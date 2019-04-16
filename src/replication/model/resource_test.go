@@ -25,7 +25,7 @@ func TestGetResourceName(t *testing.T) {
 	assert.Equal(t, "", r.GetResourceName())
 
 	r = &ResourceMetadata{
-		Namespace: &Namespace{
+		Repository: &Repository{
 			Name: "library",
 		},
 	}
@@ -39,11 +39,8 @@ func TestGetResourceName(t *testing.T) {
 	assert.Equal(t, "hello-world", r.GetResourceName())
 
 	r = &ResourceMetadata{
-		Namespace: &Namespace{
-			Name: "library",
-		},
 		Repository: &Repository{
-			Name: "hello-world",
+			Name: "library/hello-world",
 		},
 	}
 	assert.Equal(t, "library/hello-world", r.GetResourceName())

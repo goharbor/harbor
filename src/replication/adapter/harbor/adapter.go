@@ -18,7 +18,6 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
-	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
@@ -91,8 +90,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 
 func (a *adapter) Info() (*model.RegistryInfo, error) {
 	info := &model.RegistryInfo{
-		Type:             model.RegistryTypeHarbor,
-		SupportNamespace: true,
+		Type: model.RegistryTypeHarbor,
 		SupportedResourceTypes: []model.ResourceType{
 			model.ResourceTypeRepository,
 		},
@@ -130,65 +128,6 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	return info, nil
 }
 
-func (a *adapter) ListNamespaces(query *model.NamespaceQuery) ([]*model.Namespace, error) {
-	var namespaces []*model.Namespace
-	name := ""
-	if query != nil {
-		name = query.Name
-	}
-	projects, err := a.getProjects(name)
-	if err != nil {
-		return nil, err
-	}
-
-	for _, project := range projects {
-		namespaces = append(namespaces, &model.Namespace{
-			Name:     project.Name,
-			Metadata: project.Metadata,
-		})
-	}
-
-	return namespaces, nil
-}
-
-func (a *adapter) ConvertResourceMetadata(metadata *model.ResourceMetadata, namespace *model.Namespace) (*model.ResourceMetadata, error) {
-	if metadata == nil {
-		return nil, errors.New("the metadata cannot be null")
-	}
-	name := metadata.GetResourceName()
-	strs := strings.SplitN(name, "/", 2)
-	if len(strs) < 2 {
-		return nil, fmt.Errorf("unsupported resource name %s, at least contains one '/'", name)
-	}
-	meta := &model.ResourceMetadata{
-		Vtags:  metadata.Vtags,
-		Labels: metadata.Labels,
-	}
-	meta.Namespace = &model.Namespace{
-		Name: strs[0],
-	}
-	if metadata.Namespace != nil {
-		meta.Namespace.Metadata = metadata.Namespace.Metadata
-	}
-	meta.Repository = &model.Repository{
-		Name: strs[1],
-	}
-	if metadata.Repository != nil {
-		meta.Repository.Metadata = metadata.Repository.Metadata
-	}
-	// replace the namespace if it is specified
-	if namespace == nil || len(namespace.Name) == 0 {
-		return meta, nil
-	}
-	if strings.Contains(namespace.Name, "/") {
-		return nil, fmt.Errorf("the namespace %s cannot contain '/'", namespace.Name)
-	}
-	meta.Namespace.Name = namespace.Name
-	if namespace.Metadata != nil {
-		meta.Namespace.Metadata = namespace.Metadata
-	}
-	return meta, nil
-}
 func (a *adapter) PrepareForPush(resource *model.Resource) error {
 	if resource == nil {
 		return errors.New("the resource cannot be null")
@@ -196,18 +135,25 @@ func (a *adapter) PrepareForPush(resource *model.Resource) error {
 	if resource.Metadata == nil {
 		return errors.New("the metadata of resource cannot be null")
 	}
-	if resource.Metadata.Namespace == nil {
-		return errors.New("the namespace of resource cannot be null")
+	if resource.Metadata.Repository == nil {
+		return errors.New("the repository of resource cannot be null")
 	}
-	if len(resource.Metadata.Namespace.Name) == 0 {
-		return errors.New("the name of the namespace cannot be null")
+	if len(resource.Metadata.Repository.Name) == 0 {
+		return errors.New("the name of the repository cannot be null")
+	}
+	projectName, _ := util.ParseRepository(resource.Metadata.Repository.Name)
+	// harbor doesn't support the repository contains no "/"
+	// just skip here and the following task will fail
+	if len(projectName) == 0 {
+		log.Debug("the project name is empty, skip")
+		return nil
 	}
 	project := &struct {
 		Name     string                 `json:"project_name"`
 		Metadata map[string]interface{} `json:"metadata"`
 	}{
-		Name:     resource.Metadata.Namespace.Name,
-		Metadata: resource.Metadata.Namespace.Metadata,
+		Name: projectName,
+		// TODO handle the public
 	}
 
 	// TODO
@@ -234,7 +180,7 @@ func (a *adapter) PrepareForPush(resource *model.Resource) error {
 
 	err := a.client.Post(a.coreServiceURL+"/api/projects", project)
 	if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {
-		log.Debugf("got 409 when trying to create project %s", resource.Metadata.Namespace.Name)
+		log.Debugf("got 409 when trying to create project %s", projectName)
 		return nil
 	}
 	return err

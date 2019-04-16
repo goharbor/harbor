@@ -58,6 +58,9 @@ type controller struct {
 }
 
 func (c *controller) StartReplication(policy *model.Policy, resource *model.Resource, trigger model.TriggerType) (int64, error) {
+	if !policy.Enabled {
+		return 0, fmt.Errorf("the policy %d is diabled", policy.ID)
+	}
 	// only support one tag if the resource is specified as we append the tag name as a filter
 	// when creating the flow in function "createFlow"
 	if resource != nil && len(resource.Metadata.Vtags) != 1 {

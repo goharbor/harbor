@@ -89,7 +89,6 @@ func (f *fakedPolicyManager) Get(id int64) (*model.Policy, error) {
 			SrcRegistry: &model.Registry{
 				ID: 1,
 			},
-			SrcNamespaces: []string{"library"},
 		}, nil
 	}
 	if id == 2 {
@@ -99,7 +98,6 @@ func (f *fakedPolicyManager) Get(id int64) (*model.Policy, error) {
 			SrcRegistry: &model.Registry{
 				ID: 1,
 			},
-			SrcNamespaces: []string{"library"},
 		}, nil
 	}
 	return nil, nil

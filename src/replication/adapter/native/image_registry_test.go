@@ -65,13 +65,11 @@ func Test_native_FetchImages(t *testing.T) {
 	assert.NotNil(t, adapter)
 
 	tests := []struct {
-		name       string
-		namespaces []string
-		filters    []*model.Filter
-		want       []*model.Resource
-		wantErr    bool
+		name    string
+		filters []*model.Filter
+		want    []*model.Resource
+		wantErr bool
 	}{
-		{name: "namespace not empty", namespaces: []string{"ns"}, wantErr: true},
 		// TODO: discuss: should we report error if not found in the source native registry.
 		// {
 		// 	name: "repository not exist",
@@ -119,8 +117,7 @@ func Test_native_FetchImages(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:       "only special repository",
-			namespaces: []string{},
+			name: "only special repository",
 			filters: []*model.Filter{
 				{
 					Type:  model.FilterTypeName,
@@ -138,8 +135,7 @@ func Test_native_FetchImages(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:       "only special tag",
-			namespaces: []string{},
+			name: "only special tag",
 			filters: []*model.Filter{
 				{
 					Type:  model.FilterTypeTag,
@@ -163,8 +159,7 @@ func Test_native_FetchImages(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:       "special repository and special tag",
-			namespaces: []string{},
+			name: "special repository and special tag",
 			filters: []*model.Filter{
 				{
 					Type:  model.FilterTypeName,
@@ -187,8 +182,7 @@ func Test_native_FetchImages(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:       "only wildcard repository",
-			namespaces: []string{},
+			name: "only wildcard repository",
 			filters: []*model.Filter{
 				{
 					Type:  model.FilterTypeName,
@@ -206,8 +200,7 @@ func Test_native_FetchImages(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:       "only wildcard tag",
-			namespaces: []string{},
+			name: "only wildcard tag",
 			filters: []*model.Filter{
 				{
 					Type:  model.FilterTypeTag,
@@ -231,8 +224,7 @@ func Test_native_FetchImages(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:       "wildcard repository and wildcard tag",
-			namespaces: []string{},
+			name: "wildcard repository and wildcard tag",
 			filters: []*model.Filter{
 				{
 					Type:  model.FilterTypeName,
@@ -257,7 +249,7 @@ func Test_native_FetchImages(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			var resources, err = adapter.FetchImages(tt.namespaces, tt.filters)
+			var resources, err = adapter.FetchImages(tt.filters)
 			if tt.wantErr {
 				require.Len(t, resources, 0)
 				require.NotNil(t, err)
@@ -265,7 +257,6 @@ func Test_native_FetchImages(t *testing.T) {
 				require.Equal(t, len(tt.want), len(resources))
 				for i, resource := range resources {
 					require.NotNil(t, resource.Metadata)
-					assert.Equal(t, tt.want[i].Metadata.Namespace, resource.Metadata.Namespace)
 					assert.Equal(t, tt.want[i].Metadata.Repository, resource.Metadata.Repository)
 					assert.Equal(t, tt.want[i].Metadata.Vtags, resource.Metadata.Vtags)
 				}

@@ -56,8 +56,7 @@ var _ adp.Adapter = (*adapter)(nil)
 // Info returns information of the registry
 func (a *adapter) Info() (*model.RegistryInfo, error) {
 	return &model.RegistryInfo{
-		Type:             model.RegistryTypeDockerHub,
-		SupportNamespace: true,
+		Type: model.RegistryTypeDockerHub,
 		SupportedResourceTypes: []model.ResourceType{
 			model.ResourceTypeRepository,
 		},
@@ -78,12 +77,6 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	}, nil
 }
 
-// ConvertResourceMetadata converts the namespace and repository part of the resource metadata
-// to the one that the adapter can handle
-func (a *adapter) ConvertResourceMetadata(meta *model.ResourceMetadata, namespace *model.Namespace) (*model.ResourceMetadata, error) {
-	return meta, nil
-}
-
 // PrepareForPush does the prepare work that needed for pushing/uploading the resource
 // eg: create the namespace or repository
 func (a *adapter) PrepareForPush(resource *model.Resource) error {
@@ -93,18 +86,25 @@ func (a *adapter) PrepareForPush(resource *model.Resource) error {
 	if resource.Metadata == nil {
 		return errors.New("the metadata of resource cannot be null")
 	}
-	if resource.Metadata.Namespace == nil {
+	if resource.Metadata.Repository == nil {
 		return errors.New("the namespace of resource cannot be null")
 	}
-	if len(resource.Metadata.Namespace.Name) == 0 {
+	if len(resource.Metadata.Repository.Name) == 0 {
 		return errors.New("the name of the namespace cannot be null")
+	}
+	namespace, _ := util.ParseRepository(resource.Metadata.Repository.Name)
+	// Docker Hub doesn't support the repository contains no "/"
+	// just skip here and the following task will fail
+	if len(namespace) == 0 {
+		log.Debug("the namespace is empty, skip")
+		return nil
 	}
 
 	err := a.CreateNamespace(&model.Namespace{
-		Name: resource.Metadata.Namespace.Name,
+		Name: namespace,
 	})
 	if err != nil {
-		return fmt.Errorf("create namespace '%s' in DockerHub error: %v", resource.Metadata.Namespace.Name, err)
+		return fmt.Errorf("create namespace '%s' in DockerHub error: %v", namespace, err)
 	}
 
 	return nil
@@ -218,7 +218,7 @@ func (a *adapter) getNamespace(namespace string) (*model.Namespace, error) {
 }
 
 // FetchImages fetches images
-func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*model.Resource, error) {
+func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
 	var repos []Repo
 	nameFilter, err := a.getStringFilterValue(model.FilterTypeName, filters)
 	if err != nil {
@@ -229,11 +229,15 @@ func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*
 		return nil, err
 	}
 
+	namespaces, err := a.ListNamespaces(nil)
+	if err != nil {
+		return nil, err
+	}
 	for _, ns := range namespaces {
 		page := 1
 		pageSize := 100
 		for {
-			pageRepos, err := a.getRepos(ns, "", page, pageSize)
+			pageRepos, err := a.getRepos(ns.Name, "", page, pageSize)
 			if err != nil {
 				return nil, fmt.Errorf("get repos for namespace '%s' from DockerHub error: %v", ns, err)
 			}
@@ -300,11 +304,8 @@ func (a *adapter) FetchImages(namespaces []string, filters []*model.Filter) ([]*
 			Type:     model.ResourceTypeRepository,
 			Registry: a.registry,
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: repo.Namespace,
-				},
 				Repository: &model.Repository{
-					Name: repo.Name,
+					Name: fmt.Sprintf("%s/%s", repo.Namespace, repo.Name),
 				},
 				Vtags: tags,
 			},

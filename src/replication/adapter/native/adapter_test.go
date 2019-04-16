@@ -50,81 +50,6 @@ func Test_native_Info(t *testing.T) {
 	assert.Equal(t, model.ResourceTypeRepository, info.SupportedResourceTypes[0])
 }
 
-func Test_native_ConvertResourceMetadata(t *testing.T) {
-	var registry = &model.Registry{URL: "abc"}
-	var reg, _ = adp.NewDefaultImageRegistry(registry)
-	var adapter = native{
-		DefaultImageRegistry: reg,
-		registry:             registry,
-	}
-	assert.NotNil(t, adapter)
-
-	tests := []struct {
-		name      string
-		metadata  *model.ResourceMetadata
-		namespace *model.Namespace
-		want      string
-		wantErr   bool
-	}{
-		{name: "nil metadata", metadata: nil, wantErr: true},
-		{
-			name: "2 level",
-			metadata: &model.ResourceMetadata{
-				Namespace:  &model.Namespace{Name: "a"},
-				Repository: &model.Repository{Name: "b"},
-			},
-			namespace: nil,
-			want:      "a/b",
-			wantErr:   false,
-		},
-		{
-			name: "2 level rename reomte repository",
-			metadata: &model.ResourceMetadata{
-				Namespace:  &model.Namespace{Name: "a"},
-				Repository: &model.Repository{Name: "b"},
-			},
-			namespace: &model.Namespace{Name: "c"},
-			want:      "c/b",
-			wantErr:   false,
-		},
-		{
-			name: "3 level",
-			metadata: &model.ResourceMetadata{
-				Namespace:  &model.Namespace{Name: "a"},
-				Repository: &model.Repository{Name: "b/c"},
-			},
-			namespace: nil,
-			want:      "a/b/c",
-			wantErr:   false,
-		},
-		{
-			name: "3 level rename reomte repository",
-			metadata: &model.ResourceMetadata{
-				Namespace:  &model.Namespace{Name: "a"},
-				Repository: &model.Repository{Name: "b/c"},
-			},
-			namespace: &model.Namespace{Name: "d"},
-			want:      "d/b/c",
-			wantErr:   false,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			var convert, err = adapter.ConvertResourceMetadata(tt.metadata, tt.namespace)
-			if tt.wantErr {
-				assert.NotNil(t, err)
-			} else {
-				assert.Nil(t, err)
-				assert.NotNil(t, convert)
-				assert.Nil(t, convert.Namespace)
-				assert.Equal(t, tt.want, convert.Repository.Name)
-				assert.Equal(t, tt.want, convert.GetResourceName())
-			}
-		})
-	}
-}
-
 func Test_native_PrepareForPush(t *testing.T) {
 	var registry = &model.Registry{URL: "abc"}
 	var reg, _ = adp.NewDefaultImageRegistry(registry)
@@ -136,18 +61,4 @@ func Test_native_PrepareForPush(t *testing.T) {
 
 	var err = adapter.PrepareForPush(nil)
 	assert.Nil(t, err)
-}
-
-func Test_native_ListNamespaces(t *testing.T) {
-	var registry = &model.Registry{URL: "abc"}
-	var reg, _ = adp.NewDefaultImageRegistry(registry)
-	var adapter = native{
-		DefaultImageRegistry: reg,
-		registry:             registry,
-	}
-	assert.NotNil(t, adapter)
-
-	var ns, err = adapter.ListNamespaces(nil)
-	assert.Nil(t, err)
-	assert.NotNil(t, ns)
 }

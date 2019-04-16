@@ -36,11 +36,8 @@ func TestRunOfDeletionFlow(t *testing.T) {
 	resources := []*model.Resource{
 		{
 			Metadata: &model.ResourceMetadata{
-				Namespace: &model.Namespace{
-					Name: "library",
-				},
 				Repository: &model.Repository{
-					Name: "hello-world",
+					Name: "library/hello-world",
 				},
 				Vtags: []string{"latest"},
 			},

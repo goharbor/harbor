@@ -61,7 +61,6 @@ func TestValidOfPolicy(t *testing.T) {
 				DestRegistry: &Registry{
 					ID: 1,
 				},
-				SrcNamespaces: []string{"library"},
 				Filters: []*Filter{
 					{
 						Type: "invalid_type",
@@ -80,7 +79,6 @@ func TestValidOfPolicy(t *testing.T) {
 				DestRegistry: &Registry{
 					ID: 1,
 				},
-				SrcNamespaces: []string{"library"},
 				Filters: []*Filter{
 					{
 						Type:  FilterTypeName,
@@ -103,7 +101,6 @@ func TestValidOfPolicy(t *testing.T) {
 				DestRegistry: &Registry{
 					ID: 1,
 				},
-				SrcNamespaces: []string{"library"},
 				Filters: []*Filter{
 					{
 						Type:  FilterTypeName,
@@ -126,7 +123,6 @@ func TestValidOfPolicy(t *testing.T) {
 				DestRegistry: &Registry{
 					ID: 1,
 				},
-				SrcNamespaces: []string{"library"},
 				Filters: []*Filter{
 					{
 						Type:  FilterTypeName,

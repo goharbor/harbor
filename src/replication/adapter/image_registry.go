@@ -40,7 +40,7 @@ const (
 
 // ImageRegistry defines the capabilities that an image registry should have
 type ImageRegistry interface {
-	FetchImages(namespaces []string, filters []*model.Filter) ([]*model.Resource, error)
+	FetchImages(filters []*model.Filter) ([]*model.Resource, error)
 	ManifestExist(repository, reference string) (exist bool, digest string, err error)
 	PullManifest(repository, reference string, accepttedMediaTypes []string) (manifest distribution.Manifest, digest string, err error)
 	PushManifest(repository, reference, mediaType string, payload []byte) error

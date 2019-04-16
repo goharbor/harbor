@@ -29,6 +29,17 @@ func TestFetchCharts(t *testing.T) {
 	server := test.NewServer([]*test.RequestHandlerMapping{
 		{
 			Method:  http.MethodGet,
+			Pattern: "/api/projects",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				data := `[{
+					"name": "library",
+					"metadata": {"public":true}
+				}]`
+				w.Write([]byte(data))
+			},
+		},
+		{
+			Method:  http.MethodGet,
 			Pattern: "/api/chartrepo/library/charts/harbor",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
@@ -58,12 +69,30 @@ func TestFetchCharts(t *testing.T) {
 	}
 	adapter, err := newAdapter(registry)
 	require.Nil(t, err)
-	resources, err := adapter.FetchCharts([]string{"library"}, nil)
+	// nil filter
+	resources, err := adapter.FetchCharts(nil)
 	require.Nil(t, err)
 	assert.Equal(t, 2, len(resources))
 	assert.Equal(t, model.ResourceTypeChart, resources[0].Type)
-	assert.Equal(t, "harbor", resources[0].Metadata.Repository.Name)
-	assert.Equal(t, "library", resources[0].Metadata.Namespace.Name)
+	assert.Equal(t, "library/harbor", resources[0].Metadata.Repository.Name)
+	assert.Equal(t, 1, len(resources[0].Metadata.Vtags))
+	assert.Equal(t, "1.0", resources[0].Metadata.Vtags[0])
+	// not nil filter
+	filters := []*model.Filter{
+		{
+			Type:  model.FilterTypeName,
+			Value: "library/*",
+		},
+		{
+			Type:  model.FilterTypeTag,
+			Value: "1.0",
+		},
+	}
+	resources, err = adapter.FetchCharts(filters)
+	require.Nil(t, err)
+	require.Equal(t, 1, len(resources))
+	assert.Equal(t, model.ResourceTypeChart, resources[0].Type)
+	assert.Equal(t, "library/harbor", resources[0].Metadata.Repository.Name)
 	assert.Equal(t, 1, len(resources[0].Metadata.Vtags))
 	assert.Equal(t, "1.0", resources[0].Metadata.Vtags[0])
 }

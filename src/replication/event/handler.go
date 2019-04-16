@@ -18,6 +18,8 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/goharbor/harbor/src/replication/util"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -55,10 +57,9 @@ func (h *handler) Handle(event *Event) error {
 	var policies []*model.Policy
 	var err error
 	switch event.Type {
-	case EventTypeImagePush, EventTypeChartUpload:
-		policies, err = h.getRelatedPolicies(event.Resource.Metadata.Namespace.Name)
-	case EventTypeImageDelete, EventTypeChartDelete:
-		policies, err = h.getRelatedPolicies(event.Resource.Metadata.Namespace.Name, true)
+	case EventTypeImagePush, EventTypeChartUpload,
+		EventTypeImageDelete, EventTypeChartDelete:
+		policies, err = h.getRelatedPolicies(event.Resource)
 	default:
 		return fmt.Errorf("unsupported event type %s", event.Type)
 	}
@@ -84,22 +85,15 @@ func (h *handler) Handle(event *Event) error {
 	return nil
 }
 
-func (h *handler) getRelatedPolicies(namespace string, replicateDeletion ...bool) ([]*model.Policy, error) {
+func (h *handler) getRelatedPolicies(resource *model.Resource) ([]*model.Policy, error) {
 	_, policies, err := h.policyCtl.List()
 	if err != nil {
 		return nil, err
 	}
 	result := []*model.Policy{}
 	for _, policy := range policies {
-		exist := false
-		for _, ns := range policy.SrcNamespaces {
-			if ns == namespace {
-				exist = true
-				break
-			}
-		}
-		// contains no namespace that is specified
-		if !exist {
+		// disabled
+		if !policy.Enabled {
 			continue
 		}
 		// has no trigger
@@ -110,13 +104,41 @@ func (h *handler) getRelatedPolicies(namespace string, replicateDeletion ...bool
 		if policy.Trigger.Type != model.TriggerTypeEventBased {
 			continue
 		}
-		// whether replicate deletion doesn't match the value specified in policy
-		if len(replicateDeletion) > 0 && replicateDeletion[0] != policy.Deletion {
+		// doesn't replicate deletion
+		if resource.Deleted && !policy.Deletion {
+			continue
+		}
+		// doesn't match the name filter
+		m, err := match(policy.Filters, resource)
+		if err != nil {
+			return nil, err
+		}
+		if !m {
 			continue
 		}
 		result = append(result, policy)
 	}
 	return result, nil
+}
+
+// TODO unify the match logic with other?
+func match(filters []*model.Filter, resource *model.Resource) (bool, error) {
+	match := true
+	repository := resource.Metadata.Repository.Name
+	for _, filter := range filters {
+		if filter.Type != model.FilterTypeName {
+			continue
+		}
+		m, err := util.Match(filter.Value.(string), repository)
+		if err != nil {
+			return false, err
+		}
+		if !m {
+			match = false
+			break
+		}
+	}
+	return match, nil
 }
 
 // PopulateRegistries populates the source registry and destination registry properties for policy

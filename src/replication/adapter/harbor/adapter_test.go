@@ -73,38 +73,6 @@ func TestInfo(t *testing.T) {
 	server.Close()
 }
 
-func TestListNamespaces(t *testing.T) {
-	// project exists
-	server := test.NewServer(&test.RequestHandlerMapping{
-		Method:  http.MethodGet,
-		Pattern: "/api/projects",
-		Handler: func(w http.ResponseWriter, r *http.Request) {
-			data := `[{
-				"name": "library",
-				"metadata": {"public":true}
-			},{
-				"name": "library1",
-				"metadata": {"public":true}
-			}]`
-			w.Write([]byte(data))
-		},
-	})
-	defer server.Close()
-	registry := &model.Registry{
-		URL: server.URL,
-	}
-	adapter, err := newAdapter(registry)
-	require.Nil(t, err)
-	npQuery := &model.NamespaceQuery{
-		Name: "lib",
-	}
-	namespace, err := adapter.ListNamespaces(npQuery)
-	require.Nil(t, err)
-	assert.Equal(t, 2, len(namespace))
-	assert.Equal(t, "library", namespace[0].Name)
-	assert.True(t, namespace[0].Metadata["public"].(bool))
-}
-
 func TestPrepareForPush(t *testing.T) {
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodPost,
@@ -124,30 +92,23 @@ func TestPrepareForPush(t *testing.T) {
 	// nil metadata
 	err = adapter.PrepareForPush(&model.Resource{})
 	require.NotNil(t, err)
-	// nil namespace
+	// nil repository
 	err = adapter.PrepareForPush(&model.Resource{
 		Metadata: &model.ResourceMetadata{},
 	})
 	require.NotNil(t, err)
-	// nil namespace name
+	// nil repository name
 	err = adapter.PrepareForPush(&model.Resource{
 		Metadata: &model.ResourceMetadata{
-			Namespace: &model.Namespace{},
-		},
-	})
-	require.NotNil(t, err)
-	// nil namespace name
-	err = adapter.PrepareForPush(&model.Resource{
-		Metadata: &model.ResourceMetadata{
-			Namespace: &model.Namespace{},
+			Repository: &model.Repository{},
 		},
 	})
 	require.NotNil(t, err)
 	// project doesn't exist
 	err = adapter.PrepareForPush(&model.Resource{
 		Metadata: &model.ResourceMetadata{
-			Namespace: &model.Namespace{
-				Name: "library",
+			Repository: &model.Repository{
+				Name: "library/hello-world",
 			},
 		},
 	})
@@ -170,8 +131,8 @@ func TestPrepareForPush(t *testing.T) {
 	require.Nil(t, err)
 	err = adapter.PrepareForPush(&model.Resource{
 		Metadata: &model.ResourceMetadata{
-			Namespace: &model.Namespace{
-				Name: "library",
+			Repository: &model.Repository{
+				Name: "library/hello-world",
 			},
 		},
 	})

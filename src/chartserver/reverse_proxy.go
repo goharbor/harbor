@@ -4,11 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/common"
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/replication"
-	rep_event "github.com/goharbor/harbor/src/replication/event"
-	"github.com/goharbor/harbor/src/replication/model"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -17,6 +12,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/goharbor/harbor/src/common"
+	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/replication"
+	rep_event "github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/model"
 )
 
 const (
@@ -100,11 +101,8 @@ func modifyResponse(res *http.Response) error {
 						Resource: &model.Resource{
 							Type: model.ResourceTypeChart,
 							Metadata: &model.ResourceMetadata{
-								Namespace: &model.Namespace{
-									Name: chartUploadSplitted[0],
-								},
 								Repository: &model.Repository{
-									Name: chartUploadSplitted[1],
+									Name: fmt.Sprintf("%s/%s", chartUploadSplitted[0], chartUploadSplitted[1]),
 								},
 								Vtags: []string{chartUploadSplitted[2]},
 							},

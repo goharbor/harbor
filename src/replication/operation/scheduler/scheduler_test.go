@@ -50,7 +50,7 @@ func TestStop(t *testing.T) {
 func generateData() ([]*ScheduleItem, error) {
 	srcResource := &model.Resource{
 		Metadata: &model.ResourceMetadata{
-			Namespace: &model.Namespace{
+			Repository: &model.Repository{
 				Name: "namespace1",
 			},
 			Vtags:  []string{"latest"},
@@ -62,7 +62,7 @@ func generateData() ([]*ScheduleItem, error) {
 	}
 	destResource := &model.Resource{
 		Metadata: &model.ResourceMetadata{
-			Namespace: &model.Namespace{
+			Repository: &model.Repository{
 				Name: "namespace2",
 			},
 			Vtags:  []string{"v1", "v2"},

@@ -15,8 +15,6 @@
 package native
 
 import (
-	"errors"
-
 	"github.com/goharbor/harbor/src/common/utils/log"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -75,33 +73,5 @@ func (native) Info() (info *model.RegistryInfo, err error) {
 	}, nil
 }
 
-// ConvertResourceMetadata convert src to dst resource
-func (native) ConvertResourceMetadata(metadata *model.ResourceMetadata, namespace *model.Namespace) (*model.ResourceMetadata, error) {
-	if metadata == nil {
-		return nil, errors.New("the metadata cannot be null")
-	}
-
-	var result = &model.ResourceMetadata{
-		Namespace:  metadata.Namespace,
-		Repository: metadata.Repository,
-		Vtags:      metadata.Vtags,
-	}
-
-	// if dest namespace is set, rename metadata namespace
-	if namespace != nil {
-		result.Namespace = namespace
-	}
-
-	result.Repository = &model.Repository{Name: result.GetResourceName()}
-	result.Namespace = nil
-
-	return result, nil
-}
-
 // PrepareForPush nothing need to do.
 func (native) PrepareForPush(*model.Resource) error { return nil }
-
-// ListNamespaces native registry no namespaces, so list empty array.
-func (native) ListNamespaces(*model.NamespaceQuery) ([]*model.Namespace, error) {
-	return []*model.Namespace{}, nil
-}

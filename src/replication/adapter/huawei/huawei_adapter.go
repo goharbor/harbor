@@ -10,6 +10,8 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/goharbor/harbor/src/replication/util"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -110,7 +112,6 @@ func (adapter Adapter) ListNamespaces(query *model.NamespaceQuery) ([]*model.Nam
 // ConvertResourceMetadata convert resource metadata for Huawei SWR
 func (adapter Adapter) ConvertResourceMetadata(resourceMetadata *model.ResourceMetadata, namespace *model.Namespace) (*model.ResourceMetadata, error) {
 	metadata := &model.ResourceMetadata{
-		Namespace:  namespace,
 		Repository: resourceMetadata.Repository,
 		Vtags:      resourceMetadata.Vtags,
 		Labels:     resourceMetadata.Labels,
@@ -121,12 +122,12 @@ func (adapter Adapter) ConvertResourceMetadata(resourceMetadata *model.ResourceM
 // PrepareForPush prepare for push to Huawei SWR
 func (adapter Adapter) PrepareForPush(resource *model.Resource) error {
 
-	namespace := resource.Metadata.Namespace
-	ns, err := adapter.GetNamespace(namespace.Name)
+	namespace, _ := util.ParseRepository(resource.Metadata.Repository.Name)
+	ns, err := adapter.GetNamespace(namespace)
 	if err != nil {
 		//
 	} else {
-		if ns.Name == namespace.Name {
+		if ns.Name == namespace {
 			return nil
 		}
 	}
@@ -134,7 +135,7 @@ func (adapter Adapter) PrepareForPush(resource *model.Resource) error {
 	url := fmt.Sprintf("%s/dockyard/v2/namespaces", adapter.Registry.URL)
 	namespacebyte, err := json.Marshal(struct {
 		Namespace string `json:"namespace"`
-	}{Namespace: namespace.Name})
+	}{Namespace: namespace})
 	if err != nil {
 		return err
 	}

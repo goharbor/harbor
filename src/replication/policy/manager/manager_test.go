@@ -54,7 +54,6 @@ func Test_convertFromPersistModel(t *testing.T) {
 				Description:       "Policy Description",
 				Creator:           "someone",
 				SrcRegistryID:     123,
-				SrcNamespaces:     "ns1,ns2,ns3",
 				DestRegistryID:    456,
 				DestNamespace:     "target_ns",
 				ReplicateDeletion: true,
@@ -70,7 +69,6 @@ func Test_convertFromPersistModel(t *testing.T) {
 				SrcRegistry: &model.Registry{
 					ID: 123,
 				},
-				SrcNamespaces: []string{"ns1", "ns2", "ns3"},
 				DestRegistry: &model.Registry{
 					ID: 456,
 				},
@@ -103,7 +101,6 @@ func Test_convertFromPersistModel(t *testing.T) {
 			assert.Equal(t, tt.want.Description, got.Description)
 			assert.Equal(t, tt.want.Creator, got.Creator)
 			assert.Equal(t, tt.want.SrcRegistry.ID, got.SrcRegistry.ID)
-			assert.Equal(t, tt.want.SrcNamespaces, got.SrcNamespaces)
 			assert.Equal(t, tt.want.DestRegistry.ID, got.DestRegistry.ID)
 			assert.Equal(t, tt.want.DestNamespace, got.DestNamespace)
 			assert.Equal(t, tt.want.Deletion, got.Deletion)
@@ -133,7 +130,6 @@ func Test_convertToPersistModel(t *testing.T) {
 				SrcRegistry: &model.Registry{
 					ID: 123,
 				},
-				SrcNamespaces: []string{"ns1", "ns2", "ns3"},
 				DestRegistry: &model.Registry{
 					ID: 456,
 				},
@@ -149,7 +145,6 @@ func Test_convertToPersistModel(t *testing.T) {
 				Description:       "Policy Description",
 				Creator:           "someone",
 				SrcRegistryID:     123,
-				SrcNamespaces:     "ns1,ns2,ns3",
 				DestRegistryID:    456,
 				DestNamespace:     "target_ns",
 				ReplicateDeletion: true,
@@ -175,7 +170,6 @@ func Test_convertToPersistModel(t *testing.T) {
 			assert.Equal(t, tt.want.Description, got.Description)
 			assert.Equal(t, tt.want.Creator, got.Creator)
 			assert.Equal(t, tt.want.SrcRegistryID, got.SrcRegistryID)
-			assert.Equal(t, tt.want.SrcNamespaces, got.SrcNamespaces)
 			assert.Equal(t, tt.want.DestRegistryID, got.DestRegistryID)
 			assert.Equal(t, tt.want.DestNamespace, got.DestNamespace)
 			assert.Equal(t, tt.want.ReplicateDeletion, got.ReplicateDeletion)

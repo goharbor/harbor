@@ -18,7 +18,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -58,19 +57,14 @@ func convertFromPersistModel(policy *persist_models.RepPolicy) (*model.Policy, e
 		}
 	}
 
-	// 1. parse SrcNamespaces to array
-	if len(policy.SrcNamespaces) > 0 {
-		ply.SrcNamespaces = strings.Split(policy.SrcNamespaces, ",")
-	}
-
-	// 2. parse Filters
+	// parse Filters
 	filters, err := parseFilters(policy.Filters)
 	if err != nil {
 		return nil, err
 	}
 	ply.Filters = filters
 
-	// 3. parse Trigger
+	// parse Trigger
 	trigger, err := parseTrigger(policy.Trigger)
 	if err != nil {
 		return nil, err
@@ -90,7 +84,6 @@ func convertToPersistModel(policy *model.Policy) (*persist_models.RepPolicy, err
 		Name:              policy.Name,
 		Description:       policy.Description,
 		Creator:           policy.Creator,
-		SrcNamespaces:     strings.Join(policy.SrcNamespaces, ","),
 		DestNamespace:     policy.DestNamespace,
 		Override:          policy.Override,
 		Enabled:           policy.Enabled,

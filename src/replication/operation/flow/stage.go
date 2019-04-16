@@ -87,14 +87,14 @@ func fetchResources(adapter adp.Adapter, policy *model.Policy) ([]*model.Resourc
 			if !ok {
 				return nil, fmt.Errorf("the adapter doesn't implement the ImageRegistry interface")
 			}
-			res, err = reg.FetchImages(policy.SrcNamespaces, filters)
+			res, err = reg.FetchImages(filters)
 		} else if typ == model.ResourceTypeChart {
 			// charts
 			reg, ok := adapter.(adp.ChartRegistry)
 			if !ok {
 				return nil, fmt.Errorf("the adapter doesn't implement the ChartRegistry interface")
 			}
-			res, err = reg.FetchCharts(policy.SrcNamespaces, filters)
+			res, err = reg.FetchCharts(filters)
 		} else {
 			return nil, fmt.Errorf("unsupported resource type %s", typ)
 		}
@@ -135,8 +135,7 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 					match = false
 					break FILTER_LOOP
 				}
-				// TODO filter only the repository part?
-				m, err := util.Match(pattern, resource.Metadata.GetResourceName())
+				m, err := util.Match(pattern, resource.Metadata.Repository.Name)
 				if err != nil {
 					return nil, err
 				}
@@ -184,39 +183,35 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 }
 
 // assemble the destination resources by filling the metadata, registry and override properties
-func assembleDestinationResources(adapter adp.Adapter, resources []*model.Resource,
-	policy *model.Policy) ([]*model.Resource, error) {
+func assembleDestinationResources(resources []*model.Resource,
+	policy *model.Policy) []*model.Resource {
 	var result []*model.Resource
-	var namespace *model.Namespace
-	if len(policy.DestNamespace) > 0 {
-		namespace = &model.Namespace{
-			Name: policy.DestNamespace,
-		}
-	}
 	for _, resource := range resources {
-		metadata, err := adapter.ConvertResourceMetadata(resource.Metadata, namespace)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert the resource metadata of %s: %v", resource.Metadata.GetResourceName(), err)
-		}
 		res := &model.Resource{
 			Type:         resource.Type,
-			Metadata:     metadata,
 			Registry:     policy.DestRegistry,
 			ExtendedInfo: resource.ExtendedInfo,
 			Deleted:      resource.Deleted,
 			Override:     policy.Override,
 		}
+		res.Metadata = &model.ResourceMetadata{
+			Repository: &model.Repository{
+				Name:     replaceNamespace(resource.Metadata.Repository.Name, policy.DestNamespace),
+				Metadata: resource.Metadata.Repository.Metadata,
+			},
+			Vtags: resource.Metadata.Vtags,
+		}
 		result = append(result, res)
 	}
 	log.Debug("assemble the destination resources completed")
-	return result, nil
+	return result
 }
 
 // do the prepare work for pushing/uploading the resources: create the namespace or repository
 func prepareForPush(adapter adp.Adapter, resources []*model.Resource) error {
 	// TODO need to consider how to handle that both contains public/private namespace
 	for _, resource := range resources {
-		name := resource.Metadata.GetResourceName()
+		name := resource.Metadata.Repository.Name
 		if err := adapter.PrepareForPush(resource); err != nil {
 			return fmt.Errorf("failed to do the prepare work for pushing/uploading %s: %v", name, err)
 		}
@@ -318,12 +313,23 @@ func getResourceName(res *model.Resource) string {
 		return ""
 	}
 	if len(meta.Vtags) == 0 {
-		return meta.GetResourceName()
+		return meta.Repository.Name
 	}
 
 	if len(meta.Vtags) <= 5 {
-		return meta.GetResourceName() + ":[" + strings.Join(meta.Vtags, ",") + "]"
+		return meta.Repository.Name + ":[" + strings.Join(meta.Vtags, ",") + "]"
 	}
 
 	return fmt.Sprintf("%s:[%s ... %d in total]", meta.GetResourceName(), strings.Join(meta.Vtags[:5], ","), len(meta.Vtags))
+}
+
+// repository:c namespace:n -> n/c
+// repository:b/c namespace:n -> n/c
+// repository:a/b/c namespace:n -> n/c
+func replaceNamespace(repository string, namespace string) string {
+	if len(namespace) == 0 {
+		return repository
+	}
+	_, rest := util.ParseRepository(repository)
+	return fmt.Sprintf("%s/%s", namespace, rest)
 }
