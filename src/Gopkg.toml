@@ -123,3 +123,7 @@ ignored = ["github.com/goharbor/harbor/tests*"]
 [[constraint]]
   name = "k8s.io/api"
   version = "kubernetes-1.13.4"
+
+[[constraint]]
+  name = "github.com/bmatcuk/doublestar"
+  version = "1.1.1"
