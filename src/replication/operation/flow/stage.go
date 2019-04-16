@@ -209,14 +209,10 @@ func assembleDestinationResources(resources []*model.Resource,
 
 // do the prepare work for pushing/uploading the resources: create the namespace or repository
 func prepareForPush(adapter adp.Adapter, resources []*model.Resource) error {
-	// TODO need to consider how to handle that both contains public/private namespace
-	for _, resource := range resources {
-		name := resource.Metadata.Repository.Name
-		if err := adapter.PrepareForPush(resource); err != nil {
-			return fmt.Errorf("failed to do the prepare work for pushing/uploading %s: %v", name, err)
-		}
-		log.Debugf("the prepare work for pushing/uploading %s completed", name)
+	if err := adapter.PrepareForPush(resources); err != nil {
+		return fmt.Errorf("failed to do the prepare work for pushing/uploading resources: %v", err)
 	}
+	log.Debug("the prepare work for pushing/uploading resources completed")
 	return nil
 }
 

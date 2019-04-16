@@ -120,53 +120,55 @@ func (adapter Adapter) ConvertResourceMetadata(resourceMetadata *model.ResourceM
 }
 
 // PrepareForPush prepare for push to Huawei SWR
-func (adapter Adapter) PrepareForPush(resource *model.Resource) error {
-
-	namespace, _ := util.ParseRepository(resource.Metadata.Repository.Name)
-	ns, err := adapter.GetNamespace(namespace)
-	if err != nil {
-		//
-	} else {
-		if ns.Name == namespace {
-			return nil
+func (adapter Adapter) PrepareForPush(resources []*model.Resource) error {
+	// TODO optimize the logic by merging the same namesapces
+	for _, resource := range resources {
+		namespace, _ := util.ParseRepository(resource.Metadata.Repository.Name)
+		ns, err := adapter.GetNamespace(namespace)
+		if err != nil {
+			//
+		} else {
+			if ns.Name == namespace {
+				return nil
+			}
 		}
-	}
 
-	url := fmt.Sprintf("%s/dockyard/v2/namespaces", adapter.Registry.URL)
-	namespacebyte, err := json.Marshal(struct {
-		Namespace string `json:"namespace"`
-	}{Namespace: namespace})
-	if err != nil {
-		return err
-	}
-
-	r, err := http.NewRequest("POST", url, strings.NewReader(string(namespacebyte)))
-	if err != nil {
-		return err
-	}
-
-	r.Header.Add("content-type", "application/json; charset=utf-8")
-	encodeAuth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", adapter.Registry.Credential.AccessKey, adapter.Registry.Credential.AccessSecret)))
-	r.Header.Add("Authorization", "Basic "+encodeAuth)
-
-	client := &http.Client{}
-	if adapter.Registry.Insecure == true {
-		client = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			},
+		url := fmt.Sprintf("%s/dockyard/v2/namespaces", adapter.Registry.URL)
+		namespacebyte, err := json.Marshal(struct {
+			Namespace string `json:"namespace"`
+		}{Namespace: namespace})
+		if err != nil {
+			return err
 		}
-	}
-	resp, err := client.Do(r)
-	if err != nil {
-		return err
-	}
 
-	defer resp.Body.Close()
-	code := resp.StatusCode
-	if code >= 300 || code < 200 {
-		body, _ := ioutil.ReadAll(resp.Body)
-		return fmt.Errorf("[%d][%s]", code, string(body))
+		r, err := http.NewRequest("POST", url, strings.NewReader(string(namespacebyte)))
+		if err != nil {
+			return err
+		}
+
+		r.Header.Add("content-type", "application/json; charset=utf-8")
+		encodeAuth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", adapter.Registry.Credential.AccessKey, adapter.Registry.Credential.AccessSecret)))
+		r.Header.Add("Authorization", "Basic "+encodeAuth)
+
+		client := &http.Client{}
+		if adapter.Registry.Insecure == true {
+			client = &http.Client{
+				Transport: &http.Transport{
+					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+				},
+			}
+		}
+		resp, err := client.Do(r)
+		if err != nil {
+			return err
+		}
+
+		defer resp.Body.Close()
+		code := resp.StatusCode
+		if code >= 300 || code < 200 {
+			body, _ := ioutil.ReadAll(resp.Body)
+			return fmt.Errorf("[%d][%s]", code, string(body))
+		}
 	}
 	return nil
 }

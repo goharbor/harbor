@@ -130,7 +130,7 @@ func (f *fakedAdapter) Info() (*model.RegistryInfo, error) {
 	}, nil
 }
 
-func (f *fakedAdapter) PrepareForPush(*model.Resource) error {
+func (f *fakedAdapter) PrepareForPush([]*model.Resource) error {
 	return nil
 }
 func (f *fakedAdapter) HealthCheck() (model.HealthStatus, error) {

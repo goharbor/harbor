@@ -30,9 +30,9 @@ type Factory func(*model.Registry) (Adapter, error)
 type Adapter interface {
 	// Info return the information of this adapter
 	Info() (*model.RegistryInfo, error)
-	// PrepareForPush does the prepare work that needed for pushing/uploading the resource
+	// PrepareForPush does the prepare work that needed for pushing/uploading the resources
 	// eg: create the namespace or repository
-	PrepareForPush(*model.Resource) error
+	PrepareForPush([]*model.Resource) error
 	// HealthCheck checks health status of registry
 	HealthCheck() (model.HealthStatus, error)
 }
