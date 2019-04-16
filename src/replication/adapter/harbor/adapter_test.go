@@ -87,31 +87,42 @@ func TestPrepareForPush(t *testing.T) {
 	adapter, err := newAdapter(registry)
 	require.Nil(t, err)
 	// nil resource
-	err = adapter.PrepareForPush(nil)
+	err = adapter.PrepareForPush([]*model.Resource{nil})
 	require.NotNil(t, err)
 	// nil metadata
-	err = adapter.PrepareForPush(&model.Resource{})
+	err = adapter.PrepareForPush([]*model.Resource{
+		{},
+	})
 	require.NotNil(t, err)
 	// nil repository
-	err = adapter.PrepareForPush(&model.Resource{
-		Metadata: &model.ResourceMetadata{},
-	})
+	err = adapter.PrepareForPush(
+		[]*model.Resource{
+			{
+				Metadata: &model.ResourceMetadata{},
+			},
+		})
 	require.NotNil(t, err)
 	// nil repository name
-	err = adapter.PrepareForPush(&model.Resource{
-		Metadata: &model.ResourceMetadata{
-			Repository: &model.Repository{},
-		},
-	})
+	err = adapter.PrepareForPush(
+		[]*model.Resource{
+			{
+				Metadata: &model.ResourceMetadata{
+					Repository: &model.Repository{},
+				},
+			},
+		})
 	require.NotNil(t, err)
 	// project doesn't exist
-	err = adapter.PrepareForPush(&model.Resource{
-		Metadata: &model.ResourceMetadata{
-			Repository: &model.Repository{
-				Name: "library/hello-world",
+	err = adapter.PrepareForPush(
+		[]*model.Resource{
+			{
+				Metadata: &model.ResourceMetadata{
+					Repository: &model.Repository{
+						Name: "library/hello-world",
+					},
+				},
 			},
-		},
-	})
+		})
 	require.Nil(t, err)
 
 	server.Close()
@@ -129,12 +140,15 @@ func TestPrepareForPush(t *testing.T) {
 	}
 	adapter, err = newAdapter(registry)
 	require.Nil(t, err)
-	err = adapter.PrepareForPush(&model.Resource{
-		Metadata: &model.ResourceMetadata{
-			Repository: &model.Repository{
-				Name: "library/hello-world",
+	err = adapter.PrepareForPush(
+		[]*model.Resource{
+			{
+				Metadata: &model.ResourceMetadata{
+					Repository: &model.Repository{
+						Name: "library/hello-world",
+					},
+				},
 			},
-		},
-	})
+		})
 	require.Nil(t, err)
 }

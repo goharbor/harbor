@@ -79,34 +79,40 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 
 // PrepareForPush does the prepare work that needed for pushing/uploading the resource
 // eg: create the namespace or repository
-func (a *adapter) PrepareForPush(resource *model.Resource) error {
-	if resource == nil {
-		return errors.New("the resource cannot be null")
-	}
-	if resource.Metadata == nil {
-		return errors.New("the metadata of resource cannot be null")
-	}
-	if resource.Metadata.Repository == nil {
-		return errors.New("the namespace of resource cannot be null")
-	}
-	if len(resource.Metadata.Repository.Name) == 0 {
-		return errors.New("the name of the namespace cannot be null")
-	}
-	namespace, _ := util.ParseRepository(resource.Metadata.Repository.Name)
-	// Docker Hub doesn't support the repository contains no "/"
-	// just skip here and the following task will fail
-	if len(namespace) == 0 {
-		log.Debug("the namespace is empty, skip")
-		return nil
+func (a *adapter) PrepareForPush(resources []*model.Resource) error {
+	namespaces := map[string]struct{}{}
+	for _, resource := range resources {
+		if resource == nil {
+			return errors.New("the resource cannot be null")
+		}
+		if resource.Metadata == nil {
+			return errors.New("the metadata of resource cannot be null")
+		}
+		if resource.Metadata.Repository == nil {
+			return errors.New("the namespace of resource cannot be null")
+		}
+		if len(resource.Metadata.Repository.Name) == 0 {
+			return errors.New("the name of the namespace cannot be null")
+		}
+		namespace, _ := util.ParseRepository(resource.Metadata.Repository.Name)
+		// Docker Hub doesn't support the repository contains no "/"
+		// just skip here and the following task will fail
+		if len(namespace) == 0 {
+			log.Debug("the namespace is empty, skip")
+			continue
+		}
+
+		namespaces[namespace] = struct{}{}
 	}
 
-	err := a.CreateNamespace(&model.Namespace{
-		Name: namespace,
-	})
-	if err != nil {
-		return fmt.Errorf("create namespace '%s' in DockerHub error: %v", namespace, err)
+	for namespace := range namespaces {
+		err := a.CreateNamespace(&model.Namespace{
+			Name: namespace,
+		})
+		if err != nil {
+			return fmt.Errorf("create namespace '%s' in DockerHub error: %v", namespace, err)
+		}
 	}
-
 	return nil
 }
 

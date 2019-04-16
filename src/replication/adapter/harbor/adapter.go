@@ -136,33 +136,42 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	return info, nil
 }
 
-func (a *adapter) PrepareForPush(resource *model.Resource) error {
-	if resource == nil {
-		return errors.New("the resource cannot be null")
-	}
-	if resource.Metadata == nil {
-		return errors.New("the metadata of resource cannot be null")
-	}
-	if resource.Metadata.Repository == nil {
-		return errors.New("the repository of resource cannot be null")
-	}
-	if len(resource.Metadata.Repository.Name) == 0 {
-		return errors.New("the name of the repository cannot be null")
-	}
-	projectName, _ := util.ParseRepository(resource.Metadata.Repository.Name)
-	// harbor doesn't support the repository contains no "/"
-	// just skip here and the following task will fail
-	if len(projectName) == 0 {
-		log.Debug("the project name is empty, skip")
-		return nil
-	}
-	project := &struct {
-		Name     string                 `json:"project_name"`
-		Metadata map[string]interface{} `json:"metadata"`
-	}{
-		Name: projectName,
+func (a *adapter) PrepareForPush(resources []*model.Resource) error {
+	projects := map[string]*project{}
+	for _, resource := range resources {
+		if resource == nil {
+			return errors.New("the resource cannot be null")
+		}
+		if resource.Metadata == nil {
+			return errors.New("the metadata of resource cannot be null")
+		}
+		if resource.Metadata.Repository == nil {
+			return errors.New("the repository of resource cannot be null")
+		}
+		if len(resource.Metadata.Repository.Name) == 0 {
+			return errors.New("the name of the repository cannot be null")
+		}
+		projectName, _ := util.ParseRepository(resource.Metadata.Repository.Name)
+		// harbor doesn't support the repository contains no "/"
+		// just skip here and the following task will fail
+		if len(projectName) == 0 {
+			log.Debug("the project name is empty, skip")
+			continue
+		}
 		// TODO handle the public
+		projects[projectName] = &project{
+			Name: projectName,
+		}
 	}
+	for _, project := range projects {
+		err := a.client.Post(a.coreServiceURL+"/api/projects", project)
+		if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {
+			log.Debugf("got 409 when trying to create project %s", project.Name)
+			return nil
+		}
+		return err
+	}
+	return nil
 
 	// TODO
 	/*
@@ -185,13 +194,6 @@ func (a *adapter) PrepareForPush(resource *model.Resource) error {
 			}
 		}
 	*/
-
-	err := a.client.Post(a.coreServiceURL+"/api/projects", project)
-	if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {
-		log.Debugf("got 409 when trying to create project %s", projectName)
-		return nil
-	}
-	return err
 }
 
 type project struct {

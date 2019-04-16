@@ -74,4 +74,4 @@ func (native) Info() (info *model.RegistryInfo, err error) {
 }
 
 // PrepareForPush nothing need to do.
-func (native) PrepareForPush(*model.Resource) error { return nil }
+func (native) PrepareForPush([]*model.Resource) error { return nil }
