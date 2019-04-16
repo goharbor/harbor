@@ -21,7 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/replication/util"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/operation"
 	"github.com/goharbor/harbor/src/replication/policy"
@@ -160,8 +159,8 @@ func PopulateRegistries(registryMgr registry.Manager, policy *model.Policy) erro
 }
 
 func getRegistry(registryMgr registry.Manager, registry *model.Registry) (*model.Registry, error) {
-	if registry == nil || registry.ID == 0 {
-		return GetLocalRegistry(), nil
+	if registry == nil {
+		return nil, errors.New("empty registry")
 	}
 	reg, err := registryMgr.Get(registry.ID)
 	if err != nil {
@@ -171,21 +170,4 @@ func getRegistry(registryMgr registry.Manager, registry *model.Registry) (*model
 		return nil, fmt.Errorf("registry %d not found", registry.ID)
 	}
 	return reg, nil
-}
-
-// GetLocalRegistry returns the info of the local Harbor registry
-func GetLocalRegistry() *model.Registry {
-	return &model.Registry{
-		Type:    model.RegistryTypeHarbor,
-		Name:    "Local",
-		URL:     config.Config.RegistryURL,
-		CoreURL: config.Config.CoreURL,
-		Status:  "healthy",
-		Credential: &model.Credential{
-			Type: model.CredentialTypeSecret,
-			// use secret to do the auth for the local Harbor
-			AccessSecret: config.Config.JobserviceSecret,
-		},
-		Insecure: true,
-	}
 }

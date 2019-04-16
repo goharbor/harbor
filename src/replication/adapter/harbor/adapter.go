@@ -37,6 +37,14 @@ func init() {
 		return
 	}
 	log.Infof("the factory for adapter %s registered", model.RegistryTypeHarbor)
+
+	if err := adp.RegisterFactory(model.RegistryTypeLocalHarbor, func(registry *model.Registry) (adp.Adapter, error) {
+		return newAdapter(registry)
+	}); err != nil {
+		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeLocalHarbor, err)
+		return
+	}
+	log.Infof("the factory for adapter %s registered", model.RegistryTypeLocalHarbor)
 }
 
 type adapter struct {

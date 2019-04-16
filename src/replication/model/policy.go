@@ -72,20 +72,12 @@ func (p *Policy) Valid(v *validation.Validation) {
 	if len(p.Name) == 0 {
 		v.SetError("name", "cannot be empty")
 	}
-	var srcRegistryID, dstRegistryID int64
-	if p.SrcRegistry != nil {
-		srcRegistryID = p.SrcRegistry.ID
+	if p.SrcRegistry == nil || p.SrcRegistry.ID == 0 {
+		v.SetError("src_registry", "cannot be empty")
 	}
-	if p.DestRegistry != nil {
-		dstRegistryID = p.DestRegistry.ID
+	if p.DestRegistry == nil || p.DestRegistry.ID == 0 {
+		v.SetError("dest_registry", "cannot be empty")
 	}
-
-	// one of the source registry and destination registry must be Harbor itself
-	if srcRegistryID != 0 && dstRegistryID != 0 ||
-		srcRegistryID == 0 && dstRegistryID == 0 {
-		v.SetError("src_registry, dest_registry", "one of them should be empty and the other one shouldn't be empty")
-	}
-
 	// valid the filters
 	for _, filter := range p.Filters {
 		if filter.Type != FilterTypeResource &&
@@ -96,7 +88,6 @@ func (p *Policy) Valid(v *validation.Validation) {
 			break
 		}
 	}
-
 	// valid trigger
 	if p.Trigger != nil {
 		if p.Trigger.Type != TriggerTypeManual &&

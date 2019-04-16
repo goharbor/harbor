@@ -23,8 +23,10 @@ import (
 // const definition
 const (
 	// RegistryTypeHarbor indicates registry type harbor
-	RegistryTypeHarbor    RegistryType = "harbor"
-	RegistryTypeDockerHub RegistryType = "dockerHub"
+	RegistryTypeHarbor RegistryType = "harbor"
+	// Local Harbor is the type of Harbor instance where the replication service is running on
+	RegistryTypeLocalHarbor RegistryType = "localHarbor"
+	RegistryTypeDockerHub   RegistryType = "dockerHub"
 
 	FilterStyleTypeText  = "input"
 	FilterStyleTypeRadio = "radio"
@@ -94,6 +96,7 @@ type Registry struct {
 type RegistryQuery struct {
 	// Name is name of the registry to query
 	Name string
+	Type string
 	// Pagination specifies the pagination
 	Pagination *models.Pagination
 }

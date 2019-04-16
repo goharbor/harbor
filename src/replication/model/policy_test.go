@@ -31,22 +31,19 @@ func TestValidOfPolicy(t *testing.T) {
 			policy: &Policy{},
 			pass:   false,
 		},
-		// empty source registry and destination registry
+		// empty source registry
 		{
 			policy: &Policy{
 				Name: "policy01",
 			},
 			pass: false,
 		},
-		// source registry and destination registry both not empty
+		// empty destination registry
 		{
 			policy: &Policy{
 				Name: "policy01",
 				SrcRegistry: &Registry{
 					ID: 1,
-				},
-				DestRegistry: &Registry{
-					ID: 2,
 				},
 			},
 			pass: false,
@@ -56,10 +53,10 @@ func TestValidOfPolicy(t *testing.T) {
 			policy: &Policy{
 				Name: "policy01",
 				SrcRegistry: &Registry{
-					ID: 0,
+					ID: 1,
 				},
 				DestRegistry: &Registry{
-					ID: 1,
+					ID: 2,
 				},
 				Filters: []*Filter{
 					{
@@ -74,10 +71,10 @@ func TestValidOfPolicy(t *testing.T) {
 			policy: &Policy{
 				Name: "policy01",
 				SrcRegistry: &Registry{
-					ID: 0,
+					ID: 1,
 				},
 				DestRegistry: &Registry{
-					ID: 1,
+					ID: 2,
 				},
 				Filters: []*Filter{
 					{
@@ -96,10 +93,10 @@ func TestValidOfPolicy(t *testing.T) {
 			policy: &Policy{
 				Name: "policy01",
 				SrcRegistry: &Registry{
-					ID: 0,
+					ID: 1,
 				},
 				DestRegistry: &Registry{
-					ID: 1,
+					ID: 2,
 				},
 				Filters: []*Filter{
 					{
@@ -118,10 +115,10 @@ func TestValidOfPolicy(t *testing.T) {
 			policy: &Policy{
 				Name: "policy01",
 				SrcRegistry: &Registry{
-					ID: 0,
+					ID: 1,
 				},
 				DestRegistry: &Registry{
-					ID: 1,
+					ID: 2,
 				},
 				Filters: []*Filter{
 					{
