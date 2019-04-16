@@ -2298,7 +2298,7 @@ paths:
         This endpoint let user list namespaces of registry according to query.
       parameters:
       - name: id
-        in: query
+        in: path
         type: integer
         required: true
         description: The registry ID.
@@ -3772,11 +3772,6 @@ definitions:
       src_registry:
         description: The source registry.
         $ref: '#/definitions/Registry'
-      src_namespaces:
-        type: array
-        description: The source namespaces
-        items:
-          type: string
       dest_registry:
         description: The destination registry.
         $ref: '#/definitions/Registry'
