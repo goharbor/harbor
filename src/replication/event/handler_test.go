@@ -62,12 +62,6 @@ func (f *fakedPolicyController) List(...*model.PolicyQuery) (int64, []*model.Pol
 			ID:       1,
 			Enabled:  true,
 			Deletion: true,
-			SrcRegistry: &model.Registry{
-				ID: 1,
-			},
-			DestRegistry: &model.Registry{
-				ID: 1,
-			},
 			Trigger: &model.Trigger{
 				Type: model.TriggerTypeEventBased,
 			},
@@ -83,13 +77,7 @@ func (f *fakedPolicyController) List(...*model.PolicyQuery) (int64, []*model.Pol
 			ID:       2,
 			Enabled:  true,
 			Deletion: true,
-			SrcRegistry: &model.Registry{
-				ID: 1,
-			},
-			DestRegistry: &model.Registry{
-				ID: 1,
-			},
-			Trigger: nil,
+			Trigger:  nil,
 			Filters: []*model.Filter{
 				{
 					Type:  model.FilterTypeName,
@@ -102,12 +90,6 @@ func (f *fakedPolicyController) List(...*model.PolicyQuery) (int64, []*model.Pol
 			ID:       3,
 			Enabled:  true,
 			Deletion: false,
-			SrcRegistry: &model.Registry{
-				ID: 1,
-			},
-			DestRegistry: &model.Registry{
-				ID: 1,
-			},
 			Trigger: &model.Trigger{
 				Type: model.TriggerTypeEventBased,
 			},
@@ -123,12 +105,6 @@ func (f *fakedPolicyController) List(...*model.PolicyQuery) (int64, []*model.Pol
 			ID:       4,
 			Enabled:  true,
 			Deletion: true,
-			SrcRegistry: &model.Registry{
-				ID: 1,
-			},
-			DestRegistry: &model.Registry{
-				ID: 1,
-			},
 			Trigger: &model.Trigger{
 				Type: model.TriggerTypeEventBased,
 			},
@@ -144,12 +120,6 @@ func (f *fakedPolicyController) List(...*model.PolicyQuery) (int64, []*model.Pol
 			ID:       5,
 			Enabled:  false,
 			Deletion: true,
-			SrcRegistry: &model.Registry{
-				ID: 1,
-			},
-			DestRegistry: &model.Registry{
-				ID: 1,
-			},
 			Trigger: &model.Trigger{
 				Type: model.TriggerTypeEventBased,
 			},
