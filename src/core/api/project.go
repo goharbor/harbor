@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 
+	"errors"
 	"strconv"
 	"time"
 )
@@ -59,7 +60,7 @@ func (p *ProjectAPI) Prepare() {
 			} else {
 				text += fmt.Sprintf("%d", id)
 			}
-			p.HandleBadRequest(text)
+			p.SendBadRequestError(errors.New(text))
 			return
 		}
 
@@ -70,7 +71,7 @@ func (p *ProjectAPI) Prepare() {
 		}
 
 		if project == nil {
-			p.HandleNotFound(fmt.Sprintf("project %d not found", id))
+			p.SendNotFoundError(fmt.Errorf("project %d not found", id))
 			return
 		}
 
@@ -86,9 +87,10 @@ func (p *ProjectAPI) requireAccess(action rbac.Action, subresource ...rbac.Resou
 
 	if !p.SecurityCtx.Can(action, resource) {
 		if !p.SecurityCtx.IsAuthenticated() {
-			p.HandleUnauthorized()
+			p.SendUnAuthorizedError(errors.New("Unauthorized"))
+
 		} else {
-			p.HandleForbidden(p.SecurityCtx.GetUsername())
+			p.SendForbiddenError(errors.New(p.SecurityCtx.GetUsername()))
 		}
 
 		return false
@@ -100,7 +102,7 @@ func (p *ProjectAPI) requireAccess(action rbac.Action, subresource ...rbac.Resou
 // Post ...
 func (p *ProjectAPI) Post() {
 	if !p.SecurityCtx.IsAuthenticated() {
-		p.HandleUnauthorized()
+		p.SendUnAuthorizedError(errors.New("Unauthorized"))
 		return
 	}
 	var onlyAdmin bool
@@ -111,21 +113,25 @@ func (p *ProjectAPI) Post() {
 		onlyAdmin, err = config.OnlyAdminCreateProject()
 		if err != nil {
 			log.Errorf("failed to determine whether only admin can create projects: %v", err)
-			p.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			p.SendInternalServerError(fmt.Errorf("failed to determine whether only admin can create projects: %v", err))
+			return
 		}
 	}
 
 	if onlyAdmin && !(p.SecurityCtx.IsSysAdmin() || p.SecurityCtx.IsSolutionUser()) {
 		log.Errorf("Only sys admin can create project")
-		p.RenderError(http.StatusForbidden, "Only system admin can create project")
+		p.SendForbiddenError(errors.New("Only system admin can create project"))
 		return
 	}
 	var pro *models.ProjectRequest
-	p.DecodeJSONReq(&pro)
+	if err := p.DecodeJSONReq(&pro); err != nil {
+		p.SendBadRequestError(err)
+		return
+	}
 	err = validateProjectReq(pro)
 	if err != nil {
 		log.Errorf("Invalid project request, error: %v", err)
-		p.RenderError(http.StatusBadRequest, fmt.Sprintf("invalid request: %v", err))
+		p.SendBadRequestError(fmt.Errorf("invalid request: %v", err))
 		return
 	}
 
@@ -136,7 +142,7 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 	if exist {
-		p.RenderError(http.StatusConflict, "")
+		p.SendConflictError(errors.New("conflict project"))
 		return
 	}
 
@@ -162,7 +168,7 @@ func (p *ProjectAPI) Post() {
 			UserID: 1,
 		})
 		if err != nil {
-			p.HandleInternalServerError(fmt.Sprintf("failed to get the user 1: %v", err))
+			p.SendInternalServerError(fmt.Errorf("failed to get the user 1: %v", err))
 			return
 		}
 		owner = user.Username
@@ -175,7 +181,7 @@ func (p *ProjectAPI) Post() {
 	if err != nil {
 		if err == errutil.ErrDupProject {
 			log.Debugf("conflict %s", pro.Name)
-			p.RenderError(http.StatusConflict, "")
+			p.SendConflictError(fmt.Errorf("conflict %s", pro.Name))
 		} else {
 			p.ParseAndHandleError("failed to add project", err)
 		}
@@ -203,7 +209,7 @@ func (p *ProjectAPI) Post() {
 func (p *ProjectAPI) Head() {
 	name := p.GetString("project_name")
 	if len(name) == 0 {
-		p.HandleBadRequest("project_name is needed")
+		p.SendBadRequestError(errors.New("project_name is needed"))
 		return
 	}
 
@@ -214,7 +220,7 @@ func (p *ProjectAPI) Head() {
 	}
 
 	if project == nil {
-		p.HandleNotFound(fmt.Sprintf("project %s not found", name))
+		p.SendNotFoundError(fmt.Errorf("project %s not found", name))
 		return
 	}
 }
@@ -239,12 +245,13 @@ func (p *ProjectAPI) Delete() {
 
 	result, err := p.deletable(p.project.ProjectID)
 	if err != nil {
-		p.HandleInternalServerError(fmt.Sprintf(
+		p.SendInternalServerError(fmt.Errorf(
 			"failed to check the deletable of project %d: %v", p.project.ProjectID, err))
 		return
 	}
 	if !result.Deletable {
-		p.CustomAbort(http.StatusPreconditionFailed, result.Message)
+		p.SendPreconditionFailedError(errors.New(result.Message))
+		return
 	}
 
 	if err = p.ProjectMgr.Delete(p.project.ProjectID); err != nil {
@@ -274,7 +281,7 @@ func (p *ProjectAPI) Deletable() {
 
 	result, err := p.deletable(p.project.ProjectID)
 	if err != nil {
-		p.HandleInternalServerError(fmt.Sprintf(
+		p.SendInternalServerError(fmt.Errorf(
 			"failed to check the deletable of project %d: %v", p.project.ProjectID, err))
 		return
 	}
@@ -321,7 +328,11 @@ func (p *ProjectAPI) deletable(projectID int64) (*deletableResp, error) {
 // List ...
 func (p *ProjectAPI) List() {
 	// query strings
-	page, size := p.GetPaginationParams()
+	page, size, err := p.GetPaginationParams()
+	if err != nil {
+		p.SendBadRequestError(err)
+		return
+	}
 	query := &models.ProjectQueryParam{
 		Name:  p.GetString("name"),
 		Owner: p.GetString("owner"),
@@ -335,7 +346,7 @@ func (p *ProjectAPI) List() {
 	if len(public) > 0 {
 		pub, err := strconv.ParseBool(public)
 		if err != nil {
-			p.HandleBadRequest(fmt.Sprintf("invalid public: %s", public))
+			p.SendBadRequestError(fmt.Errorf("invalid public: %s", public))
 			return
 		}
 		query.Public = &pub
@@ -348,7 +359,7 @@ func (p *ProjectAPI) List() {
 			// not login, only get public projects
 			pros, err := p.ProjectMgr.GetPublic()
 			if err != nil {
-				p.HandleInternalServerError(fmt.Sprintf("failed to get public projects: %v", err))
+				p.SendInternalServerError(fmt.Errorf("failed to get public projects: %v", err))
 				return
 			}
 			projects = []*models.Project{}
@@ -360,13 +371,13 @@ func (p *ProjectAPI) List() {
 				// projects that the user is member of
 				pros, err := p.ProjectMgr.GetPublic()
 				if err != nil {
-					p.HandleInternalServerError(fmt.Sprintf("failed to get public projects: %v", err))
+					p.SendInternalServerError(fmt.Errorf("failed to get public projects: %v", err))
 					return
 				}
 				projects = append(projects, pros...)
 				mps, err := p.SecurityCtx.GetMyProjects()
 				if err != nil {
-					p.HandleInternalServerError(fmt.Sprintf("failed to list projects: %v", err))
+					p.SendInternalServerError(fmt.Errorf("failed to list projects: %v", err))
 					return
 				}
 				projects = append(projects, mps...)
@@ -416,7 +427,8 @@ func (p *ProjectAPI) populateProperties(project *models.Project) {
 	})
 	if err != nil {
 		log.Errorf("failed to get total of repositories of project %d: %v", project.ProjectID, err)
-		p.CustomAbort(http.StatusInternalServerError, "")
+		p.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	project.RepoCount = total
@@ -426,7 +438,8 @@ func (p *ProjectAPI) populateProperties(project *models.Project) {
 		count, err := chartController.GetCountOfCharts([]string{project.Name})
 		if err != nil {
 			log.Errorf("Failed to get total of charts under project %s: %v", project.Name, err)
-			p.CustomAbort(http.StatusInternalServerError, "")
+			p.SendInternalServerError(errors.New(""))
+			return
 		}
 
 		project.ChartCount = count
@@ -440,7 +453,10 @@ func (p *ProjectAPI) Put() {
 	}
 
 	var req *models.ProjectRequest
-	p.DecodeJSONReq(&req)
+	if err := p.DecodeJSONReq(&req); err != nil {
+		p.SendBadRequestError(err)
+		return
+	}
 
 	if err := p.ProjectMgr.Update(p.project.ProjectID,
 		&models.Project{
@@ -458,7 +474,11 @@ func (p *ProjectAPI) Logs() {
 		return
 	}
 
-	page, size := p.GetPaginationParams()
+	page, size, err := p.GetPaginationParams()
+	if err != nil {
+		p.SendBadRequestError(err)
+		return
+	}
 	query := &models.LogQueryParam{
 		ProjectIDs: []int64{p.project.ProjectID},
 		Username:   p.GetString("username"),
@@ -475,7 +495,7 @@ func (p *ProjectAPI) Logs() {
 	if len(timestamp) > 0 {
 		t, err := utils.ParseTimeStamp(timestamp)
 		if err != nil {
-			p.HandleBadRequest(fmt.Sprintf("invalid begin_timestamp: %s", timestamp))
+			p.SendBadRequestError(fmt.Errorf("invalid begin_timestamp: %s", timestamp))
 			return
 		}
 		query.BeginTime = t
@@ -485,7 +505,7 @@ func (p *ProjectAPI) Logs() {
 	if len(timestamp) > 0 {
 		t, err := utils.ParseTimeStamp(timestamp)
 		if err != nil {
-			p.HandleBadRequest(fmt.Sprintf("invalid end_timestamp: %s", timestamp))
+			p.SendBadRequestError(fmt.Errorf("invalid end_timestamp: %s", timestamp))
 			return
 		}
 		query.EndTime = t
@@ -493,14 +513,14 @@ func (p *ProjectAPI) Logs() {
 
 	total, err := dao.GetTotalOfAccessLogs(query)
 	if err != nil {
-		p.HandleInternalServerError(fmt.Sprintf(
+		p.SendInternalServerError(fmt.Errorf(
 			"failed to get total of access log: %v", err))
 		return
 	}
 
 	logs, err := dao.GetAccessLogs(query)
 	if err != nil {
-		p.HandleInternalServerError(fmt.Sprintf(
+		p.SendInternalServerError(fmt.Errorf(
 			"failed to get access log: %v", err))
 		return
 	}

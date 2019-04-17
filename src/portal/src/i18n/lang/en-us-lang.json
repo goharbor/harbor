@@ -74,12 +74,12 @@
         "EMPTY": "Name is required",
         "NONEMPTY": "Can't be empty",
         "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
-        "ENDPOINT_FORMAT": "Endpoint must start with HTTP or HTTPS.",
-        "OIDC_ENDPOIT_FORMAT": "Endpoint must start with HTTPS.",
+        "ENDPOINT_FORMAT": "Endpoint must start with HTTP:// or HTTPS://.",
+        "OIDC_ENDPOIT_FORMAT": "Endpoint must start with HTTPS://.",
         "OIDC_NAME": "The name of the OIDC provider.",
         "OIDC_ENDPOINT": "The URL of an OIDC-complaint server.",
         "OIDC_SCOPE": "The scope sent to OIDC server during authentication.  It has to contain “openid”, and “offline_access”.  If you are using google, please remove “offline_access” from this field.",
-        "OIDC_SKIPCERTVERIFY": "Check this box if your OIDC server is hosted via self-signed certificate."
+        "OIDC_VERIFYCERT": "Uncheck this box if your OIDC server is hosted via self-signed certificate."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -102,7 +102,11 @@
         "ADMIN_RENAME_BUTTON": "Change username",
         "ADMIN_RENAME_TIP": "Select the button in order to change the username to \"admin@harbor.local\". This operation can not be undone.",
         "RENAME_SUCCESS": "Rename success!",
-        "RENAME_CONFIRM_INFO": "Warning, changing the name to admin@harbor.local can not be undone."
+        "RENAME_CONFIRM_INFO": "Warning, changing the name to admin@harbor.local can not be undone.",
+        "CLI_PASSWORD": "CLI secret",
+        "CLI_PASSWORD_TIP": "You can use this cli secret as password when using docker/helm cli to access Harbor.",
+        "COPY_SUCCESS": "copy success",
+        "COPY_ERROR": "copy failed"
     },
     "CHANGE_PWD": {
         "TITLE": "Change Password",
@@ -705,7 +709,7 @@
             "FILTER": "LDAP Filter",
             "UID": "LDAP UID",
             "SCOPE": "LDAP Scope",
-            "VERIFY_CERT": "LDAP Verify Cert",
+            "VERIFY_CERT": "LDAP Verify Certificate",
             "LDAP_GROUP_BASE_DN": "LDAP Group Base DN",
             "LDAP_GROUP_BASE_DN_INFO": "The base DN from which to look up a group in LDAP/AD.",
             "LDAP_GROUP_FILTER": "LDAP Group Filter",
@@ -728,16 +732,17 @@
         },
         "HTTP_AUTH": {
             "ENDPOINT": "Server Endpoint",
+            "TOKEN_REVIEW": "Token Review Endpoint",
             "ALWAYS_ONBOARD": "Always Onboard",
-            "VERIFY_CERT": "Authentication Verify Cert"
+            "VERIFY_CERT": "Verify Certificate"
         },
         "OIDC": {
-            "OIDC_PROVIDER": "OIDC Provider",
+            "OIDC_PROVIDER": "OIDC Provider Name",
             "ENDPOINT": "OIDC Endpoint",
             "CLIENT_ID": "OIDC Client ID",
             "CLIENTSECRET": "OIDC Client Secret",
             "SCOPE": "OIDC Scope",
-            "OIDCSKIPCERTVERIFY": "OIDC Skip Verifying Certificate",
+            "OIDC_VERIFYCERT": "Verify Certificate",
             "OIDC_SETNAME": "Set OIDC Username",
             "OIDC_SETNAMECONTENT": "You must create a Harbor username the first time when authenticating via a third party(OIDC).This will be used within Harbor to be associated with projects, roles, etc.",
             "OIDC_USERNAME": "Username"

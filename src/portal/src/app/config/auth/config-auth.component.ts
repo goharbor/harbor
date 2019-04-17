@@ -53,7 +53,6 @@ export class ConfigurationAuthComponent implements OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes && changes["currentConfig"]) {
-
             this.originalConfig = clone(this.currentConfig);
 
         }
@@ -153,9 +152,7 @@ export class ConfigurationAuthComponent implements OnChanges {
                 || prop === 'auth_mode'
                 || prop === 'project_creattion_restriction'
                 || prop === 'self_registration'
-                || prop === 'http_authproxy_endpoint'
-                || prop === 'http_authproxy_skip_cert_verify'
-                || prop === 'http_authproxy_always_onboard'
+                || prop.startsWith('http_')
             ) {
                 changes[prop] = allChanges[prop];
             }

@@ -15,6 +15,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -37,10 +38,10 @@ func (r *ReplicationOperationAPI) Prepare() {
 	// we need to allow the jobservice to call the API
 	if !(r.SecurityCtx.IsSysAdmin() || r.SecurityCtx.IsSolutionUser()) {
 		if !r.SecurityCtx.IsAuthenticated() {
-			r.HandleUnauthorized()
+			r.SendUnAuthorizedError(errors.New("UnAuthorized"))
 			return
 		}
-		r.HandleForbidden(r.SecurityCtx.GetUsername())
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
 		return
 	}
 }
@@ -85,15 +86,22 @@ func (r *ReplicationOperationAPI) ListExecutions() {
 	if len(r.GetString("policy_id")) > 0 {
 		policyID, err := r.GetInt64("policy_id")
 		if err != nil || policyID <= 0 {
-			r.HandleBadRequest(fmt.Sprintf("invalid policy_id %s", r.GetString("policy_id")))
+			r.SendBadRequestError(fmt.Errorf("invalid policy_id %s", r.GetString("policy_id")))
 			return
 		}
 		query.PolicyID = policyID
 	}
-	query.Page, query.Size = r.GetPaginationParams()
+	page, size, err := r.GetPaginationParams()
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	query.Page = page
+	query.Size = size
+
 	total, executions, err := replication.OperationCtl.ListExecutions(query)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to list executions: %v", err))
+		r.SendInternalServerError(fmt.Errorf("failed to list executions: %v", err))
 		return
 	}
 	r.SetPaginationHeader(total, query.Page, query.Size)
@@ -103,29 +111,33 @@ func (r *ReplicationOperationAPI) ListExecutions() {
 // CreateExecution starts a replication
 func (r *ReplicationOperationAPI) CreateExecution() {
 	execution := &models.Execution{}
-	r.DecodeJSONReq(execution)
+	if err := r.DecodeJSONReq(execution); err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+
 	policy, err := replication.PolicyCtl.Get(execution.PolicyID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get policy %d: %v", execution.PolicyID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get policy %d: %v", execution.PolicyID, err))
 		return
 	}
 	if policy == nil {
-		r.HandleNotFound(fmt.Sprintf("policy %d not found", execution.PolicyID))
+		r.SendNotFoundError(fmt.Errorf("policy %d not found", execution.PolicyID))
 		return
 	}
 	if !policy.Enabled {
-		r.HandleBadRequest(fmt.Sprintf("the policy %d is disabled", execution.PolicyID))
+		r.SendBadRequestError(fmt.Errorf("the policy %d is disabled", execution.PolicyID))
 		return
 	}
 	if err = event.PopulateRegistries(replication.RegistryMgr, policy); err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to populate registries for policy %d: %v", execution.PolicyID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to populate registries for policy %d: %v", execution.PolicyID, err))
 		return
 	}
 
 	trigger := r.GetString("trigger", string(model.TriggerTypeManual))
 	executionID, err := replication.OperationCtl.StartReplication(policy, nil, model.TriggerType(trigger))
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to start replication for policy %d: %v", execution.PolicyID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to start replication for policy %d: %v", execution.PolicyID, err))
 		return
 	}
 	r.Redirect(http.StatusCreated, strconv.FormatInt(executionID, 10))
@@ -135,17 +147,17 @@ func (r *ReplicationOperationAPI) CreateExecution() {
 func (r *ReplicationOperationAPI) GetExecution() {
 	executionID, err := r.GetInt64FromPath(":id")
 	if err != nil || executionID <= 0 {
-		r.HandleBadRequest("invalid execution ID")
+		r.SendBadRequestError(errors.New("invalid execution ID"))
 		return
 	}
 	execution, err := replication.OperationCtl.GetExecution(executionID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get execution %d: %v", executionID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get execution %d: %v", executionID, err))
 		return
 	}
 
 	if execution == nil {
-		r.HandleNotFound(fmt.Sprintf("execution %d not found", executionID))
+		r.SendNotFoundError(fmt.Errorf("execution %d not found", executionID))
 		return
 	}
 	r.WriteJSONData(execution)
@@ -155,22 +167,22 @@ func (r *ReplicationOperationAPI) GetExecution() {
 func (r *ReplicationOperationAPI) StopExecution() {
 	executionID, err := r.GetInt64FromPath(":id")
 	if err != nil || executionID <= 0 {
-		r.HandleBadRequest("invalid execution ID")
+		r.SendBadRequestError(errors.New("invalid execution ID"))
 		return
 	}
 	execution, err := replication.OperationCtl.GetExecution(executionID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get execution %d: %v", executionID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get execution %d: %v", executionID, err))
 		return
 	}
 
 	if execution == nil {
-		r.HandleNotFound(fmt.Sprintf("execution %d not found", executionID))
+		r.SendNotFoundError(fmt.Errorf("execution %d not found", executionID))
 		return
 	}
 
 	if err := replication.OperationCtl.StopReplication(executionID); err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to stop execution %d: %v", executionID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to stop execution %d: %v", executionID, err))
 		return
 	}
 }
@@ -179,17 +191,17 @@ func (r *ReplicationOperationAPI) StopExecution() {
 func (r *ReplicationOperationAPI) ListTasks() {
 	executionID, err := r.GetInt64FromPath(":id")
 	if err != nil || executionID <= 0 {
-		r.HandleBadRequest("invalid execution ID")
+		r.SendBadRequestError(errors.New("invalid execution ID"))
 		return
 	}
 
 	execution, err := replication.OperationCtl.GetExecution(executionID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get execution %d: %v", executionID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get execution %d: %v", executionID, err))
 		return
 	}
 	if execution == nil {
-		r.HandleNotFound(fmt.Sprintf("execution %d not found", executionID))
+		r.SendNotFoundError(fmt.Errorf("execution %d not found", executionID))
 		return
 	}
 
@@ -201,10 +213,16 @@ func (r *ReplicationOperationAPI) ListTasks() {
 	if len(status) > 0 {
 		query.Statuses = []string{status}
 	}
-	query.Page, query.Size = r.GetPaginationParams()
+	page, size, err := r.GetPaginationParams()
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	query.Page = page
+	query.Size = size
 	total, tasks, err := replication.OperationCtl.ListTasks(query)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to list tasks: %v", err))
+		r.SendInternalServerError(fmt.Errorf("failed to list tasks: %v", err))
 		return
 	}
 	r.SetPaginationHeader(total, query.Page, query.Size)
@@ -215,45 +233,45 @@ func (r *ReplicationOperationAPI) ListTasks() {
 func (r *ReplicationOperationAPI) GetTaskLog() {
 	executionID, err := r.GetInt64FromPath(":id")
 	if err != nil || executionID <= 0 {
-		r.HandleBadRequest("invalid execution ID")
+		r.SendBadRequestError(errors.New("invalid execution ID"))
 		return
 	}
 
 	execution, err := replication.OperationCtl.GetExecution(executionID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get execution %d: %v", executionID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get execution %d: %v", executionID, err))
 		return
 	}
 	if execution == nil {
-		r.HandleNotFound(fmt.Sprintf("execution %d not found", executionID))
+		r.SendNotFoundError(fmt.Errorf("execution %d not found", executionID))
 		return
 	}
 
 	taskID, err := r.GetInt64FromPath(":tid")
 	if err != nil || taskID <= 0 {
-		r.HandleBadRequest("invalid task ID")
+		r.SendBadRequestError(errors.New("invalid task ID"))
 		return
 	}
 	task, err := replication.OperationCtl.GetTask(taskID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get task %d: %v", taskID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get task %d: %v", taskID, err))
 		return
 	}
 	if task == nil {
-		r.HandleNotFound(fmt.Sprintf("task %d not found", taskID))
+		r.SendNotFoundError(fmt.Errorf("task %d not found", taskID))
 		return
 	}
 
 	logBytes, err := replication.OperationCtl.GetTaskLog(taskID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get log of task %d: %v", taskID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get log of task %d: %v", taskID, err))
 		return
 	}
 	r.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), strconv.Itoa(len(logBytes)))
 	r.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), "text/plain")
 	_, err = r.Ctx.ResponseWriter.Write(logBytes)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to write log of task %d: %v", taskID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to write log of task %d: %v", taskID, err))
 		return
 	}
 }

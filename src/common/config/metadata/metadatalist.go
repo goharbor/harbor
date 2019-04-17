@@ -133,7 +133,7 @@ var (
 
 		{Name: common.HTTPAuthProxyEndpoint, Scope: UserScope, Group: HTTPAuthGroup, ItemType: &StringType{}},
 		{Name: common.HTTPAuthProxyTokenReviewEndpoint, Scope: UserScope, Group: HTTPAuthGroup, ItemType: &StringType{}},
-		{Name: common.HTTPAuthProxySkipCertVerify, Scope: UserScope, Group: HTTPAuthGroup, DefaultValue: "false", ItemType: &BoolType{}},
+		{Name: common.HTTPAuthProxyVerifyCert, Scope: UserScope, Group: HTTPAuthGroup, DefaultValue: "true", ItemType: &BoolType{}},
 		{Name: common.HTTPAuthProxyAlwaysOnboard, Scope: UserScope, Group: HTTPAuthGroup, DefaultValue: "false", ItemType: &BoolType{}},
 
 		{Name: common.OIDCName, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}},
@@ -141,7 +141,7 @@ var (
 		{Name: common.OIDCCLientID, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}},
 		{Name: common.OIDCClientSecret, Scope: UserScope, Group: OIDCGroup, ItemType: &PasswordType{}},
 		{Name: common.OIDCScope, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}},
-		{Name: common.OIDCSkipCertVerify, Scope: UserScope, Group: OIDCGroup, DefaultValue: "false", ItemType: &BoolType{}},
+		{Name: common.OIDCVerifyCert, Scope: UserScope, Group: OIDCGroup, DefaultValue: "true", ItemType: &BoolType{}},
 
 		{Name: "with_chartmuseum", Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_CHARTMUSEUM", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		{Name: "with_clair", Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_CLAIR", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},

@@ -21,4 +21,13 @@ export class SessionUser {
     role_id?: number;
     has_admin_role?: boolean;
     comment: string;
+    oidc_user_meta?: OidcUserMeta;
+}
+export class OidcUserMeta {
+    id: number;
+    user_id: number;
+    secret: string;
+    subiss: string;
+    creation_time: Date;
+    update_time: Date;
 }

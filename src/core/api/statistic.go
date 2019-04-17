@@ -15,8 +15,8 @@
 package api
 
 import (
+	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -48,7 +48,7 @@ type StatisticAPI struct {
 func (s *StatisticAPI) Prepare() {
 	s.BaseController.Prepare()
 	if !s.SecurityCtx.IsAuthenticated() {
-		s.HandleUnauthorized()
+		s.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 	s.username = s.SecurityCtx.GetUsername()
@@ -76,7 +76,8 @@ func (s *StatisticAPI) Get() {
 		})
 		if err != nil {
 			log.Errorf("failed to get total of public repositories: %v", err)
-			s.CustomAbort(http.StatusInternalServerError, "")
+			s.SendInternalServerError(fmt.Errorf("failed to get total of public repositories: %v", err))
+			return
 		}
 		statistic[PubRC] = n
 	}
@@ -85,7 +86,8 @@ func (s *StatisticAPI) Get() {
 		result, err := s.ProjectMgr.List(nil)
 		if err != nil {
 			log.Errorf("failed to get total of projects: %v", err)
-			s.CustomAbort(http.StatusInternalServerError, "")
+			s.SendInternalServerError(fmt.Errorf("failed to get total of projects: %v", err))
+			return
 		}
 		statistic[TPC] = result.Total
 		statistic[PriPC] = result.Total - statistic[PubPC]
@@ -93,7 +95,8 @@ func (s *StatisticAPI) Get() {
 		n, err := dao.GetTotalOfRepositories()
 		if err != nil {
 			log.Errorf("failed to get total of repositories: %v", err)
-			s.CustomAbort(http.StatusInternalServerError, "")
+			s.SendInternalServerError(fmt.Errorf("failed to get total of repositories: %v", err))
+			return
 		}
 		statistic[TRC] = n
 		statistic[PriRC] = n - statistic[PubRC]
@@ -124,7 +127,7 @@ func (s *StatisticAPI) Get() {
 				ProjectIDs: ids,
 			})
 			if err != nil {
-				s.HandleInternalServerError(fmt.Sprintf(
+				s.SendInternalServerError(fmt.Errorf(
 					"failed to get total of repositories for user %s: %v",
 					s.username, err))
 				return

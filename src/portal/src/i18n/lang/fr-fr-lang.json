@@ -61,12 +61,12 @@
         "USER_EXISTING": "Le nom d'utilisateur est déjà utilisé.",
         "NONEMPTY": "Can't be empty",
         "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
-        "ENDPOINT_FORMAT": "Endpoint must start with HTTP or HTTPS.",
-        "OIDC_ENDPOIT_FORMAT": "Endpoint must start with HTTPS.",
+        "ENDPOINT_FORMAT": "Endpoint must start with HTTP:// or HTTPS://.",
+        "OIDC_ENDPOIT_FORMAT": "Endpoint must start with HTTPS://.",
         "OIDC_NAME": "le nom du fournisseur de oidc.",
         "OIDC_ENDPOINT": "l'url d'un serveur oidc plainte.",
         "OIDC_SCOPE": "le champ envoyés au serveur au cours oidc l'authentification.il doit contenir 'openid', et 'offline_access'.si vous utilisez google, veuillez supprimer 'offline_access' dans ce domaine",
-        "OIDC_SKIPCERTVERIFY": "cocher cette case si votre oidc serveur est accueilli par auto - certificat signé."
+        "OIDC_VERIFYCERT": "décocher cette case si votre oidc serveur est accueilli par auto - certificat signé."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Entrez le mot de passe actuel",
@@ -89,7 +89,11 @@
         "ADMIN_RENAME_BUTTON": "Change username",
         "ADMIN_RENAME_TIP": "Select the button in order to change the username to \"admin@harbor.local\". This operation can not be undone.",
         "RENAME_SUCCESS": "Rename success!",
-        "RENAME_CONFIRM_INFO": "Warning, changing the name to admin@harbor.local can not be undone."
+        "RENAME_CONFIRM_INFO": "Warning, changing the name to admin@harbor.local can not be undone.",
+        "CLI_PASSWORD": "CLI secret",
+        "CLI_PASSWORD_TIP": "vous pouvez utiliser ce cli secret comme mot de passe quand utiliser docker / barre l'accès à harbor.",
+        "COPY_SUCCESS": "copie de succès",
+        "COPY_ERROR": "copie a échoué"
     },
     "CHANGE_PWD": {
         "TITLE": "Modifier le mot de passe",
@@ -692,7 +696,8 @@
         },
         "HTTP_AUTH": {
             "ENDPOINT": "serveur paramètre",
-            "ALWAYS_ONBOARD": "Always Onboard",
+            "TOKEN_REVIEW": "examen symbolique paramètre",
+            "ALWAYS_ONBOARD": "always onboard",
             "VERIFY_CERT": "authentification vérifier cert"
         },
         "OIDC": {
@@ -701,7 +706,7 @@
             "CLIENT_ID": "no d'identification du client OIDC",
             "CLIENTSECRET": "OIDC Client Secret",
             "SCOPE": "OIDC Scope",
-            "OIDCSKIPCERTVERIFY": "Certificat OIDC skip vérifier",
+            "OIDC_VERIFYCERT": "Certificat vérifier",
             "OIDC_SETNAME": "Ensemble OIDC nom d'utilisateur",
             "OIDC_SETNAMECONTENT": "vous devez créer un Harbor identifiant la première fois lors de la vérification par une tierce partie (oidc). il sera utilisé au sein de port à être associés aux projets, des rôles, etc.",
             "OIDC_USERNAME": "d'utilisateur"

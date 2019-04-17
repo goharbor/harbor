@@ -46,3 +46,13 @@ func (f *FileKeyProvider) Get(params map[string]interface{}) (string, error) {
 	}
 	return string(b), nil
 }
+
+// PresetKeyProvider returns the preset key disregarding the parm, this is for testing only
+type PresetKeyProvider struct {
+	Key string
+}
+
+// Get ...
+func (p *PresetKeyProvider) Get(params map[string]interface{}) (string, error) {
+	return p.Key, nil
+}

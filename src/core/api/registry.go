@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -28,12 +29,12 @@ type RegistryAPI struct {
 func (t *RegistryAPI) Prepare() {
 	t.BaseController.Prepare()
 	if !t.SecurityCtx.IsAuthenticated() {
-		t.HandleUnauthorized()
+		t.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 
 	if !t.SecurityCtx.IsSysAdmin() {
-		t.HandleForbidden(t.SecurityCtx.GetUsername())
+		t.SendForbiddenError(errors.New(t.SecurityCtx.GetUsername()))
 		return
 	}
 
@@ -59,12 +60,12 @@ func (t *RegistryAPI) Ping() {
 	if req.ID != nil {
 		reg, err = t.manager.Get(*req.ID)
 		if err != nil {
-			t.HandleInternalServerError(fmt.Sprintf("failed to get registry %d: %v", *req.ID, err))
+			t.SendInternalServerError(fmt.Errorf("failed to get registry %d: %v", *req.ID, err))
 			return
 		}
 
 		if reg == nil {
-			t.HandleNotFound(fmt.Sprintf("registry %d not found", *req.ID))
+			t.SendNotFoundError(fmt.Errorf("registry %d not found", *req.ID))
 			return
 		}
 	}
@@ -74,7 +75,7 @@ func (t *RegistryAPI) Ping() {
 	if req.URL != nil {
 		url, err := utils.ParseEndpoint(*req.URL)
 		if err != nil {
-			t.HandleBadRequest(err.Error())
+			t.SendBadRequestError(err)
 			return
 		}
 
@@ -103,7 +104,7 @@ func (t *RegistryAPI) Ping() {
 		reg.Insecure = *req.Insecure
 	}
 	if len(reg.Type) == 0 || len(reg.URL) == 0 {
-		t.HandleBadRequest("type or url cannot be empty")
+		t.SendBadRequestError(errors.New("type or url cannot be empty"))
 		return
 	}
 
@@ -111,15 +112,15 @@ func (t *RegistryAPI) Ping() {
 	if err != nil {
 		e, ok := err.(*common_http.Error)
 		if ok && e.Code == http.StatusUnauthorized {
-			t.HandleBadRequest("invalid credential")
+			t.SendBadRequestError(errors.New("invalid credential"))
 			return
 		}
-		t.HandleInternalServerError(fmt.Sprintf("failed to check health of registry %s: %v", reg.URL, err))
+		t.SendInternalServerError(fmt.Errorf("failed to check health of registry %s: %v", reg.URL, err))
 		return
 	}
 
 	if status != model.Healthy {
-		t.HandleBadRequest("")
+		t.SendBadRequestError(errors.New(""))
 		return
 	}
 	return
@@ -127,17 +128,21 @@ func (t *RegistryAPI) Ping() {
 
 // Get gets a registry by id.
 func (t *RegistryAPI) Get() {
-	id := t.GetIDFromURL()
+	id, err := t.GetIDFromURL()
+	if err != nil {
+		t.SendBadRequestError(err)
+		return
+	}
 
 	r, err := t.manager.Get(id)
 	if err != nil {
 		log.Errorf("failed to get registry %d: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(err)
 		return
 	}
 
 	if r == nil {
-		t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
+		t.SendNotFoundError(fmt.Errorf("registry %d not found", id))
 		return
 	}
 
@@ -159,7 +164,7 @@ func (t *RegistryAPI) List() {
 	})
 	if err != nil {
 		log.Errorf("failed to list registries %s: %v", name, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(err)
 		return
 	}
 
@@ -178,34 +183,38 @@ func (t *RegistryAPI) List() {
 // Post creates a registry
 func (t *RegistryAPI) Post() {
 	r := &model.Registry{}
-	t.DecodeJSONReqAndValidate(r)
+	isValid, err := t.DecodeJSONReqAndValidate(r)
+	if !isValid {
+		t.SendBadRequestError(err)
+		return
+	}
 
 	reg, err := t.manager.GetByName(r.Name)
 	if err != nil {
 		log.Errorf("failed to get registry %s: %v", r.Name, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(err)
 		return
 	}
 
 	if reg != nil {
-		t.HandleConflict(fmt.Sprintf("name '%s' is already used", r.Name))
+		t.SendConflictError(fmt.Errorf("name '%s' is already used", r.Name))
 		return
 	}
 
 	status, err := registry.CheckHealthStatus(r)
 	if err != nil {
-		t.HandleBadRequest(fmt.Sprintf("health check to registry %s failed: %v", r.URL, err))
+		t.SendBadRequestError(fmt.Errorf("health check to registry %s failed: %v", r.URL, err))
 		return
 	}
 	if status != model.Healthy {
-		t.HandleBadRequest(fmt.Sprintf("registry %s is unhealthy: %s", r.URL, status))
+		t.SendBadRequestError(fmt.Errorf("registry %s is unhealthy: %s", r.URL, status))
 		return
 	}
 
 	id, err := t.manager.Add(r)
 	if err != nil {
 		log.Errorf("Add registry '%s' error: %v", r.URL, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(err)
 		return
 	}
 
@@ -214,22 +223,29 @@ func (t *RegistryAPI) Post() {
 
 // Put updates a registry
 func (t *RegistryAPI) Put() {
-	id := t.GetIDFromURL()
+	id, err := t.GetIDFromURL()
+	if err != nil {
+		t.SendBadRequestError(err)
+		return
+	}
 
 	r, err := t.manager.Get(id)
 	if err != nil {
 		log.Errorf("Get registry by id %d error: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(err)
 		return
 	}
 
 	if r == nil {
-		t.HandleNotFound(fmt.Sprintf("Registry %d not found", id))
+		t.SendNotFoundError(fmt.Errorf("Registry %d not found", id))
 		return
 	}
 
 	req := models.RegistryUpdateRequest{}
-	t.DecodeJSONReq(&req)
+	if err := t.DecodeJSONReq(&req); err != nil {
+		t.SendBadRequestError(err)
+		return
+	}
 
 	originalName := r.Name
 
@@ -261,47 +277,51 @@ func (t *RegistryAPI) Put() {
 		reg, err := t.manager.GetByName(r.Name)
 		if err != nil {
 			log.Errorf("Get registry by name '%s' error: %v", r.Name, err)
-			t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			t.SendInternalServerError(err)
 			return
 		}
 
 		if reg != nil {
-			t.HandleConflict("name is already used")
+			t.SendConflictError(errors.New("name is already used"))
 			return
 		}
 	}
 
 	status, err := registry.CheckHealthStatus(r)
 	if err != nil {
-		t.HandleBadRequest(fmt.Sprintf("health check to registry %s failed: %v", r.URL, err))
+		t.SendBadRequestError(fmt.Errorf("health check to registry %s failed: %v", r.URL, err))
 		return
 	}
 	if status != model.Healthy {
-		t.HandleBadRequest(fmt.Sprintf("registry %s is unhealthy: %s", r.URL, status))
+		t.SendBadRequestError(fmt.Errorf("registry %s is unhealthy: %s", r.URL, status))
 		return
 	}
 
 	if err := t.manager.Update(r); err != nil {
 		log.Errorf("Update registry %d error: %v", id, err)
-		t.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		t.SendInternalServerError(err)
 		return
 	}
 }
 
 // Delete deletes a registry
 func (t *RegistryAPI) Delete() {
-	id := t.GetIDFromURL()
+	id, err := t.GetIDFromURL()
+	if err != nil {
+		t.SendBadRequestError(err)
+		return
+	}
 
 	registry, err := t.manager.Get(id)
 	if err != nil {
 		msg := fmt.Sprintf("Get registry %d error: %v", id, err)
 		log.Error(msg)
-		t.HandleInternalServerError(msg)
+		t.SendInternalServerError(errors.New(msg))
 		return
 	}
 
 	if registry == nil {
-		t.HandleNotFound(fmt.Sprintf("Registry %d not found", id))
+		t.SendNotFoundError(fmt.Errorf("Registry %d not found", id))
 		return
 	}
 
@@ -312,13 +332,13 @@ func (t *RegistryAPI) Delete() {
 		},
 	}...)
 	if err != nil {
-		t.HandleInternalServerError(fmt.Sprintf("List replication policies with source registry %d error: %v", id, err))
+		t.SendInternalServerError(fmt.Errorf("List replication policies with source registry %d error: %v", id, err))
 		return
 	}
 	if total > 0 {
 		msg := fmt.Sprintf("Can't delete registry %d,  %d replication policies use it as source registry", id, total)
 		log.Error(msg)
-		t.HandleStatusPreconditionFailed(msg)
+		t.SendPreconditionFailedError(errors.New(msg))
 		return
 	}
 
@@ -329,20 +349,20 @@ func (t *RegistryAPI) Delete() {
 		},
 	}...)
 	if err != nil {
-		t.HandleInternalServerError(fmt.Sprintf("List replication policies with destination registry %d error: %v", id, err))
+		t.SendInternalServerError(fmt.Errorf("List replication policies with destination registry %d error: %v", id, err))
 		return
 	}
 	if total > 0 {
 		msg := fmt.Sprintf("Can't delete registry %d,  %d replication policies use it as destination registry", id, total)
 		log.Error(msg)
-		t.HandleStatusPreconditionFailed(msg)
+		t.SendPreconditionFailedError(errors.New(msg))
 		return
 	}
 
 	if err := t.manager.Remove(id); err != nil {
 		msg := fmt.Sprintf("Delete registry %d error: %v", id, err)
 		log.Error(msg)
-		t.HandleInternalServerError(msg)
+		t.SendPreconditionFailedError(errors.New(msg))
 		return
 	}
 }
@@ -352,7 +372,7 @@ func (t *RegistryAPI) GetInfo() {
 	id, err := t.GetInt64FromPath(":id")
 	// "0" is used for the ID of the local Harbor registry
 	if err != nil || id < 0 {
-		t.HandleBadRequest(fmt.Sprintf("invalid registry ID %s", t.GetString(":id")))
+		t.SendBadRequestError(fmt.Errorf("invalid registry ID %s", t.GetString(":id")))
 		return
 	}
 	var registry *model.Registry
@@ -361,28 +381,28 @@ func (t *RegistryAPI) GetInfo() {
 	} else {
 		registry, err = t.manager.Get(id)
 		if err != nil {
-			t.HandleInternalServerError(fmt.Sprintf("failed to get registry %d: %v", id, err))
+			t.SendInternalServerError(fmt.Errorf("failed to get registry %d: %v", id, err))
 			return
 		}
 		if registry == nil {
-			t.HandleNotFound(fmt.Sprintf("registry %d not found", id))
+			t.SendNotFoundError(fmt.Errorf("registry %d not found", id))
 			return
 		}
 	}
 
 	factory, err := adapter.GetFactory(registry.Type)
 	if err != nil {
-		t.HandleInternalServerError(fmt.Sprintf("failed to get the adapter factory for registry type %s: %v", registry.Type, err))
+		t.SendInternalServerError(fmt.Errorf("failed to get the adapter factory for registry type %s: %v", registry.Type, err))
 		return
 	}
 	adp, err := factory(registry)
 	if err != nil {
-		t.HandleInternalServerError(fmt.Sprintf("failed to create the adapter for registry %d: %v", registry.ID, err))
+		t.SendInternalServerError(fmt.Errorf("failed to create the adapter for registry %d: %v", registry.ID, err))
 		return
 	}
 	info, err := adp.Info()
 	if err != nil {
-		t.HandleInternalServerError(fmt.Sprintf("failed to get registry info %d: %v", id, err))
+		t.SendInternalServerError(fmt.Errorf("failed to get registry info %d: %v", id, err))
 		return
 	}
 	t.WriteJSONData(process(info))

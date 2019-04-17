@@ -28,7 +28,7 @@ import { GcPageComponent } from './gc-page/gc-page.component';
 import { VulnerabilityPageComponent } from './vulnerability-page/vulnerability-page.component';
 
 import { UserComponent } from './user/user.component';
-import { SignInComponent } from './account/sign-in/sign-in.component';
+import { SignInComponent } from './sign-in/sign-in.component';
 import { ResetPasswordComponent } from './account/password-setting/reset-password/reset-password.component';
 import { GroupComponent } from './group/group.component';
 
@@ -70,16 +70,17 @@ const harborRoutes: Routes = [
     canActivate: [OidcGuard, SignInGuard]
   },
   {
+    path: 'harbor/sign-in',
+    component: SignInComponent,
+    canActivate: [ SignInGuard]
+  },
+  {
     path: 'harbor',
     component: HarborShellComponent,
+    // canActivate: [AuthCheckGuard],
     canActivateChild: [AuthCheckGuard],
     children: [
-      { path: '', redirectTo: 'sign-in', pathMatch: 'full' },
-      {
-        path: 'sign-in',
-        component: SignInComponent,
-        canActivate: [SignInGuard]
-      },
+      { path: '', redirectTo: 'projects', pathMatch: 'full' },
       {
         path: 'projects',
         component: ProjectComponent

@@ -16,9 +16,9 @@ package api
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 
+	"errors"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/config/metadata"
@@ -41,20 +41,20 @@ func (c *ConfigAPI) Prepare() {
 	c.BaseController.Prepare()
 	c.cfgManager = corecfg.GetCfgManager()
 	if !c.SecurityCtx.IsAuthenticated() {
-		c.HandleUnauthorized()
+		c.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 
 	// Only internal container can access /api/internal/configurations
 	if strings.EqualFold(c.Ctx.Request.RequestURI, "/api/internal/configurations") {
 		if _, ok := c.Ctx.Request.Context().Value(filter.SecurCtxKey).(*secret.SecurityContext); !ok {
-			c.HandleUnauthorized()
+			c.SendUnAuthorizedError(errors.New("UnAuthorized"))
 			return
 		}
 	}
 
 	if !c.SecurityCtx.IsSysAdmin() && !c.SecurityCtx.IsSolutionUser() {
-		c.HandleForbidden(c.SecurityCtx.GetUsername())
+		c.SendForbiddenError(errors.New(c.SecurityCtx.GetUsername()))
 		return
 	}
 
@@ -71,7 +71,8 @@ func (c *ConfigAPI) Get() {
 	m, err := convertForGet(configs)
 	if err != nil {
 		log.Errorf("failed to convert configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		c.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	c.Data["json"] = m
@@ -89,25 +90,33 @@ func (c *ConfigAPI) GetInternalConfig() {
 // Put updates configurations
 func (c *ConfigAPI) Put() {
 	m := map[string]interface{}{}
-	c.DecodeJSONReq(&m)
+	if err := c.DecodeJSONReq(&m); err != nil {
+		c.SendBadRequestError(err)
+		return
+	}
 	err := c.cfgManager.Load()
 	if err != nil {
 		log.Errorf("failed to get configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		c.SendInternalServerError(errors.New(""))
+		return
 	}
 	isSysErr, err := c.validateCfg(m)
 	if err != nil {
 		if isSysErr {
 			log.Errorf("failed to validate configurations: %v", err)
-			c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+			c.SendInternalServerError(errors.New(""))
+			return
 		}
 
-		c.CustomAbort(http.StatusBadRequest, err.Error())
+		c.SendBadRequestError(err)
+		return
+
 	}
 
 	if err := c.cfgManager.UpdateConfig(m); err != nil {
 		log.Errorf("failed to upload configurations: %v", err)
-		c.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		c.SendInternalServerError(errors.New(""))
+		return
 	}
 }
 

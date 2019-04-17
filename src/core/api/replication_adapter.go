@@ -15,6 +15,7 @@
 package api
 
 import (
+	"errors"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -29,10 +30,10 @@ func (r *ReplicationAdapterAPI) Prepare() {
 	r.BaseController.Prepare()
 	if !r.SecurityCtx.IsSysAdmin() {
 		if !r.SecurityCtx.IsAuthenticated() {
-			r.HandleUnauthorized()
+			r.SendUnAuthorizedError(errors.New("UnAuthorized"))
 			return
 		}
-		r.HandleForbidden(r.SecurityCtx.GetUsername())
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
 		return
 	}
 }

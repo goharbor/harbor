@@ -21,6 +21,7 @@ import (
 	"strconv"
 	"strings"
 
+	"errors"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -56,7 +57,7 @@ func (m *MetadataAPI) Prepare() {
 		} else {
 			text += fmt.Sprintf("%d", id)
 		}
-		m.HandleBadRequest(text)
+		m.SendBadRequestError(errors.New(text))
 		return
 	}
 
@@ -67,7 +68,7 @@ func (m *MetadataAPI) Prepare() {
 	}
 
 	if project == nil {
-		m.HandleNotFound(fmt.Sprintf("project %d not found", id))
+		m.SendNotFoundError(fmt.Errorf("project %d not found", id))
 		return
 	}
 
@@ -78,11 +79,11 @@ func (m *MetadataAPI) Prepare() {
 		m.name = name
 		metas, err := m.metaMgr.Get(project.ProjectID, name)
 		if err != nil {
-			m.HandleInternalServerError(fmt.Sprintf("failed to get metadata of project %d: %v", project.ProjectID, err))
+			m.SendInternalServerError(fmt.Errorf("failed to get metadata of project %d: %v", project.ProjectID, err))
 			return
 		}
 		if len(metas) == 0 {
-			m.HandleNotFound(fmt.Sprintf("metadata %s of project %d not found", name, project.ProjectID))
+			m.SendNotFoundError(fmt.Errorf("metadata %s of project %d not found", name, project.ProjectID))
 			return
 		}
 	}
@@ -93,9 +94,9 @@ func (m *MetadataAPI) requireAccess(action rbac.Action) bool {
 
 	if !m.SecurityCtx.Can(action, resource) {
 		if !m.SecurityCtx.IsAuthenticated() {
-			m.HandleUnauthorized()
+			m.SendUnAuthorizedError(errors.New("Unauthorized"))
 		} else {
-			m.HandleForbidden(m.SecurityCtx.GetUsername())
+			m.SendForbiddenError(errors.New(m.SecurityCtx.GetUsername()))
 		}
 		return false
 	}
@@ -118,7 +119,7 @@ func (m *MetadataAPI) Get() {
 	}
 
 	if err != nil {
-		m.HandleInternalServerError(fmt.Sprintf("failed to get metadata %s of project %d: %v", m.name, m.project.ProjectID, err))
+		m.SendInternalServerError(fmt.Errorf("failed to get metadata %s of project %d: %v", m.name, m.project.ProjectID, err))
 		return
 	}
 	m.Data["json"] = metas
@@ -132,33 +133,36 @@ func (m *MetadataAPI) Post() {
 	}
 
 	var metas map[string]string
-	m.DecodeJSONReq(&metas)
+	if err := m.DecodeJSONReq(&metas); err != nil {
+		m.SendBadRequestError(err)
+		return
+	}
 
 	ms, err := validateProjectMetadata(metas)
 	if err != nil {
-		m.HandleBadRequest(err.Error())
+		m.SendBadRequestError(err)
 		return
 	}
 
 	if len(ms) != 1 {
-		m.HandleBadRequest("invalid request: has no valid key/value pairs or has more than one valid key/value pairs")
+		m.SendBadRequestError(errors.New("invalid request: has no valid key/value pairs or has more than one valid key/value pairs"))
 		return
 	}
 
 	keys := reflect.ValueOf(ms).MapKeys()
 	mts, err := m.metaMgr.Get(m.project.ProjectID, keys[0].String())
 	if err != nil {
-		m.HandleInternalServerError(fmt.Sprintf("failed to get metadata for project %d: %v", m.project.ProjectID, err))
+		m.SendInternalServerError(fmt.Errorf("failed to get metadata for project %d: %v", m.project.ProjectID, err))
 		return
 	}
 
 	if len(mts) != 0 {
-		m.HandleConflict()
+		m.SendConflictError(errors.New("conflict metadata"))
 		return
 	}
 
 	if err := m.metaMgr.Add(m.project.ProjectID, ms); err != nil {
-		m.HandleInternalServerError(fmt.Sprintf("failed to create metadata for project %d: %v", m.project.ProjectID, err))
+		m.SendInternalServerError(fmt.Errorf("failed to create metadata for project %d: %v", m.project.ProjectID, err))
 		return
 	}
 
@@ -172,11 +176,14 @@ func (m *MetadataAPI) Put() {
 	}
 
 	var metas map[string]string
-	m.DecodeJSONReq(&metas)
+	if err := m.DecodeJSONReq(&metas); err != nil {
+		m.SendBadRequestError(err)
+		return
+	}
 
 	meta, exist := metas[m.name]
 	if !exist {
-		m.HandleBadRequest(fmt.Sprintf("must contains key %s", m.name))
+		m.SendBadRequestError(fmt.Errorf("must contains key %s", m.name))
 		return
 	}
 
@@ -184,14 +191,14 @@ func (m *MetadataAPI) Put() {
 		m.name: meta,
 	})
 	if err != nil {
-		m.HandleBadRequest(err.Error())
+		m.SendBadRequestError(err)
 		return
 	}
 
 	if err := m.metaMgr.Update(m.project.ProjectID, map[string]string{
 		m.name: ms[m.name],
 	}); err != nil {
-		m.HandleInternalServerError(fmt.Sprintf("failed to update metadata %s of project %d: %v", m.name, m.project.ProjectID, err))
+		m.SendInternalServerError(fmt.Errorf("failed to update metadata %s of project %d: %v", m.name, m.project.ProjectID, err))
 		return
 	}
 }
@@ -203,7 +210,7 @@ func (m *MetadataAPI) Delete() {
 	}
 
 	if err := m.metaMgr.Delete(m.project.ProjectID, m.name); err != nil {
-		m.HandleInternalServerError(fmt.Sprintf("failed to delete metadata %s of project %d: %v", m.name, m.project.ProjectID, err))
+		m.SendInternalServerError(fmt.Errorf("failed to delete metadata %s of project %d: %v", m.name, m.project.ProjectID, err))
 		return
 	}
 }

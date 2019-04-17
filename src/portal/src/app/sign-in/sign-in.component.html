@@ -1,3 +1,6 @@
+<clr-main-container><global-message [isAppLevel]="true"></global-message>
+<navigator></navigator>
+<search-result></search-result>
 <div class="login-wrapper"
     [ngStyle]="{'background-image': customLoginBgImg? 'url(static/images/' + customLoginBgImg + ')': ''}">
     <form #signInForm="ngForm" class="login">
@@ -37,8 +40,8 @@
             <div [class.visibility-hidden]="!isError" class="error active">
                 {{ 'SIGN_IN.INVALID_MSG' | translate }}
             </div>
-            <button [disabled]="isOnGoing || !isValid" type="submit" class="btn btn-primary"
-                (click)="signIn()" id="log_in">{{ 'BUTTON.LOG_IN' | translate }}</button>
+            <button [disabled]="isOnGoing || !isValid" type="submit" class="btn btn-primary" (click)="signIn()"
+                id="log_in">{{ 'BUTTON.LOG_IN' | translate }}</button>
             <a href="javascript:void(0)" class="signup" (click)="signUp()"
                 *ngIf="selfSignUp">{{ 'BUTTON.SIGN_UP_LINK' | translate }}</a>
         </div>
@@ -51,5 +54,6 @@
         <top-repo class="repo-container"></top-repo>
     </div>
 </div>
+</clr-main-container>
 <sign-up #signupDialog (userCreation)="handleUserCreation($event)"></sign-up>
 <forgot-password #forgotPwdDialog></forgot-password>

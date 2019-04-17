@@ -73,12 +73,12 @@
         "RULE_USER_EXISTING": "名称已经存在。",
         "EMPTY": "名称为必填项",
         "NONEMPTY": "不能为空",
-        "ENDPOINT_FORMAT": "Endpoint必须以http或https开头。",
-        "OIDC_ENDPOIT_FORMAT": "Endpoint必须以https开头。",
+        "ENDPOINT_FORMAT": "Endpoint必须以http://或https://开头。",
+        "OIDC_ENDPOIT_FORMAT": "Endpoint必须以https://开头。",
         "OIDC_NAME": "OIDC提供商的名称.",
         "OIDC_ENDPOINT": "OIDC服务器的地址.",
         "OIDC_SCOPE": "在身份验证期间发送到OIDC服务器的scope。它必须包含“openid”和“offline_access”。如果您使用Google，请从此字段中删除“脱机访问”。",
-        "OIDC_SKIPCERTVERIFY": "如果您的OIDC服务器是通过自签名证书托管的，请选中此框。"
+        "OIDC_VERIFYCERT": "如果您的OIDC服务器是通过自签名证书托管的，请取消选中此框。"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -101,7 +101,11 @@
         "ADMIN_RENAME_TIP": "单击将用户名改为 \"admin@harbor.local\", 注意这个操作是无法撤销的",
         "RENAME_SUCCESS": "用户名更改成功！",
         "ADMIN_RENAME_BUTTON": "更改用户名",
-        "RENAME_CONFIRM_INFO": "更改用户名为admin@harbor.local是无法撤销的, 你确定更改吗?"
+        "RENAME_CONFIRM_INFO": "更改用户名为admin@harbor.local是无法撤销的, 你确定更改吗?",
+        "CLI_PASSWORD": "CLI密码",
+        "CLI_PASSWORD_TIP": "使用docker/helm cli访问Harbor时，可以使用此cli密码作为密码。",
+        "COPY_SUCCESS": "复制成功",
+        "COPY_ERROR": "复制失败"
     },
     "CHANGE_PWD": {
         "TITLE": "修改密码",
@@ -726,6 +730,7 @@
         },
         "HTTP_AUTH": {
             "ENDPOINT": "Server Endpoint",
+            "TOKEN_REVIEW": "Token Review Endpoint",
             "ALWAYS_ONBOARD": "Always Onboard",
             "VERIFY_CERT": "Authentication验证证书"
         },
@@ -735,7 +740,7 @@
             "CLIENT_ID": "OIDC 客户端标识",
             "CLIENTSECRET": "OIDC 客户端密码",
             "SCOPE": "OIDC Scope",
-            "OIDCSKIPCERTVERIFY": "OIDC 验证证书",
+            "OIDC_VERIFYCERT": "验证证书",
             "OIDC_SETNAME": "设置OIDC用户名",
             "OIDC_SETNAMECONTENT": "在通过第三方（OIDC）进行身份验证时，您必须第一次创建一个Harbor用户名。这将在端口中用于与项目、角色等关联。",
             "OIDC_USERNAME": "用户名"

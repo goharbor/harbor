@@ -16,6 +16,7 @@ package oidc
 
 import (
 	"github.com/goharbor/harbor/src/common"
+	config2 "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
@@ -28,16 +29,17 @@ import (
 
 func TestMain(m *testing.M) {
 	conf := map[string]interface{}{
-		common.OIDCName:           "test",
-		common.OIDCEndpoint:       "https://accounts.google.com",
-		common.OIDCSkipCertVerify: "false",
-		common.OIDCScope:          "openid, profile, offline_access",
-		common.OIDCCLientID:       "client",
-		common.OIDCClientSecret:   "secret",
-		common.ExtEndpoint:        "https://harbor.test",
+		common.OIDCName:         "test",
+		common.OIDCEndpoint:     "https://accounts.google.com",
+		common.OIDCVerifyCert:   "true",
+		common.OIDCScope:        "openid, profile, offline_access",
+		common.OIDCCLientID:     "client",
+		common.OIDCClientSecret: "secret",
+		common.ExtEndpoint:      "https://harbor.test",
 	}
+	kp := &config2.PresetKeyProvider{Key: "naa4JtarA1Zsc3uY"}
 
-	config.InitWithSettings(conf)
+	config.InitWithSettings(conf, kp)
 
 	result := m.Run()
 	if result != 0 {
@@ -71,13 +73,13 @@ func TestHelperGet(t *testing.T) {
 	assert.Equal(t, "https://oauth2.googleapis.com/token", p.Endpoint().TokenURL)
 
 	update := map[string]interface{}{
-		common.OIDCName:           "test",
-		common.OIDCEndpoint:       "https://accounts.google.com",
-		common.OIDCSkipCertVerify: "false",
-		common.OIDCScope:          "openid, profile, offline_access",
-		common.OIDCCLientID:       "client",
-		common.OIDCClientSecret:   "new-secret",
-		common.ExtEndpoint:        "https://harbor.test",
+		common.OIDCName:         "test",
+		common.OIDCEndpoint:     "https://accounts.google.com",
+		common.OIDCVerifyCert:   "true",
+		common.OIDCScope:        "openid, profile, offline_access",
+		common.OIDCCLientID:     "client",
+		common.OIDCClientSecret: "new-secret",
+		common.ExtEndpoint:      "https://harbor.test",
 	}
 	config.GetCfgManager().UpdateConfig(update)
 
