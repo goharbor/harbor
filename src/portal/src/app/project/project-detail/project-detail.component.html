@@ -13,9 +13,6 @@
         <li class="nav-item" *ngIf="hasMemberListPermission">
             <a class="nav-link" routerLink="members" routerLinkActive="active">{{'PROJECT_DETAIL.USERS' | translate}}</a>
         </li>
-        <li class="nav-item" *ngIf="hasReplicationListPermission">
-            <a class="nav-link" routerLink="replications" routerLinkActive="active">{{'PROJECT_DETAIL.REPLICATION' | translate}}</a>
-        </li>
         <li class="nav-item" *ngIf="(hasLabelListPermission && hasLabelCreatePermission) && !withAdmiral">
             <a class="nav-link" routerLink="labels" routerLinkActive="active">{{'PROJECT_DETAIL.LABELS' | translate}}</a>
         </li>

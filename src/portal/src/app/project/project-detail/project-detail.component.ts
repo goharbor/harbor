@@ -38,7 +38,6 @@ export class ProjectDetailComponent implements OnInit {
   hasHelmChartsListPermission: boolean;
   hasRepositoryListPermission: boolean;
   hasMemberListPermission: boolean;
-  hasReplicationListPermission: boolean;
   hasLabelListPermission: boolean;
   hasLabelCreatePermission: boolean;
   hasLogListPermission: boolean;
@@ -73,8 +72,6 @@ export class ProjectDetailComponent implements OnInit {
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.MEMBER.KEY, USERSTATICPERMISSION.MEMBER.VALUE.LIST));
     permissionsList.push(this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPLICATION.KEY, USERSTATICPERMISSION.REPLICATION.VALUE.LIST));
-    permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.LABEL.KEY, USERSTATICPERMISSION.LABEL.VALUE.LIST));
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.LIST));
@@ -85,7 +82,7 @@ export class ProjectDetailComponent implements OnInit {
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.LABEL.KEY, USERSTATICPERMISSION.LABEL.VALUE.CREATE));
     forkJoin(...permissionsList).subscribe(Rules => {
-      [this.hasLogListPermission, this.hasConfigurationListPermission, this.hasMemberListPermission, this.hasReplicationListPermission
+      [this.hasLogListPermission, this.hasConfigurationListPermission, this.hasMemberListPermission,
         , this.hasLabelListPermission, this.hasRepositoryListPermission, this.hasHelmChartsListPermission, this.hasRobotListPermission
         , this.hasLabelCreatePermission] = Rules;
 
