@@ -15,10 +15,12 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 
+	common_model "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/event"
@@ -38,30 +40,38 @@ func (r *ReplicationPolicyAPI) Prepare() {
 	r.BaseController.Prepare()
 	if !r.SecurityCtx.IsSysAdmin() {
 		if !r.SecurityCtx.IsAuthenticated() {
-			r.HandleUnauthorized()
+			r.SendUnAuthorizedError(errors.New("UnAuthorized"))
 			return
 		}
-		r.HandleForbidden(r.SecurityCtx.GetUsername())
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
 		return
 	}
 }
 
 // List the replication policies
 func (r *ReplicationPolicyAPI) List() {
+	page, size, err := r.GetPaginationParams()
+	if err != nil {
+		r.SendInternalServerError(err)
+		return
+	}
 	// TODO: support more query
 	query := &model.PolicyQuery{
 		Name: r.GetString("name"),
+		Pagination: common_model.Pagination{
+			Page: page,
+			Size: size,
+		},
 	}
-	query.Page, query.Size = r.GetPaginationParams()
 
 	total, policies, err := replication.PolicyCtl.List(query)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to list policies: %v", err))
+		r.SendInternalServerError(fmt.Errorf("failed to list policies: %v", err))
 		return
 	}
 	for _, policy := range policies {
 		if err = populateRegistries(replication.RegistryMgr, policy); err != nil {
-			r.HandleInternalServerError(fmt.Sprintf("failed to populate registries for policy %d: %v", policy.ID, err))
+			r.SendInternalServerError(fmt.Errorf("failed to populate registries for policy %d: %v", policy.ID, err))
 			return
 		}
 	}
@@ -72,7 +82,11 @@ func (r *ReplicationPolicyAPI) List() {
 // Create the replication policy
 func (r *ReplicationPolicyAPI) Create() {
 	policy := &model.Policy{}
-	r.DecodeJSONReqAndValidate(policy)
+	isValid, err := r.DecodeJSONReqAndValidate(policy)
+	if !isValid {
+		r.SendBadRequestError(err)
+		return
+	}
 
 	if !r.validateName(policy) {
 		return
@@ -83,7 +97,7 @@ func (r *ReplicationPolicyAPI) Create() {
 
 	id, err := replication.PolicyCtl.Create(policy)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to create the policy: %v", err))
+		r.SendInternalServerError(fmt.Errorf("failed to create the policy: %v", err))
 		return
 	}
 	r.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
@@ -93,11 +107,11 @@ func (r *ReplicationPolicyAPI) Create() {
 func (r *ReplicationPolicyAPI) validateName(policy *model.Policy) bool {
 	p, err := replication.PolicyCtl.GetByName(policy.Name)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get policy %s: %v", policy.Name, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get policy %s: %v", policy.Name, err))
 		return false
 	}
 	if p != nil {
-		r.HandleConflict(fmt.Sprintf("policy %s already exists", policy.Name))
+		r.SendConflictError(fmt.Errorf("policy %s already exists", policy.Name))
 		return false
 	}
 	return true
@@ -113,11 +127,11 @@ func (r *ReplicationPolicyAPI) validateRegistry(policy *model.Policy) bool {
 	}
 	registry, err := replication.RegistryMgr.Get(registryID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get registry %d: %v", registryID, err))
+		r.SendConflictError(fmt.Errorf("failed to get registry %d: %v", registryID, err))
 		return false
 	}
 	if registry == nil {
-		r.HandleNotFound(fmt.Sprintf("registry %d not found", registryID))
+		r.SendNotFoundError(fmt.Errorf("registry %d not found", registryID))
 		return false
 	}
 	return true
@@ -127,21 +141,21 @@ func (r *ReplicationPolicyAPI) validateRegistry(policy *model.Policy) bool {
 func (r *ReplicationPolicyAPI) Get() {
 	id, err := r.GetInt64FromPath(":id")
 	if id <= 0 || err != nil {
-		r.HandleBadRequest("invalid policy ID")
+		r.SendBadRequestError(errors.New("invalid policy ID"))
 		return
 	}
 
 	policy, err := replication.PolicyCtl.Get(id)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get the policy %d: %v", id, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get the policy %d: %v", id, err))
 		return
 	}
 	if policy == nil {
-		r.HandleNotFound(fmt.Sprintf("policy %d not found", id))
+		r.SendNotFoundError(fmt.Errorf("policy %d not found", id))
 		return
 	}
 	if err = populateRegistries(replication.RegistryMgr, policy); err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to populate registries for policy %d: %v", policy.ID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to populate registries for policy %d: %v", policy.ID, err))
 		return
 	}
 
@@ -152,22 +166,27 @@ func (r *ReplicationPolicyAPI) Get() {
 func (r *ReplicationPolicyAPI) Update() {
 	id, err := r.GetInt64FromPath(":id")
 	if id <= 0 || err != nil {
-		r.HandleBadRequest("invalid policy ID")
+		r.SendBadRequestError(errors.New("invalid policy ID"))
 		return
 	}
 
 	originalPolicy, err := replication.PolicyCtl.Get(id)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get the policy %d: %v", id, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get the policy %d: %v", id, err))
 		return
 	}
 	if originalPolicy == nil {
-		r.HandleNotFound(fmt.Sprintf("policy %d not found", id))
+		r.SendNotFoundError(fmt.Errorf("policy %d not found", id))
 		return
 	}
 
 	policy := &model.Policy{}
-	r.DecodeJSONReqAndValidate(policy)
+	isValid, err := r.DecodeJSONReqAndValidate(policy)
+	if !isValid {
+		r.SendBadRequestError(err)
+		return
+	}
+
 	if policy.Name != originalPolicy.Name &&
 		!r.validateName(policy) {
 		return
@@ -179,7 +198,7 @@ func (r *ReplicationPolicyAPI) Update() {
 
 	policy.ID = id
 	if err := replication.PolicyCtl.Update(policy); err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to update the policy %d: %v", id, err))
+		r.SendInternalServerError(fmt.Errorf("failed to update the policy %d: %v", id, err))
 		return
 	}
 }
@@ -188,17 +207,17 @@ func (r *ReplicationPolicyAPI) Update() {
 func (r *ReplicationPolicyAPI) Delete() {
 	id, err := r.GetInt64FromPath(":id")
 	if id <= 0 || err != nil {
-		r.HandleBadRequest("invalid policy ID")
+		r.SendBadRequestError(errors.New("invalid policy ID"))
 		return
 	}
 
 	policy, err := replication.PolicyCtl.Get(id)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get the policy %d: %v", id, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get the policy %d: %v", id, err))
 		return
 	}
 	if policy == nil {
-		r.HandleNotFound(fmt.Sprintf("policy %d not found", id))
+		r.SendNotFoundError(fmt.Errorf("policy %d not found", id))
 		return
 	}
 
@@ -206,19 +225,19 @@ func (r *ReplicationPolicyAPI) Delete() {
 		PolicyID: id,
 	})
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get the executions of policy %d: %v", id, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get the executions of policy %d: %v", id, err))
 		return
 	}
 
 	for _, execution := range executions {
 		if execution.Status == models.ExecutionStatusInProgress {
-			r.HandleStatusPreconditionFailed(fmt.Sprintf("the policy %d has running executions, can not be deleted", id))
+			r.SendInternalServerError(fmt.Errorf("the policy %d has running executions, can not be deleted", id))
 			return
 		}
 	}
 
 	if err := replication.PolicyCtl.Remove(id); err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to delete the policy %d: %v", id, err))
+		r.SendInternalServerError(fmt.Errorf("failed to delete the policy %d: %v", id, err))
 		return
 	}
 }

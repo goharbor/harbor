@@ -16,19 +16,19 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { Input, ViewChild, AfterViewChecked } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
-import { SessionService } from '../../shared/session.service';
-import { SignInCredential } from '../../shared/sign-in-credential';
+import { SessionService } from '../shared/session.service';
+import { SignInCredential } from '../shared/sign-in-credential';
 
-import { SignUpComponent } from '../sign-up/sign-up.component';
-import { CommonRoutes } from '../../shared/shared.const';
-import { ForgotPasswordComponent } from '../password-setting/forgot-password/forgot-password.component';
+import { SignUpComponent } from '../account/sign-up/sign-up.component';
+import { CommonRoutes } from '../shared/shared.const';
+import { ForgotPasswordComponent } from '../account/password-setting/forgot-password/forgot-password.component';
 
-import { AppConfigService } from '../../app-config.service';
-import { AppConfig } from '../../app-config';
-import { User } from '../../user/user';
+import { AppConfigService } from '../app-config.service';
+import { AppConfig } from '../app-config';
+import { User } from '../user/user';
 
 import { CookieService, CookieOptions } from 'ngx-cookie';
-import { SkinableConfig } from "../../skinable-config.service";
+import { SkinableConfig } from "../skinable-config.service";
 
 // Define status flags for signing in states
 export const signInStatusNormal = 0;
@@ -271,4 +271,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     forgotPassword(): void {
         this.forgotPwdDialog.open();
     }
+
 }
+
+

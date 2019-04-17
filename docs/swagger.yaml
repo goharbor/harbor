@@ -4899,7 +4899,7 @@ definitions:
   RobotAccountUpdate:
     type: object
     properties:
-      disable:
+      disabled:
         type: boolean
         description: The robot account is disable or enable
   Permission:

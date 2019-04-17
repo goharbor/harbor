@@ -1,9 +1,9 @@
 package token
 
 import (
+	"errors"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/pkg/errors"
 )
 
 // RobotClaims implements the interface of jwt.Claims

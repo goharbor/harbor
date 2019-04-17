@@ -16,6 +16,9 @@ CREATE TRIGGER robot_update_time_at_modtime BEFORE UPDATE ON robot FOR EACH ROW 
 CREATE TABLE oidc_user (
  id SERIAL NOT NULL,
  user_id int NOT NULL,
+ /*
+ Encoded secret
+  */
  secret varchar(255) NOT NULL,
   /*
  Subject and Issuer
@@ -24,9 +27,14 @@ CREATE TABLE oidc_user (
   The sub (subject) and iss (issuer) Claims, used together, are the only Claims that an RP can rely upon as a stable identifier for the End-User
  */
  subiss varchar(255) NOT NULL,
+ /*
+ Encoded token
+  */
+ token text,
  creation_time timestamp default CURRENT_TIMESTAMP,
  update_time timestamp default CURRENT_TIMESTAMP,
  PRIMARY KEY (id),
+ FOREIGN KEY (user_id) REFERENCES harbor_user(user_id),
  UNIQUE (subiss)
 );
 

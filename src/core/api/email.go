@@ -15,8 +15,8 @@
 package api
 
 import (
+	"errors"
 	"net"
-	"net/http"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/utils/email"
@@ -37,12 +37,12 @@ type EmailAPI struct {
 func (e *EmailAPI) Prepare() {
 	e.BaseController.Prepare()
 	if !e.SecurityCtx.IsAuthenticated() {
-		e.HandleUnauthorized()
+		e.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 
 	if !e.SecurityCtx.IsSysAdmin() {
-		e.HandleForbidden(e.SecurityCtx.GetUsername())
+		e.SendForbiddenError(errors.New(e.SecurityCtx.GetUsername()))
 		return
 	}
 }
@@ -57,8 +57,8 @@ func (e *EmailAPI) Ping() {
 		cfg, err := config.Email()
 		if err != nil {
 			log.Errorf("failed to get email configurations: %v", err)
-			e.CustomAbort(http.StatusInternalServerError,
-				http.StatusText(http.StatusInternalServerError))
+			e.SendInternalServerError(err)
+			return
 		}
 		host = cfg.Host
 		port = cfg.Port
@@ -77,18 +77,22 @@ func (e *EmailAPI) Ping() {
 			Identity string  `json:"email_identity"`
 			Insecure bool    `json:"email_insecure"`
 		}{}
-		e.DecodeJSONReq(&settings)
+		if err := e.DecodeJSONReq(&settings); err != nil {
+			e.SendBadRequestError(err)
+			return
+		}
 
 		if len(settings.Host) == 0 || settings.Port == nil {
-			e.CustomAbort(http.StatusBadRequest, "empty host or port")
+			e.SendBadRequestError(errors.New("empty host or port"))
+			return
 		}
 
 		if settings.Password == nil {
 			cfg, err := config.Email()
 			if err != nil {
 				log.Errorf("failed to get email configurations: %v", err)
-				e.CustomAbort(http.StatusInternalServerError,
-					http.StatusText(http.StatusInternalServerError))
+				e.SendInternalServerError(err)
+				return
 			}
 
 			settings.Password = &cfg.Password
@@ -108,7 +112,7 @@ func (e *EmailAPI) Ping() {
 		password, pingEmailTimeout, ssl, insecure); err != nil {
 		log.Errorf("failed to ping email server: %v", err)
 		// do not return any detail information of the error, or may cause SSRF security issue #3755
-		e.RenderError(http.StatusBadRequest, "failed to ping email server")
+		e.SendBadRequestError(errors.New("failed to ping email server"))
 		return
 	}
 }

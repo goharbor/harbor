@@ -54,7 +54,7 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
     }
 
     this.searchTrigger.closeSearch(true);
-    return new Observable( observer => {
+    return new Observable(observer => {
       let queryParams = route.queryParams;
       if (queryParams) {
         if (queryParams[AdmiralQueryParamKey]) {
@@ -72,25 +72,27 @@ export class AuthCheckGuard implements CanActivate, CanActivateChild {
       let user = this.authService.getCurrentUser();
       if (!user) {
         this.authService.retrieveUser()
-          .subscribe(() => observer.next(true)
-          , error => {
-            // If is guest, skip it
-            if (this.isGuest(route, state)) {
-              return observer.next(true);
-            }
-            // Session retrieving failed then redirect to sign-in
-            // no matter what status code is.
-            // Please pay attention that route 'HARBOR_ROOT' and 'EMBEDDED_SIGN_IN' support anonymous user
-            if (state.url !== CommonRoutes.HARBOR_ROOT && !state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
-              let navigatorExtra: NavigationExtras = {
-                queryParams: { "redirect_url": state.url }
-              };
-              this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
-              return observer.next(false);
-            } else {
-              return observer.next(true);
-            }
-          });
+          .subscribe(() => {
+            return observer.next(true);
+          }
+            , error => {
+              // If is guest, skip it
+              if (this.isGuest(route, state)) {
+                return observer.next(true);
+              }
+              // Session retrieving failed then redirect to sign-in
+              // no matter what status code is.
+              // Please pay attention that route 'HARBOR_ROOT' and 'EMBEDDED_SIGN_IN' support anonymous user
+              if (!state.url.startsWith(CommonRoutes.EMBEDDED_SIGN_IN)) {
+                let navigatorExtra: NavigationExtras = {
+                  queryParams: { "redirect_url": state.url }
+                };
+                this.router.navigate([CommonRoutes.EMBEDDED_SIGN_IN], navigatorExtra);
+                return observer.next(false);
+              } else {
+                return observer.next(true);
+              }
+            });
       } else {
         return observer.next(true);
       }

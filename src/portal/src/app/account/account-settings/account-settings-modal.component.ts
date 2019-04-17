@@ -22,7 +22,7 @@ import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.com
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
 import { CommonRoutes } from "../../shared/shared.const";
-
+import { CopyInputComponent } from "@harbor/ui";
 @Component({
   selector: "account-settings-modal",
   templateUrl: "account-settings-modal.component.html",
@@ -48,6 +48,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
   accountFormRef: NgForm;
   @ViewChild("accountSettingsFrom") accountForm: NgForm;
   @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
+  @ViewChild("copyInput") copyInput: CopyInputComponent;
 
   constructor(
     private session: SessionService,
@@ -319,5 +320,11 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
     }
     this.inlineAlert.close();
     this.opened = false;
+  }
+  onSuccess(event) {
+    this.inlineAlert.showInlineSuccess({message: 'PROFILE.COPY_SUCCESS'});
+  }
+  onError(event) {
+    this.inlineAlert.showInlineError({message: 'PROFILE.COPY_ERROR'});
   }
 }

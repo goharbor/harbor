@@ -4,6 +4,7 @@ import time
 import base
 import swagger_client
 from docker_api import DockerAPI
+from swagger_client.rest import ApiException
 
 def pull_harbor_image(registry, username, password, image, tag, expected_error_message = None):
     _docker_api = DockerAPI()
@@ -94,7 +95,7 @@ class Repository(base.Base):
             time.sleep(5)
             timeout_count = timeout_count - 1
             if (timeout_count == 0):
-                break            
+                break
             _tag = self.get_tag(repo_name, tag, **kwargs)
             if _tag.name == tag and _tag.scan_overview !=None:
                 if _tag.scan_overview.scan_status == expected_scan_status:
@@ -119,3 +120,19 @@ class Repository(base.Base):
                 print "sha256:", len(each_sign.hashes["sha256"])
                 return
         raise Exception(r"Signature of {}:{} is not exist!".format(repo_name, tag))
+
+    def retag_image(self, repo_name, tag, src_image, override=True, expect_status_code = 200, expect_response_body = None, **kwargs):
+        client = self._get_client(**kwargs)
+        request = swagger_client.RetagReq(tag=tag, src_image=src_image, override=override)
+
+        try:
+            data, status_code, _ = client.repositories_repo_name_tags_post_with_http_info(repo_name, request)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+            if expect_response_body is not None:
+                base._assert_status_body(expect_response_body, e.body)
+            return
+
+        base._assert_status_code(expect_status_code, status_code)
+        base._assert_status_code(200, status_code)
+        return data
