@@ -8,7 +8,8 @@
     </clr-dg-action-bar>
     <clr-dg-column>{{'REPLICATION.NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'status'" class="status-width">{{'REPLICATION.STATUS' | translate}}</clr-dg-column>
-    <clr-dg-column class="min-width">{{'REPLICATION.SRC_REGISTRY' | translate}}</clr-dg-column>
+    <clr-dg-column class="col-width">{{'REPLICATION.SRC_REGISTRY' | translate}}</clr-dg-column>
+    <clr-dg-column class="col-width">{{'REPLICATION.REPLICATION_MODE' | translate}}</clr-dg-column>
     <clr-dg-column class="min-width">{{'REPLICATION.DESTINATION_NAMESPACE' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'override'" class="status-width">{{'REPLICATION.OVERRIDE' | translate}}</clr-dg-column>
@@ -27,14 +28,11 @@
                 <div *ngSwitchCase="true" ><clr-icon shape="success-standard" class="is-success text-alignment" size="18"></clr-icon> Enabled</div>	
             </div>
         </clr-dg-cell>
-        <clr-dg-cell class="min-width">
+        <clr-dg-cell class="col-width">
             {{p.src_registry ? p.src_registry.name : ''}}
-            <clr-tooltip>
-                <clr-icon *ngIf="p.src_namespaces && p.src_namespaces.length > 1" clrTooltipTrigger shape="ellipsis-horizontal" size="18"></clr-icon>
-                <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>
-                    <span>{{p.src_namespaces}}</span>
-                </clr-tooltip-content>
-            </clr-tooltip>
+        </clr-dg-cell>
+        <clr-dg-cell class="col-width">	
+            {{p.src_registry && p.src_registry.id > 0 ? 'pull-based' : 'push-based'}}	
         </clr-dg-cell>
         <clr-dg-cell class="min-width">
             {{p.dest_registry ? p.dest_registry.name : ''}} : {{p.dest_namespace? p.dest_namespace: '-'}}

@@ -8,7 +8,11 @@ import { ErrorHandler } from "../../error-handler/error-handler";
 import { ReplicationJob, ReplicationTasks, Comparator, ReplicationJobItem, State } from "../../service/interface";
 import { CustomComparator, DEFAULT_PAGE_SIZE, calculatePage, doFiltering, doSorting } from "../../utils";
 import { RequestQueryParams } from "../../service/RequestQueryParams";
-const taskStatus = 'InProgress';
+const taskStatus: any = {
+  PENDING: "pending",
+  RUNNING: "running",
+  SCHEDULED: "scheduled"
+};
 @Component({
   selector: 'replication-tasks',
   templateUrl: './replication-tasks.component.html',
@@ -145,7 +149,9 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
             let count: number = 0;
             this.tasks.forEach(tasks => {
               if (
-                tasks.status === taskStatus
+                tasks.status.toLowerCase() === taskStatus.PENDING ||
+                tasks.status.toLowerCase() === taskStatus.RUNNING ||
+                tasks.status.toLowerCase() === taskStatus.SCHEDULED
               ) {
                 count++;
               }

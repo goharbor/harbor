@@ -82,7 +82,7 @@ export class ProjectDetailComponent implements OnInit {
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.LABEL.KEY, USERSTATICPERMISSION.LABEL.VALUE.CREATE));
     forkJoin(...permissionsList).subscribe(Rules => {
-      [this.hasLogListPermission, this.hasConfigurationListPermission, this.hasMemberListPermission,
+      [this.hasLogListPermission, this.hasConfigurationListPermission, this.hasMemberListPermission
         , this.hasLabelListPermission, this.hasRepositoryListPermission, this.hasHelmChartsListPermission, this.hasRobotListPermission
         , this.hasLabelCreatePermission] = Rules;
 
