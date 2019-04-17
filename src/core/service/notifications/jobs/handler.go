@@ -98,7 +98,7 @@ func (h *Handler) HandleReplicationTask() {
 	log.Debugf("received replication task status update event: task-%d, status-%s", h.id, h.status)
 	if err := hook.UpdateTask(replication.OperationCtl, h.id, h.rawStatus); err != nil {
 		log.Errorf("Failed to update replication task status, id: %d, status: %s", h.id, h.status)
-		h.HandleInternalServerError(err.Error())
+		h.SendInternalServerError(err)
 		return
 	}
 }
