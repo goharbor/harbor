@@ -31,9 +31,8 @@ import { ReplicationService } from "../service/replication.service";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { TranslateService } from "@ngx-translate/core";
 import { EndpointService } from "../service/endpoint.service";
+import { cronRegex } from "../utils";
 
-const ONE_HOUR_SECONDS = 3600;
-const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
 
 @Component({
   selector: "hbr-create-edit-rule",
@@ -41,16 +40,11 @@ const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
   styleUrls: ["./create-edit-rule.component.scss"]
 })
 export class CreateEditRuleComponent implements OnInit, OnDestroy {
-  _localTime: Date = new Date();
   sourceList: Endpoint[] = [];
   targetList: Endpoint[] = [];
-  isFilterHide = false;
-  weeklySchedule: boolean;
   noEndpointInfo = "";
   isPushMode = true;
   noSelectedEndpoint = true;
-  filterCount = 0;
-  alertClosed = false;
   TRIGGER_TYPES = {
     MANUAL: "manual",
     SCHEDULED: "scheduled",
@@ -61,12 +55,10 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   headerTitle = "REPLICATION.ADD_POLICY";
 
   createEditRuleOpened: boolean;
-  filterListData: { [key: string]: any }[] = [];
   inProgress = false;
   inNameChecking = false;
   isRuleNameValid = true;
   nameChecker: Subject<string> = new Subject<string>();
-  firstClick = 0;
   policyId: number;
   confirmSub: Subscription;
   ruleForm: FormGroup;
@@ -139,12 +131,10 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   equals(c1: any, c2: any): boolean {
     return c1 && c2 ? c1.id === c2.id : c1 === c2;
   }
-
   modeChange(): void {
     this.setFilter([]);
     this.initRegistryInfo(0);
   }
-
 
   sourceChange($event): void {
     this.noSelectedEndpoint = false;
@@ -161,18 +151,20 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       this.nameChecker.unsubscribe();
     }
   }
-  get src_namespaces(): FormArray { return this.ruleForm.get('src_namespaces') as FormArray; }
 
   get isValid() {
-    let controlName = this.ruleForm.controls["name"].invalid;
-    let controlSrcNamespace = this.ruleForm.controls["src_namespaces"].invalid;
-    return !(
-      controlName ||
-      controlSrcNamespace ||
+    let controlName = !!this.ruleForm.controls["name"].value;
+    let sourceRegistry = !!this.ruleForm.controls["src_registry"].value;
+    let destRegistry = !!this.ruleForm.controls["dest_registry"].value;
+    let triggerMode = !!this.ruleForm.controls["trigger"].value.type;
+    let cron = !!this.ruleForm.value.trigger.trigger_settings.cron;
+    return !(!controlName ||
+      !triggerMode ||
       !this.isRuleNameValid ||
-      this.noSelectedEndpoint ||
-      this.inProgress
-    );
+      (!this.isPushMode && !sourceRegistry ||
+        this.isPushMode && !destRegistry)
+      || !(!this.isNotSchedule() && cron && this.cronInputValid(this.ruleForm.value.trigger.trigger_settings.cron || '')
+        || this.isNotSchedule()));
   }
 
   createForm() {
@@ -180,7 +172,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       name: ["", Validators.required],
       description: "",
       src_registry: new FormControl(),
-      src_namespaces: new FormArray([new FormControl('')], Validators.required),
       dest_registry: new FormControl(),
       dest_namespace: "",
       trigger: this.fb.group({
@@ -196,9 +187,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     });
   }
 
-  selectTrigger($event: any): void {
-
-  }
 
   isNotSchedule(): boolean {
     return this.ruleForm.get("trigger").get("type").value !== this.TRIGGER_TYPES.SCHEDULED;
@@ -225,25 +213,17 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     this.isPushMode = true;
   }
 
-  initForm(): void {
-    this.formReset();
-    this.setFilter([]);
-    this.initRegistryInfo(0);
-    this.copyUpdateForm = clone(this.ruleForm.value);
-  }
 
-  updateForm(rule: ReplicationRule): void {
+  updateRuleFormAndCopyUpdateForm(rule: ReplicationRule): void {
     if (rule.dest_registry.id === 0) {
       this.isPushMode = false;
     } else {
       this.isPushMode = true;
     }
-
     setTimeout(() => {
       this.ruleForm.reset({
         name: rule.name,
         description: rule.description,
-        src_namespaces: rule.src_namespaces,
         dest_namespace: rule.dest_namespace,
         src_registry: rule.src_registry,
         dest_registry: rule.dest_registry,
@@ -252,26 +232,15 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         enabled: rule.enabled,
         override: rule.override
       });
-      // reset the filter list.
-      let filters = [];
-      for (let i = 0; i < this.supportedFilters.length; i++) {
-        let findTag: boolean = false;
-        if (rule.filters) {
-          rule.filters.forEach((ruleItem, j) => {
-            if (this.supportedFilters[i].type === ruleItem.type) {
-              filters.push(ruleItem);
-              findTag = true;
-            }
-          });
-        }
-        if (!findTag) {
-          filters.push({ type: this.supportedFilters[i].type, value: "" });
-        }
-
-      }
+      let filtersArray = this.getFilterArray(rule);
 
       this.noSelectedEndpoint = false;
-      this.setFilter(filters);
+      this.setFilter(filtersArray);
+      this.copyUpdateForm = clone(this.ruleForm.value);
+      // keep trigger same value
+      this.copyUpdateForm.trigger = clone(rule.trigger);
+      this.copyUpdateForm.filters = this.copyUpdateForm.filters === null ? [] : this.copyUpdateForm.filters;
+      // set filter value is [] if callback filter value is null.
     }, 100);
     // end of reset the filter list.
   }
@@ -302,28 +271,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
   }
 
-  focusClear($event: any): void {
-    if (this.policyId < 0 && this.firstClick === 0) {
-      if ($event && $event.target && $event.target["value"]) {
-        $event.target["value"] = "";
-      }
-      this.firstClick++;
-    }
-  }
-
-  addNewNamespace(): void {
-    this.src_namespaces.push(new FormControl());
-  }
-
-  deleteNamespace(index: number): void {
-    this.src_namespaces.removeAt(index);
-  }
-
-  // Replication Schedule select value exchange
-  selectSchedule($event: any): void {
-
-  }
-
   checkRuleName(): void {
     let ruleName: string = this.ruleForm.controls["name"].value;
     if (ruleName) {
@@ -338,6 +285,9 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   onSubmit() {
+    if (this.ruleForm.value.trigger.type !== 'scheduled') {
+      this.ruleForm.get("trigger").get("trigger_settings").get('cron').setValue('');
+    }
     // add new Replication rule
     this.inProgress = true;
     let copyRuleForm: ReplicationRule = this.ruleForm.value;
@@ -363,6 +313,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             .subscribe(res => this.errorHandler.info(res));
           this.inProgress = false;
           this.reload.emit(true);
+          this.createForm();
           this.close();
         }, (error: any) => {
           this.inProgress = false;
@@ -384,19 +335,13 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         });
     }
   }
-
   openCreateEditRule(ruleId?: number | string): void {
     this.formReset();
     this.copyUpdateForm = clone(this.ruleForm.value);
     this.inlineAlert.close();
-    this.filterCount = 0;
-    this.isFilterHide = false;
-    this.filterListData = [];
-    this.firstClick = 0;
     this.noSelectedEndpoint = true;
     this.isRuleNameValid = true;
 
-    this.weeklySchedule = false;
     this.policyId = -1;
     this.createEditRuleOpened = true;
     this.noEndpointInfo = "";
@@ -412,21 +357,19 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           this.repService.getRegistryInfo(srcRegistryId)
             .subscribe(adapter => {
               this.setFilterAndTrigger(adapter);
-              this.copyUpdateForm = clone(ruleInfo);
-              // keep trigger same value
-              this.copyUpdateForm.trigger = clone(ruleInfo.trigger);
-              this.copyUpdateForm.filters = this.copyUpdateForm.filters === null ? [] : this.copyUpdateForm.filters;
-              // set filter value is [] if callback filter value is null.
-              this.updateForm(ruleInfo);
-          }, (error: any) => {
-            this.inlineAlert.showInlineError(error);
-          });
+              this.updateRuleFormAndCopyUpdateForm(ruleInfo);
+            }, (error: any) => {
+              this.inlineAlert.showInlineError(error);
+            });
         }, (error: any) => {
           this.inlineAlert.showInlineError(error);
         });
     } else {
       let registryObs = this.repService.getRegistryInfo(0);
-      registryObs.subscribe(adapter => { this.setFilterAndTrigger(adapter); });
+      registryObs.subscribe(adapter => {
+        this.setFilterAndTrigger(adapter);
+        this.copyUpdateForm = clone(this.ruleForm.value);
+      });
       this.headerTitle = "REPLICATION.ADD_POLICY";
       this.copyUpdateForm = clone(this.ruleForm.value);
     }
@@ -449,6 +392,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   confirmCancel(confirmed: boolean) {
     this.inlineAlert.close();
+    this.createForm();
     this.close();
   }
 
@@ -458,6 +402,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         message: "ALERT.FORM_CHANGE_CONFIRMATION"
       });
     } else {
+      this.createForm();
       this.close();
     }
   }
@@ -478,5 +423,42 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       return true;
     }
     return false;
+  }
+
+
+  getFilterArray(rule): Array<any> {
+    let filtersArray = [];
+    for (let i = 0; i < this.supportedFilters.length; i++) {
+      let findTag: boolean = false;
+      if (rule.filters) {
+        rule.filters.forEach((ruleItem) => {
+          if (this.supportedFilters[i].type === ruleItem.type) {
+            filtersArray.push(ruleItem);
+            findTag = true;
+          }
+        });
+      }
+
+      if (!findTag) {
+        filtersArray.push({ type: this.supportedFilters[i].type, value: "" });
+      }
+
+    }
+    return filtersArray;
+  }
+  cronInputValid(cronValue): boolean {
+    return cronRegex(cronValue);
+  }
+  get cronTouched(): boolean {
+    let triggerControl = this.ruleForm.controls.trigger as FormGroup;
+    if (!triggerControl) {
+      return false;
+    }
+    let trigger_settingsControls = triggerControl.controls.trigger_settings as FormGroup;
+    if (!trigger_settingsControls) {
+      return false;
+    }
+    return trigger_settingsControls.controls.cron.touched && trigger_settingsControls.controls.cron.dirty
+      && !trigger_settingsControls.controls.cron.value;
   }
 }

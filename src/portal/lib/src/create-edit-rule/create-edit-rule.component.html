@@ -22,9 +22,9 @@
         <div class="form-group form-group-override">
           <label class="form-group-label-override">{{'REPLICATION.REPLI_MODE' | translate}}</label>
           <div class="radio" style="display:inherit;">
-            <input type="radio" id="push_base" name="replicationMode" [value]=true [(ngModel)]="isPushMode" (change)="modeChange()" [ngModelOptions]="{standalone: true}">
+            <input class="mode-base" type="radio" id="push_base" name="replicationMode" [value]=true  [disabled]="!(policyId<0)" [(ngModel)]="isPushMode" (change)="modeChange()" [ngModelOptions]="{standalone: true}">
             <label for="push_base">Push-based</label>
-            <input type="radio" id="pull_base" name="replicationMode" [value]=false [(ngModel)]="isPushMode" [ngModelOptions]="{standalone: true}">
+            <input class="mode-base" type="radio" id="pull_base" name="replicationMode" [value]=false [disabled]="!(policyId<0)" [(ngModel)]="isPushMode" [ngModelOptions]="{standalone: true}">
             <label for="pull_base">Pull-based</label>
           </div>
         </div>
@@ -33,29 +33,13 @@
           <label class="form-group-label-override  required">{{'REPLICATION.SOURCE_REGISTRY' | translate}}</label>
           <div class="form-select">
             <div class="select endpointSelect pull-left">
-              <select id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry" [compareWith]="equals">
+              <select id="src_registry_id" (change)="sourceChange($event)"  formControlName="src_registry" [compareWith]="equals">
                 <option *ngFor="let source of sourceList" [ngValue]="source">{{source.name}}-{{source.url}}</option>
               </select>
             </div>
           </div>
           <label *ngIf="noEndpointInfo.length != 0" class="colorRed alertLabel">{{noEndpointInfo | translate}}</label>
           <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
-        </div>
-        <!--source namespace -->
-        <div class="form-group form-group-override">
-          <label class="form-group-label-override  required">{{'REPLICATION.SOURCE_NAMESPACES' | translate}}</label>
-          <div formArrayName="src_namespaces">
-            <div class="width-315" *ngFor="let src_namespace of src_namespaces.controls; let i=index">
-              <div class="endpointSelect pull-left">
-                <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='(src_namespace.touched && src_namespace.invalid)'>
-                  <input type="text" [formControlName]="i" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required maxlength="255">
-                  <span class="tooltip-content">{{'REPLICATION.NAMESPACE_TOOLTIP' | translate}}</span>
-                </label>
-              </div>
-              <clr-icon shape="times-circle" class="is-solid" (click)="deleteNamespace(i)"></clr-icon>
-            </div>
-          </div>
-          <clr-icon id="addSourceNamespace" shape="plus-circle" class="is-solid mr-t-10" (click)="addNewNamespace()"></clr-icon>
         </div>
         <!--images/Filter-->
         <div class="form-group form-group-override">
@@ -81,13 +65,13 @@
           </div>
         </div>
         <!--destination registry-->
-        <div *ngIf="isPushMode" class="form-group form-group-override">
+        <div *ngIf="isPushMode"  class="form-group form-group-override">
           <label class="form-group-label-override  required">{{'REPLICATION.DEST_REGISTRY' | translate}}</label>
           <div class="form-select">
             <div class="select endpointSelect pull-left">
-              <select id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry"  [compareWith]="equals">
-                <option *ngFor="let target of targetList" [ngValue]="target">{{target.name}}-{{target.url}}</option>
-              </select>
+                <select id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry"  [compareWith]="equals">
+                    <option *ngFor="let target of targetList" [ngValue]="target">{{target.name}}-{{target.url}}</option>
+                  </select>
             </div>
           </div>
           <label *ngIf="noEndpointInfo.length != 0" class="colorRed alertLabel">{{noEndpointInfo | translate}}</label>
@@ -106,19 +90,20 @@
 
         <!--Trigger-->
         <div class="form-group form-group-override">
-          <label class="form-group-label-override">{{'REPLICATION.TRIGGER_MODE' | translate}}</label>
+          <label class="form-group-label-override required">{{'REPLICATION.TRIGGER_MODE' | translate}}</label>
           <div formGroupName="trigger">
             <!--on trigger-->
             <div class="select width-115">
-              <select id="ruleTrigger" formControlName="type" (change)="selectTrigger($event)">
+              <select id="ruleTrigger" formControlName="type">
                 <option *ngFor="let trigger of supportedTriggers" [value]="trigger">{{'REPLICATION.' + trigger.toUpperCase() | translate }}</option>
               </select>
             </div>
             <!--on push-->
             <div formGroupName="trigger_settings">
-              <div [hidden]="isNotSchedule()">
-                <label>Cron String</label>
-                <label for="targetCron" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right">
+              <div [hidden]="isNotSchedule()" class="form-group form-cron">
+                <label class="required">Cron String</label>
+                <label for="targetCron" aria-haspopup="true" role="tooltip"class="tooltip tooltip-validation tooltip-md tooltip-top-right"
+                [class.invalid]="!isNotSchedule() && cronTouched || !cronInputValid(ruleForm.value.trigger?.trigger_settings?.cron || '')" >
                   <input type="text" name=targetCron id="targetCron" required class="form-control cron-input" formControlName="cron">
                   <span class="tooltip-content">
                     {{'TOOLTIP.CRON_REQUIRED' | translate }}

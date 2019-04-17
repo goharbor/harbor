@@ -232,7 +232,6 @@ export class ReplicationDefaultService extends ReplicationService {
       rule != null &&
       rule.name !== undefined &&
       rule.name.trim() !== "" &&
-      rule.src_namespaces && rule.src_namespaces.length > 0 &&
       (!!rule.dest_registry || !!rule.src_registry)
     );
   }
