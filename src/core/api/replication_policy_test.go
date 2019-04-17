@@ -22,6 +22,8 @@ import (
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
+// TODO rename the file to "replication.go"
+
 type fakedRegistryManager struct{}
 
 func (f *fakedRegistryManager) Add(*model.Registry) (int64, error) {
@@ -33,12 +35,7 @@ func (f *fakedRegistryManager) List(...*model.RegistryQuery) (int64, []*model.Re
 func (f *fakedRegistryManager) Get(id int64) (*model.Registry, error) {
 	if id == 1 {
 		return &model.Registry{
-			Type: model.RegistryTypeLocalHarbor,
-		}, nil
-	}
-	if id == 2 {
-		return &model.Registry{
-			Type: model.RegistryTypeHarbor,
+			Type: "faked_registry",
 		}, nil
 	}
 	return nil, nil
@@ -131,14 +128,11 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 					SrcRegistry: &model.Registry{
 						ID: 1,
 					},
-					DestRegistry: &model.Registry{
-						ID: 2,
-					},
 				},
 			},
 			code: http.StatusBadRequest,
 		},
-		// 400 empty source registry
+		// 400 empty registry
 		{
 			request: &testingRequest{
 				method:     http.MethodPost,
@@ -146,29 +140,10 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 				credential: sysAdmin,
 				bodyJSON: &model.Policy{
 					Name: "policy01",
-					DestRegistry: &model.Registry{
-						ID: 1,
-					},
 				},
 			},
 			code: http.StatusBadRequest,
 		},
-		// 400 empty destination registry
-		{
-			request: &testingRequest{
-				method:     http.MethodPost,
-				url:        "/api/replication/policies",
-				credential: sysAdmin,
-				bodyJSON: &model.Policy{
-					Name: "policy01",
-					SrcRegistry: &model.Registry{
-						ID: 1,
-					},
-				},
-			},
-			code: http.StatusBadRequest,
-		},
-
 		// 409, duplicate policy name
 		{
 			request: &testingRequest{
@@ -179,9 +154,6 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 					Name: "duplicate_name",
 					SrcRegistry: &model.Registry{
 						ID: 1,
-					},
-					DestRegistry: &model.Registry{
-						ID: 2,
 					},
 				},
 			},
@@ -196,32 +168,11 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 				bodyJSON: &model.Policy{
 					Name: "policy01",
 					SrcRegistry: &model.Registry{
-						ID: 1,
-					},
-					DestRegistry: &model.Registry{
-						ID: 3,
+						ID: 2,
 					},
 				},
 			},
 			code: http.StatusNotFound,
-		},
-		// 400 both registry types are not local harbor
-		{
-			request: &testingRequest{
-				method:     http.MethodPost,
-				url:        "/api/replication/policies",
-				credential: sysAdmin,
-				bodyJSON: &model.Policy{
-					Name: "policy01",
-					SrcRegistry: &model.Registry{
-						ID: 2,
-					},
-					DestRegistry: &model.Registry{
-						ID: 2,
-					},
-				},
-			},
-			code: http.StatusBadRequest,
 		},
 		// 201
 		{
@@ -233,9 +184,6 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 					Name: "policy01",
 					SrcRegistry: &model.Registry{
 						ID: 1,
-					},
-					DestRegistry: &model.Registry{
-						ID: 2,
 					},
 				},
 			},
@@ -343,9 +291,6 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 					SrcRegistry: &model.Registry{
 						ID: 1,
 					},
-					DestRegistry: &model.Registry{
-						ID: 2,
-					},
 				},
 			},
 			code: http.StatusBadRequest,
@@ -361,9 +306,6 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 					SrcRegistry: &model.Registry{
 						ID: 1,
 					},
-					DestRegistry: &model.Registry{
-						ID: 2,
-					},
 				},
 			},
 			code: http.StatusConflict,
@@ -377,32 +319,11 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 				bodyJSON: &model.Policy{
 					Name: "policy01",
 					SrcRegistry: &model.Registry{
-						ID: 3,
-					},
-					DestRegistry: &model.Registry{
 						ID: 2,
 					},
 				},
 			},
 			code: http.StatusNotFound,
-		},
-		// 400 both registry types are not local harbor
-		{
-			request: &testingRequest{
-				method:     http.MethodPut,
-				url:        "/api/replication/policies/1",
-				credential: sysAdmin,
-				bodyJSON: &model.Policy{
-					Name: "policy01",
-					SrcRegistry: &model.Registry{
-						ID: 2,
-					},
-					DestRegistry: &model.Registry{
-						ID: 2,
-					},
-				},
-			},
-			code: http.StatusBadRequest,
 		},
 		// 200
 		{
@@ -414,9 +335,6 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 					Name: "policy01",
 					SrcRegistry: &model.Registry{
 						ID: 1,
-					},
-					DestRegistry: &model.Registry{
-						ID: 2,
 					},
 				},
 			},

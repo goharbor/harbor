@@ -79,7 +79,8 @@ create table replication_execution (
  id SERIAL NOT NULL,
  policy_id int NOT NULL,
  status varchar(32),
- status_text varchar(256),
+ /*the status text may contain error message whose length is very long*/
+ status_text text,
  total int NOT NULL DEFAULT 0,
  failed int NOT NULL DEFAULT 0,
  succeed int NOT NULL DEFAULT 0,
