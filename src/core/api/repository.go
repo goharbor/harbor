@@ -333,7 +333,7 @@ func (ra *RepositoryAPI) Delete() {
 			e := &event.Event{
 				Type: event.EventTypeImagePush,
 				Resource: &model.Resource{
-					Type: model.ResourceTypeRepository,
+					Type: model.ResourceTypeImage,
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{
 							Name: repoName,

@@ -123,7 +123,7 @@ func (f *fakedAdapter) Info() (*model.RegistryInfo, error) {
 	return &model.RegistryInfo{
 		Type: model.RegistryTypeHarbor,
 		SupportedResourceTypes: []model.ResourceType{
-			model.ResourceTypeRepository,
+			model.ResourceTypeImage,
 			model.ResourceTypeChart,
 		},
 		SupportedTriggers: []model.TriggerType{model.TriggerTypeManual},
@@ -139,7 +139,7 @@ func (f *fakedAdapter) HealthCheck() (model.HealthStatus, error) {
 func (f *fakedAdapter) FetchImages(namespace []string, filters []*model.Filter) ([]*model.Resource, error) {
 	return []*model.Resource{
 		{
-			Type: model.ResourceTypeRepository,
+			Type: model.ResourceTypeImage,
 			Metadata: &model.ResourceMetadata{
 				Repository: &model.Repository{
 					Name: "library/hello-world",
@@ -217,7 +217,7 @@ func TestStartReplication(t *testing.T) {
 		},
 	}
 	resource := &model.Resource{
-		Type: model.ResourceTypeRepository,
+		Type: model.ResourceTypeImage,
 		Metadata: &model.ResourceMetadata{
 			Repository: &model.Repository{
 				Name: "library/hello-world",

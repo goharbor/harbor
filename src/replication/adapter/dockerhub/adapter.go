@@ -58,7 +58,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	return &model.RegistryInfo{
 		Type: model.RegistryTypeDockerHub,
 		SupportedResourceTypes: []model.ResourceType{
-			model.ResourceTypeRepository,
+			model.ResourceTypeImage,
 		},
 		SupportedResourceFilters: []*model.FilterStyle{
 			{
@@ -307,7 +307,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		}
 
 		resources = append(resources, &model.Resource{
-			Type:     model.ResourceTypeRepository,
+			Type:     model.ResourceTypeImage,
 			Registry: a.registry,
 			Metadata: &model.ResourceMetadata{
 				Repository: &model.Repository{

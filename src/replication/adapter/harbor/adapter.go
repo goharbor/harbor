@@ -92,7 +92,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	info := &model.RegistryInfo{
 		Type: model.RegistryTypeHarbor,
 		SupportedResourceTypes: []model.ResourceType{
-			model.ResourceTypeRepository,
+			model.ResourceTypeImage,
 		},
 		SupportedResourceFilters: []*model.FilterStyle{
 			{

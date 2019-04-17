@@ -89,7 +89,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 				vtags = append(vtags, tag.Name)
 			}
 			resources = append(resources, &model.Resource{
-				Type:     model.ResourceTypeRepository,
+				Type:     model.ResourceTypeImage,
 				Registry: a.registry,
 				Metadata: &model.ResourceMetadata{
 					Repository: &model.Repository{

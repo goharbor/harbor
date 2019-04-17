@@ -70,15 +70,16 @@ UPDATE registry SET credential_type='basic';
 /*upgrade the replication_policy*/
 ALTER TABLE replication_policy ADD COLUMN creator varchar(256);
 ALTER TABLE replication_policy ADD COLUMN src_registry_id int;
-ALTER TABLE replication_policy ADD COLUMN src_namespaces varchar(256);
-/*if harbor is integrated with the external project service, the src_namespaces will be empty,
-which means the repilcation policy cannot work as expected*/
-UPDATE replication_policy r SET src_namespaces=(SELECT p.name FROM project p WHERE p.project_id=r.project_id);
+/*The predefined filters will be cleared and replaced by "project_name/"+double star.
+if harbor is integrated with the external project service, we cannot get the project name by ID,
+which means the repilcation policy will match all resources.*/
+UPDATE replication_policy r SET filters=(SELECT CONCAT('[{"type":"name","value":"', p.name,'/**"}]') FROM project p WHERE p.project_id=r.project_id);
 ALTER TABLE replication_policy RENAME COLUMN target_id TO dest_registry_id;
 ALTER TABLE replication_policy ALTER COLUMN dest_registry_id DROP NOT NULL;
 ALTER TABLE replication_policy ADD COLUMN dest_namespace varchar(256);
 ALTER TABLE replication_policy ADD COLUMN override boolean;
 ALTER TABLE replication_policy DROP COLUMN project_id;
+ALTER TABLE replication_policy RENAME COLUMN cron_str TO trigger;
 
 DROP TRIGGER replication_immediate_trigger_update_time_at_modtime ON replication_immediate_trigger;
 DROP TABLE replication_immediate_trigger;
@@ -127,10 +128,11 @@ BEGIN
     LOOP
       /*insert one execution record*/
       INSERT INTO replication_execution (policy_id, start_time) VALUES (job.policy_id, job.creation_time) RETURNING id INTO execid;
-      /*insert one task record*/
+      /*insert one task record
+      doesn't record the tags info in "src_resource" and "dst_resource" as the length
+      of the tags may longer than the capability of the column*/
       INSERT INTO replication_task (execution_id, resource_type, src_resource, dst_resource, operation, job_id, status, start_time, end_time) 
-      VALUES (execid, 'image', CONCAT(job.repository,':[', job.tags,']'), CONCAT(job.repository,':[', job.tags,']'),
-        job.operation, job.job_uuid, job.status, job.creation_time, job.update_time);
+      VALUES (execid, 'image', job.repository, job.repository, job.operation, job.job_uuid, job.status, job.creation_time, job.update_time);
     END LOOP;
 END $$;
 UPDATE replication_task SET status='Pending' WHERE status='pending';

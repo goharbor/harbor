@@ -117,7 +117,7 @@ func (n *NotificationHandler) Post() {
 				e := &rep_event.Event{
 					Type: rep_event.EventTypeImagePush,
 					Resource: &model.Resource{
-						Type: model.ResourceTypeRepository,
+						Type: model.ResourceTypeImage,
 						Metadata: &model.ResourceMetadata{
 							Repository: &model.Repository{
 								Name: repository,

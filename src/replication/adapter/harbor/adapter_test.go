@@ -45,7 +45,7 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, 2, len(info.SupportedResourceFilters))
 	assert.Equal(t, 3, len(info.SupportedTriggers))
 	assert.Equal(t, 2, len(info.SupportedResourceTypes))
-	assert.Equal(t, model.ResourceTypeRepository, info.SupportedResourceTypes[0])
+	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
 	assert.Equal(t, model.ResourceTypeChart, info.SupportedResourceTypes[1])
 	server.Close()
 
@@ -69,7 +69,7 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, 2, len(info.SupportedResourceFilters))
 	assert.Equal(t, 3, len(info.SupportedTriggers))
 	assert.Equal(t, 1, len(info.SupportedResourceTypes))
-	assert.Equal(t, model.ResourceTypeRepository, info.SupportedResourceTypes[0])
+	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
 	server.Close()
 }
 

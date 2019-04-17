@@ -52,7 +52,7 @@ func (n native) FetchImages(filters []*model.Filter) ([]*model.Resource, error) 
 			continue
 		}
 		resources = append(resources, &model.Resource{
-			Type:     model.ResourceTypeRepository,
+			Type:     model.ResourceTypeImage,
 			Registry: n.registry,
 			Metadata: &model.ResourceMetadata{
 				Repository: &model.Repository{
