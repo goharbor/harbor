@@ -156,7 +156,14 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		}
 	}
 	for _, project := range projects {
-		err := a.client.Post(a.coreServiceURL+"/api/projects", project)
+		pro := struct {
+			Name     string                 `json:"project_name"`
+			Metadata map[string]interface{} `json:"metadata"`
+		}{
+			Name:     project.Name,
+			Metadata: project.Metadata,
+		}
+		err := a.client.Post(a.coreServiceURL+"/api/projects", pro)
 		if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {
 			log.Debugf("got 409 when trying to create project %s", project.Name)
 			return nil
