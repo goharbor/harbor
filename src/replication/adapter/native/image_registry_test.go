@@ -70,27 +70,26 @@ func Test_native_FetchImages(t *testing.T) {
 		want    []*model.Resource
 		wantErr bool
 	}{
-		// TODO: discuss: should we report error if not found in the source native registry.
-		// {
-		// 	name: "repository not exist",
-		// 	filters: []*model.Filter{
-		// 		{
-		// 			Type:  model.FilterTypeName,
-		// 			Value: "b1",
-		// 		},
-		// 	},
-		// 	wantErr: true,
-		// },
-		// {
-		// 	name: "tag not exist",
-		// 	filters: []*model.Filter{
-		// 		{
-		// 			Type:  model.FilterTypeTag,
-		// 			Value: "c",
-		// 		},
-		// 	},
-		// 	wantErr: true,
-		// },
+		{
+			name: "repository not exist",
+			filters: []*model.Filter{
+				{
+					Type:  model.FilterTypeName,
+					Value: "b1",
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "tag not exist",
+			filters: []*model.Filter{
+				{
+					Type:  model.FilterTypeTag,
+					Value: "this_tag_not_exist_in_the_mock_server",
+				},
+			},
+			wantErr: false,
+		},
 		{
 			name:    "no filters",
 			filters: []*model.Filter{},
