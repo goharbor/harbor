@@ -16,7 +16,6 @@ package api
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
@@ -69,7 +68,7 @@ func (s *SearchAPI) Get() {
 		if isAuthenticated {
 			mys, err := s.SecurityCtx.GetMyProjects()
 			if err != nil {
-				s.HandleInternalServerError(fmt.Sprintf(
+				s.SendInternalServerError(fmt.Errorf(
 					"failed to get projects: %v", err))
 				return
 			}
@@ -111,7 +110,8 @@ func (s *SearchAPI) Get() {
 		})
 		if err != nil {
 			log.Errorf("failed to get total of repositories of project %d: %v", p.ProjectID, err)
-			s.CustomAbort(http.StatusInternalServerError, "")
+			s.SendInternalServerError(fmt.Errorf("failed to get total of repositories of project %d: %v", p.ProjectID, err))
+			return
 		}
 
 		p.RepoCount = total
@@ -122,7 +122,8 @@ func (s *SearchAPI) Get() {
 	repositoryResult, err := filterRepositories(projects, keyword)
 	if err != nil {
 		log.Errorf("failed to filter repositories: %v", err)
-		s.CustomAbort(http.StatusInternalServerError, "")
+		s.SendInternalServerError(fmt.Errorf("failed to filter repositories: %v", err))
+		return
 	}
 
 	result := &searchResult{
@@ -139,7 +140,9 @@ func (s *SearchAPI) Get() {
 		chartResults, err := searchHandler(keyword, proNames)
 		if err != nil {
 			log.Errorf("failed to filter charts: %v", err)
-			s.CustomAbort(http.StatusInternalServerError, err.Error())
+			s.SendInternalServerError(err)
+			return
+
 		}
 		result.Chart = &chartResults
 

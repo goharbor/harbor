@@ -16,7 +16,6 @@ package api
 
 import (
 	"fmt"
-	"net/http"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/dao"
@@ -28,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/replication/event/notification"
 	"github.com/goharbor/harbor/src/replication/event/topic"
 
+	"errors"
 	"github.com/docker/distribution/uuid"
 )
 
@@ -40,12 +40,12 @@ type ReplicationAPI struct {
 func (r *ReplicationAPI) Prepare() {
 	r.BaseController.Prepare()
 	if !r.SecurityCtx.IsAuthenticated() {
-		r.HandleUnauthorized()
+		r.SendUnAuthorizedError(errors.New("Unauthorized"))
 		return
 	}
 
 	if !r.SecurityCtx.IsSysAdmin() && !r.SecurityCtx.IsSolutionUser() {
-		r.HandleForbidden(r.SecurityCtx.GetUsername())
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
 		return
 	}
 }
@@ -53,16 +53,20 @@ func (r *ReplicationAPI) Prepare() {
 // Post trigger a replication according to the specified policy
 func (r *ReplicationAPI) Post() {
 	replication := &api_models.Replication{}
-	r.DecodeJSONReqAndValidate(replication)
+	isValid, err := r.DecodeJSONReqAndValidate(replication)
+	if !isValid {
+		r.SendBadRequestError(err)
+		return
+	}
 
 	policy, err := core.GlobalController.GetPolicy(replication.PolicyID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to get replication policy %d: %v", replication.PolicyID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get replication policy %d: %v", replication.PolicyID, err))
 		return
 	}
 
 	if policy.ID == 0 {
-		r.HandleNotFound(fmt.Sprintf("replication policy %d not found", replication.PolicyID))
+		r.SendNotFoundError(fmt.Errorf("replication policy %d not found", replication.PolicyID))
 		return
 	}
 
@@ -72,18 +76,18 @@ func (r *ReplicationAPI) Post() {
 		Operations: []string{models.RepOpTransfer, models.RepOpDelete},
 	})
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to filter jobs of policy %d: %v",
+		r.SendInternalServerError(fmt.Errorf("failed to filter jobs of policy %d: %v",
 			replication.PolicyID, err))
 		return
 	}
 	if count > 0 {
-		r.RenderError(http.StatusPreconditionFailed, "policy has running/pending jobs, new replication can not be triggered")
+		r.SendPreconditionFailedError(errors.New("policy has running/pending jobs, new replication can not be triggered"))
 		return
 	}
 
 	opUUID, err := startReplication(replication.PolicyID)
 	if err != nil {
-		r.HandleInternalServerError(fmt.Sprintf("failed to publish replication topic for policy %d: %v", replication.PolicyID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to publish replication topic for policy %d: %v", replication.PolicyID, err))
 		return
 	}
 	log.Infof("replication signal for policy %d sent", replication.PolicyID)

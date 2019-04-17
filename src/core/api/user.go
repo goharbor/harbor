@@ -15,6 +15,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -55,7 +56,8 @@ func (ua *UserAPI) Prepare() {
 	mode, err := config.AuthMode()
 	if err != nil {
 		log.Errorf("failed to get auth mode: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		ua.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	ua.AuthMode = mode
@@ -63,7 +65,8 @@ func (ua *UserAPI) Prepare() {
 	self, err := config.SelfRegistration()
 	if err != nil {
 		log.Errorf("failed to get self registration: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
+		ua.SendInternalServerError(errors.New(""))
+		return
 	}
 
 	ua.SelfRegistration = self
@@ -72,7 +75,7 @@ func (ua *UserAPI) Prepare() {
 		if ua.Ctx.Input.IsPost() {
 			return
 		}
-		ua.HandleUnauthorized()
+		ua.SendUnAuthorizedError(errors.New("UnAuthorize"))
 		return
 	}
 
@@ -80,7 +83,7 @@ func (ua *UserAPI) Prepare() {
 		Username: ua.SecurityCtx.GetUsername(),
 	})
 	if err != nil {
-		ua.HandleInternalServerError(fmt.Sprintf("failed to get user %s: %v",
+		ua.SendInternalServerError(fmt.Errorf("failed to get user %s: %v",
 			ua.SecurityCtx.GetUsername(), err))
 		return
 	}
@@ -94,17 +97,20 @@ func (ua *UserAPI) Prepare() {
 		ua.userID, err = strconv.Atoi(id)
 		if err != nil {
 			log.Errorf("Invalid user id, error: %v", err)
-			ua.CustomAbort(http.StatusBadRequest, "Invalid user Id")
+			ua.SendBadRequestError(errors.New("invalid user Id"))
+			return
 		}
 		userQuery := models.User{UserID: ua.userID}
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
 			log.Errorf("Error occurred in GetUser, error: %v", err)
-			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+			ua.SendInternalServerError(errors.New("internal error"))
+			return
 		}
 		if u == nil {
 			log.Errorf("User with Id: %d does not exist", ua.userID)
-			ua.CustomAbort(http.StatusNotFound, "")
+			ua.SendNotFoundError(errors.New(""))
+			return
 		}
 	}
 
@@ -118,7 +124,7 @@ func (ua *UserAPI) Get() {
 		u, err := dao.GetUser(userQuery)
 		if err != nil {
 			log.Errorf("Error occurred in GetUser, error: %v", err)
-			ua.RenderFormatedError(http.StatusInternalServerError, err)
+			ua.SendInternalServerError(err)
 			return
 		}
 		u.Password = ""
@@ -128,7 +134,7 @@ func (ua *UserAPI) Get() {
 		if ua.AuthMode == common.OIDCAuth {
 			o, err := ua.getOIDCUserInfo()
 			if err != nil {
-				ua.RenderFormatedError(http.StatusInternalServerError, err)
+				ua.SendInternalServerError(err)
 				return
 			}
 			u.OIDCUserMeta = o
@@ -139,7 +145,7 @@ func (ua *UserAPI) Get() {
 	}
 
 	log.Errorf("Current user, id: %d does not have admin role, can not view other user's detail", ua.currentUserID)
-	ua.RenderError(http.StatusForbidden, "User does not have admin role")
+	ua.SendForbiddenError(errors.New("user does not have admin role"))
 	return
 }
 
@@ -147,11 +153,16 @@ func (ua *UserAPI) Get() {
 func (ua *UserAPI) List() {
 	if !ua.IsAdmin {
 		log.Errorf("Current user, id: %d does not have admin role, can not list users", ua.currentUserID)
-		ua.RenderError(http.StatusForbidden, "User does not have admin role")
+		ua.SendForbiddenError(errors.New("user does not have admin role"))
 		return
 	}
 
-	page, size := ua.GetPaginationParams()
+	page, size, err := ua.GetPaginationParams()
+	if err != nil {
+		ua.SendBadRequestError(err)
+		return
+	}
+
 	query := &models.UserQuery{
 		Username: ua.GetString("username"),
 		Email:    ua.GetString("email"),
@@ -163,13 +174,13 @@ func (ua *UserAPI) List() {
 
 	total, err := dao.GetTotalOfUsers(query)
 	if err != nil {
-		ua.HandleInternalServerError(fmt.Sprintf("failed to get total of users: %v", err))
+		ua.SendInternalServerError(fmt.Errorf("failed to get total of users: %v", err))
 		return
 	}
 
 	users, err := dao.ListUsers(query)
 	if err != nil {
-		ua.HandleInternalServerError(fmt.Sprintf("failed to get users: %v", err))
+		ua.SendInternalServerError(fmt.Errorf("failed to get users: %v", err))
 		return
 	}
 
@@ -180,7 +191,11 @@ func (ua *UserAPI) List() {
 
 // Search ...
 func (ua *UserAPI) Search() {
-	page, size := ua.GetPaginationParams()
+	page, size, err := ua.GetPaginationParams()
+	if err != nil {
+		ua.SendBadRequestError(err)
+		return
+	}
 	query := &models.UserQuery{
 		Username: ua.GetString("username"),
 		Email:    ua.GetString("email"),
@@ -192,13 +207,13 @@ func (ua *UserAPI) Search() {
 
 	total, err := dao.GetTotalOfUsers(query)
 	if err != nil {
-		ua.HandleInternalServerError(fmt.Sprintf("failed to get total of users: %v", err))
+		ua.SendInternalServerError(fmt.Errorf("failed to get total of users: %v", err))
 		return
 	}
 
 	users, err := dao.ListUsers(query)
 	if err != nil {
-		ua.HandleInternalServerError(fmt.Sprintf("failed to get users: %v", err))
+		ua.SendInternalServerError(fmt.Errorf("failed to get users: %v", err))
 		return
 	}
 
@@ -215,42 +230,49 @@ func (ua *UserAPI) Search() {
 // Put ...
 func (ua *UserAPI) Put() {
 	if !ua.modifiable() {
-		ua.RenderError(http.StatusForbidden, fmt.Sprintf("User with ID %d cannot be modified", ua.userID))
+		ua.SendForbiddenError(fmt.Errorf("User with ID %d cannot be modified", ua.userID))
 		return
 	}
 	user := models.User{UserID: ua.userID}
-	ua.DecodeJSONReq(&user)
+	if err := ua.DecodeJSONReq(&user); err != nil {
+		ua.SendBadRequestError(err)
+		return
+	}
 	err := commonValidate(user)
 	if err != nil {
 		log.Warningf("Bad request in change user profile: %v", err)
-		ua.RenderError(http.StatusBadRequest, "change user profile error:"+err.Error())
+		ua.SendBadRequestError(fmt.Errorf("change user profile error:" + err.Error()))
 		return
 	}
 	userQuery := models.User{UserID: ua.userID}
 	u, err := dao.GetUser(userQuery)
 	if err != nil {
 		log.Errorf("Error occurred in GetUser, error: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		ua.SendInternalServerError(errors.New("internal error"))
+		return
 	}
 	if u == nil {
 		log.Errorf("User with Id: %d does not exist", ua.userID)
-		ua.CustomAbort(http.StatusNotFound, "")
+		ua.SendNotFoundError(errors.New(""))
+		return
 	}
 	if u.Email != user.Email {
 		emailExist, err := dao.UserExists(user, "email")
 		if err != nil {
 			log.Errorf("Error occurred in change user profile: %v", err)
-			ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+			ua.SendInternalServerError(errors.New("internal error"))
+			return
 		}
 		if emailExist {
 			log.Warning("email has already been used!")
-			ua.RenderError(http.StatusConflict, "email has already been used!")
+			ua.SendConflictError(errors.New("email has already been used"))
 			return
 		}
 	}
 	if err := dao.ChangeUserProfile(user); err != nil {
 		log.Errorf("Failed to update user profile, error: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, err.Error())
+		ua.SendInternalServerError(err)
+		return
 	}
 }
 
@@ -258,16 +280,21 @@ func (ua *UserAPI) Put() {
 func (ua *UserAPI) Post() {
 
 	if !(ua.AuthMode == common.DBAuth) {
-		ua.CustomAbort(http.StatusForbidden, "")
+		ua.SendForbiddenError(errors.New(""))
+		return
 	}
 
 	if !(ua.SelfRegistration || ua.IsAdmin) {
 		log.Warning("Registration can only be used by admin role user when self-registration is off.")
-		ua.CustomAbort(http.StatusForbidden, "")
+		ua.SendForbiddenError(errors.New(""))
+		return
 	}
 
 	user := models.User{}
-	ua.DecodeJSONReq(&user)
+	if err := ua.DecodeJSONReq(&user); err != nil {
+		ua.SendBadRequestError(err)
+		return
+	}
 	err := validate(user)
 	if err != nil {
 		log.Warningf("Bad request in Register: %v", err)
@@ -277,27 +304,30 @@ func (ua *UserAPI) Post() {
 	userExist, err := dao.UserExists(user, "username")
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		ua.SendInternalServerError(errors.New("internal error"))
+		return
 	}
 	if userExist {
 		log.Warning("username has already been used!")
-		ua.RenderError(http.StatusConflict, "username has already been used!")
+		ua.SendConflictError(errors.New("username has already been used"))
 		return
 	}
 	emailExist, err := dao.UserExists(user, "email")
 	if err != nil {
 		log.Errorf("Error occurred in change user profile: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		ua.SendInternalServerError(errors.New("internal error"))
+		return
 	}
 	if emailExist {
 		log.Warning("email has already been used!")
-		ua.RenderError(http.StatusConflict, "email has already been used!")
+		ua.SendConflictError(errors.New("email has already been used"))
 		return
 	}
 	userID, err := dao.Register(user)
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		ua.SendInternalServerError(errors.New("internal error"))
+		return
 	}
 
 	ua.Redirect(http.StatusCreated, strconv.FormatInt(userID, 10))
@@ -306,7 +336,7 @@ func (ua *UserAPI) Post() {
 // Delete ...
 func (ua *UserAPI) Delete() {
 	if !ua.IsAdmin || ua.AuthMode != common.DBAuth || ua.userID == 1 || ua.currentUserID == ua.userID {
-		ua.RenderError(http.StatusForbidden, fmt.Sprintf("User with ID: %d cannot be removed, auth mode: %s, current user ID: %d", ua.userID, ua.AuthMode, ua.currentUserID))
+		ua.SendForbiddenError(fmt.Errorf("User with ID: %d cannot be removed, auth mode: %s, current user ID: %d", ua.userID, ua.AuthMode, ua.currentUserID))
 		return
 	}
 
@@ -314,7 +344,7 @@ func (ua *UserAPI) Delete() {
 	err = dao.DeleteUser(ua.userID)
 	if err != nil {
 		log.Errorf("Failed to delete data from database, error: %v", err)
-		ua.RenderError(http.StatusInternalServerError, "Failed to delete User")
+		ua.SendInternalServerError(errors.New("failed to delete User"))
 		return
 	}
 }
@@ -322,43 +352,46 @@ func (ua *UserAPI) Delete() {
 // ChangePassword handles PUT to /api/users/{}/password
 func (ua *UserAPI) ChangePassword() {
 	if !ua.modifiable() {
-		ua.RenderError(http.StatusForbidden, fmt.Sprintf("User with ID: %d is not modifiable", ua.userID))
+		ua.SendForbiddenError(fmt.Errorf("User with ID: %d is not modifiable", ua.userID))
 		return
 	}
 
 	changePwdOfOwn := ua.userID == ua.currentUserID
 
 	var req passwordReq
-	ua.DecodeJSONReq(&req)
+	if err := ua.DecodeJSONReq(&req); err != nil {
+		ua.SendBadRequestError(err)
+		return
+	}
 
 	if changePwdOfOwn && len(req.OldPassword) == 0 {
-		ua.HandleBadRequest("empty old_password")
+		ua.SendBadRequestError(errors.New("empty old_password"))
 		return
 	}
 
 	if len(req.NewPassword) == 0 {
-		ua.HandleBadRequest("empty new_password")
+		ua.SendBadRequestError(errors.New("empty new_password"))
 		return
 	}
 
 	user, err := dao.GetUser(models.User{UserID: ua.userID})
 	if err != nil {
-		ua.HandleInternalServerError(fmt.Sprintf("failed to get user %d: %v", ua.userID, err))
+		ua.SendInternalServerError(fmt.Errorf("failed to get user %d: %v", ua.userID, err))
 		return
 	}
 	if user == nil {
-		ua.HandleNotFound(fmt.Sprintf("user %d not found", ua.userID))
+		ua.SendNotFoundError(fmt.Errorf("user %d not found", ua.userID))
 		return
 	}
 	if changePwdOfOwn {
 		if user.Password != utils.Encrypt(req.OldPassword, user.Salt) {
 			log.Info("incorrect old_password")
-			ua.RenderError(http.StatusForbidden, "incorrect old_password")
+			ua.SendForbiddenError(errors.New("incorrect old_password"))
 			return
 		}
 	}
 	if user.Password == utils.Encrypt(req.NewPassword, user.Salt) {
-		ua.HandleBadRequest("the new password can not be same with the old one")
+		ua.SendBadRequestError(errors.New("the new password can not be same with the old one"))
 		return
 	}
 
@@ -367,7 +400,7 @@ func (ua *UserAPI) ChangePassword() {
 		Password: req.NewPassword,
 	}
 	if err = dao.ChangeUserPassword(updatedUser); err != nil {
-		ua.HandleInternalServerError(fmt.Sprintf("failed to change password of user %d: %v", ua.userID, err))
+		ua.SendInternalServerError(fmt.Errorf("failed to change password of user %d: %v", ua.userID, err))
 		return
 	}
 }
@@ -380,10 +413,14 @@ func (ua *UserAPI) ToggleUserAdminRole() {
 		return
 	}
 	userQuery := models.User{UserID: ua.userID}
-	ua.DecodeJSONReq(&userQuery)
+	if err := ua.DecodeJSONReq(&userQuery); err != nil {
+		ua.SendBadRequestError(err)
+		return
+	}
 	if err := dao.ToggleUserAdminRole(userQuery.UserID, userQuery.HasAdminRole); err != nil {
 		log.Errorf("Error occurred in ToggleUserAdminRole: %v", err)
-		ua.CustomAbort(http.StatusInternalServerError, "Internal error.")
+		ua.SendInternalServerError(errors.New("internal error"))
+		return
 	}
 }
 

@@ -50,7 +50,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 	pma.BaseController.Prepare()
 
 	if !pma.SecurityCtx.IsAuthenticated() {
-		pma.HandleUnauthorized()
+		pma.SendUnAuthorizedError(errors.New("Unauthorized"))
 		return
 	}
 	pid, err := pma.GetInt64FromPath(":pid")
@@ -61,7 +61,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 		} else {
 			text += fmt.Sprintf("%d", pid)
 		}
-		pma.HandleBadRequest(text)
+		pma.SendBadRequestError(errors.New(text))
 		return
 	}
 	project, err := pma.ProjectMgr.Get(pid)
@@ -70,7 +70,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 		return
 	}
 	if project == nil {
-		pma.HandleNotFound(fmt.Sprintf("project %d not found", pid))
+		pma.SendNotFoundError(fmt.Errorf("project %d not found", pid))
 		return
 	}
 	pma.project = project
@@ -80,7 +80,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 		log.Warningf("Failed to get pmid from path, error %v", err)
 	}
 	if pmid <= 0 && (pma.Ctx.Input.IsPut() || pma.Ctx.Input.IsDelete()) {
-		pma.HandleBadRequest(fmt.Sprintf("The project member id is invalid, pmid:%s", pma.GetStringFromPath(":pmid")))
+		pma.SendBadRequestError(fmt.Errorf("The project member id is invalid, pmid:%s", pma.GetStringFromPath(":pmid")))
 		return
 	}
 	pma.id = int(pmid)
@@ -91,9 +91,9 @@ func (pma *ProjectMemberAPI) requireAccess(action rbac.Action) bool {
 
 	if !pma.SecurityCtx.Can(action, resource) {
 		if !pma.SecurityCtx.IsAuthenticated() {
-			pma.HandleUnauthorized()
+			pma.SendUnAuthorizedError(errors.New("Unauthorized"))
 		} else {
-			pma.HandleForbidden(pma.SecurityCtx.GetUsername())
+			pma.SendForbiddenError(errors.New(pma.SecurityCtx.GetUsername()))
 		}
 
 		return false
@@ -115,7 +115,7 @@ func (pma *ProjectMemberAPI) Get() {
 		entityname := pma.GetString("entityname")
 		memberList, err := project.SearchMemberByName(projectID, entityname)
 		if err != nil {
-			pma.HandleInternalServerError(fmt.Sprintf("Failed to query database for member list, error: %v", err))
+			pma.SendInternalServerError(fmt.Errorf("Failed to query database for member list, error: %v", err))
 			return
 		}
 		if len(memberList) > 0 {
@@ -127,11 +127,11 @@ func (pma *ProjectMemberAPI) Get() {
 		queryMember.ID = pma.id
 		memberList, err := project.GetProjectMember(queryMember)
 		if err != nil {
-			pma.HandleInternalServerError(fmt.Sprintf("Failed to query database for member list, error: %v", err))
+			pma.SendInternalServerError(fmt.Errorf("Failed to query database for member list, error: %v", err))
 			return
 		}
 		if len(memberList) == 0 {
-			pma.HandleNotFound(fmt.Sprintf("The project member does not exit, pmid:%v", pma.id))
+			pma.SendNotFoundError(fmt.Errorf("The project member does not exit, pmid:%v", pma.id))
 			return
 		}
 
@@ -150,27 +150,30 @@ func (pma *ProjectMemberAPI) Post() {
 	}
 	projectID := pma.project.ProjectID
 	var request models.MemberReq
-	pma.DecodeJSONReq(&request)
+	if err := pma.DecodeJSONReq(&request); err != nil {
+		pma.SendBadRequestError(err)
+		return
+	}
 	request.MemberGroup.LdapGroupDN = strings.TrimSpace(request.MemberGroup.LdapGroupDN)
 
 	pmid, err := AddProjectMember(projectID, request)
 	if err == auth.ErrorGroupNotExist || err == auth.ErrorUserNotExist {
-		pma.HandleNotFound(fmt.Sprintf("Failed to add project member, error: %v", err))
+		pma.SendNotFoundError(fmt.Errorf("Failed to add project member, error: %v", err))
 		return
 	} else if err == auth.ErrDuplicateLDAPGroup {
-		pma.HandleConflict(fmt.Sprintf("Failed to add project member, already exist LDAP group or project member, groupDN:%v", request.MemberGroup.LdapGroupDN))
+		pma.SendConflictError(fmt.Errorf("Failed to add project member, already exist LDAP group or project member, groupDN:%v", request.MemberGroup.LdapGroupDN))
 		return
 	} else if err == ErrDuplicateProjectMember {
-		pma.HandleConflict(fmt.Sprintf("Failed to add project member, already exist LDAP group or project member, groupMemberID:%v", request.MemberGroup.ID))
+		pma.SendConflictError(fmt.Errorf("Failed to add project member, already exist LDAP group or project member, groupMemberID:%v", request.MemberGroup.ID))
 		return
 	} else if err == ErrInvalidRole {
-		pma.HandleBadRequest(fmt.Sprintf("Invalid role ID, role ID %v", request.Role))
+		pma.SendBadRequestError(fmt.Errorf("Invalid role ID, role ID %v", request.Role))
 		return
 	} else if err == auth.ErrInvalidLDAPGroupDN {
-		pma.HandleBadRequest(fmt.Sprintf("Invalid LDAP DN: %v", request.MemberGroup.LdapGroupDN))
+		pma.SendBadRequestError(fmt.Errorf("Invalid LDAP DN: %v", request.MemberGroup.LdapGroupDN))
 		return
 	} else if err != nil {
-		pma.HandleInternalServerError(fmt.Sprintf("Failed to add project member, error: %v", err))
+		pma.SendInternalServerError(fmt.Errorf("Failed to add project member, error: %v", err))
 		return
 	}
 	pma.Redirect(http.StatusCreated, strconv.FormatInt(int64(pmid), 10))
@@ -184,14 +187,17 @@ func (pma *ProjectMemberAPI) Put() {
 	pid := pma.project.ProjectID
 	pmID := pma.id
 	var req models.Member
-	pma.DecodeJSONReq(&req)
+	if err := pma.DecodeJSONReq(&req); err != nil {
+		pma.SendBadRequestError(err)
+		return
+	}
 	if req.Role < 1 || req.Role > 4 {
-		pma.HandleBadRequest(fmt.Sprintf("Invalid role id %v", req.Role))
+		pma.SendBadRequestError(fmt.Errorf("Invalid role id %v", req.Role))
 		return
 	}
 	err := project.UpdateProjectMemberRole(pmID, req.Role)
 	if err != nil {
-		pma.HandleInternalServerError(fmt.Sprintf("Failed to update DB to add project user role, project id: %d, pmid : %d, role id: %d", pid, pmID, req.Role))
+		pma.SendInternalServerError(fmt.Errorf("Failed to update DB to add project user role, project id: %d, pmid : %d, role id: %d", pid, pmID, req.Role))
 		return
 	}
 }
@@ -204,7 +210,7 @@ func (pma *ProjectMemberAPI) Delete() {
 	pmid := pma.id
 	err := project.DeleteProjectMemberByID(pmid)
 	if err != nil {
-		pma.HandleInternalServerError(fmt.Sprintf("Failed to delete project roles for user, project member id: %d, error: %v", pmid, err))
+		pma.SendInternalServerError(fmt.Errorf("Failed to delete project roles for user, project member id: %d, error: %v", pmid, err))
 		return
 	}
 }

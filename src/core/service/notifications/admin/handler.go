@@ -75,12 +75,12 @@ func (h *Handler) HandleAdminJob() {
 	log.Infof("received admin job status update event: job-%d, status-%s", h.id, h.status)
 	// create the mapping relationship between the jobs in database and jobservice
 	if err := dao.SetAdminJobUUID(h.id, h.UUID); err != nil {
-		h.HandleInternalServerError(err.Error())
+		h.SendInternalServerError(err)
 		return
 	}
 	if err := dao.UpdateAdminJobStatus(h.id, h.status); err != nil {
 		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
-		h.HandleInternalServerError(err.Error())
+		h.SendInternalServerError(err)
 		return
 	}
 }
