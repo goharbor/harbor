@@ -54,7 +54,7 @@ func (native) Info() (info *model.RegistryInfo, err error) {
 	return &model.RegistryInfo{
 		Type: registryTypeNative,
 		SupportedResourceTypes: []model.ResourceType{
-			model.ResourceTypeRepository,
+			model.ResourceTypeImage,
 		},
 		SupportedResourceFilters: []*model.FilterStyle{
 			{

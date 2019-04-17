@@ -40,7 +40,7 @@ func (adapter Adapter) Info() (*model.RegistryInfo, error) {
 	registryInfo := model.RegistryInfo{
 		Type:                     huawei,
 		Description:              "Adapter for SWR -- The image registry of Huawei Cloud",
-		SupportedResourceTypes:   []model.ResourceType{model.ResourceTypeRepository},
+		SupportedResourceTypes:   []model.ResourceType{model.ResourceTypeImage},
 		SupportedResourceFilters: []*model.FilterStyle{},
 		SupportedTriggers:        []model.TriggerType{},
 	}

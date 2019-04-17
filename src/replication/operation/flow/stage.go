@@ -81,7 +81,7 @@ func fetchResources(adapter adp.Adapter, policy *model.Policy) ([]*model.Resourc
 	for _, typ := range resTypes {
 		var res []*model.Resource
 		var err error
-		if typ == model.ResourceTypeRepository {
+		if typ == model.ResourceTypeImage {
 			// images
 			reg, ok := adapter.(adp.ImageRegistry)
 			if !ok {

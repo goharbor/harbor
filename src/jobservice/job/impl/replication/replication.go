@@ -25,8 +25,8 @@ import (
 
 	// import chart transfer
 	_ "github.com/goharbor/harbor/src/replication/transfer/chart"
-	// import repository transfer
-	_ "github.com/goharbor/harbor/src/replication/transfer/repository"
+	// import image transfer
+	_ "github.com/goharbor/harbor/src/replication/transfer/image"
 	// register the Harbor adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/harbor"
 	// register the DockerHub adapter

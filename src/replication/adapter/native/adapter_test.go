@@ -47,7 +47,7 @@ func Test_native_Info(t *testing.T) {
 	assert.Equal(t, 1, len(info.SupportedResourceTypes))
 	assert.Equal(t, 2, len(info.SupportedResourceFilters))
 	assert.Equal(t, 2, len(info.SupportedTriggers))
-	assert.Equal(t, model.ResourceTypeRepository, info.SupportedResourceTypes[0])
+	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
 }
 
 func Test_native_PrepareForPush(t *testing.T) {

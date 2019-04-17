@@ -96,7 +96,7 @@ func parseRepoQueryResultToResource(repo hwRepoQueryResult) *model.Resource {
 	}
 	resource.Deleted = false
 	resource.Override = false
-	resource.Type = model.ResourceTypeRepository
+	resource.Type = model.ResourceTypeImage
 
 	return &resource
 }

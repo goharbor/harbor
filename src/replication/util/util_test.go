@@ -29,7 +29,7 @@ func TestMatch(t *testing.T) {
 	}{
 		{
 			pattern: "",
-			str:     "",
+			str:     "library",
 			match:   true,
 		},
 		{
