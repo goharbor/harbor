@@ -905,8 +905,8 @@ func TestAddRepJob(t *testing.T) {
 		return
 	}
 	if j.Status != models.JobPending || j.Repository != "library/ubuntu" || j.PolicyID != policyID || j.Operation != "transfer" || len(j.TagList) != 3 {
-		t.Errorf("Expected data of job, id: %d, Status: %s, Repository: library/ubuntu, PolicyID: %d, Operation: transfer, taglist length 3"+
-			"but in returned data:, Status: %s, Repository: %s, Operation: %s, PolicyID: %d, TagList: %v", id, models.JobPending, policyID, j.Status, j.Repository, j.Operation, j.PolicyID, j.TagList)
+		t.Errorf("Expected data of job, id: %d, Status: %s, Repository: library/ubuntu, ID: %d, Operation: transfer, taglist length 3"+
+			"but in returned data:, Status: %s, Repository: %s, Operation: %s, ID: %d, TagList: %v", id, models.JobPending, policyID, j.Status, j.Repository, j.Operation, j.PolicyID, j.TagList)
 		return
 	}
 }

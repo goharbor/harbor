@@ -33,14 +33,12 @@ const (
 	MissingBackendHandlerErrorCode
 	// LaunchJobErrorCode is code for the error of launching job
 	LaunchJobErrorCode
-	// CheckStatsErrorCode is code for the error of checking stats of worker pool
+	// CheckStatsErrorCode is code for the error of checking stats of worker worker
 	CheckStatsErrorCode
 	// GetJobStatsErrorCode is code for the error of getting stats of enqueued job
 	GetJobStatsErrorCode
 	// StopJobErrorCode is code for the error of stopping job
 	StopJobErrorCode
-	// CancelJobErrorCode is code for the error of cancelling job
-	CancelJobErrorCode
 	// RetryJobErrorCode is code for the error of retrying job
 	RetryJobErrorCode
 	// UnknownActionNameErrorCode is code for the case of unknown action name
@@ -115,11 +113,6 @@ func StopJobError(err error) error {
 	return New(StopJobErrorCode, "Stop job failed with error", err.Error())
 }
 
-// CancelJobError is error for the case of cancelling job failed
-func CancelJobError(err error) error {
-	return New(CancelJobErrorCode, "Cancel job failed with error", err.Error())
-}
-
 // RetryJobError is error for the case of retrying job failed
 func RetryJobError(err error) error {
 	return New(RetryJobErrorCode, "Retry job failed with error", err.Error())
@@ -151,21 +144,6 @@ func JobStoppedError() error {
 		baseError{
 			Code: JobStoppedErrorCode,
 			Err:  "Job is stopped",
-		},
-	}
-}
-
-// jobCancelledError is designed for the case of cancelling job.
-type jobCancelledError struct {
-	baseError
-}
-
-// JobCancelledError is error wrapper for the case of cancelling job.
-func JobCancelledError() error {
-	return jobCancelledError{
-		baseError{
-			Code: JobStoppedErrorCode,
-			Err:  "Job is cancelled",
 		},
 	}
 }
@@ -205,12 +183,6 @@ func ConflictError(object string) error {
 // IsJobStoppedError return true if the error is jobStoppedError
 func IsJobStoppedError(err error) bool {
 	_, ok := err.(jobStoppedError)
-	return ok
-}
-
-// IsJobCancelledError return true if the error is jobCancelledError
-func IsJobCancelledError(err error) bool {
-	_, ok := err.(jobCancelledError)
 	return ok
 }
 

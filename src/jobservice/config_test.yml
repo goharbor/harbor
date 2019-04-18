@@ -10,7 +10,7 @@ https_config:
 #Server listening port
 port: 9444
 
-#Worker pool
+#Worker worker
 worker_pool:
   #Worker concurrency
   workers: 10
@@ -39,7 +39,3 @@ job_loggers:
 loggers:
   - name: "STD_OUTPUT" # Same with above
     level: "DEBUG"
-
-#Admin server endpoint
-admin_server: "http://127.0.0.1:8888"
-

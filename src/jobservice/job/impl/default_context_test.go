@@ -46,7 +46,7 @@ func TestDefaultContext(t *testing.T) {
 				JobID:       "fake_sub_job_id",
 				Status:      "pending",
 				JobName:     "DEMO",
-				JobKind:     job.JobKindGeneric,
+				JobKind:     job.KindGeneric,
 				EnqueueTime: time.Now().Unix(),
 				UpdateTime:  time.Now().Unix(),
 			},

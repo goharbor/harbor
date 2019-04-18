@@ -15,127 +15,117 @@
 package core
 
 import (
-	"errors"
 	"fmt"
+	"github.com/pkg/errors"
 
 	"github.com/goharbor/harbor/src/jobservice/logger"
 
+	"github.com/goharbor/harbor/src/jobservice/common/query"
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/models"
-	"github.com/goharbor/harbor/src/jobservice/pool"
-	"github.com/goharbor/harbor/src/jobservice/utils"
+	"github.com/goharbor/harbor/src/jobservice/lcm"
+	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/robfig/cron"
 )
 
-const (
-	hookActivated   = "activated"
-	hookDeactivated = "error"
-)
-
-// Controller implement the core interface and provides related job handle methods.
-// Controller will coordinate the lower components to complete the process as a commander role.
-type Controller struct {
-	// Refer the backend pool
-	backendPool pool.Interface
+// basicController implement the core interface and provides related job handle methods.
+// basicController will coordinate the lower components to complete the process as a commander role.
+type basicController struct {
+	// Refer the backend worker
+	backendWorker worker.Interface
+	// Refer the job life cycle management controller
+	ctl lcm.Controller
 }
 
-// NewController is constructor of Controller.
-func NewController(backendPool pool.Interface) *Controller {
-	return &Controller{
-		backendPool: backendPool,
+// NewController is constructor of basicController.
+func NewController(backendWorker worker.Interface, ctl lcm.Controller) Interface {
+	return &basicController{
+		backendWorker: backendWorker,
+		ctl:           ctl,
 	}
 }
 
 // LaunchJob is implementation of same method in core interface.
-func (c *Controller) LaunchJob(req models.JobRequest) (models.JobStats, error) {
+func (bc *basicController) LaunchJob(req *job.Request) (res *job.Stats, err error) {
 	if err := validJobReq(req); err != nil {
-		return models.JobStats{}, err
+		return nil, err
 	}
 
 	// Validate job name
-	jobType, isKnownJob := c.backendPool.IsKnownJob(req.Job.Name)
+	jobType, isKnownJob := bc.backendWorker.IsKnownJob(req.Job.Name)
 	if !isKnownJob {
-		return models.JobStats{}, fmt.Errorf("job with name '%s' is unknown", req.Job.Name)
+		return nil, errors.Errorf("job with name '%s' is unknown", req.Job.Name)
 	}
 
 	// Validate parameters
-	if err := c.backendPool.ValidateJobParameters(jobType, req.Job.Parameters); err != nil {
-		return models.JobStats{}, err
+	if err := bc.backendWorker.ValidateJobParameters(jobType, req.Job.Parameters); err != nil {
+		return nil, err
 	}
 
 	// Enqueue job regarding of the kind
-	var (
-		res models.JobStats
-		err error
-	)
 	switch req.Job.Metadata.JobKind {
-	case job.JobKindScheduled:
-		res, err = c.backendPool.Schedule(
+	case job.KindScheduled:
+		res, err = bc.backendWorker.Schedule(
 			req.Job.Name,
 			req.Job.Parameters,
 			req.Job.Metadata.ScheduleDelay,
-			req.Job.Metadata.IsUnique)
-	case job.JobKindPeriodic:
-		res, err = c.backendPool.PeriodicallyEnqueue(
+			req.Job.Metadata.IsUnique,
+			req.Job.StatusHook,
+		)
+	case job.KindPeriodic:
+		res, err = bc.backendWorker.PeriodicallyEnqueue(
 			req.Job.Name,
 			req.Job.Parameters,
-			req.Job.Metadata.Cron)
+			req.Job.Metadata.Cron,
+			req.Job.Metadata.IsUnique,
+			req.Job.StatusHook,
+		)
 	default:
-		res, err = c.backendPool.Enqueue(req.Job.Name, req.Job.Parameters, req.Job.Metadata.IsUnique)
+		res, err = bc.backendWorker.Enqueue(
+			req.Job.Name,
+			req.Job.Parameters,
+			req.Job.Metadata.IsUnique,
+			req.Job.StatusHook,
+		)
 	}
 
-	// Register status hook?
-	if err == nil {
-		if !utils.IsEmptyStr(req.Job.StatusHook) {
-			if err := c.backendPool.RegisterHook(res.Stats.JobID, req.Job.StatusHook); err != nil {
-				res.Stats.HookStatus = hookDeactivated
-			} else {
-				res.Stats.HookStatus = hookActivated
-			}
-		}
-	}
-
-	return res, err
+	return
 }
 
 // GetJob is implementation of same method in core interface.
-func (c *Controller) GetJob(jobID string) (models.JobStats, error) {
+func (bc *basicController) GetJob(jobID string) (*job.Stats, error) {
 	if utils.IsEmptyStr(jobID) {
-		return models.JobStats{}, errors.New("empty job ID")
+		return nil, errors.New("empty job ID")
 	}
 
-	return c.backendPool.GetJobStats(jobID)
+	t, err := bc.ctl.Track(jobID)
+	if err != nil {
+		return nil, err
+	}
+
+	return t.Job(), nil
 }
 
 // StopJob is implementation of same method in core interface.
-func (c *Controller) StopJob(jobID string) error {
+func (bc *basicController) StopJob(jobID string) error {
 	if utils.IsEmptyStr(jobID) {
 		return errors.New("empty job ID")
 	}
 
-	return c.backendPool.StopJob(jobID)
-}
-
-// CancelJob is implementation of same method in core interface.
-func (c *Controller) CancelJob(jobID string) error {
-	if utils.IsEmptyStr(jobID) {
-		return errors.New("empty job ID")
-	}
-
-	return c.backendPool.CancelJob(jobID)
+	return bc.backendWorker.StopJob(jobID)
 }
 
 // RetryJob is implementation of same method in core interface.
-func (c *Controller) RetryJob(jobID string) error {
+func (bc *basicController) RetryJob(jobID string) error {
 	if utils.IsEmptyStr(jobID) {
 		return errors.New("empty job ID")
 	}
 
-	return c.backendPool.RetryJob(jobID)
+	return bc.backendWorker.RetryJob(jobID)
 }
 
 // GetJobLogData is used to return the log text data for the specified job if exists
-func (c *Controller) GetJobLogData(jobID string) ([]byte, error) {
+func (bc *basicController) GetJobLogData(jobID string) ([]byte, error) {
 	if utils.IsEmptyStr(jobID) {
 		return nil, errors.New("empty job ID")
 	}
@@ -149,12 +139,46 @@ func (c *Controller) GetJobLogData(jobID string) ([]byte, error) {
 }
 
 // CheckStatus is implementation of same method in core interface.
-func (c *Controller) CheckStatus() (models.JobPoolStats, error) {
-	return c.backendPool.Stats()
+func (bc *basicController) CheckStatus() (*worker.Stats, error) {
+	return bc.backendWorker.Stats()
 }
 
-func validJobReq(req models.JobRequest) error {
-	if req.Job == nil {
+// GetPeriodicExecutions gets the periodic executions for the specified periodic job
+func (bc *basicController) GetPeriodicExecutions(periodicJobID string, query *query.Parameter) ([]*job.Stats, int64, error) {
+	if utils.IsEmptyStr(periodicJobID) {
+		return nil, 0, errors.New("nil periodic job ID")
+	}
+
+	t, err := bc.ctl.Track(periodicJobID)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	eIDs, total, err := t.Executions(query)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	res := make([]*job.Stats, 0)
+	for _, eID := range eIDs {
+		et, err := bc.ctl.Track(eID)
+		if err != nil {
+			return nil, 0, err
+		}
+
+		res = append(res, et.Job())
+	}
+
+	return res, total, nil
+}
+
+// ScheduledJobs returns the scheduled jobs by page
+func (bc *basicController) ScheduledJobs(query *query.Parameter) ([]*job.Stats, int64, error) {
+	return bc.backendWorker.ScheduledJobs(query)
+}
+
+func validJobReq(req *job.Request) error {
+	if req == nil || req.Job == nil {
 		return errors.New("empty job request is not allowed")
 	}
 
@@ -166,29 +190,29 @@ func validJobReq(req models.JobRequest) error {
 		return errors.New("metadata of job is missing")
 	}
 
-	if req.Job.Metadata.JobKind != job.JobKindGeneric &&
-		req.Job.Metadata.JobKind != job.JobKindPeriodic &&
-		req.Job.Metadata.JobKind != job.JobKindScheduled {
-		return fmt.Errorf(
+	if req.Job.Metadata.JobKind != job.KindGeneric &&
+		req.Job.Metadata.JobKind != job.KindPeriodic &&
+		req.Job.Metadata.JobKind != job.KindScheduled {
+		return errors.Errorf(
 			"job kind '%s' is not supported, only support '%s','%s','%s'",
 			req.Job.Metadata.JobKind,
-			job.JobKindGeneric,
-			job.JobKindScheduled,
-			job.JobKindPeriodic)
+			job.KindGeneric,
+			job.KindScheduled,
+			job.KindPeriodic)
 	}
 
-	if req.Job.Metadata.JobKind == job.JobKindScheduled &&
+	if req.Job.Metadata.JobKind == job.KindScheduled &&
 		req.Job.Metadata.ScheduleDelay == 0 {
-		return fmt.Errorf("'schedule_delay' must be specified if the job kind is '%s'", job.JobKindScheduled)
+		return errors.Errorf("'schedule_delay' must be specified for %s job", job.KindScheduled)
 	}
 
-	if req.Job.Metadata.JobKind == job.JobKindPeriodic {
+	if req.Job.Metadata.JobKind == job.KindPeriodic {
 		if utils.IsEmptyStr(req.Job.Metadata.Cron) {
-			return fmt.Errorf("'cron_spec' must be specified if the job kind is '%s'", job.JobKindPeriodic)
+			return fmt.Errorf("'cron_spec' must be specified if the %s job", job.KindPeriodic)
 		}
 
 		if _, err := cron.Parse(req.Job.Metadata.Cron); err != nil {
-			return fmt.Errorf("'cron_spec' is not correctly set: %s", err)
+			return fmt.Errorf("'cron_spec' is not correctly set: %s: %s", req.Job.Metadata.Cron, err)
 		}
 	}
 

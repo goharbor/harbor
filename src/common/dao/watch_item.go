@@ -52,7 +52,7 @@ func (d *DatabaseWatchItemDAO) Add(item *models.WatchItem) (int64, error) {
 
 // DeleteByPolicyID deletes the WatchItem specified by policy ID
 func (d *DatabaseWatchItemDAO) DeleteByPolicyID(policyID int64) error {
-	_, err := GetOrmer().QueryTable(&models.WatchItem{}).Filter("PolicyID", policyID).Delete()
+	_, err := GetOrmer().QueryTable(&models.WatchItem{}).Filter("ID", policyID).Delete()
 	return err
 }
 

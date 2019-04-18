@@ -16,19 +16,13 @@ package main
 
 import (
 	"context"
-	"errors"
 	"flag"
 	"fmt"
 
-	"github.com/goharbor/harbor/src/common"
-	comcfg "github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
-	"github.com/goharbor/harbor/src/jobservice/env"
-	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/runtime"
-	"github.com/goharbor/harbor/src/jobservice/utils"
-	"os"
 )
 
 func main() {
@@ -57,7 +51,7 @@ func main() {
 	}
 
 	// Set job context initializer
-	runtime.JobService.SetJobContextInitializer(func(ctx *env.Context) (env.JobContext, error) {
+	/*runtime.JobService.SetJobContextInitializer(func(ctx context.Context) (job.Context, error) {
 		secret := config.GetAuthSecret()
 		if utils.IsEmptyStr(secret) {
 			return nil, errors.New("empty auth secret")
@@ -72,8 +66,8 @@ func main() {
 		}
 
 		return jobCtx, nil
-	})
+	})*/
 
 	// Start
-	runtime.JobService.LoadAndRun(ctx, cancel)
+	runtime.JobService.LoadAndRun(ctx)
 }

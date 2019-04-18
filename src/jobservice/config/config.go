@@ -23,7 +23,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/goharbor/harbor/src/jobservice/utils"
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	yaml "gopkg.in/yaml.v2"
 )
 
@@ -68,7 +68,7 @@ type Configuration struct {
 	// Additional config when using https
 	HTTPSConfig *HTTPSConfig `yaml:"https_config,omitempty"`
 
-	// Configurations of worker pool
+	// Configurations of worker worker
 	PoolConfig *PoolConfig `yaml:"worker_pool,omitempty"`
 
 	// Job logger configurations
@@ -84,13 +84,13 @@ type HTTPSConfig struct {
 	Key  string `yaml:"key"`
 }
 
-// RedisPoolConfig keeps redis pool info.
+// RedisPoolConfig keeps redis worker info.
 type RedisPoolConfig struct {
 	RedisURL  string `yaml:"redis_url"`
 	Namespace string `yaml:"namespace"`
 }
 
-// PoolConfig keeps worker pool configurations.
+// PoolConfig keeps worker worker configurations.
 type PoolConfig struct {
 	// Worker concurrency
 	WorkerCount  uint             `yaml:"workers"`
@@ -274,20 +274,20 @@ func (c *Configuration) validate() error {
 	}
 
 	if c.PoolConfig == nil {
-		return errors.New("no worker pool is configured")
+		return errors.New("no worker worker is configured")
 	}
 
 	if c.PoolConfig.Backend != JobServicePoolBackendRedis {
-		return fmt.Errorf("worker pool backend %s does not support", c.PoolConfig.Backend)
+		return fmt.Errorf("worker worker backend %s does not support", c.PoolConfig.Backend)
 	}
 
 	// When backend is redis
 	if c.PoolConfig.Backend == JobServicePoolBackendRedis {
 		if c.PoolConfig.RedisPoolCfg == nil {
-			return fmt.Errorf("redis pool must be configured when backend is set to '%s'", c.PoolConfig.Backend)
+			return fmt.Errorf("redis worker must be configured when backend is set to '%s'", c.PoolConfig.Backend)
 		}
 		if utils.IsEmptyStr(c.PoolConfig.RedisPoolCfg.RedisURL) {
-			return errors.New("URL of redis pool is empty")
+			return errors.New("URL of redis worker is empty")
 		}
 
 		if !strings.HasPrefix(c.PoolConfig.RedisPoolCfg.RedisURL, redisSchema) {
@@ -299,7 +299,7 @@ func (c *Configuration) validate() error {
 		}
 
 		if utils.IsEmptyStr(c.PoolConfig.RedisPoolCfg.Namespace) {
-			return errors.New("namespace of redis pool is required")
+			return errors.New("namespace of redis worker is required")
 		}
 	}
 

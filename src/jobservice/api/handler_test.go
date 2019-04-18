@@ -232,7 +232,7 @@ func TestCheckStatus(t *testing.T) {
 	}
 
 	if poolStats.Pools[0].WorkerPoolID != "fake_pool_ID" {
-		t.Fatalf("expect pool ID 'fake_pool_ID' but got '%s'", poolStats.Pools[0].WorkerPoolID)
+		t.Fatalf("expect worker ID 'fake_pool_ID' but got '%s'", poolStats.Pools[0].WorkerPoolID)
 	}
 
 	server.Stop()

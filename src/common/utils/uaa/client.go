@@ -192,7 +192,7 @@ func (dc *defaultClient) UpdateConfig(cfg *ClientConfig) error {
 			pool := x509.NewCertPool()
 			// Do not throw error if the certificate is malformed, so we can put a place holder.
 			if ok := pool.AppendCertsFromPEM(content); !ok {
-				log.Warningf("Failed to append certificate to cert pool, cert path: %s", cfg.CARootPath)
+				log.Warningf("Failed to append certificate to cert worker, cert path: %s", cfg.CARootPath)
 			} else {
 				tc.RootCAs = pool
 			}

@@ -350,7 +350,7 @@ func repJobQueryConditions(query ...*models.RepJobQuery) orm.QuerySeter {
 
 	q := query[0]
 	if q.PolicyID != 0 {
-		qs = qs.Filter("PolicyID", q.PolicyID)
+		qs = qs.Filter("ID", q.PolicyID)
 	}
 	if len(q.OpUUID) > 0 {
 		qs = qs.Filter("OpUUID__exact", q.OpUUID)
@@ -382,7 +382,7 @@ func DeleteRepJob(id int64) error {
 
 // DeleteRepJobs deletes replication jobs by policy ID
 func DeleteRepJobs(policyID int64) error {
-	_, err := GetOrmer().QueryTable(&models.RepJob{}).Filter("PolicyID", policyID).Delete()
+	_, err := GetOrmer().QueryTable(&models.RepJob{}).Filter("ID", policyID).Delete()
 	return err
 }
 

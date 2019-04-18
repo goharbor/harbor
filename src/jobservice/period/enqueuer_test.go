@@ -21,8 +21,8 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/opm"
 
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/tests"
-	"github.com/goharbor/harbor/src/jobservice/utils"
 )
 
 func TestPeriodicEnqueuerStartStop(t *testing.T) {
@@ -31,7 +31,7 @@ func TestPeriodicEnqueuerStartStop(t *testing.T) {
 		lock:     new(sync.RWMutex),
 		policies: make(map[string]*PeriodicJobPolicy),
 	}
-	enqueuer := newPeriodicEnqueuer(ns, redisPool, ps, nil)
+	enqueuer := newEnqueuer(ns, redisPool, ps, nil)
 	enqueuer.start()
 	<-time.After(100 * time.Millisecond)
 	enqueuer.stop()
@@ -55,7 +55,7 @@ func TestEnqueue(t *testing.T) {
 	statsManager.Start()
 	defer statsManager.Shutdown()
 
-	enqueuer := newPeriodicEnqueuer(ns, redisPool, ps, statsManager)
+	enqueuer := newEnqueuer(ns, redisPool, ps, statsManager)
 	if err := enqueuer.enqueue(); err != nil {
 		t.Error(err)
 	}

@@ -10,7 +10,7 @@ https_config:
 #Server listening port
 port: 9443
 
-#Worker pool
+#Worker worker
 worker_pool:
   #Worker concurrency
   workers: 10
@@ -29,17 +29,14 @@ job_loggers:
   - name: "FILE"
     level: "DEBUG"
     settings: # Customized settings of logger
-      base_dir: "/tmp/job_logs"
+      base_dir: "/Users/szou/tmp/job_logs"
     sweeper:
       duration: 1 #days
       settings: # Customized settings of sweeper
-        work_dir: "/tmp/job_logs"
+        work_dir: "/Users/szou/tmp/job_logs"
 
 #Loggers for the job service
 loggers:
   - name: "STD_OUTPUT" # Same with above
     level: "DEBUG"
-
-#Admin server endpoint
-admin_server: "http://adminserver:9010/"
 
