@@ -7,24 +7,24 @@ import (
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
-var HWAdapter Adapter
+var HWAdapter adapter
 
 func init() {
 	hwRegistry := &model.Registry{
 		ID:          1,
 		Name:        "Huawei",
 		Description: "Adapter for SWR -- The image registry of Huawei Cloud",
-		Type:        "huawei",
+		Type:        model.RegistryTypeHuawei,
 		URL:         "https://swr.cn-north-1.myhuaweicloud.com",
-		Credential:  &model.Credential{AccessKey: "cn-north-1@AQR6NF5G2MQ1V7U4FCD", AccessSecret: "2f7ec95070592fd4838a3aa4fd09338c047fd1cd654b3422197318f97281cd9"},
+		Credential:  &model.Credential{AccessKey: "cn-north-1@IJYZLFBKBFN8LOUITAH", AccessSecret: "f31e8e2b948265afdae32e83722a7705fd43e154585ff69e64108247750e5d"},
 		Insecure:    false,
 		Status:      "",
 	}
-	HWAdapter.Registry = hwRegistry
+	HWAdapter.registry = hwRegistry
 }
 
 func TestAdapter_FetchImages(t *testing.T) {
-	resources, err := HWAdapter.FetchImages([]string{"swr_namespace2", "sunday0615"}, nil)
+	resources, err := HWAdapter.FetchImages(nil)
 	if err != nil {
 		if strings.HasPrefix(err.Error(), "[401]") {
 			t.Log("huawei ak/sk is not available", err.Error())
@@ -35,5 +35,33 @@ func TestAdapter_FetchImages(t *testing.T) {
 		for _, resource := range resources {
 			t.Log(*resource)
 		}
+	}
+}
+
+func TestAdapter_ManifestExist(t *testing.T) {
+	exist, digest, err := HWAdapter.ManifestExist("", "")
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "[401]") {
+			t.Log("huawei ak/sk is not available", err.Error())
+		} else {
+			t.Error(err)
+		}
+	} else {
+		if exist {
+			t.Log(digest)
+		}
+	}
+}
+
+func TestAdapter_DeleteManifest(t *testing.T) {
+	err := HWAdapter.DeleteManifest("sundaymango_mango/hello-world", "latest")
+	if err != nil {
+		if strings.HasPrefix(err.Error(), "[401]") {
+			t.Log("huawei ak/sk is not available", err.Error())
+		} else {
+			t.Error(err)
+		}
+	} else {
+		t.Error("the manifest is deleted")
 	}
 }
