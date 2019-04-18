@@ -126,15 +126,15 @@ export class Filter {
 }
 
 export class Trigger {
-  kind: string;
-  schedule_param:
+  type: string;
+  trigger_settings:
     | any
     | {
       [key: string]: any | any[];
     };
-  constructor(kind: string, param: any | { [key: string]: any | any[] }) {
-    this.kind = kind;
-    this.schedule_param = param;
+  constructor(type: string, param: any | { [key: string]: any | any[] }) {
+    this.type = type;
+    this.trigger_settings = param;
   }
 }
 

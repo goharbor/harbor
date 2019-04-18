@@ -94,7 +94,6 @@ export class EndpointComponent implements OnInit, OnDestroy {
         private translateService: TranslateService,
         private operationService: OperationService,
         private ref: ChangeDetectorRef) {
-        this.forceRefreshView(1000);
     }
 
     ngOnInit(): void {
@@ -119,6 +118,7 @@ export class EndpointComponent implements OnInit, OnDestroy {
             .subscribe(targets => {
                 this.targets = targets || [];
                 this.loading = false;
+                this.forceRefreshView(1000);
             }, error => {
                 this.errorHandler.error(error);
                 this.loading = false;
