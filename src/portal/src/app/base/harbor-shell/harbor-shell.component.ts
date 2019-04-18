@@ -107,6 +107,15 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         return account != null;
     }
 
+    public get withClair(): boolean {
+        return this.appConfigService.getConfig().with_clair;
+    }
+
+    public get hasAdminRole(): boolean {
+        return this.session.getCurrentUser() &&
+            this.session.getCurrentUser().has_admin_role;
+    }
+
     // Open modal dialog
     openModal(event: ModalEvent): void {
         switch (event.modalName) {

@@ -46,15 +46,15 @@
                     </a>
                 </clr-vertical-nav-group-children>
             </clr-vertical-nav-group>
-            <clr-vertical-nav-group *ngIf="isSystemAdmin" routerLinkActive="active">
+            <clr-vertical-nav-group *ngIf="isSystemAdmin && (withClair || hasAdminRole)" routerLinkActive="active">
                 <clr-icon shape="event" clrVerticalNavIcon></clr-icon>
                 {{'SIDE_NAV.TASKS' | translate}}
                 <a routerLink="#" hidden aria-hidden="true"></a>
                 <clr-vertical-nav-group-children *clrIfExpanded="true">
-                    <a clrVerticalNavLink routerLink="/harbor/vulnerability" routerLinkActive="active">
+                    <a clrVerticalNavLink *ngIf="withClair" routerLink="/harbor/vulnerability" routerLinkActive="active">
                         {{'SIDE_NAV.SYSTEM_MGMT.VULNERABILITY' | translate}}
                     </a>
-                    <a clrVerticalNavLink routerLink="/harbor/gc" routerLinkActive="active">
+                    <a clrVerticalNavLink *ngIf="hasAdminRole" routerLink="/harbor/gc" routerLinkActive="active">
                         {{'SIDE_NAV.SYSTEM_MGMT.GARBAGE_COLLECTION' | translate}}
                     </a>
                 </clr-vertical-nav-group-children>
