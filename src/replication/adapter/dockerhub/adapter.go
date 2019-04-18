@@ -321,6 +321,32 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	return resources, nil
 }
 
+// DeleteManifest ...
+// Note: DockerHub only supports delete by tag
+func (a *adapter) DeleteManifest(repository, reference string) error {
+	parts := strings.Split(repository, "/")
+	if len(parts) != 2 {
+		return fmt.Errorf("dockerhub only support repo in format <namespace>/<name>, but got: %s", repository)
+	}
+
+	resp, err := a.client.Do(http.MethodDelete, deleteTagPath(parts[0], parts[1], reference), nil)
+	if err != nil {
+		return err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode/100 != 2 {
+		log.Errorf("Delete tag error: %d -- %s", resp.StatusCode, string(body))
+		return fmt.Errorf("%d -- %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
 // getRepos gets a page of repos from DockerHub
 func (a *adapter) getRepos(namespace, name string, page, pageSize int) (*ReposResp, error) {
 	resp, err := a.client.Do(http.MethodGet, listReposPath(namespace, name, page, pageSize), nil)
@@ -336,7 +362,7 @@ func (a *adapter) getRepos(namespace, name string, page, pageSize int) (*ReposRe
 
 	if resp.StatusCode/100 != 2 {
 		log.Errorf("list repos error: %d -- %s", resp.StatusCode, string(body))
-		return nil, fmt.Errorf("%d -- %s", resp.StatusCode, body)
+		return nil, fmt.Errorf("%d -- %s", resp.StatusCode, string(body))
 	}
 
 	repos := &ReposResp{}
