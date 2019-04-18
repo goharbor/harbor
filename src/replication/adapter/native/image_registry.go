@@ -15,10 +15,8 @@
 package native
 
 import (
-	"net/http"
 	"strings"
 
-	common_http "github.com/goharbor/harbor/src/common/http"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
@@ -42,7 +40,7 @@ func (n native) FetchImages(filters []*model.Filter) ([]*model.Resource, error) 
 		return nil, err
 	}
 
-	resources := []*model.Resource{}
+	var resources []*model.Resource
 	for _, repository := range repositories {
 		tags, err := n.filterTags(repository, tagFilterPattern)
 		if err != nil {
@@ -70,17 +68,8 @@ func (n native) filterRepositories(pattern string) ([]string, error) {
 	// if the pattern contains no "*" and "?", it is a specific repository name
 	// just to make sure the repository exists
 	if len(pattern) > 0 && !strings.ContainsAny(pattern, "*?") {
-		_, err := n.ListTag(pattern)
-		// the repository exists
-		if err == nil {
-			return []string{pattern}, nil
-		}
-		// the repository doesn't exist
-		if e, ok := err.(*common_http.Error); ok && e.Code == http.StatusNotFound {
-			return nil, nil
-		}
-		// other error
-		return nil, err
+		// check is repository exist later at filterTags.
+		return []string{pattern}, nil
 	}
 	// search repositories from catalog api
 	repositories, err := n.Catalog()
@@ -113,7 +102,7 @@ func (n native) filterTags(repository, pattern string) ([]string, error) {
 		return tags, nil
 	}
 
-	result := []string{}
+	var result []string
 	for _, tag := range tags {
 		match, err := util.Match(pattern, tag)
 		if err != nil {
