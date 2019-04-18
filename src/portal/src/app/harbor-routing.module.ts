@@ -33,8 +33,9 @@ import { ResetPasswordComponent } from './account/password-setting/reset-passwor
 import { GroupComponent } from './group/group.component';
 
 import { TotalReplicationPageComponent } from './replication/total-replication/total-replication-page.component';
+import { ReplicationTasksPageComponent } from './replication/replication-tasks-page/replication-tasks-page.component';
+
 import { DestinationPageComponent } from './replication/destination/destination-page.component';
-import { ReplicationPageComponent } from './replication/replication-page.component';
 
 import { AuditLogComponent } from './log/audit-log.component';
 import { LogPageComponent } from './log/log-page.component';
@@ -110,6 +111,12 @@ const harborRoutes: Routes = [
         canActivateChild: [SystemAdminGuard],
       },
       {
+        path: 'replications/:id/:tasks',
+        component: ReplicationTasksPageComponent,
+        canActivate: [SystemAdminGuard],
+        canActivateChild: [SystemAdminGuard],
+      },
+      {
         path: 'tags/:id/:repo',
         component: TagRepositoryComponent,
         canActivate: [MemberGuard],
@@ -169,10 +176,6 @@ const harborRoutes: Routes = [
           {
             path: 'repositories/:repo/tags',
             component: TagRepositoryComponent,
-          },
-          {
-            path: 'replications',
-            component: ReplicationPageComponent,
           },
           {
             path: 'members',

@@ -14,6 +14,8 @@
 
 package common
 
+type contextKey string
+
 // const variables
 const (
 	DBAuth              = "db_auth"
@@ -136,4 +138,6 @@ const (
 	RobotTokenDuration      = "robot_token_duration"
 
 	OIDCCallbackPath = "/c/oidc/callback"
+
+	ChartUploadCtxKey = contextKey("chart_upload")
 )

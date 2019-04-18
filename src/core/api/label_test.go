@@ -21,10 +21,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/replication"
-	rep_models "github.com/goharbor/harbor/src/replication/models"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -435,106 +432,4 @@ func TestLabelAPIDelete(t *testing.T) {
 	}
 
 	runCodeCheckingCases(t, cases...)
-}
-
-func TestListResources(t *testing.T) {
-	// global level label
-	globalLabelID, err := dao.AddLabel(&models.Label{
-		Name:  "globel_level_label",
-		Scope: common.LabelScopeGlobal,
-	})
-	require.Nil(t, err)
-	defer dao.DeleteLabel(globalLabelID)
-
-	// project level label
-	projectLabelID, err := dao.AddLabel(&models.Label{
-		Name:      "project_level_label",
-		Scope:     common.LabelScopeProject,
-		ProjectID: 1,
-	})
-	require.Nil(t, err)
-	defer dao.DeleteLabel(projectLabelID)
-
-	targetID, err := dao.AddRepTarget(models.RepTarget{
-		Name: "target_for_testing_label_resource",
-		URL:  "https://192.168.0.1",
-	})
-	require.Nil(t, err)
-	defer dao.DeleteRepTarget(targetID)
-
-	// create a policy references both global and project labels
-	policyID, err := dao.AddRepPolicy(models.RepPolicy{
-		Name:      "policy_for_testing_label_resource",
-		ProjectID: 1,
-		TargetID:  targetID,
-		Trigger:   fmt.Sprintf(`{"kind":"%s"}`, replication.TriggerKindManual),
-		Filters: fmt.Sprintf(`[{"kind":"%s","value":%d}, {"kind":"%s","value":%d}]`,
-			replication.FilterItemKindLabel, globalLabelID,
-			replication.FilterItemKindLabel, projectLabelID),
-	})
-	require.Nil(t, err)
-	defer dao.DeleteRepPolicy(policyID)
-
-	cases := []*codeCheckingCase{
-		// 401
-		{
-			request: &testingRequest{
-				method: http.MethodGet,
-				url:    fmt.Sprintf("%s/%d/resources", labelAPIBasePath, globalLabelID),
-			},
-			code: http.StatusUnauthorized,
-		},
-		// 404
-		{
-			request: &testingRequest{
-				method:     http.MethodGet,
-				url:        fmt.Sprintf("%s/%d/resources", labelAPIBasePath, 10000),
-				credential: sysAdmin,
-			},
-			code: http.StatusNotFound,
-		},
-		// 403: global level label
-		{
-			request: &testingRequest{
-				method:     http.MethodGet,
-				url:        fmt.Sprintf("%s/%d/resources", labelAPIBasePath, globalLabelID),
-				credential: projAdmin,
-			},
-			code: http.StatusForbidden,
-		},
-		// 403: project level label
-		{
-			request: &testingRequest{
-				method:     http.MethodGet,
-				url:        fmt.Sprintf("%s/%d/resources", labelAPIBasePath, projectLabelID),
-				credential: projDeveloper,
-			},
-			code: http.StatusForbidden,
-		},
-	}
-	runCodeCheckingCases(t, cases...)
-
-	// 200: global level label
-	resources := map[string][]rep_models.ReplicationPolicy{}
-	err = handleAndParse(&testingRequest{
-		method:     http.MethodGet,
-		url:        fmt.Sprintf("%s/%d/resources", labelAPIBasePath, globalLabelID),
-		credential: sysAdmin,
-	}, &resources)
-	require.Nil(t, err)
-	policies := resources["replication_policies"]
-	require.Equal(t, 1, len(policies))
-	assert.Equal(t, policyID, policies[0].ID)
-
-	// 200: project level label
-	resources = map[string][]rep_models.ReplicationPolicy{}
-	err = handleAndParse(&testingRequest{
-		method:     http.MethodGet,
-		url:        fmt.Sprintf("%s/%d/resources", labelAPIBasePath, projectLabelID),
-		credential: projAdmin,
-	}, &resources)
-	require.Nil(t, err)
-	policies = resources["replication_policies"]
-	require.Equal(t, 1, len(policies))
-	assert.Equal(t, policyID, policies[0].ID)
 }

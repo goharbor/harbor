@@ -76,12 +76,16 @@ export class EndpointComponent implements OnInit, OnDestroy {
 
     get initEndpoint(): Endpoint {
         return {
-            endpoint: "",
-            name: "",
-            username: "",
-            password: "",
+            credential: {
+                access_key: "",
+                access_secret: "",
+                type: ""
+              },
+            description: "",
             insecure: false,
-            type: 0
+            name: "",
+            type: "",
+            url: "",
         };
     }
 
@@ -90,7 +94,6 @@ export class EndpointComponent implements OnInit, OnDestroy {
         private translateService: TranslateService,
         private operationService: OperationService,
         private ref: ChangeDetectorRef) {
-        this.forceRefreshView(1000);
     }
 
     ngOnInit(): void {
@@ -114,8 +117,8 @@ export class EndpointComponent implements OnInit, OnDestroy {
         this.endpointService.getEndpoints(this.targetName)
             .subscribe(targets => {
                 this.targets = targets || [];
-                this.forceRefreshView(1000);
                 this.loading = false;
+                this.forceRefreshView(1000);
             }, error => {
                 this.errorHandler.error(error);
                 this.loading = false;

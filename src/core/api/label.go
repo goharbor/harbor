@@ -24,9 +24,6 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/replication"
-	"github.com/goharbor/harbor/src/replication/core"
-	rep_models "github.com/goharbor/harbor/src/replication/models"
 )
 
 // LabelAPI handles requests for label management
@@ -332,26 +329,28 @@ func (l *LabelAPI) ListResources() {
 		return
 	}
 
-	result, err := core.GlobalController.GetPolicies(rep_models.QueryParameter{})
-	if err != nil {
-		l.SendInternalServerError(fmt.Errorf("failed to get policies: %v", err))
-		return
-	}
-	policies := []*rep_models.ReplicationPolicy{}
-	if result != nil {
-		for _, policy := range result.Policies {
-			for _, filter := range policy.Filters {
-				if filter.Kind != replication.FilterItemKindLabel {
-					continue
-				}
-				if filter.Value.(int64) == label.ID {
-					policies = append(policies, policy)
+	/*
+		result, err := core.GlobalController.GetPolicies(rep_models.QueryParameter{})
+		if err != nil {
+			l.HandleInternalServerError(fmt.Sprintf("failed to get policies: %v", err))
+			return
+		}
+		policies := []*rep_models.ReplicationPolicy{}
+		if result != nil {
+			for _, policy := range result.Policies {
+				for _, filter := range policy.Filters {
+					if filter.Kind != replication.FilterItemKindLabel {
+						continue
+					}
+					if filter.Value.(int64) == label.ID {
+						policies = append(policies, policy)
+					}
 				}
 			}
 		}
-	}
+	*/
 	resources := map[string]interface{}{}
-	resources["replication_policies"] = policies
+	resources["replication_policies"] = nil
 	l.Data["json"] = resources
 	l.ServeJSON()
 }

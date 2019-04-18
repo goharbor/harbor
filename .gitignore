@@ -1,4 +1,3 @@
-harbor
 !/contrib/helm/harbor
 
 make/docker-compose.yml

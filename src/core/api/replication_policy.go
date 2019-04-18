@@ -15,463 +15,243 @@
 package api
 
 import (
-	"fmt"
-
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	api_models "github.com/goharbor/harbor/src/core/api/models"
-	"github.com/goharbor/harbor/src/core/promgr"
+	common_model "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/replication"
-	"github.com/goharbor/harbor/src/replication/core"
-	rep_models "github.com/goharbor/harbor/src/replication/models"
+	"github.com/goharbor/harbor/src/replication/dao/models"
+	"github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/replication/registry"
 )
 
-// RepPolicyAPI handles /api/replicationPolicies /api/replicationPolicies/:id/enablement
-type RepPolicyAPI struct {
+// TODO rename the file to "replication.go"
+
+// ReplicationPolicyAPI handles the replication policy requests
+type ReplicationPolicyAPI struct {
 	BaseController
 }
 
-// Prepare validates whether the user has system admin role
-func (pa *RepPolicyAPI) Prepare() {
-	pa.BaseController.Prepare()
-	if !pa.SecurityCtx.IsAuthenticated() {
-		pa.SendUnAuthorizedError(errors.New("Unauthorized"))
-		return
-	}
-
-	if !(pa.Ctx.Request.Method == http.MethodGet || pa.SecurityCtx.IsSysAdmin()) {
-		pa.SendForbiddenError(errors.New(pa.SecurityCtx.GetUsername()))
-		return
-	}
-}
-
-// Get ...
-func (pa *RepPolicyAPI) Get() {
-	id, err := pa.GetIDFromURL()
-	if err != nil {
-		pa.SendBadRequestError(err)
-		return
-	}
-	policy, err := core.GlobalController.GetPolicy(id)
-	if err != nil {
-		log.Errorf("failed to get policy %d: %v", id, err)
-		pa.SendInternalServerError(fmt.Errorf("failed to get policy %d: %v", id, err))
-		return
-
-	}
-
-	if policy.ID == 0 {
-		pa.SendNotFoundError(fmt.Errorf("policy %d not found", id))
-		return
-	}
-
-	resource := rbac.NewProjectNamespace(policy.ProjectIDs[0]).Resource(rbac.ResourceReplication)
-	if !pa.SecurityCtx.Can(rbac.ActionRead, resource) {
-		pa.SendForbiddenError(errors.New(pa.SecurityCtx.GetUsername()))
-		return
-	}
-
-	ply, err := convertFromRepPolicy(pa.ProjectMgr, policy)
-	if err != nil {
-		pa.ParseAndHandleError(fmt.Sprintf("failed to convert from replication policy"), err)
-		return
-	}
-
-	pa.Data["json"] = ply
-	pa.ServeJSON()
-}
-
-// List ...
-func (pa *RepPolicyAPI) List() {
-	queryParam := rep_models.QueryParameter{
-		Name: pa.GetString("name"),
-	}
-	projectIDStr := pa.GetString("project_id")
-	if len(projectIDStr) > 0 {
-		projectID, err := strconv.ParseInt(projectIDStr, 10, 64)
-		if err != nil || projectID <= 0 {
-			pa.SendBadRequestError(fmt.Errorf("invalid project ID: %s", projectIDStr))
+// Prepare ...
+func (r *ReplicationPolicyAPI) Prepare() {
+	r.BaseController.Prepare()
+	if !r.SecurityCtx.IsSysAdmin() {
+		if !r.SecurityCtx.IsAuthenticated() {
+			r.SendUnAuthorizedError(errors.New("UnAuthorized"))
 			return
 		}
-		queryParam.ProjectID = projectID
-	}
-	var err error
-	queryParam.Page, queryParam.PageSize, err = pa.GetPaginationParams()
-	if err != nil {
-		pa.SendBadRequestError(err)
+		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
 		return
 	}
-
-	result, err := core.GlobalController.GetPolicies(queryParam)
-	if err != nil {
-		log.Errorf("failed to get policies: %v, query parameters: %v", err, queryParam)
-		pa.SendInternalServerError(fmt.Errorf("failed to get policies: %v, query parameters: %v", err, queryParam))
-		return
-	}
-
-	var total int64
-	policies := []*api_models.ReplicationPolicy{}
-	if result != nil {
-		total = result.Total
-		for _, policy := range result.Policies {
-			resource := rbac.NewProjectNamespace(policy.ProjectIDs[0]).Resource(rbac.ResourceReplication)
-			if !pa.SecurityCtx.Can(rbac.ActionRead, resource) {
-				continue
-			}
-			ply, err := convertFromRepPolicy(pa.ProjectMgr, *policy)
-			if err != nil {
-				pa.ParseAndHandleError(fmt.Sprintf("failed to convert from replication policy"), err)
-				return
-			}
-			policies = append(policies, ply)
-		}
-	}
-
-	pa.SetPaginationHeader(total, queryParam.Page, queryParam.PageSize)
-
-	pa.Data["json"] = policies
-	pa.ServeJSON()
 }
 
-// Post creates a replicartion policy
-func (pa *RepPolicyAPI) Post() {
-	policy := &api_models.ReplicationPolicy{}
-	isValid, err := pa.DecodeJSONReqAndValidate(policy)
+// List the replication policies
+func (r *ReplicationPolicyAPI) List() {
+	page, size, err := r.GetPaginationParams()
+	if err != nil {
+		r.SendInternalServerError(err)
+		return
+	}
+	// TODO: support more query
+	query := &model.PolicyQuery{
+		Name: r.GetString("name"),
+		Pagination: common_model.Pagination{
+			Page: page,
+			Size: size,
+		},
+	}
+
+	total, policies, err := replication.PolicyCtl.List(query)
+	if err != nil {
+		r.SendInternalServerError(fmt.Errorf("failed to list policies: %v", err))
+		return
+	}
+	for _, policy := range policies {
+		if err = populateRegistries(replication.RegistryMgr, policy); err != nil {
+			r.SendInternalServerError(fmt.Errorf("failed to populate registries for policy %d: %v", policy.ID, err))
+			return
+		}
+	}
+	r.SetPaginationHeader(total, query.Page, query.Size)
+	r.WriteJSONData(policies)
+}
+
+// Create the replication policy
+func (r *ReplicationPolicyAPI) Create() {
+	policy := &model.Policy{}
+	isValid, err := r.DecodeJSONReqAndValidate(policy)
 	if !isValid {
-		pa.SendBadRequestError(err)
+		r.SendBadRequestError(err)
 		return
 	}
 
-	// check the name
-	exist, err := exist(policy.Name)
+	if !r.validateName(policy) {
+		return
+	}
+	if !r.validateRegistry(policy) {
+		return
+	}
+
+	id, err := replication.PolicyCtl.Create(policy)
 	if err != nil {
-		pa.SendInternalServerError(fmt.Errorf("failed to check the existence of policy %s: %v", policy.Name, err))
+		r.SendInternalServerError(fmt.Errorf("failed to create the policy: %v", err))
 		return
 	}
-
-	if exist {
-		pa.SendConflictError(fmt.Errorf("name %s is already used", policy.Name))
-		return
-	}
-
-	// check the existence of projects
-	for _, project := range policy.Projects {
-		pro, err := pa.ProjectMgr.Get(project.ProjectID)
-		if err != nil {
-			pa.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d", project.ProjectID), err)
-			return
-		}
-		if pro == nil {
-			pa.SendNotFoundError(fmt.Errorf("project %d not found", project.ProjectID))
-			return
-		}
-		project.Name = pro.Name
-	}
-
-	// check the existence of targets
-	for _, target := range policy.Targets {
-		t, err := dao.GetRepTarget(target.ID)
-		if err != nil {
-			pa.SendInternalServerError(fmt.Errorf("failed to get target %d: %v", target.ID, err))
-			return
-		}
-
-		if t == nil {
-			pa.SendNotFoundError(fmt.Errorf("target %d not found", target.ID))
-			return
-		}
-	}
-
-	// check the existence of labels
-	for _, filter := range policy.Filters {
-		if filter.Kind == replication.FilterItemKindLabel {
-			labelID := filter.Value.(int64)
-			label, err := dao.GetLabel(labelID)
-			if err != nil {
-				pa.SendInternalServerError(fmt.Errorf("failed to get label %d: %v", labelID, err))
-				return
-			}
-			if label == nil || label.Deleted {
-				pa.SendNotFoundError(fmt.Errorf("label %d not found", labelID))
-				return
-			}
-		}
-	}
-
-	id, err := core.GlobalController.CreatePolicy(convertToRepPolicy(policy))
-	if err != nil {
-		pa.SendInternalServerError(fmt.Errorf("failed to create policy: %v", err))
-		return
-	}
-
-	if policy.ReplicateExistingImageNow {
-		go func() {
-			if _, err = startReplication(id); err != nil {
-				log.Errorf("failed to send replication signal for policy %d: %v", id, err)
-				return
-			}
-			log.Infof("replication signal for policy %d sent", id)
-		}()
-	}
-
-	pa.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
+	r.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
 }
 
-func exist(name string) (bool, error) {
-	result, err := core.GlobalController.GetPolicies(rep_models.QueryParameter{
-		Name: name,
-	})
+// make sure the policy name doesn't exist
+func (r *ReplicationPolicyAPI) validateName(policy *model.Policy) bool {
+	p, err := replication.PolicyCtl.GetByName(policy.Name)
 	if err != nil {
-		return false, err
+		r.SendInternalServerError(fmt.Errorf("failed to get policy %s: %v", policy.Name, err))
+		return false
 	}
-
-	for _, policy := range result.Policies {
-		if policy.Name == name {
-			return true, nil
-		}
+	if p != nil {
+		r.SendConflictError(fmt.Errorf("policy %s already exists", policy.Name))
+		return false
 	}
-	return false, nil
+	return true
 }
 
-// Put updates the replication policy
-func (pa *RepPolicyAPI) Put() {
-	id, err := pa.GetIDFromURL()
+// make sure the registry referred exists
+func (r *ReplicationPolicyAPI) validateRegistry(policy *model.Policy) bool {
+	var registryID int64
+	if policy.SrcRegistry != nil && policy.SrcRegistry.ID > 0 {
+		registryID = policy.SrcRegistry.ID
+	} else {
+		registryID = policy.DestRegistry.ID
+	}
+	registry, err := replication.RegistryMgr.Get(registryID)
 	if err != nil {
-		pa.SendBadRequestError(err)
+		r.SendConflictError(fmt.Errorf("failed to get registry %d: %v", registryID, err))
+		return false
+	}
+	if registry == nil {
+		r.SendNotFoundError(fmt.Errorf("registry %d not found", registryID))
+		return false
+	}
+	return true
+}
+
+// Get the specified replication policy
+func (r *ReplicationPolicyAPI) Get() {
+	id, err := r.GetInt64FromPath(":id")
+	if id <= 0 || err != nil {
+		r.SendBadRequestError(errors.New("invalid policy ID"))
 		return
 	}
 
-	originalPolicy, err := core.GlobalController.GetPolicy(id)
+	policy, err := replication.PolicyCtl.Get(id)
 	if err != nil {
-		log.Errorf("failed to get policy %d: %v", id, err)
-		pa.SendInternalServerError(fmt.Errorf("failed to get policy %d: %v", id, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get the policy %d: %v", id, err))
+		return
+	}
+	if policy == nil {
+		r.SendNotFoundError(fmt.Errorf("policy %d not found", id))
+		return
+	}
+	if err = populateRegistries(replication.RegistryMgr, policy); err != nil {
+		r.SendInternalServerError(fmt.Errorf("failed to populate registries for policy %d: %v", policy.ID, err))
 		return
 	}
 
-	if originalPolicy.ID == 0 {
-		pa.SendNotFoundError(fmt.Errorf("policy %d not found", id))
+	r.WriteJSONData(policy)
+}
+
+// Update the replication policy
+func (r *ReplicationPolicyAPI) Update() {
+	id, err := r.GetInt64FromPath(":id")
+	if id <= 0 || err != nil {
+		r.SendBadRequestError(errors.New("invalid policy ID"))
 		return
 	}
 
-	policy := &api_models.ReplicationPolicy{}
-	isValid, err := pa.DecodeJSONReqAndValidate(policy)
+	originalPolicy, err := replication.PolicyCtl.Get(id)
+	if err != nil {
+		r.SendInternalServerError(fmt.Errorf("failed to get the policy %d: %v", id, err))
+		return
+	}
+	if originalPolicy == nil {
+		r.SendNotFoundError(fmt.Errorf("policy %d not found", id))
+		return
+	}
+
+	policy := &model.Policy{}
+	isValid, err := r.DecodeJSONReqAndValidate(policy)
 	if !isValid {
-		pa.SendBadRequestError(err)
+		r.SendBadRequestError(err)
+		return
+	}
+
+	if policy.Name != originalPolicy.Name &&
+		!r.validateName(policy) {
+		return
+	}
+
+	if !r.validateRegistry(policy) {
 		return
 	}
 
 	policy.ID = id
-
-	// check the name
-	if policy.Name != originalPolicy.Name {
-		exist, err := exist(policy.Name)
-		if err != nil {
-			pa.SendInternalServerError(fmt.Errorf("failed to check the existence of policy %s: %v", policy.Name, err))
-			return
-		}
-
-		if exist {
-			pa.SendConflictError(fmt.Errorf("name %s is already used", policy.Name))
-			return
-		}
-	}
-
-	// check the existence of projects
-	for _, project := range policy.Projects {
-		pro, err := pa.ProjectMgr.Get(project.ProjectID)
-		if err != nil {
-			pa.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d", project.ProjectID), err)
-			return
-		}
-		if pro == nil {
-			pa.SendNotFoundError(fmt.Errorf("project %d not found", project.ProjectID))
-			return
-		}
-		project.Name = pro.Name
-	}
-
-	// check the existence of targets
-	for _, target := range policy.Targets {
-		t, err := dao.GetRepTarget(target.ID)
-		if err != nil {
-			pa.SendInternalServerError(fmt.Errorf("failed to get target %d: %v", target.ID, err))
-			return
-		}
-
-		if t == nil {
-			pa.SendNotFoundError(fmt.Errorf("target %d not found", target.ID))
-			return
-		}
-	}
-
-	// check the existence of labels
-	for _, filter := range policy.Filters {
-		if filter.Kind == replication.FilterItemKindLabel {
-			labelID := filter.Value.(int64)
-			label, err := dao.GetLabel(labelID)
-			if err != nil {
-				pa.SendInternalServerError(fmt.Errorf("failed to get label %d: %v", labelID, err))
-				return
-			}
-			if label == nil || label.Deleted {
-				pa.SendNotFoundError(fmt.Errorf("label %d not found", labelID))
-				return
-			}
-		}
-	}
-
-	if err = core.GlobalController.UpdatePolicy(convertToRepPolicy(policy)); err != nil {
-		pa.SendInternalServerError(fmt.Errorf("failed to update policy %d: %v", id, err))
+	if err := replication.PolicyCtl.Update(policy); err != nil {
+		r.SendInternalServerError(fmt.Errorf("failed to update the policy %d: %v", id, err))
 		return
-	}
-
-	if policy.ReplicateExistingImageNow {
-		go func() {
-			if _, err = startReplication(id); err != nil {
-				log.Errorf("failed to send replication signal for policy %d: %v", id, err)
-				return
-			}
-			log.Infof("replication signal for policy %d sent", id)
-		}()
 	}
 }
 
 // Delete the replication policy
-func (pa *RepPolicyAPI) Delete() {
-	id, err := pa.GetIDFromURL()
+func (r *ReplicationPolicyAPI) Delete() {
+	id, err := r.GetInt64FromPath(":id")
+	if id <= 0 || err != nil {
+		r.SendBadRequestError(errors.New("invalid policy ID"))
+		return
+	}
+
+	policy, err := replication.PolicyCtl.Get(id)
 	if err != nil {
-		pa.SendBadRequestError(err)
+		r.SendInternalServerError(fmt.Errorf("failed to get the policy %d: %v", id, err))
 		return
 	}
-
-	policy, err := core.GlobalController.GetPolicy(id)
-	if err != nil {
-		log.Errorf("failed to get policy %d: %v", id, err)
-		pa.SendInternalServerError(fmt.Errorf("failed to get policy %d: %v", id, err))
-		return
-	}
-
-	if policy.ID == 0 {
-		pa.SendNotFoundError(fmt.Errorf("policy %d not found", id))
-		return
-	}
-
-	count, err := dao.GetTotalCountOfRepJobs(&models.RepJobQuery{
-		PolicyID: id,
-		Statuses: []string{models.JobRunning, models.JobRetrying, models.JobPending},
-		// only get the transfer and delete jobs, do not get schedule job
-		Operations: []string{models.RepOpTransfer, models.RepOpDelete},
-	})
-	if err != nil {
-		log.Errorf("failed to filter jobs of policy %d: %v", id, err)
-		pa.SendInternalServerError(fmt.Errorf("failed to filter jobs of policy %d: %v", id, err))
-		return
-
-	}
-	if count > 0 {
-		pa.SendPreconditionFailedError(errors.New("policy has running/retrying/pending jobs, can not be deleted"))
-		return
-	}
-
-	if err = core.GlobalController.RemovePolicy(id); err != nil {
-		log.Errorf("failed to delete policy %d: %v", id, err)
-		pa.SendInternalServerError(fmt.Errorf("failed to delete policy %d: %v", id, err))
-		return
-	}
-}
-
-func convertFromRepPolicy(projectMgr promgr.ProjectManager, policy rep_models.ReplicationPolicy) (*api_models.ReplicationPolicy, error) {
-	if policy.ID == 0 {
-		return nil, nil
-	}
-
-	// populate simple properties
-	ply := &api_models.ReplicationPolicy{
-		ID:                policy.ID,
-		Name:              policy.Name,
-		Description:       policy.Description,
-		ReplicateDeletion: policy.ReplicateDeletion,
-		Trigger:           policy.Trigger,
-		CreationTime:      policy.CreationTime,
-		UpdateTime:        policy.UpdateTime,
-	}
-
-	// populate projects
-	for _, projectID := range policy.ProjectIDs {
-		project, err := projectMgr.Get(projectID)
-		if err != nil {
-			return nil, err
-		}
-
-		ply.Projects = append(ply.Projects, project)
-	}
-
-	// populate targets
-	for _, targetID := range policy.TargetIDs {
-		target, err := dao.GetRepTarget(targetID)
-		if err != nil {
-			return nil, err
-		}
-		target.Password = ""
-		ply.Targets = append(ply.Targets, target)
-	}
-
-	// populate label used in label filter
-	for _, filter := range policy.Filters {
-		if filter.Kind == replication.FilterItemKindLabel {
-			labelID := filter.Value.(int64)
-			label, err := dao.GetLabel(labelID)
-			if err != nil {
-				return nil, err
-			}
-			filter.Value = label
-		}
-		ply.Filters = append(ply.Filters, filter)
-	}
-
-	// TODO call the method from replication controller
-	errJobCount, err := dao.GetTotalCountOfRepJobs(&models.RepJobQuery{
-		PolicyID: policy.ID,
-		Statuses: []string{models.JobError},
-	})
-	if err != nil {
-		return nil, err
-	}
-	ply.ErrorJobCount = errJobCount
-
-	return ply, nil
-}
-
-func convertToRepPolicy(policy *api_models.ReplicationPolicy) rep_models.ReplicationPolicy {
 	if policy == nil {
-		return rep_models.ReplicationPolicy{}
+		r.SendNotFoundError(fmt.Errorf("policy %d not found", id))
+		return
 	}
 
-	ply := rep_models.ReplicationPolicy{
-		ID:                policy.ID,
-		Name:              policy.Name,
-		Description:       policy.Description,
-		Filters:           policy.Filters,
-		ReplicateDeletion: policy.ReplicateDeletion,
-		Trigger:           policy.Trigger,
-		CreationTime:      policy.CreationTime,
-		UpdateTime:        policy.UpdateTime,
+	_, executions, err := replication.OperationCtl.ListExecutions(&models.ExecutionQuery{
+		PolicyID: id,
+	})
+	if err != nil {
+		r.SendInternalServerError(fmt.Errorf("failed to get the executions of policy %d: %v", id, err))
+		return
 	}
 
-	for _, project := range policy.Projects {
-		ply.ProjectIDs = append(ply.ProjectIDs, project.ProjectID)
-		ply.Namespaces = append(ply.Namespaces, project.Name)
+	for _, execution := range executions {
+		if execution.Status == models.ExecutionStatusInProgress {
+			r.SendInternalServerError(fmt.Errorf("the policy %d has running executions, can not be deleted", id))
+			return
+		}
 	}
 
-	for _, target := range policy.Targets {
-		ply.TargetIDs = append(ply.TargetIDs, target.ID)
+	if err := replication.PolicyCtl.Remove(id); err != nil {
+		r.SendInternalServerError(fmt.Errorf("failed to delete the policy %d: %v", id, err))
+		return
 	}
+}
 
-	return ply
+// ignore the credential for the registries
+func populateRegistries(registryMgr registry.Manager, policy *model.Policy) error {
+	if err := event.PopulateRegistries(registryMgr, policy); err != nil {
+		return err
+	}
+	if policy.SrcRegistry != nil {
+		policy.SrcRegistry.Credential = nil
+	}
+	if policy.DestRegistry != nil {
+		policy.DestRegistry.Credential = nil
+	}
+	return nil
 }

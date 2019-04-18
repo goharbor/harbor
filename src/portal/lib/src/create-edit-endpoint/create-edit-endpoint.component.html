@@ -11,6 +11,18 @@
     </div>
     <form #targetForm="ngForm">
       <section class="form-block">
+        <!-- provider -->
+        <div class="form-group">
+          <label class="form-group-label-override required">{{'DESTINATION.PROVIDER' | translate}}</label>
+          <div class="form-select">
+            <div class="select providerSelect pull-left">
+              <select name="adapter" id="adapter" [(ngModel)]="target.type" [disabled]="testOngoing || controlEnabled">
+                <option *ngFor="let adapter of adapterList" value="{{adapter}}">{{adapter}}</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <!-- Endpoint name -->
         <div class="form-group">
           <label for="destination_name" class="col-md-4 form-group-label-override required">{{ 'DESTINATION.NAME' |
             translate }}</label>
@@ -23,30 +35,39 @@
             </span>
           </label>
         </div>
+        <!--Description-->
+        <div class="form-group">
+          <label class="form-group-label-override">{{'REPLICATION.DESCRIPTION' | translate}}</label>
+          <textarea type="text" class="inputWidth" row=3 name="description" [(ngModel)]="target.description"></textarea>
+        </div>
+        <!-- Endpoint Url -->
         <div class="form-group">
           <label for="destination_url" class="col-md-4 form-group-label-override required">{{ 'DESTINATION.URL' |
             translate }}</label>
           <label class="col-md-8" for="destination_url" aria-haspopup="true" role="tooltip" [class.invalid]="targetEndpoint.errors && (targetEndpoint.dirty || targetEndpoint.touched)"
             [class.valid]="targetEndpoint.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
-            <input type="text" id="destination_url" [disabled]="testOngoing" [readonly]="!editable" [(ngModel)]="target.endpoint"
+            <input type="text" id="destination_url" [disabled]="testOngoing || controlEnabled" [readonly]="!editable" [(ngModel)]="target.url"
               size="20" name="endpointUrl" #targetEndpoint="ngModel" required placeholder="http(s)://192.168.1.1">
             <span class="tooltip-content" *ngIf="targetEndpoint.errors && targetEndpoint.errors.required && (targetEndpoint.dirty || targetEndpoint.touched)">
               {{ 'DESTINATION.URL_IS_REQUIRED' | translate }}
             </span>
           </label>
         </div>
+        <!-- access_key -->
         <div class="form-group">
-          <label for="destination_username" class="col-md-4 form-group-label-override">{{ 'DESTINATION.USERNAME' |
+          <label for="destination_access_key" class="col-md-4 form-group-label-override">{{ 'DESTINATION.ACCESS_ID' |
             translate }}</label>
-          <input type="text" class="col-md-8" id="destination_username" [disabled]="testOngoing" [readonly]="!editable"
-            [(ngModel)]="target.username" size="20" name="username" #username="ngModel">
+          <input type="text" placeholder="Access ID" class="col-md-8" id="destination_access_key" [disabled]="testOngoing" [readonly]="!editable"
+            [(ngModel)]="target.credential.access_key" size="23" name="access_key" #access_key="ngModel">
         </div>
+        <!-- access_secret -->
         <div class="form-group">
-          <label for="destination_password" class="col-md-4 form-group-label-override">{{ 'DESTINATION.PASSWORD' |
+          <label for="destination_password" class="col-md-4 form-group-label-override">{{ 'DESTINATION.ACCESS_SECRET' |
             translate }}</label>
-          <input type="password" class="col-md-8" id="destination_password" [disabled]="testOngoing" [readonly]="!editable"
-            [(ngModel)]="target.password" size="20" name="password" #password="ngModel">
+          <input type="password" placeholder="Access Secret" class="col-md-8" id="destination_password" [disabled]="testOngoing" [readonly]="!editable"
+            [(ngModel)]="target.credential.access_secret" size="23" name="access_secret" #access_secret="ngModel">
         </div>
+        <!-- Verify Remote Cert -->
         <div class="form-group">
           <label for="destination_insecure" id="destination_insecure_checkbox">{{'CONFIG.VERIFY_REMOTE_CERT' |
             translate }}</label>

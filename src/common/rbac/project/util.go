@@ -75,6 +75,18 @@ var (
 		{Resource: rbac.ResourceReplicationJob, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceReplicationJob, Action: rbac.ActionList},
 
+		{Resource: rbac.ResourceReplicationExecution, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceReplicationExecution, Action: rbac.ActionList},
+		{Resource: rbac.ResourceReplicationExecution, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceReplicationExecution, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceReplicationExecution, Action: rbac.ActionDelete},
+
+		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionList},
+		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionDelete},
+
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionUpdate},

@@ -21,83 +21,29 @@ describe('ListReplicationRuleComponent (inline template)', () => {
   let mockRules: ReplicationRule[] = [
     {
         "id": 1,
-        "projects": [{
-            "project_id": 33,
-            "owner_id": 1,
-            "name": "aeas",
-            "deleted": 0,
-            "togglable": false,
-            "current_user_role_id": 0,
-            "repo_count": 0,
-            "metadata": {
-                "public": false,
-                "enable_content_trust": "",
-                "prevent_vul": "",
-                "severity": "",
-                "auto_scan": ""},
-            "owner_name": "",
-            "creation_time": null,
-            "update_time": null,
-            "has_project_admin_role": true,
-            "is_member": true,
-            "role_name": ""
-        }],
-        "targets": [{
-            "endpoint": "",
-            "id": 0,
-            "insecure": false,
-            "name": "khans3",
-            "username": "",
-            "password": "",
-            "type": 0,
-        }],
         "name": "sync_01",
         "description": "",
         "filters": null,
-        "trigger": {"kind": "Manual", "schedule_param": null},
+        "trigger": {"type": "Manual", "trigger_settings": null},
         "error_job_count": 2,
-        "replicate_deletion": false,
-        "replicate_existing_image_now": false,
+        "deletion": false,
+        "src_namespaces": ["name1", "name2"],
+        "src_registry": {id: 3},
+        "enabled": true,
+        "override": true
     },
     {
           "id": 2,
-          "projects": [{
-              "project_id": 33,
-              "owner_id": 1,
-              "name": "aeas",
-              "deleted": 0,
-              "togglable": false,
-              "current_user_role_id": 0,
-              "repo_count": 0,
-              "metadata": {
-                  "public": false,
-                  "enable_content_trust": "",
-                  "prevent_vul": "",
-                  "severity": "",
-                  "auto_scan": ""},
-              "owner_name": "",
-              "creation_time": null,
-              "update_time": null,
-              "has_project_admin_role": true,
-              "is_member": true,
-              "role_name": ""
-          }],
-          "targets": [{
-              "endpoint": "",
-              "id": 0,
-              "insecure": false,
-              "name": "khans3",
-              "username": "",
-              "password": "",
-              "type": 0,
-          }],
           "name": "sync_02",
           "description": "",
           "filters": null,
-          "trigger": {"kind": "Manual", "schedule_param": null},
+          "trigger": {"type": "Manual", "trigger_settings": null},
           "error_job_count": 2,
-          "replicate_deletion": false,
-          "replicate_existing_image_now": false,
+          "deletion": false,
+          "src_namespaces": ["name1", "name2"],
+          "dest_registry": {id: 3},
+          "enabled": true,
+          "override": true
       },
   ];
 
@@ -137,6 +83,7 @@ describe('ListReplicationRuleComponent (inline template)', () => {
     comp = fixture.componentInstance;
     replicationService = fixture.debugElement.injector.get(ReplicationService);
     spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(of(mockRules));
+
     fixture.detectChanges();
   });
 

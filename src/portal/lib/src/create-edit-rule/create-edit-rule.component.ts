@@ -21,22 +21,18 @@ import {
   EventEmitter,
   Output
 } from "@angular/core";
-import { Filter, ReplicationRule, Endpoint, Label } from "../service/interface";
-import { Subject ,  Subscription } from "rxjs";
-import {debounceTime, distinctUntilChanged} from "rxjs/operators";
-import { FormArray, FormBuilder, FormGroup, Validators } from "@angular/forms";
+import { Filter, ReplicationRule, Endpoint } from "../service/interface";
+import { Subject, Subscription, Observable, zip } from "rxjs";
+import { debounceTime, distinctUntilChanged } from "rxjs/operators";
+import { FormArray, FormBuilder, FormGroup, Validators, FormControl } from "@angular/forms";
 import { clone, compareValue, isEmptyObject } from "../utils";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { ReplicationService } from "../service/replication.service";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { TranslateService } from "@ngx-translate/core";
 import { EndpointService } from "../service/endpoint.service";
-import { ProjectService } from "../service/project.service";
-import { Project } from "../project-policy-config/project";
-import { LabelState } from "../tag/tag.component";
+import { cronRegex } from "../utils";
 
-const ONE_HOUR_SECONDS = 3600;
-const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
 
 @Component({
   selector: "hbr-create-edit-rule",
@@ -44,115 +40,68 @@ const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
   styleUrls: ["./create-edit-rule.component.scss"]
 })
 export class CreateEditRuleComponent implements OnInit, OnDestroy {
-  _localTime: Date = new Date();
+  sourceList: Endpoint[] = [];
   targetList: Endpoint[] = [];
-  projectList: Project[] = [];
-  selectedProjectList: Project[] = [];
-  isFilterHide = false;
-  weeklySchedule: boolean;
-  isScheduleOpt: boolean;
-  isImmediate = false;
-  noProjectInfo = "";
   noEndpointInfo = "";
-  noSelectedProject = true;
+  isPushMode = true;
   noSelectedEndpoint = true;
-  filterCount = 0;
-  alertClosed = false;
-  triggerNames: string[] = ["Manual", "Immediate", "Scheduled"];
-  scheduleNames: string[] = ["Daily", "Weekly"];
-  weekly: string[] = [
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-    "Sunday"
-  ];
-  filterSelect: string[] = ["repository", "tag", "label"];
+  TRIGGER_TYPES = {
+    MANUAL: "manual",
+    SCHEDULED: "scheduled",
+    EVENT_BASED: "event_based"
+  };
+
   ruleNameTooltip = "REPLICATION.NAME_TOOLTIP";
   headerTitle = "REPLICATION.ADD_POLICY";
 
   createEditRuleOpened: boolean;
-  filterListData: { [key: string]: any }[] = [];
   inProgress = false;
   inNameChecking = false;
   isRuleNameValid = true;
   nameChecker: Subject<string> = new Subject<string>();
-  proNameChecker: Subject<string> = new Subject<string>();
-  firstClick = 0;
   policyId: number;
-  labelInputVal = '';
-  filterLabelInfo: Label[] = [];  // store filter selected labels` id
-  deletedLabelCount = 0;
-  deletedLabelInfo: string;
-
   confirmSub: Subscription;
   ruleForm: FormGroup;
-  formArrayLabel: FormArray;
   copyUpdateForm: ReplicationRule;
-
-  @Input() projectId: number;
-  @Input() projectName: string;
+  cronString: string;
+  supportedTriggers: string[];
+  supportedFilters: Filter[];
   @Input() withAdmiral: boolean;
 
   @Output() goToRegistry = new EventEmitter<any>();
   @Output() reload = new EventEmitter<boolean>();
 
   @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
-
-  emptyProject = {
-    project_id: -1,
-    name: ""
-  };
-  emptyEndpoint = {
-    id: -1,
-    endpoint: "",
-    name: "",
-    username: "",
-    password: "",
-    insecure: true,
-    type: 0
-  };
   constructor(
     private fb: FormBuilder,
     private repService: ReplicationService,
     private endpointService: EndpointService,
     private errorHandler: ErrorHandler,
-    private proService: ProjectService,
     private translateService: TranslateService,
     private ref: ChangeDetectorRef
   ) {
     this.createForm();
   }
 
-  baseFilterData(name: string, option: string[], state: boolean) {
-    return {
-      name: name,
-      options: option,
-      state: state,
-      isValid: true,
-      isOpen: false  // label list
-    };
+  initRegistryInfo(id: number): void {
+    this.repService.getRegistryInfo(id).subscribe(adapter => {
+      this.supportedFilters = adapter.supported_resource_filters;
+      this.supportedFilters.forEach(element => {
+        this.filters.push(this.initFilter(element.type));
+      });
+
+      this.supportedTriggers = adapter.supported_triggers;
+      this.ruleForm.get("trigger").get("type").setValue(this.supportedTriggers[0]);
+    });
   }
 
   ngOnInit(): void {
-    if (this.withAdmiral) {
-      this.filterSelect = ["repository", "tag"];
-    }
-
-    this.endpointService.getEndpoints()
-      .subscribe(targets => {
-        this.targetList = targets || [];
-      }, (error: any) => this.errorHandler.error(error));
-
-    if (!this.projectId) {
-      this.proService.listProjects("", undefined)
-        .subscribe(targets => {
-          this.projectList = targets || [];
-        }, error => this.errorHandler.error(error));
-    }
-
+    this.endpointService.getEndpoints().subscribe(endPoints => {
+      this.targetList = endPoints || [];
+      this.sourceList = endPoints || [];
+    }, error => {
+      this.errorHandler.error(error);
+    });
     this.nameChecker
       .pipe(debounceTime(300))
       .pipe(distinctUntilChanged())
@@ -162,7 +111,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           this.isRuleNameValid = cont.valid;
           if (this.isRuleNameValid) {
             this.inNameChecking = true;
-              this.repService.getReplicationRules(0, ruleName)
+            this.repService.getReplicationRules(0, ruleName)
               .subscribe(response => {
                 if (response.some(rule => rule.name === ruleName)) {
                   this.ruleNameTooltip = "TOOLTIP.RULE_USER_EXISTING";
@@ -177,38 +126,21 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           }
         }
       });
+  }
 
-    this.proNameChecker
-      .pipe(debounceTime(500))
-      .pipe(distinctUntilChanged())
-      .subscribe((resp: string) => {
-        let name = this.ruleForm.controls["projects"].value[0].name;
-        this.noProjectInfo = "";
-        this.selectedProjectList = [];
-        this.proService.listProjects(name, undefined)
-          .subscribe((res: any) => {
-            if (res) {
-              this.selectedProjectList = res.slice(0, 10);
-              // if input value exit in project list
-              let pro = res.find((data: any) => data.name === name);
-              if (!pro) {
-                this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-                this.noSelectedProject = true;
-              } else {
-                this.noProjectInfo = "";
-                this.noSelectedProject = false;
-                this.setProject([pro]);
-              }
-            } else {
-              this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-              this.noSelectedProject = true;
-            }
-          }, (error: any) => {
-            this.errorHandler.error(error);
-            this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-            this.noSelectedProject = true;
-          });
-      });
+  equals(c1: any, c2: any): boolean {
+    return c1 && c2 ? c1.id === c2.id : c1 === c2;
+  }
+  modeChange(): void {
+    this.setFilter([]);
+    this.initRegistryInfo(0);
+  }
+
+  sourceChange($event): void {
+    this.noSelectedEndpoint = false;
+    let selectId = this.ruleForm.get('src_registry').value;
+    this.setFilter([]);
+    this.initRegistryInfo(selectId.id);
   }
 
   ngOnDestroy(): void {
@@ -218,135 +150,101 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     if (this.nameChecker) {
       this.nameChecker.unsubscribe();
     }
-    if (this.proNameChecker) {
-      this.proNameChecker.unsubscribe();
-    }
   }
 
   get isValid() {
-    return !(
+    let controlName = !!this.ruleForm.controls["name"].value;
+    let sourceRegistry = !!this.ruleForm.controls["src_registry"].value;
+    let destRegistry = !!this.ruleForm.controls["dest_registry"].value;
+    let triggerMode = !!this.ruleForm.controls["trigger"].value.type;
+    let cron = !!this.ruleForm.value.trigger.trigger_settings.cron;
+    return !(!controlName ||
+      !triggerMode ||
       !this.isRuleNameValid ||
-      this.noSelectedProject ||
-      this.noSelectedEndpoint ||
-      this.inProgress
-    );
+      (!this.isPushMode && !sourceRegistry ||
+        this.isPushMode && !destRegistry)
+      || !(!this.isNotSchedule() && cron && this.cronInputValid(this.ruleForm.value.trigger.trigger_settings.cron || '')
+        || this.isNotSchedule()));
   }
 
   createForm() {
-    this.formArrayLabel = this.fb.array([]);
-
     this.ruleForm = this.fb.group({
       name: ["", Validators.required],
       description: "",
-      projects: this.fb.array([]),
-      targets: this.fb.array([]),
+      src_registry: new FormControl(),
+      dest_registry: new FormControl(),
+      dest_namespace: "",
       trigger: this.fb.group({
-        kind: this.triggerNames[0],
-        schedule_param: this.fb.group({
-          type: this.scheduleNames[0],
-          weekday: 1,
-          offtime: "08:00"
+        type: '',
+        trigger_settings: this.fb.group({
+          cron: ""
         })
       }),
       filters: this.fb.array([]),
-      replicate_existing_image_now: true,
-      replicate_deletion: false
+      deletion: false,
+      enabled: true,
+      override: true
     });
   }
 
-  initForm(): void {
+
+  isNotSchedule(): boolean {
+    return this.ruleForm.get("trigger").get("type").value !== this.TRIGGER_TYPES.SCHEDULED;
+  }
+
+  isNotEventBased(): boolean {
+    return this.ruleForm.get("trigger").get("type").value !== this.TRIGGER_TYPES.EVENT_BASED;
+  }
+
+  formReset(): void {
     this.ruleForm.reset({
       name: "",
       description: "",
       trigger: {
-        kind: this.triggerNames[0],
-        schedule_param: {
-          type: this.scheduleNames[0],
-          weekday: 1,
-          offtime: "08:00"
+        type: '',
+        trigger_settings: {
+          cron: ""
         }
       },
-      replicate_existing_image_now: true,
-      replicate_deletion: false
+      deletion: false,
+      enabled: true,
+      override: true
     });
-    this.setProject([this.emptyProject]);
-    this.setTarget([this.emptyEndpoint]);
-    this.setFilter([]);
-
-    this.copyUpdateForm = clone(this.ruleForm.value);
+    this.isPushMode = true;
   }
 
-  updateForm(rule: ReplicationRule): void {
-    rule.trigger = this.updateTrigger(rule.trigger);
-    this.ruleForm.reset({
-      name: rule.name,
-      description: rule.description,
-      trigger: rule.trigger,
-      replicate_existing_image_now: rule.replicate_existing_image_now,
-      replicate_deletion: rule.replicate_deletion
-    });
-    this.setProject(rule.projects);
-    this.noSelectedProject = false;
-    this.setTarget(rule.targets);
-    this.noSelectedEndpoint = false;
 
-    if (rule.filters) {
-      this.reOrganizeLabel(rule.filters);
-      this.setFilter(rule.filters);
-      this.updateFilter(rule.filters);
+  updateRuleFormAndCopyUpdateForm(rule: ReplicationRule): void {
+    if (rule.dest_registry.id === 0) {
+      this.isPushMode = false;
+    } else {
+      this.isPushMode = true;
     }
-
-    // Force refresh view
-    let hnd = setInterval(() => this.ref.markForCheck(), 100);
-    setTimeout(() => clearInterval(hnd), 2000);
-  }
-
-  // reorganize filter structure
-  reOrganizeLabel(filterLabels: any[]): void {
-    let count = 0;
-    if (filterLabels.length) {
-      this.filterLabelInfo = [];
-
-      let delLabel = '';
-      filterLabels.forEach((data: any) => {
-        if (data.kind === this.filterSelect[2]) {
-          if (!data.value.deleted) {
-            count++;
-            this.filterLabelInfo.push(data.value);
-          } else {
-            this.deletedLabelCount++;
-            delLabel += data.value.name + ',';
-          }
-        }
+    setTimeout(() => {
+      // There is no trigger_setting type when the harbor is upgraded from the old version.
+      rule.trigger.trigger_settings = rule.trigger.trigger_settings ? rule.trigger.trigger_settings : {cron: ''};
+      this.ruleForm.reset({
+        name: rule.name,
+        description: rule.description,
+        dest_namespace: rule.dest_namespace,
+        src_registry: rule.src_registry,
+        dest_registry: rule.dest_registry,
+        trigger: rule.trigger,
+        deletion: rule.deletion,
+        enabled: rule.enabled,
+        override: rule.override
       });
+      let filtersArray = this.getFilterArray(rule);
 
-      this.translateService.get('REPLICATION.DELETED_LABEL_INFO', {
-        param: delLabel
-      }).subscribe((res: string) => {
-        this.deletedLabelInfo = res;
-        this.alertClosed = false;
-      });
-
-      // delete api return label info, replace with label count
-      if (delLabel || count) {
-        let len = filterLabels.length;
-        for (let i = 0; i < len; i++) {
-          let lab = filterLabels.find(data => data.kind === this.filterSelect[2]);
-          if (lab) { filterLabels.splice(filterLabels.indexOf(lab), 1); }
-        }
-        filterLabels.push({ kind: 'label', value: count + ' labels' });
-        this.labelInputVal = count.toString();
-      }
-    }
-  }
-
-  get projects(): FormArray {
-    return this.ruleForm.get("projects") as FormArray;
-  }
-  setProject(projects: Project[]) {
-    const projectFGs = projects.map(project => this.fb.group(project));
-    const projectFormArray = this.fb.array(projectFGs);
-    this.ruleForm.setControl("projects", projectFormArray);
+      this.noSelectedEndpoint = false;
+      this.setFilter(filtersArray);
+      this.copyUpdateForm = clone(this.ruleForm.value);
+      // keep trigger same value
+      this.copyUpdateForm.trigger = clone(rule.trigger);
+      this.copyUpdateForm.filters = this.copyUpdateForm.filters === null ? [] : this.copyUpdateForm.filters;
+      // set filter value is [] if callback filter value is null.
+    }, 100);
+    // end of reset the filter list.
   }
 
   get filters(): FormArray {
@@ -358,72 +256,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     this.ruleForm.setControl("filters", filterFormArray);
   }
 
-  get targets(): FormArray {
-    return this.ruleForm.get("targets") as FormArray;
-  }
-  setTarget(targets: Endpoint[]) {
-    const targetFGs = targets.map(target => this.fb.group(target));
-    const targetFormArray = this.fb.array(targetFGs);
-    this.ruleForm.setControl("targets", targetFormArray);
-  }
-
   initFilter(name: string) {
     return this.fb.group({
-      kind: name,
-      value: ['', Validators.required]
+      type: name,
+      value: ''
     });
-  }
-
-  filterChange($event: any, selectedValue: string) {
-    if ($event && $event.target["value"]) {
-      let id: number = $event.target.id;
-      let name: string = $event.target.name;
-      let value: string = $event.target["value"];
-
-      const controlArray = <FormArray>this.ruleForm.get('filters');
-      this.filterListData.forEach((data, index) => {
-        if (index === +id) {
-          data.name = $event.target.name = value;
-        } else {
-          data.options.splice(data.options.indexOf(value), 1);
-        }
-        if (data.options.indexOf(name) === -1) {
-          data.options.push(name);
-        }
-
-        // if before select, $event is label
-        if (!this.withAdmiral && name === this.filterSelect[2] && data.name === value) {
-          this.labelInputVal = controlArray.controls[index].get('value').value.split(' ')[0];
-          data.isOpen = false;
-          controlArray.controls[index].get('value').setValue('');
-        }
-        // if before select, $event is  not label
-        if (!this.withAdmiral && data.name === this.filterSelect[2]) {
-          if (this.labelInputVal) {
-            controlArray.controls[index].get('value').setValue(this.labelInputVal + ' labels');
-          } else {
-            controlArray.controls[index].get('value').setValue('');
-          }
-
-          // this.labelInputVal = '';
-          data.isOpen = false;
-        }
-
-      });
-    }
-  }
-
-  // when input value is label, then open label panel
-  openLabelList(labelTag: string, indexId: number, $event: any) {
-    if (!this.withAdmiral && labelTag === this.filterSelect[2]) {
-      this.filterListData.forEach((data, index) => {
-        if (index === indexId) {
-          data.isOpen = true;
-        } else {
-          data.isOpen = false;
-        }
-      });
-    }
   }
 
   targetChange($event: any) {
@@ -432,149 +269,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         this.noSelectedEndpoint = true;
         return;
       }
-      let selecedTarget: Endpoint = this.targetList.find(
-        target => target.id === +$event.target["value"]
-      );
-      this.setTarget([selecedTarget]);
       this.noSelectedEndpoint = false;
-    }
-  }
-
-  // Handle the form validation
-  handleValidation(): void {
-    let cont = this.ruleForm.controls["projects"];
-    if (cont && cont.valid) {
-      this.proNameChecker.next(cont.value[0].name);
-    }
-  }
-
-  focusClear($event: any): void {
-    if (this.policyId < 0 && this.firstClick === 0) {
-      if ($event && $event.target && $event.target["value"]) {
-        $event.target["value"] = "";
-      }
-      this.firstClick++;
-    }
-  }
-
-  leaveInput() {
-    this.selectedProjectList = [];
-  }
-
-  selectedProjectName(projectName: string) {
-    this.noSelectedProject = false;
-    let pro: Project = this.selectedProjectList.find(
-      data => data.name === projectName
-    );
-    this.setProject([pro]);
-    this.selectedProjectList = [];
-    this.noProjectInfo = "";
-  }
-
-  selectedProject(project: Project): void {
-    if (!project) {
-      this.noSelectedProject = true;
-    } else {
-      this.noSelectedProject = false;
-      this.setProject([project]);
-    }
-  }
-
-  addNewFilter(): void {
-    const controlArray = <FormArray>this.ruleForm.get('filters');
-    if (this.filterCount === 0) {
-      this.filterListData.push(
-        this.baseFilterData(
-          this.filterSelect[0],
-          this.filterSelect.slice(),
-          true,
-        )
-      );
-      controlArray.push(this.initFilter(this.filterSelect[0]));
-    } else {
-      let nameArr: string[] = this.filterSelect.slice();
-      this.filterListData.forEach(data => {
-        nameArr.splice(nameArr.indexOf(data.name), 1);
-      });
-      // when add a new filter,the filterListData should change the options
-      this.filterListData.filter(data => {
-        data.options.splice(data.options.indexOf(nameArr[0]), 1);
-      });
-      this.filterListData.push(this.baseFilterData(nameArr[0], nameArr, true));
-      controlArray.push(this.initFilter(nameArr[0]));
-    }
-    this.filterCount += 1;
-    if (this.filterCount >= this.filterSelect.length) {
-      this.isFilterHide = true;
-    }
-    if (controlArray.controls[this.filterCount - 1].get('kind').value === this.filterSelect[2] && this.labelInputVal) {
-      controlArray.controls[this.filterCount - 1].get('value').setValue(this.labelInputVal + ' labels');
-    }
-
-  }
-
-  // delete a filter
-  deleteFilter(i: number): void {
-    if (i >= 0) {
-      let delFilter = this.filterListData.splice(i, 1)[0];
-      if (this.filterCount === this.filterSelect.length) {
-        this.isFilterHide = false;
-      }
-      this.filterCount -= 1;
-      if (this.filterListData.length) {
-        let optionVal = delFilter.name;
-        this.filterListData.filter(data => {
-          if (data.options.indexOf(optionVal) === -1) {
-            data.options.push(optionVal);
-          }
-        });
-      }
-      const control = <FormArray>this.ruleForm.get('filters');
-      if (control.controls[i].get('kind').value === this.filterSelect[2]) {
-        this.filterLabelInfo = [];
-        this.labelInputVal = "";
-      }
-      control.removeAt(i);
-      this.setFilter(control.value);
-    }
-  }
-
-  selectTrigger($event: any): void {
-    if ($event && $event.target && $event.target["value"]) {
-      let val: string = $event.target["value"];
-      if (val === this.triggerNames[2]) {
-        this.isScheduleOpt = true;
-        this.isImmediate = false;
-      }
-      if (val === this.triggerNames[1]) {
-        this.isScheduleOpt = false;
-        this.isImmediate = true;
-      }
-      if (val === this.triggerNames[0]) {
-        this.isScheduleOpt = false;
-        this.isImmediate = false;
-      }
-    }
-  }
-
-  // Replication Schedule select value exchange
-  selectSchedule($event: any): void {
-    if ($event && $event.target && $event.target["value"]) {
-      switch ($event.target["value"]) {
-        case this.scheduleNames[1]:
-          this.weeklySchedule = true;
-          this.ruleForm.patchValue({
-            trigger: {
-              schedule_param: {
-                weekday: 1
-              }
-            }
-          });
-          break;
-        case this.scheduleNames[0]:
-          this.weeklySchedule = false;
-          break;
-      }
     }
   }
 
@@ -587,119 +282,29 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
   }
 
-  updateFilter(filters: any) {
-    let opt: string[] = this.filterSelect.slice();
-    filters.forEach((filter: any) => {
-      opt.splice(opt.indexOf(filter.kind), 1);
-    });
-    filters.forEach((filter: any) => {
-      let option: string[] = opt.slice();
-      option.unshift(filter.kind);
-      this.filterListData.push(this.baseFilterData(filter.kind, option, true));
-    });
-    this.filterCount = filters.length;
-    if (filters.length === this.filterSelect.length) {
-      this.isFilterHide = true;
-    }
-  }
-
-  selectedLabelList(selectedLabels: LabelState[], indexId: number) {
-    // set input value of filter label
-    const controlArray = <FormArray>this.ruleForm.get('filters');
-
-    this.filterListData.forEach((data, index) => {
-      if (data.name === this.filterSelect[2]) {
-        let labelsLength = selectedLabels.filter(lab => lab.iconsShow === true).length;
-        if (labelsLength > 0) {
-          controlArray.controls[index].get('value').setValue(labelsLength + ' labels');
-          this.labelInputVal = labelsLength.toString();
-        } else {
-          controlArray.controls[index].get('value').setValue('');
-        }
-      }
-    });
-
-    // store filter label info
-    this.filterLabelInfo = [];
-    selectedLabels.forEach(data => {
-      if (data.iconsShow === true) {
-        this.filterLabelInfo.push(data.label);
-      }
-    });
-  }
-
-  updateTrigger(trigger: any) {
-    if (trigger["schedule_param"]) {
-      this.isScheduleOpt = true;
-      this.isImmediate = false;
-      trigger["schedule_param"]["offtime"] = this.getOfftime(
-        trigger["schedule_param"]["offtime"]
-      );
-      if (trigger["schedule_param"]["weekday"]) {
-        this.weeklySchedule = true;
-      } else {
-        // set default
-        trigger["schedule_param"]["weekday"] = 1;
-      }
-    } else {
-      if (trigger["kind"] === this.triggerNames[0]) {
-        this.isImmediate = false;
-      }
-      if (trigger["kind"] === this.triggerNames[1]) {
-        this.isImmediate = true;
-      }
-      trigger["schedule_param"] = {
-        type: this.scheduleNames[0],
-        weekday: this.weekly[0],
-        offtime: "08:00"
-      };
-    }
-    return trigger;
-  }
-
-  setTriggerVaule(trigger: any) {
-    if (!this.isScheduleOpt) {
-      delete trigger["schedule_param"];
-      return trigger;
-    } else {
-      if (!this.weeklySchedule) {
-        delete trigger["schedule_param"]["weekday"];
-      } else {
-        trigger["schedule_param"]["weekday"] = +trigger["schedule_param"][
-          "weekday"
-        ];
-      }
-      trigger["schedule_param"]["offtime"] = this.setOfftime(
-        trigger["schedule_param"]["offtime"]
-      );
-      return trigger;
-    }
-  }
-
-  setFilterLabelVal(filters: any[]) {
-    let labels: any = filters.find(data => data.kind === this.filterSelect[2]);
-
-    if (labels) {
-      filters.splice(filters.indexOf(labels), 1);
-      let info: any[] = [];
-      this.filterLabelInfo.forEach(data => {
-        info.push({ kind: 'label', value: data.id });
-      });
-      filters.push.apply(filters, info);
-    }
-  }
-
   public hasFormChange(): boolean {
     return !isEmptyObject(this.hasChanges());
   }
 
   onSubmit() {
+    if (this.ruleForm.value.trigger.type !== 'scheduled') {
+      this.ruleForm.get("trigger").get("trigger_settings").get('cron').setValue('');
+    }
     // add new Replication rule
     this.inProgress = true;
     let copyRuleForm: ReplicationRule = this.ruleForm.value;
-    copyRuleForm.trigger = this.setTriggerVaule(copyRuleForm.trigger);
-    // rewrite key name of label when filer contain labels.
-    if (copyRuleForm.filters) { this.setFilterLabelVal(copyRuleForm.filters); }
+    if (this.isPushMode) {
+      copyRuleForm.src_registry = null;
+    } else {
+      copyRuleForm.dest_registry = null;
+    }
+    let filters: any = copyRuleForm.filters;
+    // remove the filters which user not set.
+    for (let i = filters.length - 1; i >= 0; i--) {
+      if (filters[i].value === "") {
+        copyRuleForm.filters.splice(i, 1);
+      }
+    }
 
     if (this.policyId < 0) {
       this.repService
@@ -710,6 +315,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             .subscribe(res => this.errorHandler.info(res));
           this.inProgress = false;
           this.reload.emit(true);
+          this.createForm();
           this.close();
         }, (error: any) => {
           this.inProgress = false;
@@ -731,61 +337,55 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         });
     }
   }
-
   openCreateEditRule(ruleId?: number | string): void {
-    this.initForm();
+    this.formReset();
+    this.copyUpdateForm = clone(this.ruleForm.value);
     this.inlineAlert.close();
-    this.selectedProjectList = [];
-    this.filterCount = 0;
-    this.isFilterHide = false;
-    this.filterListData = [];
-    this.firstClick = 0;
-    this.noSelectedProject = true;
     this.noSelectedEndpoint = true;
     this.isRuleNameValid = true;
-    this.deletedLabelCount = 0;
 
-    this.weeklySchedule = false;
-    this.isScheduleOpt = false;
-    this.isImmediate = false;
     this.policyId = -1;
     this.createEditRuleOpened = true;
-    this.filterLabelInfo = [];
-    this.labelInputVal = '';
-
-    this.noProjectInfo = "";
     this.noEndpointInfo = "";
     if (this.targetList.length === 0) {
       this.noEndpointInfo = "REPLICATION.NO_ENDPOINT_INFO";
     }
-    if (this.projectList.length === 0 && !this.projectName) {
-      this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-    }
-
     if (ruleId) {
       this.policyId = +ruleId;
       this.headerTitle = "REPLICATION.EDIT_POLICY_TITLE";
       this.repService.getReplicationRule(ruleId)
-        .subscribe(response => {
-          this.copyUpdateForm = clone(response);
-          // set filter value is [] if callback filter value is null.
-          this.updateForm(response);
-          // keep trigger same value
-          this.copyUpdateForm.trigger = clone(response.trigger);
-          this.copyUpdateForm.filters = this.copyUpdateForm.filters === null ? [] : this.copyUpdateForm.filters;
+        .subscribe((ruleInfo) => {
+          let srcRegistryId = ruleInfo.src_registry.id;
+          this.repService.getRegistryInfo(srcRegistryId)
+            .subscribe(adapter => {
+              this.setFilterAndTrigger(adapter);
+              this.updateRuleFormAndCopyUpdateForm(ruleInfo);
+            }, (error: any) => {
+              this.inlineAlert.showInlineError(error);
+            });
         }, (error: any) => {
           this.inlineAlert.showInlineError(error);
         });
     } else {
+      let registryObs = this.repService.getRegistryInfo(0);
+      registryObs.subscribe(adapter => {
+        this.setFilterAndTrigger(adapter);
+        this.copyUpdateForm = clone(this.ruleForm.value);
+      });
       this.headerTitle = "REPLICATION.ADD_POLICY";
-      if (this.projectId) {
-        this.setProject([
-          { project_id: this.projectId, name: this.projectName }
-        ]);
-        this.noSelectedProject = false;
-      }
       this.copyUpdateForm = clone(this.ruleForm.value);
     }
+  }
+
+  setFilterAndTrigger(adapter) {
+    this.supportedFilters = adapter.supported_resource_filters;
+    this.setFilter([]);
+    this.supportedFilters.forEach(element => {
+      this.filters.push(this.initFilter(element.type));
+    });
+
+    this.supportedTriggers = adapter.supported_triggers;
+    this.ruleForm.get("trigger").get("type").setValue(this.supportedTriggers[0]);
   }
 
   close(): void {
@@ -794,6 +394,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   confirmCancel(confirmed: boolean) {
     this.inlineAlert.close();
+    this.createForm();
     this.close();
   }
 
@@ -803,77 +404,13 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         message: "ALERT.FORM_CHANGE_CONFIRMATION"
       });
     } else {
+      this.createForm();
       this.close();
     }
   }
 
   goRegistry(): void {
     this.goToRegistry.emit();
-  }
-
-  // UTC time
-  public getOfftime(daily_time: any): string {
-    let timeOffset = 0; // seconds
-    if (daily_time && typeof daily_time === "number") {
-      timeOffset = +daily_time;
-    }
-
-    // Convert to current time
-    let timezoneOffset: number = this._localTime.getTimezoneOffset();
-    // Local time
-    timeOffset = timeOffset - timezoneOffset * 60;
-    if (timeOffset < 0) {
-      timeOffset = timeOffset + ONE_DAY_SECONDS;
-    }
-
-    if (timeOffset >= ONE_DAY_SECONDS) {
-      timeOffset -= ONE_DAY_SECONDS;
-    }
-
-    // To time string
-    let hours: number = Math.floor(timeOffset / ONE_HOUR_SECONDS);
-    let minutes: number = Math.floor(
-      (timeOffset - hours * ONE_HOUR_SECONDS) / 60
-    );
-
-    let timeStr: string = "" + hours;
-    if (hours < 10) {
-      timeStr = "0" + timeStr;
-    }
-    if (minutes < 10) {
-      timeStr += ":0";
-    } else {
-      timeStr += ":";
-    }
-    timeStr += minutes;
-
-    return timeStr;
-  }
-  public setOfftime(v: string) {
-    if (!v || v === "") {
-      return;
-    }
-
-    let values: string[] = v.split(":");
-    if (!values || values.length !== 2) {
-      return;
-    }
-
-    let hours: number = +values[0];
-    let minutes: number = +values[1];
-    // Convert to UTC time
-    let timezoneOffset: number = this._localTime.getTimezoneOffset();
-    let utcTimes: number = hours * ONE_HOUR_SECONDS + minutes * 60;
-    utcTimes += timezoneOffset * 60;
-    if (utcTimes < 0) {
-      utcTimes += ONE_DAY_SECONDS;
-    }
-
-    if (utcTimes >= ONE_DAY_SECONDS) {
-      utcTimes -= ONE_DAY_SECONDS;
-    }
-
-    return utcTimes;
   }
 
   hasChanges(): boolean {
@@ -884,21 +421,46 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       initValueCopy[key] = initValue[key];
     }
 
-    if (formValue.filters && formValue.filters.length > 0) {
-      formValue.filters.forEach((data, index) => {
-        if (data.kind === this.filterSelect[2]) {
-          formValue.filters.splice(index, 1);
-        }
-      });
-      // rewrite filter label
-      this.filterLabelInfo.forEach(data => {
-        formValue.filters.push({ kind: "label", pattern: "", value: data });
-      });
-    }
-
     if (!compareValue(formValue, initValueCopy)) {
       return true;
     }
     return false;
+  }
+
+
+  getFilterArray(rule): Array<any> {
+    let filtersArray = [];
+    for (let i = 0; i < this.supportedFilters.length; i++) {
+      let findTag: boolean = false;
+      if (rule.filters) {
+        rule.filters.forEach((ruleItem) => {
+          if (this.supportedFilters[i].type === ruleItem.type) {
+            filtersArray.push(ruleItem);
+            findTag = true;
+          }
+        });
+      }
+
+      if (!findTag) {
+        filtersArray.push({ type: this.supportedFilters[i].type, value: "" });
+      }
+
+    }
+    return filtersArray;
+  }
+  cronInputValid(cronValue): boolean {
+    return cronRegex(cronValue);
+  }
+  get cronTouched(): boolean {
+    let triggerControl = this.ruleForm.controls.trigger as FormGroup;
+    if (!triggerControl) {
+      return false;
+    }
+    let trigger_settingsControls = triggerControl.controls.trigger_settings as FormGroup;
+    if (!trigger_settingsControls) {
+      return false;
+    }
+    return trigger_settingsControls.controls.cron.touched && trigger_settingsControls.controls.cron.dirty
+      && !trigger_settingsControls.controls.cron.value;
   }
 }

@@ -7,7 +7,7 @@ import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 describe('ReplicationService', () => {
   const mockConfig: IServiceConfig = {
     replicationRuleEndpoint: "/api/policies/replication/testing",
-    replicationJobEndpoint: "/api/jobs/replication/testing"
+    replicationBaseEndpoint: "/api/replication/testing"
   };
 
   let config: IServiceConfig;
@@ -38,6 +38,6 @@ describe('ReplicationService', () => {
   it('should inject the right config', () => {
     expect(config).toBeTruthy();
     expect(config.replicationRuleEndpoint).toEqual("/api/policies/replication/testing");
-    expect(config.replicationJobEndpoint).toEqual("/api/jobs/replication/testing");
+    expect(config.replicationBaseEndpoint).toEqual("/api/replication/testing");
   });
 });

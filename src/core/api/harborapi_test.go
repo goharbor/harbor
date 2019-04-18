@@ -27,25 +27,20 @@ import (
 	"runtime"
 	"strconv"
 
+	"github.com/astaxie/beego"
+	"github.com/dghubble/sling"
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job/test"
 	"github.com/goharbor/harbor/src/common/models"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
 	api_models "github.com/goharbor/harbor/src/core/api/models"
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/tests/apitests/apilib"
-
-	//	"strconv"
-	//	"strings"
-
-	"github.com/astaxie/beego"
-	"github.com/dghubble/sling"
-
-	"github.com/goharbor/harbor/src/common/dao"
+	apimodels "github.com/goharbor/harbor/src/core/api/models"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
-	"github.com/goharbor/harbor/src/replication/core"
-	_ "github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/filter"
+	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/tests/apitests/apilib"
 )
 
 const (
@@ -128,14 +123,9 @@ func init() {
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &RepositoryAPI{}, "get:GetSignatures")
 	beego.Router("/api/repositories/top", &RepositoryAPI{}, "get:GetTopRepos")
-	beego.Router("/api/targets/", &TargetAPI{}, "get:List")
-	beego.Router("/api/targets/", &TargetAPI{}, "post:Post")
-	beego.Router("/api/targets/:id([0-9]+)", &TargetAPI{})
-	beego.Router("/api/targets/:id([0-9]+)/policies/", &TargetAPI{}, "get:ListPolicies")
-	beego.Router("/api/targets/ping", &TargetAPI{}, "post:Ping")
-	beego.Router("/api/policies/replication/:id([0-9]+)", &RepPolicyAPI{})
-	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "get:List")
-	beego.Router("/api/policies/replication", &RepPolicyAPI{}, "post:Post;delete:Delete")
+	beego.Router("/api/registries", &RegistryAPI{}, "get:List;post:Post")
+	beego.Router("/api/registries/ping", &RegistryAPI{}, "post:Ping")
+	beego.Router("/api/registries/:id([0-9]+)", &RegistryAPI{}, "get:Get;put:Put;delete:Delete")
 	beego.Router("/api/systeminfo", &SystemInfoAPI{}, "get:GetGeneralInfo")
 	beego.Router("/api/systeminfo/volumes", &SystemInfoAPI{}, "get:GetVolumeInfo")
 	beego.Router("/api/systeminfo/getcert", &SystemInfoAPI{}, "get:GetCert")
@@ -146,7 +136,6 @@ func init() {
 	beego.Router("/api/configurations", &ConfigAPI{})
 	beego.Router("/api/configs", &ConfigAPI{}, "get:GetInternalConfig")
 	beego.Router("/api/email/ping", &EmailAPI{}, "post:Ping")
-	beego.Router("/api/replications", &ReplicationAPI{})
 	beego.Router("/api/labels", &LabelAPI{}, "post:Post;get:List")
 	beego.Router("/api/labels/:id([0-9]+", &LabelAPI{}, "get:Get;put:Put;delete:Delete")
 	beego.Router("/api/labels/:id([0-9]+)/resources", &LabelAPI{}, "get:ListResources")
@@ -158,6 +147,15 @@ func init() {
 
 	beego.Router("/api/projects/:pid([0-9]+)/robots/", &RobotAPI{}, "post:Post;get:List")
 	beego.Router("/api/projects/:pid([0-9]+)/robots/:id([0-9]+)", &RobotAPI{}, "get:Get;put:Put;delete:Delete")
+
+	beego.Router("/api/replication/adapters", &ReplicationAdapterAPI{}, "get:List")
+	beego.Router("/api/replication/executions", &ReplicationOperationAPI{}, "get:ListExecutions;post:CreateExecution")
+	beego.Router("/api/replication/executions/:id([0-9]+)", &ReplicationOperationAPI{}, "get:GetExecution;put:StopExecution")
+	beego.Router("/api/replication/executions/:id([0-9]+)/tasks", &ReplicationOperationAPI{}, "get:ListTasks")
+	beego.Router("/api/replication/executions/:id([0-9]+)/tasks/:tid([0-9]+)/log", &ReplicationOperationAPI{}, "get:GetTaskLog")
+
+	beego.Router("/api/replication/policies", &ReplicationPolicyAPI{}, "get:List;post:Create")
+	beego.Router("/api/replication/policies/:id([0-9]+)", &ReplicationPolicyAPI{}, "get:Get;put:Update;delete:Delete")
 
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}
@@ -179,10 +177,6 @@ func init() {
 	chartLabelAPIType := &ChartLabelAPI{}
 	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
 	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
-
-	if err := core.Init(); err != nil {
-		log.Fatalf("failed to initialize GlobalController: %v", err)
-	}
 
 	// syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
@@ -657,103 +651,6 @@ func (a testapi) GetReposTop(authInfo usrInfo, count string) (int, interface{}, 
 		return 0, nil, err
 	}
 	return http.StatusOK, result, nil
-}
-
-// -------------------------Targets Test---------------------------------------//
-// Create a new replication target
-func (a testapi) AddTargets(authInfo usrInfo, repTarget apilib.RepTargetPost) (int, string, error) {
-	_sling := sling.New().Post(a.basePath)
-
-	path := "/api/targets"
-
-	_sling = _sling.Path(path)
-	_sling = _sling.BodyJSON(repTarget)
-
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, string(body), err
-}
-
-// List filters targets by name
-func (a testapi) ListTargets(authInfo usrInfo, targetName string) (int, []apilib.RepTarget, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	path := "/api/targets?name=" + targetName
-
-	_sling = _sling.Path(path)
-
-	var successPayload []apilib.RepTarget
-
-	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
-	if err == nil && httpStatusCode == 200 {
-		err = json.Unmarshal(body, &successPayload)
-	}
-
-	return httpStatusCode, successPayload, err
-}
-
-// Ping target
-func (a testapi) PingTarget(authInfo usrInfo, body interface{}) (int, error) {
-	_sling := sling.New().Post(a.basePath)
-
-	path := "/api/targets/ping"
-
-	_sling = _sling.Path(path)
-	_sling = _sling.BodyJSON(body)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
-}
-
-// Get target by targetID
-func (a testapi) GetTargetByID(authInfo usrInfo, targetID string) (int, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	path := "/api/targets/" + targetID
-
-	_sling = _sling.Path(path)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-
-	return httpStatusCode, err
-}
-
-// Update target by targetID
-func (a testapi) PutTargetByID(authInfo usrInfo, targetID string, repTarget apilib.RepTargetPost) (int, error) {
-	_sling := sling.New().Put(a.basePath)
-
-	path := "/api/targets/" + targetID
-
-	_sling = _sling.Path(path)
-	_sling = _sling.BodyJSON(repTarget)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-
-	return httpStatusCode, err
-}
-
-// List the target relevant policies by targetID
-func (a testapi) GetTargetPoliciesByID(authInfo usrInfo, targetID string) (int, error) {
-	_sling := sling.New().Get(a.basePath)
-
-	path := "/api/targets/" + targetID + "/policies/"
-
-	_sling = _sling.Path(path)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-
-	return httpStatusCode, err
-}
-
-// Delete target by targetID
-func (a testapi) DeleteTargetsByID(authInfo usrInfo, targetID string) (int, error) {
-	_sling := sling.New().Delete(a.basePath)
-
-	path := "/api/targets/" + targetID
-
-	_sling = _sling.Path(path)
-
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
-	return httpStatusCode, err
 }
 
 // --------------------Replication_Policy Test--------------------------------//
@@ -1243,4 +1140,74 @@ func (a testapi) ScanAllScheduleGet(authInfo usrInfo) (int, api_models.AdminJobS
 	}
 
 	return httpStatusCode, successPayLoad, err
+}
+
+func (a testapi) RegistryGet(authInfo usrInfo, registryID int64) (*model.Registry, int, error) {
+	_sling := sling.New().Base(a.basePath).Get(fmt.Sprintf("/api/registries/%d", registryID))
+	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err == nil && code == http.StatusOK {
+		registry := model.Registry{}
+		if err := json.Unmarshal(body, &registry); err != nil {
+			return nil, code, err
+		}
+		return &registry, code, nil
+	}
+	return nil, code, err
+}
+
+func (a testapi) RegistryList(authInfo usrInfo) ([]*model.Registry, int, error) {
+	_sling := sling.New().Base(a.basePath).Get("/api/registries")
+	code, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err != nil || code != http.StatusOK {
+		return nil, code, err
+	}
+
+	var registries []*model.Registry
+	if err := json.Unmarshal(body, &registries); err != nil {
+		return nil, code, err
+	}
+
+	return registries, code, nil
+}
+
+func (a testapi) RegistryCreate(authInfo usrInfo, registry *model.Registry) (int, error) {
+	_sling := sling.New().Base(a.basePath).Post("/api/registries").BodyJSON(registry)
+	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return code, err
+}
+
+type pingReq struct {
+	ID             *int64  `json:"id"`
+	Type           *string `json:"type"`
+	URL            *string `json:"url"`
+	CredentialType *string `json:"credential_type"`
+	AccessKey      *string `json:"access_key"`
+	AccessSecret   *string `json:"access_secret"`
+	Insecure       *bool   `json:"insecure"`
+}
+
+func (a testapi) RegistryPing(authInfo usrInfo, registry *pingReq) (int, error) {
+	_sling := sling.New().Base(a.basePath).Post("/api/registries/ping").BodyJSON(registry)
+	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return code, err
+}
+
+func (a testapi) RegistryDelete(authInfo usrInfo, registryID int64) (int, error) {
+	_sling := sling.New().Base(a.basePath).Delete(fmt.Sprintf("/api/registries/%d", registryID))
+	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err != nil || code != http.StatusOK {
+		return code, fmt.Errorf("delete registry error: %v", err)
+	}
+
+	return code, nil
+}
+
+func (a testapi) RegistryUpdate(authInfo usrInfo, registryID int64, req *apimodels.RegistryUpdateRequest) (int, error) {
+	_sling := sling.New().Base(a.basePath).Put(fmt.Sprintf("/api/registries/%d", registryID)).BodyJSON(req)
+	code, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err != nil || code != http.StatusOK {
+		return code, fmt.Errorf("update registry error: %v", err)
+	}
+
+	return code, nil
 }

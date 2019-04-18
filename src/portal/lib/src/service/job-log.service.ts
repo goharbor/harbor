@@ -47,9 +47,9 @@ export class JobLogDefaultService extends JobLogService {
     @Inject(SERVICE_CONFIG) config: IServiceConfig
   ) {
     super();
-    this._replicationJobBaseUrl = config.replicationJobEndpoint
-      ? config.replicationJobEndpoint
-      : "/api/jobs/replication";
+    this._replicationJobBaseUrl = config.replicationBaseEndpoint
+      ? config.replicationBaseEndpoint
+      : "/api/replication";
     this._scanningJobBaseUrl = config.scanJobEndpoint
       ? config.scanJobEndpoint
       : "/api/jobs/scan";

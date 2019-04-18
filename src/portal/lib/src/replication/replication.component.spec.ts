@@ -22,166 +22,105 @@ import {ProjectDefaultService, ProjectService} from "../service/project.service"
 import {OperationService} from "../operation/operation.service";
 import {FilterLabelComponent} from "../create-edit-rule/filter-label.component";
 import {LabelPieceComponent} from "../label-piece/label-piece.component";
+import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
+
 
 describe('Replication Component (inline template)', () => {
 
   let mockRules: ReplicationRule[] = [
       {
           "id": 1,
-          "projects": [{
-              "project_id": 33,
-              "owner_id": 1,
-              "name": "aeas",
-              "deleted": 0,
-              "togglable": false,
-              "current_user_role_id": 0,
-              "repo_count": 0,
-              "metadata": {
-                  "public": false,
-                  "enable_content_trust": "",
-                  "prevent_vul": "",
-                  "severity": "",
-                  "auto_scan": ""},
-              "owner_name": "",
-              "creation_time": null,
-              "update_time": null,
-              "has_project_admin_role": true,
-              "is_member": true,
-              "role_name": ""
-          }],
-          "targets": [{
-              "id": 1,
-              "endpoint": "https://10.117.4.151",
-              "name": "target_01",
-              "username": "admin",
-              "password": "",
-              "insecure": false,
-              "type": 0
-          }],
           "name": "sync_01",
           "description": "",
           "filters": null,
-          "trigger": {"kind": "Manual", "schedule_param": null},
+          "trigger": {"type": "Manual", "trigger_settings": null},
           "error_job_count": 2,
-          "replicate_deletion": false,
-          "replicate_existing_image_now": false,
+          "deletion": false,
+          "src_registry": {id: 3},
+          "src_namespaces": ["name1"],
+          "enabled": true,
+          "override": true
       },
       {
           "id": 2,
-          "projects": [{
-              "project_id": 33,
-              "owner_id": 1,
-              "name": "aeas",
-              "deleted": 0,
-              "togglable": false,
-              "current_user_role_id": 0,
-              "repo_count": 0,
-              "metadata": {
-                  "public": false,
-                  "enable_content_trust": "",
-                  "prevent_vul": "",
-                  "severity": "",
-                  "auto_scan": ""},
-              "owner_name": "",
-              "creation_time": null,
-              "update_time": null,
-              "has_project_admin_role": true,
-              "is_member": true,
-              "role_name": ""
-          }],
-          "targets": [{
-              "id": 1,
-              "endpoint": "https://10.117.4.151",
-              "name": "target_01",
-              "username": "admin",
-              "password": "",
-              "insecure": false,
-              "type": 0
-          }],
           "name": "sync_02",
           "description": "",
           "filters": null,
-          "trigger": {"kind": "Manual", "schedule_param": null},
+          "trigger": {"type": "Manual", "trigger_settings": null},
           "error_job_count": 2,
-          "replicate_deletion": false,
-          "replicate_existing_image_now": false,
+          "deletion": false,
+          "dest_registry": {id: 5},
+          "src_namespaces": ["name1"],
+          "enabled": true,
+          "override": true
       }
   ];
 
   let mockJobs: ReplicationJobItem[] = [
     {
-        "id": 1,
-        "status": "error",
-        "repository": "library/nginx",
-        "policy_id": 1,
-        "operation": "transfer",
-        "update_time": new Date("2017-05-23 12:20:33"),
-        "tags": null
+      id: 1,
+      status: "stopped",
+      policy_id: 1,
+      trigger: "Manual",
+      total: 0,
+      failed: 0,
+      succeed: 0,
+      in_progress: 0,
+      stopped: 0
     },
     {
-        "id": 2,
-        "status": "finished",
-        "repository": "library/mysql",
-        "policy_id": 1,
-        "operation": "transfer",
-        "update_time": new Date("2017-05-27 12:20:33"),
-        "tags": null
+      id: 2,
+      status: "stopped",
+      policy_id: 1,
+      trigger: "Manual",
+      total: 1,
+      failed: 0,
+      succeed: 1,
+      in_progress: 0,
+      stopped: 0
     },
     {
-        "id": 3,
-        "status": "stopped",
-        "repository": "library/busybox",
-        "policy_id": 2,
-        "operation": "transfer",
-        "update_time": new Date("2017-04-23 12:20:33"),
-        "tags": null
+      id: 3,
+      status: "stopped",
+      policy_id: 2,
+      trigger: "Manual",
+      total: 1,
+      failed: 1,
+      succeed: 0,
+      in_progress: 0,
+      stopped: 0
     }
   ];
 
     let mockEndpoints: Endpoint[] = [
         {
             "id": 1,
-            "endpoint": "https://10.117.4.151",
-            "name": "target_01",
-            "username": "admin",
-            "password": "",
+            "credential": {
+              "access_key": "admin",
+              "access_secret": "",
+              "type": "basic"
+            },
+            "description": "test",
             "insecure": false,
-            "type": 0
+            "name": "target_01",
+            "type": "Harbor",
+            "url": "https://10.117.4.151"
         },
         {
             "id": 2,
-            "endpoint": "https://10.117.5.142",
-            "name": "target_02",
-            "username": "AAA",
-            "password": "",
+            "credential": {
+              "access_key": "admin",
+              "access_secret": "",
+              "type": "basic"
+            },
+            "description": "test",
             "insecure": false,
-            "type": 0
+            "name": "target_02",
+            "type": "Harbor",
+            "url": "https://10.117.5.142"
         },
     ];
-
-    // let mockProjects: Project[] = [
-    //     { "project_id": 1,
-    //         "owner_id": 0,
-    //         "name": 'project_01',
-    //         "creation_time": '',
-    //         "deleted": 0,
-    //         "owner_name": '',
-    //         "togglable": false,
-    //         "update_time": '',
-    //         "current_user_role_id": 0,
-    //         "repo_count": 0,
-    //         "has_project_admin_role": false,
-    //         "is_member": false,
-    //         "role_name": '',
-    //         "metadata": {
-    //             "public": '',
-    //             "enable_content_trust": '',
-    //             "prevent_vul": '',
-    //             "severity": '',
-    //             "auto_scan": '',
-    //         }
-    //     }];
 
   let mockJob: ReplicationJob = {
     metadata: {xTotalCount: 3},
@@ -198,7 +137,7 @@ describe('Replication Component (inline template)', () => {
 
   let spyRules: jasmine.Spy;
   let spyJobs: jasmine.Spy;
-  let spyEndpoint: jasmine.Spy;
+  let spyEndpoints: jasmine.Spy;
 
   let deGrids: DebugElement[];
   let deRules: DebugElement;
@@ -208,15 +147,15 @@ describe('Replication Component (inline template)', () => {
   let elJob: HTMLElement;
 
   let config: IServiceConfig = {
-    replicationRuleEndpoint: '/api/policies/replication/testing',
-    replicationJobEndpoint: '/api/jobs/replication/testing'
+    replicationRuleEndpoint: '/api/policies/replication/testing'
   };
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
-        NoopAnimationsModule
+        NoopAnimationsModule,
+        RouterTestingModule
       ],
       declarations: [
         ReplicationComponent,
@@ -254,10 +193,10 @@ describe('Replication Component (inline template)', () => {
     endpointService = fixtureCreate.debugElement.injector.get(EndpointService);
 
     spyRules = spyOn(replicationService, 'getReplicationRules').and.returnValues(of(mockRules));
-    spyJobs = spyOn(replicationService, 'getJobs').and.returnValues(of(mockJob));
+    spyJobs = spyOn(replicationService, 'getExecutions').and.returnValues(of(mockJob));
 
-    spyEndpoint = spyOn(endpointService, 'getEndpoints').and.returnValues(of(mockEndpoints));
 
+    spyEndpoints = spyOn(endpointService, 'getEndpoints').and.returnValues(of(mockEndpoints));
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -325,7 +264,6 @@ describe('Replication Component (inline template)', () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
-      comp.doFilterJobStatus('finished');
       let el: HTMLElement = deJobs.nativeElement;
       fixture.detectChanges();
       expect(el).toBeTruthy();
@@ -337,8 +275,6 @@ describe('Replication Component (inline template)', () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
-      comp.doJobSearchByStartTime('2017-05-01');
-      comp.doJobSearchByEndTime('2015-05-25');
       let el: HTMLElement = deJobs.nativeElement;
       fixture.detectChanges();
       expect(el).toBeTruthy();

@@ -118,7 +118,7 @@ func (p *ProjectAPI) Post() {
 		}
 	}
 
-	if onlyAdmin && !p.SecurityCtx.IsSysAdmin() {
+	if onlyAdmin && !(p.SecurityCtx.IsSysAdmin() || p.SecurityCtx.IsSolutionUser()) {
 		log.Errorf("Only sys admin can create project")
 		p.SendForbiddenError(errors.New("Only system admin can create project"))
 		return
@@ -159,9 +159,23 @@ func (p *ProjectAPI) Post() {
 		pro.Metadata[models.ProMetaPublic] = strconv.FormatBool(false)
 	}
 
+	owner := p.SecurityCtx.GetUsername()
+	// set the owner as the system admin when the API being called by replication
+	// it's a solution to workaround the restriction of project creation API:
+	// only normal users can create projects
+	if p.SecurityCtx.IsSolutionUser() {
+		user, err := dao.GetUser(models.User{
+			UserID: 1,
+		})
+		if err != nil {
+			p.SendInternalServerError(fmt.Errorf("failed to get the user 1: %v", err))
+			return
+		}
+		owner = user.Username
+	}
 	projectID, err := p.ProjectMgr.Create(&models.Project{
 		Name:      pro.Name,
-		OwnerName: p.SecurityCtx.GetUsername(),
+		OwnerName: owner,
 		Metadata:  pro.Metadata,
 	})
 	if err != nil {
@@ -288,18 +302,6 @@ func (p *ProjectAPI) deletable(projectID int64) (*deletableResp, error) {
 		return &deletableResp{
 			Deletable: false,
 			Message:   "the project contains repositories, can not be deleted",
-		}, nil
-	}
-
-	policies, err := dao.GetRepPolicyByProject(projectID)
-	if err != nil {
-		return nil, err
-	}
-
-	if len(policies) > 0 {
-		return &deletableResp{
-			Deletable: false,
-			Message:   "the project contains replication rules, can not be deleted",
 		}, nil
 	}
 
@@ -531,8 +533,8 @@ func (p *ProjectAPI) Logs() {
 // TODO move this to pa ckage models
 func validateProjectReq(req *models.ProjectRequest) error {
 	pn := req.Name
-	if utils.IsIllegalLength(req.Name, projectNameMinLen, projectNameMaxLen) {
-		return fmt.Errorf("Project name is illegal in length. (greater than %d or less than %d)", projectNameMaxLen, projectNameMinLen)
+	if utils.IsIllegalLength(pn, projectNameMinLen, projectNameMaxLen) {
+		return fmt.Errorf("Project name %s is illegal in length. (greater than %d or less than %d)", pn, projectNameMaxLen, projectNameMinLen)
 	}
 	validProjectName := regexp.MustCompile(`^` + restrictedNameChars + `$`)
 	legal := validProjectName.MatchString(pn)

@@ -278,7 +278,7 @@ func NewStandardTokenAuthorizer(client *http.Client, credential Credential,
 	// 1. performance issue
 	// 2. the realm field returned by registry is an IP which can not reachable
 	// inside Harbor
-	if len(customizedTokenService) > 0 {
+	if len(customizedTokenService) > 0 && len(customizedTokenService[0]) > 0 {
 		generator.realm = customizedTokenService[0]
 	}
 

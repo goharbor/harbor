@@ -43,7 +43,8 @@ export const enum ConfirmationTargets {
   CONFIG_ROUTE,
   CONFIG_TAB,
   HELM_CHART,
-  HELM_CHART_VERSION
+  HELM_CHART_VERSION,
+  STOP_EXECUTIONS
 }
 
 export const enum ActionType {
@@ -69,7 +70,7 @@ export const enum ConfirmationState {
 }
 
 export const enum ConfirmationButtons {
-  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, REPLICATE_CANCEL
+  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, REPLICATE_CANCEL, STOP_CANCEL
 }
 
 export const LabelColor = [
