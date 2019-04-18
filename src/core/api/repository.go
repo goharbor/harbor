@@ -1043,6 +1043,7 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 }
 
 
+// ScanStatus fetch the scan status (done: true or done: false)
 func (ra *RepositoryAPI) ScanStatus() {
 	if !config.WithClair() {
 		log.Warningf("Harbor is not deployed with Clair, it's impossible to get vulnerability details.")
