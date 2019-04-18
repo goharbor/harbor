@@ -96,6 +96,11 @@ func (h *handler) getRelatedPolicies(resource *model.Resource) ([]*model.Policy,
 		if !policy.Enabled {
 			continue
 		}
+		// currently, the events are produced only by local Harbor,
+		// so they should only apply to the policies whose source registry is local Harbor
+		if !(policy.SrcRegistry == nil || policy.SrcRegistry.ID == 0) {
+			continue
+		}
 		// has no trigger
 		if policy.Trigger == nil {
 			continue

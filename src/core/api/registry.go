@@ -147,12 +147,20 @@ func (t *RegistryAPI) Get() {
 	}
 
 	// Hide access secret
-	if r.Credential != nil && len(r.Credential.AccessSecret) != 0 {
-		r.Credential.AccessSecret = "*****"
-	}
+	hideAccessSecret(r.Credential)
 
 	t.Data["json"] = r
 	t.ServeJSON()
+}
+
+func hideAccessSecret(credential *model.Credential) {
+	if credential == nil {
+		return
+	}
+	if len(credential.AccessSecret) == 0 {
+		return
+	}
+	credential.AccessSecret = "*****"
 }
 
 // List lists all registries that match a given registry name.
@@ -170,9 +178,7 @@ func (t *RegistryAPI) List() {
 
 	// Hide passwords
 	for _, r := range registries {
-		if r.Credential != nil && len(r.Credential.AccessSecret) != 0 {
-			r.Credential.AccessSecret = "*****"
-		}
+		hideAccessSecret(r.Credential)
 	}
 
 	t.Data["json"] = registries

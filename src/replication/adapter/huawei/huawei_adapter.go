@@ -121,22 +121,30 @@ func (a *adapter) ConvertResourceMetadata(resourceMetadata *model.ResourceMetada
 
 // PrepareForPush prepare for push to Huawei SWR
 func (a *adapter) PrepareForPush(resources []*model.Resource) error {
-	// TODO optimize the logic by merging the same namesapces
+	namespaces := map[string]struct{}{}
 	for _, resource := range resources {
-		namespace, _ := util.ParseRepository(resource.Metadata.Repository.Name)
+		paths := strings.Split(resource.Metadata.Repository.Name, "/")
+		namespace := paths[0]
 		ns, err := a.GetNamespace(namespace)
 		if err != nil {
-			//
-		} else {
-			if ns.Name == namespace {
-				return nil
-			}
+			return err
 		}
+		if ns != nil && ns.Name == namespace {
+			continue
+		}
+		namespaces[namespace] = struct{}{}
+	}
 
-		url := fmt.Sprintf("%s/dockyard/v2/namespaces", a.registry.URL)
+	url := fmt.Sprintf("%s/dockyard/v2/namespaces", a.registry.URL)
+	client := &http.Client{
+		Transport: util.GetHTTPTransport(a.registry.Insecure),
+	}
+	for namespace := range namespaces {
 		namespacebyte, err := json.Marshal(struct {
 			Namespace string `json:"namespace"`
-		}{Namespace: namespace})
+		}{
+			Namespace: namespace,
+		})
 		if err != nil {
 			return err
 		}
@@ -150,25 +158,18 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		encodeAuth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", a.registry.Credential.AccessKey, a.registry.Credential.AccessSecret)))
 		r.Header.Add("Authorization", "Basic "+encodeAuth)
 
-		client := &http.Client{}
-		if a.registry.Insecure == true {
-			client = &http.Client{
-				Transport: &http.Transport{
-					TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-				},
-			}
-		}
 		resp, err := client.Do(r)
 		if err != nil {
 			return err
 		}
-
 		defer resp.Body.Close()
 		code := resp.StatusCode
 		if code >= 300 || code < 200 {
 			body, _ := ioutil.ReadAll(resp.Body)
 			return fmt.Errorf("[%d][%s]", code, string(body))
 		}
+
+		log.Debugf("namespace %s created", namespace)
 	}
 	return nil
 }
