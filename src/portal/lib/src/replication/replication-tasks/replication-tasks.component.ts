@@ -20,12 +20,9 @@ const taskStatus: any = {
 })
 export class ReplicationTasksComponent implements OnInit, OnDestroy {
   isOpenFilterTag: boolean;
-  selectedRow: [];
   currentPage: number = 1;
-  currentPagePvt: number = 0;
-  totalCount: number = 0;
+  selectedRow: [];
   pageSize: number = DEFAULT_PAGE_SIZE;
-  currentState: State;
   loading = true;
   searchTask: string;
   defaultFilter = "resource_type";
@@ -53,6 +50,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.searchTask = '';
     this.getExecutionDetail();
+    this.clrLoadTasks();
   }
 
   getExecutionDetail(): void {
@@ -120,30 +118,16 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
     }
   }
 
-  clrLoadTasks(state: State): void {
-      if (!state || !state.page) {
-        return;
-      }
-      // Keep it for future filter
-      this.currentState = state;
-
-      let pageNumber: number = calculatePage(state);
-      if (pageNumber !== this.currentPagePvt) {
-        // load data
-        let params: RequestQueryParams = new RequestQueryParams();
-        params.set("page", '' + pageNumber);
-        params.set("page_size", '' + this.pageSize);
-        if (this.searchTask && this.searchTask !== "") {
-            params.set(this.defaultFilter, this.searchTask);
-        }
-
+  clrLoadTasks(): void {
       this.loading = true;
+      let params: RequestQueryParams = new RequestQueryParams();
+      if (this.searchTask && this.searchTask !== "") {
+        params.set(this.defaultFilter, this.searchTask);
+      }
       this.replicationService.getReplicationTasks(this.executionId, params)
       .pipe(finalize(() => (this.loading = false)))
       .subscribe(res => {
-        this.totalCount = res.length;
         this.tasks = res; // Keep the data
-        this.taskItem = this.tasks.filter(tasks => tasks.resource_type !== "");
         if (!this.timerDelay) {
           this.timerDelay = timer(10000, 10000).subscribe(() => {
             let count: number = 0;
@@ -157,31 +141,17 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
               }
             });
             if (count > 0) {
-              this.clrLoadTasks(this.currentState);
+              this.clrLoadTasks();
             } else {
               this.timerDelay.unsubscribe();
               this.timerDelay = null;
             }
           });
         }
-        this.taskItem = doFiltering<ReplicationTasks>(this.taskItem, state);
-
-        this.taskItem = doSorting<ReplicationTasks>(this.taskItem, state);
-
-        this.currentPagePvt = pageNumber;
       },
       error => {
         this.errorHandler.error(error);
       });
-      } else {
-
-        this.taskItem = this.tasks.filter(tasks => tasks.resource_type !== "");
-        // Do customized filter
-        this.taskItem = doFiltering<ReplicationTasks>(this.taskItem, state);
-
-        // Do customized sorting
-        this.taskItem = doSorting<ReplicationTasks>(this.taskItem, state);
-      }
   }
   onBack(): void {
     this.router.navigate(["harbor", "replications"]);
@@ -194,8 +164,8 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
 
   // refresh icon
   refreshTasks(): void {
-    this.searchTask = '';
     this.loading = true;
+    this.currentPage = 1;
     this.replicationService.getReplicationTasks(this.executionId)
     .subscribe(res => {
       this.tasks = res;
@@ -213,23 +183,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
     }
     this.searchTask = value.trim();
     this.loading = true;
-    this.currentPage = 1;
-    if (this.currentPagePvt === 1) {
-        // Force reloading
-        let st: State = this.currentState;
-        if (!st) {
-            st = {
-                page: {}
-            };
-        }
-        st.page.from = 0;
-        st.page.to = this.pageSize - 1;
-        st.page.size = this.pageSize;
-
-        this.currentPagePvt = 0;
-
-        this.clrLoadTasks(st);
-    }
+    this.clrLoadTasks();
   }
 
   openFilter(isOpen: boolean): void {
