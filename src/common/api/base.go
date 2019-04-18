@@ -223,7 +223,8 @@ func (b *BaseAPI) SendBadRequestError(err error) {
 
 // SendInternalServerError sends internal server error to the client.
 func (b *BaseAPI) SendInternalServerError(err error) {
-	b.RenderFormattedError(http.StatusInternalServerError, err.Error())
+	log.Error(err.Error())
+	b.RenderFormattedError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
 }
 
 // SendForbiddenError sends forbidden error to the client.
