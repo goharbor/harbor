@@ -366,14 +366,6 @@
   revision = "b2004221932bd6b13167ef654c81cffac36f7537"
 
 [[projects]]
-  digest = "1:ee0845ea64262e3d1a6e2eab768fcb2008a0c8e571b7a3bebea554a1c031aeeb"
-  name = "github.com/mattn/go-sqlite3"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "6c771bb9887719704b210e87e934f08be014bdb1"
-  version = "v1.6.0"
-
-[[projects]]
   digest = "1:5113b1edf6e2f370f9ce6101e7b5a86c3e8decd108067e34b762ae91e42964ee"
   name = "github.com/miekg/pkcs11"
   packages = ["."]
@@ -405,12 +397,12 @@
   version = "v1.0.0-rc0"
 
 [[projects]]
-  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
+  digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
   name = "github.com/pkg/errors"
   packages = ["."]
   pruneopts = "UT"
-  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
-  version = "v0.8.0"
+  revision = "ba968bfe8b2f7e042a574c888954fccecfa385b4"
+  version = "v0.8.1"
 
 [[projects]]
   digest = "1:0028cb19b2e4c3112225cd871870f2d9cf49b9b4276531f03438a88e94be86fe"
@@ -753,7 +745,6 @@
     "github.com/gorilla/handlers",
     "github.com/gorilla/mux",
     "github.com/lib/pq",
-    "github.com/mattn/go-sqlite3",
     "github.com/opencontainers/go-digest",
     "github.com/pkg/errors",
     "github.com/robfig/cron",
