@@ -43,6 +43,7 @@ func (adapter Adapter) Info() (*model.RegistryInfo, error) {
 		SupportedResourceTypes:   []model.ResourceType{model.ResourceTypeImage},
 		SupportedResourceFilters: []*model.FilterStyle{},
 		SupportedTriggers:        []model.TriggerType{},
+		SupportedCustomEndpoint:  false,
 	}
 	return &registryInfo, nil
 }

@@ -114,6 +114,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeScheduled,
 			model.TriggerTypeEventBased,
 		},
+		SupportedCustomEndpoint: true,
 	}
 
 	sys := &struct {

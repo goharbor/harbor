@@ -112,4 +112,5 @@ type RegistryInfo struct {
 	SupportedResourceTypes   []ResourceType `json:"-"`
 	SupportedResourceFilters []*FilterStyle `json:"supported_resource_filters"`
 	SupportedTriggers        []TriggerType  `json:"supported_triggers"`
+	SupportedCustomEndpoint  bool           `json:"supported_custom_endpoint"`
 }

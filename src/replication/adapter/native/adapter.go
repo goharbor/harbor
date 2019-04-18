@@ -70,6 +70,7 @@ func (native) Info() (info *model.RegistryInfo, err error) {
 			model.TriggerTypeManual,
 			model.TriggerTypeScheduled,
 		},
+		SupportedCustomEndpoint: true,
 	}, nil
 }
 

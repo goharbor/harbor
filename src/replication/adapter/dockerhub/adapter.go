@@ -74,6 +74,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeManual,
 			model.TriggerTypeScheduled,
 		},
+		SupportedCustomEndpoint: false,
 	}, nil
 }
 

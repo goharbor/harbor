@@ -471,9 +471,10 @@ func process(info *model.RegistryInfo) *model.RegistryInfo {
 		return nil
 	}
 	in := &model.RegistryInfo{
-		Type:              info.Type,
-		Description:       info.Description,
-		SupportedTriggers: info.SupportedTriggers,
+		Type:                    info.Type,
+		Description:             info.Description,
+		SupportedTriggers:       info.SupportedTriggers,
+		SupportedCustomEndpoint: info.SupportedCustomEndpoint,
 	}
 	filters := []*model.FilterStyle{}
 	for _, filter := range info.SupportedResourceFilters {
