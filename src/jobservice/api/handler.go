@@ -16,7 +16,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -27,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/core"
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/pkg/errors"
 )
@@ -84,13 +82,19 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 	// Pass request to the controller for the follow-up.
 	jobStats, err := dh.controller.LaunchJob(jobReq)
 	if err != nil {
-		if errs.IsConflictError(err) {
+		code := http.StatusInternalServerError
+		if errs.IsBadRequestError(err) {
+			// Bad request
+			code = http.StatusBadRequest
+		} else if errs.IsConflictError(err) {
 			// Conflict error
-			dh.handleError(w, req, http.StatusConflict, err)
+			code = http.StatusConflict
 		} else {
 			// General error
-			dh.handleError(w, req, http.StatusInternalServerError, errs.LaunchJobError(err))
+			err = errs.LaunchJobError(err)
 		}
+
+		dh.handleError(w, req, code, err)
 		return
 	}
 
@@ -109,12 +113,14 @@ func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Reque
 	jobStats, err := dh.controller.GetJob(jobID)
 	if err != nil {
 		code := http.StatusInternalServerError
-		backErr := errs.GetJobStatsError(err)
 		if errs.IsObjectNotFoundError(err) {
 			code = http.StatusNotFound
-			backErr = err
+		} else if errs.IsBadRequestError(err) {
+			code = http.StatusBadRequest
+		} else {
+			err = errs.GetJobStatsError(err)
 		}
-		dh.handleError(w, req, code, backErr)
+		dh.handleError(w, req, code, err)
 		return
 	}
 
@@ -144,21 +150,23 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 	}
 
 	// Only support stop command now
-	cmd := lcm.OPCommand(jobActionReq.Action)
+	cmd := job.OPCommand(jobActionReq.Action)
 	if !cmd.IsStop() {
-		dh.handleError(w, req, http.StatusNotImplemented, errs.UnknownActionNameError(fmt.Errorf("command: %s", jobActionReq.Action)))
+		dh.handleError(w, req, http.StatusNotImplemented, errs.UnknownActionNameError(errors.Errorf("command: %s", jobActionReq.Action)))
 		return
 	}
 
 	// Stop job
 	if err := dh.controller.StopJob(jobID); err != nil {
 		code := http.StatusInternalServerError
-		backErr := errs.StopJobError(err)
 		if errs.IsObjectNotFoundError(err) {
 			code = http.StatusNotFound
-			backErr = err
+		} else if errs.IsBadRequestError(err) {
+			code = http.StatusBadRequest
+		} else {
+			err = errs.StopJobError(err)
 		}
-		dh.handleError(w, req, code, backErr)
+		dh.handleError(w, req, code, err)
 		return
 	}
 
@@ -199,12 +207,14 @@ func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Reque
 	logData, err := dh.controller.GetJobLogData(jobID)
 	if err != nil {
 		code := http.StatusInternalServerError
-		backErr := errs.GetJobLogError(err)
 		if errs.IsObjectNotFoundError(err) {
 			code = http.StatusNotFound
-			backErr = err
+		} else if errs.IsBadRequestError(err) {
+			code = http.StatusBadRequest
+		} else {
+			err = errs.GetJobLogError(err)
 		}
-		dh.handleError(w, req, code, backErr)
+		dh.handleError(w, req, code, err)
 		return
 	}
 
@@ -239,7 +249,7 @@ func (dh *DefaultHandler) handleError(w http.ResponseWriter, req *http.Request, 
 
 func (dh *DefaultHandler) preCheck(w http.ResponseWriter, req *http.Request) bool {
 	if dh.controller == nil {
-		dh.handleError(w, req, http.StatusInternalServerError, errs.MissingBackendHandlerError(fmt.Errorf("nil controller")))
+		dh.handleError(w, req, http.StatusInternalServerError, errs.MissingBackendHandlerError(errors.Errorf("nil controller")))
 		return false
 	}
 

@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
@@ -501,7 +502,7 @@ func (bt *basicTracker) retrieve() error {
 	}
 
 	if vals == nil || len(vals) == 0 {
-		return errors.Errorf("nothing got from backend for job '%s'", bt.jobID)
+		return errs.NoObjectFoundError(bt.jobID)
 	}
 
 	res := &Stats{

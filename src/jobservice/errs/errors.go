@@ -23,8 +23,6 @@ import (
 const (
 	// JobStoppedErrorCode is code for jobStoppedError
 	JobStoppedErrorCode = 10000 + iota
-	// JobCancelledErrorCode is code for jobCancelledError
-	JobCancelledErrorCode
 	// ReadRequestBodyErrorCode is code for the error of reading http request body error
 	ReadRequestBodyErrorCode
 	// HandleJSONDataErrorCode is code for the error of handling json data error
@@ -51,6 +49,8 @@ const (
 	UnAuthorizedErrorCode
 	// ResourceConflictsErrorCode is code for the error of resource conflicting
 	ResourceConflictsErrorCode
+	// BadRequestErrorCode is code for the error of bad request
+	BadRequestErrorCode
 )
 
 // baseError ...
@@ -180,6 +180,22 @@ func ConflictError(object string) error {
 	}
 }
 
+// badRequestError is designed for the case of bad request
+type badRequestError struct {
+	baseError
+}
+
+// BadRequestError returns the error of handing bad request case
+func BadRequestError(object interface{}) error {
+	return badRequestError{
+		baseError{
+			Code:        BadRequestErrorCode,
+			Err:         "bad request",
+			Description: fmt.Sprintf("%s", object),
+		},
+	}
+}
+
 // IsJobStoppedError return true if the error is jobStoppedError
 func IsJobStoppedError(err error) bool {
 	_, ok := err.(jobStoppedError)
@@ -195,5 +211,11 @@ func IsObjectNotFoundError(err error) bool {
 // IsConflictError returns true if the error is conflictError
 func IsConflictError(err error) bool {
 	_, ok := err.(conflictError)
+	return ok
+}
+
+// IsBadRequestError returns true if the error is badRequestError
+func IsBadRequestError(err error) bool {
+	_, ok := err.(badRequestError)
 	return ok
 }
