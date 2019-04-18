@@ -30,6 +30,12 @@ func Match(pattern, str string) (bool, error) {
 	return doublestar.Match(pattern, str)
 }
 
+// IsSpecificRepositoryName if the name not contains any char of "*?[{\\]}^,",
+// it is a specific repository name.
+func IsSpecificRepositoryName(name string) bool {
+	return !strings.ContainsAny(name, "*?[{\\]}^,")
+}
+
 // GetHTTPTransport can be used to share the common HTTP transport
 func GetHTTPTransport(insecure bool) *http.Transport {
 	return registry.GetHTTPTransport(insecure)
