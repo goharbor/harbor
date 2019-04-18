@@ -198,7 +198,6 @@ func (a *adapter) CreateNamespace(namespace *model.Namespace) error {
 // getNamespace get namespace from DockerHub, if the namespace not found, two nil would be returned.
 func (a *adapter) getNamespace(namespace string) (*model.Namespace, error) {
 	resp, err := a.client.Do(http.MethodGet, getNamespacePath(namespace), nil)
-
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +213,7 @@ func (a *adapter) getNamespace(namespace string) (*model.Namespace, error) {
 	}
 
 	if resp.StatusCode/100 != 2 {
-		log.Errorf("create namespace error: %d -- %s", resp.StatusCode, string(body))
+		log.Errorf("get namespace error: %d -- %s", resp.StatusCode, string(body))
 		return nil, fmt.Errorf("%d -- %s", resp.StatusCode, body)
 	}
 
