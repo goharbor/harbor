@@ -221,6 +221,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       this.isPushMode = true;
     }
     setTimeout(() => {
+      // There is no trigger_setting type when the harbor is upgraded from the old version.
+      rule.trigger.trigger_settings = rule.trigger.trigger_settings ? rule.trigger.trigger_settings : {cron: ''};
       this.ruleForm.reset({
         name: rule.name,
         description: rule.description,

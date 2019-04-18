@@ -49,8 +49,8 @@ describe("CreateEditRuleComponent (inline template)", () => {
       src_registry: {id: 2},
       src_namespaces: ["name1", "name2"],
       trigger: {
-        kind: "Manual",
-        schedule_param: {}
+        type: "Manual",
+        trigger_settings: {}
       },
       filters: [],
       deletion: false,
@@ -162,8 +162,8 @@ describe("CreateEditRuleComponent (inline template)", () => {
     src_registry: {id: 10 },
     dest_registry: {id: 0 },
     trigger: {
-      kind: "Manual",
-      schedule_param: {}
+      type: "Manual",
+      trigger_settings: {}
     },
     filters: [],
     deletion: false,

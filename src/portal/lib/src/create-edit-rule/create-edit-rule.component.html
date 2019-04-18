@@ -21,10 +21,12 @@
         <!-- replication mode -->
         <div class="form-group form-group-override">
           <label class="form-group-label-override">{{'REPLICATION.REPLI_MODE' | translate}}</label>
-          <div class="radio" style="display:inherit;">
-            <input class="mode-base" type="radio" id="push_base" name="replicationMode" [value]=true  [disabled]="!(policyId<0)" [(ngModel)]="isPushMode" (change)="modeChange()" [ngModelOptions]="{standalone: true}">
+          <div class="radio-inline" [class.disabled]="policyId >= 0">
+            <input type="radio" id="push_base" name="replicationMode" [value]=true  [disabled]="policyId >= 0" [(ngModel)]="isPushMode" (change)="modeChange()" [ngModelOptions]="{standalone: true}">
             <label for="push_base">Push-based</label>
-            <input class="mode-base" type="radio" id="pull_base" name="replicationMode" [value]=false [disabled]="!(policyId<0)" [(ngModel)]="isPushMode" [ngModelOptions]="{standalone: true}">
+          </div>
+          <div class="radio-inline" [class.disabled]="policyId >= 0">          
+            <input type="radio" id="pull_base" name="replicationMode" [value]=false [disabled]="policyId >= 0" [(ngModel)]="isPushMode" [ngModelOptions]="{standalone: true}">
             <label for="pull_base">Pull-based</label>
           </div>
         </div>
@@ -57,6 +59,7 @@
                 </label>
                 <div class="select inline-block" *ngIf="supportedFilters[i]?.style==='radio'">
                   <select  formControlName="value" #selectedValue id="{{i}}" name="{{supportedFilters[i]?.type}}">
+                    <option value=""></option>
                     <option *ngFor="let value of supportedFilters[i]?.values;" value="{{value}}">{{value}}</option>
                   </select>
                 </div>
