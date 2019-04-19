@@ -5,11 +5,11 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/goharbor/harbor/src/replication/adapter"
+	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
-var hwAdapter adapter.Adapter
+var hwAdapter adp.Adapter
 
 func init() {
 	var err error
@@ -17,7 +17,7 @@ func init() {
 		ID:          1,
 		Name:        "Huawei",
 		Description: "Adapter for SWR -- The image registry of Huawei Cloud",
-		Type:        "huawei",
+		Type:        model.RegistryTypeHuawei,
 		URL:         "https://swr.cn-north-1.myhuaweicloud.com",
 		Credential:  &model.Credential{AccessKey: "cn-north-1@AQR6NF5G2MQ1V7U4FCD", AccessSecret: "2f7ec95070592fd4838a3aa4fd09338c047fd1cd654b3422197318f97281cd9"},
 		Insecure:    false,
@@ -59,4 +59,12 @@ func TestAdapter_PrepareForPush(t *testing.T) {
 	} else {
 		t.Log("success prepare for push")
 	}
+}
+
+func TestAdapter_HealthCheck(t *testing.T) {
+	health, err := hwAdapter.HealthCheck()
+	if err != nil {
+		t.Error(err)
+	}
+	t.Log(health)
 }
