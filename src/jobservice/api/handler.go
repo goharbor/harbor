@@ -216,7 +216,7 @@ func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Reque
 	w.Write(logData)
 }
 
-// HandleJobLogReq is implementation of method defined in interface 'Handler'
+// HandlePeriodicExecutions is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandlePeriodicExecutions(w http.ResponseWriter, req *http.Request) {
 	// Get param
 	vars := mux.Vars(req)

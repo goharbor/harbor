@@ -29,13 +29,11 @@ import (
 	"strings"
 )
 
-// CtlContextKey is used to keep controller reference in the system context
-type CtlContextKey string
-
 // NodeIDContextKey is used to keep node ID in the system context
 type NodeIDContextKey string
 
 const (
+	// NodeID is const of the ID context key
 	NodeID NodeIDContextKey = "node_id"
 )
 
@@ -155,7 +153,7 @@ func DeSerializeJob(jobBytes []byte) (*work.Job, error) {
 	return &j, err
 }
 
-// Get the local hostname and IP
+// ResolveHostnameAndIP gets the local hostname and IP
 func ResolveHostnameAndIP() (string, error) {
 	host, err := os.Hostname()
 	if err != nil {

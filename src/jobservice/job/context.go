@@ -70,5 +70,5 @@ type Context interface {
 	Tracker() Tracker
 }
 
-// JobContextInitializer is a func to initialize the concrete job context
-type JobContextInitializer func(ctx context.Context) (Context, error)
+// ContextInitializer is a func to initialize the concrete job context
+type ContextInitializer func(ctx context.Context) (Context, error)

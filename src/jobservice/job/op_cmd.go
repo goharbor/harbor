@@ -15,8 +15,10 @@
 package job
 
 const (
+	// StopCommand is const for stop command
 	StopCommand OPCommand = "stop"
-	NilCommand  OPCommand = "nil"
+	// NilCommand is const for a nil command
+	NilCommand OPCommand = "nil"
 )
 
 // OPCommand is the type of job operation commands

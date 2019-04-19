@@ -103,9 +103,9 @@ func (s *Server) Start() error {
 
 	if s.config.Protocol == config.JobServiceProtocolHTTPS {
 		return s.httpServer.ListenAndServeTLS(s.config.Cert, s.config.Key)
-	} else {
-		return s.httpServer.ListenAndServe()
 	}
+
+	return s.httpServer.ListenAndServe()
 }
 
 // Stop server gracefully.

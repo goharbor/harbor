@@ -13,7 +13,7 @@ import (
 	"github.com/gomodule/redigo/redis"
 )
 
-// redisDeDuplicator is designed to handle the uniqueness of the job.
+// DeDuplicator is designed to handle the uniqueness of the job.
 // Once a job is declared to be unique, the job can be enqueued only if
 // no same job (same job name and parameters) in the queue or running in progress.
 // Adopt the same unique mechanism with the upstream framework.

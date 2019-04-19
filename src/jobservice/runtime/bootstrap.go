@@ -53,11 +53,11 @@ var JobService = &Bootstrap{}
 
 // Bootstrap is coordinating process to help load and start the other components to serve.
 type Bootstrap struct {
-	jobConextInitializer job.JobContextInitializer
+	jobConextInitializer job.ContextInitializer
 }
 
 // SetJobContextInitializer set the job context initializer
-func (bs *Bootstrap) SetJobContextInitializer(initializer job.JobContextInitializer) {
+func (bs *Bootstrap) SetJobContextInitializer(initializer job.ContextInitializer) {
 	if initializer != nil {
 		bs.jobConextInitializer = initializer
 	}

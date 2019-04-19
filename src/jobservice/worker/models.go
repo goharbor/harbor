@@ -14,12 +14,12 @@
 
 package worker
 
-// Info represents the healthy and status of all the running worker pools.
+// Stats represents the healthy and status of all the running worker pools.
 type Stats struct {
 	Pools []*StatsData `json:"worker_pools"`
 }
 
-// JobPoolStatsData represent the healthy and status of the worker worker.
+// StatsData represents the healthy and status of the worker worker.
 type StatsData struct {
 	WorkerPoolID string   `json:"worker_pool_id"`
 	StartedAt    int64    `json:"started_at"`
