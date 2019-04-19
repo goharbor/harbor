@@ -43,18 +43,8 @@ type Session struct {
 	ldapConn        *goldap.Conn
 }
 
-// LoadSystemLdapConfig - load LDAP configure from adminserver
+// LoadSystemLdapConfig - load LDAP configure
 func LoadSystemLdapConfig() (*Session, error) {
-
-	authMode, err := config.AuthMode()
-	if err != nil {
-		log.Errorf("can't load auth mode from system, error: %v", err)
-		return nil, err
-	}
-
-	if authMode != "ldap_auth" {
-		return nil, fmt.Errorf("system auth_mode isn't ldap_auth, please check configuration")
-	}
 
 	ldapConf, err := config.LDAPConf()
 
@@ -158,14 +148,8 @@ func ConnectionTestWithConfig(ldapConfig models.LdapConf) error {
 // ConnectionTestWithAllConfig - test ldap session connection, out of the scope of normal session create/close
 func ConnectionTestWithAllConfig(ldapConfig models.LdapConf, ldapGroupConfig models.LdapGroupConf) error {
 
-	authMode, err := config.AuthMode()
-	if err != nil {
-		log.Errorf("Connection test failed %v", err)
-		return err
-	}
-
 	// If no password present, use the system default password
-	if ldapConfig.LdapSearchPassword == "" && authMode == "ldap_auth" {
+	if ldapConfig.LdapSearchPassword == "" {
 
 		session, err := LoadSystemLdapConfig()
 
