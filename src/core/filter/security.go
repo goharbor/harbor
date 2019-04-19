@@ -467,9 +467,12 @@ func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 			log.Errorf("Failed to get OIDC user info, error: %v", err)
 			return false
 		}
-		if err := oidc.VerifyAndPersistToken(ctx.Request.Context(), ou); err != nil {
-			log.Errorf("Failed to verify secret, error: %v", err)
-			return false
+		if ou != nil { // If user does not have OIDC metadata, it means he is not onboarded via OIDC authn,
+			// so we can skip checking the token.
+			if err := oidc.VerifyAndPersistToken(ctx.Request.Context(), ou); err != nil {
+				log.Errorf("Failed to verify secret, error: %v", err)
+				return false
+			}
 		}
 	}
 	log.Debug("using local database project manager")
