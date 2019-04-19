@@ -94,14 +94,8 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		if len(resource.Metadata.Repository.Name) == 0 {
 			return errors.New("the name of the namespace cannot be null")
 		}
-		namespace, _ := util.ParseRepository(resource.Metadata.Repository.Name)
-		// Docker Hub doesn't support the repository contains no "/"
-		// just skip here and the following task will fail
-		if len(namespace) == 0 {
-			log.Debug("the namespace is empty, skip")
-			continue
-		}
-
+		paths := strings.Split(resource.Metadata.Repository.Name, "/")
+		namespace := paths[0]
 		namespaces[namespace] = struct{}{}
 	}
 
@@ -112,6 +106,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		if err != nil {
 			return fmt.Errorf("create namespace '%s' in DockerHub error: %v", namespace, err)
 		}
+		log.Debugf("namespace %s created", namespace)
 	}
 	return nil
 }

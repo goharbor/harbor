@@ -248,10 +248,10 @@ func populateRegistries(registryMgr registry.Manager, policy *model.Policy) erro
 		return err
 	}
 	if policy.SrcRegistry != nil {
-		policy.SrcRegistry.Credential = nil
+		hideAccessSecret(policy.SrcRegistry.Credential)
 	}
 	if policy.DestRegistry != nil {
-		policy.DestRegistry.Credential = nil
+		hideAccessSecret(policy.DestRegistry.Credential)
 	}
 	return nil
 }

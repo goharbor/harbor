@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
@@ -143,13 +144,8 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		if len(resource.Metadata.Repository.Name) == 0 {
 			return errors.New("the name of the repository cannot be null")
 		}
-		projectName, _ := util.ParseRepository(resource.Metadata.Repository.Name)
-		// harbor doesn't support the repository contains no "/"
-		// just skip here and the following task will fail
-		if len(projectName) == 0 {
-			log.Debug("the project name is empty, skip")
-			continue
-		}
+		paths := strings.Split(resource.Metadata.Repository.Name, "/")
+		projectName := paths[0]
 		// TODO handle the public
 		projects[projectName] = &project{
 			Name: projectName,
@@ -164,11 +160,14 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 			Metadata: project.Metadata,
 		}
 		err := a.client.Post(a.coreServiceURL+"/api/projects", pro)
-		if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {
-			log.Debugf("got 409 when trying to create project %s", project.Name)
-			return nil
+		if err != nil {
+			if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {
+				log.Debugf("got 409 when trying to create project %s", project.Name)
+				continue
+			}
+			return err
 		}
-		return err
+		log.Debugf("project %s created", project.Name)
 	}
 	return nil
 

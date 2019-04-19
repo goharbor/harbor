@@ -71,6 +71,9 @@ func (f *fakedPolicyController) List(...*model.PolicyQuery) (int64, []*model.Pol
 					Value: "test/*",
 				},
 			},
+			DestRegistry: &model.Registry{
+				ID: 1,
+			},
 		},
 		// nil trigger
 		{
@@ -83,6 +86,9 @@ func (f *fakedPolicyController) List(...*model.PolicyQuery) (int64, []*model.Pol
 					Type:  model.FilterTypeName,
 					Value: "library/*",
 				},
+			},
+			DestRegistry: &model.Registry{
+				ID: 1,
 			},
 		},
 		// doesn't replicate deletion
@@ -99,6 +105,9 @@ func (f *fakedPolicyController) List(...*model.PolicyQuery) (int64, []*model.Pol
 					Value: "library/*",
 				},
 			},
+			DestRegistry: &model.Registry{
+				ID: 1,
+			},
 		},
 		// replicate deletion
 		{
@@ -114,6 +123,9 @@ func (f *fakedPolicyController) List(...*model.PolicyQuery) (int64, []*model.Pol
 					Value: "library/*",
 				},
 			},
+			DestRegistry: &model.Registry{
+				ID: 1,
+			},
 		},
 		// disabled
 		{
@@ -128,6 +140,27 @@ func (f *fakedPolicyController) List(...*model.PolicyQuery) (int64, []*model.Pol
 					Type:  model.FilterTypeName,
 					Value: "library/*",
 				},
+			},
+			DestRegistry: &model.Registry{
+				ID: 1,
+			},
+		},
+		// the source registry is not local Harbor
+		{
+			ID:       6,
+			Enabled:  true,
+			Deletion: true,
+			Trigger: &model.Trigger{
+				Type: model.TriggerTypeEventBased,
+			},
+			Filters: []*model.Filter{
+				{
+					Type:  model.FilterTypeName,
+					Value: "library/*",
+				},
+			},
+			SrcRegistry: &model.Registry{
+				ID: 1,
 			},
 		},
 	}
