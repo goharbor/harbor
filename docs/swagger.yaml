@@ -903,7 +903,7 @@ paths:
         '401':
           description: Don't have authority to change password. Please check login status.
         '403':
-          description: The caller does not have permission to update the password of the user with given ID, or the old password in request body is not correct. 
+          description: The caller does not have permission to update the password of the user with given ID, or the old password in request body is not correct.
         '500':
           description: Unexpected internal errors.
   '/users/{user_id}/sysadmin':
@@ -940,6 +940,44 @@ paths:
           description: User ID does not exist.
         '500':
           description: Unexpected internal errors.
+  '/users/{user_id}/gen_cli_secret':
+    post:
+      summary: Generate new CLI secret for a user.
+      description: |
+        This endpoint let user generate a new CLI secret for himself.  This API only works when auth mode is set to 'OIDC'.
+        Once this API returns with successful status, the old secret will be invalid, as there will be only one CLI secret
+        for a user.  The new secret will be returned in the response.
+      parameters:
+        - name: user_id
+          in: path
+          type: integer
+          format: int
+          required: true
+          description: User ID
+      tags:
+        - Products
+      responses:
+        '200':
+          description: The secret is successfully generated.
+          schema:
+            type: object
+            properties:
+              secret:
+                type: string
+                description: The new secret
+        '400':
+          description: Invalid user ID.  Or user is not onboarded via OIDC authentication.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: Non-admin user can only generate the cli secret of himself.
+        '404':
+          description: User ID does not exist.
+        '412':
+          description: The auth mode of the system is not "oidc_auth", or the user is not onboarded via OIDC AuthN.
+        '500':
+          description: Unexpected internal errors.
+
   /repositories:
     get:
       summary: Get repositories accompany with relevant project and repo name.
@@ -1492,7 +1530,7 @@ paths:
     get:
       summary: Get recent logs of the projects which the user is a member of
       description: |
-        This endpoint let user see the recent operation logs of the projects which he is member of 
+        This endpoint let user see the recent operation logs of the projects which he is member of
       parameters:
         - name: username
           in: query
@@ -1624,7 +1662,7 @@ paths:
         '500':
           description: Unexpected internal errors.
   /replication/executions/{id}:
-    get: 
+    get:
       summary: Get the execution of the replication.
       description: |
         This endpoint is for user to get one execution of the replication.
@@ -1654,7 +1692,7 @@ paths:
           $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
-    put: 
+    put:
       summary: Stop the execution of the replication.
       description: |
         This endpoint is for user to stop one execution of the replication.
@@ -1683,7 +1721,7 @@ paths:
         '500':
           description: Unexpected internal errors.
   /replication/executions/{id}/tasks:
-    get: 
+    get:
       summary: Get the task list of one execution.
       description: |
         This endpoint is for user to get the task list of one execution.
@@ -1714,7 +1752,7 @@ paths:
         '500':
           description: Unexpected internal errors.
   /replication/executions/{id}/tasks/{task_id}/log:
-    get: 
+    get:
       summary: Get the log of one task.
       description: |
         This endpoint is for user to get the log of one task.
@@ -1884,14 +1922,14 @@ paths:
       description: |
         Delete the replication policy specified by ID.
       parameters:
-      - name: id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: Replication policy ID
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Replication policy ID
       tags:
-      - Products
+        - Products
       responses:
         '200':
           $ref: '#/responses/OK'
@@ -2297,18 +2335,18 @@ paths:
       description: |
         This endpoint let user list namespaces of registry according to query.
       parameters:
-      - name: id
-        in: path
-        type: integer
-        required: true
-        description: The registry ID.
-      - name: name
-        in: query
-        type: string
-        required: false
-        description: The name of namespace.
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: The registry ID.
+        - name: name
+          in: query
+          type: string
+          required: false
+          description: The name of namespace.
       tags:
-      - Products
+        - Products
       responses:
         '200':
           description: Success
@@ -2328,7 +2366,7 @@ paths:
     post:
       summary: Sync repositories from registry to DB.
       description: |
-        This endpoint is for syncing all repositories of registry with database. 
+        This endpoint is for syncing all repositories of registry with database.
       tags:
         - Products
       responses:
@@ -2392,7 +2430,7 @@ paths:
     post:
       summary: Ping available ldap service.
       description: |
-        This endpoint ping the available ldap service for test related configuration parameters. 
+        This endpoint ping the available ldap service for test related configuration parameters.
       parameters:
         - name: ldapconf
           in: body
@@ -2476,7 +2514,7 @@ paths:
     post:
       summary: Import selected available ldap users.
       description: |
-        This endpoint adds the selected available ldap users to harbor based on related configuration parameters from the system. System will try to guess the user email address and realname, add to harbor user information. 
+        This endpoint adds the selected available ldap users to harbor based on related configuration parameters from the system. System will try to guess the user email address and realname, add to harbor user information.
         If have errors when import user, will return the list of importing failed uid and the failed reason.
       parameters:
         - name: uid_list
@@ -2661,7 +2699,7 @@ paths:
         '200':
           description: Get gc results successfully.
           schema:
-              $ref: '#/definitions/GCResult'
+            $ref: '#/definitions/GCResult'
         '401':
           description: User need to log in first.
         '403':
@@ -2685,7 +2723,7 @@ paths:
         '200':
           description: Get successfully.
           schema:
-            type: string        
+            type: string
         '400':
           description: Illegal format of provided ID value.
         '401':
@@ -2706,7 +2744,7 @@ paths:
         '200':
           description: Get gc's schedule.
           schema:
-              $ref: '#/definitions/AdminJobSchedule'
+            $ref: '#/definitions/AdminJobSchedule'
         '401':
           description: User need to log in first.
         '403':
@@ -2768,12 +2806,12 @@ paths:
       summary: Get scan_all's schedule.
       description: This endpoint is for getting a schedule for the scan all job, which scans all of images in Harbor.
       tags:
-      - Products
+        - Products
       responses:
         '200':
           description: Get a schedule for the scan all job, which scans all of images in Harbor.
           schema:
-              $ref: '#/definitions/AdminJobSchedule'
+            $ref: '#/definitions/AdminJobSchedule'
         '401':
           description: User need to log in first.
         '403':
@@ -2785,14 +2823,14 @@ paths:
       description: |
         This endpoint is for updating the schedule of scan all job, which scans all of images in Harbor.
       parameters:
-      - name: schedule
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/AdminJobSchedule'
-        description: Updates the schedule of scan all job, which scans all of images in Harbor.
+        - name: schedule
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AdminJobSchedule'
+          description: Updates the schedule of scan all job, which scans all of images in Harbor.
       tags:
-      - Products
+        - Products
       responses:
         '200':
           description: Updated scan_all's schedule successfully.
@@ -2809,14 +2847,14 @@ paths:
       description: |
         This endpoint is for creating a schedule or a manual trigger for the scan all job, which scans all of images in Harbor.
       parameters:
-      - name: schedule
-        in: body
-        required: true
-        schema:
-          $ref: '#/definitions/AdminJobSchedule'
-        description: Create a schedule or a manual trigger for the scan all job.
+        - name: schedule
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/AdminJobSchedule'
+          description: Create a schedule or a manual trigger for the scan all job.
       tags:
-      - Products
+        - Products
       responses:
         '200':
           description: Updated scan_all's schedule successfully.
@@ -2876,7 +2914,7 @@ paths:
     post:
       summary: Test connection and authentication with email server.
       description: |
-        Test connection and authentication with email server. 
+        Test connection and authentication with email server.
       parameters:
         - name: settings
           in: body
@@ -2937,7 +2975,7 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/ChartInfoEntry'        
+              $ref: '#/definitions/ChartInfoEntry'
         '401':
           $ref: '#/definitions/UnauthorizedChartAPIError'
         '403':
@@ -3289,15 +3327,15 @@ paths:
       summary: Get all robot accounts of specified project
       description: Get all robot accounts of specified project
       parameters:
-      - name: project_id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: Relevant project ID.
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
       tags:
-      - Products
-      - Robot Account
+        - Products
+        - Robot Account
       responses:
         '200':
           description: Get project robot accounts successfully.
@@ -3319,21 +3357,21 @@ paths:
       summary: Create a robot account for project
       description: Create a robot account for project
       tags:
-      - Products
-      - Robot Account
+        - Products
+        - Robot Account
       parameters:
-      - name: project_id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: Relevant project ID.
-      - name: robot
-        in: body
-        description: Request body of creating a robot account.
-        required: true
-        schema:
-          $ref: '#/definitions/RobotAccountCreate'
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: robot
+          in: body
+          description: Request body of creating a robot account.
+          required: true
+          schema:
+            $ref: '#/definitions/RobotAccountCreate'
       responses:
         '201':
           description: Project member created successfully.
@@ -3354,21 +3392,21 @@ paths:
       summary: Return the infor of the specified robot account.
       description: Return the infor of the specified robot account.
       tags:
-      - Products
-      - Robot Account
+        - Products
+        - Robot Account
       parameters:
-      - name: project_id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: Relevant project ID.
-      - name: robot_id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: The ID of robot account.
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: robot_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The ID of robot account.
       responses:
         '200':
           description: Robot account information.
@@ -3386,27 +3424,27 @@ paths:
       summary: Update status of robot account.
       description: Used to disable/enable a specified robot account.
       tags:
-      - Products
-      - Robot Account
+        - Products
+        - Robot Account
       parameters:
-      - name: project_id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: Relevant project ID.
-      - name: robot_id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: The ID of robot account.
-      - name: robot
-        in: body
-        description: Request body of enable/disable a robot account.
-        required: true
-        schema:
-          $ref: '#/definitions/RobotAccountUpdate'
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: robot_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The ID of robot account.
+        - name: robot
+          in: body
+          description: Request body of enable/disable a robot account.
+          required: true
+          schema:
+            $ref: '#/definitions/RobotAccountUpdate'
       responses:
         '200':
           description: Robot account has been modified success.
@@ -3416,21 +3454,21 @@ paths:
       summary: Delete the specified robot account
       description: Delete the specified robot account
       tags:
-      - Products
-      - Robot Account
+        - Products
+        - Robot Account
       parameters:
-      - name: project_id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: Relevant project ID.
-      - name: robot_id
-        in: path
-        type: integer
-        format: int64
-        required: true
-        description: The ID of robot account.
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: robot_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: The ID of robot account.
       responses:
         '200':
           description: The specified robot account is successfully deleted.
@@ -4603,13 +4641,13 @@ definitions:
         description: Total count of chart versions
       latest_version:
         type: string
-        description: latest version of chart      
+        description: latest version of chart
       created:
         type: string
         description: The created time of chart
       updated:
         type: string
-        description: The created time of chart        
+        description: The created time of chart
       icon:
         type: string
         description: The icon path of chart
@@ -4818,7 +4856,7 @@ definitions:
     properties:
       status:
         type: string
-        description: The overall health status. It is "healthy" only when all the components' status are "healthy" 
+        description: The overall health status. It is "healthy" only when all the components' status are "healthy"
       components:
         type: array
         items:
@@ -4829,7 +4867,7 @@ definitions:
     properties:
       name:
         type: string
-        description: The component name 
+        description: The component name
       status:
         type: string
         description: The health status of component

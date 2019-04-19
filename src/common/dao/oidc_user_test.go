@@ -80,15 +80,13 @@ func TestOIDCUserMetaDaoMethods(t *testing.T) {
 		ID:     ou111.ID,
 		UserID: ou111.UserID,
 		SubIss: "newSub",
+		Secret: "newSecret",
 	}
 	require.Nil(t, UpdateOIDCUser(meta3))
 	oidcUser1Update, err := GetOIDCUserByID(ou111.ID)
 	require.Nil(t, err)
-	assert.Equal(t, "newSub", oidcUser1Update.SubIss)
-
-	user, err := GetUserBySubIss("new", "Sub")
-	require.Nil(t, err)
-	assert.Equal(t, "user111", user.Username)
+	assert.Equal(t, "QWE123123RT1", oidcUser1Update.SubIss)
+	assert.Equal(t, "newSecret", oidcUser1Update.Secret)
 
 	// clear data
 	defer func() {
