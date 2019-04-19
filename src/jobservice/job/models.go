@@ -50,22 +50,23 @@ type Stats struct {
 
 // StatsInfo keeps the stats of job
 type StatsInfo struct {
-	JobID         string `json:"id"`
-	Status        string `json:"status"`
-	JobName       string `json:"name"`
-	JobKind       string `json:"kind"`
-	IsUnique      bool   `json:"unique"`
-	RefLink       string `json:"ref_link,omitempty"`
-	CronSpec      string `json:"cron_spec,omitempty"`
-	EnqueueTime   int64  `json:"enqueue_time"`
-	UpdateTime    int64  `json:"update_time"`
-	RunAt         int64  `json:"run_at,omitempty"`
-	CheckIn       string `json:"check_in,omitempty"`
-	CheckInAt     int64  `json:"check_in_at,omitempty"`
-	DieAt         int64  `json:"die_at,omitempty"`
-	WebHookURL    string `json:"web_hook_url,omitempty"`
-	UpstreamJobID string `json:"upstream_job_id,omitempty"`   // Ref the upstream job if existing
-	NumericPID    int64  `json:"numeric_policy_id,omitempty"` // The numeric policy ID of the periodic job
+	JobID         string     `json:"id"`
+	Status        string     `json:"status"`
+	JobName       string     `json:"name"`
+	JobKind       string     `json:"kind"`
+	IsUnique      bool       `json:"unique"`
+	RefLink       string     `json:"ref_link,omitempty"`
+	CronSpec      string     `json:"cron_spec,omitempty"`
+	EnqueueTime   int64      `json:"enqueue_time"`
+	UpdateTime    int64      `json:"update_time"`
+	RunAt         int64      `json:"run_at,omitempty"`
+	CheckIn       string     `json:"check_in,omitempty"`
+	CheckInAt     int64      `json:"check_in_at,omitempty"`
+	DieAt         int64      `json:"die_at,omitempty"`
+	WebHookURL    string     `json:"web_hook_url,omitempty"`
+	UpstreamJobID string     `json:"upstream_job_id,omitempty"`   // Ref the upstream job if existing
+	NumericPID    int64      `json:"numeric_policy_id,omitempty"` // The numeric policy ID of the periodic job
+	Parameters    Parameters `json:"parameters,omitempty"`
 }
 
 // ActionRequest defines for triggering job action like stop/cancel.

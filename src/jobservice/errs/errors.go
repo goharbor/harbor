@@ -21,10 +21,8 @@ import (
 )
 
 const (
-	// JobStoppedErrorCode is code for jobStoppedError
-	JobStoppedErrorCode = 10000 + iota
 	// ReadRequestBodyErrorCode is code for the error of reading http request body error
-	ReadRequestBodyErrorCode
+	ReadRequestBodyErrorCode = 10000 + iota
 	// HandleJSONDataErrorCode is code for the error of handling json data error
 	HandleJSONDataErrorCode
 	// MissingBackendHandlerErrorCode is code for the error of missing backend controller
@@ -51,6 +49,10 @@ const (
 	ResourceConflictsErrorCode
 	// BadRequestErrorCode is code for the error of bad request
 	BadRequestErrorCode
+	// GetScheduledJobsErrorCode is code for the error of getting scheduled jobs
+	GetScheduledJobsErrorCode
+	// GetPeriodicExecutionErrorCode is code for the error of getting periodic executions
+	GetPeriodicExecutionErrorCode
 )
 
 // baseError ...
@@ -80,72 +82,67 @@ func New(code uint16, err string, description string) error {
 
 // ReadRequestBodyError is error wrapper for the error of reading request body.
 func ReadRequestBodyError(err error) error {
-	return New(ReadRequestBodyErrorCode, "Read request body failed with error", err.Error())
+	return New(ReadRequestBodyErrorCode, "read request body failed with error", err.Error())
 }
 
 // HandleJSONDataError is error wrapper for the error of handling json data.
 func HandleJSONDataError(err error) error {
-	return New(HandleJSONDataErrorCode, "Handle json data failed with error", err.Error())
+	return New(HandleJSONDataErrorCode, "handle json data failed with error", err.Error())
 }
 
 // MissingBackendHandlerError is error wrapper for the error of missing backend controller.
 func MissingBackendHandlerError(err error) error {
-	return New(MissingBackendHandlerErrorCode, "Missing backend controller to handle the requests", err.Error())
+	return New(MissingBackendHandlerErrorCode, "missing backend controller to handle the requests", err.Error())
 }
 
 // LaunchJobError is error wrapper for the error of launching job failed.
 func LaunchJobError(err error) error {
-	return New(LaunchJobErrorCode, "Launch job failed with error", err.Error())
+	return New(LaunchJobErrorCode, "launch job failed with error", err.Error())
 }
 
 // CheckStatsError is error wrapper for the error of checking stats failed
 func CheckStatsError(err error) error {
-	return New(CheckStatsErrorCode, "Check stats of server failed with error", err.Error())
+	return New(CheckStatsErrorCode, "check stats of server failed with error", err.Error())
 }
 
 // GetJobStatsError is error wrapper for the error of getting job stats
 func GetJobStatsError(err error) error {
-	return New(GetJobStatsErrorCode, "Get job stats failed with error", err.Error())
+	return New(GetJobStatsErrorCode, "get job stats failed with error", err.Error())
 }
 
 // StopJobError is error for the case of stopping job failed
 func StopJobError(err error) error {
-	return New(StopJobErrorCode, "Stop job failed with error", err.Error())
+	return New(StopJobErrorCode, "stop job failed with error", err.Error())
 }
 
 // RetryJobError is error for the case of retrying job failed
 func RetryJobError(err error) error {
-	return New(RetryJobErrorCode, "Retry job failed with error", err.Error())
+	return New(RetryJobErrorCode, "retry job failed with error", err.Error())
 }
 
 // UnknownActionNameError is error for the case of getting unknown job action
 func UnknownActionNameError(err error) error {
-	return New(UnknownActionNameErrorCode, "Unknown job action name", err.Error())
+	return New(UnknownActionNameErrorCode, "unknown job action name", err.Error())
 }
 
 // GetJobLogError is error for the case of getting job log failed
 func GetJobLogError(err error) error {
-	return New(GetJobLogErrorCode, "Failed to get the job log", err.Error())
+	return New(GetJobLogErrorCode, "failed to get the job log", err.Error())
 }
 
 // UnauthorizedError is error for the case of unauthorized accessing
 func UnauthorizedError(err error) error {
-	return New(UnAuthorizedErrorCode, "Unauthorized", err.Error())
+	return New(UnAuthorizedErrorCode, "unauthorized", err.Error())
 }
 
-// jobStoppedError is designed for the case of stopping job.
-type jobStoppedError struct {
-	baseError
+// GetScheduledJobsError is error for the case of getting scheduled jobs failed
+func GetScheduledJobsError(err error) error {
+	return New(GetScheduledJobsErrorCode, "failed to get scheduled jobs", err.Error())
 }
 
-// JobStoppedError is error wrapper for the case of stopping job.
-func JobStoppedError() error {
-	return jobStoppedError{
-		baseError{
-			Code: JobStoppedErrorCode,
-			Err:  "Job is stopped",
-		},
-	}
+// GetPeriodicExecutionError is error for the case of getting periodic jobs failed
+func GetPeriodicExecutionError(err error) error {
+	return New(GetPeriodicExecutionErrorCode, "failed to get periodic executions", err.Error())
 }
 
 // objectNotFound is designed for the case of no object found
@@ -194,12 +191,6 @@ func BadRequestError(object interface{}) error {
 			Description: fmt.Sprintf("%s", object),
 		},
 	}
-}
-
-// IsJobStoppedError return true if the error is jobStoppedError
-func IsJobStoppedError(err error) bool {
-	_, ok := err.(jobStoppedError)
-	return ok
 }
 
 // IsObjectNotFoundError return true if the error is objectNotFoundError

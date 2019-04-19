@@ -2,6 +2,7 @@ import { InjectionToken } from '@angular/core';
 
 export let SERVICE_CONFIG = new InjectionToken("service.config");
 export interface IServiceConfig {
+    baseEndpoint?: string;
     /**
      * The base endpoint of service used to retrieve the system configuration information.
      * The configurations may include but not limit:
@@ -65,16 +66,6 @@ export interface IServiceConfig {
      * @memberOf IServiceConfig
      */
     replicationRuleEndpoint?: string;
-
-
-    /**
-     * The base endpoint of the service used to handle the replication jobs.
-     *
-     *
-     * * {string}
-     * @memberOf IServiceConfig
-     */
-    replicationJobEndpoint?: string;
 
     /**
      * The base endpoint of the service used to handle vulnerability scanning.

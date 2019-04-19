@@ -16,11 +16,11 @@ package api
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
-	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/utils"
 
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -39,12 +39,12 @@ type ScanJobAPI struct {
 func (sj *ScanJobAPI) Prepare() {
 	sj.BaseController.Prepare()
 	if !sj.SecurityCtx.IsAuthenticated() {
-		sj.HandleUnauthorized()
+		sj.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 	id, err := sj.GetInt64FromPath(":id")
 	if err != nil {
-		sj.HandleBadRequest("invalid ID")
+		sj.SendBadRequestError(errors.New("invalid ID"))
 		return
 	}
 	sj.jobID = id
@@ -52,14 +52,16 @@ func (sj *ScanJobAPI) Prepare() {
 	data, err := dao.GetScanJob(id)
 	if err != nil {
 		log.Errorf("Failed to load job data for job: %d, error: %v", id, err)
-		sj.CustomAbort(http.StatusInternalServerError, "Failed to get Job data")
+		sj.SendInternalServerError(errors.New("Failed to get Job data"))
+		return
 	}
 	projectName := strings.SplitN(data.Repository, "/", 2)[0]
 
 	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepositoryTagScanJob)
 	if !sj.SecurityCtx.Can(rbac.ActionRead, resource) {
 		log.Errorf("User does not have read permission for project: %s", projectName)
-		sj.HandleForbidden(sj.SecurityCtx.GetUsername())
+		sj.SendForbiddenError(errors.New(sj.SecurityCtx.GetUsername()))
+		return
 	}
 	sj.projectName = projectName
 	sj.jobUUID = data.UUID
@@ -69,20 +71,14 @@ func (sj *ScanJobAPI) Prepare() {
 func (sj *ScanJobAPI) GetLog() {
 	logBytes, err := utils.GetJobServiceClient().GetJobLog(sj.jobUUID)
 	if err != nil {
-		if httpErr, ok := err.(*common_http.Error); ok {
-			sj.RenderError(httpErr.Code, "")
-			log.Errorf(fmt.Sprintf("failed to get log of job %d: %d %s",
-				sj.jobID, httpErr.Code, httpErr.Message))
-			return
-		}
-		sj.HandleInternalServerError(fmt.Sprintf("Failed to get job logs, uuid: %s, error: %v", sj.jobUUID, err))
+		sj.ParseAndHandleError(fmt.Sprintf("Failed to get job logs, uuid: %s, error: %v", sj.jobUUID, err), err)
 		return
 	}
 	sj.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), strconv.Itoa(len(logBytes)))
 	sj.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), "text/plain")
 	_, err = sj.Ctx.ResponseWriter.Write(logBytes)
 	if err != nil {
-		sj.HandleInternalServerError(fmt.Sprintf("Failed to write job logs, uuid: %s, error: %v", sj.jobUUID, err))
+		sj.SendInternalServerError(fmt.Errorf("Failed to write job logs, uuid: %s, error: %v", sj.jobUUID, err))
 	}
 
 }

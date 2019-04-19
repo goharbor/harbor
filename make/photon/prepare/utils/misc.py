@@ -36,13 +36,6 @@ def validate(conf, **kwargs):
             raise Exception(
                 "Error: The path for certificate key: %s is invalid" % cert_key_path)
 
-    # Project validate
-    project_creation = conf.get(
-        "configuration", "project_creation_restriction")
-    if project_creation != "everyone" and project_creation != "adminonly":
-        raise Exception(
-            "Error invalid value for project_creation_restriction: %s" % project_creation)
-
     # Storage validate
     valid_storage_drivers = ["filesystem",
                              "azure", "gcs", "s3", "swift", "oss"]

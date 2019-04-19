@@ -28,6 +28,7 @@ Resource  VCH-Util.robot
 Resource  Drone-Util.robot
 Resource  Github-Util.robot
 Resource  Harbor-Util.robot
+Resource  Harbor-Pages/Public_Elements.robot
 Resource  Harbor-Pages/HomePage.robot
 Resource  Harbor-Pages/HomePage_Elements.robot
 Resource  Harbor-Pages/Project.robot
@@ -176,7 +177,7 @@ Retry Keyword When Error
 Retry Double Keywords When Error
     [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}
     :For  ${n}  IN RANGE  1  6
-    \    Log To Console  Trying Delete Repo ${n} times ...
+    \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
     \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
     \    Capture Page Screenshot
     \    ${out2}  Run Keyword And Ignore Error  ${keyword2}  ${element2}

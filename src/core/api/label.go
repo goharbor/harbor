@@ -15,6 +15,7 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -23,9 +24,6 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/replication"
-	"github.com/goharbor/harbor/src/replication/core"
-	rep_models "github.com/goharbor/harbor/src/replication/models"
 )
 
 // LabelAPI handles requests for label management
@@ -44,25 +42,25 @@ func (l *LabelAPI) Prepare() {
 
 	// POST, PUT, DELETE need login first
 	if !l.SecurityCtx.IsAuthenticated() {
-		l.HandleUnauthorized()
+		l.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 
 	if method == http.MethodPut || method == http.MethodDelete {
 		id, err := l.GetInt64FromPath(":id")
 		if err != nil || id <= 0 {
-			l.HandleBadRequest("invalid label ID")
+			l.SendBadRequestError(errors.New("invalid lable ID"))
 			return
 		}
 
 		label, err := dao.GetLabel(id)
 		if err != nil {
-			l.HandleInternalServerError(fmt.Sprintf("failed to get label %d: %v", id, err))
+			l.SendInternalServerError(fmt.Errorf("failed to get label %d: %v", id, err))
 			return
 		}
 
 		if label == nil || label.Deleted {
-			l.HandleNotFound(fmt.Sprintf("label %d not found", id))
+			l.SendNotFoundError(fmt.Errorf("label %d not found", id))
 			return
 		}
 
@@ -86,9 +84,9 @@ func (l *LabelAPI) requireAccess(label *models.Label, action rbac.Action, subres
 
 	if !hasPermission {
 		if !l.SecurityCtx.IsAuthenticated() {
-			l.HandleUnauthorized()
+			l.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		} else {
-			l.HandleForbidden(l.SecurityCtx.GetUsername())
+			l.SendForbiddenError(errors.New(l.SecurityCtx.GetUsername()))
 		}
 		return false
 	}
@@ -99,7 +97,12 @@ func (l *LabelAPI) requireAccess(label *models.Label, action rbac.Action, subres
 // Post creates a label
 func (l *LabelAPI) Post() {
 	label := &models.Label{}
-	l.DecodeJSONReqAndValidate(label)
+	isValid, err := l.DecodeJSONReqAndValidate(label)
+	if !isValid {
+		l.SendBadRequestError(err)
+		return
+	}
+
 	label.Level = common.LabelLevelUser
 
 	switch label.Scope {
@@ -108,12 +111,12 @@ func (l *LabelAPI) Post() {
 	case common.LabelScopeProject:
 		exist, err := l.ProjectMgr.Exists(label.ProjectID)
 		if err != nil {
-			l.HandleInternalServerError(fmt.Sprintf("failed to check the existence of project %d: %v",
+			l.SendInternalServerError(fmt.Errorf("failed to check the existence of project %d: %v",
 				label.ProjectID, err))
 			return
 		}
 		if !exist {
-			l.HandleNotFound(fmt.Sprintf("project %d not found", label.ProjectID))
+			l.SendNotFoundError(fmt.Errorf("project %d not found", label.ProjectID))
 			return
 		}
 	}
@@ -129,17 +132,17 @@ func (l *LabelAPI) Post() {
 		ProjectID: label.ProjectID,
 	})
 	if err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("failed to list labels: %v", err))
+		l.SendInternalServerError(fmt.Errorf("failed to list labels: %v", err))
 		return
 	}
 	if len(labels) > 0 {
-		l.HandleConflict()
+		l.SendConflictError(errors.New("conflict label"))
 		return
 	}
 
 	id, err := dao.AddLabel(label)
 	if err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("failed to create label: %v", err))
+		l.SendInternalServerError(fmt.Errorf("failed to create label: %v", err))
 		return
 	}
 
@@ -150,18 +153,18 @@ func (l *LabelAPI) Post() {
 func (l *LabelAPI) Get() {
 	id, err := l.GetInt64FromPath(":id")
 	if err != nil || id <= 0 {
-		l.HandleBadRequest(fmt.Sprintf("invalid label ID: %s", l.GetStringFromPath(":id")))
+		l.SendBadRequestError(fmt.Errorf("invalid label ID: %s", l.GetStringFromPath(":id")))
 		return
 	}
 
 	label, err := dao.GetLabel(id)
 	if err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("failed to get label %d: %v", id, err))
+		l.SendInternalServerError(fmt.Errorf("failed to get label %d: %v", id, err))
 		return
 	}
 
 	if label == nil || label.Deleted {
-		l.HandleNotFound(fmt.Sprintf("label %d not found", id))
+		l.SendNotFoundError(fmt.Errorf("label %d not found", id))
 		return
 	}
 
@@ -183,7 +186,7 @@ func (l *LabelAPI) List() {
 
 	scope := l.GetString("scope")
 	if scope != common.LabelScopeGlobal && scope != common.LabelScopeProject {
-		l.HandleBadRequest(fmt.Sprintf("invalid scope: %s", scope))
+		l.SendBadRequestError(fmt.Errorf("invalid scope: %s", scope))
 		return
 	}
 	query.Scope = scope
@@ -191,22 +194,22 @@ func (l *LabelAPI) List() {
 	if scope == common.LabelScopeProject {
 		projectIDStr := l.GetString("project_id")
 		if len(projectIDStr) == 0 {
-			l.HandleBadRequest("project_id is required")
+			l.SendBadRequestError(errors.New("project_id is required"))
 			return
 		}
 		projectID, err := strconv.ParseInt(projectIDStr, 10, 64)
 		if err != nil || projectID <= 0 {
-			l.HandleBadRequest(fmt.Sprintf("invalid project_id: %s", projectIDStr))
+			l.SendBadRequestError(fmt.Errorf("invalid project_id: %s", projectIDStr))
 			return
 		}
 
 		resource := rbac.NewProjectNamespace(projectID).Resource(rbac.ResourceLabel)
 		if !l.SecurityCtx.Can(rbac.ActionList, resource) {
 			if !l.SecurityCtx.IsAuthenticated() {
-				l.HandleUnauthorized()
+				l.SendUnAuthorizedError(errors.New("UnAuthorized"))
 				return
 			}
-			l.HandleForbidden(l.SecurityCtx.GetUsername())
+			l.SendForbiddenError(errors.New(l.SecurityCtx.GetUsername()))
 			return
 		}
 		query.ProjectID = projectID
@@ -214,15 +217,19 @@ func (l *LabelAPI) List() {
 
 	total, err := dao.GetTotalOfLabels(query)
 	if err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("failed to get total count of labels: %v", err))
+		l.SendInternalServerError(fmt.Errorf("failed to get total count of labels: %v", err))
 		return
 	}
 
-	query.Page, query.Size = l.GetPaginationParams()
+	query.Page, query.Size, err = l.GetPaginationParams()
+	if err != nil {
+		l.SendBadRequestError(err)
+		return
+	}
 
 	labels, err := dao.ListLabels(query)
 	if err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("failed to list labels: %v", err))
+		l.SendInternalServerError(fmt.Errorf("failed to list labels: %v", err))
 		return
 	}
 
@@ -238,7 +245,10 @@ func (l *LabelAPI) Put() {
 	}
 
 	label := &models.Label{}
-	l.DecodeJSONReq(label)
+	if err := l.DecodeJSONReq(label); err != nil {
+		l.SendBadRequestError(err)
+		return
+	}
 
 	oldName := l.label.Name
 
@@ -247,7 +257,13 @@ func (l *LabelAPI) Put() {
 	l.label.Description = label.Description
 	l.label.Color = label.Color
 
-	l.Validate(l.label)
+	isValidate, err := l.Validate(l.label)
+	if !isValidate {
+		if err != nil {
+			l.SendBadRequestError(err)
+			return
+		}
+	}
 
 	if l.label.Name != oldName {
 		labels, err := dao.ListLabels(&models.LabelQuery{
@@ -257,17 +273,17 @@ func (l *LabelAPI) Put() {
 			ProjectID: l.label.ProjectID,
 		})
 		if err != nil {
-			l.HandleInternalServerError(fmt.Sprintf("failed to list labels: %v", err))
+			l.SendInternalServerError(fmt.Errorf("failed to list labels: %v", err))
 			return
 		}
 		if len(labels) > 0 {
-			l.HandleConflict()
+			l.SendConflictError(errors.New("conflict label"))
 			return
 		}
 	}
 
 	if err := dao.UpdateLabel(l.label); err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("failed to update label %d: %v", l.label.ID, err))
+		l.SendInternalServerError(fmt.Errorf("failed to update label %d: %v", l.label.ID, err))
 		return
 	}
 
@@ -281,11 +297,11 @@ func (l *LabelAPI) Delete() {
 
 	id := l.label.ID
 	if err := dao.DeleteResourceLabelByLabel(id); err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("failed to delete resource label mappings of label %d: %v", id, err))
+		l.SendInternalServerError(fmt.Errorf("failed to delete resource label mappings of label %d: %v", id, err))
 		return
 	}
 	if err := dao.DeleteLabel(id); err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("failed to delete label %d: %v", id, err))
+		l.SendInternalServerError(fmt.Errorf("failed to delete label %d: %v", id, err))
 		return
 	}
 }
@@ -294,18 +310,18 @@ func (l *LabelAPI) Delete() {
 func (l *LabelAPI) ListResources() {
 	id, err := l.GetInt64FromPath(":id")
 	if err != nil || id <= 0 {
-		l.HandleBadRequest("invalid label ID")
+		l.SendBadRequestError(errors.New("invalid label ID"))
 		return
 	}
 
 	label, err := dao.GetLabel(id)
 	if err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("failed to get label %d: %v", id, err))
+		l.SendInternalServerError(fmt.Errorf("failed to get label %d: %v", id, err))
 		return
 	}
 
 	if label == nil || label.Deleted {
-		l.HandleNotFound(fmt.Sprintf("label %d not found", id))
+		l.SendNotFoundError(fmt.Errorf("label %d not found", id))
 		return
 	}
 
@@ -313,26 +329,28 @@ func (l *LabelAPI) ListResources() {
 		return
 	}
 
-	result, err := core.GlobalController.GetPolicies(rep_models.QueryParameter{})
-	if err != nil {
-		l.HandleInternalServerError(fmt.Sprintf("failed to get policies: %v", err))
-		return
-	}
-	policies := []*rep_models.ReplicationPolicy{}
-	if result != nil {
-		for _, policy := range result.Policies {
-			for _, filter := range policy.Filters {
-				if filter.Kind != replication.FilterItemKindLabel {
-					continue
-				}
-				if filter.Value.(int64) == label.ID {
-					policies = append(policies, policy)
+	/*
+		result, err := core.GlobalController.GetPolicies(rep_models.QueryParameter{})
+		if err != nil {
+			l.HandleInternalServerError(fmt.Sprintf("failed to get policies: %v", err))
+			return
+		}
+		policies := []*rep_models.ReplicationPolicy{}
+		if result != nil {
+			for _, policy := range result.Policies {
+				for _, filter := range policy.Filters {
+					if filter.Kind != replication.FilterItemKindLabel {
+						continue
+					}
+					if filter.Value.(int64) == label.ID {
+						policies = append(policies, policy)
+					}
 				}
 			}
 		}
-	}
+	*/
 	resources := map[string]interface{}{}
-	resources["replication_policies"] = policies
+	resources["replication_policies"] = nil
 	l.Data["json"] = resources
 	l.ServeJSON()
 }

@@ -10,16 +10,11 @@ from .misc import generate_random_string
 SSL_CERT_PATH = os.path.join("/etc/nginx/cert", "server.crt")
 SSL_CERT_KEY_PATH = os.path.join("/etc/nginx/cert", "server.key")
 
-input_cert = '/input/nginx/server.crt'
-input_cert_key = '/input/nginx/server.key'
-
 secret_cert_dir = '/secret/nginx'
 secret_cert = '/secret/nginx/server.crt'
 secret_cert_key = '/secret/nginx/server.key'
 
-input_secret_keys_dir = '/input/keys'
 secret_keys_dir = '/secret/keys'
-allowed_secret_key_names = ['defaultalias', 'secretkey']
 
 def _get_secret(folder, filename, length=16):
     key_file = os.path.join(folder, filename)
@@ -49,26 +44,6 @@ def get_secret_key(path):
 def get_alias(path):
     alias = _get_secret(path, "defaultalias", length=8)
     return alias
-
-def copy_secret_keys():
-    """
-    Copy the secret keys, which used for encrypt user password, from input keys dir to secret keys dir
-    """
-    if os.path.isdir(input_secret_keys_dir) and os.path.isdir(secret_keys_dir):
-        input_files = os.listdir(input_secret_keys_dir)
-        secret_files = os.listdir(secret_keys_dir)
-        files_need_copy =  [x for x in input_files if (x in allowed_secret_key_names) and (x not in secret_files) ]
-        for f in files_need_copy:
-            shutil.copy(f, secret_keys_dir)
-
-def copy_ssl_cert():
-    """
-    Copy the ssl certs key paris, which used in nginx ssl certificate, from input dir to secret cert dir
-    """
-    if os.path.isfile(input_cert_key) and os.path.isfile(input_cert):
-        os.makedirs(secret_cert_dir, exist_ok=True)
-        shutil.copy(input_cert, secret_cert)
-        shutil.copy(input_cert_key, secret_cert_key)
 
 ## decorator actions
 def stat_decorator(func):
@@ -115,9 +90,7 @@ def prepare_ca(
     private_key_pem_path: Path,
     root_crt_path: Path,
     old_private_key_pem_path: Path,
-    old_crt_path: Path,
-    registry_custom_ca_bundle_config: Path,
-    registry_custom_ca_bundle_storage_path: Path):
+    old_crt_path: Path):
     if not ( private_key_pem_path.exists() and root_crt_path.exists() ):
         # From version 1.8 the cert storage path is changed
         # if old key paris not exist create new ones
@@ -133,10 +106,3 @@ def prepare_ca(
         else:
             shutil.move(old_crt_path, root_crt_path)
             shutil.move(old_private_key_pem_path, private_key_pem_path)
-
-
-    if not registry_custom_ca_bundle_storage_path.exists() and registry_custom_ca_bundle_config.exists():
-        registry_custom_ca_bundle_storage_path.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(registry_custom_ca_bundle_config, registry_custom_ca_bundle_storage_path)
-        mark_file(registry_custom_ca_bundle_storage_path)
-        print("Copied custom ca bundle: %s" % registry_custom_ca_bundle_config)

@@ -17,31 +17,31 @@ type MockJobClient struct {
 // GetJobLog ...
 func (mjc *MockJobClient) GetJobLog(uuid string) ([]byte, error) {
 	if uuid == "500" {
-		return nil, &http.Error{500, "Server side error"}
+		return nil, &http.Error{500, "server side error"}
 	}
 	if mjc.validUUID(uuid) {
 		return []byte("some log"), nil
 	}
-	return nil, &http.Error{404, "Not Found"}
+	return nil, &http.Error{404, "not Found"}
 }
 
 // SubmitJob ...
 func (mjc *MockJobClient) SubmitJob(data *models.JobData) (string, error) {
-	if data.Name == job.ImageScanAllJob || data.Name == job.ImageReplicate || data.Name == job.ImageGC || data.Name == job.ImageScanJob {
+	if data.Name == job.ImageScanAllJob || data.Name == job.Replication || data.Name == job.ImageGC || data.Name == job.ImageScanJob {
 		uuid := fmt.Sprintf("u-%d", rand.Int())
 		mjc.JobUUID = append(mjc.JobUUID, uuid)
 		return uuid, nil
 	}
-	return "", fmt.Errorf("Unsupported job %s", data.Name)
+	return "", fmt.Errorf("unsupported job %s", data.Name)
 }
 
 // PostAction ...
 func (mjc *MockJobClient) PostAction(uuid, action string) error {
 	if "500" == uuid {
-		return &http.Error{500, "Server side error"}
+		return &http.Error{500, "server side error"}
 	}
 	if !mjc.validUUID(uuid) {
-		return &http.Error{404, "Not Found"}
+		return &http.Error{404, "not Found"}
 	}
 	return nil
 }

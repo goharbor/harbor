@@ -1551,103 +1551,160 @@ paths:
           description: User need to login first.
         '500':
           description: Unexpected internal errors.
-  /jobs/replication:
+  /replication/executions:
     get:
-      summary: List filters jobs according to the policy and repository
+      summary: List replication executions.
       description: |
-        This endpoint let user list filters jobs according to the policy and repository. (if start_time and end_time are both null, list jobs of last 10 days)
-      tags:
-        - Products
+        This endpoint let user list replication executions.
       parameters:
         - name: policy_id
           in: query
           type: integer
-          format: int
-          required: true
-          description: The ID of the policy that triggered this job.
-        - name: op_uuid
-          in: query
-          type: string
           required: false
-          description: The UUID of one trigger of replication policy.
-        - name: num
-          in: query
-          type: integer
-          format: int32
-          required: false
-          description: The return list length number.
-        - name: end_time
-          in: query
-          type: integer
-          format: int64
-          required: false
-          description: The end time of jobs done. (Timestamp)
-        - name: start_time
-          in: query
-          type: integer
-          format: int64
-          required: false
-          description: The start time of jobs. (Timestamp)
-        - name: repository
-          in: query
-          type: string
-          required: false
-          description: The respond jobs list filter by repository name.
+          description: The policy ID.
         - name: status
           in: query
           type: string
           required: false
-          description: The respond jobs list filter by status.
+          description: The execution status.
+        - name: trigger
+          in: query
+          type: string
+          required: false
+          description: The trigger mode.
         - name: page
           in: query
           type: integer
-          format: int32
           required: false
-          description: 'The page nubmer, default is 1.'
+          description: The page.
         - name: page_size
           in: query
           type: integer
-          format: int32
           required: false
-          description: 'The size of per page, default is 10, maximum is 100.'
+          description: The page size.
+      tags:
+        - Products
       responses:
         '200':
-          description: Get the required logs successfully.
+          description: Success
           schema:
             type: array
             items:
-              $ref: '#/definitions/JobStatus'
-          headers:
-            X-Total-Count:
-              description: The total count of jobs
-              type: integer
-            Link:
-              description: Link refers to the previous page and next page
-              type: string
-        '400':
-          description: Bad request because of invalid parameters.
+              $ref: '#/definitions/ReplicationExecution'
         '401':
           description: User need to login first.
+        '403':
+          description: User has no privilege for the operation.
         '500':
           description: Unexpected internal errors.
-    put:
-      summary: Update status of jobs. Only stop is supported for now.
+    post:
+      summary: Start one execution of the replication.
       description: |
-        The endpoint is used to stop the replication jobs of a policy.
-      tags:
-        - Products
+        This endpoint is for user to start one execution of the replication.
       parameters:
-        - name: policyinfo
+        - name: execution
           in: body
-          description: The policy ID and status.
+          description: The execution that needs to be started, only the property "policy_id" is needed.
           required: true
           schema:
-            $ref: '#/definitions/UpdateJobs'
+            $ref: '#/definitions/ReplicationExecution'
+      tags:
+        - Products
+      responses:
+        '201':
+          description: Success.
+        '400':
+          description: Bad request.
+        '401':
+          description: User need to login first.
+        '403':
+          description: User has no privilege for the operation.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
+        '500':
+          description: Unexpected internal errors.
+  /replication/executions/{id}:
+    get: 
+      summary: Get the execution of the replication.
+      description: |
+        This endpoint is for user to get one execution of the replication.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          description: The execution ID.
+          required: true
+      tags:
+        - Products
       responses:
         '200':
-          description: Update the status successfully.
+          description: Success.
+          schema:
+            $ref: '#/definitions/ReplicationExecution'
         '400':
-          description: Bad request because of invalid parameters.
+          description: Bad request.
+        '401':
+          description: User need to login first.
+        '403':
+          description: User has no privilege for the operation.
+        '404':
+          description: Resource requested does not exist.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
+        '500':
+          description: Unexpected internal errors.
+    put: 
+      summary: Stop the execution of the replication.
+      description: |
+        This endpoint is for user to stop one execution of the replication.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          description: The execution ID.
+          required: true
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Success.
+        '400':
+          description: Bad request.
+        '401':
+          description: User need to login first.
+        '403':
+          description: User has no privilege for the operation.
+        '404':
+          description: Resource requested does not exist.
+        '415':
+          $ref: '#/responses/UnsupportedMediaType'
+        '500':
+          description: Unexpected internal errors.
+  /replication/executions/{id}/tasks:
+    get: 
+      summary: Get the task list of one execution.
+      description: |
+        This endpoint is for user to get the task list of one execution.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          description: The execution ID.
+          required: true
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Success.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ReplicationTask'
+        '400':
+          description: Bad request.
         '401':
           description: User need to login first.
         '403':
@@ -1656,98 +1713,50 @@ paths:
           description: Resource requested does not exist.
         '500':
           description: Unexpected internal errors.
-  '/jobs/replication/{id}':
-    delete:
-      summary: Delete specific ID job.
+  /replication/executions/{id}/tasks/{task_id}/log:
+    get: 
+      summary: Get the log of one task.
       description: |
-        This endpoint is aimed to remove specific ID job from jobservice.
+        This endpoint is for user to get the log of one task.
       parameters:
         - name: id
           in: path
           type: integer
           format: int64
+          description: The execution ID.
           required: true
-          description: Delete job ID.
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Job deleted successfully.
-        '400':
-          description: Job ID is invalid or can't remove this job.
-        '401':
-          description: Only admin has this authority.
-        '404':
-          description: Project ID does not exist.
-        '500':
-          description: Unexpected internal errors.
-  '/jobs/replication/{id}/log':
-    get:
-      summary: Get job logs.
-      description: |
-        This endpoint let user search job logs filtered by specific ID.
-      parameters:
-        - name: id
+        - name: task_id
           in: path
           type: integer
           format: int64
+          description: The task ID.
           required: true
-          description: Relevant job ID
       tags:
         - Products
       responses:
         '200':
-          description: Get job log successfully.
+          description: Success.
         '400':
-          description: Illegal format of provided ID value.
+          description: Bad request.
         '401':
-          description: User need to log in first.
+          description: User need to login first.
+        '403':
+          description: User has no privilege for the operation.
         '404':
-          description: The specific repository ID's log does not exist.
+          description: Resource requested does not exist.
         '500':
           description: Unexpected internal errors.
-  '/jobs/scan/{id}/log':
+  /replication/policies:
     get:
-      summary: Get job logs.
+      summary: List replication policies
       description: |
-        This endpoint let user get scan job logs filtered by specific ID.
-      parameters:
-        - name: id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: Relevant job ID
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Get job log successfully.
-        '400':
-          description: Illegal format of provided ID value.
-        '401':
-          description: User need to log in first.
-        '404':
-          description: The specific repository ID's log does not exist.
-        '500':
-          description: Unexpected internal errors.
-  /policies/replication:
-    get:
-      summary: List filters policies by name and project_id
-      description: |
-        This endpoint let user list filters policies by name and project_id, if name and project_id are nil, list returns all policies
+        This endpoint let user list replication policies
       parameters:
         - name: name
           in: query
           type: string
           required: false
-          description: The replication's policy name.
-        - name: project_id
-          in: query
-          type: integer
-          format: int64
-          required: false
-          description: Relevant project ID.
+          description: The replication policy name.
         - name: page
           in: query
           type: integer
@@ -1768,44 +1777,50 @@ paths:
           schema:
             type: array
             items:
-              $ref: '#/definitions/RepPolicy'
+              $ref: '#/definitions/ReplicationPolicy'
         '400':
-          description: Invalid project ID.
+          $ref: '#/responses/BadRequest'
         '401':
-          description: User need to log in first.
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
         '500':
-          description: Unexpected internal errors.
+          $ref: '#/responses/InternalServerError'
     post:
-      summary: Post creates a policy
+      summary: Create a replication policy
       description: |
-        This endpoint let user creates a policy, and if it is enabled, the replication will be triggered right now.
+        This endpoint let user create a replication policy
       parameters:
-        - name: policyinfo
+        - name: policy
           in: body
-          description: Create new policy.
+          description: The policy model.
           required: true
           schema:
-            $ref: '#/definitions/RepPolicy'
+            $ref: '#/definitions/ReplicationPolicy'
       tags:
         - Products
       responses:
         '201':
-          description: Create policy successfully.
+          $ref: '#/responses/Created'
         '400':
-          description: Invalid project ID or target ID.
+          $ref: '#/responses/BadRequest'
         '401':
-          description: User need to log in first.
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
         '409':
-          description: Policy name already used or policy already exists with the same project and target.
+          $ref: '#/responses/Conflict'
         '415':
           $ref: '#/responses/UnsupportedMediaType'
         '500':
-          description: Unexpected internal errors.
-  '/policies/replication/{id}':
+          $ref: '#/responses/InternalServerError'
+  '/replication/policies/{id}':
     get:
       summary: Get replication policy.
       description: |
-        This endpoint let user search replication policy by specific ID.
+        This endpoint let user get replication policy by specific ID.
       parameters:
         - name: id
           in: path
@@ -1817,47 +1832,53 @@ paths:
         - Products
       responses:
         '200':
-          description: Get job policy successfully.
+          description: Get the replication policy successfully.
           schema:
-            $ref: '#/definitions/RepPolicy'
-        '401':
-          description: User need to log in first.
-        '404':
-          description: The specific repository ID's policy does not exist.
-        '500':
-          description: Unexpected internal errors.
-    put:
-      summary: 'Put modifies name, description, target and enablement of policy.'
-      description: |
-        This endpoint let user update policy name, description, target and enablement.
-      parameters:
-        - name: id
-          in: path
-          type: integer
-          format: int64
-          required: true
-          description: policy ID
-        - name: policyupdate
-          in: body
-          description: Updated properties of the replication policy.
-          required: true
-          schema:
-            $ref: '#/definitions/RepPolicy'
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Update job policy content successfully.
+            $ref: '#/definitions/ReplicationPolicy'
         '400':
-          description: policy is enabled or target does not exist
+          $ref: '#/responses/BadRequest'
         '401':
-          description: User need to log in first.
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
         '404':
-          description: The specific repository ID's policy does not exist.
-        '409':
-          description: Policy name already used or policy already exists with the same project and target.
+          $ref: '#/responses/NotFound'
         '500':
-          description: Unexpected internal errors.
+          $ref: '#/responses/InternalServerError'
+    put:
+      summary: Update the replication policy
+      description: |
+        This endpoint let user update policy.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: policy ID
+        - name: policy
+          in: body
+          description: The replication policy model.
+          required: true
+          schema:
+            $ref: '#/definitions/ReplicationPolicy'
+      tags:
+        - Products
+      responses:
+        '200':
+          $ref: '#/responses/OK'
+        '400':
+          $ref: '#/responses/BadRequest'
+        '401':
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
+        '404':
+          $ref: '#/responses/NotFound'
+        '409':
+          $ref: '#/responses/Conflict'
+        '500':
+          $ref: '#/responses/InternalServerError'
     delete:
       summary: Delete the replication policy specified by ID.
       description: |
@@ -1873,15 +1894,19 @@ paths:
       - Products
       responses:
         '200':
-          description: Delete successfully.
+          $ref: '#/responses/OK'
         '400':
-          description: Invalid parameters.
+          $ref: '#/responses/BadRequest'
         '401':
-          description: User need to log in first.
+          $ref: '#/responses/Unauthorized'
+        '403':
+          $ref: '#/responses/Forbidden'
         '404':
-          description: The resource does not exist.
+          $ref: '#/responses/NotFound'
+        '412':
+          $ref: '#/responses/PreconditionFailed'
         '500':
-          description: Unexpected internal errors.
+          $ref: '#/responses/InternalServerError'
   /labels:
     get:
       summary: List labels according to the query strings.
@@ -2065,146 +2090,139 @@ paths:
           description: The resource does not exist.
         '500':
           description: Unexpected internal errors.
-  /replications:
-    post:
-      summary: Trigger the replication according to the specified policy.
+  /replication/adapters:
+    get:
+      summary: List supported adapters.
       description: |
-        This endpoint is used to trigger a replication.
-      parameters:
-        - name: policy ID
-          in: body
-          description: The ID of replication policy.
-          required: true
-          schema:
-            $ref: '#/definitions/Replication'
+        This endpoint let user list supported adapters.
       tags:
         - Products
       responses:
         '200':
-          description: Trigger the replication successfully.
+          description: Success.
           schema:
-            $ref: '#/definitions/ReplicationResponse'
+            type: array
+            items:
+              type: string
         '401':
-          description: User need to log in first.
-        '404':
-          description: The policy does not exist.
-        '415':
-          $ref: '#/responses/UnsupportedMediaType'
+          description: Unauthorized.
+        '403':
+          description: Forbidden.
         '500':
           description: Unexpected internal errors.
-  /targets:
+  /registries:
     get:
-      summary: List filters targets by name.
+      summary: List registries.
       description: |
-        This endpoint let user list filters targets by name, if name is nil, list returns all targets.
+        This endpoint let user list filtered registries by name, if name is nil, list returns all registries.
       parameters:
         - name: name
           in: query
           type: string
           required: false
-          description: The replication's target name.
+          description: Registry's name.
       tags:
         - Products
       responses:
         '200':
-          description: Get policy successfully.
+          description: List registries successfully.
           schema:
             type: array
             items:
-              $ref: '#/definitions/RepTarget'
+              $ref: '#/definitions/Registry'
         '401':
           description: User need to log in first.
         '500':
           description: Unexpected internal errors.
     post:
-      summary: Create a new replication target.
+      summary: Create a new registry.
       description: |
-        This endpoint is for user to create a new replication target.
+        This endpoint is for user to create a new registry.
       parameters:
-        - name: reptarget
+        - name: registry
           in: body
-          description: New created replication target.
+          description: New created registry.
           required: true
           schema:
-            $ref: '#/definitions/RepTargetPost'
+            $ref: '#/definitions/Registry'
       tags:
         - Products
       responses:
         '201':
-          description: Replication target created successfully.
+          description: Registry created successfully.
         '400':
-          description: Unsatisfied with constraints of the target creation.
+          description: Unsatisfied with constraints of the registry creation.
         '401':
           description: User need to log in first.
         '409':
-          description: Replication target name already exists.
+          description: Registry name already exists.
         '415':
           $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
-  /targets/ping:
+  /registries/ping:
     post:
-      summary: Ping validates target.
+      summary: Ping status of a registry.
       description: |
-        This endpoint is for ping validates whether the target is reachable and whether the credential is valid.
+        This endpoint checks status of a registry, the registry can be given by ID or URL (together with credential)
       parameters:
-        - name: target
+        - name: registry
           in: body
-          description: The target object.
+          description: Registry to ping.
           required: true
           schema:
-            $ref: '#/definitions/PingTarget'
+            $ref: '#/definitions/Registry'
       tags:
         - Products
       responses:
         '200':
-          description: Ping target successfully.
+          description: Registry is healthy.
         '400':
-          description: Target id is invalid/ endpoint is needed/ invaild URL/ network issue.
+          description: No proper registry information provided.
         '401':
-          description: User need to log in first or wrong username/password for remote target.
+          description: User need to log in first.
         '404':
-          description: Target not found.
+          description: Registry not found (when registry is provided by ID).
         '415':
           $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
-  '/targets/{id}':
+  '/registries/{id}':
     put:
-      summary: Update replication's target.
+      summary: Update a given registry.
       description: |
-        This endpoint is for update specific replication's target.
+        This endpoint is for update a given registry.
       parameters:
         - name: id
           in: path
           type: integer
           format: int64
           required: true
-          description: The replication's target ID.
+          description: The registry's ID.
         - name: repo_target
           in: body
           required: true
           schema:
-            $ref: '#/definitions/PutTarget'
-          description: Updates of replication's target.
+            $ref: '#/definitions/PutRegistry'
+          description: Updates registry.
       tags:
         - Products
       responses:
         '200':
-          description: Updated replication's target successfully.
+          description: Updated registry successfully.
         '400':
-          description: The target is associated with policy which is enabled.
+          description: The registry is associated with policy which is enabled.
         '401':
           description: User need to log in first.
         '404':
-          description: Target ID does not exist.
+          description: Registry does not exist.
         '409':
-          description: Target name or endpoint is already used.
+          description: Registry name is already used.
         '500':
           description: Unexpected internal errors.
     get:
-      summary: Get replication's target.
-      description: This endpoint is for get specific replication's target.
+      summary: Get registry.
+      description: This endpoint is for get specific registry.
       tags:
         - Products
       parameters:
@@ -2213,67 +2231,97 @@ paths:
           type: integer
           format: int64
           required: true
-          description: The replication's target ID.
+          description: The registry ID.
       responses:
         '200':
-          description: Get replication's target successfully.
+          description: Get registry successfully.
           schema:
-            $ref: '#/definitions/RepTarget'
+            $ref: '#/definitions/Registry'
         '401':
           description: User need to log in first.
         '404':
-          description: Replication's target not found
+          description: Registry not found
         '500':
           description: Unexpected internal errors.
     delete:
-      summary: Delete specific replication's target.
+      summary: Delete specific registry.
       description: |
-        This endpoint is for to delete specific replication's target.
+        This endpoint is for to delete specific registry.
       parameters:
         - name: id
           in: path
           type: integer
           format: int64
           required: true
-          description: The replication's target ID.
+          description: The registry's ID.
       tags:
         - Products
       responses:
         '200':
-          description: Replication's target deleted successfully.
+          description: Registry deleted successfully.
         '400':
-          description: Replication's target ID is invalid or the target is used by policies.
+          description: Registry's ID is invalid or the registry is used by policies.
         '401':
           description: Only admin has this authority.
         '404':
-          description: Replication's target does not exist.
+          description: Registry does not exist.
         '500':
           description: Unexpected internal errors.
-  '/targets/{id}/policies/':
+  '/registries/{id}/info':
     get:
-      summary: List the target relevant policies.
-      description: |
-        This endpoint list policies filter with specific replication's target ID.
+      summary: Get registry info.
+      description: Get the info of one specific registry.
+      tags:
+        - Products
       parameters:
         - name: id
           in: path
           type: integer
           format: int64
           required: true
-          description: The replication's target ID.
-      tags:
-        - Products
+          description: The registry ID.
       responses:
         '200':
-          description: Get relevant policies successfully.
+          description: Get registry successfully.
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/RepPolicy'
+            $ref: '#/definitions/RegistryInfo'
         '401':
           description: User need to log in first.
         '404':
-          description: Replication's target not found
+          description: Registry not found
+        '500':
+          description: Unexpected internal errors.
+  /registries/{id}/namespace:
+    get:
+      summary: List namespaces of registry
+      description: |
+        This endpoint let user list namespaces of registry according to query.
+      parameters:
+      - name: id
+        in: path
+        type: integer
+        required: true
+        description: The registry ID.
+      - name: name
+        in: query
+        type: string
+        required: false
+        description: The name of namespace.
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Namespace'
+        '401':
+          description: User need to login first.
+        '404':
+          description: No registry found.
+        '403':
+          description: User has no privilege for the operation.
         '500':
           description: Unexpected internal errors.
   /internal/syncregistry:
@@ -3395,8 +3443,26 @@ paths:
         '500':
           description: Unexpected internal errors.
 responses:
+  OK:
+    description: 'Success'
+  Created:
+    description: 'Created'
+  BadRequest:
+    description: 'Bad Request'
+  Unauthorized:
+    description: 'Unauthorized'
+  Forbidden:
+    description: 'Forbidden'
+  NotFound:
+    description: 'Not Found'
+  Conflict:
+    description: 'Conflict'
+  PreconditionFailed:
+    description: 'Precondition Failed'
   UnsupportedMediaType:
     description: 'The Media Type of the request is not supported, it has to be "application/json"'
+  InternalServerError:
+    description: 'Internal Server Error'
 definitions:
   Search:
     type: object
@@ -3690,7 +3756,7 @@ definitions:
       tag:
         type: string
         description: The repository's used tag.
-  RepPolicy:
+  ReplicationPolicy:
     type: object
     properties:
       id:
@@ -3703,159 +3769,150 @@ definitions:
       description:
         type: string
         description: The description of the policy.
-      projects:
-        type: array
-        description: The project list that the policy applys to.
-        items:
-          $ref: '#/definitions/Project'
-      targets:
-        type: array
-        description: The target list.
-        items:
-          $ref: '#/definitions/RepTarget'
+      src_registry:
+        description: The source registry.
+        $ref: '#/definitions/Registry'
+      dest_registry:
+        description: The destination registry.
+        $ref: '#/definitions/Registry'
+      dest_namespace:
+        type: string
+        description: The destination namespace.
       trigger:
-        $ref: '#/definitions/RepTrigger'
+        $ref: '#/definitions/ReplicationTrigger'
       filters:
         type: array
         description: The replication policy filter array.
         items:
-          $ref: '#/definitions/RepFilter'
-      replicate_existing_image_now:
-        type: boolean
-        description: Whether to replicate the existing images now.
-      replicate_deletion:
+          $ref: '#/definitions/ReplicationFilter'
+      deletion:
         type: boolean
         description: Whether to replicate the deletion operation.
+      override:
+        type: boolean
+        description: Whether to override the resources on the destination registry.
+      enabled:
+        type: boolean
+        description: Whether the policy is enabled or not.
       creation_time:
         type: string
         description: The create time of the policy.
       update_time:
         type: string
         description: The update time of the policy.
-      error_job_count:
-        type: integer
-        description: The error job count number for the policy.
-  RepTrigger:
-    type: object
-    properties:
-      kind:
-        type: string
-        description: 'The replication policy trigger kind. The valid values are manual, immediate and schedule.'
-      schedule_param:
-        $ref: '#/definitions/ScheduleParam'
-  ScheduleParam:
+  ReplicationTrigger:
     type: object
     properties:
       type:
         type: string
-        description: The schedule type. The valid values are daily and weekly.
-      weekday:
-        type: integer
-        format: int8
-        description: 'Optional, only used when the type is weedly. The valid values are 1-7.'
-      offtime:
-        type: integer
-        format: int64
-        description: 'The time offset with the UTC 00:00 in seconds.'
-  RepFilter:
+        description: 'The replication policy trigger type. The valid values are manual, event_based and scheduled.'
+      trigger_settings:
+        $ref: '#/definitions/TriggerSettings'
+  TriggerSettings:
     type: object
     properties:
-      kind:
+      cron:
         type: string
-        description: 'The replication policy filter kind. The valid values are project, repository and tag.'
+        description: The cron string for scheduled trigger
+  ReplicationFilter:
+    type: object
+    properties:
+      type:
+        type: string
+        description: 'The replication policy filter type.'
       value:
         type: string
-        description: 'The value of replication policy filter. When creating repository and tag filter, filling it with the pattern as string. When creating label filter, filling it with label ID as integer.'
-      pattern:
+        description: 'The value of replication policy filter.'
+  RegistryCredential:
+    type: object
+    properties:
+      type:
         type: string
-        description: 'Depraceted, use value instead. The replication policy filter pattern.'
-      metadata:
-        type: object
-        description: This map object is the replication policy filter metadata.
-  RepTarget:
+        description: Credential type, such as 'basic', 'oauth'.
+      access_key:
+        type: string
+        description: Access key, e.g. user name when credential type is 'basic'.
+      access_secret:
+        type: string
+        description: Access secret, e.g. password when credential type is 'basic'.
+  Registry:
     type: object
     properties:
       id:
         type: integer
         format: int64
-        description: The target ID.
-      endpoint:
+        description: The registry ID.
+      url:
         type: string
-        description: The target address URL string.
+        description: The registry URL string.
       name:
         type: string
-        description: The target name.
-      username:
-        type: string
-        description: The target server username.
-      password:
-        type: string
-        description: The target server password.
+        description: The registry name.
+      credential:
+        $ref: '#/definitions/RegistryCredential'
       type:
-        type: integer
-        format: int
-        description: Reserved field.
+        type: string
+        description: Type of the registry, e.g. 'harbor'.
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
+      description:
+        type: string
+        description: Description of the registry.
+      status:
+        type: string
+        description: Health status of the registry.
       creation_time:
         type: string
         description: The create time of the policy.
       update_time:
         type: string
         description: The update time of the policy.
-  RepTargetPost:
-    type: object
-    properties:
-      endpoint:
-        type: string
-        description: The target address URL string.
-      name:
-        type: string
-        description: The target name.
-      username:
-        type: string
-        description: The target server username.
-      password:
-        type: string
-        description: The target server password.
-      insecure:
-        type: boolean
-        description: Whether or not the certificate will be verified when Harbor tries to access the server.
-  PingTarget:
+  PingRegistry:
     type: object
     properties:
       id:
         type: integer
-        format: int
-        description: Target ID.
-      endpoint:
+        description: The ID of the registry
+      type:
         type: string
-        description: The target address URL string.
-      username:
+        description: Type of the registry, e.g. 'harbor'.
+      url:
         type: string
-        description: The target server username.
-      password:
+        description: The registry address URL string.
+      credential_type:
         type: string
-        description: The target server password.
+        description: Credential type of the registry, e.g. 'basic'.
+      access_key:
+        type: string
+        description: The registry access key.
+      access_secret:
+        type: string
+        description: The registry access secret.
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
-  PutTarget:
+  PutRegistry:
     type: object
     properties:
       name:
         type: string
-        description: The target name.
-      endpoint:
+        description: The registry name.
+      description:
         type: string
-        description: The target address URL string.
-      username:
+        description: Description of the registry.
+      url:
         type: string
-        description: The target server username.
-      password:
+        description: The registry address URL string.
+      credential_type:
         type: string
-        description: The target server password.
+        description: Credential type of the registry, e.g. 'basic'.
+      access_key:
+        type: string
+        description: The registry access key.
+      access_secret:
+        type: string
+        description: The registry access secret.
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
@@ -4351,33 +4408,12 @@ definitions:
                 type: integer
                 description: 'The offest in seconds of UTC 0 o''clock, only valid when the policy type is "daily"'
             description: 'The parameters of the policy, the values are dependant on the type of the policy.'
-  Replication:
-    type: object
-    properties:
-      policy_id:
-        type: integer
-        description: The ID of replication policy
-  ReplicationResponse:
-    type: object
-    properties:
-      uuid:
-        type: string
-        description: UUID of the replication
   RepositoryDescription:
     type: object
     properties:
       description:
         type: string
         description: The description of the repository.
-  UpdateJobs:
-    type: object
-    properties:
-      policy_id:
-        type: integer
-        description: The ID of replication policy
-      status:
-        type: string
-        description: The status of jobs. The only valid value is stop for now.
   Label:
     type: object
     properties:
@@ -4479,7 +4515,7 @@ definitions:
         type: array
         description: The replication policy list.
         items:
-          $ref: '#/definitions/RepPolicy'
+          $ref: '#/definitions/ReplicationPolicy'
   StringConfigItem:
     type: object
     properties:
@@ -4863,7 +4899,7 @@ definitions:
   RobotAccountUpdate:
     type: object
     properties:
-      disable:
+      disabled:
         type: boolean
         description: The robot account is disable or enable
   Permission:
@@ -4876,3 +4912,119 @@ definitions:
       action:
         type: string
         description: The permission action
+  RegistryInfo:
+    type: object
+    description: The registry info contains the base info and capability declarations of the registry
+    properties:
+      type:
+        type: string
+        description: The registry type
+      description:
+        type: string
+        description: The description
+      supported_resource_filters:
+        type: array
+        description: The filters that the registry supports
+        items:
+          $ref: '#/definitions/FilterStyle'
+      supported_triggers:
+        type: array
+        description: The triggers that the registry supports
+        items:
+          type: string
+  FilterStyle:
+    type: object
+    description: The style of the resource filter
+    properties:
+      type:
+        type: string
+        description: The filter type
+      style:
+        type: string
+        description: The filter style
+      values:
+        type: array
+        description: The filter values
+        items:
+          type: string
+  ReplicationExecution:
+    type: object
+    description: The replication execution
+    properties:
+      id:
+        type: integer
+        description: The ID
+      policy_id:
+        type: integer
+        description: The policy ID
+      status:
+        type: string
+        description: The status
+      status_text:
+        type: string
+        description: The status text
+      trigger:
+        type: string
+        description: The trigger mode
+      total:
+        type: integer
+        description: The total count of all tasks
+      failed:
+        type: integer
+        description: The count of failed tasks
+      succeed:
+        type: integer
+        description: The count of succeed tasks
+      in_progress:
+        type: integer
+        description: The count of in_progress tasks
+      stopped:
+        type: integer
+        description: The count of stopped tasks
+      start_time:
+        type: string
+        description: The start time
+      end_time:
+        type: string
+        description: The end time
+  ReplicationTask:
+    type: object
+    description: The replication task
+    properties:
+      id:
+        type: integer
+        description: The ID
+      execution_id:
+        type: integer
+        description: The execution ID
+      resource_type:
+        type: string
+        description: The resource type
+      src_resource:
+        type: string
+        description: The source resource
+      dst_resource:
+        type: string
+        description: The destination resource
+      job_id:
+        type: string
+        description: The job ID
+      status:
+        type: string
+        description: The status
+      start_time:
+        type: string
+        description: The start time
+      end_time:
+        type: string
+        description: The end time
+  Namespace:
+    type: object
+    description: The namespace of registry
+    properties:
+      name:
+        type: string
+        description: The name of namespace
+      metadata:
+        type: object
+        description: The metadata of namespace

@@ -25,53 +25,75 @@ describe("EndpointComponent (inline template)", () => {
   let mockData: Endpoint[] = [
     {
       id: 1,
-      endpoint: "https://10.117.4.151",
+      credential: {
+        access_key: "admin",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
+      insecure: false,
       name: "target_01",
-      username: "admin",
-      password: "",
-      insecure: true,
-      type: 0
+      type: "Harbor",
+      url: "https://10.117.4.151"
     },
     {
       id: 2,
-      endpoint: "https://10.117.5.142",
-      name: "target_02",
-      username: "AAA",
-      password: "",
+      credential: {
+        access_key: "AAA",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
       insecure: false,
-      type: 0
+      name: "target_02",
+      type: "Harbor",
+      url: "https://10.117.5.142"
     },
     {
       id: 3,
-      endpoint: "https://101.1.11.111",
-      name: "target_03",
-      username: "admin",
-      password: "",
+      credential: {
+        access_key: "admin",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
       insecure: false,
-      type: 0
+      name: "target_03",
+      type: "Harbor",
+      url: "https://101.1.11.111"
     },
     {
       id: 4,
-      endpoint: "http://4.4.4.4",
-      name: "target_04",
-      username: "",
-      password: "",
+      credential: {
+        access_key: "admin",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
       insecure: false,
-      type: 0
+      name: "target_04",
+      type: "Harbor",
+      url: "https://4.4.4.4"
     }
   ];
 
   let mockOne: Endpoint[] = [
     {
       id: 1,
-      endpoint: "https://10.117.4.151",
-      name: "target_01",
-      username: "admin",
-      password: "",
+      credential: {
+        access_key: "admin",
+        access_secret: "",
+        type: "basic"
+      },
+      description: "test",
       insecure: false,
-      type: 0
+      name: "target_01",
+      type: "Harbor",
+      url: "https://10.117.4.151"
     }
   ];
+
+  let mockAdapters = ['harbor', 'docker hub'];
 
   let comp: EndpointComponent;
   let fixture: ComponentFixture<EndpointComponent>;
@@ -81,6 +103,7 @@ describe("EndpointComponent (inline template)", () => {
 
   let endpointService: EndpointService;
   let spy: jasmine.Spy;
+  let spyAdapter: jasmine.Spy;
   let spyOnRules: jasmine.Spy;
   let spyOne: jasmine.Spy;
   beforeEach(async(() => {
@@ -111,6 +134,11 @@ describe("EndpointComponent (inline template)", () => {
     spy = spyOn(endpointService, "getEndpoints").and.returnValues(
       of(mockData)
     );
+
+    spyAdapter = spyOn(endpointService, "getAdapters").and.returnValue(
+      of(mockAdapters)
+    );
+
     spyOnRules = spyOn(
       endpointService,
       "getEndpointWithReplicationRules"

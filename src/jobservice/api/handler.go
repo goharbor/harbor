@@ -23,12 +23,18 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/common/query"
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/core"
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/pkg/errors"
+	"strconv"
 )
+
+const totalHeaderKey = "Total-Count"
 
 // Handler defines approaches to handle the http requests.
 type Handler interface {
@@ -46,6 +52,12 @@ type Handler interface {
 
 	// HandleJobLogReq is used to handle the request of getting job logs
 	HandleJobLogReq(w http.ResponseWriter, req *http.Request)
+
+	// HandleJobLogReq is used to handle the request of getting periodic executions
+	HandlePeriodicExecutions(w http.ResponseWriter, req *http.Request)
+
+	// HandleScheduledJobs is used to handle the request of getting pending scheduled jobs
+	HandleScheduledJobs(w http.ResponseWriter, req *http.Request)
 }
 
 // DefaultHandler is the default request handler which implements the Handler interface.
@@ -62,10 +74,6 @@ func NewDefaultHandler(ctl core.Interface) *DefaultHandler {
 
 // HandleLaunchJobReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w, req) {
-		return
-	}
-
 	data, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		dh.handleError(w, req, http.StatusInternalServerError, errs.ReadRequestBodyError(err))
@@ -103,10 +111,6 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 
 // HandleGetJobReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w, req) {
-		return
-	}
-
 	vars := mux.Vars(req)
 	jobID := vars["job_id"]
 
@@ -129,10 +133,6 @@ func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Reque
 
 // HandleJobActionReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w, req) {
-		return
-	}
-
 	vars := mux.Vars(req)
 	jobID := vars["job_id"]
 
@@ -177,10 +177,6 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 
 // HandleCheckStatusReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w, req) {
-		return
-	}
-
 	stats, err := dh.controller.CheckStatus()
 	if err != nil {
 		dh.handleError(w, req, http.StatusInternalServerError, errs.CheckStatsError(err))
@@ -192,10 +188,6 @@ func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.
 
 // HandleJobLogReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w, req) {
-		return
-	}
-
 	vars := mux.Vars(req)
 	jobID := vars["job_id"]
 
@@ -224,6 +216,48 @@ func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Reque
 	w.Write(logData)
 }
 
+// HandleJobLogReq is implementation of method defined in interface 'Handler'
+func (dh *DefaultHandler) HandlePeriodicExecutions(w http.ResponseWriter, req *http.Request) {
+	// Get param
+	vars := mux.Vars(req)
+	jobID := vars["job_id"]
+
+	// Get query params
+	q := extractQuery(req)
+
+	executions, total, err := dh.controller.GetPeriodicExecutions(jobID, q)
+	if err != nil {
+		code := http.StatusInternalServerError
+		if errs.IsObjectNotFoundError(err) {
+			code = http.StatusNotFound
+		} else if errs.IsBadRequestError(err) {
+			code = http.StatusBadRequest
+		} else {
+			err = errs.GetPeriodicExecutionError(err)
+		}
+		dh.handleError(w, req, code, err)
+		return
+	}
+
+	w.Header().Add(totalHeaderKey, fmt.Sprintf("%d", total))
+	dh.handleJSONData(w, req, http.StatusOK, executions)
+
+}
+
+// HandleScheduledJobs is implementation of method defined in interface 'Handler'
+func (dh *DefaultHandler) HandleScheduledJobs(w http.ResponseWriter, req *http.Request) {
+	// Get query parameters
+	q := extractQuery(req)
+	jobs, total, err := dh.controller.ScheduledJobs(q)
+	if err != nil {
+		dh.handleError(w, req, http.StatusInternalServerError, errs.GetScheduledJobsError(err))
+		return
+	}
+
+	w.Header().Add(totalHeaderKey, fmt.Sprintf("%d", total))
+	dh.handleJSONData(w, req, http.StatusOK, jobs)
+}
+
 func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, req *http.Request, code int, object interface{}) {
 	data, err := json.Marshal(object)
 	if err != nil {
@@ -247,15 +281,45 @@ func (dh *DefaultHandler) handleError(w http.ResponseWriter, req *http.Request, 
 	w.Write([]byte(err.Error()))
 }
 
-func (dh *DefaultHandler) preCheck(w http.ResponseWriter, req *http.Request) bool {
-	if dh.controller == nil {
-		dh.handleError(w, req, http.StatusInternalServerError, errs.MissingBackendHandlerError(errors.Errorf("nil controller")))
-		return false
-	}
-
-	return true
-}
-
 func (dh *DefaultHandler) log(req *http.Request, code int, text string) {
 	logger.Debugf("Serve http request '%s %s': %d %s", req.Method, req.URL.String(), code, text)
+}
+
+func extractQuery(req *http.Request) *query.Parameter {
+	q := &query.Parameter{
+		PageNumber: 1,
+		PageSize:   query.DefaultPageSize,
+		Extras:     make(query.ExtraParameters),
+	}
+
+	queries := req.URL.Query()
+	// Page number
+	p := queries.Get(query.QueryParamKeyPage)
+	if !utils.IsEmptyStr(p) {
+		if pv, err := strconv.ParseUint(p, 10, 32); err == nil {
+			if pv > 1 {
+				q.PageNumber = uint(pv)
+			}
+		}
+	}
+
+	// Page number
+	size := queries.Get(query.QueryParamKeyPageSize)
+	if !utils.IsEmptyStr(size) {
+		if pz, err := strconv.ParseUint(size, 10, 32); err == nil {
+			if pz > 0 {
+				q.PageSize = uint(pz)
+			}
+		}
+	}
+
+	// Extra query parameters
+	nonStoppedOnly := queries.Get(query.QueryParamKeyNonStoppedOnly)
+	if !utils.IsEmptyStr(nonStoppedOnly) {
+		if nonStoppedOnlyV, err := strconv.ParseBool(nonStoppedOnly); err == nil {
+			q.Extras.Set(query.ExtraParamKeyNonStoppedOnly, nonStoppedOnlyV)
+		}
+	}
+
+	return q
 }

@@ -80,11 +80,14 @@ func Init() error {
 	return nil
 }
 
-// InitWithSettings init config with predefined configs
-func InitWithSettings(cfgs map[string]interface{}) {
+// InitWithSettings init config with predefined configs, and optionally overwrite the keyprovider
+func InitWithSettings(cfgs map[string]interface{}, kp ...comcfg.KeyProvider) {
 	Init()
 	cfgMgr = comcfg.NewInMemoryManager()
 	cfgMgr.UpdateConfig(cfgs)
+	if len(kp) > 0 {
+		keyProvider = kp[0]
+	}
 }
 
 func initKeyProvider() {
@@ -473,7 +476,7 @@ func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
 	return &models.HTTPAuthProxy{
 		Endpoint:            cfgMgr.Get(common.HTTPAuthProxyEndpoint).GetString(),
 		TokenReviewEndpoint: cfgMgr.Get(common.HTTPAuthProxyTokenReviewEndpoint).GetString(),
-		SkipCertVerify:      cfgMgr.Get(common.HTTPAuthProxySkipCertVerify).GetBool(),
+		VerifyCert:          cfgMgr.Get(common.HTTPAuthProxyVerifyCert).GetBool(),
 		AlwaysOnBoard:       cfgMgr.Get(common.HTTPAuthProxyAlwaysOnboard).GetBool(),
 	}, nil
 
@@ -493,12 +496,12 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 	}
 
 	return &models.OIDCSetting{
-		Name:           cfgMgr.Get(common.OIDCName).GetString(),
-		Endpoint:       cfgMgr.Get(common.OIDCEndpoint).GetString(),
-		SkipCertVerify: cfgMgr.Get(common.OIDCSkipCertVerify).GetBool(),
-		ClientID:       cfgMgr.Get(common.OIDCCLientID).GetString(),
-		ClientSecret:   cfgMgr.Get(common.OIDCClientSecret).GetString(),
-		RedirectURL:    extEndpoint + common.OIDCCallbackPath,
-		Scope:          scope,
+		Name:         cfgMgr.Get(common.OIDCName).GetString(),
+		Endpoint:     cfgMgr.Get(common.OIDCEndpoint).GetString(),
+		VerifyCert:   cfgMgr.Get(common.OIDCVerifyCert).GetBool(),
+		ClientID:     cfgMgr.Get(common.OIDCCLientID).GetString(),
+		ClientSecret: cfgMgr.Get(common.OIDCClientSecret).GetString(),
+		RedirectURL:  extEndpoint + common.OIDCCallbackPath,
+		Scope:        scope,
 	}, nil
 }

@@ -24,6 +24,7 @@ import (
 	"strings"
 	"time"
 
+	"errors"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common"
@@ -37,10 +38,10 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/notary"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/notifier"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
-	"github.com/goharbor/harbor/src/replication/event/notification"
-	"github.com/goharbor/harbor/src/replication/event/topic"
+	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/model"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -110,13 +111,13 @@ type manifestResp struct {
 func (ra *RepositoryAPI) Get() {
 	projectID, err := ra.GetInt64("project_id")
 	if err != nil || projectID <= 0 {
-		ra.HandleBadRequest(fmt.Sprintf("invalid project_id %s", ra.GetString("project_id")))
+		ra.SendBadRequestError(fmt.Errorf("invalid project_id %s", ra.GetString("project_id")))
 		return
 	}
 
 	labelID, err := ra.GetInt64("label_id", 0)
 	if err != nil {
-		ra.HandleBadRequest(fmt.Sprintf("invalid label_id: %s", ra.GetString("label_id")))
+		ra.SendBadRequestError(fmt.Errorf("invalid label_id: %s", ra.GetString("label_id")))
 		return
 	}
 
@@ -128,17 +129,17 @@ func (ra *RepositoryAPI) Get() {
 	}
 
 	if !exist {
-		ra.HandleNotFound(fmt.Sprintf("project %d not found", projectID))
+		ra.SendNotFoundError(fmt.Errorf("project %d not found", projectID))
 		return
 	}
 
 	resource := rbac.NewProjectNamespace(projectID).Resource(rbac.ResourceRepository)
 	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
-			ra.HandleUnauthorized()
+			ra.SendUnAuthorizedError(errors.New("Unauthorized"))
 			return
 		}
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
 
@@ -147,19 +148,24 @@ func (ra *RepositoryAPI) Get() {
 		Name:       ra.GetString("q"),
 		LabelID:    labelID,
 	}
-	query.Page, query.Size = ra.GetPaginationParams()
+	query.Page, query.Size, err = ra.GetPaginationParams()
+	if err != nil {
+		ra.SendBadRequestError(err)
+		return
+	}
+
 	query.Sort = ra.GetString("sort")
 
 	total, err := dao.GetTotalOfRepositories(query)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get total of repositories of project %d: %v",
+		ra.SendInternalServerError(fmt.Errorf("failed to get total of repositories of project %d: %v",
 			projectID, err))
 		return
 	}
 
 	repositories, err := getRepositories(query)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get repository: %v", err))
+		ra.SendInternalServerError(fmt.Errorf("failed to get repository: %v", err))
 		return
 	}
 
@@ -240,25 +246,26 @@ func (ra *RepositoryAPI) Delete() {
 	}
 
 	if project == nil {
-		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
+		ra.SendNotFoundError(fmt.Errorf("project %s not found", projectName))
 		return
 	}
 
 	if !ra.SecurityCtx.IsAuthenticated() {
-		ra.HandleUnauthorized()
+		ra.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 
 	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(rbac.ResourceRepository)
 	if !ra.SecurityCtx.Can(rbac.ActionDelete, resource) {
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
 
 	rc, err := coreutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
-		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		ra.SendInternalServerError(errors.New("internal error"))
+		return
 	}
 
 	tags := []string{}
@@ -266,18 +273,13 @@ func (ra *RepositoryAPI) Delete() {
 	if len(tag) == 0 {
 		tagList, err := rc.ListTag()
 		if err != nil {
-			log.Errorf("error occurred while listing tags of %s: %v", repoName, err)
-
-			if regErr, ok := err.(*commonhttp.Error); ok {
-				ra.CustomAbort(regErr.Code, regErr.Message)
-			}
-
-			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+			ra.ParseAndHandleError(fmt.Sprintf("error occurred while listing tags of %s", repoName), err)
+			return
 		}
 
 		// TODO remove the logic if the bug of registry is fixed
 		if len(tagList) == 0 {
-			ra.HandleNotFound(fmt.Sprintf("no tags found for repository %s", repoName))
+			ra.SendNotFoundError(fmt.Errorf("no tags found for repository %s", repoName))
 			return
 		}
 
@@ -289,7 +291,7 @@ func (ra *RepositoryAPI) Delete() {
 	if config.WithNotary() {
 		signedTags, err := getSignatures(ra.SecurityCtx.GetUsername(), repoName)
 		if err != nil {
-			ra.HandleInternalServerError(fmt.Sprintf(
+			ra.SendInternalServerError(fmt.Errorf(
 				"failed to get signatures for repository %s: %v", repoName, err))
 			return
 		}
@@ -298,12 +300,14 @@ func (ra *RepositoryAPI) Delete() {
 			digest, _, err := rc.ManifestExist(t)
 			if err != nil {
 				log.Errorf("Failed to Check the digest of tag: %s, error: %v", t, err.Error())
-				ra.CustomAbort(http.StatusInternalServerError, err.Error())
+				ra.SendInternalServerError(err)
+				return
 			}
 			log.Debugf("Tag: %s, digest: %s", t, digest)
 			if _, ok := signedTags[digest]; ok {
 				log.Errorf("Found signed tag, repostory: %s, tag: %s, deletion will be canceled", repoName, t)
-				ra.CustomAbort(http.StatusPreconditionFailed, fmt.Sprintf("tag %s is signed", t))
+				ra.SendPreconditionFailedError(fmt.Errorf("tag %s is signed", t))
+				return
 			}
 		}
 	}
@@ -311,7 +315,7 @@ func (ra *RepositoryAPI) Delete() {
 	for _, t := range tags {
 		image := fmt.Sprintf("%s:%s", repoName, t)
 		if err = dao.DeleteLabelsOfResource(common.ResourceTypeImage, image); err != nil {
-			ra.HandleInternalServerError(fmt.Sprintf("failed to delete labels of image %s: %v", image, err))
+			ra.SendInternalServerError(fmt.Errorf("failed to delete labels of image %s: %v", image, err))
 			return
 		}
 		if err = rc.DeleteTag(t); err != nil {
@@ -319,24 +323,29 @@ func (ra *RepositoryAPI) Delete() {
 				if regErr.Code == http.StatusNotFound {
 					continue
 				}
-				log.Errorf("failed to delete tag %s: %v", t, err)
-				ra.CustomAbort(regErr.Code, regErr.Message)
 			}
-			log.Errorf("error occurred while deleting tag %s:%s: %v", repoName, t, err)
-			ra.CustomAbort(http.StatusInternalServerError, "internal error")
+			ra.ParseAndHandleError(fmt.Sprintf("failed to delete tag %s", t), err)
+			return
 		}
 		log.Infof("delete tag: %s:%s", repoName, t)
 
 		go func(tag string) {
-			image := repoName + ":" + tag
-			err := notifier.Publish(topic.ReplicationEventTopicOnDeletion, notification.OnDeletionNotification{
-				Image: image,
-			})
-			if err != nil {
-				log.Errorf("failed to publish on deletion topic for resource %s: %v", image, err)
-				return
+			e := &event.Event{
+				Type: event.EventTypeImagePush,
+				Resource: &model.Resource{
+					Type: model.ResourceTypeImage,
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{
+							Name: repoName,
+						},
+						Vtags: []string{tag},
+					},
+					Deleted: true,
+				},
 			}
-			log.Debugf("the on deletion topic for resource %s published", image)
+			if err := replication.EventHandler.Handle(e); err != nil {
+				log.Errorf("failed to handle event: %v", err)
+			}
 		}(t)
 
 		go func(tag string) {
@@ -356,12 +365,13 @@ func (ra *RepositoryAPI) Delete() {
 	exist, err := repositoryExist(repoName, rc)
 	if err != nil {
 		log.Errorf("failed to check the existence of repository %s: %v", repoName, err)
-		ra.CustomAbort(http.StatusInternalServerError, "")
+		ra.SendInternalServerError(fmt.Errorf("failed to check the existence of repository %s: %v", repoName, err))
+		return
 	}
 	if !exist {
 		repository, err := dao.GetRepositoryByName(repoName)
 		if err != nil {
-			ra.HandleInternalServerError(fmt.Sprintf("failed to get repository %s: %v", repoName, err))
+			ra.SendInternalServerError(fmt.Errorf("failed to get repository %s: %v", repoName, err))
 			return
 		}
 		if repository == nil {
@@ -371,13 +381,14 @@ func (ra *RepositoryAPI) Delete() {
 
 		if err = dao.DeleteLabelsOfResource(common.ResourceTypeRepository,
 			strconv.FormatInt(repository.RepositoryID, 10)); err != nil {
-			ra.HandleInternalServerError(fmt.Sprintf("failed to delete labels of repository %s: %v",
+			ra.SendInternalServerError(fmt.Errorf("failed to delete labels of repository %s: %v",
 				repoName, err))
 			return
 		}
 		if err = dao.DeleteRepository(repoName); err != nil {
 			log.Errorf("failed to delete repository %s: %v", repoName, err)
-			ra.CustomAbort(http.StatusInternalServerError, "")
+			ra.SendInternalServerError(fmt.Errorf("failed to delete repository %s: %v", repoName, err))
+			return
 		}
 	}
 }
@@ -388,38 +399,38 @@ func (ra *RepositoryAPI) GetTag() {
 	tag := ra.GetString(":tag")
 	exist, _, err := ra.checkExistence(repository, tag)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of resource, error: %v", err))
+		ra.SendInternalServerError(fmt.Errorf("failed to check the existence of resource, error: %v", err))
 		return
 	}
 	if !exist {
-		ra.HandleNotFound(fmt.Sprintf("resource: %s:%s not found", repository, tag))
+		ra.SendNotFoundError(fmt.Errorf("resource: %s:%s not found", repository, tag))
 		return
 	}
 	project, _ := utils.ParseRepository(repository)
 	resource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepositoryTag)
 	if !ra.SecurityCtx.Can(rbac.ActionRead, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
-			ra.HandleUnauthorized()
+			ra.SendUnAuthorizedError(errors.New("UnAuthorized"))
 			return
 		}
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
 
 	client, err := coreutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repository)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to initialize the client for %s: %v",
+		ra.SendInternalServerError(fmt.Errorf("failed to initialize the client for %s: %v",
 			repository, err))
 		return
 	}
 
 	_, exist, err = client.ManifestExist(tag)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of %s:%s: %v", repository, tag, err))
+		ra.SendInternalServerError(fmt.Errorf("failed to check the existence of %s:%s: %v", repository, tag, err))
 		return
 	}
 	if !exist {
-		ra.HandleNotFound(fmt.Sprintf("%s not found", tag))
+		ra.SendNotFoundError(fmt.Errorf("%s not found", tag))
 		return
 	}
 
@@ -432,38 +443,41 @@ func (ra *RepositoryAPI) GetTag() {
 // Retag tags an existing image to another tag in this repo, the source image is specified by request body.
 func (ra *RepositoryAPI) Retag() {
 	if !ra.SecurityCtx.IsAuthenticated() {
-		ra.HandleUnauthorized()
+		ra.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 
 	repoName := ra.GetString(":splat")
 	project, repo := utils.ParseRepository(repoName)
 	if !utils.ValidateRepo(repo) {
-		ra.HandleBadRequest(fmt.Sprintf("invalid repo '%s'", repo))
+		ra.SendBadRequestError(fmt.Errorf("invalid repo '%s'", repo))
 		return
 	}
 
 	request := models.RetagRequest{}
-	ra.DecodeJSONReq(&request)
+	if err := ra.DecodeJSONReq(&request); err != nil {
+		ra.SendBadRequestError(err)
+		return
+	}
 	srcImage, err := models.ParseImage(request.SrcImage)
 	if err != nil {
-		ra.HandleBadRequest(fmt.Sprintf("invalid src image string '%s', should in format '<project>/<repo>:<tag>'", request.SrcImage))
+		ra.SendBadRequestError(fmt.Errorf("invalid src image string '%s', should in format '<project>/<repo>:<tag>'", request.SrcImage))
 		return
 	}
 
 	if !utils.ValidateTag(request.Tag) {
-		ra.HandleBadRequest(fmt.Sprintf("invalid tag '%s'", request.Tag))
+		ra.SendBadRequestError(fmt.Errorf("invalid tag '%s'", request.Tag))
 		return
 	}
 
 	// Check whether source image exists
 	exist, _, err := ra.checkExistence(fmt.Sprintf("%s/%s", srcImage.Project, srcImage.Repo), srcImage.Tag)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("check existence of %s error: %v", request.SrcImage, err))
+		ra.SendInternalServerError(fmt.Errorf("check existence of %s error: %v", request.SrcImage, err))
 		return
 	}
 	if !exist {
-		ra.HandleNotFound(fmt.Sprintf("image %s not exist", request.SrcImage))
+		ra.SendNotFoundError(fmt.Errorf("image %s not exist", request.SrcImage))
 		return
 	}
 
@@ -474,7 +488,7 @@ func (ra *RepositoryAPI) Retag() {
 		return
 	}
 	if !exist {
-		ra.HandleNotFound(fmt.Sprintf("project %s not found", project))
+		ra.SendNotFoundError(fmt.Errorf("project %s not found", project))
 		return
 	}
 
@@ -482,11 +496,11 @@ func (ra *RepositoryAPI) Retag() {
 	if !request.Override {
 		exist, _, err := ra.checkExistence(repoName, request.Tag)
 		if err != nil {
-			ra.HandleInternalServerError(fmt.Sprintf("check existence of %s:%s error: %v", repoName, request.Tag, err))
+			ra.SendInternalServerError(fmt.Errorf("check existence of %s:%s error: %v", repoName, request.Tag, err))
 			return
 		}
 		if exist {
-			ra.HandleConflict(fmt.Sprintf("tag '%s' already existed for '%s'", request.Tag, repoName))
+			ra.SendConflictError(fmt.Errorf("tag '%s' already existed for '%s'", request.Tag, repoName))
 			return
 		}
 	}
@@ -495,7 +509,7 @@ func (ra *RepositoryAPI) Retag() {
 	srcResource := rbac.NewProjectNamespace(srcImage.Project).Resource(rbac.ResourceRepository)
 	if !ra.SecurityCtx.Can(rbac.ActionPull, srcResource) {
 		log.Errorf("user has no read permission to project '%s'", srcImage.Project)
-		ra.HandleForbidden(fmt.Sprintf("%s has no read permission to project %s", ra.SecurityCtx.GetUsername(), srcImage.Project))
+		ra.SendForbiddenError(fmt.Errorf("%s has no read permission to project %s", ra.SecurityCtx.GetUsername(), srcImage.Project))
 		return
 	}
 
@@ -503,7 +517,7 @@ func (ra *RepositoryAPI) Retag() {
 	destResource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepository)
 	if !ra.SecurityCtx.Can(rbac.ActionPush, destResource) {
 		log.Errorf("user has no write permission to project '%s'", project)
-		ra.HandleForbidden(fmt.Sprintf("%s has no write permission to project %s", ra.SecurityCtx.GetUsername(), project))
+		ra.SendForbiddenError(fmt.Errorf("%s has no write permission to project %s", ra.SecurityCtx.GetUsername(), project))
 		return
 	}
 
@@ -513,7 +527,7 @@ func (ra *RepositoryAPI) Retag() {
 		Repo:    repo,
 		Tag:     request.Tag,
 	}); err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("%v", err))
+		ra.SendInternalServerError(fmt.Errorf("%v", err))
 	}
 }
 
@@ -522,7 +536,7 @@ func (ra *RepositoryAPI) GetTags() {
 	repoName := ra.GetString(":splat")
 	labelID, err := ra.GetInt64("label_id", 0)
 	if err != nil {
-		ra.HandleBadRequest(fmt.Sprintf("invalid label_id: %s", ra.GetString("label_id")))
+		ra.SendBadRequestError(fmt.Errorf("invalid label_id: %s", ra.GetString("label_id")))
 		return
 	}
 
@@ -535,29 +549,30 @@ func (ra *RepositoryAPI) GetTags() {
 	}
 
 	if !exist {
-		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
+		ra.SendNotFoundError(fmt.Errorf("project %s not found", projectName))
 		return
 	}
 
 	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepositoryTag)
 	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
-			ra.HandleUnauthorized()
+			ra.SendUnAuthorizedError(errors.New("UnAuthorized"))
 			return
 		}
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
 
 	client, err := coreutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
-		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		ra.SendInternalServerError(errors.New("internal error"))
+		return
 	}
 
 	tags, err := client.ListTag()
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get tag of %s: %v", repoName, err))
+		ra.SendInternalServerError(fmt.Errorf("failed to get tag of %s: %v", repoName, err))
 		return
 	}
 
@@ -568,7 +583,7 @@ func (ra *RepositoryAPI) GetTags() {
 			ResourceType: common.ResourceTypeImage,
 		})
 		if err != nil {
-			ra.HandleInternalServerError(fmt.Sprintf("failed to list resource labels: %v", err))
+			ra.SendInternalServerError(fmt.Errorf("failed to list resource labels: %v", err))
 			return
 		}
 		labeledTags := map[string]struct{}{}
@@ -731,7 +746,7 @@ func (ra *RepositoryAPI) GetManifests() {
 	}
 
 	if version != "v1" && version != "v2" {
-		ra.HandleBadRequest("version should be v1 or v2")
+		ra.SendBadRequestError(errors.New("version should be v1 or v2"))
 		return
 	}
 
@@ -744,36 +759,32 @@ func (ra *RepositoryAPI) GetManifests() {
 	}
 
 	if !exist {
-		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
+		ra.SendNotFoundError(fmt.Errorf("project %s not found", projectName))
 		return
 	}
 
 	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepositoryTagManifest)
 	if !ra.SecurityCtx.Can(rbac.ActionRead, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
-			ra.HandleUnauthorized()
+			ra.SendUnAuthorizedError(errors.New("Unauthorized"))
 			return
 		}
 
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
 
 	rc, err := coreutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
-		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		ra.SendInternalServerError(errors.New("internal error"))
+		return
 	}
 
 	manifest, err := getManifest(rc, tag, version)
 	if err != nil {
-		log.Errorf("error occurred while getting manifest of %s:%s: %v", repoName, tag, err)
-
-		if regErr, ok := err.(*commonhttp.Error); ok {
-			ra.CustomAbort(regErr.Code, regErr.Message)
-		}
-
-		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		ra.ParseAndHandleError(fmt.Sprintf("error occurred while getting manifest of %s:%s", repoName, tag), err)
+		return
 	}
 
 	ra.Data["json"] = manifest
@@ -826,7 +837,7 @@ func getManifest(client *registry.Repository,
 func (ra *RepositoryAPI) GetTopRepos() {
 	count, err := ra.GetInt("count", 10)
 	if err != nil || count <= 0 {
-		ra.HandleBadRequest(fmt.Sprintf("invalid count: %s", ra.GetString("count")))
+		ra.SendBadRequestError(fmt.Errorf("invalid count: %s", ra.GetString("count")))
 		return
 	}
 
@@ -839,7 +850,7 @@ func (ra *RepositoryAPI) GetTopRepos() {
 	if ra.SecurityCtx.IsAuthenticated() {
 		list, err := ra.SecurityCtx.GetMyProjects()
 		if err != nil {
-			ra.HandleInternalServerError(fmt.Sprintf("failed to get projects which the user %s is a member of: %v",
+			ra.SendInternalServerError(fmt.Errorf("failed to get projects which the user %s is a member of: %v",
 				ra.SecurityCtx.GetUsername(), err))
 			return
 		}
@@ -853,7 +864,8 @@ func (ra *RepositoryAPI) GetTopRepos() {
 	repos, err := dao.GetTopRepos(projectIDs, count)
 	if err != nil {
 		log.Errorf("failed to get top repos: %v", err)
-		ra.CustomAbort(http.StatusInternalServerError, "internal server error")
+		ra.SendInternalServerError(errors.New("internal server error"))
+		return
 	}
 
 	ra.Data["json"] = assembleReposInParallel(repos)
@@ -865,35 +877,38 @@ func (ra *RepositoryAPI) Put() {
 	name := ra.GetString(":splat")
 	repository, err := dao.GetRepositoryByName(name)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get repository %s: %v", name, err))
+		ra.SendInternalServerError(fmt.Errorf("failed to get repository %s: %v", name, err))
 		return
 	}
 
 	if repository == nil {
-		ra.HandleNotFound(fmt.Sprintf("repository %s not found", name))
+		ra.SendNotFoundError(fmt.Errorf("repository %s not found", name))
 		return
 	}
 
 	if !ra.SecurityCtx.IsAuthenticated() {
-		ra.HandleUnauthorized()
+		ra.SendUnAuthorizedError(errors.New("Unauthorized"))
 		return
 	}
 
 	project, _ := utils.ParseRepository(name)
 	resource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepository)
 	if !ra.SecurityCtx.Can(rbac.ActionUpdate, resource) {
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
 
 	desc := struct {
 		Description string `json:"description"`
 	}{}
-	ra.DecodeJSONReq(&desc)
+	if err := ra.DecodeJSONReq(&desc); err != nil {
+		ra.SendBadRequestError(err)
+		return
+	}
 
 	repository.Description = desc.Description
 	if err = dao.UpdateRepository(*repository); err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to update repository %s: %v", name, err))
+		ra.SendInternalServerError(fmt.Errorf("failed to update repository %s: %v", name, err))
 		return
 	}
 }
@@ -911,17 +926,17 @@ func (ra *RepositoryAPI) GetSignatures() {
 	}
 
 	if !exist {
-		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
+		ra.SendNotFoundError(fmt.Errorf("project %s not found", projectName))
 		return
 	}
 
 	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepository)
 	if !ra.SecurityCtx.Can(rbac.ActionRead, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
-			ra.HandleUnauthorized()
+			ra.SendUnAuthorizedError(errors.New("Unauthorized"))
 			return
 		}
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
 
@@ -929,7 +944,8 @@ func (ra *RepositoryAPI) GetSignatures() {
 		ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("Error while fetching signature from notary: %v", err)
-		ra.CustomAbort(http.StatusInternalServerError, "internal error")
+		ra.SendInternalServerError(errors.New("internal error"))
+		return
 	}
 	ra.Data["json"] = targets
 	ra.ServeJSON()
@@ -939,7 +955,7 @@ func (ra *RepositoryAPI) GetSignatures() {
 func (ra *RepositoryAPI) ScanImage() {
 	if !config.WithClair() {
 		log.Warningf("Harbor is not deployed with Clair, scan is disabled.")
-		ra.RenderError(http.StatusServiceUnavailable, "")
+		ra.SendInternalServerError(errors.New("harbor is not deployed with Clair, scan is disabled"))
 		return
 	}
 	repoName := ra.GetString(":splat")
@@ -952,23 +968,23 @@ func (ra *RepositoryAPI) ScanImage() {
 		return
 	}
 	if !exist {
-		ra.HandleNotFound(fmt.Sprintf("project %s not found", projectName))
+		ra.SendNotFoundError(fmt.Errorf("project %s not found", projectName))
 		return
 	}
 	if !ra.SecurityCtx.IsAuthenticated() {
-		ra.HandleUnauthorized()
+		ra.SendUnAuthorizedError(errors.New("Unauthorized"))
 		return
 	}
 
 	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepositoryTagScanJob)
 	if !ra.SecurityCtx.Can(rbac.ActionCreate, resource) {
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
 	err = coreutils.TriggerImageScan(repoName, tag)
 	if err != nil {
 		log.Errorf("Error while calling job service to trigger image scan: %v", err)
-		ra.HandleInternalServerError("Failed to scan image, please check log for details")
+		ra.SendInternalServerError(errors.New("Failed to scan image, please check log for details"))
 		return
 	}
 }
@@ -977,18 +993,18 @@ func (ra *RepositoryAPI) ScanImage() {
 func (ra *RepositoryAPI) VulnerabilityDetails() {
 	if !config.WithClair() {
 		log.Warningf("Harbor is not deployed with Clair, it's not impossible to get vulnerability details.")
-		ra.RenderError(http.StatusServiceUnavailable, "")
+		ra.SendInternalServerError(errors.New("harbor is not deployed with Clair, it's not impossible to get vulnerability details"))
 		return
 	}
 	repository := ra.GetString(":splat")
 	tag := ra.GetString(":tag")
 	exist, digest, err := ra.checkExistence(repository, tag)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of resource, error: %v", err))
+		ra.SendInternalServerError(fmt.Errorf("failed to check the existence of resource, error: %v", err))
 		return
 	}
 	if !exist {
-		ra.HandleNotFound(fmt.Sprintf("resource: %s:%s not found", repository, tag))
+		ra.SendNotFoundError(fmt.Errorf("resource: %s:%s not found", repository, tag))
 		return
 	}
 	project, _ := utils.ParseRepository(repository)
@@ -996,16 +1012,16 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 	resource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepositoryTagVulnerability)
 	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
-			ra.HandleUnauthorized()
+			ra.SendUnAuthorizedError(errors.New("Unauthorized"))
 			return
 		}
-		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
 	res := []*models.VulnerabilityItem{}
 	overview, err := dao.GetImgScanOverview(digest)
 	if err != nil {
-		ra.HandleInternalServerError(fmt.Sprintf("failed to get the scan overview, error: %v", err))
+		ra.SendInternalServerError(fmt.Errorf("failed to get the scan overview, error: %v", err))
 		return
 	}
 	if overview != nil && len(overview.DetailsKey) > 0 {
@@ -1013,7 +1029,7 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 		log.Debugf("The key for getting details: %s", overview.DetailsKey)
 		details, err := clairClient.GetResult(overview.DetailsKey)
 		if err != nil {
-			ra.HandleInternalServerError(fmt.Sprintf("Failed to get scan details from Clair, error: %v", err))
+			ra.SendInternalServerError(fmt.Errorf("Failed to get scan details from Clair, error: %v", err))
 			return
 		}
 		res = transformVulnerabilities(details)

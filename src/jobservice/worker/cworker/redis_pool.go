@@ -195,7 +195,7 @@ func (w *basicWorker) Enqueue(jobName string, params job.Parameters, isUnique bo
 		return nil, fmt.Errorf("job '%s' can not be enqueued, please check the job metatdata", jobName)
 	}
 
-	return generateResult(j, job.KindGeneric, isUnique), nil
+	return generateResult(j, job.KindGeneric, isUnique, params), nil
 }
 
 // Schedule job
@@ -225,8 +225,9 @@ func (w *basicWorker) Schedule(jobName string, params job.Parameters, runAfterSe
 		return nil, fmt.Errorf("job '%s' can not be enqueued, please check the job metatdata", jobName)
 	}
 
-	res := generateResult(j.Job, job.KindScheduled, isUnique)
+	res := generateResult(j.Job, job.KindScheduled, isUnique, params)
 	res.Info.RunAt = j.RunAt
+	res.Info.Status = job.ScheduledStatus.String()
 
 	return res, nil
 }
@@ -258,6 +259,7 @@ func (w *basicWorker) PeriodicallyEnqueue(jobName string, params job.Parameters,
 			EnqueueTime: time.Now().Unix(),
 			UpdateTime:  time.Now().Unix(),
 			RefLink:     fmt.Sprintf("/api/v1/jobs/%s", p.ID),
+			Parameters:  params,
 		},
 	}
 
@@ -361,8 +363,8 @@ func (w *basicWorker) ValidateJobParameters(jobType interface{}, params job.Para
 // ScheduledJobs returns the scheduled jobs by page
 func (w *basicWorker) ScheduledJobs(query *query.Parameter) ([]*job.Stats, int64, error) {
 	var page uint = 1
-	if query != nil && query.PageSize > 1 {
-		page = query.PageSize
+	if query != nil && query.PageNumber > 1 {
+		page = query.PageNumber
 	}
 
 	sJobs, total, err := w.client.ScheduledJobs(page)
@@ -372,7 +374,14 @@ func (w *basicWorker) ScheduledJobs(query *query.Parameter) ([]*job.Stats, int64
 
 	res := make([]*job.Stats, 0)
 	for _, sJob := range sJobs {
-		t, err := w.ctl.Track(sJob.ID)
+		jID := sJob.ID
+		if len(sJob.Args) > 0 {
+			if _, ok := sJob.Args[period.PeriodicExecutionMark]; ok {
+				// Periodic scheduled job
+				jID = fmt.Sprintf("%s@%d", sJob.ID, sJob.RunAt)
+			}
+		}
+		t, err := w.ctl.Track(jID)
 		if err != nil {
 			// Just log it
 			logger.Errorf("cworker: query scheduled jobs error: %s", err)
@@ -394,7 +403,7 @@ func (w *basicWorker) registerJob(name string, j interface{}) (err error) {
 
 	// j must be job.Interface
 	if _, ok := j.(job.Interface); !ok {
-		return errors.New("job must implement the job.Interface")
+		return errors.Errorf("job must implement the job.Interface: %s", reflect.TypeOf(j).String())
 	}
 
 	// 1:1 constraint
@@ -459,7 +468,7 @@ func (w *basicWorker) ping() error {
 }
 
 // generate the job stats data
-func generateResult(j *work.Job, jobKind string, isUnique bool) *job.Stats {
+func generateResult(j *work.Job, jobKind string, isUnique bool, jobParameters job.Parameters) *job.Stats {
 	return &job.Stats{
 		Info: &job.StatsInfo{
 			JobID:       j.ID,
@@ -470,6 +479,7 @@ func generateResult(j *work.Job, jobKind string, isUnique bool) *job.Stats {
 			EnqueueTime: j.EnqueuedAt,
 			UpdateTime:  time.Now().Unix(),
 			RefLink:     fmt.Sprintf("/api/v1/jobs/%s", j.ID),
+			Parameters:  jobParameters,
 		},
 	}
 }

@@ -18,11 +18,12 @@ import (
 	"encoding/gob"
 	"fmt"
 	"os"
+	"os/signal"
 	"strconv"
+	"syscall"
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
-
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -36,8 +37,7 @@ import (
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/proxy"
 	"github.com/goharbor/harbor/src/core/service/token"
-	"github.com/goharbor/harbor/src/replication/core"
-	_ "github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication"
 )
 
 const (
@@ -68,6 +68,13 @@ func updateInitPassword(userID int, password string) error {
 		log.Infof("User id: %d already has its encrypted password.", userID)
 	}
 	return nil
+}
+
+func gracefulShutdown(closing chan struct{}) {
+	signals := make(chan os.Signal, 1)
+	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
+	log.Infof("capture system signal %s, to close \"closing\" channel", <-signals)
+	close(closing)
 }
 
 func main() {
@@ -122,8 +129,10 @@ func main() {
 		}
 	}
 
-	if err := core.Init(); err != nil {
-		log.Errorf("failed to initialize the replication controller: %v", err)
+	closing := make(chan struct{})
+	go gracefulShutdown(closing)
+	if err := replication.Init(closing); err != nil {
+		log.Fatalf("failed to init for replication: %v", err)
 	}
 
 	filter.Init()

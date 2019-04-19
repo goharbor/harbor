@@ -82,6 +82,14 @@
   revision = "e87155e8f0c05bf323d0b13470e1b97af0cb5652"
 
 [[projects]]
+  digest = "1:2aaf2cc045d0219bba79655e4df795b973168c310574669cb75786684f7287d3"
+  name = "github.com/bmatcuk/doublestar"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "85a78806aa1b4707d1dbace9be592cf1ece91ab3"
+  version = "v1.1.1"
+
+[[projects]]
   digest = "1:76ca0dfcbf951d1868c7449453981dba9e1f79034706d1500a5a785000f5f222"
   name = "github.com/casbin/casbin"
   packages = [
@@ -651,11 +659,10 @@
   revision = "f534d624797b270e5e46104dc7e2c2d61edbb85d"
 
 [[projects]]
-  digest = "1:b2a0bdcfc59bed6a64d3ade946f9bf807f8fcd105892d940a008b0b2816babe5"
+  digest = "1:131682c26796b64f0abb77ac3d85525712706fde0b085aaa7b6d10b4398167cc"
   name = "k8s.io/client-go"
   packages = [
     "kubernetes/scheme",
-    "kubernetes/typed/authentication/v1beta1",
     "pkg/apis/clientauthentication",
     "pkg/apis/clientauthentication/v1alpha1",
     "pkg/apis/clientauthentication/v1beta1",
@@ -714,6 +721,7 @@
     "github.com/astaxie/beego/session/redis",
     "github.com/astaxie/beego/validation",
     "github.com/beego/i18n",
+    "github.com/bmatcuk/doublestar",
     "github.com/casbin/casbin",
     "github.com/casbin/casbin/model",
     "github.com/casbin/casbin/persist",
@@ -729,7 +737,6 @@
     "github.com/docker/distribution/reference",
     "github.com/docker/distribution/registry/auth/token",
     "github.com/docker/distribution/registry/client/auth/challenge",
-    "github.com/docker/distribution/uuid",
     "github.com/docker/libtrust",
     "github.com/docker/notary",
     "github.com/docker/notary/client",
@@ -760,7 +767,9 @@
     "gopkg.in/yaml.v2",
     "k8s.io/api/authentication/v1beta1",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
-    "k8s.io/client-go/kubernetes/typed/authentication/v1beta1",
+    "k8s.io/apimachinery/pkg/runtime/schema",
+    "k8s.io/apimachinery/pkg/runtime/serializer",
+    "k8s.io/client-go/kubernetes/scheme",
     "k8s.io/client-go/rest",
     "k8s.io/helm/cmd/helm/search",
     "k8s.io/helm/pkg/chartutil",

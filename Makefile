@@ -98,7 +98,7 @@ VERSIONFILENAME=UIVERSION
 PREPARE_VERSION_NAME=versions
 
 #versions
-REGISTRYVERSION=v2.7.1
+REGISTRYVERSION=v2.7.1-patch-2819
 NGINXVERSION=$(VERSIONTAG)
 NOTARYVERSION=v0.6.1
 CLAIRVERSION=v2.0.7
@@ -295,7 +295,7 @@ compile: check_environment versions_prepare compile_core compile_jobservice comp
 
 update_prepare_version:
 	@echo "substitude the prepare version tag in prepare file..."
-	$(SEDCMD) -i -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) /' $(MAKEPATH)/prepare ;
+	@$(SEDCMD) -i -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) /' $(MAKEPATH)/prepare ;
 
 prepare: update_prepare_version
 	@echo "preparing..."
@@ -310,7 +310,7 @@ build:
 
 install: compile ui_version build prepare start
 
-package_online: prepare
+package_online: update_prepare_version
 	@echo "packing online package ..."
 	@cp -r make $(HARBORPKG)
 	@if [ -n "$(REGISTRYSERVER)" ] ; then \

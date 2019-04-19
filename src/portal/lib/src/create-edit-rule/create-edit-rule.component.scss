@@ -1,5 +1,5 @@
 .select {
-    width: 186px;
+    width: 190px;
 }
 
 .select .optionMore {
@@ -40,7 +40,7 @@ h4 {
 
 .endpointSelect {
     width: 270px;
-    margin-right: 20px;
+    margin-right: 10px;
 }
 
 .filterSelect {
@@ -49,11 +49,11 @@ h4 {
 }
 
 .filterSelect clr-icon {
-    margin-left: 15px;
+    margin-left: 10px;
 }
 
 .filterSelect label {
-    width: 136px;
+    width: 190px;
 }
 
 .filterSelect label input {
@@ -68,9 +68,15 @@ h4 {
     padding-left: 0;
 }
 
-.floatSetPar {
+.width-70 {
     display: inline-block;
-    width: 120px;
+    width: 70px;
+    margin-right: 10px;
+}
+
+.width-115 {
+    display: inline-block;
+    width: 115px;
     margin-right: 10px;
 }
 
@@ -146,12 +152,19 @@ h4 {
 }
 
 .form-group-override {
-    padding-left: 170px !important;
+    padding-left: 200px;
 }
 
-.form-group>label:first-child {
-    font-size: 14px;
-    width: 6.5rem;
+.form-group {
+    >label:first-child{
+        font-size: 14px;
+        width: 7rem;
+    }
+   .radio {
+       label {
+           margin-right:10px;
+       }
+   }
 }
 
 .form-select {
@@ -199,7 +212,7 @@ clr-modal {
     margin-left: -15px;
 }
 
-.plus-position {
+.mr-t-11{
     margin-top: 11px;
 }
 
@@ -215,3 +228,21 @@ clr-modal {
     display: block;
     text-align: center;
 }
+ 
+.width-315 {
+    display: flex;
+    align-items: center;
+    width:315px;
+}
+
+.mr-t-10 {
+    margin-top: 10px;
+}
+
+.inline-block {
+    display: inline-block;
+}
+.form-cron {
+    padding-left:3.8rem;
+}
+

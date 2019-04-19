@@ -33,7 +33,7 @@
     </select>
   </div>
   <span [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
-  <div [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">
+  <div [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM" class="cron-input">
     <label for="targetCron" aria-haspopup="true" role="tooltip" [class.invalid]="dateInvalid" class="tooltip tooltip-validation tooltip-md tooltip-top-right cron-label">
       <input type="text"  (blur)="blurInvalid()" (input)="inputInvalid()" name=targetCron id="targetCron" #cronStringInput="ngModel" required class="form-control"
         [(ngModel)]="cronString">

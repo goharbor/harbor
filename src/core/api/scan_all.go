@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 	"strconv"
 
@@ -20,15 +21,15 @@ func (sc *ScanAllAPI) Prepare() {
 	sc.BaseController.Prepare()
 	if !config.WithClair() {
 		log.Warningf("Harbor is not deployed with Clair, it's not possible to scan images.")
-		sc.RenderError(http.StatusServiceUnavailable, "")
+		sc.SendStatusServiceUnavailableError(errors.New(""))
 		return
 	}
 	if !sc.SecurityCtx.IsAuthenticated() {
-		sc.HandleUnauthorized()
+		sc.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
 	if !sc.SecurityCtx.IsSysAdmin() {
-		sc.HandleForbidden(sc.SecurityCtx.GetUsername())
+		sc.SendForbiddenError(errors.New(sc.SecurityCtx.GetUsername()))
 		return
 	}
 }
@@ -49,7 +50,11 @@ func (sc *ScanAllAPI) Prepare() {
 //	}
 func (sc *ScanAllAPI) Post() {
 	ajr := models.AdminJobReq{}
-	sc.DecodeJSONReqAndValidate(&ajr)
+	isValid, err := sc.DecodeJSONReqAndValidate(&ajr)
+	if !isValid {
+		sc.SendBadRequestError(err)
+		return
+	}
 	ajr.Name = common_job.ImageScanAllJob
 	sc.submit(&ajr)
 	sc.Redirect(http.StatusCreated, strconv.FormatInt(ajr.ID, 10))
@@ -65,7 +70,11 @@ func (sc *ScanAllAPI) Post() {
 //	}
 func (sc *ScanAllAPI) Put() {
 	ajr := models.AdminJobReq{}
-	sc.DecodeJSONReqAndValidate(&ajr)
+	isValid, err := sc.DecodeJSONReqAndValidate(&ajr)
+	if !isValid {
+		sc.SendBadRequestError(err)
+		return
+	}
 	ajr.Name = common_job.ImageScanAllJob
 	sc.updateSchedule(ajr)
 }

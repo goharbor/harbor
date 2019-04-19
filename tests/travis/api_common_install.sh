@@ -10,12 +10,12 @@ sudo sed "s/127.0.0.1/$1/" -i tests/generateCerts.sh
 sudo ./tests/generateCerts.sh
 sudo mkdir -p /etc/docker/certs.d/$1 && sudo cp ./harbor_ca.crt /etc/docker/certs.d/$1/
 
+sudo ./tests/hostcfg.sh
+
 if [ "$2" = 'LDAP' ]; then
-    sudo ./tests/hostcfg.sh LDAP
     cd tests && sudo ./ldapprepare.sh && cd ..
 fi
 
-sudo ./tests/hostcfg.sh
 
 
 # prepare a chart file for API_DB test...

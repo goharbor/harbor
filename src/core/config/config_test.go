@@ -228,36 +228,36 @@ func TestConfigureValue_GetMap(t *testing.T) {
 
 func TestHTTPAuthProxySetting(t *testing.T) {
 	m := map[string]interface{}{
-		common.HTTPAuthProxyAlwaysOnboard:  "true",
-		common.HTTPAuthProxySkipCertVerify: "true",
-		common.HTTPAuthProxyEndpoint:       "https://auth.proxy/suffix",
+		common.HTTPAuthProxyAlwaysOnboard: "true",
+		common.HTTPAuthProxyVerifyCert:    "true",
+		common.HTTPAuthProxyEndpoint:      "https://auth.proxy/suffix",
 	}
 	InitWithSettings(m)
 	v, e := HTTPAuthProxySetting()
 	assert.Nil(t, e)
 	assert.Equal(t, *v, models.HTTPAuthProxy{
-		Endpoint:       "https://auth.proxy/suffix",
-		AlwaysOnBoard:  true,
-		SkipCertVerify: true,
+		Endpoint:      "https://auth.proxy/suffix",
+		AlwaysOnBoard: true,
+		VerifyCert:    true,
 	})
 }
 
 func TestOIDCSetting(t *testing.T) {
 	m := map[string]interface{}{
-		common.OIDCName:           "test",
-		common.OIDCEndpoint:       "https://oidc.test",
-		common.OIDCSkipCertVerify: "true",
-		common.OIDCScope:          "openid, profile",
-		common.OIDCCLientID:       "client",
-		common.OIDCClientSecret:   "secret",
-		common.ExtEndpoint:        "https://harbor.test",
+		common.OIDCName:         "test",
+		common.OIDCEndpoint:     "https://oidc.test",
+		common.OIDCVerifyCert:   "true",
+		common.OIDCScope:        "openid, profile",
+		common.OIDCCLientID:     "client",
+		common.OIDCClientSecret: "secret",
+		common.ExtEndpoint:      "https://harbor.test",
 	}
 	InitWithSettings(m)
 	v, e := OIDCSetting()
 	assert.Nil(t, e)
 	assert.Equal(t, "test", v.Name)
 	assert.Equal(t, "https://oidc.test", v.Endpoint)
-	assert.True(t, v.SkipCertVerify)
+	assert.True(t, v.VerifyCert)
 	assert.Equal(t, "client", v.ClientID)
 	assert.Equal(t, "secret", v.ClientSecret)
 	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)

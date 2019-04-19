@@ -192,9 +192,9 @@ docker-compose up -d
 protocol=http
 hostname=reg.mydomain.com
 
-if [[ $(cat ./harbor.yml) =~ ui_url_protocol:[[:blank:]]*(https?) ]]
+if [ -n "$(grep '^[^#]*https:' ./harbor.yml)" ]
 then
-protocol=${BASH_REMATCH[1]}
+protocol=https
 fi
 
 if [[ $(grep '^[[:blank:]]*hostname:' ./harbor.yml) =~ hostname:[[:blank:]]*(.*) ]]

@@ -25,9 +25,11 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
+	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/gomodule/redigo/redis"
 	"math"
+	"sync"
 )
 
 const (
@@ -92,22 +94,24 @@ type basicAgent struct {
 	events    chan *Event
 	tokens    chan bool
 	redisPool *redis.Pool
+	wg        *sync.WaitGroup
 }
 
 // NewAgent is constructor of basic agent
-func NewAgent(ctx context.Context, ns string, redisPool *redis.Pool) Agent {
+func NewAgent(ctx *env.Context, ns string, redisPool *redis.Pool) Agent {
 	tks := make(chan bool, maxHandlers)
 	// Put tokens
 	for i := 0; i < maxHandlers; i++ {
 		tks <- true
 	}
 	return &basicAgent{
-		context:   ctx,
+		context:   ctx.SystemContext,
 		namespace: ns,
-		client:    NewClient(ctx),
+		client:    NewClient(ctx.SystemContext),
 		events:    make(chan *Event, maxEventChanBuffer),
 		tokens:    tks,
 		redisPool: redisPool,
+		wg:        ctx.WG,
 	}
 }
 
@@ -131,7 +135,7 @@ func (ba *basicAgent) Trigger(evt *Event) error {
 // Blocking call
 func (ba *basicAgent) Serve() {
 	go ba.looplyRetry()
-	logger.Info("Hook event retrying loop is started!")
+	logger.Info("Hook event retrying loop is started")
 	go ba.serve()
 	logger.Info("Basic hook agent is started")
 
@@ -140,8 +144,10 @@ func (ba *basicAgent) Serve() {
 func (ba *basicAgent) serve() {
 	defer func() {
 		logger.Info("Basic hook agent is stopped")
+		ba.wg.Done()
 	}()
 
+	ba.wg.Add(1)
 	for {
 		select {
 		case evt := <-ba.events:
@@ -220,8 +226,11 @@ func (ba *basicAgent) pushForRetry(evt *Event) error {
 
 func (ba *basicAgent) looplyRetry() {
 	defer func() {
-		logger.Info("Hook event retrying loop exit!")
+		logger.Info("Hook event retrying loop exit")
+		ba.wg.Done()
 	}()
+
+	ba.wg.Add(1)
 
 	// Append random seconds to avoid working in the same time slot
 	tk := time.NewTicker(retryInterval + time.Duration(rand.Int31n(13)+3)*time.Second)

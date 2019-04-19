@@ -34,6 +34,9 @@ const (
 	enqueuerSleep   = 2 * time.Minute
 	enqueuerHorizon = 4 * time.Minute
 	neverExecuted   = 365 * 24 * time.Hour
+
+	// PeriodicExecutionMark marks the scheduled job to a periodic execution
+	PeriodicExecutionMark = "_job_kind_periodic_"
 )
 
 type enqueuer struct {
@@ -173,9 +176,17 @@ func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
 		if p.JobParameters == nil {
 			p.JobParameters = make(job.Parameters)
 		}
+
+		// Clone job parameters
+		wJobParams := make(job.Parameters)
+		if p.JobParameters != nil && len(p.JobParameters) > 0 {
+			for k, v := range p.JobParameters {
+				wJobParams[k] = v
+			}
+		}
 		// Add extra argument for job running
-		// Only for system using
-		p.JobParameters["_job_kind_periodic_"] = true
+		// Notes: Only for system using
+		wJobParams[PeriodicExecutionMark] = true
 
 		for t := schedule.Next(nowTime); t.Before(horizon); t = schedule.Next(t) {
 			epoch := t.Unix()
@@ -190,7 +201,7 @@ func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
 				// history of the past 100 periodic jobs, and only scheduling a job if it's not in the history.
 				EnqueuedAt: epoch,
 				// Pass parameters to scheduled job here
-				Args: p.JobParameters,
+				Args: wJobParams,
 			}
 
 			rawJSON, err := utils.SerializeJob(j)
@@ -246,10 +257,11 @@ func (e *enqueuer) createExecution(p *Policy, runAt int64) *job.Stats {
 			CronSpec:      p.CronSpec,
 			UpstreamJobID: p.ID,
 			RunAt:         runAt,
-			Status:        job.PendingStatus.String(),
+			Status:        job.ScheduledStatus.String(),
 			JobKind:       job.KindScheduled, // For periodic job execution, it should be set to 'scheduled'
 			EnqueueTime:   time.Now().Unix(),
 			RefLink:       fmt.Sprintf("/api/v1/jobs/%s", eID),
+			Parameters:    p.JobParameters,
 		},
 	}
 }

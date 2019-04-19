@@ -19,18 +19,18 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	rep_dao "github.com/goharbor/harbor/src/replication/dao"
+	rep_models "github.com/goharbor/harbor/src/replication/dao/models"
 )
 
 const (
 	// Prepare Test info
-	TestUserName       = "testUser0001"
-	TestUserPwd        = "testUser0001"
-	TestUserEmail      = "testUser0001@mydomain.com"
-	TestProName        = "testProject0001"
-	TestTargetName     = "testTarget0001"
-	TestRepoName       = "testRepo0001"
-	AdminName          = "admin"
-	DefaultProjectName = "library"
+	TestUserName     = "testUser0001"
+	TestUserPwd      = "testUser0001"
+	TestUserEmail    = "testUser0001@mydomain.com"
+	TestProName      = "testProject0001"
+	TestRegistryName = "testRegistry0001"
+	TestRepoName     = "testRepo0001"
 )
 
 func CommonAddUser() {
@@ -83,25 +83,25 @@ func CommonDelProject() {
 	_ = dao.DeleteProject(commonProject.ProjectID)
 }
 
-func CommonAddTarget() {
+func CommonAddRegistry() {
 	endPoint := os.Getenv("REGISTRY_URL")
-	commonTarget := &models.RepTarget{
-		URL:      endPoint,
-		Name:     TestTargetName,
-		Username: adminName,
-		Password: adminPwd,
+	commonRegistry := &rep_models.Registry{
+		URL:          endPoint,
+		Name:         TestRegistryName,
+		AccessKey:    adminName,
+		AccessSecret: adminPwd,
 	}
-	_, _ = dao.AddRepTarget(*commonTarget)
+	_, _ = rep_dao.AddRegistry(commonRegistry)
 }
 
-func CommonGetTarget() int {
-	target, _ := dao.GetRepTargetByName(TestTargetName)
-	return int(target.ID)
+func CommonGetRegistry() int {
+	registry, _ := rep_dao.GetRegistryByName(TestRegistryName)
+	return int(registry.ID)
 }
 
-func CommonDelTarget() {
-	target, _ := dao.GetRepTargetByName(TestTargetName)
-	_ = dao.DeleteRepTarget(target.ID)
+func CommonDelRegistry() {
+	registry, _ := rep_dao.GetRegistryByName(TestRegistryName)
+	_ = rep_dao.DeleteRegistry(registry.ID)
 }
 
 func CommonAddRepository() {

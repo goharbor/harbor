@@ -19,7 +19,7 @@ notary_signer_env_path = os.path.join(notary_config_dir, "signer_env")
 notary_server_env_path = os.path.join(notary_config_dir, "server_env")
 
 
-def prepare_env_notary(customize_crt, nginx_config_dir):
+def prepare_env_notary(nginx_config_dir):
     notary_config_dir = prepare_config_dir(config_dir, "notary")
     old_signer_cert_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer.crt'))
     old_signer_key_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer.key'))
@@ -87,7 +87,7 @@ def prepare_env_notary(customize_crt, nginx_config_dir):
 
 def prepare_notary(config_dict, nginx_config_dir, ssl_cert_path, ssl_cert_key_path):
 
-    prepare_env_notary(config_dict['customize_crt'], nginx_config_dir)
+    prepare_env_notary(nginx_config_dir)
 
     render_jinja(
         notary_signer_pg_template,

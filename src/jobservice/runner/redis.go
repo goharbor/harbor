@@ -21,7 +21,6 @@ import (
 	"fmt"
 	"github.com/gocraft/work"
 	"github.com/goharbor/harbor/src/jobservice/env"
-	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -50,18 +49,18 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 	var (
 		runningJob  job.Interface
 		execContext job.Context
-		tracker     lcm.Tracker
-		markStopped *bool = bp(false)
+		tracker     job.Tracker
+		markStopped = bp(false)
 	)
 
 	// Defer to log the exit result
 	defer func() {
 		if !*markStopped {
 			if err == nil {
-				logger.Infof("Job '%s:%s' exit with success", j.Name, j.ID)
+				logger.Infof("|^_^| Job '%s:%s' exit with success", j.Name, j.ID)
 			} else {
 				// log error
-				logger.Errorf("Job '%s:%s' exit with error: %s\n", j.Name, j.ID, err)
+				logger.Errorf("|@_@| Job '%s:%s' exit with error: %s", j.Name, j.ID, err)
 			}
 		}
 	}()
@@ -86,7 +85,7 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 		return
 	}
 
-	if job.RunningStatus.Compare(job.Status(tracker.Job().Info.Status)) >= 0 {
+	if job.RunningStatus.Compare(job.Status(tracker.Job().Info.Status)) <= 0 {
 		// Probably jobs has been stopped by directly mark status to stopped.
 		// Directly exit and no retry
 		markStopped = bp(true)
@@ -98,22 +97,28 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 		// Switch job status based on the returned error.
 		// The err happened here should not override the job run error, just log it.
 		if err != nil {
-			if errs.IsJobStoppedError(err) {
-				if er := tracker.Stop(); er != nil {
-					logger.Errorf("Mark job status to stopped error: %s", err)
-				}
-			} else {
-				if er := tracker.Fail(); er != nil {
-					logger.Errorf("Mark job status to failure error: %s", err)
-				}
+			if er := tracker.Fail(); er != nil {
+				logger.Errorf("Mark job status to failure error: %s", err)
 			}
 
 			return
 		}
 
+		// Nil error might be returned by the stopped job. Check the latest status here.
+		// If refresh latest status failed, let the process to go on to void missing status updating.
+		if latest, er := tracker.Status(); er == nil {
+			if latest == job.StoppedStatus {
+				// Logged
+				logger.Infof("Job %s:%s is stopped", tracker.Job().Info.JobName, tracker.Job().Info.JobID)
+				// Stopped job, no exit message printing.
+				markStopped = bp(true)
+				return
+			}
+		}
+
 		// Mark job status to success.
 		if er := tracker.Succeed(); er != nil {
-			logger.Errorf("Mark job status to success error: %s", err)
+			logger.Errorf("Mark job status to success error: %s", er)
 		}
 	}()
 
@@ -121,7 +126,7 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			// Log the stack
-			buf := make([]byte, 1<<16)
+			buf := make([]byte, 1<<10)
 			size := runtime.Stack(buf, false)
 			err = errors.Errorf("runtime error: %s; stack: %s", r, buf[0:size])
 			logger.Errorf("Run job %s:%s error: %s", j.Name, j.ID, err)
@@ -131,10 +136,11 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 	// Build job context
 	if rj.context.JobContext == nil {
 		rj.context.JobContext = impl.NewDefaultContext(rj.context.SystemContext)
-		if execContext, err = rj.context.JobContext.Build(tracker); err != nil {
-			return
-		}
 	}
+	if execContext, err = rj.context.JobContext.Build(tracker); err != nil {
+		return
+	}
+
 	// Defer to close logger stream
 	defer func() {
 		// Close open io stream first
@@ -154,7 +160,7 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 	// Run the job
 	err = runningJob.Run(execContext, j.Args)
 	// Handle retry
-	rj.retry(runningJob, j, (err != nil && errs.IsJobStoppedError(err)))
+	rj.retry(runningJob, j)
 	// Handle periodic job execution
 	if isPeriodicJobExecution(j) {
 		if er := tracker.PeriodicExecutionDone(); er != nil {
@@ -166,8 +172,8 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 	return
 }
 
-func (rj *RedisJob) retry(j job.Interface, wj *work.Job, stopped bool) {
-	if stopped || !j.ShouldRetry() {
+func (rj *RedisJob) retry(j job.Interface, wj *work.Job) {
+	if !j.ShouldRetry() {
 		// Cancel retry immediately
 		// Make it big enough to avoid retrying
 		wj.Fails = 10000000000

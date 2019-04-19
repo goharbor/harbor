@@ -143,7 +143,7 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 	defer conn.Close()
 
 	// Get the un-scheduling policy object
-	bytes, err := redis.Values(conn.Do("ZRANGE", rds.KeyPeriodicPolicy(bs.namespace), numericID, numericID))
+	bytes, err := redis.Values(conn.Do("ZRANGEBYSCORE", rds.KeyPeriodicPolicy(bs.namespace), numericID, numericID))
 	if err != nil {
 		return err
 	}
@@ -186,6 +186,10 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 		logger.Error(err)
 	}
 
+	// Switch the job stats to stopped
+	// Should not block the next clear action
+	err = tracker.Stop()
+
 	// Get downstream executions of the periodic job
 	// And clear these executions
 	// This is a try best action, its failure will not cause the unschedule action failed.
@@ -194,6 +198,9 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 	if eIDs, err := getPeriodicExecutions(conn, eKey); err != nil {
 		logger.Errorf("Get executions for periodic job %s error: %s", policyID, err)
 	} else {
+		if len(eIDs) == 0 {
+			logger.Debugf("no stopped executions: %s", policyID)
+		}
 		for _, eID := range eIDs {
 			eTracker, err := bs.ctl.Track(eID)
 			if err != nil {
@@ -201,23 +208,23 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 				continue
 			}
 
-			// Mark job status to stopped to block execution.
-			// The executions here should not be in the final states,
-			// double confirmation: only stop the stopped ones.
 			e := eTracker.Job()
-			if job.RunningStatus.Compare(job.Status(e.Info.Status)) >= 0 {
-				if err := eTracker.Stop(); err != nil {
-					logger.Errorf("Stop execution %s error: %s", eID, err)
-				}
-			}
-
 			// Only need to care the pending and running ones
 			// Do clear
-			if job.PendingStatus == job.Status(e.Info.Status) {
+			if job.ScheduledStatus == job.Status(e.Info.Status) {
 				// Please pay attention here, the job ID used in the scheduled jon queue is
 				// the ID of the periodic job (policy).
 				if err := bs.client.DeleteScheduledJob(e.Info.RunAt, policyID); err != nil {
 					logger.Errorf("Delete scheduled job %s error: %s", eID, err)
+				}
+			}
+
+			// Mark job status to stopped to block execution.
+			// The executions here should not be in the final states,
+			// double confirmation: only stop the stopped ones.
+			if job.RunningStatus.Compare(job.Status(e.Info.Status)) >= 0 {
+				if err := eTracker.Stop(); err != nil {
+					logger.Errorf("Stop execution %s error: %s", eID, err)
 				}
 			}
 		}
@@ -268,8 +275,8 @@ func getPeriodicExecutions(conn redis.Conn, key string) ([]string, error) {
 
 	results := make([]string, 0)
 	for _, item := range list {
-		if eID, ok := item.(string); ok {
-			results = append(results, eID)
+		if eID, ok := item.([]byte); ok {
+			results = append(results, string(eID))
 		}
 	}
 

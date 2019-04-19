@@ -25,13 +25,22 @@ def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
         'chartmuseum_version': '{}-{}'.format(CHARTMUSEUM_VERSION, VERSION_TAG),
         'data_volume': configs['data_volume'],
         'log_location': configs['log_location'],
-        'cert_key_path': configs['cert_key_path'],
-        'cert_path': configs['cert_path'],
         'protocol': configs['protocol'],
-        'registry_custom_ca_bundle_storage_path': configs['registry_custom_ca_bundle_path'],
+        'http_port': configs['http_port'],
+        'registry_custom_ca_bundle_path': configs['registry_custom_ca_bundle_path'],
         'with_notary': with_notary,
         'with_clair': with_clair,
         'with_chartmuseum': with_chartmuseum
     }
+
+    storage_config = configs.get('storage_provider_config') or {}
+    if storage_config.get('keyfile'):
+        rendering_variables['gcs_keyfile'] = storage_config['keyfile']
+    if configs.get('https_port'):
+        rendering_variables['https_port'] = configs['https_port']
+
+    if configs['protocol'] == 'https':
+        rendering_variables['cert_key_path'] = configs['cert_key_path']
+        rendering_variables['cert_path'] = configs['cert_path']
 
     render_jinja(docker_compose_template_path, docker_compose_yml_path, **rendering_variables)

@@ -12,6 +12,7 @@ import { RequestQueryParams } from "./RequestQueryParams";
 import { Endpoint, ReplicationRule } from "./interface";
 import { catchError, map } from "rxjs/operators";
 
+
 /**
  * Define the service methods to handle the endpoint related things.
  *
@@ -55,6 +56,17 @@ export abstract class EndpointService {
    * @abstract
    *  ** deprecated param {Endpoint} endpoint
    * returns {(Observable<any>)}
+   *
+   * @memberOf EndpointService
+   */
+  abstract getAdapters(): Observable<any>;
+
+  /**
+   * Create new endpoint.
+   *
+   * @abstract
+   *  ** deprecated param {Adapter} adapter
+   * returns {(Observable<any> | any)}
    *
    * @memberOf EndpointService
    */
@@ -133,7 +145,7 @@ export class EndpointDefaultService extends EndpointService {
     super();
     this._endpointUrl = config.targetBaseEndpoint
       ? config.targetBaseEndpoint
-      : "/api/targets";
+      : "/api/registries";
   }
 
   public getEndpoints(
@@ -165,6 +177,13 @@ export class EndpointDefaultService extends EndpointService {
       .pipe(map(response => response.json() as Endpoint)
       , catchError(error => observableThrowError(error)));
   }
+
+  public getAdapters(): Observable<any> {
+    return this.http
+    .get(`/api/replication/adapters`)
+    .pipe(map(response => response.json())
+    , catchError(error => observableThrowError(error)));
+}
 
   public createEndpoint(
     endpoint: Endpoint

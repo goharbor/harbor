@@ -41,8 +41,10 @@ func main() {
 		panic(fmt.Sprintf("load configurations error: %s\n", err))
 	}
 
+	// Append node ID
+	vCtx := context.WithValue(context.Background(), utils.NodeID, utils.GenerateNodeID())
 	// Create the root context
-	ctx, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(vCtx)
 	defer cancel()
 
 	// Initialize logger
@@ -69,5 +71,5 @@ func main() {
 	})*/
 
 	// Start
-	runtime.JobService.LoadAndRun(ctx)
+	runtime.JobService.LoadAndRun(ctx, cancel)
 }

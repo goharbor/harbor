@@ -22,6 +22,7 @@ import (
 
 	"context"
 	"github.com/goharbor/harbor/src/jobservice/config"
+	"github.com/goharbor/harbor/src/jobservice/logger"
 )
 
 // Server serves the http requests.
@@ -96,6 +97,10 @@ func NewServer(ctx context.Context, router Router, cfg ServerConfig) *Server {
 // Start the server to serve requests.
 // Blocking call
 func (s *Server) Start() error {
+	defer func() {
+		logger.Info("API server is stopped")
+	}()
+
 	if s.config.Protocol == config.JobServiceProtocolHTTPS {
 		return s.httpServer.ListenAndServeTLS(s.config.Cert, s.config.Key)
 	} else {

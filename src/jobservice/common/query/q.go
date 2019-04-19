@@ -14,8 +14,39 @@
 
 package query
 
+const (
+	// DefaultPageSize defines the default page size
+	DefaultPageSize uint = 25
+	// QueryParamKeyPage defines query param key of page number
+	QueryParamKeyPage = "page_number"
+	// QueryParamKeyPage defines query param key of page size
+	QueryParamKeyPageSize = "page_size"
+	// QueryParamKeyPage defines query param key of querying non stopped periodic executions
+	QueryParamKeyNonStoppedOnly = "non_dead_only"
+	// ExtraParamKeyNonStoppedOnly defines extra parameter key for querying non stopped periodic executions
+	ExtraParamKeyNonStoppedOnly = "NonDeadOnly"
+)
+
+// ExtraParameters to keep non pagination query parameters
+type ExtraParameters map[string]interface{}
+
+// Set extra parameters
+func (ep ExtraParameters) Set(key string, v interface{}) {
+	if len(key) > 0 {
+		ep[key] = v
+	}
+}
+
+// Get the extra parameter by key
+func (ep ExtraParameters) Get(key string) (interface{}, bool) {
+	v, ok := ep[key]
+
+	return v, ok
+}
+
 // Parameter for getting executions
 type Parameter struct {
 	PageNumber uint
 	PageSize   uint
+	Extras     ExtraParameters
 }

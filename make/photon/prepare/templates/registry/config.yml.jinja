@@ -1,6 +1,6 @@
 version: 0.1
 log:
-  level: info
+  level: {{log_level}}
   fields:
     service: registry
 storage:
@@ -37,3 +37,6 @@ notifications:
     timeout: 3000ms
     threshold: 5
     backoff: 1s
+compatibility:
+  schema1:
+    enabled: true

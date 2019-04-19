@@ -19,6 +19,7 @@ import { BaseModule } from './base/base.module';
 import { HarborRoutingModule } from './harbor-routing.module';
 import { SharedModule } from './shared/shared.module';
 import { AccountModule } from './account/account.module';
+import { SignInModule } from './sign-in/sign-in.module';
 import { ConfigurationModule } from './config/config.module';
 import { DeveloperCenterModule } from './dev-center/dev-center.module';
 import { registerLocaleData } from '@angular/common';
@@ -63,6 +64,7 @@ export function getCurrentLanguage(translateService: TranslateService) {
         SharedModule,
         BaseModule,
         AccountModule,
+        SignInModule,
         HarborRoutingModule,
         ConfigurationModule,
         DeveloperCenterModule,

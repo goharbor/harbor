@@ -12,6 +12,12 @@ import (
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/goharbor/harbor/src/common"
+	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/replication"
+	rep_event "github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/model"
 )
 
 const (
@@ -80,6 +86,36 @@ func director(target *url.URL, cred *Credential, req *http.Request) {
 
 // Modify the http response
 func modifyResponse(res *http.Response) error {
+	// Upload chart success, then to the notification to replication handler
+	if res.StatusCode == http.StatusCreated {
+		// 201 and has chart_upload(namespace-repository-version) context
+		// means this response is for uploading chart success.
+		chartUpload := res.Request.Context().Value(common.ChartUploadCtxKey).(string)
+		if chartUpload != "" {
+			chartUploadSplitted := strings.Split(chartUpload, ":")
+			if len(chartUploadSplitted) == 3 {
+				// Todo: it used as the replacement of webhook, will be removed when webhook to be introduced.
+				go func() {
+					e := &rep_event.Event{
+						Type: rep_event.EventTypeChartUpload,
+						Resource: &model.Resource{
+							Type: model.ResourceTypeChart,
+							Metadata: &model.ResourceMetadata{
+								Repository: &model.Repository{
+									Name: fmt.Sprintf("%s/%s", chartUploadSplitted[0], chartUploadSplitted[1]),
+								},
+								Vtags: []string{chartUploadSplitted[2]},
+							},
+						},
+					}
+					if err := replication.EventHandler.Handle(e); err != nil {
+						hlog.Errorf("failed to handle event: %v", err)
+					}
+				}()
+			}
+		}
+	}
+
 	// Accept cases
 	// Success or redirect
 	if res.StatusCode >= http.StatusOK && res.StatusCode <= http.StatusTemporaryRedirect {

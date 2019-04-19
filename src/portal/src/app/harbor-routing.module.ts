@@ -28,13 +28,14 @@ import { GcPageComponent } from './gc-page/gc-page.component';
 import { VulnerabilityPageComponent } from './vulnerability-page/vulnerability-page.component';
 
 import { UserComponent } from './user/user.component';
-import { SignInComponent } from './account/sign-in/sign-in.component';
+import { SignInComponent } from './sign-in/sign-in.component';
 import { ResetPasswordComponent } from './account/password-setting/reset-password/reset-password.component';
 import { GroupComponent } from './group/group.component';
 
 import { TotalReplicationPageComponent } from './replication/total-replication/total-replication-page.component';
+import { ReplicationTasksPageComponent } from './replication/replication-tasks-page/replication-tasks-page.component';
+
 import { DestinationPageComponent } from './replication/destination/destination-page.component';
-import { ReplicationPageComponent } from './replication/replication-page.component';
 
 import { AuditLogComponent } from './log/audit-log.component';
 import { LogPageComponent } from './log/log-page.component';
@@ -69,16 +70,17 @@ const harborRoutes: Routes = [
     canActivate: [OidcGuard, SignInGuard]
   },
   {
+    path: 'harbor/sign-in',
+    component: SignInComponent,
+    canActivate: [ SignInGuard]
+  },
+  {
     path: 'harbor',
     component: HarborShellComponent,
+    // canActivate: [AuthCheckGuard],
     canActivateChild: [AuthCheckGuard],
     children: [
-      { path: '', redirectTo: 'sign-in', pathMatch: 'full' },
-      {
-        path: 'sign-in',
-        component: SignInComponent,
-        canActivate: [SignInGuard]
-      },
+      { path: '', redirectTo: 'projects', pathMatch: 'full' },
       {
         path: 'projects',
         component: ProjectComponent
@@ -105,6 +107,12 @@ const harborRoutes: Routes = [
       {
         path: 'replications',
         component: TotalReplicationPageComponent,
+        canActivate: [SystemAdminGuard],
+        canActivateChild: [SystemAdminGuard],
+      },
+      {
+        path: 'replications/:id/:tasks',
+        component: ReplicationTasksPageComponent,
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard],
       },
@@ -168,10 +176,6 @@ const harborRoutes: Routes = [
           {
             path: 'repositories/:repo/tags',
             component: TagRepositoryComponent,
-          },
-          {
-            path: 'replications',
-            component: ReplicationPageComponent,
           },
           {
             path: 'members',

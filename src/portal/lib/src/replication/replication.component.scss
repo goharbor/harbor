@@ -13,6 +13,25 @@
   padding-right: 16px;
 }
 
+.execution-select {
+  padding-right: 18px;
+  height: 24px;
+  display: flex;
+  justify-content: flex-end;
+  padding-top: 25px;
+  .filter-tag {
+      float: left;
+      margin-top: 8px;
+  }
+  .refresh-btn {
+      cursor: pointer;
+      margin-top: 7px;
+      &:hover {
+        color: #007CBB;
+    }
+  }
+}
+
  .rightPos{
     position: absolute;
     right: 35px;
@@ -28,7 +47,7 @@
 }
 
 .row-right {
-  padding-right: 50px;
+  margin-left: 564px;
 }
 
 .replication-row {
@@ -47,5 +66,11 @@
       padding-right: 16px;
       margin-top: 24px;
     }
+  }
+}
+
+clr-datagrid {
+  ::ng-deep .datagrid-table {
+    position: static;
   }
 }

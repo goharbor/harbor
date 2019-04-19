@@ -90,6 +90,13 @@ func (bc *basicController) LaunchJob(req *job.Request) (res *job.Stats, err erro
 		)
 	}
 
+	// Save job stats
+	if err == nil {
+		if _, err := bc.ctl.New(res); err != nil {
+			return nil, err
+		}
+	}
+
 	return
 }
 
@@ -209,7 +216,7 @@ func validJobReq(req *job.Request) error {
 
 	if req.Job.Metadata.JobKind == job.KindPeriodic {
 		if utils.IsEmptyStr(req.Job.Metadata.Cron) {
-			return fmt.Errorf("'cron_spec' must be specified if the %s job", job.KindPeriodic)
+			return fmt.Errorf("'cron_spec' must be specified for the %s job", job.KindPeriodic)
 		}
 
 		if _, err := cron.Parse(req.Job.Metadata.Cron); err != nil {

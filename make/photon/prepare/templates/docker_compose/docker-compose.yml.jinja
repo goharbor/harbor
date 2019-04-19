@@ -33,8 +33,11 @@ services:
       - {{data_volume}}/registry:/storage:z
       - ./common/config/registry/:/etc/registry/:z
       - {{data_volume}}/secret/registry/root.crt:/etc/registry/root.crt:z
-{%if registry_custom_ca_bundle_storage_path %}
-      - {{data_volume}}/secret/common/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
+{% if gcs_keyfile %}
+      - {{gcs_keyfile}}:/etc/registry/gcs.key
+{% endif %}
+{%if registry_custom_ca_bundle_path %}
+      - {{registry_custom_ca_bundle_path}}:/harbor_cust_cert/custom-ca-bundle.crt:z
 {% endif %}
     networks:
       - harbor
@@ -247,8 +250,8 @@ services:
     volumes:
       - ./common/config/nginx:/etc/nginx:z
 {% if protocol == 'https' %}
-      - {{data_volume}}/secret/nginx/server.key:/etc/nginx/cert/server.key
-      - {{data_volume}}/secret/nginx/server.crt:/etc/nginx/cert/server.crt
+      - {{cert_key_path}}:/etc/nginx/cert/server.key:z
+      - {{cert_path}}:/etc/nginx/cert/server.crt:z
 {% endif %}
     networks:
       - harbor
@@ -257,9 +260,13 @@ services:
 {% endif %}
     dns_search: .
     ports:
-      - 80:80
-      - 443:443
+      - {{http_port}}:80
+{% if protocol == 'https' %}
+      - {{https_port}}:443
+{% endif %}
+{% if with_notary %}
       - 4443:4443
+{% endif %}
     depends_on:
       - postgresql
       - registry
@@ -337,8 +344,8 @@ services:
       - postgresql
     volumes:
       - ./common/config/clair/config.yaml:/etc/clair/config.yaml:z
-{%if registry_custom_ca_bundle_storage_path %}
-      - {{data_volume}}/secret/common/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
+{%if registry_custom_ca_bundle_path %}
+      - {{registry_custom_ca_bundle_path}}:/harbor_cust_cert/custom-ca-bundle.crt:z
 {% endif %}
     logging:
       driver: "syslog"
@@ -368,8 +375,8 @@ services:
     volumes:
       - {{data_volume}}/chart_storage:/chart_storage:z
       - ./common/config/chartserver:/etc/chartserver:z
-{%if registry_custom_ca_bundle_storage_path %}
-      - {{data_volume}}/secret/common/custom-ca-bundle.crt:/harbor_cust_cert/custom-ca-bundle.crt:z
+{%if registry_custom_ca_bundle_path %}
+      - {{registry_custom_ca_bundle_path}}:/harbor_cust_cert/custom-ca-bundle.crt:z
 {% endif %}
     logging:
       driver: "syslog"

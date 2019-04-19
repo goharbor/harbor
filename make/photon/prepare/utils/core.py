@@ -43,7 +43,6 @@ def copy_core_config(core_templates_path, core_config_path):
 
 def render_config_env(config_dict, with_notary, with_clair, with_chartmuseum):
     # Use reload_key to avoid reload config after restart harbor
-    reload_key = generate_random_string(6) if config_dict['reload_config'] == "true" else ""
 
     render_jinja(
         core_config_env_template,
@@ -51,6 +50,5 @@ def render_config_env(config_dict, with_notary, with_clair, with_chartmuseum):
         with_notary=with_notary,
         with_clair=with_clair,
         with_chartmuseum=with_chartmuseum,
-        reload_key=reload_key,
         **config_dict
         )

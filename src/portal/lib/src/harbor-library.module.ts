@@ -79,13 +79,13 @@ import { OperationService } from './operation/operation.service';
  * this default configuration.
  */
 export const DefaultServiceConfig: IServiceConfig = {
+  baseEndpoint: "/api",
   systemInfoEndpoint: "/api/systeminfo",
   repositoryBaseEndpoint: "/api/repositories",
   logBaseEndpoint: "/api/logs",
-  targetBaseEndpoint: "/api/targets",
-  replicationBaseEndpoint: "/api/replications",
-  replicationRuleEndpoint: "/api/policies/replication",
-  replicationJobEndpoint: "/api/jobs/replication",
+  targetBaseEndpoint: "/api/registries",
+  replicationBaseEndpoint: "/api/replication",
+  replicationRuleEndpoint: "/api/replication/policies",
   vulnerabilityScanningBaseEndpoint: "/api/repositories",
   projectPolicyEndpoint: "/api/projects/configs",
   projectBaseEndpoint: "/api/projects",

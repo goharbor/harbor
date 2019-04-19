@@ -16,6 +16,7 @@ package job
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
@@ -32,8 +33,6 @@ import (
 const (
 	// Try best to keep the job stats data but anyway clear it after a long time
 	statDataExpireTime = 180 * 24 * 3600
-	// Default page size for querying
-	defaultPageSize = 25
 )
 
 // Tracker is designed to track the life cycle of the job described by the stats
@@ -244,8 +243,15 @@ func (bt *basicTracker) Executions(q *query.Parameter) ([]string, int64, error) 
 
 	key := rds.KeyUpstreamJobAndExecutions(bt.namespace, bt.jobID)
 
+	// Query executions by "non stopped"
+	if nonStoppedOnly, ok := q.Extras.Get(query.ExtraParamKeyNonStoppedOnly); ok {
+		if v, yes := nonStoppedOnly.(bool); yes && v {
+			return queryExecutions(conn, key, q)
+		}
+	}
+
 	// Pagination
-	var pageNumber, pageSize uint = 1, defaultPageSize
+	var pageNumber, pageSize uint = 1, query.DefaultPageSize
 	if q != nil {
 		if q.PageNumber > 0 {
 			pageNumber = q.PageNumber
@@ -275,8 +281,8 @@ func (bt *basicTracker) Executions(q *query.Parameter) ([]string, int64, error) 
 	}
 
 	for _, item := range list {
-		if eID, ok := item.(string); ok {
-			result = append(result, eID)
+		if eID, ok := item.([]byte); ok {
+			result = append(result, string(eID))
 		}
 	}
 
@@ -381,6 +387,12 @@ func (bt *basicTracker) Save() (err error) {
 
 	if !utils.IsEmptyStr(stats.Info.UpstreamJobID) {
 		args = append(args, "upstream_job_id", stats.Info.UpstreamJobID)
+	}
+
+	if len(stats.Info.Parameters) > 0 {
+		if bytes, err := json.Marshal(&stats.Info.Parameters); err == nil {
+			args = append(args, "parameters", string(bytes))
+		}
 	}
 	// Set update timestamp
 	args = append(args, "update_time", time.Now().Unix())
@@ -568,6 +580,12 @@ func (bt *basicTracker) retrieve() error {
 			v, _ := strconv.ParseInt(value, 10, 64)
 			res.Info.NumericPID = v
 			break
+		case "parameters":
+			params := make(Parameters)
+			if err := json.Unmarshal([]byte(value), &params); err == nil {
+				res.Info.Parameters = params
+			}
+			break
 		default:
 			break
 		}
@@ -596,4 +614,41 @@ func getStatus(conn redis.Conn, key string) (Status, error) {
 
 func setStatus(conn redis.Conn, key string, status Status) error {
 	return rds.HmSet(conn, key, "status", status.String(), "update_time", time.Now().Unix())
+}
+
+// queryExecutions queries periodic executions by status
+func queryExecutions(conn redis.Conn, dataKey string, q *query.Parameter) ([]string, int64, error) {
+	total, err := redis.Int64(conn.Do("ZCOUNT", dataKey, 0, "+inf"))
+	if err != nil {
+		return nil, 0, err
+	}
+
+	var pageNumber, pageSize uint = 1, query.DefaultPageSize
+	if q.PageNumber > 0 {
+		pageNumber = q.PageNumber
+	}
+	if q.PageSize > 0 {
+		pageSize = q.PageSize
+	}
+
+	results := make([]string, 0)
+	if total == 0 || (int64)((pageNumber-1)*pageSize) >= total {
+		return results, total, nil
+	}
+
+	offset := (pageNumber - 1) * pageSize
+	args := []interface{}{dataKey, "+inf", 0, "LIMIT", offset, pageSize}
+
+	eIDs, err := redis.Values(conn.Do("ZREVRANGEBYSCORE", args...))
+	if err != nil {
+		return nil, 0, err
+	}
+
+	for _, eID := range eIDs {
+		if eIDBytes, ok := eID.([]byte); ok {
+			results = append(results, string(eIDBytes))
+		}
+	}
+
+	return results, total, nil
 }

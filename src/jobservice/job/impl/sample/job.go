@@ -20,7 +20,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
 )
 
@@ -38,7 +37,7 @@ func (j *Job) ShouldRetry() bool {
 }
 
 // Validate is implementation of same method in Interface.
-func (j *Job) Validate(params map[string]interface{}) error {
+func (j *Job) Validate(params job.Parameters) error {
 	if params == nil || len(params) == 0 {
 		return errors.New("parameters required for replication job")
 	}
@@ -48,7 +47,7 @@ func (j *Job) Validate(params map[string]interface{}) error {
 	}
 
 	if !strings.HasPrefix(name.(string), "demo") {
-		return fmt.Errorf("expected '%s' but got '%s'", "demo steven", name)
+		return fmt.Errorf("expected '%s' but got '%s'", "demo *", name)
 	}
 
 	return nil
@@ -58,39 +57,29 @@ func (j *Job) Validate(params map[string]interface{}) error {
 func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	logger := ctx.GetLogger()
 
+	logger.Info("Sample job starting")
 	defer func() {
-		logger.Info("I'm finished, exit!")
+		logger.Info("Sample job exit")
 	}()
 
-	fmt.Println("I'm running")
 	logger.Infof("Params: %#v\n", params)
-	logger.Infof("Context: %#v\n", ctx)
-	if v, ok := ctx.Get("email_from"); ok {
-		fmt.Printf("Get prop form context: email_from=%s\n", v)
+	if v, ok := ctx.Get("sample"); ok {
+		fmt.Printf("Get prop form context: sample=%s\n", v)
 	}
 
-	logger.Info("Check in 30%")
-	ctx.Checkin("30%")
-	time.Sleep(2 * time.Second)
-	logger.Warning("Check in 60%")
-	ctx.Checkin("60%")
-	time.Sleep(2 * time.Second)
-	logger.Debug("Check in 100%")
-	ctx.Checkin("100%")
-	time.Sleep(1 * time.Second)
+	ctx.Checkin("progress data: %30")
 
 	// HOLD ON FOR A WHILE
-	logger.Error("Holding for 5 sec")
-	<-time.After(5 * time.Second)
+	logger.Warning("Holding for 30 seconds")
+	<-time.After(30 * time.Second)
 
 	if cmd, ok := ctx.OPCommand(); ok {
-		logger.Infof("cmd=%s\n", cmd)
-		fmt.Printf("Receive OP command: %s\n", cmd)
-		logger.Info("Exit for receiving stop signal")
-		return errs.JobStoppedError()
+		if cmd == job.StopCommand {
+			logger.Info("Exit for receiving stop signal")
+			return nil
+		}
 	}
 
-	fmt.Println("I'm close to end")
-
+	// Successfully exit
 	return nil
 }

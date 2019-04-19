@@ -22,11 +22,13 @@ def prepare_nginx(config_dict):
 def render_nginx_template(config_dict):
     if config_dict['protocol'] == "https":
         render_jinja(nginx_https_conf_template, nginx_conf,
-            ssl_cert = SSL_CERT_PATH,
-            ssl_cert_key = SSL_CERT_KEY_PATH)
+            ssl_cert=SSL_CERT_PATH,
+            ssl_cert_key=SSL_CERT_KEY_PATH)
         location_file_pattern = CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS
     else:
-        render_jinja(nginx_http_conf_template, nginx_conf)
+        render_jinja(
+            nginx_http_conf_template,
+            nginx_conf)
         location_file_pattern = CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTP
     copy_nginx_location_configs_if_exist(nginx_template_ext_dir, nginx_confd_dir, location_file_pattern)
 

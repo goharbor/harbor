@@ -65,11 +65,11 @@ func (bs *Bootstrap) SetJobContextInitializer(initializer job.JobContextInitiali
 
 // LoadAndRun will load configurations, initialize components and then start the related process to serve requests.
 // Return error if meet any problems.
-func (bs *Bootstrap) LoadAndRun(ctx context.Context) {
+func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) {
 	rootContext := &env.Context{
 		SystemContext: ctx,
 		WG:            &sync.WaitGroup{},
-		ErrorChan:     make(chan error, 3), // with 3 buffers
+		ErrorChan:     make(chan error, 5), // with 5 buffers
 	}
 
 	// Build specified job context
@@ -97,7 +97,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context) {
 		// Get redis connection pool
 		redisPool := bs.getRedisPool(cfg.PoolConfig.RedisPoolCfg.RedisURL)
 		// Create hook agent, it's a singleton object
-		hookAgent := hook.NewAgent(ctx, namespace, redisPool)
+		hookAgent := hook.NewAgent(rootContext, namespace, redisPool)
 		hookCallback := func(URL string, change *job.StatusChange) error {
 			msg := fmt.Sprintf("status change: job=%s, status=%s", change.JobID, change.Status)
 			if !utils.IsEmptyStr(change.CheckIn) {
@@ -120,7 +120,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context) {
 		// Start the backend worker
 		backendWorker, wErr = bs.loadAndRunRedisWorkerPool(rootContext, namespace, workerNum, redisPool, lcmCtl)
 		if wErr != nil {
-			logger.Fatalf("Failed to load and run worker worker: %s\n", wErr.Error())
+			logger.Fatalf("Failed to load and run worker: %s\n", wErr.Error())
 		}
 
 		// Start agent
@@ -136,18 +136,22 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context) {
 	apiServer := bs.createAPIServer(ctx, cfg, ctl)
 
 	// Listen to the system signals
+	sig := make(chan os.Signal, 1)
+	signal.Notify(sig, os.Interrupt, syscall.SIGTERM, os.Kill)
+	terminated := false
 	go func(errChan chan error) {
 		defer func() {
 			// Gracefully shutdown
 			if err := apiServer.Stop(); err != nil {
 				logger.Error(err)
 			}
+			// Notify others who're listening to the system context
+			cancel()
 		}()
-		sig := make(chan os.Signal, 1)
-		signal.Notify(sig, os.Interrupt, syscall.SIGTERM, os.Kill)
 
 		select {
 		case <-sig:
+			terminated = true
 			return
 		case err := <-errChan:
 			logger.Errorf("error received from error chan: %s", err)
@@ -155,13 +159,21 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context) {
 		}
 	}(rootContext.ErrorChan)
 
+	node := ctx.Value(utils.NodeID)
 	// Blocking here
-	logger.Infof("API server is serving at %d with %s mode", cfg.Port, cfg.Protocol)
+	logger.Infof("API server is serving at %d with [%s] mode at node [%s]", cfg.Port, cfg.Protocol, node)
 	if err := apiServer.Start(); err != nil {
-		logger.Errorf("API server error: %s", err)
+		if !terminated {
+			// Tell the listening goroutine
+			rootContext.ErrorChan <- err
+		}
 	} else {
-		logger.Info("API server is gracefully shut down")
+		// In case
+		sig <- os.Interrupt
 	}
+
+	// Wait everyone exit
+	rootContext.WG.Wait()
 }
 
 // Load and run the API server.
@@ -197,12 +209,11 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			// Only for debugging and testing purpose
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
-			job.ImageScanJob:    (*scan.ClairJob)(nil),
-			job.ImageScanAllJob: (*scan.All)(nil),
-			job.ImageTransfer:   (*replication.Transfer)(nil),
-			job.ImageDelete:     (*replication.Deleter)(nil),
-			job.ImageReplicate:  (*replication.Replicator)(nil),
-			job.ImageGC:         (*gc.GarbageCollector)(nil),
+			job.ImageScanJob:         (*scan.ClairJob)(nil),
+			job.ImageScanAllJob:      (*scan.All)(nil),
+			job.ImageGC:              (*gc.GarbageCollector)(nil),
+			job.Replication:          (*replication.Replication)(nil),
+			job.ReplicationScheduler: (*replication.Scheduler)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

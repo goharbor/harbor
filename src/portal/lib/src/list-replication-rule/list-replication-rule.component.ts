@@ -27,9 +27,8 @@ import {
 import { Comparator } from "../service/interface";
 import { TranslateService } from "@ngx-translate/core";
 import { map, catchError } from "rxjs/operators";
-import { Observable, forkJoin, throwError as observableThrowError } from "rxjs";
+import { Observable, forkJoin, of, throwError as observableThrowError } from "rxjs";
 import { ReplicationService } from "../service/replication.service";
-
 import {
     ReplicationJob,
     ReplicationJobItem,
@@ -198,7 +197,8 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
         let ruleData: ReplicationJobItem[];
         this.canDeleteRule = true;
         let count = 0;
-        return this.replicationService.getJobs(id)
+
+        return this.replicationService.getExecutions(id)
             .pipe(map(response => {
                 ruleData = response.data;
                 if (ruleData.length) {

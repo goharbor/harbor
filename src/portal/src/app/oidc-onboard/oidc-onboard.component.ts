@@ -28,7 +28,9 @@ export class OidcOnboardComponent implements OnInit {
       });
   }
   clickSaveBtn(): void {
-    this.oidcOnboardService.oidcSave({ username: this.oidcUsername.value }).subscribe(res => { }
+    this.oidcOnboardService.oidcSave({ username: this.oidcUsername.value }).subscribe(res => {
+      this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+    }
       , error => {
         this.errorMessage = errorHandler(error);
         this.errorOpen = true;

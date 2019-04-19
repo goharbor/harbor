@@ -20,7 +20,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gocraft/work"
+	"github.com/pkg/errors"
 	"io"
+	"net"
 	"net/url"
 	"os"
 	"strconv"
@@ -151,4 +153,37 @@ func DeSerializeJob(jobBytes []byte) (*work.Job, error) {
 	err := json.Unmarshal(jobBytes, &j)
 
 	return &j, err
+}
+
+// Get the local hostname and IP
+func ResolveHostnameAndIP() (string, error) {
+	host, err := os.Hostname()
+	if err != nil {
+		return "", err
+	}
+
+	addrs, err := net.InterfaceAddrs()
+	if err != nil {
+		return "", err
+	}
+
+	for _, address := range addrs {
+		if ipnet, ok := address.(*net.IPNet); ok && !ipnet.IP.IsLoopback() {
+			if ipnet.IP.To4() != nil {
+				return fmt.Sprintf("%s:%s", host, ipnet.IP.String()), nil
+			}
+		}
+	}
+
+	return "", errors.New("failed to resolve local host&ip")
+}
+
+// GenerateNodeID returns ID of current node
+func GenerateNodeID() string {
+	hIP, err := ResolveHostnameAndIP()
+	if err != nil {
+		return MakeIdentifier()
+	}
+
+	return hIP
 }

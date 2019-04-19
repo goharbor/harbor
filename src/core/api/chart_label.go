@@ -61,7 +61,7 @@ func (cla *ChartLabelAPI) requireAccess(action rbac.Action) bool {
 	resource := rbac.NewProjectNamespace(cla.project.ProjectID).Resource(rbac.ResourceHelmChartVersionLabel)
 
 	if !cla.SecurityCtx.Can(action, resource) {
-		cla.HandleForbidden(cla.SecurityCtx.GetUsername())
+		cla.SendForbiddenError(errors.New(cla.SecurityCtx.GetUsername()))
 		return false
 	}
 
@@ -75,7 +75,10 @@ func (cla *ChartLabelAPI) MarkLabel() {
 	}
 
 	l := &models.Label{}
-	cla.DecodeJSONReq(l)
+	if err := cla.DecodeJSONReq(l); err != nil {
+		cla.SendBadRequestError(err)
+		return
+	}
 
 	label, ok := cla.validate(l.ID, cla.project.ProjectID)
 	if !ok {
