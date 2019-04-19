@@ -46,7 +46,7 @@ import { ErrorHandler } from "../error-handler/error-handler";
 import { CustomComparator } from "../utils";
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
-
+const jobstatus = "InProgress";
 
 @Component({
     selector: "hbr-list-replication-rule",
@@ -204,9 +204,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
                 if (ruleData.length) {
                     ruleData.forEach(job => {
                         if (
-                            job.status === "pending" ||
-                            job.status === "running" ||
-                            job.status === "retrying"
+                            job.status === jobstatus
                         ) {
                             count++;
                         }
