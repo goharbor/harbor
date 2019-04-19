@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
@@ -28,12 +29,12 @@ func verifyError(err error) error {
 
 // SecretManager is the interface for store and verify the secret
 type SecretManager interface {
-	// SetSecret sets the secret and token based on the ID of the user, when setting the secret the user has to be
-	// onboarded to Harbor DB.
-	SetSecret(userID int, secret string, token *Token) error
 	// VerifySecret verifies the secret and the token associated with it, it refreshes the token in the DB if it's
 	// refreshed during the verification
 	VerifySecret(ctx context.Context, userID int, secret string) error
+	// VerifyToken verifies the token in the model from parm,
+	// and refreshes the token in the DB if it's refreshed during the verification.
+	VerifyToken(ctx context.Context, user *models.OIDCUser) error
 }
 
 type defaultManager struct {
@@ -58,25 +59,6 @@ func (dm *defaultManager) getEncryptKey() (string, error) {
 	return dm.key, nil
 }
 
-// SetSecret sets the secret and token based on the ID of the user, when setting the secret the user has to be
-// onboarded to Harbor DB.
-func (dm *defaultManager) SetSecret(userID int, secret string, token *Token) error {
-	key, err := dm.getEncryptKey()
-	if err != nil {
-		return fmt.Errorf("failed to load the key for encryption/decryption： %v", err)
-	}
-	oidcUser, err := dao.GetOIDCUserByUserID(userID)
-	if oidcUser == nil {
-		return fmt.Errorf("failed to get oidc user info, error: %v", err)
-	}
-	encSecret, _ := utils.ReversibleEncrypt(secret, key)
-	tb, _ := json.Marshal(token)
-	encToken, _ := utils.ReversibleEncrypt(string(tb), key)
-	oidcUser.Secret = encSecret
-	oidcUser.Token = encToken
-	return dao.UpdateOIDCUser(oidcUser)
-}
-
 // VerifySecret verifies the secret and the token associated with it, it tries to update the token in the DB if it's
 // refreshed during the verification
 func (dm *defaultManager) VerifySecret(ctx context.Context, userID int, secret string) error {
@@ -98,7 +80,20 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, userID int, secret s
 	if secret != plainSecret {
 		return verifyError(errors.New("secret mismatch"))
 	}
-	tokenStr, err := utils.ReversibleDecrypt(oidcUser.Token, key)
+	return dm.VerifyToken(ctx, oidcUser)
+}
+
+// VerifyToken verifies the token in the model from parm in this implementation it will try to refresh the token
+// if it's expired, if the refresh is successful it will persist the token and consider the verification successful.
+func (dm *defaultManager) VerifyToken(ctx context.Context, user *models.OIDCUser) error {
+	if user == nil {
+		return verifyError(fmt.Errorf("input user is nil"))
+	}
+	key, err := dm.getEncryptKey()
+	if err != nil {
+		return fmt.Errorf("failed to load the key for encryption/decryption： %v", err)
+	}
+	tokenStr, err := utils.ReversibleDecrypt(user.Token, key)
 	if err != nil {
 		return verifyError(err)
 	}
@@ -116,15 +111,25 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, userID int, secret s
 	if err != nil {
 		return verifyError(err)
 	}
-	err = dm.SetSecret(oidcUser.UserID, secret, t)
+	tb, err := json.Marshal(t)
+	if err != nil {
+		log.Warningf("Failed to encode the refreshed token, error: %v", err)
+	}
+	encToken, _ := utils.ReversibleEncrypt(string(tb), key)
+	user.Token = encToken
+	err = dao.UpdateOIDCUser(user)
 	if err != nil {
 		log.Warningf("Failed to update the token in DB: %v, ignore this error.", err)
 	}
 	return nil
 }
 
-// VerifySecret verifies the secret and the token associated with it, it tries to update the token in the DB if it's
-// refreshed during the verification
+// VerifySecret calls the manager to verify the secret.
 func VerifySecret(ctx context.Context, userID int, secret string) error {
 	return m.VerifySecret(ctx, userID, secret)
+}
+
+// VerifyAndPersistToken calls the manager to verify token and persist it if it's refreshed.
+func VerifyAndPersistToken(ctx context.Context, user *models.OIDCUser) error {
+	return m.VerifyToken(ctx, user)
 }

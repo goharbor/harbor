@@ -66,6 +66,8 @@ const (
 
 	// PmKey is context value key for the project manager
 	PmKey ContextValueKey = "harbor_project_manager"
+	// AuthModeKey is context key for auth mode
+	AuthModeKey ContextValueKey = "harbor_auth_mode"
 )
 
 var (
@@ -110,6 +112,7 @@ func Init() {
 
 	// standalone
 	reqCtxModifiers = []ReqCtxModifier{
+		&configCtxModifier{},
 		&secretReqCtxModifier{config.SecretStore},
 		&oidcCliReqCtxModifier{},
 		&authProxyReqCtxModifier{},
@@ -142,6 +145,20 @@ func SecurityFilter(ctx *beegoctx.Context) {
 // ReqCtxModifier modifies the context of request
 type ReqCtxModifier interface {
 	Modify(*beegoctx.Context) bool
+}
+
+// configCtxModifier populates to the configuration values to context, which are to be read by subsequent
+// filters.
+type configCtxModifier struct {
+}
+
+func (c *configCtxModifier) Modify(ctx *beegoctx.Context) bool {
+	m, err := config.AuthMode()
+	if err != nil {
+		log.Warningf("Failed to get auth mode, err: %v", err)
+	}
+	addToReqContext(ctx.Request, AuthModeKey, m)
+	return false
 }
 
 type secretReqCtxModifier struct {
@@ -215,12 +232,7 @@ func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Debug("OIDC CLI modifer only handles request by docker CLI or helm CLI")
 		return false
 	}
-	authMode, err := config.AuthMode()
-	if err != nil {
-		log.Errorf("fail to get auth mode, %v", err)
-		return false
-	}
-	if authMode != common.OIDCAuth {
+	if ctx.Request.Context().Value(AuthModeKey).(string) != common.OIDCAuth {
 		return false
 	}
 	username, secret, ok := ctx.Request.BasicAuth()
@@ -251,12 +263,7 @@ func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 type authProxyReqCtxModifier struct{}
 
 func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
-	authMode, err := config.AuthMode()
-	if err != nil {
-		log.Errorf("fail to get auth mode, %v", err)
-		return false
-	}
-	if authMode != common.HTTPAuth {
+	if ctx.Request.Context().Value(AuthModeKey).(string) != common.HTTPAuth {
 		return false
 	}
 
@@ -443,19 +450,27 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 type sessionReqCtxModifier struct{}
 
 func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
-	var user models.User
 	userInterface := ctx.Input.Session("user")
-
 	if userInterface == nil {
 		log.Debug("can not get user information from session")
 		return false
 	}
-
 	log.Debug("got user information from session")
 	user, ok := userInterface.(models.User)
 	if !ok {
 		log.Info("can not get user information from session")
 		return false
+	}
+	if ctx.Request.Context().Value(AuthModeKey).(string) == common.OIDCAuth {
+		ou, err := dao.GetOIDCUserByUserID(user.UserID)
+		if err != nil {
+			log.Errorf("Failed to get OIDC user info, error: %v", err)
+			return false
+		}
+		if err := oidc.VerifyAndPersistToken(ctx.Request.Context(), ou); err != nil {
+			log.Errorf("Failed to verify secret, error: %v", err)
+			return false
+		}
 	}
 	log.Debug("using local database project manager")
 	pm := config.GlobalProjectMgr
