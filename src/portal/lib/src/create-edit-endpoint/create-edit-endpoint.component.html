@@ -15,8 +15,8 @@
         <div class="form-group">
           <label class="form-group-label-override required">{{'DESTINATION.PROVIDER' | translate}}</label>
           <div class="form-select">
-            <div class="select providerSelect pull-left">
-              <select name="adapter" id="adapter" [(ngModel)]="target.type" [disabled]="testOngoing || controlEnabled">
+            <div class="select inputWidth pull-left">
+              <select name="adapter" id="adapter" (change)="adapterChange($event)" [(ngModel)]="target.type" [disabled]="testOngoing || editDisabled">
                 <option *ngFor="let adapter of adapterList" value="{{adapter}}">{{adapter}}</option>
               </select>
             </div>
@@ -29,7 +29,7 @@
           <label class="col-md-8" for="destination_name" aria-haspopup="true" role="tooltip" [class.invalid]="targetName.errors && (targetName.dirty || targetName.touched)"
             [class.valid]="targetName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
             <input type="text" id="destination_name" [disabled]="testOngoing" [readonly]="!editable" [(ngModel)]="target.name"
-              name="targetName" size="20" #targetName="ngModel" required>
+              name="targetName" size="25" #targetName="ngModel" required>
             <span class="tooltip-content" *ngIf="targetName.errors && targetName.errors.required && (targetName.dirty || targetName.touched)">
               {{ 'DESTINATION.NAME_IS_REQUIRED' | translate }}
             </span>
@@ -46,8 +46,8 @@
             translate }}</label>
           <label class="col-md-8" for="destination_url" aria-haspopup="true" role="tooltip" [class.invalid]="targetEndpoint.errors && (targetEndpoint.dirty || targetEndpoint.touched)"
             [class.valid]="targetEndpoint.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
-            <input type="text" id="destination_url" [disabled]="testOngoing || controlEnabled" [readonly]="!editable" [(ngModel)]="target.url"
-              size="20" name="endpointUrl" #targetEndpoint="ngModel" required placeholder="http(s)://192.168.1.1">
+            <input type="text" id="destination_url" [disabled]="testOngoing || editDisabled || controlEnabled" [readonly]="!editable" [(ngModel)]="target.url"
+              size="25" name="endpointUrl" #targetEndpoint="ngModel" required placeholder="http(s)://192.168.1.1">
             <span class="tooltip-content" *ngIf="targetEndpoint.errors && targetEndpoint.errors.required && (targetEndpoint.dirty || targetEndpoint.touched)">
               {{ 'DESTINATION.URL_IS_REQUIRED' | translate }}
             </span>
@@ -58,14 +58,14 @@
           <label for="destination_access_key" class="col-md-4 form-group-label-override">{{ 'DESTINATION.ACCESS_ID' |
             translate }}</label>
           <input type="text" placeholder="Access ID" class="col-md-8" id="destination_access_key" [disabled]="testOngoing" [readonly]="!editable"
-            [(ngModel)]="target.credential.access_key" size="23" name="access_key" #access_key="ngModel">
+            [(ngModel)]="target.credential.access_key" size="28" name="access_key" #access_key="ngModel">
         </div>
         <!-- access_secret -->
         <div class="form-group">
           <label for="destination_password" class="col-md-4 form-group-label-override">{{ 'DESTINATION.ACCESS_SECRET' |
             translate }}</label>
           <input type="password" placeholder="Access Secret" class="col-md-8" id="destination_password" [disabled]="testOngoing" [readonly]="!editable"
-            [(ngModel)]="target.credential.access_secret" size="23" name="access_secret" #access_secret="ngModel">
+            [(ngModel)]="target.credential.access_secret" size="28" name="access_secret" #access_secret="ngModel">
         </div>
         <!-- Verify Remote Cert -->
         <div class="form-group">
