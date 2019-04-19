@@ -92,7 +92,7 @@ func modifyResponse(res *http.Response) error {
 		// means this response is for uploading chart success.
 		chartUpload := res.Request.Context().Value(common.ChartUploadCtxKey).(string)
 		if chartUpload != "" {
-			chartUploadSplitted := strings.Split(chartUpload, ":")
+			chartUploadSplitted := strings.Split(chartUpload, common.ChartUploadCtxSeparator)
 			if len(chartUploadSplitted) == 3 {
 				// Todo: it used as the replacement of webhook, will be removed when webhook to be introduced.
 				go func() {

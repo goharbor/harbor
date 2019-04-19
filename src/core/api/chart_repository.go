@@ -296,30 +296,13 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 			cra.SendInternalServerError(err)
 			return
 		}
+		if err := cra.addEventContext(formFiles, cra.Ctx.Request); err != nil {
+			hlog.Infof("Failed to add chart upload context into request, which could lead to no execution of event based chart replication policy, %v", err)
+		}
 	}
-
-	// set namespace/repository/version for replication event.
-	_, header, err := cra.GetFile(formFieldNameForChart)
-	if err != nil {
-		cra.SendInternalServerError(err)
-		return
-	}
-
-	req := cra.Ctx.Request
-	charFileName := header.Filename
-	if !strings.HasSuffix(charFileName, ".tgz") {
-		cra.SendInternalServerError(fmt.Errorf("chart file expected %s to end with .tgz", charFileName))
-		return
-	}
-	charFileName = strings.TrimSuffix(charFileName, ".tgz")
-	// colon cannot be used as namespace
-	charFileName = strings.Replace(charFileName, "-", ":", -1)
-	// value sample: library:redis:4.0.3 (namespace:repository:version)
-	ctx := context.WithValue(cra.Ctx.Request.Context(), common.ChartUploadCtxKey, cra.namespace+":"+charFileName)
-	req = req.WithContext(ctx)
 
 	// Directly proxy to the backend
-	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, req)
+	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
 // UploadChartProvFile handles POST /api/:repo/prov
@@ -428,6 +411,43 @@ type formFile struct {
 	mustHave bool
 }
 
+// The func is for event based chart replication policy.
+// It will add a context for uploading request with key chart_upload, and consumed by upload response.
+// Context Sample: library^{chartUP}harbor^{chartUP}0.2.0
+func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.Request) error {
+	if len(files) == 0 {
+		return nil
+	}
+
+	for _, f := range files {
+		if f.formField == formFieldNameForChart {
+			mFile, _, err := cra.GetFile(f.formField)
+			if err != nil {
+				hlog.Infof("failed to read file content for upload event, %v", err)
+				return err
+			}
+			var Buf bytes.Buffer
+			_, err = io.Copy(&Buf, mFile)
+			if err != nil {
+				hlog.Infof("failed to read file content for upload event, %v", err)
+				return err
+			}
+			chartOpr := chartserver.ChartOperator{}
+			chartDetails, err := chartOpr.GetChartData(Buf.Bytes())
+			if err != nil {
+				hlog.Infof("failed to get chart content for upload event, %v", err)
+				return err
+			}
+			*request = *(request.WithContext(context.WithValue(request.Context(), common.ChartUploadCtxKey, cra.namespace+
+				common.ChartUploadCtxSeparator+chartDetails.Metadata.Name+
+				common.ChartUploadCtxSeparator+chartDetails.Metadata.Version)))
+			break
+		}
+	}
+
+	return nil
+}
+
 // If the files are uploaded with multipart/form-data mimetype, beego will extract the data
 // from the request automatically. Then the request passed to the backend server with proxying
 // way will have empty content.
@@ -449,6 +469,7 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 	// Process files by key one by one
 	for _, f := range files {
 		mFile, mHeader, err := cra.GetFile(f.formField)
+
 		// Handle error case by case
 		if err != nil {
 			formatedErr := fmt.Errorf("Get file content with multipart header from key '%s' failed with error: %s", f.formField, err.Error())
@@ -470,6 +491,7 @@ func (cra *ChartRepositoryAPI) rewriteFileContent(files []formFile, request *htt
 		if err != nil {
 			return fmt.Errorf("Copy file stream in multipart form data failed with error: %s", err.Error())
 		}
+
 	}
 
 	request.Header.Set(headerContentType, w.FormDataContentType())
