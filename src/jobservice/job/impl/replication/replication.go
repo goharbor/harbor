@@ -32,6 +32,8 @@ import (
 	// register the Native adapter
 	"github.com/goharbor/harbor/src/jobservice/job"
 	_ "github.com/goharbor/harbor/src/replication/adapter/native"
+	// register the Huawei adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/huawei"
 )
 
 // Replication implements the job interface

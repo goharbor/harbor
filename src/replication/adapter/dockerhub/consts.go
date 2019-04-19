@@ -28,3 +28,7 @@ func listReposPath(namespace, name string, page, pageSize int) string {
 func listTagsPath(namespace, repo string, page, pageSize int) string {
 	return fmt.Sprintf("/v2/repositories/%s/%s/tags/?page=%d&page_size=%d", namespace, repo, page, pageSize)
 }
+
+func deleteTagPath(namespace, repo, tag string) string {
+	return fmt.Sprintf("/v2/repositories/%s/%s/tags/%s/", namespace, repo, tag)
+}

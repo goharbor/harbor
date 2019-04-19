@@ -23,6 +23,9 @@ import (
 	"github.com/goharbor/harbor/src/core/auth"
 
 	"errors"
+	"strings"
+
+	"github.com/goharbor/harbor/src/core/config"
 	goldap "gopkg.in/ldap.v2"
 )
 
@@ -52,6 +55,19 @@ func (l *LdapAPI) Prepare() {
 		return
 	}
 
+	// check the auth_mode except ping
+	if strings.EqualFold(l.Ctx.Request.RequestURI, "/api/ldap/ping") {
+		return
+	}
+	authMode, err := config.AuthMode()
+	if err != nil {
+		l.SendInternalServerError(fmt.Errorf("Can't load system configuration, error: %v", err))
+		return
+	}
+	if authMode != "ldap_auth" {
+		l.SendInternalServerError(fmt.Errorf("Can't load system configuration, error: %v", err))
+		return
+	}
 	ldapCfg, err := ldapUtils.LoadSystemLdapConfig()
 	if err != nil {
 		l.SendInternalServerError(fmt.Errorf("Can't load system configuration, error: %v", err))

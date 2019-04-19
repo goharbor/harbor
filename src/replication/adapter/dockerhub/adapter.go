@@ -94,14 +94,8 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		if len(resource.Metadata.Repository.Name) == 0 {
 			return errors.New("the name of the namespace cannot be null")
 		}
-		namespace, _ := util.ParseRepository(resource.Metadata.Repository.Name)
-		// Docker Hub doesn't support the repository contains no "/"
-		// just skip here and the following task will fail
-		if len(namespace) == 0 {
-			log.Debug("the namespace is empty, skip")
-			continue
-		}
-
+		paths := strings.Split(resource.Metadata.Repository.Name, "/")
+		namespace := paths[0]
 		namespaces[namespace] = struct{}{}
 	}
 
@@ -112,6 +106,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		if err != nil {
 			return fmt.Errorf("create namespace '%s' in DockerHub error: %v", namespace, err)
 		}
+		log.Debugf("namespace %s created", namespace)
 	}
 	return nil
 }
@@ -198,7 +193,6 @@ func (a *adapter) CreateNamespace(namespace *model.Namespace) error {
 // getNamespace get namespace from DockerHub, if the namespace not found, two nil would be returned.
 func (a *adapter) getNamespace(namespace string) (*model.Namespace, error) {
 	resp, err := a.client.Do(http.MethodGet, getNamespacePath(namespace), nil)
-
 	if err != nil {
 		return nil, err
 	}
@@ -214,7 +208,7 @@ func (a *adapter) getNamespace(namespace string) (*model.Namespace, error) {
 	}
 
 	if resp.StatusCode/100 != 2 {
-		log.Errorf("create namespace error: %d -- %s", resp.StatusCode, string(body))
+		log.Errorf("get namespace error: %d -- %s", resp.StatusCode, string(body))
 		return nil, fmt.Errorf("%d -- %s", resp.StatusCode, body)
 	}
 
@@ -321,6 +315,32 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	return resources, nil
 }
 
+// DeleteManifest ...
+// Note: DockerHub only supports delete by tag
+func (a *adapter) DeleteManifest(repository, reference string) error {
+	parts := strings.Split(repository, "/")
+	if len(parts) != 2 {
+		return fmt.Errorf("dockerhub only support repo in format <namespace>/<name>, but got: %s", repository)
+	}
+
+	resp, err := a.client.Do(http.MethodDelete, deleteTagPath(parts[0], parts[1], reference), nil)
+	if err != nil {
+		return err
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode/100 != 2 {
+		log.Errorf("Delete tag error: %d -- %s", resp.StatusCode, string(body))
+		return fmt.Errorf("%d -- %s", resp.StatusCode, string(body))
+	}
+
+	return nil
+}
+
 // getRepos gets a page of repos from DockerHub
 func (a *adapter) getRepos(namespace, name string, page, pageSize int) (*ReposResp, error) {
 	resp, err := a.client.Do(http.MethodGet, listReposPath(namespace, name, page, pageSize), nil)
@@ -336,7 +356,7 @@ func (a *adapter) getRepos(namespace, name string, page, pageSize int) (*ReposRe
 
 	if resp.StatusCode/100 != 2 {
 		log.Errorf("list repos error: %d -- %s", resp.StatusCode, string(body))
-		return nil, fmt.Errorf("%d -- %s", resp.StatusCode, body)
+		return nil, fmt.Errorf("%d -- %s", resp.StatusCode, string(body))
 	}
 
 	repos := &ReposResp{}

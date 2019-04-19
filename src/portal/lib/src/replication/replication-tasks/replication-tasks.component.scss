@@ -105,6 +105,9 @@
         }
         clr-datagrid {
             margin-top: 20px;
+            .resource-width {
+                width: 150px;
+            }
         }
     }
 }

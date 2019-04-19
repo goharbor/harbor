@@ -97,20 +97,5 @@ func (c *Client) Do(method, path string, body io.Reader) (*http.Response, error)
 	}
 	req.Header.Set("Authorization", fmt.Sprintf("JWT %s", c.token))
 
-	resp, err := c.client.Do(req)
-	if err != nil {
-		log.Errorf("unexpected error: %v", err)
-		return nil, err
-	}
-
-	if resp.StatusCode/100 != 2 {
-		b, err := ioutil.ReadAll(resp.Body)
-		defer resp.Body.Close()
-		if err != nil {
-			return nil, err
-		}
-
-		return nil, fmt.Errorf("unexpected %d error from dockerhub: %s", resp.StatusCode, string(b))
-	}
-	return resp, nil
+	return c.client.Do(req)
 }

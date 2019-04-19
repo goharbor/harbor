@@ -25,6 +25,7 @@ const (
 	// RegistryTypeHarbor indicates registry type harbor
 	RegistryTypeHarbor    RegistryType = "harbor"
 	RegistryTypeDockerHub RegistryType = "dockerHub"
+	RegistryTypeHuawei    RegistryType = "Huawei"
 
 	FilterStyleTypeText  = "input"
 	FilterStyleTypeRadio = "radio"
