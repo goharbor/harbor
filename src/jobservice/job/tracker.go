@@ -87,6 +87,9 @@ type Tracker interface {
 	// Check in message
 	CheckIn(message string) error
 
+	// Update status with retry enabled
+	UpdateStatusWithRetry(targetStatus Status) error
+
 	// The current status of job
 	Status() (Status, error)
 
@@ -95,9 +98,6 @@ type Tracker interface {
 
 	// Switch status to running
 	Run() error
-
-	// Switch status to scheduled
-	Schedule() error
 
 	// Switch status to stopped
 	Stop() error
@@ -222,11 +222,15 @@ func (bt *basicTracker) CheckIn(message string) error {
 		return errors.New("check in error: empty message")
 	}
 
-	err := bt.fireHook(Status(bt.jobStats.Info.Status), message)
+	now := time.Now().Unix()
+	current := Status(bt.jobStats.Info.Status)
+
+	bt.refresh(current, message)
+	err := bt.fireHookEvent(current, message)
 	err = bt.Update(
 		"check_in", message,
-		"check_in_at", time.Now().Unix(),
-		"update_time", time.Now().Unix(),
+		"check_in_at", now,
+		"update_time", now,
 	)
 
 	return err
@@ -308,21 +312,22 @@ func (bt *basicTracker) Expire() error {
 }
 
 // Run job
+// Either one is failed, the final return will be marked as failed.
 func (bt *basicTracker) Run() error {
-	return bt.compareAndSet(RunningStatus)
-}
+	bt.refresh(RunningStatus)
+	err := bt.fireHookEvent(RunningStatus)
+	err = bt.compareAndSet(RunningStatus)
 
-// Schedule job
-func (bt *basicTracker) Schedule() error {
-	return bt.compareAndSet(ScheduledStatus)
+	return err
 }
 
 // Stop job
 // Stop is final status, if failed to do, retry should be enforced.
 // Either one is failed, the final return will be marked as failed.
 func (bt *basicTracker) Stop() error {
-	err := bt.fireHook(StoppedStatus)
-	err = bt.updateStatusWithRetry(StoppedStatus)
+	bt.refresh(StoppedStatus)
+	err := bt.fireHookEvent(StoppedStatus)
+	err = bt.UpdateStatusWithRetry(StoppedStatus)
 
 	return err
 }
@@ -331,8 +336,9 @@ func (bt *basicTracker) Stop() error {
 // Fail is final status, if failed to do, retry should be enforced.
 // Either one is failed, the final return will be marked as failed.
 func (bt *basicTracker) Fail() error {
-	err := bt.fireHook(ErrorStatus)
-	err = bt.updateStatusWithRetry(ErrorStatus)
+	bt.refresh(ErrorStatus)
+	err := bt.fireHookEvent(ErrorStatus)
+	err = bt.UpdateStatusWithRetry(ErrorStatus)
 
 	return err
 }
@@ -341,8 +347,9 @@ func (bt *basicTracker) Fail() error {
 // Succeed is final status, if failed to do, retry should be enforced.
 // Either one is failed, the final return will be marked as failed.
 func (bt *basicTracker) Succeed() error {
-	err := bt.fireHook(SuccessStatus)
-	err = bt.updateStatusWithRetry(SuccessStatus)
+	bt.refresh(SuccessStatus)
+	err := bt.fireHookEvent(SuccessStatus)
+	err = bt.UpdateStatusWithRetry(SuccessStatus)
 
 	return err
 }
@@ -433,8 +440,38 @@ func (bt *basicTracker) Save() (err error) {
 	return
 }
 
-// Fire the hook event
-func (bt *basicTracker) fireHook(status Status, checkIn ...string) error {
+// UpdateStatusWithRetry updates the status with retry enabled.
+// If update status failed, then retry if permitted.
+// Try best to do
+func (bt *basicTracker) UpdateStatusWithRetry(targetStatus Status) error {
+	err := bt.compareAndSet(targetStatus)
+	if err != nil {
+		// Push to the retrying Q
+		if er := bt.pushToQueueForRetry(targetStatus); er != nil {
+			logger.Errorf("push job status update request to retry queue error: %s", er)
+			// If failed to put it into the retrying Q in case, let's downgrade to retry in current process
+			// by recursively call in goroutines.
+			bt.retryUpdateStatus(targetStatus)
+		}
+	}
+
+	return err
+}
+
+// Refresh the job stats in mem
+func (bt *basicTracker) refresh(targetStatus Status, checkIn ...string) {
+	now := time.Now().Unix()
+
+	bt.jobStats.Info.Status = targetStatus.String()
+	if len(checkIn) > 0 {
+		bt.jobStats.Info.CheckIn = checkIn[0]
+		bt.jobStats.Info.CheckInAt = now
+	}
+	bt.jobStats.Info.UpdateTime = now
+}
+
+// FireHookEvent fires the hook event
+func (bt *basicTracker) fireHookEvent(status Status, checkIn ...string) error {
 	// Check if hook URL is registered
 	if utils.IsEmptyStr(bt.jobStats.Info.WebHookURL) {
 		// Do nothing
@@ -459,29 +496,45 @@ func (bt *basicTracker) fireHook(status Status, checkIn ...string) error {
 	return nil
 }
 
-// If update status failed, then retry if permitted.
-// Try best to do
-func (bt *basicTracker) updateStatusWithRetry(targetStatus Status) error {
-	err := bt.compareAndSet(targetStatus)
-	if err != nil {
-		// If still need to retry
-		// Check the update timestamp
-		if time.Now().Unix()-bt.jobStats.Info.UpdateTime < 2*24*3600 {
-			// Keep on retrying
-			go func() {
-				select {
-				case <-time.After(time.Duration(5)*time.Minute + time.Duration(rand.Int31n(13))*time.Second):
-					if err := bt.updateStatusWithRetry(targetStatus); err != nil {
-						logger.Errorf("Retry of updating status of job %s error: %s", bt.jobID, err)
-					}
-				case <-bt.context.Done():
-					return // terminated
-				}
-			}()
-		}
+func (bt *basicTracker) pushToQueueForRetry(targetStatus Status) error {
+	simpleStatusChange := &SimpleStatusChange{
+		JobID:        bt.jobID,
+		TargetStatus: targetStatus.String(),
 	}
 
+	rawJSON, err := json.Marshal(simpleStatusChange)
+	if err != nil {
+		return err
+	}
+
+	conn := bt.pool.Get()
+	defer conn.Close()
+
+	key := rds.KeyStatusUpdateRetryQueue(bt.namespace)
+	args := []interface{}{key, "NX", time.Now().Unix(), rawJSON}
+
+	_, err = conn.Do("ZADD", args...)
+
 	return err
+}
+
+func (bt *basicTracker) retryUpdateStatus(targetStatus Status) {
+	go func() {
+		select {
+		case <-time.After(time.Duration(5)*time.Minute + time.Duration(rand.Int31n(13))*time.Second):
+			// Check the update timestamp
+			if time.Now().Unix()-bt.jobStats.Info.UpdateTime < statDataExpireTime-24*3600 {
+				if err := bt.compareAndSet(targetStatus); err != nil {
+					logger.Errorf("Retry to update job status error: %s", err)
+					bt.retryUpdateStatus(targetStatus)
+				}
+				// Success
+			}
+			return
+		case <-bt.context.Done():
+			return // terminated
+		}
+	}()
 }
 
 func (bt *basicTracker) compareAndSet(targetStatus Status) error {
@@ -495,8 +548,13 @@ func (bt *basicTracker) compareAndSet(targetStatus Status) error {
 		return err
 	}
 
-	if st.Compare(targetStatus) >= 0 {
+	diff := st.Compare(targetStatus)
+	if diff > 0 {
 		return fmt.Errorf("mismatch job status: current %s, setting to %s", st, targetStatus)
+	}
+	if diff == 0 {
+		// Desired matches actual
+		return nil
 	}
 
 	return setStatus(conn, rootKey, targetStatus)

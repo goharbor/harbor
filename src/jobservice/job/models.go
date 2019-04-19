@@ -82,6 +82,12 @@ type StatusChange struct {
 	Metadata *StatsInfo `json:"metadata,omitempty"`
 }
 
+// SimpleStatusChange only keeps job ID and the target status
+type SimpleStatusChange struct {
+	JobID        string `json:"job_id"`
+	TargetStatus string `json:"target_status"`
+}
+
 // Validate the job stats
 func (st *Stats) Validate() error {
 	if st.Info == nil {

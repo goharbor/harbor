@@ -115,13 +115,17 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		}
 
 		// Create job life cycle management controller
-		lcmCtl = lcm.NewController(ctx, namespace, redisPool, hookCallback)
+		lcmCtl = lcm.NewController(rootContext, namespace, redisPool, hookCallback)
 
 		// Start the backend worker
 		backendWorker, wErr = bs.loadAndRunRedisWorkerPool(rootContext, namespace, workerNum, redisPool, lcmCtl)
 		if wErr != nil {
 			logger.Fatalf("Failed to load and run worker: %s\n", wErr.Error())
 		}
+
+		// Run daemon process of life cycle controller
+		// Ignore returned error
+		lcmCtl.Serve()
 
 		// Start agent
 		// Non blocking call

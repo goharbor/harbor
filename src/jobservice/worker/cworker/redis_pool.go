@@ -195,7 +195,7 @@ func (w *basicWorker) Enqueue(jobName string, params job.Parameters, isUnique bo
 		return nil, fmt.Errorf("job '%s' can not be enqueued, please check the job metatdata", jobName)
 	}
 
-	return generateResult(j, job.KindGeneric, isUnique, params), nil
+	return generateResult(j, job.KindGeneric, isUnique, params, webHook), nil
 }
 
 // Schedule job
@@ -225,7 +225,7 @@ func (w *basicWorker) Schedule(jobName string, params job.Parameters, runAfterSe
 		return nil, fmt.Errorf("job '%s' can not be enqueued, please check the job metatdata", jobName)
 	}
 
-	res := generateResult(j.Job, job.KindScheduled, isUnique, params)
+	res := generateResult(j.Job, job.KindScheduled, isUnique, params, webHook)
 	res.Info.RunAt = j.RunAt
 	res.Info.Status = job.ScheduledStatus.String()
 
@@ -468,7 +468,13 @@ func (w *basicWorker) ping() error {
 }
 
 // generate the job stats data
-func generateResult(j *work.Job, jobKind string, isUnique bool, jobParameters job.Parameters) *job.Stats {
+func generateResult(
+	j *work.Job,
+	jobKind string,
+	isUnique bool,
+	jobParameters job.Parameters,
+	webHook string,
+) *job.Stats {
 	return &job.Stats{
 		Info: &job.StatsInfo{
 			JobID:       j.ID,
@@ -480,6 +486,7 @@ func generateResult(j *work.Job, jobKind string, isUnique bool, jobParameters jo
 			UpdateTime:  time.Now().Unix(),
 			RefLink:     fmt.Sprintf("/api/v1/jobs/%s", j.ID),
 			Parameters:  jobParameters,
+			WebHookURL:  webHook,
 		},
 	}
 }

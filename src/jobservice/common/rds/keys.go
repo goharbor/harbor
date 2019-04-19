@@ -83,3 +83,8 @@ func KeyUpstreamJobAndExecutions(namespace, upstreamJobID string) string {
 func KeyHookEventRetryQueue(namespace string) string {
 	return fmt.Sprintf("%s:%s", KeyNamespacePrefix(namespace), "hook_events")
 }
+
+// KeyStatusUpdateRetryQueue returns the key of status change retrying queue
+func KeyStatusUpdateRetryQueue(namespace string) string {
+	return fmt.Sprintf("%s:%s", KeyNamespacePrefix(namespace), "status_change_events")
+}

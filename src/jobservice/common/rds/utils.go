@@ -118,3 +118,35 @@ func ReleaseLock(conn redis.Conn, lockerKey string, lockerID string) error {
 
 	return errors.New("locker ID mismatch")
 }
+
+// ZPopMin pops the element with lowest score in the zset
+func ZPopMin(conn redis.Conn, key string) (interface{}, error) {
+	err := conn.Send("MULTI")
+	err = conn.Send("ZRANGE", key, 0, 0) // lowest one
+	err = conn.Send("ZREMRANGEBYRANK", key, 0, 0)
+	if err != nil {
+		return nil, err
+	}
+
+	replies, err := redis.Values(conn.Do("EXEC"))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(replies) < 2 {
+		return nil, errors.Errorf("zpopmin error: not enough results returned, expected %d but got %d", 2, len(replies))
+	}
+
+	zrangeReply := replies[0]
+	if zrangeReply != nil {
+		if elements, ok := zrangeReply.([]interface{}); ok {
+			if len(elements) == 0 {
+				return nil, redis.ErrNil
+			} else {
+				return elements[0], nil
+			}
+		}
+	}
+
+	return nil, errors.New("zpopmin error: bad result reply")
+}

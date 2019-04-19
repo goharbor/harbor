@@ -173,9 +173,12 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 	}
 
 	// REM from redis db with transaction way
-	conn.Send("MULTI")
-	conn.Send("ZREMRANGEBYSCORE", rds.KeyPeriodicPolicy(bs.namespace), numericID, numericID) // Accurately remove the item with the specified score
-	conn.Send("PUBLISH", rds.KeyPeriodicNotification(bs.namespace), msgJSON)
+	err = conn.Send("MULTI")
+	err = conn.Send("ZREMRANGEBYSCORE", rds.KeyPeriodicPolicy(bs.namespace), numericID, numericID) // Accurately remove the item with the specified score
+	err = conn.Send("PUBLISH", rds.KeyPeriodicNotification(bs.namespace), msgJSON)
+	if err != nil {
+		return err
+	}
 	_, err = conn.Do("EXEC")
 	if err != nil {
 		return err
