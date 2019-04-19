@@ -233,9 +233,11 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	if err != nil {
 		return nil, err
 	}
+	log.Debugf("got %d namespaces", len(namespaces))
 	for _, ns := range namespaces {
 		page := 1
 		pageSize := 100
+		n := 0
 		for {
 			pageRepos, err := a.getRepos(ns.Name, "", page, pageSize)
 			if err != nil {
@@ -243,24 +245,26 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 			}
 			repos = append(repos, pageRepos.Repos...)
 
+			n += len(pageRepos.Repos)
 			if len(pageRepos.Next) == 0 {
 				break
 			}
+
 			page++
 		}
+		log.Debugf("got %d repositories for namespace %s", n, ns.Name)
 	}
 
-	log.Infof("%d repos found for namespaces: %v", len(repos), namespaces)
 	var resources []*model.Resource
 	// TODO(ChenDe): Get tags for repos in parallel
 	for _, repo := range repos {
+		name := fmt.Sprintf("%s/%s", repo.Namespace, repo.Name)
 		// If name filter set, skip repos that don't match the filter pattern.
 		if len(nameFilter) != 0 {
-			m, err := util.Match(nameFilter, repo.Name)
+			m, err := util.Match(nameFilter, name)
 			if err != nil {
-				return nil, fmt.Errorf("match repo name '%s' against pattern '%s' error: %v", repo.Name, nameFilter, err)
+				return nil, fmt.Errorf("match repo name '%s' against pattern '%s' error: %v", name, nameFilter, err)
 			}
-
 			if !m {
 				continue
 			}
@@ -305,7 +309,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 			Registry: a.registry,
 			Metadata: &model.ResourceMetadata{
 				Repository: &model.Repository{
-					Name: fmt.Sprintf("%s/%s", repo.Namespace, repo.Name),
+					Name: name,
 				},
 				Vtags: tags,
 			},

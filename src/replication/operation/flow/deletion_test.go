@@ -43,7 +43,7 @@ func TestRunOfDeletionFlow(t *testing.T) {
 			},
 		},
 	}
-	flow := NewDeletionFlow(executionMgr, scheduler, 1, policy, resources)
+	flow := NewDeletionFlow(executionMgr, scheduler, 1, policy, resources...)
 	n, err := flow.Run(nil)
 	require.Nil(t, err)
 	assert.Equal(t, 1, n)

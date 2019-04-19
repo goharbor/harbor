@@ -26,20 +26,23 @@ import (
 
 type copyFlow struct {
 	executionID  int64
+	resources    []*model.Resource
 	policy       *model.Policy
 	executionMgr execution.Manager
 	scheduler    scheduler.Scheduler
 }
 
 // NewCopyFlow returns an instance of the copy flow which replicates the resources from
-// the source registry to the destination registry
+// the source registry to the destination registry. If the parameter "resources" isn't provided,
+// will fetch the resources first
 func NewCopyFlow(executionMgr execution.Manager, scheduler scheduler.Scheduler,
-	executionID int64, policy *model.Policy) Flow {
+	executionID int64, policy *model.Policy, resources ...*model.Resource) Flow {
 	return &copyFlow{
 		executionMgr: executionMgr,
 		scheduler:    scheduler,
 		executionID:  executionID,
 		policy:       policy,
+		resources:    resources,
 	}
 }
 
@@ -48,16 +51,23 @@ func (c *copyFlow) Run(interface{}) (int, error) {
 	if err != nil {
 		return 0, err
 	}
-	srcResources, err := fetchResources(srcAdapter, c.policy)
+	var srcResources []*model.Resource
+	if len(c.resources) > 0 {
+		srcResources, err = filterResources(c.resources, c.policy.Filters)
+	} else {
+		srcResources, err = fetchResources(srcAdapter, c.policy)
+	}
 	if err != nil {
 		return 0, err
 	}
+
 	if len(srcResources) == 0 {
 		markExecutionSuccess(c.executionMgr, c.executionID, "no resources need to be replicated")
 		log.Infof("no resources need to be replicated for the execution %d, skip", c.executionID)
 		return 0, nil
 	}
 
+	srcResources = assembleSourceResources(srcResources, c.policy)
 	dstResources := assembleDestinationResources(srcResources, c.policy)
 
 	if err = prepareForPush(dstAdapter, dstResources); err != nil {
