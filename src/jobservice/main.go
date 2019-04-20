@@ -71,5 +71,7 @@ func main() {
 	})*/
 
 	// Start
-	runtime.JobService.LoadAndRun(ctx, cancel)
+	if err := runtime.JobService.LoadAndRun(ctx, cancel); err != nil {
+		logger.Fatal(err)
+	}
 }

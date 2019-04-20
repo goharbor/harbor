@@ -28,8 +28,10 @@ import (
 )
 
 const (
+	// Waiting a short while if any errors occurred
 	shortLoopInterval = 5 * time.Second
-	longLoopInterval  = 5 * time.Minute
+	// Waiting for long while if no retrying elements found
+	longLoopInterval = 5 * time.Minute
 )
 
 // Controller is designed to control the life cycle of the job
@@ -115,14 +117,17 @@ func (bc *basicController) loopForRestoreDeadStatus() {
 		<-token
 
 		if err := bc.restoreDeadStatus(); err != nil {
-			wait := shortLoopInterval
-			if err == redis.ErrNil {
+			waitInterval := shortLoopInterval
+			if err == rds.NoElementsError {
 				// No elements
-				wait = longLoopInterval
+				waitInterval = longLoopInterval
+			} else {
+				logger.Errorf("restore dead status error: %s, put it back to the retrying Q later again", err)
 			}
+
 			// wait for a while or be terminated
 			select {
-			case <-time.After(wait):
+			case <-time.After(waitInterval):
 			case <-bc.context.Done():
 				return
 			}

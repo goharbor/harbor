@@ -17,7 +17,7 @@ package hook
 import (
 	"context"
 	"encoding/json"
-	"errors"
+	"github.com/pkg/errors"
 	"math/rand"
 	"net/url"
 	"time"
@@ -26,9 +26,9 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/gomodule/redigo/redis"
-	"math"
 	"sync"
 )
 
@@ -40,10 +40,10 @@ const (
 	// The max time for expiring the retrying events
 	// 180 days
 	maxEventExpireTime = 3600 * 24 * 180
-	// Interval for retrying loop
-	retryInterval = 2 * time.Minute
-	// Number for splitting the event list to sub set for popping out
-	defaultShardNum = 3
+	// Waiting a short while if any errors occurred
+	shortLoopInterval = 5 * time.Second
+	// Waiting for long while if no retrying elements found
+	longLoopInterval = 5 * time.Minute
 )
 
 // Agent is designed to handle the hook events with reasonable numbers of concurrent threads
@@ -51,7 +51,9 @@ type Agent interface {
 	// Trigger hooks
 	Trigger(evt *Event) error
 	// Serves events now
-	Serve()
+	Serve() error
+	// Attach a job life cycle controller
+	Attach(ctl lcm.Controller)
 }
 
 // Event contains the hook URL and the data
@@ -91,6 +93,7 @@ type basicAgent struct {
 	context   context.Context
 	namespace string
 	client    Client
+	ctl       lcm.Controller
 	events    chan *Event
 	tokens    chan bool
 	redisPool *redis.Pool
@@ -115,6 +118,11 @@ func NewAgent(ctx *env.Context, ns string, redisPool *redis.Pool) Agent {
 	}
 }
 
+// Attach a job life cycle controller
+func (ba *basicAgent) Attach(ctl lcm.Controller) {
+	ba.ctl = ctl
+}
+
 // Trigger implements the same method of interface @Agent
 func (ba *basicAgent) Trigger(evt *Event) error {
 	if evt == nil {
@@ -133,12 +141,17 @@ func (ba *basicAgent) Trigger(evt *Event) error {
 // Start the basic agent
 // Termination depends on the system context
 // Blocking call
-func (ba *basicAgent) Serve() {
-	go ba.looplyRetry()
+func (ba *basicAgent) Serve() error {
+	if ba.ctl == nil {
+		return errors.New("nil life cycle controller of hook agent")
+	}
+
+	go ba.loopRetry()
 	logger.Info("Hook event retrying loop is started")
 	go ba.serve()
 	logger.Info("Basic hook agent is started")
 
+	return nil
 }
 
 func (ba *basicAgent) serve() {
@@ -167,15 +180,14 @@ func (ba *basicAgent) serve() {
 						// to the event channel of this node with reasonable backoff time.
 						logger.Errorf("Failed to push hook event to the retry queue: %s", err)
 
-						// Put to the event chan now
-						// In a separate goroutine to avoid occupying the token long time
-						go func() {
-							// As 'pushForRetry' has checked the timestamp and expired event
-							// will be directly discarded and nil error is returned, no need to
-							// check it again here.
-							<-time.After(time.Duration((rand.Int31n(60) + 5)) * time.Second)
-							ba.events <- evt
-						}()
+						// Put to the event chan after waiting for a reasonable while,
+						// waiting is important, it can avoid sending large scale failure expecting
+						// requests in a short while.
+						// As 'pushForRetry' has checked the timestamp and expired event
+						// will be directly discarded and nil error is returned, no need to
+						// check it again here.
+						<-time.After(time.Duration(rand.Int31n(55)+5) * time.Second)
+						ba.events <- evt
 					}
 				}
 			}(evt)
@@ -201,7 +213,7 @@ func (ba *basicAgent) pushForRetry(evt *Event) error {
 	now := time.Now().Unix()
 	if evt.Timestamp > 0 && now-evt.Timestamp >= maxEventExpireTime {
 		// Expired, do not need to push back to the retry queue
-		logger.Warningf("Event is expired: %s\n", rawJSON)
+		logger.Warningf("Event is expired: %s", rawJSON)
 
 		return nil
 	}
@@ -224,7 +236,7 @@ func (ba *basicAgent) pushForRetry(evt *Event) error {
 	return nil
 }
 
-func (ba *basicAgent) looplyRetry() {
+func (ba *basicAgent) loopRetry() {
 	defer func() {
 		logger.Info("Hook event retrying loop exit")
 		ba.wg.Done()
@@ -232,93 +244,81 @@ func (ba *basicAgent) looplyRetry() {
 
 	ba.wg.Add(1)
 
-	// Append random seconds to avoid working in the same time slot
-	tk := time.NewTicker(retryInterval + time.Duration(rand.Int31n(13)+3)*time.Second)
-	defer tk.Stop()
+	token := make(chan bool, 1)
+	token <- true
 
 	for {
-		select {
-		case <-tk.C:
-			if err := ba.popMinOnes(); err != nil {
-				logger.Errorf("Retrying to send hook events failed with error: %s", err.Error())
+		<-token
+		if err := ba.reSend(); err != nil {
+			waitInterval := shortLoopInterval
+			if err == rds.NoElementsError {
+				// No elements
+				waitInterval = longLoopInterval
+			} else {
+				logger.Errorf("Resend hook event error: %s", err.Error())
 			}
-		case <-ba.context.Done():
-			return
+
+			select {
+			case <-time.After(waitInterval):
+				// Just wait, do nothing
+			case <-ba.context.Done():
+				/// Terminated
+				return
+			}
 		}
+
+		// Put token back
+		token <- true
 	}
 }
 
-func (ba *basicAgent) popMinOnes() error {
+func (ba *basicAgent) reSend() error {
+	evt, err := ba.popMinOne()
+	if err != nil {
+		return err
+	}
+
+	jobID, status, err := extractJobID(evt.Data)
+	if err != nil {
+		return err
+	}
+
+	t, err := ba.ctl.Track(jobID)
+	if err != nil {
+		return err
+	}
+
+	diff := status.Compare(job.Status(t.Job().Info.Status))
+	if diff > 0 ||
+		(diff == 0 && t.Job().Info.CheckIn != evt.Data.CheckIn) {
+		ba.events <- evt
+		return nil
+	}
+
+	return errors.Errorf("outdated hook event: %s, latest job status: %s", evt.Message, t.Job().Info.Status)
+}
+
+func (ba *basicAgent) popMinOne() (*Event, error) {
 	conn := ba.redisPool.Get()
 	defer conn.Close()
 
 	key := rds.KeyHookEventRetryQueue(ba.namespace)
-	// Get total events
-	total, err := redis.Int(conn.Do("ZCARD", key))
+	minOne, err := rds.ZPopMin(conn, key)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	// Get sharding ones
-	poppedNum := math.Ceil(float64(total) / float64(defaultShardNum))
-	rawContent, err := redis.Values(conn.Do("ZPOPMIN", key, poppedNum))
-	if err != nil {
-		return err
+	rawEvent, ok := minOne.([]byte)
+	if !ok {
+		return nil, errors.New("bad request: non bytes slice for raw event")
 	}
 
-	for i, l := 0, len(rawContent); i < l; i = i + 2 {
-		rawEvent := rawContent[i].([]byte)
-		evt := &Event{}
-
-		if err := evt.Deserialize(rawEvent); err != nil {
-			// Partially failed
-			logger.Warningf("Invalid event data when retrying to send hook event: %s", err.Error())
-			continue
-		}
-
-		// Compare with current job status if it is still valid hook events
-		// If it is already out of date, then directly discard it
-		// If it is still valid, then retry to send it
-		// Get the current status of job
-		jobID, status, err := extractJobID(evt.Data)
-		if err != nil {
-			logger.Warning(err.Error())
-			continue
-		}
-
-		latestStatus, err := ba.getJobStatus(jobID)
-		if err != nil {
-			logger.Warning(err.Error())
-			continue
-		}
-
-		if status.Compare(latestStatus) < 0 {
-			// Already out of date
-			logger.Debugf("Abandon out dated status update retrying action: %s", evt.Message)
-			continue
-		}
-
-		// Put to the event chan for sending with a separate goroutine to avoid long time
-		// waiting
-		go func(evt *Event) {
-			ba.events <- evt
-		}(evt)
+	evt := &Event{}
+	if err := evt.Deserialize(rawEvent); err != nil {
+		return nil, err
 	}
 
-	return nil
-}
-
-func (ba *basicAgent) getJobStatus(jobID string) (job.Status, error) {
-	conn := ba.redisPool.Get()
-	defer conn.Close()
-
-	key := rds.KeyJobStats(ba.namespace, jobID)
-	status, err := redis.String(conn.Do("HGET", key, "status"))
-	if err != nil {
-		return job.PendingStatus, err
-	}
-
-	return job.Status(status), nil
+	return evt, nil
 }
 
 // Extract the job ID and status from the event data field
@@ -333,5 +333,5 @@ func extractJobID(data *job.StatusChange) (string, job.Status, error) {
 		}
 	}
 
-	return "", "", errors.New("invalid job status change data to extract job ID")
+	return "", "", errors.New("malform job status change data")
 }

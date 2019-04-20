@@ -39,6 +39,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
 	"github.com/gomodule/redigo/redis"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -65,7 +66,7 @@ func (bs *Bootstrap) SetJobContextInitializer(initializer job.ContextInitializer
 
 // LoadAndRun will load configurations, initialize components and then start the related process to serve requests.
 // Return error if meet any problems.
-func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) {
+func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) (err error) {
 	rootContext := &env.Context{
 		SystemContext: ctx,
 		WG:            &sync.WaitGroup{},
@@ -74,10 +75,9 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 
 	// Build specified job context
 	if bs.jobConextInitializer != nil {
-		if jobCtx, err := bs.jobConextInitializer(ctx); err == nil {
-			rootContext.JobContext = jobCtx
-		} else {
-			logger.Fatalf("Failed to initialize job context: %s\n", err)
+		rootContext.JobContext, err = bs.jobConextInitializer(ctx)
+		if err != nil {
+			return errors.Errorf("initialize job context error: %s", err)
 		}
 	}
 
@@ -87,7 +87,6 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 	var (
 		backendWorker worker.Interface
 		lcmCtl        lcm.Controller
-		wErr          error
 	)
 	if cfg.PoolConfig.Backend == config.JobServicePoolBackendRedis {
 		// Number of workers
@@ -118,20 +117,31 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		lcmCtl = lcm.NewController(rootContext, namespace, redisPool, hookCallback)
 
 		// Start the backend worker
-		backendWorker, wErr = bs.loadAndRunRedisWorkerPool(rootContext, namespace, workerNum, redisPool, lcmCtl)
-		if wErr != nil {
-			logger.Fatalf("Failed to load and run worker: %s\n", wErr.Error())
+		backendWorker, err = bs.loadAndRunRedisWorkerPool(
+			rootContext,
+			namespace,
+			workerNum,
+			redisPool,
+			lcmCtl,
+		)
+		if err != nil {
+			return errors.Errorf("load and run worker error: %s", err)
 		}
 
 		// Run daemon process of life cycle controller
 		// Ignore returned error
-		lcmCtl.Serve()
+		if err = lcmCtl.Serve(); err != nil {
+			return errors.Errorf("start life cycle controller error: %s", err)
+		}
 
 		// Start agent
 		// Non blocking call
-		hookAgent.Serve()
+		hookAgent.Attach(lcmCtl)
+		if err = hookAgent.Serve(); err != nil {
+			return errors.Errorf("start hook agent error: %s", err)
+		}
 	} else {
-		logger.Fatalf("Worker worker backend '%s' is not supported", cfg.PoolConfig.Backend)
+		return errors.Errorf("worker backend '%s' is not supported", cfg.PoolConfig.Backend)
 	}
 
 	// Initialize controller
@@ -146,8 +156,9 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 	go func(errChan chan error) {
 		defer func() {
 			// Gracefully shutdown
-			if err := apiServer.Stop(); err != nil {
-				logger.Error(err)
+			// Error happened here should not override the outside error
+			if er := apiServer.Stop(); er != nil {
+				logger.Error(er)
 			}
 			// Notify others who're listening to the system context
 			cancel()
@@ -157,8 +168,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		case <-sig:
 			terminated = true
 			return
-		case err := <-errChan:
-			logger.Errorf("error received from error chan: %s", err)
+		case err = <-errChan:
 			return
 		}
 	}(rootContext.ErrorChan)
@@ -166,10 +176,10 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 	node := ctx.Value(utils.NodeID)
 	// Blocking here
 	logger.Infof("API server is serving at %d with [%s] mode at node [%s]", cfg.Port, cfg.Protocol, node)
-	if err := apiServer.Start(); err != nil {
+	if er := apiServer.Start(); er != nil {
 		if !terminated {
 			// Tell the listening goroutine
-			rootContext.ErrorChan <- err
+			rootContext.ErrorChan <- er
 		}
 	} else {
 		// In case
@@ -178,6 +188,8 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 
 	// Wait everyone exit
 	rootContext.WG.Wait()
+
+	return
 }
 
 // Load and run the API server.
