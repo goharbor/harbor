@@ -251,7 +251,7 @@ func (ba *basicAgent) loopRetry() {
 		<-token
 		if err := ba.reSend(); err != nil {
 			waitInterval := shortLoopInterval
-			if err == rds.NoElementsError {
+			if err == rds.ErrNoElements {
 				// No elements
 				waitInterval = longLoopInterval
 			} else {

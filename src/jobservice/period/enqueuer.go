@@ -187,7 +187,6 @@ func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
 		// Add extra argument for job running
 		// Notes: Only for system using
 		wJobParams[PeriodicExecutionMark] = true
-
 		for t := schedule.Next(nowTime); t.Before(horizon); t = schedule.Next(t) {
 			epoch := t.Unix()
 
@@ -288,7 +287,7 @@ func (e *enqueuer) shouldEnqueue() bool {
 	shouldEnq := false
 	lastEnqueue, err := redis.Int64(conn.Do("GET", rds.RedisKeyLastPeriodicEnqueue(e.namespace)))
 	if err != nil {
-		if err != redis.ErrNil {
+		if err.Error() != redis.ErrNil.Error() {
 			// Logged error
 			logger.Errorf("get timestamp of last enqueue error: %s", err)
 		}
@@ -304,10 +303,11 @@ func (e *enqueuer) shouldEnqueue() bool {
 		// Set last periodic enqueue timestamp
 		if _, err := conn.Do("SET", rds.RedisKeyLastPeriodicEnqueue(e.namespace), time.Now().Unix()); err != nil {
 			logger.Errorf("set last periodic enqueue timestamp error: %s", err)
-			// Anyway the action should be enforced
-			// The negative effect of this failure is just more re-enqueues by other nodes
-			return true
 		}
+
+		// Anyway the action should be enforced
+		// The negative effect of this failure is just more re-enqueues by other nodes
+		return true
 	}
 
 	return false

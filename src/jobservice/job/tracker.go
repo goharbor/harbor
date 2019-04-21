@@ -17,7 +17,6 @@ package job
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
@@ -121,8 +120,8 @@ type basicTracker struct {
 
 // NewBasicTrackerWithID builds a tracker with the provided job ID
 func NewBasicTrackerWithID(
-	jobID string,
 	ctx context.Context,
+	jobID string,
 	ns string,
 	pool *redis.Pool,
 	callback HookCallback,
@@ -138,8 +137,8 @@ func NewBasicTrackerWithID(
 
 // NewBasicTrackerWithStats builds a tracker with the provided job stats
 func NewBasicTrackerWithStats(
-	stats *Stats,
 	ctx context.Context,
+	stats *Stats,
 	ns string,
 	pool *redis.Pool,
 	callback HookCallback,
@@ -314,9 +313,13 @@ func (bt *basicTracker) Expire() error {
 // Run job
 // Either one is failed, the final return will be marked as failed.
 func (bt *basicTracker) Run() error {
-	bt.refresh(RunningStatus)
-	err := bt.fireHookEvent(RunningStatus)
-	err = bt.compareAndSet(RunningStatus)
+	err := bt.compareAndSet(RunningStatus)
+	if !errs.IsStatusMismatchError(err) {
+		bt.refresh(RunningStatus)
+		if er := bt.fireHookEvent(RunningStatus); err == nil && er != nil {
+			return er
+		}
+	}
 
 	return err
 }
@@ -325,9 +328,13 @@ func (bt *basicTracker) Run() error {
 // Stop is final status, if failed to do, retry should be enforced.
 // Either one is failed, the final return will be marked as failed.
 func (bt *basicTracker) Stop() error {
-	bt.refresh(StoppedStatus)
-	err := bt.fireHookEvent(StoppedStatus)
-	err = bt.UpdateStatusWithRetry(StoppedStatus)
+	err := bt.UpdateStatusWithRetry(StoppedStatus)
+	if !errs.IsStatusMismatchError(err) {
+		bt.refresh(StoppedStatus)
+		if er := bt.fireHookEvent(StoppedStatus); err == nil && er != nil {
+			return er
+		}
+	}
 
 	return err
 }
@@ -336,9 +343,13 @@ func (bt *basicTracker) Stop() error {
 // Fail is final status, if failed to do, retry should be enforced.
 // Either one is failed, the final return will be marked as failed.
 func (bt *basicTracker) Fail() error {
-	bt.refresh(ErrorStatus)
-	err := bt.fireHookEvent(ErrorStatus)
-	err = bt.UpdateStatusWithRetry(ErrorStatus)
+	err := bt.UpdateStatusWithRetry(ErrorStatus)
+	if !errs.IsStatusMismatchError(err) {
+		bt.refresh(ErrorStatus)
+		if er := bt.fireHookEvent(ErrorStatus); err == nil && er != nil {
+			return er
+		}
+	}
 
 	return err
 }
@@ -347,9 +358,13 @@ func (bt *basicTracker) Fail() error {
 // Succeed is final status, if failed to do, retry should be enforced.
 // Either one is failed, the final return will be marked as failed.
 func (bt *basicTracker) Succeed() error {
-	bt.refresh(SuccessStatus)
-	err := bt.fireHookEvent(SuccessStatus)
-	err = bt.UpdateStatusWithRetry(SuccessStatus)
+	err := bt.UpdateStatusWithRetry(SuccessStatus)
+	if !errs.IsStatusMismatchError(err) {
+		bt.refresh(SuccessStatus)
+		if er := bt.fireHookEvent(SuccessStatus); err == nil && er != nil {
+			return er
+		}
+	}
 
 	return err
 }
@@ -446,12 +461,15 @@ func (bt *basicTracker) Save() (err error) {
 func (bt *basicTracker) UpdateStatusWithRetry(targetStatus Status) error {
 	err := bt.compareAndSet(targetStatus)
 	if err != nil {
-		// Push to the retrying Q
-		if er := bt.pushToQueueForRetry(targetStatus); er != nil {
-			logger.Errorf("push job status update request to retry queue error: %s", er)
-			// If failed to put it into the retrying Q in case, let's downgrade to retry in current process
-			// by recursively call in goroutines.
-			bt.retryUpdateStatus(targetStatus)
+		// Status mismatching error will be ignored
+		if !errs.IsStatusMismatchError(err) {
+			// Push to the retrying Q
+			if er := bt.pushToQueueForRetry(targetStatus); er != nil {
+				logger.Errorf("push job status update request to retry queue error: %s", er)
+				// If failed to put it into the retrying Q in case, let's downgrade to retry in current process
+				// by recursively call in goroutines.
+				bt.retryUpdateStatus(targetStatus)
+			}
 		}
 	}
 
@@ -550,7 +568,7 @@ func (bt *basicTracker) compareAndSet(targetStatus Status) error {
 
 	diff := st.Compare(targetStatus)
 	if diff > 0 {
-		return fmt.Errorf("mismatch job status: current %s, setting to %s", st, targetStatus)
+		return errs.StatusMismatchError(st.String(), targetStatus.String())
 	}
 	if diff == 0 {
 		// Desired matches actual

@@ -84,7 +84,7 @@ func (bc *basicController) New(stats *job.Stats) (job.Tracker, error) {
 		return nil, errors.Errorf("error occurred when creating job tracker: %s", err)
 	}
 
-	bt := job.NewBasicTrackerWithStats(stats, bc.context, bc.namespace, bc.pool, bc.callback)
+	bt := job.NewBasicTrackerWithStats(bc.context, stats, bc.namespace, bc.pool, bc.callback)
 	if err := bt.Save(); err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func (bc *basicController) New(stats *job.Stats) (job.Tracker, error) {
 
 // Track and attache with the job
 func (bc *basicController) Track(jobID string) (job.Tracker, error) {
-	bt := job.NewBasicTrackerWithID(jobID, bc.context, bc.namespace, bc.pool, bc.callback)
+	bt := job.NewBasicTrackerWithID(bc.context, jobID, bc.namespace, bc.pool, bc.callback)
 	if err := bt.Load(); err != nil {
 		return nil, err
 	}
@@ -118,7 +118,7 @@ func (bc *basicController) loopForRestoreDeadStatus() {
 
 		if err := bc.restoreDeadStatus(); err != nil {
 			waitInterval := shortLoopInterval
-			if err == rds.NoElementsError {
+			if err == rds.ErrNoElements {
 				// No elements
 				waitInterval = longLoopInterval
 			} else {

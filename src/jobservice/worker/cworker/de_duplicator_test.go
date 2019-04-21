@@ -12,7 +12,7 @@ func TestDeDuplicator(t *testing.T) {
 		"image": "ubuntu:latest",
 	}
 
-	rdd := NewDeDuplicator(tests.GiveMeTestNamespace(), rPool)
+	rdd := NewDeDuplicator(tests.GiveMeTestNamespace(), tests.GiveMeRedisPool())
 
 	if err := rdd.MustUnique(jobName, jobParams); err != nil {
 		t.Error(err)

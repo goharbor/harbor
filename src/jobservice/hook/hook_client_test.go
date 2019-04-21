@@ -14,58 +14,92 @@
 package hook
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 )
 
-var testClient = NewClient()
+// HookClientTestSuite tests functions of hook client
+type HookClientTestSuite struct {
+	suite.Suite
 
-func TestHookClient(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Fprintln(w, "ok")
-	}))
-	defer ts.Close()
-
-	changeData := &job.StatusChange{
-		JobID:  "fake_job_ID",
-		Status: "running",
-	}
-	evt := &Event{
-		URL:       ts.URL,
-		Data:      changeData,
-		Message:   fmt.Sprintf("Status of job %s changed to: %s", changeData.JobID, changeData.Status),
-		Timestamp: time.Now().Unix(),
-	}
-	err := testClient.SendEvent(evt)
-	if err != nil {
-		t.Fatal(err)
-	}
+	mockServer *httptest.Server
+	client     Client
 }
 
-func TestReportStatusFailed(t *testing.T) {
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(http.StatusInternalServerError)
-		w.Write([]byte("failed"))
-	}))
-	defer ts.Close()
+// SetupSuite prepares test suite
+func (suite *HookClientTestSuite) SetupSuite() {
+	suite.client = NewClient(context.Background())
+	suite.mockServer = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		bytes, err := ioutil.ReadAll(r.Body)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
 
+		m := &Event{}
+		err = json.Unmarshal(bytes, m)
+		if err != nil {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		if m.Data.JobID == "job_ID_failed" {
+			w.WriteHeader(http.StatusInternalServerError)
+			return
+		}
+
+		fmt.Fprintln(w, "ok")
+	}))
+}
+
+// TearDownSuite clears test suite
+func (suite *HookClientTestSuite) TearDownSuite() {
+	suite.mockServer.Close()
+}
+
+// TestHookClientTestSuite is entry of go test
+func TestHookClientTestSuite(t *testing.T) {
+	suite.Run(t, new(HookClientTestSuite))
+}
+
+// TestHookClient ...
+func (suite *HookClientTestSuite) TestHookClient() {
 	changeData := &job.StatusChange{
 		JobID:  "fake_job_ID",
 		Status: "running",
 	}
 	evt := &Event{
-		URL:       ts.URL,
+		URL:       suite.mockServer.URL,
+		Data:      changeData,
+		Message:   fmt.Sprintf("Status of job %s changed to: %s", changeData.JobID, changeData.Status),
+		Timestamp: time.Now().Unix(),
+	}
+	err := suite.client.SendEvent(evt)
+	assert.Nil(suite.T(), err, "send event: nil error expected but got %s", err)
+}
+
+// TestReportStatusFailed ...
+func (suite *HookClientTestSuite) TestReportStatusFailed() {
+	changeData := &job.StatusChange{
+		JobID:  "job_ID_failed",
+		Status: "running",
+	}
+	evt := &Event{
+		URL:       suite.mockServer.URL,
 		Data:      changeData,
 		Message:   fmt.Sprintf("Status of job %s changed to: %s", changeData.JobID, changeData.Status),
 		Timestamp: time.Now().Unix(),
 	}
 
-	err := testClient.SendEvent(evt)
-	if err == nil {
-		t.Fatal("expect error but got nil")
-	}
+	err := suite.client.SendEvent(evt)
+	assert.NotNil(suite.T(), err, "send event: expected non nil error but got nil")
 }

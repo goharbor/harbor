@@ -53,6 +53,8 @@ const (
 	GetScheduledJobsErrorCode
 	// GetPeriodicExecutionErrorCode is code for the error of getting periodic executions
 	GetPeriodicExecutionErrorCode
+	// StatusMismatchErrorCode is code for the error of mismatching status
+	StatusMismatchErrorCode
 )
 
 // baseError ...
@@ -193,20 +195,54 @@ func BadRequestError(object interface{}) error {
 	}
 }
 
+// statusMismatchError is designed for the case of job status update mismatching
+type statusMismatchError struct {
+	baseError
+}
+
+// StatusMismatchError returns the error of job status mismatching
+func StatusMismatchError(current, target string) error {
+	return statusMismatchError{
+		baseError{
+			Code:        StatusMismatchErrorCode,
+			Err:         "mismatch job status",
+			Description: fmt.Sprintf("current %s, setting to %s", current, target),
+		},
+	}
+}
+
 // IsObjectNotFoundError return true if the error is objectNotFoundError
 func IsObjectNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
 	_, ok := err.(objectNotFoundError)
 	return ok
 }
 
 // IsConflictError returns true if the error is conflictError
 func IsConflictError(err error) bool {
+	if err == nil {
+		return false
+	}
 	_, ok := err.(conflictError)
 	return ok
 }
 
 // IsBadRequestError returns true if the error is badRequestError
 func IsBadRequestError(err error) bool {
+	if err == nil {
+		return false
+	}
 	_, ok := err.(badRequestError)
+	return ok
+}
+
+// IsStatusMismatchError returns true if the error is statusMismatchError
+func IsStatusMismatchError(err error) bool {
+	if err == nil {
+		return false
+	}
+	_, ok := err.(statusMismatchError)
 	return ok
 }

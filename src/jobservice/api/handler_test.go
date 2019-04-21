@@ -18,329 +18,309 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/common/query"
+	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/worker"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
 	"os"
 	"strings"
-	"sync"
 	"testing"
 	"time"
-
-	"github.com/goharbor/harbor/src/jobservice/env"
-	"github.com/goharbor/harbor/src/jobservice/models"
 )
 
-const fakeSecret = "I'mfakesecret"
+const (
+	secretKey  = "CORE_SECRET"
+	fakeSecret = "I'mfakesecret"
+)
 
-var testingAuthProvider = &SecretAuthenticator{}
-var testingHandler = NewDefaultHandler(&fakeController{})
-var testingRouter = NewBaseRouter(testingHandler, testingAuthProvider)
-var client = &http.Client{
-	Timeout: 10 * time.Second,
-	Transport: &http.Transport{
-		MaxIdleConns:    20,
-		IdleConnTimeout: 30 * time.Second,
-	},
+// APIHandlerTestSuite tests functions of API handler
+type APIHandlerTestSuite struct {
+	suite.Suite
+
+	server     *Server
+	controller *fakeController
+	APIAddr    string
+	client     *http.Client
+	cancel     context.CancelFunc
 }
 
-func TestUnAuthorizedAccess(t *testing.T) {
-	exportUISecret("hello")
+// SetupSuite prepares test suite
+func (suite *APIHandlerTestSuite) SetupSuite() {
+	os.Setenv(secretKey, fakeSecret)
 
-	server, port, ctx := createServer()
-	server.Start()
-	<-time.After(200 * time.Millisecond)
-
-	res, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job", port))
-	if e := expectFormatedError(res, err); e != nil {
-		t.Fatal(e)
-	}
-	if strings.Index(err.Error(), "401") == -1 {
-		t.Fatalf("expect '401' but got none 401 error")
-	}
-
-	server.Stop()
-	ctx.WG.Wait()
-}
-
-func TestLaunchJobFailed(t *testing.T) {
-	exportUISecret(fakeSecret)
-
-	server, port, ctx := createServer()
-	server.Start()
-	<-time.After(200 * time.Millisecond)
-
-	resData, err := postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs", port), createJobReq(false))
-	if e := expectFormatedError(resData, err); e != nil {
-		t.Error(e)
-	}
-
-	server.Stop()
-	ctx.WG.Wait()
-}
-
-func TestLaunchJobSucceed(t *testing.T) {
-	exportUISecret(fakeSecret)
-
-	server, port, ctx := createServer()
-	server.Start()
-	<-time.After(200 * time.Millisecond)
-
-	res, err := postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs", port), createJobReq(true))
-	if err != nil {
-		t.Fatal(err)
-	}
-	obj, err := getResult(res)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if obj.Stats.JobID != "fake_ID_ok" {
-		t.Fatalf("expect job ID 'fake_ID_ok' but got '%s'\n", obj.Stats.JobID)
-	}
-
-	server.Stop()
-	ctx.WG.Wait()
-}
-
-func TestGetJobFailed(t *testing.T) {
-	exportUISecret(fakeSecret)
-
-	server, port, ctx := createServer()
-	server.Start()
-	<-time.After(200 * time.Millisecond)
-
-	res, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job", port))
-	if e := expectFormatedError(res, err); e != nil {
-		t.Fatal(e)
-	}
-
-	server.Stop()
-	ctx.WG.Wait()
-}
-
-func TestGetJobSucceed(t *testing.T) {
-	exportUISecret(fakeSecret)
-
-	server, port, ctx := createServer()
-	server.Start()
-	<-time.After(200 * time.Millisecond)
-
-	res, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job_ok", port))
-	if err != nil {
-		t.Fatal(err)
-	}
-	obj, err := getResult(res)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if obj.Stats.JobName != "testing" || obj.Stats.JobID != "fake_ID_ok" {
-		t.Fatalf("expect job ID 'fake_ID_ok' of 'testing', but got '%s'\n", obj.Stats.JobID)
-	}
-
-	server.Stop()
-	ctx.WG.Wait()
-}
-
-func TestJobActionFailed(t *testing.T) {
-	exportUISecret(fakeSecret)
-
-	server, port, ctx := createServer()
-	server.Start()
-	<-time.After(200 * time.Millisecond)
-
-	actionReq, err := createJobActionReq("stop")
-	if err != nil {
-		t.Fatal(err)
-	}
-	resData, err := postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job", port), actionReq)
-	expectFormatedError(resData, err)
-
-	actionReq, err = createJobActionReq("cancel")
-	if err != nil {
-		t.Fatal(err)
-	}
-	resData, err = postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job", port), actionReq)
-	expectFormatedError(resData, err)
-
-	actionReq, err = createJobActionReq("retry")
-	if err != nil {
-		t.Fatal(err)
-	}
-	resData, err = postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job", port), actionReq)
-	expectFormatedError(resData, err)
-
-	server.Stop()
-	ctx.WG.Wait()
-}
-
-func TestJobActionSucceed(t *testing.T) {
-	exportUISecret(fakeSecret)
-
-	server, port, ctx := createServer()
-	server.Start()
-	<-time.After(200 * time.Millisecond)
-
-	actionReq, err := createJobActionReq("stop")
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job_ok", port), actionReq)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	actionReq, err = createJobActionReq("cancel")
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job_ok", port), actionReq)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	actionReq, err = createJobActionReq("retry")
-	if err != nil {
-		t.Fatal(err)
-	}
-	_, err = postReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job_ok", port), actionReq)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	server.Stop()
-	ctx.WG.Wait()
-}
-
-func TestCheckStatus(t *testing.T) {
-	exportUISecret(fakeSecret)
-
-	server, port, ctx := createServer()
-	server.Start()
-	<-time.After(200 * time.Millisecond)
-
-	resData, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/stats", port))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	poolStats := &models.JobPoolStats{
-		Pools: make([]*models.JobPoolStatsData, 0),
-	}
-	err = json.Unmarshal(resData, poolStats)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if poolStats.Pools[0].WorkerPoolID != "fake_pool_ID" {
-		t.Fatalf("expect worker ID 'fake_pool_ID' but got '%s'", poolStats.Pools[0].WorkerPoolID)
-	}
-
-	server.Stop()
-	ctx.WG.Wait()
-}
-
-func TestGetJobLogInvalidID(t *testing.T) {
-	exportUISecret(fakeSecret)
-
-	server, port, ctx := createServer()
-	server.Start()
-	<-time.After(200 * time.Millisecond)
-
-	_, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/%%2F..%%2Fpasswd/log", port))
-	if err == nil || strings.Contains(err.Error(), "400") {
-		t.Fatalf("Expected 400 error but got: %v", err)
-	}
-
-	server.Stop()
-	ctx.WG.Wait()
-}
-
-func TestGetJobLog(t *testing.T) {
-	exportUISecret(fakeSecret)
-
-	server, port, ctx := createServer()
-	server.Start()
-	<-time.After(200 * time.Millisecond)
-
-	resData, err := getReq(fmt.Sprintf("http://localhost:%d/api/v1/jobs/fake_job_ok/log", port))
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if len(resData) == 0 {
-		t.Fatal("expect job log but got nothing")
-	}
-
-	server.Stop()
-	ctx.WG.Wait()
-}
-
-func expectFormatedError(data []byte, err error) error {
-	if err == nil {
-		return errors.New("expect error but got nil")
-	}
-
-	if err != nil && len(data) <= 0 {
-		return errors.New("expect error but got nothing")
-	}
-
-	if err != nil && len(data) > 0 {
-		var m = make(map[string]interface{})
-		if err := json.Unmarshal(data, &m); err != nil {
-			return err
-		}
-
-		if _, ok := m["code"]; !ok {
-			return errors.New("malformated error")
-		}
-	}
-
-	return nil
-}
-
-func createJobReq(ok bool) []byte {
-	params := make(map[string]interface{})
-	params["image"] = "testing:v1"
-	name := "fake_job_ok"
-	if !ok {
-		name = "fake_job_error"
-	}
-	req := &models.JobRequest{
-		Job: &models.JobData{
-			Name:       name,
-			Parameters: params,
-			Metadata: &models.JobMetadata{
-				JobKind:  "Periodic",
-				Cron:     "5 * * * * *",
-				IsUnique: true,
-			},
-			StatusHook: "http://localhost:39999",
+	suite.client = &http.Client{
+		Timeout: 10 * time.Second,
+		Transport: &http.Transport{
+			MaxIdleConns:    20,
+			IdleConnTimeout: 30 * time.Second,
 		},
 	}
 
-	data, _ := json.Marshal(req)
-	return data
+	suite.createServer()
+
+	go suite.server.Start()
+	<-time.After(200 * time.Millisecond)
 }
 
-func createJobActionReq(action string) ([]byte, error) {
-	actionReq := models.JobActionRequest{
-		Action: action,
+// TearDownSuite clears test suite
+func (suite *APIHandlerTestSuite) TearDownSuite() {
+	os.Unsetenv(secretKey)
+	suite.server.Stop()
+	suite.cancel()
+}
+
+// TestAPIHandlerTestSuite is suite entry for 'go test'
+func TestAPIHandlerTestSuite(t *testing.T) {
+	suite.Run(t, new(APIHandlerTestSuite))
+}
+
+// TestUnAuthorizedAccess ...
+func (suite *APIHandlerTestSuite) TestUnAuthorizedAccess() {
+	os.Unsetenv(secretKey)
+	defer func() {
+		os.Setenv(secretKey, fakeSecret)
+	}()
+
+	_, code := suite.getReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job"))
+	assert.Equal(suite.T(), 401, code, "expect '401' but got none 401 error")
+}
+
+// TestLaunchJobFailed ...
+func (suite *APIHandlerTestSuite) TestLaunchJobFailed() {
+	req := createJobReq()
+	bytes, _ := json.Marshal(req)
+
+	fc1 := &fakeController{}
+	fc1.On("LaunchJob", req).Return(nil, errs.BadRequestError(req.Job.Name))
+	suite.controller = fc1
+	_, code := suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs"), bytes)
+	assert.Equal(suite.T(), 400, code, "expect 400 bad request but got %d", code)
+
+	fc2 := &fakeController{}
+	fc2.On("LaunchJob", req).Return(nil, errs.ConflictError(req.Job.Name))
+	suite.controller = fc2
+	_, code = suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs"), bytes)
+	assert.Equal(suite.T(), 409, code, "expect 409 conflict but got %d", code)
+
+	fc3 := &fakeController{}
+	fc3.On("LaunchJob", req).Return(nil, errs.LaunchJobError(errors.New("testing launch job")))
+	suite.controller = fc3
+	_, code = suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs"), bytes)
+	assert.Equal(suite.T(), 500, code, "expect 500 internal server error but got %d", code)
+}
+
+// TestLaunchJobSucceed ...
+func (suite *APIHandlerTestSuite) TestLaunchJobSucceed() {
+	req := createJobReq()
+	bytes, _ := json.Marshal(req)
+
+	fc := &fakeController{}
+	fc.On("LaunchJob", req).Return(createJobStats("sample", "Generic", ""), nil)
+	suite.controller = fc
+
+	_, code := suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs"), bytes)
+	assert.Equal(suite.T(), 202, code, "expected 202 created but got %d when launching job", code)
+}
+
+// TestGetJobFailed ...
+func (suite *APIHandlerTestSuite) TestGetJobFailed() {
+	fc := &fakeController{}
+	fc.On("GetJob", "fake_job_ID").Return(nil, errs.NoObjectFoundError("fake_job_ID"))
+	suite.controller = fc
+
+	_, code := suite.getReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID"))
+	assert.Equal(suite.T(), 404, code, "expected 404 not found but got %d when getting job", code)
+}
+
+// TestGetJobSucceed ...
+func (suite *APIHandlerTestSuite) TestGetJobSucceed() {
+	fc := &fakeController{}
+	fc.On("GetJob", "fake_job_ID").Return(createJobStats("sample", "Generic", ""), nil)
+	suite.controller = fc
+
+	res, code := suite.getReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID"))
+	require.Equal(suite.T(), 200, code, "expected 200 ok but got %d when getting job", code)
+	stats, err := getResult(res)
+	require.Nil(suite.T(), err, "no error should be occurred when unmarshal job stats")
+	assert.Equal(suite.T(), "fake_job_ID", stats.Info.JobID, "expected job ID 'fake_job_ID' but got %s", stats.Info.JobID)
+}
+
+// TestJobActionFailed ...
+func (suite *APIHandlerTestSuite) TestJobActionFailed() {
+	actionReq := createJobActionReq("not-support")
+	data, _ := json.Marshal(actionReq)
+	_, code := suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID"), data)
+	assert.Equal(suite.T(), 501, code, "expected 501 not implemented but got %d", code)
+
+	fc1 := &fakeController{}
+	fc1.On("StopJob", "fake_job_ID_not").Return(errs.NoObjectFoundError("fake_job_ID_not"))
+	suite.controller = fc1
+	actionReq = createJobActionReq("stop")
+	data, _ = json.Marshal(actionReq)
+	_, code = suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID_not"), data)
+	assert.Equal(suite.T(), 404, code, "expected 404 not found but got %d", code)
+
+	fc2 := &fakeController{}
+	fc2.On("StopJob", "fake_job_ID").Return(errs.BadRequestError("fake_job_ID"))
+	suite.controller = fc2
+	_, code = suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID"), data)
+	assert.Equal(suite.T(), 400, code, "expected 400 bad request but got %d", code)
+
+	fc3 := &fakeController{}
+	fc3.On("StopJob", "fake_job_ID").Return(errs.StopJobError(errors.New("testing error")))
+	suite.controller = fc3
+	_, code = suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID"), data)
+	assert.Equal(suite.T(), 500, code, "expected 500 internal server but got %d", code)
+}
+
+// TestJobActionSucceed ...
+func (suite *APIHandlerTestSuite) TestJobActionSucceed() {
+	fc := &fakeController{}
+	fc.On("StopJob", "fake_job_ID_not").Return(nil)
+	suite.controller = fc
+	actionReq := createJobActionReq("stop")
+	data, _ := json.Marshal(actionReq)
+	_, code := suite.postReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID_not"), data)
+	assert.Equal(suite.T(), 204, code, "expected 204 no content but got %d", code)
+}
+
+// TestCheckStatus ...
+func (suite *APIHandlerTestSuite) TestCheckStatus() {
+	statsRes := &worker.Stats{
+		Pools: []*worker.StatsData{
+			{
+				WorkerPoolID: "my-worker-pool-ID",
+			},
+		},
+	}
+	fc := &fakeController{}
+	fc.On("CheckStatus").Return(statsRes, nil)
+	suite.controller = fc
+
+	bytes, code := suite.getReq(fmt.Sprintf("%s/%s", suite.APIAddr, "stats"))
+	require.Equal(suite.T(), 200, code, "expected 200 ok when getting worker stats but got %d", code)
+
+	poolStats := &worker.Stats{
+		Pools: make([]*worker.StatsData, 0),
+	}
+	err := json.Unmarshal(bytes, poolStats)
+	assert.Nil(suite.T(), err, "no error should be occurred when unmarshal worker stats")
+	assert.Equal(suite.T(), 1, len(poolStats.Pools), "at least 1 pool exists but got %d", len(poolStats.Pools))
+	assert.Equal(suite.T(), "my-worker-pool-ID", poolStats.Pools[0].WorkerPoolID, "expected pool ID 'my-worker-pool-ID' but got %s", poolStats.Pools[0].WorkerPoolID)
+}
+
+// TestGetJobLogInvalidID ...
+func (suite *APIHandlerTestSuite) TestGetJobLogInvalidID() {
+	fc := &fakeController{}
+	fc.On("GetJobLogData", "fake_job_ID_not").Return(nil, errs.NoObjectFoundError("fake_job_ID_not"))
+	suite.controller = fc
+
+	_, code := suite.getReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID_not/log"))
+	assert.Equal(suite.T(), 404, code, "expected 404 not found but got %d", code)
+}
+
+// TestGetJobLog ...
+func (suite *APIHandlerTestSuite) TestGetJobLog() {
+	fc := &fakeController{}
+	fc.On("GetJobLogData", "fake_job_ID").Return([]byte("hello log"), nil)
+	suite.controller = fc
+
+	resData, code := suite.getReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID/log"))
+	require.Equal(suite.T(), 200, code, "expected 200 ok but got %d", code)
+	assert.Equal(suite.T(), "hello log", string(resData))
+}
+
+// TestGetPeriodicExecutionsWithoutQuery ...
+func (suite *APIHandlerTestSuite) TestGetPeriodicExecutionsWithoutQuery() {
+	q := &query.Parameter{
+		PageNumber: 1,
+		PageSize:   query.DefaultPageSize,
+		Extras:     make(query.ExtraParameters),
 	}
 
-	return json.Marshal(&actionReq)
+	fc := &fakeController{}
+	fc.On("GetPeriodicExecutions", "fake_job_ID", q).
+		Return([]*job.Stats{createJobStats("sample", "Generic", "")}, int64(1), nil)
+	suite.controller = fc
+
+	_, code := suite.getReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID/executions"))
+	assert.Equal(suite.T(), 200, code, "expected 200 ok but got %d", code)
 }
 
-func postReq(url string, data []byte) ([]byte, error) {
+// TestGetPeriodicExecutionsWithQuery ...
+func (suite *APIHandlerTestSuite) TestGetPeriodicExecutionsWithQuery() {
+	extras := make(query.ExtraParameters)
+	extras.Set(query.ExtraParamKeyNonStoppedOnly, true)
+	q := &query.Parameter{
+		PageNumber: 2,
+		PageSize:   50,
+		Extras:     extras,
+	}
+
+	fc := &fakeController{}
+	fc.On("GetPeriodicExecutions", "fake_job_ID", q).
+		Return([]*job.Stats{createJobStats("sample", "Generic", "")}, int64(1), nil)
+	suite.controller = fc
+
+	_, code := suite.getReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job_ID/executions?page_number=2&page_size=50&non_dead_only=true"))
+	assert.Equal(suite.T(), 200, code, "expected 200 ok but got %d", code)
+}
+
+// TestScheduledJobs ...
+func (suite *APIHandlerTestSuite) TestScheduledJobs() {
+	q := &query.Parameter{
+		PageNumber: 2,
+		PageSize:   50,
+		Extras:     make(query.ExtraParameters),
+	}
+
+	fc := &fakeController{}
+	fc.On("ScheduledJobs", q).
+		Return([]*job.Stats{createJobStats("sample", "Generic", "")}, int64(1), nil)
+	suite.controller = fc
+
+	_, code := suite.getReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/scheduled?page_number=2&page_size=50"))
+	assert.Equal(suite.T(), 200, code, "expected 200 ok but got %d", code)
+}
+
+// createServer ...
+func (suite *APIHandlerTestSuite) createServer() {
+	port := uint(30000 + rand.Intn(1000))
+	suite.APIAddr = fmt.Sprintf("http://localhost:%d/api/v1", port)
+
+	config := ServerConfig{
+		Protocol: "http",
+		Port:     port,
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+
+	testingRouter := NewBaseRouter(
+		NewDefaultHandler(suite),
+		&SecretAuthenticator{},
+	)
+	suite.server = NewServer(ctx, testingRouter, config)
+	suite.cancel = cancel
+}
+
+// postReq ...
+func (suite *APIHandlerTestSuite) postReq(url string, data []byte) ([]byte, int) {
 	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(string(data)))
 	if err != nil {
-		return nil, err
+		return nil, 0
 	}
 
 	req.Header.Set(authHeader, fmt.Sprintf("%s %s", secretPrefix, fakeSecret))
 
-	res, err := client.Do(req)
+	res, err := suite.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, 0
 	}
 
 	var (
@@ -351,144 +331,185 @@ func postReq(url string, data []byte) ([]byte, error) {
 	if res.ContentLength > 0 {
 		resData, err = ioutil.ReadAll(res.Body)
 		if err != nil {
-			return nil, err
+			return nil, 0
 		}
 	}
 
-	if res.StatusCode >= http.StatusOK && res.StatusCode <= http.StatusNoContent {
-		return resData, nil
-	}
-
-	return resData, fmt.Errorf("expect status code '200,201,202,204', but got '%d'", res.StatusCode)
+	return resData, res.StatusCode
 }
 
-func getReq(url string) ([]byte, error) {
+// getReq ...
+func (suite *APIHandlerTestSuite) getReq(url string) ([]byte, int) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
-		return nil, err
+		return nil, 0
 	}
 
 	req.Header.Set(authHeader, fmt.Sprintf("%s %s", secretPrefix, fakeSecret))
 
-	res, err := client.Do(req)
+	res, err := suite.client.Do(req)
 	if err != nil {
-		return nil, err
+		return nil, 0
 	}
 
 	defer res.Body.Close()
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
-		return nil, err
+		return nil, 0
 	}
 
-	if res.StatusCode != http.StatusOK {
-		return data, fmt.Errorf("expect status code '200', but got '%d'", res.StatusCode)
-	}
-
-	return data, nil
+	return data, res.StatusCode
 }
 
-func exportUISecret(secret string) {
-	os.Setenv("CORE_SECRET", secret)
+func (suite *APIHandlerTestSuite) LaunchJob(req *job.Request) (*job.Stats, error) {
+	return suite.controller.LaunchJob(req)
 }
 
-type fakeController struct{}
-
-func (fc *fakeController) LaunchJob(req models.JobRequest) (models.JobStats, error) {
-	if req.Job.Name != "fake_job_ok" || req.Job.Metadata == nil {
-		return models.JobStats{}, errors.New("failed")
-	}
-
-	return createJobStats(req.Job.Name, req.Job.Metadata.JobKind, req.Job.Metadata.Cron), nil
+func (suite *APIHandlerTestSuite) GetJob(jobID string) (*job.Stats, error) {
+	return suite.controller.GetJob(jobID)
 }
 
-func (fc *fakeController) GetJob(jobID string) (models.JobStats, error) {
-	if jobID != "fake_job_ok" {
-		return models.JobStats{}, errors.New("failed")
+func (suite *APIHandlerTestSuite) StopJob(jobID string) error {
+	return suite.controller.StopJob(jobID)
+}
+
+func (suite *APIHandlerTestSuite) RetryJob(jobID string) error {
+	return suite.controller.RetryJob(jobID)
+}
+
+func (suite *APIHandlerTestSuite) CheckStatus() (*worker.Stats, error) {
+	return suite.controller.CheckStatus()
+}
+
+func (suite *APIHandlerTestSuite) GetJobLogData(jobID string) ([]byte, error) {
+	return suite.controller.GetJobLogData(jobID)
+}
+
+func (suite *APIHandlerTestSuite) GetPeriodicExecutions(periodicJobID string, query *query.Parameter) ([]*job.Stats, int64, error) {
+	return suite.controller.GetPeriodicExecutions(periodicJobID, query)
+}
+
+func (suite *APIHandlerTestSuite) ScheduledJobs(query *query.Parameter) ([]*job.Stats, int64, error) {
+	return suite.controller.ScheduledJobs(query)
+}
+
+type fakeController struct {
+	mock.Mock
+}
+
+func (fc *fakeController) LaunchJob(req *job.Request) (*job.Stats, error) {
+	args := fc.Called(req)
+	if args.Error(1) != nil {
+		return nil, args.Error(1)
 	}
 
-	return createJobStats("testing", "Generic", ""), nil
+	return args.Get(0).(*job.Stats), nil
+}
+
+func (fc *fakeController) GetJob(jobID string) (*job.Stats, error) {
+	args := fc.Called(jobID)
+	if args.Error(1) != nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(*job.Stats), nil
 }
 
 func (fc *fakeController) StopJob(jobID string) error {
-	if jobID == "fake_job_ok" {
-		return nil
-	}
-
-	return errors.New("failed")
+	args := fc.Called(jobID)
+	return args.Error(0)
 }
 
 func (fc *fakeController) RetryJob(jobID string) error {
-	if jobID == "fake_job_ok" {
-		return nil
-	}
-
-	return errors.New("failed")
+	args := fc.Called(jobID)
+	return args.Error(0)
 }
 
-func (fc *fakeController) CancelJob(jobID string) error {
-	if jobID == "fake_job_ok" {
-		return nil
+func (fc *fakeController) CheckStatus() (*worker.Stats, error) {
+	args := fc.Called()
+	if args.Error(1) != nil {
+		return nil, args.Error(1)
 	}
 
-	return errors.New("failed")
-}
-
-func (fc *fakeController) CheckStatus() (models.JobPoolStats, error) {
-	return models.JobPoolStats{
-		Pools: []*models.JobPoolStatsData{{
-			WorkerPoolID: "fake_pool_ID",
-			Status:       "running",
-			StartedAt:    time.Now().Unix(),
-		}},
-	}, nil
+	return args.Get(0).(*worker.Stats), nil
 }
 
 func (fc *fakeController) GetJobLogData(jobID string) ([]byte, error) {
-	if jobID == "fake_job_ok" {
-		return []byte("job log"), nil
+	args := fc.Called(jobID)
+	if args.Error(1) != nil {
+		return nil, args.Error(1)
 	}
 
-	return nil, errors.New("failed")
+	return args.Get(0).([]byte), nil
 }
 
-func createJobStats(name, kind, cron string) models.JobStats {
-	now := time.Now()
+func (fc *fakeController) GetPeriodicExecutions(periodicJobID string, query *query.Parameter) ([]*job.Stats, int64, error) {
+	args := fc.Called(periodicJobID, query)
+	if args.Error(2) != nil {
+		return nil, args.Get(1).(int64), args.Error(2)
+	}
 
-	return models.JobStats{
-		Stats: &models.JobStatData{
-			JobID:       "fake_ID_ok",
-			Status:      "pending",
+	return args.Get(0).([]*job.Stats), args.Get(1).(int64), nil
+}
+
+func (fc *fakeController) ScheduledJobs(query *query.Parameter) ([]*job.Stats, int64, error) {
+	args := fc.Called(query)
+	if args.Error(2) != nil {
+		return nil, args.Get(1).(int64), args.Error(2)
+	}
+
+	return args.Get(0).([]*job.Stats), args.Get(1).(int64), nil
+}
+
+func createJobStats(name, kind, cron string) *job.Stats {
+	now := time.Now()
+	params := make(job.Parameters)
+	params["image"] = "testing:v1"
+
+	return &job.Stats{
+		Info: &job.StatsInfo{
+			JobID:       "fake_job_ID",
+			Status:      job.PendingStatus.String(),
 			JobName:     name,
 			JobKind:     kind,
 			IsUnique:    false,
-			RefLink:     "/api/v1/jobs/fake_ID_ok",
+			RefLink:     "/api/v1/jobs/fake_job_ID",
 			CronSpec:    cron,
 			RunAt:       now.Add(100 * time.Second).Unix(),
 			EnqueueTime: now.Unix(),
 			UpdateTime:  now.Unix(),
+			Parameters:  params,
 		},
 	}
 }
 
-func getResult(res []byte) (models.JobStats, error) {
-	obj := models.JobStats{}
-	err := json.Unmarshal(res, &obj)
+func getResult(res []byte) (*job.Stats, error) {
+	obj := &job.Stats{}
+	err := json.Unmarshal(res, obj)
 
 	return obj, err
 }
 
-func createServer() (*Server, uint, *env.Context) {
-	port := uint(30000 + rand.Intn(10000))
-	config := ServerConfig{
-		Protocol: "http",
-		Port:     port,
+func createJobReq() *job.Request {
+	params := make(job.Parameters)
+	params["image"] = "testing:v1"
+
+	return &job.Request{
+		Job: &job.RequestBody{
+			Name:       "my-testing-job",
+			Parameters: params,
+			Metadata: &job.Metadata{
+				JobKind:  "Periodic",
+				Cron:     "5 * * * * *",
+				IsUnique: true,
+			},
+			StatusHook: "http://localhost:39999",
+		},
 	}
-	ctx := &env.Context{
-		SystemContext: context.Background(),
-		WG:            new(sync.WaitGroup),
-		ErrorChan:     make(chan error, 1),
+}
+
+func createJobActionReq(action string) *job.ActionRequest {
+	return &job.ActionRequest{
+		Action: action,
 	}
-	server := NewServer(ctx, testingRouter, config)
-	return server, port, ctx
 }

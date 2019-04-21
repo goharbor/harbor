@@ -8,9 +8,9 @@ import (
 	"time"
 )
 
-// NoElementsError is a pre defined error to describe the case that no elements got
+// ErrNoElements is a pre defined error to describe the case that no elements got
 // from the backend database.
-var NoElementsError = errors.New("no elements got from the backend")
+var ErrNoElements = errors.New("no elements got from the backend")
 
 // HmSet sets the properties of hash map
 func HmSet(conn redis.Conn, key string, fieldAndValues ...interface{}) error {
@@ -145,10 +145,10 @@ func ZPopMin(conn redis.Conn, key string) (interface{}, error) {
 	if zrangeReply != nil {
 		if elements, ok := zrangeReply.([]interface{}); ok {
 			if len(elements) == 0 {
-				return nil, NoElementsError
-			} else {
-				return elements[0], nil
+				return nil, ErrNoElements
 			}
+
+			return elements[0], nil
 		}
 	}
 

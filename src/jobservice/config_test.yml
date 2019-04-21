@@ -20,7 +20,7 @@ worker_pool:
     #redis://[arbitrary_username:password@]ipaddress:port/database_index
     #or ipaddress:port[,weight,password,database_index]
     redis_url: "localhost:6379"
-    namespace: "harbor_job_service"
+    namespace: "testing_job_service_v2"
 
 #Loggers for the running job
 job_loggers:

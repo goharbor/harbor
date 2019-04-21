@@ -15,91 +15,116 @@ package period
 
 import (
 	"context"
+	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/lcm"
+	"github.com/goharbor/harbor/src/jobservice/tests"
+	"github.com/gomodule/redigo/redis"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/goharbor/harbor/src/jobservice/opm"
-
-	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	"github.com/goharbor/harbor/src/jobservice/env"
-	"github.com/goharbor/harbor/src/jobservice/tests"
 )
 
-var redisPool = tests.GiveMeRedisPool()
+// BasicSchedulerTestSuite tests functions of basic scheduler
+type BasicSchedulerTestSuite struct {
+	suite.Suite
 
-func TestScheduler(t *testing.T) {
-	statsManager := opm.NewRedisJobStatsManager(context.Background(), tests.GiveMeTestNamespace(), redisPool)
-	statsManager.Start()
-	defer statsManager.Shutdown()
+	cancel    context.CancelFunc
+	namespace string
+	pool      *redis.Pool
 
-	scheduler := myPeriodicScheduler(statsManager)
-	params := make(map[string]interface{})
-	params["image"] = "testing:v1"
-	id, runAt, err := scheduler.Schedule("fake_job", params, "5 * * * * *")
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	if time.Now().Unix() >= runAt {
-		t.Fatal("the running at time of scheduled job should be after now, but seems not")
-	}
-
-	if err := scheduler.Load(); err != nil {
-		t.Fatal(err)
-	}
-
-	if scheduler.pstore.size() != 1 {
-		t.Fatalf("expect 1 item in pstore but got '%d'\n", scheduler.pstore.size())
-	}
-
-	if err := scheduler.UnSchedule(id); err != nil {
-		t.Fatal(err)
-	}
-	if err := scheduler.Clear(); err != nil {
-		t.Fatal(err)
-	}
-
-	err = tests.Clear(utils.KeyPeriodicPolicy(tests.GiveMeTestNamespace()), redisPool.Get())
-	err = tests.Clear(utils.KeyPeriodicPolicyScore(tests.GiveMeTestNamespace()), redisPool.Get())
-	err = tests.Clear(utils.KeyPeriodicNotification(tests.GiveMeTestNamespace()), redisPool.Get())
-	if err != nil {
-		t.Fatal(err)
-	}
+	lcmCtl    lcm.Controller
+	scheduler Scheduler
 }
 
-func TestPubFunc(t *testing.T) {
-	statsManager := opm.NewRedisJobStatsManager(context.Background(), tests.GiveMeTestNamespace(), redisPool)
-	statsManager.Start()
-	defer statsManager.Shutdown()
+// SetupSuite prepares the test suite
+func (suite *BasicSchedulerTestSuite) SetupSuite() {
+	ctx, cancel := context.WithCancel(context.WithValue(context.Background(), utils.NodeID, "fake_node_ID"))
+	suite.cancel = cancel
 
-	scheduler := myPeriodicScheduler(statsManager)
-	p := &PeriodicJobPolicy{
-		PolicyID: "fake_ID",
-		JobName:  "fake_job",
-		CronSpec: "5 * * * * *",
-	}
-	if err := scheduler.AcceptPeriodicPolicy(p); err != nil {
-		t.Fatal(err)
-	}
-	if scheduler.pstore.size() != 1 {
-		t.Fatalf("expect 1 item in pstore but got '%d' after accepting \n", scheduler.pstore.size())
-	}
-	if rmp := scheduler.RemovePeriodicPolicy("fake_ID"); rmp == nil {
-		t.Fatal("expect none nil object returned after removing but got nil")
-	}
-	if scheduler.pstore.size() != 0 {
-		t.Fatalf("expect 0 item in pstore but got '%d' \n", scheduler.pstore.size())
-	}
-}
+	suite.namespace = tests.GiveMeTestNamespace()
+	suite.pool = tests.GiveMeRedisPool()
 
-func myPeriodicScheduler(statsManager opm.JobStatsManager) *basicScheduler {
-	sysCtx := context.Background()
-	ctx := &env.Context{
-		SystemContext: sysCtx,
+	envCtx := &env.Context{
+		SystemContext: ctx,
 		WG:            new(sync.WaitGroup),
-		ErrorChan:     make(chan error, 1),
 	}
 
-	return NewScheduler(ctx, tests.GiveMeTestNamespace(), redisPool, statsManager)
+	suite.lcmCtl = lcm.NewController(
+		envCtx,
+		suite.namespace,
+		suite.pool,
+		func(hookURL string, change *job.StatusChange) error { return nil },
+	)
+
+	suite.scheduler = NewScheduler(ctx, suite.namespace, suite.pool, suite.lcmCtl)
+}
+
+// TearDownSuite clears the test suite
+func (suite *BasicSchedulerTestSuite) TearDownSuite() {
+	suite.cancel()
+
+	conn := suite.pool.Get()
+	defer conn.Close()
+
+	tests.ClearAll(suite.namespace, conn)
+}
+
+// TestSchedulerTestSuite is entry of go test
+func TestSchedulerTestSuite(t *testing.T) {
+	suite.Run(t, new(BasicSchedulerTestSuite))
+}
+
+// TestScheduler tests scheduling and un-scheduling
+func (suite *BasicSchedulerTestSuite) TestScheduler() {
+	go func() {
+		<-time.After(1 * time.Second)
+		suite.scheduler.Stop()
+	}()
+
+	go func() {
+		var err error
+		defer func() {
+			require.NoError(suite.T(), err, "start scheduler: nil error expected but got %s", err)
+		}()
+
+		err = suite.scheduler.Start()
+	}()
+
+	// Prepare one
+	now := time.Now()
+	minute := now.Minute()
+	coreSpec := fmt.Sprintf("30,50 %d * * * *", minute+2)
+	p := &Policy{
+		ID:       "fake_policy",
+		JobName:  job.SampleJob,
+		CronSpec: coreSpec,
+	}
+
+	pid, err := suite.scheduler.Schedule(p)
+	require.NoError(suite.T(), err, "schedule: nil error expected but got %s", err)
+	assert.Condition(suite.T(), func() bool {
+		return pid > 0
+	}, "schedule: returned pid should >0")
+
+	jobStats := &job.Stats{
+		Info: &job.StatsInfo{
+			JobID:      p.ID,
+			Status:     job.ScheduledStatus.String(),
+			JobName:    job.SampleJob,
+			JobKind:    job.KindPeriodic,
+			NumericPID: pid,
+			CronSpec:   coreSpec,
+		},
+	}
+	_, err = suite.lcmCtl.New(jobStats)
+	require.NoError(suite.T(), err, "lcm new: nil error expected but got %s", err)
+
+	err = suite.scheduler.UnSchedule(p.ID)
+	require.NoError(suite.T(), err, "unschedule: nil error expected but got %s", err)
 }

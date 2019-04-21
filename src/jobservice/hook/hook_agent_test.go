@@ -24,11 +24,59 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
+	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/tests"
+	"github.com/gomodule/redigo/redis"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
+	"sync"
 )
 
-func TestEventSending(t *testing.T) {
+// HookAgentTestSuite tests functions of hook agent
+type HookAgentTestSuite struct {
+	suite.Suite
+
+	pool      *redis.Pool
+	namespace string
+	lcmCtl    lcm.Controller
+
+	envContext *env.Context
+	cancel     context.CancelFunc
+}
+
+// TestHookAgentTestSuite is entry of go test
+func TestHookAgentTestSuite(t *testing.T) {
+	suite.Run(t, new(HookAgentTestSuite))
+}
+
+// SetupSuite prepares test suites
+func (suite *HookAgentTestSuite) SetupSuite() {
+	suite.pool = tests.GiveMeRedisPool()
+	suite.namespace = tests.GiveMeTestNamespace()
+
+	ctx, cancel := context.WithCancel(context.Background())
+	suite.envContext = &env.Context{
+		SystemContext: ctx,
+		WG:            new(sync.WaitGroup),
+	}
+	suite.cancel = cancel
+
+	suite.lcmCtl = lcm.NewController(suite.envContext, suite.namespace, suite.pool, func(hookURL string, change *job.StatusChange) error { return nil })
+}
+
+// TearDownSuite prepares test suites
+func (suite *HookAgentTestSuite) TearDownSuite() {
+	conn := suite.pool.Get()
+	defer conn.Close()
+
+	tests.ClearAll(suite.namespace, conn)
+}
+
+// TestEventSending ...
+func (suite *HookAgentTestSuite) TestEventSending() {
 	done := make(chan bool, 1)
 
 	expected := uint32(1300) // >1024 max
@@ -52,20 +100,13 @@ func TestEventSending(t *testing.T) {
 		done <- true // time out
 	}()
 
-	ctx, cancel := context.WithCancel(context.Background())
-
-	ns := tests.GiveMeTestNamespace()
-	pool := tests.GiveMeRedisPool()
-
-	conn := pool.Get()
-	defer tests.ClearAll(ns, conn)
-
-	agent := NewAgent(ctx, ns, pool)
+	agent := NewAgent(suite.envContext, suite.namespace, suite.pool)
+	agent.Attach(suite.lcmCtl)
 	agent.Serve()
 
 	go func() {
 		defer func() {
-			cancel()
+			suite.cancel()
 		}()
 
 		for i := uint32(0); i < expected; i++ {
@@ -81,29 +122,22 @@ func TestEventSending(t *testing.T) {
 				Timestamp: time.Now().Unix(),
 			}
 
-			if err := agent.Trigger(evt); err != nil {
-				t.Fatal(err)
-			}
+			err := agent.Trigger(evt)
+			require.Nil(suite.T(), err, "agent trigger: nil error expected but got %s", err)
 		}
 
 		// Check results
 		<-done
-		if count != expected {
-			t.Fatalf("expected %d hook events but only got %d", expected, count)
-		}
+		require.Equal(suite.T(), expected, count, "expected %d hook events but only got %d", expected, count)
 	}()
 
 	// Wait
-	<-ctx.Done()
+	suite.envContext.WG.Wait()
 }
 
-func TestRetryAndPopMin(t *testing.T) {
+// TestRetryAndPopMin ...
+func (suite *HookAgentTestSuite) TestRetryAndPopMin() {
 	ctx := context.Background()
-	ns := tests.GiveMeTestNamespace()
-	pool := tests.GiveMeRedisPool()
-
-	conn := pool.Get()
-	defer tests.ClearAll(ns, conn)
 
 	tks := make(chan bool, maxHandlers)
 	// Put tokens
@@ -113,12 +147,13 @@ func TestRetryAndPopMin(t *testing.T) {
 
 	agent := &basicAgent{
 		context:   ctx,
-		namespace: ns,
-		client:    NewClient(),
+		namespace: suite.namespace,
+		client:    NewClient(ctx),
 		events:    make(chan *Event, maxEventChanBuffer),
 		tokens:    tks,
-		redisPool: pool,
+		redisPool: suite.pool,
 	}
+	agent.Attach(suite.lcmCtl)
 
 	changeData := &job.StatusChange{
 		JobID:  "fake_job_ID",
@@ -133,45 +168,30 @@ func TestRetryAndPopMin(t *testing.T) {
 	}
 
 	// Mock job stats
-	conn = pool.Get()
+	conn := suite.pool.Get()
 	defer conn.Close()
 
-	key := rds.KeyJobStats(ns, "fake_job_ID")
+	key := rds.KeyJobStats(suite.namespace, "fake_job_ID")
 	_, err := conn.Do("HSET", key, "status", job.SuccessStatus.String())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.Nil(suite.T(), err, "prepare job stats: nil error returned but got %s", err)
 
-	if err := agent.pushForRetry(evt); err != nil {
-		t.Fatal(err)
-	}
+	err = agent.pushForRetry(evt)
+	require.Nil(suite.T(), err, "push for retry: nil error expected but got %s", err)
 
-	if err := agent.popMinOnes(); err != nil {
-		t.Fatal(err)
-	}
-
-	// Check results
-	if len(agent.events) > 0 {
-		t.Error("the hook event should be discard but actually not")
-	}
+	err = agent.reSend()
+	require.Error(suite.T(), err, "resend: non nil error expected but got nil")
+	assert.Equal(suite.T(), 0, len(agent.events), "the hook event should be discard but actually not")
 
 	// Change status
 	_, err = conn.Do("HSET", key, "status", job.PendingStatus.String())
-	if err != nil {
-		t.Fatal(err)
-	}
+	require.Nil(suite.T(), err, "prepare job stats: nil error returned but got %s", err)
 
-	if err := agent.pushForRetry(evt); err != nil {
-		t.Fatal(err)
-	}
-
-	if err := agent.popMinOnes(); err != nil {
-		t.Fatal(err)
-	}
+	err = agent.pushForRetry(evt)
+	require.Nil(suite.T(), err, "push for retry: nil error expected but got %s", err)
+	err = agent.reSend()
+	require.Nil(suite.T(), err, "resend: nil error should be returned but got %s", err)
 
 	<-time.After(time.Duration(1) * time.Second)
 
-	if len(agent.events) != 1 {
-		t.Errorf("the hook event should be requeued but actually not: %d", len(agent.events))
-	}
+	assert.Equal(suite.T(), 1, len(agent.events), "the hook event should be requeued but actually not: %d", len(agent.events))
 }
