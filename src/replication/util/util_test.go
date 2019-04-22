@@ -67,6 +67,11 @@ func TestMatch(t *testing.T) {
 			str:     "1.01",
 			match:   false,
 		},
+		{
+			pattern: "a[",
+			str:     "aaa",
+			match:   false,
+		},
 	}
 	for _, c := range cases {
 		match, err := Match(c.pattern, c.str)

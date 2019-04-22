@@ -18,6 +18,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/goharbor/harbor/src/common/utils/log"
+
 	"github.com/bmatcuk/doublestar"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 )
@@ -27,7 +29,12 @@ func Match(pattern, str string) (bool, error) {
 	if len(pattern) == 0 {
 		return true, nil
 	}
-	return doublestar.Match(pattern, str)
+	match, err := doublestar.Match(pattern, str)
+	if err == doublestar.ErrBadPattern {
+		log.Warningf("failed to match the string %s against pattern %s: %v", str, pattern, err)
+		return false, nil
+	}
+	return match, err
 }
 
 // GetHTTPTransport can be used to share the common HTTP transport
