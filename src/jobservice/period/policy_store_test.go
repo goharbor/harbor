@@ -55,9 +55,11 @@ func (suite *PolicyStoreTestSuite) TearDownSuite() {
 	suite.cancel()
 
 	conn := suite.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
-	tests.ClearAll(suite.namespace, conn)
+	_ = tests.ClearAll(suite.namespace, conn)
 }
 
 // TestStore tests policy store serve
@@ -88,7 +90,9 @@ func (suite *PolicyStoreTestSuite) TestLoad() {
 	key := rds.KeyPeriodicPolicy(suite.namespace)
 
 	conn := suite.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	_, err = conn.Do("ZADD", key, time.Now().Unix(), rawData)
 	assert.Nil(suite.T(), err, "add data: nil error expected but got %s", err)

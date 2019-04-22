@@ -25,11 +25,6 @@ import (
 	"time"
 )
 
-var (
-	pool      = tests.GiveMeRedisPool()
-	namespace = tests.GiveMeTestNamespace()
-)
-
 // For testing
 type simpleStatusChange struct {
 	JobID string
@@ -56,15 +51,19 @@ func (suite *RdsUtilsTestSuite) SetupTest() {
 
 // TearDownTest clears test cases
 func (suite *RdsUtilsTestSuite) TearDownTest() {
-	suite.conn.Close()
+	err := suite.conn.Close()
+	assert.NoError(suite.T(), err, "close conn: nil error expected but got %s", err)
 }
 
 // TearDownSuite clears test suite
 func (suite *RdsUtilsTestSuite) TearDownSuite() {
 	conn := suite.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
-	tests.ClearAll(suite.namespace, conn)
+	err := tests.ClearAll(suite.namespace, conn)
+	assert.NoError(suite.T(), err, "clear all: nil error expected but got %s", err)
 }
 
 // TestZPopMin ...
@@ -75,7 +74,7 @@ func (suite *RdsUtilsTestSuite) TestZPopMin() {
 	raw1, _ := json.Marshal(s1)
 	raw2, _ := json.Marshal(s2)
 
-	key := KeyStatusUpdateRetryQueue(namespace)
+	key := KeyStatusUpdateRetryQueue(suite.namespace)
 	_, err := suite.conn.Do("ZADD", key, time.Now().Unix(), raw1)
 	_, err = suite.conn.Do("ZADD", key, time.Now().Unix()+5, raw2)
 	require.Nil(suite.T(), err, "zadd objects error should be nil")
@@ -84,14 +83,14 @@ func (suite *RdsUtilsTestSuite) TestZPopMin() {
 	require.Nil(suite.T(), err, "nil error should be returned by calling ZPopMin")
 
 	change1 := &simpleStatusChange{}
-	json.Unmarshal(v.([]byte), change1)
+	_ = json.Unmarshal(v.([]byte), change1)
 	assert.Equal(suite.T(), "a", change1.JobID, "job ID not equal")
 
 	v, err = ZPopMin(suite.conn, key)
 	require.Nil(suite.T(), err, "nil error should be returned by calling ZPopMin")
 
 	change2 := &simpleStatusChange{}
-	json.Unmarshal(v.([]byte), change2)
+	_ = json.Unmarshal(v.([]byte), change2)
 	assert.Equal(suite.T(), "b", change2.JobID, "job ID not equal")
 }
 

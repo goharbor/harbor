@@ -213,7 +213,7 @@ func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Reque
 	dh.log(req, http.StatusOK, "")
 
 	w.WriteHeader(http.StatusOK)
-	w.Write(logData)
+	writeDate(w, logData)
 }
 
 // HandlePeriodicExecutions is implementation of method defined in interface 'Handler'
@@ -270,7 +270,7 @@ func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, req *http.Reques
 	w.Header().Set(http.CanonicalHeaderKey("Accept"), "application/json")
 	w.Header().Set(http.CanonicalHeaderKey("content-type"), "application/json")
 	w.WriteHeader(code)
-	w.Write(data)
+	writeDate(w, data)
 }
 
 func (dh *DefaultHandler) handleError(w http.ResponseWriter, req *http.Request, code int, err error) {
@@ -278,7 +278,7 @@ func (dh *DefaultHandler) handleError(w http.ResponseWriter, req *http.Request, 
 	logger.Errorf("Serve http request '%s %s' error: %d %s", req.Method, req.URL.String(), code, err.Error())
 
 	w.WriteHeader(code)
-	w.Write([]byte(err.Error()))
+	writeDate(w, []byte(err.Error()))
 }
 
 func (dh *DefaultHandler) log(req *http.Request, code int, text string) {
@@ -294,7 +294,7 @@ func extractQuery(req *http.Request) *query.Parameter {
 
 	queries := req.URL.Query()
 	// Page number
-	p := queries.Get(query.QueryParamKeyPage)
+	p := queries.Get(query.ParamKeyPage)
 	if !utils.IsEmptyStr(p) {
 		if pv, err := strconv.ParseUint(p, 10, 32); err == nil {
 			if pv > 1 {
@@ -304,7 +304,7 @@ func extractQuery(req *http.Request) *query.Parameter {
 	}
 
 	// Page number
-	size := queries.Get(query.QueryParamKeyPageSize)
+	size := queries.Get(query.ParamKeyPageSize)
 	if !utils.IsEmptyStr(size) {
 		if pz, err := strconv.ParseUint(size, 10, 32); err == nil {
 			if pz > 0 {
@@ -314,7 +314,7 @@ func extractQuery(req *http.Request) *query.Parameter {
 	}
 
 	// Extra query parameters
-	nonStoppedOnly := queries.Get(query.QueryParamKeyNonStoppedOnly)
+	nonStoppedOnly := queries.Get(query.ParamKeyNonStoppedOnly)
 	if !utils.IsEmptyStr(nonStoppedOnly) {
 		if nonStoppedOnlyV, err := strconv.ParseBool(nonStoppedOnly); err == nil {
 			q.Extras.Set(query.ExtraParamKeyNonStoppedOnly, nonStoppedOnlyV)
@@ -322,4 +322,10 @@ func extractQuery(req *http.Request) *query.Parameter {
 	}
 
 	return q
+}
+
+func writeDate(w http.ResponseWriter, bytes []byte) {
+	if _, err := w.Write(bytes); err != nil {
+		logger.Errorf("writer write error: %s", err)
+	}
 }

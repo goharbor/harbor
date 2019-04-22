@@ -17,7 +17,7 @@ func TestFileFactory(t *testing.T) {
 	require.Nil(t, err)
 
 	if closer, ok := ff.(Closer); ok {
-		closer.Close()
+		_ = closer.Close()
 	}
 }
 

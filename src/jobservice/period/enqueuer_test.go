@@ -75,9 +75,11 @@ func (suite *EnqueuerTestSuite) TearDownSuite() {
 	suite.cancel()
 
 	conn := suite.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
-	tests.ClearAll(suite.namespace, conn)
+	_ = tests.ClearAll(suite.namespace, conn)
 }
 
 // TestEnqueuer tests enqueuer
@@ -91,7 +93,9 @@ func (suite *EnqueuerTestSuite) TestEnqueuer() {
 
 		key := rds.RedisKeyScheduled(suite.namespace)
 		conn := suite.pool.Get()
-		defer conn.Close()
+		defer func() {
+			_ = conn.Close()
+		}()
 
 		count, err := redis.Int(conn.Do("ZCARD", key))
 		require.Nil(suite.T(), err, "count scheduled: nil error expected but got %s", err)
@@ -121,7 +125,9 @@ func (suite *EnqueuerTestSuite) prepare() {
 	key := rds.KeyPeriodicPolicy(suite.namespace)
 
 	conn := suite.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	_, err = conn.Do("ZADD", key, time.Now().Unix(), rawData)
 	assert.Nil(suite.T(), err, "prepare policy: nil error expected but got %s", err)

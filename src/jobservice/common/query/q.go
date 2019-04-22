@@ -17,12 +17,12 @@ package query
 const (
 	// DefaultPageSize defines the default page size
 	DefaultPageSize uint = 25
-	// QueryParamKeyPage defines query param key of page number
-	QueryParamKeyPage = "page_number"
-	// QueryParamKeyPageSize defines query param key of page size
-	QueryParamKeyPageSize = "page_size"
-	// QueryParamKeyNonStoppedOnly defines query param key of querying non stopped periodic executions
-	QueryParamKeyNonStoppedOnly = "non_dead_only"
+	// ParamKeyPage defines query param key of page number
+	ParamKeyPage = "page_number"
+	// ParamKeyPageSize defines query param key of page size
+	ParamKeyPageSize = "page_size"
+	// ParamKeyNonStoppedOnly defines query param key of querying non stopped periodic executions
+	ParamKeyNonStoppedOnly = "non_dead_only"
 	// ExtraParamKeyNonStoppedOnly defines extra parameter key for querying non stopped periodic executions
 	ExtraParamKeyNonStoppedOnly = "NonDeadOnly"
 )

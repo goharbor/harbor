@@ -15,6 +15,7 @@ package runner
 
 import (
 	"context"
+	"github.com/stretchr/testify/assert"
 	"os"
 	"sync"
 	"testing"
@@ -39,8 +40,9 @@ import (
 type RedisRunnerTestSuite struct {
 	suite.Suite
 
-	lcmCtl   lcm.Controller
-	redisJob *RedisJob
+	lcmCtl lcm.Controller
+
+	envContext *env.Context
 
 	cancel    context.CancelFunc
 	namespace string
@@ -57,7 +59,7 @@ func (suite *RedisRunnerTestSuite) SetupSuite() {
 	ctx, cancel := context.WithCancel(context.Background())
 	suite.cancel = cancel
 
-	envCtx := &env.Context{
+	suite.envContext = &env.Context{
 		SystemContext: ctx,
 		WG:            new(sync.WaitGroup),
 		ErrorChan:     make(chan error, 1),
@@ -67,7 +69,7 @@ func (suite *RedisRunnerTestSuite) SetupSuite() {
 	suite.pool = tests.GiveMeRedisPool()
 
 	suite.lcmCtl = lcm.NewController(
-		envCtx,
+		suite.envContext,
 		suite.namespace,
 		suite.pool,
 		func(hookURL string, change *job.StatusChange) error { return nil },
@@ -84,8 +86,14 @@ func (suite *RedisRunnerTestSuite) SetupSuite() {
 	}
 	_, err := suite.lcmCtl.New(fakeStats)
 	require.NoError(suite.T(), err, "lcm new: nil error expected but got %s", err)
+}
 
-	suite.redisJob = NewRedisJob((*fakeParentJob)(nil), envCtx, suite.lcmCtl)
+// SetupTest prepares test cases
+func (suite *RedisRunnerTestSuite) SetupTest() {
+	t, err := suite.lcmCtl.Track("FAKE-j")
+	require.NoError(suite.T(), err)
+	err = t.Update("status", job.PendingStatus.String()) // reset
+	assert.NoError(suite.T(), err)
 }
 
 // TearDownSuite clears the test suite
@@ -129,11 +137,59 @@ func (suite *RedisRunnerTestSuite) TestJobWrapper() {
 		},
 	}
 
-	err := suite.redisJob.Run(j)
+	redisJob := NewRedisJob((*fakeParentJob)(nil), suite.envContext, suite.lcmCtl)
+	err := redisJob.Run(j)
 	require.NoError(suite.T(), err, "redis job: nil error expected but got %s", err)
 }
 
-type fakeParentJob struct{}
+// TestJobWrapperInvalidTracker tests job runner with invalid job ID
+func (suite *RedisRunnerTestSuite) TestJobWrapperInvalidTracker() {
+	j := &work.Job{
+		ID:         "FAKE-j2",
+		Name:       "fakeParentJob",
+		EnqueuedAt: time.Now().Add(5 * time.Minute).Unix(),
+		Fails:      3,
+	}
+
+	redisJob := NewRedisJob((*fakeParentJob)(nil), suite.envContext, suite.lcmCtl)
+	err := redisJob.Run(j)
+	require.Error(suite.T(), err, "redis job: non nil error expected but got nil")
+	assert.Equal(suite.T(), int64(2), j.Fails)
+}
+
+// TestJobWrapperPanic tests job runner panic
+func (suite *RedisRunnerTestSuite) TestJobWrapperPanic() {
+	j := &work.Job{
+		ID:         "FAKE-j",
+		Name:       "fakePanicJob",
+		EnqueuedAt: time.Now().Add(5 * time.Minute).Unix(),
+	}
+
+	redisJob := NewRedisJob((*fakePanicJob)(nil), suite.envContext, suite.lcmCtl)
+	err := redisJob.Run(j)
+	assert.Error(suite.T(), err)
+}
+
+// TestJobWrapperStopped tests job runner stopped
+func (suite *RedisRunnerTestSuite) TestJobWrapperStopped() {
+	j := &work.Job{
+		ID:         "FAKE-j",
+		Name:       "fakePanicJob",
+		EnqueuedAt: time.Now().Add(5 * time.Minute).Unix(),
+	}
+
+	t, err := suite.lcmCtl.Track("FAKE-j")
+	require.NoError(suite.T(), err)
+	err = t.Stop()
+	require.NoError(suite.T(), err)
+
+	redisJob := NewRedisJob((*fakeParentJob)(nil), suite.envContext, suite.lcmCtl)
+	err = redisJob.Run(j)
+	require.NoError(suite.T(), err)
+}
+
+type fakeParentJob struct {
+}
 
 func (j *fakeParentJob) MaxFails() uint {
 	return 1
@@ -148,7 +204,26 @@ func (j *fakeParentJob) Validate(params job.Parameters) error {
 }
 
 func (j *fakeParentJob) Run(ctx job.Context, params job.Parameters) error {
-	ctx.Checkin("start")
+	_ = ctx.Checkin("start")
 	ctx.OPCommand()
 	return nil
+}
+
+type fakePanicJob struct {
+}
+
+func (j *fakePanicJob) MaxFails() uint {
+	return 1
+}
+
+func (j *fakePanicJob) ShouldRetry() bool {
+	return false
+}
+
+func (j *fakePanicJob) Validate(params job.Parameters) error {
+	return nil
+}
+
+func (j *fakePanicJob) Run(ctx job.Context, params job.Parameters) error {
+	panic("for testing")
 }

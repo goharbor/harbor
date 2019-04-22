@@ -15,9 +15,3 @@ func Retrieve(logID string) ([]byte, error) {
 
 	return val.(getter.Interface).Retrieve(logID)
 }
-
-// HasLogGetterConfigured checks if a log data getter is there for using
-func HasLogGetterConfigured() bool {
-	_, ok := singletons.Load(systemKeyLogDataGetter)
-	return ok
-}

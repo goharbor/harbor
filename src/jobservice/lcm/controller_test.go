@@ -48,11 +48,11 @@ func (suite *LcmControllerTestSuite) SetupSuite() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	suite.cancel = cancel
-	context := &env.Context{
+	envCtx := &env.Context{
 		SystemContext: ctx,
 		WG:            new(sync.WaitGroup),
 	}
-	suite.ctl = NewController(context, suite.namespace, suite.pool, func(hookURL string, change *job.StatusChange) error { return nil })
+	suite.ctl = NewController(envCtx, suite.namespace, suite.pool, func(hookURL string, change *job.StatusChange) error { return nil })
 }
 
 // TearDownSuite clears test suite
@@ -82,7 +82,9 @@ func (suite *LcmControllerTestSuite) TestServe() {
 	suite.newsStats(jobID)
 
 	conn := suite.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 	simpleChange := &job.SimpleStatusChange{
 		JobID:        jobID,
 		TargetStatus: job.RunningStatus.String(),
@@ -94,7 +96,8 @@ func (suite *LcmControllerTestSuite) TestServe() {
 	_, err = conn.Do("ZADD", args...)
 	require.Nil(suite.T(), err, "prepare mock data: nil error expected but got %s", err)
 
-	suite.ctl.Serve()
+	err = suite.ctl.Serve()
+	require.NoError(suite.T(), err, "lcm: nil error expected but got %s", err)
 	<-time.After(1 * time.Second)
 
 	count, err := redis.Int(conn.Do("ZCARD", key))

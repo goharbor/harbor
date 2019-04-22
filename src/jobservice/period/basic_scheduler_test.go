@@ -70,9 +70,11 @@ func (suite *BasicSchedulerTestSuite) TearDownSuite() {
 	suite.cancel()
 
 	conn := suite.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
-	tests.ClearAll(suite.namespace, conn)
+	_ = tests.ClearAll(suite.namespace, conn)
 }
 
 // TestSchedulerTestSuite is entry of go test
@@ -84,7 +86,7 @@ func TestSchedulerTestSuite(t *testing.T) {
 func (suite *BasicSchedulerTestSuite) TestScheduler() {
 	go func() {
 		<-time.After(1 * time.Second)
-		suite.scheduler.Stop()
+		_ = suite.scheduler.Stop()
 	}()
 
 	go func() {
@@ -99,6 +101,9 @@ func (suite *BasicSchedulerTestSuite) TestScheduler() {
 	// Prepare one
 	now := time.Now()
 	minute := now.Minute()
+	if minute+2 >= 60 {
+		minute = minute - 2
+	}
 	coreSpec := fmt.Sprintf("30,50 %d * * * *", minute+2)
 	p := &Policy{
 		ID:       "fake_policy",

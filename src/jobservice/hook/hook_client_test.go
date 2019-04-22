@@ -45,14 +45,14 @@ func (suite *HookClientTestSuite) SetupSuite() {
 			return
 		}
 
-		m := &Event{}
-		err = json.Unmarshal(bytes, m)
+		change := &job.StatusChange{}
+		err = json.Unmarshal(bytes, change)
 		if err != nil {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 
-		if m.Data.JobID == "job_ID_failed" {
+		if change.JobID == "job_ID_failed" {
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}

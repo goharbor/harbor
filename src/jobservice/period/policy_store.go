@@ -119,7 +119,9 @@ func (ps *policyStore) serve() (err error) {
 	psc := redis.PubSubConn{
 		Conn: conn,
 	}
-	defer psc.Close()
+	defer func() {
+		_ = psc.Close()
+	}()
 
 	// Subscribe channel
 	err = psc.Subscribe(redis.Args{}.AddFlat(rds.KeyPeriodicNotification(ps.namespace))...)
@@ -182,7 +184,9 @@ func (ps *policyStore) serve() (err error) {
 			}
 		}()
 		// Unsubscribe all
-		psc.Unsubscribe()
+		if err := psc.Unsubscribe(); err != nil {
+			logger.Errorf("unsubscribe: %s", err)
+		}
 		// Confirm result
 		// Add timeout in case unsubscribe failed
 		select {
@@ -245,7 +249,9 @@ func (ps *policyStore) sync(m *message) error {
 // Load all the policies from the backend to store
 func (ps *policyStore) load() error {
 	conn := ps.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	bytes, err := redis.Values(conn.Do("ZRANGE", rds.KeyPeriodicPolicy(ps.namespace), 0, -1))
 	if err != nil {

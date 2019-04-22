@@ -93,7 +93,7 @@ func (c *Context) Init() error {
 // Build implements the same method in env.JobContext interface
 // This func will build the job execution context before running
 func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
-	if tracker == nil {
+	if tracker == nil || tracker.Job() == nil {
 		return nil, errors.New("nil job tracker")
 	}
 
@@ -101,6 +101,7 @@ func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
 		sysContext: c.sysContext,
 		cfgMgr:     c.cfgMgr,
 		properties: make(map[string]interface{}),
+		tracker:    tracker,
 	}
 
 	// Copy properties
@@ -112,16 +113,17 @@ func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
 
 	// Refresh config properties
 	err := c.cfgMgr.Load()
-	props := c.cfgMgr.GetAll()
 	if err != nil {
 		return nil, err
 	}
+
+	props := c.cfgMgr.GetAll()
 	for k, v := range props {
 		jContext.properties[k] = v
 	}
 
 	// Set loggers for job
-	lg, err := createLoggers(c.tracker.Job().Info.JobID)
+	lg, err := createLoggers(tracker.Job().Info.JobID)
 	if err != nil {
 		return nil, err
 	}
@@ -176,20 +178,20 @@ func createLoggers(jobID string) (logger.Interface, error) {
 	lOptions := make([]logger.Option, 0)
 	for _, lc := range config.DefaultConfig.JobLoggerConfigs {
 		// For running job, the depth should be 5
-		if lc.Name == logger.LoggerNameFile || lc.Name == logger.LoggerNameStdOutput || lc.Name == logger.LoggerNameDB {
+		if lc.Name == logger.NameFile || lc.Name == logger.NameStdOutput || lc.Name == logger.NameDB {
 			if lc.Settings == nil {
 				lc.Settings = map[string]interface{}{}
 			}
 			lc.Settings["depth"] = 5
 		}
-		if lc.Name == logger.LoggerNameFile || lc.Name == logger.LoggerNameDB {
+		if lc.Name == logger.NameFile || lc.Name == logger.NameDB {
 			// Need extra param
 			fSettings := map[string]interface{}{}
 			for k, v := range lc.Settings {
 				// Copy settings
 				fSettings[k] = v
 			}
-			if lc.Name == logger.LoggerNameFile {
+			if lc.Name == logger.NameFile {
 				// Append file name param
 				fSettings["filename"] = fmt.Sprintf("%s.log", jobID)
 				lOptions = append(lOptions, logger.BackendOption(lc.Name, lc.Level, fSettings))

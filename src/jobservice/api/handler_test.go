@@ -53,7 +53,7 @@ type APIHandlerTestSuite struct {
 
 // SetupSuite prepares test suite
 func (suite *APIHandlerTestSuite) SetupSuite() {
-	os.Setenv(secretKey, fakeSecret)
+	_ = os.Setenv(secretKey, fakeSecret)
 
 	suite.client = &http.Client{
 		Timeout: 10 * time.Second,
@@ -65,14 +65,17 @@ func (suite *APIHandlerTestSuite) SetupSuite() {
 
 	suite.createServer()
 
-	go suite.server.Start()
+	go func() {
+		_ = suite.server.Start()
+	}()
+
 	<-time.After(200 * time.Millisecond)
 }
 
 // TearDownSuite clears test suite
 func (suite *APIHandlerTestSuite) TearDownSuite() {
-	os.Unsetenv(secretKey)
-	suite.server.Stop()
+	_ = os.Unsetenv(secretKey)
+	_ = suite.server.Stop()
 	suite.cancel()
 }
 
@@ -83,9 +86,9 @@ func TestAPIHandlerTestSuite(t *testing.T) {
 
 // TestUnAuthorizedAccess ...
 func (suite *APIHandlerTestSuite) TestUnAuthorizedAccess() {
-	os.Unsetenv(secretKey)
+	_ = os.Unsetenv(secretKey)
 	defer func() {
-		os.Setenv(secretKey, fakeSecret)
+		_ = os.Setenv(secretKey, fakeSecret)
 	}()
 
 	_, code := suite.getReq(fmt.Sprintf("%s/%s", suite.APIAddr, "jobs/fake_job"))
@@ -327,7 +330,9 @@ func (suite *APIHandlerTestSuite) postReq(url string, data []byte) ([]byte, int)
 		resData []byte
 	)
 
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
 	if res.ContentLength > 0 {
 		resData, err = ioutil.ReadAll(res.Body)
 		if err != nil {
@@ -352,7 +357,10 @@ func (suite *APIHandlerTestSuite) getReq(url string) ([]byte, int) {
 		return nil, 0
 	}
 
-	defer res.Body.Close()
+	defer func() {
+		_ = res.Body.Close()
+	}()
+
 	data, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, 0

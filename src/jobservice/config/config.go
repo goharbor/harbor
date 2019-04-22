@@ -24,20 +24,19 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	yaml "gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v2"
 )
 
 const (
-	jobServiceProtocol           = "JOB_SERVICE_PROTOCOL"
-	jobServicePort               = "JOB_SERVICE_PORT"
-	jobServiceHTTPCert           = "JOB_SERVICE_HTTPS_CERT"
-	jobServiceHTTPKey            = "JOB_SERVICE_HTTPS_KEY"
-	jobServiceWorkerPoolBackend  = "JOB_SERVICE_POOL_BACKEND"
-	jobServiceWorkers            = "JOB_SERVICE_POOL_WORKERS"
-	jobServiceRedisURL           = "JOB_SERVICE_POOL_REDIS_URL"
-	jobServiceRedisNamespace     = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
-	jobServiceCoreServerEndpoint = "CORE_URL"
-	jobServiceAuthSecret         = "JOBSERVICE_SECRET"
+	jobServiceProtocol          = "JOB_SERVICE_PROTOCOL"
+	jobServicePort              = "JOB_SERVICE_PORT"
+	jobServiceHTTPCert          = "JOB_SERVICE_HTTPS_CERT"
+	jobServiceHTTPKey           = "JOB_SERVICE_HTTPS_KEY"
+	jobServiceWorkerPoolBackend = "JOB_SERVICE_POOL_BACKEND"
+	jobServiceWorkers           = "JOB_SERVICE_POOL_WORKERS"
+	jobServiceRedisURL          = "JOB_SERVICE_POOL_REDIS_URL"
+	jobServiceRedisNamespace    = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
+	jobServiceAuthSecret        = "JOBSERVICE_SECRET"
 
 	// JobServiceProtocolHTTPS points to the 'https' protocol
 	JobServiceProtocolHTTPS = "https"
@@ -291,11 +290,11 @@ func (c *Configuration) validate() error {
 		}
 
 		if !strings.HasPrefix(c.PoolConfig.RedisPoolCfg.RedisURL, redisSchema) {
-			return errors.New("Invalid redis URL")
+			return errors.New("invalid redis URL")
 		}
 
 		if _, err := url.Parse(c.PoolConfig.RedisPoolCfg.RedisURL); err != nil {
-			return fmt.Errorf("Invalid redis URL: %s", err.Error())
+			return fmt.Errorf("invalid redis URL: %s", err.Error())
 		}
 
 		if utils.IsEmptyStr(c.PoolConfig.RedisPoolCfg.Namespace) {

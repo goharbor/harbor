@@ -138,7 +138,9 @@ func (w *basicWorker) Start() error {
 			logger.Infof("Basic worker is stopped")
 		}()
 		<-w.context.SystemContext.Done()
-		w.scheduler.Stop()
+		if err := w.scheduler.Stop(); err != nil {
+			logger.Errorf("stop scheduler error: %s", err)
+		}
 		w.pool.Stop()
 	}()
 
@@ -318,7 +320,7 @@ func (w *basicWorker) StopJob(jobID string) error {
 
 	if job.RunningStatus.Compare(job.Status(t.Job().Info.Status)) < 0 {
 		// Job has been in the final states
-		return errors.Errorf("mismatch job status %s for stopping job %s", t.Job().Info.Status, jobID)
+		return errors.Errorf("mismatch job status for stopping job: %s, job status %s is behind %s", jobID, t.Job().Info.Status, job.RunningStatus)
 	}
 
 	switch t.Job().Info.JobKind {
@@ -453,7 +455,9 @@ func (w *basicWorker) registerJob(name string, j interface{}) (err error) {
 // Ping the redis server
 func (w *basicWorker) ping() error {
 	conn := w.redisPool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	var err error
 	for count := 1; count <= pingRedisMaxTimes; count++ {

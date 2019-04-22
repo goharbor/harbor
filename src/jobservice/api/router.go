@@ -16,6 +16,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/jobservice/errs"
@@ -68,9 +69,12 @@ func (br *BaseRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.URL.String() != fmt.Sprintf("%s/%s/stats", baseRoute, apiVersion) {
 		if err := br.authenticator.DoAuth(req); err != nil {
 			authErr := errs.UnauthorizedError(err)
+			if authErr == nil {
+				authErr = errors.Errorf("unauthorized: %s", err)
+			}
 			logger.Errorf("Serve http request '%s %s' failed with error: %s", req.Method, req.URL.String(), authErr.Error())
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte(authErr.Error()))
+			writeDate(w, []byte(authErr.Error()))
 			return
 		}
 	}

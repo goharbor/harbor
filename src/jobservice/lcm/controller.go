@@ -68,7 +68,9 @@ func NewController(ctx *env.Context, ns string, pool *redis.Pool, callback job.H
 
 // Serve ...
 func (bc *basicController) Serve() error {
+	bc.wg.Add(1)
 	go bc.loopForRestoreDeadStatus()
+
 	logger.Info("Status restoring loop is started")
 
 	return nil
@@ -112,7 +114,6 @@ func (bc *basicController) loopForRestoreDeadStatus() {
 	token := make(chan bool, 1)
 	token <- true
 
-	bc.wg.Add(1)
 	for {
 		<-token
 
@@ -157,7 +158,9 @@ func (bc *basicController) restoreDeadStatus() error {
 // popOneDead retrieves one dead status from the backend Q from lowest to highest
 func (bc *basicController) popOneDead() (*job.SimpleStatusChange, error) {
 	conn := bc.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	key := rds.KeyStatusUpdateRetryQueue(bc.namespace)
 	v, err := rds.ZPopMin(conn, key)

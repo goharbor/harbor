@@ -7,12 +7,12 @@ import (
 )
 
 const (
-	// LoggerNameFile is unique name of the file logger.
-	LoggerNameFile = "FILE"
-	// LoggerNameStdOutput is the unique name of the std logger.
-	LoggerNameStdOutput = "STD_OUTPUT"
-	// LoggerNameDB is the unique name of the DB logger.
-	LoggerNameDB = "DB"
+	// NameFile is unique name of the file logger.
+	NameFile = "FILE"
+	// NameStdOutput is the unique name of the std logger.
+	NameStdOutput = "STD_OUTPUT"
+	// NameDB is the unique name of the DB logger.
+	NameDB = "DB"
 )
 
 // Declaration is used to declare a supported logger.
@@ -31,11 +31,11 @@ type Declaration struct {
 // log info.
 var knownLoggers = map[string]*Declaration{
 	// File logger
-	LoggerNameFile: {FileFactory, FileSweeperFactory, FileGetterFactory, false},
+	NameFile: {FileFactory, FileSweeperFactory, FileGetterFactory, false},
 	// STD output(both stdout and stderr) logger
-	LoggerNameStdOutput: {StdFactory, nil, nil, true},
+	NameStdOutput: {StdFactory, nil, nil, true},
 	// DB logger
-	LoggerNameDB: {DBFactory, DBSweeperFactory, DBGetterFactory, false},
+	NameDB: {DBFactory, DBSweeperFactory, DBGetterFactory, false},
 }
 
 // IsKnownLogger checks if the logger is supported with name.
@@ -97,11 +97,11 @@ func GetLoggerName(l Interface) string {
 
 	switch l.(type) {
 	case *backend.DBLogger:
-		name = LoggerNameDB
+		name = NameDB
 	case *backend.StdOutputLogger:
-		name = LoggerNameStdOutput
+		name = NameStdOutput
 	case *backend.FileLogger:
-		name = LoggerNameFile
+		name = NameFile
 	default:
 		name = reflect.TypeOf(l).String()
 	}

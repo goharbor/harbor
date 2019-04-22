@@ -44,6 +44,7 @@ type Client interface {
 // Client is used to post the related data to the interested parties.
 type basicClient struct {
 	client *http.Client
+	ctx    context.Context
 }
 
 // NewClient return the ptr of the new hook client
@@ -81,6 +82,7 @@ func NewClient(ctx context.Context) Client {
 
 	return &basicClient{
 		client: client,
+		ctx:    ctx,
 	}
 }
 
@@ -112,7 +114,9 @@ func (bc *basicClient) SendEvent(evt *Event) error {
 		return err
 	}
 
-	defer res.Body.Close() // close connection for reuse
+	defer func() {
+		_ = res.Body.Close()
+	}() // close connection for reuse
 
 	// Should be 200
 	if res.StatusCode != http.StatusOK {

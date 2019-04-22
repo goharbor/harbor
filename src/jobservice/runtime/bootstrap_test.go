@@ -60,9 +60,11 @@ func (suite *BootStrapTestSuite) TearDownSuite() {
 
 	pool := tests.GiveMeRedisPool()
 	conn := pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
-	tests.ClearAll(tests.GiveMeTestNamespace(), conn)
+	_ = tests.ClearAll(tests.GiveMeTestNamespace(), conn)
 }
 
 // TestBootStrapTestSuite is entry of go test

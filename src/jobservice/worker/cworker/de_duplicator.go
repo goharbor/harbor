@@ -64,7 +64,9 @@ func (rdd *redisDeDuplicator) MustUnique(jobName string, params job.Parameters) 
 	}
 
 	conn := rdd.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	args := []interface{}{
 		uniqueKey,
@@ -98,7 +100,9 @@ func (rdd *redisDeDuplicator) DelUniqueSign(jobName string, params job.Parameter
 	}
 
 	conn := rdd.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	if _, err := conn.Do("DEL", uniqueKey); err != nil {
 		return fmt.Errorf("delete unique job error: %s", err)

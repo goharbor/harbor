@@ -14,16 +14,19 @@
 package core
 
 import (
+	"context"
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
+	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"testing"
+	"time"
 )
 
 // ControllerTestSuite tests functions of core controller
@@ -126,7 +129,7 @@ func (suite *ControllerTestSuite) TestJobActions() {
 // TestCheckStatus ...
 func (suite *ControllerTestSuite) TestCheckStatus() {
 	suite.worker.On("Stats").Return(&worker.Stats{
-		[]*worker.StatsData{
+		Pools: []*worker.StatsData{
 			{
 				Status: "running",
 			},
@@ -175,6 +178,61 @@ func (suite *ControllerTestSuite) TestInvalidChecks() {
 	req.Job.Metadata.Cron = "x x x x x x"
 	_, err = suite.ctl.LaunchJob(req)
 	assert.NotNil(suite.T(), err, "invalid job name: error expected but got nil")
+}
+
+// TestGetPeriodicExecutions tests GetPeriodicExecutions
+func (suite *ControllerTestSuite) TestGetPeriodicExecutions() {
+	pool := tests.GiveMeRedisPool()
+	namespace := tests.GiveMeTestNamespace()
+
+	jobID := utils.MakeIdentifier()
+	nID := time.Now().Unix()
+	mockJobStats := &job.Stats{
+		Info: &job.StatsInfo{
+			JobID:      jobID,
+			Status:     job.ScheduledStatus.String(),
+			JobKind:    job.KindPeriodic,
+			JobName:    job.SampleJob,
+			IsUnique:   false,
+			CronSpec:   "0 0 * * * *",
+			NumericPID: nID,
+		},
+	}
+
+	t := job.NewBasicTrackerWithStats(context.TODO(), mockJobStats, namespace, pool, nil)
+	err := t.Save()
+	require.NoError(suite.T(), err)
+
+	executionID := utils.MakeIdentifier()
+	runAt := time.Now().Add(1 * time.Hour).Unix()
+	executionStats := &job.Stats{
+		Info: &job.StatsInfo{
+			JobID:         executionID,
+			Status:        job.ScheduledStatus.String(),
+			JobKind:       job.KindScheduled,
+			JobName:       job.SampleJob,
+			IsUnique:      false,
+			CronSpec:      "0 0 * * * *",
+			RunAt:         runAt,
+			EnqueueTime:   runAt,
+			UpstreamJobID: jobID,
+		},
+	}
+
+	t2 := job.NewBasicTrackerWithStats(context.TODO(), executionStats, namespace, pool, nil)
+	err = t2.Save()
+	require.NoError(suite.T(), err)
+
+	suite.lcmCtl.On("Track", jobID).Return(t, nil)
+	suite.lcmCtl.On("Track", executionID).Return(t2, nil)
+
+	_, total, err := suite.ctl.GetPeriodicExecutions(jobID, &query.Parameter{
+		PageSize:   10,
+		PageNumber: 1,
+		Extras:     make(query.ExtraParameters),
+	})
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), int64(1), total)
 }
 
 func createJobReq(kind string) *job.Request {

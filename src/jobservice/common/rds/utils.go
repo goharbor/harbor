@@ -19,11 +19,11 @@ func HmSet(conn redis.Conn, key string, fieldAndValues ...interface{}) error {
 	}
 
 	if utils.IsEmptyStr(key) {
-		errors.New("no key specified to do HMSET")
+		return errors.New("no key specified to do HMSET")
 	}
 
 	if len(fieldAndValues) == 0 {
-		errors.New("no properties specified to do HMSET")
+		return errors.New("no properties specified to do HMSET")
 	}
 
 	args := make([]interface{}, 0, len(fieldAndValues)+2)

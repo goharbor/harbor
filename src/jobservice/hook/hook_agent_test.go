@@ -70,9 +70,11 @@ func (suite *HookAgentTestSuite) SetupSuite() {
 // TearDownSuite prepares test suites
 func (suite *HookAgentTestSuite) TearDownSuite() {
 	conn := suite.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
-	tests.ClearAll(suite.namespace, conn)
+	_ = tests.ClearAll(suite.namespace, conn)
 }
 
 // TestEventSending ...
@@ -90,7 +92,7 @@ func (suite *HookAgentTestSuite) TestEventSending() {
 				done <- true
 			}
 		}()
-		fmt.Fprintln(w, "ok")
+		_, _ = fmt.Fprintln(w, "ok")
 	}))
 	defer ts.Close()
 
@@ -102,7 +104,8 @@ func (suite *HookAgentTestSuite) TestEventSending() {
 
 	agent := NewAgent(suite.envContext, suite.namespace, suite.pool)
 	agent.Attach(suite.lcmCtl)
-	agent.Serve()
+	err := agent.Serve()
+	require.NoError(suite.T(), err, "agent serve: nil error expected but got %s", err)
 
 	go func() {
 		defer func() {
@@ -169,7 +172,9 @@ func (suite *HookAgentTestSuite) TestRetryAndPopMin() {
 
 	// Mock job stats
 	conn := suite.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	key := rds.KeyJobStats(suite.namespace, "fake_job_ID")
 	_, err := conn.Do("HSET", key, "status", job.SuccessStatus.String())

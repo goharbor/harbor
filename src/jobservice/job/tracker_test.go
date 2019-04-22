@@ -16,20 +16,23 @@ package job
 
 import (
 	"context"
+	"testing"
+	"time"
+
+	"github.com/goharbor/harbor/src/jobservice/common/query"
+
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 // TrackerTestSuite tests functions of tracker
 type TrackerTestSuite struct {
 	suite.Suite
 
-	tracker   *basicTracker
 	namespace string
 	pool      *redis.Pool
 }
@@ -45,22 +48,14 @@ func (suite *TrackerTestSuite) SetupSuite() {
 	suite.pool = tests.GiveMeRedisPool()
 }
 
-// SetupTest prepares for test cases
-func (suite *TrackerTestSuite) SetupTest() {
-	suite.tracker = &basicTracker{
-		namespace: suite.namespace,
-		context:   context.Background(),
-		pool:      suite.pool,
-		callback:  func(hookURL string, change *StatusChange) error { return nil },
-	}
-}
-
 // TearDownSuite prepares test suites
 func (suite *TrackerTestSuite) TearDownSuite() {
 	conn := suite.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
-	tests.ClearAll(suite.namespace, conn)
+	_ = tests.ClearAll(suite.namespace, conn)
 }
 
 // TestTracker tests tracker
@@ -76,41 +71,148 @@ func (suite *TrackerTestSuite) TestTracker() {
 		},
 	}
 
-	suite.tracker.jobStats = mockJobStats
-	suite.tracker.jobID = jobID
+	tracker := NewBasicTrackerWithStats(
+		context.TODO(),
+		mockJobStats,
+		suite.namespace,
+		suite.pool,
+		func(hookURL string, change *StatusChange) error {
+			return nil
+		},
+	)
 
-	err := suite.tracker.Save()
+	err := tracker.Save()
 	require.Nil(suite.T(), err, "save: nil error expected but got %s", err)
 
-	s, err := suite.tracker.Status()
+	s, err := tracker.Status()
 	assert.Nil(suite.T(), err, "get status: nil error expected but got %s", err)
 	assert.Equal(suite.T(), SuccessStatus, s, "get status: expected pending but got %s", s)
 
-	j := suite.tracker.Job()
+	j := tracker.Job()
 	assert.Equal(suite.T(), jobID, j.Info.JobID, "job: expect job ID %s but got %s", jobID, j.Info.JobID)
 
-	err = suite.tracker.Update("web_hook_url", "http://hook.url")
+	err = tracker.Update("web_hook_url", "http://hook.url")
 	assert.Nil(suite.T(), err, "update: nil error expected but got %s", err)
 
-	err = suite.tracker.Load()
+	err = tracker.Load()
 	assert.Nil(suite.T(), err, "load: nil error expected but got %s", err)
 	assert.Equal(
 		suite.T(),
 		"http://hook.url",
-		suite.tracker.jobStats.Info.WebHookURL,
+		tracker.Job().Info.WebHookURL,
 		"web hook: expect %s but got %s",
 		"http://hook.url",
-		suite.tracker.jobStats.Info.WebHookURL,
+		tracker.Job().Info.WebHookURL,
 	)
 
-	err = suite.tracker.Run()
+	err = tracker.Run()
 	assert.Error(suite.T(), err, "run: non nil error expected but got nil")
-	err = suite.tracker.CheckIn("check in")
+	err = tracker.CheckIn("check in")
 	assert.Nil(suite.T(), err, "check in: nil error expected but got %s", err)
-	err = suite.tracker.Succeed()
+	err = tracker.Succeed()
 	assert.Nil(suite.T(), err, "succeed: nil error expected but got %s", err)
-	err = suite.tracker.Stop()
+	err = tracker.Stop()
 	assert.Nil(suite.T(), err, "stop: nil error expected but got %s", err)
-	err = suite.tracker.Fail()
+	err = tracker.Fail()
 	assert.Nil(suite.T(), err, "fail: nil error expected but got %s", err)
+
+	t := NewBasicTrackerWithID(
+		context.TODO(),
+		jobID,
+		suite.namespace,
+		suite.pool,
+		func(hookURL string, change *StatusChange) error {
+			return nil
+		},
+	)
+	err = t.Load()
+	assert.NoError(suite.T(), err)
+
+	err = t.Expire()
+	assert.NoError(suite.T(), err)
+}
+
+// TestPeriodicTracker tests tracker of periodic
+func (suite *TrackerTestSuite) TestPeriodicTracker() {
+	jobID := utils.MakeIdentifier()
+	nID := time.Now().Unix()
+	mockJobStats := &Stats{
+		Info: &StatsInfo{
+			JobID:      jobID,
+			Status:     ScheduledStatus.String(),
+			JobKind:    KindPeriodic,
+			JobName:    SampleJob,
+			IsUnique:   false,
+			CronSpec:   "0 0 * * * *",
+			NumericPID: nID,
+		},
+	}
+
+	t := NewBasicTrackerWithStats(context.TODO(), mockJobStats, suite.namespace, suite.pool, nil)
+	err := t.Save()
+	require.NoError(suite.T(), err)
+
+	executionID := utils.MakeIdentifier()
+	runAt := time.Now().Add(1 * time.Hour).Unix()
+	executionStats := &Stats{
+		Info: &StatsInfo{
+			JobID:         executionID,
+			Status:        ScheduledStatus.String(),
+			JobKind:       KindScheduled,
+			JobName:       SampleJob,
+			IsUnique:      false,
+			CronSpec:      "0 0 * * * *",
+			RunAt:         runAt,
+			EnqueueTime:   runAt,
+			UpstreamJobID: jobID,
+		},
+	}
+
+	t2 := NewBasicTrackerWithStats(context.TODO(), executionStats, suite.namespace, suite.pool, nil)
+	err = t2.Save()
+	require.NoError(suite.T(), err)
+
+	id, err := t.NumericID()
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), nID, id)
+
+	_, total, err := t.Executions(&query.Parameter{
+		PageNumber: 1,
+		PageSize:   10,
+		Extras:     make(query.ExtraParameters),
+	})
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), int64(1), total)
+
+	err = t2.PeriodicExecutionDone()
+	require.NoError(suite.T(), err)
+}
+
+// TestPushForRetry tests push for retry
+func (suite *TrackerTestSuite) TestPushForRetry() {
+	ID := utils.MakeIdentifier()
+	runAt := time.Now().Add(1 * time.Hour).Unix()
+	jobStats := &Stats{
+		Info: &StatsInfo{
+			JobID:       ID,
+			Status:      ScheduledStatus.String(),
+			JobKind:     KindScheduled,
+			JobName:     SampleJob,
+			IsUnique:    false,
+			RunAt:       runAt,
+			EnqueueTime: runAt,
+		},
+	}
+
+	t := &basicTracker{
+		namespace: suite.namespace,
+		context:   context.TODO(),
+		pool:      suite.pool,
+		jobID:     ID,
+		jobStats:  jobStats,
+		callback:  nil,
+	}
+
+	err := t.pushToQueueForRetry(RunningStatus)
+	require.NoError(suite.T(), err)
 }

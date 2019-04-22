@@ -166,11 +166,13 @@ func (bt *basicTracker) Job() *Stats {
 // Update the properties of the job stats
 func (bt *basicTracker) Update(fieldAndValues ...interface{}) error {
 	if len(fieldAndValues) == 0 {
-		errors.New("no properties specified to update")
+		return errors.New("no properties specified to update")
 	}
 
 	conn := bt.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	key := rds.KeyJobStats(bt.namespace, bt.jobID)
 	args := []interface{}{"update_time", time.Now().Unix()} // update timestamp
@@ -183,7 +185,9 @@ func (bt *basicTracker) Update(fieldAndValues ...interface{}) error {
 func (bt *basicTracker) Status() (Status, error) {
 	// Retrieve the latest status again in case get the outdated one.
 	conn := bt.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	rootKey := rds.KeyJobStats(bt.namespace, bt.jobID)
 	return getStatus(conn, rootKey)
@@ -207,7 +211,9 @@ func (bt *basicTracker) PeriodicExecutionDone() error {
 	key := rds.KeyUpstreamJobAndExecutions(bt.namespace, bt.jobStats.Info.UpstreamJobID)
 
 	conn := bt.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	args := []interface{}{key, "XX", -1, bt.jobID}
 	_, err := conn.Do("ZADD", args...)
@@ -242,7 +248,9 @@ func (bt *basicTracker) Executions(q *query.Parameter) ([]string, int64, error) 
 	}
 
 	conn := bt.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	key := rds.KeyUpstreamJobAndExecutions(bt.namespace, bt.jobID)
 
@@ -295,7 +303,9 @@ func (bt *basicTracker) Executions(q *query.Parameter) ([]string, int64, error) 
 // Expire job stats
 func (bt *basicTracker) Expire() error {
 	conn := bt.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	key := rds.KeyJobStats(bt.namespace, bt.jobID)
 	num, err := conn.Do("EXPIRE", key, statDataExpireTime)
@@ -372,11 +382,13 @@ func (bt *basicTracker) Succeed() error {
 // Save the stats of job tracked by this tracker
 func (bt *basicTracker) Save() (err error) {
 	if bt.jobStats == nil {
-		errors.New("nil job stats to save")
+		return errors.New("nil job stats to save")
 	}
 
 	conn := bt.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	// Alliance
 	stats := bt.jobStats
@@ -526,7 +538,9 @@ func (bt *basicTracker) pushToQueueForRetry(targetStatus Status) error {
 	}
 
 	conn := bt.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	key := rds.KeyStatusUpdateRetryQueue(bt.namespace)
 	args := []interface{}{key, "NX", time.Now().Unix(), rawJSON}
@@ -557,7 +571,9 @@ func (bt *basicTracker) retryUpdateStatus(targetStatus Status) {
 
 func (bt *basicTracker) compareAndSet(targetStatus Status) error {
 	conn := bt.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	rootKey := rds.KeyJobStats(bt.namespace, bt.jobID)
 
@@ -581,7 +597,9 @@ func (bt *basicTracker) compareAndSet(targetStatus Status) error {
 // retrieve the stats of job tracked by this tracker from the backend data
 func (bt *basicTracker) retrieve() error {
 	conn := bt.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	key := rds.KeyJobStats(bt.namespace, bt.jobID)
 	vals, err := redis.Strings(conn.Do("HGETALL", key))

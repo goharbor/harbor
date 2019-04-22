@@ -37,7 +37,7 @@ func RedisKeyLastPeriodicEnqueue(namespace string) string {
 	return RedisNamespacePrefix(namespace) + "last_periodic_enqueue"
 }
 
-//----------------------------------------------------------
+// ----------------------------------------------------------
 
 // KeyNamespacePrefix returns the based key based on the namespace.
 func KeyNamespacePrefix(namespace string) string {

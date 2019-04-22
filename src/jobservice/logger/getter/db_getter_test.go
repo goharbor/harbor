@@ -39,14 +39,16 @@ func TestDBGetter(t *testing.T) {
 	require.Nil(t, err)
 
 	l.Debug("JobLog Debug: TestDBLoggerGetter")
-	l.Close()
+	err = l.Close()
+	require.NoError(t, err)
 
 	dbGetter := NewDBGetter()
 	ll, err := dbGetter.Retrieve(uuid)
 	require.Nil(t, err)
 	log.Infof("get logger %s", ll)
 
-	sweeper.PrepareDBSweep()
+	err = sweeper.PrepareDBSweep()
+	require.NoError(t, err)
 	dbSweeper := sweeper.NewDBSweeper(-1)
 	count, err := dbSweeper.Sweep()
 	require.Nil(t, err)
@@ -60,7 +62,8 @@ func TestDBGetterError(t *testing.T) {
 	require.Nil(t, err)
 
 	l.Debug("JobLog Debug: TestDBLoggerGetter")
-	l.Close()
+	err = l.Close()
+	require.NoError(t, err)
 
 	dbGetter := NewDBGetter()
 	_, err = dbGetter.Retrieve("")
@@ -68,7 +71,8 @@ func TestDBGetterError(t *testing.T) {
 	_, err = dbGetter.Retrieve("not_exist_uuid")
 	require.NotNil(t, err)
 
-	sweeper.PrepareDBSweep()
+	err = sweeper.PrepareDBSweep()
+	require.NoError(t, err)
 	dbSweeper := sweeper.NewDBSweeper(-1)
 	count, err := dbSweeper.Sweep()
 	require.Nil(t, err)

@@ -86,7 +86,9 @@ func (bs *basicScheduler) Schedule(p *Policy) (int64, error) {
 	}
 
 	conn := bs.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	// Do the 1st round of enqueuing
 	bs.enqueuer.scheduleNextJobs(p, conn)
@@ -140,7 +142,9 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 	}
 
 	conn := bs.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	// Get the un-scheduling policy object
 	bytes, err := redis.Values(conn.Do("ZRANGEBYSCORE", rds.KeyPeriodicPolicy(bs.namespace), numericID, numericID))
@@ -241,7 +245,9 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 // This is a try best action
 func (bs *basicScheduler) clearDirtyJobs() {
 	conn := bs.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	nowEpoch := time.Now().Unix()
 	scope := nowEpoch - int64(enqueuerHorizon/time.Minute)*60

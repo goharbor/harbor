@@ -17,19 +17,21 @@ package hook
 import (
 	"context"
 	"encoding/json"
-	"github.com/pkg/errors"
 	"math/rand"
 	"net/url"
 	"time"
 
+	"github.com/pkg/errors"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
+
+	"sync"
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/gomodule/redigo/redis"
-	"sync"
 )
 
 const (
@@ -146,8 +148,11 @@ func (ba *basicAgent) Serve() error {
 		return errors.New("nil life cycle controller of hook agent")
 	}
 
+	ba.wg.Add(1)
 	go ba.loopRetry()
 	logger.Info("Hook event retrying loop is started")
+
+	ba.wg.Add(1)
 	go ba.serve()
 	logger.Info("Basic hook agent is started")
 
@@ -160,7 +165,6 @@ func (ba *basicAgent) serve() {
 		ba.wg.Done()
 	}()
 
-	ba.wg.Add(1)
 	for {
 		select {
 		case evt := <-ba.events:
@@ -219,7 +223,9 @@ func (ba *basicAgent) pushForRetry(evt *Event) error {
 	}
 
 	conn := ba.redisPool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	key := rds.KeyHookEventRetryQueue(ba.namespace)
 	args := make([]interface{}, 0)
@@ -242,8 +248,6 @@ func (ba *basicAgent) loopRetry() {
 		ba.wg.Done()
 	}()
 
-	ba.wg.Add(1)
-
 	token := make(chan bool, 1)
 	token <- true
 
@@ -262,7 +266,7 @@ func (ba *basicAgent) loopRetry() {
 			case <-time.After(waitInterval):
 				// Just wait, do nothing
 			case <-ba.context.Done():
-				/// Terminated
+				// Terminated
 				return
 			}
 		}
@@ -300,7 +304,9 @@ func (ba *basicAgent) reSend() error {
 
 func (ba *basicAgent) popMinOne() (*Event, error) {
 	conn := ba.redisPool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	key := rds.KeyHookEventRetryQueue(ba.namespace)
 	minOne, err := rds.ZPopMin(conn, key)

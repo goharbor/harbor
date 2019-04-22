@@ -89,9 +89,11 @@ func (suite *CWorkerTestSuite) TearDownSuite() {
 	suite.context.WG.Wait()
 
 	conn := suite.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
-	tests.ClearAll(suite.namespace, conn)
+	_ = tests.ClearAll(suite.namespace, conn)
 }
 
 // TestCWorkerTestSuite is entry fo go test
@@ -234,7 +236,7 @@ func (j *fakeJob) Validate(params job.Parameters) error {
 
 func (j *fakeJob) Run(ctx job.Context, params job.Parameters) error {
 	ctx.OPCommand()
-	ctx.Checkin("done")
+	_ = ctx.Checkin("done")
 
 	return nil
 }
@@ -266,7 +268,7 @@ func (j *fakeLongRunJob) Run(ctx job.Context, params job.Parameters) error {
 		return nil
 	}
 
-	ctx.Checkin("done")
+	_ = ctx.Checkin("done")
 
 	return nil
 }

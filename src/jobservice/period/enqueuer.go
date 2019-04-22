@@ -150,7 +150,9 @@ func (e *enqueuer) nextTurn(isHit bool, enqErr bool) time.Duration {
 
 func (e *enqueuer) enqueue() {
 	conn := e.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	// Reset error track
 	e.lastEnqueueErr = nil
@@ -267,7 +269,9 @@ func (e *enqueuer) createExecution(p *Policy, runAt int64) *job.Stats {
 
 func (e *enqueuer) shouldEnqueue() bool {
 	conn := e.pool.Get()
-	defer conn.Close()
+	defer func() {
+		_ = conn.Close()
+	}()
 
 	// Acquired a lock before doing checking
 	// If failed, directly returns false.

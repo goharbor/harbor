@@ -47,11 +47,16 @@ func (suite *ConfigurationTestSuite) TestConfigLoadingSucceed() {
 
 // TestConfigLoadingWithEnv ...
 func (suite *ConfigurationTestSuite) TestConfigLoadingWithEnv() {
-	setENV()
-	defer unsetENV()
+	err := setENV()
+	require.Nil(suite.T(), err, "set envs: expect nil error but got error '%s'", err)
+
+	defer func() {
+		err := unsetENV()
+		require.Nil(suite.T(), err, "unset envs: expect nil error but got error '%s'", err)
+	}()
 
 	cfg := &Configuration{}
-	err := cfg.Load("../config_test.yml", true)
+	err = cfg.Load("../config_test.yml", true)
 	require.Nil(suite.T(), err, "load config from yaml file, expect nil error but got error '%s'", err)
 
 	assert.Equal(suite.T(), "https", cfg.Protocol, "expect protocol 'https', but got '%s'", cfg.Protocol)
@@ -118,28 +123,32 @@ func (suite *ConfigurationTestSuite) TestDefaultConfig() {
 	)
 }
 
-func setENV() {
-	os.Setenv("JOB_SERVICE_PROTOCOL", "https")
-	os.Setenv("JOB_SERVICE_PORT", "8989")
-	os.Setenv("JOB_SERVICE_HTTPS_CERT", "../server.crt")
-	os.Setenv("JOB_SERVICE_HTTPS_KEY", "../server.key")
-	os.Setenv("JOB_SERVICE_POOL_BACKEND", "redis")
-	os.Setenv("JOB_SERVICE_POOL_WORKERS", "8")
-	os.Setenv("JOB_SERVICE_POOL_REDIS_URL", "8.8.8.8:6379,100,password,0")
-	os.Setenv("JOB_SERVICE_POOL_REDIS_NAMESPACE", "ut_namespace")
-	os.Setenv("JOBSERVICE_SECRET", "js_secret")
-	os.Setenv("CORE_SECRET", "core_secret")
+func setENV() error {
+	err := os.Setenv("JOB_SERVICE_PROTOCOL", "https")
+	err = os.Setenv("JOB_SERVICE_PORT", "8989")
+	err = os.Setenv("JOB_SERVICE_HTTPS_CERT", "../server.crt")
+	err = os.Setenv("JOB_SERVICE_HTTPS_KEY", "../server.key")
+	err = os.Setenv("JOB_SERVICE_POOL_BACKEND", "redis")
+	err = os.Setenv("JOB_SERVICE_POOL_WORKERS", "8")
+	err = os.Setenv("JOB_SERVICE_POOL_REDIS_URL", "8.8.8.8:6379,100,password,0")
+	err = os.Setenv("JOB_SERVICE_POOL_REDIS_NAMESPACE", "ut_namespace")
+	err = os.Setenv("JOBSERVICE_SECRET", "js_secret")
+	err = os.Setenv("CORE_SECRET", "core_secret")
+
+	return err
 }
 
-func unsetENV() {
-	os.Unsetenv("JOB_SERVICE_PROTOCOL")
-	os.Unsetenv("JOB_SERVICE_PORT")
-	os.Unsetenv("JOB_SERVICE_HTTPS_CERT")
-	os.Unsetenv("JOB_SERVICE_HTTPS_KEY")
-	os.Unsetenv("JOB_SERVICE_POOL_BACKEND")
-	os.Unsetenv("JOB_SERVICE_POOL_WORKERS")
-	os.Unsetenv("JOB_SERVICE_POOL_REDIS_URL")
-	os.Unsetenv("JOB_SERVICE_POOL_REDIS_NAMESPACE")
-	os.Unsetenv("JOBSERVICE_SECRET")
-	os.Unsetenv("CORE_SECRET")
+func unsetENV() error {
+	err := os.Unsetenv("JOB_SERVICE_PROTOCOL")
+	err = os.Unsetenv("JOB_SERVICE_PORT")
+	err = os.Unsetenv("JOB_SERVICE_HTTPS_CERT")
+	err = os.Unsetenv("JOB_SERVICE_HTTPS_KEY")
+	err = os.Unsetenv("JOB_SERVICE_POOL_BACKEND")
+	err = os.Unsetenv("JOB_SERVICE_POOL_WORKERS")
+	err = os.Unsetenv("JOB_SERVICE_POOL_REDIS_URL")
+	err = os.Unsetenv("JOB_SERVICE_POOL_REDIS_NAMESPACE")
+	err = os.Unsetenv("JOBSERVICE_SECRET")
+	err = os.Unsetenv("CORE_SECRET")
+
+	return err
 }

@@ -118,7 +118,7 @@ func TranslateRedisAddress(commaFormat string) (string, bool) {
 		return "", false
 	}
 
-	urlParts := []string{}
+	urlParts := make([]string, 0)
 	// section[0] should be host:port
 	redisURL := fmt.Sprintf("redis://%s", sections[0])
 	if _, err := url.Parse(redisURL); err != nil {
