@@ -6,7 +6,7 @@ name = "pypi"
 [packages]
 pyyaml = "==4.2b1"
 click = "*"
-"jinja2" = "*"
+"jinja2" = ">=2.10.1"
 
 [dev-packages]
 pylint = "*"
