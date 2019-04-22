@@ -87,40 +87,7 @@ The parameters are described below - note that at the very least, you will need 
 * **http_proxy**: Config http proxy for Clair, e.g. `http://my.proxy.com:3128`.
 * **https_proxy**: Config https proxy for Clair, e.g. `http://my.proxy.com:3128`.
 * **no_proxy**: Config no proxy for Clair, e.g. `127.0.0.1,localhost,core,registry`.
-
-##### Optional parameters
-* **Email settings**: These parameters are needed for Harbor to be able to send a user a "password reset" email, and are only necessary if that functionality is needed.  Also, do note that by default SSL connectivity is _not_ enabled - if your SMTP server requires SSL, but does _not_ support STARTTLS, then you should enable SSL by setting **email_ssl = true**. Setting **email_insecure = true** if the email server uses a self-signed or untrusted certificate. For a detailed description about "email_identity" please refer to [rfc2595](https://tools.ietf.org/rfc/rfc2595.txt)
-  * email_server = smtp.mydomain.com 
-  * email_server_port = 25
-  * email_identity = 
-  * email_username = sample_admin@mydomain.com
-  * email_password = abc
-  * email_from = admin <sample_admin@mydomain.com>  
-  * email_ssl = false
-  * email_insecure = false
-
 * **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the Portal. _Note that the default username/password are **admin/Harbor12345** ._   
-* **auth_mode**: The type of authentication that is used. By default, it is **db_auth**, i.e. the credentials are stored in a database. 
-For LDAP authentication, set this to **ldap_auth**.  
-
-   **IMPORTANT:** When upgrading from an existing Harbor instance, you must make sure **auth_mode** is the same in ```harbor.cfg``` before launching the new version of Harbor. Otherwise, users 
-may not be able to log in after the upgrade.
-* **ldap_url**: The LDAP endpoint URL (e.g. `ldaps://ldap.mydomain.com`).  _Only used when **auth_mode** is set to *ldap_auth* ._    
-* **ldap_searchdn**: The DN of a user who has the permission to search an LDAP/AD server (e.g. `uid=admin,ou=people,dc=mydomain,dc=com`).
-* **ldap_search_pwd**: The password of the user specified by *ldap_searchdn*.
-* **ldap_basedn**: The base DN to look up a user, e.g. `ou=people,dc=mydomain,dc=com`.  _Only used when **auth_mode** is set to *ldap_auth* ._ 
-* **ldap_filter**: The search filter for looking up a user, e.g. `(objectClass=person)`.
-* **ldap_uid**: The attribute used to match a user during a LDAP search, it could be uid, cn, email or other attributes.
-* **ldap_scope**: The scope to search for a user, 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE. Default is 2. 
-* **ldap_timeout**: Timeout (in seconds)  when connecting to an LDAP Server. Default is 5.
-* **ldap_verify_cert**: Verify certificate from LDAP server. Default is true.
-* **ldap_group_basedn**: The base dn from which to lookup a group in LDAP/AD, e.g. `ou=group,dc=mydomain,dc=com`.
-* **ldap_group_filter**: The filter to search LDAP/AD group, e.g. `objectclass=group`.
-* **ldap_group_gid**: The attribute used to name a LDAP/AD group, it could be cn, name.
-* **ldap_group_scope**: The scope to search for ldap groups. 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE. Default is 2.
-* **self_registration**: (**on** or **off**. Default is **on**) Enable / Disable the ability for a user to register himself/herself. When disabled, new users can only be created by the Admin user, only an admin user can create new users in Harbor.  _NOTE: When **auth_mode** is set to **ldap_auth**, self-registration feature is **always** disabled, and this flag is ignored._  
-* **token_expiration**: The expiration time (in minutes) of a token created by token service, default is 30 minutes.
-* **project_creation_restriction**: The flag to control what users have permission to create projects.  By default everyone can create a project, set to "adminonly" such that only admin can create project.
 
 #### Configuring storage backend (optional)
 
@@ -139,7 +106,6 @@ registry_storage_provider_config="username: admin, password: ADMIN_PASS, authurl
 ```
 
 _NOTE: For detailed information on storage backend of a registry, refer to [Registry Configuration Reference](https://docs.docker.com/registry/configuration/) ._
-
 
 #### Finishing installation and starting Harbor
 Once **harbor.cfg** and storage backend (optional) are configured, install and start Harbor using the ```install.sh``` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
@@ -378,6 +344,9 @@ hostname = 192.168.0.2:8888
 
 4.Re-deploy Harbor referring to previous section "Managing Harbor's lifecycle".
 
+## Manage user settings
+After release 1.8.0, User settings are separated with system settings, and all user settings should be configured in web console or by HTTP request.
+Please refer [Configure User Settings](configure_user_settings.md) to config user settings.
 
 ## Performance tuning
 By default, Harbor limits the CPU usage of Clair container to 150000 and avoids its using up all the CPU resources. This is defined in the docker-compose.clair.yml file. You can modify it based on your hardware configuration.
