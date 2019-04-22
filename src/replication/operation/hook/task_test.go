@@ -61,31 +61,27 @@ func TestUpdateTask(t *testing.T) {
 		expectedStatus string
 	}{
 		{
-			inputStatus:    job.JobStatusPending,
+			inputStatus:    job.PendingStatus.String(),
 			expectedStatus: models.TaskStatusPending,
 		},
 		{
-			inputStatus:    job.JobStatusScheduled,
+			inputStatus:    job.ScheduledStatus.String(),
 			expectedStatus: models.TaskStatusInProgress,
 		},
 		{
-			inputStatus:    job.JobStatusRunning,
+			inputStatus:    job.RunningStatus.String(),
 			expectedStatus: models.TaskStatusInProgress,
 		},
 		{
-			inputStatus:    job.JobStatusStopped,
+			inputStatus:    job.StoppedStatus.String(),
 			expectedStatus: models.TaskStatusStopped,
 		},
 		{
-			inputStatus:    job.JobStatusCancelled,
-			expectedStatus: models.TaskStatusStopped,
-		},
-		{
-			inputStatus:    job.JobStatusError,
+			inputStatus:    job.ErrorStatus.String(),
 			expectedStatus: models.TaskStatusFailed,
 		},
 		{
-			inputStatus:    job.JobStatusSuccess,
+			inputStatus:    job.SuccessStatus.String(),
 			expectedStatus: models.TaskStatusSucceed,
 		},
 	}

@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/transfer"
 
@@ -30,7 +31,6 @@ import (
 	// register the DockerHub adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/dockerhub"
 	// register the Native adapter
-	"github.com/goharbor/harbor/src/jobservice/job"
 	_ "github.com/goharbor/harbor/src/replication/adapter/native"
 	// register the Huawei adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/huawei"

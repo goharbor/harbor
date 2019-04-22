@@ -22,18 +22,19 @@ import (
 
 // UpdateTask update the status of the task
 func UpdateTask(ctl operation.Controller, id int64, status string) error {
+	jobStatus := job.Status(status)
 	// convert the job status to task status
 	s := ""
-	switch status {
-	case job.JobStatusPending:
+	switch jobStatus {
+	case job.PendingStatus:
 		s = models.TaskStatusPending
-	case job.JobStatusScheduled, job.JobStatusRunning:
+	case job.ScheduledStatus, job.RunningStatus:
 		s = models.TaskStatusInProgress
-	case job.JobStatusStopped, job.JobStatusCancelled:
+	case job.StoppedStatus:
 		s = models.TaskStatusStopped
-	case job.JobStatusError:
+	case job.ErrorStatus:
 		s = models.TaskStatusFailed
-	case job.JobStatusSuccess:
+	case job.SuccessStatus:
 		s = models.TaskStatusSucceed
 	}
 	return ctl.UpdateTaskStatus(id, s)
