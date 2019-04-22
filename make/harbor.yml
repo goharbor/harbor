@@ -3,15 +3,19 @@
 #The IP address or hostname to access admin UI and registry service.
 #DO NOT use localhost or 127.0.0.1, because Harbor needs to be accessed by external clients.
 hostname: reg.mydomain.com
-# core, harbor
+
+# http related comfig
 http:
+  # port for http, default is 80. If https enabled, this port will redirect to https port
   port: 80
 
-# https:
-#   port: 443
-#   #The path of cert and key files for nginx
-#   certificate: /your/certificate/path
-#   private_key: /your/private/key/path
+# https related comfig
+https:
+  # https port for harbor, default is 443
+  port: 443
+  #The path of cert and key files for nginx
+  certificate: /data/cert/server.crt
+  private_key: /data/cert/server.key
 
 # Uncomment extearnal_url if you want to enable external proxy
 # And when it enabled the hostname will no longger used
