@@ -14,4 +14,21 @@ clr-modal {
     .label-inner-text{
         margin: 0;
     }
+    .cli-secret {
+        align-items: center;
+        .reset-cli {
+            height: 30px;
+        }
+        .btn-padding-less {
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+    }
+    .hidden-generate-cli {
+        font-size: 30px;
+        color: grey;
+        margin-left: 0.5rem;
+        cursor: pointer;
+        line-height: 30px;
+    }
 }

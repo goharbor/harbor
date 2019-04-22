@@ -106,7 +106,12 @@
         "CLI_PASSWORD": "CLI secreto",
         "CLI_PASSWORD_TIP": "Puede utilizar este generador CLI secreto como utilizando Docker / Helm CLI para acceder a puerto.",
         "COPY_SUCCESS": "Copiar el éxito",
-        "COPY_ERROR": "Copia no"
+        "COPY_ERROR": "Copia no",
+        "ADMIN_CIL_SECRET_BUTTON": "GENERATE SECRET",
+        "GENERATE_SUCCESS": "generate CLI secret success",
+        "GENERATE_ERROR": "generate CLI secret failed",
+        "CONFIRM_TITLE_CLI_GENERATE": "Are you sure you can regenerate secret?",
+        "CONFIRM_BODY_CLI_GENERATE": "If you regenerate cli secret, the old cli secret will be discarded"
     },
     "CHANGE_PWD": {
         "TITLE": "Cambiar contraseña",

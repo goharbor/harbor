@@ -93,7 +93,12 @@
         "CLI_PASSWORD": "CLI secret",
         "CLI_PASSWORD_TIP": "vous pouvez utiliser ce cli secret comme mot de passe quand utiliser docker / barre l'accès à harbor.",
         "COPY_SUCCESS": "copie de succès",
-        "COPY_ERROR": "copie a échoué"
+        "COPY_ERROR": "copie a échoué",
+        "ADMIN_CIL_SECRET_BUTTON": "GENERATE SECRET",
+        "GENERATE_SUCCESS": "generate CLI secret success",
+        "GENERATE_ERROR": "generate CLI secret failed",
+        "CONFIRM_TITLE_CLI_GENERATE": "Are you sure you can regenerate secret?",
+        "CONFIRM_BODY_CLI_GENERATE": "If you regenerate cli secret, the old cli secret will be discarded"
     },
     "CHANGE_PWD": {
         "TITLE": "Modifier le mot de passe",

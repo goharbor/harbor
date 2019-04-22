@@ -106,7 +106,12 @@
         "CLI_PASSWORD": "CLI secret",
         "CLI_PASSWORD_TIP": "You can use this cli secret as password when using docker/helm cli to access Harbor.",
         "COPY_SUCCESS": "copy success",
-        "COPY_ERROR": "copy failed"
+        "COPY_ERROR": "copy failed",
+        "ADMIN_CIL_SECRET_BUTTON": "GENERATE SECRET",
+        "GENERATE_SUCCESS": "generate CLI secret success",
+        "GENERATE_ERROR": "generate CLI secret failed",
+        "CONFIRM_TITLE_CLI_GENERATE": "Are you sure you can regenerate secret?",
+        "CONFIRM_BODY_CLI_GENERATE": "If you regenerate cli secret, the old cli secret will be discarded"
     },
     "CHANGE_PWD": {
         "TITLE": "Change Password",
