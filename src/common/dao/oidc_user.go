@@ -92,10 +92,17 @@ func GetOIDCUserByUserID(userID int) (*models.OIDCUser, error) {
 	return &oidcUsers[0], nil
 }
 
-// UpdateOIDCUser ...
+// UpdateOIDCUser updates the OIDCUser based on the input parm, only the column "secret" and "token" can be updated
 func UpdateOIDCUser(oidcUser *models.OIDCUser) error {
-	oidcUser.UpdateTime = time.Now()
-	_, err := GetOrmer().Update(oidcUser)
+	cols := []string{"secret", "token"}
+	_, err := GetOrmer().Update(oidcUser, cols...)
+	return err
+}
+
+// UpdateOIDCUserSecret updates the secret of the OIDC User.  The secret in the input parm should be encrypted before
+// calling this func
+func UpdateOIDCUserSecret(oidcUser *models.OIDCUser) error {
+	_, err := GetOrmer().Update(oidcUser, "secret")
 	return err
 }
 

@@ -31,7 +31,7 @@ ${destination_insecure_xpath}  //label[@id='destination_insecure_checkbox']
 
 ${new_replication-rule_button}  //button[contains(.,'New Replication Rule')]
 ${link_to_registries}  //clr-modal//span[contains(.,'Endpoint')]
-${new_endpoint_button}  //hbr-endpoint//button[contains(.,'New')]
+${new_endpoint_button}  //hbr-endpoint//button[contains(.,'New Endpoint')]
 ${rule_name}  //input[@id='ruleName']
 ${source_project}    //input[@value='name']
 ${source_image_filter_add}  //hbr-create-edit-rule/clr-modal//clr-icon[@id='add-label-list']

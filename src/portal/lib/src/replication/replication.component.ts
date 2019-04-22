@@ -474,9 +474,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     if (!j) {
       return;
     }
-    if (j.status === "Failed") {
-      return "-";
-    }
+
     let start_time = new Date(j.start_time).getTime();
     let end_time = new Date(j.end_time).getTime();
     let timesDiff = end_time - start_time;

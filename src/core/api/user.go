@@ -38,6 +38,7 @@ type UserAPI struct {
 	SelfRegistration bool
 	IsAdmin          bool
 	AuthMode         string
+	secretKey        string
 }
 
 type passwordReq struct {
@@ -48,6 +49,10 @@ type passwordReq struct {
 type userSearch struct {
 	UserID   int    `json:"user_id"`
 	Username string `json:"username"`
+}
+
+type secretResp struct {
+	Secret string `json:"secret"`
 }
 
 // Prepare validates the URL and parms
@@ -61,6 +66,15 @@ func (ua *UserAPI) Prepare() {
 	}
 
 	ua.AuthMode = mode
+	if mode == common.OIDCAuth {
+		key, err := config.SecretKey()
+		if err != nil {
+			log.Errorf("failed to get secret key: %v", err)
+			ua.SendInternalServerError(fmt.Errorf("failed to get secret key: %v", err))
+			return
+		}
+		ua.secretKey = key
+	}
 
 	self, err := config.SelfRegistration()
 	if err != nil {
@@ -475,17 +489,53 @@ func (ua *UserAPI) ListUserPermissions() {
 	return
 }
 
-func (ua *UserAPI) getOIDCUserInfo() (*models.OIDCUser, error) {
-	key, err := config.SecretKey()
-	if err != nil {
-		return nil, err
+// GenCLISecret generates a new CLI secret and replace the old one
+func (ua *UserAPI) GenCLISecret() {
+	if ua.AuthMode != common.OIDCAuth {
+		ua.SendPreconditionFailedError(errors.New("the auth mode has to be oidc auth"))
+		return
 	}
+	if ua.userID != ua.currentUserID && !ua.IsAdmin {
+		ua.SendForbiddenError(errors.New(""))
+		return
+	}
+	oidcData, err := dao.GetOIDCUserByUserID(ua.userID)
+	if err != nil {
+		log.Errorf("Failed to get OIDC User meta for user, id: %d, error: %v", ua.userID, err)
+		ua.SendInternalServerError(errors.New("failed to get OIDC meta data for user"))
+		return
+	}
+	if oidcData == nil {
+		log.Errorf("User is not onboarded via OIDC AuthN, user id: %d", ua.userID)
+		ua.SendPreconditionFailedError(errors.New("user is not onboarded via OIDC AuthN"))
+		return
+	}
+
+	sec := utils.GenerateRandomString()
+	encSec, err := utils.ReversibleEncrypt(sec, ua.secretKey)
+	if err != nil {
+		log.Errorf("Failed to encrypt secret, error: %v", err)
+		ua.SendInternalServerError(errors.New("failed to encrypt secret"))
+		return
+	}
+	oidcData.Secret = encSec
+	err = dao.UpdateOIDCUserSecret(oidcData)
+	if err != nil {
+		log.Errorf("Failed to update secret in DB, error: %v", err)
+		ua.SendInternalServerError(errors.New("failed to update secret in DB"))
+		return
+	}
+	ua.Data["json"] = secretResp{sec}
+	ua.ServeJSON()
+}
+
+func (ua *UserAPI) getOIDCUserInfo() (*models.OIDCUser, error) {
 	o, err := dao.GetOIDCUserByUserID(ua.userID)
 	if err != nil || o == nil {
 		return nil, err
 	}
 	if len(o.Secret) > 0 {
-		p, err := utils.ReversibleDecrypt(o.Secret, key)
+		p, err := utils.ReversibleDecrypt(o.Secret, ua.secretKey)
 		if err != nil {
 			return nil, err
 		}

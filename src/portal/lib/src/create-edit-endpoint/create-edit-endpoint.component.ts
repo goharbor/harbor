@@ -32,7 +32,7 @@ import { Endpoint } from "../service/interface";
 import { clone, compareValue, isEmptyObject } from "../utils";
 
 const FAKE_PASSWORD = "rjGcfuRu";
-
+const DOCKERHUB_URL = "https://registry-1.docker.io";
 @Component({
   selector: "hbr-create-edit-endpoint",
   templateUrl: "./create-edit-endpoint.component.html",
@@ -41,6 +41,7 @@ const FAKE_PASSWORD = "rjGcfuRu";
 export class CreateEditEndpointComponent
   implements AfterViewChecked, OnDestroy, OnInit {
   modalTitle: string;
+  editDisabled: boolean = false;
   controlEnabled: boolean = false;
   createEditDestinationOpened: boolean;
   staticBackdrop: boolean = true;
@@ -178,7 +179,7 @@ export class CreateEditEndpointComponent
 
           // Open the modal now
           this.open();
-          this.controlEnabled = true;
+          this.editDisabled = true;
           this.forceRefreshView(2000);
         },
         error => this.errorHandler.error(error)
@@ -190,6 +191,17 @@ export class CreateEditEndpointComponent
         .subscribe(res => (this.modalTitle = res));
       // Directly open the modal
       this.open();
+      this.editDisabled = false;
+    }
+  }
+
+  adapterChange($event): void {
+    let selectValue = this.targetForm.controls.adapter.value;
+    if (selectValue === 'dockerHub') {
+      this.targetForm.controls.endpointUrl.setValue(DOCKERHUB_URL);
+      this.controlEnabled = true;
+    } else {
+      this.targetForm.controls.endpointUrl.setValue("");
       this.controlEnabled = false;
     }
   }
