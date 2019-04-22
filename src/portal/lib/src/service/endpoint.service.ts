@@ -9,7 +9,7 @@ import {
   HTTP_GET_OPTIONS
 } from "../utils";
 import { RequestQueryParams } from "./RequestQueryParams";
-import { Endpoint, ReplicationRule } from "./interface";
+import { Endpoint, ReplicationRule, PingEndpoint } from "./interface";
 import { catchError, map } from "rxjs/operators";
 
 
@@ -112,7 +112,7 @@ export abstract class EndpointService {
    * @memberOf EndpointService
    */
   abstract pingEndpoint(
-    endpoint: Endpoint
+    endpoint: PingEndpoint
   ): Observable<any>;
 
   /**

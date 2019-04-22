@@ -59,7 +59,7 @@
                 </label>
                 <div class="select inline-block" *ngIf="supportedFilters[i]?.style==='radio'">
                   <select  formControlName="value" #selectedValue id="{{i}}" name="{{supportedFilters[i]?.type}}">
-                    <option value=""></option>
+                    <option value="">-- {{'REPLICATION.PLEASE_SELECT' | translate}} --</option>
                     <option *ngFor="let value of supportedFilters[i]?.values;" value="{{value}}">{{value}}</option>
                   </select>
                 </div>

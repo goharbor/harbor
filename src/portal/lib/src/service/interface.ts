@@ -87,6 +87,16 @@ export interface Endpoint extends Base {
   url: string;
 }
 
+export interface PingEndpoint extends Base {
+  access_key?: string;
+  access_secret?: string;
+  description: string;
+  insecure: boolean;
+  name: string;
+  type: string;
+  url: string;
+}
+
 export interface Filter {
    type: string;
    style: string;

@@ -333,6 +333,7 @@
         "CURRENT": "current",
         "FILTER_PLACEHOLDER": "Filter Tasks",
         "STOP_TITLE": "Confirmer arrêter les exécutions",
+        "PLEASE_SELECT": "select an option",
         "STOP_SUCCESS": "Stop Execution {{param}} Successful",
         "STOP_SUMMARY": "Voulez-vous arrêter les exécutions {{param}}?",
         "TASK_ID":"Task ID",

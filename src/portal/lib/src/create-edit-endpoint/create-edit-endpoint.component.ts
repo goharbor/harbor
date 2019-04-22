@@ -28,11 +28,11 @@ import { TranslateService } from "@ngx-translate/core";
 import { EndpointService } from "../service/endpoint.service";
 import { ErrorHandler } from "../error-handler/index";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
-import { Endpoint } from "../service/interface";
+import { Endpoint, PingEndpoint } from "../service/interface";
 import { clone, compareValue, isEmptyObject } from "../utils";
 
 const FAKE_PASSWORD = "rjGcfuRu";
-const DOCKERHUB_URL = "https://registry-1.docker.io";
+const DOCKERHUB_URL = "https://hub.docker.com";
 @Component({
   selector: "hbr-create-edit-endpoint",
   templateUrl: "./create-edit-endpoint.component.html",
@@ -124,6 +124,18 @@ export class CreateEditEndpointComponent
     };
   }
 
+  initPingEndpoint(): PingEndpoint {
+    return {
+      access_key: "",
+      access_secret: "",
+      description: "",
+      insecure: false,
+      name: "",
+      type: "harbor",
+      url: ""
+    };
+  }
+
   open(): void {
     this.createEditDestinationOpened = true;
   }
@@ -199,19 +211,20 @@ export class CreateEditEndpointComponent
     let selectValue = this.targetForm.controls.adapter.value;
     if (selectValue === 'dockerHub') {
       this.targetForm.controls.endpointUrl.setValue(DOCKERHUB_URL);
-      this.controlEnabled = true;
     } else {
       this.targetForm.controls.endpointUrl.setValue("");
-      this.controlEnabled = false;
     }
   }
 
   testConnection() {
-    let payload: Endpoint = this.initEndpoint();
+    let payload: PingEndpoint = this.initPingEndpoint();
     if (!this.endpointId) {
+      payload.name = this.target.name;
+      payload.description = this.target.description;
+      payload.type = this.target.type;
       payload.url = this.target.url;
-      payload.credential.access_key = this.target.credential.access_key;
-      payload.credential.access_secret = this.target.credential.access_secret;
+      payload.access_key = this.target.credential.access_key;
+      payload.access_secret = this.target.credential.access_secret;
       payload.insecure = this.target.insecure;
     } else {
       let changes: { [key: string]: any } = this.getChanges();

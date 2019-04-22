@@ -92,7 +92,7 @@
       </div>
     </div>
     <clr-datagrid [(clrDgSelected)]="selectedRow" [clrDgLoading]="loading">
-      <clr-dg-column>{{'REPLICATION.TASK_ID'| translate}}</clr-dg-column>
+      <clr-dg-column [clrDgSortBy]="'id'">{{'REPLICATION.TASK_ID'| translate}}</clr-dg-column>
       <clr-dg-column [clrDgField]="'resource_type'" class="resource-width">{{'REPLICATION.RESOURCE_TYPE' | translate}}</clr-dg-column>
       <clr-dg-column [clrDgField]="'src_resource'">{{'REPLICATION.SOURCE' | translate}}</clr-dg-column>
       <clr-dg-column [clrDgField]="'dst_resource'">{{'REPLICATION.DESTINATION' | translate}}</clr-dg-column>
