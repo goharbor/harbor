@@ -22,7 +22,6 @@ src/portal/typings/
 **/*npm-debug.log.*
 **/*yarn-error.log.*
 .idea/
-*.iml
 .DS_Store
 .project
 .vscode/

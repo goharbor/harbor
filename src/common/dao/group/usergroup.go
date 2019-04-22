@@ -116,8 +116,6 @@ func UpdateUserGroupName(id int, groupName string) error {
 // This is used for ldap and uaa authentication, such the usergroup can have an ID in Harbor.
 // the keyAttribute and combinedKeyAttribute are key columns used to check duplicate usergroup in harbor
 func OnBoardUserGroup(g *models.UserGroup, keyAttribute string, combinedKeyAttributes ...string) error {
-	g.LdapGroupDN = utils.TrimLower(g.LdapGroupDN)
-
 	o := dao.GetOrmer()
 	created, ID, err := o.ReadOrCreate(g, keyAttribute, combinedKeyAttributes...)
 	if err != nil {
