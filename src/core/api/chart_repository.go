@@ -19,6 +19,8 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	rep_event "github.com/goharbor/harbor/src/replication/event"
+	"github.com/goharbor/harbor/src/replication/model"
 )
 
 const (
@@ -297,7 +299,7 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 			return
 		}
 		if err := cra.addEventContext(formFiles, cra.Ctx.Request); err != nil {
-			hlog.Infof("Failed to add chart upload context into request, which could lead to no execution of event based chart replication policy, %v", err)
+			hlog.Errorf("Failed to add chart upload context into request, which could lead to no execution of event based chart replication policy, %v", err)
 		}
 	}
 
@@ -413,7 +415,6 @@ type formFile struct {
 
 // The func is for event based chart replication policy.
 // It will add a context for uploading request with key chart_upload, and consumed by upload response.
-// Context Sample: library^{chartUP}harbor^{chartUP}0.2.0
 func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.Request) error {
 	if len(files) == 0 {
 		return nil
@@ -423,24 +424,35 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 		if f.formField == formFieldNameForChart {
 			mFile, _, err := cra.GetFile(f.formField)
 			if err != nil {
-				hlog.Infof("failed to read file content for upload event, %v", err)
+				hlog.Errorf("failed to read file content for upload event, %v", err)
 				return err
 			}
 			var Buf bytes.Buffer
 			_, err = io.Copy(&Buf, mFile)
 			if err != nil {
-				hlog.Infof("failed to read file content for upload event, %v", err)
+				hlog.Errorf("failed to copy file content for upload event, %v", err)
 				return err
 			}
 			chartOpr := chartserver.ChartOperator{}
 			chartDetails, err := chartOpr.GetChartData(Buf.Bytes())
 			if err != nil {
-				hlog.Infof("failed to get chart content for upload event, %v", err)
+				hlog.Errorf("failed to get chart content for upload event, %v", err)
 				return err
 			}
-			*request = *(request.WithContext(context.WithValue(request.Context(), common.ChartUploadCtxKey, cra.namespace+
-				common.ChartUploadCtxSeparator+chartDetails.Metadata.Name+
-				common.ChartUploadCtxSeparator+chartDetails.Metadata.Version)))
+
+			e := &rep_event.Event{
+				Type: rep_event.EventTypeChartUpload,
+				Resource: &model.Resource{
+					Type: model.ResourceTypeChart,
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{
+							Name: fmt.Sprintf("%s/%s", cra.namespace, chartDetails.Metadata.Name),
+						},
+						Vtags: []string{chartDetails.Metadata.Version},
+					},
+				},
+			}
+			*request = *(request.WithContext(context.WithValue(request.Context(), common.ChartUploadCtxKey, e)))
 			break
 		}
 	}
