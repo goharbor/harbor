@@ -23,7 +23,7 @@ ${policy_enable_checkbox}  //input[@id='policy_enable']/../label
 ${policy_endpoint_checkbox}  //input[@id='check_new']/../label
 ${destination_name_xpath}  //*[@id='destination_name']
 ${destination_url_xpath}  //*[@id='destination_url']
-${destination_username_xpath}  //*[@id='destination_username']
+${destination_username_xpath}    //*[@id='destination_access_key']
 ${destination_password_xpath}  //*[@id='destination_password']
 ${replication_save_xpath}  //button[contains(.,'OK')]
 ${replication_xpath}  //clr-vertical-nav-group-children/a[contains(.,'Replication')]
@@ -60,3 +60,4 @@ ${dialog_delete}  //clr-modal//button[contains(.,'DELETE')]
 ${dialog_replicate}  //clr-modal//button[contains(.,'REPLICATE')]
 ${action_bar_replicate}  //button[contains(.,'Replicate')]
 ${rule_save_button}  //button[contains(.,'SAVE')]
+${provider_selector}    //*[@id='adapter']
