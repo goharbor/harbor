@@ -53,6 +53,13 @@
         "REPLICATE_FAILURE": "开始失败"
     },
     "TOOLTIP": {
+        "NAME_FILTER": "过滤资源的名字。不填或者“”匹配所有资源；“library/”只匹配“library”下的资源。更多的匹配模式请参考用户手册。",
+        "TAG_FILTER": "过滤资源的tag/version。不填或者“”匹配所有；“1.0*”只匹配以“1.0”开头的tag/version。",
+        "RESOURCE_FILTER": "过滤资源的类型。",
+        "PUSH_BASED": "把资源由当前Harbor推送到远端仓库。",
+        "PULL_BASED": "把资源由远端仓库拉取到当前Harbor。",
+        "DESTINATION_NAMESPACE": "指定目的端名称空间。如果不填，资源会被放到和源相同的名称空间下。",
+        "OVERRIDE": "指定如果目的端仓库中已有同名的资源是否覆盖。",
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com。",
         "USER_NAME": "不能包含特殊字符且长度不能超过255。",
         "FULL_NAME": "长度不能超过20。",
