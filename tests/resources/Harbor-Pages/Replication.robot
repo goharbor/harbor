@@ -21,11 +21,11 @@ ${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Check New Rule UI Without Endpoint
-    Click Element  ${new_replication-rule_button}
-    Page Should Contain  Please add an endpoint first
-    Mouse Down  ${link_to_registries}
-    Mouse Up  ${link_to_registries}
-    Page Should Contain  Endpoint Name
+    Retry Element Click    ${new_replication-rule_button}
+    Page Should Contain    Please add an endpoint first
+    Retry Element Click    ${link_to_registries}
+    Retry Wait Until Page Contains    Endpoint URL
+    Retry Wait Element  ${new_endpoint_button}
 
 Create A New Endpoint
     [Arguments]  ${name}  ${url}  ${username}  ${pwd}  ${save}=Y
@@ -42,7 +42,7 @@ Create A New Endpoint
     Run Keyword If  '${save}' == 'N'  No Operation
 
 Create A Rule With Existing Endpoint
-# day 1=Monday..7=Sunday timeformat 12hour+am/pm    
+# day 1=Monday..7=Sunday timeformat 12hour+am/pm
     [Arguments]  ${name}  ${project_name}  ${endpoint}  ${mode}  ${plan}=Daily  ${weekday}=1  ${time}=0800a
     #click new
     Click Element  ${new_name_xpath}

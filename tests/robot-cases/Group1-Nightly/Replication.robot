@@ -34,3 +34,10 @@ ${REMOTE_SERVER_API_ENDPOINT}  ${REMOTE_SERVER_URL}/api
 Test Case - Get Harbor Version
 #Just get harbor version and log it
     Get Harbor Version
+
+Test Case - Pro Replication Rules Add
+    Init Chrome Driver
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Replication Manage
+    Check New Rule UI Without Endpoint
+    Close Browser
