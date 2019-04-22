@@ -234,15 +234,6 @@ func encrypt(secret string) (string, error) {
 // fromDaoModel converts DAO layer registry model to replication model.
 // Also, if access secret is provided, decrypt it.
 func fromDaoModel(registry *models.Registry) (*model.Registry, error) {
-	var decrypted string
-	var err error
-	if len(registry.AccessSecret) != 0 {
-		decrypted, err = decrypt(registry.AccessSecret)
-		if err != nil {
-			return nil, err
-		}
-	}
-
 	r := &model.Registry{
 		ID:           registry.ID,
 		Name:         registry.Name,
@@ -256,9 +247,17 @@ func fromDaoModel(registry *models.Registry) (*model.Registry, error) {
 		UpdateTime:   registry.UpdateTime,
 	}
 
-	if len(registry.CredentialType) != 0 && len(registry.AccessKey) != 0 {
+	if len(registry.AccessKey) != 0 {
+		credentialType := registry.CredentialType
+		if len(credentialType) == 0 {
+			credentialType = model.CredentialTypeBasic
+		}
+		decrypted, err := decrypt(registry.AccessSecret)
+		if err != nil {
+			return nil, err
+		}
 		r.Credential = &model.Credential{
-			Type:         model.CredentialType(registry.CredentialType),
+			Type:         model.CredentialType(credentialType),
 			AccessKey:    registry.AccessKey,
 			AccessSecret: decrypted,
 		}
@@ -283,16 +282,16 @@ func toDaoModel(registry *model.Registry) (*models.Registry, error) {
 	}
 
 	if registry.Credential != nil && len(registry.Credential.AccessKey) != 0 {
-		var encrypted string
-		var err error
-		if len(registry.Credential.AccessSecret) != 0 {
-			encrypted, err = encrypt(registry.Credential.AccessSecret)
-			if err != nil {
-				return nil, err
-			}
+		credentialType := registry.Credential.Type
+		if len(credentialType) == 0 {
+			credentialType = model.CredentialTypeBasic
+		}
+		encrypted, err := encrypt(registry.Credential.AccessSecret)
+		if err != nil {
+			return nil, err
 		}
 
-		m.CredentialType = string(registry.Credential.Type)
+		m.CredentialType = string(credentialType)
 		m.AccessKey = registry.Credential.AccessKey
 		m.AccessSecret = encrypted
 	}
