@@ -18,22 +18,18 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 View Repo Scan Details
-    Click Element  xpath=${first_repo_xpath}
-    Sleep  2
+    Retry Element Click  xpath=${first_repo_xpath}
     Capture Page Screenshot  viewcve1.png
-    Wait Until Page Contains  unknown
-    Wait Until Page Contains  high
-    Wait Until Page Contains  medium
-    Page Should Contain  CVE
-    Sleep  2
-    Click Element  xpath=${build_history_btn}
-    Sleep  1
-    Page Should Contain Element  xpath=${build_history_data}
+    Retry Wait Until Page Contains  unknown
+    Retry Wait Until Page Contains  high
+    Retry Wait Until Page Contains  medium
+    Retry Wait Until Page Contains  CVE
+    Retry Element Click  xpath=${build_history_btn}
+    Retry Wait Until Page Contains Element  xpath=${build_history_data}
 
 View Scan Error Log
-    Page Should Contain  View Log
-    Click Element  xpath=${view_log_xpath}
-    Sleep  1
+    Retry Wait Until Page Contains  View Log
+    Retry Element Click  xpath=${view_log_xpath}
     Capture Page Screenshot  viewlog.png
 
 
