@@ -40,6 +40,7 @@ Create A New Endpoint
     #cancel verify cert since we use a selfsigned cert
     Retry Element Click  ${destination_insecure_xpath}
     Run Keyword If  '${save}' == 'Y'  Run keyword  Retry Double Keywords When Error  Retry Element Click  ${replication_save_xpath}  Retry Wait Until Page Not Contains Element  ${replication_save_xpath}
+    Run Keyword If  '${save}' == 'Y'  Run keyword  Retry Wait Until Page Contains  ${name}
     Run Keyword If  '${save}' == 'N'  No Operation
 
 Create A Rule With Existing Endpoint

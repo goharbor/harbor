@@ -54,11 +54,38 @@ Test Case - Harbor Endpoint Verification
     Endpoint Is Unpingable
     Close Browser
 
-Test Case - DockerHub Endpoint Verification
+Test Case - DockerHub Endpoint Add
     #This case need vailid info and selfsign cert
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%M%S
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Registries
     Create A New Endpoint    dockerHub    edp1${d}    https://hub.docker.com/    danfengliu    Aa123456    Y
+    Close Browser
+
+Test Case - Harbor Endpoint Add
+    #This case need vailid info and selfsign cert
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%M%S
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Registries
+    Create A New Endpoint    harbor    testabc    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    Y
+    Close Browser
+
+Test Case - Harbor Endpoint Edit
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Registries
+    Rename Endpoint  testabc  deletea
+    Retry Wait Until Page Contains  deletea
+    Close Browser
+
+Test Case - Harbor Endpoint Delete
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Registries
+    Delete Endpoint  deletea
+    Delete Success  deletea
     Close Browser
