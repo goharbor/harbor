@@ -139,5 +139,5 @@ const (
 
 	OIDCCallbackPath = "/c/oidc/callback"
 
-	ChartUploadCtxKey = contextKey("chart_upload")
+	ChartUploadCtxKey = contextKey("chart_upload_event")
 )

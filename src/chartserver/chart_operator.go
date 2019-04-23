@@ -14,6 +14,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"k8s.io/helm/pkg/chartutil"
+	"k8s.io/helm/pkg/proto/hapi/chart"
 	helm_repo "k8s.io/helm/pkg/repo"
 )
 
@@ -71,13 +72,7 @@ type ChartOperator struct{}
 
 // GetChartDetails parse the details from the provided content bytes
 func (cho *ChartOperator) GetChartDetails(content []byte) (*ChartVersionDetails, error) {
-	if content == nil || len(content) == 0 {
-		return nil, errors.New("zero content")
-	}
-
-	// Load chart from in-memory content
-	reader := bytes.NewReader(content)
-	chartData, err := chartutil.LoadArchive(reader)
+	chartData, err := cho.GetChartData(content)
 	if err != nil {
 		return nil, err
 	}
@@ -162,6 +157,21 @@ func (cho *ChartOperator) GetChartList(content []byte) ([]*ChartInfo, error) {
 	})
 
 	return chartList, nil
+}
+
+// GetChartData returns raw data of chart
+func (cho *ChartOperator) GetChartData(content []byte) (*chart.Chart, error) {
+	if content == nil || len(content) == 0 {
+		return nil, errors.New("zero content")
+	}
+
+	reader := bytes.NewReader(content)
+	chartData, err := chartutil.LoadArchive(reader)
+	if err != nil {
+		return nil, err
+	}
+
+	return chartData, nil
 }
 
 // GetChartVersions returns the chart versions
