@@ -348,6 +348,7 @@
         "CURRENT": "当前仓库",
         "FILTER_PLACEHOLDER": "过滤任务",
         "STOP_TITLE": "确认停止任务",
+        "PLEASE_SELECT": "请选择",
         "STOP_SUCCESS": "停止任务 {{param}} 成功",
         "STOP_SUMMARY": "确认停止任务{{param}}?",
         "TASK_ID":"任务ID",

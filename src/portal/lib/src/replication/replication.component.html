@@ -50,7 +50,7 @@
               (click)="openStopExecutionsDialog(selectedRow)">{{'REPLICATION.STOPJOB' | translate}}</button>
           </div>
         </clr-dg-action-bar>
-        <clr-dg-column [clrDgField]="'id'">{{'REPLICATION.ID' | translate}}</clr-dg-column>
+        <clr-dg-column [clrDgSortBy]="'id'">{{'REPLICATION.ID' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
         <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
         <clr-dg-column>{{'REPLICATION.DURATION' | translate}}</clr-dg-column>

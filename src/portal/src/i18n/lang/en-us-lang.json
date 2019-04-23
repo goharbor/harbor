@@ -350,6 +350,7 @@
         "CURRENT": "current",
         "FILTER_PLACEHOLDER": "Filter Tasks",
         "STOP_TITLE": "Confirm Stop Executions",
+        "PLEASE_SELECT": "select an option",
         "STOP_SUCCESS": "Stop Execution {{param}} Successful",
         "STOP_SUMMARY": "Do you want to stop the executions {{param}}?",
         "TASK_ID":"Task ID",
