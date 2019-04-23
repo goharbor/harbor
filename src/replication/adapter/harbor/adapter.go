@@ -231,5 +231,5 @@ func (a *adapter) getProject(name string) (*project, error) {
 			return p, nil
 		}
 	}
-	return nil, fmt.Errorf("project %s not found", name)
+	return nil, nil
 }

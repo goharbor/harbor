@@ -18,30 +18,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
-
-	"github.com/bmatcuk/doublestar"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 )
-
-// Match returns whether the str matches the pattern
-func Match(pattern, str string) (bool, error) {
-	if len(pattern) == 0 {
-		return true, nil
-	}
-	match, err := doublestar.Match(pattern, str)
-	if err == doublestar.ErrBadPattern {
-		log.Warningf("failed to match the string %s against pattern %s: %v", str, pattern, err)
-		return false, nil
-	}
-	return match, err
-}
-
-// IsSpecificRepositoryName if the name not contains any char of "*?[{\\]}^,",
-// it is a specific repository name.
-func IsSpecificRepositoryName(name string) bool {
-	return !strings.ContainsAny(name, "*?[{\\]}^,")
-}
 
 // GetHTTPTransport can be used to share the common HTTP transport
 func GetHTTPTransport(insecure bool) *http.Transport {

@@ -9,6 +9,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+// TODO add more unit test
+
 const (
 	testUser     = ""
 	testPassword = ""
@@ -42,9 +44,9 @@ func TestListNamespaces(t *testing.T) {
 	ad := getAdapter(t)
 	adapter := ad.(*adapter)
 
-	namespaces, err := adapter.ListNamespaces(nil)
+	namespaces, err := adapter.listNamespaces()
 	assert.Nil(err)
 	for _, ns := range namespaces {
-		fmt.Println(ns.Name)
+		fmt.Println(ns)
 	}
 }

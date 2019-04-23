@@ -16,8 +16,11 @@ package harbor
 
 import (
 	"fmt"
+	"strings"
 
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/replication/util"
 )
 
 type repository struct {
@@ -55,8 +58,7 @@ func (t *tag) Match(filters []*model.Filter) (bool, error) {
 }
 
 func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
-	// TODO optimize the performance
-	projects, err := a.getProjects("")
+	projects, err := a.listCandidateProjects(filters)
 	if err != nil {
 		return nil, err
 	}
@@ -103,6 +105,43 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	}
 
 	return resources, nil
+}
+
+func (a *adapter) listCandidateProjects(filters []*model.Filter) ([]*project, error) {
+	pattern := ""
+	for _, filter := range filters {
+		if filter.Type == model.FilterTypeName {
+			pattern = filter.Value.(string)
+			break
+		}
+	}
+	projects := []*project{}
+	if len(pattern) > 0 {
+		substrings := strings.Split(pattern, "/")
+		projectPattern := substrings[0]
+		names, ok := util.IsSpecificPathComponent(projectPattern)
+		if ok {
+			for _, name := range names {
+				project, err := a.getProject(name)
+				if err != nil {
+					return nil, err
+				}
+				if project == nil {
+					continue
+				}
+				projects = append(projects, project)
+			}
+		}
+	}
+	if len(projects) > 0 {
+		names := []string{}
+		for _, project := range projects {
+			names = append(names, project.Name)
+		}
+		log.Debugf("parsed the projects %v from pattern %s", names, pattern)
+		return projects, nil
+	}
+	return a.getProjects("")
 }
 
 // override the default implementation from the default image registry

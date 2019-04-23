@@ -10,38 +10,58 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
 )
 
 func init() {
-	if err := adp.RegisterFactory(model.RegistryTypeDockerHub, func(registry *model.Registry) (adp.Adapter, error) {
-		registry.URL = baseURL
-		client, err := NewClient(registry)
-		if err != nil {
-			return nil, err
-		}
-		reg, err := adp.NewDefaultImageRegistry(&model.Registry{
-			Name:       registry.Name,
-			URL:        registryURL,
-			Credential: registry.Credential,
-			Insecure:   registry.Insecure,
-		})
-		if err != nil {
-			return nil, err
-		}
-
-		return &adapter{
-			client:               client,
-			registry:             registry,
-			DefaultImageRegistry: reg,
-		}, nil
-	}); err != nil {
+	if err := adp.RegisterFactory(model.RegistryTypeDockerHub, factory); err != nil {
 		log.Errorf("Register adapter factory for %s error: %v", model.RegistryTypeDockerHub, err)
 		return
 	}
 	log.Infof("Factory for adapter %s registered", model.RegistryTypeDockerHub)
+}
+
+func factory(registry *model.Registry) (adp.Adapter, error) {
+	client, err := NewClient(&model.Registry{
+		URL:        baseURL, // specify the URL of Docker Hub
+		Credential: registry.Credential,
+		Insecure:   registry.Insecure,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// if the registry.Credentail isn't specified, the credential here is nil
+	// the client will request the token with no authentication
+	// this is needed for pulling images from public repositories
+	var credential auth.Credential
+	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
+		credential = auth.NewBasicAuthCredential(
+			registry.Credential.AccessKey,
+			registry.Credential.AccessSecret)
+	}
+	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
+		Transport: util.GetHTTPTransport(registry.Insecure),
+	}, credential)
+
+	reg, err := adp.NewDefaultImageRegistryWithCustomizedAuthorizer(&model.Registry{
+		Name:       registry.Name,
+		URL:        registryURL, // specify the URL of Docker Hub registry service
+		Credential: registry.Credential,
+		Insecure:   registry.Insecure,
+	}, authorizer)
+	if err != nil {
+		return nil, err
+	}
+
+	return &adapter{
+		client:               client,
+		registry:             registry,
+		DefaultImageRegistry: reg,
+	}, nil
 }
 
 type adapter struct {
@@ -111,8 +131,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 	return nil
 }
 
-// ListNamespaces lists namespaces from DockerHub with the provided query conditions.
-func (a *adapter) ListNamespaces(query *model.NamespaceQuery) ([]*model.Namespace, error) {
+func (a *adapter) listNamespaces() ([]string, error) {
 	resp, err := a.client.Do(http.MethodGet, listNamespacePath, nil)
 	if err != nil {
 		return nil, err
@@ -134,18 +153,8 @@ func (a *adapter) ListNamespaces(query *model.NamespaceQuery) ([]*model.Namespac
 	if err != nil {
 		return nil, err
 	}
-	var result []*model.Namespace
-	for _, ns := range namespaces.Namespaces {
-		// If query set, skip the namespace that doesn't match the query.
-		if query != nil && len(query.Name) > 0 && strings.Index(ns, query.Name) != -1 {
-			continue
-		}
-
-		result = append(result, &model.Namespace{
-			Name: ns,
-		})
-	}
-	return result, nil
+	log.Debugf("got namespaces %v by calling the listing namespaces API", namespaces)
+	return namespaces.Namespaces, nil
 }
 
 // CreateNamespace creates a new namespace in DockerHub
@@ -229,7 +238,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		return nil, err
 	}
 
-	namespaces, err := a.ListNamespaces(nil)
+	namespaces, err := a.listCandidateNamespaces(nameFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -239,7 +248,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		pageSize := 100
 		n := 0
 		for {
-			pageRepos, err := a.getRepos(ns.Name, "", page, pageSize)
+			pageRepos, err := a.getRepos(ns, "", page, pageSize)
 			if err != nil {
 				return nil, fmt.Errorf("get repos for namespace '%s' from DockerHub error: %v", ns, err)
 			}
@@ -252,7 +261,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 
 			page++
 		}
-		log.Debugf("got %d repositories for namespace %s", n, ns.Name)
+		log.Debugf("got %d repositories for namespace %s", n, ns)
 	}
 
 	var resources []*model.Resource
@@ -317,6 +326,22 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	}
 
 	return resources, nil
+}
+
+func (a *adapter) listCandidateNamespaces(pattern string) ([]string, error) {
+	namespaces := []string{}
+	if len(pattern) > 0 {
+		substrings := strings.Split(pattern, "/")
+		namespacePattern := substrings[0]
+		if nms, ok := util.IsSpecificPathComponent(namespacePattern); ok {
+			namespaces = append(namespaces, nms...)
+		}
+	}
+	if len(namespaces) > 0 {
+		log.Debugf("parsed the namespaces %v from pattern %s", namespaces, pattern)
+		return namespaces, nil
+	}
+	return a.listNamespaces()
 }
 
 // DeleteManifest ...

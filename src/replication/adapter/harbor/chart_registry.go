@@ -76,8 +76,7 @@ type chartVersionMetadata struct {
 }
 
 func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {
-	// TODO optimize the performance
-	projects, err := a.getProjects("")
+	projects, err := a.listCandidateProjects(filters)
 	if err != nil {
 		return nil, err
 	}

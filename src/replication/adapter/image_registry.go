@@ -62,12 +62,7 @@ type DefaultImageRegistry struct {
 
 // NewDefaultImageRegistry returns an instance of DefaultImageRegistry
 func NewDefaultImageRegistry(registry *model.Registry) (*DefaultImageRegistry, error) {
-	transport := util.GetHTTPTransport(registry.Insecure)
-	modifiers := []modifier.Modifier{
-		&auth.UserAgentModifier{
-			UserAgent: UserAgentReplication,
-		},
-	}
+	var authorizer modifier.Modifier
 	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
 		var cred modifier.Modifier
 		if registry.Credential.Type == model.CredentialTypeSecret {
@@ -83,10 +78,22 @@ func NewDefaultImageRegistry(registry *model.Registry) (*DefaultImageRegistry, e
 		if len(registry.CoreURL) > 0 {
 			tokenServiceURL = fmt.Sprintf("%s/service/token", registry.CoreURL)
 		}
-		authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
-			Transport: transport,
+		authorizer = auth.NewStandardTokenAuthorizer(&http.Client{
+			Transport: util.GetHTTPTransport(registry.Insecure),
 		}, cred, tokenServiceURL)
+	}
+	return NewDefaultImageRegistryWithCustomizedAuthorizer(registry, authorizer)
+}
 
+// NewDefaultImageRegistryWithCustomizedAuthorizer returns an instance of DefaultImageRegistry with the customized authorizer
+func NewDefaultImageRegistryWithCustomizedAuthorizer(registry *model.Registry, authorizer modifier.Modifier) (*DefaultImageRegistry, error) {
+	transport := util.GetHTTPTransport(registry.Insecure)
+	modifiers := []modifier.Modifier{
+		&auth.UserAgentModifier{
+			UserAgent: UserAgentReplication,
+		},
+	}
+	if authorizer != nil {
 		modifiers = append(modifiers, authorizer)
 	}
 	client := &http.Client{
