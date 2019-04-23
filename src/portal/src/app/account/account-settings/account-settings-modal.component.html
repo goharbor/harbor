@@ -51,7 +51,7 @@
                     </span>
                     </label>
                 </div>
-                <div class="form-group form-group-override" *ngIf="account.oidc_user_meta">
+                <div class="form-group form-group-override cli-secret" *ngIf="account.oidc_user_meta">
                     <label for="cli_password" aria-haspopup="true" class="form-group-label-override"><span class="label-inner-text">{{'PROFILE.CLI_PASSWORD' | translate}}</span>
                         <clr-tooltip>
                             <clr-icon clrTooltipTrigger shape="info-circle" size="20"></clr-icon>
@@ -60,9 +60,13 @@
                             </clr-tooltip-content>
                         </clr-tooltip></label>
                     <input type="password" name="cli_password" disabled [ngModel]="'account.oidc_user_meta.secret'" size="33">
-                    <div class="rename-tool">
-                        <hbr-copy-input #copyInput (onCopySuccess)="onSuccess($event)" (onCopyError)="onCpError($event)"  iconMode="true" defaultValue="{{account.oidc_user_meta.secret}}"></hbr-copy-input>
+                    <button (click)="generateCli(account.user_id)" class="btn btn-outline btn-sm btn-padding-less" *ngIf="showGenerateCli">
+                                {{'PROFILE.ADMIN_CIL_SECRET_BUTTON' | translate}}
+                            </button>
+                    <div class="rename-tool reset-cli">
+                        <hbr-copy-input #copyInput (onCopySuccess)="onSuccess($event)" (onCopyError)="onError($event)"  iconMode="true" [defaultValue]="account.oidc_user_meta.secret"></hbr-copy-input>
                     </div>
+                    <div (click)="showGenerateCliFn()" *ngIf="!showGenerateCli" class="hidden-generate-cli">···</div>
                 </div>
             </section>
         </form>
@@ -73,3 +77,4 @@
         <button type="button" class="btn btn-primary" [disabled]="!isValid || showProgress" (click)="submit()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>
+<confirmation-dialog #confirmationDialog (confirmAction)="confirmGenerate($event)"></confirmation-dialog>

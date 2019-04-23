@@ -105,7 +105,12 @@
         "CLI_PASSWORD": "CLI密码",
         "CLI_PASSWORD_TIP": "使用docker/helm cli访问Harbor时，可以使用此cli密码作为密码。",
         "COPY_SUCCESS": "复制成功",
-        "COPY_ERROR": "复制失败"
+        "COPY_ERROR": "复制失败",
+        "ADMIN_CIL_SECRET_BUTTON": "生成新的CLI密码",
+        "GENERATE_SUCCESS": "成功生成新的CLI密码",
+        "GENERATE_ERROR": "生成新的CLI密码失败",
+        "CONFIRM_TITLE_CLI_GENERATE": "您确定需要重新生成cli secret吗?",
+        "CONFIRM_BODY_CLI_GENERATE": "如果您重新生成cli secret，那么旧的cli secret将会被弃用"
     },
     "CHANGE_PWD": {
         "TITLE": "修改密码",

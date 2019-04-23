@@ -104,7 +104,12 @@
         "CLI_PASSWORD": "Segredo CLI",
         "CLI_PASSWORD_TIP": "Você Pode USAR este Segredo de clitóris Como senha Ao USAR clitóris de estivador /leme para acessar Harbor.",
         "COPY_SUCCESS": "SUCESSO de cópia",
-        "COPY_ERROR": "Cópia falhou"
+        "COPY_ERROR": "Cópia falhou",
+        "ADMIN_CIL_SECRET_BUTTON": "GENERATE SECRET",
+        "GENERATE_SUCCESS": "generate CLI secret success",
+        "GENERATE_ERROR": "generate CLI secret failed",
+        "CONFIRM_TITLE_CLI_GENERATE": "Are you sure you can regenerate secret?",
+        "CONFIRM_BODY_CLI_GENERATE": "If you regenerate cli secret, the old cli secret will be discarded"
     },
     "CHANGE_PWD": {
         "TITLE": "Alterar Senha",
