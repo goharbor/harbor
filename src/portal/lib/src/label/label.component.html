@@ -16,7 +16,7 @@
             <button type="button" class="btn btn-sm btn-secondary" [disabled]="!selectedRow.length || !hasDeleteLabelPermission" (click)="deleteLabels(selectedRow)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'LABEL.DELETE' | translate}}</button>     
             <hbr-create-edit-label [scope]="scope"  [projectId]="projectId" (reload)="reload()"></hbr-create-edit-label>
         </div>
-        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 content-mt">
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <clr-datagrid [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
                 <clr-dg-column [clrDgField]="'name'">{{'LABEL.LABEL' | translate}}</clr-dg-column>
                 <clr-dg-column [clrDgField]="'endpoint'">{{'LABEL.DESCRIPTION' | translate}}</clr-dg-column>
