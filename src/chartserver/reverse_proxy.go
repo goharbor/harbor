@@ -92,7 +92,7 @@ func modifyResponse(res *http.Response) error {
 		chartUploadEvent := res.Request.Context().Value(common.ChartUploadCtxKey)
 		e, ok := chartUploadEvent.(*rep_event.Event)
 		if !ok {
-			hlog.Errorf("failed to convert chart upload context to replication event, which could lead to no execution of event based chart replication policy")
+			hlog.Error("failed to convert chart upload context into replication event.")
 		} else {
 			// Todo: it used as the replacement of webhook, will be removed when webhook to be introduced.
 			go func() {

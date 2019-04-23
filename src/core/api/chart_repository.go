@@ -299,7 +299,7 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 			return
 		}
 		if err := cra.addEventContext(formFiles, cra.Ctx.Request); err != nil {
-			hlog.Errorf("Failed to add chart upload context into request, which could lead to no execution of event based chart replication policy, %v", err)
+			hlog.Errorf("Failed to add chart upload context, %v", err)
 		}
 	}
 
