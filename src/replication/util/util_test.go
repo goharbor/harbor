@@ -104,3 +104,70 @@ func TestParseRepository(t *testing.T) {
 	assert.Equal(t, "a/b", namespace)
 	assert.Equal(t, "c", rest)
 }
+func TestIsSpecificRepositoryName(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  bool
+	}{
+		{"Is Specific", "a", true},
+		{"Is Specific", "abc", true},
+		{"Is Specific", "a/b", true},
+		{"Is Specific", "a/b/c", true},
+		{"Not Specific", "*", false},
+		{"Not Specific", "?", false},
+		{"Not Specific", "*c", false},
+		{"Not Specific", "a*", false},
+		{"Not Specific", "a*b*c*d*e*", false},
+		{"Not Specific", "a*b?c*x", false},
+		{"Not Specific", "ab[c]", false},
+		{"Not Specific", "ab[b-d]", false},
+		{"Not Specific", "ab[e-g]", false},
+		{"Not Specific", "ab[^c]", false},
+		{"Not Specific", "ab[^b-d]", false},
+		{"Not Specific", "ab[^e-g]", false},
+		{"Not Specific", "a\\*b", false},
+		{"Not Specific", "a?b", false},
+		{"Not Specific", "a[^a]b", false},
+		{"Not Specific", "a???b", false},
+		{"Not Specific", "a[^a][^a][^a]b", false},
+		{"Not Specific", "[a-ζ]*", false},
+		{"Not Specific", "*[a-ζ]", false},
+		{"Not Specific", "a?b", false},
+		{"Not Specific", "a*b", false},
+		{"Not Specific", "[\\-]", false},
+		{"Not Specific", "[x\\-]", false},
+		{"Not Specific", "[x\\-]", false},
+		{"Not Specific", "[x\\-]", false},
+		{"Not Specific", "[\\-x]", false},
+		{"Not Specific", "[\\-x]", false},
+		{"Not Specific", "[\\-x]", false},
+		{"Not Specific", "[a-b-c]", false},
+		{"Not Specific", "*x", false},
+		{"Not Specific", "[abc]", false},
+		{"Not Specific", "**", false},
+		{"Not Specific", "ab{c,d}", false},
+		{"Not Specific", "ab{c,d,*}", false},
+		{"Not Specific", "abc**", false},
+		{"Not Specific", "[]a]", false},
+		{"Not Specific", "[-]", false},
+		{"Not Specific", "[x-]", false},
+		{"Not Specific", "[-x]", false},
+		{"Not Specific", "\\", false},
+		{"Not Specific", "[a-b-c]", false},
+		{"Not Specific", "[]", false},
+		{"Not Specific", "[", false},
+		{"Not Specific", "[^", false},
+		{"Not Specific", "^", false},
+		{"Not Specific", "]", false},
+		{"Not Specific", "[^bc", false},
+		{"Not Specific", "a[", false},
+		{"Not Specific", "ab{c,d}[", false},
+	}
+	for _, tt := range tests {
+		t.Run("", func(t *testing.T) {
+			var got = IsSpecificRepositoryName(tt.input)
+			assert.Equal(t, tt.want, got)
+		})
+	}
+}

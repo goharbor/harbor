@@ -15,8 +15,6 @@
 package native
 
 import (
-	"strings"
-
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
@@ -65,9 +63,9 @@ func (n native) FetchImages(filters []*model.Filter) ([]*model.Resource, error) 
 }
 
 func (n native) filterRepositories(pattern string) ([]string, error) {
-	// if the pattern contains no "*" and "?", it is a specific repository name
+	// if is a specific repository name
 	// just to make sure the repository exists
-	if len(pattern) > 0 && !strings.ContainsAny(pattern, "*?") {
+	if len(pattern) > 0 && util.IsSpecificRepositoryName(pattern) {
 		// check is repository exist later at filterTags.
 		return []string{pattern}, nil
 	}
