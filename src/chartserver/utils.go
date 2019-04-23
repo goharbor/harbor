@@ -16,22 +16,22 @@ const (
 
 // Extract error object '{"error": "****---***"}' from the content if existing
 // nil error will be returned if it does exist
-func extractError(content []byte) error {
+func extractError(content []byte) (text string, err error) {
 	if len(content) == 0 {
-		return nil
+		return "", nil
 	}
 
 	errorObj := make(map[string]string)
-	err := json.Unmarshal(content, &errorObj)
+	err = json.Unmarshal(content, &errorObj)
 	if err != nil {
-		return nil
+		return "", err
 	}
 
 	if errText, ok := errorObj["error"]; ok {
-		return errors.New(errText)
+		return errText, nil
 	}
 
-	return nil
+	return "", nil
 }
 
 // Parse the redis configuration to the beego cache pattern

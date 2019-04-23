@@ -186,7 +186,7 @@ func (cra *ChartRepositoryAPI) ListCharts() {
 
 	charts, err := chartController.ListCharts(cra.namespace)
 	if err != nil {
-		cra.SendInternalServerError(err)
+		cra.ParseAndHandleError("fail to list charts", err)
 		return
 	}
 
@@ -204,7 +204,7 @@ func (cra *ChartRepositoryAPI) ListChartVersions() {
 
 	versions, err := chartController.GetChart(cra.namespace, chartName)
 	if err != nil {
-		cra.SendInternalServerError(err)
+		cra.ParseAndHandleError("fail to get chart", err)
 		return
 	}
 
@@ -234,7 +234,7 @@ func (cra *ChartRepositoryAPI) GetChartVersion() {
 
 	chartVersion, err := chartController.GetChartVersionDetails(cra.namespace, chartName, version)
 	if err != nil {
-		cra.SendInternalServerError(err)
+		cra.ParseAndHandleError("fail to get chart version", err)
 		return
 	}
 
@@ -267,7 +267,7 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 	}
 
 	if err := chartController.DeleteChartVersion(cra.namespace, chartName, version); err != nil {
-		cra.SendInternalServerError(err)
+		cra.ParseAndHandleError("fail to delete chart version", err)
 		return
 	}
 }
@@ -360,7 +360,7 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 	// Remove labels from all the deleting chart versions under the chart
 	chartVersions, err := chartController.GetChart(cra.namespace, chartName)
 	if err != nil {
-		cra.SendInternalServerError(err)
+		cra.ParseAndHandleError("fail to get chart", err)
 		return
 	}
 
