@@ -65,7 +65,7 @@ func (l *LdapAPI) Prepare() {
 		return
 	}
 	if authMode != "ldap_auth" {
-		l.SendInternalServerError(fmt.Errorf("Can't load system configuration, error: %v", err))
+		l.SendInternalServerError(errors.New("system auth_mode isn't ldap_auth, please check configuration"))
 		return
 	}
 	ldapCfg, err := ldapUtils.LoadSystemLdapConfig()
