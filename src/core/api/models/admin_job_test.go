@@ -26,7 +26,7 @@ import (
 	"strings"
 )
 
-var adminServerTestConfig = map[string]interface{}{
+var testConfig = map[string]interface{}{
 	common.DefaultCoreEndpoint: "test",
 }
 
@@ -34,7 +34,7 @@ func TestMain(m *testing.M) {
 
 	test.InitDatabaseFromEnv()
 	config.Init()
-	config.Upload(adminServerTestConfig)
+	config.Upload(testConfig)
 	os.Exit(m.Run())
 
 }
