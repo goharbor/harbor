@@ -113,6 +113,7 @@ const (
 	CfgDriverDB                       = "db"
 	NewHarborAdminName                = "admin@harbor.local"
 	RegistryStorageProviderName       = "registry_storage_provider_name"
+	RegistryControllerURL             = "registry_controller_url"
 	UserMember                        = "u"
 	GroupMember                       = "g"
 	ReadOnly                          = "read_only"
