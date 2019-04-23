@@ -113,7 +113,6 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 		SupportedTriggers: []model.TriggerType{
 			model.TriggerTypeManual,
 			model.TriggerTypeScheduled,
-			model.TriggerTypeEventBased,
 		},
 	}
 

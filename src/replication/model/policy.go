@@ -20,6 +20,7 @@ import (
 
 	"github.com/astaxie/beego/validation"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/robfig/cron"
 )
 
 // const definition
@@ -88,10 +89,20 @@ func (p *Policy) Valid(v *validation.Validation) {
 
 	// valid the filters
 	for _, filter := range p.Filters {
-		if filter.Type != FilterTypeResource &&
-			filter.Type != FilterTypeName &&
-			filter.Type != FilterTypeTag &&
-			filter.Type != FilterTypeLabel {
+		value, ok := filter.Value.(string)
+		if !ok {
+			v.SetError("filters", "the type of filter value isn't string")
+			break
+		}
+		switch filter.Type {
+		case FilterTypeResource:
+			rt := ResourceType(value)
+			if !(rt == ResourceTypeImage || rt == ResourceTypeChart) {
+				v.SetError("filters", fmt.Sprintf("invalid resource filter: %s", value))
+				break
+			}
+		case FilterTypeName, FilterTypeTag, FilterTypeLabel:
+		default:
 			v.SetError("filters", "invalid filter type")
 			break
 		}
@@ -99,14 +110,19 @@ func (p *Policy) Valid(v *validation.Validation) {
 
 	// valid trigger
 	if p.Trigger != nil {
-		if p.Trigger.Type != TriggerTypeManual &&
-			p.Trigger.Type != TriggerTypeScheduled &&
-			p.Trigger.Type != TriggerTypeEventBased {
+		switch p.Trigger.Type {
+		case TriggerTypeManual, TriggerTypeEventBased:
+		case TriggerTypeScheduled:
+			if p.Trigger.Settings == nil || len(p.Trigger.Settings.Cron) == 0 {
+				v.SetError("trigger", fmt.Sprintf("the cron string cannot be empty when the trigger type is %s", TriggerTypeScheduled))
+			} else {
+				_, err := cron.Parse(p.Trigger.Settings.Cron)
+				if err != nil {
+					v.SetError("trigger", fmt.Sprintf("invalid cron string for scheduled trigger: %s", p.Trigger.Settings.Cron))
+				}
+			}
+		default:
 			v.SetError("trigger", "invalid trigger type")
-		}
-		if p.Trigger.Type == TriggerTypeScheduled &&
-			(p.Trigger.Settings == nil || len(p.Trigger.Settings.Cron) == 0) {
-			v.SetError("trigger", fmt.Sprintf("the cron string cannot be empty when the trigger type is %s", TriggerTypeScheduled))
 		}
 	}
 }

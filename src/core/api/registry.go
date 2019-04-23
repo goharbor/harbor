@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -205,6 +206,10 @@ func (t *RegistryAPI) Post() {
 	if reg != nil {
 		t.SendConflictError(fmt.Errorf("name '%s' is already used", r.Name))
 		return
+	}
+	i := strings.Index(r.URL, "://")
+	if i == -1 {
+		r.URL = fmt.Sprintf("http://%s", r.URL)
 	}
 
 	status, err := registry.CheckHealthStatus(r)
@@ -410,6 +415,10 @@ func (t *RegistryAPI) GetInfo() {
 	if err != nil {
 		t.SendInternalServerError(fmt.Errorf("failed to get registry info %d: %v", id, err))
 		return
+	}
+	// currently, only the local Harbor registry supports the event based trigger, append it here
+	if id == 0 {
+		info.SupportedTriggers = append(info.SupportedTriggers, model.TriggerTypeEventBased)
 	}
 	t.WriteJSONData(process(info))
 }

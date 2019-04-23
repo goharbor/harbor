@@ -15,6 +15,7 @@
 package model
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/astaxie/beego/validation"
@@ -69,6 +70,48 @@ func TestValidOfPolicy(t *testing.T) {
 			},
 			pass: false,
 		},
+		// invalid filter
+		{
+			policy: &Policy{
+				Name: "policy01",
+				SrcRegistry: &Registry{
+					ID: 0,
+				},
+				DestRegistry: &Registry{
+					ID: 1,
+				},
+				Filters: []*Filter{
+					{
+						Type:  FilterTypeResource,
+						Value: "invalid_resource_type",
+					},
+				},
+			},
+			pass: false,
+		},
+		// invalid filter
+		{
+			policy: &Policy{
+				Name: "policy01",
+				SrcRegistry: &Registry{
+					ID: 0,
+				},
+				DestRegistry: &Registry{
+					ID: 1,
+				},
+				Filters: []*Filter{
+					{
+						Type:  FilterTypeResource,
+						Value: ResourceTypeImage,
+					},
+					{
+						Type:  FilterTypeName,
+						Value: "a[",
+					},
+				},
+			},
+			pass: false,
+		},
 		// invalid trigger
 		{
 			policy: &Policy{
@@ -113,6 +156,35 @@ func TestValidOfPolicy(t *testing.T) {
 			},
 			pass: false,
 		},
+		// invalid cron
+		{
+			policy: &Policy{
+				Name: "policy01",
+				SrcRegistry: &Registry{
+					ID: 0,
+				},
+				DestRegistry: &Registry{
+					ID: 1,
+				},
+				Filters: []*Filter{
+					{
+						Type:  FilterTypeResource,
+						Value: "image",
+					},
+					{
+						Type:  FilterTypeName,
+						Value: "library/**",
+					},
+				},
+				Trigger: &Trigger{
+					Type: TriggerTypeScheduled,
+					Settings: &TriggerSettings{
+						Cron: "* * *",
+					},
+				},
+			},
+			pass: false,
+		},
 		// pass
 		{
 			policy: &Policy{
@@ -125,14 +197,18 @@ func TestValidOfPolicy(t *testing.T) {
 				},
 				Filters: []*Filter{
 					{
+						Type:  FilterTypeResource,
+						Value: "image",
+					},
+					{
 						Type:  FilterTypeName,
-						Value: "library",
+						Value: "library/**",
 					},
 				},
 				Trigger: &Trigger{
 					Type: TriggerTypeScheduled,
 					Settings: &TriggerSettings{
-						Cron: "* * *",
+						Cron: "* * * * * *",
 					},
 				},
 			},
@@ -140,7 +216,8 @@ func TestValidOfPolicy(t *testing.T) {
 		},
 	}
 
-	for _, c := range cases {
+	for i, c := range cases {
+		fmt.Printf("running case %d ...\n", i)
 		v := &validation.Validation{}
 		c.policy.Valid(v)
 		assert.Equal(t, c.pass, len(v.Errors) == 0)
