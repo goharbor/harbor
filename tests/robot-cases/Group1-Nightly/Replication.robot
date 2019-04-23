@@ -41,3 +41,24 @@ Test Case - Pro Replication Rules Add
     Switch To Replication Manage
     Check New Rule UI Without Endpoint
     Close Browser
+
+Test Case - Harbor Endpoint Verification
+    #This case need vailid info and selfsign cert
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%M%S
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Registries
+    Create A New Endpoint    harbor    edp1${d}    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    N
+    Endpoint Is Pingable
+    Enable Certificate Verification
+    Endpoint Is Unpingable
+    Close Browser
+
+Test Case - DockerHub Endpoint Verification
+    #This case need vailid info and selfsign cert
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%M%S
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Registries
+    Create A New Endpoint    dockerHub    edp1${d}    https://hub.docker.com/    danfengliu    Aa123456    Y
+    Close Browser
