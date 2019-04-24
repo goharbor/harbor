@@ -182,6 +182,16 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 	return res, nil
 }
 
+// assemble the source resources by filling the registry information
+func assembleSourceResources(resources []*model.Resource,
+	policy *model.Policy) []*model.Resource {
+	for _, resource := range resources {
+		resource.Registry = policy.SrcRegistry
+	}
+	log.Debug("assemble the source resources completed")
+	return resources
+}
+
 // assemble the destination resources by filling the metadata, registry and override properties
 func assembleDestinationResources(resources []*model.Resource,
 	policy *model.Policy) []*model.Resource {

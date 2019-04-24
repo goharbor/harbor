@@ -230,12 +230,7 @@ func TestStartReplication(t *testing.T) {
 	require.NotNil(t, err)
 
 	policy.Enabled = true
-	// the resource contains Vtags whose length isn't 1
-	_, err = ctl.StartReplication(policy, resource, model.TriggerTypeEventBased)
-	require.NotNil(t, err)
-
 	// replicate resource deletion
-	resource.Metadata.Vtags = []string{"1.0"}
 	resource.Deleted = true
 	id, err := ctl.StartReplication(policy, resource, model.TriggerTypeEventBased)
 	require.Nil(t, err)
