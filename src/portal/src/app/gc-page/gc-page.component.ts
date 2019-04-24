@@ -7,6 +7,7 @@ import { SessionService } from "../shared/session.service";
   styleUrls: ["./gc-page.component.scss"]
 })
 export class GcPageComponent implements OnInit {
+  inProgress: boolean;
   constructor(private session: SessionService) {}
 
   ngOnInit() {}
@@ -15,5 +16,9 @@ export class GcPageComponent implements OnInit {
       this.session.getCurrentUser() &&
       this.session.getCurrentUser().has_admin_role
     );
+  }
+
+  getGcStatus(status: boolean) {
+    this.inProgress = status;
   }
 }

@@ -1,12 +1,13 @@
 <div class="row">
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <h2 class="custom-h2 gc-title">{{'CONFIG.GC' | translate }}</h2>
+        <span class="spinner spinner-inline" [hidden]="!inProgress"></span>
         <clr-tabs>
             <clr-tab *ngIf="hasAdminRole">
                 <button id="config-gc" clrTabLink>{{'CONFIG.GC' | translate }}</button>
                 <ng-template [(clrIfActive)]="gcActive">
                     <clr-tab-content id="gc" *ngIf="hasAdminRole">
-                        <gc-config></gc-config>
+                        <gc-config (loadingGcStatus)="getGcStatus($event)"></gc-config>
                     </clr-tab-content>
                 </ng-template>
             </clr-tab>
