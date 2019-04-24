@@ -1,6 +1,6 @@
 {
     "name": "@harbor/ui",
-    "version": "1.7.1-rc1",
+    "version": "1.7.4-rc2",
     "description": "Harbor shared UI components based on Clarity and Angular6",
     "author": "CNCF",
     "module": "index.js",

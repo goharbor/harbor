@@ -115,6 +115,10 @@ export class GcComponent implements OnInit {
     this.getJobs();
   }
 
+  logLink(id) {
+    return this.gcRepoService.getLogLink(id);
+  }
+
   scheduleGc(): void {
     let offTime = this.gcUtility.getOffTime(this.dailyTime);
     let schedule = this.schedule;

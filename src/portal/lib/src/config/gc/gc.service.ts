@@ -61,4 +61,8 @@ export class GcRepoService {
         }
         return this.gcApiRepository.putSchedule(param);
     }
+
+    public getLogLink(id): string  {
+        return this.gcApiRepository.getLogLink(id);
+    }
 }
