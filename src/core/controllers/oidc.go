@@ -33,6 +33,7 @@ import (
 const tokenKey = "oidc_token"
 const stateKey = "oidc_state"
 const userInfoKey = "oidc_user_info"
+const oidcUserComment = "Onboarded via OIDC provider"
 
 // OIDCController handles requests for OIDC login, callback and user onboard
 type OIDCController struct {
@@ -67,6 +68,7 @@ func (oc *OIDCController) RedirectLogin() {
 		return
 	}
 	oc.SetSession(stateKey, state)
+	log.Debugf("State dumped to session: %s", state)
 	// Force to use the func 'Redirect' of beego.Controller
 	oc.Controller.Redirect(url, http.StatusFound)
 }
@@ -75,6 +77,8 @@ func (oc *OIDCController) RedirectLogin() {
 // kick off onboard if needed.
 func (oc *OIDCController) Callback() {
 	if oc.Ctx.Request.URL.Query().Get("state") != oc.GetSession(stateKey) {
+		log.Errorf("State mismatch, in session: %s, in url: %s", oc.GetSession(stateKey),
+			oc.Ctx.Request.URL.Query().Get("state"))
 		oc.SendBadRequestError(errors.New("State mismatch"))
 		return
 	}
@@ -106,21 +110,34 @@ func (oc *OIDCController) Callback() {
 		oc.SendInternalServerError(err)
 		return
 	}
+
 	tokenBytes, err := json.Marshal(token)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return
 	}
+	log.Debugf("Exchanged token string: %s", string(tokenBytes))
 	oc.SetSession(tokenKey, tokenBytes)
 
 	if u == nil {
 		oc.SetSession(userInfoKey, string(ouDataStr))
-		oc.Controller.Redirect("/oidc-onboard", http.StatusFound)
+		oc.Controller.Redirect(fmt.Sprintf("/oidc-onboard?username=%s", strings.Replace(d.Username, " ", "_", -1)),
+			http.StatusFound)
 	} else {
+		oidcUser, err := dao.GetOIDCUserByUserID(u.UserID)
+		if err != nil {
+			oc.SendInternalServerError(err)
+			return
+		}
+		_, t, err := secretAndToken(tokenBytes)
+		oidcUser.Token = t
+		if err := dao.UpdateOIDCUser(oidcUser); err != nil {
+			oc.SendInternalServerError(err)
+			return
+		}
 		oc.SetSession(userKey, *u)
 		oc.Controller.Redirect("/", http.StatusFound)
 	}
-
 }
 
 // Onboard handles the request to onboard an user authenticated via OIDC provider
@@ -170,18 +187,19 @@ func (oc *OIDCController) Onboard() {
 
 	email := d.Email
 	if email == "" {
-		email = utils.GenerateRandomString() + "@harbor.com"
+		email = utils.GenerateRandomString() + "@placeholder.com"
 	}
 	user := models.User{
 		Username:     username,
 		Email:        email,
 		OIDCUserMeta: &oidcUser,
+		Comment:      oidcUserComment,
 	}
 
 	err = dao.OnBoardOIDCUser(&user)
 	if err != nil {
 		if strings.Contains(err.Error(), dao.ErrDupUser.Error()) {
-			oc.RenderError(http.StatusConflict, "Duplicate username")
+			oc.RenderError(http.StatusConflict, "Conflict in username, the user with same username has been onboarded.")
 			return
 		}
 		oc.SendInternalServerError(err)

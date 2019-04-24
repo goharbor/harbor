@@ -148,8 +148,8 @@ func AuthCodeURL(state string) (string, error) {
 		log.Errorf("Failed to get OAuth configuration, error: %v", err)
 		return "", err
 	}
-	if strings.HasPrefix(conf.Endpoint.AuthURL, googleEndpoint) {
-		return conf.AuthCodeURL(state, oauth2.AccessTypeOffline), nil
+	if strings.HasPrefix(conf.Endpoint.AuthURL, googleEndpoint) { // make sure the refresh token will be returned
+		return conf.AuthCodeURL(state, oauth2.AccessTypeOffline, oauth2.SetAuthURLParam("prompt", "consent")), nil
 	}
 	return conf.AuthCodeURL(state), nil
 }

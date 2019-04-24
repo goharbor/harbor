@@ -102,6 +102,7 @@ func (dm *defaultManager) VerifyToken(ctx context.Context, user *models.OIDCUser
 	if err != nil {
 		return verifyError(err)
 	}
+	log.Debugf("Token string for verify: %s", tokenStr)
 	_, err = VerifyToken(ctx, token.IDToken)
 	if err == nil {
 		return nil
