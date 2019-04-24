@@ -16,6 +16,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/pkg/errors"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/jobservice/errs"
@@ -68,9 +69,12 @@ func (br *BaseRouter) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.URL.String() != fmt.Sprintf("%s/%s/stats", baseRoute, apiVersion) {
 		if err := br.authenticator.DoAuth(req); err != nil {
 			authErr := errs.UnauthorizedError(err)
+			if authErr == nil {
+				authErr = errors.Errorf("unauthorized: %s", err)
+			}
 			logger.Errorf("Serve http request '%s %s' failed with error: %s", req.Method, req.URL.String(), authErr.Error())
 			w.WriteHeader(http.StatusUnauthorized)
-			w.Write([]byte(authErr.Error()))
+			writeDate(w, []byte(authErr.Error()))
 			return
 		}
 	}
@@ -84,8 +88,10 @@ func (br *BaseRouter) registerRoutes() {
 	subRouter := br.router.PathPrefix(fmt.Sprintf("%s/%s", baseRoute, apiVersion)).Subrouter()
 
 	subRouter.HandleFunc("/jobs", br.handler.HandleLaunchJobReq).Methods(http.MethodPost)
+	subRouter.HandleFunc("/jobs/scheduled", br.handler.HandleScheduledJobs).Methods(http.MethodGet)
 	subRouter.HandleFunc("/jobs/{job_id}", br.handler.HandleGetJobReq).Methods(http.MethodGet)
 	subRouter.HandleFunc("/jobs/{job_id}", br.handler.HandleJobActionReq).Methods(http.MethodPost)
 	subRouter.HandleFunc("/jobs/{job_id}/log", br.handler.HandleJobLogReq).Methods(http.MethodGet)
 	subRouter.HandleFunc("/stats", br.handler.HandleCheckStatusReq).Methods(http.MethodGet)
+	subRouter.HandleFunc("/jobs/{job_id}/executions", br.handler.HandlePeriodicExecutions).Methods(http.MethodGet)
 }

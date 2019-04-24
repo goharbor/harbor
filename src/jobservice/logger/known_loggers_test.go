@@ -13,28 +13,28 @@ func TestKnownLoggers(t *testing.T) {
 	b := IsKnownLogger("Unknown")
 	require.False(t, b)
 
-	b = IsKnownLogger(LoggerNameFile)
+	b = IsKnownLogger(NameFile)
 	require.True(t, b)
 
 	// no getter
-	b = HasGetter(LoggerNameStdOutput)
+	b = HasGetter(NameStdOutput)
 	require.False(t, b)
 	// has getter
-	b = HasGetter(LoggerNameDB)
+	b = HasGetter(NameDB)
 	require.True(t, b)
 
 	// no sweeper
-	b = HasSweeper(LoggerNameStdOutput)
+	b = HasSweeper(NameStdOutput)
 	require.False(t, b)
 	// has sweeper
-	b = HasSweeper(LoggerNameDB)
+	b = HasSweeper(NameDB)
 	require.True(t, b)
 
 	// unknown logger
 	l := KnownLoggers("unknown")
 	require.Nil(t, l)
 	// known logger
-	l = KnownLoggers(LoggerNameDB)
+	l = KnownLoggers(NameDB)
 	require.NotNil(t, l)
 
 	// unknown level
@@ -52,14 +52,14 @@ func TestGetLoggerName(t *testing.T) {
 	uuid := "uuid_for_unit_test"
 	l, err := backend.NewDBLogger(uuid, "DEBUG", 4)
 	require.Nil(t, err)
-	require.Equal(t, LoggerNameDB, GetLoggerName(l))
+	require.Equal(t, NameDB, GetLoggerName(l))
 
 	stdLog := backend.NewStdOutputLogger("DEBUG", backend.StdErr, 4)
-	require.Equal(t, LoggerNameStdOutput, GetLoggerName(stdLog))
+	require.Equal(t, NameStdOutput, GetLoggerName(stdLog))
 
 	fileLog, err := backend.NewFileLogger("DEBUG", path.Join(os.TempDir(), "TestFileLogger.log"), 4)
 	require.Nil(t, err)
-	require.Equal(t, LoggerNameFile, GetLoggerName(fileLog))
+	require.Equal(t, NameFile, GetLoggerName(fileLog))
 
 	e := &Entry{}
 	n := GetLoggerName(e)

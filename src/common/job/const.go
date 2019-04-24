@@ -7,10 +7,6 @@ const (
 	ImageScanAllJob = "IMAGE_SCAN_ALL"
 	// ImageGC the name of image garbage collection job in job service
 	ImageGC = "IMAGE_GC"
-	// Replication : the name of the replication job in job service
-	Replication = "REPLICATION"
-	// ReplicationScheduler : the name of the replication scheduler job in job service
-	ReplicationScheduler = "IMAGE_REPLICATE"
 
 	// JobKindGeneric : Kind of generic job
 	JobKindGeneric = "Generic"

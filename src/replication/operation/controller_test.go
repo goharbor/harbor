@@ -90,7 +90,7 @@ func (f *fakedExecutionManager) GetTaskLog(int64) ([]byte, error) {
 type fakedScheduler struct{}
 
 func (f *fakedScheduler) Preprocess(src []*model.Resource, dst []*model.Resource) ([]*scheduler.ScheduleItem, error) {
-	items := []*scheduler.ScheduleItem{}
+	items := make([]*scheduler.ScheduleItem, 0)
 	for i, res := range src {
 		items = append(items, &scheduler.ScheduleItem{
 			SrcResource: res,
@@ -100,7 +100,7 @@ func (f *fakedScheduler) Preprocess(src []*model.Resource, dst []*model.Resource
 	return items, nil
 }
 func (f *fakedScheduler) Schedule(items []*scheduler.ScheduleItem) ([]*scheduler.ScheduleResult, error) {
-	results := []*scheduler.ScheduleResult{}
+	results := make([]*scheduler.ScheduleResult, 0)
 	for _, item := range items {
 		results = append(results, &scheduler.ScheduleResult{
 			TaskID: item.TaskID,

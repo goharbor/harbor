@@ -25,7 +25,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/utils"
 )
 
@@ -50,7 +50,7 @@ func (sa *All) ShouldRetry() bool {
 }
 
 // Validate implements the interface in job/Interface
-func (sa *All) Validate(params map[string]interface{}) error {
+func (sa *All) Validate(params job.Parameters) error {
 	if len(params) > 0 {
 		return fmt.Errorf("the parms should be empty for scan all job")
 	}
@@ -58,7 +58,7 @@ func (sa *All) Validate(params map[string]interface{}) error {
 }
 
 // Run implements the interface in job/Interface
-func (sa *All) Run(ctx env.JobContext, params map[string]interface{}) error {
+func (sa *All) Run(ctx job.Context, params job.Parameters) error {
 	logger := ctx.GetLogger()
 	logger.Info("Scanning all the images in the registry")
 	err := sa.init(ctx)
@@ -107,7 +107,7 @@ func (sa *All) Run(ctx env.JobContext, params map[string]interface{}) error {
 	return nil
 }
 
-func (sa *All) init(ctx env.JobContext) error {
+func (sa *All) init(ctx job.Context) error {
 	if v, err := getAttrFromCtx(ctx, common.RegistryURL); err == nil {
 		sa.registryURL = v
 	} else {
@@ -133,9 +133,9 @@ func (sa *All) init(ctx env.JobContext) error {
 	return nil
 }
 
-func getAttrFromCtx(ctx env.JobContext, key string) (string, error) {
+func getAttrFromCtx(ctx job.Context, key string) (string, error) {
 	if v, ok := ctx.Get(key); ok && len(v.(string)) > 0 {
 		return v.(string), nil
 	}
-	return "", fmt.Errorf("Failed to get required property: %s", key)
+	return "", fmt.Errorf("failed to get required property: %s", key)
 }

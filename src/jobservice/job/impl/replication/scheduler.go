@@ -22,9 +22,7 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	reg "github.com/goharbor/harbor/src/common/utils/registry"
-	"github.com/goharbor/harbor/src/jobservice/env"
-	"github.com/goharbor/harbor/src/jobservice/errs"
-	"github.com/goharbor/harbor/src/jobservice/opm"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
@@ -32,7 +30,7 @@ import (
 // a scheduler when submitting it as a scheduled job. It receives
 // a URL and data, and post the data to the URL when it is running
 type Scheduler struct {
-	ctx env.JobContext
+	ctx job.Context
 }
 
 // ShouldRetry ...
@@ -46,15 +44,15 @@ func (s *Scheduler) MaxFails() uint {
 }
 
 // Validate ....
-func (s *Scheduler) Validate(params map[string]interface{}) error {
+func (s *Scheduler) Validate(params job.Parameters) error {
 	return nil
 }
 
 // Run ...
-func (s *Scheduler) Run(ctx env.JobContext, params map[string]interface{}) error {
+func (s *Scheduler) Run(ctx job.Context, params job.Parameters) error {
 	cmd, exist := ctx.OPCommand()
-	if exist && cmd == opm.CtlCommandStop {
-		return errs.JobStoppedError()
+	if exist && cmd == job.StopCommand {
+		return nil
 	}
 	logger := ctx.GetLogger()
 

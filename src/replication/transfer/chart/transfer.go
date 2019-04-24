@@ -18,14 +18,9 @@ import (
 	"errors"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 	trans "github.com/goharbor/harbor/src/replication/transfer"
-)
-
-var (
-	jobStoppedErr = errs.JobStoppedError()
 )
 
 func init() {
@@ -81,7 +76,7 @@ func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
 
 func (t *transfer) initialize(src, dst *model.Resource) error {
 	if t.shouldStop() {
-		return jobStoppedErr
+		return nil
 	}
 	// create client for source registry
 	srcReg, err := createRegistry(src.Registry)
@@ -132,7 +127,7 @@ func (t *transfer) shouldStop() bool {
 
 func (t *transfer) copy(src, dst *chart, override bool) error {
 	if t.shouldStop() {
-		return jobStoppedErr
+		return nil
 	}
 	t.logger.Infof("copying %s:%s(source registry) to %s:%s(destination registry)...",
 		src.name, src.version, dst.name, dst.version)

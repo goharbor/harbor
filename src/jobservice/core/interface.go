@@ -16,28 +16,30 @@
 package core
 
 import (
-	"github.com/goharbor/harbor/src/jobservice/models"
+	"github.com/goharbor/harbor/src/jobservice/common/query"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/worker"
 )
 
 // Interface defines the related main methods of job operation.
 type Interface interface {
 	// LaunchJob is used to handle the job submission request.
 	//
-	// req	JobRequest    : Job request contains related required information of queuing job.
+	// req	*job.Request    : Job request contains related required information of queuing job.
 	//
 	// Returns:
-	//	JobStats: Job status info with ID and self link returned if job is successfully launched.
-	//  error   : Error returned if failed to launch the specified job.
-	LaunchJob(req models.JobRequest) (models.JobStats, error)
+	//	job.Stats : Job status info with ID and self link returned if job is successfully launched.
+	//  error     : Error returned if failed to launch the specified job.
+	LaunchJob(req *job.Request) (*job.Stats, error)
 
 	// GetJob is used to handle the job stats query request.
 	//
 	// jobID	string: ID of job.
 	//
 	// Returns:
-	//	JobStats: Job status info if job exists.
-	//  error   : Error returned if failed to get the specified job.
-	GetJob(jobID string) (models.JobStats, error)
+	//	*job.Stats : Job status info if job exists.
+	//  error      : Error returned if failed to get the specified job.
+	GetJob(jobID string) (*job.Stats, error)
 
 	// StopJob is used to handle the job stopping request.
 	//
@@ -55,17 +57,19 @@ type Interface interface {
 	//  error   : Error returned if failed to retry the specified job.
 	RetryJob(jobID string) error
 
-	// Cancel the job
-	//
-	// jobID string : ID of the enqueued job
-	//
-	// Returns:
-	//  error           : error returned if meet any problems
-	CancelJob(jobID string) error
-
 	// CheckStatus is used to handle the job service healthy status checking request.
-	CheckStatus() (models.JobPoolStats, error)
+	CheckStatus() (*worker.Stats, error)
 
 	// GetJobLogData is used to return the log text data for the specified job if exists
 	GetJobLogData(jobID string) ([]byte, error)
+
+	// Get the periodic executions for the specified periodic job.
+	// Pagination by query is supported.
+	// The total number is also returned.
+	GetPeriodicExecutions(periodicJobID string, query *query.Parameter) ([]*job.Stats, int64, error)
+
+	// Get the scheduled jobs by page
+	// The page number in the query will be ignored, default 20 is used. This is the limitation of backend lib.
+	// The total number is also returned.
+	ScheduledJobs(query *query.Parameter) ([]*job.Stats, int64, error)
 }

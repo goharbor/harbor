@@ -10,7 +10,7 @@ https_config:
 #Server listening port
 port: 9444
 
-#Worker pool
+#Worker worker
 worker_pool:
   #Worker concurrency
   workers: 10
@@ -20,7 +20,7 @@ worker_pool:
     #redis://[arbitrary_username:password@]ipaddress:port/database_index
     #or ipaddress:port[,weight,password,database_index]
     redis_url: "localhost:6379"
-    namespace: "harbor_job_service"
+    namespace: "testing_job_service_v2"
 
 #Loggers for the running job
 job_loggers:
@@ -39,7 +39,3 @@ job_loggers:
 loggers:
   - name: "STD_OUTPUT" # Same with above
     level: "DEBUG"
-
-#Admin server endpoint
-admin_server: "http://127.0.0.1:8888"
-

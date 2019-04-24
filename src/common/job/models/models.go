@@ -54,7 +54,7 @@ type JobPoolStats struct {
 	Pools []*JobPoolStatsData `json:"worker_pools"`
 }
 
-// JobPoolStatsData represent the healthy and status of the worker pool.
+// JobPoolStatsData represent the healthy and status of the worker worker.
 type JobPoolStatsData struct {
 	WorkerPoolID string   `json:"worker_pool_id"`
 	StartedAt    int64    `json:"started_at"`

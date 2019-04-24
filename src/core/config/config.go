@@ -116,7 +116,7 @@ func initProjectManager() error {
 		}
 		pool := x509.NewCertPool()
 		if ok := pool.AppendCertsFromPEM(content); !ok {
-			return fmt.Errorf("failed to append cert content into cert pool")
+			return fmt.Errorf("failed to append cert content into cert worker")
 		}
 		AdmiralClient = &http.Client{
 			Transport: &http.Transport{

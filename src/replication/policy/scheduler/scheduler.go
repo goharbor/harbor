@@ -19,10 +19,11 @@ import (
 	"net/http"
 	"time"
 
-	common_http "github.com/goharbor/harbor/src/common/http"
+	commonHttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/job"
-	job_models "github.com/goharbor/harbor/src/common/job/models"
+	jobModels "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	jsJob "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/dao"
 	"github.com/goharbor/harbor/src/replication/dao/models"
@@ -61,13 +62,13 @@ func (s *scheduler) Schedule(policyID int64, cron string) error {
 	log.Debugf("the schedule job record %d added", id)
 
 	statusHookURL := fmt.Sprintf("%s/service/notifications/jobs/replication/%d", config.Config.CoreURL, id)
-	jobID, err := s.jobservice.SubmitJob(&job_models.JobData{
-		Name: job.ReplicationScheduler,
+	jobID, err := s.jobservice.SubmitJob(&jobModels.JobData{
+		Name: jsJob.ReplicationScheduler,
 		Parameters: map[string]interface{}{
 			"url":       config.Config.CoreURL,
 			"policy_id": policyID,
 		},
-		Metadata: &job_models.JobMetadata{
+		Metadata: &jobModels.JobMetadata{
 			JobKind: job.JobKindPeriodic,
 			Cron:    cron,
 		},
@@ -103,7 +104,7 @@ func (s *scheduler) Unschedule(policyID int64) error {
 		if err = s.jobservice.PostAction(sj.JobID, job.JobActionStop); err != nil {
 			// if the job specified by jobID is not found in jobservice, just delete
 			// the record from database
-			if e, ok := err.(*common_http.Error); !ok || e.Code != http.StatusNotFound {
+			if e, ok := err.(*commonHttp.Error); !ok || e.Code != http.StatusNotFound {
 				return err
 			}
 			log.Debugf("the stop action for schedule job %s submitted to the jobservice", sj.JobID)

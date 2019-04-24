@@ -19,20 +19,19 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/goharbor/harbor/src/common/job"
-	common_job "github.com/goharbor/harbor/src/common/job"
+	cjob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
-	"github.com/goharbor/harbor/src/jobservice/opm"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
 type defaultScheduler struct {
-	client job.Client
+	client cjob.Client
 }
 
 // NewScheduler returns an instance of Scheduler
-func NewScheduler(js job.Client) Scheduler {
+func NewScheduler(js cjob.Client) Scheduler {
 	return &defaultScheduler{
 		client: js,
 	}
@@ -95,14 +94,14 @@ func (d *defaultScheduler) Schedule(items []*ScheduleItem) ([]*ScheduleResult, e
 			results = append(results, result)
 			continue
 		}
-		job := &models.JobData{
+		j := &models.JobData{
 			Metadata: &models.JobMetadata{
-				JobKind: job.JobKindGeneric,
+				JobKind: job.KindGeneric,
 			},
 			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/replication/task/%d", config.Config.CoreURL, item.TaskID),
 		}
 
-		job.Name = common_job.Replication
+		j.Name = job.Replication
 		src, err := json.Marshal(item.SrcResource)
 		if err != nil {
 			result.Error = err
@@ -115,11 +114,11 @@ func (d *defaultScheduler) Schedule(items []*ScheduleItem) ([]*ScheduleResult, e
 			results = append(results, result)
 			continue
 		}
-		job.Parameters = map[string]interface{}{
+		j.Parameters = map[string]interface{}{
 			"src_resource": string(src),
 			"dst_resource": string(dest),
 		}
-		id, joberr := d.client.SubmitJob(job)
+		id, joberr := d.client.SubmitJob(j)
 		if joberr != nil {
 			result.Error = joberr
 			results = append(results, result)
@@ -133,7 +132,7 @@ func (d *defaultScheduler) Schedule(items []*ScheduleItem) ([]*ScheduleResult, e
 
 // Stop the transfer job
 func (d *defaultScheduler) Stop(id string) error {
-	err := d.client.PostAction(id, opm.CtlCommandStop)
+	err := d.client.PostAction(id, string(job.StopCommand))
 	if err != nil {
 		return err
 	}

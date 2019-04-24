@@ -16,7 +16,6 @@ package api
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -24,12 +23,18 @@ import (
 
 	"github.com/gorilla/mux"
 
+	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/common/query"
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/core"
 	"github.com/goharbor/harbor/src/jobservice/errs"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/jobservice/models"
-	"github.com/goharbor/harbor/src/jobservice/opm"
+	"github.com/pkg/errors"
+	"strconv"
 )
+
+const totalHeaderKey = "Total-Count"
 
 // Handler defines approaches to handle the http requests.
 type Handler interface {
@@ -47,6 +52,12 @@ type Handler interface {
 
 	// HandleJobLogReq is used to handle the request of getting job logs
 	HandleJobLogReq(w http.ResponseWriter, req *http.Request)
+
+	// HandleJobLogReq is used to handle the request of getting periodic executions
+	HandlePeriodicExecutions(w http.ResponseWriter, req *http.Request)
+
+	// HandleScheduledJobs is used to handle the request of getting pending scheduled jobs
+	HandleScheduledJobs(w http.ResponseWriter, req *http.Request)
 }
 
 // DefaultHandler is the default request handler which implements the Handler interface.
@@ -63,10 +74,6 @@ func NewDefaultHandler(ctl core.Interface) *DefaultHandler {
 
 // HandleLaunchJobReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w, req) {
-		return
-	}
-
 	data, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		dh.handleError(w, req, http.StatusInternalServerError, errs.ReadRequestBodyError(err))
@@ -74,8 +81,8 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 	}
 
 	// unmarshal data
-	jobReq := models.JobRequest{}
-	if err = json.Unmarshal(data, &jobReq); err != nil {
+	jobReq := &job.Request{}
+	if err = json.Unmarshal(data, jobReq); err != nil {
 		dh.handleError(w, req, http.StatusInternalServerError, errs.HandleJSONDataError(err))
 		return
 	}
@@ -83,13 +90,19 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 	// Pass request to the controller for the follow-up.
 	jobStats, err := dh.controller.LaunchJob(jobReq)
 	if err != nil {
-		if errs.IsConflictError(err) {
+		code := http.StatusInternalServerError
+		if errs.IsBadRequestError(err) {
+			// Bad request
+			code = http.StatusBadRequest
+		} else if errs.IsConflictError(err) {
 			// Conflict error
-			dh.handleError(w, req, http.StatusConflict, err)
+			code = http.StatusConflict
 		} else {
 			// General error
-			dh.handleError(w, req, http.StatusInternalServerError, errs.LaunchJobError(err))
+			err = errs.LaunchJobError(err)
 		}
+
+		dh.handleError(w, req, code, err)
 		return
 	}
 
@@ -98,22 +111,20 @@ func (dh *DefaultHandler) HandleLaunchJobReq(w http.ResponseWriter, req *http.Re
 
 // HandleGetJobReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w, req) {
-		return
-	}
-
 	vars := mux.Vars(req)
 	jobID := vars["job_id"]
 
 	jobStats, err := dh.controller.GetJob(jobID)
 	if err != nil {
 		code := http.StatusInternalServerError
-		backErr := errs.GetJobStatsError(err)
 		if errs.IsObjectNotFoundError(err) {
 			code = http.StatusNotFound
-			backErr = err
+		} else if errs.IsBadRequestError(err) {
+			code = http.StatusBadRequest
+		} else {
+			err = errs.GetJobStatsError(err)
 		}
-		dh.handleError(w, req, code, backErr)
+		dh.handleError(w, req, code, err)
 		return
 	}
 
@@ -122,10 +133,6 @@ func (dh *DefaultHandler) HandleGetJobReq(w http.ResponseWriter, req *http.Reque
 
 // HandleJobActionReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w, req) {
-		return
-	}
-
 	vars := mux.Vars(req)
 	jobID := vars["job_id"]
 
@@ -136,48 +143,30 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 	}
 
 	// unmarshal data
-	jobActionReq := models.JobActionRequest{}
-	if err = json.Unmarshal(data, &jobActionReq); err != nil {
+	jobActionReq := &job.ActionRequest{}
+	if err = json.Unmarshal(data, jobActionReq); err != nil {
 		dh.handleError(w, req, http.StatusInternalServerError, errs.HandleJSONDataError(err))
 		return
 	}
 
-	switch jobActionReq.Action {
-	case opm.CtlCommandStop:
-		if err := dh.controller.StopJob(jobID); err != nil {
-			code := http.StatusInternalServerError
-			backErr := errs.StopJobError(err)
-			if errs.IsObjectNotFoundError(err) {
-				code = http.StatusNotFound
-				backErr = err
-			}
-			dh.handleError(w, req, code, backErr)
-			return
+	// Only support stop command now
+	cmd := job.OPCommand(jobActionReq.Action)
+	if !cmd.IsStop() {
+		dh.handleError(w, req, http.StatusNotImplemented, errs.UnknownActionNameError(errors.Errorf("command: %s", jobActionReq.Action)))
+		return
+	}
+
+	// Stop job
+	if err := dh.controller.StopJob(jobID); err != nil {
+		code := http.StatusInternalServerError
+		if errs.IsObjectNotFoundError(err) {
+			code = http.StatusNotFound
+		} else if errs.IsBadRequestError(err) {
+			code = http.StatusBadRequest
+		} else {
+			err = errs.StopJobError(err)
 		}
-	case opm.CtlCommandCancel:
-		if err := dh.controller.CancelJob(jobID); err != nil {
-			code := http.StatusInternalServerError
-			backErr := errs.CancelJobError(err)
-			if errs.IsObjectNotFoundError(err) {
-				code = http.StatusNotFound
-				backErr = err
-			}
-			dh.handleError(w, req, code, backErr)
-			return
-		}
-	case opm.CtlCommandRetry:
-		if err := dh.controller.RetryJob(jobID); err != nil {
-			code := http.StatusInternalServerError
-			backErr := errs.RetryJobError(err)
-			if errs.IsObjectNotFoundError(err) {
-				code = http.StatusNotFound
-				backErr = err
-			}
-			dh.handleError(w, req, code, backErr)
-			return
-		}
-	default:
-		dh.handleError(w, req, http.StatusNotImplemented, errs.UnknownActionNameError(fmt.Errorf("%s", jobID)))
+		dh.handleError(w, req, code, err)
 		return
 	}
 
@@ -188,10 +177,6 @@ func (dh *DefaultHandler) HandleJobActionReq(w http.ResponseWriter, req *http.Re
 
 // HandleCheckStatusReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w, req) {
-		return
-	}
-
 	stats, err := dh.controller.CheckStatus()
 	if err != nil {
 		dh.handleError(w, req, http.StatusInternalServerError, errs.CheckStatsError(err))
@@ -203,34 +188,74 @@ func (dh *DefaultHandler) HandleCheckStatusReq(w http.ResponseWriter, req *http.
 
 // HandleJobLogReq is implementation of method defined in interface 'Handler'
 func (dh *DefaultHandler) HandleJobLogReq(w http.ResponseWriter, req *http.Request) {
-	if !dh.preCheck(w, req) {
-		return
-	}
-
 	vars := mux.Vars(req)
 	jobID := vars["job_id"]
 
 	if strings.Contains(jobID, "..") || strings.ContainsRune(jobID, os.PathSeparator) {
-		dh.handleError(w, req, http.StatusBadRequest, fmt.Errorf("Invalid Job ID: %s", jobID))
+		dh.handleError(w, req, http.StatusBadRequest, errors.Errorf("invalid Job ID: %s", jobID))
 		return
 	}
 
 	logData, err := dh.controller.GetJobLogData(jobID)
 	if err != nil {
 		code := http.StatusInternalServerError
-		backErr := errs.GetJobLogError(err)
 		if errs.IsObjectNotFoundError(err) {
 			code = http.StatusNotFound
-			backErr = err
+		} else if errs.IsBadRequestError(err) {
+			code = http.StatusBadRequest
+		} else {
+			err = errs.GetJobLogError(err)
 		}
-		dh.handleError(w, req, code, backErr)
+		dh.handleError(w, req, code, err)
 		return
 	}
 
 	dh.log(req, http.StatusOK, "")
 
 	w.WriteHeader(http.StatusOK)
-	w.Write(logData)
+	writeDate(w, logData)
+}
+
+// HandlePeriodicExecutions is implementation of method defined in interface 'Handler'
+func (dh *DefaultHandler) HandlePeriodicExecutions(w http.ResponseWriter, req *http.Request) {
+	// Get param
+	vars := mux.Vars(req)
+	jobID := vars["job_id"]
+
+	// Get query params
+	q := extractQuery(req)
+
+	executions, total, err := dh.controller.GetPeriodicExecutions(jobID, q)
+	if err != nil {
+		code := http.StatusInternalServerError
+		if errs.IsObjectNotFoundError(err) {
+			code = http.StatusNotFound
+		} else if errs.IsBadRequestError(err) {
+			code = http.StatusBadRequest
+		} else {
+			err = errs.GetPeriodicExecutionError(err)
+		}
+		dh.handleError(w, req, code, err)
+		return
+	}
+
+	w.Header().Add(totalHeaderKey, fmt.Sprintf("%d", total))
+	dh.handleJSONData(w, req, http.StatusOK, executions)
+
+}
+
+// HandleScheduledJobs is implementation of method defined in interface 'Handler'
+func (dh *DefaultHandler) HandleScheduledJobs(w http.ResponseWriter, req *http.Request) {
+	// Get query parameters
+	q := extractQuery(req)
+	jobs, total, err := dh.controller.ScheduledJobs(q)
+	if err != nil {
+		dh.handleError(w, req, http.StatusInternalServerError, errs.GetScheduledJobsError(err))
+		return
+	}
+
+	w.Header().Add(totalHeaderKey, fmt.Sprintf("%d", total))
+	dh.handleJSONData(w, req, http.StatusOK, jobs)
 }
 
 func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, req *http.Request, code int, object interface{}) {
@@ -245,7 +270,7 @@ func (dh *DefaultHandler) handleJSONData(w http.ResponseWriter, req *http.Reques
 	w.Header().Set(http.CanonicalHeaderKey("Accept"), "application/json")
 	w.Header().Set(http.CanonicalHeaderKey("content-type"), "application/json")
 	w.WriteHeader(code)
-	w.Write(data)
+	writeDate(w, data)
 }
 
 func (dh *DefaultHandler) handleError(w http.ResponseWriter, req *http.Request, code int, err error) {
@@ -253,18 +278,54 @@ func (dh *DefaultHandler) handleError(w http.ResponseWriter, req *http.Request, 
 	logger.Errorf("Serve http request '%s %s' error: %d %s", req.Method, req.URL.String(), code, err.Error())
 
 	w.WriteHeader(code)
-	w.Write([]byte(err.Error()))
-}
-
-func (dh *DefaultHandler) preCheck(w http.ResponseWriter, req *http.Request) bool {
-	if dh.controller == nil {
-		dh.handleError(w, req, http.StatusInternalServerError, errs.MissingBackendHandlerError(fmt.Errorf("nil controller")))
-		return false
-	}
-
-	return true
+	writeDate(w, []byte(err.Error()))
 }
 
 func (dh *DefaultHandler) log(req *http.Request, code int, text string) {
 	logger.Debugf("Serve http request '%s %s': %d %s", req.Method, req.URL.String(), code, text)
+}
+
+func extractQuery(req *http.Request) *query.Parameter {
+	q := &query.Parameter{
+		PageNumber: 1,
+		PageSize:   query.DefaultPageSize,
+		Extras:     make(query.ExtraParameters),
+	}
+
+	queries := req.URL.Query()
+	// Page number
+	p := queries.Get(query.ParamKeyPage)
+	if !utils.IsEmptyStr(p) {
+		if pv, err := strconv.ParseUint(p, 10, 32); err == nil {
+			if pv > 1 {
+				q.PageNumber = uint(pv)
+			}
+		}
+	}
+
+	// Page number
+	size := queries.Get(query.ParamKeyPageSize)
+	if !utils.IsEmptyStr(size) {
+		if pz, err := strconv.ParseUint(size, 10, 32); err == nil {
+			if pz > 0 {
+				q.PageSize = uint(pz)
+			}
+		}
+	}
+
+	// Extra query parameters
+	nonStoppedOnly := queries.Get(query.ParamKeyNonStoppedOnly)
+	if !utils.IsEmptyStr(nonStoppedOnly) {
+		if nonStoppedOnlyV, err := strconv.ParseBool(nonStoppedOnly); err == nil {
+			q.Extras.Set(query.ExtraParamKeyNonStoppedOnly, nonStoppedOnlyV)
+		}
+	}
+
+	return q
+}
+
+func writeDate(w http.ResponseWriter, bytes []byte) {
+	if _, err := w.Write(bytes); err != nil {
+		logger.Errorf("writer write error: %s", err)
+	}
 }

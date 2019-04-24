@@ -38,12 +38,12 @@ func GetLogger(loggerOptions ...Option) (Interface, error) {
 
 	// No options specified, enable std as default
 	if len(loggerOptions) == 0 {
-		defaultOp := BackendOption(LoggerNameStdOutput, "", nil)
+		defaultOp := BackendOption(NameStdOutput, "", nil)
 		defaultOp.Apply(lOptions)
 	}
 
 	// Create backends
-	loggers := []Interface{}
+	loggers := make([]Interface, 0)
 	for name, ops := range lOptions.values {
 		if !IsKnownLogger(name) {
 			return nil, fmt.Errorf("no logger registered for name '%s'", name)
@@ -105,7 +105,7 @@ func GetSweeper(context context.Context, sweeperOptions ...Option) (sweeper.Inte
 		op.Apply(sOptions)
 	}
 
-	sweepers := []sweeper.Interface{}
+	sweepers := make([]sweeper.Interface, 0)
 	for name, ops := range sOptions.values {
 		if !HasSweeper(name) {
 			return nil, fmt.Errorf("no sweeper provided for the logger %s", name)
@@ -147,7 +147,7 @@ func GetLogDataGetter(loggerOptions ...Option) (getter.Interface, error) {
 	}
 
 	// Iterate with specified order
-	keys := []string{}
+	keys := make([]string, 0)
 	for k := range lOptions.values {
 		keys = append(keys, k)
 	}
@@ -175,14 +175,14 @@ func GetLogDataGetter(loggerOptions ...Option) (getter.Interface, error) {
 // Init the loggers and sweepers
 func Init(ctx context.Context) error {
 	// For loggers
-	options := []Option{}
+	options := make([]Option, 0)
 	// For sweepers
-	sOptions := []Option{}
+	sOptions := make([]Option, 0)
 
 	for _, lc := range config.DefaultConfig.LoggerConfigs {
 		// Inject logger depth here for FILE and STD logger to avoid configuring it in the yaml
 		// For logger of job service itself, the depth should be 6
-		if lc.Name == LoggerNameFile || lc.Name == LoggerNameStdOutput {
+		if lc.Name == NameFile || lc.Name == NameStdOutput {
 			if lc.Settings == nil {
 				lc.Settings = map[string]interface{}{}
 			}
@@ -202,7 +202,7 @@ func Init(ctx context.Context) error {
 	// Avoid data race issue
 	singletons.Store(systemKeyServiceLogger, lg)
 
-	jOptions := []Option{}
+	jOptions := make([]Option, 0)
 	// Append configured sweepers in job loggers if existing
 	for _, lc := range config.DefaultConfig.JobLoggerConfigs {
 		jOptions = append(jOptions, BackendOption(lc.Name, lc.Level, lc.Settings))
@@ -224,12 +224,12 @@ func Init(ctx context.Context) error {
 	// If sweepers configured
 	if len(sOptions) > 0 {
 		// Get the sweeper controller
-		sweeper, err := GetSweeper(ctx, sOptions...)
+		swp, err := GetSweeper(ctx, sOptions...)
 		if err != nil {
 			return fmt.Errorf("create logger sweeper error: %s", err)
 		}
 		// Start sweep loop
-		_, err = sweeper.Sweep()
+		_, err = swp.Sweep()
 		if err != nil {
 			return fmt.Errorf("start logger sweeper error: %s", err)
 		}

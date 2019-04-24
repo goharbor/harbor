@@ -15,272 +15,304 @@
 package period
 
 import (
-	"errors"
 	"fmt"
 	"math/rand"
 	"time"
 
+	"context"
 	"github.com/gocraft/work"
+	"github.com/goharbor/harbor/src/jobservice/common/rds"
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/jobservice/models"
-	"github.com/goharbor/harbor/src/jobservice/opm"
-	"github.com/goharbor/harbor/src/jobservice/utils"
 	"github.com/gomodule/redigo/redis"
 	"github.com/robfig/cron"
 )
 
 const (
-	periodicEnqueuerSleep   = 2 * time.Minute
-	periodicEnqueuerHorizon = 4 * time.Minute
+	enqueuerSleep   = 2 * time.Minute
+	enqueuerHorizon = 4 * time.Minute
+	neverExecuted   = 365 * 24 * time.Hour
+
+	// PeriodicExecutionMark marks the scheduled job to a periodic execution
+	PeriodicExecutionMark = "_job_kind_periodic_"
 )
 
-type periodicEnqueuer struct {
-	namespace        string
-	pool             *redis.Pool
-	policyStore      *periodicJobPolicyStore
-	stopChan         chan struct{}
-	doneStoppingChan chan struct{}
-	statsManager     opm.JobStatsManager
-	identity         string
+type enqueuer struct {
+	namespace   string
+	context     context.Context
+	pool        *redis.Pool
+	policyStore *policyStore
+	ctl         lcm.Controller
+	// Diff with other nodes
+	nodeID string
+	// Track the error of enqueuing
+	lastEnqueueErr error
+	// For stop
+	stopChan chan bool
 }
 
-func newPeriodicEnqueuer(namespace string, pool *redis.Pool, policyStore *periodicJobPolicyStore, statsManager opm.JobStatsManager) *periodicEnqueuer {
-	return &periodicEnqueuer{
-		namespace:        namespace,
-		pool:             pool,
-		policyStore:      policyStore,
-		statsManager:     statsManager,
-		stopChan:         make(chan struct{}),
-		doneStoppingChan: make(chan struct{}),
-		identity:         utils.MakeIdentifier(), // Currently, use a generated ID
+func newEnqueuer(ctx context.Context, namespace string, pool *redis.Pool, ctl lcm.Controller) *enqueuer {
+	nodeID := ctx.Value(utils.NodeID)
+	if nodeID == nil {
+		// Must be failed
+		panic("missing node ID in the system context of periodic enqueuer")
+	}
+
+	return &enqueuer{
+		context:     ctx,
+		namespace:   namespace,
+		pool:        pool,
+		policyStore: newPolicyStore(ctx, namespace, pool),
+		ctl:         ctl,
+		stopChan:    make(chan bool, 1),
+		nodeID:      nodeID.(string),
 	}
 }
 
-func (pe *periodicEnqueuer) start() {
-	go pe.loop()
+// Blocking call
+func (e *enqueuer) start() error {
+	// Load policies first when starting
+	if err := e.policyStore.load(); err != nil {
+		return err
+	}
+
+	go e.loop()
 	logger.Info("Periodic enqueuer is started")
+
+	return e.policyStore.serve()
 }
 
-func (pe *periodicEnqueuer) stop() {
-	pe.stopChan <- struct{}{}
-	<-pe.doneStoppingChan
-}
-
-func (pe *periodicEnqueuer) loop() {
+func (e *enqueuer) loop() {
 	defer func() {
 		logger.Info("Periodic enqueuer is stopped")
 	}()
-	// Begin reaping periodically
-	timer := time.NewTimer(periodicEnqueuerSleep + time.Duration(rand.Intn(30))*time.Second)
-	defer timer.Stop()
 
-	if pe.shouldEnqueue() {
-		err := pe.enqueue()
-		if err != nil {
-			logger.Errorf("periodic_enqueuer.loop.enqueue:%s\n", err)
-		}
-	} else {
-		logger.Debug("Enqueue condition not matched, do nothing.")
-	}
+	// Do enqueue immediately when starting
+	isHit := e.checkAndEnqueue()
+
+	// Begin reaping periodically
+	timer := time.NewTimer(e.nextTurn(isHit, e.lastEnqueueErr != nil))
+	defer timer.Stop()
 
 	for {
 		select {
-		case <-pe.stopChan:
-			pe.doneStoppingChan <- struct{}{}
+		case <-e.stopChan:
+			// Stop policy store now
+			e.policyStore.stopChan <- true
 			return
 		case <-timer.C:
-			timer.Reset(periodicEnqueuerSleep + time.Duration(rand.Intn(30))*time.Second)
-			if pe.shouldEnqueue() {
-				err := pe.enqueue()
-				if err != nil {
-					logger.Errorf("periodic_enqueuer.loop.enqueue:%s\n", err)
-				}
-			} else {
-				logger.Debug("Enqueue condition not matched, do nothing.")
-			}
+			// Pause the timer for completing the processing this time
+			timer.Reset(neverExecuted)
+
+			// Check and enqueue.
+			// Set next turn with lower priority to balance workload with long
+			// round time if it hits.
+			isHit = e.checkAndEnqueue()
+			timer.Reset(e.nextTurn(isHit, e.lastEnqueueErr != nil))
 		}
 	}
 }
 
-func (pe *periodicEnqueuer) enqueue() error {
-	now := time.Now().Unix()
-
-	logger.Debugf("Periodic enqueuing loop by enqueuer %s: %d", pe.identity, now)
-
-	conn := pe.pool.Get()
-	defer conn.Close()
-
-	// Set last periodic enqueue timestamp in advance to avoid duplicated enqueue actions
-	if _, err := conn.Do("SET", utils.RedisKeyLastPeriodicEnqueue(pe.namespace), now); err != nil {
-		return err
+// checkAndEnqueue checks if it should do enqueue and
+// does enqueue when condition hit.
+func (e *enqueuer) checkAndEnqueue() (isHit bool) {
+	if isHit = e.shouldEnqueue(); isHit {
+		e.enqueue()
 	}
 
-	// Avoid schedule in the same time.
-	lockKey := fmt.Sprintf("%s:%s", utils.KeyPeriod(pe.namespace), "lock")
+	return
+}
 
-	// Use separate conn for the locker
-	lockConn := pe.pool.Get()
-	defer lockConn.Close()
+// nextTurn returns the next check time slot by applying
+// priorities to balance the workloads across multiple nodes
+func (e *enqueuer) nextTurn(isHit bool, enqErr bool) time.Duration {
+	base := enqueuerSleep
 
-	// Acquire a locker with 30s expiring time
-	if err := acquireLock(lockConn, lockKey, pe.identity, 30); err != nil {
-		return err
-	}
-	logger.Debugf("Periodic enqueuer %s acquires lock", pe.identity)
-
-	defer func() {
-		if err := releaseLock(lockConn, lockKey, pe.identity); err != nil {
-			logger.Errorf("Periodic enqueuer %s releases lock failed: %s", pe.identity, err)
-		} else {
-			logger.Debugf("Periodic enqueuer %s releases lock", pe.identity)
+	if isHit {
+		// Down the hit priority by adding more waiting time
+		base = base + time.Duration(3)*time.Second
+		if enqErr {
+			// Downgrade the priority if the node has occurred error when enqueuing
+			base = base + time.Duration(5)*time.Second
 		}
+	} else {
+		// Upgrade the priority of hitting in the next turn
+		base = base - time.Duration(3)*time.Second
+	}
+
+	// Add random waiting time [0,8)
+	base = base + time.Duration(rand.Intn(5))*time.Second
+
+	return base
+}
+
+func (e *enqueuer) enqueue() {
+	conn := e.pool.Get()
+	defer func() {
+		_ = conn.Close()
 	}()
 
-	nowTime := time.Unix(now, 0)
-	horizon := nowTime.Add(periodicEnqueuerHorizon)
+	// Reset error track
+	e.lastEnqueueErr = nil
 
-	for _, pl := range pe.policyStore.list() {
-		schedule, err := cron.Parse(pl.CronSpec)
-		if err != nil {
-			// The cron spec should be already checked at top components.
-			// Just in cases, if error occurred, ignore it
-			logger.Errorf("[Ignore] Invalid corn spec in periodic policy %s %s: %s", pl.JobName, pl.PolicyID, err)
-			continue
+	e.policyStore.Iterate(func(id string, p *Policy) bool {
+		e.scheduleNextJobs(p, conn)
+		return true
+	})
+}
+
+// scheduleNextJobs schedules job for next time slots based on the policy
+func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
+	nowTime := time.Unix(time.Now().Unix(), 0)
+	horizon := nowTime.Add(enqueuerHorizon)
+
+	schedule, err := cron.Parse(p.CronSpec)
+	if err != nil {
+		// The cron spec should be already checked at upper layers.
+		// Just in cases, if error occurred, ignore it
+		e.lastEnqueueErr = err
+		logger.Errorf("Invalid corn spec in periodic policy %s %s: %s", p.JobName, p.ID, err)
+	} else {
+		if p.JobParameters == nil {
+			p.JobParameters = make(job.Parameters)
 		}
 
-		executions := []string{}
+		// Clone job parameters
+		wJobParams := make(job.Parameters)
+		if p.JobParameters != nil && len(p.JobParameters) > 0 {
+			for k, v := range p.JobParameters {
+				wJobParams[k] = v
+			}
+		}
+		// Add extra argument for job running
+		// Notes: Only for system using
+		wJobParams[PeriodicExecutionMark] = true
 		for t := schedule.Next(nowTime); t.Before(horizon); t = schedule.Next(t) {
 			epoch := t.Unix()
-			scheduledExecutionID := utils.MakeIdentifier()
-			executions = append(executions, scheduledExecutionID)
 
 			// Create an execution (job) based on the periodic job template (policy)
-			job := &work.Job{
-				Name: pl.JobName,
-				ID:   scheduledExecutionID,
+			j := &work.Job{
+				Name: p.JobName,
+				ID:   p.ID, // Use the ID of policy to avoid scheduling duplicated periodic job executions.
 
 				// This is technically wrong, but this lets the bytes be identical for the same periodic job instance.
 				// If we don't do this, we'd need to use a different approach -- probably giving each periodic job its own
 				// history of the past 100 periodic jobs, and only scheduling a job if it's not in the history.
 				EnqueuedAt: epoch,
-				Args:       pl.JobParameters, // Pass parameters to scheduled job here
+				// Pass parameters to scheduled job here
+				Args: wJobParams,
 			}
 
-			rawJSON, err := utils.SerializeJob(job)
+			rawJSON, err := utils.SerializeJob(j)
 			if err != nil {
-				return err
+				e.lastEnqueueErr = err
+				// Actually this error should not happen if the object struct is well defined
+				logger.Errorf("Serialize job object for periodic job %s error: %s", p.ID, err)
+				break
 			}
 
-			// Place the time slots for the job (policy)
-			// If the slot is already there, error will be returned.
-			expireTime := (epoch - nowTime.Unix()) + 5
-			slot := fmt.Sprintf("%s:%s@%d", utils.KeyPeriodicJobTimeSlots(pe.namespace), pl.PolicyID, epoch)
-			if err := placeSlot(conn, slot, epoch, expireTime); err != nil {
-				// Logged and continue
-				logger.Errorf("Failed to place time slot '%s@%d' in enqueuer %s: %s", pl.PolicyID, epoch, pe.identity, err)
-				continue
-			}
-
-			_, err = conn.Do("ZADD", utils.RedisKeyScheduled(pe.namespace), epoch, rawJSON)
+			// Persistent execution first.
+			// Please pay attention that the job has not been really scheduled yet.
+			// If job data is failed to persistent, then job schedule should be abandoned.
+			execution := e.createExecution(p, epoch)
+			eTracker, err := e.ctl.New(execution)
 			if err != nil {
-				return err
+				e.lastEnqueueErr = err
+				logger.Errorf("Save stats data of job execution '%s' error: %s", execution.Info.JobID, err)
+				break
 			}
 
-			logger.Infof("Schedule job %s:%s for policy %s at %d by enqueuer %s", job.Name, job.ID, pl.PolicyID, epoch, pe.identity)
+			// Put job to the scheduled job queue
+			_, err = conn.Do("ZADD", rds.RedisKeyScheduled(e.namespace), epoch, rawJSON)
+			if err != nil {
+				e.lastEnqueueErr = err
+				logger.Errorf("Put the execution of the periodic job '%s' to the scheduled job queue error: %s", p.ID, err)
 
-			// Try to save the stats of new scheduled execution (job).
-			pe.createExecution(pl.PolicyID, pl.JobName, scheduledExecutionID, epoch)
-
-			// Get web hook from the periodic job (policy)
-			webHookURL, err := pe.statsManager.GetHook(pl.PolicyID)
-			if err == nil {
-				// Register hook for the execution
-				if err := pe.statsManager.RegisterHook(scheduledExecutionID, webHookURL, false); err != nil {
-					// Just logged
-					logger.Errorf("Failed to register web hook '%s' for periodic job (execution) '%s' with error by enqueuer %s: %s", webHookURL, scheduledExecutionID, pe.identity, err)
+				// Mark job status to be error
+				// If this happened, the job stats is definitely becoming dirty data at job service side.
+				// For the consumer side, the retrying of web hook may fix the problem.
+				if err := eTracker.Fail(); err != nil {
+					e.lastEnqueueErr = err
+					logger.Errorf("Mark execution '%s' to failure status error: %s", execution.Info.JobID, err)
 				}
-			} else {
-				// Just a warning
-				logger.Warningf("Failed to retrieve web hook for periodic job (policy) %s by enqueuer %s: %s", pl.PolicyID, pe.identity, err)
-			}
-		}
-		// Link the upstream job (policy) with the created executions
-		if len(executions) > 0 {
-			if err := pe.statsManager.AttachExecution(pl.PolicyID, executions...); err != nil {
-				// Just logged it
-				logger.Errorf("Link upstream job with executions failed in enqueuer %s: %s", pe.identity, err)
-			}
-		}
-		// Directly use redis conn to update the periodic job (policy) status
-		// Do not care the result
-		conn.Do("HMSET", utils.KeyJobStats(pe.namespace, pl.PolicyID), "status", job.JobStatusScheduled, "update_time", time.Now().Unix())
-	}
 
-	return nil
+				break // Probably redis connection is broken
+			}
+
+			logger.Debugf("Scheduled execution for periodic job %s:%s at %d", j.Name, p.ID, epoch)
+		}
+	}
 }
 
-func (pe *periodicEnqueuer) createExecution(upstreamJobID, upstreamJobName, executionID string, runAt int64) {
-	execution := models.JobStats{
-		Stats: &models.JobStatData{
-			JobID:         executionID,
-			JobName:       upstreamJobName,
-			Status:        job.JobStatusPending,
-			JobKind:       job.JobKindScheduled,
-			EnqueueTime:   time.Now().Unix(),
-			UpdateTime:    time.Now().Unix(),
-			RefLink:       fmt.Sprintf("/api/v1/jobs/%s", executionID),
+// createExecution creates execution object
+func (e *enqueuer) createExecution(p *Policy, runAt int64) *job.Stats {
+	eID := fmt.Sprintf("%s@%d", p.ID, runAt)
+
+	return &job.Stats{
+		Info: &job.StatsInfo{
+			JobID:         eID,
+			JobName:       p.JobName,
+			WebHookURL:    p.WebHookURL,
+			CronSpec:      p.CronSpec,
+			UpstreamJobID: p.ID,
 			RunAt:         runAt,
-			UpstreamJobID: upstreamJobID,
+			Status:        job.ScheduledStatus.String(),
+			JobKind:       job.KindScheduled, // For periodic job execution, it should be set to 'scheduled'
+			EnqueueTime:   time.Now().Unix(),
+			RefLink:       fmt.Sprintf("/api/v1/jobs/%s", eID),
+			Parameters:    p.JobParameters,
 		},
 	}
-
-	pe.statsManager.Save(execution)
 }
 
-func (pe *periodicEnqueuer) shouldEnqueue() bool {
-	conn := pe.pool.Get()
-	defer conn.Close()
+func (e *enqueuer) shouldEnqueue() bool {
+	conn := e.pool.Get()
+	defer func() {
+		_ = conn.Close()
+	}()
 
-	lastEnqueue, err := redis.Int64(conn.Do("GET", utils.RedisKeyLastPeriodicEnqueue(pe.namespace)))
-	if err == redis.ErrNil {
-		return true
-	} else if err != nil {
-		logger.Errorf("periodic_enqueuer.should_enqueue:%s\n", err)
-		return true
+	// Acquired a lock before doing checking
+	// If failed, directly returns false.
+	lockKey := rds.KeyPeriodicLock(e.namespace)
+	if err := rds.AcquireLock(conn, lockKey, e.nodeID, 30); err != nil {
+		logger.Errorf("acquire lock for periodic enqueuing error: %s", err)
+		return false
 	}
+	// Acquired lock
+	// For lock releasing
+	defer func() {
+		if err := rds.ReleaseLock(conn, lockKey, e.nodeID); err != nil {
+			logger.Errorf("release lock for periodic enqueuing error: %s", err)
+		}
+	}()
 
-	return lastEnqueue < (time.Now().Unix() - int64(periodicEnqueuerSleep/time.Minute))
-}
-
-func placeSlot(conn redis.Conn, key string, value interface{}, expireTime int64) error {
-	args := []interface{}{key, value, "NX", "EX", expireTime}
-	res, err := conn.Do("SET", args...)
+	shouldEnq := false
+	lastEnqueue, err := redis.Int64(conn.Do("GET", rds.RedisKeyLastPeriodicEnqueue(e.namespace)))
 	if err != nil {
-		return err
-	}
-	// Existing, the value can not be overrid
-	if res == nil {
-		return fmt.Errorf("key %s is already set with value %v", key, value)
-	}
+		if err.Error() != redis.ErrNil.Error() {
+			// Logged error
+			logger.Errorf("get timestamp of last enqueue error: %s", err)
+		}
 
-	return nil
-}
-
-func acquireLock(conn redis.Conn, lockerKey string, lockerID string, expireTime int64) error {
-	return placeSlot(conn, lockerKey, lockerID, expireTime)
-}
-
-func releaseLock(conn redis.Conn, lockerKey string, lockerID string) error {
-	theID, err := redis.String(conn.Do("GET", lockerKey))
-	if err != nil {
-		return err
+		// Should enqueue
+		shouldEnq = true
+	} else {
+		// Check further condition
+		shouldEnq = lastEnqueue < (time.Now().Unix() - int64(enqueuerSleep/time.Minute)*60)
 	}
 
-	if theID == lockerID {
-		_, err := conn.Do("DEL", lockerKey)
-		return err
+	if shouldEnq {
+		// Set last periodic enqueue timestamp
+		if _, err := conn.Do("SET", rds.RedisKeyLastPeriodicEnqueue(e.namespace), time.Now().Unix()); err != nil {
+			logger.Errorf("set last periodic enqueue timestamp error: %s", err)
+		}
+
+		// Anyway the action should be enforced
+		// The negative effect of this failure is just more re-enqueues by other nodes
+		return true
 	}
 
-	return errors.New("locker ID mismatch")
+	return false
 }
