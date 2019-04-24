@@ -221,25 +221,64 @@ func (r *ReplicationPolicyAPI) Delete() {
 		return
 	}
 
-	_, executions, err := replication.OperationCtl.ListExecutions(&models.ExecutionQuery{
-		PolicyID: id,
-	})
+	isRunning, err := hasRunningExecutions(id)
 	if err != nil {
-		r.SendInternalServerError(fmt.Errorf("failed to get the executions of policy %d: %v", id, err))
+		r.SendInternalServerError(fmt.Errorf("failed to check the execution status of policy %d: %v", id, err))
 		return
 	}
 
-	for _, execution := range executions {
-		if execution.Status == models.ExecutionStatusInProgress {
-			r.SendInternalServerError(fmt.Errorf("the policy %d has running executions, can not be deleted", id))
-			return
-		}
+	if isRunning {
+		r.SendPreconditionFailedError(fmt.Errorf("the policy %d has running executions, can not be deleted", id))
+		return
 	}
 
 	if err := replication.PolicyCtl.Remove(id); err != nil {
 		r.SendInternalServerError(fmt.Errorf("failed to delete the policy %d: %v", id, err))
 		return
 	}
+}
+
+// the execution's status will not be updated if it is not queried
+// so need to check the status of tasks to determine the status of
+// the execution
+func hasRunningExecutions(policyID int64) (bool, error) {
+	_, executions, err := replication.OperationCtl.ListExecutions(&models.ExecutionQuery{
+		PolicyID: policyID,
+	})
+	if err != nil {
+		return false, err
+	}
+	for _, execution := range executions {
+		if execution.Status != models.ExecutionStatusInProgress {
+			continue
+		}
+		_, tasks, err := replication.OperationCtl.ListTasks(&models.TaskQuery{
+			ExecutionID: execution.ID,
+		})
+		if err != nil {
+			return false, err
+		}
+		for _, task := range tasks {
+			if isTaskRunning(task) {
+				return true, nil
+			}
+		}
+	}
+	return false, nil
+}
+
+// return true if the status of the task is running or pending
+func isTaskRunning(task *models.Task) bool {
+	if task == nil {
+		return false
+	}
+	switch task.Status {
+	case models.TaskStatusSucceed,
+		models.TaskStatusStopped,
+		models.TaskStatusFailed:
+		return false
+	}
+	return true
 }
 
 // ignore the credential for the registries
