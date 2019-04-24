@@ -53,6 +53,13 @@
         "REPLICATE_FAILURE": "Falha ao iniciar"
     },
     "TOOLTIP": {
+        "NAME_FILTER": "Filter the name part of the resources. Leaving empty or '**' matches all; 'library/**' only matches the resources under 'library'. For more patterns please refer to the user guide.",
+        "TAG_FILTER": "Filter the tag/version part of the resources. Leaving empty or '**' matches all; '1.0*' only matches the tags that starts with '1.0'. For more patterns please refer to the user guide.",
+        "RESOURCE_FILTER": "Filter the type of the resources.",
+        "PUSH_BASED": "Push the resources from the current Harbor to the remote registry.",
+        "PULL_BASED": "Pull the resources from the remote registry to the current Harbor.",
+        "DESTINATION_NAMESPACE": "Specify the destination namespaces. The resources will be put under the same namespace with the source if it is empty.",
+        "OVERRIDE": "Specify whether override the resources if the same name resources found on the destination registry.",
         "EMAIL": "Email deve ser um  endereço de email válido como nome@exemplo.com.",
         "USER_NAME": "Não pode conter caracteres especiais e o tamanho máximo deve ser de 255 caracteres.",
         "FULL_NAME": "Tamanho máximo deve ser de 20 caracteres.",
