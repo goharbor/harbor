@@ -13,7 +13,7 @@ export class GcHistoryComponent implements OnInit {
   constructor(
     private gcRepoService: GcRepoService,
     private gcViewModelFactory: GcViewModelFactory,
-    ) { }
+    ) {}
 
   ngOnInit() {
     this.getJobs();
@@ -23,6 +23,10 @@ export class GcHistoryComponent implements OnInit {
     this.gcRepoService.getJobs().subscribe(jobs => {
       this.jobs = this.gcViewModelFactory.createJobViewModel(jobs);
     });
+  }
+
+  getLogLink(id): string {
+    return this.gcRepoService.getLogLink(id);
   }
 
 }

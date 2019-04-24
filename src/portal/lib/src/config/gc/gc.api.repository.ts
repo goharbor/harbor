@@ -17,6 +17,8 @@ export abstract class GcApiRepository {
     abstract getStatus(id): Observable<any>;
 
     abstract getJobs(): Observable<any>;
+
+    abstract getLogLink(id): string;
 }
 
 @Injectable()
@@ -59,6 +61,10 @@ export class GcApiDefaultRepository extends GcApiRepository {
         return this.http.get(`${this.config.gcEndpoint}`)
             .pipe(catchError(error => observableThrowError(error)))
             .pipe(map(response => response.json()));
+    }
+
+    public getLogLink(id) {
+        return `${this.config.gcEndpoint}/${id}/log`;
     }
 
 }
