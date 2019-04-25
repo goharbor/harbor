@@ -47,6 +47,14 @@ func TestGetJobLog(t *testing.T) {
 	assert.Contains(text, "The content in this file is for mocking the get log api.")
 }
 
+func TestGetExecutions(t *testing.T) {
+	assert := assert.New(t)
+	exes, err := testClient.GetExecutions(ID)
+	assert.Nil(err)
+	stat := exes[0]
+	assert.Equal("u-1234-5678-9012", stat.Info.JobID)
+}
+
 func TestPostAction(t *testing.T) {
 	assert := assert.New(t)
 	err := testClient.PostAction(ID, "fff")

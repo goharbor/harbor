@@ -38,9 +38,10 @@ var statusMap = map[string]string{
 // Handler handles reqeust on /service/notifications/jobs/adminjob/*, which listens to the webhook of jobservice.
 type Handler struct {
 	api.BaseController
-	id     int64
-	UUID   string
-	status string
+	id            int64
+	UUID          string
+	status        string
+	UpstreamJobID string
 }
 
 // Prepare ...
@@ -60,7 +61,13 @@ func (h *Handler) Prepare() {
 		return
 	}
 	h.id = id
-	h.UUID = data.JobID
+	// UpstreamJobID is the periodic job id
+	if data.Metadata.UpstreamJobID != "" {
+		h.UUID = data.Metadata.UpstreamJobID
+	} else {
+		h.UUID = data.JobID
+	}
+
 	status, ok := statusMap[data.Status]
 	if !ok {
 		log.Infof("drop the job status update event: job id-%d, status-%s", h.id, status)

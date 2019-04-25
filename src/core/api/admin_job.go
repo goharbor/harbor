@@ -169,8 +169,22 @@ func (aj *AJAPI) getLog(id int64) {
 		aj.SendNotFoundError(errors.New("Failed to get Job"))
 		return
 	}
+	jobID := job.UUID
+	// to get the latest execution job id, then to query job log.
+	if job.Kind == common_job.JobKindPeriodic {
+		exes, err := utils_core.GetJobServiceClient().GetExecutions(job.UUID)
+		if err != nil {
+			aj.SendInternalServerError(err)
+			return
+		}
+		if len(exes) == 0 {
+			aj.SendNotFoundError(errors.New("no execution log "))
+			return
+		}
+		jobID = exes[0].Info.JobID
+	}
 
-	logBytes, err := utils_core.GetJobServiceClient().GetJobLog(job.UUID)
+	logBytes, err := utils_core.GetJobServiceClient().GetJobLog(jobID)
 	if err != nil {
 		if httpErr, ok := err.(*common_http.Error); ok {
 			aj.RenderError(httpErr.Code, "")

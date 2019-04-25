@@ -10,6 +10,7 @@ import (
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/jobservice/job"
 )
 
 // Client wraps interface to access jobservice.
@@ -17,6 +18,7 @@ type Client interface {
 	SubmitJob(*models.JobData) (string, error)
 	GetJobLog(uuid string) ([]byte, error)
 	PostAction(uuid, action string) error
+	GetExecutions(uuid string) ([]job.Stats, error)
 	// TODO Redirect joblog when we see there's memory issue.
 }
 
@@ -101,6 +103,35 @@ func (d *DefaultClient) GetJobLog(uuid string) ([]byte, error) {
 		}
 	}
 	return data, nil
+}
+
+func (d *DefaultClient) GetExecutions(periodicJobID string) ([]job.Stats, error) {
+	url := d.endpoint + "/api/v1/jobs/" + periodicJobID + "/executions"
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := d.client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		return nil, &commonhttp.Error{
+			Code:    resp.StatusCode,
+			Message: string(data),
+		}
+	}
+	var exes []job.Stats
+	err = json.Unmarshal(data, &exes)
+	if err != nil {
+		return nil, err
+	}
+	return exes, nil
 }
 
 // PostAction call jobservice's API to operate action for job specified by uuid
