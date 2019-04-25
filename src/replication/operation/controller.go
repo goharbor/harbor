@@ -16,7 +16,6 @@ package operation
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job"
@@ -115,10 +114,6 @@ func (c *controller) StopReplication(executionID int64) error {
 			continue
 		}
 		if err = c.scheduler.Stop(task.JobID); err != nil {
-			if isNotRunningJobError(err) {
-				log.Warningf("got not running job error when trying stop the task %d(job ID: %s): %v, skip", task.ID, task.JobID, err)
-				continue
-			}
 			return err
 		}
 		log.Debugf("the stop request for task %d(job ID: %s) sent", task.ID, task.JobID)
@@ -137,16 +132,6 @@ func isTaskRunning(task *models.Task) bool {
 		return false
 	}
 	return true
-}
-
-// when trying to stop a job which isn't running in jobservice,
-// an error whose message contains "xxx is not a running job"
-// will be returned
-func isNotRunningJobError(err error) bool {
-	if err == nil {
-		return false
-	}
-	return strings.Contains(err.Error(), "is not a running job")
 }
 
 func (c *controller) ListExecutions(query ...*models.ExecutionQuery) (int64, []*models.Execution, error) {

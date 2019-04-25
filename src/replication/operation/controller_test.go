@@ -15,7 +15,6 @@
 package operation
 
 import (
-	"errors"
 	"io"
 	"testing"
 
@@ -327,29 +326,5 @@ func TestIsTaskRunning(t *testing.T) {
 
 	for _, c := range cases {
 		assert.Equal(t, c.isRunning, isTaskRunning(c.task))
-	}
-}
-
-func TestIsNotRunningJobError(t *testing.T) {
-	cases := []struct {
-		err                  error
-		isNotRunningJobError bool
-	}{
-		{
-			err:                  nil,
-			isNotRunningJobError: false,
-		},
-		{
-			err:                  errors.New("not the error"),
-			isNotRunningJobError: false,
-		},
-		{
-			err:                  errors.New(`[ERROR] [handler.go:253]: Serve http request 'POST /api/v1/jobs/734a11140d939ef700889725' error: 500 {"code":10008,"message":"Stop job failed with error","details":"job '734a11140d939ef700889725' is not a running job"}`),
-			isNotRunningJobError: true,
-		},
-	}
-
-	for _, c := range cases {
-		assert.Equal(t, c.isNotRunningJobError, isNotRunningJobError(c.err))
 	}
 }
