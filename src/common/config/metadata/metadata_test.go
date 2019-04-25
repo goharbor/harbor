@@ -15,16 +15,17 @@
 package metadata
 
 import (
+	"github.com/goharbor/harbor/src/common"
 	"testing"
 )
 
 func TestCfgMetaData_InitFromArray(t *testing.T) {
 	testArray := []Item{
-		{Scope: SystemScope, Group: BasicGroup, EnvKey: "HARBOR_ADMIN_PASSWORD", DefaultValue: "", Name: "admin_initial_password", ItemType: &PasswordType{}, Editable: true},
-		{Scope: SystemScope, Group: BasicGroup, EnvKey: "ADMIRAL_URL", DefaultValue: "NA", Name: "admiral_url", ItemType: &StringType{}, Editable: false},
-		{Scope: UserScope, Group: BasicGroup, EnvKey: "AUTH_MODE", DefaultValue: "db_auth", Name: "auth_mode", ItemType: &StringType{}, Editable: false},
-		{Scope: SystemScope, Group: BasicGroup, EnvKey: "CFG_EXPIRATION", DefaultValue: "5", Name: "cfg_expiration", ItemType: &StringType{}, Editable: false},
-		{Scope: SystemScope, Group: BasicGroup, EnvKey: "CHART_REPOSITORY_URL", DefaultValue: "http://chartmuseum:9999", Name: "chart_repository_url", ItemType: &StringType{}, Editable: false},
+		{Scope: SystemScope, Group: BasicGroup, EnvKey: "HARBOR_ADMIN_PASSWORD", DefaultValue: "", Name: common.AdminInitialPassword, ItemType: &PasswordType{}, Editable: true},
+		{Scope: SystemScope, Group: BasicGroup, EnvKey: "ADMIRAL_URL", DefaultValue: "NA", Name: common.AdmiralEndpoint, ItemType: &StringType{}, Editable: false},
+		{Scope: UserScope, Group: BasicGroup, EnvKey: "AUTH_MODE", DefaultValue: "db_auth", Name: common.AUTHMode, ItemType: &StringType{}, Editable: false},
+		{Scope: SystemScope, Group: BasicGroup, EnvKey: "CFG_EXPIRATION", DefaultValue: "5", Name: common.CfgExpiration, ItemType: &StringType{}, Editable: false},
+		{Scope: SystemScope, Group: BasicGroup, EnvKey: "CHART_REPOSITORY_URL", DefaultValue: "http://chartmuseum:9999", Name: common.ChartRepoURL, ItemType: &StringType{}, Editable: false},
 	}
 	curInst := Instance()
 	curInst.initFromArray(testArray)
@@ -32,11 +33,11 @@ func TestCfgMetaData_InitFromArray(t *testing.T) {
 	if len(metaDataInstance.metaMap) != 5 {
 		t.Errorf("Can not initial metadata, size %v", len(metaDataInstance.metaMap))
 	}
-	item, ok := curInst.GetByName("admin_initial_password")
+	item, ok := curInst.GetByName(common.AdminInitialPassword)
 	if ok == false {
 		t.Errorf("Can not get admin_initial_password metadata")
 	}
-	if item.Name != "admin_initial_password" {
+	if item.Name != common.AdminInitialPassword {
 		t.Errorf("Can not get admin_initial_password metadata")
 	}
 

@@ -121,7 +121,7 @@ func (c *ConfigAPI) Put() {
 }
 
 func (c *ConfigAPI) validateCfg(cfgs map[string]interface{}) (bool, error) {
-	mode := c.cfgManager.Get("auth_mode").GetString()
+	mode := c.cfgManager.Get(common.AUTHMode).GetString()
 	if value, ok := cfgs[common.AUTHMode]; ok {
 		flag, err := authModeCanBeModified()
 		if err != nil {
