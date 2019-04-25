@@ -66,12 +66,12 @@
                 </div>
                 <label *ngIf="supportedFilters[i]?.style==='input'" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
                   [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
-                  <input type="text" #filterValue required size="14" formControlName="value">
+                  <input type="text" #filterValue required size="14" formControlName="value" id="{{'filter_'+ supportedFilters[i]?.type}}">
                   <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
                 </label>
                 <div class="select inline-block" *ngIf="supportedFilters[i]?.style==='radio'">
-                  <select  formControlName="value" #selectedValue id="{{i}}" name="{{supportedFilters[i]?.type}}">
-                    <option value="">-- {{'REPLICATION.PLEASE_SELECT' | translate}} --</option>
+                  <select formControlName="value" #selectedValue id="{{'select_'+ supportedFilters[i]?.type}}" name="{{supportedFilters[i]?.type}}">
+                    <option value="">{{'REPLICATION.BOTH' | translate}}</option>
                     <option *ngFor="let value of supportedFilters[i]?.values;" value="{{value}}">{{value}}</option>
                   </select>
                 </div>
@@ -156,11 +156,11 @@
           <div class="clr-form-control rule-width override-box">
               <clr-checkbox-wrapper>
                 <input type="checkbox" clrCheckbox [checked]="true" id="overridePolicy" formControlName="override" class="clr-checkbox">
-                <label for="overridePolicy" class="clr-control-label">{{'REPLICATION.OVERRIDE' | translate}}</label>
+                <label for="overridePolicy" class="clr-control-label">{{'REPLICATION.OVERRIDE_INFO' | translate}}</label>
               </clr-checkbox-wrapper>
               <clr-tooltip class="override-tooltip">
                 <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>
+                <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
                     <span>{{'TOOLTIP.OVERRIDE' | translate}}</span>
                 </clr-tooltip-content>
               </clr-tooltip>

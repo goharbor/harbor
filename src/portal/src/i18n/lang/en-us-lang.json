@@ -50,7 +50,9 @@
         "SWITCH_SUCCESS": "Switch successfully",
         "SWITCH_FAILURE": "Switch failed",
         "REPLICATE_SUCCESS": "Started successfully",
-        "REPLICATE_FAILURE": "Started failed"
+        "REPLICATE_FAILURE": "Started failed",
+        "STOP_SUCCESS": "Stop successfully",
+        "STOP_FAILURE": "Stop execution failed"
     },
     "TOOLTIP": {
         "NAME_FILTER": "Filter the name part of the resources. Leaving empty or '**' matches all; 'library/**' only matches the resources under 'library'. For more patterns please refer to the user guide.",
@@ -358,11 +360,12 @@
     "REPLICATION": {
         "TOTAL": "Total",
         "OVERRIDE": "Override",
+        "OVERRIDE_INFO": "Override the destination resources if name conflicts",
         "OPERATION": "Operation",
         "CURRENT": "current",
         "FILTER_PLACEHOLDER": "Filter Tasks",
         "STOP_TITLE": "Confirm Stop Executions",
-        "PLEASE_SELECT": "select an option",
+        "BOTH": "both",
         "STOP_SUCCESS": "Stop Execution {{param}} Successful",
         "STOP_SUMMARY": "Do you want to stop the executions {{param}}?",
         "TASK_ID":"Task ID",

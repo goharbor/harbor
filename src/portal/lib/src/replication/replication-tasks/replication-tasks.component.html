@@ -111,13 +111,9 @@
         <clr-dg-cell>{{t.start_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>{{t.end_time | date: 'short'}}</clr-dg-cell>
         <clr-dg-cell>
-          <span *ngIf="t.status=='InProgress'; else elseBlock" class="label">{{'REPLICATION.NO_LOGS'
-            | translate}}</span>
-          <ng-template #elseBlock>
-            <a target="_blank" [href]="viewLog(t.id)">
-              <clr-icon shape="list"></clr-icon>
-            </a>
-          </ng-template>
+          <a target="_blank" [href]="viewLog(t.id)">
+            <clr-icon shape="list"></clr-icon>
+          </a>
         </clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
