@@ -50,7 +50,9 @@
         "SWITCH_SUCCESS": "切换成功",
         "SWITCH_FAILURE": "切换失败",
         "REPLICATE_SUCCESS": "开始成功",
-        "REPLICATE_FAILURE": "开始失败"
+        "REPLICATE_FAILURE": "开始失败",
+        "STOP_SUCCESS": "停止任务成功",
+        "STOP_FAILURE": "停止任务失败"
     },
     "TOOLTIP": {
         "NAME_FILTER": "过滤资源的名字。不填或者“”匹配所有资源；“library/”只匹配“library”下的资源。更多的匹配模式请参考用户手册。",
@@ -357,9 +359,11 @@
     "REPLICATION": {
         "TOTAL": "总数",
         "OVERRIDE": "覆盖",
+        "OVERRIDE_INFO": "如果名称冲突则覆盖目标资源",
         "CURRENT": "当前仓库",
         "FILTER_PLACEHOLDER": "过滤任务",
         "STOP_TITLE": "确认停止任务",
+        "BOTH": "全部",
         "PLEASE_SELECT": "请选择",
         "STOP_SUCCESS": "停止任务 {{param}} 成功",
         "STOP_SUMMARY": "确认停止任务{{param}}?",

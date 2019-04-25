@@ -41,6 +41,16 @@
         "UPLOAD": "Upload",
         "NO_FILE": "No file selected"
     },
+    "BATCH": {
+        "DELETED_SUCCESS": "Deleted successfully",
+        "DELETED_FAILURE": "Deleted failed",
+        "SWITCH_SUCCESS": "Switch successfully",
+        "SWITCH_FAILURE": "Switch failed",
+        "REPLICATE_SUCCESS": "Started successfully",
+        "REPLICATE_FAILURE": "Started failed",
+        "STOP_SUCCESS": "Stop successfully",
+        "STOP_FAILURE": "Stop execution failed"
+    },
     "TOOLTIP": {
         "NAME_FILTER": "Filter the name part of the resources. Leaving empty or '**' matches all; 'library/**' only matches the resources under 'library'. For more patterns please refer to the user guide.",
         "TAG_FILTER": "Filter the tag/version part of the resources. Leaving empty or '**' matches all; '1.0*' only matches the tags that starts with '1.0'. For more patterns please refer to the user guide.",
@@ -341,10 +351,12 @@
     },
     "REPLICATION": {
         "TOTAL": "Total",
-        "OVERRIDE": "Passer outre",
+        "OVERRIDE": "Override",
+        "OVERRIDE_INFO": "Override the destination resources if name conflicts",
         "CURRENT": "current",
         "FILTER_PLACEHOLDER": "Filter Tasks",
         "STOP_TITLE": "Confirmer arrêter les exécutions",
+        "BOTH": "both",
         "PLEASE_SELECT": "select an option",
         "STOP_SUCCESS": "Stop Execution {{param}} Successful",
         "STOP_SUMMARY": "Voulez-vous arrêter les exécutions {{param}}?",

@@ -22,7 +22,7 @@ import {
 } from "@angular/core";
 import { Comparator, State } from "../service/interface";
 import { finalize, catchError, map } from "rxjs/operators";
-import { Subscription, forkJoin, timer, Observable, throwError } from "rxjs";
+import { Subscription, forkJoin, timer, Observable, throwError as observableThrowError, observable } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 
 import { ListReplicationRuleComponent } from "../list-replication-rule/list-replication-rule.component";
@@ -327,19 +327,14 @@ export class ReplicationComponent implements OnInit, OnDestroy {
           );
       }),
       catchError(error => {
-        if (error && error.status === 412) {
-          return forkJoin(
-            this.translateService.get("BATCH.REPLICATE_FAILURE"),
-            this.translateService.get("REPLICATION.REPLICATE_SUMMARY_FAILURE")
-          ).pipe(
-            map(function(res) {
-              operateChanges(operMessage, OperationState.failure, res[1]);
-            })
-          );
+        if (error && error._body) {
+          const message = JSON.parse(error._body).message;
+          operateChanges(operMessage, OperationState.failure, message);
+          return observableThrowError(message);
         } else {
           return this.translateService.get("BATCH.REPLICATE_FAILURE").pipe(
             map(res => {
-              operateChanges(operMessage, OperationState.failure, res);
+            operateChanges(operMessage, OperationState.failure, res);
             })
           );
         }
@@ -409,7 +404,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
       let ExecutionsStop$ = targets.map(target => this.StopOperate(target));
       forkJoin(ExecutionsStop$)
         .pipe(
-          catchError(err => throwError(err)),
+          catchError(err => observableThrowError(err)),
           finalize(() => {
             this.refreshJobs();
             this.isStopOnGoing = false;
@@ -431,10 +426,26 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     return this.replicationService
       .stopJobs(targets.id)
       .pipe(
-        map(
-          () => operateChanges(operMessage, OperationState.success),
-          err => operateChanges(operMessage, OperationState.failure, err)
-        )
+        map(response => {
+          this.translateService
+            .get("BATCH.STOP_SUCCESS")
+            .subscribe(res =>
+              operateChanges(operMessage, OperationState.success)
+            );
+        }),
+        catchError(error => {
+          if (error && error._body) {
+            const message = JSON.parse(error._body).message;
+            operateChanges(operMessage, OperationState.failure, message);
+            return observableThrowError(message);
+          } else {
+            return this.translateService.get("BATCH.STOP_FAILURE").pipe(
+              map(res => {
+              operateChanges(operMessage, OperationState.failure, res);
+              })
+            );
+          }
+        })
       );
   }
 
