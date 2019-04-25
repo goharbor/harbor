@@ -20,6 +20,7 @@ const taskStatus: any = {
 })
 export class ReplicationTasksComponent implements OnInit, OnDestroy {
   isOpenFilterTag: boolean;
+  inProgress: boolean = false;
   currentPage: number = 1;
   selectedRow: [];
   pageSize: number = DEFAULT_PAGE_SIZE;
@@ -54,14 +55,35 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   }
 
   getExecutionDetail(): void {
+    this.inProgress = true;
     if (this.executionId) {
       this.replicationService.getExecutionById(this.executionId)
+        .pipe(finalize(() => (this.inProgress = false)))
         .subscribe(res => {
           this.executions = res.data;
+          this.clrLoadPage();
         },
         error => {
           this.errorHandler.error(error);
         });
+    }
+  }
+
+  clrLoadPage(): void {
+    if (!this.timerDelay) {
+      this.timerDelay = timer(10000, 10000).subscribe(() => {
+        let count: number = 0;
+          if (this.executions['in_progress'] > 0) {
+            count++;
+          }
+        if (count > 0) {
+          this.getExecutionDetail();
+          this.clrLoadTasks();
+        } else {
+          this.timerDelay.unsubscribe();
+          this.timerDelay = null;
+        }
+      });
     }
   }
 
@@ -128,26 +150,6 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
       .pipe(finalize(() => (this.loading = false)))
       .subscribe(res => {
         this.tasks = res; // Keep the data
-        if (!this.timerDelay) {
-          this.timerDelay = timer(10000, 10000).subscribe(() => {
-            let count: number = 0;
-            this.tasks.forEach(tasks => {
-              if (
-                tasks.status.toLowerCase() === taskStatus.PENDING ||
-                tasks.status.toLowerCase() === taskStatus.RUNNING ||
-                tasks.status.toLowerCase() === taskStatus.SCHEDULED
-              ) {
-                count++;
-              }
-            });
-            if (count > 0) {
-              this.clrLoadTasks();
-            } else {
-              this.timerDelay.unsubscribe();
-              this.timerDelay = null;
-            }
-          });
-        }
       },
       error => {
         this.errorHandler.error(error);
