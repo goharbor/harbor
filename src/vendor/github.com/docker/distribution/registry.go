@@ -1,7 +1,8 @@
 package distribution
 
 import (
-	"github.com/docker/distribution/context"
+	"context"
+
 	"github.com/docker/distribution/reference"
 )
 
@@ -35,7 +36,7 @@ type Namespace interface {
 	// reference.
 	Repository(ctx context.Context, name reference.Named) (Repository, error)
 
-	// Repositories fills 'repos' with a lexigraphically sorted catalog of repositories
+	// Repositories fills 'repos' with a lexicographically sorted catalog of repositories
 	// up to the size of 'repos' and returns the value 'n' for the number of entries
 	// which were filled.  'last' contains an offset in the catalog, and 'err' will be
 	// set to io.EOF if there are no more entries to obtain.
@@ -53,6 +54,11 @@ type RepositoryEnumerator interface {
 	Enumerate(ctx context.Context, ingester func(string) error) error
 }
 
+// RepositoryRemover removes given repository
+type RepositoryRemover interface {
+	Remove(ctx context.Context, name reference.Named) error
+}
+
 // ManifestServiceOption is a function argument for Manifest Service methods
 type ManifestServiceOption interface {
 	Apply(ManifestService) error
@@ -68,6 +74,21 @@ type WithTagOption struct{ Tag string }
 
 // Apply conforms to the ManifestServiceOption interface
 func (o WithTagOption) Apply(m ManifestService) error {
+	// no implementation
+	return nil
+}
+
+// WithManifestMediaTypes lists the media types the client wishes
+// the server to provide.
+func WithManifestMediaTypes(mediaTypes []string) ManifestServiceOption {
+	return WithManifestMediaTypesOption{mediaTypes}
+}
+
+// WithManifestMediaTypesOption holds a list of accepted media types
+type WithManifestMediaTypesOption struct{ MediaTypes []string }
+
+// Apply conforms to the ManifestServiceOption interface
+func (o WithManifestMediaTypesOption) Apply(m ManifestService) error {
 	// no implementation
 	return nil
 }
