@@ -98,6 +98,9 @@ func (a *adapter) ManifestExist(repository, reference string) (exist bool, diges
 	defer resp.Body.Close()
 	code := resp.StatusCode
 	if code >= 300 || code < 200 {
+		if code == 404 {
+			return false, digest, nil
+		}
 		body, _ := ioutil.ReadAll(resp.Body)
 		return exist, digest, fmt.Errorf("[%d][%s]", code, string(body))
 	}
