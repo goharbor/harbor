@@ -15,11 +15,13 @@
 package authproxy
 
 import (
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	cut "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/auth/authproxy/test"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
 	"net/http/httptest"
 	"os"
@@ -45,6 +47,13 @@ func TestMain(m *testing.M) {
 		// So it won't require mocking the cfgManager
 		settingTimeStamp: time.Now(),
 	}
+	conf := map[string]interface{}{
+		common.HTTPAuthProxyEndpoint:            "dummy",
+		common.HTTPAuthProxyTokenReviewEndpoint: "dummy",
+		common.HTTPAuthProxyVerifyCert:          "false",
+	}
+
+	config.InitWithSettings(conf)
 	rc := m.Run()
 	if err := dao.ClearHTTPAuthProxyUsers(); err != nil {
 		panic(err)
