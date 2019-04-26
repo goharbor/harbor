@@ -1,4 +1,15 @@
+@import '../../../mixin';
 .history-header {
     color: #000;
     margin:20px 0 6px 0;
 }
+
+.refresh-btn {
+    @include grid-right-top-pos;
+    margin-top: -30px;
+    cursor: pointer;
+    &:hover {
+        color: #007CBB;
+    }
+}
+  

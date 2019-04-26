@@ -1,4 +1,7 @@
 <h5 class="history-header" id="history-header">{{'GC.JOB_HISTORY' | translate}}</h5>
+<span class="refresh-btn" (click)="getJobs()">
+  <clr-icon shape="refresh"></clr-icon>
+</span>
 <clr-datagrid>
   <clr-dg-column>{{'GC.JOB_ID' | translate}}</clr-dg-column>
   <clr-dg-column>{{'GC.TRIGGER_TYPE' | translate}}</clr-dg-column>
