@@ -105,6 +105,7 @@ func (d *DefaultClient) GetJobLog(uuid string) ([]byte, error) {
 	return data, nil
 }
 
+// GetExecutions ...
 func (d *DefaultClient) GetExecutions(periodicJobID string) ([]job.Stats, error) {
 	url := d.endpoint + "/api/v1/jobs/" + periodicJobID + "/executions"
 	req, err := http.NewRequest(http.MethodGet, url, nil)

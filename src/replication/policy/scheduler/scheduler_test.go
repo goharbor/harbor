@@ -19,6 +19,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/dao"
 	rep_models "github.com/goharbor/harbor/src/replication/dao/models"
@@ -50,6 +51,10 @@ func (f *fakedJobserviceClient) GetJobLog(uuid string) ([]byte, error) {
 func (f *fakedJobserviceClient) PostAction(uuid, action string) error {
 	f.stopped = true
 	return nil
+}
+func (f *fakedJobserviceClient) GetExecutions(uuid string) ([]job.Stats, error) {
+	f.stopped = true
+	return nil, nil
 }
 
 type fakedScheduleJobDAO struct {

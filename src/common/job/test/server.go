@@ -70,7 +70,7 @@ func NewJobServiceServer() *httptest.Server {
 			rw.WriteHeader(http.StatusOK)
 			return
 		})
-	mux.HandleFunc(fmt.Sprintf("%s/%s/", jobsPrefix, jobUUID),
+	mux.HandleFunc(fmt.Sprintf("%s/%s", jobsPrefix, jobUUID),
 		func(rw http.ResponseWriter, req *http.Request) {
 			if req.Method != http.MethodPost {
 				rw.WriteHeader(http.StatusMethodNotAllowed)
