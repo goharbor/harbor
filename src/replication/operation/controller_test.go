@@ -16,6 +16,7 @@ package operation
 
 import (
 	"io"
+	"os"
 	"testing"
 
 	"github.com/docker/distribution"
@@ -197,16 +198,25 @@ func (f *fakedAdapter) DeleteChart(name, version string) error {
 	return nil
 }
 
-var ctl = &controller{
-	executionMgr: &fakedExecutionManager{},
-	scheduler:    &fakedScheduler{},
-	flowCtl:      flow.NewController(),
+var ctl *controller
+
+func TestMain(m *testing.M) {
+	ctl = &controller{
+		replicators:  make(chan struct{}, 1),
+		executionMgr: &fakedExecutionManager{},
+		scheduler:    &fakedScheduler{},
+		flowCtl:      flow.NewController(),
+	}
+	ctl.replicators <- struct{}{}
+	os.Exit(m.Run())
 }
 
 func TestStartReplication(t *testing.T) {
 	err := adapter.RegisterFactory(model.RegistryTypeHarbor, fakedAdapterFactory)
 	require.Nil(t, err)
 	config.Config = &config.Configuration{}
+
+	// policy is disabled
 	policy := &model.Policy{
 		SrcRegistry: &model.Registry{
 			Type: model.RegistryTypeHarbor,
@@ -224,24 +234,67 @@ func TestStartReplication(t *testing.T) {
 			Vtags: []string{"1.0", "2.0"},
 		},
 	}
-	// policy is disabled
 	_, err = ctl.StartReplication(policy, resource, model.TriggerTypeEventBased)
 	require.NotNil(t, err)
 
-	policy.Enabled = true
 	// replicate resource deletion
-	resource.Deleted = true
+	policy = &model.Policy{
+		SrcRegistry: &model.Registry{
+			Type: model.RegistryTypeHarbor,
+		},
+		DestRegistry: &model.Registry{
+			Type: model.RegistryTypeHarbor,
+		},
+		Enabled: true,
+	}
+	resource = &model.Resource{
+		Type: model.ResourceTypeImage,
+		Metadata: &model.ResourceMetadata{
+			Repository: &model.Repository{
+				Name: "library/hello-world",
+			},
+			Vtags: []string{"1.0", "2.0"},
+		},
+		Deleted: true,
+	}
 	id, err := ctl.StartReplication(policy, resource, model.TriggerTypeEventBased)
 	require.Nil(t, err)
 	assert.Equal(t, int64(1), id)
 
 	// replicate resource copy
-	resource.Deleted = false
+	policy = &model.Policy{
+		SrcRegistry: &model.Registry{
+			Type: model.RegistryTypeHarbor,
+		},
+		DestRegistry: &model.Registry{
+			Type: model.RegistryTypeHarbor,
+		},
+		Enabled: true,
+	}
+	resource = &model.Resource{
+		Type: model.ResourceTypeImage,
+		Metadata: &model.ResourceMetadata{
+			Repository: &model.Repository{
+				Name: "library/hello-world",
+			},
+			Vtags: []string{"1.0", "2.0"},
+		},
+		Deleted: false,
+	}
 	id, err = ctl.StartReplication(policy, resource, model.TriggerTypeEventBased)
 	require.Nil(t, err)
 	assert.Equal(t, int64(1), id)
 
 	// nil resource
+	policy = &model.Policy{
+		SrcRegistry: &model.Registry{
+			Type: model.RegistryTypeHarbor,
+		},
+		DestRegistry: &model.Registry{
+			Type: model.RegistryTypeHarbor,
+		},
+		Enabled: true,
+	}
 	id, err = ctl.StartReplication(policy, nil, model.TriggerTypeEventBased)
 	require.Nil(t, err)
 	assert.Equal(t, int64(1), id)

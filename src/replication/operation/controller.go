@@ -41,16 +41,26 @@ type Controller interface {
 	GetTaskLog(int64) ([]byte, error)
 }
 
+const (
+	maxReplicators = 1024
+)
+
 // NewController returns a controller implementation
 func NewController(js job.Client) Controller {
-	return &controller{
+	ctl := &controller{
+		replicators:  make(chan struct{}, maxReplicators),
 		executionMgr: execution.NewDefaultManager(),
 		scheduler:    scheduler.NewScheduler(js),
 		flowCtl:      flow.NewController(),
 	}
+	for i := 0; i < maxReplicators; i++ {
+		ctl.replicators <- struct{}{}
+	}
+	return ctl
 }
 
 type controller struct {
+	replicators  chan struct{}
 	flowCtl      flow.Controller
 	executionMgr execution.Manager
 	scheduler    scheduler.Scheduler
@@ -67,24 +77,31 @@ func (c *controller) StartReplication(policy *model.Policy, resource *model.Reso
 	if err != nil {
 		return 0, err
 	}
-
-	flow := c.createFlow(id, policy, resource)
-	if n, err := c.flowCtl.Start(flow); err != nil {
-		// only update the execution when got error.
-		// if got no error, it will be updated automatically
-		// when listing the execution records
-		if e := c.executionMgr.Update(&models.Execution{
-			ID:         id,
-			Status:     models.ExecutionStatusFailed,
-			StatusText: err.Error(),
-			Total:      n,
-			Failed:     n,
-		}, "Status", "StatusText", "Total", "Failed"); e != nil {
-			log.Errorf("failed to update the execution %d: %v", id, e)
+	// control the count of concurrent replication requests
+	log.Debugf("waiting for the available replicator ...")
+	<-c.replicators
+	log.Debugf("got an available replicator, starting the replication ...")
+	go func() {
+		defer func() {
+			c.replicators <- struct{}{}
+		}()
+		flow := c.createFlow(id, policy, resource)
+		if n, err := c.flowCtl.Start(flow); err != nil {
+			// only update the execution when got error.
+			// if got no error, it will be updated automatically
+			// when listing the execution records
+			if e := c.executionMgr.Update(&models.Execution{
+				ID:         id,
+				Status:     models.ExecutionStatusFailed,
+				StatusText: err.Error(),
+				Total:      n,
+				Failed:     n,
+			}, "Status", "StatusText", "Total", "Failed"); e != nil {
+				log.Errorf("failed to update the execution %d: %v", id, e)
+			}
+			log.Errorf("the execution %d failed: %v", id, err)
 		}
-		log.Errorf("the execution %d failed: %v", id, err)
-	}
-
+	}()
 	return id, nil
 }
 
