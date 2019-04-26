@@ -1,7 +1,3 @@
-.select {
-    width: 190px;
-}
-
 .select .optionMore {
     background-color: #bfbaba;
     height: 1.6em;
@@ -239,8 +235,9 @@ clr-modal {
     margin-top: 10px;
 }
 
-.inline-block {
+.resource-box {
     display: inline-block;
+    width: 190px;
 }
 .form-cron {
     padding-left:3.8rem;
@@ -255,4 +252,8 @@ clr-modal {
     .override-tooltip {
         margin: 3px 0 0 5px;
     }
+}
+
+.spinner-position {
+    left: 25%;
 }

@@ -52,7 +52,8 @@
         "REPLICATE_SUCCESS": "开始成功",
         "REPLICATE_FAILURE": "开始失败",
         "STOP_SUCCESS": "停止任务成功",
-        "STOP_FAILURE": "停止任务失败"
+        "STOP_FAILURE": "停止任务失败",
+        "TIME_OUT": "网关超时"
     },
     "TOOLTIP": {
         "NAME_FILTER": "过滤资源的名字。不填或者“”匹配所有资源；“library/”只匹配“library”下的资源。更多的匹配模式请参考用户手册。",

@@ -58,6 +58,7 @@
         <!--images/Filter-->
         <div class="form-group form-group-override">
           <label class="form-group-label-override">{{'REPLICATION.SOURCE_RESOURCE_FILTER' | translate}}</label>
+          <span class="spinner spinner-inline spinner-position" [hidden]="onGoing === false"></span>
           <div formArrayName="filters">
             <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index">
               <div [formGroupName]="i">
@@ -69,11 +70,14 @@
                   <input type="text" #filterValue required size="14" formControlName="value" id="{{'filter_'+ supportedFilters[i]?.type}}">
                   <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
                 </label>
-                <div class="select inline-block" *ngIf="supportedFilters[i]?.style==='radio'">
+                <div class="select resource-box" *ngIf="supportedFilters[i]?.style==='radio' && supportedFilters[i]?.values.length > 1">
                   <select formControlName="value" #selectedValue id="{{'select_'+ supportedFilters[i]?.type}}" name="{{supportedFilters[i]?.type}}">
                     <option value="">{{'REPLICATION.BOTH' | translate}}</option>
                     <option *ngFor="let value of supportedFilters[i]?.values;" value="{{value}}">{{value}}</option>
                   </select>
+                </div>
+                <div class="resource-box" *ngIf="supportedFilters[i]?.style==='radio' && supportedFilters[i]?.values.length <= 1">
+                  <span>{{supportedFilters[i]?.values}}</span>
                 </div>
                 <clr-tooltip>
                   <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>

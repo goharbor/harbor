@@ -46,7 +46,7 @@
             translate }}</label>
           <label class="col-md-8" for="destination_url" aria-haspopup="true" role="tooltip" [class.invalid]="targetEndpoint.errors && (targetEndpoint.dirty || targetEndpoint.touched)"
             [class.valid]="targetEndpoint.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
-            <input type="text" id="destination_url" [disabled]="testOngoing" [readonly]="!editable" [(ngModel)]="target.url"
+            <input type="text" id="destination_url" [disabled]="testOngoing || urlDisabled" [readonly]="!editable" [(ngModel)]="target.url"
               size="25" name="endpointUrl" #targetEndpoint="ngModel" required placeholder="http(s)://192.168.1.1">
             <span class="tooltip-content" *ngIf="targetEndpoint.errors && targetEndpoint.errors.required && (targetEndpoint.dirty || targetEndpoint.touched)">
               {{ 'DESTINATION.URL_IS_REQUIRED' | translate }}
