@@ -171,7 +171,7 @@ func TestIsSolutionUser(t *testing.T) {
 	assert.False(t, ctx.IsSolutionUser())
 }
 
-func TestHasReadPerm(t *testing.T) {
+func TestHasPullPerm(t *testing.T) {
 	// public project
 	ctx := NewSecurityContext(nil, pm)
 
@@ -201,7 +201,7 @@ func TestHasReadPerm(t *testing.T) {
 	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 }
 
-func TestHasWritePerm(t *testing.T) {
+func TestHasPushPerm(t *testing.T) {
 	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
 
 	// unauthenticated
@@ -224,26 +224,26 @@ func TestHasWritePerm(t *testing.T) {
 	assert.True(t, ctx.Can(rbac.ActionPush, resource))
 }
 
-func TestHasAllPerm(t *testing.T) {
+func TestHasPushPullPerm(t *testing.T) {
 	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
 
 	// unauthenticated
 	ctx := NewSecurityContext(nil, pm)
-	assert.False(t, ctx.Can(rbac.ActionPushPull, resource))
+	assert.False(t, ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource))
 
 	// authenticated, has all perms
 	ctx = NewSecurityContext(projectAdminUser, pm)
-	assert.True(t, ctx.Can(rbac.ActionPushPull, resource))
+	assert.True(t, ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource))
 
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
 		HasAdminRole: true,
 	}, pm)
-	assert.True(t, ctx.Can(rbac.ActionPushPull, resource))
+	assert.True(t, ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource))
 }
 
-func TestHasAllPermWithGroup(t *testing.T) {
+func TestHasPushPullPermWithGroup(t *testing.T) {
 	PrepareGroupTest()
 	project, err := dao.GetProjectByName("group_project")
 	if err != nil {
@@ -260,7 +260,6 @@ func TestHasAllPermWithGroup(t *testing.T) {
 	resource := rbac.NewProjectNamespace(project.Name).Resource(rbac.ResourceRepository)
 
 	ctx := NewSecurityContext(developer, pm)
-	assert.False(t, ctx.Can(rbac.ActionPushPull, resource))
 	assert.True(t, ctx.Can(rbac.ActionPush, resource))
 	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 }
