@@ -66,21 +66,13 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		modifiers = append(modifiers, authorizer)
 	}
 
-	// The registry URL and core service URL are different when the adapter
-	// is created for a local Harbor. If the "registry.CoreURL" is null, the
-	// registry URL will be used as the coreServiceURL instead
-	url := registry.URL
-	if len(registry.CoreURL) > 0 {
-		url = registry.CoreURL
-	}
-
 	reg, err := adp.NewDefaultImageRegistry(registry)
 	if err != nil {
 		return nil, err
 	}
 	return &adapter{
 		registry:       registry,
-		coreServiceURL: url,
+		coreServiceURL: registry.URL,
 		client: common_http.NewClient(
 			&http.Client{
 				Transport: transport,

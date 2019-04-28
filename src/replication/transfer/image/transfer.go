@@ -134,55 +134,66 @@ func (t *transfer) copy(src *repository, dst *repository, override bool) error {
 	dstRepo := dst.repository
 	t.logger.Infof("copying %s:[%s](source registry) to %s:[%s](destination registry)...",
 		srcRepo, strings.Join(src.tags, ","), dstRepo, strings.Join(dst.tags, ","))
+	var err error
 	for i := range src.tags {
-		srcTag := src.tags[i]
-		dstTag := dst.tags[i]
-		t.logger.Infof("copying %s:%s(source registry) to %s:%s(destination registry)...",
-			srcRepo, srcTag, dstRepo, dstTag)
-		// pull the manifest from the source registry
-		manifest, digest, err := t.pullManifest(srcRepo, srcTag)
-		if err != nil {
-			return err
+		if e := t.copyTag(srcRepo, src.tags[i], dstRepo, dst.tags[i], override); e != nil {
+			t.logger.Errorf(e.Error())
+			err = e
 		}
-
-		// check the existence of the image on the destination registry
-		exist, digest2, err := t.exist(dstRepo, dstTag)
-		if err != nil {
-			return err
-		}
-		if exist {
-			// the same image already exists
-			if digest == digest2 {
-				t.logger.Infof("the image %s:%s already exists on the destination registry, skip",
-					dstRepo, dstTag)
-				continue
-			}
-			// the same name image exists, but not allowed to override
-			if !override {
-				t.logger.Warningf("the same name image %s:%s exists on the destination registry, but the \"override\" is set to false, skip",
-					dstRepo, dstTag)
-				continue
-			}
-			// the same name image exists, but allowed to override
-			t.logger.Warningf("the same name image %s:%s exists on the destination registry and the \"override\" is set to true, continue...",
-				dstRepo, dstTag)
-		}
-
-		// copy blobs between the source and destination registries
-		if err = t.copyBlobs(manifest.References(), srcRepo, dstRepo); err != nil {
-			return err
-		}
-
-		// push the manifest to the destination registry
-		if err := t.pushManifest(manifest, dstRepo, dstTag); err != nil {
-			return err
-		}
-
-		t.logger.Infof("copy %s:%s(source registry) to %s:%s(destination registry) completed",
-			srcRepo, srcTag, dstRepo, dstTag)
 	}
+	if err != nil {
+		return err
+	}
+
 	t.logger.Infof("copy %s:[%s](source registry) to %s:[%s](destination registry) completed",
 		srcRepo, strings.Join(src.tags, ","), dstRepo, strings.Join(dst.tags, ","))
+	return nil
+}
+
+func (t *transfer) copyTag(srcRepo, srcTag, dstRepo, dstTag string, override bool) error {
+	t.logger.Infof("copying %s:%s(source registry) to %s:%s(destination registry)...",
+		srcRepo, srcTag, dstRepo, dstTag)
+	// pull the manifest from the source registry
+	manifest, digest, err := t.pullManifest(srcRepo, srcTag)
+	if err != nil {
+		return err
+	}
+
+	// check the existence of the image on the destination registry
+	exist, digest2, err := t.exist(dstRepo, dstTag)
+	if err != nil {
+		return err
+	}
+	if exist {
+		// the same image already exists
+		if digest == digest2 {
+			t.logger.Infof("the image %s:%s already exists on the destination registry, skip",
+				dstRepo, dstTag)
+			return nil
+		}
+		// the same name image exists, but not allowed to override
+		if !override {
+			t.logger.Warningf("the same name image %s:%s exists on the destination registry, but the \"override\" is set to false, skip",
+				dstRepo, dstTag)
+			return nil
+		}
+		// the same name image exists, but allowed to override
+		t.logger.Warningf("the same name image %s:%s exists on the destination registry and the \"override\" is set to true, continue...",
+			dstRepo, dstTag)
+	}
+
+	// copy blobs between the source and destination registries
+	if err = t.copyBlobs(manifest.References(), srcRepo, dstRepo); err != nil {
+		return err
+	}
+
+	// push the manifest to the destination registry
+	if err := t.pushManifest(manifest, dstRepo, dstTag); err != nil {
+		return err
+	}
+
+	t.logger.Infof("copy %s:%s(source registry) to %s:%s(destination registry) completed",
+		srcRepo, srcTag, dstRepo, dstTag)
 	return nil
 }
 

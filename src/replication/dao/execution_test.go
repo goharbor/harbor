@@ -91,6 +91,7 @@ func TestMethodOfExecution(t *testing.T) {
 }
 
 func TestMethodOfTask(t *testing.T) {
+	now := time.Now()
 	task1 := &models.Task{
 		ExecutionID:  112200,
 		ResourceType: "resourceType1",
@@ -98,7 +99,7 @@ func TestMethodOfTask(t *testing.T) {
 		DstResource:  "dstResource1",
 		JobID:        "jobID1",
 		Status:       "Initialized",
-		StartTime:    time.Now(),
+		StartTime:    &now,
 	}
 	task2 := &models.Task{
 		ExecutionID:  112200,
@@ -107,8 +108,8 @@ func TestMethodOfTask(t *testing.T) {
 		DstResource:  "dstResource2",
 		JobID:        "jobID2",
 		Status:       "Stopped",
-		StartTime:    time.Now(),
-		EndTime:      time.Now(),
+		StartTime:    &now,
+		EndTime:      &now,
 	}
 
 	// test add
@@ -143,7 +144,7 @@ func TestMethodOfTask(t *testing.T) {
 	taskNew := &models.Task{
 		ID:      id1,
 		Status:  "Failed",
-		EndTime: time.Now(),
+		EndTime: &now,
 	}
 	n, err := UpdateTask(taskNew, models.TaskPropsName.Status, models.TaskPropsName.EndTime)
 	require.Nil(t, err)
@@ -171,6 +172,7 @@ func TestMethodOfTask(t *testing.T) {
 }
 
 func TestExecutionFill(t *testing.T) {
+	now := time.Now()
 	execution := &models.Execution{
 		PolicyID:   11209,
 		Status:     "InProgress",
@@ -190,8 +192,8 @@ func TestExecutionFill(t *testing.T) {
 		DstResource:  "dstResource1",
 		JobID:        "jobID1",
 		Status:       "Succeed",
-		StartTime:    time.Now(),
-		EndTime:      et1,
+		StartTime:    &now,
+		EndTime:      &et1,
 	}
 	task2 := &models.Task{
 		ID:           20192,
@@ -201,8 +203,8 @@ func TestExecutionFill(t *testing.T) {
 		DstResource:  "dstResource2",
 		JobID:        "jobID2",
 		Status:       "Stopped",
-		StartTime:    time.Now(),
-		EndTime:      et2,
+		StartTime:    &now,
+		EndTime:      &et2,
 	}
 	AddTask(task1)
 	AddTask(task2)
@@ -224,6 +226,7 @@ func TestExecutionFill(t *testing.T) {
 }
 
 func TestExecutionFill2(t *testing.T) {
+	now := time.Now()
 	execution := &models.Execution{
 		PolicyID:   11209,
 		Status:     "InProgress",
@@ -241,7 +244,7 @@ func TestExecutionFill2(t *testing.T) {
 		DstResource:  "dstResource1",
 		JobID:        "jobID1",
 		Status:       models.TaskStatusInProgress,
-		StartTime:    time.Now(),
+		StartTime:    &now,
 	}
 	task2 := &models.Task{
 		ID:           20192,
@@ -251,8 +254,8 @@ func TestExecutionFill2(t *testing.T) {
 		DstResource:  "dstResource2",
 		JobID:        "jobID2",
 		Status:       "Stopped",
-		StartTime:    time.Now(),
-		EndTime:      time.Now(),
+		StartTime:    &now,
+		EndTime:      &now,
 	}
 	taskID1, _ := AddTask(task1)
 	AddTask(task2)

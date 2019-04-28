@@ -16,7 +16,6 @@ package adapter
 
 import (
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -72,15 +71,9 @@ func NewDefaultImageRegistry(registry *model.Registry) (*DefaultImageRegistry, e
 				registry.Credential.AccessKey,
 				registry.Credential.AccessSecret)
 		}
-		tokenServiceURL := ""
-		// the registry is a local Harbor instance if the core URL is specified,
-		// use the internal token service URL instead
-		if len(registry.CoreURL) > 0 {
-			tokenServiceURL = fmt.Sprintf("%s/service/token", registry.CoreURL)
-		}
 		authorizer = auth.NewStandardTokenAuthorizer(&http.Client{
 			Transport: util.GetHTTPTransport(registry.Insecure),
-		}, cred, tokenServiceURL)
+		}, cred, registry.TokenServiceURL)
 	}
 	return NewDefaultImageRegistryWithCustomizedAuthorizer(registry, authorizer)
 }

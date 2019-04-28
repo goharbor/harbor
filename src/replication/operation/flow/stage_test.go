@@ -192,7 +192,7 @@ func (f *fakedExecutionManager) GetTaskLog(int64) ([]byte, error) {
 func TestMain(m *testing.M) {
 	url := "https://registry.harbor.local"
 	config.Config = &config.Configuration{
-		RegistryURL: url,
+		CoreURL: url,
 	}
 	if err := adapter.RegisterFactory(model.RegistryTypeHarbor, fakedAdapterFactory); err != nil {
 		os.Exit(1)

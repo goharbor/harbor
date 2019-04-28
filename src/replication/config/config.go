@@ -22,7 +22,6 @@ var (
 // Configuration holds the configuration information for replication
 type Configuration struct {
 	CoreURL         string
-	RegistryURL     string
 	TokenServiceURL string
 	JobserviceURL   string
 	SecretKey       string
