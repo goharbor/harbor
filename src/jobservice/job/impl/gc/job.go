@@ -23,7 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/registryctl"
-	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/registryctl/client"
 )
@@ -56,12 +56,12 @@ func (gc *GarbageCollector) ShouldRetry() bool {
 }
 
 // Validate implements the interface in job/Interface
-func (gc *GarbageCollector) Validate(params map[string]interface{}) error {
+func (gc *GarbageCollector) Validate(params job.Parameters) error {
 	return nil
 }
 
 // Run implements the interface in job/Interface
-func (gc *GarbageCollector) Run(ctx env.JobContext, params map[string]interface{}) error {
+func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 	if err := gc.init(ctx, params); err != nil {
 		return err
 	}
@@ -93,12 +93,12 @@ func (gc *GarbageCollector) Run(ctx env.JobContext, params map[string]interface{
 	return nil
 }
 
-func (gc *GarbageCollector) init(ctx env.JobContext, params map[string]interface{}) error {
+func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 	registryctl.Init()
 	gc.registryCtlClient = registryctl.RegistryCtlClient
 	gc.logger = ctx.GetLogger()
 
-	errTpl := "Failed to get required property: %s"
+	errTpl := "failed to get required property: %s"
 	if v, ok := ctx.Get(common.CoreURL); ok && len(v.(string)) > 0 {
 		gc.CoreURL = v.(string)
 	} else {
@@ -165,7 +165,7 @@ func (gc *GarbageCollector) cleanCache() error {
 
 func delKeys(con redis.Conn, pattern string) error {
 	iter := 0
-	keys := []string{}
+	keys := make([]string, 0)
 	for {
 		arr, err := redis.Values(con.Do("SCAN", iter, "MATCH", pattern))
 		if err != nil {

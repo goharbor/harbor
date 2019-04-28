@@ -33,4 +33,8 @@ export class GcHistoryComponent implements OnInit {
     });
   }
 
+  getLogLink(id): string {
+    return this.gcRepoService.getLogLink(id);
+  }
+
 }

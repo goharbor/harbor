@@ -49,33 +49,25 @@
                             <div class="icon-position">
                                 <clr-icon shape="error" size="24" class="is-error"></clr-icon>
                             </div>
-                            <span class="detail-count">{{highCount}}</span> {{packageText(highCount) | translate}}
-                            {{haveText(highCount) | translate}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }}
-                            {{suffixForHigh | translate }}
+                            <span class="detail-count">{{highCount}}</span> {{packageText(highCount) | translate}} {{haveText(highCount) | translate}} {{'VULNERABILITY.SEVERITY.HIGH' | translate }} {{suffixForHigh | translate }}
                         </div>
                         <div class="second-row row-flex">
                             <div class="icon-position">
                                 <clr-icon shape="exclamation-triangle" size="24" class="tip-icon-medium"></clr-icon>
                             </div>
-                            <span class="detail-count">{{mediumCount}}</span> {{packageText(mediumCount) | translate}}
-                            {{haveText(mediumCount) | translate}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }}
-                            {{suffixForMedium | translate }}
+                            <span class="detail-count">{{mediumCount}}</span> {{packageText(mediumCount) | translate}} {{haveText(mediumCount) | translate}} {{'VULNERABILITY.SEVERITY.MEDIUM' | translate }} {{suffixForMedium | translate }}
                         </div>
                         <div class="second-row row-flex">
                             <div class="icon-position">
                                 <clr-icon shape="play" size="22" class="tip-icon-low rotate-90"></clr-icon>
                             </div>
-                            <span class="detail-count">{{lowCount}}</span> {{packageText(lowCount) | translate}}
-                            {{haveText(lowCount) | translate}} {{'VULNERABILITY.SEVERITY.LOW' | translate }}
-                            {{suffixForLow | translate }}
+                            <span class="detail-count">{{lowCount}}</span> {{packageText(lowCount) | translate}} {{haveText(lowCount) | translate}} {{'VULNERABILITY.SEVERITY.LOW' | translate }} {{suffixForLow | translate }}
                         </div>
                         <div class="second-row row-flex">
                             <div class="icon-position">
                                 <clr-icon shape="help" size="20"></clr-icon>
                             </div>
-                            <span class="detail-count">{{unknownCount}}</span> {{packageText(unknownCount) |
-                            translate}} {{haveText(unknownCount) | translate}} {{'VULNERABILITY.SEVERITY.UNKNOWN' |
-                            translate }} {{suffixForUnknown | translate }}
+                            <span class="detail-count">{{unknownCount}}</span> {{packageText(unknownCount) | translate}} {{haveText(unknownCount) | translate}} {{'VULNERABILITY.SEVERITY.UNKNOWN' | translate }} {{suffixForUnknown | translate }}
                         </div>
                     </div>
                 </div>
@@ -91,19 +83,16 @@
         </div>
     </section>
     <clr-tabs>
-        <clr-tab *ngIf="hasVulnerabilitiesListPermission">
-            <button clrTabLink [clrTabLinkInOverflow]="false" class="btn btn-link nav-link" id="tag-vulnerability" [class.active]='isCurrentTabLink("tag-vulnerability")'
-                type="button" (click)='tabLinkClick("tag-vulnerability")'>{{'REPOSITORY.VULNERABILITY' | translate}}</button>
+        <clr-tab *ngIf="hasVulnerabilitiesListPermission && withClair">
+            <button clrTabLink [clrTabLinkInOverflow]="false" class="btn btn-link nav-link" id="tag-vulnerability" [class.active]='isCurrentTabLink("tag-vulnerability")' type="button" (click)='tabLinkClick("tag-vulnerability")'>{{'REPOSITORY.VULNERABILITY' | translate}}</button>
             <clr-tab-content id="content1" *clrIfActive="true">
                 <hbr-vulnerabilities-grid [repositoryId]="repositoryId" [projectId]="projectId" [tagId]="tagId"></hbr-vulnerabilities-grid>
             </clr-tab-content>
         </clr-tab>
         <clr-tab>
-            <button [clrTabLinkInOverflow]="false" *ngIf="hasBuildHistoryPermission" id="tag-history" clrTabLink class="btn btn-link nav-link" [class.active]='isCurrentTabLink("tag-history")'
-                type="button" (click)='tabLinkClick("tag-history")'>{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</button>
+            <button [clrTabLinkInOverflow]="false" *ngIf="hasBuildHistoryPermission" id="tag-history" clrTabLink class="btn btn-link nav-link" [class.active]='isCurrentTabLink("tag-history")' type="button" (click)='tabLinkClick("tag-history")'>{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</button>
             <clr-tab-content *clrIfActive>
-                <hbr-tag-history [repositoryId]="repositoryId" [tagId]="tagId">{{ 'REPOSITORY.BUILD_HISTORY' |
-                    translate }}</hbr-tag-history>
+                <hbr-tag-history [repositoryId]="repositoryId" [tagId]="tagId">{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</hbr-tag-history>
             </clr-tab-content>
         </clr-tab>
     </clr-tabs>

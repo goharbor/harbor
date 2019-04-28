@@ -62,7 +62,6 @@ func GiveMeTestNamespace() string {
 // Clear ...
 func Clear(key string, conn redis.Conn) error {
 	if conn != nil {
-		defer conn.Close()
 		_, err := conn.Do("DEL", key)
 		return err
 	}
@@ -72,8 +71,6 @@ func Clear(key string, conn redis.Conn) error {
 
 // ClearAll ...
 func ClearAll(namespace string, conn redis.Conn) error {
-	defer conn.Close()
-
 	keys, err := redis.Strings(conn.Do("KEYS", fmt.Sprintf("%s:*", namespace)))
 	if err != nil {
 		return err

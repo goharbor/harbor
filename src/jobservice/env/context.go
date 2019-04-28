@@ -16,6 +16,7 @@ package env
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"sync"
 )
 
@@ -33,6 +34,6 @@ type Context struct {
 	ErrorChan chan error
 
 	// The base job context reference
-	// It will be the parent conetext of job execution context
-	JobContext JobContext
+	// It will be the parent context of job execution context
+	JobContext job.Context
 }

@@ -38,9 +38,11 @@ func TestDBGetter(t *testing.T) {
 	require.Nil(t, err)
 
 	l.Debug("JobLog Debug: TestDBLoggerSweeper")
-	l.Close()
+	err = l.Close()
+	require.NoError(t, err)
 
-	PrepareDBSweep()
+	err = PrepareDBSweep()
+	require.NoError(t, err)
 	dbSweeper := NewDBSweeper(-1)
 	count, err := dbSweeper.Sweep()
 	require.Nil(t, err)

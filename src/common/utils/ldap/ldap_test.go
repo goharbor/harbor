@@ -13,7 +13,7 @@ import (
 	goldap "gopkg.in/ldap.v2"
 )
 
-var adminServerLdapTestConfig = map[string]interface{}{
+var ldapTestConfig = map[string]interface{}{
 	common.ExtEndpoint:        "host01.com",
 	common.AUTHMode:           "ldap_auth",
 	common.DatabaseType:       "postgresql",
@@ -35,7 +35,7 @@ var adminServerLdapTestConfig = map[string]interface{}{
 	common.AdminInitialPassword: "password",
 }
 
-var adminServerDefaultConfigWithVerifyCert = map[string]interface{}{
+var defaultConfigWithVerifyCert = map[string]interface{}{
 	common.ExtEndpoint:                "https://host01.com",
 	common.AUTHMode:                   common.LDAPAuth,
 	common.DatabaseType:               "postgresql",
@@ -91,7 +91,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to initialize configurations: %v", err)
 	}
 
-	uiConfig.Upload(adminServerLdapTestConfig)
+	uiConfig.Upload(ldapTestConfig)
 
 	os.Exit(m.Run())
 
@@ -270,11 +270,11 @@ func TestSession_SearchGroup(t *testing.T) {
 	}
 
 	ldapConfig := models.LdapConf{
-		LdapURL:            adminServerLdapTestConfig[common.LDAPURL].(string) + ":389",
-		LdapSearchDn:       adminServerLdapTestConfig[common.LDAPSearchDN].(string),
+		LdapURL:            ldapTestConfig[common.LDAPURL].(string) + ":389",
+		LdapSearchDn:       ldapTestConfig[common.LDAPSearchDN].(string),
 		LdapScope:          2,
-		LdapSearchPassword: adminServerLdapTestConfig[common.LDAPSearchPwd].(string),
-		LdapBaseDn:         adminServerLdapTestConfig[common.LDAPBaseDN].(string),
+		LdapSearchPassword: ldapTestConfig[common.LDAPSearchPwd].(string),
+		LdapBaseDn:         ldapTestConfig[common.LDAPBaseDN].(string),
 	}
 
 	tests := []struct {
@@ -311,11 +311,11 @@ func TestSession_SearchGroup(t *testing.T) {
 
 func TestSession_SearchGroupByDN(t *testing.T) {
 	ldapConfig := models.LdapConf{
-		LdapURL:            adminServerLdapTestConfig[common.LDAPURL].(string) + ":389",
-		LdapSearchDn:       adminServerLdapTestConfig[common.LDAPSearchDN].(string),
+		LdapURL:            ldapTestConfig[common.LDAPURL].(string) + ":389",
+		LdapSearchDn:       ldapTestConfig[common.LDAPSearchDN].(string),
 		LdapScope:          2,
-		LdapSearchPassword: adminServerLdapTestConfig[common.LDAPSearchPwd].(string),
-		LdapBaseDn:         adminServerLdapTestConfig[common.LDAPBaseDN].(string),
+		LdapSearchPassword: ldapTestConfig[common.LDAPSearchPwd].(string),
+		LdapBaseDn:         ldapTestConfig[common.LDAPBaseDN].(string),
 	}
 	ldapGroupConfig := models.LdapGroupConf{
 		LdapGroupBaseDN:        "ou=group,dc=example,dc=com",

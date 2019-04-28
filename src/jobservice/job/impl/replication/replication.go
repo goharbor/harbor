@@ -18,8 +18,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/goharbor/harbor/src/jobservice/env"
-	"github.com/goharbor/harbor/src/jobservice/opm"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/transfer"
 
@@ -51,13 +50,13 @@ func (r *Replication) ShouldRetry() bool {
 }
 
 // Validate does nothing
-func (r *Replication) Validate(params map[string]interface{}) error {
+func (r *Replication) Validate(params job.Parameters) error {
 	return nil
 }
 
 // Run gets the corresponding transfer according to the resource type
 // and calls its function to do the real work
-func (r *Replication) Run(ctx env.JobContext, params map[string]interface{}) error {
+func (r *Replication) Run(ctx job.Context, params job.Parameters) error {
 	logger := ctx.GetLogger()
 
 	src, dst, err := parseParams(params)
@@ -77,15 +76,15 @@ func (r *Replication) Run(ctx env.JobContext, params map[string]interface{}) err
 		if !exist {
 			return false
 		}
-		return cmd == opm.CtlCommandStop
+		return cmd == job.StopCommand
 	}
-	transfer, err := factory(ctx.GetLogger(), stopFunc)
+	trans, err := factory(ctx.GetLogger(), stopFunc)
 	if err != nil {
 		logger.Errorf("failed to create transfer: %v", err)
 		return err
 	}
 
-	return transfer.Transfer(src, dst)
+	return trans.Transfer(src, dst)
 }
 
 func parseParams(params map[string]interface{}) (*model.Resource, *model.Resource, error) {

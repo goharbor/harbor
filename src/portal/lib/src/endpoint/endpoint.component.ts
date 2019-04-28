@@ -19,7 +19,7 @@ import {
     ChangeDetectionStrategy,
     ChangeDetectorRef
 } from "@angular/core";
-import { Subscription, Observable, forkJoin } from "rxjs";
+import { Subscription, Observable, forkJoin, throwError as observableThrowError } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { Comparator } from "../service/interface";
 
@@ -210,19 +210,17 @@ export class EndpointComponent implements OnInit, OnDestroy {
                         });
                 })
                 , catchError(error => {
-                    if (error && error.status === 412) {
-                        return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                            this.translateService.get('DESTINATION.FAILED_TO_DELETE_TARGET_IN_USED')).pipe(map(res => {
-                                operateChanges(operMessage, OperationState.failure, res[1]);
-                            }));
+                    if (error && error._body) {
+                        const message = JSON.parse(error._body).message;
+                        operateChanges(operMessage, OperationState.failure, message);
+                        return observableThrowError(message);
                     } else {
                         return this.translateService.get('BATCH.DELETED_FAILURE').pipe(map(res => {
                             operateChanges(operMessage, OperationState.failure, res);
                         }));
                     }
-
                 }
-                ));
+            ));
     }
 
     // Forcely refresh the view

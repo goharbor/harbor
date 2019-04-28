@@ -276,6 +276,29 @@ func TestFilterResources(t *testing.T) {
 	assert.Equal(t, "0.2.0", res[0].Metadata.Vtags[0])
 }
 
+func TestAssembleSourceResources(t *testing.T) {
+	resources := []*model.Resource{
+		{
+			Type: model.ResourceTypeChart,
+			Metadata: &model.ResourceMetadata{
+				Repository: &model.Repository{
+					Name: "library/hello-world",
+				},
+				Vtags: []string{"latest"},
+			},
+			Override: false,
+		},
+	}
+	policy := &model.Policy{
+		SrcRegistry: &model.Registry{
+			ID: 1,
+		},
+	}
+	res := assembleSourceResources(resources, policy)
+	assert.Equal(t, 1, len(res))
+	assert.Equal(t, int64(1), res[0].Registry.ID)
+}
+
 func TestAssembleDestinationResources(t *testing.T) {
 	resources := []*model.Resource{
 		{

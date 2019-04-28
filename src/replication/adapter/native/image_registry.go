@@ -63,11 +63,10 @@ func (n native) FetchImages(filters []*model.Filter) ([]*model.Resource, error) 
 }
 
 func (n native) filterRepositories(pattern string) ([]string, error) {
-	// if is a specific repository name
-	// just to make sure the repository exists
-	if len(pattern) > 0 && util.IsSpecificRepositoryName(pattern) {
-		// check is repository exist later at filterTags.
-		return []string{pattern}, nil
+	// if the pattern is a specific repository name, just returns the parsed repositories
+	// and will check the existence later when filtering the tags
+	if repositories, ok := util.IsSpecificPath(pattern); ok {
+		return repositories, nil
 	}
 	// search repositories from catalog api
 	repositories, err := n.Catalog()

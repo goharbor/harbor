@@ -74,7 +74,7 @@ func TestGetLoggersMulti(t *testing.T) {
 		}
 	}()
 
-	ops := []Option{}
+	ops := make([]Option, 0)
 	ops = append(
 		ops,
 		BackendOption("STD_OUTPUT", "DEBUG", nil),

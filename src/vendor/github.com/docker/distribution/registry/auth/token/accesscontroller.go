@@ -1,6 +1,7 @@
 package token
 
 import (
+	"context"
 	"crypto"
 	"crypto/x509"
 	"encoding/pem"
@@ -11,7 +12,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/docker/distribution/context"
+	dcontext "github.com/docker/distribution/context"
 	"github.com/docker/distribution/registry/auth"
 	"github.com/docker/libtrust"
 )
@@ -75,10 +76,11 @@ var (
 
 // authChallenge implements the auth.Challenge interface.
 type authChallenge struct {
-	err       error
-	realm     string
-	service   string
-	accessSet accessSet
+	err          error
+	realm        string
+	autoRedirect bool
+	service      string
+	accessSet    accessSet
 }
 
 var _ auth.Challenge = authChallenge{}
@@ -96,8 +98,14 @@ func (ac authChallenge) Status() int {
 // challengeParams constructs the value to be used in
 // the WWW-Authenticate response challenge header.
 // See https://tools.ietf.org/html/rfc6750#section-3
-func (ac authChallenge) challengeParams() string {
-	str := fmt.Sprintf("Bearer realm=%q,service=%q", ac.realm, ac.service)
+func (ac authChallenge) challengeParams(r *http.Request) string {
+	var realm string
+	if ac.autoRedirect {
+		realm = fmt.Sprintf("https://%s/auth/token", r.Host)
+	} else {
+		realm = ac.realm
+	}
+	str := fmt.Sprintf("Bearer realm=%q,service=%q", realm, ac.service)
 
 	if scope := ac.accessSet.scopeParam(); scope != "" {
 		str = fmt.Sprintf("%s,scope=%q", str, scope)
@@ -113,23 +121,25 @@ func (ac authChallenge) challengeParams() string {
 }
 
 // SetChallenge sets the WWW-Authenticate value for the response.
-func (ac authChallenge) SetHeaders(w http.ResponseWriter) {
-	w.Header().Add("WWW-Authenticate", ac.challengeParams())
+func (ac authChallenge) SetHeaders(r *http.Request, w http.ResponseWriter) {
+	w.Header().Add("WWW-Authenticate", ac.challengeParams(r))
 }
 
 // accessController implements the auth.AccessController interface.
 type accessController struct {
-	realm       string
-	issuer      string
-	service     string
-	rootCerts   *x509.CertPool
-	trustedKeys map[string]libtrust.PublicKey
+	realm        string
+	autoRedirect bool
+	issuer       string
+	service      string
+	rootCerts    *x509.CertPool
+	trustedKeys  map[string]libtrust.PublicKey
 }
 
 // tokenAccessOptions is a convenience type for handling
 // options to the contstructor of an accessController.
 type tokenAccessOptions struct {
 	realm          string
+	autoRedirect   bool
 	issuer         string
 	service        string
 	rootCertBundle string
@@ -151,6 +161,15 @@ func checkOptions(options map[string]interface{}) (tokenAccessOptions, error) {
 	}
 
 	opts.realm, opts.issuer, opts.service, opts.rootCertBundle = vals[0], vals[1], vals[2], vals[3]
+
+	autoRedirectVal, ok := options["autoredirect"]
+	if ok {
+		autoRedirect, ok := autoRedirectVal.(bool)
+		if !ok {
+			return opts, fmt.Errorf("token auth requires a valid option bool: autoredirect")
+		}
+		opts.autoRedirect = autoRedirect
+	}
 
 	return opts, nil
 }
@@ -204,11 +223,12 @@ func newAccessController(options map[string]interface{}) (auth.AccessController,
 	}
 
 	return &accessController{
-		realm:       config.realm,
-		issuer:      config.issuer,
-		service:     config.service,
-		rootCerts:   rootPool,
-		trustedKeys: trustedKeys,
+		realm:        config.realm,
+		autoRedirect: config.autoRedirect,
+		issuer:       config.issuer,
+		service:      config.service,
+		rootCerts:    rootPool,
+		trustedKeys:  trustedKeys,
 	}, nil
 }
 
@@ -216,12 +236,13 @@ func newAccessController(options map[string]interface{}) (auth.AccessController,
 // for actions on resources described by the given access items.
 func (ac *accessController) Authorized(ctx context.Context, accessItems ...auth.Access) (context.Context, error) {
 	challenge := &authChallenge{
-		realm:     ac.realm,
-		service:   ac.service,
-		accessSet: newAccessSet(accessItems...),
+		realm:        ac.realm,
+		autoRedirect: ac.autoRedirect,
+		service:      ac.service,
+		accessSet:    newAccessSet(accessItems...),
 	}
 
-	req, err := context.GetRequest(ctx)
+	req, err := dcontext.GetRequest(ctx)
 	if err != nil {
 		return nil, err
 	}

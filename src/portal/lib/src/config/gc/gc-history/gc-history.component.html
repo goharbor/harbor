@@ -13,7 +13,7 @@
     <clr-dg-cell>{{job.createTime | date:'medium'}}</clr-dg-cell>
     <clr-dg-cell>{{job.updateTime | date:'medium'}}</clr-dg-cell>
     <clr-dg-cell>
-      <a *ngIf="job.status.toLowerCase() === 'finished' || job.status.toLowerCase() === 'error'" target="_blank" href="/api/system/gc/{{job.id}}/log"><clr-icon shape="list"></clr-icon></a>
+      <a *ngIf="job.status.toLowerCase() === 'finished' || job.status.toLowerCase() === 'error'" target="_blank" [href]="getLogLink(job.id)"><clr-icon shape="list"></clr-icon></a>
     </clr-dg-cell>
   </clr-dg-row>
   <clr-dg-footer>{{'GC.LATEST_JOBS' | translate :{param: jobs.length} }}</clr-dg-footer>

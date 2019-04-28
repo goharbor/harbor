@@ -38,12 +38,7 @@ func NewBasicAuthCredential(username, password string) Credential {
 }
 
 func (b *basicAuthCredential) AddAuthorization(req *http.Request) {
-	// only add the authentication info when the username isn't empty
-	// the logic is needed for requesting resources from docker hub's
-	// public repositories
-	if len(b.username) > 0 {
-		req.SetBasicAuth(b.username, b.password)
-	}
+	req.SetBasicAuth(b.username, b.password)
 }
 
 // implement github.com/goharbor/harbor/src/common/http/modifier.Modifier

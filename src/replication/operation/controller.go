@@ -16,7 +16,6 @@ package operation
 
 import (
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job"
@@ -59,12 +58,7 @@ type controller struct {
 
 func (c *controller) StartReplication(policy *model.Policy, resource *model.Resource, trigger model.TriggerType) (int64, error) {
 	if !policy.Enabled {
-		return 0, fmt.Errorf("the policy %d is diabled", policy.ID)
-	}
-	// only support one tag if the resource is specified as we append the tag name as a filter
-	// when creating the flow in function "createFlow"
-	if resource != nil && len(resource.Metadata.Vtags) != 1 {
-		return 0, fmt.Errorf("the length of Vtags must be 1: %v", resource.Metadata.Vtags)
+		return 0, fmt.Errorf("the policy %d is disabled", policy.ID)
 	}
 	if len(trigger) == 0 {
 		trigger = model.TriggerTypeManual
@@ -98,31 +92,13 @@ func (c *controller) StartReplication(policy *model.Policy, resource *model.Reso
 func (c *controller) createFlow(executionID int64, policy *model.Policy, resource *model.Resource) flow.Flow {
 	// replicate the deletion operation, so create a deletion flow
 	if resource != nil && resource.Deleted {
-		return flow.NewDeletionFlow(c.executionMgr, c.scheduler, executionID, policy, []*model.Resource{resource})
+		return flow.NewDeletionFlow(c.executionMgr, c.scheduler, executionID, policy, resource)
 	}
-	// copy only one resource, add extra filters to the policy to make sure
-	// only the specified resource will be filtered out
+	resources := []*model.Resource{}
 	if resource != nil {
-		filters := []*model.Filter{
-			{
-				Type:  model.FilterTypeResource,
-				Value: resource.Type,
-			},
-			{
-				Type: model.FilterTypeName,
-				// TODO only filter the repo part?
-				Value: resource.Metadata.Repository.Name,
-			},
-			{
-				Type: model.FilterTypeTag,
-				// only support replicate one tag
-				Value: resource.Metadata.Vtags[0],
-			},
-		}
-		filters = append(filters, policy.Filters...)
-		policy.Filters = filters
+		resources = append(resources, resource)
 	}
-	return flow.NewCopyFlow(c.executionMgr, c.scheduler, executionID, policy)
+	return flow.NewCopyFlow(c.executionMgr, c.scheduler, executionID, policy, resources...)
 }
 
 func (c *controller) StopReplication(executionID int64) error {
@@ -138,10 +114,6 @@ func (c *controller) StopReplication(executionID int64) error {
 			continue
 		}
 		if err = c.scheduler.Stop(task.JobID); err != nil {
-			if isNotRunningJobError(err) {
-				log.Warningf("got not running job error when trying stop the task %d(job ID: %s): %v, skip", task.ID, task.JobID, err)
-				continue
-			}
 			return err
 		}
 		log.Debugf("the stop request for task %d(job ID: %s) sent", task.ID, task.JobID)
@@ -160,16 +132,6 @@ func isTaskRunning(task *models.Task) bool {
 		return false
 	}
 	return true
-}
-
-// when trying to stop a job which isn't running in jobservice,
-// an error whose message contains "xxx is not a running job"
-// will be returned
-func isNotRunningJobError(err error) bool {
-	if err == nil {
-		return false
-	}
-	return strings.Contains(err.Error(), "is not a running job")
 }
 
 func (c *controller) ListExecutions(query ...*models.ExecutionQuery) (int64, []*models.Execution, error) {

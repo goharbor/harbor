@@ -17,144 +17,97 @@ package impl
 import (
 	"context"
 	"errors"
-	"reflect"
-
-	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	jmodel "github.com/goharbor/harbor/src/jobservice/models"
 )
 
 // DefaultContext provides a basic job context
 type DefaultContext struct {
 	// System context
 	sysContext context.Context
-
 	// Logger for job
 	logger logger.Interface
-
-	// op command func
-	opCommandFunc job.CheckOPCmdFunc
-
-	// checkin func
-	checkInFunc job.CheckInFunc
-
-	// launch job
-	launchJobFunc job.LaunchJobFunc
-
-	// other required information
+	// Other required information
 	properties map[string]interface{}
+	// Track the job attached with the context
+	tracker job.Tracker
 }
 
 // NewDefaultContext is constructor of building DefaultContext
-func NewDefaultContext(sysCtx context.Context) env.JobContext {
+func NewDefaultContext(sysCtx context.Context) job.Context {
 	return &DefaultContext{
 		sysContext: sysCtx,
 		properties: make(map[string]interface{}),
 	}
 }
 
-// Build implements the same method in env.JobContext interface
+// Build implements the same method in env.Context interface
 // This func will build the job execution context before running
-func (c *DefaultContext) Build(dep env.JobData) (env.JobContext, error) {
+func (dc *DefaultContext) Build(t job.Tracker) (job.Context, error) {
+	if t == nil {
+		return nil, errors.New("nil job tracker")
+	}
+
 	jContext := &DefaultContext{
-		sysContext: c.sysContext,
+		sysContext: dc.sysContext,
+		tracker:    t,
 		properties: make(map[string]interface{}),
 	}
 
 	// Copy properties
-	if len(c.properties) > 0 {
-		for k, v := range c.properties {
+	if len(dc.properties) > 0 {
+		for k, v := range dc.properties {
 			jContext.properties[k] = v
 		}
 	}
 
 	// Set loggers for job
-	if err := setLoggers(func(lg logger.Interface) {
-		jContext.logger = lg
-	}, dep.ID); err != nil {
+	lg, err := createLoggers(t.Job().Info.JobID)
+	if err != nil {
 		return nil, err
 	}
 
-	if opCommandFunc, ok := dep.ExtraData["opCommandFunc"]; ok {
-		if reflect.TypeOf(opCommandFunc).Kind() == reflect.Func {
-			if funcRef, ok := opCommandFunc.(job.CheckOPCmdFunc); ok {
-				jContext.opCommandFunc = funcRef
-			}
-		}
-	}
-	if jContext.opCommandFunc == nil {
-		return nil, errors.New("failed to inject opCommandFunc")
-	}
-
-	if checkInFunc, ok := dep.ExtraData["checkInFunc"]; ok {
-		if reflect.TypeOf(checkInFunc).Kind() == reflect.Func {
-			if funcRef, ok := checkInFunc.(job.CheckInFunc); ok {
-				jContext.checkInFunc = funcRef
-			}
-		}
-	}
-
-	if jContext.checkInFunc == nil {
-		return nil, errors.New("failed to inject checkInFunc")
-	}
-
-	if launchJobFunc, ok := dep.ExtraData["launchJobFunc"]; ok {
-		if reflect.TypeOf(launchJobFunc).Kind() == reflect.Func {
-			if funcRef, ok := launchJobFunc.(job.LaunchJobFunc); ok {
-				jContext.launchJobFunc = funcRef
-			}
-		}
-	}
-
-	if jContext.launchJobFunc == nil {
-		return nil, errors.New("failed to inject launchJobFunc")
-	}
+	jContext.logger = lg
 
 	return jContext, nil
 }
 
-// Get implements the same method in env.JobContext interface
-func (c *DefaultContext) Get(prop string) (interface{}, bool) {
-	v, ok := c.properties[prop]
+// Get implements the same method in env.Context interface
+func (dc *DefaultContext) Get(prop string) (interface{}, bool) {
+	v, ok := dc.properties[prop]
 	return v, ok
 }
 
-// SystemContext implements the same method in env.JobContext interface
-func (c *DefaultContext) SystemContext() context.Context {
-	return c.sysContext
+// SystemContext implements the same method in env.Context interface
+func (dc *DefaultContext) SystemContext() context.Context {
+	return dc.sysContext
 }
 
 // Checkin is bridge func for reporting detailed status
-func (c *DefaultContext) Checkin(status string) error {
-	if c.checkInFunc != nil {
-		c.checkInFunc(status)
-	} else {
-		return errors.New("nil check in function")
-	}
-
-	return nil
+func (dc *DefaultContext) Checkin(status string) error {
+	return dc.tracker.CheckIn(status)
 }
 
-// OPCommand return the control operational command like stop/cancel if have
-func (c *DefaultContext) OPCommand() (string, bool) {
-	if c.opCommandFunc != nil {
-		return c.opCommandFunc()
+// OPCommand return the control operational command like stop if have
+func (dc *DefaultContext) OPCommand() (job.OPCommand, bool) {
+	latest, err := dc.tracker.Status()
+	if err != nil {
+		return job.NilCommand, false
 	}
 
-	return "", false
+	if job.StoppedStatus == latest {
+		return job.StopCommand, true
+	}
+
+	return job.NilCommand, false
 }
 
 // GetLogger returns the logger
-func (c *DefaultContext) GetLogger() logger.Interface {
-	return c.logger
+func (dc *DefaultContext) GetLogger() logger.Interface {
+	return dc.logger
 }
 
-// LaunchJob launches sub jobs
-func (c *DefaultContext) LaunchJob(req jmodel.JobRequest) (jmodel.JobStats, error) {
-	if c.launchJobFunc == nil {
-		return jmodel.JobStats{}, errors.New("nil launch job function")
-	}
-
-	return c.launchJobFunc(req)
+// Tracker returns the tracker tracking the job attached with the context
+func (dc *DefaultContext) Tracker() job.Tracker {
+	return dc.tracker
 }

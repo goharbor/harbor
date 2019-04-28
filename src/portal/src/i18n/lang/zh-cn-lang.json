@@ -50,9 +50,18 @@
         "SWITCH_SUCCESS": "切换成功",
         "SWITCH_FAILURE": "切换失败",
         "REPLICATE_SUCCESS": "开始成功",
-        "REPLICATE_FAILURE": "开始失败"
+        "REPLICATE_FAILURE": "开始失败",
+        "STOP_SUCCESS": "停止任务成功",
+        "STOP_FAILURE": "停止任务失败"
     },
     "TOOLTIP": {
+        "NAME_FILTER": "过滤资源的名字。不填或者“”匹配所有资源；“library/”只匹配“library”下的资源。更多的匹配模式请参考用户手册。",
+        "TAG_FILTER": "过滤资源的tag/version。不填或者“”匹配所有；“1.0*”只匹配以“1.0”开头的tag/version。",
+        "RESOURCE_FILTER": "过滤资源的类型。",
+        "PUSH_BASED": "把资源由本地Harbor推送到远端仓库。",
+        "PULL_BASED": "把资源由远端仓库拉取到本地Harbor。",
+        "DESTINATION_NAMESPACE": "指定目的端名称空间。如果不填，资源会被放到和源相同的名称空间下。",
+        "OVERRIDE": "如果存在具有相同名称的资源，请指定是否替换目标上的资源。",
         "EMAIL": "请使用正确的邮箱地址，比如name@example.com。",
         "USER_NAME": "不能包含特殊字符且长度不能超过255。",
         "FULL_NAME": "长度不能超过20。",
@@ -350,9 +359,12 @@
     "REPLICATION": {
         "TOTAL": "总数",
         "OVERRIDE": "覆盖",
+        "ENABLED_RULE": "启用规则",
+        "OVERRIDE_INFO": "如果名称存在，则替换目标资源",
         "CURRENT": "当前仓库",
         "FILTER_PLACEHOLDER": "过滤任务",
         "STOP_TITLE": "确认停止任务",
+        "BOTH": "全部",
         "PLEASE_SELECT": "请选择",
         "STOP_SUCCESS": "停止任务 {{param}} 成功",
         "STOP_SUMMARY": "确认停止任务{{param}}?",

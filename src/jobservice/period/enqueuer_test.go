@@ -15,63 +15,120 @@ package period
 
 import (
 	"context"
+	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/common/rds"
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
+	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/lcm"
+	"github.com/goharbor/harbor/src/jobservice/tests"
+	"github.com/gomodule/redigo/redis"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 	"sync"
 	"testing"
 	"time"
-
-	"github.com/goharbor/harbor/src/jobservice/opm"
-
-	"github.com/goharbor/harbor/src/jobservice/tests"
-	"github.com/goharbor/harbor/src/jobservice/utils"
 )
 
-func TestPeriodicEnqueuerStartStop(t *testing.T) {
-	ns := tests.GiveMeTestNamespace()
-	ps := &periodicJobPolicyStore{
-		lock:     new(sync.RWMutex),
-		policies: make(map[string]*PeriodicJobPolicy),
-	}
-	enqueuer := newPeriodicEnqueuer(ns, redisPool, ps, nil)
-	enqueuer.start()
-	<-time.After(100 * time.Millisecond)
-	enqueuer.stop()
+// EnqueuerTestSuite tests functions of enqueuer
+type EnqueuerTestSuite struct {
+	suite.Suite
+
+	enqueuer  *enqueuer
+	namespace string
+	pool      *redis.Pool
+	cancel    context.CancelFunc
 }
 
-func TestEnqueue(t *testing.T) {
-	ns := tests.GiveMeTestNamespace()
-
-	pl := &PeriodicJobPolicy{
-		PolicyID: "fake_ID",
-		JobName:  "fake_name",
-		CronSpec: "5 * * * * *",
-	}
-	ps := &periodicJobPolicyStore{
-		lock:     new(sync.RWMutex),
-		policies: make(map[string]*PeriodicJobPolicy),
-	}
-	ps.add(pl)
-
-	statsManager := opm.NewRedisJobStatsManager(context.Background(), ns, redisPool)
-	statsManager.Start()
-	defer statsManager.Shutdown()
-
-	enqueuer := newPeriodicEnqueuer(ns, redisPool, ps, statsManager)
-	if err := enqueuer.enqueue(); err != nil {
-		t.Error(err)
-	}
-
-	if err := clear(ns); err != nil {
-		t.Error(err)
-	}
+// TestEnqueuerTestSuite is entry of go test
+func TestEnqueuerTestSuite(t *testing.T) {
+	suite.Run(t, new(EnqueuerTestSuite))
 }
 
-func clear(ns string) error {
-	err := tests.Clear(utils.RedisKeyScheduled(ns), redisPool.Get())
-	err = tests.Clear(utils.KeyJobStats(ns, "fake_ID"), redisPool.Get())
-	err = tests.Clear(utils.RedisKeyLastPeriodicEnqueue(ns), redisPool.Get())
-	if err != nil {
-		return err
+// SetupSuite prepares the test suite
+func (suite *EnqueuerTestSuite) SetupSuite() {
+	suite.namespace = tests.GiveMeTestNamespace()
+	suite.pool = tests.GiveMeRedisPool()
+
+	ctx, cancel := context.WithCancel(context.WithValue(context.Background(), utils.NodeID, "fake_node_ID"))
+	suite.cancel = cancel
+
+	envCtx := &env.Context{
+		SystemContext: ctx,
+		WG:            new(sync.WaitGroup),
 	}
 
-	return nil
+	lcmCtl := lcm.NewController(
+		envCtx,
+		suite.namespace,
+		suite.pool,
+		func(hookURL string, change *job.StatusChange) error { return nil },
+	)
+	suite.enqueuer = newEnqueuer(ctx, suite.namespace, suite.pool, lcmCtl)
+
+	suite.prepare()
+}
+
+// TearDownSuite clears the test suite
+func (suite *EnqueuerTestSuite) TearDownSuite() {
+	suite.cancel()
+
+	conn := suite.pool.Get()
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	_ = tests.ClearAll(suite.namespace, conn)
+}
+
+// TestEnqueuer tests enqueuer
+func (suite *EnqueuerTestSuite) TestEnqueuer() {
+	go func() {
+		defer func() {
+			suite.enqueuer.stopChan <- true
+		}()
+
+		<-time.After(1 * time.Second)
+
+		key := rds.RedisKeyScheduled(suite.namespace)
+		conn := suite.pool.Get()
+		defer func() {
+			_ = conn.Close()
+		}()
+
+		count, err := redis.Int(conn.Do("ZCARD", key))
+		require.Nil(suite.T(), err, "count scheduled: nil error expected but got %s", err)
+		assert.Condition(suite.T(), func() bool {
+			return count > 0
+		}, "count of scheduled jobs should be greater than 0 but got %d", count)
+	}()
+
+	err := suite.enqueuer.start()
+	require.Nil(suite.T(), err, "enqueuer start: nil error expected but got %s", err)
+}
+
+func (suite *EnqueuerTestSuite) prepare() {
+	now := time.Now()
+	minute := now.Minute()
+
+	coreSpec := fmt.Sprintf("30,50 %d * * * *", minute+2)
+
+	// Prepare one
+	p := &Policy{
+		ID:       "fake_policy",
+		JobName:  job.SampleJob,
+		CronSpec: coreSpec,
+	}
+	rawData, err := p.Serialize()
+	assert.Nil(suite.T(), err, "prepare data: nil error expected but got %s", err)
+	key := rds.KeyPeriodicPolicy(suite.namespace)
+
+	conn := suite.pool.Get()
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	_, err = conn.Do("ZADD", key, time.Now().Unix(), rawData)
+	assert.Nil(suite.T(), err, "prepare policy: nil error expected but got %s", err)
 }

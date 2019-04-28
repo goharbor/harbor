@@ -15,7 +15,6 @@
 package operation
 
 import (
-	"errors"
 	"io"
 	"testing"
 
@@ -90,7 +89,7 @@ func (f *fakedExecutionManager) GetTaskLog(int64) ([]byte, error) {
 type fakedScheduler struct{}
 
 func (f *fakedScheduler) Preprocess(src []*model.Resource, dst []*model.Resource) ([]*scheduler.ScheduleItem, error) {
-	items := []*scheduler.ScheduleItem{}
+	items := make([]*scheduler.ScheduleItem, 0)
 	for i, res := range src {
 		items = append(items, &scheduler.ScheduleItem{
 			SrcResource: res,
@@ -100,7 +99,7 @@ func (f *fakedScheduler) Preprocess(src []*model.Resource, dst []*model.Resource
 	return items, nil
 }
 func (f *fakedScheduler) Schedule(items []*scheduler.ScheduleItem) ([]*scheduler.ScheduleResult, error) {
-	results := []*scheduler.ScheduleResult{}
+	results := make([]*scheduler.ScheduleResult, 0)
 	for _, item := range items {
 		results = append(results, &scheduler.ScheduleResult{
 			TaskID: item.TaskID,
@@ -230,12 +229,7 @@ func TestStartReplication(t *testing.T) {
 	require.NotNil(t, err)
 
 	policy.Enabled = true
-	// the resource contains Vtags whose length isn't 1
-	_, err = ctl.StartReplication(policy, resource, model.TriggerTypeEventBased)
-	require.NotNil(t, err)
-
 	// replicate resource deletion
-	resource.Metadata.Vtags = []string{"1.0"}
 	resource.Deleted = true
 	id, err := ctl.StartReplication(policy, resource, model.TriggerTypeEventBased)
 	require.Nil(t, err)
@@ -332,29 +326,5 @@ func TestIsTaskRunning(t *testing.T) {
 
 	for _, c := range cases {
 		assert.Equal(t, c.isRunning, isTaskRunning(c.task))
-	}
-}
-
-func TestIsNotRunningJobError(t *testing.T) {
-	cases := []struct {
-		err                  error
-		isNotRunningJobError bool
-	}{
-		{
-			err:                  nil,
-			isNotRunningJobError: false,
-		},
-		{
-			err:                  errors.New("not the error"),
-			isNotRunningJobError: false,
-		},
-		{
-			err:                  errors.New(`[ERROR] [handler.go:253]: Serve http request 'POST /api/v1/jobs/734a11140d939ef700889725' error: 500 {"code":10008,"message":"Stop job failed with error","details":"job '734a11140d939ef700889725' is not a running job"}`),
-			isNotRunningJobError: true,
-		},
-	}
-
-	for _, c := range cases {
-		assert.Equal(t, c.isNotRunningJobError, isNotRunningJobError(c.err))
 	}
 }

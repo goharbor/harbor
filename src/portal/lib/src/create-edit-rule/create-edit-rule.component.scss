@@ -246,3 +246,13 @@ clr-modal {
     padding-left:3.8rem;
 }
 
+.mode-tooltip {
+    margin-left: 5px;
+}
+
+.override-box {
+    flex-direction: row;
+    .override-tooltip {
+        margin: 3px 0 0 5px;
+    }
+}

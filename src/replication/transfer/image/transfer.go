@@ -22,14 +22,9 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 	trans "github.com/goharbor/harbor/src/replication/transfer"
-)
-
-var (
-	jobStoppedErr = errs.JobStoppedError()
 )
 
 func init() {
@@ -85,7 +80,7 @@ func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
 
 func (t *transfer) initialize(src *model.Resource, dst *model.Resource) error {
 	if t.shouldStop() {
-		return jobStoppedErr
+		return nil
 	}
 	// create client for source registry
 	srcReg, err := createRegistry(src.Registry)
@@ -194,7 +189,7 @@ func (t *transfer) copy(src *repository, dst *repository, override bool) error {
 func (t *transfer) pullManifest(repository, tag string) (
 	distribution.Manifest, string, error) {
 	if t.shouldStop() {
-		return nil, "", jobStoppedErr
+		return nil, "", nil
 	}
 	t.logger.Infof("pulling the manifest of image %s:%s ...", repository, tag)
 	manifest, digest, err := t.src.PullManifest(repository, tag, []string{
@@ -222,7 +217,7 @@ func (t *transfer) exist(repository, tag string) (bool, string, error) {
 func (t *transfer) copyBlobs(blobs []distribution.Descriptor, srcRepo, dstRepo string) error {
 	for _, blob := range blobs {
 		if t.shouldStop() {
-			return jobStoppedErr
+			return nil
 		}
 		digest := blob.Digest.String()
 		if blob.MediaType == schema2.MediaTypeForeignLayer {
@@ -257,7 +252,7 @@ func (t *transfer) copyBlobs(blobs []distribution.Descriptor, srcRepo, dstRepo s
 
 func (t *transfer) pushManifest(manifest distribution.Manifest, repository, tag string) error {
 	if t.shouldStop() {
-		return jobStoppedErr
+		return nil
 	}
 	t.logger.Infof("pushing the manifest of image %s:%s ...", repository, tag)
 	mediaType, payload, err := manifest.Payload()
@@ -278,7 +273,7 @@ func (t *transfer) pushManifest(manifest distribution.Manifest, repository, tag 
 
 func (t *transfer) delete(repo *repository) error {
 	if t.shouldStop() {
-		return jobStoppedErr
+		return nil
 	}
 
 	repository := repo.repository

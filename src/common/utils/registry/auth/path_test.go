@@ -31,8 +31,8 @@ func TestParseRepository(t *testing.T) {
 		{"/v2/tags/list", ""},
 		{"/v2/tags/list/tags/list", "tags/list"},
 		{"/v2/library/manifests/latest", "library"},
-		{"/v2/library/manifests/sha256:1234567890", "library"},
-		{"/v2/library/blobs/sha256:1234567890", "library"},
+		{"/v2/library/manifests/sha256:eec76eedea59f7bf39a2713bfd995c82cfaa97724ee5b7f5aba253e07423d0ae", "library"},
+		{"/v2/library/blobs/sha256:eec76eedea59f7bf39a2713bfd995c82cfaa97724ee5b7f5aba253e07423d0ae", "library"},
 		{"/v2/library/blobs/uploads", "library"},
 		{"/v2/library/blobs/uploads/1234567890", "library"},
 	}

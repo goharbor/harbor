@@ -32,7 +32,7 @@ type deletionFlow struct {
 // NewDeletionFlow returns an instance of the delete flow which deletes the resources
 // on the destination registry
 func NewDeletionFlow(executionMgr execution.Manager, scheduler scheduler.Scheduler,
-	executionID int64, policy *model.Policy, resources []*model.Resource) Flow {
+	executionID int64, policy *model.Policy, resources ...*model.Resource) Flow {
 	return &deletionFlow{
 		executionMgr: executionMgr,
 		scheduler:    scheduler,
@@ -43,10 +43,6 @@ func NewDeletionFlow(executionMgr execution.Manager, scheduler scheduler.Schedul
 }
 
 func (d *deletionFlow) Run(interface{}) (int, error) {
-	// filling the registry information
-	for _, resource := range d.resources {
-		resource.Registry = d.policy.SrcRegistry
-	}
 	srcResources, err := filterResources(d.resources, d.policy.Filters)
 	if err != nil {
 		return 0, err
@@ -57,6 +53,7 @@ func (d *deletionFlow) Run(interface{}) (int, error) {
 		return 0, nil
 	}
 
+	srcResources = assembleSourceResources(srcResources, d.policy)
 	dstResources := assembleDestinationResources(srcResources, d.policy)
 
 	items, err := preprocess(d.scheduler, srcResources, dstResources)

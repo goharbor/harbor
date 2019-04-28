@@ -24,11 +24,11 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/job"
+	cjob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/clair"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/utils"
 )
 
@@ -51,12 +51,12 @@ func (cj *ClairJob) ShouldRetry() bool {
 }
 
 // Validate implements the interface in job/Interface
-func (cj *ClairJob) Validate(params map[string]interface{}) error {
+func (cj *ClairJob) Validate(params job.Parameters) error {
 	return nil
 }
 
 // Run implements the interface in job/Interface
-func (cj *ClairJob) Run(ctx env.JobContext, params map[string]interface{}) error {
+func (cj *ClairJob) Run(ctx job.Context, params job.Parameters) error {
 	logger := ctx.GetLogger()
 	if err := cj.init(ctx); err != nil {
 		logger.Errorf("Failed to initialize the job, error: %v", err)
@@ -114,8 +114,8 @@ func (cj *ClairJob) Run(ctx env.JobContext, params map[string]interface{}) error
 	return err
 }
 
-func (cj *ClairJob) init(ctx env.JobContext) error {
-	errTpl := "Failed to get required property: %s"
+func (cj *ClairJob) init(ctx job.Context) error {
+	errTpl := "failed to get required property: %s"
 	if v, ok := ctx.Get(common.RegistryURL); ok && len(v.(string)) > 0 {
 		cj.registryURL = v.(string)
 	} else {
@@ -140,8 +140,8 @@ func (cj *ClairJob) init(ctx env.JobContext) error {
 	return nil
 }
 
-func transformParam(params map[string]interface{}) (*job.ScanJobParms, error) {
-	res := job.ScanJobParms{}
+func transformParam(params job.Parameters) (*cjob.ScanJobParms, error) {
+	res := cjob.ScanJobParms{}
 	parmsBytes, err := json.Marshal(params)
 	if err != nil {
 		return nil, err
@@ -151,7 +151,7 @@ func transformParam(params map[string]interface{}) (*job.ScanJobParms, error) {
 }
 
 func prepareLayers(payload []byte, registryURL, repo, tk string) ([]models.ClairLayer, error) {
-	layers := []models.ClairLayer{}
+	layers := make([]models.ClairLayer, 0)
 	manifest, _, err := distribution.UnmarshalManifest(schema2.MediaTypeManifest, payload)
 	if err != nil {
 		return layers, err
@@ -160,7 +160,7 @@ func prepareLayers(payload []byte, registryURL, repo, tk string) ([]models.Clair
 	// form the chain by using the digests of all parent layers in the image, such that if another image is built on top of this image the layer name can be re-used.
 	shaChain := ""
 	for _, d := range manifest.References() {
-		if d.MediaType == schema2.MediaTypeConfig {
+		if d.MediaType == schema2.MediaTypeImageConfig {
 			continue
 		}
 		shaChain += string(d.Digest) + "-"

@@ -24,10 +24,22 @@
           <div class="radio-inline" [class.disabled]="policyId >= 0">
             <input type="radio" id="push_base" name="replicationMode" [value]=true  [disabled]="policyId >= 0" [(ngModel)]="isPushMode" (change)="modeChange()" [ngModelOptions]="{standalone: true}">
             <label for="push_base">Push-based</label>
+            <clr-tooltip class="mode-tooltip">
+              <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+              <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+                  <span>{{'TOOLTIP.PUSH_BASED' | translate}}</span>
+              </clr-tooltip-content>
+            </clr-tooltip>
           </div>
           <div class="radio-inline" [class.disabled]="policyId >= 0">          
             <input type="radio" id="pull_base" name="replicationMode" [value]=false [disabled]="policyId >= 0" [(ngModel)]="isPushMode" [ngModelOptions]="{standalone: true}">
             <label for="pull_base">Pull-based</label>
+            <clr-tooltip class="mode-tooltip">
+              <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+              <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+                  <span>{{'TOOLTIP.PULL_BASED' | translate}}</span>
+              </clr-tooltip-content>
+            </clr-tooltip>
           </div>
         </div>
         <!--source registry-->
@@ -54,15 +66,23 @@
                 </div>
                 <label *ngIf="supportedFilters[i]?.style==='input'" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
                   [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
-                  <input type="text" #filterValue required size="14" formControlName="value">
+                  <input type="text" #filterValue required size="14" formControlName="value" id="{{'filter_'+ supportedFilters[i]?.type}}">
                   <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
                 </label>
                 <div class="select inline-block" *ngIf="supportedFilters[i]?.style==='radio'">
-                  <select  formControlName="value" #selectedValue id="{{i}}" name="{{supportedFilters[i]?.type}}">
-                    <option value="">-- {{'REPLICATION.PLEASE_SELECT' | translate}} --</option>
+                  <select formControlName="value" #selectedValue id="{{'select_'+ supportedFilters[i]?.type}}" name="{{supportedFilters[i]?.type}}">
+                    <option value="">{{'REPLICATION.BOTH' | translate}}</option>
                     <option *ngFor="let value of supportedFilters[i]?.values;" value="{{value}}">{{value}}</option>
                   </select>
                 </div>
+                <clr-tooltip>
+                  <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                  <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+                    <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='name'">{{'TOOLTIP.NAME_FILTER' | translate}}</span>
+                    <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='tag'">{{'TOOLTIP.TAG_FILTER' | translate}}</span>
+                    <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='resource'">{{'TOOLTIP.RESOURCE_FILTER' | translate}}</span>                
+                  </clr-tooltip-content>
+                </clr-tooltip>
               </div>
             </div>
           </div>
@@ -88,6 +108,12 @@
               <input formControlName="dest_namespace" type="text" id="dest_namespace" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth"
                 maxlength="255">
             </div>
+            <clr-tooltip>
+              <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+              <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+                  <span>{{'TOOLTIP.DESTINATION_NAMESPACE' | translate}}</span>
+              </clr-tooltip-content>
+            </clr-tooltip>
           </div>
         </div>
 
@@ -121,18 +147,24 @@
               <label for="ruleDeletion" class="clr-control-label">{{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}</label>
             </clr-checkbox-wrapper>
           </div>
-          <div class="clr-form-control rule-width">
-              <clr-checkbox-wrapper>
-                <input type="checkbox" clrCheckbox [checked]="true" id="enablePolicy" formControlName="enabled" class="clr-checkbox">
-                <label for="enablePolicy" class="clr-control-label">{{'REPLICATION.ENABLED' | translate}}</label>
-              </clr-checkbox-wrapper>
-          </div>
-          <div class="clr-form-control rule-width">
+          <div class="clr-form-control rule-width override-box">
               <clr-checkbox-wrapper>
                 <input type="checkbox" clrCheckbox [checked]="true" id="overridePolicy" formControlName="override" class="clr-checkbox">
-                <label for="overridePolicy" class="clr-control-label">{{'REPLICATION.OVERRIDE' | translate}}</label>
+                <label for="overridePolicy" class="clr-control-label">{{'REPLICATION.OVERRIDE_INFO' | translate}}</label>
               </clr-checkbox-wrapper>
+              <clr-tooltip class="override-tooltip">
+                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+                    <span>{{'TOOLTIP.OVERRIDE' | translate}}</span>
+                </clr-tooltip-content>
+              </clr-tooltip>
           </div>
+          <div class="clr-form-control rule-width">
+            <clr-checkbox-wrapper>
+              <input type="checkbox" clrCheckbox [checked]="true" id="enablePolicy" formControlName="enabled" class="clr-checkbox">
+              <label for="enablePolicy" class="clr-control-label">{{'REPLICATION.ENABLED_RULE' | translate}}</label>
+            </clr-checkbox-wrapper>
+        </div>
         </div>
         <div class="loading-center">
           <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>

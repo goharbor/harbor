@@ -49,14 +49,15 @@ func TestDBLogger(t *testing.T) {
 	l.Warningf("JobLog Warningf: %s", "TestDBLogger")
 	l.Errorf("JobLog Errorf: %s", "TestDBLogger")
 
-	l.Close()
+	_ = l.Close()
 
 	dbGetter := getter.NewDBGetter()
 	ll, err := dbGetter.Retrieve(uuid)
 	require.Nil(t, err)
 	log.Infof("get logger %s", ll)
 
-	sweeper.PrepareDBSweep()
+	err = sweeper.PrepareDBSweep()
+	require.NoError(t, err)
 	dbSweeper := sweeper.NewDBSweeper(-1)
 	count, err := dbSweeper.Sweep()
 	require.Nil(t, err)

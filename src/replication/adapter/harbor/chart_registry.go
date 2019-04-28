@@ -76,8 +76,7 @@ type chartVersionMetadata struct {
 }
 
 func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {
-	// TODO optimize the performance
-	projects, err := a.getProjects("")
+	projects, err := a.listCandidateProjects(filters)
 	if err != nil {
 		return nil, err
 	}
@@ -130,13 +129,6 @@ func (a *adapter) ChartExist(name, version string) (bool, error) {
 	}
 	if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusNotFound {
 		return false, nil
-	}
-	// TODO this is a workaround for https://github.com/goharbor/harbor/issues/7171
-	if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusInternalServerError {
-		if strings.Contains(httpErr.Message, "no chart name found") ||
-			strings.Contains(httpErr.Message, "No chart version found") {
-			return false, nil
-		}
 	}
 	return false, err
 }
