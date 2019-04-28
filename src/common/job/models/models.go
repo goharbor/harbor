@@ -28,25 +28,28 @@ type JobMetadata struct {
 
 // JobStats keeps the result of job launching.
 type JobStats struct {
-	Stats *JobStatData `json:"job"`
+	Stats *StatsInfo `json:"job"`
 }
 
-// JobStatData keeps the stats of job
-type JobStatData struct {
-	JobID       string `json:"id"`
-	Status      string `json:"status"`
-	JobName     string `json:"name"`
-	JobKind     string `json:"kind"`
-	IsUnique    bool   `json:"unique"`
-	RefLink     string `json:"ref_link,omitempty"`
-	CronSpec    string `json:"cron_spec,omitempty"`
-	EnqueueTime int64  `json:"enqueue_time"`
-	UpdateTime  int64  `json:"update_time"`
-	RunAt       int64  `json:"run_at,omitempty"`
-	CheckIn     string `json:"check_in,omitempty"`
-	CheckInAt   int64  `json:"check_in_at,omitempty"`
-	DieAt       int64  `json:"die_at,omitempty"`
-	HookStatus  string `json:"hook_status,omitempty"`
+// StatsInfo keeps the stats of job
+type StatsInfo struct {
+	JobID         string     `json:"id"`
+	Status        string     `json:"status"`
+	JobName       string     `json:"name"`
+	JobKind       string     `json:"kind"`
+	IsUnique      bool       `json:"unique"`
+	RefLink       string     `json:"ref_link,omitempty"`
+	CronSpec      string     `json:"cron_spec,omitempty"`
+	EnqueueTime   int64      `json:"enqueue_time"`
+	UpdateTime    int64      `json:"update_time"`
+	RunAt         int64      `json:"run_at,omitempty"`
+	CheckIn       string     `json:"check_in,omitempty"`
+	CheckInAt     int64      `json:"check_in_at,omitempty"`
+	DieAt         int64      `json:"die_at,omitempty"`
+	WebHookURL    string     `json:"web_hook_url,omitempty"`
+	UpstreamJobID string     `json:"upstream_job_id,omitempty"`   // Ref the upstream job if existing
+	NumericPID    int64      `json:"numeric_policy_id,omitempty"` // The numeric policy ID of the periodic job
+	Parameters    Parameters `json:"parameters,omitempty"`
 }
 
 // JobPoolStats represents the healthy and status of all the running worker pools.
@@ -71,9 +74,10 @@ type JobActionRequest struct {
 
 // JobStatusChange is designed for reporting the status change via hook.
 type JobStatusChange struct {
-	JobID   string `json:"job_id"`
-	Status  string `json:"status"`
-	CheckIn string `json:"check_in,omitempty"`
+	JobID    string     `json:"job_id"`
+	Status   string     `json:"status"`
+	CheckIn  string     `json:"check_in,omitempty"`
+	Metadata *StatsInfo `json:"metadata,omitempty"`
 }
 
 // Message is designed for sub/pub messages
