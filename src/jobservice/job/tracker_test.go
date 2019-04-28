@@ -19,8 +19,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/jobservice/common/query"
-
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/gomodule/redigo/redis"
@@ -175,14 +173,6 @@ func (suite *TrackerTestSuite) TestPeriodicTracker() {
 	id, err := t.NumericID()
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), nID, id)
-
-	_, total, err := t.Executions(&query.Parameter{
-		PageNumber: 1,
-		PageSize:   10,
-		Extras:     make(query.ExtraParameters),
-	})
-	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), int64(1), total)
 
 	err = t2.PeriodicExecutionDone()
 	require.NoError(suite.T(), err)

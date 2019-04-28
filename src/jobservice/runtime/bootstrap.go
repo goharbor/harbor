@@ -17,6 +17,7 @@ package runtime
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/mgt"
 	"os"
 	"os/signal"
 	"sync"
@@ -86,7 +87,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 
 	var (
 		backendWorker worker.Interface
-		lcmCtl        lcm.Controller
+		manager       mgt.Manager
 	)
 	if cfg.PoolConfig.Backend == config.JobServicePoolBackendRedis {
 		// Number of workers
@@ -95,6 +96,9 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		namespace := fmt.Sprintf("{%s}", cfg.PoolConfig.RedisPoolCfg.Namespace)
 		// Get redis connection pool
 		redisPool := bs.getRedisPool(cfg.PoolConfig.RedisPoolCfg.RedisURL)
+
+		// Create stats manager
+		manager = mgt.NewManager(ctx, namespace, redisPool)
 		// Create hook agent, it's a singleton object
 		hookAgent := hook.NewAgent(rootContext, namespace, redisPool)
 		hookCallback := func(URL string, change *job.StatusChange) error {
@@ -114,7 +118,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		}
 
 		// Create job life cycle management controller
-		lcmCtl = lcm.NewController(rootContext, namespace, redisPool, hookCallback)
+		lcmCtl := lcm.NewController(rootContext, namespace, redisPool, hookCallback)
 
 		// Start the backend worker
 		backendWorker, err = bs.loadAndRunRedisWorkerPool(
@@ -145,7 +149,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 	}
 
 	// Initialize controller
-	ctl := core.NewController(backendWorker, lcmCtl)
+	ctl := core.NewController(backendWorker, manager)
 	// Start the API server
 	apiServer := bs.createAPIServer(ctx, cfg, ctl)
 

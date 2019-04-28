@@ -156,6 +156,9 @@ func (suite *CWorkerTestSuite) TestEnqueuePeriodicJob() {
 	params["name"] = "testing:v1"
 
 	m := time.Now().Minute()
+	if m+2 >= 60 {
+		m = m - 2
+	}
 	_, err := suite.cWorker.PeriodicallyEnqueue(
 		"fake_job",
 		params,
@@ -202,16 +205,6 @@ func (suite *CWorkerTestSuite) TestStopJob() {
 
 	err = suite.cWorker.StopJob(scheduledJob.Info.JobID)
 	require.NoError(suite.T(), err, "stop job: nil error expected but got %s", err)
-}
-
-// TestScheduledJobs tests get scheduled job
-func (suite *CWorkerTestSuite) TestScheduledJobs() {
-	params := make(map[string]interface{})
-	params["name"] = "testing:v1"
-
-	_, total, err := suite.cWorker.ScheduledJobs(nil)
-	require.NoError(suite.T(), err, "get scheduled job: nil error expected but got %s", err)
-	assert.EqualValues(suite.T(), int64(2), total, "expect 1 item but got 0")
 }
 
 type fakeJob struct{}

@@ -18,6 +18,7 @@ package errs
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/common/query"
 )
 
 const (
@@ -49,8 +50,8 @@ const (
 	ResourceConflictsErrorCode
 	// BadRequestErrorCode is code for the error of bad request
 	BadRequestErrorCode
-	// GetScheduledJobsErrorCode is code for the error of getting scheduled jobs
-	GetScheduledJobsErrorCode
+	// GetJobsErrorCode is code for the error of getting scheduled jobs
+	GetJobsErrorCode
 	// GetPeriodicExecutionErrorCode is code for the error of getting periodic executions
 	GetPeriodicExecutionErrorCode
 	// StatusMismatchErrorCode is code for the error of mismatching status
@@ -137,9 +138,13 @@ func UnauthorizedError(err error) error {
 	return New(UnAuthorizedErrorCode, "unauthorized", err.Error())
 }
 
-// GetScheduledJobsError is error for the case of getting scheduled jobs failed
-func GetScheduledJobsError(err error) error {
-	return New(GetScheduledJobsErrorCode, "failed to get scheduled jobs", err.Error())
+// GetJobsError is error for the case of getting jobs failed
+func GetJobsError(q *query.Parameter, err error) error {
+	qStr := ""
+	if q != nil {
+		qStr = q.Extras.String()
+	}
+	return New(GetJobsErrorCode, fmt.Sprintf("failed to get scheduled jobs, q=%s", qStr), err.Error())
 }
 
 // GetPeriodicExecutionError is error for the case of getting periodic jobs failed

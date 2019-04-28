@@ -15,7 +15,6 @@
 package worker
 
 import (
-	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/job"
 )
 
@@ -112,16 +111,4 @@ type Interface interface {
 	// Return:
 	//  error           : error returned if meet any problems
 	RetryJob(jobID string) error
-
-	// Get the scheduled jobs by page
-	// The page number in the query will be ignored, default 20 is used. This is the limitation of backend lib.
-	// The total number is also returned.
-	//
-	// query *query.Parameter : query parameters
-	//
-	// Return:
-	//   []*job.Stats : list of scheduled jobs
-	//   int          : the total number of scheduled jobs
-	//   error        : non nil error if meet any issues
-	ScheduledJobs(query *query.Parameter) ([]*job.Stats, int64, error)
 }

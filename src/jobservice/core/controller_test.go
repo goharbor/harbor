@@ -14,28 +14,25 @@
 package core
 
 import (
-	"context"
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
-	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"testing"
-	"time"
 )
 
 // ControllerTestSuite tests functions of core controller
 type ControllerTestSuite struct {
 	suite.Suite
 
-	lcmCtl *fakeLcmController
-	worker *fakeWorker
-	ctl    Interface
+	manager *fakeManager
+	worker  *fakeWorker
+	ctl     Interface
 
 	res    *job.Stats
 	jobID  string
@@ -60,14 +57,17 @@ func (suite *ControllerTestSuite) SetupSuite() {
 // Prepare for each test case
 func (suite *ControllerTestSuite) SetupTest() {
 	suite.worker = &fakeWorker{}
-	suite.lcmCtl = &fakeLcmController{}
-
-	suite.lcmCtl.On("Track", suite.jobID).Return(job.NewBasicTrackerWithStats(nil, suite.res, "ns", nil, nil), nil)
-	suite.lcmCtl.On("New", suite.res).Return(job.NewBasicTrackerWithStats(nil, suite.res, "ns", nil, nil), nil)
 
 	suite.worker.On("IsKnownJob", job.SampleJob).Return((*sample.Job)(nil), true)
 	suite.worker.On("IsKnownJob", "fake").Return(nil, false)
 	suite.worker.On("ValidateJobParameters", (*sample.Job)(nil), suite.params).Return(nil)
+
+	fakeMgr := &fakeManager{}
+	fakeMgr.On("SaveJob", suite.res).Return(nil)
+	fakeMgr.On("GetJob", suite.jobID).Return(suite.res, nil)
+
+	suite.manager = fakeMgr
+
 }
 
 // TestControllerTestSuite is suite entry for 'go test'
@@ -142,20 +142,6 @@ func (suite *ControllerTestSuite) TestCheckStatus() {
 	assert.Equal(suite.T(), "running", st.Pools[0].Status, "expected running pool but got %s", st.Pools[0].Status)
 }
 
-// TestScheduledJobs ...
-func (suite *ControllerTestSuite) TestScheduledJobs() {
-	q := &query.Parameter{
-		PageSize:   20,
-		PageNumber: 1,
-	}
-
-	suite.worker.On("ScheduledJobs", q).Return([]*job.Stats{suite.res}, 1, nil)
-
-	_, total, err := suite.ctl.ScheduledJobs(q)
-	require.Nil(suite.T(), err, "scheduled jobs: nil error expected but got %s", err)
-	assert.Equal(suite.T(), int64(1), total, "expected 1 item but got 0")
-}
-
 // TestInvalidChecks ...
 func (suite *ControllerTestSuite) TestInvalidChecks() {
 	req := createJobReq("kind")
@@ -180,57 +166,42 @@ func (suite *ControllerTestSuite) TestInvalidChecks() {
 	assert.NotNil(suite.T(), err, "invalid job name: error expected but got nil")
 }
 
+// TestScheduledJobs ...
+func (suite *ControllerTestSuite) TestGetScheduledJobs() {
+	extras := make(query.ExtraParameters)
+	extras.Set(query.ExtraParamKeyKind, job.KindScheduled)
+	q := &query.Parameter{
+		PageSize:   20,
+		PageNumber: 1,
+		Extras:     extras,
+	}
+
+	fakeMgr := &fakeManager{}
+	fakeMgr.On("SaveJob", suite.res).Return(nil)
+	fakeMgr.On("GetJob", suite.jobID).Return(suite.res, nil)
+	fakeMgr.On("GetScheduledJobs", q).Return([]*job.Stats{suite.res}, int64(1), nil)
+	suite.manager = fakeMgr
+
+	_, total, err := suite.ctl.GetJobs(q)
+	require.Nil(suite.T(), err, "scheduled jobs: nil error expected but got %s", err)
+	assert.Equal(suite.T(), int64(1), total, "expected 1 item but got 0")
+}
+
 // TestGetPeriodicExecutions tests GetPeriodicExecutions
 func (suite *ControllerTestSuite) TestGetPeriodicExecutions() {
-	pool := tests.GiveMeRedisPool()
-	namespace := tests.GiveMeTestNamespace()
-
-	jobID := utils.MakeIdentifier()
-	nID := time.Now().Unix()
-	mockJobStats := &job.Stats{
-		Info: &job.StatsInfo{
-			JobID:      jobID,
-			Status:     job.ScheduledStatus.String(),
-			JobKind:    job.KindPeriodic,
-			JobName:    job.SampleJob,
-			IsUnique:   false,
-			CronSpec:   "0 0 * * * *",
-			NumericPID: nID,
-		},
-	}
-
-	t := job.NewBasicTrackerWithStats(context.TODO(), mockJobStats, namespace, pool, nil)
-	err := t.Save()
-	require.NoError(suite.T(), err)
-
-	executionID := utils.MakeIdentifier()
-	runAt := time.Now().Add(1 * time.Hour).Unix()
-	executionStats := &job.Stats{
-		Info: &job.StatsInfo{
-			JobID:         executionID,
-			Status:        job.ScheduledStatus.String(),
-			JobKind:       job.KindScheduled,
-			JobName:       job.SampleJob,
-			IsUnique:      false,
-			CronSpec:      "0 0 * * * *",
-			RunAt:         runAt,
-			EnqueueTime:   runAt,
-			UpstreamJobID: jobID,
-		},
-	}
-
-	t2 := job.NewBasicTrackerWithStats(context.TODO(), executionStats, namespace, pool, nil)
-	err = t2.Save()
-	require.NoError(suite.T(), err)
-
-	suite.lcmCtl.On("Track", jobID).Return(t, nil)
-	suite.lcmCtl.On("Track", executionID).Return(t2, nil)
-
-	_, total, err := suite.ctl.GetPeriodicExecutions(jobID, &query.Parameter{
+	q := &query.Parameter{
 		PageSize:   10,
 		PageNumber: 1,
 		Extras:     make(query.ExtraParameters),
-	})
+	}
+
+	fakeMgr := &fakeManager{}
+	fakeMgr.On("SaveJob", suite.res).Return(nil)
+	fakeMgr.On("GetJob", suite.jobID).Return(suite.res, nil)
+	fakeMgr.On("GetPeriodicExecution", "1000", q).Return([]*job.Stats{suite.res}, int64(1), nil)
+	suite.manager = fakeMgr
+
+	_, total, err := suite.ctl.GetPeriodicExecutions("1000", q)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), int64(1), total)
 }
@@ -251,19 +222,6 @@ func createJobReq(kind string) *job.Request {
 			},
 		},
 	}
-}
-
-// Implement lcm controller interface
-func (suite *ControllerTestSuite) Serve() error {
-	return suite.lcmCtl.Serve()
-}
-
-func (suite *ControllerTestSuite) New(stats *job.Stats) (job.Tracker, error) {
-	return suite.lcmCtl.New(stats)
-}
-
-func (suite *ControllerTestSuite) Track(jobID string) (job.Tracker, error) {
-	return suite.lcmCtl.Track(jobID)
 }
 
 // Implement worker interface
@@ -307,37 +265,28 @@ func (suite *ControllerTestSuite) RetryJob(jobID string) error {
 	return suite.worker.RetryJob(jobID)
 }
 
-func (suite *ControllerTestSuite) ScheduledJobs(query *query.Parameter) ([]*job.Stats, int64, error) {
-	return suite.worker.ScheduledJobs(query)
+// Implement manager interface
+func (suite *ControllerTestSuite) GetJobs(q *query.Parameter) ([]*job.Stats, int64, error) {
+	return suite.manager.GetJobs(q)
 }
 
-// Implement fake objects with mock
-type fakeLcmController struct {
-	mock.Mock
+func (suite *ControllerTestSuite) GetPeriodicExecution(pID string, q *query.Parameter) ([]*job.Stats, int64, error) {
+	return suite.manager.GetPeriodicExecution(pID, q)
 }
 
-func (flc *fakeLcmController) Serve() error {
-	return flc.Called().Error(0)
+func (suite *ControllerTestSuite) GetScheduledJobs(q *query.Parameter) ([]*job.Stats, int64, error) {
+	return suite.manager.GetScheduledJobs(q)
 }
 
-func (flc *fakeLcmController) New(stats *job.Stats) (job.Tracker, error) {
-	args := flc.Called(stats)
-	if args.Error(1) != nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(job.Tracker), nil
+func (suite *ControllerTestSuite) GetJob(jobID string) (*job.Stats, error) {
+	return suite.manager.GetJob(jobID)
 }
 
-func (flc *fakeLcmController) Track(jobID string) (job.Tracker, error) {
-	args := flc.Called(jobID)
-	if args.Error(1) != nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(job.Tracker), nil
+func (suite *ControllerTestSuite) SaveJob(j *job.Stats) error {
+	return suite.manager.SaveJob(j)
 }
 
+// fake worker
 type fakeWorker struct {
 	mock.Mock
 }
@@ -407,11 +356,48 @@ func (f *fakeWorker) RetryJob(jobID string) error {
 	return f.Called(jobID).Error(0)
 }
 
-func (f *fakeWorker) ScheduledJobs(query *query.Parameter) ([]*job.Stats, int64, error) {
-	args := f.Called(query)
+// fake manager
+type fakeManager struct {
+	mock.Mock
+}
+
+func (fm *fakeManager) GetJobs(q *query.Parameter) ([]*job.Stats, int64, error) {
+	args := fm.Called(q)
 	if args.Error(2) != nil {
 		return nil, 0, args.Error(2)
 	}
 
-	return args.Get(0).([]*job.Stats), int64(args.Int(1)), nil
+	return args.Get(0).([]*job.Stats), args.Get(1).(int64), nil
+}
+
+func (fm *fakeManager) GetPeriodicExecution(pID string, q *query.Parameter) ([]*job.Stats, int64, error) {
+	args := fm.Called(pID, q)
+	if args.Error(2) != nil {
+		return nil, 0, args.Error(2)
+	}
+
+	return args.Get(0).([]*job.Stats), args.Get(1).(int64), nil
+}
+
+func (fm *fakeManager) GetScheduledJobs(q *query.Parameter) ([]*job.Stats, int64, error) {
+	args := fm.Called(q)
+	if args.Error(2) != nil {
+		return nil, 0, args.Error(2)
+	}
+
+	return args.Get(0).([]*job.Stats), args.Get(1).(int64), nil
+}
+
+func (fm *fakeManager) GetJob(jobID string) (*job.Stats, error) {
+	args := fm.Called(jobID)
+	if args.Error(1) != nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(*job.Stats), nil
+}
+
+func (fm *fakeManager) SaveJob(j *job.Stats) error {
+	args := fm.Called(j)
+	return args.Error(0)
 }
