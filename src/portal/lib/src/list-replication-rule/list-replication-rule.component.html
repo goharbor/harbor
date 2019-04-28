@@ -12,7 +12,6 @@
     <clr-dg-column class="col-width">{{'REPLICATION.REPLICATION_MODE' | translate}}</clr-dg-column>
     <clr-dg-column class="min-width">{{'REPLICATION.DESTINATION_NAMESPACE' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'trigger'">{{'REPLICATION.REPLICATION_TRIGGER' | translate}}</clr-dg-column>
-    <clr-dg-column class="status-width">{{'REPLICATION.OVERRIDE' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgField]="'description'">{{'REPLICATION.DESCRIPTION' | translate}}</clr-dg-column>
     <clr-dg-placeholder>{{'REPLICATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
     <clr-dg-row *clrDgItems="let p of changedRules; let i=index" [clrDgItem]="p" [style.backgroundColor]="(projectScope && withReplicationJob && selectedId === p.id) ? '#eee' : ''">
@@ -38,10 +37,6 @@
             {{p.dest_registry ? p.dest_registry.name : ''}} : {{p.dest_namespace? p.dest_namespace: '-'}}
         </clr-dg-cell>
         <clr-dg-cell>{{p.trigger ? p.trigger.type : ''}}</clr-dg-cell>
-        <clr-dg-cell [ngSwitch]="p.override">
-            <clr-icon shape="check-circle" *ngSwitchCase="true" size="20" class="color-green"></clr-icon>
-            <clr-icon shape="times-circle" *ngSwitchCase="false" size="16" class="icon-style"></clr-icon>
-        </clr-dg-cell>
         <clr-dg-cell>
             {{p.description ? trancatedDescription(p.description) : '-'}}
             <clr-tooltip>
