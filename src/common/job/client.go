@@ -3,6 +3,7 @@ package job
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -107,7 +108,7 @@ func (d *DefaultClient) GetJobLog(uuid string) ([]byte, error) {
 
 // GetExecutions ...
 func (d *DefaultClient) GetExecutions(periodicJobID string) ([]job.Stats, error) {
-	url := d.endpoint + "/api/v1/jobs/" + periodicJobID + "/executions"
+	url := fmt.Sprintf("%s/api/v1/jobs/%s/executions", d.endpoint, periodicJobID)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err

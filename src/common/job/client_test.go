@@ -52,7 +52,7 @@ func TestGetExecutions(t *testing.T) {
 	exes, err := testClient.GetExecutions(ID)
 	assert.Nil(err)
 	stat := exes[0]
-	assert.Equal(ID, stat.Info.JobID)
+	assert.Equal(ID+"@123123", stat.Info.JobID)
 }
 
 func TestPostAction(t *testing.T) {

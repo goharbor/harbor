@@ -56,7 +56,7 @@ func NewJobServiceServer() *httptest.Server {
 			var stats []job.Stats
 			stat := job_models.Stats{
 				Info: &job_models.StatsInfo{
-					JobID:    jobUUID,
+					JobID:    jobUUID + "@123123",
 					Status:   "Pending",
 					RunAt:    time.Now().Unix(),
 					IsUnique: false,
