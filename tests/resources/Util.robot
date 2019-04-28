@@ -45,6 +45,7 @@ Resource  Harbor-Pages/Project-Retag_Elements.robot
 Resource  Harbor-Pages/Replication.robot
 Resource  Harbor-Pages/Replication_Elements.robot
 Resource  Harbor-Pages/UserProfile.robot
+Resource  Harbor-Pages/UserProfile_Elements.robot
 Resource  Harbor-Pages/Administration-Users.robot
 Resource  Harbor-Pages/Administration-Users_Elements.robot
 Resource  Harbor-Pages/Configuration.robot
@@ -98,6 +99,11 @@ Retry Text Input
     @{param}  Create List  ${element_xpath}  ${text}
     Retry Action Keyword  Text Input  @{param}
 
+Retry Link Click
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Link Click  @{param}
+
 Retry Checkbox Should Be Selected
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}
@@ -122,6 +128,10 @@ Retry Wait Until Page Not Contains Element
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Wait Until Page Does Not Contain Element  @{param}
+
+Link Click
+    [Arguments]  ${element_xpath}
+    Click Link  ${element_xpath}
 
 Element Click
     [Arguments]  ${element_xpath}
