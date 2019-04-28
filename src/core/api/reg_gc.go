@@ -87,6 +87,9 @@ func (gc *GCAPI) Put() {
 		return
 	}
 	ajr.Name = common_job.ImageGC
+	ajr.Parameters = map[string]interface{}{
+		"redis_url_reg": os.Getenv("_REDIS_URL_REG"),
+	}
 	gc.updateSchedule(ajr)
 }
 
