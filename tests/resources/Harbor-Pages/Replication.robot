@@ -45,27 +45,23 @@ Create A New Endpoint
 
 Create A Rule With Existing Endpoint
 # day 1=Monday..7=Sunday timeformat 12hour+am/pm
-    [Arguments]  ${name}  ${project_name}  ${endpoint}  ${mode}  ${plan}=Daily  ${weekday}=1  ${time}=0800a
+    [Arguments]  ${name}  ${replication_mode}  ${project_name}  ${resource_type}  ${endpoint}  ${dest_namespace_input}  ${mode}  ${plan}=Daily  ${weekday}=1  ${time}=0800a
     #click new
     Retry Element Click  ${new_name_xpath}
     #input name
-    Input Text  ${rule_name}  ${name}
-    #input descripiton,here skip, leave it blank
-    #source projects, input
-    Input Text  ${source_project}  ${project_name}
+    Retry Text Input  ${rule_name}  ${name}
+    Retry Element Click  ${replication_mode}
+
     #set filter
-    Retry Element Click  ${source_image_filter_add}
-    Input Text  ${source_iamge_repo_filter}  *
-    Retry Element Click  ${source_image_filter_add}
-    Input Text  ${source_image_tag_filter}  *
+    Retry Text Input  ${source_project}  ${project_name}
+    Select From List By Value  ${rule_resource_selector}  ${resource_type}
+    Retry Text Input  ${dest_namespace_xpath}  ${dest_namespace_input}
+    Select From List By Value  ${rule_resource_selector}  ${resource_type}
     #select endpoint
-    Retry Element Click  ${rule_target_select}
-    Wait Until Element Is Visible  //select[@id='ruleTarget']//option[contains(.,'${endpoint}')]
-    Retry Element Click  //select[@id='ruleTarget']//option[contains(.,'${endpoint}')]
+    Retry Element Click  //select[@id='dest_registry']
+    Wait Until Element Is Visible  //select[@id='dest_registry']//option[contains(.,'${endpoint}')]
+    Retry Element Click  //select[@id='dest_registry']//option[contains(.,'${endpoint}')]
     #set trigger
-    Retry Element Click  ${rule_trigger_select}
-    Wait Until Element Is Visible  //select[@id='ruleTrigger']//option[contains(.,'${mode}')]
-    Retry Element Click  //select[@id='ruleTrigger']//option[contains(.,'${mode}')]
     Run Keyword If  '${mode}' == 'Scheduled'  Setting Replicaiton Schedule  ${plan}  ${weekday}  ${time}
     #click save
     Retry Element Click  ${rule_save_button}
@@ -88,7 +84,7 @@ Project Create A Rule With Existing Endpoint
     Retry Element Click  ${rule_target_select}
     Wait Until Element Is Visible  //select[@id='ruleTarget']//option[contains(.,'${endpoint}')]
     Retry Element Click  //select[@id='ruleTarget']//option[contains(.,'${endpoint}')]
-    #set trigger  
+    #set trigger
     Retry Element Click  ${rule_trigger_select}
     Wait Until Element Is Visible  //select[@id='ruleTrigger']//option[contains(.,'${mode}')]
     Retry Element Click  //select[@id='ruleTrigger']//option[contains(.,'${mode}')]

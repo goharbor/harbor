@@ -212,7 +212,9 @@ Add Labels To Tag
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${tagName}')]//label
     Capture Page Screenshot  add_${labelName}.png
     Retry Element Click  xpath=//clr-dg-action-bar//clr-dropdown//button
+    Capture Page Screenshot  add1_${labelName}.png
     Retry Element Click  xpath=//clr-dropdown//div//label[contains(.,'${labelName}')]
+    Capture Page Screenshot  add2_${labelName}.png
     Retry Wait Until Page Contains Element  xpath=//clr-dg-row//label[contains(.,'${labelName}')]
 
 Filter Labels In Tags
