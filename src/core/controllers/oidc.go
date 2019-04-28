@@ -82,7 +82,9 @@ func (oc *OIDCController) Callback() {
 	ctx := oc.Ctx.Request.Context()
 	token, err := oidc.ExchangeToken(ctx, code)
 	if err != nil {
-		oc.SendInternalServerError(err)
+		log.Errorf("Failed to exchange token, error: %v", err)
+		// Return a 4xx error so user can see the details in case it's due to misconfiguration.
+		oc.SendBadRequestError(err)
 		return
 	}
 	idToken, err := oidc.VerifyToken(ctx, token.IDToken)
