@@ -1,21 +1,16 @@
 package context
 
 import (
+	"context"
 	"sync"
 
 	"github.com/docker/distribution/uuid"
-	"golang.org/x/net/context"
 )
-
-// Context is a copy of Context from the golang.org/x/net/context package.
-type Context interface {
-	context.Context
-}
 
 // instanceContext is a context that provides only an instance id. It is
 // provided as the main background context.
 type instanceContext struct {
-	Context
+	context.Context
 	id   string    // id of context, logged as "instance.id"
 	once sync.Once // once protect generation of the id
 }
@@ -42,15 +37,8 @@ var background = &instanceContext{
 // Background returns a non-nil, empty Context. The background context
 // provides a single key, "instance.id" that is globally unique to the
 // process.
-func Background() Context {
+func Background() context.Context {
 	return background
-}
-
-// WithValue returns a copy of parent in which the value associated with key is
-// val. Use context Values only for request-scoped data that transits processes
-// and APIs, not for passing optional parameters to functions.
-func WithValue(parent Context, key, val interface{}) Context {
-	return context.WithValue(parent, key, val)
 }
 
 // stringMapContext is a simple context implementation that checks a map for a

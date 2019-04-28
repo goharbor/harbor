@@ -160,7 +160,7 @@ func prepareLayers(payload []byte, registryURL, repo, tk string) ([]models.Clair
 	// form the chain by using the digests of all parent layers in the image, such that if another image is built on top of this image the layer name can be re-used.
 	shaChain := ""
 	for _, d := range manifest.References() {
-		if d.MediaType == schema2.MediaTypeConfig {
+		if d.MediaType == schema2.MediaTypeImageConfig {
 			continue
 		}
 		shaChain += string(d.Digest) + "-"
