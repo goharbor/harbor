@@ -102,6 +102,12 @@ func (ua *UserAPI) Prepare() {
 		return
 	}
 
+	if user == nil {
+		log.Errorf("User with username %s does not exist in DB.", ua.SecurityCtx.GetUsername())
+		ua.SendInternalServerError(fmt.Errorf("user %s does not exist in DB", ua.SecurityCtx.GetUsername()))
+		return
+	}
+
 	ua.currentUserID = user.UserID
 	id := ua.Ctx.Input.Param(":id")
 	if id == "current" {
