@@ -6,6 +6,7 @@ hostname: reg.mydomain.com
 
 # http related config
 http:
+  # port for http, default is 80. If https enabled, this port will redirect to https port
   port: 80
 
 # https related config

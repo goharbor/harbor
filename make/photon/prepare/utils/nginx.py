@@ -1,5 +1,6 @@
 import os, shutil
 from fnmatch import fnmatch
+from pathlib import Path
 
 from g import config_dir, templates_dir
 from utils.misc import prepare_config_dir, mark_file
@@ -11,6 +12,10 @@ nginx_confd_dir = os.path.join(config_dir, "nginx", "conf.d")
 nginx_https_conf_template = os.path.join(templates_dir, "nginx", "nginx.https.conf.jinja")
 nginx_http_conf_template = os.path.join(templates_dir, "nginx", "nginx.http.conf.jinja")
 nginx_template_ext_dir = os.path.join(templates_dir, 'nginx', 'ext')
+
+cert_dir = Path(os.path.join(config_dir, "nginx", "cert"))
+ssl_cert_key = Path(os.path.join(config_dir, "nginx", "cert", 'server.key'))
+ssl_cert_cert = Path(os.path.join(config_dir, "nginx", "cert", 'server.crt'))
 
 CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS = 'harbor.https.*.conf'
 CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTP = 'harbor.http.*.conf'
@@ -25,6 +30,9 @@ def render_nginx_template(config_dict):
             ssl_cert=SSL_CERT_PATH,
             ssl_cert_key=SSL_CERT_KEY_PATH)
         location_file_pattern = CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS
+        cert_dir.mkdir(parents=True, exist_ok=True)
+        ssl_cert_key.touch()
+        ssl_cert_cert.touch()
     else:
         render_jinja(
             nginx_http_conf_template,
