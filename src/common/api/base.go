@@ -222,6 +222,9 @@ func (b *BaseAPI) SendBadRequestError(err error) {
 }
 
 // SendInternalServerError sends internal server error to the client.
+// Note the detail info of err will not include in the response body.
+// When you send an internal server error  to the client, you expect user to check the log
+// to find out the root cause.
 func (b *BaseAPI) SendInternalServerError(err error) {
 	log.Error(err.Error())
 	b.RenderFormattedError(http.StatusInternalServerError, http.StatusText(http.StatusInternalServerError))
@@ -232,12 +235,12 @@ func (b *BaseAPI) SendForbiddenError(err error) {
 	b.RenderFormattedError(http.StatusForbidden, err.Error())
 }
 
-// SendPreconditionFailedError sends forbidden error to the client.
+// SendPreconditionFailedError sends conflict error to the client.
 func (b *BaseAPI) SendPreconditionFailedError(err error) {
 	b.RenderFormattedError(http.StatusPreconditionFailed, err.Error())
 }
 
-// SendStatusServiceUnavailableError sends forbidden error to the client.
+// SendStatusServiceUnavailableError sends service unavailable error to the client.
 func (b *BaseAPI) SendStatusServiceUnavailableError(err error) {
 	b.RenderFormattedError(http.StatusServiceUnavailable, err.Error())
 }
