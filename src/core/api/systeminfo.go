@@ -97,6 +97,7 @@ type GeneralInfo struct {
 	AuthMode                    string                           `json:"auth_mode"`
 	AuthProxySettings           *models.HTTPAuthProxy            `json:"authproxy_settings,omitempty"`
 	RegistryURL                 string                           `json:"registry_url"`
+	ExtURL                      string                           `json:"external_url"`
 	ProjectCreationRestrict     string                           `json:"project_creation_restriction"`
 	SelfRegistration            bool                             `json:"self_registration"`
 	HasCARoot                   bool                             `json:"has_ca_root"`
@@ -162,8 +163,9 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		sia.SendInternalServerError(fmt.Errorf("Unexpected error: %v", err))
 		return
 	}
+	extURL := cfg[common.ExtEndpoint].(string)
 	var registryURL string
-	if l := strings.Split(cfg[common.ExtEndpoint].(string), "://"); len(l) > 1 {
+	if l := strings.Split(extURL, "://"); len(l) > 1 {
 		registryURL = l[1]
 	} else {
 		registryURL = l[0]
@@ -178,6 +180,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		AuthMode:                    utils.SafeCastString(cfg[common.AUTHMode]),
 		ProjectCreationRestrict:     utils.SafeCastString(cfg[common.ProjectCreationRestriction]),
 		SelfRegistration:            utils.SafeCastBool(cfg[common.SelfRegistration]),
+		ExtURL:                      extURL,
 		RegistryURL:                 registryURL,
 		HasCARoot:                   caStatErr == nil,
 		HarborVersion:               harborVersion,
