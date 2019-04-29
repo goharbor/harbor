@@ -133,14 +133,13 @@ func TestIsSolutionUser(t *testing.T) {
 	assert.False(t, ctx.IsSolutionUser())
 }
 
-func TestHasReadPerm(t *testing.T) {
-
-	rbacPolicy := &rbac.Policy{
-		Resource: "/project/testrobot/repository",
-		Action:   "pull",
+func TestHasPullPerm(t *testing.T) {
+	policies := []*rbac.Policy{
+		{
+			Resource: "/project/testrobot/repository",
+			Action:   rbac.ActionPull,
+		},
 	}
-	policies := []*rbac.Policy{}
-	policies = append(policies, rbacPolicy)
 	robot := &models.Robot{
 		Name:        "test_robot_1",
 		Description: "desc",
@@ -151,14 +150,13 @@ func TestHasReadPerm(t *testing.T) {
 	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 }
 
-func TestHasWritePerm(t *testing.T) {
-
-	rbacPolicy := &rbac.Policy{
-		Resource: "/project/testrobot/repository",
-		Action:   "push",
+func TestHasPushPerm(t *testing.T) {
+	policies := []*rbac.Policy{
+		{
+			Resource: "/project/testrobot/repository",
+			Action:   rbac.ActionPush,
+		},
 	}
-	policies := []*rbac.Policy{}
-	policies = append(policies, rbacPolicy)
 	robot := &models.Robot{
 		Name:        "test_robot_2",
 		Description: "desc",
@@ -169,13 +167,17 @@ func TestHasWritePerm(t *testing.T) {
 	assert.True(t, ctx.Can(rbac.ActionPush, resource))
 }
 
-func TestHasAllPerm(t *testing.T) {
-	rbacPolicy := &rbac.Policy{
-		Resource: "/project/testrobot/repository",
-		Action:   "push+pull",
+func TestHasPushPullPerm(t *testing.T) {
+	policies := []*rbac.Policy{
+		{
+			Resource: "/project/testrobot/repository",
+			Action:   rbac.ActionPush,
+		},
+		{
+			Resource: "/project/testrobot/repository",
+			Action:   rbac.ActionPull,
+		},
 	}
-	policies := []*rbac.Policy{}
-	policies = append(policies, rbacPolicy)
 	robot := &models.Robot{
 		Name:        "test_robot_3",
 		Description: "desc",
@@ -183,7 +185,7 @@ func TestHasAllPerm(t *testing.T) {
 
 	ctx := NewSecurityContext(robot, pm, policies)
 	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
-	assert.True(t, ctx.Can(rbac.ActionPushPull, resource))
+	assert.True(t, ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource))
 }
 
 func TestGetMyProjects(t *testing.T) {
