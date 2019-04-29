@@ -1054,11 +1054,19 @@ func (ra *RepositoryAPI) ScanStatus() {
 	tag := ra.GetString(":tag")
 	exist, digest, err := ra.checkExistence(repository, tag)
 	if err != nil {
+<<<<<<< HEAD
 		ra.SendInternalServerError(fmt.Sprintf("failed to check the existence of resource, error: %v", err))
 		return
 	}
 	if !exist {
 		ra.SendNotFound(fmt.Sprintf("resource: %s:%s not found", repository, tag))
+=======
+		ra.HandleInternalServerError(fmt.Sprintf("failed to check the existence of resource, error: %v", err))
+		return
+	}
+	if !exist {
+		ra.HandleNotFound(fmt.Sprintf("resource: %s:%s not found", repository, tag))
+>>>>>>> baf85b623edfb7198bff511ce72a66dda0946c64
 		return
 	}
 	project, _ := utils.ParseRepository(repository)
@@ -1066,15 +1074,26 @@ func (ra *RepositoryAPI) ScanStatus() {
 	resource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepositoryTagVulnerability)
 	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
 		if !ra.SecurityCtx.IsAuthenticated() {
+<<<<<<< HEAD
 			ra.SendUnauthorized()
 			return
 		}
 		ra.SendForbidden(ra.SecurityCtx.GetUsername())
+=======
+			ra.HandleUnauthorized()
+			return
+		}
+		ra.HandleForbidden(ra.SecurityCtx.GetUsername())
+>>>>>>> baf85b623edfb7198bff511ce72a66dda0946c64
 		return
 	}
 	overview, err := dao.GetImgScanOverview(digest)
 	if err != nil {
+<<<<<<< HEAD
 		ra.SendInternalServerError(fmt.Sprintf("failed to get the scan overview, error: %v", err))
+=======
+		ra.HandleInternalServerError(fmt.Sprintf("failed to get the scan overview, error: %v", err))
+>>>>>>> baf85b623edfb7198bff511ce72a66dda0946c64
 		return
 	}
 	ra.Data["json"]= scanStatus{ overview != nil }
