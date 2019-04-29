@@ -246,9 +246,6 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     );
   }
   public doSearchExecutions(terms: string): void {
-    if (!terms) {
-      return;
-    }
     this.currentTerm = terms.trim();
     // Trigger data loading and start from first page
     this.jobsLoading = true;
