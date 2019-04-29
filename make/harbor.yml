@@ -6,16 +6,15 @@ hostname: reg.mydomain.com
 
 # http related config
 http:
-  # port for http, default is 80. If https enabled, this port will redirect to https port
   port: 80
 
 # https related config
-https:
-  # https port for harbor, default is 443
-  port: 443
-  #The path of cert and key files for nginx
-  certificate: /data/cert/server.crt
-  private_key: /data/cert/server.key
+# https:
+#   # https port for harbor, default is 443
+#   port: 443
+#   # The path of cert and key files for nginx
+#   certificate: /your/certificate/path
+#   private_key: /your/private/key/path
 
 # Uncomment external_url if you want to enable external proxy
 # And when it enabled the hostname will no longer used
