@@ -1,5 +1,5 @@
 <h5 class="history-header" id="history-header">{{'GC.JOB_HISTORY' | translate}}</h5>
-<clr-datagrid>
+<clr-datagrid [clrDgLoading]="loading">
   <clr-dg-column>{{'GC.JOB_ID' | translate}}</clr-dg-column>
   <clr-dg-column>{{'GC.TRIGGER_TYPE' | translate}}</clr-dg-column>
   <clr-dg-column>{{'STATUS' | translate}}</clr-dg-column>
