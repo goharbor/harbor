@@ -52,7 +52,8 @@
         "REPLICATE_SUCCESS": "Started successfully",
         "REPLICATE_FAILURE": "Started failed",
         "STOP_SUCCESS": "Stop successfully",
-        "STOP_FAILURE": "Stop execution failed"
+        "STOP_FAILURE": "Stop execution failed",
+        "TIME_OUT": "Gateway time-out"
     },
     "TOOLTIP": {
         "NAME_FILTER": "Filter the name of the resource. Leave empty or use '**' to match all. 'library/**' only matches resources under 'library'. For more patterns, please refer to the user guide.",

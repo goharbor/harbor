@@ -327,7 +327,13 @@ export class ReplicationComponent implements OnInit, OnDestroy {
           );
       }),
       catchError(error => {
-        if (error && error._body) {
+        if (error && error.status === 504) {
+          return this.translateService.get("BATCH.TIME_OUT").pipe(
+            map(res => {
+            operateChanges(operMessage, OperationState.failure, res);
+            })
+          );
+        } else if (error && error._body) {
           const message = JSON.parse(error._body).message;
           operateChanges(operMessage, OperationState.failure, message);
           return observableThrowError(message);

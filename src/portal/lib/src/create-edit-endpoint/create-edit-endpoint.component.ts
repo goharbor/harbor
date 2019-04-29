@@ -41,6 +41,7 @@ const DOCKERHUB_URL = "https://hub.docker.com";
 export class CreateEditEndpointComponent
   implements AfterViewChecked, OnDestroy, OnInit {
   modalTitle: string;
+  urlDisabled: boolean = false;
   editDisabled: boolean = false;
   controlEnabled: boolean = false;
   createEditDestinationOpened: boolean;
@@ -184,6 +185,7 @@ export class CreateEditEndpointComponent
       this.endpointService.getEndpoint(targetId).subscribe(
         target => {
           this.target = target;
+          this.urlDisabled = this.target.type === 'dockerHub' ? true : false;
           // Keep data cache
           this.initVal = clone(target);
           this.initVal.credential.access_secret = FAKE_PASSWORD;
@@ -197,6 +199,7 @@ export class CreateEditEndpointComponent
         error => this.errorHandler.error(error)
       );
     } else {
+      this.urlDisabled = false;
       this.endpointId = "";
       this.translateService
         .get("DESTINATION.TITLE_ADD")
@@ -210,8 +213,10 @@ export class CreateEditEndpointComponent
   adapterChange($event): void {
     let selectValue = this.targetForm.controls.adapter.value;
     if (selectValue === 'dockerHub') {
+      this.urlDisabled = true;
       this.targetForm.controls.endpointUrl.setValue(DOCKERHUB_URL);
     } else {
+      this.urlDisabled = false;
       this.targetForm.controls.endpointUrl.setValue("");
     }
   }

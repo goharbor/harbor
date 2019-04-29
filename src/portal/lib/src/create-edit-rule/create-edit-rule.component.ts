@@ -56,6 +56,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   createEditRuleOpened: boolean;
   inProgress = false;
+  onGoing = false;
   inNameChecking = false;
   isRuleNameValid = true;
   nameChecker: Subject<string> = new Subject<string>();
@@ -84,12 +85,13 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   initRegistryInfo(id: number): void {
+    this.onGoing = true;
     this.repService.getRegistryInfo(id).subscribe(adapter => {
       this.supportedFilters = adapter.supported_resource_filters;
       this.supportedFilters.forEach(element => {
         this.filters.push(this.initFilter(element.type));
       });
-
+      this.onGoing = false;
       this.supportedTriggers = adapter.supported_triggers;
       this.ruleForm.get("trigger").get("type").setValue(this.supportedTriggers[0]);
     });
@@ -367,10 +369,12 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           this.inlineAlert.showInlineError(error);
         });
     } else {
+      this.onGoing = true;
       let registryObs = this.repService.getRegistryInfo(0);
       registryObs.subscribe(adapter => {
         this.setFilterAndTrigger(adapter);
         this.copyUpdateForm = clone(this.ruleForm.value);
+        this.onGoing = false;
       });
       this.headerTitle = "REPLICATION.ADD_POLICY";
       this.copyUpdateForm = clone(this.ruleForm.value);
