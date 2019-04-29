@@ -169,7 +169,8 @@ func (aj *AJAPI) getLog(id int64) {
 		aj.SendNotFoundError(errors.New("Failed to get Job"))
 		return
 	}
-	jobID := job.UUID
+
+	var jobID string
 	// to get the latest execution job id, then to query job log.
 	if job.Kind == common_job.JobKindPeriodic {
 		exes, err := utils_core.GetJobServiceClient().GetExecutions(job.UUID)
@@ -178,10 +179,24 @@ func (aj *AJAPI) getLog(id int64) {
 			return
 		}
 		if len(exes) == 0 {
-			aj.SendNotFoundError(errors.New("no execution log "))
+			aj.SendNotFoundError(errors.New("no execution log found"))
 			return
 		}
-		jobID = exes[0].Info.JobID
+		// get the latest terminal status execution.
+		for _, exe := range exes {
+			if exe.Info.Status == "Error" || exe.Info.Status == "Success" {
+				jobID = exe.Info.JobID
+				break
+			}
+		}
+		// no execution found
+		if jobID == "" {
+			aj.SendNotFoundError(errors.New("no execution log found"))
+			return
+		}
+
+	} else {
+		jobID = job.UUID
 	}
 
 	logBytes, err := utils_core.GetJobServiceClient().GetJobLog(jobID)
