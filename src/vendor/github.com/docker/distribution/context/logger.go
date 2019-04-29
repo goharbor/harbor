@@ -1,10 +1,11 @@
 package context
 
 import (
+	"context"
 	"fmt"
-
-	"github.com/Sirupsen/logrus"
 	"runtime"
+
+	"github.com/sirupsen/logrus"
 )
 
 // Logger provides a leveled-logging interface.
@@ -38,24 +39,28 @@ type Logger interface {
 	Warn(args ...interface{})
 	Warnf(format string, args ...interface{})
 	Warnln(args ...interface{})
+
+	WithError(err error) *logrus.Entry
 }
 
+type loggerKey struct{}
+
 // WithLogger creates a new context with provided logger.
-func WithLogger(ctx Context, logger Logger) Context {
-	return WithValue(ctx, "logger", logger)
+func WithLogger(ctx context.Context, logger Logger) context.Context {
+	return context.WithValue(ctx, loggerKey{}, logger)
 }
 
 // GetLoggerWithField returns a logger instance with the specified field key
 // and value without affecting the context. Extra specified keys will be
 // resolved from the context.
-func GetLoggerWithField(ctx Context, key, value interface{}, keys ...interface{}) Logger {
+func GetLoggerWithField(ctx context.Context, key, value interface{}, keys ...interface{}) Logger {
 	return getLogrusLogger(ctx, keys...).WithField(fmt.Sprint(key), value)
 }
 
 // GetLoggerWithFields returns a logger instance with the specified fields
 // without affecting the context. Extra specified keys will be resolved from
 // the context.
-func GetLoggerWithFields(ctx Context, fields map[interface{}]interface{}, keys ...interface{}) Logger {
+func GetLoggerWithFields(ctx context.Context, fields map[interface{}]interface{}, keys ...interface{}) Logger {
 	// must convert from interface{} -> interface{} to string -> interface{} for logrus.
 	lfields := make(logrus.Fields, len(fields))
 	for key, value := range fields {
@@ -71,7 +76,7 @@ func GetLoggerWithFields(ctx Context, fields map[interface{}]interface{}, keys .
 // argument passed to GetLogger will be passed to fmt.Sprint when expanded as
 // a logging key field. If context keys are integer constants, for example,
 // its recommended that a String method is implemented.
-func GetLogger(ctx Context, keys ...interface{}) Logger {
+func GetLogger(ctx context.Context, keys ...interface{}) Logger {
 	return getLogrusLogger(ctx, keys...)
 }
 
@@ -79,11 +84,11 @@ func GetLogger(ctx Context, keys ...interface{}) Logger {
 // are provided, they will be resolved on the context and included in the
 // logger. Only use this function if specific logrus functionality is
 // required.
-func getLogrusLogger(ctx Context, keys ...interface{}) *logrus.Entry {
+func getLogrusLogger(ctx context.Context, keys ...interface{}) *logrus.Entry {
 	var logger *logrus.Entry
 
 	// Get a logger, if it is present.
-	loggerInterface := ctx.Value("logger")
+	loggerInterface := ctx.Value(loggerKey{})
 	if loggerInterface != nil {
 		if lgr, ok := loggerInterface.(*logrus.Entry); ok {
 			logger = lgr

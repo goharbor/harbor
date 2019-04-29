@@ -31,6 +31,7 @@ export class GcComponent implements OnInit {
   disableGC: boolean = false;
   getText = 'CONFIG.GC';
   getLabelCurrent = 'GC.CURRENT_SCHEDULE';
+  @Output() loadingGcStatus = new EventEmitter<boolean>();
   @ViewChild(CronScheduleComponent)
   CronScheduleComponent: CronScheduleComponent;
   constructor(
@@ -48,8 +49,10 @@ export class GcComponent implements OnInit {
   }
 
   getCurrentSchedule() {
+    this.loadingGcStatus.emit(true);
     this.gcRepoService.getSchedule().subscribe(schedule => {
       this.initSchedule(schedule);
+      this.loadingGcStatus.emit(false);
     });
   }
 

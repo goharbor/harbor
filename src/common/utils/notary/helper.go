@@ -23,16 +23,16 @@ import (
 	"strings"
 
 	"github.com/docker/distribution/registry/auth/token"
-	"github.com/docker/notary"
-	"github.com/docker/notary/client"
-	"github.com/docker/notary/trustpinning"
-	"github.com/docker/notary/tuf/data"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
 	tokenutil "github.com/goharbor/harbor/src/core/service/token"
+	"github.com/theupdateframework/notary"
+	"github.com/theupdateframework/notary/client"
+	"github.com/theupdateframework/notary/trustpinning"
+	"github.com/theupdateframework/notary/tuf/data"
 
-	"github.com/opencontainers/go-digest"
+	digest "github.com/opencontainers/go-digest"
 )
 
 var (
@@ -91,7 +91,7 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]Target
 	}
 	tr := registry.NewTransport(registry.GetHTTPTransport(), authorizer)
 	gun := data.GUN(fqRepo)
-	notaryRepo, err := client.NewFileCachedNotaryRepository(notaryCachePath, gun, notaryEndpoint, tr, mockRetriever, trustPin)
+	notaryRepo, err := client.NewFileCachedRepository(notaryCachePath, gun, notaryEndpoint, tr, mockRetriever, trustPin)
 	if err != nil {
 		return res, err
 	}

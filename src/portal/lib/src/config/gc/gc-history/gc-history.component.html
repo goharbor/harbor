@@ -2,7 +2,7 @@
 <span class="refresh-btn" (click)="getJobs()">
   <clr-icon shape="refresh"></clr-icon>
 </span>
-<clr-datagrid>
+<clr-datagrid [clrDgLoading]="loading">
   <clr-dg-column>{{'GC.JOB_ID' | translate}}</clr-dg-column>
   <clr-dg-column>{{'GC.TRIGGER_TYPE' | translate}}</clr-dg-column>
   <clr-dg-column>{{'STATUS' | translate}}</clr-dg-column>

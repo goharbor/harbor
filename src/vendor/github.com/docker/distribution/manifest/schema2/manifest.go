@@ -6,16 +6,16 @@ import (
 	"fmt"
 
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/digest"
 	"github.com/docker/distribution/manifest"
+	"github.com/opencontainers/go-digest"
 )
 
 const (
 	// MediaTypeManifest specifies the mediaType for the current version.
 	MediaTypeManifest = "application/vnd.docker.distribution.manifest.v2+json"
 
-	// MediaTypeConfig specifies the mediaType for the image configuration.
-	MediaTypeConfig = "application/vnd.docker.container.image.v1+json"
+	// MediaTypeImageConfig specifies the mediaType for the image configuration.
+	MediaTypeImageConfig = "application/vnd.docker.container.image.v1+json"
 
 	// MediaTypePluginConfig specifies the mediaType for plugin configuration.
 	MediaTypePluginConfig = "application/vnd.docker.plugin.v1+json"
@@ -27,6 +27,10 @@ const (
 	// MediaTypeForeignLayer is the mediaType used for layers that must be
 	// downloaded from foreign URLs.
 	MediaTypeForeignLayer = "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip"
+
+	// MediaTypeUncompressedLayer is the mediaType used for layers which
+	// are not compressed.
+	MediaTypeUncompressedLayer = "application/vnd.docker.image.rootfs.diff.tar"
 )
 
 var (
@@ -67,7 +71,7 @@ type Manifest struct {
 	Layers []distribution.Descriptor `json:"layers"`
 }
 
-// References returnes the descriptors of this manifests references.
+// References returns the descriptors of this manifests references.
 func (m Manifest) References() []distribution.Descriptor {
 	references := make([]distribution.Descriptor, 0, 1+len(m.Layers))
 	references = append(references, m.Config)
@@ -75,7 +79,7 @@ func (m Manifest) References() []distribution.Descriptor {
 	return references
 }
 
-// Target returns the target of this signed manifest.
+// Target returns the target of this manifest.
 func (m Manifest) Target() distribution.Descriptor {
 	return m.Config
 }
@@ -110,6 +114,12 @@ func (m *DeserializedManifest) UnmarshalJSON(b []byte) error {
 	var manifest Manifest
 	if err := json.Unmarshal(m.canonical, &manifest); err != nil {
 		return err
+	}
+
+	if manifest.MediaType != MediaTypeManifest {
+		return fmt.Errorf("mediaType in manifest should be '%s' not '%s'",
+			MediaTypeManifest, manifest.MediaType)
+
 	}
 
 	m.Manifest = manifest

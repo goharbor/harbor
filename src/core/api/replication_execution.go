@@ -20,6 +20,7 @@ import (
 	"net/http"
 	"strconv"
 
+	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/event"
@@ -264,6 +265,12 @@ func (r *ReplicationOperationAPI) GetTaskLog() {
 
 	logBytes, err := replication.OperationCtl.GetTaskLog(taskID)
 	if err != nil {
+		if httpErr, ok := err.(*common_http.Error); ok {
+			if ok && httpErr.Code == http.StatusNotFound {
+				r.SendNotFoundError(fmt.Errorf("the log of task %d not found", taskID))
+				return
+			}
+		}
 		r.SendInternalServerError(fmt.Errorf("failed to get log of task %d: %v", taskID, err))
 		return
 	}

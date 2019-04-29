@@ -26,14 +26,6 @@
   version = "v1.4.2"
 
 [[projects]]
-  digest = "1:9e9193aa51197513b3abcb108970d831fbcf40ef96aa845c4f03276e1fa316d2"
-  name = "github.com/Sirupsen/logrus"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
-
-[[projects]]
   digest = "1:e8078e5f9d84e87745efb3c0961e78045500cda10d7102fdf839fbac4b49a423"
   name = "github.com/Unknwon/goconfig"
   packages = ["."]
@@ -141,14 +133,15 @@
   version = "v3.0.0"
 
 [[projects]]
-  digest = "1:5a39bab16f84dd753a3af60076a915b55584cc6df3b3dfba53bfd48bf4420e77"
+  digest = "1:d06c54bbda3a04ec18a2fa0577896b3c40f13409639b442379ee0a5a53be8259"
   name = "github.com/docker/distribution"
   packages = [
     ".",
     "context",
-    "digest",
+    "digestset",
     "health",
     "manifest",
+    "manifest/manifestlist",
     "manifest/schema1",
     "manifest/schema2",
     "reference",
@@ -159,8 +152,8 @@
     "uuid",
   ]
   pruneopts = "UT"
-  revision = "48294d928ced5dd9b378f7fd7c6f5da3ff3f2c89"
-  version = "v2.6.2"
+  revision = "2461543d988979529609e8cb6fca9ca190dc48da"
+  version = "v2.7.1"
 
 [[projects]]
   branch = "master"
@@ -177,27 +170,6 @@
   packages = ["."]
   pruneopts = "UT"
   revision = "aabc10ec26b754e797f9028f4589c5b7bd90dc20"
-
-[[projects]]
-  digest = "1:fea1a444386b05e00dfcf2cb9a95fb09e11f1689056161471229baa4a7a65459"
-  name = "github.com/docker/notary"
-  packages = [
-    ".",
-    "client",
-    "client/changelist",
-    "cryptoservice",
-    "storage",
-    "trustmanager",
-    "trustmanager/yubikey",
-    "trustpinning",
-    "tuf",
-    "tuf/data",
-    "tuf/signed",
-    "tuf/utils",
-    "tuf/validation",
-  ]
-  pruneopts = "UT"
-  revision = "c04e3e6d05881045def11167c51d4a8baa34899a"
 
 [[projects]]
   digest = "1:0594af97b2f4cec6554086eeace6597e20a4b69466eb4ada25adf9f4300dddd2"
@@ -355,6 +327,14 @@
   version = "v1.1.6"
 
 [[projects]]
+  digest = "1:31e761d97c76151dde79e9d28964a812c46efc5baee4085b86f68f0c654450de"
+  name = "github.com/konsorten/go-windows-terminal-sequences"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "f55edac94c9bbba5d6182a4be46d86a2c9b5b50e"
+  version = "v1.0.2"
+
+[[projects]]
   branch = "master"
   digest = "1:bd26bbaf1e9f9dfe829a88f87a0849b56f717c31785443a67668f2c752fa8412"
   name = "github.com/lib/pq"
@@ -397,6 +377,17 @@
   version = "v1.0.0-rc0"
 
 [[projects]]
+  digest = "1:11db38d694c130c800d0aefb502fb02519e514dc53d9804ce51d1ad25ec27db6"
+  name = "github.com/opencontainers/image-spec"
+  packages = [
+    "specs-go",
+    "specs-go/v1",
+  ]
+  pruneopts = "UT"
+  revision = "d60099175f88c47cd379c4738d158884749ed235"
+  version = "v1.0.1"
+
+[[projects]]
   digest = "1:cf31692c14422fa27c83a05292eb5cbe0fb2775972e8f1f8446a71549bd8980b"
   name = "github.com/pkg/errors"
   packages = ["."]
@@ -432,6 +423,14 @@
   version = "v1"
 
 [[projects]]
+  digest = "1:fd61cf4ae1953d55df708acb6b91492d538f49c305b364a014049914495db426"
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "8bdbc7bcc01dcbb8ec23dc8a28e332258d25251f"
+  version = "v1.4.1"
+
+[[projects]]
   digest = "1:9424f440bba8f7508b69414634aef3b2b3a877e522d8a4624692412805407bb7"
   name = "github.com/spf13/pflag"
   packages = ["."]
@@ -459,6 +458,28 @@
   pruneopts = "UT"
   revision = "ffdc059bfe9ce6a4e144ba849dbedead332c6053"
   version = "v1.3.0"
+
+[[projects]]
+  digest = "1:a5702d6fd0891671faf050c05451d3ee4cfd70cb958e11556fefaca628ce832e"
+  name = "github.com/theupdateframework/notary"
+  packages = [
+    ".",
+    "client",
+    "client/changelist",
+    "cryptoservice",
+    "storage",
+    "trustmanager",
+    "trustmanager/yubikey",
+    "trustpinning",
+    "tuf",
+    "tuf/data",
+    "tuf/signed",
+    "tuf/utils",
+    "tuf/validation",
+  ]
+  pruneopts = "UT"
+  revision = "d6e1431feb32348e0650bf7551ac5cffd01d857b"
+  version = "v0.6.1"
 
 [[projects]]
   digest = "1:ab3259b9f5008a18ff8c1cc34623eccce354f3a9faf5b409983cd6717d64b40b"
@@ -731,18 +752,14 @@
     "github.com/dghubble/sling",
     "github.com/dgrijalva/jwt-go",
     "github.com/docker/distribution",
-    "github.com/docker/distribution/digest",
     "github.com/docker/distribution/health",
+    "github.com/docker/distribution/manifest/manifestlist",
     "github.com/docker/distribution/manifest/schema1",
     "github.com/docker/distribution/manifest/schema2",
     "github.com/docker/distribution/reference",
     "github.com/docker/distribution/registry/auth/token",
     "github.com/docker/distribution/registry/client/auth/challenge",
     "github.com/docker/libtrust",
-    "github.com/docker/notary",
-    "github.com/docker/notary/client",
-    "github.com/docker/notary/trustpinning",
-    "github.com/docker/notary/tuf/data",
     "github.com/garyburd/redigo/redis",
     "github.com/ghodss/yaml",
     "github.com/go-sql-driver/mysql",
@@ -761,6 +778,10 @@
     "github.com/stretchr/testify/mock",
     "github.com/stretchr/testify/require",
     "github.com/stretchr/testify/suite",
+    "github.com/theupdateframework/notary",
+    "github.com/theupdateframework/notary/client",
+    "github.com/theupdateframework/notary/trustpinning",
+    "github.com/theupdateframework/notary/tuf/data",
     "golang.org/x/crypto/pbkdf2",
     "golang.org/x/oauth2",
     "golang.org/x/oauth2/clientcredentials",

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
@@ -23,6 +24,9 @@ func (client TestClient) GetJobLog(uuid string) ([]byte, error) {
 }
 func (client TestClient) PostAction(uuid, action string) error {
 	return nil
+}
+func (client TestClient) GetExecutions(uuid string) ([]job.Stats, error) {
+	return nil, nil
 }
 
 func TestPreprocess(t *testing.T) {
