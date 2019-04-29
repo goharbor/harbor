@@ -4,12 +4,12 @@
 #DO NOT use localhost or 127.0.0.1, because Harbor needs to be accessed by external clients.
 hostname: reg.mydomain.com
 
-# http related comfig
+# http related config
 http:
   # port for http, default is 80. If https enabled, this port will redirect to https port
   port: 80
 
-# https related comfig
+# https related config
 https:
   # https port for harbor, default is 443
   port: 443
@@ -17,8 +17,8 @@ https:
   certificate: /data/cert/server.crt
   private_key: /data/cert/server.key
 
-# Uncomment extearnal_url if you want to enable external proxy
-# And when it enabled the hostname will no longger used
+# Uncomment external_url if you want to enable external proxy
+# And when it enabled the hostname will no longer used
 # external_url: https://reg.mydomain.com:8433
 
 # The initial password of Harbor admin
@@ -78,7 +78,7 @@ log:
 _version: 1.7.0
 
 # Uncomment external_database if using external database. And the password will replace the the password setting in database.
-# And currently ontly support postgres.
+# And currently only support postgres.
 # external_database:
 #   host: postgresql
 #   port: 5432
@@ -86,7 +86,7 @@ _version: 1.7.0
 #   password: root123
 #   ssl_mode: disable
 
-# Umcomments external_redis if using external Redis server
+# Uncomment external_redis if using external Redis server
 # external_redis:
 #   host: redis
 #   port: 6379
