@@ -15,7 +15,7 @@ import {
 import { RequestQueryParams } from "./RequestQueryParams";
 
 /**
- * Define the service methods to handle the Prject related things.
+ * Define the service methods to handle the Project related things.
  *
  **
  * @abstract
@@ -23,7 +23,7 @@ import { RequestQueryParams } from "./RequestQueryParams";
  */
 export abstract class ProjectService {
   /**
-   * Get Infomations of a specific Project.
+   * Get Informations about a specific Project.
    *
    * @abstract
    *  ** deprecated param {string|number} [projectId]
