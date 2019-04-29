@@ -102,7 +102,6 @@ var (
 		{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
 		{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
 		{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
-		{Resource: rbac.ResourceRepository, Action: rbac.ActionPushPull}, // compatible with security all perm of project
 
 		{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionCreate},
 		{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionDelete},
