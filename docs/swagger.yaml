@@ -3998,6 +3998,12 @@ definitions:
       admiral_endpoint:
         type: string
         description: The url of the endpoint of admiral instance.
+      registry_url:
+        type: string
+        description: The url of registry against which the docker command should be issued.
+      external_url:
+        type: string
+        description: The external URL of Harbor, with protocol.
       auth_mode:
         type: string
         description: The auth mode of current Harbor instance.
