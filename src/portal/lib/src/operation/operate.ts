@@ -8,7 +8,7 @@ export class OperateInfo {
         this.name = '';
         this.state = '';
         this.data = {id: -1, name: '', errorInf: ''};
-        this.timeStamp = 0;
+        this.timeStamp = new Date().getTime();
         this.timeDiff = 'less 1 minute';
     }
 }

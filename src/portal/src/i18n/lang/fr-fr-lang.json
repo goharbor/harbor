@@ -729,6 +729,7 @@
         },
         "OIDC": {
             "OIDC_PROVIDER": "OIDC Fournisseur",
+            "OIDC_REDIREC_URL": "Please make sure the Redirect URI on the OIDC provider is set to",
             "ENDPOINT": "OIDC Faramètre",
             "CLIENT_ID": "no d'identification du client OIDC",
             "CLIENTSECRET": "OIDC Client Secret",
