@@ -152,7 +152,7 @@ def parse_yaml_config(config_file_path):
         config_dict['db_password'] = external_db_configs.get('password') or ''
         config_dict['db_host'] = external_db_configs['host']
         config_dict['db_port'] = external_db_configs['port']
-        config_dict['db_user'] = db_configs['username']
+        config_dict['db_user'] = external_db_configs['username']
         if external_db_configs.get('ssl_mode'):
             config_dict['db_ssl_mode'] = external_db_configs['ssl_mode']
 
