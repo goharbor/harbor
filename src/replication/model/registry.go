@@ -81,14 +81,14 @@ type Registry struct {
 	Description string       `json:"description"`
 	Type        RegistryType `json:"type"`
 	URL         string       `json:"url"`
-	// CoreURL is only used for local harbor instance to
-	// avoid the requests passing through the external proxy
-	CoreURL      string      `json:"core_url"`
-	Credential   *Credential `json:"credential"`
-	Insecure     bool        `json:"insecure"`
-	Status       string      `json:"status"`
-	CreationTime time.Time   `json:"creation_time"`
-	UpdateTime   time.Time   `json:"update_time"`
+	// TokenServiceURL is only used for local harbor instance to
+	// avoid the requests passing through the external proxy for now
+	TokenServiceURL string      `json:"token_service_url"`
+	Credential      *Credential `json:"credential"`
+	Insecure        bool        `json:"insecure"`
+	Status          string      `json:"status"`
+	CreationTime    time.Time   `json:"creation_time"`
+	UpdateTime      time.Time   `json:"update_time"`
 }
 
 // RegistryQuery defines the query conditions for listing registries

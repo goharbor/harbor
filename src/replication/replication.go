@@ -51,17 +51,12 @@ var (
 // Init the global variables and configurations
 func Init(closing chan struct{}) error {
 	// init config
-	registryURL, err := cfg.RegistryURL()
-	if err != nil {
-		return err
-	}
 	secretKey, err := cfg.SecretKey()
 	if err != nil {
 		return err
 	}
 	config.Config = &config.Configuration{
 		CoreURL:          cfg.InternalCoreURL(),
-		RegistryURL:      registryURL,
 		TokenServiceURL:  cfg.InternalTokenServiceEndpoint(),
 		JobserviceURL:    cfg.InternalJobServiceURL(),
 		SecretKey:        secretKey,

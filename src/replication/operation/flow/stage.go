@@ -292,10 +292,11 @@ func schedule(scheduler scheduler.Scheduler, executionMgr execution.Manager, ite
 		if err = executionMgr.UpdateTaskStatus(result.TaskID, models.TaskStatusPending, models.TaskStatusInitialized); err != nil {
 			log.Errorf("failed to update the task status %d: %v", result.TaskID, err)
 		}
+		now := time.Now()
 		if err = executionMgr.UpdateTask(&models.Task{
 			ID:        result.TaskID,
 			JobID:     result.JobID,
-			StartTime: time.Now(),
+			StartTime: &now,
 		}, "JobID", "StartTime"); err != nil {
 			log.Errorf("failed to update the task %d: %v", result.TaskID, err)
 		}

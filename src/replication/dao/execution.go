@@ -234,7 +234,7 @@ func UpdateExecution(execution *models.Execution, props ...string) (int64, error
 func AddTask(task *models.Task) (int64, error) {
 	o := dao.GetOrmer()
 	now := time.Now()
-	task.StartTime = now
+	task.StartTime = &now
 
 	return o.Insert(task)
 }

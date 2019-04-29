@@ -181,11 +181,11 @@ func getRegistry(registryMgr registry.Manager, registry *model.Registry) (*model
 // GetLocalRegistry returns the info of the local Harbor registry
 func GetLocalRegistry() *model.Registry {
 	return &model.Registry{
-		Type:    model.RegistryTypeHarbor,
-		Name:    "Local",
-		URL:     config.Config.RegistryURL,
-		CoreURL: config.Config.CoreURL,
-		Status:  "healthy",
+		Type:            model.RegistryTypeHarbor,
+		Name:            "Local",
+		URL:             config.Config.CoreURL,
+		TokenServiceURL: config.Config.TokenServiceURL,
+		Status:          "healthy",
 		Credential: &model.Credential{
 			Type: model.CredentialTypeSecret,
 			// use secret to do the auth for the local Harbor

@@ -91,6 +91,7 @@ func TestMethodOfExecutionManager(t *testing.T) {
 }
 
 func TestMethodOfTaskManager(t *testing.T) {
+	now := time.Now()
 	task := &models.Task{
 		ExecutionID:  112200,
 		ResourceType: "resourceType1",
@@ -98,7 +99,7 @@ func TestMethodOfTaskManager(t *testing.T) {
 		DstResource:  "dstResource1",
 		JobID:        "jobID1",
 		Status:       "Initialized",
-		StartTime:    time.Now(),
+		StartTime:    &now,
 	}
 
 	defer func() {
