@@ -45,6 +45,9 @@ data_volume: /data
 #   # for more info about this configuration please refer https://docs.docker.com/registry/configuration/
 #   filesystem:
 #     maxthreads: 100
+#   # set disable to true when you want to disable registry redirect
+#   redirect:
+#     disabled: false
 
 # Clair configuration
 clair: 

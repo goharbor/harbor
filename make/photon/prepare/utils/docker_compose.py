@@ -36,11 +36,10 @@ def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
     storage_config = configs.get('storage_provider_config') or {}
     if storage_config.get('keyfile'):
         rendering_variables['gcs_keyfile'] = storage_config['keyfile']
-    if configs.get('https_port'):
-        rendering_variables['https_port'] = configs['https_port']
 
     if configs['protocol'] == 'https':
         rendering_variables['cert_key_path'] = configs['cert_key_path']
         rendering_variables['cert_path'] = configs['cert_path']
+        rendering_variables['https_port'] = configs['https_port']
 
     render_jinja(docker_compose_template_path, docker_compose_yml_path, **rendering_variables)
