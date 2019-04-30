@@ -17,11 +17,14 @@ package models
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/astaxie/beego/validation"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
+	common_models "github.com/goharbor/harbor/src/common/models"
+	common_utils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/robfig/cron"
@@ -138,4 +141,43 @@ func (ar *AdminJobReq) CronString() string {
 		return ""
 	}
 	return string(str)
+}
+
+// ConvertSchedule
+// In the latest design, it uses {"type":"Daily","cron":"0 0 0 * * *"} as the cron item.
+// As for supporting migration from older version, it needs to convert {"parameter":{"daily_time":0},"type":"daily"}
+// and {"type":"Daily","weekday":0,"offtime":57600} into one standard.
+func ConvertSchedule(cronStr string) (converted ScheduleParam, err error) {
+	if cronStr == "" {
+		return ScheduleParam{}, nil
+	}
+
+	convertedSchedule := ScheduleParam{}
+	convertedSchedule.Type = "custom"
+
+	if strings.Contains(cronStr, "parameter") {
+		scheduleModel := &common_models.ScanAllPolicy{}
+		if err := json.Unmarshal([]byte(cronStr), &scheduleModel); err != nil {
+			return ScheduleParam{}, err
+		}
+		h, m, s := common_utils.ParseOfftime(scheduleModel.Parm["daily_time"].(int64))
+		cron := fmt.Sprintf("%d %d %d * * *", s, m, h)
+		convertedSchedule.Cron = cron
+	} else if strings.Contains(cronStr, "offtime") {
+		scheduleModel := &common_models.ScheduleParam{}
+		if err := json.Unmarshal([]byte(cronStr), &scheduleModel); err != nil {
+			return ScheduleParam{}, err
+		}
+		convertedSchedule.Cron = common_utils.ParseScheduleParamToCron(scheduleModel)
+	} else if strings.Contains(cronStr, "cron") {
+		scheduleModel := ScheduleParam{}
+		if err := json.Unmarshal([]byte(cronStr), &scheduleModel); err != nil {
+			return ScheduleParam{}, err
+		}
+		return scheduleModel, nil
+	} else {
+		return ScheduleParam{}, fmt.Errorf("unsupported cron format, %s", cronStr)
+	}
+
+	return convertedSchedule, nil
 }

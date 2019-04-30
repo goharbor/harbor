@@ -51,3 +51,10 @@ type AdminJobQuery struct {
 	Deleted bool
 	Pagination
 }
+
+// ScheduleParam ...
+type ScheduleParam struct {
+	Type    string `json:"type"`
+	Weekday int8   `json:"weekday"`
+	Offtime int64  `json:"offtime"`
+}

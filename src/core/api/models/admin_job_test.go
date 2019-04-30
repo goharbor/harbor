@@ -137,3 +137,20 @@ func TestCronString(t *testing.T) {
 	cronStr := adminjob.CronString()
 	assert.True(t, strings.EqualFold(cronStr, "{\"type\":\"Daily\",\"Cron\":\"20 3 0 * * *\"}"))
 }
+
+func TestConvertSchedule(t *testing.T) {
+	schedule1 := "{\"type\":\"Daily\",\"Cron\":\"20 3 0 * * *\"}"
+	converted1, err1 := ConvertSchedule(schedule1)
+	assert.NotNil(t, err1)
+	assert.Equal(t, converted1.Cron, "20 3 0 * * *")
+
+	schedule2 := "{\"type\":\"Daily\",\"weekday\":0,\"offtime\":57720}"
+	converted2, err2 := ConvertSchedule(schedule2)
+	assert.NotNil(t, err2)
+	assert.Equal(t, converted2.Cron, "0 2 16 * * *")
+
+	schedule3 := "{\"parameter\":{\"daily_time\":57720},\"type\":\"daily\"}"
+	converted3, err3 := ConvertSchedule(schedule3)
+	assert.NotNil(t, err3)
+	assert.Equal(t, converted3.Cron, "0 2 16 * * *")
+}

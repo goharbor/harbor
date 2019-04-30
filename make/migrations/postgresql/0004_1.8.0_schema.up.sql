@@ -155,3 +155,18 @@ DROP INDEX poid_uptime;
 DROP INDEX poid_status;
 DROP TRIGGER replication_job_update_time_at_modtime ON replication_job;
 ALTER TABLE replication_job RENAME TO replication_schedule_job;
+
+/*
+migrate scan all schedule
+
+If user set the scan all schedule, move it into table admin_job, and let the api the parse the json data.
+*/
+DO $$
+BEGIN
+    IF exists(select * FROM properties WHERE k = 'scan_all_policy') then
+        INSERT INTO admin_job (job_name, job_kind, cron_str, status) VALUES ('IMAGE_SCAN_ALL', 'Periodic', (select v FROM properties WHERE k = 'scan_all_policy'), 'pending');
+        DELETE FROM properties WHERE k='scan_all_policy';
+    END IF;
+END $$;
+
+
