@@ -1042,7 +1042,7 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 	ra.ServeJSON()
 }
 
-// Returns a bool 'Done' true if scan is done, false if it isn't
+// ScanStatus returns a bool 'Done' true if scan is done, false if it isn't
 func (ra *RepositoryAPI) ScanStatus() {
 	if !config.WithClair() {
 		log.Warningf("Harbor is not deployed with Clair, it's impossible to get vulnerability details.")
