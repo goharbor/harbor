@@ -1,10 +1,10 @@
 
-import {of,  Subscription, forkJoin } from "rxjs";
+import { of, Subscription, forkJoin } from "rxjs";
 import { flatMap, catchError } from "rxjs/operators";
 import { SessionService } from "./../shared/session.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
+import { operateChanges, OperateInfo, OperationService, OperationState } from "@harbor/ui";
 
 import {
   ConfirmationTargets,
@@ -17,7 +17,8 @@ import { AddGroupModalComponent } from "./add-group-modal/add-group-modal.compon
 import { UserGroup } from "./group";
 import { GroupService } from "./group.service";
 import { MessageHandlerService } from "../shared/message-handler/message-handler.service";
-
+import { errorHandler as errorHandFn } from "../shared/shared.utils";
+import { Observable, throwError as observableThrowError } from "rxjs";
 @Component({
   selector: "app-group",
   templateUrl: "./group.component.html",
@@ -43,8 +44,9 @@ export class GroupComponent implements OnInit, OnDestroy {
     private operateDialogService: ConfirmationDialogService,
     private groupService: GroupService,
     private msgHandler: MessageHandlerService,
-    private session: SessionService
-  ) {}
+    private session: SessionService,
+    private translateService: TranslateService,
+  ) { }
 
   ngOnInit() {
     this.loadData();
@@ -74,9 +76,9 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.groupService.getUserGroups().subscribe(groups => {
       this.groups = groups.filter(group => {
-        if (!group.group_name) {group.group_name = ''; }
+        if (!group.group_name) { group.group_name = ''; }
         return group.group_name.includes(this.searchTerm);
-        }
+      }
       );
       this.loading = false;
     });
@@ -128,11 +130,12 @@ export class GroupComponent implements OnInit, OnDestroy {
             return of(res);
           }));
         }))
-        .pipe(catchError(err => {
-          return this.translate.get("BATCH.DELETED_FAILURE").pipe(flatMap(res => {
-            operateChanges(operMessage, OperationState.failure, res);
-            return of(res);
-          }));
+        .pipe(catchError(error => {
+          const message = errorHandFn(error);
+          this.translateService.get(message).subscribe(res =>
+            operateChanges(operMessage, OperationState.failure, res)
+          );
+          return observableThrowError(message);
         }));
     });
 
@@ -147,7 +150,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   groupToSring(type: number) {
-    if (type === 1) {return 'GROUP.LDAP_TYPE'; } else {return 'UNKNOWN'; }
+    if (type === 1) { return 'GROUP.LDAP_TYPE'; } else { return 'UNKNOWN'; }
   }
 
   doFilter(groupName: string): void {

@@ -34,6 +34,7 @@ import { AddMemberComponent } from "./add-member/add-member.component";
 import { AppConfigService } from "../../app-config.service";
 import { UserPermissionService, USERSTATICPERMISSION, ErrorHandler } from "@harbor/ui";
 import { map, catchError } from "rxjs/operators";
+import { errorHandler as errorHandFn } from "../../shared/shared.utils";
 import { throwError as observableThrowError } from "rxjs";
 @Component({
   templateUrl: "member.component.html",
@@ -260,9 +261,11 @@ export class MemberComponent implements OnInit, OnDestroy {
             operateChanges(operMessage, OperationState.success);
           });
         }), catchError(error => {
-          return this.translate.get("BATCH.DELETED_FAILURE").pipe(map(res => {
-            operateChanges(operMessage, OperationState.failure, res);
-          }));
+          const message = errorHandFn(error);
+          this.translate.get(message).subscribe(res =>
+            operateChanges(operMessage, OperationState.failure, res)
+          );
+          return observableThrowError(message);
         }));
     };
 

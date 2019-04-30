@@ -8,8 +8,8 @@ import {
   Output,
   EventEmitter
 } from "@angular/core";
-import { Observable, forkJoin } from "rxjs";
-import { finalize, map } from "rxjs/operators";
+import { Observable, forkJoin, throwError as observableThrowError } from "rxjs";
+import { finalize, map, catchError } from "rxjs/operators";
 
 import { TranslateService } from "@ngx-translate/core";
 import { State,
@@ -41,6 +41,7 @@ import {
   ResourceType,
   Roles
 } from "../../../../shared/shared.const";
+import { errorHandler as errorHandFn } from "../../../../shared/shared.utils";
 
 @Component({
   selector: "hbr-helm-chart-version",
@@ -95,6 +96,7 @@ export class ChartVersionComponent implements OnInit {
     public userPermissionService: UserPermissionService,
     private cdr: ChangeDetectorRef,
     private operationService: OperationService,
+    private translateService: TranslateService,
   ) { }
 
   public get registryUrl(): string {
@@ -175,8 +177,14 @@ export class ChartVersionComponent implements OnInit {
       .deleteChartVersion(this.projectName, this.chartName, version.version)
       .pipe(map(
         () => operateChanges(operateMsg, OperationState.success),
-        err => operateChanges(operateMsg, OperationState.failure, err)
-      ));
+        catchError( error => {
+          const message = errorHandFn(error);
+          this.translateService.get(message).subscribe(res =>
+            operateChanges(operateMsg, OperationState.failure, res)
+          );
+          return observableThrowError(message);
+        }
+      )));
   }
 
   deleteVersions(versions: HelmChartVersion[]) {

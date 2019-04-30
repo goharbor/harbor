@@ -12,9 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { NgForm } from '@angular/forms';
-import {RequestOptions, Headers, Response} from "@angular/http";
+import { RequestOptions, Headers, Response } from "@angular/http";
 import { Comparator, State } from '../../../lib/src/service/interface';
-import {RequestQueryParams} from "@harbor/ui";
+import { RequestQueryParams } from "@harbor/ui";
 
 import { MessageService } from '../global-message/message.service';
 import { httpStatusCode, AlertType } from './shared.const';
@@ -26,16 +26,21 @@ import { httpStatusCode, AlertType } from './shared.const';
  * returns {string}
  */
 export const errorHandler = function (error: any): string {
-    if (typeof error === "string") {
-        return error;
+    if (!error) {
+        return "UNKNOWN_ERROR";
     }
-    if (error && error._body) {
+
+    try {
+        return JSON.parse(error._body).message;
+    } catch (err) { }
+
+    if (error._body && error._body.message) {
+        return error._body.message;
+    }
+
+    if (!(error.statusCode || error.status)) {
         // treat as string message
-        if (typeof error._body === "string") {
-            return error._body;
-        } else if (error._body.error) {
-            return error._body.error;
-        }
+        return '' + error;
     } else {
         switch (error.statusCode || error.status) {
             case 400:

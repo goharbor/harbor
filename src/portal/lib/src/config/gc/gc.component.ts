@@ -53,6 +53,9 @@ export class GcComponent implements OnInit {
     this.gcRepoService.getSchedule().subscribe(schedule => {
       this.initSchedule(schedule);
       this.loadingGcStatus.emit(false);
+    }, error => {
+      this.errorHandler.error(error);
+      this.loadingGcStatus.emit(false);
     });
   }
 
