@@ -108,7 +108,7 @@ func (d *DefaultClient) GetJobLog(uuid string) ([]byte, error) {
 
 // GetExecutions ...
 func (d *DefaultClient) GetExecutions(periodicJobID string) ([]job.Stats, error) {
-	url := fmt.Sprintf("%s/api/v1/jobs/%s/executions", d.endpoint, periodicJobID)
+	url := fmt.Sprintf("%s/api/v1/jobs/%s/executions?page_number=1&page_size=100", d.endpoint, periodicJobID)
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, err
