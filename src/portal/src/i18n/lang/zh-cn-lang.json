@@ -755,6 +755,7 @@
         },
         "OIDC": {
             "OIDC_PROVIDER": "OIDC 供应商",
+            "OIDC_REDIREC_URL": "请确保将OIDC提供的重定向地址设置为",
             "ENDPOINT": "OIDC Endpoint",
             "CLIENT_ID": "OIDC 客户端标识",
             "CLIENTSECRET": "OIDC 客户端密码",

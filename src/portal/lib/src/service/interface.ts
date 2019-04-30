@@ -257,6 +257,7 @@ export interface SystemInfo {
   harbor_version?: string;
   clair_vulnerability_status?: ClairDBStatus;
   next_scan_all?: number;
+  external_url?: string;
 }
 
 /**

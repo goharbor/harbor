@@ -138,7 +138,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         // Get system info for tag views
         this.systemInfoService.getSystemInfo()
             .subscribe(systemInfo => (this.systemInfo = systemInfo)
-            , error => this.errorHandler.error(error));
+                , error => this.errorHandler.error(error));
 
         if (this.mode === "admiral") {
             this.isCardView = true;
@@ -151,29 +151,42 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     }
 
     confirmDeletion(message: ConfirmationAcknowledgement) {
-        if (message &&
-            message.source === ConfirmationTargets.REPOSITORY &&
-            message.state === ConfirmationState.CONFIRMED) {
-
-            let repoLists = message.data;
-            if (repoLists && repoLists.length) {
-                let observableLists: any[] = [];
-                repoLists.forEach(repo => {
-                    observableLists.push(this.delOperate(repo));
-                });
-
-                forkJoin(observableLists).subscribe((item) => {
-                    this.selectedRow = [];
-                    this.refresh();
-                    let st: State = this.getStateAfterDeletion();
-                    if (!st) {
-                        this.refresh();
-                    } else {
-                        this.clrLoad(st);
-                    }
-                });
+        let repArr: any[] = [];
+        message.data.forEach(repo => {
+            if (!this.signedCon[repo.name]) {
+                repArr.push(this.getTagInfo(repo.name));
             }
-        }
+        });
+        this.loading = true;
+        forkJoin(...repArr).subscribe(() => {
+            if (message &&
+                message.source === ConfirmationTargets.REPOSITORY &&
+                message.state === ConfirmationState.CONFIRMED) {
+                let repoLists = message.data;
+                if (repoLists && repoLists.length) {
+                    let observableLists: any[] = [];
+                    repoLists.forEach(repo => {
+                        observableLists.push(this.delOperate(repo));
+                    });
+                    forkJoin(observableLists).subscribe((item) => {
+                        this.selectedRow = [];
+                        this.refresh();
+                        let st: State = this.getStateAfterDeletion();
+                        if (!st) {
+                            this.refresh();
+                        } else {
+                            this.clrLoad(st);
+                        }
+                    }, error => {
+                        this.errorHandler.error(error);
+                        this.loading = false;
+                    });
+                }
+            }
+        }, error => {
+            this.errorHandler.error(error);
+            this.loading = false;
+        });
     }
 
     delOperate(repo: RepositoryItem): Observable<any> {
@@ -238,25 +251,16 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     deleteRepos(repoLists: RepositoryItem[]) {
         if (repoLists && repoLists.length) {
             let repoNames: string[] = [];
-            let repArr: any[] = [];
-
             repoLists.forEach(repo => {
                 repoNames.push(repo.name);
-
-                if (!this.signedCon[repo.name]) {
-                    repArr.push(this.getTagInfo(repo.name));
-                }
             });
-
-            forkJoin(...repArr).subscribe(() => {
-                this.confirmationDialogSet(
-                    'REPOSITORY.DELETION_TITLE_REPO',
-                    '',
-                    repoNames.join(','),
-                    repoLists,
-                    'REPOSITORY.DELETION_SUMMARY_REPO',
-                    ConfirmationButtons.DELETE_CANCEL);
-            }, error => this.errorHandler.error(error));
+            this.confirmationDialogSet(
+                'REPOSITORY.DELETION_TITLE_REPO',
+                '',
+                repoNames.join(','),
+                repoLists,
+                'REPOSITORY.DELETION_SUMMARY_REPO',
+                ConfirmationButtons.DELETE_CANCEL);
         }
     }
 
@@ -270,7 +274,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                     }
                 });
             })
-            , catchError(error => observableThrowError(error)));
+                , catchError(error => observableThrowError(error)));
     }
 
     confirmationDialogSet(summaryTitle: string, signature: string,
@@ -311,7 +315,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 }
 
             })
-            , catchError(error => observableThrowError(false)));
+                , catchError(error => observableThrowError(false)));
     }
 
     provisionItemEvent(evt: any, repo: RepositoryItem): void {
@@ -358,11 +362,11 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         params.set("page_size", "" + this.pageSize);
 
         this.loading = true;
-            this.repositoryService.getRepositories(
-                this.projectId,
-                this.lastFilteredRepoName,
-                params
-            )
+        this.repositoryService.getRepositories(
+            this.projectId,
+            this.lastFilteredRepoName,
+            params
+        )
             .subscribe((repo: Repository) => {
                 this.totalCount = repo.metadata.xTotalCount;
                 this.repositoriesCopy = repo.data;
@@ -406,11 +410,11 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
 
         this.loading = true;
 
-            this.repositoryService.getRepositories(
-                this.projectId,
-                this.lastFilteredRepoName,
-                params
-            )
+        this.repositoryService.getRepositories(
+            this.projectId,
+            this.lastFilteredRepoName,
+            params
+        )
             .subscribe((repo: Repository) => {
 
                 this.totalCount = repo.metadata.xTotalCount;

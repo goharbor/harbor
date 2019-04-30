@@ -322,6 +322,7 @@
     </section>
 
     <section class="form-block" *ngIf="showOIDC">
+        <div class="oidc-tip">{{ 'CONFIG.OIDC.OIDC_REDIREC_URL' | translate}} <span>{{redirectUrl}}/c/oidc/callback</span></div>
         <div class="form-group">
             <label for="oidcName" class="required">{{'CONFIG.OIDC.OIDC_PROVIDER' | translate}}</label>
             <label for="oidcName" aria-haspopup="true" role="tooltip"

@@ -11,11 +11,11 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, Input, ViewChild, SimpleChanges, OnChanges } from '@angular/core';
+import { Component, Input, ViewChild, SimpleChanges, OnChanges, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Subscription } from "rxjs";
 
-import { Configuration, clone, isEmpty, getChanges, StringValueItem, BoolValueItem } from '@harbor/ui';
+import { Configuration, clone, isEmpty, getChanges, StringValueItem, BoolValueItem, SystemInfoService, ErrorHandler } from '@harbor/ui';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ConfirmMessageHandler } from '../config.msg.utils';
 import { AppConfigService } from '../../app-config.service';
@@ -28,10 +28,11 @@ const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
     templateUrl: 'config-auth.component.html',
     styleUrls: ['./config-auth.component.scss', '../config.component.scss']
 })
-export class ConfigurationAuthComponent implements OnChanges {
+export class ConfigurationAuthComponent implements OnChanges, OnInit {
     changeSub: Subscription;
     testingLDAPOnGoing = false;
     onGoing = false;
+    redirectUrl: string;
     // tslint:disable-next-line:no-input-rename
     @Input('allConfig') currentConfig: Configuration = new Configuration();
     private originalConfig: Configuration;
@@ -41,10 +42,19 @@ export class ConfigurationAuthComponent implements OnChanges {
         private msgHandler: MessageHandlerService,
         private configService: ConfigurationService,
         private appConfigService: AppConfigService,
-        private confirmMessageHandler: ConfirmMessageHandler
+        private confirmMessageHandler: ConfirmMessageHandler,
+        private systemInfo: SystemInfoService,
+        private errorHandler: ErrorHandler,
     ) {
     }
-
+    ngOnInit() {
+        this.getSystemInfo();
+    }
+    getSystemInfo(): void {
+        this.systemInfo.getSystemInfo()
+            .subscribe(systemInfo => (this.redirectUrl = systemInfo.external_url)
+                , error => this.errorHandler.error(error));
+    }
     get checkable() {
         return this.currentConfig &&
             this.currentConfig.self_registration &&
