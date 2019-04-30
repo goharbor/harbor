@@ -95,6 +95,7 @@ func (r *ReplicationPolicyAPI) Create() {
 		return
 	}
 
+	policy.Creator = r.SecurityCtx.GetUsername()
 	id, err := replication.PolicyCtl.Create(policy)
 	if err != nil {
 		r.SendInternalServerError(fmt.Errorf("failed to create the policy: %v", err))

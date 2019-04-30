@@ -125,7 +125,7 @@ func fillExecution(execution *models.Execution) error {
 	}
 
 	if execution.Total != total {
-		log.Errorf("execution task count inconsistent and fixed, executionID=%d, execution.total=%d, tasks.count=%d",
+		log.Debugf("execution task count inconsistent and fixed, executionID=%d, execution.total=%d, tasks.count=%d",
 			execution.ID, execution.Total, total)
 		execution.Total = total
 	}
@@ -324,38 +324,24 @@ func UpdateTask(task *models.Task, props ...string) (int64, error) {
 
 // UpdateTaskStatus ...
 func UpdateTaskStatus(id int64, status string, statusCondition ...string) (int64, error) {
-	o := dao.GetOrmer()
-
-	// update status
-	params := []interface{}{}
-	sql := `update replication_task set status = ?`
-	params = append(params, status)
-	if taskFinished(status) { // should update endTime
-		sql += ` ,end_time = ?`
-		params = append(params, time.Now())
-	}
-	sql += ` where id = ?`
-	params = append(params, id)
+	qs := dao.GetOrmer().QueryTable(&models.Task{}).
+		Filter("id", id)
 	if len(statusCondition) > 0 {
-		sql += ` and status in (`
-		for _, stCondition := range statusCondition {
-			sql += ` ?,`
-			params = append(params, stCondition)
-		}
-		sql = sql[0 : len(sql)-1]
-		sql += `)`
+		qs = qs.Filter("status", statusCondition[0])
 	}
-
-	log.Infof("Update task %d: -> %s", id, status)
-	res, err := o.Raw(sql, params).Exec()
+	params := orm.Params{
+		"status": status,
+	}
+	if taskFinished(status) {
+		// should update endTime
+		params["end_time"] = time.Now()
+	}
+	n, err := qs.Update(params)
 	if err != nil {
 		return 0, err
 	}
-	count, err := res.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-	return count, nil
+	log.Debugf("update task status %d: -> %s", id, status)
+	return n, err
 }
 
 func taskFinished(status string) bool {
