@@ -82,6 +82,8 @@ These files will be generated:
 - make/kubernetes/adminserver/adminserver.cm.yaml
 - make/kubernetes/ingress.yaml
 
+* make/kubernetes/ui directory doesnt exist. Create the directory before k8s-prepare script is run. ui.cm.yaml file gets generated and is stored in make/kubernetes/ui. If the directory doesnt exist then k8s-prepare script will fail to getnerate various configuration files listed above
+
 #### Advanced Configuration
 If Basic Configuration was not covering your requirements, you can read this section for more details.
 
