@@ -143,8 +143,8 @@ func (ar *AdminJobReq) CronString() string {
 	return string(str)
 }
 
-// ConvertSchedule
-// In the latest design, it uses {"type":"Daily","cron":"0 0 0 * * *"} as the cron item.
+// ConvertSchedule converts different kinds of cron string into one standard for UI to show.
+// in the latest design, it uses {"type":"Daily","cron":"0 0 0 * * *"} as the cron item.
 // As for supporting migration from older version, it needs to convert {"parameter":{"daily_time":0},"type":"daily"}
 // and {"type":"Daily","weekday":0,"offtime":57600} into one standard.
 func ConvertSchedule(cronStr string) (converted ScheduleParam, err error) {
@@ -160,24 +160,24 @@ func ConvertSchedule(cronStr string) (converted ScheduleParam, err error) {
 		if err := json.Unmarshal([]byte(cronStr), &scheduleModel); err != nil {
 			return ScheduleParam{}, err
 		}
-		h, m, s := common_utils.ParseOfftime(scheduleModel.Parm["daily_time"].(int64))
+		h, m, s := common_utils.ParseOfftime(int64(scheduleModel.Parm["daily_time"].(float64)))
 		cron := fmt.Sprintf("%d %d %d * * *", s, m, h)
 		convertedSchedule.Cron = cron
+		return convertedSchedule, nil
 	} else if strings.Contains(cronStr, "offtime") {
 		scheduleModel := &common_models.ScheduleParam{}
 		if err := json.Unmarshal([]byte(cronStr), &scheduleModel); err != nil {
 			return ScheduleParam{}, err
 		}
 		convertedSchedule.Cron = common_utils.ParseScheduleParamToCron(scheduleModel)
+		return convertedSchedule, nil
 	} else if strings.Contains(cronStr, "cron") {
 		scheduleModel := ScheduleParam{}
 		if err := json.Unmarshal([]byte(cronStr), &scheduleModel); err != nil {
 			return ScheduleParam{}, err
 		}
 		return scheduleModel, nil
-	} else {
-		return ScheduleParam{}, fmt.Errorf("unsupported cron format, %s", cronStr)
 	}
 
-	return convertedSchedule, nil
+	return ScheduleParam{}, fmt.Errorf("unsupported cron format, %s", cronStr)
 }
