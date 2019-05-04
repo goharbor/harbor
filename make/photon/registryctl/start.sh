@@ -17,4 +17,6 @@ if [ -d /storage ]; then
     fi
 fi
 
+/harbor/install_cert.sh
+
 sudo -E -u \#10000 "/harbor/harbor_registryctl" "-c" "/etc/registryctl/config.yml"

@@ -2,11 +2,13 @@ FROM photon:2.0
 
 MAINTAINER wangyan@vmware.com
 
-RUN tdnf install sudo -y >> /dev/null\
+RUN tdnf install sudo -y >> /dev/null \
     && tdnf clean all \
     && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor \
-    && mkdir -p /etc/registry
+    && mkdir -p /etc/registry \
+    && mkdir /harbor/
 
+COPY ./make/photon/common/install_cert.sh /harbor
 COPY ./make/photon/registry/binary/registry /usr/bin
 COPY ./make/photon/registryctl/start.sh /harbor/
 COPY ./make/photon/registryctl/harbor_registryctl /harbor/
