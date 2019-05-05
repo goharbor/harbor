@@ -378,6 +378,9 @@ services:
     volumes:
       - {{data_volume}}/chart_storage:/chart_storage:z
       - ./common/config/chartserver:/etc/chartserver:z
+{% if gcs_keyfile %}
+      - {{gcs_keyfile}}:/etc/registry/gcs.key
+{% endif %}
 {%if registry_custom_ca_bundle_path %}
       - {{registry_custom_ca_bundle_path}}:/harbor_cust_cert/custom-ca-bundle.crt:z
 {% endif %}
