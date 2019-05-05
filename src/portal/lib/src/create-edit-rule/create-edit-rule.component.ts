@@ -464,7 +464,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     if (!trigger_settingsControls) {
       return false;
     }
-    return trigger_settingsControls.controls.cron.touched && trigger_settingsControls.controls.cron.dirty
-      && !trigger_settingsControls.controls.cron.value;
+    return trigger_settingsControls.controls.cron.touched || trigger_settingsControls.controls.cron.dirty;
   }
 }

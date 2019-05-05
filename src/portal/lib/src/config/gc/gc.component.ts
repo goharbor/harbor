@@ -119,6 +119,7 @@ export class GcComponent implements OnInit {
             .get("GC.MSG_SCHEDULE_RESET")
             .subscribe((res) => {
               this.errorHandler.info(res);
+              this.CronScheduleComponent.resetSchedule();
             });
           this.resetSchedule(cron);
         },
@@ -131,6 +132,7 @@ export class GcComponent implements OnInit {
         response => {
           this.translate.get("GC.MSG_SCHEDULE_SET").subscribe((res) => {
             this.errorHandler.info(res);
+            this.CronScheduleComponent.resetSchedule();
           });
           this.resetSchedule(cron);
         },

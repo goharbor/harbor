@@ -49,13 +49,15 @@ export class CronScheduleComponent implements OnChanges {
     this.scheduleType = this.originScheduleType;
     if (this.scheduleType && this.scheduleType === SCHEDULE_TYPE.CUSTOM) {
       this.cronString = this.oriCron;
+      this.dateInvalid = !cronRegex(this.cronString);
     } else {
       this.cronString = "";
+      this.dateInvalid = false;
     }
   }
 
   inputInvalid() {
-    this.dateInvalid = cronRegex(this.cronString) ? false : true;
+    this.dateInvalid = !cronRegex(this.cronString);
   }
 
   blurInvalid() {
@@ -71,11 +73,13 @@ export class CronScheduleComponent implements OnChanges {
   }
 
   save(): void {
-    if (this.dateInvalid && this.scheduleType === SCHEDULE_TYPE.CUSTOM) {
+    if (this.scheduleType === SCHEDULE_TYPE.CUSTOM && this.cronString === '') {
+      this.dateInvalid = true;
+    }
+    if (this.dateInvalid) {
       return;
     }
     let scheduleTerm: string = "";
-    this.resetSchedule();
     if (this.scheduleType && this.scheduleType === SCHEDULE_TYPE.NONE) {
       scheduleTerm = "";
     } else if (this.scheduleType && this.scheduleType === SCHEDULE_TYPE.HOURLY) {

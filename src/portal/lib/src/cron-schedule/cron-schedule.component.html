@@ -1,5 +1,5 @@
-<div class="normal-wrapper flex-layout" *ngIf="!isEditMode">
-  <div>
+<div class="normal-wrapper-box flex-layout" *ngIf="!isEditMode">
+  <div class="normal-wrapper">
     <span class="font-style">{{ labelCurrent | translate }}</span>
     <span>{{(originScheduleType ? 'SCHEDULE.'+ originScheduleType.toUpperCase(): "") | translate}}</span>
     <a [hidden]="originScheduleType!==SCHEDULE_TYPE.HOURLY" href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
@@ -32,15 +32,71 @@
       <option [value]="SCHEDULE_TYPE.CUSTOM">{{'SCHEDULE.CUSTOM' | translate}}</option>
     </select>
   </div>
-  <span [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
+  <span class="required" [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }}</span>
   <div [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM" class="cron-input">
-    <label for="targetCron" aria-haspopup="true" role="tooltip" [class.invalid]="dateInvalid" class="tooltip tooltip-validation tooltip-md tooltip-top-right cron-label">
-      <input type="text"  (blur)="blurInvalid()" (input)="inputInvalid()" name=targetCron id="targetCron" #cronStringInput="ngModel" required class="form-control"
+    <label for="targetCron" aria-haspopup="true" role="tooltip" [class.invalid]="dateInvalid" class="tooltip tooltip-validation tooltip-md tooltip-top-left cron-label">
+      <input type="text" (blur)="blurInvalid()" (input)="inputInvalid()" name=targetCron id="targetCron" #cronStringInput="ngModel" required class="form-control"
         [(ngModel)]="cronString">
       <span class="tooltip-content" *ngIf="dateInvalid">
         {{'TOOLTIP.CRON_REQUIRED' | translate }}
       </span>
     </label>
+    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-right top-7 cron-tooltip">
+        <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+        <table class="table table-noborder tooltip-content table-style">
+            <caption class="table-title">
+              <span>
+                {{ 'REPLICATION.CRON-TITLE' | translate }}              
+              </span>
+            </caption>
+            <thead>
+                <tr>
+                    <th>{{ 'REPLICATION.FIELD_NAME' | translate }}</th>
+                    <th>{{ 'REPLICATION.MANDATORY' | translate }}</th>
+                    <th>{{ 'REPLICATION.ALLOWED_VALUES' | translate }}</th>
+                    <th>{{ 'REPLICATION.ALLOWED_CHARACTERS' | translate }}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>{{'REPLICATION.SECONDS' | translate}}</td>
+                    <td>{{'REPLICATION.YES' | translate}}</td>
+                    <td>0-59</td>
+                    <td>* / , -</td>
+                </tr>
+                <tr>
+                    <td>{{'REPLICATION.MINUTES' | translate}}</td>
+                    <td>{{'REPLICATION.YES' | translate}}</td>
+                    <td>0-59</td>
+                    <td>* / , -</td>
+                </tr>
+                <tr>
+                    <td>{{'REPLICATION.HOURS' | translate}}</td>
+                    <td>{{'REPLICATION.YES' | translate}}</td>
+                    <td>0-23</td>
+                    <td>* / , -</td>
+                </tr>
+                <tr>
+                    <td>{{'REPLICATION.DAY_MONTH' | translate}}</td>
+                    <td>{{'REPLICATION.YES' | translate}}</td>
+                    <td>1-31</td>
+                    <td>* / , - ?</td>
+                </tr>
+                <tr>
+                    <td>{{'REPLICATION.MONTH' | translate}}</td>
+                    <td>{{'REPLICATION.YES' | translate}}</td>
+                    <td>1-12 or JAN-DEC</td>
+                    <td>* / , -</td>
+                </tr>
+                <tr>
+                    <td>{{'REPLICATION.DAY_WEEK' | translate}}</td>
+                    <td>{{'REPLICATION.YES' | translate}}</td>
+                    <td>0-6 or SUN-SAT</td>
+                    <td>* / , - ?</td>
+                </tr>
+            </tbody>
+        </table>
+    </a>
   </div>
   <div class="confirm-button">
     <button class="btn btn-primary btn-sm"
