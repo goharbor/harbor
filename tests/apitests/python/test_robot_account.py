@@ -120,15 +120,15 @@ class TestProjects(unittest.TestCase):
         push_image_to_project(project_ra_name_c, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_error_message = "denied: requested access to the resource is denied")
 
         print "#12. Update action property of robot account(RA);"
-        #self.project.disable_project_robot_account(TestProjects.project_ra_id_a, robot_id, True, **TestProjects.USER_RA_CLIENT)
+        self.project.disable_project_robot_account(TestProjects.project_ra_id_a, robot_id, True, **TestProjects.USER_RA_CLIENT)
 
         print "#13. Pull image(ImagePA) from project(PA) by robot account(RA), it must be not successful;"
-        #pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_a, tag_a, expected_error_message = "")
+        pull_harbor_image(harbor_server, robot_account.name, robot_account.token, TestProjects.repo_name_in_project_a, tag_a, expected_login_error_message = "401 Client Error: Unauthorized")
 
         print "#14. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;"
-        #push_image_to_project(project_ra_name_a, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_error_message = "")
+        push_image_to_project(project_ra_name_a, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_login_error_message = "401 Client Error: Unauthorized")
 
-        print "#15. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;"
+        print "#15. Delete robot account(RA), it must be not successful;"
         self.project.delete_project_robot_account(TestProjects.project_ra_id_a, robot_id, **TestProjects.USER_RA_CLIENT)
 
 if __name__ == '__main__':

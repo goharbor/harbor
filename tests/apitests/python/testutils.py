@@ -17,7 +17,7 @@ USER_ROLE=dict(admin=0,normal=1)
 TEARDOWN = True
 
 def GetProductApi(username, password, harbor_server= os.environ["HARBOR_HOST"]):
-    
+
     cfg = swagger_client.Configuration()
     cfg.host = "https://"+harbor_server+"/api"
     cfg.username = username

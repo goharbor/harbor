@@ -13,11 +13,18 @@ class DockerAPI(object):
     def __init__(self):
         self.DCLIENT = docker.APIClient(base_url='unix://var/run/docker.sock',version='auto',timeout=10)
 
-    def docker_login(self, registry, username, password):
+    def docker_login(self, registry, username, password, expected_error_message = None):
+        if expected_error_message is "":
+            expected_error_message = None
         try:
             self.DCLIENT.login(registry = registry, username=username, password=password)
-        except docker.errors.APIError, e:
-            raise Exception(r" Docker login failed, error is [{}]".format (e.message))
+        except docker.errors.APIError, err:
+            if expected_error_message is not None:
+                print "docker login error:", str(err)
+                if str(err).lower().find(expected_error_message.lower()) < 0:
+                    raise Exception(r"Docker login: Return message {} is not as expected {}".format(str(err), expected_error_message))
+            else:
+                raise Exception(r" Docker login {} failed, error is [{}]".format (image, err.message))
 
     def docker_image_pull(self, image, tag = None, expected_error_message = None):
         if tag is not None:

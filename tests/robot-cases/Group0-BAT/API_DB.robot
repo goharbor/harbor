@@ -45,3 +45,5 @@ Test Case - Assign Sys Admin
     Harbor API Test  ./tests/apitests/python/test_assign_sys_admin.py
 Test Case - Retag Image
     Harbor API Test  ./tests/apitests/python/test_retag.py
+Test Case - Robot Account
+    Harbor API Test  ./tests/apitests/python/test_robot_account.py
