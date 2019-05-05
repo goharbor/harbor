@@ -6,17 +6,15 @@ MAINTAINER wangyan@vmware.com
 RUN tdnf install sudo -y >> /dev/null\
     && tdnf clean all \
     && mkdir /harbor/ \
+    && mkdir -p /etc/registry \
     && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor  
 
-COPY  ./make/photon/common/install_cert.sh /harbor 
-
+COPY ./make/photon/common/install_cert.sh /harbor
 COPY ./make/photon/registry/entrypoint.sh /
-RUN chmod u+x /entrypoint.sh
-
-RUN mkdir -p /etc/registry
-
 COPY ./make/photon/registry/binary/registry /usr/bin
-RUN chmod u+x /usr/bin/registry
+
+RUN chmod u+x /entrypoint.sh \
+    && chmod u+x /usr/bin/registry
 
 HEALTHCHECK CMD curl 127.0.0.1:5000/
 
