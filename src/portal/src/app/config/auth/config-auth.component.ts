@@ -251,5 +251,8 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
             console.error('Nothing changed');
         }
     }
+    public allowGoOidc(event) {
+        return this.currentConfig.auth_mode && this.currentConfig.auth_mode.value === 'oidc_auth';
+    }
 
 }
