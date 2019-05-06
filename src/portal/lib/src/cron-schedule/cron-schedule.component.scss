@@ -3,23 +3,29 @@
     font-size: .541667rem;
 }
   
-  .normal-wrapper {
-    > span:first-child {
-      width: 200px;
-    }
-  
-    > span:not(:first-child) {
-      margin-right: 18px;
-    }
-    > a {
-      margin-left: -10px;
+  .normal-wrapper-box {
+    position: relative;
+    .normal-wrapper {
+      position: absolute;
+      width: 700px;
+      > span:first-child {
+        width: 200px;
+      }
+    
+      > span:not(:first-child) {
+        margin-right: 18px;
+      }
+      > a {
+        margin-left: -10px;
+      }
     }
     button {
-      margin: 20px 20px 0 200px;
+      margin: 35px 20px 0 200px;
     }
   }
   
   .setting-wrapper {
+    position: relative;
     > span:first-child {
       width: 200px;
     }
@@ -46,6 +52,27 @@
     .cron-label {
       width: 195px;
     }
+    .cron-tooltip {
+      color: gray;
+      cursor: default;
+      .table-style {
+          margin-right: 462px;
+          width: 20rem;
+          border-top-left-radius: 0;
+          border-top-right-radius: 0;
+          .table-title {
+              border-top-left-radius: 0.125rem;
+              border-top-right-radius: 0.125rem;
+              height: 40px;
+              line-height: 40px;
+              background: #000;
+              color: #fff;
+              span {
+                 font-size: 16px;
+              }
+          }
+      }
+  }
   }
 
   .font-style {
@@ -53,4 +80,14 @@
     color: #000;
     font-size: .541667rem;
     width: 200px;
+  }
+
+  span.required {
+    &:after {
+        content: '*';
+        font-size: .58479532rem;
+        line-height: .5rem;
+        color: #c92100;
+        margin-left: .25rem;
+    }
   }

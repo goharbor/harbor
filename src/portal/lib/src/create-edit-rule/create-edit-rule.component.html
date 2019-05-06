@@ -138,8 +138,8 @@
             <div formGroupName="trigger_settings">
               <div [hidden]="isNotSchedule()" class="form-group form-cron">
                 <label class="required">Cron String</label>
-                <label for="targetCron" aria-haspopup="true" role="tooltip"class="tooltip tooltip-validation tooltip-md tooltip-top-right"
-                [class.invalid]="!isNotSchedule() && cronTouched || !cronInputValid(ruleForm.value.trigger?.trigger_settings?.cron || '')" >
+                <label for="targetCron" aria-haspopup="true" role="tooltip"class="tooltip tooltip-validation tooltip-sm tooltip-top-right"
+                [class.invalid]="!isNotSchedule() && cronTouched && !cronInputValid(ruleForm.value.trigger?.trigger_settings?.cron || '')" >
                   <input type="text" name=targetCron id="targetCron" required class="form-control cron-input" formControlName="cron">
                   <span class="tooltip-content">
                     {{'TOOLTIP.CRON_REQUIRED' | translate }}
