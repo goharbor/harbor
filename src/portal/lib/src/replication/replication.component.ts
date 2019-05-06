@@ -488,6 +488,8 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
     if (seconds <= 0 && timesDiff > 0) {
       return timesDiff + 'ms';
+    } else {
+      return '-';
     }
   }
 }
