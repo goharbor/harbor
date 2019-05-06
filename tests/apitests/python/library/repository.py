@@ -6,17 +6,20 @@ import swagger_client
 from docker_api import DockerAPI
 from swagger_client.rest import ApiException
 
-def pull_harbor_image(registry, username, password, image, tag, expected_error_message = None):
+def pull_harbor_image(registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None):
     _docker_api = DockerAPI()
-    _docker_api.docker_login(registry, username, password)
+    _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
+    if expected_login_error_message != None:
+        return
     time.sleep(2)
     _docker_api.docker_image_pull(r'{}/{}'.format(registry, image), tag = tag, expected_error_message = expected_error_message)
 
-def push_image_to_project(project_name, registry, username, password, image, tag, expected_error_message = None):
+def push_image_to_project(project_name, registry, username, password, image, tag, expected_login_error_message = None, expected_error_message = None):
     _docker_api = DockerAPI()
-    _docker_api.docker_login(registry, username, password)
+    _docker_api.docker_login(registry, username, password, expected_error_message = expected_login_error_message)
     time.sleep(2)
-
+    if expected_login_error_message != None:
+        return
     _docker_api.docker_image_pull(image, tag = tag)
     time.sleep(2)
 
