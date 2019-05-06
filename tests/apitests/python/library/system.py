@@ -143,15 +143,17 @@ class System(base.Base):
     def validate_gc_job_status(self, gc_id, expected_gc_status, **kwargs):
         get_gc_status_finish = False
         timeout_count = 20
-        while not (get_gc_status_finish):
+        while timeout_count > 0:
             time.sleep(5)
             status = self.get_gc_status_by_id(gc_id, **kwargs)
+            print("GC job No: {}, status: {}".format(timeout_count, status.job_status))
             if status.job_status == expected_gc_status:
                 get_gc_status_finish = True
+                break
             timeout_count = timeout_count - 1
 
         if not (get_gc_status_finish):
-            raise Exception("Scan image result is not as expected {} actual scan status is {}".format(expected_scan_status, actual_scan_status))
+            raise Exception("GC status is not as expected '{}' actual GC status is '{}'".format(expected_gc_status, status.job_status))
 
     def validate_deletion_success(self, gc_id, **kwargs):
         log_content = self.get_gc_log_by_id(gc_id, **kwargs)
