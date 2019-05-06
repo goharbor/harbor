@@ -124,6 +124,23 @@ func (cra *ChartRepositoryAPI) GetHealthStatus() {
 	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
 
+// GetMetrics handles GET /api/chartrepo/metrics
+func (cra *ChartRepositoryAPI) GetMetrics() {
+	// Check access
+	if !cra.SecurityCtx.IsAuthenticated() {
+		cra.SendUnAuthorizedError(errors.New("Unauthorized"))
+		return
+	}
+
+	if !cra.SecurityCtx.IsSysAdmin() {
+		cra.SendForbiddenError(errors.New(cra.SecurityCtx.GetUsername()))
+		return
+	}
+
+	// Directly proxy to the backend
+	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+}
+
 // GetIndexByRepo handles GET /:repo/index.yaml
 func (cra *ChartRepositoryAPI) GetIndexByRepo() {
 	// Check access

@@ -145,6 +145,7 @@ func initRouters() {
 		// Charts are controlled under projects
 		chartRepositoryAPIType := &api.ChartRepositoryAPI{}
 		beego.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
+		beego.Router("/api/chartrepo/metrics", chartRepositoryAPIType, "get:GetMetrics")
 		beego.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
 		beego.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "get:ListChartVersions")
 		beego.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "delete:DeleteChart")
