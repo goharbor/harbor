@@ -544,5 +544,10 @@ func isMultipartFormData(req *http.Request) bool {
 
 // Return the chart full name
 func chartFullName(namespace, chartName, version string) string {
-	return fmt.Sprintf("%s/%s:%s", namespace, chartName, version)
+	if strings.HasPrefix(chartName, "http") {
+		return fmt.Sprintf("%s:%s", namespace, chartName, version)
+	} else {
+		return fmt.Sprintf("%s/%s:%s", namespace, chartName, version)
+
+	}
 }
