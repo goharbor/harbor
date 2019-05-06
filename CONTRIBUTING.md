@@ -244,16 +244,16 @@ To build code, please refer to [build](docs/compile_guide.md) guideline.
 
 ###  Keep sync with upstream
 
-```
+
 Once your branch gets out of sync with the goharbor/master branch, use the following commands to update:
-```
+```bash
 git checkout my_feature
 git fetch -a
 git rebase goharbor/master
 
 ```
 
-Please don't use `git pull` instead of the above `fetch / rebase`. `git pull` does a merge, which leaves merge commits. These make the commit history messy and violate the principle that commits ought to be individually understandable and useful (see below). You can also consider changing your `.git/config` file via git config `branch.autoSetupRebase` always to change the behavior of `git pull`.
+Please use `fetch / rebase` (as shown above) instead of `git pull`. `git pull` does a merge, which leaves merge commits. These make the commit history messy and violate the principle that commits ought to be individually understandable and useful (see below). You can also consider changing your `.git/config` file via git config `branch.autoSetupRebase` always to change the behavior of `git pull`.
 
 ### Commit
 
@@ -264,15 +264,15 @@ $ git commit -s -m 'This is my commit message'
 ```
 
 Commit your changes if they're ready:
-```
-#git add -A
+```bash
+git add -A
 git commit -s #-a
 git push --force-with-lease $user my_feature
 ```
 
 The commit message should follow the convention on [How to Write a Git Commit Message](http://chris.beams.io/posts/git-commit/). Be sure to include any related GitHub issue references in the commit message. See [GFM syntax](https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown) for referencing issues and commits.
 
-To help write conforming commit messages, it is recommended to set up the [git-good-commit](https://github.com/tommarshall/git-good-commit) commit hook. Run this command in the Harbor repo's root directory:
+To help write conformant commit messages, it is recommended to set up the [git-good-commit](https://github.com/tommarshall/git-good-commit) commit hook. Run this command in the Harbor repo's root directory:
 
 ```
 curl https://cdn.rawgit.com/tommarshall/git-good-commit/v0.6.1/hook.sh > .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
