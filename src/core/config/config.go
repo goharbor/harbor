@@ -168,7 +168,11 @@ func Upload(cfg map[string]interface{}) error {
 
 // GetSystemCfg returns the system configurations
 func GetSystemCfg() (map[string]interface{}, error) {
-	return cfgMgr.GetAll(), nil
+	sysCfg := cfgMgr.GetAll()
+	if len(sysCfg) == 0 {
+		return nil, errors.New("can not load system config, the database might be down")
+	}
+	return sysCfg, nil
 }
 
 // AuthMode ...
@@ -176,6 +180,7 @@ func AuthMode() (string, error) {
 	err := cfgMgr.Load()
 	if err != nil {
 		log.Errorf("failed to load config, error %v", err)
+		return "db_auth", err
 	}
 	return cfgMgr.Get(common.AUTHMode).GetString(), nil
 }
