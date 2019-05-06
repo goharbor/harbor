@@ -43,8 +43,6 @@ func init() {
 	beego.TestBeegoInit(apppath)
 	beego.AddTemplateExt("htm")
 
-	beego.Router("/", &IndexController{})
-
 	beego.Router("/c/login", &CommonController{}, "post:Login")
 	beego.Router("/c/log_out", &CommonController{}, "get:LogOut")
 	beego.Router("/c/reset", &CommonController{}, "post:ResetPassword")
