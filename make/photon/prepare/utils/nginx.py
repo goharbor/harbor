@@ -13,9 +13,9 @@ nginx_https_conf_template = os.path.join(templates_dir, "nginx", "nginx.https.co
 nginx_http_conf_template = os.path.join(templates_dir, "nginx", "nginx.http.conf.jinja")
 nginx_template_ext_dir = os.path.join(templates_dir, 'nginx', 'ext')
 
-cert_dir = Path(os.path.join(config_dir, "nginx", "cert"))
-ssl_cert_key = Path(os.path.join(config_dir, "nginx", "cert", 'server.key'))
-ssl_cert_cert = Path(os.path.join(config_dir, "nginx", "cert", 'server.crt'))
+cert_dir = Path(os.path.join(config_dir, "cert"))
+ssl_cert_key = Path(os.path.join(cert_dir, 'server.key'))
+ssl_cert_cert = Path(os.path.join(cert_dir, 'server.crt'))
 
 CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS = 'harbor.https.*.conf'
 CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTP = 'harbor.http.*.conf'

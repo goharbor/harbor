@@ -256,8 +256,8 @@ services:
     volumes:
       - ./common/config/nginx:/etc/nginx:z
 {% if protocol == 'https' %}
-      - {{cert_key_path}}:/etc/nginx/cert/server.key:z
-      - {{cert_path}}:/etc/nginx/cert/server.crt:z
+      - {{cert_key_path}}:/etc/cert/server.key:z
+      - {{cert_path}}:/etc/cert/server.crt:z
 {% endif %}
     networks:
       - harbor
