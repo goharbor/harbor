@@ -41,6 +41,7 @@ import { OperateInfo, OperationState, operateChanges } from "../operation/operat
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
+import { errorHandler as errorHandFn } from "../shared/shared.utils";
 @Component({
     selector: "hbr-repository-gridview",
     templateUrl: "./repository-gridview.component.html",
@@ -212,21 +213,11 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                             operateChanges(operMessage, OperationState.success);
                         });
                     }), catchError(error => {
-                        if (error.status === "412") {
-                            return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                                this.translateService.get('REPOSITORY.TAGS_SIGNED')).pipe(map(res => {
-                                    operateChanges(operMessage, OperationState.failure, res[1]);
-                                }));
-                        }
-                        if (error.status === 503) {
-                            return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                                this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).pipe(map(res => {
-                                    operateChanges(operMessage, OperationState.failure, res[1]);
-                                }));
-                        }
-                        return this.translateService.get('BATCH.DELETED_FAILURE').pipe(map(res => {
-                            operateChanges(operMessage, OperationState.failure, res);
-                        }));
+                        const message = errorHandFn(error);
+                        this.translateService.get(message).subscribe(res =>
+                            operateChanges(operMessage, OperationState.failure, res)
+                        );
+                        return observableThrowError(message);
                     }));
         }
     }

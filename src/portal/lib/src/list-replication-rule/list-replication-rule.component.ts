@@ -46,6 +46,8 @@ import { ErrorHandler } from "../error-handler/error-handler";
 import { CustomComparator } from "../utils";
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
+import { errorHandler as errorHandFn } from "../shared/shared.utils";
+
 const jobstatus = "InProgress";
 
 @Component({
@@ -131,7 +133,7 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
     retrieveRules(ruleName = ""): void {
         this.loading = true;
         /*this.selectedRow = null;*/
-            this.replicationService.getReplicationRules(this.projectId, ruleName)
+        this.replicationService.getReplicationRules(this.projectId, ruleName)
             .subscribe(rules => {
                 this.rules = rules || [];
                 // job list hidden
@@ -220,18 +222,12 @@ export class ListReplicationRuleComponent implements OnInit, OnChanges {
                 this.translateService.get('BATCH.DELETED_SUCCESS')
                     .subscribe(res => operateChanges(operMessage, OperationState.success));
             })
-            , catchError(error => {
-                if (error && error._body) {
-                    const message = JSON.parse(error._body).message;
-                    operateChanges(operMessage, OperationState.failure, message);
-                    return observableThrowError(message);
-                } else {
-                    return this.translateService.get("BATCH.DELETED_FAILURE").pipe(
-                        map(res => {
-                        operateChanges(operMessage, OperationState.failure, res);
-                        })
+                , catchError(error => {
+                    const message = errorHandFn(error);
+                    this.translateService.get(message).subscribe(res =>
+                        operateChanges(operMessage, OperationState.failure, res)
                     );
-                }
-            }));
+                    return observableThrowError(message);
+                }));
     }
 }

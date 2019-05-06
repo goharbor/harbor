@@ -30,6 +30,7 @@ import { ChangePasswordComponent } from "./change-password/change-password.compo
 import { operateChanges, OperateInfo, OperationService, OperationState } from "@harbor/ui";
 import { map, catchError } from 'rxjs/operators';
 import { throwError as observableThrowError } from "rxjs";
+import { errorHandler as errorHandFn } from "../shared/shared.utils";
 
 /**
  * NOTES:
@@ -230,9 +231,9 @@ export class UserComponent implements OnInit, OnDestroy {
         this.selectedRow = [];
         this.refresh();
       }, error => {
-          this.selectedRow = [];
-          this.msgHandler.handleError(error);
-        });
+        this.selectedRow = [];
+        this.msgHandler.handleError(error);
+      });
     }
   }
 
@@ -296,9 +297,11 @@ export class UserComponent implements OnInit, OnDestroy {
         operateChanges(operMessage, OperationState.success);
       });
     }, catchError(error => {
-      return this.translate.get('BATCH.DELETED_FAILURE').pipe(map(res => {
-        operateChanges(operMessage, OperationState.failure, res);
-      }));
+      const message = errorHandFn(error);
+      this.translate.get(message).subscribe(res =>
+        operateChanges(operMessage, OperationState.failure, res)
+      );
+      return observableThrowError(message);
     })));
   }
 
@@ -320,10 +323,10 @@ export class UserComponent implements OnInit, OnDestroy {
 
       return users;
     }, error => {
-        this.onGoing = false;
-        this.msgHandler.handleError(error);
-        this.forceRefreshView(5000);
-      });
+      this.onGoing = false;
+      this.msgHandler.handleError(error);
+      this.forceRefreshView(5000);
+    });
   }
 
   // Add new user

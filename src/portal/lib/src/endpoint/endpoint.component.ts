@@ -40,6 +40,7 @@ import {
 
 import { CreateEditEndpointComponent } from "../create-edit-endpoint/create-edit-endpoint.component";
 import { CustomComparator } from "../utils";
+import { errorHandler as errorHandFn } from "../shared/shared.utils";
 
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
@@ -80,7 +81,7 @@ export class EndpointComponent implements OnInit, OnDestroy {
                 access_key: "",
                 access_secret: "",
                 type: ""
-              },
+            },
             description: "",
             insecure: false,
             name: "",
@@ -210,17 +211,13 @@ export class EndpointComponent implements OnInit, OnDestroy {
                         });
                 })
                 , catchError(error => {
-                    if (error && error._body) {
-                        const message = JSON.parse(error._body).message;
-                        operateChanges(operMessage, OperationState.failure, message);
-                        return observableThrowError(message);
-                    } else {
-                        return this.translateService.get('BATCH.DELETED_FAILURE').pipe(map(res => {
-                            operateChanges(operMessage, OperationState.failure, res);
-                        }));
-                    }
+                    const message = errorHandFn(error);
+                    this.translateService.get(message).subscribe(res =>
+                        operateChanges(operMessage, OperationState.failure, res)
+                    );
+                    return observableThrowError(message);
                 }
-            ));
+                ));
     }
 
     // Forcely refresh the view

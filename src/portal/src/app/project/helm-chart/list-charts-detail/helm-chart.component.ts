@@ -14,7 +14,7 @@ import {
   State, ErrorHandler, SystemInfo, SystemInfoService, DEFAULT_PAGE_SIZE, downloadFile
   , OperationService, UserPermissionService, USERSTATICPERMISSION, OperateInfo, OperationState, operateChanges
 } from "@harbor/ui";
-import { forkJoin, throwError, Observable } from "rxjs";
+import { forkJoin, throwError as observableThrowError, Observable } from "rxjs";
 import { finalize, map, catchError } from "rxjs/operators";
 import { HelmChartItem } from "../helm-chart.interface.service";
 import { HelmChartService } from "../helm-chart.service";
@@ -28,6 +28,7 @@ import {
   ConfirmationTargets,
   ConfirmationState,
 } from "../../../shared/shared.const";
+import { errorHandler as errorHandFn } from "../../../shared/shared.utils";
 
 @Component({
   selector: "hbr-helm-chart",
@@ -202,8 +203,14 @@ export class HelmChartComponent implements OnInit {
     return this.helmChartService.deleteHelmChart(this.projectName, chartName)
       .pipe(map(
         () => operateChanges(operateMsg, OperationState.success),
-        err => operateChanges(operateMsg, OperationState.failure, err)
-      ));
+        catchError( error => {
+          const message = errorHandFn(error);
+          this.translateService.get(message).subscribe(res =>
+            operateChanges(operateMsg, OperationState.failure, res)
+          );
+          return observableThrowError(message);
+        }
+      )));
   }
 
   deleteCharts(charts: HelmChartItem[]) {
@@ -211,7 +218,7 @@ export class HelmChartComponent implements OnInit {
     let chartsDelete$ = charts.map(chart => this.deleteChart(chart.name));
     forkJoin(chartsDelete$)
       .pipe(
-        catchError(err => throwError(err)),
+        catchError(err => observableThrowError(err)),
         finalize(() => {
           this.refresh();
           this.selectedRows = [];

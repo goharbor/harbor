@@ -15,7 +15,8 @@ import { GroupService } from "../../../group/group.service";
 import { ProjectRoles } from "../../../shared/shared.const";
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
 import { Member } from "../member";
-
+import { throwError as observableThrowError } from "rxjs";
+import { errorHandler as errorHandFn } from "../../../shared/shared.utils";
 @Component({
   selector: "add-group",
   templateUrl: "./add-group.component.html",
@@ -135,12 +136,14 @@ export class AddGroupComponent implements OnInit {
             operateChanges(operMessage, OperationState.success);
             return observableOf(res);
            })); }),
-           catchError(error => {
-            return this.translateService.get("BATCH.DELETED_FAILURE").pipe(
-            mergeMap(res => {
-              operateChanges(operMessage, OperationState.failure, res);
-              return observableOf(res);
-            })); }),
+            catchError(
+              error => {
+                  const message = errorHandFn(error);
+                  this.translateService.get(message).subscribe(res =>
+                    operateChanges(operMessage, OperationState.failure, res)
+                  );
+                  return observableThrowError(message);
+              }),
         catchError(error => observableOf(error.status)), );
       });
     forkJoin(GroupAdders$)

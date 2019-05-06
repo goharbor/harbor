@@ -23,9 +23,11 @@ export const errorHandler = function (error: any): string {
     if (!error) {
         return "UNKNOWN_ERROR";
     }
-
-    if (error && error._body) {
-        return error._body;
+    try {
+        return JSON.parse(error._body).message;
+    } catch (err) { }
+    if (error._body && error._body.message) {
+        return error._body.message;
     }
 
     if (!(error.statusCode || error.status)) {
@@ -52,7 +54,6 @@ export const errorHandler = function (error: any): string {
         }
     }
 };
-
 export const extractJson = (res: Response) => {
     if (res.text() === '') {
         return [];

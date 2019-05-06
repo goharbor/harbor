@@ -60,6 +60,7 @@ import {
 } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
 import { Router } from "@angular/router";
+import { errorHandler as errorHandFn } from "../shared/shared.utils";
 const ONE_HOUR_SECONDS: number = 3600;
 const ONE_MINUTE_SECONDS: number = 60;
 const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
@@ -151,7 +152,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
     private replicationService: ReplicationService,
     private operationService: OperationService,
     private translateService: TranslateService
-  ) {}
+  ) { }
 
   public get showPaginationIndex(): boolean {
     return this.totalCount > 0;
@@ -324,23 +325,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
           );
       }),
       catchError(error => {
-        if (error && error.status === 504) {
-          return this.translateService.get("BATCH.TIME_OUT").pipe(
-            map(res => {
-            operateChanges(operMessage, OperationState.failure, res);
-            })
-          );
-        } else if (error && error._body) {
-          const message = JSON.parse(error._body).message;
-          operateChanges(operMessage, OperationState.failure, message);
-          return observableThrowError(message);
-        } else {
-          return this.translateService.get("BATCH.REPLICATE_FAILURE").pipe(
-            map(res => {
-            operateChanges(operMessage, OperationState.failure, res);
-            })
-          );
-        }
+        const message = errorHandFn(error);
+        this.translateService.get(message).subscribe(res =>
+          operateChanges(operMessage, OperationState.failure, res)
+        );
+        return observableThrowError(message);
       })
     );
   }
@@ -414,7 +403,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
             this.selectedRow = [];
           })
         )
-        .subscribe(() => {});
+        .subscribe(() => { });
     }
   }
 
@@ -437,17 +426,11 @@ export class ReplicationComponent implements OnInit, OnDestroy {
             );
         }),
         catchError(error => {
-          if (error && error._body) {
-            const message = JSON.parse(error._body).message;
-            operateChanges(operMessage, OperationState.failure, message);
-            return observableThrowError(message);
-          } else {
-            return this.translateService.get("BATCH.STOP_FAILURE").pipe(
-              map(res => {
-              operateChanges(operMessage, OperationState.failure, res);
-              })
-            );
-          }
+          const message = errorHandFn(error);
+          this.translateService.get(message).subscribe(res =>
+            operateChanges(operMessage, OperationState.failure, res)
+          );
+          return observableThrowError(message);
         })
       );
   }

@@ -59,6 +59,7 @@ import { operateChanges, OperateInfo, OperationState } from "../operation/operat
 import { OperationService } from "../operation/operation.service";
 import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
 import { map, catchError } from "rxjs/operators";
+import { errorHandler as errorHandFn } from "../shared/shared.utils";
 import { Observable, throwError as observableThrowError } from "rxjs";
 export interface LabelState {
   iconsShow: boolean;
@@ -213,7 +214,7 @@ export class TagComponent implements OnInit, AfterViewInit {
         }
       });
 
-      this.getImagePermissionRule(this.projectId);
+    this.getImagePermissionRule(this.projectId);
   }
 
   ngAfterViewInit() {
@@ -668,15 +669,11 @@ export class TagComponent implements OnInit, AfterViewInit {
                 operateChanges(operMessage, OperationState.success);
               });
           }), catchError(error => {
-            if (error.status === 503) {
-              return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                this.translateService.get('REPOSITORY.TAGS_NO_DELETE')).pipe(map(res => {
-                  operateChanges(operMessage, OperationState.failure, res[1]);
-                }));
-            }
-            return this.translateService.get("BATCH.DELETED_FAILURE").pipe(map(res => {
-              operateChanges(operMessage, OperationState.failure, res);
-            }));
+            const message = errorHandFn(error);
+            this.translateService.get(message).subscribe(res =>
+              operateChanges(operMessage, OperationState.failure, res)
+            );
+            return observableThrowError(message);
           }));
     }
   }
@@ -751,12 +748,12 @@ export class TagComponent implements OnInit, AfterViewInit {
     let hasScanImagePermission = this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE);
     forkJoin(hasAddLabelImagePermission, hasRetagImagePermission, hasDeleteImagePermission, hasScanImagePermission)
-    .subscribe(permissions => {
-      this.hasAddLabelImagePermission = permissions[0] as boolean;
-      this.hasRetagImagePermission = permissions[1] as boolean;
-      this.hasDeleteImagePermission = permissions[2] as boolean;
-      this.hasScanImagePermission = permissions[3] as boolean;
-    }, error =>  this.errorHandler.error(error) );
+      .subscribe(permissions => {
+        this.hasAddLabelImagePermission = permissions[0] as boolean;
+        this.hasRetagImagePermission = permissions[1] as boolean;
+        this.hasDeleteImagePermission = permissions[2] as boolean;
+        this.hasScanImagePermission = permissions[3] as boolean;
+      }, error => this.errorHandler.error(error));
   }
   // Trigger scan
   scanNow(t: Tag[]): void {

@@ -35,6 +35,7 @@ import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
 import { map, catchError } from "rxjs/operators";
+import { errorHandler as errorHandFn } from "../shared/shared.utils";
 import { Observable, throwError as observableThrowError, forkJoin } from "rxjs";
 @Component({
     selector: "hbr-label",
@@ -162,11 +163,13 @@ export class LabelComponent implements OnInit {
                         .subscribe(res => {
                             operateChanges(operMessage, OperationState.success);
                         });
-                }), catchError( error => {
-                        return this.translateService.get('BATCH.DELETED_FAILURE').pipe(map(res => {
-                            operateChanges(operMessage, OperationState.failure, res);
-                        }));
-                    }));
+                }), catchError(error => {
+                    const message = errorHandFn(error);
+                    this.translateService.get(message).subscribe(res =>
+                        operateChanges(operMessage, OperationState.failure, res)
+                      );
+                    return observableThrowError(message);
+                }));
     }
 
     // Forcely refresh the view

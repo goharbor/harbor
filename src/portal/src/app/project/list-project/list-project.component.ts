@@ -41,6 +41,8 @@ import { Project } from "../project";
 import { ProjectService } from "../project.service";
 import { map, catchError } from "rxjs/operators";
 import { throwError as observableThrowError } from "rxjs";
+import { errorHandler as errorHandFn } from "../../shared/shared.utils";
+
 @Component({
     selector: "list-project",
     templateUrl: "list-project.component.html",
@@ -78,6 +80,7 @@ export class ListProjectComponent implements OnDestroy {
         private translate: TranslateService,
         private deletionDialogService: ConfirmationDialogService,
         private operationService: OperationService,
+        private translateService: TranslateService,
         private ref: ChangeDetectorRef) {
         this.subscription = deletionDialogService.confirmationConfirm$.subscribe(message => {
             if (message &&
@@ -274,16 +277,11 @@ export class ListProjectComponent implements OnDestroy {
                     });
                 }), catchError(
                 error => {
-                    if (error && error.status === 412) {
-                        return observableForkJoin(this.translate.get("BATCH.DELETED_FAILURE"),
-                            this.translate.get("PROJECT.FAILED_TO_DELETE_PROJECT")).pipe(map(res => {
-                            operateChanges(operMessage, OperationState.failure, res[1]);
-                        }));
-                    } else {
-                        return this.translate.get("BATCH.DELETED_FAILURE").pipe(map(res => {
-                            operateChanges(operMessage, OperationState.failure, res);
-                        }));
-                    }
+                    const message = errorHandFn(error);
+                    this.translateService.get(message).subscribe(res =>
+                        operateChanges(operMessage, OperationState.failure, res)
+                    );
+                    return observableThrowError(message);
                 }));
     }
 
