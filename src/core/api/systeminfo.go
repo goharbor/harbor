@@ -171,6 +171,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		registryURL = l[0]
 	}
 	_, caStatErr := os.Stat(defaultRootCert)
+	enableCADownload := caStatErr == nil && strings.HasPrefix(extURL, "https://")
 	harborVersion := sia.getVersion()
 	info := GeneralInfo{
 		AdmiralEndpoint:             utils.SafeCastString(cfg[common.AdmiralEndpoint]),
@@ -182,7 +183,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		SelfRegistration:            utils.SafeCastBool(cfg[common.SelfRegistration]),
 		ExtURL:                      extURL,
 		RegistryURL:                 registryURL,
-		HasCARoot:                   caStatErr == nil,
+		HasCARoot:                   enableCADownload,
 		HarborVersion:               harborVersion,
 		RegistryStorageProviderName: utils.SafeCastString(cfg[common.RegistryStorageProviderName]),
 		ReadOnly:                    config.ReadOnly(),
