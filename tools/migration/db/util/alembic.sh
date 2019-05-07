@@ -20,14 +20,7 @@ function alembic_up {
     local db_type="$1"
     local target_version="$2"
     
-    if [ $db_type = "mysql" ]; then
-        export PYTHONPATH=/harbor-migration/db/alembic/mysql
-        source /harbor-migration/db/alembic/mysql/alembic.tpl > /harbor-migration/db/alembic/mysql/alembic.ini
-        echo "Performing upgrade $target_version..."
-        alembic -c /harbor-migration/db/alembic/mysql/alembic.ini current
-        alembic -c /harbor-migration/db/alembic/mysql/alembic.ini upgrade $target_version
-        alembic -c /harbor-migration/db/alembic/mysql/alembic.ini current
-    elif [ $db_type = "pgsql" ]; then
+    if [ $db_type = "pgsql" ]; then
         export PYTHONPATH=/harbor-migration/db/alembic/postgres
         echo "TODO: add support for pgsql."
         source /harbor-migration/db/alembic/postgres/alembic.tpl > /harbor-migration/db/alembic/postgres/alembic.ini
@@ -36,7 +29,7 @@ function alembic_up {
         alembic -c /harbor-migration/db/alembic/postgres/alembic.ini upgrade $target_version
         alembic -c /harbor-migration/db/alembic/postgres/alembic.ini current
     else
-        echo "Unsupported DB type."
+        echo "Unsupported DB type: $db_type"
         exit 1
     fi
 
