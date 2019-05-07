@@ -190,4 +190,7 @@ def parse_yaml_config(config_file_path):
      # Admiral configs
     config_dict['admiral_url'] = configs.get("admiral_url") or ""
 
+    # UAA configs
+    config_dict['uaa'] = configs.get('uaa') or {}
+
     return config_dict
