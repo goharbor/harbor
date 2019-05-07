@@ -22,10 +22,10 @@ import (
 
 // const definition
 const (
-	// RegistryTypeHarbor indicates registry type harbor
-	RegistryTypeHarbor    RegistryType = "harbor"
-	RegistryTypeDockerHub RegistryType = "dockerHub"
-	RegistryTypeHuawei    RegistryType = "Huawei"
+	RegistryTypeHarbor         RegistryType = "harbor"
+	RegistryTypeDockerHub      RegistryType = "docker-hub"
+	RegistryTypeDockerRegistry RegistryType = "docker-registry"
+	RegistryTypeHuawei         RegistryType = "huawei"
 
 	FilterStyleTypeText  = "input"
 	FilterStyleTypeRadio = "radio"

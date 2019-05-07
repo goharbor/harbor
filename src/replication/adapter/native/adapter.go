@@ -20,16 +20,14 @@ import (
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
-const registryTypeNative model.RegistryType = "native"
-
 func init() {
-	if err := adp.RegisterFactory(registryTypeNative, func(registry *model.Registry) (adp.Adapter, error) {
+	if err := adp.RegisterFactory(model.RegistryTypeDockerRegistry, func(registry *model.Registry) (adp.Adapter, error) {
 		return newAdapter(registry)
 	}); err != nil {
-		log.Errorf("failed to register factory for %s: %v", registryTypeNative, err)
+		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeDockerRegistry, err)
 		return
 	}
-	log.Infof("the factory for adapter %s registered", registryTypeNative)
+	log.Infof("the factory for adapter %s registered", model.RegistryTypeDockerRegistry)
 }
 
 func newAdapter(registry *model.Registry) (*native, error) {
@@ -52,7 +50,7 @@ var _ adp.Adapter = native{}
 
 func (native) Info() (info *model.RegistryInfo, err error) {
 	return &model.RegistryInfo{
-		Type: registryTypeNative,
+		Type: model.RegistryTypeDockerRegistry,
 		SupportedResourceTypes: []model.ResourceType{
 			model.ResourceTypeImage,
 		},
