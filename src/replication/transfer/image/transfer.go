@@ -16,7 +16,10 @@ package image
 
 import (
 	"errors"
+	"fmt"
 	"strings"
+
+	"github.com/docker/distribution/manifest/manifestlist"
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
@@ -136,7 +139,7 @@ func (t *transfer) copy(src *repository, dst *repository, override bool) error {
 		srcRepo, strings.Join(src.tags, ","), dstRepo, strings.Join(dst.tags, ","))
 	var err error
 	for i := range src.tags {
-		if e := t.copyTag(srcRepo, src.tags[i], dstRepo, dst.tags[i], override); e != nil {
+		if e := t.copyImage(srcRepo, src.tags[i], dstRepo, dst.tags[i], override); err != nil {
 			t.logger.Errorf(e.Error())
 			err = e
 		}
@@ -150,17 +153,17 @@ func (t *transfer) copy(src *repository, dst *repository, override bool) error {
 	return nil
 }
 
-func (t *transfer) copyTag(srcRepo, srcTag, dstRepo, dstTag string, override bool) error {
+func (t *transfer) copyImage(srcRepo, srcRef, dstRepo, dstRef string, override bool) error {
 	t.logger.Infof("copying %s:%s(source registry) to %s:%s(destination registry)...",
-		srcRepo, srcTag, dstRepo, dstTag)
+		srcRepo, srcRef, dstRepo, dstRef)
 	// pull the manifest from the source registry
-	manifest, digest, err := t.pullManifest(srcRepo, srcTag)
+	manifest, digest, err := t.pullManifest(srcRepo, srcRef)
 	if err != nil {
 		return err
 	}
 
 	// check the existence of the image on the destination registry
-	exist, digest2, err := t.exist(dstRepo, dstTag)
+	exist, digest2, err := t.exist(dstRepo, dstRef)
 	if err != nil {
 		return err
 	}
@@ -168,51 +171,148 @@ func (t *transfer) copyTag(srcRepo, srcTag, dstRepo, dstTag string, override boo
 		// the same image already exists
 		if digest == digest2 {
 			t.logger.Infof("the image %s:%s already exists on the destination registry, skip",
-				dstRepo, dstTag)
+				dstRepo, dstRef)
 			return nil
 		}
 		// the same name image exists, but not allowed to override
 		if !override {
 			t.logger.Warningf("the same name image %s:%s exists on the destination registry, but the \"override\" is set to false, skip",
-				dstRepo, dstTag)
+				dstRepo, dstRef)
 			return nil
 		}
 		// the same name image exists, but allowed to override
 		t.logger.Warningf("the same name image %s:%s exists on the destination registry and the \"override\" is set to true, continue...",
-			dstRepo, dstTag)
+			dstRepo, dstRef)
 	}
 
-	// copy blobs between the source and destination registries
-	if err = t.copyBlobs(manifest.References(), srcRepo, dstRepo); err != nil {
-		return err
+	// copy contents between the source and destination registries
+	for _, content := range manifest.References() {
+		if err = t.copyContent(content, srcRepo, dstRepo); err != nil {
+			return err
+		}
 	}
 
 	// push the manifest to the destination registry
-	if err := t.pushManifest(manifest, dstRepo, dstTag); err != nil {
+	if err := t.pushManifest(manifest, dstRepo, dstRef); err != nil {
 		return err
 	}
 
 	t.logger.Infof("copy %s:%s(source registry) to %s:%s(destination registry) completed",
-		srcRepo, srcTag, dstRepo, dstTag)
+		srcRepo, srcRef, dstRepo, dstRef)
 	return nil
 }
 
-func (t *transfer) pullManifest(repository, tag string) (
+// copy the content from source registry to destination according to its media type
+func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo string) error {
+	digest := content.Digest.String()
+	switch content.MediaType {
+	// when the media type of pulled manifest is manifest list,
+	// the contents it contains are a few manifests
+	case schema2.MediaTypeManifest:
+		// as using digest as the reference, so set the override to true directly
+		return t.copyImage(srcRepo, digest, dstRepo, digest, true)
+	// copy layer or image config
+	case schema2.MediaTypeLayer, schema2.MediaTypeImageConfig:
+		return t.copyBlob(srcRepo, dstRepo, digest)
+	// handle foreign layer
+	case schema2.MediaTypeForeignLayer:
+		t.logger.Infof("the layer %s is a foreign layer, skip", digest)
+		return nil
+	// others
+	default:
+		err := fmt.Errorf("unsupported media type: %s", content.MediaType)
+		t.logger.Error(err.Error())
+		return err
+	}
+}
+
+// copy the layer or image config from the source registry to destination
+func (t *transfer) copyBlob(srcRepo, dstRepo, digest string) error {
+	if t.shouldStop() {
+		return nil
+	}
+	t.logger.Infof("copying the blob %s...", digest)
+	exist, err := t.dst.BlobExist(dstRepo, digest)
+	if err != nil {
+		t.logger.Errorf("failed to check the existence of blob %s on the destination registry: %v", digest, err)
+		return err
+	}
+	if exist {
+		t.logger.Infof("the blob %s already exists on the destination registry, skip", digest)
+		return nil
+	}
+
+	size, data, err := t.src.PullBlob(srcRepo, digest)
+	if err != nil {
+		t.logger.Errorf("failed to pulling the blob %s: %v", digest, err)
+		return err
+	}
+	defer data.Close()
+	if err = t.dst.PushBlob(dstRepo, digest, size, data); err != nil {
+		t.logger.Errorf("failed to pushing the blob %s: %v", digest, err)
+		return err
+	}
+	t.logger.Infof("copy the blob %s completed", digest)
+	return nil
+}
+
+func (t *transfer) pullManifest(repository, reference string) (
 	distribution.Manifest, string, error) {
 	if t.shouldStop() {
 		return nil, "", nil
 	}
-	t.logger.Infof("pulling the manifest of image %s:%s ...", repository, tag)
-	manifest, digest, err := t.src.PullManifest(repository, tag, []string{
+	t.logger.Infof("pulling the manifest of image %s:%s ...", repository, reference)
+	manifest, digest, err := t.src.PullManifest(repository, reference, []string{
 		schema1.MediaTypeManifest,
 		schema2.MediaTypeManifest,
+		manifestlist.MediaTypeManifestList,
 	})
 	if err != nil {
-		t.logger.Errorf("failed to pull the manifest of image %s:%s: %v", repository, tag, err)
+		t.logger.Errorf("failed to pull the manifest of image %s:%s: %v", repository, reference, err)
 		return nil, "", err
 	}
-	t.logger.Infof("the manifest of image %s:%s pulled", repository, tag)
-	return manifest, digest, nil
+	t.logger.Infof("the manifest of image %s:%s pulled", repository, reference)
+
+	// this is a solution to work around that harbor doesn't support manifest list
+	return t.handleManifest(manifest, repository, digest)
+}
+
+// if the media type of the specified manifest is manifest list, just abstract one
+// manifest from the list and return it
+func (t *transfer) handleManifest(manifest distribution.Manifest, repository, digest string) (
+	distribution.Manifest, string, error) {
+	mediaType, _, err := manifest.Payload()
+	if err != nil {
+		t.logger.Errorf("failed to call the payload method for manifest of %s:%s: %v", repository, digest, err)
+		return nil, "", err
+	}
+	// manifest
+	if mediaType == schema1.MediaTypeManifest ||
+		mediaType == schema2.MediaTypeManifest {
+		return manifest, digest, nil
+	}
+	// manifest list
+	t.logger.Info("trying abstract a manifest from the manifest list...")
+	manifestlist, ok := manifest.(*manifestlist.DeserializedManifestList)
+	if !ok {
+		err := fmt.Errorf("the object isn't a DeserializedManifestList")
+		t.logger.Errorf(err.Error())
+		return nil, "", err
+	}
+	digest = ""
+	for _, reference := range manifestlist.Manifests {
+		if strings.ToLower(reference.Platform.Architecture) == "amd64" &&
+			strings.ToLower(reference.Platform.OS) == "linux" {
+			digest = reference.Digest.String()
+			t.logger.Infof("a manifest(architecture: amd64, os: linux) found, using this one: %s", digest)
+			break
+		}
+	}
+	if len(digest) == 0 {
+		digest = manifest.References()[0].Digest.String()
+		t.logger.Infof("no manifest(architecture: amd64, os: linux) found, using the first one: %s", digest)
+	}
+	return t.pullManifest(repository, digest)
 }
 
 func (t *transfer) exist(repository, tag string) (bool, string, error) {
@@ -223,42 +323,6 @@ func (t *transfer) exist(repository, tag string) (bool, string, error) {
 		return false, "", err
 	}
 	return exist, digest, nil
-}
-
-func (t *transfer) copyBlobs(blobs []distribution.Descriptor, srcRepo, dstRepo string) error {
-	for _, blob := range blobs {
-		if t.shouldStop() {
-			return nil
-		}
-		digest := blob.Digest.String()
-		if blob.MediaType == schema2.MediaTypeForeignLayer {
-			t.logger.Infof("the blob %s is a foreign layer, skip", digest)
-			continue
-		}
-		t.logger.Infof("copying the blob %s...", digest)
-		exist, err := t.dst.BlobExist(dstRepo, digest)
-		if err != nil {
-			t.logger.Errorf("failed to check the existence of blob %s on the destination registry: %v", digest, err)
-			return err
-		}
-		if exist {
-			t.logger.Infof("the blob %s already exists on the destination registry, skip", digest)
-			continue
-		}
-
-		size, data, err := t.src.PullBlob(srcRepo, digest)
-		if err != nil {
-			t.logger.Errorf("failed to pulling the blob %s: %v", digest, err)
-			return err
-		}
-		defer data.Close()
-		if err = t.dst.PushBlob(dstRepo, digest, size, data); err != nil {
-			t.logger.Errorf("failed to pushing the blob %s: %v", digest, err)
-			return err
-		}
-		t.logger.Infof("copy the blob %s completed", digest)
-	}
-	return nil
 }
 
 func (t *transfer) pushManifest(manifest distribution.Manifest, repository, tag string) error {
