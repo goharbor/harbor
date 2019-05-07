@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
@@ -135,11 +136,18 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		if len(resource.Metadata.Repository.Name) == 0 {
 			return errors.New("the name of the repository cannot be null")
 		}
+
 		paths := strings.Split(resource.Metadata.Repository.Name, "/")
 		projectName := paths[0]
-		// TODO handle the public
+		// handle the public properties
+		metadata := resource.Metadata.Repository.Metadata
+		pro, exist := projects[projectName]
+		if exist {
+			metadata = mergeMetadata(pro.Metadata, metadata)
+		}
 		projects[projectName] = &project{
-			Name: projectName,
+			Name:     projectName,
+			Metadata: metadata,
 		}
 	}
 	for _, project := range projects {
@@ -161,28 +169,38 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		log.Debugf("project %s created", project.Name)
 	}
 	return nil
+}
 
-	// TODO
-	/*
-		// handle the public of the project
-		if meta, exist := namespace.Metadata["public"]; exist {
-			public := true
-			// if one of them is "private", the set the public as false
-			for _, value := range meta.(map[string]interface{}) {
-				b, err := strconv.ParseBool(value.(string))
-				if err != nil {
-					return err
-				}
-				if !b {
-					public = false
-					break
-				}
-			}
-			project.Metadata = map[string]interface{}{
-				"public": public,
-			}
+// currently, mergeMetadata only handles the public metadata
+func mergeMetadata(metadata1, metadata2 map[string]interface{}) map[string]interface{} {
+	public := parsePublic(metadata1) && parsePublic(metadata2)
+	return map[string]interface{}{
+		"public": strconv.FormatBool(public),
+	}
+}
+
+func parsePublic(metadata map[string]interface{}) bool {
+	if metadata == nil {
+		return false
+	}
+	pub, exist := metadata["public"]
+	if !exist {
+		return false
+	}
+	public, ok := pub.(bool)
+	if ok {
+		return public
+	}
+	pubstr, ok := pub.(string)
+	if ok {
+		public, err := strconv.ParseBool(pubstr)
+		if err != nil {
+			log.Errorf("failed to parse %s to bool: %v", pubstr, err)
+			return false
 		}
-	*/
+		return public
+	}
+	return false
 }
 
 type project struct {

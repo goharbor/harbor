@@ -16,6 +16,7 @@ package harbor
 
 import (
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/utils/test"
@@ -151,4 +152,61 @@ func TestPrepareForPush(t *testing.T) {
 			},
 		})
 	require.Nil(t, err)
+}
+
+func TestParsePublic(t *testing.T) {
+	cases := []struct {
+		metadata map[string]interface{}
+		result   bool
+	}{
+		{nil, false},
+		{map[string]interface{}{}, false},
+		{map[string]interface{}{"public": true}, true},
+		{map[string]interface{}{"public": "not_bool"}, false},
+		{map[string]interface{}{"public": "true"}, true},
+		{map[string]interface{}{"public": struct{}{}}, false},
+	}
+	for _, c := range cases {
+		assert.Equal(t, c.result, parsePublic(c.metadata))
+	}
+}
+
+func TestMergeMetadata(t *testing.T) {
+	cases := []struct {
+		m1     map[string]interface{}
+		m2     map[string]interface{}
+		public bool
+	}{
+		{
+			m1: map[string]interface{}{
+				"public": "true",
+			},
+			m2: map[string]interface{}{
+				"public": "true",
+			},
+			public: true,
+		},
+		{
+			m1: map[string]interface{}{
+				"public": "false",
+			},
+			m2: map[string]interface{}{
+				"public": "true",
+			},
+			public: false,
+		},
+		{
+			m1: map[string]interface{}{
+				"public": "false",
+			},
+			m2: map[string]interface{}{
+				"public": "false",
+			},
+			public: false,
+		},
+	}
+	for _, c := range cases {
+		m := mergeMetadata(c.m1, c.m2)
+		assert.Equal(t, strconv.FormatBool(c.public), m["public"].(string))
+	}
 }

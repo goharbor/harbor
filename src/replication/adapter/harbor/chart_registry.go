@@ -27,8 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
-// TODO review the logic in this file
-
 type chart struct {
 	Name    string `json:"name"`
 	Project string
@@ -110,8 +108,8 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 					Registry: a.registry,
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{
-							Name: fmt.Sprintf("%s/%s", project.Name, chart.Name),
-							// TODO handle the metadata
+							Name:     fmt.Sprintf("%s/%s", project.Name, chart.Name),
+							Metadata: project.Metadata,
 						},
 						Vtags: []string{version.Version},
 					},

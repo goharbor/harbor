@@ -95,8 +95,8 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 				Registry: a.registry,
 				Metadata: &model.ResourceMetadata{
 					Repository: &model.Repository{
-						Name: repository.Name,
-						// TODO handle the metadata
+						Name:     repository.Name,
+						Metadata: project.Metadata,
 					},
 					Vtags: vtags,
 				},

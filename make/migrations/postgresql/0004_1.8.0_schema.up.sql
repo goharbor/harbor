@@ -59,7 +59,7 @@ ALTER TABLE registry ALTER COLUMN url TYPE varchar(256);
 ALTER TABLE registry ADD COLUMN credential_type varchar(16);
 ALTER TABLE registry RENAME COLUMN username TO access_key;
 ALTER TABLE registry RENAME COLUMN password TO access_secret;
-ALTER TABLE registry ALTER COLUMN access_secret TYPE varchar(1024);
+ALTER TABLE registry ALTER COLUMN access_secret TYPE varchar(4096);
 ALTER TABLE registry ADD COLUMN type varchar(32);
 ALTER TABLE registry DROP COLUMN target_type;
 ALTER TABLE registry ADD COLUMN description text;

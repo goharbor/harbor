@@ -40,18 +40,15 @@ type Policy struct {
 	ID          int64  `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	// TODO consider to remove this property?
-	Creator string `json:"creator"`
+	Creator     string `json:"creator"`
 	// source
 	SrcRegistry *Registry `json:"src_registry"`
 	// destination
-	// TODO rename to DstRegistry
 	DestRegistry *Registry `json:"dest_registry"`
 	// Only support two dest namespace modes:
 	// Put all the src resources to the one single dest namespace
 	// or keep namespaces same with the source ones (under this case,
 	// the DestNamespace should be set to empty)
-	// TODO rename to DstNamespace
 	DestNamespace string `json:"dest_namespace"`
 	// Filters
 	Filters []*Filter `json:"filters"`
