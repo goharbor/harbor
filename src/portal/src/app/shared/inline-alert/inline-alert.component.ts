@@ -23,7 +23,7 @@ import { Subscription } from "rxjs";
     styleUrls: ['inline-alert.component.scss']
 })
 export class InlineAlertComponent {
-    inlineAlertType: string = 'alert-danger';
+    inlineAlertType: string = 'danger';
     inlineAlertClosable: boolean = false;
     alertClose: boolean = true;
     displayedText: string = "";
@@ -49,7 +49,7 @@ export class InlineAlertComponent {
             this.translate.get(this.displayedText).subscribe((res: string) => this.displayedText = res);
         }
 
-        this.inlineAlertType = 'alert-danger';
+        this.inlineAlertType = 'danger';
         this.showCancelAction = false;
         this.inlineAlertClosable = true;
         this.alertClose = false;
@@ -62,7 +62,7 @@ export class InlineAlertComponent {
         if (warning && warning.message) {
             this.translate.get(warning.message).subscribe((res: string) => this.displayedText = res);
         }
-        this.inlineAlertType = 'alert-warning';
+        this.inlineAlertType = 'warning';
         this.showCancelAction = true;
         this.inlineAlertClosable = false;
         this.alertClose = false;
@@ -75,7 +75,7 @@ export class InlineAlertComponent {
         if (warning && warning.message) {
             this.translate.get(warning.message).subscribe((res: string) => this.displayedText = res);
         }
-        this.inlineAlertType = 'alert-warning';
+        this.inlineAlertType = 'warning';
         this.showCancelAction = false;
         this.inlineAlertClosable = true;
         this.alertClose = false;
@@ -88,7 +88,7 @@ export class InlineAlertComponent {
         if (info && info.message) {
             this.translate.get(info.message).subscribe((res: string) => this.displayedText = res);
         }
-        this.inlineAlertType = 'alert-success';
+        this.inlineAlertType = 'success';
         this.showCancelAction = false;
         this.inlineAlertClosable = true;
         this.alertClose = false;
