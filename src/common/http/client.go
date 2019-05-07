@@ -17,9 +17,13 @@ package http
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"io"
 	"io/ioutil"
 	"net/http"
+	"net/url"
+	"reflect"
+	"strings"
 
 	"github.com/goharbor/harbor/src/common/http/modifier"
 )
@@ -167,4 +171,64 @@ func (c *Client) do(req *http.Request) ([]byte, error) {
 	}
 
 	return data, nil
+}
+
+// GetAndIteratePagination iterates the pagination header and returns all resources
+// The parameter "v" must be a pointer to a slice
+func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
+	url, err := url.Parse(endpoint)
+	if err != nil {
+		return err
+	}
+
+	rv := reflect.ValueOf(v)
+	if rv.Kind() != reflect.Ptr {
+		return errors.New("v should be a pointer to a slice")
+	}
+	elemType := rv.Elem().Type()
+	if elemType.Kind() != reflect.Slice {
+		return errors.New("v should be a pointer to a slice")
+	}
+
+	resources := reflect.Indirect(reflect.New(elemType))
+	for len(endpoint) > 0 {
+		req, err := http.NewRequest(http.MethodGet, endpoint, nil)
+		if err != nil {
+			return err
+		}
+		resp, err := c.Do(req)
+		if err != nil {
+			return err
+		}
+		defer resp.Body.Close()
+		data, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return err
+		}
+		if resp.StatusCode < 200 || resp.StatusCode > 299 {
+			return &Error{
+				Code:    resp.StatusCode,
+				Message: string(data),
+			}
+		}
+
+		res := reflect.New(elemType)
+		if err = json.Unmarshal(data, res.Interface()); err != nil {
+			return err
+		}
+		resources = reflect.AppendSlice(resources, reflect.Indirect(res))
+
+		endpoint = ""
+		link := resp.Header.Get("Link")
+		for _, str := range strings.Split(link, ",") {
+			if strings.HasSuffix(str, `rel="next"`) &&
+				strings.Index(str, "<") >= 0 &&
+				strings.Index(str, ">") >= 0 {
+				endpoint = url.Scheme + "://" + url.Host + str[strings.Index(str, "<")+1:strings.Index(str, ">")]
+				break
+			}
+		}
+	}
+	rv.Elem().Set(resources)
+	return nil
 }

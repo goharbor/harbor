@@ -211,8 +211,8 @@ type project struct {
 
 func (a *adapter) getProjects(name string) ([]*project, error) {
 	projects := []*project{}
-	url := fmt.Sprintf("%s/api/projects?name=%s&page=1&page_size=1000", a.coreServiceURL, name)
-	if err := a.client.Get(url, &projects); err != nil {
+	url := fmt.Sprintf("%s/api/projects?name=%s&page=1&page_size=500", a.coreServiceURL, name)
+	if err := a.client.GetAndIteratePagination(url, &projects); err != nil {
 		return nil, err
 	}
 	return projects, nil
@@ -242,4 +242,13 @@ func (a *adapter) getProject(name string) (*project, error) {
 		}
 	}
 	return nil, nil
+}
+
+func (a *adapter) getRepositories(projectID int64) ([]*repository, error) {
+	repositories := []*repository{}
+	url := fmt.Sprintf("%s/api/repositories?project_id=%d&page=1&page_size=500", a.coreServiceURL, projectID)
+	if err := a.client.GetAndIteratePagination(url, &repositories); err != nil {
+		return nil, err
+	}
+	return repositories, nil
 }

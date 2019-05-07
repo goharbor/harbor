@@ -64,9 +64,8 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	}
 	resources := []*model.Resource{}
 	for _, project := range projects {
-		repositories := []*repository{}
-		url := fmt.Sprintf("%s/api/repositories?project_id=%d", a.coreServiceURL, project.ID)
-		if err = a.client.Get(url, &repositories); err != nil {
+		repositories, err := a.getRepositories(project.ID)
+		if err != nil {
 			return nil, err
 		}
 		repositories, err = filterRepositories(repositories, filters)
