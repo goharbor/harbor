@@ -133,9 +133,17 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   equals(c1: any, c2: any): boolean {
     return c1 && c2 ? c1.id === c2.id : c1 === c2;
   }
-  modeChange(): void {
+  pushModeChange(): void {
     this.setFilter([]);
     this.initRegistryInfo(0);
+  }
+
+  pullModeChange(): void {
+    let selectId = this.ruleForm.get('src_registry').value;
+    if (selectId) {
+      this.setFilter([]);
+      this.initRegistryInfo(selectId.id);
+    }
   }
 
   sourceChange($event): void {
