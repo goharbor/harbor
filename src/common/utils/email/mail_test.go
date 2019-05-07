@@ -103,3 +103,82 @@ func TestPing(t *testing.T) {
 		}
 	}
 }
+
+func TestPing163(t *testing.T) {
+	t.Skipf("TODO add test 163 email")
+	addr := "smtp.163.com:465"
+	identity := ""
+	username := "xxx"
+	password := "xxx"
+	timeout := 5
+	tls := true
+	insecure := false
+
+	// tls connection
+	err := Ping(addr, identity, username, password, timeout, tls, insecure)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestPingOutlook(t *testing.T) {
+	t.Skipf("TODO add test outlook email")
+	addr := "smtp.office365.com:587"
+	identity := ""
+	username := "xxx"
+	password := "xxx"
+	timeout := 5
+	tls := false
+	insecure := false
+
+	// tls connection
+	err := Ping(addr, identity, username, password,
+		timeout, tls, insecure)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestSendOutlook(t *testing.T) {
+	t.Skipf("TODO add test outlook email")
+	addr := "smtp.office365.com:587"
+	identity := ""
+	username := "xxx"
+	password := "xxx"
+	timeout := 5
+	tls := false
+	insecure := false
+	from := username
+	to := []string{"xxx"}
+	subject := "subject"
+	message := "message"
+
+	err := Send(addr, identity, username, password,
+		timeout, tls, insecure, from, to,
+		subject, message)
+	if err != nil {
+		t.Error(err)
+	}
+}
+
+func TestSend163(t *testing.T) {
+	t.Skipf("TODO add test 163 email")
+	addr := "smtp.163.com:465"
+	identity := ""
+	username := "xxx"
+	password := "xxx"
+	timeout := 5
+	tls := true
+	insecure := false
+	from := username
+	to := []string{"xxx"}
+	subject := "subject"
+	message := "message"
+
+	err := Send(addr, identity, username, password,
+		timeout, tls, insecure, from, to,
+		subject, message)
+	if err != nil {
+		t.Error(err)
+	}
+}

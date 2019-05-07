@@ -15,7 +15,9 @@
 package email
 
 import (
+	"bytes"
 	tlspkg "crypto/tls"
+	"errors"
 	"fmt"
 	"net"
 	"net/smtp"
@@ -130,19 +132,26 @@ func newClient(addr, identity, username, password string,
 			}); err != nil {
 				return nil, err
 			}
-			tls = true
 		} else {
 			log.Debugf("the email server %s does not support STARTTLS", addr)
 		}
 	}
 
-	if ok, _ := client.Extension("AUTH"); ok {
+	// refer to https://github.com/go-gomail/gomail/blob/master/smtp.go
+	if ok, auths := client.Extension("AUTH"); ok {
 		log.Debug("authenticating the client...")
 		var auth smtp.Auth
-		if tls {
-			auth = smtp.PlainAuth(identity, username, password, host)
-		} else {
+		if strings.Contains(auths, "CRAM-MD5") {
 			auth = smtp.CRAMMD5Auth(username, password)
+		} else if strings.Contains(auths, "LOGIN") &&
+			!strings.Contains(auths, "PLAIN") {
+			auth = &loginAuth{
+				username: username,
+				password: password,
+				host:     host,
+			}
+		} else {
+			auth = smtp.PlainAuth("", username, password, host)
 		}
 		if err = client.Auth(auth); err != nil {
 			return nil, err
@@ -155,4 +164,45 @@ func newClient(addr, identity, username, password string,
 	log.Debug("create smtp client successfully")
 
 	return client, nil
+}
+
+// refer to https://github.com/go-gomail/gomail/blob/master/smtp.go
+type loginAuth struct {
+	username string
+	password string
+	host     string
+}
+
+func (a *loginAuth) Start(server *smtp.ServerInfo) (string, []byte, error) {
+	if !server.TLS {
+		advertised := false
+		for _, mechanism := range server.Auth {
+			if mechanism == "LOGIN" {
+				advertised = true
+				break
+			}
+		}
+		if !advertised {
+			return "", nil, errors.New("unencrypted connection")
+		}
+	}
+	if server.Name != a.host {
+		return "", nil, errors.New("wrong host name")
+	}
+	return "LOGIN", nil, nil
+}
+
+func (a *loginAuth) Next(fromServer []byte, more bool) ([]byte, error) {
+	if !more {
+		return nil, nil
+	}
+
+	switch {
+	case bytes.Equal(fromServer, []byte("Username:")):
+		return []byte(a.username), nil
+	case bytes.Equal(fromServer, []byte("Password:")):
+		return []byte(a.password), nil
+	default:
+		return nil, fmt.Errorf("unexpected server challenge: %s", fromServer)
+	}
 }
