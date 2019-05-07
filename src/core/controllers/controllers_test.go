@@ -14,6 +14,8 @@
 package controllers
 
 import (
+	"context"
+	"github.com/goharbor/harbor/src/core/filter"
 	"net/http"
 	"net/http/httptest"
 	// "net/url"
@@ -88,6 +90,15 @@ func TestUserResettable(t *testing.T) {
 	assert.True(isUserResetable(u2))
 	config.InitWithSettings(DBAuthConfig)
 	assert.True(isUserResetable(u1))
+}
+
+func TestRedirectForOIDC(t *testing.T) {
+	ctx := context.WithValue(context.Background(), filter.AuthModeKey, common.DBAuth)
+	assert.False(t, redirectForOIDC(ctx, "nonexist"))
+	ctx = context.WithValue(context.Background(), filter.AuthModeKey, common.OIDCAuth)
+	assert.True(t, redirectForOIDC(ctx, "nonexist"))
+	assert.False(t, redirectForOIDC(ctx, "admin"))
+
 }
 
 // TestMain is a sample to run an endpoint test

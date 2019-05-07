@@ -139,6 +139,7 @@ const (
 	RobotTokenDuration      = "robot_token_duration"
 
 	OIDCCallbackPath = "/c/oidc/callback"
+	OIDCLoginPath    = "/c/oidc/login"
 
 	ChartUploadCtxKey = contextKey("chart_upload_event")
 )
