@@ -185,7 +185,7 @@ export class CreateEditEndpointComponent
       this.endpointService.getEndpoint(targetId).subscribe(
         target => {
           this.target = target;
-          this.urlDisabled = this.target.type === 'dockerHub' ? true : false;
+          this.urlDisabled = this.target.type === 'docker-hub' ? true : false;
           // Keep data cache
           this.initVal = clone(target);
           this.initVal.credential.access_secret = FAKE_PASSWORD;
@@ -212,7 +212,7 @@ export class CreateEditEndpointComponent
 
   adapterChange($event): void {
     let selectValue = this.targetForm.controls.adapter.value;
-    if (selectValue === 'dockerHub') {
+    if (selectValue === 'docker-hub') {
       this.urlDisabled = true;
       this.targetForm.controls.endpointUrl.setValue(DOCKERHUB_URL);
     } else {
