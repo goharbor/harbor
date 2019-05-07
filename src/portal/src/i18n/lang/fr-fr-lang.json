@@ -72,6 +72,7 @@
         "SIGN_UP_MAIL": "L'email n'est utilisé que pour réinitialiser votre mot de passe.",
         "SIGN_UP_REAL_NAME": "Prénom et nom",
         "ITEM_REQUIRED": "Le champ est obligatoire.",
+        "SCOPE_REQUIRED": "Field is required and should be in scope format.",
         "NUMBER_REQUIRED": "Le champ est obligatoire et doit être numérique.",
         "PORT_REQUIRED": "Le champ est obligatoire et doit être un numéro de port valide.",
         "CRON_REQUIRED": "Le champ est obligatoire et doit être au format cron.",

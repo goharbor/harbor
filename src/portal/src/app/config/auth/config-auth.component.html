@@ -322,7 +322,6 @@
     </section>
 
     <section class="form-block" *ngIf="showOIDC">
-        <div class="oidc-tip">{{ 'CONFIG.OIDC.OIDC_REDIREC_URL' | translate}} <span>{{redirectUrl}}/c/oidc/callback</span></div>
         <div class="form-group">
             <label for="oidcName" class="required">{{'CONFIG.OIDC.OIDC_PROVIDER' | translate}}</label>
             <label for="oidcName" aria-haspopup="true" role="tooltip"
@@ -348,7 +347,7 @@
                 class="tooltip tooltip-validation tooltip-lg tooltip-top-right">
                 <input name="oidcEndpoint" type="text" #oidcEndpointInput="ngModel" required
                     [(ngModel)]="currentConfig.oidc_endpoint.value" id="oidcEndpoint" size="40"
-                    [disabled]="disabled(currentConfig.oidc_endpoint)" pattern="^([hH][tT]{2}[pP][sS])(.*?)*$">
+                    [disabled]="disabled(currentConfig.oidc_endpoint)" pattern="^([hH][tT]{2}[pP][sS]:\/\/)(.*?)*$">
                 <span class="tooltip-content">
                     {{'TOOLTIP.OIDC_ENDPOIT_FORMAT' | translate}}
                 </span>
@@ -394,7 +393,7 @@
                     [(ngModel)]="currentConfig.oidc_scope.value" id="oidcScope" size="40" required
                     [disabled]="disabled(currentConfig.oidc_scope)" pattern="^(\w+,){0,}openid(,\w+){0,}$">
                 <span class="tooltip-content">
-                    {{'TOOLTIP.ITEM_REQUIRED' | translate}}
+                    {{'TOOLTIP.SCOPE_REQUIRED' | translate}}
                 </span>
             </label>
             <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
@@ -416,6 +415,7 @@
                 <span class="tooltip-content">{{'TOOLTIP.OIDC_VERIFYCERT' | translate}}</span>
             </a>
         </div>
+        <div class="oidc-tip">{{ 'CONFIG.OIDC.OIDC_REDIREC_URL' | translate}} <span>{{redirectUrl}}/c/oidc/callback</span></div>
     </section>
 </form>
 <div>
