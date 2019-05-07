@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/require"
+
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/assert"
 )
-
-// TODO add more unit test
 
 const (
 	testUser     = ""
@@ -35,6 +35,21 @@ func getAdapter(t *testing.T) adp.Adapter {
 	return adapter
 }
 
+func TestInfo(t *testing.T) {
+	adapter := &adapter{}
+	info, err := adapter.Info()
+	require.Nil(t, err)
+	require.Equal(t, 1, len(info.SupportedResourceTypes))
+	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
+}
+
+func TestListCandidateNamespaces(t *testing.T) {
+	adapter := &adapter{}
+	namespaces, err := adapter.listCandidateNamespaces("library/*")
+	require.Nil(t, err)
+	require.Equal(t, 1, len(namespaces))
+	assert.Equal(t, "library", namespaces[0])
+}
 func TestListNamespaces(t *testing.T) {
 	if testUser == "" {
 		return
@@ -49,4 +64,16 @@ func TestListNamespaces(t *testing.T) {
 	for _, ns := range namespaces {
 		fmt.Println(ns)
 	}
+}
+
+func TestFetchImages(t *testing.T) {
+	ad := getAdapter(t)
+	adapter := ad.(*adapter)
+	_, err := adapter.FetchImages([]*model.Filter{
+		{
+			Type:  model.FilterTypeName,
+			Value: "goharbor/harbor-core",
+		},
+	})
+	require.Nil(t, err)
 }

@@ -10,6 +10,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/replication/util"
 )
 
 // Client is a client to interact with DockerHub
@@ -23,8 +24,10 @@ type Client struct {
 // NewClient creates a new DockerHub client.
 func NewClient(registry *model.Registry) (*Client, error) {
 	client := &Client{
-		host:   registry.URL,
-		client: http.DefaultClient,
+		host: registry.URL,
+		client: &http.Client{
+			Transport: util.GetHTTPTransport(false),
+		},
 	}
 
 	// For anonymous access, no need to refresh token.
