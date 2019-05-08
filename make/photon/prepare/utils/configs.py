@@ -79,7 +79,12 @@ def parse_yaml_config(config_file_path):
         config_dict['cert_path'] = https_config["certificate"]
         config_dict['cert_key_path'] = https_config["private_key"]
 
-    config_dict['public_url'] = configs.get('external_url') or '{protocol}://{hostname}'.format(**config_dict)
+    if configs.get('external_url'):
+        config_dict['public_url'] = configs.get('external_url')
+        if config_dict['protocol'] == 'https':
+            '{protocol}://{hostname}:{https_port}'.format(**config_dict)
+        else:
+            '{protocol}://{hostname}:{http_port}'.format(**config_dict)
 
     # DB configs
     db_configs = configs.get('database')
