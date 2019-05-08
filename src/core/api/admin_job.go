@@ -219,6 +219,11 @@ func (aj *AJAPI) getLog(id int64) {
 
 // submit submits a job to job service per request
 func (aj *AJAPI) submit(ajr *models.AdminJobReq) {
+	// when the schedule is saved as None without any schedule, just return 200 and do nothing.
+	if ajr.Schedule.Type == models.ScheduleNone {
+		return
+	}
+
 	// cannot post multiple schedule for admin job.
 	if ajr.IsPeriodic() {
 		jobs, err := dao.GetAdminJobs(&common_models.AdminJobQuery{
@@ -254,11 +259,7 @@ func (aj *AJAPI) submit(ajr *models.AdminJobReq) {
 		if err := dao.DeleteAdminJob(id); err != nil {
 			log.Debugf("Failed to delete admin job, err: %v", err)
 		}
-		if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {
-			aj.SendConflictError(fmt.Errorf("conflict when triggering %s, please try again later", ajr.Name))
-			return
-		}
-		aj.SendInternalServerError(err)
+		aj.ParseAndHandleError("failed to submit admin job", err)
 		return
 	}
 	if err := dao.SetAdminJobUUID(id, uuid); err != nil {
