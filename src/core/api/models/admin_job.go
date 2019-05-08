@@ -147,7 +147,7 @@ func (ar *AdminJobReq) CronString() string {
 // in the latest design, it uses {"type":"Daily","cron":"0 0 0 * * *"} as the cron item.
 // As for supporting migration from older version, it needs to convert {"parameter":{"daily_time":0},"type":"daily"}
 // and {"type":"Daily","weekday":0,"offtime":57600} into one standard.
-func ConvertSchedule(cronStr string) (converted ScheduleParam, err error) {
+func ConvertSchedule(cronStr string) (ScheduleParam, error) {
 	if cronStr == "" {
 		return ScheduleParam{}, nil
 	}
