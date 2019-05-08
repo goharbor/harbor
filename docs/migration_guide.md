@@ -44,9 +44,10 @@ When upgrading your existing Habor instance to a newer version, you may need to 
     ```
 
 6.  Upgrade database schema and migrate data.
+Please note that you need to use the migrator of the targeted version, as an example, to upgrade to v1.6.0, you need to use the migrator with version v1.6.0. Migrators above v1.4 are available at goharbor/harbor-migrator in docker hub.
 
     ```
-    docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql vmware/harbor-db-migrator:[tag] up head
+    docker run -ti --rm -e DB_USR=root -e DB_PWD=xxxx -v /data/database:/var/lib/mysql vmware/harbor-db-migrator:[tag] up
     ```
 
      **NOTE:** Some errors like
