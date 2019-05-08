@@ -51,7 +51,7 @@
 
 .rightPos {
   position: absolute;
-  z-index: 600;
+  z-index: 1;
   right: 35px;
   margin-top: 20px;
   display: flex;
@@ -106,10 +106,6 @@
   position: absolute;
   left: 34px;
   top: 5px;
-}
-
-.datagrid-action-bar {
-  z-index: 10;
 }
 
 .trigger-item hbr-label-piece {

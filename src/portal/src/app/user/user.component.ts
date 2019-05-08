@@ -291,18 +291,17 @@ export class UserComponent implements OnInit, OnDestroy {
       }));
     }
 
-
     return this.userService.deleteUser(user.user_id).pipe(map(() => {
       this.translate.get('BATCH.DELETED_SUCCESS').subscribe(res => {
         operateChanges(operMessage, OperationState.success);
       });
-    }, catchError(error => {
+    }), catchError(error => {
       const message = errorHandFn(error);
       this.translate.get(message).subscribe(res =>
         operateChanges(operMessage, OperationState.failure, res)
       );
       return observableThrowError(message);
-    })));
+    }));
   }
 
   // Refresh the user list
