@@ -13,75 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-source $PWD/db/util/mysql.sh
 source $PWD/db/util/pgsql.sh
-source $PWD/db/util/mysql_pgsql_1_5_0.sh
 source $PWD/db/util/alembic.sh
 
 set -e
 
-ISMYSQL=false
 ISPGSQL=false
-ISNOTARY=false
-ISCLAIR=false
 
 cur_version=""
 PGSQL_USR="postgres" 
 
 function init {
-    if [ "$(ls -A /var/lib/mysql)" ]; then
-        # As after the first success run, the data will be migrated to pgsql,
-        # the PG_VERSION should be in /var/lib/mysql if user repeats the UP command.
-        if [ -e '/var/lib/mysql/PG_VERSION' ]; then
-            ISPGSQL=true
-        elif [ -d '/var/lib/mysql/mysql' ]; then
-            ISMYSQL=true
-            if [ -d '/var/lib/mysql/notaryserver' ]; then
-                ISNOTARY=true
-            fi
-        fi
-    fi
-
     if [ "$(ls -A /var/lib/postgresql/data)" ]; then
         ISPGSQL=true
     fi
 
-    if [ -d "/clair-db" ]; then
-        ISCLAIR=true
-    fi
-
-    if [ $ISMYSQL == false ] && [ $ISPGSQL == false ]; then
+    if  [ $ISPGSQL == false ]; then
         echo "No database has been mounted for the migration. Use '-v' to set it in 'docker run'."
         exit 1
     fi
 
-    if [ $ISMYSQL == true ]; then
-        # as for UP notary, user does not need to provide username and pwd.
-        # the check works for harbor DB only.
-        if [ $ISNOTARY == false ]; then
-            if [ -z "$DB_USR" -o -z "$DB_PWD" ]; then
-                echo "DB_USR or DB_PWD not set, exiting..."
-                exit 1
-            fi
-            launch_mysql $DB_USR $DB_PWD
-        else
-            launch_mysql root
-        fi
-    fi
-
     if [ $ISPGSQL == true ]; then
-        if [ $ISCLAIR == true ]; then
-            launch_pgsql $PGSQL_USR "/clair-db"
-        else
-            launch_pgsql $PGSQL_USR
-        fi
+        launch_pgsql $PGSQL_USR
     fi
 }
 
 function get_version {
-    if [ $ISMYSQL == true ]; then
-        result=$(get_version_mysql) 
-    fi
     if [ $ISPGSQL == true ]; then
         result=$(get_version_pgsql $PGSQL_USR) 
     fi
@@ -99,9 +56,6 @@ function version_le {
 
 function backup {
     echo "Performing backup..."
-    if [ $ISMYSQL == true ]; then
-        backup_mysql
-    fi
     if [ $ISPGSQL == true ]; then
         backup_pgsql
     fi
@@ -112,9 +66,6 @@ function backup {
 
 function restore {
     echo "Performing restore..."
-    if [ $ISMYSQL == true ]; then
-        restore_mysql
-    fi
     if [ $ISPGSQL == true ]; then
         restore_pgsql
     fi
@@ -125,9 +76,6 @@ function restore {
 
 function validate {
     echo "Performing test..."
-    if [ $ISMYSQL == true ]; then
-        test_mysql $DB_USR $DB_PWD
-    fi
     if [ $ISPGSQL == true ]; then
         test_pgsql $PGSQL_USR
     fi
@@ -137,13 +85,7 @@ function validate {
 }
 
 function upgrade {
-    if [ $ISNOTARY == true ];then
-        up_notary $PGSQL_USR
-    elif [ $ISCLAIR == true ];then
-        up_clair $PGSQL_USR
-    else
-        up_harbor $1          
-    fi   
+    up_harbor $1          
 }
 
 function up_harbor {
@@ -159,58 +101,13 @@ function up_harbor {
         exit 0
     fi
 
-    # $cur_version <='1.5.0', $target_version <='1.5.0', it needs to call mysql upgrade.
-    if version_le $cur_version '1.5.0' && version_le $target_version '1.5.0'; then
-        if [ $ISMYSQL != true ]; then
-            echo "Please mount the database volume to /var/lib/mysql, then to run the upgrade again."
-            return 1
-        else
-            alembic_up mysql $target_version
-            return $?
-        fi
-    fi
-
     # $cur_version > '1.5.0', $target_version > '1.5.0', it needs to call pgsql upgrade.
-    if ! version_le $cur_version '1.5.0' && ! version_le $target_version '1.5.0'; then    
-        if [ $ISPGSQL != true ]; then
-            echo "Please mount the database volume to /var/lib/postgresql/data, then to run the upgrade again."
-            return 1
-        else
-            alembic_up pgsql $target_version
-            return $?
-        fi
-    fi
-
-    # $cur_version <='1.5.0', $target_version >'1.5.0', it needs to upgrade to $cur_version.mysql => 1.5.0.mysql => 1.5.0.pgsql => target_version.pgsql.
-    if version_le $cur_version '1.5.0' && ! version_le $target_version '1.5.0'; then
-        if [ $ISMYSQL != true ]; then
-            echo "Please make sure to mount the correct the data volume."
-            return 1
-        else
-            launch_pgsql $PGSQL_USR
-            mysql_2_pgsql_1_5_0 $PGSQL_USR
-            
-            # Pgsql won't run the init scripts as the migration script has already created the PG_VERSION,
-            # which is a flag that used by entrypoint.sh of pgsql to define whether to run init scripts to create harbor DBs.
-            # Here to force init notary DBs just align with new harbor launch process.
-            # Otherwise, user could get db failure when to launch harbor with notary as no data was created.
-
-            psql -U $PGSQL_USR -f /harbor-migration/db/schema/notaryserver_init.pgsql
-            psql -U $PGSQL_USR -f /harbor-migration/db/schema/notarysigner_init.pgsql
-
-            stop_mysql $DB_USR $DB_PWD
-            ## it needs to call the alembic_up to target, disable it as it's now unsupported.
-            alembic_up pgsql $target_version
-            stop_pgsql $PGSQL_USR
-            
-
-            rm -rf /var/lib/mysql/*
-            cp -rf $PGDATA/* /var/lib/mysql
-
-            ## Chmod 700 to DB data directory
-            chmod 700 /var/lib/mysql
-            return 0
-        fi        
+    if [ $ISPGSQL != true ]; then
+        echo "Please mount the database volume to /var/lib/postgresql/data, then to run the upgrade again."
+        return 1
+    else
+        alembic_up pgsql $target_version
+        return $?
     fi
 
     echo "Unsupported DB upgrade from $cur_version to $target_version, please check the inputs."

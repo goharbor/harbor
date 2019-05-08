@@ -6,15 +6,11 @@ ENV PGDATA /var/lib/postgresql/data
 RUN tdnf distro-sync -y \
     && tdnf remove -y toybox \
     && tdnf install -y sed shadow procps-ng gawk gzip sudo net-tools glibc-i18n >> /dev/null\
-    && groupadd -r -g 10000 mysql && useradd --no-log-init -r -g 10000 -u 10000 mysql \
-    && tdnf install -y mariadb-server mariadb mariadb-devel python2 python2-devel python-pip gcc PyYAML python-jinja2\
+    && tdnf install -y python2 python2-devel python-pip gcc PyYAML python-jinja2 \
     linux-api-headers glibc-devel binutils zlib-devel openssl-devel postgresql python-psycopg2 >> /dev/null \
-    && pip install mysqlclient alembic \
+    && pip install alembic \
     && mkdir /docker-entrypoint-initdb.d /docker-entrypoint-updatedb.d \
-    && rm -fr /var/lib/mysql \
-    && mkdir -p /var/lib/mysql /var/run/mysqld \
-    && chown -R mysql:mysql /var/lib/mysql /var/run/mysqld \
-    && chmod 777 /var/run/mysqld /docker-entrypoint-initdb.d /docker-entrypoint-updatedb.d \
+    && chmod 777 /docker-entrypoint-initdb.d /docker-entrypoint-updatedb.d \
     && mkdir -p /harbor-migration \
     && touch /etc/localtime.bak \
     && groupadd -r postgres --gid=999 \
@@ -28,8 +24,6 @@ RUN tdnf distro-sync -y \
     && touch /usr/share/locale/locale.alias \
     && locale-gen.sh en_US.UTF-8 \
     && tdnf clean all
-
-COPY ./db/my.cnf /etc/
 
 VOLUME /var/lib/postgresql/data
 
