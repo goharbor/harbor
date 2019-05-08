@@ -106,7 +106,7 @@ export class UserComponent implements OnInit, OnDestroy {
   public get canCreateUser(): boolean {
     let appConfig = this.appConfigService.getConfig();
     if (appConfig) {
-      return !(appConfig.auth_mode === 'ldap_auth' || appConfig.auth_mode === 'uaa_auth');
+      return !(appConfig.auth_mode === 'ldap_auth' || appConfig.auth_mode === 'uaa_auth' || appConfig.auth_mode === 'oidc_auth');
     } else {
       return true;
     }
