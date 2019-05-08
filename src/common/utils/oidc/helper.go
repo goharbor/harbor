@@ -208,5 +208,9 @@ func RefreshToken(ctx context.Context, token *Token) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Token{Token: *t, IDToken: t.Extra("id_token").(string)}, nil
+	it, ok := t.Extra("id_token").(string)
+	if !ok {
+		return nil, fmt.Errorf("failed to get id_token from refresh response")
+	}
+	return &Token{Token: *t, IDToken: it}, nil
 }
