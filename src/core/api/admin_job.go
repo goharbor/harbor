@@ -19,7 +19,6 @@ import (
 	"net/http"
 	"strconv"
 
-	"encoding/json"
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	common_job "github.com/goharbor/harbor/src/common/job"
@@ -283,11 +282,11 @@ func convertToAdminJobRep(job *common_models.AdminJob) (models.AdminJobRep, erro
 	}
 
 	if len(job.Cron) > 0 {
-		schedule := &models.ScheduleParam{}
-		if err := json.Unmarshal([]byte(job.Cron), &schedule); err != nil {
+		schedule, err := models.ConvertSchedule(job.Cron)
+		if err != nil {
 			return models.AdminJobRep{}, err
 		}
-		AdminJobRep.Schedule = schedule
+		AdminJobRep.Schedule = &schedule
 	}
 	return AdminJobRep, nil
 }

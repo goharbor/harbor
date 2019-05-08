@@ -15,6 +15,7 @@
 package models
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -50,4 +51,28 @@ type AdminJobQuery struct {
 	UUID    string
 	Deleted bool
 	Pagination
+}
+
+// ScheduleParam ...
+type ScheduleParam struct {
+	Type    string `json:"type"`
+	Weekday int8   `json:"weekday"`
+	Offtime int64  `json:"offtime"`
+}
+
+// ParseScheduleParamToCron ...
+func ParseScheduleParamToCron(param *ScheduleParam) string {
+	if param == nil {
+		return ""
+	}
+	offtime := param.Offtime
+	offtime = offtime % (3600 * 24)
+	hour := int(offtime / 3600)
+	offtime = offtime % 3600
+	minute := int(offtime / 60)
+	second := int(offtime % 60)
+	if param.Type == "Weekly" {
+		return fmt.Sprintf("%d %d %d * * %d", second, minute, hour, param.Weekday%7)
+	}
+	return fmt.Sprintf("%d %d %d * * *", second, minute, hour)
 }
