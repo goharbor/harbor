@@ -16,17 +16,17 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"fmt"
-	"github.com/goharbor/harbor/src/common"
-	comcfg "github.com/goharbor/harbor/src/common/config"
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/job/impl"
-	"github.com/pkg/errors"
 	"os"
 
+	"github.com/goharbor/harbor/src/common"
+	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/runtime"
 )

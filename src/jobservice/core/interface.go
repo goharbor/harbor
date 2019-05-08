@@ -68,8 +68,11 @@ type Interface interface {
 	// The total number is also returned.
 	GetPeriodicExecutions(periodicJobID string, query *query.Parameter) ([]*job.Stats, int64, error)
 
-	// Get the scheduled jobs by page
-	// The page number in the query will be ignored, default 20 is used. This is the limitation of backend lib.
+	// Get the jobs with queries.
+	//
+	// For scheduled jobs, the page number in the query will be ignored, default 20 is used.
+	// This is the limitation of backend lib. The int64 is total number.
+	// For other cases, query the jobs with cursor, not standard pagination. The int64 is next cursor.
 	// The total number is also returned.
-	ScheduledJobs(query *query.Parameter) ([]*job.Stats, int64, error)
+	GetJobs(query *query.Parameter) ([]*job.Stats, int64, error)
 }

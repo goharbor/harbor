@@ -34,7 +34,10 @@ import (
 	"strconv"
 )
 
-const totalHeaderKey = "Total-Count"
+const (
+	totalHeaderKey = "Total-Count"
+	nextCursorKey  = "Next-Cursor"
+)
 
 // Handler defines approaches to handle the http requests.
 type Handler interface {
@@ -56,8 +59,8 @@ type Handler interface {
 	// HandleJobLogReq is used to handle the request of getting periodic executions
 	HandlePeriodicExecutions(w http.ResponseWriter, req *http.Request)
 
-	// HandleScheduledJobs is used to handle the request of getting pending scheduled jobs
-	HandleScheduledJobs(w http.ResponseWriter, req *http.Request)
+	// HandleGetJobsReq is used to handle the request of getting jobs
+	HandleGetJobsReq(w http.ResponseWriter, req *http.Request)
 }
 
 // DefaultHandler is the default request handler which implements the Handler interface.
@@ -244,17 +247,24 @@ func (dh *DefaultHandler) HandlePeriodicExecutions(w http.ResponseWriter, req *h
 
 }
 
-// HandleScheduledJobs is implementation of method defined in interface 'Handler'
-func (dh *DefaultHandler) HandleScheduledJobs(w http.ResponseWriter, req *http.Request) {
+// HandleGetJobsReq is implementation of method defined in interface 'Handler'
+func (dh *DefaultHandler) HandleGetJobsReq(w http.ResponseWriter, req *http.Request) {
 	// Get query parameters
 	q := extractQuery(req)
-	jobs, total, err := dh.controller.ScheduledJobs(q)
+	jobs, total, err := dh.controller.GetJobs(q)
 	if err != nil {
-		dh.handleError(w, req, http.StatusInternalServerError, errs.GetScheduledJobsError(err))
+		dh.handleError(w, req, http.StatusInternalServerError, errs.GetJobsError(q, err))
 		return
 	}
 
-	w.Header().Add(totalHeaderKey, fmt.Sprintf("%d", total))
+	key := nextCursorKey
+	if v, ok := q.Extras.Get(query.ExtraParamKeyKind); ok {
+		if kind, yes := v.(string); yes && kind == job.KindScheduled {
+			key = totalHeaderKey
+		}
+	}
+
+	w.Header().Add(key, fmt.Sprintf("%d", total))
 	dh.handleJSONData(w, req, http.StatusOK, jobs)
 }
 
@@ -318,6 +328,20 @@ func extractQuery(req *http.Request) *query.Parameter {
 	if !utils.IsEmptyStr(nonStoppedOnly) {
 		if nonStoppedOnlyV, err := strconv.ParseBool(nonStoppedOnly); err == nil {
 			q.Extras.Set(query.ExtraParamKeyNonStoppedOnly, nonStoppedOnlyV)
+		}
+	}
+
+	// Extra job kind query param
+	jobKind := queries.Get(query.ParamKeyJobKind)
+	if !utils.IsEmptyStr(jobKind) {
+		q.Extras.Set(query.ExtraParamKeyKind, jobKind)
+	}
+
+	// Extra query cursor
+	cursorV := queries.Get(query.ParamKeyCursor)
+	if !utils.IsEmptyStr(cursorV) {
+		if cursor, err := strconv.ParseInt(cursorV, 10, 32); err == nil {
+			q.Extras.Set(query.ExtraParamKeyCursor, cursor)
 		}
 	}
 

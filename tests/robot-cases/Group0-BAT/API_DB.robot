@@ -17,6 +17,8 @@ ${SERVER_API_ENDPOINT}  ${SERVER_URL}/api
 &{SERVER_CONFIG}  endpoint=${SERVER_API_ENDPOINT}  verify_ssl=False
 
 *** Test Cases ***
+Test Case - Garbage Collection
+    Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 Test Case - Add Private Project Member and Check User Can See It
     Harbor API Test  ./tests/apitests/python/test_add_member_to_private_project.py
 Test Case - Delete a Repository of a Certain Project Created by Normal User
@@ -33,8 +35,6 @@ Test Case - Manage Project Member
     Harbor API Test  ./tests/apitests/python/test_manage_project_member.py
 Test Case - Project Level Policy Content Trust
     Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
-Test Case - Garbage Collection
-    Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 Test Case - User View Logs
     Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
 Test Case - Scan All Images

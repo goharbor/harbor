@@ -17,7 +17,6 @@ package job
 import (
 	"context"
 	"encoding/json"
-	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/errs"
@@ -65,15 +64,6 @@ type Tracker interface {
 	// Returns:
 	//  error if update failed
 	Update(fieldAndValues ...interface{}) error
-
-	// Executions returns the executions of the job tracked by this tracker.
-	// Please pay attention, this only for periodic job.
-	//
-	// Returns:
-	//   job execution IDs matched the query
-	//   the total number
-	//   error if any issues happened
-	Executions(q *query.Parameter) ([]string, int64, error)
 
 	// NumericID returns the numeric ID of periodic job.
 	// Please pay attention, this only for periodic job.
@@ -239,65 +229,6 @@ func (bt *basicTracker) CheckIn(message string) error {
 	)
 
 	return err
-}
-
-// Executions of the tracked job
-func (bt *basicTracker) Executions(q *query.Parameter) ([]string, int64, error) {
-	if bt.jobStats.Info.JobKind != KindPeriodic {
-		return nil, 0, errors.New("only periodic job has executions")
-	}
-
-	conn := bt.pool.Get()
-	defer func() {
-		_ = conn.Close()
-	}()
-
-	key := rds.KeyUpstreamJobAndExecutions(bt.namespace, bt.jobID)
-
-	// Query executions by "non stopped"
-	if nonStoppedOnly, ok := q.Extras.Get(query.ExtraParamKeyNonStoppedOnly); ok {
-		if v, yes := nonStoppedOnly.(bool); yes && v {
-			return queryExecutions(conn, key, q)
-		}
-	}
-
-	// Pagination
-	var pageNumber, pageSize uint = 1, query.DefaultPageSize
-	if q != nil {
-		if q.PageNumber > 0 {
-			pageNumber = q.PageNumber
-		}
-		if q.PageSize > 0 {
-			pageSize = q.PageSize
-		}
-	}
-
-	// Get total first
-	total, err := redis.Int64(conn.Do("ZCARD", key))
-	if err != nil {
-		return nil, 0, err
-	}
-
-	// No items
-	result := make([]string, 0)
-	if total == 0 || (int64)((pageNumber-1)*pageSize) >= total {
-		return result, total, nil
-	}
-
-	min, max := (pageNumber-1)*pageSize, pageNumber*pageSize-1
-	args := []interface{}{key, min, max}
-	list, err := redis.Values(conn.Do("ZREVRANGE", args...))
-	if err != nil {
-		return nil, 0, err
-	}
-
-	for _, item := range list {
-		if eID, ok := item.([]byte); ok {
-			result = append(result, string(eID))
-		}
-	}
-
-	return result, total, nil
 }
 
 // Expire job stats
@@ -708,41 +639,4 @@ func getStatus(conn redis.Conn, key string) (Status, error) {
 
 func setStatus(conn redis.Conn, key string, status Status) error {
 	return rds.HmSet(conn, key, "status", status.String(), "update_time", time.Now().Unix())
-}
-
-// queryExecutions queries periodic executions by status
-func queryExecutions(conn redis.Conn, dataKey string, q *query.Parameter) ([]string, int64, error) {
-	total, err := redis.Int64(conn.Do("ZCOUNT", dataKey, 0, "+inf"))
-	if err != nil {
-		return nil, 0, err
-	}
-
-	var pageNumber, pageSize uint = 1, query.DefaultPageSize
-	if q.PageNumber > 0 {
-		pageNumber = q.PageNumber
-	}
-	if q.PageSize > 0 {
-		pageSize = q.PageSize
-	}
-
-	results := make([]string, 0)
-	if total == 0 || (int64)((pageNumber-1)*pageSize) >= total {
-		return results, total, nil
-	}
-
-	offset := (pageNumber - 1) * pageSize
-	args := []interface{}{dataKey, "+inf", 0, "LIMIT", offset, pageSize}
-
-	eIDs, err := redis.Values(conn.Do("ZREVRANGEBYSCORE", args...))
-	if err != nil {
-		return nil, 0, err
-	}
-
-	for _, eID := range eIDs {
-		if eIDBytes, ok := eID.([]byte); ok {
-			results = append(results, string(eIDBytes))
-		}
-	}
-
-	return results, total, nil
 }

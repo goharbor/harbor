@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/gocraft/work"
-	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -360,40 +359,6 @@ func (w *basicWorker) ValidateJobParameters(jobType interface{}, params job.Para
 
 	theJ := runner.Wrap(jobType)
 	return theJ.Validate(params)
-}
-
-// ScheduledJobs returns the scheduled jobs by page
-func (w *basicWorker) ScheduledJobs(query *query.Parameter) ([]*job.Stats, int64, error) {
-	var page uint = 1
-	if query != nil && query.PageNumber > 1 {
-		page = query.PageNumber
-	}
-
-	sJobs, total, err := w.client.ScheduledJobs(page)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	res := make([]*job.Stats, 0)
-	for _, sJob := range sJobs {
-		jID := sJob.ID
-		if len(sJob.Args) > 0 {
-			if _, ok := sJob.Args[period.PeriodicExecutionMark]; ok {
-				// Periodic scheduled job
-				jID = fmt.Sprintf("%s@%d", sJob.ID, sJob.RunAt)
-			}
-		}
-		t, err := w.ctl.Track(jID)
-		if err != nil {
-			// Just log it
-			logger.Errorf("cworker: query scheduled jobs error: %s", err)
-			continue
-		}
-
-		res = append(res, t.Job())
-	}
-
-	return res, total, nil
 }
 
 // RegisterJob is used to register the job to the worker.

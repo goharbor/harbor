@@ -16,6 +16,7 @@ package core
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/mgt"
 	"github.com/pkg/errors"
 
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -24,7 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/robfig/cron"
 )
@@ -34,15 +34,15 @@ import (
 type basicController struct {
 	// Refer the backend worker
 	backendWorker worker.Interface
-	// Refer the job life cycle management controller
-	ctl lcm.Controller
+	// Refer the job stats manager
+	manager mgt.Manager
 }
 
 // NewController is constructor of basicController.
-func NewController(backendWorker worker.Interface, ctl lcm.Controller) Interface {
+func NewController(backendWorker worker.Interface, mgr mgt.Manager) Interface {
 	return &basicController{
 		backendWorker: backendWorker,
-		ctl:           ctl,
+		manager:       mgr,
 	}
 }
 
@@ -92,7 +92,7 @@ func (bc *basicController) LaunchJob(req *job.Request) (res *job.Stats, err erro
 
 	// Save job stats
 	if err == nil {
-		if _, err := bc.ctl.New(res); err != nil {
+		if err := bc.manager.SaveJob(res); err != nil {
 			return nil, err
 		}
 	}
@@ -106,12 +106,7 @@ func (bc *basicController) GetJob(jobID string) (*job.Stats, error) {
 		return nil, errs.BadRequestError(errors.New("empty job ID"))
 	}
 
-	t, err := bc.ctl.Track(jobID)
-	if err != nil {
-		return nil, err
-	}
-
-	return t.Job(), nil
+	return bc.manager.GetJob(jobID)
 }
 
 // StopJob is implementation of same method in core interface.
@@ -157,32 +152,25 @@ func (bc *basicController) GetPeriodicExecutions(periodicJobID string, query *qu
 		return nil, 0, errs.BadRequestError(errors.New("nil periodic job ID"))
 	}
 
-	t, err := bc.ctl.Track(periodicJobID)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	eIDs, total, err := t.Executions(query)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	res := make([]*job.Stats, 0)
-	for _, eID := range eIDs {
-		et, err := bc.ctl.Track(eID)
-		if err != nil {
-			return nil, 0, err
-		}
-
-		res = append(res, et.Job())
-	}
-
-	return res, total, nil
+	return bc.manager.GetPeriodicExecution(periodicJobID, query)
 }
 
-// ScheduledJobs returns the scheduled jobs by page
-func (bc *basicController) ScheduledJobs(query *query.Parameter) ([]*job.Stats, int64, error) {
-	return bc.backendWorker.ScheduledJobs(query)
+// GetJobs returns the jobs by specified
+func (bc *basicController) GetJobs(q *query.Parameter) ([]*job.Stats, int64, error) {
+	onlyScheduledJobs := false
+	if q != nil && q.Extras != nil {
+		if v, ok := q.Extras.Get(query.ExtraParamKeyKind); ok {
+			if job.KindScheduled == v.(string) {
+				onlyScheduledJobs = true
+			}
+		}
+	}
+
+	if onlyScheduledJobs {
+		return bc.manager.GetScheduledJobs(q)
+	}
+
+	return bc.manager.GetJobs(q)
 }
 
 func validJobReq(req *job.Request) error {
