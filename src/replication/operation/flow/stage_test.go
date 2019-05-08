@@ -151,7 +151,7 @@ func (f *fakedExecutionManager) List(...*models.ExecutionQuery) (int64, []*model
 	return 0, nil, nil
 }
 func (f *fakedExecutionManager) Get(int64) (*models.Execution, error) {
-	return nil, nil
+	return &models.Execution{}, nil
 }
 func (f *fakedExecutionManager) Update(*models.Execution, ...string) error {
 	return nil

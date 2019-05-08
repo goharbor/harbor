@@ -125,6 +125,29 @@ func (c *controller) StopReplication(executionID int64) error {
 	if err != nil {
 		return err
 	}
+	// no tasks, just set its status to "stopped"
+	if len(tasks) == 0 {
+		execution, err := c.executionMgr.Get(executionID)
+		if err != nil {
+			return err
+		}
+		if execution == nil {
+			return fmt.Errorf("the execution %d not found", executionID)
+		}
+		if execution.Status != models.ExecutionStatusInProgress {
+			log.Debugf("the execution %d isn't in progress, no need to stop", executionID)
+			return nil
+		}
+		if err = c.executionMgr.Update(&models.Execution{
+			ID:      executionID,
+			Status:  models.ExecutionStatusStopped,
+			EndTime: time.Now(),
+		}, models.ExecutionPropsName.Status, models.ExecutionPropsName.EndTime); err != nil {
+			return err
+		}
+		log.Debugf("the status of execution %d is set to stopped", executionID)
+	}
+	// got tasks, stopping the tasks one by one
 	for _, task := range tasks {
 		if !isTaskRunning(task) {
 			log.Debugf("the task %d(job ID: %s) isn't running, its status is %s, skip", task.ID, task.JobID, task.Status)

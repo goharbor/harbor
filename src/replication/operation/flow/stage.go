@@ -309,6 +309,18 @@ func schedule(scheduler scheduler.Scheduler, executionMgr execution.Manager, ite
 	return n, nil
 }
 
+// check whether the execution is stopped
+func isExecutionStopped(mgr execution.Manager, id int64) (bool, error) {
+	execution, err := mgr.Get(id)
+	if err != nil {
+		return false, err
+	}
+	if execution == nil {
+		return false, fmt.Errorf("execution %d not found", id)
+	}
+	return execution.Status == models.ExecutionStatusStopped, nil
+}
+
 // return the name with format "res_name" or "res_name:[vtag1,vtag2,vtag3]"
 // if the resource has vtags
 func getResourceName(res *model.Resource) string {
