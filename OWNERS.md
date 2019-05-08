@@ -21,7 +21,7 @@ Maintainer list here is a copy of [MAINTAINERS.md](https://github.com/goharbor/c
 | ---------- | --------- | ----------- |
 | Daojun Zhang | [stonezdj](https://github.com/stonezdj) | [VMware](https://www.github.com/vmware/) |
 | Wenkai Yin | [ywk253100](https://github.com/ywk253100) | [VMware](https://www.github.com/vmware/) |
-| Yan | [wy65701436](https://github.com/wy65701436) | [VMware](https://www.github.com/vmware/) |
+| Yan Wang | [wy65701436](https://github.com/wy65701436) | [VMware](https://www.github.com/vmware/) |
 | Qian Deng | [ninjadq](https://github.com/ninjadq) | [VMware](https://www.github.com/vmware/) |
 | Mia Zhou | [zhoumeina](https://github.com/zhoumeina) | [VMware](https://www.github.com/vmware/) |
 | Nathan Lowe | [nlowe](https://github.com/nlowe) | [Hyland Software](https://github.com/HylandSoftware) |
