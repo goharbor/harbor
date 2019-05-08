@@ -12,7 +12,6 @@ chartm_env = os.path.join(config_dir, "chartserver", "env")
 def prepare_chartmuseum(config_dict):
 
     core_secret = config_dict['core_secret']
-    registry_custom_ca_bundle_path = config_dict['registry_custom_ca_bundle_path']
     redis_host = config_dict['redis_host']
     redis_port = config_dict['redis_port']
     redis_password = config_dict['redis_password']

@@ -178,7 +178,15 @@ export class HelmChartDefaultService extends HelmChartService {
     projectName: string,
     filename: string,
   ): Observable<any> {
-    return this.http.get(`${this.config.downloadChartEndpoint}/${projectName}/${filename}`, {
+    let url: string;
+    let chartFileRegexPattern = new RegExp('^http.*/chartrepo/(.*)');
+    if (chartFileRegexPattern.test(filename)) {
+      let match = filename.match('^http.*/chartrepo/(.*)');
+      url = `${this.config.downloadChartEndpoint}/${match[1]}`;
+    } else {
+      url = `${this.config.downloadChartEndpoint}/${projectName}/${filename}`;
+    }
+    return this.http.get(url, {
       responseType: ResponseContentType.Blob,
     })
     .pipe(map(response => {
