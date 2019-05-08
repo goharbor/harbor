@@ -19,11 +19,14 @@ import (
 	"io"
 	"os"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 )
 
 var logger = New(os.Stdout, NewTextFormatter(), WarningLevel, 4)
+
+const srcSeparator = "harbor" + string(os.PathSeparator) + "src"
 
 func init() {
 	lvl := os.Getenv("LOG_LEVEL")
@@ -148,7 +151,7 @@ func (l *Logger) Debugf(format string, v ...interface{}) {
 // Info ...
 func (l *Logger) Info(v ...interface{}) {
 	if l.lvl <= InfoLevel {
-		record := NewRecord(time.Now(), fmt.Sprint(v...), "", InfoLevel)
+		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), InfoLevel)
 		l.output(record)
 	}
 }
@@ -156,7 +159,7 @@ func (l *Logger) Info(v ...interface{}) {
 // Infof ...
 func (l *Logger) Infof(format string, v ...interface{}) {
 	if l.lvl <= InfoLevel {
-		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), "", InfoLevel)
+		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), InfoLevel)
 		l.output(record)
 	}
 }
@@ -164,7 +167,7 @@ func (l *Logger) Infof(format string, v ...interface{}) {
 // Warning ...
 func (l *Logger) Warning(v ...interface{}) {
 	if l.lvl <= WarningLevel {
-		record := NewRecord(time.Now(), fmt.Sprint(v...), "", WarningLevel)
+		record := NewRecord(time.Now(), fmt.Sprint(v...), l.getLine(), WarningLevel)
 		l.output(record)
 	}
 }
@@ -172,7 +175,7 @@ func (l *Logger) Warning(v ...interface{}) {
 // Warningf ...
 func (l *Logger) Warningf(format string, v ...interface{}) {
 	if l.lvl <= WarningLevel {
-		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), "", WarningLevel)
+		record := NewRecord(time.Now(), fmt.Sprintf(format, v...), l.getLine(), WarningLevel)
 		l.output(record)
 	}
 }
@@ -268,19 +271,15 @@ func Fatalf(format string, v ...interface{}) {
 	logger.Fatalf(format, v...)
 }
 
-func line(calldepth int) string {
-	_, file, line, ok := runtime.Caller(calldepth)
+func line(callDepth int) string {
+	_, file, line, ok := runtime.Caller(callDepth)
 	if !ok {
 		file = "???"
 		line = 0
 	}
-
-	for i := len(file) - 2; i > 0; i-- {
-		if file[i] == os.PathSeparator {
-			file = file[i+1:]
-			break
-		}
+	l := strings.SplitN(file, srcSeparator, 2)
+	if len(l) > 0 {
+		file = l[1]
 	}
-
 	return fmt.Sprintf("[%s:%d]:", file, line)
 }
