@@ -170,6 +170,10 @@ def parse_yaml_config(config_file_path):
     config_dict['clair_https_proxy'] = clair_configs.get('https_proxy') or ''
     config_dict['clair_no_proxy'] = clair_configs.get('no_proxy') or '127.0.0.1,localhost,core,registry'
 
+    # Chart configs
+    chart_configs = configs.get("chart") or {}
+    config_dict['chart_absolute_url'] = chart_configs.get('absolute_url') or ''
+
     # jobservice config
     js_config = configs.get('jobservice') or {}
     config_dict['max_job_workers'] = js_config["max_job_workers"]
