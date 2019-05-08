@@ -61,6 +61,15 @@ func (c *copyFlow) Run(interface{}) (int, error) {
 		return 0, err
 	}
 
+	isStopped, err := isExecutionStopped(c.executionMgr, c.executionID)
+	if err != nil {
+		return 0, err
+	}
+	if isStopped {
+		log.Debugf("the execution %d is stopped, stop the flow", c.executionID)
+		return 0, nil
+	}
+
 	if len(srcResources) == 0 {
 		markExecutionSuccess(c.executionMgr, c.executionID, "no resources need to be replicated")
 		log.Infof("no resources need to be replicated for the execution %d, skip", c.executionID)
