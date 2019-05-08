@@ -64,6 +64,9 @@ jobservice:
   # Maximum number of job workers in job service  
   max_job_workers: 10
 
+chart:
+  absolute_url: disabled
+
 # Log configurations
 log:
   # options are debug, info, warn, error
