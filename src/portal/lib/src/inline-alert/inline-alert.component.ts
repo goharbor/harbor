@@ -24,7 +24,7 @@ import { Observable,  Subscription } from "rxjs";
   styleUrls: ["./inline-alert.component.scss"]
 })
 export class InlineAlertComponent {
-  inlineAlertType: string = "alert-danger";
+  inlineAlertType: string = "danger";
   inlineAlertClosable: boolean = false;
   alertClose: boolean = true;
   displayedText: string = "";
@@ -51,7 +51,7 @@ export class InlineAlertComponent {
         .subscribe((res: string) => (this.displayedText = res));
     }
 
-    this.inlineAlertType = "alert-danger";
+    this.inlineAlertType = "danger";
     this.showCancelAction = false;
     this.inlineAlertClosable = true;
     this.alertClose = false;
@@ -66,7 +66,7 @@ export class InlineAlertComponent {
         .get(warning.message)
         .subscribe((res: string) => (this.displayedText = res));
     }
-    this.inlineAlertType = "alert-warning";
+    this.inlineAlertType = "warning";
     this.showCancelAction = true;
     this.inlineAlertClosable = false;
     this.alertClose = false;
@@ -81,7 +81,7 @@ export class InlineAlertComponent {
         .get(info.message)
         .subscribe((res: string) => (this.displayedText = res));
     }
-    this.inlineAlertType = "alert-success";
+    this.inlineAlertType = "success";
     this.showCancelAction = false;
     this.inlineAlertClosable = true;
     this.alertClose = false;
