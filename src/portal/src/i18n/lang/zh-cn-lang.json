@@ -75,6 +75,7 @@
         "SIGN_UP_MAIL": "邮件地址仅用来重置您的密码。",
         "SIGN_UP_REAL_NAME": "全名",
         "ITEM_REQUIRED": "此项为必填项。",
+        "SCOPE_REQUIRED": "此项为必填项且为scope格式。",
         "NUMBER_REQUIRED": "此项为必填项且为数字。",
         "PORT_REQUIRED": "此项为必填项且为合法端口号。",
         "CRON_REQUIRED": "此项为必填项且为cron格式。",

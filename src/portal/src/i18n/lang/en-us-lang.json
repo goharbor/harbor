@@ -75,6 +75,7 @@
         "SIGN_UP_MAIL": "Email is only used for resetting your password.",
         "SIGN_UP_REAL_NAME": "First and last name",
         "ITEM_REQUIRED": "Field is required.",
+        "SCOPE_REQUIRED": "Field is required and should be in scope format.",
         "NUMBER_REQUIRED": "Field is required and should be numbers.",
         "PORT_REQUIRED": "Field is required and should be valid port number.",
         "CRON_REQUIRED": "Field is required and should be in cron format.",

@@ -75,6 +75,7 @@
         "SIGN_UP_MAIL": "La dirección de email solamente se utilizar para restablecer la contraseña.",
         "SIGN_UP_REAL_NAME": "Nombre y apellidos",
         "ITEM_REQUIRED": "Campo obligatorio.",
+        "SCOPE_REQUIRED": "Field is required and should be in scope format.",
         "NUMBER_REQUIRED": "El campo es obligatorio y debería ser un número.",
         "PORT_REQUIRED": "El campo es obligatorio y debería ser un número de puerto válido.",
         "CRON_REQUIRED": "El campo es obligatorio y debe estar en formato cron.",

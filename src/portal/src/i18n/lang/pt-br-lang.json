@@ -75,6 +75,7 @@
         "SIGN_UP_MAIL": "Email é apenas utilizado para redefinir a senha.",
         "SIGN_UP_REAL_NAME": "Primeiro e último nome",
         "ITEM_REQUIRED": "Campo é obrigatório.",
+        "SCOPE_REQUIRED": "Field is required and should be in scope format.",
         "NUMBER_REQUIRED": "Campo é obrigatório e deve ser numerico.",
         "PORT_REQUIRED": "Campo é obrigatório e deve ser um número de porta válido.",
         "CRON_REQUIRED": "O campo é obrigatório e deve estar no formato cron.",
