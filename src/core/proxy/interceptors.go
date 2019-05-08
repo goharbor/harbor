@@ -43,6 +43,18 @@ func MatchPullManifest(req *http.Request) (bool, string, string) {
 	if req.Method != http.MethodGet {
 		return false, "", ""
 	}
+	return matchManifestURL(req)
+}
+
+// MatchPushManifest checks if the request looks like a request to push manifest.  If it is returns the image and tag/sha256 digest as 2nd and 3rd return values
+func MatchPushManifest(req *http.Request) (bool, string, string) {
+	if req.Method != http.MethodPut {
+		return false, "", ""
+	}
+	return matchManifestURL(req)
+}
+
+func matchManifestURL(req *http.Request) (bool, string, string) {
 	re := regexp.MustCompile(manifestURLPattern)
 	s := re.FindStringSubmatch(req.URL.Path)
 	if len(s) == 3 {
@@ -166,6 +178,25 @@ func (rh readonlyHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		}
 	}
 	rh.next.ServeHTTP(rw, req)
+}
+
+type multipleManifestHandler struct {
+	next http.Handler
+}
+
+// The handler is responsible for blocking request to upload manifest list by docker client, which is not supported so far by Harbor.
+func (mh multipleManifestHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	match, _, _ := MatchPushManifest(req)
+	if match {
+		contentType := req.Header.Get("Content-type")
+		// application/vnd.docker.distribution.manifest.list.v2+json
+		if strings.Contains(contentType, "manifest.list.v2") {
+			log.Debugf("Content-type: %s is not supported, failing the response.", contentType)
+			http.Error(rw, marshalError("UNSUPPORTED_MEDIA_TYPE", "Manifest.list is not supported."), http.StatusUnsupportedMediaType)
+			return
+		}
+	}
+	mh.next.ServeHTTP(rw, req)
 }
 
 type listReposHandler struct {

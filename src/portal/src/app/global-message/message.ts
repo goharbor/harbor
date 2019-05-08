@@ -22,15 +22,15 @@ export class Message {
   get type(): string {
     switch (this.alertType) {
       case AlertType.DANGER:
-        return 'alert-danger';
+        return 'danger';
       case AlertType.INFO:
-        return 'alert-info';
+        return 'info';
       case AlertType.SUCCESS:
-        return 'alert-success';
+        return 'success';
       case AlertType.WARNING:
-        return 'alert-warning';
+        return 'warning';
       default:
-        return 'alert-warning';
+        return 'warning';
     }
   }
 

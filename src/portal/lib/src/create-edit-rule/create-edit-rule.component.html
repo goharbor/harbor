@@ -22,7 +22,7 @@
         <div class="form-group form-group-override">
           <label class="form-group-label-override">{{'REPLICATION.REPLI_MODE' | translate}}</label>
           <div class="radio-inline" [class.disabled]="policyId >= 0 || onGoing">
-            <input type="radio" id="push_base" name="replicationMode" [value]=true  [disabled]="policyId >= 0 || onGoing" [(ngModel)]="isPushMode" (change)="modeChange()" [ngModelOptions]="{standalone: true}">
+            <input type="radio" id="push_base" name="replicationMode" [value]=true  [disabled]="policyId >= 0 || onGoing" [(ngModel)]="isPushMode" (change)="pushModeChange()" [ngModelOptions]="{standalone: true}">
             <label for="push_base">Push-based</label>
             <clr-tooltip class="mode-tooltip">
               <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
@@ -32,7 +32,7 @@
             </clr-tooltip>
           </div>
           <div class="radio-inline" [class.disabled]="policyId >= 0 || onGoing">          
-            <input type="radio" id="pull_base" name="replicationMode" [value]=false [disabled]="policyId >= 0 || onGoing" [(ngModel)]="isPushMode" [ngModelOptions]="{standalone: true}">
+            <input type="radio" id="pull_base" name="replicationMode" [value]=false [disabled]="policyId >= 0 || onGoing" [(ngModel)]="isPushMode" (change)="pullModeChange()" [ngModelOptions]="{standalone: true}">
             <label for="pull_base">Pull-based</label>
             <clr-tooltip class="mode-tooltip">
               <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>

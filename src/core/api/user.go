@@ -203,7 +203,10 @@ func (ua *UserAPI) List() {
 		ua.SendInternalServerError(fmt.Errorf("failed to get users: %v", err))
 		return
 	}
-
+	for i := range users {
+		user := &users[i]
+		user.Password = ""
+	}
 	ua.SetPaginationHeader(total, page, size)
 	ua.Data["json"] = users
 	ua.ServeJSON()

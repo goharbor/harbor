@@ -73,12 +73,15 @@ export class CronScheduleComponent implements OnChanges {
   }
 
   save(): void {
-    if (this.scheduleType === SCHEDULE_TYPE.CUSTOM && this.cronString === '') {
-      this.dateInvalid = true;
+    if (this.scheduleType === SCHEDULE_TYPE.CUSTOM ) {
+      if (this.cronString === '') {
+        this.dateInvalid = true;
+      }
+      if (this.dateInvalid) {
+        return;
+      }
     }
-    if (this.dateInvalid) {
-      return;
-    }
+
     let scheduleTerm: string = "";
     if (this.scheduleType && this.scheduleType === SCHEDULE_TYPE.NONE) {
       scheduleTerm = "";

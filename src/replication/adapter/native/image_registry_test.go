@@ -65,7 +65,7 @@ func Test_native_FetchImages(t *testing.T) {
 	fmt.Println("mockNativeRegistry URL: ", mock.URL)
 
 	var registry = &model.Registry{
-		Type:     registryTypeNative,
+		Type:     model.RegistryTypeDockerRegistry,
 		URL:      mock.URL,
 		Insecure: true,
 	}

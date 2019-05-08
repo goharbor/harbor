@@ -145,7 +145,8 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         return this.appConfig.auth_mode === 'oidc_auth';
     }
     public get showForgetPwd(): boolean {
-        return this.appConfig.auth_mode !== 'ldap_auth' && this.appConfig.auth_mode !== 'uaa_auth';
+        return this.appConfig.auth_mode !== 'ldap_auth' && this.appConfig.auth_mode !== 'uaa_auth'
+         && this.appConfig.auth_mode !== 'oidc_auth';
     }
     clickRememberMe($event: any): void {
         if ($event && $event.target) {

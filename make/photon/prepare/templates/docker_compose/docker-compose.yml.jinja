@@ -1,4 +1,4 @@
-version: '2'
+version: '2.3'
 services:
   log:
     image: goharbor/harbor-log:{{version}}
@@ -130,12 +130,16 @@ services:
       - SETUID
     volumes:
       - ./common/config/core/app.conf:/etc/core/app.conf:z
-      - ./common/config/core/certificates/:/etc/core/certificates/:z
       - {{data_volume}}/secret/core/private_key.pem:/etc/core/private_key.pem:z
       - {{data_volume}}/secret/keys/secretkey:/etc/core/key:z
       - {{data_volume}}/ca_download/:/etc/core/ca/:z
       - {{data_volume}}/psc/:/etc/core/token/:z
       - {{data_volume}}/:/data/:z
+{% if uaa_ca_file %}
+      - type: bind
+        source: {{uaa_ca_file}}
+        target: /etc/core/certificates/uaa_ca.pem
+{% endif %}
     networks:
       harbor:
 {% if with_notary %}

@@ -93,20 +93,24 @@ func (n *NotificationHandler) Post() {
 		}()
 
 		if action == "push" {
-			go func() {
-				exist := dao.RepositoryExists(repository)
-				if exist {
-					return
-				}
-				log.Debugf("Add repository %s into DB.", repository)
-				repoRecord := models.RepoRecord{
-					Name:      repository,
-					ProjectID: pro.ProjectID,
-				}
-				if err := dao.AddRepository(repoRecord); err != nil {
-					log.Errorf("Error happens when adding repository: %v", err)
-				}
-			}()
+			// discard the notification without tag.
+			if tag != "" {
+				go func() {
+					exist := dao.RepositoryExists(repository)
+					if exist {
+						return
+					}
+					log.Debugf("Add repository %s into DB.", repository)
+					repoRecord := models.RepoRecord{
+						Name:      repository,
+						ProjectID: pro.ProjectID,
+					}
+					if err := dao.AddRepository(repoRecord); err != nil {
+						log.Errorf("Error happens when adding repository: %v", err)
+					}
+				}()
+			}
+
 			if !coreutils.WaitForManifestReady(repository, tag, 5) {
 				log.Errorf("Manifest for image %s:%s is not ready, skip the follow up actions.", repository, tag)
 				return
