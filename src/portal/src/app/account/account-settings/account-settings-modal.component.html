@@ -34,9 +34,9 @@
                     </label><span class="spinner spinner-inline" [hidden]="!checkProgress"></span>
                 </div>
                 <div class="form-group form-group-override">
-                    <label for="account_settings_full_name" class="required form-group-label-override">{{'PROFILE.FULL_NAME' | translate}}</label>
+                    <label for="account_settings_full_name" class="form-group-label-override" [class.required]="!account.oidc_user_meta">{{'PROFILE.FULL_NAME' | translate}}</label>
                     <label for="account_settings_full_name" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]='!getValidationState("account_settings_full_name")'>
-                      <input type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname" required maxLengthExt="20" id="account_settings_full_name" size="30" (input)='handleValidation("account_settings_full_name", false)' (blur)='handleValidation("account_settings_full_name", true)'>
+                      <input type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname" [required]="!account.oidc_user_meta"  maxLengthExt="20" id="account_settings_full_name" size="30" (input)='handleValidation("account_settings_full_name", false)' (blur)='handleValidation("account_settings_full_name", true)'>
                       <span class="tooltip-content">
                           {{'TOOLTIP.FULL_NAME' | translate}}
                       </span>
@@ -45,7 +45,7 @@
                 <div class="form-group form-group-override">
                     <label for="account_settings_comments" class="form-group-label-override">{{'PROFILE.COMMENT' | translate}}</label>
                     <label for="account_settings_comments" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
-                    <input type="text" #commentInput="ngModel" maxLengthExt="20" name="account_settings_comments" [(ngModel)]="account.comment" id="account_settings_comments" size="30">
+                    <input type="text" #commentInput="ngModel" maxLengthExt="30" name="account_settings_comments" [(ngModel)]="account.comment" id="account_settings_comments" size="30">
                     <span class="tooltip-content">
                         {{'TOOLTIP.COMMENT' | translate}}
                     </span>
