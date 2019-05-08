@@ -13,8 +13,12 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - {{log_location}}/:/var/log/docker/:z
-      - ./common/config/log/:/etc/logrotate.d/:z
+      - type: bind
+        source: {{log_location}}
+        target: /var/log/docker
+      - type: bind
+        source: ./common/config/log
+        target: /etc/logrotate.d
     ports:
       - 127.0.0.1:1514:10514
     networks:
@@ -30,14 +34,24 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - {{data_volume}}/registry:/storage:z
-      - ./common/config/registry/:/etc/registry/:z
-      - {{data_volume}}/secret/registry/root.crt:/etc/registry/root.crt:z
+      - type: bind
+        source: {{data_volume}}
+        target: /registry:/storage
+      - type: bind
+        source: ./common/config/registry
+        target: /etc/registry
+      - type: bind
+        source: {{data_volume}}/secret/registry/root.crt
+        target: /etc/registry/root.crt
 {% if gcs_keyfile %}
-      - {{gcs_keyfile}}:/etc/registry/gcs.key
+      - type: bind
+        source: {{gcs_keyfile}}
+        target: /etc/registry/gcs.key
 {% endif %}
 {%if registry_custom_ca_bundle_path %}
-      - {{registry_custom_ca_bundle_path}}:/harbor_cust_cert/custom-ca-bundle.crt:z
+      - type: bind
+        source: {{registry_custom_ca_bundle_path}}
+        target: /harbor_cust_cert/custom-ca-bundle.crt
 {% endif %}
     networks:
       - harbor
@@ -65,11 +79,19 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - {{data_volume}}/registry:/storage:z
-      - ./common/config/registry/:/etc/registry/:z
-      - ./common/config/registryctl/config.yml:/etc/registryctl/config.yml:z
+      - type: bind
+        source: {{data_volume}}
+        target: /registry:/storage
+      - type: bind
+        source: ./common/config/registry
+        target: /etc/registry
+      - type: bind
+        source: ./common/config/registryctl/config.yml
+        target: /etc/registryctl/config.yml
 {%if registry_custom_ca_bundle_path %}
-      - {{registry_custom_ca_bundle_path}}:/harbor_cust_cert/custom-ca-bundle.crt:z
+      - type: bind
+        source: {{registry_custom_ca_bundle_path}}
+        target: /harbor_cust_cert/custom-ca-bundle.crt
 {% endif %}
     networks:
       - harbor
@@ -93,7 +115,9 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - {{data_volume}}/database:/var/lib/postgresql/data:z
+      - type: bind
+        source: {{data_volume}}/database
+        target: /var/lib/postgresql/data
     networks:
       harbor:
 {% if with_notary %}
@@ -128,12 +152,27 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - ./common/config/core/app.conf:/etc/core/app.conf:z
-      - {{data_volume}}/secret/core/private_key.pem:/etc/core/private_key.pem:z
-      - {{data_volume}}/secret/keys/secretkey:/etc/core/key:z
-      - {{data_volume}}/ca_download/:/etc/core/ca/:z
-      - {{data_volume}}/psc/:/etc/core/token/:z
-      - {{data_volume}}/:/data/:z
+      - type: bind
+        source: ./common/config/core/app.conf
+        target: /etc/core/app.conf
+      - type: bind
+        source: ./common/config/core/certificates
+        target: /etc/core/certificates
+      - type: bind
+        source: {{data_volume}}/secret/core/private_key.pem
+        target: /etc/core/private_key.pem
+      - type: bind
+        source: {{data_volume}}/secret/keys/secretkey
+        target: /etc/core/key
+      - type: bind
+        source: {{data_volume}}/ca_download
+        target: /etc/core/ca
+      - type: bind
+        source: {{data_volume}}/psc
+        target: /etc/core/token
+      - type: bind
+        source: {{data_volume}}
+        target: /data
 {% if uaa_ca_file %}
       - type: bind
         source: {{uaa_ca_file}}
@@ -199,8 +238,10 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - {{data_volume}}/job_logs:/var/log/jobs:z
-      - ./common/config/jobservice/config.yml:/etc/jobservice/config.yml:z
+      - type: bind
+        source: {{data_volume}}/job_logs
+        target: /var/log/jobs
+      - ./common/config/jobservice/config.yml:/etc/jobservice/config.yml
     networks:
       - harbor
 {% if with_clair %}
@@ -226,7 +267,9 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - {{data_volume}}/redis:/var/lib/redis
+      - type: bind
+        source: {{data_volume}}/redis
+        target: /var/lib/redis
     networks:
       harbor:
 {% if with_chartmuseum %}
@@ -254,10 +297,16 @@ services:
       - SETUID
       - NET_BIND_SERVICE
     volumes:
-      - ./common/config/nginx:/etc/nginx:z
+      - type: bind
+        source: ./common/config/nginx
+        target: /etc/nginx
 {% if protocol == 'https' %}
-      - {{cert_key_path}}:/etc/cert/server.key:z
-      - {{cert_path}}:/etc/cert/server.crt:z
+      - type: bind
+        source: {{cert_key_path}}
+        target: /etc/cert/server.key
+      - type: bind
+        source: {{cert_path}}
+        target: /etc/cert/server.crt
 {% endif %}
     networks:
       - harbor
@@ -294,9 +343,15 @@ services:
       - harbor-notary
     dns_search: .
     volumes:
-      - ./common/config/notary:/etc/notary:z
-      - {{data_volume}}/secret/notary/notary-signer-ca.crt:/etc/notary/notary-signer-ca.crt:z
-      - {{data_volume}}/secret/registry/root.crt:/etc/notary/root.crt:z
+      - type: bind
+        source: ./common/config/notary
+        target: /etc/notary
+      - type: bind
+        source: {{data_volume}}/secret/notary/notary-signer-ca.crt
+        target: /etc/notary/notary-signer-ca.crt
+      - type: bind
+        source: {{data_volume}}/secret/registry/root.crt
+        target: /etc/notary/root.crt
     env_file:
       - ./common/config/notary/server_env
     depends_on:
@@ -318,9 +373,15 @@ services:
           - notarysigner
     dns_search: .
     volumes:
-      - ./common/config/notary:/etc/notary:z
-      - {{data_volume}}/secret/notary/notary-signer.crt:/etc/notary/notary-signer.crt:z
-      - {{data_volume}}/secret/notary/notary-signer.key:/etc/notary/notary-signer.key:z
+      - type: bind
+        source: ./common/config/notary
+        target: /etc/notary
+      - type: bind
+        source: {{data_volume}}/secret/notary/notary-signer.crt
+        target: /etc/notary/notary-signer.crt
+      - type: bind
+        source: {{data_volume}}/secret/notary/notary-signer.key
+        target: /etc/notary/notary-signer.key
     env_file:
       - ./common/config/notary/signer_env
     depends_on:
@@ -349,9 +410,13 @@ services:
     depends_on:
       - postgresql
     volumes:
-      - ./common/config/clair/config.yaml:/etc/clair/config.yaml:z
+      - type: bind
+        source: ./common/config/clair/config.yaml
+        target: /etc/clair/config.yaml
 {%if registry_custom_ca_bundle_path %}
-      - {{registry_custom_ca_bundle_path}}:/harbor_cust_cert/custom-ca-bundle.crt:z
+      - type: bind
+        source: {{registry_custom_ca_bundle_path}}
+        target: /harbor_cust_cert/custom-ca-bundle.crt
 {% endif %}
     logging:
       driver: "syslog"
@@ -382,10 +447,14 @@ services:
       - {{data_volume}}/chart_storage:/chart_storage:z
       - ./common/config/chartserver:/etc/chartserver:z
 {% if gcs_keyfile %}
-      - {{gcs_keyfile}}:/etc/registry/gcs.key
+      - type: bind
+        source: {{gcs_keyfile}}
+        target: /etc/registry/gcs.key
 {% endif %}
 {%if registry_custom_ca_bundle_path %}
-      - {{registry_custom_ca_bundle_path}}:/harbor_cust_cert/custom-ca-bundle.crt:z
+      - type: bind
+        source: {{registry_custom_ca_bundle_path}}
+        target: /harbor_cust_cert/custom-ca-bundle.crt
 {% endif %}
     logging:
       driver: "syslog"
