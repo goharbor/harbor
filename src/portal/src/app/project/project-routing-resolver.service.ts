@@ -59,10 +59,10 @@ export class ProjectRoutingResolver implements Resolve<Project> {
           this.router.navigate(['/harbor', 'projects']);
           return null;
         }
-      }, catchError (error => {
+      }), catchError (error => {
         this.router.navigate(['/harbor', 'projects']);
         return null;
-      })));
+      }));
 
   }
 }

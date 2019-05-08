@@ -129,7 +129,7 @@ export class Configuration {
         this.email_password = new StringValueItem("", true);
         this.email_insecure = new BoolValueItem(false, true);
         this.token_expiration = new NumberValueItem(30, true);
-        this.robot_token_duration = new NumberValueItem(30, true);
+        this.robot_token_duration = new NumberValueItem(30 * (60 * 24), true);
         this.cfg_expiration = new NumberValueItem(30, true);
         this.verify_remote_cert = new BoolValueItem(false, true);
         this.scan_all_policy = new ComplexValueItem({

@@ -27,7 +27,7 @@ import { Endpoint } from "../service/interface";
 import { EndpointService } from "../service/endpoint.service";
 
 import { ErrorHandler } from "../error-handler/index";
-import { map, catchError } from "rxjs/operators";
+import { map, catchError, finalize } from "rxjs/operators";
 import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
 import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
@@ -115,14 +115,14 @@ export class EndpointComponent implements OnInit, OnDestroy {
     retrieve(): void {
         this.loading = true;
         this.selectedRow = [];
-        this.endpointService.getEndpoints(this.targetName)
+        this.endpointService.getEndpoints(this.targetName).pipe(finalize(() => {
+            this.loading = false;
+            this.forceRefreshView(1000);
+        }))
             .subscribe(targets => {
                 this.targets = targets || [];
-                this.loading = false;
-                this.forceRefreshView(1000);
             }, error => {
                 this.errorHandler.error(error);
-                this.loading = false;
             });
     }
 
