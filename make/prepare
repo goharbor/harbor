@@ -3,7 +3,11 @@ set +e
 
 # If compling source code this dir is harbor's make dir
 # If install harbor via pacakge, this dir is harbor's root dir
-harbor_prepare_path="$( cd "$(dirname "$0")" ; pwd -P )"
+if [[ -n "$HARBOR_BUNDLE_DIR" ]]; then
+    harbor_prepare_path=$HARBOR_BUNDLE_DIR
+else
+    harbor_prepare_path="$( cd "$(dirname "$0")" ; pwd -P )"
+fi
 echo "prepare base dir is set to ${harbor_prepare_path}"
 data_path=$(grep '^[^#]*data_volume:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
 

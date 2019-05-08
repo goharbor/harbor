@@ -12,6 +12,10 @@ storage:
       enabled: false
   delete:
     enabled: true
+{% if storage_redirect_disabled %}
+  redirect:
+    disabled: true
+{% endif %}
 redis:
   addr: {{redis_host}}:{{redis_port}}
   password: {{redis_password}}

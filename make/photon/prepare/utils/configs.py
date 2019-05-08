@@ -124,6 +124,9 @@ def parse_yaml_config(config_file_path):
         config_dict['storage_provider_name'] = 'filesystem'
         config_dict['storage_provider_config'] = {}
 
+    if storage_config.get('redirect'):
+        config_dict['storage_redirect_disabled'] = storage_config['redirect']['disabled']
+
     # Clair configs
     clair_configs = configs.get("clair") or {}
     config_dict['clair_db'] = 'postgres'

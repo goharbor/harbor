@@ -29,7 +29,7 @@ def prepare_registry(config_dict):
 def get_storage_provider_info(provider_name, provider_config):
     provider_config_copy = copy.deepcopy(provider_config)
     if provider_name == "filesystem":
-        if not (provider_config_copy and provider_config_copy.has_key('rootdirectory')):
+        if not (provider_config_copy and ('rootdirectory' in provider_config_copy)):
             provider_config_copy['rootdirectory'] = '/storage'
     if provider_name == 'gcs' and provider_config_copy.get('keyfile'):
         provider_config_copy['keyfile'] = '/etc/registry/gcs.key'
