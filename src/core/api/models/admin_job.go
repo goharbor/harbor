@@ -156,7 +156,7 @@ func ConvertSchedule(cronStr string) (converted ScheduleParam, err error) {
 	convertedSchedule.Type = "custom"
 
 	if strings.Contains(cronStr, "parameter") {
-		scheduleModel := &common_models.ScanAllPolicy{}
+		scheduleModel := common_models.ScanAllPolicy{}
 		if err := json.Unmarshal([]byte(cronStr), &scheduleModel); err != nil {
 			return ScheduleParam{}, err
 		}
@@ -165,11 +165,11 @@ func ConvertSchedule(cronStr string) (converted ScheduleParam, err error) {
 		convertedSchedule.Cron = cron
 		return convertedSchedule, nil
 	} else if strings.Contains(cronStr, "offtime") {
-		scheduleModel := &common_models.ScheduleParam{}
+		scheduleModel := common_models.ScheduleParam{}
 		if err := json.Unmarshal([]byte(cronStr), &scheduleModel); err != nil {
 			return ScheduleParam{}, err
 		}
-		convertedSchedule.Cron = common_utils.ParseScheduleParamToCron(scheduleModel)
+		convertedSchedule.Cron = common_models.ParseScheduleParamToCron(&scheduleModel)
 		return convertedSchedule, nil
 	} else if strings.Contains(cronStr, "cron") {
 		scheduleModel := ScheduleParam{}
