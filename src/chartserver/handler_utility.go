@@ -218,7 +218,6 @@ func (c *Controller) SearchChart(q string, namespaces []string) ([]*search.Resul
 
 // Get the content bytes of the chart version
 func (c *Controller) getChartVersionContent(namespace string, subPath string) ([]byte, error) {
-	hlog.Infof("namespace: %v, subpath: %v", namespace, subPath)
 	var url string
 	if strings.HasPrefix(subPath, "http") {
 		extEndpoint, err := config.ExtEndpoint()
@@ -226,7 +225,6 @@ func (c *Controller) getChartVersionContent(namespace string, subPath string) ([
 			return nil, errors.Wrap(err, "can not get ext endpoint")
 		}
 		url = strings.TrimPrefix(subPath, fmt.Sprintf("%s/%s", extEndpoint, "chartrepo/"))
-		hlog.Infof("extendpoint: %v, trim head: %v result url: %v", extEndpoint, fmt.Sprintf("%s/%s", extEndpoint, "chartrepo"), url)
 	} else {
 		url = path.Join(namespace, subPath)
 	}

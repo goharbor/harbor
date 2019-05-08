@@ -65,6 +65,7 @@ jobservice:
   max_job_workers: 10
 
 chart:
+  # Harbor Default will using relative url in chart, if you want using absolute url you should enable it by change the following value to disabled
   absolute_url: disabled
 
 # Log configurations
