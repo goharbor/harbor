@@ -8,10 +8,12 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { ReplicationComponent } from './replication.component';
 import { ListReplicationRuleComponent } from '../list-replication-rule/list-replication-rule.component';
 import { CreateEditRuleComponent } from '../create-edit-rule/create-edit-rule.component';
+import { CronScheduleComponent } from '../cron-schedule/cron-schedule.component';
 import { DatePickerComponent } from '../datetime-picker/datetime-picker.component';
 import { FilterComponent } from '../filter/filter.component';
 import { InlineAlertComponent } from '../inline-alert/inline-alert.component';
 import {ReplicationRule, ReplicationJob, Endpoint} from '../service/interface';
+import { CronTooltipComponent } from "../cron-schedule/cron-tooltip/cron-tooltip.component";
 
 import { ErrorHandler } from '../error-handler/error-handler';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
@@ -161,6 +163,8 @@ describe('Replication Component (inline template)', () => {
         ReplicationComponent,
         ListReplicationRuleComponent,
         CreateEditRuleComponent,
+        CronTooltipComponent,
+        CronScheduleComponent,
         ConfirmationDialogComponent,
         DatePickerComponent,
         FilterComponent,

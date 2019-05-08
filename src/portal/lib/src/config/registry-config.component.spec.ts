@@ -11,7 +11,7 @@ import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation
 import { GcComponent } from './gc/gc.component';
 import { GcHistoryComponent } from './gc/gc-history/gc-history.component';
 import { CronScheduleComponent } from '../cron-schedule/cron-schedule.component';
-
+import { CronTooltipComponent } from "../cron-schedule/cron-tooltip/cron-tooltip.component";
 import {
   ConfigurationService,
   ConfigurationDefaultService,
@@ -69,7 +69,8 @@ describe('RegistryConfigComponent (inline template)', () => {
         ConfirmationDialogComponent,
         GcComponent,
         GcHistoryComponent,
-        CronScheduleComponent
+        CronScheduleComponent,
+        CronTooltipComponent
       ],
       providers: [
         ErrorHandler,

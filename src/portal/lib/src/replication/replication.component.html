@@ -2,7 +2,7 @@
   <div>
     <div class="row flex-items-xs-between rightPos">
       <div class="flex-xs-middle option-right">
-        <hbr-filter [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_POLICIES_PLACEHOLDER" | translate}}' (filterEvt)="doSearchRules($event)"
+        <hbr-filter id="filter-rules" [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_POLICIES_PLACEHOLDER" | translate}}' (filterEvt)="doSearchRules($event)"
           [currentValue]="search.ruleName"></hbr-filter>
         <span class="refresh-btn" (click)="refreshRules()">
           <clr-icon shape="refresh"></clr-icon>
@@ -32,7 +32,7 @@
                 <option value="status">{{'REPLICATION.STATUS' | translate}}</option>
               </select>
             </div>
-            <hbr-filter [withDivider]="true" (openFlag)="openFilter($event)"
+            <hbr-filter id="filter-executions" [withDivider]="true" (openFlag)="openFilter($event)"
               filterPlaceholder='{{"REPLICATION.FILTER_EXECUTIONS_PLACEHOLDER" | translate}}'
               (filterEvt)="doSearchExecutions($event)" [currentValue]="currentTerm"></hbr-filter>
             <span class="refresh-btn">

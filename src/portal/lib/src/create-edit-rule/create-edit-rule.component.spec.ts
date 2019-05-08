@@ -8,7 +8,7 @@ import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation
 import { ReplicationComponent } from "../replication/replication.component";
 
 import { ListReplicationRuleComponent } from "../list-replication-rule/list-replication-rule.component";
-
+import { CronTooltipComponent } from "../cron-schedule/cron-tooltip/cron-tooltip.component";
 import { CreateEditRuleComponent } from "./create-edit-rule.component";
 import { DatePickerComponent } from "../datetime-picker/datetime-picker.component";
 import { FilterComponent } from "../filter/filter.component";
@@ -232,6 +232,7 @@ describe("CreateEditRuleComponent (inline template)", () => {
         ReplicationComponent,
         ListReplicationRuleComponent,
         CreateEditRuleComponent,
+        CronTooltipComponent,
         ConfirmationDialogComponent,
         DatePickerComponent,
         FilterComponent,

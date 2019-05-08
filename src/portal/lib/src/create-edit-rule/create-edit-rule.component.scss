@@ -261,19 +261,7 @@ clr-modal {
 .cron-tooltip {
     color: gray;
     cursor: default;
-    .table-style {
-        margin-right: 462px;
+    .table-box {
         width: 20rem;
-        border-top-left-radius: 0;
-        border-top-right-radius: 0;
-        .table-title {
-            border-top-left-radius: 0.125rem;
-            border-top-right-radius: 0.125rem;
-            background: #000;
-            color: #fff;
-            span {
-               font-size: 16px;
-            }
-        }
     }
 }
