@@ -80,7 +80,7 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 	}
 	resources := []*model.Resource{}
 	for _, project := range projects {
-		url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.coreServiceURL, project.Name)
+		url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.getURL(), project.Name)
 		charts := []*chart{}
 		if err := a.client.Get(url, &charts); err != nil {
 			return nil, err
@@ -93,7 +93,7 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 			return nil, err
 		}
 		for _, chart := range charts {
-			url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s", a.coreServiceURL, project.Name, chart.Name)
+			url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s", a.getURL(), project.Name, chart.Name)
 			chartVersions := []*chartVersion{}
 			if err := a.client.Get(url, &chartVersions); err != nil {
 				return nil, err
@@ -136,7 +136,7 @@ func (a *adapter) getChartInfo(name, version string) (*chartVersionDetail, error
 	if err != nil {
 		return nil, err
 	}
-	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.coreServiceURL, project, name, version)
+	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.getURL(), project, name, version)
 	info := &chartVersionDetail{}
 	if err = a.client.Get(url, info); err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func (a *adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
 		if err != nil {
 			return nil, err
 		}
-		url = fmt.Sprintf("%s/chartrepo/%s/%s", a.coreServiceURL, project, url)
+		url = fmt.Sprintf("%s/chartrepo/%s/%s", a.getURL(), project, url)
 	}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -189,7 +189,7 @@ func (a *adapter) UploadChart(name, version string, chart io.Reader) error {
 	}
 	w.Close()
 
-	url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.coreServiceURL, project)
+	url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.getURL(), project)
 
 	req, err := http.NewRequest(http.MethodPost, url, buf)
 	if err != nil {
@@ -220,7 +220,7 @@ func (a *adapter) DeleteChart(name, version string) error {
 	if err != nil {
 		return err
 	}
-	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.coreServiceURL, project, name, version)
+	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.getURL(), project, name, version)
 	return a.client.Delete(url)
 }
 

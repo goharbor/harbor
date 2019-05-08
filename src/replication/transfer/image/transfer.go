@@ -139,7 +139,7 @@ func (t *transfer) copy(src *repository, dst *repository, override bool) error {
 		srcRepo, strings.Join(src.tags, ","), dstRepo, strings.Join(dst.tags, ","))
 	var err error
 	for i := range src.tags {
-		if e := t.copyImage(srcRepo, src.tags[i], dstRepo, dst.tags[i], override); err != nil {
+		if e := t.copyImage(srcRepo, src.tags[i], dstRepo, dst.tags[i], override); e != nil {
 			t.logger.Errorf(e.Error())
 			err = e
 		}

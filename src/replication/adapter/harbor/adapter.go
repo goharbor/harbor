@@ -43,9 +43,9 @@ func init() {
 
 type adapter struct {
 	*adp.DefaultImageRegistry
-	registry       *model.Registry
-	coreServiceURL string
-	client         *common_http.Client
+	registry *model.Registry
+	url      string
+	client   *common_http.Client
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
@@ -72,8 +72,8 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		return nil, err
 	}
 	return &adapter{
-		registry:       registry,
-		coreServiceURL: registry.URL,
+		registry: registry,
+		url:      registry.URL,
 		client: common_http.NewClient(
 			&http.Client{
 				Transport: transport,
@@ -112,7 +112,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	sys := &struct {
 		ChartRegistryEnabled bool `json:"with_chartmuseum"`
 	}{}
-	if err := a.client.Get(a.coreServiceURL+"/api/systeminfo", sys); err != nil {
+	if err := a.client.Get(a.getURL()+"/api/systeminfo", sys); err != nil {
 		return nil, err
 	}
 	if sys.ChartRegistryEnabled {
@@ -158,7 +158,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 			Name:     project.Name,
 			Metadata: project.Metadata,
 		}
-		err := a.client.Post(a.coreServiceURL+"/api/projects", pro)
+		err := a.client.Post(a.getURL()+"/api/projects", pro)
 		if err != nil {
 			if httpErr, ok := err.(*common_http.Error); ok && httpErr.Code == http.StatusConflict {
 				log.Debugf("got 409 when trying to create project %s", project.Name)
@@ -211,7 +211,7 @@ type project struct {
 
 func (a *adapter) getProjects(name string) ([]*project, error) {
 	projects := []*project{}
-	url := fmt.Sprintf("%s/api/projects?name=%s&page=1&page_size=500", a.coreServiceURL, name)
+	url := fmt.Sprintf("%s/api/projects?name=%s&page=1&page_size=500", a.getURL(), name)
 	if err := a.client.GetAndIteratePagination(url, &projects); err != nil {
 		return nil, err
 	}
@@ -246,9 +246,19 @@ func (a *adapter) getProject(name string) (*project, error) {
 
 func (a *adapter) getRepositories(projectID int64) ([]*repository, error) {
 	repositories := []*repository{}
-	url := fmt.Sprintf("%s/api/repositories?project_id=%d&page=1&page_size=500", a.coreServiceURL, projectID)
+	url := fmt.Sprintf("%s/api/repositories?project_id=%d&page=1&page_size=500", a.getURL(), projectID)
 	if err := a.client.GetAndIteratePagination(url, &repositories); err != nil {
 		return nil, err
 	}
 	return repositories, nil
+}
+
+// when the adapter is created for local Harbor, returns the "http://127.0.0.1:8080"
+// as URL to avoid issue https://github.com/goharbor/harbor-helm/issues/222
+// when harbor is deployed on Kubernetes
+func (a *adapter) getURL() string {
+	if a.registry.Type == model.RegistryTypeHarbor && a.registry.Name == "Local" {
+		return "http://127.0.0.1:8080"
+	}
+	return a.url
 }
