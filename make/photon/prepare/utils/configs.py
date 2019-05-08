@@ -81,6 +81,7 @@ def parse_yaml_config(config_file_path):
 
     if configs.get('external_url'):
         config_dict['public_url'] = configs.get('external_url')
+    else:
         if config_dict['protocol'] == 'https':
             '{protocol}://{hostname}:{https_port}'.format(**config_dict)
         else:

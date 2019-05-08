@@ -9,7 +9,7 @@
 	},
     "storage": {
         "backend": "postgres",
-		    "db_url": "postgres://signer:password@postgresql:5432/notarysigner?sslmode=disable",
-		    "default_alias":"defaultalias"
+			"db_url": "postgres://{{db_user}}:{{db_password}}@{{db_host}}:{{db_port}}/notarysigner?sslmode={{db_ssl_mode}}",
+		    "default_alias": "{{alias}}"
     }
 }  

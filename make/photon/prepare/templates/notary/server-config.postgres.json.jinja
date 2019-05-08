@@ -14,7 +14,7 @@
 	},
 	"storage": {
 		"backend": "postgres",
-		"db_url": "postgres://server:password@postgresql:5432/notaryserver?sslmode=disable"
+		"db_url": "postgres://{{db_user}}:{{db_password}}@{{db_host}}:{{db_port}}/notaryserver?sslmode={{db_ssl_mode}}"
     },
     "auth": {
         "type": "token",

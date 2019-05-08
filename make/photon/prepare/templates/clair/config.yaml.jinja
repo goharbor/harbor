@@ -2,7 +2,7 @@ clair:
   database:
     type: pgsql
     options:
-      source: postgresql://{{username}}:{{password}}@{{host}}:{{port}}/{{dbname}}?sslmode=disable
+      source: postgresql://{{username}}:{{password}}@{{host}}:{{port}}/{{dbname}}?sslmode={{sslmode}}
 
       # Number of elements kept in the cache
       # Values unlikely to change (e.g. namespaces) are cached in order to save prevent needless roundtrips to the database.

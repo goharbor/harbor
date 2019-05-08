@@ -34,10 +34,11 @@ def prepare_clair(config_dict):
         clair_config_path,
         uid=DEFAULT_UID,
         gid=DEFAULT_GID,
-        password= config_dict['db_password'],
-        username= config_dict['db_user'],
-        host= config_dict['db_host'],
-        port= config_dict['db_port'],
+        password=config_dict['db_password'],
+        username=config_dict['db_user'],
+        host=config_dict['db_host'],
+        port=config_dict['db_port'],
+        sslmode=config_dict['db_ssl_mode'],
         dbname= config_dict['clair_db'],
         interval= config_dict['clair_updaters_interval'])
 
