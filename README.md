@@ -12,7 +12,13 @@
 |![notification](docs/img/bell-outline-badged.svg)Community Meeting|
 |------------------|
 |The Harbor Project holds bi-weekly community calls, to join them and watch previous meeting notes and recordings, please see [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
-</br>
+ 
+Welcome to join below Harbor community events and meet with project maintainers and users:
+
+**May 20-24, 2019**, [KubeCon EU, Barcelona](https://events.linuxfoundation.org/events/kubecon-cloudnativecon-europe-2019/): Harbor Community Reception, Intro and Deep-dive sessions.
+
+**June 24-26, 2019**, [KubeCon Shanghai](https://www.lfasiallc.com/events/kubecon-cloudnativecon-china-2019/): Harbor community meetup, Harbor session. 
+</br> </br>
 
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
 Please use [releases](https://github.com/vmware/harbor/releases) instead of the `master` branch in order to get stable binaries.
