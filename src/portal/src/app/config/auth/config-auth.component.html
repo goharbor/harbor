@@ -12,12 +12,12 @@
                     <option value="oidc_auth">{{'CONFIG.AUTH_MODE_OIDC' | translate }}</option>
                 </select>
             </div>
-            <a href="{{currentConfig?.auth_mode?.value==='oidc_auth'?'https://openid.net/connect/':'/'}}"
-                target="{{currentConfig?.auth_mode?.value==='oidc_auth'?'_blank':''}}" role="tooltip" (click)="allowGoOidc($event)"
-                aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right top-1">
+            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right top-1">
                 <clr-icon shape="info-circle" size="24" class="info-tips-icon"></clr-icon>
                 <span class="tooltip-content">{{'CONFIG.TOOLTIP.AUTH_MODE' | translate}}</span>
             </a>
+            <a href="https://openid.net/connect/" *ngIf="currentConfig?.auth_mode?.value==='oidc_auth'" target="_blank"
+            class="more-info-link">{{ 'BUTTON.MORE_INFO' | translate }}</a>
         </div>
     </section>
     <section class="form-block" *ngIf="showUAA">
