@@ -53,7 +53,6 @@ var defaultConfig = map[string]interface{}{
 	common.ProjectCreationRestriction: common.ProCrtRestrAdmOnly,
 	common.MaxJobWorkers:              3,
 	common.TokenExpiration:            30,
-	common.CfgExpiration:              5,
 	common.AdminInitialPassword:       "password",
 	common.AdmiralEndpoint:            "",
 	common.WithNotary:                 false,

@@ -40,7 +40,6 @@ func TestMain(m *testing.M) {
 	var defaultConfig = map[string]interface{}{
 		common.ExtEndpoint:     "https://" + endpoint,
 		common.WithNotary:      true,
-		common.CfgExpiration:   5,
 		common.TokenExpiration: 30,
 	}
 

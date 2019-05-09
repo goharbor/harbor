@@ -85,7 +85,6 @@ export class Configuration {
     verify_remote_cert: BoolValueItem;
     robot_token_duration: NumberValueItem;
     token_expiration: NumberValueItem;
-    cfg_expiration: NumberValueItem;
     scan_all_policy: ComplexValueItem;
     read_only: BoolValueItem;
     http_authproxy_endpoint?: StringValueItem;
