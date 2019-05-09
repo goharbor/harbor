@@ -481,7 +481,7 @@
         "TRIGGER_MODE": "Trigger Mode",
         "SOURCE_PROJECT": "Source project",
         "REPLICATE": "Replicate",
-        "DELETE_REMOTE_IMAGES": "Delete remote images when locally deleted",
+        "DELETE_REMOTE_IMAGES": "Delete remote resources when locally deleted",
         "DELETE_ENABLED": "Enabled this policy",
         "REPLICATE_IMMEDIATE": "Replicate existing images immediately",
         "NEW": "New",
