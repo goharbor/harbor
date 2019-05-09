@@ -73,7 +73,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 			return nil, err
 		}
 		for _, repository := range repositories {
-			url := fmt.Sprintf("%s/api/repositories/%s/tags", a.coreServiceURL, repository.Name)
+			url := fmt.Sprintf("%s/api/repositories/%s/tags", a.getURL(), repository.Name)
 			tags := []*tag{}
 			if err = a.client.Get(url, &tags); err != nil {
 				return nil, err
@@ -146,7 +146,7 @@ func (a *adapter) listCandidateProjects(filters []*model.Filter) ([]*project, er
 // override the default implementation from the default image registry
 // by calling Harbor API directly
 func (a *adapter) DeleteManifest(repository, reference string) error {
-	url := fmt.Sprintf("%s/api/repositories/%s/tags/%s", a.coreServiceURL, repository, reference)
+	url := fmt.Sprintf("%s/api/repositories/%s/tags/%s", a.getURL(), repository, reference)
 	return a.client.Delete(url)
 }
 
