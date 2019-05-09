@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -234,9 +235,26 @@ func parseFilters(str string) ([]*model.Filter, error) {
 		}
 		// keep backwards compatibility
 		if len(filter.Type) == 0 {
+			if filter.Value == nil {
+				filter.Value = item.Pattern
+			}
 			switch item.Kind {
 			case "repository":
-				filter.Type = model.FilterTypeName
+				// a name filter "project_name/**" must exist after running upgrade
+				// if there is any repository filter, merge it into the name filter
+				repository, ok := filter.Value.(string)
+				if ok && len(repository) > 0 {
+					for _, item := range items {
+						if item.Type == model.FilterTypeName {
+							name, ok := item.Value.(string)
+							if ok && len(name) > 0 {
+								item.Value = strings.Replace(name, "**", repository, 1)
+							}
+							break
+						}
+					}
+				}
+				continue
 			case "tag":
 				filter.Type = model.FilterTypeTag
 			case "label":
@@ -247,9 +265,7 @@ func parseFilters(str string) ([]*model.Filter, error) {
 				continue
 			}
 		}
-		if filter.Value == nil {
-			filter.Value = item.Pattern
-		}
+
 		// convert the type of value from string to model.ResourceType if the filter
 		// is a resource type filter
 		if filter.Type == model.FilterTypeResource {
