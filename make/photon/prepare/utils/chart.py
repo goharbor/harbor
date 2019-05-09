@@ -77,9 +77,13 @@ def prepare_chartmuseum(config_dict):
     elif storage_provider_name == 'oss':
         # aliyun OSS
         storage_driver = "alibaba"
-        storage_provider_config_options.append("STORAGE_ALIBABA_BUCKET=%s" % ( storage_provider_config_map.get("bucket") or '') )
+        bucket = storage_provider_config_map.get("bucket") or ''
+        endpoint = storage_provider_config_map.get("endpoint") or ''
+        if endpoint.startswith(bucket + "."):
+            endpoint = endpoint.replace(bucket + ".", "")
+        storage_provider_config_options.append("STORAGE_ALIBABA_BUCKET=%s" % bucket )
+        storage_provider_config_options.append("STORAGE_ALIBABA_ENDPOINT=%s" % endpoint )
         storage_provider_config_options.append("STORAGE_ALIBABA_PREFIX=%s" % ( storage_provider_config_map.get("rootdirectory") or '') )
-        storage_provider_config_options.append("STORAGE_ALIBABA_ENDPOINT=%s" % ( storage_provider_config_map.get("endpoint") or '') )
         storage_provider_config_options.append("ALIBABA_CLOUD_ACCESS_KEY_ID=%s" % ( storage_provider_config_map.get("accesskeyid") or '') )
         storage_provider_config_options.append("ALIBABA_CLOUD_ACCESS_KEY_SECRET=%s" % ( storage_provider_config_map.get("accesskeysecret") or '') )
     else:
