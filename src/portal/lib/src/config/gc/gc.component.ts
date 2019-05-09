@@ -88,10 +88,6 @@ export class GcComponent implements OnInit {
         this.translate.get("GC.MSG_SUCCESS").subscribe((res: string) => {
           this.errorHandler.info(res);
         });
-        this.getJobs();
-        setTimeout(() => {
-          this.getJobs();
-        }, THREE_SECONDS); // to avoid some jobs not finished.
       },
       error => {
         this.errorHandler.error(error);
