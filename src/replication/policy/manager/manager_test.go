@@ -212,14 +212,14 @@ func TestParseFilters(t *testing.T) {
 	assert.Equal(t, model.FilterTypeName, filters[0].Type)
 	assert.Equal(t, "library/hello-world", filters[0].Value.(string))
 	// contains "kind" from previous versions
-	str = `[{"kind":"repository","value":"library/hello-world"}]`
+	str = `[{"kind":"repository","value":"hello-world"},{"type":"name","value":"library/**"}]`
 	filters, err = parseFilters(str)
 	require.Nil(t, err)
 	require.Equal(t, 1, len(filters))
 	assert.Equal(t, model.FilterTypeName, filters[0].Type)
 	assert.Equal(t, "library/hello-world", filters[0].Value.(string))
 	// contains "pattern" from previous versions
-	str = `[{"kind":"repository","pattern":"library/hello-world"}]`
+	str = `[{"kind":"repository","pattern":"hello-world"},{"type":"name","value":"library/**"}]`
 	filters, err = parseFilters(str)
 	require.Nil(t, err)
 	require.Equal(t, 1, len(filters))
