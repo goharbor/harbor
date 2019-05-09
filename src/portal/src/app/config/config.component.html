@@ -6,13 +6,13 @@
                 <clr-tab>
                     <button id="config-auth" clrTabLink>{{'CONFIG.AUTH' | translate}}</button>
                     <clr-tab-content id="authentication" *clrIfActive>
-                        <config-auth [allConfig]="allConfig"></config-auth>
+                        <config-auth [allConfig]="allConfig"  (refreshAllconfig)="refreshAllconfig()"></config-auth>
                     </clr-tab-content>
                 </clr-tab>
                 <clr-tab>
                     <button id="config-email" clrTabLink>{{'CONFIG.EMAIL' | translate }}</button>
                     <clr-tab-content id="email" *clrIfActive>
-                        <config-email [mailConfig]="allConfig"></config-email>
+                        <config-email [mailConfig]="allConfig" (refreshAllconfig)="refreshAllconfig()"></config-email>
                     </clr-tab-content>
                 </clr-tab>
                 <clr-tab>

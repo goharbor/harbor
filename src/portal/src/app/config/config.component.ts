@@ -80,7 +80,9 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     isCurrentTabContent(contentId: string): boolean {
         return TabLinkContentMap[this.currentTabId] === contentId;
     }
-
+    refreshAllconfig() {
+        this.retrieveConfig();
+    }
     ngOnInit(): void {
         // First load
         // Double confirm the current use has admin role
