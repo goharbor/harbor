@@ -25,8 +25,8 @@ Harbor is deployed as several Docker containers, and, therefore, can be deployed
 |Software|Version|Description|
 |---|---|---|
 |Python|version 2.7 or higher|Note that you may have to install Python on Linux distributions (Gentoo, Arch) that do not come with a Python interpreter installed by default|
-|Docker engine|version 1.10 or higher|For installation instructions, please refer to: https://docs.docker.com/engine/installation/|
-|Docker Compose|version 1.6.0 or higher|For installation instructions, please refer to: https://docs.docker.com/compose/install/|
+|Docker engine|version 17.03.0-ce+ or higher|For installation instructions, please refer to: https://docs.docker.com/engine/installation/|
+|Docker Compose|version 1.17.0 or higher|For installation instructions, please refer to: https://docs.docker.com/compose/install/|
 |Openssl|latest is preferred|Generate certificate and keys for Harbor|
 ### Network ports 
 |Port|Protocol|Description|
