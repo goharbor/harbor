@@ -91,6 +91,8 @@ func (oc *OIDCController) Callback() {
 		oc.SendBadRequestError(err)
 		return
 	}
+	log.Debugf("ID token from provider: %s", token.IDToken)
+
 	idToken, err := oidc.VerifyToken(ctx, token.IDToken)
 	if err != nil {
 		oc.SendInternalServerError(err)
@@ -118,7 +120,6 @@ func (oc *OIDCController) Callback() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	log.Debugf("Exchanged token string: %s", string(tokenBytes))
 	oc.SetSession(tokenKey, tokenBytes)
 
 	if u == nil {

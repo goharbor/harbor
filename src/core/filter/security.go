@@ -115,6 +115,7 @@ func Init() {
 		&configCtxModifier{},
 		&secretReqCtxModifier{config.SecretStore},
 		&oidcCliReqCtxModifier{},
+		&idTokenReqCtxModifier{},
 		&authProxyReqCtxModifier{},
 		&robotAuthReqCtxModifier{},
 		&basicAuthReqCtxModifier{},
@@ -256,6 +257,41 @@ func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	}
 	pm := config.GlobalProjectMgr
 	sc := local.NewSecurityContext(user, pm)
+	setSecurCtxAndPM(ctx.Request, sc, pm)
+	return true
+}
+
+type idTokenReqCtxModifier struct{}
+
+func (it *idTokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
+	req := ctx.Request
+	if req.Context().Value(AuthModeKey).(string) != common.OIDCAuth {
+		return false
+	}
+	if !strings.HasPrefix(ctx.Request.URL.Path, "/api") {
+		return false
+	}
+	h := req.Header.Get("Authorization")
+	token := strings.Split(h, "Bearer")
+	if len(token) < 2 {
+		return false
+	}
+	claims, err := oidc.VerifyToken(req.Context(), strings.TrimSpace(token[1]))
+	if err != nil {
+		log.Warningf("Failed to verify token, error: %v", err)
+		return false
+	}
+	u, err := dao.GetUserBySubIss(claims.Subject, claims.Issuer)
+	if err != nil {
+		log.Warningf("Failed to get user based on token claims, error: %v", err)
+		return false
+	}
+	if u == nil {
+		log.Warning("User matches token's claims is not onboarded.")
+		return false
+	}
+	pm := config.GlobalProjectMgr
+	sc := local.NewSecurityContext(u, pm)
 	setSecurCtxAndPM(ctx.Request, sc, pm)
 	return true
 }
