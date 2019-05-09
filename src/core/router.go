@@ -38,7 +38,7 @@ func initRouters() {
 		beego.Router("/c/reset", &controllers.CommonController{}, "post:ResetPassword")
 		beego.Router("/c/userExists", &controllers.CommonController{}, "post:UserExists")
 		beego.Router("/c/sendEmail", &controllers.CommonController{}, "get:SendResetEmail")
-		beego.Router("/c/oidc/login", &controllers.OIDCController{}, "get:RedirectLogin")
+		beego.Router(common.OIDCLoginPath, &controllers.OIDCController{}, "get:RedirectLogin")
 		beego.Router("/c/oidc/onboard", &controllers.OIDCController{}, "post:Onboard")
 		beego.Router(common.OIDCCallbackPath, &controllers.OIDCController{}, "get:Callback")
 
