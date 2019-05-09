@@ -22,36 +22,26 @@ ${HARBOR_VERSION}  v1.1.1
 *** Keywords ***
 Change Password
     [Arguments]  ${cur_pw}  ${new_pw}
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
-    Click Element  xpath=//clr-main-container//clr-dropdown//a[2]
-    Sleep  2
-    Input Text  xpath=//*[@id='oldPassword']  ${cur_pw}
-    Input Text  xpath=//*[@id='newPassword']  ${new_pw}
-    Input Text  xpath=//*[@id='reNewPassword']  ${new_pw}
-    Sleep  1
-    Click Element  xpath=//password-setting/clr-modal//button[2]
-    Sleep  2
-    Click Element  xpath=${log_xpath}
+    Retry Element Click  ${head_admin_xpath}
+    Retry Element Click  ${change_password_xpath}
+    Retry Text Input  ${old_password_xpath}  ${cur_pw}
+    Retry Text Input  ${new_password_xpath}   ${new_pw}
+    Retry Text Input  ${renew_password_xpath}  ${new_pw}
+    Retry Element Click  ${change_password_confirm_btn_xpath}
+    Retry Element Click  xpath=${log_xpath}
     Sleep  1
 
 Update User Comment
     [Arguments]  ${new_comment}
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
-    Click Element  xpath=//clr-main-container//clr-dropdown//a[1]
-    Sleep  2
-    Input Text  xpath=//*[@id='account_settings_comments']  ${new_comment}
-    Sleep  1
-    Click Element  xpath=//account-settings-modal/clr-modal//button[2]
+    Retry Element Click  ${head_admin_xpath}
+    Retry Element Click  ${user_profile_xpath}
+    Retry Text Input  ${account_settings_comments_xpath}  ${new_comment}
+    Retry Element Click  ${user_profile_confirm_btn_xpath}
     Sleep  2
 
 Logout Harbor
-    Wait Until Element Is Visible  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
-    Wait Until Element Is Enabled  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/navigator/clr-header/div[3]/clr-dropdown[2]/button/span
-    Sleep  2
-    Click Link  Log Out
-    #Click Element  xpath=//harbor-app/harbor-shell/clr-main-container/navigator/clr-header//clr-dropdown//a[4]
-    Sleep  1
+    Retry Element Click  ${head_admin_xpath}
+    Retry Link Click  Log Out
     Capture Page Screenshot  Logout.png
     Sleep  2
-    Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  xpath=//sign-in//form//*[@class='title']
+    Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  ${sign_in_title_xpath}

@@ -11,6 +11,7 @@ ${upload_action_button}  //clr-modal//form/div/button[contains(.,'Upload')]
 
 ${harbor_chart_name}  harbor
 ${harbor_chart_filename}  harbor-0.2.0.tgz
+${harbor_chart_version}  0.2.0
 ${harbor_chart_prov_filename}  harbor-0.2.0.tgz.prov
 ${harbor_chart_file_url}  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz
 ${harbor_chart_prov_file_url}  https://storage.googleapis.com/harbor-builds/helm-chart-test-files/harbor-0.2.0.tgz.prov
