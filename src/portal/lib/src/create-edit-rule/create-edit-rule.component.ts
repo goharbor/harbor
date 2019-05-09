@@ -23,7 +23,7 @@ import {
 } from "@angular/core";
 import { Filter, ReplicationRule, Endpoint } from "../service/interface";
 import { Subject, Subscription, Observable, zip } from "rxjs";
-import { debounceTime, distinctUntilChanged } from "rxjs/operators";
+import { debounceTime, distinctUntilChanged, finalize } from "rxjs/operators";
 import { FormArray, FormBuilder, FormGroup, Validators, FormControl } from "@angular/forms";
 import { clone, compareValue, isEmptyObject } from "../utils";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
@@ -86,14 +86,17 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
 
   initRegistryInfo(id: number): void {
     this.onGoing = true;
-    this.repService.getRegistryInfo(id).subscribe(adapter => {
+    this.repService.getRegistryInfo(id)
+      .pipe(finalize(() => (this.onGoing = false)))
+      .subscribe(adapter => {
       this.supportedFilters = adapter.supported_resource_filters;
       this.supportedFilters.forEach(element => {
         this.filters.push(this.initFilter(element.type));
       });
-      this.onGoing = false;
       this.supportedTriggers = adapter.supported_triggers;
       this.ruleForm.get("trigger").get("type").setValue(this.supportedTriggers[0]);
+    }, (error: any) => {
+      this.inlineAlert.showInlineError(error);
     });
   }
 
@@ -361,12 +364,14 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       this.noEndpointInfo = "REPLICATION.NO_ENDPOINT_INFO";
     }
     if (ruleId) {
+      this.onGoing = true;
       this.policyId = +ruleId;
       this.headerTitle = "REPLICATION.EDIT_POLICY_TITLE";
       this.repService.getReplicationRule(ruleId)
         .subscribe((ruleInfo) => {
           let srcRegistryId = ruleInfo.src_registry.id;
           this.repService.getRegistryInfo(srcRegistryId)
+            .pipe(finalize(() => (this.onGoing = false)))
             .subscribe(adapter => {
               this.setFilterAndTrigger(adapter);
               this.updateRuleFormAndCopyUpdateForm(ruleInfo);
@@ -374,15 +379,18 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
               this.inlineAlert.showInlineError(error);
             });
         }, (error: any) => {
+          this.onGoing = false;
           this.inlineAlert.showInlineError(error);
         });
     } else {
       this.onGoing = true;
       let registryObs = this.repService.getRegistryInfo(0);
-      registryObs.subscribe(adapter => {
+      registryObs.pipe(finalize(() => (this.onGoing = false)))
+      .subscribe(adapter => {
         this.setFilterAndTrigger(adapter);
         this.copyUpdateForm = clone(this.ruleForm.value);
-        this.onGoing = false;
+      }, (error: any) => {
+        this.inlineAlert.showInlineError(error);
       });
       this.headerTitle = "REPLICATION.ADD_POLICY";
       this.copyUpdateForm = clone(this.ruleForm.value);
