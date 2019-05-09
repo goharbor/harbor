@@ -34,7 +34,7 @@ def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
     }
 
     storage_config = configs.get('storage_provider_config') or {}
-    if storage_config.get('keyfile'):
+    if storage_config.get('keyfile') and configs['storage_provider_name'] == 'gcs':
         rendering_variables['gcs_keyfile'] = storage_config['keyfile']
 
     if configs['protocol'] == 'https':
