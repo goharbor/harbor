@@ -110,7 +110,7 @@ def prepare_notary(config_dict, nginx_config_dir, ssl_cert_path, ssl_cert_key_pa
     render_jinja(
         notary_signer_env_template,
         notary_signer_env_path,
-        alias=default_alias
+        alias=default_alias,
         **config_dict)
 
     render_jinja(
@@ -118,5 +118,5 @@ def prepare_notary(config_dict, nginx_config_dir, ssl_cert_path, ssl_cert_key_pa
         notary_signer_pg_config,
         uid=DEFAULT_UID,
         gid=DEFAULT_GID,
-        alias=default_alias
+        alias=default_alias,
         **config_dict)

@@ -2,7 +2,7 @@ clair:
   database:
     type: pgsql
     options:
-      source: postgresql://{{username}}:{{password}}@{{host}}:{{port}}/{{dbname}}?sslmode={{sslmode}}
+      source: postgresql://{{clair_db_username}}:{{clair_db_password}}@{{clair_db_host}}:{{clair_db_port}}/{{clair_db_name}}?sslmode={{clair_db_sslmode}}
 
       # Number of elements kept in the cache
       # Values unlikely to change (e.g. namespaces) are cached in order to save prevent needless roundtrips to the database.
@@ -16,7 +16,7 @@ clair:
     # Deadline before an API request will respond with a 503
     timeout: 300s
   updater:
-    interval: {{interval}}h
+    interval: {{clair_updaters_interval}}h
 
   notifier:
     attempts: 3
