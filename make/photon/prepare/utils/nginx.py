@@ -13,7 +13,6 @@ nginx_https_conf_template = os.path.join(templates_dir, "nginx", "nginx.https.co
 nginx_http_conf_template = os.path.join(templates_dir, "nginx", "nginx.http.conf.jinja")
 nginx_template_ext_dir = os.path.join(templates_dir, 'nginx', 'ext')
 
-
 CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS = 'harbor.https.*.conf'
 CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTP = 'harbor.http.*.conf'
 
@@ -27,6 +26,12 @@ def render_nginx_template(config_dict):
             ssl_cert=SSL_CERT_PATH,
             ssl_cert_key=SSL_CERT_KEY_PATH)
         location_file_pattern = CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS
+        cert_dir = Path(os.path.join(config_dir, 'cert'))
+        ssl_key_path = Path(os.path.join(cert_dir, 'server.key'))
+        ssl_crt_path = Path(os.path.join(cert_dir, 'server.crt'))
+        cert_dir.mkdir(parents=True, exist_ok=True)
+        ssl_key_path.touch()
+        ssl_crt_path.touch()
     else:
         render_jinja(
             nginx_http_conf_template,

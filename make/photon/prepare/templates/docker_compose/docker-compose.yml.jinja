@@ -13,12 +13,8 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - type: bind
-        source: {{log_location}}
-        target: /var/log/docker
-      - type: bind
-        source: ./common/config/log
-        target: /etc/logrotate.d
+      - {{log_location}}/:/var/log/docker/:z
+      - ./common/config/log/:/etc/logrotate.d/:z
     ports:
       - 127.0.0.1:1514:10514
     networks:
@@ -34,12 +30,8 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - type: bind
-        source: {{data_volume}}
-        target: /registry:/storage
-      - type: bind
-        source: ./common/config/registry
-        target: /etc/registry
+      - {{data_volume}}/registry:/storage:z
+      - ./common/config/registry/:/etc/registry/:z
       - type: bind
         source: {{data_volume}}/secret/registry/root.crt
         target: /etc/registry/root.crt
@@ -79,12 +71,8 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - type: bind
-        source: {{data_volume}}
-        target: /registry:/storage
-      - type: bind
-        source: ./common/config/registry
-        target: /etc/registry
+      - {{data_volume}}/registry:/storage:z
+      - ./common/config/registry/:/etc/registry/:z
       - type: bind
         source: ./common/config/registryctl/config.yml
         target: /etc/registryctl/config.yml
@@ -115,9 +103,7 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - type: bind
-        source: {{data_volume}}/database
-        target: /var/lib/postgresql/data
+      - {{data_volume}}/database:/var/lib/postgresql/data:z
     networks:
       harbor:
 {% if with_notary %}
@@ -152,27 +138,19 @@ services:
       - SETGID
       - SETUID
     volumes:
+      - {{data_volume}}/ca_download/:/etc/core/ca/:z
+      - {{data_volume}}/psc/:/etc/core/token/:z
+      - {{data_volume}}/:/data/:z
+      - ./common/config/core/certificates/:/etc/core/certificates/:z
       - type: bind
         source: ./common/config/core/app.conf
         target: /etc/core/app.conf
-      - type: bind
-        source: ./common/config/core/certificates
-        target: /etc/core/certificates
       - type: bind
         source: {{data_volume}}/secret/core/private_key.pem
         target: /etc/core/private_key.pem
       - type: bind
         source: {{data_volume}}/secret/keys/secretkey
         target: /etc/core/key
-      - type: bind
-        source: {{data_volume}}/ca_download
-        target: /etc/core/ca
-      - type: bind
-        source: {{data_volume}}/psc
-        target: /etc/core/token
-      - type: bind
-        source: {{data_volume}}
-        target: /data
 {% if uaa_ca_file %}
       - type: bind
         source: {{uaa_ca_file}}
@@ -238,10 +216,10 @@ services:
       - SETGID
       - SETUID
     volumes:
+      - {{data_volume}}/job_logs:/var/log/jobs:z
       - type: bind
-        source: {{data_volume}}/job_logs
-        target: /var/log/jobs
-      - ./common/config/jobservice/config.yml:/etc/jobservice/config.yml
+        source: ./common/config/jobservice/config.yml
+        target: /etc/jobservice/config.yml
     networks:
       - harbor
 {% if with_clair %}
@@ -267,9 +245,7 @@ services:
       - SETGID
       - SETUID
     volumes:
-      - type: bind
-        source: {{data_volume}}/redis
-        target: /var/lib/redis
+      - {{data_volume}}/redis:/var/lib/redis
     networks:
       harbor:
 {% if with_chartmuseum %}
@@ -297,9 +273,7 @@ services:
       - SETUID
       - NET_BIND_SERVICE
     volumes:
-      - type: bind
-        source: ./common/config/nginx
-        target: /etc/nginx
+      - ./common/config/nginx:/etc/nginx:z
 {% if protocol == 'https' %}
       - type: bind
         source: {{cert_key_path}}
@@ -343,9 +317,7 @@ services:
       - harbor-notary
     dns_search: .
     volumes:
-      - type: bind
-        source: ./common/config/notary
-        target: /etc/notary
+      - ./common/config/notary:/etc/notary:z
       - type: bind
         source: {{data_volume}}/secret/notary/notary-signer-ca.crt
         target: /etc/notary/notary-signer-ca.crt
@@ -373,9 +345,7 @@ services:
           - notarysigner
     dns_search: .
     volumes:
-      - type: bind
-        source: ./common/config/notary
-        target: /etc/notary
+      - ./common/config/notary:/etc/notary:z
       - type: bind
         source: {{data_volume}}/secret/notary/notary-signer.crt
         target: /etc/notary/notary-signer.crt
