@@ -16,10 +16,6 @@ import (
 	"github.com/goharbor/harbor/src/replication/util"
 )
 
-const (
-	huawei model.RegistryType = "Huawei"
-)
-
 func init() {
 	err := adp.RegisterFactory(model.RegistryTypeHuawei, AdapterFactory)
 	if err != nil {
@@ -38,7 +34,7 @@ type adapter struct {
 // Info gets info about Huawei SWR
 func (a *adapter) Info() (*model.RegistryInfo, error) {
 	registryInfo := model.RegistryInfo{
-		Type:                     huawei,
+		Type:                     model.RegistryTypeHuawei,
 		Description:              "Adapter for SWR -- The image registry of Huawei Cloud",
 		SupportedResourceTypes:   []model.ResourceType{model.ResourceTypeImage},
 		SupportedResourceFilters: []*model.FilterStyle{},
