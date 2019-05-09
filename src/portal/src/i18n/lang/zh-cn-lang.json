@@ -492,7 +492,7 @@
         "TRIGGER_MODE": "触发模式",
         "SOURCE_PROJECT": "源项目",
         "REPLICATE": "同步",
-        "DELETE_REMOTE_IMAGES": "删除本地镜像时同时也删除远程的镜像。",
+        "DELETE_REMOTE_IMAGES": "删除本地资源时同时也删除远程的资源。",
         "DELETE_ENABLED": "默认启用该规则",
         "REPLICATE_IMMEDIATE": "立即同步现有的镜像。",
         "NEW": "新增",

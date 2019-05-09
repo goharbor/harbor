@@ -491,7 +491,7 @@
         "TRIGGER_MODE": "Modo de disparo",
         "SOURCE_PROJECT": "Projeto de origem",
         "REPLICATE": "Replicar",
-        "DELETE_REMOTE_IMAGES":"Remover imagens remotas quando removido localmente",
+        "DELETE_REMOTE_IMAGES":"Remover resources remotas quando removido localmente",
         "DELETE_ENABLED": "Enabled this policy",
         "REPLICATE_IMMEDIATE":"Replicar imagens existentes imediatamente",
         "NEW": "Novo",
