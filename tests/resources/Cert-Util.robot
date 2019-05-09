@@ -27,7 +27,7 @@ Generate Certificate Authority For Chrome
     ${rc}  ${out}=  Run And Return Rc And Output  certutil -d sql:$HOME/.pki/nssdb -A -t TC -f password${rand}.ca -n "Harbor${rand}" -i ./harbor_ca.crt
     Log  ${out}
     Should Be Equal As Integers  ${rc}  0
-		
+
 Generate Certificate Authority
     #  Generates CA (private/ca.key.pem, certs/ca.cert.pem, certs/STARK_ENTERPRISES_ROOT_CA.crt) in OUT_DIR
     [Arguments]  ${CA_NAME}=STARK_ENTERPRISES_ROOT_CA  ${OUT_DIR}=/root/ca

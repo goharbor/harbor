@@ -76,15 +76,8 @@ Test Case - Create An New Project
 
 Test Case - Delete A Project
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world
-    Project Should Not Be Deleted  project${d}
-    Go Into Project  project${d}
-    Delete Repo  project${d}
-    Navigate To Projects
-    Project Should Be Deleted  project${d}
+    Delete A Project Without Sign In Harbor
     Close Browser
 
 Test Case - Read Only Mode
