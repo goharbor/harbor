@@ -16,6 +16,6 @@ echo "server ip is "$IP
 
 echo "Current path is"
 pwd
-cat make/common/config/core/config_env
+cat make/common/config/core/env
 
 chmod 777 /data/
