@@ -36,7 +36,6 @@ data:
   CORE_SECRET: "{{core_secret}}"
   JOBSERVICE_SECRET: "{{jobservice_secret}}"
   TOKEN_EXPIRATION: "30"
-  CFG_EXPIRATION: "5"
   GODEBUG: "netdns=cgo"
   ADMIRAL_URL: NA
   WITH_NOTARY: "False"

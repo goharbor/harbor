@@ -66,13 +66,11 @@ func TestUserResettable(t *testing.T) {
 	assert := assert.New(t)
 	DBAuthConfig := map[string]interface{}{
 		common.AUTHMode:        common.DBAuth,
-		common.CfgExpiration:   5,
 		common.TokenExpiration: 30,
 	}
 
 	LDAPAuthConfig := map[string]interface{}{
 		common.AUTHMode:        common.LDAPAuth,
-		common.CfgExpiration:   5,
 		common.TokenExpiration: 30,
 	}
 	config.InitWithSettings(LDAPAuthConfig)

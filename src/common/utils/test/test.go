@@ -115,7 +115,6 @@ func GetUnitTestConfig() map[string]interface{} {
 		common.LDAPVerifyCert:         true,
 		common.UAAVerifyCert:          true,
 		common.ClairDBHost:            "postgresql",
-		common.CfgExpiration:          5,
 		common.AdminInitialPassword:   "Harbor12345",
 		common.LDAPGroupSearchFilter:  "objectclass=groupOfNames",
 		common.LDAPGroupBaseDN:        "dc=example,dc=com",

@@ -50,7 +50,6 @@ var ldapTestConfig = map[string]interface{}{
 	common.LDAPFilter:             "",
 	common.LDAPScope:              2,
 	common.LDAPTimeout:            30,
-	common.CfgExpiration:          5,
 	common.AdminInitialPassword:   "password",
 	common.LDAPGroupSearchFilter:  "objectclass=groupOfNames",
 	common.LDAPGroupBaseDN:        "dc=example,dc=com",

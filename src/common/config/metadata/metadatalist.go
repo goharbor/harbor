@@ -63,7 +63,6 @@ var (
 		{Name: common.AdminInitialPassword, Scope: SystemScope, Group: BasicGroup, EnvKey: "HARBOR_ADMIN_PASSWORD", DefaultValue: "", ItemType: &PasswordType{}, Editable: true},
 		{Name: common.AdmiralEndpoint, Scope: SystemScope, Group: BasicGroup, EnvKey: "ADMIRAL_URL", DefaultValue: "", ItemType: &StringType{}, Editable: false},
 		{Name: common.AUTHMode, Scope: UserScope, Group: BasicGroup, EnvKey: "AUTH_MODE", DefaultValue: "db_auth", ItemType: &AuthModeType{}, Editable: false},
-		{Name: common.CfgExpiration, Scope: SystemScope, Group: BasicGroup, EnvKey: "CFG_EXPIRATION", DefaultValue: "5", ItemType: &IntType{}, Editable: false},
 		{Name: common.ChartRepoURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CHART_REPOSITORY_URL", DefaultValue: "http://chartmuseum:9999", ItemType: &StringType{}, Editable: false},
 
 		{Name: common.ClairDB, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_DB", DefaultValue: "postgres", ItemType: &StringType{}, Editable: false},

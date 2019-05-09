@@ -28,7 +28,6 @@ func TestMain(m *testing.M) {
 	var defaultConfig = map[string]interface{}{
 		common.ExtEndpoint:     "https://" + endpoint,
 		common.WithNotary:      true,
-		common.CfgExpiration:   5,
 		common.TokenExpiration: 30,
 	}
 	config.InitWithSettings(defaultConfig)
@@ -146,7 +145,6 @@ func TestPMSPolicyChecker(t *testing.T) {
 	var defaultConfigAdmiral = map[string]interface{}{
 		common.ExtEndpoint:        "https://" + endpoint,
 		common.WithNotary:         true,
-		common.CfgExpiration:      5,
 		common.TokenExpiration:    30,
 		common.DatabaseType:       "postgresql",
 		common.PostGreSQLHOST:     "127.0.0.1",

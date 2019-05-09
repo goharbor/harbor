@@ -31,7 +31,6 @@ var ldapTestConfig = map[string]interface{}{
 	common.LDAPFilter:           "",
 	common.LDAPScope:            3,
 	common.LDAPTimeout:          30,
-	common.CfgExpiration:        5,
 	common.AdminInitialPassword: "password",
 }
 
@@ -66,7 +65,6 @@ var defaultConfigWithVerifyCert = map[string]interface{}{
 	common.ProjectCreationRestriction: common.ProCrtRestrAdmOnly,
 	common.MaxJobWorkers:              3,
 	common.TokenExpiration:            30,
-	common.CfgExpiration:              5,
 	common.AdminInitialPassword:       "password",
 	common.AdmiralEndpoint:            "http://www.vmware.com",
 	common.WithNotary:                 false,

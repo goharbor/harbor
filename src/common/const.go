@@ -82,7 +82,6 @@ const (
 	ProjectCreationRestriction       = "project_creation_restriction"
 	MaxJobWorkers                    = "max_job_workers"
 	TokenExpiration                  = "token_expiration"
-	CfgExpiration                    = "cfg_expiration"
 	AdminInitialPassword             = "admin_initial_password"
 	AdmiralEndpoint                  = "admiral_url"
 	WithNotary                       = "with_notary"

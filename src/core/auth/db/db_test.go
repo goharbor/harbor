@@ -46,7 +46,6 @@ var testConfig = map[string]interface{}{
 	common.LDAPFilter:           "",
 	common.LDAPScope:            3,
 	common.LDAPTimeout:          30,
-	common.CfgExpiration:        5,
 	common.AdminInitialPassword: "password",
 }
 

@@ -191,11 +191,6 @@ spec:
               configMapKeyRef:
                 name: harbor-adminserver-config
                 key: TOKEN_EXPIRATION
-          - name: CFG_EXPIRATION
-            valueFrom:
-              configMapKeyRef:
-                name: harbor-adminserver-config
-                key: CFG_EXPIRATION
           - name: GODEBUG
             valueFrom:
               configMapKeyRef:
