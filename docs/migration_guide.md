@@ -1,6 +1,9 @@
-# Harbor upgrade and database migration guide
+# Harbor upgrade and migration guide
 
-When upgrading your existing Harbor instance to a newer version, you may need to migrate the data in your database and the settings in `harbor.cfg`. Since the migration may alter the database schema and the settings of `harbor.cfg`, you should **always** back up your data before any migration.
+This guide only covers upgrade and mgiration to version >= v1.8.0
+
+When upgrading your existing Harbor instance to a newer version, you may need to migrate the data in your database and the settings in `harbor.cfg`. 
+Since the migration may alter the database schema and the settings of `harbor.cfg`, you should **always** back up your data before any migration.
 
 **NOTE:**
 
@@ -12,9 +15,11 @@ refer to the migration guide in release branch to upgrade to v1.6.0 and follow t
 - From v1.6.0 on, Harbor will automatically try to do the migrate the DB schema when it starts, so if you are upgrading from v1.6.0 
 or above it's not necessary to call the migrator tool to migrate the schema.
 
-- From v1.6.0 on, Harbor migrates DB from MariaDB to PostgreSQL, and combines Harbor, Notary and Clair DB into one. 
-
 - For the change in Database schema please refer to [change log](../tools/migration/db/changelog.md).
+
+- Since v1.8.0, the configuration of Harbor has changed to `.yml` file, the migrator will transform the configuration 
+file from `harbor.cfg` to `harbor.yml`.  The command will be a little different to perform this migration, please make sure
+you follow the steps below.
 
 
 ### Upgrading Harbor and migrating data
@@ -42,10 +47,12 @@ or above it's not necessary to call the migrator tool to migrate the schema.
     docker pull goharbor/harbor-migrator:[tag]
     ```
 
-5. Upgrade `harbor.cfg`.
-    **NOTE:** The ${harbor_cfg} will be overwritten, you must move it to your installation directory after migration.
+5. Upgrade from `harbor.cfg` to `harbor.yml`
+    **NOTE:** You can find the ${harbor_yml} in the extracted installer you got in step `3`, after the migration the file `harbor.yml` 
+    in that path will be updated with the values from ${harbor_cfg}
+    
     ```
-    docker run -it --rm -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg goharbor/harbor-migrator:[tag] --cfg up
+    docker run -it --rm -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg -v ${harbor_yml}:/harbor-migration/harbor-cfg-out/harbor.yml goharbor/harbor-migrator:[tag] --cfg up
     ```
     **NOTE:** The schema upgrade and data migration of Database is performed by core when Harbor starts, if the migration fails,
     please check the log of core to debug.
