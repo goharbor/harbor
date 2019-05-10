@@ -4,14 +4,14 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 
 * [Manage your projects.](#managing-projects)
 * [Manage members of a project.](#managing-members-of-a-project)
-* [Replicate projects to a remote registry.](#replicating-images)
+* [Replicate resources between Harbor and non-Harbor registries.](#replicating-resources)
 * [Retag images within Harbor](#retag-images)
 * [Search projects and repositories.](#searching-projects-and-repositories)
 * [Manage labels.](#managing-labels)
 * [Manage Harbor system if you are the system administrator:](#administrator-options)
   * [Manage users.](#managing-user)
-  * [Manage endpoints.](#managing-endpoint)
-  * [Manage replication policies.](#managing-replication)
+  * [Manage registries.](#managing-registry)
+  * [Manage replication rules.](#managing-replication)
   * [Manage authentication.](#managing-authentication)
   * [Manage project creation.](#managing-project-creation)
   * [Manage self-registration.](#managing-self-registration)
@@ -120,54 +120,66 @@ You can check one or more members, then click `ACTION`, choose one role to batch
 
 ![browse project](img/new_remove_update_member.png)
 
-## Replicating images  
-Images replication is used to replicate repositories from one Harbor instance to another.
+## Replicating resources  
+Replication allows users to replicate resources(images/charts) between Harbor and non-Harbor registries in both pull or push mode. Currently, the non-Harbor registries includes Docker Hub, Docker registry, Huawei SWR, and more registries will be supported in future.  
 
-The function is project-oriented, and once the system administrator has set a rule to one project, all repositories under the project that match the defined [filter](#image-filter) patterns will be replicated to the remote registry when the [triggering condition](#trigger-mode) is triggered. Each repository will start a job to run. If the project does not exist on the remote registry, a new project will be created automatically. If it already exists and the user configured in policy has no write privilege to it, the process will fail. The member information will not be replicated.  
+Once the system administrator has set a rule, all resources that match the defined [filter](#resource-filter) patterns will be replicated to the destination registry when the [triggering condition](#trigger-mode) is matched. Each resource will start a task to run. If the namespace does not exist on the destination registry, a new namespace will be created automatically. If it already exists and the user configured in policy has no write privilege to it, the process will fail. The member information will not be replicated.  
 
-There may be a bit of delay during replication based on the situation of the network. If replication job fails due to the network issue, the job will be re-scheduled a few minutes later and the schedule will keep trying until the network issue is resolved.  
+There may be a bit of delay during replication based on the situation of the network. If replication task fails, it will be re-scheduled a few minutes later and try 3 times.  
 
 **Note:** Due to API changes, replication between different versions of Harbor may be broken.
 
 ### Creating a replication rule
-Replication can be configured by creating a rule. Click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different image filters and trigger modes according to the different requirements. If there is no endpoint available in the list, you need to create one. Click `SAVE` to create a replication rule for the selected project. If `Replicate existing images immediately` is chosen, the existing images under the project will be replicated to the remote registry immediately.  
-
-#### Image filter
-Three image filters are supported:
-* **Repository**: Filter images according to the repository part of image name.
-* **Tag**: Filter images according to the tag part of image name.
-* **Label**: Filter images according to the [labels](#managing-labels). **Notes**: If the labels referenced by a rule are deleted, the rule's status will be set to `Disabled`. You need to edit and update it according to the tips.
-
-Two terms are supported in the pattern used by repository filter and tag filter:
-* **\***: Matches any sequence of non-separator characters `/`.
-* **?**: Matches any single non-separator character `/`.
-
-#### Trigger mode
-* **Manual**: Replicate the repositories manually when needed. **Note**: The deletion operations are not replicated. 
-* **Immediate**: When a new repository is pushed to the project, it is replicated to the remote registry immediately. Same to the deletion operation if the `Delete remote images when locally deleted` checkbox is selected.
-* **Scheduled**: Replicate the repositories daily or weekly. **Note**: The deletion operations are not replicated. 
+Login as a system administrator user, click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication modes, [resource filters](#resource-filter) and [trigger modes](#trigger-mode) according to the different requirements. If there is no endpoint available in the list, you need to create one. Click `SAVE` to create a replication rule.  
 
 ![browse project](img/create_rule.png)
 
-### Listing and stopping replication jobs
-Click a rule, jobs which belong to this rule will be listed. A job represents the progress of replicating the repository to the remote instance. Click `STOP JOBS`, the pending and retrying jobs will be stopped immediately and the running jobs will be canceled at the next checkpoint.  
+#### Resource filter
+Three resource filters are supported:
+* **Name**: Filter resources according to the name.
+* **Tag**: Filter resources according to the tag.
+* **Resource**: Filter images according to the resource type.
 
-![browse project](img/list_stop_jobs.png)
+The terms supported in the pattern used by name filter and tag filter are as follows:
+* **\***: Matches any sequence of non-separator characters `/`.
+* **\*\***: Matches any sequence of characters, including path separators `/`.
+* **?**: Matches any single non-separator character `/`.
+* **{alt1,...}**: Matches a sequence of characters if one of the comma-separated alternatives matches.
+
+**Note:** `library` must be added if you want to replicate the official images of Docker Hub. For example, `library/hello-world` matches the official hello-world images.  
+
+Pattern | String(Match or not)
+---------- | -------
+`library/*`      | `library/hello-world`(Y)<br> `library/my/hello-world`(N)
+`library/**`     | `library/hello-world`(Y)<br> `library/my/hello-world`(Y)
+`{library,goharbor}/**` | `library/hello-world`(Y)<br> `goharbor/harbor-core`(Y)<br> `google/hello-world`(N)
+`1.?`      | `1.0`(Y)<br> `1.01`(N)
+
+#### Trigger mode
+* **Manual**: Replicate the resources manually when needed. **Note**: The deletion operations are not replicated. 
+* **Scheduled**: Replicate the resources periodically. **Note**: The deletion operations are not replicated. 
+* **Event Based**: When a new resource is pushed to the project, it is replicated to the remote registry immediately. Same to the deletion operation if the `Delete remote resources when locally deleted` checkbox is selected.
 
 ### Starting a replication manually
-Select a replication rule and click `REPLICATE`, the images under the project which the rule is applied to will be replicated to the remote registry immediately. If there is any pending/running job that belongs to the rule, the new replication will not be started.
+Select a replication rule and click `REPLICATE`, the resources which the rule is applied to will be replicated from the source registry to the destination immediately.  
 
 ![browse project](img/start_replicate.png)
 
+### Listing and stopping replication executions
+Click a rule, the execution records which belong to this rule will be listed. Each record represents the summary of the once execution of the rule. Click `STOP` to stop the executions which are in progress.  
+
+![browse project](img/list_stop_executions.png)
+
+### Listing tasks
+Click the ID of one execution, you can get the execution summary and the task list. Click the log icon can get the detail information for the replication progress.  
+**Note**: The count of `IN PROGRESS` status in the summary includes both `Pending` and `In Progress` tasks.  
+
+![browse project](img/list_tasks.png)
+
 ### Deleting the replication rule
-Select the replication rule and click `DELETE` to delete it. Only rules which have no pending/running/retrying jobs can be deleted.  
+Select the replication rule and click `DELETE` to delete it. Only rules which have no in progress executions can be deleted.  
 
 ![browse project](img/delete_rule.png)
-
-
-The system administrator can also operate the replication rules defined for the specified project in `Replication` tab under `Projects` view. Project administrator has read-only privilege.
-
-![browse project](img/rule_under_project_view.png)
 
 ## Retag Images
 
@@ -221,10 +233,10 @@ Administrator can add "Administrator" role to one or more ordinary users by chec
 
 ![browse project](img/new_set_admin_remove_user.png)
 
-### Managing endpoint  
-You can list, add, edit and delete endpoints under `Administration->Registries`. Only endpoints which are not referenced by any rules can be deleted.  
+### Managing registry  
+You can list, add, edit and delete registries under `Administration->Registries`. Only registries which are not referenced by any rules can be deleted.  
 
-![browse project](img/manage_endpoint.png)
+![browse project](img/manage_registry.png)
 
 ### Managing replication  
 You can list, add, edit and delete rules under `Administration->Replications`.   
