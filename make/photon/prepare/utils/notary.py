@@ -70,10 +70,6 @@ def prepare_env_notary(nginx_config_dir):
         else:
             raise(Exception("No certs for notary"))
 
-    # copy server_env to notary config
-    shutil.copy2(
-        os.path.join(notary_template_dir, "server_env.jinja"),
-        os.path.join(notary_config_dir, "server_env"))
 
     print("Copying nginx configuration file for notary")
     shutil.copy2(
@@ -90,32 +86,37 @@ def prepare_notary(config_dict, nginx_config_dir, ssl_cert_path, ssl_cert_key_pa
     prepare_env_notary(nginx_config_dir)
 
     render_jinja(
-        notary_signer_pg_template,
-        notary_signer_pg_config,
-        uid=DEFAULT_UID,
-        gid=DEFAULT_GID
-        )
+        notary_server_nginx_config_template,
+        os.path.join(nginx_config_dir, "notary.server.conf"),
+        ssl_cert=ssl_cert_path,
+        ssl_cert_key=ssl_cert_key_path)
 
     render_jinja(
         notary_server_pg_template,
         notary_server_pg_config,
         uid=DEFAULT_UID,
         gid=DEFAULT_GID,
-        token_endpoint=config_dict['public_url'])
-
-    render_jinja(
-        notary_server_nginx_config_template,
-        os.path.join(nginx_config_dir, "notary.server.conf"),
-        ssl_cert=ssl_cert_path,
-        ssl_cert_key=ssl_cert_key_path)
-
-    default_alias = get_alias(secret_key_dir)
-    render_jinja(
-        notary_signer_env_template,
-        notary_signer_env_path,
-        alias=default_alias)
+        token_endpoint=config_dict['public_url'],
+        **config_dict)
 
     render_jinja(
         notary_server_env_template,
-        notary_server_env_path
+        notary_server_env_path,
+        **config_dict
     )
+
+    default_alias = get_alias(secret_key_dir)
+
+    render_jinja(
+        notary_signer_env_template,
+        notary_signer_env_path,
+        alias=default_alias,
+        **config_dict)
+
+    render_jinja(
+        notary_signer_pg_template,
+        notary_signer_pg_config,
+        uid=DEFAULT_UID,
+        gid=DEFAULT_GID,
+        alias=default_alias,
+        **config_dict)

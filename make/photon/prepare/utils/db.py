@@ -14,7 +14,7 @@ def prepare_db(config_dict):
     render_jinja(
         db_env_template_path,
         db_conf_env,
-        db_password=config_dict['db_password'])
+        harbor_db_password=config_dict['harbor_db_password'])
 
 def prepare_db_config_dir():
     prepare_config_dir(db_config_dir)

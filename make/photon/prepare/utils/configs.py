@@ -79,16 +79,45 @@ def parse_yaml_config(config_file_path):
         config_dict['cert_path'] = https_config["certificate"]
         config_dict['cert_key_path'] = https_config["private_key"]
 
-    config_dict['public_url'] = configs.get('external_url') or '{protocol}://{hostname}'.format(**config_dict)
+    if configs.get('external_url'):
+        config_dict['public_url'] = configs.get('external_url')
+    else:
+        if config_dict['protocol'] == 'https':
+            config_dict['public_url'] = '{protocol}://{hostname}:{https_port}'.format(**config_dict)
+        else:
+            config_dict['public_url'] = '{protocol}://{hostname}:{http_port}'.format(**config_dict)
 
     # DB configs
     db_configs = configs.get('database')
     if db_configs:
-        config_dict['db_host'] = 'postgresql'
-        config_dict['db_port'] = 5432
-        config_dict['db_user'] = 'postgres'
-        config_dict['db_password'] = db_configs.get("password") or ''
-        config_dict['ssl_mode'] = 'disable'
+        # harbor db
+        config_dict['harbor_db_host'] = 'postgresql'
+        config_dict['harbor_db_port'] = 5432
+        config_dict['harbor_db_name'] = 'registry'
+        config_dict['harbor_db_username'] = 'postgres'
+        config_dict['harbor_db_password'] = db_configs.get("password") or ''
+        config_dict['harbor_db_sslmode'] = 'disable'
+        # clari db
+        config_dict['clair_db_host'] = 'postgresql'
+        config_dict['clair_db_port'] = 5432
+        config_dict['clair_db_name'] = 'postgres'
+        config_dict['clair_db_username'] = 'postgres'
+        config_dict['clair_db_password'] = db_configs.get("password") or ''
+        config_dict['clair_db_sslmode'] = 'disable'
+        # notary signer
+        config_dict['notary_signer_db_host'] = 'postgresql'
+        config_dict['notary_signer_db_port'] = 5432
+        config_dict['notary_signer_db_name'] = 'notarysigner'
+        config_dict['notary_signer_db_username'] = 'signer'
+        config_dict['notary_signer_db_password'] = 'password'
+        config_dict['notary_signer_db_sslmode'] = 'disable'
+        # notary server
+        config_dict['notary_server_db_host'] = 'postgresql'
+        config_dict['notary_server_db_port'] = 5432
+        config_dict['notary_server_db_name'] = 'notaryserver'
+        config_dict['notary_server_db_username'] = 'server'
+        config_dict['notary_server_db_password'] = 'password'
+        config_dict['notary_server_db_sslmode'] = 'disable'
 
 
     # Data path volume
@@ -152,12 +181,34 @@ def parse_yaml_config(config_file_path):
     # external DB, if external_db enabled, it will cover the database config
     external_db_configs = configs.get('external_database') or {}
     if external_db_configs:
-        config_dict['db_password'] = external_db_configs.get('password') or ''
-        config_dict['db_host'] = external_db_configs['host']
-        config_dict['db_port'] = external_db_configs['port']
-        config_dict['db_user'] = external_db_configs['username']
-        if external_db_configs.get('ssl_mode'):
-            config_dict['db_ssl_mode'] = external_db_configs['ssl_mode']
+        # harbor db
+        config_dict['harbor_db_host'] = external_db_configs['harbor']['host']
+        config_dict['harbor_db_port'] = external_db_configs['harbor']['port']
+        config_dict['harbor_db_name'] = external_db_configs['harbor']['db_name']
+        config_dict['harbor_db_username'] = external_db_configs['harbor']['username']
+        config_dict['harbor_db_password'] = external_db_configs['harbor']['password']
+        config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
+        # clari db
+        config_dict['clair_db_host'] = external_db_configs['clair']['host']
+        config_dict['clair_db_port'] = external_db_configs['clair']['port']
+        config_dict['clair_db_name'] = external_db_configs['clair']['db_name']
+        config_dict['clair_db_username'] = external_db_configs['clair']['username']
+        config_dict['clair_db_password'] = external_db_configs['clair']['password']
+        config_dict['clair_db_sslmode'] = external_db_configs['clair']['ssl_mode']
+        # notary signer
+        config_dict['notary_signer_db_host'] = external_db_configs['notary_signer']['host']
+        config_dict['notary_signer_db_port'] = external_db_configs['notary_signer']['port']
+        config_dict['notary_signer_db_name'] = external_db_configs['notary_signer']['db_name']
+        config_dict['notary_signer_db_username'] = external_db_configs['notary_signer']['username']
+        config_dict['notary_signer_db_password'] = external_db_configs['notary_signer']['password']
+        config_dict['notary_signer_db_sslmode'] = external_db_configs['notary_signer']['ssl_mode']
+        # notary server
+        config_dict['notary_server_db_host'] = external_db_configs['notary_server']['host']
+        config_dict['notary_server_db_port'] = external_db_configs['notary_server']['port']
+        config_dict['notary_server_db_name'] = external_db_configs['notary_server']['db_name']
+        config_dict['notary_server_db_username'] = external_db_configs['notary_server']['username']
+        config_dict['notary_server_db_password'] = external_db_configs['notary_server']['password']
+        config_dict['notary_server_db_sslmode'] = external_db_configs['notary_server']['ssl_mode']
 
 
     # redis config

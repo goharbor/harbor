@@ -27,19 +27,14 @@ def prepare_clair(config_dict):
     render_jinja(
         postgres_env_template,
         postgres_env_path,
-        password=config_dict['db_password'])
+        **config_dict)
 
     render_jinja(
         clair_config_template,
         clair_config_path,
         uid=DEFAULT_UID,
         gid=DEFAULT_GID,
-        password= config_dict['db_password'],
-        username= config_dict['db_user'],
-        host= config_dict['db_host'],
-        port= config_dict['db_port'],
-        dbname= config_dict['clair_db'],
-        interval= config_dict['clair_updaters_interval'])
+        **config_dict)
 
     # config http proxy for Clair
     render_jinja(

@@ -83,11 +83,34 @@ _version: 1.8.0
 # Uncomment external_database if using external database. And the password will replace the the password setting in database.
 # And currently only support postgres.
 # external_database:
-#   host: postgresql
-#   port: 5432
-#   username: postgres
-#   password: root123
-#   ssl_mode: disable
+#   harbor:
+#     host: postgresql
+#     port: 5432
+#     db_name: registry
+#     username: postgres
+#     password: root123
+#     ssl_mode: disable
+#   clair:
+#     host: postgresql
+#     port: 5432
+#     db_name: registry
+#     username: postgres
+#     password: root123
+#     ssl_mode: disable
+#   notary_signer:
+#     host: postgresql
+#     port: 5432
+#     db_name: registry
+#     username: postgres
+#     password: root123
+#     ssl_mode: disable
+#   notary_server:
+#     host: postgresql
+#     port: 5432
+#     db_name: registry
+#     username: postgres
+#     password: root123
+#     ssl_mode: disable
 
 # Uncomment external_redis if using external Redis server
 # external_redis:

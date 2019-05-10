@@ -34,7 +34,7 @@ def migrate(input_cfg, output_cfg):
     val = {}
     for k in keys:
         val[k] = d.get(k,'')
-    if val['db_host'] == 'postgresql' and val['db_port'] == 5432 and val['db_user'] == 'postgres':
+    if val['db_host'] == 'postgresql' and val['db_port'] == '5432':
         val['external_db'] = False
     else:
         val['external_db'] = True
@@ -46,7 +46,7 @@ def migrate(input_cfg, output_cfg):
             val['registry_storage_provider_name'],
             val['registry_storage_provider_config']
             )
-    if val['redis_host'] == 'redis' and val['redis_port'] == 6379 and not val['redis_password'] and val['redis_db_index'] == '1,2,3':
+    if val['redis_host'] == 'redis' and val['redis_port'] == '6379':
         val['external_redis'] = False
     else:
         val['registry_db_index'], val['jobservice_db_index'], val['chartmuseum_db_index'] = map(int, val['redis_db_index'].split(','))
