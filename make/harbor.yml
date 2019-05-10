@@ -80,36 +80,37 @@ log:
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
 _version: 1.8.0
 
-# Uncomment external_database if using external database. And the password will replace the the password setting in database.
-# And currently only support postgres.
+# Uncomment external_database if using external database.
+# Currently only support POSTGRES, the password will replace the password setting in database.
+# NOTE: external_database is unable to custom attributes individually, you must do them in block.
 # external_database:
 #   harbor:
-#     host: postgresql
-#     port: 5432
-#     db_name: registry
-#     username: postgres
-#     password: root123
+#     host: harbor_db_host
+#     port: harbor_db_port
+#     db_name: harbor_db_name
+#     username: harbor_db_username
+#     password: harbor_db_password
 #     ssl_mode: disable
 #   clair:
-#     host: postgresql
-#     port: 5432
-#     db_name: registry
-#     username: postgres
-#     password: root123
+#     host: clair_db_host
+#     port: clair_db_port
+#     db_name: clair_db_name
+#     username: clair_db_username
+#     password: clair_db_password
 #     ssl_mode: disable
 #   notary_signer:
-#     host: postgresql
-#     port: 5432
-#     db_name: registry
-#     username: postgres
-#     password: root123
+#     host: notary_signer_db_host
+#     port: notary_signer_db_port
+#     db_name: notary_signer_db_name
+#     username: notary_signer_db_username
+#     password: notary_signer_db_password
 #     ssl_mode: disable
 #   notary_server:
-#     host: postgresql
-#     port: 5432
-#     db_name: registry
-#     username: postgres
-#     password: root123
+#     host: notary_server_db_host
+#     port: notary_server_db_port
+#     db_name: notary_server_db_name
+#     username: notary_server_db_username
+#     password: notary_server_db_password
 #     ssl_mode: disable
 
 # Uncomment external_redis if using external Redis server
