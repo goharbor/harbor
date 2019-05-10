@@ -36,6 +36,12 @@ def get_storage_provider_info(provider_name, provider_config):
     # generate storage configuration section in yaml format
     storage_provider_conf_list = [provider_name + ':']
     for config in provider_config_copy.items():
-        storage_provider_conf_list.append('{}: {}'.format(*config))
+        if config[1] is None:
+            value = ''
+        elif config[1] == True:
+            value = 'true'
+        else:
+            value = config[1]
+        storage_provider_conf_list.append('{}: {}'.format(config[0], value))
     storage_provider_info = ('\n' + ' ' * 4).join(storage_provider_conf_list)
     return storage_provider_info
