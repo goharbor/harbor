@@ -146,7 +146,7 @@ func (a *adapter) listCandidateProjects(filters []*model.Filter) ([]*project, er
 // override the default implementation from the default image registry
 // by calling Harbor API directly
 func (a *adapter) DeleteManifest(repository, reference string) error {
-	url := fmt.Sprintf("%s/api/repositories/%s/tags/%s", a.getURL(), repository, reference)
+	url := fmt.Sprintf("%s/api/repositories/%s/tags/%s", a.url, repository, reference)
 	return a.client.Delete(url)
 }
 

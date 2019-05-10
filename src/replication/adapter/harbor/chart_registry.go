@@ -136,7 +136,7 @@ func (a *adapter) getChartInfo(name, version string) (*chartVersionDetail, error
 	if err != nil {
 		return nil, err
 	}
-	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.getURL(), project, name, version)
+	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.url, project, name, version)
 	info := &chartVersionDetail{}
 	if err = a.client.Get(url, info); err != nil {
 		return nil, err
@@ -159,7 +159,7 @@ func (a *adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
 		if err != nil {
 			return nil, err
 		}
-		url = fmt.Sprintf("%s/chartrepo/%s/%s", a.getURL(), project, url)
+		url = fmt.Sprintf("%s/chartrepo/%s/%s", a.url, project, url)
 	}
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
@@ -189,7 +189,7 @@ func (a *adapter) UploadChart(name, version string, chart io.Reader) error {
 	}
 	w.Close()
 
-	url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.getURL(), project)
+	url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.url, project)
 
 	req, err := http.NewRequest(http.MethodPost, url, buf)
 	if err != nil {
@@ -220,7 +220,7 @@ func (a *adapter) DeleteChart(name, version string) error {
 	if err != nil {
 		return err
 	}
-	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.getURL(), project, name, version)
+	url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s/%s", a.url, project, name, version)
 	return a.client.Delete(url)
 }
 
