@@ -14,7 +14,7 @@ storage:
     enabled: true
 {% if storage_redirect_disabled %}
   redirect:
-    disabled: true
+    disable: true
 {% endif %}
 redis:
   addr: {{redis_host}}:{{redis_port}}
