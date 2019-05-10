@@ -9,6 +9,8 @@ import {
 } from "@angular/core";
 import { OriginCron } from "../service/interface";
 import { cronRegex } from "../utils";
+import { TranslateService } from "@ngx-translate/core";
+import { ErrorHandler } from "../error-handler/error-handler";
 const SCHEDULE_TYPE = {
   NONE: "None",
   DAILY: "Daily",
@@ -33,6 +35,10 @@ export class CronScheduleComponent implements OnChanges {
   SCHEDULE_TYPE = SCHEDULE_TYPE;
   scheduleType: string;
   @Output() inputvalue = new EventEmitter<string>();
+  constructor(
+    private translate: TranslateService,
+    private errorHandler: ErrorHandler,
+    ) { }
 
   ngOnChanges(changes: SimpleChanges): void {
     let cronChange: SimpleChange = changes["originCron"];
@@ -43,6 +49,7 @@ export class CronScheduleComponent implements OnChanges {
   }
   editSchedule() {
     if (!this.originScheduleType) {
+      this.translate.get('SCHEDULE.NOSCHEDULE').subscribe(res => this.errorHandler.error(res));
       return;
     }
     this.isEditMode = true;

@@ -991,7 +991,9 @@
         "MANUAL": "Manual",
         "CRON": "cron",
         "ON": "on",
-        "AT": "at"
+        "AT": "at",
+        "NOSCHEDULE": "An error occurred in Get schedule"
+
     },
     "GC": {
         "CURRENT_SCHEDULE": "Current Schedule",
