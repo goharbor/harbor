@@ -83,9 +83,15 @@ def parse_yaml_config(config_file_path):
         config_dict['public_url'] = configs.get('external_url')
     else:
         if config_dict['protocol'] == 'https':
-            config_dict['public_url'] = '{protocol}://{hostname}:{https_port}'.format(**config_dict)
+            if config_dict['https_port'] == 443:
+                config_dict['public_url'] = '{protocol}://{hostname}'.format(**config_dict)
+            else:
+                config_dict['public_url'] = '{protocol}://{hostname}:{https_port}'.format(**config_dict)
         else:
-            config_dict['public_url'] = '{protocol}://{hostname}:{http_port}'.format(**config_dict)
+            if config_dict['http_port'] == 80:
+                config_dict['public_url'] = '{protocol}://{hostname}'.format(**config_dict)
+            else:
+                config_dict['public_url'] = '{protocol}://{hostname}:{http_port}'.format(**config_dict)
 
     # DB configs
     db_configs = configs.get('database')
