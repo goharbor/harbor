@@ -101,7 +101,7 @@ function check_docker {
 		docker_version_part2=${BASH_REMATCH[3]}
 		
 		# the version of docker does not meet the requirement
-		if [ "$docker_version" -lt 17 ] || ([ "$docker_version" -eq 17 ] && [ "$docker_version_part1" -lt 6 ])
+		if [ "$docker_version_part1" -lt 17 ] || ([ "$docker_version_part1" -eq 17 ] && [ "$docker_version_part2" -lt 6 ])
 		then
 			error "Need to upgrade docker package to 17.06.0+."
 			exit 1
