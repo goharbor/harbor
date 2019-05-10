@@ -344,6 +344,10 @@ hostname = 192.168.0.2:8888
 
 4.Re-deploy Harbor referring to previous section "Managing Harbor's lifecycle".
 
+## Configuring Harbor using the external database
+Currently, only PostgreSQL database is supported by Harbor.  
+To user an external database, just uncomment the `external_database` section in `harbor.yml` and fill the necessary information. Four databases are needed to be create first by users for Harbor core, Clair, Notary server and Notary signer. And the tables will be generated automatically when Harbor starting up.  
+
 ## Manage user settings
 After release 1.8.0, User settings are separated with system settings, and all user settings should be configured in web console or by HTTP request.
 Please refer [Configure User Settings](configure_user_settings.md) to config user settings.
