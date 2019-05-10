@@ -18,6 +18,7 @@ import {
 import { ErrorHandler } from "../../error-handler/index";
 import { CronScheduleComponent } from "../../cron-schedule/cron-schedule.component";
 import { OriginCron } from '../../service/interface';
+import { finalize } from "rxjs/operators";
 
 @Component({
   selector: "gc-config",
@@ -50,12 +51,14 @@ export class GcComponent implements OnInit {
 
   getCurrentSchedule() {
     this.loadingGcStatus.emit(true);
-    this.gcRepoService.getSchedule().subscribe(schedule => {
-      this.initSchedule(schedule);
+    this.gcRepoService.getSchedule()
+    .pipe(finalize(() => {
       this.loadingGcStatus.emit(false);
+    }))
+    .subscribe(schedule => {
+      this.initSchedule(schedule);
     }, error => {
       this.errorHandler.error(error);
-      this.loadingGcStatus.emit(false);
     });
   }
 

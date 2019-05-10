@@ -987,7 +987,8 @@
         "CRON": "cron",
         "MANUAL": "手动",
         "ON": " ",
-        "AT": " "
+        "AT": " ",
+        "NOSCHEDULE": "获取schedule时出现错误"
     },
     "GC": {
         "CURRENT_SCHEDULE": "当前定时任务",
