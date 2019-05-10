@@ -7,12 +7,8 @@ from functools import wraps
 from .misc import mark_file
 from .misc import generate_random_string
 
-SSL_CERT_PATH = os.path.join("/etc/nginx/cert", "server.crt")
-SSL_CERT_KEY_PATH = os.path.join("/etc/nginx/cert", "server.key")
-
-secret_cert_dir = '/secret/nginx'
-secret_cert = '/secret/nginx/server.crt'
-secret_cert_key = '/secret/nginx/server.key'
+SSL_CERT_PATH = os.path.join("/etc/cert", "server.crt")
+SSL_CERT_KEY_PATH = os.path.join("/etc/cert", "server.key")
 
 secret_keys_dir = '/secret/keys'
 
