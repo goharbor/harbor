@@ -15,12 +15,12 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"errors"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
@@ -123,7 +123,7 @@ func (uga *UserGroupAPI) Post() {
 	// User can not add ldap group when the ldap server is offline
 	ldapGroup, err := auth.SearchGroup(userGroup.LdapGroupDN)
 	if err == ldap.ErrNotFound || ldapGroup == nil {
-		uga.SendNotFoundError(fmt.Errorf("LDAP Group DN is not found: DN:%v", userGroup.LdapGroupDN))
+		uga.SendBadRequestError(fmt.Errorf("LDAP Group DN is not found: DN:%v", userGroup.LdapGroupDN))
 		return
 	}
 	if err == ldap.ErrDNSyntax {

@@ -116,7 +116,7 @@ func (l *LabelAPI) Post() {
 			return
 		}
 		if !exist {
-			l.SendNotFoundError(fmt.Errorf("project %d not found", label.ProjectID))
+			l.SendBadRequestError(fmt.Errorf("project %d not found", label.ProjectID))
 			return
 		}
 	}
