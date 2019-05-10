@@ -21,7 +21,7 @@ def main():
     args = parser.parse_args()
     if args.target_version is not None:
         target_version = args.target_version
-    input_version =  utils.get_conf_version(args.input_path)
+    input_version = utils.get_conf_version(args.input_path)
     curr_dir = os.path.dirname(__file__)
     if input_version == target_version:
         print ("Version of input harbor.cfg is identical to target %s, no need to upgrade" % input_version)

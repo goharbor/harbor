@@ -16,28 +16,14 @@ RC_UP = 102
 RC_DOWN = 103
 RC_BACKUP = 104
 RC_RESTORE = 105
-RC_UNNKNOW_TYPE = 106
+RC_UNKNOWN_TYPE = 106
 RC_GEN = 110
 
 class DBMigrator():
 
     def __init__(self, target):
-        path = "/harbor-migration/harbor-cfg/harbor.cfg"
-        env = ""
-        if os.path.exists(path):
-            temp_section = "configuration"
-            conf = StringIO.StringIO()
-            conf.write("[%s]\n" % temp_section)
-            conf.write(open(path).read())
-            conf.seek(0, os.SEEK_SET)
-            rcp = ConfigParser.RawConfigParser()
-            rcp.readfp(conf)
-            if rcp.get(temp_section, "admiral_url") != "NA":
-                env = "WITH_ADMIRAL=true"
-        else:
-            print("harbor.cfg not found, WITH_ADMIRAL will not be set to true")
         self.target = target
-        self.script = env + " ./db/run.sh"
+        self.script = "./db/run.sh"
 
     def backup(self):
         return run_cmd(self.script + " backup") == 0
@@ -246,7 +232,7 @@ def main():
         
         else:
             print ("Unknow action type: " + str(commandline_input.action))
-            sys.exit(RC_UNNKNOW_TYPE)     
+            sys.exit(RC_UNKNOWN_TYPE)
     except Exception as ex:
         print ("Migrator fail to execute, err: " + ex.message)
         sys.exit(RC_GEN)

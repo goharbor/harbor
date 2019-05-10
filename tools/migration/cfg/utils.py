@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import sys
 import os
-import json
+import yaml
 from string import Template
 
 if sys.version_info[:3][0] == 2:
@@ -14,16 +14,24 @@ if sys.version_info[:3][0] == 3:
     import io as StringIO
 
 def read_conf(path):
-    temp_section = "configuration"
-    conf = StringIO.StringIO()
-    conf.write("[%s]\n" % temp_section)
-    conf.write(open(path).read())
-    conf.seek(0, os.SEEK_SET)
-    rcp = ConfigParser.RawConfigParser()
-    rcp.readfp(conf)
-    d = {}
-    for op in rcp.options(temp_section):
-        d[op] = rcp.get(temp_section, op)
+    with open(path) as f:
+        try:
+            d = yaml.safe_load(f)
+        except yaml.error.YAMLError:
+            f.seek(0)
+            temp_section = "configuration"
+            conf = StringIO.StringIO()
+            conf.write("[%s]\n" % temp_section)
+            conf.write(f.read())
+            conf.seek(0, os.SEEK_SET)
+            rcp = ConfigParser.RawConfigParser()
+            rcp.readfp(conf)
+            d = {}
+            for op in rcp.options(temp_section):
+                d[op] = rcp.get(temp_section, op)
+        else:
+            if "_version" not in d:
+                raise Exception("Bad format configuration file: %s" % path)
     return d
 
 def get_conf_version(path):
