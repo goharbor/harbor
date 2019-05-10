@@ -132,7 +132,7 @@ func (r *ReplicationPolicyAPI) validateRegistry(policy *model.Policy) bool {
 		return false
 	}
 	if registry == nil {
-		r.SendNotFoundError(fmt.Errorf("registry %d not found", registryID))
+		r.SendBadRequestError(fmt.Errorf("registry %d not found", registryID))
 		return false
 	}
 	return true

@@ -106,7 +106,7 @@ func TestLabelAPIPost(t *testing.T) {
 			code: http.StatusForbidden,
 		},
 
-		// 404 non-exist project
+		// 400 non-exist project
 		{
 			request: &testingRequest{
 				method: http.MethodPost,
@@ -118,7 +118,7 @@ func TestLabelAPIPost(t *testing.T) {
 				},
 				credential: projAdmin,
 			},
-			code: http.StatusNotFound,
+			code: http.StatusBadRequest,
 		},
 
 		// 200

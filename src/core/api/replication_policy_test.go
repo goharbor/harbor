@@ -159,7 +159,7 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 			},
 			code: http.StatusConflict,
 		},
-		// 404, registry not found
+		// 400, registry not found
 		{
 			request: &testingRequest{
 				method:     http.MethodPost,
@@ -172,7 +172,7 @@ func TestReplicationPolicyAPICreate(t *testing.T) {
 					},
 				},
 			},
-			code: http.StatusNotFound,
+			code: http.StatusBadRequest,
 		},
 		// 201
 		{
@@ -310,7 +310,7 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 			},
 			code: http.StatusConflict,
 		},
-		// 404, registry not found
+		// 400, registry not found
 		{
 			request: &testingRequest{
 				method:     http.MethodPut,
@@ -323,7 +323,7 @@ func TestReplicationPolicyAPIUpdate(t *testing.T) {
 					},
 				},
 			},
-			code: http.StatusNotFound,
+			code: http.StatusBadRequest,
 		},
 		// 200
 		{

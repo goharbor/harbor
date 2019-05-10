@@ -158,7 +158,7 @@ func (pma *ProjectMemberAPI) Post() {
 
 	pmid, err := AddProjectMember(projectID, request)
 	if err == auth.ErrorGroupNotExist || err == auth.ErrorUserNotExist {
-		pma.SendNotFoundError(fmt.Errorf("Failed to add project member, error: %v", err))
+		pma.SendBadRequestError(fmt.Errorf("Failed to add project member, error: %v", err))
 		return
 	} else if err == auth.ErrDuplicateLDAPGroup {
 		pma.SendConflictError(fmt.Errorf("Failed to add project member, already exist LDAP group or project member, groupDN:%v", request.MemberGroup.LdapGroupDN))

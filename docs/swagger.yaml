@@ -515,8 +515,6 @@ paths:
           description: User need to log in first.
         '403':
           description: User in session does not have permission to the project.
-        '404':
-          description: 'Project does not exist, or the username does not found, or the user group does not found.'
         '409':
           description: An LDAP user group with same DN already exist.
         '500':
@@ -1846,8 +1844,6 @@ paths:
           $ref: '#/responses/Unauthorized'
         '403':
           $ref: '#/responses/Forbidden'
-        '404':
-          $ref: '#/responses/NotFound'
         '409':
           $ref: '#/responses/Conflict'
         '415':
@@ -2578,8 +2574,6 @@ paths:
           description: User need to log in first.
         '403':
           description: User in session does not have permission to the user group.
-        '404':
-          description: The LDAP group is not found.
         '409':
           description: An LDAP user group with same DN already exist.
         '500':

@@ -126,7 +126,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 				},
 				credential: admin,
 			},
-			code: http.StatusNotFound,
+			code: http.StatusBadRequest,
 		},
 		{
 			request: &testingRequest{
