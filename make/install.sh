@@ -1,9 +1,5 @@
 #!/bin/bash
 
-#docker version: 1.11.2 
-#docker-compose version: 1.7.1 
-#Harbor version: 0.4.0 
-
 set +e
 set -o noglob
 
@@ -93,7 +89,7 @@ fi
 function check_docker {
 	if ! docker --version &> /dev/null
 	then
-		error "Need to install docker(1.10.0+) first and run this script again."
+		error "Need to install docker(17.06.0+) first and run this script again."
 		exit 1
 	fi
 	
@@ -105,9 +101,9 @@ function check_docker {
 		docker_version_part2=${BASH_REMATCH[3]}
 		
 		# the version of docker does not meet the requirement
-		if [ "$docker_version_part1" -lt 1 ] || ([ "$docker_version_part1" -eq 1 ] && [ "$docker_version_part2" -lt 10 ])
+		if [ "$docker_version" -lt 17 ] || ([ "$docker_version" -eq 17 ] && [ "$docker_version_part1" -lt 6 ])
 		then
-			error "Need to upgrade docker package to 1.10.0+."
+			error "Need to upgrade docker package to 17.06.0+."
 			exit 1
 		else
 			note "docker version: $docker_version"
@@ -121,7 +117,7 @@ function check_docker {
 function check_dockercompose {
 	if ! docker-compose --version &> /dev/null
 	then
-		error "Need to install docker-compose(1.7.1+) by yourself first and run this script again."
+		error "Need to install docker-compose(1.18.0+) by yourself first and run this script again."
 		exit 1
 	fi
 	
@@ -133,9 +129,9 @@ function check_dockercompose {
 		docker_compose_version_part2=${BASH_REMATCH[3]}
 		
 		# the version of docker-compose does not meet the requirement
-		if [ "$docker_compose_version_part1" -lt 1 ] || ([ "$docker_compose_version_part1" -eq 1 ] && [ "$docker_compose_version_part2" -lt 6 ])
+		if [ "$docker_compose_version_part1" -lt 1 ] || ([ "$docker_compose_version_part1" -eq 1 ] && [ "$docker_compose_version_part2" -lt 18 ])
 		then
-			error "Need to upgrade docker-compose package to 1.7.1+."
+			error "Need to upgrade docker-compose package to 1.18.0+."
                         exit 1
 		else
 			note "docker-compose version: $docker_compose_version"
