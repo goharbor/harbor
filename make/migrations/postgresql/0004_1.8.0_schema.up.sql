@@ -166,7 +166,16 @@ If user set the scan all schedule, move it into table admin_job, and let the api
 DO $$
 BEGIN
     IF exists(select * FROM properties WHERE k = 'scan_all_policy') then
-        INSERT INTO admin_job (job_name, job_kind, cron_str, status) VALUES ('IMAGE_SCAN_ALL', 'Periodic', (select v FROM properties WHERE k = 'scan_all_policy'), 'pending');
+        /*
+            In v1.7.0, it creates an record for scan all but without cron string, just update the record with the cron in properties.
+         */
+        IF exists(select * FROM admin_job WHERE job_name = 'IMAGE_SCAN_ALL' AND job_kind = 'Periodic' AND deleted = 'f') then
+            UPDATE admin_job SET cron_str=scan_all_cron.v
+            FROM (select * FROM properties WHERE k = 'scan_all_policy') AS scan_all_cron
+            WHERE job_name = 'IMAGE_SCAN_ALL' AND job_kind = 'Periodic' AND deleted = 'f';
+        ELSE
+            INSERT INTO admin_job (job_name, job_kind, cron_str, status) VALUES ('IMAGE_SCAN_ALL', 'Periodic', (select v FROM properties WHERE k = 'scan_all_policy'), 'pending');
+        END IF;
         DELETE FROM properties WHERE k='scan_all_policy';
     END IF;
 END $$;
