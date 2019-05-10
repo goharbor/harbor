@@ -188,7 +188,7 @@ func (suite *CWorkerTestSuite) TestStopJob() {
 	t, err := suite.lcmCtl.New(genericJob)
 	require.NoError(suite.T(), err, "new job stats: nil error expected but got %s", err)
 
-	time.Sleep(500 * time.Millisecond)
+	time.Sleep(3 * time.Second)
 
 	latest, err := t.Status()
 	require.NoError(suite.T(), err, "get latest status: nil error expected but got %s", err)
@@ -255,7 +255,7 @@ func (j *fakeLongRunJob) Validate(params job.Parameters) error {
 }
 
 func (j *fakeLongRunJob) Run(ctx job.Context, params job.Parameters) error {
-	time.Sleep(2 * time.Second)
+	time.Sleep(5 * time.Second)
 
 	if _, stopped := ctx.OPCommand(); stopped {
 		return nil
