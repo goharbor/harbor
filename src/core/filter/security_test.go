@@ -192,6 +192,31 @@ func TestOIDCCliReqCtxModifier(t *testing.T) {
 	assert.Nil(t, err)
 }
 
+func TestIdTokenReqCtxModifier(t *testing.T) {
+	bc := context.Background()
+	it := &idTokenReqCtxModifier{}
+	r1, err := http.NewRequest(http.MethodGet,
+		"http://127.0.0.1/chartrepo/", nil)
+	require.Nil(t, err)
+	req1 := r1.WithContext(context.WithValue(bc, AuthModeKey, common.DBAuth))
+	ctx1, err := newContext(req1)
+	require.Nil(t, err)
+	assert.False(t, it.Modify(ctx1))
+
+	req2 := r1.WithContext(context.WithValue(bc, AuthModeKey, common.OIDCAuth))
+	ctx2, err := newContext(req2)
+	require.Nil(t, err)
+	assert.False(t, it.Modify(ctx2))
+
+	r2, err := http.NewRequest(http.MethodGet,
+		"http://127.0.0.1/api/projects/", nil)
+	require.Nil(t, err)
+	req3 := r2.WithContext(context.WithValue(bc, AuthModeKey, common.OIDCAuth))
+	ctx3, err := newContext(req3)
+	require.Nil(t, err)
+	assert.False(t, it.Modify(ctx3))
+}
+
 func TestRobotReqCtxModifier(t *testing.T) {
 	req, err := http.NewRequest(http.MethodGet,
 		"http://127.0.0.1/api/projects/", nil)
