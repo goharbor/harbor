@@ -41,7 +41,7 @@ Push image
     Wait Unitl Command Success  docker logout ${ip}
 
 Push Image With Tag
-#tag1 is tag of image on docker hub,default latest,use a version existing if you do not want to use latest    
+#tag1 is tag of image on docker hub,default latest,use a version existing if you do not want to use latest
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}  ${tag1}=latest
     Log To Console  \nRunning docker push ${image}...
     Wait Unitl Command Success  docker pull ${image}:${tag1}
@@ -56,7 +56,7 @@ Cannot Pull image
     Wait Unitl Command Success  docker pull ${ip}/${project}/${image}  positive=${false}
 
 Cannot Pull Unsigned Image
-    [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}  
+    [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}
     Wait Unitl Command Success  docker login -u ${user} -p ${pass} ${ip}
     ${output}=  Wait Unitl Command Success  docker pull ${ip}/${proj}/${imagewithtag}  positive=${false}
     Should Contain  ${output}  The image is not signed in Notary
@@ -107,8 +107,8 @@ Start Docker Daemon Locally
 Prepare Docker Cert
     [Arguments]  ${ip}
     Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
-    Wait Unitl Command Success  cp harbor_ca.crt /etc/docker/certs.d/${ip} 
-    
+    Wait Unitl Command Success  cp harbor_ca.crt /etc/docker/certs.d/${ip}
+
 Kill Local Docker Daemon
     [Arguments]  ${handle}  ${dockerd-pid}
     Terminate Process  ${handle}

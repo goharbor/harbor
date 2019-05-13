@@ -30,8 +30,8 @@
            {
               "url":"http://url",
               "name":"endpoint1",
-              "user":"endpointuser",
-              "pass":"endpointpass"
+              "user":"admin",
+              "pass":"Harbor12345"
            }
         ],
         "replicationrule":[
