@@ -91,7 +91,11 @@ func (cc *CommonController) Login() {
 		}
 		url := strings.TrimSuffix(ep, "/") + common.OIDCLoginPath
 		log.Debugf("Redirect user %s to login page of OIDC provider", principal)
-		cc.Redirect(url, http.StatusFound)
+		// Return a json to UI with status code 403, as it cannot handle status 302
+		cc.Ctx.Output.Status = http.StatusForbidden
+		cc.Ctx.Output.JSON(struct {
+			Location string `json:"redirect_location"`
+		}{url}, false, false)
 		return
 	}
 
