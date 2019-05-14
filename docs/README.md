@@ -66,8 +66,6 @@ How to add your local language to Harbor.
 
 [Using vSphere docker volume driver to run Project Harbor on VSAN](http://cormachogan.com/2016/07/29/using-vsphere-docker-volume-driver-run-project-harbor-vsan/)
 
-[Overall Architecture of Harbor Registry](http://www.compare-review-information.com/overall-architecture-of-harbor-registry/)
-
 [Making a Private Secured Docker Registry in 15 Minutes](http://alexanderzeitler.com/articles/deploying-a-private-secured-docker-registry-within-15-minutes/)
 
 [Docker Private Registry Using Harbor](https://blog.imaginea.com/docker-private-registry-using-harbor-2/)
