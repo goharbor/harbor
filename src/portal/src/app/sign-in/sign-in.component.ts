@@ -82,18 +82,18 @@ export class SignInComponent implements AfterViewChecked, OnInit {
             if (customSkinObj.loginBgImg) {
                 this.customLoginBgImg = customSkinObj.loginBgImg;
             }
-           if (customSkinObj.appTitle) {
-               this.customAppTitle = customSkinObj.appTitle;
-           }
+            if (customSkinObj.appTitle) {
+                this.customAppTitle = customSkinObj.appTitle;
+            }
         }
 
         // Make sure the updated configuration can be loaded
         this.appConfigService.load()
             .subscribe(updatedConfig => this.appConfig = updatedConfig
                 , error => {
-                // Catch the error
-                console.error("Failed to load bootstrap options with error: ", error);
-            });
+                    // Catch the error
+                    console.error("Failed to load bootstrap options with error: ", error);
+                });
 
         this.route.queryParams
             .subscribe(params => {
@@ -146,7 +146,7 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     }
     public get showForgetPwd(): boolean {
         return this.appConfig.auth_mode !== 'ldap_auth' && this.appConfig.auth_mode !== 'uaa_auth'
-         && this.appConfig.auth_mode !== 'oidc_auth';
+            && this.appConfig.auth_mode !== 'oidc_auth';
     }
     clickRememberMe($event: any): void {
         if ($event && $event.target) {
@@ -259,6 +259,16 @@ export class SignInComponent implements AfterViewChecked, OnInit {
                     this.router.navigateByUrl(this.redirectUrl);
                 }
             }, error => {
+                // 403 oidc login no body;
+                if (this.isOidcLoginMode && error && error.status === 403) {
+                    try {
+                        let redirect_location = '';
+                        redirect_location = error._body && error._body.redirect_location ?
+                            error._body.redirect_location : JSON.parse(error._body).redirect_location;
+                        window.location.href = redirect_location;
+                        return;
+                    } catch (error) { }
+                }
                 this.handleError(error);
             });
     }
