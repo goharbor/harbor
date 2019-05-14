@@ -84,10 +84,7 @@ log:
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
 _version: 1.8.0
 
-# Uncomment external_database if using external database. Currently only support POSTGRES. 
-# Four databases are needed to be create first by users for Harbor core, Clair, Notary server 
-# and Notary signer. And the tables will be generated automatically when Harbor starting up.
-# NOTE: external_database is unable to custom attributes individually, you must do them in block.
+# Uncomment external_database if using external database.
 # external_database:
 #   harbor:
 #     host: harbor_db_host
