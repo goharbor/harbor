@@ -79,10 +79,10 @@ func (l *LdapAPI) Prepare() {
 
 // Ping ...
 func (l *LdapAPI) Ping() {
+	var err error
 	var ldapConfs = models.LdapConf{
 		LdapConnectionTimeout: 5,
 	}
-	var err error
 
 	l.Ctx.Input.CopyBody(1 << 32)
 
@@ -90,7 +90,8 @@ func (l *LdapAPI) Ping() {
 		ldapSession := *l.ldapConfig
 		err = ldapSession.ConnectionTest()
 	} else {
-		isValid, err := l.DecodeJSONReqAndValidate(&ldapConfs)
+		var isValid bool
+		isValid, err = l.DecodeJSONReqAndValidate(&ldapConfs)
 		if !isValid {
 			l.SendBadRequestError(err)
 			return
