@@ -194,6 +194,7 @@ func (oc *OIDCController) Onboard() {
 	}
 	user := models.User{
 		Username:     username,
+		Realname:     d.Username,
 		Email:        email,
 		OIDCUserMeta: &oidcUser,
 		Comment:      oidcUserComment,
