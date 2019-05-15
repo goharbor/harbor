@@ -3,6 +3,7 @@ package chartserver
 import (
 	"fmt"
 	"path"
+	"strings"
 	"sync"
 	"time"
 
@@ -190,7 +191,9 @@ func (c *Controller) mergeIndexFile(namespace string,
 			version.Name = nameWithNS
 			// Currently there is only one url
 			for index, url := range version.URLs {
-				version.URLs[index] = path.Join(namespace, url)
+				if !strings.HasPrefix(url, "http") {
+					version.URLs[index] = path.Join(namespace, url)
+				}
 			}
 		}
 

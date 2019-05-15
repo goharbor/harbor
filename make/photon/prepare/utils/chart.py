@@ -96,6 +96,8 @@ def prepare_chartmuseum(config_dict):
     cache_redis_addr=cache_redis_addr,
     cache_redis_password=cache_redis_password,
     cache_redis_db_index=cache_redis_db_index,
-    core_secret=core_secret,
+    core_secret=config_dict['core_secret'],
     storage_driver=storage_driver,
-    all_storage_driver_configs=all_storage_provider_configs)
+    all_storage_driver_configs=all_storage_provider_configs,
+    public_url=config_dict['public_url'],
+    chart_absolute_url=config_dict['chart_absolute_url'])
