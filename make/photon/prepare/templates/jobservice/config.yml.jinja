@@ -23,9 +23,9 @@ worker_pool:
 #Loggers for the running job
 job_loggers:
   - name: "STD_OUTPUT" # logger backend name, only support "FILE" and "STD_OUTPUT"
-    level: "INFO" # INFO/DEBUG/WARNING/ERROR/FATAL
+    level: "{{level}}" # INFO/DEBUG/WARNING/ERROR/FATAL
   - name: "FILE"
-    level: "INFO"
+    level: "{{level}}"
     settings: # Customized settings of logger
       base_dir: "/var/log/jobs"
     sweeper:
@@ -36,4 +36,4 @@ job_loggers:
 #Loggers for the job service
 loggers:
   - name: "STD_OUTPUT" # Same with above
-    level: "INFO"
+    level: "{{level}}"

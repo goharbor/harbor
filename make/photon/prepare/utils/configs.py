@@ -177,11 +177,15 @@ def parse_yaml_config(config_file_path):
 
 
     # Log configs
+    allowed_levels = ['debug', 'info', 'warning', 'error', 'fatal']
     log_configs = configs.get('log') or {}
     config_dict['log_location'] = log_configs["location"]
     config_dict['log_rotate_count'] = log_configs["rotate_count"]
     config_dict['log_rotate_size'] = log_configs["rotate_size"]
-    config_dict['log_level'] = log_configs['level']
+    log_level = log_configs['level']
+    if log_level not in allowed_levels:
+        raise Exception('log level must be one of debug, info, warning, error, fatal')
+    config_dict['log_level'] = log_level.lower()
 
 
     # external DB, if external_db enabled, it will cover the database config

@@ -66,7 +66,7 @@ jobservice:
 
 # Log configurations
 log:
-  # options are debug, info, warn, error
+  # options are debug, info, warning, error, fatal
   level: info
   # Log files are rotated log_rotate_count times before being removed. If count is 0, old versions are removed rather than rotated.
   rotate_count: 50
