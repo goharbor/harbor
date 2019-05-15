@@ -54,7 +54,7 @@ def prepare_chartmuseum(config_dict):
 
         if storage_provider_config_map.get("keyfile"):
             storage_provider_config_options.append('GOOGLE_APPLICATION_CREDENTIALS=%s' % '/etc/chartserver/gcs.key')
-    elif storage_provider_name == 'gcs':
+    elif storage_provider_name == 'azure':
         # azure storage
         storage_driver = "microsoft"
         storage_provider_config_options.append("STORAGE_MICROSOFT_CONTAINER=%s" % ( storage_provider_config_map.get("container") or '') )
