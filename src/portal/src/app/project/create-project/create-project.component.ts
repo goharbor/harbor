@@ -135,6 +135,7 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
     this.isNameValid = true;
 
     this.createProjectOpened = true;
+    this.inlineAlert.close();
   }
 
   public get isValid(): boolean {
