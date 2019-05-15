@@ -103,6 +103,7 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     this.isRobotNameValid = true;
     this.robot = new Robot();
     this.nameTooltipText = "ROBOT_ACCOUNT.ROBOT_NAME";
+    this.copyAlert.close();
   }
 
   onCancel(): void {
@@ -143,7 +144,7 @@ export class AddRobotComponent implements OnInit, OnDestroy {
         },
         error => {
           this.isSubmitOnGoing = false;
-          this.errorHandler.error(error);
+          this.copyAlert.showInlineError(error);
         }
       );
   }

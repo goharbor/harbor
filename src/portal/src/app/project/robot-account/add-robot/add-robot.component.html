@@ -1,6 +1,7 @@
 <clr-modal [(clrModalOpen)]="addRobotOpened"
   [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
   <h3 class="modal-title">{{'ROBOT_ACCOUNT.CREAT_ROBOT_ACCOUNT' | translate}}</h3>
+  <inline-alert #copyAlert class="modal-title"></inline-alert>
   <div class="modal-body">
     <form #robotForm="ngForm">
       <section class="form-block">
