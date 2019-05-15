@@ -1,14 +1,16 @@
 package chartserver
 
 import (
-	"errors"
 	"fmt"
 	"path"
 	"strings"
 	"sync"
 
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/pkg/errors"
 	"k8s.io/helm/cmd/helm/search"
+
+	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
 )
 
 const (
@@ -216,8 +218,16 @@ func (c *Controller) SearchChart(q string, namespaces []string) ([]*search.Resul
 
 // Get the content bytes of the chart version
 func (c *Controller) getChartVersionContent(namespace string, subPath string) ([]byte, error) {
-	url := path.Join(namespace, subPath)
+	var url string
+	if strings.HasPrefix(subPath, "http") {
+		extEndpoint, err := config.ExtEndpoint()
+		if err != nil {
+			return nil, errors.Wrap(err, "can not get ext endpoint")
+		}
+		url = strings.TrimPrefix(subPath, fmt.Sprintf("%s/%s", extEndpoint, "chartrepo/"))
+	} else {
+		url = path.Join(namespace, subPath)
+	}
 	url = fmt.Sprintf("%s/%s", c.backendServerAddress.String(), url)
-
 	return c.apiClient.GetContent(url)
 }
