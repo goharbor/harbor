@@ -70,6 +70,19 @@ func TestRobotAPIPost(t *testing.T) {
 			},
 			code: http.StatusCreated,
 		},
+		// 400
+		{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    robotPath,
+				bodyJSON: &models.RobotReq{
+					Name:        "testIllgel#",
+					Description: "test desc",
+				},
+				credential: projAdmin4Robot,
+			},
+			code: http.StatusBadRequest,
+		},
 		// 403 -- developer
 		{
 			request: &testingRequest{

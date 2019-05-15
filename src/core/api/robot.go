@@ -107,7 +107,8 @@ func (r *RobotAPI) Post() {
 	}
 
 	var robotReq models.RobotReq
-	if err := r.DecodeJSONReq(&robotReq); err != nil {
+	isValid, err := r.DecodeJSONReqAndValidate(&robotReq)
+	if !isValid {
 		r.SendBadRequestError(err)
 		return
 	}
@@ -230,8 +231,7 @@ func (r *RobotAPI) Put() {
 	}
 
 	var robotReq models.RobotReq
-	isValid, err := r.DecodeJSONReqAndValidate(&robotReq)
-	if !isValid {
+	if err := r.DecodeJSONReq(&robotReq); err != nil {
 		r.SendBadRequestError(err)
 		return
 	}

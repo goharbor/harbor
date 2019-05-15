@@ -17,6 +17,7 @@ package models
 import (
 	"github.com/astaxie/beego/validation"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/utils"
 	"time"
 )
 
@@ -52,9 +53,14 @@ type RobotReq struct {
 	Access      []*rbac.Policy `json:"access"`
 }
 
-// Valid put request validation
+// Valid ...
 func (rq *RobotReq) Valid(v *validation.Validation) {
-	// ToDo: add validation for access info.
+	if utils.IsIllegalLength(rq.Name, 1, 255) {
+		v.SetError("name", "robot name with illegal length")
+	}
+	if utils.IsContainIllegalChar(rq.Name, []string{",", "~", "#", "$", "%"}) {
+		v.SetError("name", "robot name contains illegal characters")
+	}
 }
 
 // RobotRep ...
