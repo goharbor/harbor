@@ -1,7 +1,7 @@
-## Configuration file of Harbor
+# Configuration file of Harbor
 
-#The IP address or hostname to access admin UI and registry service.
-#DO NOT use localhost or 127.0.0.1, because Harbor needs to be accessed by external clients.
+# The IP address or hostname to access admin UI and registry service.
+# DO NOT use localhost or 127.0.0.1, because Harbor needs to be accessed by external clients.
 hostname: reg.mydomain.com
 
 # http related config
@@ -26,9 +26,9 @@ http:
 # Remember Change the admin password from UI after launching Harbor.
 harbor_admin_password: Harbor12345
 
-## Harbor DB configuration
+# Harbor DB configuration
 database:
-  #The password for the root user of Harbor DB. Change this before any production use.
+  # The password for the root user of Harbor DB. Change this before any production use.
   password: root123
 
 # The default data volume
@@ -65,7 +65,7 @@ jobservice:
   max_job_workers: 10
 
 chart:
-  # Harbor Default will using relative url in chart, if you want using absolute url you should enable it by change the following value to disabled
+  # Change the value of absolute_url to enabled can enable absolute url in chart
   absolute_url: disabled
 
 # Log configurations
