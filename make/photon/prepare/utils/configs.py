@@ -162,7 +162,7 @@ def parse_yaml_config(config_file_path):
     if storage_config.get('redirect'):
         config_dict['storage_redirect_disabled'] = storage_config['redirect']['disabled']
 
-    # Clair configs
+    # Clair configs, optional
     clair_configs = configs.get("clair") or {}
     config_dict['clair_db'] = 'postgres'
     config_dict['clair_updaters_interval'] = clair_configs.get("updaters_interval") or 12
@@ -192,7 +192,7 @@ def parse_yaml_config(config_file_path):
     config_dict['log_level'] = log_level.lower()
 
 
-    # external DB, if external_db enabled, it will cover the database config
+    # external DB, optional, if external_db enabled, it will cover the database config
     external_db_configs = configs.get('external_database') or {}
     if external_db_configs:
         # harbor db
