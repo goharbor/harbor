@@ -2,9 +2,9 @@ import { RequestQueryParams } from './RequestQueryParams';
 import { Repository, RepositoryItem } from './interface';
 import { Injectable, Inject } from '@angular/core';
 
-import { Http } from '@angular/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { SERVICE_CONFIG, IServiceConfig } from '../service.config';
-import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from '../utils';
+import { buildHttpRequestOptions, buildHttpRequestOptionsWithObserveResponse, HTTP_JSON_OPTIONS } from '../utils';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
@@ -33,7 +33,7 @@ export abstract class RepositoryService {
      * @memberOf RepositoryService
      */
     abstract getRepositories(projectId: number | string, repositoryName?: string, queryParams?: RequestQueryParams):
-    Observable<Repository>;
+        Observable<Repository>;
 
     /**
      * Update description of specified repository.
@@ -69,14 +69,13 @@ export abstract class RepositoryService {
 @Injectable()
 export class RepositoryDefaultService extends RepositoryService {
     constructor(
-        private http: Http,
+        private http: HttpClient,
         @Inject(SERVICE_CONFIG) private config: IServiceConfig
     ) {
         super();
     }
-
     public getRepositories(projectId: number | string, repositoryName?: string, queryParams?: RequestQueryParams):
-    Observable<Repository> {
+        Observable<Repository> {
         if (!projectId) {
             return observableThrowError('Bad argument');
         }
@@ -85,13 +84,12 @@ export class RepositoryDefaultService extends RepositoryService {
             queryParams = new RequestQueryParams();
         }
 
-        queryParams.set('project_id', '' + projectId);
+        queryParams = queryParams.set('project_id', '' + projectId);
         if (repositoryName && repositoryName.trim() !== '') {
-            queryParams.set('q', repositoryName);
+            queryParams = queryParams.set('q', repositoryName);
         }
-
         let url: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : '/api/repositories';
-        return this.http.get(url, buildHttpRequestOptions(queryParams))
+        return this.http.get<HttpResponse<RepositoryItem[]>>(url, buildHttpRequestOptionsWithObserveResponse(queryParams))
             .pipe(map(response => {
                 let result: Repository = {
                     metadata: { xTotalCount: 0 },
@@ -105,7 +103,7 @@ export class RepositoryDefaultService extends RepositoryService {
                     }
                 }
 
-                result.data = response.json() as RepositoryItem[];
+                result.data = response.body as RepositoryItem[];
 
                 if (result.metadata.xTotalCount === 0) {
                     if (result.data && result.data.length > 0) {
@@ -115,11 +113,13 @@ export class RepositoryDefaultService extends RepositoryService {
 
                 return result;
             })
-            , catchError(error => observableThrowError(error)));
+                , catchError(error => {
+                    return observableThrowError(error);
+                }));
     }
 
     public updateRepositoryDescription(repositoryName: string, description: string,
-         queryParams?: RequestQueryParams): Observable<any> {
+        queryParams?: RequestQueryParams): Observable<any> {
 
         if (!queryParams) {
             queryParams = new RequestQueryParams();
@@ -127,10 +127,10 @@ export class RepositoryDefaultService extends RepositoryService {
 
         let baseUrl: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : '/api/repositories';
         let url = `${baseUrl}/${repositoryName}`;
-        return this.http.put(url, {'description': description }, HTTP_JSON_OPTIONS)
-        .pipe(map(response => response)
-        , catchError(error => observableThrowError(error)));
-      }
+        return this.http.put(url, { 'description': description }, HTTP_JSON_OPTIONS)
+            .pipe(map(response => response)
+                , catchError(error => observableThrowError(error)));
+    }
 
     public deleteRepository(repositoryName: string): Observable<any> {
         if (!repositoryName) {
@@ -141,6 +141,6 @@ export class RepositoryDefaultService extends RepositoryService {
 
         return this.http.delete(url, HTTP_JSON_OPTIONS)
             .pipe(map(response => response)
-            , catchError(error => observableThrowError(error)));
+                , catchError(error => observableThrowError(error)));
     }
 }

@@ -1,16 +1,16 @@
 
 import {Injectable} from "@angular/core";
-import {Http} from "@angular/http";
+import {HttpClient} from "@angular/common/http";
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 @Injectable()
 export class SkinableConfig {
     customSkinData: {[key: string]: any};
-    constructor(private http: Http) {}
+    constructor(private http: HttpClient) {}
 
     public getCustomFile(): Observable<any> {
        return this.http.get('setting.json')
-           .pipe(map(response => { this.customSkinData = response.json(); return this.customSkinData; })
+           .pipe(map(response => this.customSkinData = response)
            , catchError((error: any) => {
                 console.error('custom skin json file load failed');
                 return observableThrowError(error);

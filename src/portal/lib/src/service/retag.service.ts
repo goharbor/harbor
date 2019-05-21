@@ -1,5 +1,5 @@
 import { Observable } from "rxjs";
-import { Http } from "@angular/http";
+import { HttpClient } from "@angular/common/http";
 import { Injectable, Inject } from "@angular/core";
 import { RetagRequest } from "./interface";
 import { HTTP_JSON_OPTIONS } from "../utils";
@@ -37,7 +37,7 @@ export abstract class RetagService {
 @Injectable()
 export class RetagDefaultService extends RetagService {
     constructor(
-        private http: Http,
+        private http: HttpClient,
         @Inject(SERVICE_CONFIG) private config: IServiceConfig
     ) {
         super();

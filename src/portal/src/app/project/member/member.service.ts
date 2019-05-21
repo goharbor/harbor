@@ -16,12 +16,14 @@ import {map, catchError} from 'rxjs/operators';
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 
 
 
 
-import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";
+
+import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "@harbor/ui";
+// import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";
 import { User } from '../../user/user';
 import { Member } from './member';
 
@@ -29,12 +31,12 @@ import { Member } from './member';
 @Injectable()
 export class MemberService {
 
-  constructor(private http: Http) {}
+  constructor(private http: HttpClient) {}
 
   listMembers(projectId: number, entity_name: string): Observable<Member[]> {
     return this.http
                .get(`/api/projects/${projectId}/members?entityname=${entity_name}`, HTTP_GET_OPTIONS).pipe(
-               map(response => response.json() as Member[]),
+               map(response => response as Member[]),
                catchError(error => observableThrowError(error)), );
   }
 
@@ -54,7 +56,6 @@ export class MemberService {
         member_user: member_user
       },
       HTTP_JSON_OPTIONS).pipe(
-      map(response => response.status),
       catchError(error => observableThrowError(error)), );
   }
 
@@ -63,21 +64,18 @@ export class MemberService {
                .post(`/api/projects/${projectId}/members`,
                { role_id: roleId, member_group: group},
                HTTP_JSON_OPTIONS).pipe(
-               map(response => response.status),
                catchError(error => observableThrowError(error)), );
   }
 
   changeMemberRole(projectId: number, userId: number, roleId: number): Observable<any> {
     return this.http
                .put(`/api/projects/${projectId}/members/${userId}`, { role_id: roleId }, HTTP_JSON_OPTIONS)
-               .pipe(map(response => response.status)
-               , catchError(error => observableThrowError(error)));
+               .pipe(catchError(error => observableThrowError(error)));
   }
 
   deleteMember(projectId: number, memberId: number): Observable<any> {
     return this.http
                .delete(`/api/projects/${projectId}/members/${memberId}`)
-               .pipe(map(response => response.status)
-               , catchError(error => observableThrowError(error)));
+               .pipe(catchError(error => observableThrowError(error)));
   }
 }

@@ -1,6 +1,6 @@
 import { Label } from "./interface";
 import { Inject, Injectable } from "@angular/core";
-import { Http } from "@angular/http";
+import { HttpClient } from "@angular/common/http";
 import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
 import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from "../utils";
 import { RequestQueryParams } from "./RequestQueryParams";
@@ -35,7 +35,7 @@ export class LabelDefaultService extends LabelService {
 
   constructor(
     @Inject(SERVICE_CONFIG) config: IServiceConfig,
-    private http: Http
+    private http: HttpClient
   ) {
     super();
     this._labelUrl = config.labelEndpoint
@@ -53,18 +53,17 @@ export class LabelDefaultService extends LabelService {
       queryParams = new RequestQueryParams();
     }
     if (scope) {
-      queryParams.set("scope", scope);
+      queryParams = queryParams.set("scope", scope);
     }
     if (projectId) {
-      queryParams.set("project_id", "" + projectId);
+      queryParams = queryParams.set("project_id", "" + projectId);
     }
     if (name) {
-      queryParams.set("name", "" + name);
+      queryParams = queryParams.set("name", "" + name);
     }
     return this.http
-      .get(this._labelUrl, buildHttpRequestOptions(queryParams))
-      .pipe(map(response => response.json())
-      , catchError(error => observableThrowError(error)));
+      .get<Label[]>(this._labelUrl, buildHttpRequestOptions(queryParams))
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   getGLabels(
@@ -74,15 +73,14 @@ export class LabelDefaultService extends LabelService {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
-    queryParams.set("scope", "g");
+    queryParams = queryParams.set("scope", "g");
 
     if (name) {
-      queryParams.set("name", "" + name);
+      queryParams = queryParams.set("name", "" + name);
     }
     return this.http
-      .get(this._labelUrl, buildHttpRequestOptions(queryParams))
-      .pipe(map(response => response.json())
-      , catchError(error => observableThrowError(error)));
+      .get<Label[]>(this._labelUrl, buildHttpRequestOptions(queryParams))
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   getPLabels(
@@ -93,17 +91,16 @@ export class LabelDefaultService extends LabelService {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
-    queryParams.set("scope", "p");
+    queryParams = queryParams.set("scope", "p");
     if (projectId) {
-      queryParams.set("project_id", "" + projectId);
+      queryParams = queryParams.set("project_id", "" + projectId);
     }
     if (name) {
-      queryParams.set("name", "" + name);
+      queryParams = queryParams.set("name", "" + name);
     }
     return this.http
-      .get(this._labelUrl, buildHttpRequestOptions(queryParams))
-      .pipe(map(response => response.json())
-      , catchError(error => observableThrowError(error)));
+      .get<Label[]>(this._labelUrl, buildHttpRequestOptions(queryParams))
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   createLabel(label: Label): Observable<any> {
@@ -112,8 +109,7 @@ export class LabelDefaultService extends LabelService {
     }
     return this.http
       .post(this._labelUrl, JSON.stringify(label), HTTP_JSON_OPTIONS)
-      .pipe(map(response => response.status)
-      , catchError(error => observableThrowError(error)));
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   getLabel(id: number): Observable<Label> {
@@ -122,9 +118,8 @@ export class LabelDefaultService extends LabelService {
     }
     let reqUrl = `${this._labelUrl}/${id}`;
     return this.http
-      .get(reqUrl)
-      .pipe(map(response => response.json())
-      , catchError(error => observableThrowError(error)));
+      .get<any>(reqUrl)
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   updateLabel(id: number, label: Label): Observable<any> {
@@ -137,8 +132,7 @@ export class LabelDefaultService extends LabelService {
     let reqUrl = `${this._labelUrl}/${id}`;
     return this.http
       .put(reqUrl, JSON.stringify(label), HTTP_JSON_OPTIONS)
-      .pipe(map(response => response.status)
-      , catchError(error => observableThrowError(error)));
+      .pipe(catchError(error => observableThrowError(error)));
   }
   deleteLabel(id: number): Observable<any> {
     if (!id || id <= 0) {
@@ -147,7 +141,6 @@ export class LabelDefaultService extends LabelService {
     let reqUrl = `${this._labelUrl}/${id}`;
     return this.http
       .delete(reqUrl)
-      .pipe(map(response => response.status)
-      , catchError(error => observableThrowError(error)));
+      .pipe(catchError(error => observableThrowError(error)));
   }
 }

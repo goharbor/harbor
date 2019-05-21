@@ -354,8 +354,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
   confirmGenerate(confirmData): void {
     let userId = confirmData.data;
     this.accountSettingsService.generateCli(userId).subscribe(cliSecret => {
-      let secret = JSON.parse(cliSecret._body).secret;
-      this.account.oidc_user_meta.secret = secret;
+      this.account.oidc_user_meta.secret = cliSecret.secret;
       this.inlineAlert.showInlineSuccess({message: 'PROFILE.GENERATE_SUCCESS'});
     }, error => {
       this.inlineAlert.showInlineError({message: 'PROFILE.GENERATE_ERROR'});

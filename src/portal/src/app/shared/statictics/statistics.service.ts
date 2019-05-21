@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
 import { Statistics } from './statistics';
 import { Volumes } from './volumes';
-import {HTTP_GET_OPTIONS} from "../shared.utils";
+import {HTTP_GET_OPTIONS} from "@harbor/ui";
 
 const statisticsEndpoint = "/api/statistics";
 const volumesEndpoint = "/api/systeminfo/volumes";
@@ -32,17 +32,17 @@ const volumesEndpoint = "/api/systeminfo/volumes";
 @Injectable()
 export class StatisticsService {
 
-    constructor(private http: Http) { }
+    constructor(private http: HttpClient) { }
 
     getStatistics(): Observable<Statistics> {
         return this.http.get(statisticsEndpoint, HTTP_GET_OPTIONS)
-        .pipe(map(response => response.json() as Statistics)
+        .pipe(map(response => response as Statistics)
         , catchError(error => observableThrowError(error)));
     }
 
     getVolumes(): Observable<Volumes> {
         return this.http.get(volumesEndpoint, HTTP_GET_OPTIONS)
-        .pipe(map(response => response.json() as Volumes)
+        .pipe(map(response => response as Volumes)
         , catchError(error => observableThrowError(error)));
     }
 }

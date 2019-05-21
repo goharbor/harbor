@@ -1,6 +1,7 @@
 import { Project } from "../project-policy-config/project";
 import { Observable } from 'rxjs';
 import { ClrModal } from '@clr/angular';
+import { HttpHeaders, HttpParams } from '@angular/common/http';
 
 /**
  * The base interface contains the general properties
@@ -405,5 +406,31 @@ export interface UserPrivilegeServeItem {
 export class OriginCron {
   type: string;
   cron: string;
+}
+
+export interface  HttpOptionInterface {
+  headers?: HttpHeaders | {
+      [header: string]: string | string[];
+  };
+  observe?: 'body';
+  params?: HttpParams | {
+      [param: string]: string | string[];
+  };
+  reportProgress?: boolean;
+  responseType: 'json';
+  withCredentials?: boolean;
+}
+
+export interface  HttpOptionTextInterface {
+  headers?: HttpHeaders | {
+      [header: string]: string | string[];
+  };
+  observe?: 'body';
+  params?: HttpParams | {
+      [param: string]: string | string[];
+  };
+  reportProgress?: boolean;
+  responseType: 'text';
+  withCredentials?: boolean;
 }
 

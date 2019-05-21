@@ -44,7 +44,7 @@ export class ReplicationPageComponent implements OnInit, AfterViewInit {
     this.getReplicationPermissions(this.projectIdentify);
     this.proService.listProjects("", undefined)
       .subscribe(response => {
-        let projects = response.json() as Project[];
+        let projects = response.body as Project[];
         if (projects.length) {
           let project = projects.find(data => data.project_id === this.projectIdentify);
           if (project) {

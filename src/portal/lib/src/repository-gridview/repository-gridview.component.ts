@@ -348,9 +348,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     loadNextPage() {
         this.currentPage = this.currentPage + 1;
         // Pagination
-        let params: RequestQueryParams = new RequestQueryParams();
-        params.set("page", "" + this.currentPage);
-        params.set("page_size", "" + this.pageSize);
+        let params: RequestQueryParams = new RequestQueryParams().set("page", "" + this.currentPage).set("page_size", "" + this.pageSize);
 
         this.loading = true;
         this.repositoryService.getRepositories(
@@ -395,9 +393,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         }
 
         // Pagination
-        let params: RequestQueryParams = new RequestQueryParams();
-        params.set("page", "" + pageNumber);
-        params.set("page_size", "" + this.pageSize);
+        let params: RequestQueryParams = new RequestQueryParams().set("page", "" + pageNumber).set("page_size", "" + this.pageSize);
 
         this.loading = true;
 

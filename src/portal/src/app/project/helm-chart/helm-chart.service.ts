@@ -1,7 +1,7 @@
 
 import {throwError as observableThrowError,  Observable } from "rxjs";
 import { Injectable, Inject } from "@angular/core";
-import { Http, Response, ResponseContentType } from "@angular/http";
+import { HttpClient } from "@angular/common/http";
 import { map, catchError } from "rxjs/operators";
 import {HttpErrorResponse} from "@angular/common/http";
 
@@ -98,21 +98,15 @@ export abstract class HelmChartService {
 @Injectable()
 export class HelmChartDefaultService extends HelmChartService {
   constructor(
-    private http: Http,
+    private http: HttpClient,
     @Inject(SERVICE_CONFIG) private config: IServiceConfig
   ) {
     super();
   }
 
-  private extractData(res: Response) {
-    if (res.text() === "") {
-      return [];
-    }
-    return res.json() || [];
-  }
 
   private handleErrorObservable(error: HttpErrorResponse) {
-    return observableThrowError(error.message || error);
+    return observableThrowError(error.error || error);
   }
 
   public getHelmCharts(
@@ -123,11 +117,11 @@ export class HelmChartDefaultService extends HelmChartService {
     }
 
     return this.http
-      .get(`${this.config.helmChartEndpoint}/${projectName}/charts`, HTTP_GET_OPTIONS)
+      .get<HelmChartItem[]>(`${this.config.helmChartEndpoint}/${projectName}/charts`, HTTP_GET_OPTIONS)
       .pipe(
-        map(response => this.extractData(response),
+        map(response => response || []),
         catchError(error => this.handleErrorObservable(error))
-      ));
+      );
   }
 
   public deleteHelmChart(projectId: number | string, chartName: string): Observable<any> {
@@ -138,7 +132,7 @@ export class HelmChartDefaultService extends HelmChartService {
     return this.http
       .delete(`${this.config.helmChartEndpoint}/${projectId}/charts/${chartName}`)
       .pipe(map(response => {
-        return this.extractData(response);
+        return response || [];
       }))
       .pipe(catchError(this.handleErrorObservable));
   }
@@ -147,9 +141,9 @@ export class HelmChartDefaultService extends HelmChartService {
     projectName: string,
     chartName: string,
   ): Observable<HelmChartVersion[]> {
-    return this.http.get(`${this.config.helmChartEndpoint}/${projectName}/charts/${chartName}`, HTTP_GET_OPTIONS)
+    return this.http.get<HelmChartVersion[]>(`${this.config.helmChartEndpoint}/${projectName}/charts/${chartName}`, HTTP_GET_OPTIONS)
     .pipe(
-      map(response => this.extractData(response)),
+      map(response => response || []),
       catchError(this.handleErrorObservable)
     );
   }
@@ -157,7 +151,7 @@ export class HelmChartDefaultService extends HelmChartService {
   public deleteChartVersion(projectName: string, chartName: string, version: string): any {
     return this.http.delete(`${this.config.helmChartEndpoint}/${projectName}/charts/${chartName}/${version}`, HTTP_JSON_OPTIONS)
     .pipe(map(response => {
-      return this.extractData(response);
+      return response || [];
     }))
     .pipe(catchError(this.handleErrorObservable));
   }
@@ -167,10 +161,7 @@ export class HelmChartDefaultService extends HelmChartService {
     chartName: string,
     version: string,
   ): Observable<HelmChartDetail> {
-    return this.http.get(`${this.config.helmChartEndpoint}/${projectName}/charts/${chartName}/${version}`)
-    .pipe(map(response => {
-      return this.extractData(response);
-    }))
+    return this.http.get<HelmChartDetail>(`${this.config.helmChartEndpoint}/${projectName}/charts/${chartName}/${version}`)
     .pipe(catchError(this.handleErrorObservable));
   }
 
@@ -187,12 +178,12 @@ export class HelmChartDefaultService extends HelmChartService {
       url = `${this.config.downloadChartEndpoint}/${projectName}/${filename}`;
     }
     return this.http.get(url, {
-      responseType: ResponseContentType.Blob,
+      responseType: 'blob',
     })
     .pipe(map(response => {
       return {
         filename: filename.split('/')[1],
-        data: response.blob()
+        data: response
       };
     }))
     .pipe(catchError(this.handleErrorObservable));
@@ -216,9 +207,9 @@ export class HelmChartDefaultService extends HelmChartService {
       }
     }
     return this.http.post(uploadURL, formData, {
-      responseType: ResponseContentType.Json
+      responseType: 'json'
     })
-    .pipe(map(response => this.extractData(response)))
+    .pipe(map(response => response || []))
     .pipe(catchError(this.handleErrorObservable));
   }
 }

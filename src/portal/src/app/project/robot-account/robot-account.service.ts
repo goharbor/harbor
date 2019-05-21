@@ -15,12 +15,12 @@ import { map, catchError } from "rxjs/operators";
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from "@angular/core";
-import { Http } from "@angular/http";
+import { HttpClient } from "@angular/common/http";
 import { RobotApiRepository } from "./robot.api.repository";
 @Injectable()
 export class RobotService {
   constructor(
-    private http: Http,
+    private http: HttpClient,
     private robotApiRepository: RobotApiRepository
   ) {}
   public addRobotAccount(projecId, name, description, projectName, isPull, isPush): Observable<any> {

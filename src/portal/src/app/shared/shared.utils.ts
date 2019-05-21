@@ -12,7 +12,6 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { NgForm } from '@angular/forms';
-import { RequestOptions, Headers, Response } from "@angular/http";
 import { Comparator, State } from '../../../lib/src/service/interface';
 import { RequestQueryParams } from "@harbor/ui";
 
@@ -29,15 +28,15 @@ export const errorHandler = function (error: any): string {
     if (!error) {
         return "UNKNOWN_ERROR";
     }
-
     try {
-        return JSON.parse(error._body).message;
+        return JSON.parse(error.error).message;
     } catch (err) { }
-
-    if (error._body && error._body.message) {
-        return error._body.message;
+    if (typeof error.error === "string") {
+        return error.error;
     }
-
+    if (error.error && error.error.message) {
+        return error.error.message;
+    }
     if (!(error.statusCode || error.status)) {
         // treat as string message
         return '' + error;
@@ -185,49 +184,7 @@ export class CustomComparator<T> implements Comparator<T> {
     }
 }
 
-export const HTTP_JSON_OPTIONS: RequestOptions = new RequestOptions({
-    headers: new Headers({
-        "Content-Type": 'application/json',
-        "Accept": 'application/json',
-    })
-});
-export const HTTP_GET_OPTIONS: RequestOptions = new RequestOptions({
-    headers: new Headers({
-        "Content-Type": 'application/json',
-        "Accept": 'application/json',
-        "Cache-Control": 'no-cache',
-        "Pragma": 'no-cache'
-    })
-});
 
-export const HTTP_FORM_OPTIONS: RequestOptions = new RequestOptions({
-    headers: new Headers({
-        "Content-Type": 'application/x-www-form-urlencoded'
-    })
-});
-/**
- * Build http request options
- *
- **
- *  ** deprecated param {RequestQueryParams} params
- * returns {RequestOptions}
- */
-export function buildHttpRequestOptions(params: RequestQueryParams): RequestOptions {
-    let reqOptions: RequestOptions = new RequestOptions({
-        headers: new Headers({
-            "Content-Type": 'application/json',
-            "Accept": 'application/json',
-            "Cache-Control": 'no-cache',
-            "Pragma": 'no-cache'
-        })
-    });
-
-    if (params) {
-        reqOptions.search = params;
-    }
-
-    return reqOptions;
-}
 
 /**
  * Filter columns via RegExp
@@ -309,10 +266,3 @@ export function doSorting<T extends { [key: string]: any | any[] }>(items: T[], 
         return comp;
     });
 }
-
-export const extractJson = (res: Response) => {
-    if (res.text() === '') {
-        return [];
-    }
-    return (res.json() || []);
-};

@@ -140,7 +140,7 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
       this.loading = true;
       let params: RequestQueryParams = new RequestQueryParams();
       if (this.searchTask && this.searchTask !== "") {
-        params.set(this.defaultFilter, this.searchTask);
+        params = params.set(this.defaultFilter, this.searchTask);
       }
       this.replicationService.getReplicationTasks(this.executionId, params)
       .pipe(finalize(() => (this.loading = false)))

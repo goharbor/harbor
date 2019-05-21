@@ -1,5 +1,5 @@
 import { Injectable, Inject } from "@angular/core";
-import { Http } from "@angular/http";
+import { HttpClient } from "@angular/common/http";
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
@@ -44,7 +44,7 @@ export class ConfigurationDefaultService extends ConfigurationService {
   _baseUrl: string;
 
   constructor(
-    private http: Http,
+    private http: HttpClient,
     @Inject(SERVICE_CONFIG) private config: IServiceConfig
   ) {
     super();
@@ -59,7 +59,7 @@ export class ConfigurationDefaultService extends ConfigurationService {
     | Observable<Configuration> {
     return this.http
       .get(this._baseUrl, HTTP_GET_OPTIONS)
-      .pipe(map(response => response.json() as Configuration)
+      .pipe(map(response => response as Configuration)
       , catchError(error => observableThrowError(error)));
   }
 

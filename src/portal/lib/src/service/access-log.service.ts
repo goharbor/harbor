@@ -3,8 +3,8 @@ import { RequestQueryParams } from "./RequestQueryParams";
 import { AccessLog, AccessLogItem } from "./interface";
 import { Injectable, Inject } from "@angular/core";
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
-import { Http } from "@angular/http";
-import { buildHttpRequestOptions, HTTP_GET_OPTIONS } from "../utils";
+import { HttpClient, HttpResponse } from "@angular/common/http";
+import { buildHttpRequestOptionsWithObserveResponse, HTTP_GET_OPTIONS_OBSERVE_RESPONSE } from "../utils";
 import { map, catchError } from "rxjs/operators";
 
 /**
@@ -57,7 +57,7 @@ export abstract class AccessLogService {
 @Injectable()
 export class AccessLogDefaultService extends AccessLogService {
   constructor(
-    private http: Http,
+    private http: HttpClient,
     @Inject(SERVICE_CONFIG) private config: IServiceConfig
   ) {
     super();
@@ -81,9 +81,9 @@ export class AccessLogDefaultService extends AccessLogService {
     }
 
     return this.http
-      .get(
+      .get<HttpResponse<AccessLogItem[]>>(
         url,
-        queryParams ? buildHttpRequestOptions(queryParams) : HTTP_GET_OPTIONS
+        queryParams ? buildHttpRequestOptionsWithObserveResponse(queryParams) : HTTP_GET_OPTIONS_OBSERVE_RESPONSE
       )
       .pipe(map(response => {
         let result: AccessLog = {
@@ -100,7 +100,7 @@ export class AccessLogDefaultService extends AccessLogService {
         if (result && result.metadata) {
           result.metadata.xTotalCount = parseInt(xHeader ? xHeader : "0", 0);
           if (result.metadata.xTotalCount > 0) {
-            result.data = response.json() as AccessLogItem[];
+            result.data = response.body as AccessLogItem[];
           }
         }
 

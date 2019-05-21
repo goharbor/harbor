@@ -1,4 +1,3 @@
-import { extractJson } from './../shared.utils';
 import { Router } from '@angular/router';
 import { Component, OnInit, Input } from '@angular/core';
 
@@ -56,7 +55,7 @@ export class ListChartVersionRoComponent implements OnInit {
     this.searchTrigger.closeSearch(true);
     let [projectName, chartName] = chartVersion.name.split('/');
     this.projectService.listProjects(projectName).subscribe( res => {
-      let projects = extractJson(res);
+      let projects = res.body || [];
       if (projects || projects.length >= 1) {
         let linkUrl = ['harbor', 'projects', projects[0].project_id, 'helm-charts', chartName, 'versions', chartVersion.version];
         this.router.navigate(linkUrl);
