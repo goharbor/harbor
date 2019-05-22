@@ -54,6 +54,8 @@ Resource  Harbor-Pages/ToolKit.robot
 Resource  Harbor-Pages/ToolKit_Elements.robot
 Resource  Harbor-Pages/Vulnerability.robot
 Resource  Harbor-Pages/LDAP-Mode.robot
+Resource  Harbor-Pages/OIDC_Auth.robot
+Resource  Harbor-Pages/OIDC_Auth_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
 Resource  Admiral-Util.robot
@@ -197,3 +199,12 @@ Retry Double Keywords When Error
     \    Sleep  2
     Should Be Equal As Strings  '${out1[0]}'  'PASS'
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
+
+Run Curl And Return Json
+    [Arguments]  ${curl_cmd}
+    ${json_data_file}=  Set Variable  ${CURDIR}${/}cur_user_info.json
+    ${rc}  ${output}=  Run And Return Rc And Output  ${curl_cmd}
+    Should Be Equal As Integers  0  ${rc}
+    Create File  ${json_data_file}  ${output}
+    ${json}=    Load Json From File    ${json_data_file}
+    [Return]  ${json}
