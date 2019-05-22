@@ -311,7 +311,7 @@
         "DELETE": "Delete",
         "CREAT_ROBOT_ACCOUNT": "Creat Robot Account",
         "PULL_PERMISSION": "Permission for Pull",
-        "PULL_PUSH_PERMISSION": "Permission for Push and Pull",
+        "PULL_PUSH_PERMISSION": "Permission for Push / Pull",
         "FILTER_PLACEHOLDER": "Filter Robot Accounts",
         "ROBOT_NAME": "Cannot contain special characters(~#$%) and maximum length should be 255 characters.",
         "ACCOUNT_EXISTING": "Robot Account is already exists.",

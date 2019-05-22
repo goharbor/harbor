@@ -308,7 +308,7 @@
         "DELETE": "Remover",
         "CREAT_ROBOT_ACCOUNT": "CRIA robô conta",
         "PULL_PERMISSION": "Permission for Pull",
-        "PULL_PUSH_PERMISSION": "Permission for Push and Pull",
+        "PULL_PUSH_PERMISSION": "Permission for Push / Pull",
         "FILTER_PLACEHOLDER": "Filtro robot accounts",
         "ROBOT_NAME": "Não Pode conter caracteres especiais(~#$%) e comprimento máximo deveria ser 255 caracteres.",
         "ACCOUNT_EXISTING": "Robô conta já existe.",
