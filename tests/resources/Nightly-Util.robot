@@ -31,7 +31,7 @@ CA Setup
     [Arguments]  ${ip}  ${HARBOR_PASSWORD}  ${cert}=/ca/ca.crt
     Run  mv ${cert} harbor_ca.crt
     Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}
-    Prepare Docker Cert  ${ip}	
+    Prepare Docker Cert  ${ip}
 
 Collect Nightly Logs
     [Arguments]  ${ip}  ${SSH_PWD}  ${ip1}==${EMPTY}
@@ -45,11 +45,13 @@ Collect Logs
     SSHLibrary.Get File  /var/log/harbor/ui.log
     SSHLibrary.Get File  /var/log/harbor/registry.log
     SSHLibrary.Get File  /var/log/harbor/proxy.log
-    SSHLibrary.Get File  /var/log/harbor/adminserver.log  
-    SSHLibrary.Get File  /var/log/harbor/clair.log  
-    SSHLibrary.Get File  /var/log/harbor/jobservice.log  
+    SSHLibrary.Get File  /var/log/harbor/adminserver.log
+    SSHLibrary.Get File  /var/log/harbor/clair.log
+    SSHLibrary.Get File  /var/log/harbor/jobservice.log
     SSHLibrary.Get File  /var/log/harbor/postgresql.log
     SSHLibrary.Get File  /var/log/harbor/notary-server.log
     SSHLibrary.Get File  /var/log/harbor/notary-signer.log
+    SSHLibrary.Get File  /var/log/harbor/chartmuseum.log
+    SSHLibrary.Get File  /var/log/harbor/registryctl.log
     Run  rename 's/^/${ip}/' *.log
     Close All Connections
