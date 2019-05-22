@@ -65,6 +65,7 @@ func (rq *RobotReq) Valid(v *validation.Validation) {
 
 // RobotRep ...
 type RobotRep struct {
+	ID    int64  `json:"id"`
 	Name  string `json:"name"`
 	Token string `json:"token"`
 }
