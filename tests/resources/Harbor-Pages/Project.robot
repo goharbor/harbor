@@ -100,6 +100,7 @@ Delete Repo
     Retry Double Keywords When Error  Retry Element Click  ${element_repo_checkbox}  Wait Until Element Is Visible And Enabled  ${repo_delete_btn}
     Retry Double Keywords When Error  Retry Element Click  ${repo_delete_btn}  Wait Until Element Is Visible And Enabled  ${delete_confirm_btn}
     Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
+    Retry Wait Until Page Not Contains Element  ${element_repo_checkbox}
 
 Delete Repo on CardView
     [Arguments]  ${reponame}
