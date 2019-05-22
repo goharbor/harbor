@@ -110,3 +110,14 @@ Body Of Admin Push Signed Image
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  sha256
+
+Delete A Project Without Sign In Harbor
+    [Arguments]  ${harbor_ip}=${ip}  ${username}=${HARBOR_ADMIN}  ${password}=${HARBOR_PASSWORD}
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New Project  project${d}
+    Push Image  ${harbor_ip}  ${username}  ${password}  project${d}  hello-world
+    Project Should Not Be Deleted  project${d}
+    Go Into Project  project${d}
+    Delete Repo  project${d}
+    Navigate To Projects
+    Project Should Be Deleted  project${d}

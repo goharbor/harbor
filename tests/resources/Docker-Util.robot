@@ -107,8 +107,8 @@ Start Docker Daemon Locally
 Prepare Docker Cert
     [Arguments]  ${ip}
     Wait Unitl Command Success  mkdir -p /etc/docker/certs.d/${ip}
-    Wait Unitl Command Success  cp harbor_ca.crt /etc/docker/certs.d/${ip} 
-    
+    Wait Unitl Command Success  cp harbor_ca.crt /etc/docker/certs.d/${ip}
+
 Kill Local Docker Daemon
     [Arguments]  ${handle}  ${dockerd-pid}
     Terminate Process  ${handle}
