@@ -104,6 +104,10 @@ func (a *Auth) PostAuthenticate(u *models.User) error {
 // SearchUser returns nil as authproxy does not have such capability.
 // When AlwaysOnboard is set it always return the default model.
 func (a *Auth) SearchUser(username string) (*models.User, error) {
+	err := a.ensure()
+	if err != nil {
+		log.Warningf("Failed to refresh configuration for HTTP Auth Proxy Authenticator, error: %v, the default settings will be used", err)
+	}
 	var u *models.User
 	if a.AlwaysOnboard {
 		u = &models.User{Username: username}
