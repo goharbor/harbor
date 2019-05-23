@@ -309,7 +309,7 @@
         "DELETE": "删除",
         "CREAT_ROBOT_ACCOUNT": "创建机器人账户",
         "PULL_PERMISSION": "Pull 权限",
-        "PULL_PUSH_PERMISSION": "Push和Pull 权限",
+        "PULL_PUSH_PERMISSION": "Push / Pull 权限",
         "FILTER_PLACEHOLDER": "过滤机器人账户",
         "ROBOT_NAME": "不能包含特殊字符(~#$%)且长度不能超过255.",
         "ACCOUNT_EXISTING": "机器人账户已经存在.",
