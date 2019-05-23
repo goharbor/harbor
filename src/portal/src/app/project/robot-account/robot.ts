@@ -6,16 +6,20 @@ export class Robot {
   expires_at: number;
   disabled: boolean;
   access: {
-    isPull: boolean;
-    isPush: boolean;
+    isPullImage: boolean;
+    isPushOrPullImage: boolean;
+    isPushChart: boolean;
+    isPullChart: boolean;
   };
 
 
   constructor () {
     this.access = <any>{};
     // this.access[0].action = true;
-    this.access.isPull = true;
-    this.access.isPush = true;
+    this.access.isPullImage = true;
+    this.access.isPushOrPullImage = true;
+    this.access.isPushChart = false;
+    this.access.isPullChart = false;
   }
 }
 

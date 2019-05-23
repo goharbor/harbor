@@ -60,13 +60,13 @@
                             </clr-tooltip-content>
                         </clr-tooltip></label>
                     <input type="password" name="cli_password" disabled [ngModel]="'account.oidc_user_meta.secret'" size="33">
-                    <button (click)="generateCli(account.user_id)" class="btn btn-outline btn-sm btn-padding-less" *ngIf="showGenerateCli">
+                    <button (click)="generateCli(account.user_id)" id="generate-cli-btn" class="btn btn-outline btn-sm btn-padding-less" *ngIf="showGenerateCli">
                                 {{'PROFILE.ADMIN_CIL_SECRET_BUTTON' | translate}}
                             </button>
                     <div class="rename-tool reset-cli">
                         <hbr-copy-input #copyInput (onCopySuccess)="onSuccess($event)" (onCopyError)="onError($event)"  iconMode="true" [defaultValue]="account.oidc_user_meta.secret"></hbr-copy-input>
                     </div>
-                    <div (click)="showGenerateCliFn()" *ngIf="!showGenerateCli" class="hidden-generate-cli">···</div>
+                    <div (click)="showGenerateCliFn()" *ngIf="!showGenerateCli" id="hidden-generate-cli" class="hidden-generate-cli">···</div>
                 </div>
             </section>
         </form>

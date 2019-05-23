@@ -31,8 +31,6 @@ export class AddRobotComponent implements OnInit, OnDestroy {
   isSubmitOnGoing = false;
   closable: boolean = false;
   staticBackdrop: boolean = true;
-  isPull: boolean;
-  isPush: boolean;
   createSuccess: string;
   isRobotNameValid: boolean = true;
   checkOnGoing: boolean = false;
@@ -122,11 +120,8 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     this.robotService
       .addRobotAccount(
         this.projectId,
-        this.robot.name,
-        this.robot.description,
-        this.projectName,
-        this.robot.access.isPull,
-        this.robot.access.isPush
+        this.robot,
+        this.projectName
       )
       .subscribe(
         response => {
@@ -162,7 +157,8 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     if (this.robot && this.robot.access) {
       return (
         !this.isValid() ||
-        (!this.robot.access.isPush && !this.robot.access.isPull)
+        (!this.robot.access.isPushOrPullImage && !this.robot.access.isPullImage
+          && !this.robot.access.isPullChart && !this.robot.access.isPushChart)
       );
     }
   }
