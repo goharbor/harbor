@@ -17,27 +17,38 @@ import { map, catchError } from "rxjs/operators";
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { RobotApiRepository } from "./robot.api.repository";
+import { Robot } from "./robot";
 @Injectable()
 export class RobotService {
   constructor(
     private http: HttpClient,
     private robotApiRepository: RobotApiRepository
-  ) {}
-  public addRobotAccount(projecId, name, description, projectName, isPull, isPush): Observable<any> {
+  ) { }
+
+  /** addRobotAccount
+   * projecId
+   * robot: Robot
+   * projectName
+   */
+  public addRobotAccount(projecId: number, robot: Robot, projectName: string): Observable<any> {
     let access = [];
-    if ( isPull ) {
-      access.push({"resource": "/project/" + projecId + "/repository", "action": "pull"});
-      access.push({"resource": "/project/" + projectName + "/repository", "action": "pull"});
+    if (robot.access.isPullImage) {
+      access.push({ "resource": `/project/${projectName}/repository`, "action": "pull" });
     }
-    if ( isPush ) {
-      access.push({"resource": "/project/" + projecId + "/repository", "action": "push"});
-      access.push({"resource": "/project/" + projectName + "/repository", "action": "push"});
+    if (robot.access.isPushOrPullImage) {
+      access.push({ "resource": `/project/${projectName}/repository`, "action": "push" });
+    }
+    if (robot.access.isPullChart) {
+      access.push({ "resource": `/project/${projectName}/helm-chart`, "action": "read" });
+    }
+    if (robot.access.isPushChart) {
+      access.push({ "resource": `/project/${projectName}/helm-chart-version`, "action": "create" });
     }
 
     let param = {
-      name: name,
-      description: description,
-      access: access
+      name: robot.name,
+      description: robot.description,
+      access
     };
 
     return this.robotApiRepository.postRobot(projecId, param);

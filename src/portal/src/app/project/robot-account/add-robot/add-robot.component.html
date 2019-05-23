@@ -38,23 +38,50 @@
             [(ngModel)]="robot.description"
             name="robot_desc" id="robot_desc">
         </div>
-        <div class="form-group clr-form-control rule-width">
+        <div class="form-group">
+          <label class="col-md-3">
+            {{'ROBOT_ACCOUNT.PERMISSIONS' | translate}}
+          </label>
+          <label class="clr-col-md-8 no-margin padding-left-0">
           <clr-checkbox-wrapper>
             <input type="checkbox" clrCheckbox [checked]="true"
-              [(ngModel)]="robot.access.isPull" name="isPull"
+              [(ngModel)]="robot.access.isPullImage" name="isPullImage"
               id="permission-pull" class="clr-checkbox">
             <label for="permission-pull" class="clr-control-label">
               {{'ROBOT_ACCOUNT.PULL_PERMISSION' | translate}}
             </label>
           </clr-checkbox-wrapper>
+        </label>
+        <label class="clr-col-md-8 no-margin padding-left-0">
           <clr-checkbox-wrapper>
             <input type="checkbox" clrCheckbox [checked]="true"
-              [(ngModel)]="robot.access.isPush" name="isPush"
+              [(ngModel)]="robot.access.isPushOrPullImage" name="isPushOrPullImage"
               id="permission-push" class="clr-checkbox">
             <label for="permission-push" class="clr-control-label">
               {{'ROBOT_ACCOUNT.PULL_PUSH_PERMISSION' | translate}}
             </label>
           </clr-checkbox-wrapper>
+        </label>
+        <label class="clr-col-md-8 no-margin padding-left-0">
+          <clr-checkbox-wrapper>
+            <input type="checkbox" clrCheckbox [checked]="true"
+              [(ngModel)]="robot.access.isPushChart" name="isPushChart"
+              id="permission-push-chart" class="clr-checkbox">
+            <label for="permission-push-chart" class="clr-control-label">
+              {{'ROBOT_ACCOUNT.PUSH_CHART_PERMISSION' | translate}}
+            </label>
+          </clr-checkbox-wrapper>
+        </label>
+        <label class="clr-col-md-8 no-margin padding-left-0">
+          <clr-checkbox-wrapper>
+            <input type="checkbox" clrCheckbox [checked]="true"
+              [(ngModel)]="robot.access.isPullChart" name="isPullChart"
+              id="permission-pull-chart" class="clr-checkbox">
+            <label for="permission-pull-chart" class="clr-control-label">
+              {{'ROBOT_ACCOUNT.PULL_CHART_PERMISSION' | translate}}
+            </label>
+          </clr-checkbox-wrapper>
+        </label>
         </div>
       </section>
     </form>
