@@ -27,6 +27,7 @@ Test Case - Get Harbor Version
     Get Harbor Version
 
 Test Case - OIDC User Sign In
+    #Sign in with all 9 users is for user population, other test cases might use these users.
     Sign In Harbor With OIDC User    ${HARBOR_URL}
     Sleep  2
     Sign In Harbor With OIDC User    ${HARBOR_URL}    test2
@@ -48,19 +49,15 @@ Test Case - OIDC User Sign In
     Close Browser
 
 Test Case - Create An New Project
-    Sign In Harbor With OIDC User    ${HARBOR_URL}
+    Sign In Harbor With OIDC User  ${HARBOR_URL}
     ${d}=    Get Current Date    result_format=%M%S
     Create An New Project  test${d}
     Close Browser
 
 Test Case - Delete A Project
     Init Chrome Driver
-    Sign In Harbor With OIDC User    ${HARBOR_URL}
-    ${json}=  Run Curl And Return Json  curl -s -k -X GET --header 'Accept: application/json' -u '${HARBOR_ADMIN}:${HARBOR_PASSWORD}' 'https://${ip}/api/users/search?username=${OIDC_USERNAME}'
-    ${user_info}=    Set Variable    ${json[0]}
-    ${user_id}=    Set Variable    ${user_info["user_id"]}
-    ${json}=  Run Curl And Return Json   curl -s -k -X GET --header 'Accept: application/json' -u '${HARBOR_ADMIN}:${HARBOR_PASSWORD}' 'https://${ip}/api/users/${user_id}'
-    ${secret}=    Set Variable    ${json["oidc_user_meta"]["secret"]}
+    Sign In Harbor With OIDC User  ${HARBOR_URL}
+    ${secret}=  Get Secrete By API  ${HARBOR_URL}
     Delete A Project Without Sign In Harbor   harbor_ip=${OIDC_HOSTNAME}  username=${OIDC_USERNAME}  password=${secret}
     Close Browser
 
