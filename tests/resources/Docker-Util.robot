@@ -50,13 +50,17 @@ Push Image With Tag
     Wait Unitl Command Success  docker push ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker logout ${ip}
 
+Cannot Login Harbor
+    [Arguments]  ${ip}  ${user}  ${pwd}
+    Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}  positive=${false}
+
 Cannot Pull image
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     Wait Unitl Command Success  docker pull ${ip}/${project}/${image}  positive=${false}
 
 Cannot Pull Unsigned Image
-    [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}  
+    [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}
     Wait Unitl Command Success  docker login -u ${user} -p ${pass} ${ip}
     ${output}=  Wait Unitl Command Success  docker pull ${ip}/${proj}/${imagewithtag}  positive=${false}
     Should Contain  ${output}  The image is not signed in Notary
