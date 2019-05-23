@@ -37,3 +37,12 @@ Sign In Harbor With OIDC User
     ${isVisible}=  Run Keyword And Return Status  Element Should Be Visible  ${oidc_username_input}
     Run Keyword If  '${isVisible}' == 'True'  Run Keywords  Retry Text Input    ${oidc_username_input}    ${username}  AND  Retry Element Click    ${save_btn}
     Retry Wait Element  ${head_username}
+
+Get Secrete By API
+    [Arguments]  ${url}  ${username}=${OIDC_USERNAME}
+    ${json}=  Run Curl And Return Json  curl -s -k -X GET --header 'Accept: application/json' -u '${HARBOR_ADMIN}:${HARBOR_PASSWORD}' '${url}/api/users/search?username=${username}'
+    ${user_info}=    Set Variable    ${json[0]}
+    ${user_id}=    Set Variable    ${user_info["user_id"]}
+    ${json}=  Run Curl And Return Json   curl -s -k -X GET --header 'Accept: application/json' -u '${HARBOR_ADMIN}:${HARBOR_PASSWORD}' '${url}/api/users/${user_id}'
+    ${secret}=    Set Variable    ${json["oidc_user_meta"]["secret"]}
+    [Return]  ${secret}

@@ -303,27 +303,8 @@ Test Case - User View Logs
 
 Test Case - Manage Project Member
     Init Chrome Driver
-    ${d}=    Get current Date  result_format=%m%s
-
     Sign In Harbor  ${HARBOR_URL}  user004  Test1@34
-    Create An New Project  project${d}
-    Push image  ip=${ip}  user=user004  pwd=Test1@34  project=project${d}  image=hello-world
-    Logout Harbor
-
-    User Should Not Be A Member Of Project  user005  Test1@34  project${d}
-    Manage Project Member  user004  Test1@34  project${d}  user005  Add
-    User Should Be Guest  user005  Test1@34  project${d}
-    Change User Role In Project  user004  Test1@34  project${d}  user005  Developer
-    User Should Be Developer  user005  Test1@34  project${d}
-    Change User Role In Project  user004  Test1@34  project${d}  user005  Admin
-    User Should Be Admin  user005  Test1@34  project${d}  user006
-    Change User Role In Project  user004  Test1@34  project${d}  user005  Master
-    User Should Be Master  user005  Test1@34  project${d}
-    Manage Project Member  user004  Test1@34  project${d}  user005  Remove
-    User Should Not Be A Member Of Project  user005  Test1@34  project${d}
-    Push image  ip=${ip}  user=user004  pwd=Test1@34  project=project${d}  image=hello-world
-    User Should Be Guest  user006  Test1@34  project${d}
-
+    Manage Project Member Without Sign In Harbor
     Close Browser
 
 Test Case - Manage project publicity
