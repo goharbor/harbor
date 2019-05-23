@@ -1,5 +1,5 @@
 import { AfterViewInit, Component, ElementRef, OnInit } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { throwError as observableThrowError, Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
@@ -19,7 +19,7 @@ export class DevCenterComponent implements AfterViewInit, OnInit {
   private json: any;
   constructor(
     private el: ElementRef,
-    private http: Http,
+    private http: HttpClient,
     private translate: TranslateService,
     private titleService: Title) {
   }
@@ -38,10 +38,10 @@ export class DevCenterComponent implements AfterViewInit, OnInit {
   ngAfterViewInit() {
     this.http.get("/swagger.json")
     .pipe(catchError(error => observableThrowError(error)))
-    .pipe(map(response => response.json())).subscribe(json => {
-      json.host = window.location.host;
+    .subscribe(json => {
+      json['host'] = window.location.host;
       const protocal = window.location.protocol;
-      json.schemes = [protocal.replace(":", "")];
+      json['schemes'] = [protocal.replace(":", "")];
       let ui = SwaggerUI({
         spec: json,
         domNode: this.el.nativeElement.querySelector('.swagger-container'),

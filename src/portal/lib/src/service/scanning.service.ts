@@ -1,4 +1,4 @@
-import { Http } from "@angular/http";
+import { HttpClient } from "@angular/common/http";
 import { Injectable, Inject } from "@angular/core";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
@@ -79,7 +79,7 @@ export class ScanningResultDefaultService extends ScanningResultService {
   _baseUrl: string = "/api/repositories";
 
   constructor(
-    private http: Http,
+    private http: HttpClient,
     @Inject(SERVICE_CONFIG) private config: IServiceConfig
   ) {
     super();
@@ -116,7 +116,7 @@ export class ScanningResultDefaultService extends ScanningResultService {
         `${this._baseUrl}/${repoName}/tags/${tagId}/vulnerability/details`,
         buildHttpRequestOptions(queryParams)
       )
-      .pipe(map(response => response.json() as VulnerabilityItem[])
+      .pipe(map(response => response as VulnerabilityItem[])
       , catchError(error => observableThrowError(error)));
   }
 

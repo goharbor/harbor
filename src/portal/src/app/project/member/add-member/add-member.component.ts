@@ -23,7 +23,6 @@ import {
   OnInit,
   OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef
 } from '@angular/core';
-import { Response } from '@angular/http';
 import { NgForm } from '@angular/forms';
 import {ActivatedRoute} from "@angular/router";
 import { Subject, forkJoin } from "rxjs";
@@ -40,7 +39,10 @@ import {User} from "../../../user/user";
 import {Project} from "../../project";
 
 import { Member } from '../member';
+import { errorHandler as errorHandFn } from "../../../shared/shared.utils";
+
 import { MemberService } from '../member.service';
+import { HttpResponseBase } from '@angular/common/http';
 
 
 @Component({
@@ -161,22 +163,12 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
         // this.addMemberOpened = false;
       },
       error => {
-        if (error instanceof Response) {
-          let errorMessageKey: string;
-          switch (error.status) {
-            case 404:
-              errorMessageKey = 'MEMBER.USERNAME_DOES_NOT_EXISTS';
-              break;
-            case 409:
-              errorMessageKey = 'MEMBER.USERNAME_ALREADY_EXISTS';
-              break;
-            default:
-              errorMessageKey = 'MEMBER.UNKNOWN_ERROR';
-          }
+        if (error instanceof HttpResponseBase) {
           if (this.messageHandlerService.isAppLevel(error)) {
             this.messageHandlerService.handleError(error);
             // this.addMemberOpened = false;
           } else {
+          let errorMessageKey: string = errorHandFn(error);
             this.translateService
               .get(errorMessageKey)
               .subscribe(errorMessage => this.messageHandlerService.handleError(errorMessage));

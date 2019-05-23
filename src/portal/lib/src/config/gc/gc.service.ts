@@ -1,5 +1,4 @@
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
 import { Observable, Subscription, Subject, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { GcApiRepository } from './gc.api.repository';
@@ -10,7 +9,7 @@ import { GcJobData } from './gcLog';
 @Injectable()
 export class GcRepoService {
 
-    constructor(private http: Http,
+    constructor(
         private gcApiRepository: GcApiRepository,
         private errorHandler: ErrorHandler) {
     }

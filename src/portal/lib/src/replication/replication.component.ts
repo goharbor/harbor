@@ -201,13 +201,10 @@ export class ReplicationComponent implements OnInit, OnDestroy {
       pageNumber = 1;
     }
 
-    let params: RequestQueryParams = new RequestQueryParams();
-    // Pagination
-    params.set("page", "" + pageNumber);
-    params.set("page_size", "" + this.pageSize);
+    let params: RequestQueryParams = new RequestQueryParams().set("page", "" + pageNumber).set("page_size", "" + this.pageSize);
 
     if (this.currentTerm && this.currentTerm !== "") {
-      params.set(this.defaultFilter, this.currentTerm);
+      params = params.set(this.defaultFilter, this.currentTerm);
     }
 
     this.jobsLoading = true;

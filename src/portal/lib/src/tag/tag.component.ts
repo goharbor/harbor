@@ -259,8 +259,7 @@ export class TagComponent implements OnInit, AfterViewInit {
 
     // Pagination
     let params: RequestQueryParams = new RequestQueryParams();
-    params.set("page", "" + pageNumber);
-    params.set("page_size", "" + this.pageSize);
+    params = params.set("page", "" + pageNumber).set("page_size", "" + this.pageSize);
 
     this.loading = true;
 

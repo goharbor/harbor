@@ -1,5 +1,5 @@
 import { Injectable, Inject } from "@angular/core";
-import { Http } from "@angular/http";
+import { HttpClient } from "@angular/common/http";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import {
@@ -118,7 +118,7 @@ export class TagDefaultService extends TagService {
   _baseUrl: string;
   _labelUrl: string;
   constructor(
-    private http: Http,
+    private http: HttpClient,
     @Inject(SERVICE_CONFIG) private config: IServiceConfig
   ) {
     super();
@@ -137,15 +137,15 @@ export class TagDefaultService extends TagService {
     queryParams?: RequestQueryParams
   ): Observable<Tag[]> {
     if (!queryParams) {
-      queryParams = new RequestQueryParams();
+      queryParams = queryParams = new RequestQueryParams();
     }
 
-    queryParams.set("detail", "1");
+    queryParams = queryParams.set("detail", "1");
     let url: string = `${this._baseUrl}/${repositoryName}/tags`;
 
     return this.http
       .get(url, buildHttpRequestOptions(queryParams))
-      .pipe(map(response => response.json() as Tag[])
+      .pipe(map(response => response as Tag[])
       , catchError(error => observableThrowError(error)));
   }
 
@@ -153,7 +153,7 @@ export class TagDefaultService extends TagService {
     let url: string = `${this._baseUrl}/${repositoryName}/signatures`;
     return this.http
       .get(url, HTTP_GET_OPTIONS)
-      .pipe(map(response => response.json() as VerifiedSignature[])
+      .pipe(map(response => response as VerifiedSignature[])
       , catchError(error => observableThrowError(error)));
   }
 
@@ -194,7 +194,7 @@ export class TagDefaultService extends TagService {
     let url: string = `${this._baseUrl}/${repositoryName}/tags/${tag}`;
     return this.http
       .get(url, HTTP_GET_OPTIONS)
-      .pipe(map(response => response.json() as Tag)
+      .pipe(map(response => response as Tag)
       , catchError(error => observableThrowError(error)));
   }
 
@@ -212,8 +212,7 @@ export class TagDefaultService extends TagService {
     }/${repoName}/tags/${tagName}/labels`;
     return this.http
       .post(_addLabelToImageUrl, { id: labelId }, HTTP_JSON_OPTIONS)
-      .pipe(map(response => response.status)
-      , catchError(error => observableThrowError(error)));
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   public deleteLabelToImages(
@@ -230,8 +229,7 @@ export class TagDefaultService extends TagService {
     }/${repoName}/tags/${tagName}/labels/${labelId}`;
     return this.http
       .delete(_addLabelToImageUrl)
-      .pipe(map(response => response.status)
-      , catchError(error => observableThrowError(error)));
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   public getManifest(
@@ -244,7 +242,7 @@ export class TagDefaultService extends TagService {
     let url: string = `${this._baseUrl}/${repositoryName}/tags/${tag}/manifest`;
     return this.http
       .get(url, HTTP_GET_OPTIONS)
-      .pipe(map(response => response.json() as Manifest)
+      .pipe(map(response => response as Manifest)
       , catchError(error => observableThrowError(error)));
   }
 }

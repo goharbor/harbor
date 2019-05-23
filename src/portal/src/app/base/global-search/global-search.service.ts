@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
 import { SearchResults } from './search-results';
-import { HTTP_GET_OPTIONS } from "../../shared/shared.utils";
+import { HTTP_GET_OPTIONS } from "@harbor/ui";
 
 const searchEndpoint = "/api/search";
 /**
@@ -30,7 +30,7 @@ const searchEndpoint = "/api/search";
 @Injectable()
 export class GlobalSearchService {
 
-    constructor(private http: Http) { }
+    constructor(private http: HttpClient) { }
 
     /**
      * Search related artifacts with the provided keyword
@@ -44,7 +44,7 @@ export class GlobalSearchService {
         let searchUrl = searchEndpoint + "?q=" + term;
 
         return this.http.get(searchUrl, HTTP_GET_OPTIONS)
-            .pipe(map(response => response.json() as SearchResults)
+            .pipe(map(response => response as SearchResults)
             , catchError(error => observableThrowError(error)));
     }
 }

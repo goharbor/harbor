@@ -1,7 +1,7 @@
 
 import {throwError as observableThrowError,  Observable } from "rxjs";
 import { Injectable, Inject } from "@angular/core";
-import { Http } from "@angular/http";
+import { HttpClient } from "@angular/common/http";
 import { map ,  catchError } from "rxjs/operators";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
@@ -80,7 +80,7 @@ export abstract class ProjectService {
 @Injectable()
 export class ProjectDefaultService extends ProjectService {
   constructor(
-    private http: Http,
+    private http: HttpClient,
     @Inject(SERVICE_CONFIG) private config: IServiceConfig
   ) {
     super();
@@ -96,8 +96,7 @@ export class ProjectDefaultService extends ProjectService {
       ? this.config.projectBaseEndpoint
       : "/api/projects";
     return this.http
-      .get(`${baseUrl}/${projectId}`, HTTP_GET_OPTIONS)
-      .pipe(map(response => response.json()))
+      .get<Project>(`${baseUrl}/${projectId}`, HTTP_GET_OPTIONS)
       .pipe(catchError(error => observableThrowError(error)));
   }
 
@@ -112,20 +111,18 @@ export class ProjectDefaultService extends ProjectService {
       : "/api/projects";
     let params = new RequestQueryParams();
     if (page && pageSize) {
-      params.set("page", page + "");
-      params.set("page_size", pageSize + "");
+      params = params.set("page", page + "").set("page_size", pageSize + "");
     }
     if (name && name.trim() !== "") {
-      params.set("name", name);
+      params = params.set("name", name);
     }
     if (isPublic !== undefined) {
-      params.set("public", "" + isPublic);
+      params = params.set("public", "" + isPublic);
     }
 
     // let options = new RequestOptions({ headers: this.getHeaders, search: params });
     return this.http
-      .get(baseUrl, buildHttpRequestOptions(params))
-      .pipe(map(response => response.json()))
+      .get<Project[]>(baseUrl, buildHttpRequestOptions(params))
       .pipe(catchError(error => observableThrowError(error)));
   }
 
@@ -137,7 +134,7 @@ export class ProjectDefaultService extends ProjectService {
       ? this.config.projectBaseEndpoint
       : "/api/projects";
     return this.http
-      .put(
+      .put<any>(
         `${baseUrl}/${projectId}`,
         {
           metadata: {
@@ -150,7 +147,6 @@ export class ProjectDefaultService extends ProjectService {
         },
         HTTP_JSON_OPTIONS
       )
-      .pipe(map(response => response.status))
       .pipe(catchError(error => observableThrowError(error)));
   }
 }

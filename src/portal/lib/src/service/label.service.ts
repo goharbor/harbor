@@ -1,5 +1,5 @@
 import { Inject, Injectable } from "@angular/core";
-import { Http } from "@angular/http";
+import { HttpClient } from "@angular/common/http";
 import { map, catchError} from "rxjs/operators";
 
 import { RequestQueryParams } from "./RequestQueryParams";
@@ -7,7 +7,6 @@ import { Label } from "./interface";
 
 import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
 import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from "../utils";
-import { extractJson } from "../shared/shared.utils";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
 export abstract class LabelService {
@@ -76,7 +75,7 @@ export class LabelDefaultService extends LabelService {
 
   constructor(
     @Inject(SERVICE_CONFIG) config: IServiceConfig,
-    private http: Http
+    private http: HttpClient
   ) {
     super();
     this.labelUrl = config.labelEndpoint ? config.labelEndpoint : "/api/labels";
@@ -91,15 +90,14 @@ export class LabelDefaultService extends LabelService {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
-    queryParams.set("scope", "g");
+    queryParams = queryParams.set("scope", "g");
 
     if (name) {
-      queryParams.set("name", "" + name);
+      queryParams = queryParams.set("name", "" + name);
     }
     return this.http
-      .get(this.labelUrl, buildHttpRequestOptions(queryParams))
-      .pipe(map(response => response.json())
-      , catchError(error => observableThrowError(error)));
+      .get<Label[]>(this.labelUrl, buildHttpRequestOptions(queryParams))
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   getPLabels(
@@ -110,17 +108,16 @@ export class LabelDefaultService extends LabelService {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
-    queryParams.set("scope", "p");
+    queryParams = queryParams.set("scope", "p");
     if (projectId) {
-      queryParams.set("project_id", "" + projectId);
+      queryParams = queryParams.set("project_id", "" + projectId);
     }
     if (name) {
-      queryParams.set("name", "" + name);
+      queryParams = queryParams.set("name", "" + name);
     }
     return this.http
-      .get(this.labelUrl, buildHttpRequestOptions(queryParams))
-      .pipe(map(response => response.json())
-      , catchError(error => observableThrowError(error)));
+      .get<Label[]>(this.labelUrl, buildHttpRequestOptions(queryParams))
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   getProjectLabels(
@@ -131,15 +128,14 @@ export class LabelDefaultService extends LabelService {
     if (!queryParams) {
       queryParams = new RequestQueryParams();
     }
-    queryParams.set("scope", "p");
+    queryParams = queryParams.set("scope", "p");
     if (projectId) {
-      queryParams.set("project_id", "" + projectId);
+      queryParams = queryParams.set("project_id", "" + projectId);
     }
     if (name) {
-      queryParams.set("name", "" + name);
+      queryParams = queryParams.set("name", "" + name);
     }
-    return this.http.get(this.labelUrl, buildHttpRequestOptions(queryParams))
-    .pipe(map( res => extractJson(res)));
+    return this.http.get<Label[]>(this.labelUrl, buildHttpRequestOptions(queryParams));
   }
 
   getLabels(
@@ -149,20 +145,19 @@ export class LabelDefaultService extends LabelService {
     queryParams?: RequestQueryParams
   ): Observable<Label[]> {
     if (!queryParams) {
-      queryParams = new RequestQueryParams();
+      queryParams = queryParams = new RequestQueryParams();
     }
     if (scope) {
-      queryParams.set("scope", scope);
+      queryParams = queryParams.set("scope", scope);
     }
     if (projectId) {
-      queryParams.set("project_id", "" + projectId);
+      queryParams = queryParams.set("project_id", "" + projectId);
     }
     if (name) {
-      queryParams.set("name", "" + name);
+      queryParams = queryParams.set("name", "" + name);
     }
     return this.http
-      .get(this.labelUrl, buildHttpRequestOptions(queryParams))
-      .pipe(map(response => response.json()))
+      .get<Label[]>(this.labelUrl, buildHttpRequestOptions(queryParams))
       .pipe(catchError(error => observableThrowError(error)));
   }
 
@@ -171,9 +166,8 @@ export class LabelDefaultService extends LabelService {
       return observableThrowError("Invalid label.");
     }
     return this.http
-      .post(this.labelUrl, JSON.stringify(label), HTTP_JSON_OPTIONS)
-      .pipe(map(response => response.status)
-      , catchError(error => observableThrowError(error)));
+      .post<any>(this.labelUrl, JSON.stringify(label), HTTP_JSON_OPTIONS)
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   getLabel(id: number): Observable<Label> {
@@ -182,9 +176,8 @@ export class LabelDefaultService extends LabelService {
     }
     let reqUrl = `${this.labelUrl}/${id}`;
     return this.http
-      .get(reqUrl, HTTP_JSON_OPTIONS)
-      .pipe(map(response => response.json())
-      , catchError(error => observableThrowError(error)));
+      .get<Label>(reqUrl, HTTP_JSON_OPTIONS)
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   updateLabel(id: number, label: Label): Observable<any> {
@@ -196,9 +189,8 @@ export class LabelDefaultService extends LabelService {
     }
     let reqUrl = `${this.labelUrl}/${id}`;
     return this.http
-      .put(reqUrl, JSON.stringify(label), HTTP_JSON_OPTIONS)
-      .pipe(map(response => response.status)
-      , catchError(error => observableThrowError(error)));
+      .put<any>(reqUrl, JSON.stringify(label), HTTP_JSON_OPTIONS)
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   deleteLabel(id: number): Observable<any> {
@@ -207,9 +199,8 @@ export class LabelDefaultService extends LabelService {
     }
     let reqUrl = `${this.labelUrl}/${id}`;
     return this.http
-      .delete(reqUrl)
-      .pipe(map(response => response.status)
-      , catchError(error => observableThrowError(error)));
+      .delete<any>(reqUrl)
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   getChartVersionLabels(
@@ -217,8 +208,7 @@ export class LabelDefaultService extends LabelService {
     chartName: string,
     version: string
   ): Observable<Label[]> {
-    return this.http.get(`${this.chartUrl}/${projectName}/charts/${chartName}/${version}/labels`)
-    .pipe(map(res => extractJson(res)));
+    return this.http.get<Label[]>(`${this.chartUrl}/${projectName}/charts/${chartName}/${version}/labels`);
   }
 
   markChartLabel(
@@ -228,8 +218,7 @@ export class LabelDefaultService extends LabelService {
     label: Label,
   ): Observable<any> {
     return this.http.post(`${this.chartUrl}/${projectName}/charts/${chartName}/${version}/labels`,
-    JSON.stringify(label), HTTP_JSON_OPTIONS)
-    .pipe(map(res => extractJson(res)));
+    JSON.stringify(label), HTTP_JSON_OPTIONS);
   }
 
   unmarkChartLabel(
@@ -238,8 +227,7 @@ export class LabelDefaultService extends LabelService {
     version: string,
     label: Label,
   ): Observable<any> {
-    return this.http.delete(`${this.chartUrl}/${projectName}/charts/${chartName}/${version}/labels/${label.id}`, HTTP_JSON_OPTIONS)
-    .pipe(map(res => extractJson(res)));
+    return this.http.delete(`${this.chartUrl}/${projectName}/charts/${chartName}/${version}/labels/${label.id}`, HTTP_JSON_OPTIONS);
   }
 
 }

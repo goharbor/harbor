@@ -106,7 +106,7 @@ export class ConfigurationEmailComponent implements OnChanges {
                 this.msgHandler.showSuccess('CONFIG.TEST_MAIL_SUCCESS');
             }, error => {
                 this.testingMailOnGoing = false;
-                let err = error._body;
+                let err = error.error;
                 if (!err) {
                     err = 'UNKNOWN';
                 }

@@ -119,11 +119,9 @@ export class RecentLogComponent implements OnInit {
         let pageNumber: number = calculatePage(state);
         if (pageNumber !== this.currentPagePvt) {
             // load data
-            let params: RequestQueryParams = new RequestQueryParams();
-            params.set("page", '' + pageNumber);
-            params.set("page_size", '' + this.pageSize);
+            let params: RequestQueryParams = new RequestQueryParams().set("page", '' + pageNumber).set("page_size", '' + this.pageSize);
             if (this.currentTerm && this.currentTerm !== "") {
-                params.set(this.defaultFilter, this.currentTerm);
+                params = params.set(this.defaultFilter, this.currentTerm);
             }
 
             this.loading = true;

@@ -1,4 +1,4 @@
-import { URLSearchParams } from "@angular/http";
+import { HttpParams } from "@angular/common/http";
 
 /**
  * Wrap the class 'URLSearchParams' for future extending requirements.
@@ -8,7 +8,7 @@ import { URLSearchParams } from "@angular/http";
  * class RequestQueryParams
  * extends {URLSearchParams}
  */
-export class RequestQueryParams extends URLSearchParams {
+export class RequestQueryParams extends HttpParams {
   constructor() {
     super();
   }

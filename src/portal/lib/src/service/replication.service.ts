@@ -1,10 +1,12 @@
-import { Http } from "@angular/http";
+import { HttpClient, HttpResponse } from "@angular/common/http";
 import { Injectable, Inject } from "@angular/core";
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import {
   buildHttpRequestOptions,
   HTTP_JSON_OPTIONS,
-  HTTP_GET_OPTIONS
+  HTTP_GET_OPTIONS,
+  buildHttpRequestOptionsWithObserveResponse,
+  HTTP_GET_OPTIONS_OBSERVE_RESPONSE
 } from "../utils";
 import {
   ReplicationJob,
@@ -211,7 +213,7 @@ export class ReplicationDefaultService extends ReplicationService {
   _baseUrl: string;
 
   constructor(
-    private http: Http,
+    private http: HttpClient,
     @Inject(SERVICE_CONFIG) config: IServiceConfig
   ) {
     super();
@@ -240,8 +242,7 @@ export class ReplicationDefaultService extends ReplicationService {
     let requestUrl: string = `${this._baseUrl}/registries/${id}/info`;
     return this.http
       .get(requestUrl)
-      .pipe(map(response => response.json())
-        , catchError(error => observableThrowError(error)));
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   public getJobBaseUrl() {
@@ -255,20 +256,20 @@ export class ReplicationDefaultService extends ReplicationService {
   ):
     | Observable<ReplicationRule[]> {
     if (!queryParams) {
-      queryParams = new RequestQueryParams();
+      queryParams = queryParams = new RequestQueryParams();
     }
 
     if (projectId) {
-      queryParams.set("project_id", "" + projectId);
+      queryParams = queryParams.set("project_id", "" + projectId);
     }
 
     if (ruleName) {
-      queryParams.set("name", ruleName);
+      queryParams = queryParams.set("name", ruleName);
     }
 
     return this.http
       .get(this._ruleBaseUrl, buildHttpRequestOptions(queryParams))
-      .pipe(map(response => response.json() as ReplicationRule[])
+      .pipe(map(response => response as ReplicationRule[])
         , catchError(error => observableThrowError(error)));
   }
 
@@ -282,7 +283,7 @@ export class ReplicationDefaultService extends ReplicationService {
     let url: string = `${this._ruleBaseUrl}/${ruleId}`;
     return this.http
       .get(url, HTTP_GET_OPTIONS)
-      .pipe(map(response => response.json() as ReplicationRule)
+      .pipe(map(response => response as ReplicationRule)
         , catchError(error => observableThrowError(error)));
   }
 
@@ -297,7 +298,7 @@ export class ReplicationDefaultService extends ReplicationService {
     return this.http
       .get(url,
         queryParams ? buildHttpRequestOptions(queryParams) : HTTP_GET_OPTIONS)
-      .pipe(map(response => response.json() as ReplicationTasks)
+      .pipe(map(response => response as ReplicationTasks)
         , catchError(error => observableThrowError(error)));
   }
 
@@ -402,9 +403,9 @@ export class ReplicationDefaultService extends ReplicationService {
       queryParams = new RequestQueryParams();
     }
     let url: string = `${this._replicateUrl}/executions`;
-    queryParams.set("policy_id", "" + ruleId);
+    queryParams = queryParams.set("policy_id", "" + ruleId);
     return this.http
-      .get(url, buildHttpRequestOptions(queryParams))
+      .get<HttpResponse<ReplicationJobItem[]>>(url, buildHttpRequestOptionsWithObserveResponse(queryParams))
       .pipe(map(response => {
         let result: ReplicationJob = {
           metadata: {
@@ -419,7 +420,7 @@ export class ReplicationDefaultService extends ReplicationService {
             result.metadata.xTotalCount = parseInt(xHeader, 0);
           }
         }
-        result.data = response.json() as ReplicationJobItem[];
+        result.data = response.body as ReplicationJobItem[];
         if (result.metadata.xTotalCount === 0) {
           if (result.data && result.data.length > 0) {
             result.metadata.xTotalCount = result.data.length;
@@ -439,7 +440,7 @@ export class ReplicationDefaultService extends ReplicationService {
     }
     let requestUrl: string = `${this._replicateUrl}/executions/${executionId}`;
     return this.http
-      .get(requestUrl, HTTP_GET_OPTIONS)
+      .get<HttpResponse<ReplicationJobItem[]>>(requestUrl, HTTP_GET_OPTIONS_OBSERVE_RESPONSE)
       .pipe(map(response => {
         let result: ReplicationJob = {
           metadata: {
@@ -454,7 +455,7 @@ export class ReplicationDefaultService extends ReplicationService {
             result.metadata.xTotalCount = parseInt(xHeader, 0);
           }
         }
-        result.data = response.json() as ReplicationJobItem[];
+        result.data = response.body as ReplicationJobItem[];
         if (result.metadata.xTotalCount === 0) {
           if (result.data && result.data.length > 0) {
             result.metadata.xTotalCount = result.data.length;
@@ -475,9 +476,8 @@ export class ReplicationDefaultService extends ReplicationService {
 
     let logUrl = `${this._replicateUrl}/${jobId}/log`;
     return this.http
-      .get(logUrl, HTTP_GET_OPTIONS)
-      .pipe(map(response => response.text())
-        , catchError(error => observableThrowError(error)));
+      .get<string>(logUrl, HTTP_GET_OPTIONS)
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   public stopJobs(

@@ -12,11 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
-import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../shared/shared.utils";
+import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "@harbor/ui";
 import { User, LDAPUser } from './user';
 import LDAPUsertoUser from './user';
 
@@ -33,22 +33,22 @@ const ldapUserEndpoint = '/api/ldap/users';
 @Injectable()
 export class UserService {
 
-    constructor(private http: Http) { }
+    constructor(private http: HttpClient) { }
 
     // Handle the related exceptions
     handleError(error: any): Observable<any> {
-        return observableThrowError(error.message || error);
+        return observableThrowError(error.error || error);
     }
 
     // Get the user list
     getUsersNameList(name: string, page_size: number): Observable<User[]> {
         return this.http.get(`${userListSearch}page_size=${page_size}&username=${name}`, HTTP_GET_OPTIONS)
-            .pipe(map(response => response.json() as User[])
+            .pipe(map(response => response as User[])
             , catchError(error => this.handleError(error)));
     }
     getUsers(): Observable<User[]> {
         return this.http.get(userMgmtEndpoint, HTTP_GET_OPTIONS)
-            .pipe(map(response => response.json() as User[])
+            .pipe(map(response => response as User[])
             , catchError(error => this.handleError(error)));
     }
 
@@ -102,7 +102,7 @@ export class UserService {
     getLDAPUsers(username: string): Observable<User[]> {
         return this.http.get(`${ldapUserEndpoint}/search?username=${username}`, HTTP_GET_OPTIONS)
         .pipe(map(response => {
-            let ldapUser = response.json() as LDAPUser[] || [];
+            let ldapUser = response as LDAPUser[] || [];
             return ldapUser.map(u => LDAPUsertoUser(u));
         })
         , catchError( error => this.handleError(error)));

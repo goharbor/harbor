@@ -135,7 +135,7 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
                 this.msgHandler.showSuccess('CONFIG.TEST_LDAP_SUCCESS');
             }, error => {
                 this.testingLDAPOnGoing = false;
-                let err = error._body;
+                let err = error.error;
                 if (!err || !err.trim()) {
                     err = 'UNKNOWN';
                 }

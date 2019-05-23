@@ -17,39 +17,37 @@ import {catchError, map} from 'rxjs/operators';
 // limitations under the License.
 import { Injectable } from '@angular/core';
 
-import { Http, URLSearchParams } from '@angular/http';
+import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 
 
 
-import {HTTP_JSON_OPTIONS, buildHttpRequestOptions, HTTP_GET_OPTIONS} from "../shared/shared.utils";
+import {HTTP_JSON_OPTIONS, buildHttpRequestOptions, HTTP_GET_OPTIONS, buildHttpRequestOptionsWithObserveResponse} from "@harbor/ui";
+import { Project } from "./project";
 
 @Injectable()
 export class ProjectService {
 
-  constructor(private http: Http) {}
+  constructor(private http: HttpClient) {}
 
   getProject(projectId: number): Observable<any> {
     return this.http
                .get(`/api/projects/${projectId}`, HTTP_GET_OPTIONS).pipe(
-               map(response => response.json()),
                catchError(error => observableThrowError(error)), );
   }
 
-  listProjects(name: string, isPublic?: number, page?: number, pageSize?: number): Observable<any> {
-    let params = new URLSearchParams();
+  listProjects(name: string, isPublic?: number, page?: number, pageSize?: number): Observable<HttpResponse<Project[]>> {
+    let params = new HttpParams();
     if (page && pageSize) {
-      params.set('page', page + '');
-      params.set('page_size', pageSize + '');
+      params = params.set('page', page + '').set('page_size', pageSize + '');
     }
     if (name && name.trim() !== "") {
-      params.set('name', name);
+      params = params.set('name', name);
     }
     if (isPublic !== undefined) {
-      params.set('public', '' + isPublic);
+      params = params.set('public', '' + isPublic);
     }
     return this.http
-               .get(`/api/projects`, buildHttpRequestOptions(params)).pipe(
-               map(response => response),
+               .get<HttpResponse<Project[]>>(`/api/projects`, buildHttpRequestOptionsWithObserveResponse(params)).pipe(
                catchError(error => observableThrowError(error)), );
   }
 
@@ -60,35 +58,30 @@ export class ProjectService {
                   public: metadata.public ? 'true' : 'false',
                 }})
                 , HTTP_JSON_OPTIONS).pipe(
-               map(response => response.status),
                catchError(error => observableThrowError(error)), );
   }
 
   toggleProjectPublic(projectId: number, isPublic: string): Observable<any> {
     return this.http
                .put(`/api/projects/${projectId}`, { 'metadata': {'public': isPublic} }, HTTP_JSON_OPTIONS).pipe(
-               map(response => response.status),
                catchError(error => observableThrowError(error)), );
   }
 
   deleteProject(projectId: number): Observable<any> {
     return this.http
                .delete(`/api/projects/${projectId}`)
-               .pipe(map(response => response.status)
-               , catchError(error => observableThrowError(error)));
+               .pipe(catchError(error => observableThrowError(error)));
   }
 
   checkProjectExists(projectName: string): Observable<any> {
     return this.http
                .head(`/api/projects/?project_name=${projectName}`).pipe(
-               map(response => response.status),
                catchError(error => observableThrowError(error)), );
   }
 
   checkProjectMember(projectId: number): Observable<any> {
     return this.http
                .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS).pipe(
-               map(response => response.json()),
                catchError(error => observableThrowError(error)), );
   }
 }

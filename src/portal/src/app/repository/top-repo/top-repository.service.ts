@@ -12,12 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { Repository } from '@harbor/ui';
 
-import {HTTP_GET_OPTIONS} from "../../shared/shared.utils";
+import {HTTP_GET_OPTIONS} from "@harbor/ui";
 
 export const topRepoEndpoint = "/api/repositories/top";
 /**
@@ -30,7 +30,7 @@ export const topRepoEndpoint = "/api/repositories/top";
 @Injectable()
 export class TopRepoService {
 
-    constructor(private http: Http) { }
+    constructor(private http: HttpClient) { }
 
     /**
      * Get top popular repositories
@@ -42,7 +42,7 @@ export class TopRepoService {
      */
     getTopRepos(): Observable<Repository[]> {
         return this.http.get(topRepoEndpoint, HTTP_GET_OPTIONS)
-            .pipe(map(response => response.json() as Repository[])
+            .pipe(map(response => response as Repository[])
             , catchError(error => observableThrowError(error)));
     }
 }

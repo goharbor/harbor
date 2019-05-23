@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http, URLSearchParams } from '@angular/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
 
 import { PasswordSetting } from './password-setting';
-import {HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";
+
+import {HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "@harbor/ui";
 
 const passwordChangeEndpoint = "/api/users/:user_id/password";
 const sendEmailEndpoint = "/c/sendEmail";
@@ -27,7 +28,7 @@ const resetPasswordEndpoint = "/c/reset";
 @Injectable()
 export class PasswordSettingService {
 
-    constructor(private http: Http) { }
+    constructor(private http: HttpClient) { }
 
     changePassword(userId: number, setting: PasswordSetting): Observable<any> {
         if (!setting || setting.new_password.trim() === "" || setting.old_password.trim() === "") {
@@ -56,10 +57,7 @@ export class PasswordSettingService {
             return observableThrowError("Invalid reset uuid or password");
         }
 
-        let body: URLSearchParams = new URLSearchParams();
-        body.set("reset_uuid", uuid);
-        body.set("password", newPassword);
-
+        let body: HttpParams = new HttpParams().set("reset_uuid", uuid).set("password", newPassword);
         return this.http.post(resetPasswordEndpoint, body.toString(), HTTP_FORM_OPTIONS)
             .pipe(map(response => response)
             , catchError(error => observableThrowError(error)));

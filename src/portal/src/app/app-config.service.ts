@@ -12,13 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 
 import { CookieService } from 'ngx-cookie';
 
 import { AppConfig } from './app-config';
 import { CookieKeyOfAdmiral, HarborQueryParamKey } from './shared/shared.const';
-import { maintainUrlQueryParmas, HTTP_GET_OPTIONS} from './shared/shared.utils';
+import { maintainUrlQueryParmas } from './shared/shared.utils';
+import {  HTTP_GET_OPTIONS} from '@harbor/ui';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 export const systemInfoEndpoint = "/api/systeminfo";
@@ -36,13 +37,13 @@ export class AppConfigService {
     configurations: AppConfig = new AppConfig();
 
     constructor(
-        private http: Http,
+        private http: HttpClient,
         private cookie: CookieService) { }
 
     public load(): Observable<AppConfig> {
         return this.http.get(systemInfoEndpoint, HTTP_GET_OPTIONS)
             .pipe(map(response => {
-                this.configurations = response.json() as AppConfig;
+                this.configurations = response as AppConfig;
 
                 // Read admiral endpoint from cookie if existing
                 let admiralUrlFromCookie: string = this.cookie.get(CookieKeyOfAdmiral);

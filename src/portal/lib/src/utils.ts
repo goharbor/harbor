@@ -1,9 +1,9 @@
 import { Observable } from "rxjs";
 
-import { RequestOptions, Headers } from '@angular/http';
+import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { RequestQueryParams } from './service/RequestQueryParams';
 import { DebugElement } from '@angular/core';
-import { Comparator, State } from './service/interface';
+import { Comparator, State, HttpOptionInterface, HttpOptionTextInterface } from './service/interface';
 
 /**
  * Convert the different async channels to the Promise<T> type.
@@ -41,35 +41,74 @@ export const DEFAULT_SUPPORTING_LANGS = ['en-us', 'zh-cn', 'es-es', 'fr-fr', 'pt
  */
 export const DEFAULT_LANG = 'en-us';
 
-export const HTTP_JSON_OPTIONS: RequestOptions = new RequestOptions({
-    headers: new Headers({
+
+export const HTTP_JSON_OPTIONS: HttpOptionInterface = {
+    headers: new HttpHeaders({
         "Content-Type": 'application/json',
         "Accept": 'application/json'
-    })
-});
+    }),
+    responseType: 'json'
+};
 
-export const HTTP_GET_OPTIONS: RequestOptions = new RequestOptions({
-    headers: new Headers({
+export const HTTP_GET_OPTIONS: HttpOptionInterface = {
+    headers: new HttpHeaders({
         "Content-Type": 'application/json',
         "Accept": 'application/json',
         "Cache-Control": 'no-cache',
         "Pragma": 'no-cache'
-    })
+    }),
+    responseType: 'json'
+};
+export const HTTP_GET_OPTIONS_OBSERVE_RESPONSE: HttpOptionInterface = {
+    headers: new HttpHeaders({
+        "Content-Type": 'application/json',
+        "Accept": 'application/json',
+        "Cache-Control": 'no-cache',
+        "Pragma": 'no-cache'
+    }),
+    observe: 'response' as 'body',
+    responseType: 'json'
+};
+export const HTTP_GET_OPTIONS_TEXT: HttpOptionTextInterface = {
+    headers: new HttpHeaders({
+        "Content-Type": 'application/json',
+        "Accept": 'application/json',
+        "Cache-Control": 'no-cache',
+        "Pragma": 'no-cache'
+    }),
+    responseType: 'text'
+};
+
+export const HTTP_FORM_OPTIONS: HttpOptionInterface = {
+    headers: new HttpHeaders({
+        "Content-Type": 'application/x-www-form-urlencoded'
+    }),
+    responseType: 'json'
+};
+
+export const HTTP_GET_HEADER: HttpHeaders = new HttpHeaders({
+    "Content-Type": 'application/json',
+    "Accept": 'application/json',
+    "Cache-Control": 'no-cache',
+    "Pragma": 'no-cache'
 });
-export const HTTP_GET_OPTIONS_CACHE: RequestOptions = new RequestOptions({
-    headers: new Headers({
+
+export const HTTP_GET_OPTIONS_CACHE: HttpOptionInterface = {
+    headers: new HttpHeaders({
         "Content-Type": 'application/json',
         "Accept": 'application/json',
         "Cache-Control": 'no-cache',
         "Pragma": 'no-cache',
-    })
-});
+    }),
+    responseType: 'json'
+};
 
-export const FILE_UPLOAD_OPTION: RequestOptions = new RequestOptions({
-    headers: new Headers({
+export const FILE_UPLOAD_OPTION: HttpOptionInterface = {
+    headers: new HttpHeaders({
         "Content-Type": 'multipart/form-data',
-    })
-});
+    }),
+    responseType: 'json'
+};
 
 /**
  * Build http request options
@@ -78,20 +117,36 @@ export const FILE_UPLOAD_OPTION: RequestOptions = new RequestOptions({
  *  ** deprecated param {RequestQueryParams} params
  * returns {RequestOptions}
  */
-export function buildHttpRequestOptions(params: RequestQueryParams): RequestOptions {
-    let reqOptions: RequestOptions = new RequestOptions({
-        headers: new Headers({
+export function buildHttpRequestOptions(params: RequestQueryParams): HttpOptionInterface {
+    let reqOptions: HttpOptionInterface = {
+        headers: new HttpHeaders({
             "Content-Type": 'application/json',
             "Accept": 'application/json',
             "Cache-Control": 'no-cache',
             "Pragma": 'no-cache'
-        })
-    });
-
+        }),
+        responseType: 'json',
+    };
     if (params) {
-        reqOptions.search = params;
+        reqOptions.params = params;
     }
 
+    return reqOptions;
+}
+export function buildHttpRequestOptionsWithObserveResponse(params: RequestQueryParams): HttpOptionInterface {
+    let reqOptions: HttpOptionInterface = {
+        headers: new HttpHeaders({
+            "Content-Type": 'application/json',
+            "Accept": 'application/json',
+            "Cache-Control": 'no-cache',
+            "Pragma": 'no-cache'
+        }),
+        responseType: 'json',
+        observe: 'response' as 'body'
+    };
+    if (params) {
+        reqOptions.params = params;
+    }
     return reqOptions;
 }
 
@@ -335,7 +390,7 @@ export function getChanges(original: any, afterChange: any): { [key: string]: an
                 }
 
                 // Trim string value
-                if (typeof field.value === 'string') {
+                if (typeof field.value === "string") {
                     changes[prop] = ('' + changes[prop]).trim();
                 }
             }

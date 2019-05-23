@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Http, URLSearchParams } from '@angular/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
@@ -21,7 +21,7 @@ import { Member } from '../project/member/member';
 
 import { SignInCredential } from './sign-in-credential';
 import { enLang } from '../shared/shared.const';
-import { HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from "./shared.utils";
+import { HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from "@harbor/ui";
 
 const signInUrl = '/c/login';
 const currentUserEndpoint = "/api/users/current";
@@ -51,11 +51,11 @@ export class SessionService {
         "Content-Type": 'application/x-www-form-urlencoded'
     });*/
 
-    constructor(private http: Http) { }
+    constructor(private http: HttpClient) { }
 
     // Handle the related exceptions
     handleError(error: any): Observable<any> {
-        return observableThrowError(error.message || error);
+        return observableThrowError(error.error || error);
     }
 
     // Clear session
@@ -70,10 +70,10 @@ export class SessionService {
         let queryParam: string = 'principal=' + encodeURIComponent(signInCredential.principal) +
             '&password=' + encodeURIComponent(signInCredential.password);
 
-        // Trigger Http
+        // Trigger HttpClient
         return this.http.post(signInUrl, queryParam, HTTP_FORM_OPTIONS)
             .pipe(map(() => null)
-            , catchError(error => this.handleError(error)));
+            , catchError(error => observableThrowError(error)));
     }
 
     /**
@@ -85,7 +85,7 @@ export class SessionService {
      */
     retrieveUser(): Observable<SessionUser> {
         return this.http.get(currentUserEndpoint, HTTP_GET_OPTIONS)
-            .pipe(map(response => this.currentUser = response.json() as SessionUser)
+            .pipe(map(response => this.currentUser = response as SessionUser)
             , catchError(error => this.handleError(error)));
     }
 
@@ -169,16 +169,13 @@ export class SessionService {
 
     checkUserExisting(target: string, value: string): Observable<boolean> {
         // Build the form package
-        const body = new URLSearchParams();
-        body.set('target', target);
-        body.set('value', value);
+        let body = new HttpParams();
+        body = body.set('target', target);
+        body = body.set('value', value);
 
-        // Trigger Http
+        // Trigger HttpClient
         return this.http.post(userExistsEndpoint, body.toString(), HTTP_FORM_OPTIONS)
-            .pipe(map(response => {
-                return response.json();
-            })
-            , catchError(error => this.handleError(error)));
+            .pipe(catchError(error => this.handleError(error)));
     }
 
     setProjectMembers(projectMembers: Member[]): void {

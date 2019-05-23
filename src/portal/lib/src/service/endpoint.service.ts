@@ -1,5 +1,5 @@
 import { Injectable, Inject } from "@angular/core";
-import { Http } from "@angular/http";
+import { HttpClient } from "@angular/common/http";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
 import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
@@ -140,7 +140,7 @@ export class EndpointDefaultService extends EndpointService {
 
   constructor(
     @Inject(SERVICE_CONFIG) config: IServiceConfig,
-    private http: Http
+    private http: HttpClient
   ) {
     super();
     this._endpointUrl = config.targetBaseEndpoint
@@ -156,12 +156,12 @@ export class EndpointDefaultService extends EndpointService {
       queryParams = new RequestQueryParams();
     }
     if (endpointName) {
-      queryParams.set("name", endpointName);
+      queryParams = queryParams.set("name", endpointName);
     }
     let requestUrl: string = `${this._endpointUrl}`;
     return this.http
       .get(requestUrl, buildHttpRequestOptions(queryParams))
-      .pipe(map(response => response.json())
+      .pipe(map(response => response as Endpoint[])
       , catchError(error => observableThrowError(error)));
   }
 
@@ -174,15 +174,14 @@ export class EndpointDefaultService extends EndpointService {
     let requestUrl: string = `${this._endpointUrl}/${endpointId}`;
     return this.http
       .get(requestUrl, HTTP_GET_OPTIONS)
-      .pipe(map(response => response.json() as Endpoint)
+      .pipe(map(response => response as Endpoint)
       , catchError(error => observableThrowError(error)));
   }
 
   public getAdapters(): Observable<any> {
     return this.http
     .get(`/api/replication/adapters`)
-    .pipe(map(response => response.json())
-    , catchError(error => observableThrowError(error)));
+    .pipe(catchError(error => observableThrowError(error)));
 }
 
   public createEndpoint(
@@ -193,9 +192,8 @@ export class EndpointDefaultService extends EndpointService {
     }
     let requestUrl: string = `${this._endpointUrl}`;
     return this.http
-      .post(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
-      .pipe(map(response => response.status)
-      , catchError(error => observableThrowError(error)));
+      .post<any>(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   public updateEndpoint(
@@ -210,9 +208,8 @@ export class EndpointDefaultService extends EndpointService {
     }
     let requestUrl: string = `${this._endpointUrl}/${endpointId}`;
     return this.http
-      .put(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
-      .pipe(map(response => response.status)
-      , catchError(error => observableThrowError(error)));
+      .put<any>(requestUrl, JSON.stringify(endpoint), HTTP_JSON_OPTIONS)
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   public deleteEndpoint(
@@ -223,9 +220,8 @@ export class EndpointDefaultService extends EndpointService {
     }
     let requestUrl: string = `${this._endpointUrl}/${endpointId}`;
     return this.http
-      .delete(requestUrl)
-      .pipe(map(response => response.status)
-      , catchError(error => observableThrowError(error)));
+      .delete<any>(requestUrl)
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   public pingEndpoint(
@@ -236,9 +232,8 @@ export class EndpointDefaultService extends EndpointService {
     }
     let requestUrl: string = `${this._endpointUrl}/ping`;
     return this.http
-      .post(requestUrl, endpoint, HTTP_JSON_OPTIONS)
-      .pipe(map(response => response.status)
-      , catchError(error => observableThrowError(error)));
+      .post<any>(requestUrl, endpoint, HTTP_JSON_OPTIONS)
+      .pipe(catchError(error => observableThrowError(error)));
   }
 
   public getEndpointWithReplicationRules(
@@ -250,7 +245,7 @@ export class EndpointDefaultService extends EndpointService {
     let requestUrl: string = `${this._endpointUrl}/${endpointId}/policies`;
     return this.http
       .get(requestUrl, HTTP_GET_OPTIONS)
-      .pipe(map(response => response.json() as ReplicationRule[])
+      .pipe(map(response => response as ReplicationRule[])
       , catchError(error => observableThrowError(error)));
   }
 }
