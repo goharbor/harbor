@@ -46,4 +46,4 @@ def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
     if uaa_config.get('ca_file'):
         rendering_variables['uaa_ca_file'] = uaa_config['ca_file']
 
-    render_jinja(docker_compose_template_path, docker_compose_yml_path, **rendering_variables)
+    render_jinja(docker_compose_template_path, docker_compose_yml_path, mode=0o644, **rendering_variables)
