@@ -63,3 +63,26 @@ Test Case - Delete A Project
     ${secret}=    Set Variable    ${json["oidc_user_meta"]["secret"]}
     Delete A Project Without Sign In Harbor   harbor_ip=${OIDC_HOSTNAME}  username=${OIDC_USERNAME}  password=${secret}
     Close Browser
+
+Test Case - Manage Project Member
+    Init Chrome Driver
+    Sign In Harbor With OIDC User  ${HARBOR_URL}
+    ${secret}=  Get Secrete By API  ${HARBOR_URL}
+    Manage Project Member Without Sign In Harbor  sign_in_user=${OIDC_USERNAME}  sign_in_pwd=${secret}  test_user1=test2  test_user2=test3  is_oidc_mode=${true}
+    Close Browser
+
+Test Case - Generate User CLI Secret
+    Init Chrome Driver
+    ${d}=    Get current Date  result_format=%m%s
+    ${image}=  Set Variable  hello-world
+    Sign In Harbor With OIDC User  ${HARBOR_URL}
+    Create An New Project  project${d}
+    ${secret_old}=  Get Secrete By API  ${HARBOR_URL}
+    Push image  ip=${ip}  user=${OIDC_USERNAME}  pwd=${secret_old}  project=project${d}  image=${image}
+    ${secret_new}=  Generate And Return Secret  ${HARBOR_URL}
+    Log To Console  ${secret_old}
+    Log To Console  ${secret_new}
+    Should Not Be Equal As Strings  '${secret_old}'  '${secret_new}'
+    Cannot Docker Login Harbor  ${ip}  ${OIDC_USERNAME}  ${secret_old}
+    Pull image  ${ip}  ${OIDC_USERNAME}  ${secret_new}  project${d}  ${image}
+    Push image  ${ip}  ${OIDC_USERNAME}  ${secret_new}  project${d}  ${image}

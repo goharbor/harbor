@@ -37,3 +37,23 @@ Sign In Harbor With OIDC User
     ${isVisible}=  Run Keyword And Return Status  Element Should Be Visible  ${oidc_username_input}
     Run Keyword If  '${isVisible}' == 'True'  Run Keywords  Retry Text Input    ${oidc_username_input}    ${username}  AND  Retry Element Click    ${save_btn}
     Retry Wait Element  ${head_username}
+
+Get Secrete By API
+    [Arguments]  ${url}  ${username}=${OIDC_USERNAME}
+    ${json}=  Run Curl And Return Json  curl -s -k -X GET --header 'Accept: application/json' -u '${HARBOR_ADMIN}:${HARBOR_PASSWORD}' '${url}/api/users/search?username=${username}'
+    ${user_info}=    Set Variable    ${json[0]}
+    ${user_id}=    Set Variable    ${user_info["user_id"]}
+    ${json}=  Run Curl And Return Json   curl -s -k -X GET --header 'Accept: application/json' -u '${HARBOR_ADMIN}:${HARBOR_PASSWORD}' '${url}/api/users/${user_id}'
+    ${secret}=    Set Variable    ${json["oidc_user_meta"]["secret"]}
+    [Return]  ${secret}
+
+Generate And Return Secret
+    [Arguments]  ${url}
+    Retry Element Click  ${head_admin_xpath}
+    Retry Element Click  ${user_profile_xpath}
+    Retry Element Click  ${more_btn}
+    Retry Element Click  ${generate_secret_btn}
+    Retry Double Keywords When Error  Retry Element Click  ${confirm_btn}  Retry Wait Until Page Not Contains Element  ${confirm_btn}
+    Retry Wait Until Page Contains  generate CLI secret success
+    ${secret}=  Get Secrete By API  ${url}
+    [Return]  ${secret}
