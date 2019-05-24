@@ -22,8 +22,6 @@ import (
 	"net/url"
 	"strings"
 
-	// "time"
-
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
 )
@@ -130,9 +128,18 @@ func (r *Registry) Catalog() ([]string, error) {
 	return repos, nil
 }
 
-// Ping ...
+// Ping checks by Head method
 func (r *Registry) Ping() error {
-	req, err := http.NewRequest(http.MethodHead, buildPingURL(r.Endpoint.String()), nil)
+	return r.ping(http.MethodHead)
+}
+
+// PingGet checks by Get method
+func (r *Registry) PingGet() error {
+	return r.ping(http.MethodGet)
+}
+
+func (r *Registry) ping(method string) error {
+	req, err := http.NewRequest(method, buildPingURL(r.Endpoint.String()), nil)
 	if err != nil {
 		return err
 	}

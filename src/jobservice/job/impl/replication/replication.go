@@ -34,6 +34,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/native"
 	// register the Huawei adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/huawei"
+	// register the AwsEcr adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/awsecr"
 )
 
 // Replication implements the job interface
