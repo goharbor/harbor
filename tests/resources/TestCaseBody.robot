@@ -123,7 +123,7 @@ Delete A Project Without Sign In Harbor
     Project Should Be Deleted  project${d}
 
 Manage Project Member Without Sign In Harbor
-    [Arguments]  ${sign_in_user}=user004  ${sign_in_pwd}=Test1@34  ${test_user1}=user005  ${test_user2}=user006  ${is_oidc_mode}=${false}
+    [Arguments]  ${sign_in_user}  ${sign_in_pwd}  ${test_user1}=user005  ${test_user2}=user006  ${is_oidc_mode}=${false}
     ${d}=    Get current Date  result_format=%m%s
     Create An New Project  project${d}
     Push image  ip=${ip}  user=${sign_in_user}  pwd=${sign_in_pwd}  project=project${d}  image=hello-world
