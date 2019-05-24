@@ -50,15 +50,19 @@ Push Image With Tag
     Wait Unitl Command Success  docker push ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker logout ${ip}
 
+Cannot Docker Login Harbor
+    [Arguments]  ${ip}  ${user}  ${pwd}
+    Command Should be Failed  docker login -u ${user} -p ${pwd} ${ip}
+
 Cannot Pull image
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
-    Wait Unitl Command Success  docker pull ${ip}/${project}/${image}  positive=${false}
+    Command Should be Failed  docker pull ${ip}/${project}/${image}
 
 Cannot Pull Unsigned Image
-    [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}  
+    [Arguments]  ${ip}  ${user}  ${pass}  ${proj}  ${imagewithtag}
     Wait Unitl Command Success  docker login -u ${user} -p ${pass} ${ip}
-    ${output}=  Wait Unitl Command Success  docker pull ${ip}/${proj}/${imagewithtag}  positive=${false}
+    ${output}=  Command Should be Failed  docker pull ${ip}/${proj}/${imagewithtag}
     Should Contain  ${output}  The image is not signed in Notary
 
 Cannot Push image
@@ -67,7 +71,7 @@ Cannot Push image
     Wait Unitl Command Success  docker pull ${image}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     Wait Unitl Command Success  docker tag ${image} ${ip}/${project}/${image}
-    Wait Unitl Command Success  docker push ${ip}/${project}/${image}  positive=${false}
+    Command Should be Failed  docker push ${ip}/${project}/${image}
     Wait Unitl Command Success  docker logout ${ip}
 
 Wait Until Container Stops
@@ -118,7 +122,7 @@ Kill Local Docker Daemon
 Docker Login Fail
     [Arguments]  ${ip}  ${user}  ${pwd}
     Log To Console  \nRunning docker login ${ip} ...
-    ${output}=  Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}  positive=${false}
+    ${output}=  Command Should be Failed  docker login -u ${user} -p ${pwd} ${ip}
     Should Contain  ${output}  unauthorized: authentication required
     Should Not Contain  ${output}  500 Internal Server Error
 
