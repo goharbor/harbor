@@ -300,11 +300,12 @@ Test Case - User View Logs
     Do Log Advanced Search
     Close Browser
 
-
 Test Case - Manage Project Member
     Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  user004  Test1@34
-    Manage Project Member Without Sign In Harbor
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Manage Project Member Without Sign In Harbor  ${user}  ${pwd}
     Close Browser
 
 Test Case - Manage project publicity
