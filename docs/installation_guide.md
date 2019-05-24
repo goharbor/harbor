@@ -70,7 +70,7 @@ Offline installer:
 
 Configuration parameters are located in the file **harbor.yml**.
 
-There are two categories of parameters, **required parameters** and **optional parameters**.  
+There are two categories of parameters, **required parameters** and **optional parameters**.
 
 - **System level parameters**: These parameters are required to be set in the configuration file. They will take effect if a user updates them in ```harbor.yml``` and run the ```install.sh``` script to reinstall Harbor.
 
@@ -89,14 +89,14 @@ The parameters are described below - note that at the very least, you will need 
 
 
 - **database**: the configs related to local database
-  - **password**: The root password for the PostgreSQL database used for **db_auth**. _Change this password for any production use!_ 
+  - **password**: The root password for the PostgreSQL database used for **db_auth**. _Change this password for any production use!_
 
 - **jobservice**: jobservice related service
   - **max_job_workers**: The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host.
 - **log**: log related url
   - **level**: log level, options are debug, info, warning, error, fatal
-  - **rotate_count**: Log files are rotated **log_rotate_count** times before being removed. If count is 0, old versions are removed rather than rotated.
-  - **log_rotate_size**: Log files are rotated only if they grow bigger than **log_rotate_size** bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.
+  - **rotate_count**: Log files are rotated **rotate_count** times before being removed. If count is 0, old versions are removed rather than rotated.
+  - **rotate_size**: Log files are rotated only if they grow bigger than **rotate_size** bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.
   - **location**: he directory to store store log
 
 ##### optional parameters
@@ -188,7 +188,7 @@ _NOTE: For detailed information on storage backend of a registry, refer to [Regi
 
 #### Finishing installation and starting Harbor
 
-Once **harbor.yml** and storage backend (optional) are configured, install and start Harbor using the `install.sh` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.  
+Once **harbor.yml** and storage backend (optional) are configured, install and start Harbor using the `install.sh` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.
 
 ##### Default installation (without Notary/Clair)
 
@@ -249,7 +249,7 @@ For information on how to use Harbor, please refer to **[User Guide of Harbor](u
 
 #### Configuring Harbor with HTTPS access
 
-Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.  
+Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.
 
 ### Managing Harbor's lifecycle
 
@@ -283,7 +283,7 @@ Starting portal      ... done
 Starting redis       ... done
 Starting jobservice  ... done
 Starting proxy       ... done
-```  
+```
 
 To change Harbor's configuration, first stop existing Harbor instance and update `harbor.yml`. Then run `prepare` script to populate the configuration. Finally re-create and start Harbor's instance:
 
@@ -298,7 +298,7 @@ Removing Harbor's containers while keeping the image data and Harbor's database 
 
 ``` sh
 $ sudo docker-compose down -v
-```  
+```
 
 Removing Harbor's database and image data (for a clean re-installation):
 
@@ -332,8 +332,8 @@ By default, Harbor listens on port 80(HTTP) and 443(HTTPS, if configured) for bo
 
 ## Configuring Harbor using the external database
 
-Currently, only PostgreSQL database is supported by Harbor.  
-To user an external database, just uncomment the `external_database` section in `harbor.yml` and fill the necessary information. Four databases are needed to be create first by users for Harbor core, Clair, Notary server and Notary signer. And the tables will be generated automatically when Harbor starting up.  
+Currently, only PostgreSQL database is supported by Harbor.
+To user an external database, just uncomment the `external_database` section in `harbor.yml` and fill the necessary information. Four databases are needed to be create first by users for Harbor core, Clair, Notary server and Notary signer. And the tables will be generated automatically when Harbor starting up.
 
 ## Manage user settings
 
@@ -346,10 +346,10 @@ By default, Harbor limits the CPU usage of Clair container to 150000 and avoids 
 
 ## Troubleshooting
 
-1. When Harbor does not work properly, run the below commands to find out if all containers of Harbor are in **UP** status: 
+1. When Harbor does not work properly, run the below commands to find out if all containers of Harbor are in **UP** status:
 ```
     $ sudo docker-compose ps
-        Name                     Command               State                    Ports                   
+        Name                     Command               State                    Ports
   -----------------------------------------------------------------------------------------------------------------------------
   harbor-core         /harbor/start.sh                 Up
   harbor-db           /entrypoint.sh postgres          Up      5432/tcp
