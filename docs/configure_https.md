@@ -113,17 +113,24 @@ Notice that you may need to trust the certificate at OS level. Please refer to t
 
 **3) Configure Harbor**
 
-Edit the file ```harbor.cfg```, update the hostname and the protocol, and update the attributes ```ssl_cert``` and ```ssl_cert_key```:
+Edit the file `harbor.yml`, update the hostname and uncomment the https block, and update the attributes `certificate` and `private_key`:
 
-```
-  #set hostname
-  hostname = yourdomain.com:port
-  #set ui_url_protocol
-  ui_url_protocol = https
+```yaml
+#set hostname
+hostname: yourdomain.com
+
+http:
+  port: 80
+
+https:
+  # https port for harbor, default is 443
+  port: 443
+  # The path of cert and key files for nginx
+  certificate: /data/cert/yourdomain.com.crt
+  private_key: /data/cert/yourdomain.com.key
+
   ......
-  #The path of cert and key files for nginx, they are applied only the protocol is set to https 
-  ssl_cert = /data/cert/yourdomain.com.crt
-  ssl_cert_key = /data/cert/yourdomain.com.key
+
 ```
 
 Generate configuration files for Harbor:
