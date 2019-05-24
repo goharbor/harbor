@@ -35,6 +35,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/native"
 	// register the huawei adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/huawei"
+	// register the AwsEcr adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/awsecr"
 )
 
 var (

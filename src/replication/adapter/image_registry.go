@@ -253,3 +253,8 @@ func (d *DefaultImageRegistry) ListTag(repository string) ([]string, error) {
 	}
 	return client.ListTag()
 }
+
+// BlobExist ...
+func (d *DefaultImageRegistry) GetClient() *http.Client {
+	return d.client
+}
