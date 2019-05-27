@@ -46,3 +46,14 @@ Get Secrete By API
     ${json}=  Run Curl And Return Json   curl -s -k -X GET --header 'Accept: application/json' -u '${HARBOR_ADMIN}:${HARBOR_PASSWORD}' '${url}/api/users/${user_id}'
     ${secret}=    Set Variable    ${json["oidc_user_meta"]["secret"]}
     [Return]  ${secret}
+
+Generate And Return Secret
+    [Arguments]  ${url}
+    Retry Element Click  ${head_admin_xpath}
+    Retry Element Click  ${user_profile_xpath}
+    Retry Element Click  ${more_btn}
+    Retry Element Click  ${generate_secret_btn}
+    Retry Double Keywords When Error  Retry Element Click  ${confirm_btn}  Retry Wait Until Page Not Contains Element  ${confirm_btn}
+    Retry Wait Until Page Contains  generate CLI secret success
+    ${secret}=  Get Secrete By API  ${url}
+    [Return]  ${secret}
