@@ -17,7 +17,8 @@ import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, Chang
 import { ActivatedRoute, Router } from "@angular/router";
 import { Subscription, forkJoin, Observable } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
-import { operateChanges, OperateInfo, OperationService, OperationState } from "@harbor/ui";
+import { operateChanges, OperateInfo, OperationService, OperationState, UserPermissionService, USERSTATICPERMISSION, ErrorHandler
+  , errorHandler as errorHandFn } from "@harbor/ui";
 
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
@@ -32,9 +33,7 @@ import { AddGroupComponent } from './add-group/add-group.component';
 import { MemberService } from "./member.service";
 import { AddMemberComponent } from "./add-member/add-member.component";
 import { AppConfigService } from "../../app-config.service";
-import { UserPermissionService, USERSTATICPERMISSION, ErrorHandler } from "@harbor/ui";
 import { map, catchError } from "rxjs/operators";
-import { errorHandler as errorHandFn } from "../../shared/shared.utils";
 import { throwError as observableThrowError } from "rxjs";
 @Component({
   templateUrl: "member.component.html",

@@ -26,7 +26,7 @@ import { SessionService } from '../../shared/session.service';
 
 import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
-import { CommonRoutes } from '../../shared/shared.const';
+import { CommonRoutes } from '@harbor/ui';
 
 @Component({
     selector: 'harbor-shell',

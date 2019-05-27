@@ -39,7 +39,7 @@ import {User} from "../../../user/user";
 import {Project} from "../../project";
 
 import { Member } from '../member';
-import { errorHandler as errorHandFn } from "../../../shared/shared.utils";
+import { errorHandler as errorHandFn } from "@harbor/ui";
 
 import { MemberService } from '../member.service';
 import { HttpResponseBase } from '@angular/common/http';

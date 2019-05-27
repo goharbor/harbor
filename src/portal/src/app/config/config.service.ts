@@ -16,9 +16,8 @@ import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
-import { Configuration } from '@harbor/ui';
+import { Configuration, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from '@harbor/ui';
 
-import {HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS} from "@harbor/ui";
 
 const configEndpoint = "/api/configurations";
 const emailEndpoint = "/api/email/ping";

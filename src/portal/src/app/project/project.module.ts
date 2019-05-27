@@ -28,7 +28,7 @@ import { MemberComponent } from './member/member.component';
 import { AddMemberComponent } from './member/add-member/add-member.component';
 import { AddGroupComponent } from './member/add-group/add-group.component';
 
-import { ProjectService } from './project.service';
+// import { ProjectService } from '@harbor/ui';
 import { MemberService } from './member/member.service';
 import { RobotService } from './robot-account/robot-account.service';
 import { ProjectRoutingResolver } from './project-routing-resolver.service';
@@ -62,7 +62,7 @@ import { AddRobotComponent } from './robot-account/add-robot/add-robot.component
     AddRobotComponent
   ],
   exports: [ProjectComponent, ListProjectComponent],
-  providers: [ProjectRoutingResolver, ProjectService, MemberService, RobotService]
+  providers: [ProjectRoutingResolver, MemberService, RobotService]
 })
 export class ProjectModule {
 

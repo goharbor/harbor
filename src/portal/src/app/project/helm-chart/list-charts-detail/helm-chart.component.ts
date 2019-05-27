@@ -10,10 +10,9 @@ import {
 } from "@angular/core";
 import { NgForm } from '@angular/forms';
 import { TranslateService } from "@ngx-translate/core";
-import {
-  State, ErrorHandler, SystemInfo, SystemInfoService, DEFAULT_PAGE_SIZE, downloadFile
+import { State, ErrorHandler, SystemInfo, SystemInfoService, DEFAULT_PAGE_SIZE, downloadFile
   , OperationService, UserPermissionService, USERSTATICPERMISSION, OperateInfo, OperationState, operateChanges
-} from "@harbor/ui";
+  , errorHandler as errorHandFn } from "@harbor/ui";
 import { forkJoin, throwError as observableThrowError, Observable } from "rxjs";
 import { finalize, map, catchError } from "rxjs/operators";
 import { HelmChartItem } from "../helm-chart.interface.service";
@@ -28,7 +27,6 @@ import {
   ConfirmationTargets,
   ConfirmationState,
 } from "../../../shared/shared.const";
-import { errorHandler as errorHandFn } from "../../../shared/shared.utils";
 
 @Component({
   selector: "hbr-helm-chart",

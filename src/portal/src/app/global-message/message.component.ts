@@ -19,7 +19,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { Message } from './message';
 import { MessageService } from './message.service';
 
-import { dismissInterval, httpStatusCode, CommonRoutes } from '../shared/shared.const';
+import { dismissInterval, httpStatusCode, CommonRoutes } from '@harbor/ui';
 
 @Component({
   selector: 'global-message',

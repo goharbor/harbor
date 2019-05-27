@@ -16,8 +16,8 @@ import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, Chang
 import { Subscription, Observable, forkJoin } from "rxjs";
 
 import { TranslateService } from '@ngx-translate/core';
-
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
+import { operateChanges, OperateInfo, OperationService, OperationState, errorHandler as errorHandFn } from '@harbor/ui';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
@@ -27,10 +27,8 @@ import { NewUserModalComponent } from './new-user-modal.component';
 import { UserService } from './user.service';
 import { User } from './user';
 import { ChangePasswordComponent } from "./change-password/change-password.component";
-import { operateChanges, OperateInfo, OperationService, OperationState } from "@harbor/ui";
 import { map, catchError } from 'rxjs/operators';
 import { throwError as observableThrowError } from "rxjs";
-import { errorHandler as errorHandFn } from "../shared/shared.utils";
 
 /**
  * NOTES:

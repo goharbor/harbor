@@ -19,8 +19,8 @@ import {
   CanActivateChild
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
-import { ProjectService } from '../../project/project.service';
-import { CommonRoutes } from '../../shared/shared.const';
+import { ProjectService } from '@harbor/ui';
+import { CommonRoutes } from '@harbor/ui';
 import { Observable } from 'rxjs';
 
 @Injectable()

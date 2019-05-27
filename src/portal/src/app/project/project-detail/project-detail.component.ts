@@ -17,10 +17,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from '../project';
 
 import { SessionService } from '../../shared/session.service';
-import { ProjectService } from '../../project/project.service';
 
 import { AppConfigService } from "../../app-config.service";
-import { UserPermissionService, USERSTATICPERMISSION, ErrorHandler } from "@harbor/ui";
+import { UserPermissionService, USERSTATICPERMISSION, ErrorHandler, ProjectService } from "@harbor/ui";
 import { forkJoin } from "rxjs";
 @Component({
   selector: 'project-detail',
