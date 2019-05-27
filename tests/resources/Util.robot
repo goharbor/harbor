@@ -131,9 +131,32 @@ Retry Wait Until Page Not Contains Element
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Wait Until Page Does Not Contain Element  @{param}
 
+Retry Select Object
+    [Arguments]    ${obj_name}
+    @{param}    Create List    ${obj_name}
+    Retry Action Keyword    Select Object    @{param}
+
+Retry Textfield Value Should Be
+    [Arguments]    ${element}    ${text}
+    @{param}    Create List    ${element}    ${text}
+    Retry Action Keyword    Wait And Textfield Value Should Be    @{param}
+
+Retry List Selection Should Be
+    [Arguments]    ${element}    ${text}
+    @{param}    Create List    ${element}    ${text}
+    Retry Action Keyword    Wait And List Selection Should Be    @{param}
 Link Click
     [Arguments]  ${element_xpath}
     Click Link  ${element_xpath}
+Wait And List Selection Should Be
+    [Arguments]    ${element}    ${text}
+    Wait Until Element Is Visible And Enabled    ${element}
+    List Selection Should Be    ${element}    ${text}
+
+Wait And Textfield Value Should Be
+    [Arguments]    ${element}    ${text}
+    Wait Until Element Is Visible And Enabled    ${element}
+    Textfield Value Should Be    ${element}    ${text}
 
 Element Click
     [Arguments]  ${element_xpath}
@@ -149,6 +172,12 @@ Text Input
     [Arguments]  ${element_xpath}  ${text}
     Wait Until Element Is Visible And Enabled  ${element_xpath}
     Input Text  ${element_xpath}  ${text}
+
+Clear Field Of Characters
+    [Arguments]    ${field}    ${character count}
+    [Documentation]    This keyword pushes the delete key (ascii: \8) a specified number of times in a specified field.
+    : FOR    ${index}    IN RANGE    ${character count}
+    \    Press Key    ${field}    \\8
 
 Wait Unitl Vul Data Ready
     [Arguments]  ${url}  ${timeout}  ${interval}
