@@ -28,11 +28,11 @@ golang*               | 1.7.3 +
 
 ### Configuration
 
-Edit the file **make/harbor.cfg** and make necessary configuration changes such as hostname, admin password and mail server. Refer to **[Installation and Configuration Guide](installation_guide.md#configuring-harbor)** for more info.
+Edit the file **make/harbor.yml** and make necessary configuration changes such as hostname, admin password and mail server. Refer to **[Installation and Configuration Guide](installation_guide.md#configuring-harbor)** for more info.
 
    ```sh
       $ cd harbor
-      $ vi make/harbor.cfg
+      $ vi make/harbor.yml
    ```
 
 ### Compiling and Running
