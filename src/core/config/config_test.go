@@ -263,3 +263,13 @@ func TestOIDCSetting(t *testing.T) {
 	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)
 	assert.ElementsMatch(t, []string{"openid", "profile"}, v.Scope)
 }
+
+func TestGetIpWhiteList(t *testing.T) {
+	m := map[string]interface{}{
+		common.IPWhite: "127.0.0.1",
+	}
+	InitWithSettings(m)
+	v, e := GetIPWhiteList()
+	assert.Nil(t, e)
+	assert.Equal(t, []string{"127.0.0.1/32"}, v)
+}

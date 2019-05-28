@@ -17,7 +17,9 @@ package filter
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/security/ipwhite"
 	"github.com/goharbor/harbor/src/common/utils/oidc"
+	"net"
 	"net/http"
 	"regexp"
 
@@ -120,6 +122,7 @@ func Init() {
 		&robotAuthReqCtxModifier{},
 		&basicAuthReqCtxModifier{},
 		&sessionReqCtxModifier{},
+		&ipWhiteReqCtxModifier{},
 		&unauthorizedReqCtxModifier{}}
 }
 
@@ -550,6 +553,43 @@ func (t *tokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	securCtx := admr.NewSecurityContext(authContext, pm)
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 
+	return true
+}
+
+// Support IP white do pull/push
+type ipWhiteReqCtxModifier struct{}
+
+func (u *ipWhiteReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
+	// check path only /service/token to use ip white
+	log.Debugf("request URL:%s", ctx.Input.URL())
+	if ctx.Input.URL() != "/service/token" {
+		return false
+	}
+	ips, err := config.GetIPWhiteList()
+	if err != nil {
+		log.Errorf("failed to get ip white list error: %v", err)
+	}
+	if len(ips) == 0 {
+		return false
+	}
+	userIP := net.ParseIP(ctx.Input.IP())
+	log.Debugf("UserIP:%s", ctx.Input.IP())
+	isInWhiteList := false
+	for _, ip := range ips {
+		_, ipNet, _ := net.ParseCIDR(ip)
+		if ipNet.Contains(userIP) {
+			isInWhiteList = true
+			break
+		}
+	}
+	if !isInWhiteList {
+		log.Debug("not match ip white")
+		return false
+	}
+	var securCtx security.Context
+	securCtx = &ipwhite.SecurityContext{UserIP: ctx.Input.IP()}
+	pm := config.GlobalProjectMgr
+	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 	return true
 }
 

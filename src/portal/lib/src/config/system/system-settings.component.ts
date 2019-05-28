@@ -85,7 +85,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
         let changes = {};
         for (let prop in allChanges) {
             if (prop === 'token_expiration' || prop === 'read_only' || prop === 'project_creation_restriction'
-            || prop === 'robot_token_duration') {
+            || prop === 'robot_token_duration'  || prop === 'ip_white') {
                 changes[prop] = allChanges[prop];
             }
         }

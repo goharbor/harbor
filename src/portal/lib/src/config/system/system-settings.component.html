@@ -53,11 +53,27 @@
                 <span class="tooltip-content">{{'CONFIG.TOOLTIP.ROOT_CERT_DOWNLOAD' | translate}}</span>
             </a>
         </div>
+        <div class="form-group">
+            <label for="ipWhite">{{'CONFIG.IP_WHITE' | translate}}</label>
+            <label for="ipWhite" aria-haspopup="true" role="tooltip"
+                   class="tooltip tooltip-validation tooltip-md tooltip-top-right"
+                   [class.invalid]="ipWhiteInput.invalid && (ipWhiteInput.dirty || ipWhiteInput.touched)">
+                <input name="ipWhite" type="text" #ipWhiteInput="ngModel" [(ngModel)]="systemSettings.ip_white.value"
+                       id="ipWhite" size="20" [disabled]="!editable">
+                <span class="tooltip-content">
+                    {{'TOOLTIP.IP_WHITE' | translate}}
+                </span>
+            </label>
+            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
+                <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                <span class="tooltip-content">{{'CONFIG.TOOLTIP.IP_WHITE' | translate}}</span>
+            </a>
+        </div>
         <div *ngIf="!withAdmiral" class="form-group">
             <label for="repoReadOnly">{{'CONFIG.REPO_READ_ONLY' | translate}}</label>
             <clr-checkbox-wrapper>
                 <input type="checkbox" clrCheckbox name="repoReadOnly" id="repoReadOnly" [ngModel]="systemSettings.read_only.value"
-                    (ngModelChange)="setRepoReadOnlyValue($event)" />
+                       (ngModelChange)="setRepoReadOnlyValue($event)" />
                 <label>
                     <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right read-tooltip">
                         <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>

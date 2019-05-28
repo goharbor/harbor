@@ -510,3 +510,23 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 		Scope:        scope,
 	}, nil
 }
+
+// GetIPWhiteList ...
+func GetIPWhiteList() ([]string, error) {
+	if err := cfgMgr.Load(); err != nil {
+		return nil, err
+	}
+	ipWhiteStr := cfgMgr.Get(common.IPWhite).GetString()
+	if ipWhiteStr == "" {
+		return nil, nil
+	}
+	ips := []string{}
+	for _, s := range strings.Split(ipWhiteStr, ",") {
+		if !strings.Contains(s, "/") {
+			s = s + "/32"
+		}
+		ips = append(ips, s)
+	}
+	return ips, nil
+
+}

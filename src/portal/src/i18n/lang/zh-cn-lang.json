@@ -699,6 +699,7 @@
         "SSL_TOOLTIP": "启用SSL到邮件服务器连接。",
         "VERIFY_REMOTE_CERT": "验证远程证书",
         "TOKEN_EXPIRATION": "令牌过期时间（分钟）",
+        "IP_WHITE": "IP白名单",
         "AUTH_MODE": "认证模式",
         "PRO_CREATION_RESTRICTION": "项目创建",
         "SELF_REGISTRATION": "允许自注册",
@@ -725,7 +726,7 @@
             "LDAP_UID": "在搜索中用来匹配用户的属性，可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服务器支持的属性。",
             "LDAP_SCOPE": "搜索用户的范围。",
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
-            "ROBOT_TOKEN_EXPIRATION": "机器人账户的令牌的过期时间（天），默认为30天,显示的结果为分钟转化的天数并向下取整。",            
+            "ROBOT_TOKEN_EXPIRATION": "机器人账户的令牌的过期时间（天），默认为30天,显示的结果为分钟转化的天数并向下取整。",
             "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
             "ROOT_CERT_DOWNLOAD": "下载镜像库根证书.",
             "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。",
@@ -734,7 +735,8 @@
             "REPO_TOOLTIP": "用户在此模式下无法对图像执行任何操作。",
             "HOURLY_CRON":"每小时运行一次。相当于 0 0 * * * *",
             "WEEKLY_CRON":"每周一次，周六/周日午夜之间开始。相当于 0 0 * * * *",
-            "DAILY_CRON":"每天午夜运行一次。相当于 0 0 * * * *"
+            "DAILY_CRON":"每天午夜运行一次。相当于 0 0 * * * *",
+            "IP_WHITE": "在这白名单内的ip访问,无需验证即可pull/push。多ip用,分割。支持CIDR。比如:127.0.0.1,192.168.1.1/24"
         },
         "LDAP": {
             "URL": "LDAP URL",

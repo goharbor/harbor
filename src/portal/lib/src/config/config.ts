@@ -53,6 +53,7 @@ export class ComplexValueItem {
 
 export class Configuration {
     [key: string]: any | any[]
+
     auth_mode: StringValueItem;
     project_creation_restriction: StringValueItem;
     self_registration: BoolValueItem;
@@ -85,6 +86,7 @@ export class Configuration {
     verify_remote_cert: BoolValueItem;
     robot_token_duration: NumberValueItem;
     token_expiration: NumberValueItem;
+    ip_white: StringValueItem;
     scan_all_policy: ComplexValueItem;
     read_only: BoolValueItem;
     http_authproxy_endpoint?: StringValueItem;
@@ -97,6 +99,7 @@ export class Configuration {
     oidc_client_secret?: StringValueItem;
     oidc_verify_cert?: BoolValueItem;
     oidc_scope?: StringValueItem;
+
     public constructor() {
         this.auth_mode = new StringValueItem("db_auth", true);
         this.project_creation_restriction = new StringValueItem("everyone", true);
@@ -128,6 +131,7 @@ export class Configuration {
         this.email_password = new StringValueItem("", true);
         this.email_insecure = new BoolValueItem(false, true);
         this.token_expiration = new NumberValueItem(30, true);
+        this.ip_white = new StringValueItem("", true);
         this.robot_token_duration = new NumberValueItem(30 * (60 * 24), true);
         this.cfg_expiration = new NumberValueItem(30, true);
         this.verify_remote_cert = new BoolValueItem(false, true);

@@ -107,6 +107,7 @@ const (
 	OIDCClientSecret                 = "oidc_client_secret"
 	OIDCVerifyCert                   = "oidc_verify_cert"
 	OIDCScope                        = "oidc_scope"
+	IPWhite                          = "ip_white"
 
 	DefaultClairEndpoint              = "http://clair:6060"
 	CfgDriverDB                       = "db"

@@ -694,6 +694,7 @@
         "SSL_TOOLTIP": "Habilitar SSL para conexão ao servidor de Email",
         "VERIFY_REMOTE_CERT": "Verificar Certificado remoto",
         "TOKEN_EXPIRATION": "Expiração do Token (Minutos)",
+        "IP_WHITE": "O acesso ip nesta whitelist pode ser puxado / empurrado sem autenticação. Use mais ip, split. Suporte para o CIDR. Por exemplo: 127.0.0.1, 192.168.1.1/24",
         "AUTH_MODE": "Modo de autenticação",
         "PRO_CREATION_RESTRICTION": "Criação de Projeto",
         "SELF_REGISTRATION": "Permitir auto registro.",
@@ -728,7 +729,8 @@
             "REPO_TOOLTIP": "Usuários não podem efetuar qualquer operação nas imagens nesse modo.",
             "HOURLY_CRON":"Run once an hour, beginning of hour. Equivalente a 0 0 * * * *.",
             "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun. Equivalente a 0 0 0 * * 0.",
-            "DAILY_CRON":"Run once a day, midnight. Equivalente a 0 0 0 * * *."
+            "DAILY_CRON":"Run once a day, midnight. Equivalente a 0 0 0 * * *.",
+            "IP_WHITE": "在这白名单内的ip访问,无需验证即可pull/push。多ip用,分割。支持CIDR。比如:127.0.0.1,192.168.1.1/24"
         },
         "LDAP": {
             "URL": "URL LDAP",

@@ -24,6 +24,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -420,6 +421,36 @@ func TestUnauthorizedReqCtxModifier(t *testing.T) {
 	s := sc.(security.Context)
 	assert.False(t, s.IsAuthenticated())
 	assert.NotNil(t, projectManager(ctx))
+}
+
+func TestIpWhiteReqCtxModifier(t *testing.T) {
+	req, err := http.NewRequest(http.MethodGet,
+		"http://127.0.0.1/service/token", nil)
+	if err != nil {
+		t.Fatalf("failed to create request: %v", req)
+	}
+
+	ctx, err := newContext(req)
+	if err != nil {
+		t.Fatalf("failed to crate context: %v", err)
+	}
+	clientIP := "127.0.0.1"
+	ctx.Request.RemoteAddr = clientIP
+	conf := map[string]interface{}{
+		common.IPWhite: clientIP,
+	}
+	config.InitWithSettings(conf)
+
+	modifier := &ipWhiteReqCtxModifier{}
+	modified := modifier.Modify(ctx)
+	assert.True(t, modified)
+
+	sc := securityContext(ctx)
+	assert.NotNil(t, sc)
+	s := sc.(security.Context)
+	assert.True(t, s.IsAuthenticated())
+	assert.Equal(t, s.GetUsername(), "robot-"+strings.Replace(clientIP, ".", "-", -1))
+
 }
 
 func newContext(req *http.Request) (*beegoctx.Context, error) {

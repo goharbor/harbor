@@ -680,6 +680,7 @@
         "SSL_TOOLTIP": "Activer SSL la connexion au serveur mail",
         "VERIFY_REMOTE_CERT": "Vérifier le Certificat Distant",
         "TOKEN_EXPIRATION": "Expiration du Jeton (Minutes)",
+        "IP_WHITE": "Liste blanche IP",
         "AUTH_MODE": "Mode d'Identification",
         "PRO_CREATION_RESTRICTION": "Création du Projet",
         "SELF_REGISTRATION": "Autoriser l'Auto-Inscription",
@@ -714,7 +715,8 @@
             "GC_POLICY": "",
             "HOURLY_CRON":"Run once an hour, beginning of hour. Équivalent à 0 0 * * * *.",
             "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun. Équivalent à 0 0 0 * * 0.",
-            "DAILY_CRON":"Run once a day, midnight. Équivalent à 0 0 0 * * *."
+            "DAILY_CRON":"Run once a day, midnight. Équivalent à 0 0 0 * * *.",
+            "IP_WHITE": "L'accès IP dans cette liste blanche peut être tiré / poussé sans authentification. Utilisez plus d'ip, divisé. Prise en charge de CIDR. Par exemple: 127.0.0.1, 192.168.1.1/24"
         },
         "LDAP": {
             "URL": "URL LDAP",

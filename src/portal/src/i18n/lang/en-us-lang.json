@@ -699,6 +699,7 @@
         "SSL_TOOLTIP": "Enable SSL for email server connection",
         "VERIFY_REMOTE_CERT": "Verify Remote Cert",
         "TOKEN_EXPIRATION": "Token Expiration (Minutes)",
+        "IP_WHITE": "IP White",
         "AUTH_MODE": "Auth Mode",
         "PRO_CREATION_RESTRICTION": "Project Creation",
         "SELF_REGISTRATION": "Allow Self-Registration",
@@ -734,7 +735,8 @@
             "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
             "HOURLY_CRON":"Run once an hour, beginning of hour. Equivalent to 0 0 * * * *.",
             "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun. Equivalent to 0 0 0 * * 0.",
-            "DAILY_CRON":"Run once a day, midnight. Equivalent to 0 0 0 * * *."
+            "DAILY_CRON":"Run once a day, midnight. Equivalent to 0 0 0 * * *.",
+            "IP_WHITE": "The ip access in this whitelist can be pulled/push without authentication. Use more ip, split. Support for CIDR. For example: 127.0.0.1, 192.168.1.1/24"
         },
         "LDAP": {
             "URL": "LDAP URL",
