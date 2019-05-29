@@ -16,6 +16,7 @@ package filter
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/common/security/ipwhite"
 	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"github.com/stretchr/testify/require"
 	"log"
@@ -449,7 +450,7 @@ func TestIpWhiteReqCtxModifier(t *testing.T) {
 	assert.NotNil(t, sc)
 	s := sc.(security.Context)
 	assert.True(t, s.IsAuthenticated())
-	assert.Equal(t, s.GetUsername(), "robot-"+strings.Replace(clientIP, ".", "-", -1))
+	assert.Equal(t, s.GetUsername(), ipwhite.UsernamePrefix+strings.Replace(clientIP, ".", "-", -1))
 
 }
 

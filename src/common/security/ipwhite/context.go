@@ -20,6 +20,9 @@ import (
 	"strings"
 )
 
+// UsernamePrefix ...
+const UsernamePrefix = "ip-"
+
 // SecurityContext implements security.Context interface based on IP White
 type SecurityContext struct {
 	UserIP string
@@ -36,8 +39,7 @@ func (s *SecurityContext) GetUsername() string {
 	if !s.IsAuthenticated() {
 		return ""
 	}
-	// todo to config
-	return "robot-" + strings.Replace(s.UserIP, ".", "-", -1)
+	return UsernamePrefix + strings.Replace(s.UserIP, ".", "-", -1)
 }
 
 // IsSysAdmin returns whether the authenticated user is system admin
@@ -53,7 +55,7 @@ func (s *SecurityContext) IsSolutionUser() bool {
 
 // Can returns whether the user can do action on resource
 func (s *SecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
-	if action == "pull" || action == "push" {
+	if action == rbac.ActionPull || action == rbac.ActionPush {
 		return true
 	}
 	return false
