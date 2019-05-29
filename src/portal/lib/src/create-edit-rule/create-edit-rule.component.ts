@@ -95,6 +95,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       });
       this.supportedTriggers = adapter.supported_triggers;
       this.ruleForm.get("trigger").get("type").setValue(this.supportedTriggers[0]);
+      this.clearSelectDefaultValueInSafari('dest_registry');
     }, (error: any) => {
       this.inlineAlert.showInlineError(error);
     });
@@ -142,6 +143,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   pullModeChange(): void {
+    this.clearSelectDefaultValueInSafari('src_registry');
     let selectId = this.ruleForm.get('src_registry').value;
     if (selectId) {
       this.setFilter([]);
@@ -388,6 +390,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       registryObs.pipe(finalize(() => (this.onGoing = false)))
       .subscribe(adapter => {
         this.setFilterAndTrigger(adapter);
+        this.clearSelectDefaultValueInSafari('dest_registry');
         this.copyUpdateForm = clone(this.ruleForm.value);
       }, (error: any) => {
         this.inlineAlert.showInlineError(error);
@@ -396,7 +399,29 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       this.copyUpdateForm = clone(this.ruleForm.value);
     }
   }
+  clearSelectDefaultValueInSafari(registryName) {
+      // clear the default value to fix dest_registry / src_registry has no default value when it
+      // is selected by default when this.targetList.length>0 in safari;
 
+      switch (registryName) {
+        case 'dest_registry':
+        if (this.targetList.length) {
+          this.ruleForm.controls['dest_registry'].setValue(null);
+        }
+          break;
+          case 'src_registry':
+          if (this.sourceList.length) {
+            this.onGoing = true;
+            setTimeout(() => {
+              this.onGoing = false;
+              this.ruleForm.controls['src_registry'].setValue(null);
+            }, 500);
+          }
+          break;
+          default:
+          break;
+      }
+  }
   setFilterAndTrigger(adapter) {
     this.supportedFilters = adapter.supported_resource_filters;
     this.setFilter([]);

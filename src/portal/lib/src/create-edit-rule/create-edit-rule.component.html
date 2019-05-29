@@ -31,7 +31,7 @@
               </clr-tooltip-content>
             </clr-tooltip>
           </div>
-          <div class="radio-inline" [class.disabled]="policyId >= 0 || onGoing">          
+          <div class="radio-inline" [class.disabled]="policyId >= 0 || onGoing">
             <input type="radio" id="pull_base" name="replicationMode" [value]=false [disabled]="policyId >= 0 || onGoing" [(ngModel)]="isPushMode" (change)="pullModeChange()" [ngModelOptions]="{standalone: true}">
             <label for="pull_base">Pull-based</label>
             <clr-tooltip class="mode-tooltip">
