@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	FilterTypeDeleteRegex = "retention:filter:delete_regex"
+	TypeDeleteRegex = "retention:filter:delete_regex"
 )
 
 type deleteRegex struct {

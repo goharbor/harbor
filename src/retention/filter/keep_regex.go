@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	FilterTypeKeepRegex = "retention:filter:keep_regex"
+	TypeKeepRegex = "retention:filter:keep_regex"
 
 	MetaDataKeyMatch = "match"
 )

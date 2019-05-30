@@ -19,8 +19,8 @@ import (
 	"github.com/goharbor/harbor/src/common/retention"
 )
 
-// FilterTypeDeleteEverything tells the filter builder to construct a DeleteEverything filter for the associated metadata
-const FilterTypeDeleteEverything = "retention:filter:delete_everything"
+// TypeDeleteEverything tells the filter builder to construct a DeleteEverything filter for the associated metadata
+const TypeDeleteEverything = "retention:filter:delete_everything"
 
 type DeleteEverything struct{}
 

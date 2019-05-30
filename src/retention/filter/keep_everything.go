@@ -19,8 +19,8 @@ import (
 	"github.com/goharbor/harbor/src/common/retention"
 )
 
-// FilterTypeKeepEverything tells the filter builder to construct a KeepEverything filter for the associated metadata
-const FilterTypeKeepEverything = "retention:filter:keep_everything"
+// TypeKeepEverything tells the filter builder to construct a KeepEverything filter for the associated metadata
+const TypeKeepEverything = "retention:filter:keep_everything"
 
 type KeepEverything struct{}
 

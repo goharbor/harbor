@@ -23,7 +23,7 @@ import (
 )
 
 const (
-	FilterTypeDeleteOlderThan = "retention:filter:delete_older_than"
+	TypeDeleteOlderThan = "retention:filter:delete_older_than"
 )
 
 var daysAgo = -24 * time.Hour
