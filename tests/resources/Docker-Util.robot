@@ -41,7 +41,7 @@ Push image
     Wait Unitl Command Success  docker logout ${ip}
 
 Push Image With Tag
-#tag1 is tag of image on docker hub,default latest,use a version existing if you do not want to use latest    
+#tag1 is tag of image on docker hub,default latest,use a version existing if you do not want to use latest
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}  ${tag1}=latest
     Log To Console  \nRunning docker push ${image}...
     Wait Unitl Command Success  docker pull ${image}:${tag1}
