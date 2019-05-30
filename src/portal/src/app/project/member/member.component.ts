@@ -129,15 +129,16 @@ export class MemberComponent implements OnInit, OnDestroy {
     this.selectedRow = [];
     this.memberService
       .listMembers(projectId, username).pipe(
-        finalize(() => this.loading = false))
+        finalize(() => {
+          this.loading = false;
+          let hnd = setInterval(() => this.ref.markForCheck(), 100);
+          setTimeout(() => clearInterval(hnd), 1000);
+        }))
       .subscribe(
         response => {
           this.members = response;
-          let hnd = setInterval(() => this.ref.markForCheck(), 100);
-          setTimeout(() => clearInterval(hnd), 1000);
         },
         error => {
-          this.router.navigate(["/harbor", "projects"]);
           this.messageHandlerService.handleError(error);
         });
   }
