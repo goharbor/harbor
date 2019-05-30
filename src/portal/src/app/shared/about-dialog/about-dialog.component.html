@@ -11,7 +11,7 @@
             <div *ngIf="!customIntroduction">
                 <p class="p5">{{'ABOUT.COPYRIGHT' | translate}}</p>
                 <p class="p5">
-                    <a href="https://raw.githubusercontent.com/goharbor/harbor/master/LICENSE" target="_blank">{{'ABOUT.OPEN_SOURCE_LICENSE' | translate}}</a>
+                    <a href={{threeSourceLink}} target="_blank">{{'ABOUT.OPEN_SOURCE_LICENSE' | translate}}</a>
                 </p>
             </div>
             <div *ngIf="customIntroduction">

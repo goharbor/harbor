@@ -49,6 +49,12 @@ export class AboutDialogComponent implements OnInit {
         let appConfig = this.appConfigService.getConfig();
         return appConfig.harbor_version;
     }
+    public get threeSourceLink(): string {
+        const harborVersion = this.appConfigService.getConfig().harbor_version;
+        const index = harborVersion.lastIndexOf("-");
+        const  harborVersionAbbreviation  = harborVersion.substring(0, index);
+        return `https://raw.githubusercontent.com/goharbor/harbor/${harborVersionAbbreviation}/LICENSE`;
+    }
 
     public open(): void {
         this.opened = true;
