@@ -20,8 +20,8 @@ import (
 )
 
 const (
-	// FilterTypeKeepMostRecentN tells the filter builder to construct a keepMostRecentN filter for associated metadata
-	FilterTypeKeepMostRecentN = "retention:filter:keep_most_recent_n"
+	// TypeKeepMostRecentN tells the filter builder to construct a keepMostRecentN filter for associated metadata
+	TypeKeepMostRecentN = "retention:filter:keep_most_recent_n"
 
 	// MetaDataKeyN is the ke in the metadata map for the `n` value
 	MetaDataKeyN = "n"
