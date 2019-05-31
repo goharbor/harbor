@@ -4,21 +4,21 @@ import { flatMap, catchError } from "rxjs/operators";
 import { SessionService } from "./../shared/session.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
-import { operateChanges, OperateInfo, OperationService, OperationState } from "@harbor/ui";
+import { operateChanges, OperateInfo, OperationService, OperationState, errorHandler as errorHandFn } from "@harbor/ui";
 
 import {
   ConfirmationTargets,
   ConfirmationState,
   ConfirmationButtons
 } from "../shared/shared.const";
+
 import { ConfirmationMessage } from "../shared/confirmation-dialog/confirmation-message";
 import { ConfirmationDialogService } from "./../shared/confirmation-dialog/confirmation-dialog.service";
 import { AddGroupModalComponent } from "./add-group-modal/add-group-modal.component";
 import { UserGroup } from "./group";
 import { GroupService } from "./group.service";
 import { MessageHandlerService } from "../shared/message-handler/message-handler.service";
-import { errorHandler as errorHandFn } from "../shared/shared.utils";
-import { Observable, throwError as observableThrowError } from "rxjs";
+import { throwError as observableThrowError } from "rxjs";
 @Component({
   selector: "app-group",
   templateUrl: "./group.component.html",

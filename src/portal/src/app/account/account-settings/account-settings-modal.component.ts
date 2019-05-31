@@ -22,8 +22,7 @@ import { SessionService } from "../../shared/session.service";
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
-import { CommonRoutes } from "../../shared/shared.const";
-import { CopyInputComponent } from "@harbor/ui";
+import { CopyInputComponent, CommonRoutes } from "@harbor/ui";
 import { AccountSettingsModalService } from './account-settings-modal-service.service';
 import {  ConfirmationDialogComponent } from "../../shared/confirmation-dialog/confirmation-dialog.component";
 import {

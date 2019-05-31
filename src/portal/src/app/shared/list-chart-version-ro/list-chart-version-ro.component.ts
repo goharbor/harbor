@@ -4,7 +4,7 @@ import { Component, OnInit, Input } from '@angular/core';
 import { HelmChartSearchResultItem, HelmChartVersion, HelmChartMaintainer } from '../../project/helm-chart/helm-chart.interface.service';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-import { ProjectService } from '../../project/project.service';
+import { ProjectService } from '@harbor/ui';
 
 @Component({
   selector: 'list-chart-version-ro',

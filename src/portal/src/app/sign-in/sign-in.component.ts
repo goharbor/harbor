@@ -20,7 +20,7 @@ import { SessionService } from '../shared/session.service';
 import { SignInCredential } from '../shared/sign-in-credential';
 
 import { SignUpComponent } from '../account/sign-up/sign-up.component';
-import { CommonRoutes } from '../shared/shared.const';
+import { CommonRoutes } from '@harbor/ui';
 import { ForgotPasswordComponent } from '../account/password-setting/forgot-password/forgot-password.component';
 
 import { AppConfigService } from '../app-config.service';

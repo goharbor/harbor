@@ -11,14 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-export const supportedLangs = ['en-us', 'zh-cn', 'es-es', 'fr-fr'];
-export const enLang = "en-us";
-export const languageNames = {
-  "en-us": "English",
-  "zh-cn": "中文简体",
-  "es-es": "Español",
-  "fr-fr": "Français"
-};
+
 export const enum AlertType {
   DANGER, WARNING, INFO, SUCCESS
 }
@@ -91,21 +84,3 @@ export const LabelColor = [
   { 'color': '#F52F52', 'textColor': 'black' }, { 'color': '#FF5501', 'textColor': 'black' },
   { 'color': '#F57600', 'textColor': 'black' }, { 'color': '#FFDC0B', 'textColor': 'black' },
 ];
-
-export const RoleMapping = { 'projectAdmin': 'MEMBER.PROJECT_ADMIN', 'master': 'MEMBER.PROJECT_MASTER',
-'developer': 'MEMBER.DEVELOPER', 'guest': 'MEMBER.GUEST' };
-
-
-export enum Roles {
-  PROJECT_ADMIN = 1,
-  PROJECT_MASTER = 4,
-  DEVELOPER = 2,
-  GUEST = 3,
-  OTHER = 0,
-}
-
-export enum ResourceType {
-  REPOSITORY = 1,
-  CHART_VERSION = 2,
-  REPOSITORY_TAG = 3,
-}

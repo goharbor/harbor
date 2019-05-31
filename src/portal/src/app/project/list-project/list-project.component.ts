@@ -24,9 +24,10 @@ import { Router } from "@angular/router";
 
 import { Comparator, State } from "../../../../lib/src/service/interface";
 import {TranslateService} from "@ngx-translate/core";
-
 import { RoleInfo, ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
-import { CustomComparator, doFiltering, doSorting, calculatePage } from "../../shared/shared.utils";
+
+import { errorHandler as errorHandFn, calculatePage , operateChanges, OperateInfo, OperationService
+    , OperationState, CustomComparator, doFiltering, doSorting, ProjectService } from "@harbor/ui";
 
 import { SessionService } from "../../shared/session.service";
 import { StatisticHandler } from "../../shared/statictics/statistic-handler.service";
@@ -34,14 +35,11 @@ import { ConfirmationDialogService } from "../../shared/confirmation-dialog/conf
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
 import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
-import {AppConfigService} from "../../app-config.service";
-import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
+import { AppConfigService } from "../../app-config.service";
 
 import { Project } from "../project";
-import { ProjectService } from "../project.service";
 import { map, catchError } from "rxjs/operators";
 import { throwError as observableThrowError } from "rxjs";
-import { errorHandler as errorHandFn } from "../../shared/shared.utils";
 
 @Component({
     selector: "list-project",

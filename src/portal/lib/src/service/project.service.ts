@@ -1,7 +1,7 @@
 
 import {throwError as observableThrowError,  Observable } from "rxjs";
 import { Injectable, Inject } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams, HttpResponse } from "@angular/common/http";
 import { map ,  catchError } from "rxjs/operators";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
@@ -10,7 +10,7 @@ import { ProjectPolicy } from "../project-policy-config/project-policy-config.co
 import {
   HTTP_JSON_OPTIONS,
   HTTP_GET_OPTIONS,
-  buildHttpRequestOptions
+  buildHttpRequestOptionsWithObserveResponse
 } from "../utils";
 import { RequestQueryParams } from "./RequestQueryParams";
 
@@ -64,10 +64,15 @@ export abstract class ProjectService {
    */
   abstract listProjects(
     name: string,
-    isPublic: number,
+    isPublic?: number,
     page?: number,
     pageSize?: number
-  ): Observable<Project[]>;
+  ): Observable<HttpResponse<Project[]>>;
+  abstract createProject(name: string, metadata: any): Observable<any>;
+  abstract toggleProjectPublic(projectId: number, isPublic: string): Observable<any>;
+  abstract deleteProject(projectId: number): Observable<any>;
+  abstract checkProjectExists(projectName: string): Observable<any>;
+  abstract checkProjectMember(projectId: number): Observable<any>;
 }
 
 /**
@@ -100,32 +105,6 @@ export class ProjectDefaultService extends ProjectService {
       .pipe(catchError(error => observableThrowError(error)));
   }
 
-  public listProjects(
-    name: string,
-    isPublic: number,
-    page?: number,
-    pageSize?: number
-  ): Observable<Project[]> {
-    let baseUrl: string = this.config.projectBaseEndpoint
-      ? this.config.projectBaseEndpoint
-      : "/api/projects";
-    let params = new RequestQueryParams();
-    if (page && pageSize) {
-      params = params.set("page", page + "").set("page_size", pageSize + "");
-    }
-    if (name && name.trim() !== "") {
-      params = params.set("name", name);
-    }
-    if (isPublic !== undefined) {
-      params = params.set("public", "" + isPublic);
-    }
-
-    // let options = new RequestOptions({ headers: this.getHeaders, search: params });
-    return this.http
-      .get<Project[]>(baseUrl, buildHttpRequestOptions(params))
-      .pipe(catchError(error => observableThrowError(error)));
-  }
-
   public updateProjectPolicy(
     projectId: number | string,
     projectPolicy: ProjectPolicy
@@ -148,5 +127,54 @@ export class ProjectDefaultService extends ProjectService {
         HTTP_JSON_OPTIONS
       )
       .pipe(catchError(error => observableThrowError(error)));
+  }
+  public listProjects(name: string, isPublic?: number, page?: number, pageSize?: number): Observable<HttpResponse<Project[]>> {
+    let params = new HttpParams();
+    if (page && pageSize) {
+      params = params.set('page', page + '').set('page_size', pageSize + '');
+    }
+    if (name && name.trim() !== "") {
+      params = params.set('name', name);
+    }
+    if (isPublic !== undefined) {
+      params = params.set('public', '' + isPublic);
+    }
+    return this.http
+               .get<HttpResponse<Project[]>>(`/api/projects`, buildHttpRequestOptionsWithObserveResponse(params)).pipe(
+               catchError(error => observableThrowError(error)), );
+  }
+
+  public createProject(name: string, metadata: any): Observable<any> {
+    return this.http
+               .post(`/api/projects`,
+                JSON.stringify({'project_name': name, 'metadata': {
+                  public: metadata.public ? 'true' : 'false',
+                }})
+                , HTTP_JSON_OPTIONS).pipe(
+               catchError(error => observableThrowError(error)), );
+  }
+
+  public toggleProjectPublic(projectId: number, isPublic: string): Observable<any> {
+    return this.http
+               .put(`/api/projects/${projectId}`, { 'metadata': {'public': isPublic} }, HTTP_JSON_OPTIONS).pipe(
+               catchError(error => observableThrowError(error)), );
+  }
+
+  public deleteProject(projectId: number): Observable<any> {
+    return this.http
+               .delete(`/api/projects/${projectId}`)
+               .pipe(catchError(error => observableThrowError(error)));
+  }
+
+  public checkProjectExists(projectName: string): Observable<any> {
+    return this.http
+               .head(`/api/projects/?project_name=${projectName}`).pipe(
+               catchError(error => observableThrowError(error)), );
+  }
+
+  public checkProjectMember(projectId: number): Observable<any> {
+    return this.http
+               .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS).pipe(
+               catchError(error => observableThrowError(error)), );
   }
 }

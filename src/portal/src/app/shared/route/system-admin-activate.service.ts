@@ -20,7 +20,7 @@ import {
   NavigationExtras
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
-import { CommonRoutes } from '../../shared/shared.const';
+import { CommonRoutes } from '@harbor/ui';
 import { AppConfigService } from '../../app-config.service';
 import { Observable } from 'rxjs';
 

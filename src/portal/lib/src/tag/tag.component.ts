@@ -32,7 +32,7 @@ import { ChannelService } from "../channel/index";
 import {
   ConfirmationTargets,
   ConfirmationState,
-  ConfirmationButtons, Roles
+  ConfirmationButtons
 } from "../shared/shared.const";
 
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";

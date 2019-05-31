@@ -16,7 +16,7 @@ import { Injectable } from '@angular/core';
 import { Router, Resolve, RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/router';
 
 import { Project } from './project';
-import { ProjectService } from './project.service';
+import { ProjectService } from '@harbor/ui';
 import { SessionService } from '../shared/session.service';
 import { Observable } from 'rxjs';
 import { map, catchError } from "rxjs/operators";

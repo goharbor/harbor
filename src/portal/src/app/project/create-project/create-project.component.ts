@@ -30,7 +30,7 @@ import { MessageHandlerService } from "../../shared/message-handler/message-hand
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
 
 import { Project } from "../project";
-import { ProjectService } from "../project.service";
+import { ProjectService } from "@harbor/ui";
 import { errorHandler } from '@angular/platform-browser/src/browser';
 
 

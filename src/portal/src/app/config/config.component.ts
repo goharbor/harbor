@@ -15,8 +15,7 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from "rxjs";
 import {
     Configuration, StringValueItem, SystemSettingsComponent,
-    isEmpty, clone, getChanges, GcRepoService } from '@harbor/ui';
-
+    isEmpty, clone } from '@harbor/ui';
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { SessionService } from '../shared/session.service';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';

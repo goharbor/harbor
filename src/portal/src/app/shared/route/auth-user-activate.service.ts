@@ -20,7 +20,8 @@ import {
   NavigationExtras
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
-import { CommonRoutes, AdmiralQueryParamKey } from '../../shared/shared.const';
+import { AdmiralQueryParamKey } from '../../shared/shared.const';
+import { CommonRoutes } from '@harbor/ui';
 import { AppConfigService } from '../../app-config.service';
 import { maintainUrlQueryParmas } from '../../shared/shared.utils';
 import { MessageHandlerService } from '../message-handler/message-handler.service';
