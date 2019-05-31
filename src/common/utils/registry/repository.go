@@ -211,7 +211,7 @@ func (r *Repository) PushManifest(reference, mediaType string, payload []byte) (
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusCreated {
+	if resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK {
 		digest = resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
 		return
 	}
