@@ -359,7 +359,8 @@
         "ITEMS": "条记录",
         "FILTER_PLACEHOLDER": "过滤日志",
         "INVALID_DATE": "无效日期。",
-        "OF": "共计"
+        "OF": "共计",
+        "NOT_FOUND": "未发现任何日志!"
     },
     "REPLICATION": {
         "YES": "是",
@@ -725,7 +726,7 @@
             "LDAP_UID": "在搜索中用来匹配用户的属性，可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服务器支持的属性。",
             "LDAP_SCOPE": "搜索用户的范围。",
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
-            "ROBOT_TOKEN_EXPIRATION": "机器人账户的令牌的过期时间（天），默认为30天,显示的结果为分钟转化的天数并向下取整。",            
+            "ROBOT_TOKEN_EXPIRATION": "机器人账户的令牌的过期时间（天），默认为30天,显示的结果为分钟转化的天数并向下取整。",
             "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
             "ROOT_CERT_DOWNLOAD": "下载镜像库根证书.",
             "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。",

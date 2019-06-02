@@ -67,9 +67,9 @@ export class RecentLogComponent implements OnInit {
     }
 
     public doFilter(terms: string): void {
-        if (!terms) {
-            return;
-        }
+        // if (!terms) {
+        //     return;
+        // }
         this.currentTerm = terms.trim();
         // Trigger data loading and start from first page
         this.loading = true;
