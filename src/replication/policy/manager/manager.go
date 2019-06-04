@@ -258,7 +258,7 @@ func parseFilters(str string) ([]*model.Filter, error) {
 			case "tag":
 				filter.Type = model.FilterTypeTag
 			case "label":
-				// TODO if we support the label filter, remove the checking logic here
+				// drop all legend label filters
 				continue
 			default:
 				log.Warningf("unknown filter type: %s", filter.Type)

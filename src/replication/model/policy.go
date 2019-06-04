@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goharbor/harbor/src/replication/filter"
+
 	"github.com/astaxie/beego/validation"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/robfig/cron"
@@ -131,6 +133,29 @@ type FilterType string
 type Filter struct {
 	Type  FilterType  `json:"type"`
 	Value interface{} `json:"value"`
+}
+
+// DoFilter filter the filterables
+// The parameter "filterables" must be a pointer points to a slice
+// whose elements must be Filterable. After applying the filter
+// to the "filterables", the result is put back into the variable
+// "filterables"
+func (f *Filter) DoFilter(filterables interface{}) error {
+	var ft filter.Filter
+	switch f.Type {
+	case FilterTypeName:
+		ft = filter.NewRepositoryNameFilter(f.Value.(string))
+	case FilterTypeTag:
+		ft = filter.NewVTagNameFilter(f.Value.(string))
+	case FilterTypeLabel:
+		ft = filter.NewVTagLabelFilter(f.Value.(string))
+	case FilterTypeResource:
+		ft = filter.NewResourceTypeFilter(f.Value.(string))
+	default:
+		return fmt.Errorf("unsupported filter type: %s", f.Type)
+	}
+
+	return filter.DoFilter(filterables, ft)
 }
 
 // TriggerType represents the type of trigger.
