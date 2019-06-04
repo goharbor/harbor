@@ -1,5 +1,18 @@
 # Changelog
 
+# v1.8.0 (2019-05-21)
+[Full list of issues fixed in v1.8.0](https://github.com/goharbor/harbor/issues?q=is%3Aissue+is%3Aclosed+label%3Atarget%2F1.8.0)
+* Support for OpenID Connect - OpenID Connect (OIDC) is an authentication layer on top of OAuth 2.0, allowing Harbor to verify the identity of users based on the authentication performed by an external authorization server or identity provider.
+* Robot accounts - Robot accounts can be configured to provide administrators with a token that can be granted appropriate permissions for pulling or pushing images. Harbor users can continue operating Harbor using their enterprise SSO credentials, and use robot accounts for CI/CD systems that perform Docker client commands.
+* Replication advancements - Harbor new version replication allows you to replicate your Harbor repository to and from non-Harbor registries. Harbor 1.8 expands on the Harbor-to-Harbor replication feature, adding the ability to replicate resources between Harbor and Docker Hub, Docker Registry, and Huawei Registry. This is enabled through both push and pull mode replication.
+* Health check API, showing detailed status and health of all Harbor components.
+* Support for defining cron-based scheduled tasks in the Harbor UI. Administrators can now use cron strings to define the schedule of a job. Scan, garbage collection and replication jobs are all supported.
+API explorer integration. End users can now explore and trigger Harbor’s API via the swagger UI nested inside Harbor’s UI.
+* Introduce a new master role to project, the role's permissions are more than developer and less than project admin.
+* Introduce harbor.yml as the replacement of harbor.cfg and refactor the prepare script to provide more flexibility to the installation process based on docker-compose
+* Enhancement of the Job Service engine to include webhook events, additional APIs for automation, and numerous bug fixes to improve the stability of the service.
+* Docker Registry upgraded to v2.7.1.
+
 ## v1.7.5 (2019-04-02)
 * Bumped up Clair to v2.0.8
 * Fixed issues in supporting windows images. #6992 #6369
