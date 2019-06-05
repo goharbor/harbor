@@ -212,7 +212,8 @@ func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo
 		// as using digest as the reference, so set the override to true directly
 		return t.copyImage(srcRepo, digest, dstRepo, digest, true)
 	// copy layer or image config
-	case schema2.MediaTypeLayer, schema2.MediaTypeImageConfig:
+	case "application/octet-stream", schema1.MediaTypeManifestLayer,
+		schema2.MediaTypeLayer, schema2.MediaTypeImageConfig:
 		return t.copyBlob(srcRepo, dstRepo, digest)
 	// handle foreign layer
 	case schema2.MediaTypeForeignLayer:
@@ -288,6 +289,7 @@ func (t *transfer) handleManifest(manifest distribution.Manifest, repository, di
 	}
 	// manifest
 	if mediaType == schema1.MediaTypeManifest ||
+		mediaType == schema1.MediaTypeSignedManifest ||
 		mediaType == schema2.MediaTypeManifest {
 		return manifest, digest, nil
 	}
