@@ -268,7 +268,7 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 	chartName := cra.GetStringFromPath(nameParam)
 	version := cra.GetStringFromPath(versionParam)
 
-	// Try to remove labels from deleting chart if exitsing
+	// Try to remove labels from deleting chart if they exist
 	if err := cra.removeLabelsFromChart(chartName, version); err != nil {
 		cra.SendInternalServerError(err)
 		return
@@ -369,7 +369,7 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 }
 
 func (cra *ChartRepositoryAPI) removeLabelsFromChart(chartName, version string) error {
-	// Try to remove labels from deleting chart if exitsing
+	// Try to remove labels from deleting chart if they exist
 	resourceID := chartFullName(cra.namespace, chartName, version)
 	labels, err := cra.labelManager.GetLabelsOfResource(common.ResourceTypeChart, resourceID)
 	if err == nil && len(labels) > 0 {

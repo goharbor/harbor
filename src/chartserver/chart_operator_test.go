@@ -14,11 +14,11 @@ func TestGetChartDetails(t *testing.T) {
 	}
 
 	if len(chartDetails.Dependencies) == 0 {
-		t.Fatal("At least 1 dependency exitsing, but we got 0 now")
+		t.Fatal("At least 1 dependency exists, but we got 0 now")
 	}
 
 	if len(chartDetails.Values) == 0 {
-		t.Fatal("At least 1 value existing, but we got 0 now")
+		t.Fatal("At least 1 value exists, but we got 0 now")
 	}
 
 	if chartDetails.Values["adminserver.adminPassword"] != "Harbor12345" {

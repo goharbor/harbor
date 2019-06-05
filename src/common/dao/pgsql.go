@@ -48,7 +48,7 @@ func (p *pgsql) Name() string {
 
 // String ...
 func (p *pgsql) String() string {
-	return fmt.Sprintf("type-%s host-%s port-%s databse-%s sslmode-%q",
+	return fmt.Sprintf("type-%s host-%s port-%s database-%s sslmode-%q",
 		p.Name(), p.host, p.port, p.database, p.sslmode)
 }
 

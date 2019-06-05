@@ -302,7 +302,7 @@ func (d *driver) Create(pro *models.Project) (int64, error) {
 
 		match, e := regexp.MatchString(dupProjectPattern, httpErr.Message)
 		if e != nil {
-			log.Errorf("failed to match duplicate project mattern: %v", e)
+			log.Errorf("failed to match duplicate project pattern: %v", e)
 		}
 
 		if match {

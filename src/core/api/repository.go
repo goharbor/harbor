@@ -46,7 +46,7 @@ import (
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
-// RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
+// RepositoryAPI handles requests to /api/repositories /api/repositories/tags /api/repositories/manifests, the param has to be put
 // in the query string as the web framework can not parse the URL if it contains veriadic sectors.
 type RepositoryAPI struct {
 	BaseController
@@ -283,7 +283,7 @@ func (ra *RepositoryAPI) Delete() {
 			}
 			log.Debugf("Tag: %s, digest: %s", t, digest)
 			if _, ok := signedTags[digest]; ok {
-				log.Errorf("Found signed tag, repostory: %s, tag: %s, deletion will be canceled", repoName, t)
+				log.Errorf("Found signed tag, repository: %s, tag: %s, deletion will be cancelled", repoName, t)
 				ra.SendPreconditionFailedError(fmt.Errorf("tag %s is signed", t))
 				return
 			}
@@ -880,7 +880,7 @@ func getManifest(client *registry.Repository,
 	return result, nil
 }
 
-// GetTopRepos returns the most populor repositories
+// GetTopRepos returns the most popular repositories
 func (ra *RepositoryAPI) GetTopRepos() {
 	count, err := ra.GetInt("count", 10)
 	if err != nil || count <= 0 {
@@ -1117,7 +1117,7 @@ func (ra *RepositoryAPI) checkExistence(repository, tag string) (bool, string, e
 	return true, digest, nil
 }
 
-// will return nil when it failed to get data.  The parm "tag" is for logging only.
+// will return nil when it failed to get data.  The param "tag" is for logging only.
 func getScanOverview(digest string, tag string) *models.ImgScanOverview {
 	if len(digest) == 0 {
 		log.Debug("digest is nil")

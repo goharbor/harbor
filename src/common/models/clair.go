@@ -116,7 +116,7 @@ type ClairVulnerabilityStatus struct {
 	Details    []ClairNamespaceTimestamp `json:"details,omitempty"`
 }
 
-// ClairNamespaceTimestamp is a record to store the clairname space and the timestamp,
+// ClairNamespaceTimestamp is a record to store the clair namespace and the timestamp,
 // in practice different namespace in Clair maybe merged into one, e.g. ubuntu:14.04 and ubuntu:16.4 maybe merged into ubuntu and put into response.
 type ClairNamespaceTimestamp struct {
 	Namespace string `json:"namespace"`

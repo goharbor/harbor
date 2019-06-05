@@ -41,7 +41,7 @@ const (
 	userNameEmptyMsg = "User group name can not be empty!"
 )
 
-// Prepare validates the URL and parms
+// Prepare validates the URL and params
 func (uga *UserGroupAPI) Prepare() {
 	uga.BaseController.Prepare()
 	if !uga.SecurityCtx.IsAuthenticated() {

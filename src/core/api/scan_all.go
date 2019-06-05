@@ -16,7 +16,7 @@ type ScanAllAPI struct {
 	AJAPI
 }
 
-// Prepare validates the URL and parms, it needs the system admin permission.
+// Prepare validates the URL and params, it needs the system admin permission.
 func (sc *ScanAllAPI) Prepare() {
 	sc.BaseController.Prepare()
 	if !config.WithClair() {

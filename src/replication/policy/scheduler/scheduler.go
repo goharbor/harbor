@@ -102,7 +102,7 @@ func (s *scheduler) Unschedule(policyID int64) error {
 	}
 	for _, sj := range sjs {
 		if err = s.jobservice.PostAction(sj.JobID, job.JobActionStop); err != nil {
-			// if the job specified by jobID is not found in jobservice, just delete
+			// if the job specified by JobID is not found in jobservice, just delete
 			// the record from database
 			if e, ok := err.(*commonHttp.Error); !ok || e.Code != http.StatusNotFound {
 				return err

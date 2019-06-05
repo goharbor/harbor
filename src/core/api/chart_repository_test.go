@@ -33,7 +33,7 @@ func TestIsMultipartFormData(t *testing.T) {
 	}
 }
 
-// Test namespace cheking
+// Test namespace checking
 func TestRequireNamespace(t *testing.T) {
 	chartAPI := &ChartRepositoryAPI{}
 	chartAPI.ProjectMgr = &mockProjectManager{}
@@ -274,7 +274,7 @@ func (msc *mockSecurityContext) IsAuthenticated() bool {
 
 // GetUsername returns the username of user related to the context
 func (msc *mockSecurityContext) GetUsername() string {
-	return "amdin"
+	return "admin"
 }
 
 // IsSysAdmin returns whether the user is system admin

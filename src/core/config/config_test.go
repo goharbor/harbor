@@ -158,7 +158,7 @@ func TestConfig(t *testing.T) {
 		t.Errorf("Unexpected notary endpoint: %s", InternalNotaryEndpoint())
 	}
 	if WithNotary() {
-		t.Errorf("Withnotary should be false")
+		t.Errorf("WithNotary should be false")
 	}
 	if WithClair() {
 		t.Errorf("WithClair should be false")

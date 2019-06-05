@@ -19,7 +19,7 @@ type Interface interface {
 	// Declare how many times the job can be retried if failed.
 	//
 	// Return:
-	// uint: the failure count allowed. If it is set to 0, then default value 4 is used.
+	// unit: the failure count allowed. If it is set to 0, then default value 4 is used.
 	MaxFails() uint
 
 	// Tell the worker worker if retry the failed job when the fails is

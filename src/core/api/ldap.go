@@ -29,7 +29,7 @@ import (
 	goldap "gopkg.in/ldap.v2"
 )
 
-// LdapAPI handles requesst to /api/ldap/ping /api/ldap/user/search /api/ldap/user/import
+// LdapAPI handles requests to /api/ldap/ping /api/ldap/user/search /api/ldap/user/import
 type LdapAPI struct {
 	BaseController
 	ldapConfig *ldapUtils.Session

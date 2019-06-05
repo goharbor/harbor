@@ -155,7 +155,7 @@ func GetImgScanOverview(digest string) (*models.ImgScanOverview, error) {
 	return rec, nil
 }
 
-// UpdateImgScanOverview updates the serverity and components status of a record in img_scan_overview
+// UpdateImgScanOverview updates the severity and components status of a record in img_scan_overview
 func UpdateImgScanOverview(digest, detailsKey string, sev models.Severity, compOverview *models.ComponentsOverview) error {
 	o := GetOrmer()
 	rec, err := GetImgScanOverview(digest)

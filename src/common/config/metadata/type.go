@@ -65,7 +65,7 @@ func (t *AuthModeType) validate(str string) error {
 	if str == common.LDAPAuth || str == common.DBAuth || str == common.UAAAuth || str == common.HTTPAuth || str == common.OIDCAuth {
 		return nil
 	}
-	return fmt.Errorf("invalid %s, shoud be one of %s, %s, %s, %s, %s",
+	return fmt.Errorf("invalid %s, should be one of %s, %s, %s, %s, %s",
 		common.AUTHMode, common.DBAuth, common.LDAPAuth, common.UAAAuth, common.HTTPAuth, common.OIDCAuth)
 }
 

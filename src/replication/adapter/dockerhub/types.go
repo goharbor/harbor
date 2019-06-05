@@ -11,7 +11,7 @@ type TokenResp struct {
 	Token string `json:"token"`
 }
 
-// NamespacesResp is namespace list responsed from DockerHub.
+// NamespacesResp is namespace list response from DockerHub.
 type NamespacesResp struct {
 	// Namespaces is a list of namespaces
 	Namespaces []string `json:"namespaces"`

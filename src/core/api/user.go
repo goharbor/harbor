@@ -55,7 +55,7 @@ type secretResp struct {
 	Secret string `json:"secret"`
 }
 
-// Prepare validates the URL and parms
+// Prepare validates the URL and params
 func (ua *UserAPI) Prepare() {
 	ua.BaseController.Prepare()
 	mode, err := config.AuthMode()

@@ -18,7 +18,7 @@ import (
 	"time"
 )
 
-// AccessLog holds information about logs which are used to record the actions that user take to the resourses.
+// AccessLog holds information about logs which are used to record the actions that user take to the resources.
 type AccessLog struct {
 	LogID     int       `orm:"pk;auto;column(log_id)" json:"log_id"`
 	Username  string    `orm:"column(username)"  json:"username"`
@@ -39,6 +39,6 @@ type LogQueryParam struct {
 	Tag        string      // tag name
 	Operations []string    // operations
 	BeginTime  *time.Time  // the time after which the operation is done
-	EndTime    *time.Time  // the time before which the operation is doen
+	EndTime    *time.Time  // the time before which the operation is done
 	Pagination *Pagination // pagination information
 }

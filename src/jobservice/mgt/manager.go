@@ -139,7 +139,7 @@ func (bm *basicManager) GetJobs(q *query.Parameter) ([]*job.Stats, int64, error)
 		return nil, 0, err
 	}
 	if len(values) != 2 {
-		return nil, 0, errors.New("malform scan results")
+		return nil, 0, errors.New("malformed scan results")
 	}
 
 	nextCur, err := strconv.ParseUint(string(values[0].([]byte)), 10, 8)

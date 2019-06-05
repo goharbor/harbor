@@ -219,7 +219,7 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 			// Only need to care the pending and running ones
 			// Do clear
 			if job.ScheduledStatus == job.Status(e.Info.Status) {
-				// Please pay attention here, the job ID used in the scheduled jon queue is
+				// Please pay attention here, the job ID used in the scheduled job queue is
 				// the ID of the periodic job (policy).
 				if err := bs.client.DeleteScheduledJob(e.Info.RunAt, policyID); err != nil {
 					logger.Errorf("Delete scheduled job %s error: %s", eID, err)

@@ -37,7 +37,7 @@ type InternalAPI struct {
 	BaseController
 }
 
-// Prepare validates the URL and parms
+// Prepare validates the URL and params
 func (ia *InternalAPI) Prepare() {
 	ia.BaseController.Prepare()
 	if !ia.SecurityCtx.IsAuthenticated() {

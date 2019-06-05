@@ -30,7 +30,7 @@ var (
 func TestRobotAPIPost(t *testing.T) {
 
 	rbacPolicy := &rbac.Policy{
-		Resource: "/project/libray/repository",
+		Resource: "/project/library/repository",
 		Action:   "pull",
 	}
 	policies := []*rbac.Policy{}

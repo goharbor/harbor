@@ -38,7 +38,7 @@ func NewDriver(path string) storage.Driver {
 	}
 }
 
-// Name returns a human-readable name of the fielsystem driver
+// Name returns a human-readable name of the filesystem driver
 func (d *driver) Name() string {
 	return driverName
 }

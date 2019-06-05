@@ -404,7 +404,7 @@ func (p *ProjectAPI) List() {
 		query.Public = &pub
 	}
 
-	// standalone, filter projects according to the privilleges of the user first
+	// standalone, filter projects according to the privileges of the user first
 	if !config.WithAdmiral() {
 		var projects []*models.Project
 		if !p.SecurityCtx.IsAuthenticated() {
@@ -615,7 +615,7 @@ func (p *ProjectAPI) Summary() {
 	p.ServeJSON()
 }
 
-// TODO move this to pa ckage models
+// TODO move this to package models
 func validateProjectReq(req *models.ProjectRequest) error {
 	pn := req.Name
 	if utils.IsIllegalLength(pn, projectNameMinLen, projectNameMaxLen) {

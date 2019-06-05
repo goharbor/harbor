@@ -39,9 +39,9 @@ type Transfer interface {
 
 // Logger defines an interface for logging
 type Logger interface {
-	// For debuging
+	// For debugging
 	Debug(v ...interface{})
-	// For debuging with format
+	// For debugging with format
 	Debugf(format string, v ...interface{})
 	// For logging info
 	Info(v ...interface{})

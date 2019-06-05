@@ -94,5 +94,5 @@ func (c *SweeperController) doSweeping(sid string, s sweeper.Interface) {
 		return
 	}
 
-	Infof("%d outdated log entries are sweepped by sweeper %s", count, sid)
+	Infof("%d outdated log entries are swept by sweeper %s", count, sid)
 }

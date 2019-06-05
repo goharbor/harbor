@@ -99,7 +99,7 @@ func GetTokenForRepo(repository, secret, internalTokenServiceURL string) (string
 	return t.Token, nil
 }
 
-// GetClient returns the HTTP client that will attach jobservce secret to the request, which can be used for
+// GetClient returns the HTTP client that will attach jobservice secret to the request, which can be used for
 // accessing Harbor's Core Service.
 // This function returns error if the secret of Job service is not set.
 func GetClient() (*http.Client, error) {

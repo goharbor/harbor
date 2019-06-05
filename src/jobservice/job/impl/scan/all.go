@@ -52,7 +52,7 @@ func (sa *All) ShouldRetry() bool {
 // Validate implements the interface in job/Interface
 func (sa *All) Validate(params job.Parameters) error {
 	if len(params) > 0 {
-		return fmt.Errorf("the parms should be empty for scan all job")
+		return fmt.Errorf("the params should be empty for scan all job")
 	}
 	return nil
 }
@@ -116,7 +116,7 @@ func (sa *All) init(ctx job.Context) error {
 	if v := os.Getenv("JOBSERVICE_SECRET"); len(v) > 0 {
 		sa.secret = v
 	} else {
-		return fmt.Errorf("failed to read evnironment variable JOBSERVICE_SECRET")
+		return fmt.Errorf("failed to read environment variable JOBSERVICE_SECRET")
 	}
 	sa.coreClient, _ = utils.GetClient()
 	if v, err := getAttrFromCtx(ctx, common.TokenServiceURL); err == nil {

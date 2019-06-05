@@ -371,8 +371,8 @@ func TestResource_GetNamespace(t *testing.T) {
 			wantErr: false,
 		},
 		{
-			name:    "unknow namespace",
-			res:     Resource("/unknow/1"),
+			name:    "unknown namespace",
+			res:     Resource("/unknown/1"),
 			want:    nil,
 			wantErr: true,
 		},

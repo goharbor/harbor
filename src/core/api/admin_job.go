@@ -34,7 +34,7 @@ type AJAPI struct {
 	BaseController
 }
 
-// Prepare validates the URL and parms, it needs the system admin permission.
+// Prepare validates the URL and params, it needs the system admin permission.
 func (aj *AJAPI) Prepare() {
 	aj.BaseController.Prepare()
 }

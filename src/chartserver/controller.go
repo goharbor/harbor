@@ -32,7 +32,7 @@ type Controller struct {
 	// Parse and process the chart version to provide required info data
 	chartOperator *ChartOperator
 
-	// HTTP client used to call the realted APIs of the backend chart repositories
+	// HTTP client used to call the related APIs of the backend chart repositories
 	apiClient *ChartClient
 
 	// The access endpoint of the backend chart repository server
@@ -54,7 +54,7 @@ func NewController(backendServer *url.URL, chains ...*alice.Chain) (*Controller,
 		Password: os.Getenv(passwordKey),
 	}
 
-	// Creat cache
+	// Create cache
 	cacheCfg, err := getCacheConfig()
 	if err != nil {
 		// just log the error

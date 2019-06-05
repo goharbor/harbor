@@ -20,7 +20,7 @@ import (
 	"sync"
 )
 
-// Context keep some sharable materials and system controlling channels.
+// Context keep some shareable materials and system controlling channels.
 // The system context.Context interface is also included.
 type Context struct {
 	// The system context with cancel capability.

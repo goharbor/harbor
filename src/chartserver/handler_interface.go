@@ -89,7 +89,7 @@ type ServiceHandler interface {
 
 // ProxyTrafficHandler defines the handler methods to handle the proxy traffic.
 type ProxyTrafficHandler interface {
-	// Proxy the traffic to the backended server
+	// Proxy the traffic to the backend server
 	//
 	// Req *http.Request     : The incoming http request
 	// w http.ResponseWriter : The response writer reference

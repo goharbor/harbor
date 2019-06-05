@@ -167,7 +167,7 @@ func (c *Controller) GetChartVersionDetails(namespace, chartName, version string
 			Signed: false,
 		},
 	}
-	// Try to get the prov file to confirm if it is exitsing
+	// Try to get the prov file to confirm that it exists
 	provFilePath := fmt.Sprintf("%s.prov", chartV.URLs[0])
 	provBytes, err := c.getChartVersionContent(namespace, provFilePath)
 	if err == nil && len(provBytes) > 0 {

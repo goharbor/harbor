@@ -48,7 +48,7 @@ type Manager interface {
 // DefaultManager implement the Manager interface
 type DefaultManager struct{}
 
-// NewDefaultManager returns an instance of DefaultManger
+// NewDefaultManager returns an instance of DefaultManager
 func NewDefaultManager() *DefaultManager {
 	return &DefaultManager{}
 }
@@ -192,7 +192,7 @@ func CheckHealthStatus(r *model.Registry) (model.HealthStatus, error) {
 
 	factory, err := adapter.GetFactory(r.Type)
 	if err != nil {
-		return model.Unknown, fmt.Errorf("get adaper for type '%s' error: %v", r.Type, err)
+		return model.Unknown, fmt.Errorf("get adapter for type '%s' error: %v", r.Type, err)
 	}
 
 	rAdapter, err := factory(r)

@@ -63,28 +63,28 @@ func (cj *ClairJob) Run(ctx job.Context, params job.Parameters) error {
 		return err
 	}
 
-	jobParms, err := transformParam(params)
+	jobParams, err := transformParam(params)
 	if err != nil {
-		logger.Errorf("Failed to prepare parms for scan job, error: %v", err)
+		logger.Errorf("Failed to prepare params for scan job, error: %v", err)
 		return err
 	}
 
-	repoClient, err := utils.NewRepositoryClientForJobservice(jobParms.Repository, cj.registryURL, cj.secret, cj.tokenEndpoint)
+	repoClient, err := utils.NewRepositoryClientForJobservice(jobParams.Repository, cj.registryURL, cj.secret, cj.tokenEndpoint)
 	if err != nil {
-		logger.Errorf("Failed create repository client for repo: %s, error: %v", jobParms.Repository, err)
+		logger.Errorf("Failed create repository client for repo: %s, error: %v", jobParams.Repository, err)
 		return err
 	}
-	_, _, payload, err := repoClient.PullManifest(jobParms.Tag, []string{schema2.MediaTypeManifest})
+	_, _, payload, err := repoClient.PullManifest(jobParams.Tag, []string{schema2.MediaTypeManifest})
 	if err != nil {
-		logger.Errorf("Error pulling manifest for image %s:%s :%v", jobParms.Repository, jobParms.Tag, err)
+		logger.Errorf("Error pulling manifest for image %s:%s :%v", jobParams.Repository, jobParams.Tag, err)
 		return err
 	}
-	token, err := utils.GetTokenForRepo(jobParms.Repository, cj.secret, cj.tokenEndpoint)
+	token, err := utils.GetTokenForRepo(jobParams.Repository, cj.secret, cj.tokenEndpoint)
 	if err != nil {
 		logger.Errorf("Failed to get token, error: %v", err)
 		return err
 	}
-	layers, err := prepareLayers(payload, cj.registryURL, jobParms.Repository, token)
+	layers, err := prepareLayers(payload, cj.registryURL, jobParams.Repository, token)
 	if err != nil {
 		logger.Errorf("Failed to prepare layers, error: %v", err)
 		return err
@@ -110,7 +110,7 @@ func (cj *ClairJob) Run(ctx job.Context, params job.Parameters) error {
 		return err
 	}
 	compOverview, sev := clair.TransformVuln(res)
-	err = dao.UpdateImgScanOverview(jobParms.Digest, layerName, sev, compOverview)
+	err = dao.UpdateImgScanOverview(jobParams.Digest, layerName, sev, compOverview)
 	return err
 }
 
@@ -140,13 +140,13 @@ func (cj *ClairJob) init(ctx job.Context) error {
 	return nil
 }
 
-func transformParam(params job.Parameters) (*cjob.ScanJobParms, error) {
-	res := cjob.ScanJobParms{}
-	parmsBytes, err := json.Marshal(params)
+func transformParam(params job.Parameters) (*cjob.ScanJobParams, error) {
+	res := cjob.ScanJobParams{}
+	paramsBytes, err := json.Marshal(params)
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(parmsBytes, &res)
+	err = json.Unmarshal(paramsBytes, &res)
 	return &res, err
 }
 

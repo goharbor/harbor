@@ -58,7 +58,7 @@ func TestMain(m *testing.M) {
 
 	test.InitDatabaseFromEnv()
 
-	// regiser users
+	// register users
 	id, err := dao.Register(*projectAdminUser)
 	if err != nil {
 		log.Fatalf("failed to register user: %v", err)

@@ -96,7 +96,7 @@ func (suite *CWorkerTestSuite) TearDownSuite() {
 	_ = tests.ClearAll(suite.namespace, conn)
 }
 
-// TestCWorkerTestSuite is entry fo go test
+// TestCWorkerTestSuite is entry for go test
 func TestCWorkerTestSuite(t *testing.T) {
 	suite.Run(t, new(CWorkerTestSuite))
 }

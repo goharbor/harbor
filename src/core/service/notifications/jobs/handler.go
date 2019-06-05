@@ -40,7 +40,7 @@ var statusMap = map[string]string{
 	job.JobServiceStatusSuccess:   models.JobFinished,
 }
 
-// Handler handles reqeust on /service/notifications/jobs/*, which listens to the webhook of jobservice.
+// Handler handles request on /service/notifications/jobs/*, which listens to the webhook of jobservice.
 type Handler struct {
 	api.BaseController
 	id        int64
@@ -79,7 +79,7 @@ func (h *Handler) Prepare() {
 
 // HandleScan handles the webhook of scan job
 func (h *Handler) HandleScan() {
-	log.Debugf("received san job status update event: job-%d, status-%s", h.id, h.status)
+	log.Debugf("received scan job status update event: job-%d, status-%s", h.id, h.status)
 	if err := dao.UpdateScanJobStatus(h.id, h.status); err != nil {
 		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
 		h.SendInternalServerError(err)

@@ -266,7 +266,7 @@ func (ps *policyStore) load() error {
 		if err := p.DeSerialize(rawPolicy); err != nil {
 			// Ignore error which means the policy data is not valid
 			// Only logged
-			logger.Errorf("malform policy: %s; error: %s\n", rawPolicy, err)
+			logger.Errorf("malformed policy: %s; error: %s\n", rawPolicy, err)
 			continue
 		}
 
@@ -294,7 +294,7 @@ func (ps *policyStore) add(item *Policy) error {
 	}
 
 	if utils.IsEmptyStr(item.ID) {
-		return errors.New("malform policy to add")
+		return errors.New("malformed policy to add")
 	}
 
 	v, _ := ps.hash.LoadOrStore(item.ID, item)

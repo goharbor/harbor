@@ -48,7 +48,7 @@ var ErrDuplicateProjectMember = errors.New("The project member specified already
 // ErrInvalidRole ...
 var ErrInvalidRole = errors.New("Failed to update project member, role is not in 1,2,3")
 
-// Prepare validates the URL and parms
+// Prepare validates the URL and params
 func (pma *ProjectMemberAPI) Prepare() {
 	pma.BaseController.Prepare()
 

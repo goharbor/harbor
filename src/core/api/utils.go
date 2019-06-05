@@ -47,7 +47,7 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 	var repoRecordsInDB []*models.RepoRecord
 	repoRecordsInDB, err = dao.GetRepositories()
 	if err != nil {
-		log.Errorf("error occurred while getting all registories. %v", err)
+		log.Errorf("error occurred while getting all repositories. %v", err)
 		return err
 	}
 

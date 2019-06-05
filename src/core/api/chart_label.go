@@ -14,7 +14,7 @@ const (
 	idParam      = ":id"
 )
 
-// ChartLabelAPI handles the requests of marking/removing lables to/from charts.
+// ChartLabelAPI handles the requests of marking/removing labels to/from charts.
 type ChartLabelAPI struct {
 	LabelResourceAPI
 	project       *models.Project

@@ -35,7 +35,7 @@ func TestStatisticGet(t *testing.T) {
 	var priTotalProjectCount, priTotalRepoCount int32
 
 	// case 1: case 1: user not login, expect fail to get status info.
-	fmt.Println("case 1: user not login, expect fail to get status info.")
+	fmt.Println("Case 1: user not login, expect fail to get status info.")
 	httpStatusCode, result, err := apiTest.StatisticGet(*unknownUsr)
 	if err != nil {
 		t.Error("Error get statistic info.", err.Error())
@@ -45,7 +45,7 @@ func TestStatisticGet(t *testing.T) {
 	}
 
 	// case 2: admin successful login, expect get status info successful.
-	fmt.Println("case 2: admin successful login, expect get status info successful.")
+	fmt.Println("Case 2: admin successful login, expect get status info successful.")
 	httpStatusCode, result, err = apiTest.StatisticGet(*admin)
 	if err != nil {
 		t.Error("Error get statistic info.", err.Error())
@@ -62,7 +62,7 @@ func TestStatisticGet(t *testing.T) {
 	}
 
 	// case 3: status info increased after add more project and repo.
-	fmt.Println("case 3: status info increased after add more project and repo.")
+	fmt.Println("Case 3: status info increased after add more project and repo.")
 
 	CommonAddProject()
 	CommonAddRepository()

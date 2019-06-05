@@ -339,5 +339,5 @@ func extractJobID(data *job.StatusChange) (string, job.Status, error) {
 		}
 	}
 
-	return "", "", errors.New("malform job status change data")
+	return "", "", errors.New("malformed job status change data")
 }

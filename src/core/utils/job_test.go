@@ -11,14 +11,14 @@ import (
 )
 
 type jobDataTestEntry struct {
-	input  job.ScanJobParms
+	input  job.ScanJobParams
 	expect jobmodels.JobData
 }
 
 func TestBuildScanJobData(t *testing.T) {
 	assert := assert.New(t)
 	testData := []jobDataTestEntry{
-		{input: job.ScanJobParms{
+		{input: job.ScanJobParams{
 			JobID:      123,
 			Digest:     "sha256:abcde",
 			Repository: "library/ubuntu",

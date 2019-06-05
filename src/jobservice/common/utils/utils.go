@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package utils provides reusable and sharable utilities for other packages and components.
+// Package utils provides reusable and shareable utilities for other packages and components.
 package utils
 
 import (
@@ -47,7 +47,7 @@ func MakeIdentifier() string {
 	return fmt.Sprintf("%x", b)
 }
 
-// IsEmptyStr check if the specified str is empty (len ==0) after triming prefix and suffix spaces.
+// IsEmptyStr check if the specified str is empty (len ==0) after trimming prefix and suffix spaces.
 func IsEmptyStr(str string) bool {
 	return len(strings.TrimSpace(str)) == 0
 }
@@ -93,7 +93,7 @@ func IsValidPort(port uint) bool {
 	return port != 0 && port < 65536
 }
 
-// IsValidURL validates if the url is well-formted
+// IsValidURL validates if the url is well-formed
 func IsValidURL(address string) bool {
 	if IsEmptyStr(address) {
 		return false

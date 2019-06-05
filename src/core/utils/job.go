@@ -90,18 +90,18 @@ func triggerImageScan(repository, tag, digest string, client job.Client) error {
 }
 
 func buildScanJobData(jobID int64, repository, tag, digest string) (*jobmodels.JobData, error) {
-	parms := job.ScanJobParms{
+	params := job.ScanJobParams{
 		JobID:      jobID,
 		Repository: repository,
 		Digest:     digest,
 		Tag:        tag,
 	}
-	parmsMap := make(map[string]interface{})
-	b, err := json.Marshal(parms)
+	paramsMap := make(map[string]interface{})
+	b, err := json.Marshal(params)
 	if err != nil {
 		return nil, err
 	}
-	err = json.Unmarshal(b, &parmsMap)
+	err = json.Unmarshal(b, &paramsMap)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func buildScanJobData(jobID int64, repository, tag, digest string) (*jobmodels.J
 
 	data := &jobmodels.JobData{
 		Name:       job.ImageScanJob,
-		Parameters: jobmodels.Parameters(parmsMap),
+		Parameters: jobmodels.Parameters(paramsMap),
 		Metadata:   &meta,
 		StatusHook: fmt.Sprintf("%s/service/notifications/jobs/scan/%d", config.InternalCoreURL(), jobID),
 	}

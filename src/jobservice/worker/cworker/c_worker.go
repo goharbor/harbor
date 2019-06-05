@@ -196,7 +196,7 @@ func (w *basicWorker) Enqueue(jobName string, params job.Parameters, isUnique bo
 
 	// avoid backend worker bug
 	if j == nil {
-		return nil, fmt.Errorf("job '%s' can not be enqueued, please check the job metatdata", jobName)
+		return nil, fmt.Errorf("job '%s' can not be enqueued, please check the job metadata", jobName)
 	}
 
 	return generateResult(j, job.KindGeneric, isUnique, params, webHook), nil
@@ -226,7 +226,7 @@ func (w *basicWorker) Schedule(jobName string, params job.Parameters, runAfterSe
 
 	// avoid backend worker bug
 	if j == nil {
-		return nil, fmt.Errorf("job '%s' can not be enqueued, please check the job metatdata", jobName)
+		return nil, fmt.Errorf("job '%s' can not be enqueued, please check the job metadata", jobName)
 	}
 
 	res := generateResult(j.Job, job.KindScheduled, isUnique, params, webHook)

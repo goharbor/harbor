@@ -35,7 +35,7 @@ func TestGetRepos(t *testing.T) {
 
 	fmt.Println("Testing Repos Get API")
 	// -------------------case 1 : response code = 200------------------------//
-	fmt.Println("case 1 : response code = 200")
+	fmt.Println("Case 1: Response Code = 200")
 	code, repositories, err := apiTest.GetRepos(*admin, projectID, keyword)
 	if err != nil {
 		t.Errorf("failed to get repositories: %v", err)
@@ -50,22 +50,22 @@ func TestGetRepos(t *testing.T) {
 	}
 
 	// -------------------case 2 : response code = 404------------------------//
-	fmt.Println("case 2 : response code = 404:project  not found")
+	fmt.Println("Case 2: Response Code = 404 : project  not found")
 	projectID = "111"
 	httpStatusCode, _, err := apiTest.GetRepos(*admin, projectID, keyword)
 	if err != nil {
-		t.Error("Error whihle get repos by projectID", err.Error())
+		t.Error("Error while get repos by projectID", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
 	}
 
 	// -------------------case 3 : response code = 400------------------------//
-	fmt.Println("case 3 : response code = 400,invalid project_id")
+	fmt.Println("Case 3: Response Code = 400 : invalid project_id")
 	projectID = "ccc"
 	httpStatusCode, _, err = apiTest.GetRepos(*admin, projectID, keyword)
 	if err != nil {
-		t.Error("Error whihle get repos by projectID", err.Error())
+		t.Error("Error while get repos by projectID", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(int(400), httpStatusCode, "httpStatusCode should be 400")
@@ -80,7 +80,7 @@ func TestGetReposTags(t *testing.T) {
 	apiTest := newHarborAPI()
 
 	// -------------------case 1 : response code = 404------------------------//
-	fmt.Println("case 1 : response code = 404,repo not found")
+	fmt.Println("Case 1: Response Code = 404 : repo not found")
 	repository := "errorRepos"
 	code, _, err := apiTest.GetReposTags(*admin, repository)
 	if err != nil {
@@ -89,7 +89,7 @@ func TestGetReposTags(t *testing.T) {
 		assert.Equal(int(404), code, "httpStatusCode should be 404")
 	}
 	// -------------------case 2 : response code = 200------------------------//
-	fmt.Println("case 2 : response code = 200")
+	fmt.Println("Case 2: Response Code = 200")
 	repository = "library/hello-world"
 	code, tags, err := apiTest.GetReposTags(*admin, repository)
 	if err != nil {
@@ -105,7 +105,7 @@ func TestGetReposTags(t *testing.T) {
 	}
 
 	// -------------------case 3 : response code = 404------------------------//
-	fmt.Println("case 3 : response code = 404")
+	fmt.Println("Case 3: Response Code = 404")
 	repository = "library/hello-world"
 	tag := "not_exist_tag"
 	code, result, err := apiTest.GetTag(*admin, repository, tag)
@@ -113,7 +113,7 @@ func TestGetReposTags(t *testing.T) {
 	assert.Equal(http.StatusNotFound, code)
 
 	// -------------------case 4 : response code = 200------------------------//
-	fmt.Println("case 4 : response code = 200")
+	fmt.Println("Case 4: Response Code = 200")
 	repository = "library/hello-world"
 	tag = "latest"
 	code, result, err = apiTest.GetTag(*admin, repository, tag)
@@ -135,33 +135,33 @@ func TestGetReposManifests(t *testing.T) {
 
 	fmt.Println("Testing ReposManifests Get API")
 	// -------------------case 1 : response code = 200------------------------//
-	fmt.Println("case 1 : response code = 200")
+	fmt.Println("Case 1: Response Code = 200")
 	repoName = "library/hello-world"
 	tag = "latest"
 	httpStatusCode, err = apiTest.GetReposManifests(*admin, repoName, tag)
 	if err != nil {
-		t.Error("Error whihle get reposManifests by repoName and tag", err.Error())
+		t.Error("Error while get reposManifests by repoName and tag", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	}
 	// -------------------case 2 : response code = 404------------------------//
-	fmt.Println("case 2 : response code = 404:tags error,manifest unknown")
+	fmt.Println("Case 2: Response Code = 404 : tags error,manifest unknown")
 	tag = "l"
 	httpStatusCode, err = apiTest.GetReposManifests(*admin, repoName, tag)
 	if err != nil {
-		t.Error("Error whihle get reposManifests by repoName and tag", err.Error())
+		t.Error("Error while get reposManifests by repoName and tag", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
 	}
 
 	// -------------------case 3 : response code = 404------------------------//
-	fmt.Println("case 3 : response code = 404,repo not found")
+	fmt.Println("Case 3: Response Code = 404 : repo not found")
 	repoName = "111"
 	httpStatusCode, err = apiTest.GetReposManifests(*admin, repoName, tag)
 	if err != nil {
-		t.Error("Error whihle get reposManifests by repoName and tag", err.Error())
+		t.Error("Error while get reposManifests by repoName and tag", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
@@ -177,7 +177,7 @@ func TestGetReposTop(t *testing.T) {
 
 	fmt.Println("Testing ReposTop Get API")
 	// -------------------case 1 : response code = 400------------------------//
-	fmt.Println("case 1 : response code = 400,invalid count")
+	fmt.Println("Case 1: Response Code = 400,invalid count")
 	count := "cc"
 	code, _, err := apiTest.GetReposTop(*admin, count)
 	if err != nil {
@@ -187,7 +187,7 @@ func TestGetReposTop(t *testing.T) {
 	}
 
 	// -------------------case 2 : response code = 200------------------------//
-	fmt.Println("case 2 : response code = 200")
+	fmt.Println("Case 2: Response Code = 200")
 	count = "1"
 	code, repos, err := apiTest.GetReposTop(*admin, count)
 	if err != nil {
@@ -357,7 +357,7 @@ func TestRetag(t *testing.T) {
 
 	fmt.Println("Testing Image Retag API")
 	// -------------------case 1 : response code = 200------------------------//
-	fmt.Println("case 1 : response code = 200")
+	fmt.Println("Case 1: Response Code = 200")
 	retagReq := &apilib.Retag{
 		Tag:      "prd",
 		SrcImage: "library/hello-world:latest",
@@ -371,7 +371,7 @@ func TestRetag(t *testing.T) {
 	}
 
 	// -------------------case 2 : response code = 400------------------------//
-	fmt.Println("case 2 : response code = 400: invalid image value provided")
+	fmt.Println("Case 2: Response Code = 400 : invalid image value provided")
 	retagReq = &apilib.Retag{
 		Tag:      "prd",
 		SrcImage: "hello-world:latest",
@@ -399,7 +399,7 @@ func TestRetag(t *testing.T) {
 	}
 
 	// -------------------case 4 : response code = 404------------------------//
-	fmt.Println("case 4 : response code = 404: target project not exist")
+	fmt.Println("Case 4: Response Code = 404 : target project not exist")
 	retagReq = &apilib.Retag{
 		Tag:      "prd",
 		SrcImage: "library/hello-world:latest",
@@ -413,7 +413,7 @@ func TestRetag(t *testing.T) {
 	}
 
 	// -------------------case 5 : response code = 401------------------------//
-	fmt.Println("case 5 : response code = 401, unathorized")
+	fmt.Println("Case 5: Response Code = 401, unathorized")
 	retagReq = &apilib.Retag{
 		Tag:      "prd",
 		SrcImage: "library/hello-world:latest",
@@ -427,7 +427,7 @@ func TestRetag(t *testing.T) {
 	}
 
 	// -------------------case 6 : response code = 409------------------------//
-	fmt.Println("case 6 : response code = 409, conflict")
+	fmt.Println("Case 6: Response Code = 409 : conflict")
 	retagReq = &apilib.Retag{
 		Tag:      "latest",
 		SrcImage: "library/hello-world:latest",
@@ -441,7 +441,7 @@ func TestRetag(t *testing.T) {
 	}
 
 	// -------------------case 7 : response code = 400------------------------//
-	fmt.Println("case 7 : response code = 400")
+	fmt.Println("Case 7: Response Code = 400")
 	retagReq = &apilib.Retag{
 		Tag:      ".0.1",
 		SrcImage: "library/hello-world:latest",
@@ -455,7 +455,7 @@ func TestRetag(t *testing.T) {
 	}
 
 	// -------------------case 8 : response code = 400------------------------//
-	fmt.Println("case 8 : response code = 400")
+	fmt.Println("Case 8: Response Code = 400")
 	retagReq = &apilib.Retag{
 		Tag:      "v0.1",
 		SrcImage: "library/hello-world:latest",

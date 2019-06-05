@@ -58,7 +58,7 @@ func (iso *ImgScanOverview) TableName() string {
 	return ScanOverviewTable
 }
 
-// ComponentsOverview has the total number and a list of components number of different serverity level.
+// ComponentsOverview has the total number and a list of components number of different severity level.
 type ComponentsOverview struct {
 	Total   int                        `json:"total"`
 	Summary []*ComponentsOverviewEntry `json:"summary"`
@@ -76,10 +76,10 @@ type ImageScanReq struct {
 	Tag  string `json:"tag"`
 }
 
-// ScanAllPolicy is represent the json request and object for scan all policy, the parm is het
+// ScanAllPolicy is represent the json request and object for scan all policy, the param is het
 type ScanAllPolicy struct {
-	Type string                 `json:"type"`
-	Parm map[string]interface{} `json:"parameter,omitempty"`
+	Type  string                 `json:"type"`
+	Param map[string]interface{} `json:"parameter,omitempty"`
 }
 
 const (
@@ -89,7 +89,7 @@ const (
 	ScanAllDaily = "daily"
 	// ScanAllOnRefresh for doing scan all when the Clair DB is refreshed.
 	ScanAllOnRefresh = "on_refresh"
-	// ScanAllDailyTime the key for parm of daily scan all policy.
+	// ScanAllDailyTime the key for param of daily scan all policy.
 	ScanAllDailyTime = "daily_time"
 )
 

@@ -125,7 +125,7 @@ LOOP:
 		}(ns)
 	}
 
-	// Hold util all the retrieving work are done
+	// Hold until all the retrieving work are done
 	waitGroup.Wait()
 
 	// close merge channel

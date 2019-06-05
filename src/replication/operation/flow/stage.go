@@ -170,7 +170,7 @@ func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*m
 			case model.FilterTypeLabel:
 				// TODO add support to label
 			default:
-				return nil, fmt.Errorf("unsupportted filter type: %v", filter.Type)
+				return nil, fmt.Errorf("unsupported filter type: %v", filter.Type)
 			}
 		}
 		if match {

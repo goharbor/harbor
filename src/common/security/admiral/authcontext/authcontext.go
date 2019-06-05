@@ -132,7 +132,7 @@ func convertRoles(roles []string) []int {
 		case guestRole:
 			list = append(list, common.RoleGuest)
 		default:
-			log.Warningf("unknow role: %s", role)
+			log.Warningf("unknown role: %s", role)
 		}
 	}
 

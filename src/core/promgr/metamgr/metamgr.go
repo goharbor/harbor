@@ -22,14 +22,14 @@ import (
 // ProjectMetadataManager defines the operations that a project metadata manager should
 // implement
 type ProjectMetadataManager interface {
-	// Add metadatas for project specified by projectID
+	// Add metadata for project specified by projectID
 	Add(projectID int64, meta map[string]string) error
-	// Delete metadatas whose keys are specified in parameter meta, if it
+	// Delete metadata whose keys are specified in parameter meta, if it
 	// is absent, delete all
 	Delete(projecdtID int64, meta ...string) error
-	// Update metadatas
+	// Update metadata
 	Update(projectID int64, meta map[string]string) error
-	// Get metadatas whose keys are specified in parameter meta, if it is
+	// Get metadata whose keys are specified in parameter meta, if it is
 	// absent, get all
 	Get(projectID int64, meta ...string) (map[string]string, error)
 	// List metadata according to the name and value
