@@ -12,7 +12,6 @@ parser.add_argument('--version', '-v', dest='version', required=False, help='The
 args = parser.parse_args()
 
 url = "https://"+args.endpoint+"/api/"
-endpoint_url = "https://"+args.endpoint
 print url
 
 class HarborAPI:
@@ -46,27 +45,18 @@ class HarborAPI:
         request(url+"projects/"+projectid+"/members", 'post', **body)
 
     def add_endpoint(self, endpointurl, endpointname, username, password, insecure):
-        payload = {
-            "credential":{
-                "access_key":""+username+"",
-                "access_secret":""+password+"",
-                "type":"basic"
-            },
-            "insecure":insecure,
-            "name":""+endpointname+"",
-            "type":"harbor",
-            "url":""+endpoint_url+""
-        }
+        payload = {"endpoint": ""+endpointurl+"", "name": ""+endpointname+"", "username": ""+username+"", "password": ""+password+"", "insecure": insecure}
         body=dict(body=payload)
-        print  body
-        request(url+"/registries", 'post', **body)
+        request(url+"targets", 'post', **body)
 
     def add_replication_rule(self, project, target, trigger, rulename):
-        r = request(url+"registries?name="+target+"", 'get')
+        r = request(url+"projects?name="+project+"", 'get')
+        projectid = r.json()[0]['project_id']
+        r = request(url+"targets?name="+target+"", 'get')
         targetid = r.json()[0]['id']
-        payload = {"name": ""+rulename+"", "deletion": False, "enabled": True, "description": "string", "dest_registry": {"id": targetid},"trigger": {"type": "manual"}}
+        payload = {"name": ""+rulename+"", "description": "string", "projects": [{"project_id": projectid,}], "targets": [{"id": targetid,}], "trigger": {"kind": ""+trigger+"", "schedule_param": {"type": "weekly", "weekday": 1, "offtime": 0}}}
         body=dict(body=payload)
-        request(url+"replication/policies", 'post', **body)
+        request(url+"policies/replication", 'post', **body)
 
     def update_project_setting(self, project, contenttrust, preventrunning, preventseverity, scanonpush):
         r = request(url+"projects?name="+project+"", 'get')
@@ -181,7 +171,7 @@ def do_data_creation():
     push_signed_image("alpine", data["projects"][0]["name"], "latest")
 
     for endpoint in data["endpoint"]:
-        harborAPI.add_endpoint(endpoint["url"], endpoint["name"], endpoint["user"], endpoint["pass"], True)
+        harborAPI.add_endpoint(endpoint["url"], endpoint["name"], endpoint["user"], endpoint["pass"], False)
     for replicationrule in data["replicationrule"]:
         harborAPI.add_replication_rule(replicationrule["project"],
                                        replicationrule["endpoint"], replicationrule["trigger"],
@@ -190,7 +180,7 @@ def do_data_creation():
         harborAPI.update_project_setting(project["name"],
                                         project["configuration"]["enable_content_trust"],
                                         project["configuration"]["prevent_vulnerable_images_from_running"],
-                                        project["configuration"]["prevent_vlunerable_images_from_running_severity"],
+                                        project["configuration"]["prevent_vlunerable_images_from_running_severity"], 
                                         project["configuration"]["automatically_scan_images_on_push"])
     harborAPI.update_systemsetting(data["configuration"]["emailsetting"]["emailfrom"],
                                    data["configuration"]["emailsetting"]["emailserver"],

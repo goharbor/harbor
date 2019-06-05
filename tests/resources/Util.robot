@@ -54,6 +54,8 @@ Resource  Harbor-Pages/ToolKit.robot
 Resource  Harbor-Pages/ToolKit_Elements.robot
 Resource  Harbor-Pages/Vulnerability.robot
 Resource  Harbor-Pages/LDAP-Mode.robot
+Resource  Harbor-Pages/OIDC_Auth.robot
+Resource  Harbor-Pages/OIDC_Auth_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
 Resource  Admiral-Util.robot
@@ -129,9 +131,32 @@ Retry Wait Until Page Not Contains Element
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Wait Until Page Does Not Contain Element  @{param}
 
+Retry Select Object
+    [Arguments]    ${obj_name}
+    @{param}    Create List    ${obj_name}
+    Retry Action Keyword    Select Object    @{param}
+
+Retry Textfield Value Should Be
+    [Arguments]    ${element}    ${text}
+    @{param}    Create List    ${element}    ${text}
+    Retry Action Keyword    Wait And Textfield Value Should Be    @{param}
+
+Retry List Selection Should Be
+    [Arguments]    ${element}    ${text}
+    @{param}    Create List    ${element}    ${text}
+    Retry Action Keyword    Wait And List Selection Should Be    @{param}
 Link Click
     [Arguments]  ${element_xpath}
     Click Link  ${element_xpath}
+Wait And List Selection Should Be
+    [Arguments]    ${element}    ${text}
+    Wait Until Element Is Visible And Enabled    ${element}
+    List Selection Should Be    ${element}    ${text}
+
+Wait And Textfield Value Should Be
+    [Arguments]    ${element}    ${text}
+    Wait Until Element Is Visible And Enabled    ${element}
+    Textfield Value Should Be    ${element}    ${text}
 
 Element Click
     [Arguments]  ${element_xpath}
@@ -148,6 +173,12 @@ Text Input
     Wait Until Element Is Visible And Enabled  ${element_xpath}
     Input Text  ${element_xpath}  ${text}
 
+Clear Field Of Characters
+    [Arguments]    ${field}    ${character count}
+    [Documentation]    This keyword pushes the delete key (ascii: \8) a specified number of times in a specified field.
+    : FOR    ${index}    IN RANGE    ${character count}
+    \    Press Key    ${field}    \\8
+
 Wait Unitl Vul Data Ready
     [Arguments]  ${url}  ${timeout}  ${interval}
     ${n}=  Evaluate  ${timeout}/${interval}
@@ -161,16 +192,20 @@ Wait Unitl Vul Data Ready
     Run Keyword If  ${i+1}==${n}  Fail  The vul data is not ready
 
 Wait Unitl Command Success
-    [Arguments]  ${cmd}  ${times}=8  ${positive}=${true}
+    [Arguments]  ${cmd}  ${times}=8
     :FOR  ${n}  IN RANGE  1  ${times}
     \    Log  Trying ${cmd}: ${n} ...  console=True
     \    ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
-    \    Run Keyword If  ${positive} == ${true}  Exit For Loop If  '${rc}'=='0'
-    \    ...  ELSE  Exit For Loop If  '${rc}'!='0'
+    \    Exit For Loop If  '${rc}'=='0'
     \    Sleep  2
     Log  Command Result is ${output}
-    Run Keyword If  ${positive} == ${true}  Should Be Equal As Strings  '${rc}'  '0'
-    ...  ELSE  Should Not Be Equal As Strings  '${rc}'  '0'
+    Should Be Equal As Strings  '${rc}'  '0'
+    [Return]  ${output}
+
+Command Should be Failed
+    [Arguments]  ${cmd}
+    ${rc}  ${output}=  Run And Return Rc And Output  ${cmd}
+    Should Not Be Equal As Strings  '${rc}'  '0'
     [Return]  ${output}
 
 Retry Keyword When Error
@@ -197,3 +232,12 @@ Retry Double Keywords When Error
     \    Sleep  2
     Should Be Equal As Strings  '${out1[0]}'  'PASS'
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
+
+Run Curl And Return Json
+    [Arguments]  ${curl_cmd}
+    ${json_data_file}=  Set Variable  ${CURDIR}${/}cur_user_info.json
+    ${rc}  ${output}=  Run And Return Rc And Output  ${curl_cmd}
+    Should Be Equal As Integers  0  ${rc}
+    Create File  ${json_data_file}  ${output}
+    ${json}=    Load Json From File    ${json_data_file}
+    [Return]  ${json}

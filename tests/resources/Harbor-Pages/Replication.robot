@@ -20,6 +20,21 @@ Resource  ../../resources/Util.robot
 ${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
+Select Dest Registry
+    [Arguments]    ${endpoint}
+    Retry Element Click    ${dest_registry_dropdown_list}
+    Retry Element Click    ${dest_registry_dropdown_list}//option[contains(.,'${endpoint}')]
+
+Select Source Registry
+    [Arguments]    ${endpoint}
+    Retry Element Click    ${src_registry_dropdown_list}
+    Retry Element Click    ${src_registry_dropdown_list}//option[contains(.,'${endpoint}')]
+
+Select Trigger
+    [Arguments]    ${mode}
+    Retry Element Click    ${rule_trigger_select}
+    Retry Element Click    ${rule_trigger_select}//option[contains(.,'${mode}')]
+
 Check New Rule UI Without Endpoint
     Retry Element Click    ${new_replication-rule_button}
     Page Should Contain    Please add an endpoint first
@@ -44,68 +59,25 @@ Create A New Endpoint
     Run Keyword If  '${save}' == 'N'  No Operation
 
 Create A Rule With Existing Endpoint
-    [Arguments]    ${name}    ${replication_mode}    ${project_name}    ${resource_type}    ${endpoint}    ${dest_namespace_input}
+    [Arguments]    ${name}    ${replication_mode}    ${project_name}    ${resource_type}    ${endpoint}    ${dest_namespace}
     ...    ${mode}=Manual
     #click new
     Retry Element Click    ${new_name_xpath}
     #input name
     Retry Text Input    ${rule_name}    ${name}
-    Run Keyword If    '${replication_mode}' == 'push'    Run Keywords    Retry Element Click    ${replication_mode_radio_push}
-    ...    AND    Retry Element Click    //select[@id='dest_registry']
-    ...    AND    Retry Element Click    //select[@id='dest_registry']//option[contains(.,'${endpoint}')]
-    ...    ELSE    Run Keywords    Retry Element Click    ${replication_mode_radio_pull}
-    ...    AND    Retry Element Click    //select[@id='src_registry_id']
-    ...    AND    Retry Element Click    //select[@id='src_registry_id']//option[contains(.,'${endpoint}')]
+    Run Keyword If    '${replication_mode}' == 'push'  Run Keywords  Retry Element Click  ${replication_mode_radio_push}
+    ...    AND  Select Dest Registry  ${endpoint}
+    ...    ELSE  Run Keywords  Retry Element Click  ${replication_mode_radio_pull}
+    ...    AND  Select Source Registry  ${endpoint}
     #set filter
     Retry Text Input    ${source_project}    ${project_name}
     Run Keyword And Ignore Error    Select From List By Value    ${rule_resource_selector}    ${resource_type}
-    Retry Text Input    ${dest_namespace_xpath}    ${dest_namespace_input}
+    Retry Text Input    ${dest_namespace_xpath}    ${dest_namespace}
     #set trigger
-    Retry Element Click    //select[@id='ruleTrigger']
-    Retry Element Click    //select[@id='ruleTrigger']//option[contains(.,'${mode}')]
+    Select Trigger  ${mode}
     Run Keyword If    '${mode}' == 'Scheduled'    Log To Console    Scheduled
     #click save
     Retry Double Keywords When Error  Retry Element Click  ${rule_save_button}  Retry Wait Until Page Not Contains Element  ${rule_save_button}
-
-Project Create A Rule With Existing Endpoint
-# day 1=Monday..7=Sunday timeformat 12hour+am/pm
-    [Arguments]  ${name}  ${project_name}  ${endpoint}  ${mode}  ${plan}=Daily  ${weekday}=1  ${time}=0800a
-    #click new
-    Retry Element Click  ${new_name_xpath}
-    #input name
-    Retry Text Input  ${rule_name}  ${name}
-    #input descripiton,here skip, leave it blank
-    #in this keyword, source project is not need to input
-    #set filter
-    Retry Element Click  ${source_image_filter_add}
-    Retry Text Input  ${source_iamge_repo_filter}  *
-    Retry Element Click  ${source_image_filter_add}
-    Retry Text Input  ${source_image_tag_filter}  *
-    #select endpoint
-    Retry Element Click  ${rule_target_select}
-    Wait Until Element Is Visible  //select[@id='ruleTarget']//option[contains(.,'${endpoint}')]
-    Retry Element Click  //select[@id='ruleTarget']//option[contains(.,'${endpoint}')]
-    #set trigger
-    Retry Element Click  ${rule_trigger_select}
-    Wait Until Element Is Visible  //select[@id='ruleTrigger']//option[contains(.,'${mode}')]
-    Retry Element Click  //select[@id='ruleTrigger']//option[contains(.,'${mode}')]
-    Run Keyword If  '${mode}' == 'Scheduled'  Setting Replication Schedule  ${plan}  ${weekday}  ${time}
-    #click save
-    Retry Element Click  ${rule_save_button}
-
-Setting Replication Schedule
-    [Arguments]  ${plan}  ${weekday}=1  ${time}=0800a
-    Retry Element Click  ${schedule_type_select}
-    Wait Until Element Is Visible  //select[@name='scheduleType']/option[@value='${plan}']
-    Retry Element Click  //select[@name='scheduleType']/option[@value='${plan}']
-    Run Keyword If  '${plan}' == 'Weekly'  Setting Replication Weekday  ${weekday}
-    Retry Text Input  ${shcedule_time}  ${time}
-
-Setting Replication Weekday
-    [arguments]  ${day}
-    Retry Element Click  ${schedule_day_select}
-    Wait Until Element Is Visible  //select[@name='scheduleDay']/option[@value='${day}']
-    Retry Element Click  //select[@name='scheduleDay']/option[@value='${day}']
 
 Endpoint Is Unpingable
     Retry Element Click  ${ping_test_button}
@@ -187,11 +159,39 @@ View Job Log
     Retry Text Input  ${job_filter_input}  ${job}
     Retry Link Click  //clr-dg-row[contains(.,'${job}')]//a
 
+Find Item And Click Edit Button
+    [Arguments]    ${name}
+    Filter Object    ${name}
+    Retry Select Object    ${name}
+    Retry Element Click    ${action_bar_edit}
+
+Find Item And Click Delete Button
+    [Arguments]    ${name}
+    Filter Object    ${name}
+    Retry Select Object    ${name}
+    Retry Element Click    ${action_bar_delete}
+
+Edit Replication Rule By Name
+    [Arguments]    ${name}
+    Switch To Registries
+    Switch To Replication Manage
+    Find Item And Click Edit Button  ${name}
+
+Delete Replication Rule By Name
+    [Arguments]    ${name}
+    Switch To Registries
+    Switch To Replication Manage
+    Find Item And Click Delete Button  ${name}
+
+Ensure Delete Replication Rule By Name
+    [Arguments]    ${name}
+    Delete Replication Rule By Name    ${name}
+    Retry Double Keywords When Error  Retry Element Click  ${delete_confirm_btn}  Retry Wait Until Page Not Contains Element  ${delete_confirm_btn}
+    Retry Wait Element  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any replication rules!\")]
+
 Rename Endpoint
     [arguments]  ${name}  ${newname}
-    Filter Object  ${name}
-    Select Object  ${name}
-    Retry Element Click  ${action_bar_edit}
+    Find Item And Click Edit Button  ${name}
     Retry Wait Until Page Contains Element  ${destination_name_xpath}
     Retry Text Input  ${destination_name_xpath}  ${newname}
     Retry Element Click  ${replication_save_xpath}

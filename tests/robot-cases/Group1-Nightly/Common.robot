@@ -76,15 +76,8 @@ Test Case - Create An New Project
 
 Test Case - Delete A Project
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world
-    Project Should Not Be Deleted  project${d}
-    Go Into Project  project${d}
-    Delete Repo  project${d}
-    Navigate To Projects
-    Project Should Be Deleted  project${d}
+    Delete A Project Without Sign In Harbor
     Close Browser
 
 Test Case - Read Only Mode
@@ -307,30 +300,12 @@ Test Case - User View Logs
     Do Log Advanced Search
     Close Browser
 
-
 Test Case - Manage Project Member
     Init Chrome Driver
-    ${d}=    Get current Date  result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user004  Test1@34
-    Create An New Project  project${d}
-    Push image  ip=${ip}  user=user004  pwd=Test1@34  project=project${d}  image=hello-world
-    Logout Harbor
-
-    User Should Not Be A Member Of Project  user005  Test1@34  project${d}
-    Manage Project Member  user004  Test1@34  project${d}  user005  Add
-    User Should Be Guest  user005  Test1@34  project${d}
-    Change User Role In Project  user004  Test1@34  project${d}  user005  Developer
-    User Should Be Developer  user005  Test1@34  project${d}
-    Change User Role In Project  user004  Test1@34  project${d}  user005  Admin
-    User Should Be Admin  user005  Test1@34  project${d}  user006
-    Change User Role In Project  user004  Test1@34  project${d}  user005  Master
-    User Should Be Master  user005  Test1@34  project${d}
-    Manage Project Member  user004  Test1@34  project${d}  user005  Remove
-    User Should Not Be A Member Of Project  user005  Test1@34  project${d}
-    Push image  ip=${ip}  user=user004  pwd=Test1@34  project=project${d}  image=hello-world
-    User Should Be Guest  user006  Test1@34  project${d}
-
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Manage Project Member Without Sign In Harbor  ${user}  ${pwd}
     Close Browser
 
 Test Case - Manage project publicity

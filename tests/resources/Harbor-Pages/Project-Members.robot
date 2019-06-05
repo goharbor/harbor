@@ -117,16 +117,20 @@ User Should Be Owner Of Project
     Logout Harbor
 
 User Should Not Be A Member Of Project
-    [Arguments]  ${user}  ${pwd}  ${project}
-    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    [Arguments]  ${user}  ${pwd}  ${project}  ${is_oidc_mode}=${false}
+    Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${user}
+    ${pwd_oidc}=  Run Keyword And Return If  ${is_oidc_mode} == ${true}  Get Secrete By API  ${HARBOR_URL}
+    ${password}=  Set Variable If  ${is_oidc_mode} == ${true}  ${pwd_oidc}  ${pwd}
     Project Should Not Display  ${project}
     Logout Harbor
-    Cannot Pull image  ${ip}  ${user}  ${pwd}  ${project}  ${ip}/${project}/hello-world
-    Cannot Push image  ${ip}  ${user}  ${pwd}  ${project}  hello-world
+    Cannot Pull image  ${ip}  ${user}  ${password}  ${project}  ${ip}/${project}/hello-world
+    Cannot Push image  ${ip}  ${user}  ${password}  ${project}  hello-world
 
 Manage Project Member
-    [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${op}  ${has_image}=${true}
-    Sign In Harbor  ${HARBOR_URL}  ${admin}  ${pwd}
+    [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${op}  ${has_image}=${true}  ${is_oidc_mode}=${false}
+    Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor  ${HARBOR_URL}  ${admin}  ${pwd}
+    ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${admin}
     Go Into Project  ${project}  ${has_image}
     Switch To Member
     Run Keyword If  '${op}' == 'Add'  Add Guest Member To Project  ${user}
@@ -135,38 +139,48 @@ Manage Project Member
     Logout Harbor
 
 Change User Role In Project
-    [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${role}
-    Sign In Harbor  ${HARBOR_URL}  ${admin}  ${pwd}
+    [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${role}  ${is_oidc_mode}=${false}
+    Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor   ${HARBOR_URL}  ${admin}  ${pwd}
+    ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${admin}
     Wait Until Element Is Visible  //clr-dg-cell//a[contains(.,'${project}')]
     Change Project Member Role  ${project}  ${user}  ${role}
     Logout Harbor
 
 User Should Be Guest
-    [Arguments]  ${user}  ${pwd}  ${project}
-    Sign In Harbor   ${HARBOR_URL}  ${user}  ${pwd}
+    [Arguments]  ${user}  ${pwd}  ${project}  ${is_oidc_mode}=${false}
+    Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor   ${HARBOR_URL}  ${user}  ${pwd}
+    ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${user}
+    ${pwd_oidc}=  Run Keyword And Return If  ${is_oidc_mode} == ${true}  Get Secrete By API  ${HARBOR_URL}
+    ${password}=  Set Variable If  ${is_oidc_mode} == ${true}  ${pwd_oidc}  ${pwd}
     Project Should Display  ${project}
     Go Into Project  ${project}
     Switch To Member
     User Can Not Add Member
     Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Guest')]
     Logout Harbor
-    Pull image  ${ip}  ${user}  ${pwd}  ${project}  hello-world
-    Cannot Push image  ${ip}  ${user}  ${pwd}  ${project}  hello-world
+    Pull image  ${ip}  ${user}  ${password}  ${project}  hello-world
+    Cannot Push image  ${ip}  ${user}  ${password}  ${project}  hello-world
 
 User Should Be Developer
-    [Arguments]  ${user}  ${pwd}  ${project}
-    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    [Arguments]  ${user}  ${pwd}  ${project}  ${is_oidc_mode}=${false}
+    Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor   ${HARBOR_URL}  ${user}  ${pwd}
+    ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${user}
+    ${pwd_oidc}=  Run Keyword And Return If  ${is_oidc_mode} == ${true}  Get Secrete By API  ${HARBOR_URL}
+    ${password}=  Set Variable If  ${is_oidc_mode} == ${true}  ${pwd_oidc}  ${pwd}
     Project Should Display  ${project}
     Go Into Project  ${project}
     Switch To Member
     User Can Not Add Member
     Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Developer')]
     Logout Harbor
-    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project}  hello-world  v1
+    Push Image With Tag  ${ip}  ${user}  ${password}  ${project}  hello-world  v1
 
 User Should Be Admin
-    [Arguments]  ${user}  ${pwd}  ${project}  ${guest}
-    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    [Arguments]  ${user}  ${pwd}  ${project}  ${guest}  ${is_oidc_mode}=${false}
+    Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor   ${HARBOR_URL}  ${user}  ${pwd}
+    ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${user}
+    ${pwd_oidc}=  Run Keyword And Return If  ${is_oidc_mode} == ${true}  Get Secrete By API  ${HARBOR_URL}
+    ${password}=  Set Variable If  ${is_oidc_mode} == ${true}  ${pwd_oidc}  ${pwd}
     Project Should Display  ${project}
     Go Into Project  ${project}
     Switch To Member
@@ -174,18 +188,21 @@ User Should Be Admin
     User Can Change Role  ${guest}
     Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Admin')]
     Logout Harbor
-    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project}  hello-world  v2
+    Push Image With Tag  ${ip}  ${user}  ${password}  ${project}  hello-world  v2
 
 User Should Be Master
-    [Arguments]  ${user}  ${pwd}  ${project}
-    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    [Arguments]  ${user}  ${pwd}  ${project}  ${is_oidc_mode}=${false}
+    Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor   ${HARBOR_URL}  ${user}  ${pwd}
+    ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${user}
+    ${pwd_oidc}=  Run Keyword And Return If  ${is_oidc_mode} == ${true}  Get Secrete By API  ${HARBOR_URL}
+    ${password}=  Set Variable If  ${is_oidc_mode} == ${true}  ${pwd_oidc}  ${pwd}
     Project Should Display  ${project}
     Go Into Project  ${project}
     Delete Repo  ${project}
     Switch To Member
     Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Master')]
     Logout Harbor
-    Push Image With Tag  ${ip}  ${user}  ${pwd}  ${project}  hello-world  v3
+    Push Image With Tag  ${ip}  ${user}  ${password}  ${project}  hello-world  v3
 
 Project Should Have Member
     [Arguments]  ${project}  ${user}
