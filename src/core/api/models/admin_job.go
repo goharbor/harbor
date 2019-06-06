@@ -160,7 +160,7 @@ func ConvertSchedule(cronStr string) (ScheduleParam, error) {
 		if err := json.Unmarshal([]byte(cronStr), &scheduleModel); err != nil {
 			return ScheduleParam{}, err
 		}
-		h, m, s := common_utils.ParseOfftime(int64(scheduleModel.Parm["daily_time"].(float64)))
+		h, m, s := common_utils.ParseOfftime(int64(scheduleModel.Param["daily_time"].(float64)))
 		cron := fmt.Sprintf("%d %d %d * * *", s, m, h)
 		convertedSchedule.Cron = cron
 		return convertedSchedule, nil

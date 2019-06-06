@@ -32,7 +32,7 @@ type SecretManager interface {
 	// VerifySecret verifies the secret and the token associated with it, it refreshes the token in the DB if it's
 	// refreshed during the verification
 	VerifySecret(ctx context.Context, userID int, secret string) error
-	// VerifyToken verifies the token in the model from parm,
+	// VerifyToken verifies the token in the model from param,
 	// and refreshes the token in the DB if it's refreshed during the verification.
 	VerifyToken(ctx context.Context, user *models.OIDCUser) error
 }
@@ -83,7 +83,7 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, userID int, secret s
 	return dm.VerifyToken(ctx, oidcUser)
 }
 
-// VerifyToken verifies the token in the model from parm in this implementation it will try to refresh the token
+// VerifyToken verifies the token in the model from param in this implementation it will try to refresh the token
 // if it's expired, if the refresh is successful it will persist the token and consider the verification successful.
 func (dm *defaultManager) VerifyToken(ctx context.Context, user *models.OIDCUser) error {
 	if user == nil {
