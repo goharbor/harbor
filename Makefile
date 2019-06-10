@@ -70,7 +70,6 @@ SRCPATH=./src
 TOOLSPATH=$(BUILDPATH)/tools
 CORE_PATH=$(BUILDPATH)/src/core
 PORTAL_PATH=$(BUILDPATH)/src/portal
-GOBASEPATH=/go/src/github.com/goharbor
 CHECKENVCMD=checkenv.sh
 
 # parameters
@@ -136,10 +135,10 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.11.2
-GOBUILDPATH=$(GOBASEPATH)/harbor
+GOBUILDIMAGE=golang:1.12.5
+GOBUILDPATH=/harbor
 GOIMAGEBUILDCMD=/usr/local/go/bin/go
-GOIMAGEBUILD=$(GOIMAGEBUILDCMD) build
+GOIMAGEBUILD=$(GOIMAGEBUILDCMD) build -mod vendor
 GOBUILDPATH_CORE=$(GOBUILDPATH)/src/core
 GOBUILDPATH_JOBSERVICE=$(GOBUILDPATH)/src/jobservice
 GOBUILDPATH_REGISTRYCTL=$(GOBUILDPATH)/src/registryctl
@@ -271,7 +270,6 @@ check_environment:
 
 compile_core:
 	@echo "compiling binary for core (golang image)..."
-	@echo $(GOBASEPATH)
 	@echo $(GOBUILDPATH)
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_CORE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_CORE)/$(CORE_BINARYNAME)
 	@echo "Done."
