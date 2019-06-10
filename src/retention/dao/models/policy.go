@@ -7,6 +7,7 @@ import (
 	"github.com/goharbor/harbor/src/common/retention"
 )
 
+// Policy defines a retention policy stored in the database
 type Policy struct {
 	ID      int64  `orm:"pk;auto;column(id)" json:"id"`
 	Name    string `orm:"column(name)" json:"name"`
@@ -26,10 +27,12 @@ type Policy struct {
 	UpdatedAt time.Time `orm:"column(updated_at);auto_now" json:"updated_at"`
 }
 
+// TableName returns the name of the table to store retention policies in
 func (p *Policy) TableName() string {
 	return "retention_policy"
 }
 
+// TableUnique defines composite unique constraints on the table that houses Policy information
 func (p *Policy) TableUnique() [][]string {
 	return [][]string{
 		{"Project", "Repository"},
