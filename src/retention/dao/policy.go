@@ -11,6 +11,9 @@ import (
 
 var deleteFilterQuery = fmt.Sprintf(`DELETE FROM %s WHERE policy = ?`, (&models.FilterMetadata{}).TableName())
 
+// AddPolicy adds the specified policy to the database, returning the auto-generated ID.
+//
+// All associated filters are also persisted, within a single transaction.
 func AddPolicy(p *models.Policy) (id int64, err error) {
 	o := commonDao.GetOrmer()
 	if err = o.Begin(); err != nil {
@@ -44,6 +47,7 @@ func AddPolicy(p *models.Policy) (id int64, err error) {
 	return
 }
 
+// GetServerPolicy gets the server-wide retention policy from the database. Returns nil if no such policy exists.
 func GetServerPolicy() (p *models.Policy, err error) {
 	p = &models.Policy{}
 	o := commonDao.GetOrmer()
@@ -71,6 +75,7 @@ func GetServerPolicy() (p *models.Policy, err error) {
 	return
 }
 
+// GetProjectPolicy gets the retention policy for the specified project ID. Returns nil if no such policy exists.
 func GetProjectPolicy(projectID int64) (p *models.Policy, err error) {
 	p = &models.Policy{}
 	o := commonDao.GetOrmer()
@@ -98,6 +103,7 @@ func GetProjectPolicy(projectID int64) (p *models.Policy, err error) {
 	return
 }
 
+// GetRepoPolicy gets the retention policy for the specified repository ID. Returns nil if no such policy exists.
 func GetRepoPolicy(projectID, repoID int64) (p *models.Policy, err error) {
 	p = &models.Policy{}
 	o := commonDao.GetOrmer()
@@ -125,6 +131,9 @@ func GetRepoPolicy(projectID, repoID int64) (p *models.Policy, err error) {
 	return
 }
 
+// UpdatePolicy updates the policy stored in the database. The policy must already be in the database.
+//
+// All associated filters are dropped and then re-added under a single transaction.
 func UpdatePolicy(p *models.Policy, props ...string) (err error) {
 	o := commonDao.GetOrmer()
 	if err = o.Begin(); err != nil {
@@ -169,6 +178,7 @@ func UpdatePolicy(p *models.Policy, props ...string) (err error) {
 	return
 }
 
+// DeletePolicy removes the specified policy from the database.
 func DeletePolicy(id int64) error {
 	_, err := commonDao.GetOrmer().Delete(&models.Policy{ID: id})
 	return err
