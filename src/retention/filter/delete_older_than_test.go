@@ -52,7 +52,7 @@ func TestNewDeleteOlderThan(t *testing.T) {
 
 			if tt.ExpectedN > 0 {
 				require.NotNil(t, sut)
-				assert.Equal(t, tt.ExpectedN, sut.n)
+				assert.Equal(t, tt.ExpectedN, sut.(*deleteOlderThan).n)
 			} else {
 				assert.Nil(t, sut)
 			}

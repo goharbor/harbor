@@ -23,6 +23,7 @@ import (
 )
 
 const (
+	// TypeDeleteOlderThan tells the filter builder to construct a DeleteOlderThan filter for the associated metadata
 	TypeDeleteOlderThan = "retention:filter:delete_older_than"
 )
 
@@ -32,7 +33,9 @@ type deleteOlderThan struct {
 	n int
 }
 
-func NewDeleteOlderThan(metadata map[string]interface{}) (*deleteOlderThan, error) {
+// NewDeleteOlderThan constructs a filter implementing retention.Filter. It accepts a single key "n" which specifies
+// how many days to keep tags for. All tags older than "n" days will be deleted.
+func NewDeleteOlderThan(metadata map[string]interface{}) (retention.Filter, error) {
 	if raw, ok := metadata[MetaDataKeyN]; ok {
 		if n, ok := raw.(int); ok && n > 0 {
 			return &deleteOlderThan{n: n}, nil
@@ -47,8 +50,11 @@ func NewDeleteOlderThan(metadata map[string]interface{}) (*deleteOlderThan, erro
 	return nil, ErrMissingMetadata(MetaDataKeyN)
 }
 
+// InitializeFor for a DeleteOlderThan filter does nothing
 func (*deleteOlderThan) InitializeFor(project *models.Project, repo *models.RepoRecord) {}
 
+// Process returns retention.FilterActionDelete if the provided tag record was created more than "n" days ago.
+// Otherwise, it returns retention.FilterActionNoDecision
 func (d *deleteOlderThan) Process(tag *retention.TagRecord) (retention.FilterAction, error) {
 	if tag.CreatedAt.Before(time.Now().Add(time.Duration(d.n) * daysAgo)) {
 		return retention.FilterActionDelete, nil
