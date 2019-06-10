@@ -3,8 +3,6 @@ package dao
 import (
 	"testing"
 
-	"github.com/magiconair/properties/assert"
-
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	common_models "github.com/goharbor/harbor/src/common/models"
 
@@ -12,6 +10,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/retention"
 	"github.com/goharbor/harbor/src/retention/dao/models"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -211,21 +210,21 @@ func assertPolicyEffectivelyEqual(t *testing.T, expected, actual *models.Policy)
 	require.NotNil(t, expected)
 	require.NotNil(t, actual)
 
-	assert.Equal(t, actual.ID, expected.ID, "ID Not Equal")
-	assert.Equal(t, actual.Name, expected.Name, "Name Not Equal")
-	assert.Equal(t, actual.Enabled, expected.Enabled, "Enabled flag not equal")
+	assert.Equal(t, expected.ID, actual.ID, "ID Not Equal")
+	assert.Equal(t, expected.Name, actual.Name, "Name Not Equal")
+	assert.Equal(t, expected.Enabled, actual.Enabled, "Enabled flag not equal")
 
-	assert.Equal(t, actual.Scope, expected.Scope, "Scope not equal")
-	assert.Equal(t, actual.FallThroughAction, expected.FallThroughAction, "FallThroughAction not equal")
+	assert.Equal(t, expected.Scope, actual.Scope, "Scope not equal")
+	assert.Equal(t, expected.FallThroughAction, actual.FallThroughAction, "FallThroughAction not equal")
 
 	if expected.Project != nil {
-		assert.Equal(t, actual.Project.ProjectID, expected.Project.ProjectID, "Project ID Not Equal")
+		assert.Equal(t, expected.Project.ProjectID, actual.Project.ProjectID, "Project ID Not Equal")
 	} else {
 		require.Nil(t, actual.Project)
 	}
 
 	if expected.Repository != nil {
-		assert.Equal(t, actual.Repository.RepositoryID, expected.Repository.RepositoryID, "Repository ID Not Equal")
+		assert.Equal(t, expected.Repository.RepositoryID, actual.Repository.RepositoryID, "Repository ID Not Equal")
 	} else {
 		require.Nil(t, actual.Repository)
 	}
@@ -239,9 +238,9 @@ func assertPolicyEffectivelyEqual(t *testing.T, expected, actual *models.Policy)
 	for i, ef := range expected.Filters {
 		af := actual.Filters[i]
 
-		assert.Equal(t, af.ID, ef.ID, "Filter ID not equal")
-		assert.Equal(t, af.Type, ef.Type, "Filter type not equal")
+		assert.Equal(t, ef.ID, af.ID, "Filter ID not equal")
+		assert.Equal(t, ef.Type, af.Type, "Filter type not equal")
 
-		assert.Equal(t, af.RawOptions, ef.RawOptions, "Filter Options not equal")
+		assert.Equal(t, ef.RawOptions, af.RawOptions, "Filter Options not equal")
 	}
 }
