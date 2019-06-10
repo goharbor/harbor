@@ -23,6 +23,7 @@ import (
 )
 
 const (
+	// TypeDeleteRegex tells the filter builder to construct a DeleteRegex filter for the associated metadata
 	TypeDeleteRegex = "retention:filter:delete_regex"
 )
 
@@ -30,14 +31,17 @@ type deleteRegex struct {
 	match *regexp.Regexp
 }
 
-func NewDeleteRegex(metadata map[string]interface{}) (*deleteRegex, error) {
+// NewDeleteRegex constructs a filter implementing retention.Filter. It accepts a single argument, "match",
+// which must be a string consisting of a valid regular expression.
+func NewDeleteRegex(metadata map[string]interface{}) (retention.Filter, error) {
 	if raw, ok := metadata[MetaDataKeyMatch]; ok {
 		if rawString, ok := raw.(string); ok {
-			if regex, err := regexp.Compile(rawString); err == nil {
+			regex, err := regexp.Compile(rawString)
+			if err == nil {
 				return &deleteRegex{match: regex}, nil
-			} else {
-				return nil, ErrInvalidMetadata(MetaDataKeyMatch, err.Error())
 			}
+
+			return nil, ErrInvalidMetadata(MetaDataKeyMatch, err.Error())
 		}
 
 		return nil, ErrWrongMetadataType(MetaDataKeyMatch, "string")
@@ -46,8 +50,11 @@ func NewDeleteRegex(metadata map[string]interface{}) (*deleteRegex, error) {
 	return nil, ErrMissingMetadata(MetaDataKeyMatch)
 }
 
+// InitializeFor for a DeleteRegex filter does nothing
 func (f *deleteRegex) InitializeFor(project *models.Project, repo *models.RepoRecord) {}
 
+// Process for a DeleteREgex filter returns retention.FilterActionDelete if the tag name matches the
+// regular expression in "match". Otherwise, it returns FilterActionNoDecision
 func (f *deleteRegex) Process(tag *retention.TagRecord) (retention.FilterAction, error) {
 	if f.match.MatchString(tag.Name) {
 		return retention.FilterActionDelete, nil
