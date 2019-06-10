@@ -23,8 +23,10 @@ import (
 )
 
 const (
+	// TypeKeepRegex tells the filter builder to construct a KeepRegex filter for the associated metadata
 	TypeKeepRegex = "retention:filter:keep_regex"
 
+	// MetaDataKeyMatch is the ke in the metadata map for the `match` value
 	MetaDataKeyMatch = "match"
 )
 
@@ -32,14 +34,17 @@ type keepRegex struct {
 	match *regexp.Regexp
 }
 
-func NewKeepRegex(metadata map[string]interface{}) (*keepRegex, error) {
+// NewKeepRegex constructs a filter implementing retention.Filter. It accepts a single argument, "match",
+// which must be a string consisting of a valid regular expression.
+func NewKeepRegex(metadata map[string]interface{}) (retention.Filter, error) {
 	if raw, ok := metadata[MetaDataKeyMatch]; ok {
 		if rawString, ok := raw.(string); ok {
-			if regex, err := regexp.Compile(rawString); err == nil {
+			regex, err := regexp.Compile(rawString)
+			if err == nil {
 				return &keepRegex{match: regex}, nil
-			} else {
-				return nil, ErrInvalidMetadata(MetaDataKeyMatch, err.Error())
 			}
+
+			return nil, ErrInvalidMetadata(MetaDataKeyMatch, err.Error())
 		}
 
 		return nil, ErrWrongMetadataType(MetaDataKeyMatch, "string")
@@ -48,8 +53,11 @@ func NewKeepRegex(metadata map[string]interface{}) (*keepRegex, error) {
 	return nil, ErrMissingMetadata(MetaDataKeyMatch)
 }
 
+// InitializeFor for a KeepRegex filter does nothing
 func (f *keepRegex) InitializeFor(project *models.Project, repo *models.RepoRecord) {}
 
+// Process for a KeepRegex filter returns retention.FilterActionDelete if the tag name matches the
+// regular expression in "match". Otherwise, it returns FilterActionNoDecision
 func (f *keepRegex) Process(tag *retention.TagRecord) (retention.FilterAction, error) {
 	if f.match.MatchString(tag.Name) {
 		return retention.FilterActionKeep, nil

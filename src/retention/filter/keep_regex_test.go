@@ -61,7 +61,7 @@ func TestNewKeepRegex(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 				assert.NotNil(t, sut)
-				assert.NotNil(t, sut.match)
+				assert.NotNil(t, sut.(*keepRegex).match)
 			}
 		})
 	}
