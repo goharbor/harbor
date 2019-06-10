@@ -53,7 +53,7 @@ func NewDeleteRegex(metadata map[string]interface{}) (retention.Filter, error) {
 // InitializeFor for a DeleteRegex filter does nothing
 func (f *deleteRegex) InitializeFor(project *models.Project, repo *models.RepoRecord) {}
 
-// Process for a DeleteREgex filter returns retention.FilterActionDelete if the tag name matches the
+// Process for a DeleteRegex filter returns retention.FilterActionDelete if the tag name matches the
 // regular expression in "match". Otherwise, it returns FilterActionNoDecision
 func (f *deleteRegex) Process(tag *retention.TagRecord) (retention.FilterAction, error) {
 	if f.match.MatchString(tag.Name) {
