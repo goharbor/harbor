@@ -16,14 +16,17 @@ package filter
 
 import "fmt"
 
+// ErrMissingMetadata builds an error that indicates a required metadata key is missing from the filter metadata
 func ErrMissingMetadata(key string) error {
 	return fmt.Errorf("filter: metadata: missing required key %s", key)
 }
 
+// ErrWrongMetadataType builds an error that indicates a metadata value is of the wrong type
 func ErrWrongMetadataType(key, t string) error {
 	return fmt.Errorf("filter: metadata: %s is wrong type (not a %s)", key, t)
 }
 
+// ErrInvalidMetadata builds a generic error that indicates a problem with the filter metadata
 func ErrInvalidMetadata(key, err string) error {
 	return fmt.Errorf("filter: metadata: %s: %s", key, err)
 }
