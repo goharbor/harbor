@@ -22,11 +22,13 @@ import (
 // TypeDeleteEverything tells the filter builder to construct a DeleteEverything filter for the associated metadata
 const TypeDeleteEverything = "retention:filter:delete_everything"
 
+// DeleteEverything is an empty struct that implements retention.Filter. It takes no arguments.
 type DeleteEverything struct{}
 
 // InitializeFor on a deleteEverything Filter does nothing
 func (*DeleteEverything) InitializeFor(project *models.Project, repo *models.RepoRecord) {}
 
+// Process for the DeleteEverything Filter simply returns retention.FilterActionDelete
 func (*DeleteEverything) Process(tag *retention.TagRecord) (retention.FilterAction, error) {
 	return retention.FilterActionDelete, nil
 }
