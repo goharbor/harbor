@@ -22,11 +22,13 @@ import (
 // TypeKeepEverything tells the filter builder to construct a KeepEverything filter for the associated metadata
 const TypeKeepEverything = "retention:filter:keep_everything"
 
+// KeepEverything is an empty struct that implements retention.Filter. It takes no arguments.
 type KeepEverything struct{}
 
 // InitializeFor on a KeepEverything Filter does nothing
 func (*KeepEverything) InitializeFor(project *models.Project, repo *models.RepoRecord) {}
 
+// Process for the DeleteEverything Filter simply returns retention.FilterActionKeep
 func (*KeepEverything) Process(tag *retention.TagRecord) (retention.FilterAction, error) {
 	return retention.FilterActionKeep, nil
 }
