@@ -64,7 +64,7 @@ func TestNewKeepMostRecentN_New(t *testing.T) {
 
 			if tt.ExpectedN > 0 {
 				assert.NotNil(t, sut)
-				assert.Equal(t, tt.ExpectedN, sut.N)
+				assert.Equal(t, tt.ExpectedN, sut.(*keepMostRecentN).N)
 			} else {
 				assert.Nil(t, sut)
 			}

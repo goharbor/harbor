@@ -33,7 +33,7 @@ type keepMostRecentN struct {
 }
 
 // NewKeepMostRecentN constructs a new filter for the provided metadata
-func NewKeepMostRecentN(metadata map[string]interface{}) (*keepMostRecentN, error) {
+func NewKeepMostRecentN(metadata map[string]interface{}) (retention.Filter, error) {
 	if n, ok := metadata[MetaDataKeyN]; ok {
 		if intN, ok := n.(int); ok && intN > 0 {
 			return &keepMostRecentN{N: intN}, nil
@@ -47,10 +47,14 @@ func NewKeepMostRecentN(metadata map[string]interface{}) (*keepMostRecentN, erro
 	return nil, ErrMissingMetadata(MetaDataKeyN)
 }
 
+// InitializeFor for the KeepMostRecentN filter resets the keptSoFar count
 func (f *keepMostRecentN) InitializeFor(project *models.Project, repo *models.RepoRecord) {
 	f.keptSoFar = 0
 }
 
+// Process keeps track of the number of tags processed for the given project and repository pair. If more than N tags
+// have been kept so far, Process returns retention.FilterActionDelete, otherwise, it returns
+// retention.FilterActionKeep.
 func (f *keepMostRecentN) Process(tag *retention.TagRecord) (retention.FilterAction, error) {
 	f.keptSoFar++
 	if f.keptSoFar > f.N {
