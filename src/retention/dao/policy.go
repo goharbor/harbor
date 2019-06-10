@@ -35,7 +35,7 @@ func AddPolicy(p *models.Policy) (id int64, err error) {
 	for _, f := range p.Filters {
 		f.Policy = p
 
-		if err = f.SyncJsonToORM(); err != nil {
+		if err = f.SyncJSONToORM(); err != nil {
 			return
 		}
 
@@ -66,7 +66,7 @@ func GetServerPolicy() (p *models.Policy, err error) {
 		}
 
 		for _, f := range p.Filters {
-			if err = f.SyncORMToJson(); err != nil {
+			if err = f.SyncORMToJSON(); err != nil {
 				return
 			}
 		}
@@ -94,7 +94,7 @@ func GetProjectPolicy(projectID int64) (p *models.Policy, err error) {
 		}
 
 		for _, f := range p.Filters {
-			if err = f.SyncORMToJson(); err != nil {
+			if err = f.SyncORMToJSON(); err != nil {
 				return
 			}
 		}
@@ -122,7 +122,7 @@ func GetRepoPolicy(projectID, repoID int64) (p *models.Policy, err error) {
 		}
 
 		for _, f := range p.Filters {
-			if err = f.SyncORMToJson(); err != nil {
+			if err = f.SyncORMToJSON(); err != nil {
 				return
 			}
 		}
@@ -166,7 +166,7 @@ func UpdatePolicy(p *models.Policy, props ...string) (err error) {
 	for _, f := range p.Filters {
 		f.Policy = p
 
-		if err = f.SyncJsonToORM(); err != nil {
+		if err = f.SyncJSONToORM(); err != nil {
 			return
 		}
 

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 )
 
+// FilterMetadata defines type and argument information for a retention filter in a policy
 type FilterMetadata struct {
 	ID   int64  `orm:"column(id);pk;auto" json:"id"`
 	Type string `orm:"column(type)" json:"type"`
@@ -14,17 +15,20 @@ type FilterMetadata struct {
 	Policy *Policy `orm:"column(policy);rel(fk)" json:"-"`
 }
 
-func (f *FilterMetadata) SyncJsonToORM() error {
-	if bytes, err := json.Marshal(&f.Options); err != nil {
+// SyncJSONToORM marshals metadata stored in f.Options into f.RawOptions
+func (f *FilterMetadata) SyncJSONToORM() error {
+	bytes, err := json.Marshal(&f.Options)
+	if err != nil {
 		return err
-	} else {
-		f.RawOptions = string(bytes)
 	}
+
+	f.RawOptions = string(bytes)
 
 	return nil
 }
 
-func (f *FilterMetadata) SyncORMToJson() error {
+// SyncORMToJSON unmarshals metadata stored in f.RawOptions to f.Options
+func (f *FilterMetadata) SyncORMToJSON() error {
 	if f.RawOptions == "" {
 		f.Options = map[string]interface{}{}
 		return nil
@@ -33,6 +37,7 @@ func (f *FilterMetadata) SyncORMToJson() error {
 	return json.Unmarshal([]byte(f.RawOptions), &f.Options)
 }
 
+// TableName returns the name of the table to store filter metadata in
 func (f *FilterMetadata) TableName() string {
 	return "retention_filter_metadata"
 }
