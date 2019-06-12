@@ -16,6 +16,7 @@ package runtime
 
 import (
 	"context"
+	"fmt"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -56,15 +57,16 @@ func (suite *BootStrapTestSuite) SetupSuite() {
 
 // TearDownSuite clears the test suite
 func (suite *BootStrapTestSuite) TearDownSuite() {
-	suite.cancel()
-
 	pool := tests.GiveMeRedisPool()
 	conn := pool.Get()
 	defer func() {
 		_ = conn.Close()
 	}()
 
-	_ = tests.ClearAll(tests.GiveMeTestNamespace(), conn)
+	err := tests.ClearAll(fmt.Sprintf("{%s}", tests.GiveMeTestNamespace()), conn)
+	require.NoError(suite.T(), err, "clear rdb error")
+
+	suite.cancel()
 }
 
 // TestBootStrapTestSuite is entry of go test
