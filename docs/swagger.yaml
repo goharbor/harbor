@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Harbor API
   description: These APIs provide services for manipulating Harbor project.
-  version: 1.7.0
+  version: 1.8.0
 host: localhost
 schemes:
   - http

@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"errors"
+
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common"
@@ -682,14 +683,17 @@ func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
 		Name: tag,
 	}
 
-	digest, _, payload, err := client.PullManifest(tag, []string{schema2.MediaTypeManifest})
+	digest, mediaType, payload, err := client.PullManifest(tag, []string{schema2.MediaTypeManifest})
 	if err != nil {
 		return detail, err
 	}
 	detail.Digest = digest
 
-	manifest := &schema2.DeserializedManifest{}
-	if err = manifest.UnmarshalJSON(payload); err != nil {
+	if strings.Contains(mediaType, "application/json") {
+		mediaType = schema1.MediaTypeManifest
+	}
+	manifest, _, err := registry.UnMarshal(mediaType, payload)
+	if err != nil {
 		return detail, err
 	}
 
@@ -699,7 +703,21 @@ func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
 		detail.Size += ref.Size
 	}
 
-	_, reader, err := client.PullBlob(manifest.Target().Digest.String())
+	// if the media type of the manifest isn't v2, doesn't parse image config
+	// and return directly
+	// this impacts that some detail information(os, arch, ...) of old images
+	// cannot be got
+	if mediaType != schema2.MediaTypeManifest {
+		log.Debugf("the media type of the manifest is %s, not v2, skip", mediaType)
+		return detail, nil
+	}
+	v2Manifest, ok := manifest.(*schema2.DeserializedManifest)
+	if !ok {
+		log.Debug("the manifest cannot be convert to DeserializedManifest, skip")
+		return detail, nil
+	}
+
+	_, reader, err := client.PullBlob(v2Manifest.Target().Digest.String())
 	if err != nil {
 		return detail, err
 	}
