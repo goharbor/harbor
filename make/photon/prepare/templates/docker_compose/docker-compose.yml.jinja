@@ -419,7 +419,7 @@ services:
 {% if gcs_keyfile %}
       - type: bind
         source: {{gcs_keyfile}}
-        target: /etc/registry/gcs.key
+        target: /etc/chartserver/gcs.key
 {% endif %}
 {%if registry_custom_ca_bundle_path %}
       - type: bind
