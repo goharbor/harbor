@@ -169,7 +169,7 @@ Go Into Repo
     ${repo_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${repoName}')]/a
     Retry Element Click  ${repo_search_icon}
     Retry Text Input  ${repo_search_input}  ${repoName}
-    Retry Element Click  ${repo_name_element}
+    Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}  Page Should Not Contain Element  ${repo_name_element}
     Retry Wait Element  ${tag_table_column_signed}
     Retry Wait Element  ${tag_table_column_vulnerability}
     Retry Wait Element  ${tag_images_btn}
