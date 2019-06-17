@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/jobservice/mgt"
+	"github.com/goharbor/harbor/src/jobservice/migration"
 	"os"
 	"os/signal"
 	"sync"
@@ -96,6 +97,14 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		namespace := fmt.Sprintf("{%s}", cfg.PoolConfig.RedisPoolCfg.Namespace)
 		// Get redis connection pool
 		redisPool := bs.getRedisPool(cfg.PoolConfig.RedisPoolCfg.RedisURL)
+
+		// Do data migration if necessary
+		rdbMigrator := migration.New(redisPool, namespace)
+		rdbMigrator.Register(migration.PolicyMigratorFactory)
+		if err := rdbMigrator.Migrate(); err != nil {
+			// Just logged, should not block the starting process
+			logger.Error(err)
+		}
 
 		// Create stats manager
 		manager = mgt.NewManager(ctx, namespace, redisPool)

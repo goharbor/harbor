@@ -19,8 +19,8 @@ worker_pool:
   redis_pool:
     #redis://[arbitrary_username:password@]ipaddress:port/database_index
     #or ipaddress:port[,weight,password,database_index]
-    redis_url: "localhost:6379"
-    namespace: "harbor_job_service"
+    redis_url: "redis://localhost:6379/2"
+    namespace: "harbor_job_service_namespace"
 
 #Loggers for the running job
 job_loggers:
@@ -29,11 +29,11 @@ job_loggers:
   - name: "FILE"
     level: "DEBUG"
     settings: # Customized settings of logger
-      base_dir: "/Users/szou/tmp/job_logs"
+      base_dir: "/tmp/job_logs"
     sweeper:
       duration: 1 #days
       settings: # Customized settings of sweeper
-        work_dir: "/Users/szou/tmp/job_logs"
+        work_dir: "/tmp/job_logs"
 
 #Loggers for the job service
 loggers:
