@@ -225,12 +225,12 @@ Retry Double Keywords When Error
     \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
     \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
     \    Capture Page Screenshot
+    \    Sleep  2
     \    ${out2}  Run Keyword And Ignore Error  ${keyword2}  ${element2}
     \    Capture Page Screenshot
     \    Log To Console  Return value is ${out1[0]} ${out2[0]}
-    \    Exit For Loop If  '${out1[0]}'=='PASS' and '${out2[0]}'=='PASS'
-    \    Sleep  2
-    Should Be Equal As Strings  '${out1[0]}'  'PASS'
+    \    Exit For Loop If  '${out2[0]}'=='PASS'
+    \    Sleep  1
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
 
 Run Curl And Return Json
