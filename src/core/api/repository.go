@@ -332,7 +332,7 @@ func (ra *RepositoryAPI) Delete() {
 
 		go func(tag string) {
 			e := &event.Event{
-				Type: event.EventTypeImagePush,
+				Type: event.EventTypeImageDelete,
 				Resource: &model.Resource{
 					Type: model.ResourceTypeImage,
 					Metadata: &model.ResourceMetadata{
