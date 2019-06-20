@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -203,6 +204,55 @@ func TestGetReposTop(t *testing.T) {
 	}
 
 	fmt.Printf("\n")
+}
+
+func TestGetTagSize(t *testing.T) {
+	payload1 := `
+{
+	"config": {
+		"digest": "sha256:e0cecb09a8b6f69043428d9307470d51e60d764da9aed7df59b1065fe071d70b",
+		"mediaType": "application/octet-stream",
+		"size": 1024
+	},
+	"layers": [
+		{
+		"digest": "sha256:e0cecb09a8b6f69043428d9307470d51e60d764da9aed7df59b1065fe071d70b",
+		"mediaType": "application/octet-stream",
+		"size": 1024
+		}
+	],
+	"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+	"schemaVersion": 2
+}
+	`
+
+	payload2 := `
+{
+	"config": {
+		"digest": "sha256:fff10de009faf42c0ca1845ba001af4d3a02d50d4e19b926a375ebb1661b09d7",
+		"mediaType": "application/octet-stream",
+		"size": 1024
+	},
+	"layers": [
+		{
+		"digest": "sha256:e0cecb09a8b6f69043428d9307470d51e60d764da9aed7df59b1065fe071d70b",
+		"mediaType": "application/octet-stream",
+		"size": 1024
+		}
+	],
+	"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
+	"schemaVersion": 2
+}
+	`
+
+	mediaType := "application/vnd.docker.distribution.manifest.v2+json"
+	manifest1, _, err := registry.UnMarshal(mediaType, []byte(payload1))
+	assert.Nil(t, err)
+	assert.Equal(t, int64(1024+len([]byte(payload1))), getTagSize(manifest1))
+
+	manifest2, _, err := registry.UnMarshal(mediaType, []byte(payload2))
+	assert.Nil(t, err)
+	assert.Equal(t, int64(1024*2+len([]byte(payload2))), getTagSize(manifest2))
 }
 
 func TestPopulateAuthor(t *testing.T) {

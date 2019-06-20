@@ -26,6 +26,7 @@ import (
 
 	"errors"
 
+	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common"
@@ -697,11 +698,7 @@ func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
 		return detail, err
 	}
 
-	// size of manifest + size of layers
-	detail.Size = int64(len(payload))
-	for _, ref := range manifest.References() {
-		detail.Size += ref.Size
-	}
+	detail.Size = getTagSize(manifest)
 
 	// if the media type of the manifest isn't v2, doesn't parse image config
 	// and return directly
@@ -734,6 +731,31 @@ func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
 	populateAuthor(detail)
 
 	return detail, nil
+}
+
+func getTagSize(manifest distribution.Manifest) int64 {
+	var size int64
+
+	_, payload, err := manifest.Payload()
+	if err != nil {
+		return size
+	}
+
+	digests := map[string]bool{}
+
+	// size of manifest + size of layers
+	size = int64(len(payload))
+	for _, ref := range manifest.References() {
+		digest := string(ref.Digest)
+
+		// duplicate layers only calculated once
+		if _, ok := digests[digest]; !ok {
+			size += ref.Size
+			digests[digest] = true
+		}
+	}
+
+	return size
 }
 
 func populateAuthor(detail *tagDetail) {
