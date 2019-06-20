@@ -114,6 +114,8 @@ github.com/gorilla/handlers
 github.com/gorilla/mux
 # github.com/json-iterator/go v1.1.6
 github.com/json-iterator/go
+# github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
+github.com/justinas/alice
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/lib/pq v1.1.0

@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"github.com/astaxie/beego"
-	"github.com/goharbor/harbor/src/core/proxy"
+	"github.com/goharbor/harbor/src/core/middlewares"
 )
 
 // RegistryProxy is the endpoint on UI for a reverse proxy pointing to registry
@@ -14,10 +14,11 @@ type RegistryProxy struct {
 func (p *RegistryProxy) Handle() {
 	req := p.Ctx.Request
 	rw := p.Ctx.ResponseWriter
-	proxy.Handle(rw, req)
+	middlewares.Handle(rw, req)
 }
 
 // Render ...
 func (p *RegistryProxy) Render() error {
 	return nil
 }
+

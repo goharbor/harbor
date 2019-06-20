@@ -32,7 +32,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/proxy"
+	"github.com/goharbor/review/harbor/src/core/proxy"
 	"github.com/stretchr/testify/assert"
 )
 

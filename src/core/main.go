@@ -35,7 +35,7 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/src/core/proxy"
+	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/replication"
 )
@@ -158,7 +158,9 @@ func main() {
 	}
 
 	log.Info("Init proxy")
-	proxy.Init()
+	if err := middlewares.Init(); err != nil {
+		log.Errorf("init proxy error, %v", err)
+	}
 	// go proxy.StartProxy()
 	beego.Run()
 }
