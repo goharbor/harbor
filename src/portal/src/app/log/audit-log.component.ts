@@ -104,7 +104,6 @@ export class AuditLogComponent implements OnInit {
           this.auditLogs = response.body;
         },
         error => {
-          this.router.navigate(['/harbor', 'projects']);
           this.messageHandlerService.handleError(error);
         }
       );
