@@ -48,6 +48,7 @@
           <div class="form-select">
             <div class="select endpointSelect pull-left">
               <select id="src_registry_id" (change)="sourceChange($event)"  formControlName="src_registry" [compareWith]="equals">
+                <option style="display: none"></option>
                 <option *ngFor="let source of sourceList" [ngValue]="source">{{source.name}}-{{source.url}}</option>
               </select>
             </div>
@@ -97,6 +98,7 @@
           <div class="form-select">
             <div class="select endpointSelect pull-left">
                 <select id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry"  [compareWith]="equals">
+                    <option style="display: none"></option>
                     <option *ngFor="let target of targetList" [ngValue]="target">{{target.name}}-{{target.url}}</option>
                   </select>
             </div>
