@@ -1,4 +1,4 @@
-# Copyright Project Harbor Authors
+f# Copyright Project Harbor Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,6 +53,7 @@ Resource  Harbor-Pages/Configuration_Elements.robot
 Resource  Harbor-Pages/ToolKit.robot
 Resource  Harbor-Pages/ToolKit_Elements.robot
 Resource  Harbor-Pages/Vulnerability.robot
+Resource  Harbor-Pages/Vulnerability_Elements.robot
 Resource  Harbor-Pages/LDAP-Mode.robot
 Resource  Harbor-Pages/OIDC_Auth.robot
 Resource  Harbor-Pages/OIDC_Auth_Elements.robot
@@ -221,6 +222,7 @@ Retry Keyword When Error
 
 Retry Double Keywords When Error
     [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}
+    Retry Wait Element  ${element1}
     :For  ${n}  IN RANGE  1  6
     \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
     \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
