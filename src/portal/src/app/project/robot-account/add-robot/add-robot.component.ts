@@ -185,4 +185,15 @@ export class AddRobotComponent implements OnInit, OnDestroy {
         this.messageHandlerService.showSuccess(res);
       });
   }
+
+  radioChange(num): void {
+    if (num === 1) {
+      this.robot.access.isPullImage = true;
+      this.robot.access.isPushOrPullImage = false;
+    }
+    if ( num === 2) {
+      this.robot.access.isPullImage = false;
+      this.robot.access.isPushOrPullImage = true;
+    }
+  }
 }

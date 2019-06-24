@@ -3,7 +3,7 @@
 }
 
 .input-width {
-  width: 200px;
+  width: 300px;
 }
 
 .copy-token {
@@ -34,4 +34,23 @@
 }
 .no-margin {
   margin: 0;
+}
+.display-table{
+  display: table;
+  width: 100%;
+}
+
+.left{
+  display: table-cell;
+  width: 23%;
+  color: #000000;
+}
+
+.right{
+  display: table-cell;
+  width: 77%;
+}
+
+.padding-left-120{
+  padding-left: 120px;
 }
