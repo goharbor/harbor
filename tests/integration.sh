@@ -123,7 +123,6 @@ function publishImage {
     # for release-*, will use 'release-*-dev' as the tag name, like release-v1.8.0-dev
     if [[ $DRONE_BRANCH == "master" ]]; then
       image_tag=dev
-      docker images | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:$image_tag;docker push \1:$image_tag|p" | bash
     fi
     if [[ $DRONE_BRANCH == "release-"* ]]; then
       image_tag=$Harbor_Assets_Version-dev
