@@ -38,6 +38,7 @@ export class AddRobotComponent implements OnInit, OnDestroy {
   robotNameChecker: Subject<string> = new Subject<string>();
   nameTooltipText = "ROBOT_ACCOUNT.ROBOT_NAME";
   robotForm: NgForm;
+  imagePermission: string = "push-and-pull";
   @Input() projectId: number;
   @Input() projectName: string;
   @Output() create = new EventEmitter<boolean>();
@@ -116,6 +117,14 @@ export class AddRobotComponent implements OnInit, OnDestroy {
     if (this.isSubmitOnGoing) {
       return;
     }
+    // set value to robot.access.isPullImage and robot.access.isPushOrPullImage when submit
+    if ( this.imagePermission === 'pull' ) {
+      this.robot.access.isPullImage = true;
+      this.robot.access.isPushOrPullImage = false;
+    } else {
+      this.robot.access.isPullImage = false;
+      this.robot.access.isPushOrPullImage = true;
+    }
     this.isSubmitOnGoing = true;
     this.robotService
       .addRobotAccount(
@@ -184,15 +193,5 @@ export class AddRobotComponent implements OnInit, OnDestroy {
       .subscribe((res: string) => {
         this.messageHandlerService.showSuccess(res);
       });
-  }
-
-  radioChange(radioId: string ): void {
-    if (radioId === 'image-permission-push') {
-      this.robot.access.isPullImage = true;
-      this.robot.access.isPushOrPullImage = false;
-    } else if (radioId === 'image-permission-push-and-pull') {
-      this.robot.access.isPullImage = false;
-      this.robot.access.isPushOrPullImage = true;
-    }
   }
 }
