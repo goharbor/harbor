@@ -186,12 +186,11 @@ export class AddRobotComponent implements OnInit, OnDestroy {
       });
   }
 
-  radioChange(num): void {
-    if (num === 1) {
+  radioChange(radioId: string ): void {
+    if (radioId === 'image-permission-push') {
       this.robot.access.isPullImage = true;
       this.robot.access.isPushOrPullImage = false;
-    }
-    if ( num === 2) {
+    } else if (radioId === 'image-permission-push-and-pull') {
       this.robot.access.isPullImage = false;
       this.robot.access.isPushOrPullImage = true;
     }

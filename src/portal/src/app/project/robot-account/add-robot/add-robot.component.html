@@ -50,14 +50,14 @@
               <div class="radio-inline">
                 <input type="radio" name="image-permission"
                        id="image-permission-push"
-                       (change)="radioChange(1)">
+                       (change)="radioChange('image-permission-push')">
                 <label for="image-permission-push">{{'ROBOT_ACCOUNT.PUSH' | translate}}</label>
               </div>
               <div class="radio-inline">
                 <input type="radio" name="image-permission"
                        id="image-permission-push-and-pull"
                        checked
-                       (change)="radioChange(2)">
+                       (change)="radioChange('image-permission-push-and-pull')">
                 <label for="image-permission-push-and-pull">{{'ROBOT_ACCOUNT.PUSH' | translate}} & {{'ROBOT_ACCOUNT.PULL' | translate}}</label>
               </div>
             </div>
