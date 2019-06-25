@@ -29,6 +29,7 @@ const (
 
 	FilterStyleTypeText  = "input"
 	FilterStyleTypeRadio = "radio"
+	FilterStyleTypeList  = "list"
 )
 
 // RegistryType indicates the type of registry
