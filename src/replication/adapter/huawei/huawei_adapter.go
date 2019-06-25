@@ -218,7 +218,10 @@ func AdapterFactory(registry *model.Registry) (adp.Adapter, error) {
 	}
 
 	var (
-		modifiers  []modifier.Modifier
+		modifiers = []modifier.Modifier{
+			&auth.UserAgentModifier{
+				UserAgent: adp.UserAgentReplication,
+			}}
 		authorizer modifier.Modifier
 	)
 	if registry.Credential != nil {
