@@ -77,8 +77,8 @@ Multi-delete Member
     [Arguments]    @{obj}
     :For  ${obj}  in  @{obj}
     \    Retry Element Click  //clr-dg-row[contains(.,'${obj}')]//label
-    Retry Element Click  ${member_action_xpath}
-    Retry Element Click  ${delete_action_xpath}
+    Retry Double Keywords When Error  Retry Element Click  ${member_action_xpath}  Retry Wait Until Page Contains Element  ${delete_action_xpath}
+    Retry Double Keywords When Error  Retry Element Click  ${delete_action_xpath}  Retry Wait Until Page Contains Element  ${delete_btn}
     Retry Double Keywords When Error  Retry Element Click  ${delete_btn}  Retry Wait Until Page Not Contains Element  ${delete_btn}
 
 
