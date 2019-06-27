@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Harbor API
   description: These APIs provide services for manipulating Harbor project.
-  version: 1.8.0
+  version: 1.9.0
 host: localhost
 schemes:
   - http
@@ -3478,6 +3478,44 @@ paths:
           description: The robot account is not found.
         '500':
           description: Unexpected internal errors.
+  '/system/CVEWhitelist':
+    get:
+      summary: Get the system level whitelist of CVE.
+      description: Get the system level whitelist of CVE.  This API can be called by all authenticated users.
+      tags:
+        - Products
+        - System
+      responses:
+        '200':
+          description: Successfully retrieved the CVE whitelist.
+          schema:
+            $ref: "#/definitions/CVEWhitelist"
+        '401':
+          description: User is not authenticated.
+        '500':
+          description: Unexpected internal errors.
+    put:
+      summary: Update the system level whitelist of CVE.
+      description: This API overwrites the system level whitelist of CVE with the list in request body.  Only system Admin
+        has permission to call this API.
+      tags:
+        - Products
+        - System
+      parameters:
+        - in: body
+          name: whitelist
+          description: The whitelist with new content
+          schema:
+              $ref: "#/definitions/CVEWhitelist"
+      responses:
+        '200':
+          description: Successfully updated the CVE whitelist.
+        '401':
+          description: User is not authenticated.
+        '403':
+          description: User does not have permission to call this API.
+        '500':
+          description: Unexpected internal errors.
 responses:
   OK:
     description: 'Success'
@@ -5070,3 +5108,27 @@ definitions:
       metadata:
         type: object
         description: The metadata of namespace
+  CVEWhitelist:
+    type: object
+    description: The CVE Whitelist for system or project
+    properties:
+      id:
+        type: integer
+        description: ID of the whitelist
+      project_id:
+        type: integer
+        description: ID of the project which the whitelist belongs to.  For system level whitelist this attribute is zero.
+      expires_at:
+        type: integer
+        description: the time for expiration of the whitelist, in the form of seconds since epoch.  This is an optional attribute, if it's not set the CVE whitelist does not expire.
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/CVEWhitelistItem"
+  CVEWhitelistItem:
+    type: object
+    description: The item in CVE whitelist
+    properties:
+      cve_id:
+        type: string
+        description: The ID of the CVE, such as "CVE-2019-10164"
