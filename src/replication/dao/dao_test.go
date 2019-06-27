@@ -33,7 +33,7 @@ func TestMain(m *testing.M) {
   "harbor_label", "harbor_resource_label", "harbor_user", "img_scan_job", "img_scan_overview",
   "job_log", "project", "project_member", "project_metadata", "properties", "registry",
   "replication_policy", "repository", "robot", "role", "schema_migrations", "user_group",
-  "replication_execution", "replication_task", "replication_schedule_job", "oidc_user";`,
+  "replication_execution", "replication_task", "replication_schedule_job", "oidc_user", "cve_whitelist";`,
 		`DROP FUNCTION "update_update_time_at_column"();`,
 	}
 	dao.PrepareTestData(clearSqls, nil)

@@ -31,6 +31,9 @@ export const errorHandler = function (error: any): string {
     if (error.error && error.error.message) {
         return error.error.message;
     }
+    if (error.message) {
+        return error.message;
+    }
 
     if (!(error.statusCode || error.status)) {
         // treat as string message

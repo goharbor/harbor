@@ -97,11 +97,6 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 				Type:  model.FilterTypeTag,
 				Style: model.FilterStyleTypeText,
 			},
-			// TODO add support for label filter
-			// {
-			//	 Type:  model.FilterTypeLabel,
-			//	 Style: model.FilterStyleTypeText,
-			// },
 		},
 		SupportedTriggers: []model.TriggerType{
 			model.TriggerTypeManual,
@@ -117,6 +112,26 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	}
 	if sys.ChartRegistryEnabled {
 		info.SupportedResourceTypes = append(info.SupportedResourceTypes, model.ResourceTypeChart)
+	}
+	labels := []*struct {
+		Name string `json:"name"`
+	}{}
+	// label isn't supported in some previous version of Harbor
+	if err := a.client.Get(a.getURL()+"/api/labels?scope=g", &labels); err != nil {
+		if e, ok := err.(*common_http.Error); !ok || e.Code != http.StatusNotFound {
+			return nil, err
+		}
+	} else {
+		ls := []string{}
+		for _, label := range labels {
+			ls = append(ls, label.Name)
+		}
+		labelFilter := &model.FilterStyle{
+			Type:   model.FilterTypeLabel,
+			Style:  model.FilterStyleTypeList,
+			Values: ls,
+		}
+		info.SupportedResourceFilters = append(info.SupportedResourceFilters, labelFilter)
 	}
 	return info, nil
 }
@@ -244,11 +259,14 @@ func (a *adapter) getProject(name string) (*project, error) {
 	return nil, nil
 }
 
-func (a *adapter) getRepositories(projectID int64) ([]*repository, error) {
-	repositories := []*repository{}
+func (a *adapter) getRepositories(projectID int64) ([]*adp.Repository, error) {
+	repositories := []*adp.Repository{}
 	url := fmt.Sprintf("%s/api/repositories?project_id=%d&page=1&page_size=500", a.getURL(), projectID)
 	if err := a.client.GetAndIteratePagination(url, &repositories); err != nil {
 		return nil, err
+	}
+	for _, repository := range repositories {
+		repository.ResourceType = string(model.ResourceTypeImage)
 	}
 	return repositories, nil
 }

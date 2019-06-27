@@ -188,11 +188,23 @@ func (suite *CWorkerTestSuite) TestStopJob() {
 	t, err := suite.lcmCtl.New(genericJob)
 	require.NoError(suite.T(), err, "new job stats: nil error expected but got %s", err)
 
-	time.Sleep(3 * time.Second)
+	tk := time.NewTicker(500 * time.Millisecond)
+	defer tk.Stop()
 
-	latest, err := t.Status()
-	require.NoError(suite.T(), err, "get latest status: nil error expected but got %s", err)
-	assert.EqualValues(suite.T(), job.RunningStatus, latest, "expect job is running now")
+LOOP:
+	for {
+		select {
+		case <-tk.C:
+			latest, err := t.Status()
+			require.NoError(suite.T(), err, "get latest status: nil error expected but got %s", err)
+			if latest.Compare(job.RunningStatus) == 0 {
+				break LOOP
+			}
+		case <-time.After(30 * time.Second):
+			require.NoError(suite.T(), errors.New("check running status time out"))
+			break LOOP
+		}
+	}
 
 	err = suite.cWorker.StopJob(genericJob.Info.JobID)
 	require.NoError(suite.T(), err, "stop job: nil error expected but got %s", err)
@@ -255,7 +267,7 @@ func (j *fakeLongRunJob) Validate(params job.Parameters) error {
 }
 
 func (j *fakeLongRunJob) Run(ctx job.Context, params job.Parameters) error {
-	time.Sleep(5 * time.Second)
+	time.Sleep(3 * time.Second)
 
 	if _, stopped := ctx.OPCommand(); stopped {
 		return nil

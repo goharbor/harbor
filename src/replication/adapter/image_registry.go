@@ -21,6 +21,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/goharbor/harbor/src/replication/filter"
+
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/goharbor/harbor/src/common/http/modifier"
@@ -48,6 +50,59 @@ type ImageRegistry interface {
 	BlobExist(repository, digest string) (exist bool, err error)
 	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
 	PushBlob(repository, digest string, size int64, blob io.Reader) error
+}
+
+// Repository defines an repository object, it can be image repository, chart repository and etc.
+type Repository struct {
+	ResourceType string `json:"resource_type"`
+	Name         string `json:"name"`
+}
+
+// GetName returns the name
+func (r *Repository) GetName() string {
+	return r.Name
+}
+
+// GetFilterableType returns the filterable type
+func (r *Repository) GetFilterableType() filter.FilterableType {
+	return filter.FilterableTypeRepository
+}
+
+// GetResourceType returns the resource type
+func (r *Repository) GetResourceType() string {
+	return r.ResourceType
+}
+
+// GetLabels returns the labels
+func (r *Repository) GetLabels() []string {
+	return nil
+}
+
+// VTag defines an vTag object, it can be image tag, chart version and etc.
+type VTag struct {
+	ResourceType string   `json:"resource_type"`
+	Name         string   `json:"name"`
+	Labels       []string `json:"labels"`
+}
+
+// GetFilterableType returns the filterable type
+func (v *VTag) GetFilterableType() filter.FilterableType {
+	return filter.FilterableTypeVTag
+}
+
+// GetResourceType returns the resource type
+func (v *VTag) GetResourceType() string {
+	return v.ResourceType
+}
+
+// GetName returns the name
+func (v *VTag) GetName() string {
+	return v.Name
+}
+
+// GetLabels returns the labels
+func (v *VTag) GetLabels() []string {
+	return v.Labels
 }
 
 // DefaultImageRegistry provides a default implementation for interface ImageRegistry

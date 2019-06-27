@@ -96,6 +96,7 @@ func initRouters() {
 	beego.Router("/api/system/gc/:id([0-9]+)/log", &api.GCAPI{}, "get:GetLog")
 	beego.Router("/api/system/gc/schedule", &api.GCAPI{}, "get:Get;put:Put;post:Post")
 	beego.Router("/api/system/scanAll/schedule", &api.ScanAllAPI{}, "get:Get;put:Put;post:Post")
+	beego.Router("/api/system/CVEWhitelist", &api.SysCVEWhitelistAPI{}, "get:Get;put:Put")
 
 	beego.Router("/api/logs", &api.LogAPI{})
 
