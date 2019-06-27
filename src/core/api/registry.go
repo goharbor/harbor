@@ -49,6 +49,7 @@ func (t *RegistryAPI) Ping() {
 		ID             *int64  `json:"id"`
 		Type           *string `json:"type"`
 		URL            *string `json:"url"`
+		Region         *string `json:"region"`
 		CredentialType *string `json:"credential_type"`
 		AccessKey      *string `json:"access_key"`
 		AccessSecret   *string `json:"access_secret"`

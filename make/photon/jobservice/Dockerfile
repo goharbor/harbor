@@ -8,5 +8,6 @@ RUN mkdir /harbor/ \
 COPY ./make/photon/jobservice/start.sh ./make/photon/jobservice/harbor_jobservice /harbor/
 
 RUN chmod u+x /harbor/harbor_jobservice /harbor/start.sh
+RUN mkdir -p /var/log/jobs
 WORKDIR /harbor/
 ENTRYPOINT ["/harbor/start.sh"]

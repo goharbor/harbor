@@ -10,6 +10,7 @@ require (
 	github.com/Unknwon/goconfig v0.0.0-20160216183935-5f601ca6ef4d // indirect
 	github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 // indirect
 	github.com/astaxie/beego v1.9.0
+	github.com/aws/aws-sdk-go v1.19.47
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bitly/go-hostpool v0.0.0-20171023180738-a3a6125de932 // indirect
 	github.com/bitly/go-simplejson v0.5.0 // indirect
