@@ -87,3 +87,7 @@ body {
 .color-red {
     color: red;
 }
+
+.datagrid-table,.datagrid-header{
+    position: inherit !important;
+}
