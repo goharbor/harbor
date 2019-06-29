@@ -33,7 +33,7 @@ func Test_newAdapter(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewAdapter(tt.registry)
+			got, err := newAdapter(tt.registry)
 			if tt.wantErr {
 				assert.NotNil(t, err)
 				assert.Nil(t, got)

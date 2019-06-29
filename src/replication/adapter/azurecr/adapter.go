@@ -78,7 +78,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 }
 
 // HealthCheck checks health status of a registry
-func (a adapter) HealthCheck() (model.HealthStatus, error) {
+func (a *adapter) HealthCheck() (model.HealthStatus, error) {
 	err := a.PingGet()
 	if err != nil {
 		return model.Unhealthy, nil
