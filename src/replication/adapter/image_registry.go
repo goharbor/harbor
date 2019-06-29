@@ -114,6 +114,21 @@ type DefaultImageRegistry struct {
 	clients  map[string]*registry_pkg.Repository
 }
 
+// NewDefaultRegistryWithClient returns an instance of DefaultImageRegistry
+func NewDefaultRegistryWithClient(registry *model.Registry, client *http.Client) (*DefaultImageRegistry, error) {
+	reg, err := registry_pkg.NewRegistry(registry.URL, client)
+	if err != nil {
+		return nil, err
+	}
+
+	return &DefaultImageRegistry{
+		Registry: reg,
+		client:   client,
+		registry: registry,
+		clients:  map[string]*registry_pkg.Repository{},
+	}, nil
+}
+
 // NewDefaultImageRegistry returns an instance of DefaultImageRegistry
 func NewDefaultImageRegistry(registry *model.Registry) (*DefaultImageRegistry, error) {
 	var authorizer modifier.Modifier

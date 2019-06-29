@@ -28,6 +28,7 @@ const (
 	RegistryTypeHuawei         RegistryType = "huawei-SWR"
 	RegistryTypeGoogleGcr      RegistryType = "google-gcr"
 	RegistryTypeAwsEcr         RegistryType = "aws-ecr"
+	RegistryTypeAzureAcr       RegistryType = "azure-acr"
 
 	FilterStyleTypeText  = "input"
 	FilterStyleTypeRadio = "radio"
