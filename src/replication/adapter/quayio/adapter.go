@@ -28,7 +28,7 @@ type adapter struct {
 func init() {
 	err := adp.RegisterFactory(model.RegistryTypeQuayio, func(registry *model.Registry) (adp.Adapter, error) {
 		return newAdapter(registry)
-	})
+	}, nil)
 	if err != nil {
 		log.Errorf("failed to register factory for Quay.io: %v", err)
 		return

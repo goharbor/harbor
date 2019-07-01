@@ -22,7 +22,7 @@ import (
 )
 
 func init() {
-	err := adp.RegisterFactory(model.RegistryTypeJfrogArtifactory, AdapterFactory)
+	err := adp.RegisterFactory(model.RegistryTypeJfrogArtifactory, AdapterFactory, nil)
 	if err != nil {
 		log.Errorf("failed to register factory for jfrog artifactory: %v", err)
 		return

@@ -35,7 +35,7 @@ import (
 func init() {
 	if err := adp.RegisterFactory(model.RegistryTypeHarbor, func(registry *model.Registry) (adp.Adapter, error) {
 		return newAdapter(registry)
-	}); err != nil {
+	}, nil); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeHarbor, err)
 		return
 	}

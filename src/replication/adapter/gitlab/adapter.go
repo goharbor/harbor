@@ -14,7 +14,7 @@ import (
 func init() {
 	if err := adp.RegisterFactory(model.RegistryTypeGitLab, func(registry *model.Registry) (adp.Adapter, error) {
 		return newAdapter(registry)
-	}); err != nil {
+	}, nil); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeGitLab, err)
 		return
 	}

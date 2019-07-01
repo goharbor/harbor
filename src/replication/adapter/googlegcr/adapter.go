@@ -24,7 +24,7 @@ import (
 func init() {
 	if err := adp.RegisterFactory(model.RegistryTypeGoogleGcr, func(registry *model.Registry) (adp.Adapter, error) {
 		return newAdapter(registry)
-	}); err != nil {
+	}, getAdapterInfo()); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeGoogleGcr, err)
 		return
 	}
@@ -71,6 +71,37 @@ func (adapter) Info() (info *model.RegistryInfo, err error) {
 			model.TriggerTypeScheduled,
 		},
 	}, nil
+}
+
+func getAdapterInfo() *model.AdapterInfo {
+	info := &model.AdapterInfo{
+		SpecialEndpoints: []*model.Endpoint{
+			{
+				Key:   "gcr.io",
+				Value: "https://gcr.io",
+			},
+			{
+				Key:   "us.gcr.io",
+				Value: "https://us.gcr.io",
+			},
+			{
+				Key:   "eu.gcr.io",
+				Value: "https://eu.gcr.io",
+			},
+			{
+				Key:   "asia.gcr.io",
+				Value: "https://asia.gcr.io",
+			},
+		},
+		SpecialCredential: &model.CredentialInfo{
+
+			AccessKeyType:    model.AccessKeyTypeFix,
+			AccessKeyData:    "_json_key",
+			AccessSecretType: model.AccessSecretTypeFile,
+			AccessSecretData: "No Change",
+		},
+	}
+	return info
 }
 
 // HealthCheck checks health status of a registry

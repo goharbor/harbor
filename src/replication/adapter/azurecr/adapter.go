@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	if err := adp.RegisterFactory(model.RegistryTypeAzureAcr, factory); err != nil {
+	if err := adp.RegisterFactory(model.RegistryTypeAzureAcr, factory, nil); err != nil {
 		log.Errorf("Register adapter factory for %s error: %v", model.RegistryTypeAzureAcr, err)
 		return
 	}

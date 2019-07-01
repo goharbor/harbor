@@ -42,7 +42,7 @@ var (
 func init() {
 	if err := adp.RegisterFactory(model.RegistryTypeAwsEcr, func(registry *model.Registry) (adp.Adapter, error) {
 		return newAdapter(registry)
-	}); err != nil {
+	}, getAdapterInfo()); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeAwsEcr, err)
 		return
 	}
@@ -102,6 +102,82 @@ func (*adapter) Info() (info *model.RegistryInfo, err error) {
 			model.TriggerTypeScheduled,
 		},
 	}, nil
+}
+
+func getAdapterInfo() *model.AdapterInfo {
+	info := &model.AdapterInfo{
+		SpecialEndpoints: []*model.Endpoint{
+			{
+				Key:   "ap-northeast-1",
+				Value: "https://api.ecr.ap-northeast-1.amazonaws.com",
+			},
+			{
+				Key:   "us-east-1",
+				Value: "https://api.ecr.us-east-1.amazonaws.com",
+			},
+			{
+				Key:   "us-east-2",
+				Value: "https://api.ecr.us-east-2.amazonaws.com",
+			},
+			{
+				Key:   "us-west-1",
+				Value: "https://api.ecr.us-west-1.amazonaws.com",
+			},
+			{
+				Key:   "us-west-2",
+				Value: "https://api.ecr.us-west-2.amazonaws.com",
+			},
+			{
+				Key:   "ap-east-1",
+				Value: "https://api.ecr.ap-east-1.amazonaws.com",
+			},
+			{
+				Key:   "ap-south-1",
+				Value: "https://api.ecr.ap-south-1.amazonaws.com",
+			},
+			{
+				Key:   "ap-northeast-2",
+				Value: "https://api.ecr.ap-northeast-2.amazonaws.com",
+			},
+			{
+				Key:   "ap-southeast-1",
+				Value: "https://api.ecr.ap-southeast-1.amazonaws.com",
+			},
+			{
+				Key:   "ap-southeast-2",
+				Value: "https://api.ecr.ap-southeast-2.amazonaws.com",
+			},
+			{
+				Key:   "ca-central-1",
+				Value: "https://api.ecr.ca-central-1.amazonaws.com",
+			},
+			{
+				Key:   "eu-central-1",
+				Value: "https://api.ecr.eu-central-1.amazonaws.com",
+			},
+			{
+				Key:   "eu-west-1",
+				Value: "https://api.ecr.eu-west-1.amazonaws.com",
+			},
+			{
+				Key:   "eu-west-2",
+				Value: "https://api.ecr.eu-west-2.amazonaws.com",
+			},
+			{
+				Key:   "eu-west-3",
+				Value: "https://api.ecr.eu-west-3.amazonaws.com",
+			},
+			{
+				Key:   "eu-north-1",
+				Value: "https://api.ecr.eu-north-1.amazonaws.com",
+			},
+			{
+				Key:   "sa-east-1",
+				Value: "https://api.ecr.sa-east-1.amazonaws.com",
+			},
+		},
+	}
+	return info
 }
 
 // HealthCheck checks health status of a registry

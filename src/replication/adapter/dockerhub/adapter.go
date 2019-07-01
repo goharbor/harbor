@@ -18,7 +18,7 @@ import (
 )
 
 func init() {
-	if err := adp.RegisterFactory(model.RegistryTypeDockerHub, factory); err != nil {
+	if err := adp.RegisterFactory(model.RegistryTypeDockerHub, factory, getAdapterInfo()); err != nil {
 		log.Errorf("Register adapter factory for %s error: %v", model.RegistryTypeDockerHub, err)
 		return
 	}
@@ -78,6 +78,18 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeScheduled,
 		},
 	}, nil
+}
+
+func getAdapterInfo() *model.AdapterInfo {
+	info := &model.AdapterInfo{
+		SpecialEndpoints: []*model.Endpoint{
+			{
+				Key:   "hub.docker.com",
+				Value: "https://hub.docker.com",
+			},
+		},
+	}
+	return info
 }
 
 // PrepareForPush does the prepare work that needed for pushing/uploading the resource

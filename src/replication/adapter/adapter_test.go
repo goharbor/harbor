@@ -28,18 +28,18 @@ func fakedFactory(*model.Registry) (Adapter, error) {
 
 func TestRegisterFactory(t *testing.T) {
 	// empty type
-	assert.NotNil(t, RegisterFactory("", nil))
+	assert.NotNil(t, RegisterFactory("", nil, nil))
 	// empty factory
-	assert.NotNil(t, RegisterFactory("harbor", nil))
+	assert.NotNil(t, RegisterFactory("harbor", nil, nil))
 	// pass
-	assert.Nil(t, RegisterFactory("harbor", fakedFactory))
+	assert.Nil(t, RegisterFactory("harbor", fakedFactory, nil))
 	// already exists
-	assert.NotNil(t, RegisterFactory("harbor", fakedFactory))
+	assert.NotNil(t, RegisterFactory("harbor", fakedFactory, nil))
 }
 
 func TestGetFactory(t *testing.T) {
 	registry = map[model.RegistryType]Factory{}
-	require.Nil(t, RegisterFactory("harbor", fakedFactory))
+	require.Nil(t, RegisterFactory("harbor", fakedFactory, nil))
 	// doesn't exist
 	_, err := GetFactory("gcr")
 	assert.NotNil(t, err)
@@ -55,7 +55,7 @@ func TestListRegisteredAdapterTypes(t *testing.T) {
 	assert.Equal(t, 0, len(types))
 
 	// register one factory
-	require.Nil(t, RegisterFactory("harbor", fakedFactory))
+	require.Nil(t, RegisterFactory("harbor", fakedFactory, nil))
 
 	types = ListRegisteredAdapterTypes()
 	require.Equal(t, 1, len(types))

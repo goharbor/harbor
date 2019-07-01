@@ -212,7 +212,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestStartReplication(t *testing.T) {
-	err := adapter.RegisterFactory(model.RegistryTypeHarbor, fakedAdapterFactory)
+	err := adapter.RegisterFactory(model.RegistryTypeHarbor, fakedAdapterFactory, nil)
 	require.Nil(t, err)
 	config.Config = &config.Configuration{}
 

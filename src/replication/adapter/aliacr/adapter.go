@@ -21,7 +21,7 @@ import (
 func init() {
 	if err := adp.RegisterFactory(model.RegistryTypeAliAcr, func(registry *model.Registry) (adp.Adapter, error) {
 		return newAdapter(registry)
-	}); err != nil {
+	}, getAdapterInfo()); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeAliAcr, err)
 		return
 	}
@@ -103,6 +103,34 @@ func (a *adapter) Info() (info *model.RegistryInfo, err error) {
 		},
 	}
 	return
+}
+
+func getAdapterInfo() *model.AdapterInfo {
+	info := &model.AdapterInfo{
+		SpecialEndpoints: []*model.Endpoint{
+			{Key: "cn-hangzhou", Value: "https://registry.cn-hangzhou.aliyuncs.com"},
+			{Key: "cn-shanghai", Value: "https://registry.cn-shanghai.aliyuncs.com"},
+			{Key: "cn-qingdao", Value: "https://registry.cn-qingdao.aliyuncs.com"},
+			{Key: "cn-beijing", Value: "https://registry.cn-beijing.aliyuncs.com"},
+			{Key: "cn-zhangjiakou", Value: "https://registry.cn-zhangjiakou.aliyuncs.com"},
+			{Key: "cn-huhehaote", Value: "https://registry.cn-huhehaote.aliyuncs.com"},
+			{Key: "cn-shenzhen", Value: "https://registry.cn-shenzhen.aliyuncs.com"},
+			{Key: "cn-chengdu", Value: "https://registry.cn-chengdu.aliyuncs.com"},
+			{Key: "cn-hongkong", Value: "https://registry.cn-hongkong.aliyuncs.com"},
+			{Key: "ap-southeast-1", Value: "https://registry.ap-southeast-1.aliyuncs.com"},
+			{Key: "ap-southeast-2", Value: "https://registry.ap-southeast-2.aliyuncs.com"},
+			{Key: "ap-southeast-3", Value: "https://registry.ap-southeast-3.aliyuncs.com"},
+			{Key: "ap-southeast-5", Value: "https://registry.ap-southeast-5.aliyuncs.com"},
+			{Key: "ap-northeast-1", Value: "https://registry.ap-northeast-1.aliyuncs.com"},
+			{Key: "ap-south-1", Value: "https://registry.ap-south-1.aliyuncs.com"},
+			{Key: "eu-central-1", Value: "https://registry.eu-central-1.aliyuncs.com"},
+			{Key: "eu-west-1", Value: "https://registry.eu-west-1.aliyuncs.com"},
+			{Key: "us-west-1", Value: "https://registry.us-west-1.aliyuncs.com"},
+			{Key: "us-east-1", Value: "https://registry.us-east-1.aliyuncs.com"},
+			{Key: "me-east-1", Value: "https://registry.me-east-1.aliyuncs.com"},
+		},
+	}
+	return info
 }
 
 // FetchImages AliACR not support /v2/_catalog of Registry, we'll list all resources via Aliyun's API

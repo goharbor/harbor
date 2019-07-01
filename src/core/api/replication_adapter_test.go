@@ -28,7 +28,7 @@ func fakedFactory(*model.Registry) (adapter.Adapter, error) {
 }
 
 func TestReplicationAdapterAPIList(t *testing.T) {
-	err := adapter.RegisterFactory("test", fakedFactory)
+	err := adapter.RegisterFactory("test", fakedFactory, nil)
 	require.Nil(t, err)
 	cases := []*codeCheckingCase{
 		// 401

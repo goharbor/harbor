@@ -116,11 +116,53 @@ type FilterStyle struct {
 	Values []string   `json:"values,omitempty"`
 }
 
+// Endpoint ...
+type Endpoint struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+// CredentialInfo ...
+type CredentialInfo struct {
+	AccessKeyType    AccessKeyType    `json:"access_key_type"`
+	AccessKeyData    string           `json:"access_key_data"`
+	AccessSecretType AccessSecretType `json:"access_secret_type"`
+	AccessSecretData string           `json:"access_secret_data"`
+}
+
+// AccessKeyType ..
+type AccessKeyType string
+
+const (
+	// AccessKeyTypeStandard ...
+	AccessKeyTypeStandard AccessKeyType = "AccessKeyTypeStandard"
+	// AccessKeyTypeFix ...
+	AccessKeyTypeFix AccessKeyType = "AccessKeyTypeFix"
+)
+
+// AccessSecretType ...
+type AccessSecretType string
+
+const (
+	// AccessSecretTypeStandard ...
+	AccessSecretTypeStandard AccessSecretType = "AccessSecretTypePass"
+	// AccessSecretTypeFile ...
+	AccessSecretTypeFile AccessSecretType = "AccessSecretTypeFile"
+)
+
 // RegistryInfo provides base info and capability declarations of the registry
 type RegistryInfo struct {
-	Type                     RegistryType   `json:"type"`
-	Description              string         `json:"description"`
-	SupportedResourceTypes   []ResourceType `json:"-"`
-	SupportedResourceFilters []*FilterStyle `json:"supported_resource_filters"`
-	SupportedTriggers        []TriggerType  `json:"supported_triggers"`
+	Type                     RegistryType    `json:"type"`
+	Description              string          `json:"description"`
+	SupportedResourceTypes   []ResourceType  `json:"-"`
+	SupportedResourceFilters []*FilterStyle  `json:"supported_resource_filters"`
+	SupportedTriggers        []TriggerType   `json:"supported_triggers"`
+	SpecialEndpoints         []*Endpoint     `json:"special_endpoints"`
+	SpecialCredential        *CredentialInfo `json:"special_credential"`
+}
+
+// AdapterInfo provides base info and capability declarations of the registry
+type AdapterInfo struct {
+	SpecialEndpoints  []*Endpoint     `json:"special_endpoints"`
+	SpecialCredential *CredentialInfo `json:"special_credential"`
 }

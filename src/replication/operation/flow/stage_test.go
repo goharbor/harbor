@@ -194,7 +194,7 @@ func TestMain(m *testing.M) {
 	config.Config = &config.Configuration{
 		CoreURL: url,
 	}
-	if err := adapter.RegisterFactory(model.RegistryTypeHarbor, fakedAdapterFactory); err != nil {
+	if err := adapter.RegisterFactory(model.RegistryTypeHarbor, fakedAdapterFactory, nil); err != nil {
 		os.Exit(1)
 	}
 	os.Exit(m.Run())

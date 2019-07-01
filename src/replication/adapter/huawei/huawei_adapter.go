@@ -19,7 +19,7 @@ import (
 )
 
 func init() {
-	err := adp.RegisterFactory(model.RegistryTypeHuawei, AdapterFactory)
+	err := adp.RegisterFactory(model.RegistryTypeHuawei, AdapterFactory, nil)
 	if err != nil {
 		log.Errorf("failed to register factory for Huawei: %v", err)
 		return
