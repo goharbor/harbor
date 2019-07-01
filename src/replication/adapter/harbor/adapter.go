@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
 )
@@ -42,7 +43,7 @@ func init() {
 }
 
 type adapter struct {
-	*adp.DefaultImageRegistry
+	*native.Adapter
 	registry *model.Registry
 	url      string
 	client   *common_http.Client
@@ -67,7 +68,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		modifiers = append(modifiers, authorizer)
 	}
 
-	reg, err := adp.NewDefaultImageRegistry(registry)
+	dockerRegistryAdapter, err := native.NewAdapter(registry)
 	if err != nil {
 		return nil, err
 	}
@@ -78,7 +79,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 			&http.Client{
 				Transport: transport,
 			}, modifiers...),
-		DefaultImageRegistry: reg,
+		Adapter: dockerRegistryAdapter,
 	}, nil
 }
 
