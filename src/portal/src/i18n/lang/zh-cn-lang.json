@@ -58,6 +58,7 @@
     "TOOLTIP": {
         "NAME_FILTER": "过滤资源的名字。不填或者“”匹配所有资源；“library/”只匹配“library”下的资源。更多的匹配模式请参考用户手册。",
         "TAG_FILTER": "过滤资源的tag/version。不填或者“”匹配所有；“1.0*”只匹配以“1.0”开头的tag/version。",
+        "LABEL_FILTER": "根据标签筛选资源。",
         "RESOURCE_FILTER": "过滤资源的类型。",
         "PUSH_BASED": "把资源由本地Harbor推送到远端仓库。",
         "PULL_BASED": "把资源由远端仓库拉取到本地Harbor。",
@@ -86,8 +87,8 @@
         "NONEMPTY": "不能为空",
         "ENDPOINT_FORMAT": "Endpoint必须以http://或https://开头。",
         "OIDC_ENDPOIT_FORMAT": "Endpoint必须以https://开头。",
-        "OIDC_NAME": "OIDC提供商的名称.",
-        "OIDC_ENDPOINT": "OIDC服务器的地址.",
+        "OIDC_NAME": "OIDC提供商的名称。",
+        "OIDC_ENDPOINT": "OIDC服务器的地址。",
         "OIDC_SCOPE": "在身份验证期间发送到OIDC服务器的scope。它必须包含“openid”和“offline_access”。如果您使用Google，请从此字段中删除“脱机访问”。",
         "OIDC_VERIFYCERT": "如果您的OIDC服务器是通过自签名证书托管的，请取消选中此框。"
     },
@@ -298,7 +299,7 @@
         "NEW_ROBOT_ACCOUNT": "添加机器人账户",
         "ENABLED_STATE": "启用状态",
         "EXPIRATION": "过期时间",
-        "NUMBER_REQUIRED":"此项为必填项且为不为0的整数.",
+        "NUMBER_REQUIRED":"此项为必填项且为不为0的整数。",
         "TOKEN_EXPIRATION":"机器人账户令牌过期时间(天)",
         "DESCRIPTION": "描述",
         "ACTION": "操作",
@@ -314,10 +315,10 @@
         "PUSH": "推送",
         "PULL": "拉取",
         "FILTER_PLACEHOLDER": "过滤机器人账户",
-        "ROBOT_NAME": "不能包含特殊字符(~#$%)且长度不能超过255.",
-        "ACCOUNT_EXISTING": "机器人账户已经存在.",
+        "ROBOT_NAME": "不能包含特殊字符(~#$%)且长度不能超过255。",
+        "ACCOUNT_EXISTING": "机器人账户已经存在。",
         "ALERT_TEXT": "这是唯一一次复制您的个人访问令牌的机会",
-        "CREATED_SUCCESS": "创建账户 '{{param}}' 成功.",
+        "CREATED_SUCCESS": "创建账户 '{{param}}' 成功。",
         "COPY_SUCCESS": "成功复制 '{{param}}' 的令牌",
         "DELETION_TITLE": "删除账户确认",
         "DELETION_SUMMARY": "你确认删除机器人账户 {{param}}?"
@@ -727,7 +728,7 @@
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
             "ROBOT_TOKEN_EXPIRATION": "机器人账户的令牌的过期时间（天），默认为30天,显示的结果为分钟转化的天数并向下取整。",            
             "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
-            "ROOT_CERT_DOWNLOAD": "下载镜像库根证书.",
+            "ROOT_CERT_DOWNLOAD": "下载镜像库根证书。",
             "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。",
             "VERIFY_CERT": "检查来自LDAP服务端的证书",
             "READONLY_TOOLTIP": "选中，表示正在维护状态，不可删除仓库及标签,也不可以推送镜像。",
@@ -859,8 +860,8 @@
         },
         "CHART": {
             "SCANNING_TIME": "扫描完成时间:",
-            "TOOLTIPS_TITLE": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}.",
-            "TOOLTIPS_TITLE_SINGULAR": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}.",
+            "TOOLTIPS_TITLE": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}。",
+            "TOOLTIPS_TITLE_SINGULAR": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}。",
             "TOOLTIPS_TITLE_ZERO": "没有发现可识别的漏洞包"
         },
         "SEVERITY": {
