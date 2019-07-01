@@ -20,9 +20,10 @@ import (
 	"github.com/goharbor/harbor/src/replication/util"
 )
 
-var _ adp.ImageRegistry = native{}
+var _ adp.ImageRegistry = Native{}
 
-func (n native) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
+// FetchImages ...
+func (n Native) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
 	nameFilterPattern := ""
 	tagFilterPattern := ""
 	for _, filter := range filters {
@@ -62,7 +63,7 @@ func (n native) FetchImages(filters []*model.Filter) ([]*model.Resource, error) 
 	return resources, nil
 }
 
-func (n native) filterRepositories(pattern string) ([]string, error) {
+func (n Native) filterRepositories(pattern string) ([]string, error) {
 	// if the pattern is a specific repository name, just returns the parsed repositories
 	// and will check the existence later when filtering the tags
 	if repositories, ok := util.IsSpecificPath(pattern); ok {
@@ -90,7 +91,7 @@ func (n native) filterRepositories(pattern string) ([]string, error) {
 	return result, nil
 }
 
-func (n native) filterTags(repository, pattern string) ([]string, error) {
+func (n Native) filterTags(repository, pattern string) ([]string, error) {
 	tags, err := n.ListTag(repository)
 	if err != nil {
 		return nil, err

@@ -39,6 +39,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/googlegcr"
 	// register the AwsEcr adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/awsecr"
+	// register the AzureAcr adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/azurecr"
 )
 
 var (

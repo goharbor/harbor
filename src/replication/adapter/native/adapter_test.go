@@ -48,7 +48,7 @@ func Test_newAdapter(t *testing.T) {
 func Test_native_Info(t *testing.T) {
 	var registry = &model.Registry{URL: "abc"}
 	var reg, _ = adp.NewDefaultImageRegistry(registry)
-	var adapter = native{
+	var adapter = Native{
 		DefaultImageRegistry: reg,
 		registry:             registry,
 	}
@@ -67,7 +67,7 @@ func Test_native_Info(t *testing.T) {
 func Test_native_PrepareForPush(t *testing.T) {
 	var registry = &model.Registry{URL: "abc"}
 	var reg, _ = adp.NewDefaultImageRegistry(registry)
-	var adapter = native{
+	var adapter = Native{
 		DefaultImageRegistry: reg,
 		registry:             registry,
 	}

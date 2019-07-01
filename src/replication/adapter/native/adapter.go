@@ -15,6 +15,8 @@
 package native
 
 import (
+	"net/http"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -30,25 +32,39 @@ func init() {
 	log.Infof("the factory for adapter %s registered", model.RegistryTypeDockerRegistry)
 }
 
-func newAdapter(registry *model.Registry) (*native, error) {
+func newAdapter(registry *model.Registry) (*Native, error) {
 	reg, err := adp.NewDefaultImageRegistry(registry)
 	if err != nil {
 		return nil, err
 	}
-	return &native{
+	return &Native{
 		registry:             registry,
 		DefaultImageRegistry: reg,
 	}, nil
 }
 
-type native struct {
+// NewWithClient ...
+func NewWithClient(registry *model.Registry, client *http.Client) (*Native, error) {
+	reg, err := adp.NewDefaultRegistryWithClient(registry, client)
+	if err != nil {
+		return nil, err
+	}
+	return &Native{
+		registry:             registry,
+		DefaultImageRegistry: reg,
+	}, nil
+}
+
+// Native is adapter to native docker registry
+type Native struct {
 	*adp.DefaultImageRegistry
 	registry *model.Registry
 }
 
-var _ adp.Adapter = native{}
+var _ adp.Adapter = Native{}
 
-func (native) Info() (info *model.RegistryInfo, err error) {
+// Info ...
+func (Native) Info() (info *model.RegistryInfo, err error) {
 	return &model.RegistryInfo{
 		Type: model.RegistryTypeDockerRegistry,
 		SupportedResourceTypes: []model.ResourceType{
@@ -72,4 +88,4 @@ func (native) Info() (info *model.RegistryInfo, err error) {
 }
 
 // PrepareForPush nothing need to do.
-func (native) PrepareForPush([]*model.Resource) error { return nil }
+func (Native) PrepareForPush([]*model.Resource) error { return nil }

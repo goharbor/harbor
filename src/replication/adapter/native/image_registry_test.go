@@ -72,7 +72,7 @@ func Test_native_FetchImages(t *testing.T) {
 	var reg, err = adp.NewDefaultImageRegistry(registry)
 	assert.NotNil(t, reg)
 	assert.Nil(t, err)
-	var adapter = native{
+	var adapter = Native{
 		DefaultImageRegistry: reg,
 		registry:             registry,
 	}
