@@ -58,6 +58,7 @@
     "TOOLTIP": {
         "NAME_FILTER": "Filter the name of the resource. Leave empty or use '**' to match all. 'library/**' only matches resources under 'library'. For more patterns, please refer to the user guide.",
         "TAG_FILTER": "Filter the tag/version part of the resources. Leave empty or use '**' to match all. '1.0*' only matches the tags that starts with '1.0'. For more patterns, please refer to the user guide.",
+        "LABEL_FILTER": "Filter the resources according to labels.",
         "RESOURCE_FILTER": "Filter the type of resources.",
         "PUSH_BASED": "Push the resources from the local Harbor to the remote registry.",
         "PULL_BASED": "Pull the resources from the remote registry to the local Harbor.",
