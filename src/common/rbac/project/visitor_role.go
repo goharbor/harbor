@@ -27,6 +27,7 @@ var (
 			{Resource: rbac.ResourceSelf, Action: rbac.ActionDelete},
 
 			{Resource: rbac.ResourceMember, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceMember, Action: rbac.ActionUpdate},
 			{Resource: rbac.ResourceMember, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
@@ -105,6 +106,7 @@ var (
 		"master": {
 			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
 
+			{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceMetadata, Action: rbac.ActionCreate},
@@ -172,6 +174,7 @@ var (
 		"developer": {
 			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
 
+			{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
@@ -221,6 +224,7 @@ var (
 		"guest": {
 			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
 
+			{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceLog, Action: rbac.ActionList},

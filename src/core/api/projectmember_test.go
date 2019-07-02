@@ -52,6 +52,15 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 			},
 			code: http.StatusBadRequest,
 		},
+		// 200
+		{
+			request: &testingRequest{
+				method:     http.MethodGet,
+				url:        fmt.Sprintf("/api/projects/1/members/%d", projAdminPMID),
+				credential: admin,
+			},
+			code: http.StatusOK,
+		},
 		// 404
 		{
 			request: &testingRequest{
