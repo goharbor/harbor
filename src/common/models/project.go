@@ -128,9 +128,9 @@ type ProjectQueryParam struct {
 
 // MemberQuery filter by member's username and role
 type MemberQuery struct {
-	Name      string       // the username of member
-	Role      int          // the role of the member has to the project
-	GroupList []*UserGroup // the group list of current user
+	Name     string // the username of member
+	Role     int    // the role of the member has to the project
+	GroupIDs []int  // the group ID of current user belongs to
 }
 
 // Pagination ...

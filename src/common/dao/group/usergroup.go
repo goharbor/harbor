@@ -15,10 +15,8 @@
 package group
 
 import (
-	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils"
 
 	"github.com/goharbor/harbor/src/common/dao"
@@ -138,21 +136,4 @@ func OnBoardUserGroup(g *models.UserGroup, keyAttribute string, combinedKeyAttri
 	}
 
 	return nil
-}
-
-// GetGroupDNQueryCondition get the part of IN ('XXX', 'XXX') condition
-func GetGroupDNQueryCondition(userGroupList []*models.UserGroup) string {
-	result := make([]string, 0)
-	count := 0
-	for _, userGroup := range userGroupList {
-		if userGroup.GroupType == common.LdapGroupType {
-			result = append(result, "'"+userGroup.LdapGroupDN+"'")
-			count++
-		}
-	}
-	// No LDAP Group found
-	if count == 0 {
-		return ""
-	}
-	return strings.Join(result, ",")
 }

@@ -305,30 +305,3 @@ func PrepareGroupTest() {
 	}
 	dao.PrepareTestData(clearSqls, initSqls)
 }
-func TestGetRolesByGroup(t *testing.T) {
-	PrepareGroupTest()
-
-	project, err := dao.GetProjectByName("group_project")
-	if err != nil {
-		t.Errorf("Error occurred when GetProjectByName : %v", err)
-	}
-	type args struct {
-		projectID        int64
-		groupDNCondition string
-	}
-	tests := []struct {
-		name string
-		args args
-		want []int
-	}{
-		{"Query group with role", args{project.ProjectID, "'cn=harbor_user,dc=example,dc=com'"}, []int{2}},
-		{"Query group no role", args{project.ProjectID, "'cn=another_user,dc=example,dc=com'"}, []int{}},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := GetRolesByGroup(tt.args.projectID, tt.args.groupDNCondition); !dao.ArrayEqual(got, tt.want) {
-				t.Errorf("GetRolesByGroup() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
