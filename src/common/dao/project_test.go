@@ -118,36 +118,6 @@ func Test_projectQueryConditions(t *testing.T) {
 	}
 }
 
-func TestGetGroupProjects(t *testing.T) {
-	prepareGroupTest()
-	query := &models.ProjectQueryParam{Member: &models.MemberQuery{Name: "sample_group"}}
-	type args struct {
-		groupDNCondition string
-		query            *models.ProjectQueryParam
-	}
-	tests := []struct {
-		name     string
-		args     args
-		wantSize int
-		wantErr  bool
-	}{
-		{"Verify correct sql", args{groupDNCondition: "'cn=harbor_user,dc=example,dc=com'", query: query}, 1, false},
-		{"Verify missed sql", args{groupDNCondition: "'cn=another_user,dc=example,dc=com'", query: query}, 0, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetGroupProjects(tt.args.groupDNCondition, tt.args.query)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetGroupProjects() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(got) != tt.wantSize {
-				t.Errorf("GetGroupProjects() = %v, want %v", got, tt.wantSize)
-			}
-		})
-	}
-}
-
 func prepareGroupTest() {
 	initSqls := []string{
 		`insert into user_group (group_name, group_type, ldap_group_dn) values ('harbor_group_01', 1, 'cn=harbor_user,dc=example,dc=com')`,
@@ -167,73 +137,6 @@ func prepareGroupTest() {
 		`delete from harbor_user where username = 'sample01'`,
 	}
 	PrepareTestData(clearSqls, initSqls)
-}
-
-func TestGetTotalGroupProjects(t *testing.T) {
-	prepareGroupTest()
-	query := &models.ProjectQueryParam{Member: &models.MemberQuery{Name: "sample_group"}}
-	type args struct {
-		groupDNCondition string
-		query            *models.ProjectQueryParam
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    int
-		wantErr bool
-	}{
-		{"Verify correct sql", args{groupDNCondition: "'cn=harbor_user,dc=example,dc=com'", query: query}, 1, false},
-		{"Verify missed sql", args{groupDNCondition: "'cn=another_user,dc=example,dc=com'", query: query}, 0, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetTotalGroupProjects(tt.args.groupDNCondition, tt.args.query)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetTotalGroupProjects() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if got != tt.want {
-				t.Errorf("GetTotalGroupProjects() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func TestGetRolesByLDAPGroup(t *testing.T) {
-	prepareGroupTest()
-	project, err := GetProjectByName("group_project")
-	if err != nil {
-		t.Errorf("Error occurred when Get project by name: %v", err)
-	}
-	privateProject, err := GetProjectByName("group_project_private")
-	if err != nil {
-		t.Errorf("Error occurred when Get project by name: %v", err)
-	}
-	type args struct {
-		projectID        int64
-		groupDNCondition string
-	}
-	tests := []struct {
-		name     string
-		args     args
-		wantSize int
-		wantErr  bool
-	}{
-		{"Check normal", args{project.ProjectID, "'cn=harbor_user,dc=example,dc=com'"}, 1, false},
-		{"Check non exist", args{privateProject.ProjectID, "'cn=not_harbor_user,dc=example,dc=com'"}, 0, false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetRolesByLDAPGroup(tt.args.projectID, tt.args.groupDNCondition)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("TestGetRolesByLDAPGroup() error = %v, wantErr %v", err, tt.wantErr)
-				return
-			}
-			if len(got) != tt.wantSize {
-				t.Errorf("TestGetRolesByLDAPGroup() = %v, want %v", len(got), tt.wantSize)
-			}
-		})
-	}
 }
 
 func TestProjetExistsByName(t *testing.T) {
