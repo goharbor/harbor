@@ -66,8 +66,8 @@ export class ProjectComponent implements OnInit {
     this.configService.getConfiguration()
       .subscribe((configurations: Configuration) => {
         this.quotaObj = {
-          count_per_project: configurations.count_per_project.value,
-          storage_per_project: configurations.storage_per_project.value
+          count_per_project: configurations.count_per_project ? configurations.count_per_project.value: '',
+          storage_per_project: configurations.storage_per_project ? configurations.storage_per_project.value : ''
         }
       })
   }

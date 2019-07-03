@@ -1,0 +1,49 @@
+.summary {
+  color: #000;
+  padding-right: 0.3rem;
+  font-size: 13px;
+  .summary-left {
+    .project-detail {
+      width: 17rem;
+      min-height: 3rem;
+      padding-top: 1rem;
+
+      ul {
+        width: 8rem;
+      }
+    }
+  }
+
+  h5 {
+    margin-top: 0;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .summary-right {
+    padding-top: 1rem;
+
+    .quotas-progress {
+      min-width: 10rem;
+      ;
+    }
+  }
+}
+
+.display-flex {
+  display: flex;
+  justify-content: space-between;
+}
+
+.progress,
+.progress-static {
+  overflow: visible;
+
+  progress {
+    max-height: 0.48rem;
+  }
+}
+
+.margin-left-1 {
+  margin-left: 1rem;
+}

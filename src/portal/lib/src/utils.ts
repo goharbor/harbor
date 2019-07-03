@@ -5,7 +5,7 @@ import { RequestQueryParams } from './service/RequestQueryParams';
 import { DebugElement } from '@angular/core';
 import { Comparator, State, HttpOptionInterface, HttpOptionTextInterface, QuotaUnitInterface } from './service/interface';
 import { QuotaHardInterface } from './service/interface';
-import { QuotaUnits } from './shared/shared.const';
+import { QuotaUnits, QuotaUnit } from './shared/shared.const';
 /**
  * Convert the different async channels to the Promise<T> type.
  *
@@ -438,4 +438,39 @@ export function cronRegex(testValue: any): boolean {
  */
 export const roundDecimals = (count, decimals = 0) => {
     return Number(`${Math.round(+`${count}e${decimals}`)}e-${decimals}`)
+}
+/**
+   * get suitable unit
+   * @param count number  ;bit
+   * @param quotaUnitsDeep Array link  QuotaUnits;
+   */
+export const getSuitableUnit = (count: number, quotaUnitsDeep: QuotaUnitInterface[]): string => {
+    for (let unitObj of quotaUnitsDeep) {
+        if (count / 1024 >= 1) {
+            quotaUnitsDeep.shift();
+            return getSuitableUnit(count / 1024, quotaUnitsDeep);
+        } else {
+            return +count ? `${roundDecimals(count, 2)}${unitObj.UNIT}` : '0';
+        }
+    }
+    return `${roundDecimals(count, 2)}${QuotaUnits[0].UNIT}`
+}
+export const getByte = (count: number, unit: string): number => {
+    let flagIndex;
+    return QuotaUnits.reduce((totalValue, currentValue, index) => {
+        if (currentValue.UNIT === unit) {
+            flagIndex = index;
+            return totalValue;
+        } else {
+            if (!flagIndex) {
+                return totalValue * 1024
+            }
+            return totalValue;
+        }
+    }, count);
+}
+export const SeparationNumberCharacter = (NumberCharacter, defaultCharacter) => {
+    const numberStr = NumberCharacter ? parseFloat(NumberCharacter) + '' : '';
+    const character = NumberCharacter ? NumberCharacter.toString().split(numberStr)[1] || defaultCharacter : defaultCharacter;
+    return { numberStr, character }
 }

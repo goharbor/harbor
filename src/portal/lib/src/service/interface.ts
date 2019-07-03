@@ -99,9 +99,9 @@ export interface PingEndpoint extends Base {
 }
 
 export interface Filter {
-   type: string;
-   style: string;
-   values ?: string[];
+  type: string;
+  style: string;
+  values?: string[];
 }
 
 /**
@@ -122,7 +122,7 @@ export interface ReplicationRule extends Base {
   deletion?: boolean;
   src_registry?: any;
   dest_registry?: any;
-  src_namespaces: string [];
+  src_namespaces: string[];
   dest_namespace?: string;
   enabled: boolean;
   override: boolean;
@@ -333,6 +333,32 @@ export interface Label {
   scope: string;
   project_id: number;
 }
+export interface Quota {
+  id: number;
+  ref: {
+    name: string;
+    owner_name: string;
+    id: string;
+  };
+  creation_time: string;
+  update_time: string;
+  spec: QuotaSpec;
+  status: {
+    hard: {
+      count: string;
+      storage: string;
+    };
+    used: {
+      count: string;
+      storage: string;
+    };
+  };
+}
+export interface QuotaSpec {
+
+  count: string;
+  storage: string;
+}
 export interface CardItemEvent {
   event_type: string;
   item: any;
@@ -408,33 +434,33 @@ export class OriginCron {
   cron: string;
 }
 
-export interface  HttpOptionInterface {
+export interface HttpOptionInterface {
   headers?: HttpHeaders | {
-      [header: string]: string | string[];
+    [header: string]: string | string[];
   };
   observe?: 'body';
   params?: HttpParams | {
-      [param: string]: string | string[];
+    [param: string]: string | string[];
   };
   reportProgress?: boolean;
   responseType: 'json';
   withCredentials?: boolean;
 }
 
-export interface  HttpOptionTextInterface {
+export interface HttpOptionTextInterface {
   headers?: HttpHeaders | {
-      [header: string]: string | string[];
+    [header: string]: string | string[];
   };
   observe?: 'body';
   params?: HttpParams | {
-      [param: string]: string | string[];
+    [param: string]: string | string[];
   };
   reportProgress?: boolean;
   responseType: 'text';
   withCredentials?: boolean;
 }
 
-export interface  ProjectRootInterface {
+export interface ProjectRootInterface {
   NAME: string;
   VALUE: number;
   LABEL: string;
@@ -447,4 +473,19 @@ export interface QuotaHardInterface {
 export interface QuotaUnitInterface {
   UNIT: string;
 }
-
+export interface QuotaHardLimitInterface {
+  countLimit: string;
+  storageLimit: string;
+  storageUnit: string;
+  id?: string;
+  countUsed?: string;
+  storageUsed?: string;
+}
+export interface EditQuotaQuotaInterface {
+  editQuota: string;
+  setQuota: string;
+  countQuota: string;
+  storageQuota: string;
+  quotaHardLimitValue: QuotaHardLimitInterface | any;
+  isSystemDefaultQuota: boolean;
+}

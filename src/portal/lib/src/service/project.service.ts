@@ -73,6 +73,7 @@ export abstract class ProjectService {
   abstract deleteProject(projectId: number): Observable<any>;
   abstract checkProjectExists(projectName: string): Observable<any>;
   abstract checkProjectMember(projectId: number): Observable<any>;
+  abstract getProjectSummary(projectId: number): Observable<any>;
 }
 
 /**
@@ -177,6 +178,11 @@ export class ProjectDefaultService extends ProjectService {
   public checkProjectMember(projectId: number): Observable<any> {
     return this.http
                .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS).pipe(
+               catchError(error => observableThrowError(error)), );
+  }
+  public getProjectSummary(projectId: number): Observable<any> {
+    return this.http
+               .get(`/api/projects/${projectId}/summary`, HTTP_GET_OPTIONS).pipe(
                catchError(error => observableThrowError(error)), );
   }
 }

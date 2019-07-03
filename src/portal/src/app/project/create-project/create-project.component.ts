@@ -33,7 +33,7 @@ import { MessageHandlerService } from "../../shared/message-handler/message-hand
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
 
 import { Project } from "../project";
-import { ProjectService, QuotaUnits, QuotaHardInterface } from "@harbor/ui";
+import { ProjectService, QuotaUnits, QuotaHardInterface, SeparationNumberCharacter } from "@harbor/ui";
 import { errorHandler } from '@angular/platform-browser/src/browser';
 
 
@@ -53,7 +53,7 @@ export class CreateProjectComponent implements OnInit, OnChanges, OnDestroy {
   project: Project = new Project();
   countLimit: string;
   storageLimit: string;
-  storageLimitUnit: string = QuotaUnits[0].UNIT;
+  storageLimitUnit: string = QuotaUnits[3].UNIT;
   storageDefaultLimit: string;
   storageDefaultLimitUnit: string;
   countDefaultLimit: string;
@@ -111,9 +111,8 @@ export class CreateProjectComponent implements OnInit, OnChanges, OnDestroy {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes && changes["quotaObj"]&& changes["quotaObj"].currentValue) {
       this.countLimit = this.quotaObj.count_per_project;
-      this.storageLimit = this.quotaObj.storage_per_project ? parseFloat(this.quotaObj.storage_per_project) + '' : '';
-      this.storageLimitUnit =
-      this.quotaObj.storage_per_project ? this.quotaObj.storage_per_project.toString().split(this.storageLimit)[1]||QuotaUnits[0].UNIT : QuotaUnits[0].UNIT;
+      this.storageLimit = SeparationNumberCharacter(this.quotaObj.storage_per_project, QuotaUnits[3].UNIT).numberStr;
+      this.storageLimitUnit = SeparationNumberCharacter(this.quotaObj.storage_per_project, QuotaUnits[3].UNIT).character
 
       this.countDefaultLimit = this.countLimit;
       this.storageDefaultLimit = this.storageLimit;

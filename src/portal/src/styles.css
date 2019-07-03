@@ -87,7 +87,9 @@ body {
 .color-red {
     color: red;
 }
-
+.success>progress {
+        border: 1px solid #ccc;
+}
 .datagrid-table,.datagrid-header{
     position: inherit !important;
 }

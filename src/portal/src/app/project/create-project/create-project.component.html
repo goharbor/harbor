@@ -70,11 +70,13 @@
                             </span>
                         </label>
                         <select clrSelect id="create_project_storage-limit-unit" name="create_project_storage-limit-unit" [(ngModel)]="storageLimitUnit">
-                            <option *ngFor="let quotaUnit of quotaUnits" [value]="quotaUnit.UNIT">{{ quotaUnit.UNIT }}</option>
+                            <ng-template ngFor let-quotaUnit [ngForOf]="quotaUnits" let-i="index">
+                                    <option  *ngIf="i>1"[value]="quotaUnit.UNIT">{{ quotaUnit.UNIT }}</option>
+                            </ng-template>
                         </select>
                         <div class="checkbox-inline">
                             <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-md tooltip-top-left public-tooltip">
-                                <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                                <clr-icon shape="info-circle" size="24"></clr-icon>
                                 <span class="tooltip-content inline-help-public">{{'PROJECT.QUOTA_UNLIMIT_TIP' | translate }}</span>
                             </a>
                         </div>
