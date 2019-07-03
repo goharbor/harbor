@@ -229,8 +229,10 @@ type oidcCliReqCtxModifier struct{}
 
 func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	path := ctx.Request.URL.Path
-	if path != "/service/token" && !strings.HasPrefix(path, "/chartrepo/") {
-		log.Debug("OIDC CLI modifer only handles request by docker CLI or helm CLI")
+	if path != "/service/token" &&
+		!strings.HasPrefix(path, "/chartrepo/") &&
+		!strings.HasPrefix(path, "/api/chartrepo/") {
+		log.Debug("OIDC CLI modifier only handles request by docker CLI or helm CLI")
 		return false
 	}
 	if ctx.Request.Context().Value(AuthModeKey).(string) != common.OIDCAuth {
