@@ -1,3 +1,17 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package multiplmanifest
 
 import (
@@ -7,18 +21,19 @@ import (
 	"strings"
 )
 
-type MultipleManifestHandler struct {
+type multipleManifestHandler struct {
 	next http.Handler
 }
 
+// New ...
 func New(next http.Handler) http.Handler {
-	return &MultipleManifestHandler{
+	return &multipleManifestHandler{
 		next: next,
 	}
 }
 
-// The handler is responsible for blocking request to upload manifest list by docker client, which is not supported so far by Harbor.
-func (mh MultipleManifestHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+// ServeHTTP The handler is responsible for blocking request to upload manifest list by docker client, which is not supported so far by Harbor.
+func (mh multipleManifestHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	match, _, _ := util.MatchManifestURL(req)
 	if match {
 		contentType := req.Header.Get("Content-type")

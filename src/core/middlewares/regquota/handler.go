@@ -1,3 +1,17 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package regquota
 
 import (
@@ -14,13 +28,14 @@ type regQuotaHandler struct {
 	next http.Handler
 }
 
+// New ...
 func New(next http.Handler) http.Handler {
 	return &regQuotaHandler{
 		next: next,
 	}
 }
 
-//PATCH manifest ...
+// ServeHTTP PATCH manifest ...
 func (rqh regQuotaHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	match, _, _ := util.MatchManifestURL(req)
 	if match {
@@ -30,16 +45,16 @@ func (rqh regQuotaHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) 
 		if req.Method == http.MethodPut && mediaType == "application/vnd.docker.distribution.manifest.v2+json" {
 			data, err := ioutil.ReadAll(req.Body)
 			if err != nil {
-				log.Warningf("Error occured when to copy manifest body %v", err)
-				http.Error(rw, util.MarshalError("InternalServerError", fmt.Sprintf("Error occured when to decode manifest body %v", err)), http.StatusInternalServerError)
+				log.Warningf("Error occurred when to copy manifest body %v", err)
+				http.Error(rw, util.MarshalError("InternalServerError", fmt.Sprintf("Error occurred when to decode manifest body %v", err)), http.StatusInternalServerError)
 				return
 			}
 			req.Body = ioutil.NopCloser(bytes.NewBuffer(data))
 
 			_, desc, err := distribution.UnmarshalManifest(mediaType, data)
 			if err != nil {
-				log.Warningf("Error occured when to Unmarshal Manifest %v", err)
-				http.Error(rw, util.MarshalError("InternalServerError", fmt.Sprintf("Error occured when to Unmarshal Manifest %v", err)), http.StatusInternalServerError)
+				log.Warningf("Error occurred when to Unmarshal Manifest %v", err)
+				http.Error(rw, util.MarshalError("InternalServerError", fmt.Sprintf("Error occurred when to Unmarshal Manifest %v", err)), http.StatusInternalServerError)
 				return
 			}
 			mfDigest = desc.Digest.String()
