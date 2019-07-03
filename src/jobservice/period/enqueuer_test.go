@@ -16,6 +16,12 @@ package period
 import (
 	"context"
 	"fmt"
+	"sync"
+	"testing"
+	"time"
+
+	"github.com/pkg/errors"
+
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
@@ -26,9 +32,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"sync"
-	"testing"
-	"time"
 )
 
 // EnqueuerTestSuite tests functions of enqueuer
@@ -89,19 +92,30 @@ func (suite *EnqueuerTestSuite) TestEnqueuer() {
 			suite.enqueuer.stopChan <- true
 		}()
 
-		<-time.After(1 * time.Second)
-
 		key := rds.RedisKeyScheduled(suite.namespace)
 		conn := suite.pool.Get()
 		defer func() {
 			_ = conn.Close()
 		}()
 
-		count, err := redis.Int(conn.Do("ZCARD", key))
-		require.Nil(suite.T(), err, "count scheduled: nil error expected but got %s", err)
-		assert.Condition(suite.T(), func() bool {
-			return count > 0
-		}, "count of scheduled jobs should be greater than 0 but got %d", count)
+		tk := time.NewTicker(500 * time.Millisecond)
+		defer tk.Stop()
+
+		for {
+			select {
+			case <-tk.C:
+				count, err := redis.Int(conn.Do("ZCARD", key))
+				require.Nil(suite.T(), err, "count scheduled: nil error expected but got %s", err)
+				if assert.Condition(suite.T(), func() (success bool) {
+					return count > 0
+				}, "at least one job should be scheduled for the periodic job policy") {
+					return
+				}
+			case <-time.After(15 * time.Second):
+				require.NoError(suite.T(), errors.New("timeout (15s): expect at 1 scheduled job but still get nothing"))
+				return
+			}
+		}
 	}()
 
 	err := suite.enqueuer.start()
@@ -112,7 +126,7 @@ func (suite *EnqueuerTestSuite) prepare() {
 	now := time.Now()
 	minute := now.Minute()
 
-	coreSpec := fmt.Sprintf("30,50 %d * * * *", minute+2)
+	coreSpec := fmt.Sprintf("0-59 %d * * * *", minute)
 
 	// Prepare one
 	p := &Policy{
