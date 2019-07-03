@@ -33,6 +33,23 @@ type CVEWhitelistItem struct {
 }
 
 // TableName ...
-func (r *CVEWhitelist) TableName() string {
+func (c *CVEWhitelist) TableName() string {
 	return "cve_whitelist"
+}
+
+// CVESet returns the set of CVE id of the items in the whitelist to help filter the vulnerability list
+func (c *CVEWhitelist) CVESet() map[string]struct{} {
+	r := map[string]struct{}{}
+	for _, it := range c.Items {
+		r[it.CVEID] = struct{}{}
+	}
+	return r
+}
+
+// IsExpired returns whether the whitelist is expired
+func (c *CVEWhitelist) IsExpired() bool {
+	if c.ExpiresAt == nil {
+		return false
+	}
+	return time.Now().Unix() >= *c.ExpiresAt
 }
