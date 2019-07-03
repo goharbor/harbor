@@ -37,5 +37,11 @@ func init() {
 		new(JobLog),
 		new(Robot),
 		new(OIDCUser),
-		new(CVEWhitelist))
+		new(Blob),
+		new(Artifact),
+		new(ArtifactAndBlob),
+		new(CVEWhitelist),
+		new(Quota),
+		new(QuotaUsage),
+	)
 }
