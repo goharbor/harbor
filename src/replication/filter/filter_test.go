@@ -120,7 +120,7 @@ func TestFilterOfLabelFilter(t *testing.T) {
 	}
 	// pass the filter
 	filter := &labelFilter{
-		label: "production",
+		labels: []string{"production"},
 	}
 	result, err := filter.Filter(filterable)
 	require.Nil(t, err)
@@ -128,7 +128,7 @@ func TestFilterOfLabelFilter(t *testing.T) {
 		assert.True(t, reflect.DeepEqual(filterable, result[0].(*fakeFilterable)))
 	}
 	// cannot pass the filter
-	filter.label = "cannotpass"
+	filter.labels = []string{"production", "ci-pass"}
 	result, err = filter.Filter(filterable)
 	require.Nil(t, err)
 	assert.Equal(t, 0, len(result))
@@ -160,7 +160,7 @@ func TestDoFilter(t *testing.T) {
 	filterables := []Filterable{tag1, tag2}
 	filters := []Filter{
 		NewVTagNameFilter("*"),
-		NewVTagLabelFilter("production"),
+		NewVTagLabelFilter([]string{"production"}),
 	}
 	err := DoFilter(&filterables, filters...)
 	require.Nil(t, err)

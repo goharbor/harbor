@@ -105,8 +105,8 @@ func TestValidOfPolicy(t *testing.T) {
 						Value: ResourceTypeImage,
 					},
 					{
-						Type:  FilterTypeName,
-						Value: "a[",
+						Type:  FilterTypeTag,
+						Value: "",
 					},
 				},
 			},

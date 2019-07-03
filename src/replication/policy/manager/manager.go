@@ -271,6 +271,13 @@ func parseFilters(str string) ([]*model.Filter, error) {
 		if filter.Type == model.FilterTypeResource {
 			filter.Value = (model.ResourceType)(filter.Value.(string))
 		}
+		if filter.Type == model.FilterTypeLabel {
+			labels := []string{}
+			for _, label := range filter.Value.([]interface{}) {
+				labels = append(labels, label.(string))
+			}
+			filter.Value = labels
+		}
 		filters = append(filters, filter)
 	}
 	return filters, nil

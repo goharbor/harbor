@@ -88,19 +88,33 @@ func (p *Policy) Valid(v *validation.Validation) {
 
 	// valid the filters
 	for _, filter := range p.Filters {
-		value, ok := filter.Value.(string)
-		if !ok {
-			v.SetError("filters", "the type of filter value isn't string")
-			break
-		}
 		switch filter.Type {
-		case FilterTypeResource:
-			rt := ResourceType(value)
-			if !(rt == ResourceTypeImage || rt == ResourceTypeChart) {
-				v.SetError("filters", fmt.Sprintf("invalid resource filter: %s", value))
+		case FilterTypeResource, FilterTypeName, FilterTypeTag:
+			value, ok := filter.Value.(string)
+			if !ok {
+				v.SetError("filters", "the type of filter value isn't string")
 				break
 			}
-		case FilterTypeName, FilterTypeTag, FilterTypeLabel:
+			if filter.Type == FilterTypeResource {
+				rt := ResourceType(value)
+				if !(rt == ResourceTypeImage || rt == ResourceTypeChart) {
+					v.SetError("filters", fmt.Sprintf("invalid resource filter: %s", value))
+					break
+				}
+			}
+		case FilterTypeLabel:
+			labels, ok := filter.Value.([]interface{})
+			if !ok {
+				v.SetError("filters", "the type of label filter value isn't string slice")
+				break
+			}
+			for _, label := range labels {
+				_, ok := label.(string)
+				if !ok {
+					v.SetError("filters", "the type of label filter value isn't string slice")
+					break
+				}
+			}
 		default:
 			v.SetError("filters", "invalid filter type")
 			break
@@ -148,7 +162,10 @@ func (f *Filter) DoFilter(filterables interface{}) error {
 	case FilterTypeTag:
 		ft = filter.NewVTagNameFilter(f.Value.(string))
 	case FilterTypeLabel:
-		ft = filter.NewVTagLabelFilter(f.Value.(string))
+		labels, ok := f.Value.([]string)
+		if ok {
+			ft = filter.NewVTagLabelFilter(labels)
+		}
 	case FilterTypeResource:
 		ft = filter.NewResourceTypeFilter(f.Value.(string))
 	default:

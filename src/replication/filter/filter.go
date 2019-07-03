@@ -72,9 +72,9 @@ func NewVTagNameFilter(pattern string) Filter {
 }
 
 // NewVTagLabelFilter return a Filter to filter vtags according to the label
-func NewVTagLabelFilter(label string) Filter {
+func NewVTagLabelFilter(labels []string) Filter {
 	return &labelFilter{
-		label: label,
+		labels: labels,
 	}
 }
 
@@ -138,7 +138,7 @@ func (n *nameFilter) Filter(filterables ...Filterable) ([]Filterable, error) {
 }
 
 type labelFilter struct {
-	label string
+	labels []string
 }
 
 func (l *labelFilter) ApplyTo(filterable Filterable) bool {
@@ -154,18 +154,24 @@ func (l *labelFilter) ApplyTo(filterable Filterable) bool {
 func (l *labelFilter) Filter(filterables ...Filterable) ([]Filterable, error) {
 	// if no specified label in the filter, just returns the input filterable
 	// candidate as the result
-	if len(l.label) == 0 {
+	if len(l.labels) == 0 {
 		return filterables, nil
 	}
 	result := []Filterable{}
 	for _, filterable := range filterables {
-		match := false
+		labels := map[string]struct{}{}
 		for _, label := range filterable.GetLabels() {
-			if label == l.label {
-				match = true
+			labels[label] = struct{}{}
+		}
+		match := true
+		for _, label := range l.labels {
+			if _, exist := labels[label]; !exist {
+				match = false
 				break
 			}
 		}
+		// add the filterable to the result list if it contains
+		// all labels defined for the filter
 		if match {
 			result = append(result, filterable)
 		}
