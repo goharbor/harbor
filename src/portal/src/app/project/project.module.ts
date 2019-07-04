@@ -38,6 +38,7 @@ import { ProjectLabelComponent } from "../project/project-label/project-label.co
 import { HelmChartModule } from './helm-chart/helm-chart.module';
 import { RobotAccountComponent } from './robot-account/robot-account.component';
 import { AddRobotComponent } from './robot-account/add-robot/add-robot.component';
+import { AddHttpAuthGroupComponent } from './member/add-http-auth-group/add-http-auth-group.component';
 
 @NgModule({
   imports: [
@@ -59,7 +60,8 @@ import { AddRobotComponent } from './robot-account/add-robot/add-robot.component
     ProjectLabelComponent,
     AddGroupComponent,
     RobotAccountComponent,
-    AddRobotComponent
+    AddRobotComponent,
+    AddHttpAuthGroupComponent
   ],
   exports: [ProjectComponent, ListProjectComponent],
   providers: [ProjectRoutingResolver, MemberService, RobotService]
