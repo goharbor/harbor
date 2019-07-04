@@ -29,6 +29,7 @@ import { Project } from "../../project/project";
 import { Member } from "./member";
 import { SessionUser } from "../../shared/session-user";
 import { AddGroupComponent } from './add-group/add-group.component';
+import { AddHttpAuthGroupComponent } from './add-http-auth-group/add-http-auth-group.component';
 import { MemberService } from "./member.service";
 import { AddMemberComponent } from "./add-member/add-member.component";
 import { AppConfigService } from "../../app-config.service";
@@ -57,16 +58,18 @@ export class MemberComponent implements OnInit, OnDestroy {
   isDelete = false;
   isChangeRole = false;
   loading = false;
-  isLdapMode: boolean = false;
 
   isChangingRole = false;
   batchChangeRoleInfos = {};
-
+  isLdapMode: boolean;
+  isHttpAuthMode: boolean;
   @ViewChild(AddMemberComponent)
   addMemberComponent: AddMemberComponent;
 
   @ViewChild(AddGroupComponent)
   addGroupComponent: AddGroupComponent;
+  @ViewChild(AddHttpAuthGroupComponent)
+  addHttpAuthGroupComponent: AddHttpAuthGroupComponent;
   hasCreateMemberPermission: boolean;
   hasUpdateMemberPermission: boolean;
   hasDeleteMemberPermission: boolean;
@@ -109,13 +112,15 @@ export class MemberComponent implements OnInit, OnDestroy {
     // Get current user from registered resolver.
     this.currentUser = this.session.getCurrentUser();
     this.retrieve(this.projectId, "");
+    // get member permission rule
+    this.getMemberPermissionRule(this.projectId);
     if (this.appConfigService.isLdapMode()) {
       this.isLdapMode = true;
     }
-    // get member permission rule
-    this.getMemberPermissionRule(this.projectId);
+    if (this.appConfigService.isHttpAuthMode()) {
+      this.isHttpAuthMode = true;
+    }
   }
-
   doSearch(searchMember: string) {
     this.searchMember = searchMember;
     this.retrieve(this.projectId, this.searchMember);
@@ -172,7 +177,11 @@ export class MemberComponent implements OnInit, OnDestroy {
 
   // Add group
   openAddGroupModal() {
-    this.addGroupComponent.open();
+    if (this.isLdapMode) {
+      this.addGroupComponent.open();
+    } else {
+      this.addHttpAuthGroupComponent.openAddMemberModal();
+    }
   }
   addedGroup(result: boolean) {
     this.searchMember = "";
@@ -188,10 +197,10 @@ export class MemberComponent implements OnInit, OnDestroy {
       return this.memberService
         .changeMemberRole(projectId, member.id, roleId)
         .pipe(map(() => this.batchChangeRoleInfos[member.id] = 'done')
-        , catchError(error => {
-          this.messageHandlerService.handleError(error + ": " + member.entity_name);
-          return observableThrowError(error);
-        }));
+          , catchError(error => {
+            this.messageHandlerService.handleError(error + ": " + member.entity_name);
+            return observableThrowError(error);
+          }));
     };
 
     // Preparation for members role change

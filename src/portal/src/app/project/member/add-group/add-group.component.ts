@@ -31,7 +31,7 @@ export class AddGroupComponent implements OnInit {
   currentTerm = '';
 
   selectedRole = 1;
-  group = new UserGroup();
+  group = new UserGroup(1);
   selectedGroups: UserGroup[] = [];
   groups: UserGroup[] = [];
   totalCount = 0;
@@ -90,7 +90,7 @@ export class AddGroupComponent implements OnInit {
 
   resetModaldata() {
     this.createGroupMode = false;
-    this.group = new UserGroup();
+    this.group = new UserGroup(1);
     this.selectedRole = 1;
     this.selectedGroups = [];
     this.groups = [];

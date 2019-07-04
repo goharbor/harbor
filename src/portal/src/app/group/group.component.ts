@@ -4,7 +4,7 @@ import { flatMap, catchError } from "rxjs/operators";
 import { SessionService } from "./../shared/session.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
-import { operateChanges, OperateInfo, OperationService, OperationState } from "@harbor/ui";
+import { operateChanges, OperateInfo, OperationService, OperationState, GroupType } from "@harbor/ui";
 
 import {
   ConfirmationTargets,
@@ -18,7 +18,9 @@ import { UserGroup } from "./group";
 import { GroupService } from "./group.service";
 import { MessageHandlerService } from "../shared/message-handler/message-handler.service";
 import { errorHandler as errorHandFn } from "../shared/shared.utils";
-import { Observable, throwError as observableThrowError } from "rxjs";
+import { throwError as observableThrowError } from "rxjs";
+import { AppConfigService } from '../app-config.service';
+
 @Component({
   selector: "app-group",
   templateUrl: "./group.component.html",
@@ -35,6 +37,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   delSub: Subscription;
   batchOps = 'idle';
   batchInfos = new Map();
+  isLdapMode: boolean;
 
   @ViewChild(AddGroupModalComponent) newGroupModal: AddGroupModalComponent;
 
@@ -46,10 +49,14 @@ export class GroupComponent implements OnInit, OnDestroy {
     private msgHandler: MessageHandlerService,
     private session: SessionService,
     private translateService: TranslateService,
+    private appConfigService: AppConfigService
   ) { }
 
   ngOnInit() {
     this.loadData();
+    if (this.appConfigService.isLdapMode()) {
+      this.isLdapMode = true;
+    }
     this.delSub = this.operateDialogService.confirmationConfirm$.subscribe(
       message => {
         if (
@@ -150,7 +157,13 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   groupToSring(type: number) {
-    if (type === 1) { return 'GROUP.LDAP_TYPE'; } else { return 'UNKNOWN'; }
+    if (type === GroupType.LDAP_TYPE) {
+      return 'GROUP.LDAP_TYPE';
+    } else if (type === GroupType.HTTP_TYPE) {
+      return 'GROUP.HTTP_TYPE';
+    } else {
+      return 'UNKNOWN';
+    }
   }
 
   doFilter(groupName: string): void {
@@ -162,6 +175,12 @@ export class GroupComponent implements OnInit, OnDestroy {
   }
 
   get canEditGroup(): boolean {
+    return (
+      this.selectedGroups.length === 1 &&
+      this.session.currentUser.has_admin_role && this.isLdapMode
+    );
+  }
+  get canDeleteGroup(): boolean {
     return (
       this.selectedGroups.length === 1 &&
       this.session.currentUser.has_admin_role

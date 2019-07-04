@@ -407,3 +407,8 @@ export class OriginCron {
   cron: string;
 }
 
+export interface  ProjectRootInterface {
+  NAME: string;
+  VALUE: number;
+  LABEL: string;
+}

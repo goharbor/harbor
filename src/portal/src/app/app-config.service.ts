@@ -19,6 +19,7 @@ import { CookieService } from 'ngx-cookie';
 import { AppConfig } from './app-config';
 import { CookieKeyOfAdmiral, HarborQueryParamKey } from './shared/shared.const';
 import { maintainUrlQueryParmas, HTTP_GET_OPTIONS} from './shared/shared.utils';
+import { CONFIG_AUTH_MODE} from "@harbor/ui";
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 export const systemInfoEndpoint = "/api/systeminfo";
@@ -66,7 +67,10 @@ export class AppConfigService {
     }
 
     public isLdapMode(): boolean {
-        return this.configurations && this.configurations.auth_mode === 'ldap_auth';
+        return this.configurations && this.configurations.auth_mode === CONFIG_AUTH_MODE.LDAP_AUTH;
+    }
+    public isHttpAuthMode(): boolean {
+        return this.configurations && this.configurations.auth_mode === CONFIG_AUTH_MODE.HTTP_AUTH;
     }
 
     // Return the reconstructed admiral url
