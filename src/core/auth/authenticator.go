@@ -133,6 +133,7 @@ func Login(m models.AuthModel) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	if authMode == "" || dao.IsSuperUser(m.Principal) {
 		authMode = common.DBAuth
 	}

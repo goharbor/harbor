@@ -61,11 +61,11 @@ type AuthModeType struct {
 }
 
 func (t *AuthModeType) validate(str string) error {
-	if str == common.LDAPAuth || str == common.DBAuth || str == common.UAAAuth || str == common.HTTPAuth || str == common.OIDCAuth {
+	if str == common.LDAPAuth || str == common.DBAuth || str == common.UAAAuth || str == common.HTTPAuth || str == common.OIDCAuth || str == common.KeystoneAuth {
 		return nil
 	}
-	return fmt.Errorf("invalid %s, shoud be one of %s, %s, %s, %s, %s",
-		common.AUTHMode, common.DBAuth, common.LDAPAuth, common.UAAAuth, common.HTTPAuth, common.OIDCAuth)
+	return fmt.Errorf("invalid %s, shoud be one of %s, %s, %s, %s, %s, %s",
+		common.AUTHMode, common.DBAuth, common.LDAPAuth, common.UAAAuth, common.HTTPAuth, common.OIDCAuth, common.KeystoneAuth)
 }
 
 // ProjectCreationRestrictionType ...

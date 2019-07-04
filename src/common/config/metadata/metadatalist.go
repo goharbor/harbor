@@ -47,6 +47,7 @@ const (
 	HTTPAuthGroup  = "http_auth"
 	OIDCGroup      = "oidc"
 	DatabaseGroup  = "database"
+	KeystoneGroup  = "keystone"
 	// Put all config items do not belong a existing group into basic
 	BasicGroup = "basic"
 	ClairGroup = "clair"
@@ -147,5 +148,8 @@ var (
 		{Name: common.WithNotary, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_NOTARY", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		// the unit of expiration is minute, 43200 minutes = 30 days
 		{Name: common.RobotTokenDuration, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_TOKEN_DURATION", DefaultValue: "43200", ItemType: &IntType{}, Editable: true},
+
+		{Name: common.KeystoneEndpoint, Scope: UserScope, Group: KeystoneGroup, EnvKey: "KEYSTONE_ENDPOINT", DefaultValue: "", ItemType: &StringType{}, Editable: false},
+		{Name: common.KeystoneDomainName, Scope: UserScope, Group: KeystoneGroup, EnvKey: "KEYSTONE_DOMAIN_NAME", DefaultValue: "", ItemType: &StringType{}, Editable: false},
 	}
 )

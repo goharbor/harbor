@@ -67,7 +67,7 @@ Get current configurations
 
 | Configure item name | Description  | Type | Required | Default Value | 
 | ------------ |------------ | ---- | ----- | ----- |
-auth_mode | Authentication mode, it can be db_auth, ldap_auth, uaa_auth or oidc_auth  | string
+auth_mode | Authentication mode, it can be db_auth, ldap_auth, uaa_auth, oidc_auth or keystone_auth  | string
 email_from |   Email from  |  string | required (email feature)
 email_host |   Email server  |  string | required (email feature)
 email_identity |  Email identity  | string | optional (email feature)
@@ -106,6 +106,8 @@ oidc_client_secret | client secret for OIDC auth |string | required(oidc_auth)
 oidc_scope | scope for OIDC auth | string| required(oidc_auth)
 oidc_verify_cert | verify cert for OIDC auth, true or false | boolean | optional| true
 robot_token_duration | Robot token expiration time in minutes | number | optional | 43200 (30days)
+keystone_endpoint | Keystone endpoint | string | required(keystone_auth) | 
+keystone_domain_name | Keystone domain | string | required(keystone_auth) | 
 
 
 

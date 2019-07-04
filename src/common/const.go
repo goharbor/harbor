@@ -23,6 +23,7 @@ const (
 	UAAAuth             = "uaa_auth"
 	HTTPAuth            = "http_auth"
 	OIDCAuth            = "oidc_auth"
+	KeystoneAuth        = "keystone_auth"
 	ProCrtRestrEveryone = "everyone"
 	ProCrtRestrAdmOnly  = "adminonly"
 	LDAPScopeBase       = 0
@@ -141,4 +142,7 @@ const (
 	OIDCLoginPath    = "/c/oidc/login"
 
 	ChartUploadCtxKey = contextKey("chart_upload_event")
+
+	KeystoneEndpoint   = "keystone_endpoint"
+	KeystoneDomainName = "keystone_domain_name"
 )

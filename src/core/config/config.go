@@ -510,3 +510,16 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 		Scope:        scope,
 	}, nil
 }
+
+// KeystoneSetting returns the setting of Keystone service.
+// The settings are only meaningful when the auth mode is set keystone.
+func KeystoneSetting() (*models.KeystoneSettings, error) {
+	if err := cfgMgr.Load(); err != nil {
+		return nil, err
+	}
+
+	return &models.KeystoneSettings{
+		Endpoint:   cfgMgr.Get(common.KeystoneEndpoint).GetString(),
+		DomainName: cfgMgr.Get(common.KeystoneDomainName).GetString(),
+	}, nil
+}
