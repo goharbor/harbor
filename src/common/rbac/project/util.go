@@ -54,6 +54,7 @@ var (
 		{Resource: rbac.ResourceSelf, Action: rbac.ActionDelete},
 
 		{Resource: rbac.ResourceMember, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceMember, Action: rbac.ActionUpdate},
 		{Resource: rbac.ResourceMember, Action: rbac.ActionDelete},
 		{Resource: rbac.ResourceMember, Action: rbac.ActionList},
