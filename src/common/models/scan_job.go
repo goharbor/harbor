@@ -34,31 +34,6 @@ type ScanJob struct {
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
 
-// Severity represents the severity of a image/component in terms of vulnerability.
-type Severity int64
-
-// Sevxxx is the list of severity of image after scanning.
-const (
-	_ Severity = iota
-	SevNone
-	SevUnknown
-	SevLow
-	SevMedium
-	SevHigh
-)
-
-// String is the output function for sererity variable
-func (sev Severity) String() string {
-	name := []string{"negligible", "unknown", "low", "medium", "high"}
-	i := int64(sev)
-	switch {
-	case i >= 1 && i <= int64(SevHigh):
-		return name[i-1]
-	default:
-		return "unknown"
-	}
-}
-
 // TableName is required by by beego orm to map ScanJob to table img_scan_job
 func (s *ScanJob) TableName() string {
 	return ScanJobTable
@@ -99,17 +74,6 @@ type ComponentsOverviewEntry struct {
 type ImageScanReq struct {
 	Repo string `json:"repository"`
 	Tag  string `json:"tag"`
-}
-
-// VulnerabilityItem is an item in the vulnerability result returned by vulnerability details API.
-type VulnerabilityItem struct {
-	ID          string   `json:"id"`
-	Severity    Severity `json:"severity"`
-	Pkg         string   `json:"package"`
-	Version     string   `json:"version"`
-	Description string   `json:"description"`
-	Link        string   `json:"link"`
-	Fixed       string   `json:"fixedVersion,omitempty"`
 }
 
 // ScanAllPolicy is represent the json request and object for scan all policy, the parm is het

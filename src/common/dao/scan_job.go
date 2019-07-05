@@ -15,12 +15,11 @@
 package dao
 
 import (
+	"encoding/json"
+	"fmt"
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-
-	"encoding/json"
-	"fmt"
 	"time"
 )
 
