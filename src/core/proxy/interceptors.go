@@ -11,6 +11,7 @@ import (
 	"github.com/goharbor/harbor/src/core/promgr"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/pkg/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
 
 	"context"
 	"fmt"
@@ -82,7 +83,7 @@ type policyChecker interface {
 	// contentTrustEnabled returns whether a project has enabled content trust.
 	contentTrustEnabled(name string) bool
 	// vulnerablePolicy  returns whether a project has enabled vulnerable, and the project's severity.
-	vulnerablePolicy(name string) (bool, models.Severity)
+	vulnerablePolicy(name string) (bool, models.Severity, models.CVEWhitelist)
 }
 
 type pmsPolicyChecker struct {
@@ -97,13 +98,28 @@ func (pc pmsPolicyChecker) contentTrustEnabled(name string) bool {
 	}
 	return project.ContentTrustEnabled()
 }
-func (pc pmsPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity) {
+func (pc pmsPolicyChecker) vulnerablePolicy(name string) (bool, models.Severity, models.CVEWhitelist) {
 	project, err := pc.pm.Get(name)
+	wl := models.CVEWhitelist{}
 	if err != nil {
 		log.Errorf("Unexpected error when getting the project, error: %v", err)
-		return true, models.SevUnknown
+		return true, models.SevUnknown, wl
 	}
-	return project.VulPrevented(), clair.ParseClairSev(project.Severity())
+	mgr := whitelist.NewDefaultManager()
+	if project.ReuseSysCVEWhitelist() {
+		w, err := mgr.GetSys()
+		if err != nil {
+			return project.VulPrevented(), clair.ParseClairSev(project.Severity()), wl
+		}
+		wl = *w
+	} else {
+		w, err := mgr.Get(project.ProjectID)
+		if err != nil {
+			return project.VulPrevented(), clair.ParseClairSev(project.Severity()), wl
+		}
+		wl = *w
+	}
+	return project.VulPrevented(), clair.ParseClairSev(project.Severity()), wl
 }
 
 // newPMSPolicyChecker returns an instance of an pmsPolicyChecker
@@ -298,16 +314,9 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		vh.next.ServeHTTP(rw, req)
 		return
 	}
-	projectVulnerableEnabled, projectVulnerableSeverity := getPolicyChecker().vulnerablePolicy(img.projectName)
+	projectVulnerableEnabled, projectVulnerableSeverity, wl := getPolicyChecker().vulnerablePolicy(img.projectName)
 	if !projectVulnerableEnabled {
 		vh.next.ServeHTTP(rw, req)
-		return
-	}
-	// TODO: Get whitelist based on project setting
-	wl, err := dao.GetSysCVEWhitelist()
-	if err != nil {
-		log.Errorf("Failed to get the whitelist, error: %v", err)
-		http.Error(rw, marshalError("PROJECT_POLICY_VIOLATION", "Failed to get CVE whitelist."), http.StatusPreconditionFailed)
 		return
 	}
 	vl, err := scan.VulnListByDigest(img.digest)
@@ -316,7 +325,7 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		http.Error(rw, marshalError("PROJECT_POLICY_VIOLATION", "Failed to get vulnerabilities."), http.StatusPreconditionFailed)
 		return
 	}
-	filtered := vl.ApplyWhitelist(*wl)
+	filtered := vl.ApplyWhitelist(wl)
 	msg := vh.filterMsg(img, filtered)
 	log.Info(msg)
 	if int(vl.Severity()) >= int(projectVulnerableSeverity) {
