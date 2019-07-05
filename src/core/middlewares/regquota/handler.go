@@ -18,6 +18,8 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/docker/distribution"
+	"github.com/docker/distribution/manifest/schema1"
+	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"io/ioutil"
@@ -42,25 +44,29 @@ func (rqh regQuotaHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) 
 		var mfSize int64
 		var mfDigest string
 		mediaType := req.Header.Get("Content-Type")
-		if req.Method == http.MethodPut && mediaType == "application/vnd.docker.distribution.manifest.v2+json" {
-			data, err := ioutil.ReadAll(req.Body)
-			if err != nil {
-				log.Warningf("Error occurred when to copy manifest body %v", err)
-				http.Error(rw, util.MarshalError("InternalServerError", fmt.Sprintf("Error occurred when to decode manifest body %v", err)), http.StatusInternalServerError)
-				return
-			}
-			req.Body = ioutil.NopCloser(bytes.NewBuffer(data))
+		if req.Method == http.MethodPut {
+			if mediaType == schema1.MediaTypeManifest ||
+				mediaType == schema1.MediaTypeSignedManifest ||
+				mediaType == schema2.MediaTypeManifest {
+				data, err := ioutil.ReadAll(req.Body)
+				if err != nil {
+					log.Warningf("Error occurred when to copy manifest body %v", err)
+					http.Error(rw, util.MarshalError("InternalServerError", fmt.Sprintf("Error occurred when to decode manifest body %v", err)), http.StatusInternalServerError)
+					return
+				}
+				req.Body = ioutil.NopCloser(bytes.NewBuffer(data))
 
-			_, desc, err := distribution.UnmarshalManifest(mediaType, data)
-			if err != nil {
-				log.Warningf("Error occurred when to Unmarshal Manifest %v", err)
-				http.Error(rw, util.MarshalError("InternalServerError", fmt.Sprintf("Error occurred when to Unmarshal Manifest %v", err)), http.StatusInternalServerError)
-				return
+				_, desc, err := distribution.UnmarshalManifest(mediaType, data)
+				if err != nil {
+					log.Warningf("Error occurred when to Unmarshal Manifest %v", err)
+					http.Error(rw, util.MarshalError("InternalServerError", fmt.Sprintf("Error occurred when to Unmarshal Manifest %v", err)), http.StatusInternalServerError)
+					return
+				}
+				mfDigest = desc.Digest.String()
+				mfSize = desc.Size
+				log.Infof("manifest digest... %s", mfDigest)
+				log.Infof("manifest size... %v", mfSize)
 			}
-			mfDigest = desc.Digest.String()
-			mfSize = desc.Size
-			log.Infof("manifest digest... %s", mfDigest)
-			log.Infof("manifest size... %v", mfSize)
 		}
 	}
 

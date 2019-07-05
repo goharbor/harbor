@@ -34,7 +34,7 @@ func New(next http.Handler) http.Handler {
 
 // ServeHTTP The handler is responsible for blocking request to upload manifest list by docker client, which is not supported so far by Harbor.
 func (mh multipleManifestHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	match, _, _ := util.MatchManifestURL(req)
+	match, _, _ := util.MatchPushManifest(req)
 	if match {
 		contentType := req.Header.Get("Content-type")
 		// application/vnd.docker.distribution.manifest.list.v2+json

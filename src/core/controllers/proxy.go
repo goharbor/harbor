@@ -21,4 +21,3 @@ func (p *RegistryProxy) Handle() {
 func (p *RegistryProxy) Render() error {
 	return nil
 }
-

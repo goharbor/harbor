@@ -74,7 +74,11 @@ func MarshalError(code, msg string) string {
 
 // MatchManifestURL ...
 func MatchManifestURL(req *http.Request) (bool, string, string) {
-	re := regexp.MustCompile(manifestURLPattern)
+	re, err := regexp.Compile(manifestURLPattern)
+	if err != nil {
+		log.Errorf("error to match manifest url, %v", err)
+		return false, "", ""
+	}
 	s := re.FindStringSubmatch(req.URL.Path)
 	if len(s) == 3 {
 		s[1] = strings.TrimSuffix(s[1], "/")
@@ -88,7 +92,11 @@ func MatchPutBlobURL(req *http.Request) (bool, string) {
 	if req.Method != http.MethodPut {
 		return false, ""
 	}
-	re := regexp.MustCompile(blobURLPattern)
+	re, err := regexp.Compile(blobURLPattern)
+	if err != nil {
+		log.Errorf("error to match put blob url, %v", err)
+		return false, ""
+	}
 	s := re.FindStringSubmatch(req.URL.Path)
 	if len(s) == 2 {
 		s[1] = strings.TrimSuffix(s[1], "/")
@@ -100,6 +108,14 @@ func MatchPutBlobURL(req *http.Request) (bool, string) {
 // MatchPullManifest checks if the request looks like a request to pull manifest.  If it is returns the image and tag/sha256 digest as 2nd and 3rd return values
 func MatchPullManifest(req *http.Request) (bool, string, string) {
 	if req.Method != http.MethodGet {
+		return false, "", ""
+	}
+	return MatchManifestURL(req)
+}
+
+// MatchPushManifest checks if the request looks like a request to push manifest.  If it is returns the image and tag/sha256 digest as 2nd and 3rd return values
+func MatchPushManifest(req *http.Request) (bool, string, string) {
+	if req.Method != http.MethodPut {
 		return false, "", ""
 	}
 	return MatchManifestURL(req)

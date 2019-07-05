@@ -32,7 +32,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/review/harbor/src/core/proxy"
+	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -102,8 +102,9 @@ func TestRedirectForOIDC(t *testing.T) {
 // TestMain is a sample to run an endpoint test
 func TestAll(t *testing.T) {
 	config.InitWithSettings(utilstest.GetUnitTestConfig())
-	proxy.Init()
 	assert := assert.New(t)
+	err := middlewares.Init()
+	assert.Nil(err)
 
 	r, _ := http.NewRequest("POST", "/c/login", nil)
 	w := httptest.NewRecorder()

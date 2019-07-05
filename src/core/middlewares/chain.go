@@ -46,7 +46,7 @@ func (b *DefaultCreator) Create() *alice.Chain {
 	for _, mName := range b.middlewares {
 		middlewareName := mName
 		chain = chain.Append(func(next http.Handler) http.Handler {
-			constructor := b.getMiddleware(middlewareName)
+			constructor := b.geMiddleware(middlewareName)
 			if constructor == nil {
 				log.Errorf("cannot init middle %s", middlewareName)
 				return nil
@@ -57,70 +57,16 @@ func (b *DefaultCreator) Create() *alice.Chain {
 	return &chain
 }
 
-func (b *DefaultCreator) getMiddleware(mName string) alice.Constructor {
-	var middleware alice.Constructor
-
-	if mName == READONLY {
-		middleware = func(next http.Handler) http.Handler {
-			return readonly.New(next)
-		}
+func (b *DefaultCreator) geMiddleware(mName string) alice.Constructor {
+	middlewares := map[string]alice.Constructor{
+		READONLY:         func(next http.Handler) http.Handler { return readonly.New(next) },
+		URL:              func(next http.Handler) http.Handler { return url.New(next) },
+		MUITIPLEMANIFEST: func(next http.Handler) http.Handler { return multiplmanifest.New(next) },
+		LISTREPO:         func(next http.Handler) http.Handler { return listrepo.New(next) },
+		CONTENTTRUST:     func(next http.Handler) http.Handler { return contenttrust.New(next) },
+		VULNERABLE:       func(next http.Handler) http.Handler { return vulnerable.New(next) },
+		REGQUOTA:         func(next http.Handler) http.Handler { return regquota.New(next) },
+		BLOBQUOTA:        func(next http.Handler) http.Handler { return blobquota.New(next) },
 	}
-	if mName == URL {
-		if middleware != nil {
-			return nil
-		}
-		middleware = func(next http.Handler) http.Handler {
-			return url.New(next)
-		}
-	}
-	if mName == MUITIPLEMANIFEST {
-		if middleware != nil {
-			return nil
-		}
-		middleware = func(next http.Handler) http.Handler {
-			return multiplmanifest.New(next)
-		}
-	}
-	if mName == LISTREPO {
-		if middleware != nil {
-			return nil
-		}
-		middleware = func(next http.Handler) http.Handler {
-			return listrepo.New(next)
-		}
-	}
-	if mName == CONTENTTRUST {
-		if middleware != nil {
-			return nil
-		}
-		middleware = func(next http.Handler) http.Handler {
-			return contenttrust.New(next)
-		}
-	}
-	if mName == VULNERABLE {
-		if middleware != nil {
-			return nil
-		}
-		middleware = func(next http.Handler) http.Handler {
-			return vulnerable.New(next)
-		}
-	}
-	if mName == REGQUOTA {
-		if middleware != nil {
-			return nil
-		}
-		middleware = func(next http.Handler) http.Handler {
-			return regquota.New(next)
-		}
-	}
-	if mName == BLOBQUOTA {
-		if middleware != nil {
-			return nil
-		}
-		middleware = func(next http.Handler) http.Handler {
-			return blobquota.New(next)
-		}
-	}
-
-	return middleware
+	return middlewares[mName]
 }
