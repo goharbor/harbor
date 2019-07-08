@@ -17,7 +17,6 @@ package local
 import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/rbac/project"
@@ -140,12 +139,11 @@ func (s *SecurityContext) GetRolesByGroup(projectIDOrName interface{}) []int {
 	user := s.user
 	project, err := s.pm.Get(projectIDOrName)
 	// No user, group or project info
-	if err != nil || project == nil || user == nil || len(user.GroupList) == 0 {
+	if err != nil || project == nil || user == nil || len(user.GroupIDs) == 0 {
 		return roles
 	}
-	// Get role by LDAP group
-	groupDNConditions := group.GetGroupDNQueryCondition(user.GroupList)
-	roles, err = dao.GetRolesByLDAPGroup(project.ProjectID, groupDNConditions)
+	// Get role by Group ID
+	roles, err = dao.GetRolesByGroupID(project.ProjectID, user.GroupIDs)
 	if err != nil {
 		return nil
 	}
@@ -157,8 +155,8 @@ func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
 	result, err := s.pm.List(
 		&models.ProjectQueryParam{
 			Member: &models.MemberQuery{
-				Name:      s.GetUsername(),
-				GroupList: s.user.GroupList,
+				Name:     s.GetUsername(),
+				GroupIDs: s.user.GroupIDs,
 			},
 		})
 	if err != nil {
