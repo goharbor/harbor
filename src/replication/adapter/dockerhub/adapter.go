@@ -12,6 +12,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
 )
@@ -47,7 +48,7 @@ func factory(registry *model.Registry) (adp.Adapter, error) {
 		Transport: util.GetHTTPTransport(registry.Insecure),
 	}, credential)
 
-	reg, err := adp.NewDefaultImageRegistryWithCustomizedAuthorizer(&model.Registry{
+	dockerRegistryAdapter, err := native.NewAdapterWithCustomizedAuthorizer(&model.Registry{
 		Name:       registry.Name,
 		URL:        registryURL, // specify the URL of Docker Hub registry service
 		Credential: registry.Credential,
@@ -58,14 +59,14 @@ func factory(registry *model.Registry) (adp.Adapter, error) {
 	}
 
 	return &adapter{
-		client:               client,
-		registry:             registry,
-		DefaultImageRegistry: reg,
+		client:   client,
+		registry: registry,
+		Adapter:  dockerRegistryAdapter,
 	}, nil
 }
 
 type adapter struct {
-	*adp.DefaultImageRegistry
+	*native.Adapter
 	registry *model.Registry
 	client   *Client
 }

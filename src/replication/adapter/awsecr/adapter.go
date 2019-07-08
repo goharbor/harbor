@@ -16,6 +16,9 @@ package awsecr
 
 import (
 	"errors"
+	"net/http"
+	"regexp"
+
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -24,9 +27,8 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
-	"net/http"
-	"regexp"
 )
 
 func init() {
@@ -45,14 +47,14 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		return nil, err
 	}
 	authorizer := NewAuth(region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure)
-	reg, err := adp.NewDefaultImageRegistryWithCustomizedAuthorizer(registry, authorizer)
+	dockerRegistry, err := native.NewAdapterWithCustomizedAuthorizer(registry, authorizer)
 	if err != nil {
 		return nil, err
 	}
 	return &adapter{
-		registry:             registry,
-		DefaultImageRegistry: reg,
-		region:               region,
+		registry: registry,
+		Adapter:  dockerRegistry,
+		region:   region,
 	}, nil
 }
 
@@ -66,7 +68,7 @@ func parseRegion(url string) (string, error) {
 }
 
 type adapter struct {
-	*adp.DefaultImageRegistry
+	*native.Adapter
 	registry      *model.Registry
 	region        string
 	forceEndpoint *string

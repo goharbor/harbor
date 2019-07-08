@@ -15,12 +15,14 @@
 package googlegcr
 
 import (
+	"net/http"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
-	"net/http"
 )
 
 func init() {
@@ -44,19 +46,19 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		Transport: util.GetHTTPTransport(registry.Insecure),
 	}, credential)
 
-	reg, err := adp.NewDefaultImageRegistryWithCustomizedAuthorizer(registry, authorizer)
+	dockerRegistryAdapter, err := native.NewAdapterWithCustomizedAuthorizer(registry, authorizer)
 	if err != nil {
 		return nil, err
 	}
 
 	return &adapter{
-		registry:             registry,
-		DefaultImageRegistry: reg,
+		registry: registry,
+		Adapter:  dockerRegistryAdapter,
 	}, nil
 }
 
 type adapter struct {
-	*adp.DefaultImageRegistry
+	*native.Adapter
 	registry *model.Registry
 }
 

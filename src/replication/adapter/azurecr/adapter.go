@@ -24,24 +24,26 @@ func init() {
 }
 
 func factory(registry *model.Registry) (adp.Adapter, error) {
-	client, err := getClient(registry)
-	if err != nil {
-		return nil, err
+	if registry.Credential == nil || len(registry.Credential.AccessKey) == 0 ||
+		len(registry.Credential.AccessSecret) == 0 {
+		return nil, fmt.Errorf("credential is necessary for registry %s", registry.URL)
 	}
 
-	reg, err := native.NewWithClient(registry, client)
+	authorizer := auth.NewBasicAuthCredential(registry.Credential.AccessKey,
+		registry.Credential.AccessSecret)
+	dockerRegistryAdapter, err := native.NewAdapterWithCustomizedAuthorizer(registry, authorizer)
 	if err != nil {
 		return nil, err
 	}
 
 	return &adapter{
 		registry: registry,
-		Native:   reg,
+		Adapter:  dockerRegistryAdapter,
 	}, nil
 }
 
 type adapter struct {
-	*native.Native
+	*native.Adapter
 	registry *model.Registry
 }
 
@@ -70,11 +72,6 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeScheduled,
 		},
 	}, nil
-}
-
-// PrepareForPush no preparation needed for Azure container registry
-func (a *adapter) PrepareForPush(resources []*model.Resource) error {
-	return nil
 }
 
 // HealthCheck checks health status of a registry
