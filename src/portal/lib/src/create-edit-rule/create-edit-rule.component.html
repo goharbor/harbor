@@ -62,8 +62,8 @@
           <span class="spinner spinner-inline spinner-position" [hidden]="onGoing === false"></span>
           <div formArrayName="filters">
             <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index">
-              <div [formGroupName]="i">
-                <div class="width-70">
+              <div [formGroupName]="i" *ngIf="supportedFilters[i]?.type !=='label' || (supportedFilters[i]?.type==='label' && supportedFilterLabels?.length)">
+                <div class="width-70" >
                   <label>{{"REPLICATION." + supportedFilters[i]?.type.toUpperCase() | translate}}:</label>
                 </div>
                 <label *ngIf="supportedFilters[i]?.style==='input'" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
