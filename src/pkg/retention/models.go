@@ -25,6 +25,14 @@ type Execution struct {
 	Status    string    `json:"status"`
 }
 
+// TaskSubmitResult is the result of task submitting
+// If the task is submitted successfully, JobID will be set
+// and the Error is nil
+type TaskSubmitResult struct {
+	JobID string
+	Error error
+}
+
 // History of retention
 type History struct {
 	ExecutionID string `json:"execution_id"`

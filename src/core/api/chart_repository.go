@@ -46,6 +46,11 @@ const (
 // chartController is a singleton instance
 var chartController *chartserver.Controller
 
+// GetChartController returns the chart controller
+func GetChartController() *chartserver.Controller {
+	return chartController
+}
+
 // ChartRepositoryAPI provides related API handlers for the chart repository APIs
 type ChartRepositoryAPI struct {
 	// The base controller to provide common utilities
