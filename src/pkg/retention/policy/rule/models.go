@@ -17,7 +17,7 @@ package rule
 // Metadata of the retention rule
 type Metadata struct {
 	// UUID of rule
-	ID string `json:"id"`
+	ID int `json:"id"`
 
 	// Priority of rule when doing calculating
 	Priority int `json:"priority"`

@@ -16,6 +16,6 @@ package q
 
 // Query parameters
 type Query struct {
-	PageNumber int
-	PageSize   int
+	PageNumber int64
+	PageSize   int64
 }

@@ -131,6 +131,21 @@ func (b *BaseAPI) GetIDFromURL() (int64, error) {
 	return id, nil
 }
 
+// GetIDFromURL checks the ID in request URL
+func (b *BaseAPI) GetSpecialIDFromURL(name string) (int64, error) {
+	idStr := b.Ctx.Input.Param(":"+name)
+	if len(idStr) == 0 {
+		return 0, errors.New(fmt.Sprintf("invalid %s in URL", name))
+	}
+
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil || id <= 0 {
+		return 0, errors.New("invalid ID in URL")
+	}
+
+	return id, nil
+}
+
 // SetPaginationHeader set"Link" and "X-Total-Count" header for pagination request
 func (b *BaseAPI) SetPaginationHeader(total, page, pageSize int64) {
 	b.Ctx.ResponseWriter.Header().Set("X-Total-Count", strconv.FormatInt(total, 10))
