@@ -1,4 +1,18 @@
-package proxy
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package util
 
 import (
 	"github.com/goharbor/harbor/src/common"
@@ -24,7 +38,6 @@ var token = ""
 func TestMain(m *testing.M) {
 	notaryServer = notarytest.NewNotaryServer(endpoint)
 	defer notaryServer.Close()
-	NotaryEndpoint = notaryServer.URL
 	var defaultConfig = map[string]interface{}{
 		common.ExtEndpoint:     "https://" + endpoint,
 		common.WithNotary:      true,
@@ -78,6 +91,22 @@ func TestMatchPullManifest(t *testing.T) {
 	assert.Equal("sha256:ca4626b691f57d16ce1576231e4a2e2135554d32e13a85dcff380d51fdd13f6a", tag7)
 }
 
+func TestMatchPutBlob(t *testing.T) {
+	assert := assert.New(t)
+	req1, _ := http.NewRequest("PUT", "http://127.0.0.1:5000/v2/library/ubuntu/blobs/uploads/67bb4d9b-4dab-4bbe-b726-2e39322b8303?_state=7W3kWkgdr3fTW", nil)
+	res1, repo1 := MatchPutBlobURL(req1)
+	assert.True(res1, "%s %v is not a request to put blob", req1.Method, req1.URL)
+	assert.Equal("library/ubuntu", repo1)
+
+	req2, _ := http.NewRequest("PATCH", "http://127.0.0.1:5000/v2/library/blobs/uploads/67bb4d9b-4dab-4bbe-b726-2e39322b8303?_state=7W3kWkgdr3fTW", nil)
+	res2, _ := MatchPutBlobURL(req2)
+	assert.False(res2, "%s %v is a request to put blob", req2.Method, req2.URL)
+
+	req3, _ := http.NewRequest("PUT", "http://127.0.0.1:5000/v2/library/manifest/67bb4d9b-4dab-4bbe-b726-2e39322b8303?_state=7W3kWkgdr3fTW", nil)
+	res3, _ := MatchPutBlobURL(req3)
+	assert.False(res3, "%s %v is not a request to put blob", req3.Method, req3.URL)
+}
+
 func TestMatchPushManifest(t *testing.T) {
 	assert := assert.New(t)
 	req1, _ := http.NewRequest("POST", "http://127.0.0.1:5000/v2/library/ubuntu/manifests/14.04", nil)
@@ -125,22 +154,6 @@ func TestMatchPushManifest(t *testing.T) {
 	assert.Equal("14.04", tag8)
 }
 
-func TestMatchListRepos(t *testing.T) {
-	assert := assert.New(t)
-	req1, _ := http.NewRequest("POST", "http://127.0.0.1:5000/v2/_catalog", nil)
-	res1 := MatchListRepos(req1)
-	assert.False(res1, "%s %v is not a request to list repos", req1.Method, req1.URL)
-
-	req2, _ := http.NewRequest("GET", "http://127.0.0.1:5000/v2/_catalog", nil)
-	res2 := MatchListRepos(req2)
-	assert.True(res2, "%s %v is a request to list repos", req2.Method, req2.URL)
-
-	req3, _ := http.NewRequest("GET", "https://192.168.0.5:443/v1/_catalog", nil)
-	res3 := MatchListRepos(req3)
-	assert.False(res3, "%s %v is not a request to pull manifest", req3.Method, req3.URL)
-
-}
-
 func TestPMSPolicyChecker(t *testing.T) {
 	var defaultConfigAdmiral = map[string]interface{}{
 		common.ExtEndpoint:        "https://" + endpoint,
@@ -178,26 +191,11 @@ func TestPMSPolicyChecker(t *testing.T) {
 		}
 	}(id)
 
-	contentTrustFlag := getPolicyChecker().contentTrustEnabled("project_for_test_get_sev_low")
+	contentTrustFlag := GetPolicyChecker().ContentTrustEnabled("project_for_test_get_sev_low")
 	assert.True(t, contentTrustFlag)
-	projectVulnerableEnabled, projectVulnerableSeverity := getPolicyChecker().vulnerablePolicy("project_for_test_get_sev_low")
+	projectVulnerableEnabled, projectVulnerableSeverity := GetPolicyChecker().VulnerablePolicy("project_for_test_get_sev_low")
 	assert.True(t, projectVulnerableEnabled)
 	assert.Equal(t, projectVulnerableSeverity, models.SevLow)
-}
-
-func TestMatchNotaryDigest(t *testing.T) {
-	assert := assert.New(t)
-	// The data from common/utils/notary/helper_test.go
-	img1 := imageInfo{"notary-demo/busybox", "1.0", "notary-demo", "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"}
-	img2 := imageInfo{"notary-demo/busybox", "2.0", "notary-demo", "sha256:12345678"}
-
-	res1, err := matchNotaryDigest(img1)
-	assert.Nil(err, "Unexpected error: %v, image: %#v", err, img1)
-	assert.True(res1)
-
-	res2, err := matchNotaryDigest(img2)
-	assert.Nil(err, "Unexpected error: %v, image: %#v, take 2", err, img2)
-	assert.False(res2)
 }
 
 func TestCopyResp(t *testing.T) {
@@ -206,21 +204,15 @@ func TestCopyResp(t *testing.T) {
 	rec2 := httptest.NewRecorder()
 	rec1.Header().Set("X-Test", "mytest")
 	rec1.WriteHeader(418)
-	copyResp(rec1, rec2)
+	CopyResp(rec1, rec2)
 	assert.Equal(418, rec2.Result().StatusCode)
 	assert.Equal("mytest", rec2.Header().Get("X-Test"))
 }
 
 func TestMarshalError(t *testing.T) {
 	assert := assert.New(t)
-	js1 := marshalError("PROJECT_POLICY_VIOLATION", "Not Found")
+	js1 := MarshalError("PROJECT_POLICY_VIOLATION", "Not Found")
 	assert.Equal("{\"errors\":[{\"code\":\"PROJECT_POLICY_VIOLATION\",\"message\":\"Not Found\",\"detail\":\"Not Found\"}]}", js1)
-	js2 := marshalError("DENIED", "The action is denied")
+	js2 := MarshalError("DENIED", "The action is denied")
 	assert.Equal("{\"errors\":[{\"code\":\"DENIED\",\"message\":\"The action is denied\",\"detail\":\"The action is denied\"}]}", js2)
-}
-
-func TestIsDigest(t *testing.T) {
-	assert := assert.New(t)
-	assert.False(isDigest("latest"))
-	assert.True(isDigest("sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"))
 }
