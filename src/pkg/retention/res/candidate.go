@@ -14,6 +14,11 @@
 
 package res
 
+import (
+	"encoding/base64"
+	"fmt"
+)
+
 const (
 	// Image kind
 	Image = "image"
@@ -36,4 +41,11 @@ type Candidate struct {
 	PushedTime int64
 	// Labels attached with the candidate
 	Labels []string
+}
+
+// Hash code based on the candidate info for differentiation
+func (c *Candidate) Hash() string {
+	raw := fmt.Sprintf("%s:%s/%s:%s", c.Kind, c.Namespace, c.Repository, c.Tag)
+
+	return base64.StdEncoding.EncodeToString([]byte(raw))
 }

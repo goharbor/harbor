@@ -38,7 +38,8 @@ type evaluator struct {
 
 // Process the candidates based on the rule definition
 func (e *evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
-	return nil, nil
+	// TODO: REPLACE SAMPLE CODE WITH REAL IMPLEMENTATION
+	return artifacts, nil
 }
 
 // Specify what action is performed to the candidates processed by this evaluator

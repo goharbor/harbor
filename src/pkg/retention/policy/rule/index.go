@@ -37,7 +37,7 @@ type IndexMeta struct {
 type IndexedParam struct {
 	Name string `json:"name"`
 
-	//Type of the param
+	// Type of the param
 	// "int", "string" or "[]string"
 	Type string `json:"type"`
 
@@ -50,11 +50,11 @@ type IndexedParam struct {
 type indexedItem struct {
 	Meta *IndexMeta
 
-	Factory RuleFactory
+	Factory Factory
 }
 
 // Register the rule evaluator with the corresponding rule template
-func Register(meta *IndexMeta, factory RuleFactory) {
+func Register(meta *IndexMeta, factory Factory) {
 	if meta == nil || factory == nil || len(meta.TemplateID) == 0 {
 		// do nothing
 		return

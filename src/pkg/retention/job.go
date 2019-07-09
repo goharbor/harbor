@@ -32,11 +32,11 @@ func (pj *Job) ShouldRetry() bool {
 }
 
 // Validate the parameters
-func (pj *Job) Validate(params Parameters) error {
+func (pj *Job) Validate(params job.Parameters) error {
 	return nil
 }
 
 // Run the job
-func (pj *Job) Run(ctx job.Context, params Parameters) error {
+func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	return nil
 }

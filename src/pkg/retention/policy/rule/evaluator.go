@@ -32,5 +32,5 @@ type Evaluator interface {
 	Action() string
 }
 
-//  RuleFactory defines a factory method for creating rule evaluator
-type RuleFactory func(parameters Parameters) Evaluator
+// Factory defines a factory method for creating rule evaluator
+type Factory func(parameters Parameters) Evaluator

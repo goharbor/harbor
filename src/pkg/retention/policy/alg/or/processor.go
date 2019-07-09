@@ -52,7 +52,7 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 		// collect errors by wrapping
 		err error
 		// collect processed candidates
-		processedCandidates = make(map[string][]*res.Candidate)
+		processedCandidates = make(map[string]cHash)
 	)
 
 	// for sync
@@ -67,30 +67,36 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 	// control chan
 	done := make(chan bool, 1)
 
-	defer func() {
-		// signal the result listener loop exit
-		done <- true
-	}()
-
 	// go routine for receiving results/error
 	go func() {
+		defer func() {
+			// done
+			done <- true
+		}()
+
 		for {
 			select {
 			case result := <-resChan:
-				if _, ok := processedCandidates[result.action]; !ok {
-					processedCandidates[result.action] = make([]*res.Candidate, 0)
+				if result == nil {
+					// chan is closed
+					return
 				}
 
-				processedCandidates[result.action] = append(processedCandidates[result.action], result.processed...)
+				if _, ok := processedCandidates[result.action]; !ok {
+					processedCandidates[result.action] = make(cHash)
+				}
+
+				listByAction := processedCandidates[result.action]
+				for _, rp := range result.processed {
+					// remove duplicated ones
+					listByAction[rp.Hash()] = rp
+				}
 			case e := <-errChan:
 				if err == nil {
 					err = errors.Wrap(e, "artifact processing error")
 				} else {
 					err = errors.Wrap(e, err.Error())
 				}
-			case <-done:
-				// exit
-				return
 			}
 		}
 	}()
@@ -143,6 +149,10 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 
 	// waiting for all the rules are evaluated
 	wg.Wait()
+	// close result chan
+	close(resChan)
+	// check if the receiving loop exists
+	<-done
 
 	if err != nil {
 		return nil, err
@@ -150,11 +160,13 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 
 	results := make([]*res.Result, 0)
 	// Perform actions
-	for act, candidates := range processedCandidates {
+	for act, hash := range processedCandidates {
 		var attachedErr error
 
+		cl := hash.toList()
+
 		if pf, ok := p.performers[act]; ok {
-			if theRes, err := pf.Perform(candidates); err != nil {
+			if theRes, err := pf.Perform(cl); err != nil {
 				attachedErr = err
 			} else {
 				results = append(results, theRes...)
@@ -164,7 +176,7 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 		}
 
 		if attachedErr != nil {
-			for _, c := range candidates {
+			for _, c := range cl {
 				results = append(results, &res.Result{
 					Target: c,
 					Error:  attachedErr,
@@ -186,4 +198,16 @@ func (p *processor) AddEvaluator(evaluator rule.Evaluator, selectors []res.Selec
 // SetPerformer sets a action performer to the processor
 func (p *processor) AddActionPerformer(action string, performer action.Performer) {
 	p.performers[action] = performer
+}
+
+type cHash map[string]*res.Candidate
+
+func (ch cHash) toList() []*res.Candidate {
+	l := make([]*res.Candidate, 0)
+
+	for _, v := range ch {
+		l = append(l, v)
+	}
+
+	return l
 }

@@ -44,7 +44,16 @@ type retainAction struct {
 
 // Perform the action
 func (ra *retainAction) Perform(candidates []*res.Candidate) ([]*res.Result, error) {
-	return nil, nil
+	// TODO: REPLACE SAMPLE CODE WITH REAL IMPLEMENTATION
+	results := make([]*res.Result, 0)
+
+	for _, c := range candidates {
+		results = append(results, &res.Result{
+			Target: c,
+		})
+	}
+
+	return results, nil
 }
 
 // NewRetainAction is factory method for RetainAction

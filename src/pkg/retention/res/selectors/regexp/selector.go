@@ -39,7 +39,8 @@ type selector struct {
 
 // Select candidates by regular expressions
 func (s *selector) Select(artifacts []*res.Candidate) ([]*res.Candidate, error) {
-	return nil, nil
+	// TODO: REPLACE SAMPLE CODE WITH REAL IMPLEMENTATION
+	return artifacts, nil
 }
 
 // New is factory method for regexp selector

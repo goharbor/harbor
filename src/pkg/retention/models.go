@@ -16,7 +16,7 @@ package retention
 
 import "time"
 
-// Retention execution
+// Execution of retention
 type Execution struct {
 	ID        string    `json:"id"`
 	PolicyID  string    `json:"policy_id"`
@@ -25,7 +25,7 @@ type Execution struct {
 	Status    string    `json:"status"`
 }
 
-// Retention history
+// History of retention
 type History struct {
 	ExecutionID string `json:"execution_id"`
 	Rule        struct {
