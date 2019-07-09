@@ -15,7 +15,12 @@
 package policy
 
 import (
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/pkg/retention/res"
+	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
 	"github.com/pkg/errors"
 )
 
@@ -32,8 +37,17 @@ type Builder interface {
 	Build(rawPolicy string) (alg.Processor, error)
 }
 
+// NewBuilder news a basic builder
+func NewBuilder(all []*res.Candidate) Builder {
+	return &basicBuilder{
+		allCandidates: all,
+	}
+}
+
 // basicBuilder is default implementation of Builder interface
-type basicBuilder struct{}
+type basicBuilder struct {
+	allCandidates []*res.Candidate
+}
 
 // Build policy processor from the raw policy
 func (bb *basicBuilder) Build(rawPolicy string) (alg.Processor, error) {
@@ -49,9 +63,36 @@ func (bb *basicBuilder) Build(rawPolicy string) (alg.Processor, error) {
 
 	switch liteMeta.Algorithm {
 	case AlgorithmOR:
+		// New OR processor
+		p := or.New()
+		for _, r := range liteMeta.Rules {
+			evaluator, err := rule.Get(r.Template, r.Parameters)
+			if err != nil {
+				return nil, err
+			}
+
+			perf, err := action.Get(r.Action, bb.allCandidates)
+			if err != nil {
+				return nil, errors.Wrap(err, "get action performer by metadata")
+			}
+
+			sl := make([]res.Selector, 0)
+			for _, s := range r.TagSelectors {
+				sel, err := selectors.Get(s.Kind, s.Decoration, s.Pattern)
+				if err != nil {
+					return nil, errors.Wrap(err, "get selector by metadata")
+				}
+
+				sl = append(sl, sel)
+			}
+
+			p.AddEvaluator(evaluator, sl)
+			p.AddActionPerformer(r.Action, perf)
+
+			return p, nil
+		}
 	default:
-		return nil, errors.Errorf("algorithm %s is not supported", liteMeta.Algorithm)
 	}
 
-	return nil, errors.New("not implemented")
+	return nil, errors.Errorf("algorithm %s is not supported", liteMeta.Algorithm)
 }

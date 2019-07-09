@@ -27,6 +27,9 @@ type Evaluator interface {
 	//    []*res.Candidate : matched candidates for next stage
 	//    error            : common error object if any errors occurred
 	Process(artifacts []*res.Candidate) ([]*res.Candidate, error)
+
+	// Specify what action is performed to the candidates processed by this evaluator
+	Action() string
 }
 
 //  RuleFactory defines a factory method for creating rule evaluator

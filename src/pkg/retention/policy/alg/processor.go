@@ -41,9 +41,10 @@ type Processor interface {
 	//    selectors []res.Selector    : selectors to narrow down the scope (&& adopted), optional
 	AddEvaluator(evaluator rule.Evaluator, selectors []res.Selector)
 
-	// Set performer for the processor
+	// Add performer for the related action to the processor
 	//
 	//  Arguments:
+	//    action string              : action name
 	//    performer action.Performer : a performer implementation
-	SetPerformer(performer action.Performer)
+	AddActionPerformer(action string, performer action.Performer)
 }

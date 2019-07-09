@@ -41,6 +41,11 @@ func (e *evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error
 	return nil, nil
 }
 
+// Specify what action is performed to the candidates processed by this evaluator
+func (e *evaluator) Action() string {
+	return action.Retain
+}
+
 // New a Evaluator
 func New(params rule.Parameters) rule.Evaluator {
 	if params != nil {

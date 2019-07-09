@@ -26,15 +26,19 @@ import (
 
 // processor to handle the rules with OR mapping ways
 type processor struct {
-	performer action.Performer
 	// keep evaluator and its related selector if existing
 	// attentions here, the selectors can be empty/nil, that means match all "**"
 	evaluators map[*rule.Evaluator][]res.Selector
+	// action performer
+	performers map[string]action.Performer
 }
 
 // New processor
 func New() alg.Processor {
-	return &processor{}
+	return &processor{
+		evaluators: make(map[*rule.Evaluator][]res.Selector),
+		performers: make(map[string]action.Performer),
+	}
 }
 
 // Process the candidates with the rules
@@ -47,12 +51,17 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 	var (
 		// collect errors by wrapping
 		err error
-		// collect results
-		retained = make([]*res.Candidate, 0)
+		// collect processed candidates
+		processedCandidates = make(map[string][]*res.Candidate)
 	)
 
 	// for sync
-	resChan := make(chan []*res.Candidate, 1)
+	type chanItem struct {
+		action    string
+		processed []*res.Candidate
+	}
+
+	resChan := make(chan *chanItem, 1)
 	// handle error
 	errChan := make(chan error, 1)
 	// control chan
@@ -67,8 +76,12 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 	go func() {
 		for {
 			select {
-			case retainedOnes := <-resChan:
-				retained = append(retained, retainedOnes...)
+			case result := <-resChan:
+				if _, ok := processedCandidates[result.action]; !ok {
+					processedCandidates[result.action] = make([]*res.Candidate, 0)
+				}
+
+				processedCandidates[result.action] = append(processedCandidates[result.action], result.processed...)
 			case e := <-errChan:
 				if err == nil {
 					err = errors.Wrap(e, "artifact processing error")
@@ -120,7 +133,10 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 
 			if len(processed) > 0 {
 				// Pass to the outside
-				resChan <- processed
+				resChan <- &chanItem{
+					action:    evaluator.Action(),
+					processed: processed,
+				}
 			}
 		}(evaluator, selectors)
 	}
@@ -132,7 +148,32 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 		return nil, err
 	}
 
-	return p.performer.Perform(retained)
+	results := make([]*res.Result, 0)
+	// Perform actions
+	for act, candidates := range processedCandidates {
+		var attachedErr error
+
+		if pf, ok := p.performers[act]; ok {
+			if theRes, err := pf.Perform(candidates); err != nil {
+				attachedErr = err
+			} else {
+				results = append(results, theRes...)
+			}
+		} else {
+			attachedErr = errors.Errorf("no performer added for action %s in OR processor", act)
+		}
+
+		if attachedErr != nil {
+			for _, c := range candidates {
+				results = append(results, &res.Result{
+					Target: c,
+					Error:  attachedErr,
+				})
+			}
+		}
+	}
+
+	return results, nil
 }
 
 // AddEvaluator appends a rule evaluator for processing
@@ -143,6 +184,6 @@ func (p *processor) AddEvaluator(evaluator rule.Evaluator, selectors []res.Selec
 }
 
 // SetPerformer sets a action performer to the processor
-func (p *processor) SetPerformer(performer action.Performer) {
-	p.performer = performer
+func (p *processor) AddActionPerformer(action string, performer action.Performer) {
+	p.performers[action] = performer
 }
