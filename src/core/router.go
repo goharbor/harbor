@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/core/service/notifications/jobs"
 	"github.com/goharbor/harbor/src/core/service/notifications/registry"
 	"github.com/goharbor/harbor/src/core/service/token"
+	retentionCtl "github.com/goharbor/harbor/src/pkg/retention/controllers"
 
 	"github.com/astaxie/beego"
 )
@@ -138,6 +139,16 @@ func initRouters() {
 	// we use "0" as the ID of the local Harbor registry, so don't add "([0-9]+)" in the path
 	beego.Router("/api/registries/:id/info", &api.RegistryAPI{}, "get:GetInfo")
 	beego.Router("/api/registries/:id/namespace", &api.RegistryAPI{}, "get:GetNamespace")
+
+	beego.Router("/api/retentions/:id", &retentionCtl.RetentionAPI{}, "get:GetRetention")
+	beego.Router("/api/retentions", &retentionCtl.RetentionAPI{}, "post:CreateRetention")
+	beego.Router("/api/retentions/:id", &retentionCtl.RetentionAPI{}, "put:UpdateRetention")
+	beego.Router("/api/retentions/:id", &retentionCtl.RetentionAPI{}, "delete:DeleteRetention")
+	beego.Router("/api/retentions/:id/executions", &retentionCtl.RetentionAPI{}, "delete:TriggerRetentionExec")
+	beego.Router("/api/retentions/:id/executions/:eid", &retentionCtl.RetentionAPI{}, "delete:OperateRetentionExec")
+	beego.Router("/api/retentions/:id/executions/:eid", &retentionCtl.RetentionAPI{}, "get:GetRetentionExec")
+	beego.Router("/api/retentions/:id/executions", &retentionCtl.RetentionAPI{}, "get:ListRetentionExec")
+	beego.Router("/api/retentions/:id/executions/:eid/histories", &retentionCtl.RetentionAPI{}, "get:ListRetentionExecHistory")
 
 	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 
