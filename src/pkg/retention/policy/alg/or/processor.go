@@ -28,8 +28,8 @@ import (
 type processor struct {
 	performer action.Performer
 	// keep evaluator and its related selector if existing
-	// attentions here, the selector can be nil, that means match all "**"
-	evaluators map[*rule.Evaluator]res.Selector
+	// attentions here, the selectors can be empty/nil, that means match all "**"
+	evaluators map[*rule.Evaluator][]res.Selector
 }
 
 // New processor
@@ -85,10 +85,10 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 	wg := new(sync.WaitGroup)
 	wg.Add(len(p.evaluators))
 
-	for eva, selector := range p.evaluators {
-		var evaluator rule.Evaluator = *eva
+	for eva, selectors := range p.evaluators {
+		var evaluator = *eva
 
-		go func(evaluator rule.Evaluator, selector res.Selector) {
+		go func(evaluator rule.Evaluator, selectors []res.Selector) {
 			var (
 				processed []*res.Candidate
 				err       error
@@ -98,10 +98,18 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 				wg.Done()
 			}()
 
-			if selector != nil {
-				if processed, err = selector.Select(artifacts); err != nil {
-					errChan <- err
-					return
+			// init
+			// pass array copy to the selector
+			processed = append(processed, artifacts...)
+
+			if len(selectors) > 0 {
+				// selecting artifacts one by one
+				// `&&` mappings
+				for _, s := range selectors {
+					if processed, err = s.Select(processed); err != nil {
+						errChan <- err
+						return
+					}
 				}
 			}
 
@@ -114,7 +122,7 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 				// Pass to the outside
 				resChan <- processed
 			}
-		}(evaluator, selector)
+		}(evaluator, selectors)
 	}
 
 	// waiting for all the rules are evaluated
@@ -128,9 +136,9 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 }
 
 // AddEvaluator appends a rule evaluator for processing
-func (p *processor) AddEvaluator(evaluator rule.Evaluator, selector res.Selector) {
+func (p *processor) AddEvaluator(evaluator rule.Evaluator, selectors []res.Selector) {
 	if evaluator != nil {
-		p.evaluators[&evaluator] = selector
+		p.evaluators[&evaluator] = selectors
 	}
 }
 

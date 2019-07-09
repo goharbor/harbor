@@ -16,6 +16,11 @@ package action
 
 import "github.com/goharbor/harbor/src/pkg/retention/res"
 
+const (
+	// Retain artifacts
+	Retain = "retain"
+)
+
 // Performer performs the related actions targeting the candidates
 type Performer interface {
 	// Perform the action
@@ -30,10 +35,12 @@ type Performer interface {
 }
 
 // PerformerFactory is factory method for creating Performer
-type PerformerFactory func() Performer
+type PerformerFactory func(params interface{}) Performer
 
 // retainAction make sure all the candidates will be retained and others will be cleared
-type retainAction struct{}
+type retainAction struct {
+	all []*res.Candidate
+}
 
 // Perform the action
 func (ra *retainAction) Perform(candidates []*res.Candidate) ([]*res.Result, error) {
@@ -41,6 +48,21 @@ func (ra *retainAction) Perform(candidates []*res.Candidate) ([]*res.Result, err
 }
 
 // NewRetainAction is factory method for RetainAction
-func NewRetainAction() Performer {
-	return &retainAction{}
+func NewRetainAction(params interface{}) Performer {
+	if params != nil {
+		if all, ok := params.([]*res.Candidate); ok {
+			return &retainAction{
+				all: all,
+			}
+		}
+	}
+
+	return &retainAction{
+		all: make([]*res.Candidate, 0),
+	}
+}
+
+func init() {
+	// Register itself
+	Register(Retain, NewRetainAction)
 }

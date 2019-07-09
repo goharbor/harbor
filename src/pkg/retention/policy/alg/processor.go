@@ -37,9 +37,9 @@ type Processor interface {
 	// Add a rule evaluator for the processor
 	//
 	//  Arguments:
-	//    evaluator rule.Evaluator : a rule evaluator
-	//    selector res.Selector    : selector to narrow down the scope, optional
-	AddEvaluator(evaluator rule.Evaluator, selector res.Selector)
+	//    evaluator rule.Evaluator    : a rule evaluator
+	//    selectors []res.Selector    : selectors to narrow down the scope (&& adopted), optional
+	AddEvaluator(evaluator rule.Evaluator, selectors []res.Selector)
 
 	// Set performer for the processor
 	//

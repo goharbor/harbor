@@ -33,7 +33,7 @@ func Register(action string, factory PerformerFactory) {
 }
 
 // Get performer with the provided action
-func Get(action string) (Performer, error) {
+func Get(action string, params interface{}) (Performer, error) {
 	if len(action) == 0 {
 		return nil, errors.New("empty action")
 	}
@@ -48,5 +48,5 @@ func Get(action string) (Performer, error) {
 		return nil, errors.Errorf("invalid action performer registered for action %s", action)
 	}
 
-	return factory(), nil
+	return factory(params), nil
 }

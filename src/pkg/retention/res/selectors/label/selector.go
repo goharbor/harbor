@@ -12,28 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package list
+package label
 
-import "github.com/goharbor/harbor/src/pkg/retention/res"
-
-const (
-	// InRepos for in [repositories]
-	InRepos = "in repositories"
-	// NotInRepos for not in [repositories]
-	NotInRepos = "not in repositories"
-	// InTags for in [tags]
-	InTags = "in tags"
-	// NotInTags for not in [tags]
-	NotInTags = "not in tags"
+import (
+	"github.com/goharbor/harbor/src/pkg/retention/res"
+	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
+	"strings"
 )
 
-// selector for regular expression
+const (
+	// Kind ...
+	Kind = "label"
+	// With labels
+	With = "withLabels"
+	// Without labels
+	Without = "withoutLabels"
+)
+
+// selector is for label selector
 type selector struct {
-	// Pre defined pattern declarator
-	// "InRepo", "NotInRepo", "InTag" and "NotInTags"
+	// Pre defined pattern decorations
+	// "with" or "without"
 	decoration string
-	// The item list
-	values []string
+	// Label list
+	labels []string
 }
 
 // Select candidates by regular expressions
@@ -42,9 +44,16 @@ func (s *selector) Select(artifacts []*res.Candidate) ([]*res.Candidate, error) 
 }
 
 // New is factory method for list selector
-func New(decoration string, pattern interface{}) res.Selector {
+func New(decoration string, pattern string) res.Selector {
+	labels := strings.Split(pattern, ",")
+
 	return &selector{
 		decoration: decoration,
-		values:     pattern.([]string),
+		labels:     labels,
 	}
+}
+
+func init() {
+	// Register regexp selector
+	selectors.Register(Kind, []string{With, Without}, New)
 }

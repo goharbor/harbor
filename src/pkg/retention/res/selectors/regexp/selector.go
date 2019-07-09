@@ -12,22 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package label
+package regexp
 
-import "github.com/goharbor/harbor/src/pkg/retention/res"
-
-const (
-	With    = "with labels"
-	Without = "without labels"
+import (
+	"github.com/goharbor/harbor/src/pkg/retention/res"
+	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
 )
 
-// selector is for label selector
+const (
+	// Kind ...
+	Kind = "regularExpression"
+	// Matches [pattern]
+	Matches = "matches"
+	// Excludes [pattern]
+	Excludes = "excludes"
+)
+
+// selector for regular expression
 type selector struct {
-	// Pre defined pattern decorations
-	// "with" or "without"
+	// Pre defined pattern declarator
+	// "matches" and "excludes"
 	decoration string
-	// Label list
-	labels []string
+	// The pattern expression
+	pattern string
 }
 
 // Select candidates by regular expressions
@@ -35,10 +42,15 @@ func (s *selector) Select(artifacts []*res.Candidate) ([]*res.Candidate, error) 
 	return nil, nil
 }
 
-// New is factory method for list selector
-func New(decoration string, pattern interface{}) res.Selector {
+// New is factory method for regexp selector
+func New(decoration string, pattern string) res.Selector {
 	return &selector{
 		decoration: decoration,
-		labels:     pattern.([]string),
+		pattern:    pattern,
 	}
+}
+
+func init() {
+	// Register regexp selector
+	selectors.Register(Kind, []string{Matches, Excludes}, New)
 }

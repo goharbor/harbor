@@ -14,15 +14,64 @@
 
 package latestk
 
-import "github.com/goharbor/harbor/src/pkg/retention/res"
+import (
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/pkg/retention/res"
+)
 
-// Evaluator for evaluating latest x tags
-type Evaluator struct {
-	// latest x
+const (
+	// TemplateID of latest k rule
+	TemplateID = "latestK"
+	// ParameterK ...
+	ParameterK = TemplateID
+	// DefaultK defines the default K
+	DefaultK = 10
+)
+
+// evaluator for evaluating latest k tags
+type evaluator struct {
+	// latest k
 	k int
 }
 
 // Process the candidates based on the rule definition
-func (e *Evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
+func (e *evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
 	return nil, nil
+}
+
+// New a Evaluator
+func New(params rule.Parameters) rule.Evaluator {
+	if params != nil {
+		if param, ok := params[ParameterK]; ok {
+			if v, ok := param.(int); ok {
+				return &evaluator{
+					k: v,
+				}
+			}
+		}
+	}
+
+	log.Debugf("default parameter %d used for rule %s", DefaultK, TemplateID)
+
+	return &evaluator{
+		k: DefaultK,
+	}
+}
+
+func init() {
+	// Register itself
+	rule.Register(&rule.IndexMeta{
+		TemplateID: TemplateID,
+		Action:     action.Retain,
+		Parameters: []*rule.IndexedParam{
+			{
+				Name:     ParameterK,
+				Type:     "int",
+				Unit:     "count",
+				Required: true,
+			},
+		},
+	}, New)
 }

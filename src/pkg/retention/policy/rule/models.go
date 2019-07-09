@@ -33,7 +33,7 @@ type Metadata struct {
 	Parameters Parameters `json:"params"`
 
 	// Selector attached to the rule for filtering tags
-	TagSelector *Selector `json:"tag_selector"`
+	TagSelectors []*Selector `json:"tag_selectors"`
 
 	// Selector attached to the rule for filtering scope (e.g: repositories or namespaces)
 	ScopeSelectors []*Selector `json:"scope_selectors"`
@@ -42,17 +42,16 @@ type Metadata struct {
 // Selector to narrow down the list
 type Selector struct {
 	// Kind of the selector
-	// "regularExpression", "label" or "list"
+	// "regularExpression" or "label"
 	Kind string `json:"kind"`
 
 	// Decorated the selector
 	// for "regularExpression" : "matches" and "excludes"
 	// for "label" : "with" and "without"
-	// for "list"  : "in" and "not in"
-	decoration string `json:"decoration"`
+	Decoration string `json:"decoration"`
 
 	// Param for the selector
-	Value Parameter `json:"param"`
+	Pattern string `json:"pattern"`
 }
 
 // Parameters of rule, indexed by the key
