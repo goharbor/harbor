@@ -61,6 +61,12 @@ export const CommonRoutes = {
 export const enum ConfirmationState {
   NA, CONFIRMED, CANCEL
 }
+export const FilterType = {
+  NAME: "name",
+  TAG: "tag",
+  LABEL: "label",
+  RESOURCE: "resource"
+};
 
 export const enum ConfirmationButtons {
   CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, REPLICATE_CANCEL, STOP_CANCEL
