@@ -34,11 +34,27 @@ type processor struct {
 }
 
 // New processor
-func New() alg.Processor {
-	return &processor{
+func New(parameters []*alg.Parameter) alg.Processor {
+	p := &processor{
 		evaluators: make(map[*rule.Evaluator][]res.Selector),
 		performers: make(map[string]action.Performer),
 	}
+
+	if len(parameters) > 0 {
+		for _, param := range parameters {
+			if param.Evaluator != nil {
+				if len(param.Selectors) > 0 {
+					p.evaluators[&param.Evaluator] = param.Selectors
+				}
+
+				if param.Performer != nil {
+					p.performers[param.Evaluator.Action()] = param.Performer
+				}
+			}
+		}
+	}
+
+	return p
 }
 
 // Process the candidates with the rules
@@ -188,16 +204,8 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 	return results, nil
 }
 
-// AddEvaluator appends a rule evaluator for processing
-func (p *processor) AddEvaluator(evaluator rule.Evaluator, selectors []res.Selector) {
-	if evaluator != nil {
-		p.evaluators[&evaluator] = selectors
-	}
-}
-
-// SetPerformer sets a action performer to the processor
-func (p *processor) AddActionPerformer(action string, performer action.Performer) {
-	p.performers[action] = performer
+func init() {
+	alg.Register(alg.AlgorithmOR, New)
 }
 
 type cHash map[string]*res.Candidate

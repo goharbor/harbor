@@ -15,9 +15,9 @@
 package policy
 
 import (
+	"fmt"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
@@ -55,38 +55,40 @@ func (bb *basicBuilder) Build(policy *LiteMeta) (alg.Processor, error) {
 		return nil, errors.New("nil policy to build processor")
 	}
 
-	switch policy.Algorithm {
-	case AlgorithmOR:
-		// New OR processor
-		p := or.New()
-		for _, r := range policy.Rules {
-			evaluator, err := rule.Get(r.Template, r.Parameters)
-			if err != nil {
-				return nil, err
-			}
+	params := make([]*alg.Parameter, 0)
 
-			perf, err := action.Get(r.Action, bb.allCandidates)
-			if err != nil {
-				return nil, errors.Wrap(err, "get action performer by metadata")
-			}
-
-			sl := make([]res.Selector, 0)
-			for _, s := range r.TagSelectors {
-				sel, err := selectors.Get(s.Kind, s.Decoration, s.Pattern)
-				if err != nil {
-					return nil, errors.Wrap(err, "get selector by metadata")
-				}
-
-				sl = append(sl, sel)
-			}
-
-			p.AddEvaluator(evaluator, sl)
-			p.AddActionPerformer(r.Action, perf)
-
-			return p, nil
+	for _, r := range policy.Rules {
+		evaluator, err := rule.Get(r.Template, r.Parameters)
+		if err != nil {
+			return nil, err
 		}
-	default:
+
+		perf, err := action.Get(r.Action, bb.allCandidates)
+		if err != nil {
+			return nil, errors.Wrap(err, "get action performer by metadata")
+		}
+
+		sl := make([]res.Selector, 0)
+		for _, s := range r.TagSelectors {
+			sel, err := selectors.Get(s.Kind, s.Decoration, s.Pattern)
+			if err != nil {
+				return nil, errors.Wrap(err, "get selector by metadata")
+			}
+
+			sl = append(sl, sel)
+		}
+
+		params = append(params, &alg.Parameter{
+			Evaluator: evaluator,
+			Selectors: sl,
+			Performer: perf,
+		})
 	}
 
-	return nil, errors.Errorf("algorithm %s is not supported", policy.Algorithm)
+	p, err := alg.Get(policy.Algorithm, params)
+	if err != nil {
+		return nil, errors.Wrap(err, fmt.Sprintf("get processor for algorithm: %s", policy.Algorithm))
+	}
+
+	return p, nil
 }
