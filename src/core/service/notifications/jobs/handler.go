@@ -16,6 +16,7 @@ package jobs
 
 import (
 	"encoding/json"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
@@ -26,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/operation/hook"
 	"github.com/goharbor/harbor/src/replication/policy/scheduler"
+	"github.com/goharbor/harbor/src/webhook"
 )
 
 var statusMap = map[string]string{
@@ -98,6 +100,20 @@ func (h *Handler) HandleReplicationTask() {
 	log.Debugf("received replication task status update event: task-%d, status-%s", h.id, h.status)
 	if err := hook.UpdateTask(replication.OperationCtl, h.id, h.rawStatus); err != nil {
 		log.Errorf("Failed to update replication task status, id: %d, status: %s", h.id, h.status)
+		h.SendInternalServerError(err)
+		return
+	}
+}
+
+// HandleWebhookExecution handles the hook of webhook execution
+func (h *Handler) HandleWebhookExecution() {
+	log.Debugf("received webhook task status update event: task-%d, status-%s", h.id, h.status)
+	if err := webhook.ExecutionCtl.UpdateWebhookExecution(&models.WebhookExecution{
+		ID:         h.id,
+		Status:     h.status,
+		UpdateTime: time.Now(),
+	}, "Status", "UpdateTime"); err != nil {
+		log.Errorf("Failed to update webhook job status, id: %d, status: %s", h.id, h.status)
 		h.SendInternalServerError(err)
 		return
 	}

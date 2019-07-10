@@ -44,7 +44,7 @@ func TestDeleteChart(t *testing.T) {
 	}
 	defer s.Close()
 
-	if err := c.DeleteChart("repo1", "harbor"); err != nil {
+	if err := c.DeleteChart("repo1", "harbor", "admin"); err != nil {
 		t.Fatal(err)
 	}
 }

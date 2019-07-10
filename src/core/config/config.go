@@ -510,3 +510,8 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 		Scope:        scope,
 	}, nil
 }
+
+// WebhookEnable returns a bool to indicates if webhook enabled in harbor
+func WebhookEnable() bool {
+	return cfgMgr.Get(common.WebhookEnable).GetBool()
+}

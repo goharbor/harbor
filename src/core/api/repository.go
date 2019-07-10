@@ -16,6 +16,7 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -23,8 +24,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"errors"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
@@ -39,10 +38,14 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/notary"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/notifier"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
+	wbEvent "github.com/goharbor/harbor/src/webhook/event"
+	"github.com/goharbor/harbor/src/webhook/event/topic"
+	whModel "github.com/goharbor/harbor/src/webhook/model"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -313,12 +316,48 @@ func (ra *RepositoryAPI) Delete() {
 		}
 	}
 
+	// image delete hook
+	e := &wbEvent.ImageEvent{
+		HookType:      whModel.EventTypeDeleteImage,
+		ProjectID:     project.ProjectID,
+		ProjectName:   project.Name,
+		ProjectPublic: project.IsPublic(),
+		OccurAt:       time.Now(),
+		Operator:      ra.SecurityCtx.GetUsername(),
+		RepoName:      repoName,
+	}
+
 	for _, t := range tags {
 		image := fmt.Sprintf("%s:%s", repoName, t)
 		if err = dao.DeleteLabelsOfResource(common.ResourceTypeImage, image); err != nil {
 			ra.SendInternalServerError(fmt.Errorf("failed to delete labels of image %s: %v", image, err))
 			return
 		}
+
+		// get image digest before delete
+		evt := &models.Event{
+			Target: &models.Target{
+				Tag: t,
+			},
+		}
+		e.Events = append(e.Events, evt)
+
+		client, err := coreutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
+		if err != nil {
+			log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
+		}
+		tags, err := client.ListTag()
+		if err != nil {
+			ra.SendInternalServerError(fmt.Errorf("failed to get tag of %s: %v", repoName, err))
+			return
+		}
+		imageTagsDetail := assembleTagsInParallel(client, repoName, tags, ra.SecurityCtx.GetUsername())
+		for _, tagDetail := range imageTagsDetail {
+			if t == tagDetail.Name {
+				evt.Target.Digest = tagDetail.Digest
+			}
+		}
+
 		if err = rc.DeleteTag(t); err != nil {
 			if regErr, ok := err.(*commonhttp.Error); ok {
 				if regErr.Code == http.StatusNotFound {
@@ -362,6 +401,13 @@ func (ra *RepositoryAPI) Delete() {
 			}
 		}(t)
 	}
+
+	// publish image delete wehhook topic
+	err = notifier.Publish(topic.WebhookEventTopicOnImage, e)
+	if err != nil {
+		log.Errorf("failed to publish on image topic with delete event: %v", err)
+	}
+	log.Debugf("published image topic for delete event: %v", e)
 
 	exist, err := repositoryExist(repoName, rc)
 	if err != nil {

@@ -141,4 +141,7 @@ const (
 	OIDCLoginPath    = "/c/oidc/login"
 
 	ChartUploadCtxKey = contextKey("chart_upload_event")
+
+	// Global webhook enable configuration
+	WebhookEnable = "webhook_enable"
 )

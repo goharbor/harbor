@@ -16,13 +16,13 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
 	"sync"
 
-	"fmt"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	clairdao "github.com/goharbor/harbor/src/common/dao/clair"
@@ -106,6 +106,7 @@ type GeneralInfo struct {
 	RegistryStorageProviderName string                           `json:"registry_storage_provider_name"`
 	ReadOnly                    bool                             `json:"read_only"`
 	WithChartMuseum             bool                             `json:"with_chartmuseum"`
+	WebhookEnable               bool                             `json:"webhook_enable"`
 }
 
 // GetVolumeInfo gets specific volume storage info.
@@ -188,6 +189,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 		RegistryStorageProviderName: utils.SafeCastString(cfg[common.RegistryStorageProviderName]),
 		ReadOnly:                    config.ReadOnly(),
 		WithChartMuseum:             config.WithChartMuseum(),
+		WebhookEnable:               utils.SafeCastBool(cfg[common.WebhookEnable]),
 	}
 	if info.WithClair {
 		info.ClairVulnStatus = getClairVulnStatus()

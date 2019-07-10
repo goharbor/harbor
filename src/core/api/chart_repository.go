@@ -11,16 +11,20 @@ import (
 	"net/http"
 	"net/url"
 	"strings"
-
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/core/label"
+	"time"
 
 	"github.com/goharbor/harbor/src/chartserver"
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/label"
+	"github.com/goharbor/harbor/src/core/notifier"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/webhook/event"
+	"github.com/goharbor/harbor/src/webhook/event/topic"
+	whModel "github.com/goharbor/harbor/src/webhook/model"
 )
 
 const (
@@ -177,6 +181,28 @@ func (cra *ChartRepositoryAPI) DownloadChart() {
 
 	// Directly proxy to the backend
 	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+
+	go func() {
+		filename := cra.GetString(":filename")
+		chartName, chartVersion := getChartNameAndVersion(filename)
+		repoCreateTime := chartController.GetChartRepoCreateTime(cra.namespace, chartName)
+
+		e := &event.ChartEvent{
+			HookType:       whModel.EventTypeDownloadChart,
+			ProjectName:    cra.namespace,
+			ChartName:      chartName,
+			ChartVersions:  []string{chartVersion},
+			Operator:       cra.SecurityCtx.GetUsername(),
+			OccurTime:      time.Now(),
+			RepoCreateTime: repoCreateTime,
+		}
+		err := notifier.Publish(topic.WebhookEventTopicOnChart, e)
+		if err != nil {
+			hlog.Errorf("failed to publish topic with uploading chart %s: %v", filename, err)
+			return
+		}
+		hlog.Debugf("published chart upload topic with event: %v", e)
+	}()
 }
 
 // ListCharts handles GET /api/:repo/charts
@@ -272,6 +298,28 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 		cra.ParseAndHandleError("fail to delete chart version", err)
 		return
 	}
+
+	// FIXME: change the way get chart name and version
+	go func() {
+		repoCreateTime := chartController.GetChartRepoCreateTime(cra.namespace, chartName)
+
+		e := &event.ChartEvent{
+			HookType:       whModel.EventTypeDeleteChart,
+			ProjectName:    cra.namespace,
+			ChartName:      chartName,
+			ChartVersions:  []string{version},
+			Operator:       cra.SecurityCtx.GetUsername(),
+			OccurTime:      time.Now(),
+			RepoCreateTime: repoCreateTime,
+		}
+
+		err := notifier.Publish(topic.WebhookEventTopicOnChart, e)
+		if err != nil {
+			hlog.Errorf("failed to publish topic with deleting chart %s version %s: %v", chartName, version, err)
+			return
+		}
+		hlog.Debugf("published chart delete topic with event: %v", e)
+	}()
 }
 
 // UploadChartVersion handles POST /api/:repo/charts
@@ -305,6 +353,33 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 
 	// Directly proxy to the backend
 	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
+
+	go func() {
+		filename, err := cra.getFilename()
+		if err != nil {
+			hlog.Errorf("failed to get filename: %v", err)
+			return
+		}
+		chartName, chartVersion := getChartNameAndVersion(filename)
+		repoCreateTime := chartController.GetChartRepoCreateTime(cra.namespace, chartName)
+
+		e := &event.ChartEvent{
+			HookType:       whModel.EventTypeUploadChart,
+			ProjectName:    cra.namespace,
+			ChartName:      chartName,
+			ChartVersions:  []string{chartVersion},
+			Operator:       cra.SecurityCtx.GetUsername(),
+			OccurTime:      time.Now(),
+			RepoCreateTime: repoCreateTime,
+		}
+
+		err = notifier.Publish(topic.WebhookEventTopicOnChart, e)
+		if err != nil {
+			hlog.Errorf("failed to publish topic with uploading chart %s: %v", filename, err)
+			return
+		}
+		hlog.Debugf("published chart upload topic with event: %v", e)
+	}()
 }
 
 // UploadChartProvFile handles POST /api/:repo/prov
@@ -356,7 +431,7 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 		}
 	}
 
-	if err := chartController.DeleteChart(cra.namespace, chartName); err != nil {
+	if err := chartController.DeleteChart(cra.namespace, chartName, cra.SecurityCtx.GetUsername()); err != nil {
 		cra.SendInternalServerError(err)
 		return
 	}
@@ -548,4 +623,25 @@ func chartFullName(namespace, chartName, version string) string {
 		return fmt.Sprintf("%s:%s", chartName, version)
 	}
 	return fmt.Sprintf("%s/%s:%s", namespace, chartName, version)
+}
+
+func (cra *ChartRepositoryAPI) getFilename() (string, error) {
+	r := cra.Ctx.Request
+	err := r.ParseForm()
+	if err != nil {
+		hlog.Errorf("failed to parse chart form: %v", err)
+		return "", err
+	}
+	filename := r.PostFormValue("filename")
+	if filename == "" {
+		return "", errors.New("empty chart filename")
+	}
+	return filename, nil
+}
+
+// getChartNameAndVersion: filename format  demo-0.1.0.tgz
+func getChartNameAndVersion(filename string) (string, string) {
+	idxA := strings.LastIndex(filename, "-")
+	idxB := strings.LastIndex(filename, ".")
+	return filename[:idxA], filename[idxA+1 : idxB]
 }
