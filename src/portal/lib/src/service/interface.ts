@@ -434,3 +434,8 @@ export interface  HttpOptionTextInterface {
   withCredentials?: boolean;
 }
 
+export interface  ProjectRootInterface {
+  NAME: string;
+  VALUE: number;
+  LABEL: string;
+}
