@@ -52,7 +52,7 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 		versionList, err := a.client.fetchChartDetail(repository.Name)
 		if err != nil {
 			log.Errorf("fetch chart detail: %v", err)
-			continue
+			return nil, err
 		}
 
 		vTags := []*adp.VTag{}
@@ -112,7 +112,7 @@ func (a *adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
 			return a.download(v)
 		}
 	}
-	return nil, nil
+	return nil, errors.New("chart not found")
 }
 
 func (a *adapter) download(version *chartVersion) (io.ReadCloser, error) {

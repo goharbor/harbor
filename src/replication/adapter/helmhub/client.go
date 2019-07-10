@@ -91,6 +91,25 @@ func (c *Client) fetchChartDetail(chartName string) (*chartVersionList, error) {
 	return list, nil
 }
 
+func (c *Client) checkHealthy() error {
+	request, err := http.NewRequest(http.MethodGet, baseURL, nil)
+	if err != nil {
+		return err
+	}
+
+	resp, err := c.client.Do(request)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	ioutil.ReadAll(resp.Body)
+	if resp.StatusCode >= 200 && resp.StatusCode < 300 {
+		return nil
+	}
+	return errors.New("helm hub is unhealthy")
+}
+
 // do work as a proxy of Do function from net.http
 func (c *Client) do(req *http.Request) (*http.Response, error) {
 	return c.client.Do(req)

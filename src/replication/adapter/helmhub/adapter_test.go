@@ -37,7 +37,7 @@ func TestPrepareForPush(t *testing.T) {
 }
 
 func TestHealthCheck(t *testing.T) {
-	adapter := &adapter{}
+	adapter, _ := newAdapter(nil)
 	status, err := adapter.HealthCheck()
 	require.Equal(t, model.Healthy, string(status))
 	require.Nil(t, err)
