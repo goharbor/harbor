@@ -1,8 +1,10 @@
 export const USERSTATICPERMISSION = {
     "PROJECT": {
-        'KEY': 'project',
+        'KEY': '.',
         'VALUE': {
-            "DELETE": "delete"
+            "DELETE": "delete",
+            "UPDATE": "update",
+            "READ": "read",
         }
     },
     "MEMBER": {

@@ -97,6 +97,8 @@ export class Configuration {
     oidc_client_secret?: StringValueItem;
     oidc_verify_cert?: BoolValueItem;
     oidc_scope?: StringValueItem;
+    count_per_project: StringValueItem;
+    storage_per_project: StringValueItem;
     public constructor() {
         this.auth_mode = new StringValueItem("db_auth", true);
         this.project_creation_restriction = new StringValueItem("everyone", true);
@@ -148,5 +150,7 @@ export class Configuration {
         this.oidc_client_secret = new StringValueItem('', true);
         this.oidc_verify_cert = new BoolValueItem(false, true);
         this.oidc_scope = new StringValueItem('', true);
+        this.count_per_project = new StringValueItem('', true);
+        this.storage_per_project = new StringValueItem('', true);
     }
 }

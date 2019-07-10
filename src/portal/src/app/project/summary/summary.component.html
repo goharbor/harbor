@@ -1,0 +1,66 @@
+<div class="summary display-flex" *ngIf="summaryInformation">
+  <div class="summary-left">
+    <div class="display-flex project-detail">
+      <h5>{{'SUMMARY.PROJECT_REPOSITORY' | translate}}</h5>
+      <ul class="list-unstyled">
+        <li>{{summaryInformation.repo_count}}</li>
+      </ul>
+    </div>
+    <div class="display-flex project-detail" *ngIf="withHelmChart">
+      <h5>{{'SUMMARY.PROJECT_HELM_CHART' | translate}}</h5>
+      <ul class="list-unstyled">
+        <li>{{summaryInformation.chart_count}}</li>
+      </ul>
+    </div>
+    <div class="display-flex project-detail">
+      <h5>{{'SUMMARY.PROJECT_MEMBER' | translate}}</h5>
+      <ul class="list-unstyled">
+        <li>{{ summaryInformation.project_admin_count }} {{'SUMMARY.ADMIN' | translate}}</li>
+        <li>{{ summaryInformation.master_count }} {{'SUMMARY.MASTER' | translate}}</li>
+        <li>{{ summaryInformation.developer_count }} {{'SUMMARY.DEVELOPER' | translate}}</li>
+        <li>{{ summaryInformation.guest_count }} {{'SUMMARY.GUEST' | translate}}</li>
+      </ul>
+    </div>
+  </div>
+  <div class="summary-right ">
+    <div class="display-flex  project-detail">
+      <h5>{{'SUMMARY.PROJECT_QUOTAS' | translate}}</h5>
+      <div class="margin-left-1">
+        <div class="display-flex quotas-progress">
+          <label>{{'SUMMARY.ARTIFACT_COUNT' | translate}}</label>
+          <label class="progress-label">{{ summaryInformation.quota.status.used.count }} {{ 'QUOTA.OF' | translate }}
+            {{ summaryInformation.quota.spec.count ==='-1'?'unlimited': summaryInformation.quota.spec.count }}
+          </label>
+        </div>
+
+        <div>
+          <div class="progress-block progress-min-width progress-div">
+            <div class="progress success" [class.danger]="summaryInformation.quota.status.hard.count!=='-1'?summaryInformation.quota.status.used.count/summaryInformation.quota.status.hard.count>0.9:false">
+              <progress
+                value="{{summaryInformation.quota.status.hard.count==='-1'? 0 : summaryInformation.quota.status.used.count}}"
+                max="{{summaryInformation.quota.status.hard.count}}" data-displayval="100%"></progress>
+            </div>
+          </div>
+        </div>
+        <div class="display-flex quotas-progress">
+          <label>{{'SUMMARY.STORAGE_CONSUMPTION' | translate}}</label>
+          <label class="progress-label">{{ getSuitableUnit(summaryInformation.quota.status.used.storage) }} {{ 'QUOTA.OF' | translate }}
+             {{ summaryInformation.quota.spec.storage ==='-1'? 'unlimited': summaryInformation.quota.spec.storage }}
+          </label>
+        </div>
+
+        <div>
+          <div class="progress-block progress-min-width progress-div">
+            <div class="progress success"
+            [class.danger]="summaryInformation.quota.status.hard.storage!=='-1'?summaryInformation.quota.status.used.storage/summaryInformation.quota.status.hard.storage>0.9:false">
+              <progress
+                value="{{summaryInformation.quota.status.hard.storage==='-1'? 0 : summaryInformation.quota.status.used.storage}}"
+                max="{{summaryInformation.quota.status.hard.storage}}" data-displayval="100%"></progress>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

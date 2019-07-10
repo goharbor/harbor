@@ -15,6 +15,9 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CreateProjectComponent } from './create-project/create-project.component';
 import { ListProjectComponent } from './list-project/list-project.component';
 import { ProjectTypes } from '../shared/shared.const';
+import { ConfigurationService } from '../config/config.service';
+import { Configuration, QuotaHardInterface } from '@harbor/ui';
+import { SessionService } from "../shared/session.service";
 
 @Component({
   selector: 'project',
@@ -23,7 +26,7 @@ import { ProjectTypes } from '../shared/shared.const';
 })
 export class ProjectComponent implements OnInit {
   projectTypes = ProjectTypes;
-
+  quotaObj: QuotaHardInterface;
   @ViewChild(CreateProjectComponent)
   creationProject: CreateProjectComponent;
 
@@ -45,16 +48,33 @@ export class ProjectComponent implements OnInit {
     }
   }
 
-  constructor() {
-  }
+  constructor(
+    public configService: ConfigurationService,
+    private session: SessionService
+  ) { }
 
   ngOnInit(): void {
     if (window.sessionStorage && window.sessionStorage['projectTypeValue'] && window.sessionStorage['fromDetails']) {
       this.currentFilteredType = +window.sessionStorage['projectTypeValue'];
       window.sessionStorage.removeItem('fromDetails');
     }
+    if (this.isSystemAdmin) {
+      this.getConfigration();
+    }
   }
-
+  getConfigration() {
+    this.configService.getConfiguration()
+      .subscribe((configurations: Configuration) => {
+        this.quotaObj = {
+          count_per_project: configurations.count_per_project ? configurations.count_per_project.value: '',
+          storage_per_project: configurations.storage_per_project ? configurations.storage_per_project.value : ''
+        }
+      })
+  }
+  public get isSystemAdmin(): boolean {
+    let account = this.session.getCurrentUser();
+    return account != null && account.has_admin_role;
+  }
   openModal(): void {
     this.creationProject.newProject();
   }

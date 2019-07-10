@@ -3,8 +3,9 @@ import { Observable } from "rxjs";
 import { HttpHeaders, HttpParams } from '@angular/common/http';
 import { RequestQueryParams } from './service/RequestQueryParams';
 import { DebugElement } from '@angular/core';
-import { Comparator, State, HttpOptionInterface, HttpOptionTextInterface } from './service/interface';
-
+import { Comparator, State, HttpOptionInterface, HttpOptionTextInterface, QuotaUnitInterface } from './service/interface';
+import { QuotaHardInterface } from './service/interface';
+import { QuotaUnits, QuotaUnit } from './shared/shared.const';
 /**
  * Convert the different async channels to the Promise<T> type.
  *
@@ -270,8 +271,8 @@ export function doFiltering<T extends { [key: string]: any | any[] }>(items: T[]
             if (filter['property'].indexOf('.') !== -1) {
                 let arr = filter['property'].split('.');
                 if (Array.isArray(item[arr[0]]) && item[arr[0]].length) {
-                     return item[arr[0]].some((data: any) => {
-                         return filter['value'] === data[arr[1]];
+                    return item[arr[0]].some((data: any) => {
+                        return filter['value'] === data[arr[1]];
                     });
                 }
             } else {
@@ -382,14 +383,14 @@ export function isEmpty(obj: any): boolean {
 
 export function downloadFile(fileData) {
     let url = window.URL.createObjectURL(fileData.data);
-        let a = document.createElement("a");
-        document.body.appendChild(a);
-        a.setAttribute("style", "display: none");
-        a.href = url;
-        a.download = fileData.filename;
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
+    let a = document.createElement("a");
+    document.body.appendChild(a);
+    a.setAttribute("style", "display: none");
+    a.href = url;
+    a.download = fileData.filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
 }
 
 export function getChanges(original: any, afterChange: any): { [key: string]: any | any[] } {
@@ -428,4 +429,48 @@ export function cronRegex(testValue: any): boolean {
     const regEx = regSecond + regMinute + regHour + regDay + regMonth + regWeek + regYear;
     let reg = new RegExp(regEx, "i");
     return reg.test(testValue.trim());
+}
+
+/**
+ * Keep decimal digits
+ * @param count number
+ * @param decimals number 1、2、3 ···
+ */
+export const roundDecimals = (count, decimals = 0) => {
+    return Number(`${Math.round(+`${count}e${decimals}`)}e-${decimals}`)
+}
+/**
+   * get suitable unit
+   * @param count number  ;bit
+   * @param quotaUnitsDeep Array link  QuotaUnits;
+   */
+export const getSuitableUnit = (count: number, quotaUnitsDeep: QuotaUnitInterface[]): string => {
+    for (let unitObj of quotaUnitsDeep) {
+        if (count / 1024 >= 1) {
+            quotaUnitsDeep.shift();
+            return getSuitableUnit(count / 1024, quotaUnitsDeep);
+        } else {
+            return +count ? `${roundDecimals(count, 2)}${unitObj.UNIT}` : '0';
+        }
+    }
+    return `${roundDecimals(count, 2)}${QuotaUnits[0].UNIT}`
+}
+export const getByte = (count: number, unit: string): number => {
+    let flagIndex;
+    return QuotaUnits.reduce((totalValue, currentValue, index) => {
+        if (currentValue.UNIT === unit) {
+            flagIndex = index;
+            return totalValue;
+        } else {
+            if (!flagIndex) {
+                return totalValue * 1024
+            }
+            return totalValue;
+        }
+    }, count);
+}
+export const SeparationNumberCharacter = (NumberCharacter, defaultCharacter) => {
+    const numberStr = NumberCharacter ? parseFloat(NumberCharacter) + '' : '';
+    const character = NumberCharacter ? NumberCharacter.toString().split(numberStr)[1] || defaultCharacter : defaultCharacter;
+    return { numberStr, character }
 }

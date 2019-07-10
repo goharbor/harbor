@@ -1,0 +1,63 @@
+.quota-modal {
+  .inline-alert {
+    padding: 0;
+  }
+}
+.modal-body {
+  overflow-y: visible;
+  overflow-x: visible;
+  padding-top: 0.8rem;
+  .clr-form-compact {
+    div.form-group {
+      padding-left: 8.5rem;
+      .quota-input {
+        width: 2rem;
+        padding-right: 0.8rem;
+      }
+      .select-div {
+        width: 2.5rem;
+
+        ::ng-deep .clr-form-control {
+          margin-top: 0.28rem;
+
+          select {
+            padding-right: 15px;
+          }
+        }
+      }
+    }
+  }
+
+  .clr-form-compact-common {
+    div.form-group {
+      padding-left: 6rem;
+
+      .select-div {
+        width: 1.6rem;
+      }
+    }
+  }
+}
+
+.progress-block {
+  width: 8rem;
+}
+
+.margin-right-0 {
+  margin-right: 0;
+}
+
+.progress-div {
+  position: relative;
+  padding-right: 0.6rem;
+  width: 9rem;
+}
+
+.progress-label {
+  position: absolute;
+  right: -2.3rem;
+  top: 0;
+  width: 3.5rem;
+  font-weight: 100;
+  font-size: 10px;
+}
