@@ -15,9 +15,7 @@
 package policy
 
 import (
-	"encoding/json"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/pkg/errors"
 )
 
 const (
@@ -81,22 +79,4 @@ type LiteMeta struct {
 
 	// Rule collection
 	Rules []rule.Metadata `json:"rules"`
-}
-
-// Encode the lit meta by compressed json string
-func (lm *LiteMeta) Encode() (string, error) {
-	data, err := json.Marshal(lm)
-	if err != nil {
-		return "", err
-	}
-	return string(data), nil
-}
-
-// Decode the lite meta from the data string
-func (lm *LiteMeta) Decode(data string) error {
-	if len(data) == 0 {
-		return errors.New("no data for decoding")
-	}
-
-	return json.Unmarshal([]byte(data), lm)
 }

@@ -16,7 +16,7 @@ package res
 
 // Result keeps the action result
 type Result struct {
-	Target *Candidate
+	Target *Candidate `json:"target"`
 	// nil error means success
-	Error error
+	Error error `json:"error"`
 }

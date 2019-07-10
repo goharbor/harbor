@@ -29,12 +29,12 @@ type Builder interface {
 	// Builds runnable processor
 	//
 	//  Arguments:
-	//    rawPolicy string : the simple retention policy with JSON format
+	//    policy *LiteMeta : the simple metadata of retention policy
 	//
 	//  Returns:
 	//    Processor : a processor implementation to process the candidates
 	//    error     : common error object if any errors occurred
-	Build(rawPolicy string) (alg.Processor, error)
+	Build(policy *LiteMeta) (alg.Processor, error)
 }
 
 // NewBuilder news a basic builder
@@ -50,22 +50,16 @@ type basicBuilder struct {
 }
 
 // Build policy processor from the raw policy
-func (bb *basicBuilder) Build(rawPolicy string) (alg.Processor, error) {
-	if len(rawPolicy) == 0 {
-		return nil, errors.New("empty raw policy to build processor")
+func (bb *basicBuilder) Build(policy *LiteMeta) (alg.Processor, error) {
+	if policy == nil {
+		return nil, errors.New("nil policy to build processor")
 	}
 
-	// Decode metadata
-	liteMeta := &LiteMeta{}
-	if err := liteMeta.Decode(rawPolicy); err != nil {
-		return nil, errors.Wrap(err, "build policy processor")
-	}
-
-	switch liteMeta.Algorithm {
+	switch policy.Algorithm {
 	case AlgorithmOR:
 		// New OR processor
 		p := or.New()
-		for _, r := range liteMeta.Rules {
+		for _, r := range policy.Rules {
 			evaluator, err := rule.Get(r.Template, r.Parameters)
 			if err != nil {
 				return nil, err
@@ -94,5 +88,5 @@ func (bb *basicBuilder) Build(rawPolicy string) (alg.Processor, error) {
 	default:
 	}
 
-	return nil, errors.Errorf("algorithm %s is not supported", liteMeta.Algorithm)
+	return nil, errors.Errorf("algorithm %s is not supported", policy.Algorithm)
 }

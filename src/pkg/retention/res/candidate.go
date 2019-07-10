@@ -26,6 +26,17 @@ const (
 	Chart = "chart"
 )
 
+// Repository of candidate
+type Repository struct {
+	// Namespace
+	Namespace string
+	// Repository name
+	Name string
+	// So far we need the kind of repository and retrieve candidates with different APIs
+	// TODO: REMOVE IT IN THE FUTURE IF WE SUPPORT UNIFIED ARTIFACT MODEL
+	Kind string
+}
+
 // Candidate for retention processor to match
 type Candidate struct {
 	// Namespace
