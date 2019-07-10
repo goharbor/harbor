@@ -71,6 +71,26 @@ export const FilterType = {
 export const enum ConfirmationButtons {
   CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, REPLICATE_CANCEL, STOP_CANCEL
 }
+export const  QuotaUnits = [
+  {
+    UNIT: 'TB',
+  },
+  {
+    UNIT: 'GB',
+  },
+  {
+    UNIT: 'MB',
+  },
+  {
+    UNIT: 'KB',
+  },
+  {
+    UNIT: 'B',
+  },
+]
+export enum QuotaUnit {
+  TB = "TB", GB = "GB", MB = "MB", KB = "KB", BIT ="B"
+}
 
 export const LabelColor = [
   { 'color': '#000000', 'textColor': 'white' }, { 'color': '#61717D', 'textColor': 'white' },

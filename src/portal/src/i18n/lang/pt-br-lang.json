@@ -215,7 +215,12 @@
         "TOGGLED_SUCCESS": "Projeto alterado com sucesso.",
         "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules or helm-charts cannot be deleted.",
         "INLINE_HELP_PUBLIC": "Quando um projeto é marcado como público, qualquer um tem permissões de leitura aos repositórios desse projeto, e o usuário não precisa executar \"docker login\" antes de baixar imagens desse projeto.",
-        "OF": "de"
+        "OF": "de",
+        "COUNT_QUOTA": "Count quota",
+        "STORAGE_QUOTA": "Storage quota",
+        "COUNT_QUOTA_TIP": "The upper limit of Count Quota should be integers.",
+        "STORAGE_QUOTA_TIP": "The upper limit of Storage Quota should be numbers.",
+        "QUOTA_UNLIMIT_TIP": "If you want to unlimited this quota, please input -1."
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "Repositórios",

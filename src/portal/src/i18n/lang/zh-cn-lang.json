@@ -216,7 +216,12 @@
         "DELETED_SUCCESS": "成功删除项目。",
         "TOGGLED_SUCCESS": "切换状态成功。",
         "FAILED_TO_DELETE_PROJECT": "项目包含镜像仓库或同步规则或Helm Charts，无法删除。",
-        "INLINE_HELP_PUBLIC": "当项目设为公开后，任何人都有此项目下镜像的读权限。命令行用户不需要“docker login”就可以拉取此项目下的镜像。"
+        "INLINE_HELP_PUBLIC": "当项目设为公开后，任何人都有此项目下镜像的读权限。命令行用户不需要“docker login”就可以拉取此项目下的镜像。",
+        "COUNT_QUOTA": "Count quota",
+        "STORAGE_QUOTA": "Storage quota",
+        "COUNT_QUOTA_TIP": "存储数量上限应该是整数.",
+        "STORAGE_QUOTA_TIP": "存储容量的上限应该设置成为数字.",
+        "QUOTA_UNLIMIT_TIP": "如果你想要对存储不设置上限，请输入-1."
     },
     "PROJECT_DETAIL": {
         "REPOSITORIES": "镜像仓库",

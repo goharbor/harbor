@@ -439,3 +439,12 @@ export interface  ProjectRootInterface {
   VALUE: number;
   LABEL: string;
 }
+export interface QuotaHardInterface {
+  count_per_project: string;
+  storage_per_project: string;
+}
+
+export interface QuotaUnitInterface {
+  UNIT: string;
+}
+
