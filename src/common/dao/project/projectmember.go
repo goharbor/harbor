@@ -148,16 +148,3 @@ func SearchMemberByName(projectID int64, entityName string) ([]*models.Member, e
 	_, err := o.Raw(sql, queryParam).QueryRows(&members)
 	return members, err
 }
-
-// GetRolesByGroup -- Query group roles
-func GetRolesByGroup(projectID int64, groupDNCondition string) []int {
-	var roles []int
-	o := dao.GetOrmer()
-	sql := `select role from project_member pm 
-	left join user_group ug on pm.project_id = ?
-	where ug.group_type = 1 and ug.ldap_group_dn in (` + groupDNCondition + `)`
-	if _, err := o.Raw(sql, projectID).QueryRows(&roles); err != nil {
-		return roles
-	}
-	return roles
-}
