@@ -36,6 +36,7 @@ type Project struct {
 	RepoCount    int64             `orm:"-" json:"repo_count"`
 	ChartCount   uint64            `orm:"-" json:"chart_count"`
 	Metadata     map[string]string `orm:"-" json:"metadata"`
+	CVEWhitelist CVEWhitelist      `orm:"-" json:"cve_whitelist"`
 }
 
 // GetMetadata ...
@@ -81,6 +82,15 @@ func (p *Project) VulPrevented() bool {
 		return false
 	}
 	return isTrue(prevent)
+}
+
+// ReuseSysCVEWhitelist ...
+func (p *Project) ReuseSysCVEWhitelist() bool {
+	r, ok := p.GetMetadata(ProMetaReuseSysCVEWhitelist)
+	if !ok {
+		return true
+	}
+	return isTrue(r)
 }
 
 // Severity ...
@@ -154,9 +164,10 @@ type BaseProjectCollection struct {
 
 // ProjectRequest holds informations that need for creating project API
 type ProjectRequest struct {
-	Name     string            `json:"project_name"`
-	Public   *int              `json:"public"` // deprecated, reserved for project creation in replication
-	Metadata map[string]string `json:"metadata"`
+	Name         string            `json:"project_name"`
+	Public       *int              `json:"public"` // deprecated, reserved for project creation in replication
+	Metadata     map[string]string `json:"metadata"`
+	CVEWhitelist CVEWhitelist      `json:"cve_whitelist"`
 }
 
 // ProjectQueryResult ...

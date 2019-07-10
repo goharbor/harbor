@@ -90,6 +90,22 @@ func TestSysCVEWhitelistAPIPut(t *testing.T) {
 			},
 			code: http.StatusBadRequest,
 		},
+		// 400
+		{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    url,
+				bodyJSON: models.CVEWhitelist{
+					ExpiresAt: &s,
+					Items: []models.CVEWhitelistItem{
+						{CVEID: "CVE-2019-12310"},
+						{CVEID: "CVE-2019-12310"},
+					},
+				},
+				credential: sysAdmin,
+			},
+			code: http.StatusBadRequest,
+		},
 		// 200
 		{
 			request: &testingRequest{

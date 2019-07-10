@@ -17,15 +17,16 @@ package api
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
 	"net/http"
 )
 
 // SysCVEWhitelistAPI Handles the requests to manage system level CVE whitelist
 type SysCVEWhitelistAPI struct {
 	BaseController
+	manager whitelist.Manager
 }
 
 // Prepare validates the request initially
@@ -41,11 +42,12 @@ func (sca *SysCVEWhitelistAPI) Prepare() {
 		sca.SendForbiddenError(errors.New(msg))
 		return
 	}
+	sca.manager = whitelist.NewDefaultManager()
 }
 
 // Get handles the GET request to retrieve the system level CVE whitelist
 func (sca *SysCVEWhitelistAPI) Get() {
-	l, err := dao.GetSysCVEWhitelist()
+	l, err := sca.manager.GetSys()
 	if err != nil {
 		sca.SendInternalServerError(err)
 		return
@@ -67,7 +69,12 @@ func (sca *SysCVEWhitelistAPI) Put() {
 		sca.SendBadRequestError(errors.New(msg))
 		return
 	}
-	if _, err := dao.UpdateCVEWhitelist(l); err != nil {
+	if err := sca.manager.SetSys(l); err != nil {
+		if whitelist.IsInvalidErr(err) {
+			log.Errorf("Invalid CVE whitelist: %v", err)
+			sca.SendBadRequestError(err)
+			return
+		}
 		sca.SendInternalServerError(err)
 		return
 	}
