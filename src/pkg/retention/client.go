@@ -21,12 +21,12 @@ type Client interface {
 	// Get the tag candidates under the repository
 	//
 	//  Arguments:
-	//    repo string : name of the repository with namespace
+	//    repo *res.Repository : repository info
 	//
 	//  Returns:
 	//    []*res.Candidate : candidates returned
 	//    error            : common error if any errors occurred
-	GetCandidates(repo string) ([]*res.Candidate, error)
+	GetCandidates(repo *res.Repository) ([]*res.Candidate, error)
 
 	// Delete the specified candidate
 	//
@@ -47,8 +47,10 @@ func New() Client {
 type basicClient struct{}
 
 // GetCandidates gets the tag candidates under the repository
-func (bc *basicClient) GetCandidates(repo string) ([]*res.Candidate, error) {
-	return nil, nil
+func (bc *basicClient) GetCandidates(repo *res.Repository) ([]*res.Candidate, error) {
+	results := make([]*res.Candidate, 0)
+
+	return results, nil
 }
 
 // Deletes the specified candidate
