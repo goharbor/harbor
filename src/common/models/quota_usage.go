@@ -40,7 +40,7 @@ func (u QuotaUsed) Copy() QuotaUsed {
 // QuotaUsage model for quota usage
 type QuotaUsage struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
-	Reference    string    `orm:"column(reference)" json:"reference"`
+	Reference    string    `orm:"column(reference)" json:"reference"` // The reference type for quota usage, eg: project, user
 	ReferenceID  string    `orm:"column(reference_id)" json:"reference_id"`
 	Used         string    `orm:"column(used);type(jsonb)" json:"-"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`

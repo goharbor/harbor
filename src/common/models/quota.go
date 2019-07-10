@@ -40,7 +40,7 @@ func (h QuotaHard) Copy() QuotaHard {
 // Quota model for quota
 type Quota struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
-	Reference    string    `orm:"column(reference)" json:"reference"`
+	Reference    string    `orm:"column(reference)" json:"reference"` // The reference type for quota, eg: project, user
 	ReferenceID  string    `orm:"column(reference_id)" json:"reference_id"`
 	Hard         string    `orm:"column(hard);type(jsonb)" json:"-"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
