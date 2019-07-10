@@ -38,8 +38,12 @@ type evaluator struct {
 
 // Process the candidates based on the rule definition
 func (e *evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
-	// TODO: REPLACE SAMPLE CODE WITH REAL IMPLEMENTATION
-	return artifacts, nil
+	i := e.k
+	if i > len(artifacts) {
+		i = len(artifacts)
+	}
+
+	return artifacts[:i], nil
 }
 
 // Specify what action is performed to the candidates processed by this evaluator
@@ -51,7 +55,7 @@ func (e *evaluator) Action() string {
 func New(params rule.Parameters) rule.Evaluator {
 	if params != nil {
 		if param, ok := params[ParameterK]; ok {
-			if v, ok := param.(int); ok {
+			if v, ok := param.(int); ok && v >= 0 {
 				return &evaluator{
 					k: v,
 				}
