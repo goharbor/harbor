@@ -15,6 +15,7 @@
 package main
 
 import (
+	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
@@ -24,8 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/core/service/notifications/jobs"
 	"github.com/goharbor/harbor/src/core/service/notifications/registry"
 	"github.com/goharbor/harbor/src/core/service/token"
-
-	"github.com/astaxie/beego"
 )
 
 func initRouters() {
@@ -108,6 +107,13 @@ func initRouters() {
 	beego.Router("/api/replication/policies", &api.ReplicationPolicyAPI{}, "get:List;post:Create")
 	beego.Router("/api/replication/policies/:id([0-9]+)", &api.ReplicationPolicyAPI{}, "get:Get;put:Update;delete:Delete")
 
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies", &api.WebhookPolicyAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/:id([0-9]+)", &api.WebhookPolicyAPI{})
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/test", &api.WebhookPolicyAPI{}, "post:Test")
+
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/executions/", &api.WebhookExecutionAPI{}, "get:List")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/executions/:id([0-9]+)", &api.WebhookExecutionAPI{})
+
 	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig;put:Put")
 	beego.Router("/api/configurations", &api.ConfigAPI{}, "get:Get;put:Put")
 	beego.Router("/api/statistics", &api.StatisticAPI{})
@@ -129,6 +135,7 @@ func initRouters() {
 	beego.Router("/service/notifications/jobs/adminjob/:id([0-9]+)", &admin.Handler{}, "post:HandleAdminJob")
 	beego.Router("/service/notifications/jobs/replication/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationScheduleJob")
 	beego.Router("/service/notifications/jobs/replication/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationTask")
+	beego.Router("/service/notifications/jobs/webhook/:id([0-9]+)", &jobs.Handler{}, "post:HandleWebhookExecution")
 	beego.Router("/service/token", &token.Handler{})
 
 	beego.Router("/api/registries", &api.RegistryAPI{}, "get:List;post:Post")

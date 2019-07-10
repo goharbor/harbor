@@ -36,5 +36,7 @@ func init() {
 		new(AdminJob),
 		new(JobLog),
 		new(Robot),
-		new(OIDCUser))
+		new(OIDCUser),
+		new(WebhookPolicy),
+		new(WebhookExecution))
 }
