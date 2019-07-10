@@ -96,7 +96,7 @@ describe('RegistryConfigComponent (inline template)', () => {
 
   it('should render configurations to the view', async(() => {
     expect(spy.calls.count()).toEqual(1);
-    expect(spySystemInfo.calls.count()).toEqual(1);
+    expect(spySystemInfo.calls.count()).toEqual(2);
     fixture.detectChanges();
 
     fixture.whenStable().then(() => {
