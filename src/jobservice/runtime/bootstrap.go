@@ -17,6 +17,7 @@ package runtime
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/webhook"
 	"github.com/goharbor/harbor/src/jobservice/mgt"
 	"github.com/goharbor/harbor/src/jobservice/migration"
 	"os"
@@ -243,6 +244,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.ImageGC:              (*gc.GarbageCollector)(nil),
 			job.Replication:          (*replication.Replication)(nil),
 			job.ReplicationScheduler: (*replication.Scheduler)(nil),
+			job.WebhookHTTPJob:       (*webhook.HTTPNotifier)(nil),
 		}); err != nil {
 		// exit
 		return nil, err
