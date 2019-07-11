@@ -50,6 +50,10 @@ type Candidate struct {
 	Tag string
 	// Pushed time in seconds
 	PushedTime int64
+	// Pulled time in seconds
+	PulledTime int64
+	// Created time in seconds
+	CreationTime int64
 	// Labels attached with the candidate
 	Labels []string
 }
