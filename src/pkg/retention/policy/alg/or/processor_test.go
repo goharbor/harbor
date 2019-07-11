@@ -64,21 +64,33 @@ func (suite *ProcessorTestSuite) SetupSuite() {
 		},
 	}
 
-	p := New()
-	p.AddActionPerformer(action.Retain, action.NewRetainAction(suite.all))
+	params := make([]*alg.Parameter, 0)
+
+	perf := action.NewRetainAction(suite.all)
 
 	lastxParams := make(map[string]rule.Parameter)
 	lastxParams[lastx.ParameterX] = 10
-	p.AddEvaluator(lastx.New(lastxParams), []res.Selector{
-		regexp.New(regexp.Matches, "*dev*"),
-		label.New(label.With, "L1,L2"),
+	params = append(params, &alg.Parameter{
+		Evaluator: lastx.New(lastxParams),
+		Selectors: []res.Selector{
+			regexp.New(regexp.Matches, "*dev*"),
+			label.New(label.With, "L1,L2"),
+		},
+		Performer: perf,
 	})
 
 	latestKParams := make(map[string]rule.Parameter)
 	latestKParams[latestk.ParameterK] = 10
-	p.AddEvaluator(latestk.New(latestKParams), []res.Selector{
-		label.New(label.With, "L3"),
+	params = append(params, &alg.Parameter{
+		Evaluator: latestk.New(latestKParams),
+		Selectors: []res.Selector{
+			label.New(label.With, "L3"),
+		},
+		Performer: perf,
 	})
+
+	p, err := alg.Get(alg.AlgorithmOR, params)
+	require.NoError(suite.T(), err)
 
 	suite.p = p
 }

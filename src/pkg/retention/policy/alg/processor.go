@@ -33,18 +33,20 @@ type Processor interface {
 	//    []*res.Result : the processed results
 	//    error         : common error object if any errors occurred
 	Process(artifacts []*res.Candidate) ([]*res.Result, error)
-
-	// Add a rule evaluator for the processor
-	//
-	//  Arguments:
-	//    evaluator rule.Evaluator    : a rule evaluator
-	//    selectors []res.Selector    : selectors to narrow down the scope (&& adopted), optional
-	AddEvaluator(evaluator rule.Evaluator, selectors []res.Selector)
-
-	// Add performer for the related action to the processor
-	//
-	//  Arguments:
-	//    action string              : action name
-	//    performer action.Performer : a performer implementation
-	AddActionPerformer(action string, performer action.Performer)
 }
+
+// Parameter for constructing a processor
+// Represents one rule
+type Parameter struct {
+	// Evaluator for the rule
+	Evaluator rule.Evaluator
+
+	// Selectors for the rule
+	Selectors []res.Selector
+
+	// Performer for the rule evaluator
+	Performer action.Performer
+}
+
+// Factory for creating processor
+type Factory func([]*Parameter) Processor
