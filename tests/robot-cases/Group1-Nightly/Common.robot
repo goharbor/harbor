@@ -540,7 +540,7 @@ Test Case - View Scan Error
     View Scan Error Log
     Close Browser
 
-Test Case - List Helm Charts
+Test Case - List Helm Charts And Delete Chart Files
     Body Of List Helm Charts
 
 Test Case - Helm CLI Push
