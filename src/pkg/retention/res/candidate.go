@@ -39,6 +39,8 @@ type Repository struct {
 
 // Candidate for retention processor to match
 type Candidate struct {
+	// Namespace(project) ID
+	NamespaceID int64
 	// Namespace
 	Namespace string
 	// Repository name

@@ -67,8 +67,8 @@ type Scope struct {
 	Level string `json:"level"`
 
 	// The reference identity for the specified level
-	// '' for 'system', project ID for 'project' and repo ID for 'repository'
-	Reference string `json:"ref"`
+	// 0 for 'system', project ID for 'project' and repo ID for 'repository'
+	Reference int64 `json:"ref"`
 }
 
 // LiteMeta contains partial metadata of policy
@@ -78,5 +78,5 @@ type LiteMeta struct {
 	Algorithm string `json:"algorithm"`
 
 	// Rule collection
-	Rules []rule.Metadata `json:"rules"`
+	Rules []*rule.Metadata `json:"rules"`
 }

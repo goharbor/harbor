@@ -14,7 +14,10 @@
 
 package retention
 
-import "github.com/goharbor/harbor/src/pkg/retention/res"
+import (
+	"github.com/goharbor/harbor/src/pkg/retention/policy"
+	"github.com/goharbor/harbor/src/pkg/retention/res"
+)
 
 // Client is designed to access core service to get required infos
 type Client interface {
@@ -36,6 +39,17 @@ type Client interface {
 	//  Returns:
 	//    error : common error if any errors occurred
 	Delete(candidate *res.Candidate) error
+
+	// SubmitTask to jobservice
+	//
+	//  Arguments:
+	//    repository: *res.Repository : repository info
+	//    meta *policy.LiteMeta       : policy lite metadata
+	//
+	//  Returns:
+	//    string : the job ID
+	//    error  : common error if any errors occurred
+	SubmitTask(repository *res.Repository, meta *policy.LiteMeta) (string, error)
 }
 
 // New basic client
@@ -56,4 +70,9 @@ func (bc *basicClient) GetCandidates(repo *res.Repository) ([]*res.Candidate, er
 // Deletes the specified candidate
 func (bc *basicClient) Delete(candidate *res.Candidate) error {
 	return nil
+}
+
+// SubmitTask to jobservice
+func (bc *basicClient) SubmitTask(*res.Repository, *policy.LiteMeta) (string, error) {
+	return "", nil
 }

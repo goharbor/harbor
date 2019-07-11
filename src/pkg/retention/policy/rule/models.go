@@ -36,7 +36,7 @@ type Metadata struct {
 	TagSelectors []*Selector `json:"tag_selectors"`
 
 	// Selector attached to the rule for filtering scope (e.g: repositories or namespaces)
-	ScopeSelectors []*Selector `json:"scope_selectors"`
+	ScopeSelectors map[string][]*Selector `json:"scope_selectors"`
 }
 
 // Selector to narrow down the list
