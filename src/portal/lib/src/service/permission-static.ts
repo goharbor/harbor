@@ -130,5 +130,17 @@ export const USERSTATICPERMISSION = {
             "READ": "read",
         }
     },
+    "TAG_RETENTION": {
+        'KEY': "tag-retention",
+        'VALUE': {
+            "CREATE": "create",
+            "UPDATE": "update",
+            "DELETE": "delete",
+            "LIST": "list",
+            "READ": "read",
+            "PULL": "pull",
+            "PUSH": "push"
+        }
+    },
 };
 

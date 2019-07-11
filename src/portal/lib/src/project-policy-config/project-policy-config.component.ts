@@ -104,11 +104,12 @@ export class ProjectPolicyConfigComponent implements OnInit {
         this.systemInfoService.getSystemInfo()
             .subscribe(systemInfo => {
                 this.systemInfo = systemInfo;
-                setTimeout(() => {
-                    this.dateSystemInput.nativeElement.parentNode.setAttribute("hidden", "hidden");
-                }, 100);
+                if (this.withClair) {
+                    setTimeout(() => {
+                        this.dateSystemInput.nativeElement.parentNode.setAttribute("hidden", "hidden");
+                    }, 100);
+                }
             } , error => this.errorHandler.error(error));
-
         // retrive project level policy data
         this.retrieve();
         this.getPermission();

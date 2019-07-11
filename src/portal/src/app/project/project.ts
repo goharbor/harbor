@@ -51,6 +51,7 @@ export class Project {
       prevent_vul: string | boolean;
       severity: string;
       auto_scan: string | boolean;
+      retention_id: number;
     };
     constructor () {
       this.metadata = <any>{};

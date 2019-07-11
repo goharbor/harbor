@@ -47,9 +47,11 @@ export class UserService {
             , catchError(error => this.handleError(error)));
     }
     getUsers(): Observable<User[]> {
-        return this.http.get(userMgmtEndpoint, HTTP_GET_OPTIONS)
-            .pipe(map(response => response as User[])
-            , catchError(error => this.handleError(error)));
+        return this.http.get(userMgmtEndpoint)
+            .pipe(map(((response: any) => {
+                console.log(response.headers.get('X-Total-Count'));
+                return response as User[];
+            }), catchError(error => this.handleError(error))));
     }
 
     // Add new user
