@@ -401,6 +401,7 @@ func (w *basicWorker) registerJob(name string, j interface{}) (err error) {
 	// Put into the pool
 	w.pool.JobWithOptions(
 		name,
+		// uses the default backoff algorithm to calculate retry interval
 		work.JobOptions{
 			MaxFails: theJ.MaxFails(),
 		},
