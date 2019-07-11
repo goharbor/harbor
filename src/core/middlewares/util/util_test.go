@@ -179,9 +179,10 @@ func TestPMSPolicyChecker(t *testing.T) {
 		Name:    name,
 		OwnerID: 1,
 		Metadata: map[string]string{
-			models.ProMetaEnableContentTrust: "true",
-			models.ProMetaPreventVul:         "true",
-			models.ProMetaSeverity:           "low",
+			models.ProMetaEnableContentTrust:   "true",
+			models.ProMetaPreventVul:           "true",
+			models.ProMetaSeverity:             "low",
+			models.ProMetaReuseSysCVEWhitelist: "false",
 		},
 	})
 	require.Nil(t, err)
@@ -193,9 +194,10 @@ func TestPMSPolicyChecker(t *testing.T) {
 
 	contentTrustFlag := GetPolicyChecker().ContentTrustEnabled("project_for_test_get_sev_low")
 	assert.True(t, contentTrustFlag)
-	projectVulnerableEnabled, projectVulnerableSeverity := GetPolicyChecker().VulnerablePolicy("project_for_test_get_sev_low")
+	projectVulnerableEnabled, projectVulnerableSeverity, wl := GetPolicyChecker().VulnerablePolicy("project_for_test_get_sev_low")
 	assert.True(t, projectVulnerableEnabled)
 	assert.Equal(t, projectVulnerableSeverity, models.SevLow)
+	assert.Empty(t, wl.Items)
 }
 
 func TestCopyResp(t *testing.T) {

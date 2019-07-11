@@ -16,11 +16,10 @@ package vulnerable
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
+	"github.com/goharbor/harbor/src/pkg/scan"
 	"net/http"
 )
 
@@ -47,27 +46,35 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		vh.next.ServeHTTP(rw, req)
 		return
 	}
-	projectVulnerableEnabled, projectVulnerableSeverity := util.GetPolicyChecker().VulnerablePolicy(img.ProjectName)
+	projectVulnerableEnabled, projectVulnerableSeverity, wl := util.GetPolicyChecker().VulnerablePolicy(img.ProjectName)
 	if !projectVulnerableEnabled {
 		vh.next.ServeHTTP(rw, req)
 		return
 	}
-	overview, err := dao.GetImgScanOverview(img.Digest)
+	vl, err := scan.VulnListByDigest(img.Digest)
 	if err != nil {
-		log.Errorf("failed to get ImgScanOverview with repo: %s, reference: %s, digest: %s. Error: %v", img.Repository, img.Reference, img.Digest, err)
-		http.Error(rw, util.MarshalError("PROJECT_POLICY_VIOLATION", "Failed to get ImgScanOverview."), http.StatusPreconditionFailed)
+		log.Errorf("Failed to get the vulnerability list, error: %v", err)
+		http.Error(rw, util.MarshalError("PROJECT_POLICY_VIOLATION", "Failed to get vulnerabilities."), http.StatusPreconditionFailed)
 		return
 	}
-	// severity is 0 means that the image fails to scan or not scanned successfully.
-	if overview == nil || overview.Sev == 0 {
-		http.Error(rw, util.MarshalError("PROJECT_POLICY_VIOLATION", "Cannot get the image severity."), http.StatusPreconditionFailed)
-		return
-	}
-	imageSev := overview.Sev
-	if imageSev >= int(projectVulnerableSeverity) {
-		log.Debugf("the image severity: %q is higher then project setting: %q, failing the response.", models.Severity(imageSev), projectVulnerableSeverity)
-		http.Error(rw, util.MarshalError("PROJECT_POLICY_VIOLATION", fmt.Sprintf("The severity of vulnerability of the image: %q is equal or higher than the threshold in project setting: %q.", models.Severity(imageSev), projectVulnerableSeverity)), http.StatusPreconditionFailed)
+	filtered := vl.ApplyWhitelist(wl)
+	msg := vh.filterMsg(img, filtered)
+	log.Info(msg)
+	if int(vl.Severity()) >= int(projectVulnerableSeverity) {
+		log.Debugf("the image severity: %q is higher then project setting: %q, failing the response.", vl.Severity(), projectVulnerableSeverity)
+		http.Error(rw, util.MarshalError("PROJECT_POLICY_VIOLATION", fmt.Sprintf("The severity of vulnerability of the image: %q is equal or higher than the threshold in project setting: %q.", vl.Severity(), projectVulnerableSeverity)), http.StatusPreconditionFailed)
 		return
 	}
 	vh.next.ServeHTTP(rw, req)
+}
+
+func (vh vulnerableHandler) filterMsg(img util.ImageInfo, filtered scan.VulnerabilityList) string {
+	filterMsg := fmt.Sprintf("Image: %s/%s:%s, digest: %s, vulnerabilities fitered by whitelist:", img.ProjectName, img.Repository, img.Reference, img.Digest)
+	if len(filtered) == 0 {
+		filterMsg = fmt.Sprintf("%s none.", filterMsg)
+	}
+	for _, v := range filtered {
+		filterMsg = fmt.Sprintf("%s ID: %s, severity: %s;", filterMsg, v.ID, v.Severity)
+	}
+	return filterMsg
 }

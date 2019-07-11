@@ -326,6 +326,7 @@
         "GROUP": "Grupo",
         "GROUPS": "Grupos",
         "IMPORT_LDAP_GROUP": "Importar grupo do LDAP",
+        "IMPORT_HTTP_GROUP": "New HTTP Group",
         "ADD": "Novo Grupo",
         "EDIT": "Editar",
         "DELETE": "Remover",
@@ -338,8 +339,17 @@
         "ADD_GROUP_SUCCESS": "Grupo adicionado com sucesso",
         "EDIT_GROUP_SUCCESS": "Grupo editado com sucesso",
         "LDAP_TYPE": "LDAP",
+        "HTTP_TYPE": "HTTP",
         "OF": "de",
-        "ITEMS": "itens"
+        "ITEMS": "itens",
+        "NEW_MEMBER": "New Group Member",
+        "NEW_USER_INFO": "Add a group to be a member of this project with specified role",
+        "ROLE": "Role",
+        "SYS_ADMIN": "System Admin",
+        "PROJECT_ADMIN": "Project Admin",
+        "PROJECT_MASTER": "Master",
+        "DEVELOPER": "Developer",
+        "GUEST": "Guest"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nome do usuário",

@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -135,7 +136,7 @@ type PolicyChecker interface {
 	// contentTrustEnabled returns whether a project has enabled content trust.
 	ContentTrustEnabled(name string) bool
 	// vulnerablePolicy  returns whether a project has enabled vulnerable, and the project's severity.
-	VulnerablePolicy(name string) (bool, models.Severity)
+	VulnerablePolicy(name string) (bool, models.Severity, models.CVEWhitelist)
 }
 
 // PmsPolicyChecker ...
@@ -154,13 +155,29 @@ func (pc PmsPolicyChecker) ContentTrustEnabled(name string) bool {
 }
 
 // VulnerablePolicy ...
-func (pc PmsPolicyChecker) VulnerablePolicy(name string) (bool, models.Severity) {
+func (pc PmsPolicyChecker) VulnerablePolicy(name string) (bool, models.Severity, models.CVEWhitelist) {
 	project, err := pc.pm.Get(name)
+	wl := models.CVEWhitelist{}
 	if err != nil {
 		log.Errorf("Unexpected error when getting the project, error: %v", err)
-		return true, models.SevUnknown
+		return true, models.SevUnknown, wl
 	}
-	return project.VulPrevented(), clair.ParseClairSev(project.Severity())
+	mgr := whitelist.NewDefaultManager()
+	if project.ReuseSysCVEWhitelist() {
+		w, err := mgr.GetSys()
+		if err != nil {
+			return project.VulPrevented(), clair.ParseClairSev(project.Severity()), wl
+		}
+		wl = *w
+	} else {
+		w, err := mgr.Get(project.ProjectID)
+		if err != nil {
+			return project.VulPrevented(), clair.ParseClairSev(project.Severity()), wl
+		}
+		wl = *w
+	}
+	return project.VulPrevented(), clair.ParseClairSev(project.Severity()), wl
+
 }
 
 // NewPMSPolicyChecker returns an instance of an pmsPolicyChecker

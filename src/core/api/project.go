@@ -158,6 +158,7 @@ func (p *ProjectAPI) Post() {
 	if _, ok := pro.Metadata[models.ProMetaPublic]; !ok {
 		pro.Metadata[models.ProMetaPublic] = strconv.FormatBool(false)
 	}
+	// populate
 
 	owner := p.SecurityCtx.GetUsername()
 	// set the owner as the system admin when the API being called by replication
@@ -460,7 +461,8 @@ func (p *ProjectAPI) Put() {
 
 	if err := p.ProjectMgr.Update(p.project.ProjectID,
 		&models.Project{
-			Metadata: req.Metadata,
+			Metadata:     req.Metadata,
+			CVEWhitelist: req.CVEWhitelist,
 		}); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",
 			p.project.ProjectID), err)
