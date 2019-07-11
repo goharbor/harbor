@@ -57,6 +57,8 @@ import { ListChartVersionsComponent } from './project/helm-chart/list-chart-vers
 import { HelmChartDetailComponent } from './project/helm-chart/helm-chart-detail/chart-detail.component';
 import { OidcOnboardComponent } from './oidc-onboard/oidc-onboard.component';
 import { SummaryComponent } from './project/summary/summary.component';
+import { TagRetentionComponent } from "./project/tag-retention/tag-retention.component";
+
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -201,6 +203,10 @@ const harborRoutes: Routes = [
           {
             path: 'robot-account',
             component: RobotAccountComponent
+          },
+          {
+            path: 'tag-retention',
+            component: TagRetentionComponent
           }
         ]
       },
