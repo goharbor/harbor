@@ -130,7 +130,7 @@ export interface ReplicationRule extends Base {
 
 export class Filter {
   type: string;
-  value?: string;
+  value?: any;
   constructor(type: string) {
     this.type = type;
   }
@@ -434,3 +434,8 @@ export interface  HttpOptionTextInterface {
   withCredentials?: boolean;
 }
 
+export interface  ProjectRootInterface {
+  NAME: string;
+  VALUE: number;
+  LABEL: string;
+}

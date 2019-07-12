@@ -34,6 +34,12 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/native"
 	// register the Huawei adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/huawei"
+	// register the Google Gcr adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/googlegcr"
+	// register the AwsEcr adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/awsecr"
+	// register the AzureAcr adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/azurecr"
 )
 
 // Replication implements the job interface

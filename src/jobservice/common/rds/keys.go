@@ -34,7 +34,7 @@ func RedisKeyScheduled(namespace string) string {
 
 // RedisKeyLastPeriodicEnqueue returns key of timestamp if last periodic enqueue.
 func RedisKeyLastPeriodicEnqueue(namespace string) string {
-	return RedisNamespacePrefix(namespace) + "last_periodic_enqueue"
+	return RedisNamespacePrefix(namespace) + "last_periodic_enqueue_h"
 }
 
 // KeyNamespacePrefix returns the based key based on the namespace.

@@ -17,6 +17,7 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/scan"
 	"io/ioutil"
 	"net/http"
 	"sort"
@@ -34,7 +35,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/clair"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/notary"
 	"github.com/goharbor/harbor/src/common/utils/registry"
@@ -332,7 +332,7 @@ func (ra *RepositoryAPI) Delete() {
 
 		go func(tag string) {
 			e := &event.Event{
-				Type: event.EventTypeImagePush,
+				Type: event.EventTypeImageDelete,
 				Resource: &model.Resource{
 					Type: model.ResourceTypeImage,
 					Metadata: &model.ResourceMetadata{
@@ -1036,21 +1036,9 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
-	res := []*models.VulnerabilityItem{}
-	overview, err := dao.GetImgScanOverview(digest)
+	res, err := scan.VulnListByDigest(digest)
 	if err != nil {
-		ra.SendInternalServerError(fmt.Errorf("failed to get the scan overview, error: %v", err))
-		return
-	}
-	if overview != nil && len(overview.DetailsKey) > 0 {
-		clairClient := clair.NewClient(config.ClairEndpoint(), nil)
-		log.Debugf("The key for getting details: %s", overview.DetailsKey)
-		details, err := clairClient.GetResult(overview.DetailsKey)
-		if err != nil {
-			ra.SendInternalServerError(fmt.Errorf("Failed to get scan details from Clair, error: %v", err))
-			return
-		}
-		res = transformVulnerabilities(details)
+		log.Errorf("Failed to get vulnerability list for image: %s:%s", repository, tag)
 	}
 	ra.Data["json"] = res
 	ra.ServeJSON()

@@ -12,6 +12,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils/log"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
 )
@@ -27,7 +28,7 @@ func init() {
 
 // Adapter is for images replications between harbor and Huawei image repository(SWR)
 type adapter struct {
-	*adp.DefaultImageRegistry
+	*native.Adapter
 	registry *model.Registry
 }
 
@@ -232,13 +233,13 @@ func (a *adapter) HealthCheck() (model.HealthStatus, error) {
 
 // AdapterFactory is the factory for huawei adapter
 func AdapterFactory(registry *model.Registry) (adp.Adapter, error) {
-	reg, err := adp.NewDefaultImageRegistry(registry)
+	dockerRegistryAdapter, err := native.NewAdapter(registry)
 	if err != nil {
 		return nil, err
 	}
 	return &adapter{
-		registry:             registry,
-		DefaultImageRegistry: reg,
+		registry: registry,
+		Adapter:  dockerRegistryAdapter,
 	}, nil
 
 }

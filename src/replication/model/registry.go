@@ -26,9 +26,13 @@ const (
 	RegistryTypeDockerHub      RegistryType = "docker-hub"
 	RegistryTypeDockerRegistry RegistryType = "docker-registry"
 	RegistryTypeHuawei         RegistryType = "huawei-SWR"
+	RegistryTypeGoogleGcr      RegistryType = "google-gcr"
+	RegistryTypeAwsEcr         RegistryType = "aws-ecr"
+	RegistryTypeAzureAcr       RegistryType = "azure-acr"
 
 	FilterStyleTypeText  = "input"
 	FilterStyleTypeRadio = "radio"
+	FilterStyleTypeList  = "list"
 )
 
 // RegistryType indicates the type of registry
