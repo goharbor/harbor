@@ -8,7 +8,7 @@ import (
 	"github.com/goharbor/harbor/src/webhook/model"
 	"github.com/goharbor/harbor/src/webhook/operation"
 	"github.com/goharbor/harbor/src/webhook/policy"
-	"github.com/goharbor/harbor/src/webhook/policy/impl"
+	"github.com/goharbor/harbor/src/webhook/policy/manager"
 )
 
 var (
@@ -37,7 +37,7 @@ func Init() {
 	}
 
 	// init webhook policy manager
-	PolicyManager = impl.NewDefaultManger()
+	PolicyManager = manager.NewDefaultManger()
 	// init hook manager
 	HookManager = hook.NewHookManager()
 	// init webhook execution controller

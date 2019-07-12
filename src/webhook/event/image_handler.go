@@ -10,7 +10,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier"
-	"github.com/goharbor/harbor/src/webhook"
 	"github.com/goharbor/harbor/src/webhook/hook"
 	"github.com/goharbor/harbor/src/webhook/model"
 )
@@ -53,7 +52,7 @@ func (iwh *ImageWebhookHandler) Handle(value interface{}) error {
 			continue
 		}
 
-		resURL, err := getResourceURL(imgEvent.RepoName, tag)
+		resURL, err := getImageResourceURL(imgEvent.RepoName, tag)
 		if err != nil {
 			log.Errorf("get resource URL failed: %v", err)
 			continue
@@ -67,7 +66,7 @@ func (iwh *ImageWebhookHandler) Handle(value interface{}) error {
 		payload.EventData = append(payload.EventData, eventData)
 	}
 
-	policies, err := iwh.getRelatedPolices(imgEvent.ProjectID, imgEvent.HookType)
+	policies, err := getRelatedPolices(imgEvent.ProjectID, imgEvent.HookType)
 	if err != nil {
 		return err
 	}
@@ -132,28 +131,6 @@ func (iwh *ImageWebhookHandler) constructImagePayload(event *ImageEvent) (*model
 	return payload, nil
 }
 
-func (iwh *ImageWebhookHandler) getRelatedPolices(projectID int64, hookType string) ([]*model.WebhookPolicy, error) {
-	_, policies, err := webhook.PolicyManager.List(projectID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get webhook policies with projectID %d: %v", projectID, err)
-	}
-
-	var result []*model.WebhookPolicy
-
-	for _, ply := range policies {
-		if !ply.Enabled {
-			continue
-		}
-		for _, t := range ply.HookTypes {
-			if t != hookType {
-				continue
-			}
-			result = append(result, ply)
-		}
-	}
-	return result, nil
-}
-
 func getRepository(projectID int64, repoName string) (*models.RepoRecord, error) {
 	query := &models.RepositoryQuery{
 		ProjectIDs: []int64{projectID},
@@ -175,7 +152,7 @@ func getNameFromRepoFullName(repo string) string {
 	return repo[idx+1:]
 }
 
-func getResourceURL(repoName, tag string) (string, error) {
+func getImageResourceURL(repoName, tag string) (string, error) {
 	extURL, err := config.ExtURL()
 	if err != nil {
 		return "", fmt.Errorf("get external endpoint failed: %v", err)

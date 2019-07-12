@@ -256,7 +256,7 @@ func (c *Controller) getChartVersionContent(namespace string, subPath string) ([
 	return c.apiClient.GetContent(url)
 }
 
-// GetChartRepoCreateTime ...
+// GetChartRepoCreateTime get create time of chart repository by chartName
 func (c *Controller) GetChartRepoCreateTime(namespace, chartName string) time.Time {
 	var repoCreateTime time.Time
 	charts, err := c.ListCharts(namespace)

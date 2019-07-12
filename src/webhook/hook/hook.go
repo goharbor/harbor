@@ -12,7 +12,7 @@ import (
 	"github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/webhook/config"
 	"github.com/goharbor/harbor/src/webhook/execution"
-	"github.com/goharbor/harbor/src/webhook/execution/impl"
+	"github.com/goharbor/harbor/src/webhook/execution/manager"
 	"github.com/goharbor/harbor/src/webhook/model"
 )
 
@@ -30,7 +30,7 @@ type DefaultManager struct {
 // NewHookManager ...
 func NewHookManager() *DefaultManager {
 	return &DefaultManager{
-		execMgr: impl.NewDefaultManager(),
+		execMgr: manager.NewDefaultManager(),
 		client:  utils.GetJobServiceClient(),
 	}
 }

@@ -3,7 +3,7 @@ package operation
 import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/webhook/execution"
-	"github.com/goharbor/harbor/src/webhook/execution/impl"
+	"github.com/goharbor/harbor/src/webhook/execution/manager"
 )
 
 // Controller handles the webhook related operations
@@ -28,7 +28,7 @@ type controller struct {
 // NewController returns a controller implementation
 func NewController() Controller {
 	ctl := &controller{
-		execMgr: impl.NewDefaultManager(),
+		execMgr: manager.NewDefaultManager(),
 	}
 	return ctl
 }

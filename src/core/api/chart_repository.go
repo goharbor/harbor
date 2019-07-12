@@ -185,23 +185,8 @@ func (cra *ChartRepositoryAPI) DownloadChart() {
 	go func() {
 		filename := cra.GetString(":filename")
 		chartName, chartVersion := getChartNameAndVersion(filename)
-		repoCreateTime := chartController.GetChartRepoCreateTime(cra.namespace, chartName)
 
-		e := &event.ChartEvent{
-			HookType:       whModel.EventTypeDownloadChart,
-			ProjectName:    cra.namespace,
-			ChartName:      chartName,
-			ChartVersions:  []string{chartVersion},
-			Operator:       cra.SecurityCtx.GetUsername(),
-			OccurTime:      time.Now(),
-			RepoCreateTime: repoCreateTime,
-		}
-		err := notifier.Publish(topic.WebhookEventTopicOnChart, e)
-		if err != nil {
-			hlog.Errorf("failed to publish topic with uploading chart %s: %v", filename, err)
-			return
-		}
-		hlog.Debugf("published chart upload topic with event: %v", e)
+		cra.triggerChartWebhookEvent(whModel.EventTypeDownloadChart, chartName, chartVersion)
 	}()
 }
 
@@ -299,26 +284,8 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 		return
 	}
 
-	// FIXME: change the way get chart name and version
 	go func() {
-		repoCreateTime := chartController.GetChartRepoCreateTime(cra.namespace, chartName)
-
-		e := &event.ChartEvent{
-			HookType:       whModel.EventTypeDeleteChart,
-			ProjectName:    cra.namespace,
-			ChartName:      chartName,
-			ChartVersions:  []string{version},
-			Operator:       cra.SecurityCtx.GetUsername(),
-			OccurTime:      time.Now(),
-			RepoCreateTime: repoCreateTime,
-		}
-
-		err := notifier.Publish(topic.WebhookEventTopicOnChart, e)
-		if err != nil {
-			hlog.Errorf("failed to publish topic with deleting chart %s version %s: %v", chartName, version, err)
-			return
-		}
-		hlog.Debugf("published chart delete topic with event: %v", e)
+		cra.triggerChartWebhookEvent(whModel.EventTypeDeleteChart, chartName, version)
 	}()
 }
 
@@ -355,30 +322,15 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 
 	go func() {
+		// FIXME: change the way get chart name and version
 		filename, err := cra.getFilename()
 		if err != nil {
 			hlog.Errorf("failed to get filename: %v", err)
 			return
 		}
 		chartName, chartVersion := getChartNameAndVersion(filename)
-		repoCreateTime := chartController.GetChartRepoCreateTime(cra.namespace, chartName)
 
-		e := &event.ChartEvent{
-			HookType:       whModel.EventTypeUploadChart,
-			ProjectName:    cra.namespace,
-			ChartName:      chartName,
-			ChartVersions:  []string{chartVersion},
-			Operator:       cra.SecurityCtx.GetUsername(),
-			OccurTime:      time.Now(),
-			RepoCreateTime: repoCreateTime,
-		}
-
-		err = notifier.Publish(topic.WebhookEventTopicOnChart, e)
-		if err != nil {
-			hlog.Errorf("failed to publish topic with uploading chart %s: %v", filename, err)
-			return
-		}
-		hlog.Debugf("published chart upload topic with event: %v", e)
+		cra.triggerChartWebhookEvent(whModel.EventTypeUploadChart, chartName, chartVersion)
 	}()
 }
 
@@ -644,4 +596,24 @@ func getChartNameAndVersion(filename string) (string, string) {
 	idxA := strings.LastIndex(filename, "-")
 	idxB := strings.LastIndex(filename, ".")
 	return filename[:idxA], filename[idxA+1 : idxB]
+}
+
+func (cra *ChartRepositoryAPI) triggerChartWebhookEvent(hookType, chartName, chartVersion string) {
+	repoCreateTime := chartController.GetChartRepoCreateTime(cra.namespace, chartName)
+
+	e := &event.ChartEvent{
+		HookType:       hookType,
+		ProjectName:    cra.namespace,
+		ChartName:      chartName,
+		ChartVersions:  []string{chartVersion},
+		Operator:       cra.SecurityCtx.GetUsername(),
+		OccurTime:      time.Now(),
+		RepoCreateTime: repoCreateTime,
+	}
+	err := notifier.Publish(topic.WebhookEventTopicOnChart, e)
+	if err != nil {
+		hlog.Errorf("failed to publish topic with %s %s version %s: %v", hookType, chartName, chartVersion, err)
+		return
+	}
+	hlog.Debugf("published %s topic with event: %v", hookType, e)
 }

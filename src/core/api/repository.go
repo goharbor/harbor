@@ -340,23 +340,15 @@ func (ra *RepositoryAPI) Delete() {
 				Tag: t,
 			},
 		}
-		e.Events = append(e.Events, evt)
 
-		client, err := coreutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
+		// if get digest failed, continue to delete image, digest in webhook payload will be empty
+		digest, err := getImageDigest(ra.SecurityCtx.GetUsername(), repoName, t)
 		if err != nil {
-			log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
+			log.Errorf("get image digest of tag %s failed: %v", t, err)
 		}
-		tags, err := client.ListTag()
-		if err != nil {
-			ra.SendInternalServerError(fmt.Errorf("failed to get tag of %s: %v", repoName, err))
-			return
-		}
-		imageTagsDetail := assembleTagsInParallel(client, repoName, tags, ra.SecurityCtx.GetUsername())
-		for _, tagDetail := range imageTagsDetail {
-			if t == tagDetail.Name {
-				evt.Target.Digest = tagDetail.Digest
-			}
-		}
+		evt.Target.Digest = digest
+
+		e.Events = append(e.Events, evt)
 
 		if err = rc.DeleteTag(t); err != nil {
 			if regErr, ok := err.(*commonhttp.Error); ok {
@@ -1175,4 +1167,23 @@ func getScanOverview(digest string, tag string) *models.ImgScanOverview {
 		data.DetailsKey = ""
 	}
 	return data
+}
+
+// get image digest by tag
+func getImageDigest(username, repoName, tag string) (string, error) {
+	client, err := coreutils.NewRepositoryClientForUI(username, repoName)
+	if err != nil {
+		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
+	}
+	tags, err := client.ListTag()
+	if err != nil {
+		return "", err
+	}
+	imageTagsDetail := assembleTagsInParallel(client, repoName, tags, username)
+	for _, tagDetail := range imageTagsDetail {
+		if tag == tagDetail.Name {
+			return tagDetail.Digest, nil
+		}
+	}
+	return "", fmt.Errorf("cannot find image digest of tag %s", tag)
 }

@@ -1,11 +1,13 @@
 package event
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/notifier"
+	"github.com/goharbor/harbor/src/webhook"
 	"github.com/goharbor/harbor/src/webhook/event/topic"
 	"github.com/goharbor/harbor/src/webhook/model"
 	"github.com/goharbor/harbor/src/webhook/scheduler"
@@ -67,4 +69,26 @@ func init() {
 			log.Debugf("topic %s is subscribed", t)
 		}
 	}
+}
+
+func getRelatedPolices(projectID int64, hookType string) ([]*model.WebhookPolicy, error) {
+	_, policies, err := webhook.PolicyManager.List(projectID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get webhook policies with projectID %d: %v", projectID, err)
+	}
+
+	var result []*model.WebhookPolicy
+
+	for _, ply := range policies {
+		if !ply.Enabled {
+			continue
+		}
+		for _, t := range ply.HookTypes {
+			if t != hookType {
+				continue
+			}
+			result = append(result, ply)
+		}
+	}
+	return result, nil
 }

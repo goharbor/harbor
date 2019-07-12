@@ -137,7 +137,6 @@ func (w *WebhookExecutionAPI) Delete() {
 func (w *WebhookExecutionAPI) validateRBAC(action rbac.Action, projectID int64) bool {
 	project, err := w.ProjectMgr.Get(projectID)
 	if err != nil {
-		//w.SendInternalServerError(fmt.Errorf("failed to get project %d", projectID))
 		w.ParseAndHandleError(fmt.Sprintf("failed to get project %d", projectID), err)
 		return false
 	}

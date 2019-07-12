@@ -8,7 +8,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier"
-	"github.com/goharbor/harbor/src/webhook"
 	"github.com/goharbor/harbor/src/webhook/hook"
 	"github.com/goharbor/harbor/src/webhook/model"
 )
@@ -67,7 +66,7 @@ func (cwh *ChartWebhookHandler) Handle(value interface{}) error {
 		payload.EventData = append(payload.EventData, eventData)
 	}
 
-	policies, err := cwh.getChartRelatedPolices(proj, payload.Type)
+	policies, err := getRelatedPolices(proj.ProjectID, payload.Type)
 	if err != nil {
 		return err
 	}
@@ -117,28 +116,6 @@ func (cwh *ChartWebhookHandler) constructChartPayload(proj *models.Project, even
 		Operator: event.Operator,
 	}
 	return payload, nil
-}
-
-func (cwh *ChartWebhookHandler) getChartRelatedPolices(proj *models.Project, hookType string) ([]*model.WebhookPolicy, error) {
-	_, policies, err := webhook.PolicyManager.List(proj.ProjectID)
-	if err != nil {
-		return nil, fmt.Errorf("failed to get webhook policies with projectID %d: %v", proj.ProjectID, err)
-	}
-
-	var result []*model.WebhookPolicy
-
-	for _, ply := range policies {
-		if !ply.Enabled {
-			continue
-		}
-		for _, t := range ply.HookTypes {
-			if t != hookType {
-				continue
-			}
-			result = append(result, ply)
-		}
-	}
-	return result, nil
 }
 
 func getChartResourceURL(projName, repoName, version string) (string, error) {
