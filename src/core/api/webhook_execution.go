@@ -8,7 +8,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/webhook"
 )
 
@@ -26,18 +25,17 @@ func (w *WebhookExecutionAPI) Prepare() {
 	}
 }
 
-// TODO: list execution by webhook type with UI design
 // List ...
 func (w *WebhookExecutionAPI) List() {
 	policyID, err := w.GetInt64("policy_id")
 	if err != nil || policyID <= 0 {
 		w.SendBadRequestError(fmt.Errorf("invalid policy_id: %s", w.GetString("policy_id")))
+		return
 	}
 
 	policy, err := webhook.PolicyManager.Get(policyID)
 	if err != nil {
-		log.Error("failed to get policy %d: %v", policyID, err)
-		w.SendInternalServerError(errors.New(""))
+		w.SendInternalServerError(fmt.Errorf("failed to get policy %d: %v", policyID, err))
 		return
 	}
 	if policy.ID == 0 {
@@ -128,8 +126,7 @@ func (w *WebhookExecutionAPI) Delete() {
 	}
 
 	if err = webhook.ExecutionCtl.DeleteWebhookExecution(id); err != nil {
-		log.Error("failed to delete webhook execution %d: %v", id, err)
-		w.SendInternalServerError(errors.New(""))
+		w.SendInternalServerError(fmt.Errorf("failed to delete webhook execution %d: %v", id, err))
 		return
 	}
 }

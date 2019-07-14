@@ -82,6 +82,7 @@ func (iwh *ImageWebhookHandler) Handle(value interface{}) error {
 				PolicyID: ply.ID,
 				Target:   &target,
 				Payload:  payload,
+				HookType: imgEvent.HookType,
 			}); err != nil {
 				return fmt.Errorf("failed to publish webhook topic by %s: %v", target.Type, err)
 			}

@@ -107,7 +107,7 @@ func initRouters() {
 	beego.Router("/api/replication/policies", &api.ReplicationPolicyAPI{}, "get:List;post:Create")
 	beego.Router("/api/replication/policies/:id([0-9]+)", &api.ReplicationPolicyAPI{}, "get:Get;put:Update;delete:Delete")
 
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies", &api.WebhookPolicyAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies", &api.WebhookPolicyAPI{}, "get:ListGroupByHookType;post:Post")
 	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/:id([0-9]+)", &api.WebhookPolicyAPI{})
 	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/test", &api.WebhookPolicyAPI{}, "post:Test")
 

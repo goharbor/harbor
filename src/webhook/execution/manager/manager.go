@@ -58,3 +58,8 @@ func (d *DefaultManager) Update(execution *models.WebhookExecution, props ...str
 func (d *DefaultManager) Delete(id int64) error {
 	return dao.DeleteWebhookExecution(id)
 }
+
+// ListLastTriggerInfos ...
+func (d *DefaultManager) ListLastTriggerInfos() ([]*models.LastTriggerInfo, error) {
+	return dao.GetLastTriggerInfosGroupByHookType()
+}

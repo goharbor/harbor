@@ -23,3 +23,11 @@ type HookTarget struct {
 	Attachment string `json:"attachment"`
 	Secret     string `json:"secret,omitempty"`
 }
+
+// WebhookPolicyForUI defines the structure of webhook policy info display in UI
+type WebhookPolicyForUI struct {
+	HookType        string    `json:"hook_type"`
+	Enabled         bool      `json:"enabled"`
+	CreationTime    time.Time `json:"creation_time"`
+	LastTriggerTime time.Time `json:"last_trigger_time,omitempty"`
+}

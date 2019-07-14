@@ -5,6 +5,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // UpdateWebhookExecution update webhook execution
@@ -58,6 +59,21 @@ func GetWebhookExecutions(query ...*models.WebhookExecutionQuery) ([]*models.Web
 
 	_, err := qs.All(&jobs)
 	return jobs, err
+}
+
+// GetLastTriggerInfosGroupByHookType get webhook executions info including hook type and last trigger time
+func GetLastTriggerInfosGroupByHookType() ([]*models.LastTriggerInfo, error) {
+	o := GetOrmer()
+	sql := `select hook_type, max(creation_time) from webhook_execution group by hook_type`
+
+	ltInfo := []*models.LastTriggerInfo{}
+	_, err := o.Raw(sql).QueryRows(&ltInfo)
+	if err != nil {
+		log.Errorf("query last trigger info group by hook type failed: %v", err)
+		return nil, err
+	}
+
+	return ltInfo, nil
 }
 
 // DeleteWebhookExecution ...

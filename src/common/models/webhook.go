@@ -33,6 +33,7 @@ type WebhookExecution struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	PolicyID     int64     `orm:"column(policy_id)" json:"policy_id"`
 	HookType     string    `orm:"column(hook_type)" json:"hook_type"`
+	NotifyType   string    `orm:"column(notify_type)" json:"notify_type"`
 	Status       string    `orm:"column(status)" json:"status"`
 	JobDetail    string    `orm:"column(job_detail)" json:"job_detail"`
 	UUID         string    `orm:"column(job_uuid)" json:"-"`
@@ -53,4 +54,10 @@ type WebhookExecutionQuery struct {
 	StartTime *time.Time
 	EndTime   *time.Time
 	Pagination
+}
+
+// LastTriggerInfo records last trigger time of hook type
+type LastTriggerInfo struct {
+	HookType     string    `orm:"column(hook_type)"`
+	CreationTime time.Time `orm:"column(creation_time)"`
 }

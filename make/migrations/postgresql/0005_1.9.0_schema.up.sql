@@ -19,6 +19,7 @@ create table webhook_policy (
  policy_id int NOT NULL,
  status varchar(32),
  hook_type varchar(256),
+ notify_type varchar(256),
  job_detail text,
  job_uuid varchar(64),
  creation_time timestamp default CURRENT_TIMESTAMP,

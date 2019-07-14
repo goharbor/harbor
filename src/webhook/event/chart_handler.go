@@ -82,6 +82,7 @@ func (cwh *ChartWebhookHandler) Handle(value interface{}) error {
 				PolicyID: ply.ID,
 				Target:   &target,
 				Payload:  payload,
+				HookType: crtEvent.HookType,
 			}); err != nil {
 				return fmt.Errorf("failed to publish chart webhook topic by %s: %v", target.Type, err)
 			}

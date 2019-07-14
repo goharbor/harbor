@@ -21,4 +21,7 @@ type Manager interface {
 
 	// Delete delete webhook execution
 	Delete(int64) error
+
+	// ListLastTriggerInfos list executions info including hook type and last trigger time
+	ListLastTriggerInfos() ([]*models.LastTriggerInfo, error)
 }

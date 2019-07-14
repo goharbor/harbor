@@ -19,6 +19,9 @@ type Controller interface {
 
 	// DeleteWebhookExecution delete webhook execution
 	DeleteWebhookExecution(int64) error
+
+	// ListLastTriggerInfos list executions info including hook type and last trigger time
+	ListLastTriggerInfos() ([]*models.LastTriggerInfo, error)
 }
 
 type controller struct {
@@ -51,4 +54,9 @@ func (c *controller) UpdateWebhookExecution(execution *models.WebhookExecution, 
 // DeleteWebhookExecution ...
 func (c *controller) DeleteWebhookExecution(id int64) error {
 	return c.execMgr.Delete(id)
+}
+
+// ListLastTriggerInfos ...
+func (c *controller) ListLastTriggerInfos() ([]*models.LastTriggerInfo, error) {
+	return c.execMgr.ListLastTriggerInfos()
 }

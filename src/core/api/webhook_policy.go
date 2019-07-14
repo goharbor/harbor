@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	apiModels "github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/webhook"
 	"github.com/goharbor/harbor/src/webhook/model"
@@ -120,6 +120,16 @@ func (w *WebhookPolicyAPI) Post() {
 		return
 	}
 
+	if policy.ID != 0 {
+		w.SendBadRequestError(fmt.Errorf("cannot accept policy creating request with ID: %d", policy.ID))
+		return
+	}
+
+	// for the sake of UI design, user can create only one webhook policy with each hook type
+	if w.checkHookTypeExist(policy) {
+		return
+	}
+
 	policy.Creator = w.SecurityCtx.GetUsername()
 	ply, err := convertFromAPIModel(policy)
 	if err != nil {
@@ -160,6 +170,11 @@ func (w *WebhookPolicyAPI) Put() {
 	}
 
 	if !w.validateHookTypes(policy) {
+		return
+	}
+
+	// for the sake of UI design, user can create only one webhook policy with each hook type
+	if w.checkHookTypeExist(policy) {
 		return
 	}
 
@@ -204,8 +219,7 @@ func (w *WebhookPolicyAPI) List() {
 
 	_, res, err := webhook.PolicyManager.List(projectID)
 	if err != nil {
-		log.Errorf("failed to get policies: %v, projectID: %d", err, projectID)
-		w.SendInternalServerError(errors.New(""))
+		w.SendInternalServerError(fmt.Errorf("failed to list webhook policies by projectID %d: %v", projectID, err))
 		return
 	}
 
@@ -221,6 +235,29 @@ func (w *WebhookPolicyAPI) List() {
 		}
 	}
 
+	w.WriteJSONData(policies)
+}
+
+// ListGroupByHookType lists policies info grouped by hook type for UI,
+// displays hook type, status(enabled/disabled), create time, last trigger time
+func (w *WebhookPolicyAPI) ListGroupByHookType() {
+	//
+	projectID := w.project.ProjectID
+	if !w.validateRBAC(rbac.ActionList, projectID) {
+		return
+	}
+
+	_, res, err := webhook.PolicyManager.List(projectID)
+	if err != nil {
+		w.SendInternalServerError(fmt.Errorf("failed to list webhook policies by projectID %d: %v", projectID, err))
+		return
+	}
+
+	policies, err := constructPolicyForUI(res)
+	if err != nil {
+		w.SendInternalServerError(fmt.Errorf("failed to list the webhook policy trigger infomation: %v", err))
+		return
+	}
 	w.WriteJSONData(policies)
 }
 
@@ -257,8 +294,7 @@ func (w *WebhookPolicyAPI) Delete() {
 	}
 
 	if err = webhook.PolicyManager.Delete(id); err != nil {
-		log.Error("failed to delete webhook policy %d: %v", id, err)
-		w.SendInternalServerError(errors.New(""))
+		w.SendInternalServerError(fmt.Errorf("failed to delete webhook policy %d: %v", id, err))
 		return
 	}
 }
@@ -285,14 +321,14 @@ func (w *WebhookPolicyAPI) Test() {
 
 	ply, err := convertFromAPIModel(policy)
 	if err := webhook.PolicyManager.Test(ply); err != nil {
-		log.Errorf("webhook policy %s test failed: %v", policy.Name, err)
+		w.SendBadRequestError(fmt.Errorf("webhook policy %s test failed: %v", policy.Name, err))
+		return
 	}
 }
 
 func (w *WebhookPolicyAPI) validateRBAC(action rbac.Action, projectID int64) bool {
 	project, err := w.ProjectMgr.Get(projectID)
 	if err != nil {
-		//w.SendInternalServerError(fmt.Errorf("failed to get project %d", projectID))
 		w.ParseAndHandleError(fmt.Sprintf("failed to get project %d", projectID), err)
 		return false
 	}
@@ -356,6 +392,43 @@ func (w *WebhookPolicyAPI) validateHookTypes(policy *apiModels.WebhookPolicy) bo
 	return true
 }
 
+// distinguish POST（ID==0) or PUT(ID!=0) by ID in policy
+func (w *WebhookPolicyAPI) checkHookTypeExist(policy *apiModels.WebhookPolicy) bool {
+	_, policies, err := webhook.PolicyManager.List(policy.ProjectID)
+	if err != nil {
+		w.SendInternalServerError(fmt.Errorf("failed to list webhook policies by projectID %d: %v", policy.ProjectID, err))
+		// if err occurred, return true so that API handler return error directly
+		return true
+	}
+
+	for _, hookType := range policy.HookTypes {
+		for _, ply := range policies {
+			for _, t := range ply.HookTypes {
+				if hookType == t && ply.ID != policy.ID {
+					// PUT operation allows hook type existed in database with same policy ID
+					w.SendBadRequestError(fmt.Errorf("policy with hook type %s already exist", t))
+					return true
+				}
+			}
+		}
+	}
+	return false
+}
+
+func getLastTriggerTimeByHookType(hookType string) (time.Time, error) {
+	infos, err := webhook.ExecutionCtl.ListLastTriggerInfos()
+	if err != nil {
+		return time.Time{}, err
+	}
+
+	for _, info := range infos {
+		if hookType == info.HookType {
+			return info.CreationTime, nil
+		}
+	}
+	return time.Time{}, nil
+}
+
 func convertToAPIModel(policy *model.WebhookPolicy) (*apiModels.WebhookPolicy, error) {
 	if policy.ID == 0 {
 		return nil, nil
@@ -411,4 +484,29 @@ func convertFromAPIModel(policy *apiModels.WebhookPolicy) (*model.WebhookPolicy,
 	ply.Targets = targets
 
 	return ply, nil
+}
+
+func constructPolicyForUI(policies []*model.WebhookPolicy) ([]*apiModels.WebhookPolicyForUI, error) {
+	res := []*apiModels.WebhookPolicyForUI{}
+	if policies != nil {
+		for _, policy := range policies {
+			for _, t := range policy.HookTypes {
+				ply := &apiModels.WebhookPolicyForUI{
+					HookType:     t,
+					Enabled:      policy.Enabled,
+					CreationTime: policy.CreationTime,
+				}
+
+				ltTime, err := getLastTriggerTimeByHookType(t)
+				if err != nil {
+					return nil, err
+				}
+				if !ltTime.IsZero() {
+					ply.LastTriggerTime = ltTime
+				}
+				res = append(res, ply)
+			}
+		}
+	}
+	return res, nil
 }

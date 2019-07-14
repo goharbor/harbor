@@ -37,6 +37,7 @@ func NewHookManager() *DefaultManager {
 
 // ScheduleItem is an item that can be scheduled
 type ScheduleItem struct {
+	HookType string
 	PolicyID int64
 	Target   *model.HookTarget
 	Payload  interface{}
@@ -53,7 +54,8 @@ func (hm *DefaultManager) StartHook(item *ScheduleItem, data *models.JobData) er
 	t := time.Now()
 	id, err := hm.execMgr.Create(&cModels.WebhookExecution{
 		PolicyID:     item.PolicyID,
-		HookType:     item.Target.Type,
+		HookType:     item.HookType,
+		NotifyType:   item.Target.Type,
 		Status:       cModels.JobPending,
 		CreationTime: t,
 		UpdateTime:   t,
