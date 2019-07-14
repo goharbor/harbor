@@ -33,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -519,6 +520,16 @@ func (ra *RepositoryAPI) Retag() {
 	if !ra.SecurityCtx.Can(rbac.ActionPush, destResource) {
 		log.Errorf("user has no write permission to project '%s'", project)
 		ra.SendForbiddenError(fmt.Errorf("%s has no write permission to project %s", ra.SecurityCtx.GetUsername(), project))
+		return
+	}
+
+	success, err := askQuota(srcImage, project)
+	if err != nil {
+		ra.SendInternalServerError(fmt.Errorf("require quota on project %s error: %v", project, err))
+		return
+	}
+	if !success {
+		ra.SendPreconditionFailedError(fmt.Errorf("cannot require quota on project: %s for image: %s/%s", project, srcImage.Repo, srcImage.Tag))
 		return
 	}
 
@@ -1117,4 +1128,57 @@ func getScanOverview(digest string, tag string) *models.ImgScanOverview {
 		data.DetailsKey = ""
 	}
 	return data
+}
+
+// check the quota of target project with current tag size
+func askQuota(src *models.Image, targetProject string) (bool, error) {
+
+	sProject, err := dao.GetProjectByName(src.Project)
+	if err != nil {
+		return false, err
+	}
+	if sProject == nil {
+		return false, fmt.Errorf("error occurred when to get source project id: %s", src.Project)
+	}
+	tProject, err := dao.GetProjectByName(targetProject)
+	if err != nil {
+		return false, err
+	}
+	if tProject == nil {
+		return false, fmt.Errorf("error occurred when to get target project id: %s", tProject)
+	}
+
+	afs, err := dao.ListArtifacts(&models.ArtifactQuery{
+		PID:  sProject.ProjectID,
+		Repo: src.Repo,
+		Tag:  src.Tag,
+	})
+	if len(afs) == 0 {
+		return false, fmt.Errorf("error occurred when to get digest of source project: %s %s", src.Repo, src.Tag)
+	}
+
+	tagSize, err := dao.CountSizeOfArtifact(afs[0].Digest)
+	if err != nil {
+		log.Errorf("Error occurred when to count size of src image: %s, %v", afs[0].Digest, err)
+		return false, err
+	}
+
+	// try to acquire resource on target project
+	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(tProject.ProjectID, 10))
+	if err != nil {
+		log.Errorf("Error occurred when to new quota manager %v", err)
+		return false, err
+	}
+
+	quotaRes := quota.ResourceList{
+		quota.ResourceStorage: tagSize,
+		quota.ResourceCount:   1,
+	}
+
+	if err := quotaMgr.AddResources(quotaRes); err != nil {
+		log.Errorf("cannot get quota for the tag: %s/%s on target project: %s with error :%v", src.Repo, src.Tag, tProject.Name, err)
+		return false, err
+	}
+
+	return true, nil
 }

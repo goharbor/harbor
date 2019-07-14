@@ -21,3 +21,11 @@ type Artifact struct {
 func (af *Artifact) TableName() string {
 	return "artifact"
 }
+
+// ArtifactQuery ...
+type ArtifactQuery struct {
+	PID  int64
+	Repo string
+	Tag  string
+	Pagination
+}
