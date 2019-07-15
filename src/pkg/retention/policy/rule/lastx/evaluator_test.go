@@ -8,9 +8,14 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestEvaluator_New(t *testing.T) {
+type EvaluatorTestSuite struct {
+	suite.Suite
+}
+
+func (e *EvaluatorTestSuite) TestNew() {
 	tests := []struct {
 		Name      string
 		args      rule.Parameters
@@ -23,7 +28,7 @@ func TestEvaluator_New(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.Name, func(t *testing.T) {
+		e.T().Run(tt.Name, func(t *testing.T) {
 			e := New(tt.args).(*evaluator)
 
 			require.Equal(t, tt.expectedX, e.x)
@@ -31,7 +36,7 @@ func TestEvaluator_New(t *testing.T) {
 	}
 }
 
-func TestEvaluator_Process(t *testing.T) {
+func (e *EvaluatorTestSuite) TestProcess() {
 	now := time.Now().UTC()
 	data := []*res.Candidate{
 		{PushedTime: now.Add(time.Duration(1*-24) * time.Hour).Unix()},
@@ -57,7 +62,7 @@ func TestEvaluator_Process(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(fmt.Sprintf("%d days - should keep %d", tt.days, tt.expected), func(t *testing.T) {
+		e.T().Run(fmt.Sprintf("%d days - should keep %d", tt.days, tt.expected), func(t *testing.T) {
 			e := New(rule.Parameters{ParameterX: tt.days})
 
 			result, err := e.Process(data)
@@ -66,4 +71,8 @@ func TestEvaluator_Process(t *testing.T) {
 			require.Len(t, result, tt.expected)
 		})
 	}
+}
+
+func TestEvaluatorSuite(t *testing.T) {
+	suite.Run(t, &EvaluatorTestSuite{})
 }
