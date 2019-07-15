@@ -523,7 +523,42 @@ func (ra *RepositoryAPI) Retag() {
 		return
 	}
 
-	success, err := askQuota(srcImage, project)
+	// Require quota on target project for retag
+	sProject, err := dao.GetProjectByName(srcImage.Project)
+	if err != nil {
+		ra.SendInternalServerError(fmt.Errorf("error occurred when to get source project %s, %v", srcImage.Project, err))
+		return
+	}
+	if sProject == nil {
+		ra.SendNotFoundError(fmt.Errorf("source project not found, %s", srcImage.Project))
+		return
+	}
+	tProject, err := dao.GetProjectByName(project)
+	if err != nil {
+		ra.SendInternalServerError(fmt.Errorf("error occurred when to get target project %s, %v", project, err))
+		return
+	}
+	if tProject == nil {
+		ra.SendNotFoundError(fmt.Errorf("target project not found, %s", project))
+		return
+	}
+	afs, err := dao.ListArtifacts(&models.ArtifactQuery{
+		PID:  sProject.ProjectID,
+		Repo: srcImage.Repo,
+		Tag:  srcImage.Tag,
+	})
+	if len(afs) == 0 {
+		ra.SendInternalServerError(fmt.Errorf("error occurred when to get digest of source project: %s %s", srcImage.Repo, srcImage.Tag))
+		return
+	}
+
+	tagSize, err := countSizeOfRetag(tProject.ProjectID, afs[0].Digest)
+	if err != nil {
+		ra.SendInternalServerError(fmt.Errorf("error occurred when to count size of src image: %s, %v", afs[0].Digest, err))
+		return
+	}
+
+	success, err := requireQuota(tProject.ProjectID, tagSize)
 	if err != nil {
 		ra.SendInternalServerError(fmt.Errorf("require quota on project %s error: %v", project, err))
 		return
@@ -540,6 +575,20 @@ func (ra *RepositoryAPI) Retag() {
 		Tag:     request.Tag,
 	}); err != nil {
 		ra.SendInternalServerError(fmt.Errorf("%v", err))
+		return
+	}
+
+	af := &models.Artifact{
+		PID:    tProject.ProjectID,
+		Repo:   repo,
+		Tag:    request.Tag,
+		Digest: afs[0].Digest,
+		Kind:   "Docker-Image",
+	}
+	_, err = dao.AddArtifact(af)
+	if err != nil {
+		ra.SendInternalServerError(fmt.Errorf("error occurred when to add artifact for target %s: %v", project, err))
+		return
 	}
 }
 
@@ -1130,55 +1179,51 @@ func getScanOverview(digest string, tag string) *models.ImgScanOverview {
 	return data
 }
 
-// check the quota of target project with current tag size
-func askQuota(src *models.Image, targetProject string) (bool, error) {
-
-	sProject, err := dao.GetProjectByName(src.Project)
-	if err != nil {
-		return false, err
-	}
-	if sProject == nil {
-		return false, fmt.Errorf("error occurred when to get source project id: %s", src.Project)
-	}
-	tProject, err := dao.GetProjectByName(targetProject)
-	if err != nil {
-		return false, err
-	}
-	if tProject == nil {
-		return false, fmt.Errorf("error occurred when to get target project id: %s", tProject)
-	}
-
-	afs, err := dao.ListArtifacts(&models.ArtifactQuery{
-		PID:  sProject.ProjectID,
-		Repo: src.Repo,
-		Tag:  src.Tag,
-	})
-	if len(afs) == 0 {
-		return false, fmt.Errorf("error occurred when to get digest of source project: %s %s", src.Repo, src.Tag)
-	}
-
-	tagSize, err := dao.CountSizeOfArtifact(afs[0].Digest)
-	if err != nil {
-		log.Errorf("Error occurred when to count size of src image: %s, %v", afs[0].Digest, err)
-		return false, err
-	}
-
+// require the quota of target project with current tag size
+func requireQuota(targetPID, size int64) (bool, error) {
 	// try to acquire resource on target project
-	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(tProject.ProjectID, 10))
+	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(targetPID, 10))
 	if err != nil {
 		log.Errorf("Error occurred when to new quota manager %v", err)
 		return false, err
 	}
 
 	quotaRes := quota.ResourceList{
-		quota.ResourceStorage: tagSize,
+		quota.ResourceStorage: size,
 		quota.ResourceCount:   1,
 	}
 
 	if err := quotaMgr.AddResources(quotaRes); err != nil {
-		log.Errorf("cannot get quota for the tag: %s/%s on target project: %s with error :%v", src.Repo, src.Tag, tProject.Name, err)
+		log.Errorf("cannot get quota on target project: %d with error :%v", targetPID, err)
 		return false, err
 	}
 
 	return true, nil
+}
+
+// to count the blobs are not in the target project
+func countSizeOfRetag(targetPID int64, digest string) (int64, error) {
+	size := int64(0)
+	blobsNotInTarget, err := dao.GetBlobsNotInProject(digest, targetPID)
+	if err != nil {
+		return 0, err
+	}
+	for _, blob := range blobsNotInTarget {
+		blobSize, err := getBlobSize(blob)
+		if err != nil {
+			return 0, err
+		}
+		size += blobSize
+	}
+
+	return size, nil
+
+}
+
+func getBlobSize(digest string) (int64, error) {
+	blob, err := dao.GetBlob(digest)
+	if err != nil {
+		return 0, err
+	}
+	return blob.Size, nil
 }
