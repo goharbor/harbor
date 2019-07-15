@@ -1,15 +1,22 @@
 package latestk
 
 import (
+	"math/rand"
 	"strconv"
 	"testing"
+
+	"github.com/stretchr/testify/suite"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/stretchr/testify/require"
 )
 
-func TestEvaluator_New(t *testing.T) {
+type EvaluatorTestSuite struct {
+	suite.Suite
+}
+
+func (e *EvaluatorTestSuite) TestNew() {
 	tests := []struct {
 		Name      string
 		args      rule.Parameters
@@ -22,7 +29,7 @@ func TestEvaluator_New(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(tt.Name, func(t *testing.T) {
+		e.T().Run(tt.Name, func(t *testing.T) {
 			e := New(tt.args).(*evaluator)
 
 			require.Equal(t, tt.expectedK, e.k)
@@ -30,8 +37,11 @@ func TestEvaluator_New(t *testing.T) {
 	}
 }
 
-func TestEvaluator_Process(t *testing.T) {
-	data := []*res.Candidate{{}, {}, {}, {}, {}}
+func (e *EvaluatorTestSuite) TestProcess() {
+	data := []*res.Candidate{{PushedTime: 0}, {PushedTime: 1}, {PushedTime: 2}, {PushedTime: 3}, {PushedTime: 4}}
+	rand.Shuffle(len(data), func(i, j int) {
+		data[i], data[j] = data[j], data[i]
+	})
 
 	tests := []struct {
 		k        int
@@ -45,7 +55,7 @@ func TestEvaluator_Process(t *testing.T) {
 	}
 
 	for _, tt := range tests {
-		t.Run(strconv.Itoa(tt.k), func(t *testing.T) {
+		e.T().Run(strconv.Itoa(tt.k), func(t *testing.T) {
 			e := New(map[string]rule.Parameter{ParameterK: tt.k})
 
 			result, err := e.Process(data)
@@ -54,4 +64,8 @@ func TestEvaluator_Process(t *testing.T) {
 			require.Len(t, result, tt.expected)
 		})
 	}
+}
+
+func TestEvaluator(t *testing.T) {
+	suite.Run(t, &EvaluatorTestSuite{})
 }
