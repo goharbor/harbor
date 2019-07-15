@@ -35,7 +35,7 @@ set -e
 # Copy harbor.yml to input dir
 if [[ ! "$1" =~ ^\-\- ]] && [ -f "$1" ]
 then
-    cp $1 $input_dir/harbor.yml 
+    cp $1 $input_dir/harbor.yml
 else
     cp ${harbor_prepare_path}/harbor.yml $input_dir/harbor.yml
 fi
@@ -45,10 +45,10 @@ secret_dir=${data_path}/secret
 config_dir=$harbor_prepare_path/common/config
 
 # Run prepare script
-docker run --rm -v $input_dir:/input \
-                    -v $harbor_prepare_path:/compose_location \
-                    -v $config_dir:/config \
-                    -v $secret_dir:/secret \
+docker run --rm -v $input_dir:/input:z \
+                    -v $harbor_prepare_path:/compose_location:z \
+                    -v $config_dir:/config:z \
+                    -v $secret_dir:/secret:z \
                     goharbor/prepare:dev $@
 
 echo "Clean up the input dir"
