@@ -16,21 +16,39 @@ package retention
 
 import "time"
 
+// const definitions
+const (
+	ExecutionStatusInProgress string = "InProgress"
+	ExecutionStatusSucceed    string = "Succeed"
+	ExecutionStatusFailed     string = "Failed"
+	ExecutionStatusStopped    string = "Stopped"
+
+	TaskStatusPending    string = "Pending"
+	TaskStatusInProgress string = "InProgress"
+	TaskStatusSucceed    string = "Succeed"
+	TaskStatusFailed     string = "Failed"
+	TaskStatusStopped    string = "Stopped"
+
+	CandidateKindImage string = "image"
+	CandidateKindChart string = "chart"
+)
+
 // Execution of retention
 type Execution struct {
-	ID        int64     `json:"id,omitempty"`
+	ID        int64     `json:"id"`
 	PolicyID  int64     `json:"policy_id"`
 	StartTime time.Time `json:"start_time"`
 	EndTime   time.Time `json:"end_time,omitempty"`
 	Status    string    `json:"status"`
 }
 
-// TaskSubmitResult is the result of task submitting
-// If the task is submitted successfully, JobID will be set
-// and the Error is nil
-type TaskSubmitResult struct {
-	JobID string
-	Error error
+// Task of retention
+type Task struct {
+	ID          int64     `json:"id"`
+	ExecutionID int64     `json:"execution_id"`
+	Status      string    `json:"status"`
+	StartTime   time.Time `json:"start_time"`
+	EndTime     time.Time `json:"end_time"`
 }
 
 // History of retention

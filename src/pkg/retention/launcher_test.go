@@ -19,18 +19,18 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/stretchr/testify/suite"
-
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/pkg/retention/q"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	_ "github.com/goharbor/harbor/src/pkg/retention/res/selectors/regexp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
 type fakeProjectManager struct {
@@ -85,9 +85,54 @@ func (f *fakeClient) GetCandidates(repo *res.Repository) ([]*res.Candidate, erro
 func (f *fakeClient) Delete(candidate *res.Candidate) error {
 	return nil
 }
-func (f *fakeClient) SubmitTask(repository *res.Repository, meta *policy.LiteMeta) (string, error) {
+func (f *fakeClient) SubmitTask(taskID int64, repository *res.Repository, meta *policy.LiteMeta) (string, error) {
 	f.id++
 	return strconv.Itoa(f.id), nil
+}
+
+type fakeRetentionManager struct{}
+
+func (f *fakeRetentionManager) CreatePolicy(p *policy.Metadata) (int64, error) {
+	return 0, nil
+}
+func (f *fakeRetentionManager) UpdatePolicy(p *policy.Metadata) error {
+	return nil
+}
+func (f *fakeRetentionManager) DeletePolicy(ID int64) error {
+	return nil
+}
+func (f *fakeRetentionManager) GetPolicy(ID int64) (*policy.Metadata, error) {
+	return nil, nil
+}
+func (f *fakeRetentionManager) CreateExecution(execution *Execution) (int64, error) {
+	return 0, nil
+}
+func (f *fakeRetentionManager) UpdateExecution(execution *Execution) error {
+	return nil
+}
+func (f *fakeRetentionManager) GetExecution(eid int64) (*Execution, error) {
+	return nil, nil
+}
+func (f *fakeRetentionManager) ListTasks(query *q.Query) ([]*Task, error) {
+	return nil, nil
+}
+func (f *fakeRetentionManager) CreateTask(task *Task) (int64, error) {
+	return 0, nil
+}
+func (f *fakeRetentionManager) UpdateTask(task *Task) error {
+	return nil
+}
+func (f *fakeRetentionManager) GetTaskLog(taskID int64) ([]byte, error) {
+	return nil, nil
+}
+func (f *fakeRetentionManager) ListExecutions(query *q.Query) ([]*Execution, error) {
+	return nil, nil
+}
+func (f *fakeRetentionManager) AppendHistory(history *History) error {
+	return nil
+}
+func (f *fakeRetentionManager) ListHistories(executionID int64, query *q.Query) ([]*History, error) {
+	return nil, nil
 }
 
 type launchTestSuite struct {
@@ -116,6 +161,7 @@ func (l *launchTestSuite) SetupTest() {
 		},
 	}
 	client = &fakeClient{}
+	mgr = &fakeRetentionManager{}
 }
 
 func (l *launchTestSuite) TestGetProjects() {
@@ -142,14 +188,14 @@ func (l *launchTestSuite) TestLaunch() {
 	launcher := NewLauncher()
 	var ply *policy.Metadata
 	// nil policy
-	result, err := launcher.Launch(ply)
+	n, err := launcher.Launch(ply, 1)
 	require.NotNil(l.T(), err)
 
 	// nil rules
 	ply = &policy.Metadata{}
-	result, err = launcher.Launch(ply)
+	n, err = launcher.Launch(ply, 1)
 	require.Nil(l.T(), err)
-	assert.Equal(l.T(), 0, len(result))
+	assert.Equal(l.T(), int64(0), n)
 
 	// nil scope
 	ply = &policy.Metadata{
@@ -157,7 +203,7 @@ func (l *launchTestSuite) TestLaunch() {
 			{},
 		},
 	}
-	_, err = launcher.Launch(ply)
+	_, err = launcher.Launch(ply, 1)
 	require.NotNil(l.T(), err)
 
 	// system scope
@@ -186,14 +232,9 @@ func (l *launchTestSuite) TestLaunch() {
 			},
 		},
 	}
-
-	result, err = launcher.Launch(ply)
+	n, err = launcher.Launch(ply, 1)
 	require.Nil(l.T(), err)
-	assert.Equal(l.T(), 2, len(result))
-	assert.Equal(l.T(), "1", result[0].JobID)
-	assert.Nil(l.T(), result[0].Error)
-	assert.Equal(l.T(), "2", result[1].JobID)
-	assert.Nil(l.T(), result[1].Error)
+	assert.Equal(l.T(), int64(2), n)
 }
 
 func TestLaunchTestSuite(t *testing.T) {
