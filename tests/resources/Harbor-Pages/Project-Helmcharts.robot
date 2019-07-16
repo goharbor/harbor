@@ -31,6 +31,7 @@ Upload Chart files
 Go Into Chart Version
     [Arguments]  ${chart_name}
     Retry Element Click  xpath=//hbr-helm-chart//a[contains(., '${chart_name}')]
+    Sleep  3
     Capture Page Screenshot  viewchartversion.png
 
 Go Into Chart Detail
