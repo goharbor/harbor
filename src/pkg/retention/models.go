@@ -18,7 +18,7 @@ import "time"
 
 // Execution of retention
 type Execution struct {
-	ID        int64       `json:"id,omitempty"`
+	ID        int64     `json:"id,omitempty"`
 	PolicyID  int64     `json:"policy_id"`
 	StartTime time.Time `json:"start_time"`
 	EndTime   time.Time `json:"end_time,omitempty"`
@@ -35,7 +35,7 @@ type TaskSubmitResult struct {
 
 // History of retention
 type History struct {
-	ExecutionID string `json:"execution_id"`
+	ExecutionID int64 `json:"execution_id"`
 	Rule        struct {
 		ID          int    `json:"id"`
 		DisplayText string `json:"display_text"`

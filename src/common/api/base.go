@@ -131,11 +131,11 @@ func (b *BaseAPI) GetIDFromURL() (int64, error) {
 	return id, nil
 }
 
-// GetIDFromURL checks the ID in request URL
+// GetSpecialIDFromURL checks the ID with special name in request URL
 func (b *BaseAPI) GetSpecialIDFromURL(name string) (int64, error) {
-	idStr := b.Ctx.Input.Param(":"+name)
+	idStr := b.Ctx.Input.Param(":" + name)
 	if len(idStr) == 0 {
-		return 0, errors.New(fmt.Sprintf("invalid %s in URL", name))
+		return 0, fmt.Errorf("invalid %s in URL", name)
 	}
 
 	id, err := strconv.ParseInt(idStr, 10, 64)

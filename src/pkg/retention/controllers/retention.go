@@ -8,17 +8,19 @@ import (
 	"time"
 )
 
+// RetentionAPI ...
 type RetentionAPI struct {
 	api.BaseController
 	manager retention.Manager
 }
 
 // Prepare validates the user
-func (t *RetentionAPI) Prepare() {
-	t.BaseController.Prepare()
-	t.manager = retention.NewManager()
+func (r *RetentionAPI) Prepare() {
+	r.BaseController.Prepare()
+	r.manager = retention.NewManager()
 }
 
+// GetRetention Get Retention
 func (r *RetentionAPI) GetRetention() {
 	id, err := r.GetIDFromURL()
 	if err != nil {
@@ -34,6 +36,7 @@ func (r *RetentionAPI) GetRetention() {
 	r.ServeJSON()
 }
 
+// CreateRetention Create Retention
 func (r *RetentionAPI) CreateRetention() {
 	p := &policy.Metadata{}
 	isValid, err := r.DecodeJSONReqAndValidate(p)
@@ -45,6 +48,7 @@ func (r *RetentionAPI) CreateRetention() {
 	r.manager.CreatePolicy(p)
 }
 
+// UpdateRetention Update Retention
 func (r *RetentionAPI) UpdateRetention() {
 	id, err := r.GetIDFromURL()
 	if err != nil {
@@ -61,6 +65,7 @@ func (r *RetentionAPI) UpdateRetention() {
 	r.manager.UpdatePolicy(p)
 }
 
+// DeleteRetention Delete Retention
 func (r *RetentionAPI) DeleteRetention() {
 	id, err := r.GetIDFromURL()
 	if err != nil {
@@ -70,6 +75,7 @@ func (r *RetentionAPI) DeleteRetention() {
 	r.manager.DeletePolicy(id)
 }
 
+// TriggerRetentionExec Trigger Retention Execution
 func (r *RetentionAPI) TriggerRetentionExec() {
 	id, err := r.GetIDFromURL()
 	if err != nil {
@@ -84,6 +90,7 @@ func (r *RetentionAPI) TriggerRetentionExec() {
 	r.manager.CreateExecution(exec)
 }
 
+// OperateRetentionExec Operate Retention Execution
 func (r *RetentionAPI) OperateRetentionExec() {
 	eid, err := r.GetSpecialIDFromURL("eid")
 	if err != nil {
@@ -100,6 +107,7 @@ func (r *RetentionAPI) OperateRetentionExec() {
 	r.manager.UpdateExecution(nil)
 }
 
+// GetRetentionExec Get Retention Execution
 func (r *RetentionAPI) GetRetentionExec() {
 	eid, err := r.GetSpecialIDFromURL("eid")
 	if err != nil {
@@ -115,6 +123,7 @@ func (r *RetentionAPI) GetRetentionExec() {
 	r.ServeJSON()
 }
 
+// ListRetentionExec List Retention Execution
 func (r *RetentionAPI) ListRetentionExec() {
 	page, size, err := r.GetPaginationParams()
 	if err != nil {
@@ -134,6 +143,7 @@ func (r *RetentionAPI) ListRetentionExec() {
 	r.ServeJSON()
 }
 
+// ListRetentionExecHistory List Retention Execution Histories
 func (r *RetentionAPI) ListRetentionExecHistory() {
 	eid, err := r.GetSpecialIDFromURL("eid")
 	if err != nil {
