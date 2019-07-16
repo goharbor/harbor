@@ -516,7 +516,7 @@ paths:
         '403':
           description: User in session does not have permission to the project.
         '409':
-          description: An LDAP user group with same DN already exist.
+          description: A user group with same group name already exist or an LDAP user group with same DN already exist.
         '500':
           description: Unexpected internal errors.
   '/projects/{project_id}/members/{mid}':
@@ -2575,7 +2575,7 @@ paths:
         '403':
           description: User in session does not have permission to the user group.
         '409':
-          description: An LDAP user group with same DN already exist.
+          description: A user group with same group name already exist, or an LDAP user group with same DN already exist.
         '500':
           description: Unexpected internal errors.
   '/usergroups/{group_id}':
@@ -4584,7 +4584,7 @@ definitions:
         description: The name of the user group
       group_type:
         type: integer
-        description: 'The group type, 1 for LDAP group.'
+        description: 'The group type, 1 for LDAP group, 2 for HTTP group.'
       ldap_group_dn:
         type: string
         description: The DN of the LDAP group if group type is 1 (LDAP group).

@@ -769,7 +769,7 @@
         "HTTP_AUTH": {
             "ENDPOINT": "Server Endpoint",
             "TOKEN_REVIEW": "Review Endpoint De Token",
-            "ALWAYS_ONBOARD": "Always Onboard",
+            "SKIP_SEARCH": "Skip Search",
             "VERIFY_CERT": "Authentication Verify Cert"
         },
         "OIDC": {
