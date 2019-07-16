@@ -7,25 +7,27 @@ import (
 
 func init() {
 	orm.RegisterModel(
-		new (RetentionPolicy),
-		new (RetentionExecution),
-		new (RetentionTask),
-		new (RetentionScheduleJob),
-		)
+		new(RetentionPolicy),
+		new(RetentionExecution),
+		new(RetentionTask),
+		new(RetentionScheduleJob),
+	)
 }
 
+// RetentionPolicy Retention Policy
 type RetentionPolicy struct {
 	ID int64 `orm:"pk;auto;column(id)" json:"id"`
 	// 'system', 'project' and 'repository'
-	ScopeLevel      string
-	ScopeReference  int64
-	TriggerKind     string
+	ScopeLevel     string
+	ScopeReference int64
+	TriggerKind    string
 	// json format, include algorithm, rules, exclusions
 	Data       string
 	CreateTime time.Time
 	UpdateTime time.Time
 }
 
+// RetentionExecution Retention Execution
 type RetentionExecution struct {
 	ID         int64 `orm:"pk;auto;column(id)" json:"id"`
 	PolicyID   int64
@@ -43,17 +45,17 @@ type RetentionExecution struct {
 	EndTime    time.Time
 }
 
+// RetentionTask Retention Task
 type RetentionTask struct {
-	ID          int64
-	ExecutionID int64
-	// image, chart
-	ResourceType string
-	Resource     string
-	Status       string
-	StartTime    time.Time
-	EndTime      time.Time
+	ID              int64
+	ExecutionID     int64
+	RuleID          int
+	RuleDisplayText string
+	Artifact        string
+	Timestamp       time.Time
 }
 
+// RetentionScheduleJob Retention Schedule Job
 type RetentionScheduleJob struct {
 	ID         int64
 	Status     string

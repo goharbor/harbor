@@ -3,19 +3,24 @@ package controllers
 import (
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/pkg/retention"
+	"github.com/goharbor/harbor/src/pkg/retention/policy"
+	"github.com/goharbor/harbor/src/pkg/retention/q"
+	"time"
 )
 
+// RetentionAPI ...
 type RetentionAPI struct {
 	api.BaseController
 	manager retention.Manager
 }
 
 // Prepare validates the user
-func (t *RetentionAPI) Prepare() {
-	t.BaseController.Prepare()
-	t.manager = retention.NewManager()
+func (r *RetentionAPI) Prepare() {
+	r.BaseController.Prepare()
+	r.manager = retention.NewManager()
 }
 
+// GetRetention Get Retention
 func (r *RetentionAPI) GetRetention() {
 	id, err := r.GetIDFromURL()
 	if err != nil {
@@ -31,19 +36,36 @@ func (r *RetentionAPI) GetRetention() {
 	r.ServeJSON()
 }
 
+// CreateRetention Create Retention
 func (r *RetentionAPI) CreateRetention() {
-	r.manager.CreatePolicy(nil)
+	p := &policy.Metadata{}
+	isValid, err := r.DecodeJSONReqAndValidate(p)
+	if !isValid {
+		r.SendBadRequestError(err)
+		return
+	}
+
+	r.manager.CreatePolicy(p)
 }
 
+// UpdateRetention Update Retention
 func (r *RetentionAPI) UpdateRetention() {
-	_, err := r.GetIDFromURL()
+	id, err := r.GetIDFromURL()
 	if err != nil {
 		r.SendBadRequestError(err)
 		return
 	}
-	r.manager.UpdatePolicy(nil)
+	p := &policy.Metadata{}
+	isValid, err := r.DecodeJSONReqAndValidate(p)
+	if !isValid {
+		r.SendBadRequestError(err)
+		return
+	}
+	p.ID = id
+	r.manager.UpdatePolicy(p)
 }
 
+// DeleteRetention Delete Retention
 func (r *RetentionAPI) DeleteRetention() {
 	id, err := r.GetIDFromURL()
 	if err != nil {
@@ -53,22 +75,95 @@ func (r *RetentionAPI) DeleteRetention() {
 	r.manager.DeletePolicy(id)
 }
 
+// TriggerRetentionExec Trigger Retention Execution
 func (r *RetentionAPI) TriggerRetentionExec() {
-	//r.manager.CreateExecution(nil)
+	id, err := r.GetIDFromURL()
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	exec := &retention.Execution{
+		PolicyID:  id,
+		StartTime: time.Now(),
+		Status:    "Running",
+	}
+	r.manager.CreateExecution(exec)
 }
 
+// OperateRetentionExec Operate Retention Execution
 func (r *RetentionAPI) OperateRetentionExec() {
+	eid, err := r.GetSpecialIDFromURL("eid")
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	exec := &retention.Execution{}
+	isValid, err := r.DecodeJSONReqAndValidate(exec)
+	if !isValid {
+		r.SendBadRequestError(err)
+		return
+	}
+	exec.ID = eid
 	r.manager.UpdateExecution(nil)
 }
 
+// GetRetentionExec Get Retention Execution
 func (r *RetentionAPI) GetRetentionExec() {
-	//r.manager.GetExecution(eid)
+	eid, err := r.GetSpecialIDFromURL("eid")
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	exec, err := r.manager.GetExecution(eid)
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	r.Data["json"] = exec
+	r.ServeJSON()
 }
 
+// ListRetentionExec List Retention Execution
 func (r *RetentionAPI) ListRetentionExec() {
-	r.manager.ListExecutions(nil)
+	page, size, err := r.GetPaginationParams()
+	if err != nil {
+		r.SendInternalServerError(err)
+		return
+	}
+	query := &q.Query{
+		PageNumber: page,
+		PageSize:   size,
+	}
+	execs, err := r.manager.ListExecutions(query)
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	r.Data["json"] = execs
+	r.ServeJSON()
 }
 
+// ListRetentionExecHistory List Retention Execution Histories
 func (r *RetentionAPI) ListRetentionExecHistory() {
-	//r.manager.ListHistories(eid, nil)
+	eid, err := r.GetSpecialIDFromURL("eid")
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	page, size, err := r.GetPaginationParams()
+	if err != nil {
+		r.SendInternalServerError(err)
+		return
+	}
+	query := &q.Query{
+		PageNumber: page,
+		PageSize:   size,
+	}
+	his, err := r.manager.ListHistories(eid, query)
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	r.Data["json"] = his
+	r.ServeJSON()
 }

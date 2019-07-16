@@ -21,7 +21,6 @@ func TestMain(m *testing.M) {
 
 func TestPolicy(t *testing.T) {
 	p := &policy.Metadata{
-		ID:        1,
 		Algorithm: "OR",
 		Rules: []rule.Metadata{
 			{
@@ -43,11 +42,13 @@ func TestPolicy(t *testing.T) {
 						Pattern:    "release-[\\d\\.]+",
 					},
 				},
-				ScopeSelectors: []*rule.Selector{
-					{
-						Kind:       "regularExpression",
-						Decoration: "matches",
-						Pattern:    ".+",
+				ScopeSelectors: map[string][]*rule.Selector{
+					"repository": {
+						{
+							Kind:       "regularExpression",
+							Decoration: "matches",
+							Pattern:    ".+",
+						},
 					},
 				},
 			},
@@ -79,6 +80,7 @@ func TestPolicy(t *testing.T) {
 	p1, err = GetPolicy(id)
 	assert.Nil(t, err)
 	assert.EqualValues(t, "project", p1.ScopeLevel)
+	assert.True(t, p1.ID > 0)
 
 	p1.ScopeLevel = "test"
 	err = UpdatePolicy(p1)
