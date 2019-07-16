@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -228,17 +229,17 @@ func TestConfigureValue_GetMap(t *testing.T) {
 
 func TestHTTPAuthProxySetting(t *testing.T) {
 	m := map[string]interface{}{
-		common.HTTPAuthProxyAlwaysOnboard: "true",
-		common.HTTPAuthProxyVerifyCert:    "true",
-		common.HTTPAuthProxyEndpoint:      "https://auth.proxy/suffix",
+		common.HTTPAuthProxySkipSearch: "true",
+		common.HTTPAuthProxyVerifyCert: "true",
+		common.HTTPAuthProxyEndpoint:   "https://auth.proxy/suffix",
 	}
 	InitWithSettings(m)
 	v, e := HTTPAuthProxySetting()
 	assert.Nil(t, e)
 	assert.Equal(t, *v, models.HTTPAuthProxy{
-		Endpoint:      "https://auth.proxy/suffix",
-		AlwaysOnBoard: true,
-		VerifyCert:    true,
+		Endpoint:   "https://auth.proxy/suffix",
+		SkipSearch: true,
+		VerifyCert: true,
 	})
 }
 

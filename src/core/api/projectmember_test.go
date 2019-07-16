@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 )
@@ -94,6 +95,21 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 		t.Errorf("Error occurred when create user: %v", err)
 	}
 
+	ugList, err := group.QueryUserGroup(models.UserGroup{GroupType: 1, LdapGroupDN: "cn=harbor_users,ou=sample,ou=vmware,dc=harbor,dc=com"})
+	if err != nil {
+		t.Errorf("Failed to query the user group")
+	}
+	if len(ugList) <= 0 {
+		t.Errorf("Failed to query the user group")
+	}
+	httpUgList, err := group.QueryUserGroup(models.UserGroup{GroupType: 2, GroupName: "vsphere.local\\administrators"})
+	if err != nil {
+		t.Errorf("Failed to query the user group")
+	}
+	if len(httpUgList) <= 0 {
+		t.Errorf("Failed to query the user group")
+	}
+
 	cases := []*codeCheckingCase{
 		// 401
 		{
@@ -166,6 +182,66 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 				credential: admin,
 			},
 			code: http.StatusOK,
+		},
+		{
+			request: &testingRequest{
+				method:     http.MethodPost,
+				url:        "/api/projects/1/members",
+				credential: admin,
+				bodyJSON: &models.MemberReq{
+					Role: 1,
+					MemberGroup: models.UserGroup{
+						GroupType:   1,
+						LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
+					},
+				},
+			},
+			code: http.StatusBadRequest,
+		},
+		{
+			request: &testingRequest{
+				method:     http.MethodPost,
+				url:        "/api/projects/1/members",
+				credential: admin,
+				bodyJSON: &models.MemberReq{
+					Role: 1,
+					MemberGroup: models.UserGroup{
+						GroupType: 2,
+						ID:        httpUgList[0].ID,
+					},
+				},
+			},
+			code: http.StatusCreated,
+		},
+		{
+			request: &testingRequest{
+				method:     http.MethodPost,
+				url:        "/api/projects/1/members",
+				credential: admin,
+				bodyJSON: &models.MemberReq{
+					Role: 1,
+					MemberGroup: models.UserGroup{
+						GroupType: 1,
+						ID:        ugList[0].ID,
+					},
+				},
+			},
+			code: http.StatusCreated,
+		},
+		{
+			request: &testingRequest{
+				method:     http.MethodPost,
+				url:        "/api/projects/1/members",
+				credential: admin,
+				bodyJSON: &models.MemberReq{
+					Role: 1,
+					MemberGroup: models.UserGroup{
+						GroupType: 2,
+						GroupName: "vsphere.local/users",
+					},
+				},
+			},
+			code: http.StatusBadRequest,
 		},
 	}
 	runCodeCheckingCases(t, cases...)
