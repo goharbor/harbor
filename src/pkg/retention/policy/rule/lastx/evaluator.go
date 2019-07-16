@@ -15,6 +15,8 @@
 package lastx
 
 import (
+	"time"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -37,9 +39,15 @@ type evaluator struct {
 }
 
 // Process the candidates based on the rule definition
-func (e *evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
-	// TODO: REPLACE SAMPLE CODE WITH REAL IMPLEMENTATION
-	return artifacts, nil
+func (e *evaluator) Process(artifacts []*res.Candidate) (retain []*res.Candidate, err error) {
+	cutoff := time.Now().Add(time.Duration(e.x*-24) * time.Hour)
+	for _, a := range artifacts {
+		if time.Unix(a.PushedTime, 0).UTC().After(cutoff) {
+			retain = append(retain, a)
+		}
+	}
+
+	return
 }
 
 // Specify what action is performed to the candidates processed by this evaluator
@@ -51,7 +59,7 @@ func (e *evaluator) Action() string {
 func New(params rule.Parameters) rule.Evaluator {
 	if params != nil {
 		if param, ok := params[ParameterX]; ok {
-			if v, ok := param.(int); ok {
+			if v, ok := param.(int); ok && v >= 0 {
 				return &evaluator{
 					x: v,
 				}
