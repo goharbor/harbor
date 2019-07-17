@@ -224,7 +224,7 @@ func LDAPGroupConf() (*models.LdapGroupConf, error) {
 		LdapGroupFilter:              cfgMgr.Get(common.LDAPGroupSearchFilter).GetString(),
 		LdapGroupNameAttribute:       cfgMgr.Get(common.LDAPGroupAttributeName).GetString(),
 		LdapGroupSearchScope:         cfgMgr.Get(common.LDAPGroupSearchScope).GetInt(),
-		LdapGroupAdminDN:             cfgMgr.Get(common.LdapGroupAdminDn).GetString(),
+		LdapGroupAdminDN:             cfgMgr.Get(common.LDAPGroupAdminDn).GetString(),
 		LdapGroupMembershipAttribute: cfgMgr.Get(common.LDAPGroupMembershipAttribute).GetString(),
 	}, nil
 }
@@ -482,7 +482,7 @@ func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
 		Endpoint:            cfgMgr.Get(common.HTTPAuthProxyEndpoint).GetString(),
 		TokenReviewEndpoint: cfgMgr.Get(common.HTTPAuthProxyTokenReviewEndpoint).GetString(),
 		VerifyCert:          cfgMgr.Get(common.HTTPAuthProxyVerifyCert).GetBool(),
-		AlwaysOnBoard:       cfgMgr.Get(common.HTTPAuthProxyAlwaysOnboard).GetBool(),
+		SkipSearch:          cfgMgr.Get(common.HTTPAuthProxySkipSearch).GetBool(),
 	}, nil
 
 }

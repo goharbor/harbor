@@ -15,18 +15,20 @@
 package authproxy
 
 import (
+	"net/http/httptest"
+	"os"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	cut "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/auth/authproxy/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
-	"net/http/httptest"
-	"os"
-	"testing"
-	"time"
 )
 
 var mockSvr *httptest.Server
@@ -42,15 +44,16 @@ func TestMain(m *testing.M) {
 	mockSvr = test.NewMockServer(map[string]string{"jt": "pp", "Admin@vsphere.local": "Admin!23"})
 	defer mockSvr.Close()
 	a = &Auth{
-		Endpoint:       mockSvr.URL + "/test/login",
-		SkipCertVerify: true,
+		Endpoint:            mockSvr.URL + "/test/login",
+		TokenReviewEndpoint: mockSvr.URL + "/test/tokenreview",
+		SkipCertVerify:      true,
 		// So it won't require mocking the cfgManager
 		settingTimeStamp: time.Now(),
 	}
 	conf := map[string]interface{}{
-		common.HTTPAuthProxyEndpoint:            "dummy",
-		common.HTTPAuthProxyTokenReviewEndpoint: "dummy",
-		common.HTTPAuthProxyVerifyCert:          "false",
+		common.HTTPAuthProxyEndpoint:            a.Endpoint,
+		common.HTTPAuthProxyTokenReviewEndpoint: a.TokenReviewEndpoint,
+		common.HTTPAuthProxyVerifyCert:          !a.SkipCertVerify,
 	}
 
 	config.InitWithSettings(conf)
@@ -64,6 +67,10 @@ func TestMain(m *testing.M) {
 }
 
 func TestAuth_Authenticate(t *testing.T) {
+	groupIDs, err := group.GetGroupIDByGroupName([]string{"vsphere.local\\users", "vsphere.local\\administrators"}, common.HTTPGroupType)
+	if err != nil {
+		t.Fatal("Failed to get groupIDs")
+	}
 	t.Log("auth endpoint: ", a.Endpoint)
 	type output struct {
 		user models.User
@@ -80,6 +87,7 @@ func TestAuth_Authenticate(t *testing.T) {
 			expect: output{
 				user: models.User{
 					Username: "jt",
+					GroupIDs: groupIDs,
 				},
 				err: nil,
 			},
@@ -92,6 +100,7 @@ func TestAuth_Authenticate(t *testing.T) {
 			expect: output{
 				user: models.User{
 					Username: "Admin@vsphere.local",
+					GroupIDs: groupIDs,
 					// Email:    "Admin@placeholder.com",
 					// Password: pwd,
 					// Comment:  fmt.Sprintf(cmtTmpl, path.Join(mockSvr.URL, "/test/login")),

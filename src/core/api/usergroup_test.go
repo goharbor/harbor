@@ -35,7 +35,7 @@ func TestUserGroupAPI_GetAndDelete(t *testing.T) {
 	groupID, err := group.AddUserGroup(models.UserGroup{
 		GroupName:   "harbor_users",
 		LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
-		GroupType:   common.LdapGroupType,
+		GroupType:   common.LDAPGroupType,
 	})
 
 	if err != nil {
@@ -88,7 +88,7 @@ func TestUserGroupAPI_Post(t *testing.T) {
 	groupID, err := group.AddUserGroup(models.UserGroup{
 		GroupName:   "harbor_group",
 		LdapGroupDN: "cn=harbor_group,ou=groups,dc=example,dc=com",
-		GroupType:   common.LdapGroupType,
+		GroupType:   common.LDAPGroupType,
 	})
 	if err != nil {
 		t.Errorf("Error occurred when AddUserGroup: %v", err)
@@ -104,7 +104,32 @@ func TestUserGroupAPI_Post(t *testing.T) {
 				bodyJSON: &models.UserGroup{
 					GroupName:   "harbor_group",
 					LdapGroupDN: "cn=harbor_group,ou=groups,dc=example,dc=com",
-					GroupType:   common.LdapGroupType,
+					GroupType:   common.LDAPGroupType,
+				},
+				credential: admin,
+			},
+			code: http.StatusConflict,
+		},
+		// 201
+		{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    "/api/usergroups",
+				bodyJSON: &models.UserGroup{
+					GroupName: "vsphere.local\\guest",
+					GroupType: common.HTTPGroupType,
+				},
+				credential: admin,
+			},
+			code: http.StatusCreated,
+		},
+		{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    "/api/usergroups",
+				bodyJSON: &models.UserGroup{
+					GroupName: "vsphere.local\\guest",
+					GroupType: common.HTTPGroupType,
 				},
 				credential: admin,
 			},
@@ -118,7 +143,7 @@ func TestUserGroupAPI_Put(t *testing.T) {
 	groupID, err := group.AddUserGroup(models.UserGroup{
 		GroupName:   "harbor_group",
 		LdapGroupDN: "cn=harbor_groups,ou=groups,dc=example,dc=com",
-		GroupType:   common.LdapGroupType,
+		GroupType:   common.LDAPGroupType,
 	})
 	defer group.DeleteUserGroup(groupID)
 
@@ -148,6 +173,19 @@ func TestUserGroupAPI_Put(t *testing.T) {
 				credential: admin,
 			},
 			code: http.StatusOK,
+		},
+		// 400
+		{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    fmt.Sprintf("/api/usergroups/%d", groupID),
+				bodyJSON: &models.UserGroup{
+					GroupName: "my_group",
+					GroupType: common.HTTPGroupType,
+				},
+				credential: admin,
+			},
+			code: http.StatusBadRequest,
 		},
 	}
 	runCodeCheckingCases(t, cases...)
