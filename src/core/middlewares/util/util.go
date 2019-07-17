@@ -16,9 +16,12 @@ package util
 
 import (
 	"encoding/json"
+	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils/clair"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	common_redis "github.com/goharbor/harbor/src/common/utils/redis"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
@@ -38,6 +41,8 @@ const (
 	// TokenUsername ...
 	// TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	TokenUsername = "harbor-core"
+	// MFInfokKey the context key for image tag redis lock
+	MFInfokKey = contextKey("ManifestLock")
 )
 
 // ImageInfo ...
@@ -46,6 +51,28 @@ type ImageInfo struct {
 	Reference   string
 	ProjectName string
 	Digest      string
+}
+
+// MfInfo ...
+type MfInfo struct {
+	// basic information of a manifest
+	ProjectID  int64
+	Repository string
+	Tag        string
+	Digest     string
+
+	// Exist is to index the existing of the manifest in DB. If false, it's an new image for uploading.
+	Exist bool
+	// DigestChanged true means the manifest exists but digest is changed.
+	// Probably it's a new image with existing repo/tag name or overwrite.
+	DigestChanged bool
+
+	// used to block multiple push on same image.
+	TagLock    *common_redis.Mutex
+	Refrerence []distribution.Descriptor
+
+	// Quota is the resource applied for the manifest upload request.
+	Quota *quota.ResourceList
 }
 
 // JSONError wraps a concrete Code and Message, it's readable for docker deamon.

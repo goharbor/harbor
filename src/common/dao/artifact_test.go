@@ -40,6 +40,24 @@ func TestAddArtifact(t *testing.T) {
 
 }
 
+func TestUpdateArtifactDigest(t *testing.T) {
+	af := &models.Artifact{
+		PID:    1,
+		Repo:   "hello-world",
+		Tag:    "v2.0",
+		Digest: "4321abcd",
+		Kind:   "image",
+	}
+
+	// add
+	_, err := AddArtifact(af)
+	require.Nil(t, err)
+
+	af.Digest = "update_4321abcd"
+	require.Nil(t, UpdateArtifactDigest(af))
+	assert.Equal(t, af.Digest, "update_4321abcd")
+}
+
 func TestDeleteArtifact(t *testing.T) {
 	af := &models.Artifact{
 		PID:    1,
@@ -89,4 +107,25 @@ func TestDeleteArtifactByTag(t *testing.T) {
 	// delete
 	err = DeleteByTag(1, "hello-world", "v1.2")
 	require.Nil(t, err)
+}
+
+func TestListArtifacts(t *testing.T) {
+	af := &models.Artifact{
+		PID:    1,
+		Repo:   "hello-world",
+		Tag:    "v3.0",
+		Digest: "TestListArtifacts",
+		Kind:   "image",
+	}
+	// add
+	_, err := AddArtifact(af)
+	require.Nil(t, err)
+
+	afs, err := ListArtifacts(&models.ArtifactQuery{
+		PID:  1,
+		Repo: "hello-world",
+		Tag:  "v3.0",
+	})
+	require.Nil(t, err)
+	assert.Equal(t, 1, len(afs))
 }
