@@ -5,8 +5,14 @@ from utils.misc import prepare_config_dir
 from utils.jinja import render_jinja
 
 log_config_dir = os.path.join(config_dir, "log")
+
+# logrotate config file
 logrotate_template_path = os.path.join(templates_dir, "log", "logrotate.conf.jinja")
 log_rotate_config = os.path.join(config_dir, "log", "logrotate.conf")
+
+# syslog docker config file
+log_syslog_docker_template_path = os.path.join(templates_dir, 'log', 'rsyslog_docker.conf.jinja')
+log_syslog_docker_config = os.path.join(config_dir, 'log', 'rsyslog_docker.conf')
 
 def prepare_log_configs(config_dict):
     prepare_config_dir(log_config_dir)
@@ -18,3 +24,12 @@ def prepare_log_configs(config_dict):
         uid=DEFAULT_UID,
         gid=DEFAULT_GID,
         **config_dict)
+
+   # Render syslog docker config
+    render_jinja(
+        log_syslog_docker_template_path,
+        log_syslog_docker_config,
+        uid=DEFAULT_UID,
+        gid=DEFAULT_GID,
+        **config_dict
+   )

@@ -13,6 +13,14 @@ def validate(conf, **kwargs):
         if not conf.get("cert_key_path"):
             raise Exception("Error: The protocol is https but attribute ssl_cert_key is not set")
 
+    # log endpoint validate
+    if ('log_ep_host' in conf) and not conf['log_ep_host']:
+        raise Exception('Error: must set log endpoint host to enable external host')
+    if ('log_ep_port' in conf) and not conf['log_ep_port']:
+        raise Exception('Error: must set log endpoint port to enable external host')
+    if ('log_ep_protocol' in conf) and (conf['log_ep_protocol'] not in ['udp', 'tcp']):
+        raise Exception("Protocol in external log endpoint must be one of 'udp' or 'tcp' ")
+
     # Storage validate
     valid_storage_drivers = ["filesystem", "azure", "gcs", "s3", "swift", "oss"]
     storage_provider_name = conf.get("storage_provider_name")
@@ -183,14 +191,27 @@ def parse_yaml_config(config_file_path):
     # Log configs
     allowed_levels = ['debug', 'info', 'warning', 'error', 'fatal']
     log_configs = configs.get('log') or {}
-    config_dict['log_location'] = log_configs["location"]
-    config_dict['log_rotate_count'] = log_configs["rotate_count"]
-    config_dict['log_rotate_size'] = log_configs["rotate_size"]
+
     log_level = log_configs['level']
     if log_level not in allowed_levels:
         raise Exception('log level must be one of debug, info, warning, error, fatal')
     config_dict['log_level'] = log_level.lower()
 
+    # parse local log related configs
+    local_logs = log_configs.get('local') or {}
+    if local_logs:
+        config_dict['log_location'] = local_logs.get('location') or '/var/log/harbor'
+        config_dict['log_rotate_count'] = local_logs.get('rotate_count') or 50
+        config_dict['log_rotate_size'] = local_logs.get('rotate_size') or '200M'
+
+    # parse external log endpoint related configs
+    if log_configs.get('external_endpoint'):
+        config_dict['log_external'] = True
+        config_dict['log_ep_protocol'] = log_configs['external_endpoint']['protocol']
+        config_dict['log_ep_host'] = log_configs['external_endpoint']['host']
+        config_dict['log_ep_port'] = log_configs['external_endpoint']['port']
+    else:
+        config_dict['log_external'] = False
 
     # external DB, optional, if external_db enabled, it will cover the database config
     external_db_configs = configs.get('external_database') or {}
@@ -202,7 +223,7 @@ def parse_yaml_config(config_file_path):
         config_dict['harbor_db_username'] = external_db_configs['harbor']['username']
         config_dict['harbor_db_password'] = external_db_configs['harbor']['password']
         config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
-        # clari db
+        # clair db
         config_dict['clair_db_host'] = external_db_configs['clair']['host']
         config_dict['clair_db_port'] = external_db_configs['clair']['port']
         config_dict['clair_db_name'] = external_db_configs['clair']['db_name']
