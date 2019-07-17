@@ -97,3 +97,16 @@ func TestAuthCodeURL(t *testing.T) {
 	assert.Equal(t, "offline", q.Get("access_type"))
 	assert.False(t, strings.Contains(q.Get("scope"), "offline_access"))
 }
+
+func TestTestEndpoint(t *testing.T) {
+	c1 := Conn{
+		URL:        googleEndpoint,
+		VerifyCert: true,
+	}
+	c2 := Conn{
+		URL:        "https://www.baidu.com",
+		VerifyCert: false,
+	}
+	assert.Nil(t, TestEndpoint(c1))
+	assert.NotNil(t, TestEndpoint(c2))
+}
