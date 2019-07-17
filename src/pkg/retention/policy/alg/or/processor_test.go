@@ -21,8 +21,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/lastx"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
+	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/regexp"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -73,7 +73,7 @@ func (suite *ProcessorTestSuite) SetupSuite() {
 	params = append(params, &alg.Parameter{
 		Evaluator: lastx.New(lastxParams),
 		Selectors: []res.Selector{
-			regexp.New(regexp.Matches, "*dev*"),
+			doublestar.New(doublestar.Matches, "*dev*"),
 			label.New(label.With, "L1,L2"),
 		},
 		Performer: perf,

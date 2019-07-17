@@ -28,7 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
-	_ "github.com/goharbor/harbor/src/pkg/retention/res/selectors/regexp"
+	_ "github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
