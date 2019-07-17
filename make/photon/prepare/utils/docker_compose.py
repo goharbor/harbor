@@ -14,7 +14,7 @@ def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
     REGISTRY_VERSION = versions.get('REGISTRY_VERSION') or 'v2.7.1'
     NOTARY_VERSION = versions.get('NOTARY_VERSION') or 'v0.6.1'
     CLAIR_VERSION = versions.get('CLAIR_VERSION') or 'v2.0.7'
-    CHARTMUSEUM_VERSION = versions.get('CHARTMUSEUM_VERSION') or 'v0.8.1'
+    CHARTMUSEUM_VERSION = versions.get('CHARTMUSEUM_VERSION') or 'v0.9.0'
 
     rendering_variables = {
         'version': VERSION_TAG,
