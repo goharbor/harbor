@@ -2,19 +2,17 @@ package chartserver
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/ghodss/yaml"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/pkg/errors"
 	helm_repo "k8s.io/helm/pkg/repo"
-
-	"os"
-
-	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // ListCharts gets the chart list under the namespace
