@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
+	"time"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -27,10 +29,7 @@ import (
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-
-	"errors"
-	"strconv"
-	"time"
+	"github.com/pkg/errors"
 )
 
 type deletableResp struct {
@@ -231,7 +230,10 @@ func (p *ProjectAPI) Get() {
 		return
 	}
 
-	p.populateProperties(p.project)
+	err := p.populateProperties(p.project)
+	if err != nil {
+		log.Errorf("populate project poroperties failed with : %+v", err)
+	}
 
 	p.Data["json"] = p.project
 	p.ServeJSON()
@@ -401,15 +403,17 @@ func (p *ProjectAPI) List() {
 	}
 
 	for _, project := range result.Projects {
-		p.populateProperties(project)
+		err = p.populateProperties(project)
+		if err != nil {
+			log.Errorf("populate project properties failed %v", err)
+		}
 	}
-
 	p.SetPaginationHeader(result.Total, page, size)
 	p.Data["json"] = result.Projects
 	p.ServeJSON()
 }
 
-func (p *ProjectAPI) populateProperties(project *models.Project) {
+func (p *ProjectAPI) populateProperties(project *models.Project) error {
 	if p.SecurityCtx.IsAuthenticated() {
 		roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
 		if len(roles) != 0 {
@@ -426,9 +430,8 @@ func (p *ProjectAPI) populateProperties(project *models.Project) {
 		ProjectIDs: []int64{project.ProjectID},
 	})
 	if err != nil {
-		log.Errorf("failed to get total of repositories of project %d: %v", project.ProjectID, err)
-		p.SendInternalServerError(errors.New(""))
-		return
+		err = errors.Wrap(err, fmt.Sprintf("get repo count of project %d failed", project.ProjectID))
+		return err
 	}
 
 	project.RepoCount = total
@@ -437,13 +440,13 @@ func (p *ProjectAPI) populateProperties(project *models.Project) {
 	if config.WithChartMuseum() {
 		count, err := chartController.GetCountOfCharts([]string{project.Name})
 		if err != nil {
-			log.Errorf("Failed to get total of charts under project %s: %v", project.Name, err)
-			p.SendInternalServerError(errors.New(""))
-			return
+			err = errors.Wrap(err, fmt.Sprintf("get chart count of project %d failed", project.ProjectID))
+			return err
 		}
 
 		project.ChartCount = count
 	}
+	return nil
 }
 
 // Put ...
