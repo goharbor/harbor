@@ -70,7 +70,7 @@ type HTTPAuthProxy struct {
 	Endpoint            string `json:"endpoint"`
 	TokenReviewEndpoint string `json:"tokenreivew_endpoint"`
 	VerifyCert          bool   `json:"verify_cert"`
-	AlwaysOnBoard       bool   `json:"always_onboard"`
+	SkipSearch          bool   `json:"skip_search"`
 }
 
 // OIDCSetting wraps the settings for OIDC auth endpoint

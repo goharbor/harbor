@@ -92,7 +92,9 @@ Body Of List Helm Charts
     # Values tab
     Retry Double Keywords When Error  Retry Element Click  xpath=${detail_value}  Retry Wait Until Page Contains Element  ${value_content}
 
-    Go Back To Versions And Delete
+    Go Into Project  project${d}  has_image=${false}
+    Switch To Project Charts
+    Multi-delete Chart Files  ${prometheus_chart_name}  ${harbor_chart_name}
     Close Browser
 
 Body Of Admin Push Signed Image

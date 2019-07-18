@@ -205,7 +205,7 @@ func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
 	if len(altGroupName) > 0 {
 		u.GroupName = altGroupName
 	}
-	u.GroupType = common.LdapGroupType
+	u.GroupType = common.LDAPGroupType
 	// Check duplicate LDAP DN in usergroup, if usergroup exist, return error
 	userGroupList, err := group.QueryUserGroup(models.UserGroup{LdapGroupDN: u.LdapGroupDN})
 	if err != nil {

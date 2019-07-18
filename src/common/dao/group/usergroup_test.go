@@ -17,6 +17,7 @@ package group
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
@@ -46,10 +47,13 @@ func TestMain(m *testing.M) {
 		// Extract to test utils
 		initSqls := []string{
 			"insert into harbor_user (username, email, password, realname)  values ('member_test_01', 'member_test_01@example.com', '123456', 'member_test_01')",
+			"insert into harbor_user (username, email, password, realname)  values ('grouptestu09', 'grouptestu09@example.com', '123456', 'grouptestu09')",
 			"insert into project (name, owner_id) values ('member_test_01', 1)",
 			`insert into project (name, owner_id) values ('group_project2', 1)`,
 			`insert into project (name, owner_id) values ('group_project_private', 1)`,
 			"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_group_01', 1, 'cn=harbor_users,ou=sample,ou=vmware,dc=harbor,dc=com')",
+			"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_http_group', 2, '')",
+			"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_myhttp_group', 2, '')",
 			"update project set owner_id = (select user_id from harbor_user where username = 'member_test_01') where name = 'member_test_01'",
 			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select user_id from harbor_user where username = 'member_test_01'), 'u', 1)",
 			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select id from user_group where group_name = 'test_group_01'), 'g', 1)",
@@ -59,11 +63,12 @@ func TestMain(m *testing.M) {
 			"delete from project where name='member_test_01'",
 			"delete from project where name='group_project2'",
 			"delete from project where name='group_project_private'",
-			"delete from harbor_user where username='member_test_01' or username='pm_sample'",
+			"delete from harbor_user where username='member_test_01' or username='pm_sample' or username='grouptestu09'",
 			"delete from user_group",
 			"delete from project_member",
 		}
-		dao.PrepareTestData(clearSqls, initSqls)
+		dao.ExecuteBatchSQL(initSqls)
+		defer dao.ExecuteBatchSQL(clearSqls)
 
 		result = m.Run()
 
@@ -84,7 +89,7 @@ func TestAddUserGroup(t *testing.T) {
 		want    int
 		wantErr bool
 	}{
-		{"Insert an ldap user group", args{userGroup: models.UserGroup{GroupName: "sample_group", GroupType: common.LdapGroupType, LdapGroupDN: "sample_ldap_dn_string"}}, 0, false},
+		{"Insert an ldap user group", args{userGroup: models.UserGroup{GroupName: "sample_group", GroupType: common.LDAPGroupType, LdapGroupDN: "sample_ldap_dn_string"}}, 0, false},
 		{"Insert other user group", args{userGroup: models.UserGroup{GroupName: "other_group", GroupType: 3, LdapGroupDN: "other information"}}, 0, false},
 	}
 	for _, tt := range tests {
@@ -112,8 +117,8 @@ func TestQueryUserGroup(t *testing.T) {
 		wantErr bool
 	}{
 		{"Query all user group", args{query: models.UserGroup{GroupName: "test_group_01"}}, 1, false},
-		{"Query all ldap group", args{query: models.UserGroup{GroupType: common.LdapGroupType}}, 2, false},
-		{"Query ldap group with group property", args{query: models.UserGroup{GroupType: common.LdapGroupType, LdapGroupDN: "CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com"}}, 1, false},
+		{"Query all ldap group", args{query: models.UserGroup{GroupType: common.LDAPGroupType}}, 2, false},
+		{"Query ldap group with group property", args{query: models.UserGroup{GroupType: common.LDAPGroupType, LdapGroupDN: "CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com"}}, 1, false},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -130,7 +135,7 @@ func TestQueryUserGroup(t *testing.T) {
 }
 
 func TestGetUserGroup(t *testing.T) {
-	userGroup := models.UserGroup{GroupName: "insert_group", GroupType: common.LdapGroupType, LdapGroupDN: "ldap_dn_string"}
+	userGroup := models.UserGroup{GroupName: "insert_group", GroupType: common.LDAPGroupType, LdapGroupDN: "ldap_dn_string"}
 	result, err := AddUserGroup(userGroup)
 	if err != nil {
 		t.Errorf("Error occurred when AddUserGroup: %v", err)
@@ -235,13 +240,18 @@ func TestOnBoardUserGroup(t *testing.T) {
 			args{g: &models.UserGroup{
 				GroupName:   "harbor_example",
 				LdapGroupDN: "cn=harbor_example,ou=groups,dc=example,dc=com",
-				GroupType:   common.LdapGroupType}},
+				GroupType:   common.LDAPGroupType}},
 			false},
 		{"OnBoardUserGroup second time",
 			args{g: &models.UserGroup{
 				GroupName:   "harbor_example",
 				LdapGroupDN: "cn=harbor_example,ou=groups,dc=example,dc=com",
-				GroupType:   common.LdapGroupType}},
+				GroupType:   common.LDAPGroupType}},
+			false},
+		{"OnBoardUserGroup HTTP user group",
+			args{g: &models.UserGroup{
+				GroupName: "test_myhttp_group",
+				GroupType: common.HTTPGroupType}},
 			false},
 	}
 	for _, tt := range tests {
@@ -254,12 +264,6 @@ func TestOnBoardUserGroup(t *testing.T) {
 }
 
 func TestGetGroupProjects(t *testing.T) {
-	userID, err := dao.Register(models.User{
-		Username: "grouptestu09",
-		Email:    "grouptest09@example.com",
-		Password: "Harbor123456",
-	})
-	defer dao.DeleteUser(int(userID))
 	projectID1, err := dao.AddProject(models.Project{
 		Name:    "grouptest01",
 		OwnerID: 1,
@@ -277,7 +281,7 @@ func TestGetGroupProjects(t *testing.T) {
 	}
 	defer dao.DeleteProject(projectID2)
 	groupID, err := AddUserGroup(models.UserGroup{
-		GroupName:   "test_group_01",
+		GroupName:   "test_group_03",
 		GroupType:   1,
 		LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
 	})
@@ -344,7 +348,7 @@ func TestGetTotalGroupProjects(t *testing.T) {
 	}
 	defer dao.DeleteProject(projectID2)
 	groupID, err := AddUserGroup(models.UserGroup{
-		GroupName:   "test_group_01",
+		GroupName:   "test_group_05",
 		GroupType:   1,
 		LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
 	})
@@ -424,6 +428,48 @@ func TestGetRolesByLDAPGroup(t *testing.T) {
 			}
 			if len(got) != tt.wantSize {
 				t.Errorf("TestGetRolesByLDAPGroup() = %v, want %v", len(got), tt.wantSize)
+			}
+		})
+	}
+}
+
+func TestGetGroupIDByGroupName(t *testing.T) {
+	groupList, err := QueryUserGroup(models.UserGroup{GroupName: "test_http_group", GroupType: 2})
+	if err != nil {
+		t.Error(err)
+	}
+	if len(groupList) < 0 {
+		t.Error(err)
+	}
+	groupList2, err := QueryUserGroup(models.UserGroup{GroupName: "test_myhttp_group", GroupType: 2})
+	if err != nil {
+		t.Error(err)
+	}
+	if len(groupList2) < 0 {
+		t.Error(err)
+	}
+	var expectGroupID []int
+	type args struct {
+		groupName []string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []int
+		wantErr bool
+	}{
+		{"empty query", args{groupName: []string{}}, expectGroupID, false},
+		{"normal query", args{groupName: []string{"test_http_group", "test_myhttp_group"}}, []int{groupList[0].ID, groupList2[0].ID}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetGroupIDByGroupName(tt.args.groupName, common.HTTPGroupType)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetHTTPGroupIDByGroupName() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("GetHTTPGroupIDByGroupName() = %#v, want %#v", got, tt.want)
 			}
 		})
 	}

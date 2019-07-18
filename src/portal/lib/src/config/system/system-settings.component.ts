@@ -28,6 +28,8 @@ const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 const ONE_HOUR_MINUTES: number = 60;
 const ONE_DAY_MINUTES: number = 24 * ONE_HOUR_MINUTES;
 const ONE_THOUSAND: number = 1000;
+const CVE_DETAIL_PRE_URL = `https://nvd.nist.gov/vuln/detail/`;
+const TARGET_BLANK = "_blank";
 
 @Component({
     selector: 'system-settings',
@@ -379,5 +381,9 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
             return new Date().getTime() > this.systemWhitelistOrigin.expires_at * ONE_THOUSAND;
         }
         return false;
+    }
+
+    goToDetail(cveId) {
+        window.open(CVE_DETAIL_PRE_URL + `${cveId}`, TARGET_BLANK);
     }
 }

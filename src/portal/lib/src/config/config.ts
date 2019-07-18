@@ -90,7 +90,7 @@ export class Configuration {
     http_authproxy_endpoint?: StringValueItem;
     http_authproxy_tokenreview_endpoint?: StringValueItem;
     http_authproxy_verify_cert?: BoolValueItem;
-    http_authproxy_always_onboard?: BoolValueItem;
+    http_authproxy_skip_search?: BoolValueItem;
     oidc_name?: StringValueItem;
     oidc_endpoint?: StringValueItem;
     oidc_client_id?: StringValueItem;
@@ -141,7 +141,7 @@ export class Configuration {
         this.http_authproxy_endpoint = new StringValueItem("", true);
         this.http_authproxy_tokenreview_endpoint = new StringValueItem("", true);
         this.http_authproxy_verify_cert = new BoolValueItem(false, true);
-        this.http_authproxy_always_onboard = new BoolValueItem(false, true);
+        this.http_authproxy_skip_search = new BoolValueItem(false, true);
         this.oidc_name = new StringValueItem('', true);
         this.oidc_endpoint = new StringValueItem('', true);
         this.oidc_client_id = new StringValueItem('', true);

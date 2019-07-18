@@ -255,7 +255,7 @@ func TestHasPushPullPermWithGroup(t *testing.T) {
 		t.Errorf("Error occurred when GetUser: %v", err)
 	}
 
-	userGroups, err := group.QueryUserGroup(models.UserGroup{GroupType: common.LdapGroupType, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"})
+	userGroups, err := group.QueryUserGroup(models.UserGroup{GroupType: common.LDAPGroupType, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"})
 	if err != nil {
 		t.Errorf("Failed to query user group %v", err)
 	}
@@ -340,7 +340,7 @@ func TestSecurityContext_GetRolesByGroup(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when GetUser: %v", err)
 	}
-	userGroups, err := group.QueryUserGroup(models.UserGroup{GroupType: common.LdapGroupType, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"})
+	userGroups, err := group.QueryUserGroup(models.UserGroup{GroupType: common.LDAPGroupType, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"})
 	if err != nil {
 		t.Errorf("Failed to query user group %v", err)
 	}

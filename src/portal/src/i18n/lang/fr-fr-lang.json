@@ -753,7 +753,7 @@
         "HTTP_AUTH": {
             "ENDPOINT": "serveur paramètre",
             "TOKEN_REVIEW": "examen symbolique paramètre",
-            "ALWAYS_ONBOARD": "always onboard",
+            "SKIP_SEARCH": "Skip Search",
             "VERIFY_CERT": "authentification vérifier cert"
         },
         "OIDC": {

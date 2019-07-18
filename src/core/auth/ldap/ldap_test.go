@@ -55,7 +55,7 @@ var ldapTestConfig = map[string]interface{}{
 	common.LDAPGroupBaseDN:        "dc=example,dc=com",
 	common.LDAPGroupAttributeName: "cn",
 	common.LDAPGroupSearchScope:   2,
-	common.LdapGroupAdminDn:       "cn=harbor_users,ou=groups,dc=example,dc=com",
+	common.LDAPGroupAdminDn:       "cn=harbor_users,ou=groups,dc=example,dc=com",
 }
 
 func TestMain(m *testing.M) {
@@ -92,8 +92,8 @@ func TestMain(m *testing.M) {
 		"delete from user_group",
 		"delete from project_member",
 	}
-	dao.PrepareTestData(clearSqls, initSqls)
-
+	dao.ExecuteBatchSQL(initSqls)
+	defer dao.ExecuteBatchSQL(clearSqls)
 	retCode := m.Run()
 	os.Exit(retCode)
 }
@@ -405,6 +405,7 @@ func TestAddProjectMemberWithLdapGroup(t *testing.T) {
 		ProjectID: currentProject.ProjectID,
 		MemberGroup: models.UserGroup{
 			LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
+			GroupType:   1,
 		},
 		Role: models.PROJECTADMIN,
 	}

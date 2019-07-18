@@ -19,6 +19,8 @@ import {USERSTATICPERMISSION} from '../service/permission-static';
 
 const ONE_THOUSAND: number = 1000;
 const LOW: string = 'low';
+const CVE_DETAIL_PRE_URL = `https://nvd.nist.gov/vuln/detail/`;
+const TARGET_BLANK = "_blank";
 
 export class ProjectPolicy {
     Public: boolean;
@@ -366,5 +368,8 @@ export class ProjectPolicyConfigComponent implements OnInit {
             }
         }
         return false;
+    }
+    goToDetail(cveId) {
+        window.open(CVE_DETAIL_PRE_URL + `${cveId}`, TARGET_BLANK);
     }
 }
