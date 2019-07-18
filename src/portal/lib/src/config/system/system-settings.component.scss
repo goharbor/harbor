@@ -31,6 +31,7 @@
 
   li {
     height: 24px;
+    line-height: 24px;
     list-style-type: none;
   }
 }
@@ -72,4 +73,8 @@
   button {
     float: right;
   }
+}
+.hand{
+  cursor: pointer;
+  margin: 0;
 }
