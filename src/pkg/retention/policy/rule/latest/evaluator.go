@@ -15,6 +15,8 @@
 package latestk
 
 import (
+	"sort"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -38,8 +40,20 @@ type evaluator struct {
 
 // Process the candidates based on the rule definition
 func (e *evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
-	// TODO: REPLACE SAMPLE CODE WITH REAL IMPLEMENTATION
-	return artifacts, nil
+	// Sort artifacts by their "active time"
+	//
+	// Active time is defined as the selection of c.PulledTime or c.PushedTime,
+	// whichever is bigger, aka more recent.
+	sort.Slice(artifacts, func(i, j int) bool {
+		return activeTime(artifacts[i]) > activeTime(artifacts[j])
+	})
+
+	i := e.k
+	if i > len(artifacts) {
+		i = len(artifacts)
+	}
+
+	return artifacts[:i], nil
 }
 
 // Specify what action is performed to the candidates processed by this evaluator
@@ -51,7 +65,7 @@ func (e *evaluator) Action() string {
 func New(params rule.Parameters) rule.Evaluator {
 	if params != nil {
 		if param, ok := params[ParameterK]; ok {
-			if v, ok := param.(int); ok {
+			if v, ok := param.(int); ok && v >= 0 {
 				return &evaluator{
 					k: v,
 				}
@@ -64,6 +78,14 @@ func New(params rule.Parameters) rule.Evaluator {
 	return &evaluator{
 		k: DefaultK,
 	}
+}
+
+func activeTime(c *res.Candidate) int64 {
+	if c.PulledTime > c.PushedTime {
+		return c.PulledTime
+	}
+
+	return c.PushedTime
 }
 
 func init() {
