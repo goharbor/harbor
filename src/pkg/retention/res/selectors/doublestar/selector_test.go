@@ -51,8 +51,8 @@ func (suite *RegExpSelectorTestSuite) SetupSuite() {
 			Labels:       []string{"label1", "label2", "label3"},
 		},
 		{
-			NamespaceID:  1,
-			Namespace:    "library",
+			NamespaceID:  2,
+			Namespace:    "retention",
 			Repository:   "redis",
 			Tag:          "4.0",
 			Kind:         res.Image,
@@ -62,8 +62,8 @@ func (suite *RegExpSelectorTestSuite) SetupSuite() {
 			Labels:       []string{"label1", "label4", "label5"},
 		},
 		{
-			NamespaceID:  1,
-			Namespace:    "library",
+			NamespaceID:  2,
+			Namespace:    "retention",
 			Repository:   "redis",
 			Tag:          "4.1",
 			Kind:         res.Image,
@@ -177,6 +177,60 @@ func (suite *RegExpSelectorTestSuite) TestRepoExcludes() {
 	assert.Equal(suite.T(), 2, len(selected))
 	assert.Condition(suite.T(), func() bool {
 		return expect([]string{"redis:4.0", "redis:4.1"}, selected)
+	})
+}
+
+// TestNSMatches tests the namespace `matches` case
+func (suite *RegExpSelectorTestSuite) TestNSMatches() {
+	repoMatches := &selector{
+		decoration: NSMatches,
+		pattern:    "{library}",
+	}
+
+	selected, err := repoMatches.Select(suite.artifacts)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 1, len(selected))
+	assert.Condition(suite.T(), func() bool {
+		return expect([]string{"harbor:latest"}, selected)
+	})
+
+	repoMatches2 := &selector{
+		decoration: RepoMatches,
+		pattern:    "re*",
+	}
+
+	selected, err = repoMatches2.Select(suite.artifacts)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 2, len(selected))
+	assert.Condition(suite.T(), func() bool {
+		return expect([]string{"redis:4.0", "redis:4.1"}, selected)
+	})
+}
+
+// TestNSExcludes tests the namespace `excludes` case
+func (suite *RegExpSelectorTestSuite) TestNSExcludes() {
+	repoExcludes := &selector{
+		decoration: NSExcludes,
+		pattern:    "{library}",
+	}
+
+	selected, err := repoExcludes.Select(suite.artifacts)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 2, len(selected))
+	assert.Condition(suite.T(), func() bool {
+		return expect([]string{"redis:4.0", "redis:4.1"}, selected)
+	})
+
+	repoExcludes2 := &selector{
+		decoration: NSExcludes,
+		pattern:    "re*",
+	}
+
+	selected, err = repoExcludes2.Select(suite.artifacts)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 1, len(selected))
+	assert.Condition(suite.T(), func() bool {
+		return expect([]string{"harbor:latest"}, selected)
 	})
 }
 

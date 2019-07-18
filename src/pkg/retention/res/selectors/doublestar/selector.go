@@ -31,6 +31,10 @@ const (
 	RepoMatches = "repoMatches"
 	// RepoExcludes represents repository excludes [pattern]
 	RepoExcludes = "repoExcludes"
+	// NSMatches represents namespace matches [pattern]
+	NSMatches = "nsMatches"
+	// NSExcludes represents namespace excludes [pattern]
+	NSExcludes = "nsExcludes"
 )
 
 // selector for regular expression
@@ -58,6 +62,11 @@ func (s *selector) Select(artifacts []*res.Candidate) (selected []*res.Candidate
 			value = art.Repository
 		case RepoExcludes:
 			value = art.Repository
+			excludes = true
+		case NSMatches:
+			value = art.Namespace
+		case NSExcludes:
+			value = art.Namespace
 			excludes = true
 		}
 
@@ -95,5 +104,12 @@ func match(pattern, str string) (bool, error) {
 
 func init() {
 	// Register doublestar selector
-	selectors.Register(Kind, []string{Matches, Excludes}, New)
+	selectors.Register(Kind, []string{
+		Matches,
+		Excludes,
+		RepoMatches,
+		RepoExcludes,
+		NSMatches,
+		NSExcludes,
+	}, New)
 }

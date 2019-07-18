@@ -216,15 +216,15 @@ func (l *launchTestSuite) TestLaunch() {
 				ScopeSelectors: map[string][]*rule.Selector{
 					"project": {
 						{
-							Kind:       "regularExpression",
-							Decoration: "matches",
+							Kind:       "doublestar",
+							Decoration: "nsMatches",
 							Pattern:    "**",
 						},
 					},
 					"repository": {
 						{
-							Kind:       "regularExpression",
-							Decoration: "matches",
+							Kind:       "doublestar",
+							Decoration: "repoMatches",
 							Pattern:    "**",
 						},
 					},

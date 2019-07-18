@@ -102,7 +102,7 @@ func (suite *ProcessorTestSuite) TearDownSuite() {}
 func (suite *ProcessorTestSuite) TestProcess() {
 	results, err := suite.p.Process(suite.all)
 	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 2, len(results))
+	assert.Equal(suite.T(), 1, len(results))
 	assert.Condition(suite.T(), func() bool {
 		for _, r := range results {
 			if r.Error != nil {
