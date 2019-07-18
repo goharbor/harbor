@@ -12,5 +12,5 @@ COPY ./make/migrations /harbor/migrations
 
 RUN chmod u+x /harbor/start.sh /harbor/harbor_core
 WORKDIR /harbor/
-	
-ENTRYPOINT ["/harbor/start.sh"]
+
+ENTRYPOINT ["/harbor/harbor_core"]
