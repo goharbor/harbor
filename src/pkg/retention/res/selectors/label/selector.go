@@ -38,10 +38,15 @@ type selector struct {
 	labels []string
 }
 
-// Select candidates by regular expressions
-func (s *selector) Select(artifacts []*res.Candidate) ([]*res.Candidate, error) {
-	// TODO: REPLACE SAMPLE CODE WITH REAL IMPLEMENTATION
-	return artifacts, nil
+// Select candidates by the labels
+func (s *selector) Select(artifacts []*res.Candidate) (selected []*res.Candidate, err error) {
+	for _, art := range artifacts {
+		if isMatched(s.labels, art.Labels, s.decoration) {
+			selected = append(selected, art)
+		}
+	}
+
+	return selected, nil
 }
 
 // New is factory method for list selector
@@ -54,7 +59,30 @@ func New(decoration string, pattern string) res.Selector {
 	}
 }
 
+// Check if the resource labels match the pattern labels
+func isMatched(patternLbls []string, resLbls []string, decoration string) bool {
+	hash := make(map[string]bool)
+
+	for _, lbl := range resLbls {
+		hash[lbl] = true
+	}
+
+	for _, lbl := range patternLbls {
+		_, exists := hash[lbl]
+
+		if decoration == Without && exists {
+			return false
+		}
+
+		if decoration == With && !exists {
+			return false
+		}
+	}
+
+	return true
+}
+
 func init() {
-	// Register regexp selector
+	// Register doublestar selector
 	selectors.Register(Kind, []string{With, Without}, New)
 }
