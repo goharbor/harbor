@@ -17,8 +17,16 @@ package adapter
 import (
 	"errors"
 	"fmt"
+	"io"
 
+	"github.com/docker/distribution"
+	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
+)
+
+// const definition
+const (
+	UserAgentReplication = "harbor-replication-service"
 )
 
 var registry = map[model.RegistryType]Factory{}
@@ -35,6 +43,81 @@ type Adapter interface {
 	PrepareForPush([]*model.Resource) error
 	// HealthCheck checks health status of registry
 	HealthCheck() (model.HealthStatus, error)
+}
+
+// ImageRegistry defines the capabilities that an image registry should have
+type ImageRegistry interface {
+	FetchImages(filters []*model.Filter) ([]*model.Resource, error)
+	ManifestExist(repository, reference string) (exist bool, digest string, err error)
+	PullManifest(repository, reference string, accepttedMediaTypes []string) (manifest distribution.Manifest, digest string, err error)
+	PushManifest(repository, reference, mediaType string, payload []byte) error
+	// the "reference" can be "tag" or "digest", the function needs to handle both
+	DeleteManifest(repository, reference string) error
+	BlobExist(repository, digest string) (exist bool, err error)
+	PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error)
+	PushBlob(repository, digest string, size int64, blob io.Reader) error
+}
+
+// ChartRegistry defines the capabilities that a chart registry should have
+type ChartRegistry interface {
+	FetchCharts(filters []*model.Filter) ([]*model.Resource, error)
+	ChartExist(name, version string) (bool, error)
+	DownloadChart(name, version string) (io.ReadCloser, error)
+	UploadChart(name, version string, chart io.Reader) error
+	DeleteChart(name, version string) error
+}
+
+// Repository defines an repository object, it can be image repository, chart repository and etc.
+type Repository struct {
+	ResourceType string `json:"resource_type"`
+	Name         string `json:"name"`
+}
+
+// GetName returns the name
+func (r *Repository) GetName() string {
+	return r.Name
+}
+
+// GetFilterableType returns the filterable type
+func (r *Repository) GetFilterableType() filter.FilterableType {
+	return filter.FilterableTypeRepository
+}
+
+// GetResourceType returns the resource type
+func (r *Repository) GetResourceType() string {
+	return r.ResourceType
+}
+
+// GetLabels returns the labels
+func (r *Repository) GetLabels() []string {
+	return nil
+}
+
+// VTag defines an vTag object, it can be image tag, chart version and etc.
+type VTag struct {
+	ResourceType string   `json:"resource_type"`
+	Name         string   `json:"name"`
+	Labels       []string `json:"labels"`
+}
+
+// GetFilterableType returns the filterable type
+func (v *VTag) GetFilterableType() filter.FilterableType {
+	return filter.FilterableTypeVTag
+}
+
+// GetResourceType returns the resource type
+func (v *VTag) GetResourceType() string {
+	return v.ResourceType
+}
+
+// GetName returns the name
+func (v *VTag) GetName() string {
+	return v.Name
+}
+
+// GetLabels returns the labels
+func (v *VTag) GetLabels() []string {
+	return v.Labels
 }
 
 // RegisterFactory registers one adapter factory to the registry

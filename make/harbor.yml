@@ -72,14 +72,25 @@ chart:
 log:
   # options are debug, info, warning, error, fatal
   level: info
-  # Log files are rotated log_rotate_count times before being removed. If count is 0, old versions are removed rather than rotated.
-  rotate_count: 50
-  # Log files are rotated only if they grow bigger than log_rotate_size bytes. If size is followed by k, the size is assumed to be in kilobytes. 
-  # If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G 
-  # are all valid.
-  rotate_size: 200M
-  # The directory on your host that store log
-  location: /var/log/harbor
+  # configs for logs in local storage
+  local:
+    # Log files are rotated log_rotate_count times before being removed. If count is 0, old versions are removed rather than rotated.
+    rotate_count: 50
+    # Log files are rotated only if they grow bigger than log_rotate_size bytes. If size is followed by k, the size is assumed to be in kilobytes. 
+    # If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G 
+    # are all valid.
+    rotate_size: 200M
+    # The directory on your host that store log
+    location: /var/log/harbor
+
+  # Uncomment following lines to enable external syslog endpoint.
+  # external_endpoint:
+  #   # protocol used to transmit log to external endpoint, options is tcp or udp
+  #   protocol: tcp
+  #   # The host of external endpoint
+  #   host: localhost
+  #   # Port of external endpoint
+  #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
 _version: 1.8.0

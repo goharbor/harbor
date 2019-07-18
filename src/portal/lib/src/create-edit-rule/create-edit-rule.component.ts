@@ -32,6 +32,7 @@ import { ErrorHandler } from "../error-handler/error-handler";
 import { TranslateService } from "@ngx-translate/core";
 import { EndpointService } from "../service/endpoint.service";
 import { cronRegex } from "../utils";
+import { FilterType } from "../shared/shared.const";
 
 
 @Component({
@@ -265,14 +266,13 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   get filters(): FormArray {
-    console.log(this.ruleForm.get("filters"));
     return this.ruleForm.get("filters") as FormArray;
   }
   setFilter(filters: Filter[]) {
     const filterFGs = filters.map(filter => {
-      if (filter.type === 'label') {
+      if (filter.type === FilterType.LABEL) {
         let fbLabel = this.fb.group({
-          type: 'label'
+          type: FilterType.LABEL
         });
         let filterLabel = this.fb.array(filter.value);
         fbLabel.setControl('value', filterLabel);
@@ -286,7 +286,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
 
   initFilter(name: string) {
-    if (name === 'label') {
+    if (name === FilterType.LABEL) {
       const labelArray = this.fb.array([]);
       const labelControl = this.fb.group({type: name});
       labelControl.setControl('value', labelArray);
@@ -439,7 +439,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     this.ruleForm.get("trigger").get("type").setValue(this.supportedTriggers[0]);
   }
   getLabelListFromAdapter(supportedFilter) {
-    if (supportedFilter.type === 'label') {
+    if (supportedFilter.type === FilterType.LABEL && supportedFilter.values) {
       this.supportedFilterLabels = [];
       supportedFilter.values.forEach( value => {
         this.supportedFilterLabels.push({
@@ -453,7 +453,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   }
   getLabelListFromRuleInfo(ruleInfo) {
     let labelValueObj = ruleInfo.filters.find((currentValue) => {
-      return currentValue.type === 'label';
+      return currentValue.type === FilterType.LABEL;
     });
     if (labelValueObj) {
       for (const labelValue of labelValueObj.value) {
@@ -533,7 +533,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       }
 
       if (!findTag) {
-        filtersArray.push({ type: this.supportedFilters[i].type, value: "" });
+        if (this.supportedFilters[i].type === FilterType.LABEL) {
+          filtersArray.push({ type: this.supportedFilters[i].type, value: [] });
+        } else {
+          filtersArray.push({ type: this.supportedFilters[i].type, value: "" });
+        }
       }
 
     }

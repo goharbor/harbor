@@ -2,8 +2,6 @@ package awsecr
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -11,8 +9,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/utils/test"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAdapter_NewAdapter(t *testing.T) {
@@ -130,15 +131,15 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 			AccessSecret: "ppp",
 		}
 	}
-	reg, err := adp.NewDefaultImageRegistry(registry)
+	dockerRegistryAdapter, err := native.NewAdapter(registry)
 	if err != nil {
 		panic(err)
 	}
 	return &adapter{
-		registry:             registry,
-		DefaultImageRegistry: reg,
-		region:               "test-region",
-		forceEndpoint:        &server.URL,
+		registry:      registry,
+		Adapter:       dockerRegistryAdapter,
+		region:        "test-region",
+		forceEndpoint: &server.URL,
 	}, server
 }
 

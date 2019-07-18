@@ -434,3 +434,15 @@ export interface  HttpOptionTextInterface {
   withCredentials?: boolean;
 }
 
+
+export interface  ProjectRootInterface {
+  NAME: string;
+  VALUE: number;
+  LABEL: string;
+}
+export interface SystemCVEWhitelist {
+    id: number;
+    project_id: number;
+    expires_at: number;
+    items: Array<{ "cve_id": string; }>;
+}

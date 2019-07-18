@@ -61,6 +61,12 @@ export const CommonRoutes = {
 export const enum ConfirmationState {
   NA, CONFIRMED, CANCEL
 }
+export const FilterType = {
+  NAME: "name",
+  TAG: "tag",
+  LABEL: "label",
+  RESOURCE: "resource"
+};
 
 export const enum ConfirmationButtons {
   CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, REPLICATE_CANCEL, STOP_CANCEL
@@ -84,3 +90,35 @@ export const LabelColor = [
   { 'color': '#F52F52', 'textColor': 'black' }, { 'color': '#FF5501', 'textColor': 'black' },
   { 'color': '#F57600', 'textColor': 'black' }, { 'color': '#FFDC0B', 'textColor': 'black' },
 ];
+
+export const CONFIG_AUTH_MODE = {
+  HTTP_AUTH: "http_auth",
+  LDAP_AUTH: "ldap_auth"
+};
+export const PROJECT_ROOTS = [
+  {
+    NAME: "admin",
+    VALUE: 1,
+    LABEL: "GROUP.PROJECT_ADMIN"
+  },
+  {
+    NAME: "master",
+    VALUE: 4,
+    LABEL: "GROUP.PROJECT_MASTER"
+  },
+  {
+    NAME: "developer",
+    VALUE: 2,
+    LABEL: "GROUP.DEVELOPER"
+  },
+  {
+    NAME: "guest",
+    VALUE: 3,
+    LABEL: "GROUP.GUEST"
+  }
+];
+
+export enum GroupType {
+  LDAP_TYPE = 1,
+  HTTP_TYPE = 2
+}
