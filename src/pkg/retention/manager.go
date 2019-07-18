@@ -16,16 +16,17 @@ package retention
 
 import (
 	"encoding/json"
+	"time"
+
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
-	"time"
 )
 
 // Manager defines operations of managing policy
 type Manager interface {
-	// Create new policy and return uuid
+	// Create new policy and return ID
 	CreatePolicy(p *policy.Metadata) (int64, error)
 	// Update the existing policy
 	// Full update
@@ -41,6 +42,14 @@ type Manager interface {
 	UpdateExecution(execution *Execution) error
 	// Get the specified execution
 	GetExecution(eid int64) (*Execution, error)
+	// List tasks histories
+	ListTasks(query *q.Query) ([]*Task, error)
+	// Create a new retention task
+	CreateTask(task *Task) (int64, error)
+	// Update the specified task
+	UpdateTask(task *Task) error
+	// Get the log of the specified task
+	GetTaskLog(taskID int64) ([]byte, error)
 	// List execution histories
 	ListExecutions(query *q.Query) ([]*Execution, error)
 	// Add new history
@@ -148,6 +157,26 @@ func (d *DefaultManager) GetExecution(eid int64) (*Execution, error) {
 	e1.StartTime = e.StartTime
 	e1.EndTime = e.EndTime
 	return e1, nil
+}
+
+// CreateTask creates task record
+func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
+	panic("implement me")
+}
+
+// ListTasks lists tasks according to the query
+func (d *DefaultManager) ListTasks(query *q.Query) ([]*Task, error) {
+	panic("implement me")
+}
+
+// UpdateTask updates the task
+func (d *DefaultManager) UpdateTask(task *Task) error {
+	panic("implement me")
+}
+
+// GetTaskLog gets the logs of task
+func (d *DefaultManager) GetTaskLog(taskID int64) ([]byte, error) {
+	panic("implement me")
 }
 
 // ListHistories List Histories

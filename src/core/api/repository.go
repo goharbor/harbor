@@ -17,13 +17,14 @@ package api
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/scan"
 	"io/ioutil"
 	"net/http"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/goharbor/harbor/src/pkg/scan"
 
 	"errors"
 
@@ -96,7 +97,8 @@ type cfg struct {
 	Labels map[string]string `json:"labels"`
 }
 
-type tagResp struct {
+// TagResp holds the information of one image tag
+type TagResp struct {
 	tagDetail
 	Signature    *notary.Target          `json:"signature"`
 	ScanOverview *models.ImgScanOverview `json:"scan_overview,omitempty"`
@@ -608,7 +610,7 @@ func (ra *RepositoryAPI) GetTags() {
 // get config, signature and scan overview and assemble them into one
 // struct for each tag in tags
 func assembleTagsInParallel(client *registry.Repository, repository string,
-	tags []string, username string) []*tagResp {
+	tags []string, username string) []*TagResp {
 	var err error
 	signatures := map[string][]notary.Target{}
 	if config.WithNotary() {
@@ -619,13 +621,13 @@ func assembleTagsInParallel(client *registry.Repository, repository string,
 		}
 	}
 
-	c := make(chan *tagResp)
+	c := make(chan *TagResp)
 	for _, tag := range tags {
 		go assembleTag(c, client, repository, tag, config.WithClair(),
 			config.WithNotary(), signatures)
 	}
-	result := []*tagResp{}
-	var item *tagResp
+	result := []*TagResp{}
+	var item *TagResp
 	for i := 0; i < len(tags); i++ {
 		item = <-c
 		if item == nil {
@@ -636,10 +638,10 @@ func assembleTagsInParallel(client *registry.Repository, repository string,
 	return result
 }
 
-func assembleTag(c chan *tagResp, client *registry.Repository,
+func assembleTag(c chan *TagResp, client *registry.Repository,
 	repository, tag string, clairEnabled, notaryEnabled bool,
 	signatures map[string][]notary.Target) {
-	item := &tagResp{}
+	item := &TagResp{}
 	// labels
 	image := fmt.Sprintf("%s:%s", repository, tag)
 	labels, err := dao.GetLabelsOfResource(common.ResourceTypeImage, image)

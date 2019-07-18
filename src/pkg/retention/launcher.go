@@ -28,7 +28,10 @@ import (
 )
 
 // TODO init the client
-var client Client
+var (
+	client Client
+	mgr    Manager
+)
 
 // Launcher provides function to launch the async jobs to run retentions based on the provided policy.
 type Launcher interface {
@@ -37,11 +40,12 @@ type Launcher interface {
 	//
 	//  Arguments:
 	//   policy *policy.Metadata: the policy info
+	//   executionID int64      : the execution ID
 	//
 	//  Returns:
-	//   []*TaskSubmitResult : the submit results of tasks
+	//   int64               : the count of tasks
 	//   error               : common error if any errors occurred
-	Launch(policy *policy.Metadata) ([]*TaskSubmitResult, error)
+	Launch(policy *policy.Metadata, executionID int64) (int64, error)
 }
 
 // NewLauncher returns an instance of Launcher
@@ -52,17 +56,23 @@ func NewLauncher() Launcher {
 type launcher struct {
 }
 
-func (l *launcher) Launch(ply *policy.Metadata) ([]*TaskSubmitResult, error) {
+type jobData struct {
+	repository *res.Repository
+	policy     *policy.LiteMeta
+	taskID     int64
+}
+
+func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error) {
 	if ply == nil {
-		return nil, launcherError(fmt.Errorf("the policy is nil"))
+		return 0, launcherError(fmt.Errorf("the policy is nil"))
 	}
 	// no rules, return directly
 	if len(ply.Rules) == 0 {
-		return nil, nil
+		return 0, nil
 	}
 	scope := ply.Scope
 	if scope == nil {
-		return nil, launcherError(fmt.Errorf("the scope of policy is nil"))
+		return 0, launcherError(fmt.Errorf("the scope of policy is nil"))
 	}
 
 	repositoryRules := make(map[res.Repository]*policy.LiteMeta, 0)
@@ -73,7 +83,7 @@ func (l *launcher) Launch(ply *policy.Metadata) ([]*TaskSubmitResult, error) {
 		// get projects
 		projectCandidates, err = getProjects()
 		if err != nil {
-			return nil, launcherError(err)
+			return 0, launcherError(err)
 		}
 	}
 
@@ -85,11 +95,11 @@ func (l *launcher) Launch(ply *policy.Metadata) ([]*TaskSubmitResult, error) {
 				selector, err := selectors.Get(projectSelector.Kind, projectSelector.Decoration,
 					projectSelector.Pattern)
 				if err != nil {
-					return nil, launcherError(err)
+					return 0, launcherError(err)
 				}
 				projectCandidates, err = selector.Select(projectCandidates)
 				if err != nil {
-					return nil, launcherError(err)
+					return 0, launcherError(err)
 				}
 			}
 		case "project":
@@ -103,7 +113,7 @@ func (l *launcher) Launch(ply *policy.Metadata) ([]*TaskSubmitResult, error) {
 		for _, projectCandidate := range projectCandidates {
 			repositories, err := getRepositories(projectCandidate.NamespaceID)
 			if err != nil {
-				return nil, launcherError(err)
+				return 0, launcherError(err)
 			}
 			repositoryCandidates = append(repositoryCandidates, repositories...)
 		}
@@ -112,11 +122,11 @@ func (l *launcher) Launch(ply *policy.Metadata) ([]*TaskSubmitResult, error) {
 			selector, err := selectors.Get(repositorySelector.Kind, repositorySelector.Decoration,
 				repositorySelector.Pattern)
 			if err != nil {
-				return nil, launcherError(err)
+				return 0, launcherError(err)
 			}
 			repositoryCandidates, err = selector.Select(repositoryCandidates)
 			if err != nil {
-				return nil, launcherError(err)
+				return 0, launcherError(err)
 			}
 		}
 
@@ -134,19 +144,40 @@ func (l *launcher) Launch(ply *policy.Metadata) ([]*TaskSubmitResult, error) {
 			repositoryRules[repository].Rules = append(repositoryRules[repository].Rules, &rule)
 		}
 	}
+	// no tasks need to be submitted
+	if len(repositoryRules) == 0 {
+		return 0, nil
+	}
 
-	var result []*TaskSubmitResult
-	for repository, rule := range repositoryRules {
-		jobID, err := client.SubmitTask(&repository, rule)
-		result = append(result, &TaskSubmitResult{
-			JobID: jobID,
-			Error: err,
+	// create task records
+	jobDatas := []*jobData{}
+	for repository, policy := range repositoryRules {
+		taskID, err := mgr.CreateTask(&Task{
+			ExecutionID: executionID,
 		})
 		if err != nil {
-			log.Error(launcherError(fmt.Errorf("failed to submit task: %v", err)))
+			return 0, launcherError(err)
 		}
+		jobDatas = append(jobDatas, &jobData{
+			repository: &repository,
+			policy:     policy,
+			taskID:     taskID,
+		})
 	}
-	return result, nil
+
+	allFailed := true
+	for _, jobData := range jobDatas {
+		_, err := client.SubmitTask(jobData.taskID, jobData.repository, jobData.policy)
+		if err != nil {
+			log.Error(launcherError(fmt.Errorf("failed to submit task %d: %v", jobData.taskID, err)))
+			continue
+		}
+		allFailed = false
+	}
+	if allFailed {
+		return 0, launcherError(fmt.Errorf("all tasks failed"))
+	}
+	return int64(len(jobDatas)), nil
 }
 
 func launcherError(err error) error {

@@ -30,4 +30,6 @@ const (
 	Replication = "REPLICATION"
 	// ReplicationScheduler : the name of the replication scheduler job in job service
 	ReplicationScheduler = "IMAGE_REPLICATE"
+	// Retention : the name of the retention job
+	Retention = "RETENTION"
 )

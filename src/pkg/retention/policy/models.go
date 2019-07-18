@@ -25,8 +25,8 @@ const (
 
 // Metadata of policy
 type Metadata struct {
-	// UUID of the policy
-	ID int64 `json:"id,omitempty"`
+	// ID of the policy
+	ID int64 `json:"id"`
 
 	// Algorithm applied to the rules
 	// "OR" / "AND"
