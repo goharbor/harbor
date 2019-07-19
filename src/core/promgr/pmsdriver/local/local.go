@@ -20,7 +20,6 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
@@ -132,19 +131,16 @@ func (d *driver) Update(projectIDOrName interface{},
 func (d *driver) List(query *models.ProjectQueryParam) (*models.ProjectQueryResult, error) {
 	var total int64
 	var projects []*models.Project
-	var groupDNCondition string
-
-	// List with LDAP group projects
+	var groupIDs []int
 	if query != nil && query.Member != nil {
-		groupDNCondition = group.GetGroupDNQueryCondition(query.Member.GroupList)
+		groupIDs = query.Member.GroupIDs
 	}
-
-	count, err := dao.GetTotalGroupProjects(groupDNCondition, query)
+	count, err := dao.GetTotalGroupProjects(groupIDs, query)
 	if err != nil {
 		return nil, err
 	}
 	total = int64(count)
-	projects, err = dao.GetGroupProjects(groupDNCondition, query)
+	projects, err = dao.GetGroupProjects(groupIDs, query)
 	if err != nil {
 		return nil, err
 	}

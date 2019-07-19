@@ -764,7 +764,7 @@
         "HTTP_AUTH": {
             "ENDPOINT": "Server Endpoint",
             "TOKEN_REVIEW": "Token Review Endpoint",
-            "ALWAYS_ONBOARD": "Always Onboard",
+            "SKIP_SEARCH": "Skip Search",
             "VERIFY_CERT": "Authentication验证证书"
         },
         "OIDC": {

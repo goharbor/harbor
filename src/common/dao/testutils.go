@@ -120,6 +120,19 @@ func PrepareTestData(clearSqls []string, initSqls []string) {
 	}
 }
 
+// ExecuteBatchSQL ...
+func ExecuteBatchSQL(sqls []string) {
+	o := GetOrmer()
+
+	for _, sql := range sqls {
+		fmt.Printf("Exec sql:%v\n", sql)
+		_, err := o.Raw(sql).Exec()
+		if err != nil {
+			fmt.Printf("failed to execute batch sql, sql:%v, error: %v", sql, err)
+		}
+	}
+}
+
 // ArrayEqual ...
 func ArrayEqual(arrayA, arrayB []int) bool {
 	if len(arrayA) != len(arrayB) {
