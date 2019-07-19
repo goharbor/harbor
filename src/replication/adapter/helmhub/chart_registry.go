@@ -87,9 +87,10 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 
 func (a *adapter) ChartExist(name, version string) (bool, error) {
 	versionList, err := a.client.fetchChartDetail(name)
-	if err != nil && err == ErrHTTPNotFound {
-		return false, nil
-	} else if err != nil {
+	if err != nil {
+		if err == ErrHTTPNotFound {
+			return false, nil
+		}
 		return false, err
 	}
 
@@ -116,7 +117,7 @@ func (a *adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
 }
 
 func (a *adapter) download(version *chartVersion) (io.ReadCloser, error) {
-	if version.Attributes.URLs == nil || len(version.Attributes.URLs) == 0 || len(version.Attributes.URLs[0]) == 0 {
+	if len(version.Attributes.URLs) == 0 || len(version.Attributes.URLs[0]) == 0 {
 		return nil, fmt.Errorf("cannot got the download url for chart %s", version.ID)
 	}
 

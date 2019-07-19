@@ -76,10 +76,10 @@ func (c *Client) fetchChartDetail(chartName string) (*chartVersionList, error) {
 		return nil, err
 	}
 
-	if resp.StatusCode != http.StatusOK && resp.StatusCode != http.StatusNotFound {
-		return nil, fmt.Errorf("fetch chart detail error %d: %s", resp.StatusCode, string(body))
-	} else if resp.StatusCode == http.StatusNotFound {
+	if resp.StatusCode == http.StatusNotFound {
 		return nil, ErrHTTPNotFound
+	} else if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("fetch chart detail error %d: %s", resp.StatusCode, string(body))
 	}
 
 	list := &chartVersionList{}
