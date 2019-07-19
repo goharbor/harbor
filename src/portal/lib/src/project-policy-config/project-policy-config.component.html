@@ -109,6 +109,7 @@
                                     class="btn btn-link ml-1">{{'CVE_WHITELIST.ADD_SYSTEM'|translate}}</button>
                         </div>
                         <div class="add-modal" *ngIf="showAddModal && !isUseSystemWhitelist()">
+                            <clr-icon (click)="showAddModal=false" class="float-lg-right margin-top-4" shape="window-close"></clr-icon>
                             <div>
                                 <clr-textarea-container>
                                     <label>{{'CVE_WHITELIST.ENTER'|translate}}</label>
