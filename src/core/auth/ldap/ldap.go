@@ -214,7 +214,7 @@ func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
 	if len(userGroupList) > 0 {
 		return auth.ErrDuplicateLDAPGroup
 	}
-	return group.OnBoardUserGroup(u, "LdapGroupDN", "GroupType")
+	return group.OnBoardUserGroup(u)
 }
 
 // PostAuthenticate -- If user exist in harbor DB, sync email address, if not exist, call OnBoardUser
