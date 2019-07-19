@@ -23,10 +23,6 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/goharbor/harbor/src/jobservice/mgt"
-	"github.com/goharbor/harbor/src/jobservice/migration"
-	"github.com/goharbor/harbor/src/pkg/retention"
-
 	"github.com/goharbor/harbor/src/jobservice/api"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -40,8 +36,11 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl/scan"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/mgt"
+	"github.com/goharbor/harbor/src/jobservice/migration"
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
+	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
 )
