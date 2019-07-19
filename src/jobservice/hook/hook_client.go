@@ -21,18 +21,10 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
-	"net/url"
-	"os"
 	"strings"
 	"time"
 
 	"context"
-	"github.com/goharbor/harbor/src/jobservice/common/utils"
-)
-
-const (
-	proxyEnvHTTP  = "http_proxy"
-	proxyEnvHTTPS = "https_proxy"
 )
 
 // Client for handling the hook events
@@ -60,19 +52,7 @@ func NewClient(ctx context.Context) Client {
 		TLSHandshakeTimeout:   10 * time.Second,
 		ResponseHeaderTimeout: 10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
-	}
-
-	// Get the http/https proxies
-	proxyAddr, ok := os.LookupEnv(proxyEnvHTTP)
-	if !ok {
-		proxyAddr, ok = os.LookupEnv(proxyEnvHTTPS)
-	}
-
-	if ok && !utils.IsEmptyStr(proxyAddr) {
-		proxyURL, err := url.Parse(proxyAddr)
-		if err == nil {
-			transport.Proxy = http.ProxyURL(proxyURL)
-		}
+		Proxy:                 http.ProxyFromEnvironment,
 	}
 
 	client := &http.Client{
