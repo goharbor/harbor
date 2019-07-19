@@ -323,6 +323,7 @@
         "GROUP": "组",
         "GROUPS": "组",
         "IMPORT_LDAP_GROUP": "导入LDAP组",
+        "IMPORT_HTTP_GROUP": "新建HTTP组",
         "ADD": "新增",
         "EDIT": "编辑",
         "DELETE": "删除",
@@ -335,8 +336,17 @@
         "ADD_GROUP_SUCCESS": "添加组成功",
         "EDIT_GROUP_SUCCESS": "修改组成功",
         "LDAP_TYPE": "LDAP",
+        "HTTP_TYPE": "HTTP",
         "OF": "共计",
-        "ITEMS": "条记录"
+        "ITEMS": "条记录",
+        "NEW_MEMBER": "新建组成员",
+        "NEW_USER_INFO": "添加一个组作为具有指定角色的此项目的成员",
+        "ROLE": "权限",
+        "SYS_ADMIN": "系统管理员",
+        "PROJECT_ADMIN": "项目管理员",
+        "PROJECT_MASTER": "维护人员",
+        "DEVELOPER": "开发者",
+        "GUEST": "访客"
     },
     "AUDIT_LOG": {
         "USERNAME": "用户名",
