@@ -12,30 +12,17 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package middlewares
+package util
 
 import (
-	"errors"
-	"github.com/goharbor/harbor/src/core/middlewares/registryproxy"
-	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"net/http"
 )
 
-var head http.Handler
+// RegInterceptor ...
+type RegInterceptor interface {
+	// HandleRequest ...
+	HandleRequest(req *http.Request) error
 
-// Init initialize the Proxy instance and handler chain.
-func Init() error {
-	ph := registryproxy.New()
-	if ph == nil {
-		return errors.New("get nil when to create proxy")
-	}
-	handlerChain := New(Middlewares).Create()
-	head = handlerChain.Then(ph)
-	return nil
-}
-
-// Handle handles the request.
-func Handle(rw http.ResponseWriter, req *http.Request) {
-	customResW := util.NewCustomResponseWriter(rw)
-	head.ServeHTTP(customResW, req)
+	// HandleResponse won't return any error
+	HandleResponse(rw CustomResponseWriter, req *http.Request)
 }

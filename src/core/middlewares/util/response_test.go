@@ -12,19 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package middlewares
+package util
 
-// const variables
-const (
-	READONLY         = "readonly"
-	URL              = "url"
-	MUITIPLEMANIFEST = "manifest"
-	LISTREPO         = "listrepo"
-	CONTENTTRUST     = "contenttrust"
-	VULNERABLE       = "vulnerable"
-	SIZEQUOTA        = "sizequota"
-	COUNTQUOTA       = "countquota"
+import (
+	"net/http/httptest"
+	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
-// Middlewares with sequential organization
-var Middlewares = []string{READONLY, URL, MUITIPLEMANIFEST, LISTREPO, CONTENTTRUST, VULNERABLE, SIZEQUOTA, COUNTQUOTA}
+func TestCustomResponseWriter(t *testing.T) {
+	rw := httptest.NewRecorder()
+	customResW := CustomResponseWriter{ResponseWriter: rw}
+	customResW.WriteHeader(501)
+	assert.Equal(t, customResW.Status(), 501)
+}

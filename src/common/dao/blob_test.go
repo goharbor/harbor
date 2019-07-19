@@ -63,3 +63,43 @@ func TestDeleteBlob(t *testing.T) {
 	err = DeleteBlob(blob.Digest)
 	require.Nil(t, err)
 }
+
+func TestHasBlobInProject(t *testing.T) {
+	af := &models.Artifact{
+		PID:    1,
+		Repo:   "TestHasBlobInProject",
+		Tag:    "latest",
+		Digest: "tttt",
+		Kind:   "image",
+	}
+
+	// add
+	_, err := AddArtifact(af)
+	require.Nil(t, err)
+
+	afnb1 := &models.ArtifactAndBlob{
+		DigestAF:   "tttt",
+		DigestBlob: "zzza",
+	}
+	afnb2 := &models.ArtifactAndBlob{
+		DigestAF:   "tttt",
+		DigestBlob: "zzzb",
+	}
+	afnb3 := &models.ArtifactAndBlob{
+		DigestAF:   "tttt",
+		DigestBlob: "zzzc",
+	}
+
+	var afnbs []*models.ArtifactAndBlob
+	afnbs = append(afnbs, afnb1)
+	afnbs = append(afnbs, afnb2)
+	afnbs = append(afnbs, afnb3)
+
+	// add
+	err = AddArtifactNBlobs(afnbs)
+	require.Nil(t, err)
+
+	has, err := HasBlobInProject(1, "zzzb")
+	require.Nil(t, err)
+	assert.True(t, has)
+}
