@@ -15,7 +15,7 @@
 package action
 
 import (
-	"github.com/goharbor/harbor/src/pkg/retention"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 )
 
@@ -60,7 +60,7 @@ func (ra *retainAction) Perform(candidates []*res.Candidate) (results []*res.Res
 					Target: art,
 				}
 
-				if err := retention.DefaultClient.Delete(art); err != nil {
+				if err := dep.DefaultClient.Delete(art); err != nil {
 					result.Error = err
 				}
 

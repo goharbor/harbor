@@ -16,6 +16,8 @@ package retention
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -29,7 +31,7 @@ import (
 
 // TODO init the client
 var (
-	client Client
+	client dep.Client
 	mgr    Manager
 )
 
@@ -58,7 +60,7 @@ type launcher struct {
 
 type jobData struct {
 	repository *res.Repository
-	policy     *policy.LiteMeta
+	policy     *lwp.Metadata
 	taskID     int64
 }
 
@@ -75,7 +77,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 		return 0, launcherError(fmt.Errorf("the scope of policy is nil"))
 	}
 
-	repositoryRules := make(map[res.Repository]*policy.LiteMeta, 0)
+	repositoryRules := make(map[res.Repository]*lwp.Metadata, 0)
 	level := scope.Level
 	var projectCandidates []*res.Candidate
 	var err error
@@ -137,7 +139,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 				Kind:      repositoryCandidate.Kind,
 			}
 			if repositoryRules[repository] == nil {
-				repositoryRules[repository] = &policy.LiteMeta{
+				repositoryRules[repository] = &lwp.Metadata{
 					Algorithm: ply.Algorithm,
 				}
 			}

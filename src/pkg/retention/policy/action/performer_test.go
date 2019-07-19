@@ -15,8 +15,8 @@
 package action
 
 import (
-	"github.com/goharbor/harbor/src/pkg/retention"
-	"github.com/goharbor/harbor/src/pkg/retention/policy"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
@@ -30,7 +30,7 @@ import (
 type TestPerformerSuite struct {
 	suite.Suite
 
-	oldClient retention.Client
+	oldClient dep.Client
 	all       []*res.Candidate
 }
 
@@ -60,13 +60,13 @@ func (suite *TestPerformerSuite) SetupSuite() {
 		},
 	}
 
-	suite.oldClient = retention.DefaultClient
-	retention.DefaultClient = &fakeRetentionClient{}
+	suite.oldClient = dep.DefaultClient
+	dep.DefaultClient = &fakeRetentionClient{}
 }
 
 // TearDownSuite ...
 func (suite *TestPerformerSuite) TearDownSuite() {
-	retention.DefaultClient = suite.oldClient
+	dep.DefaultClient = suite.oldClient
 }
 
 // TestPerform tests Perform action
@@ -91,7 +91,7 @@ func (suite *TestPerformerSuite) TestPerform() {
 	require.Equal(suite.T(), 1, len(results))
 	require.NotNil(suite.T(), results[0].Target)
 	assert.NoError(suite.T(), results[0].Error)
-	assert.Equal(suite.T(), "latest", results[0].Target.Tag)
+	assert.Equal(suite.T(), "dev", results[0].Target.Tag)
 }
 
 type fakeRetentionClient struct{}
@@ -107,6 +107,6 @@ func (frc *fakeRetentionClient) Delete(candidate *res.Candidate) error {
 }
 
 // SubmitTask ...
-func (frc *fakeRetentionClient) SubmitTask(taskID int64, repository *res.Repository, meta *policy.LiteMeta) (string, error) {
+func (frc *fakeRetentionClient) SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error) {
 	return "", errors.New("not implemented")
 }

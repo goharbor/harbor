@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package retention
+package dep
 
 import (
 	"testing"
@@ -80,25 +80,25 @@ func (c *clientTestSuite) TestGetCandidates() {
 
 	// image repository
 	repository = &res.Repository{}
-	repository.Kind = CandidateKindImage
+	repository.Kind = res.Image
 	repository.Namespace = "library"
 	repository.Name = "hello-world"
 	candidates, err = client.GetCandidates(repository)
 	require.Nil(c.T(), err)
 	assert.Equal(c.T(), 1, len(candidates))
-	assert.Equal(c.T(), CandidateKindImage, candidates[0].Kind)
+	assert.Equal(c.T(), res.Image, candidates[0].Kind)
 	assert.Equal(c.T(), "library", candidates[0].Namespace)
 	assert.Equal(c.T(), "hello-world", candidates[0].Repository)
 	assert.Equal(c.T(), "latest", candidates[0].Tag)
 
 	// chart repository
-	repository.Kind = CandidateKindChart
+	repository.Kind = res.Chart
 	repository.Namespace = "goharbor"
 	repository.Name = "harbor"
 	candidates, err = client.GetCandidates(repository)
 	require.Nil(c.T(), err)
 	assert.Equal(c.T(), 1, len(candidates))
-	assert.Equal(c.T(), CandidateKindChart, candidates[0].Kind)
+	assert.Equal(c.T(), res.Chart, candidates[0].Kind)
 	assert.Equal(c.T(), "goharbor", candidates[0].Namespace)
 	assert.Equal(c.T(), "1.0", candidates[0].Tag)
 }
@@ -114,12 +114,12 @@ func (c *clientTestSuite) TestDelete() {
 
 	// image
 	candidate = &res.Candidate{}
-	candidate.Kind = CandidateKindImage
+	candidate.Kind = res.Image
 	err = client.Delete(candidate)
 	require.Nil(c.T(), err)
 
 	// chart
-	candidate.Kind = CandidateKindChart
+	candidate.Kind = res.Chart
 	err = client.Delete(candidate)
 	require.Nil(c.T(), err)
 

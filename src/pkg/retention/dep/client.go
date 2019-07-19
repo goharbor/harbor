@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package retention
+package dep
 
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
@@ -25,9 +26,17 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/clients/core"
-	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 )
+
+const (
+	// ParamRepo ...
+	ParamRepo = "repository"
+	// ParamMeta ...
+	ParamMeta = "liteMeta"
+)
+
+// TODO: Move to api.Base
 
 // DefaultClient for the retention
 var DefaultClient Client
@@ -58,12 +67,12 @@ type Client interface {
 	//  Arguments:
 	//    taskID                      : the ID of task
 	//    repository *res.Repository  : repository info
-	//    meta *policy.LiteMeta       : policy lite metadata
+	//    meta *lwp.Metadata          : policy lightweight metadata
 	//
 	//  Returns:
 	//    string : the job ID
 	//    error  : common error if any errors occurred
-	SubmitTask(taskID int64, repository *res.Repository, meta *policy.LiteMeta) (string, error)
+	SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error)
 }
 
 // NewClient new a basic client
@@ -108,7 +117,7 @@ func (bc *basicClient) GetCandidates(repository *res.Repository) ([]*res.Candida
 	}
 	candidates := make([]*res.Candidate, 0)
 	switch repository.Kind {
-	case CandidateKindImage:
+	case res.Image:
 		images, err := bc.coreClient.ListAllImages(repository.Namespace, repository.Name)
 		if err != nil {
 			return nil, err
@@ -119,7 +128,7 @@ func (bc *basicClient) GetCandidates(repository *res.Repository) ([]*res.Candida
 				labels = append(labels, label.Name)
 			}
 			candidate := &res.Candidate{
-				Kind:         CandidateKindImage,
+				Kind:         res.Image,
 				Namespace:    repository.Namespace,
 				Repository:   repository.Name,
 				Tag:          image.Name,
@@ -131,7 +140,7 @@ func (bc *basicClient) GetCandidates(repository *res.Repository) ([]*res.Candida
 			}
 			candidates = append(candidates, candidate)
 		}
-	case CandidateKindChart:
+	case res.Chart:
 		charts, err := bc.coreClient.ListAllCharts(repository.Namespace, repository.Name)
 		if err != nil {
 			return nil, err
@@ -142,7 +151,7 @@ func (bc *basicClient) GetCandidates(repository *res.Repository) ([]*res.Candida
 				labels = append(labels, label.Name)
 			}
 			candidate := &res.Candidate{
-				Kind:         CandidateKindChart,
+				Kind:         res.Chart,
 				Namespace:    repository.Namespace,
 				Repository:   repository.Name,
 				Tag:          chart.Name,
@@ -166,9 +175,9 @@ func (bc *basicClient) Delete(candidate *res.Candidate) error {
 		return errors.New("candidate is nil")
 	}
 	switch candidate.Kind {
-	case CandidateKindImage:
+	case res.Image:
 		return bc.coreClient.DeleteImage(candidate.Namespace, candidate.Repository, candidate.Tag)
-	case CandidateKindChart:
+	case res.Chart:
 		return bc.coreClient.DeleteChart(candidate.Namespace, candidate.Repository, candidate.Tag)
 	default:
 		return fmt.Errorf("unsupported candidate kind: %s", candidate.Kind)
@@ -176,7 +185,7 @@ func (bc *basicClient) Delete(candidate *res.Candidate) error {
 }
 
 // SubmitTask to jobservice
-func (bc *basicClient) SubmitTask(taskID int64, repository *res.Repository, meta *policy.LiteMeta) (string, error) {
+func (bc *basicClient) SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error) {
 	j := &models.JobData{
 		Metadata: &models.JobMetadata{
 			JobKind: job.KindGeneric,

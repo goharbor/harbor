@@ -70,13 +70,3 @@ type Scope struct {
 	// 0 for 'system', project ID for 'project' and repo ID for 'repository'
 	Reference int64 `json:"ref"`
 }
-
-// LiteMeta contains partial metadata of policy
-type LiteMeta struct {
-	// Algorithm applied to the rules
-	// "OR" / "AND"
-	Algorithm string `json:"algorithm"`
-
-	// Rule collection
-	Rules []*rule.Metadata `json:"rules"`
-}

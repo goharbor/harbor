@@ -12,16 +12,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package retention
+// Package lwp = lightweight policy
+package lwp
 
-import "github.com/goharbor/harbor/src/pkg/retention/dep"
+import "github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 
-// TODO: Move to api.Init()
+// Metadata contains partial metadata of policy
+// It's a lightweight version of policy.Metadata
+type Metadata struct {
+	// Algorithm applied to the rules
+	// "OR" / "AND"
+	Algorithm string `json:"algorithm"`
 
-// Init the retention components
-func Init() error {
-	// New default retention client
-	dep.DefaultClient = dep.NewClient()
-
-	return nil
+	// Rule collection
+	Rules []*rule.Metadata `json:"rules"`
 }

@@ -18,22 +18,17 @@ import (
 	"encoding/json"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/pkg/errors"
-)
-
-const (
-	// ParamRepo ...
-	ParamRepo = "repository"
-	// ParamMeta ...
-	ParamMeta = "liteMeta"
 )
 
 // Job of running retention process
 type Job struct {
 	// client used to talk to core
-	client Client
+	client dep.Client
 }
 
 // MaxFails of the job
@@ -108,28 +103,28 @@ func logError(logger logger.Interface, err error) error {
 }
 
 func getParamRepo(params job.Parameters) (*res.Repository, error) {
-	v, ok := params[ParamRepo]
+	v, ok := params[dep.ParamRepo]
 	if !ok {
-		return nil, errors.Errorf("missing parameter: %s", ParamRepo)
+		return nil, errors.Errorf("missing parameter: %s", dep.ParamRepo)
 	}
 
 	repo, ok := v.(*res.Repository)
 	if !ok {
-		return nil, errors.Errorf("invalid parameter: %s", ParamRepo)
+		return nil, errors.Errorf("invalid parameter: %s", dep.ParamRepo)
 	}
 
 	return repo, nil
 }
 
-func getParamMeta(params job.Parameters) (*policy.LiteMeta, error) {
-	v, ok := params[ParamMeta]
+func getParamMeta(params job.Parameters) (*lwp.Metadata, error) {
+	v, ok := params[dep.ParamMeta]
 	if !ok {
-		return nil, errors.Errorf("missing parameter: %s", ParamMeta)
+		return nil, errors.Errorf("missing parameter: %s", dep.ParamMeta)
 	}
 
-	meta, ok := v.(*policy.LiteMeta)
+	meta, ok := v.(*lwp.Metadata)
 	if !ok {
-		return nil, errors.Errorf("invalid parameter: %s", ParamMeta)
+		return nil, errors.Errorf("invalid parameter: %s", dep.ParamMeta)
 	}
 
 	return meta, nil

@@ -15,6 +15,14 @@
 package or
 
 import (
+	"errors"
+	"testing"
+	"time"
+
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
+
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -26,8 +34,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 // ProcessorTestSuite is suite for testing processor
@@ -36,6 +42,8 @@ type ProcessorTestSuite struct {
 
 	p   alg.Processor
 	all []*res.Candidate
+
+	oldClient dep.Client
 }
 
 // TestProcessor is entrance for ProcessorTestSuite
@@ -93,10 +101,15 @@ func (suite *ProcessorTestSuite) SetupSuite() {
 	require.NoError(suite.T(), err)
 
 	suite.p = p
+
+	suite.oldClient = dep.DefaultClient
+	dep.DefaultClient = &fakeRetentionClient{}
 }
 
 // TearDownSuite ...
-func (suite *ProcessorTestSuite) TearDownSuite() {}
+func (suite *ProcessorTestSuite) TearDownSuite() {
+	dep.DefaultClient = suite.oldClient
+}
 
 // TestProcess tests process method
 func (suite *ProcessorTestSuite) TestProcess() {
@@ -112,4 +125,21 @@ func (suite *ProcessorTestSuite) TestProcess() {
 
 		return true
 	}, "no errors in the returned result list")
+}
+
+type fakeRetentionClient struct{}
+
+// GetCandidates ...
+func (frc *fakeRetentionClient) GetCandidates(repo *res.Repository) ([]*res.Candidate, error) {
+	return nil, errors.New("not implemented")
+}
+
+// Delete ...
+func (frc *fakeRetentionClient) Delete(candidate *res.Candidate) error {
+	return nil
+}
+
+// SubmitTask ...
+func (frc *fakeRetentionClient) SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error) {
+	return "", errors.New("not implemented")
 }

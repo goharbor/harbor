@@ -16,6 +16,7 @@ package retention
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"strconv"
 	"testing"
 
@@ -85,7 +86,7 @@ func (f *fakeClient) GetCandidates(repo *res.Repository) ([]*res.Candidate, erro
 func (f *fakeClient) Delete(candidate *res.Candidate) error {
 	return nil
 }
-func (f *fakeClient) SubmitTask(taskID int64, repository *res.Repository, meta *policy.LiteMeta) (string, error) {
+func (f *fakeClient) SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error) {
 	f.id++
 	return strconv.Itoa(f.id), nil
 }
