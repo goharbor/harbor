@@ -29,6 +29,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 )
 
+// DefaultClient for the retention
+var DefaultClient Client
+
 // Client is designed to access core service to get required infos
 type Client interface {
 	// Get the tag candidates under the repository
@@ -63,8 +66,8 @@ type Client interface {
 	SubmitTask(taskID int64, repository *res.Repository, meta *policy.LiteMeta) (string, error)
 }
 
-// New basic client
-func New(client ...*http.Client) Client {
+// NewClient new a basic client
+func NewClient(client ...*http.Client) Client {
 	var c *http.Client
 	if len(client) > 0 {
 		c = client[0]
