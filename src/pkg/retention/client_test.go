@@ -18,8 +18,8 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/chartserver"
-	"github.com/goharbor/harbor/src/common/job/models"
-	"github.com/goharbor/harbor/src/core/api"
+	jmodels "github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/goharbor/harbor/src/testing/clients"
@@ -34,10 +34,10 @@ type fakeCoreClient struct {
 	clients.DumbCoreClient
 }
 
-func (f *fakeCoreClient) ListAllImages(project, repository string) ([]*api.TagResp, error) {
-	image := &api.TagResp{}
+func (f *fakeCoreClient) ListAllImages(project, repository string) ([]*models.TagResp, error) {
+	image := &models.TagResp{}
 	image.Name = "latest"
-	return []*api.TagResp{image}, nil
+	return []*models.TagResp{image}, nil
 }
 
 func (f *fakeCoreClient) ListAllCharts(project, repository string) ([]*chartserver.ChartVersion, error) {
@@ -53,7 +53,7 @@ func (f *fakeCoreClient) ListAllCharts(project, repository string) ([]*chartserv
 
 type fakeJobserviceClient struct{}
 
-func (f *fakeJobserviceClient) SubmitJob(*models.JobData) (string, error) {
+func (f *fakeJobserviceClient) SubmitJob(*jmodels.JobData) (string, error) {
 	return "1", nil
 }
 func (f *fakeJobserviceClient) GetJobLog(uuid string) ([]byte, error) {

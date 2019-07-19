@@ -18,10 +18,11 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/goharbor/harbor/src/common/models"
+
 	"github.com/goharbor/harbor/src/chartserver"
 	chttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
-	"github.com/goharbor/harbor/src/core/api"
 )
 
 // Client defines the methods that a core client should implement
@@ -34,7 +35,7 @@ type Client interface {
 
 // ImageClient defines the methods that an image client should implement
 type ImageClient interface {
-	ListAllImages(project, repository string) ([]*api.TagResp, error)
+	ListAllImages(project, repository string) ([]*models.TagResp, error)
 	DeleteImage(project, repository, tag string) error
 }
 
