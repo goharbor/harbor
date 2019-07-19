@@ -15,9 +15,9 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
-	"errors"
 	"github.com/ghodss/yaml"
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/security"
@@ -25,10 +25,21 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/repository"
 )
 
 const (
 	yamlFileContentType = "application/x-yaml"
+	// ReplicationJobType ...
+	ReplicationJobType = "replication"
+	// ScanJobType ...
+	ScanJobType = "scan"
+)
+
+var (
+	projectMgr    project.Manager
+	repositoryMgr repository.Manager
 )
 
 // BaseController ...
@@ -40,13 +51,6 @@ type BaseController struct {
 	// related to projects
 	ProjectMgr promgr.ProjectManager
 }
-
-const (
-	// ReplicationJobType ...
-	ReplicationJobType = "replication"
-	// ScanJobType ...
-	ScanJobType = "scan"
-)
 
 // Prepare inits security context and project manager from request
 // context
@@ -91,6 +95,22 @@ func (b *BaseController) WriteYamlData(object interface{}) {
 // Init related objects/configurations for the API controllers
 func Init() error {
 	registerHealthCheckers()
+
+	// init chart controller
+	if err := initChartController(); err != nil {
+		return err
+	}
+
+	// init project manager
+	initProjectManager()
+
+	// init repository manager
+	initRepositoryManager()
+
+	return nil
+}
+
+func initChartController() error {
 	// If chart repository is not enabled then directly return
 	if !config.WithChartMuseum() {
 		return nil
@@ -102,6 +122,13 @@ func Init() error {
 	}
 
 	chartController = chartCtl
-
 	return nil
+}
+
+func initProjectManager() {
+	projectMgr = project.New()
+}
+
+func initRepositoryManager() {
+	repositoryMgr = repository.New(projectMgr, chartController)
 }

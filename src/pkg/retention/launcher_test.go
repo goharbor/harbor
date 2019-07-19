@@ -137,6 +137,10 @@ func (f *fakeRetentionManager) ListHistories(executionID int64, query *q.Query) 
 
 type launchTestSuite struct {
 	suite.Suite
+	projectMgr      project.Manager
+	repositoryMgr   repository.Manager
+	retentionMgr    Manager
+	retentionClient Client
 }
 
 func (l *launchTestSuite) SetupTest() {
@@ -144,11 +148,11 @@ func (l *launchTestSuite) SetupTest() {
 		ProjectID: 1,
 		Name:      "library",
 	}
-	project.Mgr = &fakeProjectManager{
+	l.projectMgr = &fakeProjectManager{
 		projects: []*models.Project{
 			pro,
 		}}
-	repository.Mgr = &fakeRepositoryManager{
+	l.repositoryMgr = &fakeRepositoryManager{
 		imageRepositories: []*models.RepoRecord{
 			{
 				Name: "library/image",
@@ -160,12 +164,12 @@ func (l *launchTestSuite) SetupTest() {
 			},
 		},
 	}
-	client = &fakeClient{}
-	mgr = &fakeRetentionManager{}
+	l.retentionMgr = &fakeRetentionManager{}
+	l.retentionClient = &fakeClient{}
 }
 
 func (l *launchTestSuite) TestGetProjects() {
-	projects, err := getProjects()
+	projects, err := getProjects(l.projectMgr)
 	require.Nil(l.T(), err)
 	assert.Equal(l.T(), 1, len(projects))
 	assert.Equal(l.T(), int64(1), projects[0].NamespaceID)
@@ -173,7 +177,7 @@ func (l *launchTestSuite) TestGetProjects() {
 }
 
 func (l *launchTestSuite) TestGetRepositories() {
-	repositories, err := getRepositories(1)
+	repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, 1)
 	require.Nil(l.T(), err)
 	assert.Equal(l.T(), 2, len(repositories))
 	assert.Equal(l.T(), "library", repositories[0].Namespace)
@@ -185,7 +189,7 @@ func (l *launchTestSuite) TestGetRepositories() {
 }
 
 func (l *launchTestSuite) TestLaunch() {
-	launcher := NewLauncher()
+	launcher := NewLauncher(l.projectMgr, l.repositoryMgr, l.retentionMgr, l.retentionClient)
 	var ply *policy.Metadata
 	// nil policy
 	n, err := launcher.Launch(ply, 1)
