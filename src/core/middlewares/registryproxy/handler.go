@@ -273,7 +273,7 @@ func handlePatchBlob(res *http.Response) error {
 		return err
 	}
 	if !success {
-		//ToDo discuss what to do here.
+		// ToDo discuss what to do here.
 		log.Warningf(" ^^^^^^^^^^^ Fail to set bunk: %s size: %d in redis, it causes unable to set correct quota for the artifact.", uuid, size)
 	}
 	return nil
