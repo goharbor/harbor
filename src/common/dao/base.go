@@ -183,6 +183,7 @@ func paginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter 
 
 // Escape ..
 func Escape(str string) string {
+	str = strings.Replace(str, `\`, `\\`, -1)
 	str = strings.Replace(str, `%`, `\%`, -1)
 	str = strings.Replace(str, `_`, `\_`, -1)
 	return str
