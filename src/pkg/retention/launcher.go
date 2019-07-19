@@ -27,12 +27,6 @@ import (
 	"github.com/pkg/errors"
 )
 
-// TODO init the client
-var (
-	client Client
-	mgr    Manager
-)
-
 // Launcher provides function to launch the async jobs to run retentions based on the provided policy.
 type Launcher interface {
 	// Launch async jobs for the retention policy
@@ -49,11 +43,21 @@ type Launcher interface {
 }
 
 // NewLauncher returns an instance of Launcher
-func NewLauncher() Launcher {
-	return &launcher{}
+func NewLauncher(projectMgr project.Manager, repositoryMgr repository.Manager,
+	retentionMgr Manager, retentionClient Client) Launcher {
+	return &launcher{
+		projectMgr:      projectMgr,
+		repositoryMgr:   repositoryMgr,
+		retentionMgr:    retentionMgr,
+		retentionClient: retentionClient,
+	}
 }
 
 type launcher struct {
+	retentionMgr    Manager
+	retentionClient Client
+	projectMgr      project.Manager
+	repositoryMgr   repository.Manager
 }
 
 type jobData struct {
@@ -81,7 +85,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 	var err error
 	if level == "system" {
 		// get projects
-		projectCandidates, err = getProjects()
+		projectCandidates, err = getProjects(l.projectMgr)
 		if err != nil {
 			return 0, launcherError(err)
 		}
@@ -111,7 +115,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 		var repositoryCandidates []*res.Candidate
 		// get repositories of projects
 		for _, projectCandidate := range projectCandidates {
-			repositories, err := getRepositories(projectCandidate.NamespaceID)
+			repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, projectCandidate.NamespaceID)
 			if err != nil {
 				return 0, launcherError(err)
 			}
@@ -152,7 +156,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 	// create task records
 	jobDatas := []*jobData{}
 	for repository, policy := range repositoryRules {
-		taskID, err := mgr.CreateTask(&Task{
+		taskID, err := l.retentionMgr.CreateTask(&Task{
 			ExecutionID: executionID,
 		})
 		if err != nil {
@@ -167,7 +171,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 
 	allFailed := true
 	for _, jobData := range jobDatas {
-		_, err := client.SubmitTask(jobData.taskID, jobData.repository, jobData.policy)
+		_, err := l.retentionClient.SubmitTask(jobData.taskID, jobData.repository, jobData.policy)
 		if err != nil {
 			log.Error(launcherError(fmt.Errorf("failed to submit task %d: %v", jobData.taskID, err)))
 			continue
@@ -184,8 +188,8 @@ func launcherError(err error) error {
 	return errors.Wrap(err, "launcher")
 }
 
-func getProjects() ([]*res.Candidate, error) {
-	projects, err := project.Mgr.List()
+func getProjects(projectMgr project.Manager) ([]*res.Candidate, error) {
+	projects, err := projectMgr.List()
 	if err != nil {
 		return nil, err
 	}
@@ -199,14 +203,14 @@ func getProjects() ([]*res.Candidate, error) {
 	return candidates, nil
 }
 
-func getRepositories(projectID int64) ([]*res.Candidate, error) {
+func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manager, projectID int64) ([]*res.Candidate, error) {
 	var candidates []*res.Candidate
-	project, err := project.Mgr.Get(projectID)
+	project, err := projectMgr.Get(projectID)
 	if err != nil {
 		return nil, err
 	}
 	// get image repositories
-	imageRepositories, err := repository.Mgr.ListImageRepositories(projectID)
+	imageRepositories, err := repositoryMgr.ListImageRepositories(projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -219,7 +223,7 @@ func getRepositories(projectID int64) ([]*res.Candidate, error) {
 		})
 	}
 	// get chart repositories
-	chartRepositories, err := repository.Mgr.ListChartRepositories(projectID)
+	chartRepositories, err := repositoryMgr.ListChartRepositories(projectID)
 	for _, repository := range chartRepositories {
 		candidates = append(candidates, &res.Candidate{
 			Namespace:  project.Name,

@@ -28,7 +28,7 @@ import (
 
 var (
 	resourceLabelAPIBasePath = "/api/repositories"
-	repository               = "library/hello-world"
+	repo                     = "library/hello-world"
 	tag                      = "latest"
 	proLibraryLabelID        int64
 )
@@ -63,7 +63,7 @@ func TestAddToImage(t *testing.T) {
 		{
 			request: &testingRequest{
 				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-					repository, tag),
+					repo, tag),
 				method: http.MethodPost,
 			},
 			code: http.StatusUnauthorized,
@@ -72,13 +72,13 @@ func TestAddToImage(t *testing.T) {
 		{
 			request: &testingRequest{
 				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-					repository, tag),
+					repo, tag),
 				method:     http.MethodPost,
 				credential: projGuest,
 			},
 			code: http.StatusForbidden,
 		},
-		// 404 repository doesn't exist
+		// 404 repo doesn't exist
 		{
 			request: &testingRequest{
 				url:        fmt.Sprintf("%s/library/non-exist-repo/tags/%s/labels", resourceLabelAPIBasePath, tag),
@@ -90,7 +90,7 @@ func TestAddToImage(t *testing.T) {
 		// 404 image doesn't exist
 		{
 			request: &testingRequest{
-				url:        fmt.Sprintf("%s/%s/tags/non-exist-tag/labels", resourceLabelAPIBasePath, repository),
+				url:        fmt.Sprintf("%s/%s/tags/non-exist-tag/labels", resourceLabelAPIBasePath, repo),
 				method:     http.MethodPost,
 				credential: projDeveloper,
 			},
@@ -99,7 +99,7 @@ func TestAddToImage(t *testing.T) {
 		// 400
 		{
 			request: &testingRequest{
-				url:        fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath, repository, tag),
+				url:        fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath, repo, tag),
 				method:     http.MethodPost,
 				credential: projDeveloper,
 			},
@@ -109,7 +109,7 @@ func TestAddToImage(t *testing.T) {
 		{
 			request: &testingRequest{
 				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-					repository, tag),
+					repo, tag),
 				method:     http.MethodPost,
 				credential: projDeveloper,
 				bodyJSON: struct {
@@ -124,7 +124,7 @@ func TestAddToImage(t *testing.T) {
 		{
 			request: &testingRequest{
 				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-					repository, tag),
+					repo, tag),
 				method:     http.MethodPost,
 				credential: projDeveloper,
 				bodyJSON: struct {
@@ -139,7 +139,7 @@ func TestAddToImage(t *testing.T) {
 		{
 			request: &testingRequest{
 				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-					repository, tag),
+					repo, tag),
 				method:     http.MethodPost,
 				credential: projDeveloper,
 				bodyJSON: struct {
@@ -154,7 +154,7 @@ func TestAddToImage(t *testing.T) {
 		{
 			request: &testingRequest{
 				url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-					repository, tag),
+					repo, tag),
 				method:     http.MethodPost,
 				credential: projDeveloper,
 				bodyJSON: struct {
@@ -172,7 +172,7 @@ func TestAddToImage(t *testing.T) {
 func TestGetOfImage(t *testing.T) {
 	labels := []*models.Label{}
 	err := handleAndParse(&testingRequest{
-		url:        fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath, repository, tag),
+		url:        fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath, repo, tag),
 		method:     http.MethodGet,
 		credential: projDeveloper,
 	}, &labels)
@@ -185,7 +185,7 @@ func TestRemoveFromImage(t *testing.T) {
 	runCodeCheckingCases(t, &codeCheckingCase{
 		request: &testingRequest{
 			url: fmt.Sprintf("%s/%s/tags/%s/labels/%d", resourceLabelAPIBasePath,
-				repository, tag, proLibraryLabelID),
+				repo, tag, proLibraryLabelID),
 			method:     http.MethodDelete,
 			credential: projDeveloper,
 		},
@@ -195,7 +195,7 @@ func TestRemoveFromImage(t *testing.T) {
 	labels := []*models.Label{}
 	err := handleAndParse(&testingRequest{
 		url: fmt.Sprintf("%s/%s/tags/%s/labels", resourceLabelAPIBasePath,
-			repository, tag),
+			repo, tag),
 		method:     http.MethodGet,
 		credential: projDeveloper,
 	}, &labels)
@@ -206,7 +206,7 @@ func TestRemoveFromImage(t *testing.T) {
 func TestAddToRepository(t *testing.T) {
 	runCodeCheckingCases(t, &codeCheckingCase{
 		request: &testingRequest{
-			url:    fmt.Sprintf("%s/%s/labels", resourceLabelAPIBasePath, repository),
+			url:    fmt.Sprintf("%s/%s/labels", resourceLabelAPIBasePath, repo),
 			method: http.MethodPost,
 			bodyJSON: struct {
 				ID int64
@@ -222,7 +222,7 @@ func TestAddToRepository(t *testing.T) {
 func TestGetOfRepository(t *testing.T) {
 	labels := []*models.Label{}
 	err := handleAndParse(&testingRequest{
-		url:        fmt.Sprintf("%s/%s/labels", resourceLabelAPIBasePath, repository),
+		url:        fmt.Sprintf("%s/%s/labels", resourceLabelAPIBasePath, repo),
 		method:     http.MethodGet,
 		credential: projDeveloper,
 	}, &labels)
@@ -235,7 +235,7 @@ func TestRemoveFromRepository(t *testing.T) {
 	runCodeCheckingCases(t, &codeCheckingCase{
 		request: &testingRequest{
 			url: fmt.Sprintf("%s/%s/labels/%d", resourceLabelAPIBasePath,
-				repository, proLibraryLabelID),
+				repo, proLibraryLabelID),
 			method:     http.MethodDelete,
 			credential: projDeveloper,
 		},
@@ -244,7 +244,7 @@ func TestRemoveFromRepository(t *testing.T) {
 
 	labels := []*models.Label{}
 	err := handleAndParse(&testingRequest{
-		url:        fmt.Sprintf("%s/%s/labels", resourceLabelAPIBasePath, repository),
+		url:        fmt.Sprintf("%s/%s/labels", resourceLabelAPIBasePath, repo),
 		method:     http.MethodGet,
 		credential: projDeveloper,
 	}, &labels)
