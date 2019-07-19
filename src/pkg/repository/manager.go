@@ -18,13 +18,7 @@ import (
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/pkg/project"
-)
-
-var (
-	// Mgr is an instance of the default repository Manager
-	Mgr = New()
 )
 
 // Manager is used for repository management
@@ -38,11 +32,17 @@ type Manager interface {
 }
 
 // New returns a default implementation of Manager
-func New() Manager {
-	return &manager{}
+func New(projectMgr project.Manager, chartCtl *chartserver.Controller) Manager {
+	return &manager{
+		projectMgr: projectMgr,
+		chartCtl:   chartCtl,
+	}
 }
 
-type manager struct{}
+type manager struct {
+	projectMgr project.Manager
+	chartCtl   *chartserver.Controller
+}
 
 // List image repositories under the project specified by the ID
 func (m *manager) ListImageRepositories(projectID int64) ([]*models.RepoRecord, error) {
@@ -53,9 +53,9 @@ func (m *manager) ListImageRepositories(projectID int64) ([]*models.RepoRecord, 
 
 // List chart repositories under the project specified by the ID
 func (m *manager) ListChartRepositories(projectID int64) ([]*chartserver.ChartInfo, error) {
-	project, err := project.Mgr.Get(projectID)
+	project, err := m.projectMgr.Get(projectID)
 	if err != nil {
 		return nil, err
 	}
-	return api.GetChartController().ListCharts(project.Name)
+	return m.chartCtl.ListCharts(project.Name)
 }
