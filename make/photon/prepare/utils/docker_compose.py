@@ -14,7 +14,7 @@ def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
     REGISTRY_VERSION = versions.get('REGISTRY_VERSION') or 'v2.7.1'
     NOTARY_VERSION = versions.get('NOTARY_VERSION') or 'v0.6.1'
     CLAIR_VERSION = versions.get('CLAIR_VERSION') or 'v2.0.7'
-    CHARTMUSEUM_VERSION = versions.get('CHARTMUSEUM_VERSION') or 'v0.8.1'
+    CHARTMUSEUM_VERSION = versions.get('CHARTMUSEUM_VERSION') or 'v0.9.0'
 
     rendering_variables = {
         'version': VERSION_TAG,
@@ -46,4 +46,4 @@ def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
     if uaa_config.get('ca_file'):
         rendering_variables['uaa_ca_file'] = uaa_config['ca_file']
 
-    render_jinja(docker_compose_template_path, docker_compose_yml_path, **rendering_variables)
+    render_jinja(docker_compose_template_path, docker_compose_yml_path, mode=0o644, **rendering_variables)
