@@ -16,7 +16,7 @@ package clients
 
 import (
 	"github.com/goharbor/harbor/src/chartserver"
-	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/common/models"
 )
 
 // DumbCoreClient provides an empty implement for pkg/clients/core.Client
@@ -24,7 +24,7 @@ import (
 type DumbCoreClient struct{}
 
 // ListAllImages ...
-func (d *DumbCoreClient) ListAllImages(project, repository string) ([]*api.TagResp, error) {
+func (d *DumbCoreClient) ListAllImages(project, repository string) ([]*models.TagResp, error) {
 	return nil, nil
 }
 

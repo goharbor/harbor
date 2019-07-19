@@ -17,12 +17,12 @@ package core
 import (
 	"fmt"
 
-	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/common/models"
 )
 
-func (c *client) ListAllImages(project, repository string) ([]*api.TagResp, error) {
+func (c *client) ListAllImages(project, repository string) ([]*models.TagResp, error) {
 	url := c.buildURL(fmt.Sprintf("/api/repositories/%s/%s/tags", project, repository))
-	var images []*api.TagResp
+	var images []*models.TagResp
 	if err := c.httpclient.GetAndIteratePagination(url, &images); err != nil {
 		return nil, err
 	}
