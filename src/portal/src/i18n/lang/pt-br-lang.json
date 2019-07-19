@@ -320,7 +320,8 @@
         "CREATED_SUCCESS": "Created '{{param}}' successfully.",
         "COPY_SUCCESS": "Copy token successfully of '{{param}}'",
         "DELETION_TITLE": "Confirmar a remoção do robô Contas",
-        "DELETION_SUMMARY": "Você quer remover a regra {{param}}?"
+        "DELETION_SUMMARY": "Você quer remover a regra {{param}}?",
+        "PULL_IS_MUST" : "Pull permission is checked by default and can not be modified."
     },
     "GROUP": {
         "GROUP": "Grupo",
