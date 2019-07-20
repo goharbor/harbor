@@ -17,6 +17,7 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/retention"
 	"os"
 	"os/signal"
 	"strconv"
@@ -155,6 +156,12 @@ func main() {
 		}
 	} else {
 		log.Infof("Because SYNC_REGISTRY set false , no need to sync registry \n")
+	}
+
+	// Initialize retention
+	log.Info("Initialize retention")
+	if err := retention.Init(); err != nil {
+		log.Fatalf("Failed to initialize retention with error: %s", err)
 	}
 
 	log.Info("Init proxy")

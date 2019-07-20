@@ -12,47 +12,35 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package or
+package action
 
 import (
-	"errors"
-	"testing"
-	"time"
-
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
-
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/lastx"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"testing"
+	"time"
 )
 
-// ProcessorTestSuite is suite for testing processor
-type ProcessorTestSuite struct {
+// TestPerformerSuite tests the performer related function
+type TestPerformerSuite struct {
 	suite.Suite
 
-	p   alg.Processor
-	all []*res.Candidate
-
 	oldClient dep.Client
+	all       []*res.Candidate
 }
 
-// TestProcessor is entrance for ProcessorTestSuite
-func TestProcessor(t *testing.T) {
-	suite.Run(t, new(ProcessorTestSuite))
+// TestPerformer is the entry of the TestPerformerSuite
+func TestPerformer(t *testing.T) {
+	suite.Run(t, new(TestPerformerSuite))
 }
 
 // SetupSuite ...
-func (suite *ProcessorTestSuite) SetupSuite() {
+func (suite *TestPerformerSuite) SetupSuite() {
 	suite.all = []*res.Candidate{
 		{
 			Namespace:  "library",
@@ -72,59 +60,38 @@ func (suite *ProcessorTestSuite) SetupSuite() {
 		},
 	}
 
-	params := make([]*alg.Parameter, 0)
-
-	perf := action.NewRetainAction(suite.all)
-
-	lastxParams := make(map[string]rule.Parameter)
-	lastxParams[lastx.ParameterX] = 10
-	params = append(params, &alg.Parameter{
-		Evaluator: lastx.New(lastxParams),
-		Selectors: []res.Selector{
-			doublestar.New(doublestar.Matches, "*dev*"),
-			label.New(label.With, "L1,L2"),
-		},
-		Performer: perf,
-	})
-
-	latestKParams := make(map[string]rule.Parameter)
-	latestKParams[latestk.ParameterK] = 10
-	params = append(params, &alg.Parameter{
-		Evaluator: latestk.New(latestKParams),
-		Selectors: []res.Selector{
-			label.New(label.With, "L3"),
-		},
-		Performer: perf,
-	})
-
-	p, err := alg.Get(alg.AlgorithmOR, params)
-	require.NoError(suite.T(), err)
-
-	suite.p = p
-
 	suite.oldClient = dep.DefaultClient
 	dep.DefaultClient = &fakeRetentionClient{}
 }
 
 // TearDownSuite ...
-func (suite *ProcessorTestSuite) TearDownSuite() {
+func (suite *TestPerformerSuite) TearDownSuite() {
 	dep.DefaultClient = suite.oldClient
 }
 
-// TestProcess tests process method
-func (suite *ProcessorTestSuite) TestProcess() {
-	results, err := suite.p.Process(suite.all)
-	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 1, len(results))
-	assert.Condition(suite.T(), func() bool {
-		for _, r := range results {
-			if r.Error != nil {
-				return false
-			}
-		}
+// TestPerform tests Perform action
+func (suite *TestPerformerSuite) TestPerform() {
+	p := &retainAction{
+		all: suite.all,
+	}
 
-		return true
-	}, "no errors in the returned result list")
+	candidates := []*res.Candidate{
+		{
+			Namespace:  "library",
+			Repository: "harbor",
+			Kind:       "image",
+			Tag:        "latest",
+			PushedTime: time.Now().Unix(),
+			Labels:     []string{"L1", "L2"},
+		},
+	}
+
+	results, err := p.Perform(candidates)
+	require.NoError(suite.T(), err)
+	require.Equal(suite.T(), 1, len(results))
+	require.NotNil(suite.T(), results[0].Target)
+	assert.NoError(suite.T(), results[0].Error)
+	assert.Equal(suite.T(), "dev", results[0].Target.Tag)
 }
 
 type fakeRetentionClient struct{}

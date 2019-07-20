@@ -17,10 +17,13 @@ package retention
 import (
 	"fmt"
 
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
+
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
@@ -44,7 +47,7 @@ type Launcher interface {
 
 // NewLauncher returns an instance of Launcher
 func NewLauncher(projectMgr project.Manager, repositoryMgr repository.Manager,
-	retentionMgr Manager, retentionClient Client) Launcher {
+	retentionMgr Manager, retentionClient dep.Client) Launcher {
 	return &launcher{
 		projectMgr:      projectMgr,
 		repositoryMgr:   repositoryMgr,
@@ -55,14 +58,14 @@ func NewLauncher(projectMgr project.Manager, repositoryMgr repository.Manager,
 
 type launcher struct {
 	retentionMgr    Manager
-	retentionClient Client
+	retentionClient dep.Client
 	projectMgr      project.Manager
 	repositoryMgr   repository.Manager
 }
 
 type jobData struct {
 	repository *res.Repository
-	policy     *policy.LiteMeta
+	policy     *lwp.Metadata
 	taskID     int64
 }
 
@@ -79,7 +82,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 		return 0, launcherError(fmt.Errorf("the scope of policy is nil"))
 	}
 
-	repositoryRules := make(map[res.Repository]*policy.LiteMeta, 0)
+	repositoryRules := make(map[res.Repository]*lwp.Metadata, 0)
 	level := scope.Level
 	var projectCandidates []*res.Candidate
 	var err error
@@ -135,17 +138,17 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 		}
 
 		for _, repositoryCandidate := range repositoryCandidates {
-			repository := res.Repository{
+			reposit := res.Repository{
 				Namespace: repositoryCandidate.Namespace,
 				Name:      repositoryCandidate.Repository,
 				Kind:      repositoryCandidate.Kind,
 			}
-			if repositoryRules[repository] == nil {
-				repositoryRules[repository] = &policy.LiteMeta{
+			if repositoryRules[reposit] == nil {
+				repositoryRules[reposit] = &lwp.Metadata{
 					Algorithm: ply.Algorithm,
 				}
 			}
-			repositoryRules[repository].Rules = append(repositoryRules[repository].Rules, &rule)
+			repositoryRules[reposit].Rules = append(repositoryRules[reposit].Rules, &rule)
 		}
 	}
 	// no tasks need to be submitted
@@ -154,8 +157,8 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 	}
 
 	// create task records
-	jobDatas := []*jobData{}
-	for repository, policy := range repositoryRules {
+	jobDatas := make([]*jobData, 0)
+	for repo, p := range repositoryRules {
 		taskID, err := l.retentionMgr.CreateTask(&Task{
 			ExecutionID: executionID,
 		})
@@ -163,8 +166,8 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 			return 0, launcherError(err)
 		}
 		jobDatas = append(jobDatas, &jobData{
-			repository: &repository,
-			policy:     policy,
+			repository: &repo,
+			policy:     p,
 			taskID:     taskID,
 		})
 	}
@@ -194,10 +197,10 @@ func getProjects(projectMgr project.Manager) ([]*res.Candidate, error) {
 		return nil, err
 	}
 	var candidates []*res.Candidate
-	for _, project := range projects {
+	for _, pro := range projects {
 		candidates = append(candidates, &res.Candidate{
-			NamespaceID: project.ProjectID,
-			Namespace:   project.Name,
+			NamespaceID: pro.ProjectID,
+			Namespace:   pro.Name,
 		})
 	}
 	return candidates, nil
@@ -205,7 +208,7 @@ func getProjects(projectMgr project.Manager) ([]*res.Candidate, error) {
 
 func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manager, projectID int64) ([]*res.Candidate, error) {
 	var candidates []*res.Candidate
-	project, err := projectMgr.Get(projectID)
+	pro, err := projectMgr.Get(projectID)
 	if err != nil {
 		return nil, err
 	}
@@ -214,8 +217,8 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 	if err != nil {
 		return nil, err
 	}
-	for _, repository := range imageRepositories {
-		namespace, repo := utils.ParseRepository(repository.Name)
+	for _, r := range imageRepositories {
+		namespace, repo := utils.ParseRepository(r.Name)
 		candidates = append(candidates, &res.Candidate{
 			Namespace:  namespace,
 			Repository: repo,
@@ -224,10 +227,10 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 	}
 	// get chart repositories
 	chartRepositories, err := repositoryMgr.ListChartRepositories(projectID)
-	for _, repository := range chartRepositories {
+	for _, r := range chartRepositories {
 		candidates = append(candidates, &res.Candidate{
-			Namespace:  project.Name,
-			Repository: repository.Name,
+			Namespace:  pro.Name,
+			Repository: r.Name,
 			Kind:       "chart",
 		})
 	}

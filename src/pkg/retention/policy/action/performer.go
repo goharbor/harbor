@@ -14,7 +14,10 @@
 
 package action
 
-import "github.com/goharbor/harbor/src/pkg/retention/res"
+import (
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
+	"github.com/goharbor/harbor/src/pkg/retention/res"
+)
 
 const (
 	// Retain artifacts
@@ -43,17 +46,30 @@ type retainAction struct {
 }
 
 // Perform the action
-func (ra *retainAction) Perform(candidates []*res.Candidate) ([]*res.Result, error) {
-	// TODO: REPLACE SAMPLE CODE WITH REAL IMPLEMENTATION
-	results := make([]*res.Result, 0)
-
+func (ra *retainAction) Perform(candidates []*res.Candidate) (results []*res.Result, err error) {
+	retained := make(map[string]bool)
 	for _, c := range candidates {
-		results = append(results, &res.Result{
-			Target: c,
-		})
+		retained[c.Hash()] = true
 	}
 
-	return results, nil
+	// start to delete
+	if len(ra.all) > 0 {
+		for _, art := range ra.all {
+			if _, ok := retained[art.Hash()]; !ok {
+				result := &res.Result{
+					Target: art,
+				}
+
+				if err := dep.DefaultClient.Delete(art); err != nil {
+					result.Error = err
+				}
+
+				results = append(results, result)
+			}
+		}
+	}
+
+	return
 }
 
 // NewRetainAction is factory method for RetainAction

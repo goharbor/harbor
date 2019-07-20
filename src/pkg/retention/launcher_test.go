@@ -19,6 +19,9 @@ import (
 	"strconv"
 	"testing"
 
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
+
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/project"
@@ -43,18 +46,18 @@ func (f *fakeProjectManager) List(...*models.ProjectQueryParam) ([]*models.Proje
 func (f *fakeProjectManager) Get(idOrName interface{}) (*models.Project, error) {
 	id, ok := idOrName.(int64)
 	if ok {
-		for _, project := range f.projects {
-			if project.ProjectID == id {
-				return project, nil
+		for _, pro := range f.projects {
+			if pro.ProjectID == id {
+				return pro, nil
 			}
 		}
 		return nil, nil
 	}
 	name, ok := idOrName.(string)
 	if ok {
-		for _, project := range f.projects {
-			if project.Name == name {
-				return project, nil
+		for _, pro := range f.projects {
+			if pro.Name == name {
+				return pro, nil
 			}
 		}
 		return nil, nil
@@ -85,7 +88,7 @@ func (f *fakeClient) GetCandidates(repo *res.Repository) ([]*res.Candidate, erro
 func (f *fakeClient) Delete(candidate *res.Candidate) error {
 	return nil
 }
-func (f *fakeClient) SubmitTask(taskID int64, repository *res.Repository, meta *policy.LiteMeta) (string, error) {
+func (f *fakeClient) SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error) {
 	f.id++
 	return strconv.Itoa(f.id), nil
 }
@@ -140,7 +143,7 @@ type launchTestSuite struct {
 	projectMgr      project.Manager
 	repositoryMgr   repository.Manager
 	retentionMgr    Manager
-	retentionClient Client
+	retentionClient dep.Client
 }
 
 func (l *launchTestSuite) SetupTest() {
