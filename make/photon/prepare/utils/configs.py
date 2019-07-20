@@ -165,7 +165,7 @@ def parse_yaml_config(config_file_path):
     # Clair configs, optional
     clair_configs = configs.get("clair") or {}
     config_dict['clair_db'] = 'postgres'
-    config_dict['clair_updaters_interval'] = clair_configs.get("updaters_interval") or 12
+    config_dict['clair_updaters_interval'] = clair_configs.get("updaters_interval", 12)
     config_dict['clair_http_proxy'] = clair_configs.get('http_proxy') or ''
     config_dict['clair_https_proxy'] = clair_configs.get('https_proxy') or ''
     config_dict['clair_no_proxy'] = clair_configs.get('no_proxy') or '127.0.0.1,localhost,core,registry'
