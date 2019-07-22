@@ -3502,15 +3502,13 @@ paths:
                 description: Whether the certificate should be verified
       responses:
         '200':
-          description: The specified robot account is successfully deleted.
+          description: Ping succeeded.  The OIDC endpoint is valid.
         '400':
           description: The ping failed
         '401':
           description: User need to log in first.
         '403':
           description: User does not have permission to call this API
-        '500':
-          description: Unexpected internal errors.
   '/system/CVEWhitelist':
     get:
       summary: Get the system level whitelist of CVE.
