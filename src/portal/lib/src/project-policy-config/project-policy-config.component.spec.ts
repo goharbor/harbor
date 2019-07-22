@@ -6,7 +6,7 @@ import { ProjectPolicyConfigComponent } from './project-policy-config.component'
 import { SharedModule } from '../shared/shared.module';
 import { ProjectService, ProjectDefaultService} from '../service/project.service';
 import { SERVICE_CONFIG, IServiceConfig} from '../service.config';
-import { SystemInfo } from '../service/interface';
+import {SystemCVEWhitelist, SystemInfo} from '../service/interface';
 import { Project } from './project';
 import { UserPermissionService, UserPermissionDefaultService } from '../service/permission.service';
 import { USERSTATICPERMISSION } from '../service/permission-static';
@@ -83,8 +83,12 @@ describe('ProjectPolicyConfigComponent', () => {
       }
     }
   ];
-
-
+  let mockSystemWhitelist: SystemCVEWhitelist = {
+    "expires_at": 1561996800,
+    "id": 1,
+    "items": [],
+    "project_id": 0
+  };
   let component: ProjectPolicyConfigComponent;
   let fixture: ComponentFixture<ProjectPolicyConfigComponent>;
 
@@ -122,6 +126,7 @@ describe('ProjectPolicyConfigComponent', () => {
     projectPolicyService = fixture.debugElement.injector.get(ProjectService);
 
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(of(mockSystemInfo[0]));
+    spySystemInfo = spyOn(systemInfoService, 'getSystemWhitelist').and.returnValue(of(mockSystemWhitelist));
     spyProjectPolicies = spyOn(projectPolicyService, 'getProject').and.returnValues(of(mockProjectPolicies[0]));
 
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);

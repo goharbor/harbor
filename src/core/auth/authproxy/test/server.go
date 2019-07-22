@@ -41,9 +41,20 @@ func (ah *authHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 }
 
+type reviewTokenHandler struct {
+}
+
+func (rth *reviewTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodPost {
+		http.Error(rw, "", http.StatusMethodNotAllowed)
+	}
+	rw.Write([]byte(`{"apiVersion": "authentication.k8s.io/v1beta1", "kind": "TokenReview", "status": {"authenticated": true, "user": {"username": "administrator@vsphere.local", "groups": ["vsphere.local\\users", "vsphere.local\\administrators", "vsphere.local\\caadmins", "vsphere.local\\systemconfiguration.bashshelladministrators", "vsphere.local\\systemconfiguration.administrators", "vsphere.local\\licenseservice.administrators", "vsphere.local\\everyone"], "extra": {"method": ["basic"]}}}}`))
+}
+
 // NewMockServer creates the mock server for testing
 func NewMockServer(creds map[string]string) *httptest.Server {
 	mux := http.NewServeMux()
 	mux.Handle("/test/login", &authHandler{m: creds})
+	mux.Handle("/test/tokenreview", &reviewTokenHandler{})
 	return httptest.NewTLSServer(mux)
 }

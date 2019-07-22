@@ -1,3 +1,4 @@
+
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -539,8 +540,15 @@ Test Case - View Scan Error
     View Scan Error Log
     Close Browser
 
-Test Case - List Helm Charts
+Test Case - List Helm Charts And Delete Chart Files
     Body Of List Helm Charts
+
+Test Case - Helm CLI Push
+    Init Chrome Driver
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Helm CLI Push Without Sign In Harbor  ${user}  ${pwd}
 
 Test Case - Admin Push Signed Image
     Body Of Admin Push Signed Image
@@ -612,3 +620,4 @@ Test Case - Project Level Image Serverity Policy
     Set Vulnerabilty Serverity  0
     Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
     Close Browser
+

@@ -41,15 +41,7 @@ import (
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/admiral"
 	"strings"
 
-	"encoding/json"
-	k8s_api_v1beta1 "k8s.io/api/authentication/v1beta1"
-	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"github.com/goharbor/harbor/src/pkg/authproxy"
 )
 
 // ContextValueKey for content value
@@ -321,60 +313,17 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Errorf("User name %s doesn't meet the auth proxy name pattern", proxyUserName)
 		return false
 	}
-
 	httpAuthProxyConf, err := config.HTTPAuthProxySetting()
 	if err != nil {
 		log.Errorf("fail to get auth proxy settings, %v", err)
 		return false
 	}
-
-	// Init auth client with the auth proxy endpoint.
-	authClientCfg := &rest.Config{
-		Host: httpAuthProxyConf.TokenReviewEndpoint,
-		ContentConfig: rest.ContentConfig{
-			GroupVersion:         &schema.GroupVersion{},
-			NegotiatedSerializer: serializer.DirectCodecFactory{CodecFactory: scheme.Codecs},
-		},
-		BearerToken: proxyPwd,
-		TLSClientConfig: rest.TLSClientConfig{
-			Insecure: !httpAuthProxyConf.VerifyCert,
-		},
-	}
-	authClient, err := rest.RESTClientFor(authClientCfg)
+	tokenReviewResponse, err := authproxy.TokenReview(proxyPwd, httpAuthProxyConf)
 	if err != nil {
-		log.Errorf("fail to create auth client, %v", err)
+		log.Errorf("fail to review token, %v", err)
 		return false
 	}
 
-	// Do auth with the token.
-	tokenReviewRequest := &k8s_api_v1beta1.TokenReview{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "TokenReview",
-			APIVersion: "authentication.k8s.io/v1beta1",
-		},
-		Spec: k8s_api_v1beta1.TokenReviewSpec{
-			Token: proxyPwd,
-		},
-	}
-	res := authClient.Post().Body(tokenReviewRequest).Do()
-	err = res.Error()
-	if err != nil {
-		log.Errorf("fail to POST auth request, %v", err)
-		return false
-	}
-	resRaw, err := res.Raw()
-	if err != nil {
-		log.Errorf("fail to get raw data of token review, %v", err)
-		return false
-	}
-
-	// Parse the auth response, check the user name and authenticated status.
-	tokenReviewResponse := &k8s_api_v1beta1.TokenReview{}
-	err = json.Unmarshal(resRaw, &tokenReviewResponse)
-	if err != nil {
-		log.Errorf("fail to decode token review, %v", err)
-		return false
-	}
 	if !tokenReviewResponse.Status.Authenticated {
 		log.Errorf("fail to auth user: %s", rawUserName)
 		return false

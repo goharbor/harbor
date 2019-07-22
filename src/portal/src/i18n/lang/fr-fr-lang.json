@@ -315,7 +315,8 @@
         "CREATED_SUCCESS": "Created '{{param}}' successfully.",
         "COPY_SUCCESS": "Copy token successfully of '{{param}}'",
         "DELETION_TITLE": "confirmer l'enlèvement des comptes du robot ",
-        "DELETION_SUMMARY": "Voulez-vous supprimer la règle {{param}}?"
+        "DELETION_SUMMARY": "Voulez-vous supprimer la règle {{param}}?",
+        "PULL_IS_MUST" : "Pull permission is checked by default and can not be modified."
     },
     "GROUP": {
         "Group": "Group",
@@ -753,7 +754,7 @@
         "HTTP_AUTH": {
             "ENDPOINT": "serveur paramètre",
             "TOKEN_REVIEW": "examen symbolique paramètre",
-            "ALWAYS_ONBOARD": "always onboard",
+            "SKIP_SEARCH": "Skip Search",
             "VERIFY_CERT": "authentification vérifier cert"
         },
         "OIDC": {
@@ -994,6 +995,26 @@
         "MSG_SUCCESS": "Retag successfully",
         "TIP_REPO": "A repository name is broken up into path components. A component of a repository name must be at least one lowercase, alpha-numeric characters, optionally separated by periods, dashes or underscores. More strictly, it must match the regular expression [a-z0-9]+(?:[._-][a-z0-9]+)*.If a repository name has two or more path components, they must be separated by a forward slash ('/').The total length of a repository name, including slashes, must be less the 256 characters.",
         "TIP_TAG": "A tag is a label applied to a Docker image in a repository. Tags are how various images in a repository are distinguished from each other.It need to match Regex: (`[\\w][\\w.-]{0,127}`)"
+    },
+    "CVE_WHITELIST": {
+        "DEPLOYMENT_SECURITY": "Deployment security",
+        "CVE_WHITELIST": "CVE whitelist",
+        "SYS_WHITELIST_EXPLAIN": "System whitelist allows vulnerabilities in this list to be ignored when calculating the vulnerability of an image.",
+        "ADD_SYS": "Add CVE IDs to the system whitelist",
+        "WARNING_SYS": "The system CVE whitelist has expired. You can enable the whitelist by extending the expiration date.",
+        "WARNING_PRO": "The project CVE whitelist has expired. You can enable the whitelist by extending the expiration date.",
+        "ADD": "ADD",
+        "ENTER": "Enter CVE ID(s)",
+        "HELP": "Separator: commas or newline characters",
+        "NONE": "None",
+        "EXPIRES_AT": "Expires at",
+        "NEVER_EXPIRES": "Never expires",
+        "PRO_WHITELIST_EXPLAIN": "Project whitelist allows vulnerabilities in this list to be ignored in this project when pushing and pulling images.",
+        "PRO_OR_SYS": "Use the system whitelist as is or select “Project whitelist” to create a new whitelist.",
+        "MERGE_INTO": "Merge the system whitelist into this project, add individual CVE IDs.",
+        "SYS_WHITELIST": "System whitelist",
+        "PRO_WHITELIST": "Project whitelist",
+        "ADD_SYSTEM": "ADD SYSTEM"
     }
 
 }
