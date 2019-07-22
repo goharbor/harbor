@@ -15,9 +15,9 @@
 package api
 
 import (
+	"errors"
 	"net/http"
 
-	"errors"
 	"github.com/ghodss/yaml"
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/security"
