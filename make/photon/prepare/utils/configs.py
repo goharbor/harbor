@@ -178,6 +178,7 @@ def parse_yaml_config(config_file_path):
     js_config = configs.get('jobservice') or {}
     config_dict['max_job_workers'] = js_config["max_job_workers"]
     config_dict['jobservice_secret'] = generate_random_string(16)
+    config_dict['webhook_max_http_fails'] = js_config["webhook_max_http_fails"]
 
 
     # Log configs
