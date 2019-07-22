@@ -133,6 +133,7 @@ services:
     env_file:
       - ./common/config/core/env
     restart: always
+    user: 10000:10000
     cap_drop:
       - ALL
     cap_add:
@@ -185,6 +186,7 @@ services:
     image: goharbor/harbor-portal:{{version}}
     container_name: harbor-portal
     restart: always
+    user: 10000:10000
     cap_drop:
       - ALL
     cap_add:
