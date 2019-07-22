@@ -56,9 +56,9 @@ const (
 
 // DefaultConfig is the default configuration reference
 var DefaultConfig = &Configuration{
-	// Default webHook.MaxHttpFails is 10
+	// Default webHook.MaxHTTPFails is 10
 	WebHookConfig: &WebHookConfig{
-		MaxHttpFails: 10,
+		MaxHTTPFails: 10,
 	},
 }
 
@@ -125,7 +125,7 @@ type LoggerConfig struct {
 
 // WebHookConfig keeps logger basic configurations.
 type WebHookConfig struct {
-	MaxHttpFails uint `yaml:"max_http_fails"`
+	MaxHTTPFails uint `yaml:"max_http_fails"`
 }
 
 // Load the configuration options from the specified yaml file.
@@ -264,7 +264,7 @@ func (c *Configuration) loadEnvs() {
 		}
 
 		if result, err := strconv.ParseUint(maxFails, 10, 32); err == nil {
-			c.WebHookConfig.MaxHttpFails = uint(result)
+			c.WebHookConfig.MaxHTTPFails = uint(result)
 		}
 	}
 }

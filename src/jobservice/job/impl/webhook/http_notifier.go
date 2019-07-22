@@ -22,7 +22,7 @@ func (hn *HTTPNotifier) MaxFails() uint {
 	// Get max fails count from config file
 	// Default max fails count is 10, and its max retry interval is around 3h
 	// Large enough to ensure most situations can notify successfully
-	return config.DefaultConfig.WebHookConfig.MaxHttpFails
+	return config.DefaultConfig.WebHookConfig.MaxHTTPFails
 }
 
 // ShouldRetry ...
@@ -71,8 +71,8 @@ func (hn *HTTPNotifier) execute(ctx job.Context, params map[string]interface{}) 
 	if err != nil {
 		return err
 	}
-	if v, ok := params["secret"]; ok && len(v.(string)) > 0 {
-		req.Header.Set("Authorization", "Secret "+v.(string))
+	if v, ok := params["token"]; ok && len(v.(string)) > 0 {
+		req.Header.Set("Authorization", v.(string))
 	}
 	req.Header.Set("Content-Type", "application/json")
 

@@ -33,4 +33,5 @@ def prepare_job_service(config_dict):
         gid=DEFAULT_GID,
         max_job_workers=config_dict['max_job_workers'],
         redis_url=config_dict['redis_url_js'],
+        webhook_max_http_fails=config_dict['webhook_max_http_fails'],
         level=log_level)
