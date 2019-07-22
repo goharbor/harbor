@@ -16,9 +16,9 @@ func CreatePolicy(p *models.RetentionPolicy) (int64, error) {
 }
 
 // UpdatePolicy Update Policy
-func UpdatePolicy(p *models.RetentionPolicy) error {
+func UpdatePolicy(p *models.RetentionPolicy, cols ...string) error {
 	o := dao.GetOrmer()
-	_, err := o.Update(p)
+	_, err := o.Update(p, cols...)
 	return err
 }
 
@@ -50,9 +50,9 @@ func CreateExecution(e *models.RetentionExecution) (int64, error) {
 }
 
 // UpdateExecution Update Execution
-func UpdateExecution(e *models.RetentionExecution) error {
+func UpdateExecution(e *models.RetentionExecution, cols ...string) error {
 	o := dao.GetOrmer()
-	_, err := o.Update(e)
+	_, err := o.Update(e, cols...)
 	return err
 }
 
@@ -78,10 +78,14 @@ func GetExecution(id int64) (*models.RetentionExecution, error) {
 }
 
 // ListExecutions List Executions
-func ListExecutions(query *q.Query) ([]*models.RetentionExecution, error) {
+func ListExecutions(policyID int64, query *q.Query) ([]*models.RetentionExecution, error) {
 	o := dao.GetOrmer()
 	qs := o.QueryTable(new(models.RetentionExecution))
-	qs.Limit(query.PageSize, (query.PageNumber-1)*query.PageSize)
+
+	qs = qs.Filter("policy_id", policyID)
+	if query != nil {
+		qs = qs.Limit(query.PageSize, (query.PageNumber-1)*query.PageSize)
+	}
 	var execs []*models.RetentionExecution
 	_, err := qs.All(&execs)
 	if err != nil {
@@ -95,8 +99,10 @@ func ListExecutions(query *q.Query) ([]*models.RetentionExecution, error) {
 func ListExecHistories(executionID int64, query *q.Query) ([]*models.RetentionTask, error) {
 	o := dao.GetOrmer()
 	qs := o.QueryTable(new(models.RetentionTask))
-	qs.Filter("Execution_ID", executionID)
-	qs.Limit(query.PageSize, (query.PageNumber-1)*query.PageSize)
+	qs = qs.Filter("Execution_ID", executionID)
+	if query != nil {
+		qs = qs.Limit(query.PageSize, (query.PageNumber-1)*query.PageSize)
+	}
 	var tasks []*models.RetentionTask
 	_, err := qs.All(&tasks)
 	if err != nil {

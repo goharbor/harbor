@@ -22,10 +22,9 @@ create table retention_policy
 
 create table retention_execution
 (
-	id integer PRIMARY KEY NOT NULL,
+	id serial PRIMARY KEY NOT NULL,
 	policy_id integer,
 	status varchar(20),
-	status_text text,
 	dry boolean,
 	trigger varchar(20),
 	total integer,

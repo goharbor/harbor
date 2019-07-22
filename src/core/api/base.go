@@ -16,6 +16,7 @@ package api
 
 import (
 	"errors"
+	"github.com/goharbor/harbor/src/pkg/retention"
 	"net/http"
 
 	"github.com/ghodss/yaml"
@@ -39,8 +40,9 @@ const (
 
 // the managers/controllers used globally
 var (
-	projectMgr    project.Manager
-	repositoryMgr repository.Manager
+	projectMgr         project.Manager
+	repositoryMgr      repository.Manager
+	retentionScheduler retention.Scheduler
 )
 
 // BaseController ...
@@ -108,6 +110,8 @@ func Init() error {
 	// init repository manager
 	initRepositoryManager()
 
+	initRetentionScheduler()
+
 	return nil
 }
 
@@ -132,4 +136,8 @@ func initProjectManager() {
 
 func initRepositoryManager() {
 	repositoryMgr = repository.New(projectMgr, chartController)
+}
+
+func initRetentionScheduler() {
+	retentionScheduler = retention.NewFakeSchedule()
 }

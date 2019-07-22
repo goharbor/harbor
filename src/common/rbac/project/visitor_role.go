@@ -61,6 +61,14 @@ var (
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
 
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionPull},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionPush},
+
 			{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionList},
@@ -133,6 +141,14 @@ var (
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
 
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionPull},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionPush},
+
 			{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionList},
@@ -204,6 +220,14 @@ var (
 			{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionList},
 
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionPull},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionPush},
+
 			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
@@ -240,6 +264,9 @@ var (
 
 			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionList},
 

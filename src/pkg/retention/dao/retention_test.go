@@ -99,6 +99,86 @@ func TestPolicy(t *testing.T) {
 	assert.True(t, strings.Contains(err.Error(), "no row found"))
 }
 
+func TestExecution(t *testing.T) {
+	p := &policy.Metadata{
+		Algorithm: "OR",
+		Rules: []rule.Metadata{
+			{
+				ID:       1,
+				Priority: 1,
+				Template: "recentXdays",
+				Parameters: rule.Parameters{
+					"num": 10,
+				},
+				TagSelectors: []*rule.Selector{
+					{
+						Kind:       "label",
+						Decoration: "with",
+						Pattern:    "latest",
+					},
+					{
+						Kind:       "regularExpression",
+						Decoration: "matches",
+						Pattern:    "release-[\\d\\.]+",
+					},
+				},
+				ScopeSelectors: map[string][]*rule.Selector{
+					"repository": {
+						{
+							Kind:       "regularExpression",
+							Decoration: "matches",
+							Pattern:    ".+",
+						},
+					},
+				},
+			},
+		},
+		Trigger: &policy.Trigger{
+			Kind: "Schedule",
+			Settings: map[string]interface{}{
+				"cron": "* 22 11 * * *",
+			},
+		},
+		Scope: &policy.Scope{
+			Level:     "project",
+			Reference: 1,
+		},
+	}
+	p1 := &models.RetentionPolicy{
+		ScopeLevel:  p.Scope.Level,
+		TriggerKind: p.Trigger.Kind,
+		CreateTime:  time.Now(),
+		UpdateTime:  time.Now(),
+	}
+	data, _ := json.Marshal(p)
+	p1.Data = string(data)
+
+	policyID, err := CreatePolicy(p1)
+	assert.Nil(t, err)
+	assert.True(t, policyID > 0)
+
+	e := &models.RetentionExecution{
+		PolicyID:  policyID,
+		Status:    "Running",
+		Dry:       false,
+		Trigger:   "manual",
+		Total:     10,
+		StartTime: time.Now(),
+	}
+	id, err := CreateExecution(e)
+	assert.Nil(t, err)
+	assert.True(t, id > 0)
+
+	e1, err := GetExecution(id)
+	assert.Nil(t, err)
+	assert.NotNil(t, e1)
+	assert.EqualValues(t, id, e1.ID)
+
+	es, err := ListExecutions(policyID, nil)
+	assert.Nil(t, err)
+	assert.EqualValues(t, 1, len(es))
+}
+
 func TestTask(t *testing.T) {
 	task := &models.RetentionTask{
 		ExecutionID: 1,

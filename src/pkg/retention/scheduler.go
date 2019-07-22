@@ -35,3 +35,18 @@ type Scheduler interface {
 	//    common error object if any errors occurred
 	UnSchedule(policyID string) error
 }
+
+type fakeScheduler struct{}
+
+func (*fakeScheduler) Schedule(policyID string, cron string) (string, error) {
+	return "12345", nil
+}
+
+func (*fakeScheduler) UnSchedule(policyID string) error {
+	return nil
+}
+
+// NewFakeSchedule ...
+func NewFakeSchedule() Scheduler {
+	return &fakeScheduler{}
+}

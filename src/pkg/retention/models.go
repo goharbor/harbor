@@ -40,6 +40,7 @@ type Execution struct {
 	StartTime time.Time `json:"start_time"`
 	EndTime   time.Time `json:"end_time,omitempty"`
 	Status    string    `json:"status"`
+	Trigger   string    `json:"trigger"`
 }
 
 // Task of retention
@@ -53,6 +54,7 @@ type Task struct {
 
 // History of retention
 type History struct {
+	ID          int64 `json:"id,omitempty"`
 	ExecutionID int64 `json:"execution_id"`
 	Rule        struct {
 		ID          int    `json:"id"`

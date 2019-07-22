@@ -30,11 +30,10 @@ type RetentionPolicy struct {
 
 // RetentionExecution Retention Execution
 type RetentionExecution struct {
-	ID         int64 `orm:"pk;auto;column(id)" json:"id"`
-	PolicyID   int64
-	Status     string
-	StatusText string
-	Dry        bool
+	ID       int64 `orm:"pk;auto;column(id)" json:"id"`
+	PolicyID int64 `orm:"column(policy_id)"`
+	Status   string
+	Dry      bool
 	// manual, scheduled
 	Trigger    string
 	Total      int
@@ -49,9 +48,9 @@ type RetentionExecution struct {
 /*
 // RetentionTask Retention Task
 type RetentionTask struct {
-	ID              int64
-	ExecutionID     int64
-	RuleID          int
+	ID              int64 `orm:"pk;auto;column(id)" json:"id"`
+	ExecutionID     int64 `orm:"column(execution_id)"`
+	RuleID          int   `orm:"column(rule_id)"`
 	RuleDisplayText string
 	Artifact        string
 	Timestamp       time.Time
@@ -69,10 +68,10 @@ type RetentionTask struct {
 
 // RetentionScheduleJob Retention Schedule Job
 type RetentionScheduleJob struct {
-	ID         int64
+	ID         int64 `orm:"pk;auto;column(id)" json:"id"`
 	Status     string
-	PolicyID   int64
-	JobID      int64
+	PolicyID   int64 `orm:"column(policy_id)"`
+	JobID      int64 `orm:"column(job_id)"`
 	CreateTime time.Time
 	UpdateTime time.Time
 }
