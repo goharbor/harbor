@@ -95,6 +95,10 @@ func modifyResponse(res *http.Response) error {
 	if matchPutBlob {
 		return handlePutBlob(res)
 	}
+	matchMountBlob, _, _, _ := util.MatchMountBlobURL(res.Request)
+	if matchMountBlob {
+		return handlePutBlob(res)
+	}
 	matchPatchBlob, _ := util.MatchPatchBlobURL(res.Request)
 	if matchPatchBlob {
 		return handlePatchBlob(res)
@@ -245,12 +249,6 @@ func handlePatchBlob(res *http.Response) error {
 		return nil
 	}
 
-	con, err := util.GetRegRedisCon()
-	if err != nil {
-		return err
-	}
-	defer con.Close()
-
 	uuid := res.Header.Get("Docker-Upload-UUID")
 	if uuid == "" {
 		return fmt.Errorf("no UUID in the patch blob response, the request path %s ", res.Request.URL.Path)
@@ -268,6 +266,12 @@ func handlePatchBlob(res *http.Response) error {
 	if err != nil {
 		return err
 	}
+
+	con, err := util.GetRegRedisCon()
+	if err != nil {
+		return err
+	}
+	defer con.Close()
 	success, err := util.SetBunkSize(con, uuid, size)
 	if err != nil {
 		return err

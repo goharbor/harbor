@@ -129,3 +129,74 @@ func TestCountSizeOfArtifact(t *testing.T) {
 	require.Nil(t, err)
 	require.Equal(t, imageSize, int64(600))
 }
+
+func TestGetBlobsNotInProject(t *testing.T) {
+	af1 := &models.Artifact{
+		PID:    3,
+		Repo:   "hello-world",
+		Tag:    "v1.0",
+		Digest: "TestGetBlobsNotInProject1",
+		Kind:   "image",
+	}
+	// add
+	_, err := AddArtifact(af1)
+	require.Nil(t, err)
+
+	af2 := &models.Artifact{
+		PID:    3,
+		Repo:   "hello-world-2",
+		Tag:    "v1.0",
+		Digest: "TestGetBlobsNotInProject2",
+		Kind:   "image",
+	}
+
+	// add
+	_, err = AddArtifact(af2)
+	require.Nil(t, err)
+
+	afnb11 := &models.ArtifactAndBlob{
+		DigestAF:   "TestGetBlobsNotInProject1",
+		DigestBlob: "aaaa",
+	}
+	afnb12 := &models.ArtifactAndBlob{
+		DigestAF:   "TestGetBlobsNotInProject1",
+		DigestBlob: "aaab",
+	}
+	afnb13 := &models.ArtifactAndBlob{
+		DigestAF:   "TestGetBlobsNotInProject1",
+		DigestBlob: "aaac",
+	}
+
+	var afnbs1 []*models.ArtifactAndBlob
+	afnbs1 = append(afnbs1, afnb11)
+	afnbs1 = append(afnbs1, afnb12)
+	afnbs1 = append(afnbs1, afnb13)
+
+	err = AddArtifactNBlobs(afnbs1)
+	require.Nil(t, err)
+
+	_, err = AddArtifact(af2)
+	require.Nil(t, err)
+
+	afnb21 := &models.ArtifactAndBlob{
+		DigestAF:   "TestGetBlobsNotInProject2",
+		DigestBlob: "aaaa",
+	}
+	afnb22 := &models.ArtifactAndBlob{
+		DigestAF:   "TestGetBlobsNotInProject2",
+		DigestBlob: "bbbb",
+	}
+	afnb23 := &models.ArtifactAndBlob{
+		DigestAF:   "TestGetBlobsNotInProject2",
+		DigestBlob: "bbbc",
+	}
+
+	var afnbs2 []*models.ArtifactAndBlob
+	afnbs2 = append(afnbs2, afnb21)
+	afnbs2 = append(afnbs2, afnb22)
+	afnbs2 = append(afnbs2, afnb23)
+
+	err = AddArtifactNBlobs(afnbs2)
+	require.Nil(t, err)
+
+}

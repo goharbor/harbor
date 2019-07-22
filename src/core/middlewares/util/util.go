@@ -176,7 +176,7 @@ func MatchPatchBlobURL(req *http.Request) (bool, string) {
 	}
 	re, err := regexp.Compile(blobURLPattern)
 	if err != nil {
-		log.Errorf("error to match put blob url, %v", err)
+		log.Errorf("error to match patch blob url, %v", err)
 		return false, ""
 	}
 	s := re.FindStringSubmatch(req.URL.Path)
@@ -185,6 +185,33 @@ func MatchPatchBlobURL(req *http.Request) (bool, string) {
 		return true, s[1]
 	}
 	return false, ""
+}
+
+// MatchMountBlobURL POST /v2/<name>/blobs/uploads/?mount=<digest>&from=<repository name>
+// If match, will return repo, mount and from as the 2nd, 3th and 4th.
+func MatchMountBlobURL(req *http.Request) (bool, string, string, string) {
+	if req.Method != http.MethodPost {
+		return false, "", "", ""
+	}
+	re, err := regexp.Compile(blobURLPattern)
+	if err != nil {
+		log.Errorf("error to match post blob url, %v", err)
+		return false, "", "", ""
+	}
+	s := re.FindStringSubmatch(req.URL.Path)
+	if len(s) == 2 {
+		s[1] = strings.TrimSuffix(s[1], "/")
+		mount := req.FormValue("mount")
+		if mount == "" {
+			return false, "", "", ""
+		}
+		from := req.FormValue("from")
+		if from != "" {
+			return false, "", "", ""
+		}
+		return true, s[1], mount, from
+	}
+	return false, "", "", ""
 }
 
 // MatchPullManifest checks if the request looks like a request to pull manifest.  If it is returns the image and tag/sha256 digest as 2nd and 3rd return values

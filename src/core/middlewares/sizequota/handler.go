@@ -51,6 +51,21 @@ func New(next http.Handler) http.Handler {
 // ServeHTTP ...
 func (sqh *sizeQuotaHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
+	matchMountBlob, repository, mount, _ := util.MatchMountBlobURL(req)
+	if matchMountBlob {
+		bb := &util.BlobInfo{}
+		sqh.blobInfo = bb
+		sqh.blobInfo.Repository = repository
+		sqh.blobInfo.Digest = mount
+
+		if err := sqh.handlePutBlobComplete(rw, req); err != nil {
+			log.Warningf("Error occurred when to handle post blob %v", err)
+			http.Error(rw, util.MarshalError("InternalError", "Error occurred when to handle post blob"),
+				http.StatusInternalServerError)
+			return
+		}
+	}
+
 	matchPutBlob, repository := util.MatchPutBlobURL(req)
 	if matchPutBlob {
 		bb := &util.BlobInfo{}
@@ -86,17 +101,36 @@ func (sqh *sizeQuotaHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request
 	sqh.next.ServeHTTP(rw, req)
 }
 
+// POST /v2/<name>/blobs/uploads/?mount=<digest>&from=<repository name>
+func (sqh *sizeQuotaHandler) handlePostBlob(rw http.ResponseWriter, req *http.Request) error {
+	tProjectID, err := util.GetProjectID(strings.Split(sqh.blobInfo.Repository, "/")[0])
+	if err != nil {
+		return fmt.Errorf("error occurred when to get target project %s, %v", tProjectID, err)
+	}
+	blob, err := dao.GetBlob(sqh.blobInfo.Digest)
+	if err != nil {
+		return err
+	}
+	if blob == nil {
+		return fmt.Errorf("the blob in the mount request with digest: %s doesn't exist", sqh.blobInfo.Digest)
+	}
+	sqh.blobInfo.Size = blob.Size
+	con, err := util.GetRegRedisCon()
+	if err != nil {
+		return err
+	}
+	if err := sqh.requireQuota(con); err != nil {
+		return err
+	}
+	*req = *(req.WithContext(context.WithValue(req.Context(), util.BBInfokKey, sqh.blobInfo)))
+	return nil
+}
+
 func (sqh *sizeQuotaHandler) handlePutManifest(rw http.ResponseWriter, req *http.Request) error {
 	mediaType := req.Header.Get("Content-Type")
 	if mediaType == schema1.MediaTypeManifest ||
 		mediaType == schema1.MediaTypeSignedManifest ||
 		mediaType == schema2.MediaTypeManifest {
-
-		con, err := util.GetRegRedisCon()
-		if err != nil {
-			log.Infof("failed to get registry redis connection, %v", err)
-			return err
-		}
 
 		data, err := ioutil.ReadAll(req.Body)
 		if err != nil {
@@ -123,6 +157,11 @@ func (sqh *sizeQuotaHandler) handlePutManifest(rw http.ResponseWriter, req *http
 		sqh.blobInfo.Size = desc.Size
 		sqh.blobInfo.ContentType = mediaType
 
+		con, err := util.GetRegRedisCon()
+		if err != nil {
+			log.Infof("failed to get registry redis connection, %v", err)
+			return err
+		}
 		if err := sqh.requireQuota(con); err != nil {
 			return err
 		}

@@ -105,3 +105,19 @@ func CountSizeOfArtifact(digest string) (int64, error) {
 	}
 	return -1, err
 }
+
+// GetBlobsNotInProject ...
+func GetBlobsNotInProject(digest string, projectID int64) ([]string, error) {
+	var res []orm.Params
+	var digests []string
+	num, err := GetOrmer().Raw(`SELECT digest_blob FROM artifact_blob WHERE digest_af = ? AND digest_blob NOT IN ( SELECT DISTINCT afnb.digest_blob FROM artifact af LEFT JOIN artifact_blob afnb ON af.digest = afnb.digest_af WHERE af.project_id = ? ) `, digest, projectID).Values(&res)
+	if err != nil {
+		return nil, err
+	}
+	if num > 0 {
+		for _, item := range res {
+			digests = append(digests, item["digest_blob"].(string))
+		}
+	}
+	return digests, nil
+}
