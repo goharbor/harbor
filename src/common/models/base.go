@@ -38,5 +38,5 @@ func init() {
 		new(Robot),
 		new(OIDCUser),
 		new(WebhookPolicy),
-		new(WebhookExecution))
+		new(WebhookJob))
 }

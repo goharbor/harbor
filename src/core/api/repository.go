@@ -39,13 +39,12 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier"
+	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
+	"github.com/goharbor/harbor/src/core/notifier/topic"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
-	wbEvent "github.com/goharbor/harbor/src/webhook/event"
-	"github.com/goharbor/harbor/src/webhook/event/topic"
-	whModel "github.com/goharbor/harbor/src/webhook/model"
 )
 
 // RepositoryAPI handles request to /api/repositories /api/repositories/tags /api/repositories/manifests, the parm has to be put
@@ -316,40 +315,12 @@ func (ra *RepositoryAPI) Delete() {
 		}
 	}
 
-	// image delete hook
-	e := &wbEvent.ImageEvent{
-		HookType:      whModel.EventTypeDeleteImage,
-		ProjectID:     project.ProjectID,
-		ProjectName:   project.Name,
-		ProjectPublic: project.IsPublic(),
-		OccurAt:       time.Now(),
-		Operator:      ra.SecurityCtx.GetUsername(),
-		RepoName:      repoName,
-	}
-
 	for _, t := range tags {
 		image := fmt.Sprintf("%s:%s", repoName, t)
 		if err = dao.DeleteLabelsOfResource(common.ResourceTypeImage, image); err != nil {
 			ra.SendInternalServerError(fmt.Errorf("failed to delete labels of image %s: %v", image, err))
 			return
 		}
-
-		// get image digest before delete
-		evt := &models.Event{
-			Target: &models.Target{
-				Tag: t,
-			},
-		}
-
-		// if get digest failed, continue to delete image, digest in webhook payload will be empty
-		digest, err := getImageDigest(ra.SecurityCtx.GetUsername(), repoName, t)
-		if err != nil {
-			log.Errorf("get image digest of tag %s failed: %v", t, err)
-		}
-		evt.Target.Digest = digest
-
-		e.Events = append(e.Events, evt)
-
 		if err = rc.DeleteTag(t); err != nil {
 			if regErr, ok := err.(*commonhttp.Error); ok {
 				if regErr.Code == http.StatusNotFound {
@@ -394,12 +365,8 @@ func (ra *RepositoryAPI) Delete() {
 		}(t)
 	}
 
-	// publish image delete wehhook topic
-	err = notifier.Publish(topic.WebhookEventTopicOnImage, e)
-	if err != nil {
-		log.Errorf("failed to publish on image topic with delete event: %v", err)
-	}
-	log.Debugf("published image topic for delete event: %v", e)
+	// publish image delete event
+	ra.buildAndPublishImageDeleteEvent(repoName, tags, project)
 
 	exist, err := repositoryExist(repoName, rc)
 	if err != nil {
@@ -430,6 +397,30 @@ func (ra *RepositoryAPI) Delete() {
 			return
 		}
 	}
+}
+
+// build and publish image delete event, cannot get image corresponding digest once image has been deleted
+// so image delete event data will not include digest info
+func (ra *RepositoryAPI) buildAndPublishImageDeleteEvent(repoName string, tags []string, project *models.Project) {
+	// build image delete event
+	evt := &notifierEvt.ImageEvent{
+		Project:  project,
+		OccurAt:  time.Now(),
+		Operator: ra.SecurityCtx.GetUsername(),
+		RepoName: repoName,
+	}
+
+	for _, t := range tags {
+		res := &notifierEvt.Resource{Tag: t}
+		evt.Resource = append(evt.Resource, res)
+	}
+
+	// publish image delete event
+	err := notifier.Publish(topic.DeleteImageTopic, evt)
+	if err != nil {
+		log.Errorf("failed to publish image topic %s with delete event: %v", topic.DeleteImageTopic, err)
+	}
+	log.Debugf("published image topic for delete event: %v", evt)
 }
 
 // GetTag returns the tag of a repository
@@ -1167,23 +1158,4 @@ func getScanOverview(digest string, tag string) *models.ImgScanOverview {
 		data.DetailsKey = ""
 	}
 	return data
-}
-
-// get image digest by tag
-func getImageDigest(username, repoName, tag string) (string, error) {
-	client, err := coreutils.NewRepositoryClientForUI(username, repoName)
-	if err != nil {
-		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
-	}
-	tags, err := client.ListTag()
-	if err != nil {
-		return "", err
-	}
-	imageTagsDetail := assembleTagsInParallel(client, repoName, tags, username)
-	for _, tagDetail := range imageTagsDetail {
-		if tag == tagDetail.Name {
-			return tagDetail.Digest, nil
-		}
-	}
-	return "", fmt.Errorf("cannot find image digest of tag %s", tag)
 }

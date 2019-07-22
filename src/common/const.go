@@ -144,4 +144,6 @@ const (
 
 	// Global webhook enable configuration
 	WebhookEnable = "webhook_enable"
+	// Maximum fail number for webhook http notification
+	WebhookMaxHTTPFails = "webhook_max_http_fails"
 )

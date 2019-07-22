@@ -5,14 +5,9 @@ import (
 	"path"
 	"strings"
 	"sync"
-	"time"
 
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/notifier"
-	"github.com/goharbor/harbor/src/webhook/event"
-	"github.com/goharbor/harbor/src/webhook/event/topic"
-	whModel "github.com/goharbor/harbor/src/webhook/model"
 	"github.com/pkg/errors"
 	"k8s.io/helm/cmd/helm/search"
 )
@@ -38,7 +33,7 @@ func (c *Controller) GetCountOfCharts(namespaces []string) (uint64, error) {
 
 // DeleteChart deletes all the chart versions of the specified chart under the namespace.
 // See @ServiceHandler.DeleteChart
-func (c *Controller) DeleteChart(namespace, chartName, operator string) error {
+func (c *Controller) DeleteChart(namespace, chartName string) error {
 	if len(strings.TrimSpace(namespace)) == 0 {
 		return errors.New("empty namespace when deleting chart")
 	}
@@ -92,16 +87,6 @@ func (c *Controller) DeleteChart(namespace, chartName, operator string) error {
 		}
 	}()
 
-	// FIXME: any better idea to get Operator?
-	e := &event.ChartEvent{
-		HookType:       whModel.EventTypeDeleteChart,
-		ProjectName:    namespace,
-		ChartName:      chartName,
-		OccurTime:      time.Now(),
-		Operator:       operator,
-		RepoCreateTime: c.GetChartRepoCreateTime(namespace, chartName),
-	}
-
 	// Schedule deletion tasks
 	for _, deletingVersion := range allVersions {
 		// Apply for token first
@@ -121,21 +106,11 @@ func (c *Controller) DeleteChart(namespace, chartName, operator string) error {
 			if err := c.DeleteChartVersion(namespace, chartName, deletingVersion.GetVersion()); err != nil {
 				errChan <- err
 			}
-			e.ChartVersions = append(e.ChartVersions, deletingVersion.GetVersion())
-
 		}(deletingVersion)
 	}
 
 	// Wait all goroutines are done
 	waitGroup.Wait()
-
-	// chart delete webhook
-	err = notifier.Publish(topic.WebhookEventTopicOnChart, e)
-	if err != nil {
-		hlog.Errorf("failed to publish topic with deleting chart %s: %v", chartName, err)
-	}
-	hlog.Debugf("published chart delete topic with event: %v", e)
-
 	// Safe to quit error collection goroutine
 	close(errChan)
 
@@ -254,22 +229,4 @@ func (c *Controller) getChartVersionContent(namespace string, subPath string) ([
 	}
 	url = fmt.Sprintf("%s/%s", c.backendServerAddress.String(), url)
 	return c.apiClient.GetContent(url)
-}
-
-// GetChartRepoCreateTime get create time of chart repository by chartName
-func (c *Controller) GetChartRepoCreateTime(namespace, chartName string) time.Time {
-	var repoCreateTime time.Time
-	charts, err := c.ListCharts(namespace)
-	if err != nil {
-		hlog.Errorf("get charts list of namespace %s failed: %v", namespace, err)
-		return repoCreateTime
-	}
-
-	for _, chart := range charts {
-		if chart.Name == chartName {
-			repoCreateTime = chart.Created
-			break
-		}
-	}
-	return repoCreateTime
 }

@@ -13,8 +13,8 @@ create table webhook_policy (
  PRIMARY KEY (id)
  );
 
-/*add webhook execution table*/
- CREATE TABLE webhook_execution (
+/*add webhook job table*/
+ CREATE TABLE webhook_job (
  id SERIAL NOT NULL,
  policy_id int NOT NULL,
  status varchar(32),

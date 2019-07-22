@@ -28,14 +28,13 @@ import (
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier"
+	notifyEvt "github.com/goharbor/harbor/src/core/notifier/event"
+	"github.com/goharbor/harbor/src/core/notifier/topic"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
-	webhookEvent "github.com/goharbor/harbor/src/webhook/event"
-	"github.com/goharbor/harbor/src/webhook/event/topic"
-	whModel "github.com/goharbor/harbor/src/webhook/model"
 )
 
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
@@ -120,26 +119,8 @@ func (n *NotificationHandler) Post() {
 				return
 			}
 
-			// image push webhook process
-			go func() {
-				e := &webhookEvent.ImageEvent{
-					HookType:      whModel.EventTypePushImage,
-					ProjectID:     pro.ProjectID,
-					ProjectName:   pro.Name,
-					ProjectPublic: pro.IsPublic(),
-					OccurAt:       event.TimeStamp,
-					Operator:      event.Actor.Name,
-					RepoName:      event.Target.Repository,
-				}
-				e.Events = append(e.Events, event)
-
-				err := notifier.Publish(topic.WebhookEventTopicOnImage, e)
-				if err != nil {
-					log.Errorf("failed to publish on image topic with push event: %v", err)
-					return
-				}
-				log.Debugf("published image topic for push event: %v", e)
-			}()
+			// publish image push event
+			buildAndPublishImagePullOrPushEvent(topic.PushImageTopic, pro, event)
 
 			// TODO: handle image delete event and chart event
 			go func() {
@@ -173,27 +154,8 @@ func (n *NotificationHandler) Post() {
 			}
 		}
 		if action == "pull" {
-			// image pull webhook process
-			go func() {
-
-				e := &webhookEvent.ImageEvent{
-					HookType:      whModel.EventTypePullImage,
-					ProjectID:     pro.ProjectID,
-					ProjectName:   pro.Name,
-					ProjectPublic: pro.IsPublic(),
-					OccurAt:       event.TimeStamp,
-					Operator:      event.Actor.Name,
-					RepoName:      event.Target.Repository,
-				}
-				e.Events = append(e.Events, event)
-
-				err := notifier.Publish(topic.WebhookEventTopicOnImage, e)
-				if err != nil {
-					log.Errorf("failed to publish on image topic with pull event: %v", err)
-					return
-				}
-				log.Debugf("published image topic for pull event: %v", e)
-			}()
+			// publish image pull event
+			buildAndPublishImagePullOrPushEvent(topic.PullImageTopic, pro, event)
 
 			go func() {
 				log.Debugf("Increase the repository %s pull count.", repository)
@@ -203,6 +165,28 @@ func (n *NotificationHandler) Post() {
 			}()
 		}
 	}
+}
+
+func buildAndPublishImagePullOrPushEvent(topic string, project *models.Project, event *models.Event) {
+	e := &notifyEvt.ImageEvent{
+		Project:  project,
+		OccurAt:  event.TimeStamp,
+		Operator: event.Actor.Name,
+		RepoName: event.Target.Repository,
+	}
+
+	res := &notifyEvt.Resource{
+		Tag:    event.Target.Tag,
+		Digest: event.Target.Digest,
+	}
+	e.Resource = append(e.Resource, res)
+
+	err := notifier.Publish(topic, e)
+	if err != nil {
+		log.Errorf("failed to publish image topic %s with pull event: %v", topic, err)
+		return
+	}
+	log.Debugf("published image topic for pull event: %v", e)
 }
 
 func filterEvents(notification *models.Notification) ([]*models.Event, error) {

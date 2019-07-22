@@ -37,6 +37,7 @@ const (
 	jobServiceRedisURL          = "JOB_SERVICE_POOL_REDIS_URL"
 	jobServiceRedisNamespace    = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
 	jobServiceAuthSecret        = "JOBSERVICE_SECRET"
+	jobServiceWebHookMaxFails   = "JOBSERVICE_WEBHOOK_MAX_HTTP_FAILS"
 
 	// JobServiceProtocolHTTPS points to the 'https' protocol
 	JobServiceProtocolHTTPS = "https"
@@ -54,7 +55,12 @@ const (
 )
 
 // DefaultConfig is the default configuration reference
-var DefaultConfig = &Configuration{}
+var DefaultConfig = &Configuration{
+	// Default webHook.MaxHttpFails is 10
+	WebHookConfig: &WebHookConfig{
+		MaxHttpFails: 10,
+	},
+}
 
 // Configuration loads and keeps the related configuration items of job service.
 type Configuration struct {
@@ -75,6 +81,9 @@ type Configuration struct {
 
 	// Logger configurations
 	LoggerConfigs []*LoggerConfig `yaml:"loggers,omitempty"`
+
+	// WebHook configurations
+	WebHookConfig *WebHookConfig `yaml:"webhook_config,omitempty"`
 }
 
 // HTTPSConfig keeps additional configurations when using https protocol
@@ -112,6 +121,11 @@ type LoggerConfig struct {
 	Level    string             `yaml:"level"`
 	Settings CustomizedSettings `yaml:"settings"`
 	Sweeper  *LogSweeperConfig  `yaml:"sweeper"`
+}
+
+// WebHookConfig keeps logger basic configurations.
+type WebHookConfig struct {
+	MaxHttpFails uint `yaml:"max_http_fails"`
 }
 
 // Load the configuration options from the specified yaml file.
@@ -243,6 +257,16 @@ func (c *Configuration) loadEnvs() {
 		}
 	}
 
+	maxFails := utils.ReadEnv(jobServiceWebHookMaxFails)
+	if !utils.IsEmptyStr(maxFails) {
+		if c.WebHookConfig == nil {
+			c.WebHookConfig = &WebHookConfig{}
+		}
+
+		if result, err := strconv.ParseUint(maxFails, 10, 32); err == nil {
+			c.WebHookConfig.MaxHttpFails = uint(result)
+		}
+	}
 }
 
 // Check if the configurations are valid settings.

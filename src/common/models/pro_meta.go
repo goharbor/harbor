@@ -21,6 +21,7 @@ import (
 // keys of project metadata and severity values
 const (
 	ProMetaPublic             = "public"
+	ProMetaPrivate            = "private"
 	ProMetaEnableContentTrust = "enable_content_trust"
 	ProMetaPreventVul         = "prevent_vul" // prevent vulnerable images from being pulled
 	ProMetaSeverity           = "severity"

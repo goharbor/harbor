@@ -11,9 +11,8 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/webhook/config"
-	"github.com/goharbor/harbor/src/webhook/execution"
-	"github.com/goharbor/harbor/src/webhook/execution/manager"
-	"github.com/goharbor/harbor/src/webhook/model"
+	"github.com/goharbor/harbor/src/webhook/job"
+	"github.com/goharbor/harbor/src/webhook/job/manager"
 )
 
 // Manager send hook
@@ -23,15 +22,15 @@ type Manager interface {
 
 // DefaultManager ...
 type DefaultManager struct {
-	execMgr execution.Manager
-	client  cJob.Client
+	jobMgr job.Manager
+	client cJob.Client
 }
 
 // NewHookManager ...
 func NewHookManager() *DefaultManager {
 	return &DefaultManager{
-		execMgr: manager.NewDefaultManager(),
-		client:  utils.GetJobServiceClient(),
+		jobMgr: manager.NewDefaultManager(),
+		client: utils.GetJobServiceClient(),
 	}
 }
 
@@ -39,9 +38,8 @@ func NewHookManager() *DefaultManager {
 type ScheduleItem struct {
 	HookType string
 	PolicyID int64
-	Target   *model.HookTarget
+	Target   *cModels.HookTarget
 	Payload  interface{}
-	IsTest   bool
 }
 
 // StartHook ...
@@ -52,7 +50,7 @@ func (hm *DefaultManager) StartHook(item *ScheduleItem, data *models.JobData) er
 	}
 
 	t := time.Now()
-	id, err := hm.execMgr.Create(&cModels.WebhookExecution{
+	id, err := hm.jobMgr.Create(&cModels.WebhookJob{
 		PolicyID:     item.PolicyID,
 		HookType:     item.HookType,
 		NotifyType:   item.Target.Type,
@@ -62,34 +60,35 @@ func (hm *DefaultManager) StartHook(item *ScheduleItem, data *models.JobData) er
 		JobDetail:    string(payload),
 	})
 	if err != nil {
-		return fmt.Errorf("failed to create the execution record for webhook based on policy %d: %v", item.PolicyID, err)
+		return fmt.Errorf("failed to create the job record for webhook based on policy %d: %v", item.PolicyID, err)
 	}
 	statusHookURL := fmt.Sprintf("%s/service/notifications/jobs/webhook/%d", config.Config.CoreURL, id)
 	data.StatusHook = statusHookURL
 
-	log.Debugf("created a webhook execution %d for the policy %d", id, item.PolicyID)
+	log.Debugf("created a webhook job %d for the policy %d", id, item.PolicyID)
 
 	// submit hook job to jobservice
-	go func() {
-		whExecution := &cModels.WebhookExecution{
-			ID:         id,
-			UpdateTime: time.Now(),
-		}
-
-		jobUUID, err := hm.client.SubmitJob(data)
-		if err != nil {
-			log.Errorf("failed to process the webhook event: %v", err)
-			e := hm.execMgr.Update(whExecution, "Status", "UpdateTime")
-			if e != nil {
-				log.Errorf("failed to update the webhook execution %d: %v", id, e)
-			}
-			return
-		}
-		whExecution.UUID = jobUUID
-		e := hm.execMgr.Update(whExecution, "UUID", "UpdateTime")
+	jobUUID, err := hm.client.SubmitJob(data)
+	if err != nil {
+		log.Errorf("failed to process the webhook event: %v", err)
+		e := hm.jobMgr.UpdateJobStatus(id, cModels.JobError)
 		if e != nil {
-			log.Errorf("failed to update the webhook execution %d: %v", id, e)
+			log.Errorf("failed to update the webhook job status %d: %v", id, e)
 		}
-	}()
+		return err
+	}
+	err = hm.jobMgr.UpdateJobStatus(id, cModels.JobRunning, cModels.JobPending)
+	if err != nil {
+		log.Errorf("failed to update the webhook job status %d: %v", id, err)
+		return err
+	}
+
+	if err = hm.jobMgr.Update(&cModels.WebhookJob{
+		ID:   id,
+		UUID: jobUUID,
+	}, "UUID"); err != nil {
+		log.Errorf("failed to update the webhook job %d: %v", id, err)
+		return err
+	}
 	return nil
 }

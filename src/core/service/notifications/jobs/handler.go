@@ -105,10 +105,10 @@ func (h *Handler) HandleReplicationTask() {
 	}
 }
 
-// HandleWebhookExecution handles the hook of webhook execution
-func (h *Handler) HandleWebhookExecution() {
+// HandleWebhookJob handles the hook of webhook job
+func (h *Handler) HandleWebhookJob() {
 	log.Debugf("received webhook task status update event: task-%d, status-%s", h.id, h.status)
-	if err := webhook.ExecutionCtl.UpdateWebhookExecution(&models.WebhookExecution{
+	if err := webhook.JobCtl.UpdateWebhookJob(&models.WebhookJob{
 		ID:         h.id,
 		Status:     h.status,
 		UpdateTime: time.Now(),

@@ -2,16 +2,20 @@ package model
 
 // Payload of webhook event
 type Payload struct {
-	Type       string       `json:"type"`
-	OccurAt    int64        `json:"occur_at"`
-	MediaType  string       `json:"media_type"`
-	EventData  []*EventData `json:"event_data,omitempty"`
-	Repository *Repository  `json:"repository"`
-	Operator   string       `json:"operator"`
+	Type      string     `json:"type"`
+	OccurAt   int64      `json:"occur_at"`
+	EventData *EventData `json:"event_data,omitempty"`
+	Operator  string     `json:"operator"`
 }
 
-// EventData of image webhook event
+// EventData of webhook event payload
 type EventData struct {
+	Resources  []*Resource `json:"resources"`
+	Repository *Repository `json:"repository"`
+}
+
+// Resource describe infos of resource triggered webhook
+type Resource struct {
 	Digest       string        `json:"digest,omitempty"`
 	Tag          string        `json:"tag"`
 	ResourceURL  string        `json:"resource_url,omitempty"`
@@ -20,7 +24,7 @@ type EventData struct {
 
 // Repository info of webhook event
 type Repository struct {
-	DateCreated  int64  `json:"date_created"`
+	DateCreated  int64  `json:"date_created,omitempty"`
 	Name         string `json:"name"`
 	Namespace    string `json:"namespace"`
 	RepoFullName string `json:"repo_full_name"`

@@ -1,114 +1,87 @@
 package manager
 
 import (
-	"bytes"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
-	persistModels "github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/webhook/model"
 )
 
-var testPayload = model.Payload{
-	Type:      model.EventTypeTestPolicy,
-	OccurAt:   time.Now().Unix(),
-	MediaType: "containerImage",
-	EventData: []*model.EventData{
-		{
-			Digest:      "sha256:457f4aa83fc9a6663ab9d1b0a6e2dce25a12a943ed5bf2c1747c58d48bbb4917",
-			Tag:         "testTag",
-			ResourceURL: "repo.harbor.com/testnamespace/repoTest:testTag",
-		},
-	},
-	Repository: &model.Repository{
-		DateCreated:  time.Now().Unix(),
-		Name:         "repoTest",
-		RepoFullName: "testnamespace/repoTest",
-		Namespace:    "testnamespace",
-		RepoType:     "public",
-	},
-	Operator: "test",
-}
-
 // DefaultManager ...
 type DefaultManager struct {
-	client *http.Client
 }
 
 // NewDefaultManger ...
 func NewDefaultManger() *DefaultManager {
-	return &DefaultManager{
-		client: &http.Client{},
-	}
+	return &DefaultManager{}
 }
 
 // Create webhook policy
-func (m *DefaultManager) Create(policy *model.WebhookPolicy) (int64, error) {
+func (m *DefaultManager) Create(policy *models.WebhookPolicy) (int64, error) {
 	t := time.Now()
 	policy.CreationTime = t
 	policy.UpdateTime = t
 
-	ply, err := convertToPersistModel(policy)
+	err := policy.ConvertToDBModel()
 	if err != nil {
 		return 0, err
 	}
-	return dao.AddWebhookPolicy(ply)
+	return dao.AddWebhookPolicy(policy)
 }
 
 // List the webhook policies, returns the total count, policy list and error
-func (m *DefaultManager) List(projectID int64) (int64, []*model.WebhookPolicy, error) {
-	var policies []*model.WebhookPolicy
+func (m *DefaultManager) List(projectID int64) (int64, []*models.WebhookPolicy, error) {
+	policies := []*models.WebhookPolicy{}
 	total, persisPolicies, err := dao.GetWebhookPolicies(projectID)
 	if err != nil {
 		return total, nil, err
 	}
 
 	for _, policy := range persisPolicies {
-		ply, err := convertFromPersistModel(policy)
+		err := policy.ConvertFromDBModel()
 		if err != nil {
 			return 0, nil, err
 		}
-		policies = append(policies, ply)
+		policies = append(policies, policy)
 	}
 
-	if policies == nil {
-		policies = []*model.WebhookPolicy{}
-	}
 	return total, policies, nil
 }
 
 // Get webhook policy with specified ID
-func (m *DefaultManager) Get(id int64) (*model.WebhookPolicy, error) {
+func (m *DefaultManager) Get(id int64) (*models.WebhookPolicy, error) {
 	policy, err := dao.GetWebhookPolicy(id)
 	if err != nil {
 		return nil, err
 	}
-	return convertFromPersistModel(policy)
+	err = policy.ConvertFromDBModel()
+	return policy, err
 }
 
 // GetByNameAndProjectID webhook policy by the name and projectID
-func (m *DefaultManager) GetByNameAndProjectID(name string, projectID int64) (*model.WebhookPolicy, error) {
+func (m *DefaultManager) GetByNameAndProjectID(name string, projectID int64) (*models.WebhookPolicy, error) {
 	policy, err := dao.GetWebhookPolicyByName(name, projectID)
 	if err != nil {
 		return nil, err
 	}
-	return convertFromPersistModel(policy)
+	err = policy.ConvertFromDBModel()
+	return policy, err
 }
 
 // Update the specified webhook policy
-func (m *DefaultManager) Update(policy *model.WebhookPolicy) error {
+func (m *DefaultManager) Update(policy *models.WebhookPolicy) error {
 	policy.UpdateTime = time.Now()
-	ply, err := convertToPersistModel(policy)
+	err := policy.ConvertToDBModel()
 	if err != nil {
 		return err
 	}
-	return dao.UpdateWebhookPolicy(ply)
+	return dao.UpdateWebhookPolicy(policy)
 }
 
 // Delete the specified webhook policy
@@ -116,9 +89,11 @@ func (m *DefaultManager) Delete(policyID int64) error {
 	return dao.DeleteWebhookPolicy(policyID)
 }
 
-// Test the specified webhook policy
-func (m *DefaultManager) Test(policy *model.WebhookPolicy) error {
-	p, err := json.Marshal(testPayload)
+// Test the specified webhook policy, just test for network connection without request body
+func (m *DefaultManager) Test(policy *models.WebhookPolicy) error {
+	p, err := json.Marshal(model.Payload{
+		Type: model.EventTypeTestEndpoint,
+	})
 	if err != nil {
 		return err
 	}
@@ -126,7 +101,7 @@ func (m *DefaultManager) Test(policy *model.WebhookPolicy) error {
 	for _, target := range policy.Targets {
 		switch target.Type {
 		case "http":
-			return m.policyHTTPTest(target.Address, target.Secret, p)
+			return m.policyHTTPTest(target.Address, target.SkipCertVerify, p)
 		default:
 			return fmt.Errorf("invalid policy target type: %s", target.Type)
 		}
@@ -134,118 +109,47 @@ func (m *DefaultManager) Test(policy *model.WebhookPolicy) error {
 	return nil
 }
 
-func (m *DefaultManager) policyHTTPTest(address, secret string, payload []byte) error {
-	p := bytes.NewReader(payload)
-	req, err := http.NewRequest(http.MethodPost, address, p)
+func (m *DefaultManager) policyHTTPTest(address string, skipCertVerify bool, p []byte) error {
+	req, err := http.NewRequest(http.MethodPost, address, nil)
 	if err != nil {
 		return err
 	}
 
-	if secret != "" {
-		req.Header.Set("Authorization", "Secret "+secret)
+	req.Header.Set("Content-Type", "application/json")
+
+	client := http.Client{
+		Transport: registry.GetHTTPTransport(skipCertVerify),
 	}
 
-	resp, err := m.client.Do(req)
+	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-
-	if resp.StatusCode < 200 || resp.StatusCode > 300 {
-		return fmt.Errorf("policy test failed with response code %d", resp.StatusCode)
-	}
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		log.Error("read policy test response body failed: %v", err)
-	}
-	log.Debugf("policy test response code %d, body: %s", resp.StatusCode, string(body))
+	log.Debugf("policy test success with address %s, skip cert verify :%v", address, skipCertVerify)
 
 	return nil
 }
 
-func convertToPersistModel(policy *model.WebhookPolicy) (*persistModels.WebhookPolicy, error) {
-	if policy == nil {
-		return nil, errors.New("nil webhook policy model")
-	}
-
-	ply := &persistModels.WebhookPolicy{
-		ID:           policy.ID,
-		Name:         policy.Name,
-		Description:  policy.Description,
-		ProjectID:    policy.ProjectID,
-		Creator:      policy.Creator,
-		CreationTime: policy.CreationTime,
-		UpdateTime:   policy.UpdateTime,
-		Enabled:      policy.Enabled,
-	}
-
-	if len(policy.Targets) != 0 {
-		targets, err := json.Marshal(policy.Targets)
-		if err != nil {
-			return nil, err
-		}
-		ply.Targets = string(targets)
-	}
-
-	if len(policy.HookTypes) > 0 {
-		hookTypes, err := json.Marshal(policy.HookTypes)
-		if err != nil {
-			return nil, err
-		}
-		ply.HookTypes = string(hookTypes)
-	}
-	return ply, nil
-}
-
-func convertFromPersistModel(policy *persistModels.WebhookPolicy) (*model.WebhookPolicy, error) {
-	if policy == nil {
-		return nil, nil
-	}
-
-	ply := model.WebhookPolicy{
-		ID:           policy.ID,
-		Name:         policy.Name,
-		Description:  policy.Description,
-		ProjectID:    policy.ProjectID,
-		Creator:      policy.Creator,
-		CreationTime: policy.CreationTime,
-		UpdateTime:   policy.UpdateTime,
-		Enabled:      policy.Enabled,
-	}
-
-	hookTypes, err := parseHookTypes(policy.HookTypes)
+// GetRelatedPolices get policies including hook type in project
+func (m *DefaultManager) GetRelatedPolices(projectID int64, hookType string) ([]*models.WebhookPolicy, error) {
+	_, policies, err := m.List(projectID)
 	if err != nil {
-		return nil, err
-	}
-	ply.HookTypes = hookTypes
-
-	targets, err := parseTargets(policy.Targets)
-	if err != nil {
-		return nil, err
-	}
-	ply.Targets = targets
-	return &ply, nil
-}
-
-func parseTargets(targets string) ([]model.HookTarget, error) {
-	if len(targets) == 0 {
-		return nil, nil
-	}
-	var t []model.HookTarget
-	if err := json.Unmarshal([]byte(targets), &t); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("failed to get webhook policies with projectID %d: %v", projectID, err)
 	}
 
-	return t, nil
-}
+	var result []*models.WebhookPolicy
 
-func parseHookTypes(hookTypes string) ([]string, error) {
-	if len(hookTypes) == 0 {
-		return nil, nil
+	for _, ply := range policies {
+		if !ply.Enabled {
+			continue
+		}
+		for _, t := range ply.HookTypes {
+			if t != hookType {
+				continue
+			}
+			result = append(result, ply)
+		}
 	}
-	var h []string
-	if err := json.Unmarshal([]byte(hookTypes), &h); err != nil {
-		return nil, err
-	}
-	return h, nil
+	return result, nil
 }
