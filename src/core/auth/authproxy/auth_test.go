@@ -43,6 +43,7 @@ func TestMain(m *testing.M) {
 	}
 	mockSvr = test.NewMockServer(map[string]string{"jt": "pp", "Admin@vsphere.local": "Admin!23"})
 	defer mockSvr.Close()
+	defer dao.ExecuteBatchSQL([]string{"delete from user_group where group_name='OnBoardTest'"})
 	a = &Auth{
 		Endpoint:            mockSvr.URL + "/test/login",
 		TokenReviewEndpoint: mockSvr.URL + "/test/tokenreview",
@@ -50,10 +51,17 @@ func TestMain(m *testing.M) {
 		// So it won't require mocking the cfgManager
 		settingTimeStamp: time.Now(),
 	}
+	cfgMap := cut.GetUnitTestConfig()
 	conf := map[string]interface{}{
 		common.HTTPAuthProxyEndpoint:            a.Endpoint,
 		common.HTTPAuthProxyTokenReviewEndpoint: a.TokenReviewEndpoint,
 		common.HTTPAuthProxyVerifyCert:          !a.SkipCertVerify,
+		common.PostGreSQLSSLMode:                cfgMap[common.PostGreSQLSSLMode],
+		common.PostGreSQLUsername:               cfgMap[common.PostGreSQLUsername],
+		common.PostGreSQLPort:                   cfgMap[common.PostGreSQLPort],
+		common.PostGreSQLHOST:                   cfgMap[common.PostGreSQLHOST],
+		common.PostGreSQLPassword:               cfgMap[common.PostGreSQLPassword],
+		common.PostGreSQLDatabase:               cfgMap[common.PostGreSQLDatabase],
 	}
 
 	config.InitWithSettings(conf)
@@ -173,4 +181,20 @@ func TestAuth_PostAuthenticate(t *testing.T) {
 		assert.Equal(t, c.expect.Comment, c.input.Comment)
 	}
 
+}
+
+func TestAuth_OnBoardGroup(t *testing.T) {
+	input := &models.UserGroup{
+		GroupName: "OnBoardTest",
+		GroupType: common.HTTPGroupType,
+	}
+	a.OnBoardGroup(input, "")
+
+	assert.True(t, input.ID > 0, "The OnBoardGroup should have a valid group ID")
+
+	emptyGroup := &models.UserGroup{}
+	err := a.OnBoardGroup(emptyGroup, "")
+	if err == nil {
+		t.Fatal("Empty user group should failed to OnBoard")
+	}
 }

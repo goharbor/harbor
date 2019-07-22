@@ -144,11 +144,7 @@ func UpdateUserGroupName(id int, groupName string) error {
 	return err
 }
 
-// OnBoardUserGroup will check if a usergroup exists in usergroup table, if not insert the usergroup and
-// put the id in the pointer of usergroup model, if it does exist, return the usergroup's profile.
-// This is used for ldap and uaa authentication, such the usergroup can have an ID in Harbor.
-// the keyAttribute and combinedKeyAttribute are key columns used to check duplicate usergroup in harbor
-func OnBoardUserGroup(g *models.UserGroup, keyAttribute string, combinedKeyAttributes ...string) error {
+func onBoardCommonUserGroup(g *models.UserGroup, keyAttribute string, combinedKeyAttributes ...string) error {
 	g.LdapGroupDN = utils.TrimLower(g.LdapGroupDN)
 
 	o := dao.GetOrmer()
@@ -171,4 +167,13 @@ func OnBoardUserGroup(g *models.UserGroup, keyAttribute string, combinedKeyAttri
 	}
 
 	return nil
+}
+
+// OnBoardUserGroup will check if a usergroup exists in usergroup table, if not insert the usergroup and
+// put the id in the pointer of usergroup model, if it does exist, return the usergroup's profile.
+func OnBoardUserGroup(g *models.UserGroup) error {
+	if g.GroupType == common.LDAPGroupType {
+		return onBoardCommonUserGroup(g, "LdapGroupDN", "GroupType")
+	}
+	return onBoardCommonUserGroup(g, "GroupName", "GroupType")
 }

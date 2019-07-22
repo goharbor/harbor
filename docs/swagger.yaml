@@ -3478,6 +3478,37 @@ paths:
           description: The robot account is not found.
         '500':
           description: Unexpected internal errors.
+  '/system/oidc/ping':
+    post:
+      summary: Test the OIDC endpoint.
+      description: Test the OIDC endpoint, the setting of the endpoint is provided in the request.  This API can only
+        be called by system admin.
+      tags:
+        - Products
+        - System
+      parameters:
+        - name: endpoint
+          in: body
+          description: Request body for OIDC endpoint to be tested.
+          required: true
+          schema:
+            type: object
+            properties:
+              url:
+                type: string
+                description: The URL of OIDC endpoint to be tested.
+              verify_cert:
+                type: boolean
+                description: Whether the certificate should be verified
+      responses:
+        '200':
+          description: Ping succeeded.  The OIDC endpoint is valid.
+        '400':
+          description: The ping failed
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission to call this API
   '/system/CVEWhitelist':
     get:
       summary: Get the system level whitelist of CVE.

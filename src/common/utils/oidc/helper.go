@@ -206,3 +206,19 @@ func RefreshToken(ctx context.Context, token *Token) (*Token, error) {
 	}
 	return &Token{Token: *t, IDToken: it}, nil
 }
+
+// Conn wraps connection info of an OIDC endpoint
+type Conn struct {
+	URL        string `json:"url"`
+	VerifyCert bool   `json:"verify_cert"`
+}
+
+// TestEndpoint tests whether the endpoint is a valid OIDC endpoint.
+// The nil return value indicates the success of the test
+func TestEndpoint(conn Conn) error {
+
+	// gooidc will try to call the discovery api when creating the provider and that's all we need to check
+	ctx := clientCtx(context.Background(), conn.VerifyCert)
+	_, err := gooidc.NewProvider(ctx, conn.URL)
+	return err
+}

@@ -44,42 +44,46 @@
                             {{'ROBOT_ACCOUNT.PERMISSIONS' | translate}}
                         </label>
                     </div>
-                    <div class="clr-col">
-                        <div class="form-group padding-left-120">
-                            <label>{{'ROBOT_ACCOUNT.PERMISSIONS_IMAGE' | translate}}</label>
-                            <div class="radio-inline">
-                                <input type="radio" name="image-permission"
-                                       id="image-permission-pull"
-                                       value="pull"
-                                       [(ngModel)]="imagePermission">
-                                <label for="image-permission-pull">{{'ROBOT_ACCOUNT.PULL' | translate}}</label>
-                            </div>
-                            <div class="radio-inline">
-                                <input type="radio" name="image-permission"
-                                       id="image-permission-push-and-pull"
-                                       value="push-and-pull"
-                                       [(ngModel)]="imagePermission">
-                                <label for="image-permission-push-and-pull">{{'ROBOT_ACCOUNT.PUSH' | translate}}
-                                    & {{'ROBOT_ACCOUNT.PULL' | translate}}</label>
-                            </div>
-                        </div>
-                        <div class="form-group padding-left-120">
-                            <label>{{'ROBOT_ACCOUNT.PERMISSIONS_HELMCHART' | translate}}</label>
-                            <div class="checkbox-inline">
-                                <input type="checkbox" id="helm-permission-push"
-                                       [checked]="robot.access.isPushChart"
-                                       [(ngModel)]="robot.access.isPushChart"
-                                       name="helm-permission">
-                                <label for="helm-permission-push">{{'ROBOT_ACCOUNT.PUSH' | translate}}</label>
-                            </div>
-                            <div class="checkbox-inline">
-                                <input type="checkbox" id="helm-permission-pull"
-                                       [checked]="robot.access.isPullChart"
-                                       [(ngModel)]="robot.access.isPullChart"
-                                       name="helm-permission">
-                                <label for="helm-permission-pull">{{'ROBOT_ACCOUNT.PULL' | translate}}</label>
-                            </div>
-                        </div>
+                    <div class="clr-col p-0">
+                        <table class="table table-noborder m-0 w-90">
+                                <tr>
+                                    <th></th>
+                                    <th class="left">{{'ROBOT_ACCOUNT.PUSH' | translate}}</th>
+                                    <th class="left">{{'ROBOT_ACCOUNT.PULL' | translate}}</th>
+                                </tr>
+                                <tr>
+                                    <td class="left">
+                                        <span>{{'ROBOT_ACCOUNT.PERMISSIONS_IMAGE' | translate}}</span>
+                                        <clr-tooltip>
+                                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                                            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                                <span>{{'ROBOT_ACCOUNT.PULL_IS_MUST' | translate}}</span>
+                                            </clr-tooltip-content>
+                                        </clr-tooltip>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="image-permission-push"
+                                               [(ngModel)]="imagePermissionPush" clrCheckbox>
+                                    </td>
+                                    <td class="clr-form-control-disabled">
+                                        <input  disabled type="checkbox" name="image-permission-pull"
+                                               [(ngModel)]="imagePermissionPull" clrCheckbox>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="left">{{'ROBOT_ACCOUNT.PERMISSIONS_HELMCHART' | translate}}</td>
+                                    <td>
+                                        <input type="checkbox"
+                                               [(ngModel)]="robot.access.isPushChart"
+                                               name="helm-permission" clrCheckbox>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox"
+                                               [(ngModel)]="robot.access.isPullChart"
+                                               name="helm-permission" clrCheckbox>
+                                    </td>
+                                </tr>
+                            </table>
                     </div>
                 </div>
             </section>
