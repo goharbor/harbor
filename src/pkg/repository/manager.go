@@ -29,6 +29,8 @@ type Manager interface {
 	ListImageRepositories(projectID int64) ([]*models.RepoRecord, error)
 	// List chart repositories under the project specified by the ID
 	ListChartRepositories(projectID int64) ([]*chartserver.ChartInfo, error)
+	// IsChartServerEnabled returns whether the chart server is enabled
+	IsChartServerEnabled() bool
 }
 
 // New returns a default implementation of Manager
@@ -58,4 +60,8 @@ func (m *manager) ListChartRepositories(projectID int64) ([]*chartserver.ChartIn
 		return nil, err
 	}
 	return m.chartCtl.ListCharts(project.Name)
+}
+
+func (m *manager) IsChartServerEnabled() bool {
+	return m.chartCtl != nil
 }

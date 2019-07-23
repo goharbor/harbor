@@ -225,14 +225,20 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 			Kind:       "image",
 		})
 	}
-	// get chart repositories
-	chartRepositories, err := repositoryMgr.ListChartRepositories(projectID)
-	for _, r := range chartRepositories {
-		candidates = append(candidates, &res.Candidate{
-			Namespace:  pro.Name,
-			Repository: r.Name,
-			Kind:       "chart",
-		})
+	// get chart repositories when chart server is enabled
+	if repositoryMgr.IsChartServerEnabled() {
+		chartRepositories, err := repositoryMgr.ListChartRepositories(projectID)
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range chartRepositories {
+			candidates = append(candidates, &res.Candidate{
+				Namespace:  pro.Name,
+				Repository: r.Name,
+				Kind:       "chart",
+			})
+		}
 	}
+
 	return candidates, nil
 }
