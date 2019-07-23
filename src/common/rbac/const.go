@@ -48,7 +48,7 @@ const (
 	ResourceReplicationExecution       = Resource("replication-execution")
 	ResourceReplicationTask            = Resource("replication-task")
 	ResourceRepository                 = Resource("repository")
-	ResourceTagRetention               = Resource("tag-rentention")
+	ResourceTagRetention               = Resource("tag-retention")
 	ResourceRepositoryLabel            = Resource("repository-label")
 	ResourceRepositoryTag              = Resource("repository-tag")
 	ResourceRepositoryTagLabel         = Resource("repository-tag-label")

@@ -91,7 +91,7 @@ func TestPolicy(t *testing.T) {
 	assert.Nil(t, err)
 	assert.EqualValues(t, "test", p1.ScopeLevel)
 
-	err = DeletePolicy(id)
+	err = DeletePolicyAndExec(id)
 	assert.Nil(t, err)
 
 	p1, err = GetPolicy(id)

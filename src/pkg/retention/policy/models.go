@@ -22,9 +22,12 @@ const (
 	// AlgorithmOR for OR algorithm
 	AlgorithmOR = "or"
 
+	// TriggerKindSchedule Schedule
 	TriggerKindSchedule = "Schedule"
 
+	// TriggerReferencesJobid job_id
 	TriggerReferencesJobid = "job_id"
+	// TriggerSettingsCron cron
 	TriggerSettingsCron = "cron"
 )
 

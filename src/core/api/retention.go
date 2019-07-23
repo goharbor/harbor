@@ -22,12 +22,12 @@ func (r *RetentionAPI) Prepare() {
 		r.SendUnAuthorizedError(errors.New("UnAuthorized"))
 		return
 	}
-	if p, e := filter.GetProjectManager(r.Ctx.Request); e != nil {
+	p, e := filter.GetProjectManager(r.Ctx.Request)
+	if e != nil {
 		r.SendInternalServerError(e)
 		return
-	} else {
-		r.api = retention.NewAPIController(p, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
 	}
+	r.api = retention.NewAPIController(p, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
 
 }
 

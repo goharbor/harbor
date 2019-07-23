@@ -90,7 +90,7 @@ func (f *fakeRetentionManager) CreatePolicy(p *policy.Metadata) (int64, error) {
 func (f *fakeRetentionManager) UpdatePolicy(p *policy.Metadata) error {
 	return nil
 }
-func (f *fakeRetentionManager) DeletePolicy(ID int64) error {
+func (f *fakeRetentionManager) DeletePolicyAndExec(ID int64) error {
 	return nil
 }
 func (f *fakeRetentionManager) GetPolicy(ID int64) (*policy.Metadata, error) {
