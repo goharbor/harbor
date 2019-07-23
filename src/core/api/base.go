@@ -17,6 +17,7 @@ package api
 import (
 	"errors"
 	"github.com/goharbor/harbor/src/pkg/retention"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"net/http"
 
 	"github.com/ghodss/yaml"
@@ -43,6 +44,8 @@ var (
 	projectMgr         project.Manager
 	repositoryMgr      repository.Manager
 	retentionScheduler retention.Scheduler
+	retentionMgr       retention.Manager
+	retentionLauncher  retention.Launcher
 )
 
 // BaseController ...
@@ -111,6 +114,10 @@ func Init() error {
 	initRepositoryManager()
 
 	initRetentionScheduler()
+
+	retentionMgr = retention.NewManager()
+
+	retentionLauncher = retention.NewLauncher(projectMgr, repositoryMgr, retentionMgr, dep.DefaultClient)
 
 	return nil
 }

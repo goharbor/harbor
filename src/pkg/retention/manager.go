@@ -35,7 +35,7 @@ type Manager interface {
 	UpdatePolicy(p *policy.Metadata) error
 	// Delete the specified policy
 	// No actual use so far
-	DeletePolicy(ID int64) error
+	DeletePolicyAndExec(ID int64) error
 	// Get the specified policy
 	GetPolicy(ID int64) (*policy.Metadata, error)
 	// Create a new retention execution
@@ -90,9 +90,9 @@ func (d *DefaultManager) UpdatePolicy(p *policy.Metadata) error {
 	return dao.UpdatePolicy(p1, "scope_level", "trigger_kind", "data", "update_time")
 }
 
-// DeletePolicy Delete Policy
-func (d *DefaultManager) DeletePolicy(id int64) error {
-	return dao.DeletePolicy(id)
+// DeletePolicyAndExec Delete Policy
+func (d *DefaultManager) DeletePolicyAndExec(id int64) error {
+	return dao.DeletePolicyAndExec(id)
 }
 
 // GetPolicy Get Policy

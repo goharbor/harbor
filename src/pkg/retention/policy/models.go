@@ -21,6 +21,11 @@ import (
 const (
 	// AlgorithmOR for OR algorithm
 	AlgorithmOR = "or"
+
+	TriggerKindSchedule = "Schedule"
+
+	TriggerReferencesJobid = "job_id"
+	TriggerSettingsCron = "cron"
 )
 
 // Metadata of policy

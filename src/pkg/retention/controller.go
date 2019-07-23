@@ -20,7 +20,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
 	"strconv"
@@ -59,6 +58,7 @@ type APIController interface {
 // DefaultAPIController ...
 type DefaultAPIController struct {
 	manager           Manager
+	launcher          Launcher
 	projectManager    promgr.ProjectManager
 	projectManagerNew project.Manager
 	repositoryMgr     repository.Manager
@@ -109,36 +109,51 @@ func (r *DefaultAPIController) UpdateRetention(p *policy.Metadata) error {
 	if err != nil {
 		return err
 	}
-	if p0.Trigger.Kind == "Schedule" {
-		if p.Trigger.Kind == "Schedule" {
-			if p0.Trigger.Settings["cron"] != p.Trigger.Settings["cron"] {
-				err = r.scheduler.UnSchedule(p0.Trigger.References["jobid"].(string))
-				if err != nil {
-					return err
-				}
-				jobid, err := r.scheduler.Schedule(strconv.FormatInt(p.ID, 10), p.Trigger.Settings["cron"].(string))
-				if err != nil {
-					return err
-				}
-				p.Trigger.References["jobid"] = jobid
-			} else {
-				p.Trigger.References["jobid"] = p0.Trigger.References["jobid"]
-			}
-		} else {
-			err = r.scheduler.UnSchedule(p0.Trigger.References["jobid"].(string))
-			if err != nil {
-				return err
-			}
+	needUn := false
+	needSch := false
+
+	if p0.Trigger.Kind != p.Trigger.Kind {
+		if p0.Trigger.Kind == policy.TriggerKindSchedule {
+			needUn = true
+		}
+
+		if p.Trigger.Kind == policy.TriggerKindSchedule {
+			needSch = true
 		}
 	} else {
-		if p.Trigger.Kind == "Schedule" {
-			jobid, err := r.scheduler.Schedule(strconv.FormatInt(p.ID, 10), p.Trigger.Settings["cron"].(string))
-			if err != nil {
-				return err
+		switch p.Trigger.Kind {
+		case policy.TriggerKindSchedule:
+			if p0.Trigger.Settings["cron"] != p.Trigger.Settings["cron"] {
+				// unschedule old
+				if len(p0.Trigger.References[policy.TriggerReferencesJobid].(string)) > 0 {
+					needUn = true
+				}
+				// schedule new
+				if len(p.Trigger.Settings[policy.TriggerSettingsCron].(string)) > 0 {
+					// valid cron
+					needSch = true
+				}
 			}
-			p.Trigger.References["jobid"] = jobid
+		case "":
+
+		default:
+			return fmt.Errorf("Not support trigger %s", p.Trigger.Kind)
 		}
 	}
+	if needUn {
+		err = r.scheduler.UnSchedule(p0.Trigger.References[policy.TriggerReferencesJobid].(string))
+		if err != nil {
+			return err
+		}
+	}
+	if needSch {
+		jobid, err := r.scheduler.Schedule(strconv.FormatInt(p.ID, 10), p.Trigger.Settings[policy.TriggerSettingsCron].(string))
+		if err != nil {
+			return err
+		}
+		p.Trigger.References[policy.TriggerReferencesJobid] = jobid
+	}
+
 	return r.manager.UpdatePolicy(p)
 }
 
@@ -148,32 +163,18 @@ func (r *DefaultAPIController) DeleteRetention(id int64) error {
 	if err != nil {
 		return err
 	}
-	if p.Trigger.Kind == "Schedule" {
-		err = r.scheduler.UnSchedule(p.Trigger.References["jobid"].(string))
+	if p.Trigger.Kind == policy.TriggerKindSchedule && len(p.Trigger.Settings[policy.TriggerSettingsCron].(string)) > 0 {
+		err = r.scheduler.UnSchedule(p.Trigger.References[policy.TriggerReferencesJobid].(string))
 		if err != nil {
 			return err
 		}
 	}
 
-	execs, err := r.manager.ListExecutions(id, nil)
-	if err != nil {
-		return err
-	}
-	for _, e := range execs {
-		err = r.manager.DeleteTasks(e.ID, nil)
-		if err != nil {
-			return err
-		}
-		err = r.manager.DeleteExecutions(e.ID, nil)
-		return err
-	}
-
-	return r.manager.DeletePolicy(id)
+	return r.manager.DeletePolicyAndExec(id)
 }
 
 // TriggerRetentionExec Trigger Retention Execution
 func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger string) error {
-	launcher := NewLauncher(r.projectManagerNew, r.repositoryMgr, r.manager, dep.DefaultClient)
 	p, err := r.manager.GetPolicy(policyID)
 	if err != nil {
 		return err
@@ -182,11 +183,11 @@ func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger stri
 	exec := &Execution{
 		PolicyID:  policyID,
 		StartTime: time.Now(),
-		Status:    "Running",
+		Status:    ExecutionStatusInProgress,
 		Trigger:   trigger,
 	}
 	id, err := r.manager.CreateExecution(exec)
-	num, err := launcher.Launch(p, id)
+	num, err := r.launcher.Launch(p, id)
 	if err != nil {
 		return err
 	}
@@ -194,7 +195,7 @@ func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger stri
 		exec := &Execution{
 			ID:      id,
 			EndTime: time.Now(),
-			Status:  "Success",
+			Status:  ExecutionStatusSucceed,
 		}
 		err = r.manager.UpdateExecution(exec)
 		if err != nil {
@@ -243,9 +244,10 @@ func (r *DefaultAPIController) HandleHook(policyID string, event *job.StatusChan
 }
 
 // NewAPIController ...
-func NewAPIController(projectManager promgr.ProjectManager, projectManagerNew project.Manager, repositoryMgr repository.Manager, scheduler Scheduler) APIController {
+func NewAPIController(projectManager promgr.ProjectManager, projectManagerNew project.Manager, repositoryMgr repository.Manager, scheduler Scheduler, retentionLauncher Launcher) APIController {
 	return &DefaultAPIController{
 		manager:           NewManager(),
+		launcher:          retentionLauncher,
 		projectManager:    projectManager,
 		projectManagerNew: projectManagerNew,
 		repositoryMgr:     repositoryMgr,

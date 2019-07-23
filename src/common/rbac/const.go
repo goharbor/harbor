@@ -27,6 +27,8 @@ const (
 	ActionUpdate = Action("update")
 	ActionDelete = Action("delete")
 	ActionList   = Action("list")
+
+	ActionOperate = Action("operate")
 )
 
 // const resource variables

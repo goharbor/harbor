@@ -31,6 +31,9 @@ const (
 
 	CandidateKindImage string = "image"
 	CandidateKindChart string = "chart"
+
+	ExecutionTriggerManual   string = "Manual"
+	ExecutionTriggerSchedule string = "Schedule"
 )
 
 // Execution of retention

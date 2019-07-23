@@ -22,9 +22,18 @@ func UpdatePolicy(p *models.RetentionPolicy, cols ...string) error {
 	return err
 }
 
-// DeletePolicy Delete Policy
-func DeletePolicy(id int64) error {
+// DeletePolicyAndExec Delete Policy and Exec
+func DeletePolicyAndExec(id int64) error {
 	o := dao.GetOrmer()
+	// TODO o.Raw("delete from retention_tasks ")
+	if _, err := o.Raw("delete from retention_execution where policy_id in ?", id).Exec(); err != nil {
+		return err
+	}
+	if _, err := o.Delete(&models.RetentionExecution{
+		PolicyID: id,
+	}); err != nil {
+		return err
+	}
 	_, err := o.Delete(&models.RetentionPolicy{
 		ID: id,
 	})

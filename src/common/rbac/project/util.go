@@ -93,8 +93,7 @@ var (
 		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionUpdate},
 		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionDelete},
 		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
-		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionPull},
-		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionPush},
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionOperate},
 
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},

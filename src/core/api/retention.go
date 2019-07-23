@@ -23,9 +23,10 @@ func (r *RetentionAPI) Prepare() {
 		return
 	}
 	if p, e := filter.GetProjectManager(r.Ctx.Request); e != nil {
-		panic(e)
+		r.SendInternalServerError(e)
+		return
 	} else {
-		r.api = retention.NewAPIController(p, projectMgr, repositoryMgr, retentionScheduler)
+		r.api = retention.NewAPIController(p, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
 	}
 
 }
@@ -37,56 +38,48 @@ func (r *RetentionAPI) GetMetadatas() {
     "templates": [
         {
             "rule_template": "lastXDays",
-            "display_text": "last X days",
+            "display_text": "the images from the last # days",
             "action": "retain",
             "params": [
                 {
-                    "name": "lastXDays",
-                    "display_text": "last X days",
                     "type": "int",
-                    "unit": "days",
+                    "unit": "DAYS",
                     "required": true
                 }
             ]
         },
         {
             "rule_template": "latestActiveK",
-            "display_text": "latest active X images",
+            "display_text": "the most recent active # images",
             "action": "retain",
             "params": [
                 {
-                    "name": "latestActiveK",
-                    "display_text": "latest active X images",
                     "type": "int",
-                    "unit": "count",
+                    "unit": "COUNT",
                     "required": true
                 }
             ]
         },
         {
             "rule_template": "latestK",
-            "display_text": "latest X images",
+            "display_text": "the most recently pushed # images",
             "action": "retain",
             "params": [
                 {
-                    "name": "latestK",
-                    "display_text": "latest X images",
                     "type": "int",
-                    "unit": "count",
+                    "unit": "COUNT",
                     "required": true
                 }
             ]
         },
         {
             "rule_template": "latestPulledK",
-            "display_text": "latest pulled X images",
+            "display_text": "the most recently pulled # images",
             "action": "retain",
             "params": [
                 {
-                    "name": "latestPulledK",
-                    "display_text": "latest pulled X images",
                     "type": "int",
-                    "unit": "count",
+                    "unit": "COUNT",
                     "required": true
                 }
             ]
@@ -97,10 +90,8 @@ func (r *RetentionAPI) GetMetadatas() {
             "action": "retain",
             "params": [
                 {
-                    "name": "always",
-                    "display_text": "always",
                     "type": "int",
-                    "unit": "count",
+                    "unit": "COUNT",
                     "required": true
                 }
             ]
@@ -171,7 +162,7 @@ func (r *RetentionAPI) CreateRetention() {
 		return
 	}
 	if err = r.api.CreateRetention(p); err != nil {
-		r.SendBadRequestError(err)
+		r.SendInternalServerError(err)
 		return
 	}
 }
@@ -194,7 +185,7 @@ func (r *RetentionAPI) UpdateRetention() {
 		return
 	}
 	if err = r.api.UpdateRetention(p); err != nil {
-		r.SendBadRequestError(err)
+		r.SendInternalServerError(err)
 		return
 	}
 }
@@ -214,8 +205,8 @@ func (r *RetentionAPI) TriggerRetentionExec() {
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
-	if err = r.api.TriggerRetentionExec(id, "manual"); err != nil {
-		r.SendBadRequestError(err)
+	if err = r.api.TriggerRetentionExec(id, retention.ExecutionTriggerManual); err != nil {
+		r.SendInternalServerError(err)
 		return
 	}
 }
@@ -241,7 +232,7 @@ func (r *RetentionAPI) StopRetentionExec() {
 		return
 	}
 	if err = r.api.StopRetentionExec(eid); err != nil {
-		r.SendBadRequestError(err)
+		r.SendInternalServerError(err)
 		return
 	}
 }
@@ -272,7 +263,7 @@ func (r *RetentionAPI) ListRetentionExec() {
 	}
 	execs, err := r.api.ListRetentionExec(id, query)
 	if err != nil {
-		r.SendBadRequestError(err)
+		r.SendInternalServerError(err)
 		return
 	}
 	r.Data["json"] = execs
@@ -310,7 +301,7 @@ func (r *RetentionAPI) ListRetentionExecHistory() {
 	}
 	his, err := r.api.ListRetentionExecHistory(eid, query)
 	if err != nil {
-		r.SendBadRequestError(err)
+		r.SendInternalServerError(err)
 		return
 	}
 	r.Data["json"] = his
