@@ -1,8 +1,9 @@
 package models
 
 import (
-	"github.com/astaxie/beego/orm"
 	"time"
+
+	"github.com/astaxie/beego/orm"
 )
 
 func init() {
@@ -45,6 +46,7 @@ type RetentionExecution struct {
 	EndTime    time.Time
 }
 
+/*
 // RetentionTask Retention Task
 type RetentionTask struct {
 	ID              int64
@@ -53,6 +55,16 @@ type RetentionTask struct {
 	RuleDisplayText string
 	Artifact        string
 	Timestamp       time.Time
+}
+*/
+
+// RetentionTask ...
+type RetentionTask struct {
+	ID          int64     `orm:"pk;auto;column(id)"`
+	ExecutionID int64     `orm:"column(execution_id)"`
+	Status      string    `orm:"column(status)"`
+	StartTime   time.Time `orm:"column(start_time)"`
+	EndTime     time.Time `orm:"column(end_time)"`
 }
 
 // RetentionScheduleJob Retention Schedule Job

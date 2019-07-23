@@ -39,12 +39,12 @@ create table retention_execution
 
 create table retention_task
 (
-	id integer PRIMARY KEY NOT NULL,
+	id SERIAL NOT NULL,
 	execution_id integer,
-	rule_id integer,
-	rule_display_text varchar(255),
-	artifact varchar(255),
-	timestamp time
+	status varchar(32),
+	start_time timestamp default CURRENT_TIMESTAMP,
+	end_time timestamp default CURRENT_TIMESTAMP,
+	PRIMARY KEY (id)
 );
 
 create table schedule
