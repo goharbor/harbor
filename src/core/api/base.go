@@ -37,6 +37,7 @@ const (
 	ScanJobType = "scan"
 )
 
+// the managers/controllers used globally
 var (
 	projectMgr    project.Manager
 	repositoryMgr repository.Manager

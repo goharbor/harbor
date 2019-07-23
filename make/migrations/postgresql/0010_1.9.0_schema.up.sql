@@ -47,12 +47,12 @@ create table retention_task
 	timestamp time
 );
 
-create table retention_schedule_job
+create table schedule
 (
-	id integer PRIMARY KEY NOT NULL,
-	status varchar(20),
-	policy_id integer,
-	job_id integer,
-	create_time time,
-	update_time time
+	id SERIAL NOT NULL,
+	job_id varchar(64),
+	status varchar(64),
+	creation_time timestamp default CURRENT_TIMESTAMP,
+	update_time timestamp default CURRENT_TIMESTAMP,
+	PRIMARY KEY (id)
 );

@@ -12,33 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package retention
+package model
 
 import (
-	"fmt"
-	"github.com/goharbor/harbor/src/jobservice/job"
 	"time"
+
+	"github.com/astaxie/beego/orm"
 )
 
-// PeriodicJob is designed to generate hook event periodically
-type PeriodicJob struct{}
-
-// MaxFails of the job
-func (pj *PeriodicJob) MaxFails() uint {
-	return 3
+func init() {
+	orm.RegisterModel(
+		new(Schedule))
 }
 
-// ShouldRetry indicates job can be retried if failed
-func (pj *PeriodicJob) ShouldRetry() bool {
-	return true
+// Schedule is a record for a scheduler job
+type Schedule struct {
+	ID           int64      `orm:"pk;auto;column(id)" json:"id"`
+	JobID        string     `orm:"column(job_id)" json:"job_id"`
+	Status       string     `orm:"column(status)" json:"status"`
+	CreationTime *time.Time `orm:"column(creation_time)" json:"creation_time"`
+	UpdateTime   *time.Time `orm:"column(update_time)" json:"update_time"`
 }
 
-// Validate the parameters
-func (pj *PeriodicJob) Validate(params job.Parameters) error {
-	return nil
-}
-
-// Run the job
-func (pj *PeriodicJob) Run(ctx job.Context, params job.Parameters) error {
-	return ctx.Checkin(fmt.Sprintf("pong=%d", time.Now().Unix()))
+// ScheduleQuery is query for schedule
+type ScheduleQuery struct {
+	JobID string
 }
