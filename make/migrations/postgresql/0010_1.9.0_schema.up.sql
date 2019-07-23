@@ -70,3 +70,26 @@ CREATE TABLE quota_usage (
  update_time timestamp default CURRENT_TIMESTAMP,
  UNIQUE(reference, reference_id)
 );
+
+INSERT INTO quota (reference, reference_id, hard, creation_time, update_time)
+SELECT
+ 'project',
+ CAST(project_id AS VARCHAR),
+ '{"count": -1, "storage": -1}',
+ NOW(),
+ NOW()
+FROM
+ project
+WHERE
+ deleted = 'f';
+
+INSERT INTO quota_usage (id, reference, reference_id, used, creation_time, update_time)
+SELECT
+ id,
+ reference,
+ reference_id,
+'{"count": 0, "storage": 0}',
+ creation_time,
+ update_time
+FROM
+ quota;

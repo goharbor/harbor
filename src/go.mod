@@ -2,6 +2,8 @@ module github.com/goharbor/harbor/src
 
 go 1.12
 
+replace github.com/goharbor/harbor => ../
+
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible // indirect
 	github.com/Masterminds/semver v1.4.2
@@ -44,6 +46,7 @@ require (
 	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect
 	github.com/gorilla/handlers v1.3.0
 	github.com/gorilla/mux v1.6.2
+	github.com/graph-gophers/dataloader v5.0.0+incompatible
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/jinzhu/gorm v1.9.8 // indirect
 	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
@@ -53,6 +56,7 @@ require (
 	github.com/miekg/pkcs11 v0.0.0-20170220202408-7283ca79f35e // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc0
 	github.com/opencontainers/image-spec v1.0.1 // indirect
+	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/prometheus/client_golang v0.9.4 // indirect

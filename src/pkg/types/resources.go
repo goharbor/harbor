@@ -12,13 +12,16 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package quota
+package types
 
 import (
 	"encoding/json"
 )
 
 const (
+	// UNLIMITED unlimited resource value
+	UNLIMITED = -1
+
 	// ResourceCount count, in number
 	ResourceCount ResourceName = "count"
 	// ResourceStorage storage size, in bytes
@@ -99,5 +102,14 @@ func Subtract(a ResourceList, b ResourceList) ResourceList {
 		}
 	}
 
+	return result
+}
+
+// Zero returns the result of a - a for each named resource
+func Zero(a ResourceList) ResourceList {
+	result := ResourceList{}
+	for key := range a {
+		result[key] = 0
+	}
 	return result
 }

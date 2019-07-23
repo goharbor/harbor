@@ -3629,6 +3629,14 @@ definitions:
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'
+      count_limit:
+        type: integer
+        format: int64
+        description: The count quota of the project.
+      storage_limit:
+        type: integer
+        format: int64
+        description: The storage quota of the project.
   Project:
     type: object
     properties:
@@ -4346,6 +4354,9 @@ definitions:
       auth_mode:
         type: string
         description: 'The auth mode of current system, such as "db_auth", "ldap_auth"'
+      count_per_project:
+        type: string
+        description: The default count quota for the new created projects.
       email_from:
         type: string
         description: The sender name for Email notification.
@@ -4412,6 +4423,9 @@ definitions:
       self_registration:
         type: boolean
         description: 'Whether the Harbor instance supports self-registration.  If it''s set to false, admin need to add user to the instance.'
+      storage_per_project:
+        type: string
+        description: The default storage quota for the new created projects.
       token_expiration:
         type: integer
         description: 'The expiration time of the token for internal Registry, in minutes.'
@@ -4437,6 +4451,9 @@ definitions:
       auth_mode:
         $ref: '#/definitions/StringConfigItem'
         description: 'The auth mode of current system, such as "db_auth", "ldap_auth"'
+      count_per_project:
+        $ref: '#/definitions/IntegerConfigItem'
+        description: The default count quota for the new created projects.
       email_from:
         $ref: '#/definitions/StringConfigItem'
         description: The sender name for Email notification.
@@ -4503,6 +4520,9 @@ definitions:
       self_registration:
         $ref: '#/definitions/BoolConfigItem'
         description: 'Whether the Harbor instance supports self-registration.  If it''s set to false, admin need to add user to the instance.'
+      storage_per_project:
+        $ref: '#/definitions/IntegerConfigItem'
+        description: The default storage quota for the new created projects.
       token_expiration:
         $ref: '#/definitions/IntegerConfigItem'
         description: 'The expiration time of the token for internal Registry, in minutes.'

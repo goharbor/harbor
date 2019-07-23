@@ -23,7 +23,7 @@ import (
 )
 
 var (
-	quotaReference     = "project"
+	quotaReference     = "dao"
 	quotaUserReference = "user"
 	quotaHard          = models.QuotaHard{"storage": 1024}
 	quotaHardLarger    = models.QuotaHard{"storage": 2048}
@@ -45,6 +45,7 @@ func (suite *QuotaDaoSuite) equalHard(quota1 *models.Quota, quota2 *models.Quota
 
 func (suite *QuotaDaoSuite) TearDownTest() {
 	ClearTable("quota")
+	ClearTable("quota_usage")
 }
 
 func (suite *QuotaDaoSuite) TestAddQuota() {
@@ -98,10 +99,17 @@ func (suite *QuotaDaoSuite) TestUpdateQuota() {
 }
 
 func (suite *QuotaDaoSuite) TestListQuotas() {
-	AddQuota(models.Quota{Reference: quotaReference, ReferenceID: "1", Hard: quotaHard.String()})
-	AddQuota(models.Quota{Reference: quotaReference, ReferenceID: "2", Hard: quotaHard.String()})
-	AddQuota(models.Quota{Reference: quotaReference, ReferenceID: "3", Hard: quotaHard.String()})
-	AddQuota(models.Quota{Reference: quotaUserReference, ReferenceID: "1", Hard: quotaHardLarger.String()})
+	id1, _ := AddQuota(models.Quota{Reference: quotaReference, ReferenceID: "1", Hard: quotaHard.String()})
+	AddQuotaUsage(models.QuotaUsage{ID: id1, Reference: quotaReference, ReferenceID: "1", Used: "{}"})
+
+	id2, _ := AddQuota(models.Quota{Reference: quotaReference, ReferenceID: "2", Hard: quotaHard.String()})
+	AddQuotaUsage(models.QuotaUsage{ID: id2, Reference: quotaReference, ReferenceID: "2", Used: "{}"})
+
+	id3, _ := AddQuota(models.Quota{Reference: quotaUserReference, ReferenceID: "1", Hard: quotaHardLarger.String()})
+	AddQuotaUsage(models.QuotaUsage{ID: id3, Reference: quotaUserReference, ReferenceID: "1", Used: "{}"})
+
+	id4, _ := AddQuota(models.Quota{Reference: quotaReference, ReferenceID: "3", Hard: quotaHard.String()})
+	AddQuotaUsage(models.QuotaUsage{ID: id4, Reference: quotaReference, ReferenceID: "3", Used: "{}"})
 
 	// List all the quotas
 	quotas, err := ListQuotas()
