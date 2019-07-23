@@ -16,6 +16,8 @@ package retention
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"time"
 
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
@@ -42,20 +44,16 @@ type Manager interface {
 	UpdateExecution(execution *Execution) error
 	// Get the specified execution
 	GetExecution(eid int64) (*Execution, error)
+	// List execution histories
+	ListExecutions(query *q.Query) ([]*Execution, error)
 	// List tasks histories
-	ListTasks(query *q.Query) ([]*Task, error)
+	ListTasks(query ...*q.TaskQuery) ([]*Task, error)
 	// Create a new retention task
 	CreateTask(task *Task) (int64, error)
 	// Update the specified task
-	UpdateTask(task *Task) error
+	UpdateTask(task *Task, cols ...string) error
 	// Get the log of the specified task
 	GetTaskLog(taskID int64) ([]byte, error)
-	// List execution histories
-	ListExecutions(query *q.Query) ([]*Execution, error)
-	// Add new history
-	AppendHistory(history *History) error
-	// List all the histories marked by the specified execution
-	ListHistories(executionID int64, query *q.Query) ([]*History, error)
 }
 
 // DefaultManager ...
@@ -161,17 +159,52 @@ func (d *DefaultManager) GetExecution(eid int64) (*Execution, error) {
 
 // CreateTask creates task record
 func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
-	panic("implement me")
+	if task == nil {
+		return 0, errors.New("nil task")
+	}
+	t := &models.RetentionTask{
+		ExecutionID: task.ExecutionID,
+		Status:      task.Status,
+		StartTime:   task.StartTime,
+		EndTime:     task.EndTime,
+	}
+	return dao.CreateTask(t)
 }
 
 // ListTasks lists tasks according to the query
-func (d *DefaultManager) ListTasks(query *q.Query) ([]*Task, error) {
-	panic("implement me")
+func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
+	ts, err := dao.ListTask(query...)
+	if err != nil {
+		return nil, err
+	}
+	tasks := []*Task{}
+	for _, t := range ts {
+		tasks = append(tasks, &Task{
+			ID:          t.ID,
+			ExecutionID: t.ExecutionID,
+			Status:      t.Status,
+			StartTime:   t.StartTime,
+			EndTime:     t.EndTime,
+		})
+	}
+	return tasks, nil
 }
 
 // UpdateTask updates the task
-func (d *DefaultManager) UpdateTask(task *Task) error {
-	panic("implement me")
+func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
+	if task == nil {
+		return errors.New("nil task")
+	}
+	if task.ID <= 0 {
+		return fmt.Errorf("invalid task ID: %d", task.ID)
+	}
+	return dao.UpdateTask(&models.RetentionTask{
+		ID:          task.ID,
+		ExecutionID: task.ExecutionID,
+		Status:      task.Status,
+		StartTime:   task.StartTime,
+		EndTime:     task.EndTime,
+	}, cols...)
 }
 
 // GetTaskLog gets the logs of task
@@ -179,6 +212,7 @@ func (d *DefaultManager) GetTaskLog(taskID int64) ([]byte, error) {
 	panic("implement me")
 }
 
+/*
 // ListHistories List Histories
 func (d *DefaultManager) ListHistories(executionID int64, query *q.Query) ([]*History, error) {
 	his, err := dao.ListExecHistories(executionID, query)
@@ -209,6 +243,7 @@ func (d *DefaultManager) AppendHistory(h *History) error {
 	_, err := dao.AppendExecHistory(h1)
 	return err
 }
+*/
 
 // NewManager ...
 func NewManager() Manager {

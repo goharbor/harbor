@@ -2,16 +2,18 @@ package dao
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/pkg/retention/policy"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
+	"github.com/goharbor/harbor/src/pkg/retention/policy"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/pkg/retention/q"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -95,4 +97,34 @@ func TestPolicy(t *testing.T) {
 	p1, err = GetPolicy(id)
 	assert.NotNil(t, err)
 	assert.True(t, strings.Contains(err.Error(), "no row found"))
+}
+
+func TestTask(t *testing.T) {
+	task := &models.RetentionTask{
+		ExecutionID: 1,
+		Status:      "pending",
+	}
+	// create
+	id, err := CreateTask(task)
+	require.Nil(t, err)
+
+	// update
+	task.ID = id
+	task.Status = "running"
+	err = UpdateTask(task, "Status")
+	require.Nil(t, err)
+
+	// list
+	tasks, err := ListTask(&q.TaskQuery{
+		ExecutionID: 1,
+		Status:      "running",
+	})
+	require.Nil(t, err)
+	require.Equal(t, 1, len(tasks))
+	assert.Equal(t, int64(1), tasks[0].ExecutionID)
+	assert.Equal(t, "running", tasks[0].Status)
+
+	// delete
+	err = DeleteTask(id)
+	require.Nil(t, err)
 }

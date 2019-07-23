@@ -1,11 +1,12 @@
 package controllers
 
 import (
+	"time"
+
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
-	"time"
 )
 
 // RetentionAPI ...
@@ -155,15 +156,15 @@ func (r *RetentionAPI) ListRetentionExecHistory() {
 		r.SendInternalServerError(err)
 		return
 	}
-	query := &q.Query{
-		PageNumber: page,
-		PageSize:   size,
-	}
-	his, err := r.manager.ListHistories(eid, query)
+	tasks, err := r.manager.ListTasks(&q.TaskQuery{
+		ExecutionID: eid,
+		PageNumber:  page,
+		PageSize:    size,
+	})
 	if err != nil {
 		r.SendBadRequestError(err)
 		return
 	}
-	r.Data["json"] = his
+	r.Data["json"] = tasks
 	r.ServeJSON()
 }

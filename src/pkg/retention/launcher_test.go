@@ -19,14 +19,13 @@ import (
 	"strconv"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
-
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
@@ -116,13 +115,13 @@ func (f *fakeRetentionManager) UpdateExecution(execution *Execution) error {
 func (f *fakeRetentionManager) GetExecution(eid int64) (*Execution, error) {
 	return nil, nil
 }
-func (f *fakeRetentionManager) ListTasks(query *q.Query) ([]*Task, error) {
+func (f *fakeRetentionManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 	return nil, nil
 }
 func (f *fakeRetentionManager) CreateTask(task *Task) (int64, error) {
 	return 0, nil
 }
-func (f *fakeRetentionManager) UpdateTask(task *Task) error {
+func (f *fakeRetentionManager) UpdateTask(task *Task, cols ...string) error {
 	return nil
 }
 func (f *fakeRetentionManager) GetTaskLog(taskID int64) ([]byte, error) {

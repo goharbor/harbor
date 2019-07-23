@@ -1,6 +1,9 @@
 package dao
 
 import (
+	"errors"
+	"fmt"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
@@ -87,6 +90,7 @@ func ListExecutions(query *q.Query) ([]*models.RetentionExecution, error) {
 	return execs, nil
 }
 
+/*
 // ListExecHistories List Execution Histories
 func ListExecHistories(executionID int64, query *q.Query) ([]*models.RetentionTask, error) {
 	o := dao.GetOrmer()
@@ -105,4 +109,56 @@ func ListExecHistories(executionID int64, query *q.Query) ([]*models.RetentionTa
 func AppendExecHistory(t *models.RetentionTask) (int64, error) {
 	o := dao.GetOrmer()
 	return o.Insert(t)
+}
+*/
+
+// CreateTask creates task record in database
+func CreateTask(task *models.RetentionTask) (int64, error) {
+	if task == nil {
+		return 0, errors.New("nil task")
+	}
+	return dao.GetOrmer().Insert(task)
+}
+
+// UpdateTask updates the task record in database
+func UpdateTask(task *models.RetentionTask, cols ...string) error {
+	if task == nil {
+		return errors.New("nil task")
+	}
+	if task.ID <= 0 {
+		return fmt.Errorf("invalid task ID: %d", task.ID)
+	}
+	_, err := dao.GetOrmer().Update(task, cols...)
+	return err
+}
+
+// DeleteTask deletes the task record specified by ID in database
+func DeleteTask(id int64) error {
+	_, err := dao.GetOrmer().Delete(&models.RetentionTask{
+		ID: id,
+	})
+	return err
+}
+
+// ListTask lists the tasks according to the query
+func ListTask(query ...*q.TaskQuery) ([]*models.RetentionTask, error) {
+	qs := dao.GetOrmer().QueryTable(&models.RetentionTask{})
+	if len(query) > 0 && query[0] != nil {
+		q := query[0]
+		if q.ExecutionID > 0 {
+			qs = qs.Filter("ExecutionID", q.ExecutionID)
+		}
+		if len(q.Status) > 0 {
+			qs = qs.Filter("Status", q.Status)
+		}
+		if q.PageSize > 0 {
+			qs = qs.Limit(q.PageSize)
+			if q.PageNumber > 0 {
+				qs = qs.Offset((q.PageNumber - 1) * q.PageSize)
+			}
+		}
+	}
+	tasks := []*models.RetentionTask{}
+	_, err := qs.All(&tasks)
+	return tasks, err
 }

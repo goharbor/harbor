@@ -19,3 +19,11 @@ type Query struct {
 	PageNumber int64
 	PageSize   int64
 }
+
+// TaskQuery parameters
+type TaskQuery struct {
+	ExecutionID int64
+	Status      string
+	PageNumber  int64
+	PageSize    int64
+}
