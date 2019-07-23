@@ -16,6 +16,7 @@ package retention
 
 import (
 	"encoding/json"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
@@ -63,6 +64,12 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	repo, _ := getParamRepo(params)
 	liteMeta, _ := getParamMeta(params)
 
+	// Stop check point 1:
+	if isStopped(ctx) {
+		logStop(myLogger)
+		return nil
+	}
+
 	// Retrieve all the candidates under the specified repository
 	allCandidates, err := pj.client.GetCandidates(repo)
 	if err != nil {
@@ -74,6 +81,12 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	processor, err := builder.Build(liteMeta)
 	if err != nil {
 		return logError(myLogger, err)
+	}
+
+	// Stop check point 2:
+	if isStopped(ctx) {
+		logStop(myLogger)
+		return nil
 	}
 
 	// Run the flow
@@ -93,6 +106,17 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	}
 
 	return nil
+}
+
+func isStopped(ctx job.Context) (stopped bool) {
+	cmd, ok := ctx.OPCommand()
+	stopped = ok && cmd == job.StopCommand
+
+	return
+}
+
+func logStop(logger logger.Interface) {
+	logger.Info("Retention job is stopped")
 }
 
 func logError(logger logger.Interface, err error) error {
