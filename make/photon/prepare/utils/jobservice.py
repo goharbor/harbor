@@ -18,7 +18,8 @@ def prepare_job_service(config_dict):
 
     # Job log is stored in data dir
     job_log_dir = os.path.join('/data', "job_logs")
-    prepare_config_dir(job_log_dir)
+    file_path = prepare_config_dir(job_log_dir)
+    os.chown(file_path, DEFAULT_UID, DEFAULT_GID)
     # Render Jobservice env
     render_jinja(
         job_service_env_template_path,
