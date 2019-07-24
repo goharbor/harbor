@@ -9,6 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
+	"net/http"
 	"strconv"
 )
 
@@ -359,6 +360,8 @@ func (r *RetentionAPI) GetRetentionExecTaskLog() {
 		return
 	}
 	w := r.Ctx.ResponseWriter
+	w.Header().Set("Content-Type", "text/plain")
+	w.WriteHeader(http.StatusOK)
 	w.Write(log)
 }
 

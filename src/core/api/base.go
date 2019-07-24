@@ -17,7 +17,6 @@ package api
 import (
 	"errors"
 	"github.com/goharbor/harbor/src/pkg/retention"
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"net/http"
 
@@ -119,7 +118,7 @@ func Init() error {
 
 	retentionMgr = retention.NewManager()
 
-	retentionLauncher = retention.NewLauncher(projectMgr, repositoryMgr, retentionMgr, dep.DefaultClient)
+	retentionLauncher = retention.NewLauncher(projectMgr, repositoryMgr, retentionMgr)
 
 	retentionController = retention.NewAPIController(projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
 

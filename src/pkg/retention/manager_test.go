@@ -1,6 +1,7 @@
 package retention
 
 import (
+	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
 	"github.com/stretchr/testify/require"
 	"os"
@@ -87,6 +88,7 @@ func TestPolicy(t *testing.T) {
 
 	p1, err = m.GetPolicy(id)
 	assert.NotNil(t, err)
+	assert.EqualValues(t, orm.ErrNoRows, err)
 	assert.True(t, strings.Contains(err.Error(), "no row found"))
 }
 
@@ -197,4 +199,8 @@ func TestTask(t *testing.T) {
 	require.Equal(t, 1, len(tasks))
 	assert.Equal(t, int64(1), tasks[0].ExecutionID)
 	assert.Equal(t, TaskStatusInProgress, tasks[0].Status)
+
+	task.Status = TaskStatusFailed
+	err = m.UpdateTask(task, "Status")
+	require.Nil(t, err)
 }

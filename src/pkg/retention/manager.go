@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/astaxie/beego/orm"
 	"time"
 
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
@@ -129,6 +130,9 @@ func (d *DefaultManager) UpdateExecution(execution *Execution) error {
 func (d *DefaultManager) ListExecutions(policyID int64, query *q.Query) ([]*Execution, error) {
 	execs, err := dao.ListExecutions(policyID, query)
 	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 	var execs1 []*Execution
@@ -177,6 +181,9 @@ func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
 func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 	ts, err := dao.ListTask(query...)
 	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 	tasks := []*Task{}
