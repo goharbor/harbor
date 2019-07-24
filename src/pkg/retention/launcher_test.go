@@ -16,20 +16,18 @@ package retention
 
 import (
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/goharbor/harbor/src/chartserver"
+	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 	_ "github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
+	hjob "github.com/goharbor/harbor/src/testing/job"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -74,22 +72,6 @@ func (f *fakeRepositoryManager) ListImageRepositories(projectID int64) ([]*model
 }
 func (f *fakeRepositoryManager) ListChartRepositories(projectID int64) ([]*chartserver.ChartInfo, error) {
 	return f.chartRepositories, nil
-}
-
-type fakeClient struct {
-	id int
-}
-
-func (f *fakeClient) GetCandidates(repo *res.Repository) ([]*res.Candidate, error) {
-	return nil, nil
-}
-
-func (f *fakeClient) Delete(candidate *res.Candidate) error {
-	return nil
-}
-func (f *fakeClient) SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error) {
-	f.id++
-	return strconv.Itoa(f.id), nil
 }
 
 type fakeRetentionManager struct{}
@@ -139,10 +121,10 @@ func (f *fakeRetentionManager) ListHistories(executionID int64, query *q.Query) 
 
 type launchTestSuite struct {
 	suite.Suite
-	projectMgr      project.Manager
-	repositoryMgr   repository.Manager
-	retentionMgr    Manager
-	retentionClient dep.Client
+	projectMgr       project.Manager
+	repositoryMgr    repository.Manager
+	retentionMgr     Manager
+	jobserviceClient job.Client
 }
 
 func (l *launchTestSuite) SetupTest() {
@@ -167,7 +149,7 @@ func (l *launchTestSuite) SetupTest() {
 		},
 	}
 	l.retentionMgr = &fakeRetentionManager{}
-	l.retentionClient = &fakeClient{}
+	l.jobserviceClient = &hjob.MockJobClient{}
 }
 
 func (l *launchTestSuite) TestGetProjects() {
@@ -191,7 +173,13 @@ func (l *launchTestSuite) TestGetRepositories() {
 }
 
 func (l *launchTestSuite) TestLaunch() {
-	launcher := NewLauncher(l.projectMgr, l.repositoryMgr, l.retentionMgr, l.retentionClient)
+	launcher := &launcher{
+		projectMgr:       l.projectMgr,
+		repositoryMgr:    l.repositoryMgr,
+		retentionMgr:     l.retentionMgr,
+		jobserviceClient: l.jobserviceClient,
+	}
+
 	var ply *policy.Metadata
 	// nil policy
 	n, err := launcher.Launch(ply, 1)

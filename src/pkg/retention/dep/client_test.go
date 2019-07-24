@@ -129,14 +129,6 @@ func (c *clientTestSuite) TestDelete() {
 	require.NotNil(c.T(), err)
 }
 
-func (c *clientTestSuite) TestSubmitTask() {
-	client := &basicClient{}
-	client.jobserviceClient = &fakeJobserviceClient{}
-	jobID, err := client.SubmitTask(1, nil, nil)
-	require.Nil(c.T(), err)
-	assert.Equal(c.T(), "1", jobID)
-}
-
 func TestClientTestSuite(t *testing.T) {
 	suite.Run(t, new(clientTestSuite))
 }
