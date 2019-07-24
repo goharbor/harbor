@@ -321,7 +321,8 @@
         "CREATED_SUCCESS": "创建账户 '{{param}}' 成功。",
         "COPY_SUCCESS": "成功复制 '{{param}}' 的令牌",
         "DELETION_TITLE": "删除账户确认",
-        "DELETION_SUMMARY": "你确认删除机器人账户 {{param}}?"
+        "DELETION_SUMMARY": "你确认删除机器人账户 {{param}}?",
+        "PULL_IS_MUST" : "拉取权限默认选中且不可修改。"
     },
     "GROUP": {
         "GROUP": "组",

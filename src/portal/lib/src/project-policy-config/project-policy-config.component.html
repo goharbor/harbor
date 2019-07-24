@@ -109,6 +109,7 @@
                                     class="btn btn-link ml-1">{{'CVE_WHITELIST.ADD_SYSTEM'|translate}}</button>
                         </div>
                         <div class="add-modal" *ngIf="showAddModal && !isUseSystemWhitelist()">
+                            <clr-icon (click)="showAddModal=false" class="float-lg-right margin-top-4" shape="window-close"></clr-icon>
                             <div>
                                 <clr-textarea-container>
                                     <label>{{'CVE_WHITELIST.ENTER'|translate}}</label>
@@ -124,12 +125,15 @@
                         <ul class="whitelist-window" *ngIf="isUseSystemWhitelist()">
                             <li *ngIf="systemWhitelist?.items?.length<1"
                                 class="none">{{'CVE_WHITELIST.NONE'|translate}}</li>
-                            <li *ngFor="let item of systemWhitelist?.items">{{item.cve_id}}</li>
+                            <li *ngFor="let item of systemWhitelist?.items">
+                                <span class="hand" (click)="goToDetail(item.cve_id)">{{item.cve_id}}</span>
+                            </li>
                         </ul>
                         <ul class="whitelist-window" *ngIf="!isUseSystemWhitelist()">
                             <li class="none"
                                 *ngIf="projectWhitelist?.items?.length<1">{{'CVE_WHITELIST.NONE'|translate}}</li>
-                            <li *ngFor="let item of projectWhitelist?.items;let i = index;">{{item.cve_id}}
+                            <li *ngFor="let item of projectWhitelist?.items;let i = index;">
+                                <span class="hand" (click)="goToDetail(item.cve_id)">{{item.cve_id}}</span>
                                 <clr-icon (click)="deleteItem(i)" class="float-lg-right margin-top-4"
                                           shape="times-circle"></clr-icon>
                             </li>

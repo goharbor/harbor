@@ -16,8 +16,10 @@ package api
 
 import (
 	"errors"
+
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
+
 	"net/http"
 
 	"github.com/ghodss/yaml"
@@ -33,10 +35,6 @@ import (
 
 const (
 	yamlFileContentType = "application/x-yaml"
-	// ReplicationJobType ...
-	ReplicationJobType = "replication"
-	// ScanJobType ...
-	ScanJobType = "scan"
 )
 
 // the managers/controllers used globally
@@ -96,7 +94,7 @@ func (b *BaseController) WriteYamlData(object interface{}) {
 	w := b.Ctx.ResponseWriter
 	w.Header().Set("Content-Type", yamlFileContentType)
 	w.WriteHeader(http.StatusOK)
-	w.Write(yData)
+	_, _ = w.Write(yData)
 }
 
 // Init related objects/configurations for the API controllers
