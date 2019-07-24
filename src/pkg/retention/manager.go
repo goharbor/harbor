@@ -96,6 +96,9 @@ func (d *DefaultManager) DeletePolicyAndExec(id int64) error {
 func (d *DefaultManager) GetPolicy(id int64) (*policy.Metadata, error) {
 	p1, err := dao.GetPolicy(id)
 	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 	p := &policy.Metadata{}

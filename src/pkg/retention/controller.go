@@ -84,14 +84,19 @@ func (r *DefaultAPIController) GetRetention(id int64) (*policy.Metadata, error) 
 // CreateRetention Create Retention
 func (r *DefaultAPIController) CreateRetention(p *policy.Metadata) error {
 	if p.Trigger.Kind == policy.TriggerKindSchedule {
-		jobid, err := r.scheduler.Schedule(p.Trigger.Settings[policy.TriggerSettingsCron].(string), RetentionSchedulerCallback, TriggerParam{
-			PolicyID: p.ID,
-			Trigger:  ExecutionTriggerSchedule,
-		})
-		if err != nil {
-			return err
+		if p.Trigger.Settings != nil {
+			cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
+			if ok {
+				jobid, err := r.scheduler.Schedule(cron.(string), RetentionSchedulerCallback, TriggerParam{
+					PolicyID: p.ID,
+					Trigger:  ExecutionTriggerSchedule,
+				})
+				if err != nil {
+					return err
+				}
+				p.Trigger.References[policy.TriggerReferencesJobid] = jobid
+			}
 		}
-		p.Trigger.References[policy.TriggerReferencesJobid] = jobid
 	}
 	if _, err := r.manager.CreatePolicy(p); err != nil {
 		return err

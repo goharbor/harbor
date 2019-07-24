@@ -1,11 +1,9 @@
 package retention
 
 import (
-	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
 	"github.com/stretchr/testify/require"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
@@ -87,9 +85,8 @@ func TestPolicy(t *testing.T) {
 	assert.Nil(t, err)
 
 	p1, err = m.GetPolicy(id)
-	assert.NotNil(t, err)
-	assert.EqualValues(t, orm.ErrNoRows, err)
-	assert.True(t, strings.Contains(err.Error(), "no row found"))
+	assert.Nil(t, err)
+	assert.Nil(t, p1)
 }
 
 func TestExecution(t *testing.T) {

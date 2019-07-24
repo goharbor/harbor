@@ -32,8 +32,8 @@ create table retention_execution
 	failed integer,
 	in_progress integer,
 	stopped integer,
-	start_time time,
-	end_time time
+	start_time timestamp,
+	end_time timestamp
 );
 
 create table retention_task

@@ -60,7 +60,7 @@ type Metadata struct {
 type Trigger struct {
 	// Const string to declare the trigger type
 	// 'Schedule'
-	Kind string `json:"kind" valid:"Required"`
+	Kind string `json:"kind"`
 
 	// Settings for the specified trigger
 	// '[cron]="* 22 11 * * *"' for the 'Schedule'
