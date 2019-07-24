@@ -102,22 +102,22 @@ func (r *RetentionAPI) GetMetadatas() {
             "display_text": "Repositories",
             "kind": "doublestar",
             "decorations": [
-                "matches",
-                "excludes"
+                "repoMatches",
+                "repoExcludes"
             ]
         }
     ],
     "tag_selectors": [
         {
-            "display_text": "Tags",
+            "display_text": "Labels",
             "kind": "label",
             "decorations": [
-                "with",
-                "without"
+                "withLabels",
+                "withoutLabels"
             ]
         },
         {
-            "display_text": "Labels",
+            "display_text": "Tags",
             "kind": "doublestar",
             "decorations": [
                 "matches",
@@ -127,8 +127,7 @@ func (r *RetentionAPI) GetMetadatas() {
     ]
 }
 `
-	r.Data["json"] = data
-	r.ServeJSON()
+	r.WriteJSONData(data)
 }
 
 // GetRetention Get Retention
@@ -146,8 +145,7 @@ func (r *RetentionAPI) GetRetention() {
 	if !r.requireAccess(p, rbac.ActionRead) {
 		return
 	}
-	r.Data["json"] = p
-	r.ServeJSON()
+	r.WriteJSONData(p)
 }
 
 // CreateRetention Create Retention
@@ -197,6 +195,16 @@ func (r *RetentionAPI) TriggerRetentionExec() {
 		r.SendBadRequestError(err)
 		return
 	}
+	d := &struct {
+		DryRun bool `json:"dry_run"`
+	}{
+		DryRun: false,
+	}
+	isValid, err := r.DecodeJSONReqAndValidate(d)
+	if !isValid {
+		r.SendBadRequestError(err)
+		return
+	}
 	p, err := r.api.GetRetention(id)
 	if err != nil {
 		r.SendBadRequestError(err)
@@ -205,14 +213,14 @@ func (r *RetentionAPI) TriggerRetentionExec() {
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
-	if err = r.api.TriggerRetentionExec(id, retention.ExecutionTriggerManual); err != nil {
+	if err = r.api.TriggerRetentionExec(id, retention.ExecutionTriggerManual, d.DryRun); err != nil {
 		r.SendInternalServerError(err)
 		return
 	}
 }
 
-// StopRetentionExec Operate Retention Execution
-func (r *RetentionAPI) StopRetentionExec() {
+// OperateRetentionExec Operate Retention Execution
+func (r *RetentionAPI) OperateRetentionExec() {
 	id, err := r.GetIDFromURL()
 	if err != nil {
 		r.SendBadRequestError(err)
@@ -223,6 +231,14 @@ func (r *RetentionAPI) StopRetentionExec() {
 		r.SendBadRequestError(err)
 		return
 	}
+	a := &struct {
+		Action string `json:"action" valid:"Required"`
+	}{}
+	isValid, err := r.DecodeJSONReqAndValidate(a)
+	if !isValid {
+		r.SendBadRequestError(err)
+		return
+	}
 	p, err := r.api.GetRetention(id)
 	if err != nil {
 		r.SendBadRequestError(err)
@@ -231,14 +247,14 @@ func (r *RetentionAPI) StopRetentionExec() {
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
-	if err = r.api.StopRetentionExec(eid); err != nil {
+	if err = r.api.OperateRetentionExec(eid, a.Action); err != nil {
 		r.SendInternalServerError(err)
 		return
 	}
 }
 
-// ListRetentionExec List Retention Execution
-func (r *RetentionAPI) ListRetentionExec() {
+// ListRetentionExecs List Retention Execution
+func (r *RetentionAPI) ListRetentionExecs() {
 	id, err := r.GetIDFromURL()
 	if err != nil {
 		r.SendBadRequestError(err)
@@ -261,17 +277,16 @@ func (r *RetentionAPI) ListRetentionExec() {
 	if !r.requireAccess(p, rbac.ActionList) {
 		return
 	}
-	execs, err := r.api.ListRetentionExec(id, query)
+	execs, err := r.api.ListRetentionExecs(id, query)
 	if err != nil {
 		r.SendInternalServerError(err)
 		return
 	}
-	r.Data["json"] = execs
-	r.ServeJSON()
+	r.WriteJSONData(execs)
 }
 
-// ListRetentionExecHistory List Retention Execution Histories
-func (r *RetentionAPI) ListRetentionExecHistory() {
+// ListRetentionExecTasks List Retention Execution Tasks
+func (r *RetentionAPI) ListRetentionExecTasks() {
 	id, err := r.GetIDFromURL()
 	if err != nil {
 		r.SendBadRequestError(err)
@@ -299,18 +314,28 @@ func (r *RetentionAPI) ListRetentionExecHistory() {
 	if !r.requireAccess(p, rbac.ActionList) {
 		return
 	}
-	his, err := r.api.ListRetentionExecHistory(eid, query)
+	his, err := r.api.ListRetentionExecTasks(eid, query)
 	if err != nil {
 		r.SendInternalServerError(err)
 		return
 	}
-	r.Data["json"] = his
-	r.ServeJSON()
+	r.WriteJSONData(his)
 }
 
-// GetRetentionExecHistoryLog Get Retention Execution History log
-func (r *RetentionAPI) GetRetentionExecHistoryLog() {
-	// TODO Get jobservice log
+// GetRetentionExecTaskLog Get Retention Execution Task log
+func (r *RetentionAPI) GetRetentionExecTaskLog() {
+	tid, err := r.GetInt64FromPath(":tid")
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	log, err := r.api.GetRetentionExecTaskLog(tid)
+	if err != nil {
+		r.SendInternalServerError(err)
+		return
+	}
+	w := r.Ctx.ResponseWriter
+	w.Write(log)
 }
 
 func (r *RetentionAPI) requireAccess(p *policy.Metadata, action rbac.Action, subresources ...rbac.Resource) bool {

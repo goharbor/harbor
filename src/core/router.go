@@ -146,10 +146,10 @@ func initRouters() {
 	beego.Router("/api/retentions", &api.RetentionAPI{}, "post:CreateRetention")
 	beego.Router("/api/retentions/:id", &api.RetentionAPI{}, "put:UpdateRetention")
 	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "post:TriggerRetentionExec")
-	beego.Router("/api/retentions/:id/executions/:eid/stop", &api.RetentionAPI{}, "put:StopRetentionExec")
-	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "get:ListRetentionExec")
-	beego.Router("/api/retentions/:id/executions/:eid/histories", &api.RetentionAPI{}, "get:ListRetentionExecHistory")
-	beego.Router("/api/retentions/:id/executions/:eid/histories/:hid", &api.RetentionAPI{}, "get:GetRetentionExecHistoryLog")
+	beego.Router("/api/retentions/:id/executions/:eid", &api.RetentionAPI{}, "patch:OperateRetentionExec")
+	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "get:ListRetentionExecs")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks", &api.RetentionAPI{}, "get:ListRetentionExecTasks")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks/:tid", &api.RetentionAPI{}, "get:GetRetentionExecTaskLog")
 
 	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 

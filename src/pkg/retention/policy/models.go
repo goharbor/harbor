@@ -29,6 +29,9 @@ const (
 	TriggerReferencesJobid = "job_id"
 	// TriggerSettingsCron cron
 	TriggerSettingsCron = "cron"
+
+	// ScopeLevelProject project
+	ScopeLevelProject = "project"
 )
 
 // Metadata of policy

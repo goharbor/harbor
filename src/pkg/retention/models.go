@@ -44,6 +44,7 @@ type Execution struct {
 	EndTime   time.Time `json:"end_time,omitempty"`
 	Status    string    `json:"status"`
 	Trigger   string    `json:"trigger"`
+	DryRun    bool      `json:"dry_run"`
 }
 
 // Task of retention

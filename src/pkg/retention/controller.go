@@ -46,13 +46,15 @@ type APIController interface {
 
 	DeleteRetention(id int64) error
 
-	TriggerRetentionExec(policyID int64, trigger string) error
+	TriggerRetentionExec(policyID int64, trigger string, dryRun bool) error
 
-	StopRetentionExec(eid int64) error
+	OperateRetentionExec(eid int64, action string) error
 
-	ListRetentionExec(policyID int64, query *q.Query) ([]*Execution, error)
+	ListRetentionExecs(policyID int64, query *q.Query) ([]*Execution, error)
 
-	ListRetentionExecHistory(executionID int64, query *q.Query) ([]*Task, error)
+	ListRetentionExecTasks(executionID int64, query *q.Query) ([]*Task, error)
+
+	GetRetentionExecTaskLog(taskID int64) ([]byte, error)
 }
 
 // DefaultAPIController ...
@@ -72,35 +74,37 @@ func (r *DefaultAPIController) GetRetention(id int64) (*policy.Metadata, error) 
 
 // CreateRetention Create Retention
 func (r *DefaultAPIController) CreateRetention(p *policy.Metadata) error {
-	if p.Scope.Level != "project" {
+	switch p.Scope.Level {
+	case policy.ScopeLevelProject:
+		if p.Scope.Reference <= 0 {
+			return fmt.Errorf("Invalid Project id %d", p.Scope.Reference)
+		}
+		proj, err := r.projectManager.Get(p.Scope.Reference)
+		if err != nil {
+			return err
+		}
+		if proj == nil {
+			return fmt.Errorf("Invalid Project id %d", p.Scope.Reference)
+		}
+	default:
 		return fmt.Errorf("scope %s is not support", p.Scope.Level)
 	}
-	if p.Scope.Reference <= 0 {
-		return fmt.Errorf("Invalid Project id %d", p.Scope.Reference)
-	}
-	proj, err := r.projectManager.Get(p.Scope.Reference)
-	if err != nil {
-		return (err)
-	}
-	if proj == nil {
-		return fmt.Errorf("Invalid Project id %d", p.Scope.Reference)
-	}
 
-	if p.Trigger.Kind == "Schedule" {
+	if p.Trigger.Kind == policy.TriggerKindSchedule {
 		jobid, err := r.scheduler.Schedule(strconv.FormatInt(p.ID, 10), p.Trigger.Settings["cron"].(string))
 		if err != nil {
 			return err
 		}
-		p.Trigger.References["jobid"] = jobid
+		p.Trigger.References[policy.TriggerReferencesJobid] = jobid
 	}
-	if _, err = r.manager.CreatePolicy(p); err != nil {
+	if _, err := r.manager.CreatePolicy(p); err != nil {
 		return err
 	}
-	if err = r.projectManager.GetMetadataManager().Add(p.Scope.Reference,
+	if err := r.projectManager.GetMetadataManager().Add(p.Scope.Reference,
 		map[string]string{"retention_id": strconv.FormatInt(p.Scope.Reference, 10)}); err != nil {
 		return err
 	}
-	return err
+	return nil
 }
 
 // UpdateRetention Update Retention
@@ -174,7 +178,7 @@ func (r *DefaultAPIController) DeleteRetention(id int64) error {
 }
 
 // TriggerRetentionExec Trigger Retention Execution
-func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger string) error {
+func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger string, dryRun bool) error {
 	p, err := r.manager.GetPolicy(policyID)
 	if err != nil {
 		return err
@@ -185,8 +189,10 @@ func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger stri
 		StartTime: time.Now(),
 		Status:    ExecutionStatusInProgress,
 		Trigger:   trigger,
+		DryRun:    dryRun,
 	}
 	id, err := r.manager.CreateExecution(exec)
+	// TODO launcher with dryRun param
 	num, err := r.launcher.Launch(p, id)
 	if err != nil {
 		return err
@@ -206,36 +212,47 @@ func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger stri
 
 }
 
-// StopRetentionExec Stop Retention Execution
-func (r *DefaultAPIController) StopRetentionExec(eid int64) error {
+// OperateRetentionExec Operate Retention Execution
+func (r *DefaultAPIController) OperateRetentionExec(eid int64, action string) error {
 	e, err := r.manager.GetExecution(eid)
 	if err != nil {
 		return err
 	}
-	if e.Status != "Running" {
-		return fmt.Errorf("Can't abort, current status is %s", e.Status)
-	}
 	exec := &Execution{}
-	exec.ID = eid
-	exec.Status = "Abort"
-	exec.EndTime = time.Now()
-	// TODO stop the execution
+	switch action {
+	case "stop":
+		if e.Status != ExecutionStatusInProgress {
+			return fmt.Errorf("Can't abort, current status is %s", e.Status)
+		}
+		exec.ID = eid
+		exec.Status = ExecutionStatusStopped
+		exec.EndTime = time.Now()
+		// TODO stop the execution
+	default:
+		return fmt.Errorf("not support action %s", action)
+	}
+
 	return r.manager.UpdateExecution(exec)
 }
 
-// ListRetentionExec List Retention Executions
-func (r *DefaultAPIController) ListRetentionExec(policyID int64, query *q.Query) ([]*Execution, error) {
+// ListRetentionExecs List Retention Executions
+func (r *DefaultAPIController) ListRetentionExecs(policyID int64, query *q.Query) ([]*Execution, error) {
 	return r.manager.ListExecutions(policyID, query)
 }
 
-// ListRetentionExecHistory List Retention Execution Histories
-func (r *DefaultAPIController) ListRetentionExecHistory(executionID int64, query *q.Query) ([]*Task, error) {
+// ListRetentionExecTasks List Retention Execution Histories
+func (r *DefaultAPIController) ListRetentionExecTasks(executionID int64, query *q.Query) ([]*Task, error) {
 	q1 := &q.TaskQuery{
 		ExecutionID: executionID,
 		PageNumber:  query.PageNumber,
 		PageSize:    query.PageSize,
 	}
 	return r.manager.ListTasks(q1)
+}
+
+// GetRetentionExecTaskLog Get Retention Execution Task Log
+func (r *DefaultAPIController) GetRetentionExecTaskLog(taskID int64) ([]byte, error) {
+	return r.manager.GetTaskLog(taskID)
 }
 
 // HandleHook HandleHook

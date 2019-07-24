@@ -76,14 +76,6 @@ func (f *fakeRepositoryManager) ListChartRepositories(projectID int64) ([]*chart
 
 type fakeRetentionManager struct{}
 
-func (f *fakeRetentionManager) DeleteExecutions(policyID int64, query *q.Query) error {
-	panic("implement me")
-}
-
-func (f *fakeRetentionManager) DeleteTasks(eid int64, query *q.Query) error {
-	panic("implement me")
-}
-
 func (f *fakeRetentionManager) CreatePolicy(p *policy.Metadata) (int64, error) {
 	return 0, nil
 }

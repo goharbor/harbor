@@ -46,16 +46,12 @@ type Manager interface {
 	GetExecution(eid int64) (*Execution, error)
 	// List execution histories
 	ListExecutions(policyID int64, query *q.Query) ([]*Execution, error)
-	// DeleteExecutions Delete execution histories
-	DeleteExecutions(policyID int64, query *q.Query) error
 	// List tasks histories
 	ListTasks(query ...*q.TaskQuery) ([]*Task, error)
 	// Create a new retention task
 	CreateTask(task *Task) (int64, error)
 	// Update the specified task
 	UpdateTask(task *Task, cols ...string) error
-	// Delete tasks histories
-	DeleteTasks(eid int64, query *q.Query) error
 	// Get the log of the specified task
 	GetTaskLog(taskID int64) ([]byte, error)
 }
@@ -114,6 +110,7 @@ func (d *DefaultManager) CreateExecution(execution *Execution) (int64, error) {
 	exec := &models.RetentionExecution{}
 	exec.PolicyID = execution.PolicyID
 	exec.StartTime = time.Now()
+	exec.DryRun = execution.DryRun
 	exec.Status = "Running"
 	exec.Trigger = "manual"
 	return dao.CreateExecution(exec)
@@ -214,16 +211,6 @@ func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
 
 // GetTaskLog gets the logs of task
 func (d *DefaultManager) GetTaskLog(taskID int64) ([]byte, error) {
-	panic("implement me")
-}
-
-// DeleteExecutions Delete Executions
-func (d *DefaultManager) DeleteExecutions(policyID int64, query *q.Query) error {
-	panic("implement me")
-}
-
-// DeleteTasks Delete Tasks
-func (d *DefaultManager) DeleteTasks(eid int64, query *q.Query) error {
 	panic("implement me")
 }
 

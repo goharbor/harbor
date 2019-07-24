@@ -33,7 +33,7 @@ type RetentionExecution struct {
 	ID       int64 `orm:"pk;auto;column(id)" json:"id"`
 	PolicyID int64 `orm:"column(policy_id)"`
 	Status   string
-	Dry      bool
+	DryRun   bool
 	// manual, scheduled
 	Trigger    string
 	Total      int
@@ -44,18 +44,6 @@ type RetentionExecution struct {
 	StartTime  time.Time
 	EndTime    time.Time
 }
-
-/*
-// RetentionTask Retention Task
-type RetentionTask struct {
-	ID              int64 `orm:"pk;auto;column(id)" json:"id"`
-	ExecutionID     int64 `orm:"column(execution_id)"`
-	RuleID          int   `orm:"column(rule_id)"`
-	RuleDisplayText string
-	Artifact        string
-	Timestamp       time.Time
-}
-*/
 
 // RetentionTask ...
 type RetentionTask struct {
