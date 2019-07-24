@@ -25,7 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/core/service/notifications/registry"
 	"github.com/goharbor/harbor/src/core/service/notifications/scheduler"
 	"github.com/goharbor/harbor/src/core/service/token"
-	retentionCtl "github.com/goharbor/harbor/src/pkg/retention/controllers"
 
 	"github.com/astaxie/beego"
 )
@@ -142,15 +141,15 @@ func initRouters() {
 	beego.Router("/api/registries/:id/info", &api.RegistryAPI{}, "get:GetInfo")
 	beego.Router("/api/registries/:id/namespace", &api.RegistryAPI{}, "get:GetNamespace")
 
-	beego.Router("/api/retentions/:id", &retentionCtl.RetentionAPI{}, "get:GetRetention")
-	beego.Router("/api/retentions", &retentionCtl.RetentionAPI{}, "post:CreateRetention")
-	beego.Router("/api/retentions/:id", &retentionCtl.RetentionAPI{}, "put:UpdateRetention")
-	beego.Router("/api/retentions/:id", &retentionCtl.RetentionAPI{}, "delete:DeleteRetention")
-	beego.Router("/api/retentions/:id/executions", &retentionCtl.RetentionAPI{}, "post:TriggerRetentionExec")
-	beego.Router("/api/retentions/:id/executions/:eid", &retentionCtl.RetentionAPI{}, "put:OperateRetentionExec")
-	beego.Router("/api/retentions/:id/executions/:eid", &retentionCtl.RetentionAPI{}, "get:GetRetentionExec")
-	beego.Router("/api/retentions/:id/executions", &retentionCtl.RetentionAPI{}, "get:ListRetentionExec")
-	beego.Router("/api/retentions/:id/executions/:eid/histories", &retentionCtl.RetentionAPI{}, "get:ListRetentionExecHistory")
+	beego.Router("/api/retentions/metadatas", &api.RetentionAPI{}, "get:GetMetadatas")
+	beego.Router("/api/retentions/:id", &api.RetentionAPI{}, "get:GetRetention")
+	beego.Router("/api/retentions", &api.RetentionAPI{}, "post:CreateRetention")
+	beego.Router("/api/retentions/:id", &api.RetentionAPI{}, "put:UpdateRetention")
+	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "post:TriggerRetentionExec")
+	beego.Router("/api/retentions/:id/executions/:eid", &api.RetentionAPI{}, "patch:OperateRetentionExec")
+	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "get:ListRetentionExecs")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks", &api.RetentionAPI{}, "get:ListRetentionExecTasks")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks/:tid", &api.RetentionAPI{}, "get:GetRetentionExecTaskLog")
 
 	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 

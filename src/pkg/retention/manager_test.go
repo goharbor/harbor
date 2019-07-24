@@ -1,19 +1,16 @@
-package dao
+package retention
 
 import (
-	"encoding/json"
+	"github.com/goharbor/harbor/src/pkg/retention/q"
+	"github.com/stretchr/testify/require"
 	"os"
-	"strings"
 	"testing"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/q"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -22,7 +19,8 @@ func TestMain(m *testing.M) {
 }
 
 func TestPolicy(t *testing.T) {
-	p := &policy.Metadata{
+	m := NewManager()
+	p1 := &policy.Metadata{
 		Algorithm: "OR",
 		Rules: []rule.Metadata{
 			{
@@ -66,41 +64,34 @@ func TestPolicy(t *testing.T) {
 			Reference: 1,
 		},
 	}
-	p1 := &models.RetentionPolicy{
-		ScopeLevel:  p.Scope.Level,
-		TriggerKind: p.Trigger.Kind,
-		CreateTime:  time.Now(),
-		UpdateTime:  time.Now(),
-	}
-	data, _ := json.Marshal(p)
-	p1.Data = string(data)
 
-	id, err := CreatePolicy(p1)
+	id, err := m.CreatePolicy(p1)
 	assert.Nil(t, err)
 	assert.True(t, id > 0)
 
-	p1, err = GetPolicy(id)
+	p1, err = m.GetPolicy(id)
 	assert.Nil(t, err)
-	assert.EqualValues(t, "project", p1.ScopeLevel)
+	assert.EqualValues(t, "project", p1.Scope.Level)
 	assert.True(t, p1.ID > 0)
 
-	p1.ScopeLevel = "test"
-	err = UpdatePolicy(p1)
+	p1.Scope.Level = "test"
+	err = m.UpdatePolicy(p1)
 	assert.Nil(t, err)
-	p1, err = GetPolicy(id)
+	p1, err = m.GetPolicy(id)
 	assert.Nil(t, err)
-	assert.EqualValues(t, "test", p1.ScopeLevel)
+	assert.EqualValues(t, "test", p1.Scope.Level)
 
-	err = DeletePolicyAndExec(id)
+	err = m.DeletePolicyAndExec(id)
 	assert.Nil(t, err)
 
-	p1, err = GetPolicy(id)
-	assert.NotNil(t, err)
-	assert.True(t, strings.Contains(err.Error(), "no row found"))
+	p1, err = m.GetPolicy(id)
+	assert.Nil(t, err)
+	assert.Nil(t, p1)
 }
 
 func TestExecution(t *testing.T) {
-	p := &policy.Metadata{
+	m := NewManager()
+	p1 := &policy.Metadata{
 		Algorithm: "OR",
 		Rules: []rule.Metadata{
 			{
@@ -144,67 +135,69 @@ func TestExecution(t *testing.T) {
 			Reference: 1,
 		},
 	}
-	p1 := &models.RetentionPolicy{
-		ScopeLevel:  p.Scope.Level,
-		TriggerKind: p.Trigger.Kind,
-		CreateTime:  time.Now(),
-		UpdateTime:  time.Now(),
-	}
-	data, _ := json.Marshal(p)
-	p1.Data = string(data)
 
-	policyID, err := CreatePolicy(p1)
+	policyID, err := m.CreatePolicy(p1)
 	assert.Nil(t, err)
 	assert.True(t, policyID > 0)
 
-	e := &models.RetentionExecution{
+	e1 := &Execution{
 		PolicyID:  policyID,
-		Status:    "Running",
-		DryRun:    false,
-		Trigger:   "manual",
-		Total:     10,
 		StartTime: time.Now(),
+		Status:    ExecutionStatusInProgress,
+		Trigger:   ExecutionTriggerManual,
+		DryRun:    false,
 	}
-	id, err := CreateExecution(e)
+	id, err := m.CreateExecution(e1)
 	assert.Nil(t, err)
 	assert.True(t, id > 0)
 
-	e1, err := GetExecution(id)
+	e1, err = m.GetExecution(id)
 	assert.Nil(t, err)
 	assert.NotNil(t, e1)
 	assert.EqualValues(t, id, e1.ID)
 
-	es, err := ListExecutions(policyID, nil)
+	e1.Status = ExecutionStatusFailed
+	err = m.UpdateExecution(e1)
+	assert.Nil(t, err)
+
+	e1, err = m.GetExecution(id)
+	assert.Nil(t, err)
+	assert.NotNil(t, e1)
+	assert.EqualValues(t, ExecutionStatusFailed, e1.Status)
+
+	es, err := m.ListExecutions(policyID, nil)
 	assert.Nil(t, err)
 	assert.EqualValues(t, 1, len(es))
 }
 
 func TestTask(t *testing.T) {
-	task := &models.RetentionTask{
+	m := NewManager()
+	task := &Task{
 		ExecutionID: 1,
-		Status:      "pending",
+		Status:      TaskStatusPending,
+		StartTime:   time.Now(),
 	}
 	// create
-	id, err := CreateTask(task)
+	id, err := m.CreateTask(task)
 	require.Nil(t, err)
 
 	// update
 	task.ID = id
-	task.Status = "running"
-	err = UpdateTask(task, "Status")
+	task.Status = TaskStatusInProgress
+	err = m.UpdateTask(task, "Status")
 	require.Nil(t, err)
 
 	// list
-	tasks, err := ListTask(&q.TaskQuery{
+	tasks, err := m.ListTasks(&q.TaskQuery{
 		ExecutionID: 1,
-		Status:      "running",
+		Status:      TaskStatusInProgress,
 	})
 	require.Nil(t, err)
 	require.Equal(t, 1, len(tasks))
 	assert.Equal(t, int64(1), tasks[0].ExecutionID)
-	assert.Equal(t, "running", tasks[0].Status)
+	assert.Equal(t, TaskStatusInProgress, tasks[0].Status)
 
-	// delete
-	err = DeleteTask(id)
+	task.Status = TaskStatusFailed
+	err = m.UpdateTask(task, "Status")
 	require.Nil(t, err)
 }

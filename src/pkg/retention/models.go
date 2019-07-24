@@ -31,6 +31,9 @@ const (
 
 	CandidateKindImage string = "image"
 	CandidateKindChart string = "chart"
+
+	ExecutionTriggerManual   string = "Manual"
+	ExecutionTriggerSchedule string = "Schedule"
 )
 
 // Execution of retention
@@ -40,6 +43,8 @@ type Execution struct {
 	StartTime time.Time `json:"start_time"`
 	EndTime   time.Time `json:"end_time,omitempty"`
 	Status    string    `json:"status"`
+	Trigger   string    `json:"Trigger"`
+	DryRun    bool      `json:"dry_run"`
 }
 
 // Task of retention
@@ -53,6 +58,7 @@ type Task struct {
 
 // History of retention
 type History struct {
+	ID          int64 `json:"id,omitempty"`
 	ExecutionID int64 `json:"execution_id"`
 	Rule        struct {
 		ID          int    `json:"id"`

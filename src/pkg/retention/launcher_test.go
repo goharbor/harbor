@@ -82,7 +82,7 @@ func (f *fakeRetentionManager) CreatePolicy(p *policy.Metadata) (int64, error) {
 func (f *fakeRetentionManager) UpdatePolicy(p *policy.Metadata) error {
 	return nil
 }
-func (f *fakeRetentionManager) DeletePolicy(ID int64) error {
+func (f *fakeRetentionManager) DeletePolicyAndExec(ID int64) error {
 	return nil
 }
 func (f *fakeRetentionManager) GetPolicy(ID int64) (*policy.Metadata, error) {
@@ -109,11 +109,11 @@ func (f *fakeRetentionManager) UpdateTask(task *Task, cols ...string) error {
 func (f *fakeRetentionManager) GetTaskLog(taskID int64) ([]byte, error) {
 	return nil, nil
 }
-func (f *fakeRetentionManager) ListExecutions(query *q.Query) ([]*Execution, error) {
+func (f *fakeRetentionManager) ListExecutions(policyID int64, query *q.Query) ([]*Execution, error) {
 	return nil, nil
 }
-func (f *fakeRetentionManager) AppendHistory(history *History) error {
-	return nil
+func (f *fakeRetentionManager) AppendHistory(history *History) (int64, error) {
+	return 0, nil
 }
 func (f *fakeRetentionManager) ListHistories(executionID int64, query *q.Query) ([]*History, error) {
 	return nil, nil

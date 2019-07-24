@@ -20,38 +20,38 @@ type Metadata struct {
 	ID int `json:"id"`
 
 	// Priority of rule when doing calculating
-	Priority int `json:"priority"`
+	Priority int `json:"priority" valid:"Required"`
 
 	// Action of the rule performs
 	// "retain"
-	Action string `json:"action"`
+	Action string `json:"action" valid:"Required"`
 
 	// Template ID
-	Template string `json:"template"`
+	Template string `json:"template" valid:"Required"`
 
 	// The parameters of this rule
 	Parameters Parameters `json:"params"`
 
 	// Selector attached to the rule for filtering tags
-	TagSelectors []*Selector `json:"tag_selectors"`
+	TagSelectors []*Selector `json:"tag_selectors" valid:"Required"`
 
 	// Selector attached to the rule for filtering scope (e.g: repositories or namespaces)
-	ScopeSelectors map[string][]*Selector `json:"scope_selectors"`
+	ScopeSelectors map[string][]*Selector `json:"scope_selectors" valid:"Required"`
 }
 
 // Selector to narrow down the list
 type Selector struct {
 	// Kind of the selector
 	// "regularExpression" or "label"
-	Kind string `json:"kind"`
+	Kind string `json:"kind" valid:"Required"`
 
 	// Decorated the selector
 	// for "regularExpression" : "matches" and "excludes"
 	// for "label" : "with" and "without"
-	Decoration string `json:"decoration"`
+	Decoration string `json:"decoration" valid:"Required"`
 
 	// Param for the selector
-	Pattern string `json:"pattern"`
+	Pattern string `json:"pattern" valid:"Required"`
 }
 
 // Parameters of rule, indexed by the key

@@ -16,6 +16,8 @@ package api
 
 import (
 	"errors"
+	"github.com/goharbor/harbor/src/pkg/retention"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"net/http"
 
 	"github.com/ghodss/yaml"
@@ -39,8 +41,12 @@ const (
 
 // the managers/controllers used globally
 var (
-	projectMgr    project.Manager
-	repositoryMgr repository.Manager
+	projectMgr          project.Manager
+	repositoryMgr       repository.Manager
+	retentionScheduler  scheduler.Scheduler
+	retentionMgr        retention.Manager
+	retentionLauncher   retention.Launcher
+	retentionController retention.APIController
 )
 
 // BaseController ...
@@ -108,7 +114,24 @@ func Init() error {
 	// init repository manager
 	initRepositoryManager()
 
-	return nil
+	initRetentionScheduler()
+
+	retentionMgr = retention.NewManager()
+
+	retentionLauncher = retention.NewLauncher(projectMgr, repositoryMgr, retentionMgr)
+
+	retentionController = retention.NewAPIController(projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
+
+	callbackFun := func(p interface{}) error {
+		r, ok := p.(retention.TriggerParam)
+		if ok {
+			return retentionController.TriggerRetentionExec(r.PolicyID, r.Trigger, false)
+		}
+		return errors.New("bad retention callback param")
+	}
+	err := scheduler.Register(retention.RetentionSchedulerCallback, callbackFun)
+
+	return err
 }
 
 func initChartController() error {
@@ -132,4 +155,8 @@ func initProjectManager() {
 
 func initRepositoryManager() {
 	repositoryMgr = repository.New(projectMgr, chartController)
+}
+
+func initRetentionScheduler() {
+	retentionScheduler = scheduler.GlobalScheduler
 }

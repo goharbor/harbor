@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/astaxie/beego/orm"
 	"time"
 
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
@@ -35,7 +36,7 @@ type Manager interface {
 	UpdatePolicy(p *policy.Metadata) error
 	// Delete the specified policy
 	// No actual use so far
-	DeletePolicy(ID int64) error
+	DeletePolicyAndExec(ID int64) error
 	// Get the specified policy
 	GetPolicy(ID int64) (*policy.Metadata, error)
 	// Create a new retention execution
@@ -45,7 +46,7 @@ type Manager interface {
 	// Get the specified execution
 	GetExecution(eid int64) (*Execution, error)
 	// List execution histories
-	ListExecutions(query *q.Query) ([]*Execution, error)
+	ListExecutions(policyID int64, query *q.Query) ([]*Execution, error)
 	// List tasks histories
 	ListTasks(query ...*q.TaskQuery) ([]*Task, error)
 	// Create a new retention task
@@ -62,7 +63,7 @@ type DefaultManager struct {
 
 // CreatePolicy Create Policy
 func (d *DefaultManager) CreatePolicy(p *policy.Metadata) (int64, error) {
-	var p1 *models.RetentionPolicy
+	p1 := &models.RetentionPolicy{}
 	p1.ScopeLevel = p.Scope.Level
 	p1.TriggerKind = p.Trigger.Kind
 	data, _ := json.Marshal(p)
@@ -74,7 +75,7 @@ func (d *DefaultManager) CreatePolicy(p *policy.Metadata) (int64, error) {
 
 // UpdatePolicy Update Policy
 func (d *DefaultManager) UpdatePolicy(p *policy.Metadata) error {
-	var p1 *models.RetentionPolicy
+	p1 := &models.RetentionPolicy{}
 	p1.ID = p.ID
 	p1.ScopeLevel = p.Scope.Level
 	p1.TriggerKind = p.Trigger.Kind
@@ -83,55 +84,63 @@ func (d *DefaultManager) UpdatePolicy(p *policy.Metadata) error {
 	p.ID = p1.ID
 	p1.Data = string(data)
 	p1.UpdateTime = time.Now()
-	return dao.UpdatePolicy(p1)
+	return dao.UpdatePolicy(p1, "scope_level", "trigger_kind", "data", "update_time")
 }
 
-// DeletePolicy Delete Policy
-func (d *DefaultManager) DeletePolicy(id int64) error {
-	return dao.DeletePolicy(id)
+// DeletePolicyAndExec Delete Policy
+func (d *DefaultManager) DeletePolicyAndExec(id int64) error {
+	return dao.DeletePolicyAndExec(id)
 }
 
 // GetPolicy Get Policy
 func (d *DefaultManager) GetPolicy(id int64) (*policy.Metadata, error) {
 	p1, err := dao.GetPolicy(id)
 	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
-	var p *policy.Metadata
+	p := &policy.Metadata{}
 	if err = json.Unmarshal([]byte(p1.Data), p); err != nil {
 		return nil, err
 	}
+	p.ID = id
 	return p, nil
 }
 
 // CreateExecution Create Execution
 func (d *DefaultManager) CreateExecution(execution *Execution) (int64, error) {
-	var exec *models.RetentionExecution
+	exec := &models.RetentionExecution{}
 	exec.PolicyID = execution.PolicyID
 	exec.StartTime = time.Now()
+	exec.DryRun = execution.DryRun
 	exec.Status = "Running"
+	exec.Trigger = "manual"
 	return dao.CreateExecution(exec)
 }
 
 // UpdateExecution Update Execution
 func (d *DefaultManager) UpdateExecution(execution *Execution) error {
-	var exec *models.RetentionExecution
+	exec := &models.RetentionExecution{}
 	exec.ID = execution.ID
-	exec.PolicyID = execution.PolicyID
-	exec.StartTime = time.Now()
-	exec.Status = "Running"
-	return dao.UpdateExecution(exec)
+	exec.EndTime = execution.EndTime
+	exec.Status = execution.Status
+	return dao.UpdateExecution(exec, "end_time", "status")
 }
 
 // ListExecutions List Executions
-func (d *DefaultManager) ListExecutions(query *q.Query) ([]*Execution, error) {
-	execs, err := dao.ListExecutions(query)
+func (d *DefaultManager) ListExecutions(policyID int64, query *q.Query) ([]*Execution, error) {
+	execs, err := dao.ListExecutions(policyID, query)
 	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 	var execs1 []*Execution
 	for _, e := range execs {
-		var e1 *Execution
+		e1 := &Execution{}
 		e1.ID = e.ID
 		e1.PolicyID = e.PolicyID
 		e1.Status = e.Status
@@ -148,7 +157,7 @@ func (d *DefaultManager) GetExecution(eid int64) (*Execution, error) {
 	if err != nil {
 		return nil, err
 	}
-	var e1 *Execution
+	e1 := &Execution{}
 	e1.ID = e.ID
 	e1.PolicyID = e.PolicyID
 	e1.Status = e.Status
@@ -175,6 +184,9 @@ func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
 func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 	ts, err := dao.ListTask(query...)
 	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
 		return nil, err
 	}
 	tasks := []*Task{}
@@ -211,39 +223,6 @@ func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
 func (d *DefaultManager) GetTaskLog(taskID int64) ([]byte, error) {
 	panic("implement me")
 }
-
-/*
-// ListHistories List Histories
-func (d *DefaultManager) ListHistories(executionID int64, query *q.Query) ([]*History, error) {
-	his, err := dao.ListExecHistories(executionID, query)
-	if err != nil {
-		return nil, err
-	}
-	var his1 []*History
-	for _, h := range his {
-		var h1 *History
-		h1.ExecutionID = h.ExecutionID
-		h1.Artifact = h.Artifact
-		h1.Rule.ID = h.RuleID
-		h1.Rule.DisplayText = h.RuleDisplayText
-		h1.Timestamp = h.Timestamp
-		his1 = append(his1, h1)
-	}
-	return his1, nil
-}
-
-// AppendHistory Append History
-func (d *DefaultManager) AppendHistory(h *History) error {
-	var h1 *models.RetentionTask
-	h1.ExecutionID = h.ExecutionID
-	h1.Artifact = h.Artifact
-	h1.RuleID = h.Rule.ID
-	h1.RuleDisplayText = h.Rule.DisplayText
-	h1.Timestamp = h.Timestamp
-	_, err := dao.AppendExecHistory(h1)
-	return err
-}
-*/
 
 // NewManager ...
 func NewManager() Manager {

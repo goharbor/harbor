@@ -21,6 +21,17 @@ import (
 const (
 	// AlgorithmOR for OR algorithm
 	AlgorithmOR = "or"
+
+	// TriggerKindSchedule Schedule
+	TriggerKindSchedule = "Schedule"
+
+	// TriggerReferencesJobid job_id
+	TriggerReferencesJobid = "job_id"
+	// TriggerSettingsCron cron
+	TriggerSettingsCron = "cron"
+
+	// ScopeLevelProject project
+	ScopeLevelProject = "project"
 )
 
 // Metadata of policy
@@ -30,16 +41,16 @@ type Metadata struct {
 
 	// Algorithm applied to the rules
 	// "OR" / "AND"
-	Algorithm string `json:"algorithm"`
+	Algorithm string `json:"algorithm" valid:"Required;Match(/^(OR|AND)$/)"`
 
 	// Rule collection
 	Rules []rule.Metadata `json:"rules"`
 
 	// Trigger about how to launch the policy
-	Trigger *Trigger `json:"trigger"`
+	Trigger *Trigger `json:"trigger" valid:"Required"`
 
 	// Which scope the policy will be applied to
-	Scope *Scope `json:"scope"`
+	Scope *Scope `json:"scope" valid:"Required"`
 
 	// The max number of rules in a policy
 	Capacity int `json:"cap"`
@@ -64,9 +75,9 @@ type Trigger struct {
 type Scope struct {
 	// Scope level declaration
 	// 'system', 'project' and 'repository'
-	Level string `json:"level"`
+	Level string `json:"level" valid:"Required;Match(/^(project)$/)"`
 
 	// The reference identity for the specified level
 	// 0 for 'system', project ID for 'project' and repo ID for 'repository'
-	Reference int64 `json:"ref"`
+	Reference int64 `json:"ref" valid:"Required"`
 }
