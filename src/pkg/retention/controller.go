@@ -16,13 +16,12 @@ package retention
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
-	"strconv"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"time"
 )
 
@@ -31,7 +30,7 @@ type APIController interface {
 	// Handle the related hooks from the job service and launch the corresponding actions if needed
 	//
 	//  Arguments:
-	//    policyID string         : uuid of the retention policy
+	//    PolicyID string         : uuid of the retention policy
 	//    event *job.StatusChange : event object sent by job service
 	//
 	//  Returns:
@@ -59,12 +58,22 @@ type APIController interface {
 
 // DefaultAPIController ...
 type DefaultAPIController struct {
-	manager           Manager
-	launcher          Launcher
-	projectManager    promgr.ProjectManager
-	projectManagerNew project.Manager
-	repositoryMgr     repository.Manager
-	scheduler         Scheduler
+	manager        Manager
+	launcher       Launcher
+	projectManager project.Manager
+	repositoryMgr  repository.Manager
+	scheduler      scheduler.Scheduler
+}
+
+const (
+	// RetentionSchedulerCallback ...
+	RetentionSchedulerCallback = "RetentionSchedulerCallback"
+)
+
+// TriggerParam ...
+type TriggerParam struct {
+	PolicyID int64
+	Trigger  string
 }
 
 // GetRetention Get Retention
@@ -74,34 +83,17 @@ func (r *DefaultAPIController) GetRetention(id int64) (*policy.Metadata, error) 
 
 // CreateRetention Create Retention
 func (r *DefaultAPIController) CreateRetention(p *policy.Metadata) error {
-	switch p.Scope.Level {
-	case policy.ScopeLevelProject:
-		if p.Scope.Reference <= 0 {
-			return fmt.Errorf("Invalid Project id %d", p.Scope.Reference)
-		}
-		proj, err := r.projectManager.Get(p.Scope.Reference)
-		if err != nil {
-			return err
-		}
-		if proj == nil {
-			return fmt.Errorf("Invalid Project id %d", p.Scope.Reference)
-		}
-	default:
-		return fmt.Errorf("scope %s is not support", p.Scope.Level)
-	}
-
 	if p.Trigger.Kind == policy.TriggerKindSchedule {
-		jobid, err := r.scheduler.Schedule(strconv.FormatInt(p.ID, 10), p.Trigger.Settings["cron"].(string))
+		jobid, err := r.scheduler.Schedule(p.Trigger.Settings[policy.TriggerSettingsCron].(string), RetentionSchedulerCallback, TriggerParam{
+			PolicyID: p.ID,
+			Trigger:  ExecutionTriggerSchedule,
+		})
 		if err != nil {
 			return err
 		}
 		p.Trigger.References[policy.TriggerReferencesJobid] = jobid
 	}
 	if _, err := r.manager.CreatePolicy(p); err != nil {
-		return err
-	}
-	if err := r.projectManager.GetMetadataManager().Add(p.Scope.Reference,
-		map[string]string{"retention_id": strconv.FormatInt(p.Scope.Reference, 10)}); err != nil {
 		return err
 	}
 	return nil
@@ -141,17 +133,20 @@ func (r *DefaultAPIController) UpdateRetention(p *policy.Metadata) error {
 		case "":
 
 		default:
-			return fmt.Errorf("Not support trigger %s", p.Trigger.Kind)
+			return fmt.Errorf("Not support Trigger %s", p.Trigger.Kind)
 		}
 	}
 	if needUn {
-		err = r.scheduler.UnSchedule(p0.Trigger.References[policy.TriggerReferencesJobid].(string))
+		err = r.scheduler.UnSchedule(p0.Trigger.References[policy.TriggerReferencesJobid].(int64))
 		if err != nil {
 			return err
 		}
 	}
 	if needSch {
-		jobid, err := r.scheduler.Schedule(strconv.FormatInt(p.ID, 10), p.Trigger.Settings[policy.TriggerSettingsCron].(string))
+		jobid, err := r.scheduler.Schedule(p.Trigger.Settings[policy.TriggerSettingsCron].(string), RetentionSchedulerCallback, TriggerParam{
+			PolicyID: p.ID,
+			Trigger:  ExecutionTriggerSchedule,
+		})
 		if err != nil {
 			return err
 		}
@@ -168,7 +163,7 @@ func (r *DefaultAPIController) DeleteRetention(id int64) error {
 		return err
 	}
 	if p.Trigger.Kind == policy.TriggerKindSchedule && len(p.Trigger.Settings[policy.TriggerSettingsCron].(string)) > 0 {
-		err = r.scheduler.UnSchedule(p.Trigger.References[policy.TriggerReferencesJobid].(string))
+		err = r.scheduler.UnSchedule(p.Trigger.References[policy.TriggerReferencesJobid].(int64))
 		if err != nil {
 			return err
 		}
@@ -192,7 +187,7 @@ func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger stri
 		DryRun:    dryRun,
 	}
 	id, err := r.manager.CreateExecution(exec)
-	// TODO launcher with dryRun param
+	// TODO launcher with DryRun param
 	num, err := r.launcher.Launch(p, id)
 	if err != nil {
 		return err
@@ -261,13 +256,12 @@ func (r *DefaultAPIController) HandleHook(policyID string, event *job.StatusChan
 }
 
 // NewAPIController ...
-func NewAPIController(projectManager promgr.ProjectManager, projectManagerNew project.Manager, repositoryMgr repository.Manager, scheduler Scheduler, retentionLauncher Launcher) APIController {
+func NewAPIController(projectManager project.Manager, repositoryMgr repository.Manager, scheduler scheduler.Scheduler, retentionLauncher Launcher) APIController {
 	return &DefaultAPIController{
-		manager:           NewManager(),
-		launcher:          retentionLauncher,
-		projectManager:    projectManager,
-		projectManagerNew: projectManagerNew,
-		repositoryMgr:     repositoryMgr,
-		scheduler:         scheduler,
+		manager:        NewManager(),
+		launcher:       retentionLauncher,
+		projectManager: projectManager,
+		repositoryMgr:  repositoryMgr,
+		scheduler:      scheduler,
 	}
 }
