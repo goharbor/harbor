@@ -106,7 +106,7 @@ func (c *STS) AssumeRoleRequest(input *AssumeRoleInput) (req *request.Request, o
 // AWS API calls to access resources in the account that owns the role. You
 // cannot use session policies to grant more permissions than those allowed
 // by the identity-based policy of the role that is being assumed. For more
-// information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/IAM/latest/UserGuide/access_policies.html#policies_session)
+// information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 // in the IAM User Guide.
 //
 // To assume a role from a different account, your AWS account must be trusted
@@ -286,7 +286,7 @@ func (c *STS) AssumeRoleWithSAMLRequest(input *AssumeRoleWithSAMLInput) (req *re
 // AWS API calls to access resources in the account that owns the role. You
 // cannot use session policies to grant more permissions than those allowed
 // by the identity-based policy of the role that is being assumed. For more
-// information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/IAM/latest/UserGuide/access_policies.html#policies_session)
+// information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 // in the IAM User Guide.
 //
 // Before your application can call AssumeRoleWithSAML, you must configure your
@@ -484,7 +484,7 @@ func (c *STS) AssumeRoleWithWebIdentityRequest(input *AssumeRoleWithWebIdentityI
 // AWS API calls to access resources in the account that owns the role. You
 // cannot use session policies to grant more permissions than those allowed
 // by the identity-based policy of the role that is being assumed. For more
-// information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/IAM/latest/UserGuide/access_policies.html#policies_session)
+// information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 // in the IAM User Guide.
 //
 // Before your application can call AssumeRoleWithWebIdentity, you must have
@@ -506,8 +506,7 @@ func (c *STS) AssumeRoleWithWebIdentityRequest(input *AssumeRoleWithWebIdentityI
 //    * Using Web Identity Federation API Operations for Mobile Apps (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_oidc_manual.html)
 //    and Federation Through a Web-based Identity Provider (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#api_assumerolewithwebidentity).
 //
-//
-//    *  Web Identity Federation Playground (https://web-identity-federation-playground.s3.amazonaws.com/index.html).
+//    * Web Identity Federation Playground (https://web-identity-federation-playground.s3.amazonaws.com/index.html).
 //    Walk through the process of authenticating through Login with Amazon,
 //    Facebook, or Google, getting temporary security credentials, and then
 //    using those credentials to make a request to AWS.
@@ -880,7 +879,7 @@ func (c *STS) GetFederationTokenRequest(input *GetFederationTokenInput) (req *re
 // you pass. This gives you a way to further restrict the permissions for a
 // federated user. You cannot use session policies to grant more permissions
 // than those that are defined in the permissions policy of the IAM user. For
-// more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/IAM/latest/UserGuide/access_policies.html#policies_session)
+// more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 // in the IAM User Guide. For information about using GetFederationToken to
 // create temporary security credentials, see GetFederationToken—Federation
 // Through a Custom Identity Broker (https://docs.aws.amazon.com/IAM/latest/UserGuide/id_credentials_temp_request.html#api_getfederationtoken).
@@ -1003,7 +1002,7 @@ func (c *STS) GetSessionTokenRequest(input *GetSessionTokenInput) (req *request.
 //    * You cannot call any IAM API operations unless MFA authentication information
 //    is included in the request.
 //
-//    * You cannot call any STS API exceptAssumeRole or GetCallerIdentity.
+//    * You cannot call any STS API except AssumeRole or GetCallerIdentity.
 //
 // We recommend that you do not call GetSessionToken with AWS account root user
 // credentials. Instead, follow our best practices (https://docs.aws.amazon.com/IAM/latest/UserGuide/best-practices.html#create-iam-users)
@@ -1107,7 +1106,7 @@ type AssumeRoleInput struct {
 	// the role's temporary credentials in subsequent AWS API calls to access resources
 	// in the account that owns the role. You cannot use session policies to grant
 	// more permissions than those allowed by the identity-based policy of the role
-	// that is being assumed. For more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/IAM/latest/UserGuide/access_policies.html#policies_session)
+	// that is being assumed. For more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 	// in the IAM User Guide.
 	//
 	// The plain text that you use for both inline and managed session policies
@@ -1145,7 +1144,7 @@ type AssumeRoleInput struct {
 	// in subsequent AWS API calls to access resources in the account that owns
 	// the role. You cannot use session policies to grant more permissions than
 	// those allowed by the identity-based policy of the role that is being assumed.
-	// For more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/IAM/latest/UserGuide/access_policies.html#policies_session)
+	// For more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 	// in the IAM User Guide.
 	PolicyArns []*PolicyDescriptorType `type:"list"`
 
@@ -1385,7 +1384,7 @@ type AssumeRoleWithSAMLInput struct {
 	// the role's temporary credentials in subsequent AWS API calls to access resources
 	// in the account that owns the role. You cannot use session policies to grant
 	// more permissions than those allowed by the identity-based policy of the role
-	// that is being assumed. For more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/IAM/latest/UserGuide/access_policies.html#policies_session)
+	// that is being assumed. For more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 	// in the IAM User Guide.
 	//
 	// The plain text that you use for both inline and managed session policies
@@ -1423,7 +1422,7 @@ type AssumeRoleWithSAMLInput struct {
 	// in subsequent AWS API calls to access resources in the account that owns
 	// the role. You cannot use session policies to grant more permissions than
 	// those allowed by the identity-based policy of the role that is being assumed.
-	// For more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/IAM/latest/UserGuide/access_policies.html#policies_session)
+	// For more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 	// in the IAM User Guide.
 	PolicyArns []*PolicyDescriptorType `type:"list"`
 
@@ -1680,7 +1679,7 @@ type AssumeRoleWithWebIdentityInput struct {
 	// the role's temporary credentials in subsequent AWS API calls to access resources
 	// in the account that owns the role. You cannot use session policies to grant
 	// more permissions than those allowed by the identity-based policy of the role
-	// that is being assumed. For more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/IAM/latest/UserGuide/access_policies.html#policies_session)
+	// that is being assumed. For more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 	// in the IAM User Guide.
 	//
 	// The plain text that you use for both inline and managed session policies
@@ -1718,7 +1717,7 @@ type AssumeRoleWithWebIdentityInput struct {
 	// in subsequent AWS API calls to access resources in the account that owns
 	// the role. You cannot use session policies to grant more permissions than
 	// those allowed by the identity-based policy of the role that is being assumed.
-	// For more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/IAM/latest/UserGuide/access_policies.html#policies_session)
+	// For more information, see Session Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 	// in the IAM User Guide.
 	PolicyArns []*PolicyDescriptorType `type:"list"`
 
@@ -2259,7 +2258,7 @@ type GetFederationTokenInput struct {
 	// you a way to further restrict the permissions for a federated user. You cannot
 	// use session policies to grant more permissions than those that are defined
 	// in the permissions policy of the IAM user. For more information, see Session
-	// Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/IAM/latest/UserGuide/access_policies.html#policies_session)
+	// Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 	// in the IAM User Guide.
 	//
 	// The plain text that you use for both inline and managed session policies
@@ -2299,7 +2298,7 @@ type GetFederationTokenInput struct {
 	// you a way to further restrict the permissions for a federated user. You cannot
 	// use session policies to grant more permissions than those that are defined
 	// in the permissions policy of the IAM user. For more information, see Session
-	// Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/IAM/latest/UserGuide/access_policies.html#policies_session)
+	// Policies (https://docs.aws.amazon.com/IAM/latest/UserGuide/access_policies.html#policies_session)
 	// in the IAM User Guide.
 	//
 	// The characters in this parameter count towards the 2048 character session
