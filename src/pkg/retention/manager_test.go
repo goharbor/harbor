@@ -174,9 +174,9 @@ func TestExecution(t *testing.T) {
 func TestTask(t *testing.T) {
 	m := NewManager()
 	task := &Task{
-		ExecutionID :1,
-		Status      :TaskStatusPending,
-		StartTime   :time.Now(),
+		ExecutionID: 1,
+		Status:      TaskStatusPending,
+		StartTime:   time.Now(),
 	}
 	// create
 	id, err := m.CreateTask(task)
