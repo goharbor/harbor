@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package quota
+package types
 
 import (
 	"testing"
@@ -65,6 +65,15 @@ func (suite *ResourcesSuite) TestSubtract() {
 	suite.Equal(ResourceList{ResourceStorage: 0}, Subtract(res1, res2))
 	suite.Equal(ResourceList{ResourceStorage: 0, ResourceCount: -10}, Subtract(res1, res3))
 	suite.Equal(ResourceList{ResourceStorage: 100, ResourceCount: -10}, Subtract(res1, res4))
+}
+
+func (suite *ResourcesSuite) TestZero() {
+	res1 := ResourceList{ResourceStorage: 100}
+	res2 := ResourceList{ResourceCount: 10, ResourceStorage: 100}
+
+	suite.Equal(ResourceList{}, Zero(ResourceList{}))
+	suite.Equal(ResourceList{ResourceStorage: 0}, Zero(res1))
+	suite.Equal(ResourceList{ResourceStorage: 0, ResourceCount: 0}, Zero(res2))
 }
 
 func TestRunResourcesSuite(t *testing.T) {

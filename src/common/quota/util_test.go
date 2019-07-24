@@ -17,6 +17,8 @@ package quota
 import (
 	"errors"
 	"testing"
+
+	"github.com/goharbor/harbor/src/pkg/types"
 )
 
 func TestIsUnsafeError(t *testing.T) {
@@ -50,8 +52,8 @@ func TestIsUnsafeError(t *testing.T) {
 
 func Test_checkQuotas(t *testing.T) {
 	type args struct {
-		hardLimits ResourceList
-		used       ResourceList
+		hardLimits types.ResourceList
+		used       types.ResourceList
 	}
 	tests := []struct {
 		name    string
@@ -60,27 +62,27 @@ func Test_checkQuotas(t *testing.T) {
 	}{
 		{
 			"unlimited",
-			args{hardLimits: ResourceList{ResourceStorage: UNLIMITED}, used: ResourceList{ResourceStorage: 1000}},
+			args{hardLimits: types.ResourceList{types.ResourceStorage: types.UNLIMITED}, used: types.ResourceList{types.ResourceStorage: 1000}},
 			false,
 		},
 		{
 			"ok",
-			args{hardLimits: ResourceList{ResourceStorage: 100}, used: ResourceList{ResourceStorage: 1}},
+			args{hardLimits: types.ResourceList{types.ResourceStorage: 100}, used: types.ResourceList{types.ResourceStorage: 1}},
 			false,
 		},
 		{
 			"bad used value",
-			args{hardLimits: ResourceList{ResourceStorage: 100}, used: ResourceList{ResourceStorage: -1}},
+			args{hardLimits: types.ResourceList{types.ResourceStorage: 100}, used: types.ResourceList{types.ResourceStorage: -1}},
 			true,
 		},
 		{
 			"over the hard limit",
-			args{hardLimits: ResourceList{ResourceStorage: 100}, used: ResourceList{ResourceStorage: 200}},
+			args{hardLimits: types.ResourceList{types.ResourceStorage: 100}, used: types.ResourceList{types.ResourceStorage: 200}},
 			true,
 		},
 		{
 			"hard limit not found",
-			args{hardLimits: ResourceList{ResourceStorage: 100}, used: ResourceList{ResourceCount: 1}},
+			args{hardLimits: types.ResourceList{types.ResourceStorage: 100}, used: types.ResourceList{types.ResourceCount: 1}},
 			true,
 		},
 	}

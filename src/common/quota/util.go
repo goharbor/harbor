@@ -16,11 +16,8 @@ package quota
 
 import (
 	"fmt"
-)
 
-const (
-	// UNLIMITED unlimited quota value
-	UNLIMITED = int64(-1)
+	"github.com/goharbor/harbor/src/pkg/types"
 )
 
 type unsafe struct {
@@ -41,14 +38,14 @@ func IsUnsafeError(err error) bool {
 	return ok
 }
 
-func isSafe(hardLimits ResourceList, used ResourceList) error {
+func isSafe(hardLimits types.ResourceList, used types.ResourceList) error {
 	for key, value := range used {
 		if value < 0 {
 			return newUnsafe(fmt.Sprintf("bad used value: %d", value))
 		}
 
 		if hard, found := hardLimits[key]; found {
-			if hard == UNLIMITED {
+			if hard == types.UNLIMITED {
 				continue
 			}
 

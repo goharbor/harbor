@@ -1034,8 +1034,10 @@ func TestIsDupRecError(t *testing.T) {
 }
 
 func TestWithTransaction(t *testing.T) {
+	reference := "transaction"
+
 	quota := models.Quota{
-		Reference:   "project",
+		Reference:   reference,
 		ReferenceID: "1",
 		Hard:        "{}",
 	}
@@ -1061,7 +1063,7 @@ func TestWithTransaction(t *testing.T) {
 
 	if assert.Error(WithTransaction(failed)) {
 		var quota models.Quota
-		quota.Reference = "project"
+		quota.Reference = reference
 		quota.ReferenceID = "1"
 		err := GetOrmer().Read(&quota, "reference", "reference_id")
 		assert.Error(err)
@@ -1070,7 +1072,7 @@ func TestWithTransaction(t *testing.T) {
 
 	if assert.Nil(WithTransaction(success)) {
 		var quota models.Quota
-		quota.Reference = "project"
+		quota.Reference = reference
 		quota.ReferenceID = "1"
 		err := GetOrmer().Read(&quota, "reference", "reference_id")
 		assert.Nil(err)

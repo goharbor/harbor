@@ -142,4 +142,8 @@ const (
 	OIDCLoginPath    = "/c/oidc/login"
 
 	ChartUploadCtxKey = contextKey("chart_upload_event")
+
+	// Quota setting items for project
+	CountPerProject   = "count_per_project"
+	StoragePerProject = "storage_per_project"
 )

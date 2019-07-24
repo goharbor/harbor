@@ -24,11 +24,13 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/pkg/errors"
 )
 
@@ -127,7 +129,27 @@ func (p *ProjectAPI) Post() {
 		p.SendBadRequestError(err)
 		return
 	}
+
 	err = validateProjectReq(pro)
+	if err != nil {
+		log.Errorf("Invalid project request, error: %v", err)
+		p.SendBadRequestError(fmt.Errorf("invalid request: %v", err))
+		return
+	}
+
+	setting, err := config.QuotaSetting()
+	if err != nil {
+		log.Errorf("failed to get quota setting: %v", err)
+		p.SendInternalServerError(fmt.Errorf("failed to get quota setting: %v", err))
+		return
+	}
+
+	if !p.SecurityCtx.IsSysAdmin() {
+		pro.CountLimit = &setting.CountPerProject
+		pro.StorageLimit = &setting.StoragePerProject
+	}
+
+	hardLimits, err := projectQuotaHardLimits(pro, setting)
 	if err != nil {
 		log.Errorf("Invalid project request, error: %v", err)
 		p.SendBadRequestError(fmt.Errorf("invalid request: %v", err))
@@ -185,6 +207,16 @@ func (p *ProjectAPI) Post() {
 		} else {
 			p.ParseAndHandleError("failed to add project", err)
 		}
+		return
+	}
+
+	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(projectID, 10))
+	if err != nil {
+		p.SendInternalServerError(fmt.Errorf("failed to get quota manager: %v", err))
+		return
+	}
+	if _, err := quotaMgr.NewQuota(hardLimits); err != nil {
+		p.SendInternalServerError(fmt.Errorf("failed to create quota for project: %v", err))
 		return
 	}
 
@@ -259,6 +291,16 @@ func (p *ProjectAPI) Delete() {
 
 	if err = p.ProjectMgr.Delete(p.project.ProjectID); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to delete project %d", p.project.ProjectID), err)
+		return
+	}
+
+	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(p.project.ProjectID, 10))
+	if err != nil {
+		p.SendInternalServerError(fmt.Errorf("failed to get quota manager: %v", err))
+		return
+	}
+	if err := quotaMgr.DeleteQuota(); err != nil {
+		p.SendInternalServerError(fmt.Errorf("failed to delete quota for project: %v", err))
 		return
 	}
 
@@ -554,4 +596,25 @@ func validateProjectReq(req *models.ProjectRequest) error {
 
 	req.Metadata = metas
 	return nil
+}
+
+func projectQuotaHardLimits(req *models.ProjectRequest, setting *models.QuotaSetting) (types.ResourceList, error) {
+	hardLimits := types.ResourceList{}
+	if req.CountLimit != nil {
+		hardLimits[types.ResourceCount] = *req.CountLimit
+	} else {
+		hardLimits[types.ResourceCount] = setting.CountPerProject
+	}
+
+	if req.StorageLimit != nil {
+		hardLimits[types.ResourceStorage] = *req.StorageLimit
+	} else {
+		hardLimits[types.ResourceStorage] = setting.StoragePerProject
+	}
+
+	if err := quota.Validate("project", hardLimits); err != nil {
+		return nil, err
+	}
+
+	return hardLimits, nil
 }

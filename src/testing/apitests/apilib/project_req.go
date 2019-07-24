@@ -27,4 +27,8 @@ type ProjectReq struct {
 	ProjectName string `json:"project_name,omitempty"`
 	// The metadata of the project.
 	Metadata map[string]string `json:"metadata,omitempty"`
+	// The count quota of the project.
+	CountLimit *int64 `json:"count_limit,omitempty"`
+	// The storage quota of the project
+	StorageLimit *int64 `json:"storage_limit,omitempty"`
 }

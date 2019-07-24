@@ -90,6 +90,31 @@ func TestAddProject(t *testing.T) {
 		assert.Equal(int(400), result, "case 4 : response code = 400 : Project name is illegal in length ")
 	}
 
+	// case 5: response code = 201 : expect project creation with quota success.
+	fmt.Println("case 5 : response code = 201 : expect project creation with quota success ")
+
+	var countLimit, storageLimit int64
+	countLimit, storageLimit = 100, 10
+	result, err = apiTest.ProjectsPost(*admin, apilib.ProjectReq{ProjectName: "with_quota", CountLimit: &countLimit, StorageLimit: &storageLimit})
+	if err != nil {
+		t.Error("Error while creat project", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(201), result, "case 5 : response code = 201 : expect project creation with quota success ")
+	}
+
+	// case 6: response code = 400 : bad quota value, create project fail
+	fmt.Println("case 6: response code = 400 : bad quota value, create project fail")
+
+	countLimit, storageLimit = 100, -2
+	result, err = apiTest.ProjectsPost(*admin, apilib.ProjectReq{ProjectName: "with_quota", CountLimit: &countLimit, StorageLimit: &storageLimit})
+	if err != nil {
+		t.Error("Error while creat project", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(400), result, "case 6: response code = 400 : bad quota value, create project fail")
+	}
+
 	fmt.Printf("\n")
 
 }
@@ -230,7 +255,7 @@ func TestDeleteProject(t *testing.T) {
 		t.Error("Error while delete project", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(int(401), httpStatusCode, "Case 1: Project creation status should be 401")
+		assert.Equal(int(401), httpStatusCode, "Case 1: Project deletion status should be 401")
 	}
 
 	// --------------------------case 2: Response Code=200---------------------------------//
@@ -240,7 +265,7 @@ func TestDeleteProject(t *testing.T) {
 		t.Error("Error while delete project", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(int(200), httpStatusCode, "Case 2: Project creation status should be 200")
+		assert.Equal(int(200), httpStatusCode, "Case 2: Project deletion status should be 200")
 	}
 
 	// --------------------------case 3: Response Code=404,Project does not exist---------------------------------//
@@ -251,7 +276,7 @@ func TestDeleteProject(t *testing.T) {
 		t.Error("Error while delete project", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(int(404), httpStatusCode, "Case 3: Project creation status should be 404")
+		assert.Equal(int(404), httpStatusCode, "Case 3: Project deletion status should be 404")
 	}
 
 	// --------------------------case 4: Response Code=400,Invalid project id.---------------------------------//
@@ -262,7 +287,7 @@ func TestDeleteProject(t *testing.T) {
 		t.Error("Error while delete project", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(int(400), httpStatusCode, "Case 4: Project creation status should be 400")
+		assert.Equal(int(400), httpStatusCode, "Case 4: Project deletion status should be 400")
 	}
 	fmt.Printf("\n")
 
