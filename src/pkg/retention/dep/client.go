@@ -17,29 +17,16 @@ package dep
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
-	cjob "github.com/goharbor/harbor/src/common/job"
-	"github.com/goharbor/harbor/src/common/job/models"
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/pkg/clients/core"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 )
 
-const (
-	// ParamRepo ...
-	ParamRepo = "repository"
-	// ParamMeta ...
-	ParamMeta = "liteMeta"
-)
-
-// TODO: Move to api.Base
-
 // DefaultClient for the retention
-var DefaultClient Client
+var DefaultClient = NewClient()
 
 // Client is designed to access core service to get required infos
 type Client interface {
@@ -61,18 +48,6 @@ type Client interface {
 	//  Returns:
 	//    error : common error if any errors occurred
 	Delete(candidate *res.Candidate) error
-
-	// SubmitTask to jobservice
-	//
-	//  Arguments:
-	//    taskID                      : the ID of task
-	//    repository *res.Repository  : repository info
-	//    meta *lwp.Metadata          : policy lightweight metadata
-	//
-	//  Returns:
-	//    string : the job ID
-	//    error  : common error if any errors occurred
-	SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error)
 }
 
 // NewClient new a basic client
@@ -86,28 +61,21 @@ func NewClient(client ...*http.Client) Client {
 	}
 
 	// init core client
-	internalCoreURL := config.InternalCoreURL()
-	jobserviceSecret := config.JobserviceSecret()
+	internalCoreURL := config.GetCoreURL()
+	jobserviceSecret := config.GetAuthSecret()
 	authorizer := auth.NewSecretAuthorizer(jobserviceSecret)
 	coreClient := core.New(internalCoreURL, c, authorizer)
 
-	// init jobservice client
-	internalJobserviceURL := config.InternalJobServiceURL()
-	coreSecret := config.CoreSecret()
-	jobserviceClient := cjob.NewDefaultClient(internalJobserviceURL, coreSecret)
-
 	return &basicClient{
-		internalCoreURL:  internalCoreURL,
-		coreClient:       coreClient,
-		jobserviceClient: jobserviceClient,
+		internalCoreURL: internalCoreURL,
+		coreClient:      coreClient,
 	}
 }
 
 // basicClient is a default
 type basicClient struct {
-	internalCoreURL  string
-	coreClient       core.Client
-	jobserviceClient cjob.Client
+	internalCoreURL string
+	coreClient      core.Client
 }
 
 // GetCandidates gets the tag candidates under the repository
@@ -182,20 +150,4 @@ func (bc *basicClient) Delete(candidate *res.Candidate) error {
 	default:
 		return fmt.Errorf("unsupported candidate kind: %s", candidate.Kind)
 	}
-}
-
-// SubmitTask to jobservice
-func (bc *basicClient) SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error) {
-	j := &models.JobData{
-		Metadata: &models.JobMetadata{
-			JobKind: job.KindGeneric,
-		},
-		StatusHook: fmt.Sprintf("%s/service/notifications/jobs/retention/tasks/%d", bc.internalCoreURL, taskID),
-	}
-	j.Name = job.Retention
-	j.Parameters = map[string]interface{}{
-		ParamRepo: repository,
-		ParamMeta: meta,
-	}
-	return bc.jobserviceClient.SubmitJob(j)
 }

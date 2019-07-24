@@ -17,17 +17,26 @@ package retention
 import (
 	"fmt"
 
-	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
-
+	cjob "github.com/goharbor/harbor/src/common/job"
+	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
 	"github.com/pkg/errors"
+)
+
+const (
+	// ParamRepo ...
+	ParamRepo = "repository"
+	// ParamMeta ...
+	ParamMeta = "liteMeta"
 )
 
 // Launcher provides function to launch the async jobs to run retentions based on the provided policy.
@@ -47,20 +56,22 @@ type Launcher interface {
 
 // NewLauncher returns an instance of Launcher
 func NewLauncher(projectMgr project.Manager, repositoryMgr repository.Manager,
-	retentionMgr Manager, retentionClient dep.Client) Launcher {
+	retentionMgr Manager) Launcher {
 	return &launcher{
-		projectMgr:      projectMgr,
-		repositoryMgr:   repositoryMgr,
-		retentionMgr:    retentionMgr,
-		retentionClient: retentionClient,
+		projectMgr:       projectMgr,
+		repositoryMgr:    repositoryMgr,
+		retentionMgr:     retentionMgr,
+		jobserviceClient: cjob.GlobalClient,
+		internalCoreURL:  config.InternalCoreURL(),
 	}
 }
 
 type launcher struct {
-	retentionMgr    Manager
-	retentionClient dep.Client
-	projectMgr      project.Manager
-	repositoryMgr   repository.Manager
+	retentionMgr     Manager
+	projectMgr       project.Manager
+	repositoryMgr    repository.Manager
+	jobserviceClient cjob.Client
+	internalCoreURL  string
 }
 
 type jobData struct {
@@ -174,7 +185,18 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 
 	allFailed := true
 	for _, jobData := range jobDatas {
-		_, err := l.retentionClient.SubmitTask(jobData.taskID, jobData.repository, jobData.policy)
+		j := &models.JobData{
+			Metadata: &models.JobMetadata{
+				JobKind: job.KindGeneric,
+			},
+			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/retention/tasks/%d", l.internalCoreURL, jobData.taskID),
+		}
+		j.Name = job.Retention
+		j.Parameters = map[string]interface{}{
+			ParamRepo: jobData.repository,
+			ParamMeta: jobData.policy,
+		}
+		_, err := l.jobserviceClient.SubmitJob(j)
 		if err != nil {
 			log.Error(launcherError(fmt.Errorf("failed to submit task %d: %v", jobData.taskID, err)))
 			continue

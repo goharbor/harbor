@@ -21,32 +21,21 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
+	"github.com/goharbor/harbor/src/pkg/retention/policy"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
-
-	"github.com/stretchr/testify/require"
-
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
-
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-
-	"github.com/goharbor/harbor/src/jobservice/logger"
-
-	"github.com/goharbor/harbor/src/jobservice/job"
-
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
-
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
-
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
-
+	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
+	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
+	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -87,7 +76,7 @@ func (suite *JobTestSuite) TearDownSuite() {
 
 func (suite *JobTestSuite) TestRunSuccess() {
 	params := make(job.Parameters)
-	params[dep.ParamRepo] = &res.Repository{
+	params[ParamRepo] = &res.Repository{
 		Namespace: "library",
 		Name:      "harbor",
 		Kind:      res.Image,
@@ -103,7 +92,7 @@ func (suite *JobTestSuite) TestRunSuccess() {
 	ruleParams := make(rule.Parameters)
 	ruleParams[latestk.ParameterK] = 10
 
-	params[dep.ParamMeta] = &lwp.Metadata{
+	params[ParamMeta] = &lwp.Metadata{
 		Algorithm: policy.AlgorithmOR,
 		Rules: []*rule.Metadata{
 			{

@@ -205,28 +205,28 @@ func logError(logger logger.Interface, err error) error {
 }
 
 func getParamRepo(params job.Parameters) (*res.Repository, error) {
-	v, ok := params[dep.ParamRepo]
+	v, ok := params[ParamRepo]
 	if !ok {
-		return nil, errors.Errorf("missing parameter: %s", dep.ParamRepo)
+		return nil, errors.Errorf("missing parameter: %s", ParamRepo)
 	}
 
 	repo, ok := v.(*res.Repository)
 	if !ok {
-		return nil, errors.Errorf("invalid parameter: %s", dep.ParamRepo)
+		return nil, errors.Errorf("invalid parameter: %s", ParamRepo)
 	}
 
 	return repo, nil
 }
 
 func getParamMeta(params job.Parameters) (*lwp.Metadata, error) {
-	v, ok := params[dep.ParamMeta]
+	v, ok := params[ParamMeta]
 	if !ok {
-		return nil, errors.Errorf("missing parameter: %s", dep.ParamMeta)
+		return nil, errors.Errorf("missing parameter: %s", ParamMeta)
 	}
 
 	meta, ok := v.(*lwp.Metadata)
 	if !ok {
-		return nil, errors.Errorf("invalid parameter: %s", dep.ParamMeta)
+		return nil, errors.Errorf("invalid parameter: %s", ParamMeta)
 	}
 
 	return meta, nil

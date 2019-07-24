@@ -14,14 +14,10 @@
 
 package retention
 
-import "github.com/goharbor/harbor/src/pkg/retention/dep"
-
 // TODO: Move to api.Init()
 
 // Init the retention components
 func Init() error {
-	// New default retention client
-	dep.DefaultClient = dep.NewClient()
 
 	return nil
 }
