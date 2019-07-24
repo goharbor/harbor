@@ -88,6 +88,13 @@ var (
 		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionUpdate},
 		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionDelete},
 
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionOperate},
+
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionUpdate},

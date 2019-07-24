@@ -17,10 +17,13 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/retention"
 	"os"
 	"os/signal"
 	"strconv"
 	"syscall"
+
+	"github.com/goharbor/harbor/src/common/job"
 
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
@@ -37,6 +40,7 @@ import (
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/replication"
 )
 
@@ -106,6 +110,11 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+	// init the scheduler
+	scheduler.Init()
+	// init the jobservice client
+	job.Init()
+
 	password, err := config.InitialAdminPassword()
 	if err != nil {
 		log.Fatalf("failed to get admin's initia password: %v", err)
@@ -155,6 +164,12 @@ func main() {
 		}
 	} else {
 		log.Infof("Because SYNC_REGISTRY set false , no need to sync registry \n")
+	}
+
+	// Initialize retention
+	log.Info("Initialize retention")
+	if err := retention.Init(); err != nil {
+		log.Fatalf("Failed to initialize retention with error: %s", err)
 	}
 
 	log.Info("Init proxy")

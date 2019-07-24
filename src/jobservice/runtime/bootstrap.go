@@ -17,8 +17,6 @@ package runtime
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/jobservice/mgt"
-	"github.com/goharbor/harbor/src/jobservice/migration"
 	"os"
 	"os/signal"
 	"sync"
@@ -38,8 +36,11 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl/scan"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/mgt"
+	"github.com/goharbor/harbor/src/jobservice/migration"
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
+	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
 )
@@ -243,6 +244,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.ImageGC:              (*gc.GarbageCollector)(nil),
 			job.Replication:          (*replication.Replication)(nil),
 			job.ReplicationScheduler: (*replication.Scheduler)(nil),
+			job.Retention:            (*retention.Job)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

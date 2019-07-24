@@ -19,7 +19,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"os"
 
 	"github.com/goharbor/harbor/src/common"
 	comcfg "github.com/goharbor/harbor/src/common/config"
@@ -64,7 +63,7 @@ func main() {
 		if utils.IsEmptyStr(secret) {
 			return nil, errors.New("empty auth secret")
 		}
-		coreURL := os.Getenv("CORE_URL")
+		coreURL := config.GetCoreURL()
 		configURL := coreURL + common.CoreConfigPath
 		cfgMgr := comcfg.NewRESTCfgManager(configURL, secret)
 		jobCtx := impl.NewContext(ctx, cfgMgr)

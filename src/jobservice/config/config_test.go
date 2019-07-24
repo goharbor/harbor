@@ -14,11 +14,12 @@
 package config
 
 import (
+	"os"
+	"testing"
+
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"os"
-	"testing"
 )
 
 // ConfigurationTestSuite tests the configuration loading
@@ -84,6 +85,7 @@ func (suite *ConfigurationTestSuite) TestConfigLoadingWithEnv() {
 	)
 	assert.Equal(suite.T(), "js_secret", GetAuthSecret(), "expect auth secret 'js_secret' but got '%s'", GetAuthSecret())
 	assert.Equal(suite.T(), "core_secret", GetUIAuthSecret(), "expect auth secret 'core_secret' but got '%s'", GetUIAuthSecret())
+	assert.Equal(suite.T(), "core_url", GetCoreURL(), "expect core url 'core_url' but got '%s'", GetCoreURL())
 }
 
 // TestDefaultConfig ...
@@ -134,6 +136,7 @@ func setENV() error {
 	err = os.Setenv("JOB_SERVICE_POOL_REDIS_NAMESPACE", "ut_namespace")
 	err = os.Setenv("JOBSERVICE_SECRET", "js_secret")
 	err = os.Setenv("CORE_SECRET", "core_secret")
+	err = os.Setenv("CORE_URL", "core_url")
 
 	return err
 }
