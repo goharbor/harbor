@@ -109,6 +109,7 @@ export class AddHttpAuthGroupComponent implements OnInit {
     this.currentForm.reset();
     this.addHttpAuthOpened = true;
     this.role_id = 1;
+    this.inlineAlert.close();
   }
 
 
