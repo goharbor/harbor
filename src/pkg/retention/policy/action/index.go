@@ -15,8 +15,9 @@
 package action
 
 import (
-	"github.com/pkg/errors"
 	"sync"
+
+	"github.com/pkg/errors"
 )
 
 // index for keeping the mapping action and its performer
@@ -33,7 +34,7 @@ func Register(action string, factory PerformerFactory) {
 }
 
 // Get performer with the provided action
-func Get(action string, params interface{}) (Performer, error) {
+func Get(action string, params interface{}, isDryRun bool) (Performer, error) {
 	if len(action) == 0 {
 		return nil, errors.New("empty action")
 	}
@@ -48,5 +49,5 @@ func Get(action string, params interface{}) (Performer, error) {
 		return nil, errors.Errorf("invalid action performer registered for action %s", action)
 	}
 
-	return factory(params), nil
+	return factory(params, isDryRun), nil
 }

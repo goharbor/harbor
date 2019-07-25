@@ -137,7 +137,7 @@ func (suite *TestBuilderSuite) TestBuild() {
 		}},
 	}
 
-	p, err := b.Build(lm)
+	p, err := b.Build(lm, false)
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), p)
 
