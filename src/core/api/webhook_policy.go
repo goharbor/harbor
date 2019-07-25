@@ -238,7 +238,7 @@ func (w *WebhookPolicyAPI) ListGroupByHookType() {
 
 	policies, err := constructPolicyForUI(res)
 	if err != nil {
-		w.SendInternalServerError(fmt.Errorf("failed to list the webhook policy trigger infomation: %v", err))
+		w.SendInternalServerError(fmt.Errorf("failed to list the webhook policy trigger information: %v", err))
 		return
 	}
 	w.WriteJSONData(policies)

@@ -104,7 +104,7 @@ func DeleteWebhookJob(id int64) error {
 // DeleteAllWebhookJobs ...
 func DeleteAllWebhookJobs(policyID int64) (int64, error) {
 	o := GetOrmer()
-	return o.Delete(&models.WebhookJob{PolicyID: policyID})
+	return o.Delete(&models.WebhookJob{PolicyID: policyID}, "policy_id")
 }
 
 func webhookJobQueryConditions(query ...*models.WebhookJobQuery) orm.QuerySeter {

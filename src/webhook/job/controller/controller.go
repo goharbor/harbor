@@ -24,8 +24,8 @@ func (c *controller) ListWebhookJobs(query ...*models.WebhookJobQuery) (int64, [
 }
 
 // UpdateWebhookJob ...
-func (c *controller) UpdateWebhookJob(execution *models.WebhookJob, props ...string) error {
-	return c.jobMgr.Update(execution, props...)
+func (c *controller) UpdateWebhookJob(job *models.WebhookJob, props ...string) error {
+	return c.jobMgr.Update(job, props...)
 }
 
 // ListLastTriggerInfos list webhook infos including hook type and last trigger time
