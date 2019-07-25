@@ -150,7 +150,7 @@ func PreprocessAndSendImageHook(hookType string, value interface{}) error {
 	}
 	// if cannot find policy including hook type in project, return directly
 	if len(policies) == 0 {
-		log.Debug("cannot find policy for %s event: %v", hookType, imgEvent)
+		log.Debugf("cannot find policy for %s event: %v", hookType, imgEvent)
 		return nil
 	}
 
