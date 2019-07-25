@@ -16,6 +16,7 @@ package policy
 
 import (
 	"fmt"
+
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
@@ -31,11 +32,12 @@ type Builder interface {
 	//
 	//  Arguments:
 	//    policy *Metadata : the simple metadata of retention policy
+	//    isDryRun bool    : indicate if we need to build a processor for dry run
 	//
 	//  Returns:
 	//    Processor : a processor implementation to process the candidates
 	//    error     : common error object if any errors occurred
-	Build(policy *lwp.Metadata) (alg.Processor, error)
+	Build(policy *lwp.Metadata, isDryRun bool) (alg.Processor, error)
 }
 
 // NewBuilder news a basic builder
@@ -51,7 +53,7 @@ type basicBuilder struct {
 }
 
 // Build policy processor from the raw policy
-func (bb *basicBuilder) Build(policy *lwp.Metadata) (alg.Processor, error) {
+func (bb *basicBuilder) Build(policy *lwp.Metadata, isDryRun bool) (alg.Processor, error) {
 	if policy == nil {
 		return nil, errors.New("nil policy to build processor")
 	}
@@ -64,7 +66,7 @@ func (bb *basicBuilder) Build(policy *lwp.Metadata) (alg.Processor, error) {
 			return nil, err
 		}
 
-		perf, err := action.Get(r.Action, bb.allCandidates)
+		perf, err := action.Get(r.Action, bb.allCandidates, isDryRun)
 		if err != nil {
 			return nil, errors.Wrap(err, "get action performer by metadata")
 		}

@@ -54,7 +54,7 @@ func (suite *IndexTestSuite) SetupSuite() {
 
 // TestRegister tests register
 func (suite *IndexTestSuite) TestGet() {
-	p, err := Get("fakeAction", nil)
+	p, err := Get("fakeAction", nil, false)
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), p)
 
@@ -72,7 +72,10 @@ func (suite *IndexTestSuite) TestGet() {
 	})
 }
 
-type fakePerformer struct{}
+type fakePerformer struct {
+	parameters interface{}
+	isDryRun   bool
+}
 
 // Perform the artifacts
 func (p *fakePerformer) Perform(candidates []*res.Candidate) (results []*res.Result, err error) {
@@ -85,6 +88,9 @@ func (p *fakePerformer) Perform(candidates []*res.Candidate) (results []*res.Res
 	return
 }
 
-func newFakePerformer(params interface{}) Performer {
-	return &fakePerformer{}
+func newFakePerformer(params interface{}, isDryRun bool) Performer {
+	return &fakePerformer{
+		parameters: params,
+		isDryRun:   isDryRun,
+	}
 }

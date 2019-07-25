@@ -182,12 +182,12 @@ func (l *launchTestSuite) TestLaunch() {
 
 	var ply *policy.Metadata
 	// nil policy
-	n, err := launcher.Launch(ply, 1)
+	n, err := launcher.Launch(ply, 1, false)
 	require.NotNil(l.T(), err)
 
 	// nil rules
 	ply = &policy.Metadata{}
-	n, err = launcher.Launch(ply, 1)
+	n, err = launcher.Launch(ply, 1, false)
 	require.Nil(l.T(), err)
 	assert.Equal(l.T(), int64(0), n)
 
@@ -197,7 +197,7 @@ func (l *launchTestSuite) TestLaunch() {
 			{},
 		},
 	}
-	_, err = launcher.Launch(ply, 1)
+	_, err = launcher.Launch(ply, 1, false)
 	require.NotNil(l.T(), err)
 
 	// system scope
@@ -226,7 +226,7 @@ func (l *launchTestSuite) TestLaunch() {
 			},
 		},
 	}
-	n, err = launcher.Launch(ply, 1)
+	n, err = launcher.Launch(ply, 1, false)
 	require.Nil(l.T(), err)
 	assert.Equal(l.T(), int64(2), n)
 }

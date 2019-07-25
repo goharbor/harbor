@@ -127,7 +127,7 @@ func Init() error {
 		}
 		return errors.New("bad retention callback param")
 	}
-	err := scheduler.Register(retention.RetentionSchedulerCallback, callbackFun)
+	err := scheduler.Register(retention.SchedulerCallback, callbackFun)
 
 	return err
 }
