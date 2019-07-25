@@ -16,7 +16,11 @@ package util
 
 import (
 	"encoding/json"
+	"errors"
+	"fmt"
 	"github.com/docker/distribution"
+	"github.com/garyburd/redigo/redis"
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils/clair"
@@ -28,10 +32,15 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"strconv"
 	"strings"
+	"time"
 )
 
 type contextKey string
+
+// ErrRequireQuota ...
+var ErrRequireQuota = errors.New("cannot get quota on project for request")
 
 const (
 	manifestURLPattern = `^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)manifests/([\w][\w.:-]{0,127})`
@@ -42,7 +51,16 @@ const (
 	// TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	TokenUsername = "harbor-core"
 	// MFInfokKey the context key for image tag redis lock
-	MFInfokKey = contextKey("ManifestLock")
+	MFInfokKey = contextKey("ManifestInfo")
+	// BBInfokKey the context key for image tag redis lock
+	BBInfokKey = contextKey("BlobInfo")
+
+	// DialConnectionTimeout ...
+	DialConnectionTimeout = 30 * time.Second
+	// DialReadTimeout ...
+	DialReadTimeout = time.Minute + 10*time.Second
+	// DialWriteTimeout ...
+	DialWriteTimeout = 10 * time.Second
 )
 
 // ImageInfo ...
@@ -51,6 +69,24 @@ type ImageInfo struct {
 	Reference   string
 	ProjectName string
 	Digest      string
+}
+
+// BlobInfo ...
+type BlobInfo struct {
+	UUID        string
+	ProjectID   int64
+	ContentType string
+	Size        int64
+	Repository  string
+	Tag         string
+
+	// Exist is to index the existing of the manifest in DB. If false, it's an new image for uploading.
+	Exist bool
+
+	Digest     string
+	DigestLock *common_redis.Mutex
+	// Quota is the resource applied for the manifest upload request.
+	Quota *quota.ResourceList
 }
 
 // MfInfo ...
@@ -133,6 +169,24 @@ func MatchPutBlobURL(req *http.Request) (bool, string) {
 	return false, ""
 }
 
+// MatchPatchBlobURL ...
+func MatchPatchBlobURL(req *http.Request) (bool, string) {
+	if req.Method != http.MethodPatch {
+		return false, ""
+	}
+	re, err := regexp.Compile(blobURLPattern)
+	if err != nil {
+		log.Errorf("error to match put blob url, %v", err)
+		return false, ""
+	}
+	s := re.FindStringSubmatch(req.URL.Path)
+	if len(s) == 2 {
+		s[1] = strings.TrimSuffix(s[1], "/")
+		return true, s[1]
+	}
+	return false, ""
+}
+
 // MatchPullManifest checks if the request looks like a request to pull manifest.  If it is returns the image and tag/sha256 digest as 2nd and 3rd return values
 func MatchPullManifest(req *http.Request) (bool, string, string) {
 	if req.Method != http.MethodGet {
@@ -147,6 +201,33 @@ func MatchPushManifest(req *http.Request) (bool, string, string) {
 		return false, "", ""
 	}
 	return MatchManifestURL(req)
+}
+
+// MatchMountBlobURL POST /v2/<name>/blobs/uploads/?mount=<digest>&from=<repository name>
+// If match, will return repo, mount and from as the 2nd, 3th and 4th.
+func MatchMountBlobURL(req *http.Request) (bool, string, string, string) {
+	if req.Method != http.MethodPost {
+		return false, "", "", ""
+	}
+	re, err := regexp.Compile(blobURLPattern)
+	if err != nil {
+		log.Errorf("error to match post blob url, %v", err)
+		return false, "", "", ""
+	}
+	s := re.FindStringSubmatch(req.URL.Path)
+	if len(s) == 2 {
+		s[1] = strings.TrimSuffix(s[1], "/")
+		mount := req.FormValue("mount")
+		if mount == "" {
+			return false, "", "", ""
+		}
+		from := req.FormValue("from")
+		if from == "" {
+			return false, "", "", ""
+		}
+		return true, s[1], mount, from
+	}
+	return false, "", "", ""
 }
 
 // CopyResp ...
@@ -217,4 +298,80 @@ func NewPMSPolicyChecker(pm promgr.ProjectManager) PolicyChecker {
 // GetPolicyChecker ...
 func GetPolicyChecker() PolicyChecker {
 	return NewPMSPolicyChecker(config.GlobalProjectMgr)
+}
+
+// TryRequireQuota ...
+func TryRequireQuota(projectID int64, quotaRes *quota.ResourceList) error {
+	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(projectID, 10))
+	if err != nil {
+		log.Errorf("Error occurred when to new quota manager %v", err)
+		return err
+	}
+	if err := quotaMgr.AddResources(*quotaRes); err != nil {
+		log.Errorf("cannot get quota for the project resource: %d, err: %v", projectID, err)
+		return ErrRequireQuota
+	}
+	return nil
+}
+
+// TryFreeQuota used to release resource for failure case
+func TryFreeQuota(projectID int64, qres *quota.ResourceList) bool {
+	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(projectID, 10))
+	if err != nil {
+		log.Errorf("Error occurred when to new quota manager %v", err)
+		return false
+	}
+
+	if err := quotaMgr.SubtractResources(*qres); err != nil {
+		log.Errorf("cannot release quota for the project resource: %d, err: %v", projectID, err)
+		return false
+	}
+	return true
+}
+
+// GetBlobSize blob size with UUID in redis
+func GetBlobSize(conn redis.Conn, uuid string) (int64, error) {
+	exists, err := redis.Int(conn.Do("EXISTS", uuid))
+	if err != nil {
+		return 0, err
+	}
+	if exists == 1 {
+		size, err := redis.Int64(conn.Do("GET", uuid))
+		if err != nil {
+			return 0, err
+		}
+		return size, nil
+	}
+	return 0, nil
+}
+
+// SetBunkSize sets the temp size for blob bunk with its uuid.
+func SetBunkSize(conn redis.Conn, uuid string, size int64) (bool, error) {
+	setRes, err := redis.String(conn.Do("SET", uuid, size))
+	if err != nil {
+		return false, err
+	}
+	return setRes == "OK", nil
+}
+
+// GetProjectID ...
+func GetProjectID(name string) (int64, error) {
+	project, err := dao.GetProjectByName(name)
+	if err != nil {
+		return 0, err
+	}
+	if project != nil {
+		return project.ProjectID, nil
+	}
+	return 0, fmt.Errorf("project %s is not found", name)
+}
+
+// GetRegRedisCon ...
+func GetRegRedisCon() (redis.Conn, error) {
+	return redis.DialURL(
+		config.GetRedisOfRegURL(),
+		redis.DialConnectTimeout(DialConnectionTimeout),
+		redis.DialReadTimeout(DialReadTimeout),
+		redis.DialWriteTimeout(DialWriteTimeout),
+	)
 }

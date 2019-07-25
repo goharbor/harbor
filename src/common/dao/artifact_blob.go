@@ -52,6 +52,9 @@ func AddArtifactNBlobs(afnbs []*models.ArtifactAndBlob) error {
 	successNums, err := o.InsertMulti(total, afnbs)
 	if err != nil {
 		errInsertMultiple = err
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			errInsertMultiple = errors.Wrap(errInsertMultiple, ErrDupRows.Error())
+		}
 		err := o.Rollback()
 		if err != nil {
 			log.Errorf("fail to rollback when to insert multiple artifact and blobs, %v", err)

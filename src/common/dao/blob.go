@@ -2,6 +2,7 @@ package dao
 
 import (
 	"fmt"
+	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"strings"
@@ -47,4 +48,17 @@ func DeleteBlob(digest string) error {
 	o := GetOrmer()
 	_, err := o.QueryTable("blob").Filter("digest", digest).Delete()
 	return err
+}
+
+// HasBlobInProject ...
+func HasBlobInProject(projectID int64, digest string) (bool, error) {
+	var res []orm.Params
+	num, err := GetOrmer().Raw(`SELECT * FROM artifact af LEFT JOIN artifact_blob afnb ON af.digest = afnb.digest_af WHERE af.project_id = ? and afnb.digest_blob = ? `, projectID, digest).Values(&res)
+	if err != nil {
+		return false, err
+	}
+	if num == 0 {
+		return false, nil
+	}
+	return true, nil
 }
