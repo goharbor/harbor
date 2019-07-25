@@ -30,6 +30,42 @@ import (
 var addProject *apilib.ProjectReq
 var addPID int
 
+func addProjectByName(apiTest *testapi, projectName string) (int32, error) {
+	req := apilib.ProjectReq{ProjectName: projectName}
+	code, err := apiTest.ProjectsPost(*admin, req)
+	if err != nil {
+		return 0, err
+	}
+	if code != http.StatusCreated {
+		return 0, fmt.Errorf("created failed")
+	}
+
+	code, projects, err := apiTest.ProjectsGet(&apilib.ProjectQuery{Name: projectName}, *admin)
+	if err != nil {
+		return 0, err
+	}
+	if code != http.StatusOK {
+		return 0, fmt.Errorf("get failed")
+	}
+
+	if len(projects) == 0 {
+		return 0, fmt.Errorf("oops")
+	}
+
+	return projects[0].ProjectId, nil
+}
+
+func deleteProjectByIDs(apiTest *testapi, projectIDs ...int32) error {
+	for _, projectID := range projectIDs {
+		_, err := apiTest.ProjectsDelete(*admin, fmt.Sprintf("%d", projectID))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func InitAddPro() {
 	addProject = &apilib.ProjectReq{ProjectName: "add_project", Metadata: map[string]string{models.ProMetaPublic: "true"}}
 }
@@ -447,4 +483,31 @@ func TestDeletable(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, http.StatusOK, code)
 	assert.False(t, del)
+}
+
+func TestProjectSummary(t *testing.T) {
+	fmt.Println("\nTest for Project Summary API")
+	assert := assert.New(t)
+
+	apiTest := newHarborAPI()
+
+	projectID, err := addProjectByName(apiTest, "project-summary")
+	assert.Nil(err)
+	defer func() {
+		deleteProjectByIDs(apiTest, projectID)
+	}()
+
+	// ----------------------------case 1 : Response Code=200----------------------------//
+	fmt.Println("case 1: respose code:200")
+	httpStatusCode, summary, err := apiTest.ProjectSummary(*admin, fmt.Sprintf("%d", projectID))
+	if err != nil {
+		t.Error("Error while search project by proName", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+		assert.Equal(int64(1), summary.ProjectAdminCount)
+		assert.Equal(map[string]int64{"count": -1, "storage": -1}, summary.Quota.Hard)
+	}
+
+	fmt.Printf("\n")
 }
