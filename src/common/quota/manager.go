@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/quota/driver"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/types"
 )
 
@@ -207,6 +208,7 @@ func NewManager(reference string, referenceID string) (*Manager, error) {
 	}
 
 	if _, err := d.Load(referenceID); err != nil {
+		log.Warning(fmt.Sprintf("Load quota reference object (%s, %s) failed: %v", reference, referenceID, err))
 		return nil, err
 	}
 

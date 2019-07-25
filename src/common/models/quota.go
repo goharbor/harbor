@@ -17,6 +17,8 @@ package models
 import (
 	"encoding/json"
 	"time"
+
+	"github.com/goharbor/harbor/src/pkg/types"
 )
 
 // QuotaHard a map for the quota hard
@@ -69,9 +71,15 @@ func (q *Quota) SetHard(hard QuotaHard) {
 
 // QuotaQuery query parameters for quota
 type QuotaQuery struct {
+	ID           int64
 	Reference    string
 	ReferenceID  string
 	ReferenceIDs []string
 	Pagination
 	Sorting
+}
+
+// QuotaUpdateRequest the request for quota update
+type QuotaUpdateRequest struct {
+	Hard types.ResourceList `json:"hard"`
 }

@@ -15,25 +15,26 @@
 package dao
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/quota/driver"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/pkg/types"
 )
 
 var (
 	quotaOrderMap = map[string]string{
-		"id":             "id asc",
-		"+id":            "id asc",
-		"-id":            "id desc",
-		"creation_time":  "creation_time asc",
-		"+creation_time": "creation_time asc",
-		"-creation_time": "creation_time desc",
-		"update_time":    "update_time asc",
-		"+update_time":   "update_time asc",
-		"-update_time":   "update_time desc",
+		"creation_time":  "b.creation_time asc",
+		"+creation_time": "b.creation_time asc",
+		"-creation_time": "b.creation_time desc",
+		"update_time":    "b.update_time asc",
+		"+update_time":   "b.update_time asc",
+		"-update_time":   "b.update_time desc",
 	}
 )
 
@@ -62,10 +63,58 @@ func UpdateQuota(quota models.Quota) error {
 	return err
 }
 
+// Quota quota mode for api
+type Quota struct {
+	ID           int64            `orm:"pk;auto;column(id)" json:"id"`
+	Ref          driver.RefObject `json:"ref"`
+	Reference    string           `orm:"column(reference)" json:"-"`
+	ReferenceID  string           `orm:"column(reference_id)" json:"-"`
+	Hard         string           `orm:"column(hard);type(jsonb)" json:"-"`
+	Used         string           `orm:"column(used);type(jsonb)" json:"-"`
+	CreationTime time.Time        `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+	UpdateTime   time.Time        `orm:"column(update_time);auto_now" json:"update_time"`
+}
+
+// MarshalJSON ...
+func (q *Quota) MarshalJSON() ([]byte, error) {
+	hard, err := types.NewResourceList(q.Hard)
+	if err != nil {
+		return nil, err
+	}
+
+	used, err := types.NewResourceList(q.Used)
+	if err != nil {
+		return nil, err
+	}
+
+	type Alias Quota
+	return json.Marshal(&struct {
+		*Alias
+		Hard types.ResourceList `json:"hard"`
+		Used types.ResourceList `json:"used"`
+	}{
+		Alias: (*Alias)(q),
+		Hard:  hard,
+		Used:  used,
+	})
+}
+
 // ListQuotas returns quotas by query.
-func ListQuotas(query ...*models.QuotaQuery) ([]*models.Quota, error) {
+func ListQuotas(query ...*models.QuotaQuery) ([]*Quota, error) {
 	condition, params := quotaQueryConditions(query...)
-	sql := fmt.Sprintf(`select * %s`, condition)
+
+	sql := fmt.Sprintf(`
+SELECT
+  a.id,
+  a.reference,
+  a.reference_id,
+  a.hard,
+  b.used,
+  b.creation_time,
+  b.update_time
+FROM
+  quota AS a
+  JOIN quota_usage AS b ON a.id = b.id %s`, condition)
 
 	orderBy := quotaOrderBy(query...)
 	if orderBy != "" {
@@ -84,42 +133,80 @@ func ListQuotas(query ...*models.QuotaQuery) ([]*models.Quota, error) {
 		}
 	}
 
-	var quotas []*models.Quota
+	var quotas []*Quota
 	if _, err := GetOrmer().Raw(sql, params).QueryRows(&quotas); err != nil {
 		return nil, err
+	}
+
+	for _, quota := range quotas {
+		d, ok := driver.Get(quota.Reference)
+		if !ok {
+			continue
+		}
+
+		ref, err := d.Load(quota.ReferenceID)
+		if err != nil {
+			log.Warning(fmt.Sprintf("Load quota reference object (%s, %s) failed: %v", quota.Reference, quota.ReferenceID, err))
+			continue
+		}
+
+		quota.Ref = ref
 	}
 
 	return quotas, nil
 }
 
+// GetTotalOfQuotas returns total of quotas
+func GetTotalOfQuotas(query ...*models.QuotaQuery) (int64, error) {
+	condition, params := quotaQueryConditions(query...)
+	sql := fmt.Sprintf("SELECT COUNT(1) FROM quota AS a JOIN quota_usage AS b ON a.id = b.id %s", condition)
+
+	var count int64
+	if err := GetOrmer().Raw(sql, params).QueryRow(&count); err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func quotaQueryConditions(query ...*models.QuotaQuery) (string, []interface{}) {
 	params := []interface{}{}
-	sql := `from quota `
+	sql := ""
 	if len(query) == 0 || query[0] == nil {
 		return sql, params
 	}
 
-	sql += `where 1=1 `
+	sql += `WHERE 1=1 `
 
 	q := query[0]
+	if q.ID != 0 {
+		sql += `AND a.id = ? `
+		params = append(params, q.ID)
+	}
 	if q.Reference != "" {
-		sql += `and reference = ? `
+		sql += `AND a.reference = ? `
 		params = append(params, q.Reference)
 	}
 	if q.ReferenceID != "" {
-		sql += `and reference_id = ? `
+		sql += `AND a.reference_id = ? `
 		params = append(params, q.ReferenceID)
 	}
+
 	if len(q.ReferenceIDs) != 0 {
-		sql += fmt.Sprintf(`and reference_id in (%s) `, paramPlaceholder(len(q.ReferenceIDs)))
+		sql += fmt.Sprintf(`AND a.reference_id IN (%s) `, paramPlaceholder(len(q.ReferenceIDs)))
 		params = append(params, q.ReferenceIDs)
 	}
 
 	return sql, params
 }
 
+func castQuantity(field string) string {
+	// cast -1 to max int64 when order by field
+	return fmt.Sprintf("CAST( (CASE WHEN (%[1]s) IS NULL THEN '0' WHEN (%[1]s) = '-1' THEN '9223372036854775807' ELSE (%[1]s) END) AS BIGINT )", field)
+}
+
 func quotaOrderBy(query ...*models.QuotaQuery) string {
-	orderBy := ""
+	orderBy := "b.creation_time DESC"
 
 	if len(query) > 0 && query[0] != nil && query[0].Sort != "" {
 		if val, ok := quotaOrderMap[query[0].Sort]; ok {
@@ -127,15 +214,19 @@ func quotaOrderBy(query ...*models.QuotaQuery) string {
 		} else {
 			sort := query[0].Sort
 
-			order := "asc"
+			order := "ASC"
 			if sort[0] == '-' {
-				order = "desc"
+				order = "DESC"
 				sort = sort[1:]
 			}
 
-			prefix := "hard."
-			if strings.HasPrefix(sort, prefix) {
-				orderBy = fmt.Sprintf("hard->>'%s' %s", strings.TrimPrefix(sort, prefix), order)
+			prefix := []string{"hard.", "used."}
+			for _, p := range prefix {
+				if strings.HasPrefix(sort, p) {
+					field := fmt.Sprintf("%s->>'%s'", strings.TrimSuffix(p, "."), strings.TrimPrefix(sort, p))
+					orderBy = fmt.Sprintf("(%s) %s", castQuantity(field), order)
+					break
+				}
 			}
 		}
 	}

@@ -230,7 +230,14 @@ func GetStrValueOfAnyType(value interface{}) string {
 		}
 		strVal = string(b)
 	} else {
-		strVal = fmt.Sprintf("%v", value)
+		switch val := value.(type) {
+		case float64:
+			strVal = strconv.FormatFloat(val, 'f', -1, 64)
+		case float32:
+			strVal = strconv.FormatFloat(float64(val), 'f', -1, 32)
+		default:
+			strVal = fmt.Sprintf("%v", value)
+		}
 	}
 	return strVal
 }

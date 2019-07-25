@@ -51,11 +51,18 @@ func TestMain(m *testing.M) {
 			"update project set owner_id = (select user_id from harbor_user where username = 'member_test_01') where name = 'member_test_01'",
 			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select user_id from harbor_user where username = 'member_test_01'), 'u', 1)",
 			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select id from user_group where group_name = 'test_group_01'), 'g', 1)",
+
+			"insert into harbor_user (username, email, password, realname)  values ('member_test_02', 'member_test_02@example.com', '123456', 'member_test_02')",
+			"insert into project (name, owner_id) values ('member_test_02', 1)",
+			"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_group_02', 1, 'CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com')",
+			"update project set owner_id = (select user_id from harbor_user where username = 'member_test_02') where name = 'member_test_02'",
+			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_02') , (select user_id from harbor_user where username = 'member_test_02'), 'u', 1)",
+			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_02') , (select id from user_group where group_name = 'test_group_02'), 'g', 1)",
 		}
 
 		clearSqls := []string{
-			"delete from project where name='member_test_01'",
-			"delete from harbor_user where username='member_test_01' or username='pm_sample'",
+			"delete from project where name='member_test_01' or name='member_test_02'",
+			"delete from harbor_user where username='member_test_01' or username='member_test_02' or username='pm_sample'",
 			"delete from user_group",
 			"delete from project_member",
 		}
@@ -285,6 +292,39 @@ func TestGetProjectMember(t *testing.T) {
 	}
 
 }
+
+func TestGetTotalOfProjectMembers(t *testing.T) {
+	currentProject, _ := dao.GetProjectByName("member_test_02")
+
+	type args struct {
+		projectID int64
+		roles     []int
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr bool
+	}{
+		{"Get total of project admin", args{currentProject.ProjectID, []int{common.RoleProjectAdmin}}, 2, false},
+		{"Get total of master", args{currentProject.ProjectID, []int{common.RoleMaster}}, 0, false},
+		{"Get total of developer", args{currentProject.ProjectID, []int{common.RoleDeveloper}}, 0, false},
+		{"Get total of guest", args{currentProject.ProjectID, []int{common.RoleGuest}}, 0, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := GetTotalOfProjectMembers(tt.args.projectID, tt.args.roles...)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("GetTotalOfProjectMembers() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("GetTotalOfProjectMembers() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
 func PrepareGroupTest() {
 	initSqls := []string{
 		`insert into user_group (group_name, group_type, ldap_group_dn) values ('harbor_group_01', 1, 'cn=harbor_user,dc=example,dc=com')`,

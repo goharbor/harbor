@@ -19,10 +19,12 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -577,6 +579,33 @@ func (p *ProjectAPI) Logs() {
 	p.ServeJSON()
 }
 
+// Summary returns the summary of the project
+func (p *ProjectAPI) Summary() {
+	if !p.requireAccess(rbac.ActionRead) {
+		return
+	}
+
+	summary := &models.ProjectSummary{
+		RepoCount:  p.project.RepoCount,
+		ChartCount: p.project.ChartCount,
+	}
+
+	var wg sync.WaitGroup
+	for _, fn := range []func(int64, *models.ProjectSummary){getProjectQuotaSummary, getProjectMemberSummary} {
+		fn := fn
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fn(p.project.ProjectID, summary)
+		}()
+	}
+	wg.Wait()
+
+	p.Data["json"] = summary
+	p.ServeJSON()
+}
+
 // TODO move this to pa ckage models
 func validateProjectReq(req *models.ProjectRequest) error {
 	pn := req.Name
@@ -617,4 +646,51 @@ func projectQuotaHardLimits(req *models.ProjectRequest, setting *models.QuotaSet
 	}
 
 	return hardLimits, nil
+}
+
+func getProjectQuotaSummary(projectID int64, summary *models.ProjectSummary) {
+	quotas, err := dao.ListQuotas(&models.QuotaQuery{Reference: "project", ReferenceID: strconv.FormatInt(projectID, 10)})
+	if err != nil {
+		log.Debugf("failed to get quota for project: %d", projectID)
+		return
+	}
+
+	if len(quotas) == 0 {
+		log.Debugf("quota not found for project: %d", projectID)
+		return
+	}
+
+	quota := quotas[0]
+
+	summary.Quota.Hard, _ = types.NewResourceList(quota.Hard)
+	summary.Quota.Used, _ = types.NewResourceList(quota.Used)
+}
+
+func getProjectMemberSummary(projectID int64, summary *models.ProjectSummary) {
+	var wg sync.WaitGroup
+
+	for _, e := range []struct {
+		role  int
+		count *int64
+	}{
+		{common.RoleProjectAdmin, &summary.ProjectAdminCount},
+		{common.RoleMaster, &summary.MasterCount},
+		{common.RoleDeveloper, &summary.DeveloperCount},
+		{common.RoleGuest, &summary.GuestCount},
+	} {
+		wg.Add(1)
+		go func(role int, count *int64) {
+			defer wg.Done()
+
+			total, err := project.GetTotalOfProjectMembers(projectID, role)
+			if err != nil {
+				log.Debugf("failed to get total of project members of role %d", role)
+				return
+			}
+
+			*count = total
+		}(e.role, e.count)
+	}
+
+	wg.Wait()
 }
