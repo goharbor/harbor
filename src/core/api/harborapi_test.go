@@ -160,6 +160,16 @@ func init() {
 	beego.Router("/api/replication/policies", &ReplicationPolicyAPI{}, "get:List;post:Create")
 	beego.Router("/api/replication/policies/:id([0-9]+)", &ReplicationPolicyAPI{}, "get:Get;put:Update;delete:Delete")
 
+	beego.Router("/api/retentions/metadatas", &RetentionAPI{}, "get:GetMetadatas")
+	beego.Router("/api/retentions/:id", &RetentionAPI{}, "get:GetRetention")
+	beego.Router("/api/retentions", &RetentionAPI{}, "post:CreateRetention")
+	beego.Router("/api/retentions/:id", &RetentionAPI{}, "put:UpdateRetention")
+	beego.Router("/api/retentions/:id/executions", &RetentionAPI{}, "post:TriggerRetentionExec")
+	beego.Router("/api/retentions/:id/executions/:eid", &RetentionAPI{}, "patch:OperateRetentionExec")
+	beego.Router("/api/retentions/:id/executions", &RetentionAPI{}, "get:ListRetentionExecs")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks", &RetentionAPI{}, "get:ListRetentionExecTasks")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks/:tid", &RetentionAPI{}, "get:GetRetentionExecTaskLog")
+
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}
 	beego.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")

@@ -15,6 +15,7 @@
 package policy
 
 import (
+	"github.com/astaxie/beego/validation"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
 
@@ -41,7 +42,7 @@ type Metadata struct {
 
 	// Algorithm applied to the rules
 	// "OR" / "AND"
-	Algorithm string `json:"algorithm" valid:"Required;Match(/^(OR|AND)$/)"`
+	Algorithm string `json:"algorithm" valid:"Required;Match(or)"`
 
 	// Rule collection
 	Rules []rule.Metadata `json:"rules"`
@@ -56,15 +57,29 @@ type Metadata struct {
 	Capacity int `json:"cap"`
 }
 
+// Valid Valid
+func (m *Metadata) Valid(v *validation.Validation) {
+	if m.Trigger.Kind == TriggerKindSchedule {
+		if m.Trigger.Settings == nil {
+			_ = v.SetError("Trigger.Settings", "Trigger.Settings is required")
+		} else {
+			if _, ok := m.Trigger.Settings[TriggerSettingsCron]; !ok {
+				_ = v.SetError("Trigger.Settings", "cron in Trigger.Settings is required")
+			}
+		}
+
+	}
+}
+
 // Trigger of the policy
 type Trigger struct {
 	// Const string to declare the trigger type
 	// 'Schedule'
-	Kind string `json:"kind"`
+	Kind string `json:"kind" valid:"Required"`
 
 	// Settings for the specified trigger
 	// '[cron]="* 22 11 * * *"' for the 'Schedule'
-	Settings map[string]interface{} `json:"settings"`
+	Settings map[string]interface{} `json:"settings" valid:"Required"`
 
 	// References of the trigger
 	// e.g: schedule job ID
