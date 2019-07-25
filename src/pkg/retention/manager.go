@@ -18,9 +18,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/astaxie/beego/orm"
 	"time"
 
+	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -173,6 +173,7 @@ func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
 	}
 	t := &models.RetentionTask{
 		ExecutionID: task.ExecutionID,
+		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
 		EndTime:     task.EndTime,
@@ -194,6 +195,7 @@ func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 		tasks = append(tasks, &Task{
 			ID:          t.ID,
 			ExecutionID: t.ExecutionID,
+			JobID:       t.JobID,
 			Status:      t.Status,
 			StartTime:   t.StartTime,
 			EndTime:     t.EndTime,
@@ -213,6 +215,7 @@ func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
 	return dao.UpdateTask(&models.RetentionTask{
 		ID:          task.ID,
 		ExecutionID: task.ExecutionID,
+		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
 		EndTime:     task.EndTime,

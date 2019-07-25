@@ -73,7 +73,7 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 
 	// Log stage: start
 	repoPath := fmt.Sprintf("%s/%s", repo.Namespace, repo.Name)
-	myLogger.Infof("Run retention process.\n Repository: %s \n Rule Algorithm: %s", repoPath, liteMeta.Algorithm)
+	myLogger.Infof("Run retention process.\n Repository: %s \n Rule Algorithm: %s \n Dry Run: %f", repoPath, liteMeta.Algorithm, isDryRun)
 
 	// Stop check point 1:
 	if isStopped(ctx) {

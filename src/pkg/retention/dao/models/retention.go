@@ -11,7 +11,6 @@ func init() {
 		new(RetentionPolicy),
 		new(RetentionExecution),
 		new(RetentionTask),
-		new(RetentionScheduleJob),
 	)
 }
 
@@ -49,17 +48,8 @@ type RetentionExecution struct {
 type RetentionTask struct {
 	ID          int64     `orm:"pk;auto;column(id)"`
 	ExecutionID int64     `orm:"column(execution_id)"`
+	JobID       string    `orm:"column(job_id)"`
 	Status      string    `orm:"column(status)"`
 	StartTime   time.Time `orm:"column(start_time)"`
 	EndTime     time.Time `orm:"column(end_time)"`
-}
-
-// RetentionScheduleJob Retention Schedule Job
-type RetentionScheduleJob struct {
-	ID         int64 `orm:"pk;auto;column(id)" json:"id"`
-	Status     string
-	PolicyID   int64 `orm:"column(policy_id)"`
-	JobID      int64 `orm:"column(job_id)"`
-	CreateTime time.Time
-	UpdateTime time.Time
 }

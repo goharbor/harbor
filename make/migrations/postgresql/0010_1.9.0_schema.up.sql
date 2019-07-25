@@ -40,6 +40,7 @@ create table retention_task
 (
 	id SERIAL NOT NULL,
 	execution_id integer,
+	job_id varchar(64),
 	status varchar(32),
 	start_time timestamp default CURRENT_TIMESTAMP,
 	end_time timestamp default CURRENT_TIMESTAMP,

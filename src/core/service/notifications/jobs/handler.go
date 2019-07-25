@@ -18,14 +18,13 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/retention"
-
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
 	jobmodels "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/operation/hook"
 	"github.com/goharbor/harbor/src/replication/policy/scheduler"
@@ -115,7 +114,8 @@ func (h *Handler) HandleRetentionTask() {
 		ID:     h.id,
 		Status: h.status,
 	}
-	if h.status == models.JobFinished {
+	if h.status == models.JobFinished || h.status == models.JobError ||
+		h.status == models.JobStopped {
 		task.EndTime = time.Now()
 	}
 	props = append(props, "EndTime")
