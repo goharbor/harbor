@@ -16,13 +16,14 @@ package retention
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
-	"time"
 )
 
 // APIController to handle the requests related with retention
@@ -66,8 +67,8 @@ type DefaultAPIController struct {
 }
 
 const (
-	// RetentionSchedulerCallback ...
-	RetentionSchedulerCallback = "RetentionSchedulerCallback"
+	// SchedulerCallback ...
+	SchedulerCallback = "SchedulerCallback"
 )
 
 // TriggerParam ...
@@ -87,7 +88,7 @@ func (r *DefaultAPIController) CreateRetention(p *policy.Metadata) error {
 		if p.Trigger.Settings != nil {
 			cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
 			if ok {
-				jobid, err := r.scheduler.Schedule(cron.(string), RetentionSchedulerCallback, TriggerParam{
+				jobid, err := r.scheduler.Schedule(cron.(string), SchedulerCallback, TriggerParam{
 					PolicyID: p.ID,
 					Trigger:  ExecutionTriggerSchedule,
 				})
@@ -138,7 +139,7 @@ func (r *DefaultAPIController) UpdateRetention(p *policy.Metadata) error {
 		case "":
 
 		default:
-			return fmt.Errorf("Not support Trigger %s", p.Trigger.Kind)
+			return fmt.Errorf("not support Trigger %s", p.Trigger.Kind)
 		}
 	}
 	if needUn {
@@ -148,7 +149,7 @@ func (r *DefaultAPIController) UpdateRetention(p *policy.Metadata) error {
 		}
 	}
 	if needSch {
-		jobid, err := r.scheduler.Schedule(p.Trigger.Settings[policy.TriggerSettingsCron].(string), RetentionSchedulerCallback, TriggerParam{
+		jobid, err := r.scheduler.Schedule(p.Trigger.Settings[policy.TriggerSettingsCron].(string), SchedulerCallback, TriggerParam{
 			PolicyID: p.ID,
 			Trigger:  ExecutionTriggerSchedule,
 		})
@@ -192,8 +193,7 @@ func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger stri
 		DryRun:    dryRun,
 	}
 	id, err := r.manager.CreateExecution(exec)
-	// TODO launcher with DryRun param
-	num, err := r.launcher.Launch(p, id)
+	num, err := r.launcher.Launch(p, id, dryRun)
 	if err != nil {
 		return err
 	}
@@ -218,21 +218,21 @@ func (r *DefaultAPIController) OperateRetentionExec(eid int64, action string) er
 	if err != nil {
 		return err
 	}
-	exec := &Execution{}
+
 	switch action {
 	case "stop":
 		if e.Status != ExecutionStatusInProgress {
-			return fmt.Errorf("Can't abort, current status is %s", e.Status)
+			return fmt.Errorf("cannot abort, current status is %s", e.Status)
 		}
-		exec.ID = eid
-		exec.Status = ExecutionStatusStopped
-		exec.EndTime = time.Now()
-		// TODO stop the execution
+
+		e.Status = ExecutionStatusStopped
+		e.EndTime = time.Now()
+		// TODO: STOP THE EXECUTION
 	default:
 		return fmt.Errorf("not support action %s", action)
 	}
 
-	return r.manager.UpdateExecution(exec)
+	return r.manager.UpdateExecution(e)
 }
 
 // ListRetentionExecs List Retention Executions

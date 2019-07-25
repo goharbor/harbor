@@ -74,7 +74,7 @@ func (suite *ProcessorTestSuite) SetupSuite() {
 
 	params := make([]*alg.Parameter, 0)
 
-	perf := action.NewRetainAction(suite.all)
+	perf := action.NewRetainAction(suite.all, false)
 
 	lastxParams := make(map[string]rule.Parameter)
 	lastxParams[lastx.ParameterX] = 10

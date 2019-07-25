@@ -16,14 +16,14 @@ package retention
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
@@ -32,11 +32,7 @@ import (
 )
 
 // Job of running retention process
-type Job struct {
-	// client used to talk to core
-	// TODO: REFER THE GLOBAL CLIENT
-	client dep.Client
-}
+type Job struct{}
 
 // MaxFails of the job
 func (pj *Job) MaxFails() uint {
@@ -58,6 +54,10 @@ func (pj *Job) Validate(params job.Parameters) error {
 		return err
 	}
 
+	if _, err := getParamDryRun(params); err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -69,6 +69,7 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	// Parameters have been validated, ignore error checking
 	repo, _ := getParamRepo(params)
 	liteMeta, _ := getParamMeta(params)
+	isDryRun, _ := getParamDryRun(params)
 
 	// Log stage: start
 	repoPath := fmt.Sprintf("%s/%s", repo.Namespace, repo.Name)
@@ -81,7 +82,7 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	}
 
 	// Retrieve all the candidates under the specified repository
-	allCandidates, err := pj.client.GetCandidates(repo)
+	allCandidates, err := dep.DefaultClient.GetCandidates(repo)
 	if err != nil {
 		return logError(myLogger, err)
 	}
@@ -91,7 +92,7 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 
 	// Build the processor
 	builder := policy.NewBuilder(allCandidates)
-	processor, err := builder.Build(liteMeta)
+	processor, err := builder.Build(liteMeta, isDryRun)
 	if err != nil {
 		return logError(myLogger, err)
 	}
@@ -110,16 +111,6 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 
 	// Log stage: results with table view
 	logResults(myLogger, allCandidates, results)
-
-	// Check in the results
-	bytes, err := json.Marshal(results)
-	if err != nil {
-		return logError(myLogger, err)
-	}
-
-	if err := ctx.Checkin(string(bytes)); err != nil {
-		return logError(myLogger, err)
-	}
 
 	return nil
 }
@@ -146,7 +137,7 @@ func logResults(logger logger.Interface, all []*res.Candidate, results []*res.Re
 
 	var buf bytes.Buffer
 
-	data := [][]string{}
+	data := make([][]string, len(all))
 
 	for _, c := range all {
 		row := []string{
@@ -202,6 +193,20 @@ func logError(logger logger.Interface, err error) error {
 	logger.Error(wrappedErr)
 
 	return wrappedErr
+}
+
+func getParamDryRun(params job.Parameters) (bool, error) {
+	v, ok := params[ParamDryRun]
+	if !ok {
+		return false, errors.Errorf("missing parameter: %s", ParamDryRun)
+	}
+
+	dryRun, ok := v.(bool)
+	if !ok {
+		return false, errors.Errorf("invalid parameter: %s", ParamDryRun)
+	}
+
+	return dryRun, nil
 }
 
 func getParamRepo(params job.Parameters) (*res.Repository, error) {

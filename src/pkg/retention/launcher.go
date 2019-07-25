@@ -37,6 +37,8 @@ const (
 	ParamRepo = "repository"
 	// ParamMeta ...
 	ParamMeta = "liteMeta"
+	// ParamDryRun ...
+	ParamDryRun = "dryRun"
 )
 
 // Launcher provides function to launch the async jobs to run retentions based on the provided policy.
@@ -47,11 +49,12 @@ type Launcher interface {
 	//  Arguments:
 	//   policy *policy.Metadata: the policy info
 	//   executionID int64      : the execution ID
+	//   isDryRun bool          : indicate if it is a dry run
 	//
 	//  Returns:
 	//   int64               : the count of tasks
 	//   error               : common error if any errors occurred
-	Launch(policy *policy.Metadata, executionID int64) (int64, error)
+	Launch(policy *policy.Metadata, executionID int64, isDryRun bool) (int64, error)
 }
 
 // NewLauncher returns an instance of Launcher
@@ -80,7 +83,7 @@ type jobData struct {
 	taskID     int64
 }
 
-func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error) {
+func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool) (int64, error) {
 	if ply == nil {
 		return 0, launcherError(fmt.Errorf("the policy is nil"))
 	}
@@ -193,8 +196,9 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 		}
 		j.Name = job.Retention
 		j.Parameters = map[string]interface{}{
-			ParamRepo: jobData.repository,
-			ParamMeta: jobData.policy,
+			ParamRepo:   jobData.repository,
+			ParamMeta:   jobData.policy,
+			ParamDryRun: isDryRun,
 		}
 		_, err := l.jobserviceClient.SubmitJob(j)
 		if err != nil {
