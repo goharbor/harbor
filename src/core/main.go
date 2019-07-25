@@ -22,6 +22,8 @@ import (
 	"strconv"
 	"syscall"
 
+	"github.com/goharbor/harbor/src/common/job"
+
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -37,6 +39,7 @@ import (
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/proxy"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/replication"
 )
 
@@ -106,6 +109,11 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+	// init the scheduler
+	scheduler.Init()
+	// init the jobservice client
+	job.Init()
+
 	password, err := config.InitialAdminPassword()
 	if err != nil {
 		log.Fatalf("failed to get admin's initia password: %v", err)
@@ -158,7 +166,10 @@ func main() {
 	}
 
 	log.Info("Init proxy")
-	proxy.Init()
+	if err := proxy.Init(); err != nil {
+		log.Fatalf("Init proxy error: %s", err)
+	}
+
 	// go proxy.StartProxy()
 	beego.Run()
 }

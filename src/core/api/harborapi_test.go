@@ -556,7 +556,7 @@ func (a testapi) GetRepos(authInfo usrInfo, projectID, keyword string) (
 	return code, nil, nil
 }
 
-func (a testapi) GetTag(authInfo usrInfo, repository string, tag string) (int, *tagResp, error) {
+func (a testapi) GetTag(authInfo usrInfo, repository string, tag string) (int, *models.TagResp, error) {
 	_sling := sling.New().Get(a.basePath).Path(fmt.Sprintf("/api/repositories/%s/tags/%s", repository, tag))
 	code, data, err := request(_sling, jsonAcceptHeader, authInfo)
 	if err != nil {
@@ -568,7 +568,7 @@ func (a testapi) GetTag(authInfo usrInfo, repository string, tag string) (int, *
 		return code, nil, nil
 	}
 
-	result := tagResp{}
+	result := models.TagResp{}
 	if err := json.Unmarshal(data, &result); err != nil {
 		return 0, nil, err
 	}
@@ -592,7 +592,7 @@ func (a testapi) GetReposTags(authInfo usrInfo, repoName string) (int, interface
 		return httpStatusCode, body, nil
 	}
 
-	result := []tagResp{}
+	result := []models.TagResp{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return 0, nil, err
 	}

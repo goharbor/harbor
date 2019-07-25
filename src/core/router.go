@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/core/service/notifications/clair"
 	"github.com/goharbor/harbor/src/core/service/notifications/jobs"
 	"github.com/goharbor/harbor/src/core/service/notifications/registry"
+	"github.com/goharbor/harbor/src/core/service/notifications/scheduler"
 	"github.com/goharbor/harbor/src/core/service/token"
 
 	"github.com/astaxie/beego"
@@ -131,6 +132,8 @@ func initRouters() {
 	beego.Router("/service/notifications/jobs/adminjob/:id([0-9]+)", &admin.Handler{}, "post:HandleAdminJob")
 	beego.Router("/service/notifications/jobs/replication/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationScheduleJob")
 	beego.Router("/service/notifications/jobs/replication/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationTask")
+	beego.Router("/service/notifications/jobs/retention/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleRetentionTask")
+	beego.Router("/service/notifications/schedules/:id([0-9]+)", &scheduler.Handler{}, "post:Handle")
 	beego.Router("/service/token", &token.Handler{})
 
 	beego.Router("/api/registries", &api.RegistryAPI{}, "get:List;post:Post")
@@ -139,6 +142,16 @@ func initRouters() {
 	// we use "0" as the ID of the local Harbor registry, so don't add "([0-9]+)" in the path
 	beego.Router("/api/registries/:id/info", &api.RegistryAPI{}, "get:GetInfo")
 	beego.Router("/api/registries/:id/namespace", &api.RegistryAPI{}, "get:GetNamespace")
+
+	beego.Router("/api/retentions/metadatas", &api.RetentionAPI{}, "get:GetMetadatas")
+	beego.Router("/api/retentions/:id", &api.RetentionAPI{}, "get:GetRetention")
+	beego.Router("/api/retentions", &api.RetentionAPI{}, "post:CreateRetention")
+	beego.Router("/api/retentions/:id", &api.RetentionAPI{}, "put:UpdateRetention")
+	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "post:TriggerRetentionExec")
+	beego.Router("/api/retentions/:id/executions/:eid", &api.RetentionAPI{}, "patch:OperateRetentionExec")
+	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "get:ListRetentionExecs")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks", &api.RetentionAPI{}, "get:ListRetentionExecTasks")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks/:tid", &api.RetentionAPI{}, "get:GetRetentionExecTaskLog")
 
 	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 

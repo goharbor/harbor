@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -37,6 +37,7 @@ const (
 	jobServiceRedisURL          = "JOB_SERVICE_POOL_REDIS_URL"
 	jobServiceRedisNamespace    = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
 	jobServiceAuthSecret        = "JOBSERVICE_SECRET"
+	coreURL                     = "CORE_URL"
 
 	// JobServiceProtocolHTTPS points to the 'https' protocol
 	JobServiceProtocolHTTPS = "https"
@@ -161,6 +162,11 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 // GetAuthSecret get the auth secret from the env
 func GetAuthSecret() string {
 	return utils.ReadEnv(jobServiceAuthSecret)
+}
+
+// GetCoreURL get the core url from the env
+func GetCoreURL() string {
+	return utils.ReadEnv(coreURL)
 }
 
 // GetUIAuthSecret get the auth secret of UI side

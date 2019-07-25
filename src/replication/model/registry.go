@@ -30,6 +30,8 @@ const (
 	RegistryTypeAwsEcr         RegistryType = "aws-ecr"
 	RegistryTypeAzureAcr       RegistryType = "azure-acr"
 
+	RegistryTypeHelmHub RegistryType = "helm-hub"
+
 	FilterStyleTypeText  = "input"
 	FilterStyleTypeRadio = "radio"
 	FilterStyleTypeList  = "list"

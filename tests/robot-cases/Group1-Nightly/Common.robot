@@ -581,6 +581,7 @@ Test Case - Retag A Image Tag
 Test Case - Scan Image On Push
     Wait Unitl Vul Data Ready  ${HARBOR_URL}  7200  30
     Init Chrome Driver
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Go Into Project  library
     Goto Project Config
@@ -610,14 +611,16 @@ Test Case - Project Level Image Serverity Policy
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${d}=  get current date  result_format=%m%s
+    ${sha256}=  Set Variable  68b49a280d2fbe9330c0031970ebb72015e1272dfa25f0ed7557514f9e5ad7b7
+    ${image}=  Set Variable  postgres
     Create An New Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}  tag=${sha256}
     Go Into Project  project${d}
-    Go Into Repo  haproxy
-    Scan Repo  latest  Succeed
+    Go Into Repo  ${image}
+    Scan Repo  ${sha256}  Succeed
     Navigate To Projects
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  0
-    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
+    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  tag=${sha256}
     Close Browser
 
