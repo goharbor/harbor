@@ -106,6 +106,9 @@ func (f *fakeRetentionManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error)
 		},
 	}, nil
 }
+func (f *fakeRetentionManager) GetTask(taskID int64) (*Task, error) {
+	return nil, nil
+}
 func (f *fakeRetentionManager) CreateTask(task *Task) (int64, error) {
 	return 0, nil
 }

@@ -188,6 +188,12 @@ func TestTask(t *testing.T) {
 	id, err := CreateTask(task)
 	require.Nil(t, err)
 
+	// get
+	tk, err := GetTask(id)
+	require.Nil(t, err)
+	require.Equal(t, id, tk.ID)
+	require.Equal(t, "pending", tk.Status)
+
 	// update
 	task.ID = id
 	task.Status = "running"

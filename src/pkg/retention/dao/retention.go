@@ -157,6 +157,17 @@ func DeleteTask(id int64) error {
 	return err
 }
 
+// GetTask get the task record specified by ID in database
+func GetTask(id int64) (*models.RetentionTask, error) {
+	task := &models.RetentionTask{
+		ID: id,
+	}
+	if err := dao.GetOrmer().Read(task); err != nil {
+		return nil, err
+	}
+	return task, nil
+}
+
 // ListTask lists the tasks according to the query
 func ListTask(query ...*q.TaskQuery) ([]*models.RetentionTask, error) {
 	qs := dao.GetOrmer().QueryTable(&models.RetentionTask{})
