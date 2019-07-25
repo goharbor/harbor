@@ -93,7 +93,9 @@ export const LabelColor = [
 
 export const CONFIG_AUTH_MODE = {
   HTTP_AUTH: "http_auth",
-  LDAP_AUTH: "ldap_auth"
+  LDAP_AUTH: "ldap_auth",
+  OIDC_AUTH: "oidc_auth",
+  UAA_AUTH: "uaa_auth"
 };
 export const PROJECT_ROOTS = [
   {

@@ -423,7 +423,7 @@
         [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>
     <button type="button" class="btn btn-outline" (click)="cancel()"
         [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL' | translate}}</button>
-    <button type="button" class="btn btn-outline" (click)="testLDAPServer()" *ngIf="showLdapServerBtn"
-        [disabled]="!isLDAPConfigValid()">{{'BUTTON.TEST_LDAP' | translate}}</button>
-    <span id="forTestingLDAP" class="spinner spinner-inline" [hidden]="hideLDAPTestingSpinner"></span>
+    <button type="button" class="btn btn-outline" (click)="pingTestServer()" *ngIf="showTestingServerBtn"
+        [disabled]="!isConfigValidForTesting()">{{(showLdap?'BUTTON.TEST_LDAP':'BUTTON.TEST_OIDC') | translate}}</button>
+    <span id="forTestingLDAP" class="spinner spinner-inline" [hidden]="hideTestingSpinner"></span>
 </div>
