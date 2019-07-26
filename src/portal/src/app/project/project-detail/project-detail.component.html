@@ -22,6 +22,9 @@
         <li class="nav-item" *ngIf="hasRobotListPermission">
             <a class="nav-link" routerLink="robot-account" routerLinkActive="active">{{'PROJECT_DETAIL.ROBOT_ACCOUNTS' | translate}}</a>
         </li>
+        <li class="nav-item" *ngIf="hasTagRetentionPermission">
+            <a class="nav-link" routerLink="tag-retention" routerLinkActive="active">{{'TAG_RETENTION.TAG_RETENTION' | translate}}</a>
+        </li>
         <li class="nav-item" *ngIf="isSessionValid && (hasConfigurationListPermission)">
             <a class="nav-link" routerLink="configs" routerLinkActive="active">{{'PROJECT_DETAIL.CONFIG' | translate}}</a>
         </li>
