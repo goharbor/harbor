@@ -164,6 +164,7 @@ Element Click
     [Arguments]  ${element_xpath}
     Wait Until Element Is Visible And Enabled  ${element_xpath}
     Click Element  ${element_xpath}
+    Sleep  1
 
 Button Click
     [Arguments]  ${element_xpath}
@@ -223,7 +224,6 @@ Retry Keyword When Error
 
 Retry Double Keywords When Error
     [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}
-    Retry Wait Element  ${element1}
     :For  ${n}  IN RANGE  1  6
     \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
     \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
