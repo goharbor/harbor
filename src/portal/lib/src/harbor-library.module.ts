@@ -38,6 +38,8 @@ import {
   EndpointDefaultService,
   ReplicationService,
   ReplicationDefaultService,
+  QuotaService,
+  QuotaDefaultService,
   RepositoryService,
   RepositoryDefaultService,
   TagService,
@@ -130,6 +132,9 @@ export interface HarborModuleConfig {
 
   // Service implementation for replication
   replicationService?: Provider;
+
+  // Service implementation for replication
+  QuotaService?: Provider;
 
   // Service implementation for repository
   repositoryService?: Provider;
@@ -257,6 +262,7 @@ export class HarborLibraryModule {
         config.logService || { provide: AccessLogService, useClass: AccessLogDefaultService },
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
+        config.QuotaService || { provide: QuotaService, useClass: QuotaDefaultService },
         config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
         config.tagService || { provide: TagService, useClass: TagDefaultService },
         config.retagService || { provide: RetagService, useClass: RetagDefaultService },
@@ -295,6 +301,7 @@ export class HarborLibraryModule {
         config.logService || { provide: AccessLogService, useClass: AccessLogDefaultService },
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
+        config.QuotaService || { provide: QuotaService, useClass: QuotaDefaultService },
         config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
         config.tagService || { provide: TagService, useClass: TagDefaultService },
         config.retagService || { provide: RetagService, useClass: RetagDefaultService },

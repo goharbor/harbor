@@ -215,9 +215,15 @@
         "TOGGLED_SUCCESS": "Projeto alterado com sucesso.",
         "FAILED_TO_DELETE_PROJECT": "Project contains repositories or replication rules or helm-charts cannot be deleted.",
         "INLINE_HELP_PUBLIC": "Quando um projeto é marcado como público, qualquer um tem permissões de leitura aos repositórios desse projeto, e o usuário não precisa executar \"docker login\" antes de baixar imagens desse projeto.",
-        "OF": "de"
+        "OF": "de",
+        "COUNT_QUOTA": "Count quota",
+        "STORAGE_QUOTA": "Storage quota",
+        "COUNT_QUOTA_TIP": "The upper limit of Count Quota should be integers.",
+        "STORAGE_QUOTA_TIP": "The upper limit of Storage Quota should be integers,and maximum upper limit is 1024TB",
+        "QUOTA_UNLIMIT_TIP": "If you want to unlimited this quota, please input -1."
     },
     "PROJECT_DETAIL": {
+        "SUMMARY": "Summary",
         "REPOSITORIES": "Repositórios",
         "REPLICATION": "Replicação",
         "USERS": "Membros",
@@ -666,6 +672,19 @@
         "ADD_LABEL_TO_CHART_VERSION": "Add labels to this chart version",
         "STATUS": "Status"
     },
+    "SUMMARY": {
+        "QUOTAS": "quotas",
+        "PROJECT_REPOSITORY": "Project repositories",
+        "PROJECT_HELM_CHART": "Project Helm Chart",
+        "PROJECT_MEMBER": "Project members",
+        "PROJECT_QUOTAS": "Project quotas",
+        "ARTIFACT_COUNT": "Artifact count",
+        "STORAGE_CONSUMPTION": "Storage consumption",
+        "ADMIN": "Admin(s)",
+        "MASTER": "Master(s)",
+        "DEVELOPER": "Developer(s)",
+        "GUEST": "Guest(s)"
+    },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Algumas alterações ainda não foram salvas. Você deseja cancelar?"
     },
@@ -690,6 +709,7 @@
         "REPOSITORY": "Repositório",
         "REPO_READ_ONLY": "Repositório somente leitura",
         "SYSTEM": "Configurações do Sistema",
+        "PROJECT_QUOTAS": "Project Quotas",
         "VULNERABILITY": "Vulnerabilidade",
         "GC": "Garbage Collection",
         "CONFIRM_TITLE": "Confirme para cancelar",
@@ -721,6 +741,8 @@
         "PRO_CREATION_ADMIN": "Apenas Administradores",
         "ROOT_CERT": "Certificado Raiz do Registry",
         "ROOT_CERT_LINK": "Download",
+        "REGISTRY_CERTIFICATE": "Registry certificate",
+        "NO_CHANGE": "Save abort because nothing changed",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "Habilitar registro.",
             "SELF_REGISTRATION_DISABLE": "Desabilitar registro.",
@@ -929,6 +951,28 @@
         "DELETION_SUMMARY_TARGET": "Você deseja remover {{param}}?",
         "PLACEHOLDER": "Não foi possível encontrar nenhuma Label!",
         "NAME_ALREADY_EXISTS": "Nome da Label já existe."
+    },
+    "QUOTA": {
+        "PROJECT": "Project",
+        "OWNER": "Owner",
+        "COUNT": "Count",
+        "STORAGE": "Storage",
+        "EDIT": "Edit",
+        "DELETE": "Delete",
+        "OF": "of",
+        "PROJECT_QUOTA_DEFAULT_ARTIFACT": "Default artifact count per project",
+        "PROJECT_QUOTA_DEFAULT_DISK": "Default disk space per project",
+        "EDIT_PROJECT_QUOTAS": "Edit Project Quotas",
+        "EDIT_DEFAULT_PROJECT_QUOTAS": "Edit Default Project Quotas",
+        "SET_QUOTAS": "Set the project quotas for project 'library'",
+        "SET_DEFAULT_QUOTAS": "Set the default project quotas when creating new projects",
+        "COUNT_QUOTA": "Count quota",
+        "COUNT_DEFAULT_QUOTA": "Default count quota",
+        "STORAGE_QUOTA": "Storage quota",
+        "STORAGE_DEFAULT_QUOTA": "Default storage quota",
+        "SAVE_SUCCESS": "Quota edit success",
+        "UNLIMITED": "unlimited",
+        "INVALID_INPUT": "invalid input"
     },
     "WEEKLY": {
         "MONDAY": "Segunda Feira",
