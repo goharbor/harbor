@@ -45,7 +45,7 @@ registerLocaleData(localePt, 'pt-br');
 
 export function initConfig(configService: AppConfigService, skinableService: SkinableConfig) {
     return () => {
-        skinableService.getCustomFile();
+        skinableService.getCustomFile().subscribe();
         configService.load().subscribe();
     };
 }

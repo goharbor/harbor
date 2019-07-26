@@ -31,6 +31,7 @@
         "TEST_MAIL": "测试邮件服务器",
         "CLOSE": "关闭",
         "TEST_LDAP": "测试LDAP服务器",
+        "TEST_OIDC": "测试OIDC服务器",
         "MORE_INFO": "更多信息...",
         "YES": "是",
         "NO": "否",
@@ -218,9 +219,15 @@
         "DELETED_SUCCESS": "成功删除项目。",
         "TOGGLED_SUCCESS": "切换状态成功。",
         "FAILED_TO_DELETE_PROJECT": "项目包含镜像仓库或同步规则或Helm Charts，无法删除。",
-        "INLINE_HELP_PUBLIC": "当项目设为公开后，任何人都有此项目下镜像的读权限。命令行用户不需要“docker login”就可以拉取此项目下的镜像。"
+        "INLINE_HELP_PUBLIC": "当项目设为公开后，任何人都有此项目下镜像的读权限。命令行用户不需要“docker login”就可以拉取此项目下的镜像。",
+        "COUNT_QUOTA": "存储数量",
+        "STORAGE_QUOTA": "存储容量",
+        "COUNT_QUOTA_TIP": "存储数量上限应该是整数.",
+        "STORAGE_QUOTA_TIP": "存储容量的上限应该设置成为整数.并且最大值不能超过1024TB",
+        "QUOTA_UNLIMIT_TIP": "如果你想要对存储不设置上限，请输入-1."
     },
     "PROJECT_DETAIL": {
+        "SUMMARY": "概要",
         "REPOSITORIES": "镜像仓库",
         "REPLICATION": "同步",
         "USERS": "成员",
@@ -673,6 +680,19 @@
         "ADD_LABEL_TO_CHART_VERSION": "添加标签到此 Chart Version",
         "STATUS": "状态"
     },
+    "SUMMARY": {
+        "QUOTAS": "容量",
+        "PROJECT_REPOSITORY": "项目镜像",
+        "PROJECT_HELM_CHART": "项目 Helm Chart",
+        "PROJECT_MEMBER": "项目成员",
+        "PROJECT_QUOTAS": "项目容量",
+        "ARTIFACT_COUNT": "工件计数",
+        "STORAGE_CONSUMPTION": "存储消耗",
+        "ADMIN": "管理员",
+        "MASTER": "维护人员",
+        "DEVELOPER": "开发者",
+        "GUEST": "访客"
+    },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"
     },
@@ -697,6 +717,7 @@
         "REPOSITORY": "仓库",
         "REPO_READ_ONLY": "仓库只读",
         "SYSTEM": "系统设置",
+        "PROJECT_QUOTAS": "项目定额",
         "VULNERABILITY": "漏洞",
         "GC": "垃圾清理",
         "CONFIRM_TITLE": "确认取消",
@@ -729,6 +750,7 @@
         "ROOT_CERT": "镜像库根证书",
         "ROOT_CERT_LINK": "下载",
         "REGISTRY_CERTIFICATE": "注册证书",
+        "NO_CHANGE": "Save abort because nothing changed",
         "TOOLTIP": {
             "SELF_REGISTRATION_ENABLE": "激活注册功能。",
             "SELF_REGISTRATION_DISABLE": "禁用注册功能。",
@@ -739,7 +761,7 @@
             "LDAP_UID": "在搜索中用来匹配用户的属性，可以是uid,cn,email,sAMAccountName或者其它LDAP/AD服务器支持的属性。",
             "LDAP_SCOPE": "搜索用户的范围。",
             "TOKEN_EXPIRATION": "由令牌服务创建的令牌的过期时间（分钟），默认为30分钟。",
-            "ROBOT_TOKEN_EXPIRATION": "机器人账户的令牌的过期时间（天），默认为30天,显示的结果为分钟转化的天数并向下取整。",            
+            "ROBOT_TOKEN_EXPIRATION": "机器人账户的令牌的过期时间（天），默认为30天,显示的结果为分钟转化的天数并向下取整。",
             "PRO_CREATION_RESTRICTION": "用来确定哪些用户有权限创建项目，默认为’所有人‘，设置为’仅管理员‘则只有管理员可以创建项目。",
             "ROOT_CERT_DOWNLOAD": "下载镜像库根证书。",
             "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。",
@@ -814,7 +836,8 @@
         "TEST_MAIL_FAILED": "验证邮件服务器失败，错误: {{param}}。",
         "TEST_LDAP_FAILED": "验证LDAP服务器失败，错误: {{param}}。",
         "LEAVING_CONFIRMATION_TITLE": "确定离开",
-        "LEAVING_CONFIRMATION_SUMMARY": "有未保存的配置更改, 确认离开当前页面?"
+        "LEAVING_CONFIRMATION_SUMMARY": "有未保存的配置更改, 确认离开当前页面?",
+        "TEST_OIDC_SUCCESS": "OIDC服务器的连通正常。"
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "页面不存在",
@@ -939,6 +962,28 @@
         "DELETION_SUMMARY_TARGET": "确认删除标签 {{param}}?",
         "PLACEHOLDER": "未发现任何标签!",
         "NAME_ALREADY_EXISTS": "标签名已存在。"
+    },
+    "QUOTA": {
+        "PROJECT": "项目",
+        "OWNER": "创建者",
+        "COUNT": "数量",
+        "STORAGE": "存储",
+        "EDIT": "修改",
+        "DELETE": "删除",
+        "OF": "of",
+        "PROJECT_QUOTA_DEFAULT_ARTIFACT": "每个项目的默认项目计数",
+        "PROJECT_QUOTA_DEFAULT_DISK": "每个项目的默认磁盘空间",
+        "EDIT_PROJECT_QUOTAS": "修改项目容量",
+        "EDIT_DEFAULT_PROJECT_QUOTAS": "修改项目默认配额",
+        "SET_QUOTAS": "设置项目“library”的项目配额",
+        "SET_DEFAULT_QUOTAS": "创建新项目时设置默认项目配额",
+        "COUNT_QUOTA": "配额数量",
+        "COUNT_DEFAULT_QUOTA": "默认配额数量",
+        "STORAGE_QUOTA": "配额存储",
+        "STORAGE_DEFAULT_QUOTA": "默认配额存储",
+        "SAVE_SUCCESS": "项目容量修改成功",
+        "UNLIMITED": "不设限",
+        "INVALID_INPUT": "输入错误"
     },
     "WEEKLY": {
         "MONDAY": "周一",

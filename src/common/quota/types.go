@@ -12,12 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package retention
+package quota
 
-// TODO: Move to api.Init()
+import (
+	"github.com/goharbor/harbor/src/pkg/types"
+)
 
-// Init the retention components
-func Init() error {
+var (
+	// ResourceCount alias types.ResourceCount
+	ResourceCount = types.ResourceCount
+	// ResourceStorage alias types.ResourceStorage
+	ResourceStorage = types.ResourceStorage
+)
 
-	return nil
-}
+// ResourceName alias types.ResourceName
+type ResourceName = types.ResourceName
+
+// ResourceList alias types.ResourceList
+type ResourceList = types.ResourceList

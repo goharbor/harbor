@@ -98,6 +98,15 @@ func (f *fakeRetentionManager) GetExecution(eid int64) (*Execution, error) {
 	return nil, nil
 }
 func (f *fakeRetentionManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
+	return []*Task{
+		{
+			ID:          1,
+			ExecutionID: 1,
+			JobID:       "1",
+		},
+	}, nil
+}
+func (f *fakeRetentionManager) GetTask(taskID int64) (*Task, error) {
 	return nil, nil
 }
 func (f *fakeRetentionManager) CreateTask(task *Task) (int64, error) {
@@ -149,7 +158,9 @@ func (l *launchTestSuite) SetupTest() {
 		},
 	}
 	l.retentionMgr = &fakeRetentionManager{}
-	l.jobserviceClient = &hjob.MockJobClient{}
+	l.jobserviceClient = &hjob.MockJobClient{
+		JobUUID: []string{"1"},
+	}
 }
 
 func (l *launchTestSuite) TestGetProjects() {
@@ -182,12 +193,12 @@ func (l *launchTestSuite) TestLaunch() {
 
 	var ply *policy.Metadata
 	// nil policy
-	n, err := launcher.Launch(ply, 1)
+	n, err := launcher.Launch(ply, 1, false)
 	require.NotNil(l.T(), err)
 
 	// nil rules
 	ply = &policy.Metadata{}
-	n, err = launcher.Launch(ply, 1)
+	n, err = launcher.Launch(ply, 1, false)
 	require.Nil(l.T(), err)
 	assert.Equal(l.T(), int64(0), n)
 
@@ -197,7 +208,7 @@ func (l *launchTestSuite) TestLaunch() {
 			{},
 		},
 	}
-	_, err = launcher.Launch(ply, 1)
+	_, err = launcher.Launch(ply, 1, false)
 	require.NotNil(l.T(), err)
 
 	// system scope
@@ -226,9 +237,25 @@ func (l *launchTestSuite) TestLaunch() {
 			},
 		},
 	}
-	n, err = launcher.Launch(ply, 1)
+	n, err = launcher.Launch(ply, 1, false)
 	require.Nil(l.T(), err)
 	assert.Equal(l.T(), int64(2), n)
+}
+
+func (l *launchTestSuite) TestStop() {
+	t := l.T()
+	launcher := &launcher{
+		projectMgr:       l.projectMgr,
+		repositoryMgr:    l.repositoryMgr,
+		retentionMgr:     l.retentionMgr,
+		jobserviceClient: l.jobserviceClient,
+	}
+	// invalid execution ID
+	err := launcher.Stop(0)
+	require.NotNil(t, err)
+
+	err = launcher.Stop(1)
+	require.Nil(t, err)
 }
 
 func TestLaunchTestSuite(t *testing.T) {

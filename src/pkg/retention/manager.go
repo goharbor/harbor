@@ -18,9 +18,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/astaxie/beego/orm"
 	"time"
 
+	"github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -53,6 +54,8 @@ type Manager interface {
 	CreateTask(task *Task) (int64, error)
 	// Update the specified task
 	UpdateTask(task *Task, cols ...string) error
+	// Get the task specified by the task ID
+	GetTask(taskID int64) (*Task, error)
 	// Get the log of the specified task
 	GetTaskLog(taskID int64) ([]byte, error)
 }
@@ -173,6 +176,7 @@ func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
 	}
 	t := &models.RetentionTask{
 		ExecutionID: task.ExecutionID,
+		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
 		EndTime:     task.EndTime,
@@ -194,6 +198,7 @@ func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 		tasks = append(tasks, &Task{
 			ID:          t.ID,
 			ExecutionID: t.ExecutionID,
+			JobID:       t.JobID,
 			Status:      t.Status,
 			StartTime:   t.StartTime,
 			EndTime:     t.EndTime,
@@ -213,15 +218,42 @@ func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
 	return dao.UpdateTask(&models.RetentionTask{
 		ID:          task.ID,
 		ExecutionID: task.ExecutionID,
+		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
 		EndTime:     task.EndTime,
 	}, cols...)
 }
 
+// GetTask returns the task specified by task ID
+func (d *DefaultManager) GetTask(taskID int64) (*Task, error) {
+	if taskID <= 0 {
+		return nil, fmt.Errorf("invalid task ID: %d", taskID)
+	}
+	task, err := dao.GetTask(taskID)
+	if err != nil {
+		return nil, err
+	}
+	return &Task{
+		ID:          task.ID,
+		ExecutionID: task.ExecutionID,
+		JobID:       task.JobID,
+		Status:      task.Status,
+		StartTime:   task.StartTime,
+		EndTime:     task.EndTime,
+	}, nil
+}
+
 // GetTaskLog gets the logs of task
 func (d *DefaultManager) GetTaskLog(taskID int64) ([]byte, error) {
-	panic("implement me")
+	task, err := d.GetTask(taskID)
+	if err != nil {
+		return nil, err
+	}
+	if task == nil {
+		return nil, fmt.Errorf("task %d not found", taskID)
+	}
+	return job.GlobalClient.GetJobLog(task.JobID)
 }
 
 // NewManager ...

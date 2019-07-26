@@ -311,6 +311,34 @@ paths:
           description: User need to log in first.
         '500':
           description: Unexpected internal errors.
+  '/projects/{project_id}/summary':
+    get:
+      summary: Get summary of the project.
+      description: Get summary of the project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Get summary of the project successfully.
+          schema:
+            $ref: '#/definitions/ProjectSummary'
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '404':
+          description: Project ID does not exist.
+        '403':
+          description: User does not have permission to get summary of the project.
+        '500':
+          description: Unexpected internal errors.
   '/projects/{project_id}/metadatas':
     get:
       summary: Get project metadata.
@@ -3547,6 +3575,113 @@ paths:
           description: User does not have permission to call this API.
         '500':
           description: Unexpected internal errors.
+  '/quotas':
+    get:
+      summary: List quotas
+      description: List quotas
+      tags:
+        - quota
+      parameters:
+        - name: reference
+          in: query
+          description: The reference type of quota.
+          required: false
+          type: string
+        - name: sort
+          in: query
+          type: string
+          required: false
+          description: |
+            Sort method, valid values include:
+            'hard.resource_name', '-hard.resource_name', 'used.resource_name', '-used.resource_name'.
+            Here '-' stands for descending order, resource_name should be the real resource name of the quota.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: 'The page nubmer, default is 1.'
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: 'The size of per page, default is 10, maximum is 100.'
+      responses:
+        '200':
+          description: Successfully retrieved the quotas.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Quota'
+          headers:
+            X-Total-Count:
+              description: The total count of access logs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+        '401':
+          description: User is not authenticated.
+        '403':
+          description: User does not have permission to call this API.
+        '500':
+          description: Unexpected internal errors.
+  '/quotas/{id}':
+      get:
+        summary: Get the specified quota
+        description: Get the specified quota
+        tags:
+        - quota
+        parameters:
+          - name: id
+            in: path
+            type: integer
+            required: true
+            description: Quota ID
+        responses:
+          '200':
+            description: Successfully retrieved the quota.
+            schema:
+              $ref: '#/definitions/Quota'
+          '401':
+            description: User need to log in first.
+          '403':
+            description: User does not have permission to call this API
+          '404':
+            description: Quota does not exist.
+          '500':
+            description: Unexpected internal errors.
+      put:
+        summary: Update the specified quota
+        description: Update hard limits of the specified quota
+        tags:
+          - quota
+        parameters:
+          - name: id
+            in: path
+            type: integer
+            required: true
+            description: Quota ID
+          - name: hard
+            in: body
+            required: true
+            description: The new hard limits for the quota
+            schema:
+              $ref: '#/definitions/QuotaUpdateReq'
+        responses:
+          '200':
+            description: Updated quota hard limits successfully.
+          '400':
+            description: Illegal format of quota update request.
+          '401':
+            description: User need to log in first.
+          '403':
+            description: User does not have permission to the quota.
+          '404':
+            description: Quota ID does not exist.
+          '500':
+            description: Unexpected internal errors.
 responses:
   OK:
     description: 'Success'
@@ -3629,6 +3764,14 @@ definitions:
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'
+      count_limit:
+        type: integer
+        format: int64
+        description: The count quota of the project.
+      storage_limit:
+        type: integer
+        format: int64
+        description: The storage quota of the project.
   Project:
     type: object
     properties:
@@ -3691,6 +3834,36 @@ definitions:
       auto_scan:
         type: string
         description: 'Whether scan images automatically when pushing. The valid values are "true", "false".'
+  ProjectSummary:
+    type: object
+    properties:
+      repo_count:
+        type: integer
+        description: The number of the repositories under this project.
+      chart_count:
+        type: integer
+        description: The total number of charts under this project.
+      project_admin_count:
+        type: integer
+        description: The total number of project admin members.
+      master_count:
+        type: integer
+        description: The total number of master members.
+      developer_count:
+        type: integer
+        description: The total number of developer members.
+      guest_count:
+        type: integer
+        description: The total number of guest members.
+      quota:
+        type: object
+        properties:
+          hard:
+            $ref: "#/definitions/ResourceList"
+            description: The hard limits of the quota
+          used:
+            $ref: "#/definitions/ResourceList"
+            description: The used status of the quota
   Manifest:
     type: object
     properties:
@@ -4346,6 +4519,9 @@ definitions:
       auth_mode:
         type: string
         description: 'The auth mode of current system, such as "db_auth", "ldap_auth"'
+      count_per_project:
+        type: string
+        description: The default count quota for the new created projects.
       email_from:
         type: string
         description: The sender name for Email notification.
@@ -4412,6 +4588,9 @@ definitions:
       self_registration:
         type: boolean
         description: 'Whether the Harbor instance supports self-registration.  If it''s set to false, admin need to add user to the instance.'
+      storage_per_project:
+        type: string
+        description: The default storage quota for the new created projects.
       token_expiration:
         type: integer
         description: 'The expiration time of the token for internal Registry, in minutes.'
@@ -4437,6 +4616,9 @@ definitions:
       auth_mode:
         $ref: '#/definitions/StringConfigItem'
         description: 'The auth mode of current system, such as "db_auth", "ldap_auth"'
+      count_per_project:
+        $ref: '#/definitions/IntegerConfigItem'
+        description: The default count quota for the new created projects.
       email_from:
         $ref: '#/definitions/StringConfigItem'
         description: The sender name for Email notification.
@@ -4503,6 +4685,9 @@ definitions:
       self_registration:
         $ref: '#/definitions/BoolConfigItem'
         description: 'Whether the Harbor instance supports self-registration.  If it''s set to false, admin need to add user to the instance.'
+      storage_per_project:
+        $ref: '#/definitions/IntegerConfigItem'
+        description: The default storage quota for the new created projects.
       token_expiration:
         $ref: '#/definitions/IntegerConfigItem'
         description: 'The expiration time of the token for internal Registry, in minutes.'
@@ -5166,3 +5351,38 @@ definitions:
       cve_id:
         type: string
         description: The ID of the CVE, such as "CVE-2019-10164"
+  ResourceList:
+    type: object
+    additionalProperties:
+      type: integer
+  QuotaUpdateReq:
+    type: object
+    properties:
+      hard:
+        $ref: "#/definitions/ResourceList"
+        description: The new hard limits for the quota
+  QuotaRefObject:
+    type: object
+    additionalProperties: {}
+  Quota:
+    type: object
+    description: The quota object
+    properties:
+      id:
+        type: integer
+        description: ID of the quota
+      ref:
+        $ref: "#/definitions/QuotaRefObject"
+        description: The reference object of the quota
+      hard:
+        $ref: "#/definitions/ResourceList"
+        description: The hard limits of the quota
+      used:
+        $ref: "#/definitions/ResourceList"
+        description: The used status of the quota
+      creation_time:
+        type: string
+        description: the creation time of the quota
+      update_time:
+        type: string
+        description: the update time of the quota

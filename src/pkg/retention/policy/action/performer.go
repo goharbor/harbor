@@ -21,7 +21,7 @@ import (
 
 const (
 	// Retain artifacts
-	Retain = "retain"
+	Retain = "Retain"
 )
 
 // Performer performs the related actions targeting the candidates
@@ -38,11 +38,13 @@ type Performer interface {
 }
 
 // PerformerFactory is factory method for creating Performer
-type PerformerFactory func(params interface{}) Performer
+type PerformerFactory func(params interface{}, isDryRun bool) Performer
 
 // retainAction make sure all the candidates will be retained and others will be cleared
 type retainAction struct {
 	all []*res.Candidate
+	// Indicate if it is a dry run
+	isDryRun bool
 }
 
 // Perform the action
@@ -60,8 +62,10 @@ func (ra *retainAction) Perform(candidates []*res.Candidate) (results []*res.Res
 					Target: art,
 				}
 
-				if err := dep.DefaultClient.Delete(art); err != nil {
-					result.Error = err
+				if !ra.isDryRun {
+					if err := dep.DefaultClient.Delete(art); err != nil {
+						result.Error = err
+					}
 				}
 
 				results = append(results, result)
@@ -73,17 +77,19 @@ func (ra *retainAction) Perform(candidates []*res.Candidate) (results []*res.Res
 }
 
 // NewRetainAction is factory method for RetainAction
-func NewRetainAction(params interface{}) Performer {
+func NewRetainAction(params interface{}, isDryRun bool) Performer {
 	if params != nil {
 		if all, ok := params.([]*res.Candidate); ok {
 			return &retainAction{
-				all: all,
+				all:      all,
+				isDryRun: isDryRun,
 			}
 		}
 	}
 
 	return &retainAction{
-		all: make([]*res.Candidate, 0),
+		all:      make([]*res.Candidate, 0),
+		isDryRun: isDryRun,
 	}
 }
 

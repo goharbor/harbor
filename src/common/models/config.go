@@ -84,6 +84,12 @@ type OIDCSetting struct {
 	Scope        []string `json:"scope"`
 }
 
+// QuotaSetting wraps the settings for Quota
+type QuotaSetting struct {
+	CountPerProject   int64 `json:"count_per_project"`
+	StoragePerProject int64 `json:"storage_per_project"`
+}
+
 // ConfigEntry ...
 type ConfigEntry struct {
 	ID    int64  `orm:"pk;auto;column(id)" json:"-"`

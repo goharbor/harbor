@@ -17,7 +17,6 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/retention"
 	"os"
 	"os/signal"
 	"strconv"
@@ -38,7 +37,7 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/src/core/proxy"
+	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/replication"
@@ -166,14 +165,11 @@ func main() {
 		log.Infof("Because SYNC_REGISTRY set false , no need to sync registry \n")
 	}
 
-	// Initialize retention
-	log.Info("Initialize retention")
-	if err := retention.Init(); err != nil {
-		log.Fatalf("Failed to initialize retention with error: %s", err)
+	log.Info("Init proxy")
+	if err := middlewares.Init(); err != nil {
+		log.Fatalf("init proxy error, %v", err)
 	}
 
-	log.Info("Init proxy")
-	proxy.Init()
 	// go proxy.StartProxy()
 	beego.Run()
 }

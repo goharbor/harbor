@@ -71,6 +71,31 @@ export const FilterType = {
 export const enum ConfirmationButtons {
   CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, REPLICATE_CANCEL, STOP_CANCEL
 }
+export const  QuotaUnits = [
+  {
+    UNIT: "Byte",
+  },
+  {
+    UNIT: "KB",
+  },
+  {
+    UNIT: "MB",
+  },
+  {
+    UNIT: "GB",
+  },
+  {
+    UNIT: "TB",
+  },
+];
+export const QuotaUnlimited = -1;
+export const StorageMultipleConstant = 1024;
+export enum QuotaUnit {
+  TB = "TB", GB = "GB", MB = "MB", KB = "KB", BIT = "Byte"
+}
+export enum QuotaProgress {
+  COUNT_USED = "COUNT_USED", COUNT_HARD = "COUNT_HARD", STROAGE_USED = "STORAGE_USED", STORAGE_HARD = "STORAGE_HARD"
+}
 
 export const LabelColor = [
   { 'color': '#000000', 'textColor': 'white' }, { 'color': '#61717D', 'textColor': 'white' },
@@ -93,7 +118,9 @@ export const LabelColor = [
 
 export const CONFIG_AUTH_MODE = {
   HTTP_AUTH: "http_auth",
-  LDAP_AUTH: "ldap_auth"
+  LDAP_AUTH: "ldap_auth",
+  OIDC_AUTH: "oidc_auth",
+  UAA_AUTH: "uaa_auth"
 };
 export const PROJECT_ROOTS = [
   {

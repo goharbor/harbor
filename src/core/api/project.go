@@ -19,16 +19,20 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/pkg/errors"
 )
 
@@ -127,7 +131,27 @@ func (p *ProjectAPI) Post() {
 		p.SendBadRequestError(err)
 		return
 	}
+
 	err = validateProjectReq(pro)
+	if err != nil {
+		log.Errorf("Invalid project request, error: %v", err)
+		p.SendBadRequestError(fmt.Errorf("invalid request: %v", err))
+		return
+	}
+
+	setting, err := config.QuotaSetting()
+	if err != nil {
+		log.Errorf("failed to get quota setting: %v", err)
+		p.SendInternalServerError(fmt.Errorf("failed to get quota setting: %v", err))
+		return
+	}
+
+	if !p.SecurityCtx.IsSysAdmin() {
+		pro.CountLimit = &setting.CountPerProject
+		pro.StorageLimit = &setting.StoragePerProject
+	}
+
+	hardLimits, err := projectQuotaHardLimits(pro, setting)
 	if err != nil {
 		log.Errorf("Invalid project request, error: %v", err)
 		p.SendBadRequestError(fmt.Errorf("invalid request: %v", err))
@@ -188,6 +212,16 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 
+	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(projectID, 10))
+	if err != nil {
+		p.SendInternalServerError(fmt.Errorf("failed to get quota manager: %v", err))
+		return
+	}
+	if _, err := quotaMgr.NewQuota(hardLimits); err != nil {
+		p.SendInternalServerError(fmt.Errorf("failed to create quota for project: %v", err))
+		return
+	}
+
 	go func() {
 		if err = dao.AddAccessLog(
 			models.AccessLog{
@@ -233,7 +267,7 @@ func (p *ProjectAPI) Get() {
 
 	err := p.populateProperties(p.project)
 	if err != nil {
-		log.Errorf("populate project poroperties failed with : %+v", err)
+		log.Errorf("populate project properties failed with : %+v", err)
 	}
 
 	p.Data["json"] = p.project
@@ -259,6 +293,16 @@ func (p *ProjectAPI) Delete() {
 
 	if err = p.ProjectMgr.Delete(p.project.ProjectID); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to delete project %d", p.project.ProjectID), err)
+		return
+	}
+
+	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(p.project.ProjectID, 10))
+	if err != nil {
+		p.SendInternalServerError(fmt.Errorf("failed to get quota manager: %v", err))
+		return
+	}
+	if err := quotaMgr.DeleteQuota(); err != nil {
+		p.SendInternalServerError(fmt.Errorf("failed to delete quota for project: %v", err))
 		return
 	}
 
@@ -535,6 +579,37 @@ func (p *ProjectAPI) Logs() {
 	p.ServeJSON()
 }
 
+// Summary returns the summary of the project
+func (p *ProjectAPI) Summary() {
+	if !p.requireAccess(rbac.ActionRead) {
+		return
+	}
+
+	if err := p.populateProperties(p.project); err != nil {
+		log.Warningf("populate project properties failed with : %+v", err)
+	}
+
+	summary := &models.ProjectSummary{
+		RepoCount:  p.project.RepoCount,
+		ChartCount: p.project.ChartCount,
+	}
+
+	var wg sync.WaitGroup
+	for _, fn := range []func(int64, *models.ProjectSummary){getProjectQuotaSummary, getProjectMemberSummary} {
+		fn := fn
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fn(p.project.ProjectID, summary)
+		}()
+	}
+	wg.Wait()
+
+	p.Data["json"] = summary
+	p.ServeJSON()
+}
+
 // TODO move this to pa ckage models
 func validateProjectReq(req *models.ProjectRequest) error {
 	pn := req.Name
@@ -554,4 +629,72 @@ func validateProjectReq(req *models.ProjectRequest) error {
 
 	req.Metadata = metas
 	return nil
+}
+
+func projectQuotaHardLimits(req *models.ProjectRequest, setting *models.QuotaSetting) (types.ResourceList, error) {
+	hardLimits := types.ResourceList{}
+	if req.CountLimit != nil {
+		hardLimits[types.ResourceCount] = *req.CountLimit
+	} else {
+		hardLimits[types.ResourceCount] = setting.CountPerProject
+	}
+
+	if req.StorageLimit != nil {
+		hardLimits[types.ResourceStorage] = *req.StorageLimit
+	} else {
+		hardLimits[types.ResourceStorage] = setting.StoragePerProject
+	}
+
+	if err := quota.Validate("project", hardLimits); err != nil {
+		return nil, err
+	}
+
+	return hardLimits, nil
+}
+
+func getProjectQuotaSummary(projectID int64, summary *models.ProjectSummary) {
+	quotas, err := dao.ListQuotas(&models.QuotaQuery{Reference: "project", ReferenceID: strconv.FormatInt(projectID, 10)})
+	if err != nil {
+		log.Debugf("failed to get quota for project: %d", projectID)
+		return
+	}
+
+	if len(quotas) == 0 {
+		log.Debugf("quota not found for project: %d", projectID)
+		return
+	}
+
+	quota := quotas[0]
+
+	summary.Quota.Hard, _ = types.NewResourceList(quota.Hard)
+	summary.Quota.Used, _ = types.NewResourceList(quota.Used)
+}
+
+func getProjectMemberSummary(projectID int64, summary *models.ProjectSummary) {
+	var wg sync.WaitGroup
+
+	for _, e := range []struct {
+		role  int
+		count *int64
+	}{
+		{common.RoleProjectAdmin, &summary.ProjectAdminCount},
+		{common.RoleMaster, &summary.MasterCount},
+		{common.RoleDeveloper, &summary.DeveloperCount},
+		{common.RoleGuest, &summary.GuestCount},
+	} {
+		wg.Add(1)
+		go func(role int, count *int64) {
+			defer wg.Done()
+
+			total, err := project.GetTotalOfProjectMembers(projectID, role)
+			if err != nil {
+				log.Debugf("failed to get total of project members of role %d", role)
+				return
+			}
+
+			*count = total
+		}(e.role, e.count)
+	}
+
+	wg.Wait()
 }

@@ -16,9 +16,11 @@ package retention
 
 import (
 	"fmt"
+	"time"
 
 	cjob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
+	cmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
@@ -27,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
+	"github.com/goharbor/harbor/src/pkg/retention/q"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
 	"github.com/pkg/errors"
@@ -37,6 +40,8 @@ const (
 	ParamRepo = "repository"
 	// ParamMeta ...
 	ParamMeta = "liteMeta"
+	// ParamDryRun ...
+	ParamDryRun = "dryRun"
 )
 
 // Launcher provides function to launch the async jobs to run retentions based on the provided policy.
@@ -47,11 +52,20 @@ type Launcher interface {
 	//  Arguments:
 	//   policy *policy.Metadata: the policy info
 	//   executionID int64      : the execution ID
+	//   isDryRun bool          : indicate if it is a dry run
 	//
 	//  Returns:
 	//   int64               : the count of tasks
 	//   error               : common error if any errors occurred
-	Launch(policy *policy.Metadata, executionID int64) (int64, error)
+	Launch(policy *policy.Metadata, executionID int64, isDryRun bool) (int64, error)
+	// Stop the jobs for one execution
+	//
+	//  Arguments:
+	//   executionID int64 : the execution ID
+	//
+	//  Returns:
+	//   error : common error if any errors occurred
+	Stop(executionID int64) error
 }
 
 // NewLauncher returns an instance of Launcher
@@ -80,7 +94,7 @@ type jobData struct {
 	taskID     int64
 }
 
-func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error) {
+func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool) (int64, error) {
 	if ply == nil {
 		return 0, launcherError(fmt.Errorf("the policy is nil"))
 	}
@@ -169,9 +183,11 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 
 	// create task records
 	jobDatas := make([]*jobData, 0)
+	now := time.Now()
 	for repo, p := range repositoryRules {
 		taskID, err := l.retentionMgr.CreateTask(&Task{
 			ExecutionID: executionID,
+			StartTime:   now,
 		})
 		if err != nil {
 			return 0, launcherError(err)
@@ -193,20 +209,54 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64) (int64, error
 		}
 		j.Name = job.Retention
 		j.Parameters = map[string]interface{}{
-			ParamRepo: jobData.repository,
-			ParamMeta: jobData.policy,
+			ParamRepo:   jobData.repository,
+			ParamMeta:   jobData.policy,
+			ParamDryRun: isDryRun,
 		}
-		_, err := l.jobserviceClient.SubmitJob(j)
+		task := &Task{
+			ID: jobData.taskID,
+		}
+		props := []string{"Status"}
+		jobID, err := l.jobserviceClient.SubmitJob(j)
 		if err != nil {
 			log.Error(launcherError(fmt.Errorf("failed to submit task %d: %v", jobData.taskID, err)))
-			continue
+			task.Status = cmodels.JobError
+			task.EndTime = time.Now()
+			props = append(props, "EndTime")
+		} else {
+			allFailed = false
+			task.JobID = jobID
+			task.Status = cmodels.JobPending
+			props = append(props, "JobID")
 		}
-		allFailed = false
+		if err = l.retentionMgr.UpdateTask(task, props...); err != nil {
+			log.Errorf("failed to update the status of task %d: %v", task.ID, err)
+		}
 	}
+
 	if allFailed {
 		return 0, launcherError(fmt.Errorf("all tasks failed"))
 	}
 	return int64(len(jobDatas)), nil
+}
+
+func (l *launcher) Stop(executionID int64) error {
+	if executionID <= 0 {
+		return launcherError(fmt.Errorf("invalid execution ID: %d", executionID))
+	}
+	tasks, err := l.retentionMgr.ListTasks(&q.TaskQuery{
+		ExecutionID: executionID,
+	})
+	if err != nil {
+		return err
+	}
+	for _, task := range tasks {
+		if err = l.jobserviceClient.PostAction(task.JobID, cjob.JobActionStop); err != nil {
+			log.Errorf("failed to stop task %d, job ID: %s : %v", task.ID, task.JobID, err)
+			continue
+		}
+	}
+	return nil
 }
 
 func launcherError(err error) error {

@@ -1,16 +1,18 @@
 package retention
 
 import (
-	"github.com/goharbor/harbor/src/pkg/retention/q"
-	"github.com/stretchr/testify/require"
 	"os"
 	"testing"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/pkg/retention/q"
+	tjob "github.com/goharbor/harbor/src/testing/job"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestMain(m *testing.M) {
@@ -174,12 +176,18 @@ func TestTask(t *testing.T) {
 	m := NewManager()
 	task := &Task{
 		ExecutionID: 1,
+		JobID:       "1",
 		Status:      TaskStatusPending,
 		StartTime:   time.Now(),
 	}
 	// create
 	id, err := m.CreateTask(task)
 	require.Nil(t, err)
+
+	// get
+	tk, err := m.GetTask(id)
+	require.Nil(t, err)
+	assert.Equal(t, id, tk.ExecutionID)
 
 	// update
 	task.ID = id
@@ -200,4 +208,12 @@ func TestTask(t *testing.T) {
 	task.Status = TaskStatusFailed
 	err = m.UpdateTask(task, "Status")
 	require.Nil(t, err)
+
+	// get task log
+	job.GlobalClient = &tjob.MockJobClient{
+		JobUUID: []string{"1"},
+	}
+	data, err := m.GetTaskLog(task.ID)
+	require.Nil(t, err)
+	assert.Equal(t, "some log", string(data))
 }

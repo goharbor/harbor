@@ -17,6 +17,7 @@ import { RouterModule } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 import { RepositoryModule } from '../repository/repository.module';
 import { ReplicationModule } from '../replication/replication.module';
+import { SummaryModule } from './summary/summary.module';
 import { LogModule } from '../log/log.module';
 
 import { ProjectComponent } from './project.component';
@@ -51,7 +52,8 @@ import {TagRetentionService} from "./tag-retention/tag-retention.service";
     ReplicationModule,
     LogModule,
     RouterModule,
-    HelmChartModule
+    HelmChartModule,
+    SummaryModule
   ],
   declarations: [
     ProjectComponent,

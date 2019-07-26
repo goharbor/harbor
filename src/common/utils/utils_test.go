@@ -381,3 +381,31 @@ func TestTrimLower(t *testing.T) {
 		})
 	}
 }
+
+func TestGetStrValueOfAnyType(t *testing.T) {
+	type args struct {
+		value interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"float", args{float32(1048576.1)}, "1048576.1"},
+		{"float", args{float64(1048576.12)}, "1048576.12"},
+		{"float", args{1048576.000}, "1048576"},
+		{"int", args{1048576}, "1048576"},
+		{"int", args{9223372036854775807}, "9223372036854775807"},
+		{"string", args{"hello world"}, "hello world"},
+		{"bool", args{true}, "true"},
+		{"bool", args{false}, "false"},
+		{"map", args{map[string]interface{}{"key1": "value1"}}, "{\"key1\":\"value1\"}"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetStrValueOfAnyType(tt.args.value); got != tt.want {
+				t.Errorf("GetStrValueOfAnyType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

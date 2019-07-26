@@ -76,6 +76,7 @@ func (suite *JobTestSuite) TearDownSuite() {
 
 func (suite *JobTestSuite) TestRunSuccess() {
 	params := make(job.Parameters)
+	params[ParamDryRun] = false
 	params[ParamRepo] = &res.Repository{
 		Namespace: "library",
 		Name:      "harbor",
@@ -115,9 +116,7 @@ func (suite *JobTestSuite) TestRunSuccess() {
 		},
 	}
 
-	j := &Job{
-		client: &fakeRetentionClient{},
-	}
+	j := &Job{}
 	err := j.Validate(params)
 	require.NoError(suite.T(), err)
 

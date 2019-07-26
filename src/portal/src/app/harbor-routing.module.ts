@@ -57,6 +57,7 @@ import { ListChartVersionsComponent } from './project/helm-chart/list-chart-vers
 import { HelmChartDetailComponent } from './project/helm-chart/helm-chart-detail/chart-detail.component';
 import { OidcOnboardComponent } from './oidc-onboard/oidc-onboard.component';
 import {TagRetentionComponent} from "./project/tag-retention/tag-retention.component";
+import { SummaryComponent } from './project/summary/summary.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -166,6 +167,10 @@ const harborRoutes: Routes = [
           projectResolver: ProjectRoutingResolver
         },
         children: [
+          {
+            path: 'summary',
+            component: SummaryComponent
+          },
           {
             path: 'repositories',
             component: RepositoryPageComponent
