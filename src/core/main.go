@@ -167,7 +167,7 @@ func main() {
 
 	log.Info("Init proxy")
 	if err := middlewares.Init(); err != nil {
-		log.Errorf("init proxy error, %v", err)
+		log.Fatalf("init proxy error, %v", err)
 	}
 
 	// go proxy.StartProxy()
