@@ -218,21 +218,15 @@ func (r *DefaultAPIController) OperateRetentionExec(eid int64, action string) er
 	if err != nil {
 		return err
 	}
-
+	if e == nil {
+		return fmt.Errorf("execution %d not found", eid)
+	}
 	switch action {
 	case "stop":
-		if e.Status != ExecutionStatusInProgress {
-			return fmt.Errorf("cannot abort, current status is %s", e.Status)
-		}
-
-		e.Status = ExecutionStatusStopped
-		e.EndTime = time.Now()
-		// TODO: STOP THE EXECUTION
+		return r.launcher.Stop(eid)
 	default:
 		return fmt.Errorf("not support action %s", action)
 	}
-
-	return r.manager.UpdateExecution(e)
 }
 
 // ListRetentionExecs List Retention Executions
