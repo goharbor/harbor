@@ -36,7 +36,7 @@ func UpdateWebhookJobStatus(id int64, status string, statusCondition ...string) 
 	return n, err
 }
 
-//AddWebhookJob insert new webhook job to DB
+// AddWebhookJob insert new webhook job to DB
 func AddWebhookJob(job *models.WebhookJob) (int64, error) {
 	o := GetOrmer()
 	if len(job.Status) == 0 {

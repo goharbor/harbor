@@ -35,7 +35,7 @@ const (
 	WebhookEmailTopic = "email"
 )
 
-//Subscribe topics
+// Subscribe topics
 func init() {
 	handlersMap := map[string][]notifier.NotificationHandler{
 		PushImageTopic:   {&webhook.PushImagePreprocessHandler{}},
