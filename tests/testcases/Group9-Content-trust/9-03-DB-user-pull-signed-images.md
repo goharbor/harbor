@@ -23,7 +23,7 @@ In below test, project X should be replaced by an existing project and <harbor_i
 export DOCKER_CONTENT_TRUST=1  
 export DOCKER_CONTENT_TRUST_SERVER=https://<harbor_ip>:4443  
 ```
-and login Harobr.  
+and login harbor.  
 3. Pull an image from project X.  
 
 # Expected Outcome:
