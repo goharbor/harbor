@@ -267,7 +267,7 @@ func (p *ProjectAPI) Get() {
 
 	err := p.populateProperties(p.project)
 	if err != nil {
-		log.Errorf("populate project poroperties failed with : %+v", err)
+		log.Errorf("populate project properties failed with : %+v", err)
 	}
 
 	p.Data["json"] = p.project
@@ -583,6 +583,10 @@ func (p *ProjectAPI) Logs() {
 func (p *ProjectAPI) Summary() {
 	if !p.requireAccess(rbac.ActionRead) {
 		return
+	}
+
+	if err := p.populateProperties(p.project); err != nil {
+		log.Warningf("populate project properties failed with : %+v", err)
 	}
 
 	summary := &models.ProjectSummary{
