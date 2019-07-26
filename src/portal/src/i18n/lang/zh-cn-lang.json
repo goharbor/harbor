@@ -31,6 +31,7 @@
         "TEST_MAIL": "测试邮件服务器",
         "CLOSE": "关闭",
         "TEST_LDAP": "测试LDAP服务器",
+        "TEST_OIDC": "测试OIDC服务器",
         "MORE_INFO": "更多信息...",
         "YES": "是",
         "NO": "否",
@@ -812,7 +813,8 @@
         "TEST_MAIL_FAILED": "验证邮件服务器失败，错误: {{param}}。",
         "TEST_LDAP_FAILED": "验证LDAP服务器失败，错误: {{param}}。",
         "LEAVING_CONFIRMATION_TITLE": "确定离开",
-        "LEAVING_CONFIRMATION_SUMMARY": "有未保存的配置更改, 确认离开当前页面?"
+        "LEAVING_CONFIRMATION_SUMMARY": "有未保存的配置更改, 确认离开当前页面?",
+        "TEST_OIDC_SUCCESS": "OIDC服务器的连通正常。"
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "页面不存在",

@@ -31,6 +31,7 @@
         "TEST_MAIL": "TESTER LE SERVEUR MAIL",
         "CLOSE": "FERMER",
         "TEST_LDAP": "TESTER LE SERVEUR LDAP",
+        "TEST_OIDC": "TEST OIDC SERVER",
         "MORE_INFO": "Plus d'informations...",
         "YES": "OUI",
         "NO": "NON",
@@ -787,7 +788,8 @@
         "TEST_MAIL_FAILED": "Echec de la vérification du serveur de mail avec erreurs : {{param}}.",
         "TEST_LDAP_FAILED": "Echec de la vérification du serveur LDAP avec erreurs : {{param}}.",
         "LEAVING_CONFIRMATION_TITLE": "Confirmer pour quitter",
-        "LEAVING_CONFIRMATION_SUMMARY": "Les modifications n'ont pas encore été enregistrées. Voulez-vous quitter la page actuelle ?"
+        "LEAVING_CONFIRMATION_SUMMARY": "Les modifications n'ont pas encore été enregistrées. Voulez-vous quitter la page actuelle ?",
+        "TEST_OIDC_SUCCESS": "Connection to OIDC server is verified."
     },
     "PAGE_NOT_FOUND": {
         "MAIN_TITLE": "Page introuvable",
