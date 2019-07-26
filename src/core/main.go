@@ -37,7 +37,7 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/src/core/proxy"
+	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/replication"
@@ -166,8 +166,8 @@ func main() {
 	}
 
 	log.Info("Init proxy")
-	if err := proxy.Init(); err != nil {
-		log.Fatalf("Init proxy error: %s", err)
+	if err := middlewares.Init(); err != nil {
+		log.Fatalf("init proxy error, %v", err)
 	}
 
 	// go proxy.StartProxy()

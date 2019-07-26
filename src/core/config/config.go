@@ -510,3 +510,14 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 		Scope:        scope,
 	}, nil
 }
+
+// QuotaSetting returns the setting of quota.
+func QuotaSetting() (*models.QuotaSetting, error) {
+	if err := cfgMgr.Load(); err != nil {
+		return nil, err
+	}
+	return &models.QuotaSetting{
+		CountPerProject:   cfgMgr.Get(common.CountPerProject).GetInt64(),
+		StoragePerProject: cfgMgr.Get(common.StoragePerProject).GetInt64(),
+	}, nil
+}

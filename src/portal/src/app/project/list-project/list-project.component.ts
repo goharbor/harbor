@@ -143,7 +143,7 @@ export class ListProjectComponent implements OnDestroy {
     goToLink(proId: number): void {
         this.searchTrigger.closeSearch(true);
 
-        let linkUrl = ["harbor", "projects", proId, "repositories"];
+        let linkUrl = ["harbor", "projects", proId, "summary"];
         this.router.navigate(linkUrl);
     }
 

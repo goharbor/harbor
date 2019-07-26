@@ -18,9 +18,10 @@ package metadata
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/common"
 	"strconv"
 	"strings"
+
+	"github.com/goharbor/harbor/src/common"
 )
 
 // Type - Use this interface to define and encapsulate the behavior of validation and transformation
@@ -185,4 +186,22 @@ func (t *MapType) get(str string) (interface{}, error) {
 	result := map[string]interface{}{}
 	err := json.Unmarshal([]byte(str), &result)
 	return result, err
+}
+
+// QuotaType ...
+type QuotaType struct {
+	Int64Type
+}
+
+func (t *QuotaType) validate(str string) error {
+	val, err := strconv.ParseInt(str, 10, 64)
+	if err != nil {
+		return err
+	}
+
+	if val <= 0 && val != -1 {
+		return fmt.Errorf("quota value should be -1 or great than zero")
+	}
+
+	return nil
 }

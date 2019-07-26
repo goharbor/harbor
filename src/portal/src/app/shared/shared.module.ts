@@ -76,7 +76,8 @@ const uiLibConfig: IServiceConfig = {
   helmChartEndpoint: "/api/chartrepo",
   downloadChartEndpoint: "/chartrepo",
   gcEndpoint: "/api/system/gc",
-  ScanAllEndpoint: "/api/system/scanAll"
+  ScanAllEndpoint: "/api/system/scanAll",
+  quotaUrl: "/api/quotas"
 };
 
 @NgModule({
