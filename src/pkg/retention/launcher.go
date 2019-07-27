@@ -205,7 +205,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 			Metadata: &models.JobMetadata{
 				JobKind: job.KindGeneric,
 			},
-			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/retention/tasks/%d", l.internalCoreURL, jobData.taskID),
+			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/retention/task/%d", l.internalCoreURL, jobData.taskID),
 		}
 		j.Name = job.Retention
 		j.Parameters = map[string]interface{}{

@@ -16,6 +16,7 @@ package res
 
 import (
 	"encoding/base64"
+	"encoding/json"
 	"fmt"
 )
 
@@ -35,6 +36,18 @@ type Repository struct {
 	// So far we need the kind of repository and retrieve candidates with different APIs
 	// TODO: REMOVE IT IN THE FUTURE IF WE SUPPORT UNIFIED ARTIFACT MODEL
 	Kind string
+}
+
+// FromMap constructs the repository struct from map
+func (r *Repository) FromMap(m map[string]interface{}) error {
+	mdata, err := json.Marshal(&m)
+	if err != nil {
+		return err
+	}
+	if err := json.Unmarshal(mdata, r); err != nil {
+		return err
+	}
+	return nil
 }
 
 // Candidate for retention processor to match

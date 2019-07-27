@@ -15,10 +15,24 @@
 package selectors
 
 import (
-	"github.com/goharbor/harbor/src/pkg/retention/res"
-	"github.com/pkg/errors"
 	"sync"
+
+	"github.com/goharbor/harbor/src/pkg/retention/res"
+	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
+	"github.com/pkg/errors"
 )
+
+func init() {
+	// Register doublestar selector
+	Register(doublestar.Kind, []string{
+		doublestar.Matches,
+		doublestar.Excludes,
+		doublestar.RepoMatches,
+		doublestar.RepoExcludes,
+		doublestar.NSMatches,
+		doublestar.NSExcludes,
+	}, doublestar.New)
+}
 
 // index for keeping the mapping between selector meta and its implementation
 var index sync.Map

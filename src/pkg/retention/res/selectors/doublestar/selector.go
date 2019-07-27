@@ -17,7 +17,6 @@ package doublestar
 import (
 	"github.com/bmatcuk/doublestar"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
 )
 
 const (
@@ -100,16 +99,4 @@ func match(pattern, str string) (bool, error) {
 		return true, nil
 	}
 	return doublestar.Match(pattern, str)
-}
-
-func init() {
-	// Register doublestar selector
-	selectors.Register(Kind, []string{
-		Matches,
-		Excludes,
-		RepoMatches,
-		RepoExcludes,
-		NSMatches,
-		NSExcludes,
-	}, New)
 }

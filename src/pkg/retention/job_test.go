@@ -16,6 +16,7 @@ package retention
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
@@ -77,11 +78,14 @@ func (suite *JobTestSuite) TearDownSuite() {
 func (suite *JobTestSuite) TestRunSuccess() {
 	params := make(job.Parameters)
 	params[ParamDryRun] = false
-	params[ParamRepo] = &res.Repository{
+	repository := &res.Repository{
 		Namespace: "library",
 		Name:      "harbor",
 		Kind:      res.Image,
 	}
+	repoMap, err := toMap(repository)
+	require.Nil(suite.T(), err)
+	params[ParamRepo] = repoMap
 
 	scopeSelectors := make(map[string][]*rule.Selector)
 	scopeSelectors["project"] = []*rule.Selector{{
@@ -93,7 +97,7 @@ func (suite *JobTestSuite) TestRunSuccess() {
 	ruleParams := make(rule.Parameters)
 	ruleParams[latestk.ParameterK] = 10
 
-	params[ParamMeta] = &lwp.Metadata{
+	meta := &lwp.Metadata{
 		Algorithm: policy.AlgorithmOR,
 		Rules: []*rule.Metadata{
 			{
@@ -115,9 +119,12 @@ func (suite *JobTestSuite) TestRunSuccess() {
 			},
 		},
 	}
+	metaMap, err := toMap(meta)
+	require.Nil(suite.T(), err)
+	params[ParamMeta] = metaMap
 
 	j := &Job{}
-	err := j.Validate(params)
+	err = j.Validate(params)
 	require.NoError(suite.T(), err)
 
 	err = j.Run(&fakeJobContext{}, params)
@@ -231,4 +238,16 @@ func (c *fakeJobContext) GetLogger() logger.Interface {
 
 func (c *fakeJobContext) Tracker() job.Tracker {
 	return nil
+}
+
+func toMap(v interface{}) (map[string]interface{}, error) {
+	data, err := json.Marshal(v)
+	if err != nil {
+		return nil, err
+	}
+	m := map[string]interface{}{}
+	if err = json.Unmarshal(data, &m); err != nil {
+		return nil, err
+	}
+	return m, nil
 }
