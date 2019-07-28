@@ -61,9 +61,3 @@ func TestMatchNotaryDigest(t *testing.T) {
 	assert.Nil(err, "Unexpected error: %v, image: %#v, take 2", err, img2)
 	assert.False(res2)
 }
-
-func TestIsDigest(t *testing.T) {
-	assert := assert.New(t)
-	assert.False(isDigest("latest"))
-	assert.True(isDigest("sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"))
-}

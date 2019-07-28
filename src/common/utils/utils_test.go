@@ -409,3 +409,9 @@ func TestGetStrValueOfAnyType(t *testing.T) {
 		})
 	}
 }
+
+func TestIsDigest(t *testing.T) {
+	assert := assert.New(t)
+	assert.False(IsDigest("latest"))
+	assert.True(IsDigest("sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"))
+}

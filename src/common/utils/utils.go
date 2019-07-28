@@ -262,3 +262,8 @@ func IsContainIllegalChar(s string, illegalChar []string) bool {
 	}
 	return false
 }
+
+// IsDigest A sha256 is a string with 64 characters.
+func IsDigest(ref string) bool {
+	return strings.HasPrefix(ref, "sha256:") && len(ref) == 71
+}

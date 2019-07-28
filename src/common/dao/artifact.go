@@ -41,6 +41,12 @@ func UpdateArtifactDigest(af *models.Artifact) error {
 	return err
 }
 
+// UpdateArtifactPullTime updates the pull time of the artifact.
+func UpdateArtifactPullTime(af *models.Artifact) error {
+	_, err := GetOrmer().Update(af, "pull_time")
+	return err
+}
+
 // DeleteArtifact ...
 func DeleteArtifact(id int64) error {
 	_, err := GetOrmer().QueryTable(&models.Artifact{}).Filter("ID", id).Delete()
