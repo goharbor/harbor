@@ -172,7 +172,7 @@ func (l *launchTestSuite) TestGetProjects() {
 }
 
 func (l *launchTestSuite) TestGetRepositories() {
-	repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, 1)
+	repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, 1, true)
 	require.Nil(l.T(), err)
 	assert.Equal(l.T(), 2, len(repositories))
 	assert.Equal(l.T(), "library", repositories[0].Namespace)
@@ -185,10 +185,11 @@ func (l *launchTestSuite) TestGetRepositories() {
 
 func (l *launchTestSuite) TestLaunch() {
 	launcher := &launcher{
-		projectMgr:       l.projectMgr,
-		repositoryMgr:    l.repositoryMgr,
-		retentionMgr:     l.retentionMgr,
-		jobserviceClient: l.jobserviceClient,
+		projectMgr:         l.projectMgr,
+		repositoryMgr:      l.repositoryMgr,
+		retentionMgr:       l.retentionMgr,
+		jobserviceClient:   l.jobserviceClient,
+		chartServerEnabled: true,
 	}
 
 	var ply *policy.Metadata
