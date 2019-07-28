@@ -20,10 +20,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
-
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
@@ -215,9 +214,15 @@ func getParamRepo(params job.Parameters) (*res.Repository, error) {
 		return nil, errors.Errorf("missing parameter: %s", ParamRepo)
 	}
 
-	repo, ok := v.(*res.Repository)
+	fmt.Printf("%T", v)
+	repoMap, ok := v.(map[string]interface{})
 	if !ok {
 		return nil, errors.Errorf("invalid parameter: %s", ParamRepo)
+	}
+
+	repo := &res.Repository{}
+	if err := repo.FromMap(repoMap); err != nil {
+		return nil, fmt.Errorf("failed to convert map to repository: %v", err)
 	}
 
 	return repo, nil
@@ -229,9 +234,14 @@ func getParamMeta(params job.Parameters) (*lwp.Metadata, error) {
 		return nil, errors.Errorf("missing parameter: %s", ParamMeta)
 	}
 
-	meta, ok := v.(*lwp.Metadata)
+	metaMap, ok := v.(map[string]interface{})
 	if !ok {
 		return nil, errors.Errorf("invalid parameter: %s", ParamMeta)
+	}
+
+	meta := &lwp.Metadata{}
+	if err := meta.FromMap(metaMap); err != nil {
+		return nil, fmt.Errorf("failed to convert map to metadata: %v", err)
 	}
 
 	return meta, nil
