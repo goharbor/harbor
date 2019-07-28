@@ -112,6 +112,7 @@ func (b *BaseAPI) Redirect(statusCode int, resouceID string) {
 	requestURI := b.Ctx.Request.RequestURI
 	resourceURI := requestURI + "/" + resouceID
 
+	b.Ctx.ResponseWriter.Header().Set("Content-Type", "application/json")
 	b.Ctx.Redirect(statusCode, resourceURI)
 }
 
