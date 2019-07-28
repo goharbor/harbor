@@ -31,6 +31,14 @@ import (
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
+const (
+	regionPattern = "https://(?:api|\\d+\\.dkr)\\.ecr\\.([\\w\\-]+)\\.amazonaws\\.com"
+)
+
+var (
+	regionRegexp = regexp.MustCompile(regionPattern)
+)
+
 func init() {
 	if err := adp.RegisterFactory(model.RegistryTypeAwsEcr, func(registry *model.Registry) (adp.Adapter, error) {
 		return newAdapter(registry)
@@ -59,8 +67,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 }
 
 func parseRegion(url string) (string, error) {
-	pattern := "https://(?:api|\\d+\\.dkr)\\.ecr\\.([\\w\\-]+)\\.amazonaws\\.com"
-	rs := regexp.MustCompile(pattern).FindStringSubmatch(url)
+	rs := regionRegexp.FindStringSubmatch(url)
 	if rs == nil {
 		return "", errors.New("Bad aws url")
 	}
