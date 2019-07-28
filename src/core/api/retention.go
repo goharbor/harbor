@@ -131,7 +131,10 @@ func (r *RetentionAPI) GetMetadatas() {
     ]
 }
 `
-	r.WriteJSONData(data)
+	w := r.Ctx.ResponseWriter
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(data))
 }
 
 // GetRetention Get Retention
@@ -166,7 +169,7 @@ func (r *RetentionAPI) CreateRetention() {
 	switch p.Scope.Level {
 	case policy.ScopeLevelProject:
 		if p.Scope.Reference <= 0 {
-			r.SendBadRequestError(fmt.Errorf("Invalid Project id %d", p.Scope.Reference))
+			r.SendBadRequestError(fmt.Errorf("invalid Project id %d", p.Scope.Reference))
 			return
 		}
 
@@ -175,19 +178,22 @@ func (r *RetentionAPI) CreateRetention() {
 			r.SendBadRequestError(err)
 		}
 		if proj == nil {
-			r.SendBadRequestError(fmt.Errorf("Invalid Project id %d", p.Scope.Reference))
+			r.SendBadRequestError(fmt.Errorf("invalid Project id %d", p.Scope.Reference))
 		}
 	default:
 		r.SendBadRequestError(fmt.Errorf("scope %s is not support", p.Scope.Level))
 		return
 	}
-	if err = retentionController.CreateRetention(p); err != nil {
+	id, err := retentionController.CreateRetention(p)
+	if err != nil {
 		r.SendInternalServerError(err)
 		return
 	}
 	if err := r.pm.GetMetadataManager().Add(p.Scope.Reference,
 		map[string]string{"retention_id": strconv.FormatInt(p.Scope.Reference, 10)}); err != nil {
+		r.SendInternalServerError(err)
 	}
+	r.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
 }
 
 // UpdateRetention Update Retention
@@ -238,10 +244,12 @@ func (r *RetentionAPI) TriggerRetentionExec() {
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
-	if err = retentionController.TriggerRetentionExec(id, retention.ExecutionTriggerManual, d.DryRun); err != nil {
+	eid, err := retentionController.TriggerRetentionExec(id, retention.ExecutionTriggerManual, d.DryRun)
+	if err != nil {
 		r.SendInternalServerError(err)
 		return
 	}
+	r.Redirect(http.StatusCreated, strconv.FormatInt(eid, 10))
 }
 
 // OperateRetentionExec Operate Retention Execution

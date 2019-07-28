@@ -118,12 +118,13 @@ func Init() error {
 
 	retentionLauncher = retention.NewLauncher(projectMgr, repositoryMgr, retentionMgr)
 
-	retentionController = retention.NewAPIController(projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
+	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
 
 	callbackFun := func(p interface{}) error {
 		r, ok := p.(retention.TriggerParam)
 		if ok {
-			return retentionController.TriggerRetentionExec(r.PolicyID, r.Trigger, false)
+			_, err := retentionController.TriggerRetentionExec(r.PolicyID, r.Trigger, false)
+			return err
 		}
 		return errors.New("bad retention callback param")
 	}

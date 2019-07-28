@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 
 func TestPolicy(t *testing.T) {
 	p := &policy.Metadata{
-		Algorithm: "OR",
+		Algorithm: "or",
 		Rules: []rule.Metadata{
 			{
 				ID:       1,
@@ -101,7 +101,7 @@ func TestPolicy(t *testing.T) {
 
 func TestExecution(t *testing.T) {
 	p := &policy.Metadata{
-		Algorithm: "OR",
+		Algorithm: "or",
 		Rules: []rule.Metadata{
 			{
 				ID:       1,
