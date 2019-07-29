@@ -51,7 +51,10 @@ func (s *selector) Select(artifacts []*res.Candidate) (selected []*res.Candidate
 
 // New is factory method for list selector
 func New(decoration string, pattern string) res.Selector {
-	labels := strings.Split(pattern, ",")
+	labels := make([]string, 0)
+	if len(pattern) > 0 {
+		labels = append(labels, strings.Split(pattern, ",")...)
+	}
 
 	return &selector{
 		decoration: decoration,
