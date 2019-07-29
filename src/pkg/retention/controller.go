@@ -147,7 +147,7 @@ func (r *DefaultAPIController) UpdateRetention(p *policy.Metadata) error {
 		}
 	}
 	if needUn {
-		err = r.scheduler.UnSchedule((p0.Trigger.References[policy.TriggerReferencesJobid].(int64)))
+		err = r.scheduler.UnSchedule(p0.Trigger.References[policy.TriggerReferencesJobid].(int64))
 		if err != nil {
 			return err
 		}

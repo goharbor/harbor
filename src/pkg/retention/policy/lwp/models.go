@@ -18,6 +18,8 @@ package lwp
 import (
 	"encoding/json"
 
+	"github.com/pkg/errors"
+
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
 
@@ -32,14 +34,21 @@ type Metadata struct {
 	Rules []*rule.Metadata `json:"rules"`
 }
 
-// FromMap constructs the metadata struct from map
-func (meta *Metadata) FromMap(m map[string]interface{}) error {
-	mdata, err := json.Marshal(&m)
+// ToJSON marshals metadata to JSON string
+func (m *Metadata) ToJSON() (string, error) {
+	jsonData, err := json.Marshal(m)
 	if err != nil {
-		return err
+		return "", errors.Wrap(err, "marshal reporitory")
 	}
-	if err := json.Unmarshal(mdata, meta); err != nil {
-		return err
+
+	return string(jsonData), nil
+}
+
+// FromJSON constructs the metadata from json data
+func (m *Metadata) FromJSON(jsonData string) error {
+	if len(jsonData) == 0 {
+		return errors.New("empty json data to construct repository")
 	}
-	return nil
+
+	return json.Unmarshal([]byte(jsonData), m)
 }

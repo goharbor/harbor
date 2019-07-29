@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package action
+package index
 
 import (
 	"testing"
@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/stretchr/testify/suite"
 )
@@ -88,7 +89,7 @@ func (p *fakePerformer) Perform(candidates []*res.Candidate) (results []*res.Res
 	return
 }
 
-func newFakePerformer(params interface{}, isDryRun bool) Performer {
+func newFakePerformer(params interface{}, isDryRun bool) action.Performer {
 	return &fakePerformer{
 		parameters: params,
 		isDryRun:   isDryRun,

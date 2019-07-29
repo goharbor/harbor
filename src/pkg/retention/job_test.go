@@ -16,7 +16,6 @@ package retention
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"testing"
@@ -27,13 +26,10 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
 	"github.com/stretchr/testify/require"
@@ -54,18 +50,6 @@ func TestJob(t *testing.T) {
 
 // SetupSuite ...
 func (suite *JobTestSuite) SetupSuite() {
-	alg.Register(alg.AlgorithmOR, or.New)
-	selectors.Register(doublestar.Kind, []string{
-		doublestar.Matches,
-		doublestar.Excludes,
-		doublestar.RepoMatches,
-		doublestar.RepoExcludes,
-		doublestar.NSMatches,
-		doublestar.NSExcludes,
-	}, doublestar.New)
-	selectors.Register(label.Kind, []string{label.With, label.Without}, label.New)
-	action.Register(action.Retain, action.NewRetainAction)
-
 	suite.oldClient = dep.DefaultClient
 	dep.DefaultClient = &fakeRetentionClient{}
 }
@@ -83,9 +67,9 @@ func (suite *JobTestSuite) TestRunSuccess() {
 		Name:      "harbor",
 		Kind:      res.Image,
 	}
-	repoMap, err := toMap(repository)
+	repoJSON, err := repository.ToJSON()
 	require.Nil(suite.T(), err)
-	params[ParamRepo] = repoMap
+	params[ParamRepo] = repoJSON
 
 	scopeSelectors := make(map[string][]*rule.Selector)
 	scopeSelectors["project"] = []*rule.Selector{{
@@ -95,7 +79,7 @@ func (suite *JobTestSuite) TestRunSuccess() {
 	}}
 
 	ruleParams := make(rule.Parameters)
-	ruleParams[latestk.ParameterK] = 10
+	ruleParams[latestps.ParameterK] = 10
 
 	meta := &lwp.Metadata{
 		Algorithm: policy.AlgorithmOR,
@@ -104,7 +88,7 @@ func (suite *JobTestSuite) TestRunSuccess() {
 				ID:         1,
 				Priority:   999,
 				Action:     action.Retain,
-				Template:   latestk.TemplateID,
+				Template:   latestps.TemplateID,
 				Parameters: ruleParams,
 				TagSelectors: []*rule.Selector{{
 					Kind:       label.Kind,
@@ -119,9 +103,9 @@ func (suite *JobTestSuite) TestRunSuccess() {
 			},
 		},
 	}
-	metaMap, err := toMap(meta)
+	metaJSON, err := meta.ToJSON()
 	require.Nil(suite.T(), err)
-	params[ParamMeta] = metaMap
+	params[ParamMeta] = metaJSON
 
 	j := &Job{}
 	err = j.Validate(params)
@@ -238,16 +222,4 @@ func (c *fakeJobContext) GetLogger() logger.Interface {
 
 func (c *fakeJobContext) Tracker() job.Tracker {
 	return nil
-}
-
-func toMap(v interface{}) (map[string]interface{}, error) {
-	data, err := json.Marshal(v)
-	if err != nil {
-		return nil, err
-	}
-	m := map[string]interface{}{}
-	if err = json.Unmarshal(data, &m); err != nil {
-		return nil, err
-	}
-	return m, nil
 }

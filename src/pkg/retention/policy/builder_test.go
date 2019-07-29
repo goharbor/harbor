@@ -18,19 +18,23 @@ import (
 	"testing"
 	"time"
 
+	index3 "github.com/goharbor/harbor/src/pkg/retention/policy/action/index"
+
+	index2 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
+
+	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/index"
+
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
 	"github.com/pkg/errors"
 
-	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
 
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
 
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
 
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 
@@ -83,8 +87,8 @@ func (suite *TestBuilderSuite) SetupSuite() {
 		},
 	}
 
-	alg.Register(alg.AlgorithmOR, or.New)
-	selectors.Register(doublestar.Kind, []string{
+	index2.Register(index2.AlgorithmOR, or.New)
+	index.Register(doublestar.Kind, []string{
 		doublestar.Matches,
 		doublestar.Excludes,
 		doublestar.RepoMatches,
@@ -92,8 +96,8 @@ func (suite *TestBuilderSuite) SetupSuite() {
 		doublestar.NSMatches,
 		doublestar.NSExcludes,
 	}, doublestar.New)
-	selectors.Register(label.Kind, []string{label.With, label.Without}, label.New)
-	action.Register(action.Retain, action.NewRetainAction)
+	index.Register(label.Kind, []string{label.With, label.Without}, label.New)
+	index3.Register(action.Retain, action.NewRetainAction)
 
 	suite.oldClient = dep.DefaultClient
 	dep.DefaultClient = &fakeRetentionClient{}
@@ -109,7 +113,7 @@ func (suite *TestBuilderSuite) TestBuild() {
 	b := &basicBuilder{suite.all}
 
 	params := make(rule.Parameters)
-	params[latestk.ParameterK] = 10
+	params[latestps.ParameterK] = 10
 
 	scopeSelectors := make(map[string][]*rule.Selector, 1)
 	scopeSelectors["repository"] = []*rule.Selector{{
@@ -124,7 +128,7 @@ func (suite *TestBuilderSuite) TestBuild() {
 			ID:             1,
 			Priority:       999,
 			Action:         action.Retain,
-			Template:       latestk.TemplateID,
+			Template:       latestps.TemplateID,
 			Parameters:     params,
 			ScopeSelectors: scopeSelectors,
 			TagSelectors: []*rule.Selector{

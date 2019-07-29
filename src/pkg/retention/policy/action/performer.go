@@ -92,8 +92,3 @@ func NewRetainAction(params interface{}, isDryRun bool) Performer {
 		isDryRun: isDryRun,
 	}
 }
-
-func init() {
-	// Register itself
-	Register(Retain, NewRetainAction)
-}

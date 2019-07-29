@@ -73,19 +73,3 @@ func New(params rule.Parameters) rule.Evaluator {
 		x: DefaultX,
 	}
 }
-
-func init() {
-	// Register itself
-	rule.Register(&rule.IndexMeta{
-		TemplateID: TemplateID,
-		Action:     action.Retain,
-		Parameters: []*rule.IndexedParam{
-			{
-				Name:     ParameterX,
-				Type:     "int",
-				Unit:     "days",
-				Required: true,
-			},
-		},
-	}, New)
-}
