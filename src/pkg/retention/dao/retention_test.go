@@ -159,10 +159,8 @@ func TestExecution(t *testing.T) {
 
 	e := &models.RetentionExecution{
 		PolicyID:  policyID,
-		Status:    "Running",
 		DryRun:    false,
 		Trigger:   "manual",
-		Total:     10,
 		StartTime: time.Now(),
 	}
 	id, err := CreateExecution(e)

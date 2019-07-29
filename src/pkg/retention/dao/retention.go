@@ -3,7 +3,9 @@ package dao
 import (
 	"errors"
 	"fmt"
+	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
+	jobmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
 )
@@ -93,21 +95,45 @@ func GetExecution(id int64) (*models.RetentionExecution, error) {
 // fillStatus the priority is InProgress Stopped Failed Succeed
 func fillStatus(exec *models.RetentionExecution) error {
 	o := dao.GetOrmer()
+	var r orm.Params
 	if _, err := o.Raw("select status, count(*) num from retention_task where execution_id = ? group by status", exec.ID).
-		RowsToStruct(exec, "status", "num"); err != nil {
+		RowsToMap(&r, "status", "num"); err != nil {
 		return err
 	}
-	exec.Total = exec.Pending + exec.InProgress + exec.Succeed + exec.Failed + exec.Stopped
-	if exec.Total == 0 {
+	var (
+		total, running, succeed, failed, stopped int
+	)
+	for k, v := range r {
+		total += v.(int)
+		switch k {
+		case jobmodels.JobScheduled:
+			running += 1
+		case jobmodels.JobPending:
+			running += 1
+		case jobmodels.JobRunning:
+			running += 1
+		case jobmodels.JobRetrying:
+			running += 1
+		case jobmodels.JobFinished:
+			succeed += 1
+		case jobmodels.JobCanceled:
+			stopped += 1
+		case jobmodels.JobStopped:
+			stopped += 1
+		case jobmodels.JobError:
+			failed += 1
+		}
+	}
+	if total == 0 {
 		exec.Status = models.ExecutionStatusSucceed
 		exec.EndTime = exec.StartTime
 		return nil
 	}
-	if exec.Pending+exec.InProgress > 0 {
+	if running > 0 {
 		exec.Status = models.ExecutionStatusInProgress
-	} else if exec.Stopped > 0 {
+	} else if stopped > 0 {
 		exec.Status = models.ExecutionStatusStopped
-	} else if exec.Failed > 0 {
+	} else if failed > 0 {
 		exec.Status = models.ExecutionStatusFailed
 	} else {
 		exec.Status = models.ExecutionStatusSucceed
