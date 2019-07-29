@@ -125,13 +125,13 @@ func logResults(logger logger.Interface, all []*res.Candidate, results []*res.Re
 	op := func(art *res.Candidate) string {
 		if e, exists := hash[art.Hash()]; exists {
 			if e != nil {
-				return "Err"
+				return "ERR"
 			}
 
-			return "X"
+			return "DEL"
 		}
 
-		return "√"
+		return "RETAIN"
 	}
 
 	var buf bytes.Buffer
@@ -158,7 +158,7 @@ func logResults(logger logger.Interface, all []*res.Candidate, results []*res.Re
 	table.AppendBulk(data)
 	table.Render()
 
-	logger.Infof("%s", buf.String())
+	logger.Infof("\n%s", buf.String())
 
 	// log all the concrete errors if have
 	for _, r := range results {

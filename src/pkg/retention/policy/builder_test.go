@@ -133,9 +133,9 @@ func (suite *TestBuilderSuite) TestBuild() {
 			ScopeSelectors: scopeSelectors,
 			TagSelectors: []*rule.Selector{
 				{
-					Kind:       label.Kind,
-					Decoration: label.With,
-					Pattern:    "L3",
+					Kind:       doublestar.Kind,
+					Decoration: doublestar.Matches,
+					Pattern:    "latest",
 				},
 			},
 		}},
@@ -145,19 +145,7 @@ func (suite *TestBuilderSuite) TestBuild() {
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), p)
 
-	artifacts := []*res.Candidate{
-		{
-			NamespaceID: 1,
-			Namespace:   "library",
-			Repository:  "harbor",
-			Kind:        "image",
-			Tag:         "dev",
-			PushedTime:  time.Now().Unix(),
-			Labels:      []string{"L3"},
-		},
-	}
-
-	results, err := p.Process(artifacts)
+	results, err := p.Process(suite.all)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(results))
 	assert.Condition(suite.T(), func() (success bool) {
@@ -165,7 +153,7 @@ func (suite *TestBuilderSuite) TestBuild() {
 		success = art.Error == nil &&
 			art.Target != nil &&
 			art.Target.Repository == "harbor" &&
-			art.Target.Tag == "latest"
+			art.Target.Tag == "dev"
 
 		return
 	})
