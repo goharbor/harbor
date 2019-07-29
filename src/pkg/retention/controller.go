@@ -192,25 +192,12 @@ func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger stri
 	exec := &Execution{
 		PolicyID:  policyID,
 		StartTime: time.Now(),
-		Status:    ExecutionStatusInProgress,
 		Trigger:   trigger,
 		DryRun:    dryRun,
 	}
 	id, err := r.manager.CreateExecution(exec)
-	num, err := r.launcher.Launch(p, id, dryRun)
-	if err != nil {
+	if _, err = r.launcher.Launch(p, id, dryRun); err != nil {
 		return 0, err
-	}
-	if num == 0 {
-		exec := &Execution{
-			ID:      id,
-			EndTime: time.Now(),
-			Status:  ExecutionStatusSucceed,
-		}
-		err = r.manager.UpdateExecution(exec)
-		if err != nil {
-			return 0, err
-		}
 	}
 	return id, err
 

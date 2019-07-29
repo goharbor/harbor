@@ -6,6 +6,14 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+// const definitions
+const (
+	ExecutionStatusInProgress string = "InProgress"
+	ExecutionStatusSucceed    string = "Succeed"
+	ExecutionStatusFailed     string = "Failed"
+	ExecutionStatusStopped    string = "Stopped"
+)
+
 func init() {
 	orm.RegisterModel(
 		new(RetentionPolicy),
@@ -31,17 +39,18 @@ type RetentionPolicy struct {
 type RetentionExecution struct {
 	ID       int64 `orm:"pk;auto;column(id)" json:"id"`
 	PolicyID int64 `orm:"column(policy_id)"`
-	Status   string
 	DryRun   bool
 	// manual, scheduled
 	Trigger    string
-	Total      int
-	Succeed    int
-	Failed     int
-	InProgress int
-	Stopped    int
 	StartTime  time.Time
-	EndTime    time.Time
+	EndTime    time.Time `orm:"-"`
+	Status     string    `orm:"-"`
+	Total      int       `orm:"-"`
+	Succeed    int       `orm:"-"`
+	Failed     int       `orm:"-"`
+	InProgress int       `orm:"-"`
+	Stopped    int       `orm:"-"`
+	Pending    int       `orm:"-"`
 }
 
 // RetentionTask ...
