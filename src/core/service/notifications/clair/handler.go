@@ -35,7 +35,7 @@ var (
 	clairClient *clair.Client
 )
 
-// Handler handles reqeust on /service/notifications/clair/, which listens to clair's notifications.
+// Handler handles request on /service/notifications/clair/, which listens to clair's notifications.
 // When there's unexpected error it will silently fail without removing the notification such that it will be triggered again.
 type Handler struct {
 	api.BaseController
