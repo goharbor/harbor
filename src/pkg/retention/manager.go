@@ -42,8 +42,6 @@ type Manager interface {
 	GetPolicy(ID int64) (*policy.Metadata, error)
 	// Create a new retention execution
 	CreateExecution(execution *Execution) (int64, error)
-	// Update the specified execution
-	UpdateExecution(execution *Execution) error
 	// Get the specified execution
 	GetExecution(eid int64) (*Execution, error)
 	// List execution histories
@@ -123,18 +121,8 @@ func (d *DefaultManager) CreateExecution(execution *Execution) (int64, error) {
 	exec.PolicyID = execution.PolicyID
 	exec.StartTime = time.Now()
 	exec.DryRun = execution.DryRun
-	exec.Status = execution.Status
 	exec.Trigger = execution.Trigger
 	return dao.CreateExecution(exec)
-}
-
-// UpdateExecution Update Execution
-func (d *DefaultManager) UpdateExecution(execution *Execution) error {
-	exec := &models.RetentionExecution{}
-	exec.ID = execution.ID
-	exec.EndTime = execution.EndTime
-	exec.Status = execution.Status
-	return dao.UpdateExecution(exec, "end_time", "status")
 }
 
 // ListExecutions List Executions
