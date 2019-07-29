@@ -107,21 +107,21 @@ func fillStatus(exec *models.RetentionExecution) error {
 		total += v.(int)
 		switch k {
 		case jobmodels.JobScheduled:
-			running += 1
+			running += v.(int)
 		case jobmodels.JobPending:
-			running += 1
+			running += v.(int)
 		case jobmodels.JobRunning:
-			running += 1
+			running += v.(int)
 		case jobmodels.JobRetrying:
-			running += 1
+			running += v.(int)
 		case jobmodels.JobFinished:
-			succeed += 1
+			succeed += v.(int)
 		case jobmodels.JobCanceled:
-			stopped += 1
+			stopped += v.(int)
 		case jobmodels.JobStopped:
-			stopped += 1
+			stopped += v.(int)
 		case jobmodels.JobError:
-			failed += 1
+			failed += v.(int)
 		}
 	}
 	if total == 0 {
