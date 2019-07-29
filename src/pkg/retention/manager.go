@@ -109,6 +109,11 @@ func (d *DefaultManager) GetPolicy(id int64) (*policy.Metadata, error) {
 		return nil, err
 	}
 	p.ID = id
+	if p.Trigger.Settings != nil {
+		if _, ok := p.Trigger.References[policy.TriggerReferencesJobid]; ok {
+			p.Trigger.References[policy.TriggerReferencesJobid] = int64(p.Trigger.References[policy.TriggerReferencesJobid].(float64))
+		}
+	}
 	return p, nil
 }
 
@@ -118,8 +123,8 @@ func (d *DefaultManager) CreateExecution(execution *Execution) (int64, error) {
 	exec.PolicyID = execution.PolicyID
 	exec.StartTime = time.Now()
 	exec.DryRun = execution.DryRun
-	exec.Status = "Running"
-	exec.Trigger = "manual"
+	exec.Status = execution.Status
+	exec.Trigger = execution.Trigger
 	return dao.CreateExecution(exec)
 }
 

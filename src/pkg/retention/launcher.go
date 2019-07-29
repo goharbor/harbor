@@ -72,20 +72,22 @@ type Launcher interface {
 func NewLauncher(projectMgr project.Manager, repositoryMgr repository.Manager,
 	retentionMgr Manager) Launcher {
 	return &launcher{
-		projectMgr:       projectMgr,
-		repositoryMgr:    repositoryMgr,
-		retentionMgr:     retentionMgr,
-		jobserviceClient: cjob.GlobalClient,
-		internalCoreURL:  config.InternalCoreURL(),
+		projectMgr:         projectMgr,
+		repositoryMgr:      repositoryMgr,
+		retentionMgr:       retentionMgr,
+		jobserviceClient:   cjob.GlobalClient,
+		internalCoreURL:    config.InternalCoreURL(),
+		chartServerEnabled: config.WithChartMuseum(),
 	}
 }
 
 type launcher struct {
-	retentionMgr     Manager
-	projectMgr       project.Manager
-	repositoryMgr    repository.Manager
-	jobserviceClient cjob.Client
-	internalCoreURL  string
+	retentionMgr       Manager
+	projectMgr         project.Manager
+	repositoryMgr      repository.Manager
+	jobserviceClient   cjob.Client
+	internalCoreURL    string
+	chartServerEnabled bool
 }
 
 type jobData struct {
@@ -143,7 +145,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 		var repositoryCandidates []*res.Candidate
 		// get repositories of projects
 		for _, projectCandidate := range projectCandidates {
-			repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, projectCandidate.NamespaceID)
+			repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, projectCandidate.NamespaceID, l.chartServerEnabled)
 			if err != nil {
 				return 0, launcherError(err)
 			}
@@ -205,7 +207,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 			Metadata: &models.JobMetadata{
 				JobKind: job.KindGeneric,
 			},
-			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/retention/tasks/%d", l.internalCoreURL, jobData.taskID),
+			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/retention/task/%d", l.internalCoreURL, jobData.taskID),
 		}
 		j.Name = job.Retention
 		j.Parameters = map[string]interface{}{
@@ -278,7 +280,8 @@ func getProjects(projectMgr project.Manager) ([]*res.Candidate, error) {
 	return candidates, nil
 }
 
-func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manager, projectID int64) ([]*res.Candidate, error) {
+func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manager,
+	projectID int64, chartServerEnabled bool) ([]*res.Candidate, error) {
 	var candidates []*res.Candidate
 	pro, err := projectMgr.Get(projectID)
 	if err != nil {
@@ -297,14 +300,20 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 			Kind:       "image",
 		})
 	}
-	// get chart repositories
-	chartRepositories, err := repositoryMgr.ListChartRepositories(projectID)
-	for _, r := range chartRepositories {
-		candidates = append(candidates, &res.Candidate{
-			Namespace:  pro.Name,
-			Repository: r.Name,
-			Kind:       "chart",
-		})
+	if chartServerEnabled {
+		// get chart repositories when chart server is enabled
+		chartRepositories, err := repositoryMgr.ListChartRepositories(projectID)
+		if err != nil {
+			return nil, err
+		}
+		for _, r := range chartRepositories {
+			candidates = append(candidates, &res.Candidate{
+				Namespace:  pro.Name,
+				Repository: r.Name,
+				Kind:       "chart",
+			})
+		}
 	}
+
 	return candidates, nil
 }
