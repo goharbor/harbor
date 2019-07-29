@@ -19,18 +19,21 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/always"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/lastx"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
+
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
+
+	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -40,7 +43,6 @@ import (
 type ProcessorTestSuite struct {
 	suite.Suite
 
-	p   alg.Processor
 	all []*res.Candidate
 
 	oldClient dep.Client
@@ -72,10 +74,21 @@ func (suite *ProcessorTestSuite) SetupSuite() {
 		},
 	}
 
-	params := make([]*alg.Parameter, 0)
+	suite.oldClient = dep.DefaultClient
+	dep.DefaultClient = &fakeRetentionClient{}
+}
+
+// TearDownSuite ...
+func (suite *ProcessorTestSuite) TearDownSuite() {
+	dep.DefaultClient = suite.oldClient
+}
+
+// TestProcess tests process method
+func (suite *ProcessorTestSuite) TestProcess() {
 
 	perf := action.NewRetainAction(suite.all, false)
 
+	params := make([]*alg.Parameter, 0)
 	lastxParams := make(map[string]rule.Parameter)
 	lastxParams[lastx.ParameterX] = 10
 	params = append(params, &alg.Parameter{
@@ -97,20 +110,9 @@ func (suite *ProcessorTestSuite) SetupSuite() {
 		Performer: perf,
 	})
 
-	suite.p = New(params)
+	p := New(params)
 
-	suite.oldClient = dep.DefaultClient
-	dep.DefaultClient = &fakeRetentionClient{}
-}
-
-// TearDownSuite ...
-func (suite *ProcessorTestSuite) TearDownSuite() {
-	dep.DefaultClient = suite.oldClient
-}
-
-// TestProcess tests process method
-func (suite *ProcessorTestSuite) TestProcess() {
-	results, err := suite.p.Process(suite.all)
+	results, err := p.Process(suite.all)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 1, len(results))
 	assert.Condition(suite.T(), func() bool {
@@ -122,6 +124,43 @@ func (suite *ProcessorTestSuite) TestProcess() {
 
 		return true
 	}, "no errors in the returned result list")
+}
+
+// TestProcess2 ...
+func (suite *ProcessorTestSuite) TestProcess2() {
+	perf := action.NewRetainAction(suite.all, false)
+
+	params := make([]*alg.Parameter, 0)
+	alwaysParams := make(map[string]rule.Parameter)
+	params = append(params, &alg.Parameter{
+		Evaluator: always.New(alwaysParams),
+		Selectors: []res.Selector{
+			doublestar.New(doublestar.Matches, "latest"),
+			label.New(label.With, ""),
+		},
+		Performer: perf,
+	})
+
+	p := New(params)
+
+	results, err := p.Process(suite.all)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 1, len(results))
+	assert.Condition(suite.T(), func() bool {
+		found := false
+		for _, r := range results {
+			if r.Error != nil {
+				return false
+			}
+
+			if r.Target.Tag == "dev" {
+				found = true
+			}
+		}
+
+		return found
+	}, "no errors in the returned result list")
+
 }
 
 type fakeRetentionClient struct{}

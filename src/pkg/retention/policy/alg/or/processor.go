@@ -154,12 +154,10 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 				return
 			}
 
-			if len(processed) > 0 {
-				// Pass to the outside
-				resChan <- &chanItem{
-					action:    evaluator.Action(),
-					processed: processed,
-				}
+			// Pass to the outside
+			resChan <- &chanItem{
+				action:    evaluator.Action(),
+				processed: processed,
 			}
 		}(evaluator, selectors)
 	}
