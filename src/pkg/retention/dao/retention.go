@@ -127,6 +127,7 @@ func ListExecutions(policyID int64, query *q.Query) ([]*models.RetentionExecutio
 	qs := o.QueryTable(new(models.RetentionExecution))
 
 	qs = qs.Filter("policy_id", policyID)
+	qs = qs.OrderBy("-id")
 	if query != nil {
 		qs = qs.Limit(query.PageSize, (query.PageNumber-1)*query.PageSize)
 	}
