@@ -72,9 +72,12 @@ def prepare_env_notary(nginx_config_dir):
 
 
     print("Copying nginx configuration file for notary")
-    shutil.copy2(
+
+    render_jinja(
         os.path.join(templates_dir, "nginx", "notary.upstream.conf.jinja"),
-        os.path.join(nginx_config_dir, "notary.upstream.conf"))
+        os.path.join(nginx_config_dir, "notary.upstream.conf"),
+        gid=DEFAULT_GID,
+        uid=DEFAULT_UID)
 
     mark_file(os.path.join(notary_secret_dir, "notary-signer.crt"))
     mark_file(os.path.join(notary_secret_dir, "notary-signer.key"))
@@ -88,6 +91,8 @@ def prepare_notary(config_dict, nginx_config_dir, ssl_cert_path, ssl_cert_key_pa
     render_jinja(
         notary_server_nginx_config_template,
         os.path.join(nginx_config_dir, "notary.server.conf"),
+        gid=DEFAULT_GID,
+        uid=DEFAULT_UID,
         ssl_cert=ssl_cert_path,
         ssl_cert_key=ssl_cert_key_path)
 

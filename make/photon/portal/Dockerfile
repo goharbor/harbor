@@ -1,7 +1,6 @@
 FROM node:10.15.0 as nodeportal
 
-RUN mkdir -p /portal_src
-RUN mkdir -p /build_dir
+RUN mkdir -p /portal_src && mkdir -p /build_dir
 
 COPY make/photon/portal/entrypoint.sh /
 COPY src/portal /portal_src
@@ -12,7 +11,6 @@ WORKDIR /portal_src
 RUN npm install && \
     chmod u+x /entrypoint.sh
 RUN /entrypoint.sh
-VOLUME ["/portal_src"]
 
 
 FROM photon:2.0
@@ -36,5 +34,5 @@ STOPSIGNAL SIGQUIT
 
 HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080 || exit 1
 
-CMD ["nginx", "-g", "pid /tmp/nginx.pid; daemon off;"]
+CMD ["nginx", "-g", "daemon off;"]
 

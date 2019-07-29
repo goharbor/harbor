@@ -1,4 +1,5 @@
 worker_processes auto;
+pid /tmp/nginx.pid;
 
 events {
   worker_connections 1024;
@@ -7,6 +8,11 @@ events {
 }
 
 http {
+  client_body_temp_path /tmp/client_body_temp;
+  proxy_temp_path /tmp/proxy_temp;
+  fastcgi_temp_path /tmp/fastcgi_temp;
+  uwsgi_temp_path /tmp/uwsgi_temp;
+  scgi_temp_path /tmp/scgi_temp;
   tcp_nodelay on;
   include /etc/nginx/conf.d/*.upstream.conf;
 
@@ -31,7 +37,7 @@ http {
   include /etc/nginx/conf.d/*.server.conf;
 
   server {
-    listen 443 ssl;
+    listen 8443 ssl;
 #    server_name harbordomain.com;
     server_tokens off;
     # SSL
@@ -141,10 +147,9 @@ http {
       return 404;
     }
   }
-  
   server {
-    listen 80;
-    #server_name harbordomain.com;
-    return 308 https://$host$request_uri;
+      listen 8080;
+      #server_name harbordomain.com;
+      return 308 https://$host$request_uri;
   } 
 }
