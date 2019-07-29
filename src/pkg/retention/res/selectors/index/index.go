@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package selectors
+package index
 
 import (
 	"sync"
+
+	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
 
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
@@ -32,6 +34,9 @@ func init() {
 		doublestar.NSMatches,
 		doublestar.NSExcludes,
 	}, doublestar.New)
+
+	// Register label selector
+	Register(label.Kind, []string{label.With, label.Without}, label.New)
 }
 
 // index for keeping the mapping between selector meta and its implementation

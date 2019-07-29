@@ -27,7 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/lastx"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
@@ -88,19 +88,16 @@ func (suite *ProcessorTestSuite) SetupSuite() {
 	})
 
 	latestKParams := make(map[string]rule.Parameter)
-	latestKParams[latestk.ParameterK] = 10
+	latestKParams[latestps.ParameterK] = 10
 	params = append(params, &alg.Parameter{
-		Evaluator: latestk.New(latestKParams),
+		Evaluator: latestps.New(latestKParams),
 		Selectors: []res.Selector{
 			label.New(label.With, "L3"),
 		},
 		Performer: perf,
 	})
 
-	p, err := alg.Get(alg.AlgorithmOR, params)
-	require.NoError(suite.T(), err)
-
-	suite.p = p
+	suite.p = New(params)
 
 	suite.oldClient = dep.DefaultClient
 	dep.DefaultClient = &fakeRetentionClient{}

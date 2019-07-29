@@ -12,18 +12,33 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rule
+package index
 
 import (
-	"github.com/pkg/errors"
 	"sync"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestpl"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/always"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/lastx"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
+
+	"github.com/pkg/errors"
 )
 
 // index for keeping the mapping between template ID and evaluator
 var index sync.Map
 
-// IndexMeta defines metadata for rule registration
-type IndexMeta struct {
+// Metadata defines metadata for rule registration
+type Metadata struct {
 	TemplateID string `json:"rule_template"`
 
 	// Action of the rule performs
@@ -48,13 +63,78 @@ type IndexedParam struct {
 
 // indexedItem is the item saved in the sync map
 type indexedItem struct {
-	Meta *IndexMeta
+	Meta *Metadata
 
-	Factory Factory
+	Factory rule.Factory
+}
+
+func init() {
+	// Register latest pushed
+	Register(&Metadata{
+		TemplateID: latestps.TemplateID,
+		Action:     action.Retain,
+		Parameters: []*IndexedParam{
+			{
+				Name:     latestps.ParameterK,
+				Type:     "int",
+				Unit:     "count",
+				Required: true,
+			},
+		},
+	}, latestps.New)
+
+	// Register latest pulled
+	Register(&Metadata{
+		TemplateID: latestpl.TemplateID,
+		Action:     action.Retain,
+		Parameters: []*IndexedParam{
+			{
+				Name:     latestpl.ParameterN,
+				Type:     "int",
+				Unit:     "count",
+				Required: true,
+			},
+		},
+	}, latestpl.New)
+
+	// Register latest active
+	Register(&Metadata{
+		TemplateID: latestk.TemplateID,
+		Action:     action.Retain,
+		Parameters: []*IndexedParam{
+			{
+				Name:     latestk.ParameterK,
+				Type:     "int",
+				Unit:     "count",
+				Required: true,
+			},
+		},
+	}, latestk.New)
+
+	// Register lastx
+	Register(&Metadata{
+		TemplateID: lastx.TemplateID,
+		Action:     action.Retain,
+		Parameters: []*IndexedParam{
+			{
+				Name:     lastx.ParameterX,
+				Type:     "int",
+				Unit:     "days",
+				Required: true,
+			},
+		},
+	}, lastx.New)
+
+	// Register always
+	Register(&Metadata{
+		TemplateID: always.TemplateID,
+		Action:     action.Retain,
+		Parameters: []*IndexedParam{},
+	}, always.New)
 }
 
 // Register the rule evaluator with the corresponding rule template
-func Register(meta *IndexMeta, factory Factory) {
+func Register(meta *Metadata, factory rule.Factory) {
 	if meta == nil || factory == nil || len(meta.TemplateID) == 0 {
 		// do nothing
 		return
@@ -67,7 +147,7 @@ func Register(meta *IndexMeta, factory Factory) {
 }
 
 // Get rule evaluator with the provided template ID
-func Get(templateID string, parameters Parameters) (Evaluator, error) {
+func Get(templateID string, parameters rule.Parameters) (rule.Evaluator, error) {
 	if len(templateID) == 0 {
 		return nil, errors.New("empty rule template ID")
 	}
@@ -100,8 +180,8 @@ func Get(templateID string, parameters Parameters) (Evaluator, error) {
 }
 
 // Index returns all the metadata of the registered rules
-func Index() []*IndexMeta {
-	res := make([]*IndexMeta, 0)
+func Index() []*Metadata {
+	res := make([]*Metadata, 0)
 
 	index.Range(func(k, v interface{}) bool {
 		if item, ok := v.(*indexedItem); ok {

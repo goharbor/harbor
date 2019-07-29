@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package lastpulled
+package latestpl
 
 import (
 	"sort"
@@ -25,7 +25,7 @@ import (
 
 const (
 	// TemplateID of the rule
-	TemplateID = "lastpulled"
+	TemplateID = "latestPulledN"
 
 	// ParameterN is the name of the metadata parameter for the N value
 	ParameterN = TemplateID
