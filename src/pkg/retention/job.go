@@ -72,7 +72,7 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 
 	// Log stage: start
 	repoPath := fmt.Sprintf("%s/%s", repo.Namespace, repo.Name)
-	myLogger.Infof("Run retention process.\n Repository: %s \n Rule Algorithm: %s \n Dry Run: %f", repoPath, liteMeta.Algorithm, isDryRun)
+	myLogger.Infof("Run retention process.\n Repository: %s \n Rule Algorithm: %s \n Dry Run: %v", repoPath, liteMeta.Algorithm, isDryRun)
 
 	// Stop check point 1:
 	if isStopped(ctx) {
@@ -214,15 +214,14 @@ func getParamRepo(params job.Parameters) (*res.Repository, error) {
 		return nil, errors.Errorf("missing parameter: %s", ParamRepo)
 	}
 
-	fmt.Printf("%T", v)
-	repoMap, ok := v.(map[string]interface{})
+	repoJSON, ok := v.(string)
 	if !ok {
 		return nil, errors.Errorf("invalid parameter: %s", ParamRepo)
 	}
 
 	repo := &res.Repository{}
-	if err := repo.FromMap(repoMap); err != nil {
-		return nil, fmt.Errorf("failed to convert map to repository: %v", err)
+	if err := repo.FromJSON(repoJSON); err != nil {
+		return nil, errors.Wrap(err, "parse repository from JSON")
 	}
 
 	return repo, nil
@@ -234,14 +233,14 @@ func getParamMeta(params job.Parameters) (*lwp.Metadata, error) {
 		return nil, errors.Errorf("missing parameter: %s", ParamMeta)
 	}
 
-	metaMap, ok := v.(map[string]interface{})
+	metaJSON, ok := v.(string)
 	if !ok {
 		return nil, errors.Errorf("invalid parameter: %s", ParamMeta)
 	}
 
 	meta := &lwp.Metadata{}
-	if err := meta.FromMap(metaMap); err != nil {
-		return nil, fmt.Errorf("failed to convert map to metadata: %v", err)
+	if err := meta.FromJSON(metaJSON); err != nil {
+		return nil, errors.Wrap(err, "parse retention policy from JSON")
 	}
 
 	return meta, nil

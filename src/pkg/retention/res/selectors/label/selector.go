@@ -15,9 +15,9 @@
 package label
 
 import (
-	"github.com/goharbor/harbor/src/pkg/retention/res"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
 	"strings"
+
+	"github.com/goharbor/harbor/src/pkg/retention/res"
 )
 
 const (
@@ -80,9 +80,4 @@ func isMatched(patternLbls []string, resLbls []string, decoration string) bool {
 	}
 
 	return true
-}
-
-func init() {
-	// Register doublestar selector
-	selectors.Register(Kind, []string{With, Without}, New)
 }

@@ -198,7 +198,7 @@ func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 		}
 		return nil, err
 	}
-	tasks := []*Task{}
+	tasks := make([]*Task, 0)
 	for _, t := range ts {
 		tasks = append(tasks, &Task{
 			ID:          t.ID,

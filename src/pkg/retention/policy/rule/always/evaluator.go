@@ -40,11 +40,3 @@ func (e *evaluator) Action() string {
 func New(_ rule.Parameters) rule.Evaluator {
 	return &evaluator{}
 }
-
-func init() {
-	rule.Register(&rule.IndexMeta{
-		TemplateID: TemplateID,
-		Action:     action.Retain,
-		Parameters: []*rule.IndexedParam{},
-	}, New)
-}

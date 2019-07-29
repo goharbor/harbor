@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package rule
+package index
 
 import (
 	"testing"
@@ -22,6 +22,7 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 
 	"github.com/stretchr/testify/suite"
@@ -39,7 +40,7 @@ func TestIndexEntry(t *testing.T) {
 
 // SetupSuite ...
 func (suite *IndexTestSuite) SetupSuite() {
-	Register(&IndexMeta{
+	Register(&Metadata{
 		TemplateID: "fakeEvaluator",
 		Action:     "retain",
 		Parameters: []*IndexedParam{
@@ -56,7 +57,7 @@ func (suite *IndexTestSuite) SetupSuite() {
 // TestRegister tests register
 func (suite *IndexTestSuite) TestGet() {
 
-	params := make(Parameters)
+	params := make(rule.Parameters)
 	params["fakeParam"] = 99
 	evaluator, err := Get("fakeEvaluator", params)
 	require.NoError(suite.T(), err)
@@ -71,11 +72,11 @@ func (suite *IndexTestSuite) TestGet() {
 		Labels:     []string{"L1", "L2"},
 	}}
 
-	res, err := evaluator.Process(candidates)
+	results, err := evaluator.Process(candidates)
 	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 1, len(res))
+	assert.Equal(suite.T(), 1, len(results))
 	assert.Condition(suite.T(), func() bool {
-		c := res[0]
+		c := results[0]
 		return c.Repository == "harbor" && c.Tag == "latest"
 	})
 }
@@ -83,13 +84,17 @@ func (suite *IndexTestSuite) TestGet() {
 // TestIndex tests Index
 func (suite *IndexTestSuite) TestIndex() {
 	metas := Index()
-	require.Equal(suite.T(), 1, len(metas))
+	require.Equal(suite.T(), 6, len(metas))
 	assert.Condition(suite.T(), func() bool {
-		m := metas[0]
-		return m.TemplateID == "fakeEvaluator" &&
-			m.Action == "retain" &&
-			len(m.Parameters) > 0
-	})
+		for _, m := range metas {
+			if m.TemplateID == "fakeEvaluator" &&
+				m.Action == "retain" &&
+				len(m.Parameters) > 0 {
+				return true
+			}
+		}
+		return false
+	}, "check fake evaluator in index")
 }
 
 type fakeEvaluator struct {
@@ -107,7 +112,7 @@ func (e *fakeEvaluator) Action() string {
 }
 
 // newFakeEvaluator is the factory of fakeEvaluator
-func newFakeEvaluator(parameters Parameters) Evaluator {
+func newFakeEvaluator(parameters rule.Parameters) rule.Evaluator {
 	i := 10
 	if v, ok := parameters["fakeParam"]; ok {
 		i = v.(int)

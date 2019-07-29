@@ -3,14 +3,15 @@ package api
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
-	"net/http"
-	"strconv"
 )
 
 // RetentionAPI ...
@@ -65,7 +66,7 @@ func (r *RetentionAPI) GetMetadatas() {
             ]
         },
         {
-            "rule_template": "latestK",
+            "rule_template": "latestPushedK",
             "display_text": "the most recently pushed # images",
             "action": "retain",
             "params": [
@@ -77,7 +78,7 @@ func (r *RetentionAPI) GetMetadatas() {
             ]
         },
         {
-            "rule_template": "latestPulledK",
+            "rule_template": "latestPulledN",
             "display_text": "the most recently pulled # images",
             "action": "retain",
             "params": [

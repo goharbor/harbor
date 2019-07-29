@@ -24,15 +24,15 @@ import (
 )
 
 const (
-	// TemplateID of latest k rule
-	TemplateID = "latestK"
+	// TemplateID of latest active k rule
+	TemplateID = "latestActiveK"
 	// ParameterK ...
 	ParameterK = TemplateID
 	// DefaultK defines the default K
 	DefaultK = 10
 )
 
-// evaluator for evaluating latest k tags
+// evaluator for evaluating latest active k images
 type evaluator struct {
 	// latest k
 	k int
@@ -40,9 +40,12 @@ type evaluator struct {
 
 // Process the candidates based on the rule definition
 func (e *evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
-	// The updated proposal does not guarantee the order artifacts are provided, so we have to sort them first
+	// Sort artifacts by their "active time"
+	//
+	// Active time is defined as the selection of c.PulledTime or c.PushedTime,
+	// whichever is bigger, aka more recent.
 	sort.Slice(artifacts, func(i, j int) bool {
-		return artifacts[i].PushedTime < artifacts[j].PushedTime
+		return activeTime(artifacts[i]) > activeTime(artifacts[j])
 	})
 
 	i := e.k
@@ -77,18 +80,10 @@ func New(params rule.Parameters) rule.Evaluator {
 	}
 }
 
-func init() {
-	// Register itself
-	rule.Register(&rule.IndexMeta{
-		TemplateID: TemplateID,
-		Action:     action.Retain,
-		Parameters: []*rule.IndexedParam{
-			{
-				Name:     ParameterK,
-				Type:     "int",
-				Unit:     "count",
-				Required: true,
-			},
-		},
-	}, New)
+func activeTime(c *res.Candidate) int64 {
+	if c.PulledTime > c.PushedTime {
+		return c.PulledTime
+	}
+
+	return c.PushedTime
 }

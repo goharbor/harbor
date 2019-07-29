@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package latestk
+package latestps
 
 import (
 	"sort"
@@ -24,15 +24,15 @@ import (
 )
 
 const (
-	// TemplateID of latest active k rule
-	TemplateID = "latestActiveK"
+	// TemplateID of latest k rule
+	TemplateID = "latestPushedK"
 	// ParameterK ...
 	ParameterK = TemplateID
 	// DefaultK defines the default K
 	DefaultK = 10
 )
 
-// evaluator for evaluating latest active k images
+// evaluator for evaluating latest k tags
 type evaluator struct {
 	// latest k
 	k int
@@ -40,12 +40,9 @@ type evaluator struct {
 
 // Process the candidates based on the rule definition
 func (e *evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
-	// Sort artifacts by their "active time"
-	//
-	// Active time is defined as the selection of c.PulledTime or c.PushedTime,
-	// whichever is bigger, aka more recent.
+	// The updated proposal does not guarantee the order artifacts are provided, so we have to sort them first
 	sort.Slice(artifacts, func(i, j int) bool {
-		return activeTime(artifacts[i]) > activeTime(artifacts[j])
+		return artifacts[i].PushedTime < artifacts[j].PushedTime
 	})
 
 	i := e.k
@@ -78,28 +75,4 @@ func New(params rule.Parameters) rule.Evaluator {
 	return &evaluator{
 		k: DefaultK,
 	}
-}
-
-func activeTime(c *res.Candidate) int64 {
-	if c.PulledTime > c.PushedTime {
-		return c.PulledTime
-	}
-
-	return c.PushedTime
-}
-
-func init() {
-	// Register itself
-	rule.Register(&rule.IndexMeta{
-		TemplateID: TemplateID,
-		Action:     action.Retain,
-		Parameters: []*rule.IndexedParam{
-			{
-				Name:     ParameterK,
-				Type:     "int",
-				Unit:     "count",
-				Required: true,
-			},
-		},
-	}, New)
 }

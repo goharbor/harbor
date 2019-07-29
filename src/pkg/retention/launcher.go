@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/index"
+
 	cjob "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/models"
 	cmodels "github.com/goharbor/harbor/src/common/models"
@@ -31,7 +33,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
 	"github.com/pkg/errors"
 )
 
@@ -126,7 +127,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 		case "system":
 			// filter projects according to the project selectors
 			for _, projectSelector := range rule.ScopeSelectors["project"] {
-				selector, err := selectors.Get(projectSelector.Kind, projectSelector.Decoration,
+				selector, err := index.Get(projectSelector.Kind, projectSelector.Decoration,
 					projectSelector.Pattern)
 				if err != nil {
 					return 0, launcherError(err)
@@ -153,7 +154,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 		}
 		// filter repositories according to the repository selectors
 		for _, repositorySelector := range rule.ScopeSelectors["repository"] {
-			selector, err := selectors.Get(repositorySelector.Kind, repositorySelector.Decoration,
+			selector, err := index.Get(repositorySelector.Kind, repositorySelector.Decoration,
 				repositorySelector.Pattern)
 			if err != nil {
 				return 0, launcherError(err)
@@ -204,22 +205,38 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 	allFailed := true
 	for _, jobData := range jobDatas {
 		j := &models.JobData{
+			Name: job.Retention,
 			Metadata: &models.JobMetadata{
 				JobKind: job.KindGeneric,
 			},
 			StatusHook: fmt.Sprintf("%s/service/notifications/jobs/retention/task/%d", l.internalCoreURL, jobData.taskID),
+			Parameters: make(map[string]interface{}, 3),
 		}
-		j.Name = job.Retention
-		j.Parameters = map[string]interface{}{
-			ParamRepo:   jobData.repository,
-			ParamMeta:   jobData.policy,
-			ParamDryRun: isDryRun,
+
+		var (
+			repoJSON, policyJSON string
+		)
+		// Set dry run
+		j.Parameters[ParamDryRun] = isDryRun
+		// Set repository
+		if repoJSON, err = jobData.repository.ToJSON(); err == nil {
+			j.Parameters[ParamRepo] = repoJSON
+			// Set retention policy
+			if policyJSON, err = jobData.policy.ToJSON(); err == nil {
+				j.Parameters[ParamMeta] = policyJSON
+			}
 		}
+
+		var jobID string
+		if err == nil {
+			// Submit job
+			jobID, err = l.jobserviceClient.SubmitJob(j)
+		}
+
 		task := &Task{
 			ID: jobData.taskID,
 		}
 		props := []string{"Status"}
-		jobID, err := l.jobserviceClient.SubmitJob(j)
 		if err != nil {
 			log.Error(launcherError(fmt.Errorf("failed to submit task %d: %v", jobData.taskID, err)))
 			task.Status = cmodels.JobError
