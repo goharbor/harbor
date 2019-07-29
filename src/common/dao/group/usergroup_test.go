@@ -57,6 +57,8 @@ func TestMain(m *testing.M) {
 			"update project set owner_id = (select user_id from harbor_user where username = 'member_test_01') where name = 'member_test_01'",
 			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select user_id from harbor_user where username = 'member_test_01'), 'u', 1)",
 			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select id from user_group where group_name = 'test_group_01'), 'g', 1)",
+			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select id from user_group where group_name = 'test_http_group'), 'g', 4)",
+			"insert into project_member (project_id, entity_id, entity_type, role) values ( (select project_id from project where name = 'member_test_01') , (select id from user_group where group_name = 'test_myhttp_group'), 'g', 4)",
 		}
 
 		clearSqls := []string{
@@ -397,6 +399,10 @@ func TestGetRolesByLDAPGroup(t *testing.T) {
 	if err != nil || len(userGroupList) < 1 {
 		t.Errorf("failed to query user group, err %v", err)
 	}
+	gl2, err2 := GetGroupIDByGroupName([]string{"test_http_group", "test_myhttp_group"}, common.HTTPGroupType)
+	if err2 != nil || len(gl2) != 2 {
+		t.Errorf("failed to query http user group, err %v", err)
+	}
 	project, err := dao.GetProjectByName("member_test_01")
 	if err != nil {
 		t.Errorf("Error occurred when Get project by name: %v", err)
@@ -416,7 +422,7 @@ func TestGetRolesByLDAPGroup(t *testing.T) {
 		wantSize int
 		wantErr  bool
 	}{
-		{"Check normal", args{projectID: project.ProjectID, groupIDs: []int{userGroupList[0].ID}}, 1, false},
+		{"Check normal", args{projectID: project.ProjectID, groupIDs: []int{userGroupList[0].ID, gl2[0], gl2[1]}}, 2, false},
 		{"Check non exist", args{projectID: privateProject.ProjectID, groupIDs: []int{9999}}, 0, false},
 	}
 	for _, tt := range tests {
