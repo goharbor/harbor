@@ -21,6 +21,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"time"
 )
 
 func TestAddArtifact(t *testing.T) {
@@ -56,6 +57,28 @@ func TestUpdateArtifactDigest(t *testing.T) {
 	af.Digest = "update_4321abcd"
 	require.Nil(t, UpdateArtifactDigest(af))
 	assert.Equal(t, af.Digest, "update_4321abcd")
+}
+
+func TestUpdateArtifactPullTime(t *testing.T) {
+	timeNow := time.Now()
+	af := &models.Artifact{
+		PID:      1,
+		Repo:     "TestUpdateArtifactPullTime",
+		Tag:      "v1.0",
+		Digest:   "4321abcd",
+		Kind:     "image",
+		PullTime: timeNow,
+	}
+
+	// add
+	_, err := AddArtifact(af)
+	require.Nil(t, err)
+
+	time.Sleep(time.Second * 1)
+
+	af.PullTime = time.Now()
+	require.Nil(t, UpdateArtifactPullTime(af))
+	assert.NotEqual(t, timeNow, af.PullTime)
 }
 
 func TestDeleteArtifact(t *testing.T) {
