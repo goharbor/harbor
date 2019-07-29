@@ -15,12 +15,12 @@
 package contenttrust
 
 import (
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/notary"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"net/http"
-	"strings"
 )
 
 // NotaryEndpoint ...
@@ -75,7 +75,7 @@ func matchNotaryDigest(img util.ImageInfo) (bool, error) {
 		return false, err
 	}
 	for _, t := range targets {
-		if isDigest(img.Reference) {
+		if utils.IsDigest(img.Reference) {
 			d, err := notary.DigestFromTarget(t)
 			if err != nil {
 				return false, err
@@ -98,9 +98,4 @@ func matchNotaryDigest(img util.ImageInfo) (bool, error) {
 	}
 	log.Debugf("image: %#v, not found in notary", img)
 	return false, nil
-}
-
-// A sha256 is a string with 64 characters.
-func isDigest(ref string) bool {
-	return strings.HasPrefix(ref, "sha256:") && len(ref) == 71
 }
