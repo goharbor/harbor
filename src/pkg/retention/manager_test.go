@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
+
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"

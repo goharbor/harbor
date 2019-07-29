@@ -12,10 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package action
+package index
 
 import (
 	"sync"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 
 	"github.com/pkg/errors"
 )
@@ -23,8 +25,13 @@ import (
 // index for keeping the mapping action and its performer
 var index sync.Map
 
+func init() {
+	// Register retain action
+	Register(action.Retain, action.NewRetainAction)
+}
+
 // Register the performer with the corresponding action
-func Register(action string, factory PerformerFactory) {
+func Register(action string, factory action.PerformerFactory) {
 	if len(action) == 0 || factory == nil {
 		// do nothing
 		return
@@ -34,19 +41,19 @@ func Register(action string, factory PerformerFactory) {
 }
 
 // Get performer with the provided action
-func Get(action string, params interface{}, isDryRun bool) (Performer, error) {
-	if len(action) == 0 {
+func Get(act string, params interface{}, isDryRun bool) (action.Performer, error) {
+	if len(act) == 0 {
 		return nil, errors.New("empty action")
 	}
 
-	v, ok := index.Load(action)
+	v, ok := index.Load(act)
 	if !ok {
-		return nil, errors.Errorf("action %s is not registered", action)
+		return nil, errors.Errorf("action %s is not registered", act)
 	}
 
-	factory, ok := v.(PerformerFactory)
+	factory, ok := v.(action.PerformerFactory)
 	if !ok {
-		return nil, errors.Errorf("invalid action performer registered for action %s", action)
+		return nil, errors.Errorf("invalid action performer registered for action %s", act)
 	}
 
 	return factory(params, isDryRun), nil

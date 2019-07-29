@@ -21,7 +21,7 @@ import (
 
 const (
 	// Retain artifacts
-	Retain = "Retain"
+	Retain = "retain"
 )
 
 // Performer performs the related actions targeting the candidates
@@ -91,9 +91,4 @@ func NewRetainAction(params interface{}, isDryRun bool) Performer {
 		all:      make([]*res.Candidate, 0),
 		isDryRun: isDryRun,
 	}
-}
-
-func init() {
-	// Register itself
-	Register(Retain, NewRetainAction)
 }

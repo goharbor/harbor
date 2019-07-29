@@ -17,12 +17,17 @@ package policy
 import (
 	"fmt"
 
-	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
+	index4 "github.com/goharbor/harbor/src/pkg/retention/policy/action/index"
+
+	index3 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
+
+	index2 "github.com/goharbor/harbor/src/pkg/retention/res/selectors/index"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
+
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
 	"github.com/pkg/errors"
 )
 
@@ -61,19 +66,19 @@ func (bb *basicBuilder) Build(policy *lwp.Metadata, isDryRun bool) (alg.Processo
 	params := make([]*alg.Parameter, 0)
 
 	for _, r := range policy.Rules {
-		evaluator, err := rule.Get(r.Template, r.Parameters)
+		evaluator, err := index.Get(r.Template, r.Parameters)
 		if err != nil {
 			return nil, err
 		}
 
-		perf, err := action.Get(r.Action, bb.allCandidates, isDryRun)
+		perf, err := index4.Get(r.Action, bb.allCandidates, isDryRun)
 		if err != nil {
 			return nil, errors.Wrap(err, "get action performer by metadata")
 		}
 
 		sl := make([]res.Selector, 0)
 		for _, s := range r.TagSelectors {
-			sel, err := selectors.Get(s.Kind, s.Decoration, s.Pattern)
+			sel, err := index2.Get(s.Kind, s.Decoration, s.Pattern)
 			if err != nil {
 				return nil, errors.Wrap(err, "get selector by metadata")
 			}
@@ -88,7 +93,7 @@ func (bb *basicBuilder) Build(policy *lwp.Metadata, isDryRun bool) (alg.Processo
 		})
 	}
 
-	p, err := alg.Get(policy.Algorithm, params)
+	p, err := index3.Get(policy.Algorithm, params)
 	if err != nil {
 		return nil, errors.Wrap(err, fmt.Sprintf("get processor for algorithm: %s", policy.Algorithm))
 	}

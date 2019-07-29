@@ -15,9 +15,9 @@
 package label
 
 import (
-	"github.com/goharbor/harbor/src/pkg/retention/res"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors"
 	"strings"
+
+	"github.com/goharbor/harbor/src/pkg/retention/res"
 )
 
 const (
@@ -51,7 +51,10 @@ func (s *selector) Select(artifacts []*res.Candidate) (selected []*res.Candidate
 
 // New is factory method for list selector
 func New(decoration string, pattern string) res.Selector {
-	labels := strings.Split(pattern, ",")
+	labels := make([]string, 0)
+	if len(pattern) > 0 {
+		labels = append(labels, strings.Split(pattern, ",")...)
+	}
 
 	return &selector{
 		decoration: decoration,
@@ -80,9 +83,4 @@ func isMatched(patternLbls []string, resLbls []string, decoration string) bool {
 	}
 
 	return true
-}
-
-func init() {
-	// Register doublestar selector
-	selectors.Register(Kind, []string{With, Without}, New)
 }
