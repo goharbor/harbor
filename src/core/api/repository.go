@@ -238,7 +238,7 @@ func (ra *RepositoryAPI) Delete() {
 		return
 	}
 
-	rc, err := coreutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
+	rc, err := coreutils.NewRepositoryClientForUIWithMiddleware(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.SendInternalServerError(errors.New("internal error"))

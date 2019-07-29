@@ -28,13 +28,13 @@ import (
 // Retag tags an image to another
 func Retag(srcImage, destImage *models.Image) error {
 	isSameRepo := getRepoName(srcImage) == getRepoName(destImage)
-	srcClient, err := NewRepositoryClientForUI("harbor-ui", getRepoName(srcImage))
+	srcClient, err := NewRepositoryClientForUIWithMiddleware("harbor-ui", getRepoName(srcImage))
 	if err != nil {
 		return err
 	}
 	destClient := srcClient
 	if !isSameRepo {
-		destClient, err = NewRepositoryClientForUI("harbor-ui", getRepoName(destImage))
+		destClient, err = NewRepositoryClientForUIWithMiddleware("harbor-ui", getRepoName(destImage))
 		if err != nil {
 			return err
 		}

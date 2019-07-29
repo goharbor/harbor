@@ -28,3 +28,7 @@ const (
 
 // Middlewares with sequential organization
 var Middlewares = []string{READONLY, URL, MUITIPLEMANIFEST, LISTREPO, CONTENTTRUST, VULNERABLE, SIZEQUOTA, COUNTQUOTA}
+
+// MiddlewaresInternal with sequential organization, it's for internal registry api call, like retag and delete as these
+// apis need to update the quota usage.
+var MiddlewaresInternal = []string{SIZEQUOTA, COUNTQUOTA}

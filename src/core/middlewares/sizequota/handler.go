@@ -179,6 +179,7 @@ func HandleBlobCommon(rw util.CustomResponseWriter, req *http.Request) error {
 		success := util.TryFreeQuota(bb.ProjectID, bb.Quota)
 		if !success {
 			return fmt.Errorf("Error to release resource booked for the blob, %d, digest: %s ", bb.ProjectID, bb.Digest)
+
 		}
 	}
 	return nil

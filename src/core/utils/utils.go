@@ -19,11 +19,18 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/middlewares"
+
+	"errors"
+	"github.com/goharbor/harbor/src/core/middlewares/registryproxy"
+	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"net/http/httptest"
 )
 
 // NewRepositoryClientForUI creates a repository client that can only be used to
@@ -43,6 +50,58 @@ func NewRepositoryClientForUI(username, repository string) (*registry.Repository
 		Transport: transport,
 	}
 	return registry.NewRepository(repository, endpoint, client)
+}
+
+// NewRepositoryClientForUIWithMiddleware creates a repository client that can only be used to
+// access the internal registry with quota middle
+func NewRepositoryClientForUIWithMiddleware(username, repository string) (*registry.Repository, error) {
+	endpoint, err := config.RegistryURL()
+	if err != nil {
+		return nil, err
+	}
+
+	uam := &auth.UserAgentModifier{
+		UserAgent: "harbor-registry-client",
+	}
+	authorizer := auth.NewRawTokenAuthorizer(username, token.Registry)
+	transport := NewTransportWithMiddleware(authorizer, uam)
+	client := &http.Client{
+		Transport: transport,
+	}
+	return registry.NewRepository(repository, endpoint, client)
+}
+
+// TransportWithMiddleware holds information about base transport and modifiers
+type TransportWithMiddleware struct {
+	modifiers []modifier.Modifier
+}
+
+// NewTransportWithMiddleware ...
+func NewTransportWithMiddleware(modifiers ...modifier.Modifier) *TransportWithMiddleware {
+	return &TransportWithMiddleware{
+		modifiers: modifiers,
+	}
+}
+
+// RoundTrip ...
+func (t *TransportWithMiddleware) RoundTrip(req *http.Request) (*http.Response, error) {
+	for _, modifier := range t.modifiers {
+		if err := modifier.Modify(req); err != nil {
+			return nil, err
+		}
+	}
+	ph := registryproxy.New()
+	if ph == nil {
+		return nil, errors.New("get nil when to create proxy")
+	}
+	rw := httptest.NewRecorder()
+	customResW := util.NewCustomResponseWriter(rw)
+	handlerChain := middlewares.New(middlewares.MiddlewaresInternal).Create()
+	head := handlerChain.Then(ph)
+	head.ServeHTTP(customResW, req)
+
+	log.Infof("%d | %s %s", rw.Result().StatusCode, req.Method, req.URL.String())
+	return rw.Result(), nil
 }
 
 // WaitForManifestReady implements exponential sleeep to wait until manifest is ready in registry.
