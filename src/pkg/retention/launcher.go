@@ -91,8 +91,8 @@ type launcher struct {
 }
 
 type jobData struct {
-	repository *res.Repository
-	policy     *lwp.Metadata
+	repository res.Repository
+	policy     lwp.Metadata
 	taskID     int64
 }
 
@@ -195,8 +195,8 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 			return 0, launcherError(err)
 		}
 		jobDatas = append(jobDatas, &jobData{
-			repository: &repo,
-			policy:     p,
+			repository: repo,
+			policy:     *p,
 			taskID:     taskID,
 		})
 	}
