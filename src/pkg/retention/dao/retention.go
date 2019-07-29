@@ -3,7 +3,6 @@ package dao
 import (
 	"errors"
 	"fmt"
-
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
@@ -85,7 +84,41 @@ func GetExecution(id int64) (*models.RetentionExecution, error) {
 	if err := o.Read(e); err != nil {
 		return nil, err
 	}
+	if err := fillStatus(e); err != nil {
+		return nil, err
+	}
 	return e, nil
+}
+
+// fillStatus the priority is InProgress Stopped Failed Succeed
+func fillStatus(exec *models.RetentionExecution) error {
+	o := dao.GetOrmer()
+	if _, err := o.Raw("select status, count(*) num from retention_task where execution_id = ? group by status", exec.ID).
+		RowsToStruct(exec, "status", "num"); err != nil {
+		return err
+	}
+	exec.Total = exec.Pending + exec.InProgress + exec.Succeed + exec.Failed + exec.Stopped
+	if exec.Total == 0 {
+		exec.Status = models.ExecutionStatusSucceed
+		exec.EndTime = exec.StartTime
+		return nil
+	}
+	if exec.Pending+exec.InProgress > 0 {
+		exec.Status = models.ExecutionStatusInProgress
+	} else if exec.Stopped > 0 {
+		exec.Status = models.ExecutionStatusStopped
+	} else if exec.Failed > 0 {
+		exec.Status = models.ExecutionStatusFailed
+	} else {
+		exec.Status = models.ExecutionStatusSucceed
+	}
+	if exec.Status != models.ExecutionStatusInProgress {
+		if err := o.Raw("select max(end_time) from retention_task where execution_id = ?", exec.ID).
+			QueryRow(&exec.EndTime); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // ListExecutions List Executions
@@ -94,6 +127,7 @@ func ListExecutions(policyID int64, query *q.Query) ([]*models.RetentionExecutio
 	qs := o.QueryTable(new(models.RetentionExecution))
 
 	qs = qs.Filter("policy_id", policyID)
+	qs = qs.OrderBy("-id")
 	if query != nil {
 		qs = qs.Limit(query.PageSize, (query.PageNumber-1)*query.PageSize)
 	}
@@ -101,6 +135,11 @@ func ListExecutions(policyID int64, query *q.Query) ([]*models.RetentionExecutio
 	_, err := qs.All(&execs)
 	if err != nil {
 		return nil, err
+	}
+	for _, e := range execs {
+		if err := fillStatus(e); err != nil {
+			return nil, err
+		}
 	}
 	return execs, nil
 }

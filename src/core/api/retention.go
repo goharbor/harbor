@@ -191,7 +191,7 @@ func (r *RetentionAPI) CreateRetention() {
 		return
 	}
 	if err := r.pm.GetMetadataManager().Add(p.Scope.Reference,
-		map[string]string{"retention_id": strconv.FormatInt(p.Scope.Reference, 10)}); err != nil {
+		map[string]string{"retention_id": strconv.FormatInt(id, 10)}); err != nil {
 		r.SendInternalServerError(err)
 	}
 	r.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))

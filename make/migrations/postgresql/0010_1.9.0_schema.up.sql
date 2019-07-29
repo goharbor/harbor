@@ -109,22 +109,16 @@ create table retention_execution
 (
 	id serial PRIMARY KEY NOT NULL,
 	policy_id integer,
-	status varchar(20),
 	dry_run boolean,
 	trigger varchar(20),
-	total integer,
-	succeed integer,
-	failed integer,
-	in_progress integer,
-	stopped integer,
-	start_time timestamp,
-	end_time timestamp
+	start_time timestamp
 );
 
 create table retention_task
 (
 	id SERIAL NOT NULL,
 	execution_id integer,
+	repository varchar(255),
 	job_id varchar(64),
 	status varchar(32),
 	start_time timestamp default CURRENT_TIMESTAMP,

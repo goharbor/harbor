@@ -146,7 +146,6 @@ func TestExecution(t *testing.T) {
 	e1 := &Execution{
 		PolicyID:  policyID,
 		StartTime: time.Now(),
-		Status:    ExecutionStatusInProgress,
 		Trigger:   ExecutionTriggerManual,
 		DryRun:    false,
 	}
@@ -158,15 +157,6 @@ func TestExecution(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, e1)
 	assert.EqualValues(t, id, e1.ID)
-
-	e1.Status = ExecutionStatusFailed
-	err = m.UpdateExecution(e1)
-	assert.Nil(t, err)
-
-	e1, err = m.GetExecution(id)
-	assert.Nil(t, err)
-	assert.NotNil(t, e1)
-	assert.EqualValues(t, ExecutionStatusFailed, e1.Status)
 
 	es, err := m.ListExecutions(policyID, nil)
 	assert.Nil(t, err)
@@ -188,7 +178,7 @@ func TestTask(t *testing.T) {
 	// get
 	tk, err := m.GetTask(id)
 	require.Nil(t, err)
-	assert.Equal(t, id, tk.ExecutionID)
+	assert.EqualValues(t, 1, tk.ExecutionID)
 
 	// update
 	task.ID = id

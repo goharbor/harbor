@@ -155,7 +155,7 @@ func (pmi *PutManifestInterceptor) HandleResponse(rw util.CustomResponseWriter, 
 			}
 		}
 
-	} else if rw.Status() >= 300 || rw.Status() <= 511 {
+	} else if rw.Status() >= 300 && rw.Status() <= 511 {
 		if !mf.Exist {
 			success := util.TryFreeQuota(mf.ProjectID, mf.Quota)
 			if !success {

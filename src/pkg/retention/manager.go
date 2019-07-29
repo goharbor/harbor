@@ -42,8 +42,6 @@ type Manager interface {
 	GetPolicy(ID int64) (*policy.Metadata, error)
 	// Create a new retention execution
 	CreateExecution(execution *Execution) (int64, error)
-	// Update the specified execution
-	UpdateExecution(execution *Execution) error
 	// Get the specified execution
 	GetExecution(eid int64) (*Execution, error)
 	// List execution histories
@@ -68,6 +66,7 @@ type DefaultManager struct {
 func (d *DefaultManager) CreatePolicy(p *policy.Metadata) (int64, error) {
 	p1 := &models.RetentionPolicy{}
 	p1.ScopeLevel = p.Scope.Level
+	p1.ScopeReference = p.Scope.Reference
 	p1.TriggerKind = p.Trigger.Kind
 	data, _ := json.Marshal(p)
 	p1.Data = string(data)
@@ -81,6 +80,7 @@ func (d *DefaultManager) UpdatePolicy(p *policy.Metadata) error {
 	p1 := &models.RetentionPolicy{}
 	p1.ID = p.ID
 	p1.ScopeLevel = p.Scope.Level
+	p1.ScopeReference = p.Scope.Reference
 	p1.TriggerKind = p.Trigger.Kind
 	p.ID = 0
 	data, _ := json.Marshal(p)
@@ -123,18 +123,8 @@ func (d *DefaultManager) CreateExecution(execution *Execution) (int64, error) {
 	exec.PolicyID = execution.PolicyID
 	exec.StartTime = time.Now()
 	exec.DryRun = execution.DryRun
-	exec.Status = execution.Status
 	exec.Trigger = execution.Trigger
 	return dao.CreateExecution(exec)
-}
-
-// UpdateExecution Update Execution
-func (d *DefaultManager) UpdateExecution(execution *Execution) error {
-	exec := &models.RetentionExecution{}
-	exec.ID = execution.ID
-	exec.EndTime = execution.EndTime
-	exec.Status = execution.Status
-	return dao.UpdateExecution(exec, "end_time", "status")
 }
 
 // ListExecutions List Executions
@@ -154,6 +144,7 @@ func (d *DefaultManager) ListExecutions(policyID int64, query *q.Query) ([]*Exec
 		e1.Status = e.Status
 		e1.StartTime = e.StartTime
 		e1.EndTime = e.EndTime
+		e1.DryRun = e.DryRun
 		execs1 = append(execs1, e1)
 	}
 	return execs1, nil
@@ -171,6 +162,7 @@ func (d *DefaultManager) GetExecution(eid int64) (*Execution, error) {
 	e1.Status = e.Status
 	e1.StartTime = e.StartTime
 	e1.EndTime = e.EndTime
+	e1.DryRun = e.DryRun
 	return e1, nil
 }
 
@@ -181,6 +173,7 @@ func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
 	}
 	t := &models.RetentionTask{
 		ExecutionID: task.ExecutionID,
+		Repository:  task.Repository,
 		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
@@ -203,6 +196,7 @@ func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 		tasks = append(tasks, &Task{
 			ID:          t.ID,
 			ExecutionID: t.ExecutionID,
+			Repository:  t.Repository,
 			JobID:       t.JobID,
 			Status:      t.Status,
 			StartTime:   t.StartTime,
@@ -223,6 +217,7 @@ func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
 	return dao.UpdateTask(&models.RetentionTask{
 		ID:          task.ID,
 		ExecutionID: task.ExecutionID,
+		Repository:  task.Repository,
 		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
@@ -242,6 +237,7 @@ func (d *DefaultManager) GetTask(taskID int64) (*Task, error) {
 	return &Task{
 		ID:          task.ID,
 		ExecutionID: task.ExecutionID,
+		Repository:  task.Repository,
 		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
