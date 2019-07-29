@@ -181,6 +181,7 @@ func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
 	}
 	t := &models.RetentionTask{
 		ExecutionID: task.ExecutionID,
+		Repository:  task.Repository,
 		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
@@ -203,6 +204,7 @@ func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 		tasks = append(tasks, &Task{
 			ID:          t.ID,
 			ExecutionID: t.ExecutionID,
+			Repository:  t.Repository,
 			JobID:       t.JobID,
 			Status:      t.Status,
 			StartTime:   t.StartTime,
@@ -223,6 +225,7 @@ func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
 	return dao.UpdateTask(&models.RetentionTask{
 		ID:          task.ID,
 		ExecutionID: task.ExecutionID,
+		Repository:  task.Repository,
 		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
@@ -242,6 +245,7 @@ func (d *DefaultManager) GetTask(taskID int64) (*Task, error) {
 	return &Task{
 		ID:          task.ID,
 		ExecutionID: task.ExecutionID,
+		Repository:  task.Repository,
 		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
