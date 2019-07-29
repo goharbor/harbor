@@ -16,11 +16,12 @@ package redis
 
 import (
 	"fmt"
-	"github.com/garyburd/redigo/redis"
-	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"
 	"time"
+
+	"github.com/garyburd/redigo/redis"
+	"github.com/stretchr/testify/assert"
 )
 
 const testingRedisHost = "REDIS_HOST"
@@ -50,6 +51,29 @@ func TestRedisLock(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, successUnLock)
 
+}
+
+func TestRequireLock(t *testing.T) {
+	assert := assert.New(t)
+
+	con, err := redis.Dial(
+		"tcp",
+		fmt.Sprintf("%s:%d", getRedisHost(), 6379),
+		redis.DialConnectTimeout(30*time.Second),
+		redis.DialReadTimeout(time.Minute+10*time.Second),
+		redis.DialWriteTimeout(10*time.Second),
+	)
+	assert.Nil(err)
+	defer con.Close()
+
+	key := "require-lock"
+	l, err := RequireLock(key, con)
+	assert.Nil(err)
+	defer l.Free()
+
+	time.Sleep(2 * time.Second)
+	_, err = RequireLock(key, con)
+	assert.NotNil(err)
 }
 
 func getRedisHost() string {

@@ -16,9 +16,14 @@ package redis
 
 import (
 	"errors"
+	"fmt"
+	"sync"
+	"time"
+
 	"github.com/garyburd/redigo/redis"
 	"github.com/goharbor/harbor/src/common/utils"
-	"time"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
 )
 
 var (
@@ -111,4 +116,72 @@ func DefaultOptions() *Options {
 		maxRetry:   defaultMaxRetry,
 	}
 	return opt
+}
+
+var (
+	pool     *redis.Pool
+	poolOnce sync.Once
+)
+
+// DefaultPool return default redis pool
+func DefaultPool() *redis.Pool {
+	poolOnce.Do(func() {
+		pool = &redis.Pool{
+			Dial: func() (redis.Conn, error) {
+				url := config.GetRedisOfRegURL()
+				if url == "" {
+					url = "redis://localhost:6379/1"
+				}
+
+				return redis.DialURL(url)
+			},
+			TestOnBorrow: func(c redis.Conn, t time.Time) error {
+				_, err := c.Do("PING")
+				return err
+			},
+			MaxIdle:     20,
+			MaxActive:   100,
+			IdleTimeout: 180 * time.Second,
+			Wait:        true,
+		}
+	})
+
+	return pool
+}
+
+// RequireLock returns lock by key
+func RequireLock(key string, conns ...redis.Conn) (*Mutex, error) {
+	var conn redis.Conn
+	if len(conns) > 0 {
+		conn = conns[0]
+	} else {
+		conn = DefaultPool().Get()
+	}
+
+	m := New(conn, key, utils.GenerateRandomString())
+	ok, err := m.Require()
+	if err != nil {
+		return nil, fmt.Errorf("require redis lock failed: %v", err)
+	}
+
+	if !ok {
+		return nil, fmt.Errorf("unable to require lock for %s", key)
+	}
+
+	return m, nil
+}
+
+// FreeLock free lock
+func FreeLock(m *Mutex) error {
+	if _, err := m.Free(); err != nil {
+		log.Warningf("failed to free lock %s, error: %v", m.key, err)
+		return err
+	}
+
+	if err := m.Conn.Close(); err != nil {
+		log.Warningf("failed to close the redis con for lock %s, error: %v", m.key, err)
+		return err
+	}
+
+	return nil
 }
