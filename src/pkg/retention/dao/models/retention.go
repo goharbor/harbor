@@ -57,6 +57,7 @@ type RetentionExecution struct {
 type RetentionTask struct {
 	ID          int64     `orm:"pk;auto;column(id)"`
 	ExecutionID int64     `orm:"column(execution_id)"`
+	Repository  string    `orm:"column(repository)"`
 	JobID       string    `orm:"column(job_id)"`
 	Status      string    `orm:"column(status)"`
 	StartTime   time.Time `orm:"column(start_time)"`

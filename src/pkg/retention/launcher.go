@@ -189,6 +189,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 	for repo, p := range repositoryRules {
 		taskID, err := l.retentionMgr.CreateTask(&Task{
 			ExecutionID: executionID,
+			Repository:  repo.Name,
 			StartTime:   now,
 		})
 		if err != nil {
