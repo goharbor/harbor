@@ -43,6 +43,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/azurecr"
 	// register the AliACR adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/aliacr"
+	// register the Helm Hub adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/helmhub"
 )
 
 var (
