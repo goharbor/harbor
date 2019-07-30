@@ -19,21 +19,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/always"
-
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/always"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/lastx"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
+	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
-
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
-
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"

@@ -16,7 +16,6 @@ package retention
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -149,8 +148,8 @@ func (frc *fakeRetentionClient) Delete(candidate *res.Candidate) error {
 }
 
 // SubmitTask ...
-func (frc *fakeRetentionClient) SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error) {
-	return "", errors.New("not implemented")
+func (frc *fakeRetentionClient) DeleteRepository(repo *res.Repository) error {
+	return nil
 }
 
 type fakeLogger struct{}

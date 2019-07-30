@@ -18,7 +18,6 @@ import (
 	"sync"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
-
 	"github.com/pkg/errors"
 )
 
