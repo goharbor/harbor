@@ -1,9 +1,9 @@
 <div class="clr-row pt-1 fw8">
-    <div class="clr-col-2">
-        <label class="fw9-l">{{'TAG_RETENTION.RETENTION_RULES' | translate}}</label><span
-            class="badge badge-3 clr-offset-1">{{retention?.rules?.length ? retention?.rules?.length : 0}}</span>
+    <div class="clr-col">
+        <label class="label-left font-size-54">{{'TAG_RETENTION.RETENTION_RULES' | translate}}</label><span
+            class="badge badge-3 ml-5">{{retention?.rules?.length ? retention?.rules?.length : 0}}</span>
+        <span *ngIf="loadingRule" class="spinner spinner-inline ml-2">Loading...</span>
     </div>
-
 </div>
 <div class="clr-row pt-1">
     <div class="clr-col">
@@ -45,14 +45,9 @@
                 </div>
             </li>
         </ul>
-        <div class="clr-row pt-1">
-            <div class="clr-col-5 color-97">
-                <div>
-                    <span>{{'TAG_RETENTION.ADD_RULE_HELP_1' | translate}}</span>
-                </div>
-                <div>
-                    <span>{{'TAG_RETENTION.ADD_RULE_HELP_2' | translate}}</span>
-                </div>
+        <div class="v-center clr-row pt-1">
+            <div class="clr-col-5 color-97 font-size-54">
+                {{'TAG_RETENTION.ADD_RULE_HELP_1' | translate}}
             </div>
             <div class="clr-col">
                 <button class="btn btn-link" (click)="openAddRule()">{{'TAG_RETENTION.ADD_RULE' | translate}}</button>
@@ -60,8 +55,11 @@
         </div>
     </div>
 </div>
+<div class="cron-selection">
+    <cron-selection #cronScheduleComponent [labelCurrent]="label" [labelEdit]='label' [originCron]='originCron()' (inputvalue)="updateCron($event)"></cron-selection>
+</div>
 <div class="clr-row pt-1">
-    <div class="clr-col-2 pt-2"><label class="fw9-l">{{'TAG_RETENTION.RETENTION_RUNS' | translate}}</label></div>
+    <div class="clr-col-2 pt-2"><label class="label-left font-size-54">{{'TAG_RETENTION.RETENTION_RUNS' | translate}}</label></div>
     <div class="clr-col-10">
         <clr-dg-action-bar>
                 <button [disabled]="!(retention?.rules?.length > 0)" class="btn btn-outline"
@@ -71,7 +69,9 @@
                 <button [disabled]="!(retention?.rules?.length > 0)" class="btn btn-outline"
                         (click)="whatIfRun()">{{'TAG_RETENTION.WHAT_IF_RUN' | translate}}</button>
                 <button [disabled]="!(selectedItem && (selectedItem.status ==='InProgress' || selectedItem.status ==='Running'))"
-                        class="btn btn-outline" (click)="abortRun()">{{'TAG_RETENTION.ABORT' | translate}}</button>
+                        class="btn btn-outline" (click)="abortRun()">
+                    <clr-icon shape="stop"></clr-icon>
+                    <span class="ml-5">{{'TAG_RETENTION.ABORT' | translate}}</span></button>
                 <button [disabled]="!retentionId" class="btn btn-outline"
                         (click)="refreshList()">
                     <clr-icon shape="refresh"></clr-icon>

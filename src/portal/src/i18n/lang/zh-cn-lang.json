@@ -1157,7 +1157,8 @@
         "WITHOUT": "没有",
         "LOWER_LABELS": "标签",
         "WITH_CONDITION": "基于条件",
-        "LOWER_TAGS": "tags"
+        "LOWER_TAGS": "tags",
+        "TRIGGER": "定时执行"
     }
 
 }
