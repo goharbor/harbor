@@ -573,7 +573,7 @@ Before working, Harbor should be added into the repository list with `helm repo 
 
 With this mode Helm can be made aware of all the charts located in different projects and which are accessible by the currently authenticated user.
 ```
-helm repo add --ca-file ca.crt --cert-file server.crt --key-file server.key --username=admin --password=Passw0rd myrepo https://xx.xx.xx.xx/chartrepo
+helm repo add --ca-file ca.crt --username=admin --password=Passw0rd myrepo https://xx.xx.xx.xx/chartrepo
 ```
 **NOTES:** Providing both ca file and cert files is caused by an issue from helm.
 
@@ -581,7 +581,7 @@ helm repo add --ca-file ca.crt --cert-file server.crt --key-file server.key --us
 
 With this mode, helm can only pull charts in the specified project.
 ```
-helm repo add --ca-file ca.crt --cert-file server.crt --key-file server.key --username=admin --password=Passw0rd myrepo https://xx.xx.xx.xx/chartrepo/myproject
+helm repo add --ca-file ca.crt --username=admin --password=Passw0rd myrepo https://xx.xx.xx.xx/chartrepo/myproject
 ```
 
 #### Push charts to the repository server by CLI
@@ -591,7 +591,7 @@ helm plugin install https://github.com/chartmuseum/helm-push
 ```
 After a successful installation,  run `push` command to upload your charts:
 ```
-helm push --ca-file=ca.crt --key-file=server.key --cert-file=server.crt --username=admin --password=passw0rd chart_repo/hello-helm-0.1.0.tgz myrepo
+helm push --ca-file=ca.crt --username=admin --password=passw0rd chart_repo/hello-helm-0.1.0.tgz myrepo
 ```
 **NOTES:** `push` command does not support pushing a prov file of a signed chart yet.
 
@@ -609,7 +609,7 @@ helm search hello
 ```
 Everything is ready, install the chart to your kubernetes:
 ```
-helm install --ca-file=ca.crt --key-file=server.key --cert-file=server.crt --username=admin --password=Passw0rd --version 0.1.10 repo248/chart_repo/hello-helm
+helm install --ca-file=ca.crt --username=admin --password=Passw0rd --version 0.1.10 repo248/chart_repo/hello-helm
 ```
 
 For other more helm commands like how to sign a chart, please refer to the [helm doc](https://docs.helm.sh/helm/#helm).
