@@ -97,6 +97,9 @@ func (f *fakeRetentionManager) UpdateExecution(execution *Execution) error {
 func (f *fakeRetentionManager) GetExecution(eid int64) (*Execution, error) {
 	return nil, nil
 }
+func (f *fakeRetentionManager) DeleteExecution(eid int64) error {
+	return nil
+}
 func (f *fakeRetentionManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 	return []*Task{
 		{

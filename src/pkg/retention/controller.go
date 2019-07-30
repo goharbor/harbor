@@ -131,7 +131,7 @@ func (r *DefaultAPIController) UpdateRetention(p *policy.Metadata) error {
 		case policy.TriggerKindSchedule:
 			if p0.Trigger.Settings["cron"] != p.Trigger.Settings["cron"] {
 				// unschedule old
-				if len(p0.Trigger.References[policy.TriggerReferencesJobid].(string)) > 0 {
+				if len(p0.Trigger.Settings[policy.TriggerSettingsCron].(string)) > 0 {
 					needUn = true
 				}
 				// schedule new
@@ -197,6 +197,8 @@ func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger stri
 	}
 	id, err := r.manager.CreateExecution(exec)
 	if _, err = r.launcher.Launch(p, id, dryRun); err != nil {
+		// clean execution if launch failed
+		_ = r.manager.DeleteExecution(id)
 		return 0, err
 	}
 	return id, err

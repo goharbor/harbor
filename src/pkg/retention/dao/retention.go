@@ -8,6 +8,7 @@ import (
 	jobmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
+	"strconv"
 )
 
 // CreatePolicy Create Policy
@@ -101,27 +102,31 @@ func fillStatus(exec *models.RetentionExecution) error {
 		return err
 	}
 	var (
-		total, running, succeed, failed, stopped int
+		total, running, succeed, failed, stopped int64
 	)
-	for k, v := range r {
-		total += v.(int)
+	for k, s := range r {
+		v, err := strconv.ParseInt(s.(string), 10, 64)
+		if err != nil {
+			return err
+		}
+		total += v
 		switch k {
 		case jobmodels.JobScheduled:
-			running += v.(int)
+			running += v
 		case jobmodels.JobPending:
-			running += v.(int)
+			running += v
 		case jobmodels.JobRunning:
-			running += v.(int)
+			running += v
 		case jobmodels.JobRetrying:
-			running += v.(int)
+			running += v
 		case jobmodels.JobFinished:
-			succeed += v.(int)
+			succeed += v
 		case jobmodels.JobCanceled:
-			stopped += v.(int)
+			stopped += v
 		case jobmodels.JobStopped:
-			stopped += v.(int)
+			stopped += v
 		case jobmodels.JobError:
-			failed += v.(int)
+			failed += v
 		}
 	}
 	if total == 0 {
