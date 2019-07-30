@@ -18,9 +18,8 @@ package lwp
 import (
 	"encoding/json"
 
-	"github.com/pkg/errors"
-
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/pkg/errors"
 )
 
 // Metadata contains partial metadata of policy
@@ -38,7 +37,7 @@ type Metadata struct {
 func (m *Metadata) ToJSON() (string, error) {
 	jsonData, err := json.Marshal(m)
 	if err != nil {
-		return "", errors.Wrap(err, "marshal reporitory")
+		return "", errors.Wrap(err, "marshal repository")
 	}
 
 	return string(jsonData), nil

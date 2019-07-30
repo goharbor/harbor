@@ -161,6 +161,10 @@ func (suite *TestBuilderSuite) TestBuild() {
 
 type fakeRetentionClient struct{}
 
+func (frc *fakeRetentionClient) DeleteRepository(repo *res.Repository) error {
+	panic("implement me")
+}
+
 // GetCandidates ...
 func (frc *fakeRetentionClient) GetCandidates(repo *res.Repository) ([]*res.Candidate, error) {
 	return nil, errors.New("not implemented")
