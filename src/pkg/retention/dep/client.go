@@ -148,7 +148,17 @@ func (bc *basicClient) GetCandidates(repository *res.Repository) ([]*res.Candida
 
 // DeleteRepository deletes the specified repository
 func (bc *basicClient) DeleteRepository(repo *res.Repository) error {
-	return errors.New("not implemented")
+	if repo == nil {
+		return errors.New("repository is nil")
+	}
+	switch repo.Kind {
+	case res.Image:
+		return bc.coreClient.DeleteImageRepository(repo.Namespace, repo.Name)
+	case res.Chart:
+		return bc.coreClient.DeleteChartRepository(repo.Namespace, repo.Name)
+	default:
+		return fmt.Errorf("unsupported repository kind: %s", repo.Kind)
+	}
 }
 
 // Deletes the specified candidate

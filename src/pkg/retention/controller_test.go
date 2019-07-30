@@ -1,11 +1,12 @@
 package retention
 
 import (
+	"testing"
+
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type ControllerTestSuite struct {

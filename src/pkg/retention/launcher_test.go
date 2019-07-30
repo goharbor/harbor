@@ -137,18 +137,25 @@ type launchTestSuite struct {
 }
 
 func (l *launchTestSuite) SetupTest() {
-	pro := &models.Project{
+	pro1 := &models.Project{
 		ProjectID: 1,
 		Name:      "library",
 	}
+	pro2 := &models.Project{
+		ProjectID: 2,
+		Name:      "test",
+	}
 	l.projectMgr = &fakeProjectManager{
 		projects: []*models.Project{
-			pro,
+			pro1, pro2,
 		}}
 	l.repositoryMgr = &fakeRepositoryManager{
 		imageRepositories: []*models.RepoRecord{
 			{
 				Name: "library/image",
+			},
+			{
+				Name: "test/image",
 			},
 		},
 		chartRepositories: []*chartserver.ChartInfo{
@@ -166,7 +173,7 @@ func (l *launchTestSuite) SetupTest() {
 func (l *launchTestSuite) TestGetProjects() {
 	projects, err := getProjects(l.projectMgr)
 	require.Nil(l.T(), err)
-	assert.Equal(l.T(), 1, len(projects))
+	assert.Equal(l.T(), 2, len(projects))
 	assert.Equal(l.T(), int64(1), projects[0].NamespaceID)
 	assert.Equal(l.T(), "library", projects[0].Namespace)
 }
@@ -174,13 +181,10 @@ func (l *launchTestSuite) TestGetProjects() {
 func (l *launchTestSuite) TestGetRepositories() {
 	repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, 1, true)
 	require.Nil(l.T(), err)
-	assert.Equal(l.T(), 2, len(repositories))
+	assert.Equal(l.T(), 3, len(repositories))
 	assert.Equal(l.T(), "library", repositories[0].Namespace)
 	assert.Equal(l.T(), "image", repositories[0].Repository)
 	assert.Equal(l.T(), "image", repositories[0].Kind)
-	assert.Equal(l.T(), "library", repositories[1].Namespace)
-	assert.Equal(l.T(), "chart", repositories[1].Repository)
-	assert.Equal(l.T(), "chart", repositories[1].Kind)
 }
 
 func (l *launchTestSuite) TestLaunch() {
@@ -224,7 +228,7 @@ func (l *launchTestSuite) TestLaunch() {
 						{
 							Kind:       "doublestar",
 							Decoration: "nsMatches",
-							Pattern:    "**",
+							Pattern:    "library",
 						},
 					},
 					"repository": {
@@ -240,7 +244,7 @@ func (l *launchTestSuite) TestLaunch() {
 	}
 	n, err = launcher.Launch(ply, 1, false)
 	require.Nil(l.T(), err)
-	assert.Equal(l.T(), int64(2), n)
+	assert.Equal(l.T(), int64(3), n)
 }
 
 func (l *launchTestSuite) TestStop() {
