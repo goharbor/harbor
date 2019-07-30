@@ -42,6 +42,8 @@ type Manager interface {
 	GetPolicy(ID int64) (*policy.Metadata, error)
 	// Create a new retention execution
 	CreateExecution(execution *Execution) (int64, error)
+	// Delete a new retention execution
+	DeleteExecution(int64) error
 	// Get the specified execution
 	GetExecution(eid int64) (*Execution, error)
 	// List execution histories
@@ -125,6 +127,11 @@ func (d *DefaultManager) CreateExecution(execution *Execution) (int64, error) {
 	exec.DryRun = execution.DryRun
 	exec.Trigger = execution.Trigger
 	return dao.CreateExecution(exec)
+}
+
+// DeleteExecution Delete Execution
+func (d *DefaultManager) DeleteExecution(eid int64) error {
+	return dao.DeleteExecution(eid)
 }
 
 // ListExecutions List Executions

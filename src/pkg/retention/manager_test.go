@@ -161,6 +161,9 @@ func TestExecution(t *testing.T) {
 	es, err := m.ListExecutions(policyID, nil)
 	assert.Nil(t, err)
 	assert.EqualValues(t, 1, len(es))
+
+	err = m.DeleteExecution(id)
+	assert.Nil(t, err)
 }
 
 func TestTask(t *testing.T) {
