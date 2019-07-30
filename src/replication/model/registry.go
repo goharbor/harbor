@@ -29,6 +29,7 @@ const (
 	RegistryTypeGoogleGcr      RegistryType = "google-gcr"
 	RegistryTypeAwsEcr         RegistryType = "aws-ecr"
 	RegistryTypeAzureAcr       RegistryType = "azure-acr"
+	RegistryTypeAliAcr         RegistryType = "ali-acr"
 
 	RegistryTypeHelmHub RegistryType = "helm-hub"
 
