@@ -18,9 +18,7 @@ import (
 	"sync"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
-
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
-
 	"github.com/pkg/errors"
 )
 
