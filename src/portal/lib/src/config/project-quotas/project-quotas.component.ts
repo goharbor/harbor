@@ -64,8 +64,9 @@ export class ProjectQuotasComponent implements OnChanges {
     private router: Router,
     private errorHandler: ErrorHandler) { }
 
-  editQuota(quotaHardLimitValue: QuotaHardLimitInterface) {
-    const defaultTexts = [this.translate.get('QUOTA.EDIT_PROJECT_QUOTAS'), this.translate.get('QUOTA.SET_QUOTAS')
+  editQuota(quotaHardLimitValue: Quota) {
+    const defaultTexts = [this.translate.get('QUOTA.EDIT_PROJECT_QUOTAS')
+    , this.translate.get('QUOTA.SET_QUOTAS', { params: quotaHardLimitValue.ref.name })
       , this.translate.get('QUOTA.COUNT_QUOTA'), this.translate.get('QUOTA.STORAGE_QUOTA')];
     forkJoin(...defaultTexts).subscribe(res => {
       const defaultTextsObj = {
