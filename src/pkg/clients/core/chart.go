@@ -33,3 +33,8 @@ func (c *client) DeleteChart(project, repository, version string) error {
 	url := c.buildURL(fmt.Sprintf("/api/chartrepo/%s/charts/%s/%s", project, repository, version))
 	return c.httpclient.Delete(url)
 }
+
+func (c *client) DeleteChartRepository(project, repository string) error {
+	url := c.buildURL(fmt.Sprintf("/api/chartrepo/%s/charts/%s", project, repository))
+	return c.httpclient.Delete(url)
+}
