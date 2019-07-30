@@ -31,6 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -368,6 +369,16 @@ func GetProjectID(name string) (int64, error) {
 
 // GetRegRedisCon ...
 func GetRegRedisCon() (redis.Conn, error) {
+	// FOR UT
+	if os.Getenv("UTTEST") == "true" {
+		return redis.Dial(
+			"tcp",
+			fmt.Sprintf("%s:%d", os.Getenv("REDIS_HOST"), 6379),
+			redis.DialConnectTimeout(DialConnectionTimeout),
+			redis.DialReadTimeout(DialReadTimeout),
+			redis.DialWriteTimeout(DialWriteTimeout),
+		)
+	}
 	return redis.DialURL(
 		config.GetRedisOfRegURL(),
 		redis.DialConnectTimeout(DialConnectionTimeout),
