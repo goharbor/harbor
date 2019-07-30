@@ -104,8 +104,8 @@ describe('ProjectPolicyConfigComponent', () => {
         ProjectPolicyConfigComponent,
         ConfirmationDialogComponent,
         ConfirmationDialogComponent,
-       ],
-       providers: [
+      ],
+      providers: [
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: ProjectService, useClass: ProjectDefaultService },
@@ -113,7 +113,7 @@ describe('ProjectPolicyConfigComponent', () => {
         { provide: UserPermissionService, useClass: UserPermissionDefaultService},
       ]
     })
-    .compileComponents();
+        .compileComponents();
   }));
 
   beforeEach(() => {
@@ -131,9 +131,9 @@ describe('ProjectPolicyConfigComponent', () => {
 
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
     spyOn(userPermissionService, "getPermission")
-    .withArgs(component.projectId,
-      USERSTATICPERMISSION.CONFIGURATION.KEY, USERSTATICPERMISSION.CONFIGURATION.VALUE.UPDATE )
-    .and.returnValue(of(mockHasChangeConfigRole));
+        .withArgs(component.projectId,
+            USERSTATICPERMISSION.CONFIGURATION.KEY, USERSTATICPERMISSION.CONFIGURATION.VALUE.UPDATE )
+        .and.returnValue(of(mockHasChangeConfigRole));
     fixture.detectChanges();
   });
 

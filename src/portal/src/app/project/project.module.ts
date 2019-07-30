@@ -40,6 +40,10 @@ import { HelmChartModule } from './helm-chart/helm-chart.module';
 import { RobotAccountComponent } from './robot-account/robot-account.component';
 import { AddRobotComponent } from './robot-account/add-robot/add-robot.component';
 import { AddHttpAuthGroupComponent } from './member/add-http-auth-group/add-http-auth-group.component';
+import { TagRetentionComponent } from "./tag-retention/tag-retention.component";
+import { AddRuleComponent } from "./tag-retention/add-rule/add-rule.component";
+import { TagRetentionService } from "./tag-retention/tag-retention.service";
+
 
 @NgModule({
   imports: [
@@ -63,10 +67,12 @@ import { AddHttpAuthGroupComponent } from './member/add-http-auth-group/add-http
     AddGroupComponent,
     RobotAccountComponent,
     AddRobotComponent,
-    AddHttpAuthGroupComponent
+    AddHttpAuthGroupComponent,
+    TagRetentionComponent,
+    AddRuleComponent,
   ],
   exports: [ProjectComponent, ListProjectComponent],
-  providers: [ProjectRoutingResolver, MemberService, RobotService]
+  providers: [ProjectRoutingResolver, MemberService, RobotService, TagRetentionService]
 })
 export class ProjectModule {
 
