@@ -24,7 +24,7 @@ def prepare_nginx(config_dict):
 def render_nginx_template(config_dict):
     if config_dict['protocol'] == "https":
         render_jinja(
-            nginx_https_conf_template, 
+            nginx_https_conf_template,
             nginx_conf,
             uid=DEFAULT_UID,
             gid=DEFAULT_GID,

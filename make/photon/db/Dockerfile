@@ -18,15 +18,16 @@ RUN tdnf erase -y toybox && tdnf install -y util-linux net-tools
 
 VOLUME /var/lib/postgresql/data
 
-ADD ./make/photon/db/docker-entrypoint.sh /entrypoint.sh
-ADD ./make/photon/db/docker-healthcheck.sh /docker-healthcheck.sh
-RUN chmod u+x /entrypoint.sh /docker-healthcheck.sh
-ENTRYPOINT ["/entrypoint.sh"]
-HEALTHCHECK CMD ["/docker-healthcheck.sh"]
-
+COPY ./make/photon/db/docker-entrypoint.sh /entrypoint.sh
+COPY ./make/photon/db/docker-healthcheck.sh /docker-healthcheck.sh
 COPY ./make/photon/db/initial-notaryserver.sql /docker-entrypoint-initdb.d/
 COPY ./make/photon/db/initial-notarysigner.sql /docker-entrypoint-initdb.d/
 COPY ./make/photon/db/initial-registry.sql /docker-entrypoint-initdb.d/
+RUN chown -R postgres:postgres /entrypoint.sh /docker-healthcheck.sh /docker-entrypoint-initdb.d \
+    && chmod u+x /entrypoint.sh /docker-healthcheck.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+HEALTHCHECK CMD ["/docker-healthcheck.sh"]
 
 EXPOSE 5432
-CMD ["postgres"]
+USER postgres
