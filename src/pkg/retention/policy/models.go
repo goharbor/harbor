@@ -59,7 +59,7 @@ type Metadata struct {
 
 // Valid Valid
 func (m *Metadata) Valid(v *validation.Validation) {
-	if m.Trigger.Kind == TriggerKindSchedule {
+	if m.Trigger != nil && m.Trigger.Kind == TriggerKindSchedule {
 		if m.Trigger.Settings == nil {
 			_ = v.SetError("Trigger.Settings", "Trigger.Settings is required")
 		} else {

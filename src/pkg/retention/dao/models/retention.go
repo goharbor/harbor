@@ -45,12 +45,6 @@ type RetentionExecution struct {
 	StartTime  time.Time
 	EndTime    time.Time `orm:"-"`
 	Status     string    `orm:"-"`
-	Total      int       `orm:"-"`
-	Succeed    int       `orm:"-"`
-	Failed     int       `orm:"-"`
-	InProgress int       `orm:"-"`
-	Stopped    int       `orm:"-"`
-	Pending    int       `orm:"-"`
 }
 
 // RetentionTask ...

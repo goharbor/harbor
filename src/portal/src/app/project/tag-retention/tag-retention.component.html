@@ -1,0 +1,176 @@
+<div class="clr-row pt-1">
+    <div class="clr-col-2">
+        <label class="fw9-l">{{'TAG_RETENTION.RETENTION_RULES' | translate}}</label><span
+            class="badge badge-3 clr-offset-1">{{retention?.rules?.length ? retention?.rules?.length : 0}}</span>
+    </div>
+
+</div>
+<div class="clr-row">
+    <div class="clr-col">
+        <ul *ngIf="retention?.rules?.length > 0" class="list-unstyled">
+            <li class="rule" *ngFor="let rule of retention?.rules;let i = index;">
+                <div class="clr-row">
+                    <div class="clr-col rule-name">
+                        <span>
+                            <span>{{getI18nKey(rule?.action)|translate}}</span>
+                            <span class="space">{{getI18nKey(rule?.template)|translate:{number: rule?.params?.num} }}</span>
+                            <span class="space">{{'TAG_RETENTION.REPO' | translate}}</span>
+                            <span class="space">{{getI18nKey(rule?.scope_selectors.repository[0].decoration)|translate}}</span>
+                            <span class="space">{{formatPattern(rule?.scope_selectors.repository[0].pattern)}}</span>
+                            <span class="color-97 space">{{'TAG_RETENTION.AND' | translate}}</span>
+                            <span class="space">{{'TAG_RETENTION.TAGS' | translate}}</span>
+                            <span class="space">{{getI18nKey(rule?.tag_selectors[0].decoration)|translate}}</span>
+                            <span class="space">{{formatPattern(rule?.tag_selectors[0].pattern)}}</span>
+                            <ng-container *ngIf="rule?.tag_selectors[1].pattern && rule?.tag_selectors[1].pattern">
+                                <span class="color-97 space">{{'TAG_RETENTION.AND' | translate}}</span>
+                                <span class="space">{{getI18nKey(rule?.tag_selectors[1].decoration)|translate}}</span>
+                                <span class="space">{{'TAG_RETENTION.LOWER_LABELS' | translate}}</span>
+                                <span class="space">{{rule?.tag_selectors[1].pattern}}</span>
+                            </ng-container>
+                        </span>
+                    </div>
+                    <div class="clr-col-1">
+                        <clr-icon (click)="openEditor(i)" shape="ellipsis-vertical"
+                                  class="dropdown-toggle hand"></clr-icon>
+                        <div class="dropdown" [ngClass]="{open:ruleIndex===i}">
+                            <div class="dropdown-menu">
+                                <button type="button" class="dropdown-item"
+                                        (click)="editRuleByIndex(i)">{{'TAG_RETENTION.EDIT' | translate}}</button>
+                                <button type="button" class="dropdown-item"
+                                        (click)="deleteRule(i)">{{'TAG_RETENTION.DELETE' | translate}}</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+        <div class="clr-row">
+            <div class="clr-col-5 color-97">
+                <div>
+                    <span>{{'TAG_RETENTION.ADD_RULE_HELP_1' | translate}}</span>
+                </div>
+                <div>
+                    <span>{{'TAG_RETENTION.ADD_RULE_HELP_2' | translate}}</span>
+                </div>
+            </div>
+            <div class="clr-col">
+                <button class="btn btn-link" (click)="openAddRule()">{{'TAG_RETENTION.ADD_RULE' | translate}}</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="clr-row pt-1">
+    <div class="clr-col-2 pt-2"><label class="fw9-l">{{'TAG_RETENTION.RETENTION_RUNS' | translate}}</label></div>
+    <div class="clr-col">
+        <clr-dg-action-bar>
+            <button [disabled]="!(retention?.rules?.length > 0)" class="btn btn-outline"
+                    (click)="isRetentionRunOpened=true">
+                <clr-icon shape="play"></clr-icon>
+                <span class="ml-5">{{'TAG_RETENTION.RUN_NOW' | translate}}</span></button>
+            <button [disabled]="!(retention?.rules?.length > 0)" class="btn btn-outline"
+                    (click)="whatIfRun()">{{'TAG_RETENTION.WHAT_IF_RUN' | translate}}</button>
+            <button [disabled]="!(selectedItem && (selectedItem.status ==='InProgress' || selectedItem.status ==='Running'))"
+                    class="btn btn-outline" (click)="abortRun()">{{'TAG_RETENTION.ABORT' | translate}}</button>
+        </clr-dg-action-bar>
+        <clr-datagrid [clrDgLoading]="loadingExecutions" [(clrDgSingleSelected)]="selectedItem">
+            <clr-dg-column>
+                {{'TAG_RETENTION.SERIAL' | translate}}
+                <clr-dg-string-filter [clrDgStringFilter]="serialFilter"></clr-dg-string-filter>
+            </clr-dg-column>
+            <clr-dg-column>
+                {{'TAG_RETENTION.STATUS' | translate}}
+                <clr-dg-string-filter [clrDgStringFilter]="statusFilter"></clr-dg-string-filter>
+            </clr-dg-column>
+            <clr-dg-column>
+                {{'TAG_RETENTION.DRY_RUN' | translate}}
+                <clr-dg-string-filter [clrDgStringFilter]="dryRunFilter"></clr-dg-string-filter>
+            </clr-dg-column>
+            <clr-dg-column>
+                {{'TAG_RETENTION.START_TIME' | translate}}
+            </clr-dg-column>
+            <clr-dg-column>
+                {{'TAG_RETENTION.DURATION' | translate}}
+            </clr-dg-column>
+            <clr-dg-placeholder>
+                {{'TAG_RETENTION.NO_EXECUTION' | translate}}
+            </clr-dg-placeholder>
+            <clr-dg-row *clrDgItems="let execution of executionList;let i = index;" [clrDgItem]="execution">
+                <clr-dg-cell class="hand" (click)="openDetail(i,execution.id)">
+                    <clr-icon shape="angle" [dir]="index===i?'down':'right'"></clr-icon>
+                    <span class="ml-1">{{execution.id}}</span>
+                </clr-dg-cell>
+                <clr-dg-cell class="hand" (click)="openDetail(i,execution.id)">{{execution.status}}</clr-dg-cell>
+                <clr-dg-cell class="hand"
+                             (click)="openDetail(i,execution.id)">{{execution.dry_run ? 'YES' : 'NO'}}</clr-dg-cell>
+                <clr-dg-cell class="hand"
+                             (click)="openDetail(i,execution.id)">{{execution.start_time|date:'short'}}</clr-dg-cell>
+                <clr-dg-cell class="hand" (click)="openDetail(i,execution.id)">{{execution.duration}}</clr-dg-cell>
+                <clr-dg-row-detail *ngIf="index===i">
+                    <clr-datagrid [clrDgLoading]="loadingHistories" class="w-100">
+                        <clr-dg-column>{{'TAG_RETENTION.REPOSITORY' | translate}}</clr-dg-column>
+                        <clr-dg-column>{{'TAG_RETENTION.STATUS' | translate}}</clr-dg-column>
+                        <clr-dg-column>{{'TAG_RETENTION.START_TIME' | translate}}</clr-dg-column>
+                        <clr-dg-column>{{'TAG_RETENTION.DURATION' | translate}}</clr-dg-column>
+                        <clr-dg-column>{{'TAG_RETENTION.LOG' | translate}}</clr-dg-column>
+                        <clr-dg-placeholder>
+                            {{'TAG_RETENTION.NO_HISTORY' | translate}}
+                        </clr-dg-placeholder>
+                        <clr-dg-row *clrDgItems="let task of historyList" [clrDgItem]="task">
+                            <clr-dg-cell>{{task.repository}}</clr-dg-cell>
+                            <clr-dg-cell>{{task.status}}</clr-dg-cell>
+                            <clr-dg-cell>{{task.start_time|date:'short'}}</clr-dg-cell>
+                            <clr-dg-cell>{{task.duration}}</clr-dg-cell>
+                            <clr-dg-cell><span (click)="seeLog(task.execution_id,task.id)"
+                                               class="hand color-79b">{{'TAG_RETENTION.LOG' | translate}}</span>
+                            </clr-dg-cell>
+                        </clr-dg-row>
+                        <clr-dg-footer>
+        <span *ngIf="innerPagination.totalItems">{{innerPagination.firstItem + 1}}
+            -
+            {{innerPagination.lastItem + 1 }} {{'ROBOT_ACCOUNT.OF' |
+                translate}} </span>
+                            {{innerPagination.totalItems }} {{'ROBOT_ACCOUNT.ITEMS' | translate}}
+                            <clr-dg-pagination #innerPagination [clrDgPageSize]="5"></clr-dg-pagination>
+                        </clr-dg-footer>
+                    </clr-datagrid>
+                </clr-dg-row-detail>
+            </clr-dg-row>
+            <clr-dg-footer>
+        <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}}
+            -
+            {{pagination.lastItem + 1 }} {{'ROBOT_ACCOUNT.OF' |
+                translate}} </span>
+                {{pagination.totalItems }} {{'ROBOT_ACCOUNT.ITEMS' | translate}}
+                <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </div>
+
+
+    <add-rule  #addRule (clickAdd)="clickAdd($event)"></add-rule>
+    <clr-modal [(clrModalOpen)]="isRetentionRunOpened"
+               [clrModalStaticBackdrop]="true" [clrModalClosable]="true">
+        <h3 class="modal-title">{{'TAG_RETENTION.RETENTION_RUN' | translate}}</h3>
+        <div class="modal-body">
+            <p class="color-97">
+                {{'TAG_RETENTION.RETENTION_RUN_EXPLAIN' | translate}}
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-outline"
+                    (click)="isRetentionRunOpened=false">{{'BUTTON.CANCEL' | translate}}</button>
+            <button type="button" class="btn btn-primary" (click)="runRetention()">{{'BUTTON.RUN' | translate}}</button>
+        </div>
+    </clr-modal>
+    <clr-modal [(clrModalOpen)]="isAbortedOpened"
+               [clrModalStaticBackdrop]="true" [clrModalClosable]="true">
+        <h3 class="modal-title">{{'TAG_RETENTION.RETENTION_RUN_ABORTED' | translate}}</h3>
+        <div class="modal-body">
+            <p class="color-97">{{'TAG_RETENTION.RETENTION_RUN_ABORTED_EXPLAIN' | translate}}</p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-primary"
+                    (click)="abortRetention()">{{'BUTTON.OK' | translate}}</button>
+        </div>
+    </clr-modal>
+</div>
