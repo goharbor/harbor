@@ -15,14 +15,10 @@
 package googlegcr
 
 import (
-	"net/http"
-
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/src/replication/util"
 )
 
 func init() {
@@ -36,17 +32,7 @@ func init() {
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
-	var credential auth.Credential
-	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
-		credential = auth.NewBasicAuthCredential(
-			registry.Credential.AccessKey,
-			registry.Credential.AccessSecret)
-	}
-	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
-		Transport: util.GetHTTPTransport(registry.Insecure),
-	}, credential)
-
-	dockerRegistryAdapter, err := native.NewAdapterWithCustomizedAuthorizer(registry, authorizer)
+	dockerRegistryAdapter, err := native.NewAdapter(registry)
 	if err != nil {
 		return nil, err
 	}
@@ -100,9 +86,4 @@ func (a adapter) HealthCheck() (model.HealthStatus, error) {
 		return model.Unhealthy, nil
 	}
 	return model.Healthy, nil
-}
-
-// PrepareForPush nothing need to do.
-func (a adapter) PrepareForPush(resources []*model.Resource) error {
-	return nil
 }
