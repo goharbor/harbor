@@ -66,6 +66,7 @@ type DefaultManager struct {
 func (d *DefaultManager) CreatePolicy(p *policy.Metadata) (int64, error) {
 	p1 := &models.RetentionPolicy{}
 	p1.ScopeLevel = p.Scope.Level
+	p1.ScopeReference = p.Scope.Reference
 	p1.TriggerKind = p.Trigger.Kind
 	data, _ := json.Marshal(p)
 	p1.Data = string(data)
@@ -79,6 +80,7 @@ func (d *DefaultManager) UpdatePolicy(p *policy.Metadata) error {
 	p1 := &models.RetentionPolicy{}
 	p1.ID = p.ID
 	p1.ScopeLevel = p.Scope.Level
+	p1.ScopeReference = p.Scope.Reference
 	p1.TriggerKind = p.Trigger.Kind
 	p.ID = 0
 	data, _ := json.Marshal(p)
@@ -142,6 +144,7 @@ func (d *DefaultManager) ListExecutions(policyID int64, query *q.Query) ([]*Exec
 		e1.Status = e.Status
 		e1.StartTime = e.StartTime
 		e1.EndTime = e.EndTime
+		e1.DryRun = e.DryRun
 		execs1 = append(execs1, e1)
 	}
 	return execs1, nil
@@ -159,6 +162,7 @@ func (d *DefaultManager) GetExecution(eid int64) (*Execution, error) {
 	e1.Status = e.Status
 	e1.StartTime = e.StartTime
 	e1.EndTime = e.EndTime
+	e1.DryRun = e.DryRun
 	return e1, nil
 }
 
