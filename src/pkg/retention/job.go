@@ -30,6 +30,12 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	actionMarkRetain   = "RETAIN"
+	actionMarkDeletion = "DEL"
+	actionMarkError    = "ERR"
+)
+
 // Job of running retention process
 type Job struct{}
 
@@ -44,20 +50,14 @@ func (pj *Job) ShouldRetry() bool {
 }
 
 // Validate the parameters
-func (pj *Job) Validate(params job.Parameters) error {
-	if _, err := getParamRepo(params); err != nil {
-		return err
+func (pj *Job) Validate(params job.Parameters) (err error) {
+	if _, err = getParamRepo(params); err == nil {
+		if _, err = getParamMeta(params); err == nil {
+			_, err = getParamDryRun(params)
+		}
 	}
 
-	if _, err := getParamMeta(params); err != nil {
-		return err
-	}
-
-	if _, err := getParamDryRun(params); err != nil {
-		return err
-	}
-
-	return nil
+	return
 }
 
 // Run the job
@@ -125,13 +125,13 @@ func logResults(logger logger.Interface, all []*res.Candidate, results []*res.Re
 	op := func(art *res.Candidate) string {
 		if e, exists := hash[art.Hash()]; exists {
 			if e != nil {
-				return "ERR"
+				return actionMarkError
 			}
 
-			return "DEL"
+			return actionMarkDeletion
 		}
 
-		return "RETAIN"
+		return actionMarkRetain
 	}
 
 	var buf bytes.Buffer

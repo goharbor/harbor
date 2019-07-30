@@ -245,6 +245,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.Replication:          (*replication.Replication)(nil),
 			job.ReplicationScheduler: (*replication.Scheduler)(nil),
 			job.Retention:            (*retention.Job)(nil),
+			job.RetentionDel:         (*retention.DelRepoJob)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

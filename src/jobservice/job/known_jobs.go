@@ -32,4 +32,6 @@ const (
 	ReplicationScheduler = "IMAGE_REPLICATE"
 	// Retention : the name of the retention job
 	Retention = "RETENTION"
+	// Retention the name of retention deletion job
+	RetentionDel = "RETENTION_DEL"
 )
