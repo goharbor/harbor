@@ -109,10 +109,10 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
-	// init the scheduler
-	scheduler.Init()
 	// init the jobservice client
 	job.Init()
+	// init the scheduler
+	scheduler.Init()
 
 	password, err := config.InitialAdminPassword()
 	if err != nil {
