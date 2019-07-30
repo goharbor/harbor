@@ -22,7 +22,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/always"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/lastx"
@@ -171,7 +170,7 @@ func (frc *fakeRetentionClient) Delete(candidate *res.Candidate) error {
 	return nil
 }
 
-// SubmitTask ...
-func (frc *fakeRetentionClient) SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error) {
-	return "", errors.New("not implemented")
+// DeleteRepository ...
+func (frc *fakeRetentionClient) DeleteRepository(repo *res.Repository) error {
+	panic("implement me")
 }
