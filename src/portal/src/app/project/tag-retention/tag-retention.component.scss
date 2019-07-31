@@ -11,8 +11,7 @@
   overflow: hidden;
   white-space: nowrap;
   text-overflow: ellipsis;
-  font-size: 0.6rem;
-  font-weight: 500;
+  font-size: .541667rem;
 }
 
 .ml-5 {
@@ -43,4 +42,19 @@
   left: 0;
   opacity: 0;
   z-index: 999;
+}
+.cron-selection {
+  margin-top: 20px;
+  display: flex;
+  align-items: center;
+}
+.label-left {
+  color: #000;
+}
+.v-center {
+  height: 48px;
+  line-height: 48px;
+}
+.font-size-54 {
+  font-size: .541667rem;
 }

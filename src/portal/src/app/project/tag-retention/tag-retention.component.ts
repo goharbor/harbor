@@ -19,12 +19,20 @@ import { TagRetentionService } from "./tag-retention.service";
 import { Retention, Rule } from "./retention";
 import { Project } from "../project";
 import { clone, ErrorHandler } from "@harbor/ui";
+import { OriginCron } from "@harbor/ui";
+import { CronScheduleComponent } from "@harbor/ui";
 
 const MIN = 60000;
 const SEC = 1000;
 const MIN_STR = "min";
 const SEC_STR = "sec";
-
+const SCHEDULE_TYPE = {
+    NONE: "None",
+    DAILY: "Daily",
+    WEEKLY: "Weekly",
+    HOURLY: "Hourly",
+    CUSTOM: "Custom"
+};
 @Component({
     selector: 'tag-retention',
     templateUrl: './tag-retention.component.html',
@@ -48,7 +56,6 @@ export class TagRetentionComponent implements OnInit {
         }
     };
     projectId: number;
-    addRuleOpened: boolean = false;
     isRetentionRunOpened: boolean = false;
     isAbortedOpened: boolean = false;
     selectedItem: any;
@@ -61,14 +68,35 @@ export class TagRetentionComponent implements OnInit {
     historyList = [];
     loadingExecutions: boolean = false;
     loadingHistories: boolean = false;
-    dryRun: boolean = false;
+    label: string = 'TAG_RETENTION.TRIGGER';
+    loadingRule: boolean = false;
+    @ViewChild('cronScheduleComponent')
+    cronScheduleComponent: CronScheduleComponent;
     @ViewChild('addRule') addRuleComponent: AddRuleComponent;
-
     constructor(
         private route: ActivatedRoute,
         private tagRetentionService: TagRetentionService,
         private errorHandler: ErrorHandler,
     ) {
+    }
+    originCron(): OriginCron {
+        let originCron: OriginCron = {
+            type: SCHEDULE_TYPE.DAILY,
+            cron: "0 0 0 * * *"
+        };
+        originCron.cron = this.retention.trigger.settings.cron;
+        if (originCron.cron === "") {
+            originCron.type = SCHEDULE_TYPE.NONE;
+        } else if (originCron.cron === "0 0 * * * *") {
+            originCron.type = SCHEDULE_TYPE.HOURLY;
+        } else if (originCron.cron === "0 0 0 * * *") {
+            originCron.type = SCHEDULE_TYPE.DAILY;
+        } else if (originCron.cron === "0 0 0 * * 0") {
+            originCron.type = SCHEDULE_TYPE.WEEKLY;
+        } else {
+            originCron.type = SCHEDULE_TYPE.CUSTOM;
+        }
+        return originCron;
     }
 
     ngOnInit() {
@@ -88,7 +116,27 @@ export class TagRetentionComponent implements OnInit {
         this.getMetadata();
         this.refreshList();
     }
-
+    updateCron(cron: string) {
+        let retention: Retention = clone(this.retention);
+        retention.trigger.settings.cron = cron;
+        if (!this.retentionId) {
+            this.tagRetentionService.createRetention(retention).subscribe(
+                response => {
+                    this.cronScheduleComponent.isEditMode = false;
+                    this.refreshAfterCreatRetention();
+                }, error => {
+                    this.errorHandler.error(error);
+                });
+        } else {
+            this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
+                response => {
+                    this.cronScheduleComponent.isEditMode = false;
+                    this.retention = retention;
+                }, error => {
+                    this.errorHandler.error(error);
+                });
+        }
+    }
     getMetadata() {
         this.tagRetentionService.getRetentionMetadata().subscribe(
             response => {
@@ -103,8 +151,10 @@ export class TagRetentionComponent implements OnInit {
             this.tagRetentionService.getRetention(this.retentionId).subscribe(
                 response => {
                     this.retention = response;
+                    this.loadingRule = false;
                 }, error => {
                     this.errorHandler.error(error);
+                    this.loadingRule = false;
                 });
         }
     }
@@ -122,10 +172,13 @@ export class TagRetentionComponent implements OnInit {
         let retention: Retention = clone(this.retention);
         retention.rules.splice(index, 1);
         this.ruleIndex = -1;
+        this.loadingRule = true;
         this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
             response => {
+                this.loadingRule = false;
                 this.retention = retention;
             }, error => {
+                this.loadingRule = false;
                 this.errorHandler.error(error);
             });
     }
@@ -241,11 +294,13 @@ export class TagRetentionComponent implements OnInit {
                 this.retentionId = response.metadata.retention_id;
                 this.getRetention();
             }, error => {
+                this.loadingRule = false;
                 this.errorHandler.error(error);
             });
     }
 
     clickAdd(rule) {
+        this.loadingRule = true;
         if (this.addRuleComponent.isAdd) {
             let retention: Retention = clone(this.retention);
             retention.rules.push(rule);
@@ -255,12 +310,15 @@ export class TagRetentionComponent implements OnInit {
                         this.refreshAfterCreatRetention();
                     }, error => {
                         this.errorHandler.error(error);
+                        this.loadingRule = false;
                     });
             } else {
                 this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
                     response => {
+                        this.loadingRule = false;
                         this.retention = retention;
                     }, error => {
+                        this.loadingRule = false;
                         this.errorHandler.error(error);
                     });
             }
@@ -270,8 +328,10 @@ export class TagRetentionComponent implements OnInit {
             this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
                 response => {
                     this.retention = retention;
+                    this.loadingRule = false;
                 }, error => {
                     this.errorHandler.error(error);
+                    this.loadingRule = false;
                 });
         }
     }

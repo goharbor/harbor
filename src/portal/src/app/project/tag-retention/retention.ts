@@ -32,7 +32,7 @@ export class Retention {
         this.trigger = {
             kind: "Schedule",
             settings: {
-                cron: "@daily",
+                cron: "0 0 0 * * *",
             }
         };
     }
