@@ -27,6 +27,7 @@ import (
 // const definition
 const (
 	UserAgentReplication = "harbor-replication-service"
+	MaxConcurrency       = 100
 )
 
 var registry = map[model.RegistryType]Factory{}
