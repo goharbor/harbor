@@ -258,9 +258,8 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 // Get a redis connection pool
 func (bs *Bootstrap) getRedisPool(redisURL string) *redis.Pool {
 	return &redis.Pool{
-		MaxActive: 6,
-		MaxIdle:   6,
-		Wait:      true,
+		MaxIdle: 6,
+		Wait:    true,
 		Dial: func() (redis.Conn, error) {
 			return redis.DialURL(
 				redisURL,
