@@ -968,7 +968,7 @@
         "PROJECT_QUOTA_DEFAULT_DISK": "Default disk space per project",
         "EDIT_PROJECT_QUOTAS": "Edit Project Quotas",
         "EDIT_DEFAULT_PROJECT_QUOTAS": "Edit Default Project Quotas",
-        "SET_QUOTAS": "Set the project quotas for project 'library'",
+        "SET_QUOTAS": "Set the project quotas for project '{{params}}'",
         "SET_DEFAULT_QUOTAS": "Set the default project quotas when creating new projects",
         "COUNT_QUOTA": "Count quota",
         "COUNT_DEFAULT_QUOTA": "Default count quota",
