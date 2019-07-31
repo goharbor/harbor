@@ -319,7 +319,7 @@
         "DISABLE_ACCOUNT": "Disable Account",
         "ENABLE_ACCOUNT": "Enable Account",
         "DELETE": "Delete",
-        "CREAT_ROBOT_ACCOUNT": "Creat Robot Account",
+        "CREAT_ROBOT_ACCOUNT": "Create Robot Account",
         "PERMISSIONS_IMAGE": "Image",
         "PERMISSIONS_HELMCHART": "Helm Chart",
         "PUSH": "Push",
