@@ -17,6 +17,8 @@ package redis
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strconv"
 	"sync"
 	"time"
 
@@ -39,9 +41,6 @@ else
     return 0
 end
 `
-	defaultDelay    = 5 * time.Second
-	defaultMaxRetry = 5
-	defaultExpiry   = 600 * time.Second
 )
 
 // Mutex ...
@@ -108,24 +107,70 @@ type Options struct {
 	maxRetry   int
 }
 
+var (
+	opt     *Options
+	optOnce sync.Once
+
+	defaultDelay    = int64(1) // 1 second
+	defaultMaxRetry = 600
+	defaultExpire   = int64(2 * time.Hour / time.Second) // 2 hours
+)
+
 // DefaultOptions ...
 func DefaultOptions() *Options {
-	opt := &Options{
-		retryDelay: defaultDelay,
-		expiry:     defaultExpiry,
-		maxRetry:   defaultMaxRetry,
-	}
+	optOnce.Do(func() {
+		retryDelay, err := strconv.ParseInt(os.Getenv("REDIS_LOCK_RETRY_DELAY"), 10, 64)
+		if err != nil || retryDelay < 0 {
+			retryDelay = defaultDelay
+		}
+
+		maxRetry, err := strconv.Atoi(os.Getenv("REDIS_LOCK_MAX_RETRY"))
+		if err != nil || maxRetry < 0 {
+			maxRetry = defaultMaxRetry
+		}
+
+		expire, err := strconv.ParseInt(os.Getenv("REDIS_LOCK_EXPIRE"), 10, 64)
+		if err != nil || expire < 0 {
+			expire = defaultExpire
+		}
+
+		opt = &Options{
+			retryDelay: time.Duration(retryDelay) * time.Second,
+			expiry:     time.Duration(expire) * time.Second,
+			maxRetry:   maxRetry,
+		}
+	})
+
 	return opt
 }
 
 var (
 	pool     *redis.Pool
 	poolOnce sync.Once
+
+	poolMaxIdle           = 200
+	poolMaxActive         = 1000
+	poolIdleTimeout int64 = 180
 )
 
 // DefaultPool return default redis pool
 func DefaultPool() *redis.Pool {
 	poolOnce.Do(func() {
+		maxIdle, err := strconv.Atoi(os.Getenv("REDIS_POOL_MAX_IDLE"))
+		if err != nil || maxIdle < 0 {
+			maxIdle = poolMaxIdle
+		}
+
+		maxActive, err := strconv.Atoi(os.Getenv("REDIS_POOL_MAX_ACTIVE"))
+		if err != nil || maxActive < 0 {
+			maxActive = poolMaxActive
+		}
+
+		idleTimeout, err := strconv.ParseInt(os.Getenv("REDIS_POOL_IDLE_TIMEOUT"), 10, 64)
+		if err != nil || idleTimeout < 0 {
+			idleTimeout = poolIdleTimeout
+		}
+
 		pool = &redis.Pool{
 			Dial: func() (redis.Conn, error) {
 				url := config.GetRedisOfRegURL()
@@ -139,9 +184,9 @@ func DefaultPool() *redis.Pool {
 				_, err := c.Do("PING")
 				return err
 			},
-			MaxIdle:     20,
-			MaxActive:   100,
-			IdleTimeout: 180 * time.Second,
+			MaxIdle:     maxIdle,
+			MaxActive:   maxActive,
+			IdleTimeout: time.Duration(idleTimeout) * time.Second,
 			Wait:        true,
 		}
 	})
