@@ -201,7 +201,7 @@ def parse_yaml_config(config_file_path):
     # parse local log related configs
     local_logs = log_configs.get('local') or {}
     if local_logs:
-        config_dict['log_location'] = local_logs.get('location') or '/var/log/harbor'
+        config_dict['log_location'] = local_logs.get('log.location') or '/var/log/harbor'
         config_dict['log_rotate_count'] = local_logs.get('rotate_count') or 50
         config_dict['log_rotate_size'] = local_logs.get('rotate_size') or '200M'
 
