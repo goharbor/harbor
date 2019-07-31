@@ -68,7 +68,7 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     set num(num) {
-        this.rule.params[this.template] = num;
+        this.rule.params[this.template] = parseInt(num, 10);
     }
 
     get repoSelect() {
