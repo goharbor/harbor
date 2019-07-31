@@ -18,6 +18,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"strconv"
+
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -25,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
-	"strconv"
 )
 
 // PolicyMigrator migrate the cron job policy to new schema
@@ -66,7 +67,9 @@ func (pm *PolicyMigrator) Metadata() *MigratorMeta {
 func (pm *PolicyMigrator) Migrate() error {
 	conn := pm.pool.Get()
 	defer func() {
-		_ = conn.Close()
+		if err := conn.Close(); err != nil {
+			logger.Errorf("close redis connection error: %s", err)
+		}
 	}()
 
 	allJobIDs, err := getAllJobStatsIDs(conn, pm.namespace)
@@ -137,10 +140,9 @@ func (pm *PolicyMigrator) Migrate() error {
 
 				// Update periodic policy model
 				// conn is working, we need new conn
+				// this inner connection will be closed by the calling method
 				innerConn := pm.pool.Get()
-				defer func() {
-					_ = innerConn.Close()
-				}()
+
 				policy, er := getPeriodicPolicy(numbericPolicyID, innerConn, pm.namespace)
 				if er == nil {
 					policy.ID = pID
@@ -250,6 +252,13 @@ func getScoreByID(id string, conn redis.Conn, ns string) (int64, error) {
 
 // Get periodic policy object by the numeric ID
 func getPeriodicPolicy(numericID int64, conn redis.Conn, ns string) (*period.Policy, error) {
+	// close this inner connection here
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Errorf("close redis connection error: %s", err)
+		}
+	}()
+
 	bytes, err := redis.Values(conn.Do("ZRANGEBYSCORE", rds.KeyPeriodicPolicy(ns), numericID, numericID))
 	if err != nil {
 		return nil, err
