@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor/quota"
+	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"github.com/goharbor/harbor/src/pkg/types"
 )
 
@@ -104,8 +105,16 @@ func (m *uploadChartVersionBuilder) Build(req *http.Request) interceptor.Interce
 		log.Errorf("Failed to parse chart from body, error: %v", err)
 		return nil
 	}
-
 	chartName, version := chart.Metadata.Name, chart.Metadata.Version
+
+	info := &util.ChartVersionInfo{
+		ProjectID: project.ProjectID,
+		Namespace: namespace,
+		ChartName: chartName,
+		Version:   version,
+	}
+	// Chart version info will be used by computeQuotaForUpload
+	*req = *req.WithContext(util.NewChartVersionInfoContext(req.Context(), info))
 
 	opts := []quota.Option{
 		quota.WithManager("project", strconv.FormatInt(project.ProjectID, 10)),
