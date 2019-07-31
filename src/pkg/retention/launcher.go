@@ -187,7 +187,8 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 					Algorithm: ply.Algorithm,
 				}
 			}
-			repositoryRules[reposit].Rules = append(repositoryRules[reposit].Rules, &rule)
+			r := rule
+			repositoryRules[reposit].Rules = append(repositoryRules[reposit].Rules, &r)
 		}
 	}
 
