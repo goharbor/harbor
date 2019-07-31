@@ -37,8 +37,8 @@ import (
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/proxy"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/notification"
 	"github.com/goharbor/harbor/src/replication"
-	"github.com/goharbor/harbor/src/webhook"
 )
 
 const (
@@ -136,8 +136,8 @@ func main() {
 		log.Fatalf("failed to init for replication: %v", err)
 	}
 
-	log.Info("initializing webhook...")
-	webhook.Init()
+	log.Info("initializing notification...")
+	notification.Init()
 
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)

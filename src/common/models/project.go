@@ -19,8 +19,14 @@ import (
 	"time"
 )
 
-// ProjectTable is the table name for project
-const ProjectTable = "project"
+const (
+	// ProjectTable is the table name for project
+	ProjectTable = "project"
+	// ProjectPublic means project is public
+	ProjectPublic = "public"
+	// ProjectPrivate means project is private
+	ProjectPrivate = "private"
+)
 
 // Project holds the details of a project.
 type Project struct {

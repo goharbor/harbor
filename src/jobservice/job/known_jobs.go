@@ -30,6 +30,6 @@ const (
 	Replication = "REPLICATION"
 	// ReplicationScheduler : the name of the replication scheduler job in job service
 	ReplicationScheduler = "IMAGE_REPLICATE"
-	// WebhookHTTPJob : the name of the webhook http job in job service
-	WebhookHTTPJob = "WEBHOOK_HTTP"
+	// WebhookJob : the name of the webhook job in job service
+	WebhookJob = "WEBHOOK"
 )

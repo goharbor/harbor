@@ -28,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier"
-	notifyEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	"github.com/goharbor/harbor/src/core/notifier/topic"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
@@ -119,8 +118,25 @@ func (n *NotificationHandler) Post() {
 				return
 			}
 
-			// publish image push event
-			buildAndPublishImagePullOrPushEvent(topic.PushImageTopic, pro, event)
+			// build and publish image push event
+			evt := &notifier.Event{}
+			imgPushMetadata := &notifier.ImagePushPullMetaData{
+				Topic:    topic.PushImageTopic,
+				Project:  pro,
+				Tag:      tag,
+				Digest:   event.Target.Digest,
+				RepoName: event.Target.Repository,
+				OccurAt:  time.Now(),
+				Operator: event.Actor.Name,
+			}
+			if err := evt.Build(imgPushMetadata); err != nil {
+				// do not return when building event metadata failed
+				log.Errorf("failed to build image push event metadata: %v", err)
+			}
+			if err := evt.Publish(); err != nil {
+				// do not return when publishing event failed
+				log.Errorf("failed to publish image push event: %v", err)
+			}
 
 			// TODO: handle image delete event and chart event
 			go func() {
@@ -154,8 +170,25 @@ func (n *NotificationHandler) Post() {
 			}
 		}
 		if action == "pull" {
-			// publish image pull event
-			buildAndPublishImagePullOrPushEvent(topic.PullImageTopic, pro, event)
+			// build and publish image push event
+			evt := &notifier.Event{}
+			imgPullMetadata := &notifier.ImagePushPullMetaData{
+				Topic:    topic.PullImageTopic,
+				Project:  pro,
+				Tag:      tag,
+				Digest:   event.Target.Digest,
+				RepoName: event.Target.Repository,
+				OccurAt:  time.Now(),
+				Operator: event.Actor.Name,
+			}
+			if err := evt.Build(imgPullMetadata); err != nil {
+				// do not return when building event metadata failed
+				log.Errorf("failed to build image push event metadata: %v", err)
+			}
+			if err := evt.Publish(); err != nil {
+				// do not return when publishing event failed
+				log.Errorf("failed to publish image pull event: %v", err)
+			}
 
 			go func() {
 				log.Debugf("Increase the repository %s pull count.", repository)
@@ -165,28 +198,6 @@ func (n *NotificationHandler) Post() {
 			}()
 		}
 	}
-}
-
-func buildAndPublishImagePullOrPushEvent(topic string, project *models.Project, event *models.Event) {
-	e := &notifyEvt.ImageEvent{
-		Project:  project,
-		OccurAt:  event.TimeStamp,
-		Operator: event.Actor.Name,
-		RepoName: event.Target.Repository,
-	}
-
-	res := &notifyEvt.Resource{
-		Tag:    event.Target.Tag,
-		Digest: event.Target.Digest,
-	}
-	e.Resource = append(e.Resource, res)
-
-	err := notifier.Publish(topic, e)
-	if err != nil {
-		log.Errorf("failed to publish image topic %s with pull event: %v", topic, err)
-		return
-	}
-	log.Debugf("published image topic for pull event: %v", e)
 }
 
 func filterEvents(notification *models.Notification) ([]*models.Event, error) {

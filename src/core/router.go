@@ -107,14 +107,14 @@ func initRouters() {
 	beego.Router("/api/replication/policies", &api.ReplicationPolicyAPI{}, "get:List;post:Create")
 	beego.Router("/api/replication/policies/:id([0-9]+)", &api.ReplicationPolicyAPI{}, "get:Get;put:Update;delete:Delete")
 
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies", &api.WebhookPolicyAPI{}, "get:List;post:Post")
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/:id([0-9]+)", &api.WebhookPolicyAPI{})
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/test", &api.WebhookPolicyAPI{}, "post:Test")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies", &api.NotificationPolicyAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/:id([0-9]+)", &api.NotificationPolicyAPI{})
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/test", &api.NotificationPolicyAPI{}, "post:Test")
 
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/lasttrigger", &api.WebhookPolicyAPI{}, "get:ListGroupByHookType")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/lasttrigger", &api.NotificationPolicyAPI{}, "get:ListGroupByEventType")
 
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/", &api.WebhookJobAPI{}, "get:List")
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/:id([0-9]+)", &api.WebhookJobAPI{})
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/", &api.NotificationJobAPI{}, "get:List")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/:id([0-9]+)", &api.NotificationJobAPI{})
 
 	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig;put:Put")
 	beego.Router("/api/configurations", &api.ConfigAPI{}, "get:Get;put:Put")
@@ -137,7 +137,7 @@ func initRouters() {
 	beego.Router("/service/notifications/jobs/adminjob/:id([0-9]+)", &admin.Handler{}, "post:HandleAdminJob")
 	beego.Router("/service/notifications/jobs/replication/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationScheduleJob")
 	beego.Router("/service/notifications/jobs/replication/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationTask")
-	beego.Router("/service/notifications/jobs/webhook/:id([0-9]+)", &jobs.Handler{}, "post:HandleWebhookJob")
+	beego.Router("/service/notifications/jobs/webhook/:id([0-9]+)", &jobs.Handler{}, "post:HandleNotificationJob")
 	beego.Router("/service/token", &token.Handler{})
 
 	beego.Router("/api/registries", &api.RegistryAPI{}, "get:List;post:Post")

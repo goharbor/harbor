@@ -101,12 +101,11 @@ var (
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
 
-			{Resource: rbac.ResourceWebhookPolicy, Action: rbac.ActionCreate},
-			{Resource: rbac.ResourceWebhookPolicy, Action: rbac.ActionUpdate},
-			{Resource: rbac.ResourceWebhookPolicy, Action: rbac.ActionDelete},
-			{Resource: rbac.ResourceWebhookPolicy, Action: rbac.ActionList},
-			{Resource: rbac.ResourceWebhookPolicy, Action: rbac.ActionRead},
-			{Resource: rbac.ResourceWebhookPolicy, Action: rbac.ActionTest},
+			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionList},
+			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionRead},
 		},
 
 		"master": {
@@ -175,7 +174,7 @@ var (
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
 
-			{Resource: rbac.ResourceWebhookPolicy, Action: rbac.ActionList},
+			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionList},
 		},
 
 		"developer": {
