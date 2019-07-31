@@ -15,6 +15,7 @@
 package native
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -24,6 +25,7 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	registry_pkg "github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
@@ -159,37 +161,77 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		}
 	}
 
-	var resources []*model.Resource
-	for _, repository := range repositories {
-		vTags, err := a.getVTags(repository.Name)
-		if err != nil {
-			return nil, err
-		}
-		if len(vTags) == 0 {
-			continue
-		}
-		for _, filter := range filters {
-			if err = filter.DoFilter(&vTags); err != nil {
-				return nil, err
+	rawResources := make([]*model.Resource, len(repositories))
+	var wg = new(sync.WaitGroup)
+	var stopped = make(chan struct{})
+	var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, stopped)
+
+	for i, r := range repositories {
+		wg.Add(1)
+		go func(index int, repo *adp.Repository) {
+			defer func() {
+				wg.Done()
+			}()
+
+			// Return false means no passport acquired, and no valid passport will be dispatched any more.
+			// For example, some crucial errors happened and all tasks should be cancelled.
+			if ok := passportsPool.Apply(); !ok {
+				return
 			}
-		}
-		if len(vTags) == 0 {
-			continue
-		}
-		tags := []string{}
-		for _, vTag := range vTags {
-			tags = append(tags, vTag.Name)
-		}
-		resources = append(resources, &model.Resource{
-			Type:     model.ResourceTypeImage,
-			Registry: a.registry,
-			Metadata: &model.ResourceMetadata{
-				Repository: &model.Repository{
-					Name: repository.Name,
+			defer func() {
+				passportsPool.Revoke()
+			}()
+
+			vTags, err := a.getVTags(repo.Name)
+			if err != nil {
+				log.Errorf("List tags for repo '%s' error: %v", repo.Name, err)
+				if !utils.IsChannelClosed(stopped) {
+					close(stopped)
+				}
+				return
+			}
+			if len(vTags) == 0 {
+				return
+			}
+			for _, filter := range filters {
+				if err = filter.DoFilter(&vTags); err != nil {
+					log.Errorf("Filter tags %v error: %v", vTags, err)
+					if !utils.IsChannelClosed(stopped) {
+						close(stopped)
+					}
+					return
+				}
+			}
+			if len(vTags) == 0 {
+				return
+			}
+			tags := []string{}
+			for _, vTag := range vTags {
+				tags = append(tags, vTag.Name)
+			}
+			rawResources[index] = &model.Resource{
+				Type:     model.ResourceTypeImage,
+				Registry: a.registry,
+				Metadata: &model.ResourceMetadata{
+					Repository: &model.Repository{
+						Name: repo.Name,
+					},
+					Vtags: tags,
 				},
-				Vtags: tags,
-			},
-		})
+			}
+		}(i, r)
+	}
+	wg.Wait()
+
+	if utils.IsChannelClosed(stopped) {
+		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+	}
+
+	var resources []*model.Resource
+	for _, r := range rawResources {
+		if r != nil {
+			resources = append(resources, r)
+		}
 	}
 
 	return resources, nil

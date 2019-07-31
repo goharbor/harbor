@@ -7,15 +7,16 @@ import (
 	"net/http"
 	"path/filepath"
 	"regexp"
+	"sync"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
-	"github.com/goharbor/harbor/src/replication/adapter/native"
-	"github.com/goharbor/harbor/src/replication/util"
-
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/replication/util"
 )
 
 func init() {
@@ -157,42 +158,83 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 	}
 	log.Debugf("FetchImages.repositories: %#v\n", repositories)
 
-	// list tags
-	for _, repository := range repositories {
-		var tags []string
-		tags, err = a.getTags(repository, client)
-		if err != nil {
-			return
-		}
+	rawResources := make([]*model.Resource, len(repositories))
+	var wg = new(sync.WaitGroup)
+	var stopped = make(chan struct{})
+	var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, stopped)
 
-		var filterTags []string
-		if tagsPattern != "" {
-			for _, tag := range tags {
-				var ok bool
-				ok, err = util.Match(tagsPattern, tag)
-				if err != nil {
-					return
-				}
-				if ok {
-					filterTags = append(filterTags, tag)
-				}
+	for i, r := range repositories {
+		wg.Add(1)
+		go func(index int, repo aliRepo) {
+			defer func() {
+				wg.Done()
+			}()
+
+			// Return false means no passport acquired, and no valid passport will be dispatched any more.
+			// For example, some crucial errors happened and all tasks should be cancelled.
+			if ok := passportsPool.Apply(); !ok {
+				return
 			}
-		} else {
-			filterTags = tags
-		}
+			defer func() {
+				passportsPool.Revoke()
+			}()
 
-		if len(filterTags) > 0 {
-			resources = append(resources, &model.Resource{
-				Type:     model.ResourceTypeImage,
-				Registry: a.registry,
-				Metadata: &model.ResourceMetadata{
-					Repository: &model.Repository{
-						Name: filepath.Join(repository.RepoNamespace, repository.RepoName),
+			var tags []string
+			tags, err = a.getTags(repo, client)
+			if err != nil {
+				log.Errorf("List tags for repo '%s' error: %v", repo.RepoName, err)
+				if !utils.IsChannelClosed(stopped) {
+					close(stopped)
+				}
+				return
+			}
+
+			var filterTags []string
+			if tagsPattern != "" {
+				for _, tag := range tags {
+					var ok bool
+					ok, err = util.Match(tagsPattern, tag)
+					if err != nil {
+						log.Errorf("Match tag '%s' error: %v", tag, err)
+						if !utils.IsChannelClosed(stopped) {
+							close(stopped)
+						}
+						return
+					}
+					if ok {
+						filterTags = append(filterTags, tag)
+					}
+				}
+			} else {
+				filterTags = tags
+			}
+
+			if len(filterTags) > 0 {
+				rawResources[index] = &model.Resource{
+					Type:     model.ResourceTypeImage,
+					Registry: a.registry,
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{
+							Name: filepath.Join(repo.RepoNamespace, repo.RepoName),
+						},
+						Vtags:  filterTags,
+						Labels: []string{},
 					},
-					Vtags:  filterTags,
-					Labels: []string{},
-				},
-			})
+				}
+			} else {
+				rawResources[index] = nil
+			}
+		}(i, r)
+	}
+	wg.Wait()
+
+	if utils.IsChannelClosed(stopped) {
+		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+	}
+
+	for _, r := range rawResources {
+		if r != nil {
+			resources = append(resources, r)
 		}
 	}
 

@@ -248,7 +248,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		log.Debugf("got %d repositories for namespace %s", n, ns)
 	}
 
-	var resources = make([]*model.Resource, len(repos))
+	var rawResources = make([]*model.Resource, len(repos))
 	var wg = new(sync.WaitGroup)
 	var stopped = make(chan struct{})
 	var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, stopped)
@@ -325,9 +325,9 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 			}
 
 			if len(tags) == 0 {
-				resources[index] = nil
+				rawResources[index] = nil
 			} else {
-				resources[index] = &model.Resource{
+				rawResources[index] = &model.Resource{
 					Type:     model.ResourceTypeImage,
 					Registry: a.registry,
 					Metadata: &model.ResourceMetadata{
@@ -342,14 +342,18 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	}
 	wg.Wait()
 
-	var filtered []*model.Resource
-	for _, r := range resources {
+	if utils.IsChannelClosed(stopped) {
+		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+	}
+
+	var resources []*model.Resource
+	for _, r := range rawResources {
 		if r != nil {
-			filtered = append(filtered, r)
+			resources = append(resources, r)
 		}
 	}
 
-	return filtered, nil
+	return resources, nil
 }
 
 func (a *adapter) listCandidateNamespaces(pattern string) ([]string, error) {
