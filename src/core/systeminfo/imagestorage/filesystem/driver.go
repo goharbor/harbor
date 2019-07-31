@@ -24,7 +24,8 @@ import (
 )
 
 const (
-	driverName = "filesystem"
+	// DriverName is the unique name representing the filesystem driver
+	DriverName = "filesystem"
 )
 
 type driver struct {
@@ -40,7 +41,7 @@ func NewDriver(path string) storage.Driver {
 
 // Name returns a human-readable name of the fielsystem driver
 func (d *driver) Name() string {
-	return driverName
+	return DriverName
 }
 
 // Cap returns the capacity of the filesystem storage

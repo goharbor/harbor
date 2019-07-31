@@ -24,7 +24,7 @@ import (
 func TestName(t *testing.T) {
 	path := "/tmp"
 	driver := NewDriver(path)
-	assert.Equal(t, driver.Name(), driverName, "unexpected driver name")
+	assert.Equal(t, driver.Name(), DriverName, "unexpected driver name")
 }
 
 func TestCap(t *testing.T) {

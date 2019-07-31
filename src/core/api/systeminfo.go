@@ -120,7 +120,13 @@ func (sia *SystemInfoAPI) GetVolumeInfo() {
 		return
 	}
 
-	systeminfo.Init()
+	err := systeminfo.Init()
+	if err != nil {
+		log.Errorf("failed to initialize systeminfo: %v", err)
+		sia.SendInternalServerError(fmt.Errorf("failed to get capacity: %v", err))
+		return
+	}
+
 	capacity, err := imagestorage.GlobalDriver.Cap()
 	if err != nil {
 		log.Errorf("failed to get capacity: %v", err)

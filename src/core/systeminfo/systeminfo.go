@@ -19,13 +19,31 @@ import (
 
 	"github.com/goharbor/harbor/src/core/systeminfo/imagestorage"
 	"github.com/goharbor/harbor/src/core/systeminfo/imagestorage/filesystem"
+	"github.com/goharbor/harbor/src/core/systeminfo/imagestorage/swift"
+	"github.com/gophercloud/gophercloud/openstack"
+	"github.com/pkg/errors"
 )
 
 // Init image storage driver
-func Init() {
-	path := os.Getenv("IMAGE_STORE_PATH")
-	if len(path) == 0 {
-		path = "/data"
+func Init() error {
+	if imagestorage.GlobalDriver != nil {
+		return nil
 	}
-	imagestorage.GlobalDriver = filesystem.NewDriver(path)
+
+	switch os.Getenv("IMAGE_STORE_SWIFT_DRIVER") {
+	default:
+		path := os.Getenv("IMAGE_STORE_PATH")
+		if len(path) == 0 {
+			path = "/data"
+		}
+		imagestorage.GlobalDriver = filesystem.NewDriver(path)
+		return nil
+	case swift.DriverName:
+		auth, err := openstack.AuthOptionsFromEnv()
+		if err != nil {
+			return errors.Wrap(err, "invalid Swift credentials")
+		}
+		imagestorage.GlobalDriver, err = swift.NewDriver(auth, os.Getenv("OS_REGION_NAME"), os.Getenv("OS_CONTAINER_NAME"))
+		return errors.Wrap(err, "cannot create Swift driver")
+	}
 }

@@ -45,6 +45,7 @@ require (
 	github.com/google/certificate-transparency-go v1.0.21 // indirect
 	github.com/google/go-querystring v0.0.0-20170111101155-53e6ce116135 // indirect
 	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect
+	github.com/gophercloud/gophercloud v0.2.0
 	github.com/gorilla/handlers v1.3.0
 	github.com/gorilla/mux v1.6.2
 	github.com/graph-gophers/dataloader v5.0.0+incompatible

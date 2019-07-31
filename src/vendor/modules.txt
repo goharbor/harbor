@@ -151,6 +151,15 @@ github.com/gomodule/redigo/internal
 github.com/google/go-querystring/query
 # github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf
 github.com/google/gofuzz
+# github.com/gophercloud/gophercloud v0.2.0
+github.com/gophercloud/gophercloud/openstack
+github.com/gophercloud/gophercloud
+github.com/gophercloud/gophercloud/openstack/objectstorage/v1/containers
+github.com/gophercloud/gophercloud/openstack/identity/v2/tokens
+github.com/gophercloud/gophercloud/openstack/identity/v3/tokens
+github.com/gophercloud/gophercloud/openstack/utils
+github.com/gophercloud/gophercloud/pagination
+github.com/gophercloud/gophercloud/openstack/identity/v2/tenants
 # github.com/gorilla/context v1.1.1
 github.com/gorilla/context
 # github.com/gorilla/handlers v1.3.0
