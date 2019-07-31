@@ -27,16 +27,16 @@ func init() {
 }
 
 func factory(registry *model.Registry) (adp.Adapter, error) {
-	client, err := NewClient(&model.Registry{
-		URL:        baseURL, // specify the URL of Docker Hub
-		Credential: registry.Credential,
-		Insecure:   registry.Insecure,
-	})
+	client, err := NewClient(registry)
 	if err != nil {
 		return nil, err
 	}
 
-	dockerRegistryAdapter, err := native.NewAdapter(registry)
+	dockerRegistryAdapter, err := native.NewAdapter(&model.Registry{
+		URL:        registryURL,
+		Credential: registry.Credential,
+		Insecure:   registry.Insecure,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -249,13 +249,13 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	}
 
 	var resources = make([]*model.Resource, len(repos))
-	var wg sync.WaitGroup
+	var wg = new(sync.WaitGroup)
 	var stopped = make(chan struct{})
 	var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, stopped)
 
 	for i, r := range repos {
+		wg.Add(1)
 		go func(index int, repo Repo) {
-			wg.Add(1)
 			defer func() {
 				wg.Done()
 			}()
