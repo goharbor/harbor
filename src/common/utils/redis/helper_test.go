@@ -21,19 +21,18 @@ import (
 	"time"
 
 	"github.com/garyburd/redigo/redis"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 const testingRedisHost = "REDIS_HOST"
 
+func init() {
+	os.Setenv("REDIS_LOCK_MAX_RETRY", "5")
+}
+
 func TestRedisLock(t *testing.T) {
-	con, err := redis.Dial(
-		"tcp",
-		fmt.Sprintf("%s:%d", getRedisHost(), 6379),
-		redis.DialConnectTimeout(30*time.Second),
-		redis.DialReadTimeout(time.Minute+10*time.Second),
-		redis.DialWriteTimeout(10*time.Second),
-	)
+	con, err := redis.Dial("tcp", fmt.Sprintf("%s:%d", getRedisHost(), 6379))
 	assert.Nil(t, err)
 	defer con.Close()
 
@@ -56,24 +55,41 @@ func TestRedisLock(t *testing.T) {
 func TestRequireLock(t *testing.T) {
 	assert := assert.New(t)
 
-	con, err := redis.Dial(
-		"tcp",
-		fmt.Sprintf("%s:%d", getRedisHost(), 6379),
-		redis.DialConnectTimeout(30*time.Second),
-		redis.DialReadTimeout(time.Minute+10*time.Second),
-		redis.DialWriteTimeout(10*time.Second),
-	)
+	conn, err := redis.Dial("tcp", fmt.Sprintf("%s:%d", getRedisHost(), 6379))
 	assert.Nil(err)
-	defer con.Close()
+	defer conn.Close()
 
-	key := "require-lock"
-	l, err := RequireLock(key, con)
+	if l, err := RequireLock(utils.GenerateRandomString(), conn); assert.Nil(err) {
+		l.Free()
+	}
+
+	if l, err := RequireLock(utils.GenerateRandomString()); assert.Nil(err) {
+		FreeLock(l)
+	}
+
+	key := utils.GenerateRandomString()
+	if l, err := RequireLock(key); assert.Nil(err) {
+		defer FreeLock(l)
+
+		_, err = RequireLock(key)
+		assert.Error(err)
+	}
+}
+
+func TestFreeLock(t *testing.T) {
+	assert := assert.New(t)
+
+	if l, err := RequireLock(utils.GenerateRandomString()); assert.Nil(err) {
+		assert.Nil(FreeLock(l))
+	}
+
+	conn, err := redis.Dial("tcp", fmt.Sprintf("%s:%d", getRedisHost(), 6379))
 	assert.Nil(err)
-	defer l.Free()
 
-	time.Sleep(2 * time.Second)
-	_, err = RequireLock(key, con)
-	assert.NotNil(err)
+	if l, err := RequireLock(utils.GenerateRandomString(), conn); assert.Nil(err) {
+		conn.Close()
+		assert.Error(FreeLock(l))
+	}
 }
 
 func getRedisHost() string {
