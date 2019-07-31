@@ -16,6 +16,7 @@ package middlewares
 
 // const variables
 const (
+	CHART            = "chart"
 	READONLY         = "readonly"
 	URL              = "url"
 	MUITIPLEMANIFEST = "manifest"
@@ -25,6 +26,9 @@ const (
 	SIZEQUOTA        = "sizequota"
 	COUNTQUOTA       = "countquota"
 )
+
+// ChartMiddlewares middlewares for chart server
+var ChartMiddlewares = []string{CHART}
 
 // Middlewares with sequential organization
 var Middlewares = []string{READONLY, URL, MUITIPLEMANIFEST, LISTREPO, CONTENTTRUST, VULNERABLE, SIZEQUOTA, COUNTQUOTA}

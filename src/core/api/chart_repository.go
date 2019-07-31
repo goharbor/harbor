@@ -10,23 +10,17 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 
-	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/quota"
-	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/redis"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/label"
-	"github.com/goharbor/harbor/src/pkg/types"
+
+	"github.com/goharbor/harbor/src/chartserver"
+	"github.com/goharbor/harbor/src/common/rbac"
+	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
-	"k8s.io/helm/pkg/chartutil"
-	"k8s.io/helm/pkg/proto/hapi/chart"
 )
 
 const (
@@ -67,9 +61,6 @@ type ChartRepositoryAPI struct {
 
 	// Keep the namespace if existing
 	namespace string
-
-	// Quota manager when delete and upload chart (chart version)
-	quotaMgr *quota.Manager
 }
 
 // Prepare something for the following actions
@@ -98,25 +89,8 @@ func (cra *ChartRepositoryAPI) Prepare() {
 		}
 	}
 
-	project, err := cra.ProjectMgr.Get(cra.namespace)
-	if err != nil {
-		cra.ParseAndHandleError(fmt.Sprintf("failed to get project %s", cra.namespace), err)
-		return
-	}
-
 	// Init label manager
 	cra.labelManager = &label.BaseManager{}
-
-	method := cra.Ctx.Request.Method
-	if method == http.MethodDelete || method == http.MethodPost {
-		quotaMgr, err := quota.NewManager("project", strconv.FormatInt(project.ProjectID, 10))
-		if err != nil {
-			cra.SendInternalServerError(fmt.Errorf("failed to get the quota manager, error: %v", err))
-			return
-		}
-
-		cra.quotaMgr = quotaMgr
-	}
 }
 
 func (cra *ChartRepositoryAPI) requireAccess(action rbac.Action, subresource ...rbac.Resource) bool {
@@ -293,20 +267,6 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 	chartName := cra.GetStringFromPath(nameParam)
 	version := cra.GetStringFromPath(versionParam)
 
-	chartLock, err := requireLockForChart(cra.namespace, chartName)
-	if err != nil {
-		cra.SendInternalServerError(fmt.Errorf("failed to lock chart %s for deletion, error: %v", chartName, err))
-		return
-	}
-	defer redis.FreeLock(chartLock)
-
-	versionLock, err := requireLockForChart(cra.namespace, chartName, version)
-	if err != nil {
-		cra.SendInternalServerError(fmt.Errorf("failed to lock chart %s with version %s for deletion, error: %v", chartName, version, err))
-		return
-	}
-	defer redis.FreeLock(versionLock)
-
 	// Try to remove labels from deleting chart if exitsing
 	if err := cra.removeLabelsFromChart(chartName, version); err != nil {
 		cra.SendInternalServerError(err)
@@ -315,11 +275,6 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 
 	if err := chartController.DeleteChartVersion(cra.namespace, chartName, version); err != nil {
 		cra.ParseAndHandleError("fail to delete chart version", err)
-		return
-	}
-
-	if err := cra.quotaMgr.SubtractResources(types.ResourceList{types.ResourceCount: 1}); err != nil {
-		cra.SendInternalServerError(fmt.Errorf("failed to subtract resources for quota, error: %v", err))
 		return
 	}
 }
@@ -353,54 +308,8 @@ func (cra *ChartRepositoryAPI) UploadChartVersion() {
 		}
 	}
 
-	chart, err := parseChart(cra.Ctx.Request)
-	if err != nil {
-		cra.SendBadRequestError(err)
-		return
-	}
-
-	chartName := chart.Metadata.Name
-	version := chart.Metadata.Version
-
-	chartLock, err := requireLockForChart(cra.namespace, chartName)
-	if err != nil {
-		cra.SendInternalServerError(fmt.Errorf("failed to lock chart %s for upload, error: %v", chartName, err))
-		return
-	}
-	defer redis.FreeLock(chartLock)
-
-	versionLock, err := requireLockForChart(cra.namespace, chartName, version)
-	if err != nil {
-		cra.SendInternalServerError(fmt.Errorf("failed to lock chart %s with version %s for upload, error: %v", chartName, version, err))
-		return
-	}
-	defer redis.FreeLock(versionLock)
-
-	resources := types.ResourceList{}
-	if !chartVersionExists(cra.namespace, chartName, version) {
-		resources[types.ResourceCount] = 1
-	}
-
-	if len(resources) == 0 {
-		// Directly proxy to the backend
-		chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
-		return
-	}
-
-	if err := cra.quotaMgr.AddResources(resources); err != nil {
-		cra.SendBadRequestError(fmt.Errorf("failed to add resources for quota, error: %v", err))
-		return
-	}
-
 	// Directly proxy to the backend
 	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
-
-	if cra.Ctx.ResponseWriter.Status != http.StatusCreated {
-		if err := cra.quotaMgr.SubtractResources(resources); err != nil {
-			cra.SendInternalServerError(fmt.Errorf("failed to subtract resources for quota, error: %v", err))
-			return
-		}
-	}
 }
 
 // UploadChartProvFile handles POST /api/:repo/prov
@@ -438,13 +347,6 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 	// Get other parameters from the request
 	chartName := cra.GetStringFromPath(nameParam)
 
-	lock, err := requireLockForChart(cra.namespace, chartName)
-	if err != nil {
-		cra.SendInternalServerError(fmt.Errorf("failed to lock chart %s for deletion, error: %v", chartName, err))
-		return
-	}
-	defer redis.FreeLock(lock)
-
 	// Remove labels from all the deleting chart versions under the chart
 	chartVersions, err := chartController.GetChart(cra.namespace, chartName)
 	if err != nil {
@@ -462,13 +364,6 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 	if err := chartController.DeleteChart(cra.namespace, chartName); err != nil {
 		cra.SendInternalServerError(err)
 		return
-	}
-
-	if len(chartVersions) > 0 {
-		if err := cra.quotaMgr.SubtractResources(types.ResourceList{types.ResourceCount: int64(len(chartVersions))}); err != nil {
-			cra.SendInternalServerError(fmt.Errorf("failed to subtract resources for quota, error: %v", err))
-			return
-		}
 	}
 }
 
@@ -658,38 +553,4 @@ func chartFullName(namespace, chartName, version string) string {
 		return fmt.Sprintf("%s:%s", chartName, version)
 	}
 	return fmt.Sprintf("%s/%s:%s", namespace, chartName, version)
-}
-
-func requireLockForChart(keys ...string) (*redis.Mutex, error) {
-	if len(keys) == 0 {
-		return nil, errors.New("keys not allowed empty")
-	}
-
-	return redis.RequireLock("chart:" + strings.Join(keys, ":"))
-}
-
-// Returns true if chart of version exists in namespace
-var chartVersionExists = func(namespace, chartName, version string) bool {
-	chartVersion, err := chartController.GetChartVersion(namespace, chartName, version)
-	if err != nil {
-		log.Debugf("Get chart %s of version %s in namespace %s failed, error: %v", chartName, version, namespace, err)
-		return false
-	}
-
-	return !chartVersion.Removed
-}
-
-// Parse chart from http request
-var parseChart = func(req *http.Request) (*chart.Chart, error) {
-	chartFile, _, err := req.FormFile(formFieldNameForChart)
-	if err != nil {
-		return nil, fmt.Errorf("Get file content with multipart header from key '%s' failed with error: %s", formFieldNameForChart, err.Error())
-	}
-
-	chart, err := chartutil.LoadArchive(chartFile)
-	if err != nil {
-		return nil, fmt.Errorf("load chart from archive failed: %s", err.Error())
-	}
-
-	return chart, nil
 }

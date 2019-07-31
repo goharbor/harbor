@@ -51,11 +51,6 @@ var MockChartRepoHandler = http.HandlerFunc(func(w http.ResponseWriter, r *http.
 			w.Write(ChartListContent)
 			return
 		}
-		if r.Method == http.MethodPost {
-			w.WriteHeader(http.StatusCreated)
-			w.Write([]byte(`{"saved":true}`))
-			return
-		}
 	case "/api/repo1/charts/harbor/0.2.0",
 		"/api/library/charts/harbor/0.2.0":
 		if r.Method == http.MethodGet {

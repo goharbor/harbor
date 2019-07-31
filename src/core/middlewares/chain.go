@@ -15,7 +15,10 @@
 package middlewares
 
 import (
+	"net/http"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/middlewares/chart"
 	"github.com/goharbor/harbor/src/core/middlewares/contenttrust"
 	"github.com/goharbor/harbor/src/core/middlewares/countquota"
 	"github.com/goharbor/harbor/src/core/middlewares/listrepo"
@@ -25,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/core/middlewares/url"
 	"github.com/goharbor/harbor/src/core/middlewares/vulnerable"
 	"github.com/justinas/alice"
-	"net/http"
 )
 
 // DefaultCreator ...
@@ -59,6 +61,7 @@ func (b *DefaultCreator) Create() *alice.Chain {
 
 func (b *DefaultCreator) geMiddleware(mName string) alice.Constructor {
 	middlewares := map[string]alice.Constructor{
+		CHART:            func(next http.Handler) http.Handler { return chart.New(next) },
 		READONLY:         func(next http.Handler) http.Handler { return readonly.New(next) },
 		URL:              func(next http.Handler) http.Handler { return url.New(next) },
 		MUITIPLEMANIFEST: func(next http.Handler) http.Handler { return multiplmanifest.New(next) },
