@@ -23,7 +23,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/goharbor/harbor/src/jobservice/job/impl/webhook"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/mgt"
 	"github.com/goharbor/harbor/src/jobservice/migration"
 
@@ -245,7 +245,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.ImageGC:              (*gc.GarbageCollector)(nil),
 			job.Replication:          (*replication.Replication)(nil),
 			job.ReplicationScheduler: (*replication.Scheduler)(nil),
-			job.WebhookJob:           (*webhook.HTTPNotifier)(nil),
+			job.WebhookJob:           (*notification.WebhookJob)(nil),
 		}); err != nil {
 		// exit
 		return nil, err
