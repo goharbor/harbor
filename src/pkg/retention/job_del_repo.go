@@ -74,8 +74,10 @@ func (drj *DelRepoJob) Run(ctx job.Context, params job.Parameters) error {
 	}
 
 	// Delete the repository
-	if err := dep.DefaultClient.DeleteRepository(repo); err != nil {
-		return err
+	if !isDryRun {
+		if err := dep.DefaultClient.DeleteRepository(repo); err != nil {
+			return err
+		}
 	}
 
 	// Log deletions
