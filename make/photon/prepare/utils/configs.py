@@ -181,7 +181,7 @@ def parse_yaml_config(config_file_path):
 
     # notification config
     notification_config = configs.get('notification') or {}
-    config_dict['notification_webhook_job_max_retry'] = webhook_config["webhook_job_max_retry"]
+    config_dict['notification_webhook_job_max_retry'] = notification_config["webhook_job_max_retry"]
 
     # Log configs
     allowed_levels = ['debug', 'info', 'warning', 'error', 'fatal']
