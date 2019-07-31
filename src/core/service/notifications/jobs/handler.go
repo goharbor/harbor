@@ -24,10 +24,10 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/notification"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/operation/hook"
 	"github.com/goharbor/harbor/src/replication/policy/scheduler"
-	"github.com/goharbor/harbor/src/webhook"
 )
 
 var statusMap = map[string]string{
@@ -105,15 +105,15 @@ func (h *Handler) HandleReplicationTask() {
 	}
 }
 
-// HandleWebhookJob handles the hook of webhook job
-func (h *Handler) HandleWebhookJob() {
-	log.Debugf("received webhook task status update event: task-%d, status-%s", h.id, h.status)
-	if err := webhook.JobCtl.UpdateWebhookJob(&models.WebhookJob{
+// HandleNotificationJob handles the hook of notification job
+func (h *Handler) HandleNotificationJob() {
+	log.Debugf("received notification job status update event: job-%d, status-%s", h.id, h.status)
+	if err := notification.JobMgr.Update(&models.NotificationJob{
 		ID:         h.id,
 		Status:     h.status,
 		UpdateTime: time.Now(),
 	}, "Status", "UpdateTime"); err != nil {
-		log.Errorf("Failed to update webhook job status, id: %d, status: %s", h.id, h.status)
+		log.Errorf("Failed to update notification job status, id: %d, status: %s", h.id, h.status)
 		h.SendInternalServerError(err)
 		return
 	}

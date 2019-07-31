@@ -39,7 +39,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier"
-	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	"github.com/goharbor/harbor/src/core/notifier/topic"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
@@ -365,8 +364,24 @@ func (ra *RepositoryAPI) Delete() {
 		}(t)
 	}
 
-	// publish image delete event
-	ra.buildAndPublishImageDeleteEvent(repoName, tags, project)
+	// build and publish image delete event
+	evt := &notifier.Event{}
+	imgDelMetadata := &notifier.ImageDelMetaData{
+		Topic:    topic.DeleteImageTopic,
+		Project:  project,
+		Tags:     tags,
+		RepoName: repoName,
+		OccurAt:  time.Now(),
+		Operator: ra.SecurityCtx.GetUsername(),
+	}
+	if err := evt.Build(imgDelMetadata); err != nil {
+		// do not return when building event metadata failed
+		log.Errorf("failed to build image delete event metadata: %v", err)
+	}
+	if err := evt.Publish(); err != nil {
+		// do not return when publishing event failed
+		log.Errorf("failed to publish image delete event: %v", err)
+	}
 
 	exist, err := repositoryExist(repoName, rc)
 	if err != nil {
@@ -397,30 +412,6 @@ func (ra *RepositoryAPI) Delete() {
 			return
 		}
 	}
-}
-
-// build and publish image delete event, cannot get image corresponding digest once image has been deleted
-// so image delete event data will not include digest info
-func (ra *RepositoryAPI) buildAndPublishImageDeleteEvent(repoName string, tags []string, project *models.Project) {
-	// build image delete event
-	evt := &notifierEvt.ImageEvent{
-		Project:  project,
-		OccurAt:  time.Now(),
-		Operator: ra.SecurityCtx.GetUsername(),
-		RepoName: repoName,
-	}
-
-	for _, t := range tags {
-		res := &notifierEvt.Resource{Tag: t}
-		evt.Resource = append(evt.Resource, res)
-	}
-
-	// publish image delete event
-	err := notifier.Publish(topic.DeleteImageTopic, evt)
-	if err != nil {
-		log.Errorf("failed to publish image topic %s with delete event: %v", topic.DeleteImageTopic, err)
-	}
-	log.Debugf("published image topic for delete event: %v", evt)
 }
 
 // GetTag returns the tag of a repository

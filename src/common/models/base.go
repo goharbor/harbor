@@ -37,6 +37,6 @@ func init() {
 		new(JobLog),
 		new(Robot),
 		new(OIDCUser),
-		new(WebhookPolicy),
-		new(WebhookJob))
+		new(NotificationPolicy),
+		new(NotificationJob))
 }
