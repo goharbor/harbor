@@ -178,8 +178,10 @@ def parse_yaml_config(config_file_path):
     js_config = configs.get('jobservice') or {}
     config_dict['max_job_workers'] = js_config["max_job_workers"]
     config_dict['jobservice_secret'] = generate_random_string(16)
-    config_dict['webhook_max_http_fails'] = js_config["webhook_max_http_fails"]
 
+    # notification config
+    notification_config = configs.get('notification') or {}
+    config_dict['notification_webhook_job_max_retry'] = webhook_config["webhook_job_max_retry"]
 
     # Log configs
     allowed_levels = ['debug', 'info', 'warning', 'error', 'fatal']

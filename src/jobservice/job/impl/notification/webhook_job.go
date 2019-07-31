@@ -1,69 +1,80 @@
-package webhook
+package notification
 
 import (
 	"bytes"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils/registry"
-	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"net/http"
+	"os"
+	"strconv"
 )
 
-// HTTPNotifier implements the job interface, which send webhook notification by http.
-type HTTPNotifier struct {
+// Max retry has the same meaning as max fails.
+const maxFails = "JOBSERVICE_WEBHOOK_JOB_MAX_RETRY"
+
+// WebhookJob implements the job interface, which send notification by http or https.
+type WebhookJob struct {
 	client *http.Client
 	logger logger.Interface
 	ctx    job.Context
 }
 
 // MaxFails returns that how many times this job can fail, get this value from ctx.
-func (hn *HTTPNotifier) MaxFails() uint {
-	// Get max fails count from config file
+func (wj *WebhookJob) MaxFails() uint {
+	if maxFails, exist := os.LookupEnv(maxFails); exist {
+		result, err := strconv.ParseUint(maxFails, 10, 32)
+		// Unable to log error message because the logger isn't initialized when calling this function.
+		if err == nil {
+			return uint(result)
+		}
+	}
+
 	// Default max fails count is 10, and its max retry interval is around 3h
 	// Large enough to ensure most situations can notify successfully
-	return config.DefaultConfig.WebHookConfig.MaxHTTPFails
+	return 10
 }
 
 // ShouldRetry ...
-func (hn *HTTPNotifier) ShouldRetry() bool {
+func (wj *WebhookJob) ShouldRetry() bool {
 	return true
 }
 
 // Validate implements the interface in job/Interface
-func (hn *HTTPNotifier) Validate(params job.Parameters) error {
+func (wj *WebhookJob) Validate(params job.Parameters) error {
 	return nil
 }
 
 // Run implements the interface in job/Interface
-func (hn *HTTPNotifier) Run(ctx job.Context, params job.Parameters) error {
-	if err := hn.init(ctx, params); err != nil {
+func (wj *WebhookJob) Run(ctx job.Context, params job.Parameters) error {
+	if err := wj.init(ctx, params); err != nil {
 		return err
 	}
 
-	err := hn.execute(ctx, params)
+	err := wj.execute(ctx, params)
 	return err
 }
 
-// init http_notifier for webhoook
-func (hn *HTTPNotifier) init(ctx job.Context, params map[string]interface{}) error {
-	hn.logger = ctx.GetLogger()
-	hn.ctx = ctx
+// init webhook job
+func (wj *WebhookJob) init(ctx job.Context, params map[string]interface{}) error {
+	wj.logger = ctx.GetLogger()
+	wj.ctx = ctx
 
-	// default insecureSkipVerify is false
-	insecureSkipVerify := false
+	// default insecureSkipVerify is true
+	insecureSkipVerify := true
 	if v, ok := params["skip_cert_verify"]; ok {
 		insecureSkipVerify = v.(bool)
 	}
-	hn.client = &http.Client{
+	wj.client = &http.Client{
 		Transport: registry.GetHTTPTransport(insecureSkipVerify),
 	}
 
 	return nil
 }
 
-// send notification by http or https
-func (hn *HTTPNotifier) execute(ctx job.Context, params map[string]interface{}) error {
+// execute webhook job
+func (wj *WebhookJob) execute(ctx job.Context, params map[string]interface{}) error {
 	payload := params["payload"].(string)
 	address := params["address"].(string)
 
@@ -71,17 +82,17 @@ func (hn *HTTPNotifier) execute(ctx job.Context, params map[string]interface{}) 
 	if err != nil {
 		return err
 	}
-	if v, ok := params["token"]; ok && len(v.(string)) > 0 {
+	if v, ok := params["auth_header"]; ok && len(v.(string)) > 0 {
 		req.Header.Set("Authorization", v.(string))
 	}
 	req.Header.Set("Content-Type", "application/json")
 
-	resp, err := hn.client.Do(req)
+	resp, err := wj.client.Do(req)
 	if err != nil {
 		return err
 	}
 	defer resp.Body.Close()
-	if resp.StatusCode < 200 && resp.StatusCode >= 300 {
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
 		return fmt.Errorf("webhook job(target: %s) response code is %d", address, resp.StatusCode)
 	}
 
