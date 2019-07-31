@@ -24,17 +24,18 @@ import (
 )
 
 type chartHandler struct {
-	matchers []interceptor.Matcher
+	builders []interceptor.Builder
 	next     http.Handler
 }
 
 // New ...
-func New(next http.Handler, matchers ...interceptor.Matcher) http.Handler {
-	if len(matchers) == 0 {
-		matchers = defaultMatchers
+func New(next http.Handler, builders ...interceptor.Builder) http.Handler {
+	if len(builders) == 0 {
+		builders = defaultBuilders
 	}
+
 	return &chartHandler{
-		matchers: matchers,
+		builders: builders,
 		next:     next,
 	}
 }
@@ -49,7 +50,7 @@ func (h *chartHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	if err := interceptor.HandleRequest(req); err != nil {
 		log.Warningf("Error occurred when to handle request in count quota handler: %v", err)
-		http.Error(rw, util.MarshalError("InternalError", fmt.Sprintf("Error occurred when to handle request in count quota handler: %v", err)),
+		http.Error(rw, util.MarshalError("InternalError", fmt.Sprintf("Error occurred when to handle request in chart count quota handler: %v", err)),
 			http.StatusInternalServerError)
 		return
 	}
@@ -61,9 +62,10 @@ func (h *chartHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 }
 
 func (h *chartHandler) getInterceptor(req *http.Request) interceptor.Interceptor {
-	for _, matcher := range h.matchers {
-		if matcher.Match(req) {
-			return matcher.SetupInterceptor(req)
+	for _, builder := range h.builders {
+		interceptor := builder.Build(req)
+		if interceptor != nil {
+			return interceptor
 		}
 	}
 

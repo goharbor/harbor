@@ -18,17 +18,17 @@ import (
 	"net/http"
 )
 
-// Interceptor ...
+// Builder interceptor builder
+type Builder interface {
+	// Build build interceptor from http.Request returns nil if interceptor not match the request
+	Build(*http.Request) Interceptor
+}
+
+// Interceptor interceptor for middleware
 type Interceptor interface {
 	// HandleRequest ...
 	HandleRequest(*http.Request) error
 
 	// HandleResponse won't return any error
 	HandleResponse(http.ResponseWriter, *http.Request)
-}
-
-// Matcher ...
-type Matcher interface {
-	Match(*http.Request) bool
-	SetupInterceptor(*http.Request) Interceptor
 }
