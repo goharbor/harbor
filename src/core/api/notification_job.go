@@ -63,7 +63,7 @@ func (w *NotificationJobAPI) List() {
 		return
 	}
 	if policy == nil {
-		w.SendNotFoundError(fmt.Errorf("policy %d not found", policyID))
+		w.SendBadRequestError(fmt.Errorf("policy %d not found", policyID))
 		return
 	}
 
