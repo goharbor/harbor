@@ -63,8 +63,10 @@ clair:
 jobservice:
   # Maximum number of job workers in job service  
   max_job_workers: 10
-  # Maximum fail number for webhook http notification
-  webhook_max_http_fails: 10
+
+notification:
+  # Maximum retry count for webhook job
+  webhook_job_max_retry: 10
 
 chart:
   # Change the value of absolute_url to enabled can enable absolute url in chart
