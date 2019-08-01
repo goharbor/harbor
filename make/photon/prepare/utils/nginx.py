@@ -3,7 +3,7 @@ from fnmatch import fnmatch
 from pathlib import Path
 
 from g import config_dir, templates_dir, DEFAULT_GID, DEFAULT_UID
-from utils.misc import prepare_config_dir, mark_file
+from utils.misc import prepare_dir, mark_file
 from utils.jinja import render_jinja
 from utils.cert import SSL_CERT_KEY_PATH, SSL_CERT_PATH
 
@@ -17,8 +17,7 @@ CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS = 'harbor.https.*.conf'
 CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTP = 'harbor.http.*.conf'
 
 def prepare_nginx(config_dict):
-    file_path = prepare_config_dir(nginx_confd_dir)
-    os.chown(file_path, DEFAULT_UID, DEFAULT_GID)
+    prepare_dir(nginx_confd_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
     render_nginx_template(config_dict)
 
 def render_nginx_template(config_dict):

@@ -1,7 +1,5 @@
 FROM node:10.15.0 as nodeportal
 
-RUN mkdir -p /portal_src && mkdir -p /build_dir
-
 COPY src/portal /portal_src
 COPY ./docs/swagger.yaml /portal_src
 
@@ -10,9 +8,8 @@ WORKDIR /build_dir
 RUN cp -r /portal_src/* /build_dir \
     && ls -la \
     && apt-get update \
-    && apt-get install python-yaml \
-    && cat swagger.yaml | python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' > swagger.json \
-    && cat ./package.json \
+    && apt-get install -y --no-install-recommends python-yaml=3.12-1 \
+    && python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger.yaml > swagger.json \
     && npm install \
     && npm run build_lib \
     && npm run link_lib \
@@ -34,7 +31,7 @@ RUN tdnf install -y nginx sudo >> /dev/null \
     && chown -R nginx:nginx /etc/nginx \
     && tdnf clean all
 
-EXPOSE 80
+EXPOSE 8080
 VOLUME /var/cache/nginx /var/log/nginx /run
 
 STOPSIGNAL SIGQUIT

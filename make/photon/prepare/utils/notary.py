@@ -2,7 +2,7 @@ import os, shutil, pathlib
 from g import templates_dir, config_dir, root_crt_path, secret_key_dir,DEFAULT_UID, DEFAULT_GID
 from .cert import openssl_installed, create_cert, create_root_cert, get_alias
 from .jinja import render_jinja
-from .misc import mark_file, prepare_config_dir
+from .misc import mark_file, prepare_dir
 
 notary_template_dir = os.path.join(templates_dir, "notary")
 notary_signer_pg_template = os.path.join(notary_template_dir, "signer-config.postgres.json.jinja")
@@ -20,12 +20,12 @@ notary_server_env_path = os.path.join(notary_config_dir, "server_env")
 
 
 def prepare_env_notary(nginx_config_dir):
-    notary_config_dir = prepare_config_dir(config_dir, "notary")
+    notary_config_dir = prepare_dir(config_dir, "notary")
     old_signer_cert_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer.crt'))
     old_signer_key_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer.key'))
     old_signer_ca_cert_secret_path = pathlib.Path(os.path.join(config_dir, 'notary-signer-ca.crt'))
 
-    notary_secret_dir = prepare_config_dir('/secret/notary')
+    notary_secret_dir = prepare_dir('/secret/notary')
     signer_cert_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer.crt'))
     signer_key_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer.key'))
     signer_ca_cert_secret_path = pathlib.Path(os.path.join(notary_secret_dir, 'notary-signer-ca.crt'))

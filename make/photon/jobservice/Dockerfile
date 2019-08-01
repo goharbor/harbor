@@ -14,4 +14,6 @@ USER harbor
 
 VOLUME ["/var/log/jobs/"]
 
+HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/v1/stats || exit 1
+
 ENTRYPOINT ["/harbor/harbor_jobservice", "-c", "/etc/jobservice/config.yml"]

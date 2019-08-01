@@ -2,12 +2,12 @@ import os, shutil
 
 from g import templates_dir, config_dir, DEFAULT_UID, DEFAULT_GID
 from .jinja import render_jinja
-from .misc import prepare_config_dir
+from .misc import prepare_dir
 
 clair_template_dir = os.path.join(templates_dir, "clair")
 
 def prepare_clair(config_dict):
-    clair_config_dir = prepare_config_dir(config_dir, "clair")
+    clair_config_dir = prepare_dir(config_dir, "clair")
 
     if os.path.exists(os.path.join(clair_config_dir, "postgresql-init.d")):
         print("Copying offline data file for clair DB")
