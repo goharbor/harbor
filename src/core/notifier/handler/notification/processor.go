@@ -11,7 +11,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier"
 	notifyModel "github.com/goharbor/harbor/src/core/notifier/model"
-	"github.com/goharbor/harbor/src/notification"
+	"github.com/goharbor/harbor/src/pkg/notification"
 )
 
 // getNameFromImgRepoFullName gets image name from repo full name with format `repoName/imageName`

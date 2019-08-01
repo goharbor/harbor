@@ -11,8 +11,8 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	apiModels "github.com/goharbor/harbor/src/core/api/models"
-	"github.com/goharbor/harbor/src/notification"
-	"github.com/goharbor/harbor/src/notification/model"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/notification/model"
 )
 
 // NotificationPolicyAPI ...

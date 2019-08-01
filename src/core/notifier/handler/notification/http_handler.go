@@ -8,7 +8,7 @@ import (
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/notification"
+	"github.com/goharbor/harbor/src/pkg/notification"
 )
 
 // HTTPHandler handles notification http topic and start the hook processing

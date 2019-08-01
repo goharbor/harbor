@@ -3,13 +3,13 @@ package notification
 import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	cfg "github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/notification/config"
-	"github.com/goharbor/harbor/src/notification/hook"
-	"github.com/goharbor/harbor/src/notification/job"
-	jobMgr "github.com/goharbor/harbor/src/notification/job/manager"
-	"github.com/goharbor/harbor/src/notification/model"
-	"github.com/goharbor/harbor/src/notification/policy"
-	"github.com/goharbor/harbor/src/notification/policy/manager"
+	"github.com/goharbor/harbor/src/pkg/notification/config"
+	"github.com/goharbor/harbor/src/pkg/notification/hook"
+	"github.com/goharbor/harbor/src/pkg/notification/job"
+	jobMgr "github.com/goharbor/harbor/src/pkg/notification/job/manager"
+	"github.com/goharbor/harbor/src/pkg/notification/model"
+	"github.com/goharbor/harbor/src/pkg/notification/policy"
+	"github.com/goharbor/harbor/src/pkg/notification/policy/manager"
 )
 
 var (

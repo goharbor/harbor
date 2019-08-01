@@ -6,7 +6,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/notification"
+	"github.com/goharbor/harbor/src/pkg/notification"
 )
 
 // NotificationJobAPI ...

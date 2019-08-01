@@ -11,9 +11,9 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/core/utils"
-	"github.com/goharbor/harbor/src/notification/config"
-	"github.com/goharbor/harbor/src/notification/job"
-	"github.com/goharbor/harbor/src/notification/job/manager"
+	"github.com/goharbor/harbor/src/pkg/notification/config"
+	"github.com/goharbor/harbor/src/pkg/notification/job"
+	"github.com/goharbor/harbor/src/pkg/notification/job/manager"
 )
 
 // Manager send hook

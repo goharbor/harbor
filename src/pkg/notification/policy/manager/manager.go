@@ -11,7 +11,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	notifierModel "github.com/goharbor/harbor/src/core/notifier/model"
-	"github.com/goharbor/harbor/src/notification/model"
+	"github.com/goharbor/harbor/src/pkg/notification/model"
 )
 
 // DefaultManager ...

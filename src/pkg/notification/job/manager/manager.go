@@ -5,7 +5,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao/notification"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/notification/job"
+	"github.com/goharbor/harbor/src/pkg/notification/job"
 )
 
 // DefaultManager ..

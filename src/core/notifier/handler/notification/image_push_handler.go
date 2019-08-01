@@ -1,7 +1,7 @@
 package notification
 
 import (
-	"github.com/goharbor/harbor/src/notification/model"
+	"github.com/goharbor/harbor/src/pkg/notification/model"
 )
 
 // PushImagePreprocessHandler preprocess image push event data
