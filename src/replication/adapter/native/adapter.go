@@ -15,6 +15,7 @@
 package native
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"net/http"
@@ -163,8 +164,8 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 
 	rawResources := make([]*model.Resource, len(repositories))
 	var wg = new(sync.WaitGroup)
-	var stopped = make(chan struct{})
-	var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, stopped)
+	ctx, cancel := context.WithCancel(context.Background())
+	var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, ctx.Done())
 
 	for i, r := range repositories {
 		wg.Add(1)
@@ -185,9 +186,7 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 			vTags, err := a.getVTags(repo.Name)
 			if err != nil {
 				log.Errorf("List tags for repo '%s' error: %v", repo.Name, err)
-				if !utils.IsChannelClosed(stopped) {
-					close(stopped)
-				}
+				cancel()
 				return
 			}
 			if len(vTags) == 0 {
@@ -196,9 +195,7 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 			for _, filter := range filters {
 				if err = filter.DoFilter(&vTags); err != nil {
 					log.Errorf("Filter tags %v error: %v", vTags, err)
-					if !utils.IsChannelClosed(stopped) {
-						close(stopped)
-					}
+					cancel()
 					return
 				}
 			}
@@ -223,7 +220,9 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	}
 	wg.Wait()
 
-	if utils.IsChannelClosed(stopped) {
+	err = ctx.Err()
+	cancel()
+	if err != nil {
 		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
 	}
 

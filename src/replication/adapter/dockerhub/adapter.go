@@ -2,6 +2,7 @@ package dockerhub
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -250,8 +251,8 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 
 	var rawResources = make([]*model.Resource, len(repos))
 	var wg = new(sync.WaitGroup)
-	var stopped = make(chan struct{})
-	var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, stopped)
+	ctx, cancel := context.WithCancel(context.Background())
+	var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, ctx.Done())
 
 	for i, r := range repos {
 		wg.Add(1)
@@ -276,9 +277,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 			if len(nameFilter) != 0 {
 				m, err := util.Match(nameFilter, name)
 				if err != nil {
-					if !utils.IsChannelClosed(stopped) {
-						close(stopped)
-					}
+					cancel()
 					log.Errorf("match repo name '%s' against pattern '%s' error: %v", name, nameFilter, err)
 					return
 				}
@@ -293,9 +292,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 			for {
 				pageTags, err := a.getTags(repo.Namespace, repo.Name, page, pageSize)
 				if err != nil {
-					if !utils.IsChannelClosed(stopped) {
-						close(stopped)
-					}
+					cancel()
 					log.Errorf("get tags for repo '%s/%s' from DockerHub error: %v", repo.Namespace, repo.Name, err)
 					return
 				}
@@ -304,9 +301,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 					if len(tagFilter) != 0 {
 						m, err := util.Match(tagFilter, t.Name)
 						if err != nil {
-							if !utils.IsChannelClosed(stopped) {
-								close(stopped)
-							}
+							cancel()
 							log.Errorf("match tag name '%s' against pattern '%s' error: %v", t.Name, tagFilter, err)
 							return
 						}
@@ -342,7 +337,9 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	}
 	wg.Wait()
 
-	if utils.IsChannelClosed(stopped) {
+	err = ctx.Err()
+	cancel()
+	if err != nil {
 		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
 	}
 

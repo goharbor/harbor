@@ -1,6 +1,7 @@
 package aliacr
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -160,8 +161,8 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 
 	rawResources := make([]*model.Resource, len(repositories))
 	var wg = new(sync.WaitGroup)
-	var stopped = make(chan struct{})
-	var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, stopped)
+	ctx, cancel := context.WithCancel(context.Background())
+	var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, ctx.Done())
 
 	for i, r := range repositories {
 		wg.Add(1)
@@ -183,9 +184,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 			tags, err = a.getTags(repo, client)
 			if err != nil {
 				log.Errorf("List tags for repo '%s' error: %v", repo.RepoName, err)
-				if !utils.IsChannelClosed(stopped) {
-					close(stopped)
-				}
+				cancel()
 				return
 			}
 
@@ -196,9 +195,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 					ok, err = util.Match(tagsPattern, tag)
 					if err != nil {
 						log.Errorf("Match tag '%s' error: %v", tag, err)
-						if !utils.IsChannelClosed(stopped) {
-							close(stopped)
-						}
+						cancel()
 						return
 					}
 					if ok {
@@ -228,7 +225,9 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 	}
 	wg.Wait()
 
-	if utils.IsChannelClosed(stopped) {
+	err = ctx.Err()
+	cancel()
+	if err != nil {
 		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
 	}
 

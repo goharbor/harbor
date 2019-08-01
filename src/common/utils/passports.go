@@ -13,11 +13,11 @@ type PassportsPool interface {
 
 type passportsPool struct {
 	passports chan struct{}
-	stopped   chan struct{}
+	stopped   <-chan struct{}
 }
 
 // NewPassportsPool creates a passports pool with given size
-func NewPassportsPool(size int, stopped chan struct{}) PassportsPool {
+func NewPassportsPool(size int, stopped <-chan struct{}) PassportsPool {
 	return &passportsPool{
 		passports: make(chan struct{}, size),
 		stopped:   stopped,
@@ -47,15 +47,4 @@ func (p *passportsPool) Revoke() bool {
 	case <-p.stopped:
 		return false
 	}
-}
-
-// IsChannelClosed ...
-func IsChannelClosed(ch <-chan struct{}) bool {
-	select {
-	case <-ch:
-		return true
-	default:
-	}
-
-	return false
 }
