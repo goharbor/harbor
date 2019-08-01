@@ -48,9 +48,12 @@ func (h *HTTPHandler) process(event *model.HookEvent) error {
 	}
 
 	j.Parameters = map[string]interface{}{
-		"payload":          string(payload),
-		"address":          event.Target.Address,
-		"auth_header":      event.Target.AuthHeader,
+		"payload": string(payload),
+		"address": event.Target.Address,
+		// Users can define a secret in http statement in notification(webhook) policy. So it will be sent in header in http request.
+		// The format will be like this:
+		// Authorization: 'Secret eyJ0eXAiOiJKV1QiLCJhbGciOi'
+		"auth_header":      "Secret " + event.Target.AuthHeader,
 		"skip_cert_verify": event.Target.SkipCertVerify,
 	}
 	return notification.HookManager.StartHook(event, j)
