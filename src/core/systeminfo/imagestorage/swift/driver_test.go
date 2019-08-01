@@ -102,17 +102,64 @@ func TestCapNoBytesUsed(t *testing.T) {
 	assert.Equal(t, cap.Free, uint64(15000), "unexpected free capacity")
 }
 
-func TestCapInvalidBytesUsed(t *testing.T) {
-	driver, server, err := newTestDriver("container", func(w http.ResponseWriter, r *http.Request) {
-		headers := w.Header()
-		headers.Add("X-Container-Meta-Quota-Bytes", "15000")
-		headers.Add("X-Container-Bytes-Used", "AA")
-	})
-	defer server.Close()
-	assert.Nil(t, err, "unexpected error")
+func TestCapInvalidQuota(t *testing.T) {
+	t.Run("String", func(t *testing.T) {
+		driver, server, err := newTestDriver("container", func(w http.ResponseWriter, r *http.Request) {
+			headers := w.Header()
+			headers.Add("X-Container-Meta-Quota-Bytes", "ABCDE")
+			headers.Add("X-Container-Bytes-Used", "10000")
+		})
+		defer server.Close()
+		assert.Nil(t, err, "unexpected error")
 
-	_, err = driver.Cap()
-	assert.NotNil(t, err, "expecting error")
+		cap, err := driver.Cap()
+		assert.Nil(t, err, "unexpected error")
+		assert.Equal(t, cap.Total, uint64(0), "unexpected total capacity")
+		assert.Equal(t, cap.Free, uint64(0), "unexpected free capacity")
+	})
+
+	t.Run("NegativeNumber", func(t *testing.T) {
+		driver, server, err := newTestDriver("container", func(w http.ResponseWriter, r *http.Request) {
+			headers := w.Header()
+			headers.Add("X-Container-Meta-Quota-Bytes", "-15")
+			headers.Add("X-Container-Bytes-Used", "10000")
+		})
+		defer server.Close()
+		assert.Nil(t, err, "unexpected error")
+
+		cap, err := driver.Cap()
+		assert.Nil(t, err, "unexpected error")
+		assert.Equal(t, cap.Total, uint64(0), "unexpected total capacity")
+		assert.Equal(t, cap.Free, uint64(0), "unexpected free capacity")
+	})
+}
+
+func TestCapInvalidBytesUsed(t *testing.T) {
+	t.Run("String", func(t *testing.T) {
+		driver, server, err := newTestDriver("container", func(w http.ResponseWriter, r *http.Request) {
+			headers := w.Header()
+			headers.Add("X-Container-Meta-Quota-Bytes", "15000")
+			headers.Add("X-Container-Bytes-Used", "AA")
+		})
+		defer server.Close()
+		assert.Nil(t, err, "unexpected error")
+
+		_, err = driver.Cap()
+		assert.NotNil(t, err, "expecting error")
+	})
+
+	t.Run("NegativeNumber", func(t *testing.T) {
+		driver, server, err := newTestDriver("container", func(w http.ResponseWriter, r *http.Request) {
+			headers := w.Header()
+			headers.Add("X-Container-Meta-Quota-Bytes", "15000")
+			headers.Add("X-Container-Bytes-Used", "-15")
+		})
+		defer server.Close()
+		assert.Nil(t, err, "unexpected error")
+
+		_, err = driver.Cap()
+		assert.NotNil(t, err, "expecting error")
+	})
 }
 
 func TestOverflowed(t *testing.T) {
@@ -135,6 +182,116 @@ func TestCapWithError(t *testing.T) {
 		w.WriteHeader(http.StatusInternalServerError)
 	})
 	defer server.Close()
+	assert.Nil(t, err, "unexpected error")
+
+	_, err = driver.Cap()
+	assert.NotNil(t, err, "expecting error")
+}
+
+func TestNewDriverInvalidOptions(t *testing.T) {
+	t.Run("InvalidAuthUrl", func(t *testing.T) {
+		t.Run("NoIdentityServer", func(t *testing.T) {
+			_, err := NewDriver(gophercloud.AuthOptions{
+				IdentityEndpoint: "notfound.example.com",
+				TokenID:          "token",
+			}, "region", "container")
+			assert.NotNil(t, err, "expecting error")
+		})
+
+		t.Run("IdentityServerUnavailable", func(t *testing.T) {
+			var server *httptest.Server
+			server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch r.RequestURI {
+				case "/":
+					w.WriteHeader(http.StatusInternalServerError)
+				case "/v3/auth/tokens":
+					internal.CatalogHandler(server.URL, w, r)
+				}
+			}))
+			defer server.Close()
+
+			_, err := NewDriver(gophercloud.AuthOptions{
+				IdentityEndpoint: server.URL,
+				TokenID:          "token",
+			}, "region", "container")
+			assert.NotNil(t, err, "expecting error")
+		})
+
+		t.Run("CatalogServerUnavailable", func(t *testing.T) {
+			var server *httptest.Server
+			server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch r.RequestURI {
+				case "/":
+					internal.IdentityHandler(server, w, r)
+				case "/v3/auth/tokens":
+					w.WriteHeader(http.StatusInternalServerError)
+				}
+			}))
+			defer server.Close()
+
+			_, err := NewDriver(gophercloud.AuthOptions{
+				IdentityEndpoint: server.URL,
+				TokenID:          "token",
+			}, "region", "container")
+			assert.NotNil(t, err, "expecting error")
+		})
+
+		t.Run("NoSwift", func(t *testing.T) {
+			var server *httptest.Server
+			server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				switch r.RequestURI {
+				case "/":
+					internal.IdentityHandler(server, w, r)
+				case "/v3/auth/tokens":
+					internal.EmptyCatalogHandler(w, r)
+				}
+			}))
+			defer server.Close()
+
+			_, err := NewDriver(gophercloud.AuthOptions{
+				IdentityEndpoint: server.URL,
+				TokenID:          "token",
+			}, "region", "container")
+			assert.NotNil(t, err, "expecting error")
+		})
+	})
+
+	t.Run("InvalidCredentials", func(t *testing.T) {
+		var server *httptest.Server
+		server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			switch r.RequestURI {
+			case "/":
+				internal.IdentityHandler(server, w, r)
+			case "/v3/auth/tokens":
+				w.WriteHeader(http.StatusForbidden)
+			}
+		}))
+		defer server.Close()
+
+		_, err := NewDriver(gophercloud.AuthOptions{
+			IdentityEndpoint: server.URL,
+			TokenID:          "token",
+		}, "region", "container")
+		assert.NotNil(t, err, "expecting error")
+	})
+}
+
+func TestNoStorageServer(t *testing.T) {
+	var server *httptest.Server
+	server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.RequestURI {
+		case "/":
+			internal.IdentityHandler(server, w, r)
+		case "/v3/auth/tokens":
+			internal.CatalogHandler("notfound.example.com", w, r)
+		}
+	}))
+	defer server.Close()
+
+	driver, err := NewDriver(gophercloud.AuthOptions{
+		IdentityEndpoint: server.URL,
+		TokenID:          "token",
+	}, "region", "container")
 	assert.Nil(t, err, "unexpected error")
 
 	_, err = driver.Cap()

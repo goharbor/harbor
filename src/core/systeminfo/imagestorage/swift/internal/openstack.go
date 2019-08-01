@@ -83,3 +83,39 @@ func CatalogHandler(url string, w http.ResponseWriter, r *http.Request) {
 		now,
 	)
 }
+
+// EmptyCatalogHandler mocks KeyStone's token creation endpoint with an empty catalog for tests purpose
+func EmptyCatalogHandler(w http.ResponseWriter, r *http.Request) {
+	w.Header().Add("X-Subject-Token", "token")
+
+	w.WriteHeader(http.StatusCreated)
+	now := time.Now()
+	fmt.Fprintf(
+		w,
+		`{
+			"token": {
+				"audit_ids": [],
+				"catalog": [],
+				"expires_at": "%s",
+				"is_domain": false,
+				"issued_at": "%s",
+				"methods": [
+					"password"
+				],
+				"project": {
+					"domain": {
+						"id": "1",
+						"name": "domain"
+					},
+					"id": "1",
+					"name": "project"
+				},
+				"roles": [],
+				"service_providers": [],
+				"user": {}
+			}
+		}`,
+		now.Add(10*time.Minute),
+		now,
+	)
+}
