@@ -16,6 +16,7 @@ package retention
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -111,6 +112,29 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	// Log stage: results with table view
 	logResults(myLogger, allCandidates, results)
 
+	// Save retain and total num in DB
+	return saveRetainNum(ctx, results, allCandidates)
+}
+
+func saveRetainNum(ctx job.Context, retained []*res.Result, allCandidates []*res.Candidate) error {
+	var delNum int
+	for _, r := range retained {
+		if r.Error == nil {
+			delNum++
+		}
+	}
+	retainObj := struct {
+		Total    int `json:"total"`
+		Retained int `json:"retained"`
+	}{
+		Total:    len(allCandidates),
+		Retained: len(allCandidates) - delNum,
+	}
+	c, err := json.Marshal(retainObj)
+	if err != nil {
+		return err
+	}
+	_ = ctx.Checkin(string(c))
 	return nil
 }
 
