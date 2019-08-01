@@ -83,3 +83,9 @@ Test Case - Generate User CLI Secret
     Cannot Docker Login Harbor  ${ip}  ${OIDC_USERNAME}  ${secret_old}
     Pull image  ${ip}  ${OIDC_USERNAME}  ${secret_new}  project${d}  ${image}
     Push image  ${ip}  ${OIDC_USERNAME}  ${secret_new}  project${d}  ${image}
+
+Test Case - Helm CLI Push
+    Init Chrome Driver
+    Sign In Harbor With OIDC User  ${HARBOR_URL}
+    ${secret}=  Get Secrete By API  ${HARBOR_URL}
+    Helm CLI Push Without Sign In Harbor  ${OIDC_USERNAME}  ${secret}

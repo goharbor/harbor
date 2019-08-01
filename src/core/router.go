@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/core/service/notifications/clair"
 	"github.com/goharbor/harbor/src/core/service/notifications/jobs"
 	"github.com/goharbor/harbor/src/core/service/notifications/registry"
+	"github.com/goharbor/harbor/src/core/service/notifications/scheduler"
 	"github.com/goharbor/harbor/src/core/service/token"
 )
 
@@ -66,6 +67,7 @@ func initRouters() {
 	beego.Router("/api/ping", &api.SystemInfoAPI{}, "get:Ping")
 	beego.Router("/api/search", &api.SearchAPI{})
 	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:id([0-9]+)/summary", &api.ProjectAPI{}, "get:Summary")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &api.ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &api.ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
@@ -74,6 +76,9 @@ func initRouters() {
 
 	beego.Router("/api/projects/:pid([0-9]+)/robots", &api.RobotAPI{}, "post:Post;get:List")
 	beego.Router("/api/projects/:pid([0-9]+)/robots/:id([0-9]+)", &api.RobotAPI{}, "get:Get;put:Put;delete:Delete")
+
+	beego.Router("/api/quotas", &api.QuotaAPI{}, "get:List")
+	beego.Router("/api/quotas/:id([0-9]+)", &api.QuotaAPI{}, "get:Get;put:Put")
 
 	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
 	beego.Router("/api/repositories/*", &api.RepositoryAPI{}, "delete:Delete;put:Put")
@@ -95,6 +100,8 @@ func initRouters() {
 	beego.Router("/api/system/gc/:id([0-9]+)/log", &api.GCAPI{}, "get:GetLog")
 	beego.Router("/api/system/gc/schedule", &api.GCAPI{}, "get:Get;put:Put;post:Post")
 	beego.Router("/api/system/scanAll/schedule", &api.ScanAllAPI{}, "get:Get;put:Put;post:Post")
+	beego.Router("/api/system/CVEWhitelist", &api.SysCVEWhitelistAPI{}, "get:Get;put:Put")
+	beego.Router("/api/system/oidc/ping", &api.OIDCAPI{}, "post:Ping")
 
 	beego.Router("/api/logs", &api.LogAPI{})
 
@@ -138,6 +145,8 @@ func initRouters() {
 	beego.Router("/service/notifications/jobs/replication/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationScheduleJob")
 	beego.Router("/service/notifications/jobs/replication/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationTask")
 	beego.Router("/service/notifications/jobs/webhook/:id([0-9]+)", &jobs.Handler{}, "post:HandleNotificationJob")
+	beego.Router("/service/notifications/jobs/retention/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleRetentionTask")
+	beego.Router("/service/notifications/schedules/:id([0-9]+)", &scheduler.Handler{}, "post:Handle")
 	beego.Router("/service/token", &token.Handler{})
 
 	beego.Router("/api/registries", &api.RegistryAPI{}, "get:List;post:Post")
@@ -146,6 +155,16 @@ func initRouters() {
 	// we use "0" as the ID of the local Harbor registry, so don't add "([0-9]+)" in the path
 	beego.Router("/api/registries/:id/info", &api.RegistryAPI{}, "get:GetInfo")
 	beego.Router("/api/registries/:id/namespace", &api.RegistryAPI{}, "get:GetNamespace")
+
+	beego.Router("/api/retentions/metadatas", &api.RetentionAPI{}, "get:GetMetadatas")
+	beego.Router("/api/retentions/:id", &api.RetentionAPI{}, "get:GetRetention")
+	beego.Router("/api/retentions", &api.RetentionAPI{}, "post:CreateRetention")
+	beego.Router("/api/retentions/:id", &api.RetentionAPI{}, "put:UpdateRetention")
+	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "post:TriggerRetentionExec")
+	beego.Router("/api/retentions/:id/executions/:eid", &api.RetentionAPI{}, "patch:OperateRetentionExec")
+	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "get:ListRetentionExecs")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks", &api.RetentionAPI{}, "get:ListRetentionExecTasks")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks/:tid", &api.RetentionAPI{}, "get:GetRetentionExecTaskLog")
 
 	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 

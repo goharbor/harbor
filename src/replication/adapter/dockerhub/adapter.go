@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
 )
@@ -34,38 +34,20 @@ func factory(registry *model.Registry) (adp.Adapter, error) {
 		return nil, err
 	}
 
-	// if the registry.Credentail isn't specified, the credential here is nil
-	// the client will request the token with no authentication
-	// this is needed for pulling images from public repositories
-	var credential auth.Credential
-	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
-		credential = auth.NewBasicAuthCredential(
-			registry.Credential.AccessKey,
-			registry.Credential.AccessSecret)
-	}
-	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
-		Transport: util.GetHTTPTransport(registry.Insecure),
-	}, credential)
-
-	reg, err := adp.NewDefaultImageRegistryWithCustomizedAuthorizer(&model.Registry{
-		Name:       registry.Name,
-		URL:        registryURL, // specify the URL of Docker Hub registry service
-		Credential: registry.Credential,
-		Insecure:   registry.Insecure,
-	}, authorizer)
+	dockerRegistryAdapter, err := native.NewAdapter(registry)
 	if err != nil {
 		return nil, err
 	}
 
 	return &adapter{
-		client:               client,
-		registry:             registry,
-		DefaultImageRegistry: reg,
+		client:   client,
+		registry: registry,
+		Adapter:  dockerRegistryAdapter,
 	}, nil
 }
 
 type adapter struct {
-	*adp.DefaultImageRegistry
+	*native.Adapter
 	registry *model.Registry
 	client   *Client
 }

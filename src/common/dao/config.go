@@ -54,7 +54,7 @@ func GetConfigEntries() ([]*models.ConfigEntry, error) {
 func SaveConfigEntries(entries []models.ConfigEntry) error {
 	o := GetOrmer()
 	for _, entry := range entries {
-		if entry.Key == common.LdapGroupAdminDn {
+		if entry.Key == common.LDAPGroupAdminDn {
 			entry.Value = utils.TrimLower(entry.Value)
 		}
 		tempEntry := models.ConfigEntry{}

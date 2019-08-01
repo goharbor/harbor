@@ -16,6 +16,9 @@ package models
 
 import (
 	"time"
+
+	"github.com/goharbor/harbor/src/common/utils/notary/model"
+	"github.com/theupdateframework/notary/tuf/data"
 )
 
 // RepoTable is the table name for repository
@@ -46,4 +49,37 @@ type RepositoryQuery struct {
 	LabelID     int64
 	Pagination
 	Sorting
+}
+
+// TagResp holds the information of one image tag
+type TagResp struct {
+	TagDetail
+	Signature    *model.Target    `json:"signature"`
+	ScanOverview *ImgScanOverview `json:"scan_overview,omitempty"`
+	Labels       []*Label         `json:"labels"`
+}
+
+// TagDetail ...
+type TagDetail struct {
+	Digest        string    `json:"digest"`
+	Name          string    `json:"name"`
+	Size          int64     `json:"size"`
+	Architecture  string    `json:"architecture"`
+	OS            string    `json:"os"`
+	OSVersion     string    `json:"os.version"`
+	DockerVersion string    `json:"docker_version"`
+	Author        string    `json:"author"`
+	Created       time.Time `json:"created"`
+	Config        *TagCfg   `json:"config"`
+}
+
+// TagCfg ...
+type TagCfg struct {
+	Labels map[string]string `json:"labels"`
+}
+
+// Signature ...
+type Signature struct {
+	Tag    string      `json:"tag"`
+	Hashes data.Hashes `json:"hashes"`
 }

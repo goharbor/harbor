@@ -15,9 +15,13 @@
 package api
 
 import (
+	"errors"
+
+	"github.com/goharbor/harbor/src/pkg/retention"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
+
 	"net/http"
 
-	"errors"
 	"github.com/ghodss/yaml"
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/security"
@@ -25,10 +29,22 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/pkg/project"
+	"github.com/goharbor/harbor/src/pkg/repository"
 )
 
 const (
 	yamlFileContentType = "application/x-yaml"
+)
+
+// the managers/controllers used globally
+var (
+	projectMgr          project.Manager
+	repositoryMgr       repository.Manager
+	retentionScheduler  scheduler.Scheduler
+	retentionMgr        retention.Manager
+	retentionLauncher   retention.Launcher
+	retentionController retention.APIController
 )
 
 // BaseController ...
@@ -40,13 +56,6 @@ type BaseController struct {
 	// related to projects
 	ProjectMgr promgr.ProjectManager
 }
-
-const (
-	// ReplicationJobType ...
-	ReplicationJobType = "replication"
-	// ScanJobType ...
-	ScanJobType = "scan"
-)
 
 // Prepare inits security context and project manager from request
 // context
@@ -85,12 +94,46 @@ func (b *BaseController) WriteYamlData(object interface{}) {
 	w := b.Ctx.ResponseWriter
 	w.Header().Set("Content-Type", yamlFileContentType)
 	w.WriteHeader(http.StatusOK)
-	w.Write(yData)
+	_, _ = w.Write(yData)
 }
 
 // Init related objects/configurations for the API controllers
 func Init() error {
 	registerHealthCheckers()
+
+	// init chart controller
+	if err := initChartController(); err != nil {
+		return err
+	}
+
+	// init project manager
+	initProjectManager()
+
+	// init repository manager
+	initRepositoryManager()
+
+	initRetentionScheduler()
+
+	retentionMgr = retention.NewManager()
+
+	retentionLauncher = retention.NewLauncher(projectMgr, repositoryMgr, retentionMgr)
+
+	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
+
+	callbackFun := func(p interface{}) error {
+		r, ok := p.(retention.TriggerParam)
+		if ok {
+			_, err := retentionController.TriggerRetentionExec(r.PolicyID, r.Trigger, false)
+			return err
+		}
+		return errors.New("bad retention callback param")
+	}
+	err := scheduler.Register(retention.SchedulerCallback, callbackFun)
+
+	return err
+}
+
+func initChartController() error {
 	// If chart repository is not enabled then directly return
 	if !config.WithChartMuseum() {
 		return nil
@@ -102,6 +145,17 @@ func Init() error {
 	}
 
 	chartController = chartCtl
-
 	return nil
+}
+
+func initProjectManager() {
+	projectMgr = project.New()
+}
+
+func initRepositoryManager() {
+	repositoryMgr = repository.New(projectMgr, chartController)
+}
+
+func initRetentionScheduler() {
+	retentionScheduler = scheduler.GlobalScheduler
 }

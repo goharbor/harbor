@@ -32,4 +32,8 @@ const (
 	ReplicationScheduler = "IMAGE_REPLICATE"
 	// WebhookJob : the name of the webhook job in job service
 	WebhookJob = "WEBHOOK"
+	// Retention : the name of the retention job
+	Retention = "RETENTION"
+	// RetentionDel is the name of retention deletion job
+	RetentionDel = "RETENTION_DEL"
 )

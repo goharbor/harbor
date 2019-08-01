@@ -212,10 +212,10 @@ func jobserviceHealthChecker() health.Checker {
 }
 
 func registryHealthChecker() health.Checker {
-	url := getRegistryURL() + "/v2"
+	url := getRegistryURL() + "/"
 	timeout := 60 * time.Second
 	period := 10 * time.Second
-	checker := HTTPStatusCodeHealthChecker(http.MethodGet, url, nil, timeout, http.StatusUnauthorized)
+	checker := HTTPStatusCodeHealthChecker(http.MethodGet, url, nil, timeout, http.StatusOK)
 	return PeriodicHealthChecker(checker, period)
 }
 

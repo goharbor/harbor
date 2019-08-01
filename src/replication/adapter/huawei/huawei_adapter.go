@@ -1,8 +1,6 @@
 package huawei
 
 import (
-	"crypto/tls"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -10,8 +8,12 @@ import (
 	"regexp"
 	"strings"
 
+	common_http "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
 )
@@ -27,8 +29,9 @@ func init() {
 
 // Adapter is for images replications between harbor and Huawei image repository(SWR)
 type adapter struct {
-	*adp.DefaultImageRegistry
+	*native.Adapter
 	registry *model.Registry
+	client   *common_http.Client
 }
 
 // Info gets info about Huawei SWR
@@ -55,18 +58,8 @@ func (a *adapter) ListNamespaces(query *model.NamespaceQuery) ([]*model.Namespac
 	}
 
 	r.Header.Add("content-type", "application/json; charset=utf-8")
-	encodeAuth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", a.registry.Credential.AccessKey, a.registry.Credential.AccessSecret)))
-	r.Header.Add("Authorization", "Basic "+encodeAuth)
 
-	client := &http.Client{}
-	if a.registry.Insecure == true {
-		client = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			},
-		}
-	}
-	resp, err := client.Do(r)
+	resp, err := a.client.Do(r)
 	if err != nil {
 		return namespaces, err
 	}
@@ -119,8 +112,11 @@ func (a *adapter) ConvertResourceMetadata(resourceMetadata *model.ResourceMetada
 func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 	namespaces := map[string]struct{}{}
 	for _, resource := range resources {
+		var namespace string
 		paths := strings.Split(resource.Metadata.Repository.Name, "/")
-		namespace := paths[0]
+		if len(paths) > 0 {
+			namespace = paths[0]
+		}
 		ns, err := a.GetNamespace(namespace)
 		if err != nil {
 			return err
@@ -132,9 +128,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 	}
 
 	url := fmt.Sprintf("%s/dockyard/v2/namespaces", a.registry.URL)
-	client := &http.Client{
-		Transport: util.GetHTTPTransport(a.registry.Insecure),
-	}
+
 	for namespace := range namespaces {
 		namespacebyte, err := json.Marshal(struct {
 			Namespace string `json:"namespace"`
@@ -151,10 +145,8 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		}
 
 		r.Header.Add("content-type", "application/json; charset=utf-8")
-		encodeAuth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", a.registry.Credential.AccessKey, a.registry.Credential.AccessSecret)))
-		r.Header.Add("Authorization", "Basic "+encodeAuth)
 
-		resp, err := client.Do(r)
+		resp, err := a.client.Do(r)
 		if err != nil {
 			return err
 		}
@@ -184,20 +176,8 @@ func (a *adapter) GetNamespace(namespaceStr string) (*model.Namespace, error) {
 	}
 
 	r.Header.Add("content-type", "application/json; charset=utf-8")
-	encodeAuth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", a.registry.Credential.AccessKey, a.registry.Credential.AccessSecret)))
-	r.Header.Add("Authorization", "Basic "+encodeAuth)
 
-	var client *http.Client
-	if a.registry.Insecure == true {
-		client = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			},
-		}
-	} else {
-		client = &http.Client{}
-	}
-	resp, err := client.Do(r)
+	resp, err := a.client.Do(r)
 	if err != nil {
 		return namespace, err
 	}
@@ -232,13 +212,34 @@ func (a *adapter) HealthCheck() (model.HealthStatus, error) {
 
 // AdapterFactory is the factory for huawei adapter
 func AdapterFactory(registry *model.Registry) (adp.Adapter, error) {
-	reg, err := adp.NewDefaultImageRegistry(registry)
+	dockerRegistryAdapter, err := native.NewAdapter(registry)
 	if err != nil {
 		return nil, err
 	}
+
+	var (
+		modifiers = []modifier.Modifier{
+			&auth.UserAgentModifier{
+				UserAgent: adp.UserAgentReplication,
+			}}
+		authorizer modifier.Modifier
+	)
+	if registry.Credential != nil {
+		authorizer = auth.NewBasicAuthCredential(
+			registry.Credential.AccessKey,
+			registry.Credential.AccessSecret)
+		modifiers = append(modifiers, authorizer)
+	}
+
 	return &adapter{
-		registry:             registry,
-		DefaultImageRegistry: reg,
+		Adapter:  dockerRegistryAdapter,
+		registry: registry,
+		client: common_http.NewClient(
+			&http.Client{
+				Transport: util.GetHTTPTransport(registry.Insecure),
+			},
+			modifiers...,
+		),
 	}, nil
 
 }

@@ -1,4 +1,4 @@
-# Copyright Project Harbor Authors
+f# Copyright Project Harbor Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,11 +53,13 @@ Resource  Harbor-Pages/Configuration_Elements.robot
 Resource  Harbor-Pages/ToolKit.robot
 Resource  Harbor-Pages/ToolKit_Elements.robot
 Resource  Harbor-Pages/Vulnerability.robot
+Resource  Harbor-Pages/Vulnerability_Elements.robot
 Resource  Harbor-Pages/LDAP-Mode.robot
 Resource  Harbor-Pages/OIDC_Auth.robot
 Resource  Harbor-Pages/OIDC_Auth_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
+Resource  Helm-Util.robot
 Resource  Admiral-Util.robot
 Resource  OVA-Util.robot
 Resource  Cert-Util.robot
@@ -162,6 +164,7 @@ Element Click
     [Arguments]  ${element_xpath}
     Wait Until Element Is Visible And Enabled  ${element_xpath}
     Click Element  ${element_xpath}
+    Sleep  1
 
 Button Click
     [Arguments]  ${element_xpath}

@@ -17,6 +17,8 @@ package models
 import (
 	"strings"
 	"time"
+
+	"github.com/goharbor/harbor/src/pkg/types"
 )
 
 const (
@@ -42,6 +44,7 @@ type Project struct {
 	RepoCount    int64             `orm:"-" json:"repo_count"`
 	ChartCount   uint64            `orm:"-" json:"chart_count"`
 	Metadata     map[string]string `orm:"-" json:"metadata"`
+	CVEWhitelist CVEWhitelist      `orm:"-" json:"cve_whitelist"`
 }
 
 // GetMetadata ...
@@ -89,6 +92,15 @@ func (p *Project) VulPrevented() bool {
 	return isTrue(prevent)
 }
 
+// ReuseSysCVEWhitelist ...
+func (p *Project) ReuseSysCVEWhitelist() bool {
+	r, ok := p.GetMetadata(ProMetaReuseSysCVEWhitelist)
+	if !ok {
+		return true
+	}
+	return isTrue(r)
+}
+
 // Severity ...
 func (p *Project) Severity() string {
 	severity, exist := p.GetMetadata(ProMetaSeverity)
@@ -134,9 +146,9 @@ type ProjectQueryParam struct {
 
 // MemberQuery filter by member's username and role
 type MemberQuery struct {
-	Name      string       // the username of member
-	Role      int          // the role of the member has to the project
-	GroupList []*UserGroup // the group list of current user
+	Name     string // the username of member
+	Role     int    // the role of the member has to the project
+	GroupIDs []int  // the group ID of current user belongs to
 }
 
 // Pagination ...
@@ -160,9 +172,13 @@ type BaseProjectCollection struct {
 
 // ProjectRequest holds informations that need for creating project API
 type ProjectRequest struct {
-	Name     string            `json:"project_name"`
-	Public   *int              `json:"public"` // deprecated, reserved for project creation in replication
-	Metadata map[string]string `json:"metadata"`
+	Name         string            `json:"project_name"`
+	Public       *int              `json:"public"` // deprecated, reserved for project creation in replication
+	Metadata     map[string]string `json:"metadata"`
+	CVEWhitelist CVEWhitelist      `json:"cve_whitelist"`
+
+	CountLimit   *int64 `json:"count_limit,omitempty"`
+	StorageLimit *int64 `json:"storage_limit,omitempty"`
 }
 
 // ProjectQueryResult ...
@@ -174,4 +190,20 @@ type ProjectQueryResult struct {
 // TableName is required by beego orm to map Project to table project
 func (p *Project) TableName() string {
 	return ProjectTable
+}
+
+// ProjectSummary ...
+type ProjectSummary struct {
+	RepoCount  int64  `json:"repo_count"`
+	ChartCount uint64 `json:"chart_count"`
+
+	ProjectAdminCount int64 `json:"project_admin_count"`
+	MasterCount       int64 `json:"master_count"`
+	DeveloperCount    int64 `json:"developer_count"`
+	GuestCount        int64 `json:"guest_count"`
+
+	Quota struct {
+		Hard types.ResourceList `json:"hard"`
+		Used types.ResourceList `json:"used"`
+	} `json:"quota"`
 }

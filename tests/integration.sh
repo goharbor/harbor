@@ -119,10 +119,18 @@ function package_offline_installer {
 function publishImage {
     echo "Publishing images to Docker Hub..."
     echo "The images on the host:"
+    # for master, will use 'dev' as the tag name
+    # for release-*, will use 'release-*-dev' as the tag name, like release-v1.8.0-dev
+    if [[ $DRONE_BRANCH == "master" ]]; then
+      image_tag=dev
+    fi
+    if [[ $DRONE_BRANCH == "release-"* ]]; then
+      image_tag=$Harbor_Assets_Version-dev
+    fi
+    # rename the images with tag "dev" and push to Docker Hub
     docker images
     docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
-    # rename the images with tag "dev" and push to Docker Hub
-    docker images | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:dev;docker push \1:dev|p" | bash
+    docker images | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:$image_tag;docker push \1:$image_tag|p" | bash
     echo "Images are published successfully"
     docker images
 }
@@ -163,8 +171,16 @@ if [ $upload_build == true ]; then
     upload_bundle_success=true
 fi
 
-if [ $DRONE_BRANCH = "master" ] && [ $DRONE_BUILD_EVENT = "push" ]; then
-    publishImage
+
+## --------------------------------------------- Upload Harbor Dev Images ---------------------------------------
+#
+# Any merge code(PUSH) on branch master, release-* will trigger push dev images.
+#
+##
+if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == "release-"* ]]; then
+    if [[ $DRONE_BUILD_EVENT == "push" ]]; then
+        publishImage
+    fi
 fi
 
 ## --------------------------------------------- Upload Harbor Latest Build File ----------------------------------

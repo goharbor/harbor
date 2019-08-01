@@ -1,0 +1,42 @@
+.default-quota {
+  display: flex;
+
+  .default-quota-text {
+    display: flex;
+    justify-content: space-between;
+    min-width: 13rem;
+
+    .num-count {
+      display: inline-block;
+      min-width: 2rem;
+    }
+  }
+}
+
+.color-0 {
+  color: #000;
+}
+
+.progress-block {
+  label {
+    font-weight: 400 !important;
+  }
+}
+
+.default-quota-edit-button {
+  height: 1rem;
+}
+
+.min-label-width {
+  min-width: 120px;
+}
+
+.quota-top {
+  display: flex;
+  justify-content: space-between;
+}
+
+.refresh-div {
+  margin-top: auto;
+  cursor: pointer;
+}

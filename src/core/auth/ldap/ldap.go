@@ -20,11 +20,11 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/utils"
 	goldap "gopkg.in/ldap.v2"
 
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	ldapUtils "github.com/goharbor/harbor/src/common/utils/ldap"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -79,7 +79,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	u.Username = ldapUsers[0].Username
 	u.Email = strings.TrimSpace(ldapUsers[0].Email)
 	u.Realname = ldapUsers[0].Realname
-	userGroups := make([]*models.UserGroup, 0)
+	ugIDs := []int{}
 
 	dn := ldapUsers[0].DN
 	if err = ldapSession.Bind(dn, m.Password); err != nil {
@@ -95,6 +95,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	for _, groupDN := range ldapUsers[0].GroupDNList {
 
 		groupDN = utils.TrimLower(groupDN)
+		// Attach LDAP group admin
 		if len(groupAdminDN) > 0 && groupAdminDN == groupDN {
 			u.HasAdminRole = true
 		}
@@ -103,16 +104,16 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 			GroupType:   1,
 			LdapGroupDN: groupDN,
 		}
-		userGroupList, err := group.QueryUserGroup(userGroupQuery)
+		userGroups, err := group.QueryUserGroup(userGroupQuery)
 		if err != nil {
 			continue
 		}
-		if len(userGroupList) == 0 {
+		if len(userGroups) == 0 {
 			continue
 		}
-		userGroups = append(userGroups, userGroupList[0])
+		ugIDs = append(ugIDs, userGroups[0].ID)
 	}
-	u.GroupList = userGroups
+	u.GroupIDs = ugIDs
 
 	return &u, nil
 }
@@ -204,7 +205,7 @@ func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
 	if len(altGroupName) > 0 {
 		u.GroupName = altGroupName
 	}
-	u.GroupType = common.LdapGroupType
+	u.GroupType = common.LDAPGroupType
 	// Check duplicate LDAP DN in usergroup, if usergroup exist, return error
 	userGroupList, err := group.QueryUserGroup(models.UserGroup{LdapGroupDN: u.LdapGroupDN})
 	if err != nil {
@@ -213,7 +214,7 @@ func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
 	if len(userGroupList) > 0 {
 		return auth.ErrDuplicateLDAPGroup
 	}
-	return group.OnBoardUserGroup(u, "LdapGroupDN", "GroupType")
+	return group.OnBoardUserGroup(u)
 }
 
 // PostAuthenticate -- If user exist in harbor DB, sync email address, if not exist, call OnBoardUser

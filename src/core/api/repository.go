@@ -33,14 +33,15 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/clair"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/notary"
+	notarymodel "github.com/goharbor/harbor/src/common/utils/notary/model"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier"
 	"github.com/goharbor/harbor/src/core/notifier/topic"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
+	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -78,30 +79,6 @@ func (r reposSorter) Swap(i, j int) {
 
 func (r reposSorter) Less(i, j int) bool {
 	return r[i].Index < r[j].Index
-}
-
-type tagDetail struct {
-	Digest        string    `json:"digest"`
-	Name          string    `json:"name"`
-	Size          int64     `json:"size"`
-	Architecture  string    `json:"architecture"`
-	OS            string    `json:"os"`
-	OSVersion     string    `json:"os.version"`
-	DockerVersion string    `json:"docker_version"`
-	Author        string    `json:"author"`
-	Created       time.Time `json:"created"`
-	Config        *cfg      `json:"config"`
-}
-
-type cfg struct {
-	Labels map[string]string `json:"labels"`
-}
-
-type tagResp struct {
-	tagDetail
-	Signature    *notary.Target          `json:"signature"`
-	ScanOverview *models.ImgScanOverview `json:"scan_overview,omitempty"`
-	Labels       []*models.Label         `json:"labels"`
 }
 
 type manifestResp struct {
@@ -263,7 +240,7 @@ func (ra *RepositoryAPI) Delete() {
 		return
 	}
 
-	rc, err := coreutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
+	rc, err := coreutils.NewRepositoryClientForLocal(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.SendInternalServerError(errors.New("internal error"))
@@ -333,7 +310,7 @@ func (ra *RepositoryAPI) Delete() {
 
 		go func(tag string) {
 			e := &event.Event{
-				Type: event.EventTypeImagePush,
+				Type: event.EventTypeImageDelete,
 				Resource: &model.Resource{
 					Type: model.ResourceTypeImage,
 					Metadata: &model.ResourceMetadata{
@@ -628,24 +605,24 @@ func (ra *RepositoryAPI) GetTags() {
 // get config, signature and scan overview and assemble them into one
 // struct for each tag in tags
 func assembleTagsInParallel(client *registry.Repository, repository string,
-	tags []string, username string) []*tagResp {
+	tags []string, username string) []*models.TagResp {
 	var err error
-	signatures := map[string][]notary.Target{}
+	signatures := map[string][]notarymodel.Target{}
 	if config.WithNotary() {
 		signatures, err = getSignatures(username, repository)
 		if err != nil {
-			signatures = map[string][]notary.Target{}
+			signatures = map[string][]notarymodel.Target{}
 			log.Errorf("failed to get signatures of %s: %v", repository, err)
 		}
 	}
 
-	c := make(chan *tagResp)
+	c := make(chan *models.TagResp)
 	for _, tag := range tags {
 		go assembleTag(c, client, repository, tag, config.WithClair(),
 			config.WithNotary(), signatures)
 	}
-	result := []*tagResp{}
-	var item *tagResp
+	result := []*models.TagResp{}
+	var item *models.TagResp
 	for i := 0; i < len(tags); i++ {
 		item = <-c
 		if item == nil {
@@ -656,10 +633,10 @@ func assembleTagsInParallel(client *registry.Repository, repository string,
 	return result
 }
 
-func assembleTag(c chan *tagResp, client *registry.Repository,
+func assembleTag(c chan *models.TagResp, client *registry.Repository,
 	repository, tag string, clairEnabled, notaryEnabled bool,
-	signatures map[string][]notary.Target) {
-	item := &tagResp{}
+	signatures map[string][]notarymodel.Target) {
+	item := &models.TagResp{}
 	// labels
 	image := fmt.Sprintf("%s:%s", repository, tag)
 	labels, err := dao.GetLabelsOfResource(common.ResourceTypeImage, image)
@@ -675,7 +652,7 @@ func assembleTag(c chan *tagResp, client *registry.Repository,
 		log.Errorf("failed to get v2 manifest of %s:%s: %v", repository, tag, err)
 	}
 	if tagDetail != nil {
-		item.tagDetail = *tagDetail
+		item.TagDetail = *tagDetail
 	}
 
 	// scan overview
@@ -698,8 +675,8 @@ func assembleTag(c chan *tagResp, client *registry.Repository,
 
 // getTagDetail returns the detail information for v2 manifest image
 // The information contains architecture, os, author, size, etc.
-func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
-	detail := &tagDetail{
+func getTagDetail(client *registry.Repository, tag string) (*models.TagDetail, error) {
+	detail := &models.TagDetail{
 		Name: tag,
 	}
 
@@ -756,7 +733,7 @@ func getTagDetail(client *registry.Repository, tag string) (*tagDetail, error) {
 	return detail, nil
 }
 
-func populateAuthor(detail *tagDetail) {
+func populateAuthor(detail *models.TagDetail) {
 	// has author info already
 	if len(detail.Author) > 0 {
 		return
@@ -1056,34 +1033,22 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
 		return
 	}
-	res := []*models.VulnerabilityItem{}
-	overview, err := dao.GetImgScanOverview(digest)
+	res, err := scan.VulnListByDigest(digest)
 	if err != nil {
-		ra.SendInternalServerError(fmt.Errorf("failed to get the scan overview, error: %v", err))
-		return
-	}
-	if overview != nil && len(overview.DetailsKey) > 0 {
-		clairClient := clair.NewClient(config.ClairEndpoint(), nil)
-		log.Debugf("The key for getting details: %s", overview.DetailsKey)
-		details, err := clairClient.GetResult(overview.DetailsKey)
-		if err != nil {
-			ra.SendInternalServerError(fmt.Errorf("Failed to get scan details from Clair, error: %v", err))
-			return
-		}
-		res = transformVulnerabilities(details)
+		log.Errorf("Failed to get vulnerability list for image: %s:%s", repository, tag)
 	}
 	ra.Data["json"] = res
 	ra.ServeJSON()
 }
 
-func getSignatures(username, repository string) (map[string][]notary.Target, error) {
+func getSignatures(username, repository string) (map[string][]notarymodel.Target, error) {
 	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
 		username, repository)
 	if err != nil {
 		return nil, err
 	}
 
-	signatures := map[string][]notary.Target{}
+	signatures := map[string][]notarymodel.Target{}
 	for _, tgt := range targets {
 		digest, err := notary.DigestFromTarget(tgt)
 		if err != nil {

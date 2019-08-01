@@ -4,6 +4,9 @@
 <h1 class="custom-h2" sub-header-title>{{currentProject.name}} <span class="role-label" *ngIf="isMember">{{roleName | translate}}</span></h1>
 <nav class="subnav sub-nav-bg-color">
     <ul class="nav">
+        <li class="nav-item" *ngIf="hasProjectReadPermission">
+            <a class="nav-link" routerLink="summary" routerLinkActive="active">{{'PROJECT_DETAIL.SUMMARY' | translate}}</a>
+        </li>
         <li class="nav-item" *ngIf="hasRepositoryListPermission">
             <a class="nav-link" routerLink="repositories" routerLinkActive="active">{{'PROJECT_DETAIL.REPOSITORIES' | translate}}</a>
         </li>
@@ -21,6 +24,9 @@
         </li>
         <li class="nav-item" *ngIf="hasRobotListPermission">
             <a class="nav-link" routerLink="robot-account" routerLinkActive="active">{{'PROJECT_DETAIL.ROBOT_ACCOUNTS' | translate}}</a>
+        </li>
+        <li class="nav-item" *ngIf="hasTagRetentionPermission">
+            <a class="nav-link" routerLink="tag-retention" routerLinkActive="active">{{'TAG_RETENTION.TAG_RETENTION' | translate}}</a>
         </li>
         <li class="nav-item" *ngIf="isSessionValid && (hasConfigurationListPermission)">
             <a class="nav-link" routerLink="configs" routerLinkActive="active">{{'PROJECT_DETAIL.CONFIG' | translate}}</a>

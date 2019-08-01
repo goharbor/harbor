@@ -11,24 +11,21 @@ if [ $# != 4 ]; then
   usage
 fi
 
-CODE_PATH="$1"
+GIT_PATH="$1"
 VERSION="$2"
 MAIN_GO_PATH="$3"
 BIN_NAME="$4"
 
-#Get the source code of chartmusem
-go get $CODE_PATH 
-
+#Get the source code
+git clone $GIT_PATH src_code
+ls
+SRC_PATH=$(pwd)/src_code
 set -e
 
 #Checkout the released tag branch
-cd /go/src/$CODE_PATH
-git checkout tags/$VERSION -b $VERSION 
-
-#Install the go dep tool to restore the package dependencies
-curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
-dep ensure
+cd $SRC_PATH
+git checkout tags/$VERSION -b $VERSION
 
 #Compile
-cd /go/src/$CODE_PATH/$MAIN_GO_PATH && go build -a -o $BIN_NAME
+cd $SRC_PATH/$MAIN_GO_PATH && go build -a -o $BIN_NAME
 mv $BIN_NAME /go/bin/

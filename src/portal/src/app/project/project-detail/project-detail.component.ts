@@ -34,6 +34,7 @@ export class ProjectDetailComponent implements OnInit {
   isMember: boolean;
   roleName: string;
   projectId: number;
+  hasProjectReadPermission: boolean;
   hasHelmChartsListPermission: boolean;
   hasRepositoryListPermission: boolean;
   hasMemberListPermission: boolean;
@@ -42,6 +43,7 @@ export class ProjectDetailComponent implements OnInit {
   hasLogListPermission: boolean;
   hasConfigurationListPermission: boolean;
   hasRobotListPermission: boolean;
+  hasTagRetentionPermission: boolean;
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -65,6 +67,8 @@ export class ProjectDetailComponent implements OnInit {
   getPermissionsList(projectId: number): void {
     let permissionsList = [];
     permissionsList.push(this.userPermissionService.getPermission(projectId,
+      USERSTATICPERMISSION.PROJECT.KEY, USERSTATICPERMISSION.PROJECT.VALUE.READ));
+    permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.LOG.KEY, USERSTATICPERMISSION.LOG.VALUE.LIST));
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.CONFIGURATION.KEY, USERSTATICPERMISSION.CONFIGURATION.VALUE.READ));
@@ -80,10 +84,12 @@ export class ProjectDetailComponent implements OnInit {
       USERSTATICPERMISSION.ROBOT.KEY, USERSTATICPERMISSION.ROBOT.VALUE.LIST));
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.LABEL.KEY, USERSTATICPERMISSION.LABEL.VALUE.CREATE));
+    permissionsList.push(this.userPermissionService.getPermission(projectId,
+        USERSTATICPERMISSION.TAG_RETENTION.KEY, USERSTATICPERMISSION.TAG_RETENTION.VALUE.READ));
     forkJoin(...permissionsList).subscribe(Rules => {
-      [this.hasLogListPermission, this.hasConfigurationListPermission, this.hasMemberListPermission
+      [this.hasProjectReadPermission, this.hasLogListPermission, this.hasConfigurationListPermission, this.hasMemberListPermission
         , this.hasLabelListPermission, this.hasRepositoryListPermission, this.hasHelmChartsListPermission, this.hasRobotListPermission
-        , this.hasLabelCreatePermission] = Rules;
+        , this.hasLabelCreatePermission, this.hasTagRetentionPermission] = Rules;
 
     }, error => this.errorHandler.error(error));
   }

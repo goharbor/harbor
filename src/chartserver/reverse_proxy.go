@@ -17,6 +17,7 @@ import (
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
+	"github.com/justinas/alice"
 )
 
 const (
@@ -36,20 +37,29 @@ type ProxyEngine struct {
 	backend *url.URL
 
 	// Use go reverse proxy as engine
-	engine *httputil.ReverseProxy
+	engine http.Handler
 }
 
 // NewProxyEngine is constructor of NewProxyEngine
-func NewProxyEngine(target *url.URL, cred *Credential) *ProxyEngine {
+func NewProxyEngine(target *url.URL, cred *Credential, chains ...*alice.Chain) *ProxyEngine {
+	var engine http.Handler
+
+	engine = &httputil.ReverseProxy{
+		ErrorLog: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
+		Director: func(req *http.Request) {
+			director(target, cred, req)
+		},
+		ModifyResponse: modifyResponse,
+	}
+
+	if len(chains) > 0 {
+		hlog.Info("New chart server traffic proxy with middlewares")
+		engine = chains[0].Then(engine)
+	}
+
 	return &ProxyEngine{
 		backend: target,
-		engine: &httputil.ReverseProxy{
-			ErrorLog: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
-			Director: func(req *http.Request) {
-				director(target, cred, req)
-			},
-			ModifyResponse: modifyResponse,
-		},
+		engine:  engine,
 	}
 }
 

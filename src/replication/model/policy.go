@@ -18,6 +18,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/goharbor/harbor/src/replication/filter"
+
 	"github.com/astaxie/beego/validation"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/robfig/cron"
@@ -86,19 +88,33 @@ func (p *Policy) Valid(v *validation.Validation) {
 
 	// valid the filters
 	for _, filter := range p.Filters {
-		value, ok := filter.Value.(string)
-		if !ok {
-			v.SetError("filters", "the type of filter value isn't string")
-			break
-		}
 		switch filter.Type {
-		case FilterTypeResource:
-			rt := ResourceType(value)
-			if !(rt == ResourceTypeImage || rt == ResourceTypeChart) {
-				v.SetError("filters", fmt.Sprintf("invalid resource filter: %s", value))
+		case FilterTypeResource, FilterTypeName, FilterTypeTag:
+			value, ok := filter.Value.(string)
+			if !ok {
+				v.SetError("filters", "the type of filter value isn't string")
 				break
 			}
-		case FilterTypeName, FilterTypeTag, FilterTypeLabel:
+			if filter.Type == FilterTypeResource {
+				rt := ResourceType(value)
+				if !(rt == ResourceTypeImage || rt == ResourceTypeChart) {
+					v.SetError("filters", fmt.Sprintf("invalid resource filter: %s", value))
+					break
+				}
+			}
+		case FilterTypeLabel:
+			labels, ok := filter.Value.([]interface{})
+			if !ok {
+				v.SetError("filters", "the type of label filter value isn't string slice")
+				break
+			}
+			for _, label := range labels {
+				_, ok := label.(string)
+				if !ok {
+					v.SetError("filters", "the type of label filter value isn't string slice")
+					break
+				}
+			}
 		default:
 			v.SetError("filters", "invalid filter type")
 			break
@@ -131,6 +147,32 @@ type FilterType string
 type Filter struct {
 	Type  FilterType  `json:"type"`
 	Value interface{} `json:"value"`
+}
+
+// DoFilter filter the filterables
+// The parameter "filterables" must be a pointer points to a slice
+// whose elements must be Filterable. After applying the filter
+// to the "filterables", the result is put back into the variable
+// "filterables"
+func (f *Filter) DoFilter(filterables interface{}) error {
+	var ft filter.Filter
+	switch f.Type {
+	case FilterTypeName:
+		ft = filter.NewRepositoryNameFilter(f.Value.(string))
+	case FilterTypeTag:
+		ft = filter.NewVTagNameFilter(f.Value.(string))
+	case FilterTypeLabel:
+		labels, ok := f.Value.([]string)
+		if ok {
+			ft = filter.NewVTagLabelFilter(labels)
+		}
+	case FilterTypeResource:
+		ft = filter.NewResourceTypeFilter(f.Value.(string))
+	default:
+		return fmt.Errorf("unsupported filter type: %s", f.Type)
+	}
+
+	return filter.DoFilter(filterables, ft)
 }
 
 // TriggerType represents the type of trigger.
