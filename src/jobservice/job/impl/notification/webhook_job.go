@@ -3,7 +3,7 @@ package notification
 import (
 	"bytes"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils/registry"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"net/http"
@@ -67,7 +67,7 @@ func (wj *WebhookJob) init(ctx job.Context, params map[string]interface{}) error
 		insecureSkipVerify = v.(bool)
 	}
 	wj.client = &http.Client{
-		Transport: registry.GetHTTPTransport(insecureSkipVerify),
+		Transport: commonhttp.GetHTTPTransport(insecureSkipVerify),
 	}
 
 	return nil
