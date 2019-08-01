@@ -38,7 +38,7 @@ import (
 	notarymodel "github.com/goharbor/harbor/src/common/utils/notary/model"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/notifier"
+	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	"github.com/goharbor/harbor/src/core/notifier/topic"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/pkg/scan"
@@ -342,8 +342,8 @@ func (ra *RepositoryAPI) Delete() {
 	}
 
 	// build and publish image delete event
-	evt := &notifier.Event{}
-	imgDelMetadata := &notifier.ImageDelMetaData{
+	evt := &notifierEvt.Event{}
+	imgDelMetadata := &notifierEvt.ImageDelMetaData{
 		Topic:    topic.DeleteImageTopic,
 		Project:  project,
 		Tags:     tags,

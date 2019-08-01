@@ -1,10 +1,11 @@
-package notifier
+package event
 
 import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/notifier"
 	"github.com/goharbor/harbor/src/core/notifier/model"
 )
 
@@ -112,7 +113,7 @@ func (e *Event) Build(metadata ...EventMetadata) error {
 
 // Publish an event
 func (e *Event) Publish() error {
-	if err := Publish(e.Topic, e.Data); err != nil {
+	if err := notifier.Publish(e.Topic, e.Data); err != nil {
 		log.Errorf("failed to publish topic %s with event: %v", e.Topic, err)
 		return err
 	}

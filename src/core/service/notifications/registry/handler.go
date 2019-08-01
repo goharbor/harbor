@@ -27,7 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/notifier"
+	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	"github.com/goharbor/harbor/src/core/notifier/topic"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
@@ -119,8 +119,8 @@ func (n *NotificationHandler) Post() {
 			}
 
 			// build and publish image push event
-			evt := &notifier.Event{}
-			imgPushMetadata := &notifier.ImagePushPullMetaData{
+			evt := &notifierEvt.Event{}
+			imgPushMetadata := &notifierEvt.ImagePushPullMetaData{
 				Topic:    topic.PushImageTopic,
 				Project:  pro,
 				Tag:      tag,
@@ -170,9 +170,9 @@ func (n *NotificationHandler) Post() {
 			}
 		}
 		if action == "pull" {
-			// build and publish image push event
-			evt := &notifier.Event{}
-			imgPullMetadata := &notifier.ImagePushPullMetaData{
+			// build and publish image pull event
+			evt := &notifierEvt.Event{}
+			imgPullMetadata := &notifierEvt.ImagePushPullMetaData{
 				Topic:    topic.PullImageTopic,
 				Project:  pro,
 				Tag:      tag,

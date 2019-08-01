@@ -9,7 +9,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/notifier"
+	"github.com/goharbor/harbor/src/core/notifier/event"
 	notifyModel "github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/notification"
 )
@@ -100,8 +100,8 @@ func sendHookWithPolicies(policies []*models.NotificationPolicy, payload *notify
 	for _, ply := range policies {
 		targets := ply.Targets
 		for _, target := range targets {
-			evt := &notifier.Event{}
-			hookMetadata := &notifier.HookMetaData{
+			evt := &event.Event{}
+			hookMetadata := &event.HookMetaData{
 				Topic:     target.Type,
 				EventType: eventType,
 				PolicyID:  ply.ID,
