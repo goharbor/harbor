@@ -15,6 +15,7 @@
 package quota
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -60,7 +61,11 @@ func (qi *quotaInterceptor) HandleRequest(req *http.Request) (err error) {
 
 	resources := opts.Resources
 	if len(resources) == 0 && opts.OnResources != nil {
-		resources = opts.OnResources(req)
+		resources, err = opts.OnResources(req)
+		if err != nil {
+			return fmt.Errorf("failed to compute the resources for quota, error: %v", err)
+		}
+
 		log.Debugf("Compute the resources for quota, got: %v", resources)
 	}
 	qi.resources = resources

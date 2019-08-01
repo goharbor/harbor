@@ -42,7 +42,7 @@ var (
 type deleteChartVersionBuilder struct {
 }
 
-func (m *deleteChartVersionBuilder) Build(req *http.Request) interceptor.Interceptor {
+func (*deleteChartVersionBuilder) Build(req *http.Request) interceptor.Interceptor {
 	if req.Method != http.MethodDelete {
 		return nil
 	}
@@ -78,7 +78,7 @@ func (m *deleteChartVersionBuilder) Build(req *http.Request) interceptor.Interce
 type uploadChartVersionBuilder struct {
 }
 
-func (m *uploadChartVersionBuilder) Build(req *http.Request) interceptor.Interceptor {
+func (*uploadChartVersionBuilder) Build(req *http.Request) interceptor.Interceptor {
 	if req.Method != http.MethodPost {
 		return nil
 	}

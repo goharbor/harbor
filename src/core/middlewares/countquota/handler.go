@@ -16,50 +16,57 @@ package countquota
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"net/http"
+
+	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
+	"github.com/goharbor/harbor/src/core/middlewares/util"
 )
 
 type countQuotaHandler struct {
-	next http.Handler
+	builders []interceptor.Builder
+	next     http.Handler
 }
 
 // New ...
-func New(next http.Handler) http.Handler {
+func New(next http.Handler, builders ...interceptor.Builder) http.Handler {
+	if len(builders) == 0 {
+		builders = defaultBuilders
+	}
+
 	return &countQuotaHandler{
-		next: next,
+		builders: builders,
+		next:     next,
 	}
 }
 
 // ServeHTTP manifest ...
-func (cqh *countQuotaHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	countInteceptor := getInteceptor(req)
-	if countInteceptor == nil {
-		cqh.next.ServeHTTP(rw, req)
+func (h *countQuotaHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	interceptor := h.getInterceptor(req)
+	if interceptor == nil {
+		h.next.ServeHTTP(rw, req)
 		return
 	}
-	// handler request
-	if err := countInteceptor.HandleRequest(req); err != nil {
+
+	if err := interceptor.HandleRequest(req); err != nil {
 		log.Warningf("Error occurred when to handle request in count quota handler: %v", err)
 		http.Error(rw, util.MarshalError("InternalError", fmt.Sprintf("Error occurred when to handle request in count quota handler: %v", err)),
 			http.StatusInternalServerError)
 		return
 	}
-	cqh.next.ServeHTTP(rw, req)
 
-	// handler response
-	countInteceptor.HandleResponse(*rw.(*util.CustomResponseWriter), req)
+	h.next.ServeHTTP(rw, req)
+
+	interceptor.HandleResponse(rw, req)
 }
 
-func getInteceptor(req *http.Request) util.RegInterceptor {
-	// PUT /v2/<name>/manifests/<reference>
-	matchPushMF, repository, tag := util.MatchPushManifest(req)
-	if matchPushMF {
-		mfInfo := util.MfInfo{}
-		mfInfo.Repository = repository
-		mfInfo.Tag = tag
-		return NewPutManifestInterceptor(&mfInfo)
+func (h *countQuotaHandler) getInterceptor(req *http.Request) interceptor.Interceptor {
+	for _, builder := range h.builders {
+		interceptor := builder.Build(req)
+		if interceptor != nil {
+			return interceptor
+		}
 	}
+
 	return nil
 }

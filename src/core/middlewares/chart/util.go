@@ -85,18 +85,18 @@ func chartVersionExists(namespace, chartName, version string) bool {
 	return !chartVersion.Removed
 }
 
-func computeQuotaForUpload(req *http.Request) types.ResourceList {
+func computeQuotaForUpload(req *http.Request) (types.ResourceList, error) {
 	info, ok := util.ChartVersionInfoFromContext(req.Context())
 	if !ok {
-		return nil
+		return nil, errors.New("chart version info missing")
 	}
 
 	if chartVersionExists(info.Namespace, info.ChartName, info.Version) {
 		log.Debugf("Chart %s with version %s in namespace %s exists", info.ChartName, info.Version, info.Namespace)
-		return nil
+		return nil, nil
 	}
 
-	return types.ResourceList{types.ResourceCount: 1}
+	return types.ResourceList{types.ResourceCount: 1}, nil
 }
 
 func mutexKey(str ...string) string {
