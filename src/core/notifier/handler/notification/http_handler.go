@@ -50,7 +50,7 @@ func (h *HTTPHandler) process(event *model.HookEvent) error {
 	j.Parameters = map[string]interface{}{
 		"payload":          string(payload),
 		"address":          event.Target.Address,
-		"auth_header":      event.Target.AuthHeader,
+		"auth_header":      "Basic " + event.Target.AuthHeader,
 		"skip_cert_verify": event.Target.SkipCertVerify,
 	}
 	return notification.HookManager.StartHook(event, j)
