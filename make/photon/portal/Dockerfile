@@ -2,15 +2,21 @@ FROM node:10.15.0 as nodeportal
 
 RUN mkdir -p /portal_src && mkdir -p /build_dir
 
-COPY make/photon/portal/entrypoint.sh /
 COPY src/portal /portal_src
-COPY ./docs/swagger.yaml   /portal_src
+COPY ./docs/swagger.yaml /portal_src
 
-WORKDIR /portal_src
+WORKDIR /build_dir
 
-RUN npm install && \
-    chmod u+x /entrypoint.sh
-RUN /entrypoint.sh
+RUN cp -r /portal_src/* /build_dir \
+    && ls -la \
+    && apt-get update \
+    && apt-get install python-yaml \
+    && cat swagger.yaml | python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' > swagger.json \
+    && cat ./package.json \
+    && npm install \
+    && npm run build_lib \
+    && npm run link_lib \
+    && npm run release
 
 
 FROM photon:2.0
