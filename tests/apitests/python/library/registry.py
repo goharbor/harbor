@@ -14,7 +14,7 @@ class Registry(base.Base):
             username=username, password=password, insecure=insecure)
         _, _, header = client.targets_post_with_http_info(registry)
         return base._get_id_from_header(header), name
-    
+
     def get_registry_id_by_endpoint(self, endpoint, **kwargs):
         client = self._get_client(**kwargs)
         registries = client.targets_get()
