@@ -17,6 +17,7 @@ import { TranslateService } from "@ngx-translate/core";
 import { ErrorHandler } from "@harbor/ui";
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 @Component({
   selector: "add-robot",
@@ -28,6 +29,8 @@ export class AddRobotComponent implements OnInit, OnDestroy {
   copyToken: boolean;
   robotToken: string;
   robotAccount: string;
+  downLoadFileName: string = '';
+  downLoadHref: SafeUrl = '';
   isSubmitOnGoing = false;
   closable: boolean = false;
   staticBackdrop: boolean = true;
@@ -50,7 +53,8 @@ export class AddRobotComponent implements OnInit, OnDestroy {
       private translate: TranslateService,
       private errorHandler: ErrorHandler,
       private cdr: ChangeDetectorRef,
-      private messageHandlerService: MessageHandlerService
+      private messageHandlerService: MessageHandlerService,
+      private sanitizer: DomSanitizer
   ) {}
 
   ngOnInit(): void {
@@ -148,6 +152,10 @@ export class AddRobotComponent implements OnInit, OnDestroy {
                     this.createSuccess = res;
                   });
               this.addRobotOpened = false;
+              // export to token file
+              const downLoadUrl = `data:text/json;charset=utf-8, ${encodeURIComponent(JSON.stringify(response))}`;
+              this.downLoadHref = this.sanitizer.bypassSecurityTrustUrl(downLoadUrl);
+              this.downLoadFileName = `${response.name}.json`;
             },
             error => {
               this.isSubmitOnGoing = false;
@@ -196,5 +204,9 @@ export class AddRobotComponent implements OnInit, OnDestroy {
         .subscribe((res: string) => {
           this.messageHandlerService.showSuccess(res);
         });
+  }
+
+  closeModal() {
+    this.copyToken = false;
   }
 }
