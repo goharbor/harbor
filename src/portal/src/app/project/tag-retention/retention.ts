@@ -39,7 +39,7 @@ export class Retention {
 }
 
 export class Rule {
-    isDisabled: boolean;
+    disabled: boolean;
     id: number;
     priority: number;
     action: string;
@@ -51,6 +51,7 @@ export class Rule {
     };
 
     constructor() {
+        this.disabled = false;
         this.action = "retain";
         this.params = {};
         this.scope_selectors = {

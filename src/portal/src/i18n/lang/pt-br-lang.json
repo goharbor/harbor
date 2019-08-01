@@ -1123,11 +1123,11 @@
         "RULE_TEMPLATE_3": "the most recently pushed # images",
         "RULE_TEMPLATE_4": "the most recently pulled # images",
         "RULE_TEMPLATE_5": "always",
-        "ACTION_RETAIN": "Retain",
+        "ACTION_RETAIN": " retain",
         "UNIT_DAY": "DAYS",
         "UNIT_COUNT": "COUNT",
         "NUMBER": "NUMBER",
-        "IN_REPOSITORIES": "Repositories",
+        "IN_REPOSITORIES": "For the repositories",
         "REP_SEPARATOR": "Enter multiple comma separated repos,repo*,or **",
         "TAGS": "Tags",
         "MATCHES_TAGS": "Matches tags",
@@ -1158,7 +1158,10 @@
         "LOWER_LABELS": " labels",
         "WITH_CONDITION": " with",
         "LOWER_TAGS": " tags",
-        "TRIGGER": "Schedule"
+        "TRIGGER": "Schedule",
+        "RETAINED": "Retained",
+        "TOTAL": "Total",
+        "NONE": "none"
     }
 
     

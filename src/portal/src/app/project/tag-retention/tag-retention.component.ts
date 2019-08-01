@@ -58,7 +58,7 @@ export class TagRetentionComponent implements OnInit {
     projectId: number;
     isRetentionRunOpened: boolean = false;
     isAbortedOpened: boolean = false;
-    selectedItem: any;
+    selectedItem: any = null;
     ruleIndex: number = -1;
     index: number = -1;
     retentionId: number;
@@ -66,10 +66,13 @@ export class TagRetentionComponent implements OnInit {
     editIndex: number;
     executionList = [];
     historyList = [];
-    loadingExecutions: boolean = false;
-    loadingHistories: boolean = false;
+    loadingExecutions: boolean = true;
+    loadingHistories: boolean = true;
     label: string = 'TAG_RETENTION.TRIGGER';
     loadingRule: boolean = false;
+    currentPage: number = 1;
+    pageSize: number = 10;
+    totalCount: number = 0;
     @ViewChild('cronScheduleComponent')
     cronScheduleComponent: CronScheduleComponent;
     @ViewChild('addRule') addRuleComponent: AddRuleComponent;
@@ -114,7 +117,6 @@ export class TagRetentionComponent implements OnInit {
         }
         this.getRetention();
         this.getMetadata();
-        this.refreshList();
     }
     updateCron(cron: string) {
         let retention: Retention = clone(this.retention);
@@ -167,7 +169,20 @@ export class TagRetentionComponent implements OnInit {
         this.addRuleComponent.isAdd = false;
         this.ruleIndex = -1;
     }
-
+  toggleDisable(index, isActionDisable) {
+        let retention: Retention = clone(this.retention);
+        retention.rules[index].disabled = isActionDisable;
+        this.ruleIndex = -1;
+        this.loadingRule = true;
+        this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
+            response => {
+                this.loadingRule = false;
+                this.retention = retention;
+            }, error => {
+                this.loadingRule = false;
+                this.errorHandler.error(error);
+            });
+    }
     deleteRule(index) {
         let retention: Retention = clone(this.retention);
         retention.rules.splice(index, 1);
@@ -210,17 +225,27 @@ export class TagRetentionComponent implements OnInit {
 
     refreshList() {
         this.index = -1 ;
+        this.selectedItem = null;
+        this.loadingExecutions = true;
         if (this.retentionId) {
-            this.loadingExecutions = true;
-            this.tagRetentionService.getRunNowList(this.retentionId).subscribe(
-                res => {
+            this.tagRetentionService.getRunNowList(this.retentionId, this.currentPage, this.pageSize).subscribe(
+              response => {
+                    // Get total count
+                    if (response.headers) {
+                        let xHeader: string = response.headers.get("x-total-count");
+                        if (xHeader) {
+                            this.totalCount = parseInt(xHeader, 0);
+                        }
+                    }
+                    this.executionList = response.body as Array<any>;
                     this.loadingExecutions = false;
-                    this.executionList = res;
                     TagRetentionComponent.calculateDuration(this.executionList);
                 }, error => {
                     this.loadingExecutions = false;
                     this.errorHandler.error(error);
                 });
+        } else {
+            this.loadingExecutions = false;
         }
     }
 
@@ -346,5 +371,8 @@ export class TagRetentionComponent implements OnInit {
 
     getI18nKey(str: string) {
         return this.tagRetentionService.getI18nKey(str);
+    }
+    clrLoad() {
+        this.refreshList();
     }
 }
