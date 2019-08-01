@@ -23,3 +23,8 @@ END $$;
 
 ALTER TABLE user_group ADD CONSTRAINT unique_group_name UNIQUE (group_name);
 
+
+/*
+Fix issue https://github.com/goharbor/harbor/issues/8526, delete the none scan_all schedule.
+ */
+UPDATE admin_job SET deleted='true' WHERE cron_str='{"type":"none"}';
