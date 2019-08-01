@@ -12,6 +12,9 @@ How to use Harbor to manage images, projects, replications and users.
 [Configuring HTTPS for Harbor](configure_https.md)  
 Configure security connection between Harbor and Docker client.
 
+[Configuring custom image storage driver](configure_image_storage_driver.md)
+Let Harbor compute storage capacity with external backend
+
 [Upgrade and Data Migration Guide](migration_guide.md)  
 Data migration may be needed when upgrading Harbor to a newer version.
 
