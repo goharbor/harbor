@@ -332,7 +332,8 @@
         "COPY_SUCCESS": "Copy token successfully of '{{param}}'",
         "DELETION_TITLE": "Confirm removal of robot accounts",
         "DELETION_SUMMARY": "Do you want to delete robot accounts {{param}}?",
-        "PULL_IS_MUST" : "Pull permission is checked by default and can not be modified."
+        "PULL_IS_MUST" : "Pull permission is checked by default and can not be modified.",
+        "EXPORT_TO_FILE" : "export to file"
     },
     "GROUP": {
         "GROUP": "Group",
