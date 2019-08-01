@@ -49,7 +49,7 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 
 **System requirements:**
 
-**On a Linux host:** docker 17.03.0-ce+ and docker-compose 1.18.0+ .
+**On a Linux host:** docker 17.06.0-ce+ and docker-compose 1.18.0+ .
 
 Download binaries of **[Harbor release ](https://github.com/vmware/harbor/releases)** and follow **[Installation & Configuration Guide](docs/installation_guide.md)** to install Harbor.
 

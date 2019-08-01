@@ -1,17 +1,13 @@
 package topic
 
 import (
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/notifier"
-	"github.com/goharbor/harbor/src/core/notifier/handler/webhook"
+	"github.com/goharbor/harbor/src/core/notifier/handler/notification"
 )
 
 // Define global topic names
 const (
-	// ScanAllPolicyTopic is for notifying the change of scanning all policy.
-	ScanAllPolicyTopic = common.ScanAllPolicy
-
 	// PushImageTopic is topic for push image event
 	PushImageTopic = "OnPushImage"
 	// PullImageTopic is topic for pull image event
@@ -29,19 +25,19 @@ const (
 	// ScanningCompletedTopic is topic for scanning completed event
 	ScanningCompletedTopic = "OnScanningCompleted"
 
-	// WebhookHTTPTopic is topic for sending webhook payload by http
-	WebhookHTTPTopic = "http"
-	// WebhookEmailTopic is topic sending webhook payload by email
-	WebhookEmailTopic = "email"
+	// WebhookTopic is topic for sending webhook payload
+	WebhookTopic = "http"
+	// EmailTopic is topic for sending email payload
+	EmailTopic = "email"
 )
 
 // Subscribe topics
 func init() {
 	handlersMap := map[string][]notifier.NotificationHandler{
-		PushImageTopic:   {&webhook.PushImagePreprocessHandler{}},
-		PullImageTopic:   {&webhook.PullImagePreprocessHandler{}},
-		DeleteImageTopic: {&webhook.DeleteImagePreprocessHandler{}},
-		WebhookHTTPTopic: {&webhook.HTTPScheduler{}},
+		PushImageTopic:   {&notification.PushImagePreprocessHandler{}},
+		PullImageTopic:   {&notification.PullImagePreprocessHandler{}},
+		DeleteImageTopic: {&notification.DeleteImagePreprocessHandler{}},
+		WebhookTopic:     {&notification.HTTPHandler{}},
 	}
 
 	for t, handlers := range handlersMap {

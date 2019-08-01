@@ -67,3 +67,19 @@ type ProjectQuery struct {
 	Page     int64  `url:"page,omitempty"`
 	PageSize int64  `url:"page_size,omitempty"`
 }
+
+// ProjectSummary ...
+type ProjectSummary struct {
+	RepoCount  int64  `json:"repo_count"`
+	ChartCount uint64 `json:"chart_count"`
+
+	ProjectAdminCount int64 `json:"project_admin_count"`
+	MasterCount       int64 `json:"master_count"`
+	DeveloperCount    int64 `json:"developer_count"`
+	GuestCount        int64 `json:"guest_count"`
+
+	Quota struct {
+		Hard map[string]int64 `json:"hard"`
+		Used map[string]int64 `json:"used"`
+	} `json:"quota"`
+}

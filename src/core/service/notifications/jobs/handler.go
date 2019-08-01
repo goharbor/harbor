@@ -24,10 +24,11 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/operation/hook"
 	"github.com/goharbor/harbor/src/replication/policy/scheduler"
-	"github.com/goharbor/harbor/src/webhook"
 )
 
 var statusMap = map[string]string{
@@ -99,21 +100,42 @@ func (h *Handler) HandleReplicationScheduleJob() {
 func (h *Handler) HandleReplicationTask() {
 	log.Debugf("received replication task status update event: task-%d, status-%s", h.id, h.status)
 	if err := hook.UpdateTask(replication.OperationCtl, h.id, h.rawStatus); err != nil {
-		log.Errorf("Failed to update replication task status, id: %d, status: %s", h.id, h.status)
+		log.Errorf("failed to update the status of the replication task %d: %v", h.id, err)
 		h.SendInternalServerError(err)
 		return
 	}
 }
 
-// HandleWebhookJob handles the hook of webhook job
-func (h *Handler) HandleWebhookJob() {
-	log.Debugf("received webhook task status update event: task-%d, status-%s", h.id, h.status)
-	if err := webhook.JobCtl.UpdateWebhookJob(&models.WebhookJob{
+// HandleRetentionTask handles the webhook of retention task
+func (h *Handler) HandleRetentionTask() {
+	log.Debugf("received retention task status update event: task-%d, status-%s", h.id, h.status)
+	mgr := &retention.DefaultManager{}
+	props := []string{"Status"}
+	task := &retention.Task{
+		ID:     h.id,
+		Status: h.status,
+	}
+	if h.status == models.JobFinished || h.status == models.JobError ||
+		h.status == models.JobStopped {
+		task.EndTime = time.Now()
+	}
+	props = append(props, "EndTime")
+	if err := mgr.UpdateTask(task, props...); err != nil {
+		log.Errorf("failed to update the status of retention task %d: %v", h.id, err)
+		h.SendInternalServerError(err)
+		return
+	}
+}
+
+// HandleNotificationJob handles the hook of notification job
+func (h *Handler) HandleNotificationJob() {
+	log.Debugf("received notification job status update event: job-%d, status-%s", h.id, h.status)
+	if err := notification.JobMgr.Update(&models.NotificationJob{
 		ID:         h.id,
 		Status:     h.status,
 		UpdateTime: time.Now(),
 	}, "Status", "UpdateTime"); err != nil {
-		log.Errorf("Failed to update webhook job status, id: %d, status: %s", h.id, h.status)
+		log.Errorf("Failed to update notification job status, id: %d, status: %s", h.id, h.status)
 		h.SendInternalServerError(err)
 		return
 	}

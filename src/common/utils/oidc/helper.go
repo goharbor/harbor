@@ -35,20 +35,14 @@ const googleEndpoint = "https://accounts.google.com"
 
 type providerHelper struct {
 	sync.Mutex
-	ep       endpoint
-	instance atomic.Value
-	setting  atomic.Value
-}
-
-type endpoint struct {
-	url        string
-	VerifyCert bool
+	instance     atomic.Value
+	setting      atomic.Value
+	creationTime time.Time
 }
 
 func (p *providerHelper) get() (*gooidc.Provider, error) {
 	if p.instance.Load() != nil {
-		s := p.setting.Load().(models.OIDCSetting)
-		if s.Endpoint != p.ep.url || s.VerifyCert != p.ep.VerifyCert { // relevant settings have changed, need to re-create provider.
+		if time.Now().Sub(p.creationTime) > 3*time.Second {
 			if err := p.create(); err != nil {
 				return nil, err
 			}
@@ -57,7 +51,7 @@ func (p *providerHelper) get() (*gooidc.Provider, error) {
 		p.Lock()
 		defer p.Unlock()
 		if p.instance.Load() == nil {
-			if err := p.reload(); err != nil {
+			if err := p.reloadSetting(); err != nil {
 				return nil, err
 			}
 			if err := p.create(); err != nil {
@@ -65,7 +59,7 @@ func (p *providerHelper) get() (*gooidc.Provider, error) {
 			}
 			go func() {
 				for {
-					if err := p.reload(); err != nil {
+					if err := p.reloadSetting(); err != nil {
 						log.Warningf("Failed to refresh configuration, error: %v", err)
 					}
 					time.Sleep(3 * time.Second)
@@ -73,10 +67,11 @@ func (p *providerHelper) get() (*gooidc.Provider, error) {
 			}()
 		}
 	}
+
 	return p.instance.Load().(*gooidc.Provider), nil
 }
 
-func (p *providerHelper) reload() error {
+func (p *providerHelper) reloadSetting() error {
 	conf, err := config.OIDCSetting()
 	if err != nil {
 		return fmt.Errorf("failed to load OIDC setting: %v", err)
@@ -96,10 +91,7 @@ func (p *providerHelper) create() error {
 		return fmt.Errorf("failed to create OIDC provider, error: %v", err)
 	}
 	p.instance.Store(provider)
-	p.ep = endpoint{
-		url:        s.Endpoint,
-		VerifyCert: s.VerifyCert,
-	}
+	p.creationTime = time.Now()
 	return nil
 }
 
@@ -213,4 +205,20 @@ func RefreshToken(ctx context.Context, token *Token) (*Token, error) {
 		return nil, fmt.Errorf("failed to get id_token from refresh response")
 	}
 	return &Token{Token: *t, IDToken: it}, nil
+}
+
+// Conn wraps connection info of an OIDC endpoint
+type Conn struct {
+	URL        string `json:"url"`
+	VerifyCert bool   `json:"verify_cert"`
+}
+
+// TestEndpoint tests whether the endpoint is a valid OIDC endpoint.
+// The nil return value indicates the success of the test
+func TestEndpoint(conn Conn) error {
+
+	// gooidc will try to call the discovery api when creating the provider and that's all we need to check
+	ctx := clientCtx(context.Background(), conn.VerifyCert)
+	_, err := gooidc.NewProvider(ctx, conn.URL)
+	return err
 }

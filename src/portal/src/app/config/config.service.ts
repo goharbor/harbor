@@ -22,6 +22,7 @@ import { Configuration, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from '@harbor/ui';
 const configEndpoint = "/api/configurations";
 const emailEndpoint = "/api/email/ping";
 const ldapEndpoint = "/api/ldap/ping";
+const oidcEndpoint = "/api/system/oidc/ping";
 
 @Injectable()
 export class ConfigurationService {
@@ -50,5 +51,9 @@ export class ConfigurationService {
          return this.http.post(ldapEndpoint, JSON.stringify(ldapSettings), HTTP_JSON_OPTIONS)
         .pipe(map(response => response)
         , catchError(error => observableThrowError(error)));
+    }
+    public testOIDCServer(oidcSettings: any): Observable<any> {
+         return this.http.post(oidcEndpoint, JSON.stringify(oidcSettings), HTTP_JSON_OPTIONS)
+         .pipe(catchError(error => observableThrowError(error)));
     }
 }

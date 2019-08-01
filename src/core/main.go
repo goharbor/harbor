@@ -25,6 +25,7 @@ import (
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -35,10 +36,11 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/src/core/proxy"
+	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/replication"
-	"github.com/goharbor/harbor/src/webhook"
 )
 
 const (
@@ -107,6 +109,11 @@ func main() {
 		log.Fatalf("failed to load config: %v", err)
 	}
 
+	// init the jobservice client
+	job.Init()
+	// init the scheduler
+	scheduler.Init()
+
 	password, err := config.InitialAdminPassword()
 	if err != nil {
 		log.Fatalf("failed to get admin's initia password: %v", err)
@@ -136,8 +143,8 @@ func main() {
 		log.Fatalf("failed to init for replication: %v", err)
 	}
 
-	log.Info("initializing webhook...")
-	webhook.Init()
+	log.Info("initializing notification...")
+	notification.Init()
 
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
@@ -162,7 +169,10 @@ func main() {
 	}
 
 	log.Info("Init proxy")
-	proxy.Init()
+	if err := middlewares.Init(); err != nil {
+		log.Fatalf("init proxy error, %v", err)
+	}
+
 	// go proxy.StartProxy()
 	beego.Run()
 }

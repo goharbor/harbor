@@ -24,45 +24,17 @@ import (
 	"strings"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
+	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
-type chart struct {
-	Name    string `json:"name"`
-	Project string
-}
-
-func (c *chart) Match(filters []*model.Filter) (bool, error) {
-	supportedFilters := []*model.Filter{}
-	for _, filter := range filters {
-		if filter.Type == model.FilterTypeName {
-			supportedFilters = append(supportedFilters, filter)
-		}
-	}
-	item := &FilterItem{
-		Value: fmt.Sprintf("%s/%s", c.Project, c.Name),
-	}
-	return item.Match(supportedFilters)
+type label struct {
+	Name string `json:"name"`
 }
 
 type chartVersion struct {
-	Name    string `json:"name"`
-	Version string `json:"version"`
-	// TODO handle system/project level labels
-	// Labels string `json:"labels"`
-}
-
-func (c *chartVersion) Match(filters []*model.Filter) (bool, error) {
-	supportedFilters := []*model.Filter{}
-	for _, filter := range filters {
-		if filter.Type == model.FilterTypeTag {
-			supportedFilters = append(supportedFilters, filter)
-		}
-	}
-	item := &FilterItem{
-		Value: c.Version,
-	}
-	return item.Match(supportedFilters)
+	Version string   `json:"version"`
+	Labels  []*label `json:"labels"`
 }
 
 type chartVersionDetail struct {
@@ -81,37 +53,60 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 	resources := []*model.Resource{}
 	for _, project := range projects {
 		url := fmt.Sprintf("%s/api/chartrepo/%s/charts", a.getURL(), project.Name)
-		charts := []*chart{}
-		if err := a.client.Get(url, &charts); err != nil {
+		repositories := []*adp.Repository{}
+		if err := a.client.Get(url, &repositories); err != nil {
 			return nil, err
 		}
-		for _, chart := range charts {
-			chart.Project = project.Name
+		if len(repositories) == 0 {
+			continue
 		}
-		charts, err := filterCharts(charts, filters)
-		if err != nil {
-			return nil, err
+		for _, repository := range repositories {
+			repository.Name = fmt.Sprintf("%s/%s", project.Name, repository.Name)
+			repository.ResourceType = string(model.ResourceTypeChart)
 		}
-		for _, chart := range charts {
-			url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s", a.getURL(), project.Name, chart.Name)
-			chartVersions := []*chartVersion{}
-			if err := a.client.Get(url, &chartVersions); err != nil {
+		for _, filter := range filters {
+			if err = filter.DoFilter(&repositories); err != nil {
 				return nil, err
 			}
-			chartVersions, err = filterChartVersions(chartVersions, filters)
-			if err != nil {
+		}
+		for _, repository := range repositories {
+			name := strings.SplitN(repository.Name, "/", 2)[1]
+			url := fmt.Sprintf("%s/api/chartrepo/%s/charts/%s", a.getURL(), project.Name, name)
+			versions := []*chartVersion{}
+			if err := a.client.Get(url, &versions); err != nil {
 				return nil, err
 			}
-			for _, version := range chartVersions {
+			if len(versions) == 0 {
+				continue
+			}
+			vTags := []*adp.VTag{}
+			for _, version := range versions {
+				var labels []string
+				for _, label := range version.Labels {
+					labels = append(labels, label.Name)
+				}
+				vTags = append(vTags, &adp.VTag{
+					Name:         version.Version,
+					Labels:       labels,
+					ResourceType: string(model.ResourceTypeChart),
+				})
+			}
+			for _, filter := range filters {
+				if err = filter.DoFilter(&vTags); err != nil {
+					return nil, err
+				}
+			}
+
+			for _, vTag := range vTags {
 				resources = append(resources, &model.Resource{
 					Type:     model.ResourceTypeChart,
 					Registry: a.registry,
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{
-							Name:     fmt.Sprintf("%s/%s", project.Name, chart.Name),
+							Name:     repository.Name,
 							Metadata: project.Metadata,
 						},
-						Vtags: []string{version.Version},
+						Vtags: []string{vTag.Name},
 					},
 				})
 			}
@@ -231,32 +226,4 @@ func parseChartName(name string) (string, string, error) {
 		return strs[0], strs[1], nil
 	}
 	return "", "", fmt.Errorf("invalid chart name format: %s", name)
-}
-
-func filterCharts(charts []*chart, filters []*model.Filter) ([]*chart, error) {
-	result := []*chart{}
-	for _, chart := range charts {
-		match, err := chart.Match(filters)
-		if err != nil {
-			return nil, err
-		}
-		if match {
-			result = append(result, chart)
-		}
-	}
-	return result, nil
-}
-
-func filterChartVersions(chartVersions []*chartVersion, filters []*model.Filter) ([]*chartVersion, error) {
-	result := []*chartVersion{}
-	for _, chartVersion := range chartVersions {
-		match, err := chartVersion.Match(filters)
-		if err != nil {
-			return nil, err
-		}
-		if match {
-			result = append(result, chartVersion)
-		}
-	}
-	return result, nil
 }

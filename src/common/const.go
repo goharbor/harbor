@@ -55,6 +55,7 @@ const (
 	PostGreSQLSSLMode                = "postgresql_sslmode"
 	SelfRegistration                 = "self_registration"
 	CoreURL                          = "core_url"
+	CoreLocalURL                     = "core_local_url"
 	JobServiceURL                    = "jobservice_url"
 	LDAPURL                          = "ldap_url"
 	LDAPSearchDN                     = "ldap_search_dn"
@@ -100,7 +101,7 @@ const (
 	HTTPAuthProxyEndpoint            = "http_authproxy_endpoint"
 	HTTPAuthProxyTokenReviewEndpoint = "http_authproxy_tokenreview_endpoint"
 	HTTPAuthProxyVerifyCert          = "http_authproxy_verify_cert"
-	HTTPAuthProxyAlwaysOnboard       = "http_authproxy_always_onboard"
+	HTTPAuthProxySkipSearch          = "http_authproxy_skip_search"
 	OIDCName                         = "oidc_name"
 	OIDCEndpoint                     = "oidc_endpoint"
 	OIDCCLientID                     = "oidc_client_id"
@@ -120,8 +121,9 @@ const (
 	NotaryURL                         = "notary_url"
 	DefaultCoreEndpoint               = "http://core:8080"
 	DefaultNotaryEndpoint             = "http://notary-server:4443"
-	LdapGroupType                     = 1
-	LdapGroupAdminDn                  = "ldap_group_admin_dn"
+	LDAPGroupType                     = 1
+	HTTPGroupType                     = 2
+	LDAPGroupAdminDn                  = "ldap_group_admin_dn"
 	LDAPGroupMembershipAttribute      = "ldap_group_membership_attribute"
 	DefaultRegistryControllerEndpoint = "http://registryctl:8080"
 	WithChartMuseum                   = "with_chartmuseum"
@@ -142,8 +144,9 @@ const (
 
 	ChartUploadCtxKey = contextKey("chart_upload_event")
 
-	// Global webhook enable configuration
-	WebhookEnable = "webhook_enable"
-	// Maximum fail number for webhook http notification
-	WebhookMaxHTTPFails = "webhook_max_http_fails"
+	// Global notification enable configuration
+	NotificationEnable = "notification_enable"
+	// Quota setting items for project
+	CountPerProject   = "count_per_project"
+	StoragePerProject = "storage_per_project"
 )

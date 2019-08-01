@@ -1,11 +1,12 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
-    <h3 class="modal-title" *ngIf="mode === 'create'">{{'GROUP.IMPORT_LDAP_GROUP' | translate}}</h3>
+    <h3 class="modal-title" *ngIf="mode === 'create' && isLdapMode">{{'GROUP.IMPORT_LDAP_GROUP' | translate}}</h3>
+    <h3 class="modal-title" *ngIf="mode === 'create' && isHttpAuthMode">{{'GROUP.IMPORT_HTTP_GROUP' | translate}}</h3>
     <h3 class="modal-title" *ngIf="mode !== 'create'">{{'GROUP.EDIT' | translate}}</h3>
 
     <div class="modal-body">
         <form class="form" #groupForm="ngForm">
             <section class="form-block">
-                <div class="form-group">
+                <div class="form-group"  *ngIf="isLdapMode">
                     <label for="ldap_group_dn" class="required">{{ 'GROUP.GROUP_DN' | translate}}</label>
                     <label for="ldap_group_dn"
                     aria-haspopup="true"
@@ -22,7 +23,7 @@
                         </span>
                     </label>
                 </div>
-                <div class="form-group">
+                <div class="form-group"  *ngIf="isLdapMode">
                     <label for="type">{{'GROUP.TYPE' | translate}}</label>
                     <label id="type">LDAP</label>
                 </div>

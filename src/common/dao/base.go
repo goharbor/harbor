@@ -167,11 +167,13 @@ func ClearTable(table string) error {
 	return err
 }
 
-func paginateForRawSQL(sql string, limit, offset int64) string {
+// PaginateForRawSQL ...
+func PaginateForRawSQL(sql string, limit, offset int64) string {
 	return fmt.Sprintf("%s limit %d offset %d", sql, limit, offset)
 }
 
-func paginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter {
+// PaginateForQuerySetter ...
+func PaginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter {
 	if size > 0 {
 		qs = qs.Limit(size)
 		if page > 0 {
@@ -183,7 +185,34 @@ func paginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter 
 
 // Escape ..
 func Escape(str string) string {
+	str = strings.Replace(str, `\`, `\\`, -1)
 	str = strings.Replace(str, `%`, `\%`, -1)
 	str = strings.Replace(str, `_`, `\_`, -1)
 	return str
+}
+
+// WithTransaction helper for transaction
+func WithTransaction(handler func(o orm.Ormer) error) error {
+	o := orm.NewOrm()
+
+	if err := o.Begin(); err != nil {
+		log.Errorf("begin transaction failed: %v", err)
+		return err
+	}
+
+	if err := handler(o); err != nil {
+		if e := o.Rollback(); e != nil {
+			log.Errorf("rollback transaction failed: %v", e)
+			return e
+		}
+
+		return err
+	}
+
+	if err := o.Commit(); err != nil {
+		log.Errorf("commit transaction failed: %v", err)
+		return err
+	}
+
+	return nil
 }

@@ -47,6 +47,7 @@ const (
 	HTTPAuthGroup  = "http_auth"
 	OIDCGroup      = "oidc"
 	DatabaseGroup  = "database"
+	QuotaGroup     = "quota"
 	// Put all config items do not belong a existing group into basic
 	BasicGroup = "basic"
 	ClairGroup = "clair"
@@ -74,6 +75,7 @@ var (
 		{Name: common.ClairURL, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_URL", DefaultValue: "http://clair:6060", ItemType: &StringType{}, Editable: false},
 
 		{Name: common.CoreURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CORE_URL", DefaultValue: "http://core:8080", ItemType: &StringType{}, Editable: false},
+		{Name: common.CoreLocalURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CORE_LOCAL_URL", DefaultValue: "http://127.0.0.1:8080", ItemType: &StringType{}, Editable: false},
 		{Name: common.DatabaseType, Scope: SystemScope, Group: BasicGroup, EnvKey: "DATABASE_TYPE", DefaultValue: "postgresql", ItemType: &StringType{}, Editable: false},
 
 		{Name: common.EmailFrom, Scope: UserScope, Group: EmailGroup, EnvKey: "EMAIL_FROM", DefaultValue: "admin <sample_admin@mydomain.com>", ItemType: &StringType{}, Editable: false},
@@ -91,7 +93,7 @@ var (
 		{Name: common.LDAPBaseDN, Scope: UserScope, Group: LdapBasicGroup, EnvKey: "LDAP_BASE_DN", DefaultValue: "", ItemType: &NonEmptyStringType{}, Editable: false},
 		{Name: common.LDAPFilter, Scope: UserScope, Group: LdapBasicGroup, EnvKey: "LDAP_FILTER", DefaultValue: "", ItemType: &StringType{}, Editable: false},
 		{Name: common.LDAPGroupBaseDN, Scope: UserScope, Group: LdapGroupGroup, EnvKey: "LDAP_GROUP_BASE_DN", DefaultValue: "", ItemType: &StringType{}, Editable: false},
-		{Name: common.LdapGroupAdminDn, Scope: UserScope, Group: LdapGroupGroup, EnvKey: "LDAP_GROUP_ADMIN_DN", DefaultValue: "", ItemType: &StringType{}, Editable: false},
+		{Name: common.LDAPGroupAdminDn, Scope: UserScope, Group: LdapGroupGroup, EnvKey: "LDAP_GROUP_ADMIN_DN", DefaultValue: "", ItemType: &StringType{}, Editable: false},
 		{Name: common.LDAPGroupAttributeName, Scope: UserScope, Group: LdapGroupGroup, EnvKey: "LDAP_GROUP_GID", DefaultValue: "", ItemType: &StringType{}, Editable: false},
 		{Name: common.LDAPGroupSearchFilter, Scope: UserScope, Group: LdapGroupGroup, EnvKey: "LDAP_GROUP_FILTER", DefaultValue: "", ItemType: &StringType{}, Editable: false},
 		{Name: common.LDAPGroupSearchScope, Scope: UserScope, Group: LdapGroupGroup, EnvKey: "LDAP_GROUP_SCOPE", DefaultValue: "2", ItemType: &LdapScopeType{}, Editable: false},
@@ -133,7 +135,7 @@ var (
 		{Name: common.HTTPAuthProxyEndpoint, Scope: UserScope, Group: HTTPAuthGroup, ItemType: &StringType{}},
 		{Name: common.HTTPAuthProxyTokenReviewEndpoint, Scope: UserScope, Group: HTTPAuthGroup, ItemType: &StringType{}},
 		{Name: common.HTTPAuthProxyVerifyCert, Scope: UserScope, Group: HTTPAuthGroup, DefaultValue: "true", ItemType: &BoolType{}},
-		{Name: common.HTTPAuthProxyAlwaysOnboard, Scope: UserScope, Group: HTTPAuthGroup, DefaultValue: "false", ItemType: &BoolType{}},
+		{Name: common.HTTPAuthProxySkipSearch, Scope: UserScope, Group: HTTPAuthGroup, DefaultValue: "false", ItemType: &BoolType{}},
 
 		{Name: common.OIDCName, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}},
 		{Name: common.OIDCEndpoint, Scope: UserScope, Group: OIDCGroup, ItemType: &StringType{}},
@@ -147,6 +149,9 @@ var (
 		{Name: common.WithNotary, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_NOTARY", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		// the unit of expiration is minute, 43200 minutes = 30 days
 		{Name: common.RobotTokenDuration, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_TOKEN_DURATION", DefaultValue: "43200", ItemType: &IntType{}, Editable: true},
-		{Name: common.WebhookEnable, Scope: UserScope, Group: BasicGroup, EnvKey: "WEBHOOK_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true},
+		{Name: common.NotificationEnable, Scope: UserScope, Group: BasicGroup, EnvKey: "NOTIFICATION_ENABLE", DefaultValue: "true", ItemType: &BoolType{}, Editable: true},
+
+		{Name: common.CountPerProject, Scope: UserScope, Group: QuotaGroup, EnvKey: "COUNT_PER_PROJECT", DefaultValue: "-1", ItemType: &QuotaType{}, Editable: true},
+		{Name: common.StoragePerProject, Scope: UserScope, Group: QuotaGroup, EnvKey: "STORAGE_PER_PROJECT", DefaultValue: "-1", ItemType: &QuotaType{}, Editable: true},
 	}
 )

@@ -24,7 +24,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
@@ -37,7 +37,7 @@ const (
 	jobServiceRedisURL          = "JOB_SERVICE_POOL_REDIS_URL"
 	jobServiceRedisNamespace    = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
 	jobServiceAuthSecret        = "JOBSERVICE_SECRET"
-	jobServiceWebHookMaxFails   = "JOBSERVICE_WEBHOOK_MAX_HTTP_FAILS"
+	coreURL                     = "CORE_URL"
 
 	// JobServiceProtocolHTTPS points to the 'https' protocol
 	JobServiceProtocolHTTPS = "https"
@@ -55,12 +55,7 @@ const (
 )
 
 // DefaultConfig is the default configuration reference
-var DefaultConfig = &Configuration{
-	// Default webHook.MaxHTTPFails is 10
-	WebHookConfig: &WebHookConfig{
-		MaxHTTPFails: 10,
-	},
-}
+var DefaultConfig = &Configuration{}
 
 // Configuration loads and keeps the related configuration items of job service.
 type Configuration struct {
@@ -81,9 +76,6 @@ type Configuration struct {
 
 	// Logger configurations
 	LoggerConfigs []*LoggerConfig `yaml:"loggers,omitempty"`
-
-	// WebHook configurations
-	WebHookConfig *WebHookConfig `yaml:"webhook_config,omitempty"`
 }
 
 // HTTPSConfig keeps additional configurations when using https protocol
@@ -121,11 +113,6 @@ type LoggerConfig struct {
 	Level    string             `yaml:"level"`
 	Settings CustomizedSettings `yaml:"settings"`
 	Sweeper  *LogSweeperConfig  `yaml:"sweeper"`
-}
-
-// WebHookConfig keeps logger basic configurations.
-type WebHookConfig struct {
-	MaxHTTPFails uint `yaml:"max_http_fails"`
 }
 
 // Load the configuration options from the specified yaml file.
@@ -175,6 +162,11 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 // GetAuthSecret get the auth secret from the env
 func GetAuthSecret() string {
 	return utils.ReadEnv(jobServiceAuthSecret)
+}
+
+// GetCoreURL get the core url from the env
+func GetCoreURL() string {
+	return utils.ReadEnv(coreURL)
 }
 
 // GetUIAuthSecret get the auth secret of UI side
@@ -257,16 +249,6 @@ func (c *Configuration) loadEnvs() {
 		}
 	}
 
-	maxFails := utils.ReadEnv(jobServiceWebHookMaxFails)
-	if !utils.IsEmptyStr(maxFails) {
-		if c.WebHookConfig == nil {
-			c.WebHookConfig = &WebHookConfig{}
-		}
-
-		if result, err := strconv.ParseUint(maxFails, 10, 32); err == nil {
-			c.WebHookConfig.MaxHTTPFails = uint(result)
-		}
-	}
 }
 
 // Check if the configurations are valid settings.

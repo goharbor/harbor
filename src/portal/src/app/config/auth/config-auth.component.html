@@ -310,13 +310,13 @@
             </clr-checkbox-wrapper>
         </div>
         <div class="form-group">
-            <label for="http_authproxy_always_onboard"
-                class="required">{{'CONFIG.HTTP_AUTH.ALWAYS_ONBOARD' | translate}}</label>
+            <label for="http_authproxy_skip_search"
+                class="required">{{'CONFIG.HTTP_AUTH.SKIP_SEARCH' | translate}}</label>
             <clr-checkbox-wrapper>
-                <input type="checkbox" clrCheckbox name="http_authproxy_always_onboard"
-                    id="http_authproxy_always_onboard"
-                    [disabled]="!currentConfig.http_authproxy_always_onboard.editable"
-                    [(ngModel)]="currentConfig.http_authproxy_always_onboard.value" />
+                <input type="checkbox" clrCheckbox name="http_authproxy_skip_search"
+                    id="http_authproxy_skip_search"
+                    [disabled]="!currentConfig.http_authproxy_skip_search.editable"
+                    [(ngModel)]="currentConfig.http_authproxy_skip_search.value" />
             </clr-checkbox-wrapper>
         </div>
     </section>
@@ -423,7 +423,7 @@
         [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE' | translate}}</button>
     <button type="button" class="btn btn-outline" (click)="cancel()"
         [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL' | translate}}</button>
-    <button type="button" class="btn btn-outline" (click)="testLDAPServer()" *ngIf="showLdapServerBtn"
-        [disabled]="!isLDAPConfigValid()">{{'BUTTON.TEST_LDAP' | translate}}</button>
-    <span id="forTestingLDAP" class="spinner spinner-inline" [hidden]="hideLDAPTestingSpinner"></span>
+    <button type="button" class="btn btn-outline" (click)="pingTestServer()" *ngIf="showTestingServerBtn"
+        [disabled]="!isConfigValidForTesting()">{{(showLdap?'BUTTON.TEST_LDAP':'BUTTON.TEST_OIDC') | translate}}</button>
+    <span id="forTestingLDAP" class="spinner spinner-inline" [hidden]="hideTestingSpinner"></span>
 </div>

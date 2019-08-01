@@ -1,8 +1,10 @@
 export const USERSTATICPERMISSION = {
     "PROJECT": {
-        'KEY': 'project',
+        'KEY': '.',
         'VALUE': {
-            "DELETE": "delete"
+            "DELETE": "delete",
+            "UPDATE": "update",
+            "READ": "read",
         }
     },
     "MEMBER": {
@@ -128,6 +130,18 @@ export const USERSTATICPERMISSION = {
             "DELETE": "delete",
             "LIST": "list",
             "READ": "read",
+        }
+    },
+    "TAG_RETENTION": {
+        'KEY': "tag-retention",
+        'VALUE': {
+            "CREATE": "create",
+            "UPDATE": "update",
+            "DELETE": "delete",
+            "LIST": "list",
+            "READ": "read",
+            "PULL": "pull",
+            "PUSH": "push"
         }
     },
 };

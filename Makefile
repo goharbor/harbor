@@ -107,7 +107,7 @@ REDISVERSION=$(VERSIONTAG)
 NOTARYMIGRATEVERSION=v3.5.4
 
 # version of chartmuseum
-CHARTMUSEUMVERSION=v0.8.1
+CHARTMUSEUMVERSION=v0.9.0
 
 define VERSIONS_FOR_PREPARE
 VERSION_TAG: $(VERSIONTAG)
@@ -292,7 +292,7 @@ compile_notary_migrate_patch:
 compile: check_environment versions_prepare compile_core compile_jobservice compile_registryctl compile_notary_migrate_patch
 
 update_prepare_version:
-	@echo "substitude the prepare version tag in prepare file..."
+	@echo "substitute the prepare version tag in prepare file..."
 	@$(SEDCMD) -i -e 's/goharbor\/prepare:.*[[:space:]]\+/goharbor\/prepare:$(VERSIONTAG) /' $(MAKEPATH)/prepare ;
 
 prepare: update_prepare_version
@@ -416,7 +416,7 @@ start:
 	@echo "Start complete. You can visit harbor now."
 
 down:
-	@echo "Please make sure to set -e NOTARYFLAG=true/CLAIRFLAG=true/CHARTFLAG=true if you are using Notary/CLAIR/Chartmuseum in Harbor, otherwise the Notary/CLAIR/Chartmuseum containers cannot be stop automaticlly."
+	@echo "Please make sure to set -e NOTARYFLAG=true/CLAIRFLAG=true/CHARTFLAG=true if you are using Notary/CLAIR/Chartmuseum in Harbor, otherwise the Notary/CLAIR/Chartmuseum containers cannot be stopped automatically."
 	@while [ -z "$$CONTINUE" ]; do \
         read -r -p "Type anything but Y or y to exit. [Y/N]: " CONTINUE; \
     done ; \

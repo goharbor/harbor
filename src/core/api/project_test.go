@@ -30,6 +30,42 @@ import (
 var addProject *apilib.ProjectReq
 var addPID int
 
+func addProjectByName(apiTest *testapi, projectName string) (int32, error) {
+	req := apilib.ProjectReq{ProjectName: projectName}
+	code, err := apiTest.ProjectsPost(*admin, req)
+	if err != nil {
+		return 0, err
+	}
+	if code != http.StatusCreated {
+		return 0, fmt.Errorf("created failed")
+	}
+
+	code, projects, err := apiTest.ProjectsGet(&apilib.ProjectQuery{Name: projectName}, *admin)
+	if err != nil {
+		return 0, err
+	}
+	if code != http.StatusOK {
+		return 0, fmt.Errorf("get failed")
+	}
+
+	if len(projects) == 0 {
+		return 0, fmt.Errorf("oops")
+	}
+
+	return projects[0].ProjectId, nil
+}
+
+func deleteProjectByIDs(apiTest *testapi, projectIDs ...int32) error {
+	for _, projectID := range projectIDs {
+		_, err := apiTest.ProjectsDelete(*admin, fmt.Sprintf("%d", projectID))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func InitAddPro() {
 	addProject = &apilib.ProjectReq{ProjectName: "add_project", Metadata: map[string]string{models.ProMetaPublic: "true"}}
 }
@@ -88,6 +124,31 @@ func TestAddProject(t *testing.T) {
 		t.Log(err)
 	} else {
 		assert.Equal(int(400), result, "case 4 : response code = 400 : Project name is illegal in length ")
+	}
+
+	// case 5: response code = 201 : expect project creation with quota success.
+	fmt.Println("case 5 : response code = 201 : expect project creation with quota success ")
+
+	var countLimit, storageLimit int64
+	countLimit, storageLimit = 100, 10
+	result, err = apiTest.ProjectsPost(*admin, apilib.ProjectReq{ProjectName: "with_quota", CountLimit: &countLimit, StorageLimit: &storageLimit})
+	if err != nil {
+		t.Error("Error while creat project", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(201), result, "case 5 : response code = 201 : expect project creation with quota success ")
+	}
+
+	// case 6: response code = 400 : bad quota value, create project fail
+	fmt.Println("case 6: response code = 400 : bad quota value, create project fail")
+
+	countLimit, storageLimit = 100, -2
+	result, err = apiTest.ProjectsPost(*admin, apilib.ProjectReq{ProjectName: "with_quota", CountLimit: &countLimit, StorageLimit: &storageLimit})
+	if err != nil {
+		t.Error("Error while creat project", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(400), result, "case 6: response code = 400 : bad quota value, create project fail")
 	}
 
 	fmt.Printf("\n")
@@ -230,7 +291,7 @@ func TestDeleteProject(t *testing.T) {
 		t.Error("Error while delete project", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(int(401), httpStatusCode, "Case 1: Project creation status should be 401")
+		assert.Equal(int(401), httpStatusCode, "Case 1: Project deletion status should be 401")
 	}
 
 	// --------------------------case 2: Response Code=200---------------------------------//
@@ -240,7 +301,7 @@ func TestDeleteProject(t *testing.T) {
 		t.Error("Error while delete project", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(int(200), httpStatusCode, "Case 2: Project creation status should be 200")
+		assert.Equal(int(200), httpStatusCode, "Case 2: Project deletion status should be 200")
 	}
 
 	// --------------------------case 3: Response Code=404,Project does not exist---------------------------------//
@@ -251,7 +312,7 @@ func TestDeleteProject(t *testing.T) {
 		t.Error("Error while delete project", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(int(404), httpStatusCode, "Case 3: Project creation status should be 404")
+		assert.Equal(int(404), httpStatusCode, "Case 3: Project deletion status should be 404")
 	}
 
 	// --------------------------case 4: Response Code=400,Invalid project id.---------------------------------//
@@ -262,7 +323,7 @@ func TestDeleteProject(t *testing.T) {
 		t.Error("Error while delete project", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(int(400), httpStatusCode, "Case 4: Project creation status should be 400")
+		assert.Equal(int(400), httpStatusCode, "Case 4: Project deletion status should be 400")
 	}
 	fmt.Printf("\n")
 
@@ -422,4 +483,31 @@ func TestDeletable(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, http.StatusOK, code)
 	assert.False(t, del)
+}
+
+func TestProjectSummary(t *testing.T) {
+	fmt.Println("\nTest for Project Summary API")
+	assert := assert.New(t)
+
+	apiTest := newHarborAPI()
+
+	projectID, err := addProjectByName(apiTest, "project-summary")
+	assert.Nil(err)
+	defer func() {
+		deleteProjectByIDs(apiTest, projectID)
+	}()
+
+	// ----------------------------case 1 : Response Code=200----------------------------//
+	fmt.Println("case 1: respose code:200")
+	httpStatusCode, summary, err := apiTest.ProjectSummary(*admin, fmt.Sprintf("%d", projectID))
+	if err != nil {
+		t.Error("Error while search project by proName", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
+		assert.Equal(int64(1), summary.ProjectAdminCount)
+		assert.Equal(map[string]int64{"count": -1, "storage": -1}, summary.Quota.Hard)
+	}
+
+	fmt.Printf("\n")
 }

@@ -1,20 +1,36 @@
-import { Component, Input, OnInit, Output, EventEmitter, ViewChild, Inject, OnChanges, SimpleChanges } from '@angular/core';
-import { NgForm } from '@angular/forms';
-import { Configuration, StringValueItem } from '../config';
-import { SERVICE_CONFIG, IServiceConfig } from '../../service.config';
-import { clone, isEmpty, getChanges } from '../../utils';
-import { ErrorHandler } from '../../error-handler/index';
-import { ConfirmationMessage } from '../../confirmation-dialog/confirmation-message';
-import { ConfirmationDialogComponent } from '../../confirmation-dialog/confirmation-dialog.component';
-import { ConfirmationState, ConfirmationTargets } from '../../shared/shared.const';
-import { ConfirmationAcknowledgement } from '../../confirmation-dialog/confirmation-state-message';
 import {
-    ConfigurationService
+    Component,
+    Input,
+    OnInit,
+    Output,
+    EventEmitter,
+    ViewChild,
+    Inject,
+    OnChanges,
+    SimpleChanges,
+    ElementRef
+} from '@angular/core';
+import {NgForm} from '@angular/forms';
+import {Configuration, StringValueItem} from '../config';
+import {SERVICE_CONFIG, IServiceConfig} from '../../service.config';
+import {clone, isEmpty, getChanges, compareValue} from '../../utils';
+import {ErrorHandler} from '../../error-handler/index';
+import {ConfirmationMessage} from '../../confirmation-dialog/confirmation-message';
+import {ConfirmationDialogComponent} from '../../confirmation-dialog/confirmation-dialog.component';
+import {ConfirmationState, ConfirmationTargets} from '../../shared/shared.const';
+import {ConfirmationAcknowledgement} from '../../confirmation-dialog/confirmation-state-message';
+import {
+    ConfigurationService, SystemCVEWhitelist, SystemInfo, SystemInfoService, VulnerabilityItem
 } from '../../service/index';
-import { from } from 'rxjs';
+import {forkJoin} from "rxjs";
+
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 const ONE_HOUR_MINUTES: number = 60;
 const ONE_DAY_MINUTES: number = 24 * ONE_HOUR_MINUTES;
+const ONE_THOUSAND: number = 1000;
+const CVE_DETAIL_PRE_URL = `https://nvd.nist.gov/vuln/detail/`;
+const TARGET_BLANK = "_blank";
+
 @Component({
     selector: 'system-settings',
     templateUrl: './system-settings.component.html',
@@ -26,6 +42,11 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
     private originalConfig: Configuration;
     downloadLink: string;
     robotTokenExpiration: string;
+    systemWhitelist: SystemCVEWhitelist;
+    systemWhitelistOrigin: SystemCVEWhitelist;
+    cveIds: string;
+    showAddModal: boolean = false;
+    systemInfo: SystemInfo;
     @Output() configChange: EventEmitter<Configuration> = new EventEmitter<Configuration>();
     @Output() readOnlyChange: EventEmitter<boolean> = new EventEmitter<boolean>();
     @Output() reloadSystemConfig: EventEmitter<any> = new EventEmitter<any>();
@@ -34,6 +55,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
     get systemSettings(): Configuration {
         return this.config;
     }
+
     set systemSettings(cfg: Configuration) {
         this.config = cfg;
         this.configChange.emit(this.config);
@@ -46,6 +68,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
 
     @ViewChild("systemConfigFrom") systemSettingsForm: NgForm;
     @ViewChild("cfgConfirmationDialog") confirmationDlg: ConfirmationDialogComponent;
+    @ViewChild('dateInput') dateInput: ElementRef;
 
     get editable(): boolean {
         return this.systemSettings &&
@@ -85,7 +108,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
         let changes = {};
         for (let prop in allChanges) {
             if (prop === 'token_expiration' || prop === 'read_only' || prop === 'project_creation_restriction'
-            || prop === 'robot_token_duration') {
+                || prop === 'robot_token_duration') {
                 changes[prop] = allChanges[prop];
             }
         }
@@ -112,11 +135,18 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
      */
     public save(): void {
         let changes = this.getChanges();
-        if (!isEmpty(changes)) {
+        if (!isEmpty(changes) || !compareValue(this.systemWhitelistOrigin, this.systemWhitelist)) {
             this.onGoing = true;
-            this.configService.saveConfigurations(changes)
-                .subscribe(response => {
-                    this.onGoing = false;
+            let observables = [];
+            if (!isEmpty(changes)) {
+                observables.push(this.configService.saveConfigurations(changes));
+            }
+            if (!compareValue(this.systemWhitelistOrigin, this.systemWhitelist)) {
+                observables.push(this.systemInfoService.updateSystemWhitelist(this.systemWhitelist));
+            }
+            forkJoin(observables).subscribe(result => {
+                this.onGoing = false;
+                if (!isEmpty(changes)) {
                     // API should return the updated configurations here
                     // Unfortunately API does not do that
                     // To refresh the view, we can clone the original data copy
@@ -128,12 +158,15 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
                     }
 
                     this.reloadSystemConfig.emit();
-                    this.errorHandler.info('CONFIG.SAVE_SUCCESS');
                 }
-                , error => {
-                    this.onGoing = false;
-                    this.errorHandler.error(error);
-                });
+                if (!compareValue(this.systemWhitelistOrigin, this.systemWhitelist)) {
+                    this.systemWhitelistOrigin = clone(this.systemWhitelist);
+                }
+                this.errorHandler.info('CONFIG.SAVE_SUCCESS');
+            }, error => {
+                this.onGoing = false;
+                this.errorHandler.error(error);
+            });
         } else {
             // Inprop situation, should not come here
             console.error('Save abort because nothing changed');
@@ -175,6 +208,9 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
             let changes = this.getChanges();
             this.reset(changes);
             this.initRobotToken();
+            if (!compareValue(this.systemWhitelistOrigin, this.systemWhitelist)) {
+                this.systemWhitelist = clone(this.systemWhitelistOrigin);
+            }
         }
     }
 
@@ -191,7 +227,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
      */
     public cancel(): void {
         let changes = this.getChanges();
-        if (!isEmpty(changes)) {
+        if (!isEmpty(changes) || !compareValue(this.systemWhitelistOrigin, this.systemWhitelist)) {
             let msg = new ConfirmationMessage(
                 'CONFIG.CONFIRM_TITLE',
                 'CONFIG.CONFIRM_SUMMARY',
@@ -207,23 +243,59 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
     }
 
     constructor(@Inject(SERVICE_CONFIG) private configInfo: IServiceConfig,
-        private configService: ConfigurationService,
-        private errorHandler: ErrorHandler) {
+                private configService: ConfigurationService,
+                private errorHandler: ErrorHandler,
+                private systemInfoService: SystemInfoService) {
         if (this.configInfo && this.configInfo.systemInfoEndpoint) {
             this.downloadLink = this.configInfo.systemInfoEndpoint + "/getcert";
         }
     }
+
     ngOnInit() {
         this.initRobotToken();
+        this.getSystemWhitelist();
+        this.getSystemInfo();
     }
 
-    private initRobotToken (): void {
+    getSystemInfo() {
+        this.systemInfoService.getSystemInfo()
+            .subscribe(systemInfo => this.systemInfo = systemInfo
+                , error => this.errorHandler.error(error));
+    }
+
+    get withClair(): boolean {
+        return this.systemInfo ? this.systemInfo.with_clair : false;
+    }
+
+    getSystemWhitelist() {
+        this.onGoing = true;
+        this.systemInfoService.getSystemWhitelist()
+            .subscribe((systemWhitelist) => {
+                    this.onGoing = false;
+                    if (!systemWhitelist.items) {
+                        systemWhitelist.items = [];
+                    }
+                    if (!systemWhitelist.expires_at) {
+                        systemWhitelist.expires_at = null;
+                    }
+                    this.systemWhitelist = systemWhitelist;
+                    this.systemWhitelistOrigin = clone(systemWhitelist);
+                }, error => {
+                    this.onGoing = false;
+                    console.error('An error occurred during getting systemWhitelist');
+                    // this.errorHandler.error(error);
+                }
+            );
+    }
+
+    private initRobotToken(): void {
         if (this.config &&
-            this.config.robot_token_duration ) {
+            this.config.robot_token_duration) {
             let robotExpiration = this.config.robot_token_duration.value;
             this.robotTokenExpiration = Math.floor(robotExpiration / ONE_DAY_MINUTES) + '';
         }
     }
+
     changeToken(v: string) {
         if (!v || v === "") {
             return;
@@ -235,5 +307,83 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
         this.config.robot_token_duration.value = +v * ONE_DAY_MINUTES;
     }
 
+    deleteItem(index: number) {
+        this.systemWhitelist.items.splice(index, 1);
+    }
 
+    addToSystemWhitelist() {
+        // remove duplication and add to systemWhitelist
+        let map = {};
+        this.systemWhitelist.items.forEach(item => {
+            map[item.cve_id] = true;
+        });
+        this.cveIds.split(/[\n,]+/).forEach(id => {
+            let cveObj: any = {};
+            cveObj.cve_id = id.trim();
+            if (!map[cveObj.cve_id]) {
+                map[cveObj.cve_id] = true;
+                this.systemWhitelist.items.push(cveObj);
+            }
+        });
+        // clear modal and close modal
+        this.cveIds = null;
+        this.showAddModal = false;
+    }
+
+    get hasWhitelistChanged(): boolean {
+        return !compareValue(this.systemWhitelistOrigin, this.systemWhitelist);
+    }
+
+    isDisabled(): boolean {
+        if (this.cveIds) {
+            let arr = this.cveIds.split(/[\n,]+/);
+            let flag = false;
+            for (let i = 0; i < arr.length; i++) {
+                let id = arr[i].trim();
+                if (!/^CVE-[\d]+-[\d]+$/.test(id)) {
+                    flag = true;
+                    break;
+                }
+            }
+            return flag;
+        }
+        return true;
+    }
+
+    get expiresDate() {
+        if (this.systemWhitelist && this.systemWhitelist.expires_at) {
+            return new Date(this.systemWhitelist.expires_at * ONE_THOUSAND);
+        }
+        return null;
+    }
+
+    set expiresDate(date) {
+        if (this.systemWhitelist && date) {
+            this.systemWhitelist.expires_at = Math.floor(date.getTime() / ONE_THOUSAND);
+        }
+    }
+
+    get neverExpires(): boolean {
+        return !(this.systemWhitelist && this.systemWhitelist.expires_at);
+    }
+
+    set neverExpires(flag) {
+        if (flag) {
+            this.systemWhitelist.expires_at = null;
+            this.systemInfoService.resetDateInput(this.dateInput);
+        } else {
+            this.systemWhitelist.expires_at = Math.floor(new Date().getTime() / ONE_THOUSAND);
+        }
+    }
+
+    get hasExpired(): boolean {
+        if (this.systemWhitelistOrigin && this.systemWhitelistOrigin.expires_at) {
+            return new Date().getTime() > this.systemWhitelistOrigin.expires_at * ONE_THOUSAND;
+        }
+        return false;
+    }
+
+    goToDetail(cveId) {
+        window.open(CVE_DETAIL_PRE_URL + `${cveId}`, TARGET_BLANK);
+    }
 }

@@ -156,18 +156,19 @@ func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
 
 // GetGroupProjects - Get user's all projects, including user is the user member of this project
 // and the user is in the group which is a group member of this project.
-func GetGroupProjects(groupDNCondition string, query *models.ProjectQueryParam) ([]*models.Project, error) {
+func GetGroupProjects(groupIDs []int, query *models.ProjectQueryParam) ([]*models.Project, error) {
 	sql, params := projectQueryConditions(query)
 	sql = `select distinct p.project_id, p.name, p.owner_id, 
 				p.creation_time, p.update_time ` + sql
-	if len(groupDNCondition) > 0 {
+	groupIDCondition := JoinNumberConditions(groupIDs)
+	if len(groupIDs) > 0 {
 		sql = fmt.Sprintf(
 			`%s union select distinct p.project_id, p.name, p.owner_id, p.creation_time, p.update_time  
 		     from project p 
 		     left join project_member pm on p.project_id = pm.project_id
-		     left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g' and ug.group_type = 1
-			 where ug.ldap_group_dn in ( %s ) order by name`,
-			sql, groupDNCondition)
+		     left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g' 
+			 where ug.id in ( %s ) order by name`,
+			sql, groupIDCondition)
 	}
 	sqlStr, queryParams := CreatePagination(query, sql, params)
 	log.Debugf("query sql:%v", sql)
@@ -178,10 +179,11 @@ func GetGroupProjects(groupDNCondition string, query *models.ProjectQueryParam) 
 
 // GetTotalGroupProjects - Get the total count of projects, including  user is the member of this project and the
 // user is in the group, which is the group member of this project.
-func GetTotalGroupProjects(groupDNCondition string, query *models.ProjectQueryParam) (int, error) {
+func GetTotalGroupProjects(groupIDs []int, query *models.ProjectQueryParam) (int, error) {
 	var sql string
 	sqlCondition, params := projectQueryConditions(query)
-	if len(groupDNCondition) == 0 {
+	groupIDCondition := JoinNumberConditions(groupIDs)
+	if len(groupIDs) == 0 {
 		sql = `select count(1) ` + sqlCondition
 	} else {
 		sql = fmt.Sprintf(
@@ -189,9 +191,9 @@ func GetTotalGroupProjects(groupDNCondition string, query *models.ProjectQueryPa
 			   from ( select  p.project_id %s  union select  p.project_id  
 			   from project p 
 			   left join project_member pm on p.project_id = pm.project_id
-			   left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g' and ug.group_type = 1
-			   where ug.ldap_group_dn in ( %s )) t`,
-			sqlCondition, groupDNCondition)
+			   left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g' 
+			   where ug.id in ( %s )) t`,
+			sqlCondition, groupIDCondition)
 	}
 	log.Debugf("query sql:%v", sql)
 	var count int
@@ -291,29 +293,24 @@ func DeleteProject(id int64) error {
 	return err
 }
 
-// GetRolesByLDAPGroup - Get Project roles of the
-// specified group DN is a member of current project
-func GetRolesByLDAPGroup(projectID int64, groupDNCondition string) ([]int, error) {
+// GetRolesByGroupID - Get Project roles of the
+// specified group is a member of current project
+func GetRolesByGroupID(projectID int64, groupIDs []int) ([]int, error) {
 	var roles []int
-	if len(groupDNCondition) == 0 {
+	if len(groupIDs) == 0 {
 		return roles, nil
 	}
+	groupIDCondition := JoinNumberConditions(groupIDs)
 	o := GetOrmer()
-	// Because an LDAP user can be memberof multiple groups,
-	// the role is in descent order (1-admin, 2-developer, 3-guest, 4-master), use min to select the max privilege role.
 	sql := fmt.Sprintf(
-		`select min(pm.role) from project_member pm 
+		`select distinct pm.role from project_member pm 
 		left join user_group ug on pm.entity_type = 'g' and pm.entity_id = ug.id 
-		where ug.ldap_group_dn in ( %s ) and pm.project_id = ? `,
-		groupDNCondition)
-	log.Debugf("sql:%v", sql)
+		where ug.id in ( %s ) and pm.project_id = ?`,
+		groupIDCondition)
+	log.Debugf("sql for GetRolesByGroupID(project ID: %d, group ids: %v):%v", projectID, groupIDs, sql)
 	if _, err := o.Raw(sql, projectID).QueryRows(&roles); err != nil {
-		log.Warningf("Error in GetRolesByLDAPGroup, error: %v", err)
+		log.Warningf("Error in GetRolesByGroupID, error: %v", err)
 		return nil, err
-	}
-	// If there is no row selected, the min returns an empty row, to avoid return 0 as role
-	if len(roles) == 1 && roles[0] == 0 {
-		return []int{}, nil
 	}
 	return roles, nil
 }

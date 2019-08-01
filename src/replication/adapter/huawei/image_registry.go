@@ -1,8 +1,6 @@
 package huawei
 
 import (
-	"crypto/tls"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -25,18 +23,8 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	}
 
 	r.Header.Add("content-type", "application/json; charset=utf-8")
-	encodeAuth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", a.registry.Credential.AccessKey, a.registry.Credential.AccessSecret)))
-	r.Header.Add("Authorization", "Basic "+encodeAuth)
 
-	client := &http.Client{}
-	if a.registry.Insecure == true {
-		client = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			},
-		}
-	}
-	resp, err := client.Do(r)
+	resp, err := a.client.Do(r)
 	if err != nil {
 		return resources, err
 	}
@@ -82,15 +70,7 @@ func (a *adapter) ManifestExist(repository, reference string) (exist bool, diges
 	r.Header.Add("content-type", "application/json; charset=utf-8")
 	r.Header.Add("Authorization", "Bearer "+token.Token)
 
-	client := &http.Client{}
-	if a.registry.Insecure == true {
-		client = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			},
-		}
-	}
-	resp, err := client.Do(r)
+	resp, err := a.client.Do(r)
 	if err != nil {
 		return exist, digest, err
 	}
@@ -133,15 +113,7 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 	r.Header.Add("content-type", "application/json; charset=utf-8")
 	r.Header.Add("Authorization", "Bearer "+token.Token)
 
-	client := &http.Client{}
-	if a.registry.Insecure == true {
-		client = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			},
-		}
-	}
-	resp, err := client.Do(r)
+	resp, err := a.client.Do(r)
 	if err != nil {
 		return err
 	}
@@ -220,18 +192,8 @@ func getJwtToken(a *adapter, repository string) (token jwtToken, err error) {
 	}
 
 	r.Header.Add("content-type", "application/json; charset=utf-8")
-	encodeAuth := base64.StdEncoding.EncodeToString([]byte(fmt.Sprintf("%s:%s", a.registry.Credential.AccessKey, a.registry.Credential.AccessSecret)))
-	r.Header.Add("Authorization", "Basic "+encodeAuth)
 
-	client := &http.Client{}
-	if a.registry.Insecure == true {
-		client = &http.Client{
-			Transport: &http.Transport{
-				TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-			},
-		}
-	}
-	resp, err := client.Do(r)
+	resp, err := a.client.Do(r)
 	if err != nil {
 		return token, err
 	}

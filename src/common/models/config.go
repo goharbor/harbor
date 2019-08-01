@@ -70,7 +70,7 @@ type HTTPAuthProxy struct {
 	Endpoint            string `json:"endpoint"`
 	TokenReviewEndpoint string `json:"tokenreivew_endpoint"`
 	VerifyCert          bool   `json:"verify_cert"`
-	AlwaysOnBoard       bool   `json:"always_onboard"`
+	SkipSearch          bool   `json:"skip_search"`
 }
 
 // OIDCSetting wraps the settings for OIDC auth endpoint
@@ -82,6 +82,12 @@ type OIDCSetting struct {
 	ClientSecret string   `json:"client_secret"`
 	RedirectURL  string   `json:"redirect_url"`
 	Scope        []string `json:"scope"`
+}
+
+// QuotaSetting wraps the settings for Quota
+type QuotaSetting struct {
+	CountPerProject   int64 `json:"count_per_project"`
+	StoragePerProject int64 `json:"storage_per_project"`
 }
 
 // ConfigEntry ...

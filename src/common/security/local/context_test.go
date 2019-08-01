@@ -20,6 +20,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -253,9 +254,16 @@ func TestHasPushPullPermWithGroup(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when GetUser: %v", err)
 	}
-	developer.GroupList = []*models.UserGroup{
-		{GroupName: "test_group", GroupType: 1, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"},
+
+	userGroups, err := group.QueryUserGroup(models.UserGroup{GroupType: common.LDAPGroupType, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"})
+	if err != nil {
+		t.Errorf("Failed to query user group %v", err)
 	}
+	if len(userGroups) < 1 {
+		t.Errorf("Failed to retrieve user group")
+	}
+
+	developer.GroupIDs = []int{userGroups[0].ID}
 
 	resource := rbac.NewProjectNamespace(project.Name).Resource(rbac.ResourceRepository)
 
@@ -332,9 +340,15 @@ func TestSecurityContext_GetRolesByGroup(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when GetUser: %v", err)
 	}
-	developer.GroupList = []*models.UserGroup{
-		{GroupName: "test_group", GroupType: 1, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"},
+	userGroups, err := group.QueryUserGroup(models.UserGroup{GroupType: common.LDAPGroupType, LdapGroupDN: "cn=harbor_user,dc=example,dc=com"})
+	if err != nil {
+		t.Errorf("Failed to query user group %v", err)
 	}
+	if len(userGroups) < 1 {
+		t.Errorf("Failed to retrieve user group")
+	}
+
+	developer.GroupIDs = []int{userGroups[0].ID}
 	type fields struct {
 		user *models.User
 		pm   promgr.ProjectManager

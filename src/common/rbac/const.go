@@ -27,8 +27,8 @@ const (
 	ActionUpdate = Action("update")
 	ActionDelete = Action("delete")
 	ActionList   = Action("list")
-	// test for webhook policy
-	ActionTest = Action("test")
+
+	ActionOperate = Action("operate")
 )
 
 // const resource variables
@@ -48,6 +48,7 @@ const (
 	ResourceReplicationExecution       = Resource("replication-execution")
 	ResourceReplicationTask            = Resource("replication-task")
 	ResourceRepository                 = Resource("repository")
+	ResourceTagRetention               = Resource("tag-retention")
 	ResourceRepositoryLabel            = Resource("repository-label")
 	ResourceRepositoryTag              = Resource("repository-tag")
 	ResourceRepositoryTagLabel         = Resource("repository-tag-label")
@@ -55,6 +56,6 @@ const (
 	ResourceRepositoryTagScanJob       = Resource("repository-tag-scan-job")
 	ResourceRepositoryTagVulnerability = Resource("repository-tag-vulnerability")
 	ResourceRobot                      = Resource("robot")
-	ResourceWebhookPolicy              = Resource("webhook-policy")
+	ResourceNotificationPolicy         = Resource("notification-policy")
 	ResourceSelf                       = Resource("") // subresource for self
 )

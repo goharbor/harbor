@@ -17,9 +17,6 @@ package runtime
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/jobservice/job/impl/webhook"
-	"github.com/goharbor/harbor/src/jobservice/mgt"
-	"github.com/goharbor/harbor/src/jobservice/migration"
 	"os"
 	"os/signal"
 	"sync"
@@ -34,13 +31,18 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/hook"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/scan"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/mgt"
+	"github.com/goharbor/harbor/src/jobservice/migration"
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
+	"github.com/goharbor/harbor/src/pkg/retention"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
 )
@@ -239,12 +241,16 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			// Only for debugging and testing purpose
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
-			job.ImageScanJob:         (*scan.ClairJob)(nil),
-			job.ImageScanAllJob:      (*scan.All)(nil),
-			job.ImageGC:              (*gc.GarbageCollector)(nil),
-			job.Replication:          (*replication.Replication)(nil),
-			job.ReplicationScheduler: (*replication.Scheduler)(nil),
-			job.WebhookHTTPJob:       (*webhook.HTTPNotifier)(nil),
+
+			job.ImageScanJob:           (*scan.ClairJob)(nil),
+			job.ImageScanAllJob:        (*scan.All)(nil),
+			job.ImageGC:                (*gc.GarbageCollector)(nil),
+			job.Replication:            (*replication.Replication)(nil),
+			job.ReplicationScheduler:   (*replication.Scheduler)(nil),
+			job.Retention:              (*retention.Job)(nil),
+			job.RetentionDel:           (*retention.DelRepoJob)(nil),
+			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),
+			job.WebhookJob:             (*notification.WebhookJob)(nil),
 		}); err != nil {
 		// exit
 		return nil, err

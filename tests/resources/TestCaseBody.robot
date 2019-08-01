@@ -92,7 +92,9 @@ Body Of List Helm Charts
     # Values tab
     Retry Double Keywords When Error  Retry Element Click  xpath=${detail_value}  Retry Wait Until Page Contains Element  ${value_content}
 
-    Go Back To Versions And Delete
+    Go Into Project  project${d}  has_image=${false}
+    Switch To Project Charts
+    Multi-delete Chart Files  ${prometheus_chart_name}  ${harbor_chart_name}
     Close Browser
 
 Body Of Admin Push Signed Image
@@ -142,3 +144,15 @@ Manage Project Member Without Sign In Harbor
     User Should Not Be A Member Of Project  ${test_user1}  ${sign_in_pwd}  project${d}    is_oidc_mode=${is_oidc_mode}
     Push image  ip=${ip}  user=${sign_in_user}  pwd=${sign_in_pwd}  project=project${d}  image=hello-world
     User Should Be Guest  ${test_user2}  ${sign_in_pwd}  project${d}  is_oidc_mode=${is_oidc_mode}
+
+Helm CLI Push Without Sign In Harbor
+    [Arguments]  ${sign_in_user}  ${sign_in_pwd}
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project  project${d}
+    Helm Repo Add  ${HARBOR_URL}  ${sign_in_user}  ${sign_in_pwd}  project_name=project${d}
+    Helm Repo Push  ${HARBOR_URL}  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}  project_name=project${d}
+    Go Into Project  project${d}  has_image=${false}
+    Switch To Project Charts
+    Go Into Chart Version  ${harbor_chart_name}
+    Retry Wait Until Page Contains  ${harbor_chart_version}
+    Capture Page Screenshot

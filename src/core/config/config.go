@@ -224,7 +224,7 @@ func LDAPGroupConf() (*models.LdapGroupConf, error) {
 		LdapGroupFilter:              cfgMgr.Get(common.LDAPGroupSearchFilter).GetString(),
 		LdapGroupNameAttribute:       cfgMgr.Get(common.LDAPGroupAttributeName).GetString(),
 		LdapGroupSearchScope:         cfgMgr.Get(common.LDAPGroupSearchScope).GetInt(),
-		LdapGroupAdminDN:             cfgMgr.Get(common.LdapGroupAdminDn).GetString(),
+		LdapGroupAdminDN:             cfgMgr.Get(common.LDAPGroupAdminDn).GetString(),
 		LdapGroupMembershipAttribute: cfgMgr.Get(common.LDAPGroupMembershipAttribute).GetString(),
 	}, nil
 }
@@ -280,7 +280,11 @@ func InternalJobServiceURL() string {
 // InternalCoreURL returns the local harbor core url
 func InternalCoreURL() string {
 	return strings.TrimSuffix(cfgMgr.Get(common.CoreURL).GetString(), "/")
+}
 
+// LocalCoreURL returns the local harbor core url
+func LocalCoreURL() string {
+	return cfgMgr.Get(common.CoreLocalURL).GetString()
 }
 
 // InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
@@ -482,7 +486,7 @@ func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
 		Endpoint:            cfgMgr.Get(common.HTTPAuthProxyEndpoint).GetString(),
 		TokenReviewEndpoint: cfgMgr.Get(common.HTTPAuthProxyTokenReviewEndpoint).GetString(),
 		VerifyCert:          cfgMgr.Get(common.HTTPAuthProxyVerifyCert).GetBool(),
-		AlwaysOnBoard:       cfgMgr.Get(common.HTTPAuthProxyAlwaysOnboard).GetBool(),
+		SkipSearch:          cfgMgr.Get(common.HTTPAuthProxySkipSearch).GetBool(),
 	}, nil
 
 }
@@ -511,7 +515,18 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 	}, nil
 }
 
-// WebhookEnable returns a bool to indicates if webhook enabled in harbor
-func WebhookEnable() bool {
-	return cfgMgr.Get(common.WebhookEnable).GetBool()
+// NotificationEnable returns a bool to indicates if notification enabled in harbor
+func NotificationEnable() bool {
+	return cfgMgr.Get(common.NotificationEnable).GetBool()
+}
+
+// QuotaSetting returns the setting of quota.
+func QuotaSetting() (*models.QuotaSetting, error) {
+	if err := cfgMgr.Load(); err != nil {
+		return nil, err
+	}
+	return &models.QuotaSetting{
+		CountPerProject:   cfgMgr.Get(common.CountPerProject).GetInt64(),
+		StoragePerProject: cfgMgr.Get(common.StoragePerProject).GetInt64(),
+	}, nil
 }

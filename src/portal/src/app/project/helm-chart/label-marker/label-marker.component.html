@@ -5,18 +5,21 @@
     </div>
     <div class="label-items-container">
         <div class="dropdown-item" *ngFor='let label of sortedLabels'>
-            <div *ngIf="!isMarkOngoing(label)" class="mark-label-div">
-                <clr-icon *ngIf="isMarked(label)" shape="check" ></clr-icon>
-            </div>
-            <div *ngIf="isMarkOngoing(label)" class="spinner spinner-sm">
+            <div  (click)="markLabel(label)">
+                <div *ngIf="!isMarkOngoing(label)" class="mark-label-div">
+                    <clr-icon *ngIf="isMarked(label)" shape="check"></clr-icon>
+                </div>
+                <div *ngIf="isMarkOngoing(label)" class="spinner spinner-sm">
                     Loading...
+                </div>
+                <div class="label-div">
+                    <hbr-label-piece [label]="label" [labelWidth]="130"></hbr-label-piece>
+                </div>
+                <div class="unmark-label-div" (click)="unmarkLabel(label)">
+                    <clr-icon *ngIf="isMarked(label)" shape="times-circle"></clr-icon>
+                </div>
             </div>
-            <div (click)="markLabel(label)" class="label-div">
-                <hbr-label-piece [label]="label" [labelWidth]="130"></hbr-label-piece>
-            </div>
-            <div class="unmark-label-div" (click)="unmarkLabel(label)">
-                <clr-icon *ngIf="isMarked(label)" shape="times-circle"></clr-icon>
-            </div>
+
         </div>
     </div>
 </div>

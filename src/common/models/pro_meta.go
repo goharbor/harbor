@@ -20,17 +20,17 @@ import (
 
 // keys of project metadata and severity values
 const (
-	ProMetaPublic             = "public"
-	ProMetaPrivate            = "private"
-	ProMetaEnableContentTrust = "enable_content_trust"
-	ProMetaPreventVul         = "prevent_vul" // prevent vulnerable images from being pulled
-	ProMetaSeverity           = "severity"
-	ProMetaAutoScan           = "auto_scan"
-	SeverityNone              = "negligible"
-	SeverityLow               = "low"
-	SeverityMedium            = "medium"
-	SeverityHigh              = "high"
-	SeverityCritical          = "critical"
+	ProMetaPublic               = "public"
+	ProMetaEnableContentTrust   = "enable_content_trust"
+	ProMetaPreventVul           = "prevent_vul" // prevent vulnerable images from being pulled
+	ProMetaSeverity             = "severity"
+	ProMetaAutoScan             = "auto_scan"
+	ProMetaReuseSysCVEWhitelist = "reuse_sys_cve_whitelist"
+	SeverityNone                = "negligible"
+	SeverityLow                 = "low"
+	SeverityMedium              = "medium"
+	SeverityHigh                = "high"
+	SeverityCritical            = "critical"
 )
 
 // ProjectMetadata holds the metadata of a project.

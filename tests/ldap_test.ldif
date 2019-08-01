@@ -19,7 +19,7 @@ dn: ou=people,dc=example,dc=com
 objectClass: organizationalUnit
 ou: People
 
-# OU for Groups  
+# OU for Groups
 dn: ou=groups,dc=example,dc=com
 objectClass: organizationalUnit
 ou: Groups
@@ -84,6 +84,8 @@ member: cn=user023,ou=people,dc=example,dc=com
 member: cn=user024,ou=people,dc=example,dc=com
 member: cn=user025,ou=people,dc=example,dc=com
 member: cn=user026,ou=people,dc=example,dc=com
+member: cn=user027,ou=people,dc=example,dc=com
+member: cn=user028,ou=people,dc=example,dc=com
 objectclass: groupOfNames
 objectclass: top
 
@@ -676,6 +678,42 @@ objectclass: person
 sn: user026
 uid: user026
 uidnumber: 5030
+userpassword: {MD5}jMx5MaPXabPyX7F0SoFxYQ==
+
+dn: cn=user027,ou=people,dc=example,dc=com
+cn: user027
+gidnumber: 10000
+givenname: user027
+homedirectory: /home/user027
+loginshell: /bin/bash
+mail: user027@example.com
+objectclass: top
+objectclass: posixAccount
+objectclass: shadowAccount
+objectclass: inetOrgPerson
+objectclass: organizationalPerson
+objectclass: person
+sn: user027
+uid: user027
+uidnumber: 5031
+userpassword: {MD5}jMx5MaPXabPyX7F0SoFxYQ==
+
+dn: cn=user028,ou=people,dc=example,dc=com
+cn: user028
+gidnumber: 10000
+givenname: user028
+homedirectory: /home/user028
+loginshell: /bin/bash
+mail: user028@example.com
+objectclass: top
+objectclass: posixAccount
+objectclass: shadowAccount
+objectclass: inetOrgPerson
+objectclass: organizationalPerson
+objectclass: person
+sn: user028
+uid: user028
+uidnumber: 5032
 userpassword: {MD5}jMx5MaPXabPyX7F0SoFxYQ==
 
 dn: cn=guest_user,ou=people,dc=example,dc=com
