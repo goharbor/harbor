@@ -316,6 +316,12 @@ func (r *RetentionAPI) ListRetentionExecs() {
 		r.SendInternalServerError(err)
 		return
 	}
+	total, err := retentionController.GetTotalOfRetentionExecs(id)
+	if err != nil {
+		r.SendInternalServerError(err)
+		return
+	}
+	r.SetPaginationHeader(total, query.PageNumber, query.PageSize)
 	r.WriteJSONData(execs)
 }
 
@@ -353,6 +359,12 @@ func (r *RetentionAPI) ListRetentionExecTasks() {
 		r.SendInternalServerError(err)
 		return
 	}
+	total, err := retentionController.GetTotalOfRetentionExecTasks(eid)
+	if err != nil {
+		r.SendInternalServerError(err)
+		return
+	}
+	r.SetPaginationHeader(total, query.PageNumber, query.PageSize)
 	r.WriteJSONData(his)
 }
 

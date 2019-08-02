@@ -175,6 +175,15 @@ func ListExecutions(policyID int64, query *q.Query) ([]*models.RetentionExecutio
 	return execs, nil
 }
 
+// GetTotalOfRetentionExecs Count Executions
+func GetTotalOfRetentionExecs(policyID int64) (int64, error) {
+	o := dao.GetOrmer()
+	qs := o.QueryTable(new(models.RetentionExecution))
+
+	qs = qs.Filter("policy_id", policyID)
+	return qs.Count()
+}
+
 /*
 // ListExecHistories List Execution Histories
 func ListExecHistories(executionID int64, query *q.Query) ([]*models.RetentionTask, error) {
@@ -259,4 +268,11 @@ func ListTask(query ...*q.TaskQuery) ([]*models.RetentionTask, error) {
 	tasks := []*models.RetentionTask{}
 	_, err := qs.All(&tasks)
 	return tasks, err
+}
+
+// GetTotalOfTasks Count tasks
+func GetTotalOfTasks(executionID int64) (int64, error) {
+	qs := dao.GetOrmer().QueryTable(&models.RetentionTask{})
+	qs = qs.Filter("ExecutionID", executionID)
+	return qs.Count()
 }

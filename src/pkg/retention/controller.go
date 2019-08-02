@@ -54,7 +54,11 @@ type APIController interface {
 
 	ListRetentionExecs(policyID int64, query *q.Query) ([]*Execution, error)
 
+	GetTotalOfRetentionExecs(policyID int64) (int64, error)
+
 	ListRetentionExecTasks(executionID int64, query *q.Query) ([]*Task, error)
+
+	GetTotalOfRetentionExecTasks(executionID int64) (int64, error)
 
 	GetRetentionExecTaskLog(taskID int64) ([]byte, error)
 }
@@ -232,6 +236,11 @@ func (r *DefaultAPIController) ListRetentionExecs(policyID int64, query *q.Query
 	return r.manager.ListExecutions(policyID, query)
 }
 
+// GetTotalOfRetentionExecs Count Retention Executions
+func (r *DefaultAPIController) GetTotalOfRetentionExecs(policyID int64) (int64, error) {
+	return r.manager.GetTotalOfRetentionExecs(policyID)
+}
+
 // ListRetentionExecTasks List Retention Execution Histories
 func (r *DefaultAPIController) ListRetentionExecTasks(executionID int64, query *q.Query) ([]*Task, error) {
 	q1 := &q.TaskQuery{
@@ -242,6 +251,11 @@ func (r *DefaultAPIController) ListRetentionExecTasks(executionID int64, query *
 		q1.PageNumber = query.PageNumber
 	}
 	return r.manager.ListTasks(q1)
+}
+
+// GetTotalOfRetentionExecTasks Count Retention Execution Histories
+func (r *DefaultAPIController) GetTotalOfRetentionExecTasks(executionID int64) (int64, error) {
+	return r.manager.GetTotalOfTasks(executionID)
 }
 
 // GetRetentionExecTaskLog Get Retention Execution Task Log
