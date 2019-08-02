@@ -76,6 +76,14 @@ func (f *fakeRepositoryManager) ListChartRepositories(projectID int64) ([]*chart
 
 type fakeRetentionManager struct{}
 
+func (f *fakeRetentionManager) GetTotalOfRetentionExecs(policyID int64) (int64, error) {
+	return 0, nil
+}
+
+func (f *fakeRetentionManager) GetTotalOfTasks(executionID int64) (int64, error) {
+	return 0, nil
+}
+
 func (f *fakeRetentionManager) CreatePolicy(p *policy.Metadata) (int64, error) {
 	return 0, nil
 }

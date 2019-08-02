@@ -46,10 +46,14 @@ type Manager interface {
 	DeleteExecution(int64) error
 	// Get the specified execution
 	GetExecution(eid int64) (*Execution, error)
-	// List execution histories
+	// List executions
 	ListExecutions(policyID int64, query *q.Query) ([]*Execution, error)
+	// GetTotalOfRetentionExecs Count Retention Executions
+	GetTotalOfRetentionExecs(policyID int64) (int64, error)
 	// List tasks histories
 	ListTasks(query ...*q.TaskQuery) ([]*Task, error)
+	// GetTotalOfTasks Count Tasks
+	GetTotalOfTasks(executionID int64) (int64, error)
 	// Create a new retention task
 	CreateTask(task *Task) (int64, error)
 	// Update the specified task
@@ -157,6 +161,11 @@ func (d *DefaultManager) ListExecutions(policyID int64, query *q.Query) ([]*Exec
 	return execs1, nil
 }
 
+// GetTotalOfRetentionExecs Count Executions
+func (d *DefaultManager) GetTotalOfRetentionExecs(policyID int64) (int64, error) {
+	return dao.GetTotalOfRetentionExecs(policyID)
+}
+
 // GetExecution Get Execution
 func (d *DefaultManager) GetExecution(eid int64) (*Execution, error) {
 	e, err := dao.GetExecution(eid)
@@ -211,6 +220,11 @@ func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 		})
 	}
 	return tasks, nil
+}
+
+// GetTotalOfTasks Count tasks
+func (d *DefaultManager) GetTotalOfTasks(executionID int64) (int64, error) {
+	return dao.GetTotalOfTasks(executionID)
 }
 
 // UpdateTask updates the task
