@@ -15,8 +15,8 @@ type Event struct {
 	Data  interface{}
 }
 
-// EventMetadata is the event raw data to be processed
-type EventMetadata interface {
+// Metadata is the event raw data to be processed
+type Metadata interface {
 	Resolve(event *Event) error
 }
 
@@ -102,7 +102,7 @@ func (h *HookMetaData) Resolve(evt *Event) error {
 }
 
 // Build an event by metadata
-func (e *Event) Build(metadata ...EventMetadata) error {
+func (e *Event) Build(metadata ...Metadata) error {
 	for _, md := range metadata {
 		if err := md.Resolve(e); err != nil {
 			return err

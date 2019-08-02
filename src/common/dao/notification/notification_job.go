@@ -24,11 +24,13 @@ func UpdateNotificationJob(job *models.NotificationJob, props ...string) (int64,
 	return o.Update(job, props...)
 }
 
-// UpdateNotificationJobStatus ...
+// UpdateNotificationJobStatus update status of notification jobs whose status match conditions `statusCondition`,
+// if conditions provided but not matched, job status won't be update;
+// if conditions not provided, status of job with id will be update
 func UpdateNotificationJobStatus(id int64, status string, statusCondition ...string) (int64, error) {
 	qs := dao.GetOrmer().QueryTable(&models.NotificationJob{}).Filter("id", id)
 	if len(statusCondition) > 0 {
-		qs = qs.Filter("status", statusCondition[0])
+		qs = qs.Filter("status__in", statusCondition)
 	}
 	params := orm.Params{
 		"status": status,
