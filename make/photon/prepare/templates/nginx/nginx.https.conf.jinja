@@ -31,7 +31,7 @@ http {
   include /etc/nginx/conf.d/*.server.conf;
 
   server {
-    listen 443 ssl;
+    listen 443 ssl http2;
 #    server_name harbordomain.com;
     server_tokens off;
     # SSL
