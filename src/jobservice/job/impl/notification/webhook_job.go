@@ -52,8 +52,7 @@ func (wj *WebhookJob) Run(ctx job.Context, params job.Parameters) error {
 		return err
 	}
 
-	err := wj.execute(ctx, params)
-	return err
+	return wj.execute(ctx, params)
 }
 
 // init webhook job
