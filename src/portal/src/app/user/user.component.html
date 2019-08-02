@@ -2,23 +2,39 @@
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <h2 class="custom-h2">{{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}</h2>
         <div class="action-panel-pos rightPos">
-            <hbr-filter [withDivider]="true" class="filter-pos" filterPlaceholder='{{"USER.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doFilter($event)" [currentValue]="currentTerm"></hbr-filter>
+            <hbr-filter [withDivider]="true" class="filter-pos"
+                filterPlaceholder='{{"USER.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doFilter($event)"
+                [currentValue]="currentTerm"></hbr-filter>
             <span class="refresh-btn">
-        <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress" (click)="refresh()"></clr-icon>
-        <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
+                <clr-icon shape="refresh" [hidden]="inProgress" ng-disabled="inProgress" (click)="refresh()"></clr-icon>
+                <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
             </span>
         </div>
         <div>
-            <clr-datagrid (clrDgRefresh)="load($event)" [clrDgLoading]="inProgress"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="SelectedChange()">
+            <clr-datagrid (clrDgRefresh)="load($event)" [clrDgLoading]="inProgress" [(clrDgSelected)]="selectedRow">
                 <clr-dg-action-bar>
-                    <button type="button" class="btn btn-sm btn-secondary" (click)="addNewUser()" [disabled]="!canCreateUser"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'USER.ADD_ACTION' | translate}}</button>
-                    <button type="button" class="btn btn-sm btn-secondary" id="set-admin" [disabled]="!ifSameRole" (click)="changeAdminRole()" ><clr-icon shape="wrench" size="16"></clr-icon>&nbsp;{{ISADMNISTRATOR  | translate}}</button>
-                    <clr-dropdown id='member-action' [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link" clrDropdownTrigger>
+                    <button type="button" class="btn btn-sm btn-secondary" (click)="addNewUser()"
+                        [disabled]="!canCreateUser">
+                        <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'USER.ADD_ACTION' | translate}}
+                    </button>
+                    <button type="button" class="btn btn-sm btn-secondary" id="set-admin" [disabled]="!ifSameRole"
+                        (click)="changeAdminRole()">
+                        <clr-icon shape="wrench" size="16"></clr-icon>&nbsp;{{ISADMNISTRATOR  | translate}}
+                    </button>
+                    <clr-dropdown id='member-action' [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link"
+                        clrDropdownTrigger>
                         <span>{{'BUTTON.ACTIONS' | translate}}<clr-icon shape="caret down"></clr-icon></span>
                         <clr-dropdown-menu *clrIfOpen>
-                            <button type="button" class="btn btn-sm btn-secondary" id="changePwd" [hidden]="!canCreateUser" [disabled]="!(selectedRow.length==1)" (click)="openChangePwdModal()" ><clr-icon shape="edit" size="16"></clr-icon>&nbsp;{{'RESET_PWD.TITLE'  | translate}}</button>
+                            <button type="button" class="btn btn-sm btn-secondary" id="changePwd"
+                                [hidden]="!canCreateUser" [disabled]="!(selectedRow.length==1)"
+                                (click)="openChangePwdModal()">
+                                <clr-icon shape="edit" size="16"></clr-icon>&nbsp;{{'RESET_PWD.TITLE'  | translate}}
+                            </button>
                             <div class="dropdown-divider"></div>
-                            <button type="button" class="btn btn-sm btn-secondary" (click)="deleteUsers(selectedRow)" [disabled]="!selectedRow.length || onlySelf || !canCreateUser"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'USER.DEL_ACTION' | translate}}</button>
+                            <button type="button" class="btn btn-sm btn-secondary" (click)="deleteUsers(selectedRow)"
+                                [disabled]="!selectedRow.length || onlySelf || !canCreateUser">
+                                <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'USER.DEL_ACTION' | translate}}
+                            </button>
                         </clr-dropdown-menu>
                     </clr-dropdown>
                 </clr-dg-action-bar>
@@ -33,9 +49,11 @@
                     <clr-dg-cell>{{user.creation_time | date: 'short'}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
-                    <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'USER.OF' | translate }}</span>
+                    <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+                        {{'USER.OF' | translate }}</span>
                     {{pagination.totalItems}} {{'USER.ITEMS' | translate }}
-                    <clr-dg-pagination #pagination [clrDgPageSize]="15" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalCount">
+                    <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="currentPage"
+                        [clrDgTotalItems]="totalCount">
                     </clr-dg-pagination>
                 </clr-dg-footer>
             </clr-datagrid>

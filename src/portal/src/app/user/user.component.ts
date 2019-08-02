@@ -11,23 +11,33 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
 
 import { Subscription, Observable, forkJoin } from "rxjs";
 
-import { TranslateService } from '@ngx-translate/core';
-import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
-import { operateChanges, OperateInfo, OperationService, OperationState, errorHandler as errorHandFn } from '@harbor/ui';
-import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
-import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
-import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
-import { SessionService } from '../shared/session.service';
-import { AppConfigService } from '../app-config.service';
-import { NewUserModalComponent } from './new-user-modal.component';
-import { UserService } from './user.service';
-import { User } from './user';
+import { TranslateService } from "@ngx-translate/core";
+import {
+  ConfirmationState,
+  ConfirmationTargets,
+  ConfirmationButtons
+} from "../shared/shared.const";
+import {
+  operateChanges,
+  OperateInfo,
+  OperationService,
+  OperationState,
+  errorHandler as errorHandFn
+} from "@harbor/ui";
+import { ConfirmationDialogService } from "../shared/confirmation-dialog/confirmation-dialog.service";
+import { ConfirmationMessage } from "../shared/confirmation-dialog/confirmation-message";
+import { MessageHandlerService } from "../shared/message-handler/message-handler.service";
+import { SessionService } from "../shared/session.service";
+import { AppConfigService } from "../app-config.service";
+import { NewUserModalComponent } from "./new-user-modal.component";
+import { UserService } from "./user.service";
+import { User } from "./user";
 import { ChangePasswordComponent } from "./change-password/change-password.component";
-import { map, catchError } from 'rxjs/operators';
+import { map, catchError } from "rxjs/operators";
 import { throwError as observableThrowError } from "rxjs";
 
 /**
@@ -41,22 +51,20 @@ import { throwError as observableThrowError } from "rxjs";
  */
 
 @Component({
-  selector: 'harbor-user',
-  templateUrl: 'user.component.html',
-  styleUrls: ['user.component.scss'],
-  providers: [UserService],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  selector: "harbor-user",
+  templateUrl: "user.component.html",
+  styleUrls: ["user.component.scss"],
+  providers: [UserService]
 })
-
 export class UserComponent implements OnInit, OnDestroy {
   users: User[] = [];
-  originalUsers: Observable<User[]>;
   selectedRow: User[] = [];
   ISADMNISTRATOR: string = "USER.ENABLE_ADMIN_ACTION";
 
   currentTerm: string;
   totalCount: number = 0;
   currentPage: number = 1;
+  pageSize: number = 15;
   timerHandler: any;
 
   private onGoing: boolean = true;
@@ -75,15 +83,19 @@ export class UserComponent implements OnInit, OnDestroy {
     private msgHandler: MessageHandlerService,
     private session: SessionService,
     private appConfigService: AppConfigService,
-    private operationService: OperationService,
-    private ref: ChangeDetectorRef) {
-    this.deletionSubscription = deletionDialogService.confirmationConfirm$.subscribe(confirmed => {
-      if (confirmed &&
-        confirmed.source === ConfirmationTargets.USER &&
-        confirmed.state === ConfirmationState.CONFIRMED) {
-        this.delUser(confirmed.data);
+    private operationService: OperationService
+  ) {
+    this.deletionSubscription = deletionDialogService.confirmationConfirm$.subscribe(
+      confirmed => {
+        if (
+          confirmed &&
+          confirmed.source === ConfirmationTargets.USER &&
+          confirmed.state === ConfirmationState.CONFIRMED
+        ) {
+          this.delUser(confirmed.data);
+        }
       }
-    });
+    );
   }
 
   isMySelf(uid: number): boolean {
@@ -98,13 +110,20 @@ export class UserComponent implements OnInit, OnDestroy {
   }
 
   get onlySelf(): boolean {
-    return this.selectedRow.length === 1 && this.isMySelf(this.selectedRow[0].user_id);
+    return (
+      this.selectedRow.length === 1 &&
+      this.isMySelf(this.selectedRow[0].user_id)
+    );
   }
 
   public get canCreateUser(): boolean {
     let appConfig = this.appConfigService.getConfig();
     if (appConfig) {
-      return !(appConfig.auth_mode === 'ldap_auth' || appConfig.auth_mode === 'uaa_auth' || appConfig.auth_mode === 'oidc_auth');
+      return !(
+        appConfig.auth_mode === "ldap_auth" ||
+        appConfig.auth_mode === "uaa_auth" ||
+        appConfig.auth_mode === "oidc_auth"
+      );
     } else {
       return true;
     }
@@ -123,11 +142,11 @@ export class UserComponent implements OnInit, OnDestroy {
       }
     });
     if (usersRole.length && usersRole.every(num => num === 0)) {
-      this.ISADMNISTRATOR = 'USER.ENABLE_ADMIN_ACTION';
+      this.ISADMNISTRATOR = "USER.ENABLE_ADMIN_ACTION";
       return true;
     }
     if (usersRole.length && usersRole.every(num => num === 1)) {
-      this.ISADMNISTRATOR = 'USER.DISABLE_ADMIN_ACTION';
+      this.ISADMNISTRATOR = "USER.DISABLE_ADMIN_ACTION";
       return true;
     }
     return false;
@@ -138,7 +157,9 @@ export class UserComponent implements OnInit, OnDestroy {
       return "{{MISS}}";
     }
     let key: string = u.has_admin_role ? "USER.IS_ADMIN" : "USER.IS_NOT_ADMIN";
-    this.translate.get(key).subscribe((res: string) => this.adminColumn = res);
+    this.translate
+      .get(key)
+      .subscribe((res: string) => (this.adminColumn = res));
     return this.adminColumn;
   }
 
@@ -146,8 +167,12 @@ export class UserComponent implements OnInit, OnDestroy {
     if (!u) {
       return "{{MISS}}";
     }
-    let key: string = u.has_admin_role ? "USER.DISABLE_ADMIN_ACTION" : "USER.ENABLE_ADMIN_ACTION";
-    this.translate.get(key).subscribe((res: string) => this.adminMenuText = res);
+    let key: string = u.has_admin_role
+      ? "USER.DISABLE_ADMIN_ACTION"
+      : "USER.ENABLE_ADMIN_ACTION";
+    this.translate
+      .get(key)
+      .subscribe((res: string) => (this.adminMenuText = res));
     return this.adminMenuText;
   }
 
@@ -155,7 +180,7 @@ export class UserComponent implements OnInit, OnDestroy {
     return this.onGoing;
   }
 
-  ngOnInit(): void { }
+  ngOnInit(): void {}
 
   ngOnDestroy(): void {
     if (this.deletionSubscription) {
@@ -172,36 +197,28 @@ export class UserComponent implements OnInit, OnDestroy {
     if (this.selectedRow.length === 1) {
       this.changePwdDialog.open(this.selectedRow[0].user_id);
     }
-
   }
 
   // Filter items by keywords
   doFilter(terms: string): void {
     this.selectedRow = [];
-    this.currentTerm = terms;
-    this.originalUsers.subscribe(users => {
-      if (terms.trim() === "") {
-        this.refreshUser((this.currentPage - 1) * 15, this.currentPage * 15);
-      } else {
-        let selectUsers = users.filter(user => {
-          return this.isMatchFilterTerm(terms, user.username);
-        });
-        this.totalCount = selectUsers.length;
-        this.users = selectUsers.slice((this.currentPage - 1) * 15, this.currentPage * 15); // First page
-
-        this.forceRefreshView(5000);
-      }
-    });
+    this.currentTerm = terms.trim();
+    this.currentPage = 1;
+    this.onGoing = true;
+    this.getUserListByPaging();
   }
 
   // Disable the admin role for the specified user
   changeAdminRole(): void {
     let observableLists: any[] = [];
     if (this.selectedRow.length) {
-      if (this.ISADMNISTRATOR === 'USER.ENABLE_ADMIN_ACTION') {
+      if (this.ISADMNISTRATOR === "USER.ENABLE_ADMIN_ACTION") {
         for (let i = 0; i < this.selectedRow.length; i++) {
           // Double confirm user is existing
-          if (this.selectedRow[i].user_id === 0 || this.isMySelf(this.selectedRow[i].user_id)) {
+          if (
+            this.selectedRow[i].user_id === 0 ||
+            this.isMySelf(this.selectedRow[i].user_id)
+          ) {
             continue;
           }
           let updatedUser: User = new User();
@@ -211,10 +228,13 @@ export class UserComponent implements OnInit, OnDestroy {
           observableLists.push(this.userService.updateUserRole(updatedUser));
         }
       }
-      if (this.ISADMNISTRATOR === 'USER.DISABLE_ADMIN_ACTION') {
+      if (this.ISADMNISTRATOR === "USER.DISABLE_ADMIN_ACTION") {
         for (let i = 0; i < this.selectedRow.length; i++) {
           // Double confirm user is existing
-          if (this.selectedRow[i].user_id === 0 || this.isMySelf(this.selectedRow[i].user_id)) {
+          if (
+            this.selectedRow[i].user_id === 0 ||
+            this.isMySelf(this.selectedRow[i].user_id)
+          ) {
             continue;
           }
           let updatedUser: User = new User();
@@ -225,13 +245,16 @@ export class UserComponent implements OnInit, OnDestroy {
         }
       }
 
-      forkJoin(...observableLists).subscribe(() => {
-        this.selectedRow = [];
-        this.refresh();
-      }, error => {
-        this.selectedRow = [];
-        this.msgHandler.handleError(error);
-      });
+      forkJoin(...observableLists).subscribe(
+        () => {
+          this.selectedRow = [];
+          this.refresh();
+        },
+        error => {
+          this.selectedRow = [];
+          this.msgHandler.handleError(error);
+        }
+      );
     }
   }
 
@@ -251,7 +274,7 @@ export class UserComponent implements OnInit, OnDestroy {
     let msg: ConfirmationMessage = new ConfirmationMessage(
       "USER.DELETION_TITLE",
       "USER.DELETION_SUMMARY",
-      userArr.join(','),
+      userArr.join(","),
       users,
       ConfirmationTargets.USER,
       ConfirmationButtons.DELETE_CANCEL
@@ -266,9 +289,9 @@ export class UserComponent implements OnInit, OnDestroy {
         observableLists.push(this.delOperate(user));
       });
 
-      forkJoin(...observableLists).subscribe((item) => {
+      forkJoin(...observableLists).subscribe(item => {
         this.selectedRow = [];
-        this.currentTerm = '';
+        this.currentTerm = "";
         this.refresh();
       });
     }
@@ -277,53 +300,45 @@ export class UserComponent implements OnInit, OnDestroy {
   delOperate(user: User): Observable<any> {
     // init operation info
     let operMessage = new OperateInfo();
-    operMessage.name = 'OPERATION.DELETE_USER';
+    operMessage.name = "OPERATION.DELETE_USER";
     operMessage.data.id = user.user_id;
     operMessage.state = OperationState.progressing;
     operMessage.data.name = user.username;
     this.operationService.publishInfo(operMessage);
 
     if (this.isMySelf(user.user_id)) {
-      return this.translate.get('BATCH.DELETED_FAILURE').pipe(map(res => {
-        operateChanges(operMessage, OperationState.failure, res);
-      }));
+      return this.translate.get("BATCH.DELETED_FAILURE").pipe(
+        map(res => {
+          operateChanges(operMessage, OperationState.failure, res);
+        })
+      );
     }
 
-    return this.userService.deleteUser(user.user_id).pipe(map(() => {
-      this.translate.get('BATCH.DELETED_SUCCESS').subscribe(res => {
-        operateChanges(operMessage, OperationState.success);
-      });
-    }), catchError(error => {
-      const message = errorHandFn(error);
-      this.translate.get(message).subscribe(res =>
-        operateChanges(operMessage, OperationState.failure, res)
-      );
-      return observableThrowError(message);
-    }));
+    return this.userService.deleteUser(user.user_id).pipe(
+      map(() => {
+        this.translate.get("BATCH.DELETED_SUCCESS").subscribe(res => {
+          operateChanges(operMessage, OperationState.success);
+        });
+      }),
+      catchError(error => {
+        const message = errorHandFn(error);
+        this.translate
+          .get(message)
+          .subscribe(res =>
+            operateChanges(operMessage, OperationState.failure, res)
+          );
+        return observableThrowError(message);
+      })
+    );
   }
 
   // Refresh the user list
-  refreshUser(from: number, to: number): void {
+  refreshUser(): void {
     this.selectedRow = [];
     // Start to get
-    this.currentTerm = '';
+    this.currentTerm = "";
     this.onGoing = true;
-
-    this.originalUsers = this.userService.getUsers();
-    this.originalUsers.subscribe(users => {
-      this.onGoing = false;
-
-      this.totalCount = users.length;
-      this.users = users.slice(from, to); // First page
-
-      this.forceRefreshView(5000);
-
-      return users;
-    }, error => {
-      this.onGoing = false;
-      this.msgHandler.handleError(error);
-      this.forceRefreshView(5000);
-    });
+    this.getUserListByPaging();
   }
 
   // Add new user
@@ -343,46 +358,34 @@ export class UserComponent implements OnInit, OnDestroy {
   // Data loading
   load(state: any): void {
     this.selectedRow = [];
-    if (state && state.page) {
-      if (this.originalUsers) {
-        this.originalUsers.subscribe(users => {
-          this.users = users.slice(state.page.from, state.page.to + 1);
-        });
-        this.forceRefreshView(5000);
-      } else {
-        this.refreshUser(state.page.from, state.page.to + 1);
-      }
-    } else {
-      // Refresh
-      this.refresh();
-    }
+    this.onGoing = true;
+    this.getUserListByPaging();
   }
 
   refresh(): void {
     this.currentPage = 1; // Refresh pagination
-    this.refreshUser(0, 15);
+    this.refreshUser();
   }
 
-  SelectedChange(): void {
-    this.forceRefreshView(5000);
+  getUserListByPaging() {
+    this.userService
+      .getUserListByPaging(this.currentPage, this.pageSize, this.currentTerm)
+      .subscribe(
+        response => {
+          // Get total count
+          if (response.headers) {
+            let xHeader: string = response.headers.get("X-Total-Count");
+            if (xHeader) {
+              this.totalCount = parseInt(xHeader, 0);
+            }
+          }
+          this.users = response.body as User[];
+          this.onGoing = false;
+        },
+        error => {
+          this.msgHandler.handleError(error);
+          this.onGoing = false;
+        }
+      );
   }
-
-  forceRefreshView(duration: number): void {
-    // Reset timer
-    if (this.timerHandler) {
-      clearInterval(this.timerHandler);
-    }
-    this.timerHandler = setInterval(() => this.ref.markForCheck(), 100);
-    setTimeout(() => {
-      if (this.timerHandler) {
-        clearInterval(this.timerHandler);
-        this.timerHandler = null;
-      }
-    }, duration);
-  }
-
-  private isMatchFilterTerm(terms: string, testedItem: string): boolean {
-    return testedItem.toLowerCase().indexOf(terms.toLowerCase()) !== -1;
-  }
-
 }
