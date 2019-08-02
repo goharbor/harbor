@@ -136,14 +136,15 @@ http {
       proxy_buffering off;
       proxy_request_buffering off;
     }
-	
-	location /service/notifications {
+
+    location /service/notifications {
       return 404;
     }
   }
-    server {
-      listen 80;
-      #server_name harbordomain.com;
-      return 308 https://$host$request_uri;
+  
+  server {
+    listen 80;
+    #server_name harbordomain.com;
+    return 308 https://$host$request_uri;
   } 
 }
