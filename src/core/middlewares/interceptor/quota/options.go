@@ -42,7 +42,7 @@ type Options struct {
 	Resources  types.ResourceList
 	StatusCode int
 
-	OnResources func(*http.Request) types.ResourceList
+	OnResources func(*http.Request) (types.ResourceList, error)
 	OnFulfilled func(http.ResponseWriter, *http.Request) error
 	OnRejected  func(http.ResponseWriter, *http.Request) error
 	OnFinally   func(http.ResponseWriter, *http.Request) error
@@ -114,8 +114,15 @@ func StatusCode(c int) Option {
 }
 
 // OnResources sets the interceptor on resources function
-func OnResources(f func(*http.Request) types.ResourceList) Option {
+func OnResources(f func(*http.Request) (types.ResourceList, error)) Option {
 	return func(o *Options) {
 		o.OnResources = f
+	}
+}
+
+// OnFulfilled set the success handler for interceptor
+func OnFulfilled(f func(http.ResponseWriter, *http.Request) error) Option {
+	return func(o *Options) {
+		o.OnFulfilled = f
 	}
 }

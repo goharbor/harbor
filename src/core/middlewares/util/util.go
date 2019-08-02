@@ -113,6 +113,10 @@ type MfInfo struct {
 
 	// Exist is to index the existing of the manifest in DB. If false, it's an new image for uploading.
 	Exist bool
+
+	// ArtifactID is the ID of the artifact which query by repository and tag
+	ArtifactID int64
+
 	// DigestChanged true means the manifest exists but digest is changed.
 	// Probably it's a new image with existing repo/tag name or overwrite.
 	DigestChanged bool
@@ -400,13 +404,46 @@ func GetRegRedisCon() (redis.Conn, error) {
 	)
 }
 
+// BlobInfoFromContext returns blob info from context
+func BlobInfoFromContext(ctx context.Context) (*BlobInfo, bool) {
+	info, ok := ctx.Value(BBInfokKey).(*BlobInfo)
+	return info, ok
+}
+
 // ChartVersionInfoFromContext returns chart info from context
 func ChartVersionInfoFromContext(ctx context.Context) (*ChartVersionInfo, bool) {
 	info, ok := ctx.Value(chartVersionInfoKey).(*ChartVersionInfo)
 	return info, ok
 }
 
+// ImageInfoFromContext returns image info from context
+func ImageInfoFromContext(ctx context.Context) (*ImageInfo, bool) {
+	info, ok := ctx.Value(ImageInfoCtxKey).(*ImageInfo)
+	return info, ok
+}
+
+// ManifestInfoFromContext returns manifest info from context
+func ManifestInfoFromContext(ctx context.Context) (*MfInfo, bool) {
+	info, ok := ctx.Value(MFInfokKey).(*MfInfo)
+	return info, ok
+}
+
+// NewBlobInfoContext returns context with blob info
+func NewBlobInfoContext(ctx context.Context, info *BlobInfo) context.Context {
+	return context.WithValue(ctx, BBInfokKey, info)
+}
+
 // NewChartVersionInfoContext returns context with blob info
 func NewChartVersionInfoContext(ctx context.Context, info *ChartVersionInfo) context.Context {
 	return context.WithValue(ctx, chartVersionInfoKey, info)
+}
+
+// NewImageInfoContext returns context with image info
+func NewImageInfoContext(ctx context.Context, info *ImageInfo) context.Context {
+	return context.WithValue(ctx, ImageInfoCtxKey, info)
+}
+
+// NewManifestInfoContext returns context with manifest info
+func NewManifestInfoContext(ctx context.Context, info *MfInfo) context.Context {
+	return context.WithValue(ctx, MFInfokKey, info)
 }
