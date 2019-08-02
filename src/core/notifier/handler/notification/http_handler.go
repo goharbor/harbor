@@ -11,7 +11,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 )
 
-// HTTPHandler handles notification http topic and start the hook processing
+// HTTPHandler preprocess http event data and start the hook processing
 type HTTPHandler struct {
 }
 
@@ -50,10 +50,9 @@ func (h *HTTPHandler) process(event *model.HookEvent) error {
 	j.Parameters = map[string]interface{}{
 		"payload": string(payload),
 		"address": event.Target.Address,
-		// Users can define a secret in http statement in notification(webhook) policy. So it will be sent in header in http request.
-		// The format will be like this:
-		// Authorization: 'Secret eyJ0eXAiOiJKV1QiLCJhbGciOi'
-		"auth_header":      "Secret " + event.Target.AuthHeader,
+		// Users can define a auth header in http statement in notification(webhook) policy.
+		// So it will be sent in header in http request.
+		"auth_header":      event.Target.AuthHeader,
 		"skip_cert_verify": event.Target.SkipCertVerify,
 	}
 	return notification.HookManager.StartHook(event, j)

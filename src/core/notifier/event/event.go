@@ -7,6 +7,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/notifier"
 	"github.com/goharbor/harbor/src/core/notifier/model"
+	notifyModel "github.com/goharbor/harbor/src/pkg/notification/model"
 )
 
 // Event to publish
@@ -33,10 +34,11 @@ type ImageDelMetaData struct {
 // Resolve image deleting metadata into common image event
 func (i *ImageDelMetaData) Resolve(evt *Event) error {
 	data := &model.ImageEvent{
-		Project:  i.Project,
-		OccurAt:  i.OccurAt,
-		Operator: i.Operator,
-		RepoName: i.RepoName,
+		EventType: notifyModel.EventTypeDeleteImage,
+		Project:   i.Project,
+		OccurAt:   i.OccurAt,
+		Operator:  i.Operator,
+		RepoName:  i.RepoName,
 	}
 	for _, t := range i.Tags {
 		res := &model.ImgResource{Tag: t}
@@ -47,8 +49,8 @@ func (i *ImageDelMetaData) Resolve(evt *Event) error {
 	return nil
 }
 
-// ImagePushPullMetaData defines images pushing&pulling related event data
-type ImagePushPullMetaData struct {
+// ImagePushMetaData defines images pushing related event data
+type ImagePushMetaData struct {
 	Topic    string
 	Project  *models.Project
 	Tag      string
@@ -58,13 +60,46 @@ type ImagePushPullMetaData struct {
 	RepoName string
 }
 
-// Resolve image pushing&pulling metadata into common image event
-func (i *ImagePushPullMetaData) Resolve(evt *Event) error {
+// Resolve image pushing metadata into common image event
+func (i *ImagePushMetaData) Resolve(evt *Event) error {
 	data := &model.ImageEvent{
-		Project:  i.Project,
-		OccurAt:  i.OccurAt,
-		Operator: i.Operator,
-		RepoName: i.RepoName,
+		EventType: notifyModel.EventTypePushImage,
+		Project:   i.Project,
+		OccurAt:   i.OccurAt,
+		Operator:  i.Operator,
+		RepoName:  i.RepoName,
+		Resource: []*model.ImgResource{
+			{
+				Tag:    i.Tag,
+				Digest: i.Digest,
+			},
+		},
+	}
+
+	evt.Topic = i.Topic
+	evt.Data = data
+	return nil
+}
+
+// ImagePullMetaData defines images pulling related event data
+type ImagePullMetaData struct {
+	Topic    string
+	Project  *models.Project
+	Tag      string
+	Digest   string
+	OccurAt  time.Time
+	Operator string
+	RepoName string
+}
+
+// Resolve image pulling metadata into common image event
+func (i *ImagePullMetaData) Resolve(evt *Event) error {
+	data := &model.ImageEvent{
+		EventType: notifyModel.EventTypePullImage,
+		Project:   i.Project,
+		OccurAt:   i.OccurAt,
+		Operator:  i.Operator,
+		RepoName:  i.RepoName,
 		Resource: []*model.ImgResource{
 			{
 				Tag:    i.Tag,

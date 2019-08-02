@@ -120,7 +120,7 @@ func (n *NotificationHandler) Post() {
 
 			// build and publish image push event
 			evt := &notifierEvt.Event{}
-			imgPushMetadata := &notifierEvt.ImagePushPullMetaData{
+			imgPushMetadata := &notifierEvt.ImagePushMetaData{
 				Topic:    topic.PushImageTopic,
 				Project:  pro,
 				Tag:      tag,
@@ -172,7 +172,7 @@ func (n *NotificationHandler) Post() {
 		if action == "pull" {
 			// build and publish image pull event
 			evt := &notifierEvt.Event{}
-			imgPullMetadata := &notifierEvt.ImagePushPullMetaData{
+			imgPullMetadata := &notifierEvt.ImagePullMetaData{
 				Topic:    topic.PullImageTopic,
 				Project:  pro,
 				Tag:      tag,

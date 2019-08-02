@@ -34,9 +34,9 @@ const (
 // Subscribe topics
 func init() {
 	handlersMap := map[string][]notifier.NotificationHandler{
-		PushImageTopic:   {&notification.PushImagePreprocessHandler{}},
-		PullImageTopic:   {&notification.PullImagePreprocessHandler{}},
-		DeleteImageTopic: {&notification.DeleteImagePreprocessHandler{}},
+		PushImageTopic:   {&notification.ImagePreprocessHandler{}},
+		PullImageTopic:   {&notification.ImagePreprocessHandler{}},
+		DeleteImageTopic: {&notification.ImagePreprocessHandler{}},
 		WebhookTopic:     {&notification.HTTPHandler{}},
 	}
 

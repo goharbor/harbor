@@ -2,8 +2,6 @@ package notification
 
 import (
 	"github.com/goharbor/harbor/src/common/utils/log"
-	cfg "github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/pkg/notification/config"
 	"github.com/goharbor/harbor/src/pkg/notification/hook"
 	"github.com/goharbor/harbor/src/pkg/notification/job"
 	jobMgr "github.com/goharbor/harbor/src/pkg/notification/job/manager"
@@ -23,22 +21,14 @@ var (
 	HookManager hook.Manager
 
 	// SupportedEventTypes is a map to store supported event type, eg. pushImage, pullImage etc
-	SupportedEventTypes map[string]int
+	SupportedEventTypes map[string]struct{}
 
 	// SupportedNotifyTypes is a map to store notification type, eg. HTTP, Email etc
-	SupportedNotifyTypes map[string]int
+	SupportedNotifyTypes map[string]struct{}
 )
 
 // Init ...
 func Init() {
-	config.Config = &config.Configuration{
-		CoreURL:          cfg.InternalCoreURL(),
-		TokenServiceURL:  cfg.InternalTokenServiceEndpoint(),
-		JobserviceURL:    cfg.InternalJobServiceURL(),
-		CoreSecret:       cfg.CoreSecret(),
-		JobserviceSecret: cfg.JobserviceSecret(),
-	}
-
 	// init notification policy manager
 	PolicyMgr = manager.NewDefaultManger()
 	// init hook manager
@@ -46,8 +36,8 @@ func Init() {
 	// init notification job manager
 	JobMgr = jobMgr.NewDefaultManager()
 
-	SupportedEventTypes = make(map[string]int)
-	SupportedNotifyTypes = make(map[string]int)
+	SupportedEventTypes = make(map[string]struct{})
+	SupportedNotifyTypes = make(map[string]struct{})
 
 	initSupportedEventType(
 		model.EventTypePushImage, model.EventTypePullImage, model.EventTypeDeleteImage,
@@ -62,12 +52,12 @@ func Init() {
 
 func initSupportedEventType(eventTypes ...string) {
 	for _, eventType := range eventTypes {
-		SupportedEventTypes[eventType] = model.ValidType
+		SupportedEventTypes[eventType] = struct{}{}
 	}
 }
 
 func initSupportedNotifyType(notifyTypes ...string) {
 	for _, notifyType := range notifyTypes {
-		SupportedNotifyTypes[notifyType] = model.ValidType
+		SupportedNotifyTypes[notifyType] = struct{}{}
 	}
 }

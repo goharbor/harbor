@@ -25,10 +25,10 @@ func buildImageResourceURL(extURL, repoName, tag string) (string, error) {
 	return resURL, nil
 }
 
-func constructImagePayload(event *notifyModel.ImageEvent, eventType string) (*notifyModel.Payload, error) {
+func constructImagePayload(event *notifyModel.ImageEvent) (*notifyModel.Payload, error) {
 	repoName := event.RepoName
 	if repoName == "" {
-		return nil, fmt.Errorf("invalid %s event with empty repo name", eventType)
+		return nil, fmt.Errorf("invalid %s event with empty repo name", event.EventType)
 	}
 
 	repoType := models.ProjectPrivate
@@ -39,7 +39,7 @@ func constructImagePayload(event *notifyModel.ImageEvent, eventType string) (*no
 	imageName := getNameFromImgRepoFullName(repoName)
 
 	payload := &notifyModel.Payload{
-		Type:    eventType,
+		Type:    event.EventType,
 		OccurAt: event.OccurAt.Unix(),
 		EventData: &notifyModel.EventData{
 			Repository: &notifyModel.Repository{
@@ -137,7 +137,7 @@ func resolveImageEventData(value interface{}) (*notifyModel.ImageEvent, error) {
 }
 
 // preprocessAndSendImageHook preprocess image event data and send hook by notification policy target
-func preprocessAndSendImageHook(eventType string, value interface{}) error {
+func preprocessAndSendImageHook(value interface{}) error {
 	// if global notification configured disabled, return directly
 	if !config.NotificationEnable() {
 		log.Debug("notification feature is not enabled")
@@ -149,23 +149,23 @@ func preprocessAndSendImageHook(eventType string, value interface{}) error {
 		return err
 	}
 
-	policies, err := notification.PolicyMgr.GetRelatedPolices(imgEvent.Project.ProjectID, eventType)
+	policies, err := notification.PolicyMgr.GetRelatedPolices(imgEvent.Project.ProjectID, imgEvent.EventType)
 	if err != nil {
-		log.Errorf("failed to find policy for %s event: %v", eventType, err)
+		log.Errorf("failed to find policy for %s event: %v", imgEvent.EventType, err)
 		return err
 	}
 	// if cannot find policy including event type in project, return directly
 	if len(policies) == 0 {
-		log.Debugf("cannot find policy for %s event: %v", eventType, imgEvent)
+		log.Debugf("cannot find policy for %s event: %v", imgEvent.EventType, imgEvent)
 		return nil
 	}
 
-	payload, err := constructImagePayload(imgEvent, eventType)
+	payload, err := constructImagePayload(imgEvent)
 	if err != nil {
 		return err
 	}
 
-	err = sendHookWithPolicies(policies, payload, eventType)
+	err = sendHookWithPolicies(policies, payload, imgEvent.EventType)
 	if err != nil {
 		return err
 	}

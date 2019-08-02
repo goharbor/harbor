@@ -9,9 +9,9 @@ import (
 	"github.com/goharbor/harbor/src/common/job/models"
 	cModels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/core/utils"
-	"github.com/goharbor/harbor/src/pkg/notification/config"
 	"github.com/goharbor/harbor/src/pkg/notification/job"
 	"github.com/goharbor/harbor/src/pkg/notification/job/manager"
 )
@@ -55,7 +55,7 @@ func (hm *DefaultManager) StartHook(event *model.HookEvent, data *models.JobData
 	if err != nil {
 		return fmt.Errorf("failed to create the job record for notification based on policy %d: %v", event.PolicyID, err)
 	}
-	statusHookURL := fmt.Sprintf("%s/service/notifications/jobs/webhook/%d", config.Config.CoreURL, id)
+	statusHookURL := fmt.Sprintf("%s/service/notifications/jobs/webhook/%d", config.InternalCoreURL(), id)
 	data.StatusHook = statusHookURL
 
 	log.Debugf("created a notification job %d for the policy %d", id, event.PolicyID)
@@ -63,16 +63,14 @@ func (hm *DefaultManager) StartHook(event *model.HookEvent, data *models.JobData
 	// submit hook job to jobservice
 	jobUUID, err := hm.client.SubmitJob(data)
 	if err != nil {
-		log.Errorf("failed to process the notification event: %v", err)
-		e := hm.jobMgr.UpdateJobStatus(id, cModels.JobError)
+		log.Errorf("failed to submit job with notification event: %v", err)
+		e := hm.jobMgr.Update(&cModels.NotificationJob{
+			ID:     id,
+			Status: cModels.JobError,
+		}, "Status")
 		if e != nil {
 			log.Errorf("failed to update the notification job status %d: %v", id, e)
 		}
-		return err
-	}
-	err = hm.jobMgr.UpdateJobStatus(id, cModels.JobRunning, cModels.JobPending)
-	if err != nil {
-		log.Errorf("failed to update the notification job status %d: %v", id, err)
 		return err
 	}
 
