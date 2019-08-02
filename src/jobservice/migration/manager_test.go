@@ -17,6 +17,10 @@ package migration
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -25,9 +29,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"strings"
-	"testing"
-	"time"
 )
 
 // ManagerTestSuite tests functions of manager
@@ -168,7 +169,8 @@ func (suite *ManagerTestSuite) TestManager() {
 	assert.NoError(suite.T(), err, "get count of policies error")
 	assert.Equal(suite.T(), 1, count)
 
-	p, err := getPeriodicPolicy(suite.numbericID, conn, suite.namespace)
+	innerConn := suite.pool.Get()
+	p, err := getPeriodicPolicy(suite.numbericID, innerConn, suite.namespace)
 	assert.NoError(suite.T(), err, "get migrated policy error")
 	assert.NotEmpty(suite.T(), p.ID, "ID of policy")
 	assert.NotEmpty(suite.T(), p.WebHookURL, "Web hook URL of policy")
