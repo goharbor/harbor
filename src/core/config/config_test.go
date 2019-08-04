@@ -211,6 +211,7 @@ func TestConfig(t *testing.T) {
 	localCoreURL := LocalCoreURL()
 	assert.Equal("http://127.0.0.1:8080", localCoreURL)
 
+	assert.True(NotificationEnable())
 }
 
 func currPath() string {

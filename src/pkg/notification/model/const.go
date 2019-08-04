@@ -12,7 +12,5 @@ const (
 	EventTypeScanningFailed    = "scanningFailed"
 	EventTypeTestEndpoint      = "testEndpoint"
 
-	ValidType = 1
-
 	NotifyTypeHTTP = "http"
 )

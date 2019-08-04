@@ -79,13 +79,8 @@ func (w *NotificationPolicyAPI) Get() {
 		return
 	}
 
-	projectID := policy.ProjectID
-	if projectID == 0 {
-		w.SendNotFoundError(fmt.Errorf("notification policy %d with projectID %d not found", id, projectID))
-		return
-	}
-	if w.project.ProjectID != projectID {
-		w.SendBadRequestError(fmt.Errorf("notification policy %d with projectID %d not belong to project %d in URL", id, projectID, w.project.ProjectID))
+	if w.project.ProjectID != policy.ProjectID {
+		w.SendBadRequestError(fmt.Errorf("notification policy %d with projectID %d not belong to project %d in URL", id, policy.ProjectID, w.project.ProjectID))
 		return
 	}
 
@@ -120,8 +115,8 @@ func (w *NotificationPolicyAPI) Post() {
 
 	policy.Creator = w.SecurityCtx.GetUsername()
 	policy.ProjectID = w.project.ProjectID
-	id, err := notification.PolicyMgr.Create(policy)
 
+	id, err := notification.PolicyMgr.Create(policy)
 	if err != nil {
 		w.SendInternalServerError(fmt.Errorf("failed to create the notification policy: %v", err))
 		return
@@ -248,11 +243,6 @@ func (w *NotificationPolicyAPI) Delete() {
 		return
 	}
 
-	if policy.ProjectID == 0 {
-		w.SendNotFoundError(fmt.Errorf("notification policy %d with projectID %d not found", id, projectID))
-		return
-	}
-
 	if projectID != policy.ProjectID {
 		w.SendBadRequestError(fmt.Errorf("notification policy %d with projectID %d not belong to project %d in URL", id, policy.ProjectID, projectID))
 		return
@@ -314,10 +304,6 @@ func (w *NotificationPolicyAPI) validateTargets(policy *models.NotificationPolic
 	}
 
 	for _, target := range policy.Targets {
-		if target.Address == "" {
-			w.SendBadRequestError(fmt.Errorf("empty notification target address with policy %s", policy.Name))
-			return false
-		}
 		url, err := utils.ParseEndpoint(target.Address)
 		if err != nil {
 			w.SendBadRequestError(err)
