@@ -127,10 +127,24 @@ func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 			roles = append(roles, common.RoleGuest)
 		}
 	}
-	if len(roles) != 0 {
-		return roles
+	return mergeRoles(roles, s.GetRolesByGroup(projectIDOrName))
+}
+
+func mergeRoles(rolesA, rolesB []int) []int {
+	type void struct{}
+	var roles []int
+	var placeHolder void
+	roleSet := make(map[int]void)
+	for _, r := range rolesA {
+		roleSet[r] = placeHolder
 	}
-	return s.GetRolesByGroup(projectIDOrName)
+	for _, r := range rolesB {
+		roleSet[r] = placeHolder
+	}
+	for r := range roleSet {
+		roles = append(roles, r)
+	}
+	return roles
 }
 
 // GetRolesByGroup - Get the group role of current user to the project
