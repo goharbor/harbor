@@ -1,7 +1,7 @@
 <div class="clr-row pt-1 fw8">
     <div class="clr-col">
         <label class="label-left font-size-54">{{'TAG_RETENTION.RETENTION_RULES' | translate}}</label><span
-            class="badge badge-3 ml-5">{{retention?.rules?.length ? retention?.rules?.length : 0}}</span>
+            class="badge badge-3 ml-5">{{retention?.rules?.length ? retention?.rules?.length : 0}}/15</span>
         <span *ngIf="loadingRule" class="spinner spinner-inline ml-2">Loading...</span>
     </div>
 </div>
@@ -10,15 +10,35 @@
         <ul *ngIf="retention?.rules?.length > 0" class="list-unstyled">
             <li class="rule" *ngFor="let rule of retention?.rules;let i = index;">
                 <div class="clr-row">
-                    <div class="clr-col rule-name">
+                    <div class="clr-col-1">
+                        <clr-icon *ngIf="!rule?.disabled" class="color-green" shape="success-standard"></clr-icon>
+                        <clr-icon *ngIf="rule?.disabled" class="color-red" shape="error-standard"></clr-icon>
+                    </div>
+                    <div class="clr-col">
                         <span>
+                            <clr-icon (click)="openEditor(i)" shape="ellipsis-vertical"
+                                      class="dropdown-toggle hand"></clr-icon>
+                            <div class="dropdown" [ngClass]="{open:ruleIndex===i}">
+                                <div class="dropdown-menu">
+                                    <button *ngIf="!rule?.disabled" type="button" class="dropdown-item"
+                                            (click)="toggleDisable(i,true)">{{'TAG_RETENTION.DISABLE' | translate}}</button>
+                                    <button *ngIf="rule?.disabled" type="button" class="dropdown-item"
+                                            (click)="toggleDisable(i,false)">{{'TAG_RETENTION.ENABLE' | translate}}</button>
+                                    <button type="button" class="dropdown-item"
+                                            (click)="editRuleByIndex(i)">{{'TAG_RETENTION.EDIT' | translate}}</button>
+                                    <button type="button" class="dropdown-item"
+                                            (click)="deleteRule(i)">{{'TAG_RETENTION.DELETE' | translate}}</button>
+                                </div>
+                            </div>
+                        </span>
+                        <span class="rule-name">
+                            <span>{{'TAG_RETENTION.IN_REPOSITORIES' | translate}}</span>
+                            <span>{{getI18nKey(rule?.scope_selectors?.repository[0]?.decoration)|translate}}</span>
+                            <span>{{formatPattern(rule?.scope_selectors?.repository[0]?.pattern)}}</span>
+                            <span>,</span>
                             <span>{{getI18nKey(rule?.action)|translate}}</span>
                             <span>{{getI18nKey(rule?.template)|translate:{number: rule?.params[rule?.template] } }}</span>
                             <span class="color-97">{{'TAG_RETENTION.WITH_CONDITION' | translate}}</span>
-                            <span>{{'TAG_RETENTION.REPO' | translate}}</span>
-                            <span>{{getI18nKey(rule?.scope_selectors?.repository[0]?.decoration)|translate}}</span>
-                            <span>{{formatPattern(rule?.scope_selectors?.repository[0]?.pattern)}}</span>
-                            <span class="color-97 space">{{'TAG_RETENTION.AND' | translate}}</span>
                             <span>{{'TAG_RETENTION.LOWER_TAGS' | translate}}</span>
                             <span>{{getI18nKey(rule?.tag_selectors[0]?.decoration)|translate}}</span>
                             <span>{{formatPattern(rule?.tag_selectors[0]?.pattern)}}</span>
@@ -30,18 +50,6 @@
                             </ng-container>
                         </span>
                     </div>
-                    <div class="clr-col-1">
-                        <clr-icon (click)="openEditor(i)" shape="ellipsis-vertical"
-                                  class="dropdown-toggle hand"></clr-icon>
-                        <div class="dropdown" [ngClass]="{open:ruleIndex===i}">
-                            <div class="dropdown-menu">
-                                <button type="button" class="dropdown-item"
-                                        (click)="editRuleByIndex(i)">{{'TAG_RETENTION.EDIT' | translate}}</button>
-                                <button type="button" class="dropdown-item"
-                                        (click)="deleteRule(i)">{{'TAG_RETENTION.DELETE' | translate}}</button>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </li>
         </ul>
@@ -50,7 +58,7 @@
                 {{'TAG_RETENTION.ADD_RULE_HELP_1' | translate}}
             </div>
             <div class="clr-col">
-                <button class="btn btn-link" (click)="openAddRule()">{{'TAG_RETENTION.ADD_RULE' | translate}}</button>
+                <button [disabled]="retention?.rules?.length >= 15" class="btn btn-link" (click)="openAddRule()">{{'TAG_RETENTION.ADD_RULE' | translate}}</button>
             </div>
         </div>
     </div>
@@ -77,18 +85,15 @@
                     <clr-icon shape="refresh"></clr-icon>
                 </button>
             </clr-dg-action-bar>
-            <clr-datagrid [clrDgLoading]="loadingExecutions" [(clrDgSingleSelected)]="selectedItem">
+            <clr-datagrid (clrDgRefresh)="clrLoad()" [clrDgLoading]="loadingExecutions" [(clrDgSingleSelected)]="selectedItem">
                 <clr-dg-column>
                     {{'TAG_RETENTION.SERIAL' | translate}}
-                    <clr-dg-string-filter [clrDgStringFilter]="serialFilter"></clr-dg-string-filter>
                 </clr-dg-column>
                 <clr-dg-column>
                     {{'TAG_RETENTION.STATUS' | translate}}
-                    <clr-dg-string-filter [clrDgStringFilter]="statusFilter"></clr-dg-string-filter>
                 </clr-dg-column>
                 <clr-dg-column>
                     {{'TAG_RETENTION.DRY_RUN' | translate}}
-                    <clr-dg-string-filter [clrDgStringFilter]="dryRunFilter"></clr-dg-string-filter>
                 </clr-dg-column>
                 <clr-dg-column>
                     {{'TAG_RETENTION.START_TIME' | translate}}
@@ -99,7 +104,7 @@
                 <clr-dg-placeholder>
                     {{'TAG_RETENTION.NO_EXECUTION' | translate}}
                 </clr-dg-placeholder>
-                <clr-dg-row *clrDgItems="let execution of executionList;let i = index;" [clrDgItem]="execution">
+                <clr-dg-row *ngFor="let execution of executionList;let i = index;" [clrDgItem]="execution">
                     <clr-dg-cell class="hand" (click)="openDetail(i,execution.id)">
                         <clr-icon shape="angle" [dir]="index===i?'down':'right'"></clr-icon>
                         <span class="ml-1">{{execution.id}}</span>
@@ -114,6 +119,7 @@
                         <clr-datagrid [clrDgLoading]="loadingHistories" class="w-100">
                             <clr-dg-column>{{'TAG_RETENTION.REPOSITORY' | translate}}</clr-dg-column>
                             <clr-dg-column>{{'TAG_RETENTION.STATUS' | translate}}</clr-dg-column>
+                            <clr-dg-column>{{'TAG_RETENTION.RETAINED' | translate}}/{{'TAG_RETENTION.TOTAL' | translate}}</clr-dg-column>
                             <clr-dg-column>{{'TAG_RETENTION.START_TIME' | translate}}</clr-dg-column>
                             <clr-dg-column>{{'TAG_RETENTION.DURATION' | translate}}</clr-dg-column>
                             <clr-dg-column>{{'TAG_RETENTION.LOG' | translate}}</clr-dg-column>
@@ -123,6 +129,7 @@
                             <clr-dg-row *clrDgItems="let task of historyList" [clrDgItem]="task">
                                 <clr-dg-cell>{{task.repository}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.status}}</clr-dg-cell>
+                                <clr-dg-cell>{{task.retained}}/{{task.total}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.start_time|date:'short'}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.duration}}</clr-dg-cell>
                                 <clr-dg-cell><span (click)="seeLog(task.execution_id,task.id)"
@@ -141,12 +148,12 @@
                     </clr-dg-row-detail>
                 </clr-dg-row>
                 <clr-dg-footer>
-        <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}}
+        <span *ngIf="totalCount">{{pagination?.firstItem + 1}}
             -
-            {{pagination.lastItem + 1 }} {{'ROBOT_ACCOUNT.OF' |
+            {{pagination?.lastItem + 1 }} {{'ROBOT_ACCOUNT.OF' |
                 translate}} </span>
                     {{pagination.totalItems }} {{'ROBOT_ACCOUNT.ITEMS' | translate}}
-                    <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>
+                    <clr-dg-pagination [clrDgTotalItems]="totalCount" #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize"></clr-dg-pagination>
                 </clr-dg-footer>
             </clr-datagrid>
     </div>

@@ -12,11 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from "@angular/core";
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpParams, HttpResponse } from "@angular/common/http";
 import { Retention, RuleMetadate } from "./retention";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { map, catchError } from "rxjs/operators";
 import { Project } from "../project";
+import { buildHttpRequestOptionsWithObserveResponse } from "@harbor/ui";
 
 @Injectable()
 export class TagRetentionService {
@@ -39,6 +40,7 @@ export class TagRetentionService {
         "withoutLabels": "WITHOUT",
         "COUNT": "UNIT_COUNT",
         "DAYS": "UNIT_DAY",
+        "none": "NONE"
     };
 
     constructor(
@@ -96,10 +98,14 @@ export class TagRetentionService {
             .pipe(catchError(error => observableThrowError(error)));
     }
 
-    getRunNowList(retentionId) {
-        return this.http.get(`/api/retentions/${retentionId}/executions`)
-            .pipe(map(response => response as Array<any>))
-            .pipe(catchError(error => observableThrowError(error)));
+    getRunNowList(retentionId, page: number, pageSize: number) {
+        let params = new HttpParams();
+        if (page && pageSize) {
+            params = params.set('page', page + '').set('page_size', pageSize + '');
+        }
+        return this.http
+          .get<HttpResponse<Array<any>>>(`/api/retentions/${retentionId}/executions`, buildHttpRequestOptionsWithObserveResponse(params))
+          .pipe(catchError(error => observableThrowError(error)), );
     }
 
     getExecutionHistory(retentionId, executionId) {

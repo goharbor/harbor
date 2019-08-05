@@ -1124,11 +1124,11 @@
         "RULE_TEMPLATE_3": "最近推送的#个镜像",
         "RULE_TEMPLATE_4": "最近拉取的#个镜像",
         "RULE_TEMPLATE_5": "全部",
-        "ACTION_RETAIN": "保留",
+        "ACTION_RETAIN": " 保留",
         "UNIT_DAY": "天数",
         "UNIT_COUNT": "个数",
         "NUMBER": "数量",
-        "IN_REPOSITORIES": "仓库",
+        "IN_REPOSITORIES": "适用于仓库",
         "REP_SEPARATOR": "使用逗号分隔repos,repo*和**",
         "TAGS": "Tags",
         "MATCHES_TAGS": "匹配tags",
@@ -1159,7 +1159,10 @@
         "LOWER_LABELS": "标签",
         "WITH_CONDITION": "基于条件",
         "LOWER_TAGS": "tags",
-        "TRIGGER": "定时执行"
+        "TRIGGER": "定时执行",
+        "RETAINED": "保留数",
+        "TOTAL": "总数",
+        "NONE": "空"
     }
 
 }
