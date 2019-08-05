@@ -111,7 +111,7 @@ func quotaUsageQueryConditions(query ...*models.QuotaUsageQuery) (string, []inte
 		params = append(params, q.ReferenceID)
 	}
 	if len(q.ReferenceIDs) != 0 {
-		sql += fmt.Sprintf(`and reference_id in (%s) `, paramPlaceholder(len(q.ReferenceIDs)))
+		sql += fmt.Sprintf(`and reference_id in (%s) `, ParamPlaceholderForIn(len(q.ReferenceIDs)))
 		params = append(params, q.ReferenceIDs)
 	}
 

@@ -139,6 +139,8 @@ var once sync.Once
 // GetOrmer :set ormer singleton
 func GetOrmer() orm.Ormer {
 	once.Do(func() {
+		// override the default value(1000) to return all records when setting no limit
+		orm.DefaultRowsLimit = -1
 		globalOrm = orm.NewOrm()
 	})
 	return globalOrm
