@@ -42,7 +42,9 @@ ${user_delete_btn}  xpath=/clr-dropdown-menu//button[contains(.,'Delete')]
 ${repo_search_icon}  xpath=//hbr-filter//clr-icon
 ${repo_search_input}  xpath=//hbr-filter//input
 ${repo_tag_1st_checkbox}  xpath=//clr-datagrid//clr-dg-row//clr-checkbox-wrapper
-${tag_table_column_signed}  xpath=//clr-dg-column//span[contains(.,'Signed')]
+${tag_table_column_pull_command}  xpath=//clr-dg-column//span[contains(.,'Pull Command')]
+${tag_table_column_tag}  xpath=//clr-dg-column//span[contains(.,'Tag')]
+${tag_table_column_size}  xpath=//clr-dg-column//span[contains(.,'Size')]
 ${tag_table_column_vulnerability}  xpath=//clr-dg-column//span[contains(.,'Vulnerability')]
 ${tag_images_btn}  xpath=//hbr-repository//button[contains(.,'Images')]
 ${project_member_action_xpath}  xpath=//*[@id='member-action']

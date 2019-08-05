@@ -142,7 +142,7 @@ Change User Role In Project
     [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${role}  ${is_oidc_mode}=${false}
     Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor   ${HARBOR_URL}  ${admin}  ${pwd}
     ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${admin}
-    Wait Until Element Is Visible  //clr-dg-cell//a[contains(.,'${project}')]
+    Retry Wait Element Visible  //clr-dg-cell//a[contains(.,'${project}')]
     Change Project Member Role  ${project}  ${user}  ${role}
     Logout Harbor
 
