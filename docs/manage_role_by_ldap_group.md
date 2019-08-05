@@ -49,4 +49,4 @@ If a user is in the LDAP groups with admin privilege (ldap_group_admin_dn), the 
 
 ## User privileges and group privileges
 
-If a user has both user-level role and group-level role, only the user level role privileges will be considered.
+If a user has both user-level role and group-level role, these privileges are merged together.
