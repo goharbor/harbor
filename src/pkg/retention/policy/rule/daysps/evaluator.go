@@ -54,6 +54,7 @@ func (e *evaluator) Action() string {
 	return action.Retain
 }
 
+// New constructs a new 'Days Since Last Push' evaluator
 func New(params rule.Parameters) rule.Evaluator {
 	if params != nil {
 		if p, ok := params[ParameterN]; ok {
