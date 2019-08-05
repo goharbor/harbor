@@ -8,11 +8,12 @@ import (
 
 // ImageEvent is image related event data to publish
 type ImageEvent struct {
-	Project  *models.Project
-	Resource []*ImgResource
-	OccurAt  time.Time
-	Operator string
-	RepoName string
+	EventType string
+	Project   *models.Project
+	Resource  []*ImgResource
+	OccurAt   time.Time
+	Operator  string
+	RepoName  string
 }
 
 // ImgResource include image digest and tag

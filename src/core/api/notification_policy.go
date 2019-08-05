@@ -10,15 +10,21 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
-	apiModels "github.com/goharbor/harbor/src/core/api/models"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/pkg/notification/model"
 )
 
 // NotificationPolicyAPI ...
 type NotificationPolicyAPI struct {
 	BaseController
 	project *models.Project
+}
+
+// notificationPolicyForUI defines the structure of notification policy info display in UI
+type notificationPolicyForUI struct {
+	EventType       string     `json:"event_type"`
+	Enabled         bool       `json:"enabled"`
+	CreationTime    *time.Time `json:"creation_time"`
+	LastTriggerTime *time.Time `json:"last_trigger_time,omitempty"`
 }
 
 // Prepare ...
@@ -73,13 +79,9 @@ func (w *NotificationPolicyAPI) Get() {
 		return
 	}
 
-	projectID := policy.ProjectID
-	if projectID == 0 {
-		w.SendNotFoundError(fmt.Errorf("notification policy %d with projectID %d not found", id, projectID))
+	if w.project.ProjectID != policy.ProjectID {
+		w.SendBadRequestError(fmt.Errorf("notification policy %d with projectID %d not belong to project %d in URL", id, policy.ProjectID, w.project.ProjectID))
 		return
-	}
-	if w.project.ProjectID != projectID {
-		w.SendBadRequestError(fmt.Errorf("notification policy %d with projectID %d not belong to project %d in URL", id, projectID, w.project.ProjectID))
 	}
 
 	w.WriteJSONData(policy)
@@ -98,10 +100,6 @@ func (w *NotificationPolicyAPI) Post() {
 		return
 	}
 
-	if !w.validatePolicyExist() {
-		return
-	}
-
 	if !w.validateTargets(policy) {
 		return
 	}
@@ -117,8 +115,8 @@ func (w *NotificationPolicyAPI) Post() {
 
 	policy.Creator = w.SecurityCtx.GetUsername()
 	policy.ProjectID = w.project.ProjectID
-	id, err := notification.PolicyMgr.Create(policy)
 
+	id, err := notification.PolicyMgr.Create(policy)
 	if err != nil {
 		w.SendInternalServerError(fmt.Errorf("failed to create the notification policy: %v", err))
 		return
@@ -245,11 +243,6 @@ func (w *NotificationPolicyAPI) Delete() {
 		return
 	}
 
-	if policy.ProjectID == 0 {
-		w.SendNotFoundError(fmt.Errorf("notification policy %d with projectID %d not found", id, projectID))
-		return
-	}
-
 	if projectID != policy.ProjectID {
 		w.SendBadRequestError(fmt.Errorf("notification policy %d with projectID %d not belong to project %d in URL", id, policy.ProjectID, projectID))
 		return
@@ -304,20 +297,6 @@ func (w *NotificationPolicyAPI) validateRBAC(action rbac.Action, projectID int64
 	return true
 }
 
-func (w *NotificationPolicyAPI) validatePolicyExist() bool {
-	policies, err := notification.PolicyMgr.List(w.project.ProjectID)
-	if err != nil {
-		w.SendInternalServerError(fmt.Errorf("failed to list notification policy in project %d: %v", w.project.ProjectID, err))
-		return false
-	}
-	// for the sake of UI, user can create only one policy for each project
-	if len(policies) == 1 {
-		w.SendConflictError(fmt.Errorf("notification policy in project %d already exists", w.project.ProjectID))
-		return false
-	}
-	return true
-}
-
 func (w *NotificationPolicyAPI) validateTargets(policy *models.NotificationPolicy) bool {
 	if len(policy.Targets) == 0 {
 		w.SendBadRequestError(fmt.Errorf("empty notification target with policy %s", policy.Name))
@@ -325,10 +304,6 @@ func (w *NotificationPolicyAPI) validateTargets(policy *models.NotificationPolic
 	}
 
 	for _, target := range policy.Targets {
-		if target.Address == "" {
-			w.SendBadRequestError(fmt.Errorf("empty notification target address with policy %s", policy.Name))
-			return false
-		}
 		url, err := utils.ParseEndpoint(target.Address)
 		if err != nil {
 			w.SendBadRequestError(err)
@@ -337,8 +312,8 @@ func (w *NotificationPolicyAPI) validateTargets(policy *models.NotificationPolic
 		// Prevent SSRF security issue #3755
 		target.Address = url.Scheme + "://" + url.Host + url.Path
 
-		t, ok := notification.SupportedNotifyTypes[target.Type]
-		if !ok || t != model.ValidType {
+		_, ok := notification.SupportedNotifyTypes[target.Type]
+		if !ok {
 			w.SendBadRequestError(fmt.Errorf("unsupport target type %s with policy %s", target.Type, policy.Name))
 			return false
 		}
@@ -354,8 +329,8 @@ func (w *NotificationPolicyAPI) validateEventTypes(policy *models.NotificationPo
 	}
 
 	for _, eventType := range policy.EventTypes {
-		t, ok := notification.SupportedEventTypes[eventType]
-		if !ok || t != model.ValidType {
+		_, ok := notification.SupportedEventTypes[eventType]
+		if !ok {
 			w.SendBadRequestError(fmt.Errorf("unsupport event type %s", eventType))
 			return false
 		}
@@ -380,12 +355,12 @@ func getLastTriggerTimeGroupByEventType(eventType string, policyID int64) (time.
 
 // constructPolicyWithTriggerTime construct notification policy information displayed in UI
 // including event type, enabled, creation time, last trigger time
-func constructPolicyWithTriggerTime(policies []*models.NotificationPolicy) ([]*apiModels.NotificationPolicyForUI, error) {
-	res := []*apiModels.NotificationPolicyForUI{}
+func constructPolicyWithTriggerTime(policies []*models.NotificationPolicy) ([]*notificationPolicyForUI, error) {
+	res := []*notificationPolicyForUI{}
 	if policies != nil {
 		for _, policy := range policies {
 			for _, t := range policy.EventTypes {
-				ply := &apiModels.NotificationPolicyForUI{
+				ply := &notificationPolicyForUI{
 					EventType:    t,
 					Enabled:      policy.Enabled,
 					CreationTime: &policy.CreationTime,

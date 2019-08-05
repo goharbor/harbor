@@ -39,7 +39,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
 	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
-	"github.com/goharbor/harbor/src/core/notifier/topic"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/replication"
@@ -344,7 +343,6 @@ func (ra *RepositoryAPI) Delete() {
 	// build and publish image delete event
 	evt := &notifierEvt.Event{}
 	imgDelMetadata := &notifierEvt.ImageDelMetaData{
-		Topic:    topic.DeleteImageTopic,
 		Project:  project,
 		Tags:     tags,
 		RepoName: repoName,

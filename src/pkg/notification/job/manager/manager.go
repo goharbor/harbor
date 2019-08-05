@@ -49,18 +49,6 @@ func (d *DefaultManager) Update(job *models.NotificationJob, props ...string) er
 	return nil
 }
 
-// UpdateJobStatus ...
-func (d *DefaultManager) UpdateJobStatus(jobID int64, status string, statusCondition ...string) error {
-	n, err := notification.UpdateNotificationJobStatus(jobID, status, statusCondition...)
-	if err != nil {
-		return err
-	}
-	if n == 0 {
-		return fmt.Errorf("Update notification job %d status -> %s failed ", jobID, status)
-	}
-	return nil
-}
-
 // ListJobsGroupByEventType lists last triggered jobs group by event type
 func (d *DefaultManager) ListJobsGroupByEventType(policyID int64) ([]*models.NotificationJob, error) {
 	return notification.GetLastTriggerJobsGroupByEventType(policyID)
