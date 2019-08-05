@@ -41,6 +41,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/awsecr"
 	// register the AzureAcr adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/azurecr"
+	// register the Quayio adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/quayio"
 )
 
 var (
