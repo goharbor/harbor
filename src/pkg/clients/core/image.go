@@ -33,3 +33,8 @@ func (c *client) DeleteImage(project, repository, tag string) error {
 	url := c.buildURL(fmt.Sprintf("/api/repositories/%s/%s/tags/%s", project, repository, tag))
 	return c.httpclient.Delete(url)
 }
+
+func (c *client) DeleteImageRepository(project, repository string) error {
+	url := c.buildURL(fmt.Sprintf("/api/repositories/%s/%s", project, repository))
+	return c.httpclient.Delete(url)
+}

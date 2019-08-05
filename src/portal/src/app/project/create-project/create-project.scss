@@ -17,7 +17,7 @@
     .form-block > div {
         padding-left: 135px;
         .input-width {
-            width: 296px;
+            width: 196px;
         }
         .public-tooltip {
             top: -8px;
@@ -29,3 +29,19 @@
     }
 
 }
+
+.form-group {
+    ::ng-deep {
+        clr-select-container {
+            margin-top: 0.3rem;
+        }
+    }
+    select {
+        display: inline;
+    }
+    .checkbox-inline {
+        margin-left: 5px;
+        height: 1rem;
+    }
+}
+

@@ -128,6 +128,7 @@
                                 (onCopyError)="onCpError($event)" inputSize="50" headerTitle=""
                                 defaultValue="{{robotToken}}" class="copy-input"></hbr-copy-input>
             </div>
+            <a [href]="downLoadHref" [download]="downLoadFileName"><button class="btn mr-0" (click)="closeModal()">{{'ROBOT_ACCOUNT.EXPORT_TO_FILE' | translate}}</button></a>
         </section>
     </div>
 </clr-modal>

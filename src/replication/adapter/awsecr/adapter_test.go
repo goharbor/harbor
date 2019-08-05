@@ -1,11 +1,13 @@
 package awsecr
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"testing"
 	"time"
 
@@ -250,4 +252,34 @@ func TestAwsAuthCredential_Modify(t *testing.T) {
 	time.Sleep(time.Second)
 	err = a.Modify(req)
 	assert.Nil(t, err)
+}
+
+var urlForBenchmark = []string{
+	"https://1234.dkr.ecr.test-region.amazonaws.com/v2/",
+	"https://api.ecr.test-region.amazonaws.com",
+	"https://test-region.amazonaws.com",
+}
+
+func compileRegexpEveryTime(url string) (string, error) {
+	rs := regexp.MustCompile(regionPattern).FindStringSubmatch(url)
+	if rs == nil {
+		return "", errors.New("Bad aws url")
+	}
+	return rs[1], nil
+}
+
+func BenchmarkGetRegion(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		for _, url := range urlForBenchmark {
+			parseRegion(url)
+		}
+	}
+}
+
+func BenchmarkCompileRegexpEveryTime(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		for _, url := range urlForBenchmark {
+			compileRegexpEveryTime(url)
+		}
+	}
 }

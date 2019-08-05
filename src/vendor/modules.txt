@@ -9,6 +9,18 @@ github.com/Unknwon/goconfig
 # github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412
 github.com/agl/ed25519
 github.com/agl/ed25519/edwards25519
+# github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
+github.com/aliyun/alibaba-cloud-sdk-go/services/cr
+github.com/aliyun/alibaba-cloud-sdk-go/sdk
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/responses
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/credentials/provider
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/endpoints
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/errors
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/utils
+github.com/aliyun/alibaba-cloud-sdk-go/sdk/auth/signers
 # github.com/astaxie/beego v1.9.0
 github.com/astaxie/beego/cache
 github.com/astaxie/beego/cache/redis
@@ -145,10 +157,14 @@ github.com/gorilla/context
 github.com/gorilla/handlers
 # github.com/gorilla/mux v1.6.2
 github.com/gorilla/mux
+# github.com/graph-gophers/dataloader v5.0.0+incompatible
+github.com/graph-gophers/dataloader
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af
 github.com/jmespath/go-jmespath
 # github.com/json-iterator/go v1.1.6
 github.com/json-iterator/go
+# github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
+github.com/justinas/alice
 # github.com/konsorten/go-windows-terminal-sequences v1.0.2
 github.com/konsorten/go-windows-terminal-sequences
 # github.com/lib/pq v1.1.0
@@ -170,6 +186,9 @@ github.com/opencontainers/go-digest
 # github.com/opencontainers/image-spec v1.0.1
 github.com/opencontainers/image-spec/specs-go/v1
 github.com/opencontainers/image-spec/specs-go
+# github.com/opentracing/opentracing-go v1.1.0
+github.com/opentracing/opentracing-go
+github.com/opentracing/opentracing-go/log
 # github.com/pkg/errors v0.8.1
 github.com/pkg/errors
 # github.com/pmezard/go-difflib v1.0.0
@@ -186,10 +205,10 @@ github.com/spf13/pflag
 # github.com/stretchr/objx v0.1.1
 github.com/stretchr/objx
 # github.com/stretchr/testify v1.3.0
+github.com/stretchr/testify/mock
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
 github.com/stretchr/testify/suite
-github.com/stretchr/testify/mock
 # github.com/theupdateframework/notary v0.6.1
 github.com/theupdateframework/notary/tuf/data
 github.com/theupdateframework/notary
@@ -251,6 +270,8 @@ google.golang.org/appengine/internal/remote_api
 gopkg.in/asn1-ber.v1
 # gopkg.in/inf.v0 v0.9.1
 gopkg.in/inf.v0
+# gopkg.in/ini.v1 v1.42.0
+gopkg.in/ini.v1
 # gopkg.in/ldap.v2 v2.5.0
 gopkg.in/ldap.v2
 # gopkg.in/square/go-jose.v2 v2.3.0

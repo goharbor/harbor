@@ -3,14 +3,15 @@ package api
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
-	"net/http"
-	"strconv"
 )
 
 // RetentionAPI ...
@@ -65,7 +66,7 @@ func (r *RetentionAPI) GetMetadatas() {
             ]
         },
         {
-            "rule_template": "latestK",
+            "rule_template": "latestPushedK",
             "display_text": "the most recently pushed # images",
             "action": "retain",
             "params": [
@@ -77,7 +78,7 @@ func (r *RetentionAPI) GetMetadatas() {
             ]
         },
         {
-            "rule_template": "latestPulledK",
+            "rule_template": "latestPulledN",
             "display_text": "the most recently pulled # images",
             "action": "retain",
             "params": [
@@ -131,7 +132,10 @@ func (r *RetentionAPI) GetMetadatas() {
     ]
 }
 `
-	r.WriteJSONData(data)
+	w := r.Ctx.ResponseWriter
+	w.Header().Set("Content-Type", "application/json; charset=utf-8")
+	w.WriteHeader(http.StatusOK)
+	w.Write([]byte(data))
 }
 
 // GetRetention Get Retention
@@ -166,7 +170,7 @@ func (r *RetentionAPI) CreateRetention() {
 	switch p.Scope.Level {
 	case policy.ScopeLevelProject:
 		if p.Scope.Reference <= 0 {
-			r.SendBadRequestError(fmt.Errorf("Invalid Project id %d", p.Scope.Reference))
+			r.SendBadRequestError(fmt.Errorf("invalid Project id %d", p.Scope.Reference))
 			return
 		}
 
@@ -175,19 +179,22 @@ func (r *RetentionAPI) CreateRetention() {
 			r.SendBadRequestError(err)
 		}
 		if proj == nil {
-			r.SendBadRequestError(fmt.Errorf("Invalid Project id %d", p.Scope.Reference))
+			r.SendBadRequestError(fmt.Errorf("invalid Project id %d", p.Scope.Reference))
 		}
 	default:
 		r.SendBadRequestError(fmt.Errorf("scope %s is not support", p.Scope.Level))
 		return
 	}
-	if err = retentionController.CreateRetention(p); err != nil {
+	id, err := retentionController.CreateRetention(p)
+	if err != nil {
 		r.SendInternalServerError(err)
 		return
 	}
 	if err := r.pm.GetMetadataManager().Add(p.Scope.Reference,
-		map[string]string{"retention_id": strconv.FormatInt(p.Scope.Reference, 10)}); err != nil {
+		map[string]string{"retention_id": strconv.FormatInt(id, 10)}); err != nil {
+		r.SendInternalServerError(err)
 	}
+	r.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
 }
 
 // UpdateRetention Update Retention
@@ -238,10 +245,12 @@ func (r *RetentionAPI) TriggerRetentionExec() {
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
-	if err = retentionController.TriggerRetentionExec(id, retention.ExecutionTriggerManual, d.DryRun); err != nil {
+	eid, err := retentionController.TriggerRetentionExec(id, retention.ExecutionTriggerManual, d.DryRun)
+	if err != nil {
 		r.SendInternalServerError(err)
 		return
 	}
+	r.Redirect(http.StatusCreated, strconv.FormatInt(eid, 10))
 }
 
 // OperateRetentionExec Operate Retention Execution
@@ -307,6 +316,12 @@ func (r *RetentionAPI) ListRetentionExecs() {
 		r.SendInternalServerError(err)
 		return
 	}
+	total, err := retentionController.GetTotalOfRetentionExecs(id)
+	if err != nil {
+		r.SendInternalServerError(err)
+		return
+	}
+	r.SetPaginationHeader(total, query.PageNumber, query.PageSize)
 	r.WriteJSONData(execs)
 }
 
@@ -344,6 +359,12 @@ func (r *RetentionAPI) ListRetentionExecTasks() {
 		r.SendInternalServerError(err)
 		return
 	}
+	total, err := retentionController.GetTotalOfRetentionExecTasks(eid)
+	if err != nil {
+		r.SendInternalServerError(err)
+		return
+	}
+	r.SetPaginationHeader(total, query.PageNumber, query.PageSize)
 	r.WriteJSONData(his)
 }
 

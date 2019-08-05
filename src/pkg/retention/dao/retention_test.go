@@ -23,7 +23,7 @@ func TestMain(m *testing.M) {
 
 func TestPolicy(t *testing.T) {
 	p := &policy.Metadata{
-		Algorithm: "OR",
+		Algorithm: "or",
 		Rules: []rule.Metadata{
 			{
 				ID:       1,
@@ -101,7 +101,7 @@ func TestPolicy(t *testing.T) {
 
 func TestExecution(t *testing.T) {
 	p := &policy.Metadata{
-		Algorithm: "OR",
+		Algorithm: "or",
 		Rules: []rule.Metadata{
 			{
 				ID:       1,
@@ -159,10 +159,8 @@ func TestExecution(t *testing.T) {
 
 	e := &models.RetentionExecution{
 		PolicyID:  policyID,
-		Status:    "Running",
 		DryRun:    false,
 		Trigger:   "manual",
-		Total:     10,
 		StartTime: time.Now(),
 	}
 	id, err := CreateExecution(e)
@@ -187,6 +185,12 @@ func TestTask(t *testing.T) {
 	// create
 	id, err := CreateTask(task)
 	require.Nil(t, err)
+
+	// get
+	tk, err := GetTask(id)
+	require.Nil(t, err)
+	require.Equal(t, id, tk.ID)
+	require.Equal(t, "pending", tk.Status)
 
 	// update
 	task.ID = id

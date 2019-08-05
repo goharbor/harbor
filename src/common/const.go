@@ -55,6 +55,7 @@ const (
 	PostGreSQLSSLMode                = "postgresql_sslmode"
 	SelfRegistration                 = "self_registration"
 	CoreURL                          = "core_url"
+	CoreLocalURL                     = "core_local_url"
 	JobServiceURL                    = "jobservice_url"
 	LDAPURL                          = "ldap_url"
 	LDAPSearchDN                     = "ldap_search_dn"
@@ -142,4 +143,8 @@ const (
 	OIDCLoginPath    = "/c/oidc/login"
 
 	ChartUploadCtxKey = contextKey("chart_upload_event")
+
+	// Quota setting items for project
+	CountPerProject   = "count_per_project"
+	StoragePerProject = "storage_per_project"
 )

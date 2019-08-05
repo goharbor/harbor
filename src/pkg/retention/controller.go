@@ -40,19 +40,25 @@ type APIController interface {
 
 	GetRetention(id int64) (*policy.Metadata, error)
 
-	CreateRetention(p *policy.Metadata) error
+	CreateRetention(p *policy.Metadata) (int64, error)
 
 	UpdateRetention(p *policy.Metadata) error
 
 	DeleteRetention(id int64) error
 
-	TriggerRetentionExec(policyID int64, trigger string, dryRun bool) error
+	TriggerRetentionExec(policyID int64, trigger string, dryRun bool) (int64, error)
 
 	OperateRetentionExec(eid int64, action string) error
 
+	GetRetentionExec(eid int64) (*Execution, error)
+
 	ListRetentionExecs(policyID int64, query *q.Query) ([]*Execution, error)
 
+	GetTotalOfRetentionExecs(policyID int64) (int64, error)
+
 	ListRetentionExecTasks(executionID int64, query *q.Query) ([]*Task, error)
+
+	GetTotalOfRetentionExecTasks(executionID int64) (int64, error)
 
 	GetRetentionExecTaskLog(taskID int64) ([]byte, error)
 }
@@ -83,26 +89,28 @@ func (r *DefaultAPIController) GetRetention(id int64) (*policy.Metadata, error) 
 }
 
 // CreateRetention Create Retention
-func (r *DefaultAPIController) CreateRetention(p *policy.Metadata) error {
+func (r *DefaultAPIController) CreateRetention(p *policy.Metadata) (int64, error) {
 	if p.Trigger.Kind == policy.TriggerKindSchedule {
-		if p.Trigger.Settings != nil {
-			cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
-			if ok {
-				jobid, err := r.scheduler.Schedule(cron.(string), SchedulerCallback, TriggerParam{
-					PolicyID: p.ID,
-					Trigger:  ExecutionTriggerSchedule,
-				})
-				if err != nil {
-					return err
-				}
-				p.Trigger.References[policy.TriggerReferencesJobid] = jobid
+		cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
+		if ok {
+			jobid, err := r.scheduler.Schedule(cron.(string), SchedulerCallback, TriggerParam{
+				PolicyID: p.ID,
+				Trigger:  ExecutionTriggerSchedule,
+			})
+			if err != nil {
+				return 0, err
 			}
+			if p.Trigger.References == nil {
+				p.Trigger.References = map[string]interface{}{}
+			}
+			p.Trigger.References[policy.TriggerReferencesJobid] = jobid
 		}
 	}
-	if _, err := r.manager.CreatePolicy(p); err != nil {
-		return err
+	id, err := r.manager.CreatePolicy(p)
+	if err != nil {
+		return 0, err
 	}
-	return nil
+	return id, nil
 }
 
 // UpdateRetention Update Retention
@@ -127,7 +135,7 @@ func (r *DefaultAPIController) UpdateRetention(p *policy.Metadata) error {
 		case policy.TriggerKindSchedule:
 			if p0.Trigger.Settings["cron"] != p.Trigger.Settings["cron"] {
 				// unschedule old
-				if len(p0.Trigger.References[policy.TriggerReferencesJobid].(string)) > 0 {
+				if len(p0.Trigger.Settings[policy.TriggerSettingsCron].(string)) > 0 {
 					needUn = true
 				}
 				// schedule new
@@ -179,36 +187,25 @@ func (r *DefaultAPIController) DeleteRetention(id int64) error {
 }
 
 // TriggerRetentionExec Trigger Retention Execution
-func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger string, dryRun bool) error {
+func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger string, dryRun bool) (int64, error) {
 	p, err := r.manager.GetPolicy(policyID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	exec := &Execution{
 		PolicyID:  policyID,
 		StartTime: time.Now(),
-		Status:    ExecutionStatusInProgress,
 		Trigger:   trigger,
 		DryRun:    dryRun,
 	}
 	id, err := r.manager.CreateExecution(exec)
-	num, err := r.launcher.Launch(p, id, dryRun)
-	if err != nil {
-		return err
+	if _, err = r.launcher.Launch(p, id, dryRun); err != nil {
+		// clean execution if launch failed
+		_ = r.manager.DeleteExecution(id)
+		return 0, err
 	}
-	if num == 0 {
-		exec := &Execution{
-			ID:      id,
-			EndTime: time.Now(),
-			Status:  ExecutionStatusSucceed,
-		}
-		err = r.manager.UpdateExecution(exec)
-		if err != nil {
-			return err
-		}
-	}
-	return err
+	return id, err
 
 }
 
@@ -218,21 +215,20 @@ func (r *DefaultAPIController) OperateRetentionExec(eid int64, action string) er
 	if err != nil {
 		return err
 	}
-
+	if e == nil {
+		return fmt.Errorf("execution %d not found", eid)
+	}
 	switch action {
 	case "stop":
-		if e.Status != ExecutionStatusInProgress {
-			return fmt.Errorf("cannot abort, current status is %s", e.Status)
-		}
-
-		e.Status = ExecutionStatusStopped
-		e.EndTime = time.Now()
-		// TODO: STOP THE EXECUTION
+		return r.launcher.Stop(eid)
 	default:
 		return fmt.Errorf("not support action %s", action)
 	}
+}
 
-	return r.manager.UpdateExecution(e)
+// GetRetentionExec Get Retention Execution
+func (r *DefaultAPIController) GetRetentionExec(executionID int64) (*Execution, error) {
+	return r.manager.GetExecution(executionID)
 }
 
 // ListRetentionExecs List Retention Executions
@@ -240,14 +236,26 @@ func (r *DefaultAPIController) ListRetentionExecs(policyID int64, query *q.Query
 	return r.manager.ListExecutions(policyID, query)
 }
 
+// GetTotalOfRetentionExecs Count Retention Executions
+func (r *DefaultAPIController) GetTotalOfRetentionExecs(policyID int64) (int64, error) {
+	return r.manager.GetTotalOfRetentionExecs(policyID)
+}
+
 // ListRetentionExecTasks List Retention Execution Histories
 func (r *DefaultAPIController) ListRetentionExecTasks(executionID int64, query *q.Query) ([]*Task, error) {
 	q1 := &q.TaskQuery{
 		ExecutionID: executionID,
-		PageNumber:  query.PageNumber,
-		PageSize:    query.PageSize,
+	}
+	if query != nil {
+		q1.PageSize = query.PageSize
+		q1.PageNumber = query.PageNumber
 	}
 	return r.manager.ListTasks(q1)
+}
+
+// GetTotalOfRetentionExecTasks Count Retention Execution Histories
+func (r *DefaultAPIController) GetTotalOfRetentionExecTasks(executionID int64) (int64, error) {
+	return r.manager.GetTotalOfTasks(executionID)
 }
 
 // GetRetentionExecTaskLog Get Retention Execution Task Log
@@ -261,9 +269,9 @@ func (r *DefaultAPIController) HandleHook(policyID string, event *job.StatusChan
 }
 
 // NewAPIController ...
-func NewAPIController(projectManager project.Manager, repositoryMgr repository.Manager, scheduler scheduler.Scheduler, retentionLauncher Launcher) APIController {
+func NewAPIController(retentionMgr Manager, projectManager project.Manager, repositoryMgr repository.Manager, scheduler scheduler.Scheduler, retentionLauncher Launcher) APIController {
 	return &DefaultAPIController{
-		manager:        NewManager(),
+		manager:        retentionMgr,
 		launcher:       retentionLauncher,
 		projectManager: projectManager,
 		repositoryMgr:  repositoryMgr,

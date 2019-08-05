@@ -69,11 +69,12 @@ export abstract class ProjectService {
     page?: number,
     pageSize?: number
   ): Observable<HttpResponse<Project[]>>;
-  abstract createProject(name: string, metadata: any): Observable<any>;
+  abstract createProject(name: string, metadata: any, countLimit: number, storageLimit: number): Observable<any>;
   abstract toggleProjectPublic(projectId: number, isPublic: string): Observable<any>;
   abstract deleteProject(projectId: number): Observable<any>;
   abstract checkProjectExists(projectName: string): Observable<any>;
   abstract checkProjectMember(projectId: number): Observable<any>;
+  abstract getProjectSummary(projectId: number): Observable<any>;
 }
 
 /**
@@ -149,12 +150,14 @@ export class ProjectDefaultService extends ProjectService {
                catchError(error => observableThrowError(error)), );
   }
 
-  public createProject(name: string, metadata: any): Observable<any> {
+  public createProject(name: string, metadata: any, countLimit: number, storageLimit: number): Observable<any> {
     return this.http
                .post(`/api/projects`,
                 JSON.stringify({'project_name': name, 'metadata': {
                   public: metadata.public ? 'true' : 'false',
-                }})
+                },
+                count_limit: countLimit, storage_limit: storageLimit
+              })
                 , HTTP_JSON_OPTIONS).pipe(
                catchError(error => observableThrowError(error)), );
   }
@@ -180,6 +183,11 @@ export class ProjectDefaultService extends ProjectService {
   public checkProjectMember(projectId: number): Observable<any> {
     return this.http
                .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS).pipe(
+               catchError(error => observableThrowError(error)), );
+  }
+  public getProjectSummary(projectId: number): Observable<any> {
+    return this.http
+               .get(`/api/projects/${projectId}/summary`, HTTP_GET_OPTIONS).pipe(
                catchError(error => observableThrowError(error)), );
   }
 }

@@ -67,6 +67,7 @@ def parse_yaml_config(config_file_path):
         'registry_url': "http://registry:5000",
         'registry_controller_url': "http://registryctl:8080",
         'core_url': "http://core:8080",
+        'core_local_url': "http://127.0.0.1:8080",
         'token_service_url': "http://core:8080/service/token",
         'jobservice_url': 'http://jobservice:8080',
         'clair_url': 'http://clair:6060',

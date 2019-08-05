@@ -33,6 +33,52 @@
                         </a>
                     </div>
                 </div>
+
+                    <div class="form-group" *ngIf="isSystemAdmin">
+                        <label for="create_project_count-limit" class="required col-md-3 form-group-label-override">{{'PROJECT.COUNT_QUOTA' | translate}}</label>
+                        <label for="create_project_count-limit" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left"
+                        [class.invalid]="projectCountLimit.invalid && (projectCountLimit.dirty || projectCountLimit.touched)" >
+                            <input type="text" id="create_project_count-limit"  [(ngModel)]="countLimit"
+                            name="create_project_count-limit" class="input-width"
+                            pattern="(^-1$)|(^([1-9]+)([0-9]+)*$)"
+                            required
+                            #projectCountLimit="ngModel"
+                            autocomplete="off" >
+                            <span class="tooltip-content">
+                            {{ 'PROJECT.COUNT_QUOTA_TIP' | translate }}
+                            </span>
+                        </label>
+                        <div class="checkbox-inline">
+                            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-md tooltip-top-left public-tooltip">
+                                <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                                <span class="tooltip-content inline-help-public">{{'PROJECT.QUOTA_UNLIMIT_TIP' | translate }}</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="form-group" *ngIf="isSystemAdmin">
+                        <label for="create_project_storage-limit" class="required col-md-3 form-group-label-override">{{'PROJECT.STORAGE_QUOTA' | translate}}</label>
+                        <label for="create_project_storage-limit" aria-haspopup="true" role="tooltip"  class="tooltip-quota-storage tooltip tooltip-validation tooltip-md tooltip-top-left"
+                        [class.invalid]="(projectStorageLimit.invalid && (projectStorageLimit.dirty || projectStorageLimit.touched))||projectStorageLimit.errors" >
+                            <input type="text" id="create_project_storage-limit"  [(ngModel)]="storageLimit"
+                            name="create_project_storage-limit" size="255"  class="input-width"
+                            #projectStorageLimit="ngModel"
+                            autocomplete="off" >
+                            <span class="tooltip-content">
+                            {{ 'PROJECT.STORAGE_QUOTA_TIP' | translate }}
+                            </span>
+                        </label>
+                        <select clrSelect id="create_project_storage-limit-unit" name="create_project_storage-limit-unit" [(ngModel)]="storageLimitUnit">
+                            <ng-template ngFor let-quotaUnit [ngForOf]="quotaUnits" let-i="index">
+                                    <option  *ngIf="i>1"[value]="quotaUnit.UNIT">{{ quotaUnit.UNIT }}</option>
+                            </ng-template>
+                        </select>
+                        <div class="checkbox-inline">
+                            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-md tooltip-top-left public-tooltip">
+                                <clr-icon shape="info-circle" size="24"></clr-icon>
+                                <span class="tooltip-content inline-help-public">{{'PROJECT.QUOTA_UNLIMIT_TIP' | translate }}</span>
+                            </a>
+                        </div>
+                    </div>
             </section>
         </form>
     </div>

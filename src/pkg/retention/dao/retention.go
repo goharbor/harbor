@@ -3,10 +3,12 @@ package dao
 import (
 	"errors"
 	"fmt"
-
+	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
+	jobmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
+	"strconv"
 )
 
 // CreatePolicy Create Policy
@@ -85,7 +87,69 @@ func GetExecution(id int64) (*models.RetentionExecution, error) {
 	if err := o.Read(e); err != nil {
 		return nil, err
 	}
+	if err := fillStatus(e); err != nil {
+		return nil, err
+	}
 	return e, nil
+}
+
+// fillStatus the priority is InProgress Stopped Failed Succeed
+func fillStatus(exec *models.RetentionExecution) error {
+	o := dao.GetOrmer()
+	var r orm.Params
+	if _, err := o.Raw("select status, count(*) num from retention_task where execution_id = ? group by status", exec.ID).
+		RowsToMap(&r, "status", "num"); err != nil {
+		return err
+	}
+	var (
+		total, running, succeed, failed, stopped int64
+	)
+	for k, s := range r {
+		v, err := strconv.ParseInt(s.(string), 10, 64)
+		if err != nil {
+			return err
+		}
+		total += v
+		switch k {
+		case jobmodels.JobScheduled:
+			running += v
+		case jobmodels.JobPending:
+			running += v
+		case jobmodels.JobRunning:
+			running += v
+		case jobmodels.JobRetrying:
+			running += v
+		case jobmodels.JobFinished:
+			succeed += v
+		case jobmodels.JobCanceled:
+			stopped += v
+		case jobmodels.JobStopped:
+			stopped += v
+		case jobmodels.JobError:
+			failed += v
+		}
+	}
+	if total == 0 {
+		exec.Status = models.ExecutionStatusSucceed
+		exec.EndTime = exec.StartTime
+		return nil
+	}
+	if running > 0 {
+		exec.Status = models.ExecutionStatusInProgress
+	} else if stopped > 0 {
+		exec.Status = models.ExecutionStatusStopped
+	} else if failed > 0 {
+		exec.Status = models.ExecutionStatusFailed
+	} else {
+		exec.Status = models.ExecutionStatusSucceed
+	}
+	if exec.Status != models.ExecutionStatusInProgress {
+		if err := o.Raw("select max(end_time) from retention_task where execution_id = ?", exec.ID).
+			QueryRow(&exec.EndTime); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // ListExecutions List Executions
@@ -94,6 +158,7 @@ func ListExecutions(policyID int64, query *q.Query) ([]*models.RetentionExecutio
 	qs := o.QueryTable(new(models.RetentionExecution))
 
 	qs = qs.Filter("policy_id", policyID)
+	qs = qs.OrderBy("-id")
 	if query != nil {
 		qs = qs.Limit(query.PageSize, (query.PageNumber-1)*query.PageSize)
 	}
@@ -102,7 +167,21 @@ func ListExecutions(policyID int64, query *q.Query) ([]*models.RetentionExecutio
 	if err != nil {
 		return nil, err
 	}
+	for _, e := range execs {
+		if err := fillStatus(e); err != nil {
+			return nil, err
+		}
+	}
 	return execs, nil
+}
+
+// GetTotalOfRetentionExecs Count Executions
+func GetTotalOfRetentionExecs(policyID int64) (int64, error) {
+	o := dao.GetOrmer()
+	qs := o.QueryTable(new(models.RetentionExecution))
+
+	qs = qs.Filter("policy_id", policyID)
+	return qs.Count()
 }
 
 /*
@@ -157,6 +236,17 @@ func DeleteTask(id int64) error {
 	return err
 }
 
+// GetTask get the task record specified by ID in database
+func GetTask(id int64) (*models.RetentionTask, error) {
+	task := &models.RetentionTask{
+		ID: id,
+	}
+	if err := dao.GetOrmer().Read(task); err != nil {
+		return nil, err
+	}
+	return task, nil
+}
+
 // ListTask lists the tasks according to the query
 func ListTask(query ...*q.TaskQuery) ([]*models.RetentionTask, error) {
 	qs := dao.GetOrmer().QueryTable(&models.RetentionTask{})
@@ -178,4 +268,11 @@ func ListTask(query ...*q.TaskQuery) ([]*models.RetentionTask, error) {
 	tasks := []*models.RetentionTask{}
 	_, err := qs.All(&tasks)
 	return tasks, err
+}
+
+// GetTotalOfTasks Count tasks
+func GetTotalOfTasks(executionID int64) (int64, error) {
+	qs := dao.GetOrmer().QueryTable(&models.RetentionTask{})
+	qs = qs.Filter("ExecutionID", executionID)
+	return qs.Count()
 }

@@ -20,15 +20,20 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/retention/dep"
-
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/olekukonko/tablewriter"
 	"github.com/pkg/errors"
+)
+
+const (
+	actionMarkRetain   = "RETAIN"
+	actionMarkDeletion = "DEL"
+	actionMarkError    = "ERR"
 )
 
 // Job of running retention process
@@ -45,20 +50,14 @@ func (pj *Job) ShouldRetry() bool {
 }
 
 // Validate the parameters
-func (pj *Job) Validate(params job.Parameters) error {
-	if _, err := getParamRepo(params); err != nil {
-		return err
+func (pj *Job) Validate(params job.Parameters) (err error) {
+	if _, err = getParamRepo(params); err == nil {
+		if _, err = getParamMeta(params); err == nil {
+			_, err = getParamDryRun(params)
+		}
 	}
 
-	if _, err := getParamMeta(params); err != nil {
-		return err
-	}
-
-	if _, err := getParamDryRun(params); err != nil {
-		return err
-	}
-
-	return nil
+	return
 }
 
 // Run the job
@@ -73,7 +72,7 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 
 	// Log stage: start
 	repoPath := fmt.Sprintf("%s/%s", repo.Namespace, repo.Name)
-	myLogger.Infof("Run retention process.\n Repository: %s \n Rule Algorithm: %s", repoPath, liteMeta.Algorithm)
+	myLogger.Infof("Run retention process.\n Repository: %s \n Rule Algorithm: %s \n Dry Run: %v", repoPath, liteMeta.Algorithm, isDryRun)
 
 	// Stop check point 1:
 	if isStopped(ctx) {
@@ -126,13 +125,13 @@ func logResults(logger logger.Interface, all []*res.Candidate, results []*res.Re
 	op := func(art *res.Candidate) string {
 		if e, exists := hash[art.Hash()]; exists {
 			if e != nil {
-				return "Err"
+				return actionMarkError
 			}
 
-			return "X"
+			return actionMarkDeletion
 		}
 
-		return "√"
+		return actionMarkRetain
 	}
 
 	var buf bytes.Buffer
@@ -159,7 +158,7 @@ func logResults(logger logger.Interface, all []*res.Candidate, results []*res.Re
 	table.AppendBulk(data)
 	table.Render()
 
-	logger.Infof("%s", buf.String())
+	logger.Infof("\n%s", buf.String())
 
 	// log all the concrete errors if have
 	for _, r := range results {
@@ -215,9 +214,14 @@ func getParamRepo(params job.Parameters) (*res.Repository, error) {
 		return nil, errors.Errorf("missing parameter: %s", ParamRepo)
 	}
 
-	repo, ok := v.(*res.Repository)
+	repoJSON, ok := v.(string)
 	if !ok {
 		return nil, errors.Errorf("invalid parameter: %s", ParamRepo)
+	}
+
+	repo := &res.Repository{}
+	if err := repo.FromJSON(repoJSON); err != nil {
+		return nil, errors.Wrap(err, "parse repository from JSON")
 	}
 
 	return repo, nil
@@ -229,9 +233,14 @@ func getParamMeta(params job.Parameters) (*lwp.Metadata, error) {
 		return nil, errors.Errorf("missing parameter: %s", ParamMeta)
 	}
 
-	meta, ok := v.(*lwp.Metadata)
+	metaJSON, ok := v.(string)
 	if !ok {
 		return nil, errors.Errorf("invalid parameter: %s", ParamMeta)
+	}
+
+	meta := &lwp.Metadata{}
+	if err := meta.FromJSON(metaJSON); err != nil {
+		return nil, errors.Wrap(err, "parse retention policy from JSON")
 	}
 
 	return meta, nil

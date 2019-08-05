@@ -2,6 +2,8 @@ module github.com/goharbor/harbor/src
 
 go 1.12
 
+replace github.com/goharbor/harbor => ../
+
 require (
 	github.com/Knetic/govaluate v3.0.0+incompatible // indirect
 	github.com/Masterminds/semver v1.4.2
@@ -9,6 +11,7 @@ require (
 	github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d // indirect
 	github.com/Unknwon/goconfig v0.0.0-20160216183935-5f601ca6ef4d // indirect
 	github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 // indirect
+	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
 	github.com/astaxie/beego v1.9.0
 	github.com/aws/aws-sdk-go v1.19.47
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
@@ -44,8 +47,10 @@ require (
 	github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf // indirect
 	github.com/gorilla/handlers v1.3.0
 	github.com/gorilla/mux v1.6.2
+	github.com/graph-gophers/dataloader v5.0.0+incompatible
 	github.com/hailocab/go-hostpool v0.0.0-20160125115350-e80d13ce29ed // indirect
 	github.com/jinzhu/gorm v1.9.8 // indirect
+	github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
 	github.com/kardianos/osext v0.0.0-20190222173326-2bc1f35cddc0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/lib/pq v1.1.0
@@ -54,12 +59,12 @@ require (
 	github.com/olekukonko/tablewriter v0.0.1
 	github.com/opencontainers/go-digest v1.0.0-rc0
 	github.com/opencontainers/image-spec v1.0.1 // indirect
+	github.com/opentracing/opentracing-go v1.1.0 // indirect
 	github.com/pkg/errors v0.8.1
 	github.com/pquerna/cachecontrol v0.0.0-20180517163645-1555304b9b35 // indirect
 	github.com/prometheus/client_golang v0.9.4 // indirect
 	github.com/robfig/cron v1.0.0
 	github.com/sirupsen/logrus v1.4.1 // indirect
-	github.com/smartystreets/goconvey v0.0.0-20190330032615-68dc04aab96a // indirect
 	github.com/spf13/viper v1.4.0 // indirect
 	github.com/stretchr/testify v1.3.0
 	github.com/theupdateframework/notary v0.6.1

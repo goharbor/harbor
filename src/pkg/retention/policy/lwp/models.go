@@ -15,7 +15,12 @@
 // Package lwp = lightweight policy
 package lwp
 
-import "github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+import (
+	"encoding/json"
+
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/pkg/errors"
+)
 
 // Metadata contains partial metadata of policy
 // It's a lightweight version of policy.Metadata
@@ -26,4 +31,23 @@ type Metadata struct {
 
 	// Rule collection
 	Rules []*rule.Metadata `json:"rules"`
+}
+
+// ToJSON marshals metadata to JSON string
+func (m *Metadata) ToJSON() (string, error) {
+	jsonData, err := json.Marshal(m)
+	if err != nil {
+		return "", errors.Wrap(err, "marshal repository")
+	}
+
+	return string(jsonData), nil
+}
+
+// FromJSON constructs the metadata from json data
+func (m *Metadata) FromJSON(jsonData string) error {
+	if len(jsonData) == 0 {
+		return errors.New("empty json data to construct repository")
+	}
+
+	return json.Unmarshal([]byte(jsonData), m)
 }

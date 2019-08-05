@@ -154,6 +154,45 @@ func (n *NotificationHandler) Post() {
 					log.Errorf("Error happens when increasing pull count: %v", repository)
 				}
 			}()
+
+			// update the artifact pull time, and ignore the events without tag.
+			if tag != "" {
+				go func() {
+					artifactQuery := &models.ArtifactQuery{
+						PID:  pro.ProjectID,
+						Repo: repository,
+					}
+
+					// handle pull by tag or digest
+					pullByDigest := utils.IsDigest(tag)
+					if pullByDigest {
+						artifactQuery.Digest = tag
+					} else {
+						artifactQuery.Tag = tag
+					}
+
+					afs, err := dao.ListArtifacts(artifactQuery)
+					if err != nil {
+						log.Errorf("Error occurred when to get artifact %v", err)
+						return
+					}
+					if len(afs) > 0 {
+						log.Warningf("get multiple artifact records when to update pull time with query :%d-%s-%s, "+
+							"all of them will be updated.", artifactQuery.PID, artifactQuery.Repo, artifactQuery.Tag)
+					}
+
+					// ToDo: figure out how to do batch update in Pg as beego orm doesn't support update multiple like insert does.
+					for _, af := range afs {
+						log.Debugf("Update the artifact: %s pull time.", af.Repo)
+						af.PullTime = time.Now()
+						if err := dao.UpdateArtifactPullTime(af); err != nil {
+							log.Errorf("Error happens when updating the pull time of artifact: %d-%s, with err: %v",
+								artifactQuery.PID, artifactQuery.Repo, err)
+						}
+					}
+				}()
+			}
+
 		}
 	}
 }

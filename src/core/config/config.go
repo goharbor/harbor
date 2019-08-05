@@ -280,7 +280,11 @@ func InternalJobServiceURL() string {
 // InternalCoreURL returns the local harbor core url
 func InternalCoreURL() string {
 	return strings.TrimSuffix(cfgMgr.Get(common.CoreURL).GetString(), "/")
+}
 
+// LocalCoreURL returns the local harbor core url
+func LocalCoreURL() string {
+	return cfgMgr.Get(common.CoreLocalURL).GetString()
 }
 
 // InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
@@ -508,5 +512,16 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 		ClientSecret: cfgMgr.Get(common.OIDCClientSecret).GetString(),
 		RedirectURL:  extEndpoint + common.OIDCCallbackPath,
 		Scope:        scope,
+	}, nil
+}
+
+// QuotaSetting returns the setting of quota.
+func QuotaSetting() (*models.QuotaSetting, error) {
+	if err := cfgMgr.Load(); err != nil {
+		return nil, err
+	}
+	return &models.QuotaSetting{
+		CountPerProject:   cfgMgr.Get(common.CountPerProject).GetInt64(),
+		StoragePerProject: cfgMgr.Get(common.StoragePerProject).GetInt64(),
 	}, nil
 }

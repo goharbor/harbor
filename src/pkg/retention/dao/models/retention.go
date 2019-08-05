@@ -6,12 +6,19 @@ import (
 	"github.com/astaxie/beego/orm"
 )
 
+// const definitions
+const (
+	ExecutionStatusInProgress string = "InProgress"
+	ExecutionStatusSucceed    string = "Succeed"
+	ExecutionStatusFailed     string = "Failed"
+	ExecutionStatusStopped    string = "Stopped"
+)
+
 func init() {
 	orm.RegisterModel(
 		new(RetentionPolicy),
 		new(RetentionExecution),
 		new(RetentionTask),
-		new(RetentionScheduleJob),
 	)
 }
 
@@ -32,34 +39,21 @@ type RetentionPolicy struct {
 type RetentionExecution struct {
 	ID       int64 `orm:"pk;auto;column(id)" json:"id"`
 	PolicyID int64 `orm:"column(policy_id)"`
-	Status   string
 	DryRun   bool
 	// manual, scheduled
-	Trigger    string
-	Total      int
-	Succeed    int
-	Failed     int
-	InProgress int
-	Stopped    int
-	StartTime  time.Time
-	EndTime    time.Time
+	Trigger   string
+	StartTime time.Time
+	EndTime   time.Time `orm:"-"`
+	Status    string    `orm:"-"`
 }
 
 // RetentionTask ...
 type RetentionTask struct {
 	ID          int64     `orm:"pk;auto;column(id)"`
 	ExecutionID int64     `orm:"column(execution_id)"`
+	Repository  string    `orm:"column(repository)"`
+	JobID       string    `orm:"column(job_id)"`
 	Status      string    `orm:"column(status)"`
 	StartTime   time.Time `orm:"column(start_time)"`
 	EndTime     time.Time `orm:"column(end_time)"`
-}
-
-// RetentionScheduleJob Retention Schedule Job
-type RetentionScheduleJob struct {
-	ID         int64 `orm:"pk;auto;column(id)" json:"id"`
-	Status     string
-	PolicyID   int64 `orm:"column(policy_id)"`
-	JobID      int64 `orm:"column(job_id)"`
-	CreateTime time.Time
-	UpdateTime time.Time
 }

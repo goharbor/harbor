@@ -23,6 +23,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/scheduler"
+
 	"github.com/goharbor/harbor/src/jobservice/api"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -239,12 +241,13 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			// Only for debugging and testing purpose
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
-			job.ImageScanJob:         (*scan.ClairJob)(nil),
-			job.ImageScanAllJob:      (*scan.All)(nil),
-			job.ImageGC:              (*gc.GarbageCollector)(nil),
-			job.Replication:          (*replication.Replication)(nil),
-			job.ReplicationScheduler: (*replication.Scheduler)(nil),
-			job.Retention:            (*retention.Job)(nil),
+			job.ImageScanJob:           (*scan.ClairJob)(nil),
+			job.ImageScanAllJob:        (*scan.All)(nil),
+			job.ImageGC:                (*gc.GarbageCollector)(nil),
+			job.Replication:            (*replication.Replication)(nil),
+			job.ReplicationScheduler:   (*replication.Scheduler)(nil),
+			job.Retention:              (*retention.Job)(nil),
+			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),
 		}); err != nil {
 		// exit
 		return nil, err
@@ -260,9 +263,8 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 // Get a redis connection pool
 func (bs *Bootstrap) getRedisPool(redisURL string) *redis.Pool {
 	return &redis.Pool{
-		MaxActive: 6,
-		MaxIdle:   6,
-		Wait:      true,
+		MaxIdle: 6,
+		Wait:    true,
 		Dial: func() (redis.Conn, error) {
 			return redis.DialURL(
 				redisURL,

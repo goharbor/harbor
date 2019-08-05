@@ -37,12 +37,14 @@ type Client interface {
 type ImageClient interface {
 	ListAllImages(project, repository string) ([]*models.TagResp, error)
 	DeleteImage(project, repository, tag string) error
+	DeleteImageRepository(project, repository string) error
 }
 
 // ChartClient defines the methods that a chart client should implement
 type ChartClient interface {
 	ListAllCharts(project, repository string) ([]*chartserver.ChartVersion, error)
 	DeleteChart(project, repository, version string) error
+	DeleteChartRepository(project, repository string) error
 }
 
 // New returns an instance of the client which is a default implement for Client

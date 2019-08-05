@@ -1,5 +1,5 @@
 
-import {debounceTime} from 'rxjs/operators';
+import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -19,9 +19,12 @@ import {
   Output,
   ViewChild,
   OnInit,
-  OnDestroy
+  OnDestroy,
+  Input,
+  OnChanges,
+  SimpleChanges
 } from "@angular/core";
-import { NgForm } from "@angular/forms";
+import { NgForm, Validators, AbstractControl } from "@angular/forms";
 
 import { Subject } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
@@ -30,24 +33,29 @@ import { MessageHandlerService } from "../../shared/message-handler/message-hand
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
 
 import { Project } from "../project";
-import { ProjectService } from "@harbor/ui";
+import { ProjectService, QuotaUnits, QuotaHardInterface, QuotaUnlimited, getByte
+  , GetIntegerAndUnit, clone, StorageMultipleConstant, validateLimit} from "@harbor/ui";
 import { errorHandler } from '@angular/platform-browser/src/browser';
-
-
 
 @Component({
   selector: "create-project",
   templateUrl: "create-project.component.html",
   styleUrls: ["create-project.scss"]
 })
-export class CreateProjectComponent implements OnInit, OnDestroy {
+export class CreateProjectComponent implements OnInit, OnChanges, OnDestroy {
 
   projectForm: NgForm;
 
   @ViewChild("projectForm")
   currentForm: NgForm;
-
+  quotaUnits = QuotaUnits;
   project: Project = new Project();
+  countLimit: number;
+  storageLimit: number;
+  storageLimitUnit: string = QuotaUnits[3].UNIT;
+  storageDefaultLimit: number;
+  storageDefaultLimitUnit: string;
+  countDefaultLimit: number;
   initVal: Project = new Project();
 
   createProjectOpened: boolean;
@@ -64,6 +72,8 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
   proNameChecker: Subject<string> = new Subject<string>();
 
   @Output() create = new EventEmitter<boolean>();
+  @Input() quotaObj: QuotaHardInterface;
+  @Input() isSystemAdmin: boolean;
   @ViewChild(InlineAlertComponent)
   inlineAlert: InlineAlertComponent;
 
@@ -97,6 +107,35 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
       });
   }
 
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes && changes["quotaObj"] && changes["quotaObj"].currentValue) {
+      this.countLimit = this.quotaObj.count_per_project;
+      this.storageLimit = GetIntegerAndUnit(this.quotaObj.storage_per_project, clone(QuotaUnits), 0, clone(QuotaUnits)).partNumberHard;
+      this.storageLimitUnit = this.storageLimit === QuotaUnlimited ? QuotaUnits[3].UNIT
+      : GetIntegerAndUnit(this.quotaObj.storage_per_project, clone(QuotaUnits), 0, clone(QuotaUnits)).partCharacterHard;
+
+      this.countDefaultLimit = this.countLimit;
+      this.storageDefaultLimit = this.storageLimit;
+      this.storageDefaultLimitUnit = this.storageLimitUnit;
+      if (this.isSystemAdmin) {
+        this.currentForm.form.controls['create_project_storage-limit'].setValidators(
+          [
+          Validators.required,
+          Validators.pattern('(^-1$)|(^([1-9]+)([0-9]+)*$)'),
+          validateLimit(this.currentForm.form.controls['create_project_storage-limit-unit'])
+      ]);
+      }
+      this.currentForm.form.valueChanges
+            .pipe(distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)))
+            .subscribe((data) => {
+              ['create_project_storage-limit', 'create_project_storage-limit-unit'].forEach(fieldName => {
+                if (this.currentForm.form.get(fieldName) && this.currentForm.form.get(fieldName).value !== null) {
+                  this.currentForm.form.get(fieldName).updateValueAndValidity();
+                }
+              });
+            });
+    }
+}
   ngOnDestroy(): void {
     this.proNameChecker.unsubscribe();
   }
@@ -105,10 +144,10 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
     if (this.isSubmitOnGoing) {
       return ;
     }
-
     this.isSubmitOnGoing = true;
+    const storageByte = +this.storageLimit === QuotaUnlimited ? this.storageLimit : getByte(+this.storageLimit, this.storageLimitUnit);
     this.projectService
-      .createProject(this.project.name, this.project.metadata)
+      .createProject(this.project.name, this.project.metadata, +this.countLimit, +storageByte)
       .subscribe(
       status => {
         this.isSubmitOnGoing = false;
@@ -127,7 +166,6 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
       this.createProjectOpened = false;
   }
 
-
   newProject() {
     this.project = new Project();
     this.hasChanged = false;
@@ -135,6 +173,10 @@ export class CreateProjectComponent implements OnInit, OnDestroy {
 
     this.createProjectOpened = true;
     this.inlineAlert.close();
+
+    this.countLimit = this.countDefaultLimit ;
+    this.storageLimit = this.storageDefaultLimit;
+    this.storageLimitUnit = this.storageDefaultLimitUnit;
   }
 
   public get isValid(): boolean {
