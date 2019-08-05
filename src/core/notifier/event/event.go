@@ -24,7 +24,6 @@ type Metadata interface {
 
 // ImageDelMetaData defines images deleting related event data
 type ImageDelMetaData struct {
-	Topic    string
 	Project  *models.Project
 	Tags     []string
 	OccurAt  time.Time
@@ -52,7 +51,6 @@ func (i *ImageDelMetaData) Resolve(evt *Event) error {
 
 // ImagePushMetaData defines images pushing related event data
 type ImagePushMetaData struct {
-	Topic    string
 	Project  *models.Project
 	Tag      string
 	Digest   string
@@ -84,7 +82,6 @@ func (i *ImagePushMetaData) Resolve(evt *Event) error {
 
 // ImagePullMetaData defines images pulling related event data
 type ImagePullMetaData struct {
-	Topic    string
 	Project  *models.Project
 	Tag      string
 	Digest   string
@@ -116,7 +113,6 @@ func (i *ImagePullMetaData) Resolve(evt *Event) error {
 
 // HookMetaData defines hook notification related event data
 type HookMetaData struct {
-	Topic     string
 	PolicyID  int64
 	EventType string
 	Target    *models.EventTarget
@@ -132,7 +128,7 @@ func (h *HookMetaData) Resolve(evt *Event) error {
 		Payload:   h.Payload,
 	}
 
-	evt.Topic = model.WebhookTopic
+	evt.Topic = h.Target.Type
 	evt.Data = data
 	return nil
 }

@@ -102,7 +102,6 @@ func sendHookWithPolicies(policies []*models.NotificationPolicy, payload *notify
 		for _, target := range targets {
 			evt := &event.Event{}
 			hookMetadata := &event.HookMetaData{
-				Topic:     target.Type,
 				EventType: eventType,
 				PolicyID:  ply.ID,
 				Payload:   payload,
