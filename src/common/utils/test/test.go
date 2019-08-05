@@ -142,3 +142,33 @@ func TraceCfgMap(cfgs map[string]interface{}) {
 		fmt.Printf("%v=%v\n", k, cfgs[k])
 	}
 }
+
+// CheckSetsEqual - check int set if they are equals
+func CheckSetsEqual(setA, setB []int) bool {
+	if len(setA) != len(setB) {
+		return false
+	}
+	type void struct{}
+	var exist void
+	setAll := make(map[int]void)
+	for _, r := range setA {
+		setAll[r] = exist
+	}
+	for _, r := range setB {
+		if _, ok := setAll[r]; !ok {
+			return false
+		}
+	}
+
+	setAll = make(map[int]void)
+	for _, r := range setB {
+		setAll[r] = exist
+	}
+	for _, r := range setA {
+		if _, ok := setAll[r]; !ok {
+			return false
+		}
+	}
+	return true
+
+}
