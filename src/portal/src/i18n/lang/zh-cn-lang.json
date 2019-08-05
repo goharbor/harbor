@@ -1091,7 +1091,7 @@
         "ADD_SYSTEM": "添加系统白名单"
     },
     "TAG_RETENTION": {
-        "TAG_RETENTION": "Tag保留策略",
+        "TAG_RETENTION": "Tag保留",
         "RETENTION_RULES": "保留规则",
         "RULE_NAME_1": "最近{{number}}天的镜像",
         "RULE_NAME_2": "最近活跃的{{number}}个镜像",

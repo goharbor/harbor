@@ -1093,7 +1093,7 @@
         "ADD_SYSTEM": "ADD SYSTEM"
     },
     "TAG_RETENTION": {
-        "TAG_RETENTION": "Tag Retention Policy",
+        "TAG_RETENTION": "Tag Retention",
         "RETENTION_RULES": "Retention rules",
         "RULE_NAME_1": " the images from the last {{number}} days",
         "RULE_NAME_2": " the most recent active {{number}} images",
