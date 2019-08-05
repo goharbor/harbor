@@ -61,7 +61,7 @@ func (wj *WebhookJob) init(ctx job.Context, params map[string]interface{}) error
 	wj.ctx = ctx
 
 	// default insecureSkipVerify is true
-	insecureSkipVerify := true
+	insecureSkipVerify := false
 	if v, ok := params["skip_cert_verify"]; ok {
 		insecureSkipVerify = v.(bool)
 	}
