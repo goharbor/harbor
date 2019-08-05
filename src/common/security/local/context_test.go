@@ -408,3 +408,27 @@ func TestSecurityContext_GetMyProjects(t *testing.T) {
 		})
 	}
 }
+
+func Test_mergeRoles(t *testing.T) {
+	type args struct {
+		rolesA []int
+		rolesB []int
+	}
+	tests := []struct {
+		name string
+		args args
+		want []int
+	}{
+		{"normal", args{[]int{3, 4}, []int{1, 2, 3, 4}}, []int{1, 2, 3, 4}},
+		{"empty", args{[]int{}, []int{}}, []int{}},
+		{"left empty", args{[]int{}, []int{1, 2, 3, 4}}, []int{1, 2, 3, 4}},
+		{"right empty", args{[]int{1, 2, 3, 4}, []int{}}, []int{1, 2, 3, 4}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := mergeRoles(tt.args.rolesA, tt.args.rolesB); !test.CheckSetsEqual(got, tt.want) {
+				t.Errorf("mergeRoles() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
