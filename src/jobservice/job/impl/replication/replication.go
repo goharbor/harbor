@@ -44,6 +44,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/aliacr"
 	// register the Jfrog Artifactory adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/jfrog"
+	// register the Quay.io adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/quayio"
 	// register the Helm Hub adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/helmhub"
 )

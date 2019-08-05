@@ -31,6 +31,7 @@ const (
 	RegistryTypeAzureAcr         RegistryType = "azure-acr"
 	RegistryTypeAliAcr           RegistryType = "ali-acr"
 	RegistryTypeJfrogArtifactory RegistryType = "jfrog-artifactory"
+	RegistryTypeQuayio           RegistryType = "quay-io"
 
 	RegistryTypeHelmHub RegistryType = "helm-hub"
 
