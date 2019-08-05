@@ -178,7 +178,7 @@ func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []inte
 
 	if len(q.ProjectIDs) > 0 {
 		sql += fmt.Sprintf(`and r.project_id in ( %s ) `,
-			paramPlaceholder(len(q.ProjectIDs)))
+			ParamPlaceholderForIn(len(q.ProjectIDs)))
 		params = append(params, q.ProjectIDs)
 	}
 
