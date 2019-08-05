@@ -88,14 +88,37 @@ func (r *RetentionAPI) GetMetadatas() {
                     "required": true
                 }
             ]
-	},
-	{
+        },
+		{
             "rule_template": "nothing",
             "display_text": "none",
             "action": "retain",
+            "params": []
+        },
+        {
+            "rule_template": "always",
+            "display_text": "always",
+            "action": "retain",
             "params": [
+                {
+                    "type": "int",
+                    "unit": "COUNT",
+                    "required": true
+                }
             ]
         },
+		{
+			"rule_template": "dayspl",
+			"display_text": "pulled within the last # days",
+			"action": "retain",
+			"params": [
+				{
+					"type": "int",
+					"unit": "DAYS",
+					"required": true
+				}
+			]
+		},
 		{
 			"rule_template": "daysps",
 			"display_text": "pushed within the last # days",

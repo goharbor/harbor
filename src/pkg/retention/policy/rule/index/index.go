@@ -15,17 +15,18 @@
 package index
 
 import (
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/nothing"
 	"sync"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/always"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/dayspl"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/daysps"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/lastx"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestpl"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/nothing"
 	"github.com/pkg/errors"
 )
 
@@ -133,6 +134,20 @@ func init() {
 		Action:     action.Retain,
 		Parameters: []*IndexedParam{},
 	}, always.New)
+
+	// Register dayspl
+	Register(&Metadata{
+		TemplateID: dayspl.TemplateID,
+		Action:     action.Retain,
+		Parameters: []*IndexedParam{
+			{
+				Name:     dayspl.ParameterN,
+				Type:     "int",
+				Unit:     "days",
+				Required: true,
+			},
+		},
+	}, dayspl.New)
 
 	// Register daysps
 	Register(&Metadata{
