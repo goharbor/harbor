@@ -121,7 +121,6 @@ func initRouters() {
 	beego.Router("/api/projects/:pid([0-9]+)/webhook/lasttrigger", &api.NotificationPolicyAPI{}, "get:ListGroupByEventType")
 
 	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/", &api.NotificationJobAPI{}, "get:List")
-	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/:id([0-9]+)", &api.NotificationJobAPI{})
 
 	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig;put:Put")
 	beego.Router("/api/configurations", &api.ConfigAPI{}, "get:Get;put:Put")

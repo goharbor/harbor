@@ -3565,7 +3565,7 @@ paths:
           name: whitelist
           description: The whitelist with new content
           schema:
-              $ref: "#/definitions/CVEWhitelist"
+            $ref: "#/definitions/CVEWhitelist"
       responses:
         '200':
           description: Successfully updated the CVE whitelist.
@@ -3628,60 +3628,319 @@ paths:
         '500':
           description: Unexpected internal errors.
   '/quotas/{id}':
-      get:
-        summary: Get the specified quota
-        description: Get the specified quota
-        tags:
+    get:
+      summary: Get the specified quota
+      description: Get the specified quota
+      tags:
         - quota
-        parameters:
-          - name: id
-            in: path
-            type: integer
-            required: true
-            description: Quota ID
-        responses:
-          '200':
-            description: Successfully retrieved the quota.
-            schema:
-              $ref: '#/definitions/Quota'
-          '401':
-            description: User need to log in first.
-          '403':
-            description: User does not have permission to call this API
-          '404':
-            description: Quota does not exist.
-          '500':
-            description: Unexpected internal errors.
-      put:
-        summary: Update the specified quota
-        description: Update hard limits of the specified quota
-        tags:
-          - quota
-        parameters:
-          - name: id
-            in: path
-            type: integer
-            required: true
-            description: Quota ID
-          - name: hard
-            in: body
-            required: true
-            description: The new hard limits for the quota
-            schema:
-              $ref: '#/definitions/QuotaUpdateReq'
-        responses:
-          '200':
-            description: Updated quota hard limits successfully.
-          '400':
-            description: Illegal format of quota update request.
-          '401':
-            description: User need to log in first.
-          '403':
-            description: User does not have permission to the quota.
-          '404':
-            description: Quota ID does not exist.
-          '500':
-            description: Unexpected internal errors.
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Quota ID
+      responses:
+        '200':
+          description: Successfully retrieved the quota.
+          schema:
+            $ref: '#/definitions/Quota'
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission to call this API
+        '404':
+          description: Quota does not exist.
+        '500':
+          description: Unexpected internal errors.
+    put:
+      summary: Update the specified quota
+      description: Update hard limits of the specified quota
+      tags:
+        - quota
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Quota ID
+        - name: hard
+          in: body
+          required: true
+          description: The new hard limits for the quota
+          schema:
+            $ref: '#/definitions/QuotaUpdateReq'
+      responses:
+        '200':
+          description: Updated quota hard limits successfully.
+        '400':
+          description: Illegal format of quota update request.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission to the quota.
+        '404':
+          description: Quota ID does not exist.
+        '500':
+          description: Unexpected internal errors.
+  '/projects/{project_id}/webhook/policies':
+    get:
+      sumary: List project webhook policies.
+      description: |
+        This endpoint returns webhook policies of a project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: List project webhook policies successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WebhookPolicy'
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to list webhook policies of the project.
+        '500':
+          description: Unexpected internal errors.
+    post:
+      sumary: Create project webhook policy.
+      description: |
+        This endpoint create a webhook policy if the project does not have one.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID
+        - name: policy
+          in: body
+          description: Properties "targets" and "event_types" needed.
+          required: true
+          schema:
+            $ref: '#/definitions/WebhookPolicy'
+      tags:
+        - Products
+      responses:
+        '201':
+          description: Project webhook policy create successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to create webhook policy of the project.
+        '500':
+          description: Unexpected internal errors.
+  '/projects/{project_id}/webhook/policies/{policy_id}':
+    get:
+      summary: Get project webhook policy
+      description: |
+        This endpoint returns specified webhook policy of a project.
+      parameters:
+        - name: project_id
+          in: path
+          description: Relevant project ID.
+          required: true
+          type: integer
+          format: int64
+        - name: policy_id
+          in: path
+          description: The id of webhook policy.
+          required: true
+          type: int64
+          format: int64
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Get webhook policy successfully.
+          schema:
+            $ref: '#/definitions/WebhookPolicy'
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to get webhook policy of the project.
+        '404':
+          description: Webhook policy ID does not exist.
+        '500':
+          description: Internal server errors.
+    put:
+      summary: Update webhook policy of a project.
+      description: |
+        This endpoint is aimed to update the webhook policy of a project.
+      parameters:
+        - name: project_id
+          in: path
+          description: Relevant project ID.
+          required: true
+          type: integer
+          format: int64
+        - name: policy_id
+          in: path
+          description: The id of webhook policy.
+          required: true
+          type: int64
+          format: int64
+        - name: policy
+          in: body
+          description: All properties needed except "id", "project_id", "creation_time", "update_time".
+          required: true
+          schema:
+            $ref: '#/definitions/WebhookPolicy'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Update webhook policy successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to update webhook policy of the project.
+        '404':
+          description: Webhook policy ID does not exist.
+        '500':
+          description: Internal server errors.
+    delete:
+      summary: Delete webhook policy of a project
+      description: |
+        This endpoint is aimed to delete webhookpolicy of a project.
+      parameters:
+        - name: project_id
+          in: path
+          description: Relevant project ID.
+          required: true
+          type: integer
+          format: int64
+        - name: policy_id
+          in: path
+          description: The id of webhook policy.
+          required: true
+          type: int64
+          format: int64
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Delete webhook policy successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to delete webhook policy of the project.
+        '404':
+          description: Webhook policy ID does not exist.
+        '500':
+          description: Internal server errors.
+  '/projects/{project_id}/webhook/policies/test':
+    post:
+      summary: Test project webhook connection
+      description: |
+        This endpoint tests webhook connection of a project.
+      parameters:
+        - name: project_id
+          in: path
+          description: Relevant project ID.
+          required: true
+          type: integer
+          format: int64
+        - name: policy
+          in: body
+          description: Only property "targets" needed.
+          required: true
+          schema:
+            $ref: '#/definitions/WebhookPolicy'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Test webhook connection successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to get webhook policy of the project.
+        '500':
+          description: Internal server errors.
+  '/projects/{project_id}/webhook/policies/lasttrigger':
+    get:
+      summary: Get project webhook policy last trigger info
+      description: |
+        This endpoint returns last trigger information of project webhook policy.
+      parameters:
+        - name: project_id
+          in: path
+          description: Relevant project ID.
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Test webhook connection successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WebhookLastTrigger'
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to get webhook policy of the project.
+        '500':
+          description: Internal server errors.
+  '/projects/{project_id}/webhook/jobs':
+    get:
+      sumary: List project webhook jobs
+      description: |
+        This endpoint returns webhook jobs of a project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: policy_id
+          in: query
+          type: integer
+          format: int64
+          required: true
+          description: The policy ID.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: List project webhook jobs successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WebhookJob'
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to list webhook jobs of the project.
+        '500':
+          description: Unexpected internal errors.
 responses:
   OK:
     description: 'Success'
@@ -5386,3 +5645,102 @@ definitions:
       update_time:
         type: string
         description: the update time of the quota
+  WebhookTargetObject:
+    type: object
+    description: The webhook policy target object.
+    properties:
+      type:
+        type: string
+        description: The webhook target notify type.
+      address:
+        type: string
+        description: The webhook target address.
+      auth_header:
+        type: string
+        description: The webhook auth header.
+      skip_cert_verify:
+        type: boolean
+        description: Whether or not to skip cert verify.
+  WebhookPolicy:
+    type: object
+    description: The webhook policy object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The webhook policy ID.
+      name:
+        type: string
+        description: The name of webhook policy.
+      description:
+        type: string
+        description: The description of webhook policy.
+      project_id:
+        type: integer
+        description: The project ID of webhook policy.
+      targets:
+        type: array
+        items:
+          $ref: '#/definitions/WebhookTargetObject'
+      event_types:
+        type: array
+        items:
+          type: string
+      creator:
+        type: string
+        description: The creator of the webhook policy.
+      creation_time:
+        type: string
+        description: The create time of the webhook policy.
+      update_time:
+        type: string
+        description: The update time of the webhook policy.
+      enabled:
+        type: boolean
+        description: Whether the webhook policy is enabled or not.
+  WebhookLastTrigger:
+    type: object
+    description: The webhook policy and last trigger time group by event type.
+    properties:
+      event_type:
+        type: string
+        description: The webhook event type.
+      enabled:
+        type: boolean
+        description: Whether or not the webhook policy enabled.
+      creation_time:
+        type: string
+        description: The creation time of webhook policy.
+      last_trigger_time:
+        type: string
+        description: The last trigger time of webhook policy.
+  WebhookJob:
+    type: object
+    description: The webhook job.
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The webhook job ID.
+      policy_id:
+        type: integer
+        fromat: int64
+        description: The webhook policy ID.
+      event_type:
+        type: string
+        description: The webhook job event type.
+      notify_type:
+        type: string
+        description: The webhook job notify type.
+      status:
+        type: string
+        description: The webhook job status.
+      job_detail:
+        type: string
+        description: The webhook job notify detailed data.
+      creation_time:
+        type: string
+        description: The webhook job creation time.
+      update_time:
+        type: string
+        description: The webhook job update time.
