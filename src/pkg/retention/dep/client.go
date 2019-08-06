@@ -17,9 +17,7 @@ package dep
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"net/http"
-	"time"
 
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -113,8 +111,8 @@ func (bc *basicClient) GetCandidates(repository *res.Repository) ([]*res.Candida
 				Tag:          image.Name,
 				Labels:       labels,
 				CreationTime: image.Created.Unix(),
-				PulledTime:   time.Now().Unix() - (int64)(rand.Int31n(4)*3600),
-				PushedTime:   time.Now().Unix() - (int64)((rand.Int31n(5)+5)*3600),
+				PulledTime:   image.PullTime.Unix(),
+				PushedTime:   image.PushTime.Unix(),
 			}
 			candidates = append(candidates, candidate)
 		}

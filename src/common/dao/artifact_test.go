@@ -40,6 +40,16 @@ func TestAddArtifact(t *testing.T) {
 
 }
 
+func TestGetArtifact(t *testing.T) {
+	repo := "hello-world"
+	tag := "latest"
+	artifact, err := GetArtifact(repo, tag)
+	require.Nil(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, repo, artifact.Repo)
+	assert.Equal(t, tag, artifact.Tag)
+}
+
 func TestUpdateArtifactDigest(t *testing.T) {
 	af := &models.Artifact{
 		PID:    1,

@@ -57,6 +57,8 @@ type TagResp struct {
 	Signature    *model.Target    `json:"signature"`
 	ScanOverview *ImgScanOverview `json:"scan_overview,omitempty"`
 	Labels       []*Label         `json:"labels"`
+	PushTime     time.Time        `json:"push_time"`
+	PullTime     time.Time        `json:"pull_time"`
 }
 
 // TagDetail ...

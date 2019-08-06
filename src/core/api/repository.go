@@ -649,6 +649,20 @@ func assembleTag(c chan *models.TagResp, client *registry.Repository,
 			}
 		}
 	}
+
+	// pull/push time
+	artifact, err := dao.GetArtifact(repository, tag)
+	if err != nil {
+		log.Errorf("failed to get artifact %s:%s: %v", repository, tag, err)
+	} else {
+		if artifact == nil {
+			log.Warningf("artifact %s:%s not found", repository, tag)
+		} else {
+			item.PullTime = artifact.PullTime
+			item.PushTime = artifact.PushTime
+		}
+	}
+
 	c <- item
 }
 
