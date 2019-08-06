@@ -118,28 +118,30 @@ func (bc *basicClient) GetCandidates(repository *res.Repository) ([]*res.Candida
 			}
 			candidates = append(candidates, candidate)
 		}
-	case res.Chart:
-		charts, err := bc.coreClient.ListAllCharts(repository.Namespace, repository.Name)
-		if err != nil {
-			return nil, err
-		}
-		for _, chart := range charts {
-			labels := make([]string, 0)
-			for _, label := range chart.Labels {
-				labels = append(labels, label.Name)
+	/*
+		case res.Chart:
+			charts, err := bc.coreClient.ListAllCharts(repository.Namespace, repository.Name)
+			if err != nil {
+				return nil, err
 			}
-			candidate := &res.Candidate{
-				Kind:         res.Chart,
-				Namespace:    repository.Namespace,
-				Repository:   repository.Name,
-				Tag:          chart.Name,
-				Labels:       labels,
-				CreationTime: chart.Created.Unix(),
-				PushedTime:   time.Now().Unix() - (int64)((rand.Int31n(5)+5)*24*3600),
-				PulledTime:   time.Now().Unix() - (int64)((rand.Int31n(4))*24*3600),
+			for _, chart := range charts {
+				labels := make([]string, 0)
+				for _, label := range chart.Labels {
+					labels = append(labels, label.Name)
+				}
+				candidate := &res.Candidate{
+					Kind:         res.Chart,
+					Namespace:    repository.Namespace,
+					Repository:   repository.Name,
+					Tag:          chart.Name,
+					Labels:       labels,
+					CreationTime: chart.Created.Unix(),
+					PushedTime:   ,
+					PulledTime:   ,
+				}
+				candidates = append(candidates, candidate)
 			}
-			candidates = append(candidates, candidate)
-		}
+	*/
 	default:
 		return nil, fmt.Errorf("unsupported repository kind: %s", repository.Kind)
 	}
@@ -154,8 +156,10 @@ func (bc *basicClient) DeleteRepository(repo *res.Repository) error {
 	switch repo.Kind {
 	case res.Image:
 		return bc.coreClient.DeleteImageRepository(repo.Namespace, repo.Name)
-	case res.Chart:
-		return bc.coreClient.DeleteChartRepository(repo.Namespace, repo.Name)
+	/*
+		case res.Chart:
+			return bc.coreClient.DeleteChartRepository(repo.Namespace, repo.Name)
+	*/
 	default:
 		return fmt.Errorf("unsupported repository kind: %s", repo.Kind)
 	}
@@ -169,8 +173,10 @@ func (bc *basicClient) Delete(candidate *res.Candidate) error {
 	switch candidate.Kind {
 	case res.Image:
 		return bc.coreClient.DeleteImage(candidate.Namespace, candidate.Repository, candidate.Tag)
-	case res.Chart:
-		return bc.coreClient.DeleteChart(candidate.Namespace, candidate.Repository, candidate.Tag)
+	/*
+		case res.Chart:
+			return bc.coreClient.DeleteChart(candidate.Namespace, candidate.Repository, candidate.Tag)
+	*/
 	default:
 		return fmt.Errorf("unsupported candidate kind: %s", candidate.Kind)
 	}
