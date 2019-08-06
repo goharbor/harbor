@@ -40,7 +40,7 @@ func (d *Database) Load() (map[string]interface{}, error) {
 
 		itemMetadata, ok := metadata.Instance().GetByName(item.Key)
 		if !ok {
-			log.Warningf("failed to get metadata, key:%v, error:%v, skip to load item", item.Key, err)
+			log.Debugf("failed to get metadata, key:%v, error:%v, skip to load item", item.Key, err)
 			continue
 		}
 		if itemMetadata.Scope == metadata.SystemScope {
