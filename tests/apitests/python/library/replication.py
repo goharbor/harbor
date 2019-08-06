@@ -6,31 +6,6 @@ import base
 import swagger_client
 
 class Replication(base.Base):
-    def create_replication_rule(self, 
-        projectIDList, targetIDList, name=None, desc="", 
-        filters=[], trigger=swagger_client.RepTrigger(kind="Manual"), 
-        replicate_deletion=True,
-        replicate_existing_image_now=False,
-        expect_status_code = 201,
-        **kwargs):
-        if name is None:
-            name = base._random_name("rule")
-        projects = []
-        for projectID in projectIDList:
-            projects.append(swagger_client.Project(project_id=int(projectID)))
-        targets = []
-        for targetID in targetIDList:
-            targets.append(swagger_client.RepTarget(id=int(targetID)))
-        for filter in filters:
-            filter["value"] = int(filter["value"])
-        client = self._get_client(**kwargs)
-        policy = swagger_client.RepPolicy(name=name, description=desc, 
-            projects=projects, targets=targets, filters=filters, 
-            trigger=trigger, replicate_deletion=replicate_deletion,
-            replicate_existing_image_now=replicate_existing_image_now)
-        _, status_code, header = client.policies_replication_post_with_http_info(policy)
-        base._assert_status_code(expect_status_code, status_code)
-        return base._get_id_from_header(header), name
 
     def get_replication_rule(self, param = None, rule_id = None, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
