@@ -88,6 +88,13 @@ func (r *RetentionAPI) GetMetadatas() {
                     "required": true
                 }
             ]
+	},
+	{
+            "rule_template": "nothing",
+            "display_text": "none",
+            "action": "retain",
+            "params": [
+            ]
         }
     ],
     "scope_selectors": [

@@ -15,6 +15,7 @@
 package index
 
 import (
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/nothing"
 	"sync"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -124,6 +125,13 @@ func init() {
 			},
 		},
 	}, lastx.New)
+
+	// Register nothing
+	Register(&Metadata{
+		TemplateID: nothing.TemplateID,
+		Action:     action.Retain,
+		Parameters: []*IndexedParam{},
+	}, nothing.New)
 
 	// Register always
 	Register(&Metadata{
