@@ -66,7 +66,7 @@ func updateInitPassword(userID int, password string) error {
 			return fmt.Errorf("Failed to update user encrypted password, userID: %d, err: %v", userID, err)
 		}
 
-		log.Infof("User id: %d updated its encypted password successfully.", userID)
+		log.Infof("User id: %d updated its encrypted password successfully.", userID)
 	} else {
 		log.Infof("User id: %d already has its encrypted password.", userID)
 	}
@@ -116,7 +116,7 @@ func main() {
 
 	password, err := config.InitialAdminPassword()
 	if err != nil {
-		log.Fatalf("failed to get admin's initia password: %v", err)
+		log.Fatalf("failed to get admin's initial password: %v", err)
 	}
 	if err := updateInitPassword(adminUserID, password); err != nil {
 		log.Error(err)
