@@ -100,7 +100,19 @@ func (r *RetentionAPI) GetMetadatas() {
                     "required": true
                 }
             ]
-        }
+        },
+		{
+			"rule_template": "daysps",
+			"display_text": "pushed within the last # days",
+			"action": "retain",
+			"params": [
+				{
+					"type": "int",
+					"unit": "DAYS",
+					"required": true
+				}
+			]
+		}
     ],
     "scope_selectors": [
         {
