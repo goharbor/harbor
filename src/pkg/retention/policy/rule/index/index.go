@@ -17,20 +17,14 @@ package index
 import (
 	"sync"
 
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestpl"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/always"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/lastx"
-
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
-
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
-
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/always"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/daysps"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/lastx"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestpl"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
 	"github.com/pkg/errors"
 )
 
@@ -131,6 +125,20 @@ func init() {
 		Action:     action.Retain,
 		Parameters: []*IndexedParam{},
 	}, always.New)
+
+	// Register daysps
+	Register(&Metadata{
+		TemplateID: daysps.TemplateID,
+		Action:     action.Retain,
+		Parameters: []*IndexedParam{
+			{
+				Name:     daysps.ParameterN,
+				Type:     "int",
+				Unit:     "days",
+				Required: true,
+			},
+		},
+	}, daysps.New)
 }
 
 // Register the rule evaluator with the corresponding rule template
