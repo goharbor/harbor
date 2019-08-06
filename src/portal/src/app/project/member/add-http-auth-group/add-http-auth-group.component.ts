@@ -54,10 +54,10 @@ export class AddHttpAuthGroupComponent implements OnInit {
   staticBackdrop: boolean = true;
   closable: boolean = false;
 
-  @ViewChild('memberForm')
+  @ViewChild('memberForm', { static: false })
   currentForm: NgForm;
 
-  @ViewChild(InlineAlertComponent)
+  @ViewChild(InlineAlertComponent, { static: false })
   inlineAlert: InlineAlertComponent;
 
   @Input() projectId: number;

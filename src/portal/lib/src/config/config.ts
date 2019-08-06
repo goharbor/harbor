@@ -84,6 +84,7 @@ export class Configuration {
     email_insecure: BoolValueItem;
     verify_remote_cert: BoolValueItem;
     robot_token_duration: NumberValueItem;
+    cfg_expiration: NumberValueItem;
     token_expiration: NumberValueItem;
     scan_all_policy: ComplexValueItem;
     read_only: BoolValueItem;

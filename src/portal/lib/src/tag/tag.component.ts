@@ -132,14 +132,14 @@ export class TagComponent implements OnInit, AfterViewInit {
   };
   filterOneLabel: Label = this.initFilter;
 
-  @ViewChild("confirmationDialog")
+  @ViewChild("confirmationDialog", { static: false })
   confirmationDialog: ConfirmationDialogComponent;
 
-  @ViewChild("imageNameInput")
+  @ViewChild("imageNameInput", { static: false })
   imageNameInput: ImageNameInputComponent;
 
-  @ViewChild("digestTarget") textInput: ElementRef;
-  @ViewChild("copyInput") copyInput: CopyInputComponent;
+  @ViewChild("digestTarget", { static: false }) textInput: ElementRef;
+  @ViewChild("copyInput", { static: false }) copyInput: CopyInputComponent;
 
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage = 1;

@@ -80,10 +80,10 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     totalCount = 0;
     currentState: State;
 
-    @ViewChild("confirmationDialog")
+    @ViewChild("confirmationDialog", { static: false })
     confirmationDialog: ConfirmationDialogComponent;
 
-    @ViewChild("gridView") gridView: GridViewComponent;
+    @ViewChild("gridView", { static: false }) gridView: GridViewComponent;
     hasCreateRepositoryPermission: boolean;
     hasDeleteRepositoryPermission: boolean;
     constructor(@Inject(SERVICE_CONFIG) private configInfo: IServiceConfig,

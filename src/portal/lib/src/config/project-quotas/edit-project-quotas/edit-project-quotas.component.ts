@@ -41,10 +41,10 @@ export class EditProjectQuotasComponent implements OnInit {
   staticBackdrop = true;
   closable = false;
   quotaForm: NgForm;
-  @ViewChild(InlineAlertComponent)
+  @ViewChild(InlineAlertComponent, { static: false })
   inlineAlert: InlineAlertComponent;
 
-  @ViewChild('quotaForm')
+  @ViewChild('quotaForm', { static: false })
   currentForm: NgForm;
   @Output() confirmAction = new EventEmitter();
   constructor(

@@ -68,9 +68,9 @@ export class HelmChartComponent implements OnInit {
   totalCount = 0;
   currentState: State;
 
-  @ViewChild('chartUploadForm') uploadForm: NgForm;
+  @ViewChild('chartUploadForm', { static: false }) uploadForm: NgForm;
 
-  @ViewChild("confirmationDialog") confirmationDialog: ConfirmationDialogComponent;
+  @ViewChild("confirmationDialog", { static: false }) confirmationDialog: ConfirmationDialogComponent;
   hasUploadHelmChartsPermission: boolean;
   hasDownloadHelmChartsPermission: boolean;
   hasDeleteHelmChartsPermission: boolean;

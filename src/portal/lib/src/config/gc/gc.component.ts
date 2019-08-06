@@ -32,7 +32,7 @@ export class GcComponent implements OnInit {
   getText = 'CONFIG.GC';
   getLabelCurrent = 'GC.CURRENT_SCHEDULE';
   @Output() loadingGcStatus = new EventEmitter<boolean>();
-  @ViewChild(CronScheduleComponent)
+  @ViewChild(CronScheduleComponent, { static: false })
   CronScheduleComponent: CronScheduleComponent;
   constructor(
     private gcRepoService: GcRepoService,

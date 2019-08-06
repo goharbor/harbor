@@ -36,7 +36,8 @@ import 'intl/locale-data/jsonp/es';
 import 'intl/locale-data/jsonp/zh';
 
 import 'zone.js/dist/zone';
-
+import * as process from "process";
+(window as any).process = process;
 (window as any).global = window;
 // @ts-ignore
 window.Buffer = window.Buffer || require('buffer').Buffer;

@@ -64,12 +64,12 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   staticBackdrop: boolean = true;
   closable: boolean = false;
 
-  @ViewChild('memberForm')
+  @ViewChild('memberForm', { static: false })
   currentForm: NgForm;
 
   hasChanged: boolean;
 
-  @ViewChild(InlineAlertComponent)
+  @ViewChild(InlineAlertComponent, { static: false })
   inlineAlert: InlineAlertComponent;
 
   @Input() projectId: number;

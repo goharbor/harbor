@@ -30,7 +30,7 @@ export class LabelMarkerComponent implements OnInit {
 
     labelChangeDebouncer: Subject<any> = new Subject();
 
-    @ViewChild('filterInput') filterInputRef: ElementRef;
+    @ViewChild('filterInput', { static: false }) filterInputRef: ElementRef;
 
     ngOnInit(): void {
         this.sortedLabels = this.labels;

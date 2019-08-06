@@ -38,7 +38,7 @@ export class NewUserFormComponent implements AfterViewChecked, OnInit {
     @Input() isSelfRegistration = false;
     // Notify the form value changes
     @Output() valueChange = new EventEmitter<boolean>();
-    @ViewChild("newUserFrom") newUserForm: NgForm;
+    @ViewChild("newUserFrom", { static: true }) newUserForm: NgForm;
     newUser: User = new User();
     newUserFormRef: NgForm;
     confirmedPwd: string;

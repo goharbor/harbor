@@ -40,7 +40,7 @@ import { OidcOnboardModule } from './oidc-onboard/oidc-onboard.module';
 registerLocaleData(zh, 'zh-cn');
 registerLocaleData(es, 'es-es');
 registerLocaleData(localeFr, 'fr-fr');
-registerLocaleData(localePt, 'pt-br');
+registerLocaleData(localePt, 'pt');
 
 
 export function initConfig(configService: AppConfigService, skinableService: SkinableConfig) {
@@ -83,11 +83,12 @@ export function getCurrentLanguage(translateService: TranslateService) {
         deps: [ AppConfigService, SkinableConfig],
         multi: true
       },
-      {
-        provide: LOCALE_ID,
-        useFactory: getCurrentLanguage,
-        deps: [ TranslateService ]
-      }
+      // {
+      //   provide: LOCALE_ID,
+      //   useFactory: getCurrentLanguage,
+      //   deps: [ TranslateService ]
+      // },
+      {provide: LOCALE_ID, useValue: "en-US"}
     ],
     bootstrap: [AppComponent]
 })

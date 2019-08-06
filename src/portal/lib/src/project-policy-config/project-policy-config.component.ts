@@ -61,9 +61,9 @@ export class ProjectPolicyConfigComponent implements OnInit {
     @Input() hasSignedIn: boolean;
     @Input() hasProjectAdminRole: boolean;
 
-    @ViewChild('cfgConfirmationDialog') confirmationDlg: ConfirmationDialogComponent;
-    @ViewChild('dateInput') dateInput: ElementRef;
-    @ViewChild('dateSystemInput') dateSystemInput: ElementRef;
+    @ViewChild('cfgConfirmationDialog', { static: false }) confirmationDlg: ConfirmationDialogComponent;
+    @ViewChild('dateInput', { static: false }) dateInput: ElementRef;
+    @ViewChild('dateSystemInput', { static: false }) dateSystemInput: ElementRef;
 
     systemInfo: SystemInfo;
     orgProjectPolicy = new ProjectPolicy();

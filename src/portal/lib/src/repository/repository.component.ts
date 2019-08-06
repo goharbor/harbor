@@ -56,7 +56,7 @@ export class RepositoryComponent implements OnInit {
 
   timerHandler: any;
 
-  @ViewChild('confirmationDialog')
+  @ViewChild('confirmationDialog', { static: false })
   confirmationDlg: ConfirmationDialogComponent;
 
   constructor(

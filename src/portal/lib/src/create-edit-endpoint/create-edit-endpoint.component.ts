@@ -55,13 +55,13 @@ export class CreateEditEndpointComponent
   selectedType: string;
   initVal: Endpoint;
   targetForm: NgForm;
-  @ViewChild("targetForm") currentForm: NgForm;
+  @ViewChild("targetForm", { static: false }) currentForm: NgForm;
   targetEndpoint;
   testOngoing: boolean;
   onGoing: boolean;
   endpointId: number | string;
 
-  @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
+  @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
 
   @Output() reload = new EventEmitter<boolean>();
 

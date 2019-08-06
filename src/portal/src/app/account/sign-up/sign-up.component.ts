@@ -39,13 +39,13 @@ export class SignUpComponent {
         private session: SessionService,
         private userService: UserService) { }
 
-    @ViewChild(NewUserFormComponent)
+    @ViewChild(NewUserFormComponent, { static: true })
     newUserForm: NewUserFormComponent;
 
-    @ViewChild(InlineAlertComponent)
+    @ViewChild(InlineAlertComponent, { static: false })
     inlienAlert: InlineAlertComponent;
 
-    @ViewChild(Modal)
+    @ViewChild(Modal, { static: false })
     modal: Modal;
 
     getNewUser(): User {
