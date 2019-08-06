@@ -84,7 +84,7 @@ func (suite *IndexTestSuite) TestGet() {
 // TestIndex tests Index
 func (suite *IndexTestSuite) TestIndex() {
 	metas := Index()
-	require.Equal(suite.T(), 6, len(metas))
+	require.Equal(suite.T(), 7, len(metas))
 	assert.Condition(suite.T(), func() bool {
 		for _, m := range metas {
 			if m.TemplateID == "fakeEvaluator" &&
