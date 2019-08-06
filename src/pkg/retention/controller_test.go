@@ -65,6 +65,36 @@ func (s *ControllerTestSuite) TestPolicy() {
 					},
 				},
 			},
+			{
+				ID:       2,
+				Priority: 1,
+				Template: "recentXdays",
+				Disabled: true,
+				Parameters: rule.Parameters{
+					"num": 3,
+				},
+				TagSelectors: []*rule.Selector{
+					{
+						Kind:       "label",
+						Decoration: "with",
+						Pattern:    "latest",
+					},
+					{
+						Kind:       "regularExpression",
+						Decoration: "matches",
+						Pattern:    "release-[\\d\\.]+",
+					},
+				},
+				ScopeSelectors: map[string][]*rule.Selector{
+					"repository": {
+						{
+							Kind:       "regularExpression",
+							Decoration: "matches",
+							Pattern:    ".+",
+						},
+					},
+				},
+			},
 		},
 		Trigger: &policy.Trigger{
 			Kind: "Schedule",

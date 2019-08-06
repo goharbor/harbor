@@ -124,6 +124,10 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 	}
 
 	for _, rule := range ply.Rules {
+		if rule.Disabled {
+			log.Infof("Policy %d rule %d %s is disabled", ply.ID, rule.ID, rule.Template)
+			continue
+		}
 		projectCandidates := allProjects
 		switch level {
 		case "system":

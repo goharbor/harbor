@@ -251,6 +251,25 @@ func (l *launchTestSuite) TestLaunch() {
 					},
 				},
 			},
+			{
+				Disabled: true,
+				ScopeSelectors: map[string][]*rule.Selector{
+					"project": {
+						{
+							Kind:       "doublestar",
+							Decoration: "nsMatches",
+							Pattern:    "library1",
+						},
+					},
+					"repository": {
+						{
+							Kind:       "doublestar",
+							Decoration: "repoMatches",
+							Pattern:    "**",
+						},
+					},
+				},
+			},
 		},
 	}
 	n, err = launcher.Launch(ply, 1, false)
