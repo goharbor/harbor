@@ -17,6 +17,7 @@ package cworker
 import (
 	"fmt"
 	"reflect"
+	"sync"
 	"time"
 
 	"github.com/gocraft/work"
@@ -30,7 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
-	"sync"
 )
 
 var (
@@ -66,7 +66,10 @@ type workerContext struct{}
 
 // log the job
 func (rpc *workerContext) logJob(job *work.Job, next work.NextMiddlewareFunc) error {
-	jobInfo, _ := utils.SerializeJob(job)
+	jobCopy := *job
+	// as the args may contain sensitive information, ignore them when logging the detail
+	jobCopy.Args = nil
+	jobInfo, _ := utils.SerializeJob(&jobCopy)
 	logger.Infof("Job incoming: %s", jobInfo)
 
 	return next()
