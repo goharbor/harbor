@@ -1,7 +1,6 @@
 package api
 
 import (
-	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -242,12 +241,10 @@ func (r *RetentionAPI) checkRuleConflict(p *policy.Metadata) error {
 		tid := rule.ID
 		rule.ID = 0
 		bs, _ := json.Marshal(rule)
-		s := sha256.New()
-		h := s.Sum(bs)
-		if old, exists := temp[string(h)]; exists {
+		if old, exists := temp[string(bs)]; exists {
 			return fmt.Errorf("rule %d is conflict with rule %d", n, old)
 		}
-		temp[string(h)] = tid
+		temp[string(bs)] = tid
 		rule.ID = tid
 	}
 	return nil
