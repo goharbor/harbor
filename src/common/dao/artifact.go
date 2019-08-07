@@ -88,6 +88,21 @@ func ListArtifacts(query *models.ArtifactQuery) ([]*models.Artifact, error) {
 	return afs, err
 }
 
+// GetArtifact by repository and tag
+func GetArtifact(repo, tag string) (*models.Artifact, error) {
+	artifact := &models.Artifact{}
+	err := GetOrmer().QueryTable(&models.Artifact{}).
+		Filter("Repo", repo).
+		Filter("Tag", tag).One(artifact)
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return artifact, nil
+}
+
 // GetTotalOfArtifacts returns total of artifacts
 func GetTotalOfArtifacts(query ...*models.ArtifactQuery) (int64, error) {
 	var qs orm.QuerySeter
