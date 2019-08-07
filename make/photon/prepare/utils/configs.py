@@ -41,12 +41,12 @@ def validate(conf, **kwargs):
     redis_host = conf.get("redis_host")
     if redis_host is None or len(redis_host) < 1:
         raise Exception(
-            "Error: redis_host in harbor.cfg needs to point to an endpoint of Redis server or cluster.")
+            "Error: redis_host in harbor.yml needs to point to an endpoint of Redis server or cluster.")
 
     redis_port = conf.get("redis_port")
     if redis_host is None or (redis_port < 1 or redis_port > 65535):
         raise Exception(
-            "Error: redis_port in harbor.cfg needs to point to the port of Redis server or cluster.")
+            "Error: redis_port in harbor.yml needs to point to the port of Redis server or cluster.")
 
 
 def parse_versions():
