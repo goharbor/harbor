@@ -22,11 +22,10 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/goharbor/harbor/src/common/job"
-
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -38,7 +37,9 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares"
+	_ "github.com/goharbor/harbor/src/core/notifier/topic"
 	"github.com/goharbor/harbor/src/core/service/token"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/replication"
 )
@@ -142,6 +143,9 @@ func main() {
 	if err := replication.Init(closing); err != nil {
 		log.Fatalf("failed to init for replication: %v", err)
 	}
+
+	log.Info("initializing notification...")
+	notification.Init()
 
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)

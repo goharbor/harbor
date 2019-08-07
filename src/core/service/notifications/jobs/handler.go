@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/operation/hook"
@@ -142,6 +143,20 @@ func (h *Handler) HandleRetentionTask() {
 	}
 	if err := mgr.UpdateTask(task, props...); err != nil {
 		log.Errorf("failed to update the status of retention task %d: %v", h.id, err)
+		h.SendInternalServerError(err)
+		return
+	}
+}
+
+// HandleNotificationJob handles the hook of notification job
+func (h *Handler) HandleNotificationJob() {
+	log.Debugf("received notification job status update event: job-%d, status-%s", h.id, h.status)
+	if err := notification.JobMgr.Update(&models.NotificationJob{
+		ID:         h.id,
+		Status:     h.status,
+		UpdateTime: time.Now(),
+	}, "Status", "UpdateTime"); err != nil {
+		log.Errorf("Failed to update notification job status, id: %d, status: %s", h.id, h.status)
 		h.SendInternalServerError(err)
 		return
 	}

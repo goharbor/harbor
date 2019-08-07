@@ -1,0 +1,26 @@
+package model
+
+// Define global topic names
+const (
+	// PushImageTopic is topic for push image event
+	PushImageTopic = "OnPushImage"
+	// PullImageTopic is topic for pull image event
+	PullImageTopic = "OnPullImage"
+	// DeleteImageTopic is topic for delete image event
+	DeleteImageTopic = "OnDeleteImage"
+	// UploadChartTopic is topic for upload chart event
+	UploadChartTopic = "OnUploadChart"
+	// DownloadChartTopic is topic for download chart event
+	DownloadChartTopic = "OnDownloadChart"
+	// DeleteChartTopic is topic for delete chart event
+	DeleteChartTopic = "OnDeleteChart"
+	// ScanningFailedTopic is topic for scanning failed event
+	ScanningFailedTopic = "OnScanningFailed"
+	// ScanningCompletedTopic is topic for scanning completed event
+	ScanningCompletedTopic = "OnScanningCompleted"
+
+	// WebhookTopic is topic for sending webhook payload
+	WebhookTopic = "http"
+	// EmailTopic is topic for sending email payload
+	EmailTopic = "email"
+)

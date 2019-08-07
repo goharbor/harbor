@@ -167,11 +167,13 @@ func ClearTable(table string) error {
 	return err
 }
 
-func paginateForRawSQL(sql string, limit, offset int64) string {
+// PaginateForRawSQL ...
+func PaginateForRawSQL(sql string, limit, offset int64) string {
 	return fmt.Sprintf("%s limit %d offset %d", sql, limit, offset)
 }
 
-func paginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter {
+// PaginateForQuerySetter ...
+func PaginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter {
 	if size > 0 {
 		qs = qs.Limit(size)
 		if page > 0 {

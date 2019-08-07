@@ -515,6 +515,11 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 	}, nil
 }
 
+// NotificationEnable returns a bool to indicates if notification enabled in harbor
+func NotificationEnable() bool {
+	return cfgMgr.Get(common.NotificationEnable).GetBool()
+}
+
 // QuotaSetting returns the setting of quota.
 func QuotaSetting() (*models.QuotaSetting, error) {
 	if err := cfgMgr.Load(); err != nil {
