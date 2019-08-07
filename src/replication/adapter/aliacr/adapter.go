@@ -9,13 +9,13 @@ import (
 	"regexp"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
-	"github.com/goharbor/harbor/src/replication/adapter/native"
-	"github.com/goharbor/harbor/src/replication/util"
-
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/goharbor/harbor/src/replication/util"
 )
 
 func init() {
@@ -157,42 +157,62 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 	}
 	log.Debugf("FetchImages.repositories: %#v\n", repositories)
 
-	// list tags
-	for _, repository := range repositories {
-		var tags []string
-		tags, err = a.getTags(repository, client)
-		if err != nil {
-			return
-		}
+	var rawResources = make([]*model.Resource, len(repositories))
+	runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
+	defer runner.Cancel()
 
-		var filterTags []string
-		if tagsPattern != "" {
-			for _, tag := range tags {
-				var ok bool
-				ok, err = util.Match(tagsPattern, tag)
-				if err != nil {
-					return
+	for i, r := range repositories {
+		index := i
+		repo := r
+		runner.AddTask(func() error {
+			var tags []string
+			tags, err = a.getTags(repo, client)
+			if err != nil {
+				return fmt.Errorf("List tags for repo '%s' error: %v", repo.RepoName, err)
+			}
+
+			var filterTags []string
+			if tagsPattern != "" {
+				for _, tag := range tags {
+					var ok bool
+					ok, err = util.Match(tagsPattern, tag)
+					if err != nil {
+						return fmt.Errorf("Match tag '%s' error: %v", tag, err)
+					}
+					if ok {
+						filterTags = append(filterTags, tag)
+					}
 				}
-				if ok {
-					filterTags = append(filterTags, tag)
+			} else {
+				filterTags = tags
+			}
+
+			if len(filterTags) > 0 {
+				rawResources[index] = &model.Resource{
+					Type:     model.ResourceTypeImage,
+					Registry: a.registry,
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{
+							Name: filepath.Join(repo.RepoNamespace, repo.RepoName),
+						},
+						Vtags:  filterTags,
+						Labels: []string{},
+					},
 				}
 			}
-		} else {
-			filterTags = tags
-		}
 
-		if len(filterTags) > 0 {
-			resources = append(resources, &model.Resource{
-				Type:     model.ResourceTypeImage,
-				Registry: a.registry,
-				Metadata: &model.ResourceMetadata{
-					Repository: &model.Repository{
-						Name: filepath.Join(repository.RepoNamespace, repository.RepoName),
-					},
-					Vtags:  filterTags,
-					Labels: []string{},
-				},
-			})
+			return nil
+		})
+	}
+	runner.Wait()
+
+	if runner.IsCancelled() {
+		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+	}
+
+	for _, r := range rawResources {
+		if r != nil {
+			resources = append(resources, r)
 		}
 	}
 

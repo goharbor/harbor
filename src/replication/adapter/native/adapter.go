@@ -15,6 +15,7 @@
 package native
 
 import (
+	"fmt"
 	"io"
 	"net/http"
 	"strings"
@@ -24,6 +25,7 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	registry_pkg "github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
@@ -159,37 +161,58 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		}
 	}
 
-	var resources []*model.Resource
-	for _, repository := range repositories {
-		vTags, err := a.getVTags(repository.Name)
-		if err != nil {
-			return nil, err
-		}
-		if len(vTags) == 0 {
-			continue
-		}
-		for _, filter := range filters {
-			if err = filter.DoFilter(&vTags); err != nil {
-				return nil, err
+	var rawResources = make([]*model.Resource, len(repositories))
+	runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
+	defer runner.Cancel()
+
+	for i, r := range repositories {
+		index := i
+		repo := r
+		runner.AddTask(func() error {
+			vTags, err := a.getVTags(repo.Name)
+			if err != nil {
+				return fmt.Errorf("List tags for repo '%s' error: %v", repo.Name, err)
 			}
-		}
-		if len(vTags) == 0 {
-			continue
-		}
-		tags := []string{}
-		for _, vTag := range vTags {
-			tags = append(tags, vTag.Name)
-		}
-		resources = append(resources, &model.Resource{
-			Type:     model.ResourceTypeImage,
-			Registry: a.registry,
-			Metadata: &model.ResourceMetadata{
-				Repository: &model.Repository{
-					Name: repository.Name,
+			if len(vTags) == 0 {
+				return nil
+			}
+			for _, filter := range filters {
+				if err = filter.DoFilter(&vTags); err != nil {
+					return fmt.Errorf("Filter tags %v error: %v", vTags, err)
+				}
+			}
+			if len(vTags) == 0 {
+				return nil
+			}
+			tags := []string{}
+			for _, vTag := range vTags {
+				tags = append(tags, vTag.Name)
+			}
+			rawResources[index] = &model.Resource{
+				Type:     model.ResourceTypeImage,
+				Registry: a.registry,
+				Metadata: &model.ResourceMetadata{
+					Repository: &model.Repository{
+						Name: repo.Name,
+					},
+					Vtags: tags,
 				},
-				Vtags: tags,
-			},
+			}
+
+			return nil
 		})
+	}
+	runner.Wait()
+
+	if runner.IsCancelled() {
+		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+	}
+
+	var resources []*model.Resource
+	for _, r := range rawResources {
+		if r != nil {
+			resources = append(resources, r)
+		}
 	}
 
 	return resources, nil
