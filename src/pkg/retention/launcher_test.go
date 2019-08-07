@@ -192,7 +192,7 @@ func (l *launchTestSuite) TestGetProjects() {
 func (l *launchTestSuite) TestGetRepositories() {
 	repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, 1, true)
 	require.Nil(l.T(), err)
-	assert.Equal(l.T(), 3, len(repositories))
+	assert.Equal(l.T(), 2, len(repositories))
 	assert.Equal(l.T(), "library", repositories[0].Namespace)
 	assert.Equal(l.T(), "image", repositories[0].Repository)
 	assert.Equal(l.T(), "image", repositories[0].Kind)
@@ -274,7 +274,7 @@ func (l *launchTestSuite) TestLaunch() {
 	}
 	n, err = launcher.Launch(ply, 1, false)
 	require.Nil(l.T(), err)
-	assert.Equal(l.T(), int64(3), n)
+	assert.Equal(l.T(), int64(2), n)
 }
 
 func (l *launchTestSuite) TestStop() {

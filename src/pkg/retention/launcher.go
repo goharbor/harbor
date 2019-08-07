@@ -338,10 +338,12 @@ func getProjects(projectMgr project.Manager) ([]*res.Candidate, error) {
 func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manager,
 	projectID int64, chartServerEnabled bool) ([]*res.Candidate, error) {
 	var candidates []*res.Candidate
-	pro, err := projectMgr.Get(projectID)
-	if err != nil {
-		return nil, err
-	}
+	/*
+		pro, err := projectMgr.Get(projectID)
+		if err != nil {
+			return nil, err
+		}
+	*/
 	// get image repositories
 	imageRepositories, err := repositoryMgr.ListImageRepositories(projectID)
 	if err != nil {
@@ -355,20 +357,23 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 			Kind:       "image",
 		})
 	}
-	if chartServerEnabled {
-		// get chart repositories when chart server is enabled
-		chartRepositories, err := repositoryMgr.ListChartRepositories(projectID)
-		if err != nil {
-			return nil, err
+	// currently, doesn't support retention for chart
+	/*
+		if chartServerEnabled {
+			// get chart repositories when chart server is enabled
+			chartRepositories, err := repositoryMgr.ListChartRepositories(projectID)
+			if err != nil {
+				return nil, err
+			}
+			for _, r := range chartRepositories {
+				candidates = append(candidates, &res.Candidate{
+					Namespace:  pro.Name,
+					Repository: r.Name,
+					Kind:       "chart",
+				})
+			}
 		}
-		for _, r := range chartRepositories {
-			candidates = append(candidates, &res.Candidate{
-				Namespace:  pro.Name,
-				Repository: r.Name,
-				Kind:       "chart",
-			})
-		}
-	}
+	*/
 
 	return candidates, nil
 }
