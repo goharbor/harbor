@@ -46,6 +46,7 @@ type Handler struct {
 	id        int64
 	status    string
 	rawStatus string
+	checkIn   string
 }
 
 // Prepare ...
@@ -73,6 +74,7 @@ func (h *Handler) Prepare() {
 		return
 	}
 	h.status = status
+	h.checkIn = data.CheckIn
 }
 
 // HandleScan handles the webhook of scan job
@@ -117,8 +119,27 @@ func (h *Handler) HandleRetentionTask() {
 	if h.status == models.JobFinished || h.status == models.JobError ||
 		h.status == models.JobStopped {
 		task.EndTime = time.Now()
+		props = append(props, "EndTime")
+	} else if h.status == models.JobRunning {
+		if h.checkIn != "" {
+			var retainObj struct {
+				Total    int `json:"total"`
+				Retained int `json:"retained"`
+			}
+			if err := json.Unmarshal([]byte(h.checkIn), &retainObj); err != nil {
+				log.Errorf("failed to resolve checkin of retention task %d: %v", h.id, err)
+			} else {
+				if retainObj.Total > 0 {
+					task.Total = retainObj.Total
+					props = append(props, "Total")
+				}
+				if retainObj.Retained > 0 {
+					task.Retained = retainObj.Retained
+					props = append(props, "Retained")
+				}
+			}
+		}
 	}
-	props = append(props, "EndTime")
 	if err := mgr.UpdateTask(task, props...); err != nil {
 		log.Errorf("failed to update the status of retention task %d: %v", h.id, err)
 		h.SendInternalServerError(err)

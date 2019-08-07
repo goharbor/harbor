@@ -56,6 +56,8 @@ type Task struct {
 	Status      string    `json:"status"`
 	StartTime   time.Time `json:"start_time"`
 	EndTime     time.Time `json:"end_time"`
+	Total       int       `json:"total"`
+	Retained    int       `json:"retained"`
 }
 
 // History of retention

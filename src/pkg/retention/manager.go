@@ -194,6 +194,8 @@ func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
 		Status:      task.Status,
 		StartTime:   task.StartTime,
 		EndTime:     task.EndTime,
+		Total:       task.Total,
+		Retained:    task.Retained,
 	}
 	return dao.CreateTask(t)
 }
@@ -217,6 +219,8 @@ func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 			Status:      t.Status,
 			StartTime:   t.StartTime,
 			EndTime:     t.EndTime,
+			Total:       t.Total,
+			Retained:    t.Retained,
 		})
 	}
 	return tasks, nil
@@ -243,6 +247,8 @@ func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
 		Status:      task.Status,
 		StartTime:   task.StartTime,
 		EndTime:     task.EndTime,
+		Total:       task.Total,
+		Retained:    task.Retained,
 	}, cols...)
 }
 
@@ -263,6 +269,8 @@ func (d *DefaultManager) GetTask(taskID int64) (*Task, error) {
 		Status:      task.Status,
 		StartTime:   task.StartTime,
 		EndTime:     task.EndTime,
+		Total:       task.Total,
+		Retained:    task.Retained,
 	}, nil
 }
 
