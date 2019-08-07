@@ -33,6 +33,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/hook"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
+	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/scan"
@@ -248,6 +249,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.ReplicationScheduler:   (*replication.Scheduler)(nil),
 			job.Retention:              (*retention.Job)(nil),
 			scheduler.JobNameScheduler: (*scheduler.PeriodicJob)(nil),
+			job.WebhookJob:             (*notification.WebhookJob)(nil),
 		}); err != nil {
 		// exit
 		return nil, err
