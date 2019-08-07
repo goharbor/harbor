@@ -128,27 +128,19 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     canNotAdd(): boolean {
-        if (this.rule.template === 'always'
-            && this.rule.scope_selectors.repository[0].pattern
-            && this.rule.tag_selectors[0].pattern) {
-            return false;
+        if (!this.isAdd) {
+            return compareValue(this.editRuleOrigin, this.rule);
         }
-        if (this.isAdd) {
-            if (this.rule.template
-                && this.rule.params[this.template]
-                && this.rule.scope_selectors.repository[0].pattern
-                && this.rule.tag_selectors[0].pattern) {
-                return false;
-            }
+        if (!this.hasParam()) {
+            return !(this.rule.template
+              && this.rule.scope_selectors.repository[0].pattern
+              && this.rule.tag_selectors[0].pattern);
         } else {
-            if (this.rule.template
-                && this.rule.params[this.template]
-                && this.rule.scope_selectors.repository[0].pattern
-                && this.rule.tag_selectors[0].pattern && !compareValue(this.editRuleOrigin, this.rule)) {
-                return false;
-            }
+            return !(this.rule.template
+              && this.rule.params[this.template]
+              && this.rule.scope_selectors.repository[0].pattern
+              && this.rule.tag_selectors[0].pattern);
         }
-        return true;
     }
 
     open() {
@@ -170,5 +162,19 @@ export class AddRuleComponent implements OnInit, OnDestroy {
 
     getI18nKey(str: string) {
         return this.tagRetentionService.getI18nKey(str);
+    }
+    hasParam(): boolean {
+        if (this.metadata && this.metadata.templates) {
+            let flag: boolean = false;
+            this.metadata.templates.forEach(t => {
+                if (t.rule_template === this.template) {
+                    if ( t.params && t.params.length > 0) {
+                        flag = true;
+                    }
+                }
+            });
+            return flag;
+        }
+        return false;
     }
 }

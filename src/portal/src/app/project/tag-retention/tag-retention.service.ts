@@ -28,10 +28,14 @@ export class TagRetentionService {
         "latestPushedK": "RULE_NAME_3",
         "latestPulledN": "RULE_NAME_4",
         "always": "RULE_NAME_5",
+        "dayspl": "RULE_NAME_6",
+        "daysps": "RULE_NAME_7",
         "the images from the last # days": "RULE_TEMPLATE_1",
         "the most recent active # images": "RULE_TEMPLATE_2",
         "the most recently pushed # images": "RULE_TEMPLATE_3",
         "the most recently pulled # images": "RULE_TEMPLATE_4",
+        "pulled within the last # days": "RULE_TEMPLATE_6",
+        "pushed within the last # days": "RULE_TEMPLATE_7",
         "repoMatches": "MAT",
         "repoExcludes": "EXC",
         "matches": "MAT",
@@ -40,7 +44,8 @@ export class TagRetentionService {
         "withoutLabels": "WITHOUT",
         "COUNT": "UNIT_COUNT",
         "DAYS": "UNIT_DAY",
-        "none": "NONE"
+        "none": "NONE",
+        "nothing": "NONE"
     };
 
     constructor(

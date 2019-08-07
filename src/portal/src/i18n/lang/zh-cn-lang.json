@@ -1128,15 +1128,15 @@
         "UNIT_DAY": "天数",
         "UNIT_COUNT": "个数",
         "NUMBER": "数量",
-        "IN_REPOSITORIES": "适用于仓库",
+        "IN_REPOSITORIES": "应用到仓库",
         "REP_SEPARATOR": "使用逗号分隔repos,repo*和**",
         "TAGS": "Tags",
         "MATCHES_TAGS": "匹配tags",
-        "MATCHES_EXCEPT_TAGS": "反匹配tags",
+        "MATCHES_EXCEPT_TAGS": "排除tags",
         "TAG_SEPARATOR": "使用逗号分割tags,tag*,**,or regex",
         "LABELS": "标签",
         "MATCHES_LABELS": "匹配标签",
-        "MATCHES_EXCEPT_LABELS": "反匹配标签",
+        "MATCHES_EXCEPT_LABELS": "排除标签",
         "REP_LABELS": "使用逗号分割标签",
         "RETENTION_RUN": "运行保留策略",
         "RETENTION_RUN_EXPLAIN": "执行保留策略将对该项目中的镜像产生反向影响，受影响的镜像tags将会被删除。您可选择取消或者使用模拟运行，或者点击运行以继续。",
@@ -1151,7 +1151,7 @@
         "EXCLUDES": "排除",
         "MATCHES": "匹配",
         "REPO": "仓库",
-        "EXC": "反匹配",
+        "EXC": "排除",
         "MAT": "匹配",
         "AND": "且",
         "WITH": "有",
@@ -1162,7 +1162,11 @@
         "TRIGGER": "定时执行",
         "RETAINED": "保留数",
         "TOTAL": "总数",
-        "NONE": "空"
+        "NONE": "空",
+        "RULE_NAME_6": "最近{{number}}天被拉取过的镜像",
+        "RULE_NAME_7": "最近{{number}}天被推送过的镜像",
+        "RULE_TEMPLATE_6": "最近#天被拉取过的镜像",
+        "RULE_TEMPLATE_7": "最近#天被推送过的镜像"
     }
 
 }
