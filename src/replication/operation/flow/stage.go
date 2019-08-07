@@ -17,7 +17,6 @@ package flow
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -331,15 +330,16 @@ func getResourceName(res *model.Resource) string {
 	if meta == nil {
 		return ""
 	}
+	repositoryName := meta.Repository.Name
 	if len(meta.Vtags) == 0 {
-		return meta.Repository.Name
+		return repositoryName
 	}
 
-	if len(meta.Vtags) <= 5 {
-		return meta.Repository.Name + ":[" + strings.Join(meta.Vtags, ",") + "]"
+	if len(meta.Vtags) == 1 {
+		return repositoryName + ":[" + meta.Vtags[0] + "]"
 	}
 
-	return fmt.Sprintf("%s:[%s ... %d in total]", meta.GetResourceName(), strings.Join(meta.Vtags[:5], ","), len(meta.Vtags))
+	return fmt.Sprintf("%s:[%s ... %d in total]", repositoryName, meta.Vtags[0], len(meta.Vtags))
 }
 
 // repository:c namespace:n -> n/c
