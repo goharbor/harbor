@@ -27,7 +27,7 @@ var (
 	testPly2 = &models.NotificationPolicy{
 		Name:         "webhook test policy2",
 		Description:  "webhook test policy2 description",
-		ProjectID:    111,
+		ProjectID:    222,
 		TargetsDB:    "[{\"type\":\"http\",\"address\":\"http://10.173.32.58:9009\",\"token\":\"xxxxxxxxx\",\"skip_cert_verify\":true}]",
 		EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\",\"uploadChart\",\"deleteChart\",\"downloadChart\",\"scanningFailed\",\"scanningCompleted\"]",
 		Creator:      "no one",
@@ -41,7 +41,7 @@ var (
 	testPly3 = &models.NotificationPolicy{
 		Name:         "webhook test policy3",
 		Description:  "webhook test policy3 description",
-		ProjectID:    111,
+		ProjectID:    333,
 		TargetsDB:    "[{\"type\":\"http\",\"address\":\"http://10.173.32.58:9009\",\"token\":\"xxxxxxxxx\",\"skip_cert_verify\":true}]",
 		EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\",\"uploadChart\",\"deleteChart\",\"downloadChart\",\"scanningFailed\",\"scanningCompleted\"]",
 		Creator:      "no one",
@@ -86,7 +86,7 @@ func TestGetNotificationPolicies(t *testing.T) {
 		wantErr      bool
 	}{
 		{name: "GetNotificationPolicies nil", projectID: 0, wantPolicies: []*models.NotificationPolicy{}},
-		{name: "GetNotificationPolicies 1", projectID: 111, wantPolicies: []*models.NotificationPolicy{testPly1, testPly2, testPly3}},
+		{name: "GetNotificationPolicies 1", projectID: 111, wantPolicies: []*models.NotificationPolicy{testPly1}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
@@ -214,10 +214,10 @@ func TestUpdateNotificationPolicy(t *testing.T) {
 			name: "UpdateNotificationPolicy 2",
 			args: args{
 				policy: &models.NotificationPolicy{
-					ID:           1,
+					ID:           2,
 					Name:         "webhook test policy2 new",
 					Description:  "webhook test policy2 description new",
-					ProjectID:    111,
+					ProjectID:    222,
 					TargetsDB:    "[{\"type\":\"http\",\"address\":\"http://10.173.32.58:9009\",\"token\":\"xxxxxxxxx\",\"skip_cert_verify\":true}]",
 					EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\",\"uploadChart\",\"deleteChart\",\"downloadChart\",\"scanningFailed\",\"scanningCompleted\"]",
 					Creator:      "no one",
@@ -231,10 +231,10 @@ func TestUpdateNotificationPolicy(t *testing.T) {
 			name: "UpdateNotificationPolicy 3",
 			args: args{
 				policy: &models.NotificationPolicy{
-					ID:           1,
+					ID:           3,
 					Name:         "webhook test policy3 new",
 					Description:  "webhook test policy3 description new",
-					ProjectID:    111,
+					ProjectID:    333,
 					TargetsDB:    "[{\"type\":\"http\",\"address\":\"http://10.173.32.58:9009\",\"token\":\"xxxxxxxxx\",\"skip_cert_verify\":true}]",
 					EventTypesDB: "[\"pushImage\",\"pullImage\",\"deleteImage\",\"uploadChart\",\"deleteChart\",\"downloadChart\",\"scanningFailed\",\"scanningCompleted\"]",
 					Creator:      "no one",

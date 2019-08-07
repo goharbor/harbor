@@ -3877,7 +3877,7 @@ paths:
           description: User have no permission to get webhook policy of the project.
         '500':
           description: Internal server errors.
-  '/projects/{project_id}/webhook/policies/lasttrigger':
+  '/projects/{project_id}/webhook/lasttrigger':
     get:
       summary: Get project webhook policy last trigger info
       description: |
