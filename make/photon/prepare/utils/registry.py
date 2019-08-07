@@ -9,6 +9,13 @@ registry_config_dir = os.path.join(config_dir, "registry")
 registry_config_template_path = os.path.join(templates_dir, "registry", "config.yml.jinja")
 registry_conf = os.path.join(config_dir, "registry", "config.yml")
 
+levels_map = {
+    'debug': 'debug',
+    'info': 'info',
+    'warning': 'warn',
+    'error': 'error',
+    'fatal': 'fatal'
+}
 
 def prepare_registry(config_dict):
     prepare_config_dir(registry_config_dir)
@@ -22,6 +29,7 @@ def prepare_registry(config_dict):
         registry_conf,
         uid=DEFAULT_UID,
         gid=DEFAULT_GID,
+        level=levels_map[config_dict['log_level']],
         storage_provider_info=storage_provider_info,
         **config_dict)
 
