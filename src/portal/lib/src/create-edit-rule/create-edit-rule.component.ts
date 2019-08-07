@@ -137,7 +137,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         }
       });
   }
-
+  trimText(event) {
+    if (event.srcElement.value) {
+      event.srcElement.value = event.srcElement.value.trim();
+    }
+  }
   equals(c1: any, c2: any): boolean {
     return c1 && c2 ? c1.id === c2.id : c1 === c2;
   }
