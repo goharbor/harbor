@@ -15,10 +15,8 @@
 package harbor
 
 import (
-	"context"
 	"fmt"
 	"strings"
-	"sync"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -48,47 +46,30 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 			}
 		}
 
-		rawResources := make([]*model.Resource, len(repositories))
-		var wg = new(sync.WaitGroup)
-		ctx, cancel := context.WithCancel(context.Background())
-		var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, ctx.Done())
+		var rawResources = make([]*model.Resource, len(repositories))
+		runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
+		defer runner.Cancel()
 
 		for i, r := range repositories {
-			wg.Add(1)
-			go func(index int, repo *adp.Repository) {
-				defer func() {
-					wg.Done()
-				}()
-
-				// Return false means no passport acquired, and no valid passport will be dispatched any more.
-				// For example, some crucial errors happened and all tasks should be cancelled.
-				if ok := passportsPool.Apply(); !ok {
-					return
-				}
-				defer func() {
-					passportsPool.Revoke()
-				}()
-
+			index := i
+			repo := r
+			runner.AddTask(func() error {
 				vTags, err := a.getTags(repo.Name)
 				if err != nil {
-					log.Errorf("List tags for repo '%s' error: %v", repo.Name, err)
-					cancel()
-					return
+					return fmt.Errorf("List tags for repo '%s' error: %v", repo.Name, err)
 				}
 				if len(vTags) == 0 {
 					rawResources[index] = nil
-					return
+					return nil
 				}
 				for _, filter := range filters {
 					if err = filter.DoFilter(&vTags); err != nil {
-						log.Errorf("Filter tags %v error: %v", vTags, err)
-						cancel()
-						return
+						return fmt.Errorf("Filter tags %v error: %v", vTags, err)
 					}
 				}
 				if len(vTags) == 0 {
 					rawResources[index] = nil
-					return
+					return nil
 				}
 				tags := []string{}
 				for _, vTag := range vTags {
@@ -105,13 +86,13 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 						Vtags: tags,
 					},
 				}
-			}(i, r)
-		}
-		wg.Wait()
 
-		err = ctx.Err()
-		cancel()
-		if err != nil {
+				return nil
+			})
+		}
+		runner.Wait()
+
+		if runner.IsCancelled() {
 			return nil, fmt.Errorf("FetchImages error when collect tags for repos")
 		}
 

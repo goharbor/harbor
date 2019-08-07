@@ -2,14 +2,12 @@ package dockerhub
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"strings"
-	"sync"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -250,26 +248,12 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	}
 
 	var rawResources = make([]*model.Resource, len(repos))
-	var wg = new(sync.WaitGroup)
-	ctx, cancel := context.WithCancel(context.Background())
-	var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, ctx.Done())
-
+	runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
+	defer runner.Cancel()
 	for i, r := range repos {
-		wg.Add(1)
-		go func(index int, repo Repo) {
-			defer func() {
-				wg.Done()
-			}()
-
-			// Return false means no passport acquired, and no valid passport will be dispatched any more.
-			// For example, some crucial errors happened and all tasks should be cancelled.
-			if ok := passportsPool.Apply(); !ok {
-				return
-			}
-			defer func() {
-				passportsPool.Revoke()
-			}()
-
+		index := i
+		repo := r
+		runner.AddTask(func() error {
 			name := fmt.Sprintf("%s/%s", repo.Namespace, repo.Name)
 			log.Infof("Routine started to collect tags for repo: %s", name)
 
@@ -277,12 +261,10 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 			if len(nameFilter) != 0 {
 				m, err := util.Match(nameFilter, name)
 				if err != nil {
-					cancel()
-					log.Errorf("match repo name '%s' against pattern '%s' error: %v", name, nameFilter, err)
-					return
+					return fmt.Errorf("match repo name '%s' against pattern '%s' error: %v", name, nameFilter, err)
 				}
 				if !m {
-					return
+					return nil
 				}
 			}
 
@@ -292,18 +274,14 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 			for {
 				pageTags, err := a.getTags(repo.Namespace, repo.Name, page, pageSize)
 				if err != nil {
-					cancel()
-					log.Errorf("get tags for repo '%s/%s' from DockerHub error: %v", repo.Namespace, repo.Name, err)
-					return
+					return fmt.Errorf("get tags for repo '%s/%s' from DockerHub error: %v", repo.Namespace, repo.Name, err)
 				}
 				for _, t := range pageTags.Tags {
 					// If tag filter set, skip tags that don't match the filter pattern.
 					if len(tagFilter) != 0 {
 						m, err := util.Match(tagFilter, t.Name)
 						if err != nil {
-							cancel()
-							log.Errorf("match tag name '%s' against pattern '%s' error: %v", t.Name, tagFilter, err)
-							return
+							return fmt.Errorf("match tag name '%s' against pattern '%s' error: %v", t.Name, tagFilter, err)
 						}
 
 						if !m {
@@ -319,9 +297,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 				page++
 			}
 
-			if len(tags) == 0 {
-				rawResources[index] = nil
-			} else {
+			if len(tags) > 0 {
 				rawResources[index] = &model.Resource{
 					Type:     model.ResourceTypeImage,
 					Registry: a.registry,
@@ -333,13 +309,13 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 					},
 				}
 			}
-		}(i, r)
-	}
-	wg.Wait()
 
-	err = ctx.Err()
-	cancel()
-	if err != nil {
+			return nil
+		})
+	}
+	runner.Wait()
+
+	if runner.IsCancelled() {
 		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
 	}
 

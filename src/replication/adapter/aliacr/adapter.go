@@ -1,14 +1,12 @@
 package aliacr
 
 import (
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"path/filepath"
 	"regexp"
-	"sync"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -159,33 +157,18 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 	}
 	log.Debugf("FetchImages.repositories: %#v\n", repositories)
 
-	rawResources := make([]*model.Resource, len(repositories))
-	var wg = new(sync.WaitGroup)
-	ctx, cancel := context.WithCancel(context.Background())
-	var passportsPool = utils.NewPassportsPool(adp.MaxConcurrency, ctx.Done())
+	var rawResources = make([]*model.Resource, len(repositories))
+	runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
+	defer runner.Cancel()
 
 	for i, r := range repositories {
-		wg.Add(1)
-		go func(index int, repo aliRepo) {
-			defer func() {
-				wg.Done()
-			}()
-
-			// Return false means no passport acquired, and no valid passport will be dispatched any more.
-			// For example, some crucial errors happened and all tasks should be cancelled.
-			if ok := passportsPool.Apply(); !ok {
-				return
-			}
-			defer func() {
-				passportsPool.Revoke()
-			}()
-
+		index := i
+		repo := r
+		runner.AddTask(func() error {
 			var tags []string
 			tags, err = a.getTags(repo, client)
 			if err != nil {
-				log.Errorf("List tags for repo '%s' error: %v", repo.RepoName, err)
-				cancel()
-				return
+				return fmt.Errorf("List tags for repo '%s' error: %v", repo.RepoName, err)
 			}
 
 			var filterTags []string
@@ -194,9 +177,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 					var ok bool
 					ok, err = util.Match(tagsPattern, tag)
 					if err != nil {
-						log.Errorf("Match tag '%s' error: %v", tag, err)
-						cancel()
-						return
+						return fmt.Errorf("Match tag '%s' error: %v", tag, err)
 					}
 					if ok {
 						filterTags = append(filterTags, tag)
@@ -218,16 +199,14 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 						Labels: []string{},
 					},
 				}
-			} else {
-				rawResources[index] = nil
 			}
-		}(i, r)
-	}
-	wg.Wait()
 
-	err = ctx.Err()
-	cancel()
-	if err != nil {
+			return nil
+		})
+	}
+	runner.Wait()
+
+	if runner.IsCancelled() {
 		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
 	}
 
