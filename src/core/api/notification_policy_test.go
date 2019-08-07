@@ -78,7 +78,7 @@ func TestNotificationPolicyAPI_List(t *testing.T) {
 		{
 			request: &testingRequest{
 				method: http.MethodGet,
-				url:    "/api/projects/1/policies",
+				url:    "/api/projects/1/webhook/policies",
 			},
 			code: http.StatusUnauthorized,
 		},
@@ -86,10 +86,10 @@ func TestNotificationPolicyAPI_List(t *testing.T) {
 		{
 			request: &testingRequest{
 				method:     http.MethodGet,
-				url:        "/api/projects/1/policies",
+				url:        "/api/projects/1/webhook/policies",
 				credential: nonSysAdmin,
 			},
-			code: http.StatusUnauthorized,
+			code: http.StatusForbidden,
 		},
 		// 404
 		{
@@ -154,7 +154,7 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 		{
 			request: &testingRequest{
 				method:     http.MethodPost,
-				url:        "/api/projects/1/webhook/policies/1",
+				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
 					Targets: []models.EventTarget{},
@@ -165,7 +165,7 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 		{
 			request: &testingRequest{
 				method:     http.MethodPost,
-				url:        "/api/projects/1/webhook/policies/1",
+				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
 					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
@@ -181,7 +181,7 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 		{
 			request: &testingRequest{
 				method:     http.MethodPost,
-				url:        "/api/projects/1/webhook/policies/1",
+				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
 					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
@@ -198,7 +198,7 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 		{
 			request: &testingRequest{
 				method:     http.MethodPost,
-				url:        "/api/projects/1/webhook/policies/1",
+				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
 					EventTypes: []string{"invalidType"},
@@ -446,7 +446,7 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 					},
 				},
 			},
-			code: http.StatusNotFound,
+			code: http.StatusOK,
 		},
 	}
 	runCodeCheckingCases(t, cases...)
@@ -482,7 +482,7 @@ func TestNotificationPolicyAPI_Test(t *testing.T) {
 			request: &testingRequest{
 				method:     http.MethodPost,
 				url:        "/api/projects/123/webhook/policies/test",
-				credential: nonSysAdmin,
+				credential: sysAdmin,
 			},
 			code: http.StatusNotFound,
 		},
@@ -491,7 +491,7 @@ func TestNotificationPolicyAPI_Test(t *testing.T) {
 			request: &testingRequest{
 				method:     http.MethodPost,
 				url:        "/api/projects/1/webhook/policies/test",
-				credential: nonSysAdmin,
+				credential: sysAdmin,
 				bodyJSON:   1234125,
 			},
 			code: http.StatusBadRequest,
@@ -501,7 +501,7 @@ func TestNotificationPolicyAPI_Test(t *testing.T) {
 			request: &testingRequest{
 				method:     http.MethodPost,
 				url:        "/api/projects/1/webhook/policies/test",
-				credential: nonSysAdmin,
+				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
 					Targets: []models.EventTarget{
 						{

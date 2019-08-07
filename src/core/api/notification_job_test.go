@@ -73,31 +73,22 @@ func TestNotificationJobAPI_List(t *testing.T) {
 				url:        "/api/projects/1/webhook/jobs?policy_id=0",
 				credential: sysAdmin,
 			},
-			code: http.StatusNotFound,
+			code: http.StatusBadRequest,
 		},
-		// 400 policyID invalid
+		// 400 policyID not found
 		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/projects/1/webhook/jobs?policy_id=123",
 				credential: sysAdmin,
 			},
-			code: http.StatusNotFound,
+			code: http.StatusBadRequest,
 		},
 		// 404 project not found
 		{
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/projects/123/webhook/jobs?policy_id=1",
-				credential: sysAdmin,
-			},
-			code: http.StatusNotFound,
-		},
-		// 404 policy not found
-		{
-			request: &testingRequest{
-				method:     http.MethodGet,
-				url:        "/api/projects/1/webhook/jobs?policy_id=1234",
 				credential: sysAdmin,
 			},
 			code: http.StatusNotFound,
