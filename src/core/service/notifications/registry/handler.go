@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
+	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
@@ -116,6 +117,25 @@ func (n *NotificationHandler) Post() {
 				return
 			}
 
+			// build and publish image push event
+			evt := &notifierEvt.Event{}
+			imgPushMetadata := &notifierEvt.ImagePushMetaData{
+				Project:  pro,
+				Tag:      tag,
+				Digest:   event.Target.Digest,
+				RepoName: event.Target.Repository,
+				OccurAt:  time.Now(),
+				Operator: event.Actor.Name,
+			}
+			if err := evt.Build(imgPushMetadata); err != nil {
+				// do not return when building event metadata failed
+				log.Errorf("failed to build image push event metadata: %v", err)
+			}
+			if err := evt.Publish(); err != nil {
+				// do not return when publishing event failed
+				log.Errorf("failed to publish image push event: %v", err)
+			}
+
 			// TODO: handle image delete event and chart event
 			go func() {
 				e := &rep_event.Event{
@@ -148,6 +168,25 @@ func (n *NotificationHandler) Post() {
 			}
 		}
 		if action == "pull" {
+			// build and publish image pull event
+			evt := &notifierEvt.Event{}
+			imgPullMetadata := &notifierEvt.ImagePullMetaData{
+				Project:  pro,
+				Tag:      tag,
+				Digest:   event.Target.Digest,
+				RepoName: event.Target.Repository,
+				OccurAt:  time.Now(),
+				Operator: event.Actor.Name,
+			}
+			if err := evt.Build(imgPullMetadata); err != nil {
+				// do not return when building event metadata failed
+				log.Errorf("failed to build image push event metadata: %v", err)
+			}
+			if err := evt.Publish(); err != nil {
+				// do not return when publishing event failed
+				log.Errorf("failed to publish image pull event: %v", err)
+			}
+
 			go func() {
 				log.Debugf("Increase the repository %s pull count.", repository)
 				if err := dao.IncreasePullCount(repository); err != nil {

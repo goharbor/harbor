@@ -37,6 +37,8 @@ func init() {
 		new(JobLog),
 		new(Robot),
 		new(OIDCUser),
+		new(NotificationPolicy),
+		new(NotificationJob),
 		new(Blob),
 		new(Artifact),
 		new(ArtifactAndBlob),
