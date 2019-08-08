@@ -1,8 +1,3 @@
-.form-group-label-override {
-    font-size: 14px;
-    font-weight: 400;
-}
-
 .access-level-label {
     font-size: 14px;
     font-weight: 400;
@@ -31,6 +26,28 @@
 }
 
 .form-group {
+    display: flex;
+    flex-wrap: wrap;
+    position: relative;
+    padding-left: 9.5rem;
+    margin-bottom: .5rem;
+    font-size: .541667rem;
+    letter-spacing: normal;
+    line-height: 1rem;
+    >label {
+        &:first-child {
+        position: absolute;
+        width: 8.5rem;
+        left: 0;
+        top: .25rem;
+        margin: 0;
+        }
+        &:not:first-child {
+            flex: 0 1 auto;
+            margin-left: 0;
+            margin-right: .5rem;
+        }
+    }
     ::ng-deep {
         clr-select-container {
             margin-top: 0.3rem;
@@ -43,5 +60,6 @@
         margin-left: 5px;
         height: 1rem;
     }
+
 }
 
