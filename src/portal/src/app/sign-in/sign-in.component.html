@@ -14,7 +14,7 @@
         <div class="login-group">
             <label for="username" aria-haspopup="true" role="tooltip"
                 class="tooltip tooltip-validation tooltip-md tooltip-top-left">
-                <input class="username" type="text" required [(ngModel)]="signInCredential.principal"
+                <input clrInput class="username" type="text" required [(ngModel)]="signInCredential.principal"
                     name="login_username" id="login_username" placeholder='{{"PLACEHOLDER.SIGN_IN_NAME" | translate}}'
                     #userNameInput='ngModel'>
                 <span class="tooltip-content">
@@ -23,7 +23,7 @@
             </label>
             <label for="username" aria-haspopup="true" role="tpopular-repo-wrapperooltip"
                 class="tooltip tooltip-validation tooltip-md tooltip-top-left">
-                <input class="password" type="password" required [(ngModel)]="signInCredential.password"
+                <input clrInput class="password" type="password" required [(ngModel)]="signInCredential.password"
                     name="login_password" id="login_password" placeholder='{{"PLACEHOLDER.SIGN_IN_PWD" | translate}}'
                     #passwordInput="ngModel">
                 <span class="tooltip-content">
