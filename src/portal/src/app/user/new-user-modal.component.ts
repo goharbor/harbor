@@ -39,7 +39,7 @@ export class NewUserModalComponent {
         private userService: UserService,
         private msgHandler: MessageHandlerService) { }
 
-    @ViewChild(NewUserFormComponent, {static: true})
+    @ViewChild(NewUserFormComponent, {static: false})
     newUserForm: NewUserFormComponent;
     @ViewChild(InlineAlertComponent, {static: false})
     inlineAlert: InlineAlertComponent;

@@ -41,7 +41,7 @@ export class EditProjectQuotasComponent implements OnInit {
   @ViewChild(InlineAlertComponent, {static: false})
   inlineAlert: InlineAlertComponent;
 
-  @ViewChild('quotaForm', {static: true})
+  @ViewChild('quotaForm', {static: false})
   currentForm: NgForm;
   @Output() confirmAction = new EventEmitter();
   quotaDangerCoefficient: number = QUOTA_DANGER_COEFFICIENT;
