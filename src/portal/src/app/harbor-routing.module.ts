@@ -49,6 +49,7 @@ import { ProjectComponent } from './project/project.component';
 import { ProjectDetailComponent } from './project/project-detail/project-detail.component';
 import { MemberComponent } from './project/member/member.component';
 import { RobotAccountComponent } from './project/robot-account/robot-account.component';
+import { WebhookComponent } from './project/webhook/webhook.component';
 import { ProjectLabelComponent } from "./project/project-label/project-label.component";
 import { ProjectConfigComponent } from './project/project-config/project-config.component';
 import { ProjectRoutingResolver } from './project/project-routing-resolver.service';
@@ -207,7 +208,11 @@ const harborRoutes: Routes = [
           {
             path: 'tag-retention',
             component: TagRetentionComponent
-          }
+          },
+          {
+            path: 'webhook',
+            component: WebhookComponent
+          },
         ]
       },
       {

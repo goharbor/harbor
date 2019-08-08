@@ -45,7 +45,10 @@
         "UPLOAD": "Upload",
         "NO_FILE": "Nenhum arquivo selecionado",
         "ADD": "ADD",
-        "RUN": "RUN"
+        "RUN": "RUN",
+        "CONTINUE": "CONTINUE",
+        "ENABLE": "ENABLE",
+        "DISABLE": "DISABLE"
     },
     "BATCH": {
         "DELETED_SUCCESS": "Removido com sucesso",
@@ -235,7 +238,8 @@
         "PROJECTS": "Projetos",
         "CONFIG": "Configuração",
         "HELMCHART": "Helm Charts",
-        "ROBOT_ACCOUNTS": "Robot Accounts"
+        "ROBOT_ACCOUNTS": "Robot Accounts",
+        "WEBHOOKS": "Webhooks"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Registro do Projeto",
@@ -361,6 +365,34 @@
         "PROJECT_MASTER": "Master",
         "DEVELOPER": "Developer",
         "GUEST": "Guest"
+    },
+    "WEBHOOK": {
+        "EDIT_BUTTON": "EDIT",
+        "ENABLED_BUTTON": "ENABLED",
+        "DISABLED_BUTTON": "DISABLED",
+        "TYPE": "Webhook",
+        "STATUS": "Status",
+        "CREATED": "Created",
+        "ENABLED": "Enabled",
+        "DISABLED": "Disabled",
+        "OF": "of",
+        "ITEMS": "items",
+        "LAST_TRIGGERED": "Last Triggered",
+        "EDIT_WEBHOOK": "Webhook Endpoint",
+        "CREATE_WEBHOOK": "Getting started with webhooks",
+        "EDIT_WEBHOOK_DESC": "Specify the endpoint for receiving webhook notifications",
+        "CREATE_WEBHOOK_DESC": "To get started with webhooks, provide an endpoint and credentials to access the webhook server.",
+        "ENDPOINT_URL": "Endpoint URL",
+        "URL_IS_REQUIRED": "Endpoint URL is required.",
+        "AUTH_HEADER": "Auth Header",
+        "VERIFY_REMOTE_CERT": "Verify Remote Certificate",
+        "TEST_ENDPOINT_BUTTON": "TEST ENDPOINT",
+        "CANCEL_BUTTON": "CANCEL",
+        "SAVE_BUTTON": "SAVE",
+        "ENABLED_WEBHOOK_TITLE": "Enable Project Webhooks",
+        "ENABLED_WEBHOOK_SUMMARY": "Do you want to enable webhooks for project ",
+        "DISABLED_WEBHOOK_TITLE": "Disable Project Webhooks",
+        "DISABLED_WEBHOOK_SUMMARY": "Do you want to disable webhooks for project "
     },
     "AUDIT_LOG": {
         "USERNAME": "Nome do usuário",
@@ -764,6 +796,7 @@
             "VERIFY_CERT": "Verificar o Certificado do Servidor LDAP",
             "READONLY_TOOLTIP": "Em modo somente leitura, você não pode remover repositórios ou tags ou enviar imagens. ",
             "REPO_TOOLTIP": "Usuários não podem efetuar qualquer operação nas imagens nesse modo.",
+            "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
             "HOURLY_CRON":"Run once an hour, beginning of hour. Equivalente a 0 0 * * * *.",
             "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun. Equivalente a 0 0 0 * * 0.",
             "DAILY_CRON":"Run once a day, midnight. Equivalente a 0 0 0 * * *."

@@ -43,7 +43,10 @@ import { AddHttpAuthGroupComponent } from './member/add-http-auth-group/add-http
 import { TagRetentionComponent } from "./tag-retention/tag-retention.component";
 import { AddRuleComponent } from "./tag-retention/add-rule/add-rule.component";
 import { TagRetentionService } from "./tag-retention/tag-retention.service";
-
+import { WebhookService } from './webhook/webhook.service';
+import { WebhookComponent } from './webhook/webhook.component';
+import { AddWebhookComponent } from './webhook/add-webhook/add-webhook.component';
+import { AddWebhookFormComponent } from './webhook/add-webhook-form/add-webhook-form.component';
 
 @NgModule({
   imports: [
@@ -70,9 +73,12 @@ import { TagRetentionService } from "./tag-retention/tag-retention.service";
     AddHttpAuthGroupComponent,
     TagRetentionComponent,
     AddRuleComponent,
+    WebhookComponent,
+    AddWebhookComponent,
+    AddWebhookFormComponent,
   ],
   exports: [ProjectComponent, ListProjectComponent],
-  providers: [ProjectRoutingResolver, MemberService, RobotService, TagRetentionService]
+  providers: [ProjectRoutingResolver, MemberService, RobotService, TagRetentionService, WebhookService]
 })
 export class ProjectModule {
 

@@ -45,7 +45,10 @@
         "UPLOAD": "Upload",
         "NO_FILE": "No file selected",
         "ADD": "ADD",
-        "RUN": "RUN"
+        "RUN": "RUN",
+        "CONTINUE": "CONTINUE",
+        "ENABLE": "ENABLE",
+        "DISABLE": "DISABLE"
     },
     "BATCH": {
         "DELETED_SUCCESS": "Deleted successfully",
@@ -237,7 +240,8 @@
         "PROJECTS": "Projects",
         "CONFIG": "Configuration",
         "HELMCHART": "Helm Charts",
-        "ROBOT_ACCOUNTS": "Robot Accounts"
+        "ROBOT_ACCOUNTS": "Robot Accounts",
+        "WEBHOOKS": "Webhooks"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Project registry",
@@ -334,6 +338,34 @@
         "DELETION_SUMMARY": "Do you want to delete robot accounts {{param}}?",
         "PULL_IS_MUST" : "Pull permission is checked by default and can not be modified.",
         "EXPORT_TO_FILE" : "export to file"
+    },
+    "WEBHOOK": {
+        "EDIT_BUTTON": "EDIT",
+        "ENABLED_BUTTON": "ENABLED",
+        "DISABLED_BUTTON": "DISABLED",
+        "TYPE": "Webhook",
+        "STATUS": "Status",
+        "CREATED": "Created",
+        "ENABLED": "Enabled",
+        "DISABLED": "Disabled",
+        "OF": "of",
+        "ITEMS": "items",
+        "LAST_TRIGGERED": "Last Triggered",
+        "EDIT_WEBHOOK": "Webhook Endpoint",
+        "CREATE_WEBHOOK": "Getting started with webhooks",
+        "EDIT_WEBHOOK_DESC": "Specify the endpoint for receiving webhook notifications",
+        "CREATE_WEBHOOK_DESC": "To get started with webhooks, provide an endpoint and credentials to access the webhook server.",
+        "ENDPOINT_URL": "Endpoint URL",
+        "URL_IS_REQUIRED": "Endpoint URL is required.",
+        "AUTH_HEADER": "Auth Header",
+        "VERIFY_REMOTE_CERT": "Verify Remote Certificate",
+        "TEST_ENDPOINT_BUTTON": "TEST ENDPOINT",
+        "CANCEL_BUTTON": "CANCEL",
+        "SAVE_BUTTON": "SAVE",
+        "ENABLED_WEBHOOK_TITLE": "Enable Project Webhooks",
+        "ENABLED_WEBHOOK_SUMMARY": "Do you want to enable webhooks for project ",
+        "DISABLED_WEBHOOK_TITLE": "Disable Project Webhooks",
+        "DISABLED_WEBHOOK_SUMMARY": "Do you want to disable webhooks for project "
     },
     "GROUP": {
         "GROUP": "Group",
@@ -717,6 +749,7 @@
         "LABEL": "Labels",
         "REPOSITORY": "Repository",
         "REPO_READ_ONLY": "Repository Read Only",
+        "WEBHOOK_NOTIFICATION_ENABLED": "Webhooks enabled",
         "SYSTEM": "System Settings",
         "PROJECT_QUOTAS": "Project Quotas",
         "VULNERABILITY": "Vulnerability",
@@ -769,6 +802,7 @@
             "VERIFY_CERT": "Verify Cert from LDAP Server",
             "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
             "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
+            "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
             "HOURLY_CRON":"Run once an hour, beginning of hour. Equivalent to 0 0 * * * *.",
             "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun. Equivalent to 0 0 0 * * 0.",
             "DAILY_CRON":"Run once a day, midnight. Equivalent to 0 0 0 * * *."
