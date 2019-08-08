@@ -31,7 +31,7 @@ export class ConfigurationEmailComponent implements OnChanges {
     private originalConfig: Configuration;
     testingMailOnGoing = false;
     onGoing = false;
-    @ViewChild("mailConfigFrom") mailForm: NgForm;
+    @ViewChild("mailConfigFrom", {static: false}) mailForm: NgForm;
 
     constructor(
         private msgHandler: MessageHandlerService,
