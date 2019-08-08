@@ -29,17 +29,17 @@ export class ForgotPasswordComponent {
     validationState: boolean = true;
     isSuccess: boolean = false;
 
-    @ViewChild("forgotPasswordFrom", {static: true}) forgotPwdForm: NgForm;
+    @ViewChild("forgotPasswordFrom", {static: false}) forgotPwdForm: NgForm;
     @ViewChild(InlineAlertComponent, {static: false})
     inlineAlert: InlineAlertComponent;
 
     constructor(private pwdService: PasswordSettingService) { }
 
-    public get showProgress(): boolean {
+    public showProgress(): boolean {
         return this.onGoing;
     }
 
-    public get isValid(): boolean {
+    public isValid(): boolean {
         return this.forgotPwdForm && this.forgotPwdForm.valid ;
     }
 
