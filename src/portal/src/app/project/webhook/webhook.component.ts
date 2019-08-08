@@ -37,11 +37,11 @@ import { ConfirmationDialogComponent } from "../../shared/confirmation-dialog/co
   // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WebhookComponent implements OnInit {
-  @ViewChild(AddWebhookComponent, { static: true })
+  @ViewChild(AddWebhookComponent, { static: false } )
   addWebhookComponent: AddWebhookComponent;
-  @ViewChild(AddWebhookFormComponent, { static: true })
+  @ViewChild(AddWebhookFormComponent, { static: false })
   addWebhookFormComponent: AddWebhookFormComponent;
-  @ViewChild("confirmationDialogComponent", { static: true })
+  @ViewChild("confirmationDialogComponent", { static: false })
   confirmationDialogComponent: ConfirmationDialogComponent;
   webhook: Webhook;
   endpoint: string = '';

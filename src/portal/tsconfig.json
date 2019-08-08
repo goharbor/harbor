@@ -23,7 +23,8 @@
       ],
       "lib/*": [
         "dist/lib/*"
-      ]
+      ],
+      "@angular/*": [ "./node_modules/@angular/*"]
     }
   },
   "files": [
