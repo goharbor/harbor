@@ -46,7 +46,7 @@ export class CreateProjectComponent implements OnInit, OnChanges, OnDestroy {
 
   projectForm: NgForm;
 
-  @ViewChild("projectForm")
+  @ViewChild("projectForm", {static: false})
   currentForm: NgForm;
   quotaUnits = QuotaUnits;
   project: Project = new Project();
@@ -74,7 +74,7 @@ export class CreateProjectComponent implements OnInit, OnChanges, OnDestroy {
   @Output() create = new EventEmitter<boolean>();
   @Input() quotaObj: QuotaHardInterface;
   @Input() isSystemAdmin: boolean;
-  @ViewChild(InlineAlertComponent)
+  @ViewChild(InlineAlertComponent, {static: false})
   inlineAlert: InlineAlertComponent;
 
   constructor(private projectService: ProjectService,

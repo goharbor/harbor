@@ -17,7 +17,7 @@ export class DatePickerComponent implements OnChanges {
   @Input() dateInput: string;
   @Input() oneDayOffset: boolean;
 
-  @ViewChild("searchTime") searchTime: NgModel;
+  @ViewChild("searchTime", {static: false}) searchTime: NgModel;
 
   @Output() search = new EventEmitter<string>();
 

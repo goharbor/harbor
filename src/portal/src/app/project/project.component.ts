@@ -27,10 +27,10 @@ import { SessionService } from "../shared/session.service";
 export class ProjectComponent implements OnInit {
   projectTypes = ProjectTypes;
   quotaObj: QuotaHardInterface;
-  @ViewChild(CreateProjectComponent)
+  @ViewChild(CreateProjectComponent, {static: false})
   creationProject: CreateProjectComponent;
 
-  @ViewChild(ListProjectComponent)
+  @ViewChild(ListProjectComponent, {static: false})
   listProject: ListProjectComponent;
 
   currentFilteredType: number = 0; // all projects
