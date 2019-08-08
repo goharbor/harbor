@@ -144,6 +144,8 @@ const (
 
 	ChartUploadCtxKey = contextKey("chart_upload_event")
 
+	// Global notification enable configuration
+	NotificationEnable = "notification_enable"
 	// Quota setting items for project
 	CountPerProject   = "count_per_project"
 	StoragePerProject = "storage_per_project"

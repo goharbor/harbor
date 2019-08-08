@@ -151,6 +151,12 @@ var (
 		{Resource: rbac.ResourceRobot, Action: rbac.ActionUpdate},
 		{Resource: rbac.ResourceRobot, Action: rbac.ActionDelete},
 		{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionList},
+		{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionRead},
 	}
 )
 
