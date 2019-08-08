@@ -36,16 +36,16 @@ import { CommonRoutes } from '@harbor/ui';
 
 export class HarborShellComponent implements OnInit, OnDestroy {
 
-    @ViewChild(AccountSettingsModalComponent)
+    @ViewChild(AccountSettingsModalComponent, {static: false})
     accountSettingsModal: AccountSettingsModalComponent;
 
-    @ViewChild(PasswordSettingComponent)
+    @ViewChild(PasswordSettingComponent, {static: false})
     pwdSetting: PasswordSettingComponent;
 
-    @ViewChild(NavigatorComponent)
+    @ViewChild(NavigatorComponent, {static: false})
     navigator: NavigatorComponent;
 
-    @ViewChild(AboutDialogComponent)
+    @ViewChild(AboutDialogComponent, {static: false})
     aboutDialog: AboutDialogComponent;
 
     // To indicator whwther or not the search results page is displayed
