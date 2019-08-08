@@ -15,34 +15,18 @@
 package models
 
 import (
-	"github.com/astaxie/beego/orm"
+	"time"
 )
 
-func init() {
-	orm.RegisterModel(
-		new(User),
-		new(Project),
-		new(Role),
-		new(AccessLog),
-		new(ScanJob),
-		new(RepoRecord),
-		new(ImgScanOverview),
-		new(ClairVulnTimestamp),
-		new(ProjectMetadata),
-		new(ConfigEntry),
-		new(Label),
-		new(ResourceLabel),
-		new(UserGroup),
-		new(AdminJob),
-		new(JobLog),
-		new(Robot),
-		new(OIDCUser),
-		new(Blob),
-		new(ProjectBlob),
-		new(Artifact),
-		new(ArtifactAndBlob),
-		new(CVEWhitelist),
-		new(Quota),
-		new(QuotaUsage),
-	)
+// ProjectBlob holds the relationship between manifest and blob.
+type ProjectBlob struct {
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
+	BlobID       int64     `orm:"column(blob_id)" json:"blob_id"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+}
+
+// TableName ...
+func (*ProjectBlob) TableName() string {
+	return "project_blob"
 }

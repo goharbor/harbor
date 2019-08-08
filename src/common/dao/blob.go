@@ -2,11 +2,11 @@ package dao
 
 import (
 	"fmt"
-	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"strings"
 	"time"
+
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // AddBlob ...
@@ -21,6 +21,20 @@ func AddBlob(blob *models.Blob) (int64, error) {
 		return 0, err
 	}
 	return id, nil
+}
+
+// GetOrCreateBlob returns blob by digest, create it if not exists
+func GetOrCreateBlob(blob *models.Blob) (bool, *models.Blob, error) {
+	blob.CreationTime = time.Now()
+
+	created, id, err := GetOrmer().ReadOrCreate(blob, "digest")
+	if err != nil {
+		return false, nil, err
+	}
+
+	blob.ID = id
+
+	return created, blob, nil
 }
 
 // GetBlob ...
@@ -50,15 +64,73 @@ func DeleteBlob(digest string) error {
 	return err
 }
 
-// HasBlobInProject ...
-func HasBlobInProject(projectID int64, digest string) (bool, error) {
-	var res []orm.Params
-	num, err := GetOrmer().Raw(`SELECT * FROM artifact af LEFT JOIN artifact_blob afnb ON af.digest = afnb.digest_af WHERE af.project_id = ? and afnb.digest_blob = ? `, projectID, digest).Values(&res)
+// GetBlobsByArtifact returns blobs of artifact
+func GetBlobsByArtifact(artifactDigest string) ([]*models.Blob, error) {
+	sql := `SELECT * FROM blob WHERE digest IN (SELECT digest_blob FROM artifact_blob WHERE digest_af = ?)`
+
+	var blobs []*models.Blob
+	if _, err := GetOrmer().Raw(sql, artifactDigest).QueryRows(&blobs); err != nil {
+		return nil, err
+	}
+
+	return blobs, nil
+}
+
+// GetExclusiveBlobs returns layers of repository:tag which are not shared with other repositories in the project
+func GetExclusiveBlobs(projectID int64, repository, digest string) ([]*models.Blob, error) {
+	blobs, err := GetBlobsByArtifact(digest)
 	if err != nil {
-		return false, err
+		return nil, err
 	}
-	if num == 0 {
-		return false, nil
+
+	sql := fmt.Sprintf(`
+SELECT
+  DISTINCT b.digest_blob AS digest
+FROM
+  (
+    SELECT
+      digest
+    FROM
+      artifact
+    WHERE
+      (
+        project_id = ?
+        AND repo != ?
+      )
+      OR (
+        project_id = ?
+        AND digest != ?
+      )
+  ) AS a
+  LEFT JOIN artifact_blob b ON a.digest = b.digest_af
+  AND b.digest_blob IN (%s)`, paramPlaceholder(len(blobs)-1))
+
+	params := []interface{}{projectID, repository, projectID, digest}
+	for _, blob := range blobs {
+		if blob.Digest != digest {
+			params = append(params, blob.Digest)
+		}
 	}
-	return true, nil
+
+	var rows []struct {
+		Digest string
+	}
+
+	if _, err := GetOrmer().Raw(sql, params...).QueryRows(&rows); err != nil {
+		return nil, err
+	}
+
+	shared := map[string]bool{}
+	for _, row := range rows {
+		shared[row.Digest] = true
+	}
+
+	var exclusive []*models.Blob
+	for _, blob := range blobs {
+		if blob.Digest != digest && !shared[blob.Digest] {
+			exclusive = append(exclusive, blob)
+		}
+	}
+
+	return exclusive, nil
 }

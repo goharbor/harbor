@@ -12,17 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package util
+package dao
 
 import (
-	"net/http"
+	"testing"
+
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/opencontainers/go-digest"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
-// RegInterceptor ...
-type RegInterceptor interface {
-	// HandleRequest ...
-	HandleRequest(req *http.Request) error
+func TestHasBlobInProject(t *testing.T) {
+	_, blob, err := GetOrCreateBlob(&models.Blob{
+		Digest: digest.FromString(utils.GenerateRandomString()).String(),
+		Size:   100,
+	})
+	require.Nil(t, err)
 
-	// HandleResponse won't return any error
-	HandleResponse(rw CustomResponseWriter, req *http.Request)
+	_, err = AddBlobToProject(blob.ID, 1)
+	require.Nil(t, err)
+
+	has, err := HasBlobInProject(1, blob.Digest)
+	require.Nil(t, err)
+	assert.True(t, has)
 }

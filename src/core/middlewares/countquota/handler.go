@@ -42,7 +42,14 @@ func New(next http.Handler, builders ...interceptor.Builder) http.Handler {
 
 // ServeHTTP manifest ...
 func (h *countQuotaHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	interceptor := h.getInterceptor(req)
+	interceptor, err := h.getInterceptor(req)
+	if err != nil {
+		log.Warningf("Error occurred when to handle request in count quota handler: %v", err)
+		http.Error(rw, util.MarshalError("InternalError", fmt.Sprintf("Error occurred when to handle request in count quota handler: %v", err)),
+			http.StatusInternalServerError)
+		return
+	}
+
 	if interceptor == nil {
 		h.next.ServeHTTP(rw, req)
 		return
@@ -60,13 +67,17 @@ func (h *countQuotaHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 	interceptor.HandleResponse(rw, req)
 }
 
-func (h *countQuotaHandler) getInterceptor(req *http.Request) interceptor.Interceptor {
+func (h *countQuotaHandler) getInterceptor(req *http.Request) (interceptor.Interceptor, error) {
 	for _, builder := range h.builders {
-		interceptor := builder.Build(req)
+		interceptor, err := builder.Build(req)
+		if err != nil {
+			return nil, err
+		}
+
 		if interceptor != nil {
-			return interceptor
+			return interceptor, nil
 		}
 	}
 
-	return nil
+	return nil, nil
 }

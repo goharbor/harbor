@@ -15,32 +15,30 @@
 package util
 
 import (
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
-	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
-	testutils "github.com/goharbor/harbor/src/common/utils/test"
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/require"
-
-	"fmt"
-	"github.com/garyburd/redigo/redis"
-	"github.com/goharbor/harbor/src/common/quota"
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"reflect"
 	"testing"
-	"time"
+
+	"github.com/docker/distribution"
+	"github.com/docker/distribution/manifest"
+	"github.com/docker/distribution/manifest/schema2"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
+	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
+	testutils "github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/opencontainers/go-digest"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var endpoint = "10.117.4.142"
 var notaryServer *httptest.Server
-
-const testingRedisHost = "REDIS_HOST"
-
-var admiralEndpoint = "http://127.0.0.1:8282"
-var token = ""
 
 func TestMain(m *testing.M) {
 	testutils.InitDatabaseFromEnv()
@@ -97,56 +95,6 @@ func TestMatchPullManifest(t *testing.T) {
 	assert.True(res7, "%s %v is a request to pull manifest", req7.Method, req7.URL)
 	assert.Equal("myproject", repo7)
 	assert.Equal("sha256:ca4626b691f57d16ce1576231e4a2e2135554d32e13a85dcff380d51fdd13f6a", tag7)
-}
-
-func TestMatchPutBlob(t *testing.T) {
-	assert := assert.New(t)
-	req1, _ := http.NewRequest("PUT", "http://127.0.0.1:5000/v2/library/ubuntu/blobs/uploads/67bb4d9b-4dab-4bbe-b726-2e39322b8303?_state=7W3kWkgdr3fTW", nil)
-	res1, repo1 := MatchPutBlobURL(req1)
-	assert.True(res1, "%s %v is not a request to put blob", req1.Method, req1.URL)
-	assert.Equal("library/ubuntu", repo1)
-
-	req2, _ := http.NewRequest("PATCH", "http://127.0.0.1:5000/v2/library/blobs/uploads/67bb4d9b-4dab-4bbe-b726-2e39322b8303?_state=7W3kWkgdr3fTW", nil)
-	res2, _ := MatchPutBlobURL(req2)
-	assert.False(res2, "%s %v is a request to put blob", req2.Method, req2.URL)
-
-	req3, _ := http.NewRequest("PUT", "http://127.0.0.1:5000/v2/library/manifest/67bb4d9b-4dab-4bbe-b726-2e39322b8303?_state=7W3kWkgdr3fTW", nil)
-	res3, _ := MatchPutBlobURL(req3)
-	assert.False(res3, "%s %v is not a request to put blob", req3.Method, req3.URL)
-}
-
-func TestMatchMountBlobURL(t *testing.T) {
-	assert := assert.New(t)
-	req1, _ := http.NewRequest("POST", "http://127.0.0.1:5000/v2/library/ubuntu/blobs/uploads/?mount=digtest123&from=testrepo", nil)
-	res1, repo1, mount, from := MatchMountBlobURL(req1)
-	assert.True(res1, "%s %v is not a request to mount blob", req1.Method, req1.URL)
-	assert.Equal("library/ubuntu", repo1)
-	assert.Equal("digtest123", mount)
-	assert.Equal("testrepo", from)
-
-	req2, _ := http.NewRequest("PATCH", "http://127.0.0.1:5000/v2/library/ubuntu/blobs/uploads/?mount=digtest123&from=testrepo", nil)
-	res2, _, _, _ := MatchMountBlobURL(req2)
-	assert.False(res2, "%s %v is a request to mount blob", req2.Method, req2.URL)
-
-	req3, _ := http.NewRequest("PUT", "http://127.0.0.1:5000/v2/library/ubuntu/blobs/uploads/?mount=digtest123&from=testrepo", nil)
-	res3, _, _, _ := MatchMountBlobURL(req3)
-	assert.False(res3, "%s %v is not a request to put blob", req3.Method, req3.URL)
-}
-
-func TestPatchBlobURL(t *testing.T) {
-	assert := assert.New(t)
-	req1, _ := http.NewRequest("PATCH", "http://127.0.0.1:5000/v2/library/ubuntu/blobs/uploads/1234-1234-abcd", nil)
-	res1, repo1 := MatchPatchBlobURL(req1)
-	assert.True(res1, "%s %v is not a request to patch blob", req1.Method, req1.URL)
-	assert.Equal("library/ubuntu", repo1)
-
-	req2, _ := http.NewRequest("POST", "http://127.0.0.1:5000/v2/library/ubuntu/blobs/uploads/1234-1234-abcd", nil)
-	res2, _ := MatchPatchBlobURL(req2)
-	assert.False(res2, "%s %v is a request to patch blob", req2.Method, req2.URL)
-
-	req3, _ := http.NewRequest("PUT", "http://127.0.0.1:5000/v2/library/ubuntu/blobs/uploads/?mount=digtest123&from=testrepo", nil)
-	res3, _ := MatchPatchBlobURL(req3)
-	assert.False(res3, "%s %v is not a request to patch blob", req3.Method, req3.URL)
 }
 
 func TestMatchPushManifest(t *testing.T) {
@@ -260,83 +208,194 @@ func TestMarshalError(t *testing.T) {
 	assert.Equal("{\"errors\":[{\"code\":\"DENIED\",\"message\":\"The action is denied\",\"detail\":\"The action is denied\"}]}", js2)
 }
 
-func TestTryRequireQuota(t *testing.T) {
-	quotaRes := &quota.ResourceList{
-		quota.ResourceStorage: 100,
-	}
-	err := TryRequireQuota(1, quotaRes)
-	assert.Nil(t, err)
-}
-
-func TestTryFreeQuota(t *testing.T) {
-	quotaRes := &quota.ResourceList{
-		quota.ResourceStorage: 1,
-	}
-	success := TryFreeQuota(1, quotaRes)
-	assert.True(t, success)
-}
-
-func TestGetBlobSize(t *testing.T) {
-	con, err := redis.Dial(
-		"tcp",
-		fmt.Sprintf("%s:%d", getRedisHost(), 6379),
-		redis.DialConnectTimeout(30*time.Second),
-		redis.DialReadTimeout(time.Minute+10*time.Second),
-		redis.DialWriteTimeout(10*time.Second),
-	)
-	assert.Nil(t, err)
-	defer con.Close()
-
-	size, err := GetBlobSize(con, "test-TestGetBlobSize")
-	assert.Nil(t, err)
-	assert.Equal(t, size, int64(0))
-}
-
-func TestSetBunkSize(t *testing.T) {
-	con, err := redis.Dial(
-		"tcp",
-		fmt.Sprintf("%s:%d", getRedisHost(), 6379),
-		redis.DialConnectTimeout(30*time.Second),
-		redis.DialReadTimeout(time.Minute+10*time.Second),
-		redis.DialWriteTimeout(10*time.Second),
-	)
-	assert.Nil(t, err)
-	defer con.Close()
-
-	size, err := GetBlobSize(con, "TestSetBunkSize")
-	assert.Nil(t, err)
-	assert.Equal(t, size, int64(0))
-
-	_, err = SetBunkSize(con, "TestSetBunkSize", 123)
-	assert.Nil(t, err)
-
-	size1, err := GetBlobSize(con, "TestSetBunkSize")
-	assert.Nil(t, err)
-	assert.Equal(t, size1, int64(123))
-}
-
-func TestGetProjectID(t *testing.T) {
-	name := "project_for_TestGetProjectID"
-	project := models.Project{
-		OwnerID: 1,
-		Name:    name,
+func makeManifest(configSize int64, layerSizes []int64) schema2.Manifest {
+	manifest := schema2.Manifest{
+		Versioned: manifest.Versioned{SchemaVersion: 2, MediaType: schema2.MediaTypeManifest},
+		Config: distribution.Descriptor{
+			MediaType: schema2.MediaTypeImageConfig,
+			Size:      configSize,
+			Digest:    digest.FromString(utils.GenerateRandomString()),
+		},
 	}
 
-	id, err := dao.AddProject(project)
-	if err != nil {
-		t.Fatalf("failed to add project: %v", err)
+	for _, size := range layerSizes {
+		manifest.Layers = append(manifest.Layers, distribution.Descriptor{
+			MediaType: schema2.MediaTypeLayer,
+			Size:      size,
+			Digest:    digest.FromString(utils.GenerateRandomString()),
+		})
 	}
 
-	idget, err := GetProjectID(name)
-	assert.Nil(t, err)
-	assert.Equal(t, id, idget)
+	return manifest
 }
 
-func getRedisHost() string {
-	redisHost := os.Getenv(testingRedisHost)
-	if redisHost == "" {
-		redisHost = "127.0.0.1" // for local test
+func getDescriptor(manifest schema2.Manifest) distribution.Descriptor {
+	buf, _ := json.Marshal(manifest)
+	_, desc, _ := distribution.UnmarshalManifest(manifest.Versioned.MediaType, buf)
+	return desc
+}
+
+func TestParseManifestInfo(t *testing.T) {
+	manifest := makeManifest(1, []int64{2, 3, 4})
+
+	tests := []struct {
+		name    string
+		req     func() *http.Request
+		want    *ManifestInfo
+		wantErr bool
+	}{
+		{
+			"ok",
+			func() *http.Request {
+				buf, _ := json.Marshal(manifest)
+				req, _ := http.NewRequest(http.MethodPut, "/v2/library/photon/manifests/latest", bytes.NewReader(buf))
+				req.Header.Add("Content-Type", manifest.MediaType)
+
+				return req
+			},
+			&ManifestInfo{
+				ProjectID:  1,
+				Repository: "library/photon",
+				Tag:        "latest",
+				Digest:     getDescriptor(manifest).Digest.String(),
+				References: manifest.References(),
+				Descriptor: getDescriptor(manifest),
+			},
+			false,
+		},
+		{
+			"bad content type",
+			func() *http.Request {
+				buf, _ := json.Marshal(manifest)
+				req, _ := http.NewRequest(http.MethodPut, "/v2/notfound/photon/manifests/latest", bytes.NewReader(buf))
+				req.Header.Add("Content-Type", "application/json")
+
+				return req
+			},
+			nil,
+			true,
+		},
+		{
+			"bad manifest",
+			func() *http.Request {
+				req, _ := http.NewRequest(http.MethodPut, "/v2/notfound/photon/manifests/latest", bytes.NewReader([]byte("")))
+				req.Header.Add("Content-Type", schema2.MediaTypeManifest)
+
+				return req
+			},
+			nil,
+			true,
+		},
+		{
+			"body missing",
+			func() *http.Request {
+				req, _ := http.NewRequest(http.MethodPut, "/v2/notfound/photon/manifests/latest", nil)
+				req.Header.Add("Content-Type", schema2.MediaTypeManifest)
+
+				return req
+			},
+			nil,
+			true,
+		},
+		{
+			"project not found",
+			func() *http.Request {
+
+				buf, _ := json.Marshal(manifest)
+
+				req, _ := http.NewRequest(http.MethodPut, "/v2/notfound/photon/manifests/latest", bytes.NewReader(buf))
+				req.Header.Add("Content-Type", manifest.MediaType)
+
+				return req
+			},
+			nil,
+			true,
+		},
+		{
+			"url not match",
+			func() *http.Request {
+				buf, _ := json.Marshal(manifest)
+				req, _ := http.NewRequest(http.MethodPut, "/v2/library/photon/manifest/latest", bytes.NewReader(buf))
+				req.Header.Add("Content-Type", manifest.MediaType)
+
+				return req
+			},
+			nil,
+			true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseManifestInfo(tt.req())
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ParseManifestInfo() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ParseManifestInfo() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestParseManifestInfoFromPath(t *testing.T) {
+	mustRequest := func(method, url string) *http.Request {
+		req, _ := http.NewRequest(method, url, nil)
+		return req
 	}
 
-	return redisHost
+	type args struct {
+		req *http.Request
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    *ManifestInfo
+		wantErr bool
+	}{
+		{
+			"ok for digest",
+			args{mustRequest(http.MethodDelete, "/v2/library/photon/manifests/sha256:3e17b60ab9d92d953fb8ebefa25624c0d23fb95f78dde5572285d10158044059")},
+			&ManifestInfo{
+				ProjectID:  1,
+				Repository: "library/photon",
+				Digest:     "sha256:3e17b60ab9d92d953fb8ebefa25624c0d23fb95f78dde5572285d10158044059",
+			},
+			false,
+		},
+		{
+			"ok for tag",
+			args{mustRequest(http.MethodDelete, "/v2/library/photon/manifests/latest")},
+			&ManifestInfo{
+				ProjectID:  1,
+				Repository: "library/photon",
+				Tag:        "latest",
+			},
+			false,
+		},
+		{
+			"project not found",
+			args{mustRequest(http.MethodDelete, "/v2/notfound/photon/manifests/latest")},
+			nil,
+			true,
+		},
+		{
+			"url not match",
+			args{mustRequest(http.MethodDelete, "/v2/library/photon/manifest/latest")},
+			nil,
+			true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := ParseManifestInfoFromPath(tt.args.req)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("ParseManifestInfoFromPath() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("ParseManifestInfoFromPath() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

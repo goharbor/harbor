@@ -15,12 +15,12 @@
 package chart
 
 import (
+	"fmt"
 	"net/http"
 	"regexp"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor/quota"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
@@ -29,81 +29,81 @@ import (
 
 var (
 	deleteChartVersionRe = regexp.MustCompile(`^/api/chartrepo/(?P<namespace>\w+)/charts/(?P<name>\w+)/(?P<version>[\w\d\.]+)/?$`)
-	uploadChartVersionRe = regexp.MustCompile(`^/api/chartrepo/(?P<namespace>\w+)/charts/?$`)
+	createChartVersionRe = regexp.MustCompile(`^/api/chartrepo/(?P<namespace>\w+)/charts/?$`)
 )
 
 var (
 	defaultBuilders = []interceptor.Builder{
-		&deleteChartVersionBuilder{},
-		&uploadChartVersionBuilder{},
+		&chartVersionDeletionBuilder{},
+		&chartVersionCreationBuilder{},
 	}
 )
 
-type deleteChartVersionBuilder struct {
-}
+type chartVersionDeletionBuilder struct{}
 
-func (*deleteChartVersionBuilder) Build(req *http.Request) interceptor.Interceptor {
+func (*chartVersionDeletionBuilder) Build(req *http.Request) (interceptor.Interceptor, error) {
 	if req.Method != http.MethodDelete {
-		return nil
+		return nil, nil
 	}
 
 	matches := deleteChartVersionRe.FindStringSubmatch(req.URL.String())
 	if len(matches) <= 1 {
-		return nil
+		return nil, nil
 	}
 
 	namespace, chartName, version := matches[1], matches[2], matches[3]
 
 	project, err := dao.GetProjectByName(namespace)
 	if err != nil {
-		log.Errorf("Failed to get project %s, error: %v", namespace, err)
-		return nil
+		return nil, fmt.Errorf("failed to get project %s, error: %v", namespace, err)
 	}
 	if project == nil {
-		log.Warningf("Project %s not found", namespace)
-		return nil
+		return nil, fmt.Errorf("project %s not found", namespace)
+	}
+
+	info := &util.ChartVersionInfo{
+		ProjectID: project.ProjectID,
+		Namespace: namespace,
+		ChartName: chartName,
+		Version:   version,
 	}
 
 	opts := []quota.Option{
 		quota.WithManager("project", strconv.FormatInt(project.ProjectID, 10)),
 		quota.WithAction(quota.SubtractAction),
 		quota.StatusCode(http.StatusOK),
-		quota.MutexKeys(mutexKey(namespace, chartName, version)),
+		quota.MutexKeys(info.MutexKey()),
 		quota.Resources(types.ResourceList{types.ResourceCount: 1}),
 	}
 
-	return quota.New(opts...)
+	return quota.New(opts...), nil
 }
 
-type uploadChartVersionBuilder struct {
-}
+type chartVersionCreationBuilder struct{}
 
-func (*uploadChartVersionBuilder) Build(req *http.Request) interceptor.Interceptor {
+func (*chartVersionCreationBuilder) Build(req *http.Request) (interceptor.Interceptor, error) {
 	if req.Method != http.MethodPost {
-		return nil
+		return nil, nil
 	}
 
-	matches := uploadChartVersionRe.FindStringSubmatch(req.URL.String())
+	matches := createChartVersionRe.FindStringSubmatch(req.URL.String())
 	if len(matches) <= 1 {
-		return nil
+		return nil, nil
 	}
 
 	namespace := matches[1]
 
 	project, err := dao.GetProjectByName(namespace)
 	if err != nil {
-		log.Errorf("Failed to get project %s, error: %v", namespace, err)
-		return nil
+		return nil, fmt.Errorf("failed to get project %s, error: %v", namespace, err)
 	}
 	if project == nil {
-		log.Warningf("Project %s not found", namespace)
-		return nil
+		return nil, fmt.Errorf("project %s not found", namespace)
 	}
 
 	chart, err := parseChart(req)
 	if err != nil {
-		log.Errorf("Failed to parse chart from body, error: %v", err)
-		return nil
+		return nil, fmt.Errorf("failed to parse chart from body, error: %v", err)
 	}
 	chartName, version := chart.Metadata.Name, chart.Metadata.Version
 
@@ -120,9 +120,9 @@ func (*uploadChartVersionBuilder) Build(req *http.Request) interceptor.Intercept
 		quota.WithManager("project", strconv.FormatInt(project.ProjectID, 10)),
 		quota.WithAction(quota.AddAction),
 		quota.StatusCode(http.StatusCreated),
-		quota.MutexKeys(mutexKey(namespace, chartName, version)),
-		quota.OnResources(computeQuotaForUpload),
+		quota.MutexKeys(info.MutexKey()),
+		quota.OnResources(computeResourcesForChartVersionCreation),
 	}
 
-	return quota.New(opts...)
+	return quota.New(opts...), nil
 }

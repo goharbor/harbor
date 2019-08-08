@@ -85,7 +85,9 @@ func chartVersionExists(namespace, chartName, version string) bool {
 	return !chartVersion.Removed
 }
 
-func computeQuotaForUpload(req *http.Request) (types.ResourceList, error) {
+// computeResourcesForChartVersionCreation returns count resource required for the chart package
+// no count required if the chart package of version exists in project
+func computeResourcesForChartVersionCreation(req *http.Request) (types.ResourceList, error) {
 	info, ok := util.ChartVersionInfoFromContext(req.Context())
 	if !ok {
 		return nil, errors.New("chart version info missing")
@@ -97,10 +99,6 @@ func computeQuotaForUpload(req *http.Request) (types.ResourceList, error) {
 	}
 
 	return types.ResourceList{types.ResourceCount: 1}, nil
-}
-
-func mutexKey(str ...string) string {
-	return "chart:" + strings.Join(str, ":")
 }
 
 func parseChart(req *http.Request) (*chart.Chart, error) {
