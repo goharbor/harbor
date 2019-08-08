@@ -290,9 +290,9 @@ services:
 {% endif %}
     dns_search: .
     ports:
-      - {{http_port}}:80
+      - {{http_port}}:8080
 {% if protocol == 'https' %}
-      - {{https_port}}:443
+      - {{https_port}}:8443
 {% endif %}
 {% if with_notary %}
       - 4443:4443

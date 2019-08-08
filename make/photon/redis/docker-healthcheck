@@ -1,0 +1,9 @@
+#!/bin/bash
+
+set -eo pipefail
+
+if ping="$(redis-cli -h "127.0.0.1" ping)" && [ "$ping" = 'PONG' ]; then
+	exit 0
+fi
+
+exit 1

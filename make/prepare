@@ -46,6 +46,7 @@ config_dir=$harbor_prepare_path/common/config
 
 # Run prepare script
 docker run --rm -v $input_dir:/input:z \
+                    -v $data_path:/data:z \
                     -v $harbor_prepare_path:/compose_location:z \
                     -v $config_dir:/config:z \
                     -v $secret_dir:/secret:z \

@@ -2,8 +2,8 @@ import os, shutil
 from fnmatch import fnmatch
 from pathlib import Path
 
-from g import config_dir, templates_dir
-from utils.misc import prepare_config_dir, mark_file
+from g import config_dir, templates_dir, DEFAULT_GID, DEFAULT_UID
+from utils.misc import prepare_dir, mark_file
 from utils.jinja import render_jinja
 from utils.cert import SSL_CERT_KEY_PATH, SSL_CERT_PATH
 
@@ -17,12 +17,16 @@ CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS = 'harbor.https.*.conf'
 CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTP = 'harbor.http.*.conf'
 
 def prepare_nginx(config_dict):
-    prepare_config_dir(nginx_confd_dir)
+    prepare_dir(nginx_confd_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
     render_nginx_template(config_dict)
 
 def render_nginx_template(config_dict):
     if config_dict['protocol'] == "https":
-        render_jinja(nginx_https_conf_template, nginx_conf,
+        render_jinja(
+            nginx_https_conf_template,
+            nginx_conf,
+            uid=DEFAULT_UID,
+            gid=DEFAULT_GID,
             ssl_cert=SSL_CERT_PATH,
             ssl_cert_key=SSL_CERT_KEY_PATH)
         location_file_pattern = CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS
@@ -35,7 +39,9 @@ def render_nginx_template(config_dict):
     else:
         render_jinja(
             nginx_http_conf_template,
-            nginx_conf)
+            nginx_conf,
+            uid=DEFAULT_UID,
+            gid=DEFAULT_GID)
         location_file_pattern = CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTP
     copy_nginx_location_configs_if_exist(nginx_template_ext_dir, nginx_confd_dir, location_file_pattern)
 

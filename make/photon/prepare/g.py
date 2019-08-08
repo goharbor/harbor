@@ -5,10 +5,17 @@ from pathlib import Path
 DEFAULT_UID = 10000
 DEFAULT_GID = 10000
 
+PG_UID = 999
+PG_GID = 999
+
+REDIS_UID = 999
+REDIS_GID = 999
+
 ## Global variable
 base_dir = '/harbor_make'
 templates_dir = "/usr/src/app/templates"
 config_dir = '/config'
+data_dir = '/data'
 
 secret_dir = '/secret'
 secret_key_dir='/secret/keys'

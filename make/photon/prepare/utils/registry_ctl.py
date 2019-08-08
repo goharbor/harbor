@@ -1,7 +1,7 @@
 import os, shutil
 
 from g import config_dir, templates_dir
-from utils.misc import prepare_config_dir
+from utils.misc import prepare_dir
 from utils.jinja import render_jinja
 
 registryctl_config_dir = os.path.join(config_dir, "registryctl")
@@ -24,7 +24,7 @@ def prepare_registry_ctl(config_dict):
     copy_registry_ctl_conf(registryctl_config_template_path, registryctl_conf)
 
 def prepare_registry_ctl_config_dir():
-    prepare_config_dir(registryctl_config_dir)
+    prepare_dir(registryctl_config_dir)
 
 def copy_registry_ctl_conf(src, dst):
     shutil.copyfile(src, dst)
