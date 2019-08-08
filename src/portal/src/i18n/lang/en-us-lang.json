@@ -1123,11 +1123,11 @@
         "ADD_TITLE": "Add Tag Retention Rule",
         "ADD_SUBTITLE": "Specify a tag retention rule for this project. All tag retention rules are independently calculated and each rule can be applied to a selected list of repositories.",
         "BY_WHAT": "By image count or number of days",
-        "RULE_TEMPLATE_1": "the images from the last # days",
-        "RULE_TEMPLATE_2": "the most recent active # images",
-        "RULE_TEMPLATE_3": "the most recently pushed # images",
-        "RULE_TEMPLATE_4": "the most recently pulled # images",
-        "RULE_TEMPLATE_5": "always",
+        "RULE_TEMPLATE_1": " the images from the last # days",
+        "RULE_TEMPLATE_2": " the most recent active # images",
+        "RULE_TEMPLATE_3": " the most recently pushed # images",
+        "RULE_TEMPLATE_4": " the most recently pulled # images",
+        "RULE_TEMPLATE_5": " always",
         "ACTION_RETAIN": " retain",
         "UNIT_DAY": "DAYS",
         "UNIT_COUNT": "COUNT",
@@ -1166,7 +1166,11 @@
         "TRIGGER": "Schedule",
         "RETAINED": "Retained",
         "TOTAL": "Total",
-        "NONE": "none"
+        "NONE": " none",
+        "RULE_NAME_6": " the images pulled within the last {{number}} days",
+        "RULE_NAME_7": " the images pushed within the last {{number}} days",
+        "RULE_TEMPLATE_6": " the images pulled within the last # days",
+        "RULE_TEMPLATE_7": " the images pushed within the last # days"
     }
 
 }

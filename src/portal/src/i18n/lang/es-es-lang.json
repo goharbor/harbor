@@ -1164,7 +1164,11 @@
         "TRIGGER": "Schedule",
         "RETAINED": "Retained",
         "TOTAL": "Total",
-        "NONE": "none"
+        "NONE": "none",
+        "RULE_NAME_6": " the images pulled within the last {{number}} days",
+        "RULE_NAME_7": " the images pushed within the last {{number}} days",
+        "RULE_TEMPLATE_6": " the images pulled within the last # days",
+        "RULE_TEMPLATE_7": " the images pushed within the last # days"
     }
 
 }
