@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
@@ -41,30 +42,6 @@ func (r *RetentionAPI) GetMetadatas() {
 	data := `
 {
     "templates": [
-        {
-            "rule_template": "lastXDays",
-            "display_text": "the images from the last # days",
-            "action": "retain",
-            "params": [
-                {
-                    "type": "int",
-                    "unit": "DAYS",
-                    "required": true
-                }
-            ]
-        },
-        {
-            "rule_template": "latestActiveK",
-            "display_text": "the most recent active # images",
-            "action": "retain",
-            "params": [
-                {
-                    "type": "int",
-                    "unit": "COUNT",
-                    "required": true
-                }
-            ]
-        },
         {
             "rule_template": "latestPushedK",
             "display_text": "the most recently pushed # images",
@@ -194,6 +171,10 @@ func (r *RetentionAPI) CreateRetention() {
 		r.SendBadRequestError(err)
 		return
 	}
+	if err = r.checkRuleConflict(p); err != nil {
+		r.SendConflictError(err)
+		return
+	}
 	if !r.requireAccess(p, rbac.ActionCreate) {
 		return
 	}
@@ -241,6 +222,10 @@ func (r *RetentionAPI) UpdateRetention() {
 		return
 	}
 	p.ID = id
+	if err = r.checkRuleConflict(p); err != nil {
+		r.SendConflictError(err)
+		return
+	}
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
@@ -248,6 +233,21 @@ func (r *RetentionAPI) UpdateRetention() {
 		r.SendInternalServerError(err)
 		return
 	}
+}
+
+func (r *RetentionAPI) checkRuleConflict(p *policy.Metadata) error {
+	temp := make(map[string]int)
+	for n, rule := range p.Rules {
+		tid := rule.ID
+		rule.ID = 0
+		bs, _ := json.Marshal(rule)
+		if old, exists := temp[string(bs)]; exists {
+			return fmt.Errorf("rule %d is conflict with rule %d", n, old)
+		}
+		temp[string(bs)] = tid
+		rule.ID = tid
+	}
+	return nil
 }
 
 // TriggerRetentionExec Trigger Retention Execution

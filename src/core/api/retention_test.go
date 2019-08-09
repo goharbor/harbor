@@ -143,6 +143,87 @@ func TestCreatePolicy(t *testing.T) {
 			},
 			code: http.StatusBadRequest,
 		},
+		{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    "/api/retentions",
+				bodyJSON: &policy.Metadata{
+					Algorithm: "or",
+					Rules: []rule.Metadata{
+						{
+							ID:       1,
+							Priority: 1,
+							Template: "recentXdays",
+							Parameters: rule.Parameters{
+								"num": 10,
+							},
+							TagSelectors: []*rule.Selector{
+								{
+									Kind:       "label",
+									Decoration: "with",
+									Pattern:    "latest",
+								},
+								{
+									Kind:       "regularExpression",
+									Decoration: "matches",
+									Pattern:    "release-[\\d\\.]+",
+								},
+							},
+							ScopeSelectors: map[string][]*rule.Selector{
+								"repository": {
+									{
+										Kind:       "regularExpression",
+										Decoration: "matches",
+										Pattern:    ".+",
+									},
+								},
+							},
+						},
+						{
+							ID:       2,
+							Priority: 1,
+							Template: "recentXdays",
+							Parameters: rule.Parameters{
+								"num": 10,
+							},
+							TagSelectors: []*rule.Selector{
+								{
+									Kind:       "label",
+									Decoration: "with",
+									Pattern:    "latest",
+								},
+								{
+									Kind:       "regularExpression",
+									Decoration: "matches",
+									Pattern:    "release-[\\d\\.]+",
+								},
+							},
+							ScopeSelectors: map[string][]*rule.Selector{
+								"repository": {
+									{
+										Kind:       "regularExpression",
+										Decoration: "matches",
+										Pattern:    ".+",
+									},
+								},
+							},
+						},
+					},
+					Trigger: &policy.Trigger{
+						Kind: "Schedule",
+						Settings: map[string]interface{}{
+							"cron": "* 22 11 * * *",
+						},
+					},
+					Scope: &policy.Scope{
+						Level:     "project",
+						Reference: 1,
+					},
+				},
+				credential: sysAdmin,
+			},
+			code: http.StatusConflict,
+		},
 	}
 
 	runCodeCheckingCases(t, cases...)
@@ -266,6 +347,87 @@ func TestPolicy(t *testing.T) {
 				credential: sysAdmin,
 			},
 			code: http.StatusOK,
+		},
+		{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    fmt.Sprintf("/api/retentions/%d", id),
+				bodyJSON: &policy.Metadata{
+					Algorithm: "or",
+					Rules: []rule.Metadata{
+						{
+							ID:       1,
+							Priority: 1,
+							Template: "recentXdays",
+							Parameters: rule.Parameters{
+								"num": 10,
+							},
+							TagSelectors: []*rule.Selector{
+								{
+									Kind:       "label",
+									Decoration: "with",
+									Pattern:    "latest",
+								},
+								{
+									Kind:       "regularExpression",
+									Decoration: "matches",
+									Pattern:    "release-[\\d\\.]+",
+								},
+							},
+							ScopeSelectors: map[string][]*rule.Selector{
+								"repository": {
+									{
+										Kind:       "regularExpression",
+										Decoration: "matches",
+										Pattern:    "b.+",
+									},
+								},
+							},
+						},
+						{
+							ID:       2,
+							Priority: 1,
+							Template: "recentXdays",
+							Parameters: rule.Parameters{
+								"num": 10,
+							},
+							TagSelectors: []*rule.Selector{
+								{
+									Kind:       "label",
+									Decoration: "with",
+									Pattern:    "latest",
+								},
+								{
+									Kind:       "regularExpression",
+									Decoration: "matches",
+									Pattern:    "release-[\\d\\.]+",
+								},
+							},
+							ScopeSelectors: map[string][]*rule.Selector{
+								"repository": {
+									{
+										Kind:       "regularExpression",
+										Decoration: "matches",
+										Pattern:    "b.+",
+									},
+								},
+							},
+						},
+					},
+					Trigger: &policy.Trigger{
+						Kind: "Schedule",
+						Settings: map[string]interface{}{
+							"cron": "* 22 11 * * *",
+						},
+					},
+					Scope: &policy.Scope{
+						Level:     "project",
+						Reference: 1,
+					},
+				},
+				credential: sysAdmin,
+			},
+			code: http.StatusConflict,
 		},
 		{
 			request: &testingRequest{
