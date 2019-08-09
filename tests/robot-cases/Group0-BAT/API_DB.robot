@@ -47,3 +47,5 @@ Test Case - Retag Image
     Harbor API Test  ./tests/apitests/python/test_retag.py
 Test Case - Robot Account
     Harbor API Test  ./tests/apitests/python/test_robot_account.py
+Test Case - Sign A Image
+    Harbor API Test  ./tests/apitests/python/test_sign_image.py
