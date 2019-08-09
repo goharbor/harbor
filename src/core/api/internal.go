@@ -19,12 +19,15 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/quota"
+	common_quota "github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils/log"
+
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/pkg/errors"
 	"strconv"
+
+	quota "github.com/goharbor/harbor/src/core/api/quota"
 )
 
 // InternalAPI handles request of harbor admin...
@@ -132,14 +135,14 @@ func (ia *InternalAPI) ensureQuota() error {
 			pCount = pCount + int64(count)
 		}
 
-		quotaMgr, err := quota.NewManager("project", strconv.FormatInt(project.ProjectID, 10))
+		quotaMgr, err := common_quota.NewManager("project", strconv.FormatInt(project.ProjectID, 10))
 		if err != nil {
 			logger.Errorf("Error occurred when to new quota manager %v, just skip it.", err)
 			continue
 		}
-		used := quota.ResourceList{
-			quota.ResourceStorage: pSize,
-			quota.ResourceCount:   pCount,
+		used := common_quota.ResourceList{
+			common_quota.ResourceStorage: pSize,
+			common_quota.ResourceCount:   pCount,
 		}
 		if err := quotaMgr.EnsureQuota(used); err != nil {
 			logger.Errorf("cannot ensure quota for the project: %d, err: %v, just skip it.", project.ProjectID, err)
@@ -147,4 +150,13 @@ func (ia *InternalAPI) ensureQuota() error {
 		}
 	}
 	return nil
+}
+
+// SyncQuota ...
+func (ia *InternalAPI) SyncQuota() {
+	err := quota.Sync(ia.ProjectMgr, false)
+	if err != nil {
+		ia.SendInternalServerError(err)
+		return
+	}
 }

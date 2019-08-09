@@ -34,6 +34,11 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
+
+	quota "github.com/goharbor/harbor/src/core/api/quota"
+	_ "github.com/goharbor/harbor/src/core/api/quota/chart"
+	_ "github.com/goharbor/harbor/src/core/api/quota/registry"
+
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares"
@@ -71,6 +76,32 @@ func updateInitPassword(userID int, password string) error {
 	} else {
 		log.Infof("User id: %d already has its encrypted password.", userID)
 	}
+	return nil
+}
+
+// Quota migration
+func quotaSync() error {
+	usages, err := dao.ListQuotaUsages()
+	if err != nil {
+		log.Errorf("list quota usage error, %v", err)
+		return err
+	}
+	projects, err := dao.GetProjects(nil)
+	if err != nil {
+		log.Errorf("list project error, %v", err)
+		return err
+	}
+
+	// upgrade from old version
+	if len(projects) > 1 && len(usages) == 1 {
+		log.Info("Start to sync quota data .....")
+		if err := quota.Sync(config.GlobalProjectMgr, true); err != nil {
+			log.Errorf("Error happened when syncing quota usage data, %v", err)
+			return err
+		}
+		log.Info("Success to sync quota data .....")
+	}
+
 	return nil
 }
 
@@ -174,6 +205,9 @@ func main() {
 		log.Fatalf("init proxy error, %v", err)
 	}
 
-	// go proxy.StartProxy()
+	if err := quotaSync(); err != nil {
+		log.Fatalf("quota migration error, %v", err)
+	}
+
 	beego.Run()
 }
