@@ -18,178 +18,80 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"strings"
-	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor/quota"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
-	"github.com/opencontainers/go-digest"
 )
 
 var (
 	defaultBuilders = []interceptor.Builder{
-		&deleteManifestBuilder{},
-		&putManifestBuilder{},
+		&manifestDeletionBuilder{},
+		&manifestCreationBuilder{},
 	}
 )
 
-type deleteManifestBuilder struct {
-}
+type manifestDeletionBuilder struct{}
 
-func (*deleteManifestBuilder) Build(req *http.Request) interceptor.Interceptor {
-	if req.Method != http.MethodDelete {
-		return nil
+func (*manifestDeletionBuilder) Build(req *http.Request) (interceptor.Interceptor, error) {
+	if match, _, _ := util.MatchDeleteManifest(req); !match {
+		return nil, nil
 	}
 
-	match, name, reference := util.MatchManifestURL(req)
-	if !match {
-		return nil
-	}
+	info, ok := util.ManifestInfoFromContext(req.Context())
+	if !ok {
+		var err error
+		info, err = util.ParseManifestInfoFromPath(req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse manifest, error %v", err)
+		}
 
-	dgt, err := digest.Parse(reference)
-	if err != nil {
-		// Delete manifest only accept digest as reference
-		return nil
+		// Manifest info will be used by computeResourcesForDeleteManifest
+		*req = *(req.WithContext(util.NewManifestInfoContext(req.Context(), info)))
 	}
-
-	projectName := strings.Split(name, "/")[0]
-	project, err := dao.GetProjectByName(projectName)
-	if err != nil {
-		log.Errorf("Failed to get project %s, error: %v", projectName, err)
-		return nil
-	}
-	if project == nil {
-		log.Warningf("Project %s not found", projectName)
-		return nil
-	}
-
-	info := &util.MfInfo{
-		ProjectID:  project.ProjectID,
-		Repository: name,
-		Digest:     dgt.String(),
-	}
-
-	// Manifest info will be used by computeQuotaForUpload
-	*req = *req.WithContext(util.NewManifestInfoContext(req.Context(), info))
 
 	opts := []quota.Option{
-		quota.WithManager("project", strconv.FormatInt(project.ProjectID, 10)),
+		quota.WithManager("project", strconv.FormatInt(info.ProjectID, 10)),
 		quota.WithAction(quota.SubtractAction),
 		quota.StatusCode(http.StatusAccepted),
-		quota.MutexKeys(mutexKey(info)),
-		quota.OnResources(computeQuotaForDelete),
+		quota.MutexKeys(info.MutexKey("count")),
+		quota.OnResources(computeResourcesForManifestDeletion),
 		quota.OnFulfilled(func(http.ResponseWriter, *http.Request) error {
 			return dao.DeleteArtifactByDigest(info.ProjectID, info.Repository, info.Digest)
 		}),
 	}
 
-	return quota.New(opts...)
+	return quota.New(opts...), nil
 }
 
-type putManifestBuilder struct {
-}
+type manifestCreationBuilder struct{}
 
-func (b *putManifestBuilder) Build(req *http.Request) interceptor.Interceptor {
-	if req.Method != http.MethodPut {
-		return nil
+func (*manifestCreationBuilder) Build(req *http.Request) (interceptor.Interceptor, error) {
+	if match, _, _ := util.MatchPushManifest(req); !match {
+		return nil, nil
 	}
 
 	info, ok := util.ManifestInfoFromContext(req.Context())
 	if !ok {
-		// assert that manifest info will be set by others
-		return nil
+		var err error
+		info, err = util.ParseManifestInfo(req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse manifest, error %v", err)
+		}
+
+		// Manifest info will be used by computeResourcesForCreateManifest
+		*req = *(req.WithContext(util.NewManifestInfoContext(req.Context(), info)))
 	}
 
 	opts := []quota.Option{
 		quota.WithManager("project", strconv.FormatInt(info.ProjectID, 10)),
 		quota.WithAction(quota.AddAction),
 		quota.StatusCode(http.StatusCreated),
-		quota.MutexKeys(mutexKey(info)),
-		quota.OnResources(computeQuotaForPut),
-		quota.OnFulfilled(func(http.ResponseWriter, *http.Request) error {
-			newManifest, overwriteTag := !info.Exist, info.DigestChanged
-
-			if newManifest {
-				if err := b.doNewManifest(info); err != nil {
-					log.Errorf("Failed to handle response for new manifest, error: %v", err)
-				}
-			} else if overwriteTag {
-				if err := b.doOverwriteTag(info); err != nil {
-					log.Errorf("Failed to handle response for overwrite tag, error: %v", err)
-				}
-			}
-
-			return nil
-		}),
+		quota.MutexKeys(info.MutexKey("count")),
+		quota.OnResources(computeResourcesForManifestCreation),
+		quota.OnFulfilled(afterManifestCreated),
 	}
 
-	return quota.New(opts...)
-}
-
-func (b *putManifestBuilder) doNewManifest(info *util.MfInfo) error {
-	artifact := &models.Artifact{
-		PID:      info.ProjectID,
-		Repo:     info.Repository,
-		Tag:      info.Tag,
-		Digest:   info.Digest,
-		PushTime: time.Now(),
-		Kind:     "Docker-Image",
-	}
-
-	if _, err := dao.AddArtifact(artifact); err != nil {
-		return fmt.Errorf("error to add artifact, %v", err)
-	}
-
-	return b.attachBlobsToArtifact(info)
-}
-
-func (b *putManifestBuilder) doOverwriteTag(info *util.MfInfo) error {
-	artifact := &models.Artifact{
-		ID:       info.ArtifactID,
-		PID:      info.ProjectID,
-		Repo:     info.Repository,
-		Tag:      info.Tag,
-		Digest:   info.Digest,
-		PushTime: time.Now(),
-		Kind:     "Docker-Image",
-	}
-
-	if err := dao.UpdateArtifactDigest(artifact); err != nil {
-		return fmt.Errorf("error to update artifact, %v", err)
-	}
-
-	return b.attachBlobsToArtifact(info)
-}
-
-func (b *putManifestBuilder) attachBlobsToArtifact(info *util.MfInfo) error {
-	self := &models.ArtifactAndBlob{
-		DigestAF:   info.Digest,
-		DigestBlob: info.Digest,
-	}
-
-	artifactBlobs := append([]*models.ArtifactAndBlob{}, self)
-
-	for _, d := range info.Refrerence {
-		artifactBlob := &models.ArtifactAndBlob{
-			DigestAF:   info.Digest,
-			DigestBlob: d.Digest.String(),
-		}
-
-		artifactBlobs = append(artifactBlobs, artifactBlob)
-	}
-
-	if err := dao.AddArtifactNBlobs(artifactBlobs); err != nil {
-		if strings.Contains(err.Error(), dao.ErrDupRows.Error()) {
-			log.Warning("the artifact and blobs have already in the DB, it maybe an existing image with different tag")
-			return nil
-		}
-
-		return fmt.Errorf("error to add artifact and blobs in proxy response handler, %v", err)
-	}
-
-	return nil
+	return quota.New(opts...), nil
 }

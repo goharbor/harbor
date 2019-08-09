@@ -18,23 +18,35 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/quota"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"github.com/goharbor/harbor/src/pkg/types"
 )
 
-func mutexKey(info *util.MfInfo) string {
-	if info.Tag != "" {
-		return "Quota::manifest-lock::" + info.Repository + ":" + info.Tag
+// computeResourcesForManifestCreation returns count resource required for manifest
+// no count required if the tag of the repository exists in the project
+func computeResourcesForManifestCreation(req *http.Request) (types.ResourceList, error) {
+	info, ok := util.ManifestInfoFromContext(req.Context())
+	if !ok {
+		return nil, errors.New("manifest info missing")
 	}
 
-	return "Quota::manifest-lock::" + info.Repository + ":" + info.Digest
+	// only count quota required when push new tag
+	if info.IsNewTag() {
+		return quota.ResourceList{quota.ResourceCount: 1}, nil
+	}
+
+	return nil, nil
 }
 
-func computeQuotaForDelete(req *http.Request) (types.ResourceList, error) {
+// computeResourcesForManifestDeletion returns count resource will be released when manifest deleted
+// then result will be the sum of manifest count of the same repository in the project
+func computeResourcesForManifestDeletion(req *http.Request) (types.ResourceList, error) {
 	info, ok := util.ManifestInfoFromContext(req.Context())
 	if !ok {
 		return nil, errors.New("manifest info missing")
@@ -53,40 +65,54 @@ func computeQuotaForDelete(req *http.Request) (types.ResourceList, error) {
 	return types.ResourceList{types.ResourceCount: total}, nil
 }
 
-func computeQuotaForPut(req *http.Request) (types.ResourceList, error) {
+// afterManifestCreated the handler after manifest created success
+// it will create or update the artifact info in db, and then attach blobs to artifact
+func afterManifestCreated(w http.ResponseWriter, req *http.Request) error {
 	info, ok := util.ManifestInfoFromContext(req.Context())
 	if !ok {
-		return nil, errors.New("manifest info missing")
+		return errors.New("manifest info missing")
 	}
 
-	artifact, err := getArtifact(info)
-	if err != nil {
-		return nil, fmt.Errorf("error occurred when to check Manifest existence %v", err)
+	artifact := info.Artifact()
+	if artifact.ID == 0 {
+		if _, err := dao.AddArtifact(artifact); err != nil {
+			return fmt.Errorf("error to add artifact, %v", err)
+		}
+	} else {
+		if err := dao.UpdateArtifact(artifact); err != nil {
+			return fmt.Errorf("error to update artifact, %v", err)
+		}
 	}
 
-	if artifact != nil {
-		info.ArtifactID = artifact.ID
-		info.DigestChanged = artifact.Digest != info.Digest
-		info.Exist = true
-
-		return nil, nil
-	}
-
-	return quota.ResourceList{quota.ResourceCount: 1}, nil
+	return attachBlobsToArtifact(info)
 }
 
-// get artifact by manifest info
-func getArtifact(info *util.MfInfo) (*models.Artifact, error) {
-	query := &models.ArtifactQuery{
-		PID:  info.ProjectID,
-		Repo: info.Repository,
-		Tag:  info.Tag,
+// attachBlobsToArtifact attach the blobs which from manifest to artifact
+func attachBlobsToArtifact(info *util.ManifestInfo) error {
+	self := &models.ArtifactAndBlob{
+		DigestAF:   info.Digest,
+		DigestBlob: info.Digest,
 	}
 
-	artifacts, err := dao.ListArtifacts(query)
-	if err != nil || len(artifacts) == 0 {
-		return nil, err
+	artifactBlobs := append([]*models.ArtifactAndBlob{}, self)
+
+	for _, reference := range info.References {
+		artifactBlob := &models.ArtifactAndBlob{
+			DigestAF:   info.Digest,
+			DigestBlob: reference.Digest.String(),
+		}
+
+		artifactBlobs = append(artifactBlobs, artifactBlob)
 	}
 
-	return artifacts[0], nil
+	if err := dao.AddArtifactNBlobs(artifactBlobs); err != nil {
+		if strings.Contains(err.Error(), dao.ErrDupRows.Error()) {
+			log.Warning("the artifact and blobs have already in the DB, it maybe an existing image with different tag")
+			return nil
+		}
+
+		return fmt.Errorf("error to add artifact and blobs in proxy response handler, %v", err)
+	}
+
+	return nil
 }

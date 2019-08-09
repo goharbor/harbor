@@ -65,8 +65,6 @@ func (qi *quotaInterceptor) HandleRequest(req *http.Request) (err error) {
 		if err != nil {
 			return fmt.Errorf("failed to compute the resources for quota, error: %v", err)
 		}
-
-		log.Debugf("Compute the resources for quota, got: %v", resources)
 	}
 	qi.resources = resources
 
@@ -92,7 +90,9 @@ func (qi *quotaInterceptor) HandleResponse(w http.ResponseWriter, req *http.Requ
 	switch sr.Status() {
 	case opts.StatusCode:
 		if opts.OnFulfilled != nil {
-			opts.OnFulfilled(w, req)
+			if err := opts.OnFulfilled(w, req); err != nil {
+				log.Errorf("Failed to handle on fulfilled, error: %v", err)
+			}
 		}
 	default:
 		if err := qi.unreserve(); err != nil {
@@ -100,12 +100,16 @@ func (qi *quotaInterceptor) HandleResponse(w http.ResponseWriter, req *http.Requ
 		}
 
 		if opts.OnRejected != nil {
-			opts.OnRejected(w, req)
+			if err := opts.OnRejected(w, req); err != nil {
+				log.Errorf("Failed to handle on rejected, error: %v", err)
+			}
 		}
 	}
 
 	if opts.OnFinally != nil {
-		opts.OnFinally(w, req)
+		if err := opts.OnFinally(w, req); err != nil {
+			log.Errorf("Failed to handle on finally, error: %v", err)
+		}
 	}
 }
 
@@ -118,8 +122,6 @@ func (qi *quotaInterceptor) freeMutexes() {
 }
 
 func (qi *quotaInterceptor) reserve() error {
-	log.Debugf("Reserve %s resources, %v", qi.opts.Action, qi.resources)
-
 	if len(qi.resources) == 0 {
 		return nil
 	}
@@ -135,8 +137,6 @@ func (qi *quotaInterceptor) reserve() error {
 }
 
 func (qi *quotaInterceptor) unreserve() error {
-	log.Debugf("Unreserve %s resources, %v", qi.opts.Action, qi.resources)
-
 	if len(qi.resources) == 0 {
 		return nil
 	}
