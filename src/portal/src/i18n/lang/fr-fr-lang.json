@@ -565,6 +565,8 @@
         "TAGS_COUNT": "Tags",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Commande de Pull",
+        "PULL_TIME": "Pull Time",
+        "PUSH_TIME": "Push Time",
         "MY_REPOSITORY": "Mon Dépôt",
         "PUBLIC_REPOSITORY": "Dépôt Public",
         "DELETION_TITLE_REPO": "Confirmer la Suppresion du Dépôt",

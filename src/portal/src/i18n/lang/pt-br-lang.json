@@ -575,6 +575,8 @@
         "TAGS_COUNT": "Tags",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Comando de Pull",
+        "PULL_TIME": "Pull Time",
+        "PUSH_TIME": "Push Time",
         "MY_REPOSITORY": "Meu Repositório",
         "PUBLIC_REPOSITORY": "Repositório Público",
         "DELETION_TITLE_REPO": "Confirmar remoção de repositório",

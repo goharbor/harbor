@@ -576,6 +576,8 @@
         "TAGS_COUNT": "标签数",
         "PULL_COUNT": "下载数",
         "PULL_COMMAND": "Pull命令",
+        "PULL_TIME": "拉取时间",
+        "PUSH_TIME": "推送时间",
         "MY_REPOSITORY": "我的仓库",
         "PUBLIC_REPOSITORY": "公共仓库",
         "DELETION_TITLE_REPO": "删除镜像仓库确认",
