@@ -142,7 +142,8 @@ const (
 	OIDCCallbackPath = "/c/oidc/callback"
 	OIDCLoginPath    = "/c/oidc/login"
 
-	ChartUploadCtxKey = contextKey("chart_upload_event")
+	ChartUploadCtxKey   = contextKey("chart_upload_event")
+	ChartDownloadCtxKey = contextKey("chart_download_event")
 
 	// Global notification enable configuration
 	NotificationEnable = "notification_enable"
