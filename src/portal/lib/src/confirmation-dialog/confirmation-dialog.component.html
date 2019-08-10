@@ -23,10 +23,18 @@
             <button type="button" class="btn btn-primary" (click)="cancel()">{{'BUTTON.CLOSE' | translate}}</button>
         </ng-template>
         <ng-template [ngSwitchCase]="4">
+            <button type="button" class="btn btn-outline" (click)="cancel()">{{'BUTTON.CANCEL' | translate}}</button>
+            <button type="button" class="btn btn-primary" (click)="confirm()">{{'BUTTON.ENABLE' | translate}}</button>
+        </ng-template>
+        <ng-template [ngSwitchCase]="5">
+            <button type="button" class="btn btn-outline" (click)="cancel()">{{'BUTTON.CANCEL' | translate}}</button>
+            <button type="button" class="btn btn-danger" (click)="confirm()">{{'BUTTON.DISABLE' | translate}}</button>
+        </ng-template>
+        <ng-template [ngSwitchCase]="6">
             <button type="button" class="btn btn-outline" (click)="cancel()" [hidden]="isDelete">{{'BUTTON.CANCEL' | translate}}</button>
             <button type="button" class="btn btn-primary" (click)="confirm()" [hidden]="isDelete">{{'BUTTON.REPLICATE' | translate}}</button>
         </ng-template>
-        <ng-template [ngSwitchCase]="5">
+        <ng-template [ngSwitchCase]="7">
             <button type="button" class="btn btn-outline" (click)="cancel()" [hidden]="isDelete">{{'BUTTON.CANCEL' | translate}}</button>
             <button type="button" class="btn btn-primary" (click)="confirm()" [hidden]="isDelete">{{'BUTTON.STOP' | translate}}</button>
         </ng-template>

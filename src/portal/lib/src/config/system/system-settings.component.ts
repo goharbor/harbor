@@ -108,7 +108,7 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
         let changes = {};
         for (let prop in allChanges) {
             if (prop === 'token_expiration' || prop === 'read_only' || prop === 'project_creation_restriction'
-                || prop === 'robot_token_duration') {
+                || prop === 'robot_token_duration' || prop === 'notification_enable') {
                 changes[prop] = allChanges[prop];
             }
         }
@@ -117,6 +117,10 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
 
     setRepoReadOnlyValue($event: any) {
         this.systemSettings.read_only.value = $event;
+    }
+
+    setWebhookNotificationEnabledValue($event: any) {
+        this.systemSettings.notification_enable.value = $event;
     }
 
     disabled(prop: any): boolean {

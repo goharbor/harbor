@@ -142,8 +142,20 @@
                         </div>
                     </div>
                 </div>
-
             </div>
+        </div>
+        <div class="form-group">
+            <label for="webhookNotificationEnabled">{{'CONFIG.WEBHOOK_NOTIFICATION_ENABLED' | translate}}</label>
+            <clr-checkbox-wrapper>
+                <input type="checkbox" clrCheckbox name="webhookNotificationEnabled" id="webhookNotificationEnabled" [ngModel]="systemSettings.notification_enable.value"
+                    (ngModelChange)="setWebhookNotificationEnabledValue($event)" [ngModel]="systemSettings.notification_enable.value"/>
+                <label>
+                    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right read-tooltip">
+                        <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                        <span class="tooltip-content">{{'CONFIG.TOOLTIP.WEBHOOK_TOOLTIP' | translate}}</span>
+                    </a>
+                </label>
+            </clr-checkbox-wrapper>
         </div>
     </section>
 </form>
