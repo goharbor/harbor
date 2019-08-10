@@ -171,13 +171,18 @@ def parse_yaml_config(config_file_path):
     if storage_config.get('redirect'):
         config_dict['storage_redirect_disabled'] = storage_config['redirect']['disabled']
 
+    # Global proxy configs
+    proxy_config = configs.get('proxy') or {}
+    proxy_components = proxy_config.get('components') or []
+    for proxy_component in proxy_components:
+      config_dict[proxy_component + '_http_proxy'] = proxy_config.get('http_proxy') or ''
+      config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
+      config_dict[proxy_component + '_no_proxy'] = proxy_config.get('no_proxy') or '127.0.0.1,localhost,core,registry'
+
     # Clair configs, optional
     clair_configs = configs.get("clair") or {}
     config_dict['clair_db'] = 'postgres'
     config_dict['clair_updaters_interval'] = clair_configs.get("updaters_interval") or 12
-    config_dict['clair_http_proxy'] = clair_configs.get('http_proxy') or ''
-    config_dict['clair_https_proxy'] = clair_configs.get('https_proxy') or ''
-    config_dict['clair_no_proxy'] = clair_configs.get('no_proxy') or '127.0.0.1,localhost,core,registry'
 
     # Chart configs
     chart_configs = configs.get("chart") or {}
