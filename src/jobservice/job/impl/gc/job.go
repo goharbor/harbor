@@ -22,10 +22,13 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/registryctl"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/registryctl/client"
+	"strconv"
 )
 
 const (
@@ -87,6 +90,9 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 	}
 	if err := gc.cleanCache(); err != nil {
 		return err
+	}
+	if err := ensureQuota(); err != nil {
+		logger.Warningf("failed to ensure projects quota usage after GC, with error:%v", err)
 	}
 	gc.logger.Infof("GC results: status: %t, message: %s, start: %s, end: %s.", gcr.Status, gcr.Msg, gcr.StartTime, gcr.EndTime)
 	gc.logger.Infof("success to run gc in job.")
@@ -189,6 +195,34 @@ func delKeys(con redis.Conn, pattern string) error {
 		_, err := con.Do("DEL", key)
 		if err != nil {
 			return fmt.Errorf("failed to clean registry cache %v", err)
+		}
+	}
+	return nil
+}
+
+// handle size only
+func ensureQuota() error {
+	projects, err := dao.GetProjects(nil)
+	if err != nil {
+		return err
+	}
+	for _, project := range projects {
+		pSize, err := dao.CountSizeOfProject(project.ProjectID)
+		if err != nil {
+			logger.Warningf("error happen on counting size of project:%d , error:%v, just skip it.", project.ProjectID, err)
+			continue
+		}
+		quotaMgr, err := quota.NewManager("project", strconv.FormatInt(project.ProjectID, 10))
+		if err != nil {
+			logger.Errorf("Error occurred when to new quota manager %v, just skip it.", err)
+			continue
+		}
+		used := quota.ResourceList{
+			quota.ResourceStorage: pSize,
+		}
+		if err := quotaMgr.EnsureQuota(used); err != nil {
+			logger.Errorf("cannot ensure quota for the project: %d, err: %v, just skip it.", project.ProjectID, err)
+			continue
 		}
 	}
 	return nil
