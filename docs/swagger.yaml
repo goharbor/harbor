@@ -333,10 +333,10 @@ paths:
           description: Illegal format of provided ID value.
         '401':
           description: User need to log in first.
-        '404':
-          description: Project ID does not exist.
         '403':
           description: User does not have permission to get summary of the project.
+        '404':
+          description: Project ID does not exist.
         '500':
           description: Unexpected internal errors.
   '/projects/{project_id}/metadatas':
@@ -2380,10 +2380,10 @@ paths:
               $ref: '#/definitions/Namespace'
         '401':
           description: User need to login first.
-        '404':
-          description: No registry found.
         '403':
           description: User has no privilege for the operation.
+        '404':
+          description: No registry found.
         '500':
           description: Unexpected internal errors.
   /internal/syncregistry:
@@ -3684,7 +3684,7 @@ paths:
           description: Unexpected internal errors.
   '/projects/{project_id}/webhook/policies':
     get:
-      sumary: List project webhook policies.
+      summary: List project webhook policies.
       description: |
         This endpoint returns webhook policies of a project.
       parameters:
@@ -3712,7 +3712,7 @@ paths:
         '500':
           description: Unexpected internal errors.
     post:
-      sumary: Create project webhook policy.
+      summary: Create project webhook policy.
       description: |
         This endpoint create a webhook policy if the project does not have one.
       parameters:
@@ -3757,7 +3757,7 @@ paths:
           in: path
           description: The id of webhook policy.
           required: true
-          type: int64
+          type: integer
           format: int64
       tags:
         - Products
@@ -3791,7 +3791,7 @@ paths:
           in: path
           description: The id of webhook policy.
           required: true
-          type: int64
+          type: integer
           format: int64
         - name: policy
           in: body
@@ -3829,7 +3829,7 @@ paths:
           in: path
           description: The id of webhook policy.
           required: true
-          type: int64
+          type: integer
           format: int64
       tags:
         - Products
@@ -3908,7 +3908,7 @@ paths:
           description: Internal server errors.
   '/projects/{project_id}/webhook/jobs':
     get:
-      sumary: List project webhook jobs
+      summary: List project webhook jobs
       description: |
         This endpoint returns webhook jobs of a project.
       parameters:
@@ -5724,7 +5724,7 @@ definitions:
         description: The webhook job ID.
       policy_id:
         type: integer
-        fromat: int64
+        format: int64
         description: The webhook policy ID.
       event_type:
         type: string
