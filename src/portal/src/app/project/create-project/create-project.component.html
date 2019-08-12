@@ -5,7 +5,7 @@
         <form #projectForm="ngForm" clrForm>
             <section class="form-block">
                 <div class="form-group">
-                    <label for="create_project_name" required class="form-group-label-override">{{'PROJECT.NAME' | translate}}</label>
+                    <label for="create_project_name" required class="form-group-label-override required">{{'PROJECT.NAME' | translate}}</label>
                     <label for="create_project_name" aria-haspopup="true" role="tooltip" [class.invalid]="!isNameValid" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left">
                         <input clrInput type="text" id="create_project_name" [(ngModel)]="project.name" name="create_project_name" size="255" class="input-width"
                             required pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" minlength="2" #projectName="ngModel" autocomplete="off"
