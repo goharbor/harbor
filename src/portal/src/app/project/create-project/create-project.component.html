@@ -62,7 +62,6 @@
                                 <option *ngIf="i>1" [value]="quotaUnit.UNIT">{{ quotaUnit.UNIT }}</option>
                             </ng-template>
                         </select>
-
                     </div>
                     <clr-control-error *ngIf="(projectStorageLimit.invalid && (projectStorageLimit.dirty || projectStorageLimit.touched))||projectStorageLimit.errors"
                         class="tooltip-content">
