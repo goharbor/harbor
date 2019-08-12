@@ -210,3 +210,26 @@ func TestMergeMetadata(t *testing.T) {
 		assert.Equal(t, strconv.FormatBool(c.public), m["public"].(string))
 	}
 }
+
+func TestAbstractPublicMetadata(t *testing.T) {
+	// nil input metadata
+	meta := abstractPublicMetadata(nil)
+	assert.Nil(t, meta)
+
+	// contains no public metadata
+	metadata := map[string]interface{}{
+		"other": "test",
+	}
+	meta = abstractPublicMetadata(metadata)
+	assert.Nil(t, meta)
+
+	// contains public metadata
+	metadata = map[string]interface{}{
+		"other":  "test",
+		"public": "true",
+	}
+	meta = abstractPublicMetadata(metadata)
+	require.NotNil(t, meta)
+	require.Equal(t, 1, len(meta))
+	require.Equal(t, "true", meta["public"].(string))
+}
