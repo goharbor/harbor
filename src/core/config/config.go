@@ -520,6 +520,11 @@ func NotificationEnable() bool {
 	return cfgMgr.Get(common.NotificationEnable).GetBool()
 }
 
+// QuotaPerProjectEnable returns a bool to indicates if quota per project enabled in harbor
+func QuotaPerProjectEnable() bool {
+	return cfgMgr.Get(common.QuotaPerProjectEnable).GetBool()
+}
+
 // QuotaSetting returns the setting of quota.
 func QuotaSetting() (*models.QuotaSetting, error) {
 	if err := cfgMgr.Load(); err != nil {

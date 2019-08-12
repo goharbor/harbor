@@ -26,6 +26,7 @@ import (
 	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/opencontainers/go-digest"
@@ -290,6 +291,7 @@ func (suite *HandlerSuite) TestDeleteManifestInMultiProjects() {
 }
 
 func TestMain(m *testing.M) {
+	config.Init()
 	dao.PrepareTestForPostgresSQL()
 
 	if result := m.Run(); result != 0 {

@@ -21,6 +21,7 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor/quota"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
@@ -69,6 +70,7 @@ func (*chartVersionDeletionBuilder) Build(req *http.Request) (interceptor.Interc
 	}
 
 	opts := []quota.Option{
+		quota.EnforceResources(config.QuotaPerProjectEnable()),
 		quota.WithManager("project", strconv.FormatInt(project.ProjectID, 10)),
 		quota.WithAction(quota.SubtractAction),
 		quota.StatusCode(http.StatusOK),
@@ -117,6 +119,7 @@ func (*chartVersionCreationBuilder) Build(req *http.Request) (interceptor.Interc
 	*req = *req.WithContext(util.NewChartVersionInfoContext(req.Context(), info))
 
 	opts := []quota.Option{
+		quota.EnforceResources(config.QuotaPerProjectEnable()),
 		quota.WithManager("project", strconv.FormatInt(project.ProjectID, 10)),
 		quota.WithAction(quota.AddAction),
 		quota.StatusCode(http.StatusCreated),

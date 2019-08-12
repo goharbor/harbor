@@ -4841,6 +4841,9 @@ definitions:
       project_creation_restriction:
         type: string
         description: This attribute restricts what users have the permission to create project.  It can be "everyone" or "adminonly".
+      quota_per_project_enable:
+        type: boolean
+        description: This attribute indicates whether quota per project enabled in harbor
       read_only:
         type: boolean
         description: '''docker push'' is prohibited by Harbor if you set it to true.   '
@@ -4938,6 +4941,9 @@ definitions:
       project_creation_restriction:
         $ref: '#/definitions/StringConfigItem'
         description: This attribute restricts what users have the permission to create project.  It can be "everyone" or "adminonly".
+      quota_per_project_enable:
+        $ref: '#/definitions/BoolConfigItem'
+        description: This attribute indicates whether quota per project enabled in harbor
       read_only:
         $ref: '#/definitions/BoolConfigItem'
         description: '''docker push'' is prohibited by Harbor if you set it to true.   '
