@@ -37,6 +37,7 @@ import { DevCenterComponent } from './dev-center/dev-center.component';
 import { VulnerabilityPageComponent } from './vulnerability-page/vulnerability-page.component';
 import { GcPageComponent } from './gc-page/gc-page.component';
 import { OidcOnboardModule } from './oidc-onboard/oidc-onboard.module';
+import { LicenseModule } from './license/license.module';
 registerLocaleData(zh, 'zh-cn');
 registerLocaleData(es, 'es-es');
 registerLocaleData(localeFr, 'fr-fr');
@@ -70,7 +71,8 @@ export function getCurrentLanguage(translateService: TranslateService) {
         HarborRoutingModule,
         ConfigurationModule,
         DeveloperCenterModule,
-        OidcOnboardModule
+        OidcOnboardModule,
+        LicenseModule
     ],
     exports: [
     ],
