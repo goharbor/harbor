@@ -35,11 +35,11 @@ export class ForgotPasswordComponent {
 
     constructor(private pwdService: PasswordSettingService) { }
 
-    public showProgress(): boolean {
+    public get showProgress(): boolean {
         return this.onGoing;
     }
 
-    public isValid(): boolean {
+    public get isValid(): boolean {
         return this.forgotPwdForm && this.forgotPwdForm.valid ;
     }
 
