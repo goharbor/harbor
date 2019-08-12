@@ -17,16 +17,12 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
-	"os"
-	"os/signal"
-	"strconv"
-	"syscall"
-
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
+	common_quota "github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
@@ -34,6 +30,10 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
 
 	quota "github.com/goharbor/harbor/src/core/api/quota"
 	_ "github.com/goharbor/harbor/src/core/api/quota/chart"
@@ -46,6 +46,7 @@ import (
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
+	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/replication"
 )
 
@@ -92,16 +93,48 @@ func quotaSync() error {
 		return err
 	}
 
-	// upgrade from old version
-	if len(projects) > 1 && len(usages) == 1 {
+	// The condition handles these two cases:
+	// 1, len(project) > 1 && len(usages) == 1. existing projects without usage, as we do always has 'library' usage in DB.
+	// 2, migration fails at the phase of inserting usage into DB, and parts of them are inserted successfully.
+	if len(projects) != len(usages) {
 		log.Info("Start to sync quota data .....")
 		if err := quota.Sync(config.GlobalProjectMgr, true); err != nil {
-			log.Errorf("Error happened when syncing quota usage data, %v", err)
+			log.Errorf("Fail to sync quota data, %v", err)
 			return err
 		}
 		log.Info("Success to sync quota data .....")
+		return nil
 	}
 
+	// Only has one project without usage
+	zero := common_quota.ResourceList{
+		common_quota.ResourceCount:   0,
+		common_quota.ResourceStorage: 0,
+	}
+	if len(projects) == 1 && len(usages) == 1 {
+		totalRepo, err := dao.GetTotalOfRepositories()
+		if totalRepo == 0 {
+			return nil
+		}
+		refID, err := strconv.ParseInt(usages[0].ReferenceID, 10, 64)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+		usedRes, err := types.NewResourceList(usages[0].Used)
+		if err != nil {
+			log.Error(err)
+			return err
+		}
+		if types.Equals(usedRes, zero) && refID == projects[0].ProjectID {
+			log.Info("Start to sync quota data .....")
+			if err := quota.Sync(config.GlobalProjectMgr, true); err != nil {
+				log.Errorf("Fail to sync quota data, %v", err)
+				return err
+			}
+			log.Info("Success to sync quota data .....")
+		}
+	}
 	return nil
 }
 

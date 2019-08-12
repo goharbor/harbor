@@ -54,3 +54,36 @@ func TestSwitchQuota(t *testing.T) {
 	}
 	runCodeCheckingCases(t, cases...)
 }
+
+// cannot verify the real scenario here
+func TestSyncQuota(t *testing.T) {
+	cases := []*codeCheckingCase{
+		// 401
+		{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    "/api/internal/syncquota",
+			},
+			code: http.StatusUnauthorized,
+		},
+		// 200
+		{
+			request: &testingRequest{
+				method:     http.MethodPost,
+				url:        "/api/internal/syncquota",
+				credential: sysAdmin,
+			},
+			code: http.StatusOK,
+		},
+		// 403
+		{
+			request: &testingRequest{
+				url:        "/api/internal/syncquota",
+				method:     http.MethodPost,
+				credential: nonSysAdmin,
+			},
+			code: http.StatusForbidden,
+		},
+	}
+	runCodeCheckingCases(t, cases...)
+}

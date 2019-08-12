@@ -103,19 +103,22 @@ func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 
 			ctr, err := chartController()
 			if err != nil {
-				log.Error(err)
+				errChan <- err
+				return
 			}
 
 			chartInfo, err := ctr.ListCharts(project.Name)
 			if err != nil {
-				log.Error(err)
+				errChan <- err
+				return
 			}
 
 			// repo
 			for _, chart := range chartInfo {
 				chartVersions, err := ctr.GetChart(project.Name, chart.Name)
 				if err != nil {
-					log.Error(err)
+					errChan <- err
+					continue
 				}
 				for _, chart := range chartVersions {
 					af := &models.Artifact{
@@ -143,7 +146,7 @@ func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 		}(project)
 	}
 
-	wg.Done()
+	wg.Wait()
 	close(infoChan)
 
 	<-done

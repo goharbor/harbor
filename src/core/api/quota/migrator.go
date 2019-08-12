@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package models
+package api
 
 import (
-	"fmt"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/quota"
@@ -75,16 +74,11 @@ func Register(name string, adapter Instance) {
 
 // Sync ...
 func Sync(pm promgr.ProjectManager, populate bool) error {
-	for name := range adapters {
+	for name, instanceFunc := range adapters {
 		if !config.WithChartMuseum() {
 			if name == "chart" {
 				continue
 			}
-		}
-		instanceFunc, ok := adapters[name]
-		if !ok {
-			err := fmt.Errorf("quota migtator: unknown adapter name %q", name)
-			return err
 		}
 		adapter := instanceFunc(pm)
 		data, err := adapter.Dump()
@@ -92,6 +86,9 @@ func Sync(pm promgr.ProjectManager, populate bool) error {
 			return err
 		}
 		usage, err := adapter.Usage(data)
+		if err != nil {
+			return err
+		}
 		if err := ensureQuota(usage); err != nil {
 			return err
 		}

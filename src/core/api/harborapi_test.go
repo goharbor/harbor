@@ -35,6 +35,7 @@ import (
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
 	api_models "github.com/goharbor/harbor/src/core/api/models"
 	apimodels "github.com/goharbor/harbor/src/core/api/models"
+	quota "github.com/goharbor/harbor/src/core/api/quota"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
@@ -203,10 +204,15 @@ func init() {
 	beego.Router("/api/quotas/:id([0-9]+)", quotaAPIType, "get:Get;put:Put")
 
 	beego.Router("/api/internal/switchquota", &InternalAPI{}, "put:SwitchQuota")
+	beego.Router("/api/internal/syncquota", &InternalAPI{}, "post:SyncQuota")
 
 	// syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
 		log.Fatalf("failed to sync repositories from registry: %v", err)
+	}
+
+	if err := quota.Sync(config.GlobalProjectMgr, false); err != nil {
+		log.Fatalf("failed to sync quota from backend: %v", err)
 	}
 
 	// Init user Info

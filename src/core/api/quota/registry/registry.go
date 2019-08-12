@@ -383,6 +383,14 @@ func infoOfRepo(pid int64, repo string) (quota.RepoData, error) {
 			DigestBlob: desc.Digest.String(),
 		}
 		afnbs = append(afnbs, afnb)
+		// add manifest as a blob.
+		blob := &models.Blob{
+			Digest:       desc.Digest.String(),
+			ContentType:  desc.MediaType,
+			Size:         desc.Size,
+			CreationTime: time.Now(),
+		}
+		blobs = append(blobs, blob)
 		for _, layer := range manifest.References() {
 			afnb := &models.ArtifactAndBlob{
 				DigestAF:   desc.Digest.String(),

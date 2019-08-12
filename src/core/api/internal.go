@@ -28,6 +28,8 @@ import (
 	"strconv"
 
 	quota "github.com/goharbor/harbor/src/core/api/quota"
+
+	comcfg "github.com/goharbor/harbor/src/common/config"
 )
 
 // InternalAPI handles request of harbor admin...
@@ -154,9 +156,25 @@ func (ia *InternalAPI) ensureQuota() error {
 
 // SyncQuota ...
 func (ia *InternalAPI) SyncQuota() {
-	err := quota.Sync(ia.ProjectMgr, false)
-	if err != nil {
-		ia.SendInternalServerError(err)
-		return
+	cur := config.ReadOnly()
+	cfgMgr := comcfg.NewDBCfgManager()
+	if cur != true {
+		cfgMgr.Set(common.ReadOnly, true)
 	}
+	// For api call, to avoid the timeout, it should be asynchronous
+	go func() {
+		defer func() {
+			if cur != true {
+				cfgMgr.Set(common.ReadOnly, false)
+			}
+		}()
+		log.Info("start to sync quota(API), the system will be set to ReadOnly and back it normal once it done.")
+		err := quota.Sync(ia.ProjectMgr, false)
+		if err != nil {
+			log.Errorf("fail to sync quota(API), but with error: %v, please try to do it again.", err)
+			return
+		}
+		log.Info("success to sync quota(API).")
+	}()
+	return
 }

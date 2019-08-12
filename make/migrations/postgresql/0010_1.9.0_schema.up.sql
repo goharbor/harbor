@@ -86,6 +86,7 @@ CREATE TABLE quota_usage
   UNIQUE (reference, reference_id)
 );
 
+/* only set quota and usage for 'library', and let the sync quota handling others. */
 INSERT INTO quota (reference, reference_id, hard, creation_time, update_time)
 SELECT 'project',
        CAST(project_id AS VARCHAR),
@@ -93,7 +94,7 @@ SELECT 'project',
        NOW(),
        NOW()
 FROM project
-WHERE deleted = 'f';
+WHERE name = 'library' and deleted = 'f';
 
 INSERT INTO quota_usage (id, reference, reference_id, used, creation_time, update_time)
 SELECT id,

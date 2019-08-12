@@ -2409,6 +2409,20 @@ paths:
           $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
+  /internal/syncquota:
+    post:
+      summary: Sync quota from registry/chart to DB.
+      description: |
+        This endpoint is for syncing quota usage of registry/chart with database.
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Sync repositories successfully.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of system admin role.
   /systeminfo:
     get:
       summary: Get general system info
