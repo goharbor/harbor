@@ -19,12 +19,12 @@
         </div>
     </div>
     <div>
-        <clr-datagrid (clrDgRefresh)="load($event)" [clrDgLoading]="loading">
-            <clr-dg-column [clrDgField]="'username'">{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'repo_name'">{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'repo_tag'">{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'operation'">{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="opTimeComparator">{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
+        <clr-datagrid (clrDgRefresh)="load()" [clrDgLoading]="loading">
+            <clr-dg-column>{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
             <clr-dg-placeholder>We couldn't find any logs!</clr-dg-placeholder>
             <clr-dg-row *ngFor="let l of recentLogs">
                 <clr-dg-cell>{{l.username}}</clr-dg-cell>
