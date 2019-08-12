@@ -4,7 +4,7 @@
     <div class="modal-body modal-height">
         <form #projectForm="ngForm" class="clr-form clr-form-horizontal">
             <clr-input-container>
-                <label for="create_project_name" required class="form-group-label-override">{{'PROJECT.NAME' | translate}}</label>
+                <label class="required">{{'PROJECT.NAME' | translate}}</label>
                 <input clrInput type="text" id="create_project_name" [(ngModel)]="project.name" name="create_project_name" class="input-width"
                     required pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" minlength="2" #projectName="ngModel" autocomplete="off"
                     (keyup)='handleValidation()'>
