@@ -146,7 +146,9 @@ const (
 
 	// Global notification enable configuration
 	NotificationEnable = "notification_enable"
+
 	// Quota setting items for project
-	CountPerProject   = "count_per_project"
-	StoragePerProject = "storage_per_project"
+	QuotaPerProjectEnable = "quota_per_project_enable"
+	CountPerProject       = "count_per_project"
+	StoragePerProject     = "storage_per_project"
 )

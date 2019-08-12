@@ -36,6 +36,8 @@ const (
 
 // Options ...
 type Options struct {
+	enforceResources *bool
+
 	Action     Action
 	Manager    *quota.Manager
 	MutexKeys  []string
@@ -46,6 +48,15 @@ type Options struct {
 	OnFulfilled func(http.ResponseWriter, *http.Request) error
 	OnRejected  func(http.ResponseWriter, *http.Request) error
 	OnFinally   func(http.ResponseWriter, *http.Request) error
+}
+
+// EnforceResources ...
+func (opts *Options) EnforceResources() bool {
+	return opts.enforceResources != nil && *opts.enforceResources
+}
+
+func boolPtr(v bool) *bool {
+	return &v
 }
 
 func newOptions(opt ...Option) Options {
@@ -63,7 +74,18 @@ func newOptions(opt ...Option) Options {
 		opts.StatusCode = http.StatusOK
 	}
 
+	if opts.enforceResources == nil {
+		opts.enforceResources = boolPtr(true)
+	}
+
 	return opts
+}
+
+// EnforceResources sets the interceptor enforceResources
+func EnforceResources(enforceResources bool) Option {
+	return func(o *Options) {
+		o.enforceResources = boolPtr(enforceResources)
+	}
 }
 
 // WithAction sets the interceptor action
