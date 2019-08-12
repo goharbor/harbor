@@ -1,65 +1,8 @@
-.access-level-label {
-    font-size: 14px;
-    font-weight: 400;
-    margin-left: -4px;
-    margin-right: 12px;
-    top: -6px;
-    position: relative;
-}
-.modal-height {
-    height: 15.3em;
-    overflow-y: hidden;
-    .form-block > div {
-        padding-left: 135px;
-        .input-width {
-            width: 196px;
-        }
-        .public-tooltip {
-            top: -8px;
-            left: -8px;
-        }
-        .inline-help-public {
-            margin-left: 5px;
-        }
-    }
 
+.mr-10 {
+    margin-right:0.5rem;
 }
 
-.form-group {
-    display: flex;
-    flex-wrap: wrap;
-    position: relative;
-    padding-left: 9.5rem;
-    margin-bottom: .5rem;
-    font-size: .541667rem;
-    letter-spacing: normal;
-    line-height: 1rem;
-    >label {
-        &:first-child {
-        position: absolute;
-        width: 8.5rem;
-        left: 0;
-        top: .25rem;
-        margin: 0;
-        }
-        &:not:first-child {
-            flex: 0 1 auto;
-            margin-left: 0;
-            margin-right: .5rem;
-        }
-    }
-    ::ng-deep {
-        clr-select-container {
-            margin-top: 0.3rem;
-        }
-    }
-    select {
-        display: inline;
-    }
-    .checkbox-inline {
-        margin-left: 5px;
-        height: 1rem;
-    }
-
+.clr-subtext {
+   color: red;
 }
-
