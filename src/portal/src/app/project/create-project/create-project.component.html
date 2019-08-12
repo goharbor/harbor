@@ -4,7 +4,7 @@
     <div class="modal-body modal-height">
         <form #projectForm="ngForm" class="clr-form clr-form-horizontal">
             <clr-input-container>
-                <label for="create_project_name" required class="form-group-label-override">{{'PROJECT.NAME' | translate}}</label>
+                <label class="required">{{'PROJECT.NAME' | translate}}</label>
                 <input clrInput type="text" id="create_project_name" [(ngModel)]="project.name" name="create_project_name" class="input-width"
                     required pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" minlength="2" #projectName="ngModel" autocomplete="off"
                     (keyup)='handleValidation()'>
@@ -28,7 +28,7 @@
                 </clr-checkbox-wrapper>
             </clr-checkbox-container>
             <clr-input-container *ngIf="isSystemAdmin">
-                <label for="create_project_count-limit" class="required">{{'PROJECT.COUNT_QUOTA' | translate}}
+                <label class="required">{{'PROJECT.COUNT_QUOTA' | translate}}
                     <clr-tooltip>
                         <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                         <clr-tooltip-content clrPosition="bottom-left" clrSize="lg" *clrIfOpen>
@@ -44,7 +44,7 @@
                 <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
             </clr-input-container>
             <div class="clr-form-control" *ngIf="isSystemAdmin">
-                <label for="create_project_storage-limit" class="required clr-control-label">{{'PROJECT.STORAGE_QUOTA' | translate}}
+                <label class="required clr-control-label">{{'PROJECT.STORAGE_QUOTA' | translate}}
                     <clr-tooltip>
                         <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                         <clr-tooltip-content clrPosition="bottom-left" clrSize="lg" *clrIfOpen>
