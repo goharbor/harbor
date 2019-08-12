@@ -122,6 +122,8 @@ export const CONFIG_AUTH_MODE = {
   OIDC_AUTH: "oidc_auth",
   UAA_AUTH: "uaa_auth"
 };
+export const QUOTA_DANGER_COEFFICIENT = 0.9;
+export const QUOTA_WARNING_COEFFICIENT = 0.7;
 export const PROJECT_ROOTS = [
   {
     NAME: "admin",
