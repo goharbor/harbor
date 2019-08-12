@@ -37,7 +37,7 @@
                     </clr-tooltip>
                 </label>
                 <input clrInput type="text" id="create_project_count_limit" [(ngModel)]="countLimit" name="create_project_count_limit" class="input-width"
-                    pattern="(^-1$)|(^([1-9]+)([0-9]+)*$)" required #projectCountLimit="ngModel" autocomplete="off">
+                    #projectCountLimit="ngModel" autocomplete="off">
                 <clr-control-error *ngIf="projectCountLimit.invalid && (projectCountLimit.dirty || projectCountLimit.touched)" class="tooltip-content">
                     {{ 'PROJECT.COUNT_QUOTA_TIP' | translate }}
                 </clr-control-error>
