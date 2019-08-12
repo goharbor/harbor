@@ -112,6 +112,11 @@ def parse_yaml_config(config_file_path):
         config_dict['harbor_db_username'] = 'postgres'
         config_dict['harbor_db_password'] = db_configs.get("password") or ''
         config_dict['harbor_db_sslmode'] = 'disable'
+
+        default_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
+        default_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
+        config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_max_idle_conns
+        config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_max_open_conns
         # clari db
         config_dict['clair_db_host'] = 'postgresql'
         config_dict['clair_db_port'] = 5432
