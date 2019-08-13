@@ -64,7 +64,7 @@ func RemoveBlobsFromProject(projectID int64, blobs ...*models.Blob) error {
 		return nil
 	}
 
-	sql := fmt.Sprintf(`DELETE FROM project_blob WHERE blob_id IN (%s)`, paramPlaceholder(len(blobIDs)))
+	sql := fmt.Sprintf(`DELETE FROM project_blob WHERE blob_id IN (%s)`, ParamPlaceholderForIn(len(blobIDs)))
 
 	_, err := GetOrmer().Raw(sql, blobIDs).Exec()
 	return err
@@ -89,7 +89,7 @@ func GetBlobsNotInProject(projectID int64, blobDigests ...string) ([]*models.Blo
 	}
 
 	sql := fmt.Sprintf("SELECT * FROM blob WHERE id NOT IN (SELECT blob_id FROM project_blob WHERE project_id = ?) AND digest IN (%s)",
-		paramPlaceholder(len(blobDigests)))
+		ParamPlaceholderForIn(len(blobDigests)))
 
 	params := []interface{}{projectID}
 	for _, digest := range blobDigests {
