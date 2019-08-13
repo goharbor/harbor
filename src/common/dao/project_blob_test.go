@@ -38,3 +38,31 @@ func TestHasBlobInProject(t *testing.T) {
 	require.Nil(t, err)
 	assert.True(t, has)
 }
+
+func TestCountSizeOfProject(t *testing.T) {
+	id1, err := AddBlob(&models.Blob{
+		Digest: "CountSizeOfProject_blob1",
+		Size:   101,
+	})
+	require.Nil(t, err)
+
+	id2, err := AddBlob(&models.Blob{
+		Digest: "CountSizeOfProject_blob2",
+		Size:   202,
+	})
+	require.Nil(t, err)
+
+	pid1, err := AddProject(models.Project{
+		Name:    "CountSizeOfProject_project1",
+		OwnerID: 1,
+	})
+	require.Nil(t, err)
+
+	_, err = AddBlobToProject(id1, pid1)
+	require.Nil(t, err)
+	_, err = AddBlobToProject(id2, pid1)
+	require.Nil(t, err)
+
+	pSize, err := CountSizeOfProject(pid1)
+	assert.Equal(t, pSize, int64(303))
+}

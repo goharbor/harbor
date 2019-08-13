@@ -15,12 +15,19 @@
 package api
 
 import (
-	"errors"
-
+	"fmt"
+	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/pkg/errors"
+	"net/url"
+	"strconv"
+	"strings"
 )
 
 // InternalAPI handles request of harbor admin...
@@ -68,4 +75,97 @@ func (ia *InternalAPI) RenameAdmin() {
 	}
 	log.Debugf("The super user has been renamed to: %s", newName)
 	ia.DestroySession()
+}
+
+type QuotaSwitcher struct {
+	Disabled bool
+}
+
+// SwitchQuota ...
+func (ia *InternalAPI) SwitchQuota() {
+	var req QuotaSwitcher
+	if err := ia.DecodeJSONReq(&req); err != nil {
+		ia.SendBadRequestError(err)
+		return
+	}
+	// From disable to enable, update the quota usage bases on the DB records.
+	if config.QuotaPerProjectEnable() == false && req.Disabled == true {
+		if err := ensureQuota(); err != nil {
+			ia.SendBadRequestError(err)
+			return
+		}
+	}
+	defer config.GetCfgManager().Set(common.QuotaPerProjectEnable, req.Disabled)
+	return
+}
+
+func ensureQuota() error {
+	projects, err := dao.GetProjects(nil)
+	if err != nil {
+		return err
+	}
+	for _, project := range projects {
+		pSize, err := dao.CountSizeOfProject(project.ProjectID)
+		if err != nil {
+			logger.Warningf("error happen on counting size of project:%d , error:%v, just skip it.", project.ProjectID, err)
+			continue
+		}
+		afQuery := &models.ArtifactQuery{
+			PID: project.ProjectID,
+		}
+		afs, err := dao.ListArtifacts(afQuery)
+		if err != nil {
+			logger.Warningf("error happen on counting number of project:%d , error:%v, just skip it.", project.ProjectID, err)
+			continue
+		}
+		pCount := int64(len(afs))
+
+		// it needs to append the chart count
+		if config.GetCfgManager().Get(common.WithChartMuseum).GetBool() {
+			chartEndpoint := strings.TrimSpace(config.GetCfgManager().Get(common.ChartRepoURL).GetString())
+			if len(chartEndpoint) == 0 {
+				return errors.New("empty chartmuseum endpoint")
+			}
+			chartCtr, err := getChartCtr(chartEndpoint)
+			if err != nil {
+				return err
+			}
+			count, err := chartCtr.GetCountOfCharts([]string{project.Name})
+			if err != nil {
+				err = errors.Wrap(err, fmt.Sprintf("get chart count of project %d failed", project.ProjectID))
+				return err
+			}
+			pCount = pCount + int64(count)
+		}
+
+		quotaMgr, err := quota.NewManager("project", strconv.FormatInt(project.ProjectID, 10))
+		if err != nil {
+			logger.Errorf("Error occurred when to new quota manager %v, just skip it.", err)
+			continue
+		}
+		used := quota.ResourceList{
+			quota.ResourceStorage: pSize,
+			quota.ResourceCount:   pCount,
+		}
+		if err := quotaMgr.EnsureQuota(used); err != nil {
+			logger.Errorf("cannot ensure quota for the project: %d, err: %v, just skip it.", project.ProjectID, err)
+			continue
+		}
+	}
+	return nil
+}
+
+func getChartCtr(chartEndpoint string) (*chartserver.Controller, error) {
+	chartEndpoint = strings.TrimSuffix(chartEndpoint, "/")
+	url, err := url.Parse(chartEndpoint)
+	if err != nil {
+		err = errors.New("endpoint URL of chart storage server is malformed")
+		return nil, err
+	}
+	ctr, err := chartserver.NewController(url)
+	if err != nil {
+		err = errors.New("failed to initialize chart API controller")
+		return nil, err
+	}
+	return ctr, nil
 }

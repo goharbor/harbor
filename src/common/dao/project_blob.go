@@ -18,7 +18,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
+	"strconv"
 )
 
 // AddBlobToProject ...
@@ -102,4 +104,21 @@ func GetBlobsNotInProject(projectID int64, blobDigests ...string) ([]*models.Blo
 	}
 
 	return blobs, nil
+}
+
+// CountSizeOfProject ...
+func CountSizeOfProject(pid int64) (int64, error) {
+	var res []orm.Params
+	num, err := GetOrmer().Raw(`SELECT sum(bb.size) FROM project_blob pb LEFT JOIN blob bb ON pb.blob_id = bb.id WHERE pb.project_id = ? `, pid).Values(&res)
+	if err != nil {
+		return -1, err
+	}
+	if num > 0 {
+		size, err := strconv.ParseInt(res[0]["sum"].(string), 0, 64)
+		if err != nil {
+			return -1, err
+		}
+		return size, nil
+	}
+	return -1, err
 }
