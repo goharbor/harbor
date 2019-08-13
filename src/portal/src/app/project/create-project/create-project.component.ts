@@ -46,7 +46,7 @@ export class CreateProjectComponent implements OnInit, OnChanges, OnDestroy {
 
   projectForm: NgForm;
 
-  @ViewChild("projectForm", {static: false})
+  @ViewChild("projectForm", {static: true})
   currentForm: NgForm;
   quotaUnits = QuotaUnits;
   project: Project = new Project();
