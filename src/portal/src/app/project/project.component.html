@@ -7,7 +7,7 @@
             </div>
         </div>
         <div class="row flex-items-xs-between rightPos">
-            <div class="option-right">
+            <div class="display-flex">
                 <div class="clr-select-wrapper">
                     <select (change)="doFilterProjects()" [(ngModel)]="selecteType">
                         <option value="0" [selected]="currentFilteredType === 0">{{projectTypes[0] | translate}}</option>
