@@ -44,7 +44,7 @@ export class EditProjectQuotasComponent implements OnInit {
   @ViewChild(InlineAlertComponent, {static: false})
   inlineAlert: InlineAlertComponent;
 
-  @ViewChild('quotaForm', {static: false})
+  @ViewChild('quotaForm', {static: true})
   currentForm: NgForm;
   @Output() confirmAction = new EventEmitter();
   constructor(
