@@ -5355,7 +5355,9 @@ definitions:
     properties:
       type:
         type: string
-        description: The schedule type. The valid values are hourly, daily， weekly, custom and None. 'None' means to cancel the schedule.
+        description: |
+          The schedule type. The valid values are 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manually' and 'None'.
+          'Manually' means to trigger it right away and 'None' means to cancel the schedule.
       cron:
         type: string
         description: A cron expression, a time-based job scheduler.
