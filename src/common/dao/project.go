@@ -260,7 +260,7 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 	}
 	if len(query.ProjectIDs) > 0 {
 		sql += fmt.Sprintf(` and p.project_id in ( %s )`,
-			paramPlaceholder(len(query.ProjectIDs)))
+			ParamPlaceholderForIn(len(query.ProjectIDs)))
 		params = append(params, query.ProjectIDs)
 	}
 	return sql, params

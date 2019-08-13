@@ -33,12 +33,11 @@ import (
 
 var statusMap = map[string]string{
 	job.JobServiceStatusPending:   models.JobPending,
+	job.JobServiceStatusScheduled: models.JobScheduled,
 	job.JobServiceStatusRunning:   models.JobRunning,
 	job.JobServiceStatusStopped:   models.JobStopped,
-	job.JobServiceStatusCancelled: models.JobCanceled,
 	job.JobServiceStatusError:     models.JobError,
 	job.JobServiceStatusSuccess:   models.JobFinished,
-	job.JobServiceStatusScheduled: models.JobScheduled,
 }
 
 // Handler handles reqeust on /service/notifications/jobs/*, which listens to the webhook of jobservice.
