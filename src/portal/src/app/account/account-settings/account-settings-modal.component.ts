@@ -55,7 +55,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
   confirmationDialogComponent: ConfirmationDialogComponent;
 
   accountFormRef: NgForm;
-  @ViewChild("accountSettingsFrom", {static: false}) accountForm: NgForm;
+  @ViewChild("accountSettingsFrom", {static: true}) accountForm: NgForm;
   @ViewChild(InlineAlertComponent, {static: false}) inlineAlert: InlineAlertComponent;
   @ViewChild("copyInput", {static: false}) copyInput: CopyInputComponent;
 
