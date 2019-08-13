@@ -8,15 +8,15 @@
         </div>
         <div class="row flex-items-xs-between rightPos">
             <div class="option-right">
-                <div class="select select-option">
+                <div class="clr-select-wrapper">
                     <select (change)="doFilterProjects()" [(ngModel)]="selecteType">
                         <option value="0" [selected]="currentFilteredType === 0">{{projectTypes[0] | translate}}</option>
                         <option value="1">{{projectTypes[1] | translate}}</option>
                         <option value="2">{{projectTypes[2] | translate}}</option>
                     </select>
                 </div>
-                <hbr-filter [withDivider]="true" filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}'
-                    (filterEvt)="doSearchProjects($event)" [currentValue]="projectName"></hbr-filter>
+                <hbr-filter [withDivider]="true" filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doSearchProjects($event)"
+                    [currentValue]="projectName"></hbr-filter>
                 <span class="refresh-btn" (click)="refresh()">
                     <clr-icon shape="refresh"></clr-icon>
                 </span>

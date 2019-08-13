@@ -1,3 +1,4 @@
+@import "../../../lib/src/mixin";
 .header-title {
     margin-top: 0;
 }
@@ -23,7 +24,7 @@
     color: #007CBB;
 }
 .rightPos {
-    position: absolute; right: 20px; margin-top: 5px; height:32px; z-index: 100;
+    @include grid-right-top-pos;
 }
 
 .projectPos {
