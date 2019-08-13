@@ -2,14 +2,12 @@
     <h3 class="modal-title">{{'PROFILE.TITLE' | translate}}</h3>
     <inline-alert class="modal-title" (confirmEvt)="confirmYes($event)" (closeEvt)="confirmNo($event)"></inline-alert>
     <div class="modal-body body-format">
-        <form #accountSettingsFrom="ngForm" class="clr-form">
+        <form #accountSettingsFrom="ngForm" class="clr-form clr-form-horizontal">
             <div class="clr-form-control">
                 <label for="account_settings_username" aria-haspopup="true" class="clr-control-label">{{'PROFILE.USER_NAME' | translate}}</label>
-                <div class="clr-control-container">
-                    <div class="clr-input-wrapper">
-                        <input class="clr-input" type="text" name="account_settings_username" [(ngModel)]="account.username" disabled id="account_settings_username"
-                            size="33">
-                    </div>
+                <div class="clr-control-container display-flex">
+                    <input class="clr-input" type="text" name="account_settings_username" [(ngModel)]="account.username" disabled id="account_settings_username"
+                        size="30">
                     <div *ngIf="canRename" class="rename-tool">
                         <button [disabled]="RenameOnGoing" (click)="onRename()" class="btn btn-outline btn-sm">
                             {{'PROFILE.ADMIN_RENAME_BUTTON' | translate}}
@@ -23,42 +21,39 @@
                     </div>
                 </div>
             </div>
-            <div class="form-group form-group-override">
-                <label for="account_settings_email" class="required form-group-label-override">{{'PROFILE.EMAIL' | translate}}</label>
-                <label for="account_settings_email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left"
-                    [class.invalid]='!getValidationState("account_settings_email")'>
-                    <input name="account_settings_email" type="text" #eamilInput="ngModel" class="clr-input" [(ngModel)]="account.email" required
-                        email id="account_settings_email" size="30" (input)='handleValidation("account_settings_email", false)'
-                        (blur)='handleValidation("account_settings_email", true)'>
-                    <span class="tooltip-content">
+            <div class="clr-form-control">
+                <label for="account_settings_email" class="required clr-control-label">{{'PROFILE.EMAIL' | translate}}</label>
+                <div class="clr-control-container" [class.clr-error]="!getValidationState('account_settings_email')">
+                    <div class="clr-input-wrapper">
+                        <input name="account_settings_email" type="text" #eamilInput="ngModel" class="clr-input" [(ngModel)]="account.email" required
+                            email id="account_settings_email" size="30" (input)='handleValidation("account_settings_email", false)'
+                            (blur)='handleValidation("account_settings_email", true)'>
+                        <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                        <span class="spinner spinner-inline" [hidden]="!checkProgress"></span>
+                    </div>
+                    <clr-control-error *ngIf="!getValidationState('account_settings_email')">
                         {{emailTooltip | translate}}
-                    </span>
-                </label>
-                <span class="spinner spinner-inline" [hidden]="!checkProgress"></span>
+                    </clr-control-error>
+                </div>
             </div>
-            <div class="form-group form-group-override">
-                <label for="account_settings_full_name" class="form-group-label-override" [class.required]="!account.oidc_user_meta">{{'PROFILE.FULL_NAME' | translate}}</label>
-                <label for="account_settings_full_name" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left"
-                    [class.invalid]='!getValidationState("account_settings_full_name")'>
-                    <input class="clr-input" type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname"
-                        [required]="!account.oidc_user_meta" maxLengthExt="20" id="account_settings_full_name" size="30" (input)='handleValidation("account_settings_full_name", false)'
-                        (blur)='handleValidation("account_settings_full_name", true)'>
-                    <span class="tooltip-content">
-                        {{'TOOLTIP.FULL_NAME' | translate}}
-                    </span>
-                </label>
-            </div>
-            <div class="form-group form-group-override">
-                <label for="account_settings_comments" class="form-group-label-override">{{'PROFILE.COMMENT' | translate}}</label>
-                <label for="account_settings_comments" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left"
-                    [class.invalid]="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
-                    <input class="clr-input" type="text" #commentInput="ngModel" maxLengthExt="30" name="account_settings_comments" [(ngModel)]="account.comment"
-                        id="account_settings_comments" size="30">
-                    <span class="tooltip-content">
-                        {{'TOOLTIP.COMMENT' | translate}}
-                    </span>
-                </label>
-            </div>
+            <clr-input-container>
+                <label [class.required]="!account.oidc_user_meta">{{'PROFILE.FULL_NAME' | translate}}</label>
+                <input clrInput type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname" [required]="!account.oidc_user_meta"
+                    maxLengthExt="20" id="account_settings_full_name" size="30" (input)='handleValidation("account_settings_full_name", false)'
+                    (blur)='handleValidation("account_settings_full_name", true)'>
+                <clr-control-error *ngIf="!getValidationState('account_settings_full_name')">
+                    {{'TOOLTIP.FULL_NAME' | translate}}
+                </clr-control-error>
+            </clr-input-container>
+            <clr-input-container>
+                <label>{{'PROFILE.COMMENT' | translate}}</label>
+                <input clrInput type="text" #commentInput="ngModel" maxlength="30" size="30" name="account_settings_comments" [(ngModel)]="account.comment"
+                    id="account_settings_comments">
+                <clr-control-error *ngIf="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
+                    {{'TOOLTIP.COMMENT' | translate}}
+                </clr-control-error>
+            </clr-input-container>
+
             <div class="form-group form-group-override cli-secret" *ngIf="account.oidc_user_meta">
                 <label for="cli_password" aria-haspopup="true" class="form-group-label-override">
                     <span class="label-inner-text">{{'PROFILE.CLI_PASSWORD' | translate}}</span>
