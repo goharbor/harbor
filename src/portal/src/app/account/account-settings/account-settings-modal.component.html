@@ -2,13 +2,16 @@
     <h3 class="modal-title">{{'PROFILE.TITLE' | translate}}</h3>
     <inline-alert class="modal-title" (confirmEvt)="confirmYes($event)" (closeEvt)="confirmNo($event)"></inline-alert>
     <div class="modal-body body-format">
-        <form #accountSettingsFrom="ngForm" class="form">
-            <section class="form-block">
-                <div class="form-group form-group-override">
-                    <label for="account_settings_username" aria-haspopup="true" class="form-group-label-override">{{'PROFILE.USER_NAME' | translate}}</label>
-                    <input type="text" name="account_settings_username" [(ngModel)]="account.username" disabled id="account_settings_username" size="33">
-                    <div  *ngIf="canRename" class="rename-tool">
-                        <button  [disabled]="RenameOnGoing" (click)="onRename()" class="btn btn-outline btn-sm">
+        <form #accountSettingsFrom="ngForm" class="clr-form">
+            <div class="clr-form-control">
+                <label for="account_settings_username" aria-haspopup="true" class="clr-control-label">{{'PROFILE.USER_NAME' | translate}}</label>
+                <div class="clr-control-container">
+                    <div class="clr-input-wrapper">
+                        <input class="clr-input" type="text" name="account_settings_username" [(ngModel)]="account.username" disabled id="account_settings_username"
+                            size="33">
+                    </div>
+                    <div *ngIf="canRename" class="rename-tool">
+                        <button [disabled]="RenameOnGoing" (click)="onRename()" class="btn btn-outline btn-sm">
                             {{'PROFILE.ADMIN_RENAME_BUTTON' | translate}}
                         </button>
                         <clr-tooltip>
@@ -19,56 +22,62 @@
                         </clr-tooltip>
                     </div>
                 </div>
-                <div class="form-group form-group-override">
-                    <label for="account_settings_email" class="required form-group-label-override">{{'PROFILE.EMAIL' | translate}}</label>
-                    <label for="account_settings_email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]='!getValidationState("account_settings_email")'>
-                      <input name="account_settings_email" type="text" #eamilInput="ngModel" [(ngModel)]="account.email" 
-                      required 
-                      email
-                      id="account_settings_email" size="30" 
-                      (input)='handleValidation("account_settings_email", false)' 
-                      (blur)='handleValidation("account_settings_email", true)'>
-                      <span class="tooltip-content">
-                          {{emailTooltip | translate}}
-                      </span>
-                    </label><span class="spinner spinner-inline" [hidden]="!checkProgress"></span>
-                </div>
-                <div class="form-group form-group-override">
-                    <label for="account_settings_full_name" class="form-group-label-override" [class.required]="!account.oidc_user_meta">{{'PROFILE.FULL_NAME' | translate}}</label>
-                    <label for="account_settings_full_name" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]='!getValidationState("account_settings_full_name")'>
-                      <input type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname" [required]="!account.oidc_user_meta"  maxLengthExt="20" id="account_settings_full_name" size="30" (input)='handleValidation("account_settings_full_name", false)' (blur)='handleValidation("account_settings_full_name", true)'>
-                      <span class="tooltip-content">
-                          {{'TOOLTIP.FULL_NAME' | translate}}
-                      </span>
-                    </label>
-                </div>
-                <div class="form-group form-group-override">
-                    <label for="account_settings_comments" class="form-group-label-override">{{'PROFILE.COMMENT' | translate}}</label>
-                    <label for="account_settings_comments" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
-                    <input type="text" #commentInput="ngModel" maxLengthExt="30" name="account_settings_comments" [(ngModel)]="account.comment" id="account_settings_comments" size="30">
+            </div>
+            <div class="form-group form-group-override">
+                <label for="account_settings_email" class="required form-group-label-override">{{'PROFILE.EMAIL' | translate}}</label>
+                <label for="account_settings_email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left"
+                    [class.invalid]='!getValidationState("account_settings_email")'>
+                    <input name="account_settings_email" type="text" #eamilInput="ngModel" class="clr-input" [(ngModel)]="account.email" required
+                        email id="account_settings_email" size="30" (input)='handleValidation("account_settings_email", false)'
+                        (blur)='handleValidation("account_settings_email", true)'>
+                    <span class="tooltip-content">
+                        {{emailTooltip | translate}}
+                    </span>
+                </label>
+                <span class="spinner spinner-inline" [hidden]="!checkProgress"></span>
+            </div>
+            <div class="form-group form-group-override">
+                <label for="account_settings_full_name" class="form-group-label-override" [class.required]="!account.oidc_user_meta">{{'PROFILE.FULL_NAME' | translate}}</label>
+                <label for="account_settings_full_name" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left"
+                    [class.invalid]='!getValidationState("account_settings_full_name")'>
+                    <input class="clr-input" type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname"
+                        [required]="!account.oidc_user_meta" maxLengthExt="20" id="account_settings_full_name" size="30" (input)='handleValidation("account_settings_full_name", false)'
+                        (blur)='handleValidation("account_settings_full_name", true)'>
+                    <span class="tooltip-content">
+                        {{'TOOLTIP.FULL_NAME' | translate}}
+                    </span>
+                </label>
+            </div>
+            <div class="form-group form-group-override">
+                <label for="account_settings_comments" class="form-group-label-override">{{'PROFILE.COMMENT' | translate}}</label>
+                <label for="account_settings_comments" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left"
+                    [class.invalid]="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
+                    <input class="clr-input" type="text" #commentInput="ngModel" maxLengthExt="30" name="account_settings_comments" [(ngModel)]="account.comment"
+                        id="account_settings_comments" size="30">
                     <span class="tooltip-content">
                         {{'TOOLTIP.COMMENT' | translate}}
                     </span>
-                    </label>
+                </label>
+            </div>
+            <div class="form-group form-group-override cli-secret" *ngIf="account.oidc_user_meta">
+                <label for="cli_password" aria-haspopup="true" class="form-group-label-override">
+                    <span class="label-inner-text">{{'PROFILE.CLI_PASSWORD' | translate}}</span>
+                    <clr-tooltip>
+                        <clr-icon clrTooltipTrigger shape="info-circle" size="20"></clr-icon>
+                        <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>
+                            <span> {{'PROFILE.CLI_PASSWORD_TIP' | translate}}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </label>
+                <input class="clr-input" type="password" name="cli_password" disabled [ngModel]="'account.oidc_user_meta.secret'" size="33">
+                <button (click)="generateCli(account.user_id)" id="generate-cli-btn" class="btn btn-outline btn-sm btn-padding-less" *ngIf="showGenerateCli">
+                    {{'PROFILE.ADMIN_CIL_SECRET_BUTTON' | translate}}
+                </button>
+                <div class="rename-tool reset-cli">
+                    <hbr-copy-input #copyInput (onCopySuccess)="onSuccess($event)" (onCopyError)="onError($event)" iconMode="true" [defaultValue]="account.oidc_user_meta.secret"></hbr-copy-input>
                 </div>
-                <div class="form-group form-group-override cli-secret" *ngIf="account.oidc_user_meta">
-                    <label for="cli_password" aria-haspopup="true" class="form-group-label-override"><span class="label-inner-text">{{'PROFILE.CLI_PASSWORD' | translate}}</span>
-                        <clr-tooltip>
-                            <clr-icon clrTooltipTrigger shape="info-circle" size="20"></clr-icon>
-                            <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>
-                                <span> {{'PROFILE.CLI_PASSWORD_TIP' | translate}}</span>
-                            </clr-tooltip-content>
-                        </clr-tooltip></label>
-                    <input type="password" name="cli_password" disabled [ngModel]="'account.oidc_user_meta.secret'" size="33">
-                    <button (click)="generateCli(account.user_id)" id="generate-cli-btn" class="btn btn-outline btn-sm btn-padding-less" *ngIf="showGenerateCli">
-                                {{'PROFILE.ADMIN_CIL_SECRET_BUTTON' | translate}}
-                            </button>
-                    <div class="rename-tool reset-cli">
-                        <hbr-copy-input #copyInput (onCopySuccess)="onSuccess($event)" (onCopyError)="onError($event)"  iconMode="true" [defaultValue]="account.oidc_user_meta.secret"></hbr-copy-input>
-                    </div>
-                    <div (click)="showGenerateCliFn()" *ngIf="!showGenerateCli" id="hidden-generate-cli" class="hidden-generate-cli">···</div>
-                </div>
-            </section>
+                <div (click)="showGenerateCliFn()" *ngIf="!showGenerateCli" id="hidden-generate-cli" class="hidden-generate-cli">···</div>
+            </div>
         </form>
     </div>
     <div class="modal-footer">
