@@ -33,7 +33,7 @@
                     <clr-dg-cell>{{user.creation_time | date: 'short'}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
-                    <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'USER.OF' | translate }}</span>
+                    <span *ngIf="totalCount>0">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'USER.OF' | translate }}</span>
                     {{pagination.totalItems}} {{'USER.ITEMS' | translate }}
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalCount">
                     </clr-dg-pagination>

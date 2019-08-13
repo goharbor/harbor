@@ -244,7 +244,12 @@ export function calculatePage(state: State): number {
         return 1;
     }
 
-    return Math.ceil((state.page.to + 1) / state.page.size);
+    let pageNumber = Math.ceil((state.page.to + 1) / state.page.size);
+    if (pageNumber === 0) {
+        return 1;
+    } else {
+        return pageNumber;
+    }
 }
 
 /**
@@ -507,7 +512,7 @@ export const GetIntegerAndUnit = (hardNumber: number, quotaUnitsDeep: QuotaUnitI
 export const validateLimit = (unitContrl) => {
     return (control: AbstractControl) => {
         if (getByte(control.value, unitContrl.value) > StorageMultipleConstant * StorageMultipleConstant
-        * StorageMultipleConstant * StorageMultipleConstant * StorageMultipleConstant) {
+            * StorageMultipleConstant * StorageMultipleConstant * StorageMultipleConstant) {
             return {
                 error: true
             };

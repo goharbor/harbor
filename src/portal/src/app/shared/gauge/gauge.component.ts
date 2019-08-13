@@ -167,8 +167,8 @@ export class GaugeComponent implements AfterViewInit {
             this.determineColors();
       }
 
-      @ViewChild('barOne', {static: false}) private barOne: ElementRef;
-      @ViewChild('barTwo', {static: false}) private barTwo: ElementRef;
+      @ViewChild('barOne', {static: true}) private barOne: ElementRef;
+      @ViewChild('barTwo', {static: true}) private barTwo: ElementRef;
 
       determineColors() {
             let percent: number = 0;
