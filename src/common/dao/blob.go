@@ -103,7 +103,7 @@ FROM
       )
   ) AS a
   LEFT JOIN artifact_blob b ON a.digest = b.digest_af
-  AND b.digest_blob IN (%s)`, paramPlaceholder(len(blobs)-1))
+  AND b.digest_blob IN (%s)`, ParamPlaceholderForIn(len(blobs)-1))
 
 	params := []interface{}{projectID, repository, projectID, digest}
 	for _, blob := range blobs {
