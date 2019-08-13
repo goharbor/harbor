@@ -29,7 +29,7 @@ export class ForgotPasswordComponent {
     validationState: boolean = true;
     isSuccess: boolean = false;
 
-    @ViewChild("forgotPasswordFrom", {static: false}) forgotPwdForm: NgForm;
+    @ViewChild("forgotPasswordFrom", {static: true}) forgotPwdForm: NgForm;
     @ViewChild(InlineAlertComponent, {static: false})
     inlineAlert: InlineAlertComponent;
 
