@@ -72,18 +72,6 @@ func (r *RetentionAPI) GetMetadatas() {
             "action": "retain",
             "params": []
         },
-        {
-            "rule_template": "always",
-            "display_text": "always",
-            "action": "retain",
-            "params": [
-                {
-                    "type": "int",
-                    "unit": "COUNT",
-                    "required": true
-                }
-            ]
-        },
 		{
 			"rule_template": "dayspl",
 			"display_text": "pulled within the last # days",
