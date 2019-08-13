@@ -23,8 +23,8 @@
 </div>
 <div class="setting-wrapper flex-layout" *ngIf="isEditMode">
   <span class="font-style">{{ labelEdit | translate }}</span>
-  <div class="select select-schedule">
-    <select name="selectPolicy" id="selectPolicy" [(ngModel)]="scheduleType">
+  <div class="select select-schedule clr-select-wrapper">
+    <select  name="selectPolicy" id="selectPolicy" [(ngModel)]="scheduleType">
       <option [value]="SCHEDULE_TYPE.NONE">{{'SCHEDULE.NONE' | translate}}</option>
       <option [value]="SCHEDULE_TYPE.HOURLY">{{'SCHEDULE.HOURLY' | translate}}</option>
       <option [value]="SCHEDULE_TYPE.DAILY">{{'SCHEDULE.DAILY' | translate}}</option>
