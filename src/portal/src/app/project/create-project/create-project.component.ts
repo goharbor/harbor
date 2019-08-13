@@ -74,7 +74,7 @@ export class CreateProjectComponent implements OnInit, OnChanges, OnDestroy {
   @Output() create = new EventEmitter<boolean>();
   @Input() quotaObj: QuotaHardInterface;
   @Input() isSystemAdmin: boolean;
-  @ViewChild(InlineAlertComponent, {static: false})
+  @ViewChild(InlineAlertComponent, {static: true})
   inlineAlert: InlineAlertComponent;
 
   constructor(private projectService: ProjectService,
