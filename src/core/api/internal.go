@@ -16,7 +16,6 @@ package api
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -25,9 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/pkg/errors"
-	"net/url"
 	"strconv"
-	"strings"
 )
 
 // InternalAPI handles request of harbor admin...
@@ -77,6 +74,7 @@ func (ia *InternalAPI) RenameAdmin() {
 	ia.DestroySession()
 }
 
+// QuotaSwitcher ...
 type QuotaSwitcher struct {
 	Disabled bool
 }
@@ -88,9 +86,9 @@ func (ia *InternalAPI) SwitchQuota() {
 		ia.SendBadRequestError(err)
 		return
 	}
-	// From disable to enable, update the quota usage bases on the DB records.
+	// From disable to enable, it needs to update the quota usage bases on the DB records.
 	if config.QuotaPerProjectEnable() == false && req.Disabled == true {
-		if err := ensureQuota(); err != nil {
+		if err := ia.ensureQuota(); err != nil {
 			ia.SendBadRequestError(err)
 			return
 		}
@@ -99,7 +97,7 @@ func (ia *InternalAPI) SwitchQuota() {
 	return
 }
 
-func ensureQuota() error {
+func (ia *InternalAPI) ensureQuota() error {
 	projects, err := dao.GetProjects(nil)
 	if err != nil {
 		return err
@@ -121,19 +119,12 @@ func ensureQuota() error {
 		pCount := int64(len(afs))
 
 		// it needs to append the chart count
-		if config.GetCfgManager().Get(common.WithChartMuseum).GetBool() {
-			chartEndpoint := strings.TrimSpace(config.GetCfgManager().Get(common.ChartRepoURL).GetString())
-			if len(chartEndpoint) == 0 {
-				return errors.New("empty chartmuseum endpoint")
-			}
-			chartCtr, err := getChartCtr(chartEndpoint)
-			if err != nil {
-				return err
-			}
-			count, err := chartCtr.GetCountOfCharts([]string{project.Name})
+		if config.WithChartMuseum() {
+			count, err := chartController.GetCountOfCharts([]string{project.Name})
 			if err != nil {
 				err = errors.Wrap(err, fmt.Sprintf("get chart count of project %d failed", project.ProjectID))
-				return err
+				logger.Error(err)
+				continue
 			}
 			pCount = pCount + int64(count)
 		}
@@ -153,19 +144,4 @@ func ensureQuota() error {
 		}
 	}
 	return nil
-}
-
-func getChartCtr(chartEndpoint string) (*chartserver.Controller, error) {
-	chartEndpoint = strings.TrimSuffix(chartEndpoint, "/")
-	url, err := url.Parse(chartEndpoint)
-	if err != nil {
-		err = errors.New("endpoint URL of chart storage server is malformed")
-		return nil, err
-	}
-	ctr, err := chartserver.NewController(url)
-	if err != nil {
-		err = errors.New("failed to initialize chart API controller")
-		return nil, err
-	}
-	return ctr, nil
 }
