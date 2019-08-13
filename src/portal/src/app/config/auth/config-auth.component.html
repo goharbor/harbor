@@ -1,278 +1,360 @@
-<form #authConfigFrom="ngForm" class="form">
-    <section class="form-block">
-        <div class="form-group">
-            <label for="authMode">{{'CONFIG.AUTH_MODE' | translate }}</label>
-            <div class="select">
-                <select id="authMode" name="authMode" (change)="handleOnChange($event)"
+<form #authConfigFrom="ngForm" class="clr-form clr-form-horizontal">
+    <div class="clr-form-control">
+        <label class="clr-control-label" for="authMode">{{'CONFIG.AUTH_MODE' | translate }} </label>
+        <div class="clr-control-container">
+            <div class="clr-select-wrapper">
+                <select class="clr-select" id="authMode" name="authMode" (change)="handleOnChange($event)"
                     [disabled]="disabled(currentConfig.auth_mode)" [(ngModel)]="currentConfig.auth_mode.value">
                     <option value="db_auth">{{'CONFIG.AUTH_MODE_DB' | translate }}</option>
                     <option value="ldap_auth">{{'CONFIG.AUTH_MODE_LDAP' | translate }}</option>
                     <option value="uaa_auth">{{'CONFIG.AUTH_MODE_UAA' | translate }}</option>
-                    <option *ngIf="showHttpAuth" value="http_auth">{{'CONFIG.AUTH_MODE_HTTP' | translate }}</option>
+                    <!-- <option *ngIf="showHttpAuth" value="http_auth">{{'CONFIG.AUTH_MODE_HTTP' | translate }}</option> -->
+                    <option value="http_auth">{{'CONFIG.AUTH_MODE_HTTP' | translate }}</option>
                     <option value="oidc_auth">{{'CONFIG.AUTH_MODE_OIDC' | translate }}</option>
                 </select>
             </div>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-right top-1">
+            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
+                class="tooltip tooltip-lg tooltip-top-right top-1 ml-04">
                 <clr-icon shape="info-circle" size="24" class="info-tips-icon"></clr-icon>
                 <span class="tooltip-content">{{'CONFIG.TOOLTIP.AUTH_MODE' | translate}}</span>
             </a>
             <a href="https://openid.net/connect/" *ngIf="currentConfig?.auth_mode?.value==='oidc_auth'" target="_blank"
-            class="more-info-link">{{ 'BUTTON.MORE_INFO' | translate }}</a>
+                class="more-info-link">{{ 'BUTTON.MORE_INFO' | translate }}</a>
         </div>
-    </section>
+    </div>
+
     <section class="form-block" *ngIf="showUAA">
-        <div class="form-group">
+        <clr-input-container>
+            <label for="uaa-endpoint" class="required">{{'CONFIG.UAA.ENDPOINT' | translate}}</label>
+            <input type="text" id="uaa-endpoint" clrInput name="uaa-endpoint" size="35"
+                [(ngModel)]="currentConfig.uaa_endpoint.value" [disabled]="!currentConfig.uaa_verify_cert.editable">
+        </clr-input-container>
+        <clr-input-container>
+            <label for="uaa-id" class="required">{{'CONFIG.UAA.CLIENT_ID' | translate}}</label>
+            <input clrInput type="text" id="uaa-id" name="uaa-client-id" size="35"
+                [(ngModel)]="currentConfig.uaa_client_id.value" [disabled]="!currentConfig.uaa_verify_cert.editable">
+        </clr-input-container>
+        <clr-input-container>
+            <label for="uaa-secret" class="required">{{'CONFIG.UAA.CLIENT_SECRET' | translate}}</label>
+            <input clrInput id="uaa-secret" name="uaa-client-secret" type="password" size="35"
+                [(ngModel)]="currentConfig.uaa_client_secret.value"
+                [disabled]="!currentConfig.uaa_verify_cert.editable">
+        </clr-input-container>
+
+        <div class="clr-form-control">
+            <label class="clr-control-label" for="uaa-cert"> </label>
+            <div class="clr-control-container">
+                <div class="clr-checkbox-wrapper">
+                    <input type="checkbox" name="uaa-cert" id="uaa-cert" required
+                        [(ngModel)]="currentConfig.uaa_verify_cert.value"
+                        [disabled]="!currentConfig.uaa_verify_cert.editable" />
+                    <label class="clr-control-label" for="uaa-cert" class="required">
+                        {{'CONFIG.UAA.VERIFY_CERT' | translate}}
+                    </label>
+                </div>
+
+            </div>
+        </div>
+
+
+
+        <!-- <div class="form-group">
             <label for="uaa-endpoint" class="required">{{'CONFIG.UAA.ENDPOINT' | translate}}</label>
             <input type="text" id="uaa-endpoint" name="uaa-endpoint" size="35"
                 [(ngModel)]="currentConfig.uaa_endpoint.value" [disabled]="!currentConfig.uaa_verify_cert.editable">
-        </div>
-        <div class="form-group">
+        </div> -->
+        <!-- <div class="form-group">
             <label for="uaa-id" class="required">{{'CONFIG.UAA.CLIENT_ID' | translate}}</label>
             <input type="text" id="uaa-cid" name="uaa-client-id" size="35"
                 [(ngModel)]="currentConfig.uaa_client_id.value" [disabled]="!currentConfig.uaa_verify_cert.editable">
-        </div>
-        <div class="form-group">
-            <label for="uaa-id" class="required">{{'CONFIG.UAA.CLIENT_SECRET' | translate}}</label>
+        </div> -->
+        <!-- <div class="form-group">
+            <label for="uaa-secret" class="required">{{'CONFIG.UAA.CLIENT_SECRET' | translate}}</label>
             <input id="uaa-secret" name="uaa-client-secret" type="password" size="35"
                 [(ngModel)]="currentConfig.uaa_client_secret.value"
                 [disabled]="!currentConfig.uaa_verify_cert.editable">
-        </div>
-        <div class="form-group">
+        </div> -->
+        <!-- <div class="form-group">
             <clr-checkbox-wrapper>
                 <input type="checkbox" clrCheckbox name="uaa-cert" id="uaa-cert" required
                     [(ngModel)]="currentConfig.uaa_verify_cert.value"
                     [disabled]="!currentConfig.uaa_verify_cert.editable" />
                 <label for="uaa-cert" class="required">{{'CONFIG.UAA.VERIFY_CERT' | translate}}</label>
             </clr-checkbox-wrapper>
-        </div>
+        </div> -->
     </section>
 
     <section class="form-block" *ngIf="showLdap">
-        <div class="form-group">
+        <clr-input-container>
             <label for="ldapUrl" class="required">{{'CONFIG.LDAP.URL' | translate}}</label>
-            <label for="ldapUrl" aria-haspopup="true" role="tooltip"
-                class="tooltip tooltip-validation tooltip-lg tooltip-top-right"
-                [class.invalid]="ldapUrlInput.invalid && (ldapUrlInput.dirty || ldapUrlInput.touched)">
-                <input name="ldapUrl" type="text" #ldapUrlInput="ngModel" [(ngModel)]="currentConfig.ldap_url.value"
-                    required id="ldapUrl" size="40" [disabled]="disabled(currentConfig.ldap_url)">
-                <span class="tooltip-content">
-                    {{'TOOLTIP.ITEM_REQUIRED' | translate}}
-                </span>
-            </label>
-        </div>
-        <div class="form-group">
-            <label for="ldapSearchDN">{{'CONFIG.LDAP.SEARCH_DN' | translate}}</label>
-            <label for="ldapSearchDN" aria-haspopup="true" role="tooltip"
-                class="tooltip tooltip-validation tooltip-lg tooltip-top-right">
-                <input name="ldapSearchDN" type="text" #ldapSearchDNInput="ngModel"
-                    [(ngModel)]="currentConfig.ldap_search_dn.value" id="ldapSearchDN" size="40"
-                    [disabled]="disabled(currentConfig.ldap_search_dn)">
-                <span class="tooltip-content">
-                    {{'TOOLTIP.ITEM_REQUIRED' | translate}}
-                </span>
-            </label>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
-                class="tooltip tooltip-lg tooltip-top-right top-1">
-                <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                <span class="tooltip-content">{{'CONFIG.TOOLTIP.LDAP_SEARCH_DN' | translate}}</span>
-            </a>
-        </div>
-        <div class="form-group">
-            <label for="ldapSearchPwd">{{'CONFIG.LDAP.SEARCH_PWD' | translate}}</label>
-            <label for="ldapSearchPwd" aria-haspopup="true" role="tooltip"
-                class="tooltip tooltip-validation tooltip-lg tooltip-top-right">
-                <input name="ldapSearchPwd" type="password" #ldapSearchPwdInput="ngModel"
-                    [(ngModel)]="currentConfig.ldap_search_password.value" id="ldapSearchPwd" size="40"
-                    [disabled]="disabled(currentConfig.ldap_search_password)">
-                <span class="tooltip-content">
-                    {{'TOOLTIP.ITEM_REQUIRED' | translate}}
-                </span>
-            </label>
-        </div>
-        <div class="form-group">
-            <label for="ldapBaseDN" class="required">{{'CONFIG.LDAP.BASE_DN' | translate}}</label>
-            <label for="ldapBaseDN" aria-haspopup="true" role="tooltip"
-                class="tooltip tooltip-validation tooltip-lg tooltip-top-right"
-                [class.invalid]="ldapBaseDNInput.invalid && (ldapBaseDNInput.dirty || ldapBaseDNInput.touched)">
-                <input name="ldapBaseDN" type="text" #ldapBaseDNInput="ngModel"
-                    [(ngModel)]="currentConfig.ldap_base_dn.value" required id="ldapBaseDN" size="40"
-                    [disabled]="disabled(currentConfig.ldap_base_dn)">
-                <span class="tooltip-content">
-                    {{'TOOLTIP.ITEM_REQUIRED' | translate}}
-                </span>
-            </label>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right top-1">
-                <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                <span class="tooltip-content">{{'CONFIG.TOOLTIP.LDAP_BASE_DN' | translate}}</span>
-            </a>
-        </div>
-        <div class="form-group">
-            <label for="ldapFilter">{{'CONFIG.LDAP.FILTER' | translate}}</label>
-            <label for="ldapFilter" aria-haspopup="true" role="tooltip"
-                class="tooltip tooltip-validation tooltip-lg tooltip-top-right">
-                <input name="ldapFilter" type="text" #ldapFilterInput="ngModel"
-                    [(ngModel)]="currentConfig.ldap_filter.value" id="ldapFilter" size="40"
-                    [disabled]="disabled(currentConfig.ldap_filter)">
-                <span class="tooltip-content">
-                    {{'TOOLTIP.ITEM_REQUIRED' | translate}}
-                </span>
-            </label>
-        </div>
-        <div class="form-group">
-            <label for="ldapUid" class="required">{{'CONFIG.LDAP.UID' | translate}}</label>
-            <label for="ldapUid" aria-haspopup="true" role="tooltip"
-                class="tooltip tooltip-validation tooltip-lg tooltip-top-right"
-                [class.invalid]="ldapUidInput.invalid && (ldapUidInput.dirty || ldapUidInput.touched)">
-                <input name="ldapUid" type="text" #ldapUidInput="ngModel" [(ngModel)]="currentConfig.ldap_uid.value"
-                    required id="ldapUid" size="40" [disabled]="disabled(currentConfig.ldap_uid)">
-                <span class="tooltip-content">
-                    {{'TOOLTIP.ITEM_REQUIRED' | translate}}
-                </span>
-            </label>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
-                class="tooltip tooltip-lg tooltip-top-right top-1">
-                <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                <span class="tooltip-content">{{'CONFIG.TOOLTIP.LDAP_UID' | translate}}</span>
-            </a>
-        </div>
-        <div class="form-group">
-            <label for="ldapScope">{{'CONFIG.LDAP.SCOPE' | translate}}</label>
-            <div class="select">
-                <select id="ldapScope" name="ldapScope" [(ngModel)]="currentConfig.ldap_scope.value"
-                    [disabled]="disabled(currentConfig.ldap_scope)">
-                    <option value="0">{{'CONFIG.SCOPE_BASE' | translate }}</option>
-                    <option value="1">{{'CONFIG.SCOPE_ONE_LEVEL' | translate }}</option>
-                    <option value="2">{{'CONFIG.SCOPE_SUBTREE' | translate }}</option>
-                </select>
+            <input clrInput name="ldapUrl" type="text" #ldapUrlInput="ngModel"
+                [(ngModel)]="currentConfig.ldap_url.value" required id="ldapUrl" size="40"
+                [disabled]="disabled(currentConfig.ldap_url)" />
+            <clr-control-error>{{'TOOLTIP.ITEM_REQUIRED' | translate}}</clr-control-error>
+        </clr-input-container>
+
+        <div class="clr-form-control">
+            <label class="clr-control-label required" for="ldapSearchDN">{{'CONFIG.LDAP.SEARCH_DN' | translate}}</label>
+            <div class="clr-control-container"
+                [class.clr-error]="ldapSearchDNInput.invalid && (ldapSearchDNInput.dirty || ldapSearchDNInput.touched)">
+                <div class="clr-input-wrapper">
+                    <input class="clr-input" name="ldapSearchDN" type="text" #ldapSearchDNInput="ngModel"
+                        [(ngModel)]="currentConfig.ldap_search_dn.value" id="ldapSearchDN" size="40"
+                        [disabled]="disabled(currentConfig.ldap_search_dn)" required />
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
+                        class="tooltip tooltip-lg tooltip-top-right top-1 ml-04">
+                        <clr-icon shape="info-circle" size="24" class="info-tips-icon"></clr-icon>
+                        <span class="tooltip-content">{{'CONFIG.TOOLTIP.LDAP_SEARCH_DN' | translate}}</span>
+                    </a>
+                </div>
+                <span *ngIf="ldapSearchDNInput.invalid && (ldapSearchDNInput.dirty || ldapSearchDNInput.touched)"
+                    class="clr-subtext">{{'TOOLTIP.ITEM_REQUIRED' | translate}}</span>
             </div>
-            <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right top-1">
-                <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                <span class="tooltip-content">{{'CONFIG.TOOLTIP.LDAP_SCOPE' | translate}}</span>
-            </a>
         </div>
-        <div class="form-group">
-            <label for="ldapGroupBaseDN">{{'CONFIG.LDAP.LDAP_GROUP_BASE_DN' | translate}}</label>
-            <input name="ldapGroupBaseDN" class="padding-right-28" type="text" #ldapGroupDNInput="ngModel"
-                [(ngModel)]="currentConfig.ldap_group_base_dn.value" id="ldapGroupBaseDN" size="40"
-                [disabled]="disabled(currentConfig.ldap_group_base_dn)">
-            <clr-tooltip>
-                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                    <span>{{'CONFIG.LDAP.LDAP_GROUP_BASE_DN_INFO' | translate}}</span>
-                </clr-tooltip-content>
-            </clr-tooltip>
+        <clr-input-container>
+            <label for="ldapSearchPwd">{{'CONFIG.LDAP.SEARCH_PWD' | translate}}</label>
+            <input clrInput name="ldapSearchPwd" type="password" #ldapSearchPwdInput="ngModel"
+                [(ngModel)]="currentConfig.ldap_search_password.value" id="ldapSearchPwd" size="40"
+                [disabled]="disabled(currentConfig.ldap_search_password)" />
+        </clr-input-container>
+        <div class="clr-form-control">
+            <label class="clr-control-label required" for="ldapBaseDN">{{'CONFIG.LDAP.BASE_DN' | translate}}</label>
+            <div class="clr-control-container"
+                [class.clr-error]="ldapBaseDNInput.invalid && (ldapBaseDNInput.dirty || ldapBaseDNInput.touched)">
+                <div class="clr-input-wrapper">
+                    <input class="clr-input" name="ldapBaseDN" type="text" #ldapBaseDNInput="ngModel"
+                        [(ngModel)]="currentConfig.ldap_base_dn.value" required id="ldapBaseDN" size="40"
+                        [disabled]="disabled(currentConfig.ldap_base_dn)" />
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
+                        class="tooltip tooltip-lg tooltip-top-right top-1 ml-04">
+                        <clr-icon shape="info-circle" size="24" class="info-tips-icon"></clr-icon>
+                        <span class="tooltip-content">{{'CONFIG.TOOLTIP.LDAP_BASE_DN' | translate}}</span>
+                    </a>
+                </div>
+                <span *ngIf="ldapBaseDNInput.invalid && (ldapBaseDNInput.dirty || ldapBaseDNInput.touched)"
+                    class="clr-subtext">{{'TOOLTIP.ITEM_REQUIRED' | translate}}</span>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="ldapGroupFilter">{{'CONFIG.LDAP.LDAP_GROUP_FILTER' | translate}}</label>
-            <input name="ldapGroupFilter" type="text" class="padding-right-28" #ldapGroupFilterInput="ngModel"
-                [(ngModel)]="currentConfig.ldap_group_search_filter.value" id="ldapGroupFilter" size="40"
-                [disabled]="disabled(currentConfig.ldap_group_search_filter)">
-            <clr-tooltip>
-                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                    <span>{{'CONFIG.LDAP.LDAP_GROUP_FILTER_INFO' | translate}}</span>
-                </clr-tooltip-content>
-            </clr-tooltip>
+        <clr-input-container>
+            <label for="ldapFilter">{{'CONFIG.LDAP.FILTER' | translate}}</label>
+            <input clrInput name="ldapFilter" type="text" #ldapFilterInput="ngModel"
+                [(ngModel)]="currentConfig.ldap_filter.value" id="ldapFilter" size="40"
+                [disabled]="disabled(currentConfig.ldap_filter)" />
+        </clr-input-container>
+        <div class="clr-form-control">
+            <label class="clr-control-label required" for="ldapUid">{{'CONFIG.LDAP.UID' | translate}}</label>
+            <div class="clr-control-container"
+                [class.clr-error]="ldapUidInput.invalid && (ldapUidInput.dirty || ldapUidInput.touched)">
+                <div class="clr-input-wrapper">
+                    <input class="clr-input" name="ldapUid" type="text" #ldapUidInput="ngModel"
+                        [(ngModel)]="currentConfig.ldap_uid.value" required id="ldapUid" size="40"
+                        [disabled]="disabled(currentConfig.ldap_uid)" />
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
+                        class="tooltip tooltip-lg tooltip-top-right top-1 ml-04">
+                        <clr-icon shape="info-circle" size="24" class="info-tips-icon"></clr-icon>
+                        <span class="tooltip-content">{{'CONFIG.TOOLTIP.LDAP_UID' | translate}}</span>
+                    </a>
+                </div>
+                <span *ngIf="ldapUidInput.invalid && (ldapUidInput.dirty || ldapUidInput.touched)"
+                    class="clr-subtext">{{'TOOLTIP.ITEM_REQUIRED' | translate}}</span>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="ldapGroupGID">{{'CONFIG.LDAP.LDAP_GROUP_GID' | translate}}</label>
-            <input name="ldapGroupGID" class="padding-right-28" type="text" #ldapGroupDNInput="ngModel"
-                [(ngModel)]="currentConfig.ldap_group_attribute_name.value" id="ldapGroupGID" size="40"
-                [disabled]="disabled(currentConfig.ldap_group_attribute_name)">
-            <clr-tooltip>
-                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                    <span>{{'CONFIG.LDAP.LDAP_GROUP_GID_INFO' | translate}}</span>
-                </clr-tooltip-content>
-            </clr-tooltip>
+        <div class="clr-form-control">
+            <label class="clr-control-label" for="ldapScope">{{'CONFIG.LDAP.SCOPE' | translate}}</label>
+            <div class="clr-control-container">
+                <div class="clr-select-wrapper">
+                    <select class="clr-select" id="ldapScope" name="ldapScope"
+                        [(ngModel)]="currentConfig.ldap_scope.value" [disabled]="disabled(currentConfig.ldap_scope)">
+                        <option value="0">{{'CONFIG.SCOPE_BASE' | translate }}</option>
+                        <option value="1">{{'CONFIG.SCOPE_ONE_LEVEL' | translate }}</option>
+                        <option value="2">{{'CONFIG.SCOPE_SUBTREE' | translate }}</option>
+                    </select>
+                </div>
+                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
+                    class="tooltip tooltip-lg tooltip-top-right top-1 ml-04">
+                    <clr-icon shape="info-circle" size="24" class="info-tips-icon"></clr-icon>
+                    <span class="tooltip-content">{{'CONFIG.TOOLTIP.LDAP_SCOPE' | translate}}</span>
+                </a>
+            </div>
+        </div>
+        <div class="clr-form-control">
+            <label class="clr-control-label"
+                for="ldapGroupBaseDN">{{'CONFIG.LDAP.LDAP_GROUP_BASE_DN' | translate}}</label>
+            <div class="clr-control-container">
+                <div class="clr-input-wrapper">
+                    <input class="clr-input" name="ldapGroupBaseDN" type="text" #ldapGroupDNInput="ngModel"
+                        [(ngModel)]="currentConfig.ldap_group_base_dn.value" id="ldapGroupBaseDN" size="40"
+                        [disabled]="disabled(currentConfig.ldap_group_base_dn)" />
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <clr-tooltip class="ml-04">
+                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                        <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                            <span>{{'CONFIG.LDAP.LDAP_GROUP_BASE_DN_INFO' | translate}}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </div>
+            </div>
+        </div>
+        <div class="clr-form-control">
+            <label class="clr-control-label"
+                for="ldapGroupFilter">{{'CONFIG.LDAP.LDAP_GROUP_FILTER' | translate}}</label>
+            <div class="clr-control-container">
+                <div class="clr-input-wrapper">
+                    <input class="clr-input" name="ldapGroupFilter" type="text" #ldapGroupFilterInput="ngModel"
+                        [(ngModel)]="currentConfig.ldap_group_search_filter.value" id="ldapGroupFilter" size="40"
+                        [disabled]="disabled(currentConfig.ldap_group_search_filter)" />
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <clr-tooltip class="ml-04">
+                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                        <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                            <span>{{'CONFIG.LDAP.LDAP_GROUP_FILTER_INFO' | translate}}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </div>
+            </div>
+        </div>
+        <div class="clr-form-control">
+            <label class="clr-control-label" for="ldapGroupGID">{{'CONFIG.LDAP.LDAP_GROUP_GID' | translate}}</label>
+            <div class="clr-control-container">
+                <div class="clr-input-wrapper">
+                    <input class="clr-input" name="ldapGroupGID" type="text" #ldapGroupDNInput="ngModel"
+                        [(ngModel)]="currentConfig.ldap_group_attribute_name.value" id="ldapGroupGID" size="40"
+                        [disabled]="disabled(currentConfig.ldap_group_attribute_name)" />
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <clr-tooltip class="ml-04">
+                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                        <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                            <span>{{'CONFIG.LDAP.LDAP_GROUP_GID_INFO' | translate}}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </div>
+            </div>
         </div>
         <!-- This is for ldap group admin dn -->
-        <div class="form-group">
-            <label>{{'CONFIG.LDAP.LDAP_GROUP_ADMIN_DN' | translate}}</label>
-            <input name="ldapGroupAdminDN" class="padding-right-28" type="text" #ldapGroupFilterInput="ngModel"
-                [(ngModel)]="currentConfig.ldap_group_admin_dn.value" id="ldapGroupAdminDN" size="40"
-                [disabled]="disabled(currentConfig.ldap_group_admin_dn)">
-            <clr-tooltip>
-                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                    <span>{{'CONFIG.LDAP.LDAP_GROUP_ADMIN_DN_INFO' | translate}}</span>
-                </clr-tooltip-content>
-            </clr-tooltip>
+        <div class="clr-form-control">
+            <label class="clr-control-label"
+                for="ldapGroupAdminDN">{{'CONFIG.LDAP.LDAP_GROUP_ADMIN_DN' | translate}}</label>
+            <div class="clr-control-container">
+                <div class="clr-input-wrapper">
+                    <input class="clr-input" name="ldapGroupAdminDN" type="text" #ldapGroupFilterInput="ngModel"
+                        [(ngModel)]="currentConfig.ldap_group_admin_dn.value" id="ldapGroupAdminDN" size="40"
+                        [disabled]="disabled(currentConfig.ldap_group_admin_dn)" />
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <clr-tooltip class="ml-04">
+                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                        <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                            <span>{{'CONFIG.LDAP.LDAP_GROUP_ADMIN_DN_INFO' | translate}}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </div>
+            </div>
         </div>
         <!-- End of ldap group admin dn -->
-        <div class="form-group">
-            <label>{{'CONFIG.LDAP.LDAP_GROUP_MEMBERSHIP' | translate}}</label>
-            <input name="ldapGroupMembership" class="padding-right-28" type="text" #ldapGroupFilterInput="ngModel"
-                [(ngModel)]="currentConfig.ldap_group_membership_attribute.value" id="ldapGroupMembership" size="40"
-                [disabled]="disabled(currentConfig.ldap_group_membership_attribute)">
-            <clr-tooltip>
-                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                    <span>{{'CONFIG.LDAP.LDAP_GROUP_MEMBERSHIP_INFO' | translate}}</span>
-                </clr-tooltip-content>
-            </clr-tooltip>
-        </div>
-        <div class="form-group">
-            <label for="ldapGroupScope">{{'CONFIG.LDAP.GROUP_SCOPE' | translate}}</label>
-            <div class="select">
-                <select id="ldapGroupScope" name="ldapGroupScope"
-                    [(ngModel)]="currentConfig.ldap_group_search_scope.value"
-                    [disabled]="disabled(currentConfig.ldap_group_search_scope)">
-                    <option value="0">{{'CONFIG.SCOPE_BASE' | translate }}</option>
-                    <option value="1">{{'CONFIG.SCOPE_ONE_LEVEL' | translate }}</option>
-                    <option value="2">{{'CONFIG.SCOPE_SUBTREE' | translate }}</option>
-                </select>
+        <div class="clr-form-control">
+            <label class="clr-control-label"
+                for="ldapGroupAdminDN">{{'CONFIG.LDAP.LDAP_GROUP_MEMBERSHIP' | translate}}</label>
+            <div class="clr-control-container">
+                <div class="clr-input-wrapper">
+                    <input class="clr-input" name="ldapGroupMembership" type="text" #ldapGroupFilterInput="ngModel"
+                        [(ngModel)]="currentConfig.ldap_group_membership_attribute.value" id="ldapGroupMembership"
+                        size="40" [disabled]="disabled(currentConfig.ldap_group_membership_attribute)" />
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <clr-tooltip class="ml-04">
+                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                        <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                            <span>{{'CONFIG.LDAP.LDAP_GROUP_MEMBERSHIP_INFO' | translate}}</span>
+                        </clr-tooltip-content>
+                    </clr-tooltip>
+                </div>
             </div>
-            <clr-tooltip>
-                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                    <span>{{'CONFIG.LDAP.GROUP_SCOPE_INFO' | translate}}</span>
-                </clr-tooltip-content>
-            </clr-tooltip>
+        </div>
+        <div class="clr-form-control">
+            <label class="clr-control-label" for="ldapScope">{{'CONFIG.LDAP.SCOPE' | translate}}</label>
+            <div class="clr-control-container">
+                <div class="clr-select-wrapper">
+                    <select class="clr-select" id="ldapGroupScope" name="ldapGroupScope"
+                        [(ngModel)]="currentConfig.ldap_group_search_scope.value"
+                        [disabled]="disabled(currentConfig.ldap_group_search_scope)">
+                        <option value="0">{{'CONFIG.SCOPE_BASE' | translate }}</option>
+                        <option value="1">{{'CONFIG.SCOPE_ONE_LEVEL' | translate }}</option>
+                        <option value="2">{{'CONFIG.SCOPE_SUBTREE' | translate }}</option>
+                    </select>
+                </div>
+                <clr-tooltip class="ml-04">
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'CONFIG.LDAP.GROUP_SCOPE_INFO' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </div>
         </div>
     </section>
-
-    <section class="form-block">
-        <div class="form-group" *ngIf="showSelfReg">
-            <label for="selfReg">{{'CONFIG.SELF_REGISTRATION' | translate}}</label>
-            <clr-checkbox-wrapper>
-                <input type="checkbox" clrCheckbox name="selfReg" id="selfReg"
+    <div class="clr-form-control" *ngIf="showSelfReg">
+        <label class="clr-control-label" for="selfReg">{{'CONFIG.SELF_REGISTRATION' | translate}}</label>
+        <div class="clr-control-container">
+            <div class="clr-checkbox-wrapper">
+                <input type="checkbox" class="clr-checkbox" name="selfReg" id="selfReg"
                     [(ngModel)]="currentConfig.self_registration.value"
                     [disabled]="disabled(currentConfig.self_registration)" />
-                <label>
-                    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
-                        class="tooltip tooltip-top-right top-5">
+                <label class="clr-control-label">
+                    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right ">
                         <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
                         <span *ngIf="checkable; else elseBlock" class="tooltip-content">{{'CONFIG.TOOLTIP.SELF_REGISTRATION_ENABLE'
-                            | translate}}</span>
+                                        | translate}}</span>
                         <ng-template #elseBlock>
                             <span
                                 class="tooltip-content">{{'CONFIG.TOOLTIP.SELF_REGISTRATION_DISABLE' | translate}}</span>
                         </ng-template>
                     </a>
                 </label>
-            </clr-checkbox-wrapper>
+            </div>
+
         </div>
-    </section>
+    </div>
+
     <section *ngIf="showLdap">
-        <div class="form-group">
-            <label for="ldapVerifyCert">{{'CONFIG.LDAP.VERIFY_CERT' | translate}}</label>
-            <clr-checkbox-wrapper>
-                <input type="checkbox" clrCheckbox name="ldapVerifyCert" id="ldapVerifyCert"
-                    [ngModel]="currentConfig.ldap_verify_cert.value" [disabled]="disabled(currentConfig.ldap_scope)"
-                    (ngModelChange)="setVerifyCertValue($event)" />
-                <label>
-                    <a href="javascript:void(0)" role="tooltip" aria-haspopup="true"
-                        class="tooltip tooltip-top-right top-5">
-                        <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                        <span class="tooltip-content">{{'CONFIG.TOOLTIP.VERIFY_CERT' | translate}}</span>
-                    </a>
-                </label>
-            </clr-checkbox-wrapper>
+        <div class="clr-form-control">
+            <label class="clr-control-label" for="ldapVerifyCert">{{'CONFIG.LDAP.VERIFY_CERT' | translate}}</label>
+            <div class="clr-control-container">
+                <div class="clr-checkbox-wrapper">
+                    <input type="checkbox" name="ldapVerifyCert" id="ldapVerifyCert"
+                        [ngModel]="currentConfig.ldap_verify_cert.value" [disabled]="disabled(currentConfig.ldap_scope)"
+                        (ngModelChange)="setVerifyCertValue($event)" />
+                    <label class="clr-control-label" for="ldapVerifyCert">
+                        <clr-tooltip>
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                <span>{{'CONFIG.TOOLTIP.VERIFY_CERT' | translate}}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </div>
+            </div>
         </div>
     </section>
     <section class="form-block" *ngIf="showHttpAuth">
-        <div class="form-group">
+        <clr-input-container>
+            <label for="http_authproxy_endpoint" class="required">{{'CONFIG.HTTP_AUTH.ENDPOINT' | translate}}</label>
+            <input clrInput type="text" pattern="^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(.*?)*$"
+            #httpAuthproxyEndpointInput="ngModel" required id="http_authproxy_endpoint"
+            name="http_authproxy_endpoint" size="35" [(ngModel)]="currentConfig.http_authproxy_endpoint.value"
+            [disabled]="!currentConfig.http_authproxy_endpoint.editable" />
+            <clr-control-error>{{'TOOLTIP.ENDPOINT_FORMAT' | translate}}</clr-control-error>
+        </clr-input-container>
+        <clr-input-container>
+            <label for="http_authproxy_tokenreview_endpoint"
+            class="required">{{'CONFIG.HTTP_AUTH.TOKEN_REVIEW' | translate}}</label>
+            <input clrInput type="text" #httpAuthproxyTokenReviewInput="ngModel"
+            pattern="^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(.*?)*$" required
+            id="http_authproxy_tokenreview_endpoint" name="http_authproxy_tokenreview_endpoint" size="35"
+            [(ngModel)]="currentConfig.http_authproxy_tokenreview_endpoint.value"
+            [disabled]="!currentConfig.http_authproxy_tokenreview_endpoint.editable" />
+            <clr-control-error>{{'TOOLTIP.ENDPOINT_FORMAT' | translate}}</clr-control-error>
+        </clr-input-container>
+        <!-- <div class="form-group">
             <label for="http_authproxy_endpoint" class="required">{{'CONFIG.HTTP_AUTH.ENDPOINT' | translate}}</label>
             <label for="http_authproxy_endpoint" aria-haspopup="true" role="tooltip"
                 class="tooltip tooltip-validation tooltip-md tooltip-top-right"
@@ -285,26 +367,28 @@
                     {{'TOOLTIP.ENDPOINT_FORMAT' | translate}}
                 </span>
             </label>
-        </div>
-        <div class="form-group">
-            <label for="http_authproxy_tokenreview_endpoint" class="required">{{'CONFIG.HTTP_AUTH.TOKEN_REVIEW' | translate}}</label>
+        </div> -->
+        <!-- <div class="form-group">
+            <label for="http_authproxy_tokenreview_endpoint"
+                class="required">{{'CONFIG.HTTP_AUTH.TOKEN_REVIEW' | translate}}</label>
             <label for="http_authproxy_tokenreview_endpoint" aria-haspopup="true" role="tooltip"
                 class="tooltip tooltip-validation tooltip-md tooltip-top-right"
                 [class.invalid]="httpAuthproxyTokenReviewInput.invalid && (httpAuthproxyTokenReviewInput.dirty || httpAuthproxyTokenReviewInput.touched)">
-                <input type="text" #httpAuthproxyTokenReviewInput="ngModel" pattern="^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(.*?)*$"
-                 required id="http_authproxy_tokenreview_endpoint" name="http_authproxy_tokenreview_endpoint" size="35"
-                 [(ngModel)]="currentConfig.http_authproxy_tokenreview_endpoint.value" [disabled]="!currentConfig.http_authproxy_tokenreview_endpoint.editable">
+                <input type="text" #httpAuthproxyTokenReviewInput="ngModel"
+                    pattern="^([hH][tT]{2}[pP]:\/\/|[hH][tT]{2}[pP][sS]:\/\/)(.*?)*$" required
+                    id="http_authproxy_tokenreview_endpoint" name="http_authproxy_tokenreview_endpoint" size="35"
+                    [(ngModel)]="currentConfig.http_authproxy_tokenreview_endpoint.value"
+                    [disabled]="!currentConfig.http_authproxy_tokenreview_endpoint.editable">
                 <span class="tooltip-content">
                     {{'TOOLTIP.ENDPOINT_FORMAT' | translate}}
                 </span>
             </label>
-        </div>
+        </div> -->
         <div class="form-group">
             <label for="http_authproxy_verify_cert"
                 class="required">{{'CONFIG.HTTP_AUTH.VERIFY_CERT' | translate}}</label>
             <clr-checkbox-wrapper>
-                <input type="checkbox" clrCheckbox name="http_authproxy_verify_cert"
-                    id="http_authproxy_verify_cert"
+                <input type="checkbox" clrCheckbox name="http_authproxy_verify_cert" id="http_authproxy_verify_cert"
                     [(ngModel)]="currentConfig.http_authproxy_verify_cert.value"
                     [disabled]="!currentConfig.http_authproxy_verify_cert.editable" />
             </clr-checkbox-wrapper>
@@ -313,8 +397,7 @@
             <label for="http_authproxy_skip_search"
                 class="required">{{'CONFIG.HTTP_AUTH.SKIP_SEARCH' | translate}}</label>
             <clr-checkbox-wrapper>
-                <input type="checkbox" clrCheckbox name="http_authproxy_skip_search"
-                    id="http_authproxy_skip_search"
+                <input type="checkbox" clrCheckbox name="http_authproxy_skip_search" id="http_authproxy_skip_search"
                     [disabled]="!currentConfig.http_authproxy_skip_search.editable"
                     [(ngModel)]="currentConfig.http_authproxy_skip_search.value" />
             </clr-checkbox-wrapper>
@@ -415,7 +498,8 @@
                 <span class="tooltip-content">{{'TOOLTIP.OIDC_VERIFYCERT' | translate}}</span>
             </a>
         </div>
-        <div class="oidc-tip">{{ 'CONFIG.OIDC.OIDC_REDIREC_URL' | translate}} <span>{{redirectUrl}}/c/oidc/callback</span></div>
+        <div class="oidc-tip">{{ 'CONFIG.OIDC.OIDC_REDIREC_URL' | translate}}
+            <span>{{redirectUrl}}/c/oidc/callback</span></div>
     </section>
 </form>
 <div>
