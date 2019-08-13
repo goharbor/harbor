@@ -54,12 +54,6 @@ clair:
   # The interval of clair updaters, the unit is hour, set to 0 to disable the updaters.
   updaters_interval: 12
 
-  # Config http proxy for Clair, e.g. http://my.proxy.com:3128
-  # Clair doesn't need to connect to harbor internal components via http proxy.
-  http_proxy:
-  https_proxy:
-  no_proxy: 127.0.0.1,localhost,core,registry
-
 jobservice:
   # Maximum number of job workers in job service  
   max_job_workers: 10
@@ -143,3 +137,20 @@ _version: 1.8.0
 # Uncomment uaa for trusting the certificate of uaa instance that is hosted via self-signed cert.
 # uaa:
 #   ca_file: /path/to/ca
+
+# Global proxy
+# Config http proxy for components, e.g. http://my.proxy.com:3128
+# Components doesn't need to connect to each others via http proxy.
+# Remove component from `components` array if want disable proxy
+# for it. If you want use proxy for replication, MUST enable proxy
+# for core and jobservice, and set `http_proxy` and `https_proxy`.
+# Add domain to the `no_proxy` field, when you want disable proxy
+# for some special registry.
+proxy:
+  http_proxy:
+  https_proxy:
+  no_proxy: 127.0.0.1,localhost,.local,.internal,log,db,redis,nginx,core,portal,postgresql,jobservice,registry,registryctl,clair
+  components:
+    - core
+    - jobservice
+    - clair
