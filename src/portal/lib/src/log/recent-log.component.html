@@ -2,7 +2,7 @@
     <div class="row flex-items-xs-between flex-items-xs-bottom">
         <div></div>
         <div class="action-head-pos">
-            <div class="select filterTag" [hidden]="!isOpenFilterTag">
+            <div class="select filter-tag clr-select-wrapper" [hidden]="!isOpenFilterTag">
                 <select id="selectKey" (change)="selectFilterKey($event)">
                     <option value="username">{{"AUDIT_LOG.USERNAME" | translate | lowercase}}</option>
                     <option value="repository">{{"CONFIG.REPOSITORY" | translate | lowercase}}</option>
