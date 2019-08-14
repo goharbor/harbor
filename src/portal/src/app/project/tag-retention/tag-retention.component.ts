@@ -21,6 +21,7 @@ import { Project } from "../project";
 import { clone, ErrorHandler } from "@harbor/ui";
 import { OriginCron } from "@harbor/ui";
 import { CronScheduleComponent } from "@harbor/ui";
+import { finalize } from "rxjs/operators";
 
 const MIN = 60000;
 const SEC = 1000;
@@ -228,7 +229,9 @@ export class TagRetentionComponent implements OnInit {
         this.selectedItem = null;
         this.loadingExecutions = true;
         if (this.retentionId) {
-            this.tagRetentionService.getRunNowList(this.retentionId, this.currentPage, this.pageSize).subscribe(
+            this.tagRetentionService.getRunNowList(this.retentionId, this.currentPage, this.pageSize)
+              .pipe(finalize(() => this.loadingExecutions = false))
+              .subscribe(
               response => {
                     // Get total count
                     if (response.headers) {
@@ -238,14 +241,14 @@ export class TagRetentionComponent implements OnInit {
                         }
                     }
                     this.executionList = response.body as Array<any>;
-                    this.loadingExecutions = false;
                     TagRetentionComponent.calculateDuration(this.executionList);
                 }, error => {
-                    this.loadingExecutions = false;
                     this.errorHandler.error(error);
                 });
         } else {
+          setTimeout(() => {
             this.loadingExecutions = false;
+          });
         }
     }
 
@@ -299,13 +302,13 @@ export class TagRetentionComponent implements OnInit {
             this.index = index;
             this.historyList = [];
             this.loadingHistories = true;
-            this.tagRetentionService.getExecutionHistory(this.retentionId, executionId).subscribe(
+            this.tagRetentionService.getExecutionHistory(this.retentionId, executionId)
+              .pipe(finalize(() => this.loadingHistories = false))
+              .subscribe(
                 res => {
-                    this.loadingHistories = false;
                     this.historyList = res;
                     TagRetentionComponent.calculateDuration(this.historyList);
                 }, error => {
-                    this.loadingHistories = false;
                     this.errorHandler.error(error);
                 });
         } else {
