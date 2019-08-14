@@ -1,9 +1,9 @@
-import { Component, OnInit, Input } from '@angular/core';
-import { ProjectService, clone, QuotaUnits, getSuitableUnit, ErrorHandler, GetIntegerAndUnit } from '@harbor/ui';
-import { Router, ActivatedRoute } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { Component, OnInit } from '@angular/core';
+import { ProjectService, clone, QuotaUnits, getSuitableUnit, ErrorHandler, GetIntegerAndUnit
+  , QUOTA_DANGER_COEFFICIENT, QUOTA_WARNING_COEFFICIENT } from '@harbor/ui';
+import { ActivatedRoute } from '@angular/router';
+
 import { AppConfigService } from "../../app-config.service";
-export const riskRatio = 0.9;
 @Component({
   selector: 'summary',
   templateUrl: './summary.component.html',
@@ -12,6 +12,8 @@ export const riskRatio = 0.9;
 export class SummaryComponent implements OnInit {
   projectId: number;
   summaryInformation: any;
+  quotaDangerCoefficient: number = QUOTA_DANGER_COEFFICIENT;
+  quotaWarningCoefficient: number = QUOTA_WARNING_COEFFICIENT;
   constructor(
     private projectService: ProjectService,
     private errorHandler: ErrorHandler,
