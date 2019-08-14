@@ -55,12 +55,19 @@
                 <div class="clr-control-container">
                     <input type="text" id="create_project_storage_limit" [(ngModel)]="storageLimit" name="create_project_storage_limit" class="mr-10 clr-input"
                         #projectStorageLimit="ngModel" autocomplete="off">
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     <div class="clr-select-wrapper">
                         <select id="create_project_storage_limit_unit" name="create_project_storage_limit_unit" [(ngModel)]="storageLimitUnit">
                             <ng-template ngFor let-quotaUnit [ngForOf]="quotaUnits" let-i="index">
                                 <option *ngIf="i>1" [value]="quotaUnit.UNIT">{{ quotaUnit.UNIT }}</option>
                             </ng-template>
                         </select>
+                        <clr-tooltip>
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content clrPosition="bottom-left" clrSize="lg" *clrIfOpen>
+                                <span>{{'PROJECT.QUOTA_UNLIMIT_TIP' | translate }}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
                     </div>
                     <clr-control-error *ngIf="(projectStorageLimit.invalid && (projectStorageLimit.dirty || projectStorageLimit.touched))||projectStorageLimit.errors"
                         class="tooltip-content">
