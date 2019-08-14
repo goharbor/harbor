@@ -15,6 +15,7 @@
 package registry
 
 import (
+	"bufio"
 	"bytes"
 	"fmt"
 	"io/ioutil"
@@ -155,6 +156,14 @@ func TestPushBlob(t *testing.T) {
 		},
 	})
 
+	assertContentLength := func(next func(http.ResponseWriter, *http.Request)) func(http.ResponseWriter, *http.Request) {
+		return func(w http.ResponseWriter, r *http.Request) {
+			assert.Contains(t, r.Header, "Content-Length")
+			assert.Equal(t, strconv.FormatInt(int64(len(blob)), 10), r.Header.Get("Content-Length"))
+			next(w, r)
+		}
+	}
+
 	server := test.NewServer(
 		&test.RequestHandlerMapping{
 			Method:  "POST",
@@ -164,7 +173,7 @@ func TestPushBlob(t *testing.T) {
 		&test.RequestHandlerMapping{
 			Method:  "PUT",
 			Pattern: fmt.Sprintf("/v2/%s/blobs/uploads/%s", repository, uuid),
-			Handler: monolithicUploadHandler,
+			Handler: assertContentLength(monolithicUploadHandler),
 		})
 	defer server.Close()
 	location = fmt.Sprintf("%s/v2/%s/blobs/uploads/%s", server.URL, repository, uuid)
@@ -174,7 +183,7 @@ func TestPushBlob(t *testing.T) {
 		t.Fatalf("failed to create client for repository: %v", err)
 	}
 
-	if err = client.PushBlob(digest, int64(len(blob)), bytes.NewReader(blob)); err != nil {
+	if err = client.PushBlob(digest, int64(len(blob)), bufio.NewReader(bytes.NewReader(blob))); err != nil {
 		t.Fatalf("failed to push blob: %v", err)
 	}
 }

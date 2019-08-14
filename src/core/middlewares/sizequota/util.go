@@ -15,8 +15,10 @@
 package sizequota
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -27,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/opencontainers/go-digest"
@@ -98,7 +101,27 @@ func parseBlobSize(req *http.Request, uuid string) (int64, error) {
 		return size, nil
 	}
 
-	return getUploadedBlobSize(uuid)
+	size, err = getUploadedBlobSize(uuid)
+	if err == nil && size != 0 {
+		return size, nil
+	}
+
+	// Get blob size for replication of harbor 1.8 and below
+	// which don't contain Content-Length header when do PUT request to Blob Upload URL
+	if req.Body != nil {
+		body, err := ioutil.ReadAll(req.Body)
+		if err != nil {
+			log.Warningf("Error occurred when read body %v", err)
+			return 0, err
+		}
+		req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+		if len(body) > 0 {
+			return int64(len(body)), nil
+		}
+	}
+
+	return 0, fmt.Errorf("failed to get blob size")
 }
 
 // match returns true if request method equal method and path match re

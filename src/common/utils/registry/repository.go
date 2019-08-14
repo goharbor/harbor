@@ -25,7 +25,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	//	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
@@ -407,6 +406,9 @@ func (r *Repository) monolithicBlobUpload(location, digest string, size int64, d
 	if err != nil {
 		return err
 	}
+
+	// set the Content-Length for the request
+	req.ContentLength = size
 
 	resp, err := r.client.Do(req)
 	if err != nil {
