@@ -154,7 +154,7 @@ func TestAuth_PostAuthenticate(t *testing.T) {
 			},
 			expect: models.User{
 				Username: "jt",
-				Email:    "jt@placeholder.com",
+				Email:    "",
 				Realname: "jt",
 				Password: pwd,
 				Comment:  userEntryComment,

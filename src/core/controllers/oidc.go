@@ -17,6 +17,9 @@ package controllers
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"strings"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -26,8 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/pkg/errors"
-	"net/http"
-	"strings"
 )
 
 const tokenKey = "oidc_token"
@@ -189,9 +190,6 @@ func (oc *OIDCController) Onboard() {
 	}
 
 	email := d.Email
-	if email == "" {
-		email = utils.GenerateRandomString() + "@placeholder.com"
-	}
 	user := models.User{
 		Username:     username,
 		Realname:     d.Username,

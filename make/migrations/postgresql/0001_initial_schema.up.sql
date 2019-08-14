@@ -56,9 +56,9 @@ $$;
 
 CREATE TRIGGER harbor_user_update_time_at_modtime BEFORE UPDATE ON harbor_user FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
 
-insert into harbor_user (username, email, password, realname, comment, deleted, sysadmin_flag, creation_time, update_time) values 
-('admin', 'admin@example.com', '', 'system admin', 'admin user',false, true, NOW(), NOW()),
-('anonymous', 'anonymous@example.com', '', 'anonymous user', 'anonymous user', true, false, NOW(), NOW());
+insert into harbor_user (username, password, realname, comment, deleted, sysadmin_flag, creation_time, update_time) values
+('admin', '', 'system admin', 'admin user',false, true, NOW(), NOW()),
+('anonymous', '', 'anonymous user', 'anonymous user', true, false, NOW(), NOW());
 
 create table project (
  project_id SERIAL PRIMARY KEY NOT NULL,
