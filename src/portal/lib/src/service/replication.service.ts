@@ -296,8 +296,7 @@ export class ReplicationDefaultService extends ReplicationService {
     }
     let url: string = `${this._replicateUrl}/executions/${executionId}/tasks`;
     return this.http
-      .get(url,
-        queryParams ? buildHttpRequestOptions(queryParams) : HTTP_GET_OPTIONS)
+      .get(url, buildHttpRequestOptionsWithObserveResponse(queryParams))
       .pipe(map(response => response as ReplicationTasks)
         , catchError(error => observableThrowError(error)));
   }

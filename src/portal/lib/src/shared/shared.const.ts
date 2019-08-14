@@ -151,3 +151,4 @@ export enum GroupType {
   LDAP_TYPE = 1,
   HTTP_TYPE = 2
 }
+export const REFRESH_TIME_DIFFERENCE = 10000;

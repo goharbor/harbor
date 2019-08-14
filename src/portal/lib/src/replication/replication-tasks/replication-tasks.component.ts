@@ -6,8 +6,9 @@ import { finalize } from "rxjs/operators";
 import { Subscription, timer } from "rxjs";
 import { ErrorHandler } from "../../error-handler/error-handler";
 import { ReplicationJob, ReplicationTasks, Comparator, ReplicationJobItem, State } from "../../service/interface";
-import { CustomComparator, DEFAULT_PAGE_SIZE, calculatePage, doFiltering, doSorting } from "../../utils";
+import { CustomComparator, DEFAULT_PAGE_SIZE } from "../../utils";
 import { RequestQueryParams } from "../../service/RequestQueryParams";
+import { REFRESH_TIME_DIFFERENCE } from '../../shared/shared.const';
 const executionStatus = 'InProgress';
 @Component({
   selector: 'replication-tasks',
@@ -18,8 +19,8 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   isOpenFilterTag: boolean;
   inProgress: boolean = false;
   currentPage: number = 1;
-  selectedRow: [];
   pageSize: number = DEFAULT_PAGE_SIZE;
+  totalCount: number;
   loading = true;
   searchTask: string;
   defaultFilter = "resource_type";
@@ -47,7 +48,6 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.searchTask = '';
     this.getExecutionDetail();
-    this.clrLoadTasks();
   }
 
   getExecutionDetail(): void {
@@ -67,14 +67,17 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
 
   clrLoadPage(): void {
     if (!this.timerDelay) {
-      this.timerDelay = timer(10000, 10000).subscribe(() => {
+      this.timerDelay = timer(REFRESH_TIME_DIFFERENCE, REFRESH_TIME_DIFFERENCE).subscribe(() => {
         let count: number = 0;
-          if (this.executions['status'] === executionStatus) {
-            count++;
-          }
+        if (this.executions['status'] === executionStatus) {
+          count++;
+        }
         if (count > 0) {
           this.getExecutionDetail();
-          this.clrLoadTasks();
+          let state: State = {
+            page: {}
+          };
+          this.clrLoadTasks(state);
         } else {
           this.timerDelay.unsubscribe();
           this.timerDelay = null;
@@ -136,16 +139,30 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
     }
   }
 
-  clrLoadTasks(): void {
-      this.loading = true;
+  clrLoadTasks(state: State): void {
+      if (!state || !state.page || !this.executionId) {
+        return;
+      }
+
       let params: RequestQueryParams = new RequestQueryParams();
+      params = params.set('page_size', this.pageSize + '').set('page', this.currentPage + '');
       if (this.searchTask && this.searchTask !== "") {
         params = params.set(this.defaultFilter, this.searchTask);
       }
+
+      this.loading = true;
       this.replicationService.getReplicationTasks(this.executionId, params)
-      .pipe(finalize(() => (this.loading = false)))
+      .pipe(finalize(() => {
+        this.loading = false;
+      }))
       .subscribe(res => {
-        this.tasks = res; // Keep the data
+        if (res.headers) {
+          let xHeader: string = res.headers.get("X-Total-Count");
+          if (xHeader) {
+            this.totalCount = parseInt(xHeader, 0);
+          }
+        }
+        this.tasks = res.body; // Keep the data
       },
       error => {
         this.errorHandler.error(error);
@@ -162,23 +179,20 @@ export class ReplicationTasksComponent implements OnInit, OnDestroy {
 
   // refresh icon
   refreshTasks(): void {
-    this.loading = true;
     this.currentPage = 1;
-    this.replicationService.getReplicationTasks(this.executionId)
-    .subscribe(res => {
-      this.tasks = res;
-      this.loading = false;
-    },
-    error => {
-      this.loading = false;
-      this.errorHandler.error(error);
-    });
+    let state: State = {
+      page: {}
+    };
+    this.clrLoadTasks(state);
   }
 
   public doSearch(value: string): void {
+    this.currentPage = 1;
     this.searchTask = value.trim();
-    this.loading = true;
-    this.clrLoadTasks();
+    let state: State = {
+      page: {}
+    };
+    this.clrLoadTasks(state);
   }
 
   openFilter(isOpen: boolean): void {
