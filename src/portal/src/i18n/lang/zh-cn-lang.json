@@ -142,7 +142,7 @@
         "NEW_PWD": "新密码",
         "CONFIRM_PWD": "确认密码",
         "SAVE_SUCCESS": "成功更改用户密码。",
-        "PASS_TIPS": "8到20个字符且需包含至少一个大写字符、小写字符或者数字"
+        "PASS_TIPS": "8到128个字符且需包含至少一个大写字符、小写字符或者数字"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "用户设置",

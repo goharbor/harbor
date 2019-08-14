@@ -138,7 +138,7 @@
         "NEW_PWD": "Nouveau Mot de Passe",
         "CONFIRM_PWD": "Confirmer le Mot de Passe",
         "SAVE_SUCCESS": "Mot de passe utilisateur modifié avec succès.",
-        "PASS_TIPS": "8-20 caractères long avec 1 majuscule, 1 minuscule et 1 chiffre"
+        "PASS_TIPS": "8-128 caractères long avec 1 majuscule, 1 minuscule et 1 chiffre"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Profil Utilisateur",
