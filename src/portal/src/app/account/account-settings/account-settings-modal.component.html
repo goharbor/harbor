@@ -54,9 +54,8 @@
                 </clr-control-error>
             </clr-input-container>
 
-            <div class="form-group form-group-override cli-secret" *ngIf="account.oidc_user_meta">
-                <label for="cli_password" aria-haspopup="true" class="form-group-label-override">
-                    <span class="label-inner-text">{{'PROFILE.CLI_PASSWORD' | translate}}</span>
+            <div class="clr-form-control cli-secret" *ngIf="account.oidc_user_meta">
+                <label class="clr-control-label">{{'PROFILE.CLI_PASSWORD' | translate}}
                     <clr-tooltip>
                         <clr-icon clrTooltipTrigger shape="info-circle" size="20"></clr-icon>
                         <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>
