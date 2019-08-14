@@ -3,14 +3,19 @@
     margin-right:0.5rem;
 }
 
-.clr-subtext {
-   color: red;
-}
-
 .required:after {
     content: '*';
     font-size: .58479532rem;
     line-height: .5rem;
     color: #c92100;
     margin-left: .25rem;
+}
+
+.display-flex {
+    display: flex;
+    align-items:center;
+}
+
+.pos-inherit {
+    position: inherit;
 }
