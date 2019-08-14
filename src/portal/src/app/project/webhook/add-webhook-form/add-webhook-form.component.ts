@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import { Webhook, Target } from "../webhook";
 import { NgForm } from "@angular/forms";
-import {ClrLoadingState} from "@clr/angular";
+import { ClrLoadingState } from "@clr/angular";
 import { finalize } from "rxjs/operators";
 import { WebhookService } from "../webhook.service";
 import { WebhookEventTypes } from '../../../shared/shared.const';

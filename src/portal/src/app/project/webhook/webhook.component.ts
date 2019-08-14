@@ -57,7 +57,7 @@ export class WebhookComponent implements OnInit {
     private route: ActivatedRoute,
     private translate: TranslateService,
     private webhookService: WebhookService,
-    private messageHandlerService: MessageHandlerService) {}
+    private messageHandlerService: MessageHandlerService) { }
 
   ngOnInit() {
     this.projectId = +this.route.snapshot.parent.params['id'];
@@ -115,8 +115,8 @@ export class WebhookComponent implements OnInit {
     let content = '';
     this.translate.get(
       enabled
-      ? 'WEBHOOK.ENABLED_WEBHOOK_SUMMARY'
-      : 'WEBHOOK.DISABLED_WEBHOOK_SUMMARY'
+        ? 'WEBHOOK.ENABLED_WEBHOOK_SUMMARY'
+        : 'WEBHOOK.DISABLED_WEBHOOK_SUMMARY'
     ).subscribe((res) => content = res + this.projectName);
     let message = new ConfirmationMessage(
       enabled ? 'WEBHOOK.ENABLED_WEBHOOK_TITLE' : 'WEBHOOK.DISABLED_WEBHOOK_TITLE',
@@ -131,20 +131,20 @@ export class WebhookComponent implements OnInit {
 
   confirmSwitch(message: ConfirmationAcknowledgement) {
     if (message &&
-        message.source === ConfirmationTargets.WEBHOOK &&
-        message.state === ConfirmationState.CONFIRMED) {
-        this.webhookService
-          .editWebhook(this.projectId, this.webhook.id, Object.assign({}, this.webhook, { enabled: !this.isEnabled }))
-          .subscribe(
-            response => {
-              this.getData(this.projectId);
-            },
-            error => {
-              this.messageHandlerService.handleError(error);
-            }
-          );
+      message.source === ConfirmationTargets.WEBHOOK &&
+      message.state === ConfirmationState.CONFIRMED) {
+      this.webhookService
+        .editWebhook(this.projectId, this.webhook.id, Object.assign({}, this.webhook, { enabled: !this.isEnabled }))
+        .subscribe(
+          response => {
+            this.getData(this.projectId);
+          },
+          error => {
+            this.messageHandlerService.handleError(error);
+          }
+        );
     }
-}
+  }
 
   editWebhook(isModify: boolean): void {
     this.getData(this.projectId);
