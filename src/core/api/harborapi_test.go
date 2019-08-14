@@ -202,6 +202,8 @@ func init() {
 	beego.Router("/api/quotas", quotaAPIType, "get:List")
 	beego.Router("/api/quotas/:id([0-9]+)", quotaAPIType, "get:Get;put:Put")
 
+	beego.Router("/api/internal/switchquota", &InternalAPI{}, "put:SwitchQuota")
+
 	// syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
 		log.Fatalf("failed to sync repositories from registry: %v", err)
