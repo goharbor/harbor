@@ -76,7 +76,7 @@ func (ia *InternalAPI) RenameAdmin() {
 
 // QuotaSwitcher ...
 type QuotaSwitcher struct {
-	Disabled bool
+	Enabled bool
 }
 
 // SwitchQuota ...
@@ -86,14 +86,17 @@ func (ia *InternalAPI) SwitchQuota() {
 		ia.SendBadRequestError(err)
 		return
 	}
-	// From disable to enable, it needs to update the quota usage bases on the DB records.
-	if config.QuotaPerProjectEnable() == false && req.Disabled == true {
+	// quota per project from disable to enable, it needs to update the quota usage bases on the DB records.
+	if !config.QuotaPerProjectEnable() && req.Enabled {
 		if err := ia.ensureQuota(); err != nil {
-			ia.SendBadRequestError(err)
+			ia.SendInternalServerError(err)
 			return
 		}
 	}
-	defer config.GetCfgManager().Set(common.QuotaPerProjectEnable, req.Disabled)
+	defer func() {
+		config.GetCfgManager().Set(common.QuotaPerProjectEnable, req.Enabled)
+		config.GetCfgManager().Save()
+	}()
 	return
 }
 
