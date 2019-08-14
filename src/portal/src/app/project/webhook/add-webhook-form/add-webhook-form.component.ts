@@ -40,8 +40,6 @@ export class AddWebhookFormComponent implements OnInit, OnChanges {
   @ViewChild("webhookForm", { static: true }) currentForm: NgForm;
   @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
 
-
-
   constructor(
     private webhookService: WebhookService,
     private messageHandlerService: MessageHandlerService
