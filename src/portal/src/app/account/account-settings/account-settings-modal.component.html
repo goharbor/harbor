@@ -1,7 +1,7 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="false">
     <h3 class="modal-title">{{'PROFILE.TITLE' | translate}}</h3>
-    <inline-alert class="modal-title" (confirmEvt)="confirmYes($event)" (closeEvt)="confirmNo($event)"></inline-alert>
     <div class="modal-body body-format">
+        <inline-alert (confirmEvt)="confirmYes($event)" (closeEvt)="confirmNo($event)"></inline-alert>
         <form #accountSettingsFrom="ngForm" class="clr-form clr-form-horizontal">
             <div class="clr-form-control">
                 <label for="account_settings_username" aria-haspopup="true" class="clr-control-label">{{'PROFILE.USER_NAME' | translate}}</label>
