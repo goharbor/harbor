@@ -46,6 +46,11 @@ func NewRegistryMigrator(pm promgr.ProjectManager) quota.QuotaMigrator {
 	return &migrator
 }
 
+// Ping ...
+func (rm *Migrator) Ping() error {
+	return api.HealthCheckerRegistry["registry"].Check()
+}
+
 // Dump ...
 func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 	var (

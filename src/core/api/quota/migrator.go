@@ -21,11 +21,15 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/pkg/types"
 	"strconv"
 )
 
 // QuotaMigrator ...
 type QuotaMigrator interface {
+	// Ping validates and wait for backend service ready.
+	Ping() error
+
 	// Dump exports all data from backend service, registry, chartmuseum
 	Dump() ([]ProjectInfo, error)
 
@@ -74,6 +78,7 @@ func Register(name string, adapter Instance) {
 
 // Sync ...
 func Sync(pm promgr.ProjectManager, populate bool) error {
+	totalUsage := make(map[string][]ProjectUsage)
 	for name, instanceFunc := range adapters {
 		if !config.WithChartMuseum() {
 			if name == "chart" {
@@ -81,6 +86,9 @@ func Sync(pm promgr.ProjectManager, populate bool) error {
 			}
 		}
 		adapter := instanceFunc(pm)
+		if err := adapter.Ping(); err != nil {
+			return err
+		}
 		data, err := adapter.Dump()
 		if err != nil {
 			return err
@@ -89,16 +97,56 @@ func Sync(pm promgr.ProjectManager, populate bool) error {
 		if err != nil {
 			return err
 		}
-		if err := ensureQuota(usage); err != nil {
-			return err
-		}
+		totalUsage[name] = usage
 		if populate {
 			if err := adapter.Persist(data); err != nil {
 				return err
 			}
 		}
 	}
+	merged := mergeUsage(totalUsage)
+	if err := ensureQuota(merged); err != nil {
+		return err
+	}
 	return nil
+}
+
+// mergeUsage merges the usage of adapters
+func mergeUsage(total map[string][]ProjectUsage) []ProjectUsage {
+	if !config.WithChartMuseum() {
+		return total["registry"]
+	}
+	regUsgs := total["registry"]
+	chartUsgs := total["chart"]
+
+	var mergedUsage []ProjectUsage
+	temp := make(map[string]quota.ResourceList)
+
+	for _, regUsg := range regUsgs {
+		_, exist := temp[regUsg.Project]
+		if !exist {
+			temp[regUsg.Project] = regUsg.Used
+			mergedUsage = append(mergedUsage, ProjectUsage{
+				Project: regUsg.Project,
+				Used:    regUsg.Used,
+			})
+		}
+	}
+	for _, chartUsg := range chartUsgs {
+		var usedTemp quota.ResourceList
+		_, exist := temp[chartUsg.Project]
+		if !exist {
+			usedTemp = chartUsg.Used
+		} else {
+			usedTemp = types.Add(temp[chartUsg.Project], chartUsg.Used)
+		}
+		temp[chartUsg.Project] = usedTemp
+		mergedUsage = append(mergedUsage, ProjectUsage{
+			Project: chartUsg.Project,
+			Used:    usedTemp,
+		})
+	}
+	return mergedUsage
 }
 
 // ensureQuota updates the quota and quota usage in the data base.

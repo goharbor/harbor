@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	common_quota "github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/api"
 	quota "github.com/goharbor/harbor/src/core/api/quota"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
@@ -48,6 +49,11 @@ var (
 	controllerErr  error
 	controllerOnce sync.Once
 )
+
+// Ping ...
+func (rm *Migrator) Ping() error {
+	return api.HealthCheckerRegistry["chartmuseum"].Check()
+}
 
 // Dump ...
 // Depends on DB to dump chart data, as chart cannot get all of namespaces.
@@ -99,8 +105,6 @@ func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 			defer wg.Done()
 
 			var repos []quota.RepoData
-			var afs []*models.Artifact
-
 			ctr, err := chartController()
 			if err != nil {
 				errChan <- err
@@ -115,6 +119,7 @@ func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 
 			// repo
 			for _, chart := range chartInfo {
+				var afs []*models.Artifact
 				chartVersions, err := ctr.GetChart(project.Name, chart.Name)
 				if err != nil {
 					errChan <- err
@@ -171,7 +176,8 @@ func (rm *Migrator) Usage(projects []quota.ProjectInfo) ([]quota.ProjectUsage, e
 		proUsage := quota.ProjectUsage{
 			Project: project.Name,
 			Used: common_quota.ResourceList{
-				common_quota.ResourceCount: count,
+				common_quota.ResourceCount:   count,
+				common_quota.ResourceStorage: 0,
 			},
 		}
 		pros = append(pros, proUsage)
