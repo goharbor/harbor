@@ -62,12 +62,7 @@
                                 <option *ngIf="i>1" [value]="quotaUnit.UNIT">{{ quotaUnit.UNIT }}</option>
                             </ng-template>
                         </select>
-                        <clr-tooltip>
-                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                            <clr-tooltip-content clrPosition="bottom-left" clrSize="lg" *clrIfOpen>
-                                <span>{{'PROJECT.QUOTA_UNLIMIT_TIP' | translate }}</span>
-                            </clr-tooltip-content>
-                        </clr-tooltip>
+
                     </div>
                     <clr-control-error *ngIf="(projectStorageLimit.invalid && (projectStorageLimit.dirty || projectStorageLimit.touched))||projectStorageLimit.errors"
                         class="tooltip-content">
