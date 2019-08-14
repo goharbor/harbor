@@ -73,7 +73,7 @@ func (r *RetentionAPI) GetMetadatas() {
             "params": []
         },
 		{
-			"rule_template": "dayspl",
+			"rule_template": "nDaysSinceLastPull",
 			"display_text": "pulled within the last # days",
 			"action": "retain",
 			"params": [
@@ -85,7 +85,7 @@ func (r *RetentionAPI) GetMetadatas() {
 			]
 		},
 		{
-			"rule_template": "daysps",
+			"rule_template": "nDaysSinceLastPush",
 			"display_text": "pushed within the last # days",
 			"action": "retain",
 			"params": [
