@@ -21,8 +21,8 @@ func (e *EvaluatorTestSuite) TestNew() {
 		args      rule.Parameters
 		expectedX int
 	}{
-		{Name: "Valid", args: map[string]rule.Parameter{ParameterX: 3}, expectedX: 3},
-		{Name: "Default If Negative", args: map[string]rule.Parameter{ParameterX: -3}, expectedX: DefaultX},
+		{Name: "Valid", args: map[string]rule.Parameter{ParameterX: float64(3)}, expectedX: 3},
+		{Name: "Default If Negative", args: map[string]rule.Parameter{ParameterX: float64(-3)}, expectedX: DefaultX},
 		{Name: "Default If Not Set", args: map[string]rule.Parameter{}, expectedX: DefaultX},
 		{Name: "Default If Wrong Type", args: map[string]rule.Parameter{}, expectedX: DefaultX},
 	}
@@ -48,7 +48,7 @@ func (e *EvaluatorTestSuite) TestProcess() {
 	}
 
 	tests := []struct {
-		days     int
+		days     float64
 		expected int
 	}{
 		{days: 0, expected: 0},
@@ -62,7 +62,7 @@ func (e *EvaluatorTestSuite) TestProcess() {
 	}
 
 	for _, tt := range tests {
-		e.T().Run(fmt.Sprintf("%d days - should keep %d", tt.days, tt.expected), func(t *testing.T) {
+		e.T().Run(fmt.Sprintf("%v days - should keep %d", tt.days, tt.expected), func(t *testing.T) {
 			e := New(rule.Parameters{ParameterX: tt.days})
 
 			result, err := e.Process(data)

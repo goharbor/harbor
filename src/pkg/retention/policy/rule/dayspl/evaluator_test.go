@@ -15,7 +15,7 @@
 package dayspl
 
 import (
-	"strconv"
+	"fmt"
 	"testing"
 	"time"
 
@@ -36,8 +36,8 @@ func (e *EvaluatorTestSuite) TestNew() {
 		args      rule.Parameters
 		expectedN int
 	}{
-		{Name: "Valid", args: map[string]rule.Parameter{ParameterN: 5}, expectedN: 5},
-		{Name: "Default If Negative", args: map[string]rule.Parameter{ParameterN: -1}, expectedN: DefaultN},
+		{Name: "Valid", args: map[string]rule.Parameter{ParameterN: float64(5)}, expectedN: 5},
+		{Name: "Default If Negative", args: map[string]rule.Parameter{ParameterN: float64(-1)}, expectedN: DefaultN},
 		{Name: "Default If Not Set", args: map[string]rule.Parameter{}, expectedN: DefaultN},
 		{Name: "Default If Wrong Type", args: map[string]rule.Parameter{ParameterN: "foo"}, expectedN: DefaultN},
 	}
@@ -65,7 +65,7 @@ func (e *EvaluatorTestSuite) TestProcess() {
 	}
 
 	tests := []struct {
-		n           int
+		n           float64
 		expected    int
 		minPullTime int64
 	}{
@@ -80,7 +80,7 @@ func (e *EvaluatorTestSuite) TestProcess() {
 	}
 
 	for _, tt := range tests {
-		e.T().Run(strconv.Itoa(tt.n), func(t *testing.T) {
+		e.T().Run(fmt.Sprintf("%v", tt.n), func(t *testing.T) {
 			sut := New(map[string]rule.Parameter{ParameterN: tt.n})
 
 			result, err := sut.Process(data)
