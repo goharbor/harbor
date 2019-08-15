@@ -101,6 +101,11 @@ func computeResourcesForChartVersionCreation(req *http.Request) (types.ResourceL
 	return types.ResourceList{types.ResourceCount: 1}, nil
 }
 
+// computeResourcesForChartVersionDeletion always returns count 1
+func computeResourcesForChartVersionDeletion(req *http.Request) (types.ResourceList, error) {
+	return types.ResourceList{types.ResourceCount: 1}, nil
+}
+
 func parseChart(req *http.Request) (*chart.Chart, error) {
 	chartFile, _, err := req.FormFile(formFieldNameForChart)
 	if err != nil {

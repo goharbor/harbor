@@ -44,6 +44,7 @@ func New(next http.Handler, builders ...interceptor.Builder) http.Handler {
 func (h *chartHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	interceptor, err := h.getInterceptor(req)
 	if err != nil {
+		log.Warningf("Error occurred when to handle request in chart count quota handler: %v", err)
 		http.Error(rw, util.MarshalError("InternalError", fmt.Sprintf("Error occurred when to handle request in chart count quota handler: %v", err)),
 			http.StatusInternalServerError)
 		return

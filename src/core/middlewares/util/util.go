@@ -228,7 +228,6 @@ func (info *ManifestInfo) ManifestExists() (bool, error) {
 	info.manifestExistOnce.Do(func() {
 		total, err := dao.GetTotalOfArtifacts(&models.ArtifactQuery{
 			PID:    info.ProjectID,
-			Repo:   info.Repository,
 			Digest: info.Digest,
 		})
 

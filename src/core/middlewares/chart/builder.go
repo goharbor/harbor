@@ -25,7 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor/quota"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
-	"github.com/goharbor/harbor/src/pkg/types"
 )
 
 var (
@@ -48,6 +47,7 @@ func (*chartVersionDeletionBuilder) Build(req *http.Request) (interceptor.Interc
 	}
 
 	matches := deleteChartVersionRe.FindStringSubmatch(req.URL.String())
+
 	if len(matches) <= 1 {
 		return nil, nil
 	}
@@ -75,7 +75,7 @@ func (*chartVersionDeletionBuilder) Build(req *http.Request) (interceptor.Interc
 		quota.WithAction(quota.SubtractAction),
 		quota.StatusCode(http.StatusOK),
 		quota.MutexKeys(info.MutexKey()),
-		quota.Resources(types.ResourceList{types.ResourceCount: 1}),
+		quota.OnResources(computeResourcesForChartVersionDeletion),
 	}
 
 	return quota.New(opts...), nil
