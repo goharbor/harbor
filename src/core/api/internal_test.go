@@ -37,7 +37,7 @@ func TestSwitchQuota(t *testing.T) {
 				url:        "/api/internal/switchquota",
 				credential: sysAdmin,
 				bodyJSON: &QuotaSwitcher{
-					Disabled: true,
+					Enabled: true,
 				},
 			},
 			code: http.StatusOK,
