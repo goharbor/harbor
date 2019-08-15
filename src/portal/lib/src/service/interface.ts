@@ -66,6 +66,8 @@ export interface Tag extends Base {
   signature?: string;
   scan_overview?: VulnerabilitySummary;
   labels: Label[];
+  push_time?: string;
+  pull_time?: string;
 }
 
 /**
