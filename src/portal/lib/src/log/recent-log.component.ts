@@ -66,7 +66,7 @@ export class RecentLogComponent implements OnInit {
         this.currentTerm = terms.trim();
         this.loading = true;
         this.currentPage = 1;
-        this.load();
+        this.load({page: {}});
     }
 
     public refresh(): void {
@@ -86,10 +86,10 @@ export class RecentLogComponent implements OnInit {
         this.doFilter(this.currentTerm);
     }
 
-    load() {
-        /*if (!state || !state.page) {
+    load(state) {
+        if (!state || !state.page) {
             return;
-        }*/
+        }
         // Keep it for future filter
         // this.currentState = state;
         let params: RequestQueryParams = new RequestQueryParams().set("page", '' + this.currentPage).set("page_size", '' + this.pageSize);
