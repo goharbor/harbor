@@ -142,6 +142,12 @@
             <label *ngIf="noEndpointInfo.length != 0" class="alert-label">{{noEndpointInfo | translate}}</label>
             <span class="alert-label go-link" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
           </div>
+          <clr-tooltip>
+            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+            <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+              <span>{{'TOOLTIP.DESTINATION_NAMESPACE' | translate}}</span>
+            </clr-tooltip-content>
+          </clr-tooltip>
         </div>
       </div>
       <!--destination namespaces -->
