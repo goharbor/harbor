@@ -7,7 +7,7 @@
         <label class="clr-control-label required">{{'REPLICATION.NAME' | translate}}</label>
         <div class="clr-control-container">
           <div class="clr-input-wrapper">
-            <input clrInput type="text" id="ruleName" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth" required maxlength="255" formControlName="name"
+            <input class="clr-input" type="text" id="ruleName" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" required maxlength="255" formControlName="name"
               #ruleName (keyup)='checkRuleName()' autocomplete="off">
             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
             <span class="spinner spinner-inline spinner-pos" [hidden]="!inNameChecking"></span>
@@ -21,48 +21,52 @@
         <textarea clrTextarea type="text" id="ruleDescription" class="inputWidth" row=3 formControlName="description"></textarea>
       </clr-textarea-container>
       <!-- replication mode -->
-      <div class="form-group form-group-override">
-        <label class="form-group-label-override">{{'REPLICATION.REPLI_MODE' | translate}}</label>
-        <div class="radio-inline" [class.disabled]="policyId >= 0 || onGoing">
-          <input type="radio" id="push_base" name="replicationMode" [value]=true [disabled]="policyId >= 0 || onGoing" [(ngModel)]="isPushMode"
+      <clr-radio-container clrInline>
+        <label>{{'REPLICATION.REPLI_MODE' | translate}}</label>
+        <clr-radio-wrapper>
+          <input clrRadio type="radio" id="push_base" name="replicationMode" [value]=true [disabled]="policyId >= 0 || onGoing" [(ngModel)]="isPushMode"
             (change)="pushModeChange()" [ngModelOptions]="{standalone: true}">
-          <label for="push_base">Push-based</label>
-          <clr-tooltip class="mode-tooltip">
-            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-            <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
-              <span>{{'TOOLTIP.PUSH_BASED' | translate}}</span>
-            </clr-tooltip-content>
-          </clr-tooltip>
-        </div>
-        <div class="radio-inline" [class.disabled]="policyId >= 0 || onGoing">
-          <input type="radio" id="pull_base" name="replicationMode" [value]=false [disabled]="policyId >= 0 || onGoing" [(ngModel)]="isPushMode"
+          <label for="push_base">Push-based
+            <clr-tooltip class="mode-tooltip">
+              <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+              <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+                <span>{{'TOOLTIP.PUSH_BASED' | translate}}</span>
+              </clr-tooltip-content>
+            </clr-tooltip>
+          </label>
+        </clr-radio-wrapper>
+        <clr-radio-wrapper>
+          <input clrRadio type="radio" id="pull_base" name="replicationMode" [value]=false [disabled]="policyId >= 0 || onGoing" [(ngModel)]="isPushMode"
             (change)="pullModeChange()" [ngModelOptions]="{standalone: true}">
-          <label for="pull_base">Pull-based</label>
-          <clr-tooltip class="mode-tooltip">
-            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-            <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
-              <span>{{'TOOLTIP.PULL_BASED' | translate}}</span>
-            </clr-tooltip-content>
-          </clr-tooltip>
-        </div>
-      </div>
+          <label for="pull_base">Pull-based
+            <clr-tooltip class="mode-tooltip">
+              <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+              <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+                <span>{{'TOOLTIP.PULL_BASED' | translate}}</span>
+              </clr-tooltip-content>
+            </clr-tooltip>
+          </label>
+        </clr-radio-wrapper>
+      </clr-radio-container>
       <!--source registry-->
-      <div *ngIf="!isPushMode" class="form-group form-group-override">
-        <label class="form-group-label-override  required">{{'REPLICATION.SOURCE_REGISTRY' | translate}}</label>
-        <div class="form-select">
-          <div class="select endpointSelect pull-left">
-            <select id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry" [compareWith]="equals">
+      <div class="clr-form-control" *ngIf="!isPushMode">
+        <label class="required clr-control-label">{{'REPLICATION.SOURCE_REGISTRY' | translate}}</label>
+        <div class="clr-control-container">
+          <div class="clr-select-wrapper">
+            <select class="clr-select select-width" id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry" [compareWith]="equals">
               <option class="display-none"></option>
               <option *ngFor="let source of sourceList" [ngValue]="source">{{source.name}}-{{source.url}}</option>
             </select>
           </div>
+          <div class="space-between">
+            <span *ngIf="noEndpointInfo.length != 0" class="alert-label">{{noEndpointInfo | translate}}</span>
+            <span class="alert-label go-link" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
+          </div>
         </div>
-        <label *ngIf="noEndpointInfo.length != 0" class="colorRed alertLabel">{{noEndpointInfo | translate}}</label>
-        <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
       </div>
       <!--images/Filter-->
-      <div class="form-group form-group-override">
-        <label class="form-group-label-override">{{'REPLICATION.SOURCE_RESOURCE_FILTER' | translate}}</label>
+      <div class="clr-form-control">
+        <label class="clr-control-label">{{'REPLICATION.SOURCE_RESOURCE_FILTER' | translate}}</label>
         <span class="spinner spinner-inline spinner-position" [hidden]="onGoing === false"></span>
         <div formArrayName="filters">
           <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index">
@@ -132,7 +136,7 @@
             </select>
           </div>
         </div>
-        <label *ngIf="noEndpointInfo.length != 0" class="colorRed alertLabel">{{noEndpointInfo | translate}}</label>
+        <label *ngIf="noEndpointInfo.length != 0" class="alert-label">{{noEndpointInfo | translate}}</label>
         <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
       </div>
       <!--destination namespaces -->
