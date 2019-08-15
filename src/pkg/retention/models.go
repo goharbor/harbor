@@ -23,12 +23,6 @@ const (
 	ExecutionStatusFailed     string = "Failed"
 	ExecutionStatusStopped    string = "Stopped"
 
-	TaskStatusPending    string = "Pending"
-	TaskStatusInProgress string = "InProgress"
-	TaskStatusSucceed    string = "Succeed"
-	TaskStatusFailed     string = "Failed"
-	TaskStatusStopped    string = "Stopped"
-
 	CandidateKindImage string = "image"
 	CandidateKindChart string = "chart"
 
@@ -54,6 +48,7 @@ type Task struct {
 	Repository  string    `json:"repository"`
 	JobID       string    `json:"job_id"`
 	Status      string    `json:"status"`
+	StatusCode  int       `json:"status_code"`
 	StartTime   time.Time `json:"start_time"`
 	EndTime     time.Time `json:"end_time"`
 	Total       int       `json:"total"`

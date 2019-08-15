@@ -131,6 +131,7 @@ create table retention_task
   repository   varchar(255),
   job_id       varchar(64),
   status       varchar(32),
+  status_code  integer,
   start_time   timestamp default CURRENT_TIMESTAMP,
   end_time     timestamp default CURRENT_TIMESTAMP,
   total        integer,
