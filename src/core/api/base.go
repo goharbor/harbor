@@ -15,7 +15,9 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
+	"fmt"
 
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
@@ -121,12 +123,16 @@ func Init() error {
 	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
 
 	callbackFun := func(p interface{}) error {
-		r, ok := p.(retention.TriggerParam)
-		if ok {
-			_, err := retentionController.TriggerRetentionExec(r.PolicyID, r.Trigger, false)
-			return err
+		str, ok := p.(string)
+		if !ok {
+			return fmt.Errorf("the type of param %v isn't string", p)
 		}
-		return errors.New("bad retention callback param")
+		param := &retention.TriggerParam{}
+		if err := json.Unmarshal([]byte(str), param); err != nil {
+			return fmt.Errorf("failed to unmarshal the param: %v", err)
+		}
+		_, err := retentionController.TriggerRetentionExec(param.PolicyID, param.Trigger, false)
+		return err
 	}
 	err := scheduler.Register(retention.SchedulerCallback, callbackFun)
 

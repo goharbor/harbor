@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/scheduler/hook"
 )
 
@@ -31,7 +32,13 @@ type Handler struct {
 
 // Handle ...
 func (h *Handler) Handle() {
+	log.Debugf("received scheduler hook event for schedule %s", h.GetStringFromPath(":id"))
+
 	var data models.JobStatusChange
+	if err := json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data); err != nil {
+		log.Errorf("failed to decode hook event: %v", err)
+		return
+	}
 	// status update
 	if len(data.CheckIn) == 0 {
 		schedulerID, err := h.GetInt64FromPath(":id")
@@ -43,6 +50,7 @@ func (h *Handler) Handle() {
 			h.SendInternalServerError(fmt.Errorf("failed to update status of job %s: %v", data.JobID, err))
 			return
 		}
+		log.Debugf("handle status update hook event for schedule %s completed", h.GetStringFromPath(":id"))
 		return
 	}
 
@@ -53,7 +61,7 @@ func (h *Handler) Handle() {
 		log.Errorf("failed to unmarshal parameters from check in message: %v", err)
 		return
 	}
-	callbackFuncNameParam, exist := params["callback_func_name"]
+	callbackFuncNameParam, exist := params[scheduler.JobParamCallbackFunc]
 	if !exist {
 		log.Error("cannot get the parameter \"callback_func_name\" from the check in message")
 		return
@@ -63,8 +71,9 @@ func (h *Handler) Handle() {
 		log.Errorf("invalid \"callback_func_name\": %v", callbackFuncName)
 		return
 	}
-	if err := hook.GlobalController.Run(callbackFuncName, params["params"]); err != nil {
+	if err := hook.GlobalController.Run(callbackFuncName, params[scheduler.JobParamCallbackFuncParams]); err != nil {
 		log.Errorf("failed to run the callback function %s: %v", callbackFuncName, err)
 		return
 	}
+	log.Debugf("callback function %s called for schedule %s", callbackFuncName, h.GetStringFromPath(":id"))
 }
