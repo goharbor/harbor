@@ -92,9 +92,9 @@ func fakeHealthChecker(healthy bool) health.Checker {
 }
 func TestCheckHealth(t *testing.T) {
 	// component01: healthy, component02: healthy => status: healthy
-	healthCheckerRegistry = map[string]health.Checker{}
-	healthCheckerRegistry["component01"] = fakeHealthChecker(true)
-	healthCheckerRegistry["component02"] = fakeHealthChecker(true)
+	HealthCheckerRegistry = map[string]health.Checker{}
+	HealthCheckerRegistry["component01"] = fakeHealthChecker(true)
+	HealthCheckerRegistry["component02"] = fakeHealthChecker(true)
 	status := map[string]interface{}{}
 	err := handleAndParse(&testingRequest{
 		method: http.MethodGet,
@@ -104,9 +104,9 @@ func TestCheckHealth(t *testing.T) {
 	assert.Equal(t, "healthy", status["status"].(string))
 
 	// component01: healthy, component02: unhealthy => status: unhealthy
-	healthCheckerRegistry = map[string]health.Checker{}
-	healthCheckerRegistry["component01"] = fakeHealthChecker(true)
-	healthCheckerRegistry["component02"] = fakeHealthChecker(false)
+	HealthCheckerRegistry = map[string]health.Checker{}
+	HealthCheckerRegistry["component01"] = fakeHealthChecker(true)
+	HealthCheckerRegistry["component02"] = fakeHealthChecker(false)
 	status = map[string]interface{}{}
 	err = handleAndParse(&testingRequest{
 		method: http.MethodGet,
@@ -128,7 +128,7 @@ func TestDatabaseHealthChecker(t *testing.T) {
 }
 
 func TestRegisterHealthCheckers(t *testing.T) {
-	healthCheckerRegistry = map[string]health.Checker{}
+	HealthCheckerRegistry = map[string]health.Checker{}
 	registerHealthCheckers()
-	assert.NotNil(t, healthCheckerRegistry["core"])
+	assert.NotNil(t, HealthCheckerRegistry["core"])
 }
