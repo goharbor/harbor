@@ -7,7 +7,7 @@
         <label class="clr-control-label required">{{'REPLICATION.NAME' | translate}}</label>
         <div class="clr-control-container">
           <div class="clr-input-wrapper">
-            <input class="clr-input" type="text" id="ruleName" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" required maxlength="255" formControlName="name"
+            <input class="clr-input" type="text" id="ruleName" size="35"  pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" required maxlength="255" formControlName="name"
               #ruleName (keyup)='checkRuleName()' autocomplete="off">
             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
             <span class="spinner spinner-inline spinner-pos" [hidden]="!inNameChecking"></span>
@@ -53,7 +53,8 @@
         <label class="required clr-control-label">{{'REPLICATION.SOURCE_REGISTRY' | translate}}</label>
         <div class="clr-control-container">
           <div class="clr-select-wrapper">
-            <select class="clr-select select-width" id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry" [compareWith]="equals">
+            <select class="clr-select select-width" id="src_registry_id" (change)="sourceChange($event)" formControlName="src_registry"
+              [compareWith]="equals">
               <option class="display-none"></option>
               <option *ngFor="let source of sourceList" [ngValue]="source">{{source.name}}-{{source.url}}</option>
             </select>
@@ -68,7 +69,7 @@
       <div class="clr-form-control">
         <label class="clr-control-label">{{'REPLICATION.SOURCE_RESOURCE_FILTER' | translate}}</label>
         <span class="spinner spinner-inline spinner-position" [hidden]="onGoing === false"></span>
-        <div formArrayName="filters">
+        <div formArrayName="filters" class="clr-control-container">
           <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index">
             <div [formGroupName]="i" *ngIf="supportedFilters[i]?.type !=='label' || (supportedFilters[i]?.type==='label' && supportedFilterLabels?.length)">
               <div class="width-70">
@@ -76,11 +77,12 @@
               </div>
               <label *ngIf="supportedFilters[i]?.style==='input'" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
                 [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
-                <input (input)="trimText($event)" type="text" #filterValue required size="14" formControlName="value" id="{{'filter_'+ supportedFilters[i]?.type}}">
+                <input class="clr-input" (input)="trimText($event)" type="text" #filterValue required size="14" formControlName="value" id="{{'filter_'+ supportedFilters[i]?.type}}">
                 <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
               </label>
-              <div class="select resource-box" *ngIf="supportedFilters[i]?.style==='radio' && supportedFilters[i]?.values.length > 1">
-                <select formControlName="value" #selectedValue id="{{'select_'+ supportedFilters[i]?.type}}" name="{{supportedFilters[i]?.type}}">
+              <div class="select resource-box clr-select-wrapper" *ngIf="supportedFilters[i]?.style==='radio' && supportedFilters[i]?.values.length > 1">
+                <select class="clr-select width-100" formControlName="value" #selectedValue id="{{'select_'+ supportedFilters[i]?.type}}"
+                  name="{{supportedFilters[i]?.type}}">
                   <option value="">{{'REPLICATION.BOTH' | translate}}</option>
                   <option *ngFor="let value of supportedFilters[i]?.values;" value="{{value}}">{{value}}</option>
                 </select>
@@ -126,56 +128,52 @@
         </div>
       </div>
       <!--destination registry-->
-      <div *ngIf="isPushMode" class="form-group form-group-override">
-        <label class="form-group-label-override  required">{{'REPLICATION.DEST_REGISTRY' | translate}}</label>
-        <div class="form-select">
-          <div class="select endpointSelect pull-left">
-            <select id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry" [compareWith]="equals">
+      <div *ngIf="isPushMode" class="clr-form-control">
+        <label class="clr-control-label  required">{{'REPLICATION.DEST_REGISTRY' | translate}}</label>
+        <div class="form-select clr-control-container">
+          <div class="clr-select-wrapper">
+            <select class="clr-select select-width" id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry"
+              [compareWith]="equals">
               <option class="display-none"></option>
               <option *ngFor="let target of targetList" [ngValue]="target">{{target.name}}-{{target.url}}</option>
             </select>
           </div>
+          <div class="space-between">
+            <label *ngIf="noEndpointInfo.length != 0" class="alert-label">{{noEndpointInfo | translate}}</label>
+            <span class="alert-label go-link" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
+          </div>
         </div>
-        <label *ngIf="noEndpointInfo.length != 0" class="alert-label">{{noEndpointInfo | translate}}</label>
-        <span class="alertLabel goLink" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
       </div>
       <!--destination namespaces -->
-      <div class="form-group form-group-override">
-        <label class="form-group-label-override">{{'REPLICATION.DEST_NAMESPACE' | translate}}</label>
-        <div class="form-select">
-          <div class="endpointSelect pull-left">
-            <label aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='ruleForm.controls.dest_namespace.touched && ruleForm.controls.dest_namespace.invalid'>
-              <input formControlName="dest_namespace" type="text" id="dest_namespace" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" class="inputWidth"
-                maxlength="255">
-              <span class="tooltip-content">{{'REPLICATION.DESTINATION_NAME_TOOLTIP' | translate}}</span>
-            </label>
-          </div>
+      <clr-input-container>
+        <label>{{'REPLICATION.DEST_NAMESPACE' | translate}}
           <clr-tooltip>
             <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
             <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
               <span>{{'TOOLTIP.DESTINATION_NAMESPACE' | translate}}</span>
             </clr-tooltip-content>
           </clr-tooltip>
-        </div>
-      </div>
-
+        </label>
+        <input clrInput formControlName="dest_namespace" type="text" id="dest_namespace" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$"
+          class="inputWidth" maxlength="255">
+        <clr-control-error *ngIf='ruleForm.controls.dest_namespace.touched && ruleForm.controls.dest_namespace.invalid'>{{'REPLICATION.DESTINATION_NAME_TOOLTIP' | translate}}</clr-control-error>
+      </clr-input-container>
       <!--Trigger-->
-      <div class="form-group form-group-override">
-        <label class="form-group-label-override required">{{'REPLICATION.TRIGGER_MODE' | translate}}</label>
-        <div formGroupName="trigger">
+      <div class="clr-form-control">
+        <label class="clr-control-label required">{{'REPLICATION.TRIGGER_MODE' | translate}}</label>
+        <div formGroupName="trigger" class="clr-control-container">
           <!--on trigger-->
-          <div class="select width-115">
-            <select id="ruleTrigger" formControlName="type">
+          <div class="select width-115 clr-select-wrapper">
+            <select id="ruleTrigger" formControlName="type" class="clr-select">
               <option *ngFor="let trigger of supportedTriggers" [value]="trigger">{{'REPLICATION.' + trigger.toUpperCase() | translate }}</option>
             </select>
           </div>
-          <!--on push-->
-          <div formGroupName="trigger_settings">
-            <div [hidden]="isNotSchedule()" class="form-group form-cron">
+          <div formGroupName="trigger_settings" class="clr-form-control">
+            <div [hidden]="isNotSchedule()">
               <label class="required">Cron String</label>
               <label for="targetCron" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm tooltip-top-right"
                 [class.invalid]="!isNotSchedule() && cronTouched && !cronInputValid(ruleForm.value.trigger?.trigger_settings?.cron || '')">
-                <input type="text" name=targetCron id="targetCron" required class="form-control cron-input" formControlName="cron">
+                <input type="text" name=targetCron id="targetCron" required class="form-control cron-input clr-input" formControlName="cron">
                 <span class="tooltip-content">
                   {{'TOOLTIP.CRON_REQUIRED' | translate }}
                 </span>
@@ -188,30 +186,25 @@
               </a>
             </div>
           </div>
-        </div>
-        <div [hidden]="isNotEventBased()" class="clr-form-control rule-width">
-          <clr-checkbox-wrapper>
-            <input type="checkbox" clrCheckbox [checked]="false" id="ruleDeletion" formControlName="deletion" class="clr-checkbox">
-            <label for="ruleDeletion" class="clr-control-label">{{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}</label>
-          </clr-checkbox-wrapper>
-        </div>
-        <div class="clr-form-control rule-width override-box">
-          <clr-checkbox-wrapper>
-            <input type="checkbox" clrCheckbox [checked]="true" id="overridePolicy" formControlName="override" class="clr-checkbox">
-            <label for="overridePolicy" class="clr-control-label">{{'REPLICATION.OVERRIDE_INFO' | translate}}</label>
-          </clr-checkbox-wrapper>
-          <clr-tooltip class="override-tooltip">
-            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-            <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
-              <span>{{'TOOLTIP.OVERRIDE' | translate}}</span>
-            </clr-tooltip-content>
-          </clr-tooltip>
-        </div>
-        <div class="clr-form-control rule-width">
-          <clr-checkbox-wrapper>
-            <input type="checkbox" clrCheckbox [checked]="true" id="enablePolicy" formControlName="enabled" class="clr-checkbox">
+          <div class="clr-checkbox-wrapper clr-form-control" [hidden]="isNotEventBased()">
+            <input type="checkbox" class="clr-checkbox" [checked]="false" id="ruleDeletion" formControlName="deletion">
+            <label for="ruleDeletion">{{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}</label>
+          </div>
+          <div class="clr-checkbox-wrapper clr-form-control">
+            <input type="checkbox" class="clr-checkbox" [checked]="true" id="overridePolicy" formControlName="override">
+            <label for="overridePolicy">{{'REPLICATION.OVERRIDE_INFO' | translate}}
+              <clr-tooltip class="override-tooltip">
+                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+                  <span>{{'TOOLTIP.OVERRIDE' | translate}}</span>
+                </clr-tooltip-content>
+              </clr-tooltip>
+            </label>
+          </div>
+          <div class="clr-checkbox-wrapper clr-form-control">
+            <input type="checkbox" [checked]="true" id="enablePolicy" formControlName="enabled" class="clr-checkbox">
             <label for="enablePolicy" class="clr-control-label">{{'REPLICATION.ENABLED_RULE' | translate}}</label>
-          </clr-checkbox-wrapper>
+          </div>
         </div>
       </div>
       <div class="loading-center">
