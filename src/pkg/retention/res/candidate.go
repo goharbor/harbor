@@ -18,6 +18,8 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+
+	"github.com/pkg/errors"
 )
 
 const (
@@ -30,24 +32,31 @@ const (
 // Repository of candidate
 type Repository struct {
 	// Namespace
-	Namespace string
+	Namespace string `json:"namespace"`
 	// Repository name
-	Name string
+	Name string `json:"name"`
 	// So far we need the kind of repository and retrieve candidates with different APIs
 	// TODO: REMOVE IT IN THE FUTURE IF WE SUPPORT UNIFIED ARTIFACT MODEL
-	Kind string
+	Kind string `json:"kind"`
 }
 
-// FromMap constructs the repository struct from map
-func (r *Repository) FromMap(m map[string]interface{}) error {
-	mdata, err := json.Marshal(&m)
+// ToJSON marshals repository to JSON string
+func (r *Repository) ToJSON() (string, error) {
+	jsonData, err := json.Marshal(r)
 	if err != nil {
-		return err
+		return "", errors.Wrap(err, "marshal reporitory")
 	}
-	if err := json.Unmarshal(mdata, r); err != nil {
-		return err
+
+	return string(jsonData), nil
+}
+
+// FromJSON constructs the repository from json data
+func (r *Repository) FromJSON(jsonData string) error {
+	if len(jsonData) == 0 {
+		return errors.New("empty json data to construct repository")
 	}
-	return nil
+
+	return json.Unmarshal([]byte(jsonData), r)
 }
 
 // Candidate for retention processor to match

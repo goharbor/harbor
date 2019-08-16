@@ -59,33 +59,17 @@ func (e *evaluator) Action() string {
 func New(params rule.Parameters) rule.Evaluator {
 	if params != nil {
 		if param, ok := params[ParameterX]; ok {
-			if v, ok := param.(int); ok && v >= 0 {
+			if v, ok := param.(float64); ok && v >= 0 {
 				return &evaluator{
-					x: v,
+					x: int(v),
 				}
 			}
 		}
 	}
 
-	log.Debugf("default parameter %d used for rule %s", DefaultX, TemplateID)
+	log.Warningf("default parameter %d used for rule %s", DefaultX, TemplateID)
 
 	return &evaluator{
 		x: DefaultX,
 	}
-}
-
-func init() {
-	// Register itself
-	rule.Register(&rule.IndexMeta{
-		TemplateID: TemplateID,
-		Action:     action.Retain,
-		Parameters: []*rule.IndexedParam{
-			{
-				Name:     ParameterX,
-				Type:     "int",
-				Unit:     "days",
-				Required: true,
-			},
-		},
-	}, New)
 }

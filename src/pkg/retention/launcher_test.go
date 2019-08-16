@@ -76,6 +76,14 @@ func (f *fakeRepositoryManager) ListChartRepositories(projectID int64) ([]*chart
 
 type fakeRetentionManager struct{}
 
+func (f *fakeRetentionManager) GetTotalOfRetentionExecs(policyID int64) (int64, error) {
+	return 0, nil
+}
+
+func (f *fakeRetentionManager) GetTotalOfTasks(executionID int64) (int64, error) {
+	return 0, nil
+}
+
 func (f *fakeRetentionManager) CreatePolicy(p *policy.Metadata) (int64, error) {
 	return 0, nil
 }
@@ -96,6 +104,9 @@ func (f *fakeRetentionManager) UpdateExecution(execution *Execution) error {
 }
 func (f *fakeRetentionManager) GetExecution(eid int64) (*Execution, error) {
 	return nil, nil
+}
+func (f *fakeRetentionManager) DeleteExecution(eid int64) error {
+	return nil
 }
 func (f *fakeRetentionManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 	return []*Task{
@@ -137,18 +148,25 @@ type launchTestSuite struct {
 }
 
 func (l *launchTestSuite) SetupTest() {
-	pro := &models.Project{
+	pro1 := &models.Project{
 		ProjectID: 1,
 		Name:      "library",
 	}
+	pro2 := &models.Project{
+		ProjectID: 2,
+		Name:      "test",
+	}
 	l.projectMgr = &fakeProjectManager{
 		projects: []*models.Project{
-			pro,
+			pro1, pro2,
 		}}
 	l.repositoryMgr = &fakeRepositoryManager{
 		imageRepositories: []*models.RepoRecord{
 			{
 				Name: "library/image",
+			},
+			{
+				Name: "test/image",
 			},
 		},
 		chartRepositories: []*chartserver.ChartInfo{
@@ -166,7 +184,7 @@ func (l *launchTestSuite) SetupTest() {
 func (l *launchTestSuite) TestGetProjects() {
 	projects, err := getProjects(l.projectMgr)
 	require.Nil(l.T(), err)
-	assert.Equal(l.T(), 1, len(projects))
+	assert.Equal(l.T(), 2, len(projects))
 	assert.Equal(l.T(), int64(1), projects[0].NamespaceID)
 	assert.Equal(l.T(), "library", projects[0].Namespace)
 }
@@ -178,9 +196,6 @@ func (l *launchTestSuite) TestGetRepositories() {
 	assert.Equal(l.T(), "library", repositories[0].Namespace)
 	assert.Equal(l.T(), "image", repositories[0].Repository)
 	assert.Equal(l.T(), "image", repositories[0].Kind)
-	assert.Equal(l.T(), "library", repositories[1].Namespace)
-	assert.Equal(l.T(), "chart", repositories[1].Repository)
-	assert.Equal(l.T(), "chart", repositories[1].Kind)
 }
 
 func (l *launchTestSuite) TestLaunch() {
@@ -224,7 +239,26 @@ func (l *launchTestSuite) TestLaunch() {
 						{
 							Kind:       "doublestar",
 							Decoration: "nsMatches",
+							Pattern:    "library",
+						},
+					},
+					"repository": {
+						{
+							Kind:       "doublestar",
+							Decoration: "repoMatches",
 							Pattern:    "**",
+						},
+					},
+				},
+			},
+			{
+				Disabled: true,
+				ScopeSelectors: map[string][]*rule.Selector{
+					"project": {
+						{
+							Kind:       "doublestar",
+							Decoration: "nsMatches",
+							Pattern:    "library1",
 						},
 					},
 					"repository": {

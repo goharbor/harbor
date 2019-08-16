@@ -91,16 +91,18 @@ func (c *clientTestSuite) TestGetCandidates() {
 	assert.Equal(c.T(), "hello-world", candidates[0].Repository)
 	assert.Equal(c.T(), "latest", candidates[0].Tag)
 
-	// chart repository
-	repository.Kind = res.Chart
-	repository.Namespace = "goharbor"
-	repository.Name = "harbor"
-	candidates, err = client.GetCandidates(repository)
-	require.Nil(c.T(), err)
-	assert.Equal(c.T(), 1, len(candidates))
-	assert.Equal(c.T(), res.Chart, candidates[0].Kind)
-	assert.Equal(c.T(), "goharbor", candidates[0].Namespace)
-	assert.Equal(c.T(), "1.0", candidates[0].Tag)
+	/*
+		// chart repository
+		repository.Kind = res.Chart
+		repository.Namespace = "goharbor"
+		repository.Name = "harbor"
+		candidates, err = client.GetCandidates(repository)
+		require.Nil(c.T(), err)
+		assert.Equal(c.T(), 1, len(candidates))
+		assert.Equal(c.T(), res.Chart, candidates[0].Kind)
+		assert.Equal(c.T(), "goharbor", candidates[0].Namespace)
+		assert.Equal(c.T(), "1.0", candidates[0].Tag)
+	*/
 }
 
 func (c *clientTestSuite) TestDelete() {
@@ -118,10 +120,12 @@ func (c *clientTestSuite) TestDelete() {
 	err = client.Delete(candidate)
 	require.Nil(c.T(), err)
 
-	// chart
-	candidate.Kind = res.Chart
-	err = client.Delete(candidate)
-	require.Nil(c.T(), err)
+	/*
+		// chart
+		candidate.Kind = res.Chart
+		err = client.Delete(candidate)
+		require.Nil(c.T(), err)
+	*/
 
 	// unsupported type
 	candidate.Kind = "unsupported"

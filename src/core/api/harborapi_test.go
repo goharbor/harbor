@@ -39,6 +39,7 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 )
@@ -170,6 +171,12 @@ func init() {
 	beego.Router("/api/retentions/:id/executions/:eid/tasks", &RetentionAPI{}, "get:ListRetentionExecTasks")
 	beego.Router("/api/retentions/:id/executions/:eid/tasks/:tid", &RetentionAPI{}, "get:GetRetentionExecTaskLog")
 
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies", &NotificationPolicyAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/:id([0-9]+)", &NotificationPolicyAPI{})
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/test", &NotificationPolicyAPI{}, "post:Test")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/lasttrigger", &NotificationPolicyAPI{}, "get:ListGroupByEventType")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/", &NotificationJobAPI{}, "get:List")
+
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}
 	beego.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
@@ -195,6 +202,8 @@ func init() {
 	beego.Router("/api/quotas", quotaAPIType, "get:List")
 	beego.Router("/api/quotas/:id([0-9]+)", quotaAPIType, "get:Get;put:Put")
 
+	beego.Router("/api/internal/switchquota", &InternalAPI{}, "put:SwitchQuota")
+
 	// syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
 		log.Fatalf("failed to sync repositories from registry: %v", err)
@@ -204,6 +213,9 @@ func init() {
 	admin = &usrInfo{adminName, adminPwd}
 	unknownUsr = &usrInfo{"unknown", "unknown"}
 	testUser = &usrInfo{TestUserName, TestUserPwd}
+
+	// Init notification related check map
+	notification.Init()
 
 	// Init mock jobservice
 	mockServer := test.NewJobServiceServer()

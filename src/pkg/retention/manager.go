@@ -42,12 +42,18 @@ type Manager interface {
 	GetPolicy(ID int64) (*policy.Metadata, error)
 	// Create a new retention execution
 	CreateExecution(execution *Execution) (int64, error)
+	// Delete a new retention execution
+	DeleteExecution(int64) error
 	// Get the specified execution
 	GetExecution(eid int64) (*Execution, error)
-	// List execution histories
+	// List executions
 	ListExecutions(policyID int64, query *q.Query) ([]*Execution, error)
+	// GetTotalOfRetentionExecs Count Retention Executions
+	GetTotalOfRetentionExecs(policyID int64) (int64, error)
 	// List tasks histories
 	ListTasks(query ...*q.TaskQuery) ([]*Task, error)
+	// GetTotalOfTasks Count Tasks
+	GetTotalOfTasks(executionID int64) (int64, error)
 	// Create a new retention task
 	CreateTask(task *Task) (int64, error)
 	// Update the specified task
@@ -66,6 +72,7 @@ type DefaultManager struct {
 func (d *DefaultManager) CreatePolicy(p *policy.Metadata) (int64, error) {
 	p1 := &models.RetentionPolicy{}
 	p1.ScopeLevel = p.Scope.Level
+	p1.ScopeReference = p.Scope.Reference
 	p1.TriggerKind = p.Trigger.Kind
 	data, _ := json.Marshal(p)
 	p1.Data = string(data)
@@ -79,6 +86,7 @@ func (d *DefaultManager) UpdatePolicy(p *policy.Metadata) error {
 	p1 := &models.RetentionPolicy{}
 	p1.ID = p.ID
 	p1.ScopeLevel = p.Scope.Level
+	p1.ScopeReference = p.Scope.Reference
 	p1.TriggerKind = p.Trigger.Kind
 	p.ID = 0
 	data, _ := json.Marshal(p)
@@ -125,6 +133,11 @@ func (d *DefaultManager) CreateExecution(execution *Execution) (int64, error) {
 	return dao.CreateExecution(exec)
 }
 
+// DeleteExecution Delete Execution
+func (d *DefaultManager) DeleteExecution(eid int64) error {
+	return dao.DeleteExecution(eid)
+}
+
 // ListExecutions List Executions
 func (d *DefaultManager) ListExecutions(policyID int64, query *q.Query) ([]*Execution, error) {
 	execs, err := dao.ListExecutions(policyID, query)
@@ -142,9 +155,15 @@ func (d *DefaultManager) ListExecutions(policyID int64, query *q.Query) ([]*Exec
 		e1.Status = e.Status
 		e1.StartTime = e.StartTime
 		e1.EndTime = e.EndTime
+		e1.DryRun = e.DryRun
 		execs1 = append(execs1, e1)
 	}
 	return execs1, nil
+}
+
+// GetTotalOfRetentionExecs Count Executions
+func (d *DefaultManager) GetTotalOfRetentionExecs(policyID int64) (int64, error) {
+	return dao.GetTotalOfRetentionExecs(policyID)
 }
 
 // GetExecution Get Execution
@@ -159,6 +178,7 @@ func (d *DefaultManager) GetExecution(eid int64) (*Execution, error) {
 	e1.Status = e.Status
 	e1.StartTime = e.StartTime
 	e1.EndTime = e.EndTime
+	e1.DryRun = e.DryRun
 	return e1, nil
 }
 
@@ -169,10 +189,13 @@ func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
 	}
 	t := &models.RetentionTask{
 		ExecutionID: task.ExecutionID,
+		Repository:  task.Repository,
 		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
 		EndTime:     task.EndTime,
+		Total:       task.Total,
+		Retained:    task.Retained,
 	}
 	return dao.CreateTask(t)
 }
@@ -186,18 +209,26 @@ func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 		}
 		return nil, err
 	}
-	tasks := []*Task{}
+	tasks := make([]*Task, 0)
 	for _, t := range ts {
 		tasks = append(tasks, &Task{
 			ID:          t.ID,
 			ExecutionID: t.ExecutionID,
+			Repository:  t.Repository,
 			JobID:       t.JobID,
 			Status:      t.Status,
 			StartTime:   t.StartTime,
 			EndTime:     t.EndTime,
+			Total:       t.Total,
+			Retained:    t.Retained,
 		})
 	}
 	return tasks, nil
+}
+
+// GetTotalOfTasks Count tasks
+func (d *DefaultManager) GetTotalOfTasks(executionID int64) (int64, error) {
+	return dao.GetTotalOfTasks(executionID)
 }
 
 // UpdateTask updates the task
@@ -211,10 +242,13 @@ func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
 	return dao.UpdateTask(&models.RetentionTask{
 		ID:          task.ID,
 		ExecutionID: task.ExecutionID,
+		Repository:  task.Repository,
 		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
 		EndTime:     task.EndTime,
+		Total:       task.Total,
+		Retained:    task.Retained,
 	}, cols...)
 }
 
@@ -230,10 +264,13 @@ func (d *DefaultManager) GetTask(taskID int64) (*Task, error) {
 	return &Task{
 		ID:          task.ID,
 		ExecutionID: task.ExecutionID,
+		Repository:  task.Repository,
 		JobID:       task.JobID,
 		Status:      task.Status,
 		StartTime:   task.StartTime,
 		EndTime:     task.EndTime,
+		Total:       task.Total,
+		Retained:    task.Retained,
 	}, nil
 }
 

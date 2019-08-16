@@ -22,6 +22,9 @@ type Metadata struct {
 	// Priority of rule when doing calculating
 	Priority int `json:"priority" valid:"Required"`
 
+	// Disabled rule
+	Disabled bool `json:"disabled"`
+
 	// Action of the rule performs
 	// "retain"
 	Action string `json:"action" valid:"Required"`

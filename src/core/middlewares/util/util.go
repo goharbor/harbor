@@ -15,45 +15,49 @@
 package util
 
 import (
+	"bytes"
+	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"net/http/httptest"
+	"os"
+	"regexp"
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/docker/distribution"
+	"github.com/docker/distribution/manifest/schema1"
+	"github.com/docker/distribution/manifest/schema2"
 	"github.com/garyburd/redigo/redis"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/quota"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/clair"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	common_redis "github.com/goharbor/harbor/src/common/utils/redis"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
-	"net/http"
-	"net/http/httptest"
-	"regexp"
-	"strconv"
-	"strings"
-	"time"
+	"github.com/opencontainers/go-digest"
 )
 
 type contextKey string
 
-// ErrRequireQuota ...
-var ErrRequireQuota = errors.New("cannot get quota on project for request")
-
 const (
-	manifestURLPattern = `^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)manifests/([\w][\w.:-]{0,127})`
-	blobURLPattern     = `^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)blobs/uploads/`
 	// ImageInfoCtxKey the context key for image information
 	ImageInfoCtxKey = contextKey("ImageInfo")
 	// TokenUsername ...
 	// TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	TokenUsername = "harbor-core"
-	// MFInfokKey the context key for image tag redis lock
-	MFInfokKey = contextKey("ManifestInfo")
-	// BBInfokKey the context key for image tag redis lock
-	BBInfokKey = contextKey("BlobInfo")
+
+	// blobInfoKey the context key for blob info
+	blobInfoKey = contextKey("BlobInfo")
+	// chartVersionInfoKey the context key for chart version info
+	chartVersionInfoKey = contextKey("ChartVersionInfo")
+	// manifestInfoKey the context key for manifest info
+	manifestInfoKey = contextKey("ManifestInfo")
 
 	// DialConnectionTimeout ...
 	DialConnectionTimeout = 30 * time.Second
@@ -62,6 +66,25 @@ const (
 	// DialWriteTimeout ...
 	DialWriteTimeout = 10 * time.Second
 )
+
+var (
+	manifestURLRe = regexp.MustCompile(`^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)manifests/([\w][\w.:-]{0,127})`)
+)
+
+// ChartVersionInfo ...
+type ChartVersionInfo struct {
+	ProjectID int64
+	Namespace string
+	ChartName string
+	Version   string
+}
+
+// MutexKey returns mutex key of the chart version
+func (info *ChartVersionInfo) MutexKey(suffix ...string) string {
+	a := []string{"quota", info.Namespace, "chart", info.ChartName, "version", info.Version}
+
+	return strings.Join(append(a, suffix...), ":")
+}
 
 // ImageInfo ...
 type ImageInfo struct {
@@ -73,42 +96,147 @@ type ImageInfo struct {
 
 // BlobInfo ...
 type BlobInfo struct {
-	UUID        string
 	ProjectID   int64
 	ContentType string
 	Size        int64
 	Repository  string
-	Tag         string
+	Digest      string
 
-	// Exist is to index the existing of the manifest in DB. If false, it's an new image for uploading.
-	Exist bool
-
-	Digest     string
-	DigestLock *common_redis.Mutex
-	// Quota is the resource applied for the manifest upload request.
-	Quota *quota.ResourceList
+	blobExist     bool
+	blobExistErr  error
+	blobExistOnce sync.Once
 }
 
-// MfInfo ...
-type MfInfo struct {
+// BlobExists returns true when blob exists in the project
+func (info *BlobInfo) BlobExists() (bool, error) {
+	info.blobExistOnce.Do(func() {
+		info.blobExist, info.blobExistErr = dao.HasBlobInProject(info.ProjectID, info.Digest)
+	})
+
+	return info.blobExist, info.blobExistErr
+}
+
+// MutexKey returns mutex key of the blob
+func (info *BlobInfo) MutexKey(suffix ...string) string {
+	projectName, _ := utils.ParseRepository(info.Repository)
+	a := []string{"quota", projectName, "blob", info.Digest}
+
+	return strings.Join(append(a, suffix...), ":")
+}
+
+// ManifestInfo ...
+type ManifestInfo struct {
 	// basic information of a manifest
 	ProjectID  int64
 	Repository string
 	Tag        string
 	Digest     string
 
-	// Exist is to index the existing of the manifest in DB. If false, it's an new image for uploading.
-	Exist bool
-	// DigestChanged true means the manifest exists but digest is changed.
-	// Probably it's a new image with existing repo/tag name or overwrite.
-	DigestChanged bool
+	References []distribution.Descriptor
+	Descriptor distribution.Descriptor
 
-	// used to block multiple push on same image.
-	TagLock    *common_redis.Mutex
-	Refrerence []distribution.Descriptor
+	// manifestExist is to index the existing of the manifest in DB by (repository, digest)
+	manifestExist     bool
+	manifestExistErr  error
+	manifestExistOnce sync.Once
 
-	// Quota is the resource applied for the manifest upload request.
-	Quota *quota.ResourceList
+	// artifact the artifact indexed by (repository, tag) in DB
+	artifact     *models.Artifact
+	artifactErr  error
+	artifactOnce sync.Once
+
+	// ExclusiveBlobs include the blobs that belong to the manifest only
+	// and exclude the blobs that shared by other manifests in the same repo(project/repository).
+	ExclusiveBlobs []*models.Blob
+}
+
+// MutexKey returns mutex key of the manifest
+func (info *ManifestInfo) MutexKey(suffix ...string) string {
+	projectName, _ := utils.ParseRepository(info.Repository)
+	var a []string
+
+	if info.Tag != "" {
+		// tag not empty happened in PUT /v2/<name>/manifests/<reference>
+		// lock by to tag to compute the count resource required by quota
+		a = []string{"quota", projectName, "manifest", info.Tag}
+	} else {
+		a = []string{"quota", projectName, "manifest", info.Digest}
+	}
+
+	return strings.Join(append(a, suffix...), ":")
+}
+
+// BlobMutexKey returns mutex key of the blob in manifest
+func (info *ManifestInfo) BlobMutexKey(blob *models.Blob, suffix ...string) string {
+	projectName, _ := utils.ParseRepository(info.Repository)
+	a := []string{"quota", projectName, "blob", blob.Digest}
+
+	return strings.Join(append(a, suffix...), ":")
+}
+
+// GetBlobsNotInProject returns blobs of the manifest which not in the project
+func (info *ManifestInfo) GetBlobsNotInProject() ([]*models.Blob, error) {
+	var digests []string
+	for _, reference := range info.References {
+		digests = append(digests, reference.Digest.String())
+	}
+
+	blobs, err := dao.GetBlobsNotInProject(info.ProjectID, digests...)
+	if err != nil {
+		return nil, err
+	}
+
+	return blobs, nil
+}
+
+func (info *ManifestInfo) fetchArtifact() (*models.Artifact, error) {
+	info.artifactOnce.Do(func() {
+		info.artifact, info.artifactErr = dao.GetArtifact(info.Repository, info.Tag)
+	})
+
+	return info.artifact, info.artifactErr
+}
+
+// IsNewTag returns true if the tag of the manifest not exists in project
+func (info *ManifestInfo) IsNewTag() bool {
+	artifact, _ := info.fetchArtifact()
+
+	return artifact == nil
+}
+
+// Artifact returns artifact of the manifest
+func (info *ManifestInfo) Artifact() *models.Artifact {
+	result := &models.Artifact{
+		PID:    info.ProjectID,
+		Repo:   info.Repository,
+		Tag:    info.Tag,
+		Digest: info.Digest,
+		Kind:   "Docker-Image",
+	}
+
+	if artifact, _ := info.fetchArtifact(); artifact != nil {
+		result.ID = artifact.ID
+		result.CreationTime = artifact.CreationTime
+		result.PushTime = time.Now()
+	}
+
+	return result
+}
+
+// ManifestExists returns true if manifest exist in repository
+func (info *ManifestInfo) ManifestExists() (bool, error) {
+	info.manifestExistOnce.Do(func() {
+		total, err := dao.GetTotalOfArtifacts(&models.ArtifactQuery{
+			PID:    info.ProjectID,
+			Repo:   info.Repository,
+			Digest: info.Digest,
+		})
+
+		info.manifestExist = total > 0
+		info.manifestExistErr = err
+	})
+
+	return info.manifestExist, info.manifestExistErr
 }
 
 // JSONError wraps a concrete Code and Message, it's readable for docker deamon.
@@ -138,53 +266,12 @@ func MarshalError(code, msg string) string {
 
 // MatchManifestURL ...
 func MatchManifestURL(req *http.Request) (bool, string, string) {
-	re, err := regexp.Compile(manifestURLPattern)
-	if err != nil {
-		log.Errorf("error to match manifest url, %v", err)
-		return false, "", ""
-	}
-	s := re.FindStringSubmatch(req.URL.Path)
+	s := manifestURLRe.FindStringSubmatch(req.URL.Path)
 	if len(s) == 3 {
 		s[1] = strings.TrimSuffix(s[1], "/")
 		return true, s[1], s[2]
 	}
 	return false, "", ""
-}
-
-// MatchPutBlobURL ...
-func MatchPutBlobURL(req *http.Request) (bool, string) {
-	if req.Method != http.MethodPut {
-		return false, ""
-	}
-	re, err := regexp.Compile(blobURLPattern)
-	if err != nil {
-		log.Errorf("error to match put blob url, %v", err)
-		return false, ""
-	}
-	s := re.FindStringSubmatch(req.URL.Path)
-	if len(s) == 2 {
-		s[1] = strings.TrimSuffix(s[1], "/")
-		return true, s[1]
-	}
-	return false, ""
-}
-
-// MatchPatchBlobURL ...
-func MatchPatchBlobURL(req *http.Request) (bool, string) {
-	if req.Method != http.MethodPatch {
-		return false, ""
-	}
-	re, err := regexp.Compile(blobURLPattern)
-	if err != nil {
-		log.Errorf("error to match put blob url, %v", err)
-		return false, ""
-	}
-	s := re.FindStringSubmatch(req.URL.Path)
-	if len(s) == 2 {
-		s[1] = strings.TrimSuffix(s[1], "/")
-		return true, s[1]
-	}
-	return false, ""
 }
 
 // MatchPullManifest checks if the request looks like a request to pull manifest.  If it is returns the image and tag/sha256 digest as 2nd and 3rd return values
@@ -203,31 +290,21 @@ func MatchPushManifest(req *http.Request) (bool, string, string) {
 	return MatchManifestURL(req)
 }
 
-// MatchMountBlobURL POST /v2/<name>/blobs/uploads/?mount=<digest>&from=<repository name>
-// If match, will return repo, mount and from as the 2nd, 3th and 4th.
-func MatchMountBlobURL(req *http.Request) (bool, string, string, string) {
-	if req.Method != http.MethodPost {
-		return false, "", "", ""
+// MatchDeleteManifest checks if the request
+func MatchDeleteManifest(req *http.Request) (match bool, repository string, reference string) {
+	if req.Method != http.MethodDelete {
+		return
 	}
-	re, err := regexp.Compile(blobURLPattern)
-	if err != nil {
-		log.Errorf("error to match post blob url, %v", err)
-		return false, "", "", ""
+
+	match, repository, reference = MatchManifestURL(req)
+	if _, err := digest.Parse(reference); err != nil {
+		// Delete manifest only accept digest as reference
+		match = false
+
+		return
 	}
-	s := re.FindStringSubmatch(req.URL.Path)
-	if len(s) == 2 {
-		s[1] = strings.TrimSuffix(s[1], "/")
-		mount := req.FormValue("mount")
-		if mount == "" {
-			return false, "", "", ""
-		}
-		from := req.FormValue("from")
-		if from == "" {
-			return false, "", "", ""
-		}
-		return true, s[1], mount, from
-	}
-	return false, "", "", ""
+
+	return
 }
 
 // CopyResp ...
@@ -300,78 +377,152 @@ func GetPolicyChecker() PolicyChecker {
 	return NewPMSPolicyChecker(config.GlobalProjectMgr)
 }
 
-// TryRequireQuota ...
-func TryRequireQuota(projectID int64, quotaRes *quota.ResourceList) error {
-	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(projectID, 10))
-	if err != nil {
-		log.Errorf("Error occurred when to new quota manager %v", err)
-		return err
-	}
-	if err := quotaMgr.AddResources(*quotaRes); err != nil {
-		log.Errorf("cannot get quota for the project resource: %d, err: %v", projectID, err)
-		return ErrRequireQuota
-	}
-	return nil
-}
-
-// TryFreeQuota used to release resource for failure case
-func TryFreeQuota(projectID int64, qres *quota.ResourceList) bool {
-	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(projectID, 10))
-	if err != nil {
-		log.Errorf("Error occurred when to new quota manager %v", err)
-		return false
-	}
-
-	if err := quotaMgr.SubtractResources(*qres); err != nil {
-		log.Errorf("cannot release quota for the project resource: %d, err: %v", projectID, err)
-		return false
-	}
-	return true
-}
-
-// GetBlobSize blob size with UUID in redis
-func GetBlobSize(conn redis.Conn, uuid string) (int64, error) {
-	exists, err := redis.Int(conn.Do("EXISTS", uuid))
-	if err != nil {
-		return 0, err
-	}
-	if exists == 1 {
-		size, err := redis.Int64(conn.Do("GET", uuid))
-		if err != nil {
-			return 0, err
-		}
-		return size, nil
-	}
-	return 0, nil
-}
-
-// SetBunkSize sets the temp size for blob bunk with its uuid.
-func SetBunkSize(conn redis.Conn, uuid string, size int64) (bool, error) {
-	setRes, err := redis.String(conn.Do("SET", uuid, size))
-	if err != nil {
-		return false, err
-	}
-	return setRes == "OK", nil
-}
-
-// GetProjectID ...
-func GetProjectID(name string) (int64, error) {
-	project, err := dao.GetProjectByName(name)
-	if err != nil {
-		return 0, err
-	}
-	if project != nil {
-		return project.ProjectID, nil
-	}
-	return 0, fmt.Errorf("project %s is not found", name)
-}
-
 // GetRegRedisCon ...
 func GetRegRedisCon() (redis.Conn, error) {
+	// FOR UT
+	if os.Getenv("UTTEST") == "true" {
+		return redis.Dial(
+			"tcp",
+			fmt.Sprintf("%s:%d", os.Getenv("REDIS_HOST"), 6379),
+			redis.DialConnectTimeout(DialConnectionTimeout),
+			redis.DialReadTimeout(DialReadTimeout),
+			redis.DialWriteTimeout(DialWriteTimeout),
+		)
+	}
 	return redis.DialURL(
 		config.GetRedisOfRegURL(),
 		redis.DialConnectTimeout(DialConnectionTimeout),
 		redis.DialReadTimeout(DialReadTimeout),
 		redis.DialWriteTimeout(DialWriteTimeout),
 	)
+}
+
+// BlobInfoFromContext returns blob info from context
+func BlobInfoFromContext(ctx context.Context) (*BlobInfo, bool) {
+	info, ok := ctx.Value(blobInfoKey).(*BlobInfo)
+	return info, ok
+}
+
+// ChartVersionInfoFromContext returns chart info from context
+func ChartVersionInfoFromContext(ctx context.Context) (*ChartVersionInfo, bool) {
+	info, ok := ctx.Value(chartVersionInfoKey).(*ChartVersionInfo)
+	return info, ok
+}
+
+// ImageInfoFromContext returns image info from context
+func ImageInfoFromContext(ctx context.Context) (*ImageInfo, bool) {
+	info, ok := ctx.Value(ImageInfoCtxKey).(*ImageInfo)
+	return info, ok
+}
+
+// ManifestInfoFromContext returns manifest info from context
+func ManifestInfoFromContext(ctx context.Context) (*ManifestInfo, bool) {
+	info, ok := ctx.Value(manifestInfoKey).(*ManifestInfo)
+	return info, ok
+}
+
+// NewBlobInfoContext returns context with blob info
+func NewBlobInfoContext(ctx context.Context, info *BlobInfo) context.Context {
+	return context.WithValue(ctx, blobInfoKey, info)
+}
+
+// NewChartVersionInfoContext returns context with blob info
+func NewChartVersionInfoContext(ctx context.Context, info *ChartVersionInfo) context.Context {
+	return context.WithValue(ctx, chartVersionInfoKey, info)
+}
+
+// NewImageInfoContext returns context with image info
+func NewImageInfoContext(ctx context.Context, info *ImageInfo) context.Context {
+	return context.WithValue(ctx, ImageInfoCtxKey, info)
+}
+
+// NewManifestInfoContext returns context with manifest info
+func NewManifestInfoContext(ctx context.Context, info *ManifestInfo) context.Context {
+	return context.WithValue(ctx, manifestInfoKey, info)
+}
+
+// ParseManifestInfo prase manifest from request
+func ParseManifestInfo(req *http.Request) (*ManifestInfo, error) {
+	match, repository, reference := MatchManifestURL(req)
+	if !match {
+		return nil, fmt.Errorf("not match url %s for manifest", req.URL.Path)
+	}
+
+	var tag string
+	if _, err := digest.Parse(reference); err != nil {
+		tag = reference
+	}
+
+	mediaType := req.Header.Get("Content-Type")
+	if mediaType != schema1.MediaTypeManifest &&
+		mediaType != schema1.MediaTypeSignedManifest &&
+		mediaType != schema2.MediaTypeManifest {
+		return nil, fmt.Errorf("unsupported content type for manifest: %s", mediaType)
+	}
+
+	if req.Body == nil {
+		return nil, fmt.Errorf("body missing")
+	}
+
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		log.Warningf("Error occurred when to copy manifest body %v", err)
+		return nil, err
+	}
+	req.Body = ioutil.NopCloser(bytes.NewBuffer(body))
+
+	manifest, desc, err := distribution.UnmarshalManifest(mediaType, body)
+	if err != nil {
+		log.Warningf("Error occurred when to Unmarshal Manifest %v", err)
+		return nil, err
+	}
+
+	projectName, _ := utils.ParseRepository(repository)
+	project, err := dao.GetProjectByName(projectName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get project %s, error: %v", projectName, err)
+	}
+	if project == nil {
+		return nil, fmt.Errorf("project %s not found", projectName)
+	}
+
+	return &ManifestInfo{
+		ProjectID:  project.ProjectID,
+		Repository: repository,
+		Tag:        tag,
+		Digest:     desc.Digest.String(),
+		References: manifest.References(),
+		Descriptor: desc,
+	}, nil
+}
+
+// ParseManifestInfoFromPath prase manifest from request path
+func ParseManifestInfoFromPath(req *http.Request) (*ManifestInfo, error) {
+	match, repository, reference := MatchManifestURL(req)
+	if !match {
+		return nil, fmt.Errorf("not match url %s for manifest", req.URL.Path)
+	}
+
+	projectName, _ := utils.ParseRepository(repository)
+	project, err := dao.GetProjectByName(projectName)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get project %s, error: %v", projectName, err)
+	}
+	if project == nil {
+		return nil, fmt.Errorf("project %s not found", projectName)
+	}
+
+	info := &ManifestInfo{
+		ProjectID:  project.ProjectID,
+		Repository: repository,
+	}
+
+	dgt, err := digest.Parse(reference)
+	if err != nil {
+		info.Tag = reference
+	} else {
+		info.Digest = dgt.String()
+	}
+
+	return info, nil
 }

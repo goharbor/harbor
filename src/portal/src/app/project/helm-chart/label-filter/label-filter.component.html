@@ -1,18 +1,21 @@
 <div>
     <div class="form-group filter-div">
-        <input #filterInput type="text" placeholder='{{"LABEL.FILTER_LABEL_PLACEHOLDER" | translate }}' [(ngModel)]="labelFilter">
+        <input #filterInput type="text" placeholder='{{"LABEL.FILTER_LABEL_PLACEHOLDER" | translate }}'
+            [(ngModel)]="labelFilter">
     </div>
     <div class="label-items-container">
         <div class="dropdown-item" *ngFor='let label of filteredLabels'>
-            <span class="check-label-span">
-                <clr-icon *ngIf="isSelected(label)" shape="check"></clr-icon>
-            </span>
-            <span (click)="selectLabel(label)">
-                <hbr-label-piece [label]="label" [labelWidth]="90"></hbr-label-piece>
-            </span>
-            <span class="x-label-span" (click)="unselectLabel(label)">
-                <clr-icon *ngIf="isSelected(label)" shape="times-circle"></clr-icon>
-            </span>
+            <div class="cur-pointer" (click)="selectLabel(label)">
+                <span class="check-label-span">
+                    <clr-icon *ngIf="isSelected(label)" shape="check"></clr-icon>
+                </span>
+                <span class="cur-pointer">
+                    <hbr-label-piece [label]="label" [labelWidth]="90"></hbr-label-piece>
+                </span>
+                <span *ngIf="isSelected(label)" class="x-label-span" (click)="$event.stopPropagation(); unselectLabel(label)">
+                    <clr-icon shape="times-circle"></clr-icon>
+                </span>
+            </div>
         </div>
     </div>
 </div>

@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/operation/hook"
@@ -32,12 +33,11 @@ import (
 
 var statusMap = map[string]string{
 	job.JobServiceStatusPending:   models.JobPending,
+	job.JobServiceStatusScheduled: models.JobScheduled,
 	job.JobServiceStatusRunning:   models.JobRunning,
 	job.JobServiceStatusStopped:   models.JobStopped,
-	job.JobServiceStatusCancelled: models.JobCanceled,
 	job.JobServiceStatusError:     models.JobError,
 	job.JobServiceStatusSuccess:   models.JobFinished,
-	job.JobServiceStatusScheduled: models.JobScheduled,
 }
 
 // Handler handles reqeust on /service/notifications/jobs/*, which listens to the webhook of jobservice.
@@ -46,6 +46,7 @@ type Handler struct {
 	id        int64
 	status    string
 	rawStatus string
+	checkIn   string
 }
 
 // Prepare ...
@@ -73,6 +74,7 @@ func (h *Handler) Prepare() {
 		return
 	}
 	h.status = status
+	h.checkIn = data.CheckIn
 }
 
 // HandleScan handles the webhook of scan job
@@ -117,10 +119,43 @@ func (h *Handler) HandleRetentionTask() {
 	if h.status == models.JobFinished || h.status == models.JobError ||
 		h.status == models.JobStopped {
 		task.EndTime = time.Now()
+		props = append(props, "EndTime")
+	} else if h.status == models.JobRunning {
+		if h.checkIn != "" {
+			var retainObj struct {
+				Total    int `json:"total"`
+				Retained int `json:"retained"`
+			}
+			if err := json.Unmarshal([]byte(h.checkIn), &retainObj); err != nil {
+				log.Errorf("failed to resolve checkin of retention task %d: %v", h.id, err)
+			} else {
+				if retainObj.Total > 0 {
+					task.Total = retainObj.Total
+					props = append(props, "Total")
+				}
+				if retainObj.Retained > 0 {
+					task.Retained = retainObj.Retained
+					props = append(props, "Retained")
+				}
+			}
+		}
 	}
-	props = append(props, "EndTime")
 	if err := mgr.UpdateTask(task, props...); err != nil {
 		log.Errorf("failed to update the status of retention task %d: %v", h.id, err)
+		h.SendInternalServerError(err)
+		return
+	}
+}
+
+// HandleNotificationJob handles the hook of notification job
+func (h *Handler) HandleNotificationJob() {
+	log.Debugf("received notification job status update event: job-%d, status-%s", h.id, h.status)
+	if err := notification.JobMgr.Update(&models.NotificationJob{
+		ID:         h.id,
+		Status:     h.status,
+		UpdateTime: time.Now(),
+	}, "Status", "UpdateTime"); err != nil {
+		log.Errorf("Failed to update notification job status, id: %d, status: %s", h.id, h.status)
 		h.SendInternalServerError(err)
 		return
 	}

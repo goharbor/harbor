@@ -276,12 +276,7 @@ services:
     volumes:
       - ./common/config/nginx:/etc/nginx:z
 {% if protocol == 'https' %}
-      - type: bind
-        source: {{cert_key_path}}
-        target: /etc/cert/server.key
-      - type: bind
-        source: {{cert_path}}
-        target: /etc/cert/server.crt
+      - {{data_volume}}/secret/cert:/etc/cert:z
 {% endif %}
     networks:
       - harbor
@@ -290,9 +285,9 @@ services:
 {% endif %}
     dns_search: .
     ports:
-      - {{http_port}}:80
+      - {{http_port}}:8080
 {% if protocol == 'https' %}
-      - {{https_port}}:443
+      - {{https_port}}:8443
 {% endif %}
 {% if with_notary %}
       - 4443:4443

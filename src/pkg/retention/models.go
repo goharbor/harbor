@@ -51,10 +51,13 @@ type Execution struct {
 type Task struct {
 	ID          int64     `json:"id"`
 	ExecutionID int64     `json:"execution_id"`
+	Repository  string    `json:"repository"`
 	JobID       string    `json:"job_id"`
 	Status      string    `json:"status"`
 	StartTime   time.Time `json:"start_time"`
 	EndTime     time.Time `json:"end_time"`
+	Total       int       `json:"total"`
+	Retained    int       `json:"retained"`
 }
 
 // History of retention

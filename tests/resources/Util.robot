@@ -83,6 +83,11 @@ Retry Wait Element
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Wait Until Element Is Visible And Enabled  @{param}
 
+Retry Wait Element Visible
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Wait Until Element Is Visible  @{param}
+
 Retry Wait Element Not Visible
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}

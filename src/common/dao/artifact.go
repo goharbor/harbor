@@ -15,16 +15,19 @@
 package dao
 
 import (
-	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/models"
 	"strings"
 	"time"
+
+	"github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/common/models"
 )
 
 // AddArtifact ...
 func AddArtifact(af *models.Artifact) (int64, error) {
 	now := time.Now()
 	af.CreationTime = now
+	af.PushTime = now
+
 	id, err := GetOrmer().Insert(af)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
@@ -33,6 +36,12 @@ func AddArtifact(af *models.Artifact) (int64, error) {
 		return 0, err
 	}
 	return id, nil
+}
+
+// UpdateArtifact ...
+func UpdateArtifact(af *models.Artifact) error {
+	_, err := GetOrmer().Update(af)
+	return err
 }
 
 // UpdateArtifactDigest ...
@@ -54,16 +63,17 @@ func DeleteArtifact(id int64) error {
 }
 
 // DeleteArtifactByDigest ...
-func DeleteArtifactByDigest(digest string) error {
-	_, err := GetOrmer().Raw(`delete from artifact where digest = ? `, digest).Exec()
+func DeleteArtifactByDigest(projectID int64, repo, digest string) error {
+	_, err := GetOrmer().Raw(`delete from artifact where project_id = ? and repo = ? and digest = ? `,
+		projectID, repo, digest).Exec()
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// DeleteByTag ...
-func DeleteByTag(projectID int, repo, tag string) error {
+// DeleteArtifactByTag ...
+func DeleteArtifactByTag(projectID int64, repo, tag string) error {
 	_, err := GetOrmer().Raw(`delete from artifact where project_id = ? and repo = ? and tag = ? `,
 		projectID, repo, tag).Exec()
 	if err != nil {
@@ -84,6 +94,33 @@ func ListArtifacts(query *models.ArtifactQuery) ([]*models.Artifact, error) {
 	afs := []*models.Artifact{}
 	_, err := qs.All(&afs)
 	return afs, err
+}
+
+// GetArtifact by repository and tag
+func GetArtifact(repo, tag string) (*models.Artifact, error) {
+	artifact := &models.Artifact{}
+	err := GetOrmer().QueryTable(&models.Artifact{}).
+		Filter("Repo", repo).
+		Filter("Tag", tag).One(artifact)
+	if err != nil {
+		if err == orm.ErrNoRows {
+			return nil, nil
+		}
+		return nil, err
+	}
+	return artifact, nil
+}
+
+// GetTotalOfArtifacts returns total of artifacts
+func GetTotalOfArtifacts(query ...*models.ArtifactQuery) (int64, error) {
+	var qs orm.QuerySeter
+	if len(query) > 0 {
+		qs = getArtifactQuerySetter(query[0])
+	} else {
+		qs = GetOrmer().QueryTable(&models.Artifact{})
+	}
+
+	return qs.Count()
 }
 
 func getArtifactQuerySetter(query *models.ArtifactQuery) orm.QuerySeter {

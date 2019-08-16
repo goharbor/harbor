@@ -33,6 +33,11 @@ func (d *DumbCoreClient) DeleteImage(project, repository, tag string) error {
 	return nil
 }
 
+// DeleteImageRepository ...
+func (d *DumbCoreClient) DeleteImageRepository(project, repository string) error {
+	return nil
+}
+
 // ListAllCharts ...
 func (d *DumbCoreClient) ListAllCharts(project, repository string) ([]*chartserver.ChartVersion, error) {
 	return nil, nil
@@ -40,5 +45,10 @@ func (d *DumbCoreClient) ListAllCharts(project, repository string) ([]*chartserv
 
 // DeleteChart ...
 func (d *DumbCoreClient) DeleteChart(project, repository, version string) error {
+	return nil
+}
+
+// DeleteChartRepository ...
+func (d *DumbCoreClient) DeleteChartRepository(project, repository string) error {
 	return nil
 }

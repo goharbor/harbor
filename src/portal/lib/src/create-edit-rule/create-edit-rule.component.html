@@ -68,7 +68,7 @@
                 </div>
                 <label *ngIf="supportedFilters[i]?.style==='input'" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
                   [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
-                  <input type="text" #filterValue required size="14" formControlName="value" id="{{'filter_'+ supportedFilters[i]?.type}}">
+                  <input (input)="trimText($event)" type="text" #filterValue required size="14" formControlName="value" id="{{'filter_'+ supportedFilters[i]?.type}}">
                   <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
                 </label>
                 <div class="select resource-box" *ngIf="supportedFilters[i]?.style==='radio' && supportedFilters[i]?.values.length > 1">

@@ -7,6 +7,7 @@ import (
 	"os"
 
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/justinas/alice"
 )
 
 const (
@@ -42,7 +43,7 @@ type Controller struct {
 }
 
 // NewController is constructor of the chartserver.Controller
-func NewController(backendServer *url.URL) (*Controller, error) {
+func NewController(backendServer *url.URL, chains ...*alice.Chain) (*Controller, error) {
 	if backendServer == nil {
 		return nil, errors.New("failed to create chartserver.Controller: backend sever address is required")
 	}
@@ -68,7 +69,7 @@ func NewController(backendServer *url.URL) (*Controller, error) {
 	return &Controller{
 		backendServerAddress: backendServer,
 		// Use customized reverse proxy
-		trafficProxy: NewProxyEngine(backendServer, cred),
+		trafficProxy: NewProxyEngine(backendServer, cred, chains...),
 		// Initialize chart operator for use
 		chartOperator: &ChartOperator{},
 		// Create http client with customized timeouts

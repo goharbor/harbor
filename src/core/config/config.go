@@ -280,7 +280,11 @@ func InternalJobServiceURL() string {
 // InternalCoreURL returns the local harbor core url
 func InternalCoreURL() string {
 	return strings.TrimSuffix(cfgMgr.Get(common.CoreURL).GetString(), "/")
+}
 
+// LocalCoreURL returns the local harbor core url
+func LocalCoreURL() string {
+	return cfgMgr.Get(common.CoreLocalURL).GetString()
 }
 
 // InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
@@ -327,12 +331,14 @@ func Database() (*models.Database, error) {
 	database := &models.Database{}
 	database.Type = cfgMgr.Get(common.DatabaseType).GetString()
 	postgresql := &models.PostGreSQL{
-		Host:     cfgMgr.Get(common.PostGreSQLHOST).GetString(),
-		Port:     cfgMgr.Get(common.PostGreSQLPort).GetInt(),
-		Username: cfgMgr.Get(common.PostGreSQLUsername).GetString(),
-		Password: cfgMgr.Get(common.PostGreSQLPassword).GetString(),
-		Database: cfgMgr.Get(common.PostGreSQLDatabase).GetString(),
-		SSLMode:  cfgMgr.Get(common.PostGreSQLSSLMode).GetString(),
+		Host:         cfgMgr.Get(common.PostGreSQLHOST).GetString(),
+		Port:         cfgMgr.Get(common.PostGreSQLPort).GetInt(),
+		Username:     cfgMgr.Get(common.PostGreSQLUsername).GetString(),
+		Password:     cfgMgr.Get(common.PostGreSQLPassword).GetString(),
+		Database:     cfgMgr.Get(common.PostGreSQLDatabase).GetString(),
+		SSLMode:      cfgMgr.Get(common.PostGreSQLSSLMode).GetString(),
+		MaxIdleConns: cfgMgr.Get(common.PostGreSQLMaxIdleConns).GetInt(),
+		MaxOpenConns: cfgMgr.Get(common.PostGreSQLMaxOpenConns).GetInt(),
 	}
 	database.PostGreSQL = postgresql
 
@@ -509,6 +515,16 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 		RedirectURL:  extEndpoint + common.OIDCCallbackPath,
 		Scope:        scope,
 	}, nil
+}
+
+// NotificationEnable returns a bool to indicates if notification enabled in harbor
+func NotificationEnable() bool {
+	return cfgMgr.Get(common.NotificationEnable).GetBool()
+}
+
+// QuotaPerProjectEnable returns a bool to indicates if quota per project enabled in harbor
+func QuotaPerProjectEnable() bool {
+	return cfgMgr.Get(common.QuotaPerProjectEnable).GetBool()
 }
 
 // QuotaSetting returns the setting of quota.

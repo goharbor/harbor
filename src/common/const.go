@@ -53,8 +53,11 @@ const (
 	PostGreSQLPassword               = "postgresql_password"
 	PostGreSQLDatabase               = "postgresql_database"
 	PostGreSQLSSLMode                = "postgresql_sslmode"
+	PostGreSQLMaxIdleConns           = "postgresql_max_idle_conns"
+	PostGreSQLMaxOpenConns           = "postgresql_max_open_conns"
 	SelfRegistration                 = "self_registration"
 	CoreURL                          = "core_url"
+	CoreLocalURL                     = "core_local_url"
 	JobServiceURL                    = "jobservice_url"
 	LDAPURL                          = "ldap_url"
 	LDAPSearchDN                     = "ldap_search_dn"
@@ -143,7 +146,11 @@ const (
 
 	ChartUploadCtxKey = contextKey("chart_upload_event")
 
+	// Global notification enable configuration
+	NotificationEnable = "notification_enable"
+
 	// Quota setting items for project
-	CountPerProject   = "count_per_project"
-	StoragePerProject = "storage_per_project"
+	QuotaPerProjectEnable = "quota_per_project_enable"
+	CountPerProject       = "count_per_project"
+	StoragePerProject     = "storage_per_project"
 )

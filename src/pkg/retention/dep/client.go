@@ -17,9 +17,7 @@ package dep
 import (
 	"errors"
 	"fmt"
-	"math/rand"
 	"net/http"
-	"time"
 
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -41,6 +39,15 @@ type Client interface {
 	//    []*res.Candidate : candidates returned
 	//    error            : common error if any errors occurred
 	GetCandidates(repo *res.Repository) ([]*res.Candidate, error)
+
+	// Delete the given repository
+	//
+	//  Arguments:
+	//    repo *res.Repository : repository info
+	//
+	//  Returns:
+	//    error            : common error if any errors occurred
+	DeleteRepository(repo *res.Repository) error
 
 	// Delete the specified candidate
 	//
@@ -93,7 +100,7 @@ func (bc *basicClient) GetCandidates(repository *res.Repository) ([]*res.Candida
 			return nil, err
 		}
 		for _, image := range images {
-			labels := []string{}
+			labels := make([]string, 0)
 			for _, label := range image.Labels {
 				labels = append(labels, label.Name)
 			}
@@ -104,37 +111,56 @@ func (bc *basicClient) GetCandidates(repository *res.Repository) ([]*res.Candida
 				Tag:          image.Name,
 				Labels:       labels,
 				CreationTime: image.Created.Unix(),
-				PulledTime:   time.Now().Unix() - (int64)(rand.Int31n(4)*3600),
-				PushedTime:   time.Now().Unix() - (int64)((rand.Int31n(5)+5)*3600),
+				PulledTime:   image.PullTime.Unix(),
+				PushedTime:   image.PushTime.Unix(),
 			}
 			candidates = append(candidates, candidate)
 		}
-	case res.Chart:
-		charts, err := bc.coreClient.ListAllCharts(repository.Namespace, repository.Name)
-		if err != nil {
-			return nil, err
-		}
-		for _, chart := range charts {
-			labels := []string{}
-			for _, label := range chart.Labels {
-				labels = append(labels, label.Name)
+	/*
+		case res.Chart:
+			charts, err := bc.coreClient.ListAllCharts(repository.Namespace, repository.Name)
+			if err != nil {
+				return nil, err
 			}
-			candidate := &res.Candidate{
-				Kind:         res.Chart,
-				Namespace:    repository.Namespace,
-				Repository:   repository.Name,
-				Tag:          chart.Name,
-				Labels:       labels,
-				CreationTime: chart.Created.Unix(),
-				PushedTime:   time.Now().Unix() - (int64)((rand.Int31n(5)+5)*3600),
-				PulledTime:   time.Now().Unix() - (int64)((rand.Int31n(4))*3600),
+			for _, chart := range charts {
+				labels := make([]string, 0)
+				for _, label := range chart.Labels {
+					labels = append(labels, label.Name)
+				}
+				candidate := &res.Candidate{
+					Kind:         res.Chart,
+					Namespace:    repository.Namespace,
+					Repository:   repository.Name,
+					Tag:          chart.Name,
+					Labels:       labels,
+					CreationTime: chart.Created.Unix(),
+					PushedTime:   ,
+					PulledTime:   ,
+				}
+				candidates = append(candidates, candidate)
 			}
-			candidates = append(candidates, candidate)
-		}
+	*/
 	default:
 		return nil, fmt.Errorf("unsupported repository kind: %s", repository.Kind)
 	}
 	return candidates, nil
+}
+
+// DeleteRepository deletes the specified repository
+func (bc *basicClient) DeleteRepository(repo *res.Repository) error {
+	if repo == nil {
+		return errors.New("repository is nil")
+	}
+	switch repo.Kind {
+	case res.Image:
+		return bc.coreClient.DeleteImageRepository(repo.Namespace, repo.Name)
+	/*
+		case res.Chart:
+			return bc.coreClient.DeleteChartRepository(repo.Namespace, repo.Name)
+	*/
+	default:
+		return fmt.Errorf("unsupported repository kind: %s", repo.Kind)
+	}
 }
 
 // Deletes the specified candidate
@@ -145,8 +171,10 @@ func (bc *basicClient) Delete(candidate *res.Candidate) error {
 	switch candidate.Kind {
 	case res.Image:
 		return bc.coreClient.DeleteImage(candidate.Namespace, candidate.Repository, candidate.Tag)
-	case res.Chart:
-		return bc.coreClient.DeleteChart(candidate.Namespace, candidate.Repository, candidate.Tag)
+	/*
+		case res.Chart:
+			return bc.coreClient.DeleteChart(candidate.Namespace, candidate.Repository, candidate.Tag)
+	*/
 	default:
 		return fmt.Errorf("unsupported candidate kind: %s", candidate.Kind)
 	}

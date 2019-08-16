@@ -1,11 +1,12 @@
 package retention
 
 import (
+	"testing"
+
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type ControllerTestSuite struct {
@@ -41,6 +42,36 @@ func (s *ControllerTestSuite) TestPolicy() {
 				Template: "recentXdays",
 				Parameters: rule.Parameters{
 					"num": 10,
+				},
+				TagSelectors: []*rule.Selector{
+					{
+						Kind:       "label",
+						Decoration: "with",
+						Pattern:    "latest",
+					},
+					{
+						Kind:       "regularExpression",
+						Decoration: "matches",
+						Pattern:    "release-[\\d\\.]+",
+					},
+				},
+				ScopeSelectors: map[string][]*rule.Selector{
+					"repository": {
+						{
+							Kind:       "regularExpression",
+							Decoration: "matches",
+							Pattern:    ".+",
+						},
+					},
+				},
+			},
+			{
+				ID:       2,
+				Priority: 1,
+				Template: "recentXdays",
+				Disabled: true,
+				Parameters: rule.Parameters{
+					"num": 3,
 				},
 				TagSelectors: []*rule.Selector{
 					{

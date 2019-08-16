@@ -121,12 +121,16 @@ func getDatabase(database *models.Database) (db Database, err error) {
 
 	switch database.Type {
 	case "", "postgresql":
-		db = NewPGSQL(database.PostGreSQL.Host,
+		db = NewPGSQL(
+			database.PostGreSQL.Host,
 			strconv.Itoa(database.PostGreSQL.Port),
 			database.PostGreSQL.Username,
 			database.PostGreSQL.Password,
 			database.PostGreSQL.Database,
-			database.PostGreSQL.SSLMode)
+			database.PostGreSQL.SSLMode,
+			database.PostGreSQL.MaxIdleConns,
+			database.PostGreSQL.MaxOpenConns,
+		)
 	default:
 		err = fmt.Errorf("invalid database: %s", database.Type)
 	}
@@ -139,6 +143,8 @@ var once sync.Once
 // GetOrmer :set ormer singleton
 func GetOrmer() orm.Ormer {
 	once.Do(func() {
+		// override the default value(1000) to return all records when setting no limit
+		orm.DefaultRowsLimit = -1
 		globalOrm = orm.NewOrm()
 	})
 	return globalOrm
@@ -167,11 +173,13 @@ func ClearTable(table string) error {
 	return err
 }
 
-func paginateForRawSQL(sql string, limit, offset int64) string {
+// PaginateForRawSQL ...
+func PaginateForRawSQL(sql string, limit, offset int64) string {
 	return fmt.Sprintf("%s limit %d offset %d", sql, limit, offset)
 }
 
-func paginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter {
+// PaginateForQuerySetter ...
+func PaginateForQuerySetter(qs orm.QuerySeter, page, size int64) orm.QuerySeter {
 	if size > 0 {
 		qs = qs.Limit(size)
 		if page > 0 {

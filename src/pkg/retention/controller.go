@@ -54,7 +54,11 @@ type APIController interface {
 
 	ListRetentionExecs(policyID int64, query *q.Query) ([]*Execution, error)
 
+	GetTotalOfRetentionExecs(policyID int64) (int64, error)
+
 	ListRetentionExecTasks(executionID int64, query *q.Query) ([]*Task, error)
+
+	GetTotalOfRetentionExecTasks(executionID int64) (int64, error)
 
 	GetRetentionExecTaskLog(taskID int64) ([]byte, error)
 }
@@ -131,7 +135,7 @@ func (r *DefaultAPIController) UpdateRetention(p *policy.Metadata) error {
 		case policy.TriggerKindSchedule:
 			if p0.Trigger.Settings["cron"] != p.Trigger.Settings["cron"] {
 				// unschedule old
-				if len(p0.Trigger.References[policy.TriggerReferencesJobid].(string)) > 0 {
+				if len(p0.Trigger.Settings[policy.TriggerSettingsCron].(string)) > 0 {
 					needUn = true
 				}
 				// schedule new
@@ -147,7 +151,7 @@ func (r *DefaultAPIController) UpdateRetention(p *policy.Metadata) error {
 		}
 	}
 	if needUn {
-		err = r.scheduler.UnSchedule((p0.Trigger.References[policy.TriggerReferencesJobid].(int64)))
+		err = r.scheduler.UnSchedule(p0.Trigger.References[policy.TriggerReferencesJobid].(int64))
 		if err != nil {
 			return err
 		}
@@ -197,6 +201,8 @@ func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger stri
 	}
 	id, err := r.manager.CreateExecution(exec)
 	if _, err = r.launcher.Launch(p, id, dryRun); err != nil {
+		// clean execution if launch failed
+		_ = r.manager.DeleteExecution(id)
 		return 0, err
 	}
 	return id, err
@@ -230,6 +236,11 @@ func (r *DefaultAPIController) ListRetentionExecs(policyID int64, query *q.Query
 	return r.manager.ListExecutions(policyID, query)
 }
 
+// GetTotalOfRetentionExecs Count Retention Executions
+func (r *DefaultAPIController) GetTotalOfRetentionExecs(policyID int64) (int64, error) {
+	return r.manager.GetTotalOfRetentionExecs(policyID)
+}
+
 // ListRetentionExecTasks List Retention Execution Histories
 func (r *DefaultAPIController) ListRetentionExecTasks(executionID int64, query *q.Query) ([]*Task, error) {
 	q1 := &q.TaskQuery{
@@ -240,6 +251,11 @@ func (r *DefaultAPIController) ListRetentionExecTasks(executionID int64, query *
 		q1.PageNumber = query.PageNumber
 	}
 	return r.manager.ListTasks(q1)
+}
+
+// GetTotalOfRetentionExecTasks Count Retention Execution Histories
+func (r *DefaultAPIController) GetTotalOfRetentionExecTasks(executionID int64) (int64, error) {
+	return r.manager.GetTotalOfTasks(executionID)
 }
 
 // GetRetentionExecTaskLog Get Retention Execution Task Log

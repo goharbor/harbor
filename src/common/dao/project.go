@@ -167,9 +167,10 @@ func GetGroupProjects(groupIDs []int, query *models.ProjectQueryParam) ([]*model
 		     from project p 
 		     left join project_member pm on p.project_id = pm.project_id
 		     left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g' 
-			 where ug.id in ( %s ) order by name`,
+			 where ug.id in ( %s )`,
 			sql, groupIDCondition)
 	}
+	sql = sql + ` order by name`
 	sqlStr, queryParams := CreatePagination(query, sql, params)
 	log.Debugf("query sql:%v", sql)
 	var projects []*models.Project
@@ -259,7 +260,7 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 	}
 	if len(query.ProjectIDs) > 0 {
 		sql += fmt.Sprintf(` and p.project_id in ( %s )`,
-			paramPlaceholder(len(query.ProjectIDs)))
+			ParamPlaceholderForIn(len(query.ProjectIDs)))
 		params = append(params, query.ProjectIDs)
 	}
 	return sql, params
@@ -302,20 +303,15 @@ func GetRolesByGroupID(projectID int64, groupIDs []int) ([]int, error) {
 	}
 	groupIDCondition := JoinNumberConditions(groupIDs)
 	o := GetOrmer()
-	// the role is in descent order (1-admin, 2-developer, 3-guest, 4-master), use min to select the max privilege role.
 	sql := fmt.Sprintf(
-		`select min(pm.role) from project_member pm 
+		`select distinct pm.role from project_member pm 
 		left join user_group ug on pm.entity_type = 'g' and pm.entity_id = ug.id 
 		where ug.id in ( %s ) and pm.project_id = ?`,
 		groupIDCondition)
-	log.Debugf("sql:%v", sql)
+	log.Debugf("sql for GetRolesByGroupID(project ID: %d, group ids: %v):%v", projectID, groupIDs, sql)
 	if _, err := o.Raw(sql, projectID).QueryRows(&roles); err != nil {
 		log.Warningf("Error in GetRolesByGroupID, error: %v", err)
 		return nil, err
-	}
-	// If there is no row selected, the min returns an empty row, to avoid return 0 as role
-	if len(roles) == 1 && roles[0] == 0 {
-		return []int{}, nil
 	}
 	return roles, nil
 }

@@ -15,15 +15,15 @@
 package action
 
 import (
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 // TestPerformerSuite tests the performer related function
@@ -106,7 +106,7 @@ func (frc *fakeRetentionClient) Delete(candidate *res.Candidate) error {
 	return nil
 }
 
-// SubmitTask ...
-func (frc *fakeRetentionClient) SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error) {
-	return "", errors.New("not implemented")
+// DeleteRepository ...
+func (frc *fakeRetentionClient) DeleteRepository(repo *res.Repository) error {
+	panic("implement me")
 }

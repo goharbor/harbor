@@ -193,7 +193,7 @@ func quotaQueryConditions(query ...*models.QuotaQuery) (string, []interface{}) {
 	}
 
 	if len(q.ReferenceIDs) != 0 {
-		sql += fmt.Sprintf(`AND a.reference_id IN (%s) `, paramPlaceholder(len(q.ReferenceIDs)))
+		sql += fmt.Sprintf(`AND a.reference_id IN (%s) `, ParamPlaceholderForIn(len(q.ReferenceIDs)))
 		params = append(params, q.ReferenceIDs)
 	}
 

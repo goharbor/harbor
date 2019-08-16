@@ -1,7 +1,7 @@
 import os, copy
 
 from g import config_dir, templates_dir, DEFAULT_GID, DEFAULT_UID
-from utils.misc import prepare_config_dir
+from utils.misc import prepare_dir
 from utils.jinja import render_jinja
 
 
@@ -11,7 +11,7 @@ registry_conf = os.path.join(config_dir, "registry", "config.yml")
 
 
 def prepare_registry(config_dict):
-    prepare_config_dir(registry_config_dir)
+    prepare_dir(registry_config_dir)
 
     storage_provider_info = get_storage_provider_info(
     config_dict['storage_provider_name'],

@@ -1,16 +1,18 @@
 package api
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
-	"net/http"
-	"strconv"
 )
 
 // RetentionAPI ...
@@ -41,31 +43,7 @@ func (r *RetentionAPI) GetMetadatas() {
 {
     "templates": [
         {
-            "rule_template": "lastXDays",
-            "display_text": "the images from the last # days",
-            "action": "retain",
-            "params": [
-                {
-                    "type": "int",
-                    "unit": "DAYS",
-                    "required": true
-                }
-            ]
-        },
-        {
-            "rule_template": "latestActiveK",
-            "display_text": "the most recent active # images",
-            "action": "retain",
-            "params": [
-                {
-                    "type": "int",
-                    "unit": "COUNT",
-                    "required": true
-                }
-            ]
-        },
-        {
-            "rule_template": "latestK",
+            "rule_template": "latestPushedK",
             "display_text": "the most recently pushed # images",
             "action": "retain",
             "params": [
@@ -77,7 +55,7 @@ func (r *RetentionAPI) GetMetadatas() {
             ]
         },
         {
-            "rule_template": "latestPulledK",
+            "rule_template": "latestPulledN",
             "display_text": "the most recently pulled # images",
             "action": "retain",
             "params": [
@@ -88,17 +66,41 @@ func (r *RetentionAPI) GetMetadatas() {
                 }
             ]
         },
-        {
+		{
+			"rule_template": "nDaysSinceLastPull",
+			"display_text": "pulled within the last # days",
+			"action": "retain",
+			"params": [
+				{
+					"type": "int",
+					"unit": "DAYS",
+					"required": true
+				}
+			]
+		},
+		{
+			"rule_template": "nDaysSinceLastPush",
+			"display_text": "pushed within the last # days",
+			"action": "retain",
+			"params": [
+				{
+					"type": "int",
+					"unit": "DAYS",
+					"required": true
+				}
+			]
+		},
+		{
+            "rule_template": "nothing",
+            "display_text": "none",
+            "action": "retain",
+            "params": []
+        },
+		{
             "rule_template": "always",
             "display_text": "always",
             "action": "retain",
-            "params": [
-                {
-                    "type": "int",
-                    "unit": "COUNT",
-                    "required": true
-                }
-            ]
+            "params": []
         }
     ],
     "scope_selectors": [
@@ -163,6 +165,10 @@ func (r *RetentionAPI) CreateRetention() {
 		r.SendBadRequestError(err)
 		return
 	}
+	if err = r.checkRuleConflict(p); err != nil {
+		r.SendConflictError(err)
+		return
+	}
 	if !r.requireAccess(p, rbac.ActionCreate) {
 		return
 	}
@@ -210,6 +216,10 @@ func (r *RetentionAPI) UpdateRetention() {
 		return
 	}
 	p.ID = id
+	if err = r.checkRuleConflict(p); err != nil {
+		r.SendConflictError(err)
+		return
+	}
 	if !r.requireAccess(p, rbac.ActionUpdate) {
 		return
 	}
@@ -217,6 +227,21 @@ func (r *RetentionAPI) UpdateRetention() {
 		r.SendInternalServerError(err)
 		return
 	}
+}
+
+func (r *RetentionAPI) checkRuleConflict(p *policy.Metadata) error {
+	temp := make(map[string]int)
+	for n, rule := range p.Rules {
+		tid := rule.ID
+		rule.ID = 0
+		bs, _ := json.Marshal(rule)
+		if old, exists := temp[string(bs)]; exists {
+			return fmt.Errorf("rule %d is conflict with rule %d", n, old)
+		}
+		temp[string(bs)] = tid
+		rule.ID = tid
+	}
+	return nil
 }
 
 // TriggerRetentionExec Trigger Retention Execution
@@ -315,6 +340,12 @@ func (r *RetentionAPI) ListRetentionExecs() {
 		r.SendInternalServerError(err)
 		return
 	}
+	total, err := retentionController.GetTotalOfRetentionExecs(id)
+	if err != nil {
+		r.SendInternalServerError(err)
+		return
+	}
+	r.SetPaginationHeader(total, query.PageNumber, query.PageSize)
 	r.WriteJSONData(execs)
 }
 
@@ -352,6 +383,12 @@ func (r *RetentionAPI) ListRetentionExecTasks() {
 		r.SendInternalServerError(err)
 		return
 	}
+	total, err := retentionController.GetTotalOfRetentionExecTasks(eid)
+	if err != nil {
+		r.SendInternalServerError(err)
+		return
+	}
+	r.SetPaginationHeader(total, query.PageNumber, query.PageSize)
 	r.WriteJSONData(his)
 }
 

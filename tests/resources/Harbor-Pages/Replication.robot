@@ -201,7 +201,7 @@ Delete Endpoint
     Retry Element Click  ${endpoint_filter_search}
     Retry Text Input   ${endpoint_filter_input}  ${name}
     #click checkbox before target endpoint
-    Retry Element Click  //clr-dg-row[contains(.,'${name}')]//label
+    Retry Double Keywords When Error  Retry Element Click  //clr-dg-row[contains(.,'${name}')]//clr-checkbox-wrapper  Retry Wait Element  ${action_bar_delete}
     Retry Element Click  ${action_bar_delete}
     Wait Until Page Contains Element  ${dialog_delete}
     Retry Element Click  ${dialog_delete}

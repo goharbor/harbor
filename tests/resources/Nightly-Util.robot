@@ -32,6 +32,7 @@ CA Setup
     Run  mv ${cert} harbor_ca.crt
     Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}
     Prepare Docker Cert  ${ip}
+    Prepare Helm Cert
 
 Collect Nightly Logs
     [Arguments]  ${ip}  ${SSH_PWD}  ${ip1}==${EMPTY}

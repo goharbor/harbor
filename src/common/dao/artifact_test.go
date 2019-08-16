@@ -16,12 +16,11 @@ package dao
 
 import (
 	"testing"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
-
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"time"
 )
 
 func TestAddArtifact(t *testing.T) {
@@ -39,6 +38,16 @@ func TestAddArtifact(t *testing.T) {
 	af.ID = id
 	assert.Equal(t, id, int64(1))
 
+}
+
+func TestGetArtifact(t *testing.T) {
+	repo := "hello-world"
+	tag := "latest"
+	artifact, err := GetArtifact(repo, tag)
+	require.Nil(t, err)
+	require.NotNil(t, artifact)
+	assert.Equal(t, repo, artifact.Repo)
+	assert.Equal(t, tag, artifact.Tag)
 }
 
 func TestUpdateArtifactDigest(t *testing.T) {
@@ -111,7 +120,7 @@ func TestDeleteArtifactByDigest(t *testing.T) {
 	require.Nil(t, err)
 
 	// delete
-	err = DeleteArtifactByDigest(af.Digest)
+	err = DeleteArtifactByDigest(af.PID, af.Repo, af.Digest)
 	require.Nil(t, err)
 }
 
@@ -128,7 +137,7 @@ func TestDeleteArtifactByTag(t *testing.T) {
 	require.Nil(t, err)
 
 	// delete
-	err = DeleteByTag(1, "hello-world", "v1.2")
+	err = DeleteArtifactByTag(1, "hello-world", "v1.2")
 	require.Nil(t, err)
 }
 
@@ -151,4 +160,25 @@ func TestListArtifacts(t *testing.T) {
 	})
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(afs))
+}
+
+func TestGetTotalOfArtifacts(t *testing.T) {
+	af := &models.Artifact{
+		PID:    2,
+		Repo:   "hello-world",
+		Tag:    "v3.0",
+		Digest: "TestGetTotalOfArtifacts",
+		Kind:   "image",
+	}
+	// add
+	_, err := AddArtifact(af)
+	require.Nil(t, err)
+
+	total, err := GetTotalOfArtifacts(&models.ArtifactQuery{
+		PID:  2,
+		Repo: "hello-world",
+		Tag:  "v3.0",
+	})
+	require.Nil(t, err)
+	assert.Equal(t, int64(1), total)
 }

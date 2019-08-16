@@ -38,6 +38,7 @@ import (
 	notarymodel "github.com/goharbor/harbor/src/common/utils/notary/model"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/config"
+	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/replication"
@@ -238,7 +239,7 @@ func (ra *RepositoryAPI) Delete() {
 		return
 	}
 
-	rc, err := coreutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repoName)
+	rc, err := coreutils.NewRepositoryClientForLocal(ra.SecurityCtx.GetUsername(), repoName)
 	if err != nil {
 		log.Errorf("error occurred while initializing repository client for %s: %v", repoName, err)
 		ra.SendInternalServerError(errors.New("internal error"))
@@ -337,6 +338,24 @@ func (ra *RepositoryAPI) Delete() {
 				log.Errorf("failed to add access log: %v", err)
 			}
 		}(t)
+	}
+
+	// build and publish image delete event
+	evt := &notifierEvt.Event{}
+	imgDelMetadata := &notifierEvt.ImageDelMetaData{
+		Project:  project,
+		Tags:     tags,
+		RepoName: repoName,
+		OccurAt:  time.Now(),
+		Operator: ra.SecurityCtx.GetUsername(),
+	}
+	if err := evt.Build(imgDelMetadata); err != nil {
+		// do not return when building event metadata failed
+		log.Errorf("failed to build image delete event metadata: %v", err)
+	}
+	if err := evt.Publish(); err != nil {
+		// do not return when publishing event failed
+		log.Errorf("failed to publish image delete event: %v", err)
 	}
 
 	exist, err := repositoryExist(repoName, rc)
@@ -649,6 +668,20 @@ func assembleTag(c chan *models.TagResp, client *registry.Repository,
 			}
 		}
 	}
+
+	// pull/push time
+	artifact, err := dao.GetArtifact(repository, tag)
+	if err != nil {
+		log.Errorf("failed to get artifact %s:%s: %v", repository, tag, err)
+	} else {
+		if artifact == nil {
+			log.Warningf("artifact %s:%s not found", repository, tag)
+		} else {
+			item.PullTime = artifact.PullTime
+			item.PushTime = artifact.PushTime
+		}
+	}
+
 	c <- item
 }
 

@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
+
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -160,6 +161,9 @@ func TestExecution(t *testing.T) {
 	es, err := m.ListExecutions(policyID, nil)
 	assert.Nil(t, err)
 	assert.EqualValues(t, 1, len(es))
+
+	err = m.DeleteExecution(id)
+	assert.Nil(t, err)
 }
 
 func TestTask(t *testing.T) {

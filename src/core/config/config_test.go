@@ -208,6 +208,10 @@ func TestConfig(t *testing.T) {
 	assert.Equal("http://myjob:8888", InternalJobServiceURL())
 	assert.Equal("http://myui:8888/service/token", InternalTokenServiceEndpoint())
 
+	localCoreURL := LocalCoreURL()
+	assert.Equal("http://127.0.0.1:8080", localCoreURL)
+
+	assert.True(NotificationEnable())
 }
 
 func currPath() string {

@@ -15,13 +15,14 @@
 package or
 
 import (
+	"sync"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/pkg/errors"
-	"sync"
 )
 
 // processor to handle the rules with OR mapping ways
@@ -153,12 +154,10 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 				return
 			}
 
-			if len(processed) > 0 {
-				// Pass to the outside
-				resChan <- &chanItem{
-					action:    evaluator.Action(),
-					processed: processed,
-				}
+			// Pass to the outside
+			resChan <- &chanItem{
+				action:    evaluator.Action(),
+				processed: processed,
 			}
 		}(evaluator, selectors)
 	}
@@ -202,10 +201,6 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 	}
 
 	return results, nil
-}
-
-func init() {
-	alg.Register(alg.AlgorithmOR, New)
 }
 
 type cHash map[string]*res.Candidate

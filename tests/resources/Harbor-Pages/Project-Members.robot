@@ -61,7 +61,7 @@ Change Project Member Role
     [Arguments]  ${project}  ${user}  ${role}
     Retry Element Click  xpath=//clr-dg-cell//a[contains(.,'${project}')]
     Retry Element Click  xpath=${project_member_tag_xpath}
-    Retry Element Click  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//label
+    Retry Element Click  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//clr-checkbox-wrapper
     #change role
     Retry Element Click  ${project_member_action_xpath}
     Retry Element Click  //button[contains(.,'${role}')]
@@ -142,7 +142,7 @@ Change User Role In Project
     [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${role}  ${is_oidc_mode}=${false}
     Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor   ${HARBOR_URL}  ${admin}  ${pwd}
     ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${admin}
-    Wait Until Element Is Visible  //clr-dg-cell//a[contains(.,'${project}')]
+    Retry Wait Element Visible  //clr-dg-cell//a[contains(.,'${project}')]
     Change Project Member Role  ${project}  ${user}  ${role}
     Logout Harbor
 

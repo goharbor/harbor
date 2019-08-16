@@ -69,7 +69,7 @@ export const FilterType = {
 };
 
 export const enum ConfirmationButtons {
-  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, REPLICATE_CANCEL, STOP_CANCEL
+  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, ENABLE_CANCEL, DISABLE_CANCEL, REPLICATE_CANCEL, STOP_CANCEL
 }
 export const  QuotaUnits = [
   {
@@ -122,6 +122,8 @@ export const CONFIG_AUTH_MODE = {
   OIDC_AUTH: "oidc_auth",
   UAA_AUTH: "uaa_auth"
 };
+export const QUOTA_DANGER_COEFFICIENT = 0.9;
+export const QUOTA_WARNING_COEFFICIENT = 0.7;
 export const PROJECT_ROOTS = [
   {
     NAME: "admin",
@@ -149,3 +151,4 @@ export enum GroupType {
   LDAP_TYPE = 1,
   HTTP_TYPE = 2
 }
+export const REFRESH_TIME_DIFFERENCE = 10000;
