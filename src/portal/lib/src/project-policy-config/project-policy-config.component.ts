@@ -170,6 +170,9 @@ export class ProjectPolicyConfigComponent implements OnInit {
                     if (!response.cve_whitelist['expires_at']) {
                         response.cve_whitelist['expires_at'] = null;
                     }
+                    if (!response.metadata.reuse_sys_cve_whitelist) {
+                        response.metadata.reuse_sys_cve_whitelist = "true";
+                    }
                     if (response && response.cve_whitelist) {
                         this.projectWhitelist = clone(response.cve_whitelist);
                         this.projectWhitelistOrigin = clone(response.cve_whitelist);
