@@ -6,6 +6,7 @@ from .jinja import render_jinja
 
 docker_compose_template_path = os.path.join(templates_dir, 'docker_compose', 'docker-compose.yml.jinja')
 docker_compose_yml_path = '/compose_location/docker-compose.yml'
+os.makedirs('/compose_location',exist_ok=True)
 
 # render docker-compose
 def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
