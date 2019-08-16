@@ -1,6 +1,4 @@
-FROM photon:2.0
-
-RUN tdnf install -y redis sudo 
+FROM cicd.harbor.bitsf.xin/harbor-depend/redis:base
 
 VOLUME /var/lib/redis
 WORKDIR /var/lib/redis

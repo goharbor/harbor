@@ -150,6 +150,6 @@ http {
   server {
       listen 8080;
       #server_name harbordomain.com;
-      return 308 https://$host$request_uri;
+      return 308 https://{{https_redirect}}$request_uri;
   } 
 }

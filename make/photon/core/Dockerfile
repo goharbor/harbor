@@ -1,9 +1,4 @@
-FROM photon:2.0
-
-RUN tdnf install sudo tzdata -y >> /dev/null \
-    && tdnf clean all \
-    && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor \
-    && mkdir /harbor/
+FROM cicd.harbor.bitsf.xin/harbor-depend/core:base
 
 HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/ping || exit 1
 COPY ./make/photon/core/harbor_core ./UIVERSION /harbor/

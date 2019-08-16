@@ -97,6 +97,13 @@ CHART_SERVER_CODE_BASE=github.com/helm/chartmuseum
 CHART_SERVER_MAIN_PATH=cmd/chartmuseum
 CHART_SERVER_BIN_NAME=chartm
 
+build_base_docker:
+	for name in chartserver clair common core db jobservice log nginx notary portal prepare redis registry registryctl; do \
+		echo $(name) ; \
+		$(DOCKERBUILD) -f $(DOCKERFILEPATH)/$(name) -t cicd.harbor.bitsf.xin/harbor-depend/$(name):base . ; \
+		$(DOCKERBUILD) push cicd.harbor.bitsf.xin/harbor-depend/$(name):base ; \
+	done
+
 _build_prepare:
 	@echo "building prepare container for photon..."
 	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_PREPARE)/$(DOCKERFILENAME_PREPARE) -t $(DOCKERIMAGENAME_PREPARE):$(VERSIONTAG) .

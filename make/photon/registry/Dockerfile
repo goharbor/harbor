@@ -1,13 +1,4 @@
-FROM photon:2.0
-
-MAINTAINER wangyan@vmware.com
-
-# The original script in the docker offical registry image.
-RUN tdnf install sudo -y >> /dev/null\
-    && tdnf clean all \
-    && mkdir /harbor/ \
-    && mkdir -p /etc/registry \
-    && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor  
+FROM cicd.harbor.bitsf.xin/harbor-depend/registry:base
 
 COPY ./make/photon/common/install_cert.sh /harbor
 COPY ./make/photon/registry/entrypoint.sh /

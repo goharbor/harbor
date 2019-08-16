@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 set +e
 sudo rm -fr /data/*

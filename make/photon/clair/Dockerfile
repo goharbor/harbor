@@ -1,11 +1,5 @@
-FROM photon:2.0
+FROM cicd.harbor.bitsf.xin/harbor-depend/clair:base
 
-RUN tdnf install -y git shadow sudo rpm xz python-xml >>/dev/null\
-    && tdnf clean all \
-    && mkdir /clair/ \
-    && mkdir /harbor \
-    && groupadd -r -g 10000 clair \
-    && useradd --no-log-init -m -r -g 10000 -u 10000 clair
 COPY ./make/photon/clair/binary/clair /clair/
 COPY ./make/photon/clair/docker-entrypoint.sh /docker-entrypoint.sh
 COPY ./make/photon/clair/dumb-init /dumb-init

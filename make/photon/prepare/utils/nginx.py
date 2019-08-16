@@ -59,6 +59,7 @@ def render_nginx_template(config_dict):
             nginx_conf,
             uid=DEFAULT_UID,
             gid=DEFAULT_GID,
+            https_redirect='$host' + ('https_port' in config_dict and (":" + str(config_dict['https_port'])) or ""),
             ssl_cert=SSL_CERT_PATH,
             ssl_cert_key=SSL_CERT_KEY_PATH)
         location_file_pattern = CUSTOM_NGINX_LOCATION_FILE_PATTERN_HTTPS
