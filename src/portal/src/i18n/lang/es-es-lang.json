@@ -227,9 +227,9 @@
         "OF": "of",
         "COUNT_QUOTA": "Count quota",
         "STORAGE_QUOTA": "Storage quota",
-        "COUNT_QUOTA_TIP": "The upper limit of Count Quota should be integers.",
-        "STORAGE_QUOTA_TIP": "The upper limit of Storage Quota should be integers,and maximum upper limit is 1024TB",
-        "QUOTA_UNLIMIT_TIP": "If you want to unlimited this quota, please input -1."
+        "COUNT_QUOTA_TIP": "Please enter an integer between '1' & '100,000,000', '-1' for unlimited",
+        "STORAGE_QUOTA_TIP": "The upper limit of Storage Quota only takes integer values, capped at '1024TB'.  Enter '-1' for unlimited quota",
+        "QUOTA_UNLIMIT_TIP": "For unlimited quota, please enter '-1'."
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "Summary",

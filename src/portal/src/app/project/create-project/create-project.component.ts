@@ -34,7 +34,7 @@ import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.com
 
 import { Project } from "../project";
 import { ProjectService, QuotaUnits, QuotaHardInterface, QuotaUnlimited, getByte
-  , GetIntegerAndUnit, clone, StorageMultipleConstant, validateLimit} from "@harbor/ui";
+  , GetIntegerAndUnit, clone, StorageMultipleConstant, validateLimit, validateCountLimit} from "@harbor/ui";
 import { errorHandler } from '@angular/platform-browser/src/browser';
 
 @Component({
@@ -118,17 +118,23 @@ export class CreateProjectComponent implements OnInit, OnChanges, OnDestroy {
       this.storageDefaultLimit = this.storageLimit;
       this.storageDefaultLimitUnit = this.storageLimitUnit;
       if (this.isSystemAdmin) {
-        this.currentForm.form.controls['create_project_storage-limit'].setValidators(
+        this.currentForm.form.controls['create_project_storage_limit'].setValidators(
           [
           Validators.required,
           Validators.pattern('(^-1$)|(^([1-9]+)([0-9]+)*$)'),
-          validateLimit(this.currentForm.form.controls['create_project_storage-limit-unit'])
+          validateLimit(this.currentForm.form.controls['create_project_storage_limit_unit'])
       ]);
+      this.currentForm.form.controls['create_project_count_limit'].setValidators(
+        [
+          Validators.required,
+          Validators.pattern('(^-1$)|(^([1-9]+)([0-9]+)*$)'),
+          validateCountLimit()
+        ]);
       }
       this.currentForm.form.valueChanges
             .pipe(distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b)))
             .subscribe((data) => {
-              ['create_project_storage-limit', 'create_project_storage-limit-unit'].forEach(fieldName => {
+              ['create_project_storage_limit', 'create_project_storage_limit_unit', 'create_project_count_limit'].forEach(fieldName => {
                 if (this.currentForm.form.get(fieldName) && this.currentForm.form.get(fieldName).value !== null) {
                   this.currentForm.form.get(fieldName).updateValueAndValidity();
                 }

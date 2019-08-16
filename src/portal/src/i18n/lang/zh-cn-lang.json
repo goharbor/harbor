@@ -225,9 +225,9 @@
         "INLINE_HELP_PUBLIC": "当项目设为公开后，任何人都有此项目下镜像的读权限。命令行用户不需要“docker login”就可以拉取此项目下的镜像。",
         "COUNT_QUOTA": "存储数量",
         "STORAGE_QUOTA": "存储容量",
-        "COUNT_QUOTA_TIP": "存储数量上限应该是整数.",
-        "STORAGE_QUOTA_TIP": "存储容量的上限应该设置成为整数.并且最大值不能超过1024TB",
-        "QUOTA_UNLIMIT_TIP": "如果你想要对存储不设置上限，请输入-1."
+        "COUNT_QUOTA_TIP": "请输入一个'1' ~ '100000000'之间的整数, '-1'表示不设置上限。",
+        "STORAGE_QUOTA_TIP": "存储配额的上限仅采用整数值，上限为1024TB。输入“-1”作为无限制配额。",
+        "QUOTA_UNLIMIT_TIP": "如果你想要对存储不设置上限，请输入-1。"
     },
     "PROJECT_DETAIL": {
         "SUMMARY": "概要",
