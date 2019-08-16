@@ -4042,6 +4042,9 @@ definitions:
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'
+      cve_whitelist:
+        description: The CVE whitelist of the project.
+        $ref: '#/definitions/CVEWhitelist'
       count_limit:
         type: integer
         format: int64
