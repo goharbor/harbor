@@ -1263,11 +1263,16 @@ paths:
           type: string
           required: true
           description: Relevant repository name.
-        - name: label_ids
+        - name: label_id
           in: query
           type: string
           required: false
-          description: A list of comma separated label IDs.
+          description: A label ID.
+        - name: detail
+          in: query
+          type: boolean
+          required: false
+          description: Bool value indicating whether return detailed information of the tag, such as vulnerability scan info, if set to false, only tag name is returned.
       tags:
         - Products
       responses:

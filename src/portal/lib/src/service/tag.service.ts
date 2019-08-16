@@ -140,7 +140,7 @@ export class TagDefaultService extends TagService {
       queryParams = queryParams = new RequestQueryParams();
     }
 
-    queryParams = queryParams.set("detail", "1");
+    queryParams = queryParams.set("detail", "true");
     let url: string = `${this._baseUrl}/${repositoryName}/tags`;
 
     return this.http
