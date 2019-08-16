@@ -40,6 +40,7 @@ func init() {
 		new(NotificationPolicy),
 		new(NotificationJob),
 		new(Blob),
+		new(ProjectBlob),
 		new(Artifact),
 		new(ArtifactAndBlob),
 		new(CVEWhitelist),

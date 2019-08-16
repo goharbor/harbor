@@ -49,30 +49,19 @@ func (qi *quotaInterceptor) HandleRequest(req *http.Request) (err error) {
 		}
 	}()
 
-	opts := qi.opts
-
-	for _, key := range opts.MutexKeys {
-		m, err := redis.RequireLock(key)
-		if err != nil {
-			return err
-		}
-		qi.mutexes = append(qi.mutexes, m)
+	err = qi.requireMutexes()
+	if err != nil {
+		return
 	}
 
-	resources := opts.Resources
-	if len(resources) == 0 && opts.OnResources != nil {
-		resources, err = opts.OnResources(req)
-		if err != nil {
-			return fmt.Errorf("failed to compute the resources for quota, error: %v", err)
-		}
-
-		log.Debugf("Compute the resources for quota, got: %v", resources)
+	err = qi.computeResources(req)
+	if err != nil {
+		return
 	}
-	qi.resources = resources
 
 	err = qi.reserve()
 	if err != nil {
-		log.Errorf("Failed to %s resources, error: %v", opts.Action, err)
+		log.Errorf("Failed to %s resources, error: %v", qi.opts.Action, err)
 	}
 
 	return
@@ -92,7 +81,9 @@ func (qi *quotaInterceptor) HandleResponse(w http.ResponseWriter, req *http.Requ
 	switch sr.Status() {
 	case opts.StatusCode:
 		if opts.OnFulfilled != nil {
-			opts.OnFulfilled(w, req)
+			if err := opts.OnFulfilled(w, req); err != nil {
+				log.Errorf("Failed to handle on fulfilled, error: %v", err)
+			}
 		}
 	default:
 		if err := qi.unreserve(); err != nil {
@@ -100,13 +91,34 @@ func (qi *quotaInterceptor) HandleResponse(w http.ResponseWriter, req *http.Requ
 		}
 
 		if opts.OnRejected != nil {
-			opts.OnRejected(w, req)
+			if err := opts.OnRejected(w, req); err != nil {
+				log.Errorf("Failed to handle on rejected, error: %v", err)
+			}
 		}
 	}
 
 	if opts.OnFinally != nil {
-		opts.OnFinally(w, req)
+		if err := opts.OnFinally(w, req); err != nil {
+			log.Errorf("Failed to handle on finally, error: %v", err)
+		}
 	}
+}
+
+func (qi *quotaInterceptor) requireMutexes() error {
+	if !qi.opts.EnforceResources() {
+		// Do nothing for locks when quota interceptor not enforce resources
+		return nil
+	}
+
+	for _, key := range qi.opts.MutexKeys {
+		m, err := redis.RequireLock(key)
+		if err != nil {
+			return err
+		}
+		qi.mutexes = append(qi.mutexes, m)
+	}
+
+	return nil
 }
 
 func (qi *quotaInterceptor) freeMutexes() {
@@ -117,8 +129,29 @@ func (qi *quotaInterceptor) freeMutexes() {
 	}
 }
 
+func (qi *quotaInterceptor) computeResources(req *http.Request) error {
+	if !qi.opts.EnforceResources() {
+		// Do nothing in compute resources when quota interceptor not enforce resources
+		return nil
+	}
+
+	if len(qi.opts.Resources) == 0 && qi.opts.OnResources != nil {
+		resources, err := qi.opts.OnResources(req)
+		if err != nil {
+			return fmt.Errorf("failed to compute the resources for quota, error: %v", err)
+		}
+
+		qi.resources = resources
+	}
+
+	return nil
+}
+
 func (qi *quotaInterceptor) reserve() error {
-	log.Debugf("Reserve %s resources, %v", qi.opts.Action, qi.resources)
+	if !qi.opts.EnforceResources() {
+		// Do nothing in reserve resources when quota interceptor not enforce resources
+		return nil
+	}
 
 	if len(qi.resources) == 0 {
 		return nil
@@ -135,7 +168,10 @@ func (qi *quotaInterceptor) reserve() error {
 }
 
 func (qi *quotaInterceptor) unreserve() error {
-	log.Debugf("Unreserve %s resources, %v", qi.opts.Action, qi.resources)
+	if !qi.opts.EnforceResources() {
+		// Do nothing in unreserve resources when quota interceptor not enforce resources
+		return nil
+	}
 
 	if len(qi.resources) == 0 {
 		return nil

@@ -276,12 +276,7 @@ services:
     volumes:
       - ./common/config/nginx:/etc/nginx:z
 {% if protocol == 'https' %}
-      - type: bind
-        source: {{cert_key_path}}
-        target: /etc/cert/server.key
-      - type: bind
-        source: {{cert_path}}
-        target: /etc/cert/server.crt
+      - {{data_volume}}/secret/cert:/etc/cert:z
 {% endif %}
     networks:
       - harbor

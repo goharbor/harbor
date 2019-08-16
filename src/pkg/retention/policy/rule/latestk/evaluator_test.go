@@ -15,7 +15,7 @@
 package latestk
 
 import (
-	"strconv"
+	"fmt"
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -58,7 +58,7 @@ func (e *EvaluatorTestSuite) TestProcess() {
 		{k: 99, expected: len(e.artifacts)},
 	}
 	for _, tt := range tests {
-		e.T().Run(strconv.Itoa(tt.k), func(t *testing.T) {
+		e.T().Run(fmt.Sprintf("%v", tt.k), func(t *testing.T) {
 			sut := &evaluator{k: tt.k}
 
 			result, err := sut.Process(e.artifacts)
@@ -79,8 +79,8 @@ func (e *EvaluatorTestSuite) TestNew() {
 		params    rule.Parameters
 		expectedK int
 	}{
-		{name: "Valid", params: rule.Parameters{ParameterK: 5}, expectedK: 5},
-		{name: "Default If Negative", params: rule.Parameters{ParameterK: -5}, expectedK: DefaultK},
+		{name: "Valid", params: rule.Parameters{ParameterK: float64(5)}, expectedK: 5},
+		{name: "Default If Negative", params: rule.Parameters{ParameterK: float64(-5)}, expectedK: DefaultK},
 		{name: "Default If Wrong Type", params: rule.Parameters{ParameterK: "5"}, expectedK: DefaultK},
 		{name: "Default If Wrong Key", params: rule.Parameters{"n": 5}, expectedK: DefaultK},
 		{name: "Default If Empty", params: rule.Parameters{}, expectedK: DefaultK},

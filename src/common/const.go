@@ -53,6 +53,8 @@ const (
 	PostGreSQLPassword               = "postgresql_password"
 	PostGreSQLDatabase               = "postgresql_database"
 	PostGreSQLSSLMode                = "postgresql_sslmode"
+	PostGreSQLMaxIdleConns           = "postgresql_max_idle_conns"
+	PostGreSQLMaxOpenConns           = "postgresql_max_open_conns"
 	SelfRegistration                 = "self_registration"
 	CoreURL                          = "core_url"
 	CoreLocalURL                     = "core_local_url"
@@ -146,7 +148,9 @@ const (
 
 	// Global notification enable configuration
 	NotificationEnable = "notification_enable"
+
 	// Quota setting items for project
-	CountPerProject   = "count_per_project"
-	StoragePerProject = "storage_per_project"
+	QuotaPerProjectEnable = "quota_per_project_enable"
+	CountPerProject       = "count_per_project"
+	StoragePerProject     = "storage_per_project"
 )

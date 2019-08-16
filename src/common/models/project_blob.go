@@ -12,17 +12,21 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package util
+package models
 
 import (
-	"net/http"
+	"time"
 )
 
-// RegInterceptor ...
-type RegInterceptor interface {
-	// HandleRequest ...
-	HandleRequest(req *http.Request) error
+// ProjectBlob holds the relationship between manifest and blob.
+type ProjectBlob struct {
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
+	BlobID       int64     `orm:"column(blob_id)" json:"blob_id"`
+	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
+}
 
-	// HandleResponse won't return any error
-	HandleResponse(rw CustomResponseWriter, req *http.Request)
+// TableName ...
+func (*ProjectBlob) TableName() string {
+	return "project_blob"
 }

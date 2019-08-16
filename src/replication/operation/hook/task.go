@@ -25,17 +25,23 @@ func UpdateTask(ctl operation.Controller, id int64, status string) error {
 	jobStatus := job.Status(status)
 	// convert the job status to task status
 	s := ""
+	preStatus := []string{}
 	switch jobStatus {
 	case job.PendingStatus:
 		s = models.TaskStatusPending
+		preStatus = append(preStatus, models.TaskStatusInitialized)
 	case job.ScheduledStatus, job.RunningStatus:
 		s = models.TaskStatusInProgress
+		preStatus = append(preStatus, models.TaskStatusInitialized, models.TaskStatusPending)
 	case job.StoppedStatus:
 		s = models.TaskStatusStopped
+		preStatus = append(preStatus, models.TaskStatusInitialized, models.TaskStatusPending, models.TaskStatusInProgress)
 	case job.ErrorStatus:
 		s = models.TaskStatusFailed
+		preStatus = append(preStatus, models.TaskStatusInitialized, models.TaskStatusPending, models.TaskStatusInProgress)
 	case job.SuccessStatus:
 		s = models.TaskStatusSucceed
+		preStatus = append(preStatus, models.TaskStatusInitialized, models.TaskStatusPending, models.TaskStatusInProgress)
 	}
-	return ctl.UpdateTaskStatus(id, s)
+	return ctl.UpdateTaskStatus(id, s, preStatus...)
 }

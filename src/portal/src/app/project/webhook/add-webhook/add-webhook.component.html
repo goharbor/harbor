@@ -1,0 +1,13 @@
+<clr-modal [(clrModalOpen)]="isOpen" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
+  <h3 class="modal-title">{{'WEBHOOK.EDIT_WEBHOOK' | translate}}</h3>
+  <div class="modal-body">
+    <div>{{'WEBHOOK.EDIT_WEBHOOK_DESC' | translate}}</div>
+    <add-webhook-form [projectId]="projectId" 
+      [isModify]="true" 
+      [isOpen]="isOpen" 
+      [webhook]="webhook" 
+      (edit)="closeModal($event)" 
+      (close)="closeModal($event)"
+    ></add-webhook-form>
+  </div>
+</clr-modal>

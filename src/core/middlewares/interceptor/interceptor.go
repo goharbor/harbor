@@ -20,8 +20,9 @@ import (
 
 // Builder interceptor builder
 type Builder interface {
-	// Build build interceptor from http.Request returns nil if interceptor not match the request
-	Build(*http.Request) Interceptor
+	// Build build interceptor from http.Request
+	// (nil, nil) must be returned if builder not match the request
+	Build(*http.Request) (Interceptor, error)
 }
 
 // Interceptor interceptor for middleware
@@ -31,4 +32,17 @@ type Interceptor interface {
 
 	// HandleResponse won't return any error
 	HandleResponse(http.ResponseWriter, *http.Request)
+}
+
+// ResponseInterceptorFunc ...
+type ResponseInterceptorFunc func(w http.ResponseWriter, r *http.Request)
+
+// HandleRequest no-op HandleRequest
+func (f ResponseInterceptorFunc) HandleRequest(*http.Request) error {
+	return nil
+}
+
+// HandleResponse calls f(w, r).
+func (f ResponseInterceptorFunc) HandleResponse(w http.ResponseWriter, r *http.Request) {
+	f(w, r)
 }

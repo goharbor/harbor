@@ -26,6 +26,7 @@ import (
 	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/opencontainers/go-digest"
@@ -67,7 +68,7 @@ func doDeleteManifestRequest(projectID int64, projectName, name, dgt string, nex
 	url := fmt.Sprintf("/v2/%s/manifests/%s", repository, dgt)
 	req, _ := http.NewRequest("DELETE", url, nil)
 
-	ctx := util.NewManifestInfoContext(req.Context(), &util.MfInfo{
+	ctx := util.NewManifestInfoContext(req.Context(), &util.ManifestInfo{
 		ProjectID:  projectID,
 		Repository: repository,
 		Digest:     dgt,
@@ -96,12 +97,12 @@ func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, n
 	url := fmt.Sprintf("/v2/%s/manifests/%s", repository, tag)
 	req, _ := http.NewRequest("PUT", url, nil)
 
-	ctx := util.NewManifestInfoContext(req.Context(), &util.MfInfo{
+	ctx := util.NewManifestInfoContext(req.Context(), &util.ManifestInfo{
 		ProjectID:  projectID,
 		Repository: repository,
 		Tag:        tag,
 		Digest:     dgt,
-		Refrerence: []distribution.Descriptor{
+		References: []distribution.Descriptor{
 			{Digest: digest.FromString(randomString(15))},
 			{Digest: digest.FromString(randomString(15))},
 		},
@@ -146,11 +147,13 @@ func (suite *HandlerSuite) checkCountUsage(expected, projectID int64) {
 }
 
 func (suite *HandlerSuite) TearDownTest() {
-	dao.ClearTable("artifact")
-	dao.ClearTable("blob")
-	dao.ClearTable("artifact_blob")
-	dao.ClearTable("quota")
-	dao.ClearTable("quota_usage")
+	for _, table := range []string{
+		"artifact", "blob",
+		"artifact_blob", "project_blob",
+		"quota", "quota_usage",
+	} {
+		dao.ClearTable(table)
+	}
 }
 
 func (suite *HandlerSuite) TestPutManifestCreated() {
@@ -169,9 +172,6 @@ func (suite *HandlerSuite) TestPutManifestCreated() {
 	total, err := dao.GetTotalOfArtifacts(&models.ArtifactQuery{Digest: dgt})
 	suite.Nil(err)
 	suite.Equal(int64(1), total, "Artifact should be created")
-	if exists, err := dao.HasBlobInProject(projectID, dgt); suite.Nil(err) {
-		suite.True(exists)
-	}
 
 	// Push the photon:latest with photon:dev
 	code = doPutManifestRequest(projectID, projectName, "photon", "dev", dgt)
@@ -213,9 +213,6 @@ func (suite *HandlerSuite) TestPutManifestFailed() {
 	total, err := dao.GetTotalOfArtifacts(&models.ArtifactQuery{Digest: dgt})
 	suite.Nil(err)
 	suite.Equal(int64(0), total, "Artifact should not be created")
-	if exists, err := dao.HasBlobInProject(projectID, dgt); suite.Nil(err) {
-		suite.False(exists)
-	}
 }
 
 func (suite *HandlerSuite) TestDeleteManifestAccepted() {
@@ -258,7 +255,7 @@ func (suite *HandlerSuite) TestDeleteManifestFailed() {
 	suite.checkCountUsage(1, projectID)
 }
 
-func (suite *HandlerSuite) TestDeleteManifesInMultiProjects() {
+func (suite *HandlerSuite) TestDeleteManifestInMultiProjects() {
 	projectName := randomString(5)
 
 	projectID := suite.addProject(projectName)
@@ -294,6 +291,7 @@ func (suite *HandlerSuite) TestDeleteManifesInMultiProjects() {
 }
 
 func TestMain(m *testing.M) {
+	config.Init()
 	dao.PrepareTestForPostgresSQL()
 
 	if result := m.Run(); result != 0 {

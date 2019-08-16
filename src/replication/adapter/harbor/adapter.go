@@ -156,7 +156,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		paths := strings.Split(resource.Metadata.Repository.Name, "/")
 		projectName := paths[0]
 		// handle the public properties
-		metadata := resource.Metadata.Repository.Metadata
+		metadata := abstractPublicMetadata(resource.Metadata.Repository.Metadata)
 		pro, exist := projects[projectName]
 		if exist {
 			metadata = mergeMetadata(pro.Metadata, metadata)
@@ -185,6 +185,19 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 		log.Debugf("project %s created", project.Name)
 	}
 	return nil
+}
+
+func abstractPublicMetadata(metadata map[string]interface{}) map[string]interface{} {
+	if metadata == nil {
+		return nil
+	}
+	public, exist := metadata["public"]
+	if !exist {
+		return nil
+	}
+	return map[string]interface{}{
+		"public": public,
+	}
 }
 
 // currently, mergeMetadata only handles the public metadata

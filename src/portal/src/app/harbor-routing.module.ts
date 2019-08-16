@@ -49,6 +49,7 @@ import { ProjectComponent } from './project/project.component';
 import { ProjectDetailComponent } from './project/project-detail/project-detail.component';
 import { MemberComponent } from './project/member/member.component';
 import { RobotAccountComponent } from './project/robot-account/robot-account.component';
+import { WebhookComponent } from './project/webhook/webhook.component';
 import { ProjectLabelComponent } from "./project/project-label/project-label.component";
 import { ProjectConfigComponent } from './project/project-config/project-config.component';
 import { ProjectRoutingResolver } from './project/project-routing-resolver.service';
@@ -56,6 +57,7 @@ import { ListChartsComponent } from './project/helm-chart/list-charts.component'
 import { ListChartVersionsComponent } from './project/helm-chart/list-chart-versions/list-chart-versions.component';
 import { HelmChartDetailComponent } from './project/helm-chart/helm-chart-detail/chart-detail.component';
 import { OidcOnboardComponent } from './oidc-onboard/oidc-onboard.component';
+import { LicenseComponent } from './license/license.component';
 import { SummaryComponent } from './project/summary/summary.component';
 import { TagRetentionComponent } from "./project/tag-retention/tag-retention.component";
 
@@ -71,6 +73,10 @@ const harborRoutes: Routes = [
     path: 'oidc-onboard',
     component: OidcOnboardComponent,
     canActivate: [OidcGuard, SignInGuard]
+  },
+  {
+    path: 'license',
+    component: LicenseComponent
   },
   {
     path: 'harbor/sign-in',
@@ -207,7 +213,11 @@ const harborRoutes: Routes = [
           {
             path: 'tag-retention',
             component: TagRetentionComponent
-          }
+          },
+          {
+            path: 'webhook',
+            component: WebhookComponent
+          },
         ]
       },
       {

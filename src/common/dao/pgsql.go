@@ -31,12 +31,14 @@ import (
 const defaultMigrationPath = "migrations/postgresql/"
 
 type pgsql struct {
-	host     string
-	port     string
-	usr      string
-	pwd      string
-	database string
-	sslmode  string
+	host         string
+	port         string
+	usr          string
+	pwd          string
+	database     string
+	sslmode      string
+	maxIdleConns int
+	maxOpenConns int
 }
 
 // Name returns the name of PostgreSQL
@@ -51,17 +53,19 @@ func (p *pgsql) String() string {
 }
 
 // NewPGSQL returns an instance of postgres
-func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode string) Database {
+func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode string, maxIdleConns int, maxOpenConns int) Database {
 	if len(sslmode) == 0 {
 		sslmode = "disable"
 	}
 	return &pgsql{
-		host:     host,
-		port:     port,
-		usr:      usr,
-		pwd:      pwd,
-		database: database,
-		sslmode:  sslmode,
+		host:         host,
+		port:         port,
+		usr:          usr,
+		pwd:          pwd,
+		database:     database,
+		sslmode:      sslmode,
+		maxIdleConns: maxIdleConns,
+		maxOpenConns: maxOpenConns,
 	}
 }
 
@@ -82,7 +86,7 @@ func (p *pgsql) Register(alias ...string) error {
 	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		p.host, p.port, p.usr, p.pwd, p.database, p.sslmode)
 
-	return orm.RegisterDataBase(an, "postgres", info)
+	return orm.RegisterDataBase(an, "postgres", info, p.maxIdleConns, p.maxOpenConns)
 }
 
 // UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.

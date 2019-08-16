@@ -8,7 +8,7 @@ import {
   , getByte, GetIntegerAndUnit
 } from '../../utils';
 import { ErrorHandler } from '../../error-handler/index';
-import { QuotaUnits, QuotaUnlimited } from '../../shared/shared.const';
+import { QuotaUnits, QuotaUnlimited, QUOTA_DANGER_COEFFICIENT, QUOTA_WARNING_COEFFICIENT } from '../../shared/shared.const';
 import { EditProjectQuotasComponent } from './edit-project-quotas/edit-project-quotas.component';
 import {
   ConfigurationService
@@ -46,6 +46,8 @@ export class ProjectQuotasComponent implements OnChanges {
   currentPage = 1;
   totalCount = 0;
   pageSize = 15;
+  quotaDangerCoefficient: number = QUOTA_DANGER_COEFFICIENT;
+  quotaWarningCoefficient: number = QUOTA_WARNING_COEFFICIENT;
   @Input()
   get allConfig(): Configuration {
     return this.config;
