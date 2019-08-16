@@ -35,7 +35,7 @@
   <span class="required" [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }}</span>
   <div [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM" class="cron-input">
     <label for="targetCron" aria-haspopup="true" role="tooltip" [class.invalid]="dateInvalid" class="tooltip tooltip-validation tooltip-md tooltip-top-left cron-label">
-      <input type="text" (blur)="blurInvalid()" (input)="inputInvalid()" name=targetCron id="targetCron" #cronStringInput="ngModel" required class="form-control"
+      <input type="text" (blur)="blurInvalid()" (input)="inputInvalid()" name=targetCron id="targetCron" #cronStringInput="ngModel" required class="clr-input form-control"
         [(ngModel)]="cronString">
       <span class="tooltip-content" *ngIf="dateInvalid">
         {{'TOOLTIP.CRON_REQUIRED' | translate }}
