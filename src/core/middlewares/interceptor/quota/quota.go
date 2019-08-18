@@ -135,7 +135,8 @@ func (qi *quotaInterceptor) computeResources(req *http.Request) error {
 		return nil
 	}
 
-	if len(qi.opts.Resources) == 0 && qi.opts.OnResources != nil {
+	qi.resources = qi.opts.Resources
+	if len(qi.resources) == 0 && qi.opts.OnResources != nil {
 		resources, err := qi.opts.OnResources(req)
 		if err != nil {
 			return fmt.Errorf("failed to compute the resources for quota, error: %v", err)
