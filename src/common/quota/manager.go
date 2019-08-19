@@ -131,7 +131,13 @@ func (m *Manager) updateUsage(o orm.Ormer, resources types.ResourceList,
 	}
 
 	newUsed := calculate(used, resources)
-	if err := isSafe(hardLimits, newUsed); err != nil {
+
+	// ensure that new used is never negative
+	if negativeUsed := types.IsNegative(newUsed); len(negativeUsed) > 0 {
+		return fmt.Errorf("quota usage is negative for resource(s): %s", prettyPrintResourceNames(negativeUsed))
+	}
+
+	if err := isSafe(hardLimits, used, newUsed); err != nil {
 		return err
 	}
 
@@ -213,6 +219,9 @@ func (m *Manager) EnsureQuota(usages types.ResourceList) error {
 	// existent
 	used := usages
 	quotaUsed, err := types.NewResourceList(quotas[0].Used)
+	if err != nil {
+		return err
+	}
 	if types.Equals(quotaUsed, used) {
 		return nil
 	}

@@ -15,45 +15,16 @@
 package quota
 
 import (
-	"errors"
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/types"
 )
 
-func TestIsUnsafeError(t *testing.T) {
+func Test_isSafe(t *testing.T) {
 	type args struct {
-		err error
-	}
-	tests := []struct {
-		name string
-		args args
-		want bool
-	}{
-		{
-			"is unsafe error",
-			args{err: newUnsafe("unsafe")},
-			true,
-		},
-		{
-			"is not unsafe error",
-			args{err: errors.New("unsafe")},
-			false,
-		},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if got := IsUnsafeError(tt.args.err); got != tt.want {
-				t.Errorf("IsUnsafeError() = %v, want %v", got, tt.want)
-			}
-		})
-	}
-}
-
-func Test_checkQuotas(t *testing.T) {
-	type args struct {
-		hardLimits types.ResourceList
-		used       types.ResourceList
+		hardLimits  types.ResourceList
+		currentUsed types.ResourceList
+		newUsed     types.ResourceList
 	}
 	tests := []struct {
 		name    string
@@ -62,33 +33,44 @@ func Test_checkQuotas(t *testing.T) {
 	}{
 		{
 			"unlimited",
-			args{hardLimits: types.ResourceList{types.ResourceStorage: types.UNLIMITED}, used: types.ResourceList{types.ResourceStorage: 1000}},
+			args{
+				types.ResourceList{types.ResourceStorage: types.UNLIMITED},
+				types.ResourceList{types.ResourceStorage: 1000},
+				types.ResourceList{types.ResourceStorage: 1000},
+			},
 			false,
 		},
 		{
 			"ok",
-			args{hardLimits: types.ResourceList{types.ResourceStorage: 100}, used: types.ResourceList{types.ResourceStorage: 1}},
+			args{
+				types.ResourceList{types.ResourceStorage: 100},
+				types.ResourceList{types.ResourceStorage: 10},
+				types.ResourceList{types.ResourceStorage: 1},
+			},
 			false,
 		},
 		{
-			"bad used value",
-			args{hardLimits: types.ResourceList{types.ResourceStorage: 100}, used: types.ResourceList{types.ResourceStorage: -1}},
-			true,
-		},
-		{
 			"over the hard limit",
-			args{hardLimits: types.ResourceList{types.ResourceStorage: 100}, used: types.ResourceList{types.ResourceStorage: 200}},
+			args{
+				types.ResourceList{types.ResourceStorage: 100},
+				types.ResourceList{types.ResourceStorage: 0},
+				types.ResourceList{types.ResourceStorage: 200},
+			},
 			true,
 		},
 		{
 			"hard limit not found",
-			args{hardLimits: types.ResourceList{types.ResourceStorage: 100}, used: types.ResourceList{types.ResourceCount: 1}},
+			args{
+				types.ResourceList{types.ResourceStorage: 100},
+				types.ResourceList{types.ResourceCount: 0},
+				types.ResourceList{types.ResourceCount: 1},
+			},
 			true,
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if err := isSafe(tt.args.hardLimits, tt.args.used); (err != nil) != tt.wantErr {
+			if err := isSafe(tt.args.hardLimits, tt.args.currentUsed, tt.args.newUsed); (err != nil) != tt.wantErr {
 				t.Errorf("isSafe() error = %v, wantErr %v", err, tt.wantErr)
 			}
 		})
