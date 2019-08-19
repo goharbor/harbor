@@ -1175,7 +1175,9 @@
         "RULE_NAME_6": " the images pulled within the last {{number}} days",
         "RULE_NAME_7": " the images pushed within the last {{number}} days",
         "RULE_TEMPLATE_6": " the images pulled within the last # days",
-        "RULE_TEMPLATE_7": " the images pushed within the last # days"
+        "RULE_TEMPLATE_7": " the images pushed within the last # days",
+        "SCHEDULE": "Schedule",
+        "SCHEDULE_WARNING": "Executing the retention policy can have adverse effects to the images in this project and affected image tags will be deleted."
     }
 
 }

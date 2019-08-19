@@ -1202,7 +1202,9 @@
         "RULE_NAME_6": "最近{{number}}天被拉取过的镜像",
         "RULE_NAME_7": "最近{{number}}天被推送过的镜像",
         "RULE_TEMPLATE_6": "最近#天被拉取过的镜像",
-        "RULE_TEMPLATE_7": "最近#天被推送过的镜像"
+        "RULE_TEMPLATE_7": "最近#天被推送过的镜像",
+        "SCHEDULE": "定时任务",
+        "SCHEDULE_WARNING": "执行保留策略将对该项目中的镜像产生反向影响，受影响的镜像tags将会被删除。"
     }
 
 }
