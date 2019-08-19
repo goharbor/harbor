@@ -434,7 +434,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       // get supportedFilterLabels labels from supportedFilters
       this.getLabelListFromAdapter(element);
       // only when edit replication rule
-      if (ruleInfo && this.supportedFilterLabels.length) {
+      if (ruleInfo && ruleInfo.filters && this.supportedFilterLabels.length ) {
         this.getLabelListFromRuleInfo(ruleInfo);
       }
     });

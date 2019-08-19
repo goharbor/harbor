@@ -90,6 +90,7 @@ export const  QuotaUnits = [
 ];
 export const QuotaUnlimited = -1;
 export const StorageMultipleConstant = 1024;
+export const LimitCount = 100000000;
 export enum QuotaUnit {
   TB = "TB", GB = "GB", MB = "MB", KB = "KB", BIT = "Byte"
 }

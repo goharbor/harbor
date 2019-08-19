@@ -78,4 +78,7 @@
   width: 3.5rem;
   font-weight: 100;
   font-size: 10px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
