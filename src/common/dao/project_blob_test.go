@@ -40,15 +40,21 @@ func TestHasBlobInProject(t *testing.T) {
 }
 
 func TestCountSizeOfProject(t *testing.T) {
-	id1, err := AddBlob(&models.Blob{
+	_, err := AddBlob(&models.Blob{
 		Digest: "CountSizeOfProject_blob1",
 		Size:   101,
 	})
 	require.Nil(t, err)
 
-	id2, err := AddBlob(&models.Blob{
+	_, err = AddBlob(&models.Blob{
 		Digest: "CountSizeOfProject_blob2",
 		Size:   202,
+	})
+	require.Nil(t, err)
+
+	_, err = AddBlob(&models.Blob{
+		Digest: "CountSizeOfProject_blob3",
+		Size:   303,
 	})
 	require.Nil(t, err)
 
@@ -58,11 +64,40 @@ func TestCountSizeOfProject(t *testing.T) {
 	})
 	require.Nil(t, err)
 
-	_, err = AddBlobToProject(id1, pid1)
+	af := &models.Artifact{
+		PID:    pid1,
+		Repo:   "hello-world",
+		Tag:    "v1",
+		Digest: "CountSizeOfProject_af1",
+		Kind:   "image",
+	}
+
+	// add
+	_, err = AddArtifact(af)
 	require.Nil(t, err)
-	_, err = AddBlobToProject(id2, pid1)
+
+	afnb1 := &models.ArtifactAndBlob{
+		DigestAF:   "CountSizeOfProject_af1",
+		DigestBlob: "CountSizeOfProject_blob1",
+	}
+	afnb2 := &models.ArtifactAndBlob{
+		DigestAF:   "CountSizeOfProject_af1",
+		DigestBlob: "CountSizeOfProject_blob2",
+	}
+	afnb3 := &models.ArtifactAndBlob{
+		DigestAF:   "CountSizeOfProject_af1",
+		DigestBlob: "CountSizeOfProject_blob3",
+	}
+
+	var afnbs []*models.ArtifactAndBlob
+	afnbs = append(afnbs, afnb1)
+	afnbs = append(afnbs, afnb2)
+	afnbs = append(afnbs, afnb3)
+
+	// add
+	err = AddArtifactNBlobs(afnbs)
 	require.Nil(t, err)
 
 	pSize, err := CountSizeOfProject(pid1)
-	assert.Equal(t, pSize, int64(303))
+	assert.Equal(t, pSize, int64(606))
 }

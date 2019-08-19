@@ -65,7 +65,8 @@ func (gc *GCAPI) Post() {
 	}
 	ajr.Name = common_job.ImageGC
 	ajr.Parameters = map[string]interface{}{
-		"redis_url_reg": os.Getenv("_REDIS_URL_REG"),
+		"redis_url_reg":    os.Getenv("_REDIS_URL_REG"),
+		"chart_controller": chartController,
 	}
 	gc.submit(&ajr)
 	gc.Redirect(http.StatusCreated, strconv.FormatInt(ajr.ID, 10))

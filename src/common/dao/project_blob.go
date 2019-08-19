@@ -108,7 +108,7 @@ func GetBlobsNotInProject(projectID int64, blobDigests ...string) ([]*models.Blo
 func CountSizeOfProject(pid int64) (int64, error) {
 	var blobs []models.Blob
 
-	_, err := GetOrmer().Raw(`SELECT bb.id, bb.digest, bb.content_type, bb.size, bb.creation_time FROM project_blob pb LEFT JOIN blob bb ON pb.blob_id = bb.id WHERE pb.project_id = ? `, pid).QueryRows(&blobs)
+	_, err := GetOrmer().Raw(`SELECT bb.id, bb.digest, bb.content_type, bb.size, bb.creation_time FROM artifact af INNER JOIN artifact_blob afnb ON af.digest = afnb.digest_af INNER JOIN BLOB bb ON afnb.digest_blob = bb.digest WHERE af.project_id = ? `, pid).QueryRows(&blobs)
 	if err != nil {
 		return 0, err
 	}

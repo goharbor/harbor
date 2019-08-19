@@ -15,21 +15,16 @@
 package api
 
 import (
-	"fmt"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	common_quota "github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils/log"
-
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/pkg/errors"
-	"strconv"
-
-	quota "github.com/goharbor/harbor/src/core/api/quota"
+	common_quota "github.com/goharbor/harbor/src/common/utils/quota"
 
 	comcfg "github.com/goharbor/harbor/src/common/config"
+	quota "github.com/goharbor/harbor/src/core/api/quota"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/pkg/errors"
 )
 
 // InternalAPI handles request of harbor admin...
@@ -93,7 +88,7 @@ func (ia *InternalAPI) SwitchQuota() {
 	}
 	// quota per project from disable to enable, it needs to update the quota usage bases on the DB records.
 	if !config.QuotaPerProjectEnable() && req.Enabled {
-		if err := ia.ensureQuota(); err != nil {
+		if err := common_quota.AlignQuota(chartController); err != nil {
 			ia.SendInternalServerError(err)
 			return
 		}
@@ -103,55 +98,6 @@ func (ia *InternalAPI) SwitchQuota() {
 		config.GetCfgManager().Save()
 	}()
 	return
-}
-
-func (ia *InternalAPI) ensureQuota() error {
-	projects, err := dao.GetProjects(nil)
-	if err != nil {
-		return err
-	}
-	for _, project := range projects {
-		pSize, err := dao.CountSizeOfProject(project.ProjectID)
-		if err != nil {
-			logger.Warningf("error happen on counting size of project:%d , error:%v, just skip it.", project.ProjectID, err)
-			continue
-		}
-		afQuery := &models.ArtifactQuery{
-			PID: project.ProjectID,
-		}
-		afs, err := dao.ListArtifacts(afQuery)
-		if err != nil {
-			logger.Warningf("error happen on counting number of project:%d , error:%v, just skip it.", project.ProjectID, err)
-			continue
-		}
-		pCount := int64(len(afs))
-
-		// it needs to append the chart count
-		if config.WithChartMuseum() {
-			count, err := chartController.GetCountOfCharts([]string{project.Name})
-			if err != nil {
-				err = errors.Wrap(err, fmt.Sprintf("get chart count of project %d failed", project.ProjectID))
-				logger.Error(err)
-				continue
-			}
-			pCount = pCount + int64(count)
-		}
-
-		quotaMgr, err := common_quota.NewManager("project", strconv.FormatInt(project.ProjectID, 10))
-		if err != nil {
-			logger.Errorf("Error occurred when to new quota manager %v, just skip it.", err)
-			continue
-		}
-		used := common_quota.ResourceList{
-			common_quota.ResourceStorage: pSize,
-			common_quota.ResourceCount:   pCount,
-		}
-		if err := quotaMgr.EnsureQuota(used); err != nil {
-			logger.Errorf("cannot ensure quota for the project: %d, err: %v, just skip it.", project.ProjectID, err)
-			continue
-		}
-	}
-	return nil
 }
 
 // SyncQuota ...

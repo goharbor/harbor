@@ -20,9 +20,11 @@ import (
 	"time"
 
 	"github.com/garyburd/redigo/redis"
+	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/registryctl"
+	"github.com/goharbor/harbor/src/common/utils/quota"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/registryctl/client"
@@ -39,6 +41,7 @@ const (
 // GarbageCollector is the struct to run registry's garbage collection
 type GarbageCollector struct {
 	registryCtlClient client.Client
+	chartController   *chartserver.Controller
 	logger            logger.Interface
 	cfgMgr            *config.CfgManager
 	CoreURL           string
@@ -88,6 +91,9 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 	if err := gc.cleanCache(); err != nil {
 		return err
 	}
+	if err := quota.AlignQuota(gc.chartController); err != nil {
+		gc.logger.Warningf("failed to align data with backend service, with error: %v", err)
+	}
 	gc.logger.Infof("GC results: status: %t, message: %s, start: %s, end: %s.", gcr.Status, gcr.Msg, gcr.StartTime, gcr.EndTime)
 	gc.logger.Infof("success to run gc in job.")
 	return nil
@@ -107,7 +113,9 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 	secret := os.Getenv("JOBSERVICE_SECRET")
 	configURL := gc.CoreURL + common.CoreConfigPath
 	gc.cfgMgr = config.NewRESTCfgManager(configURL, secret)
+
 	gc.redisURL = params["redis_url_reg"].(string)
+	gc.chartController = params["chart_controller"].(*chartserver.Controller)
 	return nil
 }
 
