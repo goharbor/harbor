@@ -342,8 +342,8 @@
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "EDIT",
-        "ENABLED_BUTTON": "ENABLED",
-        "DISABLED_BUTTON": "DISABLED",
+        "ENABLED_BUTTON": "ENABLE",
+        "DISABLED_BUTTON": "DISABLE",
         "TYPE": "Webhook",
         "STATUS": "Status",
         "CREATED": "Created",
