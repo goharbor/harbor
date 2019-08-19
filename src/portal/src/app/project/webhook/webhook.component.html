@@ -1,4 +1,7 @@
-<div class="row">
+<div *ngIf="loadingWebhook" class="clr-row mt-2 center">
+    <span class="spinner spinner-md"></span>
+</div>
+<div class="row" *ngIf="!loadingWebhook">
   <div *ngIf="!showCreate">
     <div>
         <div class="row flex-items-xs-between rightPos">
@@ -20,7 +23,7 @@
           <clr-dg-column>{{'WEBHOOK.STATUS' | translate}}</clr-dg-column>
           <clr-dg-column>{{'WEBHOOK.CREATED' | translate}}</clr-dg-column>
           <clr-dg-column>{{'WEBHOOK.LAST_TRIGGERED' | translate}}</clr-dg-column>
-          <clr-dg-row *ngFor="let item of lastTriggers">
+          <clr-dg-row *clrDgItems="let item of lastTriggers">
               <clr-dg-cell>{{item.event_type}}</clr-dg-cell>
               <clr-dg-cell [ngSwitch]="item.enabled">
                 <div *ngSwitchCase="true" class="icon-wrap">
@@ -37,6 +40,7 @@
           </clr-dg-row>
           <clr-dg-footer>
               <span *ngIf="lastTriggerCount">1 - {{lastTriggerCount}} {{'WEBHOOK.OF' | translate}} </span> {{lastTriggerCount}} {{'WEBHOOK.ITEMS' | translate}}
+              <clr-dg-pagination [clrDgPageSize]="10"></clr-dg-pagination>
           </clr-dg-footer>
       </clr-datagrid>
     </div>
