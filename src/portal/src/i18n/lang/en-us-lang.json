@@ -1124,8 +1124,8 @@
         "EXPIRES_AT": "Expires at",
         "NEVER_EXPIRES": "Never expires",
         "PRO_WHITELIST_EXPLAIN": "Project whitelist allows vulnerabilities in this list to be ignored in this project when pushing and pulling images.",
-        "PRO_OR_SYS": "Use the system whitelist as is or select “Project whitelist” to create a new whitelist.",
-        "MERGE_INTO": "Merge the system whitelist into this project, add individual CVE IDs.",
+        "PRO_OR_SYS": "You can either use the default whitelist configured at the system level or click on 'Project whitelist' to create a new whitelist",
+        "MERGE_INTO": "Add individual CVE IDs before clicking 'ADD SYSTEM' to add system whitelist as well.",
         "SYS_WHITELIST": "System whitelist",
         "PRO_WHITELIST": "Project whitelist",
         "ADD_SYSTEM": "ADD SYSTEM"
