@@ -15,48 +15,43 @@
 package quota
 
 import (
-	"fmt"
+	"sort"
+	"strings"
 
 	"github.com/goharbor/harbor/src/pkg/types"
 )
 
-type unsafe struct {
-	message string
-}
+func isSafe(hardLimits types.ResourceList, currentUsed types.ResourceList, newUsed types.ResourceList) error {
+	var errs Errors
 
-func (err *unsafe) Error() string {
-	return err.message
-}
-
-func newUnsafe(message string) error {
-	return &unsafe{message: message}
-}
-
-// IsUnsafeError returns true when the err is unsafe error
-func IsUnsafeError(err error) bool {
-	_, ok := err.(*unsafe)
-	return ok
-}
-
-func isSafe(hardLimits types.ResourceList, used types.ResourceList) error {
-	for key, value := range used {
-		if value < 0 {
-			return newUnsafe(fmt.Sprintf("bad used value: %d", value))
+	for resource, value := range newUsed {
+		hardLimit, found := hardLimits[resource]
+		if !found {
+			errs = errs.Add(NewResourceNotFoundError(resource))
+			continue
 		}
 
-		if hard, found := hardLimits[key]; found {
-			if hard == types.UNLIMITED {
-				continue
-			}
-
-			if value > hard {
-				return newUnsafe(fmt.Sprintf("over the quota: used %d but only hard %d", value, hard))
-			}
-		} else {
-			return newUnsafe(fmt.Sprintf("hard limit not found: %s", key))
+		if hardLimit == types.UNLIMITED || value == currentUsed[resource] {
+			continue
 		}
 
+		if value > hardLimit {
+			errs = errs.Add(NewResourceOverflowError(resource, hardLimit, currentUsed[resource], value))
+		}
+	}
+
+	if len(errs) > 0 {
+		return errs
 	}
 
 	return nil
+}
+
+func prettyPrintResourceNames(a []types.ResourceName) string {
+	values := []string{}
+	for _, value := range a {
+		values = append(values, string(value))
+	}
+	sort.Strings(values)
+	return strings.Join(values, ",")
 }

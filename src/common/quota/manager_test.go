@@ -200,7 +200,11 @@ func (suite *ManagerSuite) TestAddResources() {
 	}
 
 	if err := mgr.AddResources(types.ResourceList{types.ResourceStorage: 10000}); suite.Error(err) {
-		suite.True(IsUnsafeError(err))
+		if errs, ok := err.(Errors); suite.True(ok) {
+			for _, err := range errs {
+				suite.IsType(&ResourceOverflow{}, err)
+			}
+		}
 	}
 }
 

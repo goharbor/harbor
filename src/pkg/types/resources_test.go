@@ -76,6 +76,11 @@ func (suite *ResourcesSuite) TestZero() {
 	suite.Equal(ResourceList{ResourceStorage: 0, ResourceCount: 0}, Zero(res2))
 }
 
+func (suite *ResourcesSuite) TestIsNegative() {
+	suite.EqualValues([]ResourceName{ResourceStorage}, IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: 100}))
+	suite.EqualValues([]ResourceName{ResourceStorage, ResourceCount}, IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: -100}))
+}
+
 func TestRunResourcesSuite(t *testing.T) {
 	suite.Run(t, new(ResourcesSuite))
 }
