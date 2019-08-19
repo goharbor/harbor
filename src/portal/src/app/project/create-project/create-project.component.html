@@ -20,7 +20,7 @@
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                         <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
                     </div>
-                    <clr-control-error *ngIf="!isNameValid" class="tooltip-content">
+                    <clr-control-error *ngIf="!isNameValid">
                         {{ nameTooltipText | translate }}
                     </clr-control-error>
                 </div>
@@ -52,7 +52,7 @@
 
                         <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
                     </div>
-                    <clr-control-error *ngIf="projectCountLimit.invalid && (projectCountLimit.dirty || projectCountLimit.touched)" class="tooltip-content">
+                    <clr-control-error *ngIf="projectCountLimit.invalid && (projectCountLimit.dirty || projectCountLimit.touched)">
                         {{ 'PROJECT.COUNT_QUOTA_TIP' | translate }}
                     </clr-control-error>
                 </div>
