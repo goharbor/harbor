@@ -1,91 +1,79 @@
-<form #mailConfigFrom="ngForm" class="form">
+<form #mailConfigFrom="ngForm" class="clr-form clr-form-horizontal">
     <section class="form-block">
-        <div class="form-group">
+        <clr-input-container>
             <label for="mailServer" class="required">{{'CONFIG.MAIL_SERVER' | translate}}</label>
-            <label for="mailServer" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right"
-                [class.invalid]="mailServerInput.invalid && (mailServerInput.dirty || mailServerInput.touched)">
-                <input name="mailServer" type="text" #mailServerInput="ngModel" [(ngModel)]="currentConfig.email_host.value"
-                    required id="mailServer" size="40" [disabled]="disabled(currentConfig.email_host)">
-                <span class="tooltip-content">
-                    {{'TOOLTIP.ITEM_REQUIRED' | translate}}
-                </span>
-            </label>
-        </div>
-        <div class="form-group">
+            <input clrInput name="mailServer" type="text" #mailServerInput="ngModel"
+                [(ngModel)]="currentConfig.email_host.value" required id="mailServer" size="40"
+                [disabled]="disabled(currentConfig.email_host)" />
+            <clr-control-error>{{'TOOLTIP.ITEM_REQUIRED' | translate}}</clr-control-error>
+        </clr-input-container>
+        <clr-input-container>
             <label for="emailPort" class="required">{{'CONFIG.MAIL_SERVER_PORT' | translate}}</label>
-            <label for="emailPort" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right"
-                [class.invalid]="emailPortInput.invalid && (emailPortInput.dirty || emailPortInput.touched)">
-                <input name="emailPort" type="text" #emailPortInput="ngModel" [(ngModel)]="currentConfig.email_port.value"
-                    required port id="emailPort" size="40" [disabled]="disabled(currentConfig.email_port)">
-                <span class="tooltip-content">
-                    {{'TOOLTIP.PORT_REQUIRED' | translate}}
-                </span>
-            </label>
-        </div>
-        <div class="form-group">
+            <input clrInput name="emailPort" type="text" #emailPortInput="ngModel"
+                [(ngModel)]="currentConfig.email_port.value" required port id="emailPort" size="40"
+                [disabled]="disabled(currentConfig.email_port)" />
+            <clr-control-error>{{'TOOLTIP.PORT_REQUIRED' | translate}}</clr-control-error>
+        </clr-input-container>
+        <clr-input-container>
             <label for="emailUsername">{{'CONFIG.MAIL_USERNAME' | translate}}</label>
-            <label for="emailUsername" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right"
-                [class.invalid]="false">
-                <input name="emailUsername" type="text" #emailUsernameInput="ngModel" [(ngModel)]="currentConfig.email_username.value"
-                    id="emailUsername" size="40" [disabled]="disabled(currentConfig.email_username)">
-                <span class="tooltip-content">
-                    {{'TOOLTIP.ITEM_REQUIRED' | translate}}
-                </span>
-            </label>
-        </div>
-        <div class="form-group">
+            <input clrInput name="emailUsername" type="text" #emailUsernameInput="ngModel"
+                [(ngModel)]="currentConfig.email_username.value" id="emailUsername" size="40"
+                [disabled]="disabled(currentConfig.email_username)" />
+        </clr-input-container>
+        <clr-input-container>
             <label for="emailPassword">{{'CONFIG.MAIL_PASSWORD' | translate}}</label>
-            <label for="emailPassword" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right"
-                [class.invalid]="false">
-                <input name="emailPassword" type="password" #emailPasswordInput="ngModel" [(ngModel)]="currentConfig.email_password.value"
-                    id="emailPassword" size="40" [disabled]="disabled(currentConfig.email_password)">
-                <span class="tooltip-content">
-                    {{'TOOLTIP.ITEM_REQUIRED' | translate}}
-                </span>
-            </label>
-        </div>
-        <div class="form-group">
+            <input clrInput name="emailPassword" type="password" #emailPasswordInput="ngModel"
+                [(ngModel)]="currentConfig.email_password.value" id="emailPassword" size="40"
+                [disabled]="disabled(currentConfig.email_password)" />
+        </clr-input-container>
+        <clr-input-container>
             <label for="emailFrom" class="required">{{'CONFIG.MAIL_FROM' | translate}}</label>
-            <label for="emailFrom" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-right"
-                [class.invalid]="emailFromInput.invalid && (emailFromInput.dirty || emailFromInput.touched)">
-                <input name="emailFrom" type="text" #emailFromInput="ngModel" [(ngModel)]="currentConfig.email_from.value"
-                    required id="emailFrom" size="40" [disabled]="disabled(currentConfig.email_from)">
-                <span class="tooltip-content">
-                    {{'TOOLTIP.ITEM_REQUIRED' | translate}}
-                </span>
-            </label>
+            <input clrInput name="emailFrom" type="text" #emailFromInput="ngModel"
+                [(ngModel)]="currentConfig.email_from.value" required id="emailFrom" size="40"
+                [disabled]="disabled(currentConfig.email_from)" />
+            <clr-control-error>{{'TOOLTIP.ITEM_REQUIRED' | translate}}</clr-control-error>
+        </clr-input-container>
+        <div class="clr-form-control">
+            <label class="clr-control-label" for="emailSSL">{{'CONFIG.MAIL_SSL' | translate}}</label>
+            <div class="clr-control-container">
+                <div class="clr-checkbox-wrapper" id="emailSSL-wrapper">
+                    <input type="checkbox" name="emailSSL" id="emailSSL" [(ngModel)]="currentConfig.email_ssl.value"
+                        [disabled]="disabled(currentConfig.email_ssl)" />
+                    <label class="clr-control-label" for="emailSSL">
+                        <clr-tooltip>
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                <span>{{'CONFIG.SSL_TOOLTIP' | translate}}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </div>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="selfReg">{{'CONFIG.MAIL_SSL' | translate}}</label>
-            <!--for = selfReg?-->
-            <clr-checkbox-wrapper id="emailSSL-wrapper">
-                <input type="checkbox" clrCheckbox name="emailSSL" id="emailSSL" [(ngModel)]="currentConfig.email_ssl.value"
-                    [disabled]="disabled(currentConfig.email_ssl)" />
-                <label>
-                    <a role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right top-7">
-                        <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                        <span class="tooltip-content">{{'CONFIG.SSL_TOOLTIP' | translate}}</span>
-                    </a>
-                </label>
-            </clr-checkbox-wrapper>
-        </div>
-        <div class="form-group">
-            <label for="insecure">{{'CONFIG.MAIL_INSECURE' | translate}}</label>
-            <clr-checkbox-wrapper id="emailInsecure-wrapper">
-                <input type="checkbox" clrCheckbox name="emaiInsecure" id="emailInsecure" [ngModel]="!currentConfig.email_insecure.value"
-                    [disabled]="disabled(currentConfig.email_insecure)" (ngModelChange)="setInsecureValue($event)" />
-                <label>
-                    <a role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right top-7">
-                        <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                        <span class="tooltip-content">{{'CONFIG.INSECURE_TOOLTIP' | translate}}</span>
-                    </a>
-                </label>
-            </clr-checkbox-wrapper>
+        <div class="clr-form-control">
+            <label class="clr-control-label" for="emailInsecure">{{'CONFIG.MAIL_INSECURE' | translate}}</label>
+            <div class="clr-control-container">
+                <div class="clr-checkbox-wrapper" id="emailInsecure-wrapper">
+                    <input type="checkbox" name="emaiInsecure" id="emailInsecure"
+                        [ngModel]="!currentConfig.email_insecure.value"
+                        [disabled]="disabled(currentConfig.email_insecure)"
+                        (ngModelChange)="setInsecureValue($event)" />
+                    <label class="clr-control-label" for="emailInsecure">
+                        <clr-tooltip>
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                <span>{{'CONFIG.INSECURE_TOOLTIP' | translate}}</span>
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </div>
+            </div>
         </div>
     </section>
 </form>
 <div>
-    <button type="button" id="config_email_save" class="btn btn-primary" (click)="save()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE'
+    <button type="button" id="config_email_save" class="btn btn-primary" (click)="save()"
+        [disabled]="!isValid() || !hasChanges()">{{'BUTTON.SAVE'
         | translate}}</button>
     <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL'
         | translate}}</button>
