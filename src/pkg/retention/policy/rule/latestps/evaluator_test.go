@@ -1,8 +1,8 @@
 package latestps
 
 import (
+	"fmt"
 	"math/rand"
-	"strconv"
 	"testing"
 
 	"github.com/stretchr/testify/suite"
@@ -22,8 +22,8 @@ func (e *EvaluatorTestSuite) TestNew() {
 		args      rule.Parameters
 		expectedK int
 	}{
-		{Name: "Valid", args: map[string]rule.Parameter{ParameterK: 5}, expectedK: 5},
-		{Name: "Default If Negative", args: map[string]rule.Parameter{ParameterK: -1}, expectedK: DefaultK},
+		{Name: "Valid", args: map[string]rule.Parameter{ParameterK: float64(5)}, expectedK: 5},
+		{Name: "Default If Negative", args: map[string]rule.Parameter{ParameterK: float64(-1)}, expectedK: DefaultK},
 		{Name: "Default If Not Set", args: map[string]rule.Parameter{}, expectedK: DefaultK},
 		{Name: "Default If Wrong Type", args: map[string]rule.Parameter{ParameterK: "foo"}, expectedK: DefaultK},
 	}
@@ -44,7 +44,7 @@ func (e *EvaluatorTestSuite) TestProcess() {
 	})
 
 	tests := []struct {
-		k        int
+		k        float64
 		expected int
 	}{
 		{k: 0, expected: 0},
@@ -55,7 +55,7 @@ func (e *EvaluatorTestSuite) TestProcess() {
 	}
 
 	for _, tt := range tests {
-		e.T().Run(strconv.Itoa(tt.k), func(t *testing.T) {
+		e.T().Run(fmt.Sprintf("%v", tt.k), func(t *testing.T) {
 			e := New(map[string]rule.Parameter{ParameterK: tt.k})
 
 			result, err := e.Process(data)

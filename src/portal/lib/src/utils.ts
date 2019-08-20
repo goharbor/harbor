@@ -4,8 +4,9 @@ import { HttpHeaders } from '@angular/common/http';
 import { RequestQueryParams } from './service/RequestQueryParams';
 import { DebugElement } from '@angular/core';
 import { Comparator, State, HttpOptionInterface, HttpOptionTextInterface, QuotaUnitInterface } from './service/interface';
-import { QuotaUnits, StorageMultipleConstant } from './shared/shared.const';
+import { QuotaUnits, StorageMultipleConstant, LimitCount } from './shared/shared.const';
 import { AbstractControl } from "@angular/forms";
+
 /**
  * Convert the different async channels to the Promise<T> type.
  *
@@ -509,15 +510,30 @@ export const GetIntegerAndUnit = (hardNumber: number, quotaUnitsDeep: QuotaUnitI
         }
     }
 };
-export const validateLimit = (unitContrl) => {
-    return (control: AbstractControl) => {
-        if (getByte(control.value, unitContrl.value) > StorageMultipleConstant * StorageMultipleConstant
-            * StorageMultipleConstant * StorageMultipleConstant * StorageMultipleConstant) {
-            return {
-                error: true
-            };
-        }
-        return null;
-    };
+
+export const validateCountLimit = () => {
+  return (control: AbstractControl) => {
+    if (control.value > LimitCount) {
+      return {
+        error: true
+      };
+    }
+    return null;
+  };
+};
+
+export const validateLimit = unitContrl => {
+  return (control: AbstractControl) => {
+    if (
+      // 1024TB
+      getByte(control.value, unitContrl.value) >
+      Math.pow(StorageMultipleConstant, 5)
+    ) {
+      return {
+        error: true
+      };
+    }
+    return null;
+  };
 };
 

@@ -595,9 +595,29 @@ func (ra *RepositoryAPI) GetTags() {
 		tags = ts
 	}
 
+	detail, err := ra.GetBool("detail", true)
+	if !detail && err == nil {
+		ra.Data["json"] = simpleTags(tags)
+		ra.ServeJSON()
+		return
+	}
+
 	ra.Data["json"] = assembleTagsInParallel(client, repoName, tags,
 		ra.SecurityCtx.GetUsername())
 	ra.ServeJSON()
+}
+
+func simpleTags(tags []string) []*models.TagResp {
+	var tagsResp []*models.TagResp
+	for _, tag := range tags {
+		tagsResp = append(tagsResp, &models.TagResp{
+			TagDetail: models.TagDetail{
+				Name: tag,
+			},
+		})
+	}
+
+	return tagsResp
 }
 
 // get config, signature and scan overview and assemble them into one

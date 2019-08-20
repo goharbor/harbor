@@ -53,6 +53,8 @@ const (
 	PostGreSQLPassword               = "postgresql_password"
 	PostGreSQLDatabase               = "postgresql_database"
 	PostGreSQLSSLMode                = "postgresql_sslmode"
+	PostGreSQLMaxIdleConns           = "postgresql_max_idle_conns"
+	PostGreSQLMaxOpenConns           = "postgresql_max_open_conns"
 	SelfRegistration                 = "self_registration"
 	CoreURL                          = "core_url"
 	CoreLocalURL                     = "core_local_url"

@@ -21,6 +21,14 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
+// CreateCVEWhitelist creates the CVE whitelist
+func CreateCVEWhitelist(l models.CVEWhitelist) (int64, error) {
+	o := GetOrmer()
+	itemsBytes, _ := json.Marshal(l.Items)
+	l.ItemsText = string(itemsBytes)
+	return o.Insert(&l)
+}
+
 // UpdateCVEWhitelist Updates the vulnerability white list to DB
 func UpdateCVEWhitelist(l models.CVEWhitelist) (int64, error) {
 	o := GetOrmer()
@@ -29,23 +37,6 @@ func UpdateCVEWhitelist(l models.CVEWhitelist) (int64, error) {
 	id, err := o.InsertOrUpdate(&l, "project_id")
 	return id, err
 }
-
-// GetSysCVEWhitelist Gets the system level vulnerability white list from DB
-func GetSysCVEWhitelist() (*models.CVEWhitelist, error) {
-	return GetCVEWhitelist(0)
-}
-
-// UpdateSysCVEWhitelist updates the system level CVE whitelist
-/*
-func UpdateSysCVEWhitelist(l models.CVEWhitelist) error {
-	if l.ProjectID != 0 {
-		return fmt.Errorf("system level CVE whitelist cannot set project ID")
-	}
-	l.ProjectID = -1
-	_, err := UpdateCVEWhitelist(l)
-	return err
-}
-*/
 
 // GetCVEWhitelist Gets the CVE whitelist of the project based on the project ID in parameter
 func GetCVEWhitelist(pid int64) (*models.CVEWhitelist, error) {
@@ -58,8 +49,7 @@ func GetCVEWhitelist(pid int64) (*models.CVEWhitelist, error) {
 		return nil, fmt.Errorf("failed to get CVE whitelist for project %d, error: %v", pid, err)
 	}
 	if len(r) == 0 {
-		log.Infof("No CVE whitelist found for project %d, returning empty list.", pid)
-		return &models.CVEWhitelist{ProjectID: pid, Items: []models.CVEWhitelistItem{}}, nil
+		return nil, nil
 	} else if len(r) > 1 {
 		log.Infof("Multiple CVE whitelists found for project %d, length: %d, returning first element.", pid, len(r))
 	}

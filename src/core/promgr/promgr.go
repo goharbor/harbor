@@ -94,7 +94,7 @@ func (d *defaultProjectManager) Create(project *models.Project) (int64, error) {
 		return 0, err
 	}
 	if d.metaMgrEnabled {
-		d.whitelistMgr.CreateEmpty(project.ProjectID)
+		d.whitelistMgr.CreateEmpty(id)
 		if len(project.Metadata) > 0 {
 			if err = d.metaMgr.Add(id, project.Metadata); err != nil {
 				log.Errorf("failed to add metadata for project %s: %v", project.Name, err)

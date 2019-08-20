@@ -66,7 +66,7 @@ export interface LabelState {
   label: Label;
   show: boolean;
 }
-
+export const AVAILABLE_TIME = '0001-01-01T00:00:00Z';
 @Component({
   selector: 'hbr-tag',
   templateUrl: './tag.component.html',
@@ -271,7 +271,10 @@ export class TagComponent implements OnInit, AfterViewInit {
         // Do filtering and sorting
         this.tags = doFiltering<Tag>(tags, state);
         this.tags = doSorting<Tag>(this.tags, state);
-
+        this.tags = this.tags.map(tag => {
+          tag.push_time = tag.push_time === AVAILABLE_TIME ? '' : tag.push_time;
+          return tag;
+        });
         this.loading = false;
       }, error => {
         this.loading = false;
@@ -539,7 +542,10 @@ export class TagComponent implements OnInit, AfterViewInit {
             signatures.push(t.name);
           }
         });
-        this.tags = items;
+        this.tags = items.map(tag => {
+          tag.push_time = tag.push_time === AVAILABLE_TIME ? '' : tag.push_time;
+          return tag;
+        });
         let signedName: { [key: string]: string[] } = {};
         signedName[this.repoName] = signatures;
         this.signatureOutput.emit(signedName);

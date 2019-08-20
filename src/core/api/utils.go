@@ -38,7 +38,7 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 
 	log.Infof("Start syncing repositories from registry to DB... ")
 
-	reposInRegistry, err := catalog()
+	reposInRegistry, err := Catalog()
 	if err != nil {
 		log.Error(err)
 		return err
@@ -105,7 +105,8 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 	return nil
 }
 
-func catalog() ([]string, error) {
+// Catalog ...
+func Catalog() ([]string, error) {
 	repositories := []string{}
 
 	rc, err := initRegistryClient()

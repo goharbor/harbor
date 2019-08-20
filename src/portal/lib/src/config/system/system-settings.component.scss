@@ -35,6 +35,13 @@
   display: flex;
 }
 
+.font-size-13 {
+  font-size: 13px;
+}
+.mt-05 {
+  margin-bottom: 0.5rem;
+}
+
 .title {
   font-weight: bold;
 }
@@ -51,8 +58,6 @@
   width: 222px;
   color: #0079bb;
   overflow-y: auto;
-  white-space: nowrap;
-
   li {
     height: 24px;
     line-height: 24px;

@@ -22,7 +22,7 @@ export class AddWebhookComponent implements OnInit {
   @Input() projectId: number;
   @Input() webhook: Webhook;
   @Output() modify = new EventEmitter<boolean>();
-  @ViewChild(AddWebhookFormComponent, {static: true})
+  @ViewChild(AddWebhookFormComponent, { static: false })
   addWebhookFormComponent: AddWebhookFormComponent;
 
 

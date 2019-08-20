@@ -3,11 +3,11 @@
         <section>
             <label>
                 <label for="name">{{'LABEL.LABEL_NAME' | translate}}</label>
-                <label aria-haspopup="true" role="tooltip" [class.invalid]="isLabelNameExist"
-                       class="tooltip tooltip-validation tooltip-md tooltip-bottom-left">
+                <label aria-haspopup="true" role="tooltip"
+                       class="tooltip tooltip-validation tooltip-md tooltip-bottom-right">
                     <input clrInput type="text" id="name" name="name" required size="20" autocomplete="off"
                            [(ngModel)]="labelModel.name" #name="ngModel" (keyup)="existValid(labelModel.name)">
-                    <span class="tooltip-content">
+                    <span class="tooltip-content" *ngIf="isLabelNameExist">
                       {{'LABEL.NAME_ALREADY_EXISTS' | translate }}
                     </span>
                 </label>

@@ -59,6 +59,8 @@ export class TagRetentionComponent implements OnInit {
     projectId: number;
     isRetentionRunOpened: boolean = false;
     isAbortedOpened: boolean = false;
+    isConfirmOpened: boolean = false;
+    cron: string;
     selectedItem: any = null;
     ruleIndex: number = -1;
     index: number = -1;
@@ -85,8 +87,8 @@ export class TagRetentionComponent implements OnInit {
     }
     originCron(): OriginCron {
         let originCron: OriginCron = {
-            type: SCHEDULE_TYPE.DAILY,
-            cron: "0 0 0 * * *"
+            type: SCHEDULE_TYPE.NONE,
+            cron: ""
         };
         originCron.cron = this.retention.trigger.settings.cron;
         if (originCron.cron === "") {
@@ -119,6 +121,18 @@ export class TagRetentionComponent implements OnInit {
         this.getRetention();
         this.getMetadata();
     }
+    openConfirm(cron: string) {
+      if (cron) {
+        this.isConfirmOpened = true;
+        this.cron = cron;
+      } else {
+        this.updateCron(cron);
+      }
+    }
+    closeConfirm() {
+      this.isConfirmOpened = false;
+      this.updateCron(this.cron);
+    }
     updateCron(cron: string) {
         let retention: Retention = clone(this.retention);
         retention.trigger.settings.cron = cron;
@@ -134,7 +148,7 @@ export class TagRetentionComponent implements OnInit {
             this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
                 response => {
                     this.cronScheduleComponent.isEditMode = false;
-                    this.retention = retention;
+                    this.getRetention();
                 }, error => {
                     this.errorHandler.error(error);
                 });
@@ -170,15 +184,14 @@ export class TagRetentionComponent implements OnInit {
         this.addRuleComponent.isAdd = false;
         this.ruleIndex = -1;
     }
-  toggleDisable(index, isActionDisable) {
+    toggleDisable(index, isActionDisable) {
         let retention: Retention = clone(this.retention);
         retention.rules[index].disabled = isActionDisable;
         this.ruleIndex = -1;
         this.loadingRule = true;
         this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
             response => {
-                this.loadingRule = false;
-                this.retention = retention;
+                this.getRetention();
             }, error => {
                 this.loadingRule = false;
                 this.errorHandler.error(error);
@@ -187,12 +200,15 @@ export class TagRetentionComponent implements OnInit {
     deleteRule(index) {
         let retention: Retention = clone(this.retention);
         retention.rules.splice(index, 1);
+        // if rules is empty, clear schedule.
+        if (retention.rules && retention.rules.length === 0) {
+          retention.trigger.settings.cron = "";
+        }
         this.ruleIndex = -1;
         this.loadingRule = true;
         this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
             response => {
-                this.loadingRule = false;
-                this.retention = retention;
+                this.getRetention();
             }, error => {
                 this.loadingRule = false;
                 this.errorHandler.error(error);
@@ -343,8 +359,7 @@ export class TagRetentionComponent implements OnInit {
             } else {
                 this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
                     response => {
-                        this.loadingRule = false;
-                        this.retention = retention;
+                        this.getRetention();
                     }, error => {
                         this.loadingRule = false;
                         this.errorHandler.error(error);
@@ -355,8 +370,7 @@ export class TagRetentionComponent implements OnInit {
             retention.rules[this.editIndex] = rule;
             this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
                 response => {
-                    this.retention = retention;
-                    this.loadingRule = false;
+                    this.getRetention();
                 }, error => {
                     this.errorHandler.error(error);
                     this.loadingRule = false;

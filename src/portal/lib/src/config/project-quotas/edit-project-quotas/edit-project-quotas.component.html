@@ -16,8 +16,8 @@
                   </clr-tooltip-content>
               </clr-tooltip>
               <div class="progress-block progress-min-width progress-div" *ngIf="!defaultTextsObj.isSystemDefaultQuota">
-                  <div class="progress success"
-                  [class.danger]="getDangerStyle(+quotaHardLimitValue.countLimit, quotaHardLimitValue.countUsed)">
+                  <div class="progress success" [class.warning]="isWarningColor(+quotaHardLimitValue.countLimit, quotaHardLimitValue.countUsed)"
+                  [class.danger]="isDangerColor(+quotaHardLimitValue.countLimit, quotaHardLimitValue.countUsed)">
                     <progress value="{{countInput.invalid || +quotaHardLimitValue.countLimit===-1?0:quotaHardLimitValue.countUsed}}"
                       max="{{countInput.invalid?100:quotaHardLimitValue.countLimit}}" data-displayval="100%"></progress>
                   </div>
@@ -49,8 +49,9 @@
               </div>
               
               <div class="progress-block progress-min-width progress-div" *ngIf="!defaultTextsObj.isSystemDefaultQuota">
-                  <div class="progress success" [class.danger]="getDangerStyle(+quotaHardLimitValue.storageLimit,quotaHardLimitValue.storageUsed, quotaHardLimitValue.storageUnit)">
-                    <progress value="{{storageInput.invalid?0:quotaHardLimitValue.storageUsed}}"
+                  <div class="progress success" [class.danger]="isDangerColor(+quotaHardLimitValue.storageLimit,quotaHardLimitValue.storageUsed, quotaHardLimitValue.storageUnit)"
+                  [class.warning]="isWarningColor(+quotaHardLimitValue.storageLimit,quotaHardLimitValue.storageUsed, quotaHardLimitValue.storageUnit)" >
+                    <progress value="{{storageInput.invalid || +quotaHardLimitValue.storageLimit === -1 ?0:quotaHardLimitValue.storageUsed}}"
                       max="{{storageInput.invalid?0:getByte(+quotaHardLimitValue.storageLimit, quotaHardLimitValue.storageUnit)}}"
                       data-displayval="100%"></progress>
                   </div>

@@ -59,6 +59,10 @@ export class RecentLogComponent implements OnInit {
     }
 
     public doFilter(terms: string): void {
+        // allow search by null characters
+        if (terms === undefined || terms === null) {
+            return;
+        }
         this.currentTerm = terms.trim();
         this.loading = true;
         this.currentPage = 1;

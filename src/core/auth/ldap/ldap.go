@@ -124,8 +124,6 @@ func (l *Auth) OnBoardUser(u *models.User) error {
 	if u.Email == "" {
 		if strings.Contains(u.Username, "@") {
 			u.Email = u.Username
-		} else {
-			u.Email = u.Username + "@placeholder.com"
 		}
 	}
 	u.Password = "12345678AbC" // Password is not kept in local db

@@ -77,17 +77,17 @@
             <label for="systemWhitelist"
                 class="clr-control-label">{{'CVE_WHITELIST.DEPLOYMENT_SECURITY'|translate}}</label>
             <div class="form-content">
-                <div>
-                    <div>
-                        <span class="title">{{'CVE_WHITELIST.CVE_WHITELIST'|translate}}</span>
+                <div class="font-size-13">
+                    <div class="mt-05">
+                        <span class="title font-size-13">{{'CVE_WHITELIST.CVE_WHITELIST'|translate}}</span>
                     </div>
-                    <div>
+                    <div class="mt-05">
                         <span>{{'CVE_WHITELIST.SYS_WHITELIST_EXPLAIN'|translate}}</span>
                     </div>
-                    <div>
+                    <div class="mt-05">
                         <span>{{'CVE_WHITELIST.ADD_SYS'|translate}}</span>
                     </div>
-                    <div *ngIf="hasExpired">
+                    <div class="mt-05" *ngIf="hasExpired">
                         <span class="label label-warning">{{'CVE_WHITELIST.WARNING_SYS'|translate}}</span>
                     </div>
                 </div>

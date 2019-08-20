@@ -16,6 +16,7 @@ export class Retention {
     rules: Array<Rule>;
     trigger: {
         kind: string;
+        references: object;
         settings: {
             cron: string;
         }
@@ -31,8 +32,9 @@ export class Retention {
         this.algorithm = "or";
         this.trigger = {
             kind: "Schedule",
+            references: {},
             settings: {
-                cron: "0 0 0 * * *",
+                cron: "",
             }
         };
     }

@@ -67,25 +67,7 @@ func (r *RetentionAPI) GetMetadatas() {
             ]
         },
 		{
-            "rule_template": "nothing",
-            "display_text": "none",
-            "action": "retain",
-            "params": []
-        },
-        {
-            "rule_template": "always",
-            "display_text": "always",
-            "action": "retain",
-            "params": [
-                {
-                    "type": "int",
-                    "unit": "COUNT",
-                    "required": true
-                }
-            ]
-        },
-		{
-			"rule_template": "dayspl",
+			"rule_template": "nDaysSinceLastPull",
 			"display_text": "pulled within the last # days",
 			"action": "retain",
 			"params": [
@@ -97,7 +79,7 @@ func (r *RetentionAPI) GetMetadatas() {
 			]
 		},
 		{
-			"rule_template": "daysps",
+			"rule_template": "nDaysSinceLastPush",
 			"display_text": "pushed within the last # days",
 			"action": "retain",
 			"params": [
@@ -107,7 +89,19 @@ func (r *RetentionAPI) GetMetadatas() {
 					"required": true
 				}
 			]
-		}
+		},
+		{
+            "rule_template": "nothing",
+            "display_text": "none",
+            "action": "retain",
+            "params": []
+        },
+		{
+            "rule_template": "always",
+            "display_text": "always",
+            "action": "retain",
+            "params": []
+        }
     ],
     "scope_selectors": [
         {

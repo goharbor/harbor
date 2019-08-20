@@ -112,7 +112,7 @@ func (n *NotificationHandler) Post() {
 				}()
 			}
 
-			if !coreutils.WaitForManifestReady(repository, tag, 5) {
+			if !coreutils.WaitForManifestReady(repository, tag, 6) {
 				log.Errorf("Manifest for image %s:%s is not ready, skip the follow up actions.", repository, tag)
 				return
 			}

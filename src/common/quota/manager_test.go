@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/quota/driver"
 	"github.com/goharbor/harbor/src/common/quota/driver/mocks"
 	"github.com/goharbor/harbor/src/pkg/types"
@@ -131,6 +132,48 @@ func (suite *ManagerSuite) TestUpdateQuota() {
 	}
 }
 
+func (suite *ManagerSuite) TestEnsureQuota() {
+	// non-existent
+	nonExistRefID := "3"
+	mgr := suite.quotaManager(nonExistRefID)
+	infinite := types.ResourceList{types.ResourceCount: -1, types.ResourceStorage: -1}
+	usage := types.ResourceList{types.ResourceCount: 10, types.ResourceStorage: 10}
+	err := mgr.EnsureQuota(usage)
+	suite.Nil(err)
+	query := &models.QuotaQuery{
+		Reference:   reference,
+		ReferenceID: nonExistRefID,
+	}
+	quotas, err := dao.ListQuotas(query)
+	suite.Nil(err)
+	suite.Equal(usage, mustResourceList(quotas[0].Used))
+	suite.Equal(infinite, mustResourceList(quotas[0].Hard))
+
+	// existent
+	existRefID := "4"
+	mgr = suite.quotaManager(existRefID)
+	used := types.ResourceList{types.ResourceCount: 11, types.ResourceStorage: 11}
+	if id, err := mgr.NewQuota(hardLimits, used); suite.Nil(err) {
+		quota, _ := dao.GetQuota(id)
+		suite.Equal(hardLimits, mustResourceList(quota.Hard))
+
+		usage, _ := dao.GetQuotaUsage(id)
+		suite.Equal(used, mustResourceList(usage.Used))
+	}
+
+	usage2 := types.ResourceList{types.ResourceCount: 12, types.ResourceStorage: 12}
+	err = mgr.EnsureQuota(usage2)
+	suite.Nil(err)
+	query2 := &models.QuotaQuery{
+		Reference:   reference,
+		ReferenceID: existRefID,
+	}
+	quotas2, err := dao.ListQuotas(query2)
+	suite.Equal(usage2, mustResourceList(quotas2[0].Used))
+	suite.Equal(hardLimits, mustResourceList(quotas2[0].Hard))
+
+}
+
 func (suite *ManagerSuite) TestQuotaAutoCreation() {
 	for i := 0; i < 10; i++ {
 		mgr := suite.quotaManager(fmt.Sprintf("%d", i))
@@ -157,7 +200,11 @@ func (suite *ManagerSuite) TestAddResources() {
 	}
 
 	if err := mgr.AddResources(types.ResourceList{types.ResourceStorage: 10000}); suite.Error(err) {
-		suite.True(IsUnsafeError(err))
+		if errs, ok := err.(Errors); suite.True(ok) {
+			for _, err := range errs {
+				suite.IsType(&ResourceOverflow{}, err)
+			}
+		}
 	}
 }
 

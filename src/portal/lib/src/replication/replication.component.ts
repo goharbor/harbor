@@ -48,7 +48,8 @@ import {
 import {
   ConfirmationTargets,
   ConfirmationButtons,
-  ConfirmationState
+  ConfirmationState,
+  REFRESH_TIME_DIFFERENCE
 } from "../shared/shared.const";
 import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
@@ -214,7 +215,7 @@ export class ReplicationComponent implements OnInit, OnDestroy {
         this.totalCount = response.metadata.xTotalCount;
         this.jobs = response.data;
         if (!this.timerDelay) {
-          this.timerDelay = timer(10000, 10000).subscribe(() => {
+          this.timerDelay = timer(REFRESH_TIME_DIFFERENCE, REFRESH_TIME_DIFFERENCE).subscribe(() => {
             let count: number = 0;
             this.jobs.forEach(job => {
               if (

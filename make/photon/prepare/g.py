@@ -12,11 +12,12 @@ REDIS_UID = 999
 REDIS_GID = 999
 
 ## Global variable
+host_root_dir = '/hostfs'
+
 base_dir = '/harbor_make'
 templates_dir = "/usr/src/app/templates"
 config_dir = '/config'
 data_dir = '/data'
-
 secret_dir = '/secret'
 secret_key_dir='/secret/keys'
 

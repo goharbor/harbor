@@ -37,11 +37,11 @@ import { ConfirmationDialogComponent } from "../../shared/confirmation-dialog/co
   // changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class WebhookComponent implements OnInit {
-  @ViewChild(AddWebhookComponent, { static: true })
+  @ViewChild(AddWebhookComponent, { static: false } )
   addWebhookComponent: AddWebhookComponent;
-  @ViewChild(AddWebhookFormComponent, { static: true })
+  @ViewChild(AddWebhookFormComponent, { static: false })
   addWebhookFormComponent: AddWebhookFormComponent;
-  @ViewChild("confirmationDialogComponent", { static: true })
+  @ViewChild("confirmationDialogComponent", { static: false })
   confirmationDialogComponent: ConfirmationDialogComponent;
   webhook: Webhook;
   endpoint: string = '';
@@ -50,6 +50,7 @@ export class WebhookComponent implements OnInit {
   isEnabled: boolean;
   loading: boolean = false;
   showCreate: boolean = false;
+  loadingWebhook: boolean = true;
   projectId: number;
   projectName: string;
   constructor(
@@ -92,6 +93,7 @@ export class WebhookComponent implements OnInit {
   getWebhook(projectId: number) {
     this.webhookService
       .listWebhook(projectId)
+      .pipe(finalize(() => (this.loadingWebhook = false)))
       .subscribe(
         response => {
           if (response.length) {

@@ -131,7 +131,13 @@ func (m *Manager) updateUsage(o orm.Ormer, resources types.ResourceList,
 	}
 
 	newUsed := calculate(used, resources)
-	if err := isSafe(hardLimits, newUsed); err != nil {
+
+	// ensure that new used is never negative
+	if negativeUsed := types.IsNegative(newUsed); len(negativeUsed) > 0 {
+		return fmt.Errorf("quota usage is negative for resource(s): %s", prettyPrintResourceNames(negativeUsed))
+	}
+
+	if err := isSafe(hardLimits, used, newUsed); err != nil {
 		return err
 	}
 
@@ -176,14 +182,64 @@ func (m *Manager) DeleteQuota() error {
 
 // UpdateQuota update the quota resource spec
 func (m *Manager) UpdateQuota(hardLimits types.ResourceList) error {
+	o := dao.GetOrmer()
 	if err := m.driver.Validate(hardLimits); err != nil {
 		return err
 	}
 
 	sql := `UPDATE quota SET hard = ? WHERE reference = ? AND reference_id = ?`
-	_, err := dao.GetOrmer().Raw(sql, hardLimits.String(), m.reference, m.referenceID).Exec()
+	_, err := o.Raw(sql, hardLimits.String(), m.reference, m.referenceID).Exec()
 
 	return err
+}
+
+// EnsureQuota ensures the reference has quota and usage,
+// if non-existent, will create new quota and usage.
+// if existent, update the quota and usage.
+func (m *Manager) EnsureQuota(usages types.ResourceList) error {
+	query := &models.QuotaQuery{
+		Reference:   m.reference,
+		ReferenceID: m.referenceID,
+	}
+	quotas, err := dao.ListQuotas(query)
+	if err != nil {
+		return err
+	}
+
+	// non-existent: create quota and usage
+	defaultHardLimit := m.driver.HardLimits()
+	if len(quotas) == 0 {
+		_, err := m.NewQuota(defaultHardLimit, usages)
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	// existent
+	used := usages
+	quotaUsed, err := types.NewResourceList(quotas[0].Used)
+	if err != nil {
+		return err
+	}
+	if types.Equals(quotaUsed, used) {
+		return nil
+	}
+	dao.WithTransaction(func(o orm.Ormer) error {
+		usage, err := m.getUsageForUpdate(o)
+		if err != nil {
+			return err
+		}
+		usage.Used = used.String()
+		usage.UpdateTime = time.Now()
+		_, err = o.Update(usage)
+		if err != nil {
+			return err
+		}
+		return nil
+	})
+
+	return nil
 }
 
 // AddResources add resources to usage

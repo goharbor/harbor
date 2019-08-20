@@ -36,7 +36,7 @@ export class AddWebhookFormComponent implements OnInit, OnChanges {
   @Input() isOpen: boolean;
   @Output() edit = new EventEmitter<boolean>();
   @Output() close = new EventEmitter<boolean>();
-  @ViewChild("webhookForm", { static: true }) currentForm: NgForm;
+  @ViewChild("webhookForm", { static: false }) currentForm: NgForm;
 
 
   constructor(

@@ -35,7 +35,8 @@
 
         <div>
           <div class="progress-block progress-min-width progress-div">
-            <div class="progress success" [class.danger]="summaryInformation?.quota?.hard?.count!==-1?summaryInformation?.quota?.used?.count/summaryInformation?.quota?.hard?.count>0.9:false">
+            <div class="progress success" [class.danger]="summaryInformation?.quota?.hard?.count!==-1?summaryInformation?.quota?.used?.count/summaryInformation?.quota?.hard?.count>quotaDangerCoefficient:false"
+              [class.warning]="summaryInformation?.quota?.hard?.count!==-1?summaryInformation?.quota?.used?.count/summaryInformation?.quota?.hard?.count<=quotaDangerCoefficient&&summaryInformation?.quota?.used?.count/summaryInformation?.quota?.hard?.count>=quotaWarningCoefficient:false">
               <progress
                 value="{{summaryInformation?.quota?.hard?.count===-1? 0 : summaryInformation?.quota?.used?.count}}"
                 max="{{summaryInformation?.quota?.hard?.count}}" data-displayval="100%"></progress>
@@ -58,7 +59,8 @@
         <div>
           <div class="progress-block progress-min-width progress-div">
             <div class="progress success"
-            [class.danger]="summaryInformation?.quota?.hard?.storage!==-1?summaryInformation?.quota?.used?.storage/summaryInformation?.quota?.hard?.storage>0.9:false">
+            [class.danger]="summaryInformation?.quota?.hard?.storage!==-1?summaryInformation?.quota?.used?.storage/summaryInformation?.quota?.hard?.storage>quotaDangerCoefficient:false"
+            [class.warning]="summaryInformation?.quota?.hard?.storage!==-1?summaryInformation?.quota?.used?.storage/summaryInformation?.quota?.hard?.storage<=quotaDangerCoefficient&&summaryInformation?.quota?.used?.storage/summaryInformation?.quota?.hard?.storage>=quotaWarningCoefficient:false">
               <progress
                 value="{{summaryInformation?.quota?.hard?.storage===-1? 0 : summaryInformation?.quota?.used?.storage}}"
                 max="{{summaryInformation?.quota?.hard?.storage}}" data-displayval="100%"></progress>

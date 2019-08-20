@@ -103,3 +103,20 @@ func GetBlobsNotInProject(projectID int64, blobDigests ...string) ([]*models.Blo
 
 	return blobs, nil
 }
+
+// CountSizeOfProject ...
+func CountSizeOfProject(pid int64) (int64, error) {
+	var blobs []models.Blob
+
+	_, err := GetOrmer().Raw(`SELECT bb.id, bb.digest, bb.content_type, bb.size, bb.creation_time FROM project_blob pb LEFT JOIN blob bb ON pb.blob_id = bb.id WHERE pb.project_id = ? `, pid).QueryRows(&blobs)
+	if err != nil {
+		return 0, err
+	}
+
+	var size int64
+	for _, blob := range blobs {
+		size += blob.Size
+	}
+
+	return size, err
+}
