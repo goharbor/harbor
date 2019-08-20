@@ -238,7 +238,7 @@ func (r *RetentionAPI) checkRuleConflict(p *policy.Metadata) error {
 		if old, exists := temp[string(bs)]; exists {
 			return fmt.Errorf("rule %d is conflict with rule %d", n, old)
 		}
-		temp[string(bs)] = tid
+		temp[string(bs)] = n
 		rule.ID = tid
 	}
 	return nil
