@@ -58,8 +58,12 @@ form {
 
     .borderSty
     {
-      border: 1px solid #A1A1A1 !important; 
+      border: 1px solid #A1A1A1 !important;
       line-height: 22px;
     }
 }
-  
+::ng-deep {
+  .clr-form-control {
+    display: inherit;
+  }
+}

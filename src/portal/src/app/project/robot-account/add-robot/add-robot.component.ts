@@ -46,7 +46,7 @@ export class AddRobotComponent implements OnInit, OnDestroy {
   @Input() projectId: number;
   @Input() projectName: string;
   @Output() create = new EventEmitter<boolean>();
-  @ViewChild("robotForm", {static: false}) currentForm: NgForm;
+  @ViewChild("robotForm", {static: true}) currentForm: NgForm;
   @ViewChild("copyAlert", {static: false}) copyAlert: InlineAlertComponent;
   constructor(
       private robotService: RobotService,
