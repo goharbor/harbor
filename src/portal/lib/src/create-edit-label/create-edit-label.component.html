@@ -3,11 +3,11 @@
         <section>
             <label>
                 <label for="name">{{'LABEL.LABEL_NAME' | translate}}</label>
-                <label aria-haspopup="true" role="tooltip" [class.invalid]="isLabelNameExist"
-                       class="tooltip tooltip-validation tooltip-md tooltip-bottom-left">
-                    <input type="text" id="name" name="name" required size="20" autocomplete="off"
+                <label aria-haspopup="true" role="tooltip"
+                       class="tooltip tooltip-validation tooltip-md tooltip-bottom-right">
+                    <input clrInput type="text" id="name" name="name" required size="20" autocomplete="off"
                            [(ngModel)]="labelModel.name" #name="ngModel" (keyup)="existValid(labelModel.name)">
-                    <span class="tooltip-content">
+                    <span class="tooltip-content" *ngIf="isLabelNameExist">
                       {{'LABEL.NAME_ALREADY_EXISTS' | translate }}
                     </span>
                 </label>
@@ -21,11 +21,11 @@
                             [class.borderSty]="i.color == '#FFFFFF'"   [ngStyle]="{'background-color': i.color, 'color': i.textColor }">Aa</label>
                     </clr-dropdown-menu>
                 </clr-dropdown>
-                <input type="text" id="color" size="8" name="color" disabled [(ngModel)]="labelModel.color" #color="ngModel">
+                <input clrInput type="text" id="color" size="8" name="color" disabled [(ngModel)]="labelModel.color" #color="ngModel">
             </label>
             <label>
                 <label for="description">{{'LABEL.DESCRIPTION' | translate}}</label>
-                <input type="text" id="description" name="description" size="30" [(ngModel)]="labelModel.description"
+                <input clrInput type="text" id="description" name="description" size="30" [(ngModel)]="labelModel.description"
                        #description="ngModel">
             </label>
             <label>
