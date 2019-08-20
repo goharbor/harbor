@@ -15,6 +15,7 @@
 package scheduler
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"sync"
@@ -29,9 +30,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+// const definitions
 const (
-	jobParamCallbackFunc       = "callback_func"
-	jobParamCallbackFuncParams = "params"
+	JobParamCallbackFunc       = "callback_func"
+	JobParamCallbackFuncParams = "params"
 )
 
 var (
@@ -46,6 +48,8 @@ type CallbackFunc func(interface{}) error
 
 // Scheduler provides the capability to run a periodic task, a callback function
 // needs to be registered before using the scheduler
+// The "params" is passed to the callback function specified by "callbackFuncName"
+// as encoded json string, so the callback function must decode it before using
 type Scheduler interface {
 	Schedule(cron string, callbackFuncName string, params interface{}) (int64, error)
 	UnSchedule(id int64) error
@@ -119,6 +123,15 @@ func (s *scheduler) Schedule(cron string, callbackFuncName string, params interf
 	if err != nil {
 		return 0, err
 	}
+	// if got error in the following steps, delete the schedule record in database
+	defer func() {
+		if err != nil {
+			e := s.manager.Delete(scheduleID)
+			if e != nil {
+				log.Errorf("failed to delete the schedule %d: %v", scheduleID, e)
+			}
+		}
+	}()
 	log.Debugf("the schedule record %d created", scheduleID)
 
 	// submit scheduler job to Jobservice
@@ -126,8 +139,7 @@ func (s *scheduler) Schedule(cron string, callbackFuncName string, params interf
 	jd := &models.JobData{
 		Name: JobNameScheduler,
 		Parameters: map[string]interface{}{
-			jobParamCallbackFunc:       callbackFuncName,
-			jobParamCallbackFuncParams: params,
+			JobParamCallbackFunc: callbackFuncName,
 		},
 		Metadata: &models.JobMetadata{
 			JobKind: job.JobKindPeriodic,
@@ -135,15 +147,26 @@ func (s *scheduler) Schedule(cron string, callbackFuncName string, params interf
 		},
 		StatusHook: statusHookURL,
 	}
+	if params != nil {
+		var paramsData []byte
+		paramsData, err = json.Marshal(params)
+		if err != nil {
+			return 0, err
+		}
+		jd.Parameters[JobParamCallbackFuncParams] = string(paramsData)
+	}
 	jobID, err := s.jobserviceClient.SubmitJob(jd)
 	if err != nil {
-		// if failed to submit to Jobservice, delete the schedule record in database
-		e := s.manager.Delete(scheduleID)
-		if e != nil {
-			log.Errorf("failed to delete the schedule %d: %v", scheduleID, e)
-		}
 		return 0, err
 	}
+	// if got error in the following steps, stop the scheduler job
+	defer func() {
+		if err != nil {
+			if e := s.jobserviceClient.PostAction(jobID, job.JobActionStop); e != nil {
+				log.Errorf("failed to stop the scheduler job %s: %v", jobID, e)
+			}
+		}
+	}()
 	log.Debugf("the scheduler job submitted to Jobservice, job ID: %s", jobID)
 
 	// populate the job ID for the schedule
@@ -152,14 +175,6 @@ func (s *scheduler) Schedule(cron string, callbackFuncName string, params interf
 		JobID: jobID,
 	}, "JobID")
 	if err != nil {
-		// stop the scheduler job
-		if e := s.jobserviceClient.PostAction(jobID, job.JobActionStop); e != nil {
-			log.Errorf("failed to stop the scheduler job %s: %v", jobID, e)
-		}
-		// delete the schedule record
-		if e := s.manager.Delete(scheduleID); e != nil {
-			log.Errorf("failed to delete the schedule record %d: %v", scheduleID, e)
-		}
 		return 0, err
 	}
 
@@ -172,7 +187,8 @@ func (s *scheduler) UnSchedule(id int64) error {
 		return err
 	}
 	if schedule == nil {
-		return fmt.Errorf("the schedule record %d not found", id)
+		log.Warningf("the schedule record %d not found", id)
+		return nil
 	}
 	if err = s.jobserviceClient.PostAction(schedule.JobID, job.JobActionStop); err != nil {
 		herr, ok := err.(*chttp.Error)
