@@ -21,7 +21,8 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/job"
+	cjob "github.com/goharbor/harbor/src/common/job"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -58,6 +59,12 @@ type Manager interface {
 	CreateTask(task *Task) (int64, error)
 	// Update the specified task
 	UpdateTask(task *Task, cols ...string) error
+	// Update the status of the specified task
+	// The status is updated only when it is behind the one stored
+	// in the database.
+	// e.g. if the status is running but the status stored
+	// in database is failed, the updating doesn't take effect
+	UpdateTaskStatus(taskID int64, status string) error
 	// Get the task specified by the task ID
 	GetTask(taskID int64) (*Task, error)
 	// Get the log of the specified task
@@ -217,6 +224,7 @@ func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 			Repository:  t.Repository,
 			JobID:       t.JobID,
 			Status:      t.Status,
+			StatusCode:  t.StatusCode,
 			StartTime:   t.StartTime,
 			EndTime:     t.EndTime,
 			Total:       t.Total,
@@ -252,6 +260,15 @@ func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
 	}, cols...)
 }
 
+// UpdateTaskStatus updates the status of the specified task
+func (d *DefaultManager) UpdateTaskStatus(taskID int64, status string) error {
+	if taskID <= 0 {
+		return fmt.Errorf("invalid task ID: %d", taskID)
+	}
+	st := job.Status(status)
+	return dao.UpdateTaskStatus(taskID, status, st.Code())
+}
+
 // GetTask returns the task specified by task ID
 func (d *DefaultManager) GetTask(taskID int64) (*Task, error) {
 	if taskID <= 0 {
@@ -267,6 +284,7 @@ func (d *DefaultManager) GetTask(taskID int64) (*Task, error) {
 		Repository:  task.Repository,
 		JobID:       task.JobID,
 		Status:      task.Status,
+		StatusCode:  task.StatusCode,
 		StartTime:   task.StartTime,
 		EndTime:     task.EndTime,
 		Total:       task.Total,
@@ -283,7 +301,7 @@ func (d *DefaultManager) GetTaskLog(taskID int64) ([]byte, error) {
 	if task == nil {
 		return nil, fmt.Errorf("task %d not found", taskID)
 	}
-	return job.GlobalClient.GetJobLog(task.JobID)
+	return cjob.GlobalClient.GetJobLog(task.JobID)
 }
 
 // NewManager ...
