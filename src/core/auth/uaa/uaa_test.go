@@ -110,7 +110,7 @@ func TestOnBoardUser(t *testing.T) {
 	user, _ := dao.GetUser(models.User{Username: "test"})
 	assert.Equal("test", user.Realname)
 	assert.Equal("test", user.Username)
-	assert.Equal("test@uaa.placeholder", user.Email)
+	assert.Equal("", user.Email)
 	err3 := dao.ClearTable(models.UserTable)
 	assert.Nil(err3)
 }
@@ -128,7 +128,7 @@ func TestPostAuthenticate(t *testing.T) {
 	}
 	assert.Nil(err)
 	user, _ := dao.GetUser(models.User{Username: "test"})
-	assert.Equal("test@uaa.placeholder", user.Email)
+	assert.Equal("", user.Email)
 	um2.Email = "newEmail@new.com"
 	um2.Realname = "newName"
 	err2 := auth.PostAuthenticate(um2)
@@ -145,7 +145,7 @@ func TestPostAuthenticate(t *testing.T) {
 	assert.Nil(err3)
 	user3, _ := dao.GetUser(models.User{Username: "test"})
 	assert.Equal(user3.UserID, um3.UserID)
-	assert.Equal("test@uaa.placeholder", user3.Email)
+	assert.Equal("", user3.Email)
 	assert.Equal("test", user3.Realname)
 	err4 := dao.ClearTable(models.UserTable)
 	assert.Nil(err4)
