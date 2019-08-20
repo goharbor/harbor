@@ -1,6 +1,6 @@
 # Harbor upgrade and migration guide
 
-This guide only covers upgrade and mgiration to version >= v1.8.0
+This guide only covers upgrade and migration to version >= v1.8.0
 
 When upgrading your existing Harbor instance to a newer version, you may need to migrate the data in your database and the settings in `harbor.cfg`. 
 Since the migration may alter the database schema and the settings of `harbor.cfg`, you should **always** back up your data before any migration.
@@ -34,7 +34,7 @@ you follow the steps below.
     ```
     mv harbor /my_backup_dir/harbor
     ```
-    Back up database (by default in diretory `/data/database`)
+    Back up database (by default in directory `/data/database`)
     ```
     cp -r /data/database /my_backup_dir/
     ```

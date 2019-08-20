@@ -77,9 +77,8 @@ func fillEmailRealName(user *models.User) {
 	if len(user.Realname) == 0 {
 		user.Realname = user.Username
 	}
-	if len(user.Email) == 0 {
-		// TODO: handle the case when user.Username itself is an email address.
-		user.Email = user.Username + "@uaa.placeholder"
+	if len(user.Email) == 0 && strings.Contains(user.Username, "@") {
+		user.Email = user.Username
 	}
 }
 

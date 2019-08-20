@@ -16,6 +16,7 @@ package http
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"errors"
 	"io"
@@ -33,6 +34,36 @@ import (
 type Client struct {
 	modifiers []modifier.Modifier
 	client    *http.Client
+}
+
+var defaultHTTPTransport, secureHTTPTransport, insecureHTTPTransport *http.Transport
+
+func init() {
+	defaultHTTPTransport = &http.Transport{}
+
+	secureHTTPTransport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: false,
+		},
+	}
+	insecureHTTPTransport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+}
+
+// GetHTTPTransport returns HttpTransport based on insecure configuration
+func GetHTTPTransport(insecure ...bool) *http.Transport {
+	if len(insecure) == 0 {
+		return defaultHTTPTransport
+	}
+	if insecure[0] {
+		return insecureHTTPTransport
+	}
+	return secureHTTPTransport
 }
 
 // NewClient creates an instance of Client.

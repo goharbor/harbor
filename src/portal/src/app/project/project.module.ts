@@ -17,6 +17,7 @@ import { RouterModule } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 import { RepositoryModule } from '../repository/repository.module';
 import { ReplicationModule } from '../replication/replication.module';
+import { SummaryModule } from './summary/summary.module';
 import { LogModule } from '../log/log.module';
 
 import { ProjectComponent } from './project.component';
@@ -38,6 +39,14 @@ import { ProjectLabelComponent } from "../project/project-label/project-label.co
 import { HelmChartModule } from './helm-chart/helm-chart.module';
 import { RobotAccountComponent } from './robot-account/robot-account.component';
 import { AddRobotComponent } from './robot-account/add-robot/add-robot.component';
+import { AddHttpAuthGroupComponent } from './member/add-http-auth-group/add-http-auth-group.component';
+import { TagRetentionComponent } from "./tag-retention/tag-retention.component";
+import { AddRuleComponent } from "./tag-retention/add-rule/add-rule.component";
+import { TagRetentionService } from "./tag-retention/tag-retention.service";
+import { WebhookService } from './webhook/webhook.service';
+import { WebhookComponent } from './webhook/webhook.component';
+import { AddWebhookComponent } from './webhook/add-webhook/add-webhook.component';
+import { AddWebhookFormComponent } from './webhook/add-webhook-form/add-webhook-form.component';
 
 @NgModule({
   imports: [
@@ -46,7 +55,8 @@ import { AddRobotComponent } from './robot-account/add-robot/add-robot.component
     ReplicationModule,
     LogModule,
     RouterModule,
-    HelmChartModule
+    HelmChartModule,
+    SummaryModule
   ],
   declarations: [
     ProjectComponent,
@@ -59,10 +69,16 @@ import { AddRobotComponent } from './robot-account/add-robot/add-robot.component
     ProjectLabelComponent,
     AddGroupComponent,
     RobotAccountComponent,
-    AddRobotComponent
+    AddRobotComponent,
+    AddHttpAuthGroupComponent,
+    TagRetentionComponent,
+    AddRuleComponent,
+    WebhookComponent,
+    AddWebhookComponent,
+    AddWebhookFormComponent,
   ],
   exports: [ProjectComponent, ListProjectComponent],
-  providers: [ProjectRoutingResolver, MemberService, RobotService]
+  providers: [ProjectRoutingResolver, MemberService, RobotService, TagRetentionService, WebhookService]
 })
 export class ProjectModule {
 

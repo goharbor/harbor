@@ -1,7 +1,7 @@
 import shutil, os
 
 from g import config_dir, templates_dir
-from utils.misc import prepare_config_dir, generate_random_string
+from utils.misc import prepare_dir, generate_random_string
 from utils.jinja import render_jinja
 
 core_config_dir = os.path.join(config_dir, "core", "certificates")
@@ -33,7 +33,7 @@ def prepare_core(config_dict, with_notary, with_clair, with_chartmuseum):
     copy_core_config(core_conf_template_path, core_conf)
 
 def prepare_core_config_dir():
-    prepare_config_dir(core_config_dir)
+    prepare_dir(core_config_dir)
 
 def copy_core_config(core_templates_path, core_config_path):
     shutil.copyfile(core_templates_path, core_config_path)

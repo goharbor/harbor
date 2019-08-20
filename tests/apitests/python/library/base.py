@@ -51,7 +51,7 @@ def _get_string_from_unicode(udata):
     return result
 
 class Base:
-    def __init__(self, 
+    def __init__(self,
         server = Server(endpoint="http://localhost:8080/api", verify_ssl=False),
         credential = Credential(type="basic_auth", username="admin", password="Harbor12345"),
         debug = True):

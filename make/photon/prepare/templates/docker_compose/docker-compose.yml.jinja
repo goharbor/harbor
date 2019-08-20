@@ -14,7 +14,8 @@ services:
       - SETUID
     volumes:
       - {{log_location}}/:/var/log/docker/:z
-      - ./common/config/log/:/etc/logrotate.d/:z
+      - ./common/config/log/logrotate.conf:/etc/logrotate.d/logrotate.conf:z
+      - ./common/config/log/rsyslog_docker.conf:/etc/rsyslog.d/rsyslog_docker.conf:z
     ports:
       - 127.0.0.1:1514:10514
     networks:
@@ -275,12 +276,7 @@ services:
     volumes:
       - ./common/config/nginx:/etc/nginx:z
 {% if protocol == 'https' %}
-      - type: bind
-        source: {{cert_key_path}}
-        target: /etc/cert/server.key
-      - type: bind
-        source: {{cert_path}}
-        target: /etc/cert/server.crt
+      - {{data_volume}}/secret/cert:/etc/cert:z
 {% endif %}
     networks:
       - harbor
@@ -289,9 +285,9 @@ services:
 {% endif %}
     dns_search: .
     ports:
-      - {{http_port}}:80
+      - {{http_port}}:8080
 {% if protocol == 'https' %}
-      - {{https_port}}:443
+      - {{https_port}}:8443
 {% endif %}
 {% if with_notary %}
       - 4443:4443
@@ -419,7 +415,7 @@ services:
 {% if gcs_keyfile %}
       - type: bind
         source: {{gcs_keyfile}}
-        target: /etc/registry/gcs.key
+        target: /etc/chartserver/gcs.key
 {% endif %}
 {%if registry_custom_ca_bundle_path %}
       - type: bind

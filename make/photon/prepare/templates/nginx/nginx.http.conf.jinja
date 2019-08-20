@@ -1,4 +1,5 @@
 worker_processes auto;
+pid /tmp/nginx.pid;
 
 events {
   worker_connections 1024;
@@ -7,6 +8,11 @@ events {
 }
 
 http {
+  client_body_temp_path /tmp/client_body_temp;
+  proxy_temp_path /tmp/proxy_temp;
+  fastcgi_temp_path /tmp/fastcgi_temp;
+  uwsgi_temp_path /tmp/uwsgi_temp;
+  scgi_temp_path /tmp/scgi_temp;
   tcp_nodelay on;
 
   # this is necessary for us to be able to disable request buffering in all cases
@@ -17,7 +23,7 @@ http {
   }
 
   upstream portal {
-    server portal:80;
+    server portal:8080;
   }
 
   log_format timed_combined '$remote_addr - '
@@ -28,7 +34,7 @@ http {
   access_log /dev/stdout timed_combined;
 
   server {
-    listen 80;
+    listen 8080;
     server_tokens off;
     # disable any limits to avoid HTTP 413 for large image uploads
     client_max_body_size 0;
@@ -117,7 +123,7 @@ http {
       proxy_request_buffering off;
     }
 
-  location /service/notifications {
+    location /service/notifications {
       return 404;
     }
   }

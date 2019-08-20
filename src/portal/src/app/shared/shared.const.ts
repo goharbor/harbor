@@ -40,7 +40,8 @@ export const enum ConfirmationTargets {
   CONFIG_ROUTE,
   CONFIG_TAB,
   HELM_CHART,
-  HELM_CHART_VERSION
+  HELM_CHART_VERSION,
+  WEBHOOK
 }
 
 export const enum ActionType {
@@ -54,7 +55,7 @@ export const enum ConfirmationState {
   NA, CONFIRMED, CANCEL
 }
 export const enum ConfirmationButtons {
-  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, SWITCH_CANCEL
+  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, ENABLE_CANCEL, DISABLE_CANCEL, SWITCH_CANCEL
 }
 
 export const ProjectTypes = { 0: 'PROJECT.ALL_PROJECTS', 1: 'PROJECT.PRIVATE_PROJECTS', 2: 'PROJECT.PUBLIC_PROJECTS' };
@@ -80,4 +81,15 @@ export enum ResourceType {
   REPOSITORY = 1,
   CHART_VERSION = 2,
   REPOSITORY_TAG = 3,
+}
+
+export enum WebhookEventTypes {
+  DOWNLOAD_CHART = "downloadChart",
+  DELETE_CHART = "deleteChart",
+  UPLOAD_CHART = "uploadChart",
+  DELETE_IMAGE = "deleteImage",
+  PULL_IMAGE = "pullImage",
+  PUSH_IMAGE = "pushImage",
+  SCANNING_FAILED = "scanningFailed",
+  SCANNING_COMPLETED = "scanningCompleted",
 }

@@ -6,6 +6,8 @@ import { VulnerabilityConfigComponent } from './vulnerability/vulnerability-conf
 import { RegistryConfigComponent } from './registry-config.component';
 import { GcComponent } from './gc/gc.component';
 import { GcHistoryComponent } from './gc/gc-history/gc-history.component';
+import { ProjectQuotasComponent } from './project-quotas/project-quotas.component';
+import { EditProjectQuotasComponent } from './project-quotas/edit-project-quotas/edit-project-quotas.component';
 
 export * from './config';
 export * from './replication/replication-config.component';
@@ -20,5 +22,7 @@ export const CONFIGURATION_DIRECTIVES: Type<any>[] = [
   GcComponent,
   SystemSettingsComponent,
   VulnerabilityConfigComponent,
-  RegistryConfigComponent
+  RegistryConfigComponent,
+  ProjectQuotasComponent,
+  EditProjectQuotasComponent
 ];

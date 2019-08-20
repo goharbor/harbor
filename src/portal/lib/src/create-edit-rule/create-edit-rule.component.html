@@ -48,6 +48,7 @@
           <div class="form-select">
             <div class="select endpointSelect pull-left">
               <select id="src_registry_id" (change)="sourceChange($event)"  formControlName="src_registry" [compareWith]="equals">
+                <option class="display-none"></option>
                 <option *ngFor="let source of sourceList" [ngValue]="source">{{source.name}}-{{source.url}}</option>
               </select>
             </div>
@@ -61,13 +62,13 @@
           <span class="spinner spinner-inline spinner-position" [hidden]="onGoing === false"></span>
           <div formArrayName="filters">
             <div class="filterSelect" *ngFor="let filter of filters.controls; let i=index">
-              <div [formGroupName]="i">
-                <div class="width-70">
+              <div [formGroupName]="i" *ngIf="supportedFilters[i]?.type !=='label' || (supportedFilters[i]?.type==='label' && supportedFilterLabels?.length)">
+                <div class="width-70" >
                   <label>{{"REPLICATION." + supportedFilters[i]?.type.toUpperCase() | translate}}:</label>
                 </div>
                 <label *ngIf="supportedFilters[i]?.style==='input'" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
                   [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
-                  <input type="text" #filterValue required size="14" formControlName="value" id="{{'filter_'+ supportedFilters[i]?.type}}">
+                  <input (input)="trimText($event)" type="text" #filterValue required size="14" formControlName="value" id="{{'filter_'+ supportedFilters[i]?.type}}">
                   <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
                 </label>
                 <div class="select resource-box" *ngIf="supportedFilters[i]?.style==='radio' && supportedFilters[i]?.values.length > 1">
@@ -75,6 +76,27 @@
                     <option value="">{{'REPLICATION.BOTH' | translate}}</option>
                     <option *ngFor="let value of supportedFilters[i]?.values;" value="{{value}}">{{value}}</option>
                   </select>
+                </div>
+                <div class="select resource-box" *ngIf="supportedFilters[i]?.type==='label'&& supportedFilters[i]?.style==='list'">
+                  <div class="dropdown width-100" formArrayName="value">
+                    <clr-dropdown class="width-100">
+                      <button type="button" class="width-100 dropdown-toggle btn btn-link statistic-data label-text" clrDropdownTrigger>
+                        <ng-template ngFor let-label [ngForOf]="filter.value.value" let-m="index">
+                            <span class="label" *ngIf="m<1"> {{label}} </span>
+                        </ng-template>
+                        <span class="ellipsis" *ngIf="filter.value.value.length>1">···</span>
+                        <div *ngFor="let label1 of filter.value.value;let k = index"  hidden="true">
+                        <input type="text" [formControlName]="k" #labelValue id="{{'label_'+ supportedFilters[i]?.type + '_' + label1}}" name="{{'label_'+ supportedFilters[i]?.type + '_' + label1}}" placeholder="select labels"  >
+                        </div>
+                      </button>
+                      <clr-dropdown-menu class="width-100" clrPosition="bottom-left" *clrIfOpen>
+                          <button type="button" class="dropdown-item"  *ngFor="let value of supportedFilterLabels" (click)="stickLabel(value,i)">
+                            <clr-icon shape="check" [hidden]="!value.select" class='pull-left'></clr-icon>
+                            <div class='labelDiv'><hbr-label-piece [label]="value"  [labelWidth]="130"></hbr-label-piece></div>
+                          </button>
+                        </clr-dropdown-menu>
+                    </clr-dropdown>
+                  </div>
                 </div>
                 <div class="resource-box" *ngIf="supportedFilters[i]?.style==='radio' && supportedFilters[i]?.values.length <= 1">
                   <span>{{supportedFilters[i]?.values}}</span>
@@ -84,7 +106,8 @@
                   <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
                     <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='name'">{{'TOOLTIP.NAME_FILTER' | translate}}</span>
                     <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='tag'">{{'TOOLTIP.TAG_FILTER' | translate}}</span>
-                    <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='resource'">{{'TOOLTIP.RESOURCE_FILTER' | translate}}</span>                
+                    <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='label'">{{'TOOLTIP.LABEL_FILTER' | translate}}</span>
+                    <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='resource'">{{'TOOLTIP.RESOURCE_FILTER' | translate}}</span>
                   </clr-tooltip-content>
                 </clr-tooltip>
               </div>
@@ -97,6 +120,7 @@
           <div class="form-select">
             <div class="select endpointSelect pull-left">
                 <select id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry"  [compareWith]="equals">
+                    <option class="display-none"></option>
                     <option *ngFor="let target of targetList" [ngValue]="target">{{target.name}}-{{target.url}}</option>
                   </select>
             </div>

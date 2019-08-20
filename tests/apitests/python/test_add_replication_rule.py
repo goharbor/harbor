@@ -2,11 +2,12 @@ from __future__ import absolute_import
 import unittest
 
 from testutils import ADMIN_CLIENT
+from testutils import harbor_server
 from testutils import TEARDOWN
 from library.project import Project
 from library.user import User
 from library.replication import Replication
-from library.target import Target
+from library.registry import Registry
 import swagger_client
 
 class TestProjects(unittest.TestCase):
@@ -21,8 +22,8 @@ class TestProjects(unittest.TestCase):
         replication = Replication()
         self.replication= replication
 
-        target = Target()
-        self.target= target
+        registry = Registry()
+        self.registry= registry
 
     @classmethod
     def tearDown(self):
@@ -31,11 +32,10 @@ class TestProjects(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
         #1. Delete rule(RA);
-        for rule_id in TestProjects.rule_id_list:
-            self.replication.delete_replication_rule(rule_id, **ADMIN_CLIENT)
+        self.replication.delete_replication_rule(TestProjects.rule_id, **ADMIN_CLIENT)
 
-        #2. Delete target(TA);
-        self.target.delete_target(TestProjects.target_id, **ADMIN_CLIENT)
+        #2. Delete registry(TA);
+        self.registry.delete_registry(TestProjects.registry_id, **ADMIN_CLIENT)
 
         #3. Delete project(PA);
         self.project.delete_project(TestProjects.project_add_rule_id, **TestProjects.USER_add_rule_CLIENT)
@@ -50,12 +50,12 @@ class TestProjects(unittest.TestCase):
         Test step and expected result:
             1. Create a new user(UA);
             2. Create a new private project(PA) by user(UA);
-            3. Create a new target(TA)/registry;
-            4. Create a new rule for project(PA) and target(TA);
-            5. Check if rule is exist.
+            3. Create a new registry;
+            4. Create a new rule for this registry;
+            5. Check rule should be exist.
         Tear down:
             1. Delete rule(RA);
-            2. Delete targe(TA);
+            2. Delete registry(TA);
             3. Delete project(PA);
             4. Delete user(UA).
         """
@@ -74,21 +74,15 @@ class TestProjects(unittest.TestCase):
         self.project.projects_should_exist(dict(public=False), expected_count = 1,
             expected_project_id = TestProjects.project_add_rule_id, **TestProjects.USER_add_rule_CLIENT)
 
-        #3. Create a new target(TA)/registry
-        TestProjects.target_id, _ = self.target.create_target(**ADMIN_CLIENT)
-        print "TestProjects.target_id:", TestProjects.target_id
+        #3. Create a new registry
+        TestProjects.registry_id, _ = self.registry.create_registry("https://" + harbor_server,**ADMIN_CLIENT)
+        print "TestProjects.registry_id:", TestProjects.registry_id
 
-        TestProjects.rule_id_list = []
+        #4. Create a new rule for this registry;
+        TestProjects.rule_id, rule_name = self.replication.create_replication_policy(dest_registry=swagger_client.Registry(id=int(TestProjects.registry_id)), **ADMIN_CLIENT)
 
-        trigger_values_to_set = ["Manual", "Immediate"]
-        for value in trigger_values_to_set:
-            #4. Create a new rule for project(PA) and target(TA)
-            rule_id, rule_name = self.replication.create_replication_rule([TestProjects.project_add_rule_id],
-                [TestProjects.target_id], trigger=swagger_client.RepTrigger(kind=value), **ADMIN_CLIENT)
-            TestProjects.rule_id_list.append(rule_id)
-
-            #5. Check rule should be exist
-            self.replication.check_replication_rule_should_exist(rule_id, rule_name, expect_trigger = value, **ADMIN_CLIENT)
+        #5. Check rule should be exist
+        self.replication.check_replication_rule_should_exist(TestProjects.rule_id, rule_name, **ADMIN_CLIENT)
 
 
 if __name__ == '__main__':

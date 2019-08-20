@@ -16,8 +16,6 @@ package filter
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/utils/oidc"
-	"github.com/stretchr/testify/require"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -26,6 +24,9 @@ import (
 	"path/filepath"
 	"testing"
 	"time"
+
+	"github.com/goharbor/harbor/src/common/utils/oidc"
+	"github.com/stretchr/testify/require"
 
 	"github.com/astaxie/beego"
 	beegoctx "github.com/astaxie/beego/context"
@@ -241,7 +242,7 @@ func TestAuthProxyReqCtxModifier(t *testing.T) {
 	defer server.Close()
 
 	c := map[string]interface{}{
-		common.HTTPAuthProxyAlwaysOnboard:       "true",
+		common.HTTPAuthProxySkipSearch:          "true",
 		common.HTTPAuthProxyVerifyCert:          "false",
 		common.HTTPAuthProxyEndpoint:            "https://auth.proxy/suffix",
 		common.HTTPAuthProxyTokenReviewEndpoint: server.URL,
@@ -253,7 +254,7 @@ func TestAuthProxyReqCtxModifier(t *testing.T) {
 	assert.Nil(t, e)
 	assert.Equal(t, *v, models.HTTPAuthProxy{
 		Endpoint:            "https://auth.proxy/suffix",
-		AlwaysOnBoard:       true,
+		SkipSearch:          true,
 		VerifyCert:          false,
 		TokenReviewEndpoint: server.URL,
 	})

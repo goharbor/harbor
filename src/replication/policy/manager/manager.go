@@ -258,7 +258,7 @@ func parseFilters(str string) ([]*model.Filter, error) {
 			case "tag":
 				filter.Type = model.FilterTypeTag
 			case "label":
-				// TODO if we support the label filter, remove the checking logic here
+				// drop all legend label filters
 				continue
 			default:
 				log.Warningf("unknown filter type: %s", filter.Type)
@@ -270,6 +270,13 @@ func parseFilters(str string) ([]*model.Filter, error) {
 		// is a resource type filter
 		if filter.Type == model.FilterTypeResource {
 			filter.Value = (model.ResourceType)(filter.Value.(string))
+		}
+		if filter.Type == model.FilterTypeLabel {
+			labels := []string{}
+			for _, label := range filter.Value.([]interface{}) {
+				labels = append(labels, label.(string))
+			}
+			filter.Value = labels
 		}
 		filters = append(filters, filter)
 	}

@@ -77,7 +77,7 @@ body {
 }
 
 .datagrid-header{
-    z-index: 1 !important;
+    z-index: 0 !important;
 }
 
 .color-green {
@@ -86,4 +86,8 @@ body {
 
 .color-red {
     color: red;
+}
+
+.datagrid-table,.datagrid-header{
+    position: inherit !important;
 }

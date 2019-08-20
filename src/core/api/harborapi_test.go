@@ -35,12 +35,14 @@ import (
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
 	api_models "github.com/goharbor/harbor/src/core/api/models"
 	apimodels "github.com/goharbor/harbor/src/core/api/models"
+	quota "github.com/goharbor/harbor/src/core/api/quota"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
+	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/replication/model"
-	"github.com/goharbor/harbor/tests/apitests/apilib"
+	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 )
 
 const (
@@ -103,6 +105,7 @@ func init() {
 	beego.Router("/api/users/:id/permissions", &UserAPI{}, "get:ListUserPermissions")
 	beego.Router("/api/users/:id/sysadmin", &UserAPI{}, "put:ToggleUserAdminRole")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &ProjectAPI{}, "get:Logs")
+	beego.Router("/api/projects/:id([0-9]+)/summary", &ProjectAPI{}, "get:Summary")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &MetadataAPI{}, "get:Get")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &MetadataAPI{}, "post:Post")
@@ -144,6 +147,8 @@ func init() {
 	beego.Router("/api/system/gc/:id([0-9]+)/log", &GCAPI{}, "get:GetLog")
 	beego.Router("/api/system/gc/schedule", &GCAPI{}, "get:Get;put:Put;post:Post")
 	beego.Router("/api/system/scanAll/schedule", &ScanAllAPI{}, "get:Get;put:Put;post:Post")
+	beego.Router("/api/system/CVEWhitelist", &SysCVEWhitelistAPI{}, "get:Get;put:Put")
+	beego.Router("/api/system/oidc/ping", &OIDCAPI{}, "post:Ping")
 
 	beego.Router("/api/projects/:pid([0-9]+)/robots/", &RobotAPI{}, "post:Post;get:List")
 	beego.Router("/api/projects/:pid([0-9]+)/robots/:id([0-9]+)", &RobotAPI{}, "get:Get;put:Put;delete:Delete")
@@ -156,6 +161,22 @@ func init() {
 
 	beego.Router("/api/replication/policies", &ReplicationPolicyAPI{}, "get:List;post:Create")
 	beego.Router("/api/replication/policies/:id([0-9]+)", &ReplicationPolicyAPI{}, "get:Get;put:Update;delete:Delete")
+
+	beego.Router("/api/retentions/metadatas", &RetentionAPI{}, "get:GetMetadatas")
+	beego.Router("/api/retentions/:id", &RetentionAPI{}, "get:GetRetention")
+	beego.Router("/api/retentions", &RetentionAPI{}, "post:CreateRetention")
+	beego.Router("/api/retentions/:id", &RetentionAPI{}, "put:UpdateRetention")
+	beego.Router("/api/retentions/:id/executions", &RetentionAPI{}, "post:TriggerRetentionExec")
+	beego.Router("/api/retentions/:id/executions/:eid", &RetentionAPI{}, "patch:OperateRetentionExec")
+	beego.Router("/api/retentions/:id/executions", &RetentionAPI{}, "get:ListRetentionExecs")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks", &RetentionAPI{}, "get:ListRetentionExecTasks")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks/:tid", &RetentionAPI{}, "get:GetRetentionExecTaskLog")
+
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies", &NotificationPolicyAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/:id([0-9]+)", &NotificationPolicyAPI{})
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/test", &NotificationPolicyAPI{}, "post:Test")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/lasttrigger", &NotificationPolicyAPI{}, "get:ListGroupByEventType")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/", &NotificationJobAPI{}, "get:List")
 
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}
@@ -178,15 +199,29 @@ func init() {
 	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
 	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
 
+	quotaAPIType := &QuotaAPI{}
+	beego.Router("/api/quotas", quotaAPIType, "get:List")
+	beego.Router("/api/quotas/:id([0-9]+)", quotaAPIType, "get:Get;put:Put")
+
+	beego.Router("/api/internal/switchquota", &InternalAPI{}, "put:SwitchQuota")
+	beego.Router("/api/internal/syncquota", &InternalAPI{}, "post:SyncQuota")
+
 	// syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
 		log.Fatalf("failed to sync repositories from registry: %v", err)
+	}
+
+	if err := quota.Sync(config.GlobalProjectMgr, false); err != nil {
+		log.Fatalf("failed to sync quota from backend: %v", err)
 	}
 
 	// Init user Info
 	admin = &usrInfo{adminName, adminPwd}
 	unknownUsr = &usrInfo{"unknown", "unknown"}
 	testUser = &usrInfo{TestUserName, TestUserPwd}
+
+	// Init notification related check map
+	notification.Init()
 
 	// Init mock jobservice
 	mockServer := test.NewJobServiceServer()
@@ -452,6 +487,23 @@ func (a testapi) ProjectDeletable(prjUsr usrInfo, projectID int64) (int, bool, e
 	return code, deletable.Deletable, nil
 }
 
+// ProjectSummary returns summary for the project
+func (a testapi) ProjectSummary(prjUsr usrInfo, projectID string) (int, apilib.ProjectSummary, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	// create api path
+	path := "api/projects/" + projectID + "/summary"
+	_sling = _sling.Path(path)
+
+	var successPayload apilib.ProjectSummary
+
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, prjUsr)
+	if err == nil && httpStatusCode == 200 {
+		err = json.Unmarshal(body, &successPayload)
+	}
+	return httpStatusCode, successPayload, err
+}
+
 // -------------------------Member Test---------------------------------------//
 
 // Return relevant role members of projectID
@@ -554,7 +606,7 @@ func (a testapi) GetRepos(authInfo usrInfo, projectID, keyword string) (
 	return code, nil, nil
 }
 
-func (a testapi) GetTag(authInfo usrInfo, repository string, tag string) (int, *tagResp, error) {
+func (a testapi) GetTag(authInfo usrInfo, repository string, tag string) (int, *models.TagResp, error) {
 	_sling := sling.New().Get(a.basePath).Path(fmt.Sprintf("/api/repositories/%s/tags/%s", repository, tag))
 	code, data, err := request(_sling, jsonAcceptHeader, authInfo)
 	if err != nil {
@@ -566,7 +618,7 @@ func (a testapi) GetTag(authInfo usrInfo, repository string, tag string) (int, *
 		return code, nil, nil
 	}
 
-	result := tagResp{}
+	result := models.TagResp{}
 	if err := json.Unmarshal(data, &result); err != nil {
 		return 0, nil, err
 	}
@@ -590,7 +642,7 @@ func (a testapi) GetReposTags(authInfo usrInfo, repoName string) (int, interface
 		return httpStatusCode, body, nil
 	}
 
-	result := []tagResp{}
+	result := []models.TagResp{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return 0, nil, err
 	}
@@ -1210,4 +1262,56 @@ func (a testapi) RegistryUpdate(authInfo usrInfo, registryID int64, req *apimode
 	}
 
 	return code, nil
+}
+
+// QuotasGet returns quotas
+func (a testapi) QuotasGet(query *apilib.QuotaQuery, authInfo ...usrInfo) (int, []apilib.Quota, error) {
+	_sling := sling.New().Get(a.basePath).
+		Path("api/quotas").
+		QueryStruct(query)
+
+	var successPayload []apilib.Quota
+
+	var httpStatusCode int
+	var err error
+	var body []byte
+	if len(authInfo) > 0 {
+		httpStatusCode, body, err = request(_sling, jsonAcceptHeader, authInfo[0])
+	} else {
+		httpStatusCode, body, err = request(_sling, jsonAcceptHeader)
+	}
+
+	if err == nil && httpStatusCode == 200 {
+		err = json.Unmarshal(body, &successPayload)
+	} else {
+		log.Println(string(body))
+	}
+
+	return httpStatusCode, successPayload, err
+}
+
+// Return specific quota
+func (a testapi) QuotasGetByID(authInfo usrInfo, quotaID string) (int, apilib.Quota, error) {
+	_sling := sling.New().Get(a.basePath)
+
+	// create api path
+	path := "api/quotas/" + quotaID
+	_sling = _sling.Path(path)
+
+	var successPayload apilib.Quota
+
+	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
+	if err == nil && httpStatusCode == 200 {
+		err = json.Unmarshal(body, &successPayload)
+	}
+	return httpStatusCode, successPayload, err
+}
+
+// Update spec for the quota
+func (a testapi) QuotasPut(authInfo usrInfo, quotaID string, req models.QuotaUpdateRequest) (int, error) {
+	path := "/api/quotas/" + quotaID
+	_sling := sling.New().Put(a.basePath).Path(path).BodyJSON(req)
+
+	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
+	return httpStatusCode, err
 }

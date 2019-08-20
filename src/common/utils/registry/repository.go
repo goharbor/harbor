@@ -25,11 +25,9 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	//	"time"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
 )
@@ -211,7 +209,7 @@ func (r *Repository) PushManifest(reference, mediaType string, payload []byte) (
 
 	defer resp.Body.Close()
 
-	if resp.StatusCode == http.StatusCreated {
+	if resp.StatusCode == http.StatusCreated || resp.StatusCode == http.StatusOK {
 		digest = resp.Header.Get(http.CanonicalHeaderKey("Docker-Content-Digest"))
 		return
 	}
@@ -407,6 +405,7 @@ func (r *Repository) monolithicBlobUpload(location, digest string, size int64, d
 	if err != nil {
 		return err
 	}
+	req.ContentLength = size
 
 	resp, err := r.client.Do(req)
 	if err != nil {

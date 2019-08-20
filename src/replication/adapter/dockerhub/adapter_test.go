@@ -4,11 +4,10 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/stretchr/testify/require"
-
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 const (
@@ -24,6 +23,7 @@ func getAdapter(t *testing.T) adp.Adapter {
 
 	adapter, err := factory(&model.Registry{
 		Type: model.RegistryTypeDockerHub,
+		URL:  baseURL,
 		Credential: &model.Credential{
 			AccessKey:    testUser,
 			AccessSecret: testPassword,

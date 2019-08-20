@@ -1,3 +1,4 @@
+
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -26,45 +27,6 @@ ${HARBOR_ADMIN}  admin
 Test Case - Sign With Admin
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Close Browser
-
-Test Case - Vulnerability Data Not Ready
-#This case must run before vulnerability db ready
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library  has_image=${false}
-    Vulnerability Not Ready Project Hint
-    Switch To Vulnerability Page
-    Vulnerability Not Ready Config Hint
-
-Test Case - Garbage Collection
-    Init Chrome Driver
-    ${d}=   Get Current Date    result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world
-    Sleep  2
-    Go Into Project  project${d}
-    Delete Repo  project${d}
-
-    Switch To Garbage Collection
-    Click GC Now
-    Logout Harbor
-    Sleep  2
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Garbage Collection
-    Sleep  1
-    Switch To GC History
-    Retry Wait Until Page Contains  Finished
-
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -i --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/system/gc/1/log"
-    Log To Console  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    Should Contain  ${output}  3 blobs and 0 manifests eligible for deletion
-    #Should Contain  ${output}  Deleting blob:
-    Should Contain  ${output}  success to run gc in job.
-
     Close Browser
 
 Test Case - Create An New Project
@@ -173,21 +135,6 @@ Test Case - Project Level Policy Public
     Project Should Be Public  project${d}
     Close Browser
 
-Test Case - Project Level Policy Content Trust
-    Init Chrome Driver
-    ${d}=  Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
-    Go Into Project  project${d}
-    Goto Project Config
-    Click Content Trust
-    Save Project Config
-    # Verify
-    Content Trust Should Be Selected
-    Cannot Pull Unsigned Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world:latest
-    Close Browser
-
 Test Case - Verify Download Ca Link
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -253,17 +200,6 @@ Test Case - Delete Label
     Create New Labels  label_${d}
     Sleep  3
     Delete A Label  label_${d}
-    Close Browser
-
-Test Case - Disable Scan Schedule
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Vulnerability Page
-    Disable Scan Schedule
-    Logout Harbor
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Vulnerability Page
-    Retry Wait Until Page Contains  None
     Close Browser
 
 Test Case - User View Projects
@@ -488,63 +424,6 @@ Test Case - Developer Operate Labels
     Page Should Not Contain Element  xpath=//a[contains(.,'Labels')]
     Close Browser
 
-Test Case - Scan A Tag In The Repo
-    Body Of Scan A Tag In The Repo
-
-Test Case - Scan As An Unprivileged User
-    Init Chrome Driver
-    ${d}=    get current date    result_format=%m%s
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
-
-    Sign In Harbor  ${HARBOR_URL}  user024  Test1@34
-    Go Into Project  library
-    Go Into Repo  hello-world
-    Select Object  latest
-    Scan Is Disabled
-    Close Browser
-
-Test Case - Scan Image With Empty Vul
-    Init Chrome Driver
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  busybox
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
-    Go Into Repo  busybox
-    Scan Repo  latest  Succeed
-    Move To Summary Chart
-    Wait Until Page Contains  Unknow
-    Close Browser
-
-Test Case - Manual Scan All
-    Init Chrome Driver
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Vulnerability Page
-    Trigger Scan Now
-    Navigate To Projects
-    Go Into Project  library
-    Go Into Repo  redis
-    Summary Chart Should Display  latest
-    Close Browser
-
-Test Case - View Scan Error
-    Init Chrome Driver
-    ${d}=  get current date  result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user026  Test1@34
-    Create An New Project  project${d}
-    Push Image  ${ip}  user026  Test1@34  project${d}  vmware/photon:1.0
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/vmware/photon
-    Scan Repo  1.0  Fail
-    View Scan Error Log
-    Close Browser
-
-Test Case - List Helm Charts
-    Body Of List Helm Charts
-
-Test Case - Admin Push Signed Image
-    Body Of Admin Push Signed Image
-
 Test Case - Retag A Image Tag
     Init Chrome Driver
     ${random_num1}=   Get Current Date    result_format=%m%s
@@ -570,45 +449,3 @@ Test Case - Retag A Image Tag
     Page Should Contain Element  xpath=${tag_value_xpath}
     Close Browser
 
-Test Case - Scan Image On Push
-    Wait Unitl Vul Data Ready  ${HARBOR_URL}  7200  30
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library
-    Goto Project Config
-    Enable Scan On Push
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  memcached
-    Navigate To Projects
-    Go Into Project  library
-    Go Into Repo  memcached
-    Summary Chart Should Display  latest
-    Close Browser
-
-Test Case - View Scan Results
-    Init Chrome Driver
-    ${d}=  get current date  result_format=%m%s
-
-    Sign In Harbor  ${HARBOR_URL}  user025  Test1@34
-    Create An New Project  project${d}
-    Push Image  ${ip}  user025  Test1@34  project${d}  tomcat
-    Go Into Project  project${d}
-    Go Into Repo  project${d}/tomcat
-    Scan Repo  latest  Succeed
-    Summary Chart Should Display  latest
-    View Repo Scan Details
-    Close Browser
-
-Test Case - Project Level Image Serverity Policy
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    ${d}=  get current date  result_format=%m%s
-    Create An New Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
-    Go Into Project  project${d}
-    Go Into Repo  haproxy
-    Scan Repo  latest  Succeed
-    Navigate To Projects
-    Go Into Project  project${d}
-    Set Vulnerabilty Serverity  0
-    Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  haproxy
-    Close Browser

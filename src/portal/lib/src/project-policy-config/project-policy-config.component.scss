@@ -1,8 +1,70 @@
-#severity-blk div
-{
-    display: inline-block;
+#severity-blk div {
+  display: inline-block;
 }
 
 .select {
-    width: 120px;
+  width: 120px;
 }
+.margin-top-4 {
+  margin-top: 4px;
+}
+
+.whitelist-window {
+  border: 1px solid #ccc;
+  border-radius: 3px;
+  padding: 12px;
+  height: 224px;
+  width: 222px;
+  color: #0079bb;
+  overflow-y: auto;
+  li {
+    height: 24px;
+    line-height: 24px;
+    list-style-type: none;
+  }
+}
+
+.width-70per {
+  width: 70%;
+}
+
+.none {
+  color: #ccc;
+}
+
+.underline {
+  border-bottom: 1px solid;
+}
+
+.color-0079bb {
+  color: #0079bb;
+}
+
+.padding-top-8 {
+  padding-top: 8px;
+}
+
+.padding-left-80 {
+  padding-left: 80px;
+}
+
+.add-modal {
+  position: absolute;
+  padding: 0 8px;
+  background-color: rgb(238, 238, 238);
+
+  input {
+    width: 100%;
+    border: 1px solid;
+  }
+
+  button {
+    float: right;
+  }
+}
+
+.hand{
+  cursor: pointer;
+  margin: 0;
+}
+

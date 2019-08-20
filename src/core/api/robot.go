@@ -158,7 +158,6 @@ func (r *RobotAPI) Post() {
 	}
 
 	robotRep := models.RobotRep{
-		ID:    id,
 		Name:  robot.Name,
 		Token: rawTk,
 	}

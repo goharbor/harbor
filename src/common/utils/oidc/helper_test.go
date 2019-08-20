@@ -49,21 +49,20 @@ func TestMain(m *testing.M) {
 func TestHelperLoadConf(t *testing.T) {
 	testP := &providerHelper{}
 	assert.Nil(t, testP.setting.Load())
-	err := testP.reload()
+	err := testP.reloadSetting()
 	assert.Nil(t, err)
 	assert.Equal(t, "test", testP.setting.Load().(models.OIDCSetting).Name)
-	assert.Equal(t, endpoint{}, testP.ep)
 }
 
 func TestHelperCreate(t *testing.T) {
 	testP := &providerHelper{}
-	err := testP.reload()
+	err := testP.reloadSetting()
 	assert.Nil(t, err)
 	assert.Nil(t, testP.instance.Load())
 	err = testP.create()
 	assert.Nil(t, err)
-	assert.EqualValues(t, "https://accounts.google.com", testP.ep.url)
 	assert.NotNil(t, testP.instance.Load())
+	assert.True(t, time.Now().Sub(testP.creationTime) < 2*time.Second)
 }
 
 func TestHelperGet(t *testing.T) {
@@ -97,4 +96,17 @@ func TestAuthCodeURL(t *testing.T) {
 	assert.Nil(t, err)
 	assert.Equal(t, "offline", q.Get("access_type"))
 	assert.False(t, strings.Contains(q.Get("scope"), "offline_access"))
+}
+
+func TestTestEndpoint(t *testing.T) {
+	c1 := Conn{
+		URL:        googleEndpoint,
+		VerifyCert: true,
+	}
+	c2 := Conn{
+		URL:        "https://www.baidu.com",
+		VerifyCert: false,
+	}
+	assert.Nil(t, TestEndpoint(c1))
+	assert.NotNil(t, TestEndpoint(c2))
 }

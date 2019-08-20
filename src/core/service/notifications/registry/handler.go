@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
+	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
@@ -111,9 +112,28 @@ func (n *NotificationHandler) Post() {
 				}()
 			}
 
-			if !coreutils.WaitForManifestReady(repository, tag, 5) {
+			if !coreutils.WaitForManifestReady(repository, tag, 6) {
 				log.Errorf("Manifest for image %s:%s is not ready, skip the follow up actions.", repository, tag)
 				return
+			}
+
+			// build and publish image push event
+			evt := &notifierEvt.Event{}
+			imgPushMetadata := &notifierEvt.ImagePushMetaData{
+				Project:  pro,
+				Tag:      tag,
+				Digest:   event.Target.Digest,
+				RepoName: event.Target.Repository,
+				OccurAt:  time.Now(),
+				Operator: event.Actor.Name,
+			}
+			if err := evt.Build(imgPushMetadata); err != nil {
+				// do not return when building event metadata failed
+				log.Errorf("failed to build image push event metadata: %v", err)
+			}
+			if err := evt.Publish(); err != nil {
+				// do not return when publishing event failed
+				log.Errorf("failed to publish image push event: %v", err)
 			}
 
 			// TODO: handle image delete event and chart event
@@ -148,12 +168,70 @@ func (n *NotificationHandler) Post() {
 			}
 		}
 		if action == "pull" {
+			// build and publish image pull event
+			evt := &notifierEvt.Event{}
+			imgPullMetadata := &notifierEvt.ImagePullMetaData{
+				Project:  pro,
+				Tag:      tag,
+				Digest:   event.Target.Digest,
+				RepoName: event.Target.Repository,
+				OccurAt:  time.Now(),
+				Operator: event.Actor.Name,
+			}
+			if err := evt.Build(imgPullMetadata); err != nil {
+				// do not return when building event metadata failed
+				log.Errorf("failed to build image push event metadata: %v", err)
+			}
+			if err := evt.Publish(); err != nil {
+				// do not return when publishing event failed
+				log.Errorf("failed to publish image pull event: %v", err)
+			}
+
 			go func() {
 				log.Debugf("Increase the repository %s pull count.", repository)
 				if err := dao.IncreasePullCount(repository); err != nil {
 					log.Errorf("Error happens when increasing pull count: %v", repository)
 				}
 			}()
+
+			// update the artifact pull time, and ignore the events without tag.
+			if tag != "" {
+				go func() {
+					artifactQuery := &models.ArtifactQuery{
+						PID:  pro.ProjectID,
+						Repo: repository,
+					}
+
+					// handle pull by tag or digest
+					pullByDigest := utils.IsDigest(tag)
+					if pullByDigest {
+						artifactQuery.Digest = tag
+					} else {
+						artifactQuery.Tag = tag
+					}
+
+					afs, err := dao.ListArtifacts(artifactQuery)
+					if err != nil {
+						log.Errorf("Error occurred when to get artifact %v", err)
+						return
+					}
+					if len(afs) > 0 {
+						log.Warningf("get multiple artifact records when to update pull time with query :%d-%s-%s, "+
+							"all of them will be updated.", artifactQuery.PID, artifactQuery.Repo, artifactQuery.Tag)
+					}
+
+					// ToDo: figure out how to do batch update in Pg as beego orm doesn't support update multiple like insert does.
+					for _, af := range afs {
+						log.Debugf("Update the artifact: %s pull time.", af.Repo)
+						af.PullTime = time.Now()
+						if err := dao.UpdateArtifactPullTime(af); err != nil {
+							log.Errorf("Error happens when updating the pull time of artifact: %d-%s, with err: %v",
+								artifactQuery.PID, artifactQuery.Repo, err)
+						}
+					}
+				}()
+			}
+
 		}
 	}
 }

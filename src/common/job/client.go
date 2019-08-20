@@ -11,7 +11,14 @@ import (
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
+)
+
+var (
+	// GlobalClient is an instance of the default client that can be used globally
+	// Notes: the client needs to be initialized before can be used
+	GlobalClient Client
 )
 
 // Client wraps interface to access jobservice.
@@ -27,6 +34,11 @@ type Client interface {
 type DefaultClient struct {
 	endpoint string
 	client   *commonhttp.Client
+}
+
+// Init the GlobalClient
+func Init() {
+	GlobalClient = NewDefaultClient(config.InternalJobServiceURL(), config.CoreSecret())
 }
 
 // NewDefaultClient creates a default client based on endpoint and secret.

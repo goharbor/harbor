@@ -1,4 +1,4 @@
-# Copyright Project Harbor Authors
+f# Copyright Project Harbor Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -53,11 +53,13 @@ Resource  Harbor-Pages/Configuration_Elements.robot
 Resource  Harbor-Pages/ToolKit.robot
 Resource  Harbor-Pages/ToolKit_Elements.robot
 Resource  Harbor-Pages/Vulnerability.robot
+Resource  Harbor-Pages/Vulnerability_Elements.robot
 Resource  Harbor-Pages/LDAP-Mode.robot
 Resource  Harbor-Pages/OIDC_Auth.robot
 Resource  Harbor-Pages/OIDC_Auth_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
+Resource  Helm-Util.robot
 Resource  Admiral-Util.robot
 Resource  OVA-Util.robot
 Resource  Cert-Util.robot
@@ -80,6 +82,11 @@ Retry Wait Element
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Wait Until Element Is Visible And Enabled  @{param}
+
+Retry Wait Element Visible
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Wait Until Element Is Visible  @{param}
 
 Retry Wait Element Not Visible
     [Arguments]  ${element_xpath}
@@ -162,6 +169,7 @@ Element Click
     [Arguments]  ${element_xpath}
     Wait Until Element Is Visible And Enabled  ${element_xpath}
     Click Element  ${element_xpath}
+    Sleep  1
 
 Button Click
     [Arguments]  ${element_xpath}
@@ -225,12 +233,12 @@ Retry Double Keywords When Error
     \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
     \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
     \    Capture Page Screenshot
+    \    Sleep  2
     \    ${out2}  Run Keyword And Ignore Error  ${keyword2}  ${element2}
     \    Capture Page Screenshot
     \    Log To Console  Return value is ${out1[0]} ${out2[0]}
-    \    Exit For Loop If  '${out1[0]}'=='PASS' and '${out2[0]}'=='PASS'
-    \    Sleep  2
-    Should Be Equal As Strings  '${out1[0]}'  'PASS'
+    \    Exit For Loop If  '${out2[0]}'=='PASS'
+    \    Sleep  1
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
 
 Run Curl And Return Json

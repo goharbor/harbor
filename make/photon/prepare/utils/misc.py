@@ -3,7 +3,7 @@ import string
 import random
 
 from g import DEFAULT_UID, DEFAULT_GID
-
+from pathlib import Path
 
 # To meet security requirement
 # By default it will change file mode to 0600, and make the owner of the file to 10000:10000
@@ -83,6 +83,26 @@ def prepare_config_dir(root, *name):
     if not os.path.exists(absolute_path):
         os.makedirs(absolute_path)
     return absolute_path
+
+def prepare_dir(root: str, *args, **kwargs) -> str:
+    gid, uid = kwargs.get('gid'), kwargs.get('uid')
+    absolute_path = Path(os.path.join(root, *args))
+    if absolute_path.is_file():
+        raise Exception('Path exists and the type is regular file')
+    mode = kwargs.get('mode') or 0o755
+    absolute_path.mkdir(mode, parents=True, exist_ok=True)
+
+    # if uid or gid not None, then change the ownership of this dir
+    if not(gid is None and uid is None):
+        dir_uid, dir_gid = absolute_path.stat().st_uid, absolute_path.stat().st_gid
+        if uid is None:
+            uid = dir_uid
+        if gid is None:
+            gid = dir_gid
+        os.chown(absolute_path, uid, gid)
+
+    return str(absolute_path)
+
 
 
 def delfile(src):

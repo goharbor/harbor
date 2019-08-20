@@ -18,88 +18,88 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
 )
-
-type repository struct {
-	Name string `json:"name"`
-}
-
-func (r *repository) Match(filters []*model.Filter) (bool, error) {
-	supportedFilters := []*model.Filter{}
-	for _, filter := range filters {
-		if filter.Type == model.FilterTypeName {
-			supportedFilters = append(supportedFilters, filter)
-		}
-	}
-	item := &FilterItem{
-		Value: r.Name,
-	}
-	return item.Match(supportedFilters)
-}
-
-type tag struct {
-	Name string `json:"name"`
-}
-
-func (t *tag) Match(filters []*model.Filter) (bool, error) {
-	supportedFilters := []*model.Filter{}
-	for _, filter := range filters {
-		if filter.Type == model.FilterTypeTag {
-			supportedFilters = append(supportedFilters, filter)
-		}
-	}
-	item := &FilterItem{
-		Value: t.Name,
-	}
-	return item.Match(supportedFilters)
-}
 
 func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
 	projects, err := a.listCandidateProjects(filters)
 	if err != nil {
 		return nil, err
 	}
+
 	resources := []*model.Resource{}
 	for _, project := range projects {
 		repositories, err := a.getRepositories(project.ID)
 		if err != nil {
 			return nil, err
 		}
-		repositories, err = filterRepositories(repositories, filters)
-		if err != nil {
-			return nil, err
+		if len(repositories) == 0 {
+			continue
 		}
-		for _, repository := range repositories {
-			url := fmt.Sprintf("%s/api/repositories/%s/tags", a.getURL(), repository.Name)
-			tags := []*tag{}
-			if err = a.client.Get(url, &tags); err != nil {
+		for _, filter := range filters {
+			if err = filter.DoFilter(&repositories); err != nil {
 				return nil, err
 			}
-			tags, err = filterTags(tags, filters)
-			if err != nil {
-				return nil, err
-			}
-			if len(tags) == 0 {
-				continue
-			}
-			vtags := []string{}
-			for _, tag := range tags {
-				vtags = append(vtags, tag.Name)
-			}
-			resources = append(resources, &model.Resource{
-				Type:     model.ResourceTypeImage,
-				Registry: a.registry,
-				Metadata: &model.ResourceMetadata{
-					Repository: &model.Repository{
-						Name:     repository.Name,
-						Metadata: project.Metadata,
+		}
+
+		var rawResources = make([]*model.Resource, len(repositories))
+		runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
+		defer runner.Cancel()
+
+		for i, r := range repositories {
+			index := i
+			repo := r
+			runner.AddTask(func() error {
+				vTags, err := a.getTags(repo.Name)
+				if err != nil {
+					return fmt.Errorf("List tags for repo '%s' error: %v", repo.Name, err)
+				}
+				if len(vTags) == 0 {
+					rawResources[index] = nil
+					return nil
+				}
+				for _, filter := range filters {
+					if err = filter.DoFilter(&vTags); err != nil {
+						return fmt.Errorf("Filter tags %v error: %v", vTags, err)
+					}
+				}
+				if len(vTags) == 0 {
+					rawResources[index] = nil
+					return nil
+				}
+				tags := []string{}
+				for _, vTag := range vTags {
+					tags = append(tags, vTag.Name)
+				}
+				rawResources[index] = &model.Resource{
+					Type:     model.ResourceTypeImage,
+					Registry: a.registry,
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{
+							Name:     repo.Name,
+							Metadata: project.Metadata,
+						},
+						Vtags: tags,
 					},
-					Vtags: vtags,
-				},
+				}
+
+				return nil
 			})
+		}
+		runner.Wait()
+
+		if runner.IsCancelled() {
+			return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+		}
+
+		for _, r := range rawResources {
+			if r != nil {
+				resources = append(resources, r)
+			}
 		}
 	}
 
@@ -150,30 +150,28 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 	return a.client.Delete(url)
 }
 
-func filterRepositories(repositories []*repository, filters []*model.Filter) ([]*repository, error) {
-	result := []*repository{}
-	for _, repository := range repositories {
-		match, err := repository.Match(filters)
-		if err != nil {
-			return nil, err
+func (a *adapter) getTags(repository string) ([]*adp.VTag, error) {
+	url := fmt.Sprintf("%s/api/repositories/%s/tags", a.getURL(), repository)
+	tags := []*struct {
+		Name   string `json:"name"`
+		Labels []*struct {
+			Name string `json:"name"`
 		}
-		if match {
-			result = append(result, repository)
-		}
+	}{}
+	if err := a.client.Get(url, &tags); err != nil {
+		return nil, err
 	}
-	return result, nil
-}
-
-func filterTags(tags []*tag, filters []*model.Filter) ([]*tag, error) {
-	result := []*tag{}
+	vTags := []*adp.VTag{}
 	for _, tag := range tags {
-		match, err := tag.Match(filters)
-		if err != nil {
-			return nil, err
+		var labels []string
+		for _, label := range tag.Labels {
+			labels = append(labels, label.Name)
 		}
-		if match {
-			result = append(result, tag)
-		}
+		vTags = append(vTags, &adp.VTag{
+			Name:         tag.Name,
+			Labels:       labels,
+			ResourceType: string(model.ResourceTypeImage),
+		})
 	}
-	return result, nil
+	return vTags, nil
 }

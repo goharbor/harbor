@@ -15,6 +15,7 @@
 package auth
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -111,7 +112,12 @@ func (t *tokenAuthorizer) Modify(req *http.Request) error {
 		}
 	}
 
-	req.Header.Add(http.CanonicalHeaderKey("Authorization"), fmt.Sprintf("Bearer %s", token.Token))
+	tk := token.GetToken()
+	if len(tk) == 0 {
+		return errors.New("empty token content")
+	}
+
+	req.Header.Add(http.CanonicalHeaderKey("Authorization"), fmt.Sprintf("Bearer %s", tk))
 
 	return nil
 }

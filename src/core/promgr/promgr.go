@@ -16,6 +16,7 @@ package promgr
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/models"
@@ -44,6 +45,7 @@ type defaultProjectManager struct {
 	pmsDriver      pmsdriver.PMSDriver
 	metaMgrEnabled bool // if metaMgrEnabled is enabled, metaMgr will be used to CURD metadata
 	metaMgr        metamgr.ProjectMetadataManager
+	whitelistMgr   whitelist.Manager
 }
 
 // NewDefaultProjectManager returns an instance of defaultProjectManager,
@@ -56,6 +58,7 @@ func NewDefaultProjectManager(driver pmsdriver.PMSDriver, metaMgrEnabled bool) P
 	}
 	if metaMgrEnabled {
 		mgr.metaMgr = metamgr.NewDefaultProjectMetadataManager()
+		mgr.whitelistMgr = whitelist.NewDefaultManager()
 	}
 	return mgr
 }
@@ -77,6 +80,11 @@ func (d *defaultProjectManager) Get(projectIDOrName interface{}) (*models.Projec
 		for k, v := range meta {
 			project.Metadata[k] = v
 		}
+		wl, err := d.whitelistMgr.Get(project.ProjectID)
+		if err != nil {
+			return nil, err
+		}
+		project.CVEWhitelist = *wl
 	}
 	return project, nil
 }
@@ -85,9 +93,12 @@ func (d *defaultProjectManager) Create(project *models.Project) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
-	if len(project.Metadata) > 0 && d.metaMgrEnabled {
-		if err = d.metaMgr.Add(id, project.Metadata); err != nil {
-			log.Errorf("failed to add metadata for project %s: %v", project.Name, err)
+	if d.metaMgrEnabled {
+		d.whitelistMgr.CreateEmpty(id)
+		if len(project.Metadata) > 0 {
+			if err = d.metaMgr.Add(id, project.Metadata); err != nil {
+				log.Errorf("failed to add metadata for project %s: %v", project.Name, err)
+			}
 		}
 	}
 	return id, nil
@@ -110,37 +121,40 @@ func (d *defaultProjectManager) Delete(projectIDOrName interface{}) error {
 }
 
 func (d *defaultProjectManager) Update(projectIDOrName interface{}, project *models.Project) error {
-	if len(project.Metadata) > 0 && d.metaMgrEnabled {
-		pro, err := d.Get(projectIDOrName)
-		if err != nil {
+	pro, err := d.Get(projectIDOrName)
+	if err != nil {
+		return err
+	}
+	if pro == nil {
+		return fmt.Errorf("project %v not found", projectIDOrName)
+	}
+	// TODO transaction?
+	if d.metaMgrEnabled {
+		if err := d.whitelistMgr.Set(pro.ProjectID, project.CVEWhitelist); err != nil {
 			return err
 		}
-		if pro == nil {
-			return fmt.Errorf("project %v not found", projectIDOrName)
-		}
-
-		// TODO transaction?
-		metaNeedUpdated := map[string]string{}
-		metaNeedCreated := map[string]string{}
-		if pro.Metadata == nil {
-			pro.Metadata = map[string]string{}
-		}
-		for key, value := range project.Metadata {
-			_, exist := pro.Metadata[key]
-			if exist {
-				metaNeedUpdated[key] = value
-			} else {
-				metaNeedCreated[key] = value
+		if len(project.Metadata) > 0 {
+			metaNeedUpdated := map[string]string{}
+			metaNeedCreated := map[string]string{}
+			if pro.Metadata == nil {
+				pro.Metadata = map[string]string{}
+			}
+			for key, value := range project.Metadata {
+				_, exist := pro.Metadata[key]
+				if exist {
+					metaNeedUpdated[key] = value
+				} else {
+					metaNeedCreated[key] = value
+				}
+			}
+			if err = d.metaMgr.Add(pro.ProjectID, metaNeedCreated); err != nil {
+				return err
+			}
+			if err = d.metaMgr.Update(pro.ProjectID, metaNeedUpdated); err != nil {
+				return err
 			}
 		}
-		if err = d.metaMgr.Add(pro.ProjectID, metaNeedCreated); err != nil {
-			return err
-		}
-		if err = d.metaMgr.Update(pro.ProjectID, metaNeedUpdated); err != nil {
-			return err
-		}
 	}
-
 	return d.pmsDriver.Update(projectIDOrName, project)
 }
 
@@ -179,6 +193,7 @@ func (d *defaultProjectManager) List(query *models.ProjectQueryParam) (*models.P
 			project.Metadata = meta
 		}
 	}
+	// the whitelist is not populated deliberately
 	return result, nil
 }
 

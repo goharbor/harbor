@@ -12,13 +12,14 @@ import (
 	"net/url"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/core/label"
-
 	"github.com/goharbor/harbor/src/chartserver"
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/label"
+
+	"github.com/goharbor/harbor/src/core/middlewares"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -45,6 +46,11 @@ const (
 
 // chartController is a singleton instance
 var chartController *chartserver.Controller
+
+// GetChartController returns the chart controller
+func GetChartController() *chartserver.Controller {
+	return chartController
+}
 
 // ChartRepositoryAPI provides related API handlers for the chart repository APIs
 type ChartRepositoryAPI struct {
@@ -526,7 +532,7 @@ func initializeChartController() (*chartserver.Controller, error) {
 		return nil, errors.New("Endpoint URL of chart storage server is malformed")
 	}
 
-	controller, err := chartserver.NewController(url)
+	controller, err := chartserver.NewController(url, middlewares.New(middlewares.ChartMiddlewares).Create())
 	if err != nil {
 		return nil, errors.New("Failed to initialize chart API controller")
 	}

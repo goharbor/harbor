@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Harbor API
   description: These APIs provide services for manipulating Harbor project.
-  version: 1.7.0
+  version: 1.9.0
 host: localhost
 schemes:
   - http
@@ -311,6 +311,34 @@ paths:
           description: User need to log in first.
         '500':
           description: Unexpected internal errors.
+  '/projects/{project_id}/summary':
+    get:
+      summary: Get summary of the project.
+      description: Get summary of the project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Get summary of the project successfully.
+          schema:
+            $ref: '#/definitions/ProjectSummary'
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '404':
+          description: Project ID does not exist.
+        '403':
+          description: User does not have permission to get summary of the project.
+        '500':
+          description: Unexpected internal errors.
   '/projects/{project_id}/metadatas':
     get:
       summary: Get project metadata.
@@ -516,7 +544,7 @@ paths:
         '403':
           description: User in session does not have permission to the project.
         '409':
-          description: An LDAP user group with same DN already exist.
+          description: A user group with same group name already exist or an LDAP user group with same DN already exist.
         '500':
           description: Unexpected internal errors.
   '/projects/{project_id}/members/{mid}':
@@ -1235,11 +1263,16 @@ paths:
           type: string
           required: true
           description: Relevant repository name.
-        - name: label_ids
+        - name: label_id
           in: query
           type: string
           required: false
-          description: A list of comma separated label IDs.
+          description: A label ID.
+        - name: detail
+          in: query
+          type: boolean
+          required: false
+          description: Bool value indicating whether return detailed information of the tag, such as vulnerability scan info, if set to false, only tag name is returned.
       tags:
         - Products
       responses:
@@ -2376,6 +2409,20 @@ paths:
           $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
+  /internal/syncquota:
+    post:
+      summary: Sync quota from registry/chart to DB.
+      description: |
+        This endpoint is for syncing quota usage of registry/chart with database.
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Sync repositories successfully.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of system admin role.
   /systeminfo:
     get:
       summary: Get general system info
@@ -2575,7 +2622,7 @@ paths:
         '403':
           description: User in session does not have permission to the user group.
         '409':
-          description: An LDAP user group with same DN already exist.
+          description: A user group with same group name already exist, or an LDAP user group with same DN already exist.
         '500':
           description: Unexpected internal errors.
   '/usergroups/{group_id}':
@@ -3031,7 +3078,9 @@ paths:
           description: The chart name
       responses:
         '200':
-          $ref: '#/definitions/ChartVersions'
+          description: Retrieved all versions of the specified chart
+          schema:
+            $ref: '#/definitions/ChartVersions'
         '401':
           $ref: '#/definitions/UnauthorizedChartAPIError'
         '403':
@@ -3091,7 +3140,9 @@ paths:
           description: The chart version
       responses:
         '200':
-          $ref: '#/definitions/ChartVersionDetails'
+          description: Successfully retrieved the chart version
+          schema:
+            $ref: '#/definitions/ChartVersionDetails'
         '401':
           $ref: '#/definitions/UnauthorizedChartAPIError'
         '403':
@@ -3474,6 +3525,441 @@ paths:
           description: The robot account is not found.
         '500':
           description: Unexpected internal errors.
+  '/system/oidc/ping':
+    post:
+      summary: Test the OIDC endpoint.
+      description: Test the OIDC endpoint, the setting of the endpoint is provided in the request.  This API can only
+        be called by system admin.
+      tags:
+        - Products
+        - System
+      parameters:
+        - name: endpoint
+          in: body
+          description: Request body for OIDC endpoint to be tested.
+          required: true
+          schema:
+            type: object
+            properties:
+              url:
+                type: string
+                description: The URL of OIDC endpoint to be tested.
+              verify_cert:
+                type: boolean
+                description: Whether the certificate should be verified
+      responses:
+        '200':
+          description: Ping succeeded.  The OIDC endpoint is valid.
+        '400':
+          description: The ping failed
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission to call this API
+  '/system/CVEWhitelist':
+    get:
+      summary: Get the system level whitelist of CVE.
+      description: Get the system level whitelist of CVE.  This API can be called by all authenticated users.
+      tags:
+        - Products
+        - System
+      responses:
+        '200':
+          description: Successfully retrieved the CVE whitelist.
+          schema:
+            $ref: "#/definitions/CVEWhitelist"
+        '401':
+          description: User is not authenticated.
+        '500':
+          description: Unexpected internal errors.
+    put:
+      summary: Update the system level whitelist of CVE.
+      description: This API overwrites the system level whitelist of CVE with the list in request body.  Only system Admin
+        has permission to call this API.
+      tags:
+        - Products
+        - System
+      parameters:
+        - in: body
+          name: whitelist
+          description: The whitelist with new content
+          schema:
+            $ref: "#/definitions/CVEWhitelist"
+      responses:
+        '200':
+          description: Successfully updated the CVE whitelist.
+        '401':
+          description: User is not authenticated.
+        '403':
+          description: User does not have permission to call this API.
+        '500':
+          description: Unexpected internal errors.
+  '/quotas':
+    get:
+      summary: List quotas
+      description: List quotas
+      tags:
+        - quota
+      parameters:
+        - name: reference
+          in: query
+          description: The reference type of quota.
+          required: false
+          type: string
+        - name: sort
+          in: query
+          type: string
+          required: false
+          description: |
+            Sort method, valid values include:
+            'hard.resource_name', '-hard.resource_name', 'used.resource_name', '-used.resource_name'.
+            Here '-' stands for descending order, resource_name should be the real resource name of the quota.
+        - name: page
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: 'The page nubmer, default is 1.'
+        - name: page_size
+          in: query
+          type: integer
+          format: int32
+          required: false
+          description: 'The size of per page, default is 10, maximum is 100.'
+      responses:
+        '200':
+          description: Successfully retrieved the quotas.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Quota'
+          headers:
+            X-Total-Count:
+              description: The total count of access logs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+        '401':
+          description: User is not authenticated.
+        '403':
+          description: User does not have permission to call this API.
+        '500':
+          description: Unexpected internal errors.
+  '/quotas/{id}':
+    get:
+      summary: Get the specified quota
+      description: Get the specified quota
+      tags:
+        - quota
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Quota ID
+      responses:
+        '200':
+          description: Successfully retrieved the quota.
+          schema:
+            $ref: '#/definitions/Quota'
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission to call this API
+        '404':
+          description: Quota does not exist.
+        '500':
+          description: Unexpected internal errors.
+    put:
+      summary: Update the specified quota
+      description: Update hard limits of the specified quota
+      tags:
+        - quota
+      parameters:
+        - name: id
+          in: path
+          type: integer
+          required: true
+          description: Quota ID
+        - name: hard
+          in: body
+          required: true
+          description: The new hard limits for the quota
+          schema:
+            $ref: '#/definitions/QuotaUpdateReq'
+      responses:
+        '200':
+          description: Updated quota hard limits successfully.
+        '400':
+          description: Illegal format of quota update request.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission to the quota.
+        '404':
+          description: Quota ID does not exist.
+        '500':
+          description: Unexpected internal errors.
+  '/projects/{project_id}/webhook/policies':
+    get:
+      summary: List project webhook policies.
+      description: |
+        This endpoint returns webhook policies of a project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: List project webhook policies successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WebhookPolicy'
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to list webhook policies of the project.
+        '500':
+          description: Unexpected internal errors.
+    post:
+      summary: Create project webhook policy.
+      description: |
+        This endpoint create a webhook policy if the project does not have one.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID
+        - name: policy
+          in: body
+          description: Properties "targets" and "event_types" needed.
+          required: true
+          schema:
+            $ref: '#/definitions/WebhookPolicy'
+      tags:
+        - Products
+      responses:
+        '201':
+          description: Project webhook policy create successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to create webhook policy of the project.
+        '500':
+          description: Unexpected internal errors.
+  '/projects/{project_id}/webhook/policies/{policy_id}':
+    get:
+      summary: Get project webhook policy
+      description: |
+        This endpoint returns specified webhook policy of a project.
+      parameters:
+        - name: project_id
+          in: path
+          description: Relevant project ID.
+          required: true
+          type: integer
+          format: int64
+        - name: policy_id
+          in: path
+          description: The id of webhook policy.
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Get webhook policy successfully.
+          schema:
+            $ref: '#/definitions/WebhookPolicy'
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to get webhook policy of the project.
+        '404':
+          description: Webhook policy ID does not exist.
+        '500':
+          description: Internal server errors.
+    put:
+      summary: Update webhook policy of a project.
+      description: |
+        This endpoint is aimed to update the webhook policy of a project.
+      parameters:
+        - name: project_id
+          in: path
+          description: Relevant project ID.
+          required: true
+          type: integer
+          format: int64
+        - name: policy_id
+          in: path
+          description: The id of webhook policy.
+          required: true
+          type: integer
+          format: int64
+        - name: policy
+          in: body
+          description: All properties needed except "id", "project_id", "creation_time", "update_time".
+          required: true
+          schema:
+            $ref: '#/definitions/WebhookPolicy'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Update webhook policy successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to update webhook policy of the project.
+        '404':
+          description: Webhook policy ID does not exist.
+        '500':
+          description: Internal server errors.
+    delete:
+      summary: Delete webhook policy of a project
+      description: |
+        This endpoint is aimed to delete webhookpolicy of a project.
+      parameters:
+        - name: project_id
+          in: path
+          description: Relevant project ID.
+          required: true
+          type: integer
+          format: int64
+        - name: policy_id
+          in: path
+          description: The id of webhook policy.
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Delete webhook policy successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to delete webhook policy of the project.
+        '404':
+          description: Webhook policy ID does not exist.
+        '500':
+          description: Internal server errors.
+  '/projects/{project_id}/webhook/policies/test':
+    post:
+      summary: Test project webhook connection
+      description: |
+        This endpoint tests webhook connection of a project.
+      parameters:
+        - name: project_id
+          in: path
+          description: Relevant project ID.
+          required: true
+          type: integer
+          format: int64
+        - name: policy
+          in: body
+          description: Only property "targets" needed.
+          required: true
+          schema:
+            $ref: '#/definitions/WebhookPolicy'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Test webhook connection successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to get webhook policy of the project.
+        '500':
+          description: Internal server errors.
+  '/projects/{project_id}/webhook/lasttrigger':
+    get:
+      summary: Get project webhook policy last trigger info
+      description: |
+        This endpoint returns last trigger information of project webhook policy.
+      parameters:
+        - name: project_id
+          in: path
+          description: Relevant project ID.
+          required: true
+          type: integer
+          format: int64
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Test webhook connection successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WebhookLastTrigger'
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to get webhook policy of the project.
+        '500':
+          description: Internal server errors.
+  '/projects/{project_id}/webhook/jobs':
+    get:
+      summary: List project webhook jobs
+      description: |
+        This endpoint returns webhook jobs of a project.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: policy_id
+          in: query
+          type: integer
+          format: int64
+          required: true
+          description: The policy ID.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: List project webhook jobs successfully.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/WebhookJob'
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to list webhook jobs of the project.
+        '500':
+          description: Unexpected internal errors.
 responses:
   OK:
     description: 'Success'
@@ -3556,6 +4042,17 @@ definitions:
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'
+      cve_whitelist:
+        description: The CVE whitelist of the project.
+        $ref: '#/definitions/CVEWhitelist'
+      count_limit:
+        type: integer
+        format: int64
+        description: The count quota of the project.
+      storage_limit:
+        type: integer
+        format: int64
+        description: The storage quota of the project.
   Project:
     type: object
     properties:
@@ -3597,6 +4094,9 @@ definitions:
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'
+      cve_whitelist:
+        description: The CVE whitelist of this project.
+        $ref: '#/definitions/CVEWhitelist'
   ProjectMetadata:
     type: object
     properties:
@@ -3605,16 +4105,50 @@ definitions:
         description: 'The public status of the project. The valid values are "true", "false".'
       enable_content_trust:
         type: string
-        description: 'Whether content trust is enabled or not. If it is enabled, user cann''t pull unsigned images from this project. The valid values are "true", "false".'
+        description: 'Whether content trust is enabled or not. If it is enabled, user can''t pull unsigned images from this project. The valid values are "true", "false".'
       prevent_vul:
         type: string
         description: 'Whether prevent the vulnerable images from running. The valid values are "true", "false".'
       severity:
         type: string
-        description: 'If the vulnerability is high than severity defined here, the images cann''t be pulled. The valid values are "negligible", "low", "medium", "high", "critical".'
+        description: 'If the vulnerability is high than severity defined here, the images can''t be pulled. The valid values are "negligible", "low", "medium", "high", "critical".'
       auto_scan:
         type: string
         description: 'Whether scan images automatically when pushing. The valid values are "true", "false".'
+      reuse_sys_cve_whitelist:
+        type: string
+        description: 'Whether this project reuse the system level CVE whitelist as the whitelist of its own.  The valid values are "true", "false".
+        If it is set to "true" the actual whitelist associate with this project, if any, will be ignored.'
+  ProjectSummary:
+    type: object
+    properties:
+      repo_count:
+        type: integer
+        description: The number of the repositories under this project.
+      chart_count:
+        type: integer
+        description: The total number of charts under this project.
+      project_admin_count:
+        type: integer
+        description: The total number of project admin members.
+      master_count:
+        type: integer
+        description: The total number of master members.
+      developer_count:
+        type: integer
+        description: The total number of developer members.
+      guest_count:
+        type: integer
+        description: The total number of guest members.
+      quota:
+        type: object
+        properties:
+          hard:
+            $ref: "#/definitions/ResourceList"
+            description: The hard limits of the quota
+          used:
+            $ref: "#/definitions/ResourceList"
+            description: The used status of the quota
   Manifest:
     type: object
     properties:
@@ -4270,6 +4804,9 @@ definitions:
       auth_mode:
         type: string
         description: 'The auth mode of current system, such as "db_auth", "ldap_auth"'
+      count_per_project:
+        type: string
+        description: The default count quota for the new created projects.
       email_from:
         type: string
         description: The sender name for Email notification.
@@ -4330,12 +4867,18 @@ definitions:
       project_creation_restriction:
         type: string
         description: This attribute restricts what users have the permission to create project.  It can be "everyone" or "adminonly".
+      quota_per_project_enable:
+        type: boolean
+        description: This attribute indicates whether quota per project enabled in harbor
       read_only:
         type: boolean
         description: '''docker push'' is prohibited by Harbor if you set it to true.   '
       self_registration:
         type: boolean
         description: 'Whether the Harbor instance supports self-registration.  If it''s set to false, admin need to add user to the instance.'
+      storage_per_project:
+        type: string
+        description: The default storage quota for the new created projects.
       token_expiration:
         type: integer
         description: 'The expiration time of the token for internal Registry, in minutes.'
@@ -4361,6 +4904,9 @@ definitions:
       auth_mode:
         $ref: '#/definitions/StringConfigItem'
         description: 'The auth mode of current system, such as "db_auth", "ldap_auth"'
+      count_per_project:
+        $ref: '#/definitions/IntegerConfigItem'
+        description: The default count quota for the new created projects.
       email_from:
         $ref: '#/definitions/StringConfigItem'
         description: The sender name for Email notification.
@@ -4421,12 +4967,18 @@ definitions:
       project_creation_restriction:
         $ref: '#/definitions/StringConfigItem'
         description: This attribute restricts what users have the permission to create project.  It can be "everyone" or "adminonly".
+      quota_per_project_enable:
+        $ref: '#/definitions/BoolConfigItem'
+        description: This attribute indicates whether quota per project enabled in harbor
       read_only:
         $ref: '#/definitions/BoolConfigItem'
         description: '''docker push'' is prohibited by Harbor if you set it to true.   '
       self_registration:
         $ref: '#/definitions/BoolConfigItem'
         description: 'Whether the Harbor instance supports self-registration.  If it''s set to false, admin need to add user to the instance.'
+      storage_per_project:
+        $ref: '#/definitions/IntegerConfigItem'
+        description: The default storage quota for the new created projects.
       token_expiration:
         $ref: '#/definitions/IntegerConfigItem'
         description: 'The expiration time of the token for internal Registry, in minutes.'
@@ -4542,7 +5094,7 @@ definitions:
         description: The name of the user group
       group_type:
         type: integer
-        description: 'The group type, 1 for LDAP group.'
+        description: 'The group type, 1 for LDAP group, 2 for HTTP group.'
       ldap_group_dn:
         type: string
         description: The DN of the LDAP group if group type is 1 (LDAP group).
@@ -4829,7 +5381,9 @@ definitions:
     properties:
       type:
         type: string
-        description: The schedule type. The valid values are hourly, daily， weekly, custom and None. 'None' means to cancel the schedule.
+        description: |
+          The schedule type. The valid values are 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manually' and 'None'.
+          'Manually' means to trigger it right away and 'None' means to cancel the schedule.
       cron:
         type: string
         description: A cron expression, a time-based job scheduler.
@@ -5066,3 +5620,161 @@ definitions:
       metadata:
         type: object
         description: The metadata of namespace
+  CVEWhitelist:
+    type: object
+    description: The CVE Whitelist for system or project
+    properties:
+      id:
+        type: integer
+        description: ID of the whitelist
+      project_id:
+        type: integer
+        description: ID of the project which the whitelist belongs to.  For system level whitelist this attribute is zero.
+      expires_at:
+        type: integer
+        description: the time for expiration of the whitelist, in the form of seconds since epoch.  This is an optional attribute, if it's not set the CVE whitelist does not expire.
+      items:
+        type: array
+        items:
+          $ref: "#/definitions/CVEWhitelistItem"
+  CVEWhitelistItem:
+    type: object
+    description: The item in CVE whitelist
+    properties:
+      cve_id:
+        type: string
+        description: The ID of the CVE, such as "CVE-2019-10164"
+  ResourceList:
+    type: object
+    additionalProperties:
+      type: integer
+  QuotaUpdateReq:
+    type: object
+    properties:
+      hard:
+        $ref: "#/definitions/ResourceList"
+        description: The new hard limits for the quota
+  QuotaRefObject:
+    type: object
+    additionalProperties: {}
+  Quota:
+    type: object
+    description: The quota object
+    properties:
+      id:
+        type: integer
+        description: ID of the quota
+      ref:
+        $ref: "#/definitions/QuotaRefObject"
+        description: The reference object of the quota
+      hard:
+        $ref: "#/definitions/ResourceList"
+        description: The hard limits of the quota
+      used:
+        $ref: "#/definitions/ResourceList"
+        description: The used status of the quota
+      creation_time:
+        type: string
+        description: the creation time of the quota
+      update_time:
+        type: string
+        description: the update time of the quota
+  WebhookTargetObject:
+    type: object
+    description: The webhook policy target object.
+    properties:
+      type:
+        type: string
+        description: The webhook target notify type.
+      address:
+        type: string
+        description: The webhook target address.
+      auth_header:
+        type: string
+        description: The webhook auth header.
+      skip_cert_verify:
+        type: boolean
+        description: Whether or not to skip cert verify.
+  WebhookPolicy:
+    type: object
+    description: The webhook policy object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The webhook policy ID.
+      name:
+        type: string
+        description: The name of webhook policy.
+      description:
+        type: string
+        description: The description of webhook policy.
+      project_id:
+        type: integer
+        description: The project ID of webhook policy.
+      targets:
+        type: array
+        items:
+          $ref: '#/definitions/WebhookTargetObject'
+      event_types:
+        type: array
+        items:
+          type: string
+      creator:
+        type: string
+        description: The creator of the webhook policy.
+      creation_time:
+        type: string
+        description: The create time of the webhook policy.
+      update_time:
+        type: string
+        description: The update time of the webhook policy.
+      enabled:
+        type: boolean
+        description: Whether the webhook policy is enabled or not.
+  WebhookLastTrigger:
+    type: object
+    description: The webhook policy and last trigger time group by event type.
+    properties:
+      event_type:
+        type: string
+        description: The webhook event type.
+      enabled:
+        type: boolean
+        description: Whether or not the webhook policy enabled.
+      creation_time:
+        type: string
+        description: The creation time of webhook policy.
+      last_trigger_time:
+        type: string
+        description: The last trigger time of webhook policy.
+  WebhookJob:
+    type: object
+    description: The webhook job.
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The webhook job ID.
+      policy_id:
+        type: integer
+        format: int64
+        description: The webhook policy ID.
+      event_type:
+        type: string
+        description: The webhook job event type.
+      notify_type:
+        type: string
+        description: The webhook job notify type.
+      status:
+        type: string
+        description: The webhook job status.
+      job_detail:
+        type: string
+        description: The webhook job notify detailed data.
+      creation_time:
+        type: string
+        description: The webhook job creation time.
+      update_time:
+        type: string
+        description: The webhook job update time.

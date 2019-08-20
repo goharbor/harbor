@@ -34,8 +34,9 @@ import (
 )
 
 var (
-	timeout               = 60 * time.Second
-	healthCheckerRegistry = map[string]health.Checker{}
+	timeout = 60 * time.Second
+	// HealthCheckerRegistry ...
+	HealthCheckerRegistry = map[string]health.Checker{}
 )
 
 type overallHealthStatus struct {
@@ -67,11 +68,11 @@ type HealthAPI struct {
 func (h *HealthAPI) CheckHealth() {
 	var isHealthy healthy = true
 	components := []*componentHealthStatus{}
-	c := make(chan *componentHealthStatus, len(healthCheckerRegistry))
-	for name, checker := range healthCheckerRegistry {
+	c := make(chan *componentHealthStatus, len(HealthCheckerRegistry))
+	for name, checker := range HealthCheckerRegistry {
 		go check(name, checker, timeout, c)
 	}
-	for i := 0; i < len(healthCheckerRegistry); i++ {
+	for i := 0; i < len(HealthCheckerRegistry); i++ {
 		componentStatus := <-c
 		if len(componentStatus.Error) != 0 {
 			isHealthy = false
@@ -212,10 +213,10 @@ func jobserviceHealthChecker() health.Checker {
 }
 
 func registryHealthChecker() health.Checker {
-	url := getRegistryURL() + "/v2"
+	url := getRegistryURL() + "/"
 	timeout := 60 * time.Second
 	period := 10 * time.Second
-	checker := HTTPStatusCodeHealthChecker(http.MethodGet, url, nil, timeout, http.StatusUnauthorized)
+	checker := HTTPStatusCodeHealthChecker(http.MethodGet, url, nil, timeout, http.StatusOK)
 	return PeriodicHealthChecker(checker, period)
 }
 
@@ -290,21 +291,21 @@ func redisHealthChecker() health.Checker {
 }
 
 func registerHealthCheckers() {
-	healthCheckerRegistry["core"] = coreHealthChecker()
-	healthCheckerRegistry["portal"] = portalHealthChecker()
-	healthCheckerRegistry["jobservice"] = jobserviceHealthChecker()
-	healthCheckerRegistry["registry"] = registryHealthChecker()
-	healthCheckerRegistry["registryctl"] = registryCtlHealthChecker()
-	healthCheckerRegistry["database"] = databaseHealthChecker()
-	healthCheckerRegistry["redis"] = redisHealthChecker()
+	HealthCheckerRegistry["core"] = coreHealthChecker()
+	HealthCheckerRegistry["portal"] = portalHealthChecker()
+	HealthCheckerRegistry["jobservice"] = jobserviceHealthChecker()
+	HealthCheckerRegistry["registry"] = registryHealthChecker()
+	HealthCheckerRegistry["registryctl"] = registryCtlHealthChecker()
+	HealthCheckerRegistry["database"] = databaseHealthChecker()
+	HealthCheckerRegistry["redis"] = redisHealthChecker()
 	if config.WithChartMuseum() {
-		healthCheckerRegistry["chartmuseum"] = chartmuseumHealthChecker()
+		HealthCheckerRegistry["chartmuseum"] = chartmuseumHealthChecker()
 	}
 	if config.WithClair() {
-		healthCheckerRegistry["clair"] = clairHealthChecker()
+		HealthCheckerRegistry["clair"] = clairHealthChecker()
 	}
 	if config.WithNotary() {
-		healthCheckerRegistry["notary"] = notaryHealthChecker()
+		HealthCheckerRegistry["notary"] = notaryHealthChecker()
 	}
 }
 

@@ -322,25 +322,39 @@ func UpdateTask(task *models.Task, props ...string) (int64, error) {
 	return o.Update(task, props...)
 }
 
-// UpdateTaskStatus ...
+// UpdateTaskStatus updates the status of task.
+// The implementation uses raw sql rather than QuerySetter.Filter... as QuerySetter
+// will generate sql like:
+//   `UPDATE "replication_task" SET "end_time" = $1, "status" = $2
+//     WHERE "id" IN ( SELECT T0."id" FROM "replication_task" T0 WHERE T0."id" = $3
+//     AND T0."status" IN ($4, $5, $6))]`
+// which is not a "single" sql statement, this will cause issues when running in concurrency
 func UpdateTaskStatus(id int64, status string, statusCondition ...string) (int64, error) {
-	qs := dao.GetOrmer().QueryTable(&models.Task{}).
-		Filter("id", id)
-	if len(statusCondition) > 0 {
-		qs = qs.Filter("status", statusCondition[0])
-	}
-	params := orm.Params{
-		"status": status,
-	}
+	params := []interface{}{}
+	sql := `update replication_task set status = ? `
+	params = append(params, status)
+
 	if taskFinished(status) {
 		// should update endTime
-		params["end_time"] = time.Now()
+		sql += `, end_time = ? `
+		params = append(params, time.Now())
 	}
-	n, err := qs.Update(params)
+
+	sql += `where id = ? `
+	params = append(params, id)
+	if len(statusCondition) > 0 {
+		sql += fmt.Sprintf(`and status in (%s) `, dao.ParamPlaceholderForIn(len(statusCondition)))
+		params = append(params, statusCondition)
+	}
+
+	result, err := dao.GetOrmer().Raw(sql, params...).Exec()
 	if err != nil {
 		return 0, err
 	}
-	log.Debugf("update task status %d: -> %s", id, status)
+	n, _ := result.RowsAffected()
+	if n > 0 {
+		log.Debugf("update task status %d: -> %s", id, status)
+	}
 	return n, err
 }
 

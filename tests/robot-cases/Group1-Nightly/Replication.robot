@@ -156,11 +156,13 @@ Test Case - Replication Of Pull Images from DockerHub To Self
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    rule${d}    pull    danfengliu/*    image    e${d}    project${d}
     Select Rule And Replicate  rule${d}
-    Sleep    20
+    Sleep    30
     Go Into Project    project${d}
     Switch To Project Repo
     #In docker-hub, under repository danfengliu, there're only 2 images: centos,mariadb.
     Retry Wait Until Page Contains    project${d}/centos
+    Go Into Project    project${d}
+    Switch To Project Repo
     Retry Wait Until Page Contains    project${d}/mariadb
     Close Browser
 

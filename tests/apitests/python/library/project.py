@@ -77,29 +77,20 @@ class Project(base.Base):
         base._assert_status_code(200, status_code)
         return data
 
-    def update_project(self, project_id, metadata, **kwargs):
+    def update_project(self, project_id, expect_status_code=200, metadata=None, cve_whitelist=None, **kwargs):
         client = self._get_client(**kwargs)
-        project = swagger_client.Project(project_id, None, None, None, None, None, None, None, None, None, None, metadata)
-        _, status_code, _ = client.projects_project_id_put_with_http_info(project_id, project)
-        base._assert_status_code(200, status_code)
+        project = swagger_client.ProjectReq(metadata=metadata, cve_whitelist=cve_whitelist)
+        try:
+            _, sc, _ = client.projects_project_id_put_with_http_info(project_id, project)
+        except ApiException as e:
+            base._assert_status_code(expect_status_code, e.status)
+        else:
+            base._assert_status_code(expect_status_code, sc)
 
     def delete_project(self, project_id, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         _, status_code, _ = client.projects_project_id_delete_with_http_info(project_id)
         base._assert_status_code(expect_status_code, status_code)
-
-    def get_project_metadata_by_name(self, project_id, meta_name, expect_status_code = 200, **kwargs):
-        client = self._get_client(**kwargs)
-        ProjectMetadata = swagger_client.ProjectMetadata()
-        ProjectMetadata, status_code, _ = client.projects_project_id_metadatas_meta_name_get_with_http_info(project_id, meta_name)
-        base._assert_status_code(expect_status_code, status_code)
-        return {
-            'public': ProjectMetadata.public,
-            'enable_content_trust': ProjectMetadata.enable_content_trust,
-            'prevent_vul': ProjectMetadata.prevent_vul,
-            'auto_scan': ProjectMetadata.auto_scan,
-            'severity': ProjectMetadata.severity,
-        }.get(meta_name,'error')
 
     def get_project_log(self, project_id, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
@@ -160,7 +151,6 @@ class Project(base.Base):
     def update_project_member_role(self, project_id, member_id, member_role_id, expect_status_code = 200, **kwargs):
         client = self._get_client(**kwargs)
         role = swagger_client.Role(role_id = member_role_id)
-        data = []
         data, status_code, _ = client.projects_project_id_members_mid_put_with_http_info(project_id, member_id, role = role)
         base._assert_status_code(expect_status_code, status_code)
         base._assert_status_code(200, status_code)
