@@ -21,7 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/types"
 )
 
-func isSafe(hardLimits types.ResourceList, currentUsed types.ResourceList, newUsed types.ResourceList) error {
+func isSafe(hardLimits types.ResourceList, currentUsed types.ResourceList, newUsed types.ResourceList, skipOverflow bool) error {
 	var errs Errors
 
 	for resource, value := range newUsed {
@@ -35,7 +35,7 @@ func isSafe(hardLimits types.ResourceList, currentUsed types.ResourceList, newUs
 			continue
 		}
 
-		if value > hardLimit {
+		if value > hardLimit && !skipOverflow {
 			errs = errs.Add(NewResourceOverflowError(resource, hardLimit, currentUsed[resource], value))
 		}
 	}
