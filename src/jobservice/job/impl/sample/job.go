@@ -17,6 +17,7 @@ package sample
 import (
 	"errors"
 	"fmt"
+	"os"
 	"strings"
 	"time"
 
@@ -65,6 +66,13 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	logger.Infof("Params: %#v\n", params)
 	if v, ok := ctx.Get("sample"); ok {
 		fmt.Printf("Get prop form context: sample=%s\n", v)
+	}
+
+	// For failure case
+	if len(os.Getenv("JOB_FAILED")) > 0 {
+		<-time.After(3 * time.Second)
+		logger.Info("Job exit with error because `JOB_FAILED` env is set")
+		return errors.New("`JOB_FAILED` env is set")
 	}
 
 	ctx.Checkin("progress data: %30")

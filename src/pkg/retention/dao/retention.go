@@ -3,12 +3,13 @@ package dao
 import (
 	"errors"
 	"fmt"
+	"strconv"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	jobmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
-	"strconv"
 )
 
 // CreatePolicy Create Policy
@@ -225,6 +226,18 @@ func UpdateTask(task *models.RetentionTask, cols ...string) error {
 		return fmt.Errorf("invalid task ID: %d", task.ID)
 	}
 	_, err := dao.GetOrmer().Update(task, cols...)
+	return err
+}
+
+// UpdateTaskStatus updates the status of task whose status code is less than the statusCode provided
+func UpdateTaskStatus(taskID int64, status string, statusCode int) error {
+	_, err := dao.GetOrmer().QueryTable(&models.RetentionTask{}).
+		Filter("ID", taskID).
+		Filter("StatusCode__lt", statusCode).
+		Update(orm.Params{
+			"Status":     status,
+			"StatusCode": statusCode,
+		})
 	return err
 }
 

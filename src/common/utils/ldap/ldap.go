@@ -351,13 +351,13 @@ func (session *Session) createUserFilter(username string) string {
 		filterTag = goldap.EscapeFilter(username)
 	}
 
-	ldapFilter := session.ldapConfig.LdapFilter
+	ldapFilter := normalizeFilter(session.ldapConfig.LdapFilter)
 	ldapUID := session.ldapConfig.LdapUID
 
 	if ldapFilter == "" {
 		ldapFilter = "(" + ldapUID + "=" + filterTag + ")"
 	} else {
-		ldapFilter = "(&" + ldapFilter + "(" + ldapUID + "=" + filterTag + "))"
+		ldapFilter = "(&(" + ldapFilter + ")(" + ldapUID + "=" + filterTag + "))"
 	}
 
 	log.Debug("ldap filter :", ldapFilter)
@@ -425,6 +425,7 @@ func createGroupSearchFilter(oldFilter, groupName, groupNameAttribute string) st
 	filter := ""
 	groupName = goldap.EscapeFilter(groupName)
 	groupNameAttribute = goldap.EscapeFilter(groupNameAttribute)
+	oldFilter = normalizeFilter(oldFilter)
 	if len(oldFilter) == 0 {
 		if len(groupName) == 0 {
 			filter = groupNameAttribute + "=*"
@@ -454,4 +455,12 @@ func contains(s []string, e string) bool {
 		}
 	}
 	return false
+}
+
+// normalizeFilter - remove '(' and ')' in ldap filter
+func normalizeFilter(filter string) string {
+	norFilter := strings.TrimSpace(filter)
+	norFilter = strings.TrimPrefix(norFilter, "(")
+	norFilter = strings.TrimSuffix(norFilter, ")")
+	return norFilter
 }

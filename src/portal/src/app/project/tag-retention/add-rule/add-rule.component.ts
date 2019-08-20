@@ -68,7 +68,13 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     set num(num) {
-        this.rule.params[this.template] = parseInt(num, 10);
+        if (num) {
+            num = num.trim();
+        }
+        if (parseInt(num, 10) > 0) {
+            num = parseInt(num, 10);
+        }
+        this.rule.params[this.template] = num;
     }
 
     get repoSelect() {
@@ -128,8 +134,8 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     canNotAdd(): boolean {
-        if (!this.isAdd) {
-            return compareValue(this.editRuleOrigin, this.rule);
+        if (!this.isAdd && compareValue(this.editRuleOrigin, this.rule)) {
+            return true;
         }
         if (!this.hasParam()) {
             return !(this.rule.template
@@ -138,6 +144,7 @@ export class AddRuleComponent implements OnInit, OnDestroy {
         } else {
             return !(this.rule.template
               && this.rule.params[this.template]
+              && parseInt(this.rule.params[this.template], 10) >= 0
               && this.rule.scope_selectors.repository[0].pattern
               && this.rule.tag_selectors[0].pattern);
         }

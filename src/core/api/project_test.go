@@ -171,6 +171,7 @@ func TestListProjects(t *testing.T) {
 
 	// ----------------------------case 1 : Response Code=200----------------------------//
 	fmt.Println("Case 1: Response Code = 200")
+
 	httpStatusCode, result, err := apiTest.ProjectsGet(
 		&apilib.ProjectQuery{
 			Name:   addProject.ProjectName,
@@ -262,6 +263,7 @@ func TestProGetByID(t *testing.T) {
 
 	// ----------------------------case 1 : Response Code=200----------------------------//
 	fmt.Println("Case 1: Response Code = 200")
+
 	httpStatusCode, result, err := apiTest.ProjectsGetByPID(projectID)
 	if err != nil {
 		t.Error("Error while search project by proID", err.Error())
@@ -294,6 +296,7 @@ func TestDeleteProject(t *testing.T) {
 
 	// --------------------------case 2: Response Code=200---------------------------------//
 	fmt.Println("Case 2: Response Code = 200")
+
 	httpStatusCode, err = apiTest.ProjectsDelete(*admin, projectID)
 	if err != nil {
 		t.Error("Error while delete project", err.Error())
@@ -334,6 +337,7 @@ func TestProHead(t *testing.T) {
 
 	// ----------------------------case 1 : Response Code=200----------------------------//
 	fmt.Println("Case 1: Response Code = 200")
+
 	httpStatusCode, err := apiTest.ProjectsHead(*admin, "library")
 	if err != nil {
 		t.Error("Error while search project by proName", err.Error())
@@ -344,6 +348,7 @@ func TestProHead(t *testing.T) {
 
 	// ----------------------------case 2 : Response Code=404:Project name does not exist.----------------------------//
 	fmt.Println("Case 2: Response Code = 404 : Project name does not exist.")
+
 	httpStatusCode, err = apiTest.ProjectsHead(*admin, "libra")
 	if err != nil {
 		t.Error("Error while search project by proName", err.Error())
@@ -368,21 +373,25 @@ func TestPut(t *testing.T) {
 	}
 
 	fmt.Println("Case 1: Response Code = 200")
+
 	code, err := apiTest.ProjectsPut(*admin, "1", project)
 	require.Nil(t, err)
 	assert.Equal(int(200), code)
 
 	fmt.Println("Case 2: Response Code = 401 : User need to log in first.")
+
 	code, err = apiTest.ProjectsPut(*unknownUsr, "1", project)
 	require.Nil(t, err)
 	assert.Equal(int(401), code)
 
 	fmt.Println("Case 3: Response Code = 400 : Invalid project id")
+
 	code, err = apiTest.ProjectsPut(*admin, "cc", project)
 	require.Nil(t, err)
 	assert.Equal(int(400), code)
 
 	fmt.Println("Case 4: Response Code = 404 : Not found the project")
+
 	code, err = apiTest.ProjectsPut(*admin, "1234", project)
 	require.Nil(t, err)
 	assert.Equal(int(404), code)
@@ -406,6 +415,7 @@ func TestProjectLogsFilter(t *testing.T) {
 
 	// -------------------case1: Response Code=200------------------------------//
 	fmt.Println("Case 1: Response Code = 200")
+
 	projectID := "1"
 	httpStatusCode, _, err := apiTest.ProjectLogs(*admin, projectID, query)
 	if err != nil {
@@ -416,6 +426,7 @@ func TestProjectLogsFilter(t *testing.T) {
 	}
 	// -------------------case2: Response Code=401:User need to log in first.------------------------------//
 	fmt.Println("Case 2: Response Code = 401 : User need to log in first.")
+
 	projectID = "1"
 	httpStatusCode, _, err = apiTest.ProjectLogs(*unknownUsr, projectID, query)
 	if err != nil {
@@ -426,6 +437,7 @@ func TestProjectLogsFilter(t *testing.T) {
 	}
 	// -------------------case3: Response Code=404:Project does not exist.-------------------------//
 	fmt.Println("Case 3: Response Code = 404 : Illegal format of provided ID value.")
+
 	projectID = "11111"
 	httpStatusCode, _, err = apiTest.ProjectLogs(*admin, projectID, query)
 	if err != nil {
@@ -496,7 +508,7 @@ func TestProjectSummary(t *testing.T) {
 	}()
 
 	// ----------------------------case 1 : Response Code=200----------------------------//
-	fmt.Println("case 1: respose code:200")
+	fmt.Println("case 1: response code:200")
 	httpStatusCode, summary, err := apiTest.ProjectSummary(*admin, fmt.Sprintf("%d", projectID))
 	if err != nil {
 		t.Error("Error while search project by proName", err.Error())

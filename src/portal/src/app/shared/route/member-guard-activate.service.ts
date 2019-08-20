@@ -41,8 +41,19 @@ export class MemberGuard implements CanActivate, CanActivateChild {
           this.checkMemberStatus(state.url, projectId).subscribe((res) => observer.next(res));
         }
         , error => {
-          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-          observer.next(false);
+          // if it is public project return true;
+          this.projectService.getProject(projectId).subscribe(project => {
+            if (project.metadata.public) {
+              observer.next(true);
+            } else {
+              this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+              observer.next(false);
+            }
+          }, err => {
+            this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+            observer.next(false);
+          });
+
         });
       } else {
         this.checkMemberStatus(state.url, projectId).subscribe((res) => observer.next(res));
