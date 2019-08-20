@@ -58,7 +58,7 @@ describe("CreateEditLabelComponent (inline template)", () => {
     labelService = fixture.debugElement.injector.get(LabelService);
 
     spy = spyOn(labelService, "getLabels").and.returnValue(
-      of(mockOneData)
+      of([mockOneData])
     );
     spyOne = spyOn(labelService, "createLabel").and.returnValue(
       of(mockOneData)
