@@ -99,19 +99,7 @@ func (pma *ProjectMemberAPI) Prepare() {
 }
 
 func (pma *ProjectMemberAPI) requireAccess(action rbac.Action) bool {
-	resource := rbac.NewProjectNamespace(pma.project.ProjectID).Resource(rbac.ResourceMember)
-
-	if !pma.SecurityCtx.Can(action, resource) {
-		if !pma.SecurityCtx.IsAuthenticated() {
-			pma.SendUnAuthorizedError(errors.New("Unauthorized"))
-		} else {
-			pma.SendForbiddenError(errors.New(pma.SecurityCtx.GetUsername()))
-		}
-
-		return false
-	}
-
-	return true
+	return pma.RequireProjectAccess(pma.project.ProjectID, action, rbac.ResourceMember)
 }
 
 // Get ...

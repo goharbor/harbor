@@ -55,12 +55,10 @@ func (sj *ScanJobAPI) Prepare() {
 		sj.SendInternalServerError(errors.New("Failed to get Job data"))
 		return
 	}
-	projectName := strings.SplitN(data.Repository, "/", 2)[0]
 
-	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepositoryTagScanJob)
-	if !sj.SecurityCtx.Can(rbac.ActionRead, resource) {
+	projectName := strings.SplitN(data.Repository, "/", 2)[0]
+	if !sj.RequireProjectAccess(projectName, rbac.ActionRead, rbac.ResourceRepositoryTagScanJob) {
 		log.Errorf("User does not have read permission for project: %s", projectName)
-		sj.SendForbiddenError(errors.New(sj.SecurityCtx.GetUsername()))
 		return
 	}
 	sj.projectName = projectName

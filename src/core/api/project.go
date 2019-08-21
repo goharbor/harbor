@@ -86,20 +86,8 @@ func (p *ProjectAPI) requireAccess(action rbac.Action, subresource ...rbac.Resou
 	if len(subresource) == 0 {
 		subresource = append(subresource, rbac.ResourceSelf)
 	}
-	resource := rbac.NewProjectNamespace(p.project.ProjectID).Resource(subresource...)
 
-	if !p.SecurityCtx.Can(action, resource) {
-		if !p.SecurityCtx.IsAuthenticated() {
-			p.SendUnAuthorizedError(errors.New("Unauthorized"))
-
-		} else {
-			p.SendForbiddenError(errors.New(p.SecurityCtx.GetUsername()))
-		}
-
-		return false
-	}
-
-	return true
+	return p.RequireProjectAccess(p.project.ProjectID, action, subresource...)
 }
 
 // Post ...

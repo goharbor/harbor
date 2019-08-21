@@ -37,14 +37,10 @@ func projectNamespaceParser(resource Resource) (Namespace, error) {
 		return nil, errors.New("not support resource")
 	}
 
-	var projectIDOrName interface{}
-
-	id, err := strconv.ParseInt(matches[1], 10, 64)
-	if err == nil {
-		projectIDOrName = id
-	} else {
-		projectIDOrName = matches[1]
+	projectID, err := strconv.ParseInt(matches[1], 10, 64)
+	if err != nil {
+		return nil, err
 	}
 
-	return &projectNamespace{projectIDOrName: projectIDOrName}, nil
+	return &projectNamespace{projectID: projectID}, nil
 }
