@@ -402,7 +402,7 @@ func (w *basicWorker) registerJob(name string, j interface{}) (err error) {
 	w.pool.JobWithOptions(
 		name,
 		work.JobOptions{
-			MaxFails: theJ.MaxFails(),
+			MaxFails: theJ.MaxFails() + 1,
 		},
 		// Use generic handler to handle as we do not accept context with this way.
 		func(job *work.Job) error {
