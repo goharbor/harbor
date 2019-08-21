@@ -23,10 +23,11 @@ Run Docker Info
     Wait Unitl Command Success  docker ${docker-params} info
 
 Pull image
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}=${null}
     Log To Console  \nRunning docker pull ${image}...
+    ${image_with_tag}=  Set Variable If  '${tag}'=='${null}'  ${image}  ${image}:${tag}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
-    ${output}=  Wait Unitl Command Success  docker pull ${ip}/${project}/${image}
+    ${output}=  Wait Unitl Command Success  docker pull ${ip}/${project}/${image_with_tag}
     Should Contain  ${output}  Digest:
     Should Contain  ${output}  Status:
     Should Not Contain  ${output}  No such image:

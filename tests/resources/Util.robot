@@ -38,6 +38,7 @@ Resource  Harbor-Pages/Project-Members_Elements.robot
 Resource  Harbor-Pages/Project-Repository.robot
 Resource  Harbor-Pages/Project-Repository_Elements.robot
 Resource  Harbor-Pages/Project-Config.robot
+Resource  Harbor-Pages/Project-Config-Elements.robot
 Resource  Harbor-Pages/Project-Helmcharts.robot
 Resource  Harbor-Pages/Project-Helmcharts_Elements.robot
 Resource  Harbor-Pages/Project-Retag.robot
