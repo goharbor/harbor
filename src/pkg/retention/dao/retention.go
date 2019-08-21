@@ -31,9 +31,6 @@ func DeletePolicyAndExec(id int64) error {
 	if _, err := o.Raw("delete from retention_task where execution_id in (select id from retention_execution where policy_id = ?) ", id).Exec(); err != nil {
 		return nil
 	}
-	if _, err := o.Raw("delete from retention_execution where policy_id = ?", id).Exec(); err != nil {
-		return err
-	}
 	if _, err := o.Delete(&models.RetentionExecution{
 		PolicyID: id,
 	}); err != nil {
@@ -73,7 +70,13 @@ func UpdateExecution(e *models.RetentionExecution, cols ...string) error {
 // DeleteExecution Delete Execution
 func DeleteExecution(id int64) error {
 	o := dao.GetOrmer()
-	_, err := o.Delete(&models.RetentionExecution{
+	_, err := o.Delete(&models.RetentionTask{
+		ExecutionID: id,
+	})
+	if err != nil {
+		return err
+	}
+	_, err = o.Delete(&models.RetentionExecution{
 		ID: id,
 	})
 	return err

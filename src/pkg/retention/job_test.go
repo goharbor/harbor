@@ -30,7 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -90,10 +89,6 @@ func (suite *JobTestSuite) TestRunSuccess() {
 				Template:   latestps.TemplateID,
 				Parameters: ruleParams,
 				TagSelectors: []*rule.Selector{{
-					Kind:       label.Kind,
-					Decoration: label.With,
-					Pattern:    "L3",
-				}, {
 					Kind:       doublestar.Kind,
 					Decoration: doublestar.Matches,
 					Pattern:    "**",
