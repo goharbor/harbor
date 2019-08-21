@@ -52,7 +52,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
   nameChecker = new Subject<string>();
 
   labelForm: NgForm;
-  @ViewChild("labelForm", {static: false}) currentForm: NgForm;
+  @ViewChild("labelForm", {static: true}) currentForm: NgForm;
 
   @Input() projectId: number;
   @Input() scope: string;

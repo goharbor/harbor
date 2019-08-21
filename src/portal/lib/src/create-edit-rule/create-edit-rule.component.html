@@ -186,7 +186,8 @@
               </a>
             </div>
           </div>
-          <div class="clr-checkbox-wrapper clr-form-control" [hidden]="isNotEventBased()">
+        </div>
+        <div class="clr-checkbox-wrapper clr-form-control" [hidden]="isNotEventBased()">
             <input type="checkbox" class="clr-checkbox" [checked]="false" id="ruleDeletion" formControlName="deletion">
             <label for="ruleDeletion">{{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}</label>
           </div>
@@ -205,7 +206,6 @@
             <input type="checkbox" [checked]="true" id="enablePolicy" formControlName="enabled" class="clr-checkbox">
             <label for="enablePolicy" class="clr-control-label">{{'REPLICATION.ENABLED_RULE' | translate}}</label>
           </div>
-        </div>
       </div>
       <div class="loading-center">
         <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
