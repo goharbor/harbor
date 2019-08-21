@@ -81,32 +81,6 @@
                 </div>
             </div>
         </div>
-        <div class="height-72">
-            <div class="clr-row">
-                <div class="clr-col-4">
-                    <label>{{'TAG_RETENTION.LABELS' | translate}}</label>
-                </div>
-                <div class="clr-col-3">
-                    <div class="clr-select-wrapper w-100">
-                        <select [(ngModel)]="labelsSelect" class="clr-select w-100">
-                            <option *ngFor="let d of metadata?.tag_selectors[0]?.decorations"
-                                    value="{{d}}">{{getI18nKey(d)|translate}}</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="clr-col-5">
-                    <div class="w-100">
-                        <input [(ngModel)]="labelsInput" class="clr-input w-100">
-                    </div>
-                </div>
-            </div>
-            <div class="clr-row">
-                <div class="clr-col-4"></div>
-                <div class="clr-col-8">
-                    <span>{{'TAG_RETENTION.REP_LABELS' | translate}}</span>
-                </div>
-            </div>
-        </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-outline" (click)="cancel()">{{'BUTTON.CANCEL' | translate}}</button>
