@@ -34,8 +34,7 @@ import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.com
 
 import { Project } from "../project";
 import { ProjectService, QuotaUnits, QuotaHardInterface, QuotaUnlimited, getByte
-  , GetIntegerAndUnit, clone, StorageMultipleConstant, validateLimit, validateCountLimit} from "@harbor/ui";
-import { errorHandler } from '@angular/platform-browser/src/browser';
+  , GetIntegerAndUnit, clone, validateLimit, validateCountLimit} from "@harbor/ui";
 
 @Component({
   selector: "create-project",
