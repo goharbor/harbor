@@ -52,6 +52,9 @@ func (si *ScanImagePreprocessHandler) Handle(value interface{}) error {
 		log.Errorf("failed to find project[%s] for scan image event: %v", projectName, err)
 		return err
 	}
+	if project == nil {
+		return fmt.Errorf("project[%s] not found", projectName)
+	}
 	policies, err := notification.PolicyMgr.GetRelatedPolices(project.ProjectID, e.EventType)
 	if err != nil {
 		log.Errorf("failed to find policy for %s event: %v", e.EventType, err)

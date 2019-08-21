@@ -301,11 +301,12 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 			Operator:    cra.SecurityCtx.GetUsername(),
 		},
 	}
-	if err := event.Build(metaData); err != nil {
+	if err := event.Build(metaData); err == nil {
+		if err := event.Publish(); err != nil {
+			hlog.Errorf("failed to publish chart delete event: %v", err)
+		}
+	} else {
 		hlog.Errorf("failed to build chart delete event metadata: %v", err)
-	}
-	if err := event.Publish(); err != nil {
-		hlog.Errorf("failed to publish chart delete event: %v", err)
 	}
 }
 
@@ -393,6 +394,11 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 		}
 	}
 
+	if err := chartController.DeleteChart(cra.namespace, chartName); err != nil {
+		cra.SendInternalServerError(err)
+		return
+	}
+
 	event := &n_event.Event{}
 	metaData := &n_event.ChartDeleteMetaData{
 		ChartMetaData: n_event.ChartMetaData{
@@ -403,16 +409,12 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 			Operator:    cra.SecurityCtx.GetUsername(),
 		},
 	}
-	if err := event.Build(metaData); err != nil {
+	if err := event.Build(metaData); err == nil {
+		if err := event.Publish(); err != nil {
+			hlog.Errorf("failed to publish chart delete event: %v", err)
+		}
+	} else {
 		hlog.Errorf("failed to build chart delete event metadata: %v", err)
-	}
-	if err := event.Publish(); err != nil {
-		hlog.Errorf("failed to publish chart delete event: %v", err)
-	}
-
-	if err := chartController.DeleteChart(cra.namespace, chartName); err != nil {
-		cra.SendInternalServerError(err)
-		return
 	}
 }
 

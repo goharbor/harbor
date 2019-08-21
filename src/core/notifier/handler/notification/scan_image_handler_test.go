@@ -94,7 +94,7 @@ func TestScanImagePreprocessHandler_Handle(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			err := handler.Handle(tt.args.data)
 			if tt.wantErr {
-				require.NotNil(t, err, "Error: %s", err)
+				require.NotNil(t, err, "Error: %v", err)
 				return
 			}
 			assert.Nil(t, err)

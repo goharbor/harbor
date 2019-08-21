@@ -98,6 +98,7 @@ func constructImagePayload(event *notifyModel.ImageEvent) (*notifyModel.Payload,
 
 // send hook by publishing topic of specified target type(notify type)
 func sendHookWithPolicies(policies []*models.NotificationPolicy, payload *notifyModel.Payload, eventType string) error {
+	errRet := false
 	for _, ply := range policies {
 		targets := ply.Targets
 		for _, target := range targets {
@@ -108,17 +109,21 @@ func sendHookWithPolicies(policies []*models.NotificationPolicy, payload *notify
 				Payload:   payload,
 				Target:    &target,
 			}
-			if err := evt.Build(hookMetadata); err != nil {
+			// It should never affect evaluating other policies when one is failed, but error should return
+			if err := evt.Build(hookMetadata); err == nil {
+				if err := evt.Publish(); err != nil {
+					errRet = true
+					log.Errorf("failed to publish hook notify event: %v", err)
+				}
+			} else {
+				errRet = true
 				log.Errorf("failed to build hook notify event metadata: %v", err)
-				return err
 			}
-			if err := evt.Publish(); err != nil {
-				log.Errorf("failed to publish hook notify event: %v", err)
-				return err
-			}
-
 			log.Debugf("published image event %s by topic %s", payload.Type, target.Type)
 		}
+	}
+	if errRet {
+		return errors.New("failed to trigger some of the events")
 	}
 	return nil
 }

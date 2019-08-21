@@ -89,11 +89,12 @@ func (h *Handler) HandleScan() {
 			JobID:  h.id,
 			Status: h.status,
 		}
-		if err := e.Build(metaData); err != nil {
+		if err := e.Build(metaData); err == nil {
+			if err := e.Publish(); err != nil {
+				log.Errorf("failed to publish image scanning event: %v", err)
+			}
+		} else {
 			log.Errorf("failed to build image scanning event metadata: %v", err)
-		}
-		if err := e.Publish(); err != nil {
-			log.Errorf("failed to publish image scanning event: %v", err)
 		}
 	}
 

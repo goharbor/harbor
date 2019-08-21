@@ -127,13 +127,14 @@ func (n *NotificationHandler) Post() {
 				OccurAt:  time.Now(),
 				Operator: event.Actor.Name,
 			}
-			if err := evt.Build(imgPushMetadata); err != nil {
+			if err := evt.Build(imgPushMetadata); err == nil {
+				if err := evt.Publish(); err != nil {
+					// do not return when publishing event failed
+					log.Errorf("failed to publish image push event: %v", err)
+				}
+			} else {
 				// do not return when building event metadata failed
 				log.Errorf("failed to build image push event metadata: %v", err)
-			}
-			if err := evt.Publish(); err != nil {
-				// do not return when publishing event failed
-				log.Errorf("failed to publish image push event: %v", err)
 			}
 
 			// TODO: handle image delete event and chart event
@@ -178,13 +179,14 @@ func (n *NotificationHandler) Post() {
 				OccurAt:  time.Now(),
 				Operator: event.Actor.Name,
 			}
-			if err := evt.Build(imgPullMetadata); err != nil {
+			if err := evt.Build(imgPullMetadata); err == nil {
+				if err := evt.Publish(); err != nil {
+					// do not return when publishing event failed
+					log.Errorf("failed to publish image pull event: %v", err)
+				}
+			} else {
 				// do not return when building event metadata failed
 				log.Errorf("failed to build image push event metadata: %v", err)
-			}
-			if err := evt.Publish(); err != nil {
-				// do not return when publishing event failed
-				log.Errorf("failed to publish image pull event: %v", err)
 			}
 
 			go func() {

@@ -126,11 +126,12 @@ func modifyResponse(res *http.Response) error {
 						Operator:    e.Resource.ExtendedInfo["operator"].(string),
 					},
 				}
-				if err := event.Build(metaData); err != nil {
+				if err := event.Build(metaData); err == nil {
+					if err := event.Publish(); err != nil {
+						hlog.Errorf("failed to publish chart upload event: %v", err)
+					}
+				} else {
 					hlog.Errorf("failed to build chart upload event metadata: %v", err)
-				}
-				if err := event.Publish(); err != nil {
-					hlog.Errorf("failed to publish chart upload event: %v", err)
 				}
 			}
 		}
@@ -143,11 +144,12 @@ func modifyResponse(res *http.Response) error {
 		if ok && eventMetaData != nil {
 			// Trigger harbor webhook
 			event := &n_event.Event{}
-			if err := event.Build(eventMetaData); err != nil {
+			if err := event.Build(eventMetaData); err == nil {
+				if err := event.Publish(); err != nil {
+					hlog.Errorf("failed to publish chart download event: %v", err)
+				}
+			} else {
 				hlog.Errorf("failed to build chart download event metadata: %v", err)
-			}
-			if err := event.Publish(); err != nil {
-				hlog.Errorf("failed to publish chart download event: %v", err)
 			}
 		}
 	}
