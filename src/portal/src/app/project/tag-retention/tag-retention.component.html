@@ -11,27 +11,27 @@
             <li class="rule" *ngFor="let rule of retention?.rules;let i = index;">
                 <div class="clr-row">
                     <div class="clr-col-1">
-                        <clr-icon *ngIf="!rule?.disabled" class="color-green" shape="success-standard"></clr-icon>
-                        <clr-icon *ngIf="rule?.disabled" class="color-red" shape="error-standard"></clr-icon>
+                        <clr-icon (click)="openEditor(i)" shape="ellipsis-vertical"
+                                  class="dropdown-toggle hand"></clr-icon>
+                        <div class="dropdown" [ngClass]="{open:ruleIndex===i}">
+                            <div class="dropdown-menu">
+                                <button *ngIf="!rule?.disabled" type="button" class="dropdown-item"
+                                        (click)="toggleDisable(i,true)">{{'TAG_RETENTION.DISABLE' | translate}}</button>
+                                <button *ngIf="rule?.disabled" type="button" class="dropdown-item"
+                                        (click)="toggleDisable(i,false)">{{'TAG_RETENTION.ENABLE' | translate}}</button>
+                                <button type="button" class="dropdown-item"
+                                        (click)="editRuleByIndex(i)">{{'TAG_RETENTION.EDIT' | translate}}</button>
+                                <button type="button" class="dropdown-item"
+                                        (click)="deleteRule(i)">{{'TAG_RETENTION.DELETE' | translate}}</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="clr-col">
                         <span>
-                            <clr-icon (click)="openEditor(i)" shape="ellipsis-vertical"
-                                      class="dropdown-toggle hand"></clr-icon>
-                            <div class="dropdown" [ngClass]="{open:ruleIndex===i}">
-                                <div class="dropdown-menu">
-                                    <button *ngIf="!rule?.disabled" type="button" class="dropdown-item"
-                                            (click)="toggleDisable(i,true)">{{'TAG_RETENTION.DISABLE' | translate}}</button>
-                                    <button *ngIf="rule?.disabled" type="button" class="dropdown-item"
-                                            (click)="toggleDisable(i,false)">{{'TAG_RETENTION.ENABLE' | translate}}</button>
-                                    <button type="button" class="dropdown-item"
-                                            (click)="editRuleByIndex(i)">{{'TAG_RETENTION.EDIT' | translate}}</button>
-                                    <button type="button" class="dropdown-item"
-                                            (click)="deleteRule(i)">{{'TAG_RETENTION.DELETE' | translate}}</button>
-                                </div>
-                            </div>
+                           <clr-icon *ngIf="!rule?.disabled" class="color-green" shape="success-standard"></clr-icon>
+                           <clr-icon *ngIf="rule?.disabled" class="color-red" shape="error-standard"></clr-icon>
                         </span>
-                        <span class="rule-name">
+                        <span class="rule-name ml-5">
                             <span>{{'TAG_RETENTION.IN_REPOSITORIES' | translate}}</span>
                             <span>{{getI18nKey(rule?.scope_selectors?.repository[0]?.decoration)|translate}}</span>
                             <span>{{formatPattern(rule?.scope_selectors?.repository[0]?.pattern)}}</span>
