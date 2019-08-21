@@ -132,6 +132,24 @@ func (suite *ManagerSuite) TestUpdateQuota() {
 	}
 }
 
+func (suite *ManagerSuite) TestSetResourceUsage() {
+	mgr := suite.quotaManager()
+	id, _ := mgr.NewQuota(hardLimits)
+
+	if err := mgr.SetResourceUsage(types.ResourceCount, 123); suite.Nil(err) {
+		quota, _ := dao.GetQuota(id)
+		suite.Equal(hardLimits, mustResourceList(quota.Hard))
+
+		usage, _ := dao.GetQuotaUsage(id)
+		suite.Equal(types.ResourceList{types.ResourceCount: 123, types.ResourceStorage: 0}, mustResourceList(usage.Used))
+	}
+
+	if err := mgr.SetResourceUsage(types.ResourceStorage, 234); suite.Nil(err) {
+		usage, _ := dao.GetQuotaUsage(id)
+		suite.Equal(types.ResourceList{types.ResourceCount: 123, types.ResourceStorage: 234}, mustResourceList(usage.Used))
+	}
+}
+
 func (suite *ManagerSuite) TestEnsureQuota() {
 	// non-existent
 	nonExistRefID := "3"
