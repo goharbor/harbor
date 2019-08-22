@@ -122,8 +122,6 @@ paths:
       responses:
         '200':
           description: Project name exists.
-        '401':
-          description: User need to log in first.
         '404':
           description: Project name does not exist.
         '500':

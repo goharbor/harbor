@@ -17,8 +17,6 @@ package index
 import (
 	"sync"
 
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
-
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
 	"github.com/pkg/errors"
@@ -36,7 +34,7 @@ func init() {
 	}, doublestar.New)
 
 	// Register label selector
-	Register(label.Kind, []string{label.With, label.Without}, label.New)
+	// Register(label.Kind, []string{label.With, label.Without}, label.New)
 }
 
 // index for keeping the mapping between selector meta and its implementation

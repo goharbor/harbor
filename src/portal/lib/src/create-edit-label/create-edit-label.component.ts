@@ -71,7 +71,7 @@ export class CreateEditLabelComponent implements OnInit, OnDestroy {
           this.isLabelNameExist = false;
           if (targets && targets.length) {
             if (targets.find((target) => {
-              return target.name === name;
+              return target.name === name && target.id !== this.labelId;
             })) {
               this.isLabelNameExist = true;
             }

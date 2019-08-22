@@ -11,3 +11,8 @@
 .pos-inherit {
     position: inherit;
 }
+.clr-error {
+    .clr-select-wrapper::after {
+        right: 0.25rem !important;
+    }
+}
