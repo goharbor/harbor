@@ -12,20 +12,16 @@
                 </button>
             </a>
             <div class="login-group">
-                <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left">
+                <clr-input-container>
                     <input clrInput class="username" type="text" required [(ngModel)]="signInCredential.principal" name="login_username" id="login_username"
-                        placeholder='{{"PLACEHOLDER.SIGN_IN_NAME" | translate}}' #userNameInput='ngModel'>
-                    <span class="tooltip-content">
-                        {{ 'TOOLTIP.SIGN_IN_USERNAME' | translate }}
-                    </span>
-                </label>
-                <label for="username" aria-haspopup="true" role="tpopular-repo-wrapperooltip" class="tooltip tooltip-validation tooltip-md tooltip-top-left">
+                           placeholder='{{"PLACEHOLDER.SIGN_IN_NAME" | translate}}' #userNameInput='ngModel'>
+                    <clr-control-error>{{ 'TOOLTIP.SIGN_IN_USERNAME' | translate }}</clr-control-error>
+                </clr-input-container>
+                <clr-input-container>
                     <input clrInput class="password" type="password" required [(ngModel)]="signInCredential.password" name="login_password" id="login_password"
-                        placeholder='{{"PLACEHOLDER.SIGN_IN_PWD" | translate}}' #passwordInput="ngModel">
-                    <span class="tooltip-content">
-                        {{ 'TOOLTIP.SIGN_IN_PWD' | translate }}
-                    </span>
-                </label>
+                           placeholder='{{"PLACEHOLDER.SIGN_IN_PWD" | translate}}' #passwordInput="ngModel">
+                    <clr-control-error>{{ 'TOOLTIP.SIGN_IN_PWD' | translate }}</clr-control-error>
+                </clr-input-container>
                 <div class="display-flex">
                     <clr-checkbox-wrapper>
                         <input clrCheckbox type="checkbox" id="rememberme" #rememberMeBox (click)="clickRememberMe($event)" [checked]="rememberMe">
