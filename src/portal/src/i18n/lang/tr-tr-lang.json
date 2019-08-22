@@ -362,6 +362,8 @@
         "TEST_ENDPOINT_BUTTON": "UÇ NOKTAYI DOĞRULA",
         "CANCEL_BUTTON": "İPTAL ET",
         "SAVE_BUTTON": "KAYDET",
+        "TEST_ENDPOINT_SUCCESS": "Connection tested successfully.",
+        "TEST_ENDPOINT_FAILURE": "Failed to ping endpoint.",
         "ENABLED_WEBHOOK_TITLE": "Proje Ağ Kancalarını Etkinleştir",
         "ENABLED_WEBHOOK_SUMMARY": "Proje için ağ kancalarını etkinleştirmek istiyor musunuz?",
         "DISABLED_WEBHOOK_TITLE": "Proje Ağ kancalarını Devre Dışı Bırak",
