@@ -4,7 +4,7 @@ This guide provides instructions to manage roles by LDAP/AD group. You can impor
 
 ## Prerequisite
 
-1. Harbor's auth_mode is ldap_auth and **[basic LDAP configure paremters](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md#optional-parameters)** are configured.
+1. Harbor's auth_mode is ldap_auth and **[basic LDAP configure parameters](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md#optional-parameters)** are configured.
 1. Memberof overlay
 
     This feature requires the LDAP/AD server enabled the feature **memberof overlay**. 

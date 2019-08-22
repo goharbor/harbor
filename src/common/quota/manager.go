@@ -110,7 +110,8 @@ func (m *Manager) getUsageForUpdate(o orm.Ormer) (*models.QuotaUsage, error) {
 }
 
 func (m *Manager) updateUsage(o orm.Ormer, resources types.ResourceList,
-	calculate func(types.ResourceList, types.ResourceList) types.ResourceList) error {
+	calculate func(types.ResourceList, types.ResourceList) types.ResourceList,
+	skipOverflow bool) error {
 
 	quota, err := m.getQuotaForUpdate(o)
 	if err != nil {
@@ -137,7 +138,7 @@ func (m *Manager) updateUsage(o orm.Ormer, resources types.ResourceList,
 		return fmt.Errorf("quota usage is negative for resource(s): %s", prettyPrintResourceNames(negativeUsed))
 	}
 
-	if err := isSafe(hardLimits, used, newUsed); err != nil {
+	if err := isSafe(hardLimits, used, newUsed, skipOverflow); err != nil {
 		return err
 	}
 
@@ -189,6 +190,16 @@ func (m *Manager) UpdateQuota(hardLimits types.ResourceList) error {
 
 	sql := `UPDATE quota SET hard = ? WHERE reference = ? AND reference_id = ?`
 	_, err := o.Raw(sql, hardLimits.String(), m.reference, m.referenceID).Exec()
+
+	return err
+}
+
+// SetResourceUsage sets the usage per resource name
+func (m *Manager) SetResourceUsage(resource types.ResourceName, value int64) error {
+	o := dao.GetOrmer()
+
+	sql := fmt.Sprintf("UPDATE quota_usage SET used = jsonb_set(used, '{%s}', to_jsonb(%d::int), true) WHERE reference = ? AND reference_id = ?", resource, value)
+	_, err := o.Raw(sql, m.reference, m.referenceID).Exec()
 
 	return err
 }
@@ -245,14 +256,14 @@ func (m *Manager) EnsureQuota(usages types.ResourceList) error {
 // AddResources add resources to usage
 func (m *Manager) AddResources(resources types.ResourceList) error {
 	return dao.WithTransaction(func(o orm.Ormer) error {
-		return m.updateUsage(o, resources, types.Add)
+		return m.updateUsage(o, resources, types.Add, false)
 	})
 }
 
 // SubtractResources subtract resources from usage
 func (m *Manager) SubtractResources(resources types.ResourceList) error {
 	return dao.WithTransaction(func(o orm.Ormer) error {
-		return m.updateUsage(o, resources, types.Subtract)
+		return m.updateUsage(o, resources, types.Subtract, true)
 	})
 }
 

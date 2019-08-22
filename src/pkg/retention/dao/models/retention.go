@@ -54,6 +54,7 @@ type RetentionTask struct {
 	Repository  string    `orm:"column(repository)"`
 	JobID       string    `orm:"column(job_id)"`
 	Status      string    `orm:"column(status)"`
+	StatusCode  int       `orm:"column(status_code)"`
 	StartTime   time.Time `orm:"column(start_time)"`
 	EndTime     time.Time `orm:"column(end_time)"`
 	Total       int       `orm:"column(total)"`

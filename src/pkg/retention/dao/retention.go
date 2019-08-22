@@ -3,12 +3,13 @@ package dao
 import (
 	"errors"
 	"fmt"
+	"strconv"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	jobmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
-	"strconv"
 )
 
 // CreatePolicy Create Policy
@@ -29,9 +30,6 @@ func DeletePolicyAndExec(id int64) error {
 	o := dao.GetOrmer()
 	if _, err := o.Raw("delete from retention_task where execution_id in (select id from retention_execution where policy_id = ?) ", id).Exec(); err != nil {
 		return nil
-	}
-	if _, err := o.Raw("delete from retention_execution where policy_id = ?", id).Exec(); err != nil {
-		return err
 	}
 	if _, err := o.Delete(&models.RetentionExecution{
 		PolicyID: id,
@@ -72,7 +70,13 @@ func UpdateExecution(e *models.RetentionExecution, cols ...string) error {
 // DeleteExecution Delete Execution
 func DeleteExecution(id int64) error {
 	o := dao.GetOrmer()
-	_, err := o.Delete(&models.RetentionExecution{
+	_, err := o.Delete(&models.RetentionTask{
+		ExecutionID: id,
+	})
+	if err != nil {
+		return err
+	}
+	_, err = o.Delete(&models.RetentionExecution{
 		ID: id,
 	})
 	return err
@@ -225,6 +229,18 @@ func UpdateTask(task *models.RetentionTask, cols ...string) error {
 		return fmt.Errorf("invalid task ID: %d", task.ID)
 	}
 	_, err := dao.GetOrmer().Update(task, cols...)
+	return err
+}
+
+// UpdateTaskStatus updates the status of task whose status code is less than the statusCode provided
+func UpdateTaskStatus(taskID int64, status string, statusCode int) error {
+	_, err := dao.GetOrmer().QueryTable(&models.RetentionTask{}).
+		Filter("ID", taskID).
+		Filter("StatusCode__lt", statusCode).
+		Update(orm.Params{
+			"Status":     status,
+			"StatusCode": statusCode,
+		})
 	return err
 }
 

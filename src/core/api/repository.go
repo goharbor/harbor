@@ -584,7 +584,12 @@ func (ra *RepositoryAPI) GetTags() {
 		}
 		labeledTags := map[string]struct{}{}
 		for _, rl := range rls {
-			labeledTags[strings.Split(rl.ResourceName, ":")[1]] = struct{}{}
+			strs := strings.SplitN(rl.ResourceName, ":", 2)
+			// the "rls" may contain images which don't belong to the repository
+			if strs[0] != repoName {
+				continue
+			}
+			labeledTags[strs[1]] = struct{}{}
 		}
 		ts := []string{}
 		for _, tag := range tags {

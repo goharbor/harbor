@@ -2,7 +2,7 @@ swagger: '2.0'
 info:
   title: Harbor API
   description: These APIs provide services for manipulating Harbor project.
-  version: 1.10.0
+  version: 1.9.0
 host: localhost
 schemes:
   - http
@@ -122,8 +122,6 @@ paths:
       responses:
         '200':
           description: Project name exists.
-        '401':
-          description: User need to log in first.
         '404':
           description: Project name does not exist.
         '500':
@@ -333,10 +331,10 @@ paths:
           description: Illegal format of provided ID value.
         '401':
           description: User need to log in first.
-        '404':
-          description: Project ID does not exist.
         '403':
           description: User does not have permission to get summary of the project.
+        '404':
+          description: Project ID does not exist.
         '500':
           description: Unexpected internal errors.
   '/projects/{project_id}/metadatas':
@@ -2385,10 +2383,10 @@ paths:
               $ref: '#/definitions/Namespace'
         '401':
           description: User need to login first.
-        '404':
-          description: No registry found.
         '403':
           description: User has no privilege for the operation.
+        '404':
+          description: No registry found.
         '500':
           description: Unexpected internal errors.
   /internal/syncregistry:

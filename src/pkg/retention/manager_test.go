@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
-
 	"github.com/goharbor/harbor/src/common/job"
+	jjob "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
@@ -168,10 +168,14 @@ func TestExecution(t *testing.T) {
 
 func TestTask(t *testing.T) {
 	m := NewManager()
+	err := m.DeleteExecution(1000)
+	require.Nil(t, err)
 	task := &Task{
-		ExecutionID: 1,
+		ExecutionID: 1000,
 		JobID:       "1",
-		Status:      TaskStatusPending,
+		Status:      jjob.PendingStatus.String(),
+		StatusCode:  jjob.PendingStatus.Code(),
+		Total:       0,
 		StartTime:   time.Now(),
 	}
 	// create
@@ -181,27 +185,33 @@ func TestTask(t *testing.T) {
 	// get
 	tk, err := m.GetTask(id)
 	require.Nil(t, err)
-	assert.EqualValues(t, 1, tk.ExecutionID)
+	assert.EqualValues(t, 1000, tk.ExecutionID)
 
 	// update
 	task.ID = id
-	task.Status = TaskStatusInProgress
-	err = m.UpdateTask(task, "Status")
+	task.Total = 1
+	err = m.UpdateTask(task, "Total")
+	require.Nil(t, err)
+
+	// update status to success which is a final status
+	err = m.UpdateTaskStatus(id, jjob.SuccessStatus.String())
+	require.Nil(t, err)
+
+	// try to update status to running, as the status has already
+	// been updated to a final status, this updating shouldn't take effect
+	err = m.UpdateTaskStatus(id, jjob.RunningStatus.String())
 	require.Nil(t, err)
 
 	// list
 	tasks, err := m.ListTasks(&q.TaskQuery{
-		ExecutionID: 1,
-		Status:      TaskStatusInProgress,
+		ExecutionID: 1000,
 	})
 	require.Nil(t, err)
 	require.Equal(t, 1, len(tasks))
-	assert.Equal(t, int64(1), tasks[0].ExecutionID)
-	assert.Equal(t, TaskStatusInProgress, tasks[0].Status)
-
-	task.Status = TaskStatusFailed
-	err = m.UpdateTask(task, "Status")
-	require.Nil(t, err)
+	assert.Equal(t, int64(1000), tasks[0].ExecutionID)
+	assert.Equal(t, 1, tasks[0].Total)
+	assert.Equal(t, jjob.SuccessStatus.String(), tasks[0].Status)
+	assert.Equal(t, jjob.SuccessStatus.Code(), tasks[0].StatusCode)
 
 	// get task log
 	job.GlobalClient = &tjob.MockJobClient{

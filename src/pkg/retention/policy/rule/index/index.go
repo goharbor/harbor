@@ -26,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestk"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestpl"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/nothing"
 	"github.com/pkg/errors"
 )
 
@@ -122,11 +121,11 @@ func init() {
 	}, lastx.New)
 
 	// Register nothing
-	Register(&Metadata{
-		TemplateID: nothing.TemplateID,
-		Action:     action.Retain,
-		Parameters: []*IndexedParam{},
-	}, nothing.New)
+	// Register(&Metadata{
+	// 	TemplateID: nothing.TemplateID,
+	// 	Action:     action.Retain,
+	// 	Parameters: []*IndexedParam{},
+	// }, nothing.New)
 
 	// Register always
 	Register(&Metadata{

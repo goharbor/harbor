@@ -41,7 +41,7 @@ func (suite *DriverSuite) TestLoad() {
 		obj := dr.RefObject{
 			"id":         int64(1),
 			"name":       "library",
-			"owner_name": "",
+			"owner_name": "admin",
 		}
 
 		suite.Equal(obj, ref)

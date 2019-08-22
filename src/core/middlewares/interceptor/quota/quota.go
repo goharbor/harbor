@@ -16,13 +16,19 @@ package quota
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/redis"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
 	"github.com/goharbor/harbor/src/pkg/types"
 )
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+}
 
 // New ....
 func New(opts ...Option) interceptor.Interceptor {
@@ -59,7 +65,7 @@ func (qi *quotaInterceptor) HandleRequest(req *http.Request) (err error) {
 		return
 	}
 
-	err = qi.reserve()
+	err = qi.doTry()
 	if err != nil {
 		log.Errorf("Failed to %s resources, error: %v", qi.opts.Action, err)
 	}
@@ -80,14 +86,18 @@ func (qi *quotaInterceptor) HandleResponse(w http.ResponseWriter, req *http.Requ
 
 	switch sr.Status() {
 	case opts.StatusCode:
+		if err := qi.doConfirm(); err != nil {
+			log.Errorf("Failed to confirm for resource, error: %v", err)
+		}
+
 		if opts.OnFulfilled != nil {
 			if err := opts.OnFulfilled(w, req); err != nil {
 				log.Errorf("Failed to handle on fulfilled, error: %v", err)
 			}
 		}
 	default:
-		if err := qi.unreserve(); err != nil {
-			log.Errorf("Failed to %s resources, error: %v", opts.Action, err)
+		if err := qi.doCancel(); err != nil {
+			log.Errorf("Failed to cancel for resource, error: %v", err)
 		}
 
 		if opts.OnRejected != nil {
@@ -135,7 +145,8 @@ func (qi *quotaInterceptor) computeResources(req *http.Request) error {
 		return nil
 	}
 
-	if len(qi.opts.Resources) == 0 && qi.opts.OnResources != nil {
+	qi.resources = qi.opts.Resources
+	if len(qi.resources) == 0 && qi.opts.OnResources != nil {
 		resources, err := qi.opts.OnResources(req)
 		if err != nil {
 			return fmt.Errorf("failed to compute the resources for quota, error: %v", err)
@@ -147,41 +158,64 @@ func (qi *quotaInterceptor) computeResources(req *http.Request) error {
 	return nil
 }
 
-func (qi *quotaInterceptor) reserve() error {
+func (qi *quotaInterceptor) doTry() error {
 	if !qi.opts.EnforceResources() {
-		// Do nothing in reserve resources when quota interceptor not enforce resources
+		// Do nothing in try stage when quota interceptor not enforce resources
 		return nil
 	}
 
-	if len(qi.resources) == 0 {
-		return nil
-	}
-
-	switch qi.opts.Action {
-	case AddAction:
+	// Add resources in try stage when it is add action
+	// And do nothing in confirm stage for add action
+	if len(qi.resources) != 0 && qi.opts.Action == AddAction {
 		return qi.opts.Manager.AddResources(qi.resources)
-	case SubtractAction:
-		return qi.opts.Manager.SubtractResources(qi.resources)
 	}
 
 	return nil
 }
 
-func (qi *quotaInterceptor) unreserve() error {
+func (qi *quotaInterceptor) doConfirm() error {
 	if !qi.opts.EnforceResources() {
-		// Do nothing in unreserve resources when quota interceptor not enforce resources
+		// Do nothing in confirm stage when quota interceptor not enforce resources
 		return nil
 	}
 
-	if len(qi.resources) == 0 {
+	// Subtract resources in confirm stage when it is subtract action
+	// And do nothing in try stage for subtract action
+	if len(qi.resources) != 0 && qi.opts.Action == SubtractAction {
+		return retry(3, 100*time.Millisecond, func() error {
+			return qi.opts.Manager.SubtractResources(qi.resources)
+		})
+	}
+
+	return nil
+}
+
+func (qi *quotaInterceptor) doCancel() error {
+	if !qi.opts.EnforceResources() {
+		// Do nothing in cancel stage when quota interceptor not enforce resources
 		return nil
 	}
 
-	switch qi.opts.Action {
-	case AddAction:
-		return qi.opts.Manager.SubtractResources(qi.resources)
-	case SubtractAction:
-		return qi.opts.Manager.AddResources(qi.resources)
+	// Subtract resources back when process failed for add action
+	if len(qi.resources) != 0 && qi.opts.Action == AddAction {
+		return retry(3, 100*time.Millisecond, func() error {
+			return qi.opts.Manager.SubtractResources(qi.resources)
+		})
+	}
+
+	return nil
+}
+
+func retry(attempts int, sleep time.Duration, f func() error) error {
+	if err := f(); err != nil {
+		if attempts--; attempts > 0 {
+			r := time.Duration(rand.Int63n(int64(sleep)))
+			sleep = sleep + r/2
+
+			time.Sleep(sleep)
+			return retry(attempts, 2*sleep, f)
+		}
+		return err
 	}
 
 	return nil

@@ -73,6 +73,9 @@ func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 			log.Errorf("failed to get project %s: %v", projectName, err)
 			continue
 		}
+		if pro == nil {
+			continue
+		}
 		_, exist := repoMap[pro.Name]
 		if !exist {
 			repoMap[pro.Name] = []string{item}
