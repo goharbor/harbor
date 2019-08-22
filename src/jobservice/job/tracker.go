@@ -30,8 +30,10 @@ import (
 )
 
 const (
-	// Try best to keep the job stats data but anyway clear it after a long time
-	statDataExpireTime = 180 * 24 * 3600
+	// Try best to keep the job stats data but anyway clear it after a reasonable time
+	statDataExpireTime = 7 * 24 * 3600
+	// 1 hour to discard the job stats of success jobs
+	statDataExpireTimeForSuccess = 3600
 )
 
 // Tracker is designed to track the life cycle of the job described by the stats
@@ -237,22 +239,7 @@ func (bt *basicTracker) CheckIn(message string) error {
 
 // Expire job stats
 func (bt *basicTracker) Expire() error {
-	conn := bt.pool.Get()
-	defer func() {
-		_ = conn.Close()
-	}()
-
-	key := rds.KeyJobStats(bt.namespace, bt.jobID)
-	num, err := conn.Do("EXPIRE", key, statDataExpireTime)
-	if err != nil {
-		return err
-	}
-
-	if num == 0 {
-		return errors.Errorf("job stats for expiring %s does not exist", bt.jobID)
-	}
-
-	return nil
+	return bt.expire(statDataExpireTime)
 }
 
 // Run job
@@ -306,6 +293,13 @@ func (bt *basicTracker) Succeed() error {
 	err := bt.UpdateStatusWithRetry(SuccessStatus)
 	if !errs.IsStatusMismatchError(err) {
 		bt.refresh(SuccessStatus)
+
+		// Expire the stat data of the successful job
+		if er := bt.expire(statDataExpireTimeForSuccess); er != nil {
+			// Only logged
+			logger.Errorf("Expire stat data for the success job `%s` failed with error: %s", bt.jobID, er)
+		}
+
 		if er := bt.fireHookEvent(SuccessStatus); err == nil && er != nil {
 			return er
 		}
@@ -643,6 +637,25 @@ func (bt *basicTracker) retrieve() error {
 	}
 
 	bt.jobStats = res
+
+	return nil
+}
+
+func (bt *basicTracker) expire(expireTime int64) error {
+	conn := bt.pool.Get()
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	key := rds.KeyJobStats(bt.namespace, bt.jobID)
+	num, err := conn.Do("EXPIRE", key, expireTime)
+	if err != nil {
+		return err
+	}
+
+	if num == 0 {
+		return errors.Errorf("job stats for expiring %s does not exist", bt.jobID)
+	}
 
 	return nil
 }
