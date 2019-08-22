@@ -20,7 +20,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
-	jobmodels "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
@@ -48,6 +47,7 @@ type Handler struct {
 	status    string
 	rawStatus string
 	checkIn   string
+	revision  int64
 }
 
 // Prepare ...
@@ -60,7 +60,7 @@ func (h *Handler) Prepare() {
 		return
 	}
 	h.id = id
-	var data jobmodels.JobStatusChange
+	var data jjob.StatusChange
 	err = json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data)
 	if err != nil {
 		log.Errorf("Failed to decode job status change, job ID: %d, error: %v", id, err)
@@ -76,6 +76,9 @@ func (h *Handler) Prepare() {
 	}
 	h.status = status
 	h.checkIn = data.CheckIn
+	if data.Metadata != nil {
+		h.revision = data.Metadata.Revision
+	}
 }
 
 // HandleScan handles the webhook of scan job
@@ -138,23 +141,10 @@ func (h *Handler) HandleRetentionTask() {
 	}
 
 	// handle status updating
-	if err := mgr.UpdateTaskStatus(taskID, status); err != nil {
+	if err := mgr.UpdateTaskStatus(taskID, status, h.revision); err != nil {
 		log.Errorf("failed to update the status of retention task %d: %v", taskID, err)
 		h.SendInternalServerError(err)
 		return
-	}
-	// if the status is the final status, update the end time
-	if status == jjob.StoppedStatus.String() || status == jjob.SuccessStatus.String() ||
-		status == jjob.ErrorStatus.String() {
-		task := &retention.Task{
-			ID:      taskID,
-			EndTime: time.Now(),
-		}
-		if err := mgr.UpdateTask(task, "EndTime"); err != nil {
-			log.Errorf("failed to update of retention task %d: %v", taskID, err)
-			h.SendInternalServerError(err)
-			return
-		}
 	}
 }
 
