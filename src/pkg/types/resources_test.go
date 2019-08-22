@@ -77,8 +77,12 @@ func (suite *ResourcesSuite) TestZero() {
 }
 
 func (suite *ResourcesSuite) TestIsNegative() {
-	suite.EqualValues([]ResourceName{ResourceStorage}, IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: 100}))
-	suite.EqualValues([]ResourceName{ResourceStorage, ResourceCount}, IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: -100}))
+	suite.Len(IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: 100}), 1)
+	suite.Contains(IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: 100}), ResourceStorage)
+
+	suite.Len(IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: -100}), 2)
+	suite.Contains(IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: -100}), ResourceStorage)
+	suite.Contains(IsNegative(ResourceList{ResourceStorage: -100, ResourceCount: -100}), ResourceCount)
 }
 
 func TestRunResourcesSuite(t *testing.T) {
