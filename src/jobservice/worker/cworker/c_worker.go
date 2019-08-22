@@ -406,6 +406,7 @@ func (w *basicWorker) registerJob(name string, j interface{}) (err error) {
 		name,
 		work.JobOptions{
 			MaxFails: theJ.MaxFails(),
+			SkipDead: true,
 		},
 		// Use generic handler to handle as we do not accept context with this way.
 		func(job *work.Job) error {
