@@ -67,7 +67,6 @@ func (m *Metadata) Valid(v *validation.Validation) {
 				_ = v.SetError("Trigger.Settings", "cron in Trigger.Settings is required")
 			}
 		}
-
 	}
 }
 

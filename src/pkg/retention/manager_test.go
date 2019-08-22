@@ -168,8 +168,10 @@ func TestExecution(t *testing.T) {
 
 func TestTask(t *testing.T) {
 	m := NewManager()
+	err := m.DeleteExecution(1000)
+	require.Nil(t, err)
 	task := &Task{
-		ExecutionID: 1,
+		ExecutionID: 1000,
 		JobID:       "1",
 		Status:      jjob.PendingStatus.String(),
 		StatusCode:  jjob.PendingStatus.Code(),
@@ -183,7 +185,7 @@ func TestTask(t *testing.T) {
 	// get
 	tk, err := m.GetTask(id)
 	require.Nil(t, err)
-	assert.EqualValues(t, 1, tk.ExecutionID)
+	assert.EqualValues(t, 1000, tk.ExecutionID)
 
 	// update
 	task.ID = id
@@ -202,11 +204,11 @@ func TestTask(t *testing.T) {
 
 	// list
 	tasks, err := m.ListTasks(&q.TaskQuery{
-		ExecutionID: 1,
+		ExecutionID: 1000,
 	})
 	require.Nil(t, err)
 	require.Equal(t, 1, len(tasks))
-	assert.Equal(t, int64(1), tasks[0].ExecutionID)
+	assert.Equal(t, int64(1000), tasks[0].ExecutionID)
 	assert.Equal(t, 1, tasks[0].Total)
 	assert.Equal(t, jjob.SuccessStatus.String(), tasks[0].Status)
 	assert.Equal(t, jjob.SuccessStatus.Code(), tasks[0].StatusCode)

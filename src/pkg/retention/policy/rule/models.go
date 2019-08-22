@@ -45,11 +45,11 @@ type Metadata struct {
 // Selector to narrow down the list
 type Selector struct {
 	// Kind of the selector
-	// "regularExpression" or "label"
-	Kind string `json:"kind" valid:"Required"`
+	// "doublestar" or "label"
+	Kind string `json:"kind" valid:"Required;Match(doublestar)"`
 
 	// Decorated the selector
-	// for "regularExpression" : "matches" and "excludes"
+	// for "doublestar" : "matching" and "excluding"
 	// for "label" : "with" and "without"
 	Decoration string `json:"decoration" valid:"Required"`
 

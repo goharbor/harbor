@@ -152,12 +152,7 @@ func (s *ControllerTestSuite) TestExecution() {
 				},
 				TagSelectors: []*rule.Selector{
 					{
-						Kind:       "label",
-						Decoration: "with",
-						Pattern:    "latest",
-					},
-					{
-						Kind:       "regularExpression",
+						Kind:       "doublestar",
 						Decoration: "matches",
 						Pattern:    "release-[\\d\\.]+",
 					},
@@ -165,7 +160,7 @@ func (s *ControllerTestSuite) TestExecution() {
 				ScopeSelectors: map[string][]*rule.Selector{
 					"repository": {
 						{
-							Kind:       "regularExpression",
+							Kind:       "doublestar",
 							Decoration: "matches",
 							Pattern:    ".+",
 						},
