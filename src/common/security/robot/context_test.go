@@ -15,6 +15,7 @@
 package robot
 
 import (
+	"fmt"
 	"os"
 	"strconv"
 	"testing"
@@ -136,7 +137,7 @@ func TestIsSolutionUser(t *testing.T) {
 func TestHasPullPerm(t *testing.T) {
 	policies := []*rbac.Policy{
 		{
-			Resource: "/project/testrobot/repository",
+			Resource: rbac.Resource(fmt.Sprintf("/project/%d/repository", private.ProjectID)),
 			Action:   rbac.ActionPull,
 		},
 	}
@@ -146,14 +147,14 @@ func TestHasPullPerm(t *testing.T) {
 	}
 
 	ctx := NewSecurityContext(robot, pm, policies)
-	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
+	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 }
 
 func TestHasPushPerm(t *testing.T) {
 	policies := []*rbac.Policy{
 		{
-			Resource: "/project/testrobot/repository",
+			Resource: rbac.Resource(fmt.Sprintf("/project/%d/repository", private.ProjectID)),
 			Action:   rbac.ActionPush,
 		},
 	}
@@ -163,18 +164,18 @@ func TestHasPushPerm(t *testing.T) {
 	}
 
 	ctx := NewSecurityContext(robot, pm, policies)
-	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
+	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(rbac.ActionPush, resource))
 }
 
 func TestHasPushPullPerm(t *testing.T) {
 	policies := []*rbac.Policy{
 		{
-			Resource: "/project/testrobot/repository",
+			Resource: rbac.Resource(fmt.Sprintf("/project/%d/repository", private.ProjectID)),
 			Action:   rbac.ActionPush,
 		},
 		{
-			Resource: "/project/testrobot/repository",
+			Resource: rbac.Resource(fmt.Sprintf("/project/%d/repository", private.ProjectID)),
 			Action:   rbac.ActionPull,
 		},
 	}
@@ -184,7 +185,7 @@ func TestHasPushPullPerm(t *testing.T) {
 	}
 
 	ctx := NewSecurityContext(robot, pm, policies)
-	resource := rbac.NewProjectNamespace(private.Name).Resource(rbac.ResourceRepository)
+	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource))
 }
 

@@ -404,8 +404,7 @@ func (r *RetentionAPI) requireAccess(p *policy.Metadata, action rbac.Action, sub
 		if len(subresources) == 0 {
 			subresources = append(subresources, rbac.ResourceTagRetention)
 		}
-		resource := rbac.NewProjectNamespace(p.Scope.Reference).Resource(subresources...)
-		hasPermission = r.SecurityCtx.Can(action, resource)
+		hasPermission, _ = r.HasProjectPermission(p.Scope.Reference, action, subresources...)
 	default:
 		hasPermission = r.SecurityCtx.IsSysAdmin()
 	}

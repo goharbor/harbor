@@ -93,16 +93,5 @@ func (w *NotificationJobAPI) validateRBAC(action rbac.Action, projectID int64) b
 		return true
 	}
 
-	project, err := w.ProjectMgr.Get(projectID)
-	if err != nil {
-		w.ParseAndHandleError(fmt.Sprintf("failed to get project %d", projectID), err)
-		return false
-	}
-
-	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(rbac.ResourceNotificationPolicy)
-	if !w.SecurityCtx.Can(action, resource) {
-		w.SendForbiddenError(errors.New(w.SecurityCtx.GetUsername()))
-		return false
-	}
-	return true
+	return w.RequireProjectAccess(projectID, action, rbac.ResourceNotificationPolicy)
 }
