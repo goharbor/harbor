@@ -361,6 +361,8 @@
         "TEST_ENDPOINT_BUTTON": "测试 ENDPOINT",
         "CANCEL_BUTTON": "取消",
         "SAVE_BUTTON": "保存",
+        "TEST_ENDPOINT_SUCCESS": "测试连接成功。",
+        "TEST_ENDPOINT_FAILURE": "测试连接失败。",
         "ENABLED_WEBHOOK_TITLE": "启用项目的 Webhooks",
         "ENABLED_WEBHOOK_SUMMARY": "你希望开启项目的 Webhooks 吗？",
         "DISABLED_WEBHOOK_TITLE": "停用项目的 Webhooks",

@@ -389,6 +389,8 @@
         "TEST_ENDPOINT_BUTTON": "TEST ENDPOINT",
         "CANCEL_BUTTON": "CANCEL",
         "SAVE_BUTTON": "SAVE",
+        "TEST_ENDPOINT_SUCCESS": "Connection tested successfully.",
+        "TEST_ENDPOINT_FAILURE": "Failed to ping endpoint.",
         "ENABLED_WEBHOOK_TITLE": "Enable Project Webhooks",
         "ENABLED_WEBHOOK_SUMMARY": "Do you want to enable webhooks for project ",
         "DISABLED_WEBHOOK_TITLE": "Disable Project Webhooks",
