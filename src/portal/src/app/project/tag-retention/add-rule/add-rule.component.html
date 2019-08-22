@@ -63,7 +63,7 @@
                 <div class="clr-col-3">
                     <div class="clr-select-wrapper w-100">
                         <select [(ngModel)]="tagsSelect" class="clr-select w-100">
-                            <option *ngFor="let d of metadata?.tag_selectors[1]?.decorations"
+                            <option *ngFor="let d of metadata?.tag_selectors[0]?.decorations"
                                     value="{{d}}">{{getI18nKey(d)|translate}}</option>
                         </select>
                     </div>
