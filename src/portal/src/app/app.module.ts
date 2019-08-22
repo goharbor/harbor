@@ -45,7 +45,6 @@ registerLocaleData(localeFr, 'fr-fr');
 registerLocaleData(localePt, 'pt-br');
 registerLocaleData(localeTr, 'tr-tr');
 
-
 export function initConfig(configService: AppConfigService, skinableService: SkinableConfig) {
     return () => {
         skinableService.getCustomFile().subscribe();
