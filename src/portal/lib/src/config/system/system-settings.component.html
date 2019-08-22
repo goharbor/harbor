@@ -94,7 +94,7 @@
                 <div class="clr-row width-90per">
                     <div class="position-relative pl-05">
                         <div>
-                            <button (click)="showAddModal=!showAddModal"
+                            <button id="show-add-modal-button" (click)="showAddModal=!showAddModal"
                                 class="btn btn-link">{{'CVE_WHITELIST.ADD'|translate}}</button>
                         </div>
                         <div class="add-modal" *ngIf="showAddModal">
@@ -103,13 +103,13 @@
                             <div>
                                 <clr-textarea-container class="flex-direction-column">
                                     <label>{{'CVE_WHITELIST.ENTER'|translate}}</label>
-                                    <textarea class="w-100 font-italic" clrTextarea [(ngModel)]="cveIds"
+                                    <textarea id="whitelist-textarea" class="w-100 font-italic" clrTextarea [(ngModel)]="cveIds"
                                         name="cveIds"></textarea>
                                     <clr-control-helper>{{'CVE_WHITELIST.HELP'|translate}}</clr-control-helper>
                                 </clr-textarea-container>
                             </div>
                             <div>
-                                <button [disabled]="isDisabled()" (click)="addToSystemWhitelist()"
+                                <button id="add-to-system" [disabled]="isDisabled()" (click)="addToSystemWhitelist()"
                                     class="btn btn-link">{{'CVE_WHITELIST.ADD'|translate}}</button>
                             </div>
                         </div>
