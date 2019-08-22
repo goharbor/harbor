@@ -15,11 +15,11 @@
 package period
 
 import (
+	"context"
 	"fmt"
 	"math/rand"
 	"time"
 
-	"context"
 	"github.com/gocraft/work"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
@@ -175,22 +175,13 @@ func (e *enqueuer) scheduleNextJobs(p *Policy, conn redis.Conn) {
 		e.lastEnqueueErr = err
 		logger.Errorf("Invalid corn spec in periodic policy %s %s: %s", p.JobName, p.ID, err)
 	} else {
-		if p.JobParameters == nil {
-			p.JobParameters = make(job.Parameters)
-		}
-
-		// Clone job parameters
-		wJobParams := make(job.Parameters)
-		if p.JobParameters != nil && len(p.JobParameters) > 0 {
-			for k, v := range p.JobParameters {
-				wJobParams[k] = v
-			}
-		}
-		// Add extra argument for job running
-		// Notes: Only for system using
-		wJobParams[PeriodicExecutionMark] = true
 		for t := schedule.Next(nowTime); t.Before(horizon); t = schedule.Next(t) {
 			epoch := t.Unix()
+
+			// Clone parameters
+			// Add extra argument for job running too.
+			// Notes: Only for system using
+			wJobParams := cloneParameters(p.JobParameters, epoch)
 
 			// Create an execution (job) based on the periodic job template (policy)
 			j := &work.Job{
@@ -315,4 +306,17 @@ func (e *enqueuer) shouldEnqueue() bool {
 	}
 
 	return false
+}
+
+func cloneParameters(params job.Parameters, epoch int64) job.Parameters {
+	p := make(job.Parameters)
+
+	// Clone parameters to a new param map
+	for k, v := range params {
+		p[k] = v
+	}
+
+	p[PeriodicExecutionMark] = fmt.Sprintf("%d", epoch)
+
+	return p
 }
