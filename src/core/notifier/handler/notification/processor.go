@@ -129,7 +129,7 @@ func resolveImageEventData(value interface{}) (*notifyModel.ImageEvent, error) {
 	}
 
 	if len(imgEvent.Resource) == 0 {
-		return nil, fmt.Errorf("empty event resouece data in image event: %v", imgEvent)
+		return nil, fmt.Errorf("empty event resource data in image event: %v", imgEvent)
 	}
 
 	return imgEvent, nil
