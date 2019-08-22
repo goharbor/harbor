@@ -16,10 +16,12 @@ package operation
 
 import (
 	"fmt"
+	"regexp"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	hjob "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/operation/execution"
@@ -43,6 +45,11 @@ type Controller interface {
 
 const (
 	maxReplicators = 1024
+)
+
+var (
+	statusBehindErrorPattern = "mismatch job status for stopping job: .*, job status (.*) is behind Running"
+	statusBehindErrorReg     = regexp.MustCompile(statusBehindErrorPattern)
 )
 
 // NewController returns a controller implementation
@@ -149,19 +156,36 @@ func (c *controller) StopReplication(executionID int64) error {
 	}
 	// got tasks, stopping the tasks one by one
 	for _, task := range tasks {
-		if !isTaskRunning(task) {
-			log.Debugf("the task %d(job ID: %s) isn't running, its status is %s, skip", task.ID, task.JobID, task.Status)
+		if isTaskInFinalStatus(task) {
+			log.Debugf("the task %d(job ID: %s) is in final status, its status is %s, skip", task.ID, task.JobID, task.Status)
 			continue
 		}
 		if err = c.scheduler.Stop(task.JobID); err != nil {
-			return err
+			status, flag := isStatusBehindError(err)
+			if flag {
+				switch hjob.Status(status) {
+				case hjob.ErrorStatus:
+					status = models.TaskStatusFailed
+				case hjob.SuccessStatus:
+					status = models.TaskStatusSucceed
+				}
+				e := c.executionMgr.UpdateTaskStatus(task.ID, status)
+				if e != nil {
+					log.Errorf("failed to update the status the task %d(job ID: %s): %v", task.ID, task.JobID, e)
+				} else {
+					log.Debugf("got status behind error for task %d, update it's status to %s directly", task.ID, status)
+				}
+				continue
+			}
+			log.Errorf("failed to stop the task %d(job ID: %s): %v", task.ID, task.JobID, err)
+			continue
 		}
 		log.Debugf("the stop request for task %d(job ID: %s) sent", task.ID, task.JobID)
 	}
 	return nil
 }
 
-func isTaskRunning(task *models.Task) bool {
+func isTaskInFinalStatus(task *models.Task) bool {
 	if task == nil {
 		return false
 	}
@@ -169,9 +193,20 @@ func isTaskRunning(task *models.Task) bool {
 	case models.TaskStatusSucceed,
 		models.TaskStatusStopped,
 		models.TaskStatusFailed:
-		return false
+		return true
 	}
-	return true
+	return false
+}
+
+func isStatusBehindError(err error) (string, bool) {
+	if err == nil {
+		return "", false
+	}
+	strs := statusBehindErrorReg.FindStringSubmatch(err.Error())
+	if len(strs) != 2 {
+		return "", false
+	}
+	return strs[1], true
 }
 
 func (c *controller) ListExecutions(query ...*models.ExecutionQuery) (int64, []*models.Execution, error) {
