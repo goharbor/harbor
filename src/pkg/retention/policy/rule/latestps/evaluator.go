@@ -42,7 +42,7 @@ type evaluator struct {
 func (e *evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
 	// The updated proposal does not guarantee the order artifacts are provided, so we have to sort them first
 	sort.Slice(artifacts, func(i, j int) bool {
-		return artifacts[i].PushedTime < artifacts[j].PushedTime
+		return artifacts[i].PushedTime > artifacts[j].PushedTime
 	})
 
 	i := e.k
