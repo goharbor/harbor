@@ -88,7 +88,7 @@
                 </select>
               </div>
               <div class="select resource-box" *ngIf="supportedFilters[i]?.type==='label'&& supportedFilters[i]?.style==='list'">
-                <div class="dropdown width-100" formArrayName="value">
+                <div class="dropdown width-100 clr-select-wrapper" formArrayName="value">
                   <clr-dropdown class="width-100">
                     <button type="button" class="width-100 dropdown-toggle btn btn-link statistic-data label-text" clrDropdownTrigger>
                       <ng-template ngFor let-label [ngForOf]="filter.value.value" let-m="index">
