@@ -4,6 +4,7 @@ import { GcJobViewModel } from "../gcLog";
 import { GcViewModelFactory } from "../gc.viewmodel.factory";
 import { ErrorHandler } from "../../../error-handler/index";
 import { Subscription, timer } from "rxjs";
+import { REFRESH_TIME_DIFFERENCE } from '../../../shared/shared.const';
 const JOB_STATUS = {
   PENDING: "pending",
   RUNNING: "running"
@@ -34,7 +35,7 @@ export class GcHistoryComponent implements OnInit, OnDestroy {
       this.loading = false;
       // to avoid some jobs not finished.
       if (!this.timerDelay) {
-        this.timerDelay = timer(3000, 3000).subscribe(() => {
+        this.timerDelay = timer(REFRESH_TIME_DIFFERENCE, REFRESH_TIME_DIFFERENCE).subscribe(() => {
           let count: number = 0;
           this.jobs.forEach(job => {
             if (

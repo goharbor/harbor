@@ -105,19 +105,8 @@ func (cra *ChartRepositoryAPI) requireAccess(action rbac.Action, subresource ...
 	if len(subresource) == 0 {
 		subresource = append(subresource, rbac.ResourceHelmChart)
 	}
-	resource := rbac.NewProjectNamespace(cra.namespace).Resource(subresource...)
 
-	if !cra.SecurityCtx.Can(action, resource) {
-		if !cra.SecurityCtx.IsAuthenticated() {
-			cra.SendUnAuthorizedError(errors.New("Unauthorized"))
-		} else {
-			cra.SendForbiddenError(errors.New(cra.SecurityCtx.GetUsername()))
-		}
-
-		return false
-	}
-
-	return true
+	return cra.RequireProjectAccess(cra.namespace, action, subresource...)
 }
 
 // GetHealthStatus handles GET /api/chartrepo/health

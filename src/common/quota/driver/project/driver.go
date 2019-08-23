@@ -55,9 +55,21 @@ func getProjectsBatchFn(ctx context.Context, keys dataloader.Keys) []*dataloader
 		return handleError(err)
 	}
 
+	var ownerIDs []int
 	var projectsMap = make(map[int64]*models.Project, len(projectIDs))
 	for _, project := range projects {
+		ownerIDs = append(ownerIDs, project.OwnerID)
 		projectsMap[project.ProjectID] = project
+	}
+
+	owners, err := dao.ListUsers(&models.UserQuery{UserIDs: ownerIDs})
+	if err != nil {
+		return handleError(err)
+	}
+
+	var ownersMap = make(map[int]*models.User, len(owners))
+	for i, owner := range owners {
+		ownersMap[owner.UserID] = &owners[i]
 	}
 
 	var results []*dataloader.Result
@@ -65,6 +77,11 @@ func getProjectsBatchFn(ctx context.Context, keys dataloader.Keys) []*dataloader
 		project, ok := projectsMap[projectID]
 		if !ok {
 			return handleError(fmt.Errorf("project not found, "+"project_id: %d", projectID))
+		}
+
+		owner, ok := ownersMap[project.OwnerID]
+		if ok {
+			project.OwnerName = owner.Username
 		}
 
 		result := dataloader.Result{

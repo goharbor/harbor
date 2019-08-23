@@ -78,9 +78,14 @@ func GetBlobsByArtifact(artifactDigest string) ([]*models.Blob, error) {
 
 // GetExclusiveBlobs returns layers of repository:tag which are not shared with other repositories in the project
 func GetExclusiveBlobs(projectID int64, repository, digest string) ([]*models.Blob, error) {
+	var exclusive []*models.Blob
+
 	blobs, err := GetBlobsByArtifact(digest)
 	if err != nil {
 		return nil, err
+	}
+	if len(blobs) == 0 {
+		return exclusive, nil
 	}
 
 	sql := fmt.Sprintf(`
@@ -103,13 +108,11 @@ FROM
       )
   ) AS a
   LEFT JOIN artifact_blob b ON a.digest = b.digest_af
-  AND b.digest_blob IN (%s)`, paramPlaceholder(len(blobs)-1))
+  AND b.digest_blob IN (%s)`, ParamPlaceholderForIn(len(blobs)))
 
 	params := []interface{}{projectID, repository, projectID, digest}
 	for _, blob := range blobs {
-		if blob.Digest != digest {
-			params = append(params, blob.Digest)
-		}
+		params = append(params, blob.Digest)
 	}
 
 	var rows []struct {
@@ -125,9 +128,8 @@ FROM
 		shared[row.Digest] = true
 	}
 
-	var exclusive []*models.Blob
 	for _, blob := range blobs {
-		if blob.Digest != digest && !shared[blob.Digest] {
+		if !shared[blob.Digest] {
 			exclusive = append(exclusive, blob)
 		}
 	}

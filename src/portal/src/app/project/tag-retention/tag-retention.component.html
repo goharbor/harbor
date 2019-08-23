@@ -11,27 +11,27 @@
             <li class="rule" *ngFor="let rule of retention?.rules;let i = index;">
                 <div class="clr-row">
                     <div class="clr-col-1">
-                        <clr-icon *ngIf="!rule?.disabled" class="color-green" shape="success-standard"></clr-icon>
-                        <clr-icon *ngIf="rule?.disabled" class="color-red" shape="error-standard"></clr-icon>
+                        <clr-icon (click)="openEditor(i)" shape="ellipsis-vertical"
+                                  class="dropdown-toggle hand"></clr-icon>
+                        <div class="dropdown" [ngClass]="{open:ruleIndex===i}">
+                            <div class="dropdown-menu">
+                                <button *ngIf="!rule?.disabled" type="button" class="dropdown-item"
+                                        (click)="toggleDisable(i,true)">{{'TAG_RETENTION.DISABLE' | translate}}</button>
+                                <button *ngIf="rule?.disabled" type="button" class="dropdown-item"
+                                        (click)="toggleDisable(i,false)">{{'TAG_RETENTION.ENABLE' | translate}}</button>
+                                <button type="button" class="dropdown-item"
+                                        (click)="editRuleByIndex(i)">{{'TAG_RETENTION.EDIT' | translate}}</button>
+                                <button type="button" class="dropdown-item"
+                                        (click)="deleteRule(i)">{{'TAG_RETENTION.DELETE' | translate}}</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="clr-col">
                         <span>
-                            <clr-icon (click)="openEditor(i)" shape="ellipsis-vertical"
-                                      class="dropdown-toggle hand"></clr-icon>
-                            <div class="dropdown" [ngClass]="{open:ruleIndex===i}">
-                                <div class="dropdown-menu">
-                                    <button *ngIf="!rule?.disabled" type="button" class="dropdown-item"
-                                            (click)="toggleDisable(i,true)">{{'TAG_RETENTION.DISABLE' | translate}}</button>
-                                    <button *ngIf="rule?.disabled" type="button" class="dropdown-item"
-                                            (click)="toggleDisable(i,false)">{{'TAG_RETENTION.ENABLE' | translate}}</button>
-                                    <button type="button" class="dropdown-item"
-                                            (click)="editRuleByIndex(i)">{{'TAG_RETENTION.EDIT' | translate}}</button>
-                                    <button type="button" class="dropdown-item"
-                                            (click)="deleteRule(i)">{{'TAG_RETENTION.DELETE' | translate}}</button>
-                                </div>
-                            </div>
+                           <clr-icon *ngIf="!rule?.disabled" class="color-green" shape="success-standard"></clr-icon>
+                           <clr-icon *ngIf="rule?.disabled" class="color-red" shape="error-standard"></clr-icon>
                         </span>
-                        <span class="rule-name">
+                        <span class="rule-name ml-5">
                             <span>{{'TAG_RETENTION.IN_REPOSITORIES' | translate}}</span>
                             <span>{{getI18nKey(rule?.scope_selectors?.repository[0]?.decoration)|translate}}</span>
                             <span>{{formatPattern(rule?.scope_selectors?.repository[0]?.pattern)}}</span>
@@ -64,11 +64,11 @@
     </div>
 </div>
 <div class="cron-selection">
-    <cron-selection #cronScheduleComponent [labelCurrent]="label" [labelEdit]='label' [originCron]='originCron()' (inputvalue)="updateCron($event)"></cron-selection>
+    <cron-selection [disabled]="!(retention?.rules?.length > 0)" #cronScheduleComponent [labelCurrent]="label" [labelEdit]='label' [originCron]='originCron()' (inputvalue)="openConfirm($event)"></cron-selection>
 </div>
 <div class="clr-row pt-1">
     <div class="clr-col-2 pt-2"><label class="label-left font-size-54">{{'TAG_RETENTION.RETENTION_RUNS' | translate}}</label></div>
-    <div class="clr-col-10">
+    <div class="clr-col-10 padding-left-4">
         <clr-dg-action-bar>
                 <button [disabled]="!(retention?.rules?.length > 0)" class="btn btn-outline"
                         (click)="isRetentionRunOpened=true">
@@ -162,11 +162,21 @@
 <clr-modal [(clrModalOpen)]="isRetentionRunOpened"
            [clrModalStaticBackdrop]="true" [clrModalClosable]="true">
     <h3 class="modal-title">{{'TAG_RETENTION.RETENTION_RUN' | translate}}</h3>
-    <div class="modal-body">
-        <p class="color-97">
-            {{'TAG_RETENTION.RETENTION_RUN_EXPLAIN' | translate}}
-        </p>
+    <div class="modal-body pt-1">
+        <div class="alert alert-danger" role="alert">
+            <div class="alert-items">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="exclamation-triangle"></clr-icon>
+                    </div>
+                    <span class="alert-text">
+                    {{'TAG_RETENTION.RETENTION_RUN_EXPLAIN' | translate}}
+                </span>
+                </div>
+            </div>
+        </div>
     </div>
+
     <div class="modal-footer">
         <button type="button" class="btn btn-outline"
                 (click)="isRetentionRunOpened=false">{{'BUTTON.CANCEL' | translate}}</button>
@@ -174,7 +184,7 @@
     </div>
 </clr-modal>
 <clr-modal [(clrModalOpen)]="isAbortedOpened"
-           [clrModalStaticBackdrop]="true" [clrModalClosable]="true">
+                       [clrModalStaticBackdrop]="true" [clrModalClosable]="true">
     <h3 class="modal-title">{{'TAG_RETENTION.RETENTION_RUN_ABORTED' | translate}}</h3>
     <div class="modal-body">
         <p class="color-97">{{'TAG_RETENTION.RETENTION_RUN_ABORTED_EXPLAIN' | translate}}</p>
@@ -182,6 +192,27 @@
     <div class="modal-footer">
         <button type="button" class="btn btn-primary"
                 (click)="abortRetention()">{{'BUTTON.OK' | translate}}</button>
+    </div>
+</clr-modal>
+<clr-modal [(clrModalOpen)]="isConfirmOpened"
+           [clrModalStaticBackdrop]="true" [clrModalClosable]="true">
+    <h3 class="modal-title">{{'TAG_RETENTION.SCHEDULE' | translate}}</h3>
+    <div class="modal-body pt-1">
+        <div class="alert alert-danger" role="alert">
+            <div class="alert-items">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="exclamation-triangle"></clr-icon>
+                    </div>
+                    <span class="alert-text">
+                    {{'TAG_RETENTION.SCHEDULE_WARNING' | translate}}
+                </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" (click)="closeConfirm()" class="btn btn-primary">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>
 <div class="backdrop-transparent" (click)="ruleIndex = -1" *ngIf="ruleIndex !== -1"></div>

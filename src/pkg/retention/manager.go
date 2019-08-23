@@ -21,7 +21,8 @@ import (
 	"time"
 
 	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/job"
+	cjob "github.com/goharbor/harbor/src/common/job"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -58,6 +59,10 @@ type Manager interface {
 	CreateTask(task *Task) (int64, error)
 	// Update the specified task
 	UpdateTask(task *Task, cols ...string) error
+	// Update the status of the specified task
+	// The status is updated only when (the statusRevision > the current revision)
+	// or (the the statusRevision = the current revision and status > the current status)
+	UpdateTaskStatus(taskID int64, status string, statusRevision int64) error
 	// Get the task specified by the task ID
 	GetTask(taskID int64) (*Task, error)
 	// Get the log of the specified task
@@ -188,14 +193,16 @@ func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
 		return 0, errors.New("nil task")
 	}
 	t := &models.RetentionTask{
-		ExecutionID: task.ExecutionID,
-		Repository:  task.Repository,
-		JobID:       task.JobID,
-		Status:      task.Status,
-		StartTime:   task.StartTime,
-		EndTime:     task.EndTime,
-		Total:       task.Total,
-		Retained:    task.Retained,
+		ExecutionID:    task.ExecutionID,
+		Repository:     task.Repository,
+		JobID:          task.JobID,
+		Status:         task.Status,
+		StatusCode:     task.StatusCode,
+		StatusRevision: task.StatusRevision,
+		StartTime:      task.StartTime,
+		EndTime:        task.EndTime,
+		Total:          task.Total,
+		Retained:       task.Retained,
 	}
 	return dao.CreateTask(t)
 }
@@ -212,15 +219,17 @@ func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 	tasks := make([]*Task, 0)
 	for _, t := range ts {
 		tasks = append(tasks, &Task{
-			ID:          t.ID,
-			ExecutionID: t.ExecutionID,
-			Repository:  t.Repository,
-			JobID:       t.JobID,
-			Status:      t.Status,
-			StartTime:   t.StartTime,
-			EndTime:     t.EndTime,
-			Total:       t.Total,
-			Retained:    t.Retained,
+			ID:             t.ID,
+			ExecutionID:    t.ExecutionID,
+			Repository:     t.Repository,
+			JobID:          t.JobID,
+			Status:         t.Status,
+			StatusCode:     t.StatusCode,
+			StatusRevision: t.StatusRevision,
+			StartTime:      t.StartTime,
+			EndTime:        t.EndTime,
+			Total:          t.Total,
+			Retained:       t.Retained,
 		})
 	}
 	return tasks, nil
@@ -240,16 +249,27 @@ func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
 		return fmt.Errorf("invalid task ID: %d", task.ID)
 	}
 	return dao.UpdateTask(&models.RetentionTask{
-		ID:          task.ID,
-		ExecutionID: task.ExecutionID,
-		Repository:  task.Repository,
-		JobID:       task.JobID,
-		Status:      task.Status,
-		StartTime:   task.StartTime,
-		EndTime:     task.EndTime,
-		Total:       task.Total,
-		Retained:    task.Retained,
+		ID:             task.ID,
+		ExecutionID:    task.ExecutionID,
+		Repository:     task.Repository,
+		JobID:          task.JobID,
+		Status:         task.Status,
+		StatusCode:     task.StatusCode,
+		StatusRevision: task.StatusRevision,
+		StartTime:      task.StartTime,
+		EndTime:        task.EndTime,
+		Total:          task.Total,
+		Retained:       task.Retained,
 	}, cols...)
+}
+
+// UpdateTaskStatus updates the status of the specified task
+func (d *DefaultManager) UpdateTaskStatus(taskID int64, status string, statusRevision int64) error {
+	if taskID <= 0 {
+		return fmt.Errorf("invalid task ID: %d", taskID)
+	}
+	st := job.Status(status)
+	return dao.UpdateTaskStatus(taskID, status, st.Code(), statusRevision)
 }
 
 // GetTask returns the task specified by task ID
@@ -262,15 +282,17 @@ func (d *DefaultManager) GetTask(taskID int64) (*Task, error) {
 		return nil, err
 	}
 	return &Task{
-		ID:          task.ID,
-		ExecutionID: task.ExecutionID,
-		Repository:  task.Repository,
-		JobID:       task.JobID,
-		Status:      task.Status,
-		StartTime:   task.StartTime,
-		EndTime:     task.EndTime,
-		Total:       task.Total,
-		Retained:    task.Retained,
+		ID:             task.ID,
+		ExecutionID:    task.ExecutionID,
+		Repository:     task.Repository,
+		JobID:          task.JobID,
+		Status:         task.Status,
+		StatusCode:     task.StatusCode,
+		StatusRevision: task.StatusRevision,
+		StartTime:      task.StartTime,
+		EndTime:        task.EndTime,
+		Total:          task.Total,
+		Retained:       task.Retained,
 	}, nil
 }
 
@@ -283,7 +305,7 @@ func (d *DefaultManager) GetTaskLog(taskID int64) ([]byte, error) {
 	if task == nil {
 		return nil, fmt.Errorf("task %d not found", taskID)
 	}
-	return job.GlobalClient.GetJobLog(task.JobID)
+	return cjob.GlobalClient.GetJobLog(task.JobID)
 }
 
 // NewManager ...

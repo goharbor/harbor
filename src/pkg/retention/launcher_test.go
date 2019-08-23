@@ -126,6 +126,9 @@ func (f *fakeRetentionManager) CreateTask(task *Task) (int64, error) {
 func (f *fakeRetentionManager) UpdateTask(task *Task, cols ...string) error {
 	return nil
 }
+func (f *fakeRetentionManager) UpdateTaskStatus(int64, string, int64) error {
+	return nil
+}
 func (f *fakeRetentionManager) GetTaskLog(taskID int64) ([]byte, error) {
 	return nil, nil
 }

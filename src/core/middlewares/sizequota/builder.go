@@ -20,8 +20,8 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor/quota"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
@@ -89,6 +89,7 @@ func (*blobStorageQuotaBuilder) Build(req *http.Request) (interceptor.Intercepto
 	*req = *(req.WithContext(util.NewBlobInfoContext(req.Context(), info)))
 
 	opts := []quota.Option{
+		quota.EnforceResources(config.QuotaPerProjectEnable()),
 		quota.WithManager("project", strconv.FormatInt(info.ProjectID, 10)),
 		quota.WithAction(quota.AddAction),
 		quota.StatusCode(http.StatusCreated), // NOTICE: mount blob and blob upload complete both return 201 when success
@@ -110,7 +111,7 @@ func (*manifestCreationBuilder) Build(req *http.Request) (interceptor.Intercepto
 		return nil, nil
 	}
 
-	info, err := util.ParseManifestInfo(req)
+	info, err := util.ParseManifestInfoFromReq(req)
 	if err != nil {
 		return nil, err
 	}
@@ -119,6 +120,7 @@ func (*manifestCreationBuilder) Build(req *http.Request) (interceptor.Intercepto
 	*req = *req.WithContext(util.NewManifestInfoContext(req.Context(), info))
 
 	opts := []quota.Option{
+		quota.EnforceResources(config.QuotaPerProjectEnable()),
 		quota.WithManager("project", strconv.FormatInt(info.ProjectID, 10)),
 		quota.WithAction(quota.AddAction),
 		quota.StatusCode(http.StatusCreated),
@@ -181,6 +183,7 @@ func (*manifestDeletionBuilder) Build(req *http.Request) (interceptor.Intercepto
 	}
 
 	opts := []quota.Option{
+		quota.EnforceResources(config.QuotaPerProjectEnable()),
 		quota.WithManager("project", strconv.FormatInt(info.ProjectID, 10)),
 		quota.WithAction(quota.SubtractAction),
 		quota.StatusCode(http.StatusAccepted),
@@ -188,18 +191,6 @@ func (*manifestDeletionBuilder) Build(req *http.Request) (interceptor.Intercepto
 		quota.MutexKeys(mutexKeys...),
 		quota.OnFulfilled(func(http.ResponseWriter, *http.Request) error {
 			blobs := info.ExclusiveBlobs
-
-			total, err := dao.GetTotalOfArtifacts(&models.ArtifactQuery{
-				PID:    info.ProjectID,
-				Digest: info.Digest,
-			})
-			if err == nil && total > 0 {
-				blob, err := dao.GetBlob(info.Digest)
-				if err == nil {
-					blobs = append(blobs, blob)
-				}
-			}
-
 			return dao.RemoveBlobsFromProject(info.ProjectID, blobs...)
 		}),
 	}

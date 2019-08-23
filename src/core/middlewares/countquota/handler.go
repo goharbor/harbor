@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
+	"strings"
 )
 
 type countQuotaHandler struct {
@@ -57,6 +58,10 @@ func (h *countQuotaHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 
 	if err := interceptor.HandleRequest(req); err != nil {
 		log.Warningf("Error occurred when to handle request in count quota handler: %v", err)
+		if strings.Contains(err.Error(), "resource overflow the hard limit") {
+			http.Error(rw, util.MarshalError("DENIED", fmt.Sprintf("Not enough quota is available to process the request: %v", err)), http.StatusForbidden)
+			return
+		}
 		http.Error(rw, util.MarshalError("InternalError", fmt.Sprintf("Error occurred when to handle request in count quota handler: %v", err)),
 			http.StatusInternalServerError)
 		return

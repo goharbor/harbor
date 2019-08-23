@@ -64,7 +64,7 @@ func RemoveBlobsFromProject(projectID int64, blobs ...*models.Blob) error {
 		return nil
 	}
 
-	sql := fmt.Sprintf(`DELETE FROM project_blob WHERE blob_id IN (%s)`, paramPlaceholder(len(blobIDs)))
+	sql := fmt.Sprintf(`DELETE FROM project_blob WHERE blob_id IN (%s)`, ParamPlaceholderForIn(len(blobIDs)))
 
 	_, err := GetOrmer().Raw(sql, blobIDs).Exec()
 	return err
@@ -89,7 +89,7 @@ func GetBlobsNotInProject(projectID int64, blobDigests ...string) ([]*models.Blo
 	}
 
 	sql := fmt.Sprintf("SELECT * FROM blob WHERE id NOT IN (SELECT blob_id FROM project_blob WHERE project_id = ?) AND digest IN (%s)",
-		paramPlaceholder(len(blobDigests)))
+		ParamPlaceholderForIn(len(blobDigests)))
 
 	params := []interface{}{projectID}
 	for _, digest := range blobDigests {
@@ -102,4 +102,35 @@ func GetBlobsNotInProject(projectID int64, blobDigests ...string) ([]*models.Blo
 	}
 
 	return blobs, nil
+}
+
+// CountSizeOfProject ...
+func CountSizeOfProject(pid int64) (int64, error) {
+	var blobs []models.Blob
+
+	sql := `
+SELECT 
+    DISTINCT bb.digest,
+    bb.id,
+    bb.content_type,
+    bb.size,
+    bb.creation_time
+FROM artifact af
+JOIN artifact_blob afnb
+    ON af.digest = afnb.digest_af
+JOIN BLOB bb
+    ON afnb.digest_blob = bb.digest
+WHERE af.project_id = ? 
+`
+	_, err := GetOrmer().Raw(sql, pid).QueryRows(&blobs)
+	if err != nil {
+		return 0, err
+	}
+
+	var size int64
+	for _, blob := range blobs {
+		size += blob.Size
+	}
+
+	return size, err
 }

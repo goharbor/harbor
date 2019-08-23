@@ -15,8 +15,8 @@
 package latestpl
 
 import (
+	"fmt"
 	"math/rand"
-	"strconv"
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
@@ -35,8 +35,8 @@ func (e *EvaluatorTestSuite) TestNew() {
 		args      rule.Parameters
 		expectedK int
 	}{
-		{Name: "Valid", args: map[string]rule.Parameter{ParameterN: 5}, expectedK: 5},
-		{Name: "Default If Negative", args: map[string]rule.Parameter{ParameterN: -1}, expectedK: DefaultN},
+		{Name: "Valid", args: map[string]rule.Parameter{ParameterN: float64(5)}, expectedK: 5},
+		{Name: "Default If Negative", args: map[string]rule.Parameter{ParameterN: float64(-1)}, expectedK: DefaultN},
 		{Name: "Default If Not Set", args: map[string]rule.Parameter{}, expectedK: DefaultN},
 		{Name: "Default If Wrong Type", args: map[string]rule.Parameter{ParameterN: "foo"}, expectedK: DefaultN},
 	}
@@ -57,7 +57,7 @@ func (e *EvaluatorTestSuite) TestProcess() {
 	})
 
 	tests := []struct {
-		n           int
+		n           float64
 		expected    int
 		minPullTime int64
 	}{
@@ -69,7 +69,7 @@ func (e *EvaluatorTestSuite) TestProcess() {
 	}
 
 	for _, tt := range tests {
-		e.T().Run(strconv.Itoa(tt.n), func(t *testing.T) {
+		e.T().Run(fmt.Sprintf("%v", tt.n), func(t *testing.T) {
 			ev := New(map[string]rule.Parameter{ParameterN: tt.n})
 
 			result, err := ev.Process(data)

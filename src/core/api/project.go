@@ -86,20 +86,8 @@ func (p *ProjectAPI) requireAccess(action rbac.Action, subresource ...rbac.Resou
 	if len(subresource) == 0 {
 		subresource = append(subresource, rbac.ResourceSelf)
 	}
-	resource := rbac.NewProjectNamespace(p.project.ProjectID).Resource(subresource...)
 
-	if !p.SecurityCtx.Can(action, resource) {
-		if !p.SecurityCtx.IsAuthenticated() {
-			p.SendUnAuthorizedError(errors.New("Unauthorized"))
-
-		} else {
-			p.SendForbiddenError(errors.New(p.SecurityCtx.GetUsername()))
-		}
-
-		return false
-	}
-
-	return true
+	return p.RequireProjectAccess(p.project.ProjectID, action, subresource...)
 }
 
 // Post ...
@@ -139,23 +127,26 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 
-	setting, err := config.QuotaSetting()
-	if err != nil {
-		log.Errorf("failed to get quota setting: %v", err)
-		p.SendInternalServerError(fmt.Errorf("failed to get quota setting: %v", err))
-		return
-	}
+	var hardLimits types.ResourceList
+	if config.QuotaPerProjectEnable() {
+		setting, err := config.QuotaSetting()
+		if err != nil {
+			log.Errorf("failed to get quota setting: %v", err)
+			p.SendInternalServerError(fmt.Errorf("failed to get quota setting: %v", err))
+			return
+		}
 
-	if !p.SecurityCtx.IsSysAdmin() {
-		pro.CountLimit = &setting.CountPerProject
-		pro.StorageLimit = &setting.StoragePerProject
-	}
+		if !p.SecurityCtx.IsSysAdmin() {
+			pro.CountLimit = &setting.CountPerProject
+			pro.StorageLimit = &setting.StoragePerProject
+		}
 
-	hardLimits, err := projectQuotaHardLimits(pro, setting)
-	if err != nil {
-		log.Errorf("Invalid project request, error: %v", err)
-		p.SendBadRequestError(fmt.Errorf("invalid request: %v", err))
-		return
+		hardLimits, err = projectQuotaHardLimits(pro, setting)
+		if err != nil {
+			log.Errorf("Invalid project request, error: %v", err)
+			p.SendBadRequestError(fmt.Errorf("invalid request: %v", err))
+			return
+		}
 	}
 
 	exist, err := p.ProjectMgr.Exists(pro.Name)
@@ -212,14 +203,16 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 
-	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(projectID, 10))
-	if err != nil {
-		p.SendInternalServerError(fmt.Errorf("failed to get quota manager: %v", err))
-		return
-	}
-	if _, err := quotaMgr.NewQuota(hardLimits); err != nil {
-		p.SendInternalServerError(fmt.Errorf("failed to create quota for project: %v", err))
-		return
+	if config.QuotaPerProjectEnable() {
+		quotaMgr, err := quota.NewManager("project", strconv.FormatInt(projectID, 10))
+		if err != nil {
+			p.SendInternalServerError(fmt.Errorf("failed to get quota manager: %v", err))
+			return
+		}
+		if _, err := quotaMgr.NewQuota(hardLimits); err != nil {
+			p.SendInternalServerError(fmt.Errorf("failed to create quota for project: %v", err))
+			return
+		}
 	}
 
 	go func() {
@@ -653,6 +646,11 @@ func projectQuotaHardLimits(req *models.ProjectRequest, setting *models.QuotaSet
 }
 
 func getProjectQuotaSummary(projectID int64, summary *models.ProjectSummary) {
+	if !config.QuotaPerProjectEnable() {
+		log.Debug("Quota per project disabled")
+		return
+	}
+
 	quotas, err := dao.ListQuotas(&models.QuotaQuery{Reference: "project", ReferenceID: strconv.FormatInt(projectID, 10)})
 	if err != nil {
 		log.Debugf("failed to get quota for project: %d", projectID)

@@ -369,3 +369,25 @@ func TestSession_SearchGroupByDN(t *testing.T) {
 		})
 	}
 }
+
+func TestNormalizeFilter(t *testing.T) {
+	type args struct {
+		filter string
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"normal test", args{"(objectclass=user)"}, "objectclass=user"},
+		{"with space", args{" (objectclass=user) "}, "objectclass=user"},
+		{"nothing", args{"objectclass=user"}, "objectclass=user"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := normalizeFilter(tt.args.filter); got != tt.want {
+				t.Errorf("normalizeFilter() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

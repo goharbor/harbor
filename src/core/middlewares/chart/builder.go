@@ -21,6 +21,7 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor/quota"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
@@ -69,6 +70,7 @@ func (*chartVersionDeletionBuilder) Build(req *http.Request) (interceptor.Interc
 	}
 
 	opts := []quota.Option{
+		quota.EnforceResources(config.QuotaPerProjectEnable()),
 		quota.WithManager("project", strconv.FormatInt(project.ProjectID, 10)),
 		quota.WithAction(quota.SubtractAction),
 		quota.StatusCode(http.StatusOK),
@@ -101,22 +103,26 @@ func (*chartVersionCreationBuilder) Build(req *http.Request) (interceptor.Interc
 		return nil, fmt.Errorf("project %s not found", namespace)
 	}
 
-	chart, err := parseChart(req)
-	if err != nil {
-		return nil, fmt.Errorf("failed to parse chart from body, error: %v", err)
-	}
-	chartName, version := chart.Metadata.Name, chart.Metadata.Version
+	info, ok := util.ChartVersionInfoFromContext(req.Context())
+	if !ok {
+		chart, err := parseChart(req)
+		if err != nil {
+			return nil, fmt.Errorf("failed to parse chart from body, error: %v", err)
+		}
+		chartName, version := chart.Metadata.Name, chart.Metadata.Version
 
-	info := &util.ChartVersionInfo{
-		ProjectID: project.ProjectID,
-		Namespace: namespace,
-		ChartName: chartName,
-		Version:   version,
+		info = &util.ChartVersionInfo{
+			ProjectID: project.ProjectID,
+			Namespace: namespace,
+			ChartName: chartName,
+			Version:   version,
+		}
+		// Chart version info will be used by computeQuotaForUpload
+		*req = *req.WithContext(util.NewChartVersionInfoContext(req.Context(), info))
 	}
-	// Chart version info will be used by computeQuotaForUpload
-	*req = *req.WithContext(util.NewChartVersionInfoContext(req.Context(), info))
 
 	opts := []quota.Option{
+		quota.EnforceResources(config.QuotaPerProjectEnable()),
 		quota.WithManager("project", strconv.FormatInt(project.ProjectID, 10)),
 		quota.WithAction(quota.AddAction),
 		quota.StatusCode(http.StatusCreated),

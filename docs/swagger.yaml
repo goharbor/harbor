@@ -122,8 +122,6 @@ paths:
       responses:
         '200':
           description: Project name exists.
-        '401':
-          description: User need to log in first.
         '404':
           description: Project name does not exist.
         '500':
@@ -333,10 +331,10 @@ paths:
           description: Illegal format of provided ID value.
         '401':
           description: User need to log in first.
-        '404':
-          description: Project ID does not exist.
         '403':
           description: User does not have permission to get summary of the project.
+        '404':
+          description: Project ID does not exist.
         '500':
           description: Unexpected internal errors.
   '/projects/{project_id}/metadatas':
@@ -1263,11 +1261,16 @@ paths:
           type: string
           required: true
           description: Relevant repository name.
-        - name: label_ids
+        - name: label_id
           in: query
           type: string
           required: false
-          description: A list of comma separated label IDs.
+          description: A label ID.
+        - name: detail
+          in: query
+          type: boolean
+          required: false
+          description: Bool value indicating whether return detailed information of the tag, such as vulnerability scan info, if set to false, only tag name is returned.
       tags:
         - Products
       responses:
@@ -2380,10 +2383,10 @@ paths:
               $ref: '#/definitions/Namespace'
         '401':
           description: User need to login first.
-        '404':
-          description: No registry found.
         '403':
           description: User has no privilege for the operation.
+        '404':
+          description: No registry found.
         '500':
           description: Unexpected internal errors.
   /internal/syncregistry:
@@ -2404,6 +2407,20 @@ paths:
           $ref: '#/responses/UnsupportedMediaType'
         '500':
           description: Unexpected internal errors.
+  /internal/syncquota:
+    post:
+      summary: Sync quota from registry/chart to DB.
+      description: |
+        This endpoint is for syncing quota usage of registry/chart with database.
+      tags:
+      - Products
+      responses:
+        '200':
+          description: Sync repositories successfully.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of system admin role.
   /systeminfo:
     get:
       summary: Get general system info
@@ -3684,7 +3701,7 @@ paths:
           description: Unexpected internal errors.
   '/projects/{project_id}/webhook/policies':
     get:
-      sumary: List project webhook policies.
+      summary: List project webhook policies.
       description: |
         This endpoint returns webhook policies of a project.
       parameters:
@@ -3712,7 +3729,7 @@ paths:
         '500':
           description: Unexpected internal errors.
     post:
-      sumary: Create project webhook policy.
+      summary: Create project webhook policy.
       description: |
         This endpoint create a webhook policy if the project does not have one.
       parameters:
@@ -3757,7 +3774,7 @@ paths:
           in: path
           description: The id of webhook policy.
           required: true
-          type: int64
+          type: integer
           format: int64
       tags:
         - Products
@@ -3791,7 +3808,7 @@ paths:
           in: path
           description: The id of webhook policy.
           required: true
-          type: int64
+          type: integer
           format: int64
         - name: policy
           in: body
@@ -3829,7 +3846,7 @@ paths:
           in: path
           description: The id of webhook policy.
           required: true
-          type: int64
+          type: integer
           format: int64
       tags:
         - Products
@@ -3908,7 +3925,7 @@ paths:
           description: Internal server errors.
   '/projects/{project_id}/webhook/jobs':
     get:
-      sumary: List project webhook jobs
+      summary: List project webhook jobs
       description: |
         This endpoint returns webhook jobs of a project.
       parameters:
@@ -4023,6 +4040,9 @@ definitions:
       metadata:
         description: The metadata of the project.
         $ref: '#/definitions/ProjectMetadata'
+      cve_whitelist:
+        description: The CVE whitelist of the project.
+        $ref: '#/definitions/CVEWhitelist'
       count_limit:
         type: integer
         format: int64
@@ -4083,16 +4103,20 @@ definitions:
         description: 'The public status of the project. The valid values are "true", "false".'
       enable_content_trust:
         type: string
-        description: 'Whether content trust is enabled or not. If it is enabled, user cann''t pull unsigned images from this project. The valid values are "true", "false".'
+        description: 'Whether content trust is enabled or not. If it is enabled, user can''t pull unsigned images from this project. The valid values are "true", "false".'
       prevent_vul:
         type: string
         description: 'Whether prevent the vulnerable images from running. The valid values are "true", "false".'
       severity:
         type: string
-        description: 'If the vulnerability is high than severity defined here, the images cann''t be pulled. The valid values are "negligible", "low", "medium", "high", "critical".'
+        description: 'If the vulnerability is high than severity defined here, the images can''t be pulled. The valid values are "negligible", "low", "medium", "high", "critical".'
       auto_scan:
         type: string
         description: 'Whether scan images automatically when pushing. The valid values are "true", "false".'
+      reuse_sys_cve_whitelist:
+        type: string
+        description: 'Whether this project reuse the system level CVE whitelist as the whitelist of its own.  The valid values are "true", "false".
+        If it is set to "true" the actual whitelist associate with this project, if any, will be ignored.'
   ProjectSummary:
     type: object
     properties:
@@ -4841,6 +4865,9 @@ definitions:
       project_creation_restriction:
         type: string
         description: This attribute restricts what users have the permission to create project.  It can be "everyone" or "adminonly".
+      quota_per_project_enable:
+        type: boolean
+        description: This attribute indicates whether quota per project enabled in harbor
       read_only:
         type: boolean
         description: '''docker push'' is prohibited by Harbor if you set it to true.   '
@@ -4938,6 +4965,9 @@ definitions:
       project_creation_restriction:
         $ref: '#/definitions/StringConfigItem'
         description: This attribute restricts what users have the permission to create project.  It can be "everyone" or "adminonly".
+      quota_per_project_enable:
+        $ref: '#/definitions/BoolConfigItem'
+        description: This attribute indicates whether quota per project enabled in harbor
       read_only:
         $ref: '#/definitions/BoolConfigItem'
         description: '''docker push'' is prohibited by Harbor if you set it to true.   '
@@ -5349,7 +5379,9 @@ definitions:
     properties:
       type:
         type: string
-        description: The schedule type. The valid values are hourly, daily， weekly, custom and None. 'None' means to cancel the schedule.
+        description: |
+          The schedule type. The valid values are 'Hourly', 'Daily', 'Weekly', 'Custom', 'Manually' and 'None'.
+          'Manually' means to trigger it right away and 'None' means to cancel the schedule.
       cron:
         type: string
         description: A cron expression, a time-based job scheduler.
@@ -5724,7 +5756,7 @@ definitions:
         description: The webhook job ID.
       policy_id:
         type: integer
-        fromat: int64
+        format: int64
         description: The webhook policy ID.
       event_type:
         type: string

@@ -16,6 +16,7 @@ package types
 
 import (
 	"encoding/json"
+	"strconv"
 )
 
 const (
@@ -30,6 +31,16 @@ const (
 
 // ResourceName is the name identifying various resources in a ResourceList.
 type ResourceName string
+
+// FormatValue returns string for the resource value
+func (resource ResourceName) FormatValue(value int64) string {
+	format, ok := resourceValueFormats[resource]
+	if ok {
+		return format(value)
+	}
+
+	return strconv.FormatInt(value, 10)
+}
 
 // ResourceList is a set of (resource name, value) pairs.
 type ResourceList map[ResourceName]int64
@@ -112,4 +123,15 @@ func Zero(a ResourceList) ResourceList {
 		result[key] = 0
 	}
 	return result
+}
+
+// IsNegative returns the set of resource names that have a negative value.
+func IsNegative(a ResourceList) []ResourceName {
+	results := []ResourceName{}
+	for k, v := range a {
+		if v < 0 {
+			results = append(results, k)
+		}
+	}
+	return results
 }

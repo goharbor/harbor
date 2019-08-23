@@ -30,8 +30,10 @@ import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/countquota"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"github.com/goharbor/harbor/src/pkg/types"
@@ -451,10 +453,10 @@ func (suite *HandlerSuite) TestPushImageToDifferentRepositories() {
 		suite.checkStorageUsage(size, projectID)
 
 		pushImage(projectName, "redis", "latest", manifest)
-		suite.checkStorageUsage(size+sizeOfManifest(manifest), projectID)
+		suite.checkStorageUsage(size, projectID)
 
 		pushImage(projectName, "postgres", "latest", manifest)
-		suite.checkStorageUsage(size+2*sizeOfManifest(manifest), projectID)
+		suite.checkStorageUsage(size, projectID)
 	})
 }
 
@@ -560,7 +562,7 @@ func (suite *HandlerSuite) TestDeleteManifestInDifferentRepositories() {
 
 		pushImage(projectName, "redis", "latest", manifest)
 		suite.checkCountUsage(3, projectID)
-		suite.checkStorageUsage(size+sizeOfManifest(manifest), projectID)
+		suite.checkStorageUsage(size, projectID)
 
 		deleteManifest(projectName, "redis", digestOfManifest(manifest))
 		suite.checkCountUsage(2, projectID)
@@ -568,7 +570,7 @@ func (suite *HandlerSuite) TestDeleteManifestInDifferentRepositories() {
 
 		pushImage(projectName, "redis", "latest", manifest)
 		suite.checkCountUsage(3, projectID)
-		suite.checkStorageUsage(size+sizeOfManifest(manifest), projectID)
+		suite.checkStorageUsage(size, projectID)
 	})
 }
 
@@ -662,7 +664,40 @@ func (suite *HandlerSuite) TestDeleteImageRace() {
 	})
 }
 
+func (suite *HandlerSuite) TestDisableProjectQuota() {
+	withProject(func(projectID int64, projectName string) {
+		manifest := makeManifest(1, []int64{2, 3, 4, 5})
+		pushImage(projectName, "photon", "latest", manifest)
+
+		quotas, err := dao.ListQuotas(&models.QuotaQuery{
+			Reference:   "project",
+			ReferenceID: strconv.FormatInt(projectID, 10),
+		})
+
+		suite.Nil(err)
+		suite.Len(quotas, 1)
+	})
+
+	withProject(func(projectID int64, projectName string) {
+		cfg := config.GetCfgManager()
+		cfg.Set(common.QuotaPerProjectEnable, false)
+		defer cfg.Set(common.QuotaPerProjectEnable, true)
+
+		manifest := makeManifest(1, []int64{2, 3, 4, 5})
+		pushImage(projectName, "photon", "latest", manifest)
+
+		quotas, err := dao.ListQuotas(&models.QuotaQuery{
+			Reference:   "project",
+			ReferenceID: strconv.FormatInt(projectID, 10),
+		})
+
+		suite.Nil(err)
+		suite.Len(quotas, 0)
+	})
+}
+
 func TestMain(m *testing.M) {
+	config.Init()
 	dao.PrepareTestForPostgresSQL()
 
 	if result := m.Run(); result != 0 {

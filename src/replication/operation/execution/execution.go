@@ -152,12 +152,8 @@ func (dm *DefaultManager) UpdateTask(task *models.Task, props ...string) error {
 
 // UpdateTaskStatus ...
 func (dm *DefaultManager) UpdateTaskStatus(taskID int64, status string, statusCondition ...string) error {
-	n, err := dao.UpdateTaskStatus(taskID, status, statusCondition...)
-	if err != nil {
+	if _, err := dao.UpdateTaskStatus(taskID, status, statusCondition...); err != nil {
 		return err
-	}
-	if n == 0 {
-		return fmt.Errorf("Update task status failed %d: -> %s ", taskID, status)
 	}
 	return nil
 }

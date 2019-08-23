@@ -22,6 +22,7 @@ import (
 	"strings"
 
 	"errors"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -90,18 +91,7 @@ func (m *MetadataAPI) Prepare() {
 }
 
 func (m *MetadataAPI) requireAccess(action rbac.Action) bool {
-	resource := rbac.NewProjectNamespace(m.project.ProjectID).Resource(rbac.ResourceMetadata)
-
-	if !m.SecurityCtx.Can(action, resource) {
-		if !m.SecurityCtx.IsAuthenticated() {
-			m.SendUnAuthorizedError(errors.New("Unauthorized"))
-		} else {
-			m.SendForbiddenError(errors.New(m.SecurityCtx.GetUsername()))
-		}
-		return false
-	}
-
-	return true
+	return m.RequireProjectAccess(m.project.ProjectID, action, rbac.ResourceMetadata)
 }
 
 // Get ...

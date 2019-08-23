@@ -92,7 +92,7 @@ func (r *DefaultAPIController) GetRetention(id int64) (*policy.Metadata, error) 
 func (r *DefaultAPIController) CreateRetention(p *policy.Metadata) (int64, error) {
 	if p.Trigger.Kind == policy.TriggerKindSchedule {
 		cron, ok := p.Trigger.Settings[policy.TriggerSettingsCron]
-		if ok {
+		if ok && len(cron.(string)) > 0 {
 			jobid, err := r.scheduler.Schedule(cron.(string), SchedulerCallback, TriggerParam{
 				PolicyID: p.ID,
 				Trigger:  ExecutionTriggerSchedule,

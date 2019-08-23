@@ -62,15 +62,15 @@ func (e *evaluator) Action() string {
 func New(params rule.Parameters) rule.Evaluator {
 	if params != nil {
 		if param, ok := params[ParameterK]; ok {
-			if v, ok := param.(int); ok && v >= 0 {
+			if v, ok := param.(float64); ok && v >= 0 {
 				return &evaluator{
-					k: v,
+					k: int(v),
 				}
 			}
 		}
 	}
 
-	log.Debugf("default parameter %d used for rule %s", DefaultK, TemplateID)
+	log.Warningf("default parameter %d used for rule %s", DefaultK, TemplateID)
 
 	return &evaluator{
 		k: DefaultK,

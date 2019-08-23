@@ -137,7 +137,7 @@ func TestDownloadChart(t *testing.T) {
 		},
 		{
 			Method:  http.MethodGet,
-			Pattern: "/api/chartrepo/library/charts/harbor-1.0.tgz",
+			Pattern: "/chartrepo/library/charts/harbor-1.0.tgz",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(http.StatusOK)
 			},

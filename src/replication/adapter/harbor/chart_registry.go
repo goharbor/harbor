@@ -164,6 +164,13 @@ func (a *adapter) DownloadChart(name, version string) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, err
 	}
+	if resp.StatusCode != http.StatusOK {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("failed to download the chart %s: %d %s", req.URL.String(), resp.StatusCode, string(body))
+	}
 	return resp.Body, nil
 }
 

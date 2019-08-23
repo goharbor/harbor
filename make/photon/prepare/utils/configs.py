@@ -112,6 +112,11 @@ def parse_yaml_config(config_file_path):
         config_dict['harbor_db_username'] = 'postgres'
         config_dict['harbor_db_password'] = db_configs.get("password") or ''
         config_dict['harbor_db_sslmode'] = 'disable'
+
+        default_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
+        default_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
+        config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_max_idle_conns
+        config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_max_open_conns
         # clari db
         config_dict['clair_db_host'] = 'postgresql'
         config_dict['clair_db_port'] = 5432
@@ -171,13 +176,18 @@ def parse_yaml_config(config_file_path):
     if storage_config.get('redirect'):
         config_dict['storage_redirect_disabled'] = storage_config['redirect']['disabled']
 
+    # Global proxy configs
+    proxy_config = configs.get('proxy') or {}
+    proxy_components = proxy_config.get('components') or []
+    for proxy_component in proxy_components:
+      config_dict[proxy_component + '_http_proxy'] = proxy_config.get('http_proxy') or ''
+      config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
+      config_dict[proxy_component + '_no_proxy'] = proxy_config.get('no_proxy') or '127.0.0.1,localhost,core,registry'
+
     # Clair configs, optional
     clair_configs = configs.get("clair") or {}
     config_dict['clair_db'] = 'postgres'
     config_dict['clair_updaters_interval'] = clair_configs.get("updaters_interval") or 12
-    config_dict['clair_http_proxy'] = clair_configs.get('http_proxy') or ''
-    config_dict['clair_https_proxy'] = clair_configs.get('https_proxy') or ''
-    config_dict['clair_no_proxy'] = clair_configs.get('no_proxy') or '127.0.0.1,localhost,core,registry'
 
     # Chart configs
     chart_configs = configs.get("chart") or {}

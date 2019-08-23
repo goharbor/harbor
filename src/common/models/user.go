@@ -46,6 +46,7 @@ type User struct {
 
 // UserQuery ...
 type UserQuery struct {
+	UserIDs    []int
 	Username   string
 	Email      string
 	Pagination *Pagination

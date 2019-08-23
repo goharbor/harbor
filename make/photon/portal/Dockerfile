@@ -1,7 +1,8 @@
 FROM node:10.15.0 as nodeportal
 
 COPY src/portal /portal_src
-COPY ./docs/swagger.yaml /portal_src
+COPY ./docs/swagger.yaml   /portal_src
+COPY ./LICENSE /portal_src
 
 WORKDIR /build_dir
 
@@ -21,6 +22,7 @@ FROM photon:2.0
 COPY --from=nodeportal /build_dir/dist /usr/share/nginx/html
 COPY --from=nodeportal /build_dir/swagger.yaml /usr/share/nginx/html
 COPY --from=nodeportal /build_dir/swagger.json /usr/share/nginx/html
+COPY --from=nodeportal /build_dir/LICENSE /usr/share/nginx/html
 
 COPY make/photon/portal/nginx.conf /etc/nginx/nginx.conf
 

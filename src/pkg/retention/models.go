@@ -23,12 +23,6 @@ const (
 	ExecutionStatusFailed     string = "Failed"
 	ExecutionStatusStopped    string = "Stopped"
 
-	TaskStatusPending    string = "Pending"
-	TaskStatusInProgress string = "InProgress"
-	TaskStatusSucceed    string = "Succeed"
-	TaskStatusFailed     string = "Failed"
-	TaskStatusStopped    string = "Stopped"
-
 	CandidateKindImage string = "image"
 	CandidateKindChart string = "chart"
 
@@ -49,15 +43,17 @@ type Execution struct {
 
 // Task of retention
 type Task struct {
-	ID          int64     `json:"id"`
-	ExecutionID int64     `json:"execution_id"`
-	Repository  string    `json:"repository"`
-	JobID       string    `json:"job_id"`
-	Status      string    `json:"status"`
-	StartTime   time.Time `json:"start_time"`
-	EndTime     time.Time `json:"end_time"`
-	Total       int       `json:"total"`
-	Retained    int       `json:"retained"`
+	ID             int64     `json:"id"`
+	ExecutionID    int64     `json:"execution_id"`
+	Repository     string    `json:"repository"`
+	JobID          string    `json:"job_id"`
+	Status         string    `json:"status"`
+	StatusCode     int       `json:"status_code"`
+	StatusRevision int64     `json:"status_revision"`
+	StartTime      time.Time `json:"start_time"`
+	EndTime        time.Time `json:"end_time"`
+	Total          int       `json:"total"`
+	Retained       int       `json:"retained"`
 }
 
 // History of retention

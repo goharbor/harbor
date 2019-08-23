@@ -50,6 +50,7 @@ export class WebhookComponent implements OnInit {
   isEnabled: boolean;
   loading: boolean = false;
   showCreate: boolean = false;
+  loadingWebhook: boolean = true;
   projectId: number;
   projectName: string;
   constructor(
@@ -92,6 +93,7 @@ export class WebhookComponent implements OnInit {
   getWebhook(projectId: number) {
     this.webhookService
       .listWebhook(projectId)
+      .pipe(finalize(() => (this.loadingWebhook = false)))
       .subscribe(
         response => {
           if (response.length) {

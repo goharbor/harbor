@@ -26,6 +26,7 @@ import (
 	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/opencontainers/go-digest"
@@ -201,12 +202,12 @@ func (suite *HandlerSuite) TestPutManifestFailed() {
 	}()
 
 	next := func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusForbidden)
 	}
 
 	dgt := digest.FromString(randomString(15)).String()
 	code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt, next)
-	suite.Equal(http.StatusInternalServerError, code)
+	suite.Equal(http.StatusForbidden, code)
 	suite.checkCountUsage(0, projectID)
 
 	total, err := dao.GetTotalOfArtifacts(&models.ArtifactQuery{Digest: dgt})
@@ -290,6 +291,7 @@ func (suite *HandlerSuite) TestDeleteManifestInMultiProjects() {
 }
 
 func TestMain(m *testing.M) {
+	config.Init()
 	dao.PrepareTestForPostgresSQL()
 
 	if result := m.Run(); result != 0 {

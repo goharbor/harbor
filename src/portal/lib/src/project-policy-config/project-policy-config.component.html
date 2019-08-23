@@ -89,12 +89,12 @@
                 </div>
                 <clr-radio-container clrInline>
                     <clr-radio-wrapper>
-                        <input type="radio" clrRadio name="systemWhitelistOrProjectWhitelist" required value="true"
+                        <input id="use-system" [disabled]="!hasChangeConfigRole" type="radio" clrRadio name="systemWhitelistOrProjectWhitelist" required value="true"
                                [(ngModel)]="systemWhitelistOrProjectWhitelist"/>
                         <label>{{'CVE_WHITELIST.SYS_WHITELIST'|translate}}</label>
                     </clr-radio-wrapper>
                     <clr-radio-wrapper>
-                        <input type="radio" clrRadio name="systemWhitelistOrProjectWhitelist" required value="false"
+                        <input id="use-project" [disabled]="!hasChangeConfigRole" type="radio" clrRadio name="systemWhitelistOrProjectWhitelist" required value="false"
                                [(ngModel)]="systemWhitelistOrProjectWhitelist"/>
                         <label>{{'CVE_WHITELIST.PRO_WHITELIST'|translate}}</label>
                     </clr-radio-wrapper>
@@ -102,10 +102,10 @@
                 <div class="clr-row width-70per">
                     <div class="clr-col position-relative">
                         <div>
-                            <button [disabled]="isUseSystemWhitelist()"
+                            <button id="show-add-modal" [disabled]="isUseSystemWhitelist() || !hasChangeConfigRole"
                                     (click)="showAddModal=!showAddModal"
                                     class="btn btn-link">{{'CVE_WHITELIST.ADD'|translate}}</button>
-                            <button [disabled]="isUseSystemWhitelist()" (click)="addSystem()"
+                            <button id="add-system" [disabled]="isUseSystemWhitelist() || !hasChangeConfigRole" (click)="addSystem()"
                                     class="btn btn-link ml-1">{{'CVE_WHITELIST.ADD_SYSTEM'|translate}}</button>
                         </div>
                         <div class="add-modal" *ngIf="showAddModal && !isUseSystemWhitelist()">
@@ -113,12 +113,12 @@
                             <div>
                                 <clr-textarea-container>
                                     <label>{{'CVE_WHITELIST.ENTER'|translate}}</label>
-                                    <textarea class="w-100" clrTextarea [(ngModel)]="cveIds" name="cveIds"></textarea>
+                                    <textarea id="whitelist-textarea" class="w-100" clrTextarea [(ngModel)]="cveIds" name="cveIds"></textarea>
                                     <clr-control-helper>{{'CVE_WHITELIST.HELP'|translate}}</clr-control-helper>
                                 </clr-textarea-container>
                             </div>
                             <div>
-                                <button [disabled]="isDisabled()" (click)="addToProjectWhitelist()"
+                                <button id="add-to-whitelist" [disabled]="isDisabled()" (click)="addToProjectWhitelist()"
                                         class="btn btn-link">{{'CVE_WHITELIST.ADD'|translate}}</button>
                             </div>
                         </div>
@@ -144,17 +144,17 @@
                             <label for="expires">{{'CVE_WHITELIST.EXPIRES_AT'|translate}}</label>
                             <div class="underline">
                                 <input #dateSystemInput readonly type="date" [(clrDate)]="systemExpiresDate">
-                                <input *ngIf="!isUseSystemWhitelist()" #dateInput
+                                <input [disabled]="!hasChangeConfigRole" *ngIf="!isUseSystemWhitelist()" #dateInput
                                        placeholder="{{'CVE_WHITELIST.NEVER_EXPIRES'|translate}}" readonly type="date"
                                        [(clrDate)]="expiresDate" newFormLayout="true">
-                                <input *ngIf="isUseSystemWhitelist()"
+                                <input [disabled]="!hasChangeConfigRole"  *ngIf="isUseSystemWhitelist()"
                                        placeholder="{{'CVE_WHITELIST.NEVER_EXPIRES'|translate}}" readonly type="text"
                                        value="{{systemExpiresDateString}}">
                             </div>
                         </div>
                         <div class="form-group padding-left-80">
                             <clr-checkbox-wrapper>
-                                <input [disabled]="isUseSystemWhitelist()" [checked]="neverExpires"
+                                <input [disabled]="isUseSystemWhitelist() || !hasChangeConfigRole" [checked]="neverExpires"
                                        [(ngModel)]="neverExpires" type="checkbox" clrCheckbox name="neverExpires"
                                        id="neverExpires"/>
                                 <label>
@@ -168,10 +168,10 @@
             </div>
         </div>
         <button type="button" class="btn btn-primary" (click)="save()"
-                [disabled]="(!isValid() || !hasChanges() || !hasChangeConfigRole) && !hasWhitelistChanged">{{'BUTTON.SAVE'
+                [disabled]="((!isValid() || !hasChanges()) && !hasWhitelistChanged) || !hasChangeConfigRole">{{'BUTTON.SAVE'
             | translate}}</button>
         <button type="button" class="btn btn-outline" (click)="cancel()"
-                [disabled]="(!isValid() || !hasChanges() || !hasChangeConfigRole) && !hasWhitelistChanged">{{'BUTTON.CANCEL'
+                [disabled]="((!isValid() || !hasChanges()) && !hasWhitelistChanged) || !hasChangeConfigRole">{{'BUTTON.CANCEL'
             | translate}}</button>
         <confirmation-dialog #cfgConfirmationDialog (confirmAction)="confirmCancel($event)"></confirmation-dialog>
     </section>

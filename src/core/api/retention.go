@@ -67,25 +67,19 @@ func (r *RetentionAPI) GetMetadatas() {
             ]
         },
 		{
-            "rule_template": "nothing",
-            "display_text": "none",
-            "action": "retain",
-            "params": []
-        },
-        {
-            "rule_template": "always",
-            "display_text": "always",
-            "action": "retain",
-            "params": [
-                {
-                    "type": "int",
-                    "unit": "COUNT",
-                    "required": true
-                }
-            ]
-        },
+			"rule_template": "nDaysSinceLastPush",
+			"display_text": "pushed within the last # days",
+			"action": "retain",
+			"params": [
+				{
+					"type": "int",
+					"unit": "DAYS",
+					"required": true
+				}
+			]
+		},
 		{
-			"rule_template": "dayspl",
+			"rule_template": "nDaysSinceLastPull",
 			"display_text": "pulled within the last # days",
 			"action": "retain",
 			"params": [
@@ -97,17 +91,11 @@ func (r *RetentionAPI) GetMetadatas() {
 			]
 		},
 		{
-			"rule_template": "daysps",
-			"display_text": "pushed within the last # days",
-			"action": "retain",
-			"params": [
-				{
-					"type": "int",
-					"unit": "DAYS",
-					"required": true
-				}
-			]
-		}
+            "rule_template": "always",
+            "display_text": "always",
+            "action": "retain",
+            "params": []
+        }
     ],
     "scope_selectors": [
         {
@@ -120,14 +108,6 @@ func (r *RetentionAPI) GetMetadatas() {
         }
     ],
     "tag_selectors": [
-        {
-            "display_text": "Labels",
-            "kind": "label",
-            "decorations": [
-                "withLabels",
-                "withoutLabels"
-            ]
-        },
         {
             "display_text": "Tags",
             "kind": "doublestar",
@@ -244,7 +224,7 @@ func (r *RetentionAPI) checkRuleConflict(p *policy.Metadata) error {
 		if old, exists := temp[string(bs)]; exists {
 			return fmt.Errorf("rule %d is conflict with rule %d", n, old)
 		}
-		temp[string(bs)] = tid
+		temp[string(bs)] = n
 		rule.ID = tid
 	}
 	return nil
@@ -424,8 +404,7 @@ func (r *RetentionAPI) requireAccess(p *policy.Metadata, action rbac.Action, sub
 		if len(subresources) == 0 {
 			subresources = append(subresources, rbac.ResourceTagRetention)
 		}
-		resource := rbac.NewProjectNamespace(p.Scope.Reference).Resource(subresources...)
-		hasPermission = r.SecurityCtx.Can(action, resource)
+		hasPermission, _ = r.HasProjectPermission(p.Scope.Reference, action, subresources...)
 	default:
 		hasPermission = r.SecurityCtx.IsSysAdmin()
 	}

@@ -90,6 +90,7 @@ export const  QuotaUnits = [
 ];
 export const QuotaUnlimited = -1;
 export const StorageMultipleConstant = 1024;
+export const LimitCount = 100000000;
 export enum QuotaUnit {
   TB = "TB", GB = "GB", MB = "MB", KB = "KB", BIT = "Byte"
 }
@@ -122,6 +123,8 @@ export const CONFIG_AUTH_MODE = {
   OIDC_AUTH: "oidc_auth",
   UAA_AUTH: "uaa_auth"
 };
+export const QUOTA_DANGER_COEFFICIENT = 0.9;
+export const QUOTA_WARNING_COEFFICIENT = 0.7;
 export const PROJECT_ROOTS = [
   {
     NAME: "admin",
@@ -149,3 +152,4 @@ export enum GroupType {
   LDAP_TYPE = 1,
   HTTP_TYPE = 2
 }
+export const REFRESH_TIME_DIFFERENCE = 10000;

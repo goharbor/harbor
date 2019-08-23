@@ -211,8 +211,6 @@ func (a *Auth) fillInModel(u *models.User) error {
 	u.Comment = userEntryComment
 	if strings.Contains(u.Username, "@") {
 		u.Email = u.Username
-	} else {
-		u.Email = fmt.Sprintf("%s@placeholder.com", u.Username)
 	}
 	return nil
 }

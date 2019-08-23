@@ -224,7 +224,7 @@ func TestOnBoardUser_02(t *testing.T) {
 		t.Errorf("Failed to onboard user")
 	}
 
-	assert.Equal(t, "sample02@placeholder.com", user.Email)
+	assert.Equal(t, "", user.Email)
 	dao.CleanUser(int64(user.UserID))
 }
 

@@ -44,7 +44,7 @@ func DeleteProjectMetadata(projectID int64, name ...string) error {
 	params = append(params, projectID)
 
 	if len(name) > 0 {
-		sql += fmt.Sprintf(` and name in ( %s )`, paramPlaceholder(len(name)))
+		sql += fmt.Sprintf(` and name in ( %s )`, ParamPlaceholderForIn(len(name)))
 		params = append(params, name)
 	}
 
@@ -74,7 +74,7 @@ func GetProjectMetadata(projectID int64, name ...string) ([]*models.ProjectMetad
 	params = append(params, projectID)
 
 	if len(name) > 0 {
-		sql += fmt.Sprintf(` and name in ( %s )`, paramPlaceholder(len(name)))
+		sql += fmt.Sprintf(` and name in ( %s )`, ParamPlaceholderForIn(len(name)))
 		params = append(params, name)
 	}
 
@@ -82,7 +82,9 @@ func GetProjectMetadata(projectID int64, name ...string) ([]*models.ProjectMetad
 	return proMetas, err
 }
 
-func paramPlaceholder(n int) string {
+// ParamPlaceholderForIn returns a string that contains placeholders for sql keyword "in"
+// e.g. n=3, returns "?,?,?"
+func ParamPlaceholderForIn(n int) string {
 	placeholders := []string{}
 	for i := 0; i < n; i++ {
 		placeholders = append(placeholders, "?")

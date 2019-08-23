@@ -8,11 +8,11 @@
 
 .webhook-form-wrap {
     width: 19rem;
-    margin: 0 auto;
+    margin: 0 ;
 }
 
 .create-text {
-    margin: 0 auto;
+    margin: 0;
     width: 19rem;
 }
 
@@ -34,4 +34,8 @@
 
 .enabled-icon {
     margin: -2px 5px 0 0;
+}
+.center {
+    justify-content: center;
+    align-items: center;
 }

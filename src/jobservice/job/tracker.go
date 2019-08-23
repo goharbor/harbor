@@ -17,20 +17,23 @@ package job
 import (
 	"context"
 	"encoding/json"
+	"math/rand"
+	"strconv"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
-	"math/rand"
-	"strconv"
-	"time"
 )
 
 const (
-	// Try best to keep the job stats data but anyway clear it after a long time
-	statDataExpireTime = 180 * 24 * 3600
+	// Try best to keep the job stats data but anyway clear it after a reasonable time
+	statDataExpireTime = 7 * 24 * 3600
+	// 1 hour to discard the job stats of success jobs
+	statDataExpireTimeForSuccess = 3600
 )
 
 // Tracker is designed to track the life cycle of the job described by the stats
@@ -96,6 +99,9 @@ type Tracker interface {
 
 	// Switch the status to success
 	Succeed() error
+
+	// Reset the status to `pending`
+	Reset() error
 }
 
 // basicTracker implements Tracker interface based on redis
@@ -233,22 +239,7 @@ func (bt *basicTracker) CheckIn(message string) error {
 
 // Expire job stats
 func (bt *basicTracker) Expire() error {
-	conn := bt.pool.Get()
-	defer func() {
-		_ = conn.Close()
-	}()
-
-	key := rds.KeyJobStats(bt.namespace, bt.jobID)
-	num, err := conn.Do("EXPIRE", key, statDataExpireTime)
-	if err != nil {
-		return err
-	}
-
-	if num == 0 {
-		return errors.Errorf("job stats for expiring %s does not exist", bt.jobID)
-	}
-
-	return nil
+	return bt.expire(statDataExpireTime)
 }
 
 // Run job
@@ -302,6 +293,13 @@ func (bt *basicTracker) Succeed() error {
 	err := bt.UpdateStatusWithRetry(SuccessStatus)
 	if !errs.IsStatusMismatchError(err) {
 		bt.refresh(SuccessStatus)
+
+		// Expire the stat data of the successful job
+		if er := bt.expire(statDataExpireTimeForSuccess); er != nil {
+			// Only logged
+			logger.Errorf("Expire stat data for the success job `%s` failed with error: %s", bt.jobID, er)
+		}
+
 		if er := bt.fireHookEvent(SuccessStatus); err == nil && er != nil {
 			return er
 		}
@@ -361,6 +359,8 @@ func (bt *basicTracker) Save() (err error) {
 	}
 	// Set update timestamp
 	args = append(args, "update_time", time.Now().Unix())
+	// Set the first revision
+	args = append(args, "revision", time.Now().Unix())
 
 	// Do it in a transaction
 	err = conn.Send("MULTI")
@@ -414,6 +414,29 @@ func (bt *basicTracker) UpdateStatusWithRetry(targetStatus Status) error {
 				bt.retryUpdateStatus(targetStatus)
 			}
 		}
+	}
+
+	return err
+}
+
+// Reset the job status to `pending` and update the revision.
+// Usually for the retry jobs
+func (bt *basicTracker) Reset() error {
+	conn := bt.pool.Get()
+	defer func() {
+		closeConn(conn)
+	}()
+
+	now := time.Now().Unix()
+	err := bt.Update(
+		"status",
+		PendingStatus.String(),
+		"revision",
+		now,
+	)
+	if err == nil {
+		bt.refresh(PendingStatus)
+		bt.jobStats.Info.Revision = now
 	}
 
 	return err
@@ -571,20 +594,16 @@ func (bt *basicTracker) retrieve() error {
 			res.Info.RefLink = value
 			break
 		case "enqueue_time":
-			v, _ := strconv.ParseInt(value, 10, 64)
-			res.Info.EnqueueTime = v
+			res.Info.EnqueueTime = parseInt64(value)
 			break
 		case "update_time":
-			v, _ := strconv.ParseInt(value, 10, 64)
-			res.Info.UpdateTime = v
+			res.Info.UpdateTime = parseInt64(value)
 			break
 		case "run_at":
-			v, _ := strconv.ParseInt(value, 10, 64)
-			res.Info.RunAt = v
+			res.Info.RunAt = parseInt64(value)
 			break
 		case "check_in_at":
-			v, _ := strconv.ParseInt(value, 10, 64)
-			res.Info.CheckInAt = v
+			res.Info.CheckInAt = parseInt64(value)
 			break
 		case "check_in":
 			res.Info.CheckIn = value
@@ -596,14 +615,12 @@ func (bt *basicTracker) retrieve() error {
 			res.Info.WebHookURL = value
 			break
 		case "die_at":
-			v, _ := strconv.ParseInt(value, 10, 64)
-			res.Info.DieAt = v
+			res.Info.DieAt = parseInt64(value)
 		case "upstream_job_id":
 			res.Info.UpstreamJobID = value
 			break
 		case "numeric_policy_id":
-			v, _ := strconv.ParseInt(value, 10, 64)
-			res.Info.NumericPID = v
+			res.Info.NumericPID = parseInt64(value)
 			break
 		case "parameters":
 			params := make(Parameters)
@@ -611,12 +628,34 @@ func (bt *basicTracker) retrieve() error {
 				res.Info.Parameters = params
 			}
 			break
+		case "revision":
+			res.Info.Revision = parseInt64(value)
+			break
 		default:
 			break
 		}
 	}
 
 	bt.jobStats = res
+
+	return nil
+}
+
+func (bt *basicTracker) expire(expireTime int64) error {
+	conn := bt.pool.Get()
+	defer func() {
+		_ = conn.Close()
+	}()
+
+	key := rds.KeyJobStats(bt.namespace, bt.jobID)
+	num, err := conn.Do("EXPIRE", key, expireTime)
+	if err != nil {
+		return err
+	}
+
+	if num == 0 {
+		return errors.Errorf("job stats for expiring %s does not exist", bt.jobID)
+	}
 
 	return nil
 }
@@ -639,4 +678,22 @@ func getStatus(conn redis.Conn, key string) (Status, error) {
 
 func setStatus(conn redis.Conn, key string, status Status) error {
 	return rds.HmSet(conn, key, "status", status.String(), "update_time", time.Now().Unix())
+}
+
+func closeConn(conn redis.Conn) {
+	if conn != nil {
+		if err := conn.Close(); err != nil {
+			logger.Errorf("Close redis connection failed with error: %s", err)
+		}
+	}
+}
+
+func parseInt64(v string) int64 {
+	intV, err := strconv.ParseInt(v, 10, 64)
+	if err != nil {
+		logger.Errorf("Parse int64 error: %s", err)
+		return 0
+	}
+
+	return intV
 }

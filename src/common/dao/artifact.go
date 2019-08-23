@@ -58,6 +58,7 @@ func UpdateArtifactPullTime(af *models.Artifact) error {
 
 // DeleteArtifact ...
 func DeleteArtifact(id int64) error {
+
 	_, err := GetOrmer().QueryTable(&models.Artifact{}).Filter("ID", id).Delete()
 	return err
 }

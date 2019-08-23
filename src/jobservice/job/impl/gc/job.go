@@ -22,10 +22,14 @@ import (
 	"github.com/garyburd/redigo/redis"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/common/dao"
+	common_quota "github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/registryctl"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/registryctl/client"
+	"strconv"
 )
 
 const (
@@ -87,6 +91,9 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 	}
 	if err := gc.cleanCache(); err != nil {
 		return err
+	}
+	if err := gc.ensureQuota(); err != nil {
+		gc.logger.Warningf("failed to align quota data in gc job, with error: %v", err)
 	}
 	gc.logger.Infof("GC results: status: %t, message: %s, start: %s, end: %s.", gcr.Status, gcr.Msg, gcr.StartTime, gcr.EndTime)
 	gc.logger.Infof("success to run gc in job.")
@@ -189,6 +196,30 @@ func delKeys(con redis.Conn, pattern string) error {
 		_, err := con.Do("DEL", key)
 		if err != nil {
 			return fmt.Errorf("failed to clean registry cache %v", err)
+		}
+	}
+	return nil
+}
+
+func (gc *GarbageCollector) ensureQuota() error {
+	projects, err := dao.GetProjects(nil)
+	if err != nil {
+		return err
+	}
+	for _, project := range projects {
+		pSize, err := dao.CountSizeOfProject(project.ProjectID)
+		if err != nil {
+			gc.logger.Warningf("error happen on counting size of project:%d by artifact, error:%v, just skip it.", project.ProjectID, err)
+			continue
+		}
+		quotaMgr, err := common_quota.NewManager("project", strconv.FormatInt(project.ProjectID, 10))
+		if err != nil {
+			gc.logger.Errorf("Error occurred when to new quota manager %v, just skip it.", err)
+			continue
+		}
+		if err := quotaMgr.SetResourceUsage(types.ResourceStorage, pSize); err != nil {
+			gc.logger.Errorf("cannot ensure quota for the project: %d, err: %v, just skip it.", project.ProjectID, err)
+			continue
 		}
 	}
 	return nil

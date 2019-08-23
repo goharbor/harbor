@@ -58,9 +58,8 @@ type Adapter struct {
 
 // NewAdapter returns an instance of the Adapter
 func NewAdapter(registry *model.Registry) (*Adapter, error) {
-	var authorizer modifier.Modifier
+	var cred modifier.Modifier
 	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
-		var cred modifier.Modifier
 		if registry.Credential.Type == model.CredentialTypeSecret {
 			cred = common_http_auth.NewSecretAuthorizer(registry.Credential.AccessSecret)
 		} else {
@@ -68,10 +67,11 @@ func NewAdapter(registry *model.Registry) (*Adapter, error) {
 				registry.Credential.AccessKey,
 				registry.Credential.AccessSecret)
 		}
-		authorizer = auth.NewStandardTokenAuthorizer(&http.Client{
-			Transport: util.GetHTTPTransport(registry.Insecure),
-		}, cred, registry.TokenServiceURL)
 	}
+	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
+		Transport: util.GetHTTPTransport(registry.Insecure),
+	}, cred, registry.TokenServiceURL)
+
 	return NewAdapterWithCustomizedAuthorizer(registry, authorizer)
 }
 

@@ -37,3 +37,18 @@
     max-height: 0.48rem;
   }
 }
+::ng-deep {
+  .progress {
+    &.warning>progress {
+      color: orange;
+
+      &::-webkit-progress-value {
+        background-color: orange;
+      }
+
+      &::-moz-progress-bar {
+        background-color: orange;
+      }
+    }
+  }
+}

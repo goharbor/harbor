@@ -23,12 +23,9 @@ import (
 
 func TestUpdateAndGetCVEWhitelist(t *testing.T) {
 	require.Nil(t, ClearTable("cve_whitelist"))
-	l, err := GetSysCVEWhitelist()
-	assert.Nil(t, err)
-	assert.Equal(t, models.CVEWhitelist{ProjectID: 0, Items: []models.CVEWhitelistItem{}}, *l)
 	l2, err := GetCVEWhitelist(5)
 	assert.Nil(t, err)
-	assert.Equal(t, models.CVEWhitelist{ProjectID: 5, Items: []models.CVEWhitelistItem{}}, *l2)
+	assert.Nil(t, l2)
 
 	longList := []models.CVEWhitelistItem{}
 	for i := 0; i < 50; i++ {
@@ -46,15 +43,6 @@ func TestUpdateAndGetCVEWhitelist(t *testing.T) {
 	assert.Equal(t, longList, out1.Items)
 	assert.Equal(t, e, *out1.ExpiresAt)
 
-	in2 := models.CVEWhitelist{ProjectID: 3, Items: []models.CVEWhitelistItem{}}
-	_, err = UpdateCVEWhitelist(in2)
-	require.Nil(t, err)
-	// assert.Equal(t, int64(1), n2)
-	out2, err := GetCVEWhitelist(3)
-	require.Nil(t, err)
-	assert.Equal(t, int64(3), out2.ProjectID)
-	assert.Equal(t, []models.CVEWhitelistItem{}, out2.Items)
-
 	sysCVEs := []models.CVEWhitelistItem{
 		{CVEID: "CVE-2019-10164"},
 		{CVEID: "CVE-2017-12345"},
@@ -62,11 +50,6 @@ func TestUpdateAndGetCVEWhitelist(t *testing.T) {
 	in3 := models.CVEWhitelist{Items: sysCVEs}
 	_, err = UpdateCVEWhitelist(in3)
 	require.Nil(t, err)
-	// assert.Equal(t, int64(1), n3)
-	sysList, err := GetSysCVEWhitelist()
-	require.Nil(t, err)
-	assert.Equal(t, int64(0), sysList.ProjectID)
-	assert.Equal(t, sysCVEs, sysList.Items)
 
-	// require.Nil(t, ClearTable("cve_whitelist"))
+	require.Nil(t, ClearTable("cve_whitelist"))
 }

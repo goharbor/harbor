@@ -20,6 +20,7 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor/quota"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
@@ -52,6 +53,7 @@ func (*manifestDeletionBuilder) Build(req *http.Request) (interceptor.Intercepto
 	}
 
 	opts := []quota.Option{
+		quota.EnforceResources(config.QuotaPerProjectEnable()),
 		quota.WithManager("project", strconv.FormatInt(info.ProjectID, 10)),
 		quota.WithAction(quota.SubtractAction),
 		quota.StatusCode(http.StatusAccepted),
@@ -75,7 +77,7 @@ func (*manifestCreationBuilder) Build(req *http.Request) (interceptor.Intercepto
 	info, ok := util.ManifestInfoFromContext(req.Context())
 	if !ok {
 		var err error
-		info, err = util.ParseManifestInfo(req)
+		info, err = util.ParseManifestInfoFromReq(req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse manifest, error %v", err)
 		}
@@ -85,6 +87,7 @@ func (*manifestCreationBuilder) Build(req *http.Request) (interceptor.Intercepto
 	}
 
 	opts := []quota.Option{
+		quota.EnforceResources(config.QuotaPerProjectEnable()),
 		quota.WithManager("project", strconv.FormatInt(info.ProjectID, 10)),
 		quota.WithAction(quota.AddAction),
 		quota.StatusCode(http.StatusCreated),

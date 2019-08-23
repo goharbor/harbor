@@ -17,6 +17,7 @@ package helmhub
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"net/http"
 	"strings"
 
@@ -123,7 +124,7 @@ func (a *adapter) download(version *chartVersion) (io.ReadCloser, error) {
 
 	url := strings.ToLower(version.Attributes.URLs[0])
 	if !(strings.HasPrefix(url, "http://") || strings.HasPrefix(url, "https://")) {
-		url = fmt.Sprintf("%s/charts/%s", version.Relationships.Chart.Data.Repo.URL, url)
+		url = fmt.Sprintf("%s/%s", version.Relationships.Chart.Data.Repo.URL, url)
 	}
 
 	req, err := http.NewRequest(http.MethodGet, url, nil)
@@ -133,6 +134,13 @@ func (a *adapter) download(version *chartVersion) (io.ReadCloser, error) {
 	resp, err := a.client.do(req)
 	if err != nil {
 		return nil, err
+	}
+	if resp.StatusCode != http.StatusOK {
+		body, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("failed to download the chart %s: %d %s", req.URL.String(), resp.StatusCode, string(body))
 	}
 	return resp.Body, nil
 }
