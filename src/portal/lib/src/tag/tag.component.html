@@ -85,8 +85,8 @@
             <clr-dg-column [clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
             <clr-dg-column *ngIf="!withAdmiral">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'REPOSITORY.PUSH_TIME' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'REPOSITORY.PULL_TIME' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="pushComparator">{{'REPOSITORY.PUSH_TIME' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="pullComparator">{{'REPOSITORY.PULL_TIME' | translate}}</clr-dg-column>
             <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
             <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
                 <clr-dg-cell class="truncated flex-max-width">
