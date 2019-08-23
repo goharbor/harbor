@@ -59,12 +59,27 @@ type Metadata struct {
 
 // Valid Valid
 func (m *Metadata) Valid(v *validation.Validation) {
+	if m.Trigger == nil {
+		_ = v.SetError("Trigger", "Trigger is required")
+		return
+	}
+	if m.Scope == nil {
+		_ = v.SetError("Scope", "Scope is required")
+		return
+	}
 	if m.Trigger != nil && m.Trigger.Kind == TriggerKindSchedule {
 		if m.Trigger.Settings == nil {
 			_ = v.SetError("Trigger.Settings", "Trigger.Settings is required")
 		} else {
 			if _, ok := m.Trigger.Settings[TriggerSettingsCron]; !ok {
 				_ = v.SetError("Trigger.Settings", "cron in Trigger.Settings is required")
+			}
+		}
+	}
+	if !v.HasErrors() {
+		for _, r := range m.Rules {
+			if ok, _ := v.Valid(&r); !ok {
+				return
 			}
 		}
 	}

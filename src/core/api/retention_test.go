@@ -37,17 +37,13 @@ func TestCreatePolicy(t *testing.T) {
 				ID:       1,
 				Priority: 1,
 				Template: "recentXdays",
+				Action:   "retain",
 				Parameters: rule.Parameters{
 					"num": 10,
 				},
 				TagSelectors: []*rule.Selector{
 					{
-						Kind:       "label",
-						Decoration: "with",
-						Pattern:    "latest",
-					},
-					{
-						Kind:       "regularExpression",
+						Kind:       "doublestar",
 						Decoration: "matches",
 						Pattern:    "release-[\\d\\.]+",
 					},
@@ -55,7 +51,7 @@ func TestCreatePolicy(t *testing.T) {
 				ScopeSelectors: map[string][]*rule.Selector{
 					"repository": {
 						{
-							Kind:       "regularExpression",
+							Kind:       "doublestar",
 							Decoration: "matches",
 							Pattern:    ".+",
 						},
@@ -104,17 +100,13 @@ func TestCreatePolicy(t *testing.T) {
 							ID:       1,
 							Priority: 1,
 							Template: "recentXdays",
+							Action:   "retain",
 							Parameters: rule.Parameters{
 								"num": 10,
 							},
 							TagSelectors: []*rule.Selector{
 								{
-									Kind:       "label",
-									Decoration: "with",
-									Pattern:    "latest",
-								},
-								{
-									Kind:       "regularExpression",
+									Kind:       "doublestar",
 									Decoration: "matches",
 									Pattern:    "release-[\\d\\.]+",
 								},
@@ -122,7 +114,7 @@ func TestCreatePolicy(t *testing.T) {
 							ScopeSelectors: map[string][]*rule.Selector{
 								"repository": {
 									{
-										Kind:       "regularExpression",
+										Kind:       "doublestar",
 										Decoration: "matches",
 										Pattern:    ".+",
 									},
@@ -154,17 +146,13 @@ func TestCreatePolicy(t *testing.T) {
 							ID:       1,
 							Priority: 1,
 							Template: "recentXdays",
+							Action:   "retain",
 							Parameters: rule.Parameters{
 								"num": 10,
 							},
 							TagSelectors: []*rule.Selector{
 								{
-									Kind:       "label",
-									Decoration: "with",
-									Pattern:    "latest",
-								},
-								{
-									Kind:       "regularExpression",
+									Kind:       "doublestar",
 									Decoration: "matches",
 									Pattern:    "release-[\\d\\.]+",
 								},
@@ -172,7 +160,7 @@ func TestCreatePolicy(t *testing.T) {
 							ScopeSelectors: map[string][]*rule.Selector{
 								"repository": {
 									{
-										Kind:       "regularExpression",
+										Kind:       "doublestar",
 										Decoration: "matches",
 										Pattern:    ".+",
 									},
@@ -183,17 +171,13 @@ func TestCreatePolicy(t *testing.T) {
 							ID:       2,
 							Priority: 1,
 							Template: "recentXdays",
+							Action:   "retain",
 							Parameters: rule.Parameters{
 								"num": 10,
 							},
 							TagSelectors: []*rule.Selector{
 								{
-									Kind:       "label",
-									Decoration: "with",
-									Pattern:    "latest",
-								},
-								{
-									Kind:       "regularExpression",
+									Kind:       "doublestar",
 									Decoration: "matches",
 									Pattern:    "release-[\\d\\.]+",
 								},
@@ -201,7 +185,7 @@ func TestCreatePolicy(t *testing.T) {
 							ScopeSelectors: map[string][]*rule.Selector{
 								"repository": {
 									{
-										Kind:       "regularExpression",
+										Kind:       "doublestar",
 										Decoration: "matches",
 										Pattern:    ".+",
 									},
@@ -237,17 +221,13 @@ func TestPolicy(t *testing.T) {
 				ID:       1,
 				Priority: 1,
 				Template: "recentXdays",
+				Action:   "retain",
 				Parameters: rule.Parameters{
 					"num": 10,
 				},
 				TagSelectors: []*rule.Selector{
 					{
-						Kind:       "label",
-						Decoration: "with",
-						Pattern:    "latest",
-					},
-					{
-						Kind:       "regularExpression",
+						Kind:       "doublestar",
 						Decoration: "matches",
 						Pattern:    "release-[\\d\\.]+",
 					},
@@ -255,7 +235,7 @@ func TestPolicy(t *testing.T) {
 				ScopeSelectors: map[string][]*rule.Selector{
 					"repository": {
 						{
-							Kind:       "regularExpression",
+							Kind:       "doublestar",
 							Decoration: "matches",
 							Pattern:    ".+",
 						},
@@ -307,17 +287,13 @@ func TestPolicy(t *testing.T) {
 							ID:       1,
 							Priority: 1,
 							Template: "recentXdays",
+							Action:   "retain",
 							Parameters: rule.Parameters{
 								"num": 10,
 							},
 							TagSelectors: []*rule.Selector{
 								{
-									Kind:       "label",
-									Decoration: "with",
-									Pattern:    "latest",
-								},
-								{
-									Kind:       "regularExpression",
+									Kind:       "doublestar",
 									Decoration: "matches",
 									Pattern:    "release-[\\d\\.]+",
 								},
@@ -325,7 +301,7 @@ func TestPolicy(t *testing.T) {
 							ScopeSelectors: map[string][]*rule.Selector{
 								"repository": {
 									{
-										Kind:       "regularExpression",
+										Kind:       "doublestar",
 										Decoration: "matches",
 										Pattern:    "b.+",
 									},
@@ -359,17 +335,13 @@ func TestPolicy(t *testing.T) {
 							ID:       1,
 							Priority: 1,
 							Template: "recentXdays",
+							Action:   "retain",
 							Parameters: rule.Parameters{
 								"num": 10,
 							},
 							TagSelectors: []*rule.Selector{
 								{
-									Kind:       "label",
-									Decoration: "with",
-									Pattern:    "latest",
-								},
-								{
-									Kind:       "regularExpression",
+									Kind:       "doublestar",
 									Decoration: "matches",
 									Pattern:    "release-[\\d\\.]+",
 								},
@@ -377,7 +349,7 @@ func TestPolicy(t *testing.T) {
 							ScopeSelectors: map[string][]*rule.Selector{
 								"repository": {
 									{
-										Kind:       "regularExpression",
+										Kind:       "doublestar",
 										Decoration: "matches",
 										Pattern:    "b.+",
 									},
@@ -388,17 +360,13 @@ func TestPolicy(t *testing.T) {
 							ID:       2,
 							Priority: 1,
 							Template: "recentXdays",
+							Action:   "retain",
 							Parameters: rule.Parameters{
 								"num": 10,
 							},
 							TagSelectors: []*rule.Selector{
 								{
-									Kind:       "label",
-									Decoration: "with",
-									Pattern:    "latest",
-								},
-								{
-									Kind:       "regularExpression",
+									Kind:       "doublestar",
 									Decoration: "matches",
 									Pattern:    "release-[\\d\\.]+",
 								},
@@ -406,7 +374,7 @@ func TestPolicy(t *testing.T) {
 							ScopeSelectors: map[string][]*rule.Selector{
 								"repository": {
 									{
-										Kind:       "regularExpression",
+										Kind:       "doublestar",
 										Decoration: "matches",
 										Pattern:    "b.+",
 									},
