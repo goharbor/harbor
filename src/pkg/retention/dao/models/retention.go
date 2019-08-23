@@ -49,14 +49,15 @@ type RetentionExecution struct {
 
 // RetentionTask ...
 type RetentionTask struct {
-	ID          int64     `orm:"pk;auto;column(id)"`
-	ExecutionID int64     `orm:"column(execution_id)"`
-	Repository  string    `orm:"column(repository)"`
-	JobID       string    `orm:"column(job_id)"`
-	Status      string    `orm:"column(status)"`
-	StatusCode  int       `orm:"column(status_code)"`
-	StartTime   time.Time `orm:"column(start_time)"`
-	EndTime     time.Time `orm:"column(end_time)"`
-	Total       int       `orm:"column(total)"`
-	Retained    int       `orm:"column(retained)"`
+	ID             int64     `orm:"pk;auto;column(id)"`
+	ExecutionID    int64     `orm:"column(execution_id)"`
+	Repository     string    `orm:"column(repository)"`
+	JobID          string    `orm:"column(job_id)"`
+	Status         string    `orm:"column(status)"`
+	StatusCode     int       `orm:"column(status_code)"`     // For order the different statuses
+	StatusRevision int64     `orm:"column(status_revision)"` // For differentiating the each retry of the same job
+	StartTime      time.Time `orm:"column(start_time)"`
+	EndTime        time.Time `orm:"column(end_time)"`
+	Total          int       `orm:"column(total)"`
+	Retained       int       `orm:"column(retained)"`
 }

@@ -199,7 +199,7 @@ func TestTask(t *testing.T) {
 	require.Nil(t, err)
 
 	// update status
-	err = UpdateTaskStatus(id, "running", 1)
+	err = UpdateTaskStatus(id, "running", 1, 1)
 	require.Nil(t, err)
 
 	// list
@@ -213,6 +213,7 @@ func TestTask(t *testing.T) {
 	assert.Equal(t, int64(1), tasks[0].ExecutionID)
 	assert.Equal(t, "running", tasks[0].Status)
 	assert.Equal(t, 1, tasks[0].StatusCode)
+	assert.Equal(t, int64(1), tasks[0].StatusRevision)
 
 	// delete
 	err = DeleteTask(id)

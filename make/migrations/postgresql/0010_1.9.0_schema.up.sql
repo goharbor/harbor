@@ -133,6 +133,7 @@ create table retention_task
   job_id       varchar(64),
   status       varchar(32),
   status_code  integer,
+  status_revision integer,
   start_time   timestamp default CURRENT_TIMESTAMP,
   end_time     timestamp default CURRENT_TIMESTAMP,
   total        integer,
