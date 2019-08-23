@@ -453,10 +453,10 @@ func (suite *HandlerSuite) TestPushImageToDifferentRepositories() {
 		suite.checkStorageUsage(size, projectID)
 
 		pushImage(projectName, "redis", "latest", manifest)
-		suite.checkStorageUsage(size+sizeOfManifest(manifest), projectID)
+		suite.checkStorageUsage(size, projectID)
 
 		pushImage(projectName, "postgres", "latest", manifest)
-		suite.checkStorageUsage(size+2*sizeOfManifest(manifest), projectID)
+		suite.checkStorageUsage(size, projectID)
 	})
 }
 
@@ -562,7 +562,7 @@ func (suite *HandlerSuite) TestDeleteManifestInDifferentRepositories() {
 
 		pushImage(projectName, "redis", "latest", manifest)
 		suite.checkCountUsage(3, projectID)
-		suite.checkStorageUsage(size+sizeOfManifest(manifest), projectID)
+		suite.checkStorageUsage(size, projectID)
 
 		deleteManifest(projectName, "redis", digestOfManifest(manifest))
 		suite.checkCountUsage(2, projectID)
@@ -570,7 +570,7 @@ func (suite *HandlerSuite) TestDeleteManifestInDifferentRepositories() {
 
 		pushImage(projectName, "redis", "latest", manifest)
 		suite.checkCountUsage(3, projectID)
-		suite.checkStorageUsage(size+sizeOfManifest(manifest), projectID)
+		suite.checkStorageUsage(size, projectID)
 	})
 }
 
