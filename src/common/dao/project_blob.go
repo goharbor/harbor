@@ -134,3 +134,57 @@ WHERE af.project_id = ?
 
 	return size, err
 }
+
+// RemoveUntaggedBlobs ...
+func RemoveUntaggedBlobs(pid int64) error {
+	var blobs []models.Blob
+	sql := `
+SELECT 
+    DISTINCT bb.digest,
+    bb.id,
+    bb.content_type,
+    bb.size,
+    bb.creation_time
+FROM artifact af
+JOIN artifact_blob afnb
+    ON af.digest = afnb.digest_af
+JOIN BLOB bb
+    ON afnb.digest_blob = bb.digest
+WHERE af.project_id = ? 
+`
+	_, err := GetOrmer().Raw(sql, pid).QueryRows(&blobs)
+	if len(blobs) == 0 {
+		sql = fmt.Sprintf(`DELETE FROM project_blob WHERE project_id = ?`)
+		_, err = GetOrmer().Raw(sql, pid).Exec()
+		if err != nil {
+			return err
+		}
+		return nil
+	}
+
+	var bbIDs []interface{}
+	for _, bb := range blobs {
+		bbIDs = append(bbIDs, bb.ID)
+	}
+	var projectBlobs []*models.ProjectBlob
+	sql = fmt.Sprintf(`SELECT * FROM project_blob AS pb WHERE project_id = ? AND pb.blob_id NOT IN (%s)`, ParamPlaceholderForIn(len(bbIDs)))
+	_, err = GetOrmer().Raw(sql, pid, bbIDs).QueryRows(&projectBlobs)
+	if err != nil {
+		return err
+	}
+
+	var pbIDs []interface{}
+	for _, pb := range projectBlobs {
+		pbIDs = append(pbIDs, pb.ID)
+	}
+	if len(pbIDs) == 0 {
+		return nil
+	}
+	sql = fmt.Sprintf(`DELETE FROM project_blob WHERE id IN (%s)`, ParamPlaceholderForIn(len(pbIDs)))
+	_, err = GetOrmer().Raw(sql, pbIDs).Exec()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
