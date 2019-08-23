@@ -20,13 +20,18 @@ import (
 	"github.com/goharbor/harbor/src/core/label"
 
 	"github.com/goharbor/harbor/src/core/middlewares"
+	n_event "github.com/goharbor/harbor/src/core/notifier/event"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
+	"path"
+	"strconv"
+	"time"
 )
 
 const (
 	namespaceParam          = ":repo"
 	nameParam               = ":name"
+	filenameParam           = ":filename"
 	defaultRepo             = "library"
 	rootUploadingEndpoint   = "/api/chartrepo/charts"
 	rootIndexEndpoint       = "/chartrepo/index.yaml"
@@ -42,6 +47,8 @@ const (
 	formFiledNameForProv  = "prov"
 	headerContentType     = "Content-Type"
 	contentTypeMultipart  = "multipart/form-data"
+	// chartPackageFileExtension is the file extension used for chart packages
+	chartPackageFileExtension = "tgz"
 )
 
 // chartController is a singleton instance
@@ -170,6 +177,11 @@ func (cra *ChartRepositoryAPI) DownloadChart() {
 		return
 	}
 
+	namespace := cra.GetStringFromPath(namespaceParam)
+	fileName := cra.GetStringFromPath(filenameParam)
+	// Add hook event to request context
+	cra.addDownloadChartEventContext(fileName, namespace, cra.Ctx.Request)
+
 	// Directly proxy to the backend
 	chartController.ProxyTraffic(cra.Ctx.ResponseWriter, cra.Ctx.Request)
 }
@@ -267,6 +279,24 @@ func (cra *ChartRepositoryAPI) DeleteChartVersion() {
 		cra.ParseAndHandleError("fail to delete chart version", err)
 		return
 	}
+
+	event := &n_event.Event{}
+	metaData := &n_event.ChartDeleteMetaData{
+		ChartMetaData: n_event.ChartMetaData{
+			ProjectName: cra.namespace,
+			ChartName:   chartName,
+			Versions:    []string{version},
+			OccurAt:     time.Now(),
+			Operator:    cra.SecurityCtx.GetUsername(),
+		},
+	}
+	if err := event.Build(metaData); err == nil {
+		if err := event.Publish(); err != nil {
+			hlog.Errorf("failed to publish chart delete event: %v", err)
+		}
+	} else {
+		hlog.Errorf("failed to build chart delete event metadata: %v", err)
+	}
 }
 
 // UploadChartVersion handles POST /api/:repo/charts
@@ -344,7 +374,9 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 		return
 	}
 
+	versions := []string{}
 	for _, chartVersion := range chartVersions {
+		versions = append(versions, chartVersion.GetVersion())
 		if err := cra.removeLabelsFromChart(chartName, chartVersion.GetVersion()); err != nil {
 			cra.SendInternalServerError(err)
 			return
@@ -354,6 +386,24 @@ func (cra *ChartRepositoryAPI) DeleteChart() {
 	if err := chartController.DeleteChart(cra.namespace, chartName); err != nil {
 		cra.SendInternalServerError(err)
 		return
+	}
+
+	event := &n_event.Event{}
+	metaData := &n_event.ChartDeleteMetaData{
+		ChartMetaData: n_event.ChartMetaData{
+			ProjectName: cra.namespace,
+			ChartName:   chartName,
+			Versions:    versions,
+			OccurAt:     time.Now(),
+			Operator:    cra.SecurityCtx.GetUsername(),
+		},
+	}
+	if err := event.Build(metaData); err == nil {
+		if err := event.Publish(); err != nil {
+			hlog.Errorf("failed to publish chart delete event: %v", err)
+		}
+	} else {
+		hlog.Errorf("failed to build chart delete event metadata: %v", err)
 	}
 }
 
@@ -435,6 +485,10 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 				return err
 			}
 
+			extInfo := make(map[string]interface{})
+			extInfo["operator"] = cra.SecurityCtx.GetUsername()
+			extInfo["projectName"] = cra.namespace
+			extInfo["chartName"] = chartDetails.Metadata.Name
 			e := &rep_event.Event{
 				Type: rep_event.EventTypeChartUpload,
 				Resource: &model.Resource{
@@ -445,6 +499,7 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 						},
 						Vtags: []string{chartDetails.Metadata.Version},
 					},
+					ExtendedInfo: extInfo,
 				},
 			}
 			*request = *(request.WithContext(context.WithValue(request.Context(), common.ChartUploadCtxKey, e)))
@@ -453,6 +508,20 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 	}
 
 	return nil
+}
+
+func (cra *ChartRepositoryAPI) addDownloadChartEventContext(fileName, namespace string, request *http.Request) {
+	chartName, version := parseChartVersionFromFilename(fileName)
+	event := &n_event.ChartDownloadMetaData{
+		ChartMetaData: n_event.ChartMetaData{
+			ProjectName: namespace,
+			ChartName:   chartName,
+			Versions:    []string{version},
+			OccurAt:     time.Now(),
+			Operator:    cra.SecurityCtx.GetUsername(),
+		},
+	}
+	*request = *(request.WithContext(context.WithValue(request.Context(), common.ChartDownloadCtxKey, event)))
 }
 
 // If the files are uploaded with multipart/form-data mimetype, beego will extract the data
@@ -543,4 +612,25 @@ func chartFullName(namespace, chartName, version string) string {
 		return fmt.Sprintf("%s:%s", chartName, version)
 	}
 	return fmt.Sprintf("%s/%s:%s", namespace, chartName, version)
+}
+
+// parseChartVersionFromFilename parse chart and version from file name
+func parseChartVersionFromFilename(filename string) (string, string) {
+	noExt := strings.TrimSuffix(path.Base(filename), fmt.Sprintf(".%s", chartPackageFileExtension))
+	parts := strings.Split(noExt, "-")
+	name := parts[0]
+	version := ""
+	for idx, part := range parts[1:] {
+		if _, err := strconv.Atoi(string(part[0])); err == nil { // see if this part looks like a version (starts w int)
+			version = strings.Join(parts[idx+1:], "-")
+			break
+		}
+		name = fmt.Sprintf("%s-%s", name, part)
+	}
+	if version == "" { // no parts looked like a real version, just take everything after last hyphen
+		lastIndex := len(parts) - 1
+		name = strings.Join(parts[:lastIndex], "-")
+		version = parts[lastIndex]
+	}
+	return name, version
 }

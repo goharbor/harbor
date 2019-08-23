@@ -23,6 +23,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/core/notifier/event"
 	jjob "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -84,6 +85,22 @@ func (h *Handler) Prepare() {
 // HandleScan handles the webhook of scan job
 func (h *Handler) HandleScan() {
 	log.Debugf("received san job status update event: job-%d, status-%s", h.id, h.status)
+	// Trigger image scan webhook event only for JobFinished and JobError status
+	if h.status == models.JobFinished || h.status == models.JobError {
+		e := &event.Event{}
+		metaData := &event.ScanImageMetaData{
+			JobID:  h.id,
+			Status: h.status,
+		}
+		if err := e.Build(metaData); err == nil {
+			if err := e.Publish(); err != nil {
+				log.Errorf("failed to publish image scanning event: %v", err)
+			}
+		} else {
+			log.Errorf("failed to build image scanning event metadata: %v", err)
+		}
+	}
+
 	if err := dao.UpdateScanJobStatus(h.id, h.status); err != nil {
 		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
 		h.SendInternalServerError(err)

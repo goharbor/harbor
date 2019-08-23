@@ -337,13 +337,14 @@ func (ra *RepositoryAPI) Delete() {
 		OccurAt:  time.Now(),
 		Operator: ra.SecurityCtx.GetUsername(),
 	}
-	if err := evt.Build(imgDelMetadata); err != nil {
+	if err := evt.Build(imgDelMetadata); err == nil {
+		if err := evt.Publish(); err != nil {
+			// do not return when publishing event failed
+			log.Errorf("failed to publish image delete event: %v", err)
+		}
+	} else {
 		// do not return when building event metadata failed
 		log.Errorf("failed to build image delete event metadata: %v", err)
-	}
-	if err := evt.Publish(); err != nil {
-		// do not return when publishing event failed
-		log.Errorf("failed to publish image delete event: %v", err)
 	}
 
 	exist, err := repositoryExist(repoName, rc)
