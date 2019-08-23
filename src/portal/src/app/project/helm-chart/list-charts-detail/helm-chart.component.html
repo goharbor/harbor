@@ -96,7 +96,7 @@
     <clr-modal [(clrModalOpen)]="isUploadModalOpen" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
         <h3 class="modal-title">{{'HELM_CHART.UPLOAD_TITLE' | translate | titlecase}}</h3>
         <div class="modal-body">
-            <form #chartUploadForm="ngForm" clrForm enctype="multipart/form-data" (ngSubmit)="upload()">
+            <form #chartUploadForm="ngForm" clrForm enctype="multipart/form-data">
                 <div class="clr-form-control">
                     <label class="filename-label clr-control-label clr-col-md-3"> {{'HELM_CHART.CHART_FILE' | translate}}</label>
                     <div class="clr-input-wrapper">
@@ -123,7 +123,7 @@
             <button class="btn btn-secondary" [disabled]="isUploading" (click)="cancelUpload()">
                 <span>{{'BUTTON.CANCEL' | translate}}</span>
             </button>
-            <button type="submit" class="btn btn-primary" [disabled]="isUploading">
+            <button type="submit" class="btn btn-primary" [disabled]="isUploading" (click)="upload()">
                 <span>{{'HELM_CHART.UPLOAD' | translate}}</span>
                 <span *ngIf="isUploading" class="spinner spinner-inline">
                     Loading...
