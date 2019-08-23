@@ -82,6 +82,15 @@ func (oc *OIDCController) Callback() {
 		oc.SendBadRequestError(errors.New("State mismatch"))
 		return
 	}
+
+	error := oc.Ctx.Request.URL.Query().Get("error")
+	if error != "" {
+		errorDescription := oc.Ctx.Request.URL.Query().Get("error_description")
+		log.Errorf("OIDC callback returned error: %s - %s", error, errorDescription)
+		oc.SendBadRequestError(errors.Errorf("OIDC callback returned error: %s - %s", error, errorDescription))
+		return
+	}
+
 	code := oc.Ctx.Request.URL.Query().Get("code")
 	ctx := oc.Ctx.Request.Context()
 	token, err := oidc.ExchangeToken(ctx, code)
