@@ -7,8 +7,8 @@
         <label class="clr-control-label required">{{'REPLICATION.NAME' | translate}}</label>
         <div class="clr-control-container">
           <div class="clr-input-wrapper">
-            <input class="clr-input" type="text" id="ruleName" size="35"  pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" required maxlength="255" formControlName="name"
-              #ruleName (keyup)='checkRuleName()' autocomplete="off">
+            <input class="clr-input" type="text" id="ruleName" size="35" pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" required maxlength="255"
+              formControlName="name" #ruleName (keyup)='checkRuleName()' autocomplete="off">
             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
             <span class="spinner spinner-inline spinner-pos" [hidden]="!inNameChecking"></span>
           </div>
@@ -167,32 +167,33 @@
       <!--Trigger-->
       <div class="clr-form-control">
         <label class="clr-control-label required">{{'REPLICATION.TRIGGER_MODE' | translate}}</label>
-        <div formGroupName="trigger" class="clr-control-container">
-          <!--on trigger-->
-          <div class="select width-115 clr-select-wrapper">
-            <select id="ruleTrigger" formControlName="type" class="clr-select">
-              <option *ngFor="let trigger of supportedTriggers" [value]="trigger">{{'REPLICATION.' + trigger.toUpperCase() | translate }}</option>
-            </select>
-          </div>
-          <div formGroupName="trigger_settings" class="clr-form-control">
-            <div [hidden]="isNotSchedule()">
-              <label class="required">Cron String</label>
-              <label for="targetCron" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm tooltip-top-right"
-                [class.invalid]="!isNotSchedule() && cronTouched && !cronInputValid(ruleForm.value.trigger?.trigger_settings?.cron || '')">
-                <input type="text" name=targetCron id="targetCron" required class="form-control cron-input clr-input" formControlName="cron">
-                <span class="tooltip-content">
-                  {{'TOOLTIP.CRON_REQUIRED' | translate }}
-                </span>
-              </label>
-              <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-left top-7 cron-tooltip">
-                <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
-                <div class="tooltip-content table-box">
-                  <cron-tooltip></cron-tooltip>
-                </div>
-              </a>
+        <div class="clr-control-container">
+          <div formGroupName="trigger">
+            <!--on trigger-->
+            <div class="select width-115 clr-select-wrapper">
+              <select id="ruleTrigger" formControlName="type" class="clr-select">
+                <option *ngFor="let trigger of supportedTriggers" [value]="trigger">{{'REPLICATION.' + trigger.toUpperCase() | translate }}</option>
+              </select>
+            </div>
+            <div formGroupName="trigger_settings" class="clr-form-control">
+              <div [hidden]="isNotSchedule()">
+                <label class="required">Cron String</label>
+                <label for="targetCron" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-sm tooltip-top-right"
+                  [class.invalid]="!isNotSchedule() && cronTouched && !cronInputValid(ruleForm.value.trigger?.trigger_settings?.cron || '')">
+                  <input type="text" name=targetCron id="targetCron" required class="form-control cron-input clr-input" formControlName="cron">
+                  <span class="tooltip-content">
+                    {{'TOOLTIP.CRON_REQUIRED' | translate }}
+                  </span>
+                </label>
+                <a href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-lg tooltip-top-left top-7 cron-tooltip">
+                  <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
+                  <div class="tooltip-content table-box">
+                    <cron-tooltip></cron-tooltip>
+                  </div>
+                </a>
+              </div>
             </div>
           </div>
-        </div>
           <div class="clr-checkbox-wrapper clr-form-control" [hidden]="isNotEventBased()">
             <input type="checkbox" class="clr-checkbox" [checked]="false" id="ruleDeletion" formControlName="deletion">
             <label for="ruleDeletion">{{'REPLICATION.DELETE_REMOTE_IMAGES' | translate}}</label>
@@ -212,6 +213,7 @@
             <input type="checkbox" [checked]="true" id="enablePolicy" formControlName="enabled" class="clr-checkbox">
             <label for="enablePolicy" class="clr-control-label">{{'REPLICATION.ENABLED_RULE' | translate}}</label>
           </div>
+        </div>
       </div>
       <div class="loading-center">
         <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
