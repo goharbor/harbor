@@ -138,6 +138,11 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 			// pass array copy to the selector
 			processed = append(processed, artifacts...)
 
+			if processed, err = evaluator.Process(processed); err != nil {
+				errChan <- err
+				return
+			}
+
 			if len(selectors) > 0 {
 				// selecting artifacts one by one
 				// `&&` mappings
@@ -147,11 +152,6 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 						return
 					}
 				}
-			}
-
-			if processed, err = evaluator.Process(processed); err != nil {
-				errChan <- err
-				return
 			}
 
 			// Pass to the outside
