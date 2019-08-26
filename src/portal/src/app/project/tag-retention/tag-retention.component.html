@@ -158,7 +158,7 @@
             </clr-datagrid>
     </div>
 </div>
-<add-rule #addRule (clickAdd)="clickAdd($event)"></add-rule>
+<add-rule #addRule [retention]="retention" (clickAdd)="clickAdd($event)"></add-rule>
 <clr-modal [(clrModalOpen)]="isRetentionRunOpened"
            [clrModalStaticBackdrop]="true" [clrModalClosable]="true">
     <h3 class="modal-title">{{'TAG_RETENTION.RETENTION_RUN' | translate}}</h3>
