@@ -16,9 +16,9 @@ CREATE TABLE blob
   /*
      digest of config, layer, manifest
   */
-  digest        varchar(255)       NOT NULL,
-  content_type  varchar(255)       NOT NULL,
-  size          int                NOT NULL,
+  digest        varchar(255)        NOT NULL,
+  content_type  varchar(1024)       NOT NULL,
+  size          bigint              NOT NULL,
   creation_time timestamp default CURRENT_TIMESTAMP,
   UNIQUE (digest)
 );
