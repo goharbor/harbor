@@ -182,3 +182,5 @@ create table notification_policy (
  update_time timestamp default CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
  );
+
+ALTER TABLE replication_task ADD COLUMN status_revision int DEFAULT 0;

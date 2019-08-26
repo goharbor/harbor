@@ -93,23 +93,25 @@ func TestMethodOfExecution(t *testing.T) {
 func TestMethodOfTask(t *testing.T) {
 	now := time.Now()
 	task1 := &models.Task{
-		ExecutionID:  112200,
-		ResourceType: "resourceType1",
-		SrcResource:  "srcResource1",
-		DstResource:  "dstResource1",
-		JobID:        "jobID1",
-		Status:       "Initialized",
-		StartTime:    &now,
+		ExecutionID:    112200,
+		ResourceType:   "resourceType1",
+		SrcResource:    "srcResource1",
+		DstResource:    "dstResource1",
+		JobID:          "jobID1",
+		Status:         "Initialized",
+		StatusRevision: 1,
+		StartTime:      &now,
 	}
 	task2 := &models.Task{
-		ExecutionID:  112200,
-		ResourceType: "resourceType2",
-		SrcResource:  "srcResource2",
-		DstResource:  "dstResource2",
-		JobID:        "jobID2",
-		Status:       "Stopped",
-		StartTime:    &now,
-		EndTime:      &now,
+		ExecutionID:    112200,
+		ResourceType:   "resourceType2",
+		SrcResource:    "srcResource2",
+		DstResource:    "dstResource2",
+		JobID:          "jobID2",
+		Status:         "Stopped",
+		StatusRevision: 1,
+		StartTime:      &now,
+		EndTime:        &now,
 	}
 
 	// test add
@@ -151,11 +153,12 @@ func TestMethodOfTask(t *testing.T) {
 	assert.Equal(t, int64(1), n)
 
 	// test update status
-	n, err = UpdateTaskStatus(id1, "Succeed")
+	n, err = UpdateTaskStatus(id1, "Succeed", 2, "Initialized")
 	require.Nil(t, err)
 	assert.Equal(t, int64(1), n)
 	task, _ = GetTask(id1)
 	assert.Equal(t, "Succeed", task.Status)
+	assert.Equal(t, int64(2), task.StatusRevision)
 
 	// test delete
 	require.Nil(t, DeleteTask(id1))
@@ -237,25 +240,27 @@ func TestExecutionFill2(t *testing.T) {
 	}
 	executionID, _ := AddExecution(execution)
 	task1 := &models.Task{
-		ID:           20191,
-		ExecutionID:  executionID,
-		ResourceType: "resourceType1",
-		SrcResource:  "srcResource1",
-		DstResource:  "dstResource1",
-		JobID:        "jobID1",
-		Status:       models.TaskStatusInProgress,
-		StartTime:    &now,
+		ID:             20191,
+		ExecutionID:    executionID,
+		ResourceType:   "resourceType1",
+		SrcResource:    "srcResource1",
+		DstResource:    "dstResource1",
+		JobID:          "jobID1",
+		Status:         models.TaskStatusInProgress,
+		StatusRevision: 1,
+		StartTime:      &now,
 	}
 	task2 := &models.Task{
-		ID:           20192,
-		ExecutionID:  executionID,
-		ResourceType: "resourceType2",
-		SrcResource:  "srcResource2",
-		DstResource:  "dstResource2",
-		JobID:        "jobID2",
-		Status:       "Stopped",
-		StartTime:    &now,
-		EndTime:      &now,
+		ID:             20192,
+		ExecutionID:    executionID,
+		ResourceType:   "resourceType2",
+		SrcResource:    "srcResource2",
+		DstResource:    "dstResource2",
+		JobID:          "jobID2",
+		Status:         "Stopped",
+		StatusRevision: 1,
+		StartTime:      &now,
+		EndTime:        &now,
 	}
 	taskID1, _ := AddTask(task1)
 	AddTask(task2)
@@ -275,7 +280,7 @@ func TestExecutionFill2(t *testing.T) {
 	assert.Equal(t, 0, exe.Succeed)
 
 	// update task status and query and fill
-	UpdateTaskStatus(taskID1, models.TaskStatusFailed)
+	UpdateTaskStatus(taskID1, models.TaskStatusFailed, 2, models.TaskStatusInProgress)
 	exes, err := GetExecutions(&models.ExecutionQuery{
 		PolicyID: 11209,
 	})
