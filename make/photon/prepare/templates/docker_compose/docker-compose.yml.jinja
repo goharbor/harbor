@@ -92,6 +92,7 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "registryctl"
+{% if external_database == False %}
   postgresql:
     image: goharbor/harbor-db:{{version}}
     container_name: harbor-db
@@ -107,16 +108,16 @@ services:
       - {{data_volume}}/database:/var/lib/postgresql/data:z
     networks:
       harbor:
-{% if with_notary %}
+  {% if with_notary %}
       harbor-notary:
         aliases:
           - harbor-db
-{% endif %}
-{% if with_clair %}
+  {% endif %}
+  {% if with_clair %}
       harbor-clair:
         aliases:
           - harbor-db
-{% endif %}
+  {% endif %}
     dns_search: .
     env_file:
       - ./common/config/db/env
@@ -127,6 +128,7 @@ services:
       options:  
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "postgresql"
+{% endif %}
   core:
     image: goharbor/harbor-core:{{version}}
     container_name: harbor-core
@@ -176,6 +178,12 @@ services:
     depends_on:
       - log
       - registry
+{% if external_redis == False %}
+      - redis
+{% endif %}
+{% if external_database == False %}
+      - postgresql
+{% endif %}
     logging:
       driver: "syslog"
       options:  
@@ -197,7 +205,6 @@ services:
     dns_search: .
     depends_on:
       - log
-      - core
     logging:
       driver: "syslog"
       options:
@@ -228,13 +235,13 @@ services:
 {% endif %}
     dns_search: .
     depends_on:
-      - redis
       - core
     logging:
       driver: "syslog"
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "jobservice"
+{% if external_redis == False %}
   redis:
     image: goharbor/redis-photon:{{redis_version}}
     container_name: redis
@@ -249,11 +256,11 @@ services:
       - {{data_volume}}/redis:/var/lib/redis
     networks:
       harbor:
-{% if with_chartmuseum %}
+  {% if with_chartmuseum %}
       harbor-chartmuseum:
           aliases:
             - redis
-{% endif %}
+  {% endif %}
     dns_search: .
     depends_on:
       - log
@@ -262,8 +269,9 @@ services:
       options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "redis"
+{% endif %}
   proxy:
-    image: goharbor/nginx-photon:{{redis_version}}
+    image: goharbor/nginx-photon:{{version}}
     container_name: nginx
     restart: always
     cap_drop:
@@ -293,7 +301,6 @@ services:
       - 4443:4443
 {% endif %}
     depends_on:
-      - postgresql
       - registry
       - core
       - portal
@@ -323,7 +330,9 @@ services:
     env_file:
       - ./common/config/notary/server_env
     depends_on:
+  {% if external_database == False %}
       - postgresql
+  {% endif %}
       - notary-signer
     logging:
       driver: "syslog"
@@ -351,7 +360,10 @@ services:
     env_file:
       - ./common/config/notary/signer_env
     depends_on:
+      - log
+  {% if external_database == False %}
       - postgresql
+  {% endif %}
     logging:
       driver: "syslog"
       options:  
@@ -374,16 +386,19 @@ services:
     cpu_quota: 50000
     dns_search: .
     depends_on:
+      - log
+  {% if external_database == False %}
       - postgresql
+  {% endif %}
     volumes:
       - type: bind
         source: ./common/config/clair/config.yaml
         target: /etc/clair/config.yaml
-{%if registry_custom_ca_bundle_path %}
+  {%if registry_custom_ca_bundle_path %}
       - type: bind
         source: {{registry_custom_ca_bundle_path}}
         target: /harbor_cust_cert/custom-ca-bundle.crt
-{% endif %}
+  {% endif %}
     logging:
       driver: "syslog"
       options:
@@ -408,7 +423,7 @@ services:
       - harbor-chartmuseum
     dns_search: .
     depends_on:
-      - redis
+      - log
     volumes:
       - {{data_volume}}/chart_storage:/chart_storage:z
       - ./common/config/chartserver:/etc/chartserver:z
