@@ -196,3 +196,150 @@ func TestCountSizeOfProjectDupdigest(t *testing.T) {
 	pSize, err := CountSizeOfProject(pid1)
 	assert.Equal(t, pSize, int64(1010))
 }
+
+func TestRemoveUntaggedBlobs(t *testing.T) {
+
+	pid1, err := AddProject(models.Project{
+		Name:    "RemoveUntaggedBlobs_project1",
+		OwnerID: 1,
+	})
+	require.Nil(t, err)
+
+	_, blob1, err := GetOrCreateBlob(&models.Blob{
+		Digest: digest.FromString(utils.GenerateRandomString()).String(),
+		Size:   100,
+	})
+	require.Nil(t, err)
+
+	_, blob2, err := GetOrCreateBlob(&models.Blob{
+		Digest: digest.FromString(utils.GenerateRandomString()).String(),
+		Size:   100,
+	})
+	require.Nil(t, err)
+
+	_, err = AddBlobToProject(blob1.ID, pid1)
+	require.Nil(t, err)
+
+	_, err = AddBlobToProject(blob2.ID, pid1)
+	require.Nil(t, err)
+
+	has, err := HasBlobInProject(pid1, blob1.Digest)
+	require.Nil(t, err)
+	assert.True(t, has)
+
+	has, err = HasBlobInProject(pid1, blob2.Digest)
+	require.Nil(t, err)
+	assert.True(t, has)
+
+	err = RemoveUntaggedBlobs(pid1)
+	require.Nil(t, err)
+
+	has, err = HasBlobInProject(pid1, blob1.Digest)
+	require.Nil(t, err)
+	assert.False(t, has)
+
+	has, err = HasBlobInProject(pid1, blob2.Digest)
+	require.Nil(t, err)
+	assert.False(t, has)
+
+}
+
+func TestRemoveUntaggedBlobsWithNoUntagged(t *testing.T) {
+	afDigest := digest.FromString(utils.GenerateRandomString()).String()
+	af := &models.Artifact{
+		PID:    333,
+		Repo:   "hello-world",
+		Tag:    "latest",
+		Digest: afDigest,
+		Kind:   "image",
+	}
+	_, err := AddArtifact(af)
+	require.Nil(t, err)
+
+	blob1Digest := digest.FromString(utils.GenerateRandomString()).String()
+	blob1 := &models.Blob{
+		Digest:      blob1Digest,
+		ContentType: "v2.blob",
+		Size:        1523,
+	}
+	_, err = AddBlob(blob1)
+	require.Nil(t, err)
+
+	blob2Digest := digest.FromString(utils.GenerateRandomString()).String()
+	blob2 := &models.Blob{
+		Digest:      blob2Digest,
+		ContentType: "v2.blob",
+		Size:        1523,
+	}
+	_, err = AddBlob(blob2)
+	require.Nil(t, err)
+
+	blob3Digest := digest.FromString(utils.GenerateRandomString()).String()
+	blob3 := &models.Blob{
+		Digest:      blob3Digest,
+		ContentType: "v2.blob",
+		Size:        1523,
+	}
+	_, err = AddBlob(blob3)
+	require.Nil(t, err)
+
+	afnb1 := &models.ArtifactAndBlob{
+		DigestAF:   afDigest,
+		DigestBlob: blob1Digest,
+	}
+	afnb2 := &models.ArtifactAndBlob{
+		DigestAF:   afDigest,
+		DigestBlob: blob2Digest,
+	}
+	afnb3 := &models.ArtifactAndBlob{
+		DigestAF:   afDigest,
+		DigestBlob: blob3Digest,
+	}
+	var afnbs []*models.ArtifactAndBlob
+	afnbs = append(afnbs, afnb1)
+	afnbs = append(afnbs, afnb2)
+	afnbs = append(afnbs, afnb3)
+
+	err = AddArtifactNBlobs(afnbs)
+	require.Nil(t, err)
+
+	_, err = AddBlobToProject(blob1.ID, 333)
+	require.Nil(t, err)
+
+	_, err = AddBlobToProject(blob2.ID, 333)
+	require.Nil(t, err)
+
+	_, err = AddBlobToProject(blob3.ID, 333)
+	require.Nil(t, err)
+
+	blobUntaggedDigest := digest.FromString(utils.GenerateRandomString()).String()
+	blobUntagged := &models.Blob{
+		Digest:      blobUntaggedDigest,
+		ContentType: "v2.blob",
+		Size:        1523,
+	}
+	_, err = AddBlob(blobUntagged)
+	require.Nil(t, err)
+
+	_, err = AddBlobToProject(blobUntagged.ID, 333)
+	require.Nil(t, err)
+
+	err = RemoveUntaggedBlobs(333)
+	require.Nil(t, err)
+
+	has, err := HasBlobInProject(333, blob1.Digest)
+	require.Nil(t, err)
+	assert.True(t, has)
+
+	has, err = HasBlobInProject(333, blob2.Digest)
+	require.Nil(t, err)
+	assert.True(t, has)
+
+	has, err = HasBlobInProject(333, blob3.Digest)
+	require.Nil(t, err)
+	assert.True(t, has)
+
+	has, err = HasBlobInProject(333, blobUntagged.Digest)
+	require.Nil(t, err)
+	assert.False(t, has)
+}
