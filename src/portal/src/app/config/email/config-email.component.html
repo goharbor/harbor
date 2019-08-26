@@ -51,21 +51,21 @@
             </div>
         </div>
         <div class="clr-form-control">
-            <label class="clr-control-label" for="emailInsecure">{{'CONFIG.MAIL_INSECURE' | translate}}</label>
+            <label class="clr-control-label" for="emailInsecure">{{'CONFIG.MAIL_INSECURE' | translate}}
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'CONFIG.INSECURE_TOOLTIP' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
             <div class="clr-control-container">
                 <div class="clr-checkbox-wrapper" id="emailInsecure-wrapper">
-                    <input type="checkbox" name="emaiInsecure" id="emailInsecure"
+                    <input type="checkbox" name="emailInsecure" id="emailInsecure"
                         [ngModel]="!currentConfig.email_insecure.value"
                         [disabled]="disabled(currentConfig.email_insecure)"
                         (ngModelChange)="setInsecureValue($event)" />
-                    <label class="clr-control-label" for="emailInsecure">
-                        <clr-tooltip>
-                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                                <span>{{'CONFIG.INSECURE_TOOLTIP' | translate}}</span>
-                            </clr-tooltip-content>
-                        </clr-tooltip>
-                    </label>
+                        <label class="clr-control-label" for="emailInsecure"></label>
                 </div>
             </div>
         </div>
