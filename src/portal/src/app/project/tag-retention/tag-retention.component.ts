@@ -342,6 +342,7 @@ export class TagRetentionComponent implements OnInit {
 
     clickAdd(rule) {
         this.loadingRule = true;
+        this.addRuleComponent.onGoing = true;
         if (this.addRuleComponent.isAdd) {
             let retention: Retention = clone(this.retention);
             retention.rules.push(rule);
@@ -349,17 +350,23 @@ export class TagRetentionComponent implements OnInit {
                 this.tagRetentionService.createRetention(retention).subscribe(
                     response => {
                         this.refreshAfterCreatRetention();
+                        this.addRuleComponent.close();
+                        this.addRuleComponent.onGoing = false;
                     }, error => {
-                        this.errorHandler.error(error);
+                        this.addRuleComponent.inlineAlert.showInlineError(error);
                         this.loadingRule = false;
+                        this.addRuleComponent.onGoing = false;
                     });
             } else {
                 this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
                     response => {
                         this.getRetention();
+                        this.addRuleComponent.close();
+                        this.addRuleComponent.onGoing = false;
                     }, error => {
                         this.loadingRule = false;
-                        this.errorHandler.error(error);
+                        this.addRuleComponent.onGoing = false;
+                        this.addRuleComponent.inlineAlert.showInlineError(error);
                     });
             }
         } else {
@@ -368,9 +375,12 @@ export class TagRetentionComponent implements OnInit {
             this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
                 response => {
                     this.getRetention();
+                    this.addRuleComponent.close();
+                    this.addRuleComponent.onGoing = false;
                 }, error => {
-                    this.errorHandler.error(error);
+                    this.addRuleComponent.inlineAlert.showInlineError(error);
                     this.loadingRule = false;
+                    this.addRuleComponent.onGoing = false;
                 });
         }
     }
