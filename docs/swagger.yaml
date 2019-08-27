@@ -1308,6 +1308,8 @@ paths:
           description: Invalid image values provided.
         '401':
           description: User has no permission to the source project or destination project.
+        '403':
+          description: Forbiden as quota exceeded.
         '404':
           description: Project or repository not found.
         '409':
@@ -5146,7 +5148,7 @@ definitions:
     allOf:
       - $ref: '#/definitions/ChartAPIError'
   ForbiddenChartAPIError:
-    description: Operation is forbidden
+    description: Operation is forbidden or quota exceeded
     type: object
     allOf:
       - $ref: '#/definitions/ChartAPIError'

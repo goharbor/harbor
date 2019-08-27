@@ -505,6 +505,10 @@ func (ra *RepositoryAPI) Retag() {
 		Repo:    repo,
 		Tag:     request.Tag,
 	}); err != nil {
+		if e, ok := err.(*commonhttp.Error); ok {
+			ra.RenderFormattedError(e.Code, e.Message)
+			return
+		}
 		ra.SendInternalServerError(fmt.Errorf("%v", err))
 	}
 }
