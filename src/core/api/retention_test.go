@@ -36,10 +36,10 @@ func TestCreatePolicy(t *testing.T) {
 			{
 				ID:       1,
 				Priority: 1,
-				Template: "recentXdays",
+				Template: "latestPushedK",
 				Action:   "retain",
 				Parameters: rule.Parameters{
-					"num": 10,
+					"latestPushedK": 10,
 				},
 				TagSelectors: []*rule.Selector{
 					{
@@ -99,10 +99,10 @@ func TestCreatePolicy(t *testing.T) {
 						{
 							ID:       1,
 							Priority: 1,
-							Template: "recentXdays",
+							Template: "latestPushedK",
 							Action:   "retain",
 							Parameters: rule.Parameters{
-								"num": 10,
+								"latestPushedK": 10,
 							},
 							TagSelectors: []*rule.Selector{
 								{
@@ -145,10 +145,10 @@ func TestCreatePolicy(t *testing.T) {
 						{
 							ID:       1,
 							Priority: 1,
-							Template: "recentXdays",
+							Template: "latestPushedK",
 							Action:   "retain",
 							Parameters: rule.Parameters{
-								"num": 10,
+								"latestPushedK": 10,
 							},
 							TagSelectors: []*rule.Selector{
 								{
@@ -170,10 +170,10 @@ func TestCreatePolicy(t *testing.T) {
 						{
 							ID:       2,
 							Priority: 1,
-							Template: "recentXdays",
+							Template: "latestPushedK",
 							Action:   "retain",
 							Parameters: rule.Parameters{
-								"num": 10,
+								"latestPushedK": 10,
 							},
 							TagSelectors: []*rule.Selector{
 								{
@@ -220,10 +220,10 @@ func TestPolicy(t *testing.T) {
 			{
 				ID:       1,
 				Priority: 1,
-				Template: "recentXdays",
+				Template: "latestPushedK",
 				Action:   "retain",
 				Parameters: rule.Parameters{
-					"num": 10,
+					"latestPushedK": 10,
 				},
 				TagSelectors: []*rule.Selector{
 					{
@@ -286,10 +286,10 @@ func TestPolicy(t *testing.T) {
 						{
 							ID:       1,
 							Priority: 1,
-							Template: "recentXdays",
+							Template: "latestPushedK",
 							Action:   "retain",
 							Parameters: rule.Parameters{
-								"num": 10,
+								"latestPushedK": 10,
 							},
 							TagSelectors: []*rule.Selector{
 								{
@@ -334,10 +334,10 @@ func TestPolicy(t *testing.T) {
 						{
 							ID:       1,
 							Priority: 1,
-							Template: "recentXdays",
+							Template: "latestPushedK",
 							Action:   "retain",
 							Parameters: rule.Parameters{
-								"num": 10,
+								"latestPushedK": 10,
 							},
 							TagSelectors: []*rule.Selector{
 								{
@@ -359,10 +359,10 @@ func TestPolicy(t *testing.T) {
 						{
 							ID:       2,
 							Priority: 1,
-							Template: "recentXdays",
+							Template: "latestPushedK",
 							Action:   "retain",
 							Parameters: rule.Parameters{
-								"num": 10,
+								"latestPushedK": 10,
 							},
 							TagSelectors: []*rule.Selector{
 								{

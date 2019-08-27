@@ -15,6 +15,7 @@
 package latestk
 
 import (
+	"github.com/goharbor/harbor/src/common/utils"
 	"sort"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -64,8 +65,8 @@ func (e *evaluator) Action() string {
 // New a Evaluator
 func New(params rule.Parameters) rule.Evaluator {
 	if params != nil {
-		if param, ok := params[ParameterK]; ok {
-			if v, ok := param.(float64); ok && v >= 0 {
+		if p, ok := params[ParameterK]; ok {
+			if v, ok := utils.ParseJSONInt(p); ok && v >= 0 {
 				return &evaluator{
 					k: int(v),
 				}
