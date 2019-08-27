@@ -108,7 +108,7 @@
                             <clr-icon (click)="showAddModal=false" class="float-lg-right margin-top-4"
                                 shape="window-close"></clr-icon>
                             <div>
-                                <clr-textarea-container>
+                                <clr-textarea-container class="flex-direction-column">
                                     <label>{{'CVE_WHITELIST.ENTER'|translate}}</label>
                                     <textarea class="w-100" clrTextarea [(ngModel)]="cveIds" name="cveIds"></textarea>
                                     <clr-control-helper>{{'CVE_WHITELIST.HELP'|translate}}</clr-control-helper>
