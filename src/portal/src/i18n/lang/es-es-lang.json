@@ -276,7 +276,7 @@
         "USERS": "Users",
         "EMAIL": "Email",
         "ADD_USER": "Add User",
-        "NEW_USER_INFO": "Add an user to be a member of this project with specified role",
+        "NEW_USER_INFO": "Add a user to be a member of this project with specified role",
         "NEW_GROUP": "New Group",
         "IMPORT_GROUP": "Add Group Member",
         "NEW_GROUP_INFO": "Add an existing user group or select a user group from LDAP to project member",
