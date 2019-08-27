@@ -35,7 +35,7 @@ type RegistrySuite struct {
 
 func (suite *RegistrySuite) SetupSuite() {
 	assert := assert.New(suite.T())
-	assert.Nil(replication.Init(make(chan struct{})))
+	assert.Nil(replication.Init(make(chan struct{}), make(chan struct{})))
 
 	suite.testAPI = newHarborAPI()
 	code, err := suite.testAPI.RegistryCreate(*admin, testRegistry)
