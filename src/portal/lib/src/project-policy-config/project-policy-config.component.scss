@@ -43,16 +43,16 @@
 .padding-top-8 {
   padding-top: 8px;
 }
-
-.padding-left-80 {
-  padding-left: 80px;
+.position-relative {
+  position: relative;
 }
-
 .add-modal {
   position: absolute;
   padding: 0 8px;
   background-color: rgb(238, 238, 238);
-
+  .flex-direction-column {
+    flex-direction: column;
+  }
   input {
     width: 100%;
     border: 1px solid;
