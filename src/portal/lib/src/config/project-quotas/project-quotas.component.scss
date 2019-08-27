@@ -40,3 +40,19 @@
   margin-top: auto;
   cursor: pointer;
 }
+
+::ng-deep {
+  .progress {
+    &.warning>progress {
+      color: orange;
+
+      &::-webkit-progress-value {
+        background-color: orange;
+      }
+
+      &::-moz-progress-bar {
+        background-color: orange;
+      }
+    }
+  }
+}
