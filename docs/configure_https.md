@@ -155,7 +155,7 @@ After setting up HTTPS for Harbor, you can verify it by the following steps:
 
 * Notice that some browser may still shows the warning regarding Certificate Authority (CA) unknown for security reason even though we signed certificates by self-signed CA and deploy the CA to the place mentioned above. It is because self-signed CA essentially is not a trusted third-party CA. You can import the CA to the browser on your own to solve the warning.
 
-* On a machine with Docker daemon, make sure the option "-insecure-registry" for https://yourdomain.com does not present. 
+* On a machine with Docker daemon, make sure the option "-insecure-registry" for https://yourdomain.com is not present. 
 
 * If you mapped nginx port 443 to another port, then you should instead create the directory ```/etc/docker/certs.d/yourdomain.com:port``` (or your registry host IP:port). Then run any docker command to verify the setup, e.g.
 
