@@ -31,7 +31,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [View build history.](#build-history)
 * [Using CLI after login via OIDC based SSO](#using-oidc-cli-secret)
 * [Manage robot account of a project.](#robot-account)
-* [Configure Webhooks](#configure-webhooks)
+* [Configure Webhook Notifications](#configure-webhook-notifications)
 * [Using API Explorer](#api-explorer)
 
 ## Role Based Access Control(RBAC)  
@@ -720,7 +720,7 @@ If you are a project admin, you can disable a Robot Account by clicking "Disable
 If you are a project admin, you can delete a Robot Account by clicking "Delete" in the `Robot Accounts` tab of a project.
 ![delete_robot_account](img/robotaccount/disable_delete_robot_account.png)
 
-## Using Webhooks
+## Configure Webhook Notifications
 
 If you are a project admin, you can configure a connection from a project in Harbor to a webhook endpoint. If you configure webhooks, Harbor notifies the webhook endpoint of certain events that occur in the project. Webhooks allow you to integrate Harbor with other tools to streamline continuous integration and development processes. 
 
