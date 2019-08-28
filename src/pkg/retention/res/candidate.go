@@ -72,6 +72,8 @@ type Candidate struct {
 	Kind string
 	// Tag info
 	Tag string
+	// Digest
+	Digest string
 	// Pushed time in seconds
 	PushedTime int64
 	// Pulled time in seconds
@@ -84,7 +86,10 @@ type Candidate struct {
 
 // Hash code based on the candidate info for differentiation
 func (c *Candidate) Hash() string {
-	raw := fmt.Sprintf("%s:%s/%s:%s", c.Kind, c.Namespace, c.Repository, c.Tag)
+	if c.Digest == "" {
+		panic("Lack Digest of Candidate")
+	}
+	raw := fmt.Sprintf("%s:%s/%s:%s", c.Kind, c.Namespace, c.Repository, c.Digest)
 
 	return base64.StdEncoding.EncodeToString([]byte(raw))
 }
