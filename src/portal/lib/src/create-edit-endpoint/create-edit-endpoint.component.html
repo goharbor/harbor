@@ -48,7 +48,7 @@
                  [class.valid]="targetEndpoint?.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left clr-select-wrapper">
             <input *ngIf="!endpointList.length" type="text" id="destination_url" [disabled]="testOngoing || urlDisabled" [readonly]="!editable" [(ngModel)]="target.url"
                    size="25" name="endpointUrl" #targetEndpoint="ngModel" required placeholder="http(s)://192.168.1.1">
-            <select *ngIf="endpointList.length" [(ngModel)]="target.url" class="clr-select" name="endpointUrl" #targetEndpoint="ngModel">
+            <select id="destination_url" *ngIf="endpointList.length" [(ngModel)]="target.url" class="clr-select" name="endpointUrl" #targetEndpoint="ngModel">
               <option class="display-none" value=""></option>
               <option *ngFor="let endpoint of endpointList" value="{{endpoint.value}}">{{endpoint.key}}</option>
             </select>
