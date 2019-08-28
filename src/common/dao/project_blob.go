@@ -64,9 +64,9 @@ func RemoveBlobsFromProject(projectID int64, blobs ...*models.Blob) error {
 		return nil
 	}
 
-	sql := fmt.Sprintf(`DELETE FROM project_blob WHERE blob_id IN (%s)`, ParamPlaceholderForIn(len(blobIDs)))
+	sql := fmt.Sprintf(`DELETE FROM project_blob WHERE project_id = ? AND blob_id IN (%s)`, ParamPlaceholderForIn(len(blobIDs)))
 
-	_, err := GetOrmer().Raw(sql, blobIDs).Exec()
+	_, err := GetOrmer().Raw(sql, projectID, blobIDs).Exec()
 	return err
 }
 

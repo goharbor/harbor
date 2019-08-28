@@ -24,6 +24,23 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func TestAddBlobToProject(t *testing.T) {
+	bbID, err := AddBlob(&models.Blob{
+		Digest: "TestAddBlobToProject_blob1",
+		Size:   101,
+	})
+	require.Nil(t, err)
+
+	pid, err := AddProject(models.Project{
+		Name:    "TestAddBlobToProject_project1",
+		OwnerID: 1,
+	})
+	require.Nil(t, err)
+
+	_, err = AddBlobToProject(bbID, pid)
+	require.Nil(t, err)
+}
+
 func TestHasBlobInProject(t *testing.T) {
 	_, blob, err := GetOrCreateBlob(&models.Blob{
 		Digest: digest.FromString(utils.GenerateRandomString()).String(),
@@ -100,6 +117,51 @@ func TestCountSizeOfProject(t *testing.T) {
 
 	pSize, err := CountSizeOfProject(pid1)
 	assert.Equal(t, pSize, int64(606))
+}
+
+func TestRemoveBlobsFromProject(t *testing.T) {
+	var blobs1 []*models.Blob
+	var blobsRm []*models.Blob
+	bb1 := &models.Blob{
+		Digest: "TestRemoveBlobsFromProject_blob1",
+		Size:   101,
+	}
+	bb2 := &models.Blob{
+		Digest: "TestRemoveBlobsFromProject_blob2",
+		Size:   101,
+	}
+	bb3 := &models.Blob{
+		Digest: "TestRemoveBlobsFromProject_blob3",
+		Size:   101,
+	}
+	_, err := AddBlob(bb1)
+	require.Nil(t, err)
+	_, err = AddBlob(bb2)
+	require.Nil(t, err)
+	_, err = AddBlob(bb3)
+	require.Nil(t, err)
+	blobs1 = append(blobs1, bb1)
+	blobs1 = append(blobs1, bb2)
+	blobs1 = append(blobs1, bb3)
+	blobsRm = append(blobsRm, bb1)
+	blobsRm = append(blobsRm, bb2)
+	pid, err := AddProject(models.Project{
+		Name:    "TestRemoveBlobsFromProject_project1",
+		OwnerID: 1,
+	})
+	require.Nil(t, err)
+	AddBlobsToProject(pid, blobs1...)
+	err = RemoveBlobsFromProject(pid, blobsRm...)
+	require.Nil(t, err)
+
+	has, err := HasBlobInProject(pid, bb1.Digest)
+	require.Nil(t, err)
+	assert.False(t, has)
+
+	has, err = HasBlobInProject(pid, bb3.Digest)
+	require.Nil(t, err)
+	assert.True(t, has)
+
 }
 
 func TestCountSizeOfProjectDupdigest(t *testing.T) {
