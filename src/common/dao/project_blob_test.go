@@ -41,6 +41,29 @@ func TestAddBlobToProject(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestAddBlobsToProject(t *testing.T) {
+	var blobs []*models.Blob
+
+	pid, err := AddProject(models.Project{
+		Name:    "TestAddBlobsToProject_project1",
+		OwnerID: 1,
+	})
+	require.Nil(t, err)
+
+	for i := 0; i < 8888; i++ {
+		blob := &models.Blob{
+			Digest: digest.FromString(utils.GenerateRandomString()).String(),
+			Size:   100,
+		}
+		_, err := AddBlob(blob)
+		require.Nil(t, err)
+		blobs = append(blobs, blob)
+	}
+	cnt, err := AddBlobsToProject(pid, blobs...)
+	require.Nil(t, err)
+	require.Equal(t, cnt, int64(8888))
+}
+
 func TestHasBlobInProject(t *testing.T) {
 	_, blob, err := GetOrCreateBlob(&models.Blob{
 		Digest: digest.FromString(utils.GenerateRandomString()).String(),

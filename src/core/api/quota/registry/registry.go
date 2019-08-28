@@ -48,7 +48,7 @@ func NewRegistryMigrator(pm promgr.ProjectManager) quota.QuotaMigrator {
 
 // Ping ...
 func (rm *Migrator) Ping() error {
-	return api.HealthCheckerRegistry["registry"].Check()
+	return quota.Check(api.HealthCheckerRegistry["registry"].Check)
 }
 
 // Dump ...
@@ -182,7 +182,9 @@ func (rm *Migrator) Usage(projects []quota.ProjectInfo) ([]quota.ProjectUsage, e
 
 // Persist ...
 func (rm *Migrator) Persist(projects []quota.ProjectInfo) error {
-	for _, project := range projects {
+	total := len(projects)
+	for i, project := range projects {
+		log.Infof("[Quota-Sync]:: start to persist artifact&blob for project: %s, progress... [%d/%d]", project.Name, i, total)
 		for _, repo := range project.Repos {
 			if err := persistAf(repo.Afs); err != nil {
 				return err
@@ -194,6 +196,7 @@ func (rm *Migrator) Persist(projects []quota.ProjectInfo) error {
 				return err
 			}
 		}
+		log.Infof("[Quota-Sync]:: success to persist artifact&blob for project: %s, progress... [%d/%d]", project.Name, i, total)
 	}
 	if err := persistPB(projects); err != nil {
 		return err
@@ -250,7 +253,9 @@ func persistBlob(blobs []*models.Blob) error {
 }
 
 func persistPB(projects []quota.ProjectInfo) error {
-	for _, project := range projects {
+	total := len(projects)
+	for i, project := range projects {
+		log.Infof("[Quota-Sync]:: start to persist project&blob for project: %s, progress... [%d/%d]", project.Name, i, total)
 		var blobs = make(map[string]int64)
 		var blobsOfPro []*models.Blob
 		for _, repo := range project.Repos {
@@ -275,11 +280,17 @@ func persistPB(projects []quota.ProjectInfo) error {
 			log.Error(err)
 			return err
 		}
-		_, err = dao.AddBlobsToProject(pro.ProjectID, blobsOfPro...)
-		if err != nil {
-			log.Error(err)
-			return err
+		for _, blobOfPro := range blobsOfPro {
+			_, err = dao.AddBlobToProject(blobOfPro.ID, pro.ProjectID)
+			if err != nil {
+				log.Error(err)
+				if err == dao.ErrDupRows {
+					continue
+				}
+				return err
+			}
 		}
+		log.Infof("[Quota-Sync]:: success to persist project&blob for project: %s, progress... [%d/%d]", project.Name, i, total)
 	}
 	return nil
 }

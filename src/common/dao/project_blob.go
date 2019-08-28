@@ -34,6 +34,7 @@ func AddBlobToProject(blobID, projectID int64) (int64, error) {
 }
 
 // AddBlobsToProject ...
+// Note: pq has limitation on support parameters, the maximum length of blobs is 65535
 func AddBlobsToProject(projectID int64, blobs ...*models.Blob) (int64, error) {
 	if len(blobs) == 0 {
 		return 0, nil
