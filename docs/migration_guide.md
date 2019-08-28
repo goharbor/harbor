@@ -52,7 +52,7 @@ you follow the steps below.
     in that path will be updated with the values from ${harbor_cfg}
     
     ```
-    docker run -it --rm -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg -v ${harbor_yml}:/harbor-migration/harbor-cfg-out/harbor.yml goharbor/harbor-migrator:[tag] --cfg up
+    docker run -it --rm -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.yml -v ${harbor_yml}:/harbor-migration/harbor-cfg-out/harbor.yml goharbor/harbor-migrator:[tag] --cfg up
     ```
     **NOTE:** The schema upgrade and data migration of Database is performed by core when Harbor starts, if the migration fails,
     please check the log of core to debug.
