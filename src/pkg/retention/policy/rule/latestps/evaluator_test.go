@@ -1,6 +1,7 @@
 package latestps
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"testing"
@@ -62,6 +63,26 @@ func (e *EvaluatorTestSuite) TestProcess() {
 
 			require.NoError(t, err)
 			require.Len(t, result, tt.expected)
+		})
+	}
+}
+
+func (e *EvaluatorTestSuite) TestValid() {
+	tests := []struct {
+		Name      string
+		args      rule.Parameters
+		expectedK error
+	}{
+		{Name: "Valid", args: map[string]rule.Parameter{ParameterK: 5}, expectedK: nil},
+		{Name: "Negative", args: map[string]rule.Parameter{ParameterK: -1}, expectedK: errors.New("latestPushedK is less than zero")},
+		{Name: "Big", args: map[string]rule.Parameter{ParameterK: 40000}, expectedK: errors.New("latestPushedK is too large")},
+	}
+
+	for _, tt := range tests {
+		e.T().Run(tt.Name, func(t *testing.T) {
+			err := Valid(tt.args)
+
+			require.Equal(t, tt.expectedK, err)
 		})
 	}
 }

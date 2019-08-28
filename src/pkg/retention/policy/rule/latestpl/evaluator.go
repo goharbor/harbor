@@ -15,6 +15,9 @@
 package latestpl
 
 import (
+	"fmt"
+	"github.com/goharbor/harbor/src/common/utils"
+	"math"
 	"sort"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -59,7 +62,7 @@ func (e *evaluator) Action() string {
 func New(params rule.Parameters) rule.Evaluator {
 	if params != nil {
 		if p, ok := params[ParameterN]; ok {
-			if v, ok := p.(float64); ok && v >= 0 {
+			if v, ok := utils.ParseJSONInt(p); ok && v >= 0 {
 				return &evaluator{n: int(v)}
 			}
 		}
@@ -68,4 +71,23 @@ func New(params rule.Parameters) rule.Evaluator {
 	log.Warningf("default parameter %d used for rule %s", DefaultN, TemplateID)
 
 	return &evaluator{n: DefaultN}
+}
+
+// Valid ...
+func Valid(params rule.Parameters) error {
+	if params != nil {
+		if p, ok := params[ParameterN]; ok {
+			if v, ok := utils.ParseJSONInt(p); ok {
+				if v < 0 {
+					return fmt.Errorf("%s is less than zero", ParameterN)
+				}
+				if v >= math.MaxInt16 {
+					return fmt.Errorf("%s is too large", ParameterN)
+				}
+			} else {
+				return fmt.Errorf("%s type error", ParameterN)
+			}
+		}
+	}
+	return nil
 }

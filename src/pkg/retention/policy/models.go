@@ -17,6 +17,7 @@ package policy
 import (
 	"github.com/astaxie/beego/validation"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 )
 
 const (
@@ -78,6 +79,10 @@ func (m *Metadata) Valid(v *validation.Validation) {
 	}
 	if !v.HasErrors() {
 		for _, r := range m.Rules {
+			if err := index.Valid(r.Template, r.Parameters); err != nil {
+				_ = v.SetError("Parameters", err.Error())
+				return
+			}
 			if ok, _ := v.Valid(&r); !ok {
 				return
 			}

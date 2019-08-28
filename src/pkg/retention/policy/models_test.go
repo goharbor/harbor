@@ -41,9 +41,9 @@ func TestRule(t *testing.T) {
 				ID:       1,
 				Priority: 1,
 				Action:   "retain",
-				Template: "recentXdays",
+				Template: "latestPushedK",
 				Parameters: rule.Parameters{
-					"num": 10,
+					"latestPushedK": 10,
 				},
 				TagSelectors: []*rule.Selector{
 					{
@@ -79,7 +79,105 @@ func TestRule(t *testing.T) {
 
 	require.Nil(t, err)
 	require.False(t, ok)
+	require.True(t, v.HasErrors())
+	require.EqualValues(t, "Kind", v.Errors[0].Field)
 	for _, e := range v.Errors {
 		fmt.Printf("%s %s\n", e.Field, e.Message)
 	}
+}
+
+func TestParamValid(t *testing.T) {
+	p := &Metadata{
+		Algorithm: "or",
+		Rules: []rule.Metadata{
+			{
+				ID:       1,
+				Priority: 1,
+				Action:   "retain",
+				Template: "latestPushedK",
+				Parameters: rule.Parameters{
+					"latestPushedK": -10,
+				},
+				TagSelectors: []*rule.Selector{
+					{
+						Kind:       "doublestar",
+						Decoration: "matches",
+						Pattern:    "release-[\\d\\.]+",
+					},
+				},
+				ScopeSelectors: map[string][]*rule.Selector{
+					"repository": {
+						{
+							Kind:       "doublestar",
+							Decoration: "matches",
+							Pattern:    ".+",
+						},
+					},
+				},
+			},
+		},
+		Trigger: &Trigger{
+			Kind: "Schedule",
+			Settings: map[string]interface{}{
+				"cron": "* 22 11 * * *",
+			},
+		},
+		Scope: &Scope{
+			Level:     "project",
+			Reference: 1,
+		},
+	}
+	v := &validation.Validation{}
+	ok, err := v.Valid(p)
+	require.Nil(t, err)
+	require.False(t, ok)
+	require.True(t, v.HasErrors())
+	require.EqualValues(t, "Parameters", v.Errors[0].Field)
+
+	p = &Metadata{
+		Algorithm: "or",
+		Rules: []rule.Metadata{
+			{
+				ID:       1,
+				Priority: 1,
+				Action:   "retain",
+				Template: "nDaysSinceLastPull",
+				Parameters: rule.Parameters{
+					"nDaysSinceLastPull": 20201010,
+				},
+				TagSelectors: []*rule.Selector{
+					{
+						Kind:       "doublestar",
+						Decoration: "matches",
+						Pattern:    "release-[\\d\\.]+",
+					},
+				},
+				ScopeSelectors: map[string][]*rule.Selector{
+					"repository": {
+						{
+							Kind:       "doublestar",
+							Decoration: "matches",
+							Pattern:    ".+",
+						},
+					},
+				},
+			},
+		},
+		Trigger: &Trigger{
+			Kind: "Schedule",
+			Settings: map[string]interface{}{
+				"cron": "* 22 11 * * *",
+			},
+		},
+		Scope: &Scope{
+			Level:     "project",
+			Reference: 1,
+		},
+	}
+	v = &validation.Validation{}
+	ok, err = v.Valid(p)
+	require.Nil(t, err)
+	require.False(t, ok)
+	require.True(t, v.HasErrors())
+	require.EqualValues(t, "Parameters", v.Errors[0].Field)
 }

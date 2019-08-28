@@ -61,6 +61,8 @@ type indexedItem struct {
 	Meta *Metadata
 
 	Factory rule.Factory
+
+	Validators []rule.Validator
 }
 
 func init() {
@@ -76,7 +78,7 @@ func init() {
 				Required: true,
 			},
 		},
-	}, latestps.New)
+	}, latestps.New, latestps.Valid)
 
 	// Register latest pulled
 	Register(&Metadata{
@@ -90,7 +92,7 @@ func init() {
 				Required: true,
 			},
 		},
-	}, latestpl.New)
+	}, latestpl.New, latestpl.Valid)
 
 	// Register latest active
 	Register(&Metadata{
@@ -146,7 +148,7 @@ func init() {
 				Required: true,
 			},
 		},
-	}, dayspl.New)
+	}, dayspl.New, dayspl.Valid)
 
 	// Register daysps
 	Register(&Metadata{
@@ -160,20 +162,58 @@ func init() {
 				Required: true,
 			},
 		},
-	}, daysps.New)
+	}, daysps.New, daysps.Valid)
 }
 
 // Register the rule evaluator with the corresponding rule template
-func Register(meta *Metadata, factory rule.Factory) {
+func Register(meta *Metadata, factory rule.Factory, validator ...rule.Validator) {
 	if meta == nil || factory == nil || len(meta.TemplateID) == 0 {
 		// do nothing
 		return
 	}
 
 	index.Store(meta.TemplateID, &indexedItem{
-		Meta:    meta,
-		Factory: factory,
+		Meta:       meta,
+		Factory:    factory,
+		Validators: validator,
 	})
+}
+
+// Valid ...
+func Valid(templateID string, parameters rule.Parameters) error {
+	if len(templateID) == 0 {
+		return errors.New("empty rule template ID")
+	}
+
+	v, ok := index.Load(templateID)
+	if !ok {
+		return errors.Errorf("rule evaluator %s is not registered", templateID)
+	}
+
+	item := v.(*indexedItem)
+
+	// We can check more things if we want to do in the future
+	if len(item.Meta.Parameters) > 0 {
+		for _, p := range item.Meta.Parameters {
+			if p.Required {
+				exists := parameters != nil
+				if exists {
+					_, exists = parameters[p.Name]
+				}
+
+				if !exists {
+					return errors.Errorf("missing required parameter %s for rule %s", p.Name, templateID)
+				}
+			}
+		}
+	}
+	for _, v := range item.Validators {
+		err := v(parameters)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Get rule evaluator with the provided template ID
