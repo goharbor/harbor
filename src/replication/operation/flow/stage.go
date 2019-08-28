@@ -279,19 +279,23 @@ func schedule(scheduler scheduler.Scheduler, executionMgr execution.Manager, ite
 	for _, result := range results {
 		// if the task is failed to be submitted, update the status of the
 		// task as failure
+		now := time.Now()
 		if result.Error != nil {
 			log.Errorf("failed to schedule the task %d: %v", result.TaskID, result.Error)
-			if err = executionMgr.UpdateTaskStatus(result.TaskID, models.TaskStatusFailed); err != nil {
+			if err = executionMgr.UpdateTask(&models.Task{
+				ID:      result.TaskID,
+				Status:  models.TaskStatusFailed,
+				EndTime: &now,
+			}, "Status", "EndTime"); err != nil {
 				log.Errorf("failed to update the task status %d: %v", result.TaskID, err)
 			}
 			continue
 		}
 		allFailed = false
 		// if the task is submitted successfully, update the status, job ID and start time
-		if err = executionMgr.UpdateTaskStatus(result.TaskID, models.TaskStatusPending, models.TaskStatusInitialized); err != nil {
+		if err = executionMgr.UpdateTaskStatus(result.TaskID, models.TaskStatusPending, 0, models.TaskStatusInitialized); err != nil {
 			log.Errorf("failed to update the task status %d: %v", result.TaskID, err)
 		}
-		now := time.Now()
 		if err = executionMgr.UpdateTask(&models.Task{
 			ID:        result.TaskID,
 			JobID:     result.JobID,

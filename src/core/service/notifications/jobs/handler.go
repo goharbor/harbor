@@ -121,7 +121,7 @@ func (h *Handler) HandleReplicationScheduleJob() {
 // HandleReplicationTask handles the webhook of replication task
 func (h *Handler) HandleReplicationTask() {
 	log.Debugf("received replication task status update event: task-%d, status-%s", h.id, h.status)
-	if err := hook.UpdateTask(replication.OperationCtl, h.id, h.rawStatus); err != nil {
+	if err := hook.UpdateTask(replication.OperationCtl, h.id, h.rawStatus, h.revision); err != nil {
 		log.Errorf("failed to update the status of the replication task %d: %v", h.id, err)
 		h.SendInternalServerError(err)
 		return
