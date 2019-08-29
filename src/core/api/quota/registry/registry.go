@@ -280,15 +280,10 @@ func persistPB(projects []quota.ProjectInfo) error {
 			log.Error(err)
 			return err
 		}
-		for _, blobOfPro := range blobsOfPro {
-			_, err = dao.AddBlobToProject(blobOfPro.ID, pro.ProjectID)
-			if err != nil {
-				log.Error(err)
-				if err == dao.ErrDupRows {
-					continue
-				}
-				return err
-			}
+		_, err = dao.AddBlobsToProject(pro.ProjectID, blobsOfPro...)
+		if err != nil {
+			log.Error(err)
+			return err
 		}
 		log.Infof("[Quota-Sync]:: success to persist project&blob for project: %s, progress... [%d/%d]", project.Name, i, total)
 	}

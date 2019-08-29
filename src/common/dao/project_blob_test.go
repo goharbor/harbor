@@ -50,7 +50,7 @@ func TestAddBlobsToProject(t *testing.T) {
 	})
 	require.Nil(t, err)
 
-	for i := 0; i < 8888; i++ {
+	for i := 0; i < 88888; i++ {
 		blob := &models.Blob{
 			Digest: digest.FromString(utils.GenerateRandomString()).String(),
 			Size:   100,
@@ -61,7 +61,7 @@ func TestAddBlobsToProject(t *testing.T) {
 	}
 	cnt, err := AddBlobsToProject(pid, blobs...)
 	require.Nil(t, err)
-	require.Equal(t, cnt, int64(8888))
+	require.Equal(t, cnt, int64(88888))
 }
 
 func TestHasBlobInProject(t *testing.T) {
