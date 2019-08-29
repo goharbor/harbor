@@ -16,7 +16,7 @@ In addition, the deployment instructions on Kubernetes has been created by the c
 
 ## Prerequisites for the target host
 
-Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Docker, and Docker Compose to be installed.
+Harbor is deployed as several Docker containers, and therefore can be deployed on any Linux distribution that Docker supports. The target host requires Docker, and Docker Compose to be installed.
 
 ### Hardware
 
