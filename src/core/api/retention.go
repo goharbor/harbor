@@ -380,9 +380,22 @@ func (r *RetentionAPI) ListRetentionExecTasks() {
 
 // GetRetentionExecTaskLog Get Retention Execution Task log
 func (r *RetentionAPI) GetRetentionExecTaskLog() {
+	id, err := r.GetIDFromURL()
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
 	tid, err := r.GetInt64FromPath(":tid")
 	if err != nil {
 		r.SendBadRequestError(err)
+		return
+	}
+	p, err := retentionController.GetRetention(id)
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	if !r.requireAccess(p, rbac.ActionRead) {
 		return
 	}
 	log, err := retentionController.GetRetentionExecTaskLog(tid)

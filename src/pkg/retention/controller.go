@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
@@ -28,16 +27,6 @@ import (
 
 // APIController to handle the requests related with retention
 type APIController interface {
-	// Handle the related hooks from the job service and launch the corresponding actions if needed
-	//
-	//  Arguments:
-	//    PolicyID string         : uuid of the retention policy
-	//    event *job.StatusChange : event object sent by job service
-	//
-	//  Returns:
-	//    common error object if any errors occurred
-	HandleHook(policyID string, event *job.StatusChange) error
-
 	GetRetention(id int64) (*policy.Metadata, error)
 
 	CreateRetention(p *policy.Metadata) (int64, error)
@@ -261,11 +250,6 @@ func (r *DefaultAPIController) GetTotalOfRetentionExecTasks(executionID int64) (
 // GetRetentionExecTaskLog Get Retention Execution Task Log
 func (r *DefaultAPIController) GetRetentionExecTaskLog(taskID int64) ([]byte, error) {
 	return r.manager.GetTaskLog(taskID)
-}
-
-// HandleHook HandleHook
-func (r *DefaultAPIController) HandleHook(policyID string, event *job.StatusChange) error {
-	panic("implement me")
 }
 
 // NewAPIController ...
