@@ -22,7 +22,9 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/types"
+	"math/rand"
 	"strconv"
+	"time"
 )
 
 // QuotaMigrator ...
@@ -78,6 +80,7 @@ func Register(name string, adapter Instance) {
 
 // Sync ...
 func Sync(pm promgr.ProjectManager, populate bool) error {
+	rand.Seed(time.Now().UnixNano())
 	totalUsage := make(map[string][]ProjectUsage)
 	for name, instanceFunc := range adapters {
 		if !config.WithChartMuseum() {
@@ -86,22 +89,31 @@ func Sync(pm promgr.ProjectManager, populate bool) error {
 			}
 		}
 		adapter := instanceFunc(pm)
+		log.Infof("[Quota-Sync]:: start to ping server ... [%s]", name)
 		if err := adapter.Ping(); err != nil {
+			log.Infof("[Quota-Sync]:: fail to ping server ... [%s], quit sync ...", name)
 			return err
 		}
+		log.Infof("[Quota-Sync]:: success to ping server ... [%s]", name)
+		log.Infof("[Quota-Sync]:: start to dump data from server ... [%s]", name)
 		data, err := adapter.Dump()
 		if err != nil {
+			log.Infof("[Quota-Sync]:: fail to dump data from server ... [%s], quit sync ...", name)
 			return err
 		}
+		log.Infof("[Quota-Sync]:: success to dump data from server ... [%s]", name)
 		usage, err := adapter.Usage(data)
 		if err != nil {
 			return err
 		}
 		totalUsage[name] = usage
 		if populate {
+			log.Infof("[Quota-Sync]:: start to persist data for server ... [%s]", name)
 			if err := adapter.Persist(data); err != nil {
+				log.Infof("[Quota-Sync]:: fail to persist data from server ... [%s], quit sync ...", name)
 				return err
 			}
+			log.Infof("[Quota-Sync]:: success to persist data for server ... [%s]", name)
 		}
 	}
 	merged := mergeUsage(totalUsage)
@@ -109,6 +121,11 @@ func Sync(pm promgr.ProjectManager, populate bool) error {
 		return err
 	}
 	return nil
+}
+
+// Check ...
+func Check(f func() error) error {
+	return retry(10, 2*time.Second, f)
 }
 
 // mergeUsage merges the usage of adapters
@@ -168,6 +185,17 @@ func ensureQuota(usages []ProjectUsage) error {
 			log.Errorf("cannot ensure quota for the project: %d, err: %v", pid, err)
 			return err
 		}
+	}
+	return nil
+}
+
+func retry(attempts int, sleep time.Duration, f func() error) error {
+	if err := f(); err != nil {
+		if attempts--; attempts > 0 {
+			time.Sleep(sleep)
+			return retry(attempts, sleep, f)
+		}
+		return err
 	}
 	return nil
 }
