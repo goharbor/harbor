@@ -191,9 +191,9 @@ Config Email
     Input Text  xpath=//*[@id='emailPassword']  example
     Input Text  xpath=//*[@id='emailFrom']  example<example@vmware.com>
     Sleep  1    
-    Click Element  xpath=//clr-checkbox-wrapper[@id='emailSSL-wrapper']//label
+    Click Element  xpath=//*[@id='emailSSL-wrapper']/label
     Sleep  1
-    Click Element  xpath=//clr-checkbox-wrapper[@id='emailInsecure-wrapper']//label
+    Click Element  xpath=//*[@id='emailInsecure-wrapper']/label
     Sleep  1
     Click Element  xpath=${config_email_save_button_xpath}
     Sleep  6
@@ -273,7 +273,7 @@ Delete A Label
     Sleep  3
     Capture Page Screenshot
     Click Element  xpath=//clr-modal//div//button[contains(.,'DELETE')]
-    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${labelname}')]/../div/clr-icon[@shape='success-standard']
+    Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${labelname}')]/../div/clr-icon[@shape='success-standard']
 
 ## Garbage Collection	
 Switch To Garbage Collection
