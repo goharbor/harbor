@@ -164,7 +164,8 @@ func logResults(logger logger.Interface, all []*res.Candidate, results []*res.Re
 
 	for _, c := range all {
 		row := []string{
-			arn(c),
+			c.Digest,
+			c.Tag,
 			c.Kind,
 			strings.Join(c.Labels, ","),
 			t(c.PushedTime),
@@ -176,7 +177,8 @@ func logResults(logger logger.Interface, all []*res.Candidate, results []*res.Re
 	}
 
 	table := tablewriter.NewWriter(&buf)
-	table.SetHeader([]string{"Artifact", "Kind", "labels", "PushedTime", "PulledTime", "CreatedTime", "Retention"})
+	table.SetAutoFormatHeaders(false)
+	table.SetHeader([]string{"Digest", "Tag", "Kind", "Labels", "PushedTime", "PulledTime", "CreatedTime", "Retention"})
 	table.SetBorders(tablewriter.Border{Left: true, Top: false, Right: true, Bottom: false})
 	table.SetCenterSeparator("|")
 	table.AppendBulk(data)
