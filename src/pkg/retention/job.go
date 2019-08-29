@@ -197,6 +197,9 @@ func arn(art *res.Candidate) string {
 }
 
 func t(tm int64) string {
+	if tm == 0 {
+		return ""
+	}
 	return time.Unix(tm, 0).Format("2006/01/02 15:04:05")
 }
 
