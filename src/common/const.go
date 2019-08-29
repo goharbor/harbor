@@ -154,4 +154,7 @@ const (
 	QuotaPerProjectEnable = "quota_per_project_enable"
 	CountPerProject       = "count_per_project"
 	StoragePerProject     = "storage_per_project"
+
+	// ForeignLayer
+	ForeignLayer = "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip"
 )

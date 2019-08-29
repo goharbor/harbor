@@ -18,6 +18,7 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	common_quota "github.com/goharbor/harbor/src/common/quota"
@@ -157,7 +158,8 @@ func (rm *Migrator) Usage(projects []quota.ProjectInfo) ([]quota.ProjectUsage, e
 			// Because that there are some shared blobs between repositories, it needs to remove the duplicate items.
 			for _, blob := range repo.Blobs {
 				_, exist := blobs[blob.Digest]
-				if !exist {
+				// foreign blob won't be calculated
+				if !exist && blob.ContentType != common.ForeignLayer {
 					blobs[blob.Digest] = blob.Size
 				}
 			}
