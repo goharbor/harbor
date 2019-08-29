@@ -109,6 +109,7 @@ func (bc *basicClient) GetCandidates(repository *res.Repository) ([]*res.Candida
 				Namespace:    repository.Namespace,
 				Repository:   repository.Name,
 				Tag:          image.Name,
+				Digest:       image.Digest,
 				Labels:       labels,
 				CreationTime: image.Created.Unix(),
 				PulledTime:   image.PullTime.Unix(),
