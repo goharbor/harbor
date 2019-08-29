@@ -1207,10 +1207,13 @@
         "RULE_TEMPLATE_6": " the images pulled within the last # days",
         "RULE_TEMPLATE_7": " the images pushed within the last # days",
         "SCHEDULE": "Schedule",
-        "SCHEDULE_WARNING": "Executing the retention policy can have adverse effects to the images in this project and affected image tags will be deleted.",
+        "SCHEDULE_WARNING": "Executing retention policy results in the irreversible effect of deleting images from the Harbor project.  Please double check all policies before scheduling.",
         "EXISTING_RULE": "Existing rule",
         "ILLEGAL_RULE": "Illegal rule",
-        "INVALID_RULE": "Invalid rule"
+        "INVALID_RULE": "Invalid rule",
+        "COUNT_LARGE": "Parameter \"COUNT\" is too large",
+        "DAYS_LARGE": "Parameter \"DAYS\" is too large",
+        "EXECUTION_TYPE": "Execution Type"
     }
 
 }
