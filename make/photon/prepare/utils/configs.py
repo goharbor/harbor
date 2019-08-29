@@ -2,6 +2,9 @@ import yaml
 from g import versions_file_path
 from .misc import generate_random_string
 
+default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
+default_db_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
+
 def validate(conf, **kwargs):
     protocol = conf.get("protocol")
     if protocol != "https" and kwargs.get('notary_mode'):
@@ -112,11 +115,8 @@ def parse_yaml_config(config_file_path):
         config_dict['harbor_db_username'] = 'postgres'
         config_dict['harbor_db_password'] = db_configs.get("password") or ''
         config_dict['harbor_db_sslmode'] = 'disable'
-
-        default_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
-        default_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
-        config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_max_idle_conns
-        config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_max_open_conns
+        config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_db_max_idle_conns
+        config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_db_max_open_conns
         # clari db
         config_dict['clair_db_host'] = 'postgresql'
         config_dict['clair_db_port'] = 5432
@@ -237,6 +237,8 @@ def parse_yaml_config(config_file_path):
         config_dict['harbor_db_username'] = external_db_configs['harbor']['username']
         config_dict['harbor_db_password'] = external_db_configs['harbor']['password']
         config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
+        config_dict['harbor_db_max_idle_conns'] = external_db_configs['harbor'].get("max_idle_conns") or default_db_max_idle_conns
+        config_dict['harbor_db_max_open_conns'] = external_db_configs['harbor'].get("max_open_conns") or default_db_max_open_conns
         # clair db
         config_dict['clair_db_host'] = external_db_configs['clair']['host']
         config_dict['clair_db_port'] = external_db_configs['clair']['port']
