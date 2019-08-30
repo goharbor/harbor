@@ -20,6 +20,8 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
+
+	"github.com/goharbor/harbor/src/common"
 )
 
 // AddBlobToProject ...
@@ -114,6 +116,7 @@ func GetBlobsNotInProject(projectID int64, blobDigests ...string) ([]*models.Blo
 }
 
 // CountSizeOfProject ...
+// foreign blob won't be calculated
 func CountSizeOfProject(pid int64) (int64, error) {
 	var blobs []models.Blob
 
@@ -130,8 +133,9 @@ JOIN artifact_blob afnb
 JOIN BLOB bb
     ON afnb.digest_blob = bb.digest
 WHERE af.project_id = ? 
+AND bb.content_type != ?
 `
-	_, err := GetOrmer().Raw(sql, pid).QueryRows(&blobs)
+	_, err := GetOrmer().Raw(sql, pid, common.ForeignLayer).QueryRows(&blobs)
 	if err != nil {
 		return 0, err
 	}
