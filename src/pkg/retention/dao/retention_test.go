@@ -172,7 +172,8 @@ func TestExecution(t *testing.T) {
 func TestTask(t *testing.T) {
 	task := &models.RetentionTask{
 		ExecutionID: 1,
-		Status:      "pending",
+		Status:      "Pending",
+		StartTime:   time.Now().Truncate(time.Second),
 	}
 	// create
 	id, err := CreateTask(task)
@@ -182,7 +183,7 @@ func TestTask(t *testing.T) {
 	tk, err := GetTask(id)
 	require.Nil(t, err)
 	require.Equal(t, id, tk.ID)
-	require.Equal(t, "pending", tk.Status)
+	require.Equal(t, "Pending", tk.Status)
 
 	// update
 	task.ID = id
@@ -191,21 +192,25 @@ func TestTask(t *testing.T) {
 	require.Nil(t, err)
 
 	// update status
-	err = UpdateTaskStatus(id, "running", 1, 1)
+	err = UpdateTaskStatus(id, "Running", 1, 1)
 	require.Nil(t, err)
 
 	// list
 	tasks, err := ListTask(&q.TaskQuery{
 		ExecutionID: 1,
-		Status:      "running",
+		Status:      "Running",
 	})
 	require.Nil(t, err)
 	require.Equal(t, 1, len(tasks))
 	assert.Equal(t, 1, tasks[0].Total)
 	assert.Equal(t, int64(1), tasks[0].ExecutionID)
-	assert.Equal(t, "running", tasks[0].Status)
+	assert.Equal(t, "Running", tasks[0].Status)
 	assert.Equal(t, 1, tasks[0].StatusCode)
 	assert.Equal(t, int64(1), tasks[0].StatusRevision)
+
+	// update status
+	err = UpdateTaskStatus(id, "Stopped", 1, 2)
+	require.Nil(t, err)
 
 	// delete
 	err = DeleteTask(id)
