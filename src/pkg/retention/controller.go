@@ -184,7 +184,7 @@ func (r *DefaultAPIController) TriggerRetentionExec(policyID int64, trigger stri
 
 	exec := &Execution{
 		PolicyID:  policyID,
-		StartTime: time.Now(),
+		StartTime: time.Now().Truncate(time.Second),
 		Trigger:   trigger,
 		DryRun:    dryRun,
 	}
