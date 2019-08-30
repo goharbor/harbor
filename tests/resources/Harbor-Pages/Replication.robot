@@ -35,6 +35,11 @@ Select Trigger
     Retry Element Click    ${rule_trigger_select}
     Retry Element Click    ${rule_trigger_select}//option[contains(.,'${mode}')]
 
+Select Destination URL
+    [Arguments]    ${type}
+    Retry Element Click    ${destination_url_xpath}
+    Retry Element Click    ${destination_url_xpath}//option[contains(.,'${type}')]
+
 Check New Rule UI Without Endpoint
     Retry Element Click    ${new_replication-rule_button}
     Page Should Contain    Please add an endpoint first
@@ -49,7 +54,8 @@ Create A New Endpoint
     #input necessary info
     Select From List By Value  ${provider_selector}  ${provider}
     Retry Text Input  xpath=${destination_name_xpath}    ${name}
-    Run Keyword If  '${provider}' != 'docker-hub'  Run keyword  Retry Text Input  xpath=${destination_url_xpath}  ${url}
+    Run Keyword If  '${provider}' == 'harbor'  Run keyword  Retry Text Input  xpath=${destination_url_xpath}  ${url}
+    Run Keyword If  '${provider}' == 'aws-ecr'  OR  '${provider}' == 'google-gcr'   Run keyword  Select Destination URL  xpath=${destination_url_xpath}  ${url}
     Retry Text Input  xpath=${destination_username_xpath}  ${username}
     Retry Text Input  xpath=${destination_password_xpath}  ${pwd}
     #cancel verify cert since we use a selfsigned cert
