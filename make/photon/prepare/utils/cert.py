@@ -4,8 +4,11 @@ from pathlib import Path
 from subprocess import DEVNULL
 from functools import wraps
 
-from .misc import mark_file
-from .misc import generate_random_string
+from g import DEFAULT_GID, DEFAULT_UID
+from .misc import (
+    mark_file,
+    generate_random_string,
+    check_permission)
 
 SSL_CERT_PATH = os.path.join("/etc/cert", "server.crt")
 SSL_CERT_KEY_PATH = os.path.join("/etc/cert", "server.key")
@@ -102,3 +105,9 @@ def prepare_ca(
         else:
             shutil.move(old_crt_path, root_crt_path)
             shutil.move(old_private_key_pem_path, private_key_pem_path)
+
+    if not check_permission(root_crt_path, uid=DEFAULT_UID, gid=DEFAULT_GID):
+        os.chown(root_crt_path, DEFAULT_UID, DEFAULT_GID)
+
+    if not check_permission(private_key_pem_path, uid=DEFAULT_UID, gid=DEFAULT_GID):
+        os.chown(private_key_pem_path, DEFAULT_UID, DEFAULT_GID)
