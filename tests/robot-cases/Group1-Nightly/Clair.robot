@@ -212,7 +212,7 @@ Test Case - Verfiy Project Level CVE Whitelist By Quick Way of Add System
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Switch To Configuration System Setting
-    Add Items To System CVE Whitelist    CVE-2013-7445\nCVE-2019-15099\nCVE-2019-15504\nCVE-2019-15505\nCVE-2019-9511\nCVE-2019-9513
+    Add Items To System CVE Whitelist    CVE-2013-7445\nCVE-2019-15098\nCVE-2019-15099\nCVE-2019-15504\nCVE-2019-15505\nCVE-2019-9511\nCVE-2019-9513
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
     Create An New Project    project${d}
