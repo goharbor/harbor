@@ -31,8 +31,8 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [View build history.](#build-history)
 * [Using CLI after login via OIDC based SSO](#using-oidc-cli-secret)
 * [Manage robot account of a project](#robot-account)
-* [Configure Tag Retention Rules](#configure-tag-retention-rules)
-* [Configure Webhook Notifications](#configure-webhook-notifications)
+* [Tag Retention Rules](#tag-retention-rules)
+* [Webhook Notifications](#webhook-notifications)
 * [Using API Explorer](#api-explorer)
 
 ## Role Based Access Control(RBAC)  
@@ -721,13 +721,143 @@ If you are a project admin, you can disable a Robot Account by clicking "Disable
 If you are a project admin, you can delete a Robot Account by clicking "Delete" in the `Robot Accounts` tab of a project.
 ![delete_robot_account](img/robotaccount/disable_delete_robot_account.png)
 
-## Configure Tag Retention Rules
+## Tag Retention Rules
+
+A repository can rapidly accumulate a large number of image tags, many of which might not be required after a given time or once they have been superseded by a subsequent image build. These excess tags can obviously consume large quantities of storage capacity. As a system administrator, you can define rules that govern how many tags of a given repository to retain, or for how long to retain certain tags. 
+
+### How Tag Retention Rules Work
+
+You define tag retention rules on repositories, not on projects. This allows for greater granularity when defining your retention rules. As the name suggests, when you define a retention rule for a repository, you are identifying which tags to retain. You do not define rules to explicitly remove tags. Rather, when you set a rule, any tags in a repository that are not identified as being eligible for retention are discarded. 
+
+A tag retention rule has 3 filters that are applied sequentially, as described in the following table.
+
+|Order|Filter|Description|
+|---|---|---|
+|First|Repository or repositories|Identify the repository or repositories on which to apply the rule. You can identify repositories that either have a certain name or name fragment, or that do not have that name or name fragment. Wild cards (for example `*repo`, `repo*`, and `**`) are permitted.|
+|Second|Quantity to retain|Set which tags to retain either by specifying a maximum number of tags, or by specifying a maximum period for which to retain tags.|
+|Third|Tags to retain|Identify the tag or tags on which to apply the rule. You can identify tags that either have a certain name or name fragment, or that do not have that name or name fragment. Wild cards (for example `*tag`, `tag*`, and `**`) and regular expressions are permitted.|
+
+The repository filter is applied first to mark the repositories to which to apply the retention rule. 
+
+#### Example 1
+
+- You have 5 repositories in a project, repositories A to E.
+  - Repository A has 100 image tags, all of which have been pulled in the last week.
+  - Repositories B to E each have 6 images, none of which have been pulled in the last month.
+- You set the repository filter to `**`, meaning that all repositories in the project are included.
+- You set the retention policy to retain the 10 most recently pulled images in each repository.
+- You set the tag filter to `**`, meaning that all tags in the repository are included.
+
+In this example the rule retains the 10 most recently pulled images in repository A, and all of the images in repositories B to E, retaining a total of 34 image tags in the project. In other words, the rule does not treat all of the images in repositories A to E as a single pool from which to choose the 10 most recent images. So, even if the 11th to 100th tags in repository A have been pulled more recently than any of the tags in repositories B to E, all of the tags in repositories B to E are retained, because each of those repositories has fewer than 10 tags.
+
+#### Example 2
+
+This example uses the same project and repositories as example 1, but sets the retention policy to retain the images in each repository that have been pulled in the last 7 days.
+
+In this case, all of the images in repository A are retained because they have been pulled in the last 7 days. None of the images in repositories B to E are retained, because none of them has been pulled in the last week. In this example, 100 images are retained, as opposed to 34 images in example 1.
+
+### Combining Rules on a Respository
+
+You can define up to 15 rules per project. You can apply multiple rules to a repository or set of repositories. When you apply multiple rules to a repository, they are applied with `OR` logic rather than with `AND` logic. In this way, there is no prioritization of application of the rules on a given repository. 
+
+#### Example 3
+
+This example uses the same project and repositories as examples 1 and 2, but sets two rules:
+
+- Rule 1: Retain all of the images in each repository that have been pulled in the last 7 days.
+- Rule 2: Retain a maximum number of 10 images in each repository.
+
+In this case, repository A only retains the 10 most recent images, even though images 11 to 100 have been pulled in the last week. Repositories B to E retain no images, because none of those images have been pulled in the last week. In this example, 10 images are retained, as opposed to 34 images in example 1 and 100 in example 2.
 
 
+#### Example 4
 
-## Configure Webhook Notifications
+This example uses a different repository to the previous examples.
 
-If you are a project admin, you can configure a connection from a project in Harbor to a webhook endpoint. If you configure webhooks, Harbor notifies the webhook endpoint of certain events that occur in the project. Webhooks allow you to integrate Harbor with other tools to streamline continuous integration and development processes. 
+- You have a repository that has 12 tags:
+
+  |Production|Release Candidate|Release|
+  |---|---|---|
+  |`2.1-your_repo-prod`|`2.1-your_repo-rc`|`2.1-your_repo-release`|
+  |`2.2-your_repo-prod`|`2.2-your_repo-rc`|`2.2-your_repo-release`|
+  |`3.1-your_repo-prod`|`3.1-your_repo-rc`|`3.1-your_repo-release`|
+  |`4.4-your_repo-prod`|`4.4-your_repo-rc`|`4.4-your_repo-release`| 
+
+- You define three tag retention rules on this repository:
+  - Retain the 10 most recently pushed image tags that start with `2`.
+  - Retain the 10 most recently pushed image tags that end with `-prod`.
+  - Exclude the image tag `2.1-your_repo-prod` from the list of tags to retain.
+
+In this example, the rules are applied to the following 7 tags:
+
+- `2.1-your_repo-rc`
+- `2.1-your_repo-release`
+- `2.2-your_repo-prod`
+- `2.2-your_repo-rc`
+- `2.2-your_repo-release`
+- `3.1-your_repo-prod`
+- `4.4-your_repo-prod`
+
+### How Tag Retention Rules Interact with Project Quotas
+
+The system administrator can set a maximum on the number of artifacts that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Configure Project Quotas](LINK). 
+
+Project quota settings take precedence over tag retention rules. If you set a tag retention rule to keep the 5 most recent images in a repository, but the 5th image takes the total amount of storage consumed by the project above the project quota for storage, the 5th image will be deleted.  
+
+### Configure Tag Retention Rules
+
+1. Select a project and go to the **Tag Retention** tab.
+  ![Tag Retention option](img/tag-retention1.png)
+1. Click **Add Rule** to add a rule.
+1. In the **For the repositories** drop-down menu, select **matching** or **excluding**.
+  ![Select repositories](img/tag-retention2.png)
+1. Identify the repositories on which to apply the rule.
+  
+  You can define the repositories on which to apply the rule by entering the following information:
+  
+  - A repository name, for example `my_repo_1`.
+  - A comma-separated list of repository names, for example `my_repo_1,my_repo_2,your_repo_3`.
+  - A partial repository name with wildcards, for example `my_*`, `*_3`, or `*_repo_*`.
+  - `**` to apply the rule to all of the repositories in the project. 
+  
+  If you selected **matching**, the rule is applied to the repositories you identified. If you selected **excluding**, the rule is applied to all of the repositories in the project except for the ones that you identified.
+1. Define how many tags to retain or how the period to retain tags.
+  ![Select retention criteria](img/tag-retention3.png)
+  
+  |Option|Description|
+  |---|---|
+  |**retain the most recently pushed # images**|Enter the maximum number of images to retain, keeping the ones that have been pushed most recently. There is no maximum age for an image.|
+  |**retain the most recently pulled # images**|Enter the maximum number of images to retain, keeping only the ones that have been pulled recently. There is no maximum age for an image.|
+  |**retain the images pushed within the last # days**|Enter the number of days to retain images, keeping only the ones that have been pushed during this period. There is no maximum number of images.|
+  |**retain the images pulled within the last # days**|Enter the number of days to retain images, keeping only the ones that have been pulled during this period. There is no maximum number of images.|
+  |**retain always**|Always retain the images identified by this rule.| 
+
+1. In the **Tags** drop-down menu, select **matching** or **excluding**.
+1. Identify the tags on which to apply the rule.
+  
+  You can define the tags on which to apply the rule by entering the following information:
+  
+  - A tag name, for example `my_tag_1`.
+  - A comma-separated list of tag names, for example `my_tag_1,my_tag_2,your_tag_3`.
+  - A partial tag name with wildcards, for example `my_*`, `*_3`, or `*_tag_*`.
+  - `**` to apply the rule to all of the tags in the project. 
+  
+  If you selected **matching**, the rule is applied to the tags you identified. If you selected **excluding**, the rule is applied to all of the tags in the repository except for the ones that you identified.
+1. Click **Add** to save the rule.
+1. (Optional) Click **Add Rule** to add more rules, up to a maximum of 15 per project.
+1. (Optional) Under Schedule, click **Edit** and select how often to run the rule.
+  ![Select retention criteria](img/tag-retention4.png)
+  If you select **Custom**, enter a cron job command to schedule the rule. 
+  
+  **NOTE**: If you define multiple rules, the schedule is applied to all of the rules. You cannot schedule different rules to run at different times. 
+1. (Optional) Click **Dry Run** to test the rule or rules that you have defined.
+1. (Optional) Click **Run Now** to run the rule immediately.
+
+To modify an existing rule, click the three vertical dots next to a rule to disable, edit, or delete that rule.
+
+## Webhook Notifications
+
+If you are a project administrator, you can configure a connection from a project in Harbor to a webhook endpoint. If you configure webhooks, Harbor notifies the webhook endpoint of certain events that occur in the project. Webhooks allow you to integrate Harbor with other tools to streamline continuous integration and development processes. 
 
 The action that is taken upon receiving a notification from a Harbor project depends on your continuous integration and development processes. For example, by configuring Harbor to send a `POST` request to a webhook listener at an endpoint of your choice, you can trigger a build and deployment of an application whenever there is a change to an image in the repository.
 
