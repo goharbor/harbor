@@ -20,6 +20,14 @@ Resource  ../../resources/Util.robot
 ${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
+Filter Replicatin Rule
+    [Arguments]  ${ruleName}
+    ${rule_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${ruleName}')]
+    Retry Element Click  ${filter_rules_btn}
+    Retry Text Input  ${filter_rules_input}  ${ruleName}
+    Retry Wait Until Page Contains Element   ${rule_name_element}
+    Capture Page Screenshot  filter_replic_${ruleName}.png
+
 Select Dest Registry
     [Arguments]    ${endpoint}
     Retry Element Click    ${dest_registry_dropdown_list}
@@ -35,6 +43,11 @@ Select Trigger
     Retry Element Click    ${rule_trigger_select}
     Retry Element Click    ${rule_trigger_select}//option[contains(.,'${mode}')]
 
+Select Destination URL
+    [Arguments]    ${type}
+    Retry Element Click    ${destination_url_xpath}
+    Retry Element Click    ${destination_url_xpath}//option[contains(.,'${type}')]
+
 Check New Rule UI Without Endpoint
     Retry Element Click    ${new_replication-rule_button}
     Page Should Contain    Please add an endpoint first
@@ -49,8 +62,9 @@ Create A New Endpoint
     #input necessary info
     Select From List By Value  ${provider_selector}  ${provider}
     Retry Text Input  xpath=${destination_name_xpath}    ${name}
-    Run Keyword If  '${provider}' != 'docker-hub'  Run keyword  Retry Text Input  xpath=${destination_url_xpath}  ${url}
-    Retry Text Input  xpath=${destination_username_xpath}  ${username}
+    Run Keyword If  '${provider}' == 'harbor'  Run keyword  Retry Text Input  xpath=${destination_url_xpath}  ${url}
+    Run Keyword If  '${provider}' == 'aws-ecr' or '${provider}' == 'google-gcr'   Run keyword  Select Destination URL  ${url}
+    Run Keyword If  '${provider}' != 'google-gcr'   Retry Text Input  xpath=${destination_username_xpath}  ${username}
     Retry Text Input  xpath=${destination_password_xpath}  ${pwd}
     #cancel verify cert since we use a selfsigned cert
     Retry Element Click  ${destination_insecure_xpath}

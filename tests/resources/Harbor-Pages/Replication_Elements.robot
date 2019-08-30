@@ -80,6 +80,9 @@ ${src_registry_dropdown_list}    //select[@id='src_registry_id']
 ${dest_registry_dropdown_list}    //select[@id='dest_registry']
 ${rule_confirm_btn}    //*[@id='ruleBtnOk']
 ${rule_cancel_btn}    //*[@id='ruleBtnCancel']
+${filter_rules_btn}    //*[@id='filter-rules']
+${filter_rules_input}  //*[@id='filter-rules']//input
+
 
 
 

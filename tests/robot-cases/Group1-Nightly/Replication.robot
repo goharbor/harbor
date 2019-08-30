@@ -250,3 +250,46 @@ Test Case - Replication Of Push Images from Self To Harbor By Push Event
     Switch To Project Repo
     Retry Wait Until Page Contains    project_dest${d}/centos
     Close Browser
+
+Test Case - Replication Of Pull Images from AWS-ECR To Harbor
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%M%S
+    #login source
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project    project${d}
+    Switch To Registries
+    Create A New Endpoint    aws-ecr    e${d}    us-east-2    ${ecr_ac_id}    ${ecr_ac_key}    Y
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    rule${d}    pull    a/*    image    e${d}    project${d}
+    Select Rule And Replicate  rule${d}
+    Sleep    30
+    Go Into Project    project${d}
+    Switch To Project Repo
+    #In AWS-ECR, under repository a, there're only several images: httpd,tomcat.
+    Retry Wait Until Page Contains    project${d}/httpd
+    Go Into Project    project${d}
+    Switch To Project Repo
+    Retry Wait Until Page Contains    project${d}/tomcat
+    Close Browser
+
+Test Case - Replication Of Pull Images from Google-GCR To Harbor
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%M%S
+    #login source
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project    project${d}
+    Switch To Registries
+    Create A New Endpoint    google-gcr    e${d}    asia.gcr.io    ${null}    ${gcr_ac_key}    Y
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    rule${d}    pull    eminent-nation-87317/*    image    e${d}    project${d}
+    Filter Replicatin Rule  rule${d}
+    Select Rule And Replicate  rule${d}
+    Sleep    30
+    Go Into Project    project${d}
+    Switch To Project Repo
+    #In Google-GCR, under repository a, there're only several images: httpd,tomcat.
+    Retry Wait Until Page Contains    project${d}/httpd
+    Go Into Project    project${d}
+    Switch To Project Repo
+    Retry Wait Until Page Contains    project${d}/tomcat
+    Close Browser

@@ -230,11 +230,11 @@ Retry Keyword When Error
 
 Retry Double Keywords When Error
     [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}
-    :For  ${n}  IN RANGE  1  6
+    :For  ${n}  IN RANGE  1  3
     \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
     \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
     \    Capture Page Screenshot
-    \    Sleep  2
+    \    Sleep  1
     \    ${out2}  Run Keyword And Ignore Error  ${keyword2}  ${element2}
     \    Capture Page Screenshot
     \    Log To Console  Return value is ${out1[0]} ${out2[0]}
