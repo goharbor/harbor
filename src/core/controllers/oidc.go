@@ -83,11 +83,11 @@ func (oc *OIDCController) Callback() {
 		return
 	}
 
-	error := oc.Ctx.Request.URL.Query().Get("error")
-	if error != "" {
+	errorCode := oc.Ctx.Request.URL.Query().Get("error")
+	if errorCode != "" {
 		errorDescription := oc.Ctx.Request.URL.Query().Get("error_description")
-		log.Errorf("OIDC callback returned error: %s - %s", error, errorDescription)
-		oc.SendBadRequestError(errors.Errorf("OIDC callback returned error: %s - %s", error, errorDescription))
+		log.Errorf("OIDC callback returned error: %s - %s", errorCode, errorDescription)
+		oc.SendBadRequestError(errors.Errorf("OIDC callback returned error: %s - %s", errorCode, errorDescription))
 		return
 	}
 
