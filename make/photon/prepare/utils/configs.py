@@ -230,6 +230,7 @@ def parse_yaml_config(config_file_path):
     # external DB, optional, if external_db enabled, it will cover the database config
     external_db_configs = configs.get('external_database') or {}
     if external_db_configs:
+        config_dict['external_database'] = True
         # harbor db
         config_dict['harbor_db_host'] = external_db_configs['harbor']['host']
         config_dict['harbor_db_port'] = external_db_configs['harbor']['port']
@@ -260,11 +261,14 @@ def parse_yaml_config(config_file_path):
         config_dict['notary_server_db_username'] = external_db_configs['notary_server']['username']
         config_dict['notary_server_db_password'] = external_db_configs['notary_server']['password']
         config_dict['notary_server_db_sslmode'] = external_db_configs['notary_server']['ssl_mode']
+    else:
+        config_dict['external_database'] = False
 
 
     # redis config
     redis_configs = configs.get("external_redis")
     if redis_configs:
+        config_dict['external_redis'] = True
         # using external_redis
         config_dict['redis_host'] = redis_configs['host']
         config_dict['redis_port'] = redis_configs['port']
@@ -273,6 +277,7 @@ def parse_yaml_config(config_file_path):
         config_dict['redis_db_index_js'] = redis_configs.get('jobservice_db_index') or 2
         config_dict['redis_db_index_chart'] = redis_configs.get('chartmuseum_db_index') or 3
     else:
+        config_dict['external_redis'] = False
         ## Using local redis
         config_dict['redis_host'] = 'redis'
         config_dict['redis_port'] = 6379
