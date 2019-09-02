@@ -174,6 +174,17 @@ func (info *ManifestInfo) BlobMutexKey(blob *models.Blob, suffix ...string) stri
 	return strings.Join(append(a, suffix...), ":")
 }
 
+// SyncBlobs sync layers of manifest to blobs
+func (info *ManifestInfo) SyncBlobs() error {
+	err := dao.SyncBlobs(info.References)
+	if err == dao.ErrDupRows {
+		log.Warning("Some blobs created by others, ignore this error")
+		return nil
+	}
+
+	return err
+}
+
 // GetBlobsNotInProject returns blobs of the manifest which not in the project
 func (info *ManifestInfo) GetBlobsNotInProject() ([]*models.Blob, error) {
 	var digests []string

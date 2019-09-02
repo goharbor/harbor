@@ -18,6 +18,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/docker/distribution"
+	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/opencontainers/go-digest"
@@ -67,6 +69,87 @@ func TestDeleteBlob(t *testing.T) {
 	blob.ID = id
 	err = DeleteBlob(blob.Digest)
 	require.Nil(t, err)
+}
+
+func TestListBlobs(t *testing.T) {
+	assert := assert.New(t)
+
+	d1 := digest.FromString(utils.GenerateRandomString())
+	d2 := digest.FromString(utils.GenerateRandomString())
+	d3 := digest.FromString(utils.GenerateRandomString())
+	d4 := digest.FromString(utils.GenerateRandomString())
+	for _, e := range []struct {
+		Digest      digest.Digest
+		ContentType string
+		Size        int64
+	}{
+		{d1, schema2.MediaTypeLayer, 1},
+		{d2, schema2.MediaTypeLayer, 2},
+		{d3, schema2.MediaTypeForeignLayer, 3},
+		{d4, schema2.MediaTypeForeignLayer, 4},
+	} {
+		blob := &models.Blob{
+			Digest:      e.Digest.String(),
+			ContentType: e.ContentType,
+			Size:        e.Size,
+		}
+		_, err := AddBlob(blob)
+		assert.Nil(err)
+	}
+
+	defer func() {
+		for _, d := range []digest.Digest{d1, d2, d3, d4} {
+			DeleteBlob(d.String())
+		}
+	}()
+
+	blobs, err := ListBlobs(&models.BlobQuery{Digest: d1.String()})
+	assert.Nil(err)
+	assert.Len(blobs, 1)
+
+	blobs, err = ListBlobs(&models.BlobQuery{ContentType: schema2.MediaTypeForeignLayer})
+	assert.Nil(err)
+	assert.Len(blobs, 2)
+
+	blobs, err = ListBlobs(&models.BlobQuery{Digests: []string{d1.String(), d2.String(), d3.String()}})
+	assert.Nil(err)
+	assert.Len(blobs, 3)
+}
+
+func TestSyncBlobs(t *testing.T) {
+	assert := assert.New(t)
+
+	d1 := digest.FromString(utils.GenerateRandomString())
+	d2 := digest.FromString(utils.GenerateRandomString())
+	d3 := digest.FromString(utils.GenerateRandomString())
+	d4 := digest.FromString(utils.GenerateRandomString())
+
+	blob := &models.Blob{
+		Digest:      d1.String(),
+		ContentType: schema2.MediaTypeLayer,
+		Size:        1,
+	}
+	_, err := AddBlob(blob)
+	assert.Nil(err)
+
+	assert.Nil(SyncBlobs([]distribution.Descriptor{}))
+
+	references := []distribution.Descriptor{
+		{MediaType: schema2.MediaTypeLayer, Digest: d1, Size: 1},
+		{MediaType: schema2.MediaTypeForeignLayer, Digest: d2, Size: 2},
+		{MediaType: schema2.MediaTypeForeignLayer, Digest: d3, Size: 3},
+		{MediaType: schema2.MediaTypeForeignLayer, Digest: d4, Size: 4},
+	}
+	assert.Nil(SyncBlobs(references))
+	defer func() {
+		for _, d := range []digest.Digest{d1, d2, d3, d4} {
+			DeleteBlob(d.String())
+		}
+	}()
+
+	blobs, err := ListBlobs(&models.BlobQuery{Digests: []string{d1.String(), d2.String(), d3.String(), d4.String()}})
+	assert.Nil(err)
+	assert.Len(blobs, 4)
 }
 
 func prepareImage(projectID int64, projectName, name, tag string, layerDigests ...string) (string, error) {

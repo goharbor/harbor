@@ -15,9 +15,12 @@
 package registry
 
 import (
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -29,9 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/core/promgr"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/pkg/errors"
-	"strings"
-	"sync"
-	"time"
 )
 
 // Migrator ...
@@ -423,7 +423,7 @@ func infoOfRepo(pid int64, repo string) (quota.RepoData, error) {
 		}
 		af := &models.Artifact{
 			PID:          pid,
-			Repo:         strings.Split(repo, "/")[1],
+			Repo:         repo,
 			Tag:          tag,
 			Digest:       desc.Digest.String(),
 			Kind:         "Docker-Image",
