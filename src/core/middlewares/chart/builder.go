@@ -29,8 +29,8 @@ import (
 )
 
 var (
-	deleteChartVersionRe = regexp.MustCompile(`^/api/chartrepo/(?P<namespace>\w+)/charts/(?P<name>\w+)/(?P<version>[\w\d\.]+)/?$`)
-	createChartVersionRe = regexp.MustCompile(`^/api/chartrepo/(?P<namespace>\w+)/charts/?$`)
+	deleteChartVersionRe = regexp.MustCompile(`^/api/chartrepo/(?P<namespace>[^?#]+)/charts/(?P<name>[^?#]+)/(?P<version>[^?#]+)/?$`)
+	createChartVersionRe = regexp.MustCompile(`^/api/chartrepo/(?P<namespace>[^?#]+)/charts/?$`)
 )
 
 var (

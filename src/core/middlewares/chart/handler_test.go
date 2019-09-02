@@ -120,6 +120,21 @@ func (suite *HandlerSuite) TestUpload() {
 		uploadChartVersion(projectID, projectName, "harbor", "0.2.0")
 		suite.AssertResourceUsage(1, types.ResourceCount, projectID)
 	}, "repo1")
+
+	suite.WithProject(func(projectID int64, projectName string) {
+		uploadChartVersion(projectID, projectName, "harbor-ha", "dev")
+		suite.AssertResourceUsage(1, types.ResourceCount, projectID)
+	}, "harbor-contrib")
+
+	suite.WithProject(func(projectID int64, projectName string) {
+		uploadChartVersion(projectID, projectName, "acs-engine-autoscaler", "1.0.0")
+		suite.AssertResourceUsage(1, types.ResourceCount, projectID)
+	}, "cluster-autoscaler")
+
+	suite.WithProject(func(projectID int64, projectName string) {
+		uploadChartVersion(projectID, projectName, "123456", "1-0")
+		suite.AssertResourceUsage(1, types.ResourceCount, projectID)
+	}, "123456")
 }
 
 func (suite *HandlerSuite) TestDelete() {
@@ -130,6 +145,30 @@ func (suite *HandlerSuite) TestDelete() {
 		deleteChartVersion(projectName, "harbor", "0.2.1")
 		suite.AssertResourceUsage(0, types.ResourceCount, projectID)
 	}, "repo1")
+
+	suite.WithProject(func(projectID int64, projectName string) {
+		uploadChartVersion(projectID, projectName, "harbor-ha", "dev")
+		suite.AssertResourceUsage(1, types.ResourceCount, projectID)
+
+		deleteChartVersion(projectName, "harbor-ha", "dev")
+		suite.AssertResourceUsage(0, types.ResourceCount, projectID)
+	}, "harbor-contrib")
+
+	suite.WithProject(func(projectID int64, projectName string) {
+		uploadChartVersion(projectID, projectName, "acs-engine-autoscaler", "1.0.0")
+		suite.AssertResourceUsage(1, types.ResourceCount, projectID)
+
+		deleteChartVersion(projectName, "acs-engine-autoscaler", "1.0.0")
+		suite.AssertResourceUsage(0, types.ResourceCount, projectID)
+	}, "cluster-autoscaler")
+
+	suite.WithProject(func(projectID int64, projectName string) {
+		uploadChartVersion(projectID, projectName, "123456", "1-0")
+		suite.AssertResourceUsage(1, types.ResourceCount, projectID)
+
+		deleteChartVersion(projectName, "123456", "1-0")
+		suite.AssertResourceUsage(0, types.ResourceCount, projectID)
+	}, "123456")
 }
 
 func TestRunHandlerSuite(t *testing.T) {
