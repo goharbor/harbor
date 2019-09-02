@@ -38,14 +38,14 @@ Init LDAP
     Sleep  1
     Capture Page Screenshot
     Disable Ldap Verify Cert Checkbox
-    Click Element  xpath=${config_auth_save_button_xpath}
+    Retry Element Click  xpath=${config_auth_save_button_xpath}
     Sleep  2
-    Click Element  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[3]
+    Retry Element Click  xpath=/html/body/harbor-app/harbor-shell/clr-main-container/div/div/config/div/div/div/button[3]
     Sleep  1
     Capture Page Screenshot
 
 Switch To Configure
-    Click Element  xpath=${configuration_xpath}
+    Retry Element Click  xpath=${configuration_xpath}
     Sleep  2
 
 Test Ldap Connection
@@ -64,7 +64,7 @@ Test Ldap Connection
     Sleep  1
 
     # default is checked, click test connection to verify fail as no cert.
-    Click Element  xpath=${test_ldap_xpath}
+    Retry Element Click  xpath=${test_ldap_xpath}
     Sleep  1
     Wait Until Page Contains  Failed to verify LDAP server with error
     Sleep  5
@@ -72,12 +72,12 @@ Test Ldap Connection
     Disable Ldap Verify Cert Checkbox
     # ldap checkbox unchecked, click test connection to verify success.
     Sleep  1
-    Click Element  xpath=${test_ldap_xpath}
+    Retry Element Click  xpath=${test_ldap_xpath}
     Capture Page Screenshot
     Wait Until Page Contains  Connection to LDAP server is verified  timeout=15
 
 Test LDAP Server Success
-    Click Element  xpath=${test_ldap_xpath}
+    Retry Element Click  xpath=${test_ldap_xpath}
     Wait Until Page Contains  Connection to LDAP server is verified  timeout=15
 
 Disable Ldap Verify Cert Checkbox
@@ -90,47 +90,47 @@ Disable Ldap Verify Cert Checkbox
 Ldap Verify Cert Checkbox Should Be Disabled
     Checkbox Should Not Be Selected  xpath=//*[@id='clr-checkbox-ldapVerifyCert']
 
-Set Pro Create Admin Only	
+Set Pro Create Admin Only
     #set limit to admin only
-    Click Element  xpath=${configuration_xpath}
+    Retry Element Click  xpath=${configuration_xpath}
     Sleep  2
-    Click Element  xpath=${system_config_xpath}
+    Retry Element Click  xpath=${system_config_xpath}
     Sleep  1
-    Click Element  xpath=//select[@id='proCreation']
-    Click Element  xpath=//select[@id='proCreation']//option[@value='adminonly']
+    Retry Element Click  xpath=//select[@id='proCreation']
+    Retry Element Click  xpath=//select[@id='proCreation']//option[@value='adminonly']
     Sleep  1
-    Click Element  xpath=${config_system_save_button_xpath}
+    Retry Element Click  xpath=${config_system_save_button_xpath}
     Capture Page Screenshot  AdminCreateOnly.png
 
 Set Pro Create Every One
-    Click Element  xpath=${configuration_xpath}
+    Retry Element Click  xpath=${configuration_xpath}
     sleep  1
     #set limit to Every One
-    Click Element  xpath=${system_config_xpath}
+    Retry Element Click  xpath=${system_config_xpath}
     Sleep  1
-    Click Element  xpath=//select[@id='proCreation']
-    Click Element  xpath=//select[@id='proCreation']//option[@value='everyone']
-    Sleep  1	
-    Click Element  xpath=${config_system_save_button_xpath}
+    Retry Element Click  xpath=//select[@id='proCreation']
+    Retry Element Click  xpath=//select[@id='proCreation']//option[@value='everyone']
+    Sleep  1
+    Retry Element Click  xpath=${config_system_save_button_xpath}
     Sleep  2
     Capture Page Screenshot  EveryoneCreate.png
 
 Disable Self Reg
-    Click Element  xpath=${configuration_xpath}
+    Retry Element Click  xpath=${configuration_xpath}
     Mouse Down  xpath=${self_reg_xpath}
     Mouse Up  xpath=${self_reg_xpath}
     Sleep  1
     Self Reg Should Be Disabled
-    Click Element  xpath=${config_auth_save_button_xpath}
+    Retry Element Click  xpath=${config_auth_save_button_xpath}
     Capture Page Screenshot  DisableSelfReg.png
     Sleep  1
 
-Enable Self Reg	
+Enable Self Reg
     Mouse Down  xpath=${self_reg_xpath}
     Mouse Up  xpath=${self_reg_xpath}
     Sleep  1
     Self Reg Should Be Enabled
-    Click Element  xpath=${config_auth_save_button_xpath}
+    Retry Element Click  xpath=${config_auth_save_button_xpath}
     Capture Page Screenshot  EnableSelfReg.png
     Sleep  1
 
@@ -146,56 +146,56 @@ Project Creation Should Display
 Project Creation Should Not Display
     Page Should Not Contain Element  xpath=${project_create_xpath}
 
-## System settings	
+## System settings
 Switch To System Settings
     Sleep  1
-    Click Element  xpath=${configuration_xpath}
-    Click Element  xpath=${system_config_xpath}
+    Retry Element Click  xpath=${configuration_xpath}
+    Retry Element Click  xpath=${system_config_xpath}
 Modify Token Expiration
     [Arguments]  ${minutes}
     Input Text  xpath=//*[@id='tokenExpiration']  ${minutes}
-    Click Button  xpath=${config_system_save_button_xpath} 
+    Click Button  xpath=${config_system_save_button_xpath}
     Sleep  1
 
 Token Must Be Match
     [Arguments]  ${minutes}
     Textfield Value Should Be  xpath=//*[@id='tokenExpiration']  ${minutes}
 
-## Replication	
-Check Verify Remote Cert	
-    Mouse Down  xpath=//*[@id='clr-checkbox-verifyRemoteCert'] 
+## Replication
+Check Verify Remote Cert
+    Mouse Down  xpath=//*[@id='clr-checkbox-verifyRemoteCert']
     Mouse Up  xpath=//*[@id='clr-checkbox-verifyRemoteCert']
-    Click Element  xpath=${config_save_button_xpath}
+    Retry Element Click  xpath=${config_save_button_xpath}
     Capture Page Screenshot  RemoteCert.png
     Sleep  1
 
 Switch To System Replication
     Sleep  1
     Switch To Configure
-    Click Element  xpath=//*[@id='config-replication']
+    Retry Element Click  xpath=//*[@id='config-replication']
     Sleep  1
 
 Should Verify Remote Cert Be Enabled
     Checkbox Should Not Be Selected  xpath=//*[@id='clr-checkbox-verifyRemoteCert']
 
-## Email	
+## Email
 Switch To Email
     Switch To Configure
-    Click Element  xpath=//*[@id='config-email']
+    Retry Element Click  xpath=//*[@id='config-email']
     Sleep  1
 
 Config Email
     Input Text  xpath=//*[@id='mailServer']  smtp.vmware.com
     Input Text  xpath=//*[@id='emailPort']  25
-    Input Text  xpath=//*[@id='emailUsername']  example@vmware.com 
+    Input Text  xpath=//*[@id='emailUsername']  example@vmware.com
     Input Text  xpath=//*[@id='emailPassword']  example
     Input Text  xpath=//*[@id='emailFrom']  example<example@vmware.com>
     Sleep  1    
-    Click Element  xpath=//*[@id='emailSSL-wrapper']/label
+    Retry Element Click  xpath=//*[@id='emailSSL-wrapper']/label
     Sleep  1
-    Click Element  xpath=//*[@id='emailInsecure-wrapper']/label
+    Retry Element Click  xpath=//*[@id='emailInsecure-wrapper']/label
     Sleep  1
-    Click Element  xpath=${config_email_save_button_xpath}
+    Retry Element Click  xpath=${config_email_save_button_xpath}
     Sleep  6
 
 Verify Email
@@ -207,19 +207,19 @@ Verify Email
     Checkbox Should Not Be Selected  xpath=//*[@id='emailInsecure']
 
 Set Scan All To None
-    click element  //vulnerability-config//select
-    click element  //vulnerability-config//select/option[@value='none']
+    Retry Element Click  //vulnerability-config//select
+    Retry Element Click  //vulnerability-config//select/option[@value='none']
     sleep  1
-    click element  ${vulnerbility_save_button_xpath}
+    Retry Element Click  ${vulnerbility_save_button_xpath}
 
 Set Scan All To Daily
-    click element  //vulnerability-config//select
-    click element  //vulnerability-config//select/option[@value='daily']
+    Retry Element Click  //vulnerability-config//select
+    Retry Element Click  //vulnerability-config//select/option[@value='daily']
     sleep  1
-    click element  ${vulnerbility_save_button_xpath}
+    Retry Element Click  ${vulnerbility_save_button_xpath}
 
 Click Scan Now
-    click element  //vulnerability-config//button[contains(.,'SCAN')]
+    Retry Element Click  //vulnerability-config//button[contains(.,'SCAN')]
 
 
 Enable Read Only
@@ -235,63 +235,80 @@ Disable Read Only
 ## System labels
 Switch To System Labels
     Sleep  1
-    Click Element  xpath=${configuration_xpath}
-    Click Element  xpath=//*[@id='config-label']
+    Retry Element Click  xpath=${configuration_xpath}
+    Retry Element Click  xpath=//*[@id='config-label']
+
+## System labels
+Switch To Configuration System Setting
+    Sleep  1
+    Retry Element Click  xpath=${configuration_xpath}
+    Retry Element Click  xpath=${configuration_system_xpath}
 
 Create New Labels
     [Arguments]  ${labelname}
-    Click Element  xpath=//button[contains(.,'New Label')]
+    Retry Element Click  xpath=//button[contains(.,'New Label')]
     Sleep  1
     Input Text  xpath=//*[@id='name']  ${labelname}
     Sleep  1
-    Click Element  xpath=//hbr-create-edit-label//clr-dropdown/clr-icon
+    Retry Element Click  xpath=//hbr-create-edit-label//clr-dropdown/clr-icon
     Sleep  1
-    Click Element  xpath=//hbr-create-edit-label//clr-dropdown-menu/label[1]
+    Retry Element Click  xpath=//hbr-create-edit-label//clr-dropdown-menu/label[1]
     Sleep  1
     Input Text  xpath=//*[@id='description']  global
-    Click Element  xpath=//div/form/section/label[4]/button[2]
+    Retry Element Click  xpath=//div/form/section/label[4]/button[2]
     Capture Page Screenshot
     Wait Until Page Contains  ${labelname}
 
 Update A Label
     [Arguments]  ${labelname}
-    Click Element  xpath=//clr-dg-row[contains(.,'${labelname}')]//clr-checkbox-wrapper
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${labelname}')]//clr-checkbox-wrapper
     Sleep  1
-    Click Element  xpath=//button[contains(.,'Edit')]
+    Retry Element Click  xpath=//button[contains(.,'Edit')]
     Sleep  1
     Input Text  xpath=//*[@id='name']  ${labelname}1
     Sleep  1
-    Click Element  xpath=//hbr-create-edit-label//form/section//button[2]
+    Retry Element Click  xpath=//hbr-create-edit-label//form/section//button[2]
     Capture Page Screenshot
     Wait Until Page Contains  ${labelname}1
 
 Delete A Label
     [Arguments]  ${labelname}
-    Click Element  xpath=//clr-dg-row[contains(.,'${labelname}')]//clr-checkbox-wrapper
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${labelname}')]//clr-checkbox-wrapper
     Sleep  1
-    Click ELement  xpath=//button[contains(.,'Delete')]
+    Retry Element Click  xpath=//button[contains(.,'Delete')]
     Sleep  3
     Capture Page Screenshot
-    Click Element  xpath=//clr-modal//div//button[contains(.,'DELETE')]
+    Retry Element Click  xpath=//clr-modal//div//button[contains(.,'DELETE')]
     Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${labelname}')]/../div/clr-icon[@shape='success-standard']
 
-## Garbage Collection	
+## Garbage Collection
 Switch To Garbage Collection
     Sleep  1
     Retry Element Click  xpath=${gc_config_page}
-    Wait Until Page Contains Element  ${garbage_collection_xpath} 
-    Click Element  xpath=${garbage_collection_xpath}
+    Wait Until Page Contains Element  ${garbage_collection_xpath}
+    Retry Element Click  xpath=${garbage_collection_xpath}
 
 Click GC Now
     Sleep  1
-    Click Element  xpath=${gc_now_xpath}
+    Retry Element Click  xpath=${gc_now_xpath}
     Sleep  2
 
 View GC Details
-    Click Element  xpath=${gc_log_details_xpath}
+    Retry Element Click  xpath=${gc_log_details_xpath}
     Sleep  2
 
 Switch To GC History
     Retry Element Click  xpath=${gc_log_xpath}
     Retry Wait Until Page Contains  Job
 
+Add Items To System CVE Whitelist
+    [Arguments]    ${cve_id}
+    Retry Element Click    ${configuration_system_wl_add_btn}
+    Retry Text Input    ${configuration_system_wl_textarea}    ${cve_id}
+    Retry Element Click    ${configuration_system_wl_add_confirm_btn}
+    Retry Element Click    ${config_system_save_button_xpath}
+
+Delete Top Item In System CVE Whitelist
+    [Arguments]
+    Retry Element Click    ${configuration_system_wl_delete_a_cve_id_icon}
+    Retry Element Click    ${config_system_save_button_xpath}

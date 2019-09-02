@@ -12,6 +12,7 @@ import (
 	"github.com/goharbor/harbor/src/core/notifier/event"
 	notifyModel "github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	pkgNotifyModel "github.com/goharbor/harbor/src/pkg/notification/model"
 )
 
 // getNameFromImgRepoFullName gets image name from repo full name with format `repoName/imageName`
@@ -97,6 +98,7 @@ func constructImagePayload(event *notifyModel.ImageEvent) (*notifyModel.Payload,
 
 // send hook by publishing topic of specified target type(notify type)
 func sendHookWithPolicies(policies []*models.NotificationPolicy, payload *notifyModel.Payload, eventType string) error {
+	errRet := false
 	for _, ply := range policies {
 		targets := ply.Targets
 		for _, target := range targets {
@@ -107,17 +109,21 @@ func sendHookWithPolicies(policies []*models.NotificationPolicy, payload *notify
 				Payload:   payload,
 				Target:    &target,
 			}
-			if err := evt.Build(hookMetadata); err != nil {
+			// It should never affect evaluating other policies when one is failed, but error should return
+			if err := evt.Build(hookMetadata); err == nil {
+				if err := evt.Publish(); err != nil {
+					errRet = true
+					log.Errorf("failed to publish hook notify event: %v", err)
+				}
+			} else {
+				errRet = true
 				log.Errorf("failed to build hook notify event metadata: %v", err)
-				return err
 			}
-			if err := evt.Publish(); err != nil {
-				log.Errorf("failed to publish hook notify event: %v", err)
-				return err
-			}
-
 			log.Debugf("published image event %s by topic %s", payload.Type, target.Type)
 		}
+	}
+	if errRet {
+		return errors.New("failed to trigger some of the events")
 	}
 	return nil
 }
@@ -171,4 +177,31 @@ func preprocessAndSendImageHook(value interface{}) error {
 
 	return nil
 
+}
+
+// will return nil when it failed to get data
+func getScanOverview(digest string, tag string, eventType string) *models.ImgScanOverview {
+	if len(digest) == 0 {
+		log.Debug("digest is nil")
+		return nil
+	}
+	data, err := dao.GetImgScanOverview(digest)
+	if err != nil {
+		log.Errorf("Failed to get scan result for tag:%s, digest: %s, error: %v", tag, digest, err)
+	}
+	if data == nil {
+		return nil
+	}
+
+	// Status should set by the eventType but the status from jobData in DB
+	if eventType == pkgNotifyModel.EventTypeScanningCompleted {
+		data.Status = models.JobFinished
+	} else {
+		log.Debugf("Unsetting vulnerable related historical values, job status: %s", data.Status)
+		data.Status = models.JobError
+		data.Sev = 0
+		data.CompOverview = nil
+		data.DetailsKey = ""
+	}
+	return data
 }

@@ -77,7 +77,7 @@ func (*manifestCreationBuilder) Build(req *http.Request) (interceptor.Intercepto
 	info, ok := util.ManifestInfoFromContext(req.Context())
 	if !ok {
 		var err error
-		info, err = util.ParseManifestInfo(req)
+		info, err = util.ParseManifestInfoFromReq(req)
 		if err != nil {
 			return nil, fmt.Errorf("failed to parse manifest, error %v", err)
 		}

@@ -52,7 +52,7 @@ var (
 
 // Ping ...
 func (rm *Migrator) Ping() error {
-	return api.HealthCheckerRegistry["chartmuseum"].Check()
+	return quota.Check(api.HealthCheckerRegistry["chartmuseum"].Check)
 }
 
 // Dump ...

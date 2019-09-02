@@ -267,3 +267,15 @@ func IsContainIllegalChar(s string, illegalChar []string) bool {
 func IsDigest(ref string) bool {
 	return strings.HasPrefix(ref, "sha256:") && len(ref) == 71
 }
+
+// ParseJSONInt ...
+func ParseJSONInt(value interface{}) (int, bool) {
+	switch value.(type) {
+	case float64:
+		return int(value.(float64)), true
+	case int:
+		return value.(int), true
+	default:
+		return 0, false
+	}
+}

@@ -22,6 +22,24 @@ type ImgResource struct {
 	Tag    string
 }
 
+// ChartEvent is chart related event data to publish
+type ChartEvent struct {
+	EventType   string
+	ProjectName string
+	ChartName   string
+	Versions    []string
+	OccurAt     time.Time
+	Operator    string
+}
+
+// ScanImageEvent is scanning image related event data to publish
+type ScanImageEvent struct {
+	EventType string
+	JobID     int64
+	OccurAt   time.Time
+	Operator  string
+}
+
 // HookEvent is hook related event data to publish
 type HookEvent struct {
 	PolicyID  int64
@@ -46,9 +64,10 @@ type EventData struct {
 
 // Resource describe infos of resource triggered notification
 type Resource struct {
-	Digest      string `json:"digest,omitempty"`
-	Tag         string `json:"tag"`
-	ResourceURL string `json:"resource_url,omitempty"`
+	Digest       string                  `json:"digest,omitempty"`
+	Tag          string                  `json:"tag"`
+	ResourceURL  string                  `json:"resource_url,omitempty"`
+	ScanOverview *models.ImgScanOverview `json:"scan_overview,omitempty"`
 }
 
 // Repository info of notification event

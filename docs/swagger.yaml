@@ -1308,6 +1308,8 @@ paths:
           description: Invalid image values provided.
         '401':
           description: User has no permission to the source project or destination project.
+        '403':
+          description: Forbiden as quota exceeded.
         '404':
           description: Project or repository not found.
         '409':
@@ -5052,7 +5054,7 @@ definitions:
         description: the role id
       entity_id:
         type: integer
-        description: 'the id of entity, if the member is an user, it is user_id in user table. if the member is an user group, it is the user group''s ID in user_group table.'
+        description: 'the id of entity, if the member is a user, it is user_id in user table. if the member is a user group, it is the user group''s ID in user_group table.'
       entity_type:
         type: string
         description: 'the entity''s type, u for user entity, g for group entity.'
@@ -5146,7 +5148,7 @@ definitions:
     allOf:
       - $ref: '#/definitions/ChartAPIError'
   ForbiddenChartAPIError:
-    description: Operation is forbidden
+    description: Operation is forbidden or quota exceeded
     type: object
     allOf:
       - $ref: '#/definitions/ChartAPIError'

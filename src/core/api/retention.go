@@ -380,9 +380,22 @@ func (r *RetentionAPI) ListRetentionExecTasks() {
 
 // GetRetentionExecTaskLog Get Retention Execution Task log
 func (r *RetentionAPI) GetRetentionExecTaskLog() {
+	id, err := r.GetIDFromURL()
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
 	tid, err := r.GetInt64FromPath(":tid")
 	if err != nil {
 		r.SendBadRequestError(err)
+		return
+	}
+	p, err := retentionController.GetRetention(id)
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	if !r.requireAccess(p, rbac.ActionRead) {
 		return
 	}
 	log, err := retentionController.GetRetentionExecTaskLog(tid)
@@ -404,8 +417,7 @@ func (r *RetentionAPI) requireAccess(p *policy.Metadata, action rbac.Action, sub
 		if len(subresources) == 0 {
 			subresources = append(subresources, rbac.ResourceTagRetention)
 		}
-		resource := rbac.NewProjectNamespace(p.Scope.Reference).Resource(subresources...)
-		hasPermission = r.SecurityCtx.Can(action, resource)
+		hasPermission, _ = r.HasProjectPermission(p.Scope.Reference, action, subresources...)
 	default:
 		hasPermission = r.SecurityCtx.IsSysAdmin()
 	}

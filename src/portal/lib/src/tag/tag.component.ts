@@ -107,6 +107,8 @@ export class TagComponent implements OnInit, AfterViewInit {
   showlabel: boolean;
 
   createdComparator: Comparator<Tag> = new CustomComparator<Tag>("created", "date");
+  pullComparator: Comparator<Tag> = new CustomComparator<Tag>("pull_time", "date");
+  pushComparator: Comparator<Tag> = new CustomComparator<Tag>("push_time", "date");
 
   loading = false;
   copyFailed = false;
@@ -272,7 +274,7 @@ export class TagComponent implements OnInit, AfterViewInit {
         this.tags = doFiltering<Tag>(tags, state);
         this.tags = doSorting<Tag>(this.tags, state);
         this.tags = this.tags.map(tag => {
-          tag.push_time = tag.push_time === AVAILABLE_TIME ? '' : tag.push_time;
+          tag.pull_time = tag.pull_time === AVAILABLE_TIME ? '' : tag.pull_time;
           return tag;
         });
         this.loading = false;
@@ -543,7 +545,7 @@ export class TagComponent implements OnInit, AfterViewInit {
           }
         });
         this.tags = items.map(tag => {
-          tag.push_time = tag.push_time === AVAILABLE_TIME ? '' : tag.push_time;
+          tag.pull_time = tag.pull_time === AVAILABLE_TIME ? '' : tag.pull_time;
           return tag;
         });
         let signedName: { [key: string]: string[] } = {};

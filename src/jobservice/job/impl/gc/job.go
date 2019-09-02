@@ -221,6 +221,10 @@ func (gc *GarbageCollector) ensureQuota() error {
 			gc.logger.Errorf("cannot ensure quota for the project: %d, err: %v, just skip it.", project.ProjectID, err)
 			continue
 		}
+		if err := dao.RemoveUntaggedBlobs(project.ProjectID); err != nil {
+			gc.logger.Errorf("cannot delete untagged blobs of project: %d, err: %v, just skip it.", project.ProjectID, err)
+			continue
+		}
 	}
 	return nil
 }

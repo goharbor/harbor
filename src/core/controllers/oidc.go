@@ -144,7 +144,7 @@ func (oc *OIDCController) Callback() {
 	}
 }
 
-// Onboard handles the request to onboard an user authenticated via OIDC provider
+// Onboard handles the request to onboard a user authenticated via OIDC provider
 func (oc *OIDCController) Onboard() {
 	u := &onboardReq{}
 	if err := oc.DecodeJSONReq(u); err != nil {

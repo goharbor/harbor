@@ -91,13 +91,13 @@ func doDeleteManifestRequest(projectID int64, projectName, name, dgt string, nex
 	return rr.Code
 }
 
-func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, next ...http.HandlerFunc) int {
+func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, withDupBlob bool, next ...http.HandlerFunc) int {
 	repository := fmt.Sprintf("%s/%s", projectName, name)
 
 	url := fmt.Sprintf("/v2/%s/manifests/%s", repository, tag)
 	req, _ := http.NewRequest("PUT", url, nil)
 
-	ctx := util.NewManifestInfoContext(req.Context(), &util.ManifestInfo{
+	mfInfo := &util.ManifestInfo{
 		ProjectID:  projectID,
 		Repository: repository,
 		Tag:        tag,
@@ -106,7 +106,14 @@ func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, n
 			{Digest: digest.FromString(randomString(15))},
 			{Digest: digest.FromString(randomString(15))},
 		},
-	})
+	}
+
+	ctx := util.NewManifestInfoContext(req.Context(), mfInfo)
+	if withDupBlob {
+		dupDigest := digest.FromString(randomString(15))
+		mfInfo.References = append(mfInfo.References, distribution.Descriptor{Digest: dupDigest})
+		mfInfo.References = append(mfInfo.References, distribution.Descriptor{Digest: dupDigest})
+	}
 
 	rr := httptest.NewRecorder()
 
@@ -165,7 +172,7 @@ func (suite *HandlerSuite) TestPutManifestCreated() {
 	}()
 
 	dgt := digest.FromString(randomString(15)).String()
-	code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt)
+	code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt, false)
 	suite.Equal(http.StatusCreated, code)
 	suite.checkCountUsage(1, projectID)
 
@@ -174,7 +181,7 @@ func (suite *HandlerSuite) TestPutManifestCreated() {
 	suite.Equal(int64(1), total, "Artifact should be created")
 
 	// Push the photon:latest with photon:dev
-	code = doPutManifestRequest(projectID, projectName, "photon", "dev", dgt)
+	code = doPutManifestRequest(projectID, projectName, "photon", "dev", dgt, false)
 	suite.Equal(http.StatusCreated, code)
 	suite.checkCountUsage(2, projectID)
 
@@ -184,13 +191,33 @@ func (suite *HandlerSuite) TestPutManifestCreated() {
 
 	// Push the photon:latest with new image
 	newDgt := digest.FromString(randomString(15)).String()
-	code = doPutManifestRequest(projectID, projectName, "photon", "latest", newDgt)
+	code = doPutManifestRequest(projectID, projectName, "photon", "latest", newDgt, false)
 	suite.Equal(http.StatusCreated, code)
 	suite.checkCountUsage(2, projectID)
 
 	total, err = dao.GetTotalOfArtifacts(&models.ArtifactQuery{Digest: newDgt})
 	suite.Nil(err)
 	suite.Equal(int64(1), total, "Artifact should be updated")
+}
+
+func (suite *HandlerSuite) TestPutManifestCreatedDupBlobs() {
+	projectName := randomString(5)
+
+	projectID := suite.addProject(projectName)
+	defer func() {
+		dao.DeleteProject(projectID)
+	}()
+
+	dgt := digest.FromString(randomString(15)).String()
+	code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt, true)
+	suite.Equal(http.StatusCreated, code)
+	suite.checkCountUsage(1, projectID)
+
+	var count int64
+	err := dao.GetOrmer().Raw("select count(*) from artifact_blob where digest_af = ?", dgt).QueryRow(&count)
+	suite.Nil(err)
+	// 4 = self + 3 distinct blobs
+	suite.Equal(int64(4), count)
 }
 
 func (suite *HandlerSuite) TestPutManifestFailed() {
@@ -202,12 +229,12 @@ func (suite *HandlerSuite) TestPutManifestFailed() {
 	}()
 
 	next := func(w http.ResponseWriter, req *http.Request) {
-		w.WriteHeader(http.StatusInternalServerError)
+		w.WriteHeader(http.StatusForbidden)
 	}
 
 	dgt := digest.FromString(randomString(15)).String()
-	code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt, next)
-	suite.Equal(http.StatusInternalServerError, code)
+	code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt, false, next)
+	suite.Equal(http.StatusForbidden, code)
 	suite.checkCountUsage(0, projectID)
 
 	total, err := dao.GetTotalOfArtifacts(&models.ArtifactQuery{Digest: dgt})
@@ -224,7 +251,7 @@ func (suite *HandlerSuite) TestDeleteManifestAccepted() {
 	}()
 
 	dgt := digest.FromString(randomString(15)).String()
-	code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt)
+	code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt, false)
 	suite.Equal(http.StatusCreated, code)
 	suite.checkCountUsage(1, projectID)
 
@@ -242,7 +269,7 @@ func (suite *HandlerSuite) TestDeleteManifestFailed() {
 	}()
 
 	dgt := digest.FromString(randomString(15)).String()
-	code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt)
+	code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt, false)
 	suite.Equal(http.StatusCreated, code)
 	suite.checkCountUsage(1, projectID)
 
@@ -264,7 +291,7 @@ func (suite *HandlerSuite) TestDeleteManifestInMultiProjects() {
 	}()
 
 	dgt := digest.FromString(randomString(15)).String()
-	code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt)
+	code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt, false)
 	suite.Equal(http.StatusCreated, code)
 	suite.checkCountUsage(1, projectID)
 
@@ -276,7 +303,7 @@ func (suite *HandlerSuite) TestDeleteManifestInMultiProjects() {
 			dao.DeleteProject(projectID)
 		}()
 
-		code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt)
+		code := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt, false)
 		suite.Equal(http.StatusCreated, code)
 		suite.checkCountUsage(1, projectID)
 

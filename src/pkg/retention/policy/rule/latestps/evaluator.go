@@ -15,6 +15,9 @@
 package latestps
 
 import (
+	"fmt"
+	"github.com/goharbor/harbor/src/common/utils"
+	"math"
 	"sort"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -42,7 +45,7 @@ type evaluator struct {
 func (e *evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
 	// The updated proposal does not guarantee the order artifacts are provided, so we have to sort them first
 	sort.Slice(artifacts, func(i, j int) bool {
-		return artifacts[i].PushedTime < artifacts[j].PushedTime
+		return artifacts[i].PushedTime > artifacts[j].PushedTime
 	})
 
 	i := e.k
@@ -61,8 +64,8 @@ func (e *evaluator) Action() string {
 // New a Evaluator
 func New(params rule.Parameters) rule.Evaluator {
 	if params != nil {
-		if param, ok := params[ParameterK]; ok {
-			if v, ok := param.(float64); ok && v >= 0 {
+		if p, ok := params[ParameterK]; ok {
+			if v, ok := utils.ParseJSONInt(p); ok && v >= 0 {
 				return &evaluator{
 					k: int(v),
 				}
@@ -75,4 +78,23 @@ func New(params rule.Parameters) rule.Evaluator {
 	return &evaluator{
 		k: DefaultK,
 	}
+}
+
+// Valid ...
+func Valid(params rule.Parameters) error {
+	if params != nil {
+		if p, ok := params[ParameterK]; ok {
+			if v, ok := utils.ParseJSONInt(p); ok {
+				if v < 0 {
+					return fmt.Errorf("%s is less than zero", ParameterK)
+				}
+				if v >= math.MaxInt16 {
+					return fmt.Errorf("%s is too large", ParameterK)
+				}
+			} else {
+				return fmt.Errorf("%s type error", ParameterK)
+			}
+		}
+	}
+	return nil
 }

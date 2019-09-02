@@ -31,8 +31,8 @@ type Namespace interface {
 }
 
 type projectNamespace struct {
-	projectIDOrName interface{}
-	isPublic        bool
+	projectID int64
+	isPublic  bool
 }
 
 func (ns *projectNamespace) Kind() string {
@@ -40,11 +40,11 @@ func (ns *projectNamespace) Kind() string {
 }
 
 func (ns *projectNamespace) Resource(subresources ...Resource) Resource {
-	return Resource(fmt.Sprintf("/project/%v", ns.projectIDOrName)).Subresource(subresources...)
+	return Resource(fmt.Sprintf("/project/%d", ns.projectID)).Subresource(subresources...)
 }
 
 func (ns *projectNamespace) Identity() interface{} {
-	return ns.projectIDOrName
+	return ns.projectID
 }
 
 func (ns *projectNamespace) IsPublic() bool {
@@ -52,10 +52,10 @@ func (ns *projectNamespace) IsPublic() bool {
 }
 
 // NewProjectNamespace returns namespace for project
-func NewProjectNamespace(projectIDOrName interface{}, isPublic ...bool) Namespace {
+func NewProjectNamespace(projectID int64, isPublic ...bool) Namespace {
 	isPublicNamespace := false
 	if len(isPublic) > 0 {
 		isPublicNamespace = isPublic[0]
 	}
-	return &projectNamespace{projectIDOrName: projectIDOrName, isPublic: isPublicNamespace}
+	return &projectNamespace{projectID: projectID, isPublic: isPublicNamespace}
 }

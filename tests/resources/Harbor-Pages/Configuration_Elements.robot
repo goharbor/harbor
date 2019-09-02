@@ -31,3 +31,8 @@ ${gc_log_xpath}  //*[@id='gc-log']
 ${gc_config_page}  //clr-vertical-nav-group-children/a[contains(.,'Garbage')]
 ${gc_now_xpath}  //*[@id='gc']/gc-config//button[contains(.,'GC')]
 ${gc_log_details_xpath}  //*[@id='clr-dg-row26']/clr-dg-cell[6]/a
+${configuration_system_xpath}  //*[@id='config-system']
+${configuration_system_wl_add_btn}    //*[@id='show-add-modal-button']
+${configuration_system_wl_textarea}    //*[@id='whitelist-textarea']
+${configuration_system_wl_add_confirm_btn}    //*[@id='add-to-system']
+${configuration_system_wl_delete_a_cve_id_icon}    //system-settings/form/section//ul/li[1]/clr-icon

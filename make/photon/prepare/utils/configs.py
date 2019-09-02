@@ -2,6 +2,9 @@ import yaml
 from g import versions_file_path
 from .misc import generate_random_string
 
+default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
+default_db_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
+
 def validate(conf, **kwargs):
     protocol = conf.get("protocol")
     if protocol != "https" and kwargs.get('notary_mode'):
@@ -112,11 +115,8 @@ def parse_yaml_config(config_file_path):
         config_dict['harbor_db_username'] = 'postgres'
         config_dict['harbor_db_password'] = db_configs.get("password") or ''
         config_dict['harbor_db_sslmode'] = 'disable'
-
-        default_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
-        default_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
-        config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_max_idle_conns
-        config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_max_open_conns
+        config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_db_max_idle_conns
+        config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_db_max_open_conns
         # clari db
         config_dict['clair_db_host'] = 'postgresql'
         config_dict['clair_db_port'] = 5432
@@ -230,6 +230,7 @@ def parse_yaml_config(config_file_path):
     # external DB, optional, if external_db enabled, it will cover the database config
     external_db_configs = configs.get('external_database') or {}
     if external_db_configs:
+        config_dict['external_database'] = True
         # harbor db
         config_dict['harbor_db_host'] = external_db_configs['harbor']['host']
         config_dict['harbor_db_port'] = external_db_configs['harbor']['port']
@@ -237,6 +238,8 @@ def parse_yaml_config(config_file_path):
         config_dict['harbor_db_username'] = external_db_configs['harbor']['username']
         config_dict['harbor_db_password'] = external_db_configs['harbor']['password']
         config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
+        config_dict['harbor_db_max_idle_conns'] = external_db_configs['harbor'].get("max_idle_conns") or default_db_max_idle_conns
+        config_dict['harbor_db_max_open_conns'] = external_db_configs['harbor'].get("max_open_conns") or default_db_max_open_conns
         # clair db
         config_dict['clair_db_host'] = external_db_configs['clair']['host']
         config_dict['clair_db_port'] = external_db_configs['clair']['port']
@@ -258,11 +261,14 @@ def parse_yaml_config(config_file_path):
         config_dict['notary_server_db_username'] = external_db_configs['notary_server']['username']
         config_dict['notary_server_db_password'] = external_db_configs['notary_server']['password']
         config_dict['notary_server_db_sslmode'] = external_db_configs['notary_server']['ssl_mode']
+    else:
+        config_dict['external_database'] = False
 
 
     # redis config
     redis_configs = configs.get("external_redis")
     if redis_configs:
+        config_dict['external_redis'] = True
         # using external_redis
         config_dict['redis_host'] = redis_configs['host']
         config_dict['redis_port'] = redis_configs['port']
@@ -271,6 +277,7 @@ def parse_yaml_config(config_file_path):
         config_dict['redis_db_index_js'] = redis_configs.get('jobservice_db_index') or 2
         config_dict['redis_db_index_chart'] = redis_configs.get('chartmuseum_db_index') or 3
     else:
+        config_dict['external_redis'] = False
         ## Using local redis
         config_dict['redis_host'] = 'redis'
         config_dict['redis_port'] = 6379

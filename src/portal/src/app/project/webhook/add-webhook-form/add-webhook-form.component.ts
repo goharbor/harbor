@@ -14,6 +14,7 @@ import { ClrLoadingState } from "@clr/angular";
 import { finalize } from "rxjs/operators";
 import { WebhookService } from "../webhook.service";
 import { WebhookEventTypes } from '../../../shared/shared.const';
+import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
 
 @Component({
@@ -37,7 +38,7 @@ export class AddWebhookFormComponent implements OnInit, OnChanges {
   @Output() edit = new EventEmitter<boolean>();
   @Output() close = new EventEmitter<boolean>();
   @ViewChild("webhookForm", { static: true }) currentForm: NgForm;
-
+  @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
 
   constructor(
     private webhookService: WebhookService,
@@ -64,11 +65,21 @@ export class AddWebhookFormComponent implements OnInit, OnChanges {
       .pipe(finalize(() => (this.checking = false)))
       .subscribe(
         response => {
-          this.checkBtnState = ClrLoadingState.SUCCESS;
+          if (this.isModify) {
+            this.inlineAlert.showInlineSuccess({
+              message: "WEBHOOK.TEST_ENDPOINT_SUCCESS"
+            });
+          } else {
+            this.checkBtnState = ClrLoadingState.SUCCESS;
+          }
         },
         error => {
-          this.checkBtnState = ClrLoadingState.DEFAULT;
-          this.messageHandlerService.handleError(error);
+          if (this.isModify) {
+            this.inlineAlert.showInlineError("WEBHOOK.TEST_ENDPOINT_FAILURE");
+          } else {
+            this.checkBtnState = ClrLoadingState.DEFAULT;
+            this.messageHandlerService.handleError(error);
+          }
         }
       );
   }
@@ -92,7 +103,9 @@ export class AddWebhookFormComponent implements OnInit, OnChanges {
           this.edit.emit(this.isModify);
         },
         error => {
-          this.messageHandlerService.handleError(error);
+          this.isModify
+            ? this.inlineAlert.showInlineError(error)
+            : this.messageHandlerService.handleError(error);
         }
       );
   }

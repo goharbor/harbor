@@ -4,14 +4,13 @@ This guide provides instructions for developers to build and run Harbor from sou
 
 ## Step 1: Prepare for a build environment for Harbor
 
-Harbor is deployed as several Docker containers and most of the code is written in Go language. The build environment requires Python, Docker, Docker Compose and golang development environment. Please install the below prerequisites:
+Harbor is deployed as several Docker containers and most of the code is written in Go language. The build environment requires Docker, Docker Compose and golang development environment. Please install the below prerequisites:
 
 
 Software              | Required Version
 ----------------------|--------------------------
 docker                | 17.05 +
-docker-compose        | 1.11.0 +
-python                | 2.7 +
+docker-compose        | 1.23.0 +
 git                   | 1.9.1 +
 make                  | 3.81 +
 golang*               | 1.7.3 +
@@ -28,11 +27,11 @@ golang*               | 1.7.3 +
 
 ### Configuration
 
-Edit the file **make/harbor.cfg** and make necessary configuration changes such as hostname, admin password and mail server. Refer to **[Installation and Configuration Guide](installation_guide.md#configuring-harbor)** for more info.
+Edit the file **make/harbor.yml** and make necessary configuration changes such as hostname, admin password and mail server. Refer to **[Installation and Configuration Guide](installation_guide.md#configuring-harbor)** for more info.
 
    ```sh
       $ cd harbor
-      $ vi make/harbor.cfg
+      $ vi make/harbor.yml
    ```
 
 ### Compiling and Running

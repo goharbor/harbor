@@ -23,7 +23,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/scheduler"
+	"github.com/gomodule/redigo/redis"
+	"github.com/pkg/errors"
 
 	"github.com/goharbor/harbor/src/jobservice/api"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
@@ -44,8 +45,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/worker"
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
 	"github.com/goharbor/harbor/src/pkg/retention"
-	"github.com/gomodule/redigo/redis"
-	"github.com/pkg/errors"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 )
 
 const (
@@ -100,7 +100,7 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		// Add {} to namespace to void slot issue
 		namespace := fmt.Sprintf("{%s}", cfg.PoolConfig.RedisPoolCfg.Namespace)
 		// Get redis connection pool
-		redisPool := bs.getRedisPool(cfg.PoolConfig.RedisPoolCfg.RedisURL)
+		redisPool := bs.getRedisPool(cfg.PoolConfig.RedisPoolCfg)
 
 		// Do data migration if necessary
 		rdbMigrator := migration.New(redisPool, namespace)
@@ -263,13 +263,14 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 }
 
 // Get a redis connection pool
-func (bs *Bootstrap) getRedisPool(redisURL string) *redis.Pool {
+func (bs *Bootstrap) getRedisPool(redisPoolConfig *config.RedisPoolConfig) *redis.Pool {
 	return &redis.Pool{
-		MaxIdle: 6,
-		Wait:    true,
+		MaxIdle:     6,
+		Wait:        true,
+		IdleTimeout: time.Duration(redisPoolConfig.IdleTimeoutSecond) * time.Second,
 		Dial: func() (redis.Conn, error) {
 			return redis.DialURL(
-				redisURL,
+				redisPoolConfig.RedisURL,
 				redis.DialConnectTimeout(dialConnectionTimeout),
 				redis.DialReadTimeout(dialReadTimeout),
 				redis.DialWriteTimeout(dialWriteTimeout),

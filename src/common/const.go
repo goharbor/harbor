@@ -144,7 +144,8 @@ const (
 	OIDCCallbackPath = "/c/oidc/callback"
 	OIDCLoginPath    = "/c/oidc/login"
 
-	ChartUploadCtxKey = contextKey("chart_upload_event")
+	ChartUploadCtxKey   = contextKey("chart_upload_event")
+	ChartDownloadCtxKey = contextKey("chart_download_event")
 
 	// Global notification enable configuration
 	NotificationEnable = "notification_enable"
@@ -153,4 +154,7 @@ const (
 	QuotaPerProjectEnable = "quota_per_project_enable"
 	CountPerProject       = "count_per_project"
 	StoragePerProject     = "storage_per_project"
+
+	// ForeignLayer
+	ForeignLayer = "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip"
 )

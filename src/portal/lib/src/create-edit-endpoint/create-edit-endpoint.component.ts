@@ -34,6 +34,14 @@ import { clone, compareValue, isEmptyObject } from "../utils";
 const FAKE_PASSWORD = "rjGcfuRu";
 const FAKE_JSON_KEY = "No Change";
 const DOCKERHUB_URL = "https://hub.docker.com";
+const HELM_HUB_URL = "https://hub.helm.sh";
+const HELM_HUB_ACCESS_KEY = "_json_key";
+const REGISTRY_NAME_LIST = {
+  DOCKER_HUB: "docker-hub",
+  HELM_HUB: "helm-hub",
+  GOOGLE_GCR: "google-gcr",
+  AWS_ECR: "aws-ecr"
+};
 @Component({
   selector: "hbr-create-edit-endpoint",
   templateUrl: "./create-edit-endpoint.component.html",
@@ -214,19 +222,22 @@ export class CreateEditEndpointComponent
 
   adapterChange($event): void {
     let selectValue = this.targetForm.controls.adapter.value;
-    if (selectValue === 'docker-hub') {
+    if (selectValue === REGISTRY_NAME_LIST.DOCKER_HUB) {
       this.urlDisabled = true;
       this.targetForm.controls.endpointUrl.setValue(DOCKERHUB_URL);
+    } else if (selectValue === REGISTRY_NAME_LIST.HELM_HUB) {
+      this.urlDisabled = true;
+      this.targetForm.controls.endpointUrl.setValue(HELM_HUB_URL);
     } else {
       this.urlDisabled = false;
       this.targetForm.controls.endpointUrl.setValue("");
     }
-    if (selectValue === 'google-gcr') {
-      this.targetForm.controls.access_key.setValue("_json_key");
+    if (selectValue === REGISTRY_NAME_LIST.GOOGLE_GCR) {
+      this.targetForm.controls.access_key.setValue(HELM_HUB_ACCESS_KEY);
     } else {
       this.targetForm.controls.access_key.setValue("");
     }
-    if (selectValue === 'google-gcr') {
+    if (selectValue === REGISTRY_NAME_LIST.GOOGLE_GCR) {
       this.endpointList = [
         {
           key: "gcr.io",
@@ -245,7 +256,7 @@ export class CreateEditEndpointComponent
           value: "https://asia.gcr.io"
         }
       ];
-    } else if (selectValue === 'aws-ecr') {
+    } else if (selectValue === REGISTRY_NAME_LIST.AWS_ECR) {
       this.endpointList = [
         {
           key: "ap-northeast-1",

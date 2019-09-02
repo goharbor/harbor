@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
@@ -57,6 +58,10 @@ func (h *countQuotaHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 
 	if err := interceptor.HandleRequest(req); err != nil {
 		log.Warningf("Error occurred when to handle request in count quota handler: %v", err)
+		if _, ok := err.(quota.Errors); ok {
+			http.Error(rw, util.MarshalError("DENIED", fmt.Sprintf("Quota exceeded when processing the request of %v", err)), http.StatusForbidden)
+			return
+		}
 		http.Error(rw, util.MarshalError("InternalError", fmt.Sprintf("Error occurred when to handle request in count quota handler: %v", err)),
 			http.StatusInternalServerError)
 		return

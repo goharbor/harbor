@@ -17,6 +17,12 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
+	"time"
+
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -30,10 +36,6 @@ import (
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
-	"os"
-	"os/signal"
-	"strconv"
-	"syscall"
 
 	quota "github.com/goharbor/harbor/src/core/api/quota"
 	_ "github.com/goharbor/harbor/src/core/api/quota/chart"
@@ -138,17 +140,24 @@ func quotaSync() error {
 	return nil
 }
 
-func gracefulShutdown(closing chan struct{}) {
+func gracefulShutdown(closing, done chan struct{}) {
 	signals := make(chan os.Signal, 1)
 	signal.Notify(signals, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 	log.Infof("capture system signal %s, to close \"closing\" channel", <-signals)
 	close(closing)
+	select {
+	case <-done:
+		log.Infof("Goroutines exited normally")
+	case <-time.After(time.Second * 3):
+		log.Infof("Timeout waiting goroutines to exit")
+	}
+	os.Exit(0)
 }
 
 func main() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.BConfig.WebConfig.Session.SessionName = "sid"
-	// TODO
+
 	redisURL := os.Getenv("_REDIS_URL")
 	if len(redisURL) > 0 {
 		gob.Register(models.User{})
@@ -203,8 +212,9 @@ func main() {
 	}
 
 	closing := make(chan struct{})
-	go gracefulShutdown(closing)
-	if err := replication.Init(closing); err != nil {
+	done := make(chan struct{})
+	go gracefulShutdown(closing, done)
+	if err := replication.Init(closing, done); err != nil {
 		log.Fatalf("failed to init for replication: %v", err)
 	}
 

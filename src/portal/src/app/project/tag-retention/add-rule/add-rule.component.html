@@ -3,6 +3,7 @@
     <h3 class="modal-title" *ngIf="isAdd">{{'TAG_RETENTION.ADD_TITLE' | translate}}</h3>
     <h3 class="modal-title" *ngIf="!isAdd">{{'TAG_RETENTION.EDIT_TITLE' | translate}}</h3>
     <div class="modal-body no-scrolling">
+        <inline-alert class="modal-title"></inline-alert>
         <p class="color-97">{{'TAG_RETENTION.ADD_SUBTITLE' | translate}}</p>
         <div class="height-72">
             <div class="clr-row mt-1">
@@ -40,6 +41,7 @@
                     <div class="over-line"></div>
                     <div class="clr-select-wrapper w-100">
                         <select [(ngModel)]="template" class="clr-select w-100">
+                            <option class="display-none" value=""></option>
                             <option *ngFor="let t of metadata?.templates"
                                     value="{{t?.rule_template}}">{{getI18nKey(t?.action)|translate}}{{getI18nKey(t?.display_text)|translate}}</option>
                         </select>

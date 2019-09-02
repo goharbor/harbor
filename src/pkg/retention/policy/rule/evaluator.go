@@ -34,3 +34,6 @@ type Evaluator interface {
 
 // Factory defines a factory method for creating rule evaluator
 type Factory func(parameters Parameters) Evaluator
+
+// Validator ...
+type Validator func(parameters Parameters) error

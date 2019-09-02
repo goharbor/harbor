@@ -18,21 +18,21 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-
-	"github.com/goharbor/harbor/src/pkg/retention"
-	"github.com/goharbor/harbor/src/pkg/scheduler"
-
 	"net/http"
 
 	"github.com/ghodss/yaml"
 	"github.com/goharbor/harbor/src/common/api"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/goharbor/harbor/src/pkg/retention"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 )
 
 const (
@@ -47,6 +47,10 @@ var (
 	retentionMgr        retention.Manager
 	retentionLauncher   retention.Launcher
 	retentionController retention.APIController
+)
+
+var (
+	errNotFound = errors.New("not found")
 )
 
 // BaseController ...
@@ -77,6 +81,71 @@ func (b *BaseController) Prepare() {
 		return
 	}
 	b.ProjectMgr = pm
+}
+
+// RequireAuthenticated returns true when the request is authenticated
+// otherwise send Unauthorized response and returns false
+func (b *BaseController) RequireAuthenticated() bool {
+	if !b.SecurityCtx.IsAuthenticated() {
+		b.SendUnAuthorizedError(errors.New("Unauthorized"))
+		return false
+	}
+
+	return true
+}
+
+// HasProjectPermission returns true when the request has action permission on project subresource
+func (b *BaseController) HasProjectPermission(projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) (bool, error) {
+	projectID, projectName, err := utils.ParseProjectIDOrName(projectIDOrName)
+	if err != nil {
+		return false, err
+	}
+
+	if projectName != "" {
+		project, err := b.ProjectMgr.Get(projectName)
+		if err != nil {
+			return false, err
+		}
+		if project == nil {
+			return false, errNotFound
+		}
+
+		projectID = project.ProjectID
+	}
+
+	resource := rbac.NewProjectNamespace(projectID).Resource(subresource...)
+	if !b.SecurityCtx.Can(action, resource) {
+		return false, nil
+	}
+
+	return true, nil
+}
+
+// RequireProjectAccess returns true when the request has action access on project subresource
+// otherwise send UnAuthorized or Forbidden response and returns false
+func (b *BaseController) RequireProjectAccess(projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) bool {
+	hasPermission, err := b.HasProjectPermission(projectIDOrName, action, subresource...)
+	if err != nil {
+		if err == errNotFound {
+			b.SendNotFoundError(fmt.Errorf("project %v not found", projectIDOrName))
+		} else {
+			b.SendInternalServerError(err)
+		}
+
+		return false
+	}
+
+	if !hasPermission {
+		if !b.SecurityCtx.IsAuthenticated() {
+			b.SendUnAuthorizedError(errors.New("UnAuthorized"))
+		} else {
+			b.SendForbiddenError(errors.New(b.SecurityCtx.GetUsername()))
+		}
+
+		return false
+	}
+
+	return true
 }
 
 // WriteJSONData writes the JSON data to the client.

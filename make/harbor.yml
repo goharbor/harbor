@@ -96,7 +96,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 1.8.0
+_version: 1.9.0
 
 # Uncomment external_database if using external database.
 # external_database:
@@ -107,6 +107,8 @@ _version: 1.8.0
 #     username: harbor_db_username
 #     password: harbor_db_password
 #     ssl_mode: disable
+#     max_idle_conns: 2
+#     max_open_conns: 0
 #   clair:
 #     host: clair_db_host
 #     port: clair_db_port

@@ -11,6 +11,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	autoTriggeredOperator = "auto"
+)
+
 // Event to publish
 type Event struct {
 	Topic string
@@ -107,6 +111,105 @@ func (i *ImagePullMetaData) Resolve(evt *Event) error {
 	}
 
 	evt.Topic = model.PullImageTopic
+	evt.Data = data
+	return nil
+}
+
+// ChartMetaData defines meta data of chart event
+type ChartMetaData struct {
+	ProjectName string
+	ChartName   string
+	Versions    []string
+	OccurAt     time.Time
+	Operator    string
+}
+
+func (cmd *ChartMetaData) convert(evt *model.ChartEvent) {
+	evt.ProjectName = cmd.ProjectName
+	evt.OccurAt = cmd.OccurAt
+	evt.Operator = cmd.Operator
+	evt.ChartName = cmd.ChartName
+	evt.Versions = cmd.Versions
+}
+
+// ChartUploadMetaData defines meta data of chart upload event
+type ChartUploadMetaData struct {
+	ChartMetaData
+}
+
+// Resolve chart uploading metadata into common chart event
+func (cu *ChartUploadMetaData) Resolve(evt *Event) error {
+	data := &model.ChartEvent{
+		EventType: notifyModel.EventTypeUploadChart,
+	}
+	cu.convert(data)
+
+	evt.Topic = model.UploadChartTopic
+	evt.Data = data
+	return nil
+}
+
+// ChartDownloadMetaData defines meta data of chart download event
+type ChartDownloadMetaData struct {
+	ChartMetaData
+}
+
+// Resolve chart download metadata into common chart event
+func (cd *ChartDownloadMetaData) Resolve(evt *Event) error {
+	data := &model.ChartEvent{
+		EventType: notifyModel.EventTypeDownloadChart,
+	}
+	cd.convert(data)
+
+	evt.Topic = model.DownloadChartTopic
+	evt.Data = data
+	return nil
+}
+
+// ChartDeleteMetaData defines meta data of chart delete event
+type ChartDeleteMetaData struct {
+	ChartMetaData
+}
+
+// Resolve chart delete metadata into common chart event
+func (cd *ChartDeleteMetaData) Resolve(evt *Event) error {
+	data := &model.ChartEvent{
+		EventType: notifyModel.EventTypeDeleteChart,
+	}
+	cd.convert(data)
+
+	evt.Topic = model.DeleteChartTopic
+	evt.Data = data
+	return nil
+}
+
+// ScanImageMetaData defines meta data of image scanning event
+type ScanImageMetaData struct {
+	JobID  int64
+	Status string
+}
+
+// Resolve image scanning metadata into common chart event
+func (si *ScanImageMetaData) Resolve(evt *Event) error {
+	var eventType string
+	var topic string
+	if si.Status == models.JobFinished {
+		eventType = notifyModel.EventTypeScanningCompleted
+		topic = model.ScanningCompletedTopic
+	} else if si.Status == models.JobError {
+		eventType = notifyModel.EventTypeScanningFailed
+		topic = model.ScanningFailedTopic
+	} else {
+		return errors.New("not supported scan hook status")
+	}
+	data := &model.ScanImageEvent{
+		EventType: eventType,
+		JobID:     si.JobID,
+		OccurAt:   time.Now(),
+		Operator:  autoTriggeredOperator,
+	}
+
+	evt.Topic = topic
 	evt.Data = data
 	return nil
 }
