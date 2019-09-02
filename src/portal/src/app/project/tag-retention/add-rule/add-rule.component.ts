@@ -42,6 +42,7 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     editRuleOrigin: Rule;
     onGoing: boolean = false;
     @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
+
     constructor(private tagRetentionService: TagRetentionService) {
 
     }
