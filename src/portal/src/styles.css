@@ -100,4 +100,8 @@ body {
     margin-left: .25rem;
 }
 
+.flex-items-xs-right {
+    justify-content: flex-end;
+}
+
 
