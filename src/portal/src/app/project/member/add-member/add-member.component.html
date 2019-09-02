@@ -6,13 +6,13 @@
             <div class="clr-form-control">
                 <label class="required clr-control-label">{{'MEMBER.NAME' | translate}}</label>
                 <div class="clr-control-container" [class.clr-error]="!isMemberNameValid">
-                    <div class="clr-input-wrapper">
+                    <div class="clr-input-wrapper" (mouseleave)="leaveInput()">
                         <input class="clr-input" type="text" id="member_name"  [(ngModel)]="member.entity_name"
                                name="member_name"
                                size="20"
                                #memberName="ngModel"
                                required
-                               (keyup)='handleValidation()' (blur)="leaveInput()" autocomplete="off">
+                               (keyup)="handleValidation()" autocomplete="off">
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                         <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
                         <div class="selectBox"  [style.display]="selectUserName.length ? 'block' : 'none'" >
