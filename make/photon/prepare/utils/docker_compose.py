@@ -56,4 +56,4 @@ def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
     if log_ep_host:
         rendering_variables['external_log_endpoint'] = True
 
-    render_jinja(docker_compose_template_path, docker_compose_yml_path, **rendering_variables)
+    render_jinja(docker_compose_template_path, docker_compose_yml_path,  mode=0o644, **rendering_variables)
