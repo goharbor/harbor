@@ -105,6 +105,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
             this.isMemberNameValid = cont.valid;
             if (cont.valid) {
               this.checkOnGoing = true;
+              this.ref.detectChanges();
               forkJoin(this.userService.getUsersNameList(cont.value, 20), this.memberService
               .listMembers(this.projectId, cont.value)).subscribe((res: Array<any>) => {
                 this.userLists = res[0];
@@ -122,13 +123,14 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
                       }
                     }
                   });
-                  let changeTimer = setInterval(() => this.ref.detectChanges(), 200);
-                  setTimeout(() => {
-                    clearInterval(changeTimer);
-                  }, 2000);
                 }
+                let changeTimer = setInterval(() => this.ref.detectChanges(), 200);
+                setTimeout(() => {
+                  clearInterval(changeTimer);
+                }, 2000);
               }, error => {
                 this.checkOnGoing = false;
+                this.ref.detectChanges();
               });
             } else {
               this.memberTooltip = 'MEMBER.USERNAME_IS_REQUIRED';
