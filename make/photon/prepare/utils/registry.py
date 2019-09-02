@@ -1,6 +1,6 @@
 import os, copy
 
-from g import config_dir, templates_dir, DEFAULT_GID, DEFAULT_UID
+from g import config_dir, templates_dir, DEFAULT_GID, DEFAULT_UID, data_dir
 from utils.misc import prepare_dir
 from utils.jinja import render_jinja
 
@@ -8,6 +8,7 @@ from utils.jinja import render_jinja
 registry_config_dir = os.path.join(config_dir, "registry")
 registry_config_template_path = os.path.join(templates_dir, "registry", "config.yml.jinja")
 registry_conf = os.path.join(config_dir, "registry", "config.yml")
+registry_data_dir = os.path.join(data_dir, 'registry')
 
 levels_map = {
     'debug': 'debug',
@@ -18,6 +19,7 @@ levels_map = {
 }
 
 def prepare_registry(config_dict):
+    prepare_dir(registry_data_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
     prepare_dir(registry_config_dir)
 
     storage_provider_info = get_storage_provider_info(
