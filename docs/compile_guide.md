@@ -9,19 +9,11 @@ Harbor is deployed as several Docker containers and most of the code is written 
 | Software       | Required Version |
 | -------------- | ---------------- |
 | docker         | 17.05 +          |
-| docker-compose | 1.11.0 +         |
+| docker-compose | 1.18.0 +         |
 | python         | 2.7 +            |
 | git            | 1.9.1 +          |
 | make           | 3.81 +           |
 | golang\*       | 1.7.3 +          |
-
-Software              | Required Version
-----------------------|--------------------------
-docker                | 17.05 +
-docker-compose        | 1.23.0 +
-git                   | 1.9.1 +
-make                  | 3.81 +
-golang*               | 1.7.3 +
 
 \*optional, required only if you use your own Golang environment.
 
