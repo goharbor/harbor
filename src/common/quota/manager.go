@@ -198,7 +198,7 @@ func (m *Manager) UpdateQuota(hardLimits types.ResourceList) error {
 func (m *Manager) SetResourceUsage(resource types.ResourceName, value int64) error {
 	o := dao.GetOrmer()
 
-	sql := fmt.Sprintf("UPDATE quota_usage SET used = jsonb_set(used, '{%s}', to_jsonb(%d::int), true) WHERE reference = ? AND reference_id = ?", resource, value)
+	sql := fmt.Sprintf("UPDATE quota_usage SET used = jsonb_set(used, '{%s}', to_jsonb(%d::bigint), true) WHERE reference = ? AND reference_id = ?", resource, value)
 	_, err := o.Raw(sql, m.reference, m.referenceID).Exec()
 
 	return err
