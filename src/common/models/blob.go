@@ -2,6 +2,8 @@ package models
 
 import (
 	"time"
+
+	"github.com/docker/distribution/manifest/schema2"
 )
 
 // Blob holds the details of a blob.
@@ -16,4 +18,17 @@ type Blob struct {
 // TableName ...
 func (b *Blob) TableName() string {
 	return "blob"
+}
+
+// IsForeignLayer returns true if the blob is foreign layer
+func (b *Blob) IsForeignLayer() bool {
+	return b.ContentType == schema2.MediaTypeForeignLayer
+}
+
+// BlobQuery ...
+type BlobQuery struct {
+	Digest      string
+	ContentType string
+	Digests     []string
+	Pagination
 }
