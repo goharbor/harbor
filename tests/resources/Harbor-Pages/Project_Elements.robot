@@ -57,3 +57,4 @@ ${project_config_project_wl_radio_input}    xpath=//clr-radio-wrapper//label[con
 ${project_config_project_wl_add_btn}    xpath=//*[@id='show-add-modal']
 ${project_config_project_wl_add_confirm_btn}    xpath=//*[@id='add-to-whitelist']
 ${project_config_save_btn}    xpath=//hbr-project-policy-config//button[contains(.,'SAVE')]
+

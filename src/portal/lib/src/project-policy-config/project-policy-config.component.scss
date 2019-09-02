@@ -5,6 +5,7 @@
 .select {
   width: 120px;
 }
+
 .margin-top-4 {
   margin-top: 4px;
 }
@@ -17,6 +18,7 @@
   width: 222px;
   color: #0079bb;
   overflow-y: auto;
+
   li {
     height: 24px;
     line-height: 24px;
@@ -63,8 +65,34 @@
   }
 }
 
-.hand{
+.hand {
   cursor: pointer;
   margin: 0;
 }
 
+.config-subtext {
+  font-size: 0.55rem;
+  line-height: 1.2rem;
+  color: rgb(86, 86, 86);
+  font-weight: 300;
+}
+
+.mt-05 {
+  margin-bottom: 0.5rem;
+}
+
+.col-flex-grow-0 {
+  flex-grow: 0;
+}
+
+.expire-data {
+  min-width: 12.5rem;
+  margin-top: -1rem;
+}
+
+.bottom-line {
+  display: flex;
+  flex-direction: column-reverse;
+  font-size: 13px;
+  color: #000;
+}

@@ -120,12 +120,12 @@ Delete Project
 Project Should Not Be Deleted
     [Arguments]  ${projname}
     Delete Project  ${projname}
-    Retry Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${projname}')]/../div/clr-icon[@shape='error-standard']
+    Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${projname}')]/../div/clr-icon[@shape='error-standard']
 
 Project Should Be Deleted
     [Arguments]  ${projname}
     Delete Project  ${projname}
-    Retry Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${projname}')]/../div/clr-icon[@shape='success-standard']
+    Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${projname}')]/../div/clr-icon[@shape='success-standard']
 
 Advanced Search Should Display
     Retry Wait Until Page Contains Element  xpath=//audit-log//div[@class='flex-xs-middle']/button

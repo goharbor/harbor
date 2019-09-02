@@ -123,7 +123,7 @@
             <button class="btn btn-secondary" [disabled]="isUploading" (click)="cancelUpload()">
                 <span>{{'BUTTON.CANCEL' | translate}}</span>
             </button>
-            <button type="submit" class="btn btn-primary" [disabled]="isUploading" (click)="upload()">
+            <button type="submit" class="btn btn-primary" id="upload-chart" [disabled]="isUploading" (click)="upload()">
                 <span>{{'HELM_CHART.UPLOAD' | translate}}</span>
                 <span *ngIf="isUploading" class="spinner spinner-inline">
                     Loading...
