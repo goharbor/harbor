@@ -77,8 +77,7 @@
               </div>
               <label *ngIf="supportedFilters[i]?.style==='input'" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
                 [class.invalid]='(filter.value.dirty || filter.value.touched) && filter.value.invalid'>
-                <input class="clr-input" (input)="trimText($event)" type="text" #filterValue required size="14" formControlName="value" id="{{'filter_'+ supportedFilters[i]?.type}}">
-                <span class="tooltip-content">{{'TOOLTIP.EMPTY' | translate}}</span>
+                <input class="clr-input" (input)="trimText($event)" type="text" #filterValue size="14" formControlName="value" id="{{'filter_'+ supportedFilters[i]?.type}}">
               </label>
               <div class="select resource-box clr-select-wrapper" *ngIf="supportedFilters[i]?.style==='radio' && supportedFilters[i]?.values.length > 1">
                 <select class="clr-select width-100" formControlName="value" #selectedValue id="{{'select_'+ supportedFilters[i]?.type}}"
@@ -129,7 +128,14 @@
       </div>
       <!--destination registry-->
       <div *ngIf="isPushMode" class="clr-form-control">
-        <label class="clr-control-label  required">{{'REPLICATION.DEST_REGISTRY' | translate}}</label>
+        <label class="clr-control-label  required">{{'REPLICATION.DEST_REGISTRY' | translate}}
+          <clr-tooltip>
+            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+            <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+              <span>{{'TOOLTIP.DESTINATION_NAMESPACE' | translate}}</span>
+            </clr-tooltip-content>
+          </clr-tooltip>
+        </label>
         <div class="form-select clr-control-container">
           <div class="clr-select-wrapper">
             <select class="clr-select select-width" id="dest_registry" (change)="targetChange($event)" formControlName="dest_registry"
@@ -142,12 +148,6 @@
             <label *ngIf="noEndpointInfo.length != 0" class="alert-label">{{noEndpointInfo | translate}}</label>
             <span class="alert-label go-link" *ngIf="noEndpointInfo.length != 0" (click)="goRegistry()">{{'REPLICATION.ENDPOINTS' | translate}}</span>
           </div>
-          <clr-tooltip>
-            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-            <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
-              <span>{{'TOOLTIP.DESTINATION_NAMESPACE' | translate}}</span>
-            </clr-tooltip-content>
-          </clr-tooltip>
         </div>
       </div>
       <!--destination namespaces -->
@@ -218,7 +218,7 @@
       <div class="loading-center">
         <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
       </div>
-    </form>
+      </form>
   </div>
   <div class="modal-footer">
     <button type="button" id="ruleBtnCancel" class="btn btn-outline" [disabled]="this.inProgress" (click)="onCancel()">{{ 'BUTTON.CANCEL' | translate }}</button>
