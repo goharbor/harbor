@@ -266,19 +266,19 @@ You can set a system-wide CVE whitelist or you can set CVE whitelists on a per-p
 
 System-wide CVE whitelists apply to all of the projects in a Harbor instance.
 
-1. Go to **Configuration** &gt, **System Settings**.
+1. Go to **Configuration** > **System Settings**.
 1. Under **Deployment security**, click **Add**. 
    ![System-wide CVE whitelist](img/cve-whitelist1.png)
 1. Enter the list of CVE IDs to ignore during vulnerability scanning. 
    ![Add system CVE whitelist](img/cve-whitelist2.png)
 
    Either use a comma-separated list or newlines to add multiple CVE IDs to the list.
-1. Click **Add** to add the list.
+1. Click **Add** at the bottom of the window to add the list.
 1. Optionally uncheck the **Never expires** checkbox and use the calendar selector to set an expiry date for the whitelist.
    ![Add system CVEs](img/cve-whitelist3.png)
 1. Click **Save** at the bottom of the page to save your settings.
    
-After you have created a list, you can remove CVE IDs from the whitelist by clicking the delete button next to it in the list. You can click **Add** to add more CVE IDs to the list.
+After you have created a system whitelist, you can remove CVE IDs from the list by clicking the delete button next to it in the list. You can click **Add** to add more CVE IDs to the system whitelist.
 
 ![Add and remove system CVEs](img/cve-whitelist4.png)
 
@@ -294,11 +294,11 @@ By default, the system whitelist is applied to all projects. You can configure d
    ![Add project CVEs](img/cve-whitelist6.png)
 
    Either use a comma-separated list or newlines to add multiple CVE IDs to the list.
-1. Click **Add** to add the CVEs to the project whitelist.
+1. Click **Add** at the bottom of the window to add the CVEs to the project whitelist.
 1. Optionally uncheck the **Never expires** checkbox and use the calendar selector to set an expiry date for the whitelist.
 1. Click **Save** at the bottom of the page to save your settings.
 
-After you have created a list, you can remove CVE IDs from the project whitelist by clicking the delete button next to it in the list. You can click **Add** at any time to add more CVE IDs to the whitelist for this project. 
+After you have created a project whitelist, you can remove CVE IDs from the list by clicking the delete button next to it in the list. You can click **Add** at any time to add more CVE IDs to the whitelist for this project. 
 
 If CVEs are added to the system whitelist after you have created a project whitelist, click **Add System** to add the new entries from the system whitelist to the project whitelist. 
 
