@@ -166,6 +166,13 @@ export class TagRetentionComponent implements OnInit {
         if (this.retentionId) {
             this.tagRetentionService.getRetention(this.retentionId).subscribe(
                 response => {
+                    if (response && response.rules && response.rules.length > 0) {
+                        response.rules.forEach(item => {
+                            if (!item.params) {
+                                item.params = {};
+                            }
+                        });
+                    }
                     this.retention = response;
                     this.loadingRule = false;
                 }, error => {
