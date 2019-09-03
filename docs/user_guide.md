@@ -276,6 +276,7 @@ System-wide CVE whitelists apply to all of the projects in a Harbor instance.
 1. Click **Add** to add the list.
 1. Optionally uncheck the **Never expires** checkbox and use the calendar selector to set an expiry date for the whitelist.
    ![Add system CVEs](img/cve-whitelist3.png)
+1. Click **Save** at the bottom of the page to save your settings.
    
 After you have created a list, you can remove CVE IDs from the whitelist by clicking the delete button next to it in the list. You can click **Add** to add more CVE IDs to the list.
 
@@ -289,13 +290,13 @@ By default, the system whitelist is applied to all projects. You can configure d
 1. Under **CVE whitelist**, select **Project whitelist**. 
    ![Project CVE whitelist](img/cve-whitelist5.png)
 1. Optionally click **Add System** to add all of the CVE IDs from the system CVE whitelist to this project whitelist.
-1. Enter a list of additional CVE IDs to ignore during vulnerability scanning of this project. 
+1. Click **Add** and enter a list of additional CVE IDs to ignore during vulnerability scanning of this project. 
    ![Add project CVEs](img/cve-whitelist6.png)
 
    Either use a comma-separated list or newlines to add multiple CVE IDs to the list.
 1. Click **Add** to add the CVEs to the project whitelist.
 1. Optionally uncheck the **Never expires** checkbox and use the calendar selector to set an expiry date for the whitelist.
-1. Click **Save** to save your settings.
+1. Click **Save** at the bottom of the page to save your settings.
 
 After you have created a list, you can remove CVE IDs from the project whitelist by clicking the delete button next to it in the list. You can click **Add** at any time to add more CVE IDs to the whitelist for this project. 
 
