@@ -9,7 +9,7 @@
     <div class="modal-footer" [ngSwitch]="buttons">
         <ng-template [ngSwitchCase]="0">
             <button type="button" class="btn btn-outline" (click)="cancel()">{{'BUTTON.CANCEL' | translate}}</button>
-            <button type="button" class="btn btn-primary" (click)="confirm()">{{'BUTTON.CONFIRM' | translate}}</button>
+            <button type="button" id="confirm-btn" class="btn btn-primary" (click)="confirm()">{{'BUTTON.CONFIRM' | translate}}</button>
         </ng-template>
         <ng-template [ngSwitchCase]="1">
             <button type="button" class="btn btn-outline" (click)="cancel()">{{'BUTTON.NO' | translate}}</button>
