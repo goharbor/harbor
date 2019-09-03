@@ -934,6 +934,17 @@ When you have created the webhook, you see the status of the different notificat
 
 **NOTE**: You can only disable and reenable all notifications. You cannot disable and enable selected notifications.
 
+If a webhook notification fails to send, or if it receives an HTTP error response with a code other than `2xx`, the notification is re-sent based on the configuration that you set in `harbor.yml`. 
+
+### Globally Enable and Disable Webhooks
+
+As a system administrator, you can enable and disable webhook notifications for all projects.
+
+1. Go to **Configuration** > **System Settings**.
+1. Scroll down and check or uncheck the **Webhooks enabled** check box.
+
+  ![Enable/disable webhooks](img/webhooks4.png)
+
 ## API Explorer
 
 Harbor integrated swagger UI from 1.8. That means all apis can be invoked through UI. Normally, user have 2 ways to navigate to API Explorer. 
