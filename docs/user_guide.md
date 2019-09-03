@@ -803,7 +803,7 @@ In this example, the rules are applied to the following 7 tags:
 
 The system administrator can set a maximum on the number of artifacts that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Configure Project Quotas](LINK). 
 
-Project quota settings take precedence over tag retention rules. If you set a tag retention rule to keep the 5 most recent images in a repository, but the 5th image takes the total amount of storage consumed by the project above the project quota for storage, the 5th image will be deleted.  
+Project quota settings take precedence over tag retention rules. If you set a quota on a project, this quota cannot be exceeded. The quota is applied to a project even if you set a retention rule that would exceed it. In other words, you cannot use retention rules to bypass quotas.
 
 ### Configure Tag Retention Rules
 
