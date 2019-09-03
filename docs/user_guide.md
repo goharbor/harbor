@@ -2,7 +2,7 @@
 ## Overview  
 This guide walks you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
 
-* [Manage your projects.](#managing-projects)
+* [Manage your projects](#managing-projects)
 * [Manage members of a project](#managing-members-of-a-project)
 * [Replicate resources between Harbor and non-Harbor registries](#replicating-resources)
 * [Retag images within Harbor](#retag-images)
@@ -19,9 +19,9 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
   * [Manage email settings](#managing-email-settings)
   * [Manage registry read only](#managing-registry-read-only)
   * [Manage role by LDAP group](#managing-role-by-ldap-group)
-* [Pull and push images using Docker client.](#pulling-and-pushing-images-using-docker-client)
+* [Pull and push images using Docker client](#pulling-and-pushing-images-using-docker-client)
 * [Add description to repositories](#add-description-to-repositories)
-* [Delete repositories and images.](#deleting-repositories)
+* [Delete repositories and images](#deleting-repositories)
 * [Content trust](#content-trust)
 * [Vulnerability scanning via Clair](#vulnerability-scanning-via-clair)
 * [Pull image from Harbor in Kubernetes](#pull-image-from-harbor-in-kubernetes)
@@ -262,21 +262,21 @@ To exercise control over resource use, as a system administrator you can set  qu
 By default, all projects have unlimited quotas for both artifacts and storage use. 
 
 1. Go to **Configuration** > **Project Quotas**.
-   ![Project quotas](img/project-quota1)
+   ![Project quotas](img/project-quota1.png)
 1. To set global default quotas on all projects, click **Edit**.
-   ![Project quotas](img/project-quota2)
+   ![Project quotas](img/project-quota2.png)
    1. For **Default artifact count**, enter the maximum number of artifacts that any project can contain, or enter `-1` to set the default to unlimited. 
    1. For **Default storage consumption**, enter the maximum quantity of storage that any project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu.
-   ![Project quotas](img/project-quota3)
+   ![Project quotas](img/project-quota3.png)
    1. Click **OK**.
 1. To set quotas on an individual project, click the 3 vertical dots next to a project and select **Edit**.
-   ![Project quotas](img/project-quota4)
+   ![Project quotas](img/project-quota4.png)
    1. For **Default artifact count**, enter the maximum number of artifacts that this individual project can contain, or enter `-1` to set the default to unlimited. 
    1. For **Default storage consumption**, enter the maximum quantity of storage that this individual project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu.
 
 After you set quotas, the you can see how much of their quotas each project has consumed in the **Project Quotas** tab.
 
-![Project quotas](img/project-quota5)
+![Project quotas](img/project-quota5.png)
 
 ## Administrator options  
 ### Managing user  
@@ -825,7 +825,7 @@ In this example, the rules are applied to the following 7 tags:
 
 ### How Tag Retention Rules Interact with Project Quotas
 
-The system administrator can set a maximum on the number of artifacts that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Configure Project Quotas](#set-project-quotas). 
+The system administrator can set a maximum on the number of artifacts that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Set Project Quotas](#set-project-quotas). 
 
 Project quota settings take precedence over tag retention rules. If you set a quota on a project, this quota cannot be exceeded. The quota is applied to a project even if you set a retention rule that would exceed it. In other words, you cannot use retention rules to bypass quotas.
 
