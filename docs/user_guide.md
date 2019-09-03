@@ -266,12 +266,6 @@ You can set a system-wide CVE whitelist or you can set CVE whitelists on a per-p
 
 System-wide CVE whitelists apply to all of the projects in a Harbor instance.
 
-1. Go to **
-
-### Configure a System-Wide CVE Whitelist
-
-System-wide CVE whitelists apply to all of the projects in a Harbor instance.
-
 1. Go to **Configuration** &gt, **System Settings**.
 1. Under **Deployment security**, click **Add**. 
    ![System-wide CVE whitelist](img/cve-whitelist1.png)
