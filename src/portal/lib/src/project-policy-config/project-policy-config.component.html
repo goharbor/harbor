@@ -98,10 +98,10 @@
                 <div class="clr-row width-70per">
                     <div class="clr-col position-relative col-flex-grow-0 ">
                         <div>
-                            <button [disabled]="isUseSystemWhitelist() || !hasChangeConfigRole"
+                            <button id="show-add-modal" [disabled]="isUseSystemWhitelist() || !hasChangeConfigRole"
                                 (click)="showAddModal=!showAddModal"
                                 class="btn btn-link">{{'CVE_WHITELIST.ADD'|translate}}</button>
-                            <button [disabled]="isUseSystemWhitelist() || !hasChangeConfigRole" (click)="addSystem()"
+                            <button id="add-to-whitelist" [disabled]="isUseSystemWhitelist() || !hasChangeConfigRole" (click)="addSystem()"
                                 class="btn btn-link ml-1">{{'CVE_WHITELIST.ADD_SYSTEM'|translate}}</button>
                         </div>
                         <div class="add-modal" *ngIf="showAddModal && !isUseSystemWhitelist()">
