@@ -612,7 +612,7 @@ func TestUsersCurrentPermissions(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	httpStatusCode, permissions, err := apiTest.UsersGetPermissions("current", "/project/library", *projAdmin)
+	httpStatusCode, permissions, err := apiTest.UsersGetPermissions("current", "/project/1", *projAdmin)
 	assert.Nil(err)
 	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	assert.NotEmpty(permissions, "permissions should not be empty")
@@ -622,11 +622,11 @@ func TestUsersCurrentPermissions(t *testing.T) {
 	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	assert.Empty(permissions, "permissions should be empty")
 
-	httpStatusCode, _, err = apiTest.UsersGetPermissions(projAdminID, "/project/library", *projAdmin)
+	httpStatusCode, _, err = apiTest.UsersGetPermissions(projAdminID, "/project/1", *projAdmin)
 	assert.Nil(err)
 	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 
-	httpStatusCode, _, err = apiTest.UsersGetPermissions(projDeveloperID, "/project/library", *projAdmin)
+	httpStatusCode, _, err = apiTest.UsersGetPermissions(projDeveloperID, "/project/1", *projAdmin)
 	assert.Nil(err)
 	assert.Equal(int(403), httpStatusCode, "httpStatusCode should be 403")
 }
