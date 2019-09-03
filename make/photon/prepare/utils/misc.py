@@ -57,12 +57,12 @@ def validate(conf, **kwargs):
     redis_host = conf.get("configuration", "redis_host")
     if redis_host is None or len(redis_host) < 1:
         raise Exception(
-            "Error: redis_host in harbor.cfg needs to point to an endpoint of Redis server or cluster.")
+            "Error: redis_host in harbor.yml needs to point to an endpoint of Redis server or cluster.")
 
     redis_port = conf.get("configuration", "redis_port")
     if len(redis_port) < 1:
         raise Exception(
-            "Error: redis_port in harbor.cfg needs to point to the port of Redis server or cluster.")
+            "Error: redis_port in harbor.yml needs to point to the port of Redis server or cluster.")
 
     redis_db_index = conf.get("configuration", "redis_db_index").strip()
     if len(redis_db_index.split(",")) != 3:

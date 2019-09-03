@@ -31,7 +31,7 @@ Harbor is deployed as several Docker containers, and, therefore, can be deployed
 |Software|Version|Description|
 |---|---|---|
 |Docker engine|version 17.06.0-ce+ or higher|For installation instructions, please refer to: [docker engine doc](https://docs.docker.com/engine/installation/)|
-|Docker Compose|version 1.23.0 or higher|For installation instructions, please refer to: [docker compose doc](https://docs.docker.com/compose/install/)|
+|Docker Compose|version 1.18.0 or higher|For installation instructions, please refer to: [docker compose doc](https://docs.docker.com/compose/install/)|
 |Openssl|latest is preferred|Generate certificate and keys for Harbor|
 
 ### Network ports

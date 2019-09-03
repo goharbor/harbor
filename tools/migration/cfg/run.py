@@ -24,7 +24,7 @@ def main():
     input_version = utils.get_conf_version(args.input_path)
     curr_dir = os.path.dirname(__file__)
     if input_version == target_version:
-        print ("Version of input harbor.cfg is identical to target %s, no need to upgrade" % input_version)
+        print ("Version of input harbor.yml is identical to target %s, no need to upgrade" % input_version)
         sys.exit(0)
     if args.output_path is None:
         if float(input_version[:input_version.rfind('.')]) < 1.8 and \
