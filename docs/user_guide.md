@@ -814,45 +814,47 @@ Project quota settings take precedence over tag retention rules. If you set a ta
   ![Select repositories](img/tag-retention2.png)
 1. Identify the repositories on which to apply the rule.
   
-  You can define the repositories on which to apply the rule by entering the following information:
+   You can define the repositories on which to apply the rule by entering the following information:
   
-  - A repository name, for example `my_repo_1`.
-  - A comma-separated list of repository names, for example `my_repo_1,my_repo_2,your_repo_3`.
-  - A partial repository name with wildcards, for example `my_*`, `*_3`, or `*_repo_*`.
-  - `**` to apply the rule to all of the repositories in the project. 
+   - A repository name, for example `my_repo_1`.
+   - A comma-separated list of repository names, for example `my_repo_1,my_repo_2,your_repo_3`.
+   - A partial repository name with wildcards, for example `my_*`, `*_3`, or `*_repo_*`.
+   - `**` to apply the rule to all of the repositories in the project. 
   
-  If you selected **matching**, the rule is applied to the repositories you identified. If you selected **excluding**, the rule is applied to all of the repositories in the project except for the ones that you identified.
+   If you selected **matching**, the rule is applied to the repositories you identified. If you selected **excluding**, the rule is applied to all of the repositories in the project except for the ones that you identified.
 1. Define how many tags to retain or how the period to retain tags.
   ![Select retention criteria](img/tag-retention3.png)
   
-  |Option|Description|
-  |---|---|
-  |**retain the most recently pushed # images**|Enter the maximum number of images to retain, keeping the ones that have been pushed most recently. There is no maximum age for an image.|
-  |**retain the most recently pulled # images**|Enter the maximum number of images to retain, keeping only the ones that have been pulled recently. There is no maximum age for an image.|
-  |**retain the images pushed within the last # days**|Enter the number of days to retain images, keeping only the ones that have been pushed during this period. There is no maximum number of images.|
-  |**retain the images pulled within the last # days**|Enter the number of days to retain images, keeping only the ones that have been pulled during this period. There is no maximum number of images.|
-  |**retain always**|Always retain the images identified by this rule.| 
+   |Option|Description|
+   |---|---|
+   |**retain the most recently pushed # images**|Enter the maximum number of images to retain, keeping the ones that have been pushed most recently. There is no maximum age for an image.|
+   |**retain the most recently pulled # images**|Enter the maximum number of images to retain, keeping only the ones that have been pulled recently. There is no maximum age for an image.|
+   |**retain the images pushed within the last # days**|Enter the number of days to retain images, keeping only the ones that have been pushed during this period. There is no maximum number of images.|
+   |**retain the images pulled within the last # days**|Enter the number of days to retain images, keeping only the ones that have been pulled during this period. There is no maximum number of images.|
+   |**retain always**|Always retain the images identified by this rule.| 
 
 1. In the **Tags** drop-down menu, select **matching** or **excluding**.
 1. Identify the tags on which to apply the rule.
   
-  You can define the tags on which to apply the rule by entering the following information:
+   You can define the tags on which to apply the rule by entering the following information:
   
-  - A tag name, for example `my_tag_1`.
-  - A comma-separated list of tag names, for example `my_tag_1,my_tag_2,your_tag_3`.
-  - A partial tag name with wildcards, for example `my_*`, `*_3`, or `*_tag_*`.
-  - `**` to apply the rule to all of the tags in the project. 
+   - A tag name, for example `my_tag_1`.
+   - A comma-separated list of tag names, for example `my_tag_1,my_tag_2,your_tag_3`.
+   - A partial tag name with wildcards, for example `my_*`, `*_3`, or `*_tag_*`.
+   - `**` to apply the rule to all of the tags in the project. 
   
-  If you selected **matching**, the rule is applied to the tags you identified. If you selected **excluding**, the rule is applied to all of the tags in the repository except for the ones that you identified.
+   If you selected **matching**, the rule is applied to the tags you identified. If you selected **excluding**, the rule is applied to all of the tags in the repository except for the ones that you identified.
 1. Click **Add** to save the rule.
 1. (Optional) Click **Add Rule** to add more rules, up to a maximum of 15 per project.
 1. (Optional) Under Schedule, click **Edit** and select how often to run the rule.
-  ![Select retention criteria](img/tag-retention4.png)
-  If you select **Custom**, enter a cron job command to schedule the rule. 
+   ![Select retention criteria](img/tag-retention4.png)
+   If you select **Custom**, enter a cron job command to schedule the rule. 
   
-  **NOTE**: If you define multiple rules, the schedule is applied to all of the rules. You cannot schedule different rules to run at different times. 
-1. (Optional) Click **Dry Run** to test the rule or rules that you have defined.
-1. (Optional) Click **Run Now** to run the rule immediately.
+   **NOTE**: If you define multiple rules, the schedule is applied to all of the rules. You cannot schedule different rules to run at different times. 
+1. Click **Dry Run** to test the rule or rules that you have defined.
+1. Click **Run Now** to run the rule immediately.
+
+**WARNING**: You cannot revert a rule after you run it. It is strongly recommended to perform a dry run before you run rules. 
 
 To modify an existing rule, click the three vertical dots next to a rule to disable, edit, or delete that rule. 
 
