@@ -327,12 +327,10 @@ If auth_mode is ldap_auth, you can manage project role by LDAP/AD group. please 
 
 Harbor supports HTTP by default and Docker client tries to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to configure insecure registry. Please, read [this document](https://docs.docker.com/registry/insecure/) in order to understand how to do this. 
 
-
 ```Error response from daemon: Get https://myregistrydomain.com/v1/users/: dial tcp myregistrydomain.com:443 getsockopt: connection refused.```   
 
 If this private registry supports only HTTP or HTTPS with an unknown CA certificate, please add   
 `--insecure-registry myregistrydomain.com` to the daemon's start up arguments.  
-
 
 In the case of HTTPS, if you have access to the registry's CA certificate, simply place the CA certificate at /etc/docker/certs.d/myregistrydomain.com/ca.crt .   
 
@@ -875,6 +873,27 @@ You can define one webhook endpoint per project. Webhook notifications provide i
 |Delete Helm chart from registry|`CHART DELETE`|Repository name, chart name, chart type, chart version, chart size, tag, timestamp of delete, username of user who deleted chart|
 |Image scan completed|`IMAGE SCAN COMPLETED`|Repository namespace name, repository name, tag scanned, image name, number of critical issues, number of major issues, number of minor issues, last scan status, scan completion time timestamp, vulnerability information (CVE ID, description, link to CVE, criticality, URL for any fix), username of user who performed scan|
 |Image scan failed|`IMAGE SCAN FAILED`|Repository namespace name, repository name, tag scanned, image name, error that occurred, username of user who performed scan|
+
+#### JSON Payload Format
+
+The webhook notification is delivered in JSON format. The following example shows the JSON notification for a push image event:
+
+```
+{
+ "event_type": "pushImage"
+    "events": [
+               {
+                "project": "prj",
+                "repo_name": "repo1",
+                "tag": "latest",
+                "full_name": "prj/repo1",
+                "trigger_time": 158322233213,
+                "image_id": "9e2c9d5f44efbb6ee83aecd17a120c513047d289d142ec5738c9f02f9b24ad07",
+                "project_type": "Private"
+               }
+             ]
+}
+```
 
 ### Webhook Endpoint Recommendations
 
