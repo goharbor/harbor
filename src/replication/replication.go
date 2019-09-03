@@ -59,7 +59,7 @@ var (
 )
 
 // Init the global variables and configurations
-func Init(closing chan struct{}) error {
+func Init(closing, done chan struct{}) error {
 	// init config
 	secretKey, err := cfg.SecretKey()
 	if err != nil {
@@ -86,6 +86,6 @@ func Init(closing chan struct{}) error {
 	log.Debug("the replication initialization completed")
 
 	// Start health checker for registries
-	go registry.NewHealthChecker(time.Minute*5, closing).Run()
+	go registry.NewHealthChecker(time.Minute*5, closing, done).Run()
 	return nil
 }

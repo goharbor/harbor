@@ -11,27 +11,27 @@
             <li class="rule" *ngFor="let rule of retention?.rules;let i = index;">
                 <div class="clr-row">
                     <div class="clr-col-1">
-                        <clr-icon *ngIf="!rule?.disabled" class="color-green" shape="success-standard"></clr-icon>
-                        <clr-icon *ngIf="rule?.disabled" class="color-red" shape="error-standard"></clr-icon>
+                        <clr-icon (click)="openEditor(i)" shape="ellipsis-vertical"
+                                  class="dropdown-toggle hand"></clr-icon>
+                        <div class="dropdown" [ngClass]="{open:ruleIndex===i}">
+                            <div class="dropdown-menu">
+                                <button *ngIf="!rule?.disabled" type="button" class="dropdown-item"
+                                        (click)="toggleDisable(i,true)">{{'TAG_RETENTION.DISABLE' | translate}}</button>
+                                <button *ngIf="rule?.disabled" type="button" class="dropdown-item"
+                                        (click)="toggleDisable(i,false)">{{'TAG_RETENTION.ENABLE' | translate}}</button>
+                                <button type="button" class="dropdown-item"
+                                        (click)="editRuleByIndex(i)">{{'TAG_RETENTION.EDIT' | translate}}</button>
+                                <button type="button" class="dropdown-item"
+                                        (click)="deleteRule(i)">{{'TAG_RETENTION.DELETE' | translate}}</button>
+                            </div>
+                        </div>
                     </div>
                     <div class="clr-col">
                         <span>
-                            <clr-icon (click)="openEditor(i)" shape="ellipsis-vertical"
-                                      class="dropdown-toggle hand"></clr-icon>
-                            <div class="dropdown" [ngClass]="{open:ruleIndex===i}">
-                                <div class="dropdown-menu">
-                                    <button *ngIf="!rule?.disabled" type="button" class="dropdown-item"
-                                            (click)="toggleDisable(i,true)">{{'TAG_RETENTION.DISABLE' | translate}}</button>
-                                    <button *ngIf="rule?.disabled" type="button" class="dropdown-item"
-                                            (click)="toggleDisable(i,false)">{{'TAG_RETENTION.ENABLE' | translate}}</button>
-                                    <button type="button" class="dropdown-item"
-                                            (click)="editRuleByIndex(i)">{{'TAG_RETENTION.EDIT' | translate}}</button>
-                                    <button type="button" class="dropdown-item"
-                                            (click)="deleteRule(i)">{{'TAG_RETENTION.DELETE' | translate}}</button>
-                                </div>
-                            </div>
+                           <clr-icon *ngIf="!rule?.disabled" class="color-green" shape="success-standard"></clr-icon>
+                           <clr-icon *ngIf="rule?.disabled" class="color-red" shape="error-standard"></clr-icon>
                         </span>
-                        <span class="rule-name">
+                        <span class="rule-name ml-5">
                             <span>{{'TAG_RETENTION.IN_REPOSITORIES' | translate}}</span>
                             <span>{{getI18nKey(rule?.scope_selectors?.repository[0]?.decoration)|translate}}</span>
                             <span>{{formatPattern(rule?.scope_selectors?.repository[0]?.pattern)}}</span>
@@ -96,6 +96,9 @@
                     {{'TAG_RETENTION.DRY_RUN' | translate}}
                 </clr-dg-column>
                 <clr-dg-column>
+                    {{'TAG_RETENTION.EXECUTION_TYPE' | translate}}
+                </clr-dg-column>
+                <clr-dg-column>
                     {{'TAG_RETENTION.START_TIME' | translate}}
                 </clr-dg-column>
                 <clr-dg-column>
@@ -113,7 +116,9 @@
                     <clr-dg-cell class="hand"
                                  (click)="openDetail(i,execution.id)">{{execution.dry_run ? 'YES' : 'NO'}}</clr-dg-cell>
                     <clr-dg-cell class="hand"
-                                 (click)="openDetail(i,execution.id)">{{execution.start_time|date:'short'}}</clr-dg-cell>
+                                 (click)="openDetail(i,execution.id)">{{execution.Trigger}}</clr-dg-cell>
+                    <clr-dg-cell class="hand"
+                                 (click)="openDetail(i,execution.id)">{{execution.start_time|date:'medium'}}</clr-dg-cell>
                     <clr-dg-cell class="hand" (click)="openDetail(i,execution.id)">{{execution.duration}}</clr-dg-cell>
                     <clr-dg-row-detail *ngIf="index===i">
                         <clr-datagrid [clrDgLoading]="loadingHistories" class="w-100">
@@ -130,7 +135,7 @@
                                 <clr-dg-cell>{{task.repository}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.status}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.retained}}/{{task.total}}</clr-dg-cell>
-                                <clr-dg-cell>{{task.start_time|date:'short'}}</clr-dg-cell>
+                                <clr-dg-cell>{{task.start_time|date:'medium'}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.duration}}</clr-dg-cell>
                                 <clr-dg-cell><span (click)="seeLog(task.execution_id,task.id)"
                                                    class="hand color-79b">{{'TAG_RETENTION.LOG' | translate}}</span>
@@ -158,7 +163,7 @@
             </clr-datagrid>
     </div>
 </div>
-<add-rule #addRule (clickAdd)="clickAdd($event)"></add-rule>
+<add-rule #addRule [retention]="retention" (clickAdd)="clickAdd($event)"></add-rule>
 <clr-modal [(clrModalOpen)]="isRetentionRunOpened"
            [clrModalStaticBackdrop]="true" [clrModalClosable]="true">
     <h3 class="modal-title">{{'TAG_RETENTION.RETENTION_RUN' | translate}}</h3>

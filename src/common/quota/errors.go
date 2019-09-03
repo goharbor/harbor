@@ -79,14 +79,14 @@ func (e *ResourceOverflow) Error() string {
 	)
 
 	if e.NewUsed > e.CurrentUsed {
-		op = "add"
+		op = "adding"
 		delta = e.NewUsed - e.CurrentUsed
 	} else {
-		op = "subtract"
+		op = "subtracting"
 		delta = e.CurrentUsed - e.NewUsed
 	}
 
-	return fmt.Sprintf("%s %s of %s resource overflow the hard limit, current usage is %s and hard limit is %s",
+	return fmt.Sprintf("%s %s of %s resource, which when updated to current usage of %s will exceed the configured upper limit of %s.",
 		op, resource.FormatValue(delta), resource,
 		resource.FormatValue(e.CurrentUsed), resource.FormatValue(e.HardLimit))
 }

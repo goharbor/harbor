@@ -76,13 +76,14 @@ func TestMethodOfExecutionManager(t *testing.T) {
 func TestMethodOfTaskManager(t *testing.T) {
 	now := time.Now()
 	task := &models.Task{
-		ExecutionID:  112200,
-		ResourceType: "resourceType1",
-		SrcResource:  "srcResource1",
-		DstResource:  "dstResource1",
-		JobID:        "jobID1",
-		Status:       "Initialized",
-		StartTime:    &now,
+		ExecutionID:    112200,
+		ResourceType:   "resourceType1",
+		SrcResource:    "srcResource1",
+		DstResource:    "dstResource1",
+		JobID:          "jobID1",
+		Status:         "Initialized",
+		StatusRevision: 1,
+		StartTime:      &now,
 	}
 
 	defer func() {
@@ -121,7 +122,7 @@ func TestMethodOfTaskManager(t *testing.T) {
 	assert.Equal(t, taskNew.SrcResource, taskUpdate.SrcResource)
 
 	// UpdateTaskStatus
-	err = executionManager.UpdateTaskStatus(id, models.TaskStatusSucceed)
+	err = executionManager.UpdateTaskStatus(id, models.TaskStatusSucceed, 1, models.TaskStatusInitialized)
 	require.Nil(t, err)
 	taskUpdate, _ = executionManager.GetTask(id)
 	assert.Equal(t, models.TaskStatusSucceed, taskUpdate.Status)

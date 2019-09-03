@@ -18,6 +18,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/utils/log"
 
 	"github.com/pkg/errors"
 )
@@ -72,6 +73,8 @@ type Candidate struct {
 	Kind string
 	// Tag info
 	Tag string
+	// Digest
+	Digest string
 	// Pushed time in seconds
 	PushedTime int64
 	// Pulled time in seconds
@@ -84,7 +87,10 @@ type Candidate struct {
 
 // Hash code based on the candidate info for differentiation
 func (c *Candidate) Hash() string {
-	raw := fmt.Sprintf("%s:%s/%s:%s", c.Kind, c.Namespace, c.Repository, c.Tag)
+	if c.Digest == "" {
+		log.Errorf("Lack Digest of Candidate for %s/%s:%s", c.Namespace, c.Repository, c.Tag)
+	}
+	raw := fmt.Sprintf("%s:%s/%s:%s", c.Kind, c.Namespace, c.Repository, c.Digest)
 
 	return base64.StdEncoding.EncodeToString([]byte(raw))
 }

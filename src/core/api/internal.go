@@ -21,15 +21,12 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	common_quota "github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils/log"
-
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/pkg/errors"
 	"strconv"
 
 	quota "github.com/goharbor/harbor/src/core/api/quota"
-
-	comcfg "github.com/goharbor/harbor/src/common/config"
 )
 
 // InternalAPI handles request of harbor admin...
@@ -91,14 +88,20 @@ func (ia *InternalAPI) SwitchQuota() {
 		ia.SendBadRequestError(err)
 		return
 	}
+	cur := config.ReadOnly()
 	// quota per project from disable to enable, it needs to update the quota usage bases on the DB records.
 	if !config.QuotaPerProjectEnable() && req.Enabled {
+		if !cur {
+			config.GetCfgManager().Set(common.ReadOnly, true)
+			config.GetCfgManager().Save()
+		}
 		if err := ia.ensureQuota(); err != nil {
 			ia.SendInternalServerError(err)
 			return
 		}
 	}
 	defer func() {
+		config.GetCfgManager().Set(common.ReadOnly, cur)
 		config.GetCfgManager().Set(common.QuotaPerProjectEnable, req.Enabled)
 		config.GetCfgManager().Save()
 	}()
@@ -157,16 +160,16 @@ func (ia *InternalAPI) ensureQuota() error {
 // SyncQuota ...
 func (ia *InternalAPI) SyncQuota() {
 	cur := config.ReadOnly()
-	cfgMgr := comcfg.NewDBCfgManager()
-	if cur != true {
+	cfgMgr := config.GetCfgManager()
+	if !cur {
 		cfgMgr.Set(common.ReadOnly, true)
+		cfgMgr.Save()
 	}
 	// For api call, to avoid the timeout, it should be asynchronous
 	go func() {
 		defer func() {
-			if cur != true {
-				cfgMgr.Set(common.ReadOnly, false)
-			}
+			cfgMgr.Set(common.ReadOnly, cur)
+			cfgMgr.Save()
 		}()
 		log.Info("start to sync quota(API), the system will be set to ReadOnly and back it normal once it done.")
 		err := quota.Sync(ia.ProjectMgr, false)

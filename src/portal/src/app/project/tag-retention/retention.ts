@@ -70,11 +70,6 @@ export class Rule {
                 kind: 'doublestar',
                 decoration: 'matches',
                 pattern: '**'
-            },
-            {
-                kind: 'label',
-                decoration: "withLabels",
-                pattern: null
             }
         ];
     }

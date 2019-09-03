@@ -176,7 +176,7 @@ func (f *fakedExecutionManager) GetTask(int64) (*models.Task, error) {
 func (f *fakedExecutionManager) UpdateTask(*models.Task, ...string) error {
 	return nil
 }
-func (f *fakedExecutionManager) UpdateTaskStatus(int64, string, ...string) error {
+func (f *fakedExecutionManager) UpdateTaskStatus(int64, string, int64, ...string) error {
 	return nil
 }
 func (f *fakedExecutionManager) RemoveTask(int64) error {

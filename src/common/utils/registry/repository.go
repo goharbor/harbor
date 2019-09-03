@@ -272,7 +272,10 @@ func (r *Repository) MountBlob(digest, from string) error {
 		if err != nil {
 			return err
 		}
-		return fmt.Errorf("status %d, body: %s", resp.StatusCode, string(b))
+		return &commonhttp.Error{
+			Code:    resp.StatusCode,
+			Message: string(b),
+		}
 	}
 
 	return nil

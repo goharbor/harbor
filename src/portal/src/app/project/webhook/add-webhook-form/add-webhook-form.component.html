@@ -1,4 +1,5 @@
 <div class="align-center">
+  <inline-alert class="modal-title"></inline-alert>
   <form #webhookForm="ngForm">
     <section class="form-block webhook-section">
       <!-- endpoint URL -->
@@ -39,7 +40,7 @@
       <button type="button" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
   </div>
   <div *ngIf="isModify">
-      <button type="button" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
+      <button type="button" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
       <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
       <button type="button" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.SAVE' | translate}}</button>
   </div>

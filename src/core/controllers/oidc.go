@@ -83,6 +83,15 @@ func (oc *OIDCController) Callback() {
 		oc.SendBadRequestError(errors.New("State mismatch"))
 		return
 	}
+
+	errorCode := oc.Ctx.Request.URL.Query().Get("error")
+	if errorCode != "" {
+		errorDescription := oc.Ctx.Request.URL.Query().Get("error_description")
+		log.Errorf("OIDC callback returned error: %s - %s", errorCode, errorDescription)
+		oc.SendBadRequestError(errors.Errorf("OIDC callback returned error: %s - %s", errorCode, errorDescription))
+		return
+	}
+
 	code := oc.Ctx.Request.URL.Query().Get("code")
 	ctx := oc.Ctx.Request.Context()
 	token, err := oidc.ExchangeToken(ctx, code)
@@ -144,7 +153,7 @@ func (oc *OIDCController) Callback() {
 	}
 }
 
-// Onboard handles the request to onboard an user authenticated via OIDC provider
+// Onboard handles the request to onboard a user authenticated via OIDC provider
 func (oc *OIDCController) Onboard() {
 	u := &onboardReq{}
 	if err := oc.DecodeJSONReq(u); err != nil {

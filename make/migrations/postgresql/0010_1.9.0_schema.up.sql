@@ -16,9 +16,9 @@ CREATE TABLE blob
   /*
      digest of config, layer, manifest
   */
-  digest        varchar(255)       NOT NULL,
-  content_type  varchar(255)       NOT NULL,
-  size          int                NOT NULL,
+  digest        varchar(255)        NOT NULL,
+  content_type  varchar(1024)       NOT NULL,
+  size          bigint              NOT NULL,
   creation_time timestamp default CURRENT_TIMESTAMP,
   UNIQUE (digest)
 );
@@ -133,6 +133,7 @@ create table retention_task
   job_id       varchar(64),
   status       varchar(32),
   status_code  integer,
+  status_revision integer,
   start_time   timestamp default CURRENT_TIMESTAMP,
   end_time     timestamp default CURRENT_TIMESTAMP,
   total        integer,
@@ -181,3 +182,7 @@ create table notification_policy (
  update_time timestamp default CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
  );
+
+ALTER TABLE replication_task ADD COLUMN status_revision int DEFAULT 0;
+DELETE FROM project_metadata WHERE deleted = TRUE;
+ALTER TABLE project_metadata DROP COLUMN deleted;

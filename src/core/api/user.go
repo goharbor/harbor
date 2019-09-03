@@ -324,6 +324,14 @@ func (ua *UserAPI) Post() {
 		ua.RenderError(http.StatusBadRequest, "register error:"+err.Error())
 		return
 	}
+
+	if !ua.IsAdmin && user.HasAdminRole {
+		msg := "Non-admin cannot create an admin user."
+		log.Errorf(msg)
+		ua.SendForbiddenError(errors.New(msg))
+		return
+	}
+
 	userExist, err := dao.UserExists(user, "username")
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
@@ -346,6 +354,7 @@ func (ua *UserAPI) Post() {
 		ua.SendConflictError(errors.New("email has already been used"))
 		return
 	}
+
 	userID, err := dao.Register(user)
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)

@@ -122,8 +122,6 @@ paths:
       responses:
         '200':
           description: Project name exists.
-        '401':
-          description: User need to log in first.
         '404':
           description: Project name does not exist.
         '500':
@@ -333,10 +331,10 @@ paths:
           description: Illegal format of provided ID value.
         '401':
           description: User need to log in first.
-        '404':
-          description: Project ID does not exist.
         '403':
           description: User does not have permission to get summary of the project.
+        '404':
+          description: Project ID does not exist.
         '500':
           description: Unexpected internal errors.
   '/projects/{project_id}/metadatas':
@@ -1310,6 +1308,8 @@ paths:
           description: Invalid image values provided.
         '401':
           description: User has no permission to the source project or destination project.
+        '403':
+          description: Forbiden as quota exceeded.
         '404':
           description: Project or repository not found.
         '409':
@@ -2385,10 +2385,10 @@ paths:
               $ref: '#/definitions/Namespace'
         '401':
           description: User need to login first.
-        '404':
-          description: No registry found.
         '403':
           description: User has no privilege for the operation.
+        '404':
+          description: No registry found.
         '500':
           description: Unexpected internal errors.
   /internal/syncregistry:
@@ -5054,7 +5054,7 @@ definitions:
         description: the role id
       entity_id:
         type: integer
-        description: 'the id of entity, if the member is an user, it is user_id in user table. if the member is an user group, it is the user group''s ID in user_group table.'
+        description: 'the id of entity, if the member is a user, it is user_id in user table. if the member is a user group, it is the user group''s ID in user_group table.'
       entity_type:
         type: string
         description: 'the entity''s type, u for user entity, g for group entity.'
@@ -5148,7 +5148,7 @@ definitions:
     allOf:
       - $ref: '#/definitions/ChartAPIError'
   ForbiddenChartAPIError:
-    description: Operation is forbidden
+    description: Operation is forbidden or quota exceeded
     type: object
     allOf:
       - $ref: '#/definitions/ChartAPIError'

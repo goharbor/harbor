@@ -15,6 +15,7 @@
 package daysps
 
 import (
+	"errors"
 	"fmt"
 	"testing"
 	"time"
@@ -91,6 +92,26 @@ func (e *EvaluatorTestSuite) TestProcess() {
 			for _, v := range result {
 				assert.False(t, v.PushedTime < tt.minPushTime)
 			}
+		})
+	}
+}
+
+func (e *EvaluatorTestSuite) TestValid() {
+	tests := []struct {
+		Name      string
+		args      rule.Parameters
+		expectedK error
+	}{
+		{Name: "Valid", args: map[string]rule.Parameter{ParameterN: 5}, expectedK: nil},
+		{Name: "Negative", args: map[string]rule.Parameter{ParameterN: -1}, expectedK: errors.New("nDaysSinceLastPush is less than zero")},
+		{Name: "Big", args: map[string]rule.Parameter{ParameterN: 21000000}, expectedK: errors.New("nDaysSinceLastPush is too large")},
+	}
+
+	for _, tt := range tests {
+		e.T().Run(tt.Name, func(t *testing.T) {
+			err := Valid(tt.args)
+
+			require.Equal(t, tt.expectedK, err)
 		})
 	}
 }

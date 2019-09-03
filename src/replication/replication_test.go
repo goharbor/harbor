@@ -34,7 +34,7 @@ func TestInit(t *testing.T) {
 	require.Nil(t, err)
 
 	config.InitWithSettings(nil)
-	err = Init(make(chan struct{}))
+	err = Init(make(chan struct{}), make(chan struct{}))
 	require.Nil(t, err)
 	assert.NotNil(t, PolicyCtl)
 	assert.NotNil(t, RegistryMgr)

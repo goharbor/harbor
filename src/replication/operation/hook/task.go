@@ -21,7 +21,7 @@ import (
 )
 
 // UpdateTask update the status of the task
-func UpdateTask(ctl operation.Controller, id int64, status string) error {
+func UpdateTask(ctl operation.Controller, id int64, status string, statusRevision int64) error {
 	jobStatus := job.Status(status)
 	// convert the job status to task status
 	s := ""
@@ -43,5 +43,5 @@ func UpdateTask(ctl operation.Controller, id int64, status string) error {
 		s = models.TaskStatusSucceed
 		preStatus = append(preStatus, models.TaskStatusInitialized, models.TaskStatusPending, models.TaskStatusInProgress)
 	}
-	return ctl.UpdateTaskStatus(id, s, preStatus...)
+	return ctl.UpdateTaskStatus(id, s, statusRevision, preStatus...)
 }

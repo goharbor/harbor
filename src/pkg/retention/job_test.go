@@ -30,7 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
 	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -90,10 +89,6 @@ func (suite *JobTestSuite) TestRunSuccess() {
 				Template:   latestps.TemplateID,
 				Parameters: ruleParams,
 				TagSelectors: []*rule.Selector{{
-					Kind:       label.Kind,
-					Decoration: label.With,
-					Pattern:    "L3",
-				}, {
 					Kind:       doublestar.Kind,
 					Decoration: doublestar.Matches,
 					Pattern:    "**",
@@ -124,6 +119,7 @@ func (frc *fakeRetentionClient) GetCandidates(repo *res.Repository) ([]*res.Cand
 			Repository:   "harbor",
 			Kind:         "image",
 			Tag:          "latest",
+			Digest:       "latest",
 			PushedTime:   time.Now().Unix() - 11,
 			PulledTime:   time.Now().Unix() - 2,
 			CreationTime: time.Now().Unix() - 10,
@@ -134,6 +130,7 @@ func (frc *fakeRetentionClient) GetCandidates(repo *res.Repository) ([]*res.Cand
 			Repository:   "harbor",
 			Kind:         "image",
 			Tag:          "dev",
+			Digest:       "dev",
 			PushedTime:   time.Now().Unix() - 10,
 			PulledTime:   time.Now().Unix() - 3,
 			CreationTime: time.Now().Unix() - 20,

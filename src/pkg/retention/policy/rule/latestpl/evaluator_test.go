@@ -15,6 +15,7 @@
 package latestpl
 
 import (
+	"errors"
 	"fmt"
 	"math/rand"
 	"testing"
@@ -80,6 +81,26 @@ func (e *EvaluatorTestSuite) TestProcess() {
 			for _, v := range result {
 				require.False(e.T(), v.PulledTime < tt.minPullTime)
 			}
+		})
+	}
+}
+
+func (e *EvaluatorTestSuite) TestValid() {
+	tests := []struct {
+		Name      string
+		args      rule.Parameters
+		expectedK error
+	}{
+		{Name: "Valid", args: map[string]rule.Parameter{ParameterN: 5}, expectedK: nil},
+		{Name: "Negative", args: map[string]rule.Parameter{ParameterN: -1}, expectedK: errors.New("latestPulledN is less than zero")},
+		{Name: "Big", args: map[string]rule.Parameter{ParameterN: 40000}, expectedK: errors.New("latestPulledN is too large")},
+	}
+
+	for _, tt := range tests {
+		e.T().Run(tt.Name, func(t *testing.T) {
+			err := Valid(tt.args)
+
+			require.Equal(t, tt.expectedK, err)
 		})
 	}
 }

@@ -16,6 +16,7 @@ package dao
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/astaxie/beego/orm"
@@ -91,14 +92,21 @@ func (p *pgsql) Register(alias ...string) error {
 
 // UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.
 func (p *pgsql) UpgradeSchema() error {
-	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", p.usr, p.pwd, p.host, p.port, p.database, p.sslmode)
+	dbURL := url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(p.usr, p.pwd),
+		Host:     fmt.Sprintf("%s:%s", p.host, p.port),
+		Path:     p.database,
+		RawQuery: fmt.Sprintf("sslmode=%s", p.sslmode),
+	}
+
 	// For UT
 	path := os.Getenv("POSTGRES_MIGRATION_SCRIPTS_PATH")
 	if len(path) == 0 {
 		path = defaultMigrationPath
 	}
 	srcURL := fmt.Sprintf("file://%s", path)
-	m, err := migrate.New(srcURL, dbURL)
+	m, err := migrate.New(srcURL, dbURL.String())
 	if err != nil {
 		return err
 	}

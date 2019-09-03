@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/docker/distribution"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
@@ -64,6 +65,99 @@ func DeleteBlob(digest string) error {
 	return err
 }
 
+// ListBlobs list blobs according to the query conditions
+func ListBlobs(query *models.BlobQuery) ([]*models.Blob, error) {
+	qs := GetOrmer().QueryTable(&models.Blob{})
+
+	if query != nil {
+		if query.Digest != "" {
+			qs = qs.Filter("Digest", query.Digest)
+		}
+
+		if query.ContentType != "" {
+			qs = qs.Filter("ContentType", query.ContentType)
+		}
+
+		if len(query.Digests) > 0 {
+			qs = qs.Filter("Digest__in", query.Digests)
+		}
+
+		if query.Size > 0 {
+			qs = qs.Limit(query.Size)
+			if query.Page > 0 {
+				qs = qs.Offset((query.Page - 1) * query.Size)
+			}
+		}
+	}
+
+	blobs := []*models.Blob{}
+	_, err := qs.All(&blobs)
+	return blobs, err
+}
+
+// SyncBlobs sync references to blobs
+func SyncBlobs(references []distribution.Descriptor) error {
+	if len(references) == 0 {
+		return nil
+	}
+
+	var digests []string
+	for _, reference := range references {
+		digests = append(digests, reference.Digest.String())
+	}
+
+	existing, err := ListBlobs(&models.BlobQuery{Digests: digests})
+	if err != nil {
+		return err
+	}
+
+	mp := make(map[string]*models.Blob, len(existing))
+	for _, blob := range existing {
+		mp[blob.Digest] = blob
+	}
+
+	var missing, updating []*models.Blob
+	for _, reference := range references {
+		if blob, found := mp[reference.Digest.String()]; found {
+			if blob.ContentType != reference.MediaType {
+				blob.ContentType = reference.MediaType
+				updating = append(updating, blob)
+			}
+
+		} else {
+			missing = append(missing, &models.Blob{
+				Digest:       reference.Digest.String(),
+				ContentType:  reference.MediaType,
+				Size:         reference.Size,
+				CreationTime: time.Now(),
+			})
+		}
+	}
+
+	o := GetOrmer()
+
+	if len(updating) > 0 {
+		for _, blob := range updating {
+			if _, err := o.Update(blob, "content_type"); err != nil {
+				log.Warningf("Failed to update blob %s, error: %v", blob.Digest, err)
+			}
+		}
+	}
+
+	if len(missing) > 0 {
+		_, err = o.InsertMulti(10, missing)
+		if err != nil {
+			if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+				return ErrDupRows
+			}
+		}
+
+		return err
+	}
+
+	return nil
+}
+
 // GetBlobsByArtifact returns blobs of artifact
 func GetBlobsByArtifact(artifactDigest string) ([]*models.Blob, error) {
 	sql := `SELECT * FROM blob WHERE digest IN (SELECT digest_blob FROM artifact_blob WHERE digest_af = ?)`
@@ -78,9 +172,14 @@ func GetBlobsByArtifact(artifactDigest string) ([]*models.Blob, error) {
 
 // GetExclusiveBlobs returns layers of repository:tag which are not shared with other repositories in the project
 func GetExclusiveBlobs(projectID int64, repository, digest string) ([]*models.Blob, error) {
+	var exclusive []*models.Blob
+
 	blobs, err := GetBlobsByArtifact(digest)
 	if err != nil {
 		return nil, err
+	}
+	if len(blobs) == 0 {
+		return exclusive, nil
 	}
 
 	sql := fmt.Sprintf(`
@@ -103,13 +202,11 @@ FROM
       )
   ) AS a
   LEFT JOIN artifact_blob b ON a.digest = b.digest_af
-  AND b.digest_blob IN (%s)`, ParamPlaceholderForIn(len(blobs)-1))
+  AND b.digest_blob IN (%s)`, ParamPlaceholderForIn(len(blobs)))
 
 	params := []interface{}{projectID, repository, projectID, digest}
 	for _, blob := range blobs {
-		if blob.Digest != digest {
-			params = append(params, blob.Digest)
-		}
+		params = append(params, blob.Digest)
 	}
 
 	var rows []struct {
@@ -125,9 +222,8 @@ FROM
 		shared[row.Digest] = true
 	}
 
-	var exclusive []*models.Blob
 	for _, blob := range blobs {
-		if blob.Digest != digest && !shared[blob.Digest] {
+		if !shared[blob.Digest] {
 			exclusive = append(exclusive, blob)
 		}
 	}

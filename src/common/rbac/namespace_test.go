@@ -27,7 +27,7 @@ type ProjectNamespaceTestSuite struct {
 func (suite *ProjectNamespaceTestSuite) TestResource() {
 	var namespace Namespace
 
-	namespace = &projectNamespace{projectIDOrName: int64(1)}
+	namespace = &projectNamespace{projectID: int64(1)}
 
 	suite.Equal(namespace.Resource(Resource("image")), Resource("/project/1/image"))
 }
@@ -35,9 +35,6 @@ func (suite *ProjectNamespaceTestSuite) TestResource() {
 func (suite *ProjectNamespaceTestSuite) TestIdentity() {
 	namespace, _ := Resource("/project/1/image").GetNamespace()
 	suite.Equal(namespace.Identity(), int64(1))
-
-	namespace, _ = Resource("/project/library/image").GetNamespace()
-	suite.Equal(namespace.Identity(), "library")
 }
 
 func TestProjectNamespaceTestSuite(t *testing.T) {

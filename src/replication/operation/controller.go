@@ -17,6 +17,7 @@ package operation
 import (
 	"fmt"
 	"regexp"
+	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job"
@@ -39,7 +40,7 @@ type Controller interface {
 	GetExecution(int64) (*models.Execution, error)
 	ListTasks(...*models.TaskQuery) (int64, []*models.Task, error)
 	GetTask(int64) (*models.Task, error)
-	UpdateTaskStatus(id int64, status string, statusCondition ...string) error
+	UpdateTaskStatus(id int64, status string, statusRevision int64, statusCondition ...string) error
 	GetTaskLog(int64) ([]byte, error)
 }
 
@@ -50,6 +51,7 @@ const (
 var (
 	statusBehindErrorPattern = "mismatch job status for stopping job: .*, job status (.*) is behind Running"
 	statusBehindErrorReg     = regexp.MustCompile(statusBehindErrorPattern)
+	jobNotFoundErrorMsg      = "object is not found"
 )
 
 // NewController returns a controller implementation
@@ -169,11 +171,26 @@ func (c *controller) StopReplication(executionID int64) error {
 				case hjob.SuccessStatus:
 					status = models.TaskStatusSucceed
 				}
-				e := c.executionMgr.UpdateTaskStatus(task.ID, status)
+				e := c.executionMgr.UpdateTask(&models.Task{
+					ID:     task.ID,
+					Status: status,
+				}, "Status")
 				if e != nil {
 					log.Errorf("failed to update the status the task %d(job ID: %s): %v", task.ID, task.JobID, e)
 				} else {
 					log.Debugf("got status behind error for task %d, update it's status to %s directly", task.ID, status)
+				}
+				continue
+			}
+			if isJobNotFoundError(err) {
+				e := c.executionMgr.UpdateTask(&models.Task{
+					ID:     task.ID,
+					Status: models.ExecutionStatusStopped,
+				}, "Status")
+				if e != nil {
+					log.Errorf("failed to update the status the task %d(job ID: %s): %v", task.ID, task.JobID, e)
+				} else {
+					log.Debugf("got job not found error for task %d, update it's status to %s directly", task.ID, models.ExecutionStatusStopped)
 				}
 				continue
 			}
@@ -209,6 +226,13 @@ func isStatusBehindError(err error) (string, bool) {
 	return strs[1], true
 }
 
+func isJobNotFoundError(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(err.Error(), jobNotFoundErrorMsg)
+}
+
 func (c *controller) ListExecutions(query ...*models.ExecutionQuery) (int64, []*models.Execution, error) {
 	return c.executionMgr.List(query...)
 }
@@ -221,8 +245,8 @@ func (c *controller) ListTasks(query ...*models.TaskQuery) (int64, []*models.Tas
 func (c *controller) GetTask(id int64) (*models.Task, error) {
 	return c.executionMgr.GetTask(id)
 }
-func (c *controller) UpdateTaskStatus(id int64, status string, statusCondition ...string) error {
-	return c.executionMgr.UpdateTaskStatus(id, status, statusCondition...)
+func (c *controller) UpdateTaskStatus(id int64, status string, statusRevision int64, statusCondition ...string) error {
+	return c.executionMgr.UpdateTaskStatus(id, status, statusRevision, statusCondition...)
 }
 func (c *controller) GetTaskLog(taskID int64) ([]byte, error) {
 	return c.executionMgr.GetTaskLog(taskID)

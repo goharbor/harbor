@@ -361,6 +361,8 @@
         "TEST_ENDPOINT_BUTTON": "测试 ENDPOINT",
         "CANCEL_BUTTON": "取消",
         "SAVE_BUTTON": "保存",
+        "TEST_ENDPOINT_SUCCESS": "测试连接成功。",
+        "TEST_ENDPOINT_FAILURE": "测试连接失败。",
         "ENABLED_WEBHOOK_TITLE": "启用项目的 Webhooks",
         "ENABLED_WEBHOOK_SUMMARY": "你希望开启项目的 Webhooks 吗？",
         "DISABLED_WEBHOOK_TITLE": "停用项目的 Webhooks",
@@ -1204,7 +1206,13 @@
         "RULE_TEMPLATE_6": "最近#天被拉取过的镜像",
         "RULE_TEMPLATE_7": "最近#天被推送过的镜像",
         "SCHEDULE": "定时任务",
-        "SCHEDULE_WARNING": "执行保留策略将对该项目中的镜像产生反向影响，受影响的镜像tags将会被删除。"
+        "SCHEDULE_WARNING": "执行保留策略会将会删除受影响的镜像，且不可恢复。请在制定定时任务前仔细检查所有保留规则。",
+        "EXISTING_RULE": "规则已存在",
+        "ILLEGAL_RULE": "规则不合法",
+        "INVALID_RULE": "无效规则",
+        "COUNT_LARGE": "参数“个数”太大",
+        "DAYS_LARGE": "参数“天数”太大",
+        "EXECUTION_TYPE": "执行类型"
     }
 
 }

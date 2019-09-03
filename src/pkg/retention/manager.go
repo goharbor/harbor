@@ -60,11 +60,9 @@ type Manager interface {
 	// Update the specified task
 	UpdateTask(task *Task, cols ...string) error
 	// Update the status of the specified task
-	// The status is updated only when it is behind the one stored
-	// in the database.
-	// e.g. if the status is running but the status stored
-	// in database is failed, the updating doesn't take effect
-	UpdateTaskStatus(taskID int64, status string) error
+	// The status is updated only when (the statusRevision > the current revision)
+	// or (the the statusRevision = the current revision and status > the current status)
+	UpdateTaskStatus(taskID int64, status string, statusRevision int64) error
 	// Get the task specified by the task ID
 	GetTask(taskID int64) (*Task, error)
 	// Get the log of the specified task
@@ -134,7 +132,7 @@ func (d *DefaultManager) GetPolicy(id int64) (*policy.Metadata, error) {
 func (d *DefaultManager) CreateExecution(execution *Execution) (int64, error) {
 	exec := &models.RetentionExecution{}
 	exec.PolicyID = execution.PolicyID
-	exec.StartTime = time.Now()
+	exec.StartTime = execution.StartTime
 	exec.DryRun = execution.DryRun
 	exec.Trigger = execution.Trigger
 	return dao.CreateExecution(exec)
@@ -162,6 +160,7 @@ func (d *DefaultManager) ListExecutions(policyID int64, query *q.Query) ([]*Exec
 		e1.Status = e.Status
 		e1.StartTime = e.StartTime
 		e1.EndTime = e.EndTime
+		e1.Trigger = e.Trigger
 		e1.DryRun = e.DryRun
 		execs1 = append(execs1, e1)
 	}
@@ -185,6 +184,7 @@ func (d *DefaultManager) GetExecution(eid int64) (*Execution, error) {
 	e1.Status = e.Status
 	e1.StartTime = e.StartTime
 	e1.EndTime = e.EndTime
+	e1.Trigger = e.Trigger
 	e1.DryRun = e.DryRun
 	return e1, nil
 }
@@ -195,14 +195,16 @@ func (d *DefaultManager) CreateTask(task *Task) (int64, error) {
 		return 0, errors.New("nil task")
 	}
 	t := &models.RetentionTask{
-		ExecutionID: task.ExecutionID,
-		Repository:  task.Repository,
-		JobID:       task.JobID,
-		Status:      task.Status,
-		StartTime:   task.StartTime,
-		EndTime:     task.EndTime,
-		Total:       task.Total,
-		Retained:    task.Retained,
+		ExecutionID:    task.ExecutionID,
+		Repository:     task.Repository,
+		JobID:          task.JobID,
+		Status:         task.Status,
+		StatusCode:     task.StatusCode,
+		StatusRevision: task.StatusRevision,
+		StartTime:      task.StartTime,
+		EndTime:        task.EndTime,
+		Total:          task.Total,
+		Retained:       task.Retained,
 	}
 	return dao.CreateTask(t)
 }
@@ -219,16 +221,17 @@ func (d *DefaultManager) ListTasks(query ...*q.TaskQuery) ([]*Task, error) {
 	tasks := make([]*Task, 0)
 	for _, t := range ts {
 		tasks = append(tasks, &Task{
-			ID:          t.ID,
-			ExecutionID: t.ExecutionID,
-			Repository:  t.Repository,
-			JobID:       t.JobID,
-			Status:      t.Status,
-			StatusCode:  t.StatusCode,
-			StartTime:   t.StartTime,
-			EndTime:     t.EndTime,
-			Total:       t.Total,
-			Retained:    t.Retained,
+			ID:             t.ID,
+			ExecutionID:    t.ExecutionID,
+			Repository:     t.Repository,
+			JobID:          t.JobID,
+			Status:         t.Status,
+			StatusCode:     t.StatusCode,
+			StatusRevision: t.StatusRevision,
+			StartTime:      t.StartTime,
+			EndTime:        t.EndTime,
+			Total:          t.Total,
+			Retained:       t.Retained,
 		})
 	}
 	return tasks, nil
@@ -248,25 +251,27 @@ func (d *DefaultManager) UpdateTask(task *Task, cols ...string) error {
 		return fmt.Errorf("invalid task ID: %d", task.ID)
 	}
 	return dao.UpdateTask(&models.RetentionTask{
-		ID:          task.ID,
-		ExecutionID: task.ExecutionID,
-		Repository:  task.Repository,
-		JobID:       task.JobID,
-		Status:      task.Status,
-		StartTime:   task.StartTime,
-		EndTime:     task.EndTime,
-		Total:       task.Total,
-		Retained:    task.Retained,
+		ID:             task.ID,
+		ExecutionID:    task.ExecutionID,
+		Repository:     task.Repository,
+		JobID:          task.JobID,
+		Status:         task.Status,
+		StatusCode:     task.StatusCode,
+		StatusRevision: task.StatusRevision,
+		StartTime:      task.StartTime,
+		EndTime:        task.EndTime,
+		Total:          task.Total,
+		Retained:       task.Retained,
 	}, cols...)
 }
 
 // UpdateTaskStatus updates the status of the specified task
-func (d *DefaultManager) UpdateTaskStatus(taskID int64, status string) error {
+func (d *DefaultManager) UpdateTaskStatus(taskID int64, status string, statusRevision int64) error {
 	if taskID <= 0 {
 		return fmt.Errorf("invalid task ID: %d", taskID)
 	}
 	st := job.Status(status)
-	return dao.UpdateTaskStatus(taskID, status, st.Code())
+	return dao.UpdateTaskStatus(taskID, status, st.Code(), statusRevision)
 }
 
 // GetTask returns the task specified by task ID
@@ -279,16 +284,17 @@ func (d *DefaultManager) GetTask(taskID int64) (*Task, error) {
 		return nil, err
 	}
 	return &Task{
-		ID:          task.ID,
-		ExecutionID: task.ExecutionID,
-		Repository:  task.Repository,
-		JobID:       task.JobID,
-		Status:      task.Status,
-		StatusCode:  task.StatusCode,
-		StartTime:   task.StartTime,
-		EndTime:     task.EndTime,
-		Total:       task.Total,
-		Retained:    task.Retained,
+		ID:             task.ID,
+		ExecutionID:    task.ExecutionID,
+		Repository:     task.Repository,
+		JobID:          task.JobID,
+		Status:         task.Status,
+		StatusCode:     task.StatusCode,
+		StatusRevision: task.StatusRevision,
+		StartTime:      task.StartTime,
+		EndTime:        task.EndTime,
+		Total:          task.Total,
+		Retained:       task.Retained,
 	}, nil
 }
 

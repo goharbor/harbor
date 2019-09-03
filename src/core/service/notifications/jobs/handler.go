@@ -20,10 +20,10 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
-	jobmodels "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/core/notifier/event"
 	jjob "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -48,6 +48,7 @@ type Handler struct {
 	status    string
 	rawStatus string
 	checkIn   string
+	revision  int64
 }
 
 // Prepare ...
@@ -60,7 +61,7 @@ func (h *Handler) Prepare() {
 		return
 	}
 	h.id = id
-	var data jobmodels.JobStatusChange
+	var data jjob.StatusChange
 	err = json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data)
 	if err != nil {
 		log.Errorf("Failed to decode job status change, job ID: %d, error: %v", id, err)
@@ -76,11 +77,30 @@ func (h *Handler) Prepare() {
 	}
 	h.status = status
 	h.checkIn = data.CheckIn
+	if data.Metadata != nil {
+		h.revision = data.Metadata.Revision
+	}
 }
 
 // HandleScan handles the webhook of scan job
 func (h *Handler) HandleScan() {
 	log.Debugf("received scan job status update event: job-%d, status-%s", h.id, h.status)
+	// Trigger image scan webhook event only for JobFinished and JobError status
+	if h.status == models.JobFinished || h.status == models.JobError {
+		e := &event.Event{}
+		metaData := &event.ScanImageMetaData{
+			JobID:  h.id,
+			Status: h.status,
+		}
+		if err := e.Build(metaData); err == nil {
+			if err := e.Publish(); err != nil {
+				log.Errorf("failed to publish image scanning event: %v", err)
+			}
+		} else {
+			log.Errorf("failed to build image scanning event metadata: %v", err)
+		}
+	}
+
 	if err := dao.UpdateScanJobStatus(h.id, h.status); err != nil {
 		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
 		h.SendInternalServerError(err)
@@ -101,7 +121,7 @@ func (h *Handler) HandleReplicationScheduleJob() {
 // HandleReplicationTask handles the webhook of replication task
 func (h *Handler) HandleReplicationTask() {
 	log.Debugf("received replication task status update event: task-%d, status-%s", h.id, h.status)
-	if err := hook.UpdateTask(replication.OperationCtl, h.id, h.rawStatus); err != nil {
+	if err := hook.UpdateTask(replication.OperationCtl, h.id, h.rawStatus, h.revision); err != nil {
 		log.Errorf("failed to update the status of the replication task %d: %v", h.id, err)
 		h.SendInternalServerError(err)
 		return
@@ -138,23 +158,10 @@ func (h *Handler) HandleRetentionTask() {
 	}
 
 	// handle status updating
-	if err := mgr.UpdateTaskStatus(taskID, status); err != nil {
+	if err := mgr.UpdateTaskStatus(taskID, status, h.revision); err != nil {
 		log.Errorf("failed to update the status of retention task %d: %v", taskID, err)
 		h.SendInternalServerError(err)
 		return
-	}
-	// if the status is the final status, update the end time
-	if status == jjob.StoppedStatus.String() || status == jjob.SuccessStatus.String() ||
-		status == jjob.ErrorStatus.String() {
-		task := &retention.Task{
-			ID:      taskID,
-			EndTime: time.Now(),
-		}
-		if err := mgr.UpdateTask(task, "EndTime"); err != nil {
-			log.Errorf("failed to update of retention task %d: %v", taskID, err)
-			h.SendInternalServerError(err)
-			return
-		}
 	}
 }
 

@@ -20,7 +20,6 @@ import (
 	"strconv"
 
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
@@ -112,13 +111,18 @@ func (*manifestCreationBuilder) Build(req *http.Request) (interceptor.Intercepto
 		return nil, nil
 	}
 
-	info, err := util.ParseManifestInfo(req)
+	info, err := util.ParseManifestInfoFromReq(req)
 	if err != nil {
 		return nil, err
 	}
 
 	// Replace request with manifests info context
 	*req = *req.WithContext(util.NewManifestInfoContext(req.Context(), info))
+
+	// Sync manifest layers to blobs for foreign layers not pushed and they are not in blob table
+	if err := info.SyncBlobs(); err != nil {
+		log.Warningf("Failed to sync blobs, error: %v", err)
+	}
 
 	opts := []quota.Option{
 		quota.EnforceResources(config.QuotaPerProjectEnable()),
@@ -192,18 +196,6 @@ func (*manifestDeletionBuilder) Build(req *http.Request) (interceptor.Intercepto
 		quota.MutexKeys(mutexKeys...),
 		quota.OnFulfilled(func(http.ResponseWriter, *http.Request) error {
 			blobs := info.ExclusiveBlobs
-
-			total, err := dao.GetTotalOfArtifacts(&models.ArtifactQuery{
-				PID:    info.ProjectID,
-				Digest: info.Digest,
-			})
-			if err == nil && total > 0 {
-				blob, err := dao.GetBlob(info.Digest)
-				if err == nil {
-					blobs = append(blobs, blob)
-				}
-			}
-
 			return dao.RemoveBlobsFromProject(info.ProjectID, blobs...)
 		}),
 	}

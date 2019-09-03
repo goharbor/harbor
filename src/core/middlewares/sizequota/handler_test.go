@@ -133,6 +133,24 @@ func manifestWithAdditionalLayers(raw schema2.Manifest, layerSizes []int64) sche
 	return manifest
 }
 
+func manifestWithAdditionalForeignLayers(raw schema2.Manifest, layerSizes []int64) schema2.Manifest {
+	var manifest schema2.Manifest
+
+	manifest.Versioned = raw.Versioned
+	manifest.Config = raw.Config
+	manifest.Layers = append(manifest.Layers, raw.Layers...)
+
+	for _, size := range layerSizes {
+		manifest.Layers = append(manifest.Layers, distribution.Descriptor{
+			MediaType: schema2.MediaTypeForeignLayer,
+			Size:      size,
+			Digest:    digest.FromString(randomString(15)),
+		})
+	}
+
+	return manifest
+}
+
 func digestOfManifest(manifest schema2.Manifest) string {
 	bytes, _ := json.Marshal(manifest)
 
@@ -149,7 +167,9 @@ func sizeOfImage(manifest schema2.Manifest) int64 {
 	totalSizeOfLayers := manifest.Config.Size
 
 	for _, layer := range manifest.Layers {
-		totalSizeOfLayers += layer.Size
+		if layer.MediaType != schema2.MediaTypeForeignLayer {
+			totalSizeOfLayers += layer.Size
+		}
 	}
 
 	return sizeOfManifest(manifest) + totalSizeOfLayers
@@ -256,7 +276,9 @@ func putManifest(projectName, name, tag string, manifest schema2.Manifest) {
 func pushImage(projectName, name, tag string, manifest schema2.Manifest) {
 	putBlobUpload(projectName, name, genUUID(), manifest.Config.Digest.String(), manifest.Config.Size)
 	for _, layer := range manifest.Layers {
-		putBlobUpload(projectName, name, genUUID(), layer.Digest.String(), layer.Size)
+		if layer.MediaType != schema2.MediaTypeForeignLayer {
+			putBlobUpload(projectName, name, genUUID(), layer.Digest.String(), layer.Size)
+		}
 	}
 
 	putManifest(projectName, name, tag, manifest)
@@ -388,6 +410,25 @@ func (suite *HandlerSuite) TestDeleteManifest() {
 	})
 }
 
+func (suite *HandlerSuite) TestImageWithForeignLayers() {
+	withProject(func(projectID int64, projectName string) {
+		manifest := manifestWithAdditionalForeignLayers(makeManifest(1, []int64{2, 3, 4, 5}), []int64{6, 7})
+		size := sizeOfImage(manifest)
+
+		pushImage(projectName, "photon", "latest", manifest)
+		suite.checkStorageUsage(size, projectID)
+		suite.checkStorageUsage(sizeOfManifest(manifest)+1+2+3+4+5, projectID)
+
+		blobs, err := dao.GetBlobsByArtifact(digestOfManifest(manifest))
+		if suite.Nil(err) {
+			suite.Len(blobs, 8)
+		}
+
+		deleteManifest(projectName, "photon", digestOfManifest(manifest))
+		suite.checkStorageUsage(0, projectID)
+	})
+}
+
 func (suite *HandlerSuite) TestImageOverwrite() {
 	withProject(func(projectID int64, projectName string) {
 		manifest1 := makeManifest(1, []int64{2, 3, 4, 5})
@@ -453,10 +494,10 @@ func (suite *HandlerSuite) TestPushImageToDifferentRepositories() {
 		suite.checkStorageUsage(size, projectID)
 
 		pushImage(projectName, "redis", "latest", manifest)
-		suite.checkStorageUsage(size+sizeOfManifest(manifest), projectID)
+		suite.checkStorageUsage(size, projectID)
 
 		pushImage(projectName, "postgres", "latest", manifest)
-		suite.checkStorageUsage(size+2*sizeOfManifest(manifest), projectID)
+		suite.checkStorageUsage(size, projectID)
 	})
 }
 
@@ -562,7 +603,7 @@ func (suite *HandlerSuite) TestDeleteManifestInDifferentRepositories() {
 
 		pushImage(projectName, "redis", "latest", manifest)
 		suite.checkCountUsage(3, projectID)
-		suite.checkStorageUsage(size+sizeOfManifest(manifest), projectID)
+		suite.checkStorageUsage(size, projectID)
 
 		deleteManifest(projectName, "redis", digestOfManifest(manifest))
 		suite.checkCountUsage(2, projectID)
@@ -570,7 +611,7 @@ func (suite *HandlerSuite) TestDeleteManifestInDifferentRepositories() {
 
 		pushImage(projectName, "redis", "latest", manifest)
 		suite.checkCountUsage(3, projectID)
-		suite.checkStorageUsage(size+sizeOfManifest(manifest), projectID)
+		suite.checkStorageUsage(size, projectID)
 	})
 }
 

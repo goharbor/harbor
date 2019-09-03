@@ -283,7 +283,7 @@ Once your pull request has been opened, harbor will run two CI pipelines against
 1. In the travis CI, your source code will be checked via `golint`, `go vet` and `go race` that makes sure the code is readable, safe and correct. Also all of unit tests will be triggered via `go test` against the pull request. What you need to pay attention to is the travis result and the coverage report.
 * If any failure in travis, you need to figure out whether it is introduced by your commits.
 * If the coverage dramatic decline, you need to commit unit test to coverage your code.
-2. In the drone CI, the E2E test will be triggered against the pull request. The pipeline is about to build and install harbor from source code, then to run four very basic E2E tests to validate the basic functionalities of harbor, like:
+2. In the drone CI, the E2E test will be triggered against the pull request. Also, the source code will be checked via `gosec`, and the result is stored in google storage for later analysis. The pipeline is about to build and install harbor from source code, then to run four very basic E2E tests to validate the basic functionalities of harbor, like:
 * Registry Basic Verification, to validate the image can be pulled and pushed successful.
 * Clair Basic Verification, to validate the image can be scanned successful.
 * Notary Basic Verification, to validate the image can be signed successful.

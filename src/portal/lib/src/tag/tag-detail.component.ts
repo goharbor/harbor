@@ -6,6 +6,7 @@ import { Label } from "../service/interface";
 import { forkJoin } from "rxjs";
 import { UserPermissionService } from "../service/permission.service";
 import { USERSTATICPERMISSION } from "../service/permission-static";
+import { ChannelService } from "../channel/channel.service";
 
 const TabLinkContentMap: { [index: string]: string } = {
   "tag-history": "history",
@@ -41,7 +42,7 @@ export class TagDetailComponent implements OnInit {
     created: new Date(),
     architecture: "--",
     os: "--",
-    'os.version': "--",
+    "os.version": "--",
     docker_version: "--",
     digest: "--",
     labels: []
@@ -56,45 +57,53 @@ export class TagDetailComponent implements OnInit {
   @Input() projectId: number;
   constructor(
     private tagService: TagService,
+    public channel: ChannelService,
     private errorHandler: ErrorHandler,
-    private userPermissionService: UserPermissionService,
-  ) { }
+    private userPermissionService: UserPermissionService
+  ) {}
 
   ngOnInit(): void {
     if (this.repositoryId && this.tagId) {
-      this.tagService.getTag(this.repositoryId, this.tagId)
-        .subscribe(response => {
-          this.tagDetails = response;
-          if (
-            this.tagDetails &&
-            this.tagDetails.scan_overview &&
-            this.tagDetails.scan_overview.components &&
-            this.tagDetails.scan_overview.components.summary
-          ) {
-            this.tagDetails.scan_overview.components.summary.forEach(item => {
-              switch (item.severity) {
-                case VulnerabilitySeverity.UNKNOWN:
-                  this._unknownCount += item.count;
-                  break;
-                case VulnerabilitySeverity.LOW:
-                  this._lowCount += item.count;
-                  break;
-                case VulnerabilitySeverity.MEDIUM:
-                  this._mediumCount += item.count;
-                  break;
-                case VulnerabilitySeverity.HIGH:
-                  this._highCount += item.count;
-                  break;
-                default:
-                  break;
-              }
-            });
-          }
-        }, error => this.errorHandler.error(error));
+      this.tagService.getTag(this.repositoryId, this.tagId).subscribe(
+        response => {
+          this.getTagDetails(response);
+        },
+        error => this.errorHandler.error(error)
+      );
     }
     this.getTagPermissions(this.projectId);
+    this.channel.tagDetail$.subscribe(tag => {
+      this.getTagDetails(tag);
+    });
   }
-
+  getTagDetails(tagDetails): void {
+    this.tagDetails = tagDetails;
+    if (
+      this.tagDetails &&
+      this.tagDetails.scan_overview &&
+      this.tagDetails.scan_overview.components &&
+      this.tagDetails.scan_overview.components.summary
+    ) {
+      this.tagDetails.scan_overview.components.summary.forEach(item => {
+        switch (item.severity) {
+          case VulnerabilitySeverity.UNKNOWN:
+            this._unknownCount += item.count;
+            break;
+          case VulnerabilitySeverity.LOW:
+            this._lowCount += item.count;
+            break;
+          case VulnerabilitySeverity.MEDIUM:
+            this._mediumCount += item.count;
+            break;
+          case VulnerabilitySeverity.HIGH:
+            this._highCount += item.count;
+            break;
+          default:
+            break;
+        }
+      });
+    }
+  }
   onBack(): void {
     this.backEvt.emit(this.repositoryId);
   }
@@ -178,14 +187,25 @@ export class TagDetailComponent implements OnInit {
   }
 
   getTagPermissions(projectId: number): void {
-
-    const hasVulnerabilitiesListPermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY_TAG_VULNERABILITY.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_VULNERABILITY.VALUE.LIST);
-    const hasBuildHistoryPermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY_TAG_MANIFEST.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_MANIFEST.VALUE.READ);
-    forkJoin(hasVulnerabilitiesListPermission, hasBuildHistoryPermission).subscribe(permissions => {
-      this.hasVulnerabilitiesListPermission = permissions[0] as boolean;
-      this.hasBuildHistoryPermission = permissions[1] as boolean;
-    }, error => this.errorHandler.error(error));
+    const hasVulnerabilitiesListPermission = this.userPermissionService.getPermission(
+      projectId,
+      USERSTATICPERMISSION.REPOSITORY_TAG_VULNERABILITY.KEY,
+      USERSTATICPERMISSION.REPOSITORY_TAG_VULNERABILITY.VALUE.LIST
+    );
+    const hasBuildHistoryPermission = this.userPermissionService.getPermission(
+      projectId,
+      USERSTATICPERMISSION.REPOSITORY_TAG_MANIFEST.KEY,
+      USERSTATICPERMISSION.REPOSITORY_TAG_MANIFEST.VALUE.READ
+    );
+    forkJoin(
+      hasVulnerabilitiesListPermission,
+      hasBuildHistoryPermission
+    ).subscribe(
+      permissions => {
+        this.hasVulnerabilitiesListPermission = permissions[0] as boolean;
+        this.hasBuildHistoryPermission = permissions[1] as boolean;
+      },
+      error => this.errorHandler.error(error)
+    );
   }
 }

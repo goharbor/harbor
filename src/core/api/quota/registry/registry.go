@@ -15,9 +15,13 @@
 package registry
 
 import (
+	"strings"
+	"sync"
+	"time"
+
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
-
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	common_quota "github.com/goharbor/harbor/src/common/quota"
@@ -28,9 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/core/promgr"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/pkg/errors"
-	"strings"
-	"sync"
-	"time"
 )
 
 // Migrator ...
@@ -48,7 +49,7 @@ func NewRegistryMigrator(pm promgr.ProjectManager) quota.QuotaMigrator {
 
 // Ping ...
 func (rm *Migrator) Ping() error {
-	return api.HealthCheckerRegistry["registry"].Check()
+	return quota.Check(api.HealthCheckerRegistry["registry"].Check)
 }
 
 // Dump ...
@@ -71,6 +72,9 @@ func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 		pro, err := rm.pm.Get(projectName)
 		if err != nil {
 			log.Errorf("failed to get project %s: %v", projectName, err)
+			continue
+		}
+		if pro == nil {
 			continue
 		}
 		_, exist := repoMap[pro.Name]
@@ -154,7 +158,8 @@ func (rm *Migrator) Usage(projects []quota.ProjectInfo) ([]quota.ProjectUsage, e
 			// Because that there are some shared blobs between repositories, it needs to remove the duplicate items.
 			for _, blob := range repo.Blobs {
 				_, exist := blobs[blob.Digest]
-				if !exist {
+				// foreign blob won't be calculated
+				if !exist && blob.ContentType != common.ForeignLayer {
 					blobs[blob.Digest] = blob.Size
 				}
 			}
@@ -179,7 +184,9 @@ func (rm *Migrator) Usage(projects []quota.ProjectInfo) ([]quota.ProjectUsage, e
 
 // Persist ...
 func (rm *Migrator) Persist(projects []quota.ProjectInfo) error {
-	for _, project := range projects {
+	total := len(projects)
+	for i, project := range projects {
+		log.Infof("[Quota-Sync]:: start to persist artifact&blob for project: %s, progress... [%d/%d]", project.Name, i, total)
 		for _, repo := range project.Repos {
 			if err := persistAf(repo.Afs); err != nil {
 				return err
@@ -191,6 +198,7 @@ func (rm *Migrator) Persist(projects []quota.ProjectInfo) error {
 				return err
 			}
 		}
+		log.Infof("[Quota-Sync]:: success to persist artifact&blob for project: %s, progress... [%d/%d]", project.Name, i, total)
 	}
 	if err := persistPB(projects); err != nil {
 		return err
@@ -247,7 +255,9 @@ func persistBlob(blobs []*models.Blob) error {
 }
 
 func persistPB(projects []quota.ProjectInfo) error {
-	for _, project := range projects {
+	total := len(projects)
+	for i, project := range projects {
+		log.Infof("[Quota-Sync]:: start to persist project&blob for project: %s, progress... [%d/%d]", project.Name, i, total)
 		var blobs = make(map[string]int64)
 		var blobsOfPro []*models.Blob
 		for _, repo := range project.Repos {
@@ -277,6 +287,7 @@ func persistPB(projects []quota.ProjectInfo) error {
 			log.Error(err)
 			return err
 		}
+		log.Infof("[Quota-Sync]:: success to persist project&blob for project: %s, progress... [%d/%d]", project.Name, i, total)
 	}
 	return nil
 }
@@ -412,7 +423,7 @@ func infoOfRepo(pid int64, repo string) (quota.RepoData, error) {
 		}
 		af := &models.Artifact{
 			PID:          pid,
-			Repo:         strings.Split(repo, "/")[1],
+			Repo:         repo,
 			Tag:          tag,
 			Digest:       desc.Digest.String(),
 			Kind:         "Docker-Image",

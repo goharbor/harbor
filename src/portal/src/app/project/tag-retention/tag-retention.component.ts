@@ -268,19 +268,21 @@ export class TagRetentionComponent implements OnInit {
     static calculateDuration(arr: Array<any>) {
         if (arr && arr.length > 0) {
             for (let i = 0; i < arr.length; i++) {
-                let duration = new Date(arr[i].end_time).getTime() - new Date(arr[i].start_time).getTime();
-                let min = Math.floor(duration / MIN);
-                let sec = Math.floor((duration % MIN) / SEC);
-                arr[i]['duration'] = "";
-                if ((min || sec) && duration > 0) {
-                    if (min) {
-                        arr[i]['duration'] += '' + min + MIN_STR;
+                if (arr[i].end_time && arr[i].start_time) {
+                    let duration = new Date(arr[i].end_time).getTime() - new Date(arr[i].start_time).getTime();
+                    let min = Math.floor(duration / MIN);
+                    let sec = Math.floor((duration % MIN) / SEC);
+                    arr[i]['duration'] = "";
+                    if ((min || sec) && duration > 0) {
+                        if (min) {
+                            arr[i]['duration'] += '' + min + MIN_STR;
+                        }
+                        if (sec) {
+                            arr[i]['duration'] += '' + sec + SEC_STR;
+                        }
+                    } else {
+                        arr[i]['duration'] = "0";
                     }
-                    if (sec) {
-                        arr[i]['duration'] += '' + sec + SEC_STR;
-                    }
-                } else if ( min === 0 && sec === 0 && duration > 0) {
-                    arr[i]['duration'] = "0";
                 } else {
                     arr[i]['duration'] = "N/A";
                 }
@@ -342,6 +344,7 @@ export class TagRetentionComponent implements OnInit {
 
     clickAdd(rule) {
         this.loadingRule = true;
+        this.addRuleComponent.onGoing = true;
         if (this.addRuleComponent.isAdd) {
             let retention: Retention = clone(this.retention);
             retention.rules.push(rule);
@@ -349,17 +352,29 @@ export class TagRetentionComponent implements OnInit {
                 this.tagRetentionService.createRetention(retention).subscribe(
                     response => {
                         this.refreshAfterCreatRetention();
+                        this.addRuleComponent.close();
+                        this.addRuleComponent.onGoing = false;
                     }, error => {
-                        this.errorHandler.error(error);
+                        if (error && error.error && error.error.message) {
+                            error = this.tagRetentionService.getI18nKey(error.error.message);
+                        }
+                        this.addRuleComponent.inlineAlert.showInlineError(error);
                         this.loadingRule = false;
+                        this.addRuleComponent.onGoing = false;
                     });
             } else {
                 this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
                     response => {
                         this.getRetention();
+                        this.addRuleComponent.close();
+                        this.addRuleComponent.onGoing = false;
                     }, error => {
                         this.loadingRule = false;
-                        this.errorHandler.error(error);
+                        this.addRuleComponent.onGoing = false;
+                      if (error && error.error && error.error.message) {
+                          error = this.tagRetentionService.getI18nKey(error.error.message);
+                      }
+                      this.addRuleComponent.inlineAlert.showInlineError(error);
                     });
             }
         } else {
@@ -368,9 +383,15 @@ export class TagRetentionComponent implements OnInit {
             this.tagRetentionService.updateRetention(this.retentionId, retention).subscribe(
                 response => {
                     this.getRetention();
+                    this.addRuleComponent.close();
+                    this.addRuleComponent.onGoing = false;
                 }, error => {
-                    this.errorHandler.error(error);
+                    if (error && error.error && error.error.message) {
+                        error = this.tagRetentionService.getI18nKey(error.error.message);
+                    }
+                    this.addRuleComponent.inlineAlert.showInlineError(error);
                     this.loadingRule = false;
+                    this.addRuleComponent.onGoing = false;
                 });
         }
     }

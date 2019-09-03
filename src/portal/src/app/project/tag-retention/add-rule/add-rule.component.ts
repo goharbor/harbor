@@ -16,12 +16,17 @@ import {
     OnInit,
     OnDestroy,
     Output,
-    EventEmitter,
+    EventEmitter, ViewChild, Input,
 } from "@angular/core";
-import { Rule, RuleMetadate } from "../retention";
+import { Retention, Rule, RuleMetadate } from "../retention";
 import { compareValue } from "@harbor/ui";
 import { TagRetentionService } from "../tag-retention.service";
+import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
 
+const EXISTING_RULE = "TAG_RETENTION.EXISTING_RULE";
+const ILLEGAL_RULE = "TAG_RETENTION.ILLEGAL_RULE";
+const INVALID_RULE = "TAG_RETENTION.INVALID_RULE";
+const MAX = 2100000000;
 @Component({
     selector: "add-rule",
     templateUrl: "./add-rule.component.html",
@@ -30,11 +35,13 @@ import { TagRetentionService } from "../tag-retention.service";
 export class AddRuleComponent implements OnInit, OnDestroy {
     addRuleOpened: boolean = false;
     @Output() clickAdd = new EventEmitter<Rule>();
+    @Input() retention: Retention;
     metadata: RuleMetadate = new RuleMetadate();
     rule: Rule = new Rule();
     isAdd: boolean = true;
     editRuleOrigin: Rule;
-
+    onGoing: boolean = false;
+    @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
     constructor(private tagRetentionService: TagRetentionService) {
 
     }
@@ -134,24 +141,34 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     canNotAdd(): boolean {
+        if (this.onGoing) {
+            return true;
+        }
         if (!this.isAdd && compareValue(this.editRuleOrigin, this.rule)) {
             return true;
         }
         if (!this.hasParam()) {
             return !(this.rule.template
               && this.rule.scope_selectors.repository[0].pattern
-              && this.rule.tag_selectors[0].pattern);
+              && this.rule.scope_selectors.repository[0].pattern.replace(/[{}]/g, "")
+              && this.rule.tag_selectors[0].pattern
+              && this.rule.tag_selectors[0].pattern.replace(/[{}]/g, ""));
         } else {
             return !(this.rule.template
               && this.rule.params[this.template]
               && parseInt(this.rule.params[this.template], 10) >= 0
+              && parseInt(this.rule.params[this.template], 10) < MAX
               && this.rule.scope_selectors.repository[0].pattern
-              && this.rule.tag_selectors[0].pattern);
+              && this.rule.scope_selectors.repository[0].pattern.replace(/[{}]/g, "")
+              && this.rule.tag_selectors[0].pattern
+              && this.rule.tag_selectors[0].pattern.replace(/[{}]/g, ""));
         }
     }
 
     open() {
         this.addRuleOpened = true;
+        this.inlineAlert.alertClose = true;
+        this.onGoing = false;
     }
 
     close() {
@@ -163,8 +180,47 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     add() {
-        this.close();
+        // remove whitespaces
+        this.rule.scope_selectors.repository[0].pattern = this.rule.scope_selectors.repository[0].pattern.replace(/\s+/g, "");
+        this.rule.tag_selectors[0].pattern = this.rule.tag_selectors[0].pattern.replace(/\s+/g, "");
+        if (this.rule.scope_selectors.repository[0].decoration !== "repoMatches"
+        && this.rule.scope_selectors.repository[0].pattern.indexOf("**") !== -1) {
+            this.inlineAlert.showInlineError(INVALID_RULE);
+            return;
+        }
+        if (this.isExistingRule()) {
+            this.inlineAlert.showInlineError(EXISTING_RULE);
+            return;
+        }
         this.clickAdd.emit(this.rule);
+    }
+    isExistingRule(): boolean {
+        if (this.retention && this.retention.rules && this.retention.rules.length > 0) {
+            for (let i = 0; i < this.retention.rules.length; i++) {
+                if (this.isSameRule(this.retention.rules[i])) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    isSameRule(rule: Rule): boolean {
+        if (this.rule.scope_selectors.repository[0].decoration !== rule.scope_selectors.repository[0].decoration) {
+            return false;
+        }
+        if (this.rule.scope_selectors.repository[0].pattern !== rule.scope_selectors.repository[0].pattern) {
+            return false;
+        }
+        if (this.rule.template !== rule.template) {
+            return false;
+        }
+        if (this.hasParam() && JSON.stringify(this.rule.params) !== JSON.stringify(rule.params)) {
+            return false;
+        }
+        if (this.rule.tag_selectors[0].decoration !== rule.tag_selectors[0].decoration) {
+            return false;
+        }
+        return this.rule.tag_selectors[0].pattern === rule.tag_selectors[0].pattern;
     }
 
     getI18nKey(str: string) {

@@ -72,10 +72,10 @@ func (s *SecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
 	if err == nil {
 		switch ns.Kind() {
 		case "project":
-			projectIDOrName := ns.Identity()
-			isPublicProject, _ := s.pm.IsPublic(projectIDOrName)
-			projectNamespace := rbac.NewProjectNamespace(projectIDOrName, isPublicProject)
-			user := project.NewUser(s, projectNamespace, s.GetProjectRoles(projectIDOrName)...)
+			projectID := ns.Identity().(int64)
+			isPublicProject, _ := s.pm.IsPublic(projectID)
+			projectNamespace := rbac.NewProjectNamespace(projectID, isPublicProject)
+			user := project.NewUser(s, projectNamespace, s.GetProjectRoles(projectID)...)
 			return rbac.HasPermission(user, resource, action)
 		}
 	}

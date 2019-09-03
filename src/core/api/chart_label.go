@@ -58,14 +58,7 @@ func (cla *ChartLabelAPI) Prepare() {
 }
 
 func (cla *ChartLabelAPI) requireAccess(action rbac.Action) bool {
-	resource := rbac.NewProjectNamespace(cla.project.ProjectID).Resource(rbac.ResourceHelmChartVersionLabel)
-
-	if !cla.SecurityCtx.Can(action, resource) {
-		cla.SendForbiddenError(errors.New(cla.SecurityCtx.GetUsername()))
-		return false
-	}
-
-	return true
+	return cla.RequireProjectAccess(cla.project.ProjectID, action, rbac.ResourceHelmChartVersionLabel)
 }
 
 // MarkLabel handles the request of marking label to chart.

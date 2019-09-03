@@ -26,7 +26,7 @@ type ProjectParserTestSuite struct {
 
 func (suite *ProjectParserTestSuite) TestParse() {
 	namespace, err := projectNamespaceParser(Resource("/project/1/image"))
-	suite.Equal(namespace, &projectNamespace{projectIDOrName: int64(1)})
+	suite.Equal(namespace, &projectNamespace{projectID: 1})
 	suite.Nil(err)
 
 	namespace, err = projectNamespaceParser(Resource("/fake/1/image"))

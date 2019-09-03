@@ -174,6 +174,17 @@ func (info *ManifestInfo) BlobMutexKey(blob *models.Blob, suffix ...string) stri
 	return strings.Join(append(a, suffix...), ":")
 }
 
+// SyncBlobs sync layers of manifest to blobs
+func (info *ManifestInfo) SyncBlobs() error {
+	err := dao.SyncBlobs(info.References)
+	if err == dao.ErrDupRows {
+		log.Warning("Some blobs created by others, ignore this error")
+		return nil
+	}
+
+	return err
+}
+
 // GetBlobsNotInProject returns blobs of the manifest which not in the project
 func (info *ManifestInfo) GetBlobsNotInProject() ([]*models.Blob, error) {
 	var digests []string
@@ -228,7 +239,6 @@ func (info *ManifestInfo) ManifestExists() (bool, error) {
 	info.manifestExistOnce.Do(func() {
 		total, err := dao.GetTotalOfArtifacts(&models.ArtifactQuery{
 			PID:    info.ProjectID,
-			Repo:   info.Repository,
 			Digest: info.Digest,
 		})
 
@@ -441,8 +451,8 @@ func NewManifestInfoContext(ctx context.Context, info *ManifestInfo) context.Con
 	return context.WithValue(ctx, manifestInfoKey, info)
 }
 
-// ParseManifestInfo prase manifest from request
-func ParseManifestInfo(req *http.Request) (*ManifestInfo, error) {
+// ParseManifestInfoFromReq parse manifest from request
+func ParseManifestInfoFromReq(req *http.Request) (*ManifestInfo, error) {
 	match, repository, reference := MatchManifestURL(req)
 	if !match {
 		return nil, fmt.Errorf("not match url %s for manifest", req.URL.Path)
@@ -496,7 +506,7 @@ func ParseManifestInfo(req *http.Request) (*ManifestInfo, error) {
 	}, nil
 }
 
-// ParseManifestInfoFromPath prase manifest from request path
+// ParseManifestInfoFromPath parse manifest from request path
 func ParseManifestInfoFromPath(req *http.Request) (*ManifestInfo, error) {
 	match, repository, reference := MatchManifestURL(req)
 	if !match {

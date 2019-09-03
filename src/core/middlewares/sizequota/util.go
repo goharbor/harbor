@@ -146,7 +146,7 @@ func parseBlobInfoFromComplete(req *http.Request) (*util.BlobInfo, error) {
 func parseBlobInfoFromManifest(req *http.Request) (*util.BlobInfo, error) {
 	info, ok := util.ManifestInfoFromContext(req.Context())
 	if !ok {
-		manifest, err := util.ParseManifestInfo(req)
+		manifest, err := util.ParseManifestInfoFromReq(req)
 		if err != nil {
 			return nil, err
 		}
@@ -274,7 +274,9 @@ func computeResourcesForManifestCreation(req *http.Request) (types.ResourceList,
 	size := info.Descriptor.Size
 
 	for _, blob := range blobs {
-		size += blob.Size
+		if !blob.IsForeignLayer() {
+			size += blob.Size
+		}
 	}
 
 	return types.ResourceList{types.ResourceStorage: size}, nil
@@ -295,16 +297,11 @@ func computeResourcesForManifestDeletion(req *http.Request) (types.ResourceList,
 
 	info.ExclusiveBlobs = blobs
 
-	blob, err := dao.GetBlob(info.Digest)
-	if err != nil {
-		return nil, err
-	}
-
-	// manifest size will always be released
-	size := blob.Size
-
+	var size int64
 	for _, blob := range blobs {
-		size = size + blob.Size
+		if !blob.IsForeignLayer() {
+			size = size + blob.Size
+		}
 	}
 
 	return types.ResourceList{types.ResourceStorage: size}, nil

@@ -39,18 +39,13 @@ func (s *ControllerTestSuite) TestPolicy() {
 			{
 				ID:       1,
 				Priority: 1,
-				Template: "recentXdays",
+				Template: "latestPushedK",
 				Parameters: rule.Parameters{
-					"num": 10,
+					"latestPushedK": 10,
 				},
 				TagSelectors: []*rule.Selector{
 					{
-						Kind:       "label",
-						Decoration: "with",
-						Pattern:    "latest",
-					},
-					{
-						Kind:       "regularExpression",
+						Kind:       "doublestar",
 						Decoration: "matches",
 						Pattern:    "release-[\\d\\.]+",
 					},
@@ -58,7 +53,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 				ScopeSelectors: map[string][]*rule.Selector{
 					"repository": {
 						{
-							Kind:       "regularExpression",
+							Kind:       "doublestar",
 							Decoration: "matches",
 							Pattern:    ".+",
 						},
@@ -68,19 +63,14 @@ func (s *ControllerTestSuite) TestPolicy() {
 			{
 				ID:       2,
 				Priority: 1,
-				Template: "recentXdays",
+				Template: "latestPushedK",
 				Disabled: true,
 				Parameters: rule.Parameters{
-					"num": 3,
+					"latestPushedK": 3,
 				},
 				TagSelectors: []*rule.Selector{
 					{
-						Kind:       "label",
-						Decoration: "with",
-						Pattern:    "latest",
-					},
-					{
-						Kind:       "regularExpression",
+						Kind:       "doublestar",
 						Decoration: "matches",
 						Pattern:    "release-[\\d\\.]+",
 					},
@@ -88,7 +78,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 				ScopeSelectors: map[string][]*rule.Selector{
 					"repository": {
 						{
-							Kind:       "regularExpression",
+							Kind:       "doublestar",
 							Decoration: "matches",
 							Pattern:    ".+",
 						},
@@ -146,18 +136,13 @@ func (s *ControllerTestSuite) TestExecution() {
 			{
 				ID:       1,
 				Priority: 1,
-				Template: "recentXdays",
+				Template: "latestPushedK",
 				Parameters: rule.Parameters{
-					"num": 10,
+					"latestPushedK": 10,
 				},
 				TagSelectors: []*rule.Selector{
 					{
-						Kind:       "label",
-						Decoration: "with",
-						Pattern:    "latest",
-					},
-					{
-						Kind:       "regularExpression",
+						Kind:       "doublestar",
 						Decoration: "matches",
 						Pattern:    "release-[\\d\\.]+",
 					},
@@ -165,7 +150,7 @@ func (s *ControllerTestSuite) TestExecution() {
 				ScopeSelectors: map[string][]*rule.Selector{
 					"repository": {
 						{
-							Kind:       "regularExpression",
+							Kind:       "doublestar",
 							Decoration: "matches",
 							Pattern:    ".+",
 						},

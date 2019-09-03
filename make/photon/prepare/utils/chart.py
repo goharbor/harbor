@@ -1,17 +1,19 @@
 import os, shutil
 
-from g import templates_dir, config_dir
+from g import templates_dir, config_dir, data_dir, DEFAULT_UID, DEFAULT_GID
 from .jinja import render_jinja
+from .misc import prepare_dir
 
-chartm_temp_dir = os.path.join(templates_dir, "chartserver")
-chartm_env_temp = os.path.join(chartm_temp_dir, "env.jinja")
+chart_museum_temp_dir = os.path.join(templates_dir, "chartserver")
+chart_museum_env_temp = os.path.join(chart_museum_temp_dir, "env.jinja")
 
-chartm_config_dir = os.path.join(config_dir, "chartserver")
-chartm_env = os.path.join(config_dir, "chartserver", "env")
+chart_museum_config_dir = os.path.join(config_dir, "chartserver")
+chart_museum_env = os.path.join(config_dir, "chartserver", "env")
+
+chart_museum_data_dir = os.path.join(data_dir, 'chart_storage')
 
 def prepare_chartmuseum(config_dict):
 
-    core_secret = config_dict['core_secret']
     redis_host = config_dict['redis_host']
     redis_port = config_dict['redis_port']
     redis_password = config_dict['redis_password']
@@ -19,9 +21,8 @@ def prepare_chartmuseum(config_dict):
     storage_provider_name = config_dict['storage_provider_name']
     storage_provider_config_map = config_dict['storage_provider_config']
 
-    if not os.path.isdir(chartm_config_dir):
-        print ("Create config folder: %s" % chartm_config_dir)
-        os.makedirs(chartm_config_dir)
+    prepare_dir(chart_museum_data_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
+    prepare_dir(chart_museum_config_dir)
 
     # process redis info
     cache_store = "redis"
@@ -94,8 +95,8 @@ def prepare_chartmuseum(config_dict):
     all_storage_provider_configs = ('\n').join(storage_provider_config_options)
 
     render_jinja(
-    chartm_env_temp,
-    chartm_env,
+    chart_museum_env_temp,
+    chart_museum_env,
     cache_store=cache_store,
     cache_redis_addr=cache_redis_addr,
     cache_redis_password=cache_redis_password,

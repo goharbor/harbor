@@ -14,6 +14,20 @@ If you run a previous version of Harbor, you may need to update ```harbor.yml```
 
 In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Harbor on Kubernetes](kubernetes_deployment.md) for details.
 
+## Harbor Components
+
+|Component|Version|
+|---|---|
+|Postgresql|9.6.10-1.ph2|
+|Redis|4.0.10-1.ph2|
+|Clair|2.0.8|
+|Beego|1.9.0|
+|Chartmuseum|0.9.0|
+|Docker/distribution|2.7.1|
+|Docker/notary|0.6.1|
+|Helm|2.9.1|
+|Swagger-ui|3.22.1|
+
 ## Prerequisites for the target host
 
 Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Docker, and Docker Compose to be installed.
@@ -80,7 +94,7 @@ The parameters are described below - note that at the very least, you will need 
 
 ##### Required parameters
 
-- **hostname**: The target host's hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_
+- **hostname**: The target host's hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` or `0.0.0.0` for the hostname - the registry service needs to be accessible by external clients!_
 
 - **data_volume**: The location to store harbor's data.
 
@@ -97,7 +111,7 @@ The parameters are described below - note that at the very least, you will need 
   - **level**: log level, options are debug, info, warning, error, fatal
   - **rotate_count**: Log files are rotated **rotate_count** times before being removed. If count is 0, old versions are removed rather than rotated.
   - **rotate_size**: Log files are rotated only if they grow bigger than **rotate_size** bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.
-  - **location**: he directory to store store log
+  - **location**: the directory to store log
 
 ##### optional parameters
 
