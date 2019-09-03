@@ -205,14 +205,15 @@ Test Case - Verfiy Project Level CVE Whitelist By Quick Way of Add System
     [Tags]  run-once
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%S
-    ${image}=    Set Variable    httpd
-    ${sha256}=  Set Variable  98caed3e3a90ed9db8d25dcbb98eebe0ce56358a9dbbc940d7eb66a8e2b88252
+    #Image for test: haproxy:1.5
+    ${image}=    Set Variable    haproxy
+    ${sha256}=  Set Variable  eca4db0f144d40554e97d000a414a0535720e5d6e559731860558676a57529f8
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Switch To Configuration System Setting
-    Add Items To System CVE Whitelist    CVE-2013-7445\nCVE-2019-15098\nCVE-2019-15099\nCVE-2019-15504\nCVE-2019-15505\nCVE-2019-9511\nCVE-2019-9513
+    Add Items To System CVE Whitelist    CVE-2016-2779\nCVE-2017-12424\nCVE-2018-6551\nCVE-2019-9169\nCVE-2018-6485\nCVE-2018-1000001\nCVE-2019-12900
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
     Create An New Project    project${d}
