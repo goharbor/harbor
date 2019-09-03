@@ -865,7 +865,7 @@ You can define one webhook endpoint per project. Webhook notifications provide i
 
 |Event|Webhook Event Type|Contents of Notification|
 |---|---|---|
-|Push manifest to registry|`IMAGE PUSH`|Repository namespace name, repository name, tags, manifest digest, image name, image size, push time timestamp, username of user who pushed image|
+|Push image to registry|`IMAGE PUSH`|Repository namespace name, repository name, resource URL, tags, manifest digest, image name, push time timestamp, username of user who pushed image|
 |Pull manifest from registry|`IMAGE PULL`|Repository namespace name, repository name, manifest digest, image name, pull time timestamp, username of user who pulled image|
 |Delete manifest from registry|`IMAGE DELETE`|Repository namespace name, repository name, manifest digest, image name, image size, delete time timestamp, username of user who deleted image|
 |Upload Helm chart to registry|`CHART PUSH`|Repository name, chart name, chart type, chart version, chart size, tag, timestamp of push, username of user who uploaded chart|
@@ -902,8 +902,6 @@ The endpoint that receives the webhook should ideally meet the following require
 - Have a webhook listener that is capable of interpreting the payload and acting upon the information it contains. For example, running a shell script.
 - Support queues and retry configurations, so that failed webhook notifications are queued and retried until the request succeeds or number of retries exceeds the configured maximum.
 
-It is recommended to create a separate endpoint URL for each project. 
-
 ### Example Use Cases
 
 You can configure your continuous integration and development infrastructure so that it performs the following types of operations when it receives a webhook notification from Harbor.
@@ -915,7 +913,7 @@ You can configure your continuous integration and development infrastructure so 
   - Replicate the image to remote registries.
 - Image scanning:
   - If a vulnerability is found, rescan the image or replicate it to another registry.
-  - If the scan passes, build the image.
+  - If the scan passes, deploy the image.
 
 ### Configure Webhooks
 
