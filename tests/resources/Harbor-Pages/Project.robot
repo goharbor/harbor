@@ -190,7 +190,7 @@ Edit Repo Info
     Retry Element Click  xpath=//*[@id='info-edit-button']/button
     Input Text  xpath=//*[@id='info']/form/div[2]/textarea  test_description_info
     Retry Element Click  xpath=//*[@id='info']/form/div[3]/button[2]
-    Retry Element Click  xpath=//*[@id='info']/form/confirmation-dialog/clr-modal/div/div[1]/div[1]/div/div[3]/button[2]
+    Retry Element Click  xpath=//*[@id='confirm-btn']
     Retry Wait Until Page Contains Element  //*[@id='info']/form/div[2]
     # Confirm input
     Retry Element Click  xpath=//*[@id='info-edit-button']/button

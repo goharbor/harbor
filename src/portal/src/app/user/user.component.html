@@ -13,8 +13,8 @@
                 <clr-dg-action-bar>
                     <button type="button" class="btn btn-sm btn-secondary" (click)="addNewUser()" [disabled]="!canCreateUser"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'USER.ADD_ACTION' | translate}}</button>
                     <button type="button" class="btn btn-sm btn-secondary" id="set-admin" [disabled]="!ifSameRole" (click)="changeAdminRole()" ><clr-icon shape="wrench" size="16"></clr-icon>&nbsp;{{ISADMNISTRATOR  | translate}}</button>
-                    <clr-dropdown id='member-action' [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link" clrDropdownTrigger>
-                        <span>{{'BUTTON.ACTIONS' | translate}}<clr-icon shape="caret down"></clr-icon></span>
+                    <clr-dropdown  [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link" clrDropdownTrigger>
+                        <span id='member-action'>{{'BUTTON.ACTIONS' | translate}}<clr-icon shape="caret down"></clr-icon></span>
                         <clr-dropdown-menu *clrIfOpen>
                             <clr-dropdown>
                                 <button type="button" class="btn btn-sm btn-secondary" id="changePwd" [hidden]="!canCreateUser" [disabled]="!(selectedRow.length==1)" (click)="openChangePwdModal()" ><clr-icon shape="edit" size="16"></clr-icon>&nbsp;{{'RESET_PWD.TITLE'  | translate}}</button>

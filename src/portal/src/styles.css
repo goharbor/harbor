@@ -103,5 +103,8 @@ body {
 .flex-items-xs-right {
     justify-content: flex-end;
 }
+.modal-body {
+    outline: none !important;
+}
 
 
