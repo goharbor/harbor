@@ -88,14 +88,20 @@ func (ia *InternalAPI) SwitchQuota() {
 		ia.SendBadRequestError(err)
 		return
 	}
+	cur := config.ReadOnly()
 	// quota per project from disable to enable, it needs to update the quota usage bases on the DB records.
 	if !config.QuotaPerProjectEnable() && req.Enabled {
+		if !cur {
+			config.GetCfgManager().Set(common.ReadOnly, true)
+			config.GetCfgManager().Save()
+		}
 		if err := ia.ensureQuota(); err != nil {
 			ia.SendInternalServerError(err)
 			return
 		}
 	}
 	defer func() {
+		config.GetCfgManager().Set(common.ReadOnly, cur)
 		config.GetCfgManager().Set(common.QuotaPerProjectEnable, req.Enabled)
 		config.GetCfgManager().Save()
 	}()
