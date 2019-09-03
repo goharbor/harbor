@@ -1,6 +1,7 @@
 package retention
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
@@ -118,7 +119,8 @@ func (s *ControllerTestSuite) TestPolicy() {
 	s.Require().Nil(err)
 
 	p1, err = c.GetRetention(id)
-	s.Require().Nil(err)
+	s.Require().NotNil(err)
+	s.Require().True(strings.Contains(err.Error(), "no such Retention policy"))
 	s.Require().Nil(p1)
 }
 

@@ -37,7 +37,7 @@ type Metadata struct {
 	Template string `json:"template" valid:"Required"`
 
 	// The parameters of this rule
-	Parameters Parameters `json:"params"`
+	Parameters Parameters `json:"params" valid:"Required"`
 
 	// Selector attached to the rule for filtering tags
 	TagSelectors []*Selector `json:"tag_selectors" valid:"Required"`

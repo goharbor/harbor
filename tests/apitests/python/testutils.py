@@ -2,7 +2,7 @@ import time
 import os
 import sys
 
-sys.path.append(os.environ["SWAGGER_CLIENT_PATH"])
+sys.path.insert(0, os.environ["SWAGGER_CLIENT_PATH"])
 from swagger_client.rest import ApiException
 import swagger_client.models
 from pprint import pprint
@@ -12,7 +12,7 @@ admin_pwd = "Harbor12345"
 
 harbor_server = os.environ["HARBOR_HOST"]
 #CLIENT=dict(endpoint="https://"+harbor_server+"/api")
-ADMIN_CLIENT=dict(endpoint = "https://"+harbor_server+"/api", username = admin_user, password =  admin_pwd)
+ADMIN_CLIENT=dict(endpoint = os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api", username = admin_user, password =  admin_pwd)
 USER_ROLE=dict(admin=0,normal=1)
 TEARDOWN = True
 
