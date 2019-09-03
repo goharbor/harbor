@@ -69,7 +69,7 @@ Multi-delete User
     :For  ${obj}  in  @{obj}
     \    Retry Element Click  //clr-dg-row[contains(.,'${obj}')]//label
     Retry Element Click  ${member_action_xpath}
-    Retry Element Click  //clr-dropdown/clr-dropdown-menu/button[2]
+    Retry Element Click  //*[@id='deleteUser']
     Retry Double Keywords When Error  Retry Element Click  ${delete_btn}  Retry Wait Until Page Not Contains Element  ${delete_btn}
 
 
