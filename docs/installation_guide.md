@@ -14,6 +14,20 @@ If you run a previous version of Harbor, you may need to update ```harbor.yml```
 
 In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Harbor on Kubernetes](kubernetes_deployment.md) for details.
 
+## Harbor Components
+
+|Component|Version|
+|---|---|
+|Postgresql|9.6.10-1.ph2|
+|Redis|4.0.10-1.ph2|
+|Clair|2.0.8|
+|Beego|1.9.0|
+|Chartmuseum|0.9.0|
+|Docker/distribution|2.7.1|
+|Docker/notary|0.6.1|
+|Helm|2.9.1|
+|Swagger-ui|3.22.1|
+
 ## Prerequisites for the target host
 
 Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Docker, and Docker Compose to be installed.
