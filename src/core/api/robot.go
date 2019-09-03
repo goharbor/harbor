@@ -17,16 +17,16 @@ package api
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"strconv"
+	"time"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/token"
-	"net/http"
-	"strconv"
-
 	"github.com/goharbor/harbor/src/core/config"
-	"time"
 )
 
 // RobotAPI ...
@@ -91,13 +91,7 @@ func (r *RobotAPI) Prepare() {
 }
 
 func (r *RobotAPI) requireAccess(action rbac.Action) bool {
-	resource := rbac.NewProjectNamespace(r.project.ProjectID).Resource(rbac.ResourceRobot)
-	if !r.SecurityCtx.Can(action, resource) {
-		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
-		return false
-	}
-
-	return true
+	return r.RequireProjectAccess(r.project.ProjectID, action, rbac.ResourceRobot)
 }
 
 // Post ...
@@ -158,7 +152,6 @@ func (r *RobotAPI) Post() {
 	}
 
 	robotRep := models.RobotRep{
-		ID:    id,
 		Name:  robot.Name,
 		Token: rawTk,
 	}

@@ -117,7 +117,7 @@ function check_docker {
 function check_dockercompose {
 	if ! docker-compose --version &> /dev/null
 	then
-		error "Need to install docker-compose(1.18.0+) by yourself first and run this script again."
+		error "Need to install docker-compose(1.23.0+) by yourself first and run this script again."
 		exit 1
 	fi
 	
@@ -129,9 +129,9 @@ function check_dockercompose {
 		docker_compose_version_part2=${BASH_REMATCH[3]}
 		
 		# the version of docker-compose does not meet the requirement
-		if [ "$docker_compose_version_part1" -lt 1 ] || ([ "$docker_compose_version_part1" -eq 1 ] && [ "$docker_compose_version_part2" -lt 18 ])
+		if [ "$docker_compose_version_part1" -lt 1 ] || ([ "$docker_compose_version_part1" -eq 1 ] && [ "$docker_compose_version_part2" -lt 23 ])
 		then
-			error "Need to upgrade docker-compose package to 1.18.0+."
+			error "Need to upgrade docker-compose package to 1.23.0+."
                         exit 1
 		else
 			note "docker-compose version: $docker_compose_version"

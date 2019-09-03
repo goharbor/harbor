@@ -33,19 +33,22 @@ import zh from '@angular/common/locales/zh-Hans';
 import es from '@angular/common/locales/es';
 import localeFr from '@angular/common/locales/fr';
 import localePt from '@angular/common/locales/pt-PT';
+import localeTr from '@angular/common/locales/tr';
 import { DevCenterComponent } from './dev-center/dev-center.component';
 import { VulnerabilityPageComponent } from './vulnerability-page/vulnerability-page.component';
 import { GcPageComponent } from './gc-page/gc-page.component';
 import { OidcOnboardModule } from './oidc-onboard/oidc-onboard.module';
+import { LicenseModule } from './license/license.module';
 registerLocaleData(zh, 'zh-cn');
 registerLocaleData(es, 'es-es');
 registerLocaleData(localeFr, 'fr-fr');
 registerLocaleData(localePt, 'pt-br');
+registerLocaleData(localeTr, 'tr-tr');
 
 
 export function initConfig(configService: AppConfigService, skinableService: SkinableConfig) {
     return () => {
-        skinableService.getCustomFile();
+        skinableService.getCustomFile().subscribe();
         configService.load().subscribe();
     };
 }
@@ -70,7 +73,8 @@ export function getCurrentLanguage(translateService: TranslateService) {
         HarborRoutingModule,
         ConfigurationModule,
         DeveloperCenterModule,
-        OidcOnboardModule
+        OidcOnboardModule,
+        LicenseModule
     ],
     exports: [
     ],

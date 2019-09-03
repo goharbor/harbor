@@ -32,6 +32,12 @@
 						</clr-tab-content>
 					</ng-template>
                 </clr-tab>
+                <clr-tab>
+                    <button id="config-system" clrTabLink>{{'CONFIG.PROJECT_QUOTAS' | translate }}</button>
+                    <clr-tab-content id="project_quotas" *clrIfActive>
+                        <project-quotas [(allConfig)]="allConfig" (refreshAllconfig)="refreshAllconfig()"></project-quotas>
+                    </clr-tab-content>
+                </clr-tab>
         </clr-tabs>
     </div>
 </div>

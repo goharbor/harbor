@@ -1,6 +1,6 @@
 # Harbor upgrade and migration guide
 
-This guide only covers upgrade and mgiration to version >= v1.8.0
+This guide only covers upgrade and migration to version >= v1.8.0
 
 When upgrading your existing Harbor instance to a newer version, you may need to migrate the data in your database and the settings in `harbor.cfg`. 
 Since the migration may alter the database schema and the settings of `harbor.cfg`, you should **always** back up your data before any migration.
@@ -34,7 +34,7 @@ you follow the steps below.
     ```
     mv harbor /my_backup_dir/harbor
     ```
-    Back up database (by default in diretory `/data/database`)
+    Back up database (by default in directory `/data/database`)
     ```
     cp -r /data/database /my_backup_dir/
     ```
@@ -52,7 +52,7 @@ you follow the steps below.
     in that path will be updated with the values from ${harbor_cfg}
     
     ```
-    docker run -it --rm -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.cfg -v ${harbor_yml}:/harbor-migration/harbor-cfg-out/harbor.yml goharbor/harbor-migrator:[tag] --cfg up
+    docker run -it --rm -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.yml -v ${harbor_yml}:/harbor-migration/harbor-cfg-out/harbor.yml goharbor/harbor-migrator:[tag] --cfg up
     ```
     **NOTE:** The schema upgrade and data migration of Database is performed by core when Harbor starts, if the migration fails,
     please check the log of core to debug.

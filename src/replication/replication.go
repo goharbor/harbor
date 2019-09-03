@@ -35,6 +35,16 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/native"
 	// register the huawei adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/huawei"
+	// register the Google Gcr adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/googlegcr"
+	// register the AwsEcr adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/awsecr"
+	// register the AzureAcr adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/azurecr"
+	// register the AliACR adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/aliacr"
+	// register the Helm Hub adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/helmhub"
 )
 
 var (
@@ -49,7 +59,7 @@ var (
 )
 
 // Init the global variables and configurations
-func Init(closing chan struct{}) error {
+func Init(closing, done chan struct{}) error {
 	// init config
 	secretKey, err := cfg.SecretKey()
 	if err != nil {
@@ -76,6 +86,6 @@ func Init(closing chan struct{}) error {
 	log.Debug("the replication initialization completed")
 
 	// Start health checker for registries
-	go registry.NewHealthChecker(time.Minute*5, closing).Run()
+	go registry.NewHealthChecker(time.Minute*5, closing, done).Run()
 	return nil
 }

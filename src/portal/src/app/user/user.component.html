@@ -9,7 +9,7 @@
             </span>
         </div>
         <div>
-            <clr-datagrid (clrDgRefresh)="load($event)" [clrDgLoading]="inProgress"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="SelectedChange()">
+            <clr-datagrid (clrDgRefresh)="load($event)" [clrDgLoading]="inProgress"  [(clrDgSelected)]="selectedRow">
                 <clr-dg-action-bar>
                     <button type="button" class="btn btn-sm btn-secondary" (click)="addNewUser()" [disabled]="!canCreateUser"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'USER.ADD_ACTION' | translate}}</button>
                     <button type="button" class="btn btn-sm btn-secondary" id="set-admin" [disabled]="!ifSameRole" (click)="changeAdminRole()" ><clr-icon shape="wrench" size="16"></clr-icon>&nbsp;{{ISADMNISTRATOR  | translate}}</button>
@@ -33,9 +33,9 @@
                     <clr-dg-cell>{{user.creation_time | date: 'short'}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
-                    <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'USER.OF' | translate }}</span>
+                    <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'USER.OF' | translate }}</span>
                     {{pagination.totalItems}} {{'USER.ITEMS' | translate }}
-                    <clr-dg-pagination #pagination [clrDgPageSize]="15" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalCount">
+                    <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalCount">
                     </clr-dg-pagination>
                 </clr-dg-footer>
             </clr-datagrid>

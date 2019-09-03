@@ -1,0 +1,47 @@
+<div class="align-center">
+  <inline-alert class="modal-title"></inline-alert>
+  <form #webhookForm="ngForm">
+    <section class="form-block webhook-section">
+      <!-- endpoint URL -->
+      <div class="form-group">
+        <label for="edit_endpoint_url" class="col-md-3 form-group-label-override required">{{'WEBHOOK.ENDPOINT_URL' | translate}}</label>
+        <label for="edit_endpoint_url" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left"
+          [class.invalid]="enpointURL.errors && (enpointURL.dirty || enpointURL.touched)" [class.valid]="enpointURL.valid">
+          <input type="text" id="edit_endpoint_url" [disabled]="checking" [(ngModel)]="webhookTarget.address"
+          size="25" name="edit_endpoint_url" #enpointURL="ngModel" required placeholder="http(s)://192.168.1.1">
+          <span class="tooltip-content" *ngIf="enpointURL.errors && enpointURL.errors.required && (enpointURL.dirty || enpointURL.touched)">
+            {{ 'WEBHOOK.URL_IS_REQUIRED' | translate }}
+          </span>
+        </label>
+      </div>
+      <!-- auth_header -->
+      <div class="form-group">
+        <label for="auth_header" class="col-md-3 form-group-label-override">{{ 'WEBHOOK.AUTH_HEADER' |
+          translate }}</label>
+        <input type="text" id="auth_header" [disabled]="checking"
+          [(ngModel)]="webhookTarget.auth_header" size="28" name="auth_header">
+      </div>
+      <!-- verify remote cert -->
+      <div class="form-group">
+        <label for="verify_remote_cert">{{'WEBHOOK.VERIFY_REMOTE_CERT' | translate}}</label>
+        <input type="checkbox" [disabled]="checking" clrCheckbox name="verify_remote_cert" id="verify_remote_cert" 
+          (ngModelChange)="setCertValue($event)" [ngModel]="!webhookTarget.skip_cert_verify" class="clr-checkbox"/>
+        <clr-tooltip class="icon-tooltip">
+          <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+          <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>
+            {{'CONFIG.TOOLTIP.VERIFY_REMOTE_CERT' | translate}}
+          </clr-tooltip-content>
+        </clr-tooltip>
+      </div>
+    </section>
+  </form>
+  <div *ngIf="!isModify">
+      <button type="button" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.CONTINUE' | translate}}</button>
+      <button type="button" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
+  </div>
+  <div *ngIf="isModify">
+      <button type="button" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
+      <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+      <button type="button" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.SAVE' | translate}}</button>
+  </div>
+</div>

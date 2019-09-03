@@ -16,10 +16,13 @@ package operation
 
 import (
 	"fmt"
+	"regexp"
+	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	hjob "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/operation/execution"
@@ -37,12 +40,18 @@ type Controller interface {
 	GetExecution(int64) (*models.Execution, error)
 	ListTasks(...*models.TaskQuery) (int64, []*models.Task, error)
 	GetTask(int64) (*models.Task, error)
-	UpdateTaskStatus(id int64, status string, statusCondition ...string) error
+	UpdateTaskStatus(id int64, status string, statusRevision int64, statusCondition ...string) error
 	GetTaskLog(int64) ([]byte, error)
 }
 
 const (
 	maxReplicators = 1024
+)
+
+var (
+	statusBehindErrorPattern = "mismatch job status for stopping job: .*, job status (.*) is behind Running"
+	statusBehindErrorReg     = regexp.MustCompile(statusBehindErrorPattern)
+	jobNotFoundErrorMsg      = "object is not found"
 )
 
 // NewController returns a controller implementation
@@ -149,19 +158,51 @@ func (c *controller) StopReplication(executionID int64) error {
 	}
 	// got tasks, stopping the tasks one by one
 	for _, task := range tasks {
-		if !isTaskRunning(task) {
-			log.Debugf("the task %d(job ID: %s) isn't running, its status is %s, skip", task.ID, task.JobID, task.Status)
+		if isTaskInFinalStatus(task) {
+			log.Debugf("the task %d(job ID: %s) is in final status, its status is %s, skip", task.ID, task.JobID, task.Status)
 			continue
 		}
 		if err = c.scheduler.Stop(task.JobID); err != nil {
-			return err
+			status, flag := isStatusBehindError(err)
+			if flag {
+				switch hjob.Status(status) {
+				case hjob.ErrorStatus:
+					status = models.TaskStatusFailed
+				case hjob.SuccessStatus:
+					status = models.TaskStatusSucceed
+				}
+				e := c.executionMgr.UpdateTask(&models.Task{
+					ID:     task.ID,
+					Status: status,
+				}, "Status")
+				if e != nil {
+					log.Errorf("failed to update the status the task %d(job ID: %s): %v", task.ID, task.JobID, e)
+				} else {
+					log.Debugf("got status behind error for task %d, update it's status to %s directly", task.ID, status)
+				}
+				continue
+			}
+			if isJobNotFoundError(err) {
+				e := c.executionMgr.UpdateTask(&models.Task{
+					ID:     task.ID,
+					Status: models.ExecutionStatusStopped,
+				}, "Status")
+				if e != nil {
+					log.Errorf("failed to update the status the task %d(job ID: %s): %v", task.ID, task.JobID, e)
+				} else {
+					log.Debugf("got job not found error for task %d, update it's status to %s directly", task.ID, models.ExecutionStatusStopped)
+				}
+				continue
+			}
+			log.Errorf("failed to stop the task %d(job ID: %s): %v", task.ID, task.JobID, err)
+			continue
 		}
 		log.Debugf("the stop request for task %d(job ID: %s) sent", task.ID, task.JobID)
 	}
 	return nil
 }
 
-func isTaskRunning(task *models.Task) bool {
+func isTaskInFinalStatus(task *models.Task) bool {
 	if task == nil {
 		return false
 	}
@@ -169,9 +210,27 @@ func isTaskRunning(task *models.Task) bool {
 	case models.TaskStatusSucceed,
 		models.TaskStatusStopped,
 		models.TaskStatusFailed:
+		return true
+	}
+	return false
+}
+
+func isStatusBehindError(err error) (string, bool) {
+	if err == nil {
+		return "", false
+	}
+	strs := statusBehindErrorReg.FindStringSubmatch(err.Error())
+	if len(strs) != 2 {
+		return "", false
+	}
+	return strs[1], true
+}
+
+func isJobNotFoundError(err error) bool {
+	if err == nil {
 		return false
 	}
-	return true
+	return strings.Contains(err.Error(), jobNotFoundErrorMsg)
 }
 
 func (c *controller) ListExecutions(query ...*models.ExecutionQuery) (int64, []*models.Execution, error) {
@@ -186,8 +245,8 @@ func (c *controller) ListTasks(query ...*models.TaskQuery) (int64, []*models.Tas
 func (c *controller) GetTask(id int64) (*models.Task, error) {
 	return c.executionMgr.GetTask(id)
 }
-func (c *controller) UpdateTaskStatus(id int64, status string, statusCondition ...string) error {
-	return c.executionMgr.UpdateTaskStatus(id, status, statusCondition...)
+func (c *controller) UpdateTaskStatus(id int64, status string, statusRevision int64, statusCondition ...string) error {
+	return c.executionMgr.UpdateTaskStatus(id, status, statusRevision, statusCondition...)
 }
 func (c *controller) GetTaskLog(taskID int64) ([]byte, error) {
 	return c.executionMgr.GetTaskLog(taskID)

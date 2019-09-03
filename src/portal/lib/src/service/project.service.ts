@@ -1,8 +1,8 @@
 
 import {throwError as observableThrowError,  Observable } from "rxjs";
-import { Injectable, Inject } from "@angular/core";
+import {Injectable, Inject} from "@angular/core";
 import { HttpClient, HttpParams, HttpResponse } from "@angular/common/http";
-import { map ,  catchError } from "rxjs/operators";
+import { catchError } from "rxjs/operators";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
 import { Project } from "../project-policy-config/project";
@@ -12,7 +12,6 @@ import {
   HTTP_GET_OPTIONS,
   buildHttpRequestOptionsWithObserveResponse
 } from "../utils";
-import { RequestQueryParams } from "./RequestQueryParams";
 
 /**
  * Define the service methods to handle the Project related things.
@@ -47,7 +46,9 @@ export abstract class ProjectService {
    */
   abstract updateProjectPolicy(
     projectId: number | string,
-    projectPolicy: ProjectPolicy
+    projectPolicy: ProjectPolicy,
+    reuseSysCVEVWhitelist: string,
+    projectWhitelist: object
   ): Observable<any>;
 
   /**
@@ -68,11 +69,12 @@ export abstract class ProjectService {
     page?: number,
     pageSize?: number
   ): Observable<HttpResponse<Project[]>>;
-  abstract createProject(name: string, metadata: any): Observable<any>;
+  abstract createProject(name: string, metadata: any, countLimit: number, storageLimit: number): Observable<any>;
   abstract toggleProjectPublic(projectId: number, isPublic: string): Observable<any>;
   abstract deleteProject(projectId: number): Observable<any>;
   abstract checkProjectExists(projectName: string): Observable<any>;
   abstract checkProjectMember(projectId: number): Observable<any>;
+  abstract getProjectSummary(projectId: number): Observable<any>;
 }
 
 /**
@@ -107,7 +109,9 @@ export class ProjectDefaultService extends ProjectService {
 
   public updateProjectPolicy(
     projectId: number | string,
-    projectPolicy: ProjectPolicy
+    projectPolicy: ProjectPolicy,
+    reuseSysCVEVWhitelist: string,
+    projectWhitelist: object
   ): any {
     let baseUrl: string = this.config.projectBaseEndpoint
       ? this.config.projectBaseEndpoint
@@ -117,12 +121,14 @@ export class ProjectDefaultService extends ProjectService {
         `${baseUrl}/${projectId}`,
         {
           metadata: {
-            public: projectPolicy.Public ? "true" : "false",
-            enable_content_trust: projectPolicy.ContentTrust ? "true" : "false",
-            prevent_vul: projectPolicy.PreventVulImg ? "true" : "false",
-            severity: projectPolicy.PreventVulImgSeverity,
-            auto_scan: projectPolicy.ScanImgOnPush ? "true" : "false"
-          }
+              public: projectPolicy.Public ? "true" : "false",
+              enable_content_trust: projectPolicy.ContentTrust ? "true" : "false",
+              prevent_vul: projectPolicy.PreventVulImg ? "true" : "false",
+              severity: projectPolicy.PreventVulImgSeverity,
+              auto_scan: projectPolicy.ScanImgOnPush ? "true" : "false",
+              reuse_sys_cve_whitelist: reuseSysCVEVWhitelist
+          },
+            cve_whitelist: projectWhitelist
         },
         HTTP_JSON_OPTIONS
       )
@@ -144,12 +150,14 @@ export class ProjectDefaultService extends ProjectService {
                catchError(error => observableThrowError(error)), );
   }
 
-  public createProject(name: string, metadata: any): Observable<any> {
+  public createProject(name: string, metadata: any, countLimit: number, storageLimit: number): Observable<any> {
     return this.http
                .post(`/api/projects`,
                 JSON.stringify({'project_name': name, 'metadata': {
                   public: metadata.public ? 'true' : 'false',
-                }})
+                },
+                count_limit: countLimit, storage_limit: storageLimit
+              })
                 , HTTP_JSON_OPTIONS).pipe(
                catchError(error => observableThrowError(error)), );
   }
@@ -175,6 +183,11 @@ export class ProjectDefaultService extends ProjectService {
   public checkProjectMember(projectId: number): Observable<any> {
     return this.http
                .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS).pipe(
+               catchError(error => observableThrowError(error)), );
+  }
+  public getProjectSummary(projectId: number): Observable<any> {
+    return this.http
+               .get(`/api/projects/${projectId}/summary`, HTTP_GET_OPTIONS).pipe(
                catchError(error => observableThrowError(error)), );
   }
 }

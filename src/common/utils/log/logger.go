@@ -278,7 +278,7 @@ func line(callDepth int) string {
 		line = 0
 	}
 	l := strings.SplitN(file, srcSeparator, 2)
-	if len(l) > 0 {
+	if len(l) > 1 {
 		file = l[1]
 	}
 	return fmt.Sprintf("[%s:%d]:", file, line)

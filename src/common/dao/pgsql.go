@@ -16,6 +16,7 @@ package dao
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 
 	"github.com/astaxie/beego/orm"
@@ -31,12 +32,14 @@ import (
 const defaultMigrationPath = "migrations/postgresql/"
 
 type pgsql struct {
-	host     string
-	port     string
-	usr      string
-	pwd      string
-	database string
-	sslmode  string
+	host         string
+	port         string
+	usr          string
+	pwd          string
+	database     string
+	sslmode      string
+	maxIdleConns int
+	maxOpenConns int
 }
 
 // Name returns the name of PostgreSQL
@@ -51,17 +54,19 @@ func (p *pgsql) String() string {
 }
 
 // NewPGSQL returns an instance of postgres
-func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode string) Database {
+func NewPGSQL(host string, port string, usr string, pwd string, database string, sslmode string, maxIdleConns int, maxOpenConns int) Database {
 	if len(sslmode) == 0 {
 		sslmode = "disable"
 	}
 	return &pgsql{
-		host:     host,
-		port:     port,
-		usr:      usr,
-		pwd:      pwd,
-		database: database,
-		sslmode:  sslmode,
+		host:         host,
+		port:         port,
+		usr:          usr,
+		pwd:          pwd,
+		database:     database,
+		sslmode:      sslmode,
+		maxIdleConns: maxIdleConns,
+		maxOpenConns: maxOpenConns,
 	}
 }
 
@@ -82,19 +87,26 @@ func (p *pgsql) Register(alias ...string) error {
 	info := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=%s",
 		p.host, p.port, p.usr, p.pwd, p.database, p.sslmode)
 
-	return orm.RegisterDataBase(an, "postgres", info)
+	return orm.RegisterDataBase(an, "postgres", info, p.maxIdleConns, p.maxOpenConns)
 }
 
 // UpgradeSchema calls migrate tool to upgrade schema to the latest based on the SQL scripts.
 func (p *pgsql) UpgradeSchema() error {
-	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", p.usr, p.pwd, p.host, p.port, p.database, p.sslmode)
+	dbURL := url.URL{
+		Scheme:   "postgres",
+		User:     url.UserPassword(p.usr, p.pwd),
+		Host:     fmt.Sprintf("%s:%s", p.host, p.port),
+		Path:     p.database,
+		RawQuery: fmt.Sprintf("sslmode=%s", p.sslmode),
+	}
+
 	// For UT
 	path := os.Getenv("POSTGRES_MIGRATION_SCRIPTS_PATH")
 	if len(path) == 0 {
 		path = defaultMigrationPath
 	}
 	srcURL := fmt.Sprintf("file://%s", path)
-	m, err := migrate.New(srcURL, dbURL)
+	m, err := migrate.New(srcURL, dbURL.String())
 	if err != nil {
 		return err
 	}

@@ -15,8 +15,11 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
+	n_event "github.com/goharbor/harbor/src/core/notifier/event"
 	"github.com/goharbor/harbor/src/replication"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
+	"github.com/justinas/alice"
+	"time"
 )
 
 const (
@@ -36,20 +39,29 @@ type ProxyEngine struct {
 	backend *url.URL
 
 	// Use go reverse proxy as engine
-	engine *httputil.ReverseProxy
+	engine http.Handler
 }
 
 // NewProxyEngine is constructor of NewProxyEngine
-func NewProxyEngine(target *url.URL, cred *Credential) *ProxyEngine {
+func NewProxyEngine(target *url.URL, cred *Credential, chains ...*alice.Chain) *ProxyEngine {
+	var engine http.Handler
+
+	engine = &httputil.ReverseProxy{
+		ErrorLog: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
+		Director: func(req *http.Request) {
+			director(target, cred, req)
+		},
+		ModifyResponse: modifyResponse,
+	}
+
+	if len(chains) > 0 {
+		hlog.Info("New chart server traffic proxy with middlewares")
+		engine = chains[0].Then(engine)
+	}
+
 	return &ProxyEngine{
 		backend: target,
-		engine: &httputil.ReverseProxy{
-			ErrorLog: log.New(os.Stdout, "", log.Ldate|log.Ltime|log.Lshortfile),
-			Director: func(req *http.Request) {
-				director(target, cred, req)
-			},
-			ModifyResponse: modifyResponse,
-		},
+		engine:  engine,
 	}
 }
 
@@ -100,8 +112,46 @@ func modifyResponse(res *http.Response) error {
 					hlog.Errorf("failed to handle event: %v", err)
 				}
 			}()
-		}
 
+			// Trigger harbor webhook
+			if e != nil && e.Resource != nil && e.Resource.Metadata != nil && len(e.Resource.Metadata.Vtags) > 0 &&
+				len(e.Resource.ExtendedInfo) > 0 {
+				event := &n_event.Event{}
+				metaData := &n_event.ChartUploadMetaData{
+					ChartMetaData: n_event.ChartMetaData{
+						ProjectName: e.Resource.ExtendedInfo["projectName"].(string),
+						ChartName:   e.Resource.ExtendedInfo["chartName"].(string),
+						Versions:    e.Resource.Metadata.Vtags,
+						OccurAt:     time.Now(),
+						Operator:    e.Resource.ExtendedInfo["operator"].(string),
+					},
+				}
+				if err := event.Build(metaData); err == nil {
+					if err := event.Publish(); err != nil {
+						hlog.Errorf("failed to publish chart upload event: %v", err)
+					}
+				} else {
+					hlog.Errorf("failed to build chart upload event metadata: %v", err)
+				}
+			}
+		}
+	}
+
+	// Process downloading chart success webhook event
+	if res.StatusCode == http.StatusOK {
+		chartDownloadEvent := res.Request.Context().Value(common.ChartDownloadCtxKey)
+		eventMetaData, ok := chartDownloadEvent.(*n_event.ChartDownloadMetaData)
+		if ok && eventMetaData != nil {
+			// Trigger harbor webhook
+			event := &n_event.Event{}
+			if err := event.Build(eventMetaData); err == nil {
+				if err := event.Publish(); err != nil {
+					hlog.Errorf("failed to publish chart download event: %v", err)
+				}
+			} else {
+				hlog.Errorf("failed to build chart download event metadata: %v", err)
+			}
+		}
 	}
 
 	// Accept cases

@@ -17,9 +17,3 @@ clair:
     timeout: 300s
   updater:
     interval: {{clair_updaters_interval}}h
-
-  notifier:
-    attempts: 3
-    renotifyinterval: 2h
-    http:
-      endpoint: http://core:8080/service/notifications/clair

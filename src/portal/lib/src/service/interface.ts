@@ -66,6 +66,8 @@ export interface Tag extends Base {
   signature?: string;
   scan_overview?: VulnerabilitySummary;
   labels: Label[];
+  push_time?: string;
+  pull_time?: string;
 }
 
 /**
@@ -99,9 +101,9 @@ export interface PingEndpoint extends Base {
 }
 
 export interface Filter {
-   type: string;
-   style: string;
-   values ?: string[];
+  type: string;
+  style: string;
+  values?: string[];
 }
 
 /**
@@ -122,7 +124,7 @@ export interface ReplicationRule extends Base {
   deletion?: boolean;
   src_registry?: any;
   dest_registry?: any;
-  src_namespaces: string [];
+  src_namespaces: string[];
   dest_namespace?: string;
   enabled: boolean;
   override: boolean;
@@ -130,7 +132,7 @@ export interface ReplicationRule extends Base {
 
 export class Filter {
   type: string;
-  value?: string;
+  value?: any;
   constructor(type: string) {
     this.type = type;
   }
@@ -333,6 +335,33 @@ export interface Label {
   scope: string;
   project_id: number;
 }
+
+export interface Quota {
+  id: number;
+  ref: {
+    name: string;
+    owner_name: string;
+    id: number;
+  } | null;
+  creation_time: string;
+  update_time: string;
+  hard: {
+    count: number;
+    storage: number;
+  };
+  used: {
+    count: number;
+    storage: number;
+  };
+}
+export interface QuotaHard {
+  hard: QuotaCountStorage;
+}
+export interface QuotaCountStorage {
+  count: number;
+  storage: number;
+}
+
 export interface CardItemEvent {
   event_type: string;
   item: any;
@@ -408,29 +437,65 @@ export class OriginCron {
   cron: string;
 }
 
-export interface  HttpOptionInterface {
+export interface HttpOptionInterface {
   headers?: HttpHeaders | {
-      [header: string]: string | string[];
+    [header: string]: string | string[];
   };
   observe?: 'body';
   params?: HttpParams | {
-      [param: string]: string | string[];
+    [param: string]: string | string[];
   };
   reportProgress?: boolean;
   responseType: 'json';
   withCredentials?: boolean;
 }
 
-export interface  HttpOptionTextInterface {
+export interface HttpOptionTextInterface {
   headers?: HttpHeaders | {
-      [header: string]: string | string[];
+    [header: string]: string | string[];
   };
   observe?: 'body';
   params?: HttpParams | {
-      [param: string]: string | string[];
+    [param: string]: string | string[];
   };
   reportProgress?: boolean;
   responseType: 'text';
   withCredentials?: boolean;
 }
 
+
+export interface ProjectRootInterface {
+  NAME: string;
+  VALUE: number;
+  LABEL: string;
+}
+export interface SystemCVEWhitelist {
+  id: number;
+  project_id: number;
+  expires_at: number;
+  items: Array<{ "cve_id": string; }>;
+}
+export interface QuotaHardInterface {
+  count_per_project: number;
+  storage_per_project: number;
+}
+
+export interface QuotaUnitInterface {
+  UNIT: string;
+}
+export interface QuotaHardLimitInterface {
+  countLimit: number;
+  storageLimit: number;
+  storageUnit: string;
+  id?: string;
+  countUsed?: string;
+  storageUsed?: string;
+}
+export interface EditQuotaQuotaInterface {
+  editQuota: string;
+  setQuota: string;
+  countQuota: string;
+  storageQuota: string;
+  quotaHardLimitValue: QuotaHardLimitInterface | any;
+  isSystemDefaultQuota: boolean;
+}

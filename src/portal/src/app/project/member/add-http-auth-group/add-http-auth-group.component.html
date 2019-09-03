@@ -1,0 +1,36 @@
+<clr-modal [(clrModalOpen)]="addHttpAuthOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
+    <h3 class="modal-title">{{'GROUP.NEW_MEMBER' | translate}}</h3>
+    <inline-alert class="modal-title padding-0"></inline-alert>
+    <div class="modal-body">
+        <label>{{ 'GROUP.NEW_USER_INFO' | translate}}</label>
+
+        <form #memberForm="ngForm">
+            <section class="form-block">
+                <div class="form-group">
+                    <label for="member_name" class="col-md-4 form-group-label-override required">{{'GROUP.GROUP' | translate}} {{'GROUP.NAME' | translate}}</label>
+                    <label for="member_name" aria-haspopup="true" role="tooltip"
+                           class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
+            <input type="text" id="member_name"  [(ngModel)]="member_group.group_name"
+            name="member_name"
+            size="20"
+            minlength="3"
+            #memberName="ngModel"
+            required autocomplete="off">
+          </label>
+                    <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
+                </div>
+                <div class="form-group">
+                    <label class="col-md-4 form-group-label-override">{{'GROUP.ROLE' | translate}}</label>
+                    <div class="radio" *ngFor="let projectRoot of projectRoots">
+                        <input type="radio" name="member_role" id="{{'check_root_project_' + projectRoot.NAME}}" [value]="projectRoot.VALUE" [(ngModel)]="role_id">
+                        <label for="{{'check_root_project_' + projectRoot.NAME}}">{{ projectRoot.LABEL | translate}}</label>
+                    </div>
+                </div>
+            </section>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button type="button" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
+    </div>
+</clr-modal>

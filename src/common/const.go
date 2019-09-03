@@ -53,8 +53,11 @@ const (
 	PostGreSQLPassword               = "postgresql_password"
 	PostGreSQLDatabase               = "postgresql_database"
 	PostGreSQLSSLMode                = "postgresql_sslmode"
+	PostGreSQLMaxIdleConns           = "postgresql_max_idle_conns"
+	PostGreSQLMaxOpenConns           = "postgresql_max_open_conns"
 	SelfRegistration                 = "self_registration"
 	CoreURL                          = "core_url"
+	CoreLocalURL                     = "core_local_url"
 	JobServiceURL                    = "jobservice_url"
 	LDAPURL                          = "ldap_url"
 	LDAPSearchDN                     = "ldap_search_dn"
@@ -100,7 +103,7 @@ const (
 	HTTPAuthProxyEndpoint            = "http_authproxy_endpoint"
 	HTTPAuthProxyTokenReviewEndpoint = "http_authproxy_tokenreview_endpoint"
 	HTTPAuthProxyVerifyCert          = "http_authproxy_verify_cert"
-	HTTPAuthProxyAlwaysOnboard       = "http_authproxy_always_onboard"
+	HTTPAuthProxySkipSearch          = "http_authproxy_skip_search"
 	OIDCName                         = "oidc_name"
 	OIDCEndpoint                     = "oidc_endpoint"
 	OIDCCLientID                     = "oidc_client_id"
@@ -120,8 +123,9 @@ const (
 	NotaryURL                         = "notary_url"
 	DefaultCoreEndpoint               = "http://core:8080"
 	DefaultNotaryEndpoint             = "http://notary-server:4443"
-	LdapGroupType                     = 1
-	LdapGroupAdminDn                  = "ldap_group_admin_dn"
+	LDAPGroupType                     = 1
+	HTTPGroupType                     = 2
+	LDAPGroupAdminDn                  = "ldap_group_admin_dn"
 	LDAPGroupMembershipAttribute      = "ldap_group_membership_attribute"
 	DefaultRegistryControllerEndpoint = "http://registryctl:8080"
 	WithChartMuseum                   = "with_chartmuseum"
@@ -140,5 +144,17 @@ const (
 	OIDCCallbackPath = "/c/oidc/callback"
 	OIDCLoginPath    = "/c/oidc/login"
 
-	ChartUploadCtxKey = contextKey("chart_upload_event")
+	ChartUploadCtxKey   = contextKey("chart_upload_event")
+	ChartDownloadCtxKey = contextKey("chart_download_event")
+
+	// Global notification enable configuration
+	NotificationEnable = "notification_enable"
+
+	// Quota setting items for project
+	QuotaPerProjectEnable = "quota_per_project_enable"
+	CountPerProject       = "count_per_project"
+	StoragePerProject     = "storage_per_project"
+
+	// ForeignLayer
+	ForeignLayer = "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip"
 )

@@ -3,7 +3,7 @@ package api
 import (
 	"testing"
 
-	"github.com/goharbor/harbor/tests/apitests/apilib"
+	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 	"github.com/stretchr/testify/assert"
 )
 

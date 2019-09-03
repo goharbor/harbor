@@ -1,0 +1,84 @@
+::ng-deep .modal-dialog {
+  width: 25rem;
+}
+
+.modal-body {
+  padding-top: 0.8rem;
+  overflow-y: visible;
+  overflow-x: visible;
+
+  .clr-form-compact {
+    div.form-group {
+      padding-left: 8.5rem;
+
+      .mr-3px {
+        margin-right: 3px;
+      }
+
+      .quota-input {
+        width: 2rem;
+        padding-right: 0.8rem;
+      }
+
+      .select-div {
+        width: 2.5rem;
+
+        ::ng-deep .clr-form-control {
+          margin-top: 0.28rem;
+
+          select {
+            padding-right: 15px;
+          }
+        }
+      }
+    }
+  }
+
+  .clr-form-compact-common {
+    div.form-group {
+      padding-left: 6rem;
+
+      .select-div {
+        width: 1.6rem;
+      }
+    }
+  }
+}
+
+.progress-block {
+  width: 8rem;
+}
+
+.progress-div {
+  position: relative;
+  padding-right: 0.6rem;
+  width: 9rem;
+}
+
+::ng-deep {
+  .progress {
+    &.warning>progress {
+      color: orange;
+
+      &::-webkit-progress-value {
+        background-color: orange;
+      }
+
+      &::-moz-progress-bar {
+        background-color: orange;
+      }
+    }
+  }
+}
+
+.progress-label {
+  position: absolute;
+  right: -2.3rem;
+  top: 0;
+  width: 3.5rem;
+  font-weight: 100;
+  font-size: 10px;
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

@@ -90,6 +90,61 @@ Test Case - Harbor Endpoint Delete
     Delete Success  deletea
     Close Browser
 
+Test Case - Replication Rule Edit
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%M%S
+    ${endpoint1}=    Set Variable    e1${d}
+    ${endpoint2}=    Set Variable    e2${d}
+    ${rule_name_old}=    Set Variable    rule_testabc${d}
+    ${rule_name_new}=    Set Variable    rule_abctest${d}
+    ${resource_type}=    Set Variable    chart
+    ${dest_namespace}=    Set Variable    dest_namespace${d}
+    ${mode}=    Set Variable    Scheduled
+    ${cron_str}=    Set Variable    10 10 10 * * *
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Registries
+    Create A New Endpoint    docker-hub    ${endpoint1}    https://hub.docker.com/    danfengliu    Aa123456    Y
+    Create A New Endpoint    harbor    ${endpoint2}    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    Y
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    ${rule_name_old}    pull    danfengliu/*    image    ${endpoint1}    project${d}
+    Edit Replication Rule By Name  ${rule_name_old}
+    #  Change rule-name, source-registry, filter, trigger-mode for edition verification
+    Clear Field Of Characters    ${rule_name_input}    30
+    Retry Text Input    ${rule_name_input}    ${rule_name_new}
+    Select Source Registry  ${endpoint2}
+    #Source Resource Filter
+    Retry Text Input  ${source_project}  project${d}
+    Select From List By Value  ${rule_resource_selector}  ${resource_type}
+    Retry Text Input  ${dest_namespace_xpath}  ${dest_namespace}
+    Select Trigger  ${mode}
+    Retry Text Input  ${targetCron_id}  ${cron_str}
+    Retry Double Keywords When Error    Retry Element Click    ${rule_save_button}    Retry Wait Until Page Not Contains Element    ${rule_save_button}
+    #  verify all items were changed as expected
+    Edit Replication Rule By Name    ${rule_name_new}
+    Retry Textfield Value Should Be    ${rule_name_input}               ${rule_name_new}
+    Retry List Selection Should Be     ${src_registry_dropdown_list}    ${endpoint2}-https://${ip}
+    Retry Textfield Value Should Be    ${source_project}                project${d}
+    Retry Textfield Value Should Be    ${dest_namespace_xpath}          ${dest_namespace}
+    Retry List Selection Should Be     ${rule_resource_selector}        ${resource_type}
+    Retry List Selection Should Be     ${rule_trigger_select}           ${mode}
+    Retry Textfield Value Should Be    ${targetCron_id}                 ${cron_str}
+    Retry Element Click  ${rule_cancel_btn}
+    Ensure Delete Replication Rule By Name  ${rule_name_new}
+    Close Browser
+
+Test Case - Replication Rule Delete
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%M%S
+    ${endpoint1}=    Set Variable    e1${d}
+    ${rule_name}=    Set Variable    rule_testabc${d}
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Switch To Registries
+    Create A New Endpoint    docker-hub    ${endpoint1}    https://hub.docker.com/    danfengliu    Aa123456    Y
+    Switch To Replication Manage
+    Create A Rule With Existing Endpoint    ${rule_name}    pull    danfengliu/*    image    ${endpoint1}    project${d}
+    Ensure Delete Replication Rule By Name  ${rule_name}
+    Close Browser
+
 Test Case - Replication Of Pull Images from DockerHub To Self
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%M%S
@@ -101,11 +156,13 @@ Test Case - Replication Of Pull Images from DockerHub To Self
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    rule${d}    pull    danfengliu/*    image    e${d}    project${d}
     Select Rule And Replicate  rule${d}
-    Sleep    20
+    Sleep    30
     Go Into Project    project${d}
     Switch To Project Repo
     #In docker-hub, under repository danfengliu, there're only 2 images: centos,mariadb.
     Retry Wait Until Page Contains    project${d}/centos
+    Go Into Project    project${d}
+    Switch To Project Repo
     Retry Wait Until Page Contains    project${d}/mariadb
     Close Browser
 

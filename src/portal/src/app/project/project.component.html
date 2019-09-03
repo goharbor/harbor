@@ -22,7 +22,7 @@
                 </span>
             </div>
         </div>
-        <create-project (create)="createProject($event)"></create-project>
+        <create-project (create)="createProject($event)" [quotaObj]="quotaObj" [isSystemAdmin]="isSystemAdmin"></create-project>
         <list-project (addProject)="openModal()"></list-project>
     </div>
 </div>

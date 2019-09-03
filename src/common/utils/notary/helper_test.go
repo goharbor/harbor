@@ -17,6 +17,8 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/goharbor/harbor/src/common/utils/notary/model"
+
 	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
@@ -81,17 +83,19 @@ func TestGetDigestFromTarget(t *testing.T) {
 				}
 		}`
 
-	var t1 Target
+	var t1 model.Target
 	err := json.Unmarshal([]byte(str), &t1)
 	if err != nil {
 		panic(err)
 	}
 	hash2 := make(map[string][]byte)
-	t2 := Target{"2.0", hash2}
+	t2 := model.Target{
+		Tag:    "2.0",
+		Hashes: hash2,
+	}
 	d1, err1 := DigestFromTarget(t1)
 	assert.Nil(t, err1, "Unexpected error: %v", err1)
 	assert.Equal(t, "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7", d1, "digest mismatch")
 	_, err2 := DigestFromTarget(t2)
 	assert.NotNil(t, err2, "")
-
 }

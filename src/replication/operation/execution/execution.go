@@ -50,7 +50,7 @@ type Manager interface {
 	// UpdateTaskStatus only updates the task status. If "statusCondition"
 	// presents, only the tasks whose status equal to "statusCondition"
 	// will be updated
-	UpdateTaskStatus(taskID int64, status string, statusCondition ...string) error
+	UpdateTaskStatus(taskID int64, status string, statusRevision int64, statusCondition ...string) error
 	// Remove one task specified by task ID
 	RemoveTask(int64) error
 	// Remove all tasks of one execution specified by the execution ID
@@ -151,13 +151,9 @@ func (dm *DefaultManager) UpdateTask(task *models.Task, props ...string) error {
 }
 
 // UpdateTaskStatus ...
-func (dm *DefaultManager) UpdateTaskStatus(taskID int64, status string, statusCondition ...string) error {
-	n, err := dao.UpdateTaskStatus(taskID, status, statusCondition...)
-	if err != nil {
+func (dm *DefaultManager) UpdateTaskStatus(taskID int64, status string, statusRevision int64, statusCondition ...string) error {
+	if _, err := dao.UpdateTaskStatus(taskID, status, statusRevision, statusCondition...); err != nil {
 		return err
-	}
-	if n == 0 {
-		return fmt.Errorf("Update task status failed %d: -> %s ", taskID, status)
 	}
 	return nil
 }

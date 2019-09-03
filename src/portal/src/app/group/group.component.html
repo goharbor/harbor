@@ -15,18 +15,18 @@
               <clr-icon shape="plus" size="15"></clr-icon>&nbsp;{{'GROUP.ADD' | translate}}</button>
               <button type="button" class="btn btn-sm btn-secondary" (click)="editGroup()" [disabled]="!canEditGroup">
                   <clr-icon shape="pencil" size="15"></clr-icon>&nbsp;{{'GROUP.EDIT' | translate}}</button>
-                  <button type="button" class="btn btn-sm btn-secondary" (click)="openDeleteConfirmationDialog()" [disabled]="!canEditGroup">
+                  <button type="button" class="btn btn-sm btn-secondary" (click)="openDeleteConfirmationDialog()" [disabled]="!canDeleteGroup">
                       <clr-icon shape="times" size="15"></clr-icon>&nbsp;{{'GROUP.DELETE' | translate}}</button>
         </clr-dg-action-bar>
 
         <clr-dg-column>{{'GROUP.NAME' | translate}}</clr-dg-column>
         <clr-dg-column>{{'GROUP.TYPE' | translate}}</clr-dg-column>
-        <clr-dg-column>{{'GROUP.DN' | translate}}</clr-dg-column>
+        <clr-dg-column *ngIf="isLdapMode">{{'GROUP.DN' | translate}}</clr-dg-column>
 
         <clr-dg-row *clrDgItems="let group of groups" [clrDgItem]="group">
           <clr-dg-cell>{{group.group_name}}</clr-dg-cell>
           <clr-dg-cell>{{groupToSring(group.group_type) | translate}}</clr-dg-cell>
-          <clr-dg-cell>{{group.ldap_group_dn}}</clr-dg-cell>
+          <clr-dg-cell *ngIf="isLdapMode">{{group.ldap_group_dn}}</clr-dg-cell>
         </clr-dg-row>
         <clr-dg-footer>
           <clr-dg-pagination #pagination [clrDgPageSize]="15">

@@ -92,7 +92,7 @@
         </span>
       </div>
     </div>
-    <clr-datagrid [(clrDgSelected)]="selectedRow" [clrDgLoading]="loading">
+    <clr-datagrid (clrDgRefresh)="clrLoadTasks($event)" [clrDgLoading]="loading">
       <clr-dg-column [clrDgSortBy]="'id'">{{'REPLICATION.TASK_ID'| translate}}</clr-dg-column>
       <clr-dg-column [clrDgField]="'resource_type'" class="resource-width">{{'REPLICATION.RESOURCE_TYPE' | translate}}</clr-dg-column>
       <clr-dg-column [clrDgField]="'src_resource'">{{'REPLICATION.SOURCE' | translate}}</clr-dg-column>
@@ -102,7 +102,7 @@
       <clr-dg-column [clrDgSortBy]="startTimeComparator">{{'REPLICATION.CREATION_TIME' | translate}}</clr-dg-column>
       <clr-dg-column [clrDgSortBy]="endTimeComparator">{{'REPLICATION.END_TIME' | translate}}</clr-dg-column>
       <clr-dg-column>{{'REPLICATION.LOGS' | translate}}</clr-dg-column>
-      <clr-dg-row *clrDgItems="let t of tasks">
+      <clr-dg-row *ngFor="let t of tasks">
         <clr-dg-cell>{{t.id}}</clr-dg-cell>
         <clr-dg-cell class="resource-width">{{t.resource_type}}</clr-dg-cell>
         <clr-dg-cell>{{t.src_resource}}</clr-dg-cell>
@@ -118,8 +118,8 @@
         </clr-dg-cell>
       </clr-dg-row>
       <clr-dg-footer>
-        <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'REPLICATION.OF' | translate}} </span>{{pagination.totalItems }} {{'REPLICATION.ITEMS' | translate}}
-        <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize"></clr-dg-pagination>
+        <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'REPLICATION.OF' | translate}} </span>{{totalCount }} {{'REPLICATION.ITEMS' | translate}}
+        <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalCount" [clrDgPageSize]="pageSize"></clr-dg-pagination>
       </clr-dg-footer>
     </clr-datagrid>
   </div>

@@ -15,6 +15,7 @@
 package operation
 
 import (
+	"errors"
 	"io"
 	"os"
 	"testing"
@@ -74,7 +75,7 @@ func (f *fakedExecutionManager) GetTask(int64) (*models.Task, error) {
 func (f *fakedExecutionManager) UpdateTask(*models.Task, ...string) error {
 	return nil
 }
-func (f *fakedExecutionManager) UpdateTaskStatus(int64, string, ...string) error {
+func (f *fakedExecutionManager) UpdateTaskStatus(int64, string, int64, ...string) error {
 	return nil
 }
 func (f *fakedExecutionManager) RemoveTask(int64) error {
@@ -332,7 +333,7 @@ func TestGetTask(t *testing.T) {
 }
 
 func TestUpdateTaskStatus(t *testing.T) {
-	err := ctl.UpdateTaskStatus(1, "running")
+	err := ctl.UpdateTaskStatus(1, "running", 1)
 	require.Nil(t, err)
 }
 
@@ -344,40 +345,57 @@ func TestGetTaskLog(t *testing.T) {
 
 func TestIsTaskRunning(t *testing.T) {
 	cases := []struct {
-		task      *models.Task
-		isRunning bool
+		task          *models.Task
+		isFinalStatus bool
 	}{
 		{
-			task:      nil,
-			isRunning: false,
+			task:          nil,
+			isFinalStatus: false,
 		},
 		{
 			task: &models.Task{
 				Status: models.TaskStatusSucceed,
 			},
-			isRunning: false,
+			isFinalStatus: true,
 		},
 		{
 			task: &models.Task{
 				Status: models.TaskStatusFailed,
 			},
-			isRunning: false,
+			isFinalStatus: true,
 		},
 		{
 			task: &models.Task{
 				Status: models.TaskStatusStopped,
 			},
-			isRunning: false,
+			isFinalStatus: true,
 		},
 		{
 			task: &models.Task{
 				Status: models.TaskStatusInProgress,
 			},
-			isRunning: true,
+			isFinalStatus: false,
 		},
 	}
 
 	for _, c := range cases {
-		assert.Equal(t, c.isRunning, isTaskRunning(c.task))
+		assert.Equal(t, c.isFinalStatus, isTaskInFinalStatus(c.task))
 	}
+}
+
+func TestIsStatusBehindError(t *testing.T) {
+	// nil error
+	status, flag := isStatusBehindError(nil)
+	assert.False(t, flag)
+
+	// not status behind error
+	err := errors.New("not status behind error")
+	status, flag = isStatusBehindError(err)
+	assert.False(t, flag)
+
+	// status behind error
+	err = errors.New("mismatch job status for stopping job: 9feedf9933jffs, job status Error is behind Running")
+	status, flag = isStatusBehindError(err)
+	assert.True(t, flag)
+	assert.Equal(t, "Error", status)
 }

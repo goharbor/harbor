@@ -44,11 +44,15 @@
         <div class="form-group">
           <label for="destination_url" class="col-md-4 form-group-label-override required">{{ 'DESTINATION.URL' |
             translate }}</label>
-          <label class="col-md-8" for="destination_url" aria-haspopup="true" role="tooltip" [class.invalid]="targetEndpoint.errors && (targetEndpoint.dirty || targetEndpoint.touched)"
-            [class.valid]="targetEndpoint.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
-            <input type="text" id="destination_url" [disabled]="testOngoing || urlDisabled" [readonly]="!editable" [(ngModel)]="target.url"
-              size="25" name="endpointUrl" #targetEndpoint="ngModel" required placeholder="http(s)://192.168.1.1">
-            <span class="tooltip-content" *ngIf="targetEndpoint.errors && targetEndpoint.errors.required && (targetEndpoint.dirty || targetEndpoint.touched)">
+          <label class="col-md-8" for="destination_url" aria-haspopup="true" role="tooltip" [class.invalid]="targetEndpoint?.errors && (targetEndpoint?.dirty || targetEndpoint?.touched)"
+                 [class.valid]="targetEndpoint?.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left clr-select-wrapper">
+            <input *ngIf="!endpointList.length" type="text" id="destination_url" [disabled]="testOngoing || urlDisabled" [readonly]="!editable" [(ngModel)]="target.url"
+                   size="25" name="endpointUrl" #targetEndpoint="ngModel" required placeholder="http(s)://192.168.1.1">
+            <select id="destination_url" *ngIf="endpointList.length" [(ngModel)]="target.url" class="clr-select" name="endpointUrl" #targetEndpoint="ngModel">
+              <option class="display-none" value=""></option>
+              <option *ngFor="let endpoint of endpointList" value="{{endpoint.value}}">{{endpoint.key}}</option>
+            </select>
+            <span class="tooltip-content" *ngIf="targetEndpoint?.errors && targetEndpoint.errors.required && (targetEndpoint.dirty || targetEndpoint.touched)">
               {{ 'DESTINATION.URL_IS_REQUIRED' | translate }}
             </span>
           </label>
@@ -57,15 +61,19 @@
         <div class="form-group">
           <label for="destination_access_key" class="col-md-4 form-group-label-override">{{ 'DESTINATION.ACCESS_ID' |
             translate }}</label>
-          <input type="text" placeholder="Access ID" class="col-md-8" id="destination_access_key" [disabled]="testOngoing" [readonly]="!editable"
+          <input type="text" placeholder="Access ID" class="col-md-8" id="destination_access_key" [disabled]="testOngoing" [readonly]="target.type ==='google-gcr' || !editable"
             [(ngModel)]="target.credential.access_key" size="28" name="access_key" #access_key="ngModel">
         </div>
         <!-- access_secret -->
         <div class="form-group">
           <label for="destination_password" class="col-md-4 form-group-label-override">{{ 'DESTINATION.ACCESS_SECRET' |
             translate }}</label>
-          <input type="password" placeholder="Access Secret" class="col-md-8" id="destination_password" [disabled]="testOngoing" [readonly]="!editable"
-            [(ngModel)]="target.credential.access_secret" size="28" name="access_secret" #access_secret="ngModel">
+          <input *ngIf="target.type !=='google-gcr';else gcr_secret" type="password" placeholder="Access Secret" class="col-md-8" id="destination_password" [disabled]="testOngoing" [readonly]="!editable"
+                 [(ngModel)]="target.credential.access_secret" size="28" name="access_secret" #access_secret="ngModel">
+          <ng-template #gcr_secret>
+            <textarea type="text" row="3" placeholder="Json Secret" class="inputWidth" id="destination_password" [disabled]="testOngoing" [readonly]="!editable"
+                      [(ngModel)]="target.credential.access_secret" name="access_secret" #access_secret="ngModel"></textarea>
+          </ng-template>
         </div>
         <!-- Verify Remote Cert -->
         <div class="form-group">
@@ -88,7 +96,7 @@
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="inProgress || targetEndpoint.errors">{{
+    <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="inProgress || (targetEndpoint?.errors)">{{
       'DESTINATION.TEST_CONNECTION' | translate }}</button>
     <button type="button" class="btn btn-outline" (click)="onCancel()" [disabled]="inProgress">{{ 'BUTTON.CANCEL' |
       translate }}</button>

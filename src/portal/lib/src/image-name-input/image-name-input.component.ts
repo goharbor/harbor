@@ -52,10 +52,10 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
                 const prolist: any = this.proService.listProjects(name, undefined);
                 if (prolist.subscribe) {
                     prolist.subscribe(response => {
-                        if (response) {
-                            this.selectedProjectList = response.slice(0, 10);
+                        if (response.body) {
+                            this.selectedProjectList = response.body.slice(0, 10);
                             // if input project name exist in the project list
-                            let exist = response.find((data: any) => data.name === name);
+                            let exist = response.body.find((data: any) => data.name === name);
                             if (!exist) {
                                 this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
                             } else {

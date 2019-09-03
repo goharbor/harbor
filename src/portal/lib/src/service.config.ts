@@ -232,4 +232,6 @@ export interface IServiceConfig {
     gcEndpoint?: string;
 
     ScanAllEndpoint?: string;
+
+    quotaUrl?: string;
 }

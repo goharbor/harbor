@@ -32,6 +32,7 @@ import { ErrorHandler } from "../error-handler/error-handler";
 import { TranslateService } from "@ngx-translate/core";
 import { EndpointService } from "../service/endpoint.service";
 import { cronRegex } from "../utils";
+import { FilterType } from "../shared/shared.const";
 
 
 @Component({
@@ -67,6 +68,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   cronString: string;
   supportedTriggers: string[];
   supportedFilters: Filter[];
+  supportedFilterLabels: { name: string; color: string; select: boolean; scope: string; }[] = [];
+
   @Input() withAdmiral: boolean;
 
   @Output() goToRegistry = new EventEmitter<any>();
@@ -92,6 +95,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       this.supportedFilters = adapter.supported_resource_filters;
       this.supportedFilters.forEach(element => {
         this.filters.push(this.initFilter(element.type));
+        // get supportedFilterLabels labels from supportedFilters
+        this.getLabelListFromAdapter(element);
       });
       this.supportedTriggers = adapter.supported_triggers;
       this.ruleForm.get("trigger").get("type").setValue(this.supportedTriggers[0]);
@@ -132,7 +137,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         }
       });
   }
-
+  trimText(event) {
+    if (event.target.value) {
+      event.target.value = event.target.value.trim();
+    }
+  }
   equals(c1: any, c2: any): boolean {
     return c1 && c2 ? c1.id === c2.id : c1 === c2;
   }
@@ -264,12 +273,29 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     return this.ruleForm.get("filters") as FormArray;
   }
   setFilter(filters: Filter[]) {
-    const filterFGs = filters.map(filter => this.fb.group(filter));
+    const filterFGs = filters.map(filter => {
+      if (filter.type === FilterType.LABEL) {
+        let fbLabel = this.fb.group({
+          type: FilterType.LABEL
+        });
+        let filterLabel = this.fb.array(filter.value);
+        fbLabel.setControl('value', filterLabel);
+        return fbLabel;
+      } else {
+        return this.fb.group(filter);
+      }
+    });
     const filterFormArray = this.fb.array(filterFGs);
     this.ruleForm.setControl("filters", filterFormArray);
   }
 
   initFilter(name: string) {
+    if (name === FilterType.LABEL) {
+      const labelArray = this.fb.array([]);
+      const labelControl = this.fb.group({type: name});
+      labelControl.setControl('value', labelArray);
+      return labelControl;
+    }
     return this.fb.group({
       type: name,
       value: ''
@@ -314,7 +340,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     let filters: any = copyRuleForm.filters;
     // remove the filters which user not set.
     for (let i = filters.length - 1; i >= 0; i--) {
-      if (filters[i].value === "") {
+      if (filters[i].value === "" || (filters[i].value instanceof Array
+      && filters[i].value.length === 0)) {
         copyRuleForm.filters.splice(i, 1);
       }
     }
@@ -356,6 +383,8 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     this.inlineAlert.close();
     this.noSelectedEndpoint = true;
     this.isRuleNameValid = true;
+    this.supportedFilterLabels = [];
+
 
     this.policyId = -1;
     this.createEditRuleOpened = true;
@@ -373,7 +402,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
           this.repService.getRegistryInfo(srcRegistryId)
             .pipe(finalize(() => (this.onGoing = false)))
             .subscribe(adapter => {
-              this.setFilterAndTrigger(adapter);
+              this.setFilterAndTrigger(adapter, ruleInfo);
               this.updateRuleFormAndCopyUpdateForm(ruleInfo);
             }, (error: any) => {
               this.inlineAlert.showInlineError(error);
@@ -397,17 +426,63 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
     }
   }
 
-  setFilterAndTrigger(adapter) {
+  setFilterAndTrigger(adapter, ruleInfo?) {
     this.supportedFilters = adapter.supported_resource_filters;
     this.setFilter([]);
     this.supportedFilters.forEach(element => {
       this.filters.push(this.initFilter(element.type));
+      // get supportedFilterLabels labels from supportedFilters
+      this.getLabelListFromAdapter(element);
+      // only when edit replication rule
+      if (ruleInfo && ruleInfo.filters && this.supportedFilterLabels.length ) {
+        this.getLabelListFromRuleInfo(ruleInfo);
+      }
     });
 
     this.supportedTriggers = adapter.supported_triggers;
     this.ruleForm.get("trigger").get("type").setValue(this.supportedTriggers[0]);
   }
+  getLabelListFromAdapter(supportedFilter) {
+    if (supportedFilter.type === FilterType.LABEL && supportedFilter.values) {
+      this.supportedFilterLabels = [];
+      supportedFilter.values.forEach( value => {
+        this.supportedFilterLabels.push({
+          name: value,
+          color: '#fff',
+          select: false,
+          scope: 'g'
+        });
+      });
+    }
+  }
+  getLabelListFromRuleInfo(ruleInfo) {
+    let labelValueObj = ruleInfo.filters.find((currentValue) => {
+      return currentValue.type === FilterType.LABEL;
+    });
+    if (labelValueObj) {
+      for (const labelValue of labelValueObj.value) {
+        let flagLabel = this.supportedFilterLabels.every((currentValue) => {
+          return currentValue.name !== labelValue;
+        });
+        if (flagLabel) {
+          this.supportedFilterLabels = [
+            {
+            name: labelValue,
+            color: '#fff',
+            select: true,
+            scope: 'g'
+          }, ...this.supportedFilterLabels];
+        }
+        //
+        for (const labelObj of this.supportedFilterLabels) {
+          if (labelObj.name === labelValue) {
+            labelObj.select = true;
+          }
+        }
 
+      }
+    }
+  }
   close(): void {
     this.createEditRuleOpened = false;
   }
@@ -462,7 +537,11 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       }
 
       if (!findTag) {
-        filtersArray.push({ type: this.supportedFilters[i].type, value: "" });
+        if (this.supportedFilters[i].type === FilterType.LABEL) {
+          filtersArray.push({ type: this.supportedFilters[i].type, value: [] });
+        } else {
+          filtersArray.push({ type: this.supportedFilters[i].type, value: "" });
+        }
       }
 
     }
@@ -481,5 +560,21 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       return false;
     }
     return trigger_settingsControls.controls.cron.touched || trigger_settingsControls.controls.cron.dirty;
+  }
+  stickLabel(value, index) {
+    value.select = !value.select;
+    let filters = this.ruleForm.get('filters') as FormArray;
+    let fromIndex = filters.controls[index] as FormGroup;
+    let labelValue = this.supportedFilterLabels.reduce( (cumulatedSelectedArrs, currentValue) => {
+      if (currentValue.select) {
+        if (!cumulatedSelectedArrs.length) {
+          return [currentValue.name];
+        }
+        return [...cumulatedSelectedArrs, currentValue.name];
+      }
+      return cumulatedSelectedArrs;
+    }, []);
+
+    fromIndex.setControl('value', this.fb.array(labelValue));
   }
 }

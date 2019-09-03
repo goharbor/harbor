@@ -32,7 +32,16 @@ import { Endpoint, PingEndpoint } from "../service/interface";
 import { clone, compareValue, isEmptyObject } from "../utils";
 
 const FAKE_PASSWORD = "rjGcfuRu";
+const FAKE_JSON_KEY = "No Change";
 const DOCKERHUB_URL = "https://hub.docker.com";
+const HELM_HUB_URL = "https://hub.helm.sh";
+const HELM_HUB_ACCESS_KEY = "_json_key";
+const REGISTRY_NAME_LIST = {
+  DOCKER_HUB: "docker-hub",
+  HELM_HUB: "helm-hub",
+  GOOGLE_GCR: "google-gcr",
+  AWS_ECR: "aws-ecr"
+};
 @Component({
   selector: "hbr-create-edit-endpoint",
   templateUrl: "./create-edit-endpoint.component.html",
@@ -49,12 +58,13 @@ export class CreateEditEndpointComponent
   closable: boolean = false;
   editable: boolean;
   adapterList: string[];
+  endpointList: object[] = [];
   target: Endpoint = this.initEndpoint();
   selectedType: string;
   initVal: Endpoint;
   targetForm: NgForm;
   @ViewChild("targetForm") currentForm: NgForm;
-
+  targetEndpoint;
   testOngoing: boolean;
   onGoing: boolean;
   endpointId: number | string;
@@ -188,8 +198,8 @@ export class CreateEditEndpointComponent
           this.urlDisabled = this.target.type === 'docker-hub' ? true : false;
           // Keep data cache
           this.initVal = clone(target);
-          this.initVal.credential.access_secret = FAKE_PASSWORD;
-          this.target.credential.access_secret = FAKE_PASSWORD;
+          this.initVal.credential.access_secret = this.target.type === 'google-gcr' ? FAKE_JSON_KEY : FAKE_PASSWORD;
+          this.target.credential.access_secret = this.target.type === 'google-gcr' ? FAKE_JSON_KEY : FAKE_PASSWORD;
 
           // Open the modal now
           this.open();
@@ -212,12 +222,113 @@ export class CreateEditEndpointComponent
 
   adapterChange($event): void {
     let selectValue = this.targetForm.controls.adapter.value;
-    if (selectValue === 'docker-hub') {
+    if (selectValue === REGISTRY_NAME_LIST.DOCKER_HUB) {
       this.urlDisabled = true;
       this.targetForm.controls.endpointUrl.setValue(DOCKERHUB_URL);
+    } else if (selectValue === REGISTRY_NAME_LIST.HELM_HUB) {
+      this.urlDisabled = true;
+      this.targetForm.controls.endpointUrl.setValue(HELM_HUB_URL);
     } else {
       this.urlDisabled = false;
       this.targetForm.controls.endpointUrl.setValue("");
+    }
+    if (selectValue === REGISTRY_NAME_LIST.GOOGLE_GCR) {
+      this.targetForm.controls.access_key.setValue(HELM_HUB_ACCESS_KEY);
+    } else {
+      this.targetForm.controls.access_key.setValue("");
+    }
+    if (selectValue === REGISTRY_NAME_LIST.GOOGLE_GCR) {
+      this.endpointList = [
+        {
+          key: "gcr.io",
+          value: "https://gcr.io"
+        },
+        {
+          key: "us.gcr.io",
+          value: "https://us.gcr.io"
+        },
+        {
+          key: "eu.gcr.io",
+          value: "https://eu.gcr.io"
+        },
+        {
+          key: "asia.gcr.io",
+          value: "https://asia.gcr.io"
+        }
+      ];
+    } else if (selectValue === REGISTRY_NAME_LIST.AWS_ECR) {
+      this.endpointList = [
+        {
+          key: "ap-northeast-1",
+          value: "https://api.ecr.ap-northeast-1.amazonaws.com"
+        },
+        {
+          key: "us-east-1",
+          value: "https://api.ecr.us-east-1.amazonaws.com"
+        },
+        {
+          key: "us-east-2",
+          value: "https://api.ecr.us-east-2.amazonaws.com"
+        },
+        {
+          key: "us-west-1",
+          value: "https://api.ecr.us-west-1.amazonaws.com"
+        },
+        {
+          key: "us-west-2",
+          value: "https://api.ecr.us-west-2.amazonaws.com"
+        },
+        {
+          key: "ap-east-1",
+          value: "https://api.ecr.ap-east-1.amazonaws.com"
+        },
+        {
+          key: "ap-south-1",
+          value: "https://api.ecr.ap-south-1.amazonaws.com"
+        },
+        {
+          key: "ap-northeast-2",
+          value: "https://api.ecr.ap-northeast-2.amazonaws.com"
+        },
+        {
+          key: "ap-southeast-1",
+          value: "https://api.ecr.ap-southeast-1.amazonaws.com"
+        },
+        {
+          key: "ap-southeast-2",
+          value: "https://api.ecr.ap-southeast-2.amazonaws.com"
+        },
+        {
+          key: "ca-central-1",
+          value: "https://api.ecr.ca-central-1.amazonaws.com"
+        },
+        {
+          key: "eu-central-1",
+          value: "https://api.ecr.eu-central-1.amazonaws.com"
+        },
+        {
+          key: "eu-west-1",
+          value: "https://api.ecr.eu-west-1.amazonaws.com"
+        },
+        {
+          key: "eu-west-2",
+          value: "https://api.ecr.eu-west-2.amazonaws.com"
+        },
+        {
+          key: "eu-west-3",
+          value: "https://api.ecr.eu-west-3.amazonaws.com"
+        },
+        {
+          key: "eu-north-1",
+          value: "https://api.ecr.eu-north-1.amazonaws.com"
+        },
+        {
+          key: "sa-east-1",
+          value: "https://api.ecr.sa-east-1.amazonaws.com"
+        }
+      ];
+    } else {
+      this.endpointList = [];
     }
   }
 

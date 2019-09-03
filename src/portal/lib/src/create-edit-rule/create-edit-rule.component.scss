@@ -265,3 +265,32 @@ clr-modal {
         width: 20rem;
     }
 }
+
+.display-none{
+    display: none;
+}
+.width-100 {
+    width: 100%;
+}
+.label-text {
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 13px;
+    font-weight: 400;
+    color: #000;
+    height: 1.2rem;
+    margin: 0 !important;
+    line-height: 1rem;
+    text-align: left;
+    padding-left: 6px;
+    outline: none;
+    border-bottom: 1px solid rgb(154, 154, 154);
+}
+.labelDiv {
+    padding-left: 26px;
+}
+.ellipsis {
+    margin-left: 0.2rem;
+    font-size: 16px;
+    font-weight: 700;
+}

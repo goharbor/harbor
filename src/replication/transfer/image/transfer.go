@@ -211,18 +211,15 @@ func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo
 	case schema2.MediaTypeManifest:
 		// as using digest as the reference, so set the override to true directly
 		return t.copyImage(srcRepo, digest, dstRepo, digest, true)
-	// copy layer or image config
-	case schema2.MediaTypeLayer, schema2.MediaTypeImageConfig:
-		return t.copyBlob(srcRepo, dstRepo, digest)
 	// handle foreign layer
 	case schema2.MediaTypeForeignLayer:
 		t.logger.Infof("the layer %s is a foreign layer, skip", digest)
 		return nil
-	// others
+	// copy layer or image config
+	// the media type of the layer or config can be "application/octet-stream",
+	// schema1.MediaTypeManifestLayer, schema2.MediaTypeLayer, schema2.MediaTypeImageConfig
 	default:
-		err := fmt.Errorf("unsupported media type: %s", content.MediaType)
-		t.logger.Error(err.Error())
-		return err
+		return t.copyBlob(srcRepo, dstRepo, digest)
 	}
 }
 
@@ -264,6 +261,7 @@ func (t *transfer) pullManifest(repository, reference string) (
 	t.logger.Infof("pulling the manifest of image %s:%s ...", repository, reference)
 	manifest, digest, err := t.src.PullManifest(repository, reference, []string{
 		schema1.MediaTypeManifest,
+		schema1.MediaTypeSignedManifest,
 		schema2.MediaTypeManifest,
 		manifestlist.MediaTypeManifestList,
 	})
@@ -288,6 +286,7 @@ func (t *transfer) handleManifest(manifest distribution.Manifest, repository, di
 	}
 	// manifest
 	if mediaType == schema1.MediaTypeManifest ||
+		mediaType == schema1.MediaTypeSignedManifest ||
 		mediaType == schema2.MediaTypeManifest {
 		return manifest, digest, nil
 	}

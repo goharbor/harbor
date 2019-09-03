@@ -15,12 +15,18 @@
 package api
 
 import (
-	"errors"
-
+	"fmt"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
+	common_quota "github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/pkg/errors"
+	"strconv"
+
+	quota "github.com/goharbor/harbor/src/core/api/quota"
 )
 
 // InternalAPI handles request of harbor admin...
@@ -68,4 +74,104 @@ func (ia *InternalAPI) RenameAdmin() {
 	}
 	log.Debugf("The super user has been renamed to: %s", newName)
 	ia.DestroySession()
+}
+
+// QuotaSwitcher ...
+type QuotaSwitcher struct {
+	Enabled bool
+}
+
+// SwitchQuota ...
+func (ia *InternalAPI) SwitchQuota() {
+	var req QuotaSwitcher
+	if err := ia.DecodeJSONReq(&req); err != nil {
+		ia.SendBadRequestError(err)
+		return
+	}
+	// quota per project from disable to enable, it needs to update the quota usage bases on the DB records.
+	if !config.QuotaPerProjectEnable() && req.Enabled {
+		if err := ia.ensureQuota(); err != nil {
+			ia.SendInternalServerError(err)
+			return
+		}
+	}
+	defer func() {
+		config.GetCfgManager().Set(common.QuotaPerProjectEnable, req.Enabled)
+		config.GetCfgManager().Save()
+	}()
+	return
+}
+
+func (ia *InternalAPI) ensureQuota() error {
+	projects, err := dao.GetProjects(nil)
+	if err != nil {
+		return err
+	}
+	for _, project := range projects {
+		pSize, err := dao.CountSizeOfProject(project.ProjectID)
+		if err != nil {
+			logger.Warningf("error happen on counting size of project:%d , error:%v, just skip it.", project.ProjectID, err)
+			continue
+		}
+		afQuery := &models.ArtifactQuery{
+			PID: project.ProjectID,
+		}
+		afs, err := dao.ListArtifacts(afQuery)
+		if err != nil {
+			logger.Warningf("error happen on counting number of project:%d , error:%v, just skip it.", project.ProjectID, err)
+			continue
+		}
+		pCount := int64(len(afs))
+
+		// it needs to append the chart count
+		if config.WithChartMuseum() {
+			count, err := chartController.GetCountOfCharts([]string{project.Name})
+			if err != nil {
+				err = errors.Wrap(err, fmt.Sprintf("get chart count of project %d failed", project.ProjectID))
+				logger.Error(err)
+				continue
+			}
+			pCount = pCount + int64(count)
+		}
+
+		quotaMgr, err := common_quota.NewManager("project", strconv.FormatInt(project.ProjectID, 10))
+		if err != nil {
+			logger.Errorf("Error occurred when to new quota manager %v, just skip it.", err)
+			continue
+		}
+		used := common_quota.ResourceList{
+			common_quota.ResourceStorage: pSize,
+			common_quota.ResourceCount:   pCount,
+		}
+		if err := quotaMgr.EnsureQuota(used); err != nil {
+			logger.Errorf("cannot ensure quota for the project: %d, err: %v, just skip it.", project.ProjectID, err)
+			continue
+		}
+	}
+	return nil
+}
+
+// SyncQuota ...
+func (ia *InternalAPI) SyncQuota() {
+	cur := config.ReadOnly()
+	cfgMgr := config.GetCfgManager()
+	if !cur {
+		cfgMgr.Set(common.ReadOnly, true)
+		cfgMgr.Save()
+	}
+	// For api call, to avoid the timeout, it should be asynchronous
+	go func() {
+		defer func() {
+			cfgMgr.Set(common.ReadOnly, cur)
+			cfgMgr.Save()
+		}()
+		log.Info("start to sync quota(API), the system will be set to ReadOnly and back it normal once it done.")
+		err := quota.Sync(ia.ProjectMgr, false)
+		if err != nil {
+			log.Errorf("fail to sync quota(API), but with error: %v, please try to do it again.", err)
+			return
+		}
+		log.Info("success to sync quota(API).")
+	}()
+	return
 }

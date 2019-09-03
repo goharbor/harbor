@@ -24,7 +24,6 @@ import (
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/clair"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
@@ -39,7 +38,7 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 
 	log.Infof("Start syncing repositories from registry to DB... ")
 
-	reposInRegistry, err := catalog()
+	reposInRegistry, err := Catalog()
 	if err != nil {
 		log.Error(err)
 		return err
@@ -106,7 +105,8 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 	return nil
 }
 
-func catalog() ([]string, error) {
+// Catalog ...
+func Catalog() ([]string, error) {
 	repositories := []string{}
 
 	rc, err := initRegistryClient()
@@ -278,36 +278,4 @@ func repositoryExist(name string, client *registry.Repository) (bool, error) {
 		return false, err
 	}
 	return len(tags) != 0, nil
-}
-
-// transformVulnerabilities transforms the returned value of Clair API to a list of VulnerabilityItem
-func transformVulnerabilities(layerWithVuln *models.ClairLayerEnvelope) []*models.VulnerabilityItem {
-	res := []*models.VulnerabilityItem{}
-	l := layerWithVuln.Layer
-	if l == nil {
-		return res
-	}
-	features := l.Features
-	if features == nil {
-		return res
-	}
-	for _, f := range features {
-		vulnerabilities := f.Vulnerabilities
-		if vulnerabilities == nil {
-			continue
-		}
-		for _, v := range vulnerabilities {
-			vItem := &models.VulnerabilityItem{
-				ID:          v.Name,
-				Pkg:         f.Name,
-				Version:     f.Version,
-				Severity:    clair.ParseClairSev(v.Severity),
-				Fixed:       v.FixedBy,
-				Link:        v.Link,
-				Description: v.Description,
-			}
-			res = append(res, vItem)
-		}
-	}
-	return res
 }

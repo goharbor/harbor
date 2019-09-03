@@ -1,0 +1,55 @@
+<div *ngIf="loadingWebhook" class="clr-row mt-2 center">
+    <span class="spinner spinner-md"></span>
+</div>
+<div class="row" *ngIf="!loadingWebhook">
+  <div *ngIf="!showCreate">
+    <div>
+        <div class="row flex-items-xs-between rightPos">
+            <div class="flex-xs-middle option-left">
+              <div>
+                <span class="endpoint-label">Webhook endpoint</span>: {{endpoint}}
+                <button class="btn btn-link" (click)="openAddWebhookModal()">{{'WEBHOOK.EDIT_BUTTON' | translate}}</button>
+              </div>
+              <div [ngSwitch]="isEnabled">
+                <button *ngSwitchCase="false" class="btn btn-link" (click)="switchWebhookStatus(true)">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</button>
+                <button *ngSwitchCase="true" class="btn btn-link disabled-btn" (click)="switchWebhookStatus(false)">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</button>
+              </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 datagrid-margin-top">
+      <clr-datagrid [clrDgLoading]="loading">
+          <clr-dg-column>{{'WEBHOOK.TYPE' | translate}}</clr-dg-column>
+          <clr-dg-column>{{'WEBHOOK.STATUS' | translate}}</clr-dg-column>
+          <clr-dg-column>{{'WEBHOOK.CREATED' | translate}}</clr-dg-column>
+          <clr-dg-column>{{'WEBHOOK.LAST_TRIGGERED' | translate}}</clr-dg-column>
+          <clr-dg-row *clrDgItems="let item of lastTriggers">
+              <clr-dg-cell>{{item.event_type}}</clr-dg-cell>
+              <clr-dg-cell [ngSwitch]="item.enabled">
+                <div *ngSwitchCase="true" class="icon-wrap">
+                  <clr-icon shape="check-circle" size="20" class="is-success enabled-icon"></clr-icon>
+                  <span>{{'WEBHOOK.ENABLED' | translate}}</span>
+                </div>
+                <div *ngSwitchCase="false" class="icon-wrap">
+                  <clr-icon shape="exclamation-triangle" size="20" class="is-warning"></clr-icon>
+                  <span>{{'WEBHOOK.DISABLED' | translate}}</span>
+                </div>
+              </clr-dg-cell>
+              <clr-dg-cell>{{item.creation_time | date: 'short'}}</clr-dg-cell>
+              <clr-dg-cell>{{item.last_trigger_time | date: 'short'}}</clr-dg-cell>
+          </clr-dg-row>
+          <clr-dg-footer>
+              <span *ngIf="lastTriggerCount">1 - {{lastTriggerCount}} {{'WEBHOOK.OF' | translate}} </span> {{lastTriggerCount}} {{'WEBHOOK.ITEMS' | translate}}
+              <clr-dg-pagination [clrDgPageSize]="10"></clr-dg-pagination>
+          </clr-dg-footer>
+      </clr-datagrid>
+    </div>
+  </div>
+  <div *ngIf="showCreate">
+    <h2 class="create-text create-text-title">{{'WEBHOOK.CREATE_WEBHOOK' | translate}}</h2>
+    <p class="create-text">{{'WEBHOOK.CREATE_WEBHOOK_DESC' | translate}}</p>
+    <add-webhook-form class="webhook-form-wrap" [projectId]="projectId" [webhook]="webhook" [isModify]="false" (edit)="editWebhook($event)"></add-webhook-form>
+  </div>
+  <add-webhook [projectId]="projectId" [webhook]="webhook" (modify)="editWebhook($event)"></add-webhook>
+  <confirmation-dialog #confirmationDialogComponent (confirmAction)="confirmSwitch($event)"></confirmation-dialog>
+</div>

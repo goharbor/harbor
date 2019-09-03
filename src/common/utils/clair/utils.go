@@ -15,10 +15,7 @@
 package clair
 
 import (
-	"fmt"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"strings"
 )
 
@@ -39,26 +36,6 @@ func ParseClairSev(clairSev string) models.Severity {
 	default:
 		return models.SevUnknown
 	}
-}
-
-// UpdateScanOverview qeuries the vulnerability based on the layerName and update the record in img_scan_overview table based on digest.
-func UpdateScanOverview(digest, layerName string, clairEndpoint string, l ...*log.Logger) error {
-	var logger *log.Logger
-	if len(l) > 1 {
-		return fmt.Errorf("More than one logger specified")
-	} else if len(l) == 1 {
-		logger = l[0]
-	} else {
-		logger = log.DefaultLogger()
-	}
-	client := NewClient(clairEndpoint, logger)
-	res, err := client.GetResult(layerName)
-	if err != nil {
-		logger.Errorf("Failed to get result from Clair, error: %v", err)
-		return err
-	}
-	compOverview, sev := transformVuln(res)
-	return dao.UpdateImgScanOverview(digest, layerName, sev, compOverview)
 }
 
 func transformVuln(clairVuln *models.ClairLayerEnvelope) (*models.ComponentsOverview, models.Severity) {

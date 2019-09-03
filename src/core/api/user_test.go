@@ -23,7 +23,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/tests/apitests/apilib"
+	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/astaxie/beego"
@@ -45,67 +45,67 @@ func TestUsersPost(t *testing.T) {
 		common.AUTHMode: "db_auth",
 	})
 	// case 1: register a new user without admin auth, expect 400, because self registration is on
-	fmt.Println("Register user without admin auth")
+	t.Log("case 1: Register user without admin auth")
 	code, err := apiTest.UsersPost(testUser0002)
 	if err != nil {
 		t.Error("Error occurred while add a test User", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(400, code, "Add user status should be 400")
+		assert.Equal(400, code, "case 1: Add user status should be 400")
 	}
 
 	// case 2: register a new user with admin auth, but username is empty, expect 400
-	fmt.Println("Register user with admin auth, but username is empty")
+	t.Log("case 2: Register user with admin auth, but username is empty")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
 		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(400, code, "Add user status should be 400")
+		assert.Equal(400, code, "case 2: Add user status should be 400")
 	}
 
 	// case 3: register a new user with admin auth, but bad username format, expect 400
 	testUser0002.Username = "test@$"
-	fmt.Println("Register user with admin auth, but bad username format")
+	t.Log("case 3: Register user with admin auth, but bad username format")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
 		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(400, code, "Add user status should be 400")
+		assert.Equal(400, code, "case 3: Add user status should be 400")
 	}
 
 	// case 4: register a new user with admin auth, but bad userpassword format, expect 400
 	testUser0002.Username = "testUser0002"
-	fmt.Println("Register user with admin auth, but empty password.")
+	t.Log("case 4: Register user with admin auth, but empty password.")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
 		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(400, code, "Add user status should be 400")
+		assert.Equal(400, code, "case 4: Add user status should be 400")
 	}
 
 	// case 5: register a new user with admin auth, but email is empty, expect 400
 	testUser0002.Password = "testUser0002"
-	fmt.Println("Register user with admin auth, but email is empty")
+	t.Log("case 5: Register user with admin auth, but email is empty")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
 		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(400, code, "Add user status should be 400")
+		assert.Equal(400, code, "case 5: Add user status should be 400")
 	}
 
 	// case 6: register a new user with admin auth, but bad email format, expect 400
 	testUser0002.Email = "test..."
-	fmt.Println("Register user with admin auth, but bad email format")
+	t.Log("case 6: Register user with admin auth, but bad email format")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
 		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(400, code, "Add user status should be 400")
+		assert.Equal(400, code, "case 6: Add user status should be 400")
 	}
 
 	// case 7: register a new user with admin auth, but userrealname is empty, expect 400
@@ -123,51 +123,63 @@ func TestUsersPost(t *testing.T) {
 	// case 8: register a new user with admin auth, but bad userrealname format, expect 400
 	testUser0002.Email = "testUser0002@mydomain.com"
 	testUser0002.Realname = "test$com"
-	fmt.Println("Register user with admin auth, but bad user realname format")
+	t.Log("case 8: Register user with admin auth, but bad user realname format")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
 		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 
 	} else {
-		assert.Equal(400, code, "Add user status should be 400")
+		assert.Equal(400, code, "case 8: Add user status should be 400")
 	}
 
 	// case 9: register a new user with admin auth, but bad user comment, expect 400
 	testUser0002.Realname = "testUser0002"
 	testUser0002.Comment = "vmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmmm"
-	fmt.Println("Register user with admin auth, but user comment length is illegal")
+	t.Log("case 9: Register user with admin auth, but user comment length is illegal")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
 		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(400, code, "Add user status should be 400")
+		assert.Equal(400, code, "case 9: Add user status should be 400")
 	}
-
-	// case 10: register a new user with admin auth, expect 201
-	fmt.Println("Register user with admin auth, right parameters")
 	testUser0002.Comment = "test user"
+
+	// case 10: register an admin using non-admin user, expect 403
+	t.Log("case 10: Register admin user with non admin auth")
+	testUser0002.HasAdminRole = true
+	code, err = apiTest.UsersPost(testUser0002)
+	if err != nil {
+		t.Error("Error occurred while add a user", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(http.StatusForbidden, code, "case 10: Add user status should be 403")
+	}
+	testUser0002.HasAdminRole = false
+
+	// case 11: register a new user with admin auth, expect 201
+	t.Log("case 11: Register user with admin auth, right parameters")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
 		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(201, code, "Add user status should be 201")
+		assert.Equal(201, code, "case 11: Add user status should be 201")
 	}
 
-	// case 11: register duplicate user with admin auth, expect 409
-	fmt.Println("Register duplicate user with admin auth")
+	// case 12: register duplicate user with admin auth, expect 409
+	t.Log("case 12: Register duplicate user with admin auth")
 	code, err = apiTest.UsersPost(testUser0002, *admin)
 	if err != nil {
 		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(409, code, "Add user status should be 409")
+		assert.Equal(409, code, "case 12: Add user status should be 409")
 	}
 
-	// case 12: register a new user with admin auth, but duplicate email, expect 409
-	fmt.Println("Register user with admin auth, but duplicate email")
+	// case 13: register a new user with admin auth, but duplicate email, expect 409
+	t.Log("case 13: Register user with admin auth, but duplicate email")
 	testUser0002.Username = "testUsertest"
 	testUser0002.Email = "testUser0002@mydomain.com"
 	code, err = apiTest.UsersPost(testUser0002, *admin)
@@ -175,7 +187,7 @@ func TestUsersPost(t *testing.T) {
 		t.Error("Error occurred while add a user", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(409, code, "Add user status should be 409")
+		assert.Equal(409, code, "case 13: Add user status should be 409")
 	}
 }
 
@@ -612,7 +624,7 @@ func TestUsersCurrentPermissions(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	httpStatusCode, permissions, err := apiTest.UsersGetPermissions("current", "/project/library", *projAdmin)
+	httpStatusCode, permissions, err := apiTest.UsersGetPermissions("current", "/project/1", *projAdmin)
 	assert.Nil(err)
 	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	assert.NotEmpty(permissions, "permissions should not be empty")
@@ -622,11 +634,11 @@ func TestUsersCurrentPermissions(t *testing.T) {
 	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 	assert.Empty(permissions, "permissions should be empty")
 
-	httpStatusCode, _, err = apiTest.UsersGetPermissions(projAdminID, "/project/library", *projAdmin)
+	httpStatusCode, _, err = apiTest.UsersGetPermissions(projAdminID, "/project/1", *projAdmin)
 	assert.Nil(err)
 	assert.Equal(int(200), httpStatusCode, "httpStatusCode should be 200")
 
-	httpStatusCode, _, err = apiTest.UsersGetPermissions(projDeveloperID, "/project/library", *projAdmin)
+	httpStatusCode, _, err = apiTest.UsersGetPermissions(projDeveloperID, "/project/1", *projAdmin)
 	assert.Nil(err)
 	assert.Equal(int(403), httpStatusCode, "httpStatusCode should be 403")
 }

@@ -4,7 +4,7 @@ This guide provides instructions to manage roles by LDAP/AD group. You can impor
 
 ## Prerequisite
 
-1. Harbor's auth_mode is ldap_auth and **[basic LDAP configure paremters](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md#optional-parameters)** are configured.
+1. Harbor's auth_mode is ldap_auth and **[basic LDAP configure parameters](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md#optional-parameters)** are configured.
 1. Memberof overlay
 
     This feature requires the LDAP/AD server enabled the feature **memberof overlay**. 
@@ -17,18 +17,23 @@ This guide provides instructions to manage roles by LDAP/AD group. You can impor
 
 Besides **[basic LDAP configure parameters](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md#optional-parameters)** , LDAP group related configure parameters should be configured, they can be configured before or after installation
 
-  1. Configure parameters in harbor.cfg before installation
+  1. Configure LDAP parameters via API, refer to **[Config Harbor user settings by command line](configure_user_settings.md)**
 
+For example:
+```
+curl -X PUT -u "<username>:<password>" -H "Content-Type: application/json" -ki https://harbor.sample.domain/api/configurations -d'{"ldap_group_basedn":"ou=groups,dc=example,dc=com"}'
+```   
+The following parameters are related to LDAP group configuration.
    * ldap_group_basedn -- The base DN from which to lookup a group in LDAP/AD, for example: ou=groups,dc=example,dc=com
    * ldap_group_filter -- The filter to search LDAP/AD group, for example: objectclass=groupOfNames 
    * ldap_group_gid    -- The attribute used to name an LDAP/AD group, for example: cn 
    * ldap_group_scope  -- The scope to search for LDAP/AD groups. 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE 
 
-  2. Or Change configure parameter in web console after installation. Go to "Administration" -> "Configuration" -> "Authentication" and change following settings.
-   - LDAP Group Base DN -- ldap_group_basedn in harbor.cfg
-   - LDAP Group Filter  -- ldap_group_filter in harbor.cfg
-   - LDAP Group GID     -- ldap_group_gid in harbor.cfg
-   - LDAP Group Scope   -- ldap_group_scope in harbor.cfg
+  2. Or change configure parameter in web console after installation. Go to "Administration" -> "Configuration" -> "Authentication" and change following settings.
+   - LDAP Group Base DN -- ldap_group_basedn in the Harbor user settings
+   - LDAP Group Filter  -- ldap_group_filter in the Harbor user settings
+   - LDAP Group GID     -- ldap_group_gid in the Harbor user settings
+   - LDAP Group Scope   -- ldap_group_scope in the Harbor user settings
    - LDAP Groups With Admin Privilege -- Specify an LDAP/AD group DN, all LDAPA/AD users in this group have harbor admin privileges.
 
 ![Screenshot of LDAP group config](img/group/ldap_group_config.png)
@@ -49,4 +54,4 @@ If a user is in the LDAP groups with admin privilege (ldap_group_admin_dn), the 
 
 ## User privileges and group privileges
 
-If a user has both user-level role and group-level role, only the user level role privileges will be considered.
+If a user has both user-level role and group-level role, these privileges are merged together.

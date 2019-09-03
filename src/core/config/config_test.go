@@ -21,6 +21,7 @@ import (
 	"testing"
 
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -207,6 +208,10 @@ func TestConfig(t *testing.T) {
 	assert.Equal("http://myjob:8888", InternalJobServiceURL())
 	assert.Equal("http://myui:8888/service/token", InternalTokenServiceEndpoint())
 
+	localCoreURL := LocalCoreURL()
+	assert.Equal("http://127.0.0.1:8080", localCoreURL)
+
+	assert.True(NotificationEnable())
 }
 
 func currPath() string {
@@ -228,17 +233,17 @@ func TestConfigureValue_GetMap(t *testing.T) {
 
 func TestHTTPAuthProxySetting(t *testing.T) {
 	m := map[string]interface{}{
-		common.HTTPAuthProxyAlwaysOnboard: "true",
-		common.HTTPAuthProxyVerifyCert:    "true",
-		common.HTTPAuthProxyEndpoint:      "https://auth.proxy/suffix",
+		common.HTTPAuthProxySkipSearch: "true",
+		common.HTTPAuthProxyVerifyCert: "true",
+		common.HTTPAuthProxyEndpoint:   "https://auth.proxy/suffix",
 	}
 	InitWithSettings(m)
 	v, e := HTTPAuthProxySetting()
 	assert.Nil(t, e)
 	assert.Equal(t, *v, models.HTTPAuthProxy{
-		Endpoint:      "https://auth.proxy/suffix",
-		AlwaysOnBoard: true,
-		VerifyCert:    true,
+		Endpoint:   "https://auth.proxy/suffix",
+		SkipSearch: true,
+		VerifyCert: true,
 	})
 }
 

@@ -54,6 +54,7 @@ var (
 		{Resource: rbac.ResourceSelf, Action: rbac.ActionDelete},
 
 		{Resource: rbac.ResourceMember, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceMember, Action: rbac.ActionUpdate},
 		{Resource: rbac.ResourceMember, Action: rbac.ActionDelete},
 		{Resource: rbac.ResourceMember, Action: rbac.ActionList},
@@ -86,6 +87,13 @@ var (
 		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionCreate},
 		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionUpdate},
 		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionDelete},
+
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
+		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionOperate},
 
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
@@ -143,6 +151,12 @@ var (
 		{Resource: rbac.ResourceRobot, Action: rbac.ActionUpdate},
 		{Resource: rbac.ResourceRobot, Action: rbac.ActionDelete},
 		{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionList},
+		{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionRead},
 	}
 )
 

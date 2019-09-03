@@ -131,12 +131,6 @@ func fillExecution(execution *models.Execution) error {
 	}
 	resetExecutionStatus(execution)
 
-	// if execution status changed to a final status, store to DB
-	if executionFinished(execution.Status) {
-		UpdateExecution(execution, models.ExecutionPropsName.Status, models.ExecutionPropsName.InProgress,
-			models.ExecutionPropsName.Succeed, models.ExecutionPropsName.Failed, models.ExecutionPropsName.Stopped,
-			models.ExecutionPropsName.EndTime, models.ExecutionPropsName.Total)
-	}
 	return nil
 }
 
@@ -322,25 +316,37 @@ func UpdateTask(task *models.Task, props ...string) (int64, error) {
 	return o.Update(task, props...)
 }
 
-// UpdateTaskStatus ...
-func UpdateTaskStatus(id int64, status string, statusCondition ...string) (int64, error) {
-	qs := dao.GetOrmer().QueryTable(&models.Task{}).
-		Filter("id", id)
-	if len(statusCondition) > 0 {
-		qs = qs.Filter("status", statusCondition[0])
-	}
-	params := orm.Params{
-		"status": status,
-	}
+// UpdateTaskStatus updates the status of task.
+// The implementation uses raw sql rather than QuerySetter.Filter... as QuerySetter
+// will generate sql like:
+//   `UPDATE "replication_task" SET "end_time" = $1, "status" = $2
+//     WHERE "id" IN ( SELECT T0."id" FROM "replication_task" T0 WHERE T0."id" = $3
+//     AND T0."status" IN ($4, $5, $6))]`
+// which is not a "single" sql statement, this will cause issues when running in concurrency
+func UpdateTaskStatus(id int64, status string, statusRevision int64, statusCondition ...string) (int64, error) {
+	params := []interface{}{}
+	sql := `update replication_task set status = ?, status_revision = ?, end_time = ? `
+	params = append(params, status, statusRevision)
+	var t time.Time
+	// when the task is in final status, update the endtime
+	// when the task re-runs again, the endtime should be cleared
+	// so set the endtime to null if the task isn't in final status
 	if taskFinished(status) {
-		// should update endTime
-		params["end_time"] = time.Now()
+		t = time.Now()
 	}
-	n, err := qs.Update(params)
+	params = append(params, t)
+
+	sql += fmt.Sprintf(`where id = ? and (status_revision < ? or status_revision = ? and status in (%s)) `, dao.ParamPlaceholderForIn(len(statusCondition)))
+	params = append(params, id, statusRevision, statusRevision, statusCondition)
+
+	result, err := dao.GetOrmer().Raw(sql, params...).Exec()
 	if err != nil {
 		return 0, err
 	}
-	log.Debugf("update task status %d: -> %s", id, status)
+	n, _ := result.RowsAffected()
+	if n > 0 {
+		log.Debugf("update task status %d: -> %s", id, status)
+	}
 	return n, err
 }
 

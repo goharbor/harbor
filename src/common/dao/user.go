@@ -117,12 +117,18 @@ func ListUsers(query *models.UserQuery) ([]models.User, error) {
 }
 
 func userQueryConditions(query *models.UserQuery) orm.QuerySeter {
-	qs := GetOrmer().QueryTable(&models.User{}).
-		Filter("deleted", 0).
-		Filter("user_id__gt", 1)
+	qs := GetOrmer().QueryTable(&models.User{}).Filter("deleted", 0)
 
 	if query == nil {
-		return qs
+		// Exclude admin account, see https://github.com/goharbor/harbor/issues/2527
+		return qs.Filter("user_id__gt", 1)
+	}
+
+	if len(query.UserIDs) > 0 {
+		qs = qs.Filter("user_id__in", query.UserIDs)
+	} else {
+		// Exclude admin account when not filter by UserIDs, see https://github.com/goharbor/harbor/issues/2527
+		qs = qs.Filter("user_id__gt", 1)
 	}
 
 	if len(query.Username) > 0 {
@@ -202,7 +208,7 @@ func DeleteUser(userID int) error {
 	name := fmt.Sprintf("%s#%d", user.Username, user.UserID)
 	email := fmt.Sprintf("%s#%d", user.Email, user.UserID)
 
-	_, err = o.Raw(`update harbor_user 
+	_, err = o.Raw(`update harbor_user
 		set deleted = true, username = ?, email = ?
 		where user_id = ?`, name, email, userID).Exec()
 	return err
@@ -234,6 +240,14 @@ func OnBoardUser(u *models.User) error {
 	}
 	if created {
 		u.UserID = int(id)
+		// current orm framework doesn't support to fetch a pointer or sql.NullString with QueryRow
+		// https://github.com/astaxie/beego/issues/3767
+		if len(u.Email) == 0 {
+			_, err = o.Raw("update harbor_user set email = null where user_id = ? ", id).Exec()
+			if err != nil {
+				return err
+			}
+		}
 	} else {
 		existing, err := GetUser(*u)
 		if err != nil {

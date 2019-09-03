@@ -2,19 +2,20 @@ package chartserver
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
+	"os"
 	"strings"
 
 	"github.com/ghodss/yaml"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/pkg/errors"
 	helm_repo "k8s.io/helm/pkg/repo"
-
-	"os"
-
-	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 // ListCharts gets the chart list under the namespace
@@ -68,11 +69,21 @@ func (c *Controller) DeleteChartVersion(namespace, chartName, version string) er
 		return errors.New("invalid chart for deleting")
 	}
 
-	url := fmt.Sprintf("%s/%s/%s", c.APIPrefix(namespace), chartName, version)
+	url := fmt.Sprintf("/api/chartrepo/%s/charts/%s/%s", namespace, chartName, version)
+	req, _ := http.NewRequest(http.MethodDelete, url, nil)
+	w := httptest.NewRecorder()
 
-	err := c.apiClient.DeleteContent(url)
-	if err != nil {
-		return err
+	c.trafficProxy.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		text, err := extractError(w.Body.Bytes())
+		if err != nil {
+			return err
+		}
+		return &commonhttp.Error{
+			Code:    w.Code,
+			Message: text,
+		}
 	}
 
 	// send notification to replication handler

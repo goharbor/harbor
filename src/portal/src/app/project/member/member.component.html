@@ -16,7 +16,7 @@
             <button class="btn btn-sm btn-secondary" (click)="openAddMemberModal()" [disabled]="!hasCreateMemberPermission">
                 <span><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'MEMBER.USER' | translate }}</span>
             </button>
-            <button class="btn btn-sm btn-secondary" (click)="openAddGroupModal()" [disabled]="!hasCreateMemberPermission || !isLdapMode">
+            <button class="btn btn-sm btn-secondary" (click)="openAddGroupModal()" [disabled]="!hasCreateMemberPermission || !(isLdapMode || isHttpAuthMode)">
                 <span><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'MEMBER.LDAP_GROUP' | translate}}</span>
             </button>
             <clr-dropdown id='member-action' [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link" clrDropdownTrigger>
@@ -53,4 +53,5 @@
     </div>
     <add-member [projectId]="projectId" [memberList]="members" (added)="addedMember($event)"></add-member>
     <add-group [projectId]="projectId" [memberList]="members" (added)="addedGroup($event)"></add-group>
+    <add-http-auth-group [projectId]="projectId" (added)="addedGroup($event)"></add-http-auth-group>
 </div>

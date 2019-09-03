@@ -30,6 +30,11 @@ harbor_admin_password: Harbor12345
 database:
   # The password for the root user of Harbor DB. Change this before any production use.
   password: root123
+  # The maximum number of connections in the idle connection pool. If it <=0, no idle connections are retained.
+  max_idle_conns: 50
+  # The maximum number of open connections to the database. If it <= 0, then there is no limit on the number of open connections.
+  # Note: the default number of connections is 100 for postgres.
+  max_open_conns: 100
 
 # The default data volume
 data_volume: /data
@@ -50,19 +55,17 @@ data_volume: /data
 #     disabled: false
 
 # Clair configuration
-clair: 
+clair:
   # The interval of clair updaters, the unit is hour, set to 0 to disable the updaters.
   updaters_interval: 12
 
-  # Config http proxy for Clair, e.g. http://my.proxy.com:3128
-  # Clair doesn't need to connect to harbor internal components via http proxy.
-  http_proxy:
-  https_proxy:
-  no_proxy: 127.0.0.1,localhost,core,registry
-
 jobservice:
-  # Maximum number of job workers in job service  
+  # Maximum number of job workers in job service
   max_job_workers: 10
+
+notification:
+  # Maximum retry count for webhook job
+  webhook_job_max_retry: 10
 
 chart:
   # Change the value of absolute_url to enabled can enable absolute url in chart
@@ -72,17 +75,28 @@ chart:
 log:
   # options are debug, info, warning, error, fatal
   level: info
-  # Log files are rotated log_rotate_count times before being removed. If count is 0, old versions are removed rather than rotated.
-  rotate_count: 50
-  # Log files are rotated only if they grow bigger than log_rotate_size bytes. If size is followed by k, the size is assumed to be in kilobytes. 
-  # If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G 
-  # are all valid.
-  rotate_size: 200M
-  # The directory on your host that store log
-  location: /var/log/harbor
+  # configs for logs in local storage
+  local:
+    # Log files are rotated log_rotate_count times before being removed. If count is 0, old versions are removed rather than rotated.
+    rotate_count: 50
+    # Log files are rotated only if they grow bigger than log_rotate_size bytes. If size is followed by k, the size is assumed to be in kilobytes.
+    # If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G
+    # are all valid.
+    rotate_size: 200M
+    # The directory on your host that store log
+    location: /var/log/harbor
+
+  # Uncomment following lines to enable external syslog endpoint.
+  # external_endpoint:
+  #   # protocol used to transmit log to external endpoint, options is tcp or udp
+  #   protocol: tcp
+  #   # The host of external endpoint
+  #   host: localhost
+  #   # Port of external endpoint
+  #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 1.8.0
+_version: 1.9.0
 
 # Uncomment external_database if using external database.
 # external_database:
@@ -93,6 +107,8 @@ _version: 1.8.0
 #     username: harbor_db_username
 #     password: harbor_db_password
 #     ssl_mode: disable
+#     max_idle_conns: 2
+#     max_open_conns: 0
 #   clair:
 #     host: clair_db_host
 #     port: clair_db_port
@@ -128,3 +144,20 @@ _version: 1.8.0
 # Uncomment uaa for trusting the certificate of uaa instance that is hosted via self-signed cert.
 # uaa:
 #   ca_file: /path/to/ca
+
+# Global proxy
+# Config http proxy for components, e.g. http://my.proxy.com:3128
+# Components doesn't need to connect to each others via http proxy.
+# Remove component from `components` array if want disable proxy
+# for it. If you want use proxy for replication, MUST enable proxy
+# for core and jobservice, and set `http_proxy` and `https_proxy`.
+# Add domain to the `no_proxy` field, when you want disable proxy
+# for some special registry.
+proxy:
+  http_proxy:
+  https_proxy:
+  no_proxy: 127.0.0.1,localhost,.local,.internal,log,db,redis,nginx,core,portal,postgresql,jobservice,registry,registryctl,clair
+  components:
+    - core
+    - jobservice
+    - clair

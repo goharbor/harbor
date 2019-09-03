@@ -84,11 +84,34 @@ _version: 1.8.0
 # Uncomment external_database if using external database. And the password will replace the the password setting in database.
 # And currently ontly support postgres.
 external_database:
-  host: {{ db_host }}
-  port: {{ db_port }}
-  username: {{ db_user }}
-  password: {{ db_password }}
-  ssl_mode: disable
+  harbor:
+    host: {{ db_host }}
+    port: {{ db_port }}
+    db_name: registry
+    username: {{ db_user }}
+    password: {{ db_password }}
+    ssl_mode: disable
+  clair:
+    host: {{ clair_db_host }}
+    port: {{ clair_db_port }}
+    db_name: {{ clair_db }}
+    username: {{ clair_db_username }}
+    password: {{ clair_db_password }}
+    ssl_mode: disable
+  notary_signer:
+    host: {{ db_host }}
+    port: {{ db_port }}
+    db_name: notarysigner
+    username: {{ db_user }}
+    password: {{ db_password }}
+    ssl_mode: disable
+  notary_server:
+    host: {{ db_host }}
+    port: {{ db_port }}
+    db_name: notaryserver
+    username: {{ db_user }}
+    password: {{ db_password }}
+    ssl_mode: disable
 {% endif %}
 
 {% if external_redis %}

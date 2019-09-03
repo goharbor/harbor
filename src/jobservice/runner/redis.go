@@ -15,17 +15,18 @@
 package runner
 
 import (
-	"github.com/goharbor/harbor/src/jobservice/job/impl"
-	"runtime"
-
 	"fmt"
+	"runtime"
+	"time"
+
 	"github.com/gocraft/work"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/pkg/errors"
-	"time"
 )
 
 // RedisJob is a job wrapper to wrap the job.Interface to the style which can be recognized by the redis worker.
@@ -67,8 +68,10 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 
 	// Track the running job now
 	jID := j.ID
-	if isPeriodicJobExecution(j) {
-		jID = fmt.Sprintf("%s@%d", j.ID, j.EnqueuedAt)
+
+	// Check if the job is a periodic one as periodic job has its own ID format
+	if eID, yes := isPeriodicJobExecution(j); yes {
+		jID = eID
 	}
 
 	if tracker, err = rj.ctl.Track(jID); err != nil {
@@ -85,11 +88,38 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 		return
 	}
 
-	if job.RunningStatus.Compare(job.Status(tracker.Job().Info.Status)) <= 0 {
+	// Do operation based on the job status
+	jStatus := job.Status(tracker.Job().Info.Status)
+	switch jStatus {
+	case job.PendingStatus, job.ScheduledStatus:
+		// do nothing now
+		break
+	case job.StoppedStatus:
 		// Probably jobs has been stopped by directly mark status to stopped.
 		// Directly exit and no retry
 		markStopped = bp(true)
 		return nil
+	case job.ErrorStatus:
+		if j.FailedAt > 0 && j.Fails > 0 {
+			// Retry job
+			// Reset job info
+			if er := tracker.Reset(); er != nil {
+				// Log error and return the original error if existing
+				er = errors.Wrap(er, fmt.Sprintf("retrying job %s:%s failed", j.Name, j.ID))
+				logger.Error(er)
+
+				if len(j.LastErr) > 0 {
+					return errors.New(j.LastErr)
+				}
+
+				return err
+			}
+
+			logger.Infof("|*_*| Retrying job %s:%s, revision: %d", j.Name, j.ID, tracker.Job().Info.Revision)
+		}
+		break
+	default:
+		return errors.Errorf("mismatch status for running job: expected <%s <> got %s", job.RunningStatus.String(), jStatus.String())
 	}
 
 	// Defer to switch status
@@ -162,7 +192,7 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 	// Handle retry
 	rj.retry(runningJob, j)
 	// Handle periodic job execution
-	if isPeriodicJobExecution(j) {
+	if _, yes := isPeriodicJobExecution(j); yes {
 		if er := tracker.PeriodicExecutionDone(); er != nil {
 			// Just log it
 			logger.Error(er)
@@ -181,14 +211,9 @@ func (rj *RedisJob) retry(j job.Interface, wj *work.Job) {
 	}
 }
 
-func isPeriodicJobExecution(j *work.Job) bool {
-	if isPeriodic, ok := j.Args["_job_kind_periodic_"]; ok {
-		if isPeriodicV, yes := isPeriodic.(bool); yes && isPeriodicV {
-			return true
-		}
-	}
-
-	return false
+func isPeriodicJobExecution(j *work.Job) (string, bool) {
+	epoch, ok := j.Args[period.PeriodicExecutionMark]
+	return fmt.Sprintf("%s@%s", j.ID, epoch), ok
 }
 
 func bp(b bool) *bool {

@@ -8,7 +8,7 @@ import replication
 import repository
 import swagger_client
 
-class Harbor(project.Project, label.Label, 
+class Harbor(project.Project, label.Label,
     registry.Registry, replication.Replication,
     repository.Repository):
     pass

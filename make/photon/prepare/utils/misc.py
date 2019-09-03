@@ -1,6 +1,7 @@
 import os
 import string
 import random
+from pathlib import Path
 
 from g import DEFAULT_UID, DEFAULT_GID
 
@@ -78,11 +79,33 @@ def generate_random_string(length):
     return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
 
 
-def prepare_config_dir(root, *name):
-    absolute_path = os.path.join(root, *name)
-    if not os.path.exists(absolute_path):
-        os.makedirs(absolute_path)
-    return absolute_path
+def prepare_dir(root: str, *args, **kwargs) -> str:
+    gid, uid = kwargs.get('gid'), kwargs.get('uid')
+    absolute_path = Path(os.path.join(root, *args))
+    if absolute_path.is_file():
+        raise Exception('Path exists and the type is regular file')
+    mode = kwargs.get('mode') or 0o755
+
+    # we need make sure this dir has the right permission
+    if not absolute_path.exists():
+        absolute_path.mkdir(mode=mode, parents=True)
+    elif not check_permission(absolute_path, mode=mode):
+         absolute_path.chmod(mode)
+
+    # if uid or gid not None, then change the ownership of this dir
+    if not(gid is None and uid is None):
+        dir_uid, dir_gid = absolute_path.stat().st_uid, absolute_path.stat().st_gid
+        if uid is None:
+            uid = dir_uid
+        if gid is None:
+            gid = dir_gid
+        # We decide to recursively chown only if the dir is not owned by correct user
+        # to save time if the dir is extremely large
+        if not check_permission(absolute_path, uid, gid):
+            recursive_chown(absolute_path, uid, gid)
+
+    return str(absolute_path)
+
 
 
 def delfile(src):
@@ -93,6 +116,27 @@ def delfile(src):
         except Exception as e:
             print(e)
     elif os.path.isdir(src):
-        for item in os.listdir(src):
-            itemsrc = os.path.join(src, item)
-            delfile(itemsrc)
+        for dir_name in os.listdir(src):
+            dir_path = os.path.join(src, dir_name)
+            delfile(dir_path)
+
+
+def recursive_chown(path, uid, gid):
+    os.chown(path, uid, gid)
+    for root, dirs, files in os.walk(path):
+        for d in dirs:
+            os.chown(os.path.join(root, d), uid, gid)
+        for f in files:
+            os.chown(os.path.join(root, f), uid, gid)
+
+
+def check_permission(path: str, uid:int = None, gid:int = None, mode:int = None):
+    if not isinstance(path, Path):
+        path = Path(path)
+    if uid is not None and uid != path.stat().st_uid:
+        return False
+    if gid is not None and gid != path.stat().st_gid:
+        return False
+    if mode is not None and (path.stat().st_mode - mode) % 0o1000 != 0:
+        return False
+    return True
