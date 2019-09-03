@@ -854,7 +854,9 @@ Project quota settings take precedence over tag retention rules. If you set a ta
 1. (Optional) Click **Dry Run** to test the rule or rules that you have defined.
 1. (Optional) Click **Run Now** to run the rule immediately.
 
-To modify an existing rule, click the three vertical dots next to a rule to disable, edit, or delete that rule.
+To modify an existing rule, click the three vertical dots next to a rule to disable, edit, or delete that rule. 
+
+![Modify tag retention rules](img/tag-retention5.png)
 
 ## Webhook Notifications
 
