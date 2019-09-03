@@ -746,7 +746,7 @@ For information about how the `**` wildcard is applied, see https://github.com/b
 - You set the retention policy to retain the 10 most recently pulled images in each repository.
 - You set the tag filter to `**`, meaning that all tags in the repository are included.
 
-In this example the rule retains the 10 most recently pulled images in repository A, and all of the images in repositories B to E, retaining a total of 34 image tags in the project. In other words, the rule does not treat all of the images in repositories A to E as a single pool from which to choose the 10 most recent images. So, even if the 11th to 100th tags in repository A have been pulled more recently than any of the tags in repositories B to E, all of the tags in repositories B to E are retained, because each of those repositories has fewer than 10 tags.
+In this example the rule retains the 10 most recently pulled images in repository A, and all 6 of the images in each of the 4 repositories B to E. So, a total of 34 image tags are retained in the project. In other words, the rule does not treat all of the images in repositories A to E as a single pool from which to choose the 10 most recent images. So, even if the 11th to 100th tags in repository A have been pulled more recently than any of the tags in repositories B to E, all of the tags in repositories B to E are retained, because each of those repositories has fewer than 10 tags.
 
 #### Example 2
 
@@ -765,8 +765,11 @@ This example uses the same project and repositories as examples 1 and 2, but set
 - Rule 1: Retain all of the images in each repository that have been pulled in the last 7 days.
 - Rule 2: Retain a maximum number of 10 images in each repository.
 
-In this case, repository A only retains the 10 most recent images, even though images 11 to 100 have been pulled in the last week. Repositories B to E retain no images, because none of those images have been pulled in the last week. In this example, 10 images are retained, as opposed to 34 images in example 1 and 100 in example 2.
+For repository A, rule 1 retains all of the images because they have all been pulled in the last week. Rule 2 retains the 10 most recently pulled images. So, since the two rules are applied with an `OR` relationship, all 100 images are retained in repository A.
 
+For repositories B-E, rule 1 will retain 0 images as no images are pulled in the last week. Rule 2 will retain all 6 images because 6 < 10. So, since the two rules are applied with an `OR` relationship, for repositories B-E, each repository will keep all 6 images.
+
+In this example, all of the images are retained.
 
 #### Example 4
 
