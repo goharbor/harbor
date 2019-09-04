@@ -50,7 +50,7 @@ Test Case - OIDC User Sign In
 
 Test Case - Create An New Project
     Sign In Harbor With OIDC User  ${HARBOR_URL}
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     Create An New Project  test${d}
     Close Browser
 

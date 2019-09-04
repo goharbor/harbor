@@ -3599,11 +3599,17 @@ paths:
       summary: List quotas
       description: List quotas
       tags:
-        - quota
+        - Products
+        - Quota
       parameters:
         - name: reference
           in: query
           description: The reference type of quota.
+          required: false
+          type: string
+        - name: reference_id
+          in: query
+          description: The reference id of quota.
           required: false
           type: string
         - name: sort
@@ -3651,7 +3657,8 @@ paths:
       summary: Get the specified quota
       description: Get the specified quota
       tags:
-        - quota
+        - Products
+        - Quota
       parameters:
         - name: id
           in: path
@@ -3675,7 +3682,8 @@ paths:
       summary: Update the specified quota
       description: Update hard limits of the specified quota
       tags:
-        - quota
+        - Products
+        - Quota
       parameters:
         - name: id
           in: path
