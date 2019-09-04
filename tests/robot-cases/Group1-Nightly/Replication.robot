@@ -45,7 +45,7 @@ Test Case - Pro Replication Rules Add
 Test Case - Harbor Endpoint Verification
     #This case need vailid info and selfsign cert
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Registries
     Create A New Endpoint    harbor    edp1${d}    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    N
@@ -57,7 +57,7 @@ Test Case - Harbor Endpoint Verification
 Test Case - DockerHub Endpoint Add
     #This case need vailid info and selfsign cert
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Registries
     Create A New Endpoint    docker-hub    edp1${d}    https://hub.docker.com/    danfengliu    Aa123456    Y
@@ -66,7 +66,7 @@ Test Case - DockerHub Endpoint Add
 Test Case - Harbor Endpoint Add
     #This case need vailid info and selfsign cert
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Registries
     Create A New Endpoint    harbor    testabc    https://${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    Y
@@ -92,7 +92,7 @@ Test Case - Harbor Endpoint Delete
 
 Test Case - Replication Rule Edit
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     ${endpoint1}=    Set Variable    e1${d}
     ${endpoint2}=    Set Variable    e2${d}
     ${rule_name_old}=    Set Variable    rule_testabc${d}
@@ -134,7 +134,7 @@ Test Case - Replication Rule Edit
 
 Test Case - Replication Rule Delete
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     ${endpoint1}=    Set Variable    e1${d}
     ${rule_name}=    Set Variable    rule_testabc${d}
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
@@ -147,7 +147,7 @@ Test Case - Replication Rule Delete
 
 Test Case - Replication Of Pull Images from DockerHub To Self
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project    project${d}
@@ -168,7 +168,7 @@ Test Case - Replication Of Pull Images from DockerHub To Self
 
 Test Case - Replication Of Push Images from Self To Harbor
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project    project${d}
@@ -199,7 +199,7 @@ Test Case - Replication Of Push Images from Self To Harbor
 
 Test Case - Replication Of Push Chart from Self To Harbor
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project    project${d}
@@ -231,7 +231,7 @@ Test Case - Replication Of Push Chart from Self To Harbor
 
 Test Case - Replication Of Push Images from Self To Harbor By Push Event
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project    project${d}
@@ -251,9 +251,9 @@ Test Case - Replication Of Push Images from Self To Harbor By Push Event
     Retry Wait Until Page Contains    project_dest${d}/centos
     Close Browser
 
-Test Case - Replication Of Pull Images from AWS-ECR To Harbor
+Test Case - Replication Of Pull Images from AWS-ECR To Self
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project    project${d}
@@ -272,9 +272,9 @@ Test Case - Replication Of Pull Images from AWS-ECR To Harbor
     Retry Wait Until Page Contains    project${d}/tomcat
     Close Browser
 
-Test Case - Replication Of Pull Images from Google-GCR To Harbor
+Test Case - Replication Of Pull Images from Google-GCR To Self
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     #login source
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project    project${d}
