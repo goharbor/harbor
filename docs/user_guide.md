@@ -314,8 +314,12 @@ By default, all projects have unlimited quotas for both artifacts and storage us
    ![Project quotas](img/project-quota1.png)
 1. To set global default quotas on all projects, click **Edit**.
    ![Project quotas](img/project-quota2.png)
-   1. For **Default artifact count**, enter the maximum number of artifacts that any project can contain, or enter `-1` to set the default to unlimited. 
-   1. For **Default storage consumption**, enter the maximum quantity of storage that any project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu.
+   1. For **Default artifact count**, enter the maximum number of artifacts that any project can contain. 
+   
+   Enter `-1` to set the default to unlimited. 
+   1. For **Default storage consumption**, enter the maximum quantity of storage that any project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu. 
+   
+   Enter `-1` to set the default to unlimited.
    ![Project quotas](img/project-quota3.png)
    1. Click **OK**.
 1. To set quotas on an individual project, click the 3 vertical dots next to a project and select **Edit**.
@@ -326,6 +330,20 @@ By default, all projects have unlimited quotas for both artifacts and storage us
 After you set quotas, the you can see how much of their quotas each project has consumed in the **Project Quotas** tab.
 
 ![Project quotas](img/project-quota5.png)
+
+### How Harbor Calculates Resource Usage
+
+When setting project quotas, it is useful to know how Harbor calculates artifact numbers and storage use, especially in relation to image pushing, retagging, and garbage collection.
+
+- Harbor computes image size when blobs and manifests are pushed from the Docker client.
+- Harbor computes artifact counts when manifests are pushed from the Docker client.
+- Shared blobs are only computed once per project. In Docker, blob sharing is defined globally. In Harbor, blob sharing is defined at the project level. As a consequence, overall storage usage can be greater than the actual disk capacity.
+- Retagging images reserves and releases resources: 
+  -  If you retag an image within a project, the artifact count increases by one, but storage usage does not change because there are no new blobs or manifests.
+  - If you retag an image from one project to another, the artifact count and storage usage both increase.
+- For garbage collection, `docker push` adds the config and blobs first, and then adds the manifest.
+- If the artifact count reaches the limit, image blobs can be pushed into a project and storage usage is updated accordingly. You can consider these blobs to be untagged blobs. They can be removed by garbage collection, and the storage that they consume is returned after garbage colletion.
+- Helm chart size is not calculated. Only artifact counts are c
 
 ## Administrator options  
 ### Managing user  
