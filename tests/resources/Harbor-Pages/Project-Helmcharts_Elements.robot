@@ -4,7 +4,7 @@ Documentation  This resource provides any keywords related to the Harbor private
 *** Variables ***
 ${project_chart_tabpage}  xpath=//project-detail//a[contains(.,'Charts')]
 ${project_chart_list}  xpath=//hbr-helm-chart
-${upload_chart_button}  //button[contains(.,'Upload')]
+${upload_chart_button}  //*[@id='helm-chart-upload']
 ${chart_file_browse}  //*[@id='chart']
 ${chart_prov_browse}  //*[@id='prov']
 ${upload_action_button}  //*[@id='upload-chart']
