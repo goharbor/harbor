@@ -191,9 +191,9 @@ Config Email
     Input Text  xpath=//*[@id='emailPassword']  example
     Input Text  xpath=//*[@id='emailFrom']  example<example@vmware.com>
     Sleep  1    
-    Retry Element Click  xpath=//*[@id='emailSSL-wrapper']/label
+    Retry Element Click  xpath=//*[@id='emailSSL']
     Sleep  1
-    Retry Element Click  xpath=//*[@id='emailInsecure-wrapper']/label
+    Retry Element Click  xpath=//*[@id='emailInsecure-wrapper']
     Sleep  1
     Retry Element Click  xpath=${config_email_save_button_xpath}
     Sleep  6
