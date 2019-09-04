@@ -416,7 +416,8 @@
         "ITEMS": "elementos",
         "FILTER_PLACEHOLDER": "Filtrar logs",
         "INVALID_DATE": "Fecha invalida.",
-        "OF": "of"
+        "OF": "of",
+        "NOT_FOUND": "No pudimos encontrar ningún registro!"
     },
     "REPLICATION": {
         "YES": "Yes",
@@ -798,7 +799,7 @@
             "LDAP_UID": "El atributo usado en una búsqueda para encontrar un usuario. Debe ser el uid, cn, email, sAMAccountName u otro atributo dependiendo del LDAP/AD.",
             "LDAP_SCOPE": "El ámbito de búsqueda para usuarios",
             "TOKEN_EXPIRATION": "El tiempo de expiración (en minutos) del token creado por el servicio de tokens. Por defecto son 30 minutos.",
-            "ROBOT_TOKEN_EXPIRATION": "El tiempo de caducidad (días) del token de la cuenta del robot, el valor predeterminado es 30 días. Muestra el número de días convertidos de minutos y redondeos.",                        
+            "ROBOT_TOKEN_EXPIRATION": "El tiempo de caducidad (días) del token de la cuenta del robot, el valor predeterminado es 30 días. Muestra el número de días convertidos de minutos y redondeos.",
             "PRO_CREATION_RESTRICTION": "Marca para definir qué usuarios tienen permisos para crear proyectos. Por defecto, todos pueden crear proyectos. Seleccione 'Solo Administradores' para que solamente los administradores puedan crear proyectos.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",

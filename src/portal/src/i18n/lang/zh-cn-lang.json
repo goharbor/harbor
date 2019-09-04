@@ -415,7 +415,8 @@
         "ITEMS": "条记录",
         "FILTER_PLACEHOLDER": "过滤日志",
         "INVALID_DATE": "无效日期。",
-        "OF": "共计"
+        "OF": "共计",
+        "NOT_FOUND": "未发现任何日志!"
     },
     "REPLICATION": {
         "YES": "是",

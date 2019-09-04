@@ -416,7 +416,8 @@
         "ITEMS": "items",
         "FILTER_PLACEHOLDER": "Filter Logs",
         "INVALID_DATE": "Invalid date.",
-        "OF": "of"
+        "OF": "of",
+        "NOT_FOUND": "We couldn't find any logs!"
     },
     "REPLICATION": {
         "YES": "Yes",
