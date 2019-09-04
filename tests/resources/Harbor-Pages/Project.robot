@@ -112,7 +112,7 @@ Delete Repo on CardView
 Delete Project
     [Arguments]  ${projectname}
     Navigate To Projects
-    Retry Element Click  xpath=//clr-dg-row[contains(.,'${projectname}')]//clr-checkbox-wrapper//input
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${projectname}')]//clr-checkbox-wrapper//label
     Retry Element Click  xpath=//*[@id='delete-project']
     Retry Element Click  //clr-modal//button[contains(.,'DELETE')]
     Sleep  1
@@ -185,7 +185,7 @@ Expand Repo
 
 Edit Repo Info
     Retry Element Click  //*[@id='repo-info']
-    Retry Wait Until Page Contains Element  //*[@id='info-edit-textarea']
+    Retry Wait Until Page Contains Element  //*[@id='no-editing']
     # Cancel input
     Retry Element Click  xpath=//*[@id='info-edit-button']/button
     Input Text  xpath=//*[@id='info-edit-textarea']  test_description_info
