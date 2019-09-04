@@ -343,7 +343,7 @@ When setting project quotas, it is useful to know how Harbor calculates artifact
   - If you retag an image from one project to another, the artifact count and storage usage both increase.
 - For garbage collection, `docker push` adds the config and blobs first, and then adds the manifest.
 - If the artifact count reaches the limit, image blobs can be pushed into a project and storage usage is updated accordingly. You can consider these blobs to be untagged blobs. They can be removed by garbage collection, and the storage that they consume is returned after garbage colletion.
-- Helm chart size is not calculated. Only artifact counts are c
+- Helm chart size is not calculated. Only artifact counts are calculated.
 
 ## Administrator options  
 ### Managing user  
