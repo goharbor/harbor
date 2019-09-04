@@ -49,7 +49,6 @@ Test Case - Scan A Tag In The Repo
 
 Test Case - Scan As An Unprivileged User
     Init Chrome Driver
-    ${d}=    get current date    result_format=%m%s
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
 
     Sign In Harbor  ${HARBOR_URL}  user024  Test1@34
@@ -148,7 +147,7 @@ Test Case - Project Level Image Serverity Policy
 Test Case - Verfiy System Level CVE Whitelist
     [Tags]  run-once
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%S
+    ${d}=    Get Current Date    result_format=%m%s
     ${image}=    Set Variable    postgres
     ${sha256}=  Set Variable  68b49a280d2fbe9330c0031970ebb72015e1272dfa25f0ed7557514f9e5ad7b7
     ${signin_user}=    Set Variable  user025
@@ -177,7 +176,7 @@ Test Case - Verfiy System Level CVE Whitelist
 Test Case - Verfiy Project Level CVE Whitelist
     [Tags]  run-once
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%S
+    ${d}=    Get Current Date    result_format=%m%s
     ${image}=    Set Variable    redis
     ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
     ${signin_user}=    Set Variable  user025
@@ -204,7 +203,7 @@ Test Case - Verfiy Project Level CVE Whitelist
 Test Case - Verfiy Project Level CVE Whitelist By Quick Way of Add System
     [Tags]  run-once
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%S
+    ${d}=    Get Current Date    result_format=%m%s
     #Image for test: haproxy:1.5
     ${image}=    Set Variable    haproxy
     ${sha256}=  Set Variable  eca4db0f144d40554e97d000a414a0535720e5d6e559731860558676a57529f8
