@@ -17,8 +17,8 @@ Upload Chart files
     Retry Double Keywords When Error  Retry Element Click  xpath=${upload_chart_button}  Retry Wait Until Page Contains Element  xpath=${upload_action_button}
     ${prometheus_file_path}  Set Variable  ${current_dir}/${prometheus_chart_filename}
     Choose File  xpath=${chart_file_browse}  ${prometheus_file_path}
-    #Retry Double Keywords When Error  Retry Element Click  xpath=${upload_action_button}  Retry Wait Until Page Not Contains Element  xpath=${upload_action_button}
-    Retry Double Keywords When Error  Retry Element Click  xpath=${upload_action_button}  Retry Wait Until Page Contains Element  xpath=${upload_action_button}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${upload_action_button}  Retry Wait Until Page Not Contains Element  xpath=${upload_action_button}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${upload_chart_button}  Retry Wait Until Page Contains Element  xpath=${upload_action_button}
     Retry Wait Until Page Contains  ${prometheus_chart_name}
     Capture Page Screenshot
     ${harbor_file_path}  Set Variable  ${current_dir}/${harbor_chart_filename}
