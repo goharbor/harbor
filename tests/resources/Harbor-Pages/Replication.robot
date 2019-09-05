@@ -130,7 +130,7 @@ Trigger Replication Manual
     Mouse Down  ${dialog_replicate}
     Mouse Up  ${dialog_replicate}
     Sleep  2
-    Retry Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${rule}')]/../div/clr-icon[@shape='success-standard']
+    Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${rule}')]/../div/clr-icon[@shape='success-standard']
     Sleep  1
 
 Rename Rule

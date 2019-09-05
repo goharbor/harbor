@@ -29,10 +29,10 @@ export class RegistryConfigComponent implements OnInit {
 
     @Input() hasAdminRole: boolean = false;
 
-    @ViewChild("systemSettings") systemSettings: SystemSettingsComponent;
-    @ViewChild("vulnerabilityConfig") vulnerabilityCfg: VulnerabilityConfigComponent;
-    @ViewChild("gc") gc: GcComponent;
-    @ViewChild("cfgConfirmationDialog") confirmationDlg: ConfirmationDialogComponent;
+    @ViewChild("systemSettings", {static: false}) systemSettings: SystemSettingsComponent;
+    @ViewChild("vulnerabilityConfig", {static: false}) vulnerabilityCfg: VulnerabilityConfigComponent;
+    @ViewChild("gc", {static: false}) gc: GcComponent;
+    @ViewChild("cfgConfirmationDialog", {static: false}) confirmationDlg: ConfirmationDialogComponent;
 
     constructor(
         private configService: ConfigurationService,

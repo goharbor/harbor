@@ -37,7 +37,7 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
     // tslint:disable-next-line:no-input-rename
     @Input('allConfig') currentConfig: Configuration = new Configuration();
     private originalConfig: Configuration;
-    @ViewChild('authConfigFrom') authForm: NgForm;
+    @ViewChild('authConfigFrom', {static: false}) authForm: NgForm;
     @Output() refreshAllconfig = new EventEmitter<any>();
 
     constructor(
