@@ -92,22 +92,18 @@ $size60:60px;
 }
 
 clr-modal {
-    .form-group {
-        padding-left: 6rem;
+    .filename-label {
+        padding-top: 9px;
+    }
 
-        .filename-label {
-            padding-top: 9px;
-        }
+    .filename-input {
+        margin-top: 12px;
+        width: 68%;
+    }
 
-        .filename-input {
-            margin-top: 12px;
-            width: 68%;
-        }
-    
-        .file-browser-btn {
-            margin-left: 15px;
-            max-width: 25%;
-        }
+    .file-browser-btn {
+        margin-left: 15px;
+        max-width: 32%;
     }
 }
 
@@ -115,4 +111,8 @@ button {
     clr-icon {
         margin-right: 6px;
     }
+}
+
+.mb-10 {
+    margin-bottom:10px;
 }

@@ -26,6 +26,7 @@
               "node_modules/@clr/ui/clr-ui.min.css",
               "node_modules/swagger-ui/dist/swagger-ui.css",
               "node_modules/prismjs/themes/prism-solarizedlight.css",
+              "src/global.scss",
               "src/styles.css"
             ],
             "scripts": [

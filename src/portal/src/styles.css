@@ -91,3 +91,17 @@ body {
 .datagrid-table,.datagrid-header{
     position: inherit !important;
 }
+
+.required:after {
+    content: '*';
+    font-size: .58479532rem;
+    line-height: .5rem;
+    color: #c92100;
+    margin-left: .25rem;
+}
+
+.flex-items-xs-right {
+    justify-content: flex-end;
+}
+
+
