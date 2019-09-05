@@ -1212,7 +1212,8 @@
         "INVALID_RULE": "无效规则",
         "COUNT_LARGE": "参数“个数”太大",
         "DAYS_LARGE": "参数“天数”太大",
-        "EXECUTION_TYPE": "执行类型"
+        "EXECUTION_TYPE": "执行类型",
+        "ACTION": "操作"
     }
 
 }

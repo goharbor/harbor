@@ -1185,7 +1185,8 @@
         "INVALID_RULE": "Invalid rule",
         "COUNT_LARGE": "Parameter \"COUNT\" is too large",
         "DAYS_LARGE": "Parameter \"DAYS\" is too large",
-        "EXECUTION_TYPE": "Execution Type"
+        "EXECUTION_TYPE": "Execution Type",
+        "ACTION": "ACTION"
     }
 
 }
