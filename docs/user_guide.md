@@ -337,6 +337,8 @@ When setting project quotas, it is useful to know how Harbor calculates artifact
 
 - Harbor computes image size when blobs and manifests are pushed from the Docker client.
 - Harbor computes artifact counts when manifests are pushed from the Docker client.
+
+   **NOTE**: When users push an image, the manifest is pushed last, after all of the associated blobs have been pushed successfully to the registry. If several images are pushed concurrently and if there is an insufficient number of artifacts left in the quota for all of them, images are accepted in the order that their manifests arrive. Consequently, an attempt to push an image might not be immediately rejected for exceeding the quota. This is because there was availability in the artifact quota when the push was initiated, but by the time the manifest arrived the quota had been exhausted.
 - Shared blobs are only computed once per project. In Docker, blob sharing is defined globally. In Harbor, blob sharing is defined at the project level. As a consequence, overall storage usage can be greater than the actual disk capacity.
 - Retagging images reserves and releases resources: 
   -  If you retag an image within a project, the artifact count increases by one, but storage usage does not change because there are no new blobs or manifests.
