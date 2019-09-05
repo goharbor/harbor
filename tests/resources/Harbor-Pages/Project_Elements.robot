@@ -50,10 +50,11 @@ ${tag_images_btn}  xpath=//hbr-repository//button[contains(.,'Images')]
 ${project_member_action_xpath}  xpath=//*[@id='member-action']
 ${project_member_set_role_xpath}  xpath=//clr-dropdown-menu//label[contains(.,'SET ROLE')]
 ${project_config_public_checkbox}  xpath=//input[@name='public']
-${project_config_public_checkbox_label}  xpath=//div[@id='clr-wrapper-public']//label[contains(.,'Public')]
+${project_config_public_checkbox_label}  xpath=//*[@id="clr-wrapper-public"]/div/clr-checkbox-wrapper/label
 ${project_config_prevent_vulenrability_checkbox_label}    xpath=//div[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
 ${project_config_system_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(.,'System whitelist')]
 ${project_config_project_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(.,'Project whitelist')]
 ${project_config_project_wl_add_btn}    xpath=//*[@id='show-add-modal']
 ${project_config_project_wl_add_confirm_btn}    xpath=//*[@id='add-to-whitelist']
 ${project_config_save_btn}    xpath=//hbr-project-policy-config//button[contains(.,'SAVE')]
+

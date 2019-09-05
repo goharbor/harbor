@@ -2,7 +2,7 @@
     <div class="row flex-items-xs-between flex-items-xs-bottom">
         <div></div>
         <div class="action-head-pos">
-            <div class="select filterTag" [hidden]="!isOpenFilterTag">
+            <div class="select filter-tag clr-select-wrapper" [hidden]="!isOpenFilterTag">
                 <select id="selectKey" (change)="selectFilterKey($event)">
                     <option value="username">{{"AUDIT_LOG.USERNAME" | translate | lowercase}}</option>
                     <option value="repository">{{"CONFIG.REPOSITORY" | translate | lowercase}}</option>
@@ -20,12 +20,12 @@
     </div>
     <div>
         <clr-datagrid (clrDgRefresh)="load($event)" [clrDgLoading]="loading">
-            <clr-dg-column [clrDgField]="'username'">{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'repo_name'">{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'repo_tag'">{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'operation'">{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="opTimeComparator">{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
-            <clr-dg-placeholder>{{ 'AUDIT_LOG.NOT_FOUND' | translate }}</clr-dg-placeholder>
+            <clr-dg-column>{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.OPERATION' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'AUDIT_LOG.TIMESTAMP' | translate}}</clr-dg-column>
+            <clr-dg-placeholder>We couldn't find any logs!</clr-dg-placeholder>
             <clr-dg-row *ngFor="let l of recentLogs">
                 <clr-dg-cell>{{l.username}}</clr-dg-cell>
                 <clr-dg-cell>{{l.repo_name}}</clr-dg-cell>

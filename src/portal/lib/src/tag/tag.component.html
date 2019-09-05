@@ -3,7 +3,7 @@
     <h3 class="modal-title">{{ manifestInfoTitle | translate }}</h3>
     <div class="modal-body">
         <div class="row col-md-12">
-            <textarea rows="2" #digestTarget>{{digestId}}</textarea>
+            <textarea class="clr-textarea w-100" rows="2" #digestTarget>{{digestId}}</textarea>
         </div>
     </div>
     <div class="modal-footer">
@@ -34,7 +34,7 @@
                     <div class="labelFilterPanel" *ngIf="!withAdmiral" [hidden]="!openLabelFilterPanel">
                         <a class="filterClose" (click)="closeFilter()">&times;</a>
                         <label class="filterLabelHeader">{{'REPOSITORY.FILTER_BY_LABEL' | translate}}</label>
-                        <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]="filterName" (keyup)="handleInputFilter()"></div>
+                        <div class="form-group"><input clrInput type="text" placeholder="Filter labels" [(ngModel)]="filterName" (keyup)="handleInputFilter()"></div>
                         <div [hidden]='imageFilterLabels.length' class="no-labels">{{'LABEL.NO_LABELS' | translate }}</div>
                         <div [hidden]='!imageFilterLabels.length' class="has-label">
                             <button type="button" class="labelBtn" *ngFor='let label of imageFilterLabels' [hidden]="!label.show" (click)="rightFilterLabel(label)">
@@ -60,9 +60,10 @@
                 <clr-dropdown *ngIf="!withAdmiral">
                     <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1)||!hasAddLabelImagePermission" (click)="addLabels(selectedRow)"><clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}</button>
                     <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
-                        <div class="filter-grid">
+                        <clr-dropdown>
+                             <div class="filter-grid">
                             <label class="dropdown-header">{{'REPOSITORY.ADD_LABEL_TO_IMAGE' | translate}}</label>
-                            <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]="stickName" (keyup)="handleStickInputFilter()"></div>
+                            <div class="form-group"><input clrInput type="text" placeholder="Filter labels" [(ngModel)]="stickName" (keyup)="handleStickInputFilter()"></div>
                             <div [hidden]='imageStickLabels.length' class="no-labels">{{'LABEL.NO_LABELS' | translate }}</div>
                             <div [hidden]='!imageStickLabels.length' class="has-label">
                                 <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' [hidden]='!label.show' (click)="stickLabel(label)">
@@ -71,6 +72,7 @@
                                 </button>
                             </div>
                         </div>
+                        </clr-dropdown>
                     </clr-dropdown-menu>
                 </clr-dropdown>
                 <button type="button" class="btn btn-sm btn-secondary" *ngIf="!withAdmiral" [disabled]="!(selectedRow.length===1)|| !hasRetagImagePermission" (click)="retag(selectedRow)"><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.RETAG' | translate}}</button>

@@ -13,7 +13,10 @@ clr-datagrid {
 .modeSelectradios {
     margin-top: 21px;
 }
-.filterTool {
+.left {
+    flex: 1;
+}
+.right {
     position: relative;
     z-index: 100;
     right: 15px;

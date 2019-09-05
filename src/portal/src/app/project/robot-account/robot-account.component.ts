@@ -37,7 +37,7 @@ import {
   styleUrls: ["./robot-account.component.scss"]
 })
 export class RobotAccountComponent implements OnInit, OnDestroy {
-  @ViewChild(AddRobotComponent)
+  @ViewChild(AddRobotComponent,{static: false})
   addRobotComponent: AddRobotComponent;
   selectedRow: Robot[] = [];
   robotsCopy: Robot[] = [];

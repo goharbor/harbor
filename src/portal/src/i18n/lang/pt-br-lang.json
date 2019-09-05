@@ -794,7 +794,7 @@
             "LDAP_UID": "O atributo utilizado na busca de um uusário. Pode ser uid, cn, email, sAMAccountName ou outro atributo dependendo LDAP/AD.",
             "LDAP_SCOPE": "O escopo de busca de usuários.",
             "TOKEN_EXPIRATION": "O tempo de expiração (em minutos) de um token criado pelo serviço de token. O padrão é 30 minutos.",
-            "ROBOT_TOKEN_EXPIRATION": "O tempo de expiração (dias) do token da conta do robô, o padrão é 30 dias. Mostra o número de dias convertidos de minutos e arredonda para baixo",
+            "ROBOT_TOKEN_EXPIRATION": "O tempo de expiração (dias) do token da conta do robô, o padrão é 30 dias. Mostra o número de dias convertidos de minutos e arredonda para baixo",                        
             "PRO_CREATION_RESTRICTION": "A opção para definir quais usuários possuem permissão de criar projetos. Por padrão, qualquer um pode criar projetos. Configure para 'Apenas Administradores' para que apenas Administradores possam criar projetos.",
             "ROOT_CERT_DOWNLOAD": "Baixar o certificado raiz do registry.",
             "SCANNING_POLICY": "Configura a política de análise das imagens baseado em diferentes requisitos. 'Nenhum': Nenhuma política ativa; 'Diariamente em': Dispara a análise diariamente no horário especificado.",
@@ -1086,7 +1086,7 @@
         "AT": "at",
         "NOSCHEDULE": "An error occurred in Get schedule"
 
-    },
+    }, 
     "GC": {
         "CURRENT_SCHEDULE": "Agendamento atual",
         "ON": "em",

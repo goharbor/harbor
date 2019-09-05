@@ -23,14 +23,14 @@ ${HARBOR_VERSION}  v1.1.1
 Delete Success
     [Arguments]  @{obj}
     :For  ${obj}  in  @{obj}
-    \    Retry Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape='success-standard']
+    \    Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${obj}')]/../div/clr-icon[@shape='success-standard']
     Sleep  1
     Capture Page Screenshot
 
 Delete Fail
     [Arguments]  @{obj}
     :For  ${obj}  in  @{obj}
-    \    Retry Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape='error-standard']
+    \    Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${obj}')]/../div/clr-icon[@shape='error-standard']
     Sleep  1
     Capture Page Screenshot
 

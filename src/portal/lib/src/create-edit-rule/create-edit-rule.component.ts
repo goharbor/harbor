@@ -75,7 +75,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
   @Output() goToRegistry = new EventEmitter<any>();
   @Output() reload = new EventEmitter<boolean>();
 
-  @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
+  @ViewChild(InlineAlertComponent, {static: true}) inlineAlert: InlineAlertComponent;
   constructor(
     private fb: FormBuilder,
     private repService: ReplicationService,

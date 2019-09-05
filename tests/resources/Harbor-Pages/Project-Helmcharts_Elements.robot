@@ -7,7 +7,7 @@ ${project_chart_list}  xpath=//hbr-helm-chart
 ${upload_chart_button}  //button[contains(.,'Upload')]
 ${chart_file_browse}  //*[@id='chart']
 ${chart_prov_browse}  //*[@id='prov']
-${upload_action_button}  //clr-modal//form/div/button[contains(.,'Upload')]
+${upload_action_button}  //*[@id='upload-chart']
 
 ${harbor_chart_name}  harbor
 ${harbor_chart_filename}  harbor-0.2.0.tgz

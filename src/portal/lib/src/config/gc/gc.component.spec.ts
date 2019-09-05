@@ -9,6 +9,7 @@ import { GcViewModelFactory } from './gc.viewmodel.factory';
 import { CronScheduleComponent } from '../../cron-schedule/cron-schedule.component';
 import { CronTooltipComponent } from "../../cron-schedule/cron-tooltip/cron-tooltip.component";
 import { of } from 'rxjs';
+import { GcJobData } from './gcLog';
 
 describe('GcComponent', () => {
   let component: GcComponent;
@@ -18,13 +19,17 @@ describe('GcComponent', () => {
     systemInfoEndpoint: "/api/system/gc"
   };
   let mockSchedule = [];
-  let mockJobs = [
+  let mockJobs: GcJobData[] = [
     {
     id: 22222,
     schedule: null,
     job_status: 'string',
-    creation_time: new Date(),
-    update_time: new Date(),
+    creation_time: new Date().toDateString(),
+    update_time: new Date().toDateString(),
+    job_name: 'string',
+    job_kind: 'string',
+    job_uuid: 'string',
+    delete: false
     }
   ];
   let spySchedule: jasmine.Spy;

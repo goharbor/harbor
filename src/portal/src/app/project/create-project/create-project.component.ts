@@ -34,8 +34,7 @@ import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.com
 
 import { Project } from "../project";
 import { ProjectService, QuotaUnits, QuotaHardInterface, QuotaUnlimited, getByte
-  , GetIntegerAndUnit, clone, StorageMultipleConstant, validateLimit, validateCountLimit} from "@harbor/ui";
-import { errorHandler } from '@angular/platform-browser/src/browser';
+  , GetIntegerAndUnit, clone, validateLimit, validateCountLimit} from "@harbor/ui";
 
 @Component({
   selector: "create-project",
@@ -46,7 +45,7 @@ export class CreateProjectComponent implements OnInit, OnChanges, OnDestroy {
 
   projectForm: NgForm;
 
-  @ViewChild("projectForm")
+  @ViewChild("projectForm", {static: true})
   currentForm: NgForm;
   quotaUnits = QuotaUnits;
   project: Project = new Project();
@@ -74,7 +73,7 @@ export class CreateProjectComponent implements OnInit, OnChanges, OnDestroy {
   @Output() create = new EventEmitter<boolean>();
   @Input() quotaObj: QuotaHardInterface;
   @Input() isSystemAdmin: boolean;
-  @ViewChild(InlineAlertComponent)
+  @ViewChild(InlineAlertComponent, {static: true})
   inlineAlert: InlineAlertComponent;
 
   constructor(private projectService: ProjectService,

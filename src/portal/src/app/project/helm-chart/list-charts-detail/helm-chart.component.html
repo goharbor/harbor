@@ -3,8 +3,8 @@
         <div class="toolbar">
             <div class="row flex-items-xs-right option-right rightPos">
                 <div class="flex-xs-middle">
-                    <hbr-filter [withDivider]="true" filterPlaceholder="{{'HELM_CHART.FILTER_FOR_CHARTS' | translate}}"
-                        [currentValue]="lastFilteredChartName" (filterEvt)="updateFilterValue($event)"></hbr-filter>
+                    <hbr-filter [withDivider]="true" filterPlaceholder="{{'HELM_CHART.FILTER_FOR_CHARTS' | translate}}" [currentValue]="lastFilteredChartName"
+                        (filterEvt)="updateFilterValue($event)"></hbr-filter>
                     <span class="card-btn" (click)="showCard(true)" (mouseenter)="mouseEnter('card') " (mouseleave)="mouseLeave('card')">
                         <clr-icon [ngClass]="{'is-highlight': isCardView || isHovering('card') }" shape="view-cards"></clr-icon>
                     </span>
@@ -30,7 +30,8 @@
                         (click)="openChartDeleteModal(selectedRows)">
                         <clr-icon shape="trash" size="16"></clr-icon>{{'BUTTON.DELETE' | translate}}
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="!hasDownloadHelmChartsPermission ||selectedRows.length!==1" (click)="downloadLatestVersion()">
+                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="!hasDownloadHelmChartsPermission ||selectedRows.length!==1"
+                        (click)="downloadLatestVersion()">
                         <clr-icon shape="download" size="16"></clr-icon>{{'HELM_CHART.DOWNLOAD' | translate}}
                     </button>
                 </clr-dg-action-bar>
@@ -42,8 +43,7 @@
                 <clr-dg-row *ngFor="let chart of charts" [clrDgItem]="chart">
                     <clr-dg-cell>
                         <span class="list-img">
-                            <img class="size-24 margin-right-12" [src]="chart.icon ?chart.icon:chartDefaultIcon"
-                                (error)="getDefaultIcon(chart);" />
+                            <img class="size-24 margin-right-12" [src]="chart.icon ?chart.icon:chartDefaultIcon" (error)="getDefaultIcon(chart);" />
                         </span>
                         <a href="javascript:void(0)" (click)="onChartClick(chart)">{{ chart.name }}</a>
                     </clr-dg-cell>
@@ -75,14 +75,13 @@
                     <div class="row flex-items-xs-between">
                         <div>
                             <span class="version-text">{{item.total_versions}}</span>
-                            <label class="card-label" *ngIf="item.total_versions !== 1">{{'HELM_CHART.CHARTVERSIONS' |
-                                translate}}</label>
-                            <label class="card-label" *ngIf="item.total_versions === 1">{{'HELM_CHART.VERSION' |
-                                translate}}</label>
+                            <label class="card-label" *ngIf="item.total_versions !== 1">{{'HELM_CHART.CHARTVERSIONS' | translate}}
+                            </label>
+                            <label class="card-label" *ngIf="item.total_versions === 1">{{'HELM_CHART.VERSION' | translate}}
+                            </label>
                         </div>
                         <div>
-                            <span class="label" [class.label-danger]="item.deprecated" [class.label-success]="!item.deprecated">{{getStatusString(item)
-                                | translate}}</span>
+                            <span class="label" [class.label-danger]="item.deprecated" [class.label-success]="!item.deprecated">{{getStatusString(item) | translate}}</span>
                         </div>
                     </div>
                 </div>
@@ -97,37 +96,39 @@
     <clr-modal [(clrModalOpen)]="isUploadModalOpen" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
         <h3 class="modal-title">{{'HELM_CHART.UPLOAD_TITLE' | translate | titlecase}}</h3>
         <div class="modal-body">
-            <form #chartUploadForm="ngForm" enctype="multipart/form-data" (ngSubmit)="upload()">
-                <section class="form-block">
-                    <div class="form-group">
-                        <label class="filename-label"> {{'HELM_CHART.CHART_FILE' | translate}} </label>
-                        <input class="filename-input" type="text" placeholder="{{this.chartFile?.name || 'BUTTON.NO_FILE' | translate}}"
+            <form #chartUploadForm="ngForm" clrForm enctype="multipart/form-data">
+                <div class="clr-form-control">
+                    <label class="filename-label clr-control-label clr-col-md-3"> {{'HELM_CHART.CHART_FILE' | translate}}</label>
+                    <div class="clr-input-wrapper">
+                        <input class="filename-input clr-input" type="text" placeholder="{{this.chartFile?.name || 'BUTTON.NO_FILE' | translate}}"
                             disabled>
-                        <label for="chart" class="btn btn-secondary btn-sm file-browser-btn">{{'BUTTON.BROWSE' |
-                            translate}}</label>
+                        <label for="chart" class="btn btn-secondary btn-sm file-browser-btn">{{'BUTTON.BROWSE' | translate}}
+                        </label>
                         <input class="file-input" type="file" id="chart" name="chart" ngModel (change)="onChartFileChangeEvent($event)">
                     </div>
-                    <div class="form-group">
-                        <label class="filename-label"> {{'HELM_CHART.CHART_PROV' | translate}} </label>
-                        <input class="filename-input" type="text" placeholder="{{this.provFile?.name || 'BUTTON.NO_FILE' | translate}}"
+                </div>
+                <div class="clr-form-control mb-10">
+                    <label class="filename-label clr-control-label clr-col-md-3"> {{'HELM_CHART.CHART_PROV' | translate}} </label>
+                    <div class="clr-input-wrapper">
+                        <input class="filename-input clr-input" type="text" placeholder="{{this.provFile?.name || 'BUTTON.NO_FILE' | translate}}"
                             disabled>
-                        <label for="prov" class="btn btn-secondary btn-sm file-browser-btn">{{'BUTTON.BROWSE' |
-                            translate}}</label>
+                        <label for="prov" class="btn btn-secondary btn-sm file-browser-btn">{{'BUTTON.BROWSE' | translate}}
+                        </label>
                         <input class="file-input" type="file" id="prov" name="prov" ngModel (change)="onProvFileChangeEvent($event)">
                     </div>
-                </section>
-                <div class="row flex-items-xs-right">
-                    <button class="btn btn-secondary" [disabled]="isUploading" (click)="cancelUpload()">
-                        <span>{{'BUTTON.CANCEL' | translate}}</span>
-                    </button>
-                    <button type="submit" class="btn btn-primary" [disabled]="isUploading">
-                        <span>{{'HELM_CHART.UPLOAD' | translate}}</span>
-                        <span *ngIf="isUploading" class="spinner spinner-inline">
-                            Loading...
-                        </span>
-                    </button>
                 </div>
             </form>
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-secondary" [disabled]="isUploading" (click)="cancelUpload()">
+                <span>{{'BUTTON.CANCEL' | translate}}</span>
+            </button>
+            <button type="submit" class="btn btn-primary" id="upload-chart" [disabled]="isUploading" (click)="upload()">
+                <span>{{'HELM_CHART.UPLOAD' | translate}}</span>
+                <span *ngIf="isUploading" class="spinner spinner-inline">
+                    Loading...
+                </span>
+            </button>
         </div>
     </clr-modal>
 </div>
