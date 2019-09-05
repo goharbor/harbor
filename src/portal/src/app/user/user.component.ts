@@ -68,9 +68,10 @@ export class UserComponent implements OnInit, OnDestroy {
     private adminMenuText: string = "";
     private adminColumn: string = "";
     private deletionSubscription: Subscription;
-    @ViewChild(NewUserModalComponent)
+
+    @ViewChild(NewUserModalComponent, {static: true})
     newUserDialog: NewUserModalComponent;
-    @ViewChild(ChangePasswordComponent)
+    @ViewChild(ChangePasswordComponent, {static: true})
     changePwdDialog: ChangePasswordComponent;
 
     constructor(

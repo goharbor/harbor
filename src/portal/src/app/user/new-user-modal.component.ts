@@ -39,9 +39,9 @@ export class NewUserModalComponent {
         private userService: UserService,
         private msgHandler: MessageHandlerService) { }
 
-    @ViewChild(NewUserFormComponent)
+    @ViewChild(NewUserFormComponent, {static: true})
     newUserForm: NewUserFormComponent;
-    @ViewChild(InlineAlertComponent)
+    @ViewChild(InlineAlertComponent, {static: false})
     inlineAlert: InlineAlertComponent;
 
     getNewUser(): User {

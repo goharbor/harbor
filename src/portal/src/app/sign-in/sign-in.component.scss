@@ -62,3 +62,15 @@
 .login-oidc{
     margin-top: 50px;
 }
+
+.reset-label {
+    font-size:inherit;
+    color:inherit;
+    font-family: inherit;
+}
+
+.display-flex {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}

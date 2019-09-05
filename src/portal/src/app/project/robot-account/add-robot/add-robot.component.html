@@ -5,46 +5,55 @@
     <div class="modal-body">
         <form #robotForm="ngForm">
             <section class="form-block">
-                <div class="form-group padding-left-120">
-                    <label class="col-md-3
-            form-group-label-override required" for="robot_name">
-                        {{'ROBOT_ACCOUNT.NAME' | translate}}
-                    </label>
-                    <label aria-haspopup="true" role="tooltip" class="tooltip
-            tooltip-validation
-            tooltip-md tooltip-bottom-left" for="robot_name"
-                           [class.invalid]="!isRobotNameValid">
-                        <input type="text"
-                               [(ngModel)]="robot.name"
-                               size="30" class="input-width"
-                               name="robot_name"
-                               id="robot_name"
-                               #robotName="ngModel"
-                               required
-                               pattern='[^" ~#$%]+'
-                               maxLengthExt="255"
-                               autocomplete="off"
-                               (keyup)='handleValidation()'>
-                        <span class="tooltip-content">
-              {{ nameTooltipText | translate }}
-            </span>
-                    </label>
-                    <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
-                </div>
-                <div class="form-group padding-left-120">
-                    <label class="form-group-label-override">{{'REPLICATION.DESCRIPTION' |
-                        translate}}</label>
-                    <input type="text" size="255" class="input-width"
-                           [(ngModel)]="robot.description"
-                           name="robot_desc" id="robot_desc">
-                </div>
                 <div class="clr-row">
+                    <div class="clr-col-3 permission">
+                        <label class="col-md-3 required">
+                            {{'ROBOT_ACCOUNT.NAME' | translate}}
+                        </label>
+                    </div>
+                    <div class="clr-col padding-left-0">
+                        <div class="clr-control-container" [class.clr-error]="!isRobotNameValid">
+                            <div class="clr-input-wrapper">
+                                <input class="clr-input input-width" type="text"
+                                       [(ngModel)]="robot.name"
+                                       size="30"
+                                       name="robot_name"
+                                       id="robot_name"
+                                       #robotName="ngModel"
+                                       required
+                                       pattern='[^" ~#$%]+'
+                                       maxLengthExt="255"
+                                       autocomplete="off"
+                                       (keyup)='handleValidation()'>
+                                <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                            </div>
+                            <clr-control-error *ngIf="!isRobotNameValid" class="tooltip-content">
+                                {{ nameTooltipText | translate }}
+                            </clr-control-error>
+                        </div>
+                    </div>
+                </div>
+                <div class="clr-row mt-1">
+                    <div class="clr-col-3 permission">
+                        <label class="col-md-3">{{'REPLICATION.DESCRIPTION' |translate}}</label>
+                    </div>
+                    <div class="clr-col padding-left-0">
+                        <div class="clr-control-container">
+                            <div class="clr-input-wrapper">
+                        <input class="clr-input input-width" type="text" size="255"
+                               [(ngModel)]="robot.description"
+                               name="robot_desc" id="robot_desc">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="clr-row mt-1">
                     <div class="clr-col-3 permission">
                         <label class="col-md-3">
                             {{'ROBOT_ACCOUNT.PERMISSIONS' | translate}}
                         </label>
                     </div>
-                    <div class="clr-col p-0">
+                    <div class="clr-col padding-left-0">
                         <table class="table table-noborder m-0 w-90">
                                 <tr>
                                     <th></th>

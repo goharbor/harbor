@@ -100,6 +100,7 @@ export class Configuration {
     oidc_scope?: StringValueItem;
     count_per_project: NumberValueItem;
     storage_per_project: NumberValueItem;
+    cfg_expiration: NumberValueItem;
     public constructor() {
         this.auth_mode = new StringValueItem("db_auth", true);
         this.project_creation_restriction = new StringValueItem("everyone", true);

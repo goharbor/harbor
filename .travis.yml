@@ -2,6 +2,8 @@ sudo: true
 language: go
 go:
 - 1.12.5
+node_js:
+- 10.16.2
 go_import_path: github.com/goharbor/harbor
 services:
 - docker
@@ -63,6 +65,7 @@ install:
 - if [ "$APITEST_LDAP" == true ]; then bash ./tests/travis/api_common_install.sh $IP
   LDAP; fi
 script:
+- node -v
 - if [ "$UTTEST" == true ]; then bash ./tests/travis/ut_run.sh $IP; fi
 - if [ "$APITEST_DB" == true ]; then bash ./tests/travis/api_run.sh DB $IP; fi
 - if [ "$APITEST_LDAP" == true ]; then bash ./tests/travis/api_run.sh LDAP $IP; fi
