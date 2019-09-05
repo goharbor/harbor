@@ -25,7 +25,7 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
 
   formChangeSubscription: Subscription;
 
-  @ViewChild('groupForm')
+  @ViewChild('groupForm', {static: false})
   groupForm: NgForm;
 
   submitted = false;

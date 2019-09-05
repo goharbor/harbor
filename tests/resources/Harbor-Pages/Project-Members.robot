@@ -72,13 +72,13 @@ Change Project Member Role
 User Can Change Role
      [arguments]  ${username}
      Retry Element Click  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
-     Retry Element Click  xpath=//clr-dropdown[@id='member-action']
+     Retry Element Click  xpath=//*[@id='member-action']
      Page Should Not Contain Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
 User Can Not Change Role
      [arguments]  ${username}
      Retry Element Click  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
-     Retry Element Click  xpath=//clr-dropdown[@id='member-action']
+     Retry Element Click  xpath=//*[@id='member-action']
      Page Should Contain Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
 #this keyworkd seems will not use any more, will delete in the future

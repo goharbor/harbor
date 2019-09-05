@@ -40,8 +40,8 @@ export class PasswordSettingComponent implements AfterViewChecked {
     };
 
     pwdFormRef: NgForm;
-    @ViewChild("changepwdForm") pwdForm: NgForm;
-    @ViewChild(InlineAlertComponent)
+    @ViewChild("changepwdForm", {static: true}) pwdForm: NgForm;
+    @ViewChild(InlineAlertComponent, {static: true})
     inlineAlert: InlineAlertComponent;
 
     constructor(

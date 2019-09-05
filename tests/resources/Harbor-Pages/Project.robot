@@ -113,19 +113,19 @@ Delete Project
     [Arguments]  ${projectname}
     Navigate To Projects
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${projectname}')]//clr-checkbox-wrapper//label
-    Retry Element Click  xpath=//button[contains(.,'Delete')]
+    Retry Element Click  xpath=//*[@id='delete-project']
     Retry Element Click  //clr-modal//button[contains(.,'DELETE')]
     Sleep  1
 
 Project Should Not Be Deleted
     [Arguments]  ${projname}
     Delete Project  ${projname}
-    Retry Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${projname}')]/../div/clr-icon[@shape='error-standard']
+    Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${projname}')]/../div/clr-icon[@shape='error-standard']
 
 Project Should Be Deleted
     [Arguments]  ${projname}
     Delete Project  ${projname}
-    Retry Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${projname}')]/../div/clr-icon[@shape='success-standard']
+    Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${projname}')]/../div/clr-icon[@shape='success-standard']
 
 Advanced Search Should Display
     Retry Wait Until Page Contains Element  xpath=//audit-log//div[@class='flex-xs-middle']/button
@@ -185,17 +185,17 @@ Expand Repo
 
 Edit Repo Info
     Retry Element Click  //*[@id='repo-info']
-    Retry Wait Until Page Contains Element  //*[@id='info']/form/div[2]
+    Retry Wait Until Page Contains Element  *[@id='info']/form/div[2]
     # Cancel input
     Retry Element Click  xpath=//*[@id='info-edit-button']/button
-    Input Text  xpath=//*[@id='info']/form/div[2]/textarea  test_description_info
-    Retry Element Click  xpath=//*[@id='info']/form/div[3]/button[2]
-    Retry Element Click  xpath=//*[@id='info']/form/confirmation-dialog/clr-modal/div/div[1]/div[1]/div/div[3]/button[2]
-    Retry Wait Until Page Contains Element  //*[@id='info']/form/div[2]
+    Input Text  xpath=//*[@id='info-edit-textarea']  test_description_info
++   Retry Element Click  xpath=//*[@id='edit-cancel']
++   Retry Element Click  xpath=//clr-modal//button[contains(.,'CONFIRM')]
++   Retry Wait Until Page Contains Element  //*[@id='no-editing']
     # Confirm input
     Retry Element Click  xpath=//*[@id='info-edit-button']/button
-    Input Text  xpath=//*[@id='info']/form/div[2]/textarea  test_description_info
-    Retry Element Click  xpath=//*[@id='info']/form/div[3]/button[1]
+    Input Text  xpath=//*[@id='info-edit-textarea']  test_description_info
++   Retry Element Click  xpath=//*[@id='edit-save']
     Retry Wait Until Page Contains  test_description_info
     Capture Page Screenshot  RepoInfo.png
 

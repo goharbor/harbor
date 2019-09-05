@@ -9,6 +9,7 @@ import { ChannelService } from "../channel/index";
 import { Project } from "../project-policy-config/project";
 import { IServiceConfig, SERVICE_CONFIG } from "../service.config";
 import { of } from "rxjs";
+import { HttpResponse } from "@angular/common/http";
 
 describe("ImageNameInputComponent (inline template)", () => {
     let comp: ImageNameInputComponent;
@@ -55,7 +56,7 @@ describe("ImageNameInputComponent (inline template)", () => {
 
         let projectService: ProjectService;
         projectService = fixture.debugElement.injector.get(ProjectService);
-        spy = spyOn(projectService, "listProjects").and.returnValues(of(mockProjects));
+        spy = spyOn(projectService, "listProjects").and.returnValues(of(new HttpResponse({ body: mockProjects })));
     });
 
     it("should load data", async(() => {

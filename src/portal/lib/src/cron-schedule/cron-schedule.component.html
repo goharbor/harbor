@@ -23,8 +23,8 @@
 </div>
 <div class="setting-wrapper flex-layout" *ngIf="isEditMode">
   <span class="font-style">{{ labelEdit | translate }}</span>
-  <div class="select select-schedule">
-    <select name="selectPolicy" id="selectPolicy" [(ngModel)]="scheduleType">
+  <div class="select select-schedule clr-select-wrapper">
+    <select  name="selectPolicy" id="selectPolicy" [(ngModel)]="scheduleType">
       <option [value]="SCHEDULE_TYPE.NONE">{{'SCHEDULE.NONE' | translate}}</option>
       <option [value]="SCHEDULE_TYPE.HOURLY">{{'SCHEDULE.HOURLY' | translate}}</option>
       <option [value]="SCHEDULE_TYPE.DAILY">{{'SCHEDULE.DAILY' | translate}}</option>
@@ -35,7 +35,7 @@
   <span class="required" [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }}</span>
   <div [hidden]="scheduleType!==SCHEDULE_TYPE.CUSTOM" class="cron-input">
     <label for="targetCron" aria-haspopup="true" role="tooltip" [class.invalid]="dateInvalid" class="tooltip tooltip-validation tooltip-md tooltip-top-left cron-label">
-      <input type="text" (blur)="blurInvalid()" (input)="inputInvalid()" name=targetCron id="targetCron" #cronStringInput="ngModel" required class="form-control"
+      <input type="text" (blur)="blurInvalid()" (input)="inputInvalid()" name=targetCron id="targetCron" #cronStringInput="ngModel" required class="clr-input form-control"
         [(ngModel)]="cronString">
       <span class="tooltip-content" *ngIf="dateInvalid">
         {{'TOOLTIP.CRON_REQUIRED' | translate }}
