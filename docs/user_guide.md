@@ -284,7 +284,7 @@ After you have created a system whitelist, you can remove CVE IDs from the list 
 
 ### Configure a Per-Project CVE Whitelist
 
-By default, the system whitelist is applied to all projects. You can configure different CVE whitelists for individual projects, that override the system whitelist. Per-project CVE whitelists only apply to the projects in which you create them. 
+By default, the system whitelist is applied to all projects. You can configure different CVE whitelists for individual projects, that override the system whitelist. 
 
 1. Go to **Projects**, select a project, and select **Configuration**.
 1. Under **CVE whitelist**, select **Project whitelist**. 
@@ -878,7 +878,7 @@ This example uses a different repository to the previous examples.
 - You define three tag retention rules on this repository:
   - Retain the 10 most recently pushed image tags that start with `2`.
   - Retain the 10 most recently pushed image tags that end with `-prod`.
-  - Exclude the image tag `2.1-your_repo-prod` from the list of tags to retain.
+  - Always retain tags that do not include `2.1-your_repo-prod` from the list of tags to retain.
 
 In this example, the rules are applied to the following 7 tags:
 
@@ -894,7 +894,7 @@ In this example, the rules are applied to the following 7 tags:
 
 The system administrator can set a maximum on the number of artifacts that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Set Project Quotas](#set-project-quotas). 
 
-Project quota settings take precedence over tag retention rules. If you set a quota on a project, this quota cannot be exceeded. The quota is applied to a project even if you set a retention rule that would exceed it. In other words, you cannot use retention rules to bypass quotas.
+If you set a quota on a project, this quota cannot be exceeded. The quota is applied to a project even if you set a retention rule that would exceed it. In other words, you cannot use retention rules to bypass quotas.
 
 ### Configure Tag Retention Rules
 
@@ -995,17 +995,14 @@ The webhook notification is delivered in JSON format. The following example show
 
 ### Webhook Endpoint Recommendations
 
-The endpoint that receives the webhook should ideally meet the following requirements:
-
-- Have a webhook listener that is capable of interpreting the payload and acting upon the information it contains. For example, running a shell script.
-- Support queues and retry configurations, so that failed webhook notifications are queued and retried until the request succeeds or number of retries exceeds the configured maximum.
+The endpoint that receives the webhook should ideally have a webhook listener that is capable of interpreting the payload and acting upon the information it contains. For example, running a shell script.
 
 ### Example Use Cases
 
 You can configure your continuous integration and development infrastructure so that it performs the following types of operations when it receives a webhook notification from Harbor.
 
 - Image push: 
-  - Trigger a new build immediately following a push on selected repositories s or tags.
+  - Trigger a new build immediately following a push on selected repositories or tags.
   - Notify services or applications that use the image that a new image is available and pull it.
   - Scan the image using Clair.
   - Replicate the image to remote registries.
