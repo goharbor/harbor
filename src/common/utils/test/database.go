@@ -89,7 +89,6 @@ func updateUserInitialPassword(userID int, password string) error {
 		if err != nil {
 			return fmt.Errorf("Failed to update user encrypted password, userID: %d, err: %v", userID, err)
 		}
-	} else {
 	}
 	return nil
 }
