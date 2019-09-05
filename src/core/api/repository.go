@@ -134,13 +134,7 @@ func (ra *RepositoryAPI) Get() {
 		return
 	}
 
-	resource := rbac.NewProjectNamespace(projectID).Resource(rbac.ResourceRepository)
-	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
-		if !ra.SecurityCtx.IsAuthenticated() {
-			ra.SendUnAuthorizedError(errors.New("Unauthorized"))
-			return
-		}
-		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
+	if !ra.RequireProjectAccess(projectID, rbac.ActionList, rbac.ResourceRepository) {
 		return
 	}
 
@@ -251,14 +245,8 @@ func (ra *RepositoryAPI) Delete() {
 		return
 	}
 
-	if !ra.SecurityCtx.IsAuthenticated() {
-		ra.SendUnAuthorizedError(errors.New("UnAuthorized"))
-		return
-	}
-
-	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(rbac.ResourceRepository)
-	if !ra.SecurityCtx.Can(rbac.ActionDelete, resource) {
-		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
+	if !ra.RequireAuthenticated() ||
+		!ra.RequireProjectAccess(project.ProjectID, rbac.ActionDelete, rbac.ResourceRepository) {
 		return
 	}
 
@@ -407,14 +395,9 @@ func (ra *RepositoryAPI) GetTag() {
 		ra.SendNotFoundError(fmt.Errorf("resource: %s:%s not found", repository, tag))
 		return
 	}
-	project, _ := utils.ParseRepository(repository)
-	resource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepositoryTag)
-	if !ra.SecurityCtx.Can(rbac.ActionRead, resource) {
-		if !ra.SecurityCtx.IsAuthenticated() {
-			ra.SendUnAuthorizedError(errors.New("UnAuthorized"))
-			return
-		}
-		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
+
+	projectName, _ := utils.ParseRepository(repository)
+	if !ra.RequireProjectAccess(projectName, rbac.ActionRead, rbac.ResourceRepositoryTag) {
 		return
 	}
 
@@ -507,16 +490,14 @@ func (ra *RepositoryAPI) Retag() {
 	}
 
 	// Check whether user has read permission to source project
-	srcResource := rbac.NewProjectNamespace(srcImage.Project).Resource(rbac.ResourceRepository)
-	if !ra.SecurityCtx.Can(rbac.ActionPull, srcResource) {
+	if hasPermission, _ := ra.HasProjectPermission(srcImage.Project, rbac.ActionPull, rbac.ResourceRepository); !hasPermission {
 		log.Errorf("user has no read permission to project '%s'", srcImage.Project)
 		ra.SendForbiddenError(fmt.Errorf("%s has no read permission to project %s", ra.SecurityCtx.GetUsername(), srcImage.Project))
 		return
 	}
 
 	// Check whether user has write permission to target project
-	destResource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepository)
-	if !ra.SecurityCtx.Can(rbac.ActionPush, destResource) {
+	if hasPermission, _ := ra.HasProjectPermission(project, rbac.ActionPush, rbac.ResourceRepository); !hasPermission {
 		log.Errorf("user has no write permission to project '%s'", project)
 		ra.SendForbiddenError(fmt.Errorf("%s has no write permission to project %s", ra.SecurityCtx.GetUsername(), project))
 		return
@@ -554,13 +535,7 @@ func (ra *RepositoryAPI) GetTags() {
 		return
 	}
 
-	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepositoryTag)
-	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
-		if !ra.SecurityCtx.IsAuthenticated() {
-			ra.SendUnAuthorizedError(errors.New("UnAuthorized"))
-			return
-		}
-		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
+	if !ra.RequireProjectAccess(projectName, rbac.ActionList, rbac.ResourceRepositoryTag) {
 		return
 	}
 
@@ -781,14 +756,7 @@ func (ra *RepositoryAPI) GetManifests() {
 		return
 	}
 
-	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepositoryTagManifest)
-	if !ra.SecurityCtx.Can(rbac.ActionRead, resource) {
-		if !ra.SecurityCtx.IsAuthenticated() {
-			ra.SendUnAuthorizedError(errors.New("Unauthorized"))
-			return
-		}
-
-		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
+	if !ra.RequireProjectAccess(projectName, rbac.ActionRead, rbac.ResourceRepositoryTagManifest) {
 		return
 	}
 
@@ -909,10 +877,8 @@ func (ra *RepositoryAPI) Put() {
 		return
 	}
 
-	project, _ := utils.ParseRepository(name)
-	resource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepository)
-	if !ra.SecurityCtx.Can(rbac.ActionUpdate, resource) {
-		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
+	projectName, _ := utils.ParseRepository(name)
+	if !ra.RequireProjectAccess(projectName, rbac.ActionUpdate, rbac.ResourceRepository) {
 		return
 	}
 
@@ -948,13 +914,7 @@ func (ra *RepositoryAPI) GetSignatures() {
 		return
 	}
 
-	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepository)
-	if !ra.SecurityCtx.Can(rbac.ActionRead, resource) {
-		if !ra.SecurityCtx.IsAuthenticated() {
-			ra.SendUnAuthorizedError(errors.New("Unauthorized"))
-			return
-		}
-		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
+	if !ra.RequireProjectAccess(projectName, rbac.ActionRead, rbac.ResourceRepository) {
 		return
 	}
 
@@ -994,9 +954,7 @@ func (ra *RepositoryAPI) ScanImage() {
 		return
 	}
 
-	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepositoryTagScanJob)
-	if !ra.SecurityCtx.Can(rbac.ActionCreate, resource) {
-		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
+	if !ra.RequireProjectAccess(projectName, rbac.ActionCreate, rbac.ResourceRepositoryTagScanJob) {
 		return
 	}
 	err = coreutils.TriggerImageScan(repoName, tag)
@@ -1025,15 +983,9 @@ func (ra *RepositoryAPI) VulnerabilityDetails() {
 		ra.SendNotFoundError(fmt.Errorf("resource: %s:%s not found", repository, tag))
 		return
 	}
-	project, _ := utils.ParseRepository(repository)
 
-	resource := rbac.NewProjectNamespace(project).Resource(rbac.ResourceRepositoryTagVulnerability)
-	if !ra.SecurityCtx.Can(rbac.ActionList, resource) {
-		if !ra.SecurityCtx.IsAuthenticated() {
-			ra.SendUnAuthorizedError(errors.New("Unauthorized"))
-			return
-		}
-		ra.SendForbiddenError(errors.New(ra.SecurityCtx.GetUsername()))
+	projectName, _ := utils.ParseRepository(repository)
+	if !ra.RequireProjectAccess(projectName, rbac.ActionList, rbac.ResourceRepositoryTagVulnerability) {
 		return
 	}
 	res := []*models.VulnerabilityItem{}

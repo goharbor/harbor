@@ -91,19 +91,8 @@ func (r *RepositoryLabelAPI) requireAccess(action rbac.Action, subresource ...rb
 	if len(subresource) == 0 {
 		subresource = append(subresource, rbac.ResourceRepositoryLabel)
 	}
-	resource := rbac.NewProjectNamespace(r.repository.ProjectID).Resource(rbac.ResourceRepositoryLabel)
 
-	if !r.SecurityCtx.Can(action, resource) {
-		if !r.SecurityCtx.IsAuthenticated() {
-			r.SendUnAuthorizedError(errors.New("UnAuthorized"))
-		} else {
-			r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
-		}
-
-		return false
-	}
-
-	return true
+	return r.RequireProjectAccess(r.repository.ProjectID, action, subresource...)
 }
 
 func (r *RepositoryLabelAPI) isValidLabelReq() bool {
