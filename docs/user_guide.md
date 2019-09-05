@@ -60,7 +60,7 @@ Harbor supports different authentication modes:
 	
 	A user can register himself/herself in Harbor in this mode. To disable user self-registration, refer to the [installation guide](installation_guide.md) for initial configuration, or disable this feature in [Administrator Options](#administrator-options). When self-registration is disabled, the system administrator can add users into Harbor.  
 	
-	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
+	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.
 	
 	When you forgot your password, you can follow the below steps to reset the password:  
 
@@ -158,7 +158,7 @@ There may be a bit of delay during replication based on the situation of the net
 **Note:** Due to API changes, replication between different versions of Harbor may be broken.
 
 ### Creating a replication rule
-Login as a system administrator user, click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication modes, [resource filters](#resource-filter) and [trigger modes](#trigger-mode) according to the different requirements. If there is no endpoint available in the list, you need to create one. Click `SAVE` to create a replication rule.  
+Login as a system administrator user, click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication modes, [resource filters](#resource-filter) and [trigger modes](#trigger-mode) according to the different requirements. If there is no endpoint available in the list, follow the instructions in the [Installation Guide](installation_guide.md) to create one. Click `SAVE` to create a replication rule.  
 
 ![browse project](img/create_rule.png)
 
@@ -194,7 +194,7 @@ Select a replication rule and click `REPLICATE`, the resources which the rule is
 ![browse project](img/start_replicate.png)
 
 ### Listing and stopping replication executions
-Click a rule, the execution records which belong to this rule will be listed. Each record represents the summary of the once execution of the rule. Click `STOP` to stop the executions which are in progress.  
+Click a rule, the execution records which belong to this rule will be listed. Each record represents the summary of one execution of the rule. Click `STOP` to stop the executions which are in progress.  
 
 ![browse project](img/list_stop_executions.png)
 
