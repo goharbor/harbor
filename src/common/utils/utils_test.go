@@ -17,6 +17,7 @@ package utils
 import (
 	"encoding/base64"
 	"net/http/httptest"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -91,12 +92,21 @@ func TestParseRepository(t *testing.T) {
 }
 
 func TestEncrypt(t *testing.T) {
-	content := "content"
-	salt := "salt"
-	result := Encrypt(content, salt)
+	tests := map[string]struct {
+		content string
+		salt    string
+		alg     string
+		want    string
+	}{
+		"sha1 test":   {content: "content", salt: "salt", alg: SHA1, want: "dc79e76c88415c97eb089d9cc80b4ab0"},
+		"sha256 test": {content: "content", salt: "salt", alg: SHA256, want: "83d3d6f3e7cacb040423adf7ced63d21"},
+	}
 
-	if result != "dc79e76c88415c97eb089d9cc80b4ab0" {
-		t.Errorf("unexpected result: %s != %s", result, "dc79e76c88415c97eb089d9cc80b4ab0")
+	for name, tc := range tests {
+		got := Encrypt(tc.content, tc.salt, tc.alg)
+		if !reflect.DeepEqual(tc.want, got) {
+			t.Errorf("%s: expected: %v, got: %v", name, tc.want, got)
+		}
 	}
 }
 
