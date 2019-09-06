@@ -285,7 +285,7 @@ func schedule(scheduler scheduler.Scheduler, executionMgr execution.Manager, ite
 			if err = executionMgr.UpdateTask(&models.Task{
 				ID:      result.TaskID,
 				Status:  models.TaskStatusFailed,
-				EndTime: &now,
+				EndTime: now,
 			}, "Status", "EndTime"); err != nil {
 				log.Errorf("failed to update the task status %d: %v", result.TaskID, err)
 			}
@@ -299,7 +299,7 @@ func schedule(scheduler scheduler.Scheduler, executionMgr execution.Manager, ite
 		if err = executionMgr.UpdateTask(&models.Task{
 			ID:        result.TaskID,
 			JobID:     result.JobID,
-			StartTime: &now,
+			StartTime: now,
 		}, "JobID", "StartTime"); err != nil {
 			log.Errorf("failed to update the task %d: %v", result.TaskID, err)
 		}
