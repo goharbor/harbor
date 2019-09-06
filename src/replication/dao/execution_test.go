@@ -100,7 +100,7 @@ func TestMethodOfTask(t *testing.T) {
 		JobID:          "jobID1",
 		Status:         "Initialized",
 		StatusRevision: 1,
-		StartTime:      &now,
+		StartTime:      now,
 	}
 	task2 := &models.Task{
 		ExecutionID:    112200,
@@ -110,8 +110,8 @@ func TestMethodOfTask(t *testing.T) {
 		JobID:          "jobID2",
 		Status:         "Stopped",
 		StatusRevision: 1,
-		StartTime:      &now,
-		EndTime:        &now,
+		StartTime:      now,
+		EndTime:        now,
 	}
 
 	// test add
@@ -146,7 +146,7 @@ func TestMethodOfTask(t *testing.T) {
 	taskNew := &models.Task{
 		ID:      id1,
 		Status:  "Failed",
-		EndTime: &now,
+		EndTime: now,
 	}
 	n, err := UpdateTask(taskNew, models.TaskPropsName.Status, models.TaskPropsName.EndTime)
 	require.Nil(t, err)
@@ -195,8 +195,8 @@ func TestExecutionFill(t *testing.T) {
 		DstResource:  "dstResource1",
 		JobID:        "jobID1",
 		Status:       "Succeed",
-		StartTime:    &now,
-		EndTime:      &et1,
+		StartTime:    now,
+		EndTime:      et1,
 	}
 	task2 := &models.Task{
 		ID:           20192,
@@ -206,8 +206,8 @@ func TestExecutionFill(t *testing.T) {
 		DstResource:  "dstResource2",
 		JobID:        "jobID2",
 		Status:       "Stopped",
-		StartTime:    &now,
-		EndTime:      &et2,
+		StartTime:    now,
+		EndTime:      et2,
 	}
 	AddTask(task1)
 	AddTask(task2)
@@ -248,7 +248,7 @@ func TestExecutionFill2(t *testing.T) {
 		JobID:          "jobID1",
 		Status:         models.TaskStatusInProgress,
 		StatusRevision: 1,
-		StartTime:      &now,
+		StartTime:      now,
 	}
 	task2 := &models.Task{
 		ID:             20192,
@@ -259,8 +259,8 @@ func TestExecutionFill2(t *testing.T) {
 		JobID:          "jobID2",
 		Status:         "Stopped",
 		StatusRevision: 1,
-		StartTime:      &now,
-		EndTime:        &now,
+		StartTime:      now,
+		EndTime:        now,
 	}
 	taskID1, _ := AddTask(task1)
 	AddTask(task2)
