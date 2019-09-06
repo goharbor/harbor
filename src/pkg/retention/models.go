@@ -37,7 +37,7 @@ type Execution struct {
 	StartTime time.Time `json:"start_time"`
 	EndTime   time.Time `json:"end_time,omitempty"`
 	Status    string    `json:"status"`
-	Trigger   string    `json:"Trigger"`
+	Trigger   string    `json:"trigger"`
 	DryRun    bool      `json:"dry_run"`
 }
 
