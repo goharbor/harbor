@@ -99,7 +99,7 @@ func TestMethodOfTaskManager(t *testing.T) {
 		DstResource:  "dstResource1",
 		JobID:        "jobID1",
 		Status:       "Initialized",
-		StartTime:    &now,
+		StartTime:    now,
 	}
 
 	defer func() {

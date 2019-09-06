@@ -109,16 +109,16 @@ type TaskFieldsName struct {
 
 // Task represent the tasks in one execution.
 type Task struct {
-	ID           int64      `orm:"pk;auto;column(id)" json:"id"`
-	ExecutionID  int64      `orm:"column(execution_id)" json:"execution_id"`
-	ResourceType string     `orm:"column(resource_type)" json:"resource_type"`
-	SrcResource  string     `orm:"column(src_resource)" json:"src_resource"`
-	DstResource  string     `orm:"column(dst_resource)" json:"dst_resource"`
-	Operation    string     `orm:"column(operation)" json:"operation"`
-	JobID        string     `orm:"column(job_id)" json:"job_id"`
-	Status       string     `orm:"column(status)" json:"status"`
-	StartTime    *time.Time `orm:"column(start_time)" json:"start_time"`
-	EndTime      *time.Time `orm:"column(end_time)" json:"end_time,omitempty"`
+	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
+	ExecutionID  int64     `orm:"column(execution_id)" json:"execution_id"`
+	ResourceType string    `orm:"column(resource_type)" json:"resource_type"`
+	SrcResource  string    `orm:"column(src_resource)" json:"src_resource"`
+	DstResource  string    `orm:"column(dst_resource)" json:"dst_resource"`
+	Operation    string    `orm:"column(operation)" json:"operation"`
+	JobID        string    `orm:"column(job_id)" json:"job_id"`
+	Status       string    `orm:"column(status)" json:"status"`
+	StartTime    time.Time `orm:"column(start_time)" json:"start_time"`
+	EndTime      time.Time `orm:"column(end_time)" json:"end_time,omitempty"`
 }
 
 // TableName is required by by beego orm to map Execution to table replication_execution
