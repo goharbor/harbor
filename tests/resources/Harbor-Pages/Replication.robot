@@ -43,7 +43,7 @@ Select Trigger
     Retry Element Click    ${rule_trigger_select}
     Retry Element Click    ${rule_trigger_select}//option[contains(.,'${mode}')]
 
-    Select Destination URL
+Select Destination URL
     [Arguments]    ${type}
     Retry Element Click    ${destination_url_xpath}
     Retry Element Click    ${destination_url_xpath}//option[contains(.,'${type}')]
