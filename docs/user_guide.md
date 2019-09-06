@@ -149,16 +149,51 @@ You can check one or more members, then click `ACTION`, choose one role to batch
 ![browse project](img/new_remove_update_member.png)
 
 ## Replicating resources  
-Replication allows users to replicate resources(images/charts) between Harbor and non-Harbor registries in both pull or push mode. Currently, the non-Harbor registries includes Docker Hub, Docker registry, Huawei SWR, and more registries will be supported in future.  
+Replication allows users to replicate resources (images/charts) between Harbor and non-Harbor registries in both pull or push mode. 
 
-Once the system administrator has set a rule, all resources that match the defined [filter](#resource-filter) patterns will be replicated to the destination registry when the [triggering condition](#trigger-mode) is matched. Each resource will start a task to run. If the namespace does not exist on the destination registry, a new namespace will be created automatically. If it already exists and the user configured in policy has no write privilege to it, the process will fail. The member information will not be replicated.  
+Once the system administrator has set a rule, all resources that match the defined [filter](#resource-filter) patterns will be replicated to the destination registry when the [triggering condition](#trigger-mode) is matched. Each resource will start a task to run. If the namespace does not exist on the destination registry, a new namespace will be created automatically. If it already exists and the user configured in the policy has no write privilege to it, the process will fail. The member information will not be replicated.  
 
-There may be a bit of delay during replication based on the situation of the network. If replication task fails, it will be re-scheduled a few minutes later and try 3 times.  
+There may be a bit of delay during replication based on the situation of the network. If a replication task fails, it will be re-scheduled a few minutes later and try 3 times.  
 
-**Note:** Due to API changes, replication between different versions of Harbor may be broken.
+**Note:** Due to API changes, replication between different versions of Harbor might not work.
+
+### Creating replication endpoints
+
+To replicate image repositories from one instance of Harbor to another Harbor or non-Harbor registry, you first create replication endpoints.
+
+1. Go to **Registries** and click the **+ New Endpoint** button.
+
+   ![New replication endpoint](img/replication-endpoint1.png)
+1. For **Provider**, use the drop-down menu to select the type of registry to set up as a replication endpoint.
+
+   The endpoint can be another Harbor instance, or a non-Harbor registry. Currently, the following non-Harbor registries are supported:
+
+   - Ali Cloud Container Registry
+   - Helm Hub
+   - Docker registry
+   - Huawei SWR
+   - Azure Container Registry
+   - AWS Elastic Container Registry
+   - Docker Hub
+   - Google Container Registry 
+
+   ![Replication providers](img/replication-endpoint2.png)
+
+1. Enter a suitable name and description for the new replication endpoint.
+1. Enter the full URL of the registry to set up as a replication endpoint.
+
+   For example, to replicate to another Harbor instance, enter https://harbor_instance_address:443. The registry must exist before you create the endpoint.
+1. Enter the Access ID and Access Secret for the endpoint registry instance.
+
+   Use an account that has the appropriate privileges on that registry, or an account that has write permission on the corresponding project in a Harbor  registry.
+1. Optionally, select the **Verify Remote Cert** check box.
+
+    Deselect the check box if the remote registry uses a self-signed or untrusted certificate.
+1. Click **Test Connection**.
+1. When you have successfully tested the connection, click **OK**.
 
 ### Creating a replication rule
-Login as a system administrator user, click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication modes, [resource filters](#resource-filter) and [trigger modes](#trigger-mode) according to the different requirements. If there is no endpoint available in the list, follow the instructions in the [Installation Guide](installation_guide.md) to create one. Click `SAVE` to create a replication rule.  
+Login as a system administrator user, click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication modes, [resource filters](#resource-filter) and [trigger modes](#trigger-mode) according to the different requirements. If there is no endpoint available in the list, follow the instructions in the [Creating replication endpoints](#creating-replication-endpoints) to create one. Click `SAVE` to create a replication rule.  
 
 ![browse project](img/create_rule.png)
 
