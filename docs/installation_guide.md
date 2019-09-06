@@ -103,7 +103,9 @@ The parameters are described below - note that at the very least, you will need 
 
 
 - **database**: the configs related to local database
-  - **password**: The root password for the PostgreSQL database used for **db_auth**. _Change this password for any production use!_
+  - **password**: The root password for the PostgreSQL database used for **db_auth**. _Change this password for any production use!
+  - **max_idle_conns**: The maximum number of connections in the idle connection pool. If <=0 no idle connections are retained.
+  - **max_open_conns**: The maximum number of open connections to the database. If <= 0 there is no limit on the number of open connections. The default number of connections is 100 for Postgres.
 
 - **jobservice**: jobservice related service
   - **max_job_workers**: The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host.
