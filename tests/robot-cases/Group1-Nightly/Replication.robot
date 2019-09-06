@@ -262,14 +262,15 @@ Test Case - Replication Of Pull Images from AWS-ECR To Self
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    rule${d}    pull    a/*    image    e${d}    project${d}
     Select Rule And Replicate  rule${d}
-    Sleep    30
+    Sleep    60
     Go Into Project    project${d}
     Switch To Project Repo
-    #In AWS-ECR, under repository a, there're only several images: httpd,tomcat.
+    #In AWS-ECR, under repository a, there're only several images: httpd,alpine,hello-world.
     Retry Wait Until Page Contains    project${d}/httpd
     Go Into Project    project${d}
     Switch To Project Repo
-    Retry Wait Until Page Contains    project${d}/tomcat
+    Retry Wait Until Page Contains    project${d}/alpine
+    Retry Wait Until Page Contains    project${d}/hello-world
     Close Browser
 
 Test Case - Replication Of Pull Images from Google-GCR To Self
