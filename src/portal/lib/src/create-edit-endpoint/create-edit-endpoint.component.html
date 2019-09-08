@@ -41,7 +41,8 @@
             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
           </div>
           <div class="clr-select-wrapper" *ngIf="endpointList.length">
-            <select class="clr-select" *ngIf="endpointList.length" [(ngModel)]="target.url" name="endpointUrl" #targetEndpoint="ngModel">
+            <select id="destination_url" class="clr-select" *ngIf="endpointList.length" [(ngModel)]="target.url"
+              name="endpointUrl" #targetEndpoint="ngModel">
               <option class="display-none" value=""></option>
               <option *ngFor="let endpoint of endpointList" value="{{endpoint.value}}">{{endpoint.key}}</option>
             </select>

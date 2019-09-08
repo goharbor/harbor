@@ -2,7 +2,7 @@
     <clr-dg-action-bar>
         <button type="button" class="btn btn-sm btn-secondary" (click)="addNewProject()" *ngIf="projectCreationRestriction">
             <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'PROJECT.NEW_PROJECT' | translate}}</button>
-        <buttonid="delete-project" type="button" class="btn btn-sm btn-secondary" [disabled]="!canDelete"
+        <button id="delete-project" type="button" class="btn btn-sm btn-secondary" [disabled]="!canDelete"
             (click)="deleteProjects(selectedRow)">
             <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'PROJECT.DELETE' | translate}}</button>
     </clr-dg-action-bar>
