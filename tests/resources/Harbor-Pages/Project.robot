@@ -185,7 +185,7 @@ Expand Repo
 
 Edit Repo Info
     Retry Element Click  //*[@id='repo-info']
-    Retry Wait Until Page Contains Element  *[@id='info']/form/div[2]
+    Retry Wait Until Page Contains Element  //*[@id='info']/form/div[2]
     # Cancel input
     Retry Element Click  xpath=//*[@id='info-edit-button']/button
     Input Text  xpath=//*[@id='info-edit-textarea']  test_description_info
