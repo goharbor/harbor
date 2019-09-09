@@ -309,6 +309,7 @@ Add Items To System CVE Whitelist
     Retry Element Click    ${config_system_save_button_xpath}
 
 Delete Top Item In System CVE Whitelist
-    [Arguments]
-    Retry Element Click    ${configuration_system_wl_delete_a_cve_id_icon}
+    [Arguments]  ${count}=1
+    :FOR  ${idx}  IN RANGE  1  ${count}
+    \   Retry Element Click    ${configuration_system_wl_delete_a_cve_id_icon}
     Retry Element Click    ${config_system_save_button_xpath}
