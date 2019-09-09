@@ -30,6 +30,7 @@ const (
 	RegistryTypeAwsEcr         RegistryType = "aws-ecr"
 	RegistryTypeAzureAcr       RegistryType = "azure-acr"
 	RegistryTypeAliAcr         RegistryType = "ali-acr"
+	RegistryTypeGitLab         RegistryType = "gitlab"
 
 	RegistryTypeHelmHub RegistryType = "helm-hub"
 
