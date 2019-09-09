@@ -15,7 +15,6 @@
 package operation
 
 import (
-	"errors"
 	"io"
 	"os"
 	"testing"
@@ -381,21 +380,4 @@ func TestIsTaskRunning(t *testing.T) {
 	for _, c := range cases {
 		assert.Equal(t, c.isFinalStatus, isTaskInFinalStatus(c.task))
 	}
-}
-
-func TestIsStatusBehindError(t *testing.T) {
-	// nil error
-	status, flag := isStatusBehindError(nil)
-	assert.False(t, flag)
-
-	// not status behind error
-	err := errors.New("not status behind error")
-	status, flag = isStatusBehindError(err)
-	assert.False(t, flag)
-
-	// status behind error
-	err = errors.New("mismatch job status for stopping job: 9feedf9933jffs, job status Error is behind Running")
-	status, flag = isStatusBehindError(err)
-	assert.True(t, flag)
-	assert.Equal(t, "Error", status)
 }
