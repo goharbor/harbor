@@ -16,7 +16,7 @@ package operation
 
 import (
 	"fmt"
-	"regexp"
+	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job"
@@ -48,8 +48,7 @@ const (
 )
 
 var (
-	statusBehindErrorPattern = "mismatch job status for stopping job: .*, job status (.*) is behind Running"
-	statusBehindErrorReg     = regexp.MustCompile(statusBehindErrorPattern)
+	jobNotFoundErrorMsg = "object is not found"
 )
 
 // NewController returns a controller implementation
@@ -161,19 +160,35 @@ func (c *controller) StopReplication(executionID int64) error {
 			continue
 		}
 		if err = c.scheduler.Stop(task.JobID); err != nil {
-			status, flag := isStatusBehindError(err)
-			if flag {
+			isStatusBehindError, ok := err.(*job.StatusBehindError)
+			if ok {
+				status := isStatusBehindError.Status()
 				switch hjob.Status(status) {
 				case hjob.ErrorStatus:
 					status = models.TaskStatusFailed
 				case hjob.SuccessStatus:
 					status = models.TaskStatusSucceed
 				}
-				e := c.executionMgr.UpdateTaskStatus(task.ID, status)
+				e := c.executionMgr.UpdateTask(&models.Task{
+					ID:     task.ID,
+					Status: status,
+				}, "Status")
 				if e != nil {
 					log.Errorf("failed to update the status the task %d(job ID: %s): %v", task.ID, task.JobID, e)
 				} else {
 					log.Debugf("got status behind error for task %d, update it's status to %s directly", task.ID, status)
+				}
+				continue
+			}
+			if isJobNotFoundError(err) {
+				e := c.executionMgr.UpdateTask(&models.Task{
+					ID:     task.ID,
+					Status: models.ExecutionStatusStopped,
+				}, "Status")
+				if e != nil {
+					log.Errorf("failed to update the status the task %d(job ID: %s): %v", task.ID, task.JobID, e)
+				} else {
+					log.Debugf("got job not found error for task %d, update it's status to %s directly", task.ID, models.ExecutionStatusStopped)
 				}
 				continue
 			}
@@ -198,15 +213,11 @@ func isTaskInFinalStatus(task *models.Task) bool {
 	return false
 }
 
-func isStatusBehindError(err error) (string, bool) {
+func isJobNotFoundError(err error) bool {
 	if err == nil {
-		return "", false
+		return false
 	}
-	strs := statusBehindErrorReg.FindStringSubmatch(err.Error())
-	if len(strs) != 2 {
-		return "", false
-	}
-	return strs[1], true
+	return strings.Contains(err.Error(), jobNotFoundErrorMsg)
 }
 
 func (c *controller) ListExecutions(query ...*models.ExecutionQuery) (int64, []*models.Execution, error) {
