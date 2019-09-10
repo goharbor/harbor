@@ -14,10 +14,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update \
   && mkdir -p /usr/share/man/man1 \
-  && apt-get install -y \
-    apt apt-transport-https bzip2 ca-certificates curl git gnupg gnupg2 gzip \
-    locales make mercurial net-tools netcat openjdk-9-jdk-headless openssh-client parallel \
-    postgresql software-properties-common sudo tar unzip wget xvfb zip
+  && apt-get install -y --no-install-recommends \
+    apt=1.2.32 apt-transport-https=1.2.32 bzip2=1.0.6-8ubuntu0.2 ca-certificates=20170717~16.04.2 \
+    curl=7.47.0-1ubuntu2.13 git=1:2.7.4-0ubuntu1.6 gnupg=1.4.20-1ubuntu3.3 gnupg2=2.1.11-6ubuntu2.1 \
+    gzip=1.6-4ubuntu1 locales=2.23-0ubuntu11 make=4.1-6 mercurial=3.7.3-1ubuntu1.2 net-tools=1.60-26ubuntu1 \
+    netcat=1.10-41 openjdk-9-jdk-headless=9~b114-0ubuntu1 openssh-client=1:7.2p2-4ubuntu2.8 \
+    parallel=20161222-1~ubuntu0.16.04.1 postgresql=9.5+173ubuntu0.2 software-properties-common=0.96.20.9 \
+    sudo=1.8.16-0ubuntu1.7 tar=1.28-2.1ubuntu0.1 unzip=6.0-20ubuntu1 wget=1.17.1-1ubuntu1.5 \
+    xvfb=2:1.18.4-0ubuntu0.8 zip=3.0-11 \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # Set timezone to UTC by default
 RUN ln -sf /usr/share/zoneinfo/Etc/UTC /etc/localtime
@@ -28,18 +34,24 @@ ENV LANG=C.UTF-8
 
 # install jq
 RUN JQ_URL="https://circle-downloads.s3.amazonaws.com/circleci-images/cache/linux-amd64/jq-latest" \
-  && curl --silent --show-error --location --fail --retry 3 --output /usr/bin/jq $JQ_URL \
+  && curl --silent --show-error --location --fail --retry 3 --output /usr/bin/jq "$JQ_URL" \
   && chmod +x /usr/bin/jq \
   && jq --version
 
-# Docker
+# Docker & golang
 RUN curl -fsSL https://download.docker.com/linux/ubuntu/gpg | apt-key add -
 RUN add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
-RUN apt-get update && apt-get install docker-ce docker-ce-cli containerd.io
+RUN add-apt-repository ppa:longsleep/golang-backports
+
+RUN apt-get update && apt-get install -y --no-install-recommends containerd.io=1.2.6-3 \
+    docker-ce=5:19.03.2~3-0~ubuntu-xenial docker-ce-cli=5:19.03.2~3-0~ubuntu-xenial \
+    golang-go=2:1.13~1longsleep1+xenial \
+  && apt-get clean \
+  && rm -rf /var/lib/apt/lists/*
 
 # docker compose
 RUN COMPOSE_URL="https://circle-downloads.s3.amazonaws.com/circleci-images/cache/linux-amd64/docker-compose-latest" \
-  && curl --silent --show-error --location --fail --retry 3 --output /usr/bin/docker-compose $COMPOSE_URL \
+  && curl --silent --show-error --location --fail --retry 3 --output /usr/bin/docker-compose "$COMPOSE_URL" \
   && chmod +x /usr/bin/docker-compose \
   && docker-compose version
 
@@ -98,36 +110,32 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
   && rm "node-v$NODE_VERSION-linux-$ARCH.tar.xz" SHASUMS256.txt.asc SHASUMS256.txt \
   && ln -s /usr/local/bin/node /usr/local/bin/nodejs
 
-
-# install golang
-RUN add-apt-repository ppa:longsleep/golang-backports && apt-get update && apt-get install golang-go
-
 # install chrome
 
 RUN curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && (sudo dpkg -i /tmp/google-chrome-stable_current_amd64.deb || sudo apt-get -fy install)  \
+    && (dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get -fy install)  \
     && rm -rf /tmp/google-chrome-stable_current_amd64.deb \
-    && sudo sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' \
+    && sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' \
         "/opt/google/chrome/google-chrome" \
-    && ln -s $(which google-chrome) /usr/local/bin/chromium-browser \
+    && ln -s "$(which google-chrome)" /usr/local/bin/chromium-browser \
     && chromium-browser --version
 
 RUN CHROME_VERSION="$(google-chrome --version)" \
-    && export CHROMEDRIVER_RELEASE="$(echo $CHROME_VERSION | sed 's/^Google Chrome //')" && export CHROMEDRIVER_RELEASE=${CHROMEDRIVER_RELEASE%%.*} \
-    && CHROMEDRIVER_VERSION=$(curl --silent --show-error --location --fail --retry 4 --retry-delay 5 http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE}) \
+    && export CHROMEDRIVER_RELEASE="$(echo $CHROME_VERSION | sed 's/^Google Chrome //')" && export CHROMEDRIVER_RELEASE="${CHROMEDRIVER_RELEASE%%.*}" \
+    && CHROMEDRIVER_VERSION="$(curl --silent --show-error --location --fail --retry 4 --retry-delay 5 "http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE}")" \
     && curl --silent --show-error --location --fail --retry 4 --retry-delay 5 --output /tmp/chromedriver_linux64.zip "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" \
     && cd /tmp \
     && unzip chromedriver_linux64.zip \
     && rm -rf chromedriver_linux64.zip \
-    && sudo mv chromedriver /usr/local/bin/chromedriver \
-    && sudo chmod +x /usr/local/bin/chromedriver \
+    && mv chromedriver /usr/local/bin/chromedriver \
+    && chmod +x /usr/local/bin/chromedriver \
     && chromedriver --version
 
 # start xvfb automatically to avoid needing to express in circle.yml
 ENV DISPLAY :99
 RUN printf '#!/bin/sh\nsudo Xvfb :99 -screen 0 1280x1024x24 &\nexec "$@"\n' > /tmp/entrypoint \
   && chmod +x /tmp/entrypoint \
-        && sudo mv /tmp/entrypoint /docker-entrypoint.sh
+        && mv /tmp/entrypoint /docker-entrypoint.sh
 
 RUN mkdir -p /usr/local/lib/node_modules && chgrp -R 3434 /usr/local/ && chgrp -R 3434 /usr/lib && chmod -R g+w /usr/lib/go-1.13
 RUN touch /etc/init.d/xvfb # Needed by ./tests/travis/ut_run.sh:9 :-(
@@ -138,10 +146,8 @@ ENV PATH $PATH:/home/travis/go/bin
 
 COPY .env /home/travis/
 COPY *.sh /home/travis/
-RUN sudo chmod +x /home/travis/*.sh
+RUN chmod +x /home/travis/*.sh
 
 VOLUME ["/h"]
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["/bin/sh"]
-
-# docker run --user=travis -v /Users/pivotal/workspace/harbor:/h:ro -e DEBUG=1 --privileged -it harbor-ci bash /home/travis/ut_test.sh
