@@ -27,7 +27,7 @@ type adapter struct {
 	url             string
 	username        string
 	token           string
-	clientGitlabApi *Client
+	clientGitlabAPI *Client
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
@@ -44,7 +44,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 
 	dockerRegistryAdapter, err := native.NewAdapterWithCustomizedAuthorizer(&model.Registry{
 		Name:       registry.Name,
-		URL:        registry.URL, // specify the URL of Gitlab registry service
+		URL:        registry.URL,
 		Credential: registry.Credential,
 		Insecure:   registry.Insecure,
 	}, authorizer)
@@ -55,7 +55,7 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 	return &adapter{
 		registry:        registry,
 		url:             registry.URL,
-		clientGitlabApi: NewClient(registry),
+		clientGitlabAPI: NewClient(registry),
 		Adapter:         dockerRegistryAdapter,
 	}, nil
 }
@@ -102,7 +102,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		names, ok := util.IsSpecificPathComponent(projectPattern)
 		if ok {
 			for _, name := range names {
-				var projectsByName, err = a.clientGitlabApi.getProjectsByName(name)
+				var projectsByName, err = a.clientGitlabAPI.getProjectsByName(name)
 				if err != nil {
 					return nil, err
 				}
@@ -114,7 +114,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		}
 	}
 	if len(projects) == 0 {
-		projects, err = a.clientGitlabApi.getProjects()
+		projects, err = a.clientGitlabAPI.getProjects()
 		if err != nil {
 			return nil, err
 		}
@@ -129,7 +129,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		if !existPatterns(project.FullPath, pathPatterns) {
 			continue
 		}
-		repositories, err := a.clientGitlabApi.getRepositories(project.ID)
+		repositories, err := a.clientGitlabAPI.getRepositories(project.ID)
 		if err != nil {
 			return nil, err
 		}
@@ -140,7 +140,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 			if !existPatterns(repository.Path, pathPatterns) {
 				continue
 			}
-			vTags, err := a.clientGitlabApi.getTags(project.ID, repository.ID)
+			vTags, err := a.clientGitlabAPI.getTags(project.ID, repository.ID)
 			if err != nil {
 				return nil, err
 			}
@@ -188,31 +188,3 @@ func existPatterns(path string, patterns []string) bool {
 	}
 	return correct
 }
-
-////TODO maybe remove and add input form to registry host
-//func (a *adapter) PrepareForPush(resources []*model.Resource) error {
-//	//for _, resource := range resources {
-//	//	var location, err = url.Parse(fmt.Sprintf("%v", resource.Metadata.Repository.Metadata["location"]))
-//	//	if err != nil {
-//	//		return err
-//	//	}
-//	//	endpoint := a.Adapter.Registry.Endpoint
-//	//	endpoint.Host = location.Host
-//	//	a.Adapter.Registry.Endpoint = endpoint
-//	//	break
-//	//}
-//
-//	return nil
-//}
-
-//// PullManifest ...
-//func (a *adapter) PullManifest(repository, reference string, accepttedMediaTypes []string) (distribution.Manifest, string, error) {
-//	//var location, err = url.Parse(repository)
-//	//if err != nil {
-//	//	return nil, "", err
-//	//}
-//	//endpoint := a.Adapter.Registry.Endpoint
-//	//endpoint.Host = location.Host
-//	//a.Adapter.Registry.Endpoint = endpoint
-//	return a.Adapter.PullManifest(repository, reference, accepttedMediaTypes)
-//}

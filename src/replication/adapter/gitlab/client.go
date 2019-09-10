@@ -80,7 +80,7 @@ func ping(client *http.Client, endpoint string) (string, string, error) {
 func buildPingURL(endpoint string) string {
 	return fmt.Sprintf("%s/v2/", endpoint)
 }
-func (c *Client) NewRequest(method, url string, body io.Reader) (*http.Request, error) {
+func (c *Client) newRequest(method, url string, body io.Reader) (*http.Request, error) {
 	req, err := http.NewRequest(method, url, body)
 	if err != nil {
 		return nil, err
@@ -91,8 +91,8 @@ func (c *Client) NewRequest(method, url string, body io.Reader) (*http.Request, 
 
 func (c *Client) getProjects() ([]*Project, error) {
 	var projects []*Project
-	urlApi := fmt.Sprintf("%s/api/v4/projects?membership=1&per_page=50", c.url)
-	if err := c.GetAndIteratePagination(urlApi, &projects); err != nil {
+	urlAPI := fmt.Sprintf("%s/api/v4/projects?membership=1&per_page=50", c.url)
+	if err := c.GetAndIteratePagination(urlAPI, &projects); err != nil {
 		return nil, err
 	}
 	return projects, nil
@@ -100,16 +100,16 @@ func (c *Client) getProjects() ([]*Project, error) {
 
 func (c *Client) getProjectsByName(name string) ([]*Project, error) {
 	var projects []*Project
-	urlApi := fmt.Sprintf("%s/api/v4/projects?search=%s&membership=1&per_page=50", c.url, name)
-	if err := c.GetAndIteratePagination(urlApi, &projects); err != nil {
+	urlAPI := fmt.Sprintf("%s/api/v4/projects?search=%s&membership=1&per_page=50", c.url, name)
+	if err := c.GetAndIteratePagination(urlAPI, &projects); err != nil {
 		return nil, err
 	}
 	return projects, nil
 }
 func (c *Client) getRepositories(projectID int64) ([]*Repository, error) {
 	var repositories []*Repository
-	urlApi := fmt.Sprintf("%s/api/v4/projects/%d/registry/repositories?per_page=50", c.url, projectID)
-	if err := c.GetAndIteratePagination(urlApi, &repositories); err != nil {
+	urlAPI := fmt.Sprintf("%s/api/v4/projects/%d/registry/repositories?per_page=50", c.url, projectID)
+	if err := c.GetAndIteratePagination(urlAPI, &repositories); err != nil {
 		return nil, err
 	}
 	return repositories, nil
@@ -117,8 +117,8 @@ func (c *Client) getRepositories(projectID int64) ([]*Repository, error) {
 
 func (c *Client) getTags(projectID int64, repositoryID int64) ([]*Tag, error) {
 	var tags []*Tag
-	urlApi := fmt.Sprintf("%s/api/v4/projects/%d/registry/repositories/%d/tags?per_page=50", c.url, projectID, repositoryID)
-	if err := c.GetAndIteratePagination(urlApi, &tags); err != nil {
+	urlAPI := fmt.Sprintf("%s/api/v4/projects/%d/registry/repositories/%d/tags?per_page=50", c.url, projectID, repositoryID)
+	if err := c.GetAndIteratePagination(urlAPI, &tags); err != nil {
 		return nil, err
 	}
 	return tags, nil
@@ -127,7 +127,7 @@ func (c *Client) getTags(projectID int64, repositoryID int64) ([]*Tag, error) {
 // GetAndIteratePagination iterates the pagination header and returns all resources
 // The parameter "v" must be a pointer to a slice
 func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
-	urlApi, err := url.Parse(endpoint)
+	urlAPI, err := url.Parse(endpoint)
 	if err != nil {
 		return err
 	}
@@ -143,7 +143,7 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 
 	resources := reflect.Indirect(reflect.New(elemType))
 	for len(endpoint) > 0 {
-		req, err := c.NewRequest(http.MethodGet, endpoint, nil)
+		req, err := c.newRequest(http.MethodGet, endpoint, nil)
 		if err != nil {
 			return err
 		}
@@ -172,9 +172,9 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 
 		nextPage := resp.Header.Get("X-Next-Page")
 		if len(nextPage) > 0 {
-			query := urlApi.Query()
+			query := urlAPI.Query()
 			query.Set("page", nextPage)
-			endpoint = urlApi.Scheme + "://" + urlApi.Host + urlApi.Path + "?" + query.Encode()
+			endpoint = urlAPI.Scheme + "://" + urlAPI.Host + urlAPI.Path + "?" + query.Encode()
 		}
 	}
 	rv.Elem().Set(resources)
