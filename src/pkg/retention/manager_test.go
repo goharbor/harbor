@@ -2,6 +2,7 @@ package retention
 
 import (
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -83,7 +84,8 @@ func TestPolicy(t *testing.T) {
 	assert.Nil(t, err)
 
 	p1, err = m.GetPolicy(id)
-	assert.Nil(t, err)
+	assert.NotNil(t, err)
+	assert.True(t, strings.Contains(err.Error(), "no such Retention policy"))
 	assert.Nil(t, p1)
 }
 
