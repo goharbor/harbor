@@ -15,13 +15,18 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
   && mkdir -p /usr/share/man/man1 \
   && apt-get install -y --no-install-recommends \
-    apt=1.2.32 apt-transport-https=1.2.32 bzip2=1.0.6-8ubuntu0.2 ca-certificates=20170717~16.04.2 \
-    curl=7.47.0-1ubuntu2.13 git=1:2.7.4-0ubuntu1.6 gnupg=1.4.20-1ubuntu3.3 gnupg2=2.1.11-6ubuntu2.1 \
-    gzip=1.6-4ubuntu1 locales=2.23-0ubuntu11 make=4.1-6 mercurial=3.7.3-1ubuntu1.2 net-tools=1.60-26ubuntu1 \
+    apt=1.2.32 apt-transport-https=1.2.32 build-essential=12.1ubuntu2 bzip2=1.0.6-8ubuntu0.2 \
+    curl=7.47.0-1ubuntu2.13 fonts-liberation=1.07.4-1 git=1:2.7.4-0ubuntu1.6 \
+    gnupg=1.4.20-1ubuntu3.3 gnupg2=2.1.11-6ubuntu2.1 gzip=1.6-4ubuntu1 \
+    iproute2=4.3.0-1ubuntu3.16.04.5 \
+    libappindicator3-1=12.10.1+16.04.20170215-0ubuntu1 libasound2=1.1.0-0ubuntu1 \
+    libatk-bridge2.0-0=2.18.1-2ubuntu1 libatk1.0-0=2.18.0-1 libatspi2.0-0=2.18.3-4ubuntu1 \
+    libcairo2=1.14.6-1 libgdk-pixbuf2.0-0=2.32.2-1ubuntu1.6 libgtk-3-0=3.18.9-1ubuntu3.3 \
+    libxss1=1:1.2.2-1 locales=2.23-0ubuntu11 mercurial=3.7.3-1ubuntu1.2 net-tools=1.60-26ubuntu1 \
     netcat=1.10-41 openjdk-9-jdk-headless=9~b114-0ubuntu1 openssh-client=1:7.2p2-4ubuntu2.8 \
     parallel=20161222-1~ubuntu0.16.04.1 postgresql=9.5+173ubuntu0.2 software-properties-common=0.96.20.9 \
     sudo=1.8.16-0ubuntu1.7 tar=1.28-2.1ubuntu0.1 unzip=6.0-20ubuntu1 wget=1.17.1-1ubuntu1.5 \
-    xvfb=2:1.18.4-0ubuntu0.8 zip=3.0-11 \
+    xdg-utils=1.1.1-1ubuntu1.16.04.3 xvfb=2:1.18.4-0ubuntu0.8 zip=3.0-11 \
   && apt-get clean \
   && rm -rf /var/lib/apt/lists/*
 
@@ -113,21 +118,18 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" \
 # install chrome
 
 RUN curl --silent --show-error --location --fail --retry 3 --output /tmp/google-chrome-stable_current_amd64.deb https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb \
-    && (dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get -fy install)  \
+    && (dpkg -i /tmp/google-chrome-stable_current_amd64.deb || apt-get -fy --no-install-recommends install)  \
     && rm -rf /tmp/google-chrome-stable_current_amd64.deb \
     && sed -i 's|HERE/chrome"|HERE/chrome" --disable-setuid-sandbox --no-sandbox|g' \
         "/opt/google/chrome/google-chrome" \
-    && ln -s "$(which google-chrome)" /usr/local/bin/chromium-browser \
+    && ln -s "$(command -v google-chrome)" /usr/local/bin/chromium-browser \
     && chromium-browser --version
 
 RUN CHROME_VERSION="$(google-chrome --version)" \
     && export CHROMEDRIVER_RELEASE="$(echo $CHROME_VERSION | sed 's/^Google Chrome //')" && export CHROMEDRIVER_RELEASE="${CHROMEDRIVER_RELEASE%%.*}" \
     && CHROMEDRIVER_VERSION="$(curl --silent --show-error --location --fail --retry 4 --retry-delay 5 "http://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROMEDRIVER_RELEASE}")" \
     && curl --silent --show-error --location --fail --retry 4 --retry-delay 5 --output /tmp/chromedriver_linux64.zip "http://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip" \
-    && cd /tmp \
-    && unzip chromedriver_linux64.zip \
-    && rm -rf chromedriver_linux64.zip \
-    && mv chromedriver /usr/local/bin/chromedriver \
+    && unzip /tmp/chromedriver_linux64.zip chromedriver -d /usr/local/bin \
     && chmod +x /usr/local/bin/chromedriver \
     && chromedriver --version
 
@@ -140,13 +142,14 @@ RUN printf '#!/bin/sh\nsudo Xvfb :99 -screen 0 1280x1024x24 &\nexec "$@"\n' > /t
 RUN mkdir -p /usr/local/lib/node_modules && chgrp -R 3434 /usr/local/ && chgrp -R 3434 /usr/lib && chmod -R g+w /usr/lib/go-1.13
 RUN touch /etc/init.d/xvfb # Needed by ./tests/travis/ut_run.sh:9 :-(
 
+COPY .env /home/travis/
+COPY *.sh /home/travis/
+RUN chmod +x /home/travis/*.sh
+
 USER travis
 
 ENV PATH $PATH:/home/travis/go/bin
 
-COPY .env /home/travis/
-COPY *.sh /home/travis/
-RUN chmod +x /home/travis/*.sh
 
 VOLUME ["/h"]
 ENTRYPOINT ["/docker-entrypoint.sh"]
