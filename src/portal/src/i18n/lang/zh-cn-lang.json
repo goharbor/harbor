@@ -1124,10 +1124,10 @@
         "NEVER_EXPIRES": "永不过期",
         "PRO_WHITELIST_EXPLAIN": "在推送和拉取镜像时，在项目的CVE白名单中的漏洞将会被忽略",
         "PRO_OR_SYS": "您可以选择使用系统的CVE白名单作为该项目的白名单，也可勾选“启用项目白名单”项来建立该项目自己的CVE白名单，",
-        "MERGE_INTO": "您可以点击“添加系统白名单”项将系统白名单合并至该项目白名单中，并可为该项目白名单添加特有的CVE IDs",
+        "MERGE_INTO": "您可以点击“复制系统白名单”项将系统白名单合并至该项目白名单中，并可为该项目白名单添加特有的CVE IDs",
         "SYS_WHITELIST": "启用系统白名单",
         "PRO_WHITELIST": "启用项目白名单",
-        "ADD_SYSTEM": "添加系统白名单"
+        "ADD_SYSTEM": "复制系统白名单"
     },
     "TAG_RETENTION": {
         "TAG_RETENTION": "Tag保留",
