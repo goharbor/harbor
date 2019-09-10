@@ -289,7 +289,7 @@ By default, the system whitelist is applied to all projects. You can configure d
 1. Go to **Projects**, select a project, and select **Configuration**.
 1. Under **CVE whitelist**, select **Project whitelist**. 
    ![Project CVE whitelist](img/cve-whitelist5.png)
-1. Optionally click **Add System** to add all of the CVE IDs from the system CVE whitelist to this project whitelist.
+1. Optionally click **Copy From System** to add all of the CVE IDs from the system CVE whitelist to this project whitelist.
 1. Click **Add** and enter a list of additional CVE IDs to ignore during vulnerability scanning of this project. 
    ![Add project CVEs](img/cve-whitelist6.png)
 
@@ -300,9 +300,9 @@ By default, the system whitelist is applied to all projects. You can configure d
 
 After you have created a project whitelist, you can remove CVE IDs from the list by clicking the delete button next to it in the list. You can click **Add** at any time to add more CVE IDs to the whitelist for this project. 
 
-If CVEs are added to the system whitelist after you have created a project whitelist, click **Add System** to add the new entries from the system whitelist to the project whitelist. 
+If CVEs are added to the system whitelist after you have created a project whitelist, click **Copy From System** to add the new entries from the system whitelist to the project whitelist. 
 
-**NOTE**: If CVEs are deleted from the system whitelist after you have created a project whitelist, and if you added the system whitelist to the project whitelist, you must manually remove the deleted CVEs from the project whitelist. If you click **Add System** after CVEs have been deleted from the system whitelist, the deleted CVEs are not automatically removed from the project whitelist.
+**NOTE**: If CVEs are deleted from the system whitelist after you have created a project whitelist, and if you added the system whitelist to the project whitelist, you must manually remove the deleted CVEs from the project whitelist. If you click **Copy From System** after CVEs have been deleted from the system whitelist, the deleted CVEs are not automatically removed from the project whitelist.
 
 ## Set Project Quotas
 
