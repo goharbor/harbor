@@ -184,9 +184,9 @@ To replicate image repositories from one instance of Harbor to another Harbor or
 
    Use an account that has the appropriate privileges on that registry, or an account that has write permission on the corresponding project in a Harbor  registry.
    
-   - **NOTES**: 
-      - AWS ECR adapters should use access keys, not a username and password. The access key should have enough permission such as storage permission.
-      - Google GCR adapters should use the entire JASON key generated in the service account. The namespace should start with the project ID.
+   **NOTES**: 
+    - AWS ECR adapters should use access keys, not a username and password. The access key should have sufficient permissions, such as storage permission.
+    - Google GCR adapters should use the entire JASON key generated in the service account. The namespace should start with the project ID.
 1. Optionally, select the **Verify Remote Cert** check box.
 
     Deselect the check box if the remote registry uses a self-signed or untrusted certificate.
