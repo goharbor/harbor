@@ -15,9 +15,10 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 
-	"errors"
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -87,16 +88,20 @@ func (l *LogAPI) Get() {
 			return
 		}
 
-		if len(projects) == 0 {
+		ids := []int64{}
+		for _, project := range projects {
+			roles := l.SecurityCtx.GetProjectRoles(project.ProjectID)
+
+			if (len(roles) > 0 && roles[0] != common.RoleGuest) || project.IsPublic() {
+				ids = append(ids, project.ProjectID)
+			}
+		}
+
+		if len(ids) == 0 {
 			l.SetPaginationHeader(0, page, size)
 			l.Data["json"] = nil
 			l.ServeJSON()
 			return
-		}
-
-		ids := []int64{}
-		for _, project := range projects {
-			ids = append(ids, project.ProjectID)
 		}
 		query.ProjectIDs = ids
 	}
