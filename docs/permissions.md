@@ -6,8 +6,6 @@ On public projects all users will be able to see the list of repositories, image
 
 System admin have all permissions for the project.
 
-## Project members permissions
-
 The following table depicts the various user permission levels in a project.
 
 | Action                                  | Guest | Developer | Master | Project Admin |
@@ -43,3 +41,9 @@ The following table depicts the various user permission levels in a project.
 | Add/Remove labels of helm chart version |       | ✓         | ✓      | ✓             |
 | See a list of project robots            |       |           | ✓      | ✓             |
 | Create/edit/delete project robots       |       |           |        | ✓             |
+| Create/edit/remove project CVE whitelist| ✓     | ✓         | ✓      | ✓             |
+| Enable/disable webhooks                 |       | ✓         | ✓      | ✓             |
+| Create/delete tag retention rules       |       | ✓         | ✓      | ✓             |
+| Enable/disable tag retention rules      |       | ✓         | ✓      | ✓             |
+| See quotas set for project              | ✓     | ✓         | ✓      | ✓             |
+| Edit quotas for new project             |       |           | ✓      | ✓             |
