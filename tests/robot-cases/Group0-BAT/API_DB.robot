@@ -49,6 +49,8 @@ Test Case - Robot Account
     Harbor API Test  ./tests/apitests/python/test_robot_account.py
 Test Case - Sign A Image
     Harbor API Test  ./tests/apitests/python/test_sign_image.py
+Test Case - Project Quota
+    Harbor API Test  ./tests/apitests/python/test_project_quota.py
 Test Case - System Level CVE Whitelist
     Harbor API Test  ./tests/apitests/python/test_sys_cve_whitelists.py
 Test Case - Project Level CVE Whitelist

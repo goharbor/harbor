@@ -3600,7 +3600,6 @@ paths:
       description: List quotas
       tags:
         - Products
-        - Quota
       parameters:
         - name: reference
           in: query
