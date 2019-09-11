@@ -249,8 +249,6 @@ var (
 			{Resource: rbac.ResourceMember, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceMember, Action: rbac.ActionList},
 
-			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
-
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
 
