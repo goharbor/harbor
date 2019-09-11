@@ -6,6 +6,8 @@ On public projects all users will be able to see the list of repositories, image
 
 System admin have all permissions for the project.
 
+## Project members permissions
+
 The following table depicts the various user permission levels in a project.
 
 | Action                                  | Guest | Developer | Master | Project Admin |
