@@ -18,8 +18,6 @@ Library  Selenium2Library
 Library  OperatingSystem
 
 *** Variables ***
-${HARBOR_VERSION}  v1.1.1
-${CLAIR_BUILDER}  1.6.0
 
 *** Keywords ***
 Install Harbor to Test Server

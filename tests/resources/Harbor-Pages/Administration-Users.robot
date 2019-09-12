@@ -17,7 +17,6 @@ Documentation  This resource provides any keywords related to the Harbor private
 Resource  ../../resources/Util.robot
 
 *** Variables ***
-${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Assign User Admin

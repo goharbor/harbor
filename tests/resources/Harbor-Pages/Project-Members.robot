@@ -17,11 +17,11 @@ Documentation  This resource provides any keywords related to the Harbor private
 Resource  ../../resources/Util.robot
 
 *** Variables ***
-${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Go Into Project
     [Arguments]  ${project}  ${has_image}=${true}
+    Sleep  2
     Retry Wait Element  ${search_input}
     Input Text  ${search_input}  ${project}
     Retry Wait Until Page Contains  ${project}
@@ -36,6 +36,7 @@ Go Into Project
     \    Run Keyword If  ${result} == ${true}  Exit For Loop
     \    Sleep  1
     Should Be Equal  ${result}  ${true}
+    Sleep  1
 
 Add User To Project Admin
     [Arguments]  ${project}  ${user}
