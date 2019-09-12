@@ -100,12 +100,10 @@ The parameters are described below - note that at the very least, you will need 
 
 - **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the Portal. _Note that the default username/password are **admin/Harbor12345** ._
 
-
-
 - **database**: the configs related to local database
-  - **password**: The root password for the PostgreSQL database used for **db_auth**. Change this password for any production use!
-  - **max_idle_conns**: The maximum number of connections in the idle connection pool. If <=0 no idle connections are retained.
-  - **max_open_conns**: The maximum number of open connections to the database. If <= 0 there is no limit on the number of open connections. The default number of connections is 100 for Postgres.
+  - **password**: The root password for the PostgreSQL database. Change this password for any production use.
+  - **max_idle_conns**: The maximum number of connections in the idle connection pool. If <=0 no idle connections are retained. The default value is 2.
+  - **max_open_conns**: The maximum number of open connections to the database. If <= 0 there is no limit on the number of open connections. The default value is 0 (unlimited), except for Postgres, for which the default number of connections is 100.
 
 - **jobservice**: jobservice related service
   - **max_job_workers**: The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host.
