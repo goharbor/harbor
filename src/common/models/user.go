@@ -23,14 +23,15 @@ const UserTable = "harbor_user"
 
 // User holds the details of a user.
 type User struct {
-	UserID   int    `orm:"pk;auto;column(user_id)" json:"user_id"`
-	Username string `orm:"column(username)" json:"username"`
-	Email    string `orm:"column(email)" json:"email"`
-	Password string `orm:"column(password)" json:"password"`
-	Realname string `orm:"column(realname)" json:"realname"`
-	Comment  string `orm:"column(comment)" json:"comment"`
-	Deleted  bool   `orm:"column(deleted)" json:"deleted"`
-	Rolename string `orm:"-" json:"role_name"`
+	UserID          int    `orm:"pk;auto;column(user_id)" json:"user_id"`
+	Username        string `orm:"column(username)" json:"username"`
+	Email           string `orm:"column(email)" json:"email"`
+	Password        string `orm:"column(password)" json:"password"`
+	PasswordVersion string `orm:"column(password_version)" json:"password_version"`
+	Realname        string `orm:"column(realname)" json:"realname"`
+	Comment         string `orm:"column(comment)" json:"comment"`
+	Deleted         bool   `orm:"column(deleted)" json:"deleted"`
+	Rolename        string `orm:"-" json:"role_name"`
 	// if this field is named as "RoleID", beego orm can not map role_id
 	// to it.
 	Role int `orm:"-" json:"role_id"`
