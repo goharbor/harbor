@@ -49,6 +49,7 @@ Resource  Harbor-Pages/UserProfile.robot
 Resource  Harbor-Pages/UserProfile_Elements.robot
 Resource  Harbor-Pages/Administration-Users.robot
 Resource  Harbor-Pages/Administration-Users_Elements.robot
+Resource  Harbor-Pages/GC.robot
 Resource  Harbor-Pages/Configuration.robot
 Resource  Harbor-Pages/Configuration_Elements.robot
 Resource  Harbor-Pages/ToolKit.robot
@@ -108,6 +109,11 @@ Retry Text Input
     [Arguments]  ${element_xpath}  ${text}
     @{param}  Create List  ${element_xpath}  ${text}
     Retry Action Keyword  Text Input  @{param}
+
+Retry Clear Element Text
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Clear Element Text  @{param}
 
 Retry Link Click
     [Arguments]  ${element_xpath}
