@@ -31,7 +31,12 @@ Create An New Project
     Run Keyword If  '${count_quota}'!='${null}'  Input Count Quota  ${count_quota}
     Run Keyword If  '${storage_quota}'!='${null}'  Input Storage Quota  ${storage_quota}  ${storage_quota_unit}
     Capture Page Screenshot
+<<<<<<< HEAD
     Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
+=======
+    Retry Element Click  ${create_project_OK_button_xpath}
+    Retry Wait Until Page Not Contains Element  ${create_project_CANCEL_button_xpath}
+>>>>>>> 5d1913842... Script test case for project quotas, there will be 2 or 3 test cases in this PR, like project quota edit, prject quota functionality.
     Capture Page Screenshot
     Go Into Project  ${projectname}  has_image=${false}
 
@@ -204,7 +209,11 @@ Edit Repo Info
     Input Text  xpath=//*[@id='info-edit-textarea']  test_description_info
     Retry Element Click  xpath=//*[@id='edit-save']
     Retry Wait Until Page Contains  test_description_info
+<<<<<<< HEAD
     Capture Page Screenshot
+=======
+    Capture Page Screenshot RepoInfo.png
+>>>>>>> 5d1913842... Script test case for project quotas, there will be 2 or 3 test cases in this PR, like project quota edit, prject quota functionality.
 
 Switch To Project Label
     Retry Element Click  xpath=//project-detail//a[contains(.,'Labels')]

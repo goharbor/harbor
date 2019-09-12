@@ -155,7 +155,10 @@ Switch To System Settings
 Switch To Project Quotas
     Sleep  1
     Retry Element Click  xpath=${configuration_xpath}
+<<<<<<< HEAD
     Retry Element Click  xpath=${configuration_system_tabsheet_id}
+=======
+>>>>>>> 5d1913842... Script test case for project quotas, there will be 2 or 3 test cases in this PR, like project quota edit, prject quota functionality.
     Retry Element Click  xpath=${configuration_project_quotas_tabsheet_id}
     Sleep  1
 

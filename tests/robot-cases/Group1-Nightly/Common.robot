@@ -558,6 +558,7 @@ Test Case - Project Quotas Control Under GC
     Create An New Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
     Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=Quota exceeded when processing the request of adding 82.5 MiB of storage resource, which when updated to current usage of 166.6 MiB will exceed the configured upper limit of 200.0 MiB
     GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+<<<<<<< HEAD
     @{param}  Create List  project${d}
     Retry Keyword When Return Value Mismatch  Get Project Storage Quota Text From Project Quotas List  0Byte of ${storage_quota}${storage_quota_unit}  60  @{param}
     Close Browser
@@ -585,3 +586,8 @@ Test Case - Can Not Retag Image In ReadOnly Mode
     Go Into Project  project${random_num2}  has_image=${false}
     Disable Read Only
     Close Browser
+=======
+    ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
+    Should Be Equal As Strings  ${storage_quota_ret}  0Byte of ${storage_quota}${storage_quota_unit}
+    Close Browser
+>>>>>>> 5d1913842... Script test case for project quotas, there will be 2 or 3 test cases in this PR, like project quota edit, prject quota functionality.

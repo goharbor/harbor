@@ -64,3 +64,7 @@ ${project_config_save_btn}    xpath=//hbr-project-policy-config//button[contains
 ${project_add_count_quota_input_text_id}    xpath=//*[@id='create_project_count_limit']
 ${project_add_storage_quota_input_text_id}    xpath=//*[@id='create_project_storage_limit']
 ${project_add_storage_quota_unit_id}    xpath=//*[@id='create_project_storage_limit_unit']
+<<<<<<< HEAD
+=======
+
+>>>>>>> 5d1913842... Script test case for project quotas, there will be 2 or 3 test cases in this PR, like project quota edit, prject quota functionality.
