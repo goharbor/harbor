@@ -1,6 +1,6 @@
 # Harbor Upgrade and Migration Guide
 
-This guide covers upgrade and migration to versions >= v1.9.0. This guide only covers migration from v1.7.x and later to the current version. If you are upgrading from an earlier version, refer to the migration guide in the `release-1.7.0` branch to upgrade to v1.7.x first, then follow this guide to perform the migration to this version. 
+This guide covers upgrade and migration to version 1.9.0. This guide only covers migration from v1.7.x and later to the current version. If you are upgrading from an earlier version, refer to the migration guide in the `release-1.7.0` branch to upgrade to v1.7.x first, then follow this guide to perform the migration to this version. 
 
 When upgrading an existing Harbor 1.7.x instance to a newer version, you might need to migrate the data in your database and the settings in `harbor.cfg`. 
 Since the migration might alter the database schema and the settings of `harbor.cfg`, you should **always** back up your data before any migration.
@@ -10,7 +10,7 @@ Since the migration might alter the database schema and the settings of `harbor.
 - Again, you must back up your data before any data migration.
 - Since v1.8.0, the configuration of Harbor has changed to a `.yml` file. If you are upgrading from 1.7.x, the migrator will transform the configuration file from `harbor.cfg` to `harbor.yml`. The command will be a little different to perform this migration, so make sure you follow the steps below.
 - In version 1.9.0, some containers are started by `non-root`. This does not pose problems if you are upgrading an officially released version of Harbor, but if you have deployed a customized instance of Harbor, you might encounter permission issues.
-- In previous releases, user roles took precedence over group roles in a project. In this version, if a user roles and group roles are combined so that the user has both the user and group role. This might cause the roles of certain users to change during upgrade.
+- In previous releases, user roles took precedence over group roles in a project. In this version, user roles and group roles are combined so that the user has whichever set of permissions is highest. This might cause the roles of certain users to change during upgrade.
 - With the introduction of storage and artifact quotas in version 1.9.0, migration from 1.7.x and 1.8.x might take a few minutes. This is because the `core` walks through all blobs in the registry and populates the database with information about the layers and artifacts in projects.
 - With the introduction of storage and artifact quotas in version 1.9.0, replication between version 1.9.0 and a previous version of Harbor does not work. You must upgrade all Harbor nodes to 1.9.0 if you have configured replication between them.
 
@@ -34,7 +34,7 @@ Since the migration might alter the database schema and the settings of `harbor.
 3. Get the latest Harbor release package from Github:
    https://github.com/goharbor/harbor/releases
 
-4. Before upgrading Harbor, perform migration first.  The migration tool is delivered as a docker image, so you should pull the image from docker hub. Replace [tag] with the release version of Harbor (for example, v1.9.0) in the command below:
+4. Before upgrading Harbor, perform a migration first. The migration tool is delivered as a docker image, so you should pull the image from docker hub. Replace [tag] with the release version of Harbor (for example, v1.9.0) in the command below:
     ```
     docker pull goharbor/harbor-migrator:[tag]
     ```
@@ -52,7 +52,7 @@ Since the migration might alter the database schema and the settings of `harbor.
 
 
 ## Roll Back from an Upgrade
-If, for any reason, you want to roll back to the previous version of Harbor, follow the below steps: 
+If, for any reason, you want to roll back to the previous version of Harbor, perform the following steps: 
 
 1. Stop and remove the current Harbor service if it is still running.
     ```
@@ -78,3 +78,4 @@ If, for any reason, you want to roll back to the previous version of Harbor, fol
     cd harbor
     ./install.sh
     ```
+**NOTE**: While you can roll back an upgrade to the state before you started the upgrade, Harbor does not support downgrades.
