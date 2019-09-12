@@ -153,9 +153,9 @@ Replication allows users to replicate resources (images/charts) between Harbor a
 
 Once the system administrator has set a rule, all resources that match the defined [filter](#resource-filter) patterns will be replicated to the destination registry when the [triggering condition](#trigger-mode) is matched. Each resource will start a task to run. If the namespace does not exist on the destination registry, a new namespace will be created automatically. If it already exists and the user configured in the policy has no write privilege to it, the process will fail. The member information will not be replicated.  
 
-There may be a bit of delay during replication based on the situation of the network. If a replication task fails, it will be re-scheduled a few minutes later and try 3 times.  
+There may be a bit of delay during replication based on the situation of the network. If a replication task fails, it will be re-scheduled a few minutes later and retried times.  
 
-**Note:** Due to API changes, replication between different versions of Harbor might not work.
+**Note:** Due to API changes, replication between different versions of Harbor is not supported.
 
 ### Creating replication endpoints
 
@@ -168,28 +168,28 @@ To replicate image repositories from one instance of Harbor to another Harbor or
 
    The endpoint can be another Harbor instance, or a non-Harbor registry. Currently, the following non-Harbor registries are supported:
 
-   - Ali Cloud Container Registry
-   - Helm Hub
-   - Docker registry
-   - Huawei SWR
-   - Azure Container Registry
-   - AWS Elastic Container Registry
    - Docker Hub
-   - Google Container Registry 
+   - Docker registry
+   - AWS Elastic Container Registry
+   - Azure Container Registry
+   - Ali Cloud Container Registry
+   - Google Container Registry
+   - Huawei SWR
+   - Helm Hub
 
    ![Replication providers](img/replication-endpoint2.png)
 
 1. Enter a suitable name and description for the new replication endpoint.
 1. Enter the full URL of the registry to set up as a replication endpoint.
 
-   For example, to replicate to another Harbor instance, enter https://harbor_instance_address:443. The registry must exist before you create the endpoint.
+   For example, to replicate to another Harbor instance, enter https://harbor_instance_address:443. The registry must exist and be running before you create the endpoint.
 1. Enter the Access ID and Access Secret for the endpoint registry instance.
 
    Use an account that has the appropriate privileges on that registry, or an account that has write permission on the corresponding project in a Harbor  registry.
    
    **NOTES**: 
     - AWS ECR adapters should use access keys, not a username and password. The access key should have sufficient permissions, such as storage permission.
-    - Google GCR adapters should use the entire JASON key generated in the service account. The namespace should start with the project ID.
+    - Google GCR adapters should use the entire JSON key generated in the service account. The namespace should start with the project ID.
 1. Optionally, select the **Verify Remote Cert** check box.
 
     Deselect the check box if the remote registry uses a self-signed or untrusted certificate.
