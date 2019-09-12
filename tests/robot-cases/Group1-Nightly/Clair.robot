@@ -133,7 +133,7 @@ Test Case - Project Level Image Serverity Policy
     ${sha256}=  Set Variable  68b49a280d2fbe9330c0031970ebb72015e1272dfa25f0ed7557514f9e5ad7b7
     ${image}=  Set Variable  postgres
     Create An New Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}  tag=${sha256}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}
     Go Into Project  project${d}
     Go Into Repo  ${image}
     Scan Repo  ${sha256}  Succeed

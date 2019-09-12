@@ -42,7 +42,7 @@
           </div>
         </div>
         <div *ngIf="editing">
-          <textarea rows="5" name="info-edit-textarea" [(ngModel)]="imageInfo"></textarea>
+          <textarea rows="5" id="info-edit-textarea" name="info-edit-textarea" [(ngModel)]="imageInfo"></textarea>
         </div>
         <div class="btn-sm" *ngIf="editing">
           <button class="btn btn-primary" [disabled]="!hasChanges()" (click)="saveInfo()">{{'BUTTON.SAVE' | translate}}</button>
