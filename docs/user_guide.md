@@ -884,7 +884,7 @@ This example uses a different repository to the previous examples.
 - You define three tag retention rules on this repository:
   - Retain the 10 most recently pushed image tags that start with `2`.
   - Retain the 10 most recently pushed image tags that end with `-prod`.
-  - Always retain tags that do not include `2.1-your_repo-prod` from the list of tags to retain.
+  - Retain all tags that do not include `2.1-your_repo-prod`.
 
 In this example, the rules are applied to the following 7 tags:
 
