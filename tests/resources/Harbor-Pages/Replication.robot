@@ -17,7 +17,6 @@ Documentation  This resource provides any keywords related to the Harbor private
 Resource  ../../resources/Util.robot
 
 *** Variables ***
-${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Filter Replicatin Rule
@@ -92,6 +91,7 @@ Create A Rule With Existing Endpoint
     Run Keyword If    '${mode}' == 'Scheduled'    Log To Console    Scheduled
     #click save
     Retry Double Keywords When Error  Retry Element Click  ${rule_save_button}  Retry Wait Until Page Not Contains Element  ${rule_save_button}
+    Sleep  2
 
 Endpoint Is Unpingable
     Retry Element Click  ${ping_test_button}

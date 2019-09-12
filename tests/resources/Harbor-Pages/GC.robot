@@ -19,10 +19,14 @@ Resource  ../../resources/Util.robot
 *** Variables ***
 
 *** Keywords ***
-
-Ldap User Should Not See Change Password
-    Click Element  //clr-header//clr-dropdown[2]//button
+GC Now
+    [Arguments]  ${harbor_url}  ${login_user}  ${login_pwd}
+    Switch To Garbage Collection
+    Click GC Now
+    Logout Harbor
+    Sleep  2
+    Sign In Harbor  ${harbor_url}  ${login_user}  ${login_pwd}
+    Switch To Garbage Collection
     Sleep  1
-    Page Should Not Contain  Password
-
-
+    Switch To GC History
+    Retry Wait Until Page Contains  Finished

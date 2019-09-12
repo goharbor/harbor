@@ -133,7 +133,7 @@ Test Case - Project Level Image Serverity Policy
     ${sha256}=  Set Variable  68b49a280d2fbe9330c0031970ebb72015e1272dfa25f0ed7557514f9e5ad7b7
     ${image}=  Set Variable  postgres
     Create An New Project  project${d}
-    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}  tag=${sha256}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}
     Go Into Project  project${d}
     Go Into Repo  ${image}
     Scan Repo  ${sha256}  Succeed
@@ -149,13 +149,12 @@ Test Case - Verfiy System Level CVE Whitelist
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${image}=    Set Variable    redis
-    #version redis:
     ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
     Create An New Project    project${d}
-    Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}  tag=${sha256}
+    Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  1
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
@@ -184,7 +183,7 @@ Test Case - Verfiy Project Level CVE Whitelist
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
     Create An New Project    project${d}
-    Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}  tag=${sha256}
+    Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  1
@@ -216,7 +215,7 @@ Test Case - Verfiy Project Level CVE Whitelist By Quick Way of Add System
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
     Create An New Project    project${d}
-    Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}  tag=${sha256}
+    Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
     Set Vulnerabilty Serverity  1
     Go Into Project  project${d}
