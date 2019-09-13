@@ -17,7 +17,6 @@ package controllers
 import (
 	"bytes"
 	"context"
-	"github.com/goharbor/harbor/src/core/filter"
 	"html/template"
 	"net"
 	"net/http"
@@ -25,6 +24,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/goharbor/harbor/src/core/filter"
 
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
@@ -252,11 +253,10 @@ func (cc *CommonController) ResetPassword() {
 		cc.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
 	}
 
-	password := cc.GetString("password")
+	rawPassword := cc.GetString("password")
 
-	if password != "" {
-		user.Password = password
-		err = dao.ResetUserPassword(*user)
+	if rawPassword != "" {
+		err = dao.ResetUserPassword(*user, rawPassword)
 		if err != nil {
 			log.Errorf("Error occurred in ResetUserPassword: %v", err)
 			cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
