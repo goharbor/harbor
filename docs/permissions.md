@@ -49,4 +49,4 @@ The following table depicts the various user permission levels in a project.
 | Create/delete tag retention rules       |       | ✓         | ✓      | ✓             |
 | Enable/disable tag retention rules      |       | ✓         | ✓      | ✓             |
 | See quotas set for project              | ✓     | ✓         | ✓      | ✓             |
-| Edit quotas for new project             |       |           | ✓      | ✓             |
+| Edit quotas for new project             |       |           |        | ✓             |
