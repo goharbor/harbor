@@ -248,7 +248,7 @@ func (l *launcher) createTasks(executionID int64, jobDatas []*jobData) error {
 		taskID, err := l.retentionMgr.CreateTask(&Task{
 			ExecutionID: executionID,
 			Repository:  jobData.Repository.Name,
-			StartTime:   now,
+			StartTime:   now.Truncate(time.Second),
 		})
 		if err != nil {
 			return err

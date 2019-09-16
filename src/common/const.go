@@ -131,7 +131,7 @@ const (
 	WithChartMuseum                   = "with_chartmuseum"
 	ChartRepoURL                      = "chart_repository_url"
 	DefaultChartRepoURL               = "http://chartmuseum:9999"
-	DefaultPortalURL                  = "http://portal"
+	DefaultPortalURL                  = "http://portal:8080"
 	DefaultRegistryCtlURL             = "http://registryctl:8080"
 	DefaultClairHealthCheckServerURL  = "http://clair:6061"
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.
@@ -154,4 +154,7 @@ const (
 	QuotaPerProjectEnable = "quota_per_project_enable"
 	CountPerProject       = "count_per_project"
 	StoragePerProject     = "storage_per_project"
+
+	// ForeignLayer
+	ForeignLayer = "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip"
 )

@@ -17,6 +17,10 @@ package api
 import (
 	"errors"
 	"fmt"
+	"net/http"
+	"regexp"
+	"strconv"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -25,9 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"net/http"
-	"regexp"
-	"strconv"
 )
 
 // UserAPI handles request to /api/users/{}
@@ -324,6 +325,14 @@ func (ua *UserAPI) Post() {
 		ua.RenderError(http.StatusBadRequest, "register error:"+err.Error())
 		return
 	}
+
+	if !ua.IsAdmin && user.HasAdminRole {
+		msg := "Non-admin cannot create an admin user."
+		log.Errorf(msg)
+		ua.SendForbiddenError(errors.New(msg))
+		return
+	}
+
 	userExist, err := dao.UserExists(user, "username")
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
@@ -346,6 +355,7 @@ func (ua *UserAPI) Post() {
 		ua.SendConflictError(errors.New("email has already been used"))
 		return
 	}
+
 	userID, err := dao.Register(user)
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
@@ -407,20 +417,21 @@ func (ua *UserAPI) ChangePassword() {
 		return
 	}
 	if changePwdOfOwn {
-		if user.Password != utils.Encrypt(req.OldPassword, user.Salt) {
+		if user.Password != utils.Encrypt(req.OldPassword, user.Salt, user.PasswordVersion) {
 			log.Info("incorrect old_password")
 			ua.SendForbiddenError(errors.New("incorrect old_password"))
 			return
 		}
 	}
-	if user.Password == utils.Encrypt(req.NewPassword, user.Salt) {
+	if user.Password == utils.Encrypt(req.NewPassword, user.Salt, user.PasswordVersion) {
 		ua.SendBadRequestError(errors.New("the new password can not be same with the old one"))
 		return
 	}
 
 	updatedUser := models.User{
-		UserID:   ua.userID,
-		Password: req.NewPassword,
+		UserID:          ua.userID,
+		Password:        req.NewPassword,
+		PasswordVersion: user.PasswordVersion,
 	}
 	if err = dao.ChangeUserPassword(updatedUser); err != nil {
 		ua.SendInternalServerError(fmt.Errorf("failed to change password of user %d: %v", ua.userID, err))

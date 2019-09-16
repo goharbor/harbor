@@ -16,7 +16,6 @@ package operation
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 	"time"
 
@@ -49,9 +48,7 @@ const (
 )
 
 var (
-	statusBehindErrorPattern = "mismatch job status for stopping job: .*, job status (.*) is behind Running"
-	statusBehindErrorReg     = regexp.MustCompile(statusBehindErrorPattern)
-	jobNotFoundErrorMsg      = "object is not found"
+	jobNotFoundErrorMsg = "object is not found"
 )
 
 // NewController returns a controller implementation
@@ -163,8 +160,9 @@ func (c *controller) StopReplication(executionID int64) error {
 			continue
 		}
 		if err = c.scheduler.Stop(task.JobID); err != nil {
-			status, flag := isStatusBehindError(err)
-			if flag {
+			isStatusBehindError, ok := err.(*job.StatusBehindError)
+			if ok {
+				status := isStatusBehindError.Status()
 				switch hjob.Status(status) {
 				case hjob.ErrorStatus:
 					status = models.TaskStatusFailed
@@ -213,17 +211,6 @@ func isTaskInFinalStatus(task *models.Task) bool {
 		return true
 	}
 	return false
-}
-
-func isStatusBehindError(err error) (string, bool) {
-	if err == nil {
-		return "", false
-	}
-	strs := statusBehindErrorReg.FindStringSubmatch(err.Error())
-	if len(strs) != 2 {
-		return "", false
-	}
-	return strs[1], true
 }
 
 func isJobNotFoundError(err error) bool {

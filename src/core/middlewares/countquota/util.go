@@ -89,20 +89,26 @@ func afterManifestCreated(w http.ResponseWriter, req *http.Request) error {
 
 // attachBlobsToArtifact attach the blobs which from manifest to artifact
 func attachBlobsToArtifact(info *util.ManifestInfo) error {
-	self := &models.ArtifactAndBlob{
+	temp := make(map[string]interface{})
+	artifactBlobs := []*models.ArtifactAndBlob{}
+
+	temp[info.Digest] = nil
+	// self
+	artifactBlobs = append(artifactBlobs, &models.ArtifactAndBlob{
 		DigestAF:   info.Digest,
 		DigestBlob: info.Digest,
-	}
+	})
 
-	artifactBlobs := append([]*models.ArtifactAndBlob{}, self)
-
+	// avoid the duplicate layers.
 	for _, reference := range info.References {
-		artifactBlob := &models.ArtifactAndBlob{
-			DigestAF:   info.Digest,
-			DigestBlob: reference.Digest.String(),
+		_, exist := temp[reference.Digest.String()]
+		if !exist {
+			temp[reference.Digest.String()] = nil
+			artifactBlobs = append(artifactBlobs, &models.ArtifactAndBlob{
+				DigestAF:   info.Digest,
+				DigestBlob: reference.Digest.String(),
+			})
 		}
-
-		artifactBlobs = append(artifactBlobs, artifactBlob)
 	}
 
 	if err := dao.AddArtifactNBlobs(artifactBlobs); err != nil {

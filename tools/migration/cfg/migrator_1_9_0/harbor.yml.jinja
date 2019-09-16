@@ -158,6 +158,8 @@ external_database:
     username: {{ external_database.harbor.username }}
     password: {{ external_database.harbor.password }}
     ssl_mode: {{ external_database.harbor.ssl_mode }}
+    max_idle_conns: 2
+    max_open_conns: 0
   clair:
     host: {{ external_database.clair.host }}
     port: {{ external_database.clair.port }}

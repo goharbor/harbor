@@ -184,3 +184,7 @@ create table notification_policy (
  );
 
 ALTER TABLE replication_task ADD COLUMN status_revision int DEFAULT 0;
+DELETE FROM project_metadata WHERE deleted = TRUE;
+ALTER TABLE project_metadata DROP COLUMN deleted;
+ALTER TABLE harbor_user ADD COLUMN password_version varchar(16) Default 'sha256';
+UPDATE harbor_user SET password_version = 'sha1';

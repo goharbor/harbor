@@ -49,7 +49,6 @@ Test Case - Scan A Tag In The Repo
 
 Test Case - Scan As An Unprivileged User
     Init Chrome Driver
-    ${d}=    get current date    result_format=%m%s
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
 
     Sign In Harbor  ${HARBOR_URL}  user024  Test1@34
@@ -148,16 +147,17 @@ Test Case - Project Level Image Serverity Policy
 Test Case - Verfiy System Level CVE Whitelist
     [Tags]  run-once
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%S
-    ${image}=    Set Variable    postgres
-    ${sha256}=  Set Variable  68b49a280d2fbe9330c0031970ebb72015e1272dfa25f0ed7557514f9e5ad7b7
+    ${d}=    Get Current Date    result_format=%m%s
+    ${image}=    Set Variable    redis
+    #version redis:
+    ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
     Create An New Project    project${d}
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}  tag=${sha256}
     Go Into Project  project${d}
-    Set Vulnerabilty Serverity  0
+    Set Vulnerabilty Serverity  1
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image}
@@ -166,18 +166,18 @@ Test Case - Verfiy System Level CVE Whitelist
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Switch To Configuration System Setting
-    Add Items To System CVE Whitelist    CVE-2019-12900\nCVE-2017-14062\nCVE-2019-11068\nCVE-2016-9427\nCVE-2018-6551\nCVE-2018-1000001\nCVE-2018-6485\nCVE-2019-9169\nCVE-2016-2779\nCVE-2019-13917\nCVE-2017-12424
+    Add Items To System CVE Whitelist    CVE-2019-12904\nCVE-2011-3389\nCVE-2018-12886\nCVE-2019-3843\nCVE-2018-20839
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Add Items To System CVE Whitelist    CVE-2019-8457
+    Add Items To System CVE Whitelist    CVE-2019-3844
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Delete Top Item In System CVE Whitelist
+    Delete Top Item In System CVE Whitelist  count=6
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Close Browser
 
 Test Case - Verfiy Project Level CVE Whitelist
     [Tags]  run-once
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%S
+    ${d}=    Get Current Date    result_format=%m%s
     ${image}=    Set Variable    redis
     ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
     ${signin_user}=    Set Variable  user025
@@ -204,21 +204,21 @@ Test Case - Verfiy Project Level CVE Whitelist
 Test Case - Verfiy Project Level CVE Whitelist By Quick Way of Add System
     [Tags]  run-once
     Init Chrome Driver
-    ${d}=    Get Current Date    result_format=%m%S
-    ${image}=    Set Variable    httpd
-    ${sha256}=  Set Variable  98caed3e3a90ed9db8d25dcbb98eebe0ce56358a9dbbc940d7eb66a8e2b88252
+    ${d}=    Get Current Date    result_format=%m%s
+    ${image}=    Set Variable    redis
+    ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Switch To Configuration System Setting
-    Add Items To System CVE Whitelist    CVE-2013-7445\nCVE-2019-15099\nCVE-2019-15504\nCVE-2019-15505\nCVE-2019-9511\nCVE-2019-9513
+    Add Items To System CVE Whitelist    CVE-2019-12904\nCVE-2011-3389\nCVE-2018-12886\nCVE-2019-3843\nCVE-2018-20839\nCVE-2019-3844
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
     Create An New Project    project${d}
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}  tag=${sha256}
     Go Into Project  project${d}
-    Set Vulnerabilty Serverity  0
+    Set Vulnerabilty Serverity  1
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image}
     Scan Repo  ${sha256}  Succeed

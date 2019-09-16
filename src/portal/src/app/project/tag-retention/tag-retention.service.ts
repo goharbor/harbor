@@ -45,7 +45,11 @@ export class TagRetentionService {
         "COUNT": "UNIT_COUNT",
         "DAYS": "UNIT_DAY",
         "none": "NONE",
-        "nothing": "NONE"
+        "nothing": "NONE",
+        "Parameters nDaysSinceLastPull is too large": "DAYS_LARGE",
+        "Parameters nDaysSinceLastPush is too large": "DAYS_LARGE",
+        "Parameters latestPushedK is too large": "COUNT_LARGE",
+        "Parameters latestPulledN is too large": "COUNT_LARGE"
     };
 
     constructor(

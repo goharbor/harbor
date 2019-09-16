@@ -415,7 +415,8 @@
         "ITEMS": "条记录",
         "FILTER_PLACEHOLDER": "过滤日志",
         "INVALID_DATE": "无效日期。",
-        "OF": "共计"
+        "OF": "共计",
+        "NOT_FOUND": "未发现任何日志!"
     },
     "REPLICATION": {
         "YES": "是",
@@ -1123,10 +1124,10 @@
         "NEVER_EXPIRES": "永不过期",
         "PRO_WHITELIST_EXPLAIN": "在推送和拉取镜像时，在项目的CVE白名单中的漏洞将会被忽略",
         "PRO_OR_SYS": "您可以选择使用系统的CVE白名单作为该项目的白名单，也可勾选“启用项目白名单”项来建立该项目自己的CVE白名单，",
-        "MERGE_INTO": "您可以点击“添加系统白名单”项将系统白名单合并至该项目白名单中，并可为该项目白名单添加特有的CVE IDs",
+        "MERGE_INTO": "您可以点击“复制系统白名单”项将系统白名单合并至该项目白名单中，并可为该项目白名单添加特有的CVE IDs",
         "SYS_WHITELIST": "启用系统白名单",
         "PRO_WHITELIST": "启用项目白名单",
-        "ADD_SYSTEM": "添加系统白名单"
+        "ADD_SYSTEM": "复制系统白名单"
     },
     "TAG_RETENTION": {
         "TAG_RETENTION": "Tag保留",
@@ -1206,10 +1207,13 @@
         "RULE_TEMPLATE_6": "最近#天被拉取过的镜像",
         "RULE_TEMPLATE_7": "最近#天被推送过的镜像",
         "SCHEDULE": "定时任务",
-        "SCHEDULE_WARNING": "执行保留策略将对该项目中的镜像产生反向影响，受影响的镜像tags将会被删除。",
+        "SCHEDULE_WARNING": "执行保留策略会将会删除受影响的镜像，且不可恢复。请在制定定时任务前仔细检查所有保留规则。",
         "EXISTING_RULE": "规则已存在",
         "ILLEGAL_RULE": "规则不合法",
-        "INVALID_RULE": "无效规则"
+        "INVALID_RULE": "无效规则",
+        "COUNT_LARGE": "参数“个数”太大",
+        "DAYS_LARGE": "参数“天数”太大",
+        "EXECUTION_TYPE": "执行类型"
     }
 
 }

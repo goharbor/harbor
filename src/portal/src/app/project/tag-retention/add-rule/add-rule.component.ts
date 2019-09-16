@@ -157,6 +157,7 @@ export class AddRuleComponent implements OnInit, OnDestroy {
             return !(this.rule.template
               && this.rule.params[this.template]
               && parseInt(this.rule.params[this.template], 10) >= 0
+              && parseInt(this.rule.params[this.template], 10) < MAX
               && this.rule.scope_selectors.repository[0].pattern
               && this.rule.scope_selectors.repository[0].pattern.replace(/[{}]/g, "")
               && this.rule.tag_selectors[0].pattern
@@ -179,14 +180,12 @@ export class AddRuleComponent implements OnInit, OnDestroy {
     }
 
     add() {
+        // remove whitespaces
+        this.rule.scope_selectors.repository[0].pattern = this.rule.scope_selectors.repository[0].pattern.replace(/\s+/g, "");
+        this.rule.tag_selectors[0].pattern = this.rule.tag_selectors[0].pattern.replace(/\s+/g, "");
         if (this.rule.scope_selectors.repository[0].decoration !== "repoMatches"
         && this.rule.scope_selectors.repository[0].pattern.indexOf("**") !== -1) {
             this.inlineAlert.showInlineError(INVALID_RULE);
-            return;
-        }
-        if (this.hasParam()
-          && (this.rule.params[this.template] <= 0 || this.rule.params[this.template] > MAX)) {
-            this.inlineAlert.showInlineError(ILLEGAL_RULE);
             return;
         }
         if (this.isExistingRule()) {

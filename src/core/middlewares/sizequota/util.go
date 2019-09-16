@@ -274,7 +274,9 @@ func computeResourcesForManifestCreation(req *http.Request) (types.ResourceList,
 	size := info.Descriptor.Size
 
 	for _, blob := range blobs {
-		size += blob.Size
+		if !blob.IsForeignLayer() {
+			size += blob.Size
+		}
 	}
 
 	return types.ResourceList{types.ResourceStorage: size}, nil
@@ -297,7 +299,9 @@ func computeResourcesForManifestDeletion(req *http.Request) (types.ResourceList,
 
 	var size int64
 	for _, blob := range blobs {
-		size = size + blob.Size
+		if !blob.IsForeignLayer() {
+			size = size + blob.Size
+		}
 	}
 
 	return types.ResourceList{types.ResourceStorage: size}, nil

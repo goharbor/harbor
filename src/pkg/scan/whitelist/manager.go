@@ -41,6 +41,7 @@ type defaultManager struct{}
 func (d *defaultManager) CreateEmpty(projectID int64) error {
 	l := models.CVEWhitelist{
 		ProjectID: projectID,
+		Items:     []models.CVEWhitelistItem{},
 	}
 	_, err := dao.CreateCVEWhitelist(l)
 	if err != nil {
@@ -65,6 +66,9 @@ func (d *defaultManager) Get(projectID int64) (*models.CVEWhitelist, error) {
 	if wl == nil && err == nil {
 		log.Debugf("No CVE whitelist found for project %d, returning empty list.", projectID)
 		return &models.CVEWhitelist{ProjectID: projectID, Items: []models.CVEWhitelistItem{}}, nil
+	}
+	if wl.Items == nil {
+		wl.Items = []models.CVEWhitelistItem{}
 	}
 	return wl, err
 }

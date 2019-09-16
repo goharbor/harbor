@@ -151,6 +151,10 @@ func (r *RetentionAPI) CreateRetention() {
 		r.SendBadRequestError(err)
 		return
 	}
+	if len(p.Rules) > 15 {
+		r.SendBadRequestError(errors.New("only 15 rules are allowed at most"))
+		return
+	}
 	if err = r.checkRuleConflict(p); err != nil {
 		r.SendConflictError(err)
 		return
@@ -174,6 +178,15 @@ func (r *RetentionAPI) CreateRetention() {
 		}
 	default:
 		r.SendBadRequestError(fmt.Errorf("scope %s is not support", p.Scope.Level))
+		return
+	}
+	old, err := r.pm.GetMetadataManager().Get(p.Scope.Reference, "retention_id")
+	if err != nil {
+		r.SendInternalServerError(err)
+		return
+	}
+	if old != nil && len(old) > 0 {
+		r.SendBadRequestError(fmt.Errorf("project %v already has retention policy %v", p.Scope.Reference, old["retention_id"]))
 		return
 	}
 	id, err := retentionController.CreateRetention(p)
@@ -202,6 +215,10 @@ func (r *RetentionAPI) UpdateRetention() {
 		return
 	}
 	p.ID = id
+	if len(p.Rules) > 15 {
+		r.SendBadRequestError(errors.New("only 15 rules are allowed at most"))
+		return
+	}
 	if err = r.checkRuleConflict(p); err != nil {
 		r.SendConflictError(err)
 		return
@@ -218,14 +235,13 @@ func (r *RetentionAPI) UpdateRetention() {
 func (r *RetentionAPI) checkRuleConflict(p *policy.Metadata) error {
 	temp := make(map[string]int)
 	for n, rule := range p.Rules {
-		tid := rule.ID
 		rule.ID = 0
 		bs, _ := json.Marshal(rule)
 		if old, exists := temp[string(bs)]; exists {
 			return fmt.Errorf("rule %d is conflict with rule %d", n, old)
 		}
 		temp[string(bs)] = n
-		rule.ID = tid
+		rule.ID = n
 	}
 	return nil
 }
@@ -276,7 +292,7 @@ func (r *RetentionAPI) OperateRetentionExec() {
 		return
 	}
 	a := &struct {
-		Action string `json:"action" valid:"Required"`
+		Action string `json:"action" valid:"Required;Match(stop)"`
 	}{}
 	isValid, err := r.DecodeJSONReqAndValidate(a)
 	if !isValid {
@@ -380,9 +396,22 @@ func (r *RetentionAPI) ListRetentionExecTasks() {
 
 // GetRetentionExecTaskLog Get Retention Execution Task log
 func (r *RetentionAPI) GetRetentionExecTaskLog() {
+	id, err := r.GetIDFromURL()
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
 	tid, err := r.GetInt64FromPath(":tid")
 	if err != nil {
 		r.SendBadRequestError(err)
+		return
+	}
+	p, err := retentionController.GetRetention(id)
+	if err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+	if !r.requireAccess(p, rbac.ActionRead) {
 		return
 	}
 	log, err := retentionController.GetRetentionExecTaskLog(tid)

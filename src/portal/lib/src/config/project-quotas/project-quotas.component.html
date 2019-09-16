@@ -32,7 +32,7 @@
                         <button class="action-item" (click)="editQuota(quota)">{{'QUOTA.EDIT' | translate}}</button>
                     </clr-dg-action-overflow>
                     <clr-dg-cell>
-                        <a href="javascript:void(0)" (click)="goToLink(quota.id)">{{quota?.ref?.name}}</a></clr-dg-cell>
+                        <a href="javascript:void(0)" (click)="goToLink(quota?.ref?.id)">{{quota?.ref?.name}}</a></clr-dg-cell>
                     <clr-dg-cell>{{quota?.ref?.owner_name}}</clr-dg-cell>
                     <clr-dg-cell>
                         <div class="progress-block progress-min-width">

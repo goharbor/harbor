@@ -41,16 +41,19 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 
 ![rbac](img/rbac.png)
 
-Harbor manages images through projects. Users can be added into one project as a member with three different roles:  
+Harbor manages images through projects. Users can be added into one project as a member with one of three different roles:  
 
 * **Guest**: Guest has read-only privilege for a specified project.
 * **Developer**: Developer has read and write privileges for a project.
+* **Master**: Master has elevated permissions beyond those of 'Developer' including the ability to scan images, view replications jobs, and delete images and helm charts. 
 * **ProjectAdmin**: When creating a new project, you will be assigned the "ProjectAdmin" role to the project. Besides read-write privileges, the "ProjectAdmin" also has some management privileges, such as adding and removing members, starting a vulnerability scan.
 
-Besides the above three roles, there are two system-wide roles:  
+Besides the above three roles, there are two system-level roles:  
 
 * **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator, delete users and set vulnerability scan policy for all images. The public project "library" is also owned by the administrator.  
 * **Anonymous**: When a user is not logged in, the user is considered as an "Anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects.  
+
+See detailed permissions matrix listed here: https://github.com/goharbor/harbor/blob/master/docs/permissions.md
 
 ## User account
 Harbor supports different authentication modes:  
@@ -61,7 +64,7 @@ Harbor supports different authentication modes:
 	
 	A user can register himself/herself in Harbor in this mode. To disable user self-registration, refer to the [installation guide](installation_guide.md) for initial configuration, or disable this feature in [Administrator Options](#administrator-options). When self-registration is disabled, the system administrator can add users into Harbor.  
 	
-	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.  
+	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.
 	
 	When you forgot your password, you can follow the below steps to reset the password:  
 
@@ -150,16 +153,55 @@ You can check one or more members, then click `ACTION`, choose one role to batch
 ![browse project](img/new_remove_update_member.png)
 
 ## Replicating resources  
-Replication allows users to replicate resources(images/charts) between Harbor and non-Harbor registries in both pull or push mode. Currently, the non-Harbor registries includes Docker Hub, Docker registry, Huawei SWR, and more registries will be supported in future.  
+Replication allows users to replicate resources (images/charts) between Harbor and non-Harbor registries in both pull or push mode. 
 
-Once the system administrator has set a rule, all resources that match the defined [filter](#resource-filter) patterns will be replicated to the destination registry when the [triggering condition](#trigger-mode) is matched. Each resource will start a task to run. If the namespace does not exist on the destination registry, a new namespace will be created automatically. If it already exists and the user configured in policy has no write privilege to it, the process will fail. The member information will not be replicated.  
+Once the system administrator has set a rule, all resources that match the defined [filter](#resource-filter) patterns will be replicated to the destination registry when the [triggering condition](#trigger-mode) is matched. Each resource will start a task to run. If the namespace does not exist on the destination registry, a new namespace will be created automatically. If it already exists and the user configured in the policy has no write privilege to it, the process will fail. The member information will not be replicated.  
 
-There may be a bit of delay during replication based on the situation of the network. If replication task fails, it will be re-scheduled a few minutes later and try 3 times.  
+There may be a bit of delay during replication based on the situation of the network. If a replication task fails, it will be re-scheduled a few minutes later and retried times.  
 
-**Note:** Due to API changes, replication between different versions of Harbor may be broken.
+**Note:** Due to API changes, replication between different versions of Harbor is not supported.
+
+### Creating replication endpoints
+
+To replicate image repositories from one instance of Harbor to another Harbor or non-Harbor registry, you first create replication endpoints.
+
+1. Go to **Registries** and click the **+ New Endpoint** button.
+
+   ![New replication endpoint](img/replication-endpoint1.png)
+1. For **Provider**, use the drop-down menu to select the type of registry to set up as a replication endpoint.
+
+   The endpoint can be another Harbor instance, or a non-Harbor registry. Currently, the following non-Harbor registries are supported:
+
+   - Docker Hub
+   - Docker registry
+   - AWS Elastic Container Registry
+   - Azure Container Registry
+   - Ali Cloud Container Registry
+   - Google Container Registry
+   - Huawei SWR
+   - Helm Hub
+
+   ![Replication providers](img/replication-endpoint2.png)
+
+1. Enter a suitable name and description for the new replication endpoint.
+1. Enter the full URL of the registry to set up as a replication endpoint.
+
+   For example, to replicate to another Harbor instance, enter https://harbor_instance_address:443. The registry must exist and be running before you create the endpoint.
+1. Enter the Access ID and Access Secret for the endpoint registry instance.
+
+   Use an account that has the appropriate privileges on that registry, or an account that has write permission on the corresponding project in a Harbor  registry.
+   
+   **NOTES**: 
+    - AWS ECR adapters should use access keys, not a username and password. The access key should have sufficient permissions, such as storage permission.
+    - Google GCR adapters should use the entire JSON key generated in the service account. The namespace should start with the project ID.
+1. Optionally, select the **Verify Remote Cert** check box.
+
+    Deselect the check box if the remote registry uses a self-signed or untrusted certificate.
+1. Click **Test Connection**.
+1. When you have successfully tested the connection, click **OK**.
 
 ### Creating a replication rule
-Login as a system administrator user, click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication modes, [resource filters](#resource-filter) and [trigger modes](#trigger-mode) according to the different requirements. If there is no endpoint available in the list, you need to create one. Click `SAVE` to create a replication rule.  
+Login as a system administrator user, click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication modes, [resource filters](#resource-filter) and [trigger modes](#trigger-mode) according to the different requirements. If there is no endpoint available in the list, follow the instructions in the [Creating replication endpoints](#creating-replication-endpoints) to create one. Click `SAVE` to create a replication rule.  
 
 ![browse project](img/create_rule.png)
 
@@ -195,7 +237,7 @@ Select a replication rule and click `REPLICATE`, the resources which the rule is
 ![browse project](img/start_replicate.png)
 
 ### Listing and stopping replication executions
-Click a rule, the execution records which belong to this rule will be listed. Each record represents the summary of the once execution of the rule. Click `STOP` to stop the executions which are in progress.  
+Click a rule, the execution records which belong to this rule will be listed. Each record represents the summary of one execution of the rule. Click `STOP` to stop the executions which are in progress.  
 
 ![browse project](img/list_stop_executions.png)
 
@@ -781,11 +823,11 @@ new ID token and the CLI secret will work again.
 ## Robot Account
 Robot Accounts are accounts created by project admins that are intended for automated operations. They have the following limitations:
 
-1. Robot Accounts cannot login Harbor portal
-2. Robot Accounts can only perform `docker push`/`docker pull` operations with a token.
+1, Robot Accounts cannot login Harbor portal
+2, Robot Accounts can only perform operations by using the Docker and Helm CLIs.
 
 ### Add a Robot Account
-If you are a project admin, you can create a Robot Account by clicking "New Robot Account" in the `Robot Accounts` tab of a project, and enter a name, a description and permission.
+If you are a project admin, you can create a Robot Account by clicking "New Robot Account" in the `Robot Accounts` tab of a project, and enter a name, a description, and grant permission to the account to push and pull images and Helm charts.
 ![add_robot_account](img/robotaccount/add_robot_account.png)
 
 ![add_robot_account](img/robotaccount/add_robot_account_2.png)

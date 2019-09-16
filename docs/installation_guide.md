@@ -14,6 +14,20 @@ If you run a previous version of Harbor, you may need to update ```harbor.yml```
 
 In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Harbor on Kubernetes](kubernetes_deployment.md) for details.
 
+## Harbor Components
+
+|Component|Version|
+|---|---|
+|Postgresql|9.6.10-1.ph2|
+|Redis|4.0.10-1.ph2|
+|Clair|2.0.8|
+|Beego|1.9.0|
+|Chartmuseum|0.9.0|
+|Docker/distribution|2.7.1|
+|Docker/notary|0.6.1|
+|Helm|2.9.1|
+|Swagger-ui|3.22.1|
+
 ## Prerequisites for the target host
 
 Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Docker, and Docker Compose to be installed.
@@ -31,7 +45,7 @@ Harbor is deployed as several Docker containers, and, therefore, can be deployed
 |Software|Version|Description|
 |---|---|---|
 |Docker engine|version 17.06.0-ce+ or higher|For installation instructions, please refer to: [docker engine doc](https://docs.docker.com/engine/installation/)|
-|Docker Compose|version 1.23.0 or higher|For installation instructions, please refer to: [docker compose doc](https://docs.docker.com/compose/install/)|
+|Docker Compose|version 1.18.0 or higher|For installation instructions, please refer to: [docker compose doc](https://docs.docker.com/compose/install/)|
 |Openssl|latest is preferred|Generate certificate and keys for Harbor|
 
 ### Network ports
@@ -80,25 +94,30 @@ The parameters are described below - note that at the very least, you will need 
 
 ##### Required parameters
 
-- **hostname**: The target host's hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` for the hostname - the registry service needs to be accessible by external clients!_
+- **hostname**: The target host's hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` or `0.0.0.0` for the hostname - the registry service needs to be accessible by external clients!_
 
 - **data_volume**: The location to store harbor's data.
 
 - **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the Portal. _Note that the default username/password are **admin/Harbor12345** ._
 
-
-
 - **database**: the configs related to local database
-  - **password**: The root password for the PostgreSQL database used for **db_auth**. _Change this password for any production use!_
+  - **password**: The root password for the PostgreSQL database. Change this password for any production use.
+  - **max_idle_conns**: The maximum number of connections in the idle connection pool. If <=0 no idle connections are retained. The default value is 50 and if it is not configured the value is 2.
+  - **max_open_conns**: The maximum number of open connections to the database. If <= 0 there is no limit on the number of open connections. The default value is 100 for the max connections to the Harbor database. If it is not configured the value is 0.
 
 - **jobservice**: jobservice related service
   - **max_job_workers**: The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host.
 - **log**: log related url
   - **level**: log level, options are debug, info, warning, error, fatal
-  - **rotate_count**: Log files are rotated **rotate_count** times before being removed. If count is 0, old versions are removed rather than rotated.
-  - **rotate_size**: Log files are rotated only if they grow bigger than **rotate_size** bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.
-  - **location**: he directory to store store log
-
+  - **local**: The default is to retain logs locally.
+      - **rotate_count**: Log files are rotated **rotate_count** times before being removed. If count is 0, old versions are removed rather than rotated.
+      - **rotate_size**: Log files are rotated only if they grow bigger than **rotate_size** bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.
+      - **location**: the directory to store logs
+  - **external_endpoint**: Enable this option to forward logs to a syslog server.
+       - **protocol**: Transport protocol for the syslog server. Default is TCP.
+       - **host**: The URL of the syslog server.
+       - **port**: The port on which the syslog server listens.
+     
 ##### optional parameters
 
 - **http**:
@@ -129,6 +148,8 @@ refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.
     - **username**: username to connect harbor core database
     - **password**: password to harbor core database
     - **ssl_mode**: is enable ssl mode
+    - **max_idle_conns**: The maximum number of connections in the idle connection pool. If <=0 no idle connections are retained. The default value  is 2.
+    - **max_open_conns**: The maximum number of open connections to the database. If <= 0 there is no limit on the number of open connections. The default value is 0.
   - **clair**: clair's database configs
     - **host**: hostname for clair database
     - **port**: port of clair database

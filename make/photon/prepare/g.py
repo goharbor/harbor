@@ -19,7 +19,7 @@ templates_dir = "/usr/src/app/templates"
 config_dir = '/config'
 data_dir = '/data'
 secret_dir = '/secret'
-secret_key_dir='/secret/keys'
+secret_key_dir = '/secret/keys'
 
 old_private_key_pem_path = Path('/config/core/private_key.pem')
 old_crt_path = Path('/config/registry/root.crt')

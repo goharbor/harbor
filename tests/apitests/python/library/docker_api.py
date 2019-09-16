@@ -12,6 +12,7 @@ except ImportError:
 class DockerAPI(object):
     def __init__(self):
         self.DCLIENT = docker.APIClient(base_url='unix://var/run/docker.sock',version='auto',timeout=10)
+        self.DCLIENT2 = docker.from_env()
 
     def docker_login(self, registry, username, password, expected_error_message = None):
         if expected_error_message is "":
@@ -24,7 +25,7 @@ class DockerAPI(object):
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Docker login: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
-                raise Exception(r" Docker login {} failed, error is [{}]".format (image, err.message))
+                raise Exception(r" Docker login failed, error is [{}]".format (err.message))
 
     def docker_image_pull(self, image, tag = None, expected_error_message = None):
         if tag is not None:
@@ -78,6 +79,46 @@ class DockerAPI(object):
                     raise Exception(r"Push image: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
                 raise Exception(r" Docker push image {} failed, error is [{}]".format (harbor_registry, err.message))
+        if caught_err == False:
+            if expected_error_message is not None:
+                if str(ret).lower().find(expected_error_message.lower()) < 0:
+                    raise Exception(r" Failed to catch error [{}] when push image {}".format (expected_error_message, harbor_registry))
+            else:
+                if str(ret).lower().find("errorDetail".lower()) >= 0:
+                    raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".format (harbor_registry, ret))
+
+    def docker_image_build(self, harbor_registry, tags=None, size=1, expected_error_message = None):
+        caught_err = False
+        ret = ""
+        try:
+            baseimage='busybox:latest'
+            if not self.DCLIENT.images(name=baseimage):
+                self.DCLIENT.pull(baseimage)
+            c=self.DCLIENT.create_container(image='busybox:latest',command='dd if=/dev/urandom of=test bs=1M count=%d' % size )
+            self.DCLIENT.start(c)
+            self.DCLIENT.wait(c)
+            if not tags:
+                tags=['latest']
+            firstrepo="%s:%s" % (harbor_registry, tags[0])
+            #self.DCLIENT.commit(c, firstrepo)
+            self.DCLIENT2.containers.get(c).commit(harbor_registry, tags[0])
+            for tag in tags[1:]:
+                repo="%s:%s" % (harbor_registry, tag)
+                self.DCLIENT.tag(firstrepo, repo)
+            for tag in tags:
+                repo="%s:%s" % (harbor_registry, tag)
+                self.DCLIENT.push(repo)
+                print("build image %s with size %d" % (repo, size))
+                self.DCLIENT.remove_image(repo)
+            self.DCLIENT.remove_container(c)
+        except Exception, err:
+            caught_err = True
+            if expected_error_message is not None:
+                print "docker image build error:", str(err)
+                if str(err).lower().find(expected_error_message.lower()) < 0:
+                    raise Exception(r"Push image: Return message {} is not as expected {}".format(str(err), expected_error_message))
+            else:
+                raise Exception(r" Docker build image {} failed, error is [{}]".format (harbor_registry, err.message))
         if caught_err == False:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:

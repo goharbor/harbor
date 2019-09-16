@@ -1,4 +1,5 @@
 ### Deploying Harbor using Docker Machine
+
 Docker Machine allows you to deploy your containers to several cloud providers or on premises using a unified interface.
 To deploy Harbor using Docker Machine, first create a virtual machine using Docker Machine.
 
@@ -15,7 +16,7 @@ You can get this IP address using:
 $ docker-machine ip harbor.mydomain.com
 ```
 
-Make sure to change the `hostname` in `Deploy/harbor.cfg` to `harbor.mydomain.com`, configure everything else according to the [Harbor Installation Guide](../docs/installation_guide.md) and run `prepare`.
+Make sure to change the `hostname` in `Deploy/harbor.yml` to `harbor.mydomain.com`, configure everything else according to the [Harbor Installation Guide](../docs/installation_guide.md) and run `prepare`.
 
 Now, activate the created Docker Machine instance:
 

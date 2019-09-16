@@ -41,6 +41,29 @@ func TestAddBlobToProject(t *testing.T) {
 	require.Nil(t, err)
 }
 
+func TestAddBlobsToProject(t *testing.T) {
+	var blobs []*models.Blob
+
+	pid, err := AddProject(models.Project{
+		Name:    "TestAddBlobsToProject_project1",
+		OwnerID: 1,
+	})
+	require.Nil(t, err)
+
+	for i := 0; i < 88888; i++ {
+		blob := &models.Blob{
+			Digest: digest.FromString(utils.GenerateRandomString()).String(),
+			Size:   100,
+		}
+		_, err := AddBlob(blob)
+		require.Nil(t, err)
+		blobs = append(blobs, blob)
+	}
+	cnt, err := AddBlobsToProject(pid, blobs...)
+	require.Nil(t, err)
+	require.Equal(t, cnt, int64(88888))
+}
+
 func TestHasBlobInProject(t *testing.T) {
 	_, blob, err := GetOrCreateBlob(&models.Blob{
 		Digest: digest.FromString(utils.GenerateRandomString()).String(),
@@ -58,20 +81,31 @@ func TestHasBlobInProject(t *testing.T) {
 
 func TestCountSizeOfProject(t *testing.T) {
 	_, err := AddBlob(&models.Blob{
-		Digest: "CountSizeOfProject_blob1",
-		Size:   101,
+		Digest:      "CountSizeOfProject_blob1",
+		ContentType: "application/vnd.docker.distribution.manifest.v2+json",
+		Size:        101,
 	})
 	require.Nil(t, err)
 
 	_, err = AddBlob(&models.Blob{
-		Digest: "CountSizeOfProject_blob2",
-		Size:   202,
+		Digest:      "CountSizeOfProject_blob2",
+		ContentType: "application/vnd.docker.image.rootfs.diff.tar.gzip",
+		Size:        202,
 	})
 	require.Nil(t, err)
 
 	_, err = AddBlob(&models.Blob{
-		Digest: "CountSizeOfProject_blob3",
-		Size:   303,
+		Digest:      "CountSizeOfProject_blob3",
+		ContentType: "application/vnd.docker.image.rootfs.diff.tar.gzip",
+		Size:        303,
+	})
+	require.Nil(t, err)
+
+	// this blob won't be calculated into project size
+	_, err = AddBlob(&models.Blob{
+		Digest:      "CountSizeOfProject_blob4",
+		ContentType: "application/vnd.docker.image.rootfs.foreign.diff.tar.gzip",
+		Size:        404,
 	})
 	require.Nil(t, err)
 
@@ -105,11 +139,16 @@ func TestCountSizeOfProject(t *testing.T) {
 		DigestAF:   "CountSizeOfProject_af1",
 		DigestBlob: "CountSizeOfProject_blob3",
 	}
+	afnb4 := &models.ArtifactAndBlob{
+		DigestAF:   "CountSizeOfProject_af1",
+		DigestBlob: "CountSizeOfProject_blob4",
+	}
 
 	var afnbs []*models.ArtifactAndBlob
 	afnbs = append(afnbs, afnb1)
 	afnbs = append(afnbs, afnb2)
 	afnbs = append(afnbs, afnb3)
+	afnbs = append(afnbs, afnb4)
 
 	// add
 	err = AddArtifactNBlobs(afnbs)

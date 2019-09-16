@@ -111,7 +111,7 @@ func (d *DefaultManager) GetPolicy(id int64) (*policy.Metadata, error) {
 	p1, err := dao.GetPolicy(id)
 	if err != nil {
 		if err == orm.ErrNoRows {
-			return nil, nil
+			return nil, fmt.Errorf("no such Retention policy with id %v", id)
 		}
 		return nil, err
 	}
@@ -132,7 +132,7 @@ func (d *DefaultManager) GetPolicy(id int64) (*policy.Metadata, error) {
 func (d *DefaultManager) CreateExecution(execution *Execution) (int64, error) {
 	exec := &models.RetentionExecution{}
 	exec.PolicyID = execution.PolicyID
-	exec.StartTime = time.Now()
+	exec.StartTime = execution.StartTime
 	exec.DryRun = execution.DryRun
 	exec.Trigger = execution.Trigger
 	return dao.CreateExecution(exec)
@@ -160,6 +160,7 @@ func (d *DefaultManager) ListExecutions(policyID int64, query *q.Query) ([]*Exec
 		e1.Status = e.Status
 		e1.StartTime = e.StartTime
 		e1.EndTime = e.EndTime
+		e1.Trigger = e.Trigger
 		e1.DryRun = e.DryRun
 		execs1 = append(execs1, e1)
 	}
@@ -183,6 +184,7 @@ func (d *DefaultManager) GetExecution(eid int64) (*Execution, error) {
 	e1.Status = e.Status
 	e1.StartTime = e.StartTime
 	e1.EndTime = e.EndTime
+	e1.Trigger = e.Trigger
 	e1.DryRun = e.DryRun
 	return e1, nil
 }

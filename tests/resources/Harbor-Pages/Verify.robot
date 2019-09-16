@@ -27,6 +27,8 @@ Verify Project
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     :FOR    ${project}    IN    @{project}
     \    Page Should Contain    ${project}
+    #TO_DO:
+    #Verify project metadata.
     Close Browser
 
 Verify Image Tag

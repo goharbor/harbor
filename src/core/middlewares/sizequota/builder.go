@@ -119,6 +119,11 @@ func (*manifestCreationBuilder) Build(req *http.Request) (interceptor.Intercepto
 	// Replace request with manifests info context
 	*req = *req.WithContext(util.NewManifestInfoContext(req.Context(), info))
 
+	// Sync manifest layers to blobs for foreign layers not pushed and they are not in blob table
+	if err := info.SyncBlobs(); err != nil {
+		log.Warningf("Failed to sync blobs, error: %v", err)
+	}
+
 	opts := []quota.Option{
 		quota.EnforceResources(config.QuotaPerProjectEnable()),
 		quota.WithManager("project", strconv.FormatInt(info.ProjectID, 10)),
