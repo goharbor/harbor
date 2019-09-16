@@ -148,8 +148,8 @@ refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.
     - **username**: username to connect harbor core database
     - **password**: password to harbor core database
     - **ssl_mode**: is enable ssl mode
-    - **max_idle_conns**: The maximum number of connections in the idle connection pool. If <=0 no idle connections are retained. The default value is 50 and if it is not configured the value is 2.
-    - **max_open_conns**: The maximum number of open connections to the database. If <= 0 there is no limit on the number of open connections. The default value is 100 for the max connections to the Harbor database. If it is not configured the value is 0.
+    - **max_idle_conns**: The maximum number of connections in the idle connection pool. If <=0 no idle connections are retained. The default value  is 2.
+    - **max_open_conns**: The maximum number of open connections to the database. If <= 0 there is no limit on the number of open connections. The default value is 0.
   - **clair**: clair's database configs
     - **host**: hostname for clair database
     - **port**: port of clair database
