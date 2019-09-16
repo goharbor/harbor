@@ -2,35 +2,39 @@
 ## Overview  
 This guide walks you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
 
-* [Manage your projects.](#managing-projects)
-* [Manage members of a project.](#managing-members-of-a-project)
-* [Replicate resources between Harbor and non-Harbor registries.](#replicating-resources)
+* [Manage your projects](#managing-projects)
+* [Manage members of a project](#managing-members-of-a-project)
+* [Replicate resources between Harbor and non-Harbor registries](#replicating-resources)
 * [Retag images within Harbor](#retag-images)
-* [Search projects and repositories.](#searching-projects-and-repositories)
-* [Manage labels.](#managing-labels)
+* [Search projects and repositories](#searching-projects-and-repositories)
+* [Manage labels](#managing-labels)
+* [Configure CVE Whitelists](#configure-cve-whitelists)
+* [Set Project Quotas](#set-project-quotas)
 * [Manage Harbor system if you are the system administrator:](#administrator-options)
-  * [Manage users.](#managing-user)
-  * [Manage registries.](#managing-registry)
-  * [Manage replication rules.](#managing-replication)
-  * [Manage authentication.](#managing-authentication)
-  * [Manage project creation.](#managing-project-creation)
-  * [Manage self-registration.](#managing-self-registration)
-  * [Manage email settings.](#managing-email-settings)
-  * [Manage registry read only.](#managing-registry-read-only)
-  * [Manage role by LDAP group.](#managing-role-by-ldap-group)
-* [Pull and push images using Docker client.](#pulling-and-pushing-images-using-docker-client)
+  * [Manage users](#managing-user)
+  * [Manage registries](#managing-registry)
+  * [Manage replication rules](#managing-replication)
+  * [Manage authentication](#managing-authentication)
+  * [Manage project creation](#managing-project-creation)
+  * [Manage self-registration](#managing-self-registration)
+  * [Manage email settings](#managing-email-settings)
+  * [Manage registry read only](#managing-registry-read-only)
+  * [Manage role by LDAP group](#managing-role-by-ldap-group)
+* [Pull and push images using Docker client](#pulling-and-pushing-images-using-docker-client)
 * [Add description to repositories](#add-description-to-repositories)
-* [Delete repositories and images.](#deleting-repositories)
-* [Content trust.  ](#content-trust)
-* [Vulnerability scanning via Clair.](#vulnerability-scanning-via-clair)
-* [Pull image from Harbor in Kubernetes.](#pull-image-from-harbor-in-kubernetes)
+* [Delete repositories and images](#deleting-repositories)
+* [Content trust](#content-trust)
+* [Vulnerability scanning via Clair](#vulnerability-scanning-via-clair)
+* [Pull image from Harbor in Kubernetes](#pull-image-from-harbor-in-kubernetes)
 * [Manage Helm Charts](#manage-helm-charts)
   * [Manage Helm Charts via portal](#manage-helm-charts-via-portal)
   * [Working with Helm CLI](#working-with-helm-cli)
-* [Online Garbage Collection.](#online-garbage-collection)
-* [View build history.](#build-history)
+* [Online Garbage Collection](#online-garbage-collection)
+* [View build history](#build-history)
 * [Using CLI after login via OIDC based SSO](#using-oidc-cli-secret)
-* [Manage robot account of a project.](#robot-account)
+* [Manage robot account of a project](#robot-account)
+* [Tag Retention Rules](#tag-retention-rules)
+* [Webhook Notifications](#webhook-notifications)
 * [Using API Explorer](#api-explorer)
 
 ## Role Based Access Control(RBAC)  
@@ -294,6 +298,101 @@ The images can be filtered by labels:
 
 ![filter images by labels](img/filter_images_by_label.png)
 
+## Configure CVE Whitelists
+
+When you run vulnerability scans, images that are subject to Common Vulnerabilities and Exposures (CVE) are identified. According to the severity of the CVE and your security settings, these images might not be permitted to run. As a system administrator, you can create whitelists of CVEs to ignore during vulnerability scanning. 
+
+You can set a system-wide CVE whitelist or you can set CVE whitelists on a per-project basis.
+
+### Configure a System-Wide CVE Whitelist
+
+System-wide CVE whitelists apply to all of the projects in a Harbor instance.
+
+1. Go to **Configuration** > **System Settings**.
+1. Under **Deployment security**, click **Add**. 
+   ![System-wide CVE whitelist](img/cve-whitelist1.png)
+1. Enter the list of CVE IDs to ignore during vulnerability scanning. 
+   ![Add system CVE whitelist](img/cve-whitelist2.png)
+
+   Either use a comma-separated list or newlines to add multiple CVE IDs to the list.
+1. Click **Add** at the bottom of the window to add the list.
+1. Optionally uncheck the **Never expires** checkbox and use the calendar selector to set an expiry date for the whitelist.
+   ![Add system CVEs](img/cve-whitelist3.png)
+1. Click **Save** at the bottom of the page to save your settings.
+   
+After you have created a system whitelist, you can remove CVE IDs from the list by clicking the delete button next to it in the list. You can click **Add** to add more CVE IDs to the system whitelist.
+
+![Add and remove system CVEs](img/cve-whitelist4.png)
+
+### Configure a Per-Project CVE Whitelist
+
+By default, the system whitelist is applied to all projects. You can configure different CVE whitelists for individual projects, that override the system whitelist. 
+
+1. Go to **Projects**, select a project, and select **Configuration**.
+1. Under **CVE whitelist**, select **Project whitelist**. 
+   ![Project CVE whitelist](img/cve-whitelist5.png)
+1. Optionally click **Copy From System** to add all of the CVE IDs from the system CVE whitelist to this project whitelist.
+1. Click **Add** and enter a list of additional CVE IDs to ignore during vulnerability scanning of this project. 
+   ![Add project CVEs](img/cve-whitelist6.png)
+
+   Either use a comma-separated list or newlines to add multiple CVE IDs to the list.
+1. Click **Add** at the bottom of the window to add the CVEs to the project whitelist.
+1. Optionally uncheck the **Never expires** checkbox and use the calendar selector to set an expiry date for the whitelist.
+1. Click **Save** at the bottom of the page to save your settings.
+
+After you have created a project whitelist, you can remove CVE IDs from the list by clicking the delete button next to it in the list. You can click **Add** at any time to add more CVE IDs to the whitelist for this project. 
+
+If CVEs are added to the system whitelist after you have created a project whitelist, click **Copy From System** to add the new entries from the system whitelist to the project whitelist. 
+
+**NOTE**: If CVEs are deleted from the system whitelist after you have created a project whitelist, and if you added the system whitelist to the project whitelist, you must manually remove the deleted CVEs from the project whitelist. If you click **Copy From System** after CVEs have been deleted from the system whitelist, the deleted CVEs are not automatically removed from the project whitelist.
+
+## Set Project Quotas
+
+To exercise control over resource use, as a system administrator you can set  quotas on projects. You can limit the number of tags that a project can contain and limit the amount of storage capacity that a project can consume. You can set default quotas that apply to all projects globally.
+
+**NOTE**: Default quotas apply to projects that are created after you set or change the default quota. The default quota is not applied to projects that already existed before you set it.
+
+You can also set quotas on individual projects. If you set a global default quota and you set different quotas on individual projects, the per-project quotas are applied.
+
+By default, all projects have unlimited quotas for both tags and storage use. 
+
+1. Go to **Configuration** > **Project Quotas**.
+   ![Project quotas](img/project-quota1.png)
+1. To set global default quotas on all projects, click **Edit**.
+   ![Project quotas](img/project-quota2.png)
+   1. For **Default artifact count**, enter the maximum number of tags that any project can contain. 
+   
+   Enter `-1` to set the default to unlimited. 
+   1. For **Default storage consumption**, enter the maximum quantity of storage that any project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu. 
+   
+   Enter `-1` to set the default to unlimited.
+   ![Project quotas](img/project-quota3.png)
+   1. Click **OK**.
+1. To set quotas on an individual project, click the 3 vertical dots next to a project and select **Edit**.
+   ![Project quotas](img/project-quota4.png)
+   1. For **Default artifact count**, enter the maximum number of tags that this individual project can contain, or enter `-1` to set the default to unlimited. 
+   1. For **Default storage consumption**, enter the maximum quantity of storage that this individual project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu.
+
+After you set quotas, the you can see how much of their quotas each project has consumed in the **Project Quotas** tab.
+
+![Project quotas](img/project-quota5.png)
+
+### How Harbor Calculates Resource Usage
+
+When setting project quotas, it is useful to know how Harbor calculates tag numbers and storage use, especially in relation to image pushing, retagging, and garbage collection.
+
+- Harbor computes image size when blobs and manifests are pushed from the Docker client.
+- Harbor computes tag counts when manifests are pushed from the Docker client.
+
+   **NOTE**: When users push an image, the manifest is pushed last, after all of the associated blobs have been pushed successfully to the registry. If several images are pushed concurrently and if there is an insufficient number of tags left in the quota for all of them, images are accepted in the order that their manifests arrive. Consequently, an attempt to push an image might not be immediately rejected for exceeding the quota. This is because there was availability in the tag quota when the push was initiated, but by the time the manifest arrived the quota had been exhausted.
+- Shared blobs are only computed once per project. In Docker, blob sharing is defined globally. In Harbor, blob sharing is defined at the project level. As a consequence, overall storage usage can be greater than the actual disk capacity.
+- Retagging images reserves and releases resources: 
+  -  If you retag an image within a project, the tag count increases by one, but storage usage does not change because there are no new blobs or manifests.
+  - If you retag an image from one project to another, the tag count and storage usage both increase.
+- During garbage collection, Harbor frees the storage used by untagged blobs in the project.
+- If the tag count reaches the limit, image blobs can be pushed into a project and storage usage is updated accordingly. You can consider these blobs to be untagged blobs. They can be removed by garbage collection, and the storage that they consume is returned after garbage colletion.
+- Helm chart size is not calculated. Only tag counts are calculated.
+
 ## Administrator options  
 ### Managing user  
 Administrator can add "Administrator" role to one or more ordinary users by checking checkboxes and clicking `SET AS ADMINISTRATOR`. To delete users, checked checkboxes and select `DELETE`. Deleting user is only supported under database authentication mode.
@@ -367,12 +466,10 @@ If auth_mode is ldap_auth, you can manage project role by LDAP/AD group. please 
 
 Harbor supports HTTP by default and Docker client tries to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to configure insecure registry. Please, read [this document](https://docs.docker.com/registry/insecure/) in order to understand how to do this. 
 
-
 ```Error response from daemon: Get https://myregistrydomain.com/v1/users/: dial tcp myregistrydomain.com:443 getsockopt: connection refused.```   
 
 If this private registry supports only HTTP or HTTPS with an unknown CA certificate, please add   
 `--insecure-registry myregistrydomain.com` to the daemon's start up arguments.  
-
 
 In the case of HTTPS, if you have access to the registry's CA certificate, simply place the CA certificate at /etc/docker/certs.d/myregistrydomain.com/ca.crt .   
 
@@ -760,6 +857,234 @@ If you are a project admin, you can disable a Robot Account by clicking "Disable
 ### Delete a robot account
 If you are a project admin, you can delete a Robot Account by clicking "Delete" in the `Robot Accounts` tab of a project.
 ![delete_robot_account](img/robotaccount/disable_delete_robot_account.png)
+
+## Tag Retention Rules
+
+A repository can rapidly accumulate a large number of image tags, many of which might not be required after a given time or once they have been superseded by a subsequent image build. These excess tags can obviously consume large quantities of storage capacity. As a system administrator, you can define rules that govern how many tags of a given repository to retain, or for how long to retain certain tags. 
+
+### How Tag Retention Rules Work
+
+You define tag retention rules on repositories, not on projects. This allows for greater granularity when defining your retention rules. As the name suggests, when you define a retention rule for a repository, you are identifying which tags to retain. You do not define rules to explicitly remove tags. Rather, when you set a rule, any tags in a repository that are not identified as being eligible for retention are discarded. 
+
+A tag retention rule has 3 filters that are applied sequentially, as described in the following table.
+
+|Order|Filter|Description|
+|---|---|---|
+|First|Repository or repositories|Identify the repository or repositories on which to apply the rule. You can identify repositories that either have a certain name or name fragment, or that do not have that name or name fragment. Wild cards (for example `*repo`, `repo*`, and `**`) are permitted. The repository filter is applied first to mark the repositories to which to apply the retention rule. The identified repositories are earmarked for further matching based on the tag criteria. No action is taken on the nonspecified repositories at this stage.|
+|Second|Quantity to retain|Set which tags to retain either by specifying a maximum number of tags, or by specifying a maximum period for which to retain tags.|
+|Third|Tags to retain|Identify the tag or tags on which to apply the rule. You can identify tags that either have a certain name or name fragment, or that do not have that name or name fragment. Wild cards (for example `*tag`, `tag*`, and `**`) are permitted.|
+
+For information about how the `**` wildcard is applied, see https://github.com/bmatcuk/doublestar#patterns.
+
+#### Example 1
+
+- You have 5 repositories in a project, repositories A to E.
+  - Repository A has 100 image tags, all of which have been pulled in the last week.
+  - Repositories B to E each have 6 images, none of which have been pulled in the last month.
+- You set the repository filter to `**`, meaning that all repositories in the project are included.
+- You set the retention policy to retain the 10 most recently pulled images in each repository.
+- You set the tag filter to `**`, meaning that all tags in the repository are included.
+
+In this example the rule retains the 10 most recently pulled images in repository A, and all 6 of the images in each of the 4 repositories B to E. So, a total of 34 image tags are retained in the project. In other words, the rule does not treat all of the images in repositories A to E as a single pool from which to choose the 10 most recent images. So, even if the 11th to 100th tags in repository A have been pulled more recently than any of the tags in repositories B to E, all of the tags in repositories B to E are retained, because each of those repositories has fewer than 10 tags.
+
+#### Example 2
+
+This example uses the same project and repositories as example 1, but sets the retention policy to retain the images in each repository that have been pulled in the last 7 days.
+
+In this case, all of the images in repository A are retained because they have been pulled in the last 7 days. None of the images in repositories B to E are retained, because none of them has been pulled in the last week. In this example, 100 images are retained, as opposed to 34 images in example 1.
+
+### Combining Rules on a Respository
+
+You can define up to 15 rules per project. You can apply multiple rules to a repository or set of repositories. When you apply multiple rules to a repository, they are applied with `OR` logic rather than with `AND` logic. In this way, there is no prioritization of application of the rules on a given repository. Rules run concurrently in the background, and the resulting sets from each rule are combined at the end of the run.
+
+#### Example 3
+
+This example uses the same project and repositories as examples 1 and 2, but sets two rules:
+
+- Rule 1: Retain all of the images in each repository that have been pulled in the last 7 days.
+- Rule 2: Retain a maximum number of 10 images in each repository.
+
+For repository A, rule 1 retains all of the images because they have all been pulled in the last week. Rule 2 retains the 10 most recently pulled images. So, since the two rules are applied with an `OR` relationship, all 100 images are retained in repository A.
+
+For repositories B-E, rule 1 will retain 0 images as no images are pulled in the last week. Rule 2 will retain all 6 images because 6 < 10. So, since the two rules are applied with an `OR` relationship, for repositories B-E, each repository will keep all 6 images.
+
+In this example, all of the images are retained.
+
+#### Example 4
+
+This example uses a different repository to the previous examples.
+
+- You have a repository that has 12 tags:
+
+  |Production|Release Candidate|Release|
+  |---|---|---|
+  |`2.1-your_repo-prod`|`2.1-your_repo-rc`|`2.1-your_repo-release`|
+  |`2.2-your_repo-prod`|`2.2-your_repo-rc`|`2.2-your_repo-release`|
+  |`3.1-your_repo-prod`|`3.1-your_repo-rc`|`3.1-your_repo-release`|
+  |`4.4-your_repo-prod`|`4.4-your_repo-rc`|`4.4-your_repo-release`| 
+
+- You define three tag retention rules on this repository:
+  - Retain the 10 most recently pushed image tags that start with `2`.
+  - Retain the 10 most recently pushed image tags that end with `-prod`.
+  - Retain all tags that do not include `2.1-your_repo-prod`.
+
+In this example, the rules are applied to the following 7 tags:
+
+- `2.1-your_repo-rc`
+- `2.1-your_repo-release`
+- `2.2-your_repo-prod`
+- `2.2-your_repo-rc`
+- `2.2-your_repo-release`
+- `3.1-your_repo-prod`
+- `4.4-your_repo-prod`
+
+### How Tag Retention Rules Interact with Project Quotas
+
+The system administrator can set a maximum on the number of tags that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Set Project Quotas](#set-project-quotas). 
+
+If you set a quota on a project, this quota cannot be exceeded. The quota is applied to a project even if you set a retention rule that would exceed it. In other words, you cannot use retention rules to bypass quotas.
+
+### Configure Tag Retention Rules
+
+1. Select a project and go to the **Tag Retention** tab.
+  ![Tag Retention option](img/tag-retention1.png)
+1. Click **Add Rule** to add a rule.
+1. In the **For the repositories** drop-down menu, select **matching** or **excluding**.
+  ![Select repositories](img/tag-retention2.png)
+1. Identify the repositories on which to apply the rule.
+  
+   You can define the repositories on which to apply the rule by entering the following information:
+  
+   - A repository name, for example `my_repo_1`.
+   - A comma-separated list of repository names, for example `my_repo_1,my_repo_2,your_repo_3`.
+   - A partial repository name with wildcards, for example `my_*`, `*_3`, or `*_repo_*`.
+   - `**` to apply the rule to all of the repositories in the project. 
+  
+   If you selected **matching**, the rule is applied to the repositories you identified. If you selected **excluding**, the rule is applied to all of the repositories in the project except for the ones that you identified.
+1. Define how many tags to retain or how the period to retain tags.
+  ![Select retention criteria](img/tag-retention3.png)
+  
+   |Option|Description|
+   |---|---|
+   |**retain the most recently pushed # images**|Enter the maximum number of images to retain, keeping the ones that have been pushed most recently. There is no maximum age for an image.|
+   |**retain the most recently pulled # images**|Enter the maximum number of images to retain, keeping only the ones that have been pulled recently. There is no maximum age for an image.|
+   |**retain the images pushed within the last # days**|Enter the number of days to retain images, keeping only the ones that have been pushed during this period. There is no maximum number of images.|
+   |**retain the images pulled within the last # days**|Enter the number of days to retain images, keeping only the ones that have been pulled during this period. There is no maximum number of images.|
+   |**retain always**|Always retain the images identified by this rule.| 
+
+1. In the **Tags** drop-down menu, select **matching** or **excluding**.
+1. Identify the tags on which to apply the rule.
+  
+   You can define the tags on which to apply the rule by entering the following information:
+  
+   - A tag name, for example `my_tag_1`.
+   - A comma-separated list of tag names, for example `my_tag_1,my_tag_2,your_tag_3`.
+   - A partial tag name with wildcards, for example `my_*`, `*_3`, or `*_tag_*`.
+   - `**` to apply the rule to all of the tags in the project. 
+  
+   If you selected **matching**, the rule is applied to the tags you identified. If you selected **excluding**, the rule is applied to all of the tags in the repository except for the ones that you identified.
+1. Click **Add** to save the rule.
+1. (Optional) Click **Add Rule** to add more rules, up to a maximum of 15 per project.
+1. (Optional) Under Schedule, click **Edit** and select how often to run the rule.
+   ![Select retention criteria](img/tag-retention4.png)
+   If you select **Custom**, enter a cron job command to schedule the rule. 
+  
+   **NOTE**: If you define multiple rules, the schedule is applied to all of the rules. You cannot schedule different rules to run at different times. 
+1. Click **Dry Run** to test the rule or rules that you have defined.
+1. Click **Run Now** to run the rule immediately.
+
+**WARNING**: You cannot revert a rule after you run it. It is strongly recommended to perform a dry run before you run rules. 
+
+To modify an existing rule, click the three vertical dots next to a rule to disable, edit, or delete that rule. 
+
+![Modify tag retention rules](img/tag-retention5.png)
+
+## Webhook Notifications
+
+If you are a project administrator, you can configure a connection from a project in Harbor to a webhook endpoint. If you configure webhooks, Harbor notifies the webhook endpoint of certain events that occur in the project. Webhooks allow you to integrate Harbor with other tools to streamline continuous integration and development processes. 
+
+The action that is taken upon receiving a notification from a Harbor project depends on your continuous integration and development processes. For example, by configuring Harbor to send a `POST` request to a webhook listener at an endpoint of your choice, you can trigger a build and deployment of an application whenever there is a change to an image in the repository.
+
+### Supported Events
+
+You can define one webhook endpoint per project. Webhook notifications provide information about events in JSON format and are delivered by `HTTP` or `HTTPS POST` to an existing webhhook endpoint URL that you provide. The following table describes the events that trigger notifications and the contents of each notification.
+
+|Event|Webhook Event Type|Contents of Notification|
+|---|---|---|
+|Push image to registry|`IMAGE PUSH`|Repository namespace name, repository name, resource URL, tags, manifest digest, image name, push time timestamp, username of user who pushed image|
+|Pull manifest from registry|`IMAGE PULL`|Repository namespace name, repository name, manifest digest, image name, pull time timestamp, username of user who pulled image|
+|Delete manifest from registry|`IMAGE DELETE`|Repository namespace name, repository name, manifest digest, image name, image size, delete time timestamp, username of user who deleted image|
+|Upload Helm chart to registry|`CHART PUSH`|Repository name, chart name, chart type, chart version, chart size, tag, timestamp of push, username of user who uploaded chart|
+|Download Helm chart from registry|`CHART PULL`|Repository name, chart name, chart type, chart version, chart size, tag, timestamp of push, username of user who pulled chart|
+|Delete Helm chart from registry|`CHART DELETE`|Repository name, chart name, chart type, chart version, chart size, tag, timestamp of delete, username of user who deleted chart|
+|Image scan completed|`IMAGE SCAN COMPLETED`|Repository namespace name, repository name, tag scanned, image name, number of critical issues, number of major issues, number of minor issues, last scan status, scan completion time timestamp, vulnerability information (CVE ID, description, link to CVE, criticality, URL for any fix), username of user who performed scan|
+|Image scan failed|`IMAGE SCAN FAILED`|Repository namespace name, repository name, tag scanned, image name, error that occurred, username of user who performed scan|
+
+#### JSON Payload Format
+
+The webhook notification is delivered in JSON format. The following example shows the JSON notification for a push image event:
+
+```
+{
+ "event_type": "pushImage"
+    "events": [
+               {
+                "project": "prj",
+                "repo_name": "repo1",
+                "tag": "latest",
+                "full_name": "prj/repo1",
+                "trigger_time": 158322233213,
+                "image_id": "9e2c9d5f44efbb6ee83aecd17a120c513047d289d142ec5738c9f02f9b24ad07",
+                "project_type": "Private"
+               }
+             ]
+}
+```
+
+### Webhook Endpoint Recommendations
+
+The endpoint that receives the webhook should ideally have a webhook listener that is capable of interpreting the payload and acting upon the information it contains. For example, running a shell script.
+
+### Example Use Cases
+
+You can configure your continuous integration and development infrastructure so that it performs the following types of operations when it receives a webhook notification from Harbor.
+
+- Image push: 
+  - Trigger a new build immediately following a push on selected repositories or tags.
+  - Notify services or applications that use the image that a new image is available and pull it.
+  - Scan the image using Clair.
+  - Replicate the image to remote registries.
+- Image scanning:
+  - If a vulnerability is found, rescan the image or replicate it to another registry.
+  - If the scan passes, deploy the image.
+
+### Configure Webhooks
+
+1. Select a project and go to the Webhooks tab.
+  ![Webhooks option](img/webhooks1.png)  
+1. Enter the URL for your webhook endpoint listener.
+  ![Webhook URL](img/webhooks2.png)
+1. If your webhook listener implements authentication, enter the authentication header. 
+1. To implement `HTTPS POST` instead of `HTTP POST`, select the **Verifiy Remote Certficate** check box.
+1. Click **Test Endpoint** to make sure that Harbor can connect to the listener.
+1. Click **Continue** to create the webhook.
+
+When you have created the webhook, you see the status of the different notifications and the timestamp of the last time each notification was triggered. You can click **Disable** to disable notifications.
+
+![Webhook Status](img/webhooks3.png)
+
+**NOTE**: You can only disable and reenable all notifications. You cannot disable and enable selected notifications.
+
+If a webhook notification fails to send, or if it receives an HTTP error response with a code other than `2xx`, the notification is re-sent based on the configuration that you set in `harbor.yml`. 
+
+### Globally Enable and Disable Webhooks
+
+As a system administrator, you can enable and disable webhook notifications for all projects.
+
+1. Go to **Configuration** > **System Settings**.
+1. Scroll down and check or uncheck the **Webhooks enabled** check box.
+
+  ![Enable/disable webhooks](img/webhooks4.png)
 
 ## API Explorer
 
