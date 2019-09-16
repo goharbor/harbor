@@ -112,6 +112,7 @@ func TestConfigCtxModifier(t *testing.T) {
 		common.OIDCEndpoint:     "https://accounts.google.com",
 		common.OIDCVerifyCert:   "true",
 		common.OIDCScope:        "openid, profile, offline_access",
+		common.OIDCGroupsClaim:  "groups",
 		common.OIDCCLientID:     "client",
 		common.OIDCClientSecret: "secret",
 		common.ExtEndpoint:      "https://harbor.test",

@@ -109,6 +109,7 @@ const (
 	OIDCCLientID                     = "oidc_client_id"
 	OIDCClientSecret                 = "oidc_client_secret"
 	OIDCVerifyCert                   = "oidc_verify_cert"
+	OIDCGroupsClaim                  = "oidc_groups_claim"
 	OIDCScope                        = "oidc_scope"
 
 	DefaultClairEndpoint              = "http://clair:6060"
