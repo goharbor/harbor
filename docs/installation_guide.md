@@ -102,7 +102,7 @@ The parameters are described below - note that at the very least, you will need 
 
 - **database**: the configs related to local database
   - **password**: The root password for the PostgreSQL database. Change this password for any production use.
-  - **max_idle_conns**: The maximum number of connections in the idle connection pool. If <=0 no idle connections are retained. The default value is 2.
+  - **max_idle_conns**: The maximum number of connections in the idle connection pool. If <=0 no idle connections are retained. The default value is 50 and if it is not configured the value is 2.
   - **max_open_conns**: The maximum number of open connections to the database. If <= 0 there is no limit on the number of open connections. The default value is 0 (unlimited), except for Postgres, for which the default number of connections is 100.
 
 - **jobservice**: jobservice related service
