@@ -727,10 +727,10 @@ new ID token and the CLI secret will work again.
 Robot Accounts are accounts created by project admins that are intended for automated operations. They have the following limitations:
 
 1, Robot Accounts cannot login Harbor portal
-2, Robot Accounts can only perform `docker push`/`docker pull` operations with a token.
+2, Robot Accounts can only perform operations by using the Docker and Helm CLIs.
 
 ### Add a Robot Account
-If you are a project admin, you can create a Robot Account by clicking "New Robot Account" in the `Robot Accounts` tab of a project, and enter a name, a description and permission.
+If you are a project admin, you can create a Robot Account by clicking "New Robot Account" in the `Robot Accounts` tab of a project, and enter a name, a description, and grant permission to the account to push and pull images and Helm charts.
 ![add_robot_account](img/robotaccount/add_robot_account.png)
 
 ![add_robot_account](img/robotaccount/add_robot_account_2.png)
