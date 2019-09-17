@@ -251,8 +251,8 @@ func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 			return 0, err
 		}
 		member.EntityID = groupID
-	} else if len(request.MemberGroup.GroupName) > 0 && request.MemberGroup.GroupType == common.HTTPGroupType {
-		ugs, err := group.QueryUserGroup(models.UserGroup{GroupName: request.MemberGroup.GroupName, GroupType: common.HTTPGroupType})
+	} else if len(request.MemberGroup.GroupName) > 0 && request.MemberGroup.GroupType == common.HTTPGroupType || request.MemberGroup.GroupType == common.OIDCGroupType {
+		ugs, err := group.QueryUserGroup(models.UserGroup{GroupName: request.MemberGroup.GroupName, GroupType: request.MemberGroup.GroupType})
 		if err != nil {
 			return 0, err
 		}

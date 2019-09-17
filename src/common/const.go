@@ -126,6 +126,7 @@ const (
 	DefaultNotaryEndpoint             = "http://notary-server:4443"
 	LDAPGroupType                     = 1
 	HTTPGroupType                     = 2
+	OIDCGroupType                     = 3
 	LDAPGroupAdminDn                  = "ldap_group_admin_dn"
 	LDAPGroupMembershipAttribute      = "ldap_group_membership_attribute"
 	DefaultRegistryControllerEndpoint = "http://registryctl:8080"
