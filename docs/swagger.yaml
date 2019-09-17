@@ -2415,7 +2415,7 @@ paths:
       description: |
         This endpoint is for syncing quota usage of registry/chart with database.
       tags:
-      - Products
+        - Products
       responses:
         '200':
           description: Sync repositories successfully.
@@ -2423,6 +2423,28 @@ paths:
           description: User need to log in first.
         '403':
           description: User does not have permission of system admin role.
+  /internal/switchquota:
+    put:
+      summary: Enable or disable quota.
+      description: |
+        This endpoint is for enable/disable quota. When quota is disabled, no resource require/release in image/chart push and delete.
+      tags:
+        - Products
+      parameters:
+        - name: switcher
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/QuotaSwitcher'
+      responses:
+        '200':
+          description: Enable/Disable quota successfully.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of system admin role.
+        '500':
+          description: Unexpected internal errors.
   /systeminfo:
     get:
       summary: Get general system info
@@ -6241,3 +6263,9 @@ definitions:
       retained:
         type: integer
 
+  QuotaSwitcher:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        description: The quota is enable or disable
