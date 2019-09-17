@@ -206,6 +206,13 @@ func init() {
 	beego.Router("/api/internal/switchquota", &InternalAPI{}, "put:SwitchQuota")
 	beego.Router("/api/internal/syncquota", &InternalAPI{}, "post:SyncQuota")
 
+	// Add routes for plugin scanner management
+	scannerAPI := &ScannerAPI{}
+	beego.Router("/api/scanners", scannerAPI, "post:Create;get:List")
+	beego.Router("/api/scanners/:uid", scannerAPI, "get:Get;delete:Delete;put:Update;patch:SetAsDefault")
+	// Add routes for project level scanner
+	beego.Router("/api/projects/:pid([0-9]+)/scanner", scannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
+
 	// syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
 		log.Fatalf("failed to sync repositories from registry: %v", err)
