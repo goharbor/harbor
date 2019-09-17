@@ -25,8 +25,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/goharbor/harbor/src/core/filter"
-
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
 	"github.com/goharbor/harbor/src/common"
