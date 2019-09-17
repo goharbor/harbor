@@ -1096,3 +1096,5 @@ Harbor integrated swagger UI from 1.8. That means all apis can be invoked throug
 
 2. User can navigate to swagger page by ip address by router "devcenter". For example: https://10.192.111.118/devcenter. After go to the page, need to click "authorize" button to give basic authentication to all apis. All apis will be invoked with the authorized user authorization. 
 ![authentication](img/authorize.png)
+
+
