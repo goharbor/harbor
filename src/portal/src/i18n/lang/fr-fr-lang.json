@@ -409,7 +409,8 @@
         "ITEMS": "items",
         "FILTER_PLACEHOLDER": "Filtrer les Logs",
         "INVALID_DATE": "Date invalide.",
-        "OF": "de"
+        "OF": "de",
+        "NOT_FOUND": "Nous n'avons trouvé aucun journal!"
     },
     "REPLICATION": {
         "YES": "Yes",
@@ -780,7 +781,7 @@
             "LDAP_UID": "Attribut utilisé dans une recherche pour trouver un utilisateur. Cela peut être uid, cn, email, sAMAccountName ou d'autres attributs selon votre LDAP/AD.",
             "LDAP_SCOPE": "Le scope de recherche des utilisateurs.",
             "TOKEN_EXPIRATION": "Le temps d'expiration (en minutes) d'un jeton créé par le service de jeton. La valeur par défaut est 30 minutes.",
-            "ROBOT_TOKEN_EXPIRATION": "Le délai d'expiration (en jours) du jeton du compte robot est défini par défaut sur 30 jours. Afficher le nombre de jours convertis à partir des minutes et des arrondis",                        
+            "ROBOT_TOKEN_EXPIRATION": "Le délai d'expiration (en jours) du jeton du compte robot est défini par défaut sur 30 jours. Afficher le nombre de jours convertis à partir des minutes et des arrondis",
             "PRO_CREATION_RESTRICTION": "L'indicateur pour définir quels utilisateurs ont le droit de créer des projets. Par défaut, tout le monde peut créer un projet. Définissez sur 'Administrateur Seulement' pour que seul un administrateur puisse créer un projet.",
             "ROOT_CERT_DOWNLOAD": "Téléchargez le certificat racine du dépôt.",
             "SCANNING_POLICY": "Définissez la politique d'analyse des images en fonction des différentes exigences. 'Aucune' : pas de politique active; 'Tousles jours à' : déclenchement du balayage à l'heure spécifiée tous les jours.",
@@ -1096,10 +1097,10 @@
         "NEVER_EXPIRES": "Never expires",
         "PRO_WHITELIST_EXPLAIN": "Project whitelist allows vulnerabilities in this list to be ignored in this project when pushing and pulling images.",
         "PRO_OR_SYS": "You can either use the default whitelist configured at the system level or click on 'Project whitelist' to create a new whitelist",
-        "MERGE_INTO": "Add individual CVE IDs before clicking 'ADD SYSTEM' to add system whitelist as well.",
+        "MERGE_INTO": "Add individual CVE IDs before clicking 'COPY FROM SYSTEM' to add system whitelist as well.",
         "SYS_WHITELIST": "System whitelist",
         "PRO_WHITELIST": "Project whitelist",
-        "ADD_SYSTEM": "ADD SYSTEM"
+        "ADD_SYSTEM": "COPY FROM SYSTEM"
     },
     "TAG_RETENTION": {
         "TAG_RETENTION": "Tag Retention",

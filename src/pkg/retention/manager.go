@@ -111,7 +111,7 @@ func (d *DefaultManager) GetPolicy(id int64) (*policy.Metadata, error) {
 	p1, err := dao.GetPolicy(id)
 	if err != nil {
 		if err == orm.ErrNoRows {
-			return nil, nil
+			return nil, fmt.Errorf("no such Retention policy with id %v", id)
 		}
 		return nil, err
 	}

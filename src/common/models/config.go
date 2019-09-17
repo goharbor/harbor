@@ -82,6 +82,7 @@ type OIDCSetting struct {
 	VerifyCert   bool     `json:"verify_cert"`
 	ClientID     string   `json:"client_id"`
 	ClientSecret string   `json:"client_secret"`
+	GroupsClaim  string   `json:"groups_claim"`
 	RedirectURL  string   `json:"redirect_url"`
 	Scope        []string `json:"scope"`
 }

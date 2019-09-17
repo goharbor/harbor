@@ -53,27 +53,24 @@ type Metadata struct {
 
 	// Which scope the policy will be applied to
 	Scope *Scope `json:"scope" valid:"Required"`
-
-	// The max number of rules in a policy
-	Capacity int `json:"cap"`
 }
 
 // Valid Valid
 func (m *Metadata) Valid(v *validation.Validation) {
 	if m.Trigger == nil {
-		_ = v.SetError("Trigger", "Trigger is required")
+		_ = v.SetError("Trigger", "Can not be empty")
 		return
 	}
 	if m.Scope == nil {
-		_ = v.SetError("Scope", "Scope is required")
+		_ = v.SetError("Scope", "Can not be empty")
 		return
 	}
 	if m.Trigger != nil && m.Trigger.Kind == TriggerKindSchedule {
 		if m.Trigger.Settings == nil {
-			_ = v.SetError("Trigger.Settings", "Trigger.Settings is required")
+			_ = v.SetError("Trigger.Settings", "Can not be empty")
 		} else {
 			if _, ok := m.Trigger.Settings[TriggerSettingsCron]; !ok {
-				_ = v.SetError("Trigger.Settings", "cron in Trigger.Settings is required")
+				_ = v.SetError("Trigger.Settings.cron", "Can not be empty")
 			}
 		}
 	}

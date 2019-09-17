@@ -17,7 +17,6 @@ package controllers
 import (
 	"bytes"
 	"context"
-	"github.com/goharbor/harbor/src/core/filter"
 	"html/template"
 	"net"
 	"net/http"
@@ -36,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/filter"
 )
 
 const userKey = "user"
@@ -252,11 +252,10 @@ func (cc *CommonController) ResetPassword() {
 		cc.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
 	}
 
-	password := cc.GetString("password")
+	rawPassword := cc.GetString("password")
 
-	if password != "" {
-		user.Password = password
-		err = dao.ResetUserPassword(*user)
+	if rawPassword != "" {
+		err = dao.ResetUserPassword(*user, rawPassword)
 		if err != nil {
 			log.Errorf("Error occurred in ResetUserPassword: %v", err)
 			cc.CustomAbort(http.StatusInternalServerError, "Internal error.")

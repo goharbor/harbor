@@ -39,7 +39,7 @@ def _random_name(prefix):
 def _get_id_from_header(header):
     try:
         location = header["Location"]
-        return location.split("/")[-1]
+        return int(location.split("/")[-1])
     except Exception:
         return None
 

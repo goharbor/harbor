@@ -83,7 +83,7 @@ func TestMethodOfTaskManager(t *testing.T) {
 		JobID:          "jobID1",
 		Status:         "Initialized",
 		StatusRevision: 1,
-		StartTime:      &now,
+		StartTime:      now,
 	}
 
 	defer func() {

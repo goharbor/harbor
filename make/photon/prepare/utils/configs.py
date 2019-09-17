@@ -56,7 +56,7 @@ def parse_versions():
         versions = yaml.load(f)
     return versions
 
-def parse_yaml_config(config_file_path):
+def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseum):
     '''
     :param configs: config_parser object
     :returns: dict of configs
@@ -117,27 +117,31 @@ def parse_yaml_config(config_file_path):
         config_dict['harbor_db_sslmode'] = 'disable'
         config_dict['harbor_db_max_idle_conns'] = db_configs.get("max_idle_conns") or default_db_max_idle_conns
         config_dict['harbor_db_max_open_conns'] = db_configs.get("max_open_conns") or default_db_max_open_conns
-        # clari db
-        config_dict['clair_db_host'] = 'postgresql'
-        config_dict['clair_db_port'] = 5432
-        config_dict['clair_db_name'] = 'postgres'
-        config_dict['clair_db_username'] = 'postgres'
-        config_dict['clair_db_password'] = db_configs.get("password") or ''
-        config_dict['clair_db_sslmode'] = 'disable'
-        # notary signer
-        config_dict['notary_signer_db_host'] = 'postgresql'
-        config_dict['notary_signer_db_port'] = 5432
-        config_dict['notary_signer_db_name'] = 'notarysigner'
-        config_dict['notary_signer_db_username'] = 'signer'
-        config_dict['notary_signer_db_password'] = 'password'
-        config_dict['notary_signer_db_sslmode'] = 'disable'
-        # notary server
-        config_dict['notary_server_db_host'] = 'postgresql'
-        config_dict['notary_server_db_port'] = 5432
-        config_dict['notary_server_db_name'] = 'notaryserver'
-        config_dict['notary_server_db_username'] = 'server'
-        config_dict['notary_server_db_password'] = 'password'
-        config_dict['notary_server_db_sslmode'] = 'disable'
+
+        if with_clair:
+            # clair db
+            config_dict['clair_db_host'] = 'postgresql'
+            config_dict['clair_db_port'] = 5432
+            config_dict['clair_db_name'] = 'postgres'
+            config_dict['clair_db_username'] = 'postgres'
+            config_dict['clair_db_password'] = db_configs.get("password") or ''
+            config_dict['clair_db_sslmode'] = 'disable'
+
+        if with_notary:
+            # notary signer
+            config_dict['notary_signer_db_host'] = 'postgresql'
+            config_dict['notary_signer_db_port'] = 5432
+            config_dict['notary_signer_db_name'] = 'notarysigner'
+            config_dict['notary_signer_db_username'] = 'signer'
+            config_dict['notary_signer_db_password'] = 'password'
+            config_dict['notary_signer_db_sslmode'] = 'disable'
+            # notary server
+            config_dict['notary_server_db_host'] = 'postgresql'
+            config_dict['notary_server_db_port'] = 5432
+            config_dict['notary_server_db_name'] = 'notaryserver'
+            config_dict['notary_server_db_username'] = 'server'
+            config_dict['notary_server_db_password'] = 'password'
+            config_dict['notary_server_db_sslmode'] = 'disable'
 
 
     # Data path volume
@@ -240,27 +244,30 @@ def parse_yaml_config(config_file_path):
         config_dict['harbor_db_sslmode'] = external_db_configs['harbor']['ssl_mode']
         config_dict['harbor_db_max_idle_conns'] = external_db_configs['harbor'].get("max_idle_conns") or default_db_max_idle_conns
         config_dict['harbor_db_max_open_conns'] = external_db_configs['harbor'].get("max_open_conns") or default_db_max_open_conns
-        # clair db
-        config_dict['clair_db_host'] = external_db_configs['clair']['host']
-        config_dict['clair_db_port'] = external_db_configs['clair']['port']
-        config_dict['clair_db_name'] = external_db_configs['clair']['db_name']
-        config_dict['clair_db_username'] = external_db_configs['clair']['username']
-        config_dict['clair_db_password'] = external_db_configs['clair']['password']
-        config_dict['clair_db_sslmode'] = external_db_configs['clair']['ssl_mode']
-        # notary signer
-        config_dict['notary_signer_db_host'] = external_db_configs['notary_signer']['host']
-        config_dict['notary_signer_db_port'] = external_db_configs['notary_signer']['port']
-        config_dict['notary_signer_db_name'] = external_db_configs['notary_signer']['db_name']
-        config_dict['notary_signer_db_username'] = external_db_configs['notary_signer']['username']
-        config_dict['notary_signer_db_password'] = external_db_configs['notary_signer']['password']
-        config_dict['notary_signer_db_sslmode'] = external_db_configs['notary_signer']['ssl_mode']
-        # notary server
-        config_dict['notary_server_db_host'] = external_db_configs['notary_server']['host']
-        config_dict['notary_server_db_port'] = external_db_configs['notary_server']['port']
-        config_dict['notary_server_db_name'] = external_db_configs['notary_server']['db_name']
-        config_dict['notary_server_db_username'] = external_db_configs['notary_server']['username']
-        config_dict['notary_server_db_password'] = external_db_configs['notary_server']['password']
-        config_dict['notary_server_db_sslmode'] = external_db_configs['notary_server']['ssl_mode']
+
+        if with_clair:
+            # clair db
+            config_dict['clair_db_host'] = external_db_configs['clair']['host']
+            config_dict['clair_db_port'] = external_db_configs['clair']['port']
+            config_dict['clair_db_name'] = external_db_configs['clair']['db_name']
+            config_dict['clair_db_username'] = external_db_configs['clair']['username']
+            config_dict['clair_db_password'] = external_db_configs['clair']['password']
+            config_dict['clair_db_sslmode'] = external_db_configs['clair']['ssl_mode']
+        if with_notary:
+            # notary signer
+            config_dict['notary_signer_db_host'] = external_db_configs['notary_signer']['host']
+            config_dict['notary_signer_db_port'] = external_db_configs['notary_signer']['port']
+            config_dict['notary_signer_db_name'] = external_db_configs['notary_signer']['db_name']
+            config_dict['notary_signer_db_username'] = external_db_configs['notary_signer']['username']
+            config_dict['notary_signer_db_password'] = external_db_configs['notary_signer']['password']
+            config_dict['notary_signer_db_sslmode'] = external_db_configs['notary_signer']['ssl_mode']
+            # notary server
+            config_dict['notary_server_db_host'] = external_db_configs['notary_server']['host']
+            config_dict['notary_server_db_port'] = external_db_configs['notary_server']['port']
+            config_dict['notary_server_db_name'] = external_db_configs['notary_server']['db_name']
+            config_dict['notary_server_db_username'] = external_db_configs['notary_server']['username']
+            config_dict['notary_server_db_password'] = external_db_configs['notary_server']['password']
+            config_dict['notary_server_db_sslmode'] = external_db_configs['notary_server']['ssl_mode']
     else:
         config_dict['external_database'] = False
 

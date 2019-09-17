@@ -62,9 +62,12 @@ func (aj *AJAPI) updateSchedule(ajr models.AdminJobReq) {
 
 	// stop the scheduled job and remove it.
 	if err = utils_core.GetJobServiceClient().PostAction(jobs[0].UUID, common_job.JobActionStop); err != nil {
-		if e, ok := err.(*common_http.Error); !ok || e.Code != http.StatusNotFound {
-			aj.SendInternalServerError(err)
-			return
+		_, ok := err.(*common_job.StatusBehindError)
+		if !ok {
+			if e, ok := err.(*common_http.Error); !ok || e.Code != http.StatusNotFound {
+				aj.SendInternalServerError(err)
+				return
+			}
 		}
 	}
 

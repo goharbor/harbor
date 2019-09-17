@@ -253,6 +253,7 @@ func TestOIDCSetting(t *testing.T) {
 		common.OIDCEndpoint:     "https://oidc.test",
 		common.OIDCVerifyCert:   "true",
 		common.OIDCScope:        "openid, profile",
+		common.OIDCGroupsClaim:  "my_group",
 		common.OIDCCLientID:     "client",
 		common.OIDCClientSecret: "secret",
 		common.ExtEndpoint:      "https://harbor.test",
@@ -263,6 +264,7 @@ func TestOIDCSetting(t *testing.T) {
 	assert.Equal(t, "test", v.Name)
 	assert.Equal(t, "https://oidc.test", v.Endpoint)
 	assert.True(t, v.VerifyCert)
+	assert.Equal(t, "my_group", v.GroupsClaim)
 	assert.Equal(t, "client", v.ClientID)
 	assert.Equal(t, "secret", v.ClientSecret)
 	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)

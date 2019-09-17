@@ -330,14 +330,13 @@ func TestDeleteProject(t *testing.T) {
 
 }
 func TestProHead(t *testing.T) {
-	fmt.Println("\nTest for Project HEAD API")
+	t.Log("\nTest for Project HEAD API")
 	assert := assert.New(t)
 
 	apiTest := newHarborAPI()
 
 	// ----------------------------case 1 : Response Code=200----------------------------//
-	fmt.Println("Case 1: Response Code = 200")
-
+	t.Log("case 1: response code:200")
 	httpStatusCode, err := apiTest.ProjectsHead(*admin, "library")
 	if err != nil {
 		t.Error("Error while search project by proName", err.Error())
@@ -347,14 +346,31 @@ func TestProHead(t *testing.T) {
 	}
 
 	// ----------------------------case 2 : Response Code=404:Project name does not exist.----------------------------//
-	fmt.Println("Case 2: Response Code = 404 : Project name does not exist.")
-
+	t.Log("case 2: response code:404,Project name does not exist.")
 	httpStatusCode, err = apiTest.ProjectsHead(*admin, "libra")
 	if err != nil {
 		t.Error("Error while search project by proName", err.Error())
 		t.Log(err)
 	} else {
 		assert.Equal(int(404), httpStatusCode, "httpStatusCode should be 404")
+	}
+
+	t.Log("case 3: response code:401. Project exist with unauthenticated user")
+	httpStatusCode, err = apiTest.ProjectsHead(*unknownUsr, "library")
+	if err != nil {
+		t.Error("Error while search project by proName", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 404")
+	}
+
+	t.Log("case 4: response code:401. Project name does not exist with unauthenticated user")
+	httpStatusCode, err = apiTest.ProjectsHead(*unknownUsr, "libra")
+	if err != nil {
+		t.Error("Error while search project by proName", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(int(401), httpStatusCode, "httpStatusCode should be 404")
 	}
 
 	fmt.Printf("\n")
