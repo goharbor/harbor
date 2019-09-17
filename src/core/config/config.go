@@ -512,6 +512,7 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 		VerifyCert:   cfgMgr.Get(common.OIDCVerifyCert).GetBool(),
 		ClientID:     cfgMgr.Get(common.OIDCCLientID).GetString(),
 		ClientSecret: cfgMgr.Get(common.OIDCClientSecret).GetString(),
+		GroupsClaim:  cfgMgr.Get(common.OIDCGroupsClaim).GetString(),
 		RedirectURL:  extEndpoint + common.OIDCCallbackPath,
 		Scope:        scope,
 	}, nil
