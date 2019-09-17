@@ -43,3 +43,11 @@ The following table depicts the various user permission levels in a project.
 | Add/Remove labels of helm chart version |       | ✓         | ✓      | ✓             |
 | See a list of project robots            |       |           | ✓      | ✓             |
 | Create/edit/delete project robots       |       |           |        | ✓             |
+| See configured CVE whitelist            | ✓     | ✓         | ✓      | ✓             |
+| Create/edit/remove CVE whitelist        |       |           | ✓      | ✓             |
+| Enable/disable webhooks                 |       | ✓         | ✓      | ✓             |
+| Create/delete tag retention rules       |       | ✓         | ✓      | ✓             |
+| Enable/disable tag retention rules      |       | ✓         | ✓      | ✓             |
+| See project quotas                      | ✓     | ✓         | ✓      | ✓             |
+| Edit project quotas                     |       |           |        |               |
+
