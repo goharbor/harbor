@@ -8,8 +8,8 @@ import (
 
 	"github.com/stretchr/testify/suite"
 
+	"github.com/goharbor/harbor/src/pkg/reselector"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/stretchr/testify/require"
 )
 
@@ -39,7 +39,7 @@ func (e *EvaluatorTestSuite) TestNew() {
 }
 
 func (e *EvaluatorTestSuite) TestProcess() {
-	data := []*res.Candidate{{PushedTime: 0}, {PushedTime: 1}, {PushedTime: 2}, {PushedTime: 3}, {PushedTime: 4}}
+	data := []*reselector.Candidate{{PushedTime: 0}, {PushedTime: 1}, {PushedTime: 2}, {PushedTime: 3}, {PushedTime: 4}}
 	rand.Shuffle(len(data), func(i, j int) {
 		data[i], data[j] = data[j], data[i]
 	})

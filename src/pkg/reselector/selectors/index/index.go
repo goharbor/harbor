@@ -17,8 +17,8 @@ package index
 import (
 	"sync"
 
-	"github.com/goharbor/harbor/src/pkg/retention/res"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
+	"github.com/goharbor/harbor/src/pkg/reselector"
+	"github.com/goharbor/harbor/src/pkg/reselector/doublestar"
 	"github.com/pkg/errors"
 )
 
@@ -49,11 +49,11 @@ type IndexedMeta struct {
 // indexedItem defined item kept in the index
 type indexedItem struct {
 	Meta    *IndexedMeta
-	Factory res.SelectorFactory
+	Factory reselector.SelectorFactory
 }
 
 // Register the selector with the corresponding selector kind and decoration
-func Register(kind string, decorations []string, factory res.SelectorFactory) {
+func Register(kind string, decorations []string, factory reselector.SelectorFactory) {
 	if len(kind) == 0 || factory == nil {
 		// do nothing
 		return
@@ -69,7 +69,7 @@ func Register(kind string, decorations []string, factory res.SelectorFactory) {
 }
 
 // Get selector with the provided kind and decoration
-func Get(kind, decoration, pattern string) (res.Selector, error) {
+func Get(kind, decoration, pattern string) (reselector.Selector, error) {
 	if len(kind) == 0 || len(decoration) == 0 {
 		return nil, errors.New("empty selector kind or decoration")
 	}

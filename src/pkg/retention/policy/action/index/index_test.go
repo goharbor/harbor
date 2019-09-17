@@ -18,8 +18,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/reselector"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -29,7 +29,7 @@ import (
 type IndexTestSuite struct {
 	suite.Suite
 
-	candidates []*res.Candidate
+	candidates []*reselector.Candidate
 }
 
 // TestIndexEntry is entry of IndexTestSuite
@@ -41,7 +41,7 @@ func TestIndexEntry(t *testing.T) {
 func (suite *IndexTestSuite) SetupSuite() {
 	Register("fakeAction", newFakePerformer)
 
-	suite.candidates = []*res.Candidate{{
+	suite.candidates = []*reselector.Candidate{{
 		Namespace:  "library",
 		Repository: "harbor",
 		Kind:       "image",
@@ -77,9 +77,9 @@ type fakePerformer struct {
 }
 
 // Perform the artifacts
-func (p *fakePerformer) Perform(candidates []*res.Candidate) (results []*res.Result, err error) {
+func (p *fakePerformer) Perform(candidates []*reselector.Candidate) (results []*reselector.Result, err error) {
 	for _, c := range candidates {
-		results = append(results, &res.Result{
+		results = append(results, &reselector.Result{
 			Target: c,
 		})
 	}

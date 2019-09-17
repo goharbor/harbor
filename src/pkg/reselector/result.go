@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package res
+package reselector
 
 // Result keeps the action result
 type Result struct {

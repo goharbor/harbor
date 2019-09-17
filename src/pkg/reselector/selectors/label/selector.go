@@ -17,7 +17,7 @@ package label
 import (
 	"strings"
 
-	"github.com/goharbor/harbor/src/pkg/retention/res"
+	"github.com/goharbor/harbor/src/pkg/reselector"
 )
 
 const (
@@ -39,7 +39,7 @@ type selector struct {
 }
 
 // Select candidates by the labels
-func (s *selector) Select(artifacts []*res.Candidate) (selected []*res.Candidate, err error) {
+func (s *selector) Select(artifacts []*reselector.Candidate) (selected []*reselector.Candidate, err error) {
 	for _, art := range artifacts {
 		if isMatched(s.labels, art.Labels, s.decoration) {
 			selected = append(selected, art)
@@ -50,7 +50,7 @@ func (s *selector) Select(artifacts []*res.Candidate) (selected []*res.Candidate
 }
 
 // New is factory method for list selector
-func New(decoration string, pattern string) res.Selector {
+func New(decoration string, pattern string) reselector.Selector {
 	labels := make([]string, 0)
 	if len(pattern) > 0 {
 		labels = append(labels, strings.Split(pattern, ",")...)

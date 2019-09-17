@@ -22,14 +22,14 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/reselector"
+	"github.com/goharbor/harbor/src/pkg/reselector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -60,10 +60,10 @@ func (suite *JobTestSuite) TearDownSuite() {
 func (suite *JobTestSuite) TestRunSuccess() {
 	params := make(job.Parameters)
 	params[ParamDryRun] = false
-	repository := &res.Repository{
+	repository := &reselector.Repository{
 		Namespace: "library",
 		Name:      "harbor",
-		Kind:      res.Image,
+		Kind:      reselector.Image,
 	}
 	repoJSON, err := repository.ToJSON()
 	require.Nil(suite.T(), err)
@@ -112,8 +112,8 @@ func (suite *JobTestSuite) TestRunSuccess() {
 type fakeRetentionClient struct{}
 
 // GetCandidates ...
-func (frc *fakeRetentionClient) GetCandidates(repo *res.Repository) ([]*res.Candidate, error) {
-	return []*res.Candidate{
+func (frc *fakeRetentionClient) GetCandidates(repo *reselector.Repository) ([]*reselector.Candidate, error) {
+	return []*reselector.Candidate{
 		{
 			Namespace:    "library",
 			Repository:   "harbor",
@@ -140,12 +140,12 @@ func (frc *fakeRetentionClient) GetCandidates(repo *res.Repository) ([]*res.Cand
 }
 
 // Delete ...
-func (frc *fakeRetentionClient) Delete(candidate *res.Candidate) error {
+func (frc *fakeRetentionClient) Delete(candidate *reselector.Candidate) error {
 	return nil
 }
 
 // SubmitTask ...
-func (frc *fakeRetentionClient) DeleteRepository(repo *res.Repository) error {
+func (frc *fakeRetentionClient) DeleteRepository(repo *reselector.Repository) error {
 	return nil
 }
 

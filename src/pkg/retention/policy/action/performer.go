@@ -15,8 +15,8 @@
 package action
 
 import (
+	"github.com/goharbor/harbor/src/pkg/reselector"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 )
 
 const (
@@ -29,12 +29,12 @@ type Performer interface {
 	// Perform the action
 	//
 	//  Arguments:
-	//    candidates []*res.Candidate : the targets to perform
+	//    candidates []*reselector.Candidate : the targets to perform
 	//
 	//  Returns:
-	//    []*res.Result : result infos
+	//    []*reselector.Result : result infos
 	//    error     : common error if any errors occurred
-	Perform(candidates []*res.Candidate) ([]*res.Result, error)
+	Perform(candidates []*reselector.Candidate) ([]*reselector.Result, error)
 }
 
 // PerformerFactory is factory method for creating Performer
@@ -42,13 +42,13 @@ type PerformerFactory func(params interface{}, isDryRun bool) Performer
 
 // retainAction make sure all the candidates will be retained and others will be cleared
 type retainAction struct {
-	all []*res.Candidate
+	all []*reselector.Candidate
 	// Indicate if it is a dry run
 	isDryRun bool
 }
 
 // Perform the action
-func (ra *retainAction) Perform(candidates []*res.Candidate) (results []*res.Result, err error) {
+func (ra *retainAction) Perform(candidates []*reselector.Candidate) (results []*reselector.Result, err error) {
 	retained := make(map[string]bool)
 	for _, c := range candidates {
 		retained[c.Hash()] = true
@@ -58,7 +58,7 @@ func (ra *retainAction) Perform(candidates []*res.Candidate) (results []*res.Res
 	if len(ra.all) > 0 {
 		for _, art := range ra.all {
 			if _, ok := retained[art.Hash()]; !ok {
-				result := &res.Result{
+				result := &reselector.Result{
 					Target: art,
 				}
 
@@ -79,7 +79,7 @@ func (ra *retainAction) Perform(candidates []*res.Candidate) (results []*res.Res
 // NewRetainAction is factory method for RetainAction
 func NewRetainAction(params interface{}, isDryRun bool) Performer {
 	if params != nil {
-		if all, ok := params.([]*res.Candidate); ok {
+		if all, ok := params.([]*reselector.Candidate); ok {
 			return &retainAction{
 				all:      all,
 				isDryRun: isDryRun,
@@ -88,7 +88,7 @@ func NewRetainAction(params interface{}, isDryRun bool) Performer {
 	}
 
 	return &retainAction{
-		all:      make([]*res.Candidate, 0),
+		all:      make([]*reselector.Candidate, 0),
 		isDryRun: isDryRun,
 	}
 }

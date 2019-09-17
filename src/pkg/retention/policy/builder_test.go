@@ -22,7 +22,7 @@ import (
 
 	index2 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
 
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/index"
+	"github.com/goharbor/harbor/src/pkg/reselector/selectors/index"
 
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 
@@ -30,9 +30,9 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
 
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
+	"github.com/goharbor/harbor/src/pkg/reselector/selectors/label"
 
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
+	"github.com/goharbor/harbor/src/pkg/reselector/selectors/doublestar"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
 
@@ -46,7 +46,7 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 
-	"github.com/goharbor/harbor/src/pkg/retention/res"
+	"github.com/goharbor/harbor/src/pkg/reselector"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -55,7 +55,7 @@ import (
 type TestBuilderSuite struct {
 	suite.Suite
 
-	all       []*res.Candidate
+	all       []*reselector.Candidate
 	oldClient dep.Client
 }
 
@@ -66,7 +66,7 @@ func TestBuilder(t *testing.T) {
 
 // SetupSuite prepares the testing content if needed
 func (suite *TestBuilderSuite) SetupSuite() {
-	suite.all = []*res.Candidate{
+	suite.all = []*reselector.Candidate{
 		{
 			NamespaceID: 1,
 			Namespace:   "library",
@@ -163,21 +163,21 @@ func (suite *TestBuilderSuite) TestBuild() {
 
 type fakeRetentionClient struct{}
 
-func (frc *fakeRetentionClient) DeleteRepository(repo *res.Repository) error {
+func (frc *fakeRetentionClient) DeleteRepository(repo *reselector.Repository) error {
 	panic("implement me")
 }
 
 // GetCandidates ...
-func (frc *fakeRetentionClient) GetCandidates(repo *res.Repository) ([]*res.Candidate, error) {
+func (frc *fakeRetentionClient) GetCandidates(repo *reselector.Repository) ([]*reselector.Candidate, error) {
 	return nil, errors.New("not implemented")
 }
 
 // Delete ...
-func (frc *fakeRetentionClient) Delete(candidate *res.Candidate) error {
+func (frc *fakeRetentionClient) Delete(candidate *reselector.Candidate) error {
 	return nil
 }
 
 // SubmitTask ...
-func (frc *fakeRetentionClient) SubmitTask(taskID int64, repository *res.Repository, meta *lwp.Metadata) (string, error) {
+func (frc *fakeRetentionClient) SubmitTask(taskID int64, repository *reselector.Repository, meta *lwp.Metadata) (string, error) {
 	return "", errors.New("not implemented")
 }

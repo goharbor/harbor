@@ -21,9 +21,9 @@ import (
 	"sort"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/pkg/reselector"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 )
 
 const (
@@ -42,7 +42,7 @@ type evaluator struct {
 }
 
 // Process the candidates based on the rule definition
-func (e *evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
+func (e *evaluator) Process(artifacts []*reselector.Candidate) ([]*reselector.Candidate, error) {
 	// The updated proposal does not guarantee the order artifacts are provided, so we have to sort them first
 	sort.Slice(artifacts, func(i, j int) bool {
 		return artifacts[i].PushedTime > artifacts[j].PushedTime

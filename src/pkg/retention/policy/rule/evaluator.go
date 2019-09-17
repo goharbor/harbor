@@ -14,19 +14,19 @@
 
 package rule
 
-import "github.com/goharbor/harbor/src/pkg/retention/res"
+import "github.com/goharbor/harbor/src/pkg/reselector"
 
 // Evaluator defines method of executing rule
 type Evaluator interface {
 	// Filter the inputs and return the filtered outputs
 	//
 	//  Arguments:
-	//    artifacts []*res.Candidate : candidates for processing
+	//    artifacts []*reselector.Candidate : candidates for processing
 	//
 	//  Returns:
-	//    []*res.Candidate : matched candidates for next stage
+	//    []*reselector.Candidate : matched candidates for next stage
 	//    error            : common error object if any errors occurred
-	Process(artifacts []*res.Candidate) ([]*res.Candidate, error)
+	Process(artifacts []*reselector.Candidate) ([]*reselector.Candidate, error)
 
 	// Specify what action is performed to the candidates processed by this evaluator
 	Action() string

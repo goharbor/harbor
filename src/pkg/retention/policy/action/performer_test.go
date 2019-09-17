@@ -18,8 +18,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/reselector"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -31,7 +31,7 @@ type TestPerformerSuite struct {
 	suite.Suite
 
 	oldClient dep.Client
-	all       []*res.Candidate
+	all       []*reselector.Candidate
 }
 
 // TestPerformer is the entry of the TestPerformerSuite
@@ -41,7 +41,7 @@ func TestPerformer(t *testing.T) {
 
 // SetupSuite ...
 func (suite *TestPerformerSuite) SetupSuite() {
-	suite.all = []*res.Candidate{
+	suite.all = []*reselector.Candidate{
 		{
 			Namespace:  "library",
 			Repository: "harbor",
@@ -77,7 +77,7 @@ func (suite *TestPerformerSuite) TestPerform() {
 		all: suite.all,
 	}
 
-	candidates := []*res.Candidate{
+	candidates := []*reselector.Candidate{
 		{
 			Namespace:  "library",
 			Repository: "harbor",
@@ -100,16 +100,16 @@ func (suite *TestPerformerSuite) TestPerform() {
 type fakeRetentionClient struct{}
 
 // GetCandidates ...
-func (frc *fakeRetentionClient) GetCandidates(repo *res.Repository) ([]*res.Candidate, error) {
+func (frc *fakeRetentionClient) GetCandidates(repo *reselector.Repository) ([]*reselector.Candidate, error) {
 	return nil, errors.New("not implemented")
 }
 
 // Delete ...
-func (frc *fakeRetentionClient) Delete(candidate *res.Candidate) error {
+func (frc *fakeRetentionClient) Delete(candidate *reselector.Candidate) error {
 	return nil
 }
 
 // DeleteRepository ...
-func (frc *fakeRetentionClient) DeleteRepository(repo *res.Repository) error {
+func (frc *fakeRetentionClient) DeleteRepository(repo *reselector.Repository) error {
 	panic("implement me")
 }

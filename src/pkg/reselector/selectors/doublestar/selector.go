@@ -16,7 +16,7 @@ package doublestar
 
 import (
 	"github.com/bmatcuk/doublestar"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
+	"github.com/goharbor/harbor/src/pkg/reselector"
 )
 
 const (
@@ -46,7 +46,7 @@ type selector struct {
 }
 
 // Select candidates by regular expressions
-func (s *selector) Select(artifacts []*res.Candidate) (selected []*res.Candidate, err error) {
+func (s *selector) Select(artifacts []*reselector.Candidate) (selected []*reselector.Candidate, err error) {
 	value := ""
 	excludes := false
 
@@ -86,7 +86,7 @@ func (s *selector) Select(artifacts []*res.Candidate) (selected []*res.Candidate
 }
 
 // New is factory method for doublestar selector
-func New(decoration string, pattern string) res.Selector {
+func New(decoration string, pattern string) reselector.Selector {
 	return &selector{
 		decoration: decoration,
 		pattern:    pattern,

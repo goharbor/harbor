@@ -22,18 +22,18 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	"github.com/goharbor/harbor/src/pkg/retention/res"
+	"github.com/goharbor/harbor/src/pkg/reselector"
 	"github.com/stretchr/testify/suite"
 )
 
 type EvaluatorTestSuite struct {
 	suite.Suite
 
-	artifacts []*res.Candidate
+	artifacts []*reselector.Candidate
 }
 
 func (e *EvaluatorTestSuite) SetupSuite() {
-	e.artifacts = []*res.Candidate{
+	e.artifacts = []*reselector.Candidate{
 		{PulledTime: 1, PushedTime: 2},
 		{PulledTime: 3, PushedTime: 4},
 		{PulledTime: 6, PushedTime: 5},
