@@ -18,10 +18,10 @@ import (
 	"sync"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/pkg/errors"
 )
 
@@ -29,7 +29,7 @@ import (
 type processor struct {
 	// keep evaluator and its related selector if existing
 	// attentions here, the selectors can be empty/nil, that means match all "**"
-	evaluators map[*rule.Evaluator][]res.Selector
+	evaluators map[*rule.Evaluator][]art.Selector
 	// action performer
 	performers map[string]action.Performer
 }
@@ -37,7 +37,7 @@ type processor struct {
 // New processor
 func New(parameters []*alg.Parameter) alg.Processor {
 	p := &processor{
-		evaluators: make(map[*rule.Evaluator][]res.Selector),
+		evaluators: make(map[*rule.Evaluator][]art.Selector),
 		performers: make(map[string]action.Performer),
 	}
 
@@ -59,10 +59,10 @@ func New(parameters []*alg.Parameter) alg.Processor {
 }
 
 // Process the candidates with the rules
-func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
+func (p *processor) Process(artifacts []*art.Candidate) ([]*art.Result, error) {
 	if len(artifacts) == 0 {
 		log.Debug("no artifacts to retention")
-		return make([]*res.Result, 0), nil
+		return make([]*art.Result, 0), nil
 	}
 
 	var (
@@ -75,7 +75,7 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 	// for sync
 	type chanItem struct {
 		action    string
-		processed []*res.Candidate
+		processed []*art.Candidate
 	}
 
 	resChan := make(chan *chanItem, 1)
@@ -124,9 +124,9 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 	for eva, selectors := range p.evaluators {
 		var evaluator = *eva
 
-		go func(evaluator rule.Evaluator, selectors []res.Selector) {
+		go func(evaluator rule.Evaluator, selectors []art.Selector) {
 			var (
-				processed []*res.Candidate
+				processed []*art.Candidate
 				err       error
 			)
 
@@ -173,7 +173,7 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 		return nil, err
 	}
 
-	results := make([]*res.Result, 0)
+	results := make([]*art.Result, 0)
 	// Perform actions
 	for act, hash := range processedCandidates {
 		var attachedErr error
@@ -192,7 +192,7 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 
 		if attachedErr != nil {
 			for _, c := range cl {
-				results = append(results, &res.Result{
+				results = append(results, &art.Result{
 					Target: c,
 					Error:  attachedErr,
 				})
@@ -203,10 +203,10 @@ func (p *processor) Process(artifacts []*res.Candidate) ([]*res.Result, error) {
 	return results, nil
 }
 
-type cHash map[string]*res.Candidate
+type cHash map[string]*art.Candidate
 
-func (ch cHash) toList() []*res.Candidate {
-	l := make([]*res.Candidate, 0)
+func (ch cHash) toList() []*art.Candidate {
+	l := make([]*art.Candidate, 0)
 
 	for _, v := range ch {
 		l = append(l, v)
