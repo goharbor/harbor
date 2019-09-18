@@ -55,6 +55,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     searchSub: Subscription;
     searchCloseSub: Subscription;
     isLdapMode: boolean;
+    isOidcMode: boolean;
     isHttpAuthMode: boolean;
 
     constructor(
@@ -69,6 +70,8 @@ export class HarborShellComponent implements OnInit, OnDestroy {
             this.isLdapMode = true;
         } else if (this.appConfigService.isHttpAuthMode()) {
             this.isHttpAuthMode = true;
+        } else if (this.appConfigService.isOidcMode()) {
+            this.isOidcMode = true;
         }
         this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(searchEvt => {
             if (searchEvt && searchEvt.trim() !== "") {

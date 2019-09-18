@@ -30,10 +30,11 @@ import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.
 import { UserService } from '../../../user/user.service';
 
 
-import { errorHandler as errorHandFn, PROJECT_ROOTS, ProjectRootInterface } from "@harbor/ui";
+import { errorHandler as errorHandFn, PROJECT_ROOTS, ProjectRootInterface, GroupType } from "@harbor/ui";
 
 import { MemberService } from '../member.service';
 import { UserGroup } from "./../../../group/group";
+import { AppConfigService } from "../../../app-config.service";
 
 
 @Component({
@@ -66,10 +67,13 @@ export class AddHttpAuthGroupComponent implements OnInit {
   checkOnGoing: boolean = false;
 
   constructor(private memberService: MemberService,
+    private appConfigService: AppConfigService,
     private translateService: TranslateService) { }
 
   ngOnInit(): void {
     this.projectRoots = PROJECT_ROOTS;
+
+    this.member_group = new UserGroup(this.appConfigService.isHttpAuthMode() ? GroupType.HTTP_TYPE : GroupType.OIDC_TYPE);
   }
 
   createGroupAsMember() {

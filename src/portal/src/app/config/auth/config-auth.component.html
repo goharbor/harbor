@@ -1,24 +1,28 @@
 <form #authConfigFrom="ngForm" class="clr-form clr-form-horizontal">
-    <clr-select-container>
-        <label >{{'CONFIG.AUTH_MODE' | translate}}
-            <clr-tooltip>
-                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                    <span>{{'CONFIG.TOOLTIP.AUTH_MODE' | translate}}</span>
-                </clr-tooltip-content>
-            </clr-tooltip>
+    <div class="clr-form-control">
+        <label for="authMode" class="clr-control-label">
+            {{'CONFIG.AUTH_MODE' | translate}}
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'CONFIG.TOOLTIP.AUTH_MODE' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip></label>
+        <div class="clr-control-container">
+            <div class="clr-select-wrapper">
+                <select class="clr-select" id="authMode" name="authMode" (change)="handleOnChange($event)"
+                    [disabled]="disabled(currentConfig.auth_mode)" [(ngModel)]="currentConfig.auth_mode.value">
+                    <option value="db_auth">{{'CONFIG.AUTH_MODE_DB' | translate }}</option>
+                    <option value="ldap_auth">{{'CONFIG.AUTH_MODE_LDAP' | translate }}</option>
+                    <option value="uaa_auth">{{'CONFIG.AUTH_MODE_UAA' | translate }}</option>
+                    <option *ngIf="showHttpAuth" value="http_auth">{{'CONFIG.AUTH_MODE_HTTP' | translate }}</option>
+                    <option value="oidc_auth">{{'CONFIG.AUTH_MODE_OIDC' | translate }}</option>
+                </select>
+            </div>
             <a href="https://openid.net/connect/" *ngIf="currentConfig?.auth_mode?.value==='oidc_auth'" target="_blank"
                 class="more-info-link">{{ 'BUTTON.MORE_INFO' | translate }}</a>
-        </label>
-        <select clrSelect id="authMode" name="authMode" (change)="handleOnChange($event)"
-            [disabled]="disabled(currentConfig.auth_mode)" [(ngModel)]="currentConfig.auth_mode.value">
-            <option value="db_auth">{{'CONFIG.AUTH_MODE_DB' | translate }}</option>
-            <option value="ldap_auth">{{'CONFIG.AUTH_MODE_LDAP' | translate }}</option>
-            <option value="uaa_auth">{{'CONFIG.AUTH_MODE_UAA' | translate }}</option>
-            <option *ngIf="showHttpAuth" value="http_auth">{{'CONFIG.AUTH_MODE_HTTP' | translate }}</option>
-            <option value="oidc_auth">{{'CONFIG.AUTH_MODE_OIDC' | translate }}</option>
-        </select>
-    </clr-select-container>
+        </div>
+    </div>
 
     <section *ngIf="showUAA">
         <clr-input-container>
@@ -343,6 +347,21 @@
                 [disabled]="disabled(currentConfig.oidc_client_secret)" />
             <clr-control-error>{{'TOOLTIP.ITEM_REQUIRED' | translate}}</clr-control-error>
         </clr-input-container>
+        <clr-input-container>
+            <label  for="oidcGroupClaim">{{'CONFIG.OIDC.GROUP_CLAIM_NAME' | translate}}
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'TOOLTIP.OIDC_GROUP_CLAIM' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <input clrInput name="oidcGroupClaim" type="text" #oidcClientSecretInput="ngModel"
+                [(ngModel)]="currentConfig.oidc_groups_claim.value" id="oidcGroupClaim" size="40"
+                pattern="^\w{1,256}$" [disabled]="disabled(currentConfig.oidc_groups_claim)" />
+            <clr-control-error>{{'TOOLTIP.OIDC_GROUP_CLAIM_WARNING' | translate}}</clr-control-error>
+        </clr-input-container>
+
         <clr-input-container>
                 <label class="required" for="oidcScope">{{'CONFIG.OIDC.SCOPE' | translate}}
                     <clr-tooltip>
