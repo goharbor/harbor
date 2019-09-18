@@ -16,7 +16,7 @@ package doublestar
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
+	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -28,7 +28,7 @@ import (
 type RegExpSelectorTestSuite struct {
 	suite.Suite
 
-	artifacts []*res.Candidate
+	artifacts []*art.Candidate
 }
 
 // TestRegExpSelector is entrance for RegExpSelectorTestSuite
@@ -38,13 +38,13 @@ func TestRegExpSelector(t *testing.T) {
 
 // SetupSuite to do preparation work
 func (suite *RegExpSelectorTestSuite) SetupSuite() {
-	suite.artifacts = []*res.Candidate{
+	suite.artifacts = []*art.Candidate{
 		{
 			NamespaceID:  1,
 			Namespace:    "library",
 			Repository:   "harbor",
 			Tag:          "latest",
-			Kind:         res.Image,
+			Kind:         art.Image,
 			PushedTime:   time.Now().Unix() - 3600,
 			PulledTime:   time.Now().Unix(),
 			CreationTime: time.Now().Unix() - 7200,
@@ -55,7 +55,7 @@ func (suite *RegExpSelectorTestSuite) SetupSuite() {
 			Namespace:    "retention",
 			Repository:   "redis",
 			Tag:          "4.0",
-			Kind:         res.Image,
+			Kind:         art.Image,
 			PushedTime:   time.Now().Unix() - 3600,
 			PulledTime:   time.Now().Unix(),
 			CreationTime: time.Now().Unix() - 7200,
@@ -66,7 +66,7 @@ func (suite *RegExpSelectorTestSuite) SetupSuite() {
 			Namespace:    "retention",
 			Repository:   "redis",
 			Tag:          "4.1",
-			Kind:         res.Image,
+			Kind:         art.Image,
 			PushedTime:   time.Now().Unix() - 3600,
 			PulledTime:   time.Now().Unix(),
 			CreationTime: time.Now().Unix() - 7200,
@@ -235,7 +235,7 @@ func (suite *RegExpSelectorTestSuite) TestNSExcludes() {
 }
 
 // Check whether the returned result matched the expected ones (only check repo:tag)
-func expect(expected []string, candidates []*res.Candidate) bool {
+func expect(expected []string, candidates []*art.Candidate) bool {
 	hash := make(map[string]bool)
 
 	for _, art := range candidates {
