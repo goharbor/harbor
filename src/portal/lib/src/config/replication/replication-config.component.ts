@@ -22,7 +22,7 @@ export class ReplicationConfigComponent {
 
     @Input() showSubTitle: boolean = false;
 
-    @ViewChild("replicationConfigFrom") replicationConfigForm: NgForm;
+    @ViewChild("replicationConfigFrom", { static: false }) replicationConfigForm: NgForm;
 
     get editable(): boolean {
         return this.replicationConfig &&

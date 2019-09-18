@@ -45,7 +45,6 @@ registerLocaleData(localeFr, 'fr-fr');
 registerLocaleData(localePt, 'pt-br');
 registerLocaleData(localeTr, 'tr-tr');
 
-
 export function initConfig(configService: AppConfigService, skinableService: SkinableConfig) {
     return () => {
         skinableService.getCustomFile().subscribe();
@@ -87,11 +86,7 @@ export function getCurrentLanguage(translateService: TranslateService) {
         deps: [ AppConfigService, SkinableConfig],
         multi: true
       },
-      {
-        provide: LOCALE_ID,
-        useFactory: getCurrentLanguage,
-        deps: [ TranslateService ]
-      }
+      {provide: LOCALE_ID, useValue: "en-US"}
     ],
     bootstrap: [AppComponent]
 })

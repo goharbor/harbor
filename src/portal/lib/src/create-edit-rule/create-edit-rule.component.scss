@@ -14,19 +14,8 @@ h4 {
     color: #666;
 }
 
-.colorRed {
-    color: red;
-}
-
-.colorRed a {
-    text-decoration: underline;
-    color: #007CBB;
-}
-
-.alertLabel {
-    display: block;
-    margin-top: 2px;
-    line-height: 1em;
+.alert-label {
+    color:red;
     font-size: 12px;
 }
 
@@ -42,6 +31,7 @@ h4 {
 .filterSelect {
     position: relative;
     width: 315px;
+    margin-bottom:0.5rem;
 }
 
 .filterSelect clr-icon {
@@ -84,10 +74,6 @@ h4 {
     display: inline-block;
     width: 82px;
     margin-right: 4px;
-}
-
-.form-group {
-    min-height: 36px;
 }
 
 .projectInput {
@@ -167,10 +153,10 @@ h4 {
     margin-right: 120px;
 }
 
-.goLink {
+.go-link {
     color: blue;
     border-bottom: 1px solid blue;
-    line-height: 14px;
+    line-height: 1rem;
     cursor: pointer;
 }
 
@@ -293,4 +279,13 @@ clr-modal {
     margin-left: 0.2rem;
     font-size: 16px;
     font-weight: 700;
+}
+
+.space-between {
+    display: flex;
+    justify-content: space-between;
+}
+
+.select-width {
+    min-width:11rem;
 }

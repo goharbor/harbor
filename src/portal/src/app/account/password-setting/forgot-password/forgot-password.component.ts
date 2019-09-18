@@ -29,8 +29,8 @@ export class ForgotPasswordComponent {
     validationState: boolean = true;
     isSuccess: boolean = false;
 
-    @ViewChild("forgotPasswordFrom") forgotPwdForm: NgForm;
-    @ViewChild(InlineAlertComponent)
+    @ViewChild("forgotPasswordFrom", {static: true}) forgotPwdForm: NgForm;
+    @ViewChild(InlineAlertComponent, {static: false})
     inlineAlert: InlineAlertComponent;
 
     constructor(private pwdService: PasswordSettingService) { }

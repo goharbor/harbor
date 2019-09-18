@@ -1,47 +1,18 @@
-.form-group-label-override {
-    font-size: 14px;
-    font-weight: 400;
+
+.mr-10 {
+    margin-right:0.5rem;
 }
 
-.access-level-label {
-    font-size: 14px;
-    font-weight: 400;
-    margin-left: -4px;
-    margin-right: 12px;
-    top: -6px;
-    position: relative;
-}
-.modal-height {
-    height: 15.3em;
-    overflow-y: hidden;
-    .form-block > div {
-        padding-left: 135px;
-        .input-width {
-            width: 196px;
-        }
-        .public-tooltip {
-            top: -8px;
-            left: -8px;
-        }
-        .inline-help-public {
-            margin-left: 5px;
-        }
-    }
-
+.display-flex {
+    display: flex;
+    align-items:center;
 }
 
-.form-group {
-    ::ng-deep {
-        clr-select-container {
-            margin-top: 0.3rem;
-        }
-    }
-    select {
-        display: inline;
-    }
-    .checkbox-inline {
-        margin-left: 5px;
-        height: 1rem;
+.pos-inherit {
+    position: inherit;
+}
+.clr-error {
+    .clr-select-wrapper::after {
+        right: 0.25rem !important;
     }
 }
-
