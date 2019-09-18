@@ -148,7 +148,7 @@ func (oc *OIDCController) Callback() {
 			oc.SendInternalServerError(err)
 			return
 		}
-		oc.SetSession(userKey, *u)
+		oc.PopulateUserSession(*u)
 		oc.Controller.Redirect("/", http.StatusFound)
 	}
 }
@@ -219,8 +219,8 @@ func (oc *OIDCController) Onboard() {
 	}
 
 	user.OIDCUserMeta = nil
-	oc.SetSession(userKey, user)
 	oc.DelSession(userInfoKey)
+	oc.PopulateUserSession(user)
 }
 
 func secretAndToken(tokenBytes []byte) (string, string, error) {
