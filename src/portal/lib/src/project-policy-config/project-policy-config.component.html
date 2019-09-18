@@ -56,7 +56,7 @@
             <clr-control-helper class="config-subtext"> {{ 'PROJECT_CONFIG.AUTOSCAN_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        <div class="clr-form-control" *ngIf="withClair">
+        <div class="clr-form-control" [class.clr-form-control-disabled]="!hasChangeConfigRole" *ngIf="withClair">
             <label for="systemWhitelist" class="clr-control-label">{{'CVE_WHITELIST.CVE_WHITELIST'|translate}}</label>
             <div class="w-100 clr-control-container">
                 <div class="config-subtext">
