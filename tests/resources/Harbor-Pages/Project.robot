@@ -17,19 +17,23 @@ Documentation  This resource provides any keywords related to the Harbor private
 Resource  ../../resources/Util.robot
 
 *** Variables ***
-${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Create An New Project
-    [Arguments]  ${projectname}  ${public}=false
+    [Arguments]  ${projectname}  ${public}=false  ${count_quota}=${null}  ${storage_quota}=${null}  ${storage_quota_unit}=${null}
     Navigate To Projects
     Retry Button Click  xpath=${create_project_button_xpath}
     Log To Console  Project Name: ${projectname}
+    Capture Page Screenshot
     Retry Text Input  xpath=${project_name_xpath}  ${projectname}
     ${element_project_public}=  Set Variable  xpath=${project_public_xpath}
     Run Keyword If  '${public}' == 'true'  Run Keywords  Wait Until Element Is Visible And Enabled  ${element_project_public}  AND  Click Element  ${element_project_public}
+    Run Keyword If  '${count_quota}'!='${null}'  Input Count Quota  ${count_quota}
+    Run Keyword If  '${storage_quota}'!='${null}'  Input Storage Quota  ${storage_quota}  ${storage_quota_unit}
+    Capture Page Screenshot
     Retry Element Click  ${create_project_OK_button_xpath}
     Retry Wait Until Page Not Contains Element  ${create_project_CANCEL_button_xpath}
+    Capture Page Screenshot
     Go Into Project  ${projectname}  has_image=${false}
 
 Create An New Project With New User
@@ -189,15 +193,15 @@ Edit Repo Info
     # Cancel input
     Retry Element Click  xpath=//*[@id='info-edit-button']/button
     Input Text  xpath=//*[@id='info-edit-textarea']  test_description_info
-+   Retry Element Click  xpath=//*[@id='edit-cancel']
-+   Retry Element Click  xpath=//clr-modal//button[contains(.,'CONFIRM')]
-+   Retry Wait Until Page Contains Element  //*[@id='no-editing']
+    Retry Element Click  xpath=//*[@id='edit-cancel']
+    Retry Element Click  xpath=//clr-modal//button[contains(.,'CONFIRM')]
+    Retry Wait Until Page Contains Element  //*[@id='no-editing']
     # Confirm input
     Retry Element Click  xpath=//*[@id='info-edit-button']/button
     Input Text  xpath=//*[@id='info-edit-textarea']  test_description_info
-+   Retry Element Click  xpath=//*[@id='edit-save']
+    Retry Element Click  xpath=//*[@id='edit-save']
     Retry Wait Until Page Contains  test_description_info
-    Capture Page Screenshot  RepoInfo.png
+    Capture Page Screenshot RepoInfo.png
 
 Switch To Project Label
     Retry Element Click  xpath=//project-detail//a[contains(.,'Labels')]
@@ -260,4 +264,21 @@ Get Statics Total Project
     ${totalproj}=  Get Text  //project/div/div/div[1]/div/statistics-panel/div/div[2]/div[1]/div[4]/div[1]/statistics/div/span[1]
     Convert To Integer  ${totalproj}
     [Return]  ${totalproj}
+
+Input Count Quota
+    [Arguments]  ${text}
+    ${element_xpath}=  Set Variable  ${project_add_count_quota_input_text_id}
+    Retry Clear Element Text  ${element_xpath}
+    Retry Text Input  ${element_xpath}  ${text}
+
+Input Storage Quota
+    [Arguments]  ${text}  ${unit}=${null}
+    ${element_xpath}=  Set Variable  ${project_add_storage_quota_input_text_id}
+    Retry Clear Element Text  ${element_xpath}
+    Retry Text Input  ${element_xpath}  ${text}
+    Run Keyword If  '${unit}'!='${null}'  Select Storage Quota unit  ${unit}
+
+Select Storage Quota unit
+    [Arguments]  ${unit}
+    Select From List By Value  ${project_add_storage_quota_unit_id}  ${unit}
 

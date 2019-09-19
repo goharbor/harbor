@@ -34,17 +34,7 @@ Test Case - Garbage Collection
     Sleep  2
     Go Into Project  project${d}
     Delete Repo  project${d}
-
-    Switch To Garbage Collection
-    Click GC Now
-    Logout Harbor
-    Sleep  2
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Garbage Collection
-    Sleep  1
-    Switch To GC History
-    Retry Wait Until Page Contains  Finished
-
+    GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${rc}  ${output}=  Run And Return Rc And Output  curl -u ${HARBOR_ADMIN}:${HARBOR_PASSWORD} -i --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/system/gc/1/log"
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
