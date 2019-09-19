@@ -46,8 +46,8 @@
             [(ngModel)]="imageInfo"></textarea>
         </div>
         <div class="btn-sm" *ngIf="editing">
-          <button class="btn btn-primary" [disabled]="!hasChanges()" (click)="saveInfo()">{{'BUTTON.SAVE' | translate}}</button>
-          <button class="btn" (click)="cancelInfo()">{{'BUTTON.CANCEL' | translate}}</button>
+          <button id="edit-save" class="btn btn-primary" [disabled]="!hasChanges()" (click)="saveInfo()">{{'BUTTON.SAVE' | translate}}</button>
+          <button id="edit-cancel" class="btn" (click)="cancelInfo()">{{'BUTTON.CANCEL' | translate}}</button>
         </div>
         <confirmation-dialog #confirmationDialog (confirmAction)="confirmCancel($event)"></confirmation-dialog>
       </form>
