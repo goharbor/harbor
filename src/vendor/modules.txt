@@ -93,17 +93,17 @@ github.com/dghubble/sling
 # github.com/dgrijalva/jwt-go v3.2.0+incompatible
 github.com/dgrijalva/jwt-go
 # github.com/docker/distribution v2.7.1+incompatible
-github.com/docker/distribution/registry/auth/token
 github.com/docker/distribution
-github.com/docker/distribution/manifest/schema1
 github.com/docker/distribution/manifest/schema2
+github.com/docker/distribution/registry/auth/token
+github.com/docker/distribution/manifest/schema1
 github.com/docker/distribution/reference
 github.com/docker/distribution/registry/client/auth/challenge
 github.com/docker/distribution/health
 github.com/docker/distribution/manifest/manifestlist
+github.com/docker/distribution/manifest
 github.com/docker/distribution/context
 github.com/docker/distribution/registry/auth
-github.com/docker/distribution/manifest
 github.com/docker/distribution/digestset
 github.com/docker/distribution/registry/api/errcode
 github.com/docker/distribution/uuid
@@ -151,6 +151,8 @@ github.com/gomodule/redigo/internal
 github.com/google/go-querystring/query
 # github.com/google/gofuzz v0.0.0-20170612174753-24818f796faf
 github.com/google/gofuzz
+# github.com/google/uuid v1.1.1
+github.com/google/uuid
 # github.com/gorilla/context v1.1.1
 github.com/gorilla/context
 # github.com/gorilla/handlers v1.3.0
@@ -206,9 +208,9 @@ github.com/spf13/pflag
 github.com/stretchr/objx
 # github.com/stretchr/testify v1.3.0
 github.com/stretchr/testify/mock
+github.com/stretchr/testify/suite
 github.com/stretchr/testify/assert
 github.com/stretchr/testify/require
-github.com/stretchr/testify/suite
 # github.com/theupdateframework/notary v0.6.1
 github.com/theupdateframework/notary/tuf/data
 github.com/theupdateframework/notary

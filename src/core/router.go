@@ -192,6 +192,13 @@ func initRouters() {
 		beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
 	}
 
+	// Add routes for plugin scanner management
+	scannerAPI := &api.ScannerAPI{}
+	beego.Router("/api/scanners", scannerAPI, "post:Create;get:List")
+	beego.Router("/api/scanners/:uid", scannerAPI, "get:Get;delete:Delete;put:Update;patch:SetAsDefault")
+	// Add routes for project level scanner
+	beego.Router("/api/projects/:pid([0-9]+)/scanner", scannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
+
 	// Error pages
 	beego.ErrorController(&controllers.ErrorController{})
 
