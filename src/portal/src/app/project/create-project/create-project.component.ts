@@ -89,6 +89,7 @@ export class CreateProjectComponent implements OnInit, OnChanges, OnDestroy {
           this.isNameValid = cont.valid;
           if (this.isNameValid) {
             // Check exiting from backend
+            this.checkOnGoing = true;
             this.projectService
               .checkProjectExists(cont.value)
               .subscribe(() => {
