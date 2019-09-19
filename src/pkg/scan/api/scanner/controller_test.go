@@ -12,14 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package scanner
 
 import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/dao/scanner"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -56,9 +56,6 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		Name:        "forUT",
 		Description: "sample registration",
 		URL:         "https://sample.scanner.com",
-		Adapter:     "Clair",
-		Version:     "0.1.0",
-		Vendor:      "Harbor",
 	}
 }
 

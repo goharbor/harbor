@@ -19,7 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/dao/scanner"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -48,9 +48,6 @@ func (suite *BasicManagerTestSuite) SetupSuite() {
 		Name:        "forUT",
 		Description: "sample registration",
 		URL:         "https://sample.scanner.com",
-		Adapter:     "Clair",
-		Version:     "0.1.0",
-		Vendor:      "Harbor",
 	}
 
 	uid, err := suite.mgr.Create(r)

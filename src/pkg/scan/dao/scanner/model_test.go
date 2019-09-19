@@ -38,9 +38,6 @@ func (suite *ModelTestSuite) TestJSON() {
 		Name:        "forUT",
 		Description: "sample registration",
 		URL:         "https://sample.scanner.com",
-		Adapter:     "Clair",
-		Version:     "0.1.0",
-		Vendor:      "Harbor",
 	}
 
 	json, err := r.ToJSON()
@@ -77,11 +74,8 @@ func (suite *ModelTestSuite) TestValidate() {
 
 	r.URL = "http://a.b.c"
 	err = r.Validate(true)
-	require.Error(suite.T(), err)
+	require.NoError(suite.T(), err)
 
-	r.Adapter = "Clair"
-	r.Vendor = "Harbor"
-	r.Version = "0.1.0"
 	err = r.Validate(true)
 	require.NoError(suite.T(), err)
 }

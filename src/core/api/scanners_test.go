@@ -20,10 +20,8 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/api"
-	dscan "github.com/goharbor/harbor/src/pkg/scan/scanner/dao/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/dao/scanner"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/scan"
+	sc "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -38,7 +36,7 @@ const (
 type ScannerAPITestSuite struct {
 	suite.Suite
 
-	originC api.Controller
+	originC sc.Controller
 	mockC   *MockScannerAPIController
 }
 
@@ -49,9 +47,9 @@ func TestScannerAPI(t *testing.T) {
 
 // SetupSuite prepares testing env
 func (suite *ScannerAPITestSuite) SetupTest() {
-	suite.originC = api.DefaultController
+	suite.originC = sc.DefaultController
 	m := &MockScannerAPIController{}
-	api.DefaultController = m
+	sc.DefaultController = m
 
 	suite.mockC = m
 }
@@ -59,7 +57,7 @@ func (suite *ScannerAPITestSuite) SetupTest() {
 // TearDownTest clears test case env
 func (suite *ScannerAPITestSuite) TearDownTest() {
 	// Restore
-	api.DefaultController = suite.originC
+	sc.DefaultController = suite.originC
 }
 
 // TestScannerAPICreate tests the post request to create new one
@@ -108,9 +106,6 @@ func (suite *ScannerAPITestSuite) TestScannerAPIGet() {
 		Name:        "TestScannerAPIGet",
 		Description: "JUST FOR TEST",
 		URL:         "https://a.b.c",
-		Adapter:     "Clair",
-		Vendor:      "Harbor",
-		Version:     "0.1.0",
 	}
 	suite.mockC.On("GetRegistration", "uuid").Return(res, nil)
 
@@ -133,9 +128,6 @@ func (suite *ScannerAPITestSuite) TestScannerAPICreate() {
 		Name:        "TestScannerAPICreate",
 		Description: "JUST FOR TEST",
 		URL:         "https://a.b.c",
-		Adapter:     "Clair",
-		Vendor:      "Harbor",
-		Version:     "0.1.0",
 	}
 
 	suite.mockQuery(r)
@@ -170,9 +162,6 @@ func (suite *ScannerAPITestSuite) TestScannerAPIList() {
 			Name:        "TestScannerAPIList",
 			Description: "JUST FOR TEST",
 			URL:         "https://a.b.c",
-			Adapter:     "Clair",
-			Vendor:      "Harbor",
-			Version:     "0.1.0",
 		}}
 	suite.mockC.On("ListRegistrations", query).Return(ll, nil)
 
@@ -198,9 +187,6 @@ func (suite *ScannerAPITestSuite) TestScannerAPIUpdate() {
 		Name:        "TestScannerAPIUpdate_before",
 		Description: "JUST FOR TEST",
 		URL:         "https://a.b.c",
-		Adapter:     "Clair",
-		Vendor:      "Harbor",
-		Version:     "0.1.0",
 	}
 
 	updated := &scanner.Registration{
@@ -209,9 +195,6 @@ func (suite *ScannerAPITestSuite) TestScannerAPIUpdate() {
 		Name:        "TestScannerAPIUpdate",
 		Description: "JUST FOR TEST",
 		URL:         "https://a.b.c",
-		Adapter:     "Clair",
-		Vendor:      "Harbor",
-		Version:     "0.1.0",
 	}
 
 	suite.mockQuery(updated)
@@ -240,9 +223,6 @@ func (suite *ScannerAPITestSuite) TestScannerAPIDelete() {
 		Name:        "TestScannerAPIDelete",
 		Description: "JUST FOR TEST",
 		URL:         "https://a.b.c",
-		Adapter:     "Clair",
-		Vendor:      "Harbor",
-		Version:     "0.1.0",
 	}
 
 	suite.mockC.On("DeleteRegistration", "uuid").Return(r, nil)
@@ -299,9 +279,6 @@ func (suite *ScannerAPITestSuite) TestScannerAPIProjectScanner() {
 		Name:        "TestScannerAPIProjectScanner",
 		Description: "JUST FOR TEST",
 		URL:         "https://a.b.c",
-		Adapter:     "Clair",
-		Vendor:      "Harbor",
-		Version:     "0.1.0",
 	}
 	suite.mockC.On("GetRegistrationByProject", int64(1)).Return(r, nil)
 
@@ -407,38 +384,4 @@ func (m *MockScannerAPIController) GetRegistrationByProject(projectID int64) (*s
 	}
 
 	return s.(*scanner.Registration), args.Error(1)
-}
-
-// Ping ...
-func (m *MockScannerAPIController) Ping(registration *scanner.Registration) error {
-	args := m.Called(registration)
-	return args.Error(0)
-}
-
-// Scan ...
-func (m *MockScannerAPIController) Scan(artifact *scan.Artifact) error {
-	args := m.Called(artifact)
-	return args.Error(0)
-}
-
-// GetReport ...
-func (m *MockScannerAPIController) GetReport(artifact *scan.Artifact) ([]*dscan.Report, error) {
-	args := m.Called(artifact)
-	r := args.Get(0)
-	if r == nil {
-		return nil, args.Error(1)
-	}
-
-	return r.([]*dscan.Report), args.Error(1)
-}
-
-// GetScanLog ...
-func (m *MockScannerAPIController) GetScanLog(digest string) ([]byte, error) {
-	args := m.Called(digest)
-	l := args.Get(0)
-	if l == nil {
-		return nil, args.Error(1)
-	}
-
-	return l.([]byte), args.Error(1)
 }

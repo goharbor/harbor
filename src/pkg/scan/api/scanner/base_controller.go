@@ -12,15 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package scanner
 
 import (
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	rscanner "github.com/goharbor/harbor/src/pkg/scan/scanner"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/dao/scanner"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/scan"
 	"github.com/pkg/errors"
 )
 
@@ -45,9 +44,6 @@ type basicController struct {
 	manager rscanner.Manager
 	// for operating the project level configured scanner
 	proMetaMgr metamgr.ProjectMetadataManager
-	// controller for scan actions
-	c scan.Controller
-	// Client
 }
 
 // ListRegistrations ...
@@ -58,9 +54,13 @@ func (bc *basicController) ListRegistrations(query *q.Query) ([]*scanner.Registr
 // CreateRegistration ...
 func (bc *basicController) CreateRegistration(registration *scanner.Registration) (string, error) {
 	// TODO: Get metadata from the adapter service first
-	l, err := bc.manager.List(nil)
+	// Check if there are any registrations already existing.
+	l, err := bc.manager.List(&q.Query{
+		PageSize:   1,
+		PageNumber: 1,
+	})
 	if err != nil {
-		return "", err
+		return "", errors.Wrap(err, "api controller: create registration")
 	}
 
 	if len(l) == 0 && !registration.IsDefault {
@@ -102,7 +102,7 @@ func (bc *basicController) DeleteRegistration(registrationUUID string) (*scanner
 	}
 
 	if err := bc.manager.Delete(registrationUUID); err != nil {
-		return nil, errors.Wrap(err, "delete registration")
+		return nil, errors.Wrap(err, "api controller: delete registration")
 	}
 
 	return registration, nil
@@ -127,7 +127,7 @@ func (bc *basicController) SetRegistrationByProject(projectID int64, registratio
 	// Scanner metadata existing?
 	m, err := bc.proMetaMgr.Get(projectID, proScannerMetaKey)
 	if err != nil {
-		return errors.Wrap(err, "set project scanner")
+		return errors.Wrap(err, "api controller: set project scanner")
 	}
 
 	// Update if exists
@@ -136,14 +136,14 @@ func (bc *basicController) SetRegistrationByProject(projectID int64, registratio
 		if registrationID != m[proScannerMetaKey] {
 			m[proScannerMetaKey] = registrationID
 			if err := bc.proMetaMgr.Update(projectID, m); err != nil {
-				return errors.Wrap(err, "set project scanner")
+				return errors.Wrap(err, "api controller: set project scanner")
 			}
 		}
 	} else {
 		meta := make(map[string]string, 1)
 		meta[proScannerMetaKey] = registrationID
 		if err := bc.proMetaMgr.Add(projectID, meta); err != nil {
-			return errors.Wrap(err, "set project scanner")
+			return errors.Wrap(err, "api controller: set project scanner")
 		}
 	}
 
@@ -159,21 +159,21 @@ func (bc *basicController) GetRegistrationByProject(projectID int64) (*scanner.R
 	// First, get it from the project metadata
 	m, err := bc.proMetaMgr.Get(projectID, proScannerMetaKey)
 	if err != nil {
-		return nil, errors.Wrap(err, "get project scanner")
+		return nil, errors.Wrap(err, "api controller: get project scanner")
 	}
 
 	if len(m) > 0 {
 		if registrationID, ok := m[proScannerMetaKey]; ok && len(registrationID) > 0 {
 			registration, err := bc.manager.Get(registrationID)
 			if err != nil {
-				return nil, errors.Wrap(err, "get project scanner")
+				return nil, errors.Wrap(err, "api controller: get project scanner")
 			}
 
 			if registration == nil {
 				// Not found
 				// Might be deleted by the admin, the project scanner ID reference should be cleared
 				if err := bc.proMetaMgr.Delete(projectID, proScannerMetaKey); err != nil {
-					return nil, errors.Wrap(err, "get project scanner")
+					return nil, errors.Wrap(err, "api controller: get project scanner")
 				}
 			} else {
 				return registration, nil
@@ -186,9 +186,4 @@ func (bc *basicController) GetRegistrationByProject(projectID int64) (*scanner.R
 
 	// TODO: Check status by the client later
 	return registration, err
-}
-
-// Ping ...
-func (bc *basicController) Ping(registration *scanner.Registration) error {
-	return nil
 }
