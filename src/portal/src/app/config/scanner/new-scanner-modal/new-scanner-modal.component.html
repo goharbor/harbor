@@ -1,0 +1,14 @@
+<clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
+    <h3 *ngIf="!isEdit" class="modal-title">Add Scanner</h3>
+    <h3 *ngIf="isEdit" class="modal-title">Edit Scanner</h3>
+    <div class="modal-body body-format">
+        <inline-alert class="modal-title"></inline-alert>
+        <new-scanner-form></new-scanner-form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="!canTestEndpoint">TEST CONNECTION</button>
+        <button type="button" class="btn btn-outline" (click)="close()">CANCEL</button>
+        <button *ngIf="!isEdit" type="button" [clrLoading]="saveBtnState" class="btn btn-primary" [disabled]="!valid" (click)="create()">ADD</button>
+        <button *ngIf="isEdit" type="button" [clrLoading]="saveBtnState" class="btn btn-primary" [disabled]="!validForSaving" (click)="save()">SAVE</button>
+    </div>
+</clr-modal>

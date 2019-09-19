@@ -1,0 +1,124 @@
+<div>
+    <form [formGroup]="newScannerForm"  class="clr-form clr-form-horizontal">
+        <div class="clr-form-control">
+            <label class="required clr-control-label">Name</label>
+            <div class="clr-control-container" [class.clr-error]="!isNameValid">
+                <div class="clr-input-wrapper">
+                    <input autocomplete="off" #name formControlName="name" class="clr-input width-240"
+                           type="text"
+                           id="scanner-name">
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
+                </div>
+                <clr-control-error *ngIf="!isNameValid">
+                    {{nameTooltip}}
+                </clr-control-error>
+            </div>
+        </div>
+        <div class="clr-form-control">
+            <label class="clr-control-label">Description</label>
+            <div class="clr-control-container">
+                <textarea  autocomplete="off"  formControlName="description"  class="clr-textarea width-240" type="text"
+                          id="description">
+                </textarea>
+            </div>
+        </div>
+        <div class="clr-form-control">
+            <label class="required clr-control-label">Endpoint</label>
+            <div class="clr-control-container" [class.clr-error]="!isEndpointValid || showEndpointError">
+                <div class="clr-input-wrapper">
+                    <input (focus)="showEndpointError=false" (blur)="checkEndpointUrl()" #endpointUrl placeholder="http(s)://192.168.1.1" autocomplete="off"  formControlName="url"
+                           class="clr-input width-240" type="text" id="scanner-endpoint">
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <span class="spinner spinner-inline" [hidden]="!checkEndpointOnGoing"></span>
+                </div>
+                <clr-control-error *ngIf="!isEndpointValid || showEndpointError">
+                    {{endpointTooltip}}
+                </clr-control-error>
+            </div>
+        </div>
+        <div class="clr-form-control">
+            <label class="clr-control-label">Authorization</label>
+            <div class="clr-control-container">
+                <div class="clr-select-wrapper">
+                    <select formControlName="auth"  class="clr-select width-240"  id="scanner-authorization">
+                        <option value="None">None</option>
+                        <option value="Basic">Basic</option>
+                        <option value="Bearer">Bearer</option>
+                        <option value="APIKey">APIKey</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <ng-container formGroupName="accessCredential">
+            <div class="clr-form-control" *ngIf="auth==='Basic'">
+                <label class="required clr-control-label">Username</label>
+                <div class="clr-control-container" [class.clr-error]="!isUserNameValid">
+                    <div class="clr-input-wrapper">
+                        <input formControlName="username" autocomplete="off"
+                               class="clr-input width-240" type="text" id="scanner-username">
+                        <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <clr-control-error *ngIf="!isUserNameValid">
+                        Username is required
+                    </clr-control-error>
+                </div>
+            </div>
+            <div class="clr-form-control" *ngIf="auth==='Basic'">
+                <label class="required clr-control-label">Password</label>
+                <div class="clr-control-container" [class.clr-error]="!isPasswordValid">
+                    <div class="clr-input-wrapper">
+                        <input formControlName="password" autocomplete="off"
+                               class="clr-input width-240" type="password" id="scanner-password">
+                        <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <clr-control-error *ngIf="!isPasswordValid">
+                        password is required
+                    </clr-control-error>
+                </div>
+            </div>
+            <div class="clr-form-control" *ngIf="auth==='Bearer'">
+                <label class="required clr-control-label">Token</label>
+                <div class="clr-control-container" [class.clr-error]="!isTokenValid">
+                    <div class="clr-input-wrapper">
+                        <input formControlName="token" autocomplete="off"
+                               class="clr-input width-240" type="text" id="scanner-token">
+                        <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <clr-control-error *ngIf="!isTokenValid">
+                        Token is required
+                    </clr-control-error>
+                </div>
+            </div>
+            <div class="clr-form-control" *ngIf="auth==='APIKey'">
+                <label class="required clr-control-label">APIKey</label>
+                <div class="clr-control-container" [class.clr-error]="!isApiKeyValid">
+                    <div class="clr-input-wrapper">
+                        <input formControlName="apiKey" autocomplete="off"
+                               class="clr-input width-240" type="text" id="scanner-apiKey">
+                        <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    </div>
+                    <clr-control-error *ngIf="!isApiKeyValid">
+                        APIKey is required
+                    </clr-control-error>
+                </div>
+            </div>
+        </ng-container>
+        <div class="clr-form-control">
+            <label class="clr-control-label">Skip certificate verify
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        {{'CONFIG.TOOLTIP.VERIFY_REMOTE_CERT' | translate}}
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <div class="clr-control-container padding-top-3">
+                <div class="clr-checkbox-wrapper">
+                    <input clrCheckbox formControlName="skipCertVerify"
+                           type="checkbox" id="scanner-skipCertVerify">
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
