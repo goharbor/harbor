@@ -42,37 +42,35 @@ The Harbor Security Team will respond to vulnerability reports as follows:
 1.  The Security Team will investigate the vulnerability and determine its effects and criticality.
 2.  If the issue is not deemed to be a vulnerability, the Security Team will follow up with a detailed reason for rejection.
 3.  If a vulnerability is acknowledged and the timeline for a fix is determined, the Security Team will work on a plan to communicate with the appropriate community (to be completed within 1-7 days of the report of the vulnerability), including mitigating steps that affected users can take to protect themselves until the fix is rolled out.
-4.  The Security Team will also create a [CVSS](https://www.first.org/cvss/specification-document) using the [CVSS Calculator](https://www.first.org/cvss/calculator/3.0). The Security Team makes the final call on the calculated CVSS; it is better to move quickly than making the CVSS perfect.
+4.  The Security Team will also create a [CVSS](https://www.first.org/cvss/specification-document) using the [CVSS Calculator](https://www.first.org/cvss/calculator/3.0). The Security Team makes the final call on the calculated CVSS; it is better to move quickly than making the CVSS perfect. Issues may also be reported to [Mitre](https://cve.mitre.org/) using this [scoring calculator](https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator).
 5.  The Security Team will work on fixing the vulnerability and perform internal testing before preparing to roll out the fix.
 6.  The Security Team will first email the fix to cncf-harbor-distributors-announce@lists.cncf.io, so that they can further test the fix and gather feedback. See the section **Disclosure to Private Distributors List** for details about how to join this mailing list.
 7.  Once the fix is confirmed, the Security Team will patch the vulnerability in the next patch or minor release, and backport a patch release into all earlier supported releases. 
-8.  The Security Team publishes an [advisory](https://github.com/goharbor/harbor/security/advisories) to the Harbor community via GitHub. On a case-by-case basis, additional communication via Slack, Twitter, blog and other channels will assist in educating Harbor users and rolling out the patched release to affected users.  
+8.  The Security Team publishes an [advisory](https://github.com/goharbor/harbor/security/advisories) to the Harbor community via GitHub. In most cases, additional communication via Slack, Twitter, blog and other channels will assist in educating Harbor users and rolling out the patched release to affected users.  
  
 ## Mailing lists
-- Use cncf-harbor-security@lists.cncf.io: for any security concerns. Received by Product Security Team members, and used by this team to discuss security issues and fixes.
-- Use cncf-harbor-distributors-announce@lists.cncf.io: for early private information on security patch releases. See below for information about how Harbor distributors can apply to join this list.
+- Use cncf-harbor-security@lists.cncf.io to report security concerns. Received by Product Security Team members, and used by the security team to discuss security issues and fixes.
+- Join cncf-harbor-distributors-announce@lists.cncf.io for early private information on security patch releases. See below for information on how Harbor distributors can apply to join this list.
 
-## Disclosure to Private Distributors List
-This list is intended to be used primarily to provide actionable information to multiple distributor projects at once. This list is not intended to inform individuals about security issues.
+## Disclosure to Harbor Distributors List
+This private list is intended to be used primarily to provide actionable information to multiple distributor projects at once. This list is not intended to inform individuals about security issues.
 
-## Membership Criteria
-To be eligible to join the cncf-harbor-distributors-announce@lists.cncf.io mailing list, your distribution should:
-1. Be an active distributor of the Harbor component.
-2. Have a user base that is not limited to your own organization.
-3. Have a publicly verifiable track record up to the present day of fixing security issues.
-4. Not be a downstream or rebuild of another distributor.
-5. Be a participant and active contributor in the Harbor community.
-6. Accept the Embargo Policy that is outlined below.
-7. Have someone who is already on the list vouch for the person requesting membership on behalf of your distribution.
+### Membership Criteria
+To be eligible to join the cncf-harbor-distributors-announce@lists.cncf.io mailing list, you should:
+1. Be an active distributor of the Harbor
+2. Have a user base that is not limited to your own organization
+3. Have a publicly verifiable track record up to the present day of fixing security issues
+4. Not be a downstream or rebuild of another distributor
+5. Be a participant and active contributor in the Harbor community
+6. Accept the Embargo Policy that is outlined below. Membership to this mailing list automatically assumes you accepted the terms of the Embargo Policy
+7. Have someone who is already on the list vouch for the person requesting membership on behalf of your distribution
  
-## Embargo Policy
-The information that members receive on cncf-harbor-distributors-announce@lists.cncf.io must not be made public, shared, or even hinted at anywhere beyond those who need to know within your specific team, unless you receive explicit approval to do so from the list. This remains true until the public disclosure date/time agreed upon by the list. Members of the list and others cannot use the information for any reason other than to get the issue fixed for your respective distribution's users.
+### Embargo Policy
+The information that members receive on cncf-harbor-distributors-announce@lists.cncf.io must not be made public, shared, or even hinted at anywhere beyond those who need to know within your specific team, unless you receive explicit approval to do so from the Harbor Security Team. This remains true until the public disclosure date/time agreed upon by the list. Members of the list and others cannot use the information for any reason other than to get the issue fixed for your respective distribution's users.
 Before you share any information from the list with members of your team who are required to fix the issue, these team members must agree to the same terms, and only be provided with information on a need-to-know basis.
-In the unfortunate event that you share information beyond what is permitted by this policy, you must urgently inform the cncf-harbor-security@lists.cncf.io mailing list of exactly what information was leaked and to whom.
-If you continue to leak information and break the policy outlined here, you will be removed from the list.
+
+In the unfortunate event that you share information beyond what is permitted by this policy, you must urgently inform the cncf-harbor-security@lists.cncf.io mailing list of exactly what information was leaked and to whom. If you continue to leak information and break the policy outlined here, you will be permanently removed from the list.
  
-## Requesting to Join
+### Requesting to Join
 Send new membership requests to cncf-harbor-security@lists.cncf.io.
 In the body of your request please specify how you qualify for membership and fulfill each criterion listed in the Membership Criteria section above.
-
-
