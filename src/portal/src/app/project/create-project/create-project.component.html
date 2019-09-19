@@ -3,16 +3,21 @@
     <div class="modal-body modal-height">
         <inline-alert></inline-alert>
         <form #projectForm="ngForm" class="clr-form clr-form-horizontal">
-            <clr-input-container>
-                <label class="required">{{'PROJECT.NAME' | translate}}</label>
-                <input clrInput type="text" id="create_project_name" [(ngModel)]="project.name" name="create_project_name" class="input-width"
-                    required pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" minlength="2" #projectName="ngModel" autocomplete="off"
-                    (keyup)='handleValidation()'>
-                <clr-control-error *ngIf="!isNameValid" class="tooltip-content">
-                    {{ nameTooltipText | translate }}
-                </clr-control-error>
-                <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
-            </clr-input-container>
+            <div class="clr-form-control">
+                <label class="required clr-control-label">{{'PROJECT.NAME' | translate}}</label>
+                <div class="clr-control-container" [class.clr-error]="!isNameValid">
+                    <div class="clr-input-wrapper">
+                        <input type="text" id="create_project_name" [(ngModel)]="project.name" name="create_project_name" class="clr-input input-width"
+                               required pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" minlength="2" #projectName="ngModel" autocomplete="off"
+                               (keyup)='handleValidation()'>
+                        <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                        <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
+                    </div>
+                    <clr-control-error *ngIf="!isNameValid" class="tooltip-content">
+                        {{ nameTooltipText | translate }}
+                    </clr-control-error>
+                </div>
+            </div>
             <clr-checkbox-container>
                 <label class="form-group-label-override">{{'PROJECT.ACCESS_LEVEL' | translate}}
                     <clr-tooltip>
@@ -41,7 +46,6 @@
                 <clr-control-error class="tooltip-content">
                     {{ 'PROJECT.COUNT_QUOTA_TIP' | translate }}
                 </clr-control-error>
-                <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
             </clr-input-container>
             <div class="clr-form-control" *ngIf="isSystemAdmin">
                 <label for="create_project_storage_limit" class="required clr-control-label">{{'PROJECT.STORAGE_QUOTA' | translate}}
