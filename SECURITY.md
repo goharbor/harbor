@@ -16,12 +16,14 @@ There is no mandated timeline for major versions and there are currently no crit
 | Harbor v1.8.x   | :white_check_mark: |
 | Harbor v1.9.x   | :white_check_mark: |
  
-## Reporting a Vulnerability
-Security is of the highest importance and all security vulnerabilities should be reported to Harbor privately, to minimize attacks against current users of Harbor before they are fixed. Vulnerabilities will be investigated and patched on the next patch (or minor) release as soon as possible. This information could be kept entirely internal to the project.  
- 
-**IMPORTANT: Do not file public issues on GitHub for security vulnerabilities. **
+## Reporting a Vulnerability - Private Disclosure Process
+Security is of the highest importance and all security vulnerabilities or suspected security vulnerabilities should be reported to Harbor privately, to minimize attacks against current users of Harbor before they are fixed. Vulnerabilities will be investigated and patched on the next patch (or minor) release as soon as possible. This information could be kept entirely internal to the project.  
 
-To report a vulnerability or a security-related issue, please email the private address cncf-harbor-security@lists.cncf.io with the details of the vulnerability. The email will be fielded by the Harbor Security Team, which is made up of Harbor maintainers who have committer and release permissions. Emails will be addressed within 3 business days, including a detailed plan to rectify the issue and workarounds to perform in the meantime. Do not report non-security-impacting bugs through this channel. Use GitHub issues filed under https://github.com/goharbor/harbor/issues/new/choose instead.
+If you know of a publicly disclosed security vulnerability for Harbor, please **IMMEDIATELY** contact cncf-harbor-security@lists.cncf.io to inform the Harbor Security Team.
+ 
+**IMPORTANT: Do not file public issues on GitHub for security vulnerabilities**
+
+To report a vulnerability or a security-related issue, please email the private address cncf-harbor-security@lists.cncf.io with the details of the vulnerability. The email will be fielded by the Harbor Security Team, which is made up of Harbor maintainers who have committer and release permissions. Emails will be addressed within 3 business days, including a detailed plan to investigate the issue and any potential workarounds to perform in the meantime. Do not report non-security-impacting bugs through this channel. Use [GitHub issues](https://github.com/goharbor/harbor/issues/new/choose) instead.
 
 ### Proposed Email Content
 Provide a descriptive subject line and in the body of the email include the following information:
@@ -41,16 +43,21 @@ The Harbor Security Team will respond to vulnerability reports as follows:
  
 1.  The Security Team will investigate the vulnerability and determine its effects and criticality.
 2.  If the issue is not deemed to be a vulnerability, the Security Team will follow up with a detailed reason for rejection.
-3.  If a vulnerability is acknowledged and the timeline for a fix is determined, the Security Team will work on a plan to communicate with the appropriate community (to be completed within 1-7 days of the report of the vulnerability), including mitigating steps that affected users can take to protect themselves until the fix is rolled out.
-4.  The Security Team will also create a [CVSS](https://www.first.org/cvss/specification-document) using the [CVSS Calculator](https://www.first.org/cvss/calculator/3.0). The Security Team makes the final call on the calculated CVSS; it is better to move quickly than making the CVSS perfect. Issues may also be reported to [Mitre](https://cve.mitre.org/) using this [scoring calculator](https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator).
-5.  The Security Team will work on fixing the vulnerability and perform internal testing before preparing to roll out the fix.
-6.  The Security Team will first email the fix to cncf-harbor-distributors-announce@lists.cncf.io, so that they can further test the fix and gather feedback. See the section **Disclosure to Private Distributors List** for details about how to join this mailing list.
-7.  Once the fix is confirmed, the Security Team will patch the vulnerability in the next patch or minor release, and backport a patch release into all earlier supported releases. 
-8.  The Security Team publishes an [advisory](https://github.com/goharbor/harbor/security/advisories) to the Harbor community via GitHub. In most cases, additional communication via Slack, Twitter, blog and other channels will assist in educating Harbor users and rolling out the patched release to affected users.  
+3.  The Security Team will initiate a conversation with the reporter within 3 business days
+4.  If a vulnerability is acknowledged and the timeline for a fix is determined, the Security Team will work on a plan to communicate with the appropriate community (to be completed within 1-10 days of the report of the vulnerability), including mitigating steps that affected users can take to protect themselves until the fix is rolled out.
+5.  The Security Team will also create a [CVSS](https://www.first.org/cvss/specification-document) using the [CVSS Calculator](https://www.first.org/cvss/calculator/3.0). The Security Team makes the final call on the calculated CVSS; it is better to move quickly than making the CVSS perfect. Issues may also be reported to [Mitre](https://cve.mitre.org/) using this [scoring calculator](https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator).
+6.  The Security Team will work on fixing the vulnerability and perform internal testing before preparing to roll out the fix.
+7.  The Security Team will first email the fix to cncf-harbor-distributors-announce@lists.cncf.io, so that they can further test the fix and gather feedback. See the section **Disclosure to Private Distributors List** for details about how to join this mailing list.
+8.  Once the fix is confirmed, the Security Team will patch the vulnerability in the next patch or minor release, and backport a patch release into all earlier supported releases. 
+
+### Fix Disclosure Process
+The Security Team publishes an [advisory](https://github.com/goharbor/harbor/security/advisories) to the Harbor community via GitHub. In most cases, additional communication via Slack, Twitter, blog and other channels will assist in educating Harbor users and rolling out the patched release to affected users. 
+
+The Security Team will also publish any mitigating steps users can take until the fix can be applied to their Harbor instances.
  
 ## Mailing lists
 - Use cncf-harbor-security@lists.cncf.io to report security concerns. Received by Product Security Team members, and used by the security team to discuss security issues and fixes.
-- Join cncf-harbor-distributors-announce@lists.cncf.io for early private information on security patch releases. See below for information on how Harbor distributors can apply to join this list.
+- Join cncf-harbor-distributors-announce@lists.cncf.io for early private information, including mitigating steps, on security patch releases. See below for information on how Harbor distributors can apply to join this list.
 
 ## Disclosure to Harbor Distributors List
 This private list is intended to be used primarily to provide actionable information to multiple distributor projects at once. This list is not intended to inform individuals about security issues.
@@ -74,3 +81,8 @@ In the unfortunate event that you share information beyond what is permitted by 
 ### Requesting to Join
 Send new membership requests to cncf-harbor-security@lists.cncf.io.
 In the body of your request please specify how you qualify for membership and fulfill each criterion listed in the Membership Criteria section above.
+
+## Confidentiality, integrity and availability
+We consider vulnerabilities leading to the compromise of data confidentiality, elevation of privilege, or integrity to be our highest priority concerns. Availability, in particular in areas relating to DoS and resource exhaustion, is also a serious security concern. The Harbor Security Team takes all vulnerabilities, potential vulnerabilities, and suspected vulnerabilities seriously and will investigate them in an urgent and expeditious manner.
+
+Note that we do not currently consider the default settings for Harbor to be secure-by-default. It is necessary for operators to explicitly configure settings, role based access control, and other resource related features in Harbor to provide a hardened Harbor environment. We will not act on any security disclosure that relates to a lack of safe defaults. Over time, we will work towards improved safe-by-default configuration, taking into account backwards compatibility.
