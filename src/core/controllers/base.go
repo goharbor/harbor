@@ -25,8 +25,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/goharbor/harbor/src/core/filter"
-
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
 	"github.com/goharbor/harbor/src/common"
@@ -37,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/filter"
 )
 
 const userKey = "user"

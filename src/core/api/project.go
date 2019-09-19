@@ -234,6 +234,12 @@ func (p *ProjectAPI) Post() {
 
 // Head ...
 func (p *ProjectAPI) Head() {
+
+	if !p.SecurityCtx.IsAuthenticated() {
+		p.SendUnAuthorizedError(errors.New("Unauthorized"))
+		return
+	}
+
 	name := p.GetString("project_name")
 	if len(name) == 0 {
 		p.SendBadRequestError(errors.New("project_name is needed"))

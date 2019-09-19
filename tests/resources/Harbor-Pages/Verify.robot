@@ -144,8 +144,8 @@ Verify Project Setting
     \    Run Keyword If  ${public} == "public"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@name='public']//label
     \    Run Keyword If  ${contenttrust} == "true"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@name='content-trust']//label
     \    Run Keyword If  ${contenttrust} == "false"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@name='content-trust']//label
-    \    Run Keyword If  ${preventrunning} == "true"  Checkbox Should Be Checked  //div[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
-    \    Run Keyword If  ${preventrunning} == "false"  Checkbox Should Not Be Checked    //div[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
+    \    Run Keyword If  ${preventrunning} == "true"  Checkbox Should Be Checked  //*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
+    \    Run Keyword If  ${preventrunning} == "false"  Checkbox Should Not Be Checked    //*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
     \    Run Keyword If  ${scanonpush} == "true"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='scan-image-on-push-wrapper']//input
     \    Run Keyword If  ${scanonpush} == "true"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='scan-image-on-push-wrapper']//input
     \   Close Browser

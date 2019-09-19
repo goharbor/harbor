@@ -25,7 +25,7 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
 
   formChangeSubscription: Subscription;
 
-  @ViewChild('groupForm')
+  @ViewChild('groupForm', { static: true })
   groupForm: NgForm;
 
   submitted = false;
@@ -54,15 +54,6 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
 
 
   ngOnDestroy() { }
-
-  public get isDNInvalid(): boolean {
-    let dnControl = this.groupForm.controls['ldap_group_dn'];
-    return dnControl && dnControl.invalid && (dnControl.dirty || dnControl.touched);
-  }
-  public get isNameInvalid(): boolean {
-    let dnControl = this.groupForm.controls['group_name'];
-    return dnControl && dnControl.invalid && (dnControl.dirty || dnControl.touched);
-  }
 
   public get isFormValid(): boolean {
     return this.groupForm.valid;

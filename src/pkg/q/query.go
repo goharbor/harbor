@@ -12,11 +12,14 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package res
+package q
 
-// Result keeps the action result
-type Result struct {
-	Target *Candidate `json:"target"`
-	// nil error means success
-	Error error `json:"error"`
+// Query parameters
+type Query struct {
+	// Page number
+	PageNumber int64
+	// Page size
+	PageSize int64
+	// List of key words
+	Keywords map[string]string
 }

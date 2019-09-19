@@ -21,7 +21,7 @@ import (
 	jmodels "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
+	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/testing/clients"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -73,33 +73,33 @@ type clientTestSuite struct {
 func (c *clientTestSuite) TestGetCandidates() {
 	client := &basicClient{}
 	client.coreClient = &fakeCoreClient{}
-	var repository *res.Repository
+	var repository *art.Repository
 	// nil repository
 	candidates, err := client.GetCandidates(repository)
 	require.NotNil(c.T(), err)
 
 	// image repository
-	repository = &res.Repository{}
-	repository.Kind = res.Image
+	repository = &art.Repository{}
+	repository.Kind = art.Image
 	repository.Namespace = "library"
 	repository.Name = "hello-world"
 	candidates, err = client.GetCandidates(repository)
 	require.Nil(c.T(), err)
 	assert.Equal(c.T(), 1, len(candidates))
-	assert.Equal(c.T(), res.Image, candidates[0].Kind)
+	assert.Equal(c.T(), art.Image, candidates[0].Kind)
 	assert.Equal(c.T(), "library", candidates[0].Namespace)
 	assert.Equal(c.T(), "hello-world", candidates[0].Repository)
 	assert.Equal(c.T(), "latest", candidates[0].Tag)
 
 	/*
 		// chart repository
-		repository.Kind = res.Chart
+		repository.Kind = art.Chart
 		repository.Namespace = "goharbor"
 		repository.Name = "harbor"
 		candidates, err = client.GetCandidates(repository)
 		require.Nil(c.T(), err)
 		assert.Equal(c.T(), 1, len(candidates))
-		assert.Equal(c.T(), res.Chart, candidates[0].Kind)
+		assert.Equal(c.T(), art.Chart, candidates[0].Kind)
 		assert.Equal(c.T(), "goharbor", candidates[0].Namespace)
 		assert.Equal(c.T(), "1.0", candidates[0].Tag)
 	*/
@@ -109,20 +109,20 @@ func (c *clientTestSuite) TestDelete() {
 	client := &basicClient{}
 	client.coreClient = &fakeCoreClient{}
 
-	var candidate *res.Candidate
+	var candidate *art.Candidate
 	// nil candidate
 	err := client.Delete(candidate)
 	require.NotNil(c.T(), err)
 
 	// image
-	candidate = &res.Candidate{}
-	candidate.Kind = res.Image
+	candidate = &art.Candidate{}
+	candidate.Kind = art.Image
 	err = client.Delete(candidate)
 	require.Nil(c.T(), err)
 
 	/*
 		// chart
-		candidate.Kind = res.Chart
+		candidate.Kind = art.Chart
 		err = client.Delete(candidate)
 		require.Nil(c.T(), err)
 	*/

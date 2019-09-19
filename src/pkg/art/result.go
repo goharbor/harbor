@@ -12,19 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package res
+package art
 
-// Selector is used to filter the inputting list
-type Selector interface {
-	// Select the matched ones
-	//
-	//  Arguments:
-	//    artifacts []*Candidate : candidates for matching
-	//
-	//  Returns:
-	//    []*Candidate : matched candidates
-	Select(artifacts []*Candidate) ([]*Candidate, error)
+// Result keeps the action result
+type Result struct {
+	Target *Candidate `json:"target"`
+	// nil error means success
+	Error error `json:"error"`
 }
-
-// SelectorFactory is factory method to return a selector implementation
-type SelectorFactory func(decoration string, pattern string) Selector

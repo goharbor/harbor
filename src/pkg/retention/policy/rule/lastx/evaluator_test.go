@@ -5,8 +5,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -38,7 +38,7 @@ func (e *EvaluatorTestSuite) TestNew() {
 
 func (e *EvaluatorTestSuite) TestProcess() {
 	now := time.Now().UTC()
-	data := []*res.Candidate{
+	data := []*art.Candidate{
 		{PushedTime: now.Add(time.Duration(1*-24) * time.Hour).Unix()},
 		{PushedTime: now.Add(time.Duration(2*-24) * time.Hour).Unix()},
 		{PushedTime: now.Add(time.Duration(3*-24) * time.Hour).Unix()},

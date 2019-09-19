@@ -19,9 +19,9 @@ import (
 	"sort"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 )
 
 const (
@@ -40,7 +40,7 @@ type evaluator struct {
 }
 
 // Process the candidates based on the rule definition
-func (e *evaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
+func (e *evaluator) Process(artifacts []*art.Candidate) ([]*art.Candidate, error) {
 	// Sort artifacts by their "active time"
 	//
 	// Active time is defined as the selection of c.PulledTime or c.PushedTime,
@@ -81,7 +81,7 @@ func New(params rule.Parameters) rule.Evaluator {
 	}
 }
 
-func activeTime(c *res.Candidate) int64 {
+func activeTime(c *art.Candidate) int64 {
 	if c.PulledTime > c.PushedTime {
 		return c.PulledTime
 	}

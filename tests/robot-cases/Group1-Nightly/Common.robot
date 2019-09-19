@@ -330,7 +330,6 @@ Test Case - Delete Multi Repo
 Test Case - Delete Multi Tag
     Init Chrome Driver
     ${d}=   Get Current Date    result_format=%m%s
-
     Sign In Harbor  ${HARBOR_URL}  user014  Test1@34
     Create An New Project  project${d}
     Push Image With Tag  ${ip}  user014  Test1@34  project${d}  redis  3.2.10-alpine  3.2.10-alpine
@@ -449,3 +448,116 @@ Test Case - Retag A Image Tag
     Page Should Contain Element  xpath=${tag_value_xpath}
     Close Browser
 
+Test Case - Create An New Project With Quotas Set
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${count_quota}=  Set Variable  1234
+    ${storage_quota}=  Set Variable  600
+    ${storage_quota_unit}=  Set Variable  GB
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project    project${d}  count_quota=${count_quota}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
+    ${count_quota_ret}=  Get Project Count Quota Text From Project Quotas List  project${d}
+    Should Be Equal As Strings  ${count_quota_ret}  0 of ${count_quota}
+    ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
+    Should Be Equal As Strings  ${storage_quota_ret}  0Byte of ${storage_quota}${storage_quota_unit}
+    Close Browser
+
+Test Case - Project Image And Chart Artifact Count Quotas Dispaly And Control
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${count_quota}=  Set Variable  2
+    ${storage_quota}=  Set Variable  500
+    ${storage_quota_unit}=  Set Variable  MB
+    ${image}=  Set Variable  redis
+    ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
+    ${image_size}=    Set Variable    34.14MB
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${d}  count_quota=${count_quota}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
+    Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}
+    ${count_quota_ret}=  Get Project Count Quota Text From Project Quotas List  project${d}
+    Should Be Equal As Strings  ${count_quota_ret}  1 of ${count_quota}
+    ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
+    Should Be Equal As Strings  ${storage_quota_ret}  ${image_size} of ${storage_quota}${storage_quota_unit}
+    #Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  alpine
+    Go Into Project  project${d}
+    Switch To Project Charts
+    Upload Chart files
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox  err_msg=Quota exceeded when processing the request of adding 1 of count resource, which when updated to current usage of 2 will exceed the configured upper limit of 2
+    ${count_quota_ret}=  Get Project Count Quota Text From Project Quotas List  project${d}
+    Should Be Equal As Strings  ${count_quota_ret}  2 of ${count_quota}
+    Go Into Project  project${d}
+    Delete Repo  project${d}/${image}
+    ${count_quota_ret}=  Get Project Count Quota Text From Project Quotas List  project${d}
+    Should Be Equal As Strings  ${count_quota_ret}  1 of ${count_quota}
+    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox
+    Close Browser
+
+Test Case - Project Storage Quotas Dispaly And Control
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${storage_quota}=  Set Variable  330
+    ${storage_quota_unit}=  Set Variable  MB
+    ${image_a}=  Set Variable  redis
+    ${image_b}=  Set Variable  logstash
+    ${image_a_size}=    Set Variable    34.14MB
+    ${image_b_size}=    Set Variable    321.03MB
+    ${image_a_ver}=  Set Variable  5.0
+    ${image_b_ver}=  Set Variable  6.8.3
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_b}  tag=${image_b_ver}  tag1=${image_b_ver}
+    ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
+    Should Be Equal As Strings  ${storage_quota_ret}  ${image_b_size} of ${storage_quota}${storage_quota_unit}
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=Quota exceeded when processing the request of adding 25.8 MiB of storage resource, which when updated to current usage of 329.3 MiB will exceed the configured upper limit of 330.0 MiB
+    Go Into Project  project${d}
+    Delete Repo  project${d}/${image_b}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}  tag=${image_a_ver}  tag1=${image_a_ver}
+    ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
+    Should Be Equal As Strings  ${storage_quota_ret}  ${image_a_size} of ${storage_quota}${storage_quota_unit}
+    Close Browser
+
+Test Case - Project Quotas Control Under Retag
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${count_quota}=  Set Variable  1
+    ${image_a}=  Set Variable  redis
+    ${image_b}=  Set Variable  logstash
+    ${image_a_ver}=  Set Variable  5.0
+    ${image_b_ver}=  Set Variable  6.8.3
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project_a_${d}
+    Create An New Project  project_b_${d}  count_quota=${count_quota}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project_a_${d}  ${image_a}  tag=${image_a_ver}  tag1=${image_a_ver}
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project_a_${d}  ${image_b}  tag=${image_b_ver}  tag1=${image_b_ver}
+    Go Into Project  project_a_${d}
+    Go Into Repo  project_a_${d}/${image_a}
+    Retag Image  ${image_a_ver}  project_b_${d}  ${image_a}  ${image_a_ver}
+    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
+    Go Into Project  project_a_${d}
+    Go Into Repo  project_a_${d}/${image_b}
+    Retag Image  ${image_b_ver}  project_b_${d}  ${image_b}  ${image_b_ver}
+    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
+    Sleep  2
+    Go Into Project  project_b_${d}
+    Sleep  2
+    Capture Page Screenshot
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(.,'${image_a}')]/a
+    Retry Wait Until Page Not Contains Element  xpath=//clr-dg-cell[contains(.,'${image_b}')]/a
+    Capture Page Screenshot
+    Close Browser
+
+Test Case - Project Quotas Control Under GC
+    Init Chrome Driver
+    ${d}=  Get Current Date  result_format=%m%s
+    ${storage_quota}=  Set Variable  200
+    ${storage_quota_unit}=  Set Variable  MB
+    ${image_a}=  Set Variable  logstash
+    ${image_a_size}=    Set Variable    321.03MB
+    ${image_a_ver}=  Set Variable  6.8.3
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=Quota exceeded when processing the request of adding 82.5 MiB of storage resource, which when updated to current usage of 166.6 MiB will exceed the configured upper limit of 200.0 MiB
+    GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
+    Should Be Equal As Strings  ${storage_quota_ret}  0Byte of ${storage_quota}${storage_quota_unit}
+    Close Browser

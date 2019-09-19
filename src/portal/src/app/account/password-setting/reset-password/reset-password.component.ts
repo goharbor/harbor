@@ -37,8 +37,8 @@ export class ResetPasswordComponent implements OnInit {
     resetOk: boolean = false;
     confirmPwd: string = "";
 
-    @ViewChild("resetPwdForm") resetPwdForm: NgForm;
-    @ViewChild(InlineAlertComponent)
+    @ViewChild("resetPwdForm", {static: false}) resetPwdForm: NgForm;
+    @ViewChild(InlineAlertComponent, {static: false})
     inlineAlert: InlineAlertComponent;
 
     constructor(
