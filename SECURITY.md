@@ -51,7 +51,7 @@ The Harbor Security Team will respond to vulnerability reports as follows:
 8.  Once the fix is confirmed, the Security Team will patch the vulnerability in the next patch or minor release, and backport a patch release into all earlier supported releases. 
 
 ### Fix Disclosure Process
-The Security Team publishes an [advisory](https://github.com/goharbor/harbor/security/advisories) to the Harbor community via GitHub. In most cases, additional communication via Slack, Twitter, blog and other channels will assist in educating Harbor users and rolling out the patched release to affected users. 
+The Security Team publishes an [advisory](https://github.com/goharbor/harbor/security/advisories) to the Harbor community via GitHub. In most cases, additional communication via Slack, Twitter, CNCF lists, blog and other channels will assist in educating Harbor users and rolling out the patched release to affected users. 
 
 The Security Team will also publish any mitigating steps users can take until the fix can be applied to their Harbor instances.
  
