@@ -34,6 +34,7 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
 
   isLdapMode: boolean;
   isHttpAuthMode: boolean;
+  isOidcMode: boolean;
   constructor(
     private session: SessionService,
     private msgHandler: MessageHandlerService,
@@ -49,7 +50,10 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
     if (this.appConfigService.isHttpAuthMode()) {
       this.isHttpAuthMode = true;
     }
-    this.group = new UserGroup(this.isLdapMode ? GroupType.LDAP_TYPE : GroupType.HTTP_TYPE);
+    if (this.appConfigService.isOidcMode()) {
+      this.isOidcMode = true;
+    }
+    this.group = new UserGroup(this.isLdapMode ? GroupType.LDAP_TYPE : this.isHttpAuthMode ? GroupType.HTTP_TYPE : GroupType.OIDC_TYPE);
   }
 
 
@@ -112,7 +116,7 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
   }
 
   resetGroup() {
-    this.group = new UserGroup(this.isLdapMode ? GroupType.LDAP_TYPE : GroupType.HTTP_TYPE);
+    this.group = new UserGroup(this.isLdapMode ? GroupType.LDAP_TYPE : this.isHttpAuthMode ? GroupType.HTTP_TYPE : GroupType.OIDC_TYPE);
     this.groupForm.reset();
   }
 }

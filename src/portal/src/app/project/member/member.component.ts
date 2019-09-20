@@ -64,6 +64,7 @@ export class MemberComponent implements OnInit, OnDestroy {
   batchChangeRoleInfos = {};
   isLdapMode: boolean;
   isHttpAuthMode: boolean;
+  isOidcMode: boolean;
   @ViewChild(AddMemberComponent, {static: false})
   addMemberComponent: AddMemberComponent;
 
@@ -120,6 +121,9 @@ export class MemberComponent implements OnInit, OnDestroy {
     }
     if (this.appConfigService.isHttpAuthMode()) {
       this.isHttpAuthMode = true;
+    }
+    if (this.appConfigService.isOidcMode()) {
+      this.isOidcMode = true;
     }
   }
   doSearch(searchMember: string) {

@@ -97,7 +97,9 @@
         "OIDC_NAME": "OIDC sağlayıcısının adı.",
         "OIDC_ENDPOINT": "Bir OIDC şikayet sunucusunun URL'si.",
         "OIDC_SCOPE": "Kapsam, kimlik doğrulama sırasında OIDC sunucusuna gönderildi. “Openid” ve “offline_access” içermelidir. Google kullanıyorsanız, lütfen “offline_access“'i bu alandan kaldırın.",
-        "OIDC_VERIFYCERT": "OIDC sunucunuz kendinden imzalı sertifika ile barındırılıyorsa bu kutunun işaretini kaldırın."
+        "OIDC_VERIFYCERT": "OIDC sunucunuz kendinden imzalı sertifika ile barındırılıyorsa bu kutunun işaretini kaldırın.",
+        "OIDC_GROUP_CLAIM": "The name of Claim in the ID token whose value is the list of group names.",
+        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Güncel şifrenizi giriniz",
@@ -374,6 +376,7 @@
         "GROUPS": "Gruplar",
         "IMPORT_LDAP_GROUP": "LDAP Grubunu İçe Aktar",
         "IMPORT_HTTP_GROUP": "Yeni HTTP Grubu",
+        "IMPORT_OIDC_GROUP": "New OIDC Group",
         "ADD": "Yeni Grup",
         "EDIT": "Düzenle",
         "DELETE": "Sil",
@@ -387,6 +390,7 @@
         "EDIT_GROUP_SUCCESS": "Grup başarıyla düzenlendi",
         "LDAP_TYPE": "LDAP",
         "HTTP_TYPE": "HTTP",
+        "OIDC_TYPE": "OIDC",
         "OF": "of",
         "ITEMS": "madde",
         "NEW_MEMBER": "Yeni grup Üyesi",
@@ -856,7 +860,8 @@
             "OIDC_VERIFYCERT": "Sertifikayı Doğrula",
             "OIDC_SETNAME": "OIDC Kullanıcı Adını Ayarla",
             "OIDC_SETNAMECONTENT": "Üçüncü tarafla (OIDC) kimlik doğrulaması yaparken ilk kez bir Harbor kullanıcı adı oluşturmalısınız. Bu, harbor projeler, roller vb. ile ilişkilendirilmek üzere kullanılacaktır.",
-            "OIDC_USERNAME": "Kullanıcı Adı"
+            "OIDC_USERNAME": "Kullanıcı Adı",
+            "GROUP_CLAIM_NAME": "Group Claim Name"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Tümünü başarılı bir şekilde tara!",

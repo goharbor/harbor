@@ -92,7 +92,9 @@
         "OIDC_NAME": "le nom du fournisseur de oidc.",
         "OIDC_ENDPOINT": "l'url d'un serveur oidc plainte.",
         "OIDC_SCOPE": "le champ envoyés au serveur au cours oidc l'authentification.il doit contenir 'openid', et 'offline_access'.si vous utilisez google, veuillez supprimer 'offline_access' dans ce domaine",
-        "OIDC_VERIFYCERT": "décocher cette case si votre oidc serveur est accueilli par auto - certificat signé."
+        "OIDC_VERIFYCERT": "décocher cette case si votre oidc serveur est accueilli par auto - certificat signé.",
+        "OIDC_GROUP_CLAIM": "The name of Claim in the ID token whose value is the list of group names.",
+        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Entrez le mot de passe actuel",
@@ -367,6 +369,7 @@
         "GROUPS": "Groups",
         "IMPORT_LDAP_GROUP": "Import LDAP Group",
         "IMPORT_HTTP_GROUP": "New HTTP Group",
+        "IMPORT_OIDC_GROUP": "New OIDC Group",
         "ADD": "Add",
         "EDIT": "Edit",
         "DELETE": "Delete",
@@ -380,6 +383,7 @@
         "EDIT_GROUP_SUCCESS": "Edit group success",
         "LDAP_TYPE": "LDAP",
         "HTTP_TYPE": "HTTP",
+        "OIDC_TYPE": "OIDC",
         "OF": "of",
         "ITEMS": "items",
         "NEW_MEMBER": "New Group Member",
@@ -830,7 +834,8 @@
             "OIDC_VERIFYCERT": "Certificat vérifier",
             "OIDC_SETNAME": "Ensemble OIDC nom d'utilisateur",
             "OIDC_SETNAMECONTENT": "vous devez créer un Harbor identifiant la première fois lors de la vérification par une tierce partie (oidc). il sera utilisé au sein de port à être associés aux projets, des rôles, etc.",
-            "OIDC_USERNAME": "d'utilisateur"
+            "OIDC_USERNAME": "d'utilisateur",
+            "GROUP_CLAIM_NAME": "Group Claim Name"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Déclenchement d'analyse globale avec succès !",
