@@ -55,14 +55,14 @@ func (e *EvaluatorTestSuite) TestNew() {
 func (e *EvaluatorTestSuite) TestProcess() {
 	now := time.Now().UTC()
 	data := []*art.Candidate{
-		{PushedTime: daysAgo(now, 1)},
-		{PushedTime: daysAgo(now, 2)},
-		{PushedTime: daysAgo(now, 3)},
-		{PushedTime: daysAgo(now, 4)},
-		{PushedTime: daysAgo(now, 5)},
-		{PushedTime: daysAgo(now, 10)},
-		{PushedTime: daysAgo(now, 20)},
-		{PushedTime: daysAgo(now, 30)},
+		{PushedTime: daysAgo(now, 1, time.Hour)},
+		{PushedTime: daysAgo(now, 2, time.Hour)},
+		{PushedTime: daysAgo(now, 3, time.Hour)},
+		{PushedTime: daysAgo(now, 4, time.Hour)},
+		{PushedTime: daysAgo(now, 5, time.Hour)},
+		{PushedTime: daysAgo(now, 10, time.Hour)},
+		{PushedTime: daysAgo(now, 20, time.Hour)},
+		{PushedTime: daysAgo(now, 30, time.Hour)},
 	}
 
 	tests := []struct {
@@ -71,13 +71,13 @@ func (e *EvaluatorTestSuite) TestProcess() {
 		minPushTime int64
 	}{
 		{n: 0, expected: 0, minPushTime: 0},
-		{n: 1, expected: 1, minPushTime: daysAgo(now, 1)},
-		{n: 2, expected: 2, minPushTime: daysAgo(now, 2)},
-		{n: 3, expected: 3, minPushTime: daysAgo(now, 3)},
-		{n: 4, expected: 4, minPushTime: daysAgo(now, 4)},
-		{n: 5, expected: 5, minPushTime: daysAgo(now, 5)},
-		{n: 15, expected: 6, minPushTime: daysAgo(now, 10)},
-		{n: 90, expected: 8, minPushTime: daysAgo(now, 30)},
+		{n: 1, expected: 1, minPushTime: daysAgo(now, 1, 0)},
+		{n: 2, expected: 2, minPushTime: daysAgo(now, 2, 0)},
+		{n: 3, expected: 3, minPushTime: daysAgo(now, 3, 0)},
+		{n: 4, expected: 4, minPushTime: daysAgo(now, 4, 0)},
+		{n: 5, expected: 5, minPushTime: daysAgo(now, 5, 0)},
+		{n: 15, expected: 6, minPushTime: daysAgo(now, 10, 0)},
+		{n: 90, expected: 8, minPushTime: daysAgo(now, 30, 0)},
 	}
 
 	for _, tt := range tests {
@@ -120,6 +120,6 @@ func TestEvaluatorSuite(t *testing.T) {
 	suite.Run(t, &EvaluatorTestSuite{})
 }
 
-func daysAgo(from time.Time, n int) int64 {
-	return from.Add(time.Duration(-1*24*n) * time.Hour).Unix()
+func daysAgo(from time.Time, n int, offset time.Duration) int64 {
+	return from.Add(time.Duration(-1*24*n)*time.Hour + offset).Unix()
 }
