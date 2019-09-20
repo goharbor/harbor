@@ -31,8 +31,7 @@ Create An New Project
     Run Keyword If  '${count_quota}'!='${null}'  Input Count Quota  ${count_quota}
     Run Keyword If  '${storage_quota}'!='${null}'  Input Storage Quota  ${storage_quota}  ${storage_quota_unit}
     Capture Page Screenshot
-    Retry Element Click  ${create_project_OK_button_xpath}
-    Retry Wait Until Page Not Contains Element  ${create_project_CANCEL_button_xpath}
+    Retry Double Keywords When Error  Retry Element Click  ${create_project_OK_button_xpath}  Retry Wait Until Page Not Contains Element  ${create_project_OK_button_xpath}
     Capture Page Screenshot
     Go Into Project  ${projectname}  has_image=${false}
 
@@ -201,7 +200,7 @@ Edit Repo Info
     Input Text  xpath=//*[@id='info-edit-textarea']  test_description_info
     Retry Element Click  xpath=//*[@id='edit-save']
     Retry Wait Until Page Contains  test_description_info
-    Capture Page Screenshot RepoInfo.png
+    Capture Page Screenshot
 
 Switch To Project Label
     Retry Element Click  xpath=//project-detail//a[contains(.,'Labels')]
