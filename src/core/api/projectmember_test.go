@@ -196,7 +196,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 					},
 				},
 			},
-			code: http.StatusBadRequest,
+			code: http.StatusInternalServerError,
 		},
 		{
 			request: &testingRequest{
@@ -241,7 +241,7 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 					},
 				},
 			},
-			code: http.StatusBadRequest,
+			code: http.StatusInternalServerError,
 		},
 	}
 	runCodeCheckingCases(t, cases...)

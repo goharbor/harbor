@@ -230,11 +230,11 @@ func SearchAndOnBoardUser(username string) (int, error) {
 // SearchAndOnBoardGroup ... if altGroupName is not empty, take the altGroupName as groupName in harbor DB
 func SearchAndOnBoardGroup(groupKey, altGroupName string) (int, error) {
 	userGroup, err := SearchGroup(groupKey)
-	if userGroup == nil {
-		return 0, ErrorGroupNotExist
-	}
 	if err != nil {
 		return 0, err
+	}
+	if userGroup == nil {
+		return 0, ErrorGroupNotExist
 	}
 	if userGroup != nil {
 		err = OnBoardGroup(userGroup, altGroupName)

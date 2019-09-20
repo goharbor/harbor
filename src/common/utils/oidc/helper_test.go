@@ -15,6 +15,7 @@
 package oidc
 
 import (
+	gooidc "github.com/coreos/go-oidc"
 	"github.com/goharbor/harbor/src/common"
 	config2 "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/models"
@@ -109,4 +110,51 @@ func TestTestEndpoint(t *testing.T) {
 	}
 	assert.Nil(t, TestEndpoint(c1))
 	assert.NotNil(t, TestEndpoint(c2))
+}
+
+func TestGroupsFromToken(t *testing.T) {
+	res := GroupsFromToken(nil)
+	assert.Equal(t, []string{}, res)
+	res = GroupsFromToken(&gooidc.IDToken{})
+	assert.Equal(t, []string{}, res)
+}
+
+func TestGroupsFromClaim(t *testing.T) {
+	in := map[string]interface{}{
+		"user":     "user1",
+		"groups":   []interface{}{"group1", "group2"},
+		"groups_2": []interface{}{"group1", "group2", 2},
+	}
+
+	m := []struct {
+		input  map[string]interface{}
+		key    string
+		expect []string
+	}{
+		{
+			in,
+			"user",
+			nil,
+		},
+		{
+			in,
+			"prg",
+			nil,
+		},
+		{
+			in,
+			"groups",
+			[]string{"group1", "group2"},
+		},
+		{
+			in,
+			"groups_2",
+			[]string{"group1", "group2"},
+		},
+	}
+
+	for _, tc := range m {
+		r := groupsFromClaim(tc.input, tc.key)
+		assert.Equal(t, tc.expect, r)
+	}
 }
