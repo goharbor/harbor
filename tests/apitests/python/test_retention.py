@@ -70,7 +70,7 @@ class TestProjects(unittest.TestCase):
 
         # Dry run
         self.retention.trigger_retention_policy(retention_id, dry_run=True, **TestProjects.USER_RA_CLIENT)
-        time.sleep(2)
+        time.sleep(10)
         resp=self.retention.get_retention_executions(retention_id, **TestProjects.USER_RA_CLIENT)
         self.assertTrue(len(resp)>0)
         execution=resp[0]
