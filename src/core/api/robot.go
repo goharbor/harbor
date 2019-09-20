@@ -155,6 +155,10 @@ func (r *RobotAPI) Post() {
 		Name:  robot.Name,
 		Token: rawTk,
 	}
+
+	w := r.Ctx.ResponseWriter
+	w.Header().Set("Content-Type", "application/json")
+
 	r.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
 	r.Data["json"] = robotRep
 	r.ServeJSON()
