@@ -25,7 +25,7 @@ import { forkJoin } from 'rxjs';
 })
 export class ReplicationPageComponent implements OnInit, AfterViewInit {
   projectIdentify: string | number;
-  @ViewChild("replicationView") replicationView: ReplicationComponent;
+  @ViewChild("replicationView", {static: false}) replicationView: ReplicationComponent;
   projectName: string;
   hasCreateReplicationPermission: boolean;
   hasUpdateReplicationPermission: boolean;

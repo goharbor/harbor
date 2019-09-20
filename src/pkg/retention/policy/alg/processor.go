@@ -15,9 +15,9 @@
 package alg
 
 import (
+	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 )
 
 // Processor processing the whole policy targeting a repository.
@@ -27,12 +27,12 @@ type Processor interface {
 	// Process the artifact candidates
 	//
 	//  Arguments:
-	//    artifacts []*res.Candidate : process the retention candidates
+	//    artifacts []*art.Candidate : process the retention candidates
 	//
 	//  Returns:
-	//    []*res.Result : the processed results
+	//    []*art.Result : the processed results
 	//    error         : common error object if any errors occurred
-	Process(artifacts []*res.Candidate) ([]*res.Result, error)
+	Process(artifacts []*art.Candidate) ([]*art.Result, error)
 }
 
 // Parameter for constructing a processor
@@ -42,7 +42,7 @@ type Parameter struct {
 	Evaluator rule.Evaluator
 
 	// Selectors for the rule
-	Selectors []res.Selector
+	Selectors []art.Selector
 
 	// Performer for the rule evaluator
 	Performer action.Performer

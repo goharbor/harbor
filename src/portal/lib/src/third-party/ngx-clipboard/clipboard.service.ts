@@ -7,7 +7,7 @@ import {
   Renderer,
   SkipSelf
 } from "@angular/core";
-import { DOCUMENT } from "@angular/platform-browser";
+import { DOCUMENT } from "@angular/common";
 import { WINDOW } from "../ngx-window-token/index";
 
 @Injectable()

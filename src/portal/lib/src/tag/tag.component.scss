@@ -246,3 +246,7 @@ clr-datagrid {
     position: static;
   }
 }
+
+::ng-deep .clr-form-control {
+  margin-top: 0;
+}

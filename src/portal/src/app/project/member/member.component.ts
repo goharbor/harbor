@@ -64,12 +64,12 @@ export class MemberComponent implements OnInit, OnDestroy {
   batchChangeRoleInfos = {};
   isLdapMode: boolean;
   isHttpAuthMode: boolean;
-  @ViewChild(AddMemberComponent)
+  @ViewChild(AddMemberComponent, {static: false})
   addMemberComponent: AddMemberComponent;
 
-  @ViewChild(AddGroupComponent)
+  @ViewChild(AddGroupComponent, {static: false})
   addGroupComponent: AddGroupComponent;
-  @ViewChild(AddHttpAuthGroupComponent)
+  @ViewChild(AddHttpAuthGroupComponent, {static: false})
   addHttpAuthGroupComponent: AddHttpAuthGroupComponent;
   hasCreateMemberPermission: boolean;
   hasUpdateMemberPermission: boolean;

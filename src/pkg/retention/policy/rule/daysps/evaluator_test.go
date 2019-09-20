@@ -20,8 +20,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -54,7 +54,7 @@ func (e *EvaluatorTestSuite) TestNew() {
 
 func (e *EvaluatorTestSuite) TestProcess() {
 	now := time.Now().UTC()
-	data := []*res.Candidate{
+	data := []*art.Candidate{
 		{PushedTime: daysAgo(now, 1)},
 		{PushedTime: daysAgo(now, 2)},
 		{PushedTime: daysAgo(now, 3)},

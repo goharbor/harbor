@@ -40,3 +40,5 @@ import 'zone.js/dist/zone';
 (window as any).global = window;
 // @ts-ignore
 window.Buffer = window.Buffer || require('buffer').Buffer;
+import * as process from "process";
+(window as any).process = process;

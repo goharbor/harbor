@@ -38,10 +38,10 @@ export class EditProjectQuotasComponent implements OnInit {
   staticBackdrop = true;
   closable = false;
   quotaForm: NgForm;
-  @ViewChild(InlineAlertComponent)
+  @ViewChild(InlineAlertComponent, {static: false})
   inlineAlert: InlineAlertComponent;
 
-  @ViewChild('quotaForm')
+  @ViewChild('quotaForm', {static: true})
   currentForm: NgForm;
   @Output() confirmAction = new EventEmitter();
   quotaDangerCoefficient: number = QUOTA_DANGER_COEFFICIENT;

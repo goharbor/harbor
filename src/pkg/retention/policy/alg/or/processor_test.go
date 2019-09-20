@@ -19,6 +19,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/pkg/art/selectors/doublestar"
+	"github.com/goharbor/harbor/src/pkg/art/selectors/label"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg"
@@ -26,9 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/always"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/lastx"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/doublestar"
-	"github.com/goharbor/harbor/src/pkg/retention/res/selectors/label"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -38,7 +38,7 @@ import (
 type ProcessorTestSuite struct {
 	suite.Suite
 
-	all []*res.Candidate
+	all []*art.Candidate
 
 	oldClient dep.Client
 }
@@ -50,7 +50,7 @@ func TestProcessor(t *testing.T) {
 
 // SetupSuite ...
 func (suite *ProcessorTestSuite) SetupSuite() {
-	suite.all = []*res.Candidate{
+	suite.all = []*art.Candidate{
 		{
 			Namespace:  "library",
 			Repository: "harbor",
@@ -90,7 +90,7 @@ func (suite *ProcessorTestSuite) TestProcess() {
 	lastxParams[lastx.ParameterX] = 10
 	params = append(params, &alg.Parameter{
 		Evaluator: lastx.New(lastxParams),
-		Selectors: []res.Selector{
+		Selectors: []art.Selector{
 			doublestar.New(doublestar.Matches, "*dev*"),
 			label.New(label.With, "L1,L2"),
 		},
@@ -101,7 +101,7 @@ func (suite *ProcessorTestSuite) TestProcess() {
 	latestKParams[latestps.ParameterK] = 10
 	params = append(params, &alg.Parameter{
 		Evaluator: latestps.New(latestKParams),
-		Selectors: []res.Selector{
+		Selectors: []art.Selector{
 			label.New(label.With, "L3"),
 		},
 		Performer: perf,
@@ -131,7 +131,7 @@ func (suite *ProcessorTestSuite) TestProcess2() {
 	alwaysParams := make(map[string]rule.Parameter)
 	params = append(params, &alg.Parameter{
 		Evaluator: always.New(alwaysParams),
-		Selectors: []res.Selector{
+		Selectors: []art.Selector{
 			doublestar.New(doublestar.Matches, "latest"),
 			label.New(label.With, ""),
 		},
@@ -163,16 +163,16 @@ func (suite *ProcessorTestSuite) TestProcess2() {
 type fakeRetentionClient struct{}
 
 // GetCandidates ...
-func (frc *fakeRetentionClient) GetCandidates(repo *res.Repository) ([]*res.Candidate, error) {
+func (frc *fakeRetentionClient) GetCandidates(repo *art.Repository) ([]*art.Candidate, error) {
 	return nil, errors.New("not implemented")
 }
 
 // Delete ...
-func (frc *fakeRetentionClient) Delete(candidate *res.Candidate) error {
+func (frc *fakeRetentionClient) Delete(candidate *art.Candidate) error {
 	return nil
 }
 
 // DeleteRepository ...
-func (frc *fakeRetentionClient) DeleteRepository(repo *res.Repository) error {
+func (frc *fakeRetentionClient) DeleteRepository(repo *art.Repository) error {
 	panic("implement me")
 }

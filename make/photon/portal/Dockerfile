@@ -6,6 +6,7 @@ COPY ./LICENSE /portal_src
 
 WORKDIR /build_dir
 
+
 RUN cp -r /portal_src/* /build_dir \
     && ls -la \
     && apt-get update \
@@ -14,7 +15,7 @@ RUN cp -r /portal_src/* /build_dir \
     && npm install \
     && npm run build_lib \
     && npm run link_lib \
-    && npm run release
+    && node --max_old_space_size=8192 'node_modules/@angular/cli/bin/ng' build --prod
 
 
 FROM photon:2.0

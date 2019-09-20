@@ -155,7 +155,7 @@ func (oc *OIDCController) Callback() {
 			oc.SendInternalServerError(err)
 			return
 		}
-		oc.SetSession(userKey, *u)
+		oc.PopulateUserSession(*u)
 		oc.Controller.Redirect("/", http.StatusFound)
 	}
 }
@@ -182,7 +182,6 @@ func (oc *OIDCController) Onboard() {
 		oc.SendBadRequestError(errors.New("Failed to get OIDC user info from session"))
 		return
 	}
-	defer oc.DelSession(userInfoKey)
 	log.Debugf("User info string: %s\n", userInfoStr)
 	tb, ok := oc.GetSession(tokenKey).([]byte)
 	if !ok {
@@ -223,11 +222,13 @@ func (oc *OIDCController) Onboard() {
 			return
 		}
 		oc.SendInternalServerError(err)
+		oc.DelSession(userInfoKey)
 		return
 	}
 
 	user.OIDCUserMeta = nil
-	oc.SetSession(userKey, user)
+	oc.DelSession(userInfoKey)
+	oc.PopulateUserSession(user)
 }
 
 func secretAndToken(tokenBytes []byte) (string, string, error) {
