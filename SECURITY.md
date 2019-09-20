@@ -34,8 +34,8 @@ Provide a descriptive subject line and in the body of the email include the foll
 * List other projects or dependencies that were used in conjunction with Harbor to produce the vulnerability.
  
 ## When to report a vulnerability
-* When you think Harbor has a potential security vulnerability
-* When you suspect a potential vulnerability but you are unsure that it impacts Harbor
+* When you think Harbor has a potential security vulnerability.
+* When you suspect a potential vulnerability but you are unsure that it impacts Harbor.
 * When you know of or suspect a potential vulnerability on another project that is used by Harbor. For example Harbor has a dependency on Docker, PGSql, Redis, Notary, Clair, etc.
   
 ## Patch, Release, and Disclosure
@@ -43,7 +43,7 @@ The Harbor Security Team will respond to vulnerability reports as follows:
  
 1.  The Security Team will investigate the vulnerability and determine its effects and criticality.
 2.  If the issue is not deemed to be a vulnerability, the Security Team will follow up with a detailed reason for rejection.
-3.  The Security Team will initiate a conversation with the reporter within 3 business days
+3.  The Security Team will initiate a conversation with the reporter within 3 business days.
 4.  If a vulnerability is acknowledged and the timeline for a fix is determined, the Security Team will work on a plan to communicate with the appropriate community (to be completed within 1-10 days of the report of the vulnerability), including mitigating steps that affected users can take to protect themselves until the fix is rolled out.
 5.  The Security Team will also create a [CVSS](https://www.first.org/cvss/specification-document) using the [CVSS Calculator](https://www.first.org/cvss/calculator/3.0). The Security Team makes the final call on the calculated CVSS; it is better to move quickly than making the CVSS perfect. Issues may also be reported to [Mitre](https://cve.mitre.org/) using this [scoring calculator](https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator).
 6.  The Security Team will work on fixing the vulnerability and perform internal testing before preparing to roll out the fix.
@@ -56,8 +56,8 @@ The Security Team publishes an [advisory](https://github.com/goharbor/harbor/sec
 The Security Team will also publish any mitigating steps users can take until the fix can be applied to their Harbor instances.
  
 ## Mailing lists
-- Use cncf-harbor-security@lists.cncf.io to report security concerns. Received by Product Security Team members, and used by the security team to discuss security issues and fixes.
-- Join cncf-harbor-distributors-announce@lists.cncf.io for early private information, including mitigating steps, on security patch releases. See below for information on how Harbor distributors can apply to join this list.
+- Use cncf-harbor-security@lists.cncf.io to report security concerns to the Harbor Security Team, who uses the list to privately discuss security issues and fixes prior to disclosure.
+- Join cncf-harbor-distributors-announce@lists.cncf.io for early private information and vulnerability disclosure. Early disclosure may include mitigating steps and additional information on security patch releases. See below for information on how Harbor distributors can apply to join this list.
 
 ## Disclosure to Harbor Distributors List
 This private list is intended to be used primarily to provide actionable information to multiple distributor projects at once. This list is not intended to inform individuals about security issues.
