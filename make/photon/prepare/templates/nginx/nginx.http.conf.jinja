@@ -39,6 +39,10 @@ http {
     # disable any limits to avoid HTTP 413 for large image uploads
     client_max_body_size 0;
 
+    # Add extra headers
+    add_header X-Frame-Options DENY;
+    add_header Content-Security-Policy "frame-ancestors 'none'";
+
     # costumized location config file can place to /etc/nginx/etc with prefix harbor.http. and suffix .conf
     include /etc/nginx/conf.d/harbor.http.*.conf;
 
