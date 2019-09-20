@@ -64,14 +64,16 @@ This private list is intended to be used primarily to provide actionable informa
 
 ### Membership Criteria
 To be eligible to join the cncf-harbor-distributors-announce@lists.cncf.io mailing list, you should:
-1. Be an active distributor of the Harbor
-2. Have a user base that is not limited to your own organization
-3. Have a publicly verifiable track record up to the present day of fixing security issues
-4. Not be a downstream or rebuild of another distributor
-5. Be a participant and active contributor in the Harbor community
-6. Accept the Embargo Policy that is outlined below. Membership to this mailing list automatically assumes you accepted the terms of the Embargo Policy
-7. Have someone who is already on the list vouch for the person requesting membership on behalf of your distribution
- 
+1. Be an active distributor of Harbor.
+2. Have a user base that is not limited to your own organization.
+3. Have a publicly verifiable track record up to the present day of fixing security issues.
+4. Not be a downstream or rebuild of another distributor.
+5. Be a participant and active contributor in the Harbor community.
+6. Accept the Embargo Policy that is outlined below. 
+7. Have someone who is already on the list vouch for the person requesting membership on behalf of your distribution.
+
+**The terms and conditions of the Embargo Policy apply to all members of this mailing list. A request for membership represents your acceptance to the terms and conditions of the Embargo Policy**
+
 ### Embargo Policy
 The information that members receive on cncf-harbor-distributors-announce@lists.cncf.io must not be made public, shared, or even hinted at anywhere beyond those who need to know within your specific team, unless you receive explicit approval to do so from the Harbor Security Team. This remains true until the public disclosure date/time agreed upon by the list. Members of the list and others cannot use the information for any reason other than to get the issue fixed for your respective distribution's users.
 Before you share any information from the list with members of your team who are required to fix the issue, these team members must agree to the same terms, and only be provided with information on a need-to-know basis.
