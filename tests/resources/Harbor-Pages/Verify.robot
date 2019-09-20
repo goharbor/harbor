@@ -173,7 +173,8 @@ Verify System Setting
     Textfield Value Should Be  xpath=//*[@id='emailUsername']  @{emailuser}[0]
     Textfield Value Should Be  xpath=//*[@id='emailFrom']  @{emailfrom}[0]
     Switch To System Settings
-    Page Should Contain  @{creation}[0]
+    ${ret}  Get Selected List Value  xpath=//select[@id='proCreation']
+    Should Be Equal As Strings  ${ret}  @{creation}[0]
     Token Must Be Match  @{token}[0]
     Switch To Vulnerability Page
     Page Should Contain  None
