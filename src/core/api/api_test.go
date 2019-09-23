@@ -180,6 +180,7 @@ func runCodeCheckingCases(t *testing.T, cases ...*codeCheckingCase) {
 		if c.postFunc != nil {
 			if err := c.postFunc(resp); err != nil {
 				t.Logf("error in running post function: %v", err)
+				t.Error(err)
 			}
 		}
 	}

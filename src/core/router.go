@@ -121,6 +121,9 @@ func initRouters() {
 
 	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/", &api.NotificationJobAPI{}, "get:List")
 
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules", &api.ImmutableTagRuleAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &api.ImmutableTagRuleAPI{})
+
 	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig;put:Put")
 	beego.Router("/api/configurations", &api.ConfigAPI{}, "get:Get;put:Put")
 	beego.Router("/api/statistics", &api.StatisticAPI{})
@@ -164,6 +167,8 @@ func initRouters() {
 	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "get:ListRetentionExecs")
 	beego.Router("/api/retentions/:id/executions/:eid/tasks", &api.RetentionAPI{}, "get:ListRetentionExecTasks")
 	beego.Router("/api/retentions/:id/executions/:eid/tasks/:tid", &api.RetentionAPI{}, "get:GetRetentionExecTaskLog")
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules", &api.ImmutableTagRuleAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &api.ImmutableTagRuleAPI{})
 
 	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 
