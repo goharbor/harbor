@@ -171,7 +171,29 @@
             "main": "lib/src/test.ts",
             "tsConfig": "lib/tsconfig.lib.json",
             "karmaConfig": "lib/karma.conf.js"
-          }
+          },
+          "scripts": [
+            "node_modules/core-js/client/shim.min.js",
+            "node_modules/mutationobserver-shim/dist/mutationobserver.min.js",
+            "node_modules/@webcomponents/custom-elements/custom-elements.min.js",
+            "node_modules/@clr/icons/clr-icons.min.js",
+            "node_modules/web-animations-js/web-animations.min.js",
+            "node_modules/marked/lib/marked.js",
+            "node_modules/prismjs/prism.js",
+            "node_modules/prismjs/components/prism-yaml.min.js"
+          ],
+          "styles": [
+            "node_modules/@clr/icons/clr-icons.min.css",
+            "node_modules/@clr/ui/clr-ui.min.css",
+            "node_modules/prismjs/themes/prism-solarizedlight.css",
+            "src/styles.css"
+          ],
+          "assets": [
+            "src/images",
+            "src/favicon.ico",
+            "src/setting.json",
+            "src/i18n"
+          ]
         },
         "lint": {
           "builder": "@angular-devkit/build-angular:tslint",
