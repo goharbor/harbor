@@ -58,7 +58,7 @@
             </clr-tooltip>
         </label>
         <clr-checkbox-container *ngIf="!withAdmiral">
-            <label for="repoReadOnly">{{'CONFIG.REPO_READ_ONLY' | translate}}
+            <label id="repo_read_only_lbl" for="repoReadOnly">{{'CONFIG.REPO_READ_ONLY' | translate}}
                 <clr-tooltip>
                     <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                     <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
