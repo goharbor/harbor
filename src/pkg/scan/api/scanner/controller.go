@@ -12,13 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package scanner
 
 import (
 	"github.com/goharbor/harbor/src/pkg/q"
-	dscan "github.com/goharbor/harbor/src/pkg/scan/scanner/dao/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/dao/scanner"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 )
 
 // Controller provides the related operations of scanner for the upper API.
@@ -114,44 +112,4 @@ type Controller interface {
 	//     *scanner.Registration : the default scanner registration
 	//     error                 : non nil error if any errors occurred
 	GetRegistrationByProject(projectID int64) (*scanner.Registration, error)
-
-	// Ping pings Scanner Adapter to test EndpointURL and Authorization settings.
-	// The implementation is supposed to call the GetMetadata method on scanner.Client.
-	// Returns `nil` if connection succeeded, a non `nil` error otherwise.
-	//
-	//  Arguments:
-	//    registration *scanner.Registration : scanner registration to ping
-	//
-	//  Returns:
-	//    error  : non nil error if any errors occurred
-	Ping(registration *scanner.Registration) error
-
-	// Scan the given artifact
-	//
-	//   Arguments:
-	//     artifact *res.Artifact : artifact to be scanned
-	//
-	//   Returns:
-	//     error  : non nil error if any errors occurred
-	Scan(artifact *scan.Artifact) error
-
-	// GetReport gets the reports for the given artifact identified by the digest
-	//
-	//   Arguments:
-	//     artifact *res.Artifact : the scanned artifact
-	//
-	//   Returns:
-	//     []*scan.Report : scan results by different scanner vendors
-	//     error          : non nil error if any errors occurred
-	GetReport(artifact *scan.Artifact) ([]*dscan.Report, error)
-
-	// Get the scan log for the specified artifact with the given digest
-	//
-	//   Arguments:
-	//     digest string : the digest of the artifact
-	//
-	//   Returns:
-	//     []byte : the log text stream
-	//     error  : non nil error if any errors occurred
-	GetScanLog(digest string) ([]byte, error)
 }

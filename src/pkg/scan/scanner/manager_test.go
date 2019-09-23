@@ -19,7 +19,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/dao/scanner"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -48,9 +48,6 @@ func (suite *BasicManagerTestSuite) SetupSuite() {
 		Name:        "forUT",
 		Description: "sample registration",
 		URL:         "https://sample.scanner.com",
-		Adapter:     "Clair",
-		Version:     "0.1.0",
-		Vendor:      "Harbor",
 	}
 
 	uid, err := suite.mgr.Create(r)
@@ -66,7 +63,7 @@ func (suite *BasicManagerTestSuite) TearDownSuite() {
 
 // TestList tests list registrations
 func (suite *BasicManagerTestSuite) TestList() {
-	m := make(map[string]string, 1)
+	m := make(map[string]interface{}, 1)
 	m["name"] = "forUT"
 
 	l, err := suite.mgr.List(&q.Query{

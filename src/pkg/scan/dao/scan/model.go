@@ -16,15 +16,18 @@ package scan
 
 import "time"
 
-// Report of the scan
-// Identified by the `digest` and `endpoint_id`
+// Report of the scan.
+// Identified by the `digest`, `registration_uuid` and `mime_type`.
 type Report struct {
 	ID               int64     `orm:"pk;auto;column(id)"`
+	UUID             string    `orm:"unique;column(uuid)"`
 	Digest           string    `orm:"column(digest)"`
-	ReregistrationID string    `orm:"column(registration_id)"`
+	RegistrationUUID string    `orm:"column(registration_uuid)"`
+	MimeType         string    `orm:"column(mime_type)"`
 	JobID            string    `orm:"column(job_id)"`
 	Status           string    `orm:"column(status)"`
 	StatusCode       int       `orm:"column(status_code)"`
+	StatusRevision   int64     `orm:"column(status_rev)"`
 	Report           string    `orm:"column(report);type(json)"`
 	StartTime        time.Time `orm:"column(start_time);auto_now_add;type(datetime)"`
 	EndTime          time.Time `orm:"column(end_time);type(datetime)"`
@@ -32,12 +35,13 @@ type Report struct {
 
 // TableName for Report
 func (r *Report) TableName() string {
-	return "scanner_report"
+	return "scan_report"
 }
 
 // TableUnique for Report
 func (r *Report) TableUnique() [][]string {
 	return [][]string{
-		{"digest", "registration_id"},
+		{"uuid"},
+		{"digest", "registration_uuid", "mime_type"},
 	}
 }

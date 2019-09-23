@@ -209,7 +209,7 @@ func init() {
 	// Add routes for plugin scanner management
 	scannerAPI := &ScannerAPI{}
 	beego.Router("/api/scanners", scannerAPI, "post:Create;get:List")
-	beego.Router("/api/scanners/:uid", scannerAPI, "get:Get;delete:Delete;put:Update;patch:SetAsDefault")
+	beego.Router("/api/scanners/:uuid", scannerAPI, "get:Get;delete:Delete;put:Update;patch:SetAsDefault")
 	// Add routes for project level scanner
 	beego.Router("/api/projects/:pid([0-9]+)/scanner", scannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
 

@@ -12,24 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package api
+package auth
 
 import (
-	dscan "github.com/goharbor/harbor/src/pkg/scan/scanner/dao/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/scan"
+	"net/http"
 )
 
-// Scan ...
-func (bc *basicController) Scan(artifact *scan.Artifact) error {
+// noAuth is created to handle the no authorization case which is acceptable
+type noAuth struct{}
+
+// Authorize the incoming request
+func (na *noAuth) Authorize(req *http.Request) error {
+	// Do nothing
 	return nil
 }
 
-// GetReport ...
-func (bc *basicController) GetReport(artifact *scan.Artifact) ([]*dscan.Report, error) {
-	return nil, nil
-}
-
-// GetScanLog ...
-func (bc *basicController) GetScanLog(digest string) ([]byte, error) {
-	return nil, nil
+// NewNoAuth creates a noAuth authorizer
+func NewNoAuth() Authorizer {
+	return &noAuth{}
 }

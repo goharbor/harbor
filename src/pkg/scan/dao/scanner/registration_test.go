@@ -50,9 +50,6 @@ func (suite *RegistrationDAOTestSuite) SetupTest() {
 		Name:        "forUT",
 		Description: "sample registration",
 		URL:         "https://sample.scanner.com",
-		Adapter:     "Clair",
-		Version:     "0.1.0",
-		Vendor:      "Harbor",
 	}
 
 	_, err := AddRegistration(r)
@@ -110,8 +107,8 @@ func (suite *RegistrationDAOTestSuite) TestList() {
 	require.Equal(suite.T(), 1, len(l))
 
 	// with query and found items
-	keywords := make(map[string]string)
-	keywords["adapter"] = "Clair"
+	keywords := make(map[string]interface{})
+	keywords["description"] = "sample"
 	l, err = ListRegistrations(&q.Query{
 		PageSize:   5,
 		PageNumber: 1,
@@ -121,7 +118,7 @@ func (suite *RegistrationDAOTestSuite) TestList() {
 	require.Equal(suite.T(), 1, len(l))
 
 	// With query and not found items
-	keywords["adapter"] = "Micro scanner"
+	keywords["description"] = "not_exist"
 	l, err = ListRegistrations(&q.Query{
 		Keywords: keywords,
 	})

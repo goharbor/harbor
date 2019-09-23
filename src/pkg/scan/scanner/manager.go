@@ -16,7 +16,7 @@ package scanner
 
 import (
 	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/dao/scanner"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
@@ -59,7 +59,7 @@ func New() Manager {
 // Create ...
 func (bm *basicManager) Create(registration *scanner.Registration) (string, error) {
 	if registration == nil {
-		return "", errors.New("nil endpoint to create")
+		return "", errors.New("nil registration to create")
 	}
 
 	// Inject new UUID
@@ -92,11 +92,11 @@ func (bm *basicManager) Get(registrationUUID string) (*scanner.Registration, err
 // Update ...
 func (bm *basicManager) Update(registration *scanner.Registration) error {
 	if registration == nil {
-		return errors.New("nil endpoint to update")
+		return errors.New("nil registration to update")
 	}
 
 	if err := registration.Validate(true); err != nil {
-		return errors.Wrap(err, "update endpoint")
+		return errors.Wrap(err, "update registration")
 	}
 
 	return scanner.UpdateRegistration(registration)

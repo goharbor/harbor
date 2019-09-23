@@ -45,11 +45,6 @@ type Registration struct {
 	// Http connection settings
 	SkipCertVerify bool `orm:"column(skip_cert_verify);default(false)" json:"skip_certVerify"`
 
-	// Adapter settings
-	Adapter string `orm:"column(adapter);size(128)" json:"adapter"`
-	Vendor  string `orm:"column(vendor);size(128)" json:"vendor"`
-	Version string `orm:"column(version);size(32)" json:"version"`
-
 	// Timestamps
 	CreateTime time.Time `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`
 	UpdateTime time.Time `orm:"column(update_time);auto_now;type(datetime)" json:"update_time"`
@@ -60,7 +55,7 @@ func (r *Registration) TableName() string {
 	return "scanner_registration"
 }
 
-// FromJSON parses json data
+// FromJSON parses registration from json data
 func (r *Registration) FromJSON(jsonData string) error {
 	if len(jsonData) == 0 {
 		return errors.New("empty json data to parse")
@@ -69,7 +64,7 @@ func (r *Registration) FromJSON(jsonData string) error {
 	return json.Unmarshal([]byte(jsonData), r)
 }
 
-// ToJSON marshals endpoint to JSON data
+// ToJSON marshals registration to JSON data
 func (r *Registration) ToJSON() (string, error) {
 	data, err := json.Marshal(r)
 	if err != nil {
@@ -79,7 +74,7 @@ func (r *Registration) ToJSON() (string, error) {
 	return string(data), nil
 }
 
-// Validate endpoint
+// Validate registration
 func (r *Registration) Validate(checkUUID bool) error {
 	if checkUUID && len(r.UUID) == 0 {
 		return errors.New("malformed endpoint")
@@ -92,12 +87,6 @@ func (r *Registration) Validate(checkUUID bool) error {
 	err := checkURL(r.URL)
 	if err != nil {
 		return errors.Wrap(err, "scanner registration validate")
-	}
-
-	if len(r.Adapter) == 0 ||
-		len(r.Vendor) == 0 ||
-		len(r.Version) == 0 {
-		return errors.Errorf("missing adapter settings in registration %s:%s", r.Name, r.URL)
 	}
 
 	return nil

@@ -19,8 +19,8 @@ import (
 	"net/http"
 
 	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/api"
-	"github.com/goharbor/harbor/src/pkg/scan/scanner/dao/scanner"
+	s "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/pkg/errors"
 )
 
@@ -30,7 +30,7 @@ type ScannerAPI struct {
 	BaseController
 
 	// Controller for the plug scanners
-	c api.Controller
+	c s.Controller
 }
 
 // Prepare sth. for the subsequent actions
@@ -50,7 +50,7 @@ func (sa *ScannerAPI) Prepare() {
 	}
 
 	// Use the default controller
-	sa.c = api.DefaultController
+	sa.c = s.DefaultController
 }
 
 // Get the specified scanner
@@ -76,7 +76,7 @@ func (sa *ScannerAPI) List() {
 	}
 
 	// Get query key words
-	kws := make(map[string]string)
+	kws := make(map[string]interface{})
 	properties := []string{"name", "description", "url"}
 	for _, k := range properties {
 		kw := sa.GetString(k)
@@ -192,7 +192,7 @@ func (sa *ScannerAPI) Update() {
 
 // Delete the scanner
 func (sa *ScannerAPI) Delete() {
-	uid := sa.GetStringFromPath(":uid")
+	uid := sa.GetStringFromPath(":uuid")
 	if len(uid) == 0 {
 		sa.SendBadRequestError(errors.New("missing uid"))
 		return
@@ -216,7 +216,7 @@ func (sa *ScannerAPI) Delete() {
 
 // SetAsDefault sets the given registration as default one
 func (sa *ScannerAPI) SetAsDefault() {
-	uid := sa.GetStringFromPath(":uid")
+	uid := sa.GetStringFromPath(":uuid")
 	if len(uid) == 0 {
 		sa.SendBadRequestError(errors.New("missing uid"))
 		return
@@ -293,7 +293,7 @@ func (sa *ScannerAPI) SetProjectScanner() {
 
 // get the specified scanner
 func (sa *ScannerAPI) get() *scanner.Registration {
-	uid := sa.GetStringFromPath(":uid")
+	uid := sa.GetStringFromPath(":uuid")
 	if len(uid) == 0 {
 		sa.SendBadRequestError(errors.New("missing uid"))
 		return nil
@@ -316,7 +316,7 @@ func (sa *ScannerAPI) get() *scanner.Registration {
 
 func (sa *ScannerAPI) checkDuplicated(property, value string) bool {
 	// Explicitly check if conflict
-	kw := make(map[string]string)
+	kw := make(map[string]interface{})
 	kw[property] = value
 
 	query := &q.Query{
