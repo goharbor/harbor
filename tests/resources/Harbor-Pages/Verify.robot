@@ -176,7 +176,8 @@ Verify System Setting
     ${ret}  Get Selected List Value  xpath=//select[@id='proCreation']
     Should Be Equal As Strings  ${ret}  @{creation}[0]
     Token Must Be Match  @{token}[0]
-    Switch To Vulnerability Page
-    Page Should Contain  None
+    #ToDo:These 2 lines below should be uncommented right after issue 9211 was fixed
+    #Switch To Vulnerability Page
+    #Page Should Contain  None
     Close Browser
 
