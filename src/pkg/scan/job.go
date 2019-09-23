@@ -129,43 +129,15 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 		return errors.Wrap(err, "run scan job")
 	}
 
-	// Exit signal
-	exit := make(chan bool, 1)
-	// Done signal
-	done := make(chan bool, 1)
-	// Collect errors
-	eChan := make(chan error, 1)
-
-	go func() {
-		defer func() {
-			// Done!
-			done <- true
-		}()
-
-		for {
-			select {
-			case e := <-eChan:
-				if err != nil {
-					err = errors.Wrap(e, err.Error())
-				} else {
-					err = e
-				}
-			case <-exit:
-				// Gracefully exit
-				return
-			case <-ctx.SystemContext().Done():
-				// Terminated by system
-				return
-			}
-		}
-	}()
+	// For collecting errors
+	errs := make([]error, len(mimes))
 
 	// Concurrently retrieving report by different mime types
 	wg := &sync.WaitGroup{}
 	wg.Add(len(mimes))
 
-	for _, mt := range mimes {
-		go func(m string) {
+	for i, mt := range mimes {
+		go func(i int, m string) {
 			defer wg.Done()
 
 			// Log info
@@ -191,13 +163,13 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 							continue
 						}
 
-						eChan <- errors.Wrap(err, fmt.Sprintf("check scan report with mime type %s", m))
+						errs[i] = errors.Wrap(err, fmt.Sprintf("check scan report with mime type %s", m))
 						return
 					}
 
 					// Make sure the data is aligned with the v1 spec.
 					if _, err = report.ResolveData(m, []byte(rawReport)); err != nil {
-						eChan <- errors.Wrap(err, "scan job: resolve report data")
+						errs[i] = errors.Wrap(err, "scan job: resolve report data")
 						return
 					}
 
@@ -222,25 +194,33 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 					}
 
 					// Send error and exit
-					eChan <- errors.Wrap(er, fmt.Sprintf("check in scan report for mime type %s", m))
+					errs[i] = errors.Wrap(er, fmt.Sprintf("check in scan report for mime type %s", m))
 					return
 				case <-ctx.SystemContext().Done():
 					// Terminated by system
 					return
 				case <-time.After(checkTimeout):
-					eChan <- errors.New("check scan report timeout")
+					errs[i] = errors.New("check scan report timeout")
 					return
 				}
 			}
-		}(mt)
+		}(i, mt)
 	}
 
 	// Wait for all the retrieving routines are completed
 	wg.Wait()
-	// Stop error collection goroutine
-	exit <- true
-	// done!
-	<-done
+
+	// Merge errors
+	for _, e := range errs {
+		if e != nil {
+			if err != nil {
+				err = errors.Wrap(e, err.Error())
+			} else {
+				err = e
+			}
+		}
+	}
+
 	// Log error to the job log
 	if err != nil {
 		myLogger.Error(err)

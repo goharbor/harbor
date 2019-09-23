@@ -76,7 +76,7 @@ func (sa *ScannerAPI) List() {
 	}
 
 	// Get query key words
-	kws := make(map[string]string)
+	kws := make(map[string]interface{})
 	properties := []string{"name", "description", "url"}
 	for _, k := range properties {
 		kw := sa.GetString(k)
@@ -316,7 +316,7 @@ func (sa *ScannerAPI) get() *scanner.Registration {
 
 func (sa *ScannerAPI) checkDuplicated(property, value string) bool {
 	// Explicitly check if conflict
-	kw := make(map[string]string)
+	kw := make(map[string]interface{})
 	kw[property] = value
 
 	query := &q.Query{

@@ -17,6 +17,7 @@ package v1
 import (
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/rest/auth"
@@ -34,12 +35,16 @@ type ClientPoolTestSuite struct {
 
 // TestClientPool is the entry of ClientPoolTestSuite.
 func TestClientPool(t *testing.T) {
-	suite.Run(t, new(ClientPoolTestSuite))
+	suite.Run(t, &ClientPoolTestSuite{})
 }
 
 // SetupSuite sets up test suite env.
 func (suite *ClientPoolTestSuite) SetupSuite() {
-	suite.pool = NewClientPool()
+	cfg := &PoolConfig{
+		DeadCheckInterval: 100 * time.Millisecond,
+		ExpireTime:        300 * time.Millisecond,
+	}
+	suite.pool = NewClientPool(cfg)
 }
 
 // TestClientPoolGet tests the get method of client pool.
@@ -66,4 +71,12 @@ func (suite *ClientPoolTestSuite) TestClientPoolGet() {
 
 	p2 := fmt.Sprintf("%p", client2.(*basicClient))
 	assert.Equal(suite.T(), p1, p2)
+
+	<-time.After(400 * time.Millisecond)
+	client3, err := suite.pool.Get(r)
+	require.NoError(suite.T(), err)
+	require.NotNil(suite.T(), client3)
+
+	p3 := fmt.Sprintf("%p", client3.(*basicClient))
+	assert.NotEqual(suite.T(), p2, p3)
 }

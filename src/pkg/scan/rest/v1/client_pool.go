@@ -15,16 +15,24 @@
 package v1
 
 import (
-	"encoding/base64"
 	"fmt"
+	"os"
+	"os/signal"
 	"sync"
+	"syscall"
+	"time"
 
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/pkg/errors"
 )
 
+const (
+	defaultDeadCheckInterval = 1 * time.Minute
+	defaultExpireTime        = 5 * time.Minute
+)
+
 // DefaultClientPool is a default client pool.
-var DefaultClientPool = NewClientPool()
+var DefaultClientPool = NewClientPool(nil)
 
 // ClientPool defines operations for the client pool which provides v1 client cache.
 type ClientPool interface {
@@ -39,16 +47,47 @@ type ClientPool interface {
 	Get(r *scanner.Registration) (Client, error)
 }
 
+// PoolConfig provides configurations for the client pool.
+type PoolConfig struct {
+	// Interval for checking dead instance.
+	DeadCheckInterval time.Duration
+	// Expire time for the instance to be marked as dead.
+	ExpireTime time.Duration
+}
+
+// poolItem append timestamp for the caching client instance.
+type poolItem struct {
+	c         Client
+	timestamp time.Time
+}
+
 // basicClientPool is default implementation of client pool interface.
 type basicClientPool struct {
-	pool *sync.Map
+	pool   *sync.Map
+	config *PoolConfig
 }
 
 // NewClientPool news a basic client pool.
-func NewClientPool() ClientPool {
-	return &basicClientPool{
-		pool: &sync.Map{},
+func NewClientPool(config *PoolConfig) ClientPool {
+	bcp := &basicClientPool{
+		pool:   &sync.Map{},
+		config: config,
 	}
+
+	// Set config
+	if bcp.config == nil {
+		bcp.config = &PoolConfig{}
+	}
+
+	if bcp.config.DeadCheckInterval == 0 {
+		bcp.config.DeadCheckInterval = defaultDeadCheckInterval
+	}
+
+	if bcp.config.ExpireTime == 0 {
+		bcp.config.ExpireTime = defaultExpireTime
+	}
+
+	return bcp
 }
 
 // Get client for the specified registration.
@@ -57,38 +96,7 @@ func NewClientPool() ClientPool {
 // If one day, we have to clear unactivated client instances in the pool,
 // add the following func after the first time initializing the client.
 // pool item represents the client with a timestamp of last accessed.
-//
-// type poolItem struct {
-// 	 c         Client
-// 	 timestamp time.Time
-// }
-//
-// func (bcp *basicClientPool) deadCheck(key string, item *poolItem) {
-//	// Run in a separate goroutine
-//	go func() {
-//		// As we do not have a global context, let's watch the system signal to
-//		// exit the goroutine correctly.
-//		sig := make(chan os.Signal, 1)
-//		signal.Notify(sig, os.Interrupt, syscall.SIGTERM, os.Kill)
-//
-//		tk := time.NewTicker(bcp.config.DeadCheckInterval)
-//		defer tk.Stop()
-//
-//		for {
-//			select {
-//			case t := <-tk.C:
-//				if item.timestamp.Add(bcp.config.ExpireTime).Before(t.UTC()) {
-//					// Expired
-//					bcp.pool.Delete(key)
-//					return
-//				}
-//			case <-sig:
-//				// Terminated by system
-//				return
-//			}
-//		}
-//	}()
-// }
+
 func (bcp *basicClientPool) Get(r *scanner.Registration) (Client, error) {
 	if r == nil {
 		return nil, errors.New("nil scanner registration")
@@ -100,7 +108,7 @@ func (bcp *basicClientPool) Get(r *scanner.Registration) (Client, error) {
 
 	k := key(r)
 
-	c, ok := bcp.pool.Load(k)
+	item, ok := bcp.pool.Load(k)
 	if !ok {
 		nc, err := NewClient(r)
 		if err != nil {
@@ -108,21 +116,54 @@ func (bcp *basicClientPool) Get(r *scanner.Registration) (Client, error) {
 		}
 
 		// Cache it
-		bcp.pool.Store(k, nc)
-		c = nc
+		npi := &poolItem{
+			c:         nc,
+			timestamp: time.Now().UTC(),
+		}
+
+		bcp.pool.Store(k, npi)
+		item = npi
+
+		// dead check
+		bcp.deadCheck(k, npi)
 	}
 
-	return c.(Client), nil
+	return item.(*poolItem).c, nil
+}
+
+func (bcp *basicClientPool) deadCheck(key string, item *poolItem) {
+	// Run in a separate goroutine
+	go func() {
+		// As we do not have a global context, let's watch the system signal to
+		// exit the goroutine correctly.
+		sig := make(chan os.Signal, 1)
+		signal.Notify(sig, os.Interrupt, syscall.SIGTERM, os.Kill)
+
+		tk := time.NewTicker(bcp.config.DeadCheckInterval)
+		defer tk.Stop()
+
+		for {
+			select {
+			case t := <-tk.C:
+				if item.timestamp.Add(bcp.config.ExpireTime).Before(t.UTC()) {
+					// Expired
+					bcp.pool.Delete(key)
+					return
+				}
+			case <-sig:
+				// Terminated by system
+				return
+			}
+		}
+	}()
 }
 
 func key(r *scanner.Registration) string {
-	raw := fmt.Sprintf("%s:%s:%s:%s:%v",
+	return fmt.Sprintf("%s:%s:%s:%s:%v",
 		r.UUID,
 		r.URL,
 		r.Auth,
 		r.AccessCredential,
 		r.SkipCertVerify,
 	)
-
-	return base64.StdEncoding.EncodeToString([]byte(raw))
 }

@@ -21,5 +21,5 @@ type Query struct {
 	// Page size
 	PageSize int64
 	// List of key words
-	Keywords map[string]string
+	Keywords map[string]interface{}
 }

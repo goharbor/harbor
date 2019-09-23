@@ -60,19 +60,17 @@ type Spec struct {
 
 // NewSpec news V1 spec
 func NewSpec(base string) *Spec {
-	baseRoute := "http://localhost"
+	s := &Spec{}
 
 	if len(base) > 0 {
 		if strings.HasSuffix(base, "/") {
-			baseRoute = base[:len(base)-1]
+			s.baseRoute = base[:len(base)-1]
 		} else {
-			baseRoute = base
+			s.baseRoute = base
 		}
 	}
 
-	return &Spec{
-		baseRoute: baseRoute,
-	}
+	return s
 }
 
 // Metadata API

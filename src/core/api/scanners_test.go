@@ -296,7 +296,7 @@ func (suite *ScannerAPITestSuite) TestScannerAPIProjectScanner() {
 }
 
 func (suite *ScannerAPITestSuite) mockQuery(r *scanner.Registration) {
-	kw := make(map[string]string, 1)
+	kw := make(map[string]interface{}, 1)
 	kw["name"] = r.Name
 	query := &q.Query{
 		Keywords: kw,
@@ -304,7 +304,7 @@ func (suite *ScannerAPITestSuite) mockQuery(r *scanner.Registration) {
 	emptyL := make([]*scanner.Registration, 0)
 	suite.mockC.On("ListRegistrations", query).Return(emptyL, nil)
 
-	kw2 := make(map[string]string, 1)
+	kw2 := make(map[string]interface{}, 1)
 	kw2["url"] = r.URL
 	query2 := &q.Query{
 		Keywords: kw2,

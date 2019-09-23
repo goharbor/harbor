@@ -19,12 +19,14 @@ CREATE TABLE scanner_registration
 CREATE TABLE scan_report
 (
     id SERIAL PRIMARY KEY NOT NULL,
+    uuid VARCHAR(64) UNIQUE NOT NULL,
     digest VARCHAR(256) NOT NULL,
     registration_uuid VARCHAR(64) NOT NULL,
     mime_type VARCHAR(256) NOT NULL,
     job_id VARCHAR(32),
     status VARCHAR(16) NOT NULL,
     status_code INTEGER DEFAULT 0,
+    status_rev BIGINT DEFAULT 0,
     report JSON,
     start_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     end_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

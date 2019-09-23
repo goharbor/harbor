@@ -107,7 +107,7 @@ func (suite *RegistrationDAOTestSuite) TestList() {
 	require.Equal(suite.T(), 1, len(l))
 
 	// with query and found items
-	keywords := make(map[string]string)
+	keywords := make(map[string]interface{})
 	keywords["description"] = "sample"
 	l, err = ListRegistrations(&q.Query{
 		PageSize:   5,

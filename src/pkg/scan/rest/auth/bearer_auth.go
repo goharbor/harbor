@@ -17,6 +17,8 @@ package auth
 import (
 	"fmt"
 	"net/http"
+
+	"github.com/pkg/errors"
 )
 
 // bearerAuthorizer authorizes the request by adding `Authorization Bearer credential` header
@@ -31,7 +33,7 @@ func (ba *bearerAuthorizer) Authorize(req *http.Request) error {
 		req.Header.Add(authorization, fmt.Sprintf("%s %s", ba.typeID, ba.accessCred))
 	}
 
-	return nil
+	return errors.Errorf("%s: %s", ba.typeID, "missing data to authorize request")
 }
 
 // NewBearerAuth create bearer authorizer
