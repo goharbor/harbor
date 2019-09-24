@@ -7,6 +7,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/goharbor/harbor/src/common/utils/log"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -273,7 +275,8 @@ func (w *NotificationPolicyAPI) Test() {
 	}
 
 	if err := notification.PolicyMgr.Test(policy); err != nil {
-		w.SendBadRequestError(fmt.Errorf("notification policy %s test failed: %v", policy.Name, err))
+		log.Errorf("notification policy %s test failed: %v", policy.Name, err)
+		w.SendBadRequestError(fmt.Errorf("notification policy %s test failed", policy.Name))
 		return
 	}
 }
