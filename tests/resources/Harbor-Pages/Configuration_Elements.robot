@@ -36,3 +36,4 @@ ${configuration_system_wl_add_btn}    //*[@id='show-add-modal-button']
 ${configuration_system_wl_textarea}    //*[@id='whitelist-textarea']
 ${configuration_system_wl_add_confirm_btn}    //*[@id='add-to-system']
 ${configuration_system_wl_delete_a_cve_id_icon}    //system-settings/form/section//ul/li[1]/clr-icon
+${configuration_sys_repo_readonly_chb_id}  //*[@id='repo_read_only_lbl']
