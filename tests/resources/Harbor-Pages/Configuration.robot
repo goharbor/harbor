@@ -150,7 +150,20 @@ Project Creation Should Not Display
 Switch To System Settings
     Sleep  1
     Retry Element Click  xpath=${configuration_xpath}
+<<<<<<< HEAD
     Retry Element Click  xpath=${system_config_xpath}
+=======
+    Retry Element Click  xpath=${configuration_system_tabsheet_id}
+    Sleep  1
+
+Switch To Project Quotas
+    Sleep  1
+    Retry Element Click  xpath=${configuration_xpath}
+    Retry Element Click  xpath=${configuration_system_tabsheet_id}
+    Retry Element Click  xpath=${configuration_project_quotas_tabsheet_id}
+    Sleep  1
+
+>>>>>>> 20dc24563... In nightly helm pipeline, test case 'Project Quotas Control Under GC' failed, it should be timing issue that the valuse in UI is not ready, so I add a keyword 'Retry Keyword When Return Value Mismatch' to retry value getting action.
 Modify Token Expiration
     [Arguments]  ${minutes}
     Input Text  xpath=//*[@id='tokenExpiration']  ${minutes}
