@@ -895,7 +895,7 @@ In this case, all of the images in repository A are retained because they have b
 
 #### Tag Retention Rules and Native Docker Tag Deletion
 
-**WARNING**: Due to native Docker tag deletion behavior, there is an issue with the current retention policy implementation. If you have multiple tags that refer to the same SHA digest, and if a subset of these tags are deleted by a configured retention policy, all of the remaining tags are also deleted. This violates the retention policy. 
+**WARNING**: Due to native Docker tag deletion behavior, there is an issue with the current retention policy implementation. If you have multiple tags that refer to the same SHA digest, and if a subset of these tags are marked for deletion by a configured retention policy, all of the remaining tags would also be deleted. This violates the retention policy, so in this case all of the tags are retained. This issue will be addressed in a future update release, so that tag retention policies can delete tags without deleting the digest and other shared tags.
 
 For example, you have following tags, listed according to their push time, and all of them refer to the same SHA digest:
 
@@ -904,7 +904,7 @@ For example, you have following tags, listed according to their push time, and a
 - `harbor-nightly`, pushed 8/14/2019 06:00am
 - `harbor-latest`, pushed 8/14/2019 09:00am
 
-You configure a retention policy to retain the two latest tags that match `harbor-*`, so that `harbor-rc` and `harbor-latest` are deleted. However, since all tags refer to the same SHA digest, this also policy deletes the tags `harbor-1.8` and `harbor-release`.
+You configure a retention policy to retain the two latest tags that match `harbor-*`, so that `harbor-rc` and `harbor-latest` are deleted. However, since all tags refer to the same SHA digest, this also policy would also delete the tags `harbor-1.8` and `harbor-release`, so all tags are retained.
 
 ### Combining Rules on a Respository
 
