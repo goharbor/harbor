@@ -95,6 +95,12 @@ Retry Wait Element Not Visible
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Wait Until Element Is Not Visible  @{param}
 
+
+Retry Wait Element Should Be Disabled
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Element Should Be Disabled  @{param}
+
 Retry Element Click
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}

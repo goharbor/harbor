@@ -561,3 +561,27 @@ Test Case - Project Quotas Control Under GC
     ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
     Should Be Equal As Strings  ${storage_quota_ret}  0Byte of ${storage_quota}${storage_quota_unit}
     Close Browser
+
+Test Case - Can Not Retag Image In ReadOnly Mode
+    Init Chrome Driver
+    ${random_num1}=   Get Current Date    result_format=%m%s
+    ${random_num2}=   Evaluate  str(random.randint(1000,9999))  modules=random
+
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${random_num1}
+    Create An New Project  project${random_num2}
+
+    Go Into Project  project${random_num1}  has_image=${false}
+    Sleep  1
+    Push Image With Tag  ${ip}  user028  Test1@34  project${random_num1}  redis  ${image_tag}
+    Sleep  1
+    Enable Read Only
+    Go Into Repo  project${random_num1}/redis
+    Retag Image  ${image_tag}  project${random_num2}  ${target_image_name}  ${target_tag_value}
+    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
+    Navigate To Projects
+    Go Into Project  project${random_num2}  has_image=${false}
+    Sleep  10
+    Go Into Project  project${random_num2}  has_image=${false}
+    Disable Read Only
+    Close Browser
