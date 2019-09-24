@@ -55,7 +55,7 @@ export class AddHttpAuthGroupComponent implements OnInit {
   staticBackdrop: boolean = true;
   closable: boolean = false;
 
-  @ViewChild('memberForm', {static: false})
+  @ViewChild('memberForm', {static: true})
   currentForm: NgForm;
 
   @ViewChild(InlineAlertComponent, {static: false})
