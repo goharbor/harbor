@@ -58,19 +58,29 @@ class HarborAPI:
         body=dict(body=payload)
         request(url+"policies/replication", 'post', **body)
 
-    def update_project_setting(self, project, contenttrust, preventrunning, preventseverity, scanonpush):
+    def update_project_setting(self, project, public, contenttrust, preventrunning, preventseverity, scanonpush):
         r = request(url+"projects?name="+project+"", 'get')
         projectid = str(r.json()[0]['project_id'])
-        payload = {
-            "project_name": ""+project+"",
-            "metadata": {
-                "public": "True",
-                "enable_content_trust": contenttrust,
-                "prevent_vulnerable_images_from_running": preventrunning,
-                "prevent_vulnerable_images_from_running_severity": preventseverity,
-                "automatically_scan_images_on_push": scanonpush
+        if args.version == "1.6":
+            payload = {
+                "metadata": {
+                    "public": public,
+                    "enable_content_trust": contenttrust,
+                    "prevent_vulnerable_images_from_running": preventrunning,
+                    "prevent_vulnerable_images_from_running_severity": preventseverity,
+                    "automatically_scan_images_on_push": scanonpush
+                }
             }
-        }
+        else:
+            payload = {
+                "metadata": {
+                    "public": public,
+                    "enable_content_trust": contenttrust,
+                    "prevent_vul": preventrunning,
+                    "severity": preventseverity,
+                    "auto_scan": scanonpush
+                }
+            }
         body=dict(body=payload)
         request(url+"projects/"+projectid+"", 'put', **body)
 
@@ -178,9 +188,10 @@ def do_data_creation():
                                        replicationrule["rulename"])
     for project in data["projects"]:
         harborAPI.update_project_setting(project["name"],
+                                        project["configuration"]["public"],
                                         project["configuration"]["enable_content_trust"],
                                         project["configuration"]["prevent_vulnerable_images_from_running"],
-                                        project["configuration"]["prevent_vlunerable_images_from_running_severity"], 
+                                        project["configuration"]["prevent_vlunerable_images_from_running_severity"],
                                         project["configuration"]["automatically_scan_images_on_push"])
     harborAPI.update_systemsetting(data["configuration"]["emailsetting"]["emailfrom"],
                                    data["configuration"]["emailsetting"]["emailserver"],
