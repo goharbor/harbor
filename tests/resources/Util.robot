@@ -234,6 +234,18 @@ Retry Keyword When Error
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
+Retry Keyword When Return Value Mismatch
+    [Arguments]  ${keyword}  ${expected_value}  @{elements}  ${count}=6
+    :For  ${n}  IN RANGE  1  ${count}
+    \    Log To Console  Trying ${keyword} ${n} times ...
+    \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
+    \    Log To Console  Return value is ${out[1]}
+    \    ${status}=  Set Variable If  '${out[1]}'=='${expected_value}'  'PASS'  'FAIL'
+    \    Exit For Loop If  '${out[1]}'=='${expected_value}'
+    \    Sleep  2
+    Run Keyword If  ${status}=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  ${status}  'PASS'
+
 Retry Double Keywords When Error
     [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}
     :For  ${n}  IN RANGE  1  3

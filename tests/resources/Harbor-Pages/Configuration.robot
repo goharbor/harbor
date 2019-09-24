@@ -155,6 +155,7 @@ Switch To System Settings
 Switch To Project Quotas
     Sleep  1
     Retry Element Click  xpath=${configuration_xpath}
+    Retry Element Click  xpath=${configuration_system_tabsheet_id}
     Retry Element Click  xpath=${configuration_project_quotas_tabsheet_id}
     Sleep  1
 
