@@ -45,3 +45,26 @@ CREATE TABLE immutable_tag_rule
 );
 
 ALTER TABLE robot ADD COLUMN visible boolean DEFAULT true NOT NULL;
+
+CREATE TABLE task
+(
+  id SERIAL PRIMARY KEY NOT NULL,
+  group_id int,
+  job_id varchar(64),
+  status varchar(16),
+  status_code int,
+  status_revision int,
+  message varchar(1024),
+  options varchar(256),
+  start_time timestamp,
+  end_time timestamp
+);
+
+CREATE TABLE check_in_data
+(
+  id SERIAL PRIMARY KEY NOT NULL,
+  task_id int,
+  data text,
+  creation_time timestamp,
+  update_time timestamp
+);
