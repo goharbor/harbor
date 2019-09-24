@@ -904,7 +904,7 @@ For example, you have following tags, listed according to their push time, and a
 - `harbor-nightly`, pushed 8/14/2019 06:00am
 - `harbor-latest`, pushed 8/14/2019 09:00am
 
-You configure a retention policy to retain the two latest tags that match `harbor-*`, so that `harbor-rc` and `harbor-latest` are deleted. However, since all tags refer to the same SHA digest, this also policy would also delete the tags `harbor-1.8` and `harbor-release`, so all tags are retained.
+You configure a retention policy to retain the two latest tags that match `harbor-*`, so that `harbor-rc` and `harbor-latest` are deleted. However, since all tags refer to the same SHA digest, this policy would also delete the tags `harbor-1.8` and `harbor-release`, so all tags are retained.
 
 ### Combining Rules on a Respository
 
