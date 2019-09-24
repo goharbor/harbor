@@ -16,6 +16,7 @@ package scanner
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -93,6 +94,12 @@ func ListRegistrations(query *q.Query) ([]*Registration, error) {
 	if query != nil {
 		if len(query.Keywords) > 0 {
 			for k, v := range query.Keywords {
+				if strings.HasPrefix(k, "ex_") {
+					kk := strings.TrimPrefix(k, "ex_")
+					qt = qt.Filter(kk, v)
+					continue
+				}
+
 				qt = qt.Filter(fmt.Sprintf("%s__icontains", k), v)
 			}
 		}
@@ -111,20 +118,38 @@ func ListRegistrations(query *q.Query) ([]*Registration, error) {
 // SetDefaultRegistration sets the specified registration as default one
 func SetDefaultRegistration(UUID string) error {
 	o := dao.GetOrmer()
-	qt := o.QueryTable(new(Registration))
-
-	_, err := qt.Filter("is_default", true).Update(orm.Params{
-		"is_default": false,
-	})
-
+	err := o.Begin()
 	if err != nil {
 		return err
 	}
 
-	qt2 := o.QueryTable(new(Registration))
-	_, err = qt2.Filter("uuid", UUID).Update(orm.Params{
-		"is_default": true,
-	})
+	var count int64
+	qt := o.QueryTable(new(Registration))
+	count, err = qt.Filter("uuid", UUID).
+		Filter("disabled", false).
+		Update(orm.Params{
+			"is_default": true,
+		})
+	if err == nil && count == 0 {
+		err = errors.Errorf("set default for %s failed", UUID)
+	}
+
+	if err == nil {
+		qt2 := o.QueryTable(new(Registration))
+		_, err = qt2.Exclude("uuid__exact", UUID).
+			Filter("is_default", true).
+			Update(orm.Params{
+				"is_default": false,
+			})
+	}
+
+	if err != nil {
+		if e := o.Rollback(); e != nil {
+			err = errors.Wrap(e, err.Error())
+		}
+	} else {
+		err = o.Commit()
+	}
 
 	return err
 }

@@ -54,5 +54,5 @@ type VulnerabilityItem struct {
 	// The list of link to the upstream database with the full description of the vulnerability.
 	// Format: URI
 	// e.g: List [ "https://security-tracker.debian.org/tracker/CVE-2017-8283" ]
-	Links []string
+	Links []string `json:"links"`
 }

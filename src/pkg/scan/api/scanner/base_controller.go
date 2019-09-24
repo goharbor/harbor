@@ -19,6 +19,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	rscanner "github.com/goharbor/harbor/src/pkg/scan/scanner"
 	"github.com/pkg/errors"
 )
@@ -35,25 +36,38 @@ func New() Controller {
 	return &basicController{
 		manager:    rscanner.New(),
 		proMetaMgr: metamgr.NewDefaultProjectMetadataManager(),
+		clientPool: v1.DefaultClientPool,
 	}
 }
 
 // basicController is default implementation of api.Controller interface
 type basicController struct {
-	// managers for managing the scanner registrations
+	// Managers for managing the scanner registrations
 	manager rscanner.Manager
-	// for operating the project level configured scanner
+	// For operating the project level configured scanner
 	proMetaMgr metamgr.ProjectMetadataManager
+	// Client pool for talking to adapters
+	clientPool v1.ClientPool
 }
 
 // ListRegistrations ...
 func (bc *basicController) ListRegistrations(query *q.Query) ([]*scanner.Registration, error) {
-	return bc.manager.List(query)
+	l, err := bc.manager.List(query)
+	if err != nil {
+		return nil, errors.Wrap(err, "api controller: list registrations")
+	}
+
+	for _, r := range l {
+		_, err = bc.Ping(r)
+		r.Health = err == nil
+	}
+
+	return l, nil
 }
 
 // CreateRegistration ...
 func (bc *basicController) CreateRegistration(registration *scanner.Registration) (string, error) {
-	// TODO: Get metadata from the adapter service first
+	// TODO: Check connection of the registration.
 	// Check if there are any registrations already existing.
 	l, err := bc.manager.List(&q.Query{
 		PageSize:   1,
@@ -73,7 +87,15 @@ func (bc *basicController) CreateRegistration(registration *scanner.Registration
 
 // GetRegistration ...
 func (bc *basicController) GetRegistration(registrationUUID string) (*scanner.Registration, error) {
-	return bc.manager.Get(registrationUUID)
+	r, err := bc.manager.Get(registrationUUID)
+	if err != nil {
+		return nil, err
+	}
+
+	_, err = bc.Ping(r)
+	r.Health = err == nil
+
+	return r, nil
 }
 
 // RegistrationExists ...
@@ -90,6 +112,10 @@ func (bc *basicController) RegistrationExists(registrationUUID string) bool {
 
 // UpdateRegistration ...
 func (bc *basicController) UpdateRegistration(registration *scanner.Registration) error {
+	if registration.IsDefault && registration.Disabled {
+		return errors.Errorf("default registration %s can not be marked to disabled", registration.UUID)
+	}
+
 	return bc.manager.Update(registration)
 }
 
@@ -162,9 +188,10 @@ func (bc *basicController) GetRegistrationByProject(projectID int64) (*scanner.R
 		return nil, errors.Wrap(err, "api controller: get project scanner")
 	}
 
+	var registration *scanner.Registration
 	if len(m) > 0 {
 		if registrationID, ok := m[proScannerMetaKey]; ok && len(registrationID) > 0 {
-			registration, err := bc.manager.Get(registrationID)
+			registration, err = bc.manager.Get(registrationID)
 			if err != nil {
 				return nil, errors.Wrap(err, "api controller: get project scanner")
 			}
@@ -175,15 +202,103 @@ func (bc *basicController) GetRegistrationByProject(projectID int64) (*scanner.R
 				if err := bc.proMetaMgr.Delete(projectID, proScannerMetaKey); err != nil {
 					return nil, errors.Wrap(err, "api controller: get project scanner")
 				}
-			} else {
-				return registration, nil
 			}
 		}
 	}
 
-	// Second, get the default one
-	registration, err := bc.manager.GetDefault()
+	if registration == nil {
+		// Second, get the default one
+		registration, err = bc.manager.GetDefault()
+		if err != nil {
+			return nil, errors.Wrap(err, "api controller: get project scanner")
+		}
+	}
 
-	// TODO: Check status by the client later
+	// Check status by the client later
+	if registration != nil {
+		if meta, err := bc.Ping(registration); err == nil {
+			registration.Scanner = meta.Scanner.Name
+			registration.Vendor = meta.Scanner.Vendor
+			registration.Version = meta.Scanner.Version
+			registration.Health = true
+		} else {
+			registration.Health = false
+		}
+	}
+
 	return registration, err
+}
+
+// Ping ...
+// TODO: ADD UT CASES
+func (bc *basicController) Ping(registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error) {
+	if registration == nil {
+		return nil, errors.New("nil registration to ping")
+	}
+
+	client, err := bc.clientPool.Get(registration)
+	if err != nil {
+		return nil, errors.Wrap(err, "scanner controller: ping")
+	}
+
+	meta, err := client.GetMetadata()
+	if err != nil {
+		return nil, errors.Wrap(err, "scanner controller: ping")
+	}
+
+	// Validate the required properties
+	if meta.Scanner == nil ||
+		len(meta.Scanner.Name) == 0 ||
+		len(meta.Scanner.Version) == 0 ||
+		len(meta.Scanner.Vendor) == 0 {
+		return nil, errors.New("invalid scanner in metadata")
+	}
+
+	if len(meta.Capabilities) == 0 {
+		return nil, errors.New("invalid capabilities in metadata")
+	}
+
+	for _, ca := range meta.Capabilities {
+		// v1.MimeTypeDockerArtifact is required now
+		found := false
+		for _, cm := range ca.ConsumesMimeTypes {
+			if cm == v1.MimeTypeDockerArtifact {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return nil, errors.Errorf("missing %s in consumes_mime_types", v1.MimeTypeDockerArtifact)
+		}
+
+		// v1.MimeTypeNativeReport is required
+		found = false
+		for _, pm := range ca.ProducesMimeTypes {
+			if pm == v1.MimeTypeNativeReport {
+				found = true
+				break
+			}
+		}
+
+		if !found {
+			return nil, errors.Errorf("missing %s in produces_mime_types", v1.MimeTypeNativeReport)
+		}
+	}
+
+	return meta, err
+}
+
+// GetMetadata ...
+// TODO: ADD UT CASES
+func (bc *basicController) GetMetadata(registrationUUID string) (*v1.ScannerAdapterMetadata, error) {
+	if len(registrationUUID) == 0 {
+		return nil, errors.New("empty registration uuid")
+	}
+
+	r, err := bc.manager.Get(registrationUUID)
+	if err != nil {
+		return nil, errors.Wrap(err, "scanner controller: get metadata")
+	}
+
+	return bc.Ping(r)
 }

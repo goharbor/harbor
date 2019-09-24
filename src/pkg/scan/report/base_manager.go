@@ -57,15 +57,21 @@ func (bm *basicManager) Create(r *scan.Report) (string, error) {
 	})
 
 	if err != nil {
-		return "", errors.Wrap(err, "check existence of report")
+		return "", errors.Wrap(err, "create report: check existence of report")
 	}
 
 	// Delete existing copy
 	if len(existingCopies) > 0 {
 		theCopy := existingCopies[0]
 
-		// Status conflict
 		theStatus := job.Status(theCopy.Status)
+		// Status is an error message
+		if theStatus.Code() == -1 && theCopy.StatusCode == job.ErrorStatus.Code() {
+			// Mark as regular error status
+			theStatus = job.ErrorStatus
+		}
+
+		// Status conflict
 		if theStatus.Compare(job.RunningStatus) <= 0 {
 			return "", errors.Errorf("conflict: a previous scanning is %s", theCopy.Status)
 		}
@@ -73,7 +79,7 @@ func (bm *basicManager) Create(r *scan.Report) (string, error) {
 		// Otherwise it will be a completed report
 		// Clear it before insert this new one
 		if err := scan.DeleteReport(theCopy.UUID); err != nil {
-			return "", errors.Wrap(err, "clear old scan report")
+			return "", errors.Wrap(err, "create report: clear old scan report")
 		}
 	}
 
@@ -91,10 +97,37 @@ func (bm *basicManager) Create(r *scan.Report) (string, error) {
 
 	// Insert
 	if _, err = scan.CreateReport(r); err != nil {
-		return "", errors.Wrap(err, "create report")
+		return "", errors.Wrap(err, "create report: insert")
 	}
 
 	return r.UUID, nil
+}
+
+// Get ...
+func (bm *basicManager) Get(uuid string) (*scan.Report, error) {
+	if len(uuid) == 0 {
+		return nil, errors.New("empty uuid to get scan report")
+	}
+
+	kws := make(map[string]interface{})
+	kws["uuid"] = uuid
+
+	l, err := scan.ListReports(&q.Query{
+		PageNumber: 1,
+		PageSize:   1,
+		Keywords:   kws,
+	})
+
+	if err != nil {
+		return nil, errors.Wrap(err, "report manager: get")
+	}
+
+	if len(l) == 0 {
+		// Not found
+		return nil, nil
+	}
+
+	return l[0], nil
 }
 
 // GetBy ...
@@ -121,22 +154,18 @@ func (bm *basicManager) GetBy(digest string, registrationUUID string, mimeTypes 
 }
 
 // UpdateScanJobID ...
-func (bm *basicManager) UpdateScanJobID(uuid string, jobID string) error {
-	if len(uuid) == 0 || len(jobID) == 0 {
+func (bm *basicManager) UpdateScanJobID(trackID string, jobID string) error {
+	if len(trackID) == 0 || len(jobID) == 0 {
 		return errors.New("bad arguments")
 	}
 
-	return scan.UpdateJobID(uuid, jobID)
+	return scan.UpdateJobID(trackID, jobID)
 }
 
 // UpdateStatus ...
-func (bm *basicManager) UpdateStatus(uuid string, status string, rev int64) error {
-	if len(uuid) == 0 {
+func (bm *basicManager) UpdateStatus(trackID string, status string, rev int64) error {
+	if len(trackID) == 0 {
 		return errors.New("missing uuid")
-	}
-
-	if rev <= 0 {
-		return errors.New("invalid data revision")
 	}
 
 	stCode := job.ErrorStatus.Code()
@@ -148,17 +177,13 @@ func (bm *basicManager) UpdateStatus(uuid string, status string, rev int64) erro
 		stCode = st.Code()
 	}
 
-	return scan.UpdateReportStatus(uuid, status, stCode, rev)
+	return scan.UpdateReportStatus(trackID, status, stCode, rev)
 }
 
 // UpdateReportData ...
 func (bm *basicManager) UpdateReportData(uuid string, report string, rev int64) error {
 	if len(uuid) == 0 {
 		return errors.New("missing uuid")
-	}
-
-	if rev <= 0 {
-		return errors.New("invalid data revision")
 	}
 
 	if len(report) == 0 {

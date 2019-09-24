@@ -42,7 +42,7 @@ func TestGetRepos(t *testing.T) {
 	} else {
 		assert.Equal(int(200), code, "response code should be 200")
 		if repos, ok := repositories.([]repoResp); ok {
-			assert.Equal(int(1), len(repos), "the length of repositories should be 1")
+			require.Equal(t, int(1), len(repos), "the length of repositories should be 1")
 			assert.Equal(repos[0].Name, "library/hello-world", "unexpected repository name")
 		} else {
 			t.Error("unexpected response")

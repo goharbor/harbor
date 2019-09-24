@@ -69,6 +69,7 @@ func (suite *SupportedMimesSuite) SetupSuite() {
 func (suite *SupportedMimesSuite) TestResolveData() {
 	obj, err := ResolveData(v1.MimeTypeNativeReport, suite.mockData)
 	require.NoError(suite.T(), err)
+	require.NotNil(suite.T(), obj)
 	require.Condition(suite.T(), func() (success bool) {
 		rp, ok := obj.(*vuln.Report)
 		success = ok && rp != nil && rp.Severity == vuln.High
