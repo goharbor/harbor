@@ -242,7 +242,11 @@ Retry Keyword When Error
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
 Retry Keyword When Return Value Mismatch
+<<<<<<< HEAD
     [Arguments]  ${keyword}  ${expected_value}  ${count}  @{elements}
+=======
+    [Arguments]  ${keyword}  ${expected_value}  @{elements}  ${count}=6
+>>>>>>> 20dc24563... In nightly helm pipeline, test case 'Project Quotas Control Under GC' failed, it should be timing issue that the valuse in UI is not ready, so I add a keyword 'Retry Keyword When Return Value Mismatch' to retry value getting action.
     :For  ${n}  IN RANGE  1  ${count}
     \    Log To Console  Trying ${keyword} ${n} times ...
     \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
