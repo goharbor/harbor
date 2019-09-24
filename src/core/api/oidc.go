@@ -16,6 +16,7 @@ package api
 
 import (
 	"errors"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/oidc"
 )
@@ -50,7 +51,7 @@ func (oa *OIDCAPI) Ping() {
 	}
 	if err := oidc.TestEndpoint(c); err != nil {
 		log.Errorf("Failed to verify connection: %+v, err: %v", c, err)
-		oa.SendBadRequestError(err)
+		oa.SendBadRequestError(errors.New("failed to verify connection"))
 		return
 	}
 }
