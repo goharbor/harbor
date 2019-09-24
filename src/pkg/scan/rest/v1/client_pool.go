@@ -102,7 +102,7 @@ func (bcp *basicClientPool) Get(r *scanner.Registration) (Client, error) {
 		return nil, errors.New("nil scanner registration")
 	}
 
-	if err := r.Validate(true); err != nil {
+	if err := r.Validate(false); err != nil {
 		return nil, errors.Wrap(err, "client pool: get")
 	}
 
@@ -159,8 +159,7 @@ func (bcp *basicClientPool) deadCheck(key string, item *poolItem) {
 }
 
 func key(r *scanner.Registration) string {
-	return fmt.Sprintf("%s:%s:%s:%s:%v",
-		r.UUID,
+	return fmt.Sprintf("%s:%s:%s:%v",
 		r.URL,
 		r.Auth,
 		r.AccessCredential,

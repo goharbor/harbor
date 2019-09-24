@@ -16,6 +16,7 @@ package scan
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -103,7 +104,7 @@ func UpdateReportData(uuid string, report string, statusRev int64) error {
 }
 
 // UpdateReportStatus updates the report `status` with conditions matched.
-func UpdateReportStatus(uuid string, status string, statusCode int, statusRev int64) error {
+func UpdateReportStatus(trackID string, status string, statusCode int, statusRev int64) error {
 	o := dao.GetOrmer()
 	qt := o.QueryTable(new(Report))
 
@@ -112,7 +113,13 @@ func UpdateReportStatus(uuid string, status string, statusCode int, statusRev in
 	data["status_code"] = statusCode
 	data["status_rev"] = statusRev
 
-	count, err := qt.Filter("uuid", uuid).
+	// Technically it is not correct, just to avoid changing interface and adding more code.
+	// running==2
+	if statusCode > 2 {
+		data["end_time"] = time.Now().UTC()
+	}
+
+	count, err := qt.Filter("track_id", trackID).
 		Filter("status_rev__lte", statusRev).
 		Filter("status_code__lte", statusCode).Update(data)
 
@@ -121,20 +128,20 @@ func UpdateReportStatus(uuid string, status string, statusCode int, statusRev in
 	}
 
 	if count == 0 {
-		return errors.Errorf("no report with uuid %s updated", uuid)
+		return errors.Errorf("no report with track_id %s updated", trackID)
 	}
 
 	return nil
 }
 
 // UpdateJobID updates the report `job_id` column
-func UpdateJobID(uuid string, jobID string) error {
+func UpdateJobID(trackID string, jobID string) error {
 	o := dao.GetOrmer()
 	qt := o.QueryTable(new(Report))
 
 	params := make(orm.Params, 1)
 	params["job_id"] = jobID
-	_, err := qt.Filter("uuid", uuid).Update(params)
+	_, err := qt.Filter("track_id", trackID).Update(params)
 
 	return err
 }

@@ -116,17 +116,18 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 
 	// Print related infos to log
 	printJSONParameter(JobParamRegistration, params[JobParamRegistration].(string), myLogger)
-	printJSONParameter(JobParameterRequest, params[JobParameterRequest].(string), myLogger)
+	printJSONParameter(JobParameterRequest, removeAuthInfo(req), myLogger)
+	myLogger.Infof("Report mime types: %v\n", mimes)
 
 	// Submit scan request to the scanner adapter
 	client, err := v1.DefaultClientPool.Get(r)
 	if err != nil {
-		return errors.Wrap(err, "run scan job")
+		return logAndWrapError(myLogger, err, "scan job: get client")
 	}
 
 	resp, err := client.SubmitScan(req)
 	if err != nil {
-		return errors.Wrap(err, "run scan job")
+		return logAndWrapError(myLogger, err, "scan job: submit scan request")
 	}
 
 	// For collecting errors
@@ -229,6 +230,13 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	return err
 }
 
+func logAndWrapError(logger logger.Interface, err error, message string) error {
+	e := errors.Wrap(err, message)
+	logger.Error(e)
+
+	return e
+}
+
 func printJSONParameter(parameter string, v string, logger logger.Interface) {
 	logger.Infof("%s:\n", parameter)
 	printPrettyJSON([]byte(v), logger)
@@ -242,6 +250,23 @@ func printPrettyJSON(in []byte, logger logger.Interface) {
 	}
 
 	logger.Infof("%s\n", out.String())
+}
+
+func removeAuthInfo(sr *v1.ScanRequest) string {
+	req := &v1.ScanRequest{
+		Artifact: sr.Artifact,
+		Registry: &v1.Registry{
+			URL:           sr.Registry.URL,
+			Authorization: "",
+		},
+	}
+
+	str, err := req.ToJSON()
+	if err != nil {
+		logger.Error(errors.Wrap(err, "scan job: remove auth"))
+	}
+
+	return str
 }
 
 func extractScanReq(params job.Parameters) (*v1.ScanRequest, error) {
@@ -263,7 +288,6 @@ func extractScanReq(params job.Parameters) (*v1.ScanRequest, error) {
 	if err := req.FromJSON(jsonData); err != nil {
 		return nil, err
 	}
-
 	if err := req.Validate(); err != nil {
 		return nil, err
 	}
@@ -304,14 +328,24 @@ func extractMimeTypes(params job.Parameters) ([]string, error) {
 		return nil, errors.Errorf("missing job parameter '%s'", JobParameterMimes)
 	}
 
-	l, ok := v.([]string)
+	l, ok := v.([]interface{})
 	if !ok {
 		return nil, errors.Errorf(
-			"malformed job parameter '%s', expecting string but got %s",
+			"malformed job parameter '%s', expecting []interface{} but got %s",
 			JobParameterMimes,
 			reflect.TypeOf(v).String(),
 		)
 	}
 
-	return l, nil
+	mimes := make([]string, 0)
+	for _, v := range l {
+		mime, ok := v.(string)
+		if !ok {
+			return nil, errors.Errorf("expect string but got %s", reflect.TypeOf(v).String())
+		}
+
+		mimes = append(mimes, mime)
+	}
+
+	return mimes, nil
 }

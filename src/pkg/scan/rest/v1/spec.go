@@ -39,6 +39,8 @@ const (
 	MimeTypeScanRequest = "application/vnd.scanner.adapter.scan.request+json; version=1.0"
 	// MimeTypeScanResponse defines the mime type for scan response
 	MimeTypeScanResponse = "application/vnd.scanner.adapter.scan.response+json; version=1.0"
+
+	apiPrefix = "/api/v1"
 )
 
 // RequestResolver is a function template to modify the API request, e.g: add headers
@@ -69,6 +71,8 @@ func NewSpec(base string) *Spec {
 			s.baseRoute = base
 		}
 	}
+
+	s.baseRoute = fmt.Sprintf("%s%s", s.baseRoute, apiPrefix)
 
 	return s
 }

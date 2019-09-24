@@ -53,9 +53,10 @@ const (
 	ResourceRepositoryTag              = Resource("repository-tag")
 	ResourceRepositoryTagLabel         = Resource("repository-tag-label")
 	ResourceRepositoryTagManifest      = Resource("repository-tag-manifest")
-	ResourceRepositoryTagScanJob       = Resource("repository-tag-scan-job")
-	ResourceRepositoryTagVulnerability = Resource("repository-tag-vulnerability")
+	ResourceRepositoryTagScanJob       = Resource("repository-tag-scan-job")      // TODO: remove
+	ResourceRepositoryTagVulnerability = Resource("repository-tag-vulnerability") // TODO: remove
 	ResourceRobot                      = Resource("robot")
 	ResourceNotificationPolicy         = Resource("notification-policy")
+	ResourceScan                       = Resource("scan")
 	ResourceSelf                       = Resource("") // subresource for self
 )

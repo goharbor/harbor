@@ -17,7 +17,6 @@ package scan
 import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -25,17 +24,6 @@ import (
 // TODO: Here the artifact object is reused the v1 one which is sent to the adapter,
 //  it should be pointed to the general artifact object in future once it's ready.
 type Controller interface {
-	// Ping pings Scanner Adapter to test EndpointURL and Authorization settings.
-	// The implementation is supposed to call the GetMetadata method on scanner.Client.
-	// Returns `nil` if connection succeeded, a non `nil` error otherwise.
-	//
-	//  Arguments:
-	//    registration *scanner.Registration : scanner registration to ping
-	//
-	//  Returns:
-	//    error  : non nil error if any errors occurred
-	Ping(registration *scanner.Registration) error
-
 	// Scan the given artifact
 	//
 	//   Arguments:
@@ -49,30 +37,42 @@ type Controller interface {
 	//
 	//   Arguments:
 	//     artifact *v1.Artifact : the scanned artifact
+	//     mimeTypes []string    : the mime types of the reports
 	//
 	//   Returns:
 	//     []*scan.Report : scan results by different scanner vendors
 	//     error          : non nil error if any errors occurred
-	GetReport(artifact *v1.Artifact) ([]*scan.Report, error)
+	GetReport(artifact *v1.Artifact, mimeTypes []string) ([]*scan.Report, error)
+
+	// GetSummary gets the summaries of the reports with given types.
+	//
+	//   Arguments:
+	//     artifact *v1.Artifact : the scanned artifact
+	//     mimeTypes []string    : the mime types of the reports
+	//
+	//   Returns:
+	//     map[string]interface{} : report summaries indexed by mime types
+	//     error                  : non nil error if any errors occurred
+	GetSummary(artifact *v1.Artifact, mimeTypes []string) (map[string]interface{}, error)
 
 	// Get the scan log for the specified artifact with the given digest
 	//
 	//   Arguments:
-	//     digest string : the digest of the artifact
+	//     uuid string : the UUID of the scan report
 	//
 	//   Returns:
 	//     []byte : the log text stream
 	//     error  : non nil error if any errors occurred
-	GetScanLog(digest string) ([]byte, error)
+	GetScanLog(uuid string) ([]byte, error)
 
 	// HandleJobHooks handle the hook events from the job service
 	// e.g : status change of the scan job or scan result
 	//
 	//   Arguments:
-	//     trackID int64            : ID for the result record
+	//     trackID string           : UUID for the report record
 	//     change *job.StatusChange : change event from the job service
 	//
 	//   Returns:
 	//     error  : non nil error if any errors occurred
-	HandleJobHooks(trackID int64, change *job.StatusChange) error
+	HandleJobHooks(trackID string, change *job.StatusChange) error
 }

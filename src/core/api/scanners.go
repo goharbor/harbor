@@ -62,6 +62,21 @@ func (sa *ScannerAPI) Get() {
 	}
 }
 
+// Metadata returns the metadata of the given scanner.
+func (sa *ScannerAPI) Metadata() {
+	uuid := sa.GetStringFromPath(":uuid")
+
+	meta, err := sa.c.GetMetadata(uuid)
+	if err != nil {
+		sa.SendInternalServerError(errors.Wrap(err, "scanner API: get metadata"))
+		return
+	}
+
+	// Response to the client
+	sa.Data["json"] = meta
+	sa.ServeJSON()
+}
+
 // List all the scanners
 func (sa *ScannerAPI) List() {
 	p, pz, err := sa.GetPaginationParams()
@@ -77,7 +92,7 @@ func (sa *ScannerAPI) List() {
 
 	// Get query key words
 	kws := make(map[string]interface{})
-	properties := []string{"name", "description", "url"}
+	properties := []string{"name", "description", "url", "ex_name", "ex_url"}
 	for _, k := range properties {
 		kw := sa.GetString(k)
 		if len(kw) > 0 {
@@ -193,10 +208,6 @@ func (sa *ScannerAPI) Update() {
 // Delete the scanner
 func (sa *ScannerAPI) Delete() {
 	uid := sa.GetStringFromPath(":uuid")
-	if len(uid) == 0 {
-		sa.SendBadRequestError(errors.New("missing uid"))
-		return
-	}
 
 	deleted, err := sa.c.DeleteRegistration(uid)
 	if err != nil {
@@ -217,10 +228,6 @@ func (sa *ScannerAPI) Delete() {
 // SetAsDefault sets the given registration as default one
 func (sa *ScannerAPI) SetAsDefault() {
 	uid := sa.GetStringFromPath(":uuid")
-	if len(uid) == 0 {
-		sa.SendBadRequestError(errors.New("missing uid"))
-		return
-	}
 
 	m := make(map[string]interface{})
 	if err := sa.DecodeJSONReq(&m); err != nil {
@@ -242,51 +249,22 @@ func (sa *ScannerAPI) SetAsDefault() {
 	sa.SendForbiddenError(errors.Errorf("not supported: %#v", m))
 }
 
-// GetProjectScanner gets the project level scanner
-func (sa *ScannerAPI) GetProjectScanner() {
-	pid, err := sa.GetInt64FromPath(":pid")
-	if err != nil {
-		sa.SendBadRequestError(errors.Wrap(err, "scanner API: get project scanners"))
+// Ping the registration.
+func (sa *ScannerAPI) Ping() {
+	r := &scanner.Registration{}
+
+	if err := sa.DecodeJSONReq(r); err != nil {
+		sa.SendBadRequestError(errors.Wrap(err, "scanner API: ping"))
 		return
 	}
 
-	r, err := sa.c.GetRegistrationByProject(pid)
-	if err != nil {
-		sa.SendInternalServerError(errors.Wrap(err, "scanner API: get project scanners"))
+	if err := r.Validate(false); err != nil {
+		sa.SendBadRequestError(errors.Wrap(err, "scanner API: ping"))
 		return
 	}
 
-	if r != nil {
-		sa.Data["json"] = r
-	} else {
-		sa.Data["json"] = make(map[string]interface{})
-	}
-
-	sa.ServeJSON()
-}
-
-// SetProjectScanner sets the project level scanner
-func (sa *ScannerAPI) SetProjectScanner() {
-	pid, err := sa.GetInt64FromPath(":pid")
-	if err != nil {
-		sa.SendBadRequestError(errors.Wrap(err, "scanner API: set project scanners"))
-		return
-	}
-
-	body := make(map[string]string)
-	if err := sa.DecodeJSONReq(&body); err != nil {
-		sa.SendBadRequestError(errors.Wrap(err, "scanner API: set project scanners"))
-		return
-	}
-
-	uuid, ok := body["uuid"]
-	if !ok || len(uuid) == 0 {
-		sa.SendBadRequestError(errors.New("missing scanner uuid when setting project scanner"))
-		return
-	}
-
-	if err := sa.c.SetRegistrationByProject(pid, uuid); err != nil {
-		sa.SendInternalServerError(errors.Wrap(err, "scanner API: set project scanners"))
+	if _, err := sa.c.Ping(r); err != nil {
+		sa.SendInternalServerError(errors.Wrap(err, "scanner API: ping"))
 		return
 	}
 }
@@ -294,10 +272,6 @@ func (sa *ScannerAPI) SetProjectScanner() {
 // get the specified scanner
 func (sa *ScannerAPI) get() *scanner.Registration {
 	uid := sa.GetStringFromPath(":uuid")
-	if len(uid) == 0 {
-		sa.SendBadRequestError(errors.New("missing uid"))
-		return nil
-	}
 
 	r, err := sa.c.GetRegistration(uid)
 	if err != nil {

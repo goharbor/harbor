@@ -35,7 +35,6 @@ import (
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
 	api_models "github.com/goharbor/harbor/src/core/api/models"
 	apimodels "github.com/goharbor/harbor/src/core/api/models"
-	quota "github.com/goharbor/harbor/src/core/api/quota"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
@@ -210,17 +209,19 @@ func init() {
 	scannerAPI := &ScannerAPI{}
 	beego.Router("/api/scanners", scannerAPI, "post:Create;get:List")
 	beego.Router("/api/scanners/:uuid", scannerAPI, "get:Get;delete:Delete;put:Update;patch:SetAsDefault")
+
 	// Add routes for project level scanner
-	beego.Router("/api/projects/:pid([0-9]+)/scanner", scannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
+	proScannerAPI := &ProjectScannerAPI{}
+	beego.Router("/api/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
 
 	// syncRegistry
-	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
+	/*if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
 		log.Fatalf("failed to sync repositories from registry: %v", err)
 	}
 
 	if err := quota.Sync(config.GlobalProjectMgr, false); err != nil {
 		log.Fatalf("failed to sync quota from backend: %v", err)
-	}
+	}*/
 
 	// Init user Info
 	admin = &usrInfo{adminName, adminPwd}

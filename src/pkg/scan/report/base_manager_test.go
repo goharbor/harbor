@@ -52,6 +52,7 @@ func (suite *TestManagerSuite) SetupTest() {
 		Digest:           "d1000",
 		RegistrationUUID: "ruuid",
 		MimeType:         v1.MimeTypeNativeReport,
+		TrackID:          "tid001",
 	}
 
 	uuid, err := suite.m.Create(rp)
@@ -70,13 +71,14 @@ func (suite *TestManagerSuite) TearDownTest() {
 
 // TestManagerCreateWithExisting tests the case that a copy already is there when creating report.
 func (suite *TestManagerSuite) TestManagerCreateWithExisting() {
-	err := suite.m.UpdateStatus(suite.rpUUID, job.SuccessStatus.String(), 2000)
+	err := suite.m.UpdateStatus("tid001", job.SuccessStatus.String(), 2000)
 	require.NoError(suite.T(), err)
 
 	rp := &scan.Report{
 		Digest:           "d1000",
 		RegistrationUUID: "ruuid",
 		MimeType:         v1.MimeTypeNativeReport,
+		TrackID:          "tid002",
 	}
 
 	uuid, err := suite.m.Create(rp)
@@ -85,6 +87,16 @@ func (suite *TestManagerSuite) TestManagerCreateWithExisting() {
 
 	assert.NotEqual(suite.T(), suite.rpUUID, uuid)
 	suite.rpUUID = uuid
+}
+
+// TestManagerGet tests the get method.
+func (suite *TestManagerSuite) TestManagerGet() {
+	sr, err := suite.m.Get(suite.rpUUID)
+
+	require.NoError(suite.T(), err)
+	require.NotNil(suite.T(), sr)
+
+	assert.Equal(suite.T(), "d1000", sr.Digest)
 }
 
 // TestManagerGetBy tests the get by method.
@@ -113,7 +125,7 @@ func (suite *TestManagerSuite) TestManagerUpdateJobID() {
 
 	oldJID := l[0].JobID
 
-	err = suite.m.UpdateScanJobID(suite.rpUUID, "jID1001")
+	err = suite.m.UpdateScanJobID("tid001", "jID1001")
 	require.NoError(suite.T(), err)
 
 	l, err = suite.m.GetBy("d1000", "ruuid", []string{v1.MimeTypeNativeReport})
@@ -132,7 +144,7 @@ func (suite *TestManagerSuite) TestManagerUpdateStatus() {
 
 	oldSt := l[0].Status
 
-	err = suite.m.UpdateStatus(suite.rpUUID, job.SuccessStatus.String(), 10000)
+	err = suite.m.UpdateStatus("tid001", job.SuccessStatus.String(), 10000)
 	require.NoError(suite.T(), err)
 
 	l, err = suite.m.GetBy("d1000", "ruuid", []string{v1.MimeTypeNativeReport})

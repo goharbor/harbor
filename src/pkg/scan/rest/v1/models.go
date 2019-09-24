@@ -60,13 +60,15 @@ type ScannerProperties map[string]string
 // a scanner capable of scanning a given Artifact stored in its registry and making sure that it
 // can interpret a returned result.
 type ScannerAdapterMetadata struct {
-	Scanner      *Scanner           `json:"scanner"`
-	Capabilities *ScannerCapability `json:"capabilities"`
-	Properties   ScannerProperties  `json:"properties"`
+	Scanner      *Scanner             `json:"scanner"`
+	Capabilities []*ScannerCapability `json:"capabilities"`
+	Properties   ScannerProperties    `json:"properties"`
 }
 
 // Artifact represents an artifact stored in Registry.
 type Artifact struct {
+	// ID of the namespace (project). It will not be sent to scanner adapter.
+	NamespaceID int64 `json:"-"`
 	// The full name of a Harbor repository containing the artifact, including the namespace.
 	// For example, `library/oracle/nosql`.
 	Repository string `json:"repository"`

@@ -20,6 +20,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/scan/rest/auth"
+
 	"github.com/pkg/errors"
 )
 
@@ -44,6 +46,11 @@ type Registration struct {
 
 	// Http connection settings
 	SkipCertVerify bool `orm:"column(skip_cert_verify);default(false)" json:"skip_certVerify"`
+
+	// Extra info about the scanner
+	Scanner string `orm:"-" json:"scanner,omitempty"`
+	Vendor  string `orm:"-" json:"vendor,omitempty"`
+	Version string `orm:"-" json:"version,omitempty"`
 
 	// Timestamps
 	CreateTime time.Time `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`
@@ -87,6 +94,17 @@ func (r *Registration) Validate(checkUUID bool) error {
 	err := checkURL(r.URL)
 	if err != nil {
 		return errors.Wrap(err, "scanner registration validate")
+	}
+
+	if len(r.Auth) > 0 &&
+		r.Auth != auth.Basic &&
+		r.Auth != auth.Bearer &&
+		r.Auth != auth.APIKey {
+		return errors.Errorf("auth type %s is not supported", r.Auth)
+	}
+
+	if len(r.Auth) > 0 && len(r.AccessCredential) == 0 {
+		return errors.Errorf("access_credential is required for auth type %s", r.Auth)
 	}
 
 	return nil

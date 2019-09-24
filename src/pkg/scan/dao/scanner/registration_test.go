@@ -124,6 +124,22 @@ func (suite *RegistrationDAOTestSuite) TestList() {
 	})
 	require.NoError(suite.T(), err)
 	require.Equal(suite.T(), 0, len(l))
+
+	// Exact match
+	exactKeywords := make(map[string]interface{})
+	exactKeywords["ex_name"] = "forUT"
+	l, err = ListRegistrations(&q.Query{
+		Keywords: exactKeywords,
+	})
+	require.NoError(suite.T(), err)
+	require.Equal(suite.T(), 1, len(l))
+
+	exactKeywords["ex_name"] = "forU"
+	l, err = ListRegistrations(&q.Query{
+		Keywords: exactKeywords,
+	})
+	require.NoError(suite.T(), err)
+	require.Equal(suite.T(), 0, len(l))
 }
 
 // TestDefault tests set/get default
@@ -138,4 +154,11 @@ func (suite *RegistrationDAOTestSuite) TestDefault() {
 	dr, err = GetDefaultRegistration()
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), dr)
+
+	dr.Disabled = true
+	err = UpdateRegistration(dr, "disabled")
+	require.NoError(suite.T(), err)
+
+	err = SetDefaultRegistration(suite.registrationID)
+	require.Error(suite.T(), err)
 }

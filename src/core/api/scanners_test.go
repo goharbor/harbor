@@ -19,6 +19,8 @@ import (
 	"net/http"
 	"testing"
 
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+
 	"github.com/goharbor/harbor/src/pkg/q"
 	sc "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
@@ -256,45 +258,6 @@ func (suite *ScannerAPITestSuite) TestScannerAPISetDefault() {
 	})
 }
 
-// TestScannerAPIProjectScanner tests the API of getting/setting project level scanner
-func (suite *ScannerAPITestSuite) TestScannerAPIProjectScanner() {
-	suite.mockC.On("SetRegistrationByProject", int64(1), "uuid").Return(nil)
-
-	// Set
-	body := make(map[string]interface{}, 1)
-	body["uuid"] = "uuid"
-	runCodeCheckingCases(suite.T(), &codeCheckingCase{
-		request: &testingRequest{
-			url:        fmt.Sprintf("/api/projects/%d/scanner", 1),
-			method:     http.MethodPut,
-			credential: sysAdmin,
-			bodyJSON:   body,
-		},
-		code: http.StatusOK,
-	})
-
-	r := &scanner.Registration{
-		ID:          1004,
-		UUID:        "uuid",
-		Name:        "TestScannerAPIProjectScanner",
-		Description: "JUST FOR TEST",
-		URL:         "https://a.b.c",
-	}
-	suite.mockC.On("GetRegistrationByProject", int64(1)).Return(r, nil)
-
-	// Get
-	rr := &scanner.Registration{}
-	err := handleAndParse(&testingRequest{
-		url:        fmt.Sprintf("/api/projects/%d/scanner", 1),
-		method:     http.MethodGet,
-		credential: sysAdmin,
-	}, rr)
-	require.NoError(suite.T(), err)
-
-	assert.Equal(suite.T(), r.Name, rr.Name)
-	assert.Equal(suite.T(), r.UUID, rr.UUID)
-}
-
 func (suite *ScannerAPITestSuite) mockQuery(r *scanner.Registration) {
 	kw := make(map[string]interface{}, 1)
 	kw["name"] = r.Name
@@ -384,4 +347,26 @@ func (m *MockScannerAPIController) GetRegistrationByProject(projectID int64) (*s
 	}
 
 	return s.(*scanner.Registration), args.Error(1)
+}
+
+// Ping ...
+func (m *MockScannerAPIController) Ping(registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error) {
+	args := m.Called(registration)
+	sam := args.Get(0)
+	if sam == nil {
+		return nil, args.Error(1)
+	}
+
+	return sam.(*v1.ScannerAdapterMetadata), nil
+}
+
+// GetMetadata ...
+func (m *MockScannerAPIController) GetMetadata(registrationUUID string) (*v1.ScannerAdapterMetadata, error) {
+	args := m.Called(registrationUUID)
+	sam := args.Get(0)
+	if sam == nil {
+		return nil, args.Error(1)
+	}
+
+	return sam.(*v1.ScannerAdapterMetadata), nil
 }
