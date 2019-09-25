@@ -893,6 +893,19 @@ This example uses the same project and repositories as example 1, but sets the r
 
 In this case, all of the images in repository A are retained because they have been pulled in the last 7 days. None of the images in repositories B to E are retained, because none of them has been pulled in the last week. In this example, 100 images are retained, as opposed to 34 images in example 1.
 
+#### Tag Retention Rules and Native Docker Tag Deletion
+
+**WARNING**: Due to native Docker tag deletion behavior, there is an issue with the current retention policy implementation. If you have multiple tags that refer to the same SHA digest, and if a subset of these tags are marked for deletion by a configured retention policy, all of the remaining tags would also be deleted. This violates the retention policy, so in this case all of the tags are retained. This issue will be addressed in a future update release, so that tag retention policies can delete tags without deleting the digest and other shared tags.
+
+For example, you have following tags, listed according to their push time, and all of them refer to the same SHA digest:
+
+- `harbor-1.8`, pushed 8/14/2019 12:00am
+- `harbor-release`, pushed 8/14/2019 03:00am
+- `harbor-nightly`, pushed 8/14/2019 06:00am
+- `harbor-latest`, pushed 8/14/2019 09:00am
+
+You configure a retention policy to retain the two latest tags that match `harbor-*`, so that `harbor-rc` and `harbor-latest` are deleted. However, since all tags refer to the same SHA digest, this policy would also delete the tags `harbor-1.8` and `harbor-release`, so all tags are retained.
+
 ### Combining Rules on a Respository
 
 You can define up to 15 rules per project. You can apply multiple rules to a repository or set of repositories. When you apply multiple rules to a repository, they are applied with `OR` logic rather than with `AND` logic. In this way, there is no prioritization of application of the rules on a given repository. Rules run concurrently in the background, and the resulting sets from each rule are combined at the end of the run.
