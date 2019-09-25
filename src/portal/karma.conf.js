@@ -31,7 +31,7 @@ module.exports = function (config) {
         fixWebpackSourcePaths: true,
    
         // Omit files with no statements, no functions and no branches from the report
-        skipFilesWithNoCoverage: true,
+        skipFilesWithNoCoverage: false,
    
         // Most reporters accept additional config options. You can pass these through the `report-config` option
         'report-config': {
@@ -45,13 +45,13 @@ module.exports = function (config) {
         // enforce percentage thresholds
         // anything under these percentages will cause karma to fail with an exit code of 1 if not running in watch mode
         thresholds: {
-          emitWarning: false, // set to `true` to not fail the test command when thresholds are not met
+          emitWarning: true, // set to `true` to not fail the test command when thresholds are not met
           // thresholds for all files
           global: {
-            statements: 47,
-            branches: 18,
-            functions: 27,
-            lines: 47
+            statements: 40,
+            branches: 13,
+            functions: 26,
+            lines: 41
           },
           // thresholds per file
           each: {
