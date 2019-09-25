@@ -16,7 +16,7 @@ type FileLogger struct {
 // NewFileLogger crates a new file logger
 // nil might be returned
 func NewFileLogger(level string, logPath string, depth int) (*FileLogger, error) {
-	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(logPath, os.O_CREATE|os.O_WRONLY, 0600)
 	if err != nil {
 		return nil, err
 	}
