@@ -2,6 +2,8 @@
 [![GoDoc](https://godoc.org/github.com/golang-migrate/migrate?status.svg)](https://godoc.org/github.com/golang-migrate/migrate)
 [![Coverage Status](https://img.shields.io/coveralls/github/golang-migrate/migrate/master.svg)](https://coveralls.io/github/golang-migrate/migrate?branch=master)
 [![packagecloud.io](https://img.shields.io/badge/deb-packagecloud.io-844fec.svg)](https://packagecloud.io/golang-migrate/migrate?filter=debs)
+[![Docker Pulls](https://img.shields.io/docker/pulls/migrate/migrate.svg)](https://hub.docker.com/r/migrate/migrate/)
+![Supported Go Versions](https://img.shields.io/badge/Go-1.10%2C%201.11-lightgrey.svg)
 [![GitHub Release](https://img.shields.io/github/release/golang-migrate/migrate.svg)](https://github.com/golang-migrate/migrate/releases)
 
 
@@ -17,6 +19,8 @@ __Database migrations written in Go. Use as [CLI](#cli-usage) or import as [libr
 
 
 Looking for [v1](https://github.com/golang-migrate/migrate/tree/v1)?
+
+Forked from [mattes/migrate](https://github.com/mattes/migrate)
 
 
 ## Databases
@@ -37,6 +41,25 @@ Database drivers run migrations. [Add a new database?](database/driver.go)
   * [CockroachDB](database/cockroachdb)
   * [ClickHouse](database/clickhouse)
 
+### Database URLs
+
+Database connection strings are specified via URLs. The URL format is driver dependent but generally has the form: `dbdriver://username:password@host:port/dbname?option1=true&option2=false`
+
+Any [reserved URL characters](https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_reserved_characters) need to be escaped. Note, the `%` character also [needs to be escaped](https://en.wikipedia.org/wiki/Percent-encoding#Percent-encoding_the_percent_character)
+
+Explicitly, the following characters need to be escaped:
+`!`, `#`, `$`, `%`, `&`, `'`, `(`, `)`, `*`, `+`, `,`, `/`, `:`, `;`, `=`, `?`, `@`, `[`, `]`
+
+It's easiest to always run the URL parts of your DB connection URL (e.g. username, password, etc) through an URL encoder. See the example Python helpers below:
+```bash
+$ python3 -c 'import urllib.parse; print(urllib.parse.quote(input("String to encode: "), ""))'
+String to encode: FAKEpassword!#$%&'()*+,/:;=?@[]
+FAKEpassword%21%23%24%25%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D
+$ python2 -c 'import urllib; print urllib.quote(raw_input("String to encode: "), "")'
+String to encode: FAKEpassword!#$%&'()*+,/:;=?@[]
+FAKEpassword%21%23%24%25%26%27%28%29%2A%2B%2C%2F%3A%3B%3D%3F%40%5B%5D
+$
+```
 
 ## Migration Sources
 
@@ -61,7 +84,7 @@ __[CLI Documentation](cli)__
 ### Basic usage:
 
 ```
-$ migrate -database postgres://localhost:5432/database up 2
+$ migrate -source file://path/to/migrations -database postgres://localhost:5432/database up 2
 ```
 
 ### Docker usage
@@ -74,9 +97,7 @@ $ docker run -v {{ migration dir }}:/migrations --network host migrate/migrate
 ## Use in your Go project
 
  * API is stable and frozen for this release (v3.x).
- * Package migrate has no external dependencies.
- * Only import the drivers you need.
-   (check [dependency_tree.txt](https://github.com/golang-migrate/migrate/releases) for each driver)
+ * Uses [dep](https://github.com/golang/dep) to manage dependencies
  * To help prevent database corruptions, it supports graceful stops via `GracefulStop chan bool`.
  * Bring your own logger.
  * Uses `io.Reader` streams internally for low memory overhead.

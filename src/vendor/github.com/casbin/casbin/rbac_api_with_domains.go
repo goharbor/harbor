@@ -14,6 +14,12 @@
 
 package casbin
 
+// GetUsersForRoleInDomain gets the users that has a role inside a domain. Add by Gordon
+func (e *Enforcer) GetUsersForRoleInDomain(name string, domain string) []string {
+	res, _ := e.model["g"]["g"].RM.GetUsers(name, domain)
+	return res
+}
+
 // GetRolesForUserInDomain gets the roles that a user has inside a domain.
 func (e *Enforcer) GetRolesForUserInDomain(name string, domain string) []string {
 	res, _ := e.model["g"]["g"].RM.GetRoles(name, domain)

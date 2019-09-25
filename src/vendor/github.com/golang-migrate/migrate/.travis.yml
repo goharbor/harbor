@@ -1,9 +1,14 @@
 language: go
 sudo: required
 
-go:
-  - "1.9.x"
-  - "1.10.x"
+matrix:
+  allow_failures:
+    - go: master
+  include:
+    # Supported versions of Go: https://golang.org/dl/
+    - go: "1.10.x"
+    - go: "1.11.x"
+    - go: master
 
 go_import_path: github.com/golang-migrate/migrate
 
@@ -25,8 +30,9 @@ cache:
     - $GOPATH/pkg
 
 before_install:
+  - echo "TRAVIS_GO_VERSION=${TRAVIS_GO_VERSION}"
   # Download the binary to bin folder in $GOPATH
-  - curl -L -s https://github.com/golang/dep/releases/download/v0.4.1/dep-linux-amd64 -o $GOPATH/bin/dep
+  - curl -L -s https://github.com/golang/dep/releases/download/v0.5.0/dep-linux-amd64 -o $GOPATH/bin/dep
   # Make the binary executable
   - chmod +x $GOPATH/bin/dep
 
@@ -53,7 +59,7 @@ deploy:
       secure: hWH1HLPpzpfA8pXQ93T1qKQVFSpQp0as/JLQ7D91jHuJ8p+RxVeqblDrR6HQY/95R/nyiE9GJmvUolSuw5h449LSrGxPtVWhdh6EnkxlQHlen5XeMhVjRjFV0sE9qGe8v7uAkiTfRO61ktTWHrEAvw5qpyqnNISodmZS78XIasPODQbNlzwINhWhDTHIjXGb4FpizYaL3OGCanrxfR9fQyCaqKGGBjRq3Mfq8U6Yd4mApmsE+uJxgaZV8K5zBqpkSzQRWhcVGNL5DuLsU3gfSJOo7kZeA2G71SHffH577dBoqtCZ4VFv169CoUZehLWCb+7XKJZmHXVujCURATSySLGUOPc6EoLFAn3YtsCA04mS4bZVo5FZPWVwfhjmkhtDR4f6wscKp7r1HsFHSOgm59QfETQdrn4MnZ44H2Jd39axqndn5DvK9EcZVjPHynOPnueXP2u6mTuUgh2VyyWBCDO3CNo0fGlo7VJI69IkIWNSD87K9cHZWYMClyKZkUzS+PmRAhHRYbVd+9ZjKOmnU36kUHNDG/ft1D4ogsY+rhVtXB4lgWDM5adri+EIScYdYnB1/pQexLBigcJY9uE7nQTR0U6QgVNYvun7uRNs40E0c4voSfmPdFO0FlOD2y1oQhnaXfWLbu9nMcTcs4RFGrcC7NzkUN4/WjG8s285V6w=
     skip_cleanup: true
     on:
-      go: "1.10.x"
+      go: "1.11.x"
       repo: golang-migrate/migrate
       tags: true
     file:
@@ -71,12 +77,12 @@ deploy:
     package_glob: '*.deb'
     skip_cleanup: true
     on:
-      go: "1.10.x"
+      go: "1.11.x"
       repo: golang-migrate/migrate
       tags: true
   - provider: script
     script: ./docker-deploy.sh
     on:
-      go: "1.10.x"
+      go: "1.11.x"
       repo: golang-migrate/migrate
       tags: true

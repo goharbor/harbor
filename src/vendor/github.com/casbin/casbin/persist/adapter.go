@@ -22,15 +22,14 @@ import (
 
 // LoadPolicyLine loads a text line as a policy rule to model.
 func LoadPolicyLine(line string, model model.Model) {
-	if line == "" {
+	if line == "" || strings.HasPrefix(line, "#") {
 		return
 	}
 
-	if strings.HasPrefix(line, "#") {
-		return
+	tokens := strings.Split(line, ",")
+	for i := 0; i < len(tokens); i++ {
+		tokens[i] = strings.TrimSpace(tokens[i])
 	}
-
-	tokens := strings.Split(line, ", ")
 
 	key := tokens[0]
 	sec := key[:1]

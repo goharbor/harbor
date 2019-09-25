@@ -53,12 +53,15 @@ func AddToGroupVersion(scheme *runtime.Scheme, groupVersion schema.GroupVersion)
 		&ExportOptions{},
 		&GetOptions{},
 		&DeleteOptions{},
+		&CreateOptions{},
+		&UpdateOptions{},
+		&PatchOptions{},
 	)
 	utilruntime.Must(scheme.AddConversionFuncs(
-		Convert_versioned_Event_to_watch_Event,
-		Convert_versioned_InternalEvent_to_versioned_Event,
-		Convert_watch_Event_to_versioned_Event,
-		Convert_versioned_Event_to_versioned_InternalEvent,
+		Convert_v1_WatchEvent_To_watch_Event,
+		Convert_v1_InternalEvent_To_v1_WatchEvent,
+		Convert_watch_Event_To_v1_WatchEvent,
+		Convert_v1_WatchEvent_To_v1_InternalEvent,
 	))
 	// Register Unversioned types under their own special group
 	scheme.AddUnversionedTypes(Unversioned,
@@ -86,8 +89,28 @@ func init() {
 		&ExportOptions{},
 		&GetOptions{},
 		&DeleteOptions{},
+		&CreateOptions{},
+		&UpdateOptions{},
+		&PatchOptions{},
 	)
+
+	if err := AddMetaToScheme(scheme); err != nil {
+		panic(err)
+	}
 
 	// register manually. This usually goes through the SchemeBuilder, which we cannot use here.
 	utilruntime.Must(RegisterDefaults(scheme))
+}
+
+func AddMetaToScheme(scheme *runtime.Scheme) error {
+	scheme.AddKnownTypes(SchemeGroupVersion,
+		&Table{},
+		&TableOptions{},
+		&PartialObjectMetadata{},
+		&PartialObjectMetadataList{},
+	)
+
+	return scheme.AddConversionFuncs(
+		Convert_Slice_string_To_v1_IncludeObjectPolicy,
+	)
 }

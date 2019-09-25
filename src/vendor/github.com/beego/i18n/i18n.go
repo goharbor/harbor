@@ -158,9 +158,29 @@ func SetMessageWithDesc(lang, langDesc, filePath string, appendFiles ...string) 
 	return err
 }
 
+func SetMessageDataWithDesc(lang, langDesc string, data []byte) error {
+	message, err := goconfig.LoadFromData(data)
+	if err == nil {
+		message.BlockMode = false
+		lc := new(locale)
+		lc.lang = lang
+		lc.langDesc = langDesc
+		lc.message = message
+
+		if locales.Add(lc) == false {
+			return fmt.Errorf("Lang %s alread exist", lang)
+		}
+	}
+	return err
+}
+
 // SetMessage sets the message file for localization.
 func SetMessage(lang, filePath string, appendFiles ...string) error {
 	return SetMessageWithDesc(lang, lang, filePath, appendFiles...)
+}
+
+func SetMessageData(lang string, data []byte) error {
+	return SetMessageDataWithDesc(lang, lang, data)
 }
 
 // A Locale describles the information of localization.

@@ -3,13 +3,15 @@
 package postgres
 
 import (
+	"context"
 	"database/sql"
 	"fmt"
 	"io"
 	"io/ioutil"
 	nurl "net/url"
+	"strconv"
+	"strings"
 
-	"context"
 	"github.com/golang-migrate/migrate"
 	"github.com/golang-migrate/migrate/database"
 	"github.com/lib/pq"
@@ -38,6 +40,7 @@ type Config struct {
 type Postgres struct {
 	// Locking and unlocking need to use the same connection
 	conn     *sql.Conn
+	db       *sql.DB
 	isLocked bool
 
 	// Open and WithInstance need to garantuee that config is never nil
@@ -77,6 +80,7 @@ func WithInstance(instance *sql.DB, config *Config) (database.Driver, error) {
 
 	px := &Postgres{
 		conn:   conn,
+		db:     instance,
 		config: config,
 	}
 
@@ -115,7 +119,12 @@ func (p *Postgres) Open(url string) (database.Driver, error) {
 }
 
 func (p *Postgres) Close() error {
-	return p.conn.Close()
+	connErr := p.conn.Close()
+	dbErr := p.db.Close()
+	if connErr != nil || dbErr != nil {
+		return fmt.Errorf("conn: %v, db: %v", connErr, dbErr)
+	}
+	return nil
 }
 
 // https://www.postgresql.org/docs/9.6/static/explicit-locking.html#ADVISORY-LOCKS
@@ -167,11 +176,63 @@ func (p *Postgres) Run(migration io.Reader) error {
 	// run migration
 	query := string(migr[:])
 	if _, err := p.conn.ExecContext(context.Background(), query); err != nil {
-		// TODO: cast to postgress error and get line number
+		if pgErr, ok := err.(*pq.Error); ok {
+			var line uint
+			var col uint
+			var lineColOK bool
+			if pgErr.Position != "" {
+				if pos, err := strconv.ParseUint(pgErr.Position, 10, 64); err == nil {
+					line, col, lineColOK = computeLineFromPos(query, int(pos))
+				}
+			}
+			message := fmt.Sprintf("migration failed: %s", pgErr.Message)
+			if lineColOK {
+				message = fmt.Sprintf("%s (column %d)", message, col)
+			}
+			if pgErr.Detail != "" {
+				message = fmt.Sprintf("%s, %s", message, pgErr.Detail)
+			}
+			return database.Error{OrigErr: err, Err: message, Query: migr, Line: line}
+		}
 		return database.Error{OrigErr: err, Err: "migration failed", Query: migr}
 	}
 
 	return nil
+}
+
+func computeLineFromPos(s string, pos int) (line uint, col uint, ok bool) {
+	// replace crlf with lf
+	s = strings.Replace(s, "\r\n", "\n", -1)
+	// pg docs: pos uses index 1 for the first character, and positions are measured in characters not bytes
+	runes := []rune(s)
+	if pos > len(runes) {
+		return 0, 0, false
+	}
+	sel := runes[:pos]
+	line = uint(runesCount(sel, newLine) + 1)
+	col = uint(pos - 1 - runesLastIndex(sel, newLine))
+	return line, col, true
+}
+
+const newLine = '\n'
+
+func runesCount(input []rune, target rune) int {
+	var count int
+	for _, r := range input {
+		if r == target {
+			count++
+		}
+	}
+	return count
+}
+
+func runesLastIndex(input []rune, target rune) int {
+	for i := len(input) - 1; i >= 0; i-- {
+		if input[i] == target {
+			return i
+		}
+	}
+	return -1
 }
 
 func (p *Postgres) SetVersion(version int, dirty bool) error {
@@ -223,7 +284,7 @@ func (p *Postgres) Version() (version int, dirty bool, err error) {
 
 func (p *Postgres) Drop() error {
 	// select all tables in current schema
-	query := `SELECT table_name FROM information_schema.tables WHERE table_schema=(SELECT current_schema())`
+	query := `SELECT table_name FROM information_schema.tables WHERE table_schema=(SELECT current_schema()) AND table_type='BASE TABLE'`
 	tables, err := p.conn.QueryContext(context.Background(), query)
 	if err != nil {
 		return &database.Error{OrigErr: err, Query: []byte(query)}

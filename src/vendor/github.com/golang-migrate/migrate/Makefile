@@ -8,9 +8,9 @@ COVERAGE_DIR ?= .coverage
 
 build-cli: clean
 	-mkdir ./cli/build
-	cd ./cli && GOOS=linux GOARCH=amd64 go build -a -o build/migrate.linux-amd64 -ldflags='-X main.Version=$(VERSION) -extldflags "-static"' -tags '$(DATABASE) $(SOURCE)' .
-	cd ./cli && GOOS=darwin GOARCH=amd64 go build -a -o build/migrate.darwin-amd64 -ldflags='-X main.Version=$(VERSION) -extldflags "-static"' -tags '$(DATABASE) $(SOURCE)' .
-	cd ./cli && GOOS=windows GOARCH=amd64 go build -a -o build/migrate.windows-amd64.exe -ldflags='-X main.Version=$(VERSION) -extldflags "-static"' -tags '$(DATABASE) $(SOURCE)' .
+	cd ./cli && CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -a -o build/migrate.linux-amd64 -ldflags='-X main.Version=$(VERSION) -extldflags "-static"' -tags '$(DATABASE) $(SOURCE)' .
+	cd ./cli && CGO_ENABLED=0 GOOS=darwin GOARCH=amd64 go build -a -o build/migrate.darwin-amd64 -ldflags='-X main.Version=$(VERSION) -extldflags "-static"' -tags '$(DATABASE) $(SOURCE)' .
+	cd ./cli && CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build -a -o build/migrate.windows-amd64.exe -ldflags='-X main.Version=$(VERSION) -extldflags "-static"' -tags '$(DATABASE) $(SOURCE)' .
 	cd ./cli/build && find . -name 'migrate*' | xargs -I{} tar czf {}.tar.gz {}
 	cd ./cli/build && shasum -a 256 * > sha256sum.txt
 	cat ./cli/build/sha256sum.txt
@@ -38,6 +38,7 @@ test-with-flags:
 
 	@go test $(TEST_FLAGS) .
 	@go test $(TEST_FLAGS) ./cli/...
+	@go test $(TEST_FLAGS) ./database
 	@go test $(TEST_FLAGS) ./testing/...
 
 	@echo -n '$(SOURCE)' | tr -s ' ' '\n' | xargs -I{} go test $(TEST_FLAGS) ./source/{}

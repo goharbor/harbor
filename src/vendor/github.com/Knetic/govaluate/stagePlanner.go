@@ -2,8 +2,8 @@ package govaluate
 
 import (
 	"errors"
-	"time"
 	"fmt"
+	"time"
 )
 
 var stageSymbolMap = map[OperatorSymbol]evaluationOperator{
@@ -302,10 +302,10 @@ func planFunction(stream *tokenStream) (*evaluationStage, error) {
 
 	if token.Kind != FUNCTION {
 		stream.rewind()
-		return planValue(stream)
+		return planAccessor(stream)
 	}
 
-	rightStage, err = planValue(stream)
+	rightStage, err = planAccessor(stream)
 	if err != nil {
 		return nil, err
 	}
@@ -316,6 +316,51 @@ func planFunction(stream *tokenStream) (*evaluationStage, error) {
 		rightStage:      rightStage,
 		operator:        makeFunctionStage(token.Value.(ExpressionFunction)),
 		typeErrorFormat: "Unable to run function '%v': %v",
+	}, nil
+}
+
+func planAccessor(stream *tokenStream) (*evaluationStage, error) {
+
+	var token, otherToken ExpressionToken
+	var rightStage *evaluationStage
+	var err error
+
+	if !stream.hasNext() {
+		return nil, nil
+	}
+
+	token = stream.next()
+
+	if token.Kind != ACCESSOR {
+		stream.rewind()
+		return planValue(stream)
+	}
+
+	// check if this is meant to be a function or a field.
+	// fields have a clause next to them, functions do not.
+	// if it's a function, parse the arguments. Otherwise leave the right stage null.
+	if stream.hasNext() {
+
+		otherToken = stream.next()
+		if otherToken.Kind == CLAUSE {
+
+			stream.rewind()
+
+			rightStage, err = planTokens(stream)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			stream.rewind()
+		}
+	}
+
+	return &evaluationStage{
+
+		symbol:          ACCESS,
+		rightStage:      rightStage,
+		operator:        makeAccessorStage(token.Value.([]string)),
+		typeErrorFormat: "Unable to access parameter field or method '%v': %v",
 	}, nil
 }
 
@@ -330,6 +375,10 @@ func planValue(stream *tokenStream) (*evaluationStage, error) {
 	var ret *evaluationStage
 	var operator evaluationOperator
 	var err error
+
+	if !stream.hasNext() {
+		return nil, nil
+	}
 
 	token = stream.next()
 
@@ -348,10 +397,10 @@ func planValue(stream *tokenStream) (*evaluationStage, error) {
 		// the stage we got represents all of the logic contained within the parens
 		// but for technical reasons, we need to wrap this stage in a "noop" stage which breaks long chains of precedence.
 		// see github #33.
-		ret = &evaluationStage {
+		ret = &evaluationStage{
 			rightStage: ret,
-			operator: noopStageRight,
-			symbol: NOOP,
+			operator:   noopStageRight,
+			symbol:     NOOP,
 		}
 
 		return ret, nil
@@ -390,7 +439,7 @@ func planValue(stream *tokenStream) (*evaluationStage, error) {
 	}
 
 	return &evaluationStage{
-		symbol: symbol,
+		symbol:   symbol,
 		operator: operator,
 	}, nil
 }
@@ -668,8 +717,8 @@ func elideStage(root *evaluationStage) *evaluationStage {
 		return root
 	}
 
-	return &evaluationStage {
-		symbol: LITERAL,
+	return &evaluationStage{
+		symbol:   LITERAL,
 		operator: makeLiteralStage(result),
 	}
 }

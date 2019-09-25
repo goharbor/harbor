@@ -23,7 +23,7 @@ type CachedEnforcer struct {
 	*Enforcer
 	m           map[string]bool
 	enableCache bool
-	locker      *sync.Mutex
+	locker      *sync.RWMutex
 }
 
 // NewCachedEnforcer creates a cached enforcer via file or DB.
@@ -32,7 +32,7 @@ func NewCachedEnforcer(params ...interface{}) *CachedEnforcer {
 	e.Enforcer = NewEnforcer(params...)
 	e.enableCache = true
 	e.m = make(map[string]bool)
-	e.locker = new(sync.Mutex)
+	e.locker = new(sync.RWMutex)
 	return e
 }
 
@@ -57,15 +57,26 @@ func (e *CachedEnforcer) Enforce(rvals ...interface{}) bool {
 		}
 	}
 
-	e.locker.Lock()
-	defer e.locker.Unlock()
-	if _, ok := e.m[key]; ok {
-		return e.m[key]
+	if res, ok := e.getCachedResult(key); ok {
+		return res
 	} else {
 		res := e.Enforcer.Enforce(rvals...)
-		e.m[key] = res
+		e.setCachedResult(key, res)
 		return res
 	}
+}
+
+func (e *CachedEnforcer) getCachedResult(key string) (res bool, ok bool) {
+	e.locker.RLock()
+	defer e.locker.RUnlock()
+	res, ok = e.m[key]
+	return res, ok
+}
+
+func (e *CachedEnforcer) setCachedResult(key string, res bool) {
+	e.locker.Lock()
+	defer e.locker.Unlock()
+	e.m[key] = res
 }
 
 // InvalidateCache deletes all the existing cached decisions.

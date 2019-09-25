@@ -100,3 +100,101 @@ func (e *Enforcer) RemoveFilteredPolicySafe(fieldIndex int, fieldValues ...strin
 	err = nil
 	return
 }
+
+// AddGroupingPolicySafe calls AddGroupingPolicy in a safe way, returns error instead of causing panic.
+func (e *Enforcer) AddGroupingPolicySafe(params ...interface{}) (result bool, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+			result = false
+		}
+	}()
+
+	result = e.AddGroupingPolicy(params...)
+	err = nil
+	return
+}
+
+// AddNamedGroupingPolicySafe calls AddNamedGroupingPolicy in a safe way, returns error instead of causing panic.
+func (e *Enforcer) AddNamedGroupingPolicySafe(ptype string, params ...interface{}) (result bool, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+			result = false
+		}
+	}()
+
+	result = e.AddNamedGroupingPolicy(ptype, params...)
+	err = nil
+	return
+}
+
+// AddNamedPolicySafe calls AddNamedPolicy in a safe way, returns error instead of causing panic.
+func (e *Enforcer) AddNamedPolicySafe(ptype string, params ...interface{}) (result bool, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+			result = false
+		}
+	}()
+
+	result = e.AddNamedPolicy(ptype, params...)
+	err = nil
+	return
+}
+
+// RemoveGroupingPolicySafe calls RemoveGroupingPolicy in a safe way, returns error instead of causing panic.
+func (e *Enforcer) RemoveGroupingPolicySafe(params ...interface{}) (result bool, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+			result = false
+		}
+	}()
+
+	result = e.RemoveGroupingPolicy(params...)
+	err = nil
+	return
+}
+
+// RemoveFilteredGroupingPolicySafe calls RemoveFilteredGroupingPolicy in a safe way, returns error instead of causing panic.
+func (e *Enforcer) RemoveFilteredGroupingPolicySafe(fieldIndex int, fieldValues ...string) (result bool, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+			result = false
+		}
+	}()
+
+	result = e.RemoveFilteredGroupingPolicy(fieldIndex, fieldValues...)
+	err = nil
+	return
+}
+
+// RemoveNamedGroupingPolicySafe calls RemoveNamedGroupingPolicy in a safe way, returns error instead of causing panic.
+func (e *Enforcer) RemoveNamedGroupingPolicySafe(ptype string, params ...interface{}) (result bool, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+			result = false
+		}
+	}()
+
+	result = e.RemoveNamedGroupingPolicy(ptype, params...)
+	err = nil
+	return
+}
+
+// RemoveFilteredNamedGroupingPolicySafe calls RemoveFilteredNamedGroupingPolicy in a safe way, returns error instead of causing panic.
+func (e *Enforcer) RemoveFilteredNamedGroupingPolicySafe(ptype string, fieldIndex int, fieldValues ...string) (result bool, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("%v", r)
+			result = false
+		}
+	}()
+
+	result = e.RemoveFilteredNamedGroupingPolicy(ptype, fieldIndex, fieldValues...)
+	err = nil
+	return
+}

@@ -52,8 +52,8 @@ files, and either leaving them empty or adding a comment as appropriate.
 
 The format of the migration files themselves varies between database systems.
 Different databases have different semantics around schema changes and when and
-how they are allowed to occur (for instance, if schema changes can occur within
-a transaction).
+how they are allowed to occur
+(for instance, [if schema changes can occur within a transaction](https://wiki.postgresql.org/wiki/Transactional_DDL_in_PostgreSQL:_A_Competitive_Analysis)).
 
 As such, the `migrate` library has little to no checking around the format of
 migration sources.  The migration files are generally processed directly by the

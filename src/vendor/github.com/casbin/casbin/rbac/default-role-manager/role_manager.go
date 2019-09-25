@@ -15,17 +15,21 @@
 package defaultrolemanager
 
 import (
-	"errors"
 	"sync"
 
+	"github.com/casbin/casbin/errors"
 	"github.com/casbin/casbin/log"
 	"github.com/casbin/casbin/rbac"
 )
+
+type MatchingFunc func(arg1, arg2 string) bool
 
 // RoleManager provides a default implementation for the RoleManager interface
 type RoleManager struct {
 	allRoles          *sync.Map
 	maxHierarchyLevel int
+	hasPattern        bool
+	matchingFunc      MatchingFunc
 }
 
 // NewRoleManager is the constructor for creating an instance of the
@@ -34,15 +38,41 @@ func NewRoleManager(maxHierarchyLevel int) rbac.RoleManager {
 	rm := RoleManager{}
 	rm.allRoles = &sync.Map{}
 	rm.maxHierarchyLevel = maxHierarchyLevel
+	rm.hasPattern = false
+
 	return &rm
 }
 
+func (rm *RoleManager) AddMatchingFunc(name string, fn MatchingFunc) {
+	rm.hasPattern = true
+	rm.matchingFunc = fn
+}
+
 func (rm *RoleManager) hasRole(name string) bool {
-	_, ok := rm.allRoles.Load(name)
+	var ok bool
+	if rm.hasPattern {
+		rm.allRoles.Range(func(key, value interface{}) bool {
+			if rm.matchingFunc(name, key.(string)) {
+				ok = true
+			}
+			return true
+		})
+	} else {
+		_, ok = rm.allRoles.Load(name)
+	}
+
 	return ok
 }
 
 func (rm *RoleManager) createRole(name string) *Role {
+	if rm.hasPattern {
+		rm.allRoles.Range(func(key, value interface{}) bool {
+			if rm.matchingFunc(name, key.(string)) {
+				name = key.(string)
+			}
+			return true
+		})
+	}
 	role, _ := rm.allRoles.LoadOrStore(name, newRole(name))
 	return role.(*Role)
 }
@@ -61,7 +91,7 @@ func (rm *RoleManager) AddLink(name1 string, name2 string, domain ...string) err
 		name1 = domain[0] + "::" + name1
 		name2 = domain[0] + "::" + name2
 	} else if len(domain) > 1 {
-		return errors.New("error: domain should be 1 parameter")
+		return errors.ERR_DOMAIN_PARAMETER
 	}
 
 	role1 := rm.createRole(name1)
@@ -78,11 +108,11 @@ func (rm *RoleManager) DeleteLink(name1 string, name2 string, domain ...string) 
 		name1 = domain[0] + "::" + name1
 		name2 = domain[0] + "::" + name2
 	} else if len(domain) > 1 {
-		return errors.New("error: domain should be 1 parameter")
+		return errors.ERR_DOMAIN_PARAMETER
 	}
 
 	if !rm.hasRole(name1) || !rm.hasRole(name2) {
-		return errors.New("error: name1 or name2 does not exist")
+		return errors.ERR_NAMES12_NOT_FOUND
 	}
 
 	role1 := rm.createRole(name1)
@@ -98,7 +128,7 @@ func (rm *RoleManager) HasLink(name1 string, name2 string, domain ...string) (bo
 		name1 = domain[0] + "::" + name1
 		name2 = domain[0] + "::" + name2
 	} else if len(domain) > 1 {
-		return false, errors.New("error: domain should be 1 parameter")
+		return false, errors.ERR_DOMAIN_PARAMETER
 	}
 
 	if name1 == name2 {
@@ -119,7 +149,7 @@ func (rm *RoleManager) GetRoles(name string, domain ...string) ([]string, error)
 	if len(domain) == 1 {
 		name = domain[0] + "::" + name
 	} else if len(domain) > 1 {
-		return nil, errors.New("error: domain should be 1 parameter")
+		return nil, errors.ERR_DOMAIN_PARAMETER
 	}
 
 	if !rm.hasRole(name) {
@@ -138,8 +168,14 @@ func (rm *RoleManager) GetRoles(name string, domain ...string) ([]string, error)
 // GetUsers gets the users that inherits a subject.
 // domain is an unreferenced parameter here, may be used in other implementations.
 func (rm *RoleManager) GetUsers(name string, domain ...string) ([]string, error) {
+	if len(domain) == 1 {
+		name = domain[0] + "::" + name
+	} else if len(domain) > 1 {
+		return nil, errors.ERR_DOMAIN_PARAMETER
+	}
+
 	if !rm.hasRole(name) {
-		return nil, errors.New("error: name does not exist")
+		return nil, errors.ERR_NAME_NOT_FOUND
 	}
 
 	names := []string{}
@@ -150,6 +186,11 @@ func (rm *RoleManager) GetUsers(name string, domain ...string) ([]string, error)
 		}
 		return true
 	})
+	if len(domain) == 1 {
+		for i := range names {
+			names[i] = names[i][len(domain[0])+2:]
+		}
+	}
 	return names, nil
 }
 

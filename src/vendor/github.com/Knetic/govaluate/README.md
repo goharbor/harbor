@@ -2,8 +2,9 @@ govaluate
 ====
 
 [![Build Status](https://travis-ci.org/Knetic/govaluate.svg?branch=master)](https://travis-ci.org/Knetic/govaluate)
-[![Godoc](https://godoc.org/github.com/Knetic/govaluate?status.png)](https://godoc.org/github.com/Knetic/govaluate)
-
+[![Godoc](https://img.shields.io/badge/godoc-reference-5272B4.svg)](https://godoc.org/github.com/Knetic/govaluate)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Knetic/govaluate)](https://goreportcard.com/report/github.com/Knetic/govaluate) 
+[![Gocover](https://gocover.io/_badge/github.com/Knetic/govaluate)](https://gocover.io/github.com/Knetic/govaluate)
 
 Provides support for evaluating arbitrary C-like artithmetic/string expressions.
 
@@ -150,6 +151,28 @@ Functions can accept any number of arguments, correctly handles nested functions
 
 Functions cannot be passed as parameters, they must be known at the time when the expression is parsed, and are unchangeable after parsing.
 
+Accessors
+--
+
+If you have structs in your parameters, you can access their fields and methods in the usual way. For instance, given a struct that has a method "Echo", present in the parameters as `foo`, the following is valid:
+
+	"foo.Echo('hello world')"
+
+Fields are accessed in a similar way. Assuming `foo` has a field called "Length":
+
+	"foo.Length > 9000"
+
+Accessors can be nested to any depth, like the following
+
+	"foo.Bar.Baz.SomeFunction()"
+
+However it is not _currently_ supported to access values in `map`s. So the following will not work
+
+	"foo.SomeMap['key']"
+
+This may be convenient, but note that using accessors involves a _lot_ of reflection. This makes the expression about four times slower than just using a parameter (consult the benchmarks for more precise measurements on your system).
+If at all reasonable, the author recommends extracting the values you care about into a parameter map beforehand, or defining a struct that implements the `Parameters` interface, and which grabs fields as required. If there are functions you want to use, it's better to pass them as expression functions (see the above section). These approaches use no reflection, and are designed to be fast and clean.
+
 What operators and types does this support?
 --
 
@@ -200,7 +223,7 @@ ok
 API Breaks
 --
 
-While this library has very few cases which will ever result in an API break, it can (and [has](https://github.com/Knetic/govaluate/releases/tag/2.0.0)) happened. If you are using this in production, vendor the commit you've tested against, or use gopkg.in to redirect your import (e.g., `import "gopkg.in/Knetic/govaluate.v2"`). Master branch (while infrequent) _may_ at some point contain API breaking changes, and the author will have no way to communicate these to downstreams, other than creating a new major release.
+While this library has very few cases which will ever result in an API break, it can (and [has](https://github.com/Knetic/govaluate/releases/tag/v2.0.0)) happened. If you are using this in production, vendor the commit you've tested against, or use gopkg.in to redirect your import (e.g., `import "gopkg.in/Knetic/govaluate.v2"`). Master branch (while infrequent) _may_ at some point contain API breaking changes, and the author will have no way to communicate these to downstreams, other than creating a new major release.
 
 Releases will explicitly state when an API break happens, and if they do not specify an API break it should be safe to upgrade.
 

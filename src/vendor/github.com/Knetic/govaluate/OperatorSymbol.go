@@ -44,6 +44,7 @@ const (
 	COALESCE
 
 	FUNCTIONAL
+	ACCESS
 	SEPARATE
 )
 
@@ -129,6 +130,8 @@ func findOperatorPrecedenceForSymbol(symbol OperatorSymbol) operatorPrecedence {
 		fallthrough
 	case TERNARY_FALSE:
 		return ternaryPrecedence
+	case ACCESS:
+		fallthrough
 	case FUNCTIONAL:
 		return functionalPrecedence
 	case SEPARATE:
