@@ -27,7 +27,8 @@ old_crt_path = Path('/config/registry/root.crt')
 private_key_pem_path = Path('/secret/core/private_key.pem')
 root_crt_path = Path('/secret/registry/root.crt')
 
-config_file_path = '/compose_location/harbor.yml'
+compose_location = '/compose_location'
+config_file_path = compose_location + '/harbor.yml'
 input_config_path = '/input/harbor.yml'
 versions_file_path = Path('/usr/src/app/versions')
 

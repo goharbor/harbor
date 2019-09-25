@@ -1,11 +1,11 @@
 import os
 
-from g import templates_dir
+from g import templates_dir, compose_location
 from .configs import parse_versions
 from .jinja import render_jinja
 
 docker_compose_template_path = os.path.join(templates_dir, 'docker_compose', 'docker-compose.yml.jinja')
-docker_compose_yml_path = '/compose_location/docker-compose.yml'
+docker_compose_yml_path = os.path.join(compose_location, 'docker-compose.yml')
 
 # render docker-compose
 def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):

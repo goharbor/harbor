@@ -1,6 +1,6 @@
 import os
 
-from g import config_dir, DEFAULT_GID, DEFAULT_UID, templates_dir
+from g import config_dir, data_dir, DEFAULT_GID, DEFAULT_UID, templates_dir
 from utils.misc import prepare_dir
 from utils.jinja import render_jinja
 
@@ -16,7 +16,7 @@ def prepare_job_service(config_dict):
     log_level = config_dict['log_level'].upper()
 
     # Job log is stored in data dir
-    job_log_dir = os.path.join('/data', "job_logs")
+    job_log_dir = os.path.join(data_dir, "job_logs")
     prepare_dir(job_log_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
     # Render Jobservice env
     render_jinja(
