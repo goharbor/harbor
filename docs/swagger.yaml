@@ -774,20 +774,15 @@ paths:
           description: Internal errors.
   /users/search:
     get:
-      summary: Search users by username, email
+      summary: Search users by username
       description: |
-        This endpoint is to search the users by username, email.
+        This endpoint is to search the users by username.
       parameters:
         - name: username
           in: query
           type: string
-          required: false
+          required: true
           description: Username for filtering results.
-        - name: email
-          in: query
-          type: string
-          required: false
-          description: Email for filtering results.
         - name: page
           in: query
           type: integer
