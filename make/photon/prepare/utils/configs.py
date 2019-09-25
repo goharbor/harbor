@@ -53,7 +53,7 @@ def parse_versions():
     if not versions_file_path.is_file():
         return {}
     with open('versions') as f:
-        versions = yaml.load(f)
+        versions = yaml.safe_load(f)
     return versions
 
 def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseum):
@@ -63,7 +63,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
     '''
 
     with open(config_file_path) as f:
-        configs = yaml.load(f)
+        configs = yaml.safe_load(f)
 
     config_dict = {
         'adminserver_url': "http://adminserver:8080",
