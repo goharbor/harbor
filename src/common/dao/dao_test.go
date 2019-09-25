@@ -324,7 +324,12 @@ func TestResetUserPassword(t *testing.T) {
 		t.Errorf("Error occurred in UpdateUserResetUuid: %v", err)
 	}
 
-	err = ResetUserPassword(models.User{UserID: currentUser.UserID, Password: "HarborTester12345", ResetUUID: uuid, Salt: currentUser.Salt})
+	err = ResetUserPassword(
+		models.User{
+			UserID:          currentUser.UserID,
+			PasswordVersion: utils.SHA256,
+			ResetUUID:       uuid,
+			Salt:            currentUser.Salt}, "HarborTester12345")
 	if err != nil {
 		t.Errorf("Error occurred in ResetUserPassword: %v", err)
 	}
@@ -346,7 +351,12 @@ func TestChangeUserPassword(t *testing.T) {
 		t.Errorf("Error occurred when get user salt")
 	}
 	currentUser.Salt = query.Salt
-	err = ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewHarborTester12345", Salt: currentUser.Salt})
+	err = ChangeUserPassword(
+		models.User{
+			UserID:          currentUser.UserID,
+			Password:        "NewHarborTester12345",
+			PasswordVersion: utils.SHA256,
+			Salt:            currentUser.Salt})
 	if err != nil {
 		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
 	}

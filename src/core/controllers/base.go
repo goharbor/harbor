@@ -17,8 +17,6 @@ package controllers
 import (
 	"bytes"
 	"context"
-	"github.com/goharbor/harbor/src/core/api"
-	"github.com/goharbor/harbor/src/core/filter"
 	"html/template"
 	"net"
 	"net/http"
@@ -29,14 +27,17 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/beego/i18n"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	email_util "github.com/goharbor/harbor/src/common/utils/email"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/filter"
 )
 
 // CommonController handles request from UI that doesn't expect a page, such as /SwitchLanguage /logout ...
@@ -254,11 +255,10 @@ func (cc *CommonController) ResetPassword() {
 		cc.CustomAbort(http.StatusForbidden, http.StatusText(http.StatusForbidden))
 	}
 
-	password := cc.GetString("password")
+	rawPassword := cc.GetString("password")
 
-	if password != "" {
-		user.Password = password
-		err = dao.ResetUserPassword(*user)
+	if rawPassword != "" {
+		err = dao.ResetUserPassword(*user, rawPassword)
 		if err != nil {
 			log.Errorf("Error occurred in ResetUserPassword: %v", err)
 			cc.CustomAbort(http.StatusInternalServerError, "Internal error.")
