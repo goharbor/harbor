@@ -48,6 +48,10 @@ func (*blobStreamUploadBuilder) Build(req *http.Request) (interceptor.Intercepto
 	uuid := s[2]
 
 	onResponse := func(w http.ResponseWriter, req *http.Request) {
+		if !config.QuotaPerProjectEnable() {
+			return
+		}
+
 		size, err := parseUploadedBlobSize(w)
 		if err != nil {
 			log.Errorf("failed to parse uploaded blob size for upload %s, error: %v", uuid, err)
