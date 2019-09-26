@@ -13,6 +13,7 @@ import { MessageHandlerService } from "../../../shared/message-handler/message-h
     styleUrls: ['../../../common.scss']
 })
 export class NewScannerModalComponent {
+    testMap: any = {};
     opened: boolean = false;
     @Output() notify = new EventEmitter<Scanner>();
     @ViewChild(NewScannerFormComponent, {static: true})
@@ -24,15 +25,19 @@ export class NewScannerModalComponent {
     isEdit: boolean = false;
     originValue: any;
     uid: string;
+    editScanner: Scanner;
     @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
     constructor(
         private configScannerService: ConfigScannerService,
         private msgHandler: MessageHandlerService
     ) {}
     open(): void {
+        // reset
         this.opened = true;
         this.inlineAlert.close();
-        this.newScannerFormComponent.newScannerForm.reset({auth: 'None'});
+        this.testMap = {};
+        this.newScannerFormComponent.showEndpointError = false;
+        this.newScannerFormComponent.newScannerForm.reset({auth: "None"});
     }
     close(): void {
         this.opened = false;
@@ -49,15 +54,15 @@ export class NewScannerModalComponent {
             scanner.auth = "";
         } else if (value.auth === "Basic") {
             scanner.auth = value.auth;
-            scanner.accessCredential = value.accessCredential.username + ":" + value.accessCredential.password;
+            scanner.access_credential = value.accessCredential.username + ":" + value.accessCredential.password;
         } else if (value.auth === "APIKey") {
             scanner.auth = value.auth;
-            scanner.accessCredential = value.accessCredential.apiKey;
+            scanner.access_credential = value.accessCredential.apiKey;
         } else {
             scanner.auth = value.auth;
-            scanner.accessCredential = value.accessCredential.token;
+            scanner.access_credential = value.accessCredential.token;
         }
-        scanner.skipCertVerify = value.skipCertVerify;
+        scanner.skip_certVerify = !!value.skipCertVerify;
         this.configScannerService.addScanner(scanner)
             .pipe(finalize(() => this.onSaving = false))
             .subscribe(response => {
@@ -70,13 +75,21 @@ export class NewScannerModalComponent {
                 this.saveBtnState = ClrLoadingState.ERROR;
             });
     }
+    get hasPassedTest(): boolean {
+        return  this.testMap[this.newScannerFormComponent.newScannerForm.get('url').value];
+    }
     get canTestEndpoint(): boolean {
         return !this.onTesting
             && this.newScannerFormComponent
+            && !this.newScannerFormComponent.checkOnGoing
+            && this.newScannerFormComponent.newScannerForm.get('name').valid
             && !this.newScannerFormComponent.checkEndpointOnGoing
             && this.newScannerFormComponent.newScannerForm.get('url').valid;
     }
     get valid(): boolean {
+        if (!this.hasPassedTest) {
+            return false;
+        }
         if (this.onSaving
             || this.newScannerFormComponent.isNameExisting
             || this.newScannerFormComponent.isEndpointUrlExisting
@@ -150,13 +163,32 @@ export class NewScannerModalComponent {
     onTestEndpoint() {
         this.onTesting = true;
         this.checkBtnState = ClrLoadingState.LOADING;
-        this.configScannerService.testEndpointUrl(this.newScannerFormComponent.newScannerForm.get('url').value)
+        let scanner: Scanner = new Scanner();
+        let value = this.newScannerFormComponent.newScannerForm.value;
+        scanner.name = value.name;
+        scanner.description = value.description;
+        scanner.url = value.url;
+        if (value.auth === "None") {
+            scanner.auth = "";
+        } else if (value.auth === "Basic") {
+            scanner.auth = value.auth;
+            scanner.access_credential = value.accessCredential.username + ":" + value.accessCredential.password;
+        } else if (value.auth === "APIKey") {
+            scanner.auth = value.auth;
+            scanner.access_credential = value.accessCredential.apiKey;
+        } else {
+            scanner.auth = value.auth;
+            scanner.access_credential = value.accessCredential.token;
+        }
+        scanner.skip_certVerify = !!value.skipCertVerify;
+        this.configScannerService.testEndpointUrl(scanner)
             .pipe(finalize(() => this.onTesting = false))
             .subscribe(response => {
                 this.inlineAlert.showInlineSuccess({
                     message: "Success"
                 });
                 this.checkBtnState = ClrLoadingState.SUCCESS;
+                this.testMap[this.newScannerFormComponent.newScannerForm.get('url').value] = true;
             }, error => {
                 this.inlineAlert.showInlineError({
                     message: "Failure"
@@ -167,26 +199,25 @@ export class NewScannerModalComponent {
     save() {
         this.onSaving = true;
         this.saveBtnState = ClrLoadingState.LOADING;
-        let scanner: Scanner = new Scanner();
         let value = this.newScannerFormComponent.newScannerForm.value;
-        scanner.name = value.name;
-        scanner.description = value.description;
-        scanner.url = value.url;
+        this.editScanner.name = value.name;
+        this.editScanner.description = value.description;
+        this.editScanner.url = value.url;
         if (value.auth === "None") {
-            scanner.auth = "";
+            this.editScanner.auth = "";
         } else if (value.auth === "Basic") {
-            scanner.auth = value.auth;
-            scanner.accessCredential = value.accessCredential.username + ":" + value.accessCredential.password;
+            this.editScanner.auth = value.auth;
+            this.editScanner.access_credential = value.accessCredential.username + ":" + value.accessCredential.password;
         } else if (value.auth === "APIKey") {
-            scanner.auth = value.auth;
-            scanner.accessCredential = value.accessCredential.apiKey;
+            this.editScanner.auth = value.auth;
+            this.editScanner.access_credential = value.accessCredential.apiKey;
         } else {
-            scanner.auth = value.auth;
-            scanner.accessCredential = value.accessCredential.token;
+            this.editScanner.auth = value.auth;
+            this.editScanner.access_credential = value.accessCredential.token;
         }
-        scanner.skipCertVerify = value.skipCertVerify;
-        scanner.uid = this.uid;
-        this.configScannerService.updateScanner(scanner)
+        this.editScanner.skip_certVerify = !!value.skipCertVerify;
+        this.editScanner.uuid = this.uid;
+        this.configScannerService.updateScanner(this.editScanner)
             .pipe(finalize(() => this.onSaving = false))
             .subscribe(response => {
                 this.close();

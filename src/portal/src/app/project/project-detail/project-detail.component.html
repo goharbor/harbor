@@ -31,7 +31,7 @@
         <li class="nav-item" *ngIf="hasWebhookListPermission">
             <a class="nav-link" routerLink="webhook" routerLinkActive="active">{{'PROJECT_DETAIL.WEBHOOKS' | translate}}</a>
         </li>
-        <li class="nav-item">
+        <li class="nav-item" *ngIf="isSessionValid && (hasConfigurationListPermission)">
             <a class="nav-link" routerLink="scanner" routerLinkActive="active">Scanner</a>
         </li>
         <li class="nav-item" *ngIf="isSessionValid && (hasConfigurationListPermission)">

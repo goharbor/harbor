@@ -1,5 +1,10 @@
-.name {
-  font-size: 0.7rem;
+.scanner-name {
+  height: 1rem;
+  color: #000;
+  display: inline-block;
+  padding: 0 .25rem;
+  max-height: 1rem;
+  font-size: .541667rem;
 }
 .edit {
   margin-top: -5px;

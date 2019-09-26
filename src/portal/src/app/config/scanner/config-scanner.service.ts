@@ -1,7 +1,7 @@
 import {Injectable} from "@angular/core";
 import {Scanner} from "./scanner";
-import { forkJoin, Observable, of, throwError as observableThrowError } from "rxjs";
-import { catchError, delay, map } from "rxjs/operators";
+import { forkJoin, Observable, throwError as observableThrowError } from "rxjs";
+import { catchError, map } from "rxjs/operators";
 import { HttpClient } from "@angular/common/http";
 import { ScannerMetadata } from "./scanner-metadata";
 
@@ -10,18 +10,22 @@ export class ConfigScannerService {
 
     constructor( private http: HttpClient) {}
     getScannersByName(name: string): Observable<Scanner[]> {
-            return this.http.get(`/api/scanners?q=name=${name}`)
+            return this.http.get(`/api/scanners?ex_name=${name}`)
+                .pipe(catchError(error => observableThrowError(error)))
                 .pipe(map(response => response as Scanner[]));
     }
     getScannersByEndpointUrl(endpointUrl: string): Observable<Scanner[]> {
-        return this.http.get(`/api/scanners?q=url=${endpointUrl}`)
+        return this.http.get(`/api/scanners?ex_url=${endpointUrl}`)
+            .pipe(catchError(error => observableThrowError(error)))
             .pipe(map(response => response as Scanner[]));
     }
-    testEndpointUrl(endpointUrl: string): Observable<any> {
-        if (endpointUrl === 'http://196.168.1.1') {
+    testEndpointUrl(testValue: any): Observable<any> {
+        return this.http.post(`/api/scanners/ping`, testValue)
+            .pipe(catchError(error => observableThrowError(error)));
+       /* if (endpointUrl === 'http://196.168.1.1') {
             return of([new Scanner()]).pipe(delay(1500));
         }
-        return of([]).pipe(delay(1500));
+        return of([]).pipe(delay(1500));*/
     }
     addScanner(scanner: Scanner): Observable<any> {
         return this.http.post('/api/scanners', scanner )
@@ -33,11 +37,11 @@ export class ConfigScannerService {
             .pipe(catchError(error => observableThrowError(error)));
     }
     updateScanner(scanner: Scanner): Observable<any> {
-        return this.http.put(`/api/scanners/${scanner.uid}`, scanner )
+        return this.http.put(`/api/scanners/${scanner.uuid}`, scanner )
             .pipe(catchError(error => observableThrowError(error)));
     }
     deleteScanner(scanner: Scanner): Observable<any> {
-        return this.http.delete(`/api/scanners/${scanner.uid}`)
+        return this.http.delete(`/api/scanners/${scanner.uuid}`)
             .pipe(catchError(error => observableThrowError(error)));
     }
     deleteScanners(scanners: Scanner[]): Observable<any> {
@@ -58,31 +62,13 @@ export class ConfigScannerService {
         return this.http.put(`/api/projects/${projectId}/scanner` , {uuid: uid})
             .pipe(catchError(error => observableThrowError(error)));
     }
-    getSannerMetadate(uid: string): Observable<ScannerMetadata> {
-        /*return of({
-            "scanner": {
-                "name": "Microscanner",
-                "vendor": "Aqua Security",
-                "version": "3.0.5"
-            },
-            "capabilities": [
-                {
-                    "consumes_mime_types": [
-                        "application/vnd.oci.image.manifest.v1+json",
-                        "application/vnd.docker.distribution.manifest.v2+json"
-                    ],
-                    "produces_mime_types": [
-                        "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"
-                    ]
-                }
-            ],
-            "properties": {
-                "harbor.scanner-adapter/scanner-type": "os-package-vulnerability",
-                "harbor.scanner-adapter/vulnerability-database-updated-at": "2019-08-13T08:16:33.345Z"
-            }})
-            .pipe(map(response => response as ScannerMetadata), delay(1500));*/
-        return this.http.get(`/api/sacnners/${uid}/metadata`)
+    getScannerMetadata(uid: string): Observable<ScannerMetadata> {
+        return this.http.get(`/api/scanners/${uid}/metadata`)
             .pipe(map(response => response as ScannerMetadata))
+            .pipe(catchError(error => observableThrowError(error)));
+    }
+    setAsDefault(uid: string): Observable<any> {
+        return this.http.patch(`/api/scanners/${uid}`, {is_default: true} )
             .pipe(catchError(error => observableThrowError(error)));
     }
 }

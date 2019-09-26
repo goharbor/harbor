@@ -21,7 +21,7 @@
         <span>Produces Mime Types:</span>
         <span class="ml-1" [innerHTML]="toString(scannerMetadata?.capabilities[0]?.produces_mime_types)"></span>
     </div>
-    <div  class="clr-control-label">Properties</div>
+    <div class="clr-control-label">Properties</div>
     <div class="ml-1" *ngFor="let item of scannerMetadata?.properties | keyvalue">
         <span>{{item?.key}}:</span>
         <span class="ml-1">{{parseDate(item?.value)}}</span>

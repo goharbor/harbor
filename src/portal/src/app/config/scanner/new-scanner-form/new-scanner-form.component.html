@@ -4,7 +4,7 @@
             <label class="required clr-control-label">Name</label>
             <div class="clr-control-container" [class.clr-error]="!isNameValid">
                 <div class="clr-input-wrapper">
-                    <input autocomplete="off" #name formControlName="name" class="clr-input width-240"
+                    <input autocomplete="off" #name formControlName="name" class="clr-input width-312"
                            type="text"
                            id="scanner-name">
                     <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
@@ -18,7 +18,7 @@
         <div class="clr-form-control">
             <label class="clr-control-label">Description</label>
             <div class="clr-control-container">
-                <textarea  autocomplete="off"  formControlName="description"  class="clr-textarea width-240" type="text"
+                <textarea  autocomplete="off"  formControlName="description"  class="clr-textarea width-312" type="text"
                           id="description">
                 </textarea>
             </div>
@@ -28,7 +28,7 @@
             <div class="clr-control-container" [class.clr-error]="!isEndpointValid || showEndpointError">
                 <div class="clr-input-wrapper">
                     <input (focus)="showEndpointError=false" (blur)="checkEndpointUrl()" #endpointUrl placeholder="http(s)://192.168.1.1" autocomplete="off"  formControlName="url"
-                           class="clr-input width-240" type="text" id="scanner-endpoint">
+                           class="clr-input width-312" type="text" id="scanner-endpoint">
                     <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     <span class="spinner spinner-inline" [hidden]="!checkEndpointOnGoing"></span>
                 </div>
@@ -41,7 +41,7 @@
             <label class="clr-control-label">Authorization</label>
             <div class="clr-control-container">
                 <div class="clr-select-wrapper">
-                    <select formControlName="auth"  class="clr-select width-240"  id="scanner-authorization">
+                    <select formControlName="auth"  class="clr-select width-312"  id="scanner-authorization">
                         <option value="None">None</option>
                         <option value="Basic">Basic</option>
                         <option value="Bearer">Bearer</option>
@@ -56,7 +56,7 @@
                 <div class="clr-control-container" [class.clr-error]="!isUserNameValid">
                     <div class="clr-input-wrapper">
                         <input formControlName="username" autocomplete="off"
-                               class="clr-input width-240" type="text" id="scanner-username">
+                               class="clr-input width-312" type="text" id="scanner-username">
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     </div>
                     <clr-control-error *ngIf="!isUserNameValid">
@@ -69,7 +69,7 @@
                 <div class="clr-control-container" [class.clr-error]="!isPasswordValid">
                     <div class="clr-input-wrapper">
                         <input formControlName="password" autocomplete="off"
-                               class="clr-input width-240" type="password" id="scanner-password">
+                               class="clr-input width-312" type="password" id="scanner-password">
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     </div>
                     <clr-control-error *ngIf="!isPasswordValid">
@@ -82,7 +82,7 @@
                 <div class="clr-control-container" [class.clr-error]="!isTokenValid">
                     <div class="clr-input-wrapper">
                         <input formControlName="token" autocomplete="off"
-                               class="clr-input width-240" type="text" id="scanner-token">
+                               class="clr-input width-312" type="text" id="scanner-token">
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     </div>
                     <clr-control-error *ngIf="!isTokenValid">
@@ -95,7 +95,7 @@
                 <div class="clr-control-container" [class.clr-error]="!isApiKeyValid">
                     <div class="clr-input-wrapper">
                         <input formControlName="apiKey" autocomplete="off"
-                               class="clr-input width-240" type="text" id="scanner-apiKey">
+                               class="clr-input width-312" type="text" id="scanner-apiKey">
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     </div>
                     <clr-control-error *ngIf="!isApiKeyValid">
@@ -105,11 +105,11 @@
             </div>
         </ng-container>
         <div class="clr-form-control">
-            <label class="clr-control-label">Skip certificate verify
+            <label class="clr-control-label">Skip Certificate Verify
                 <clr-tooltip>
                     <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                     <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                        {{'CONFIG.TOOLTIP.VERIFY_REMOTE_CERT' | translate}}
+                        {{'SCANNER.SKIP_CERT_VERIFY' | translate}}
                     </clr-tooltip-content>
                 </clr-tooltip>
             </label>

@@ -28,9 +28,6 @@ export class MemberPermissionGuard implements CanActivate, CanActivateChild {
   ): Observable<boolean> | boolean {
     const projectId = route.parent.params["id"];
     const permission = route.data.permissionParam as UserPrivilegeServeItem;
-    if (permission.resource === "scanner") {
-      return of(true);
-    }
     return new Observable(observer => {
       this.userPermission
         .getPermission(projectId, permission.resource, permission.action)

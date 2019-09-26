@@ -15,8 +15,10 @@
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
                     <div class="clr-input-wrapper">
-                        <input [ngModel]="scanner?.name" readonly class="clr-input width-240" type="text" id="scanner-name"
-                               autocomplete="off">
+                        <span id="scanner-name" class="scanner-name">{{scanner?.name}}</span>
+                        <span *ngIf="scanner?.disabled" class="label label-warning ml-1">Disabled</span>
+                        <span *ngIf="scanner?.health" class="label label-success ml-1">Healthy</span>
+                        <span *ngIf="!scanner?.health" class="label label-danger ml-1">Unhealthy</span>
                     </div>
                 </div>
             </div>
@@ -30,16 +32,16 @@
                 </div>
             </div>
         </div>
-        <div class="clr-form-control">
+        <div class="clr-form-control" *ngIf="scanner?.scanner">
             <label class="clr-control-label">Adapter</label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
-                    <input [ngModel]="scanner?.adapter" readonly class="clr-input width-240" type="text" id="scanner-scanner"
+                    <input [ngModel]="scanner?.scanner" readonly class="clr-input width-240" type="text" id="scanner-scanner"
                            autocomplete="off">
                 </div>
             </div>
         </div>
-        <div class="clr-form-control">
+        <div class="clr-form-control" *ngIf="scanner?.vendor">
             <label class="clr-control-label">Vendor</label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
@@ -48,7 +50,7 @@
                 </div>
             </div>
         </div>
-        <div class="clr-form-control">
+        <div class="clr-form-control" *ngIf="scanner?.vendor">
             <label class="clr-control-label">Version</label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
@@ -59,23 +61,28 @@
         </div>
     </ng-container>
 </div>
-
 <clr-modal [clrModalSize]="'xl'" [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
     <h3 class="modal-title">Select Scanner</h3>
     <div class="modal-body body-format">
         <inline-alert class="modal-title"></inline-alert>
         <clr-datagrid [(clrDgSingleSelected)]="selectedScanner">
             <clr-dg-column [clrDgField]="'name'">Name</clr-dg-column>
-            <clr-dg-column [clrDgField]="'adapter'">Adapter</clr-dg-column>
-            <clr-dg-column [clrDgField]="'url'">Endpoint</clr-dg-column>
-            <clr-dg-column [clrDgField]="'vendor'">Vendor</clr-dg-column>
-            <clr-dg-column [clrDgField]="'version'">Version</clr-dg-column>
+            <clr-dg-column [clrDgField]="'url'">Endpoint URL</clr-dg-column>
+            <clr-dg-column>Health</clr-dg-column>
+            <clr-dg-column>Default</clr-dg-column>
+            <clr-dg-column>Authorization</clr-dg-column>
             <clr-dg-row *clrDgItems="let scanner of scanners" [clrDgItem]="scanner">
                 <clr-dg-cell>{{scanner.name}}</clr-dg-cell>
-                <clr-dg-cell>{{scanner.adapter}}</clr-dg-cell>
                 <clr-dg-cell>{{scanner.url}}</clr-dg-cell>
-                <clr-dg-cell>{{scanner.vendor}}</clr-dg-cell>
-                <clr-dg-cell>{{scanner.version}}</clr-dg-cell>
+                <clr-dg-cell>
+                    <span *ngIf="scanner.health" class="label label-success">Healthy</span>
+                    <span *ngIf="!scanner.health"  class="label label-danger">Unhealthy</span>
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    <span *ngIf="scanner.is_default" class="label label-info">{{scanner.is_default}}</span>
+                    <span *ngIf="!scanner.is_default">{{scanner.is_default}}</span>
+                </clr-dg-cell>
+                <clr-dg-cell>{{scanner.auth?scanner.auth:'None'}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
                 <span *ngIf="scanners?.length > 0">1 - {{scanners?.length}} {{'WEBHOOK.OF' | translate}} </span> {{scanners?.length}} {{'WEBHOOK.ITEMS' | translate}}

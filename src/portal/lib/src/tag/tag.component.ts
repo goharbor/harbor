@@ -12,43 +12,38 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import {
-  Component,
-  OnInit,
-  ViewChild,
-  Input,
-  Output,
-  EventEmitter,
+  AfterViewInit,
   ChangeDetectorRef,
-  ElementRef, AfterViewInit
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild
 } from "@angular/core";
-import { Subject, forkJoin } from "rxjs";
-import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
+import { forkJoin, Observable, Subject, throwError as observableThrowError } from "rxjs";
+import { catchError, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
-import { State, Comparator } from "../service/interface";
+import { Comparator, Label, State, Tag, TagClickEvent } from "../service/interface";
 
-import { TagService, RetagService, VulnerabilitySeverity, RequestQueryParams } from "../service/index";
+import { RequestQueryParams, RetagService, TagService, VulnerabilitySeverity } from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { ChannelService } from "../channel/index";
-import {
-  ConfirmationTargets,
-  ConfirmationState,
-  ConfirmationButtons
-} from "../shared/shared.const";
+import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../shared/shared.const";
 
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
 import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
 
-import { Label, Tag, TagClickEvent, RetagRequest } from "../service/interface";
-
 import {
-  CustomComparator,
   calculatePage,
+  clone,
+  CustomComparator,
+  DEFAULT_PAGE_SIZE,
   doFiltering,
   doSorting,
   VULNERABILITY_SCAN_STATUS,
-  DEFAULT_PAGE_SIZE,
-  clone,
 } from "../utils";
 
 import { CopyInputComponent } from "../push-image/copy-input.component";
@@ -58,9 +53,10 @@ import { USERSTATICPERMISSION } from "../service/permission-static";
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
 import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
-import { map, catchError } from "rxjs/operators";
 import { errorHandler as errorHandFn } from "../shared/shared.utils";
-import { Observable, throwError as observableThrowError } from "rxjs";
+import { HttpClient } from "@angular/common/http";
+import { ClrLoadingState } from "@clr/angular";
+
 export interface LabelState {
   iconsShow: boolean;
   label: Label;
@@ -152,6 +148,8 @@ export class TagComponent implements OnInit, AfterViewInit {
   hasRetagImagePermission: boolean;
   hasDeleteImagePermission: boolean;
   hasScanImagePermission: boolean;
+  hasEnabledScanner: boolean;
+  scanBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
   constructor(
     private errorHandler: ErrorHandler,
     private tagService: TagService,
@@ -161,7 +159,8 @@ export class TagComponent implements OnInit, AfterViewInit {
     private translateService: TranslateService,
     private ref: ChangeDetectorRef,
     private operationService: OperationService,
-    private channel: ChannelService
+    private channel: ChannelService,
+    private http: HttpClient
   ) { }
 
   ngOnInit() {
@@ -169,6 +168,7 @@ export class TagComponent implements OnInit, AfterViewInit {
       this.errorHandler.error("Project ID cannot be unset.");
       return;
     }
+    this.getProjectScanner();
     if (!this.repoName) {
       this.errorHandler.error("Repo name cannot be unset.");
       return;
@@ -529,17 +529,6 @@ export class TagComponent implements OnInit, AfterViewInit {
       .subscribe(items => {
         // To keep easy use for vulnerability bar
         items.forEach((t: Tag) => {
-          if (!t.scan_overview) {
-            t.scan_overview = {
-              scan_status: VULNERABILITY_SCAN_STATUS.stopped,
-              severity: VulnerabilitySeverity.UNKNOWN,
-              update_time: new Date(),
-              components: {
-                total: 0,
-                summary: []
-              }
-            };
-          }
           if (t.signature !== null) {
             signatures.push(t.name);
           }
@@ -722,28 +711,30 @@ export class TagComponent implements OnInit, AfterViewInit {
 
   // Get vulnerability scanning status
   scanStatus(t: Tag): string {
-    if (t && t.scan_overview && t.scan_overview.scan_status) {
-      return t.scan_overview.scan_status;
+    if (t) {
+      let so = this.handleScanOverview(t.scan_overview);
+      if (so && so.scan_status) {
+        return so.scan_status;
+      }
     }
-
-    return VULNERABILITY_SCAN_STATUS.unknown;
+    return VULNERABILITY_SCAN_STATUS.NOT_SCANNED;
   }
 
-  existObservablePackage(t: Tag): boolean {
+  /*existObservablePackage(t: Tag): boolean {
     return t.scan_overview &&
       t.scan_overview.components &&
       t.scan_overview.components.total &&
       t.scan_overview.components.total > 0 ? true : false;
-  }
+  }*/
 
   // Whether show the 'scan now' menu
   canScanNow(t: Tag[]): boolean {
-    if (!this.withClair) { return false; }
+   /* if (!this.withClair) { return false; }*/
     if (!this.hasScanImagePermission) { return false; }
     let st: string = this.scanStatus(t[0]);
 
-    return st !== VULNERABILITY_SCAN_STATUS.pending &&
-      st !== VULNERABILITY_SCAN_STATUS.running;
+    return st !== VULNERABILITY_SCAN_STATUS.PENDING &&
+      st !== VULNERABILITY_SCAN_STATUS.RUNNING;
   }
   getImagePermissionRule(projectId: number): void {
     let hasAddLabelImagePermission = this.userPermissionService.getPermission(projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY,
@@ -775,5 +766,27 @@ export class TagComponent implements OnInit, AfterViewInit {
   // pull command
   onCpError($event: any): void {
     this.copyInput.setPullCommendShow();
+  }
+  getProjectScanner() {
+    this.hasEnabledScanner = false;
+    this.scanBtnState = ClrLoadingState.LOADING;
+    return this.http.get(`/api/projects/${this.projectId}/scanner`)
+        .pipe(map(response => response as any))
+        .pipe(catchError(error => observableThrowError(error)))
+        .subscribe(response => {
+          if (response && "{}" !== JSON.stringify(response) && !response.disable
+          && response.health) {
+            this.hasEnabledScanner = true;
+          }
+          this.scanBtnState = ClrLoadingState.SUCCESS;
+        }, error => {
+          this.scanBtnState = ClrLoadingState.ERROR;
+        });
+  }
+  handleScanOverview(scanOverview: any) {
+    if (scanOverview) {
+      return scanOverview['application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0'];
+    }
+    return null;
   }
 }

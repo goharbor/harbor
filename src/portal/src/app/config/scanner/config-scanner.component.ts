@@ -8,7 +8,6 @@ import { MessageHandlerService } from "../../shared/message-handler/message-hand
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../shared/shared.const";
 import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
 import { ConfirmationMessage } from '../../shared/confirmation-dialog/confirmation-message';
-import { ScannerMetadata } from "./scanner-metadata";
 
 @Component({
     selector: 'config-scanner',
@@ -17,7 +16,7 @@ import { ScannerMetadata } from "./scanner-metadata";
 })
 export class ConfigurationScannerComponent implements OnInit, OnDestroy {
     scanners: Scanner[] = [];
-    selectedRow: Scanner[] = [];
+    selectedRow: Scanner;
     onGoing: boolean = false;
     @ViewChild(NewScannerModalComponent, {static: false})
     newScannerDialog: NewScannerModalComponent;
@@ -73,8 +72,8 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
         this.getScanners();
     }
     changeStat() {
-        if (this.selectedRow && this.selectedRow.length === 1) {
-            let scanner: Scanner = clone(this.selectedRow[0]);
+        if (this.selectedRow) {
+            let scanner: Scanner = clone(this.selectedRow);
             scanner.disabled = !scanner.disabled;
             this.configScannerService.updateScanner(scanner)
                 .subscribe(response => {
@@ -86,10 +85,8 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
         }
     }
     setAsDefault() {
-        if (this.selectedRow && this.selectedRow.length === 1) {
-            let scanner: Scanner = clone(this.selectedRow[0]);
-            scanner.isDefault = true;
-            this.configScannerService.updateScanner(scanner)
+        if (this.selectedRow) {
+            this.configScannerService.setAsDefault(this.selectedRow.uuid)
                 .subscribe(response => {
                     this.msgHandler.showSuccess("Update Success");
                     this.getScanners();
@@ -99,17 +96,13 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
         }
     }
     deleteScanners() {
-        if (this.selectedRow && this.selectedRow.length > 0) {
-            let endPoints: string[] = [];
-            this.selectedRow.forEach(s => {
-                endPoints.push(s.url);
-            });
+        if (this.selectedRow) {
             // Confirm deletion
             let msg: ConfirmationMessage = new ConfirmationMessage(
-                "USER.DELETION_TITLE",
-                "USER.DELETION_SUMMARY",
-                endPoints.join(','),
-                this.selectedRow,
+                "Confirm Scanner deletion",
+                "SCANNER.DELETION_SUMMARY",
+                this.selectedRow.name,
+                [this.selectedRow],
                 ConfirmationTargets.SCANNER,
                 ConfirmationButtons.DELETE_CANCEL
             );
@@ -117,30 +110,30 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
         }
     }
     editScanner() {
-        if (this.selectedRow && this.selectedRow.length === 1) {
+        if (this.selectedRow) {
             this.newScannerDialog.open();
             let resetValue: object = {};
-            resetValue['name'] = this.selectedRow[0].name;
-            resetValue['description'] = this.selectedRow[0].description;
-            resetValue['url'] = this.selectedRow[0].url;
-            resetValue['skipCertVerify'] = this.selectedRow[0].skipCertVerify;
-            if (this.selectedRow[0].auth === 'Basic') {
+            resetValue['name'] = this.selectedRow.name;
+            resetValue['description'] = this.selectedRow.description;
+            resetValue['url'] = this.selectedRow.url;
+            resetValue['skipCertVerify'] = this.selectedRow.skip_certVerify;
+            if (this.selectedRow.auth === 'Basic') {
                 resetValue['auth'] = 'Basic';
-                let username: string = this.selectedRow[0].accessCredential.split(":")[0];
-                let password: string = this.selectedRow[0].accessCredential.split(":")[1];
+                let username: string = this.selectedRow.access_credential.split(":")[0];
+                let password: string = this.selectedRow.access_credential.split(":")[1];
                 resetValue['accessCredential'] = {
                     username: username,
                     password: password
                 };
-            } else if (this.selectedRow[0].auth === 'Bearer') {
+            } else if (this.selectedRow.auth === 'Bearer') {
                 resetValue['auth'] = 'Bearer';
                 resetValue['accessCredential'] = {
-                   token: this.selectedRow[0].accessCredential
+                   token: this.selectedRow.access_credential
                 };
-            } else if (this.selectedRow[0].auth === 'APIKey') {
+            } else if (this.selectedRow.auth === 'APIKey') {
                 resetValue['auth'] = 'APIKey';
                 resetValue['accessCredential'] = {
-                    apiKey: this.selectedRow[0].accessCredential
+                    apiKey: this.selectedRow.access_credential
                 };
             } else {
                 resetValue['auth'] = 'None';
@@ -148,9 +141,10 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
             this.newScannerDialog.newScannerFormComponent.newScannerForm.reset(resetValue);
             this.newScannerDialog.isEdit = true;
             this.newScannerDialog.newScannerFormComponent.isEdit = true;
-            this.newScannerDialog.uid = this.selectedRow[0].uid;
+            this.newScannerDialog.uid = this.selectedRow.uuid;
             this.newScannerDialog.originValue = clone(resetValue);
             this.newScannerDialog.newScannerFormComponent.originValue = clone(resetValue);
+            this.newScannerDialog.editScanner = clone(this.selectedRow);
         }
     }
 }

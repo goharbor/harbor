@@ -1,12 +1,13 @@
 import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core";
 
-import { TagService, Tag, VulnerabilitySeverity } from "../service/index";
+import { TagService, Tag, VulnerabilitySeverity, VulnerabilitySummary } from "../service/index";
 import { ErrorHandler } from "../error-handler/index";
 import { Label } from "../service/interface";
 import { forkJoin } from "rxjs";
 import { UserPermissionService } from "../service/permission.service";
 import { USERSTATICPERMISSION } from "../service/permission-static";
 import { ChannelService } from "../channel/channel.service";
+import { VULNERABILITY_SCAN_STATUS, VULNERABILITY_SEVERITY } from "../utils";
 
 const TabLinkContentMap: { [index: string]: string } = {
   "tag-history": "history",
@@ -26,7 +27,7 @@ export class TagDetailComponent implements OnInit {
   _lowCount: number = 0;
   _unknownCount: number = 0;
   labels: Label;
-
+  vulnerabilitySummary: VulnerabilitySummary;
   @Input()
   tagId: string;
   @Input()
@@ -73,35 +74,15 @@ export class TagDetailComponent implements OnInit {
     }
     this.getTagPermissions(this.projectId);
     this.channel.tagDetail$.subscribe(tag => {
-      this.getTagDetails(tag);
+       this.getTagDetails(tag);
     });
   }
-  getTagDetails(tagDetails): void {
+  getTagDetails(tagDetails: Tag): void {
     this.tagDetails = tagDetails;
-    if (
-      this.tagDetails &&
-      this.tagDetails.scan_overview &&
-      this.tagDetails.scan_overview.components &&
-      this.tagDetails.scan_overview.components.summary
-    ) {
-      this.tagDetails.scan_overview.components.summary.forEach(item => {
-        switch (item.severity) {
-          case VulnerabilitySeverity.UNKNOWN:
-            this._unknownCount += item.count;
-            break;
-          case VulnerabilitySeverity.LOW:
-            this._lowCount += item.count;
-            break;
-          case VulnerabilitySeverity.MEDIUM:
-            this._mediumCount += item.count;
-            break;
-          case VulnerabilitySeverity.HIGH:
-            this._highCount += item.count;
-            break;
-          default:
-            break;
-        }
-      });
+    if (tagDetails
+        && tagDetails.scan_overview
+        && tagDetails.scan_overview["application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"]) {
+      this.vulnerabilitySummary = tagDetails.scan_overview["application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"];
     }
   }
   onBack(): void {
@@ -128,25 +109,52 @@ export class TagDetailComponent implements OnInit {
       : "TAG.ANONYMITY";
   }
 
-  public get highCount(): number {
-    return this._highCount;
+  get highCount(): number {
+    if (this.vulnerabilitySummary && this.vulnerabilitySummary.summary
+        && this.vulnerabilitySummary.summary.summary) {
+      return this.vulnerabilitySummary.summary.summary[VULNERABILITY_SEVERITY.HIGH];
+    }
+    return 0;
   }
 
-  public get mediumCount(): number {
-    return this._mediumCount;
+  get mediumCount(): number {
+    if (this.vulnerabilitySummary && this.vulnerabilitySummary.summary
+        && this.vulnerabilitySummary.summary.summary) {
+      return this.vulnerabilitySummary.summary.summary[VULNERABILITY_SEVERITY.MEDIUM];
+    }
+    return 0;
   }
 
-  public get lowCount(): number {
-    return this._lowCount;
+  get lowCount(): number {
+    if (this.vulnerabilitySummary && this.vulnerabilitySummary.summary
+        && this.vulnerabilitySummary.summary.summary) {
+      return this.vulnerabilitySummary.summary.summary[VULNERABILITY_SEVERITY.LOW];
+    }
+    return 0;
   }
 
-  public get unknownCount(): number {
-    return this._unknownCount;
+  get unknownCount(): number {
+    if (this.vulnerabilitySummary && this.vulnerabilitySummary.summary
+        && this.vulnerabilitySummary.summary.summary) {
+      return this.vulnerabilitySummary.summary.summary[VULNERABILITY_SEVERITY.UNKNOWN];
+    }
+    return 0;
   }
-
+  get negligibleCount(): number {
+    if (this.vulnerabilitySummary && this.vulnerabilitySummary.summary
+        && this.vulnerabilitySummary.summary.summary) {
+      return this.vulnerabilitySummary.summary.summary[VULNERABILITY_SEVERITY.NEGLIGIBLE];
+    }
+    return 0;
+  }
+  get hasCve(): boolean {
+    return this.vulnerabilitySummary
+           && this.vulnerabilitySummary.scan_status === VULNERABILITY_SCAN_STATUS.SUCCESS;
+  }
   public get scanCompletedDatetime(): Date {
     return this.tagDetails && this.tagDetails.scan_overview
-      ? this.tagDetails.scan_overview.update_time
+    && this.tagDetails.scan_overview["application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"]
+      ? this.tagDetails.scan_overview["application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"].end_time
       : null;
   }
 

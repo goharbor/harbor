@@ -46,7 +46,7 @@ export abstract class ScanningResultService {
     tagId: string,
     queryParams?: RequestQueryParams
   ):
-    | Observable<VulnerabilityItem[]>;
+    | Observable<any>;
 
   /**
    * Start a new vulnerability scanning
@@ -106,17 +106,16 @@ export class ScanningResultDefaultService extends ScanningResultService {
     tagId: string,
     queryParams?: RequestQueryParams
   ):
-    | Observable<VulnerabilityItem[]> {
+    | Observable<any> {
     if (!repoName || repoName.trim() === "" || !tagId || tagId.trim() === "") {
       return observableThrowError("Bad argument");
     }
-
     return this.http
       .get(
-        `${this._baseUrl}/${repoName}/tags/${tagId}/vulnerability/details`,
+        `${this._baseUrl}/${repoName}/tags/${tagId}/scan`,
         buildHttpRequestOptions(queryParams)
       )
-      .pipe(map(response => response as VulnerabilityItem[])
+      .pipe(map(response => response as any)
       , catchError(error => observableThrowError(error)));
   }
 

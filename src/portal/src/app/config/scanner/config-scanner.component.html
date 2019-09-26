@@ -1,6 +1,6 @@
 <div class="row">
     <div>
-        <clr-datagrid [clrDgLoading]="onGoing" [(clrDgSelected)]="selectedRow">
+        <clr-datagrid [clrDgLoading]="onGoing" [(clrDgSingleSelected)]="selectedRow">
             <clr-dg-action-bar>
                 <div class="clr-row">
                     <div class="clr-col-7">
@@ -8,26 +8,26 @@
                             <clr-icon shape="plus" size="16"></clr-icon>
                             NEW SCANNER
                         </button>
+                        <button  [disabled]="!(selectedRow && !selectedRow.is_default && !selectedRow.disabled)"
+                                class="btn btn-sm btn-secondary"
+                                (click)="setAsDefault()">SET AS DEFAULT</button>
                         <clr-dropdown  [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link" clrDropdownTrigger>
                             <span>{{'MEMBER.ACTION' | translate}}<clr-icon class="clr-icon" shape="caret down"></clr-icon></span>
                             <clr-dropdown-menu *clrIfOpen>
                                 <button clrDropdownItem
                                         (click)="changeStat()"
-                                        [disabled]="!(selectedRow && selectedRow.length ===1)">
-                                    <span *ngIf="selectedRow && selectedRow.length ===1 && selectedRow[0].disabled">ENABLE</span>
-                                    <span *ngIf="!(selectedRow && selectedRow.length ===1 && selectedRow[0].disabled)">DISABLE</span>
+                                        [disabled]="!(selectedRow && !selectedRow.is_default)">
+                                    <span *ngIf="selectedRow && selectedRow.disabled">ENABLE</span>
+                                    <span *ngIf="!(selectedRow && selectedRow.disabled)">DISABLE</span>
                                 </button>
-                                <button clrDropdownItem  [disabled]="!(selectedRow && selectedRow.length ==1 && !selectedRow[0].isDefault)"
-                                        class="btn btn-sm btn-secondary"
-                                        (click)="setAsDefault()">SET AS DEFAULT</button>
                                 <button clrDropdownItem
                                         (click)="editScanner()"
-                                        class="btn btn-sm btn-secondary" [disabled]="!(selectedRow && selectedRow.length ===1)">
+                                        class="btn btn-sm btn-secondary" [disabled]="!selectedRow">
                                     EDIT
                                 </button>
                                 <button clrDropdownItem
                                         (click)="deleteScanners()"
-                                        class="btn btn-sm btn-secondary" [disabled]="!(selectedRow && selectedRow.length > 0)">
+                                        class="btn btn-sm btn-secondary" [disabled]="!selectedRow">
                                     DELETE
                                 </button>
                             </clr-dropdown-menu>
@@ -42,104 +42,27 @@
                     </div>
                 </div>
             </clr-dg-action-bar>
-            <clr-dg-column [clrDgField]="'name'">Name</clr-dg-column>
-            <clr-dg-column>Status</clr-dg-column>
-            <clr-dg-column [clrDgField]="'url'">Endpoint URL</clr-dg-column>
-            <clr-dg-column [clrDgField]="'auth'">Authorization</clr-dg-column>
-            <clr-dg-column>Default</clr-dg-column>
+            <clr-dg-column class="width-240" [clrDgField]="'name'">Name</clr-dg-column>
+            <clr-dg-column class="width-240" [clrDgField]="'url'">Endpoint URL</clr-dg-column>
+            <clr-dg-column>Health</clr-dg-column>
+            <clr-dg-column>Disabled</clr-dg-column>
+            <clr-dg-column>Authorization</clr-dg-column>
+            <clr-dg-placeholder>
+                Can not find any scanner
+            </clr-dg-placeholder>
             <clr-dg-row *clrDgItems="let scanner of scanners" [clrDgItem]="scanner">
-                <clr-dg-cell>{{scanner.name}}</clr-dg-cell>
                 <clr-dg-cell>
-                    <div *ngIf="!scanner.disabled" class="icon-wrap">
-                        <clr-icon shape="check-circle" size="20" class="is-success enabled-icon"></clr-icon>
-                        <span>{{'WEBHOOK.ENABLED' | translate}}</span>
-                    </div>
-                    <div *ngIf="scanner.disabled" class="icon-wrap">
-                        <clr-icon shape="exclamation-triangle" size="20" class="is-warning"></clr-icon>
-                        <span>{{'WEBHOOK.DISABLED' | translate}}</span>
-                    </div>
+                    <span>{{scanner.name}}</span>
+                    <span *ngIf="scanner.is_default" class="label label-info ml-1">Default</span>
                 </clr-dg-cell>
                 <clr-dg-cell>{{scanner.url}}</clr-dg-cell>
-                <clr-dg-cell>{{scanner.auth?scanner.auth:'None'}}</clr-dg-cell>
                 <clr-dg-cell>
-                    <span *ngIf="scanner.isDefault" class="label label-info">{{scanner.isDefault}}</span>
-                    <span *ngIf="!scanner.isDefault"  class="label">{{scanner.isDefault}}</span>
+                    <span *ngIf="scanner.health" class="label label-success">Healthy</span>
+                    <span *ngIf="!scanner.health"  class="label label-danger">Unhealthy</span>
                 </clr-dg-cell>
-                <scanner-metadata *clrIfExpanded [uid]="scanner.uid"  ngProjectAs="clr-dg-row-detail"></scanner-metadata>
-                <!--<clr-dg-row-detail *clrIfExpanded>
-                    <table class="table">
-                        <thead>
-                        <tr>
-                            <th>UUID</th>
-                            <th>Name</th>
-                            <th>Endpoint</th>
-                            <th>Authorization</th>
-                            <th>Adapter</th>
-                            <th>Disabled</th>
-                            <th>IsDefault</th>
-                            <th>SkipCertVerify</th>
-                            <th>Vendor</th>
-                            <th>Version</th>
-                            <th>CreateTime</th>
-                            <th>UpdateTime</th>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        <tr>
-                            <td>{{scanner.uid}}</td>
-                            <td>{{scanner.name}}</td>
-                            <td>{{scanner.url}}</td>
-                            <td class="left">
-                                <div *ngIf="!scanner.auth">
-                                    {{scanner.auth?scanner.auth:'None'}}
-                                </div>
-                                <div *ngIf="scanner.auth ==='Basic'">
-                                    <div>
-                                        <span class="color-b">type:</span>
-                                        <span class="margin-left-5">{{scanner.auth}}</span>
-                                    </div>
-                                    <div>
-                                        <span class="color-b">username:</span>
-                                        <span class="margin-left-5">{{scanner.accessCredential.split(":")[0]}}</span>
-                                    </div>
-                                    <div>
-                                        <span class="color-b">password:</span>
-                                        <span class="margin-left-5">{{scanner.accessCredential.split(":")[1]}}</span>
-                                    </div>
-                                </div>
-                                <div *ngIf="scanner.auth ==='Bearer'">
-                                    <div>
-                                        <span class="color-b">type:</span>
-                                        <span class="margin-left-5">{{scanner.auth}}</span>
-                                    </div>
-                                    <div>
-                                        <span class="color-b">token:</span>
-                                        <span class="margin-left-5">{{scanner.accessCredential}}</span>
-                                    </div>
-                                </div>
-                                <div *ngIf="scanner.auth ==='APIKey'">
-                                    <div>
-                                        <span class="color-b">type:</span>
-                                        <span class="margin-left-5">{{scanner.auth}}</span>
-                                    </div>
-                                    <div>
-                                        <span class="color-b">apiKey:</span>
-                                        <span class="margin-left-5">{{scanner.accessCredential}}</span>
-                                    </div>
-                                </div>
-                            </td>
-                            <td>{{scanner.adapter}}</td>
-                            <td>{{scanner.disabled}}</td>
-                            <td>{{scanner.isDefault}}</td>
-                            <td>{{scanner.skipCertVerify}}</td>
-                            <td>{{scanner.vendor}}</td>
-                            <td>{{scanner.version}}</td>
-                            <td>{{scanner.createTime |date:'short'}}</td>
-                            <td>{{scanner.updateTime |date:'short'}}</td>
-                        </tr>
-                        </tbody>
-                    </table>
-                </clr-dg-row-detail>-->
+                <clr-dg-cell>{{scanner.disabled}}</clr-dg-cell>
+                <clr-dg-cell>{{scanner.auth?scanner.auth:'None'}}</clr-dg-cell>
+                <scanner-metadata *clrIfExpanded [uid]="scanner.uuid"  ngProjectAs="clr-dg-row-detail"></scanner-metadata>
             </clr-dg-row>
             <clr-dg-footer>
                 <span *ngIf="scanners?.length > 0">1 - {{scanners?.length}} {{'WEBHOOK.OF' | translate}} </span> {{scanners?.length}} {{'WEBHOOK.ITEMS' | translate}}

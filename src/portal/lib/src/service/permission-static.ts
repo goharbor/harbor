@@ -150,13 +150,6 @@ export const USERSTATICPERMISSION = {
             "LIST": "list",
             "READ": "read",
         }
-    },
-    "SCANNER": {
-        "KEY": "scanner",
-        "VALUE": {
-            "LIST": "list",
-            "READ": "read",
-        }
-    },
+    }
 };
 

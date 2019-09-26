@@ -23,7 +23,7 @@ export class ScannerMetadataComponent implements  OnInit {
     }
     ngOnInit(): void {
         this.loading = true;
-        this.configScannerService.getSannerMetadate(this.uid)
+        this.configScannerService.getScannerMetadata(this.uid)
             .pipe(finalize(() => this.loading = false))
             .subscribe(response => {
                 this.scannerMetadata = response;

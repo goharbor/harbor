@@ -1,21 +1,19 @@
 export class Scanner {
     name?: string;
     description?: string;
-    uid?: string;
+    uuid?: string;
     url?: string;
     auth?: string;
-    accessCredential?: string;
-    adapter?: string;
+    access_credential?: string;
+    scanner?: string;
     disabled?: boolean;
-    isDefault?: boolean;
-    skipCertVerify?: boolean;
-    createTime?: any;
-    updateTime?: any;
+    is_default?: boolean;
+    skip_certVerify?: boolean;
+    create_time?: any;
+    update_time?: any;
     vendor?: string;
     version?: string;
+    health?: boolean;
     constructor() {
-        this.adapter = "Clair";
-        this.vendor = "Harbor";
-        this.version = "1.0.0";
     }
 }

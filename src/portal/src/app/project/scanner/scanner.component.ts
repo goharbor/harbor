@@ -15,7 +15,7 @@ import { Component, OnInit, ViewChild } from "@angular/core";
 import { ConfigScannerService } from "../../config/scanner/config-scanner.service";
 import { Scanner } from "../../config/scanner/scanner";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
-import { clone, ErrorHandler } from "@harbor/ui";
+import { ErrorHandler } from "@harbor/ui";
 import { ActivatedRoute } from "@angular/router";
 import { ClrLoadingState } from "@clr/angular";
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
@@ -54,7 +54,9 @@ export class ScannerComponent implements OnInit {
     getScanner() {
         this.configScannerService.getProjectScanner(this.projectId)
             .subscribe(response => {
-                this.scanner = response;
+                if (response && "{}" !== JSON.stringify(response)) {
+                    this.scanner = response;
+                }
             }, error => {
                 this.errorHandler.error(error);
             });
@@ -81,19 +83,18 @@ export class ScannerComponent implements OnInit {
         this.opened = true;
         this.inlineAlert.close();
         this.scanners.forEach(s => {
-            if (s.uid === this.scanner.uid) {
+            if (this.scanner && s.uuid === this.scanner.uuid) {
                 this.selectedScanner = s;
             }
         });
     }
     get valid(): boolean {
         return this.selectedScanner
-            && this.scanner
-            && this.scanner.uid !== this.selectedScanner.uid;
+            && !(this.scanner && this.scanner.uuid === this.selectedScanner.uuid);
     }
     save() {
         this.saveBtnState = ClrLoadingState.LOADING;
-        this.configScannerService.updateProjectScanner(this.projectId, this.selectedScanner.uid)
+        this.configScannerService.updateProjectScanner(this.projectId, this.selectedScanner.uuid)
             .subscribe(response => {
                 this.close();
                 this.msgHandler.showSuccess('Update Success');
