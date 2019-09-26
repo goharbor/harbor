@@ -1,4 +1,4 @@
-package models
+package model
 
 // ImmutableRule - rule which filter image tags should be immutable.
 type ImmutableRule struct {

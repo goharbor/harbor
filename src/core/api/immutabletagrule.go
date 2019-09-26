@@ -18,7 +18,7 @@ import (
 // ImmutableTagRuleAPI ...
 type ImmutableTagRuleAPI struct {
 	BaseController
-	manager   immutabletag.RuleManager
+	manager   immutabletag.Manager
 	projectID int64
 	ID        int64
 }
