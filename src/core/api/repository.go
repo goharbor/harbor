@@ -271,7 +271,7 @@ func (ra *RepositoryAPI) Delete() {
 			}
 			log.Debugf("Tag: %s, digest: %s", t, digest)
 			if _, ok := signedTags[digest]; ok {
-				log.Errorf("Found signed tag, repostory: %s, tag: %s, deletion will be canceled", repoName, t)
+				log.Errorf("Found signed tag, repository: %s, tag: %s, deletion will be canceled", repoName, t)
 				ra.SendPreconditionFailedError(fmt.Errorf("tag %s is signed", t))
 				return
 			}
@@ -858,7 +858,7 @@ func getManifest(client *registry.Repository,
 	return result, nil
 }
 
-// GetTopRepos returns the most populor repositories
+// GetTopRepos returns the most popular repositories
 func (ra *RepositoryAPI) GetTopRepos() {
 	count, err := ra.GetInt("count", 10)
 	if err != nil || count <= 0 {

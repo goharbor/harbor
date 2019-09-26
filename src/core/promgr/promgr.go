@@ -25,7 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver"
 )
 
-// ProjectManager is the project mamager which abstracts the operations related
+// ProjectManager is the project manager which abstracts the operations related
 // to projects
 type ProjectManager interface {
 	Get(projectIDOrName interface{}) (*models.Project, error)

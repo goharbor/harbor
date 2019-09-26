@@ -38,7 +38,7 @@ type QuotaMigrator interface {
 	// Usage computes the quota usage of all the projects
 	Usage([]ProjectInfo) ([]ProjectUsage, error)
 
-	// Persist record the data to DB, artifact, artifact_blob and blob tabel.
+	// Persist record the data to DB, artifact, artifact_blob and blob table.
 	Persist([]ProjectInfo) error
 }
 

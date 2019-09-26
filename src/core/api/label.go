@@ -49,7 +49,7 @@ func (l *LabelAPI) Prepare() {
 	if method == http.MethodPut || method == http.MethodDelete {
 		id, err := l.GetInt64FromPath(":id")
 		if err != nil || id <= 0 {
-			l.SendBadRequestError(errors.New("invalid lable ID"))
+			l.SendBadRequestError(errors.New("invalid label ID"))
 			return
 		}
 
