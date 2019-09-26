@@ -1173,7 +1173,7 @@
         "TAGS": "Tags",
         "MATCHES_TAGS": "Matches tags",
         "MATCHES_EXCEPT_TAGS": "Matches except tags",
-        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,**,or regex",
+        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
         "LABELS": "Labels",
         "MATCHES_LABELS": "Matches Labels",
         "MATCHES_EXCEPT_LABELS": "Matches except Labels",
