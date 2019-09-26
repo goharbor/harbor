@@ -1175,7 +1175,7 @@
         "TAGS": "Etiketler",
         "MATCHES_TAGS": "Etiketleri eşleşir",
         "MATCHES_EXCEPT_TAGS": "Etiketler hariç eşleşir",
-        "TAG_SEPARATOR": "Birden çok virgülle ayrılmış etiket, etiket *, ** veya regex girin",
+        "TAG_SEPARATOR": "Birden çok virgülle ayrılmış etiket, etiket * veya ** girin",
         "LABELS": "Etiketler",
         "MATCHES_LABELS": "Eşleşen Etiketler",
         "MATCHES_EXCEPT_LABELS": "Etiketler hariç eşleşmeler",
