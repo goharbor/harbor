@@ -10,7 +10,6 @@ be added to this list as they transition to production deployments.
 
 <a href="https://www.jd.com" border="0" target="_blank"><img alt="JD.com" src="docs/img/jd.png" height="50"></a>&nbsp; &nbsp; &nbsp;
 <a href="https://www.trendmicro.com" border="0" target="_blank"><img alt="trendmicro" src="docs/img/trendmicro.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="https://www.onstar.com.cn" border="0" target="_blank"><img alt="OnStar" src="docs/img/onstar.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.datayes.com" border="0" target="_blank"><img alt="DataYes" src="docs/img/datayes.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.axatp.com" border="0" target="_blank"><img alt="axatp" src="docs/img/axatp.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; <br/><br/>
 <a href="https://www.360totalsecurity.com/en/" target="_blank" border="0"><img alt="360 Total Security" src="docs/img/360.png" height="50"></a>&nbsp; &nbsp; &nbsp;
