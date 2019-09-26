@@ -16,17 +16,17 @@ package core
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/jobservice/mgt"
-	"github.com/pkg/errors"
 
-	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/pkg/errors"
+	"github.com/robfig/cron"
 
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/jobservice/mgt"
 	"github.com/goharbor/harbor/src/jobservice/worker"
-	"github.com/robfig/cron"
 )
 
 // basicController implement the core interface and provides related job handle methods.
