@@ -44,22 +44,23 @@ The Harbor Security Team will respond to vulnerability reports as follows:
 1.  The Security Team will investigate the vulnerability and determine its effects and criticality.
 2.  If the issue is not deemed to be a vulnerability, the Security Team will follow up with a detailed reason for rejection.
 3.  The Security Team will initiate a conversation with the reporter within 3 business days.
-4.  If a vulnerability is acknowledged and the timeline for a fix is determined, the Security Team will work on a plan to communicate with the appropriate community (to be completed within 1-10 days of the report of the vulnerability), including mitigating steps that affected users can take to protect themselves until the fix is rolled out.
-5.  The Security Team will also create a [CVSS](https://www.first.org/cvss/specification-document) using the [CVSS Calculator](https://www.first.org/cvss/calculator/3.0). The Security Team makes the final call on the calculated CVSS; it is better to move quickly than making the CVSS perfect. Issues may also be reported to [Mitre](https://cve.mitre.org/) using this [scoring calculator](https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator).
+4.  If a vulnerability is acknowledged and the timeline for a fix is determined, the Security Team will work on a plan to communicate with the appropriate community, including identifying mitigating steps that affected users can take to protect themselves until the fix is rolled out.
+5.  The Security Team will also create a [CVSS](https://www.first.org/cvss/specification-document) using the [CVSS Calculator](https://www.first.org/cvss/calculator/3.0). The Security Team makes the final call on the calculated CVSS; it is better to move quickly than making the CVSS perfect. Issues may also be reported to [Mitre](https://cve.mitre.org/) using this [scoring calculator](https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator). The CVE will initially be set to private.
 6.  The Security Team will work on fixing the vulnerability and perform internal testing before preparing to roll out the fix.
-7.  The Security Team will first email the fix to cncf-harbor-distributors-announce@lists.cncf.io, so that they can further test the fix and gather feedback. See the section **Disclosure to Private Distributors List** for details about how to join this mailing list.
-8.  Once the fix is confirmed, the Security Team will patch the vulnerability in the next patch or minor release, and backport a patch release into all earlier supported releases. 
+7.  The Security Team will provide early disclosure of the vulnerability by emailing the cncf-harbor-distributors-announce@lists.cncf.io mailing list. Distributors can initially plan for the vulnerability patch ahead of the fix, and later can test the fix and provide feedback to the Harbor team. See the section **Early Disclosure to Harbor Distributors List** for details about how to join this mailing list. 
+8. A public disclosure date is negotiated by the Harbor Security Team, the bug submitter, and the distributors list. We prefer to fully disclose the bug as soon as possible once a user mitigation or patch is available. It is reasonable to delay disclosure when the bug or the fix is not yet fully understood, the solution is not well-tested, or for distributor coordination. The timeframe for disclosure is from immediate (especially if it’s already publicly known) to a few weeks. For a critical vulnerability with a straightforward mitigation, we expect report date to public disclosure date to be on the order of 14 business days. The Harbor Security Team holds the final say when setting a public disclosure date.
+9.  Once the fix is confirmed, the Security Team will patch the vulnerability in the next patch or minor release, and backport a patch release into all earlier supported releases. Upon release of the patched version of Harbor, we will follow the **Public Disclosure Process**.
 
-### Fix Disclosure Process
-The Security Team publishes an [advisory](https://github.com/goharbor/harbor/security/advisories) to the Harbor community via GitHub. In most cases, additional communication via Slack, Twitter, CNCF lists, blog and other channels will assist in educating Harbor users and rolling out the patched release to affected users. 
+### Public Disclosure Process
+The Security Team publishes a public [advisory](https://github.com/goharbor/harbor/security/advisories) to the Harbor community via GitHub. In most cases, additional communication via Slack, Twitter, CNCF lists, blog and other channels will assist in educating Harbor users and rolling out the patched release to affected users. 
 
-The Security Team will also publish any mitigating steps users can take until the fix can be applied to their Harbor instances.
+The Security Team will also publish any mitigating steps users can take until the fix can be applied to their Harbor instances. Harbor distributors will handle creating and publishing their own security advisories.
  
 ## Mailing lists
 - Use cncf-harbor-security@lists.cncf.io to report security concerns to the Harbor Security Team, who uses the list to privately discuss security issues and fixes prior to disclosure.
-- Join cncf-harbor-distributors-announce@lists.cncf.io for early private information and vulnerability disclosure. Early disclosure may include mitigating steps and additional information on security patch releases. See below for information on how Harbor distributors can apply to join this list.
+- Join cncf-harbor-distributors-announce@lists.cncf.io for early private information and vulnerability disclosure. Early disclosure may include mitigating steps and additional information on security patch releases. See below for information on how Harbor distributors or vendors can apply to join this list.
 
-## Disclosure to Harbor Distributors List
+## Early Disclosure to Harbor Distributors List
 This private list is intended to be used primarily to provide actionable information to multiple distributor projects at once. This list is not intended to inform individuals about security issues.
 
 ### Membership Criteria
