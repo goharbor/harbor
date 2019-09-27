@@ -1,7 +1,8 @@
 package immutabletag
 
 import (
-	"github.com/goharbor/harbor/src/pkg/immutabletag/dao/model"
+	dao_model "github.com/goharbor/harbor/src/pkg/immutabletag/dao/model"
+	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -15,30 +16,30 @@ type mockImmutableDao struct {
 	mock.Mock
 }
 
-func (m *mockImmutableDao) CreateImmutableRule(ir *model.ImmutableRule) (int64, error) {
+func (m *mockImmutableDao) CreateImmutableRule(ir *dao_model.ImmutableRule) (int64, error) {
 	args := m.Called(ir)
 	return int64(args.Int(0)), args.Error(1)
 }
 
-func (m *mockImmutableDao) UpdateImmutableRule(projectID int64, ir *model.ImmutableRule) (int64, error) {
+func (m *mockImmutableDao) UpdateImmutableRule(projectID int64, ir *dao_model.ImmutableRule) (int64, error) {
 	args := m.Called(ir)
 	return int64(0), args.Error(1)
 }
 
-func (m *mockImmutableDao) QueryImmutableRuleByProjectID(projectID int64) ([]model.ImmutableRule, error) {
+func (m *mockImmutableDao) QueryImmutableRuleByProjectID(projectID int64) ([]dao_model.ImmutableRule, error) {
 	args := m.Called()
-	var irs []model.ImmutableRule
+	var irs []dao_model.ImmutableRule
 	if args.Get(0) != nil {
-		irs = args.Get(0).([]model.ImmutableRule)
+		irs = args.Get(0).([]dao_model.ImmutableRule)
 	}
 	return irs, args.Error(1)
 }
 
-func (m *mockImmutableDao) QueryEnabledImmutableRuleByProjectID(projectID int64) ([]model.ImmutableRule, error) {
+func (m *mockImmutableDao) QueryEnabledImmutableRuleByProjectID(projectID int64) ([]dao_model.ImmutableRule, error) {
 	args := m.Called()
-	var irs []model.ImmutableRule
+	var irs []dao_model.ImmutableRule
 	if args.Get(0) != nil {
-		irs = args.Get(0).([]model.ImmutableRule)
+		irs = args.Get(0).([]dao_model.ImmutableRule)
 	}
 	return irs, args.Error(1)
 }
@@ -53,11 +54,11 @@ func (m *mockImmutableDao) ToggleImmutableRule(id int64, enabled bool) (int64, e
 	return int64(args.Int(0)), args.Error(1)
 }
 
-func (m *mockImmutableDao) GetImmutableRule(id int64) (*model.ImmutableRule, error) {
+func (m *mockImmutableDao) GetImmutableRule(id int64) (*dao_model.ImmutableRule, error) {
 	args := m.Called(id)
-	var ir *model.ImmutableRule
+	var ir *dao_model.ImmutableRule
 	if args.Get(0) != nil {
-		ir = args.Get(0).(*model.ImmutableRule)
+		ir = args.Get(0).(*dao_model.ImmutableRule)
 	}
 	return ir, args.Error(1)
 
@@ -98,53 +99,75 @@ func TestManagerTestingSuite(t *testing.T) {
 
 func (m *managerTestingSuite) TestCreateImmutableRule() {
 	m.mockImmutableDao.On("CreateImmutableRule", mock.Anything).Return(1, nil)
-	id, err := Mgr.CreateImmutableRule(&model.ImmutableRule{})
+	id, err := Mgr.CreateImmutableRule(&model.Metadata{})
 	m.mockImmutableDao.AssertCalled(m.t, "CreateImmutableRule", mock.Anything)
 	m.require.Nil(err)
 	m.assert.Equal(int64(1), id)
 }
 
 func (m *managerTestingSuite) TestQueryImmutableRuleByProjectID() {
-	m.mockImmutableDao.On("QueryImmutableRuleByProjectID", mock.Anything).Return([]model.ImmutableRule{
+	m.mockImmutableDao.On("QueryImmutableRuleByProjectID", mock.Anything).Return([]dao_model.ImmutableRule{
 		{
-			ProjectID: int64(1),
-			TagFilter: "project_1_tag_filter",
-			Enabled:   false,
+			ID:        1,
+			ProjectID: 1,
+			Enabled:   true,
+			TagFilter: "{\"id\":1, \"projectID\":1,\"priority\":0,\"disabled\":false,\"action\":\"immutable\"," +
+				"\"template\":\"immutable_template\"," +
+				"\"tag_selectors\":[{\"kind\":\"doublestar\",\"decoration\":\"matches\",\"pattern\":\"**\"}]," +
+				"\"scope_selectors\":{\"repository\":[{\"kind\":\"doublestar\",\"decoration\":\"repoMatches\",\"pattern\":\"**\"}]}}",
 		},
 		{
-			ProjectID: int64(2),
-			TagFilter: "project_2_tag_filter",
-			Enabled:   true,
+			ID:        2,
+			ProjectID: 1,
+			Enabled:   false,
+			TagFilter: "{\"id\":2, \"projectID\":1,\"priority\":0,\"disabled\":false,\"action\":\"immutable\"," +
+				"\"template\":\"immutable_template\"," +
+				"\"tag_selectors\":[{\"kind\":\"doublestar\",\"decoration\":\"matches\",\"pattern\":\"**\"}]," +
+				"\"scope_selectors\":{\"repository\":[{\"kind\":\"doublestar\",\"decoration\":\"repoMatches\",\"pattern\":\"**\"}]}}",
 		}}, nil)
 	irs, err := Mgr.QueryImmutableRuleByProjectID(int64(1))
 	m.mockImmutableDao.AssertCalled(m.t, "QueryImmutableRuleByProjectID", mock.Anything)
 	m.require.Nil(err)
 	m.assert.Equal(len(irs), 2)
-	m.assert.Equal(irs[0].TagFilter, "project_1_tag_filter")
+	m.assert.Equal(irs[1].Disabled, false)
 }
 
 func (m *managerTestingSuite) TestQueryEnabledImmutableRuleByProjectID() {
-	m.mockImmutableDao.On("QueryEnabledImmutableRuleByProjectID", mock.Anything).Return([]model.ImmutableRule{
+	m.mockImmutableDao.On("QueryEnabledImmutableRuleByProjectID", mock.Anything).Return([]dao_model.ImmutableRule{
 		{
-			ProjectID: int64(1),
-			TagFilter: "project_1_tag_filter",
+			ID:        1,
+			ProjectID: 1,
 			Enabled:   true,
+			TagFilter: "{\"id\":1, \"projectID\":1,\"priority\":0,\"disabled\":false,\"action\":\"immutable\"," +
+				"\"template\":\"immutable_template\"," +
+				"\"tag_selectors\":[{\"kind\":\"doublestar\",\"decoration\":\"matches\",\"pattern\":\"**\"}]," +
+				"\"scope_selectors\":{\"repository\":[{\"kind\":\"doublestar\",\"decoration\":\"repoMatches\",\"pattern\":\"**\"}]}}",
 		},
 		{
-			ProjectID: int64(2),
-			TagFilter: "project_2_tag_filter",
+			ID:        2,
+			ProjectID: 1,
 			Enabled:   true,
+			TagFilter: "{\"id\":2, \"projectID\":1,\"priority\":0,\"disabled\":false,\"action\":\"immutable\"," +
+				"\"template\":\"immutable_template\"," +
+				"\"tag_selectors\":[{\"kind\":\"doublestar\",\"decoration\":\"matches\",\"pattern\":\"**\"}]," +
+				"\"scope_selectors\":{\"repository\":[{\"kind\":\"doublestar\",\"decoration\":\"repoMatches\",\"pattern\":\"**\"}]}}",
 		}}, nil)
 	irs, err := Mgr.QueryEnabledImmutableRuleByProjectID(int64(1))
 	m.mockImmutableDao.AssertCalled(m.t, "QueryEnabledImmutableRuleByProjectID", mock.Anything)
 	m.require.Nil(err)
 	m.assert.Equal(len(irs), 2)
-	m.assert.Equal(irs[0].Enabled, true)
+	m.assert.Equal(irs[0].Disabled, false)
 }
 
 func (m *managerTestingSuite) TestGetImmutableRule() {
-	m.mockImmutableDao.On("GetImmutableRule", mock.Anything).Return(&model.ImmutableRule{
-		ID: 1,
+	m.mockImmutableDao.On("GetImmutableRule", mock.Anything).Return(&dao_model.ImmutableRule{
+		ID:        1,
+		ProjectID: 1,
+		Enabled:   true,
+		TagFilter: "{\"id\":1, \"projectID\":1,\"priority\":0,\"disabled\":false,\"action\":\"immutable\"," +
+			"\"template\":\"immutable_template\"," +
+			"\"tag_selectors\":[{\"kind\":\"doublestar\",\"decoration\":\"matches\",\"pattern\":\"**\"}]," +
+			"\"scope_selectors\":{\"repository\":[{\"kind\":\"doublestar\",\"decoration\":\"repoMatches\",\"pattern\":\"**\"}]}}",
 	}, nil)
 	ir, err := Mgr.GetImmutableRule(1)
 	m.mockImmutableDao.AssertCalled(m.t, "GetImmutableRule", mock.Anything)
@@ -155,7 +178,7 @@ func (m *managerTestingSuite) TestGetImmutableRule() {
 
 func (m *managerTestingSuite) TestUpdateImmutableRule() {
 	m.mockImmutableDao.On("UpdateImmutableRule", mock.Anything).Return(1, nil)
-	id, err := Mgr.UpdateImmutableRule(int64(1), &model.ImmutableRule{})
+	id, err := Mgr.UpdateImmutableRule(int64(1), &model.Metadata{})
 	m.mockImmutableDao.AssertCalled(m.t, "UpdateImmutableRule", mock.Anything)
 	m.require.Nil(err)
 	m.assert.Equal(int64(0), id)

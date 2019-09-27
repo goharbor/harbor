@@ -1,5 +1,13 @@
 package model
 
+import (
+	"github.com/astaxie/beego/orm"
+)
+
+func init() {
+	orm.RegisterModel(&ImmutableRule{})
+}
+
 // ImmutableRule - rule which filter image tags should be immutable.
 type ImmutableRule struct {
 	ID        int64  `orm:"pk;auto;column(id)" json:"id,omitempty"`

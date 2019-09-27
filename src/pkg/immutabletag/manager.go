@@ -1,8 +1,10 @@
 package immutabletag
 
 import (
+	"encoding/json"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/dao"
-	"github.com/goharbor/harbor/src/pkg/immutabletag/dao/model"
+	dao_model "github.com/goharbor/harbor/src/pkg/immutabletag/dao/model"
+	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
 )
 
 var (
@@ -13,17 +15,17 @@ var (
 // Manager ...
 type Manager interface {
 	// CreateImmutableRule creates the Immutable Rule
-	CreateImmutableRule(ir *model.ImmutableRule) (int64, error)
+	CreateImmutableRule(m *model.Metadata) (int64, error)
 	// UpdateImmutableRule update the immutable rules
-	UpdateImmutableRule(projectID int64, ir *model.ImmutableRule) (int64, error)
+	UpdateImmutableRule(projectID int64, ir *model.Metadata) (int64, error)
 	// EnableImmutableRule enable/disable immutable rules
 	EnableImmutableRule(id int64, enabled bool) (int64, error)
 	// GetImmutableRule get immutable rule
-	GetImmutableRule(id int64) (*model.ImmutableRule, error)
+	GetImmutableRule(id int64) (*model.Metadata, error)
 	// QueryImmutableRuleByProjectID get all immutable rule by project
-	QueryImmutableRuleByProjectID(projectID int64) ([]model.ImmutableRule, error)
+	QueryImmutableRuleByProjectID(projectID int64) ([]model.Metadata, error)
 	// QueryEnabledImmutableRuleByProjectID get all enabled immutable rule by project
-	QueryEnabledImmutableRuleByProjectID(projectID int64) ([]model.ImmutableRule, error)
+	QueryEnabledImmutableRuleByProjectID(projectID int64) ([]model.Metadata, error)
 	// DeleteImmutableRule delete the immutable rule
 	DeleteImmutableRule(id int64) (int64, error)
 }
@@ -32,28 +34,68 @@ type defaultRuleManager struct {
 	dao dao.ImmutableRuleDao
 }
 
-func (drm *defaultRuleManager) CreateImmutableRule(ir *model.ImmutableRule) (int64, error) {
-	return drm.dao.CreateImmutableRule(ir)
+func (drm *defaultRuleManager) CreateImmutableRule(ir *model.Metadata) (int64, error) {
+	daoRule := &dao_model.ImmutableRule{}
+	daoRule.Enabled = !ir.Disabled
+	daoRule.ProjectID = ir.ProjectID
+	data, _ := json.Marshal(ir)
+	daoRule.TagFilter = string(data)
+	return drm.dao.CreateImmutableRule(daoRule)
 }
 
-func (drm *defaultRuleManager) UpdateImmutableRule(projectID int64, ir *model.ImmutableRule) (int64, error) {
-	return drm.dao.UpdateImmutableRule(projectID, ir)
+func (drm *defaultRuleManager) UpdateImmutableRule(projectID int64, ir *model.Metadata) (int64, error) {
+	daoRule := &dao_model.ImmutableRule{}
+	data, _ := json.Marshal(ir)
+	daoRule.TagFilter = string(data)
+	return drm.dao.UpdateImmutableRule(projectID, daoRule)
 }
 
 func (drm *defaultRuleManager) EnableImmutableRule(id int64, enabled bool) (int64, error) {
 	return drm.dao.ToggleImmutableRule(id, enabled)
 }
 
-func (drm *defaultRuleManager) GetImmutableRule(id int64) (*model.ImmutableRule, error) {
-	return drm.dao.GetImmutableRule(id)
+func (drm *defaultRuleManager) GetImmutableRule(id int64) (*model.Metadata, error) {
+	daoRule, err := drm.dao.GetImmutableRule(id)
+	if err != nil {
+		return nil, err
+	}
+	rule := &model.Metadata{}
+	if err = json.Unmarshal([]byte(daoRule.TagFilter), rule); err != nil {
+		return nil, err
+	}
+	return rule, nil
 }
 
-func (drm *defaultRuleManager) QueryImmutableRuleByProjectID(projectID int64) ([]model.ImmutableRule, error) {
-	return drm.dao.QueryImmutableRuleByProjectID(projectID)
+func (drm *defaultRuleManager) QueryImmutableRuleByProjectID(projectID int64) ([]model.Metadata, error) {
+	daoRules, err := drm.dao.QueryImmutableRuleByProjectID(projectID)
+	if err != nil {
+		return nil, err
+	}
+	var rules []model.Metadata
+	for _, daoRule := range daoRules {
+		rule := model.Metadata{}
+		if err = json.Unmarshal([]byte(daoRule.TagFilter), &rule); err != nil {
+			return nil, err
+		}
+		rules = append(rules, rule)
+	}
+	return rules, nil
 }
 
-func (drm *defaultRuleManager) QueryEnabledImmutableRuleByProjectID(projectID int64) ([]model.ImmutableRule, error) {
-	return drm.dao.QueryEnabledImmutableRuleByProjectID(projectID)
+func (drm *defaultRuleManager) QueryEnabledImmutableRuleByProjectID(projectID int64) ([]model.Metadata, error) {
+	daoRules, err := drm.dao.QueryEnabledImmutableRuleByProjectID(projectID)
+	if err != nil {
+		return nil, err
+	}
+	var rules []model.Metadata
+	for _, daoRule := range daoRules {
+		rule := model.Metadata{}
+		if err = json.Unmarshal([]byte(daoRule.TagFilter), &rule); err != nil {
+			return nil, err
+		}
+		rules = append(rules, rule)
+	}
+	return rules, nil
 }
 
 func (drm *defaultRuleManager) DeleteImmutableRule(id int64) (int64, error) {

@@ -7,7 +7,10 @@ import (
 // Metadata of the immutable rule
 type Metadata struct {
 	// UUID of rule
-	ID int `json:"id"`
+	ID int64 `json:"id"`
+
+	// ProjectID of project
+	ProjectID int64 `json:"project_id"`
 
 	// Disabled rule
 	Disabled bool `json:"disabled"`

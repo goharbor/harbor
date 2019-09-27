@@ -7,24 +7,34 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
+	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
 )
 
 func TestImmutableTagRuleAPI_List(t *testing.T) {
 
-	tagFilter := `{
-    "id":0,
-    "priority":0,
-    "disabled":false,
-    "action":"immutable",
-    "template":"immutable_template",
-    "tag_selectors":[{"kind":"doublestar","decoration":"matches","pattern":"**"}],
-    "scope_selectors":{"repository":[{"kind":"doublestar","decoration":"repoMatches","pattern":"**"}]}
-     }`
-
+	metadata := &model.Metadata{
+		ProjectID: 1,
+		Disabled:  false,
+		TagSelectors: []*model.Selector{
+			{
+				Kind:       "doublestar",
+				Decoration: "matches",
+				Pattern:    "release-[\\d\\.]+",
+			},
+		},
+		ScopeSelectors: map[string][]*model.Selector{
+			"repository": {
+				{
+					Kind:       "doublestar",
+					Decoration: "matches",
+					Pattern:    ".+",
+				},
+			},
+		},
+	}
 	mgr := immutabletag.NewDefaultRuleManager()
-	id, err := mgr.CreateImmutableRule(&models.ImmutableRule{ProjectID: 1, TagFilter: tagFilter})
+	id, err := mgr.CreateImmutableRule(metadata)
 	if err != nil {
 		t.Error(err)
 	}
@@ -46,7 +56,7 @@ func TestImmutableTagRuleAPI_List(t *testing.T) {
 				credential: admin,
 			},
 			postFunc: func(responseRecorder *httptest.ResponseRecorder) error {
-				var rules []models.ImmutableRule
+				var rules []model.Metadata
 				err := json.Unmarshal([]byte(responseRecorder.Body.String()), &rules)
 				if err != nil {
 					return err
@@ -54,7 +64,7 @@ func TestImmutableTagRuleAPI_List(t *testing.T) {
 				if len(rules) <= 0 {
 					return fmt.Errorf("no rules found")
 				}
-				if rules[0].TagFilter != tagFilter {
+				if rules[0].TagSelectors[0].Kind != "doublestar" {
 					return fmt.Errorf("rule is not expected. actual: %v", responseRecorder.Body.String())
 				}
 				return nil
@@ -86,43 +96,68 @@ func TestImmutableTagRuleAPI_List(t *testing.T) {
 
 func TestImmutableTagRuleAPI_Post(t *testing.T) {
 
-	tagFilter := `{
-    "id":0,
-    "priority":0,
-    "disabled":false,
-    "action":"immutable",
-    "template":"immutable_template",
-    "tag_selectors":[{"kind":"doublestar","decoration":"matches","pattern":"**"}],
-    "scope_selectors":{"repository":[{"kind":"doublestar","decoration":"repoMatches","pattern":"**"}]}
-}`
-	body := &models.ImmutableRule{ProjectID: 1, TagFilter: tagFilter}
+	//	body := `{
+	//    "id":0,
+	//	"projectID":1,
+	//    "priority":0,
+	//    "disabled":false,
+	//    "action":"immutable",
+	//    "template":"immutable_template",
+	//    "tag_selectors":[{"kind":"doublestar","decoration":"matches","pattern":"**"}],
+	//    "scope_selectors":{"repository":[{"kind":"doublestar","decoration":"repoMatches","pattern":"**"}]}
+	//  }`
+
+	metadata := &model.Metadata{
+		ProjectID: 1,
+		Disabled:  false,
+		Priority:  0,
+		Template:  "immutable_template",
+		Action:    "immutable",
+		TagSelectors: []*model.Selector{
+			{
+				Kind:       "doublestar",
+				Decoration: "matches",
+				Pattern:    "release-[\\d\\.]+",
+			},
+		},
+		ScopeSelectors: map[string][]*model.Selector{
+			"repository": {
+				{
+					Kind:       "doublestar",
+					Decoration: "matches",
+					Pattern:    ".+",
+				},
+			},
+		},
+	}
+
 	cases := []*codeCheckingCase{
 		// 401
 		{
 			request: &testingRequest{
 				method:   http.MethodPost,
 				url:      "/api/projects/1/immutabletagrules",
-				bodyJSON: body,
+				bodyJSON: metadata,
 			},
 			code: http.StatusUnauthorized,
 		},
-		// 200
+		// 201
 		{
 			request: &testingRequest{
 				method:     http.MethodPost,
 				url:        "/api/projects/1/immutabletagrules",
 				credential: admin,
-				bodyJSON:   body,
+				bodyJSON:   metadata,
 			},
 			code: http.StatusCreated,
 		},
-		// 200
+		// 201
 		{
 			request: &testingRequest{
 				method:     http.MethodPost,
 				url:        "/api/projects/1/immutabletagrules",
 				credential: projAdmin,
-				bodyJSON:   body,
+				bodyJSON:   metadata,
 			},
 			code: http.StatusCreated,
 		},
@@ -132,7 +167,7 @@ func TestImmutableTagRuleAPI_Post(t *testing.T) {
 				method:     http.MethodPost,
 				url:        "/api/projects/1/immutabletagrules",
 				credential: projGuest,
-				bodyJSON:   body,
+				bodyJSON:   metadata,
 			},
 			code: http.StatusForbidden,
 		},
@@ -142,40 +177,63 @@ func TestImmutableTagRuleAPI_Post(t *testing.T) {
 }
 
 func TestImmutableTagRuleAPI_Put(t *testing.T) {
-	tagFilter := `{
-    "id":0,
-    "priority":0,
-    "disabled":false,
-    "action":"immutable",
-    "template":"immutable_template",
-    "tag_selectors":[{"kind":"doublestar","decoration":"matches","pattern":"**"}],
-    "scope_selectors":{"repository":[{"kind":"doublestar","decoration":"repoMatches","pattern":"**"}]}
-}`
-	tagFilter2 := `{
-    "id":0,
-    "priority":0,
-    "disabled":false,
-    "action":"immutable",
-    "template":"immutable_template",
-    "tag_selectors":[{"kind":"doublestar","decoration":"matches","pattern":"release-1.6.0"}],
-    "scope_selectors":{"repository":[{"kind":"doublestar","decoration":"repoMatches","pattern":"regids"}]}
-}`
 
+	metadata := &model.Metadata{
+		ProjectID: 1,
+		Disabled:  false,
+		TagSelectors: []*model.Selector{
+			{
+				Kind:       "doublestar",
+				Decoration: "matches",
+				Pattern:    "release-[\\d\\.]+",
+			},
+		},
+		ScopeSelectors: map[string][]*model.Selector{
+			"repository": {
+				{
+					Kind:       "doublestar",
+					Decoration: "matches",
+					Pattern:    ".+",
+				},
+			},
+		},
+	}
+
+	metadata2 := &model.Metadata{
+		ProjectID: 1,
+		Disabled:  false,
+		TagSelectors: []*model.Selector{
+			{
+				Kind:       "doublestar",
+				Decoration: "matches",
+				Pattern:    "latest",
+			},
+		},
+		ScopeSelectors: map[string][]*model.Selector{
+			"repository": {
+				{
+					Kind:       "doublestar",
+					Decoration: "matches",
+					Pattern:    ".+",
+				},
+			},
+		},
+	}
 	mgr := immutabletag.NewDefaultRuleManager()
-	id, err := mgr.CreateImmutableRule(&models.ImmutableRule{ProjectID: 1, TagFilter: tagFilter})
+	id, err := mgr.CreateImmutableRule(metadata)
 	if err != nil {
 		t.Error(err)
 	}
 	defer mgr.DeleteImmutableRule(id)
+
 	url := fmt.Sprintf("/api/projects/1/immutabletagrules/%d", id)
-	body := &models.ImmutableRule{ID: id, ProjectID: 1, TagFilter: tagFilter2}
 	cases := []*codeCheckingCase{
 		// 401
 		{
 			request: &testingRequest{
 				method:   http.MethodPut,
 				url:      url,
-				bodyJSON: body,
+				bodyJSON: metadata2,
 			},
 			code: http.StatusUnauthorized,
 		},
@@ -185,7 +243,7 @@ func TestImmutableTagRuleAPI_Put(t *testing.T) {
 				method:     http.MethodPut,
 				url:        url,
 				credential: admin,
-				bodyJSON:   body,
+				bodyJSON:   metadata2,
 			},
 			code: http.StatusOK,
 		},
@@ -195,7 +253,7 @@ func TestImmutableTagRuleAPI_Put(t *testing.T) {
 				method:     http.MethodPut,
 				url:        url,
 				credential: projAdmin,
-				bodyJSON:   body,
+				bodyJSON:   metadata2,
 			},
 			code: http.StatusOK,
 		},
@@ -205,7 +263,7 @@ func TestImmutableTagRuleAPI_Put(t *testing.T) {
 				method:     http.MethodPut,
 				url:        url,
 				credential: projGuest,
-				bodyJSON:   body,
+				bodyJSON:   metadata2,
 			},
 			code: http.StatusForbidden,
 		},
@@ -214,17 +272,29 @@ func TestImmutableTagRuleAPI_Put(t *testing.T) {
 }
 
 func TestImmutableTagRuleAPI_Delete(t *testing.T) {
-	tagFilter := `{
-    "id":0,
-    "priority":0,
-    "disabled":false,
-    "action":"immutable",
-    "template":"immutable_template",
-    "tag_selectors":[{"kind":"doublestar","decoration":"matches","pattern":"**"}],
-    "scope_selectors":{"repository":[{"kind":"doublestar","decoration":"repoMatches","pattern":"**"}]}
-}`
+	metadata := &model.Metadata{
+		ProjectID: 1,
+		Disabled:  false,
+		TagSelectors: []*model.Selector{
+			{
+				Kind:       "doublestar",
+				Decoration: "matches",
+				Pattern:    "latest",
+			},
+		},
+		ScopeSelectors: map[string][]*model.Selector{
+			"repository": {
+				{
+					Kind:       "doublestar",
+					Decoration: "matches",
+					Pattern:    ".+",
+				},
+			},
+		},
+	}
+
 	mgr := immutabletag.NewDefaultRuleManager()
-	id, err := mgr.CreateImmutableRule(&models.ImmutableRule{ProjectID: 1, TagFilter: tagFilter})
+	id, err := mgr.CreateImmutableRule(metadata)
 	if err != nil {
 		t.Error(err)
 	}
