@@ -182,18 +182,13 @@ class Project(base.Base):
             has_pull_right = True
         access_list = []
         resource_by_project_id = "/project/"+str(project_id)+"/repository"
-        resource_by_project_name = "/project/"+project_name+"/repository"
         action_pull = "pull"
         action_push = "push"
         if has_pull_right is True:
             robotAccountAccess = swagger_client.RobotAccountAccess(resource = resource_by_project_id, action = action_pull)
             access_list.append(robotAccountAccess)
-            robotAccountAccess = swagger_client.RobotAccountAccess(resource = resource_by_project_name, action = action_pull)
-            access_list.append(robotAccountAccess)
         if has_push_right is True:
             robotAccountAccess = swagger_client.RobotAccountAccess(resource = resource_by_project_id, action = action_push)
-            access_list.append(robotAccountAccess)
-            robotAccountAccess = swagger_client.RobotAccountAccess(resource = resource_by_project_name, action = action_push)
             access_list.append(robotAccountAccess)
         robotAccountCreate = swagger_client.RobotAccountCreate(robot_name, robot_desc, access_list)
         client = self._get_client(**kwargs)

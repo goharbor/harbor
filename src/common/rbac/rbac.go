@@ -110,6 +110,10 @@ func (p *Policy) GetEffect() string {
 	return eft.String()
 }
 
+func (p *Policy) String() string {
+	return p.Resource.String() + ":" + p.Action.String() + ":" + p.GetEffect()
+}
+
 // Role the interface of rbac role
 type Role interface {
 	// GetRoleName returns the role identity, if empty string role's policies will be ignore
