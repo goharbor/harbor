@@ -165,7 +165,7 @@ Test Case - Verfiy System Level CVE Whitelist
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Switch To Configuration System Setting
-    Add Items To System CVE Whitelist    CVE-2019-12904\nCVE-2011-3389\nCVE-2018-12886\nCVE-2019-3843\nCVE-2018-20839
+    Add Items To System CVE Whitelist    CVE-2019-12904\nCVE-2011-3389\nCVE-2018-12886\nCVE-2019-3843\nCVE-2018-20839\nCVE-2019-5094
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Add Items To System CVE Whitelist    CVE-2019-3844
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
@@ -192,7 +192,7 @@ Test Case - Verfiy Project Level CVE Whitelist
     Go Into Repo  project${d}/${image}
     Scan Repo  ${sha256}  Succeed
     Go Into Project  project${d}
-    Add Items to Project CVE Whitelist    CVE-2019-12904\nCVE-2011-3389\nCVE-2018-12886\nCVE-2019-3843\nCVE-2018-20839
+    Add Items to Project CVE Whitelist    CVE-2019-12904\nCVE-2011-3389\nCVE-2018-12886\nCVE-2019-3843\nCVE-2018-20839\nCVE-2019-5094
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Add Items to Project CVE Whitelist    CVE-2019-3844
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
@@ -211,7 +211,7 @@ Test Case - Verfiy Project Level CVE Whitelist By Quick Way of Add System
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Switch To Configuration System Setting
-    Add Items To System CVE Whitelist    CVE-2019-12904\nCVE-2011-3389\nCVE-2018-12886\nCVE-2019-3843\nCVE-2018-20839\nCVE-2019-3844
+    Add Items To System CVE Whitelist    CVE-2019-12904\nCVE-2011-3389\nCVE-2018-12886\nCVE-2019-3843\nCVE-2018-20839\nCVE-2019-3844\nCVE-2019-5094
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
     Create An New Project    project${d}
