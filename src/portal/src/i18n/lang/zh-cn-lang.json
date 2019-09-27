@@ -1177,7 +1177,7 @@
         "TAGS": "Tags",
         "MATCHES_TAGS": "匹配tags",
         "MATCHES_EXCEPT_TAGS": "排除tags",
-        "TAG_SEPARATOR": "使用逗号分割tags,tag*,**,or regex",
+        "TAG_SEPARATOR": "使用逗号分割tags,tag*和**",
         "LABELS": "标签",
         "MATCHES_LABELS": "匹配标签",
         "MATCHES_EXCEPT_LABELS": "排除标签",
