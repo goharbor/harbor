@@ -162,17 +162,17 @@ func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManage
 	projectName := img.namespace
 	permission := ""
 
-	exist, err := pm.Exists(projectName)
+	project, err := pm.Get(projectName)
 	if err != nil {
 		return err
 	}
-	if !exist {
+	if project == nil {
 		log.Debugf("project %s does not exist, set empty permission", projectName)
 		a.Actions = []string{}
 		return nil
 	}
 
-	resource := rbac.NewProjectNamespace(projectName).Resource(rbac.ResourceRepository)
+	resource := rbac.NewProjectNamespace(project.ProjectID).Resource(rbac.ResourceRepository)
 	if ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource) {
 		permission = "RWM"
 	} else if ctx.Can(rbac.ActionPush, resource) {
