@@ -16,10 +16,11 @@ package api
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/rbac"
 	"net/http"
 	"testing"
+
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 )
 
 var (
@@ -28,9 +29,10 @@ var (
 )
 
 func TestRobotAPIPost(t *testing.T) {
+	res := rbac.Resource("/project/1")
 
 	rbacPolicy := &rbac.Policy{
-		Resource: "/project/libray/repository",
+		Resource: res.Subresource(rbac.ResourceRepository),
 		Action:   "pull",
 	}
 	policies := []*rbac.Policy{}
@@ -78,6 +80,51 @@ func TestRobotAPIPost(t *testing.T) {
 				bodyJSON: &models.RobotReq{
 					Name:        "testIllgel#",
 					Description: "test desc",
+				},
+				credential: projAdmin4Robot,
+			},
+			code: http.StatusBadRequest,
+		},
+		{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    robotPath,
+				bodyJSON: &models.RobotReq{
+					Name:        "test",
+					Description: "resource not exist",
+					Access: []*rbac.Policy{
+						{Resource: res.Subresource("foo"), Action: rbac.ActionCreate},
+					},
+				},
+				credential: projAdmin4Robot,
+			},
+			code: http.StatusBadRequest,
+		},
+		{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    robotPath,
+				bodyJSON: &models.RobotReq{
+					Name:        "test",
+					Description: "action not exist",
+					Access: []*rbac.Policy{
+						{Resource: res.Subresource(rbac.ResourceRepository), Action: "foo"},
+					},
+				},
+				credential: projAdmin4Robot,
+			},
+			code: http.StatusBadRequest,
+		},
+		{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    robotPath,
+				bodyJSON: &models.RobotReq{
+					Name:        "test",
+					Description: "policy not exit",
+					Access: []*rbac.Policy{
+						{Resource: res.Subresource(rbac.ResourceMember), Action: rbac.ActionPush},
+					},
 				},
 				credential: projAdmin4Robot,
 			},
