@@ -27,11 +27,9 @@ export class RobotService {
     let access = [];
     if ( isPull ) {
       access.push({"resource": "/project/" + projecId + "/repository", "action": "pull"});
-      access.push({"resource": "/project/" + projectName + "/repository", "action": "pull"});
     }
     if ( isPush ) {
       access.push({"resource": "/project/" + projecId + "/repository", "action": "push"});
-      access.push({"resource": "/project/" + projectName + "/repository", "action": "push"});
     }
 
     let param = {
