@@ -921,11 +921,10 @@
     },
     "VULNERABILITY": {
         "STATE": {
-            "STOPPED": "未扫描",
+            "OTHER_STATUS": "未扫描",
             "QUEUED": "已入队列",
             "ERROR": "查看日志",
-            "SCANNING": "扫描中",
-            "UNKNOWN": "未知"
+            "SCANNING": "扫描中"
         },
         "GRID": {
             "PLACEHOLDER": "没有扫描结果！",
@@ -1177,7 +1176,7 @@
         "TAGS": "Tags",
         "MATCHES_TAGS": "匹配tags",
         "MATCHES_EXCEPT_TAGS": "排除tags",
-        "TAG_SEPARATOR": "使用逗号分割tags,tag*,**,or regex",
+        "TAG_SEPARATOR": "使用逗号分割tags,tag*和**",
         "LABELS": "标签",
         "MATCHES_LABELS": "匹配标签",
         "MATCHES_EXCEPT_LABELS": "排除标签",
@@ -1220,6 +1219,9 @@
         "DAYS_LARGE": "参数“天数”太大",
         "EXECUTION_TYPE": "执行类型",
         "ACTION": "操作"
+    },
+    "SCANNER": {
+        "DELETION_SUMMARY": "Do you want to delete scanner {{param}}?",
+        "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote registry uses a self-signed or untrusted certificate."
     }
-
 }

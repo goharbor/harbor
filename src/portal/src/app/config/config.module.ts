@@ -22,20 +22,31 @@ import { ConfirmMessageHandler } from "./config.msg.utils";
 import { ConfigurationAuthComponent } from "./auth/config-auth.component";
 import { ConfigurationEmailComponent } from "./email/config-email.component";
 import { RobotApiRepository } from "../project/robot-account/robot.api.repository";
+import { ConfigurationScannerComponent } from "./scanner/config-scanner.component";
+import { NewScannerModalComponent } from "./scanner/new-scanner-modal/new-scanner-modal.component";
+import { NewScannerFormComponent } from "./scanner/new-scanner-form/new-scanner-form.component";
+import { ConfigScannerService } from "./scanner/config-scanner.service";
+import { ScannerMetadataComponent } from "./scanner/scanner-metadata/scanner-metadata.component";
 
 
 @NgModule({
-  imports: [CoreModule, SharedModule],
-  declarations: [
-    ConfigurationComponent,
-    ConfigurationAuthComponent,
-    ConfigurationEmailComponent
-  ],
-  exports: [ConfigurationComponent],
-  providers: [
-    ConfigurationService,
-    ConfirmMessageHandler,
-    RobotApiRepository
-  ]
+    imports: [CoreModule, SharedModule],
+    declarations: [
+        ConfigurationComponent,
+        ConfigurationAuthComponent,
+        ConfigurationEmailComponent,
+        ConfigurationScannerComponent,
+        NewScannerModalComponent,
+        NewScannerFormComponent,
+        ScannerMetadataComponent
+    ],
+    exports: [ConfigurationComponent],
+    providers: [
+        ConfigurationService,
+        ConfirmMessageHandler,
+        RobotApiRepository,
+        ConfigScannerService,
+    ]
 })
-export class ConfigurationModule {}
+export class ConfigurationModule {
+}

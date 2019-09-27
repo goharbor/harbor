@@ -12,7 +12,7 @@ import {
   ErrorHandler,
   CommonRoutes
 } from "@harbor/ui";
-import { Observable } from "rxjs";
+import { Observable, of } from "rxjs";
 
 @Injectable()
 export class MemberPermissionGuard implements CanActivate, CanActivateChild {

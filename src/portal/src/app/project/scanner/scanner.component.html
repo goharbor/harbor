@@ -1,0 +1,97 @@
+<div *ngIf="loading" class="clr-row mt-2 center">
+    <span class="spinner spinner-md"></span>
+</div>
+<div *ngIf="!loading" class="clr-form clr-form-horizontal">
+    <div class="clr-form-control">
+        <label class="clr-control-label name">Scanner</label>
+        <div class="clr-control-container">
+            <button *ngIf="scanners && scanners.length > 0" id="edit-scanner" class="btn btn-link edit" (click)="open()">Edit</button>
+            <label *ngIf="!(scanners && scanners.length > 0)" class="name">Not Available</label>
+        </div>
+    </div>
+    <ng-container *ngIf="scanner">
+        <div class="clr-form-control">
+            <label for="select-full" class="clr-control-label">Name</label>
+            <div class="clr-control-container">
+                <div class="clr-input-wrapper">
+                    <div class="clr-input-wrapper">
+                        <span id="scanner-name" class="scanner-name">{{scanner?.name}}</span>
+                        <span *ngIf="scanner?.disabled" class="label label-warning ml-1">Disabled</span>
+                        <span *ngIf="scanner?.health" class="label label-success ml-1">Healthy</span>
+                        <span *ngIf="!scanner?.health" class="label label-danger ml-1">Unhealthy</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clr-form-control">
+            <label class="clr-control-label">Endpoint</label>
+            <div class="clr-control-container">
+                <div class="clr-input-wrapper">
+                    <input [ngModel]="scanner?.url" readonly class="clr-input width-240" type="text" id="scanner-endpoint"
+                           autocomplete="off">
+                </div>
+            </div>
+        </div>
+        <div class="clr-form-control" *ngIf="scanner?.scanner">
+            <label class="clr-control-label">Adapter</label>
+            <div class="clr-control-container">
+                <div class="clr-input-wrapper">
+                    <input [ngModel]="scanner?.scanner" readonly class="clr-input width-240" type="text" id="scanner-scanner"
+                           autocomplete="off">
+                </div>
+            </div>
+        </div>
+        <div class="clr-form-control" *ngIf="scanner?.vendor">
+            <label class="clr-control-label">Vendor</label>
+            <div class="clr-control-container">
+                <div class="clr-input-wrapper">
+                    <input [ngModel]="scanner?.vendor" readonly class="clr-input width-240" type="text" id="scanner-vendor"
+                           autocomplete="off">
+                </div>
+            </div>
+        </div>
+        <div class="clr-form-control" *ngIf="scanner?.vendor">
+            <label class="clr-control-label">Version</label>
+            <div class="clr-control-container">
+                <div class="clr-input-wrapper">
+                    <input [ngModel]="scanner?.version" readonly class="clr-input width-240" type="text" id="scanner-version"
+                           autocomplete="off">
+                </div>
+            </div>
+        </div>
+    </ng-container>
+</div>
+<clr-modal [clrModalSize]="'xl'" [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
+    <h3 class="modal-title">Select Scanner</h3>
+    <div class="modal-body body-format">
+        <inline-alert class="modal-title"></inline-alert>
+        <clr-datagrid [(clrDgSingleSelected)]="selectedScanner">
+            <clr-dg-column [clrDgField]="'name'">Name</clr-dg-column>
+            <clr-dg-column [clrDgField]="'url'">Endpoint URL</clr-dg-column>
+            <clr-dg-column>Health</clr-dg-column>
+            <clr-dg-column>Default</clr-dg-column>
+            <clr-dg-column>Authorization</clr-dg-column>
+            <clr-dg-row *clrDgItems="let scanner of scanners" [clrDgItem]="scanner">
+                <clr-dg-cell>{{scanner.name}}</clr-dg-cell>
+                <clr-dg-cell>{{scanner.url}}</clr-dg-cell>
+                <clr-dg-cell>
+                    <span *ngIf="scanner.health" class="label label-success">Healthy</span>
+                    <span *ngIf="!scanner.health"  class="label label-danger">Unhealthy</span>
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    <span *ngIf="scanner.is_default" class="label label-info">{{scanner.is_default}}</span>
+                    <span *ngIf="!scanner.is_default">{{scanner.is_default}}</span>
+                </clr-dg-cell>
+                <clr-dg-cell>{{scanner.auth?scanner.auth:'None'}}</clr-dg-cell>
+            </clr-dg-row>
+            <clr-dg-footer>
+                <span *ngIf="scanners?.length > 0">1 - {{scanners?.length}} {{'WEBHOOK.OF' | translate}} </span> {{scanners?.length}} {{'WEBHOOK.ITEMS' | translate}}
+                <clr-dg-pagination [clrDgPageSize]="10"></clr-dg-pagination>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="close()">CANCEL</button>
+        <button type="button" [clrLoading]="saveBtnState" class="btn btn-primary" [disabled]="!valid" (click)="save()">OK</button>
+    </div>
+</clr-modal>

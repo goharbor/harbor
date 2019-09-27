@@ -895,11 +895,10 @@
     },
     "VULNERABILITY": {
         "STATE": {
-            "STOPPED": "Non Analysé",
+            "OTHER_STATUS": "Non Analysé",
             "QUEUED": "En fil d'attente",
             "ERROR": "Voir le Log",
-            "SCANNING": "En cours d'analyse",
-            "UNKNOWN": "Inconnu"
+            "SCANNING": "En cours d'analyse"
         },
         "GRID": {
             "PLACEHOLDER": "Nous n'avons pas trouvé de résultats d'analyse !",
@@ -1150,7 +1149,7 @@
         "TAGS": "Tags",
         "MATCHES_TAGS": "Matches tags",
         "MATCHES_EXCEPT_TAGS": "Matches except tags",
-        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,**,or regex",
+        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
         "LABELS": "Labels",
         "MATCHES_LABELS": "Matches Labels",
         "MATCHES_EXCEPT_LABELS": "Matches except Labels",
@@ -1193,6 +1192,9 @@
         "DAYS_LARGE": "Parameter \"DAYS\" is too large",
         "EXECUTION_TYPE": "Execution Type",
         "ACTION": "ACTION"
+    },
+    "SCANNER": {
+        "DELETION_SUMMARY": "Do you want to delete scanner {{param}}?",
+        "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote registry uses a self-signed or untrusted certificate."
     }
-
 }

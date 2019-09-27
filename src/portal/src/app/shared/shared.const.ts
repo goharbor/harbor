@@ -41,7 +41,8 @@ export const enum ConfirmationTargets {
   CONFIG_TAB,
   HELM_CHART,
   HELM_CHART_VERSION,
-  WEBHOOK
+  WEBHOOK,
+  SCANNER
 }
 
 export const enum ActionType {

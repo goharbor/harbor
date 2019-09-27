@@ -921,11 +921,10 @@
     },
     "VULNERABILITY": {
         "STATE": {
-            "STOPPED": "Taranmadı",
+            "OTHER_STATUS": "Taranmadı",
             "QUEUED": "Sıraya alındı",
             "ERROR": "Günlüğü Görüntüle",
-            "SCANNING": "Taranıyor",
-            "UNKNOWN": "Bilinmeyen"
+            "SCANNING": "Taranıyor"
         },
         "GRID": {
             "PLACEHOLDER": "Herhangi bir tarama sonucu bulamadık!",
@@ -1180,7 +1179,7 @@
         "TAGS": "Etiketler",
         "MATCHES_TAGS": "Etiketleri eşleşir",
         "MATCHES_EXCEPT_TAGS": "Etiketler hariç eşleşir",
-        "TAG_SEPARATOR": "Birden çok virgülle ayrılmış etiket, etiket *, ** veya regex girin",
+        "TAG_SEPARATOR": "Birden çok virgülle ayrılmış etiket, etiket * veya ** girin",
         "LABELS": "Etiketler",
         "MATCHES_LABELS": "Eşleşen Etiketler",
         "MATCHES_EXCEPT_LABELS": "Etiketler hariç eşleşmeler",
@@ -1223,6 +1222,9 @@
         "DAYS_LARGE": "Parameter \"DAYS\" is too large",
         "EXECUTION_TYPE": "Execution Type",
         "ACTION": "ACTION"
+    },
+    "SCANNER": {
+        "DELETION_SUMMARY": "Do you want to delete scanner {{param}}?",
+        "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote registry uses a self-signed or untrusted certificate."
     }
-
 }

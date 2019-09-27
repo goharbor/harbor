@@ -1,0 +1,31 @@
+<div [clrLoading]="loading" class="ml-2">
+    <div class="clr-control-label">Scanner:</div>
+    <div class="ml-1">
+        <span>Name:</span>
+        <span class="ml-1">{{scannerMetadata?.scanner?.name}}</span>
+    </div>
+    <div class="ml-1">
+        <span>Vendor:</span>
+        <span class="ml-1">{{scannerMetadata?.scanner?.vendor}}</span>
+    </div>
+    <div class="ml-1">
+        <span>Version:</span>
+        <span class="ml-1">{{scannerMetadata?.scanner?.version}}</span>
+    </div>
+    <div class="clr-control-label">Capabilities</div>
+    <div class="ml-1">
+        <span>Consumes Mime Types:</span>
+        <span class="ml-1" [innerHTML]="toString(scannerMetadata?.capabilities[0]?.consumes_mime_types)"></span>
+    </div>
+    <div class="ml-1">
+        <span>Produces Mime Types:</span>
+        <span class="ml-1" [innerHTML]="toString(scannerMetadata?.capabilities[0]?.produces_mime_types)"></span>
+    </div>
+    <div class="clr-control-label">Properties</div>
+    <div class="ml-1" *ngFor="let item of scannerMetadata?.properties | keyvalue">
+        <span>{{item?.key}}:</span>
+        <span class="ml-1">{{parseDate(item?.value)}}</span>
+    </div>
+</div>
+
+

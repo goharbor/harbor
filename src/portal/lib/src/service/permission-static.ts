@@ -150,6 +150,6 @@ export const USERSTATICPERMISSION = {
             "LIST": "list",
             "READ": "read",
         }
-    },
+    }
 };
 
