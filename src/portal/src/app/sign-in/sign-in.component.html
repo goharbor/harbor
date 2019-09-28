@@ -2,7 +2,7 @@
     <global-message [isAppLevel]="true"></global-message>
     <navigator></navigator>
     <search-result></search-result>
-    <div class="login-wrapper" [ngStyle]="{'background-image': customLoginBgImg? 'url(static/images/' + customLoginBgImg + ')': ''}">
+    <div class="login-wrapper" [ngStyle]="{'background-image': customLoginBgImg? 'url(images/' + customLoginBgImg + ')': ''}">
         <form #signInForm="ngForm" class="login">
             <label class="title"> {{customAppTitle? customAppTitle:(appTitle | translate)}}
             </label>
