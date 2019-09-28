@@ -61,8 +61,8 @@ export class NavigatorComponent implements OnInit {
         // custom skin
         let customSkinObj = this.skinableConfig.getSkinConfig();
         if (customSkinObj) {
-            if (customSkinObj.projects) {
-                this.customProjectName = customSkinObj.projects;
+            if (customSkinObj.project) {
+                this.customProjectName = customSkinObj.project;
             }
             this.customStyle = customSkinObj;
         }
