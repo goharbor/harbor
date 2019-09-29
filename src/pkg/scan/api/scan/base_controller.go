@@ -28,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/token"
-	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
@@ -359,8 +358,7 @@ func makeRobotAccount(pid int64, repo string, ttl int64) (string, error) {
 		return "", errors.Wrap(err, "scan controller: make robot account")
 	}
 
-	pro, rest := utils.ParseRepository(repo)
-	resource := fmt.Sprintf("/%s/%d/%s", pro, pid, rest)
+	resource := fmt.Sprintf("/project/%d/repository", pid)
 	access := []*rbac.Policy{{
 		Resource: rbac.Resource(resource),
 		Action:   "pull",

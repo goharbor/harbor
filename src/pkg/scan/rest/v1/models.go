@@ -72,6 +72,9 @@ type Artifact struct {
 	// The full name of a Harbor repository containing the artifact, including the namespace.
 	// For example, `library/oracle/nosql`.
 	Repository string `json:"repository"`
+	// The info used to identify the version of the artifact,
+	// e.g: tag of image or version of the chart.
+	Tag string `json:"tag"`
 	// The artifact's digest, consisting of an algorithm and hex portion.
 	// For example, `sha256:6c3c624b58dbbcd3c0dd82b4c53f04194d1247c6eebdaab7c610cf7d66709b3b`,
 	// represents sha256 based digest.

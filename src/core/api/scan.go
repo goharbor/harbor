@@ -77,6 +77,7 @@ func (sa *ScanAPI) Prepare() {
 	sa.artifact = &v1.Artifact{
 		NamespaceID: pro.ProjectID,
 		Repository:  repoName,
+		Tag:         tag,
 		Digest:      digest,
 		MimeType:    v1.MimeTypeDockerArtifact,
 	}

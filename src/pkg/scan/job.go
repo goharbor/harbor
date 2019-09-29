@@ -257,7 +257,7 @@ func removeAuthInfo(sr *v1.ScanRequest) string {
 		Artifact: sr.Artifact,
 		Registry: &v1.Registry{
 			URL:           sr.Registry.URL,
-			Authorization: "",
+			Authorization: "[HIDDEN]",
 		},
 	}
 
