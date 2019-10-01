@@ -1,4 +1,4 @@
-Test 6-02 - OVA Advanced Upgrade 
+Test 6-02 - OVA Advanced Upgrade
 =======
 
 # Purpose:
@@ -16,7 +16,7 @@ User guide, installation guide of Harbor OVA version.
 
 # Test Steps:
 
-When the number of params of OVA changes, the old OVA needs to have special handling of upgrading.  
+When the number of params of OVA changes, the old OVA needs to have special handling of upgrading.
 
 TBD
 

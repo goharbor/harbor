@@ -14,11 +14,11 @@ User guide
 * A linux host with Docker CLI installed (Docker client).
 
 # Test Steps:
-1. On a Docker client host, use `docker login <harbor_host>` command to log in as a non-admin user. 
+1. On a Docker client host, use `docker login <harbor_host>` command to log in as a non-admin user.
 2. Run some `docker push` and `docker pull` commands to push images to the registry and pull from the registry.
 3. Log in to the UI as the non-admin user.
-4. Delete a few images from the project. 
-5. View the logs of the project. 
+4. Delete a few images from the project.
+5. View the logs of the project.
 6. Try below search criteria to see if the search result is correct:
 
 * push only
@@ -27,7 +27,7 @@ User guide
 * delete only
 * all
 * push and delete
-* different date ranges 
+* different date ranges
 * date range and push
 
 # Expected Outcome:

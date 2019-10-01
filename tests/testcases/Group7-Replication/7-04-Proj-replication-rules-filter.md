@@ -1,15 +1,15 @@
-Test 7-04 Filter replication rules  
+Test 7-04 Filter replication rules
 =======
 
 # Purpose:
 
-To verify rule filter works correctly.  
+To verify rule filter works correctly.
 
 # References:
 User guide
 
 # Environment:
-* This test requires that two Harbor instance are running and avaiable.  
+* This test requires that two Harbor instance are running and avaiable.
 
 # Test Steps:
 

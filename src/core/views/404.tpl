@@ -60,7 +60,7 @@ a.underline, .underline{
 </style>
 </head>
 <body>
-    <div id="content">             
+    <div id="content">
         <div id="main-body">
 			<div>
 		        <span class="status-code">404</span>

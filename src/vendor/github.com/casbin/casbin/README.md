@@ -94,12 +94,12 @@ It means:
 - alice can read data1
 - bob can write data2
 
-We also support multi-line mode by appending '\\'  in the end:  
+We also support multi-line mode by appending '\\'  in the end:
 
 ```ini
 # Matchers
 [matchers]
-m = r.sub == p.sub && r.obj == p.obj \ 
+m = r.sub == p.sub && r.obj == p.obj \
   && r.act == p.act
 ```
 
@@ -128,7 +128,7 @@ What Casbin does:
 What Casbin does NOT do:
 
 1. authentication (aka verify ``username`` and ``password`` when a user logs in)
-2. manage the list of users or roles. I believe it's more convenient for the project itself to manage these entities. Users usually have their passwords, and Casbin is not designed as a password container. However, Casbin stores the user-role mapping for the RBAC scenario. 
+2. manage the list of users or roles. I believe it's more convenient for the project itself to manage these entities. Users usually have their passwords, and Casbin is not designed as a password container. However, Casbin stores the user-role mapping for the RBAC scenario.
 
 ## Installation
 

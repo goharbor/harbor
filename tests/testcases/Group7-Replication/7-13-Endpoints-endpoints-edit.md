@@ -15,12 +15,12 @@ User guide
 
 # Test Steps:
 
-1. Login UI as admin user.  
-2. In `Administration->Registries` page, choose an endpoint and edit setting.  
+1. Login UI as admin user.
+2. In `Administration->Registries` page, choose an endpoint and edit setting.
 
 # Expected Outcome:
- 
-* In step2, endpoint info can be edited.  
+
+* In step2, endpoint info can be edited.
 
 # Possible Problems:
 None

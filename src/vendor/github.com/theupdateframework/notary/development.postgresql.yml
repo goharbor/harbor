@@ -37,7 +37,7 @@ services:
   postgresql:
     image: postgres:9.5.4
     networks:
-      - mdb 
+      - mdb
     volumes:
       - ./notarysql/postgresql-initdb.d:/docker-entrypoint-initdb.d
     command: -l

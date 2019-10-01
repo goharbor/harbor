@@ -62,7 +62,7 @@ def get_config(key):
 
 
 def set_config(key, value):
-    """set key & value 
+    """set key & value
     """
     config.set('harbor', key, value)
 
@@ -72,9 +72,9 @@ def rel_path(p):
         return p
     config_path = args.config_file
     if config_path[0] != '/':
-        config_path = os.path.join(os.getcwd(), config_path) 
+        config_path = os.path.join(os.getcwd(), config_path)
     return os.path.join(os.path.dirname(config_path), p)
-        
+
 # path of private key
 pk_path = args.private_key
 if pk_path == '':
@@ -90,7 +90,7 @@ if cert_path == '':
         cert_path = rel_path(cert_path)
 
 
-# validate 
+# validate
 if get_config('ui_url_protocol') == 'https':
     if pk_path == '':
         raise Exception("Error: The protocol is https but attribute ssl_cert_key is not set")
@@ -145,7 +145,7 @@ if cert_path != '':
         raise Exception('Error: https cert is not existing')
 else:
     set_config('https_cert', 'USE_HTTP')
-    
+
 
 # add configs
 set_config('core_url', get_config('ui_url_protocol') +
@@ -153,7 +153,7 @@ set_config('core_url', get_config('ui_url_protocol') +
 set_config('core_secret', ''.join(random.choice(
     string.ascii_letters + string.digits) for i in range(16)))
 
-# generate auth pkey & cert 
+# generate auth pkey & cert
 with open(os.devnull, 'w') as devnull:
     openssl = subprocess.call(['which','openssl'], stdout=devnull, stderr=devnull)
     if openssl == 0:
@@ -168,7 +168,7 @@ with open(os.devnull, 'w') as devnull:
         set_config('auth_pkey', 'NEED_SET')
         set_config('auth_cert', 'NEED_SET')
         print('Warning: auth_pkey and auth_cert cannot be generated automatically without openssl.  Please set it manually')
-    
+
 
 
 variable = re.compile(r'{{.+?}}')
@@ -177,9 +177,9 @@ def render_template(tmpl):
     """render template
     replace {{(number of leading spaces)name}} with config
     examples:
-    config: 
+    config:
     hostname='test\ntest'
-    
+
     {{hostname}} -> 'test\ntest'
     {{4 hostname}} -> 'test\n    test'
     """

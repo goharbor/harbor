@@ -28,7 +28,7 @@ func GetUserProjectRoles(userID int, projectID int64, entityType string) ([]mode
 
 	sql := `select *
 		from role
-		where role_id = 
+		where role_id =
 			(
 				select role
 				from project_member

@@ -12,7 +12,7 @@ fi
 
 
 STATUS_LOGOUT=$(curl --insecure -s -o /dev/null -w '%{http_code}' https://localhost/c/log_out)
-if [ $STATUS_LOGOUT -eq 200 ]; then 
+if [ $STATUS_LOGOUT -eq 200 ]; then
 	echo "Logout Harbor success."
 else
 	echo "Logout Harbor fail."

@@ -21,7 +21,7 @@ do
         sleep 6
         echo "retry in $number "
         docker exec ldap_server ldapadd -x -D "cn=admin,dc=example,dc=com" -w admin -f /ldap_test.ldif -ZZ
-    else 
+    else
         exit 0
     fi
 done

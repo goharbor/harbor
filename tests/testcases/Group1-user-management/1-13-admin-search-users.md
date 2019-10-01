@@ -15,7 +15,7 @@ User guide
 # Test Steps:
 
 1. Log in as the admin user to the UI.
-2. The admin user should see a list of users in "Admin Options". 
+2. The admin user should see a list of users in "Admin Options".
 3. Enter different keywords or partial words to see if the user list can be filtered according to the criteria.
 
 # Expected Outcome:

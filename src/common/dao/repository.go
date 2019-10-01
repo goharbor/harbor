@@ -136,7 +136,7 @@ func GetRepositories(query ...*models.RepositoryQuery) ([]*models.RepoRecord, er
 	}
 
 	condition, params := repositoryQueryConditions(query...)
-	sql := fmt.Sprintf(`select r.repository_id, r.name, r.project_id, r.description, r.pull_count, 
+	sql := fmt.Sprintf(`select r.repository_id, r.name, r.project_id, r.description, r.pull_count,
 	r.star_count, r.creation_time, r.update_time %s order by r.%s `, condition, order)
 	if len(query) > 0 && query[0] != nil {
 		page, size := query[0].Page, query[0].Size
@@ -166,7 +166,7 @@ func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []inte
 	q := query[0]
 
 	if q.LabelID > 0 {
-		sql += `join harbor_resource_label rl on r.repository_id = rl.resource_id 
+		sql += `join harbor_resource_label rl on r.repository_id = rl.resource_id
 		and rl.resource_type = 'r' `
 	}
 	sql += `where 1=1 `

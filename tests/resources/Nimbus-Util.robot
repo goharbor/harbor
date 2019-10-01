@@ -171,7 +171,7 @@ Deploy Nimbus ESXi Server Async
     [Tags]  secret
     [Arguments]  ${name}  ${version}=${ESX_VERSION}
     Log To Console  \nDeploying Nimbus ESXi server: ${name}
-    
+
     ${out}=  Run Secret SSHPASS command  %{NIMBUS_USER}  %{NIMBUS_PASSWORD}  'nimbus-esxdeploy ${name} --disk\=48000000 --ssd\=24000000 --memory\=8192 --nics 2 ${version}'
     [Return]  ${out}
 
@@ -194,7 +194,7 @@ Deploy Nimbus Testbed
     [Arguments]  ${user}  ${password}  ${testbed}
     Open Connection  %{NIMBUS_GW}
     Login  ${user}  ${password}
-    
+
     :FOR  ${IDX}  IN RANGE  1  5
     \   ${out}=  Execute Command  nimbus-testbeddeploy ${testbed}
     \   # Make sure the deploy actually worked

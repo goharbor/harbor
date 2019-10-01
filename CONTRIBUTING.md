@@ -6,9 +6,9 @@ Welcome to Harbor! This guide provides information on filing issues and guidelin
 
 Contributors are encouraged to collaborate using the following resources in addition to the GitHub [issue tacker](https://github.com/goharbor/harbor/issues):
 
-**Twitter:** [@project_harbor](https://twitter.com/project_harbor)  
-**User Group:** Join Harbor user email group: [harbor-users@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-users) to get update of Harbor's news, features, releases, or to provide suggestion and feedback. To subscribe, send an email to [harbor-users+subscribe@googlegroups.com](mailto:harbor-users+subscribe@googlegroups.com) .  
-**Developer Group:** Join Harbor developer group: [harbor-dev@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-dev) for discussion on Harbor development and contribution. To subscribe, send an email to [harbor-dev+subscribe@googlegroups.com](mailto:harbor-dev+subscribe@googlegroups.com).  
+**Twitter:** [@project_harbor](https://twitter.com/project_harbor)
+**User Group:** Join Harbor user email group: [harbor-users@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-users) to get update of Harbor's news, features, releases, or to provide suggestion and feedback. To subscribe, send an email to [harbor-users+subscribe@googlegroups.com](mailto:harbor-users+subscribe@googlegroups.com) .
+**Developer Group:** Join Harbor developer group: [harbor-dev@googlegroups.com](https://groups.google.com/forum/#!forum/harbor-dev) for discussion on Harbor development and contribution. To subscribe, send an email to [harbor-dev+subscribe@googlegroups.com](mailto:harbor-dev+subscribe@googlegroups.com).
 **Slack:** Join Harbor's community for discussion and ask questions: [Cloud Native Computing Foundation](https://slack.cncf.io/), channel: #harbor and #harbor-dev
 
 ## Getting Started
@@ -55,7 +55,7 @@ Here is the basic structure of the harbor code base. Some of the key folders / f
 The folder graph below shows the structure of the source code folder `harbor/src`, which will be your primary working directory. The key folders are also commented.
 ```
 .
-├── chartserver          # Source code contains the main logic to handle chart. 
+├── chartserver          # Source code contains the main logic to handle chart.
 ├── cmd                  # Source code contains migrate script to handle DB upgrade.
 ├── common              # Source code for some general components like dao etc.
 │   ├── api
@@ -69,7 +69,7 @@ The folder graph below shows the structure of the source code folder `harbor/src
 │   ├── secret
 │   ├── security
 │   └── utils
-├── core          # Source code for the main busines logic. Contains rest apis and all service infomation. 
+├── core          # Source code for the main busines logic. Contains rest apis and all service infomation.
 │   ├── api
 │   ├── auth
 │   ├── config
@@ -102,9 +102,9 @@ The folder graph below shows the structure of the source code folder `harbor/src
 │   ├── e2e
 │   ├── lib             # Source code of @harbor/ui npm library which includes the main UI components of web UI
 │   └── src             # General web page UI code of Harbor
-├── registryctl          # Source code contains the main logic to handle registry. 
-├── replication          # Source code contains the main logic of replication. 
-├── testing              # Some utilities to handle testing. 
+├── registryctl          # Source code contains the main logic to handle registry.
+├── replication          # Source code contains the main logic of replication.
+├── testing              # Some utilities to handle testing.
 └── vendor              # Go code dependencies
     ├── github.com
     ├── golang.org
@@ -167,7 +167,7 @@ PR are always welcome, even if they only contain small fixes like typos or a few
 
 Please submit a PR broken down into small changes bit by bit. A PR consisting of a lot features and code changes may be hard to review. It is recommended to submit PRs in an incremental fashion.
 
-Note: If you split your pull request to small changes, please make sure any of the changes goes to master will not break anything. Otherwise, it can not be merged until this feature complete. 
+Note: If you split your pull request to small changes, please make sure any of the changes goes to master will not break anything. Otherwise, it can not be merged until this feature complete.
 
 The graphic shown below describes the overall workflow about how to contribute code to Harbor repository.
 ![contribute workflow](docs/img/workflow.png)

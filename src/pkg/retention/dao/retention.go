@@ -245,7 +245,7 @@ func UpdateTaskStatus(taskID int64, status string, statusCode int, statusRevisio
 		t = time.Now()
 	}
 	params = append(params, t)
-	sql += `where id = ? and 
+	sql += `where id = ? and
 	(status_revision = ? and status_code < ? or status_revision < ?) `
 	params = append(params, taskID, statusRevision, statusCode, statusRevision)
 	_, err := dao.GetOrmer().Raw(sql, params).Exec()

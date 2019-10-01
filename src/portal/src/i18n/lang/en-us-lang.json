@@ -804,7 +804,7 @@
             "LDAP_UID": "The attribute used in a search to match a user. It could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD.",
             "LDAP_SCOPE": "The scope to search for users.",
             "TOKEN_EXPIRATION": "The expiration time (in minutes) of a token created by the token service. Default is 30 minutes.",
-            "ROBOT_TOKEN_EXPIRATION": "The expiration time (in days) of the token of the robot account, Default is 30 days. Show the number of days converted from minutes and rounds down",            
+            "ROBOT_TOKEN_EXPIRATION": "The expiration time (in days) of the token of the robot account, Default is 30 days. Show the number of days converted from minutes and rounds down",
             "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",

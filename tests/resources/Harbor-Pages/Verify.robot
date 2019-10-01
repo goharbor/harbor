@@ -76,10 +76,10 @@ Verify User System Admin Role
     Init Chrome Driver
     :FOR    ${user}    IN    @{user}
     \    Sign In Harbor  ${HARBOR_URL}  ${user}  ${HARBOR_PASSWORD}
-    \    Page Should Contain  Administration 
+    \    Page Should Contain  Administration
     \    Logout Harbor
     Close Browser
-  
+
 Verify System Label
     [Arguments]    ${json}
     @{label}=   Get Value From Json  ${json}  $..syslabel..name
@@ -106,7 +106,7 @@ Verify Project Label
     \    \    Page Should Contain    ${projectlabel}
     \    Navigate To Projects
    Close Browser
-      
+
 Verify Endpoint
     [Arguments]    ${json}
     @{endpoint}=  Get Value From Json  ${json}  $.endpoint..name
@@ -135,7 +135,7 @@ Verify Project Setting
     \    ${contenttrust}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..enable_content_trust
     \    ${preventrunning}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..prevent_vulnerable_images_from_running
     \    ${scanonpush}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..automatically_scan_images_on_push
-    \    Init Chrome Driver 
+    \    Init Chrome Driver
     \    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     \    @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
     \    ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}

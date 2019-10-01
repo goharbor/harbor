@@ -3,7 +3,7 @@ Test 8-04 - Update-verify-remote-cert-settings
 
 # Purpose:
 
-To verify that an admin user can update verify remote cert setting.  
+To verify that an admin user can update verify remote cert setting.
 
 # References:
 User guide
@@ -18,11 +18,11 @@ User guide
 2. In configuration replication page, uncheck verify remote certificate settings.
 3. Save settings.
 4. Add an end point that use a selfsigned certificate.
-5. Add a replication rule of any project and enable the rule.  
+5. Add a replication rule of any project and enable the rule.
 
 # Expected Outcome:
 
-* In step5, project can be replicated. 
+* In step5, project can be replicated.
 
 # Possible Problems:
 None

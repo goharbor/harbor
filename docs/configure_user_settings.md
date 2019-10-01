@@ -65,7 +65,7 @@ Get current configurations
 
 ## Harbor user settings
 
-| Configure item name | Description  | Type | Required | Default Value | 
+| Configure item name | Description  | Type | Required | Default Value |
 | ------------ |------------ | ---- | ----- | ----- |
 auth_mode | Authentication mode, it can be db_auth, ldap_auth, uaa_auth or oidc_auth  | string
 email_from |   Email from  |  string | required (email feature)
@@ -76,7 +76,7 @@ email_insecure |  Email verify certificate, true or false |boolean  | optional (
 email_port |    Email server port | number | required (email feature)
 email_ssl |    Email SSL | boolean    | optional | false
 email_username |  Email username | string | required (email feature)
-ldap_url |  LDAP URL | string | required | 
+ldap_url |  LDAP URL | string | required |
 ldap_base_dn |   LDAP base DN  | string | required(ldap_auth)
 ldap_filter |    LDAP filter | string | optional
 ldap_scope |  LDAP search scope, 0-Base Level, 1- One Level, 2-Sub Tree | number | optional | 2-Sub Tree
@@ -109,4 +109,4 @@ robot_token_duration | Robot token expiration time in minutes | number | optiona
 
 
 
-**Note:** Both boolean and number can be enclosed with double quote in the request json, for example: `123`, `"123"`, `"true"` or `true` is OK. 
+**Note:** Both boolean and number can be enclosed with double quote in the request json, for example: `123`, `"123"`, `"true"` or `true` is OK.

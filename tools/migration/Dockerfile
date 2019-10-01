@@ -31,4 +31,4 @@ WORKDIR /harbor-migration
 
 COPY ./ ./
 
-ENTRYPOINT ["./docker-entrypoint.sh"] 
+ENTRYPOINT ["./docker-entrypoint.sh"]

@@ -12,7 +12,7 @@ User guide
 * This test requires that a Harbor instance is running and available.
 * Harbor is set to authenticate against an LDAP or AD server. ( auth_mode is set to **ldap_auth** .) The user data is stored in an LDAP or AD server.
 * A linux host with Docker CLI installed (Docker client).
-* At least five(5) non-admin users are in Harbor. 
+* At least five(5) non-admin users are in Harbor.
 
 # Test Steps:
 

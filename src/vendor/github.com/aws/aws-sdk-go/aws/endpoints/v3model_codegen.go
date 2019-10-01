@@ -187,7 +187,7 @@ import (
 	{{ if not $.DisableGenerateServiceIDs -}}
 	{{ template "service consts" $.Resolver }}
 	{{- end }}
-	
+
 	{{ template "endpoint resolvers" $.Resolver }}
 {{- end }}
 
@@ -244,7 +244,7 @@ import (
 			{{ PartitionVarName $partition.ID }},
 		{{ end }}
 	}
-	
+
 	{{ range $_, $partition := . -}}
 		{{ $name := PartitionGetter $partition.ID -}}
 		// {{ $name }} returns the Resolver for {{ $partition.Name }}.

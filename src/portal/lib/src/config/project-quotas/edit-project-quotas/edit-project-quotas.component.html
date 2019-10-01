@@ -47,7 +47,7 @@
                         </ng-template>
                     </select>
               </div>
-              
+
               <div class="progress-block progress-min-width progress-div" *ngIf="!defaultTextsObj.isSystemDefaultQuota">
                   <div class="progress success" [class.danger]="isDangerColor(+quotaHardLimitValue.storageLimit,quotaHardLimitValue.storageUsed, quotaHardLimitValue.storageUnit)"
                   [class.warning]="isWarningColor(+quotaHardLimitValue.storageLimit,quotaHardLimitValue.storageUsed, quotaHardLimitValue.storageUnit)" >
@@ -56,7 +56,7 @@
                       data-displayval="100%"></progress>
                   </div>
                   <label class="progress-label">
-                    <!-- the comments of progress , when storageLimit !=-1  get integet and unit  in hard storage and used storage;and the unit of used storage <= the unit of hard storage 
+                    <!-- the comments of progress , when storageLimit !=-1  get integet and unit  in hard storage and used storage;and the unit of used storage <= the unit of hard storage
                     the other : get suitable number and unit-->
                     {{ +quotaHardLimitValue.storageLimit !== -1 ?(getIntegerAndUnit(getByte(quotaHardLimitValue.storageLimit,quotaHardLimitValue.storageUnit), quotaHardLimitValue.storageUsed).partNumberUsed
                       + getIntegerAndUnit(getByte(quotaHardLimitValue.storageLimit,quotaHardLimitValue.storageUnit), quotaHardLimitValue.storageUsed).partCharacterUsed) : getSuitableUnit(quotaHardLimitValue.storageUsed)}}

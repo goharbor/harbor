@@ -3,7 +3,7 @@ goconfig [![Build Status](https://drone.io/github.com/Unknwon/goconfig/status.pn
 
 [中文文档](README_ZH.md)
 
-**IMPORTANT** 
+**IMPORTANT**
 
 - This library is under bug fix only mode, which means no more features will be added.
 - I'm continuing working on better Go code with a different library: [ini](https://github.com/go-ini/ini).
@@ -13,23 +13,23 @@ goconfig [![Build Status](https://drone.io/github.com/Unknwon/goconfig/status.pn
 Package goconfig is a easy-use, comments-support configuration file parser for the Go Programming Language, which provides a structure similar to what you would find on Microsoft Windows INI files.
 
 The configuration file consists of sections, led by a `[section]` header and followed by `name:value` or `name=value` entries. Note that leading whitespace is removed from values. The optional values can contain format strings which refer to other values in the same section, or values in a special DEFAULT section. Comments are indicated by ";" or "#"; comments may begin anywhere on a single line.
-	
+
 ## Features
-	
-- It simplified operation processes, easy to use and undersatnd; therefore, there are less chances to have errors. 
+
+- It simplified operation processes, easy to use and undersatnd; therefore, there are less chances to have errors.
 - It uses exactly the same way to access a configuration file as you use Windows APIs, so you don't need to change your code style.
 - It supports read recursion sections.
 - It supports auto increment of key.
 - It supports **READ** and **WRITE** configuration file with comments each section or key which all the other parsers don't support!!!!!!!
 - It supports get value through type bool, float64, int, int64 and string, methods that start with "Must" means ignore errors and get zero-value if error occurs, or you can specify a default value.
-- It's able to load multiple files to overwrite key values. 
+- It's able to load multiple files to overwrite key values.
 
 ## Installation
-	
+
 	go get github.com/Unknwon/goconfig
 
 Or
-	
+
 	gopm get github.com/Unknwon/goconfig
 
 ## API Documentation

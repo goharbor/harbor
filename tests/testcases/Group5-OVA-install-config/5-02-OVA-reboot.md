@@ -17,21 +17,21 @@ User guide, installation guide of Harbor OVA version.
 
 1. From vSphere Web Client, import Harbor's OVA onto an ESX host.
 2. In the deployment wizard, enter different passwords of Linux root user, Harbor admin user and MySQL root user.
-3. Leave the networking settings blank. 
+3. Leave the networking settings blank.
 4. Configure email settings. (can be mail server that does not exist )
 5. Power on the imported OVA.
 6. Wait a few minutes for the VM's booting and its IP address comes up in vCenter. (may need to refresh in Web Client)
 7. Open a browser and enter http://VM_IP_address.
 8. Log in as admin user of Harbor.
-9. Create a new project. 
-10. On a Docker client host, use `docker login <harbor_host>` command to log in as the admin user. 
+9. Create a new project.
+10. On a Docker client host, use `docker login <harbor_host>` command to log in as the admin user.
 11. Run some `docker push` and `docker pull` commands to push images to the project and pull from the project.
 12. On vSphere, open the console of Harbor's VM, log in as root user using the password entered during deployment.
 13. On vCenter Web Client, reboot the VM. (soft reboot)
 14. After the VM starts up, repeat Step 7-12, should work the same.
 15. Power off the VM, and the power it on. (hard reboot)
 16. After the VM starts up, repeat Step 7-12, should work the same.
-17. On vSphere, open the console of Harbor's VM, log in as root user, type `ovfenv` command to verify environment variables are the same as those entered during deployment. 
+17. On vSphere, open the console of Harbor's VM, log in as root user, type `ovfenv` command to verify environment variables are the same as those entered during deployment.
 
 
 # Expected Outcome:

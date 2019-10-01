@@ -20,7 +20,7 @@ User guide
 2. The user changes his/her account settings, including email, full name and comments.
 3. The user logs out.
 4. The same user logs in again using **new email**, and verify the user's account settings had been changed.
-5. The user goes to the page to change his/her settings again. Provide invalid values of input to see if validation works:  
+5. The user goes to the page to change his/her settings again. Provide invalid values of input to see if validation works:
 
 * email formatting
 * very long email address string

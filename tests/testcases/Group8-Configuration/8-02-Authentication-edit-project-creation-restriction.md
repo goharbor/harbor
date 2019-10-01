@@ -14,11 +14,11 @@ User guide
 
 # Test Steps:
 
-1. Login UI as admin user.  
-2. In configuration page, change Project Creation Restriction from everyone to admin only.  
-3. Logout admin user.  
-4. Login as non-admin user.  
-5. Try to add a project.  
+1. Login UI as admin user.
+2. In configuration page, change Project Creation Restriction from everyone to admin only.
+3. Logout admin user.
+4. Login as non-admin user.
+5. Try to add a project.
 
 # Expected Outcome:
 

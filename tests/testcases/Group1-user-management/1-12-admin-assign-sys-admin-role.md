@@ -15,7 +15,7 @@ User guide
 # Test Steps:
 
 1. Log in as the admin user to the UI.
-2. The admin user should see a list of users in "Admin Options". 
+2. The admin user should see a list of users in "Admin Options".
 3. From the list, the admin user assigns system admin role to a user A.
 4. On a different browser(e.g. if the admin logs in using Chrome, then choose Safari or FireFox ), log in as user A to verify that user A has admin privilege.
 5. From the list, the admin user removes system admin role from user A.

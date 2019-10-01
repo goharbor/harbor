@@ -15,9 +15,9 @@ User guide
 
 # Test Steps:
 
-1. Login UI as admin user.  
-2. In configuration page, uncheck self registration.  
-3. Save configuration and logout.  
+1. Login UI as admin user.
+2. In configuration page, uncheck self registration.
+3. Save configuration and logout.
 
 # Expected Outcome:
 

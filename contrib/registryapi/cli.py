@@ -69,8 +69,8 @@ class ApiProxy(object):
         return self.registry.getManifestWithConf(self.args.repo, self.args.tag)
 
 
-# since just a script tool, we do not construct whole target->action->args 
-# structure with oo abstractions which has more flexibility, just register 
+# since just a script tool, we do not construct whole target->action->args
+# structure with oo abstractions which has more flexibility, just register
 # parser directly
 def get_parser():
     """ return a parser """
@@ -78,11 +78,11 @@ def get_parser():
 
     parser.add_argument('--username', action='store', required=True, help='username')
     parser.add_argument('--password', action='store', required=True, help='password')
-    parser.add_argument('--registry_endpoint', action='store', required=True, 
+    parser.add_argument('--registry_endpoint', action='store', required=True,
             help='registry endpoint')
 
     subparsers = parser.add_subparsers(dest='target', help='target to operate on')
-    
+
     # repo target
     repo_target_parser = subparsers.add_parser('repo', help='target repository')
     repo_target_subparsers = repo_target_parser.add_subparsers(dest='action',
@@ -107,7 +107,7 @@ def get_parser():
     manifest_target_subparsers = manifest_target_parser.add_subparsers(dest='action',
             help='manifest subcommand')
     manifest_list_parser = manifest_target_subparsers.add_parser('list', help='list manifests')
-    manifest_list_parser.add_argument('--repo', action='store', required=True, 
+    manifest_list_parser.add_argument('--repo', action='store', required=True,
             help='list manifests')
     manifest_delete_parser = manifest_target_subparsers.add_parser('delete', help='delete manifest')
     manifest_delete_parser.add_argument('--repo', action='store', required=True,
@@ -118,7 +118,7 @@ def get_parser():
     manifest_get_parser.add_argument('--repo', action='store', required=True, help='delete tags')
     manifest_get_parser.add_argument('--tag', action='store', required=True,
             help='manifest reference')
-    
+
     return parser
 
 

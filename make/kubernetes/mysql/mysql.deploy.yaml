@@ -19,8 +19,8 @@ spec:
         - containerPort: 3306
         env:
           - name: MYSQL_ROOT_PASSWORD
-            valueFrom: 
-              configMapKeyRef: 
+            valueFrom:
+              configMapKeyRef:
                name: harbor-mysql-config
                key: MYSQL_ROOT_PASSWORD
         volumeMounts:
@@ -29,4 +29,4 @@ spec:
       volumes:
       - name: mysql-storage
         persistentVolumeClaim:
-          claimName: storage-pvc 
+          claimName: storage-pvc

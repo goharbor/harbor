@@ -1,10 +1,10 @@
-# Alice 
+# Alice
 
 [![GoDoc](https://godoc.org/github.com/golang/gddo?status.svg)](http://godoc.org/github.com/justinas/alice)
 [![Build Status](https://travis-ci.org/justinas/alice.svg?branch=master)](https://travis-ci.org/justinas/alice)
 [![Coverage](http://gocover.io/_badge/github.com/justinas/alice)](http://gocover.io/github.com/justinas/alice)
 
-Alice provides a convenient way to chain 
+Alice provides a convenient way to chain
 your HTTP middleware functions and the app handler.
 
 In short, it transforms

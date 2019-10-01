@@ -7,17 +7,17 @@ By default, Harbor uses default private key and certificate in authentication. A
 1.If you already have a certificate, go to step 3.
 
 2.If not, you can generate a root certificate using openSSL with following commands:
-  
+
 **1)Generate a private key:**
 
 ```sh
-    $ openssl genrsa -out private_key.pem 4096    
+    $ openssl genrsa -out private_key.pem 4096
 ```
-   
-**2)Generate a certificate:** 
+
+**2)Generate a certificate:**
 ```sh
     $ openssl req -new -x509 -key private_key.pem -out root.crt -days 3650
-```   
+```
 You are about to be asked to enter information that will be incorporated into your certificate request.
 What you are about to enter is what is called a Distinguished Name or a DN.
 There are quite a few fields but you can leave some blank

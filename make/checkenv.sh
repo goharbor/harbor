@@ -1,8 +1,8 @@
 #/bin/bash
 
-#docker version: 1.11.2 
-#docker-compose version: 1.7.1 
-#Harbor version: 0.4.5+ 
+#docker version: 1.11.2
+#docker-compose version: 1.7.1
+#Harbor version: 0.4.5+
 set +e
 set -o noglob
 
@@ -67,14 +67,14 @@ function check_golang {
 		warn "No golang package in your enviroment. You should use golang docker image build binary."
 		return
 	fi
-	
+
 	# docker has been installed and check its version
 	if [[ $(go version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
 	then
 		golang_version=${BASH_REMATCH[1]}
 		golang_version_part1=${BASH_REMATCH[2]}
 		golang_version_part2=${BASH_REMATCH[3]}
-		
+
 		# the version of golang does not meet the requirement
 		if [ "$golang_version_part1" -lt 1 ] || ([ "$golang_version_part1" -eq 1 ] && [ "$golang_version_part2" -lt 6 ])
 		then
@@ -95,14 +95,14 @@ function check_docker {
 		error "Need to install docker(1.10.0+) first and run this script again."
 		exit 1
 	fi
-	
+
 	# docker has been installed and check its version
 	if [[ $(docker --version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
 	then
 		docker_version=${BASH_REMATCH[1]}
 		docker_version_part1=${BASH_REMATCH[2]}
 		docker_version_part2=${BASH_REMATCH[3]}
-		
+
 		# the version of docker does not meet the requirement
 		if [ "$docker_version_part1" -lt 1 ] || ([ "$docker_version_part1" -eq 1 ] && [ "$docker_version_part2" -lt 10 ])
 		then
@@ -123,14 +123,14 @@ function check_dockercompose {
 		error "Need to install docker-compose(1.7.1+) by yourself first and run this script again."
 		exit 1
 	fi
-	
+
 	# docker-compose has been installed, check its version
 	if [[ $(docker-compose --version) =~ (([0-9]+)\.([0-9]+)([\.0-9]*)) ]]
 	then
 		docker_compose_version=${BASH_REMATCH[1]}
 		docker_compose_version_part1=${BASH_REMATCH[2]}
 		docker_compose_version_part2=${BASH_REMATCH[3]}
-		
+
 		# the version of docker-compose does not meet the requirement
 		if [ "$docker_compose_version_part1" -lt 1 ] || ([ "$docker_compose_version_part1" -eq 1 ] && [ "$docker_compose_version_part2" -lt 6 ])
 		then

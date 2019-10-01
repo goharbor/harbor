@@ -80,7 +80,7 @@ func main() {
 	err = o.Read(&u)
 
 	// delete
-	num, err = o.Delete(&u)	
+	num, err = o.Delete(&u)
 }
 ```
 

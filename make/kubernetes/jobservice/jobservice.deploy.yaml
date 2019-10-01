@@ -17,28 +17,28 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
           - name: CORE_SECRET
-            valueFrom: 
-              configMapKeyRef: 
+            valueFrom:
+              configMapKeyRef:
                name: harbor-jobservice-config
                key: CORE_SECRET
           - name: JOBSERVICE_SECRET
-            valueFrom: 
-              configMapKeyRef: 
+            valueFrom:
+              configMapKeyRef:
                name: harbor-jobservice-config
                key: JOBSERVICE_SECRET
           - name: CONFIG_PATH
-            valueFrom: 
-              configMapKeyRef: 
+            valueFrom:
+              configMapKeyRef:
                name: harbor-jobservice-config
                key: CONFIG_PATH
           - name: LOG_LEVEL
-            valueFrom: 
-              configMapKeyRef: 
+            valueFrom:
+              configMapKeyRef:
                name: harbor-jobservice-config
                key: LOG_LEVEL
           - name: GODEBUG
-            valueFrom: 
-              configMapKeyRef: 
+            valueFrom:
+              configMapKeyRef:
                name: harbor-jobservice-config
                key: GODEBUG
         ports:
@@ -57,4 +57,4 @@ spec:
             path: app.conf
       - name: logs
         persistentVolumeClaim:
-          claimName: log-pvc 
+          claimName: log-pvc

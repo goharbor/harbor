@@ -15,7 +15,7 @@
 """1.5.0 to 1.6.0
 
 Revision ID: 1.6.0
-Revises: 
+Revises:
 Create Date: 2018-6-26
 
 """

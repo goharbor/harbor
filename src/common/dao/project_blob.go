@@ -121,7 +121,7 @@ func CountSizeOfProject(pid int64) (int64, error) {
 	var blobs []models.Blob
 
 	sql := `
-SELECT 
+SELECT
     DISTINCT bb.digest,
     bb.id,
     bb.content_type,
@@ -132,7 +132,7 @@ JOIN artifact_blob afnb
     ON af.digest = afnb.digest_af
 JOIN BLOB bb
     ON afnb.digest_blob = bb.digest
-WHERE af.project_id = ? 
+WHERE af.project_id = ?
 AND bb.content_type != ?
 `
 	_, err := GetOrmer().Raw(sql, pid, common.ForeignLayer).QueryRows(&blobs)
@@ -152,7 +152,7 @@ AND bb.content_type != ?
 func RemoveUntaggedBlobs(pid int64) error {
 	var blobs []models.Blob
 	sql := `
-SELECT 
+SELECT
     DISTINCT bb.digest,
     bb.id,
     bb.content_type,
@@ -163,7 +163,7 @@ JOIN artifact_blob afnb
     ON af.digest = afnb.digest_af
 JOIN BLOB bb
     ON afnb.digest_blob = bb.digest
-WHERE af.project_id = ? 
+WHERE af.project_id = ?
 `
 	_, err := GetOrmer().Raw(sql, pid).QueryRows(&blobs)
 	if len(blobs) == 0 {

@@ -17,8 +17,8 @@ User guide
 * LDAP group config parameter are configured.
     1. ldap_group_basedn
     1. ldap_group_filter
-    1. ldap_gid 
-    1. ldap_group_scope   
+    1. ldap_gid
+    1. ldap_group_scope
 
 # Test Steps:
 
@@ -27,7 +27,7 @@ User guide
 3. Add a project member with ldap the LDAP DN of harbor_admin, with administrator role
 4. Log in to the UI as the admin_user in docker client.
 5. push/pull images to ldap_group_proj.
-6. View the logs of the project. 
+6. View the logs of the project.
 7. Try below search criteria to see if the search result is correct:
 
 * push only
@@ -36,7 +36,7 @@ User guide
 * delete only
 * all
 * push and delete
-* different date ranges 
+* different date ranges
 * date range and push
 
 # Expected Outcome:

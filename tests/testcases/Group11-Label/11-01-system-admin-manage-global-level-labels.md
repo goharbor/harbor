@@ -20,7 +20,7 @@ User guide
 
 # Expected Outcome:
 
-* In Step2, the label can be created successfully.  
+* In Step2, the label can be created successfully.
 * In Step3, the label can be updated successfully.
 * In Step4, the label can be deleted successfully.
 

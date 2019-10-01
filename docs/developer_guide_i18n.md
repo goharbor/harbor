@@ -16,7 +16,7 @@
         },
         ...
     }
-    ```  
+    ```
     In the file `<language>-<locale>-lang.json`, translate all the values into your language. Do not change any keys.
 
 2. After creating your language file, you should add it to the language supporting list.

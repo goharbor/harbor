@@ -11,13 +11,13 @@ User guide
 # Environment:
 * This test requires that a Harbor instance is running and available.
 * Harbor is set to authenticate against a local database. ( auth_mode is set to **db_auth** .) The user data is stored in a local database.
-* There is at least a non-admin user. 
+* There is at least a non-admin user.
 * The user has at least 3 private projects.
 * The registry has at least 3 public repositories.
 
 # Test Steps:
 
-**NOTE:**  
+**NOTE:**
 In below test, user A is non-admin user. User A should be replaced by a longer and meaningful name.
 
 1. Log in to UI as user A (non-admin).

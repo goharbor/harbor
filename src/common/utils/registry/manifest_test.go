@@ -21,16 +21,16 @@ import (
 )
 
 func TestUnMarshal(t *testing.T) {
-	b := []byte(`{  
+	b := []byte(`{
    "schemaVersion":2,
    "mediaType":"application/vnd.docker.distribution.manifest.v2+json",
-   "config":{  
+   "config":{
       "mediaType":"application/vnd.docker.container.image.v1+json",
       "size":1473,
       "digest":"sha256:c54a2cc56cbb2f04003c1cd4507e118af7c0d340fe7e2720f70976c4b75237dc"
    },
-   "layers":[  
-      {  
+   "layers":[
+      {
          "mediaType":"application/vnd.docker.image.rootfs.diff.tar.gzip",
          "size":974,
          "digest":"sha256:c04b14da8d1441880ed3fe6106fb2cc6fa1c9661846ac0266b8a5ec8edf37b7c"

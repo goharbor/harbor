@@ -228,7 +228,7 @@ var apiTimeouts = `{
       "TerminateVirtualBorderRouter": 10,
       "UnassignIpv6Addresses": 10,
       "UnassignPrivateIpAddresses": 10,
-      "UnassociateEipAddress": 16 
+      "UnassociateEipAddress": 16
   }
 }
 `

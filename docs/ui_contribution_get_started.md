@@ -16,7 +16,7 @@ If you already have a harbor backend environment, you can build a frontend devel
         },
         "/service/*": {
             "target": "$IP_ADDRESS",
-            "secure": false, 
+            "secure": false,
             "logLevel": "debug"
         },
         "/c/login": {

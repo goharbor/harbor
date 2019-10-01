@@ -16,7 +16,7 @@ User guide
 * LDAP group config parameter are configured.
     1. ldap_group_basedn
     1. ldap_group_filter
-    1. ldap_gid 
+    1. ldap_gid
     1. ldap_group_scope
 
 # Test Steps:

@@ -57,7 +57,7 @@ class TestProjects(unittest.TestCase):
         Tear down:
             1. Delete repository(RA) by admin;
             2. Delete project(Alice);
-            3. Delete user Alice, Bob and Carol.               
+            3. Delete user Alice, Bob and Carol.
         """
         url = ADMIN_CLIENT["endpoint"]
         user_alice_password = "Aa123456"

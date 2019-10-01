@@ -258,7 +258,7 @@ Welcome to Beego Admin Dashboard
 
 <style type="text/css">
 ul.nav li.dropdown:hover > ul.dropdown-menu {
-	display: block;    
+	display: block;
 }
 #logo {
 	width: 102px;

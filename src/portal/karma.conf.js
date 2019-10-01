@@ -19,20 +19,20 @@ module.exports = function (config) {
       coverageIstanbulReporter: {
         // reports can be any that are listed here: https://github.com/istanbuljs/istanbuljs/tree/aae256fb8b9a3d19414dcf069c592e88712c32c6/packages/istanbul-reports/lib
         reports: ['html', 'lcovonly', 'text-summary'],
-   
+
         // base output directory. If you include %browser% in the path it will be replaced with the karma browser name
         dir: path.join(__dirname, 'coverage'),
-   
+
         // Combines coverage information from multiple browsers into one report rather than outputting a report
         // for each browser.
         combineBrowserReports: true,
-   
+
         // if using webpack and pre-loaders, work around webpack breaking the source path
         fixWebpackSourcePaths: true,
-   
+
         // Omit files with no statements, no functions and no branches from the report
         skipFilesWithNoCoverage: false,
-   
+
         // Most reporters accept additional config options. You can pass these through the `report-config` option
         'report-config': {
           // all options available at: https://github.com/istanbuljs/istanbuljs/blob/aae256fb8b9a3d19414dcf069c592e88712c32c6/packages/istanbul-reports/lib/html/index.js#L135-L137
@@ -41,7 +41,7 @@ module.exports = function (config) {
             subdir: 'html'
           }
         },
-   
+
         // enforce percentage thresholds
         // anything under these percentages will cause karma to fail with an exit code of 1 if not running in watch mode
         thresholds: {

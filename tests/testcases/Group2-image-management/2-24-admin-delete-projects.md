@@ -12,13 +12,13 @@ User guide
 * This test requires that two(2) Harbor instances are running and available.
 * Harbor is set to authenticate against a local database. ( auth_mode is set to **db_auth** .) The user data is stored in a local database.
 * A linux host with Docker CLI installed (Docker client).
-* At least a non-admin user. 
+* At least a non-admin user.
 
 # Test Steps:
 
-**NOTE:**  
+**NOTE:**
 * In below test, user A is non-admin user. User A and project X should be replaced by longer and meaningful names.
-* Must use two kinds of browsers at the same time to ensure independent sessions. For example, use Chrome and Firefox, or Chrome and Safari. 
+* Must use two kinds of browsers at the same time to ensure independent sessions. For example, use Chrome and Firefox, or Chrome and Safari.
 * DO NOT use the same browser to log in two users in different windows(tabs).
 
 1. Log in to UI as user A (non-admin).
@@ -28,8 +28,8 @@ User guide
 5. In UI, log out user A.
 6. Log in as admin user.
 7. Delete project X. (should fail with errors)
-8. Delete all images of project X. 
-9. Delete project X. 
+8. Delete all images of project X.
+9. Delete project X.
 10. As an admin user, view the log in dashboard and should see delete operaion of project X and its images.
 
 # Expected Outcome:

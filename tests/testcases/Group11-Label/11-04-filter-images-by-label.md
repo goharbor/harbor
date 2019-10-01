@@ -20,8 +20,8 @@ User guide
 
 # Expected Outcome:
 
-* In Step2, the image list contains the image which is labeled.  
-* In Step3, the image list doesn't contain the image which is labeled.  
+* In Step2, the image list contains the image which is labeled.
+* In Step3, the image list doesn't contain the image which is labeled.
 
 # Possible Problems:
 None

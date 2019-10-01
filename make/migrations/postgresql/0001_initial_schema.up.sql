@@ -4,7 +4,7 @@ create table access (
  comment varchar (30)
 );
 
-insert into access (access_code, comment) values 
+insert into access (access_code, comment) values
 ('M', 'Management access for project'),
 ('R', 'Read access for project'),
 ('W', 'Write access for project'),
@@ -23,7 +23,7 @@ role mask is used for future enhancement when a project member can have multi-ro
 currently set to 0
 */
 
-insert into role (role_code, name) values 
+insert into role (role_code, name) values
 ('MDRWS', 'projectAdmin'),
 ('RWS', 'developer'),
 ('RS', 'guest');
@@ -64,7 +64,7 @@ create table project (
  project_id SERIAL PRIMARY KEY NOT NULL,
  owner_id int NOT NULL,
  /*
- The max length of name controlled by API is 30, 
+ The max length of name controlled by API is 30,
  and 11 is reserved for marking the deleted project.
  */
  name varchar (255) NOT NULL,
@@ -77,7 +77,7 @@ create table project (
 
 CREATE TRIGGER project_update_time_at_modtime BEFORE UPDATE ON project FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
 
-insert into project (owner_id, name, creation_time, update_time) values 
+insert into project (owner_id, name, creation_time, update_time) values
 (1, 'library', NOW(), NOW());
 
 create table project_member (
@@ -135,9 +135,9 @@ create table access_log (
  log_id SERIAL NOT NULL,
  username varchar (255) NOT NULL,
  project_id int NOT NULL,
- repo_name varchar (256), 
+ repo_name varchar (256),
  repo_tag varchar (128),
- GUID varchar(64), 
+ GUID varchar(64),
  operation varchar(20) NOT NULL,
  op_time timestamp default CURRENT_TIMESTAMP,
  primary key (log_id)
@@ -196,7 +196,7 @@ create table replication_target (
  update_time timestamp default CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
  );
- 
+
 CREATE TRIGGER replication_target_update_time_at_modtime BEFORE UPDATE ON replication_target FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
 
 create table replication_job (
@@ -214,11 +214,11 @@ New job service only records uuid, for compatibility in this table both IDs are 
  update_time timestamp default CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
  );
- 
+
 CREATE INDEX policy ON replication_job (policy_id);
 CREATE INDEX poid_uptime ON replication_job (policy_id, update_time);
 CREATE INDEX poid_status ON replication_job (policy_id, status);
- 
+
 CREATE TRIGGER replication_job_update_time_at_modtime BEFORE UPDATE ON replication_job FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
 
 create table replication_immediate_trigger (
@@ -231,7 +231,7 @@ create table replication_immediate_trigger (
  update_time timestamp default CURRENT_TIMESTAMP,
  PRIMARY KEY (id)
  );
- 
+
  CREATE TRIGGER replication_immediate_trigger_update_time_at_modtime BEFORE UPDATE ON replication_immediate_trigger FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
 
  create table img_scan_job (
@@ -253,7 +253,7 @@ CREATE INDEX idx_status ON img_scan_job (status);
 CREATE INDEX idx_digest ON img_scan_job (digest);
 CREATE INDEX idx_uuid ON img_scan_job (job_uuid);
 CREATE INDEX idx_repository_tag ON img_scan_job (repository,tag);
- 
+
 CREATE TRIGGER img_scan_job_update_time_at_modtime BEFORE UPDATE ON img_scan_job FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
 
 create table img_scan_overview (
@@ -271,11 +271,11 @@ create table img_scan_overview (
  PRIMARY KEY(id),
  UNIQUE(image_digest)
  );
- 
+
 CREATE TRIGGER img_scan_overview_update_time_at_modtime BEFORE UPDATE ON img_scan_overview FOR EACH ROW EXECUTE PROCEDURE update_update_time_at_column();
 
 create table clair_vuln_timestamp (
-id SERIAL NOT NULL, 
+id SERIAL NOT NULL,
 namespace varchar(128) NOT NULL,
 last_update timestamp NOT NULL,
 PRIMARY KEY(id),

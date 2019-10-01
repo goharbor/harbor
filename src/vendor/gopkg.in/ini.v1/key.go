@@ -669,7 +669,7 @@ func (k *Key) parseInts(strs []string, addInvalid, returnOnInvalid bool) ([]int,
 	vals := make([]int, 0, len(strs))
 	for _, str := range strs {
 		valInt64, err := strconv.ParseInt(str, 0, 64)
-		val := int(valInt64)        
+		val := int(valInt64)
 		if err != nil && returnOnInvalid {
 			return nil, err
 		}

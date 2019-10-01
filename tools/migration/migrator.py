@@ -79,7 +79,7 @@ class CfgMigrator():
             return True
         except Exception as e:
             print ("Back up error: %s" % str(e))
-            return False 
+            return False
 
     def restore(self):
         if not self.restore_src:
@@ -119,7 +119,7 @@ class CfgMigrator():
         return True
 
 class Parameters(object):
-    def __init__(self):    
+    def __init__(self):
         self.db_user = os.getenv('DB_USR', '')
         self.db_pwd = os.getenv('DB_PWD', '')
         self.skip_confirm = os.getenv('SKIP_CONFIRM', 'n')
@@ -132,31 +132,31 @@ class Parameters(object):
 
     def is_action(self, action):
         if action == "test" or action == "backup" or action == "restore" or action == "up":
-            return True     
+            return True
         else:
-            return False   
+            return False
 
     def parse_input(self):
         argv_len = len(sys.argv[1:])
         last_argv = sys.argv[argv_len:][0]
         if not self.is_action(last_argv):
             print ("Fail to parse input: the last parameter should in test:up:restore:backup")
-            sys.exit(RC_GEN) 
+            sys.exit(RC_GEN)
 
         if last_argv == 'up':
             if self.skip_confirm != 'y':
                 if not pass_skip_confirm():
-                    sys.exit(RC_GEN) 
-        
+                    sys.exit(RC_GEN)
+
         if argv_len == 1:
             return (True, True, '', False, last_argv)
 
-        parser = argparse.ArgumentParser(description='migrator of harbor') 
+        parser = argparse.ArgumentParser(description='migrator of harbor')
         parser.add_argument('--db', action="store_true", dest='is_migrate_db', required=False, default=False, help='The flag to upgrade db.')
         parser.add_argument('--cfg', action="store_true", dest='is_migrate_cfg', required=False, default=False, help='The flag to upgrede cfg.')
-        parser.add_argument('--version', action="store", dest='target_version', required=False, default='', help='The target version that the harbor will be migrated to.')         
-        parser.add_argument('--output', action="store_true", dest='output', required=False, default=False, help='The path of the migrated harbor.cfg, if not set the input file will be overwritten.')         
-    
+        parser.add_argument('--version', action="store", dest='target_version', required=False, default='', help='The target version that the harbor will be migrated to.')
+        parser.add_argument('--output', action="store_true", dest='output', required=False, default=False, help='The path of the migrated harbor.cfg, if not set the input file will be overwritten.')
+
         args = parser.parse_args(sys.argv[1:argv_len])
         args.action = last_argv
         return (args.is_migrate_db, args.is_migrate_cfg, args.target_version, args.output, args.action)
@@ -193,43 +193,43 @@ def main():
             if commandline_input.is_migrate_db:
                 if not db_migrator.validate():
                     print ("Fail to validate: please make sure your DB auth is correct.")
-                    sys.exit(RC_VALIDATE)                    
+                    sys.exit(RC_VALIDATE)
 
             if commandline_input.is_migrate_cfg:
-                if not cfg_migrator.validate():                 
+                if not cfg_migrator.validate():
                     print ("Fail to validate: please make sure your cfg path is correct.")
-                    sys.exit(RC_VALIDATE) 
-        
+                    sys.exit(RC_VALIDATE)
+
         # backup
         elif commandline_input.action == "backup":
             if commandline_input.is_migrate_db:
                 if not db_migrator.backup():
-                    sys.exit(RC_BACKUP)                    
+                    sys.exit(RC_BACKUP)
 
             if commandline_input.is_migrate_cfg:
-                if not cfg_migrator.backup():                 
-                    sys.exit(RC_BACKUP)         
-        
+                if not cfg_migrator.backup():
+                    sys.exit(RC_BACKUP)
+
         # up
         elif commandline_input.action == "up":
             if commandline_input.is_migrate_db:
                 if not db_migrator.up():
-                    sys.exit(RC_UP)                    
+                    sys.exit(RC_UP)
 
             if commandline_input.is_migrate_cfg:
-                if not cfg_migrator.up():                 
+                if not cfg_migrator.up():
                     sys.exit(RC_UP)
-        
+
         # restore
         elif commandline_input.action == "restore":
             if commandline_input.is_migrate_db:
                 if not db_migrator.restore():
-                    sys.exit(RC_RESTORE)                    
+                    sys.exit(RC_RESTORE)
 
             if commandline_input.is_migrate_cfg:
-                if not cfg_migrator.restore():                 
+                if not cfg_migrator.restore():
                     sys.exit(RC_RESTORE)
-        
+
         else:
             print ("Unknow action type: " + str(commandline_input.action))
             sys.exit(RC_UNKNOWN_TYPE)

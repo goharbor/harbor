@@ -549,7 +549,7 @@ The expected secret is passed to job service by the ENV variable `CORE_SECRET`.
 }
 ```
 
-* Response 
+* Response
   * 204 No content
   * 401/404/500/501 Error
 

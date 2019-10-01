@@ -21,8 +21,8 @@ User guide
 3. A non-admin user logs in to the UI by email.
 4. The user logs out from the UI.
 5. Use the incorrect password and username/email of the user to log in to the UI and check the error message.
-6. On a Docker client host, use `docker login <harbor_host>` command to verify the user can log in by either the **username** or **email** . (check both) 
-7. Use `docker login <harbor_host>` command to log in with incorrect password by either the **username** or **email** .  
+6. On a Docker client host, use `docker login <harbor_host>` command to verify the user can log in by either the **username** or **email** . (check both)
+7. Use `docker login <harbor_host>` command to log in with incorrect password by either the **username** or **email** .
 
 
 # Expected Outcome:

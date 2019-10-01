@@ -75,8 +75,8 @@ func GetLastTriggerJobsGroupByEventType(policyID int64) ([]*models.NotificationJ
 	o := dao.GetOrmer()
 	// get jobs last triggered(created) group by event_type. postgres group by usage reference:
 	// https://stackoverflow.com/questions/13325583/postgresql-max-and-group-by
-	sql := `select distinct on (event_type) event_type, id, creation_time, status, notify_type, job_uuid, update_time, 
-			creation_time, job_detail from notification_job where policy_id = ? 
+	sql := `select distinct on (event_type) event_type, id, creation_time, status, notify_type, job_uuid, update_time,
+			creation_time, job_detail from notification_job where policy_id = ?
 			order by event_type, id desc, creation_time, status, notify_type, job_uuid, update_time, creation_time, job_detail`
 
 	jobs := []*models.NotificationJob{}

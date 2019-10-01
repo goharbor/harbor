@@ -133,7 +133,7 @@ BEGIN
       /*insert one task record
       doesn't record the tags info in "src_resource" and "dst_resource" as the length
       of the tags may longer than the capability of the column*/
-      INSERT INTO replication_task (execution_id, resource_type, src_resource, dst_resource, operation, job_id, status, start_time, end_time) 
+      INSERT INTO replication_task (execution_id, resource_type, src_resource, dst_resource, operation, job_id, status, start_time, end_time)
       VALUES (execid, 'image', job.repository, job.repository, job.operation, job.job_uuid, job.status, job.creation_time, job.update_time);
     END LOOP;
 END $$;

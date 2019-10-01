@@ -16,7 +16,7 @@ Changelog for harbor database schema
   - add column `update_time` to table `project`
   - delete data `AMDRWS` from table `role`
   - delete data `A` from table `access`
-  
+
 ## 0.3.0
 
   - create table `replication_policy`
@@ -24,7 +24,7 @@ Changelog for harbor database schema
   - create table `replication_job`
   - add column `repo_tag` to table `access_log`
   - alter column `repo_name` on table `access_log`
-  - alter column `email` on table `user` 
+  - alter column `email` on table `user`
 
 ## 0.4.0
 
@@ -63,7 +63,7 @@ Changelog for harbor database schema
   - add column `replicate_deletion` to table `replication_policy`
   - create table `replication_immediate_trigger`
   - add pk `id` to table `properties`
-  - remove pk index from column 'k' of table `properties` 
+  - remove pk index from column 'k' of table `properties`
   - alter `name` length from 41 to 256 of table `project`
 
 ## 1.5.0

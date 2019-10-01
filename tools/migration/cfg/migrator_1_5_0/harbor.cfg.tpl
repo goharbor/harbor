@@ -10,11 +10,11 @@ hostname = $hostname
 #It can be set to https if ssl is enabled on nginx.
 ui_url_protocol = $ui_url_protocol
 
-#Maximum number of job workers in job service  
+#Maximum number of job workers in job service
 max_job_workers = $max_job_workers
 
 #Determine whether or not to generate certificate for the registry's token.
-#If the value is on, the prepare script creates new root cert and private key 
+#If the value is on, the prepare script creates new root cert and private key
 #for generating token to access the registry. If the value is off the default key/cert will be used.
 #This flag also controls the creation of the notary signer's cert.
 customize_crt = $customize_crt
@@ -31,8 +31,8 @@ admiral_url = $admiral_url
 
 #Log files are rotated log_rotate_count times before being removed. If count is 0, old versions are removed rather than rotated.
 log_rotate_count = $log_rotate_count
-#Log files are rotated only if they grow bigger than log_rotate_size bytes. If size is followed by k, the size is assumed to be in kilobytes. 
-#If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G 
+#Log files are rotated only if they grow bigger than log_rotate_size bytes. If size is followed by k, the size is assumed to be in kilobytes.
+#If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G
 #are all valid.
 log_rotate_size = $log_rotate_size
 
@@ -43,7 +43,7 @@ https_proxy =
 no_proxy = 127.0.0.1,localhost,ui
 
 #NOTES: The properties between BEGIN INITIAL PROPERTIES and END INITIAL PROPERTIES
-#only take effect in the first boot, the subsequent changes of these properties 
+#only take effect in the first boot, the subsequent changes of these properties
 #should be performed on web ui
 
 #************************BEGIN INITIAL PROPERTIES************************
@@ -52,7 +52,7 @@ no_proxy = 127.0.0.1,localhost,ui
 
 #Email server uses the given username and password to authenticate on TLS connections to host and act as identity.
 #Identity left blank to act as username.
-email_identity = 
+email_identity =
 
 email_server = smtp.mydomain.com
 email_server_port = 25
@@ -62,7 +62,7 @@ email_from = admin <sample_admin@mydomain.com>
 email_ssl = false
 email_insecure = false
 
-##The initial password of Harbor admin, only works for the first time when Harbor starts. 
+##The initial password of Harbor admin, only works for the first time when Harbor starts.
 #It has no effect after the first launch of Harbor.
 #Change the admin password from UI after launching Harbor.
 harbor_admin_password = Harbor12345
@@ -74,7 +74,7 @@ auth_mode = db_auth
 #The url for an ldap endpoint.
 ldap_url = ldaps://ldap.mydomain.com
 
-#A user's DN who has the permission to search the LDAP/AD server. 
+#A user's DN who has the permission to search the LDAP/AD server.
 #If your LDAP/AD server does not support anonymous search, you should configure this DN and ldap_search_pwd.
 #ldap_searchdn = uid=searchuser,ou=people,dc=mydomain,dc=com
 
@@ -87,11 +87,11 @@ ldap_basedn = ou=people,dc=mydomain,dc=com
 #Search filter for LDAP/AD, make sure the syntax of the filter is correct.
 #ldap_filter = (objectClass=person)
 
-# The attribute used in a search to match a user, it could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD  
-ldap_uid = uid 
+# The attribute used in a search to match a user, it could be uid, cn, email, sAMAccountName or other attributes depending on your LDAP/AD
+ldap_uid = uid
 
 #the scope to search for users, 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE
-ldap_scope = 2 
+ldap_scope = 2
 
 #Timeout (in seconds)  when connecting to an LDAP Server. The default value (and most reasonable) is 5 seconds.
 ldap_timeout = 5
@@ -118,7 +118,7 @@ self_registration = on
 token_expiration = 30
 
 #The flag to control what users have permission to create projects
-#The default value "everyone" allows everyone to creates a project. 
+#The default value "everyone" allows everyone to creates a project.
 #Set to "adminonly" so that only admin user can create project.
 project_creation_restriction = everyone
 

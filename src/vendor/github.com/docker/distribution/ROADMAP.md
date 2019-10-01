@@ -27,7 +27,7 @@ considerations made in respect of the future of the project.
 Components of the Distribution Project are managed via github [milestones](https://github.com/docker/distribution/milestones). Upcoming
 features and bugfixes for a component will be added to the relevant milestone. If a feature or
 bugfix is not part of a milestone, it is currently unscheduled for
-implementation. 
+implementation.
 
 * [Registry](#registry)
 * [Distribution Package](#distribution-package)
@@ -40,7 +40,7 @@ The new Docker registry is the main portion of the distribution repository.
 Registry 2.0 is the first release of the next-generation registry. This was
 primarily focused on implementing the [new registry
 API](https://github.com/docker/distribution/blob/master/docs/spec/api.md),
-with a focus on security and performance. 
+with a focus on security and performance.
 
 Following from the Distribution project goals above, we have a set of goals
 for registry v2 that we would like to follow in the design. New features
@@ -105,9 +105,9 @@ landing in the registry.
 
 ##### Proxying to other Registries
 
-A _pull-through caching_ mode exists for the registry, but is restricted from 
+A _pull-through caching_ mode exists for the registry, but is restricted from
 within the docker client to only mirror the official Docker Hub.  This functionality
-can be expanded when image provenance has been specified and implemented in the 
+can be expanded when image provenance has been specified and implemented in the
 distribution project.
 
 ##### Metadata storage
@@ -247,13 +247,13 @@ Please see the following issues for more detail:
 - https://github.com/docker/distribution/issues/461
 - https://github.com/docker/distribution/issues/462
 
-### Distribution Package 
+### Distribution Package
 
 At its core, the Distribution Project is a set of Go packages that make up
 Distribution Components. At this time, most of these packages make up the
-Registry implementation. 
+Registry implementation.
 
-The package itself is considered unstable. If you're using it, please take care to vendor the dependent version. 
+The package itself is considered unstable. If you're using it, please take care to vendor the dependent version.
 
 For feature additions, please see the Registry section. In the future, we may break out a
 separate Roadmap for distribution-specific features that apply to more than

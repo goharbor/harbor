@@ -1,4 +1,4 @@
-goconfig [![Build Status](https://drone.io/github.com/Unknwon/goconfig/status.png)](https://drone.io/github.com/Unknwon/goconfig/latest) [![Go Walker](http://gowalker.org/api/v1/badge)](http://gowalker.org/github.com/Unknwon/goconfig) 
+goconfig [![Build Status](https://drone.io/github.com/Unknwon/goconfig/status.png)](https://drone.io/github.com/Unknwon/goconfig/latest) [![Go Walker](http://gowalker.org/api/v1/badge)](http://gowalker.org/github.com/Unknwon/goconfig)
 ========
 
 本库已被 [《Go名库讲解》](https://github.com/Unknwon/go-rock-libraries-showcases/tree/master/lectures/01-goconfig) 收录讲解，欢迎前往学习如何使用！
@@ -10,9 +10,9 @@ goconfig [![Build Status](https://drone.io/github.com/Unknwon/goconfig/status.pn
 包 goconfig 是一个易于使用，支持注释的 Go 语言配置文件解析器，该文件的书写格式和 Windows 下的 INI 文件一样。
 
 配置文件由形为 `[section]` 的节构成，内部使用 `name:value` 或 `name=value` 这样的键值对；每行开头和尾部的空白符号都将被忽略；如果未指定任何节，则会默认放入名为 `DEFAULT` 的节当中；可以使用 “;” 或 “#” 来作为注释的开头，并可以放置于任意的单独一行中。
-	
+
 ## 特性
-	
+
 - 简化流程，易于理解，更少出错。
 - 提供与 Windows API 一模一样的操作方式。
 - 支持读取递归节。
@@ -22,7 +22,7 @@ goconfig [![Build Status](https://drone.io/github.com/Unknwon/goconfig/status.pn
 - 支持加载多个文件来重写值。
 
 ## 安装
-	
+
 	go get github.com/Unknwon/goconfig
 
 或

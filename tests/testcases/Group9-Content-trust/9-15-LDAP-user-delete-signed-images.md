@@ -10,9 +10,9 @@ User guide
 
 # Environment:
 
-* This test requries a Harbor istance is running and available.  
-* Harbor is set authenticate against an LDAP or AD server.  
-* A Linux host with Docker CLI(Docker client)installed.  
+* This test requries a Harbor istance is running and available.
+* Harbor is set authenticate against an LDAP or AD server.
+* A Linux host with Docker CLI(Docker client)installed.
 * A non-admin user that has at least one project as project admin.
 
 # Test Steps:

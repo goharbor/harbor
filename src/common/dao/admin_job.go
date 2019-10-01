@@ -53,7 +53,7 @@ func GetAdminJob(id int64) (*models.AdminJob, error) {
 // DeleteAdminJob ...
 func DeleteAdminJob(id int64) error {
 	o := GetOrmer()
-	_, err := o.Raw(`update admin_job 
+	_, err := o.Raw(`update admin_job
 		set deleted = true where id = ?`, id).Exec()
 	return err
 }
@@ -91,7 +91,7 @@ func SetAdminJobUUID(id int64, uuid string) error {
 func GetTop10AdminJobsOfName(name string) ([]*models.AdminJob, error) {
 	o := GetOrmer()
 	jobs := []*models.AdminJob{}
-	n, err := o.Raw(`select * from admin_job 
+	n, err := o.Raw(`select * from admin_job
 		where deleted = false and job_name = ? order by update_time desc limit 10`, name).QueryRows(&jobs)
 	if err != nil {
 		return nil, err

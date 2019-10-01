@@ -25,9 +25,9 @@ User guide
 
 # Expected Outcome:
 
-* In Step2, the global level label can be added to the image successfully.  
+* In Step2, the global level label can be added to the image successfully.
 * In Step3, the project level label can be added to the image successfully.
-* In Step4, the global level label can be removed from the image successfully.  
+* In Step4, the global level label can be removed from the image successfully.
 * In Step5, the project level label can be removed from the image successfully.
 * In Step6, the project admin user can do the same operations as the project developer user.
 * In Step7, the system admin user can do the same operations as the project developer user.

@@ -28,8 +28,8 @@ openssl req \
 # Generate the certificate of local registry host
 echo subjectAltName = IP:$IP > extfile.cnf
 openssl x509 -req -days 365 -in $IP.csr -CA harbor_ca.crt \
-	-CAkey harbor_ca.key -CAcreateserial -extfile extfile.cnf -out $IP.crt	
-	
+	-CAkey harbor_ca.key -CAcreateserial -extfile extfile.cnf -out $IP.crt
+
 # Copy to harbor default location
 mkdir -p $DATA_VOL/cert
 cp $IP.crt $DATA_VOL/cert/server.crt

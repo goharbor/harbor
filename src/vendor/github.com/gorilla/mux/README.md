@@ -601,7 +601,7 @@ func TestMetricsHandler(t *testing.T) {
         }
 
         rr := httptest.NewRecorder()
-	
+
 	// Need to create a router that we can pass the request through so that the vars will be added to the context
 	router := mux.NewRouter()
         router.HandleFunc("/metrics/{type}", MetricsHandler)

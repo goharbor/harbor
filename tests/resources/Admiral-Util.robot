@@ -75,22 +75,22 @@ Add Host To Admiral
     Wait Until Element Is Visible  css=a.btn.verifyHost
     Wait Until Element Is Enabled  css=a.btn.verifyHost
     Click Element  css=a.btn.verifyHost
-    
+
     Wait Until Page Contains  Verified successfully!
     Wait Until Element Is Visible  css=button.btn.btn-primary.saveHost
     Wait Until Element Is Enabled  css=button.btn.btn-primary.saveHost
     Click Button  css=button.btn.btn-primary.saveHost
-    
+
     Wait Until Element Is Visible  css=div.status.ON
     Wait Until Element Is Enabled  css=div.status.ON
-    
+
 
 Add Project to Admiral
     [Arguments]  ${name}
     Wait Until Element Is Visible  css=a[data-cmd='navigation-placements']
     Wait Until Element Is Enabled  css=a[data-cmd='navigation-placements']
     Click Element  css=a[data-cmd='navigation-placements']
-    
+
     Wait Until Element Is Visible  css=div.right-context-panel > div.toolbar > div:nth-child(2) > a
     Wait Until Element Is Enabled  css=div.right-context-panel > div.toolbar > div:nth-child(2) > a
     Click Element  css=div.right-context-panel > div.toolbar > div:nth-child(2) > a

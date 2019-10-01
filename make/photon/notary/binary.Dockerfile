@@ -11,11 +11,11 @@ RUN git clone -b $NOTARY_VERSION https://github.com/theupdateframework/notary.gi
 WORKDIR /go/src/${NOTARYPKG}
 
 RUN go install -tags pkcs11 \
-    -ldflags "-w -X ${NOTARYPKG}/version.GitCommit=`git rev-parse --short HEAD` -X ${NOTARYPKG}/version.NotaryVersion=`cat NOTARY_VERSION`" ${NOTARYPKG}/cmd/notary-server 
+    -ldflags "-w -X ${NOTARYPKG}/version.GitCommit=`git rev-parse --short HEAD` -X ${NOTARYPKG}/version.NotaryVersion=`cat NOTARY_VERSION`" ${NOTARYPKG}/cmd/notary-server
 
 RUN go install -tags pkcs11 \
     -ldflags "-w -X ${NOTARYPKG}/version.GitCommit=`git rev-parse --short HEAD` -X ${NOTARYPKG}/version.NotaryVersion=`cat NOTARY_VERSION`" ${NOTARYPKG}/cmd/notary-signer
-RUN cp -r /go/src/${NOTARYPKG}/migrations/ / 
+RUN cp -r /go/src/${NOTARYPKG}/migrations/ /
 
 RUN git clone -b $MIGRATE_VERSION https://github.com/golang-migrate/migrate /go/src/${MIGRATEPKG}
 WORKDIR /go/src/${MIGRATEPKG}

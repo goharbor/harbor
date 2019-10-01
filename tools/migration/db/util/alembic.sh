@@ -19,7 +19,7 @@ set -e
 function alembic_up {
     local db_type="$1"
     local target_version="$2"
-    
+
     if [ $db_type = "pgsql" ]; then
         export PYTHONPATH=/harbor-migration/db/alembic/postgres
         echo "TODO: add support for pgsql."

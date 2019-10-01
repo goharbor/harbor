@@ -1,4 +1,4 @@
-# Registry Landscape  
+# Registry Landscape
 The cloud native ecosystem is moving rapidly–registries and their featuresets are no exception. We've made our best effort to survey the container registry landscape and compare to our core featureset.
 
 If you find something outdated or outright erroneous, please submit a PR and we'll fix it right away.

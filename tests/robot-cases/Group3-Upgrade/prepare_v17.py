@@ -180,7 +180,7 @@ def do_data_creation():
         harborAPI.update_project_setting(project["name"],
                                         project["configuration"]["enable_content_trust"],
                                         project["configuration"]["prevent_vulnerable_images_from_running"],
-                                        project["configuration"]["prevent_vlunerable_images_from_running_severity"], 
+                                        project["configuration"]["prevent_vlunerable_images_from_running_severity"],
                                         project["configuration"]["automatically_scan_images_on_push"])
     harborAPI.update_systemsetting(data["configuration"]["emailsetting"]["emailfrom"],
                                    data["configuration"]["emailsetting"]["emailserver"],

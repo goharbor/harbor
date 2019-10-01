@@ -10,8 +10,8 @@ User guide
 
 # Environment:
 
-* This test requires that a Harbor instance is running and available.  
-* Harbor is set to authenticate against an LDAP or AD server.(auth_mode is set to ldap_auth.) The user data is stored in an LDAP or AD server.  
+* This test requires that a Harbor instance is running and available.
+* Harbor is set to authenticate against an LDAP or AD server.(auth_mode is set to ldap_auth.) The user data is stored in an LDAP or AD server.
 * A Linux host with Docker CLI(Docker client) installed.
 
 # Test Steps:

@@ -17,28 +17,28 @@ spec:
         imagePullPolicy: IfNotPresent
         env:
           - name: CONFIG_PATH
-            valueFrom: 
-              configMapKeyRef: 
+            valueFrom:
+              configMapKeyRef:
                name: harbor-core-config
                key: CONFIG_PATH
           - name: LOG_LEVEL
-            valueFrom: 
-              configMapKeyRef: 
+            valueFrom:
+              configMapKeyRef:
                name: harbor-core-config
                key: LOG_LEVEL
           - name: CORE_SECRET
-            valueFrom: 
-              configMapKeyRef: 
+            valueFrom:
+              configMapKeyRef:
                name: harbor-core-config
                key: CORE_SECRET
           - name: JOBSERVICE_SECRET
-            valueFrom: 
-              configMapKeyRef: 
+            valueFrom:
+              configMapKeyRef:
                name: harbor-core-config
                key: JOBSERVICE_SECRET
           - name: GODEBUG
-            valueFrom: 
-              configMapKeyRef: 
+            valueFrom:
+              configMapKeyRef:
                name: harbor-core-config
                key: GODEBUG
         ports:

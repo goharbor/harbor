@@ -4,7 +4,7 @@
 ASN1 BER Encoding / Decoding Library for the GO programming language.
 ---------------------------------------------------------------------
 
-Required libraries: 
+Required libraries:
    None
 
 Working:

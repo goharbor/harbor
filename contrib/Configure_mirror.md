@@ -1,7 +1,7 @@
 # Configuring Harbor as a local registry mirror
 
-Harbor runs as a local registry by default. It can also be configured as a registry mirror, 
-which caches downloaded images for subsequent use. Note that under this setup, the Harbor registry only acts as a mirror server and 
+Harbor runs as a local registry by default. It can also be configured as a registry mirror,
+which caches downloaded images for subsequent use. Note that under this setup, the Harbor registry only acts as a mirror server and
 no longer accepts image pushing requests. Edit `Deploy/templates/registry/config.yml` before executing `./prepare`, and append a `proxy` section as follows:
 
 ```

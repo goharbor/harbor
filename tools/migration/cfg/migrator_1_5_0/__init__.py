@@ -34,7 +34,7 @@ def migrate(input_cfg, output_cfg):
     d = utils.read_conf(input_cfg)
     keys = list(default.keys())
     keys.extend(overwrite.keys())
-    keys.extend(['hostname', 'ui_url_protocol', 'max_job_workers', 'customize_crt', 
+    keys.extend(['hostname', 'ui_url_protocol', 'max_job_workers', 'customize_crt',
             'ssl_cert', 'ssl_cert_key', 'secretkey_path', 'admiral_url', 'db_password', 'clair_db_password'])
     val = {}
     for k in keys:

@@ -117,7 +117,7 @@ The parameters are described below - note that at the very least, you will need 
        - **protocol**: Transport protocol for the syslog server. Default is TCP.
        - **host**: The URL of the syslog server.
        - **port**: The port on which the syslog server listens.
-     
+
 ##### optional parameters
 
 - **http**:

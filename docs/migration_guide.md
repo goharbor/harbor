@@ -88,7 +88,7 @@ If, for any reason, you want to roll back to the previous version of Harbor, per
 
 4. Restore database, copy the data files from backup directory to you data volume, by default `/data/database`.
 
-5. Restart Harbor service using the previous configuration.  
+5. Restart Harbor service using the previous configuration.
    If previous version of Harbor was installed by a release build:
 
     ```sh

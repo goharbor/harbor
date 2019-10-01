@@ -17,7 +17,7 @@ RUN chmod u+x /harbor/harbor_registryctl \
     && chmod u+x /usr/bin/registry \
     && chmod u+x /harbor/start.sh
 
-HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/health || exit 1 
+HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/health || exit 1
 
 VOLUME ["/var/lib/registry"]
 WORKDIR /harbor/

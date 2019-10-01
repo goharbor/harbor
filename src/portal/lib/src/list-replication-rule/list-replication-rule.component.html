@@ -18,20 +18,20 @@
         <clr-dg-cell>{{p.name}}</clr-dg-cell>
         <clr-dg-cell class="status-width">
             <div [ngSwitch]="p.enabled">
-                <clr-tooltip *ngSwitchCase="false" class="tooltip-lg">	
-                    <clr-icon clrTooltipTrigger shape="exclamation-triangle" class="is-warning text-alignment" size="22"></clr-icon>Disabled	
-                    <clr-tooltip-content clrPosition="top-right" clrSize="xs" *clrIfOpen>	
-                        <span>{{'REPLICATION.RULE_DISABLED' | translate}}</span>	
-                    </clr-tooltip-content>	
-                </clr-tooltip>	
-                <div *ngSwitchCase="true" ><clr-icon shape="success-standard" class="is-success text-alignment" size="18"></clr-icon> Enabled</div>	
+                <clr-tooltip *ngSwitchCase="false" class="tooltip-lg">
+                    <clr-icon clrTooltipTrigger shape="exclamation-triangle" class="is-warning text-alignment" size="22"></clr-icon>Disabled
+                    <clr-tooltip-content clrPosition="top-right" clrSize="xs" *clrIfOpen>
+                        <span>{{'REPLICATION.RULE_DISABLED' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+                <div *ngSwitchCase="true" ><clr-icon shape="success-standard" class="is-success text-alignment" size="18"></clr-icon> Enabled</div>
             </div>
         </clr-dg-cell>
         <clr-dg-cell class="col-width">
             {{p.src_registry ? p.src_registry.name : ''}}
         </clr-dg-cell>
-        <clr-dg-cell class="col-width">	
-            {{p.src_registry && p.src_registry.id > 0 ? 'pull-based' : 'push-based'}}	
+        <clr-dg-cell class="col-width">
+            {{p.src_registry && p.src_registry.id > 0 ? 'pull-based' : 'push-based'}}
         </clr-dg-cell>
         <clr-dg-cell class="min-width">
             {{p.dest_registry ? p.dest_registry.name : ''}} : {{p.dest_namespace? p.dest_namespace: '-'}}

@@ -4,16 +4,16 @@
     # ssl
     ssl_certificate {{ssl_cert}};
     ssl_certificate_key {{ssl_cert_key}};
-  
+
     # recommendations from https://raymii.org/s/tutorials/strong_ssl_security_on_nginx.html
     ssl_protocols tlsv1.1 tlsv1.2;
     ssl_ciphers '!aNULL:kECDH+AESGCM:ECDH+AESGCM:RSA+AESGCM:kECDH+AES:ECDH+AES:RSA+AES:';
     ssl_prefer_server_ciphers on;
     ssl_session_cache shared:ssl:10m;
-  
+
     # disable any limits to avoid http 413 for large image uploads
     client_max_body_size 0;
-  
+
     # required to avoid http 411: see issue #1486 (https://github.com/docker/docker/issues/1486)
     chunked_transfer_encoding on;
 

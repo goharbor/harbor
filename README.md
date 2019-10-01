@@ -12,12 +12,12 @@
 |![notification](docs/img/bell-outline-badged.svg)Community Meeting|
 |------------------|
 |The Harbor Project holds bi-weekly community calls, to join them and watch previous meeting notes and recordings, please see [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
- 
+
 Welcome to join below Harbor community events and meet with project maintainers and users:
 
 **May 20-24, 2019**, [KubeCon EU, Barcelona](https://events.linuxfoundation.org/events/kubecon-cloudnativecon-europe-2019/): Harbor Community Reception, Intro and Deep-dive sessions.
 
-**June 24-26, 2019**, [KubeCon Shanghai](https://www.lfasiallc.com/events/kubecon-cloudnativecon-china-2019/): Harbor community meetup, Harbor session. 
+**June 24-26, 2019**, [KubeCon Shanghai](https://www.lfasiallc.com/events/kubecon-cloudnativecon-china-2019/): Harbor community meetup, Harbor session.
 </br> </br>
 
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
@@ -36,8 +36,8 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 * **Role based access control**: Users and repositories are organized via 'projects' and a user can have different permission for images or Helm charts under a project.
 * **Policy based replication**: Images and charts can be replicated (synchronized) between multiple registry instances based on policies with multiple filters (repository, tag and label). Harbor automatically retries a replication if it encounters any errors. Great for load balancing, high availability, multi-datacenter, hybrid and multi-cloud scenarios.
 * **Vulnerability Scanning**: Harbor scans images regularly and warns users of vulnerabilities.
-* **LDAP/AD support**: Harbor integrates with existing enterprise LDAP/AD for user authentication and management, and supports importing LDAP groups into Harbor and assigning proper project roles to them.  
-* **OIDC support**: Harbor leverages OpenID Connect (OIDC) to verify the identity of users authenticated by an external authorization server or identity provider. Single sign-on can be enabled to log into the Harbor portal.  
+* **LDAP/AD support**: Harbor integrates with existing enterprise LDAP/AD for user authentication and management, and supports importing LDAP groups into Harbor and assigning proper project roles to them.
+* **OIDC support**: Harbor leverages OpenID Connect (OIDC) to verify the identity of users authenticated by an external authorization server or identity provider. Single sign-on can be enabled to log into the Harbor portal.
 * **Image deletion & garbage collection**: Images can be deleted and their space can be recycled.
 * **Notary**: Image authenticity can be ensured.
 * **Graphical user portal**: User can easily browse, search repositories and manage projects.
@@ -59,8 +59,8 @@ Refer to **[User Guide](docs/user_guide.md)** for more details on how to use Har
 
 ## Community
 
-* **Twitter:** [@project_harbor](https://twitter.com/project_harbor)  
-* **User Group:** Join Harbor user email group: [harbor-users@lists.cncf.io](https://lists.cncf.io/g/harbor-users) to get update of Harbor's news, features, releases, or to provide suggestion and feedback.  
+* **Twitter:** [@project_harbor](https://twitter.com/project_harbor)
+* **User Group:** Join Harbor user email group: [harbor-users@lists.cncf.io](https://lists.cncf.io/g/harbor-users) to get update of Harbor's news, features, releases, or to provide suggestion and feedback.
 * **Developer Group:** Join Harbor developer group: [harbor-dev@lists.cncf.io](https://lists.cncf.io/g/harbor-dev) for discussion on Harbor development and contribution.
 * **Slack:** Join Harbor's community for discussion and ask questions: [Cloud Native Computing Foundation](https://slack.cncf.io/), channel: [#harbor](https://cloud-native.slack.com/messages/harbor/) and [#harbor-dev](https://cloud-native.slack.com/messages/harbor-dev/)
 

@@ -18,7 +18,7 @@ if [ $TIMEOUT -eq 0 ]; then
 fi
 
 curl --insecure -s -L -H "Accept: application/json" https://localhost/ | grep "Harbor"  > /dev/null
-if [ $? -eq 0 ]; then 
+if [ $? -eq 0 ]; then
 	echo "Harbor is running success."
 else
 	echo "Harbor is running fail."

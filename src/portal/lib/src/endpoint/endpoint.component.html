@@ -18,7 +18,7 @@
                     <button type="button" class="btn btn-sm btn-secondary" [disabled]="!selectedRow.length" (click)="deleteTargets(selectedRow)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'DESTINATION.DELETE' | translate}}</button>
                 </clr-dg-action-bar>
                 <clr-dg-column [clrDgField]="'name'" class="flex-min-width">{{'DESTINATION.NAME' | translate}}</clr-dg-column>
-                <clr-dg-column [clrDgField]="'status'" class="flex-min-width">{{'DESTINATION.STATUS' | translate}}</clr-dg-column>                
+                <clr-dg-column [clrDgField]="'status'" class="flex-min-width">{{'DESTINATION.STATUS' | translate}}</clr-dg-column>
                 <clr-dg-column [clrDgField]="'url'" class="flex-min-width">{{'DESTINATION.URL' | translate}}</clr-dg-column>
                 <clr-dg-column [clrDgField]="'type'">{{'DESTINATION.PROVIDER' | translate}}</clr-dg-column>
                 <clr-dg-column [clrDgField]="'insecure'">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</clr-dg-column>

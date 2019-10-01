@@ -21,7 +21,7 @@ set -e
 ISPGSQL=false
 
 cur_version=""
-PGSQL_USR="postgres" 
+PGSQL_USR="postgres"
 
 function init {
     if [ "$(ls -A /var/lib/postgresql/data)" ]; then
@@ -40,7 +40,7 @@ function init {
 
 function get_version {
     if [ $ISPGSQL == true ]; then
-        result=$(get_version_pgsql $PGSQL_USR) 
+        result=$(get_version_pgsql $PGSQL_USR)
     fi
     cur_version=$result
 }
@@ -85,7 +85,7 @@ function validate {
 }
 
 function upgrade {
-    up_harbor $1          
+    up_harbor $1
 }
 
 function up_harbor {
@@ -133,7 +133,7 @@ function main {
     case $key in
     up|upgrade)
         upgrade $2
-        ;;    
+        ;;
     backup)
        backup
         ;;
@@ -147,7 +147,7 @@ function main {
         echo "unknown option"
         exit 0
         ;;
-    esac       
+    esac
 }
 
 main "$@"

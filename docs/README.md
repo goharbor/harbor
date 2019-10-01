@@ -2,34 +2,34 @@
 
 ### User documents
 
-**[Installation and Configuration Guide](installation_guide.md)   
-Read this first!**  
+**[Installation and Configuration Guide](installation_guide.md)
+Read this first!**
 Guide for Harbor online installer and offline installer.
 
-**[Harbor User Guide](user_guide.md)**  
+**[Harbor User Guide](user_guide.md)**
 How to use Harbor to manage images, projects, replications and users.
 
-[Configuring HTTPS for Harbor](configure_https.md)  
+[Configuring HTTPS for Harbor](configure_https.md)
 Configure security connection between Harbor and Docker client.
 
-[Upgrade and Data Migration Guide](migration_guide.md)  
+[Upgrade and Data Migration Guide](migration_guide.md)
 Data migration may be needed when upgrading Harbor to a newer version.
 
-[Deploy Harbor on Kubernetes](kubernetes_deployment.md)  
+[Deploy Harbor on Kubernetes](kubernetes_deployment.md)
 Guide to deploy Harbor on Kubernetes. (maintained by community)
 
 ### Developer documents
 
-[Architecture Overview of Harbor](https://github.com/vmware/harbor/wiki/Architecture-Overview-of-Harbor)  
+[Architecture Overview of Harbor](https://github.com/vmware/harbor/wiki/Architecture-Overview-of-Harbor)
 Developers read this first.
 
-[Build Harbor from Source](compile_guide.md)  
+[Build Harbor from Source](compile_guide.md)
 How to build Harbor from source code.
 
-[Harbor API Specs by Swagger](configure_swagger.md)  
+[Harbor API Specs by Swagger](configure_swagger.md)
 Use Swagger to find out the specs of Harbor API.
 
-[Internationalization Guide](developer_guide_i18n.md)  
+[Internationalization Guide](developer_guide_i18n.md)
 How to add your local language to Harbor.
 
 [Python SDK](../contrib/registryapi) (by community)

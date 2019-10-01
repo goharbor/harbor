@@ -2,7 +2,7 @@
     margin: 20px 0;
     font-size: .541667rem;
 }
-  
+
   .normal-wrapper-box {
     position: relative;
     .normal-wrapper {
@@ -11,7 +11,7 @@
       > span:first-child {
         width: 200px;
       }
-    
+
       > span:not(:first-child) {
         margin-right: 18px;
       }
@@ -23,7 +23,7 @@
       margin: 35px 20px 0 200px;
     }
   }
-  
+
   .setting-wrapper {
     position: relative;
     > span:first-child {
@@ -33,11 +33,11 @@
     .confirm-button {
       margin: 20px 0px 0 200px;
     }
-  
+
     *:not(:first-child) {
       margin-right: 18px;
     }
-  
+
     .select-schedule {
       display: inline-block;
       width: 100px;

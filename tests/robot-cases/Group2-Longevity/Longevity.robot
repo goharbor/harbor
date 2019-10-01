@@ -44,7 +44,7 @@ CA setup
     SSHLibrary.Get File  /data/ca_download/ca.crt
     Close All Connections
     Run  mv ca.crt harbor_ca.crt
-    Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}	
+    Generate Certificate Authority For Chrome  ${HARBOR_PASSWORD}
 
 Regression Test With DB
     [Arguments]  ${HARBOR_URL}
@@ -52,12 +52,12 @@ Regression Test With DB
 
 Exe Regression Test Cases
     [Arguments]  ${HARBOR_URL}
-    
+
     # New user, new project, push image, pull image
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     Create An New Project With New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=tester${d}  newPassword=Test1@34  comment=harbor  projectname=project${d}  public=false
-    
+
     ${rand}=  Evaluate  random.randint(0, 1)  modules=random
     Run Keyword If  '${rand}' == '0'  Generate Prepared Image  ${ip}  tester${d}  project${d}
     Run Keyword If  '${rand}' == '1'  Generate Random 10MB Image  ${ip}  tester${d}  project${d}

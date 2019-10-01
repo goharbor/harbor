@@ -1,4 +1,4 @@
-.PHONY: default install build test quicktest fmt vet lint 
+.PHONY: default install build test quicktest fmt vet lint
 
 default: fmt vet lint build quicktest
 

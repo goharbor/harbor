@@ -70,7 +70,7 @@ func (this *evaluationStage) isShortCircuitable() bool {
 			fallthrough
 		case OR:
 			fallthrough
-		case TERNARY_TRUE: 
+		case TERNARY_TRUE:
 			fallthrough
 		case TERNARY_FALSE:
 			fallthrough

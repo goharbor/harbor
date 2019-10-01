@@ -21,8 +21,8 @@ User guide
 3. The user logs in again to the UI, should not see his/her own account settings and cannot change password(need to go to LDAP/AD for this).
 4. The user logs out from the UI.
 5. Use the incorrect password and username of the user to log in to the UI and check the error message.
-6. On a Docker client host, use `docker login <harbor_host>` command to verify the user can log in by username/password. 
-7. Run `docker login <harbor_host>` command to log in with incorrect password of the user.  
+6. On a Docker client host, use `docker login <harbor_host>` command to verify the user can log in by username/password.
+7. Run `docker login <harbor_host>` command to log in with incorrect password of the user.
 8. Log in as a system admin to UI, go to "admin Options" and should see above LDAP user in the list. System admin can assign or remove system admin role to the above LDAP user.
 9. Disable or remove the user in LDAP.
 10. The user should no longer log in to UI or by Docker client.

@@ -56,7 +56,7 @@ services:
       - log
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "registry"
   registryctl:
@@ -89,7 +89,7 @@ services:
       - log
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "registryctl"
 {% if external_database == False %}
@@ -125,7 +125,7 @@ services:
       - log
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "postgresql"
 {% endif %}
@@ -186,7 +186,7 @@ services:
 {% endif %}
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "core"
   portal:
@@ -307,7 +307,7 @@ services:
       - log
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "proxy"
 {% if with_notary %}
@@ -336,7 +336,7 @@ services:
       - notary-signer
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-server"
   notary-signer:
@@ -366,7 +366,7 @@ services:
   {% endif %}
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "notary-signer"
 {% endif %}
@@ -439,7 +439,7 @@ services:
 {% endif %}
     logging:
       driver: "syslog"
-      options:  
+      options:
         syslog-address: "tcp://127.0.0.1:1514"
         tag: "chartmuseum"
     env_file:

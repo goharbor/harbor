@@ -264,7 +264,7 @@ class HarborLabel(Base):
 
 class HarborResourceLabel(Base):
     __tablename__ = 'harbor_resource_label'
- 
+
     id = sa.Column(sa.Integer, primary_key=True)
     label_id = sa.Column(sa.Integer, nullable=False)
     resource_id =  sa.Column(sa.Integer)
@@ -285,7 +285,7 @@ class SchemaMigrations(Base):
 
 class AdminJob(Base):
     __tablename__ = 'admin_job'
- 
+
     id = sa.Column(sa.Integer, primary_key=True)
     job_name = sa.Column(sa.String(64), nullable=False)
     job_kind = sa.Column(sa.String(64), nullable=False)

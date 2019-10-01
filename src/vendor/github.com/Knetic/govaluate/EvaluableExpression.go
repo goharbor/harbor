@@ -185,7 +185,7 @@ func (this EvaluableExpression) evaluateStage(stage *evaluationStage, parameters
 				if left != nil {
 					return left, nil
 				}
-			
+
 			case TERNARY_TRUE:
 				if left == false {
 					right = shortCircuitHolder

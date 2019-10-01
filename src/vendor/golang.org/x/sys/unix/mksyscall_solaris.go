@@ -328,7 +328,7 @@ import (
 %s
 %s
 var (
-%s	
+%s
 )
 
 %s

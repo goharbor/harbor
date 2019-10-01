@@ -7,7 +7,7 @@ This guide provides instructions to manage roles by LDAP/AD group. You can impor
 1. Harbor's auth_mode is ldap_auth and **[basic LDAP configure parameters](https://github.com/vmware/harbor/blob/master/docs/installation_guide.md#optional-parameters)** are configured.
 1. Memberof overlay
 
-    This feature requires the LDAP/AD server enabled the feature **memberof overlay**. 
+    This feature requires the LDAP/AD server enabled the feature **memberof overlay**.
     With this feature, the LDAP/AD user entity's attribute **memberof** is updated when the group entity's **member** attribute is updated. For example, adding or removing an LDAP/AD user from the LDAP/AD group.
 
     * OpenLDAP -- Refer this **[guide](https://technicalnotes.wordpress.com/2014/04/19/openldap-setup-with-memberof-overlay/)** to enable and verify **memberof overlay**
@@ -22,12 +22,12 @@ Besides **[basic LDAP configure parameters](https://github.com/vmware/harbor/blo
 For example:
 ```
 curl -X PUT -u "<username>:<password>" -H "Content-Type: application/json" -ki https://harbor.sample.domain/api/configurations -d'{"ldap_group_basedn":"ou=groups,dc=example,dc=com"}'
-```   
+```
 The following parameters are related to LDAP group configuration.
    * ldap_group_basedn -- The base DN from which to lookup a group in LDAP/AD, for example: ou=groups,dc=example,dc=com
-   * ldap_group_filter -- The filter to search LDAP/AD group, for example: objectclass=groupOfNames 
-   * ldap_group_gid    -- The attribute used to name an LDAP/AD group, for example: cn 
-   * ldap_group_scope  -- The scope to search for LDAP/AD groups. 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE 
+   * ldap_group_filter -- The filter to search LDAP/AD group, for example: objectclass=groupOfNames
+   * ldap_group_gid    -- The attribute used to name an LDAP/AD group, for example: cn
+   * ldap_group_scope  -- The scope to search for LDAP/AD groups. 0-LDAP_SCOPE_BASE, 1-LDAP_SCOPE_ONELEVEL, 2-LDAP_SCOPE_SUBTREE
 
   2. Or change configure parameter in web console after installation. Go to "Administration" -> "Configuration" -> "Authentication" and change following settings.
    - LDAP Group Base DN -- ldap_group_basedn in the Harbor user settings

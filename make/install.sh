@@ -46,7 +46,7 @@ set -e
 set +o noglob
 
 usage=$'Please set hostname and other necessary attributes in harbor.yml first. DO NOT use localhost or 127.0.0.1 for hostname, because Harbor needs to be accessed by external clients.
-Please set --with-notary if needs enable Notary in Harbor, and set ui_url_protocol/ssl_cert/ssl_cert_key in harbor.yml bacause notary must run under https. 
+Please set --with-notary if needs enable Notary in Harbor, and set ui_url_protocol/ssl_cert/ssl_cert_key in harbor.yml bacause notary must run under https.
 Please set --with-clair if needs enable Clair in Harbor
 Please set --with-chartmuseum if needs enable Chartmuseum in Harbor'
 item=0
@@ -92,14 +92,14 @@ function check_docker {
 		error "Need to install docker(17.06.0+) first and run this script again."
 		exit 1
 	fi
-	
+
 	# docker has been installed and check its version
 	if [[ $(docker --version) =~ (([0-9]+).([0-9]+).([0-9]+)) ]]
 	then
 		docker_version=${BASH_REMATCH[1]}
 		docker_version_part1=${BASH_REMATCH[2]}
 		docker_version_part2=${BASH_REMATCH[3]}
-		
+
 		# the version of docker does not meet the requirement
 		if [ "$docker_version_part1" -lt 17 ] || ([ "$docker_version_part1" -eq 17 ] && [ "$docker_version_part2" -lt 6 ])
 		then
@@ -120,14 +120,14 @@ function check_dockercompose {
 		error "Need to install docker-compose(1.18.0+) by yourself first and run this script again."
 		exit 1
 	fi
-	
+
 	# docker-compose has been installed, check its version
 	if [[ $(docker-compose --version) =~ (([0-9]+).([0-9]+).([0-9]+)) ]]
 	then
 		docker_compose_version=${BASH_REMATCH[1]}
 		docker_compose_version_part1=${BASH_REMATCH[2]}
 		docker_compose_version_part2=${BASH_REMATCH[3]}
-		
+
 		# the version of docker-compose does not meet the requirement
 		if [ "$docker_compose_version_part1" -lt 1 ] || ([ "$docker_compose_version_part1" -eq 1 ] && [ "$docker_compose_version_part2" -lt 18 ])
 		then
@@ -159,7 +159,7 @@ then
 	sed "s/^hostname: .*/hostname: $host/g" -i ./harbor.yml
 fi
 prepare_para=
-if [ $with_notary ] 
+if [ $with_notary ]
 then
 	prepare_para="${prepare_para} --with-notary"
 fi
@@ -177,7 +177,7 @@ echo ""
 
 if [ -n "$(docker-compose ps -q)"  ]
 then
-	note "stopping existing Harbor instance ..." 
+	note "stopping existing Harbor instance ..."
 	docker-compose down -v
 fi
 echo ""
@@ -201,6 +201,6 @@ echo ""
 
 success $"----Harbor has been installed and started successfully.----
 
-Now you should be able to visit the admin portal at ${protocol}://${hostname}. 
+Now you should be able to visit the admin portal at ${protocol}://${hostname}.
 For more details, please visit https://github.com/goharbor/harbor .
 "

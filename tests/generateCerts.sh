@@ -38,7 +38,7 @@ fi
 # Generate the certificate of local registry host
 openssl x509 -req -days 365 -sha256 -in $IP.csr -CA $CUR_DIR/harbor_ca.crt \
 	-CAkey $CUR_DIR/harbor_ca.key -CAcreateserial -extfile extfile.cnf -out $IP.crt
-	
+
 # Copy to harbor default location
 mkdir -p $DATA_VOL/cert
 cp $IP.crt $DATA_VOL/cert/server.crt

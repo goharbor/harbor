@@ -38,7 +38,7 @@ func AddProjectMetadata(meta *models.ProjectMetadata) error {
 // by name will be deleted
 func DeleteProjectMetadata(projectID int64, name ...string) error {
 	params := make([]interface{}, 1)
-	sql := `delete from project_metadata 
+	sql := `delete from project_metadata
 			where project_id = ?`
 	params = append(params, projectID)
 
@@ -53,8 +53,8 @@ func DeleteProjectMetadata(projectID int64, name ...string) error {
 
 // UpdateProjectMetadata updates metadata of a project
 func UpdateProjectMetadata(meta *models.ProjectMetadata) error {
-	sql := `update project_metadata 
-				set value = ?, update_time = ? 
+	sql := `update project_metadata
+				set value = ?, update_time = ?
 				where project_id = ? and name = ?`
 	_, err := GetOrmer().Raw(sql, meta.Value, time.Now(), meta.ProjectID,
 		meta.Name).Exec()
@@ -68,7 +68,7 @@ func GetProjectMetadata(projectID int64, name ...string) ([]*models.ProjectMetad
 	proMetas := []*models.ProjectMetadata{}
 	params := make([]interface{}, 1)
 
-	sql := `select * from project_metadata 
+	sql := `select * from project_metadata
 				where project_id = ? `
 	params = append(params, projectID)
 
@@ -93,7 +93,7 @@ func ParamPlaceholderForIn(n int) string {
 
 // ListProjectMetadata ...
 func ListProjectMetadata(name, value string) ([]*models.ProjectMetadata, error) {
-	sql := `select * from project_metadata 
+	sql := `select * from project_metadata
 				where name = ? and value = ? `
 	metadatas := []*models.ProjectMetadata{}
 	_, err := GetOrmer().Raw(sql, name, value).QueryRows(&metadatas)

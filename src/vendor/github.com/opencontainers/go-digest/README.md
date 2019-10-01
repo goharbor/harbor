@@ -18,7 +18,7 @@ systems:
 id := digest.FromBytes([]byte("my content"))
 ```
 
-In the example above, the id can be used to uniquely identify 
+In the example above, the id can be used to uniquely identify
 the byte slice "my content". This allows two disparate applications
 to agree on a verifiable identifier without having to trust one
 another.
@@ -50,25 +50,25 @@ can power a rich, safe, content distribution system.
 # Usage
 
 While the [godoc](https://godoc.org/github.com/opencontainers/go-digest) is
-considered the best resource, a few important items need to be called 
+considered the best resource, a few important items need to be called
 out when using this package.
 
 1. Make sure to import the hash implementations into your application
-    or the package will panic. You should have something like the 
+    or the package will panic. You should have something like the
     following in the main (or other entrypoint) of your application:
-   
+
     ```go
     import (
         _ "crypto/sha256"
    	    _ "crypto/sha512"
     )
     ```
-    This may seem inconvenient but it allows you replace the hash 
+    This may seem inconvenient but it allows you replace the hash
     implementations with others, such as https://github.com/stevvooe/resumable.
- 
-2. Even though `digest.Digest` may be assemable as a string, _always_ 
+
+2. Even though `digest.Digest` may be assemable as a string, _always_
     verify your input with `digest.Parse` or use `Digest.Validate`
-    when accepting untrusted input. While there are measures to 
+    when accepting untrusted input. While there are measures to
     avoid common problems, this will ensure you have valid digests
     in the rest of your application.
 
@@ -82,8 +82,8 @@ As always, before using a package export, read the [godoc](https://godoc.org/git
 
 This package is considered fairly complete. It has been in production
 in thousands (millions?) of deployments and is fairly battle-hardened.
-New additions will be met with skepticism. If you think there is a 
-missing feature, please file a bug clearly describing the problem and 
+New additions will be met with skepticism. If you think there is a
+missing feature, please file a bug clearly describing the problem and
 the alternatives you tried before submitting a PR.
 
 # Reporting security issues

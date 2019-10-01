@@ -23,12 +23,12 @@ First you must import it
 Then init a Log (example with console adapter)
 
 	log := NewLogger(10000)
-	log.SetLogger("console", "")	
+	log.SetLogger("console", "")
 
 > the first params stand for how many channel
 
-Use it like this:	
-	
+Use it like this:
+
 	log.Trace("trace")
 	log.Info("info")
 	log.Warn("warning")

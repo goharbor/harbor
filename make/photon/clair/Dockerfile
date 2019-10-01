@@ -9,7 +9,7 @@ RUN tdnf install -y git shadow sudo rpm xz python-xml >>/dev/null\
 COPY ./make/photon/clair/binary/clair /clair/
 COPY ./make/photon/clair/docker-entrypoint.sh /docker-entrypoint.sh
 COPY ./make/photon/clair/dumb-init /dumb-init
-COPY ./make/photon/common/install_cert.sh /harbor 
+COPY ./make/photon/common/install_cert.sh /harbor
 
 VOLUME /config
 

@@ -4,8 +4,8 @@ echo "mode: set" >>profile.cov
 
 deps=""
 
-# listDeps lists packages referenced by package in $1, 
-# excluding golang standard library and packages in 
+# listDeps lists packages referenced by package in $1,
+# excluding golang standard library and packages in
 # direcotry vendor
 function listDeps(){
 	pkg=$1
@@ -28,9 +28,9 @@ do
 
 #    echo "DEBUG: testing package $package"
 	go test -race -cover -coverprofile=profile.tmp -coverpkg "$deps" $package
-	if [ -f profile.tmp ]	
+	if [ -f profile.tmp ]
 	then
 		cat profile.tmp | tail -n +2 >> profile.cov
 		rm profile.tmp
-	fi	
+	fi
 done

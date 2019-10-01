@@ -12,11 +12,11 @@ User guide
 * This test requires that a Harbor instance is running and available.
 * Harbor is set to authenticate against a local database. ( auth_mode is set to **db_auth** .) The user data is stored in a local database.
 * A linux host with Docker CLI installed (Docker client).
-* At least a non-admin user. 
+* At least a non-admin user.
 
 # Test Steps:
 
-**NOTE:**  
+**NOTE:**
 In below test, user A is non-admin user. User A should be replaced by a longer and meaningful name.
 
 1. Log in to UI as user A (non-admin).

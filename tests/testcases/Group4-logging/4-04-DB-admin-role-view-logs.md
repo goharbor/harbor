@@ -17,13 +17,13 @@ User guide
 
 **NOTE:** The below non-admin user A should NOT be the same as the non-admin user in Test 4-03.
 
-1. Assign an non-admin user A with system admin role. 
+1. Assign an non-admin user A with system admin role.
 2. Repeat all steps in Test 4-03.
 
 
 # Expected Outcome:
 
-* A user with admin role can perform all operations the same as the admin user. 
+* A user with admin role can perform all operations the same as the admin user.
 * Outcome should be the same as Test 4-03.
 
 # Possible Problems:

@@ -1,4 +1,4 @@
-Test 6-01 - OVA Upgrade 
+Test 6-01 - OVA Upgrade
 =======
 
 # Purpose:
@@ -16,7 +16,7 @@ User guide, installation guide of Harbor OVA version.
 
 # Test Steps:
 
-TBD  
+TBD
 
 1. Normal flow should include rollback steps.
 

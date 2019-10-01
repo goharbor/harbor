@@ -200,7 +200,7 @@ type AssumeRoleProvider struct {
 	// by a random percentage between 0 and MaxJitterFraction. MaxJitterFrac must
 	// have a value between 0 and 1. Any other value may lead to expected behavior.
 	// With a MaxJitterFrac value of 0, default) will no jitter will be used.
-	// 
+	//
 	// For example, with a Duration of 30m and a MaxJitterFrac of 0.1, the
 	// AssumeRole call will be made with an arbitrary Duration between 27m and
 	// 30m.

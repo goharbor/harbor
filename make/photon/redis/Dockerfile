@@ -1,6 +1,6 @@
 FROM photon:2.0
 
-RUN tdnf install -y redis sudo 
+RUN tdnf install -y redis sudo
 
 VOLUME /var/lib/redis
 WORKDIR /var/lib/redis

@@ -1,7 +1,7 @@
 # registryapi
 api for docker registry by token authorization
 
-+ a simple api class which lies in registryapi.py, which simulates the interactions 
++ a simple api class which lies in registryapi.py, which simulates the interactions
 between docker registry and the vendor authorization platform like harbor.
 ```
 usage:
@@ -14,7 +14,7 @@ res = api.deleteManifest('public/ubuntu', '23424545**4343')
 
 ```
 
-+ a simple client tool based on api class, which contains basic read and delete 
++ a simple client tool based on api class, which contains basic read and delete
 operations for repo, tag, manifest
 ```
 usage:

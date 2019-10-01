@@ -36,7 +36,7 @@ Test Case - Home Page Differences With DB Mode
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Logout Harbor
     Sleep  2
-    Page Should Not Contain  Sign up 
+    Page Should Not Contain  Sign up
     Page Should Not Contain  Forgot password
     Close Browser
 
@@ -58,7 +58,7 @@ Test Case - UAA User Push An Image
     ${d}=    Get Current Date    result_format=%m%s
     Sign In Harbor  ${HARBOR_URL}  mike  zhu88jie
     Create An New Project  project${d}
-    
+
     Push Image  ${ip}  mike  zhu88jie  project${d}  hello-world:latest
     Go Into Project  project${d}
     Wait Until Page Contains  project${d}/hello-world

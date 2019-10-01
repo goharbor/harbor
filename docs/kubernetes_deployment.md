@@ -9,15 +9,15 @@ This Document describes how to deploy Harbor on Kubernetes. It has been verified
 * **Optional**: Load the docker images onto worker nodes.  *If you skip this step, worker node will pull images from Docker Hub when starting the pods.*
 	* Download the offline installer of Harbor v1.2.0 from the [release](https://github.com/goharbor/harbor/releases) page.
 	* Uncompress the offline installer and get the images tgz file harbor.*.tgz, transfer it to each of the worker nodes.
-	* Load the images into docker:  
+	* Load the images into docker:
 		```
-		docker load -i harbor.*.tgz 
+		docker load -i harbor.*.tgz
 		```
 
 ### Configuration
-We provide a python script `make/kubernetes/k8s-prepare` to generate Kubernetes ConfigMap files. 
+We provide a python script `make/kubernetes/k8s-prepare` to generate Kubernetes ConfigMap files.
 The script is written in python, so you need a version of python in your deployment environment.
-Also the script need `openssl` to generate private key and certification, make sure you have a workable `openssl`. 
+Also the script need `openssl` to generate private key and certification, make sure you have a workable `openssl`.
 
 There are some args of the python script:
 
@@ -37,7 +37,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
   ```
 - `make/kubernetes/**/*.svc.yaml`: Specify the service of pods.
 - `make/kubernetes/**/*.deploy.yaml`: Specify configs of containers.
-- `make/kubernetes/pv/*.pvc.yaml`: Persistent Volume Claim.  
+- `make/kubernetes/pv/*.pvc.yaml`: Persistent Volume Claim.
   You can set capacity of storage in these files. example:
 
   ```yaml
@@ -47,7 +47,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
       storage: 100Gi
   ```
 
-- `make/kubernetes/pv/*.pv.yaml`: Persistent Volume. Be bound with `*.pvc.yaml`.  
+- `make/kubernetes/pv/*.pv.yaml`: Persistent Volume. Be bound with `*.pvc.yaml`.
   PVs and PVCs are one to one correspondence. If you changed capacity of PVC, you need to set capacity of PV together.
   example:
 
@@ -65,7 +65,7 @@ These Basic Configuration must be set. Otherwise you can't deploy Harbor on Kube
     path: /data/registry
   ```
 
-  For more information about storage solution, Please check [Kubernetes Document](http://kubernetes.io/docs/user-guide/persistent-volumes/) 
+  For more information about storage solution, Please check [Kubernetes Document](http://kubernetes.io/docs/user-guide/persistent-volumes/)
 
 Then you can generate ConfigMap files by :
 
@@ -102,7 +102,7 @@ You can find all configs of Harbor in `make/kubernetes/templates/`. There are sp
   storage:
       filesystem:
         rootdirectory: /storage
-  ``` 
+  ```
 
   If you want use another storage backend, please see [Docker Doc](https://docs.docker.com/datacenter/dtr/2.1/guides/configure/configure-storage/)
 - `ui.cm.yaml`: Token service private key, ENV and web config of ui.

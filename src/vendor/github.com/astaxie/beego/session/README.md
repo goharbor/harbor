@@ -22,7 +22,7 @@ First you must import it
 	)
 
 Then in you web app init the global session manager
-	
+
 	var globalSessions *session.Manager
 
 * Use **memory** as provider:
@@ -45,7 +45,7 @@ Then in you web app init the global session manager
 			globalSessions, _ = session.NewManager("redis", `{"cookieName":"gosessionid","gclifetime":3600,"ProviderConfig":"127.0.0.1:6379,100,astaxie"}`)
 			go globalSessions.GC()
 		}
-		
+
 * Use **MySQL** as provider, the last param is the DSN, learn more from [mysql](https://github.com/go-sql-driver/mysql#dsn-data-source-name):
 
 		func init() {
@@ -85,8 +85,8 @@ Finally in the handlerfunc you can use it like this
 
 When you develop a web app, maybe you want to write own provider because you must meet the requirements.
 
-Writing a provider is easy. You only need to define two struct types 
-(Session and Provider), which satisfy the interface definition. 
+Writing a provider is easy. You only need to define two struct types
+(Session and Provider), which satisfy the interface definition.
 Maybe you will find the **memory** provider is a good example.
 
 	type SessionStore interface {
@@ -97,7 +97,7 @@ Maybe you will find the **memory** provider is a good example.
 		SessionRelease(w http.ResponseWriter) // release the resource & save data to provider & return the data
 		Flush() error                         //delete all data
 	}
-	
+
 	type Provider interface {
 		SessionInit(gclifetime int64, config string) error
 		SessionRead(sid string) (SessionStore, error)

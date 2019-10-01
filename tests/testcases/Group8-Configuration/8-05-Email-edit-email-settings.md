@@ -1,9 +1,9 @@
-Test 8-05 -Update email settings 
+Test 8-05 -Update email settings
 =======
 
 # Purpose:
 
-To verify that an admin user can update email settings.  
+To verify that an admin user can update email settings.
 
 # References:
 User guide
@@ -14,11 +14,11 @@ User guide
 
 # Test Steps:
 
-1. Login UI as admin user.  
-2. In configuration email page, change email settings.  
-3. Save settings and logout.  
-4. Login to check if email settings has been saved.  
-5. Click test mail server.  
+1. Login UI as admin user.
+2. In configuration email page, change email settings.
+3. Save settings and logout.
+4. Login to check if email settings has been saved.
+5. Click test mail server.
 
 # Expected Outcome:
 

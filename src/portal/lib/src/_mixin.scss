@@ -1,5 +1,5 @@
-@mixin text-overflow 
-{ 
+@mixin text-overflow
+{
     overflow: hidden;
     text-overflow: ellipsis;
     word-wrap:break-word;
@@ -7,8 +7,8 @@
 }
 
 
-@mixin text-overflow-param($width) { 
-    width: $width; 
+@mixin text-overflow-param($width) {
+    width: $width;
     @include text-overflow;
 }
 

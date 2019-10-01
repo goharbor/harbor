@@ -43,7 +43,7 @@ def migrate(input_cfg, output_cfg):
     if not 'registry' in np_list:
         np_list.append('registry')
         val['no_proxy'] = ','.join(np_list)
-    #handle harbor db information, if it previously pointed to internal mariadb, point it to the new default db instance of pgsql, 
+    #handle harbor db information, if it previously pointed to internal mariadb, point it to the new default db instance of pgsql,
     #update user to default pgsql user.
     if 'mysql' == d['db_host']:
         val['db_host'] = 'postgresql'

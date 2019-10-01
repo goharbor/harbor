@@ -44,7 +44,7 @@ after_success:
 
 before_deploy:
   - make build-cli
-  - gem install --no-ri --no-rdoc fpm 
+  - gem install --no-ri --no-rdoc fpm
   - fpm -s dir -t deb -n migrate -v "$(git describe --tags 2>/dev/null | cut -c 2-)" --license MIT -m dhui@users.noreply.github.com --url https://github.com/golang-migrate/migrate --description='Database migrations' -a amd64 -p migrate.$(git describe --tags 2>/dev/null | cut -c 2-).deb --deb-no-default-config-files -f -C cli/build migrate.linux-amd64=/usr/bin/migrate
 
 deploy:

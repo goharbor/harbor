@@ -43,15 +43,15 @@ $size24:24px;
     cursor: pointer;
 }
 
-.arrow-block {	
-    border-right: 2px solid #cccccc;	
-    margin-right: 6px;	
-    display: inline-flex;	
-    padding: 6px 6px 6px 12px;	
-}	
-	
-.title-block {	
-    display: inline-block;	
+.arrow-block {
+    border-right: 2px solid #cccccc;
+    margin-right: 6px;
+    display: inline-flex;
+    padding: 6px 6px 6px 12px;
+}
+
+.title-block {
+    display: inline-block;
 }
 
 
@@ -101,7 +101,7 @@ $size24:24px;
                 @include flex-center;
             }
         }
-    }   
+    }
 }
 
 .fourth-column{

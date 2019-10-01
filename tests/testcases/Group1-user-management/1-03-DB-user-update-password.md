@@ -21,7 +21,7 @@ User guide
 3. The user logs out.
 4. The same user logs in to the UI by **email** using the new password.
 5. The user can log in using `docker login` command using the new password.
-6. The user goes to the page to change his/her own password. Provide invalid values of input to see if validation works:  
+6. The user goes to the page to change his/her own password. Provide invalid values of input to see if validation works:
 
 * old password is incorrect
 * password input does not compliant to password rule

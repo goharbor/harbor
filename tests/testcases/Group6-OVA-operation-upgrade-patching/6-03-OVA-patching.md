@@ -1,9 +1,9 @@
-Test 6-03 - OVA Patching 
+Test 6-03 - OVA Patching
 =======
 
 # Purpose:
 
-To verify that an OVA version of Harbor can be patching. 
+To verify that an OVA version of Harbor can be patching.
 
 # References:
 User guide, installation guide of Harbor OVA version.

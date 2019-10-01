@@ -15,14 +15,14 @@ User guide
 
 # Test Steps:
 
-1. Login UI as admin user.  
-2. In `Administration->Registries` page, delete an endpoint in use by a rule.  
-3. In `Administration->Registries` page, delete an endpoint not in use by a rule.  
+1. Login UI as admin user.
+2. In `Administration->Registries` page, delete an endpoint in use by a rule.
+3. In `Administration->Registries` page, delete an endpoint not in use by a rule.
 
 # Expected Outcome:
 
-* In step2, endpoint can not be deleted.  
-* In step3, endpoint can be deleted.  
+* In step2, endpoint can not be deleted.
+* In step3, endpoint can be deleted.
 
 # Possible Problems:
 None

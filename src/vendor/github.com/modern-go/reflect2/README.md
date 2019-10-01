@@ -58,8 +58,8 @@ to get set `type`, always use its pointer `*type`
 # benchmark
 
 Benchmark is not necessary for this package. It does nothing actually.
-As it is just a thin wrapper to make go runtime public. 
-Both `reflect2` and `reflect` call same function 
+As it is just a thin wrapper to make go runtime public.
+Both `reflect2` and `reflect` call same function
 provided by `runtime` package exposed by go language.
 
 # unsafe safety

@@ -32,7 +32,7 @@ is now directly mapped to...
 		User string
 		*StandardClaims
 	}
-	
+
 	if token, err := jwt.ParseWithClaims(tokenString, &MyCustomClaims{}, keyLookupFunc); err == nil {
 		claims := token.Claims.(*MyCustomClaims)
 		fmt.Printf("Token for user %v expires %v", claims.User, claims.StandardClaims.ExpiresAt)
@@ -78,19 +78,19 @@ Due to a [critical vulnerability](https://auth0.com/blog/2015/03/31/critical-vul
 
 To replace this behavior, we've added two helper methods: `ParseRSAPrivateKeyFromPEM(key []byte) (*rsa.PrivateKey, error)` and `ParseRSAPublicKeyFromPEM(key []byte) (*rsa.PublicKey, error)`.  These are just simple helpers for unpacking PEM encoded PKCS1 and PKCS8 keys. If your keys are encoded any other way, all you need to do is convert them to the `crypto/rsa` package's types.
 
-```go 
+```go
 	func keyLookupFunc(*Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodRSA); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		
-		// Look up key 
+
+		// Look up key
 		key, err := lookupPublicKey(token.Header["kid"])
 		if err != nil {
 			return nil, err
 		}
-		
+
 		// Unpack key from PEM encoded PKCS8
 		return jwt.ParseRSAPublicKeyFromPEM(key)
 	}

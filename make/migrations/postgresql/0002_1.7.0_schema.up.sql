@@ -14,7 +14,7 @@ CREATE UNIQUE INDEX job_log_uuid ON job_log (job_uuid);
 /*
 Rename the duplicate names before adding "UNIQUE" constraint
 */
-DO $$ 
+DO $$
 BEGIN
     WHILE EXISTS (SELECT count(*) FROM replication_policy GROUP BY name HAVING count(*) > 1) LOOP
         UPDATE replication_policy AS r
@@ -22,7 +22,7 @@ BEGIN
             /*
             truncate the name if it is too long after appending the sequence number
             */
-            CASE WHEN (length(name)+length(v.seq::text)+1) > 256 
+            CASE WHEN (length(name)+length(v.seq::text)+1) > 256
             THEN
                 substring(name from 1 for (255-length(v.seq::text))) || '_' || v.seq
             ELSE
@@ -37,12 +37,12 @@ END $$;
 /*
 Rename the duplicate names before adding "UNIQUE" constraint
 */
-DO $$ 
+DO $$
 BEGIN
     WHILE EXISTS (SELECT count(*) FROM replication_target GROUP BY name HAVING count(*) > 1) LOOP
         UPDATE replication_target AS t
         SET name = (
-            CASE WHEN (length(name)+length(v.seq::text)+1) > 64 
+            CASE WHEN (length(name)+length(v.seq::text)+1) > 64
             THEN
                 substring(name from 1 for (63-length(v.seq::text))) || '_' || v.seq
             ELSE

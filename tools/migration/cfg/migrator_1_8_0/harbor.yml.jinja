@@ -61,7 +61,7 @@ clair:
   no_proxy: {{ no_proxy }}
 
 jobservice:
-  # Maximum number of job workers in job service  
+  # Maximum number of job workers in job service
   max_job_workers: {{ max_job_workers }}
 
 # Log configurations
@@ -70,8 +70,8 @@ log:
   level: info
   # Log files are rotated log_rotate_count times before being removed. If count is 0, old versions are removed rather than rotated.
   rotate_count: {{ log_rotate_count }}
-  # Log files are rotated only if they grow bigger than log_rotate_size bytes. If size is followed by k, the size is assumed to be in kilobytes. 
-  # If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G 
+  # Log files are rotated only if they grow bigger than log_rotate_size bytes. If size is followed by k, the size is assumed to be in kilobytes.
+  # If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G
   # are all valid.
   rotate_size: {{ log_rotate_size }}
   # The directory on your host that store log
