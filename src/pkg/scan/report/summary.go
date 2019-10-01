@@ -80,8 +80,15 @@ func GenerateNativeSummary(r *scan.Report) (interface{}, error) {
 
 	sum.Severity = rp.Severity
 	vsum := &vuln.VulnerabilitySummary{
-		Total:   len(rp.Vulnerabilities),
-		Summary: make(vuln.SeveritySummary),
+		Total: len(rp.Vulnerabilities),
+		Summary: vuln.SeveritySummary{
+			vuln.Unknown:    0,
+			vuln.Negligible: 0,
+			vuln.Low:        0,
+			vuln.Medium:     0,
+			vuln.High:       0,
+			vuln.Critical:   0,
+		},
 	}
 
 	for _, v := range rp.Vulnerabilities {
