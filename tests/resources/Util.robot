@@ -235,7 +235,7 @@ Retry Keyword When Error
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
 Retry Keyword When Return Value Mismatch
-    [Arguments]  ${keyword}  ${expected_value}  @{elements}  ${count}=6
+    [Arguments]  ${keyword}  ${expected_value}  ${count}  @{elements}
     :For  ${n}  IN RANGE  1  ${count}
     \    Log To Console  Trying ${keyword} ${n} times ...
     \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
