@@ -109,6 +109,14 @@ export class TagDetailComponent implements OnInit {
       : "TAG.ANONYMITY";
   }
 
+  get criticalCount(): number {
+    if (this.vulnerabilitySummary && this.vulnerabilitySummary.summary
+        && this.vulnerabilitySummary.summary.summary) {
+      return this.vulnerabilitySummary.summary.summary[VULNERABILITY_SEVERITY.CRITICAL];
+    }
+    return 0;
+  }
+
   get highCount(): number {
     if (this.vulnerabilitySummary && this.vulnerabilitySummary.summary
         && this.vulnerabilitySummary.summary.summary) {

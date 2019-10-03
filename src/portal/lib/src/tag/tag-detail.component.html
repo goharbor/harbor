@@ -39,13 +39,8 @@
                     </section>
                 </div>
             </div>
-            <div *ngIf="hasCve"  class="col-md-4 col-sm-6">
-                <histogram-chart [highCount]="highCount"
-                                 [mediumCount]="mediumCount"
-                                 [lowCount]="lowCount"
-                                 [unknownCount]="unknownCount"
-                                 [negligibleCount]="negligibleCount"
-                                 [isWhiteBackground]="true"></histogram-chart>
+            <div *ngIf="hasCve" class="col-md-4 col-sm-6">
+                <histogram-chart [criticalCount]="criticalCount" [highCount]="highCount" [mediumCount]="mediumCount" [lowCount]="lowCount" [unknownCount]="unknownCount" [negligibleCount]="negligibleCount" [isWhiteBackground]="true"></histogram-chart>
             </div>
             <div *ngIf="!withAdmiral && tagDetails?.labels?.length">
                 <div class="third-column detail-title">{{'TAG.LABELS' | translate }}</div>

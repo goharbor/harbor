@@ -61,17 +61,17 @@
                     <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1)||!hasAddLabelImagePermission" (click)="addLabels(selectedRow)"><clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}</button>
                     <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
                         <clr-dropdown>
-                             <div class="filter-grid">
-                            <label class="dropdown-header">{{'REPOSITORY.ADD_LABEL_TO_IMAGE' | translate}}</label>
-                            <div class="form-group"><input clrInput type="text" placeholder="Filter labels" [(ngModel)]="stickName" (keyup)="handleStickInputFilter()"></div>
-                            <div [hidden]='imageStickLabels.length' class="no-labels">{{'LABEL.NO_LABELS' | translate }}</div>
-                            <div [hidden]='!imageStickLabels.length' class="has-label">
-                                <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' [hidden]='!label.show' (click)="stickLabel(label)">
+                            <div class="filter-grid">
+                                <label class="dropdown-header">{{'REPOSITORY.ADD_LABEL_TO_IMAGE' | translate}}</label>
+                                <div class="form-group"><input clrInput type="text" placeholder="Filter labels" [(ngModel)]="stickName" (keyup)="handleStickInputFilter()"></div>
+                                <div [hidden]='imageStickLabels.length' class="no-labels">{{'LABEL.NO_LABELS' | translate }}</div>
+                                <div [hidden]='!imageStickLabels.length' class="has-label">
+                                    <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' [hidden]='!label.show' (click)="stickLabel(label)">
                                   <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
                                   <div class='labelDiv'><hbr-label-piece [label]="label.label"  [labelWidth]="130"></hbr-label-piece></div>
                                 </button>
+                                </div>
                             </div>
-                        </div>
                         </clr-dropdown>
                     </clr-dropdown-menu>
                 </clr-dropdown>
@@ -99,7 +99,7 @@
                     <hbr-copy-input #copyInput (onCopyError)="onCpError($event)" iconMode="true" defaultValue="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}"></hbr-copy-input>
                 </clr-dg-cell>
                 <clr-dg-cell>
-                    <hbr-vulnerability-bar [tagStatus]="handleScanOverview(t.scan_overview)?.scan_status" [repoName]="repoName" [tagId]="t.name" [summary]="handleScanOverview(t.scan_overview)"></hbr-vulnerability-bar>
+                    <hbr-vulnerability-bar [repoName]="repoName" [tagId]="t.name" [summary]="handleScanOverview(t.scan_overview)"></hbr-vulnerability-bar>
                 </clr-dg-cell>
                 <clr-dg-cell *ngIf="withNotary" [ngSwitch]="t.signature !== null">
                     <clr-icon shape="check-circle" *ngSwitchCase="true" size="20" class="color-green"></clr-icon>

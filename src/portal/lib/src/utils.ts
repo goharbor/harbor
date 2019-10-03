@@ -247,7 +247,8 @@ export const VULNERABILITY_SEVERITY = {
     UNKNOWN: "Unknown",
     LOW: "Low",
     MEDIUM: "Medium",
-    HIGH: "High"
+    HIGH: "High",
+    CRITICAL: "Critical"
 };
 
 /**
