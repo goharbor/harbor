@@ -11,8 +11,19 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-export class Retention {
+export class BaseRetention {
     algorithm: string;
+    scope: {
+        level: string,
+        ref: number;
+    };
+    cap: number;
+
+    constructor() {
+        this.algorithm = "or";
+    }
+}
+export class Retention extends BaseRetention {
     rules: Array<Rule>;
     trigger: {
         kind: string;
@@ -21,15 +32,9 @@ export class Retention {
             cron: string;
         }
     };
-    scope: {
-        level: string,
-        ref: number;
-    };
-    cap: number;
-
     constructor() {
+        super();
         this.rules = [];
-        this.algorithm = "or";
         this.trigger = {
             kind: "Schedule",
             references: {},
@@ -40,13 +45,12 @@ export class Retention {
     }
 }
 
-export class Rule {
+export class BaseRule {
     disabled: boolean;
+    template: string;
     id: number;
     priority: number;
     action: string;
-    template: string;
-    params: object;
     tag_selectors: Array<Selector>;
     scope_selectors: {
         repository: Array<Selector>;
@@ -55,7 +59,6 @@ export class Rule {
     constructor() {
         this.disabled = false;
         this.action = "retain";
-        this.params = {};
         this.scope_selectors = {
             repository: [
                 {
@@ -72,6 +75,27 @@ export class Rule {
                 pattern: '**'
             }
         ];
+    }
+}
+
+export class ImmutableRetentionRule extends BaseRule {
+    project_id: number;
+    constructor(project_id) {
+        super();
+        this.project_id = project_id;
+        this.priority = 0;
+        this.action = 'immutable';
+        this.template = 'immutable_template';
+    }
+}
+// rule for tag-retention
+export class Rule extends BaseRule {
+
+    params: object;
+
+    constructor() {
+        super();
+        this.params = {};
     }
 }
 

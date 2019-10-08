@@ -247,7 +247,8 @@
         "CONFIG": "Ayarlar",
         "HELMCHART": "Helm Tabloları",
         "ROBOT_ACCOUNTS": "Robot Hesapları",
-        "WEBHOOKS": "Ağ Kancaları"
+        "WEBHOOKS": "Ağ Kancaları",
+        "IMMUTABLE_TAG": "Immutable Tag"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Proje kaydı",
@@ -318,10 +319,10 @@
         "TOKEN": "Token",
         "NEW_ROBOT_ACCOUNT": "YENİ ROBOT HESABI",
         "ENABLED_STATE": "Etkin durum",
-        "NUMBER_REQUIRED":"Alan zorunludur ve 0 dışında bir tam sayı olmalıdır.",
+        "NUMBER_REQUIRED": "Alan zorunludur ve 0 dışında bir tam sayı olmalıdır.",
         "DESCRIPTION": "Açıklama",
         "EXPIRATION": "Süre Sonu",
-        "TOKEN_EXPIRATION":"Robot Token Sona Ermesi (Günler)",
+        "TOKEN_EXPIRATION": "Robot Token Sona Ermesi (Günler)",
         "ACTION": "Eylem",
         "EDIT": "Düzenle",
         "ITEMS": "parça",
@@ -342,8 +343,8 @@
         "COPY_SUCCESS": "Token başarıyla kopyala '{{param}}'",
         "DELETION_TITLE": "Robot hesaplarının kaldırılmasını onaylayın",
         "DELETION_SUMMARY": "Robot hesaplarını silmek istiyor musunuz {{param}}?",
-        "PULL_IS_MUST" : "Çekme izni varsayılan olarak kontrol edilir ve değiştirilemez.",
-        "EXPORT_TO_FILE" : "dosyayı dışarı aktar"
+        "PULL_IS_MUST": "Çekme izni varsayılan olarak kontrol edilir ve değiştirilemez.",
+        "EXPORT_TO_FILE": "dosyayı dışarı aktar"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "DÜZENLE",
@@ -450,7 +451,7 @@
         "BOTH": "her ikisi de",
         "STOP_SUCCESS": "Yürütmeyi Durdur {{param}} Başarılı",
         "STOP_SUMMARY": "Yürütmeyi durdurmayı iptal istiyor musunuz? {{param}}?",
-        "TASK_ID":"Görev ID",
+        "TASK_ID": "Görev ID",
         "RESOURCE_TYPE": "Kaynak tipi",
         "SOURCE": "Kaynak",
         "DESTINATION": "Hedef",
@@ -483,7 +484,7 @@
         "TESTING_CONNECTION": "Bağlantı Testi...",
         "TEST_CONNECTION_SUCCESS": "Bağlantı başarıyla test edildi.",
         "TEST_CONNECTION_FAILURE": "Ping atılamadı",
-        "ID":"ID",
+        "ID": "ID",
         "NAME": "İsim",
         "NAME_IS_REQUIRED": "İsim gerekli.",
         "DESCRIPTION": "Açıklama",
@@ -492,7 +493,7 @@
         "REPLICATION_MODE": "Çoğaltma modu",
         "SRC_REGISTRY": "Kaynak kaydı",
         "DESTINATION_NAMESPACE": "Hedef kayıt defteri: Ad alanı",
-        "LAST_REPLICATION":"Son Çoğaltma",
+        "LAST_REPLICATION": "Son Çoğaltma",
         "DESTINATION_NAME_IS_REQUIRED": "Uç noktası adı gerekli.",
         "NEW_DESTINATION": "Yeni Uç Noktası",
         "DESTINATION_URL": "Uç Noktası URL",
@@ -548,7 +549,7 @@
         "SOURCE_RESOURCE_FILTER": "Kaynak vasıtası filtresi",
         "SCHEDULED": "Belirlenmiş",
         "MANUAL": "Manuel",
-        "EVENT_BASED":"Etkinlik Tabanı",
+        "EVENT_BASED": "Etkinlik Tabanı",
         "DAILY": "Günlük",
         "WEEKLY": "Haftalık",
         "SETTING": "Ayarlar",
@@ -567,14 +568,14 @@
         "ACKNOWLEDGE": "Onaylamak",
         "RULE_DISABLED": "Bu kural, filtresinde kullanılan bir etiket silindiğinden dolayı devre dışı bırakıldı. \n Kuralı düzenleyin ve etkinleştirmek için filtresini güncelleyin.",
         "REPLI_MODE": "Çoğaltma modu",
-        "SOURCE_REGISTRY":"Kaynak kaydı",
-        "SOURCE_NAMESPACES":"Kaynak ad alanları",
-        "DEST_REGISTRY":"Hedef kaydı",
-        "DEST_NAMESPACE":"Hedef ad alanı",
+        "SOURCE_REGISTRY": "Kaynak kaydı",
+        "SOURCE_NAMESPACES": "Kaynak ad alanları",
+        "DEST_REGISTRY": "Hedef kaydı",
+        "DEST_NAMESPACE": "Hedef ad alanı",
         "NAMESPACE_TOOLTIP": "İsim alanı ismi en az 2 karakter uzunluğunda, küçük harfli karakterler, sayılar ve ._- ile başlamalı ve karakter veya sayılarla başlamalıdır. Ad alanı adı en az 2 karakter uzunluğunda, küçük harf, rakam ve ._- ile başlamalı ve karakter veya rakamlarla başlamalıdır.",
-        "TAG":"Etiketlemek",
-        "LABEL":"Etiket",
-        "RESOURCE":"Kaynak"
+        "TAG": "Etiketlemek",
+        "LABEL": "Etiket",
+        "RESOURCE": "Kaynak"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Yeni Uç Nokta",
@@ -584,7 +585,7 @@
         "NAME_IS_REQUIRED": "Uç noktası adı gerekli.",
         "URL": "Uç noktası adı gerekli.",
         "URL_IS_REQUIRED": "Uç noktası URL gerekli.",
-        "AUTHENTICATION":"Doğrulama",
+        "AUTHENTICATION": "Doğrulama",
         "ACCESS_ID": "Erişim kimliği",
         "ACCESS_SECRET": "Erişim Şifresi",
         "STATUS": "Durum",
@@ -815,9 +816,9 @@
             "READONLY_TOOLTIP": "Salt okunur modda, depoları veya imajları silemez veya görüntüleri yükleyemezsiniz.",
             "REPO_TOOLTIP": "Kullanıcılar bu moddaki imajlarda hiçbir işlem yapamazlar.",
             "WEBHOOK_TOOLTIP": "Görüntü veya grafik olarak basılan, çekilmiş, silinen, taranan gibi bazı eylemler gerçekleştirildiğinde ağ kancalarının belirtilen bitiş noktalarınızdan geri aramalar almasını sağlayın",
-            "HOURLY_CRON":"Saat başı bir saat, saat başı çalıştırın. Eşittir 0 0 * * * *.",
-            "WEEKLY_CRON":"Haftada bir kez, gece yarısı Cmt / Paz arasında koşun. Eşittir 0 0 0 * * 0.",
-            "DAILY_CRON":"Günde bir kez, gece yarısı çalıştırın. Eşittir0 0 0 * * *."
+            "HOURLY_CRON": "Saat başı bir saat, saat başı çalıştırın. Eşittir 0 0 * * * *.",
+            "WEEKLY_CRON": "Haftada bir kez, gece yarısı Cmt / Paz arasında koşun. Eşittir 0 0 0 * * 0.",
+            "DAILY_CRON": "Günde bir kez, gece yarısı çalıştırın. Eşittir0 0 0 * * *."
         },
         "LDAP": {
             "URL": "LDAP URL",

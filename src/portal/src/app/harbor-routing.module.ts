@@ -61,6 +61,7 @@ import { OidcOnboardComponent } from './oidc-onboard/oidc-onboard.component';
 import { LicenseComponent } from './license/license.component';
 import { SummaryComponent } from './project/summary/summary.component';
 import { TagRetentionComponent } from './project/tag-retention/tag-retention.component';
+import { ImmutableTagComponent } from './project/immutable-tag/immutable-tag.component';
 import { USERSTATICPERMISSION } from '@harbor/ui';
 import { ScannerComponent } from "./project/scanner/scanner.component";
 
@@ -276,6 +277,16 @@ const harborRoutes: Routes = [
               }
             },
             component: TagRetentionComponent
+          },
+          {
+            path: 'immutable-tag',
+            data: {
+              permissionParam: {
+                resource: USERSTATICPERMISSION.TAG_RETENTION.KEY,
+                action: USERSTATICPERMISSION.TAG_RETENTION.VALUE.READ
+              }
+            },
+            component: ImmutableTagComponent
           },
           {
             path: 'webhook',
