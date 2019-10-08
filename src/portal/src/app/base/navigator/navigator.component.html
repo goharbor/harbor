@@ -2,9 +2,9 @@
     <div class="branding">
         <a href="javascript:void(0)" class="nav-link" (click)="homeAction()">
             <!-- <clr-icon shape="vm-bug"  *ngIf="!customStyle?.headerLogo"></clr-icon> -->
-            <img [src]="'images/harbor-logo.svg'" class="harbor-logo" />
-            <img [attr.src]="'static/images/'+customStyle?.headerLogo" *ngIf="customStyle?.headerLogo" class="headerLogo">
-            <span class="title">{{customProjectName?.projectName? customProjectName?.projectName:(appTitle | translate)}}</span>
+            <img [attr.src]="'images/'+customStyle?.headerLogo" *ngIf="customStyle?.headerLogo;else elseBlock" class="headerLogo">
+            <ng-template #elseBlock><img [src]="'images/harbor-logo.svg'" class="harbor-logo" /></ng-template>
+            <span class="title">{{customProjectName?.name? customProjectName?.name:(appTitle | translate)}}</span>
         </a>
     </div>
     <div class="header-nav">
