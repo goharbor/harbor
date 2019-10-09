@@ -224,4 +224,38 @@ export class TagDetailComponent implements OnInit {
       error => this.errorHandler.error(error)
     );
   }
+  passMetadataToChart() {
+    return [
+      {
+        text: 'VULNERABILITY.SEVERITY.CRITICAL',
+        value: this.criticalCount ? this.criticalCount : 0,
+        color: 'red'
+      },
+      {
+        text: 'VULNERABILITY.SEVERITY.HIGH',
+        value: this.highCount ? this.highCount : 0,
+        color: '#e64524'
+      },
+      {
+        text: 'VULNERABILITY.SEVERITY.MEDIUM',
+        value: this.mediumCount ? this.mediumCount : 0,
+        color: 'orange'
+      },
+      {
+        text: 'VULNERABILITY.SEVERITY.LOW',
+        value: this.lowCount ? this.lowCount : 0,
+        color: '#007CBB'
+      },
+      {
+        text: 'VULNERABILITY.SEVERITY.NEGLIGIBLE',
+        value: this.negligibleCount ? this.negligibleCount : 0,
+        color: 'green'
+      },
+      {
+        text: 'VULNERABILITY.SEVERITY.UNKNOWN',
+        value: this.unknownCount ? this.unknownCount : 0,
+        color: 'grey'
+      },
+    ];
+  }
 }

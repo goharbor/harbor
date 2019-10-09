@@ -290,14 +290,14 @@ export enum VulnerabilitySeverity {
 
 export interface VulnerabilityBase {
   id: string;
-  severity: VulnerabilitySeverity;
+  severity: string;
   package: string;
   version: string;
 }
 
 export interface VulnerabilityItem extends VulnerabilityBase {
   links: string;
-  fixedVersion: string;
+  fix_version: string;
   layer?: string;
   description: string;
 }
