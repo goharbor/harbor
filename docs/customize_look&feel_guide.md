@@ -10,11 +10,10 @@ Open the `setting.json` file, you'll see the default content as shown below:
   "headerBgColor": "#004a70",
   "headerLogo": "",
   "loginBgImg": "",
+  "appTitle": "",
   "product": {
-    "title": "Harbor",
-    "company": "goharbor",
     "name": "Harbor",
-    "introductions": {
+    "introduction": {
       "zh-cn": "",
       "es-es": "",
       "en-us": ""
