@@ -32,7 +32,7 @@ import (
 	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/opencontainers/go-digest"
+	digest "github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -187,6 +187,9 @@ func TestPMSPolicyChecker(t *testing.T) {
 	assert.True(t, projectVulnerableEnabled)
 	assert.Equal(t, projectVulnerableSeverity, models.SevLow)
 	assert.Empty(t, wl.Items)
+
+	contentTrustFlag = GetPolicyChecker().ContentTrustEnabled("non_exist_project")
+	assert.False(t, contentTrustFlag)
 }
 
 func TestCopyResp(t *testing.T) {
