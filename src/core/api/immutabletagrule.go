@@ -1,24 +1,21 @@
 package api
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
-	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
+	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
 )
 
 // ImmutableTagRuleAPI ...
 type ImmutableTagRuleAPI struct {
 	BaseController
-	manager   immutabletag.RuleManager
+	ctr       immutabletag.APIController
 	projectID int64
 	ID        int64
 }
@@ -49,7 +46,7 @@ func (itr *ImmutableTagRuleAPI) Prepare() {
 		itr.ID = ruleID
 	}
 
-	itr.manager = immutabletag.NewDefaultRuleManager()
+	itr.ctr = immutabletag.NewAPIController(immutabletag.NewDefaultRuleManager())
 
 	if strings.EqualFold(itr.Ctx.Request.Method, "get") {
 		if !itr.requireAccess(rbac.ActionList) {
@@ -77,7 +74,7 @@ func (itr *ImmutableTagRuleAPI) requireAccess(action rbac.Action) bool {
 
 // List list all immutable tag rules of current project
 func (itr *ImmutableTagRuleAPI) List() {
-	rules, err := itr.manager.QueryImmutableRuleByProjectID(itr.projectID)
+	rules, err := itr.ctr.ListImmutableRules(itr.projectID)
 	if err != nil {
 		itr.SendInternalServerError(err)
 		return
@@ -87,19 +84,14 @@ func (itr *ImmutableTagRuleAPI) List() {
 
 // Post create immutable tag rule
 func (itr *ImmutableTagRuleAPI) Post() {
-	ir := &models.ImmutableRule{}
-	if err := itr.DecodeJSONReq(ir); err != nil {
-		itr.SendBadRequestError(fmt.Errorf("the filter must be a valid json, failed to parse json, error %+v", err))
+	ir := &model.Metadata{}
+	isValid, err := itr.DecodeJSONReqAndValidate(ir)
+	if !isValid {
+		itr.SendBadRequestError(err)
 		return
 	}
-
-	if !isValidSelectorJSON(ir.TagFilter) {
-		itr.SendBadRequestError(fmt.Errorf("the filter should be a valid json"))
-		return
-	}
-
 	ir.ProjectID = itr.projectID
-	id, err := itr.manager.CreateImmutableRule(ir)
+	id, err := itr.ctr.CreateImmutableRule(ir)
 	if err != nil {
 		itr.SendInternalServerError(err)
 		return
@@ -114,7 +106,7 @@ func (itr *ImmutableTagRuleAPI) Delete() {
 		itr.SendBadRequestError(fmt.Errorf("invalid immutable rule id %d", itr.ID))
 		return
 	}
-	_, err := itr.manager.DeleteImmutableRule(itr.ID)
+	err := itr.ctr.DeleteImmutableRule(itr.ID)
 	if err != nil {
 		itr.SendInternalServerError(err)
 		return
@@ -123,9 +115,9 @@ func (itr *ImmutableTagRuleAPI) Delete() {
 
 // Put update an immutable tag rule
 func (itr *ImmutableTagRuleAPI) Put() {
-	ir := &models.ImmutableRule{}
+	ir := &model.Metadata{}
 	if err := itr.DecodeJSONReq(ir); err != nil {
-		itr.SendInternalServerError(err)
+		itr.SendBadRequestError(err)
 		return
 	}
 	ir.ID = itr.ID
@@ -135,32 +127,9 @@ func (itr *ImmutableTagRuleAPI) Put() {
 		itr.SendBadRequestError(fmt.Errorf("invalid immutable rule id %d", itr.ID))
 		return
 	}
-	if len(ir.TagFilter) == 0 {
-		if _, err := itr.manager.EnableImmutableRule(itr.ID, ir.Enabled); err != nil {
-			itr.SendInternalServerError(err)
-			return
-		}
-	} else {
 
-		if !isValidSelectorJSON(ir.TagFilter) {
-			itr.SendBadRequestError(fmt.Errorf("the filter should be a valid json"))
-			return
-		}
-
-		if _, err := itr.manager.UpdateImmutableRule(itr.ID, ir); err != nil {
-			itr.SendInternalServerError(err)
-			return
-		}
+	if err := itr.ctr.UpdateImmutableRule(itr.projectID, ir); err != nil {
+		itr.SendInternalServerError(err)
+		return
 	}
-
-}
-
-func isValidSelectorJSON(filter string) bool {
-	tagSector := &rule.Metadata{}
-	err := json.Unmarshal([]byte(filter), tagSector)
-	if err != nil {
-		log.Errorf("The json is %v", filter)
-		return false
-	}
-	return true
 }
