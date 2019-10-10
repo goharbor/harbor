@@ -7,6 +7,8 @@
     "start": "ng serve --ssl true --ssl-key ssl/server.key --ssl-cert ssl/server.crt --host 0.0.0.0 --proxy-config proxy.config.json",
     "lint": "tslint \"src/**/*.ts\"",
     "lint:lib": "tslint \"lib/**/*.ts\"  -e \"lib/dist/**/*\" ",
+    "lint_fix": "tslint --fix \"src/**/*.ts\"",
+    "lint:lib_fix": "tslint --fix \"lib/**/*.ts\"  -e \"lib/dist/**/*\" ",
     "test": "ng test --code-coverage",
     "test:watch": "ng test --code-coverage --watch",
     "test:debug": "ng test --code-coverage --source-map false",
