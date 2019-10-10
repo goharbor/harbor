@@ -1,18 +1,23 @@
 FROM node:10.15.0 as nodeportal
 
-COPY src/portal /portal_src
-COPY ./docs/swagger.yaml   /portal_src
-COPY ./LICENSE /portal_src
-
 WORKDIR /build_dir
 
+ARG npm_registry=https://registry.npmjs.org
+ENV NPM_CONFIG_REGISTRY=${npm_registry}
 
-RUN cp -r /portal_src/* /build_dir \
-    && ls -la \
-    && apt-get update \
+COPY src/portal/package.json /build_dir
+COPY src/portal/package-lock.json /build_dir
+COPY ./docs/swagger.yaml /build_dir
+
+RUN apt-get update \
     && apt-get install -y --no-install-recommends python-yaml=3.12-1 \
     && python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger.yaml > swagger.json \
-    && npm install \
+    && npm install
+
+COPY ./LICENSE /build_dir
+COPY src/portal /build_dir
+
+RUN ls -la \
     && npm run build_lib \
     && npm run link_lib \
     && node --max_old_space_size=8192 'node_modules/@angular/cli/bin/ng' build --prod
