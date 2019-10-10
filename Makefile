@@ -235,12 +235,14 @@ PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 					$(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
 					$(HARBORPKG)/prepare \
 					$(HARBORPKG)/LICENSE $(HARBORPKG)/install.sh \
+					$(HARBORPKG)/common.sh \
 					$(HARBORPKG)/harbor.yml
 
 PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 					$(HARBORPKG)/prepare \
 					$(HARBORPKG)/LICENSE \
 					$(HARBORPKG)/install.sh \
+					$(HARBORPKG)/common.sh \
 					$(HARBORPKG)/harbor.yml
 
 DOCKERCOMPOSE_FILE_OPT=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
