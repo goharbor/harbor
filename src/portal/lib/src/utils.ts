@@ -226,15 +226,34 @@ export class CustomComparator<T> implements Comparator<T> {
 export const DEFAULT_PAGE_SIZE: number = 15;
 
 /**
+ *  The default supported mime type
+ */
+export const DEFAULT_SUPPORTED_MIME_TYPE = "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0";
+
+/**
  * The state of vulnerability scanning
  */
 export const VULNERABILITY_SCAN_STATUS = {
-    unknown: "n/a",
-    pending: "pending",
-    running: "running",
-    error: "error",
-    stopped: "stopped",
-    finished: "finished"
+    // front-end status
+    NOT_SCANNED: "Not Scanned",
+    // back-end status
+    PENDING: "Pending",
+    RUNNING: "Running",
+    ERROR: "Error",
+    STOPPED: "Stopped",
+    SUCCESS: "Success",
+    SCHEDULED: "Scheduled"
+};
+/**
+ * The severity of vulnerability scanning
+ */
+export const VULNERABILITY_SEVERITY = {
+    NEGLIGIBLE: "Negligible",
+    UNKNOWN: "Unknown",
+    LOW: "Low",
+    MEDIUM: "Medium",
+    HIGH: "High",
+    CRITICAL: "Critical"
 };
 
 /**

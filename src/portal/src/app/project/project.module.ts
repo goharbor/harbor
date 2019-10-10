@@ -47,6 +47,8 @@ import { WebhookService } from './webhook/webhook.service';
 import { WebhookComponent } from './webhook/webhook.component';
 import { AddWebhookComponent } from './webhook/add-webhook/add-webhook.component';
 import { AddWebhookFormComponent } from './webhook/add-webhook-form/add-webhook-form.component';
+import { ScannerComponent } from "./scanner/scanner.component";
+import { ConfigScannerService } from "../config/scanner/config-scanner.service";
 
 @NgModule({
   imports: [
@@ -76,9 +78,10 @@ import { AddWebhookFormComponent } from './webhook/add-webhook-form/add-webhook-
     WebhookComponent,
     AddWebhookComponent,
     AddWebhookFormComponent,
+    ScannerComponent,
   ],
   exports: [ProjectComponent, ListProjectComponent],
-  providers: [ProjectRoutingResolver, MemberService, RobotService, TagRetentionService, WebhookService]
+  providers: [ProjectRoutingResolver, MemberService, RobotService, TagRetentionService, WebhookService, ConfigScannerService]
 })
 export class ProjectModule {
 
