@@ -7,7 +7,7 @@ import { SessionService } from './../../../shared/session.service';
 import { of } from 'rxjs';
 import { HelmChartDetailComponent } from './chart-detail.component';
 
-describe('ChartDetailComponent', () => {
+xdescribe('ChartDetailComponent', () => {
   let component: HelmChartDetailComponent;
   let fixture: ComponentFixture<HelmChartDetailComponent>;
   let fakeRouter = null;
