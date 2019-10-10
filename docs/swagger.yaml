@@ -959,13 +959,13 @@ paths:
           description: User ID does not exist.
         '500':
           description: Unexpected internal errors.
-  '/users/{user_id}/gen_cli_secret':
-    post:
-      summary: Generate new CLI secret for a user.
+  '/users/{user_id}/cli_secret':
+    put:
+      summary: Set CLI secret for a user.
       description: |
         This endpoint let user generate a new CLI secret for himself.  This API only works when auth mode is set to 'OIDC'.
         Once this API returns with successful status, the old secret will be invalid, as there will be only one CLI secret
-        for a user.  The new secret will be returned in the response.
+        for a user.
       parameters:
         - name: user_id
           in: path
@@ -973,19 +973,23 @@ paths:
           format: int
           required: true
           description: User ID
-      tags:
-        - Products
-      responses:
-        '200':
-          description: The secret is successfully generated.
+        - name: input_secret
+          in: body
+          description: JSON object that includes the new secret
+          required: true
           schema:
             type: object
             properties:
               secret:
                 type: string
                 description: The new secret
+      tags:
+        - Products
+      responses:
+        '200':
+          description: The secret is successfully updated
         '400':
-          description: Invalid user ID.  Or user is not onboarded via OIDC authentication.
+          description: Invalid user ID.  Or user is not onboarded via OIDC authentication. Or the secret does not meet the standard.
         '401':
           description: User need to log in first.
         '403':

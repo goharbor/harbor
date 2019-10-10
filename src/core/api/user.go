@@ -52,7 +52,7 @@ type userSearch struct {
 	Username string `json:"username"`
 }
 
-type secretResp struct {
+type secretReq struct {
 	Secret string `json:"secret"`
 }
 
@@ -405,8 +405,8 @@ func (ua *UserAPI) ChangePassword() {
 		return
 	}
 
-	if len(req.NewPassword) == 0 {
-		ua.SendBadRequestError(errors.New("empty new_password"))
+	if err := validateSecret(req.NewPassword); err != nil {
+		ua.SendBadRequestError(err)
 		return
 	}
 
@@ -512,8 +512,8 @@ func (ua *UserAPI) ListUserPermissions() {
 	return
 }
 
-// GenCLISecret generates a new CLI secret and replace the old one
-func (ua *UserAPI) GenCLISecret() {
+// SetCLISecret handles request PUT /api/users/:id/cli_secret to update the CLI secret of the user
+func (ua *UserAPI) SetCLISecret() {
 	if ua.AuthMode != common.OIDCAuth {
 		ua.SendPreconditionFailedError(errors.New("the auth mode has to be oidc auth"))
 		return
@@ -534,8 +534,17 @@ func (ua *UserAPI) GenCLISecret() {
 		return
 	}
 
-	sec := utils.GenerateRandomString()
-	encSec, err := utils.ReversibleEncrypt(sec, ua.secretKey)
+	s := &secretReq{}
+	if err := ua.DecodeJSONReq(s); err != nil {
+		ua.SendBadRequestError(err)
+		return
+	}
+	if err := validateSecret(s.Secret); err != nil {
+		ua.SendBadRequestError(err)
+		return
+	}
+
+	encSec, err := utils.ReversibleEncrypt(s.Secret, ua.secretKey)
 	if err != nil {
 		log.Errorf("Failed to encrypt secret, error: %v", err)
 		ua.SendInternalServerError(errors.New("failed to encrypt secret"))
@@ -548,8 +557,6 @@ func (ua *UserAPI) GenCLISecret() {
 		ua.SendInternalServerError(errors.New("failed to update secret in DB"))
 		return
 	}
-	ua.Data["json"] = secretResp{sec}
-	ua.ServeJSON()
 }
 
 func (ua *UserAPI) getOIDCUserInfo() (*models.OIDCUser, error) {
@@ -588,10 +595,22 @@ func validate(user models.User) error {
 	if utils.IsContainIllegalChar(user.Username, []string{",", "~", "#", "$", "%"}) {
 		return fmt.Errorf("username contains illegal characters")
 	}
-	if utils.IsIllegalLength(user.Password, 8, 20) {
-		return fmt.Errorf("password with illegal length")
+
+	if err := validateSecret(user.Password); err != nil {
+		return err
 	}
+
 	return commonValidate(user)
+}
+
+func validateSecret(in string) error {
+	hasLower := regexp.MustCompile(`[a-z]`)
+	hasUpper := regexp.MustCompile(`[A-Z]`)
+	hasNumber := regexp.MustCompile(`[0-9]`)
+	if len(in) >= 8 && hasLower.MatchString(in) && hasUpper.MatchString(in) && hasNumber.MatchString(in) {
+		return nil
+	}
+	return errors.New("the password or secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number")
 }
 
 // commonValidate validates email, realname, comment information when user register or change their profile
