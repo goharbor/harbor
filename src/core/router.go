@@ -204,6 +204,8 @@ func initRouters() {
 	// Add routes for project level scanner
 	beego.Router("/api/projects/:pid([0-9]+)/scanner", scannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
 
+	// Add opencensus
+	beego.Handler("/api/metrics", api.InitMetrics(),true)
 	// Error pages
 	beego.ErrorController(&controllers.ErrorController{})
 
