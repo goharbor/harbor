@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TagRetentionComponent } from './tag-retention.component';
 
 xdescribe('TagRetentionComponent', () => {
@@ -8,7 +8,13 @@ xdescribe('TagRetentionComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [TagRetentionComponent]
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [TagRetentionComponent],
+            providers: [
+                TranslateService
+            ]
         })
             .compileComponents();
     }));

@@ -1,10 +1,13 @@
 import { TestBed, inject } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { PasswordSettingService } from './password-setting.service';
 
-xdescribe('PasswordSettingService', () => {
+describe('PasswordSettingService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [
+        HttpClientTestingModule
+      ],
       providers: [PasswordSettingService]
     });
   });

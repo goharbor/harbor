@@ -1,11 +1,20 @@
 import { TestBed, inject } from '@angular/core/testing';
-
+import { ProjectService } from '@harbor/ui';
+import { SessionService } from '../shared/session.service';
 import { ProjectRoutingResolver } from './project-routing-resolver.service';
+import { RouterTestingModule } from '@angular/router/testing';
 
-xdescribe('ProjectRoutingResolverService', () => {
+describe('ProjectRoutingResolverService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [ProjectRoutingResolver]
+      imports: [
+        RouterTestingModule
+      ],
+      providers: [
+        ProjectRoutingResolver,
+        { provide: SessionService, useValue: null },
+        { provide: ProjectService, useValue: null }
+      ]
     });
   });
 

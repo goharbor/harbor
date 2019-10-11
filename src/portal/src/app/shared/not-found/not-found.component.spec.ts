@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { PageNotFoundComponent } from './not-found.component';
 
 xdescribe('PageNotFoundComponent', () => {
@@ -8,7 +8,13 @@ xdescribe('PageNotFoundComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [PageNotFoundComponent]
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [PageNotFoundComponent],
+            providers: [
+                TranslateService
+            ]
         })
             .compileComponents();
     }));

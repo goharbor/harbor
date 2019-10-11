@@ -1,10 +1,13 @@
 import { TestBed, inject } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TopRepoService } from './top-repository.service';
 
-xdescribe('TopRepoService', () => {
+describe('TopRepoService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [
+        HttpClientTestingModule
+      ],
       providers: [TopRepoService]
     });
   });

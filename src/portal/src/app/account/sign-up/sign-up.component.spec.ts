@@ -7,6 +7,7 @@ import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NewUserFormComponent } from '../../shared/new-user-form/new-user-form.component';
 import { FormsModule } from '@angular/forms';
+import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 describe('SignUpComponent', () => {
     let component: SignUpComponent;
@@ -16,7 +17,7 @@ describe('SignUpComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [SignUpComponent, NewUserFormComponent],
+            declarations: [SignUpComponent, NewUserFormComponent, InlineAlertComponent],
             imports: [
                 FormsModule,
                 ClarityModule,
@@ -36,6 +37,8 @@ describe('SignUpComponent', () => {
         component = fixture.componentInstance;
         component.newUserForm =
             TestBed.createComponent(NewUserFormComponent).componentInstance;
+        component.inlineAlert =
+            TestBed.createComponent(InlineAlertComponent).componentInstance;
         fixture.detectChanges();
     });
 

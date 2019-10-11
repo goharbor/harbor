@@ -105,6 +105,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         if (this.confirmSub) {
+            console.log(this.confirmSub);
             this.confirmSub.unsubscribe();
         }
     }

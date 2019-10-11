@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { InlineAlertComponent } from './inline-alert.component';
 
 xdescribe('InlineAlertComponent', () => {
@@ -8,7 +8,13 @@ xdescribe('InlineAlertComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [InlineAlertComponent]
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [InlineAlertComponent],
+            providers: [
+                TranslateService
+            ]
         })
             .compileComponents();
     }));

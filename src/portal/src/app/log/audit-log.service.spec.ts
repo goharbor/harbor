@@ -1,10 +1,13 @@
 import { TestBed, inject } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { AuditLogService } from './audit-log.service';
 
-xdescribe('AuditLogService', () => {
+describe('AuditLogService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [
+        HttpClientTestingModule
+      ],
       providers: [AuditLogService]
     });
   });

@@ -1,11 +1,14 @@
 import { TestBed, inject } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { GlobalSearchService } from './global-search.service';
 
-xdescribe('GlobalSearchService', () => {
+describe('GlobalSearchService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [GlobalSearchService]
+      providers: [GlobalSearchService],
+      imports: [
+        HttpClientTestingModule
+      ]
     });
   });
 
