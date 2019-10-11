@@ -43,6 +43,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/pkg/authproxy"
+	"github.com/goharbor/harbor/src/pkg/robot"
 )
 
 // ContextValueKey for content value
@@ -194,7 +195,8 @@ func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		return false
 	}
 	// Do authn for robot account, as Harbor only stores the token ID, just validate the ID and disable.
-	robot, err := dao.GetRobotByID(htk.Claims.(*token.RobotClaims).TokenID)
+	ctr := robot.RobotCtr
+	robot, err := ctr.GetRobotAccount(htk.Claims.(*token.RobotClaims).TokenID)
 	if err != nil {
 		log.Errorf("failed to get robot %s: %v", robotName, err)
 		return false
