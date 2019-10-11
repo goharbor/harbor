@@ -64,8 +64,7 @@ func (sa *ScanAPI) Prepare() {
 	sa.pro = pro
 
 	// Check authentication
-	if !sa.SecurityCtx.IsAuthenticated() {
-		sa.SendUnAuthorizedError(errors.New("Unauthorized"))
+	if !sa.RequireAuthenticated() {
 		return
 	}
 
@@ -90,9 +89,7 @@ func (sa *ScanAPI) Prepare() {
 // Scan artifact
 func (sa *ScanAPI) Scan() {
 	// Check access permissions
-	resource := rbac.NewProjectNamespace(sa.pro.ProjectID).Resource(rbac.ResourceScan)
-	if !sa.SecurityCtx.Can(rbac.ActionCreate, resource) {
-		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+	if !sa.RequireProjectAccess(sa.pro.ProjectID, rbac.ActionCreate, rbac.ResourceScan) {
 		return
 	}
 
@@ -107,9 +104,7 @@ func (sa *ScanAPI) Scan() {
 // Report returns the required reports with the given mime types.
 func (sa *ScanAPI) Report() {
 	// Check access permissions
-	resource := rbac.NewProjectNamespace(sa.pro.ProjectID).Resource(rbac.ResourceScan)
-	if !sa.SecurityCtx.Can(rbac.ActionRead, resource) {
-		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+	if !sa.RequireProjectAccess(sa.pro.ProjectID, rbac.ActionRead, rbac.ResourceScan) {
 		return
 	}
 
@@ -149,9 +144,7 @@ func (sa *ScanAPI) Report() {
 // Log returns the log stream
 func (sa *ScanAPI) Log() {
 	// Check access permissions
-	resource := rbac.NewProjectNamespace(sa.pro.ProjectID).Resource(rbac.ResourceScan)
-	if !sa.SecurityCtx.Can(rbac.ActionRead, resource) {
-		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+	if !sa.RequireProjectAccess(sa.pro.ProjectID, rbac.ActionRead, rbac.ResourceScan) {
 		return
 	}
 

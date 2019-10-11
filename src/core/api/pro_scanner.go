@@ -36,17 +36,29 @@ func (sa *ProjectScannerAPI) Prepare() {
 	sa.BaseController.Prepare()
 
 	// Check access permissions
-	if !sa.SecurityCtx.IsAuthenticated() {
-		sa.SendUnAuthorizedError(errors.New("UnAuthorized"))
+	if !sa.RequireAuthenticated() {
 		return
 	}
 
 	// Get ID of the project
 	pid, err := sa.GetInt64FromPath(":pid")
 	if err != nil {
-		sa.SendBadRequestError(errors.Wrap(err, "scanner API: get project scanners"))
+		sa.SendBadRequestError(errors.Wrap(err, "project scanner API"))
 		return
 	}
+
+	// Check if the project exists
+	exists, err := sa.ProjectMgr.Exists(pid)
+	if err != nil {
+		sa.SendInternalServerError(errors.Wrap(err, "project scanner API"))
+		return
+	}
+
+	if !exists {
+		sa.SendNotFoundError(errors.Errorf("project with id %d", sa.pid))
+		return
+	}
+
 	sa.pid = pid
 
 	sa.c = scanner.DefaultController
@@ -55,11 +67,10 @@ func (sa *ProjectScannerAPI) Prepare() {
 // GetProjectScanner gets the project level scanner
 func (sa *ProjectScannerAPI) GetProjectScanner() {
 	// Check access permissions
-	resource := rbac.NewProjectNamespace(sa.pid).Resource(rbac.ResourceConfiguration)
-	if !sa.SecurityCtx.Can(rbac.ActionRead, resource) {
-		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+	if !sa.RequireProjectAccess(sa.pid, rbac.ActionRead, rbac.ResourceConfiguration) {
 		return
 	}
+
 	r, err := sa.c.GetRegistrationByProject(sa.pid)
 	if err != nil {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: get project scanners"))
@@ -78,9 +89,7 @@ func (sa *ProjectScannerAPI) GetProjectScanner() {
 // SetProjectScanner sets the project level scanner
 func (sa *ProjectScannerAPI) SetProjectScanner() {
 	// Check access permissions
-	resource := rbac.NewProjectNamespace(sa.pid).Resource(rbac.ResourceConfiguration)
-	if !sa.SecurityCtx.Can(rbac.ActionUpdate, resource) {
-		sa.SendForbiddenError(errors.New(sa.SecurityCtx.GetUsername()))
+	if !sa.RequireProjectAccess(sa.pid, rbac.ActionUpdate, rbac.ResourceConfiguration) {
 		return
 	}
 
