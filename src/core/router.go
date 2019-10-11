@@ -52,7 +52,7 @@ func initRouters() {
 		beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 		beego.Router("/api/users/:id/permissions", &api.UserAPI{}, "get:ListUserPermissions")
 		beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
-		beego.Router("/api/users/:id/gen_cli_secret", &api.UserAPI{}, "post:GenCLISecret")
+		beego.Router("/api/users/:id/cli_secret", &api.UserAPI{}, "put:SetCLISecret")
 		beego.Router("/api/usergroups/?:ugid([0-9]+)", &api.UserGroupAPI{})
 		beego.Router("/api/ldap/ping", &api.LdapAPI{}, "post:Ping")
 		beego.Router("/api/ldap/users/search", &api.LdapAPI{}, "get:Search")
