@@ -179,12 +179,12 @@ func TestSearchUser(t *testing.T) {
 
 	defer session.Close()
 
-	result, err := session.SearchUser("test")
+	result, err := session.SearchUser("test", false)
 	if err != nil || len(result) == 0 {
 		t.Fatalf("failed to search user test!")
 	}
 
-	result2, err := session.SearchUser("mike")
+	result2, err := session.SearchUser("mike", false)
 	if err != nil || len(result2) == 0 {
 		t.Fatalf("failed to search user mike!")
 	}

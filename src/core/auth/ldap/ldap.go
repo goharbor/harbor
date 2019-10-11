@@ -60,7 +60,9 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 	defer ldapSession.Close()
 
-	ldapUsers, err := ldapSession.SearchUser(p)
+	groupCfg, err := config.LDAPGroupConf()
+
+	ldapUsers, err := ldapSession.SearchUser(p, groupCfg.LdapGroupEnableNested)
 	if err != nil {
 		log.Warningf("ldap search fail: %v", err)
 		return nil, err
@@ -86,10 +88,8 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
 		return nil, auth.NewErrAuth(err.Error())
 	}
-
 	// Retrieve ldap related info in login to avoid too many traffic with LDAP server.
 	// Get group admin dn
-	groupCfg, err := config.LDAPGroupConf()
 	groupAdminDN := utils.TrimLower(groupCfg.LdapGroupAdminDN)
 	// Attach user group
 	for _, groupDN := range ldapUsers[0].GroupDNList {
@@ -140,7 +140,7 @@ func (l *Auth) SearchUser(username string) (*models.User, error) {
 		return nil, fmt.Errorf("Failed to load system ldap config, %v", err)
 	}
 
-	ldapUsers, err := ldapSession.SearchUser(username)
+	ldapUsers, err := ldapSession.SearchUser(username, false)
 	if err != nil {
 		return nil, fmt.Errorf("Failed to search user in ldap")
 	}

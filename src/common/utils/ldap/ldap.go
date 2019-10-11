@@ -183,8 +183,8 @@ func ConnectionTestWithAllConfig(ldapConfig models.LdapConf, ldapGroupConfig mod
 	return nil
 }
 
-// SearchUser - search LDAP user by name
-func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
+// SearchUser - search LDAP user by name, when enableNestedGroup is true, it will search and attach nested groups
+func (session *Session) SearchUser(username string, enableNestedGroup bool) ([]models.LdapUser, error) {
 	var ldapUsers []models.LdapUser
 	ldapFilter := session.createUserFilter(username)
 	result, err := session.SearchLdap(ldapFilter)
@@ -221,26 +221,27 @@ func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 			u.GroupDNList = groupDNList
 		}
 
-		log.Debugf("Searching for nested groups")
-		nestedGroupDNList := []string{}
-		nestedGroupFilter := createNestedGroupFilter(ldapEntry.DN)
-		result, err := session.SearchLdap(nestedGroupFilter)
-		if err != nil {
-			return nil, err
-		}
-
-		for _, groupEntry := range result.Entries {
-			if !contains(u.GroupDNList, groupEntry.DN) {
-				nestedGroupDNList = append(nestedGroupDNList, strings.TrimSpace(groupEntry.DN))
-				log.Debugf("Found group %v", groupEntry.DN)
-			} else {
-				log.Debugf("%v is already in GroupDNList", groupEntry.DN)
+		if enableNestedGroup {
+			log.Debugf("Searching for nested groups")
+			nestedGroupDNList := []string{}
+			nestedGroupFilter := createNestedGroupFilter(ldapEntry.DN)
+			result, err := session.SearchLdap(nestedGroupFilter)
+			if err != nil {
+				return nil, err
 			}
+
+			for _, groupEntry := range result.Entries {
+				if !contains(u.GroupDNList, groupEntry.DN) {
+					nestedGroupDNList = append(nestedGroupDNList, strings.TrimSpace(groupEntry.DN))
+					log.Debugf("Found group %v", groupEntry.DN)
+				} else {
+					log.Debugf("%v is already in GroupDNList", groupEntry.DN)
+				}
+			}
+
+			u.GroupDNList = append(u.GroupDNList, nestedGroupDNList...)
+			log.Debugf("Done searching for nested groups")
 		}
-
-		u.GroupDNList = append(u.GroupDNList, nestedGroupDNList...)
-		log.Debugf("Done searching for nested groups")
-
 		u.DN = ldapEntry.DN
 		ldapUsers = append(ldapUsers, u)
 

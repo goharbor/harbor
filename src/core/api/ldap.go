@@ -118,7 +118,7 @@ func (l *LdapAPI) Search() {
 
 	searchName := l.GetString("username")
 
-	ldapUsers, err = ldapSession.SearchUser(searchName)
+	ldapUsers, err = ldapSession.SearchUser(searchName, false)
 
 	if err != nil {
 		l.SendInternalServerError(fmt.Errorf("LDAP search fail, error: %v", err))
@@ -183,7 +183,7 @@ func importUsers(ldapImportUsers []string, ldapConfig *ldapUtils.Session) ([]mod
 			continue
 		}
 
-		ldapUsers, err := ldapSession.SearchUser(u.UID)
+		ldapUsers, err := ldapSession.SearchUser(u.UID, false)
 		if err != nil {
 			u.UID = tempUID
 			u.Error = "failed_search_user"

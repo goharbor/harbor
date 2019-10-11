@@ -55,3 +55,7 @@ If a user is in the LDAP groups with admin privilege (ldap_group_admin_dn), the 
 ## User privileges and group privileges
 
 If a user has both user-level role and group-level role, these privileges are merged together.
+
+## Enable nested group in LDAP/AD
+
+If you need to search the user's nested group and the LDAP/AD server support to [search for LDAP_MATCHING_RULE_IN_CHAIN groups](https://ldapwiki.com/wiki/1.2.840.113556.1.4.1941), you can enabled it by checking the "Enable Nested Group" in LDAP group configure, it is disabled by default.
