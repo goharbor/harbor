@@ -5,6 +5,7 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	core_cfg "github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -79,7 +80,12 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 	r2, _ := s.ctr.CreateRobotAccount(robot2)
 	s.robotID = r2.ID
 
-	robots, err := s.ctr.ListRobotAccount(int64(1))
+	keywords := make(map[string]interface{})
+	keywords["ProjectID"] = int64(1)
+	query := &q.Query{
+		Keywords: keywords,
+	}
+	robots, err := s.ctr.ListRobotAccount(query)
 	s.require.Nil(err)
 	s.require.Equal(len(robots), 2)
 	s.require.Equal(robots[1].Name, common.RobotPrefix+"robot2")
@@ -87,7 +93,7 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 	err = s.ctr.DeleteRobotAccount(robot.ID)
 	s.require.Nil(err)
 
-	robots, err = s.ctr.ListRobotAccount(int64(1))
+	robots, err = s.ctr.ListRobotAccount(query)
 	s.require.Equal(len(robots), 1)
 }
 

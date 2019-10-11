@@ -132,7 +132,12 @@ func (m *managerTestingSuite) ListRobotAccount() {
 			ExpiresAt: 54321,
 		}}, nil)
 
-	rs, err := Mgr.ListRobotAccount(int64(1))
+	keywords := make(map[string]interface{})
+	keywords["ProjectID"] = int64(1)
+	query := &q.Query{
+		Keywords: keywords,
+	}
+	rs, err := Mgr.ListRobotAccount(query)
 	m.mockRobotDao.AssertCalled(m.t, "ListRobotAccount", mock.Anything)
 	m.require.Nil(err)
 	m.assert.Equal(len(rs), 2)

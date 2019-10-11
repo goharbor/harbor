@@ -6,4 +6,6 @@ CREATE TABLE immutable_tag_rule
   tag_filter   text,
   enabled       boolean default true NOT NULL,
   creation_time timestamp default CURRENT_TIMESTAMP
-)
+);
+
+ALTER TABLE robot ADD COLUMN visible boolean DEFAULT true NOT NULL;

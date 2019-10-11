@@ -6,6 +6,7 @@ import (
 	"github.com/goharbor/harbor/src/common/token"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/pkg/errors"
 	"time"
@@ -31,7 +32,7 @@ type Controller interface {
 	UpdateRobotAccount(r *model.Robot) error
 
 	// ListRobotAccount ...
-	ListRobotAccount(pid int64) ([]*model.Robot, error)
+	ListRobotAccount(query *q.Query) ([]*model.Robot, error)
 }
 
 // DefaultAPIController ...
@@ -66,6 +67,7 @@ func (d *DefaultAPIController) CreateRobotAccount(robotReq *model.RobotCreate) (
 		Description: robotReq.Description,
 		ProjectID:   robotReq.ProjectID,
 		ExpiresAt:   expiresAt,
+		Visible:     robotReq.Visible,
 	}
 	id, err := d.manager.CreateRobotAccount(robot)
 	if err != nil {
@@ -110,6 +112,6 @@ func (d *DefaultAPIController) UpdateRobotAccount(r *model.Robot) error {
 }
 
 // ListRobotAccount ...
-func (d *DefaultAPIController) ListRobotAccount(pid int64) ([]*model.Robot, error) {
-	return d.manager.ListRobotAccount(pid)
+func (d *DefaultAPIController) ListRobotAccount(query *q.Query) ([]*model.Robot, error) {
+	return d.manager.ListRobotAccount(query)
 }

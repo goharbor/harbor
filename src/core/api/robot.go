@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/rbac/project"
+	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/pkg/errors"
@@ -106,6 +107,7 @@ func (r *RobotAPI) Post() {
 		r.SendBadRequestError(err)
 		return
 	}
+	robotReq.Visible = true
 
 	if err := validateRobotReq(r.project, &robotReq); err != nil {
 		r.SendBadRequestError(err)
@@ -141,7 +143,13 @@ func (r *RobotAPI) List() {
 		return
 	}
 
-	robots, err := r.ctr.ListRobotAccount(r.project.ProjectID)
+	keywords := make(map[string]interface{})
+	keywords["ProjectID"] = r.robot.ProjectID
+	keywords["Visible"] = true
+	query := &q.Query{
+		Keywords: keywords,
+	}
+	robots, err := r.ctr.ListRobotAccount(query)
 	if err != nil {
 		r.SendInternalServerError(errors.Wrap(err, "robot API: list"))
 		return
@@ -177,6 +185,10 @@ func (r *RobotAPI) Get() {
 	}
 	if robot == nil {
 		r.SendNotFoundError(fmt.Errorf("robot API: robot %d not found", id))
+		return
+	}
+	if !robot.Visible {
+		r.SendForbiddenError(fmt.Errorf("robot API: robot %d is invisible", id))
 		return
 	}
 

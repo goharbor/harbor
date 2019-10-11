@@ -26,7 +26,7 @@ type Manager interface {
 	UpdateRobotAccount(m *model.Robot) error
 
 	// ListRobotAccount ...
-	ListRobotAccount(pid int64) ([]*model.Robot, error)
+	ListRobotAccount(query *q.Query) ([]*model.Robot, error)
 }
 
 type defaultRobotManager struct {
@@ -61,11 +61,6 @@ func (drm *defaultRobotManager) UpdateRobotAccount(r *model.Robot) error {
 }
 
 // ListRobotAccount ...
-func (drm *defaultRobotManager) ListRobotAccount(pid int64) ([]*model.Robot, error) {
-	keywords := make(map[string]interface{})
-	keywords["ProjectID"] = pid
-	query := q.Query{
-		Keywords: keywords,
-	}
-	return drm.dao.ListRobotAccounts(&query)
+func (drm *defaultRobotManager) ListRobotAccount(query *q.Query) ([]*model.Robot, error) {
+	return drm.dao.ListRobotAccounts(query)
 }
