@@ -46,7 +46,7 @@ func (itr *ImmutableTagRuleAPI) Prepare() {
 		itr.ID = ruleID
 	}
 
-	itr.ctr = immutabletag.NewAPIController(immutabletag.NewDefaultRuleManager())
+	itr.ctr = immutabletag.ImmuCtr
 
 	if strings.EqualFold(itr.Ctx.Request.Method, "get") {
 		if !itr.requireAccess(rbac.ActionList) {
