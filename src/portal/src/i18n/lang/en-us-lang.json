@@ -97,7 +97,9 @@
         "OIDC_NAME": "The name of the OIDC provider.",
         "OIDC_ENDPOINT": "The URL of an OIDC-complaint server.",
         "OIDC_SCOPE": "The scope sent to OIDC server during authentication.  It has to contain “openid”, and “offline_access”.  If you are using google, please remove “offline_access” from this field.",
-        "OIDC_VERIFYCERT": "Uncheck this box if your OIDC server is hosted via self-signed certificate."
+        "OIDC_VERIFYCERT": "Uncheck this box if your OIDC server is hosted via self-signed certificate.",
+        "OIDC_GROUP_CLAIM": "The name of Claim in the ID token whose value is the list of group names.",
+        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -374,6 +376,7 @@
         "GROUPS": "Groups",
         "IMPORT_LDAP_GROUP": "Import LDAP Group",
         "IMPORT_HTTP_GROUP": "New HTTP Group",
+        "IMPORT_OIDC_GROUP": "New OIDC Group",
         "ADD": "New Group",
         "EDIT": "Edit",
         "DELETE": "Delete",
@@ -387,6 +390,7 @@
         "EDIT_GROUP_SUCCESS": "Edit group success",
         "LDAP_TYPE": "LDAP",
         "HTTP_TYPE": "HTTP",
+        "OIDC_TYPE": "OIDC",
         "OF": "of",
         "ITEMS": "items",
         "NEW_MEMBER": "New Group Member",
@@ -857,7 +861,8 @@
             "OIDC_VERIFYCERT": "Verify Certificate",
             "OIDC_SETNAME": "Set OIDC Username",
             "OIDC_SETNAMECONTENT": "You must create a Harbor username the first time when authenticating via a third party(OIDC).This will be used within Harbor to be associated with projects, roles, etc.",
-            "OIDC_USERNAME": "Username"
+            "OIDC_USERNAME": "Username",
+            "GROUP_CLAIM_NAME": "Group Claim Name"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
@@ -1176,7 +1181,7 @@
         "TAGS": "Tags",
         "MATCHES_TAGS": "Matches tags",
         "MATCHES_EXCEPT_TAGS": "Matches except tags",
-        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,**,or regex",
+        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
         "LABELS": "Labels",
         "MATCHES_LABELS": "Matches Labels",
         "MATCHES_EXCEPT_LABELS": "Matches except Labels",
@@ -1217,7 +1222,8 @@
         "INVALID_RULE": "Invalid rule",
         "COUNT_LARGE": "Parameter \"COUNT\" is too large",
         "DAYS_LARGE": "Parameter \"DAYS\" is too large",
-        "EXECUTION_TYPE": "Execution Type"
+        "EXECUTION_TYPE": "Execution Type",
+        "ACTION": "ACTION"
     }
 
 }

@@ -121,6 +121,9 @@ func initRouters() {
 
 	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/", &api.NotificationJobAPI{}, "get:List")
 
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules", &api.ImmutableTagRuleAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &api.ImmutableTagRuleAPI{})
+
 	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig;put:Put")
 	beego.Router("/api/configurations", &api.ConfigAPI{}, "get:Get;put:Put")
 	beego.Router("/api/statistics", &api.StatisticAPI{})
@@ -164,6 +167,8 @@ func initRouters() {
 	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "get:ListRetentionExecs")
 	beego.Router("/api/retentions/:id/executions/:eid/tasks", &api.RetentionAPI{}, "get:ListRetentionExecTasks")
 	beego.Router("/api/retentions/:id/executions/:eid/tasks/:tid", &api.RetentionAPI{}, "get:GetRetentionExecTaskLog")
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules", &api.ImmutableTagRuleAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &api.ImmutableTagRuleAPI{})
 
 	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 
@@ -191,6 +196,13 @@ func initRouters() {
 		beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
 		beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
 	}
+
+	// Add routes for plugin scanner management
+	scannerAPI := &api.ScannerAPI{}
+	beego.Router("/api/scanners", scannerAPI, "post:Create;get:List")
+	beego.Router("/api/scanners/:uuid", scannerAPI, "get:Get;delete:Delete;put:Update;patch:SetAsDefault")
+	// Add routes for project level scanner
+	beego.Router("/api/projects/:pid([0-9]+)/scanner", scannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
 
 	// Error pages
 	beego.ErrorController(&controllers.ErrorController{})

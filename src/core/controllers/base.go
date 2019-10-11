@@ -17,6 +17,7 @@ package controllers
 import (
 	"bytes"
 	"context"
+	"github.com/goharbor/harbor/src/core/api"
 	"html/template"
 	"net"
 	"net/http"
@@ -38,11 +39,9 @@ import (
 	"github.com/goharbor/harbor/src/core/filter"
 )
 
-const userKey = "user"
-
 // CommonController handles request from UI that doesn't expect a page, such as /SwitchLanguage /logout ...
 type CommonController struct {
-	beego.Controller
+	api.BaseController
 	i18n.Locale
 }
 
@@ -50,6 +49,9 @@ type CommonController struct {
 func (cc *CommonController) Render() error {
 	return nil
 }
+
+// Prepare overwrites the Prepare func in api.BaseController to ignore unnecessary steps
+func (cc *CommonController) Prepare() {}
 
 type messageDetail struct {
 	Hint string
@@ -111,7 +113,7 @@ func (cc *CommonController) Login() {
 	if user == nil {
 		cc.CustomAbort(http.StatusUnauthorized, "")
 	}
-	cc.SetSession(userKey, *user)
+	cc.PopulateUserSession(*user)
 }
 
 // LogOut Habor UI

@@ -265,5 +265,5 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 }
 
 func init() {
-	auth.Register("ldap_auth", &Auth{})
+	auth.Register(common.LDAPAuth, &Auth{})
 }

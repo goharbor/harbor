@@ -92,7 +92,9 @@
         "OIDC_NAME": "le nom du fournisseur de oidc.",
         "OIDC_ENDPOINT": "l'url d'un serveur oidc plainte.",
         "OIDC_SCOPE": "le champ envoyés au serveur au cours oidc l'authentification.il doit contenir 'openid', et 'offline_access'.si vous utilisez google, veuillez supprimer 'offline_access' dans ce domaine",
-        "OIDC_VERIFYCERT": "décocher cette case si votre oidc serveur est accueilli par auto - certificat signé."
+        "OIDC_VERIFYCERT": "décocher cette case si votre oidc serveur est accueilli par auto - certificat signé.",
+        "OIDC_GROUP_CLAIM": "The name of Claim in the ID token whose value is the list of group names.",
+        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Entrez le mot de passe actuel",
@@ -367,6 +369,7 @@
         "GROUPS": "Groups",
         "IMPORT_LDAP_GROUP": "Import LDAP Group",
         "IMPORT_HTTP_GROUP": "New HTTP Group",
+        "IMPORT_OIDC_GROUP": "New OIDC Group",
         "ADD": "Add",
         "EDIT": "Edit",
         "DELETE": "Delete",
@@ -380,6 +383,7 @@
         "EDIT_GROUP_SUCCESS": "Edit group success",
         "LDAP_TYPE": "LDAP",
         "HTTP_TYPE": "HTTP",
+        "OIDC_TYPE": "OIDC",
         "OF": "of",
         "ITEMS": "items",
         "NEW_MEMBER": "New Group Member",
@@ -781,7 +785,7 @@
             "LDAP_UID": "Attribut utilisé dans une recherche pour trouver un utilisateur. Cela peut être uid, cn, email, sAMAccountName ou d'autres attributs selon votre LDAP/AD.",
             "LDAP_SCOPE": "Le scope de recherche des utilisateurs.",
             "TOKEN_EXPIRATION": "Le temps d'expiration (en minutes) d'un jeton créé par le service de jeton. La valeur par défaut est 30 minutes.",
-            "ROBOT_TOKEN_EXPIRATION": "Le délai d'expiration (en jours) du jeton du compte robot est défini par défaut sur 30 jours. Afficher le nombre de jours convertis à partir des minutes et des arrondis",
+            "ROBOT_TOKEN_EXPIRATION": "Le délai d'expiration (en jours) du jeton du compte robot est défini par défaut sur 30 jours. Afficher le nombre de jours convertis à partir des minutes et des arrondis",                        
             "PRO_CREATION_RESTRICTION": "L'indicateur pour définir quels utilisateurs ont le droit de créer des projets. Par défaut, tout le monde peut créer un projet. Définissez sur 'Administrateur Seulement' pour que seul un administrateur puisse créer un projet.",
             "ROOT_CERT_DOWNLOAD": "Téléchargez le certificat racine du dépôt.",
             "SCANNING_POLICY": "Définissez la politique d'analyse des images en fonction des différentes exigences. 'Aucune' : pas de politique active; 'Tousles jours à' : déclenchement du balayage à l'heure spécifiée tous les jours.",
@@ -830,7 +834,8 @@
             "OIDC_VERIFYCERT": "Certificat vérifier",
             "OIDC_SETNAME": "Ensemble OIDC nom d'utilisateur",
             "OIDC_SETNAMECONTENT": "vous devez créer un Harbor identifiant la première fois lors de la vérification par une tierce partie (oidc). il sera utilisé au sein de port à être associés aux projets, des rôles, etc.",
-            "OIDC_USERNAME": "d'utilisateur"
+            "OIDC_USERNAME": "d'utilisateur",
+            "GROUP_CLAIM_NAME": "Group Claim Name"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Déclenchement d'analyse globale avec succès !",
@@ -1145,7 +1150,7 @@
         "TAGS": "Tags",
         "MATCHES_TAGS": "Matches tags",
         "MATCHES_EXCEPT_TAGS": "Matches except tags",
-        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,**,or regex",
+        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
         "LABELS": "Labels",
         "MATCHES_LABELS": "Matches Labels",
         "MATCHES_EXCEPT_LABELS": "Matches except Labels",
@@ -1186,7 +1191,8 @@
         "INVALID_RULE": "Invalid rule",
         "COUNT_LARGE": "Parameter \"COUNT\" is too large",
         "DAYS_LARGE": "Parameter \"DAYS\" is too large",
-        "EXECUTION_TYPE": "Execution Type"
+        "EXECUTION_TYPE": "Execution Type",
+        "ACTION": "ACTION"
     }
 
 }

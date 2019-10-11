@@ -39,7 +39,7 @@ describe('PushImageButtonComponent (inline template)', () => {
     expect(component).toBeTruthy();
   });
 
-  it('should open the drop-down panel', fakeAsync(() => {
+  it('should open the drop-down panel', () => {
     fixture.detectChanges();
     fixture.whenStable().then(() => {
       fixture.detectChanges();
@@ -57,6 +57,6 @@ describe('PushImageButtonComponent (inline template)', () => {
         expect(copyInputs[1].value.trim()).toEqual(`docker push ${component.registryUrl}/${component.projectName}/IMAGE[:TAG]`);
       });
     });
-  }));
+  });
 
 });

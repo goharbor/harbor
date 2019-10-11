@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/models"
 	"net/http"
 
 	"github.com/ghodss/yaml"
@@ -37,6 +38,7 @@ import (
 
 const (
 	yamlFileContentType = "application/x-yaml"
+	userSessionKey      = "user"
 )
 
 // the managers/controllers used globally
@@ -166,6 +168,12 @@ func (b *BaseController) WriteYamlData(object interface{}) {
 	w.Header().Set("Content-Type", yamlFileContentType)
 	w.WriteHeader(http.StatusOK)
 	_, _ = w.Write(yData)
+}
+
+// PopulateUserSession generates a new session ID and fill the user model in parm to the session
+func (b *BaseController) PopulateUserSession(u models.User) {
+	b.SessionRegenerateID()
+	b.SetSession(userSessionKey, u)
 }
 
 // Init related objects/configurations for the API controllers

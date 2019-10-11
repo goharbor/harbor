@@ -72,6 +72,9 @@ export class AppConfigService {
     public isHttpAuthMode(): boolean {
         return this.configurations && this.configurations.auth_mode === CONFIG_AUTH_MODE.HTTP_AUTH;
     }
+    public isOidcMode(): boolean {
+        return this.configurations && this.configurations.auth_mode === CONFIG_AUTH_MODE.OIDC_AUTH;
+    }
 
     // Return the reconstructed admiral url
     public getAdmiralEndpoint(currentHref: string): string {

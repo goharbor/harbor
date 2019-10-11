@@ -11,8 +11,13 @@ clr-icon {
     color: grey;
     margin-top: -3px;
 }
+
 clr-icon:hover {
     color: #007CBB;
+}
+
+.clr-validate-icon {
+    color: red;
 }
 
 .config-title {
@@ -21,4 +26,7 @@ clr-icon:hover {
 
 .tooltip-position {
     top: -7px;
+}
+.clr-form-control-disabled {
+    opacity: 1;
 }

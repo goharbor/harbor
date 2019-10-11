@@ -49,6 +49,7 @@ Resource  Harbor-Pages/UserProfile.robot
 Resource  Harbor-Pages/UserProfile_Elements.robot
 Resource  Harbor-Pages/Administration-Users.robot
 Resource  Harbor-Pages/Administration-Users_Elements.robot
+Resource  Harbor-Pages/GC.robot
 Resource  Harbor-Pages/Configuration.robot
 Resource  Harbor-Pages/Configuration_Elements.robot
 Resource  Harbor-Pages/ToolKit.robot
@@ -108,6 +109,11 @@ Retry Text Input
     [Arguments]  ${element_xpath}  ${text}
     @{param}  Create List  ${element_xpath}  ${text}
     Retry Action Keyword  Text Input  @{param}
+
+Retry Clear Element Text
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Clear Element Text  @{param}
 
 Retry Link Click
     [Arguments]  ${element_xpath}
@@ -227,6 +233,18 @@ Retry Keyword When Error
     \    Sleep  2
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
+
+Retry Keyword When Return Value Mismatch
+    [Arguments]  ${keyword}  ${expected_value}  ${count}  @{elements}
+    :For  ${n}  IN RANGE  1  ${count}
+    \    Log To Console  Trying ${keyword} ${n} times ...
+    \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
+    \    Log To Console  Return value is ${out[1]}
+    \    ${status}=  Set Variable If  '${out[1]}'=='${expected_value}'  'PASS'  'FAIL'
+    \    Exit For Loop If  '${out[1]}'=='${expected_value}'
+    \    Sleep  2
+    Run Keyword If  ${status}=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  ${status}  'PASS'
 
 Retry Double Keywords When Error
     [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}

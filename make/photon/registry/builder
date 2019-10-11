@@ -22,6 +22,13 @@ cur=$PWD
 TEMP=`mktemp -d /$TMPDIR/distribution.XXXXXX`
 git clone -b $VERSION https://github.com/docker/distribution.git $TEMP
 
+# add patch 2879
+echo 'add patch https://github.com/docker/distribution/pull/2879 ...'
+cd $TEMP
+wget https://github.com/docker/distribution/pull/2879.patch
+git apply 2879.patch
+cd $cur
+
 echo 'build the registry binary bases on the golang:1.11...'
 cp Dockerfile.binary $TEMP
 docker build -f $TEMP/Dockerfile.binary -t registry-golang $TEMP

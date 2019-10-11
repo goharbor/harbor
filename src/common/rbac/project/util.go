@@ -95,6 +95,11 @@ var (
 		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
 		{Resource: rbac.ResourceTagRetention, Action: rbac.ActionOperate},
 
+		{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionCreate},
+		{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionUpdate},
+		{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionDelete},
+		{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionList},
+
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceLabel, Action: rbac.ActionUpdate},

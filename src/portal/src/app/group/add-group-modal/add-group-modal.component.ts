@@ -25,7 +25,7 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
 
   formChangeSubscription: Subscription;
 
-  @ViewChild('groupForm')
+  @ViewChild('groupForm', { static: true })
   groupForm: NgForm;
 
   submitted = false;
@@ -34,6 +34,7 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
 
   isLdapMode: boolean;
   isHttpAuthMode: boolean;
+  isOidcMode: boolean;
   constructor(
     private session: SessionService,
     private msgHandler: MessageHandlerService,
@@ -49,20 +50,14 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
     if (this.appConfigService.isHttpAuthMode()) {
       this.isHttpAuthMode = true;
     }
-    this.group = new UserGroup(this.isLdapMode ? GroupType.LDAP_TYPE : GroupType.HTTP_TYPE);
+    if (this.appConfigService.isOidcMode()) {
+      this.isOidcMode = true;
+    }
+    this.group = new UserGroup(this.isLdapMode ? GroupType.LDAP_TYPE : this.isHttpAuthMode ? GroupType.HTTP_TYPE : GroupType.OIDC_TYPE);
   }
 
 
   ngOnDestroy() { }
-
-  public get isDNInvalid(): boolean {
-    let dnControl = this.groupForm.controls['ldap_group_dn'];
-    return dnControl && dnControl.invalid && (dnControl.dirty || dnControl.touched);
-  }
-  public get isNameInvalid(): boolean {
-    let dnControl = this.groupForm.controls['group_name'];
-    return dnControl && dnControl.invalid && (dnControl.dirty || dnControl.touched);
-  }
 
   public get isFormValid(): boolean {
     return this.groupForm.valid;
@@ -121,7 +116,7 @@ export class AddGroupModalComponent implements OnInit, OnDestroy {
   }
 
   resetGroup() {
-    this.group = new UserGroup(this.isLdapMode ? GroupType.LDAP_TYPE : GroupType.HTTP_TYPE);
+    this.group = new UserGroup(this.isLdapMode ? GroupType.LDAP_TYPE : this.isHttpAuthMode ? GroupType.HTTP_TYPE : GroupType.OIDC_TYPE);
     this.groupForm.reset();
   }
 }

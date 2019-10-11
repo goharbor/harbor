@@ -17,7 +17,6 @@ Documentation  This resource provides any keywords related to the Harbor private
 Resource  ../../resources/Util.robot
 
 *** Variables ***
-${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Init LDAP
@@ -94,7 +93,7 @@ Set Pro Create Admin Only
     #set limit to admin only
     Retry Element Click  xpath=${configuration_xpath}
     Sleep  2
-    Retry Element Click  xpath=${system_config_xpath}
+    Retry Element Click  xpath=${configuration_system_tabsheet_id}
     Sleep  1
     Retry Element Click  xpath=//select[@id='proCreation']
     Retry Element Click  xpath=//select[@id='proCreation']//option[@value='adminonly']
@@ -106,7 +105,7 @@ Set Pro Create Every One
     Retry Element Click  xpath=${configuration_xpath}
     sleep  1
     #set limit to Every One
-    Retry Element Click  xpath=${system_config_xpath}
+    Retry Element Click  xpath=${configuration_system_tabsheet_id}
     Sleep  1
     Retry Element Click  xpath=//select[@id='proCreation']
     Retry Element Click  xpath=//select[@id='proCreation']//option[@value='everyone']
@@ -150,7 +149,16 @@ Project Creation Should Not Display
 Switch To System Settings
     Sleep  1
     Retry Element Click  xpath=${configuration_xpath}
-    Retry Element Click  xpath=${system_config_xpath}
+    Retry Element Click  xpath=${configuration_system_tabsheet_id}
+    Sleep  1
+
+Switch To Project Quotas
+    Sleep  1
+    Retry Element Click  xpath=${configuration_xpath}
+    Retry Element Click  xpath=${configuration_system_tabsheet_id}
+    Retry Element Click  xpath=${configuration_project_quotas_tabsheet_id}
+    Sleep  1
+
 Modify Token Expiration
     [Arguments]  ${minutes}
     Input Text  xpath=//*[@id='tokenExpiration']  ${minutes}
@@ -190,10 +198,10 @@ Config Email
     Input Text  xpath=//*[@id='emailUsername']  example@vmware.com
     Input Text  xpath=//*[@id='emailPassword']  example
     Input Text  xpath=//*[@id='emailFrom']  example<example@vmware.com>
+    Sleep  1    
+    Retry Element Click  xpath=//*[@id='emailSSL-wrapper']/label
     Sleep  1
-    Retry Element Click  xpath=//clr-checkbox-wrapper[@id='emailSSL-wrapper']//label
-    Sleep  1
-    Retry Element Click  xpath=//clr-checkbox-wrapper[@id='emailInsecure-wrapper']//label
+    Retry Element Click  xpath=//*[@id='emailInsecure-wrapper']/label
     Sleep  1
     Retry Element Click  xpath=${config_email_save_button_xpath}
     Sleep  6
@@ -242,7 +250,12 @@ Switch To System Labels
 Switch To Configuration System Setting
     Sleep  1
     Retry Element Click  xpath=${configuration_xpath}
-    Retry Element Click  xpath=${configuration_system_xpath}
+    Retry Element Click  xpath=${configuration_system_tabsheet_id}
+
+Switch To Configuration Project Quotas
+    Sleep  1
+    Retry Element Click  xpath=${configuration_xpath}
+    Retry Element Click  xpath=${configuration_project_quotas}
 
 Create New Labels
     [Arguments]  ${labelname}
@@ -279,7 +292,7 @@ Delete A Label
     Sleep  3
     Capture Page Screenshot
     Retry Element Click  xpath=//clr-modal//div//button[contains(.,'DELETE')]
-    Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${labelname}')]/../div/clr-icon[@shape='success-standard']
+    Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${labelname}')]/../div/clr-icon[@shape='success-standard']
 
 ## Garbage Collection
 Switch To Garbage Collection
@@ -313,3 +326,15 @@ Delete Top Item In System CVE Whitelist
     :FOR  ${idx}  IN RANGE  1  ${count}
     \   Retry Element Click    ${configuration_system_wl_delete_a_cve_id_icon}
     Retry Element Click    ${config_system_save_button_xpath}
+
+Get Project Count Quota Text From Project Quotas List
+    [Arguments]    ${project_name}
+    Switch To Project Quotas
+    ${count_quota}=    Get Text    xpath=//project-quotas//clr-datagrid//clr-dg-row[contains(.,'${project_name}')]//clr-dg-cell[3]//label
+    [Return]  ${count_quota}
+
+Get Project Storage Quota Text From Project Quotas List
+    [Arguments]    ${project_name}
+    Switch To Project Quotas
+    ${storage_quota}=    Get Text    xpath=//project-quotas//clr-datagrid//clr-dg-row[contains(.,'${project_name}')]//clr-dg-cell[4]//label
+    [Return]  ${storage_quota}

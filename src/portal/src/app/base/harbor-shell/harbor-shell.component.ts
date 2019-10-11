@@ -36,16 +36,16 @@ import { CommonRoutes } from '@harbor/ui';
 
 export class HarborShellComponent implements OnInit, OnDestroy {
 
-    @ViewChild(AccountSettingsModalComponent)
+    @ViewChild(AccountSettingsModalComponent, {static: false})
     accountSettingsModal: AccountSettingsModalComponent;
 
-    @ViewChild(PasswordSettingComponent)
+    @ViewChild(PasswordSettingComponent, {static: false})
     pwdSetting: PasswordSettingComponent;
 
-    @ViewChild(NavigatorComponent)
+    @ViewChild(NavigatorComponent, {static: false})
     navigator: NavigatorComponent;
 
-    @ViewChild(AboutDialogComponent)
+    @ViewChild(AboutDialogComponent, {static: false})
     aboutDialog: AboutDialogComponent;
 
     // To indicator whwther or not the search results page is displayed
@@ -55,6 +55,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     searchSub: Subscription;
     searchCloseSub: Subscription;
     isLdapMode: boolean;
+    isOidcMode: boolean;
     isHttpAuthMode: boolean;
 
     constructor(
@@ -69,6 +70,8 @@ export class HarborShellComponent implements OnInit, OnDestroy {
             this.isLdapMode = true;
         } else if (this.appConfigService.isHttpAuthMode()) {
             this.isHttpAuthMode = true;
+        } else if (this.appConfigService.isOidcMode()) {
+            this.isOidcMode = true;
         }
         this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(searchEvt => {
             if (searchEvt && searchEvt.trim() !== "") {

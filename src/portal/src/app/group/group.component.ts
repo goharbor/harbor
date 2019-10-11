@@ -39,7 +39,7 @@ export class GroupComponent implements OnInit, OnDestroy {
   batchInfos = new Map();
   isLdapMode: boolean;
 
-  @ViewChild(AddGroupModalComponent) newGroupModal: AddGroupModalComponent;
+  @ViewChild(AddGroupModalComponent, {static: false}) newGroupModal: AddGroupModalComponent;
 
   constructor(
     private operationService: OperationService,
@@ -161,6 +161,8 @@ export class GroupComponent implements OnInit, OnDestroy {
       return 'GROUP.LDAP_TYPE';
     } else if (type === GroupType.HTTP_TYPE) {
       return 'GROUP.HTTP_TYPE';
+    } else if (type === GroupType.OIDC_TYPE) {
+      return 'GROUP.OIDC_TYPE';
     } else {
       return 'UNKNOWN';
     }

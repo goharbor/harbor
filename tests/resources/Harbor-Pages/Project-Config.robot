@@ -3,7 +3,6 @@
 Resource  ../../resources/Util.robot
 
 *** Variables ***
-${HARBOR_VERSION}  V1.1.1
 
 *** Keywords ***
 

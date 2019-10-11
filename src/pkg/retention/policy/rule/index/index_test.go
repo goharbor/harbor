@@ -22,8 +22,8 @@ import (
 
 	"github.com/stretchr/testify/require"
 
+	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 
 	"github.com/stretchr/testify/suite"
 )
@@ -63,7 +63,7 @@ func (suite *IndexTestSuite) TestGet() {
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), evaluator)
 
-	candidates := []*res.Candidate{{
+	candidates := []*art.Candidate{{
 		Namespace:  "library",
 		Repository: "harbor",
 		Kind:       "image",
@@ -102,7 +102,7 @@ type fakeEvaluator struct {
 }
 
 // Process rule
-func (e *fakeEvaluator) Process(artifacts []*res.Candidate) ([]*res.Candidate, error) {
+func (e *fakeEvaluator) Process(artifacts []*art.Candidate) ([]*art.Candidate, error) {
 	return artifacts, nil
 }
 

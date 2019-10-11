@@ -1,16 +1,41 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { ClarityModule } from '@clr/angular';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { FormsModule } from '@angular/forms';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AddGroupComponent } from './add-group.component';
+import { OperationService } from "@harbor/ui";
+import { GroupService } from "../../../group/group.service";
+import { MemberService } from "./../member.service";
+import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
 
 describe('AddGroupComponent', () => {
   let component: AddGroupComponent;
   let fixture: ComponentFixture<AddGroupComponent>;
+  let fakeMessageHandlerService = null;
+  let fakeOperationService = null;
+  let fakeGroupService = null;
+  let fakeMemberService = null;
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ AddGroupComponent ]
-    })
-    .compileComponents();
+      declarations: [AddGroupComponent],
+      imports: [
+        ClarityModule,
+        FormsModule,
+        TranslateModule.forRoot()
+      ],
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
+      ],
+      providers: [
+        TranslateService,
+        { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
+        { provide: OperationService, useValue: fakeOperationService },
+        { provide: GroupService, useValue: fakeGroupService },
+        { provide: MemberService, useValue: fakeMemberService }
+      ]
+    }).compileComponents();
   }));
 
   beforeEach(() => {

@@ -10,7 +10,7 @@ import {
 } from "@angular/core";
 import { Webhook, Target } from "../webhook";
 import { NgForm } from "@angular/forms";
-import {ClrLoadingState} from "@clr/angular";
+import { ClrLoadingState } from "@clr/angular";
 import { finalize } from "rxjs/operators";
 import { WebhookService } from "../webhook.service";
 import { WebhookEventTypes } from '../../../shared/shared.const';
@@ -37,9 +37,8 @@ export class AddWebhookFormComponent implements OnInit, OnChanges {
   @Input() isOpen: boolean;
   @Output() edit = new EventEmitter<boolean>();
   @Output() close = new EventEmitter<boolean>();
-  @ViewChild("webhookForm") currentForm: NgForm;
-  @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
-
+  @ViewChild("webhookForm", { static: true }) currentForm: NgForm;
+  @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
 
   constructor(
     private webhookService: WebhookService,

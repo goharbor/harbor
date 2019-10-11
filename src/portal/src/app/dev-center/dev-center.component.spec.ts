@@ -1,5 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DevCenterComponent } from './dev-center.component';
 
 describe('DevCenterComponent', () => {
@@ -8,9 +9,16 @@ describe('DevCenterComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ DevCenterComponent ]
+      declarations: [DevCenterComponent],
+      imports: [
+        HttpClientTestingModule,
+        TranslateModule.forRoot()
+      ],
+      providers: [
+        TranslateService
+      ],
     })
-    .compileComponents();
+      .compileComponents();
   }));
 
   beforeEach(() => {

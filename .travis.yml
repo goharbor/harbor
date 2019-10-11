@@ -20,7 +20,8 @@ matrix:
   - go: 1.12.5
     env:
     - OFFLINE=true
-  - node_js: 10.16.2
+  - language: node_js
+    node_js: 10.16.2
     env:
     - UI_UT=true
 env:

@@ -222,11 +222,14 @@ func (ua *UserAPI) Search() {
 	}
 	query := &models.UserQuery{
 		Username: ua.GetString("username"),
-		Email:    ua.GetString("email"),
 		Pagination: &models.Pagination{
 			Page: page,
 			Size: size,
 		},
+	}
+	if len(query.Username) == 0 {
+		ua.SendBadRequestError(errors.New("username is required"))
+		return
 	}
 
 	total, err := dao.GetTotalOfUsers(query)

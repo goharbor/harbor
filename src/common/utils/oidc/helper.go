@@ -207,6 +207,45 @@ func RefreshToken(ctx context.Context, token *Token) (*Token, error) {
 	return &Token{Token: *t, IDToken: it}, nil
 }
 
+// GroupsFromToken returns the list of group name in the token, the claim of the group list is set in OIDCSetting.
+// It's designed not to return errors, in case of unexpected situation it will log and return empty list.
+func GroupsFromToken(token *gooidc.IDToken) []string {
+	if token == nil {
+		log.Warning("Return empty list for nil token")
+		return []string{}
+	}
+	setting := provider.setting.Load().(models.OIDCSetting)
+	if len(setting.GroupsClaim) == 0 {
+		log.Warning("Group claim is not set in OIDC setting returning empty group list.")
+		return []string{}
+	}
+	var c map[string]interface{}
+	err := token.Claims(&c)
+	if err != nil {
+		log.Warningf("Failed to get claims map, error: %v", err)
+		return []string{}
+	}
+	return groupsFromClaim(c, setting.GroupsClaim)
+}
+
+func groupsFromClaim(claimMap map[string]interface{}, k string) []string {
+	var res []string
+	g, ok := claimMap[k].([]interface{})
+	if !ok {
+		log.Warningf("Unable to get groups from claims, claims: %+v, groups claim key: %s", claimMap, k)
+		return res
+	}
+	for _, e := range g {
+		s, ok := e.(string)
+		if !ok {
+			log.Warningf("Element in group list is not string: %v, list: %v", e, g)
+			continue
+		}
+		res = append(res, s)
+	}
+	return res
+}
+
 // Conn wraps connection info of an OIDC endpoint
 type Conn struct {
 	URL        string `json:"url"`

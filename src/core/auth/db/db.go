@@ -15,6 +15,7 @@
 package db
 
 import (
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/auth"
@@ -52,5 +53,5 @@ func (d *Auth) OnBoardUser(u *models.User) error {
 }
 
 func init() {
-	auth.Register("db_auth", &Auth{})
+	auth.Register(common.DBAuth, &Auth{})
 }

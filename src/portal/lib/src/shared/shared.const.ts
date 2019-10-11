@@ -150,6 +150,7 @@ export const PROJECT_ROOTS = [
 
 export enum GroupType {
   LDAP_TYPE = 1,
-  HTTP_TYPE = 2
+  HTTP_TYPE = 2,
+  OIDC_TYPE = 3
 }
 export const REFRESH_TIME_DIFFERENCE = 10000;

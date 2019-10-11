@@ -25,6 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/rbac/project"
 	"github.com/goharbor/harbor/src/common/token"
 	"github.com/goharbor/harbor/src/core/config"
 )
@@ -107,6 +108,11 @@ func (r *RobotAPI) Post() {
 		return
 	}
 
+	if err := validateRobotReq(r.project, &robotReq); err != nil {
+		r.SendBadRequestError(err)
+		return
+	}
+
 	// Token duration in minutes
 	tokenDuration := time.Duration(config.RobotTokenDuration()) * time.Minute
 	expiresAt := time.Now().UTC().Add(tokenDuration).Unix()
@@ -155,6 +161,10 @@ func (r *RobotAPI) Post() {
 		Name:  robot.Name,
 		Token: rawTk,
 	}
+
+	w := r.Ctx.ResponseWriter
+	w.Header().Set("Content-Type", "application/json")
+
 	r.Redirect(http.StatusCreated, strconv.FormatInt(id, 10))
 	r.Data["json"] = robotRep
 	r.ServeJSON()
@@ -249,4 +259,26 @@ func (r *RobotAPI) Delete() {
 		r.SendInternalServerError(fmt.Errorf("failed to delete robot %d: %v", r.robot.ID, err))
 		return
 	}
+}
+
+func validateRobotReq(p *models.Project, robotReq *models.RobotReq) error {
+	if len(robotReq.Access) == 0 {
+		return errors.New("access required")
+	}
+
+	namespace, _ := rbac.Resource(fmt.Sprintf("/project/%d", p.ProjectID)).GetNamespace()
+	policies := project.GetAllPolicies(namespace)
+
+	mp := map[string]bool{}
+	for _, policy := range policies {
+		mp[policy.String()] = true
+	}
+
+	for _, policy := range robotReq.Access {
+		if !mp[policy.String()] {
+			return fmt.Errorf("%s action of %s resource not exist in project %s", policy.Action, policy.Resource, p.Name)
+		}
+	}
+
+	return nil
 }

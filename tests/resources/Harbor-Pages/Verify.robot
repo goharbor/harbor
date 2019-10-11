@@ -144,8 +144,8 @@ Verify Project Setting
     \    Run Keyword If  ${public} == "public"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@name='public']//label
     \    Run Keyword If  ${contenttrust} == "true"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@name='content-trust']//label
     \    Run Keyword If  ${contenttrust} == "false"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@name='content-trust']//label
-    \    Run Keyword If  ${preventrunning} == "true"  Checkbox Should Be Checked  //div[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
-    \    Run Keyword If  ${preventrunning} == "false"  Checkbox Should Not Be Checked    //div[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
+    \    Run Keyword If  ${preventrunning} == "true"  Checkbox Should Be Checked  //*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
+    \    Run Keyword If  ${preventrunning} == "false"  Checkbox Should Not Be Checked    //*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
     \    Run Keyword If  ${scanonpush} == "true"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='scan-image-on-push-wrapper']//input
     \    Run Keyword If  ${scanonpush} == "true"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='scan-image-on-push-wrapper']//input
     \   Close Browser
@@ -173,9 +173,11 @@ Verify System Setting
     Textfield Value Should Be  xpath=//*[@id='emailUsername']  @{emailuser}[0]
     Textfield Value Should Be  xpath=//*[@id='emailFrom']  @{emailfrom}[0]
     Switch To System Settings
-    Page Should Contain  @{creation}[0]
+    ${ret}  Get Selected List Value  xpath=//select[@id='proCreation']
+    Should Be Equal As Strings  ${ret}  @{creation}[0]
     Token Must Be Match  @{token}[0]
-    Switch To Vulnerability Page
-    Page Should Contain  None
+    #ToDo:These 2 lines below should be uncommented right after issue 9211 was fixed
+    #Switch To Vulnerability Page
+    #Page Should Contain  None
     Close Browser
 

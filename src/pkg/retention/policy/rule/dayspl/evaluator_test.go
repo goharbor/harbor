@@ -17,12 +17,12 @@ package dayspl
 import (
 	"errors"
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -54,15 +54,15 @@ func (e *EvaluatorTestSuite) TestNew() {
 
 func (e *EvaluatorTestSuite) TestProcess() {
 	now := time.Now().UTC()
-	data := []*res.Candidate{
-		{PulledTime: daysAgo(now, 1)},
-		{PulledTime: daysAgo(now, 2)},
-		{PulledTime: daysAgo(now, 3)},
-		{PulledTime: daysAgo(now, 4)},
-		{PulledTime: daysAgo(now, 5)},
-		{PulledTime: daysAgo(now, 10)},
-		{PulledTime: daysAgo(now, 20)},
-		{PulledTime: daysAgo(now, 30)},
+	data := []*art.Candidate{
+		{PulledTime: daysAgo(now, 1, time.Hour)},
+		{PulledTime: daysAgo(now, 2, time.Hour)},
+		{PulledTime: daysAgo(now, 3, time.Hour)},
+		{PulledTime: daysAgo(now, 4, time.Hour)},
+		{PulledTime: daysAgo(now, 5, time.Hour)},
+		{PulledTime: daysAgo(now, 10, time.Hour)},
+		{PulledTime: daysAgo(now, 20, time.Hour)},
+		{PulledTime: daysAgo(now, 30, time.Hour)},
 	}
 
 	tests := []struct {
@@ -71,13 +71,13 @@ func (e *EvaluatorTestSuite) TestProcess() {
 		minPullTime int64
 	}{
 		{n: 0, expected: 0, minPullTime: 0},
-		{n: 1, expected: 1, minPullTime: daysAgo(now, 1)},
-		{n: 2, expected: 2, minPullTime: daysAgo(now, 2)},
-		{n: 3, expected: 3, minPullTime: daysAgo(now, 3)},
-		{n: 4, expected: 4, minPullTime: daysAgo(now, 4)},
-		{n: 5, expected: 5, minPullTime: daysAgo(now, 5)},
-		{n: 15, expected: 6, minPullTime: daysAgo(now, 10)},
-		{n: 90, expected: 8, minPullTime: daysAgo(now, 30)},
+		{n: 1, expected: 1, minPullTime: daysAgo(now, 1, 0)},
+		{n: 2, expected: 2, minPullTime: daysAgo(now, 2, 0)},
+		{n: 3, expected: 3, minPullTime: daysAgo(now, 3, 0)},
+		{n: 4, expected: 4, minPullTime: daysAgo(now, 4, 0)},
+		{n: 5, expected: 5, minPullTime: daysAgo(now, 5, 0)},
+		{n: 15, expected: 6, minPullTime: daysAgo(now, 10, 0)},
+		{n: 90, expected: 8, minPullTime: daysAgo(now, 30, 0)},
 	}
 
 	for _, tt := range tests {
@@ -120,6 +120,6 @@ func TestEvaluatorSuite(t *testing.T) {
 	suite.Run(t, &EvaluatorTestSuite{})
 }
 
-func daysAgo(from time.Time, n int) int64 {
-	return from.Add(time.Duration(-1*24*n) * time.Hour).Unix()
+func daysAgo(from time.Time, n int, offset time.Duration) int64 {
+	return from.Add(time.Duration(-1*24*n)*time.Hour + offset).Unix()
 }
