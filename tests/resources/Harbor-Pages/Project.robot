@@ -61,6 +61,10 @@ Switch To Replication
     Retry Element Click  xpath=${project_replication_xpath}
     Sleep  1
 
+Switch To Project Configuration
+    Retry Element Click  ${project_config_tabsheet}
+    Sleep  1
+
 Navigate To Projects
     Retry Element Click  xpath=${projects_xpath}
     Sleep  2
@@ -82,7 +86,7 @@ Search Private Projects
 Make Project Private
     [Arguments]  ${projectname}
     Go Into Project  ${project name}
-    Retry Element Click  ${project_config_tabsheet}
+    Switch To Project Configuration
     Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
     Retry Double Keywords When Error  Retry Element Click  ${project_config_public_checkbox_label}  Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
     Retry Element Click  //button[contains(.,'SAVE')]
@@ -91,7 +95,7 @@ Make Project Private
 Make Project Public
     [Arguments]  ${projectname}
     Go Into Project  ${project name}
-    Retry Element Click  ${project_config_tabsheet}
+    Switch To Project Configuration
     Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
     Retry Double Keywords When Error  Retry Element Click  ${project_config_public_checkbox_label}  Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
     Retry Element Click  //button[contains(.,'SAVE')]
