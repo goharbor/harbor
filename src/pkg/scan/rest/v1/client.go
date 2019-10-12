@@ -18,6 +18,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"net"
 	"net/http"
@@ -157,7 +158,7 @@ func (c *basicClient) SubmitScan(req *ScanRequest) (*ScanResponse, error) {
 		return nil, errors.Wrap(err, "v1 client: submit scan")
 	}
 
-	respData, err := c.send(request, generalResponseHandler(http.StatusCreated))
+	respData, err := c.send(request, generalResponseHandler(http.StatusAccepted))
 	if err != nil {
 		return nil, errors.Wrap(err, "v1 client: submit scan")
 	}
@@ -199,7 +200,7 @@ func (c *basicClient) GetScanReport(scanRequestID, reportMIMEType string) (strin
 func (c *basicClient) send(req *http.Request, h responseHandler) ([]byte, error) {
 	if c.authorizer != nil {
 		if err := c.authorizer.Authorize(req); err != nil {
-			return nil, errors.Wrap(err, "authorization")
+			return nil, errors.Wrap(err, "send: authorization")
 		}
 	}
 
@@ -266,12 +267,24 @@ func generalRespHandlerFunc(expectedCode, code int, resp *http.Response) ([]byte
 			eResp := &ErrorResponse{
 				Err: &Error{},
 			}
-			if err := json.Unmarshal(buf, eResp); err == nil {
-				return nil, eResp
+
+			err := json.Unmarshal(buf, eResp)
+			if err != nil {
+				return nil, errors.Wrap(err, "general response handler")
 			}
+
+			// Append more contexts
+			eResp.Err.Message = fmt.Sprintf(
+				"%s: general response handler: unexpected status code: %d, expected: %d",
+				eResp.Err.Message,
+				code,
+				expectedCode,
+			)
+
+			return nil, eResp
 		}
 
-		return nil, errors.Errorf("unexpected status code: %d, response: %s", code, string(buf))
+		return nil, errors.Errorf("general response handler: unexpected status code: %d, expected: %d", code, expectedCode)
 	}
 
 	return buf, nil

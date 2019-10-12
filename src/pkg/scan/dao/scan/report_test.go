@@ -45,6 +45,7 @@ func (suite *ReportTestSuite) SetupSuite() {
 func (suite *ReportTestSuite) SetupTest() {
 	r := &Report{
 		UUID:             "uuid",
+		TrackID:          "track-uuid",
 		Digest:           "digest1001",
 		RegistrationUUID: "ruuid",
 		MimeType:         v1.MimeTypeNativeReport,
@@ -95,7 +96,7 @@ func (suite *ReportTestSuite) TestReportList() {
 
 // TestReportUpdateJobID tests update job ID of the report.
 func (suite *ReportTestSuite) TestReportUpdateJobID() {
-	err := UpdateJobID("uuid", "jobid001")
+	err := UpdateJobID("track-uuid", "jobid001")
 	require.NoError(suite.T(), err)
 
 	l, err := ListReports(nil)
@@ -120,12 +121,12 @@ func (suite *ReportTestSuite) TestReportUpdateReportData() {
 
 // TestReportUpdateStatus tests update the report status.
 func (suite *ReportTestSuite) TestReportUpdateStatus() {
-	err := UpdateReportStatus("uuid", job.RunningStatus.String(), job.RunningStatus.Code(), 1000)
+	err := UpdateReportStatus("track-uuid", job.RunningStatus.String(), job.RunningStatus.Code(), 1000)
 	require.NoError(suite.T(), err)
 
-	err = UpdateReportStatus("uuid", job.RunningStatus.String(), job.RunningStatus.Code(), 900)
+	err = UpdateReportStatus("track-uuid", job.RunningStatus.String(), job.RunningStatus.Code(), 900)
 	require.Error(suite.T(), err)
 
-	err = UpdateReportStatus("uuid", job.PendingStatus.String(), job.PendingStatus.Code(), 1000)
+	err = UpdateReportStatus("track-uuid", job.PendingStatus.String(), job.PendingStatus.Code(), 1000)
 	require.Error(suite.T(), err)
 }

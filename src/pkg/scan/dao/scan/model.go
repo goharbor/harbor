@@ -25,6 +25,7 @@ type Report struct {
 	RegistrationUUID string    `orm:"column(registration_uuid)"`
 	MimeType         string    `orm:"column(mime_type)"`
 	JobID            string    `orm:"column(job_id)"`
+	TrackID          string    `orm:"column(track_id)"`
 	Status           string    `orm:"column(status)"`
 	StatusCode       int       `orm:"column(status_code)"`
 	StatusRevision   int64     `orm:"column(status_rev)"`
