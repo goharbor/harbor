@@ -16,22 +16,41 @@ package scan
 
 import (
 	"fmt"
+	"time"
 
-	"github.com/goharbor/harbor/src/jobservice/logger"
-
+	"github.com/goharbor/harbor/src/common"
+	cj "github.com/goharbor/harbor/src/common/job"
 	jm "github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/robot"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
 	sc "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	"github.com/google/uuid"
 	"github.com/pkg/errors"
 )
 
 // DefaultController is a default singleton scan API controller.
 var DefaultController = NewController()
+
+const (
+	configRegistryEndpoint = "registryEndpoint"
+	configCoreInternalAddr = "coreInternalAddr"
+)
+
+// uuidGenerator is a func template which is for generating UUID.
+type uuidGenerator func() (string, error)
+
+// configGetter is a func template which is used to wrap the config management
+// utility methods.
+type configGetter func(cfg string) (string, error)
 
 // basicController is default implementation of api.Controller interface
 type basicController struct {
@@ -39,8 +58,14 @@ type basicController struct {
 	manager report.Manager
 	// Scanner controller
 	sc sc.Controller
-	// Dep manager for utility functions
-	dep DepManager
+	// Robot account controller
+	rc robot.Controller
+	// Job service client
+	jc cj.Client
+	// UUID generator
+	uuid uuidGenerator
+	// Configuration getter func
+	config configGetter
 }
 
 // NewController news a scan API controller
@@ -48,10 +73,32 @@ func NewController() Controller {
 	return &basicController{
 		// New report manager
 		manager: report.NewManager(),
-		// Refer the default scanner controller
+		// Refer to the default scanner controller
 		sc: sc.DefaultController,
-		// New dep manager
-		dep: &basicDepManager{},
+		// Refer to the default robot account controller
+		rc: robot.RobotCtr,
+		// Refer to the default job service client
+		jc: cj.GlobalClient,
+		// Generate UUID with uuid lib
+		uuid: func() (string, error) {
+			aUUID, err := uuid.NewUUID()
+			if err != nil {
+				return "", err
+			}
+
+			return aUUID.String(), nil
+		},
+		// Get the required configuration options
+		config: func(cfg string) (string, error) {
+			switch cfg {
+			case configRegistryEndpoint:
+				return config.ExtEndpoint()
+			case configCoreInternalAddr:
+				return config.InternalCoreURL(), nil
+			default:
+				return "", errors.Errorf("configuration option %s not defined", cfg)
+			}
+		},
 	}
 }
 
@@ -75,7 +122,7 @@ func (bc *basicController) Scan(artifact *v1.Artifact) error {
 
 	// Generate a UUID as track ID which groups the report records generated
 	// by the specified registration for the digest with given mime type.
-	trackID, err := bc.dep.UUID()
+	trackID, err := bc.uuid()
 	if err != nil {
 		return errors.Wrap(err, "scan controller: scan")
 	}
@@ -229,7 +276,7 @@ func (bc *basicController) GetScanLog(uuid string) ([]byte, error) {
 	}
 
 	// Job log
-	return bc.dep.GetJobLog(sr.JobID)
+	return bc.jc.GetJobLog(sr.JobID)
 }
 
 // HandleJobHooks ...
@@ -274,15 +321,48 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 	return bc.manager.UpdateStatus(trackID, change.Status, change.Metadata.Revision)
 }
 
+// makeRobotAccount creates a robot account based on the arguments for scanning.
+func (bc *basicController) makeRobotAccount(pid int64, repository string, ttl int64) (string, error) {
+	// Use uuid as name to avoid duplicated entries.
+	UUID, err := bc.uuid()
+	if err != nil {
+		return "", errors.Wrap(err, "scan controller: make robot account")
+	}
+
+	expireAt := time.Now().UTC().Add(time.Duration(ttl) * time.Second).Unix()
+
+	logger.Warningf("repository %s and expire time %d are not supported by robot controller", repository, expireAt)
+
+	resource := fmt.Sprintf("/project/%d/repository", pid)
+	access := []*rbac.Policy{{
+		Resource: rbac.Resource(resource),
+		Action:   "pull",
+	}}
+
+	account := &model.RobotCreate{
+		Name:        fmt.Sprintf("%s%s", common.RobotPrefix, UUID),
+		Description: "for scan",
+		ProjectID:   pid,
+		Access:      access,
+	}
+
+	rb, err := bc.rc.CreateRobotAccount(account)
+	if err != nil {
+		return "", errors.Wrap(err, "scan controller: make robot account")
+	}
+
+	return rb.Token, nil
+}
+
 // launchScanJob launches a job to run scan
 func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, registration *scanner.Registration, mimes []string) (jobID string, err error) {
-	externalURL, err := bc.dep.GetRegistryEndpoint()
+	externalURL, err := bc.config(configRegistryEndpoint)
 	if err != nil {
 		return "", errors.Wrap(err, "scan controller: launch scan job")
 	}
 
 	// Make a robot account with 30 minutes
-	robotAccount, err := bc.dep.MakeRobotAccount(artifact.NamespaceID, 1800)
+	robotAccount, err := bc.makeRobotAccount(artifact.NamespaceID, artifact.Repository, 1800)
 	if err != nil {
 		return "", errors.Wrap(err, "scan controller: launch scan job")
 	}
@@ -312,7 +392,7 @@ func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, 
 	params[sca.JobParameterMimes] = mimes
 
 	// Launch job
-	callbackURL, err := bc.dep.GetInternalCoreAddr()
+	callbackURL, err := bc.config(configCoreInternalAddr)
 	if err != nil {
 		return "", errors.Wrap(err, "launch scan job")
 	}
@@ -327,5 +407,5 @@ func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, 
 		StatusHook: hookURL,
 	}
 
-	return bc.dep.SubmitJob(j)
+	return bc.jc.SubmitJob(j)
 }

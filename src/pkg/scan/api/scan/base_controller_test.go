@@ -20,7 +20,12 @@ import (
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/rbac"
+
+	"github.com/goharbor/harbor/src/pkg/robot/model"
+
+	cjm "github.com/goharbor/harbor/src/common/job/models"
 	jm "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/q"
@@ -151,12 +156,28 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	mgr.On("UpdateReportData", "rp-uuid-001", suite.rawReport, (int64)(10000)).Return(nil)
 	mgr.On("UpdateStatus", "the-uuid-123", "Success", (int64)(10000)).Return(nil)
 
-	dep := &MockDepManager{}
-	dep.On("UUID").Return("the-uuid-123", nil)
-	dep.On("GetRegistryEndpoint").Return("https://core.com", nil)
-	dep.On("GetInternalCoreAddr").Return("http://core:8080", nil)
-	dep.On("MakeRobotAccount", suite.artifact.NamespaceID, (int64)(1800)).Return("robot-account", nil)
-	dep.On("GetJobLog", "the-job-id").Return([]byte("job log"), nil)
+	rc := &MockRobotController{}
+
+	resource := fmt.Sprintf("/project/%d/repository", suite.artifact.NamespaceID)
+	access := []*rbac.Policy{{
+		Resource: rbac.Resource(resource),
+		Action:   "pull",
+	}}
+
+	rname := fmt.Sprintf("%s%s", common.RobotPrefix, "the-uuid-123")
+	account := &model.RobotCreate{
+		Name:        rname,
+		Description: "for scan",
+		ProjectID:   suite.artifact.NamespaceID,
+		Access:      access,
+	}
+	rc.On("CreateRobotAccount", account).Return(&model.Robot{
+		ID:          1,
+		Name:        rname,
+		Token:       "robot-account",
+		Description: "for scan",
+		ProjectID:   suite.artifact.NamespaceID,
+	}, nil)
 
 	// Set job parameters
 	req := &v1.ScanRequest{
@@ -173,6 +194,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	regJSON, err := suite.registration.ToJSON()
 	require.NoError(suite.T(), err)
 
+	jc := &MockJobServiceClient{}
 	params := make(map[string]interface{})
 	params[sca.JobParamRegistration] = regJSON
 	params[sca.JobParameterRequest] = rJSON
@@ -186,12 +208,27 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		Parameters: params,
 		StatusHook: fmt.Sprintf("%s/service/notifications/jobs/scan/%s", "http://core:8080", "the-uuid-123"),
 	}
-	dep.On("SubmitJob", j).Return("the-job-id", nil)
+	jc.On("SubmitJob", j).Return("the-job-id", nil)
+	jc.On("GetJobLog", "the-job-id").Return([]byte("job log"), nil)
 
 	suite.c = &basicController{
 		manager: mgr,
 		sc:      sc,
-		dep:     dep,
+		jc:      jc,
+		rc:      rc,
+		uuid: func() (string, error) {
+			return "the-uuid-123", nil
+		},
+		config: func(cfg string) (string, error) {
+			switch cfg {
+			case configRegistryEndpoint:
+				return "https://core.com", nil
+			case configCoreInternalAddr:
+				return "http://core:8080", nil
+			}
+
+			return "", nil
+		},
 	}
 }
 
@@ -412,50 +449,89 @@ func (msc *MockScannerController) GetMetadata(registrationUUID string) (*v1.Scan
 	return args.Get(0).(*v1.ScannerAdapterMetadata), args.Error(1)
 }
 
-// MockDepManager ...
-type MockDepManager struct {
+// MockJobServiceClient ...
+type MockJobServiceClient struct {
 	mock.Mock
 }
 
-// UUID ...
-func (mdm *MockDepManager) UUID() (string, error) {
-	args := mdm.Called()
-
-	return args.String(0), args.Error(1)
-}
-
-func (mdm *MockDepManager) SubmitJob(jobData *models.JobData) (string, error) {
-	args := mdm.Called(jobData)
-
-	return args.String(0), args.Error(1)
-}
-
-func (mdm *MockDepManager) GetRegistryEndpoint() (string, error) {
-	args := mdm.Called()
-
-	return args.String(0), args.Error(1)
-}
-
-func (mdm *MockDepManager) GetInternalCoreAddr() (string, error) {
-	args := mdm.Called()
-
-	return args.String(0), args.Error(1)
-}
-
-// MakeRobotAccount ...
-func (mdm *MockDepManager) MakeRobotAccount(pid int64, ttl int64) (string, error) {
-	args := mdm.Called(pid, ttl)
+// SubmitJob ...
+func (mjc *MockJobServiceClient) SubmitJob(jData *cjm.JobData) (string, error) {
+	args := mjc.Called(jData)
 
 	return args.String(0), args.Error(1)
 }
 
 // GetJobLog ...
-func (mdm *MockDepManager) GetJobLog(uuid string) ([]byte, error) {
-	args := mdm.Called(uuid)
-
+func (mjc *MockJobServiceClient) GetJobLog(uuid string) ([]byte, error) {
+	args := mjc.Called(uuid)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 
 	return args.Get(0).([]byte), args.Error(1)
+}
+
+// PostAction ...
+func (mjc *MockJobServiceClient) PostAction(uuid, action string) error {
+	args := mjc.Called(uuid, action)
+
+	return args.Error(0)
+}
+
+func (mjc *MockJobServiceClient) GetExecutions(uuid string) ([]job.Stats, error) {
+	args := mjc.Called(uuid)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).([]job.Stats), args.Error(1)
+}
+
+// MockRobotController ...
+type MockRobotController struct {
+	mock.Mock
+}
+
+// GetRobotAccount ...
+func (mrc *MockRobotController) GetRobotAccount(id int64) (*model.Robot, error) {
+	args := mrc.Called(id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(*model.Robot), args.Error(1)
+}
+
+// CreateRobotAccount ...
+func (mrc *MockRobotController) CreateRobotAccount(robotReq *model.RobotCreate) (*model.Robot, error) {
+	args := mrc.Called(robotReq)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(*model.Robot), args.Error(1)
+}
+
+// DeleteRobotAccount ...
+func (mrc *MockRobotController) DeleteRobotAccount(id int64) error {
+	args := mrc.Called(id)
+
+	return args.Error(0)
+}
+
+// UpdateRobotAccount ...
+func (mrc *MockRobotController) UpdateRobotAccount(r *model.Robot) error {
+	args := mrc.Called(r)
+
+	return args.Error(0)
+}
+
+// ListRobotAccount ...
+func (mrc *MockRobotController) ListRobotAccount(pid int64) ([]*model.Robot, error) {
+	args := mrc.Called(pid)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).([]*model.Robot), args.Error(1)
 }
