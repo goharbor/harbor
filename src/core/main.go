@@ -85,14 +85,19 @@ func updateInitPassword(userID int, password string) error {
 
 // Quota migration
 func quotaSync() error {
-	usages, err := dao.ListQuotaUsages()
-	if err != nil {
-		log.Errorf("list quota usage error, %v", err)
-		return err
-	}
 	projects, err := dao.GetProjects(nil)
 	if err != nil {
 		log.Errorf("list project error, %v", err)
+		return err
+	}
+
+	var pids []string
+	for _, project := range projects {
+		pids = append(pids, strconv.FormatInt(project.ProjectID, 10))
+	}
+	usages, err := dao.ListQuotaUsages(&models.QuotaUsageQuery{Reference: "project", ReferenceIDs: pids})
+	if err != nil {
+		log.Errorf("list quota usage error, %v", err)
 		return err
 	}
 

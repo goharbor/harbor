@@ -1,20 +1,7 @@
-// Copyright Project Harbor Authors
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//    http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
-package models
+package model
 
 import (
+	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/validation"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -24,16 +11,26 @@ import (
 // RobotTable is the name of table in DB that holds the robot object
 const RobotTable = "robot"
 
+func init() {
+	orm.RegisterModel(&Robot{})
+}
+
 // Robot holds the details of a robot.
 type Robot struct {
 	ID           int64     `orm:"pk;auto;column(id)" json:"id"`
 	Name         string    `orm:"column(name)" json:"name"`
+	Token        string    `orm:"-" json:"token"`
 	Description  string    `orm:"column(description)" json:"description"`
 	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
 	ExpiresAt    int64     `orm:"column(expiresat)" json:"expires_at"`
 	Disabled     bool      `orm:"column(disabled)" json:"disabled"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
+}
+
+// TableName ...
+func (r *Robot) TableName() string {
+	return RobotTable
 }
 
 // RobotQuery ...
@@ -45,16 +42,23 @@ type RobotQuery struct {
 	Pagination
 }
 
-// RobotReq ...
-type RobotReq struct {
+// RobotCreate ...
+type RobotCreate struct {
 	Name        string         `json:"name"`
+	ProjectID   int64          `json:"pid"`
 	Description string         `json:"description"`
 	Disabled    bool           `json:"disabled"`
 	Access      []*rbac.Policy `json:"access"`
 }
 
+// Pagination ...
+type Pagination struct {
+	Page int64
+	Size int64
+}
+
 // Valid ...
-func (rq *RobotReq) Valid(v *validation.Validation) {
+func (rq *RobotCreate) Valid(v *validation.Validation) {
 	if utils.IsIllegalLength(rq.Name, 1, 255) {
 		v.SetError("name", "robot name with illegal length")
 	}
@@ -67,9 +71,4 @@ func (rq *RobotReq) Valid(v *validation.Validation) {
 type RobotRep struct {
 	Name  string `json:"name"`
 	Token string `json:"token"`
-}
-
-// TableName ...
-func (r *Robot) TableName() string {
-	return RobotTable
 }

@@ -97,9 +97,10 @@ func TestImmutableTagRuleAPI_List(t *testing.T) {
 func TestImmutableTagRuleAPI_Post(t *testing.T) {
 
 	//	body := `{
-	//    "id":0,
-	//	"projectID":1,
+	//	  "projectID":1,
 	//    "priority":0,
+	//    "template": "immutable_template",
+	//    "action": "immutable",
 	//    "disabled":false,
 	//    "action":"immutable",
 	//    "template":"immutable_template",

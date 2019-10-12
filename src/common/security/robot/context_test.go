@@ -26,6 +26,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -96,7 +97,7 @@ func TestIsAuthenticated(t *testing.T) {
 	assert.False(t, ctx.IsAuthenticated())
 
 	// authenticated
-	ctx = NewSecurityContext(&models.Robot{
+	ctx = NewSecurityContext(&model.Robot{
 		Name:     "test",
 		Disabled: false,
 	}, nil, nil)
@@ -109,7 +110,7 @@ func TestGetUsername(t *testing.T) {
 	assert.Equal(t, "", ctx.GetUsername())
 
 	// authenticated
-	ctx = NewSecurityContext(&models.Robot{
+	ctx = NewSecurityContext(&model.Robot{
 		Name:     "test",
 		Disabled: false,
 	}, nil, nil)
@@ -122,7 +123,7 @@ func TestIsSysAdmin(t *testing.T) {
 	assert.False(t, ctx.IsSysAdmin())
 
 	// authenticated, non admin
-	ctx = NewSecurityContext(&models.Robot{
+	ctx = NewSecurityContext(&model.Robot{
 		Name:     "test",
 		Disabled: false,
 	}, nil, nil)
@@ -141,7 +142,7 @@ func TestHasPullPerm(t *testing.T) {
 			Action:   rbac.ActionPull,
 		},
 	}
-	robot := &models.Robot{
+	robot := &model.Robot{
 		Name:        "test_robot_1",
 		Description: "desc",
 	}
@@ -158,7 +159,7 @@ func TestHasPushPerm(t *testing.T) {
 			Action:   rbac.ActionPush,
 		},
 	}
-	robot := &models.Robot{
+	robot := &model.Robot{
 		Name:        "test_robot_2",
 		Description: "desc",
 	}
@@ -179,7 +180,7 @@ func TestHasPushPullPerm(t *testing.T) {
 			Action:   rbac.ActionPull,
 		},
 	}
-	robot := &models.Robot{
+	robot := &model.Robot{
 		Name:        "test_robot_3",
 		Description: "desc",
 	}
