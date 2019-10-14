@@ -486,7 +486,7 @@ You can now pull the image:
 $ docker pull 10.117.169.182/library/ubuntu:14.04  
 ```
 
-**Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. You cannot pull a unsigned image if you enabled content trust.**
+**Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. You cannot pull an unsigned image if you enabled content trust.**
 
 ### Pushing images  
 Before pushing an image, you must create a corresponding project on Harbor web UI. 
