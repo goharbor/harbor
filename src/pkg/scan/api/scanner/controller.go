@@ -17,6 +17,7 @@ package scanner
 import (
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
 // Controller provides the related operations of scanner for the upper API.
@@ -112,4 +113,26 @@ type Controller interface {
 	//     *scanner.Registration : the default scanner registration
 	//     error                 : non nil error if any errors occurred
 	GetRegistrationByProject(projectID int64) (*scanner.Registration, error)
+
+	// Ping pings Scanner Adapter to test EndpointURL and Authorization settings.
+	// The implementation is supposed to call the GetMetadata method on scanner.Client.
+	// Returns `nil` if connection succeeded, a non `nil` error otherwise.
+	//
+	//  Arguments:
+	//    registration *scanner.Registration : scanner registration to ping
+	//
+	//  Returns:
+	//    *v1.ScannerAdapterMetadata : metadata returned by the scanner if successfully ping
+	//    error                      : non nil error if any errors occurred
+	Ping(registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error)
+
+	// GetMetadata returns the metadata of the given scanner.
+	//
+	//  Arguments:
+	//    registrationUUID string : the UUID of the given scanner which is marked as default
+	//
+	//  Returns:
+	//    *v1.ScannerAdapterMetadata : metadata returned by the scanner if successfully ping
+	//    error                      : non nil error if any errors occurred
+	GetMetadata(registrationUUID string) (*v1.ScannerAdapterMetadata, error)
 }

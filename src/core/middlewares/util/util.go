@@ -40,7 +40,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
-	"github.com/opencontainers/go-digest"
+	digest "github.com/opencontainers/go-digest"
 )
 
 type contextKey string
@@ -345,6 +345,10 @@ func (pc PmsPolicyChecker) ContentTrustEnabled(name string) bool {
 	if err != nil {
 		log.Errorf("Unexpected error when getting the project, error: %v", err)
 		return true
+	}
+	if project == nil {
+		log.Debugf("project %s not found", name)
+		return false
 	}
 	return project.ContentTrustEnabled()
 }

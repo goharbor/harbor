@@ -115,7 +115,7 @@ type mockHandler struct{}
 // ServeHTTP ...
 func (mh *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.RequestURI {
-	case "/metadata":
+	case "/api/v1/metadata":
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusForbidden)
 			return
@@ -126,7 +126,7 @@ func (mh *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 				Vendor:  "Harbor",
 				Version: "0.1.0",
 			},
-			Capabilities: &ScannerCapability{
+			Capabilities: []*ScannerCapability{{
 				ConsumesMimeTypes: []string{
 					MimeTypeOCIArtifact,
 					MimeTypeDockerArtifact,
@@ -135,7 +135,7 @@ func (mh *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 					MimeTypeNativeReport,
 					MimeTypeRawReport,
 				},
-			},
+			}},
 			Properties: ScannerProperties{
 				"extra": "testing",
 			},
@@ -144,7 +144,7 @@ func (mh *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write(data)
 		break
-	case "/scan":
+	case "/api/v1/scan":
 		if r.Method != http.MethodPost {
 			w.WriteHeader(http.StatusForbidden)
 			return
@@ -155,10 +155,10 @@ func (mh *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 		data, _ := json.Marshal(res)
 
-		w.WriteHeader(http.StatusCreated)
+		w.WriteHeader(http.StatusAccepted)
 		_, _ = w.Write(data)
 		break
-	case "/scan/id1/report":
+	case "/api/v1/scan/id1/report":
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusForbidden)
 			return
@@ -175,7 +175,7 @@ func (mh *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusNotFound)
 		_, _ = w.Write(data)
 		break
-	case "/scan/id2/report":
+	case "/api/v1/scan/id2/report":
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusForbidden)
 			return
@@ -183,7 +183,7 @@ func (mh *mockHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, _ = w.Write([]byte("{}"))
 		break
-	case "/scan/id3/report":
+	case "/api/v1/scan/id3/report":
 		if r.Method != http.MethodGet {
 			w.WriteHeader(http.StatusForbidden)
 			return

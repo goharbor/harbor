@@ -17,6 +17,8 @@ package scanner
 import (
 	"testing"
 
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
@@ -47,15 +49,42 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	suite.mMgr = new(MockScannerManager)
 	suite.mMeta = new(MockProMetaManager)
 
-	suite.c = &basicController{
-		manager:    suite.mMgr,
-		proMetaMgr: suite.mMeta,
+	m := &v1.ScannerAdapterMetadata{
+		Scanner: &v1.Scanner{
+			Name:    "Clair",
+			Vendor:  "Harbor",
+			Version: "0.1.0",
+		},
+		Capabilities: []*v1.ScannerCapability{{
+			ConsumesMimeTypes: []string{
+				v1.MimeTypeOCIArtifact,
+				v1.MimeTypeDockerArtifact,
+			},
+			ProducesMimeTypes: []string{
+				v1.MimeTypeNativeReport,
+				v1.MimeTypeRawReport,
+			},
+		}},
+		Properties: v1.ScannerProperties{
+			"extra": "testing",
+		},
 	}
 
 	suite.sample = &scanner.Registration{
 		Name:        "forUT",
 		Description: "sample registration",
 		URL:         "https://sample.scanner.com",
+	}
+
+	mc := &MockClient{}
+	mc.On("GetMetadata").Return(m, nil)
+
+	mcp := &MockClientPool{}
+	mcp.On("Get", suite.sample).Return(mc, nil)
+	suite.c = &basicController{
+		manager:    suite.mMgr,
+		proMetaMgr: suite.mMeta,
+		clientPool: mcp,
 	}
 }
 
@@ -281,4 +310,51 @@ func (m *MockProMetaManager) Get(projectID int64, meta ...string) (map[string]st
 func (m *MockProMetaManager) List(name, value string) ([]*models.ProjectMetadata, error) {
 	args := m.Called(name, value)
 	return args.Get(0).([]*models.ProjectMetadata), args.Error(1)
+}
+
+// MockClientPool is defined and referred by other UT cases.
+type MockClientPool struct {
+	mock.Mock
+}
+
+// Get client
+func (mcp *MockClientPool) Get(r *scanner.Registration) (v1.Client, error) {
+	args := mcp.Called(r)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(v1.Client), args.Error(1)
+}
+
+// MockClient is defined and referred in other UT cases.
+type MockClient struct {
+	mock.Mock
+}
+
+// GetMetadata ...
+func (mc *MockClient) GetMetadata() (*v1.ScannerAdapterMetadata, error) {
+	args := mc.Called()
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(*v1.ScannerAdapterMetadata), args.Error(1)
+}
+
+// SubmitScan ...
+func (mc *MockClient) SubmitScan(req *v1.ScanRequest) (*v1.ScanResponse, error) {
+	args := mc.Called(req)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(*v1.ScanResponse), args.Error(1)
+}
+
+// GetScanReport ...
+func (mc *MockClient) GetScanReport(scanRequestID, reportMIMEType string) (string, error) {
+	args := mc.Called(scanRequestID, reportMIMEType)
+
+	return args.String(0), args.Error(1)
 }

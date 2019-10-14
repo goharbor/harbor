@@ -32,32 +32,32 @@ type Manager interface {
 	// Update the scan job ID of the given report.
 	//
 	//  Arguments:
-	//    uuid string : uuid to identify the report
-	//    jobID string: scan job ID
+	//    trackID string : uuid to identify the report
+	//    jobID string   : scan job ID
 	//
 	//  Returns:
 	//    error  : non nil error if any errors occurred
 	//
-	UpdateScanJobID(uuid string, jobID string) error
+	UpdateScanJobID(trackID string, jobID string) error
 
 	// Update the status (mapping to the scan job status) of the given report.
 	//
 	//  Arguments:
-	//    uuid string  : uuid to identify the report
-	//    status string: status info
-	//    rev int64    : data revision info
+	//    trackID string : uuid to identify the report
+	//    status string  : status info
+	//    rev int64      : data revision info
 	//
 	//  Returns:
 	//    error  : non nil error if any errors occurred
 	//
-	UpdateStatus(uuid string, status string, rev int64) error
+	UpdateStatus(trackID string, status string, rev int64) error
 
 	// Update the report data (with JSON format) of the given report.
 	//
 	//  Arguments:
-	//    uuid string  : uuid to identify the report
-	//    report string: report JSON data
-	//    rev int64    : data revision info
+	//    uuid string    : uuid to identify the report
+	//    report string  : report JSON data
+	//    rev int64      : data revision info
 	//
 	//  Returns:
 	//    error  : non nil error if any errors occurred
@@ -77,4 +77,14 @@ type Manager interface {
 	//    []*scan.Report : report list
 	//    error          : non nil error if any errors occurred
 	GetBy(digest string, registrationUUID string, mimeTypes []string) ([]*scan.Report, error)
+
+	// Get the report for the given uuid.
+	//
+	//  Arguments:
+	//    uuid string           : uuid of the scan report
+	//
+	//  Returns:
+	//    *scan.Report : scan report
+	//    error        : non nil error if any errors occurred
+	Get(uuid string) (*scan.Report, error)
 }

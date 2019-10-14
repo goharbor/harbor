@@ -119,6 +119,9 @@ var (
 			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionList},
 			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
 		},
 
 		"master": {
@@ -201,6 +204,9 @@ var (
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
 		},
 
 		"developer": {
@@ -251,6 +257,9 @@ var (
 
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
 		},
 
 		"guest": {

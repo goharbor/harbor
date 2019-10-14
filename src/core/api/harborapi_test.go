@@ -211,8 +211,17 @@ func init() {
 	scannerAPI := &ScannerAPI{}
 	beego.Router("/api/scanners", scannerAPI, "post:Create;get:List")
 	beego.Router("/api/scanners/:uuid", scannerAPI, "get:Get;delete:Delete;put:Update;patch:SetAsDefault")
+	beego.Router("/api/scanners/:uuid/metadata", scannerAPI, "get:Metadata")
+	beego.Router("/api/scanners/ping", scannerAPI, "post:Ping")
+
 	// Add routes for project level scanner
-	beego.Router("/api/projects/:pid([0-9]+)/scanner", scannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
+	proScannerAPI := &ProjectScannerAPI{}
+	beego.Router("/api/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
+
+	// Add routes for scan
+	scanAPI := &ScanAPI{}
+	beego.Router("/api/repositories/*/tags/:tag/scan", scanAPI, "post:Scan;get:Report")
+	beego.Router("/api/repositories/*/tags/:tag/scan/:uuid/log", scanAPI, "get:Log")
 
 	// syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {
