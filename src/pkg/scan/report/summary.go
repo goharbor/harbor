@@ -50,7 +50,7 @@ func GenerateNativeSummary(r *scan.Report) (interface{}, error) {
 	sum.ReportID = r.UUID
 	sum.StartTime = r.StartTime
 	sum.EndTime = r.EndTime
-	sum.Duration = r.EndTime.Unix() - r.EndTime.Unix()
+	sum.Duration = r.EndTime.Unix() - r.StartTime.Unix()
 
 	sum.ScanStatus = job.ErrorStatus.String()
 	if job.Status(r.Status).Code() != -1 {
