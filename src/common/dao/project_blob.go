@@ -54,7 +54,7 @@ func AddBlobsToProject(projectID int64, blobs ...*models.Blob) (int64, error) {
 		})
 	}
 
-	cnt, err := GetOrmer().InsertMulti(10, projectBlobs)
+	cnt, err := GetOrmer().InsertMulti(100, projectBlobs)
 	if err != nil {
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
 			return cnt, ErrDupRows
@@ -121,7 +121,7 @@ func CountSizeOfProject(pid int64) (int64, error) {
 	var blobs []models.Blob
 
 	sql := `
-SELECT 
+SELECT
     DISTINCT bb.digest,
     bb.id,
     bb.content_type,
@@ -132,7 +132,7 @@ JOIN artifact_blob afnb
     ON af.digest = afnb.digest_af
 JOIN BLOB bb
     ON afnb.digest_blob = bb.digest
-WHERE af.project_id = ? 
+WHERE af.project_id = ?
 AND bb.content_type != ?
 `
 	_, err := GetOrmer().Raw(sql, pid, common.ForeignLayer).QueryRows(&blobs)
@@ -152,7 +152,7 @@ AND bb.content_type != ?
 func RemoveUntaggedBlobs(pid int64) error {
 	var blobs []models.Blob
 	sql := `
-SELECT 
+SELECT
     DISTINCT bb.digest,
     bb.id,
     bb.content_type,
@@ -163,7 +163,7 @@ JOIN artifact_blob afnb
     ON af.digest = afnb.digest_af
 JOIN BLOB bb
     ON afnb.digest_blob = bb.digest
-WHERE af.project_id = ? 
+WHERE af.project_id = ?
 `
 	_, err := GetOrmer().Raw(sql, pid).QueryRows(&blobs)
 	if len(blobs) == 0 {
