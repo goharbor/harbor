@@ -310,4 +310,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
     # UAA configs
     config_dict['uaa'] = configs.get('uaa') or {}
 
+    # replication adapters
+    config_dict['replication_adapters'] = configs.get("replication_adapters") or ""
+
     return config_dict

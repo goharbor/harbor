@@ -538,3 +538,12 @@ func QuotaSetting() (*models.QuotaSetting, error) {
 		StoragePerProject: cfgMgr.Get(common.StoragePerProject).GetInt64(),
 	}, nil
 }
+
+// SupportedReplicationAdapters returns the supported adapters for replication
+func SupportedReplicationAdapters() []string {
+	adapters := os.Getenv("REPLICATION_ADAPTERS")
+	if len(adapters) == 0 {
+		return []string{}
+	}
+	return strings.Split(adapters, ",")
+}

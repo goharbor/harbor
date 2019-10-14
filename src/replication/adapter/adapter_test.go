@@ -17,6 +17,7 @@ package adapter
 import (
 	"testing"
 
+	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -38,6 +39,7 @@ func TestRegisterFactory(t *testing.T) {
 }
 
 func TestGetFactory(t *testing.T) {
+	config.Config = &config.Configuration{}
 	registry = map[model.RegistryType]Factory{}
 	require.Nil(t, RegisterFactory("harbor", fakedFactory))
 	// doesn't exist
@@ -46,6 +48,13 @@ func TestGetFactory(t *testing.T) {
 	// pass
 	_, err = GetFactory("harbor")
 	assert.Nil(t, err)
+	// configure only support docker hub
+	config.Config.SupportedAdapters = []string{"docker-hub"}
+	defer func() {
+		config.Config.SupportedAdapters = nil
+	}()
+	_, err = GetFactory("harbor")
+	assert.NotNil(t, err)
 }
 
 func TestListRegisteredAdapterTypes(t *testing.T) {

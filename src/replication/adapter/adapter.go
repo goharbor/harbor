@@ -20,6 +20,7 @@ import (
 	"io"
 
 	"github.com/docker/distribution"
+	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -140,7 +141,7 @@ func RegisterFactory(t model.RegistryType, factory Factory) error {
 // GetFactory gets the adapter factory by the specified name
 func GetFactory(t model.RegistryType) (Factory, error) {
 	factory, exist := registry[t]
-	if !exist {
+	if !exist || !isAdapterSupported(t) {
 		return nil, fmt.Errorf("adapter factory for %s not found", t)
 	}
 	return factory, nil
@@ -148,15 +149,34 @@ func GetFactory(t model.RegistryType) (Factory, error) {
 
 // HasFactory checks whether there is given type adapter factory
 func HasFactory(t model.RegistryType) bool {
-	_, ok := registry[t]
-	return ok
+	factory, err := GetFactory(t)
+	if err != nil {
+		return false
+	}
+	return factory != nil
 }
 
 // ListRegisteredAdapterTypes lists the registered Adapter type
 func ListRegisteredAdapterTypes() []model.RegistryType {
 	types := []model.RegistryType{}
 	for t := range registry {
+		if !isAdapterSupported(t) {
+			continue
+		}
 		types = append(types, t)
 	}
 	return types
+}
+
+// check whether the adapter is configured to be supported
+func isAdapterSupported(adp model.RegistryType) bool {
+	if config.Config == nil || len(config.Config.SupportedAdapters) == 0 {
+		return true
+	}
+	for _, adapter := range config.Config.SupportedAdapters {
+		if adapter == string(adp) {
+			return true
+		}
+	}
+	return false
 }

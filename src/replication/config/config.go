@@ -26,6 +26,7 @@ type Configuration struct {
 	JobserviceURL   string
 	SecretKey       string
 	// TODO consider to use a specified secret for replication
-	CoreSecret       string
-	JobserviceSecret string
+	CoreSecret        string
+	JobserviceSecret  string
+	SupportedAdapters []string
 }

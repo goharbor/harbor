@@ -70,12 +70,13 @@ func Init(closing, done chan struct{}) error {
 		return err
 	}
 	config.Config = &config.Configuration{
-		CoreURL:          cfg.InternalCoreURL(),
-		TokenServiceURL:  cfg.InternalTokenServiceEndpoint(),
-		JobserviceURL:    cfg.InternalJobServiceURL(),
-		SecretKey:        secretKey,
-		CoreSecret:       cfg.CoreSecret(),
-		JobserviceSecret: cfg.JobserviceSecret(),
+		CoreURL:           cfg.InternalCoreURL(),
+		TokenServiceURL:   cfg.InternalTokenServiceEndpoint(),
+		JobserviceURL:     cfg.InternalJobServiceURL(),
+		SecretKey:         secretKey,
+		CoreSecret:        cfg.CoreSecret(),
+		JobserviceSecret:  cfg.JobserviceSecret(),
+		SupportedAdapters: cfg.SupportedReplicationAdapters(),
 	}
 	// TODO use a global http transport
 	js := job.NewDefaultClient(config.Config.JobserviceURL, config.Config.CoreSecret)

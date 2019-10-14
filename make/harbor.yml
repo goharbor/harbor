@@ -161,3 +161,6 @@ proxy:
     - core
     - jobservice
     - clair
+
+# Comma-separated adapters for replication. All adapters are supported if not specify 
+# replication_adapters:
