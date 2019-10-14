@@ -527,8 +527,8 @@ func (mrc *MockRobotController) UpdateRobotAccount(r *model.Robot) error {
 }
 
 // ListRobotAccount ...
-func (mrc *MockRobotController) ListRobotAccount(pid int64) ([]*model.Robot, error) {
-	args := mrc.Called(pid)
+func (mrc *MockRobotController) ListRobotAccount(query *q.Query) ([]*model.Robot, error) {
+	args := mrc.Called(query)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
