@@ -444,7 +444,7 @@ func createGroupSearchFilter(oldFilter, groupName, groupNameAttribute string) st
 
 func createNestedGroupFilter(userDN string) string {
 	filter := ""
-	filter = "(&(objectClass=group)(member:1.2.840.113556.1.4.1941:=" + userDN + "))"
+	filter = "(&(objectClass=group)(member:1.2.840.113556.1.4.1941:=" + goldap.EscapeFilter(userDN) + "))"
 	return filter
 }
 
