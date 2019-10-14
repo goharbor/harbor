@@ -29,18 +29,18 @@ Test Case - Add Replication Rule
     Harbor API Test  ./tests/apitests/python/test_add_replication_rule.py
 Test Case - Edit Project Creation
     Harbor API Test  ./tests/apitests/python/test_edit_project_creation.py
-*** Enable this case after deployment change PR merged ***
-*** Test Case - Scan Image ***
-***    Harbor API Test  ./tests/apitests/python/test_scan_image.py ***
+#Enable this case after deployment change PR merged
+#Test Case - Scan Image
+#    Harbor API Test  ./tests/apitests/python/test_scan_image.py
 Test Case - Manage Project Member
     Harbor API Test  ./tests/apitests/python/test_manage_project_member.py
 Test Case - Project Level Policy Content Trust
     Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
 Test Case - User View Logs
     Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
-*** Enable this case after deployment change PR merged ***
-*** Test Case - Scan All Images ***
-***    Harbor API Test  ./tests/apitests/python/test_scan_all_images.py ***
+#Enable this case after deployment change PR merged
+#Test Case - Scan All Images
+#    Harbor API Test  ./tests/apitests/python/test_scan_all_images.py
 Test Case - List Helm Charts
     Harbor API Test  ./tests/apitests/python/test_list_helm_charts.py
 Test Case - Assign Sys Admin
