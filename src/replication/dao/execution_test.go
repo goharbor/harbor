@@ -185,8 +185,8 @@ func TestExecutionFill(t *testing.T) {
 		StartTime:  time.Now(),
 	}
 	executionID, _ := AddExecution(execution)
-	et1, _ := time.Parse("2016-01-02 15:04:05", "2019-03-21 08:01:01")
-	et2, _ := time.Parse("2016-01-02 15:04:05", "2019-04-01 10:11:53")
+	et1, _ := time.Parse("2006-01-02 15:04:05", "2019-03-21 08:01:01")
+	et2, _ := time.Parse("2006-01-02 15:04:05", "2019-04-01 10:11:53")
 	task1 := &models.Task{
 		ID:           20191,
 		ExecutionID:  executionID,
