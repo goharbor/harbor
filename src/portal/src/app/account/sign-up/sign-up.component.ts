@@ -43,7 +43,7 @@ export class SignUpComponent {
     newUserForm: NewUserFormComponent;
 
     @ViewChild(InlineAlertComponent, {static: false})
-    inlienAlert: InlineAlertComponent;
+    inlineAlert: InlineAlertComponent;
 
     @ViewChild(Modal, {static: false})
     modal: Modal;
@@ -67,7 +67,7 @@ export class SignUpComponent {
         if (this.error != null) {
             this.error = null; // clear error
         }
-        this.inlienAlert.close(); // Close alert if being shown
+        this.inlineAlert.close(); // Close alert if being shown
     }
 
     open(): void {
@@ -76,7 +76,7 @@ export class SignUpComponent {
         this.formValueChanged = false;
         this.error = null;
         this.onGoing = false;
-        this.inlienAlert.close();
+        this.inlineAlert.close();
 
         this.modal.open();
     }
@@ -87,7 +87,7 @@ export class SignUpComponent {
                 this.opened = false;
             } else {
                 // Need user confirmation
-                this.inlienAlert.showInlineConfirmation({
+                this.inlineAlert.showInlineConfirmation({
                     message: "ALERT.FORM_CHANGE_CONFIRMATION"
                 });
             }
@@ -127,7 +127,7 @@ export class SignUpComponent {
             }, error => {
                 this.onGoing = false;
                 this.error = error;
-                this.inlienAlert.showInlineError(error);
+                this.inlineAlert.showInlineError(error);
             });
     }
 }

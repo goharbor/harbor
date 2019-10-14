@@ -1,11 +1,15 @@
 import { TestBed, inject } from '@angular/core/testing';
-
 import { RobotService } from './robot-account.service';
+import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { RobotApiRepository } from "./robot.api.repository";
 
-xdescribe('RobotService', () => {
+describe('RobotService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
-      providers: [RobotService]
+      imports: [
+        HttpClientTestingModule
+      ],
+      providers: [RobotService, RobotApiRepository]
     });
   });
 

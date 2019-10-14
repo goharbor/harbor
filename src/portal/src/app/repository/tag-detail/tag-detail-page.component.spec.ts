@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TagDetailPageComponent } from './tag-detail-page.component';
 
 xdescribe('TagDetailPageComponent', () => {
@@ -8,7 +8,13 @@ xdescribe('TagDetailPageComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [TagDetailPageComponent]
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [TagDetailPageComponent],
+            providers: [
+                TranslateService
+            ]
         })
             .compileComponents();
     }));

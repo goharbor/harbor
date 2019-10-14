@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TopRepoComponent } from './top-repo.component';
 
 xdescribe('TopRepoComponent', () => {
@@ -8,7 +8,13 @@ xdescribe('TopRepoComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [TopRepoComponent]
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [TopRepoComponent],
+            providers: [
+                TranslateService
+            ]
         })
             .compileComponents();
     }));

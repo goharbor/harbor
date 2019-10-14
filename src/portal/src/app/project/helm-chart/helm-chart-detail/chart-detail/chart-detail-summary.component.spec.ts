@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ChartDetailSummaryComponent } from './chart-detail-summary.component';
 
 xdescribe('ChartDetailSummaryComponent', () => {
@@ -8,9 +8,14 @@ xdescribe('ChartDetailSummaryComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [ChartDetailSummaryComponent]
-        })
-            .compileComponents();
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [ChartDetailSummaryComponent],
+            providers: [
+                TranslateService
+            ]
+        }).compileComponents();
     }));
 
     beforeEach(() => {

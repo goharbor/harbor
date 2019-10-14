@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AddMemberComponent } from './add-member.component';
 
 xdescribe('AddMemberComponent', () => {
@@ -8,9 +8,14 @@ xdescribe('AddMemberComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [AddMemberComponent]
-        })
-            .compileComponents();
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [AddMemberComponent],
+            providers: [
+                TranslateService
+            ]
+        }).compileComponents();
     }));
 
     beforeEach(() => {

@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AddRuleComponent } from './add-rule.component';
 
 xdescribe('AddRuleComponent', () => {
@@ -8,7 +8,13 @@ xdescribe('AddRuleComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [AddRuleComponent]
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [AddRuleComponent],
+            providers: [
+                TranslateService
+            ]
         })
             .compileComponents();
     }));

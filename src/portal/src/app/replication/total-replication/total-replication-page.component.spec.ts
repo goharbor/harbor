@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TotalReplicationPageComponent } from './total-replication-page.component';
 
 xdescribe('TotalReplicationPageComponent', () => {
@@ -8,7 +8,13 @@ xdescribe('TotalReplicationPageComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [TotalReplicationPageComponent]
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [TotalReplicationPageComponent],
+            providers: [
+                TranslateService
+            ]
         })
             .compileComponents();
     }));

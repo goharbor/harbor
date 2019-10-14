@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ReplicationManagementComponent } from './replication-management.component';
 
 xdescribe('ReplicationManagementComponent', () => {
@@ -8,7 +8,13 @@ xdescribe('ReplicationManagementComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [ReplicationManagementComponent]
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [ReplicationManagementComponent],
+            providers: [
+                TranslateService
+            ]
         })
             .compileComponents();
     }));

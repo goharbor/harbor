@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { TagRepositoryComponent } from './tag-repository.component';
 
 xdescribe('TagRepositoryComponent', () => {
@@ -8,7 +8,13 @@ xdescribe('TagRepositoryComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [TagRepositoryComponent]
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [TagRepositoryComponent],
+            providers: [
+                TranslateService
+            ]
         })
             .compileComponents();
     }));

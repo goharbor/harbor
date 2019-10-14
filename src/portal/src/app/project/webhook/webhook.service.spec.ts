@@ -1,10 +1,13 @@
 import { TestBed, inject } from '@angular/core/testing';
-
+import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { WebhookService } from './webhook.service';
 
-xdescribe('WebhookService', () => {
+describe('WebhookService', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
+      imports: [
+        HttpClientTestingModule
+      ],
       providers: [WebhookService]
     });
   });
