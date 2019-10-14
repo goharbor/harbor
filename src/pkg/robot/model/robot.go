@@ -24,7 +24,7 @@ type Robot struct {
 	ProjectID    int64     `orm:"column(project_id)" json:"project_id"`
 	ExpiresAt    int64     `orm:"column(expiresat)" json:"expires_at"`
 	Disabled     bool      `orm:"column(disabled)" json:"disabled"`
-	Visible      bool      `orm:"column(visible)" json:"visible"`
+	Visible      bool      `orm:"column(visible)" json:"-"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`
 }
@@ -49,7 +49,7 @@ type RobotCreate struct {
 	ProjectID   int64          `json:"pid"`
 	Description string         `json:"description"`
 	Disabled    bool           `json:"disabled"`
-	Visible     bool           `json:"visible"`
+	Visible     bool           `json:"-"`
 	Access      []*rbac.Policy `json:"access"`
 }
 
