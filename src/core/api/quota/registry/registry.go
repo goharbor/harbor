@@ -284,6 +284,9 @@ func persistPB(projects []quota.ProjectInfo) error {
 		}
 		_, err = dao.AddBlobsToProject(pro.ProjectID, blobsOfPro...)
 		if err != nil {
+			if err == dao.ErrDupRows {
+				continue
+			}
 			log.Error(err)
 			return err
 		}
