@@ -15,15 +15,19 @@
 package vuln
 
 const (
+	// None - only used to mark the overall severity of the scanned artifacts,
+	// means no vulnerabilities attached with the artifacts,
+	// (might be bypassed by the CVE whitelist).
+	None Severity = "None"
 	// Unknown - either a security problem that has not been assigned to a priority yet or
 	// a priority that the scanner did not recognize.
 	Unknown Severity = "Unknown"
-	// Low - a security problem, but is hard to exploit due to environment, requires a
-	// user-assisted attack, a small install base, or does very little damage.
-	Low Severity = "Low"
 	// Negligible - technically a security problem, but is only theoretical in nature, requires
 	// a very special situation, has almost no install base, or does no real damage.
 	Negligible Severity = "Negligible"
+	// Low - a security problem, but is hard to exploit due to environment, requires a
+	// user-assisted attack, a small install base, or does very little damage.
+	Low Severity = "Low"
 	// Medium - a real security problem, and is exploitable for many people. Includes network
 	// daemon denial of service attacks, cross-site scripting, and gaining user privileges.
 	Medium Severity = "Medium"
@@ -37,3 +41,24 @@ const (
 
 // Severity is a standard scale for measuring the severity of a vulnerability.
 type Severity string
+
+// Code returns the int code of the severity for comparing.
+func (s Severity) Code() int {
+	switch s {
+	case None:
+		return 0
+	case Negligible:
+		return 1
+	case Low:
+		return 2
+	case Medium:
+		return 3
+	case High:
+		return 4
+	case Critical:
+		return 5
+	default:
+		// Assign the highest code to the unknown severity to provide more secure protection.
+		return 99
+	}
+}

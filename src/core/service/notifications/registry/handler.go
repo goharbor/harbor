@@ -21,7 +21,6 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
-	clairdao "github.com/goharbor/harbor/src/common/dao/clair"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -29,10 +28,14 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
+	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/api/scanner"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
+	"github.com/pkg/errors"
 )
 
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
@@ -158,13 +161,16 @@ func (n *NotificationHandler) Post() {
 			}()
 
 			if autoScanEnabled(pro) {
-				last, err := clairdao.GetLastUpdate()
-				if err != nil {
-					log.Errorf("Failed to get last update from Clair DB, error: %v, the auto scan will be skipped.", err)
-				} else if last == 0 {
-					log.Infof("The Vulnerability data is not ready in Clair DB, the auto scan will be skipped, error %v", err)
-				} else if err := coreutils.TriggerImageScan(repository, tag); err != nil {
-					log.Warningf("Failed to scan image, repository: %s, tag: %s, error: %v", repository, tag, err)
+				artifact := &v1.Artifact{
+					NamespaceID: pro.ProjectID,
+					Repository:  repository,
+					Tag:         tag,
+					MimeType:    v1.MimeTypeDockerArtifact,
+					Digest:      event.Target.Digest,
+				}
+
+				if err := scan.DefaultController.Scan(artifact); err != nil {
+					log.Error(errors.Wrap(err, "registry notification: trigger scan when pushing automatically"))
 				}
 			}
 		}
@@ -279,12 +285,13 @@ func checkEvent(event *models.Event) bool {
 }
 
 func autoScanEnabled(project *models.Project) bool {
-	if !config.WithClair() {
-		log.Debugf("Auto Scan disabled because Harbor is not deployed with Clair")
+	available, err := scanner.DefaultController.IsScannerAvailable(project.ProjectID)
+	if err != nil {
+		log.Error(errors.Wrap(err, "check auto scan enable"))
 		return false
 	}
 
-	return project.AutoScan()
+	return available && project.AutoScan()
 }
 
 // Render returns nil as it won't render any template.

@@ -1,15 +1,14 @@
 package notification
 
 import (
-	"errors"
-	"fmt"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"strings"
+	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	"github.com/pkg/errors"
 )
 
 // ScanImagePreprocessHandler preprocess chart event data
@@ -24,56 +23,40 @@ func (si *ScanImagePreprocessHandler) Handle(value interface{}) error {
 		return nil
 	}
 
+	if value == nil {
+		return errors.New("empty scan image event")
+	}
+
 	e, ok := value.(*model.ScanImageEvent)
 	if !ok {
 		return errors.New("invalid scan image event type")
 	}
 
-	if e == nil {
-		return errors.New("empty scan image event")
+	policies, err := notification.PolicyMgr.GetRelatedPolices(e.Artifact.NamespaceID, e.EventType)
+	if err != nil {
+		return errors.Wrap(err, "scan preprocess handler")
 	}
 
-	job, err := dao.GetScanJob(e.JobID)
-	if err != nil {
-		log.Errorf("failed to find scan job[%d] for scanning webhook: %v", e.JobID, err)
-		return err
-	}
-	if job == nil {
-		log.Errorf("can't find scan job[%d] for scanning webhook", e.JobID)
-		return fmt.Errorf("scan job for scanning webhook not found: %d", e.JobID)
-	}
-
-	rs := strings.SplitN(job.Repository, "/", 2)
-	projectName := rs[0]
-	repoName := rs[1]
-
-	project, err := config.GlobalProjectMgr.Get(projectName)
-	if err != nil {
-		log.Errorf("failed to find project[%s] for scan image event: %v", projectName, err)
-		return err
-	}
-	if project == nil {
-		return fmt.Errorf("project[%s] not found", projectName)
-	}
-	policies, err := notification.PolicyMgr.GetRelatedPolices(project.ProjectID, e.EventType)
-	if err != nil {
-		log.Errorf("failed to find policy for %s event: %v", e.EventType, err)
-		return err
-	}
-	// if cannot find policy including event type in project, return directly
+	// If we cannot find policy including event type in project, return directly
 	if len(policies) == 0 {
-		log.Debugf("cannot find policy for %s event: %v", e.EventType, e)
+		log.Debugf("Cannot find policy for %s event: %v", e.EventType, e)
 		return nil
 	}
 
-	payload, err := constructScanImagePayload(e, job, project, projectName, repoName)
+	// Get project
+	project, err := config.GlobalProjectMgr.Get(e.Artifact.NamespaceID)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "scan preprocess handler")
+	}
+
+	payload, err := constructScanImagePayload(e, project)
+	if err != nil {
+		return errors.Wrap(err, "scan preprocess handler")
 	}
 
 	err = sendHookWithPolicies(policies, payload, e.EventType)
 	if err != nil {
-		return err
+		return errors.Wrap(err, "scan preprocess handler")
 	}
 
 	return nil
@@ -84,11 +67,13 @@ func (si *ScanImagePreprocessHandler) IsStateful() bool {
 	return false
 }
 
-func constructScanImagePayload(event *model.ScanImageEvent, job *models.ScanJob, project *models.Project, projectName, repoName string) (*model.Payload, error) {
+func constructScanImagePayload(event *model.ScanImageEvent, project *models.Project) (*model.Payload, error) {
 	repoType := models.ProjectPrivate
 	if project.IsPublic() {
 		repoType = models.ProjectPublic
 	}
+
+	repoName := getNameFromImgRepoFullName(event.Artifact.Repository)
 
 	payload := &model.Payload{
 		Type:    event.EventType,
@@ -96,8 +81,8 @@ func constructScanImagePayload(event *model.ScanImageEvent, job *models.ScanJob,
 		EventData: &model.EventData{
 			Repository: &model.Repository{
 				Name:         repoName,
-				Namespace:    projectName,
-				RepoFullName: job.Repository,
+				Namespace:    project.Name,
+				RepoFullName: event.Artifact.Repository,
 				RepoType:     repoType,
 			},
 		},
@@ -106,25 +91,27 @@ func constructScanImagePayload(event *model.ScanImageEvent, job *models.ScanJob,
 
 	extURL, err := config.ExtURL()
 	if err != nil {
-		return nil, fmt.Errorf("get external endpoint failed: %v", err)
+		return nil, errors.Wrap(err, "construct scan payload")
 	}
-	resURL, _ := buildImageResourceURL(extURL, job.Repository, job.Tag)
+
+	resURL, err := buildImageResourceURL(extURL, event.Artifact.Repository, event.Artifact.Tag)
+	if err != nil {
+		return nil, errors.Wrap(err, "construct scan payload")
+	}
 
 	// Add scan overview
-	scanOverview := getScanOverview(job.Digest, job.Tag, event.EventType)
-	if scanOverview == nil {
-		scanOverview = &models.ImgScanOverview{
-			JobID:        job.ID,
-			Status:       job.Status,
-			CreationTime: job.CreationTime,
-		}
+	summaries, err := scan.DefaultController.GetSummary(event.Artifact, []string{v1.MimeTypeNativeReport})
+	if err != nil {
+		return nil, errors.Wrap(err, "construct scan payload")
 	}
+
 	resource := &model.Resource{
-		Tag:          job.Tag,
-		Digest:       job.Digest,
+		Tag:          event.Artifact.Tag,
+		Digest:       event.Artifact.Digest,
 		ResourceURL:  resURL,
-		ScanOverview: scanOverview,
+		ScanOverview: summaries,
 	}
 	payload.EventData.Resources = append(payload.EventData.Resources, resource)
+
 	return payload, nil
 }

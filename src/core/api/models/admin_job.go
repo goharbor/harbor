@@ -156,11 +156,11 @@ func ConvertSchedule(cronStr string) (ScheduleParam, error) {
 	convertedSchedule.Type = "custom"
 
 	if strings.Contains(cronStr, "parameter") {
-		scheduleModel := common_models.ScanAllPolicy{}
+		scheduleModel := ScanAllPolicy{}
 		if err := json.Unmarshal([]byte(cronStr), &scheduleModel); err != nil {
 			return ScheduleParam{}, err
 		}
-		h, m, s := common_utils.ParseOfftime(int64(scheduleModel.Parm["daily_time"].(float64)))
+		h, m, s := common_utils.ParseOfftime(int64(scheduleModel.Param["daily_time"].(float64)))
 		cron := fmt.Sprintf("%d %d %d * * *", s, m, h)
 		convertedSchedule.Cron = cron
 		return convertedSchedule, nil
@@ -180,4 +180,11 @@ func ConvertSchedule(cronStr string) (ScheduleParam, error) {
 	}
 
 	return ScheduleParam{}, fmt.Errorf("unsupported cron format, %s", cronStr)
+}
+
+// ScanAllPolicy is represent the json request and object for scan all policy
+// Only for migrating from the legacy schedule.
+type ScanAllPolicy struct {
+	Type  string                 `json:"type"`
+	Param map[string]interface{} `json:"parameter,omitempty"`
 }

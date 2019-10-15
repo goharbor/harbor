@@ -15,10 +15,10 @@
 package scan
 
 import (
+	"encoding/base64"
 	"fmt"
 	"time"
 
-	"github.com/goharbor/harbor/src/common"
 	cj "github.com/goharbor/harbor/src/common/job"
 	jm "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -52,6 +52,9 @@ type uuidGenerator func() (string, error)
 // utility methods.
 type configGetter func(cfg string) (string, error)
 
+// jcGetter is a func template which is used to get the job service client.
+type jcGetter func() cj.Client
+
 // basicController is default implementation of api.Controller interface
 type basicController struct {
 	// Manage the scan report records
@@ -61,7 +64,7 @@ type basicController struct {
 	// Robot account controller
 	rc robot.Controller
 	// Job service client
-	jc cj.Client
+	jc jcGetter
 	// UUID generator
 	uuid uuidGenerator
 	// Configuration getter func
@@ -78,7 +81,9 @@ func NewController() Controller {
 		// Refer to the default robot account controller
 		rc: robot.RobotCtr,
 		// Refer to the default job service client
-		jc: cj.GlobalClient,
+		jc: func() cj.Client {
+			return cj.GlobalClient
+		},
 		// Generate UUID with uuid lib
 		uuid: func() (string, error) {
 			aUUID, err := uuid.NewUUID()
@@ -226,7 +231,7 @@ func (bc *basicController) GetReport(artifact *v1.Artifact, mimeTypes []string) 
 }
 
 // GetSummary ...
-func (bc *basicController) GetSummary(artifact *v1.Artifact, mimeTypes []string) (map[string]interface{}, error) {
+func (bc *basicController) GetSummary(artifact *v1.Artifact, mimeTypes []string, options ...report.Option) (map[string]interface{}, error) {
 	if artifact == nil {
 		return nil, errors.New("no way to get report summaries for nil artifact")
 	}
@@ -239,7 +244,7 @@ func (bc *basicController) GetSummary(artifact *v1.Artifact, mimeTypes []string)
 
 	summaries := make(map[string]interface{}, len(rps))
 	for _, rp := range rps {
-		sum, err := report.GenerateSummary(rp)
+		sum, err := report.GenerateSummary(rp, options...)
 		if err != nil {
 			return nil, err
 		}
@@ -276,7 +281,7 @@ func (bc *basicController) GetScanLog(uuid string) ([]byte, error) {
 	}
 
 	// Job log
-	return bc.jc.GetJobLog(sr.JobID)
+	return bc.jc().GetJobLog(sr.JobID)
 }
 
 // HandleJobHooks ...
@@ -333,14 +338,14 @@ func (bc *basicController) makeRobotAccount(pid int64, repository string, ttl in
 
 	logger.Warningf("repository %s and expire time %d are not supported by robot controller", repository, expireAt)
 
-	resource := fmt.Sprintf("/project/%d/repository", pid)
+	resource := rbac.NewProjectNamespace(pid).Resource(rbac.ResourceRepository)
 	access := []*rbac.Policy{{
-		Resource: rbac.Resource(resource),
-		Action:   "pull",
+		Resource: resource,
+		Action:   rbac.ActionPull,
 	}}
 
 	account := &model.RobotCreate{
-		Name:        fmt.Sprintf("%s%s", common.RobotPrefix, UUID),
+		Name:        UUID,
 		Description: "for scan",
 		ProjectID:   pid,
 		Access:      access,
@@ -351,7 +356,10 @@ func (bc *basicController) makeRobotAccount(pid int64, repository string, ttl in
 		return "", errors.Wrap(err, "scan controller: make robot account")
 	}
 
-	return rb.Token, nil
+	basic := fmt.Sprintf("%s:%s", rb.Name, rb.Token)
+	encoded := base64.StdEncoding.EncodeToString([]byte(basic))
+
+	return fmt.Sprintf("Basic %s", encoded), nil
 }
 
 // launchScanJob launches a job to run scan
@@ -407,5 +415,5 @@ func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, 
 		StatusHook: hookURL,
 	}
 
-	return bc.jc.SubmitJob(j)
+	return bc.jc().SubmitJob(j)
 }

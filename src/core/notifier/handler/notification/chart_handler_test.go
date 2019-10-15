@@ -1,6 +1,8 @@
 package notification
 
 import (
+	"testing"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier/model"
@@ -8,7 +10,6 @@ import (
 	notificationModel "github.com/goharbor/harbor/src/pkg/notification/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"testing"
 )
 
 type fakedPolicyMgr struct {
@@ -80,7 +81,7 @@ func TestChartPreprocessHandler_Handle(t *testing.T) {
 		Metadata: map[string]string{
 			models.ProMetaEnableContentTrust:   "true",
 			models.ProMetaPreventVul:           "true",
-			models.ProMetaSeverity:             "low",
+			models.ProMetaSeverity:             "Low",
 			models.ProMetaReuseSysCVEWhitelist: "false",
 		},
 	})

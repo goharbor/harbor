@@ -12,7 +12,6 @@ import (
 	"github.com/goharbor/harbor/src/core/notifier/event"
 	notifyModel "github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	pkgNotifyModel "github.com/goharbor/harbor/src/pkg/notification/model"
 )
 
 // getNameFromImgRepoFullName gets image name from repo full name with format `repoName/imageName`
@@ -176,32 +175,4 @@ func preprocessAndSendImageHook(value interface{}) error {
 	}
 
 	return nil
-
-}
-
-// will return nil when it failed to get data
-func getScanOverview(digest string, tag string, eventType string) *models.ImgScanOverview {
-	if len(digest) == 0 {
-		log.Debug("digest is nil")
-		return nil
-	}
-	data, err := dao.GetImgScanOverview(digest)
-	if err != nil {
-		log.Errorf("Failed to get scan result for tag:%s, digest: %s, error: %v", tag, digest, err)
-	}
-	if data == nil {
-		return nil
-	}
-
-	// Status should set by the eventType but the status from jobData in DB
-	if eventType == pkgNotifyModel.EventTypeScanningCompleted {
-		data.Status = models.JobFinished
-	} else {
-		log.Debugf("Unsetting vulnerable related historical values, job status: %s", data.Status)
-		data.Status = models.JobError
-		data.Sev = 0
-		data.CompOverview = nil
-		data.DetailsKey = ""
-	}
-	return data
 }

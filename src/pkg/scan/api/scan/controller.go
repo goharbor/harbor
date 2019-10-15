@@ -17,6 +17,7 @@ package scan
 import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
@@ -47,13 +48,14 @@ type Controller interface {
 	// GetSummary gets the summaries of the reports with given types.
 	//
 	//   Arguments:
-	//     artifact *v1.Artifact : the scanned artifact
-	//     mimeTypes []string    : the mime types of the reports
+	//     artifact *v1.Artifact    : the scanned artifact
+	//     mimeTypes []string       : the mime types of the reports
+	//     options ...report.Option : optional report options, specify if needed
 	//
 	//   Returns:
 	//     map[string]interface{} : report summaries indexed by mime types
 	//     error                  : non nil error if any errors occurred
-	GetSummary(artifact *v1.Artifact, mimeTypes []string) (map[string]interface{}, error)
+	GetSummary(artifact *v1.Artifact, mimeTypes []string, options ...report.Option) (map[string]interface{}, error)
 
 	// Get the scan log for the specified artifact with the given digest
 	//

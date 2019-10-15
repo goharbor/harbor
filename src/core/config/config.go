@@ -20,7 +20,6 @@ package config
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -392,17 +391,6 @@ func AdmiralEndpoint() string {
 		return ""
 	}
 	return cfgMgr.Get(common.AdmiralEndpoint).GetString()
-}
-
-// ScanAllPolicy returns the policy which controls the scan all.
-func ScanAllPolicy() models.ScanAllPolicy {
-	var res models.ScanAllPolicy
-	log.Infof("Scan all policy %v", cfgMgr.Get(common.ScanAllPolicy).GetString())
-	if err := json.Unmarshal([]byte(cfgMgr.Get(common.ScanAllPolicy).GetString()), &res); err != nil {
-		log.Errorf("Failed to unmarshal the value in configuration for Scan All policy, error: %v, returning the default policy", err)
-		return models.DefaultScanAllPolicy
-	}
-	return res
 }
 
 // WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.

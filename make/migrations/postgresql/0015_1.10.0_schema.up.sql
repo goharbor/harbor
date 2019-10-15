@@ -45,3 +45,16 @@ CREATE TABLE immutable_tag_rule
 );
 
 ALTER TABLE robot ADD COLUMN visible boolean DEFAULT true NOT NULL;
+
+/** Drop the unused vul related tables **/
+DROP INDEX IF EXISTS idx_status;
+DROP INDEX IF EXISTS idx_digest;
+DROP INDEX IF EXISTS idx_uuid;
+DROP INDEX IF EXISTS idx_repository_tag;
+DROP TRIGGER IF EXISTS img_scan_job_update_time_at_modtime ON img_scan_job;
+DROP TABLE IF EXISTS img_scan_job;
+
+DROP TRIGGER IF EXISTS TRIGGER ON img_scan_overview;
+DROP TABLE IF EXISTS img_scan_overview;
+
+DROP TABLE IF EXISTS clair_vuln_timestamp

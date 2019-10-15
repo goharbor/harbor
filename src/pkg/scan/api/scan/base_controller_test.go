@@ -21,14 +21,13 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/rbac"
-
-	"github.com/goharbor/harbor/src/pkg/robot/model"
-
+	cj "github.com/goharbor/harbor/src/common/job"
 	cjm "github.com/goharbor/harbor/src/common/job/models"
 	jm "github.com/goharbor/harbor/src/common/job/models"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
@@ -214,8 +213,10 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	suite.c = &basicController{
 		manager: mgr,
 		sc:      sc,
-		jc:      jc,
-		rc:      rc,
+		jc: func() cj.Client {
+			return jc
+		},
+		rc: rc,
 		uuid: func() (string, error) {
 			return "the-uuid-123", nil
 		},
@@ -447,6 +448,13 @@ func (msc *MockScannerController) GetMetadata(registrationUUID string) (*v1.Scan
 	}
 
 	return args.Get(0).(*v1.ScannerAdapterMetadata), args.Error(1)
+}
+
+// IsScannerAvailable ...
+func (msc *MockScannerController) IsScannerAvailable(projectID int64) (bool, error) {
+	args := msc.Called(projectID)
+
+	return args.Bool(0), args.Error(1)
 }
 
 // MockJobServiceClient ...

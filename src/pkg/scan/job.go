@@ -93,7 +93,7 @@ func (j *Job) Validate(params job.Parameters) error {
 		return errors.Wrap(err, "job validate")
 	}
 
-	if _, err := extractScanReq(params); err != nil {
+	if _, err := ExtractScanReq(params); err != nil {
 		return errors.Wrap(err, "job validate")
 	}
 
@@ -111,7 +111,7 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 
 	// Ignore errors as they have been validated already
 	r, _ := extractRegistration(params)
-	req, _ := extractScanReq(params)
+	req, _ := ExtractScanReq(params)
 	mimes, _ := extractMimeTypes(params)
 
 	// Print related infos to log
@@ -230,6 +230,33 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	return err
 }
 
+// ExtractScanReq extracts the scan request from the job parameters.
+func ExtractScanReq(params job.Parameters) (*v1.ScanRequest, error) {
+	v, ok := params[JobParameterRequest]
+	if !ok {
+		return nil, errors.Errorf("missing job parameter '%s'", JobParameterRequest)
+	}
+
+	jsonData, ok := v.(string)
+	if !ok {
+		return nil, errors.Errorf(
+			"malformed job parameter '%s', expecting string but got %s",
+			JobParameterRequest,
+			reflect.TypeOf(v).String(),
+		)
+	}
+
+	req := &v1.ScanRequest{}
+	if err := req.FromJSON(jsonData); err != nil {
+		return nil, err
+	}
+	if err := req.Validate(); err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
 func logAndWrapError(logger logger.Interface, err error, message string) error {
 	e := errors.Wrap(err, message)
 	logger.Error(e)
@@ -267,32 +294,6 @@ func removeAuthInfo(sr *v1.ScanRequest) string {
 	}
 
 	return str
-}
-
-func extractScanReq(params job.Parameters) (*v1.ScanRequest, error) {
-	v, ok := params[JobParameterRequest]
-	if !ok {
-		return nil, errors.Errorf("missing job parameter '%s'", JobParameterRequest)
-	}
-
-	jsonData, ok := v.(string)
-	if !ok {
-		return nil, errors.Errorf(
-			"malformed job parameter '%s', expecting string but got %s",
-			JobParameterRequest,
-			reflect.TypeOf(v).String(),
-		)
-	}
-
-	req := &v1.ScanRequest{}
-	if err := req.FromJSON(jsonData); err != nil {
-		return nil, err
-	}
-	if err := req.Validate(); err != nil {
-		return nil, err
-	}
-
-	return req, nil
 }
 
 func extractRegistration(params job.Parameters) (*scanner.Registration, error) {

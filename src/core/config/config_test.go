@@ -14,13 +14,10 @@
 package config
 
 import (
-	"encoding/json"
 	"os"
 	"path"
 	"runtime"
 	"testing"
-
-	"fmt"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -189,10 +186,6 @@ func TestConfig(t *testing.T) {
 		t.Errorf("unexpected mode: %s != %s", mode, "db_auth")
 	}
 
-	if s := ScanAllPolicy(); s.Type != "none" {
-		t.Errorf("unexpected scan all policy %v", s)
-	}
-
 	if tokenKeyPath := TokenPrivateKeyPath(); tokenKeyPath != "/etc/core/private_key.pem" {
 		t.Errorf("Unexpected token private key path: %s, expected: %s", tokenKeyPath, "/etc/core/private_key.pem")
 	}
@@ -220,15 +213,6 @@ func currPath() string {
 		panic("Failed to get current directory")
 	}
 	return path.Dir(f)
-}
-func TestConfigureValue_GetMap(t *testing.T) {
-	var policy models.ScanAllPolicy
-	value2 := `{"parameter":{"daily_time":0},"type":"daily"}`
-	err := json.Unmarshal([]byte(value2), &policy)
-	if err != nil {
-		t.Errorf("Failed with error %v", err)
-	}
-	fmt.Printf("%+v\n", policy)
 }
 
 func TestHTTPAuthProxySetting(t *testing.T) {
