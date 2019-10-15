@@ -23,7 +23,7 @@ if sys.version_info[:3][0] == 3:
 base_dir = os.path.dirname(os.path.abspath(__file__))
 
 parser = argparse.ArgumentParser(description='Generate *.cm.yaml')
-parser.add_argument('-f', default=os.path.join(base_dir, '../harbor.cfg'),
+parser.add_argument('-f', default=os.path.join(base_dir, '../harbor.yml'),
                     dest='config_file', help='[Optional] path of harbor config file')
 parser.add_argument('-k', default='',
                     dest='private_key', help='[Optional] path of harbor https private key(pem)')
@@ -140,7 +140,7 @@ else:
 if cert_path != '':
     if os.path.isfile(cert_path):
         with open(cert_path, 'r') as cert:
-            set_config('https_cert', cert.read())i
+            set_config('https_cert', cert.read())
     else:
         raise Exception('Error: https cert is not existing')
 else:
