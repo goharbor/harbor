@@ -108,6 +108,7 @@ func (r *RobotAPI) Post() {
 		return
 	}
 	robotReq.Visible = true
+	robotReq.ProjectID = r.project.ProjectID
 
 	if err := validateRobotReq(r.project, &robotReq); err != nil {
 		r.SendBadRequestError(err)
@@ -144,7 +145,7 @@ func (r *RobotAPI) List() {
 	}
 
 	keywords := make(map[string]interface{})
-	keywords["ProjectID"] = r.robot.ProjectID
+	keywords["ProjectID"] = r.project.ProjectID
 	keywords["Visible"] = true
 	query := &q.Query{
 		Keywords: keywords,
