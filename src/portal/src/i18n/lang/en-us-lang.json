@@ -99,7 +99,8 @@
         "OIDC_SCOPE": "The scope sent to OIDC server during authentication.  It has to contain “openid”, and “offline_access”.  If you are using google, please remove “offline_access” from this field.",
         "OIDC_VERIFYCERT": "Uncheck this box if your OIDC server is hosted via self-signed certificate.",
         "OIDC_GROUP_CLAIM": "The name of Claim in the ID token whose value is the list of group names.",
-        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters."
+        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters.",
+        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Enter current password",
@@ -128,8 +129,11 @@
         "COPY_SUCCESS": "copy success",
         "COPY_ERROR": "copy failed",
         "ADMIN_CIL_SECRET_BUTTON": "GENERATE SECRET",
-        "GENERATE_SUCCESS": "generate CLI secret success",
-        "GENERATE_ERROR": "generate CLI secret failed",
+        "ADMIN_CIL_SECRET_RESET_BUTTON": "Upload Your Own Secret",
+        "NEW_SECRET": "Secret",
+        "CONFIRM_SECRET": "Re-enter Secret",
+        "GENERATE_SUCCESS": "Cli secret setting is successful",
+        "GENERATE_ERROR": "Cli secret setting is failed",
         "CONFIRM_TITLE_CLI_GENERATE": "Are you sure you can regenerate secret?",
         "CONFIRM_BODY_CLI_GENERATE": "If you regenerate cli secret, the old cli secret will be discarded"
     },

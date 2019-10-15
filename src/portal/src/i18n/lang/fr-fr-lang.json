@@ -94,7 +94,8 @@
         "OIDC_SCOPE": "le champ envoyés au serveur au cours oidc l'authentification.il doit contenir 'openid', et 'offline_access'.si vous utilisez google, veuillez supprimer 'offline_access' dans ce domaine",
         "OIDC_VERIFYCERT": "décocher cette case si votre oidc serveur est accueilli par auto - certificat signé.",
         "OIDC_GROUP_CLAIM": "The name of Claim in the ID token whose value is the list of group names.",
-        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters."
+        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters.",
+        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Entrez le mot de passe actuel",
@@ -123,8 +124,11 @@
         "COPY_SUCCESS": "copie de succès",
         "COPY_ERROR": "copie a échoué",
         "ADMIN_CIL_SECRET_BUTTON": "GENERATE SECRET",
-        "GENERATE_SUCCESS": "generate CLI secret success",
-        "GENERATE_ERROR": "generate CLI secret failed",
+        "ADMIN_CIL_SECRET_RESET_BUTTON": "Upload Your Own Secret",
+        "NEW_SECRET": "Secret",
+        "CONFIRM_SECRET": "Re-enter Secret",
+        "GENERATE_SUCCESS": "Cli secret setting is successful",
+        "GENERATE_ERROR": "Cli secret setting is failed",
         "CONFIRM_TITLE_CLI_GENERATE": "Are you sure you can regenerate secret?",
         "CONFIRM_BODY_CLI_GENERATE": "If you regenerate cli secret, the old cli secret will be discarded"
     },
