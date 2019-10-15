@@ -28,39 +28,44 @@ func (rm *Matcher) Match(c art.Candidate) (bool, error) {
 
 		// match repositories according to the repository selectors
 		var repositoryCandidates []*art.Candidate
-		for _, repositorySelector := range r.ScopeSelectors["repository"] {
-			selector, err := index.Get(repositorySelector.Kind, repositorySelector.Decoration,
-				repositorySelector.Pattern)
-			if err != nil {
-				return false, err
-			}
-			repositoryCandidates, err = selector.Select(cands)
-			if err != nil {
-				return false, err
-			}
+		repositorySelectors := r.ScopeSelectors["repository"]
+		if len(repositorySelectors) < 1 {
+			continue
 		}
-
+		repositorySelector := repositorySelectors[0]
+		selector, err := index.Get(repositorySelector.Kind, repositorySelector.Decoration,
+			repositorySelector.Pattern)
+		if err != nil {
+			return false, err
+		}
+		repositoryCandidates, err = selector.Select(cands)
+		if err != nil {
+			return false, err
+		}
 		if len(repositoryCandidates) == 0 {
 			continue
 		}
 
 		// match tag according to the tag selectors
 		var tagCandidates []*art.Candidate
-		for _, tagSelector := range r.TagSelectors {
-			selector, err := index.Get(tagSelector.Kind, tagSelector.Decoration,
-				tagSelector.Pattern)
-			if err != nil {
-				return false, err
-			}
-			tagCandidates, err = selector.Select(cands)
-			if err != nil {
-				return false, err
-			}
+		tagSelectors := r.TagSelectors
+		if len(tagSelectors) < 0 {
+			continue
 		}
-
+		tagSelector := r.TagSelectors[0]
+		selector, err = index.Get(tagSelector.Kind, tagSelector.Decoration,
+			tagSelector.Pattern)
+		if err != nil {
+			return false, err
+		}
+		tagCandidates, err = selector.Select(cands)
+		if err != nil {
+			return false, err
+		}
 		if len(tagCandidates) == 0 {
 			continue
 		}
+
 		return true, nil
 	}
 	return false, nil
