@@ -99,23 +99,3 @@ func (r *robotAccountDao) DeleteRobotAccount(id int64) error {
 	_, err := dao.GetOrmer().QueryTable(&model.Robot{}).Filter("ID", id).Delete()
 	return err
 }
-
-func getRobotQuerySetter(query *model.RobotQuery) orm.QuerySeter {
-	qs := dao.GetOrmer().QueryTable(&model.Robot{})
-
-	if query == nil {
-		return qs
-	}
-
-	if len(query.Name) > 0 {
-		if query.FuzzyMatchName {
-			qs = qs.Filter("Name__icontains", query.Name)
-		} else {
-			qs = qs.Filter("Name", query.Name)
-		}
-	}
-	if query.ProjectID != 0 {
-		qs = qs.Filter("ProjectID", query.ProjectID)
-	}
-	return qs
-}
