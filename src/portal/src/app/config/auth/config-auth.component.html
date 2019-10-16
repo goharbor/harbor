@@ -358,8 +358,7 @@
             </label>
             <input clrInput name="oidcGroupClaim" type="text" #oidcClientSecretInput="ngModel"
                 [(ngModel)]="currentConfig.oidc_groups_claim.value" id="oidcGroupClaim" size="40"
-                pattern="^\w{1,256}$" [disabled]="disabled(currentConfig.oidc_groups_claim)" />
-            <clr-control-error>{{'TOOLTIP.OIDC_GROUP_CLAIM_WARNING' | translate}}</clr-control-error>
+                 [disabled]="disabled(currentConfig.oidc_groups_claim)" />
         </clr-input-container>
 
         <clr-input-container>
