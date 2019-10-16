@@ -49,6 +49,8 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/quayio"
 	// register the Helm Hub adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/helmhub"
+	// register the GitLab adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/gitlab"
 )
 
 var (
