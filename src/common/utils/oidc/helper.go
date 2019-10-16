@@ -106,7 +106,7 @@ var insecureTransport = &http.Transport{
 // Token wraps the attributes of a oauth2 token plus the attribute of ID token
 type Token struct {
 	oauth2.Token
-	IDToken string `json:"id_token"`
+	IDToken string `json:"id_token,omitempty"`
 }
 
 func getOauthConf() (*oauth2.Config, error) {
@@ -200,9 +200,10 @@ func RefreshToken(ctx context.Context, token *Token) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	it, ok := t.Extra("id_token").(string)
 	if !ok {
-		return nil, fmt.Errorf("failed to get id_token from refresh response")
+		log.Debugf("id_token not exist in refresh response")
 	}
 	return &Token{Token: *t, IDToken: it}, nil
 }
