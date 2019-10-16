@@ -96,7 +96,9 @@
         "OIDC_NAME": "OIDC提供商的名称。",
         "OIDC_ENDPOINT": "OIDC服务器的地址。",
         "OIDC_SCOPE": "在身份验证期间发送到OIDC服务器的scope。它必须包含“openid”和“offline_access”。如果您使用Google，请从此字段中删除“脱机访问”。",
-        "OIDC_VERIFYCERT": "如果您的OIDC服务器是通过自签名证书托管的，请取消选中此框。"
+        "OIDC_VERIFYCERT": "如果您的OIDC服务器是通过自签名证书托管的，请取消选中此框。",
+        "OIDC_GROUP_CLAIM": "ID和token中的Claim名称，在组的名称列表中。",
+        "OIDC_GROUP_CLAIM_WARNING": "它只能包含字母、数字、下划线,且输入长度不超过256字符。"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -373,6 +375,7 @@
         "GROUPS": "组",
         "IMPORT_LDAP_GROUP": "导入LDAP组",
         "IMPORT_HTTP_GROUP": "新建HTTP组",
+        "IMPORT_OIDC_GROUP": "新建 OIDC 组",
         "ADD": "新增",
         "EDIT": "编辑",
         "DELETE": "删除",
@@ -386,6 +389,7 @@
         "EDIT_GROUP_SUCCESS": "修改组成功",
         "LDAP_TYPE": "LDAP",
         "HTTP_TYPE": "HTTP",
+        "OIDC_TYPE": "OIDC",
         "OF": "共计",
         "ITEMS": "条记录",
         "NEW_MEMBER": "新建组成员",
@@ -806,8 +810,8 @@
             "SCANNING_POLICY": "基于不同需求设置镜像扫描策略。‘无’：不设置任何策略；‘每日定时’：每天在设置的时间定时执行扫描。",
             "VERIFY_CERT": "检查来自LDAP服务端的证书",
             "READONLY_TOOLTIP": "选中，表示正在维护状态，不可删除仓库及标签,也不可以推送镜像。",
-            "REPO_TOOLTIP": "用户在此模式下无法对图像执行任何操作。",
-            "WEBHOOK_TOOLTIP": "当执行推送，拉动，删除，扫描图像或图表等特定操作时，启用 webhooks 以在指定端点接收回调",
+            "REPO_TOOLTIP": "用户在此模式下无法对镜像执行任何操作。",
+            "WEBHOOK_TOOLTIP": "当执行推送，拉动，删除，扫描镜像或 chart 等特定操作时，启用 webhooks 以在指定端点接收回调",
             "HOURLY_CRON":"每小时运行一次。相当于 0 0 * * * *",
             "WEEKLY_CRON":"每周一次，周六/周日午夜之间开始。相当于 0 0 * * * *",
             "DAILY_CRON":"每天午夜运行一次。相当于 0 0 * * * *"
@@ -856,7 +860,8 @@
             "OIDC_VERIFYCERT": "验证证书",
             "OIDC_SETNAME": "设置OIDC用户名",
             "OIDC_SETNAMECONTENT": "在通过第三方（OIDC）进行身份验证时，您必须第一次创建一个Harbor用户名。这将在端口中用于与项目、角色等关联。",
-            "OIDC_USERNAME": "用户名"
+            "OIDC_USERNAME": "用户名",
+            "GROUP_CLAIM_NAME": "组名称"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
@@ -1124,10 +1129,10 @@
         "NEVER_EXPIRES": "永不过期",
         "PRO_WHITELIST_EXPLAIN": "在推送和拉取镜像时，在项目的CVE白名单中的漏洞将会被忽略",
         "PRO_OR_SYS": "您可以选择使用系统的CVE白名单作为该项目的白名单，也可勾选“启用项目白名单”项来建立该项目自己的CVE白名单，",
-        "MERGE_INTO": "您可以点击“添加系统白名单”项将系统白名单合并至该项目白名单中，并可为该项目白名单添加特有的CVE IDs",
+        "MERGE_INTO": "您可以点击“复制系统白名单”项将系统白名单合并至该项目白名单中，并可为该项目白名单添加特有的CVE IDs",
         "SYS_WHITELIST": "启用系统白名单",
         "PRO_WHITELIST": "启用项目白名单",
-        "ADD_SYSTEM": "添加系统白名单"
+        "ADD_SYSTEM": "复制系统白名单"
     },
     "TAG_RETENTION": {
         "TAG_RETENTION": "Tag保留",
@@ -1172,7 +1177,7 @@
         "TAGS": "Tags",
         "MATCHES_TAGS": "匹配tags",
         "MATCHES_EXCEPT_TAGS": "排除tags",
-        "TAG_SEPARATOR": "使用逗号分割tags,tag*,**,or regex",
+        "TAG_SEPARATOR": "使用逗号分割tags,tag*和**",
         "LABELS": "标签",
         "MATCHES_LABELS": "匹配标签",
         "MATCHES_EXCEPT_LABELS": "排除标签",
@@ -1213,7 +1218,8 @@
         "INVALID_RULE": "无效规则",
         "COUNT_LARGE": "参数“个数”太大",
         "DAYS_LARGE": "参数“天数”太大",
-        "EXECUTION_TYPE": "执行类型"
+        "EXECUTION_TYPE": "执行类型",
+        "ACTION": "操作"
     }
 
 }

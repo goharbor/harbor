@@ -68,6 +68,11 @@ var (
 			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
 			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionOperate},
 
+			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionList},
+
 			{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionList},
@@ -114,6 +119,9 @@ var (
 			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionList},
 			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
 		},
 
 		"master": {
@@ -153,6 +161,11 @@ var (
 			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionList},
 			{Resource: rbac.ResourceTagRetention, Action: rbac.ActionOperate},
 
+			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionUpdate},
+			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceImmutableTag, Action: rbac.ActionList},
+
 			{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionList},
@@ -191,6 +204,9 @@ var (
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceNotificationPolicy, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
 		},
 
 		"developer": {
@@ -241,6 +257,9 @@ var (
 
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
 		},
 
 		"guest": {

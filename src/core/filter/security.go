@@ -25,6 +25,7 @@ import (
 	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	secstore "github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/security"
@@ -42,6 +43,7 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/pkg/authproxy"
+	"github.com/goharbor/harbor/src/pkg/robot"
 )
 
 // ContextValueKey for content value
@@ -193,7 +195,8 @@ func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		return false
 	}
 	// Do authn for robot account, as Harbor only stores the token ID, just validate the ID and disable.
-	robot, err := dao.GetRobotByID(htk.Claims.(*token.RobotClaims).TokenID)
+	ctr := robot.RobotCtr
+	robot, err := ctr.GetRobotAccount(htk.Claims.(*token.RobotClaims).TokenID)
 	if err != nil {
 		log.Errorf("failed to get robot %s: %v", robotName, err)
 		return false
@@ -283,6 +286,10 @@ func (it *idTokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if u == nil {
 		log.Warning("User matches token's claims is not onboarded.")
 		return false
+	}
+	u.GroupIDs, err = group.GetGroupIDByGroupName(oidc.GroupsFromToken(claims), common.OIDCGroupType)
+	if err != nil {
+		log.Errorf("Failed to get group ID list for OIDC user: %s, error: %v", u.Username, err)
 	}
 	pm := config.GlobalProjectMgr
 	sc := local.NewSecurityContext(u, pm)
@@ -457,7 +464,7 @@ func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		if ou != nil { // If user does not have OIDC metadata, it means he is not onboarded via OIDC authn,
 			// so we can skip checking the token.
 			if err := oidc.VerifyAndPersistToken(ctx.Request.Context(), ou); err != nil {
-				log.Errorf("Failed to verify secret, error: %v", err)
+				log.Errorf("Failed to verify token, error: %v", err)
 				return false
 			}
 		}

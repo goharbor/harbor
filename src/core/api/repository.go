@@ -25,6 +25,11 @@ import (
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/jobservice/logger"
+
+	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common"
@@ -40,7 +45,6 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
-	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -397,6 +401,13 @@ func (ra *RepositoryAPI) GetTag() {
 		return
 	}
 
+	project, err := ra.ProjectMgr.Get(projectName)
+	if err != nil {
+		ra.ParseAndHandleError(fmt.Sprintf("failed to get the project %s",
+			projectName), err)
+		return
+	}
+
 	client, err := coreutils.NewRepositoryClientForUI(ra.SecurityCtx.GetUsername(), repository)
 	if err != nil {
 		ra.SendInternalServerError(fmt.Errorf("failed to initialize the client for %s: %v",
@@ -414,7 +425,7 @@ func (ra *RepositoryAPI) GetTag() {
 		return
 	}
 
-	result := assembleTagsInParallel(client, repository, []string{tag},
+	result := assembleTagsInParallel(client, project.ProjectID, repository, []string{tag},
 		ra.SecurityCtx.GetUsername())
 	ra.Data["json"] = result[0]
 	ra.ServeJSON()
@@ -523,14 +534,14 @@ func (ra *RepositoryAPI) GetTags() {
 	}
 
 	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exists(projectName)
+	project, err := ra.ProjectMgr.Get(projectName)
 	if err != nil {
-		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
+		ra.ParseAndHandleError(fmt.Sprintf("failed to get the project %s",
 			projectName), err)
 		return
 	}
 
-	if !exist {
+	if project == nil {
 		ra.SendNotFoundError(fmt.Errorf("project %s not found", projectName))
 		return
 	}
@@ -587,8 +598,13 @@ func (ra *RepositoryAPI) GetTags() {
 		return
 	}
 
-	ra.Data["json"] = assembleTagsInParallel(client, repoName, tags,
-		ra.SecurityCtx.GetUsername())
+	ra.Data["json"] = assembleTagsInParallel(
+		client,
+		project.ProjectID,
+		repoName,
+		tags,
+		ra.SecurityCtx.GetUsername(),
+	)
 	ra.ServeJSON()
 }
 
@@ -607,7 +623,7 @@ func simpleTags(tags []string) []*models.TagResp {
 
 // get config, signature and scan overview and assemble them into one
 // struct for each tag in tags
-func assembleTagsInParallel(client *registry.Repository, repository string,
+func assembleTagsInParallel(client *registry.Repository, projectID int64, repository string,
 	tags []string, username string) []*models.TagResp {
 	var err error
 	signatures := map[string][]notarymodel.Target{}
@@ -621,8 +637,15 @@ func assembleTagsInParallel(client *registry.Repository, repository string,
 
 	c := make(chan *models.TagResp)
 	for _, tag := range tags {
-		go assembleTag(c, client, repository, tag, config.WithClair(),
-			config.WithNotary(), signatures)
+		go assembleTag(
+			c,
+			client,
+			projectID,
+			repository,
+			tag,
+			config.WithNotary(),
+			signatures,
+		)
 	}
 	result := []*models.TagResp{}
 	var item *models.TagResp
@@ -636,8 +659,8 @@ func assembleTagsInParallel(client *registry.Repository, repository string,
 	return result
 }
 
-func assembleTag(c chan *models.TagResp, client *registry.Repository,
-	repository, tag string, clairEnabled, notaryEnabled bool,
+func assembleTag(c chan *models.TagResp, client *registry.Repository, projectID int64,
+	repository, tag string, notaryEnabled bool,
 	signatures map[string][]notarymodel.Target) {
 	item := &models.TagResp{}
 	// labels
@@ -659,8 +682,9 @@ func assembleTag(c chan *models.TagResp, client *registry.Repository,
 	}
 
 	// scan overview
-	if clairEnabled {
-		item.ScanOverview = getScanOverview(item.Digest, item.Name)
+	so := getSummary(projectID, repository, item.Digest)
+	if len(so) > 0 {
+		item.ScanOverview = so
 	}
 
 	// signature, compare both digest and tag
@@ -968,73 +992,6 @@ func (ra *RepositoryAPI) GetSignatures() {
 	ra.ServeJSON()
 }
 
-// ScanImage handles request POST /api/repository/$repository/tags/$tag/scan to trigger image scan manually.
-func (ra *RepositoryAPI) ScanImage() {
-	if !config.WithClair() {
-		log.Warningf("Harbor is not deployed with Clair, scan is disabled.")
-		ra.SendInternalServerError(errors.New("harbor is not deployed with Clair, scan is disabled"))
-		return
-	}
-	repoName := ra.GetString(":splat")
-	tag := ra.GetString(":tag")
-	projectName, _ := utils.ParseRepository(repoName)
-	exist, err := ra.ProjectMgr.Exists(projectName)
-	if err != nil {
-		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %s",
-			projectName), err)
-		return
-	}
-	if !exist {
-		ra.SendNotFoundError(fmt.Errorf("project %s not found", projectName))
-		return
-	}
-	if !ra.SecurityCtx.IsAuthenticated() {
-		ra.SendUnAuthorizedError(errors.New("Unauthorized"))
-		return
-	}
-
-	if !ra.RequireProjectAccess(projectName, rbac.ActionCreate, rbac.ResourceRepositoryTagScanJob) {
-		return
-	}
-	err = coreutils.TriggerImageScan(repoName, tag)
-	if err != nil {
-		log.Errorf("Error while calling job service to trigger image scan: %v", err)
-		ra.SendInternalServerError(errors.New("Failed to scan image, please check log for details"))
-		return
-	}
-}
-
-// VulnerabilityDetails fetch vulnerability info from clair, transform to Harbor's format and return to client.
-func (ra *RepositoryAPI) VulnerabilityDetails() {
-	if !config.WithClair() {
-		log.Warningf("Harbor is not deployed with Clair, it's not impossible to get vulnerability details.")
-		ra.SendInternalServerError(errors.New("harbor is not deployed with Clair, it's not impossible to get vulnerability details"))
-		return
-	}
-	repository := ra.GetString(":splat")
-	tag := ra.GetString(":tag")
-	exist, digest, err := ra.checkExistence(repository, tag)
-	if err != nil {
-		ra.SendInternalServerError(fmt.Errorf("failed to check the existence of resource, error: %v", err))
-		return
-	}
-	if !exist {
-		ra.SendNotFoundError(fmt.Errorf("resource: %s:%s not found", repository, tag))
-		return
-	}
-
-	projectName, _ := utils.ParseRepository(repository)
-	if !ra.RequireProjectAccess(projectName, rbac.ActionList, rbac.ResourceRepositoryTagVulnerability) {
-		return
-	}
-	res, err := scan.VulnListByDigest(digest)
-	if err != nil {
-		log.Errorf("Failed to get vulnerability list for image: %s:%s", repository, tag)
-	}
-	ra.Data["json"] = res
-	ra.ServeJSON()
-}
-
 func getSignatures(username, repository string) (map[string][]notarymodel.Target, error) {
 	targets, err := notary.GetInternalTargets(config.InternalNotaryEndpoint(),
 		username, repository)
@@ -1079,33 +1036,19 @@ func (ra *RepositoryAPI) checkExistence(repository, tag string) (bool, string, e
 	return true, digest, nil
 }
 
-// will return nil when it failed to get data.  The parm "tag" is for logging only.
-func getScanOverview(digest string, tag string) *models.ImgScanOverview {
-	if len(digest) == 0 {
-		log.Debug("digest is nil")
-		return nil
+func getSummary(pid int64, repository string, digest string) map[string]interface{} {
+	// At present, only get harbor native report as default behavior.
+	artifact := &v1.Artifact{
+		NamespaceID: pid,
+		Repository:  repository,
+		Digest:      digest,
+		MimeType:    v1.MimeTypeDockerArtifact,
 	}
-	data, err := dao.GetImgScanOverview(digest)
+
+	sum, err := scan.DefaultController.GetSummary(artifact, []string{v1.MimeTypeNativeReport})
 	if err != nil {
-		log.Errorf("Failed to get scan result for tag:%s, digest: %s, error: %v", tag, digest, err)
+		logger.Errorf("Failed to get scan report summary with error: %s", err)
 	}
-	if data == nil {
-		return nil
-	}
-	job, err := dao.GetScanJob(data.JobID)
-	if err != nil {
-		log.Errorf("Failed to get scan job for id:%d, error: %v", data.JobID, err)
-		return nil
-	} else if job == nil { // job does not exist
-		log.Errorf("The scan job with id: %d does not exist, returning nil", data.JobID)
-		return nil
-	}
-	data.Status = job.Status
-	if data.Status != models.JobFinished {
-		log.Debugf("Unsetting vulnerable related historical values, job status: %s", data.Status)
-		data.Sev = 0
-		data.CompOverview = nil
-		data.DetailsKey = ""
-	}
-	return data
+
+	return sum
 }

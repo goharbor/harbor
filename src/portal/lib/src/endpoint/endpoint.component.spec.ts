@@ -142,7 +142,7 @@ describe("EndpointComponent (inline template)", () => {
     spyOnRules = spyOn(
       endpointService,
       "getEndpointWithReplicationRules"
-    ).and.returnValue([]);
+    ).and.returnValue(of([]));
     spyOne = spyOn(endpointService, "getEndpoint").and.returnValue(
       of(mockOne[0])
     );

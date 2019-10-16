@@ -34,7 +34,7 @@ export class TagRepositoryComponent implements OnInit {
   isGuest: boolean;
   registryUrl: string;
 
-  @ViewChild(RepositoryComponent)
+  @ViewChild(RepositoryComponent, {static: false})
   repositoryComponent: RepositoryComponent;
 
   constructor(

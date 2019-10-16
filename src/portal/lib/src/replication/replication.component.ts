@@ -120,16 +120,16 @@ export class ReplicationComponent implements OnInit, OnDestroy {
 
   jobs: ReplicationJobItem[];
 
-  @ViewChild(ListReplicationRuleComponent)
+  @ViewChild(ListReplicationRuleComponent, {static: false})
   listReplicationRule: ListReplicationRuleComponent;
 
-  @ViewChild(CreateEditRuleComponent)
+  @ViewChild(CreateEditRuleComponent, {static: false})
   createEditPolicyComponent: CreateEditRuleComponent;
 
-  @ViewChild("replicationConfirmDialog")
+  @ViewChild("replicationConfirmDialog", {static: false})
   replicationConfirmDialog: ConfirmationDialogComponent;
 
-  @ViewChild("StopConfirmDialog")
+  @ViewChild("StopConfirmDialog", {static: false})
   StopConfirmDialog: ConfirmationDialogComponent;
 
   creationTimeComparator: Comparator<ReplicationJob> = new CustomComparator<

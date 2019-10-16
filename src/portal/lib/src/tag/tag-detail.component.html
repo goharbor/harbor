@@ -89,8 +89,8 @@
                 <hbr-vulnerabilities-grid [repositoryId]="repositoryId" [projectId]="projectId" [tagId]="tagId"></hbr-vulnerabilities-grid>
             </clr-tab-content>
         </clr-tab>
-        <clr-tab>
-            <button [clrTabLinkInOverflow]="false" *ngIf="hasBuildHistoryPermission" id="tag-history" clrTabLink class="btn btn-link nav-link" [class.active]='isCurrentTabLink("tag-history")' type="button" (click)='tabLinkClick("tag-history")'>{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</button>
+        <clr-tab *ngIf="hasBuildHistoryPermission">
+            <button [clrTabLinkInOverflow]="false" id="tag-history" clrTabLink class="btn btn-link nav-link" [class.active]='isCurrentTabLink("tag-history")' type="button" (click)='tabLinkClick("tag-history")'>{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</button>
             <clr-tab-content *clrIfActive>
                 <hbr-tag-history [repositoryId]="repositoryId" [tagId]="tagId">{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</hbr-tag-history>
             </clr-tab-content>

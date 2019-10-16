@@ -29,7 +29,7 @@
                             <clr-icon shape="users" clrVerticalNavIcon></clr-icon>
                             {{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}
                         </a>
-                        <a *ngIf='isLdapMode' clrVerticalNavLink routerLink="/harbor/groups" routerLinkActive="active">
+                        <a *ngIf='isLdapMode || isHttpAuthMode || isOidcMode' clrVerticalNavLink routerLink="/harbor/groups" routerLinkActive="active">
                             <clr-icon shape="users" clrVerticalNavIcon></clr-icon>
                             {{'SIDE_NAV.SYSTEM_MGMT.GROUP' | translate}}
                         </a>

@@ -774,20 +774,15 @@ paths:
           description: Internal errors.
   /users/search:
     get:
-      summary: Search users by username, email
+      summary: Search users by username
       description: |
-        This endpoint is to search the users by username, email.
+        This endpoint is to search the users by username.
       parameters:
         - name: username
           in: query
           type: string
-          required: false
+          required: true
           description: Username for filtering results.
-        - name: email
-          in: query
-          type: string
-          required: false
-          description: Email for filtering results.
         - name: page
           in: query
           type: integer
@@ -964,13 +959,13 @@ paths:
           description: User ID does not exist.
         '500':
           description: Unexpected internal errors.
-  '/users/{user_id}/gen_cli_secret':
-    post:
-      summary: Generate new CLI secret for a user.
+  '/users/{user_id}/cli_secret':
+    put:
+      summary: Set CLI secret for a user.
       description: |
         This endpoint let user generate a new CLI secret for himself.  This API only works when auth mode is set to 'OIDC'.
         Once this API returns with successful status, the old secret will be invalid, as there will be only one CLI secret
-        for a user.  The new secret will be returned in the response.
+        for a user.
       parameters:
         - name: user_id
           in: path
@@ -978,19 +973,23 @@ paths:
           format: int
           required: true
           description: User ID
-      tags:
-        - Products
-      responses:
-        '200':
-          description: The secret is successfully generated.
+        - name: input_secret
+          in: body
+          description: JSON object that includes the new secret
+          required: true
           schema:
             type: object
             properties:
               secret:
                 type: string
                 description: The new secret
+      tags:
+        - Products
+      responses:
+        '200':
+          description: The secret is successfully updated
         '400':
-          description: Invalid user ID.  Or user is not onboarded via OIDC authentication.
+          description: Invalid user ID.  Or user is not onboarded via OIDC authentication. Or the secret does not meet the standard.
         '401':
           description: User need to log in first.
         '403':
@@ -2415,7 +2414,7 @@ paths:
       description: |
         This endpoint is for syncing quota usage of registry/chart with database.
       tags:
-      - Products
+        - Products
       responses:
         '200':
           description: Sync repositories successfully.
@@ -2423,6 +2422,28 @@ paths:
           description: User need to log in first.
         '403':
           description: User does not have permission of system admin role.
+  /internal/switchquota:
+    put:
+      summary: Enable or disable quota.
+      description: |
+        This endpoint is for enable/disable quota. When quota is disabled, no resource require/release in image/chart push and delete.
+      tags:
+        - Products
+      parameters:
+        - name: switcher
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/QuotaSwitcher'
+      responses:
+        '200':
+          description: Enable/Disable quota successfully.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User does not have permission of system admin role.
+        '500':
+          description: Unexpected internal errors.
   /systeminfo:
     get:
       summary: Get general system info
@@ -3600,7 +3621,6 @@ paths:
       description: List quotas
       tags:
         - Products
-        - Quota
       parameters:
         - name: reference
           in: query
@@ -3968,7 +3988,124 @@ paths:
           description: User have no permission to list webhook jobs of the project.
         '500':
           description: Unexpected internal errors.
-
+  '/projects/{project_id}/immutabletagrules':
+    get:
+      summary: List all immutable tag rules of current project
+      description: |
+        This endpoint returns the immutable tag rules of a project
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: List project immutable tag rules successfully.
+          schema:
+            type: array
+            items:
+            $ref: '#/definitions/ImmutableTagRule'
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to list immutable tag rules of the project.
+        '500':
+          description: Unexpected internal errors.
+    post:
+      summary: Add an immutable tag rule to current project
+      description: |
+        This endpoint add an immutable tag rule to the project
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: immutabletagrule
+          in: body
+          schema:
+            $ref: '#/definitions/ImmutableTagRule'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Add the immutable tag rule successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to get immutable tag rule of the project.
+        '500':
+          description: Internal server errors.
+  '/projects/{project_id}/immutabletagrules/{id}':
+    put:
+      summary: Update the immutable tag rule or enable or disable the rule
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Immutable tag rule ID.
+        - name: immutabletagrule
+          in: body
+          schema:
+            $ref: '#/definitions/ImmutableTagRule'
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Update the immutable tag rule successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to update the immutable tag rule of the project.
+        '500':
+          description: Internal server errors.
+    delete:
+      summary: Delete the immutable tag rule.
+      parameters:
+        - name: project_id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Relevant project ID.
+        - name: id
+          in: path
+          type: integer
+          format: int64
+          required: true
+          description: Immutable tag rule ID.
+      tags:
+        - Products
+      responses:
+        '200':
+          description: Delete the immutable tag rule successfully.
+        '400':
+          description: Illegal format of provided ID value.
+        '401':
+          description: User need to log in first.
+        '403':
+          description: User have no permission to delete immutable tags of the project.
+        '500':
+          description: Internal server errors.
   '/retentions/metadatas':
     get:
       summary: Get Retention Metadatas
@@ -6248,4 +6385,22 @@ definitions:
         type: integer
       retained:
         type: integer
-
+  QuotaSwitcher:
+    type: object
+    properties:
+      enabled:
+        type: boolean
+        description: The quota is enable or disable
+  ImmutableTagRule:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+      project_id:
+        type: integer
+        format: int64
+      tag_filter:
+        type: string
+      enabled:
+        type: boolean

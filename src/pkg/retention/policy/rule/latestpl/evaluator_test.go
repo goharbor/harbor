@@ -20,8 +20,8 @@ import (
 	"math/rand"
 	"testing"
 
+	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
-	"github.com/goharbor/harbor/src/pkg/retention/res"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -52,7 +52,7 @@ func (e *EvaluatorTestSuite) TestNew() {
 }
 
 func (e *EvaluatorTestSuite) TestProcess() {
-	data := []*res.Candidate{{PulledTime: 0}, {PulledTime: 1}, {PulledTime: 2}, {PulledTime: 3}, {PulledTime: 4}}
+	data := []*art.Candidate{{PulledTime: 0}, {PulledTime: 1}, {PulledTime: 2}, {PulledTime: 3}, {PulledTime: 4}}
 	rand.Shuffle(len(data), func(i, j int) {
 		data[i], data[j] = data[j], data[i]
 	})

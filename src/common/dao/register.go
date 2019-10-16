@@ -29,10 +29,10 @@ func Register(user models.User) (int64, error) {
 	now := time.Now()
 	salt := utils.GenerateRandomString()
 	sql := `insert into harbor_user
-				(username, password, realname, email, comment, salt, sysadmin_flag, creation_time, update_time)
-				 values (?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING user_id`
+				(username, password, password_version, realname, email, comment, salt, sysadmin_flag, creation_time, update_time)
+				 values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING user_id`
 	var userID int64
-	err := o.Raw(sql, user.Username, utils.Encrypt(user.Password, salt), user.Realname, user.Email,
+	err := o.Raw(sql, user.Username, utils.Encrypt(user.Password, salt, utils.SHA256), utils.SHA256, user.Realname, user.Email,
 		user.Comment, salt, user.HasAdminRole, now, now).QueryRow(&userID)
 	if err != nil {
 		return 0, err

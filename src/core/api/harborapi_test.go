@@ -177,7 +177,8 @@ func init() {
 	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/test", &NotificationPolicyAPI{}, "post:Test")
 	beego.Router("/api/projects/:pid([0-9]+)/webhook/lasttrigger", &NotificationPolicyAPI{}, "get:ListGroupByEventType")
 	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/", &NotificationJobAPI{}, "get:List")
-
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules", &ImmutableTagRuleAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &ImmutableTagRuleAPI{})
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}
 	beego.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
@@ -205,6 +206,22 @@ func init() {
 
 	beego.Router("/api/internal/switchquota", &InternalAPI{}, "put:SwitchQuota")
 	beego.Router("/api/internal/syncquota", &InternalAPI{}, "post:SyncQuota")
+
+	// Add routes for plugin scanner management
+	scannerAPI := &ScannerAPI{}
+	beego.Router("/api/scanners", scannerAPI, "post:Create;get:List")
+	beego.Router("/api/scanners/:uuid", scannerAPI, "get:Get;delete:Delete;put:Update;patch:SetAsDefault")
+	beego.Router("/api/scanners/:uuid/metadata", scannerAPI, "get:Metadata")
+	beego.Router("/api/scanners/ping", scannerAPI, "post:Ping")
+
+	// Add routes for project level scanner
+	proScannerAPI := &ProjectScannerAPI{}
+	beego.Router("/api/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
+
+	// Add routes for scan
+	scanAPI := &ScanAPI{}
+	beego.Router("/api/repositories/*/tags/:tag/scan", scanAPI, "post:Scan;get:Report")
+	beego.Router("/api/repositories/*/tags/:tag/scan/:uuid/log", scanAPI, "get:Log")
 
 	// syncRegistry
 	if err := SyncRegistry(config.GlobalProjectMgr); err != nil {

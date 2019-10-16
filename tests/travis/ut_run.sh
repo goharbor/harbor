@@ -8,7 +8,6 @@ export CHROME_BIN=chromium-browser
 export DISPLAY=:99.0
 sh -e /etc/init.d/xvfb start
 
-cd ./src/portal && npm run lint && npm run lint:lib && npm run test && cd -
 sudo docker-compose -f ./make/docker-compose.test.yml up -d
 sleep 10
 ./tests/pushimage.sh

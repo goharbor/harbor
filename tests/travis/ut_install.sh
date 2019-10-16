@@ -2,12 +2,6 @@
 
 set -e
 
-cd ./src/portal
-npm install -g -q --no-progress angular-cli
-npm install -g -q --no-progress karma
-npm install -q --no-progress
-npm run build_lib && npm run link_lib && cd ../..
-
 sudo apt-get update && sudo apt-get install -y libldap2-dev
 go get -d github.com/docker/distribution
 go get -d github.com/docker/libtrust

@@ -20,6 +20,10 @@ matrix:
   - go: 1.12.5
     env:
     - OFFLINE=true
+  - language: node_js
+    node_js: 10.16.2
+    env:
+    - UI_UT=true
 env:
   global:
   - POSTGRESQL_HOST: localhost
@@ -64,3 +68,4 @@ script:
 - if [ "$APITEST_DB" == true ]; then bash ./tests/travis/api_run.sh DB $IP; fi
 - if [ "$APITEST_LDAP" == true ]; then bash ./tests/travis/api_run.sh LDAP $IP; fi
 - if [ "$OFFLINE" == true ]; then bash ./tests/travis/distro_installer.sh; fi
+- if [ "$UI_UT" == true ]; then bash ./tests/travis/ui_ut_run.sh ; fi

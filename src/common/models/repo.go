@@ -54,11 +54,11 @@ type RepositoryQuery struct {
 // TagResp holds the information of one image tag
 type TagResp struct {
 	TagDetail
-	Signature    *model.Target    `json:"signature"`
-	ScanOverview *ImgScanOverview `json:"scan_overview,omitempty"`
-	Labels       []*Label         `json:"labels"`
-	PushTime     time.Time        `json:"push_time"`
-	PullTime     time.Time        `json:"pull_time"`
+	Signature    *model.Target          `json:"signature"`
+	ScanOverview map[string]interface{} `json:"scan_overview,omitempty"`
+	Labels       []*Label               `json:"labels"`
+	PushTime     time.Time              `json:"push_time"`
+	PullTime     time.Time              `json:"pull_time"`
 }
 
 // TagDetail ...

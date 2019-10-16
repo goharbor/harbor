@@ -25,7 +25,7 @@ class DockerAPI(object):
                 if str(err).lower().find(expected_error_message.lower()) < 0:
                     raise Exception(r"Docker login: Return message {} is not as expected {}".format(str(err), expected_error_message))
             else:
-                raise Exception(r" Docker login {} failed, error is [{}]".format (image, err.message))
+                raise Exception(r" Docker login failed, error is [{}]".format (err.message))
 
     def docker_image_pull(self, image, tag = None, expected_error_message = None):
         if tag is not None:

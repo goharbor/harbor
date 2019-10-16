@@ -30,7 +30,7 @@
         </div>
     </div>
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 datagrid-margin-top ">
-        <clr-datagrid (clrDgRefresh)="retrievePage($event)">
+        <clr-datagrid (clrDgRefresh)="retrievePage()">
             <clr-dg-column>{{'AUDIT_LOG.USERNAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.REPOSITORY_NAME' | translate}}</clr-dg-column>
             <clr-dg-column>{{'AUDIT_LOG.TAGS' | translate}}</clr-dg-column>

@@ -64,12 +64,12 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   staticBackdrop: boolean = true;
   closable: boolean = false;
 
-  @ViewChild('memberForm')
+  @ViewChild('memberForm', {static: false})
   currentForm: NgForm;
 
   hasChanged: boolean;
 
-  @ViewChild(InlineAlertComponent)
+  @ViewChild(InlineAlertComponent, {static: false})
   inlineAlert: InlineAlertComponent;
 
   @Input() projectId: number;
@@ -124,10 +124,10 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
                     }
                   });
                 }
-                let changeTimer = setInterval(() => this.ref.detectChanges(), 200);
-                setTimeout(() => {
-                  clearInterval(changeTimer);
-                }, 2000);
+                  let changeTimer = setInterval(() => this.ref.detectChanges(), 200);
+                  setTimeout(() => {
+                    clearInterval(changeTimer);
+                  }, 2000);
               }, error => {
                 this.checkOnGoing = false;
                 this.ref.detectChanges();

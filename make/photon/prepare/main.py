@@ -29,7 +29,7 @@ old_private_key_pem_path, old_crt_path)
 def main(conf, with_notary, with_clair, with_chartmuseum):
 
     delfile(config_dir)
-    config_dict = parse_yaml_config(conf)
+    config_dict = parse_yaml_config(conf, with_notary=with_notary, with_clair=with_clair, with_chartmuseum=with_chartmuseum)
     validate(config_dict, notary_mode=with_notary)
 
     prepare_log_configs(config_dict)

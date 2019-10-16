@@ -4,7 +4,7 @@
             <img [src]="'images/harbor-logo.svg'" class="harbor-icon">
         </div>
         <div class="content">
-            <div>{{customName?.projectName? customName?.projectName : ('APP_TITLE.HARBOR' | translate)}}</div>
+            <div>{{customName?.name? customName?.name : ('APP_TITLE.HARBOR' | translate)}}</div>
             <div>
                 <span class="p5 about-version">{{'ABOUT.VERSION' | translate}} {{version}}</span>
             </div>

@@ -46,8 +46,7 @@
     </div>
   </div>
   <div *ngIf="showCreate">
-    <h2 class="create-text create-text-title">{{'WEBHOOK.CREATE_WEBHOOK' | translate}}</h2>
-    <p class="create-text">{{'WEBHOOK.CREATE_WEBHOOK_DESC' | translate}}</p>
+    <p class="create-text pt-1">{{'WEBHOOK.CREATE_WEBHOOK_DESC' | translate}}</p>
     <add-webhook-form class="webhook-form-wrap" [projectId]="projectId" [webhook]="webhook" [isModify]="false" (edit)="editWebhook($event)"></add-webhook-form>
   </div>
   <add-webhook [projectId]="projectId" [webhook]="webhook" (modify)="editWebhook($event)"></add-webhook>

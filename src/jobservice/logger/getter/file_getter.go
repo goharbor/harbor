@@ -1,6 +1,7 @@
 package getter
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -23,8 +24,12 @@ func NewFileGetter(baseDir string) *FileGetter {
 
 // Retrieve implements @Interface.Retrieve
 func (fg *FileGetter) Retrieve(logID string) ([]byte, error) {
-	if len(logID) == 0 {
-		return nil, errors.New("empty log identify")
+	if len(logID) != 24 {
+		return nil, errors.New("invalid length of log identify")
+	}
+
+	if _, err := hex.DecodeString(logID); err != nil {
+		return nil, errors.New("invalid log identify")
 	}
 
 	fPath := path.Join(fg.baseDir, fmt.Sprintf("%s.log", logID))

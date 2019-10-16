@@ -48,9 +48,9 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     originalCopy: Configuration = new Configuration();
     confirmSub: Subscription;
 
-    @ViewChild(SystemSettingsComponent) systemSettingsConfig: SystemSettingsComponent;
-    @ViewChild(ConfigurationEmailComponent) mailConfig: ConfigurationEmailComponent;
-    @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
+    @ViewChild(SystemSettingsComponent, {static: false}) systemSettingsConfig: SystemSettingsComponent;
+    @ViewChild(ConfigurationEmailComponent, {static: false}) mailConfig: ConfigurationEmailComponent;
+    @ViewChild(ConfigurationAuthComponent, {static: false}) authConfig: ConfigurationAuthComponent;
 
     constructor(
         private msgHandler: MessageHandlerService,
@@ -105,6 +105,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     ngOnDestroy(): void {
         if (this.confirmSub) {
+            console.log(this.confirmSub);
             this.confirmSub.unsubscribe();
         }
     }

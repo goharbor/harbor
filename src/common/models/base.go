@@ -35,7 +35,6 @@ func init() {
 		new(UserGroup),
 		new(AdminJob),
 		new(JobLog),
-		new(Robot),
 		new(OIDCUser),
 		new(NotificationPolicy),
 		new(NotificationJob),

@@ -109,6 +109,7 @@ const (
 	OIDCCLientID                     = "oidc_client_id"
 	OIDCClientSecret                 = "oidc_client_secret"
 	OIDCVerifyCert                   = "oidc_verify_cert"
+	OIDCGroupsClaim                  = "oidc_groups_claim"
 	OIDCScope                        = "oidc_scope"
 
 	DefaultClairEndpoint              = "http://clair:6060"
@@ -125,13 +126,14 @@ const (
 	DefaultNotaryEndpoint             = "http://notary-server:4443"
 	LDAPGroupType                     = 1
 	HTTPGroupType                     = 2
+	OIDCGroupType                     = 3
 	LDAPGroupAdminDn                  = "ldap_group_admin_dn"
 	LDAPGroupMembershipAttribute      = "ldap_group_membership_attribute"
 	DefaultRegistryControllerEndpoint = "http://registryctl:8080"
 	WithChartMuseum                   = "with_chartmuseum"
 	ChartRepoURL                      = "chart_repository_url"
 	DefaultChartRepoURL               = "http://chartmuseum:9999"
-	DefaultPortalURL                  = "http://portal"
+	DefaultPortalURL                  = "http://portal:8080"
 	DefaultRegistryCtlURL             = "http://registryctl:8080"
 	DefaultClairHealthCheckServerURL  = "http://clair:6061"
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.

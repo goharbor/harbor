@@ -97,7 +97,9 @@
         "OIDC_NAME": "El nombre de la OIDC proveedor.",
         "OIDC_ENDPOINT": "La dirección URL de un servidor OIDC denuncia.",
         "OIDC_SCOPE": "El ámbito de aplicación enviada a OIDC Server durante la autenticación.Tiene que contener 'Openid', y 'offline_access'.Si usted esta usando Google, por favor quitar 'offline_access' de este campo",
-        "OIDC_VERIFYCERT": "Desmarque esta casilla si tu OIDC servidor está alojado a través de certificado autofirmado."
+        "OIDC_VERIFYCERT": "Desmarque esta casilla si tu OIDC servidor está alojado a través de certificado autofirmado.",
+        "OIDC_GROUP_CLAIM": "The name of Claim in the ID token whose value is the list of group names.",
+        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Introduzca la contraseña actual",
@@ -375,6 +377,7 @@
         "GROUPS": "Groups",
         "IMPORT_LDAP_GROUP": "Import LDAP Group",
         "IMPORT_HTTP_GROUP": "New HTTP Group",
+        "IMPORT_OIDC_GROUP": "New OIDC Group",
         "ADD": "Add",
         "EDIT": "Edit",
         "DELETE": "Delete",
@@ -387,6 +390,7 @@
         "EDIT_GROUP_SUCCESS": "Edit group success",
         "LDAP_TYPE": "LDAP",
         "HTTP_TYPE": "HTTP",
+        "OIDC_TYPE": "OIDC",
         "OF": "of",
         "ITEMS": "items",
         "NEW_MEMBER": "New Group Member",
@@ -799,7 +803,7 @@
             "LDAP_UID": "El atributo usado en una búsqueda para encontrar un usuario. Debe ser el uid, cn, email, sAMAccountName u otro atributo dependiendo del LDAP/AD.",
             "LDAP_SCOPE": "El ámbito de búsqueda para usuarios",
             "TOKEN_EXPIRATION": "El tiempo de expiración (en minutos) del token creado por el servicio de tokens. Por defecto son 30 minutos.",
-            "ROBOT_TOKEN_EXPIRATION": "El tiempo de caducidad (días) del token de la cuenta del robot, el valor predeterminado es 30 días. Muestra el número de días convertidos de minutos y redondeos.",
+            "ROBOT_TOKEN_EXPIRATION": "El tiempo de caducidad (días) del token de la cuenta del robot, el valor predeterminado es 30 días. Muestra el número de días convertidos de minutos y redondeos.",                        
             "PRO_CREATION_RESTRICTION": "Marca para definir qué usuarios tienen permisos para crear proyectos. Por defecto, todos pueden crear proyectos. Seleccione 'Solo Administradores' para que solamente los administradores puedan crear proyectos.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
@@ -856,7 +860,8 @@
             "OIDC_VERIFYCERT": "Verificar certificado",
             "OIDC_SETNAME": "Set OIDC nombre de usuario",
             "OIDC_SETNAMECONTENT": "Usted debe crear un Harbor nombre de usuario la primera vez cuando la autenticación a través de un tercero (OIDC). Esta será usada en Harbor para ser asociados con proyectos, funciones, etc.",
-            "OIDC_USERNAME": "Usuario"
+            "OIDC_USERNAME": "Usuario",
+            "GROUP_CLAIM_NAME": "Group Claim Name"
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
@@ -1125,10 +1130,10 @@
         "NEVER_EXPIRES": "Never expires",
         "PRO_WHITELIST_EXPLAIN": "Project whitelist allows vulnerabilities in this list to be ignored in this project when pushing and pulling images.",
         "PRO_OR_SYS": "You can either use the default whitelist configured at the system level or click on 'Project whitelist' to create a new whitelist",
-        "MERGE_INTO": "Add individual CVE IDs before clicking 'ADD SYSTEM' to add system whitelist as well.",
+        "MERGE_INTO": "Add individual CVE IDs before clicking 'COPY FROM SYSTEM' to add system whitelist as well.",
         "SYS_WHITELIST": "System whitelist",
         "PRO_WHITELIST": "Project whitelist",
-        "ADD_SYSTEM": "ADD SYSTEM"
+        "ADD_SYSTEM": "COPY FROM SYSTEM"
     },
     "TAG_RETENTION": {
         "TAG_RETENTION": "Tag Retention",
@@ -1173,7 +1178,7 @@
         "TAGS": "Tags",
         "MATCHES_TAGS": "Matches tags",
         "MATCHES_EXCEPT_TAGS": "Matches except tags",
-        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,**,or regex",
+        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
         "LABELS": "Labels",
         "MATCHES_LABELS": "Matches Labels",
         "MATCHES_EXCEPT_LABELS": "Matches except Labels",
@@ -1214,7 +1219,8 @@
         "INVALID_RULE": "Invalid rule",
         "COUNT_LARGE": "Parameter \"COUNT\" is too large",
         "DAYS_LARGE": "Parameter \"DAYS\" is too large",
-        "EXECUTION_TYPE": "Execution Type"
+        "EXECUTION_TYPE": "Execution Type",
+        "ACTION": "ACTION"
     }
 
 }

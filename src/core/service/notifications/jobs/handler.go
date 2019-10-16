@@ -18,7 +18,8 @@ import (
 	"encoding/json"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
+
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -49,29 +50,36 @@ type Handler struct {
 	rawStatus string
 	checkIn   string
 	revision  int64
+	trackID   string
+	change    *jjob.StatusChange
 }
 
 // Prepare ...
 func (h *Handler) Prepare() {
-	id, err := h.GetInt64FromPath(":id")
-	if err != nil {
-		log.Errorf("Failed to get job ID, error: %v", err)
-		// Avoid job service from resending...
-		h.Abort("200")
-		return
+	h.trackID = h.GetStringFromPath(":uuid")
+	if len(h.trackID) == 0 {
+		id, err := h.GetInt64FromPath(":id")
+		if err != nil {
+			log.Errorf("Failed to get job ID, error: %v", err)
+			// Avoid job service from resending...
+			h.Abort("200")
+			return
+		}
+		h.id = id
 	}
-	h.id = id
+
 	var data jjob.StatusChange
-	err = json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data)
+	err := json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data)
 	if err != nil {
-		log.Errorf("Failed to decode job status change, job ID: %d, error: %v", id, err)
+		log.Errorf("Failed to decode job status change with error: %v", err)
 		h.Abort("200")
 		return
 	}
+	h.change = &data
 	h.rawStatus = data.Status
 	status, ok := statusMap[data.Status]
 	if !ok {
-		log.Debugf("drop the job status update event: job id-%d, status-%s", id, status)
+		log.Debugf("drop the job status update event: job id-%d/track id-%s, status-%s", h.id, h.trackID, status)
 		h.Abort("200")
 		return
 	}
@@ -84,7 +92,8 @@ func (h *Handler) Prepare() {
 
 // HandleScan handles the webhook of scan job
 func (h *Handler) HandleScan() {
-	log.Debugf("received san job status update event: job-%d, status-%s", h.id, h.status)
+	log.Debugf("received san job status update event: job-%d, status-%s, track_id-%s", h.id, h.status, h.trackID)
+
 	// Trigger image scan webhook event only for JobFinished and JobError status
 	if h.status == models.JobFinished || h.status == models.JobError {
 		e := &event.Event{}
@@ -101,7 +110,7 @@ func (h *Handler) HandleScan() {
 		}
 	}
 
-	if err := dao.UpdateScanJobStatus(h.id, h.status); err != nil {
+	if err := scan.DefaultController.HandleJobHooks(h.trackID, h.change); err != nil {
 		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
 		h.SendInternalServerError(err)
 		return

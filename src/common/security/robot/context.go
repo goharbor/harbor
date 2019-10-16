@@ -18,17 +18,18 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 )
 
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
-	robot  *models.Robot
+	robot  *model.Robot
 	pm     promgr.ProjectManager
 	policy []*rbac.Policy
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(robot *models.Robot, pm promgr.ProjectManager, policy []*rbac.Policy) *SecurityContext {
+func NewSecurityContext(robot *model.Robot, pm promgr.ProjectManager, policy []*rbac.Policy) *SecurityContext {
 	return &SecurityContext{
 		robot:  robot,
 		pm:     pm,

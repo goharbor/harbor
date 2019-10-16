@@ -68,13 +68,13 @@ class HarborAPI:
         body=dict(body=payload)
         request(url+"replication/policies", 'post', **body)
 
-    def update_project_setting(self, project, contenttrust, preventrunning, preventseverity, scanonpush):
+    def update_project_setting(self, project, public, contenttrust, preventrunning, preventseverity, scanonpush):
         r = request(url+"projects?name="+project+"", 'get')
         projectid = str(r.json()[0]['project_id'])
         payload = {
             "project_name": ""+project+"",
             "metadata": {
-                "public": "True",
+                "public": public,
                 "enable_content_trust": contenttrust,
                 "prevent_vulnerable_images_from_running": preventrunning,
                 "prevent_vulnerable_images_from_running_severity": preventseverity,
@@ -188,6 +188,7 @@ def do_data_creation():
                                        replicationrule["rulename"])
     for project in data["projects"]:
         harborAPI.update_project_setting(project["name"],
+                                        project["configuration"]["public"],
                                         project["configuration"]["enable_content_trust"],
                                         project["configuration"]["prevent_vulnerable_images_from_running"],
                                         project["configuration"]["prevent_vlunerable_images_from_running_severity"],

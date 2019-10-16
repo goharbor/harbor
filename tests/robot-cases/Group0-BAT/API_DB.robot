@@ -29,16 +29,18 @@ Test Case - Add Replication Rule
     Harbor API Test  ./tests/apitests/python/test_add_replication_rule.py
 Test Case - Edit Project Creation
     Harbor API Test  ./tests/apitests/python/test_edit_project_creation.py
-Test Case - Scan Image
-    Harbor API Test  ./tests/apitests/python/test_scan_image.py
+*** Enable this case after deployment change PR merged ***
+*** Test Case - Scan Image ***
+***    Harbor API Test  ./tests/apitests/python/test_scan_image.py ***
 Test Case - Manage Project Member
     Harbor API Test  ./tests/apitests/python/test_manage_project_member.py
 Test Case - Project Level Policy Content Trust
     Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
 Test Case - User View Logs
     Harbor API Test  ./tests/apitests/python/test_user_view_logs.py
-Test Case - Scan All Images
-    Harbor API Test  ./tests/apitests/python/test_scan_all_images.py
+*** Enable this case after deployment change PR merged ***
+*** Test Case - Scan All Images ***
+***    Harbor API Test  ./tests/apitests/python/test_scan_all_images.py ***
 Test Case - List Helm Charts
     Harbor API Test  ./tests/apitests/python/test_list_helm_charts.py
 Test Case - Assign Sys Admin
@@ -49,6 +51,8 @@ Test Case - Robot Account
     Harbor API Test  ./tests/apitests/python/test_robot_account.py
 Test Case - Sign A Image
     Harbor API Test  ./tests/apitests/python/test_sign_image.py
+Test Case - Project Quota
+    Harbor API Test  ./tests/apitests/python/test_project_quota.py
 Test Case - System Level CVE Whitelist
     Harbor API Test  ./tests/apitests/python/test_sys_cve_whitelists.py
 Test Case - Project Level CVE Whitelist

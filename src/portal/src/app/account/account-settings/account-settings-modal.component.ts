@@ -51,13 +51,13 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
   renameConfirmation = false;
 //   confirmRename = false;
   showGenerateCli: boolean = false;
-  @ViewChild("confirmationDialog")
+  @ViewChild("confirmationDialog", {static: false})
   confirmationDialogComponent: ConfirmationDialogComponent;
 
   accountFormRef: NgForm;
-  @ViewChild("accountSettingsFrom") accountForm: NgForm;
-  @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
-  @ViewChild("copyInput") copyInput: CopyInputComponent;
+  @ViewChild("accountSettingsFrom", {static: true}) accountForm: NgForm;
+  @ViewChild(InlineAlertComponent, {static: false}) inlineAlert: InlineAlertComponent;
+  @ViewChild("copyInput", {static: false}) copyInput: CopyInputComponent;
 
   constructor(
     private session: SessionService,

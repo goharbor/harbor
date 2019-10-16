@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule, APP_INITIALIZER, LOCALE_ID } from '@angular/core';
+import { NgModule, APP_INITIALIZER, LOCALE_ID, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AppComponent } from './app.component';
 
 import { BaseModule } from './base/base.module';
@@ -44,7 +44,6 @@ registerLocaleData(es, 'es-es');
 registerLocaleData(localeFr, 'fr-fr');
 registerLocaleData(localePt, 'pt-br');
 registerLocaleData(localeTr, 'tr-tr');
-
 
 export function initConfig(configService: AppConfigService, skinableService: SkinableConfig) {
     return () => {
@@ -87,11 +86,10 @@ export function getCurrentLanguage(translateService: TranslateService) {
         deps: [ AppConfigService, SkinableConfig],
         multi: true
       },
-      {
-        provide: LOCALE_ID,
-        useFactory: getCurrentLanguage,
-        deps: [ TranslateService ]
-      }
+      {provide: LOCALE_ID, useValue: "en-US"}
+    ],
+    schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
     ],
     bootstrap: [AppComponent]
 })
