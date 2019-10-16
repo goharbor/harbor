@@ -49,9 +49,15 @@ export class ClipboardService {
     renderer: Renderer
   ): boolean {
     try {
-      this.selectTarget(targetElm, renderer);
+      const textarea = this.document.createElement('textarea');
+      textarea.textContent = targetElm.value;
+      this.document.body.appendChild(textarea);
+      let selection = this.document.getSelection();
+
+      this.selectTarget(textarea, renderer, selection);
       const re = this.copyText();
-      this.clearSelection(targetElm, this.window);
+      selection.removeAllRanges();
+      this.document.body.removeChild(textarea);
       return re;
     } catch (error) {
       return false;
@@ -82,13 +88,18 @@ export class ClipboardService {
   // select the target html input element
   private selectTarget(
     inputElement: HTMLInputElement | HTMLTextAreaElement,
-    renderer: Renderer
+    renderer: Renderer, selection
   ): number | undefined {
+    renderer.invokeElementMethod(inputElement, "focus");
     renderer.invokeElementMethod(inputElement, "select");
     renderer.invokeElementMethod(inputElement, "setSelectionRange", [
       0,
       inputElement.value.length
     ]);
+    let range = this.document.createRange();
+    range.selectNode(inputElement);
+    selection.removeAllRanges();
+    selection.addRange(range);
     return inputElement.value.length;
   }
 
