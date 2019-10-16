@@ -235,7 +235,7 @@ func getClairVulnStatus() *models.ClairVulnerabilityStatus {
 		m := make(map[string]int64)
 		for _, e := range l {
 			ns := strings.Split(e.Namespace, ":")
-			// only returns the latest time of one distro, i.e. unbuntu:14.04 and ubuntu:15.4 shares one timestamp
+			// only returns the latest time of one distro, i.e. ubuntu:14.04 and ubuntu:15.4 shares one timestamp
 			el := e.LastUpdate.UTC().Unix()
 			if ts, ok := m[ns[0]]; !ok || ts < el {
 				m[ns[0]] = el

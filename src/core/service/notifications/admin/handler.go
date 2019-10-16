@@ -35,7 +35,7 @@ var statusMap = map[string]string{
 	job.JobServiceStatusScheduled: models.JobScheduled,
 }
 
-// Handler handles reqeust on /service/notifications/jobs/adminjob/*, which listens to the webhook of jobservice.
+// Handler handles request on /service/notifications/jobs/adminjob/*, which listens to the webhook of jobservice.
 type Handler struct {
 	api.BaseController
 	id            int64

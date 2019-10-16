@@ -26,7 +26,7 @@ type ProjectMetadataManager interface {
 	Add(projectID int64, meta map[string]string) error
 	// Delete metadatas whose keys are specified in parameter meta, if it
 	// is absent, delete all
-	Delete(projecdtID int64, meta ...string) error
+	Delete(projectID int64, meta ...string) error
 	// Update metadatas
 	Update(projectID int64, meta map[string]string) error
 	// Get metadatas whose keys are specified in parameter meta, if it is
