@@ -1,15 +1,15 @@
 package rule
 
 import (
-	"github.com/goharbor/harbor/src/common/utils/test"
+	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"os"
 	"testing"
-	"time"
 )
 
 // MatchTestSuite ...
@@ -25,7 +25,6 @@ type MatchTestSuite struct {
 
 // SetupSuite ...
 func (s *MatchTestSuite) SetupSuite() {
-	test.InitDatabaseFromEnv()
 	s.t = s.T()
 	s.assert = assert.New(s.t)
 	s.require = require.New(s.t)
@@ -34,34 +33,31 @@ func (s *MatchTestSuite) SetupSuite() {
 
 func (s *MatchTestSuite) TestImmuMatch() {
 	rule := &model.Metadata{
-		ID:        1,
-		ProjectID: 2,
+		ProjectID: 1,
 		Priority:  1,
-		Template:  "latestPushedK",
-		Action:    "immuablity",
+		Action:    "immutable",
+		Template:  "immutable_template",
 		TagSelectors: []*model.Selector{
 			{
 				Kind:       "doublestar",
 				Decoration: "matches",
-				Pattern:    "release-[\\d\\.]+",
+				Pattern:    "release-**",
 			},
 		},
 		ScopeSelectors: map[string][]*model.Selector{
 			"repository": {
 				{
 					Kind:       "doublestar",
-					Decoration: "matches",
+					Decoration: "repoMatches",
 					Pattern:    "redis",
 				},
 			},
 		},
 	}
-
 	rule2 := &model.Metadata{
-		ID:        1,
-		ProjectID: 2,
+		ProjectID: 1,
 		Priority:  1,
-		Template:  "latestPushedK",
+		Template:  "immutable_template",
 		Action:    "immuablity",
 		TagSelectors: []*model.Selector{
 			{
@@ -74,7 +70,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 			"repository": {
 				{
 					Kind:       "doublestar",
-					Decoration: "matches",
+					Decoration: "repoMatches",
 					Pattern:    "mysql",
 				},
 			},
@@ -83,69 +79,52 @@ func (s *MatchTestSuite) TestImmuMatch() {
 
 	id, err := s.ctr.CreateImmutableRule(rule)
 	s.ruleID = id
-	s.require.NotNil(err)
+	s.require.Nil(err)
 
 	id, err = s.ctr.CreateImmutableRule(rule2)
 	s.ruleID2 = id
-	s.require.NotNil(err)
+	s.require.Nil(err)
 
-	match := NewRuleMatcher(2)
+	match := NewRuleMatcher(1)
 
 	c1 := art.Candidate{
-		NamespaceID:  2,
-		Namespace:    "immutable",
-		Repository:   "redis",
-		Tag:          "release-1.10",
-		Kind:         art.Image,
-		PushedTime:   time.Now().Unix() - 3600,
-		PulledTime:   time.Now().Unix(),
-		CreationTime: time.Now().Unix() - 7200,
-		Labels:       []string{"label1", "label4", "label5"},
+		NamespaceID: 1,
+		Namespace:   "library",
+		Repository:  "redis",
+		Tag:         "release-1.10",
 	}
 	isMatch, err := match.Match(c1)
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
 	c2 := art.Candidate{
-		NamespaceID:  2,
-		Namespace:    "immutable",
-		Repository:   "redis",
-		Tag:          "1.10",
-		Kind:         art.Image,
-		PushedTime:   time.Now().Unix() - 3600,
-		PulledTime:   time.Now().Unix(),
-		CreationTime: time.Now().Unix() - 7200,
-		Labels:       []string{"label1", "label4", "label5"},
+		NamespaceID: 1,
+		Namespace:   "library",
+		Repository:  "redis",
+		Tag:         "1.10",
+		Kind:        art.Image,
 	}
 	isMatch, err = match.Match(c2)
 	s.require.Equal(isMatch, false)
 	s.require.Nil(err)
 
 	c3 := art.Candidate{
-		NamespaceID:  2,
-		Namespace:    "immutable",
-		Repository:   "mysql",
-		Tag:          "9.4.8",
-		Kind:         art.Image,
-		PushedTime:   time.Now().Unix() - 3600,
-		PulledTime:   time.Now().Unix(),
-		CreationTime: time.Now().Unix() - 7200,
-		Labels:       []string{"label1"},
+		NamespaceID: 1,
+		Namespace:   "immutable",
+		Repository:  "mysql",
+		Tag:         "9.4.8",
+		Kind:        art.Image,
 	}
 	isMatch, err = match.Match(c3)
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
 	c4 := art.Candidate{
-		NamespaceID:  2,
-		Namespace:    "immutable",
-		Repository:   "hello",
-		Tag:          "world",
-		Kind:         art.Image,
-		PushedTime:   time.Now().Unix() - 3600,
-		PulledTime:   time.Now().Unix(),
-		CreationTime: time.Now().Unix() - 7200,
-		Labels:       []string{"label1"},
+		NamespaceID: 1,
+		Namespace:   "immutable",
+		Repository:  "hello",
+		Tag:         "world",
+		Kind:        art.Image,
 	}
 	isMatch, err = match.Match(c4)
 	s.require.Equal(isMatch, false)
@@ -159,4 +138,16 @@ func (s *MatchTestSuite) TearDownSuite() {
 
 	err = s.ctr.DeleteImmutableRule(s.ruleID2)
 	require.NoError(s.T(), err, "delete immutable")
+}
+
+func TestMain(m *testing.M) {
+	dao.PrepareTestForPostgresSQL()
+
+	if result := m.Run(); result != 0 {
+		os.Exit(result)
+	}
+}
+
+func TestRunHandlerSuite(t *testing.T) {
+	suite.Run(t, new(MatchTestSuite))
 }
