@@ -11,6 +11,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/pkg/errors"
 	"sync"
+	"time"
 )
 
 // SecretVerifyError wraps the different errors happened when verifying a secret for OIDC user.  When seeing this error,
@@ -83,7 +84,10 @@ func (dm *defaultManager) VerifySecret(ctx context.Context, userID int, secret s
 	return dm.VerifyToken(ctx, oidcUser)
 }
 
-// VerifyToken verifies the token in the model from parm in this implementation it will try to refresh the token
+// VerifyToken checks the expiration of the token in the model, (we'll only do expiration checks b/c according to spec,
+// the response may not have ID token:
+// https://openid.net/specs/openid-connect-core-1_0.html#RefreshTokenResponse
+// and it will try to refresh the token
 // if it's expired, if the refresh is successful it will persist the token and consider the verification successful.
 func (dm *defaultManager) VerifyToken(ctx context.Context, user *models.OIDCUser) error {
 	if user == nil {
@@ -103,11 +107,9 @@ func (dm *defaultManager) VerifyToken(ctx context.Context, user *models.OIDCUser
 		return verifyError(err)
 	}
 	log.Debugf("Token string for verify: %s", tokenStr)
-	_, err = VerifyToken(ctx, token.IDToken)
-	if err == nil {
-		return nil
+	if !token.Expiry.After(time.Now()) {
+		log.Info("Token string has expired, refreshing...")
 	}
-	log.Infof("Failed to verify ID Token, error: %v, refreshing...", err)
 	t, err := RefreshToken(ctx, token)
 	if err != nil {
 		return verifyError(err)
