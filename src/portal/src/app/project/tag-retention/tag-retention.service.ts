@@ -117,9 +117,13 @@ export class TagRetentionService {
           .pipe(catchError(error => observableThrowError(error)), );
     }
 
-    getExecutionHistory(retentionId, executionId) {
-        return this.http.get(`/api/retentions/${retentionId}/executions/${executionId}/tasks`)
-            .pipe(map(response => response as Array<any>))
+    getExecutionHistory(retentionId, executionId, page: number, pageSize: number) {
+        let params = new HttpParams();
+        if (page && pageSize) {
+            params = params.set('page', page + '').set('page_size', pageSize + '');
+        }
+        return this.http.get<HttpResponse<Array<any>>>(`/api/retentions/${retentionId}/executions/${executionId}/tasks`,
+            buildHttpRequestOptionsWithObserveResponse(params))
             .pipe(catchError(error => observableThrowError(error)));
     }
 
