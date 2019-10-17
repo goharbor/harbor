@@ -15,10 +15,10 @@
 package scan
 
 import (
+	"encoding/base64"
 	"fmt"
 	"time"
 
-	"github.com/goharbor/harbor/src/common"
 	cj "github.com/goharbor/harbor/src/common/job"
 	jm "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -100,6 +100,14 @@ func NewController() Controller {
 			}
 		},
 	}
+}
+
+func (bc *basicController) jobClient() cj.Client {
+	if bc.jc == nil {
+		return cj.GlobalClient
+	}
+
+	return bc.jc
 }
 
 // Scan ...
@@ -276,7 +284,7 @@ func (bc *basicController) GetScanLog(uuid string) ([]byte, error) {
 	}
 
 	// Job log
-	return bc.jc.GetJobLog(sr.JobID)
+	return bc.jobClient().GetJobLog(sr.JobID)
 }
 
 // HandleJobHooks ...
@@ -321,8 +329,8 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 	return bc.manager.UpdateStatus(trackID, change.Status, change.Metadata.Revision)
 }
 
-// makeRobotAccount creates a robot account based on the arguments for scanning.
-func (bc *basicController) makeRobotAccount(pid int64, repository string, ttl int64) (string, error) {
+// makeAuthorization creates authorization from a robot account based on the arguments for scanning.
+func (bc *basicController) makeAuthorization(pid int64, repository string, ttl int64) (string, error) {
 	// Use uuid as name to avoid duplicated entries.
 	UUID, err := bc.uuid()
 	if err != nil {
@@ -333,25 +341,28 @@ func (bc *basicController) makeRobotAccount(pid int64, repository string, ttl in
 
 	logger.Warningf("repository %s and expire time %d are not supported by robot controller", repository, expireAt)
 
-	resource := fmt.Sprintf("/project/%d/repository", pid)
+	resource := rbac.NewProjectNamespace(pid).Resource(rbac.ResourceRepository)
 	access := []*rbac.Policy{{
-		Resource: rbac.Resource(resource),
-		Action:   "pull",
+		Resource: resource,
+		Action:   rbac.ActionPull,
 	}}
 
-	account := &model.RobotCreate{
-		Name:        fmt.Sprintf("%s%s", common.RobotPrefix, UUID),
+	robotReq := &model.RobotCreate{
+		Name:        UUID,
 		Description: "for scan",
 		ProjectID:   pid,
 		Access:      access,
 	}
 
-	rb, err := bc.rc.CreateRobotAccount(account)
+	rb, err := bc.rc.CreateRobotAccount(robotReq)
 	if err != nil {
 		return "", errors.Wrap(err, "scan controller: make robot account")
 	}
 
-	return rb.Token, nil
+	username := rb.Name
+	password := rb.Token
+
+	return "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password)), nil
 }
 
 // launchScanJob launches a job to run scan
@@ -361,8 +372,8 @@ func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, 
 		return "", errors.Wrap(err, "scan controller: launch scan job")
 	}
 
-	// Make a robot account with 30 minutes
-	robotAccount, err := bc.makeRobotAccount(artifact.NamespaceID, artifact.Repository, 1800)
+	// Make authorization from a robot account with 30 minutes
+	authorization, err := bc.makeAuthorization(artifact.NamespaceID, artifact.Repository, 1800)
 	if err != nil {
 		return "", errors.Wrap(err, "scan controller: launch scan job")
 	}
@@ -371,7 +382,7 @@ func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, 
 	scanReq := &v1.ScanRequest{
 		Registry: &v1.Registry{
 			URL:           externalURL,
-			Authorization: robotAccount,
+			Authorization: authorization,
 		},
 		Artifact: artifact,
 	}
@@ -407,5 +418,5 @@ func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, 
 		StatusHook: hookURL,
 	}
 
-	return bc.jc.SubmitJob(j)
+	return bc.jobClient().SubmitJob(j)
 }

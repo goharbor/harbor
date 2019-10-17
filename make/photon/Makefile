@@ -64,6 +64,10 @@ DOCKERFILEPATH_CLAIR=$(DOCKERFILEPATH)/clair
 DOCKERFILENAME_CLAIR=Dockerfile
 DOCKERIMAGENAME_CLAIR=goharbor/clair-photon
 
+DOCKERFILEPATH_CLAIR_ADAPTER=$(DOCKERFILEPATH)/clair-adapter
+DOCKERFILENAME_CLAIR_ADAPTER=Dockerfile
+DOCKERIMAGENAME_CLAIR_ADAPTER=goharbor/clair-adapter-photon
+
 DOCKERFILEPATH_NGINX=$(DOCKERFILEPATH)/nginx
 DOCKERFILENAME_NGINX=Dockerfile
 DOCKERIMAGENAME_NGINX=goharbor/nginx-photon
@@ -141,6 +145,16 @@ _build_clair:
 		echo "Done." ; \
 	fi
 
+_build_clair_adapter:
+	# TODO: add support to fetch clair adapter binary from google storage ranther than build from source
+	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
+		cd $(DOCKERFILEPATH_CLAIR_ADAPTER) && $(DOCKERFILEPATH_CLAIR_ADAPTER)/builder $(CLAIRADAPTERVERSION) && cd - ; \
+		echo "building clair adapter container for photon..." ; \
+		$(DOCKERBUILD) -f $(DOCKERFILEPATH_CLAIR_ADAPTER)/$(DOCKERFILENAME_CLAIR_ADAPTER) -t $(DOCKERIMAGENAME_CLAIR_ADAPTER):$(CLAIRADAPTERVERSION)-$(VERSIONTAG) . ; \
+		rm -rf $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary; \
+		echo "Done." ; \
+	fi
+
 _build_chart_server:
 	@if [ "$(CHARTFLAG)" = "true" ] ; then \
 		if [ "$(BUILDBIN)" != "true" ] ; then \
@@ -209,7 +223,7 @@ define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2
 endef
 
-build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_redis _build_migrator _build_chart_server
+build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_clair_adapter _build_redis _build_migrator _build_chart_server
 
 cleanimage:
 	@echo "cleaning image for photon..."

@@ -121,6 +121,7 @@ const (
 	GroupMember                       = "g"
 	ReadOnly                          = "read_only"
 	ClairURL                          = "clair_url"
+	ClairAdapterURL                   = "clair_adapter_url"
 	NotaryURL                         = "notary_url"
 	DefaultCoreEndpoint               = "http://core:8080"
 	DefaultNotaryEndpoint             = "http://notary-server:4443"
