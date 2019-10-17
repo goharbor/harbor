@@ -38,6 +38,12 @@
                         <project-quotas [(allConfig)]="allConfig" (refreshAllconfig)="refreshAllconfig()"></project-quotas>
                     </clr-tab-content>
                 </clr-tab>
+                <clr-tab>
+                    <button id="config-scanners" clrTabLink>{{'SCANNER.SCANNERS' | translate}}</button>
+                    <clr-tab-content id="scanners" *clrIfActive>
+                        <config-scanner></config-scanner>
+                    </clr-tab-content>
+                </clr-tab>
         </clr-tabs>
     </div>
 </div>

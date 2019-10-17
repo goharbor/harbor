@@ -64,7 +64,7 @@ export interface Tag extends Base {
   author: string;
   created: Date;
   signature?: string;
-  scan_overview?: VulnerabilitySummary;
+  scan_overview?: ScanOverview;
   labels: Label[];
   push_time?: string;
   pull_time?: string;
@@ -290,25 +290,43 @@ export enum VulnerabilitySeverity {
 
 export interface VulnerabilityBase {
   id: string;
-  severity: VulnerabilitySeverity;
+  severity: string;
   package: string;
   version: string;
 }
 
 export interface VulnerabilityItem extends VulnerabilityBase {
-  link: string;
-  fixedVersion: string;
+  links: string[];
+  fix_version: string;
   layer?: string;
   description: string;
 }
 
 export interface VulnerabilitySummary {
-  image_digest?: string;
-  scan_status: string;
-  job_id?: number;
-  severity: VulnerabilitySeverity;
-  components: VulnerabilityComponents;
-  update_time: Date; // Use as complete timestamp
+    report_id?: string;
+    mime_type?: string;
+    scan_status?: string;
+    severity?: string;
+    duration?: number;
+    summary?: SeveritySummary;
+    start_time?: Date;
+    end_time?: Date;
+}
+export interface SeveritySummary {
+  total: number;
+  summary: {[key: string]: number};
+}
+
+export interface VulnerabilityDetail {
+  "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"?: VulnerabilityReport;
+}
+
+export interface VulnerabilityReport {
+  vulnerabilities?: VulnerabilityItem[];
+}
+
+export interface ScanOverview {
+  "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"?: VulnerabilitySummary;
 }
 
 export interface VulnerabilityComponents {

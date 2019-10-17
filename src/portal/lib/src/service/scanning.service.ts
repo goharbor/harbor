@@ -1,12 +1,13 @@
-import { HttpClient } from "@angular/common/http";
+import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable, Inject } from "@angular/core";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../service.config";
-import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from "../utils";
+import { buildHttpRequestOptions, DEFAULT_SUPPORTED_MIME_TYPE, HTTP_JSON_OPTIONS } from "../utils";
 import { RequestQueryParams } from "./RequestQueryParams";
-import { VulnerabilityItem, VulnerabilitySummary } from "./interface";
+import { VulnerabilityDetail, VulnerabilitySummary } from "./interface";
 import { map, catchError } from "rxjs/operators";
 import { Observable, of, throwError as observableThrowError } from "rxjs";
+
 
 /**
  * Get the vulnerabilities scanning results for the specified tag.
@@ -46,7 +47,7 @@ export abstract class ScanningResultService {
     tagId: string,
     queryParams?: RequestQueryParams
   ):
-    | Observable<VulnerabilityItem[]>;
+    | Observable<any>;
 
   /**
    * Start a new vulnerability scanning
@@ -106,17 +107,22 @@ export class ScanningResultDefaultService extends ScanningResultService {
     tagId: string,
     queryParams?: RequestQueryParams
   ):
-    | Observable<VulnerabilityItem[]> {
+    | Observable<any> {
     if (!repoName || repoName.trim() === "" || !tagId || tagId.trim() === "") {
       return observableThrowError("Bad argument");
     }
 
+    let httpOptions = buildHttpRequestOptions(queryParams);
+    let requestHeaders = httpOptions.headers as HttpHeaders;
+    // Change the accept header to the supported report mime types
+    httpOptions.headers = requestHeaders.set("Accept", DEFAULT_SUPPORTED_MIME_TYPE);
+
     return this.http
       .get(
-        `${this._baseUrl}/${repoName}/tags/${tagId}/vulnerability/details`,
-        buildHttpRequestOptions(queryParams)
+        `${this._baseUrl}/${repoName}/tags/${tagId}/scan`,
+        httpOptions
       )
-      .pipe(map(response => response as VulnerabilityItem[])
+      .pipe(map(response => response as VulnerabilityDetail)
       , catchError(error => observableThrowError(error)));
   }
 

@@ -1,0 +1,31 @@
+<div [clrLoading]="loading" class="ml-2">
+    <div class="clr-control-label">{{'SCANNER.SCANNER_COLON' | translate}}</div>
+    <div class="ml-1">
+        <span>{{'SCANNER.NAME_COLON' | translate}}</span>
+        <span id="scannerMetadata-name" class="ml-1">{{scannerMetadata?.scanner?.name}}</span>
+    </div>
+    <div class="ml-1">
+        <span>{{'SCANNER.VENDOR_COLON' | translate}}</span>
+        <span class="ml-1">{{scannerMetadata?.scanner?.vendor}}</span>
+    </div>
+    <div class="ml-1">
+        <span>{{'SCANNER.VERSION_COLON' | translate}}</span>
+        <span class="ml-1">{{scannerMetadata?.scanner?.version}}</span>
+    </div>
+    <div class="clr-control-label">{{'SCANNER.CAPABILITIES' | translate}}</div>
+    <div class="ml-1">
+        <span>{{'SCANNER.CONSUMES_MIME_TYPES_COLON' | translate}}</span>
+        <span class="ml-1" [innerHTML]="toString(scannerMetadata?.capabilities[0]?.consumes_mime_types)"></span>
+    </div>
+    <div class="ml-1">
+        <span>{{'SCANNER.PRODUCTS_MIME_TYPES_COLON' | translate}}</span>
+        <span class="ml-1" [innerHTML]="toString(scannerMetadata?.capabilities[0]?.produces_mime_types)"></span>
+    </div>
+    <div class="clr-control-label">{{'SCANNER.PROPERTIES' | translate}}</div>
+    <div class="ml-1" *ngFor="let item of scannerMetadata?.properties | keyvalue">
+        <span>{{item?.key}}:</span>
+        <span class="ml-1">{{parseDate(item?.value)}}</span>
+    </div>
+</div>
+
+
