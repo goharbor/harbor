@@ -14,10 +14,10 @@ This section describes how to install Harbor and perform the required initial co
   - [Troubleshooting Harbor Installation
 ](install_config/installation/troubleshoot_installation.md)
 - [Post-Installation Configuration](install_config/configuration/_index.md)
-  - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/configuration/reconfigure_manage_lifecycle.md)
   - [Configure HTTPS Access to Harbor](install_config/configuration/configure_https.md)
   - [Customize the Harbor Token Service](install_config/configuration/customize_token_service.md)
   - [Configure Notary Content Trust](install_config/configuration/configure_notary_content_trust.md)
+  - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/configuration/reconfigure_manage_lifecycle.md)
   - [Access Harbor Logs](install_config/configuration/access_logs.md)
 - [Initial Configuration in the Harbor UI](install_config/configuration/initial_config_ui.md)
   - [Configure Authentication](configure_authentication.md)
