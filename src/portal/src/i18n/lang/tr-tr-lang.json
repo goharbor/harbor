@@ -99,7 +99,8 @@
         "OIDC_SCOPE": "Kapsam, kimlik doğrulama sırasında OIDC sunucusuna gönderildi. “Openid” ve “offline_access” içermelidir. Google kullanıyorsanız, lütfen “offline_access“'i bu alandan kaldırın.",
         "OIDC_VERIFYCERT": "OIDC sunucunuz kendinden imzalı sertifika ile barındırılıyorsa bu kutunun işaretini kaldırın.",
         "OIDC_GROUP_CLAIM": "The name of Claim in the ID token whose value is the list of group names.",
-        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters."
+        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters.",
+        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Güncel şifrenizi giriniz",
@@ -128,8 +129,11 @@
         "COPY_SUCCESS": "kopyalama başarılı",
         "COPY_ERROR": "kopyalama başarısız",
         "ADMIN_CIL_SECRET_BUTTON": "ŞİFRE OLUŞTUR",
-        "GENERATE_SUCCESS": "CLI şifresi oluşturma başarılı",
-        "GENERATE_ERROR": "CLI şifresi oluşturma başarısız",
+        "ADMIN_CIL_SECRET_RESET_BUTTON": "Upload Your Own Secret",
+        "NEW_SECRET": "Secret",
+        "CONFIRM_SECRET": "Re-enter Secret",
+        "GENERATE_SUCCESS": "Cli secret setting is successful",
+        "GENERATE_ERROR": "Cli secret setting is failed",
         "CONFIRM_TITLE_CLI_GENERATE": "Şifreyi yeniden oluşturabileceğine emin misin?",
         "CONFIRM_BODY_CLI_GENERATE": "Eğer cli şifresini yeniden oluşturursanız, eski cli şifresi atılır"
     },

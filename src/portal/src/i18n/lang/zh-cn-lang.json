@@ -98,7 +98,8 @@
         "OIDC_SCOPE": "在身份验证期间发送到OIDC服务器的scope。它必须包含“openid”和“offline_access”。如果您使用Google，请从此字段中删除“脱机访问”。",
         "OIDC_VERIFYCERT": "如果您的OIDC服务器是通过自签名证书托管的，请取消选中此框。",
         "OIDC_GROUP_CLAIM": "ID和token中的Claim名称，在组的名称列表中。",
-        "OIDC_GROUP_CLAIM_WARNING": "它只能包含字母、数字、下划线,且输入长度不超过256字符。"
+        "OIDC_GROUP_CLAIM_WARNING": "它只能包含字母、数字、下划线,且输入长度不超过256字符。",
+        "NEW_SECRET": "Cli secret 必须超过8个字符，并至少包含1个大写字母，1个小写字母和1个数字。"
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "输入当前密码",
@@ -127,8 +128,11 @@
         "COPY_SUCCESS": "复制成功",
         "COPY_ERROR": "复制失败",
         "ADMIN_CIL_SECRET_BUTTON": "生成新的CLI密码",
-        "GENERATE_SUCCESS": "成功生成新的CLI密码",
-        "GENERATE_ERROR": "生成新的CLI密码失败",
+        "ADMIN_CIL_SECRET_RESET_BUTTON": "输入你自己的CLI密码",
+        "NEW_SECRET": "密码",
+        "CONFIRM_SECRET": "重复出入密码",
+        "GENERATE_SUCCESS": "成功设置新的CLI密码",
+        "GENERATE_ERROR": "设置新的CLI密码失败",
         "CONFIRM_TITLE_CLI_GENERATE": "您确定需要重新生成cli secret吗?",
         "CONFIRM_BODY_CLI_GENERATE": "如果您重新生成cli secret，那么旧的cli secret将会被弃用"
     },
