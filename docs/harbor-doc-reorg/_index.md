@@ -13,18 +13,26 @@ This section describes how to install Harbor and perform the required initial co
   - [Run the Installer Script](install_config/installation/run_installer_script.md)
   - [Troubleshooting Harbor Installation
 ](install_config/installation/troubleshoot_installation.md)
+
+  You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see the [Harbor High Availability Guide](https://github.com/goharbor/harbor-helm/blob/master/docs/High%20Availability.md) in the https://github.com/goharbor/harbor-helm repository.
 - [Configuring Harbor](install_config/configuration/_index.md)
   - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/configuration/reconfigure_manage_lifecycle.md)
   - [Configure HTTPS Access to Harbor](install_config/configuration/configure_https.md)
+  - [Customize the Harbor Token Service](install_config/configuration/customize_token_service.md)
   - [Access Harbor Logs](install_config/configuration/access_logs.md)
+
 
 ## Harbor Administration
 
-This section describes how to use, upgrade, and maintain Harbor after deployment. These day 2 operations are performed by the Harbor Administrator.
+This section describes how to use and maintain Harbor after deployment. These day 2 operations are performed by the Harbor Administrator.
 
-- [](administration/)
-- [](administration/)
-- [](administration/)
+- [Managing Users](administration/managing_users/_index.md)
+  - [Harbor Role Based Access Control (RBAC)](administration/managing_users/configure_rbac.md)
+  - [Configure Harbor User Settings at the Command Line](administration/managing_users/configure_user_settings_cli.md)
+  - [Manage Roles by LDAP Group](administration/managing_users/manage_role_by_ldap_group.md)
+- [Upgrading Harbor](administration/upgrade/_index.md)
+  - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
+  - [Roll Back an Upgrade](administration/upgrade/roll_back_upgrade.md)
 
 ## Working with Harbor Projects
 

@@ -1,4 +1,4 @@
-# Customize Harbor token service with your key and certificate
+# Customize the Harbor Token Service
 
 Harbor requires Docker client to access the Harbor registry with a token. The procedure to generate a token is like [Docker Registry v2 authentication](https://github.com/docker/distribution/blob/master/docs/spec/auth/token.md). Firstly, you should make a request to the token service for a token. The token is signed by the private key. After that, you make a new request with the token to the Harbor registry, Harbor registry will verify the token with the public key in the rootcert bundle. Then Harbor registry will authorize the Docker client to push/pull images.
 
