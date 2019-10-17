@@ -68,6 +68,7 @@ export class TagRetentionComponent implements OnInit {
     retention: Retention = new Retention();
     editIndex: number;
     executionList = [];
+    executionId: number;
     historyList = [];
     loadingExecutions: boolean = true;
     loadingHistories: boolean = true;
@@ -76,6 +77,10 @@ export class TagRetentionComponent implements OnInit {
     currentPage: number = 1;
     pageSize: number = 10;
     totalCount: number = 0;
+    currentLogPage: number = 1;
+    totalLogCount: number = 0;
+    logPageSize: number = 5;
+    isDetailOpened: boolean = false;
     @ViewChild('cronScheduleComponent', {static: false})
     cronScheduleComponent: CronScheduleComponent;
     @ViewChild('addRule', {static: false}) addRuleComponent: AddRuleComponent;
@@ -255,7 +260,7 @@ export class TagRetentionComponent implements OnInit {
             this.tagRetentionService.getRunNowList(this.retentionId, this.currentPage, this.pageSize)
               .pipe(finalize(() => this.loadingExecutions = false))
               .subscribe(
-              response => {
+                  (response: any) => {
                     // Get total count
                     if (response.headers) {
                         let xHeader: string = response.headers.get("x-total-count");
@@ -322,22 +327,36 @@ export class TagRetentionComponent implements OnInit {
         }
     }
 
+    loadLog() {
+        if (this.isDetailOpened) {
+            this.loadingHistories = true;
+            this.tagRetentionService.getExecutionHistory(this.retentionId, this.executionId, this.currentLogPage, this.logPageSize)
+                .pipe(finalize(() => this.loadingHistories = false))
+                .subscribe(
+                    (response: any) => {
+                        // Get total count
+                        if (response.headers) {
+                            let xHeader: string = response.headers.get("x-total-count");
+                            if (xHeader) {
+                                this.totalLogCount = parseInt(xHeader, 0);
+                            }
+                        }
+                        this.historyList = response.body as Array<any>;
+                        TagRetentionComponent.calculateDuration(this.historyList);
+                    }, error => {
+                        this.errorHandler.error(error);
+                    });
+        }
+    }
     openDetail(index, executionId) {
         if (this.index !== index) {
             this.index = index;
             this.historyList = [];
-            this.loadingHistories = true;
-            this.tagRetentionService.getExecutionHistory(this.retentionId, executionId)
-              .pipe(finalize(() => this.loadingHistories = false))
-              .subscribe(
-                res => {
-                    this.historyList = res;
-                    TagRetentionComponent.calculateDuration(this.historyList);
-                }, error => {
-                    this.errorHandler.error(error);
-                });
+            this.executionId = executionId;
+            this.isDetailOpened = true;
         } else {
             this.index = -1;
+            this.isDetailOpened = false;
         }
     }
 
