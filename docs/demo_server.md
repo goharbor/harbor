@@ -1,8 +1,9 @@
 # Demo Server Guide
 
 **Important!** 
- - Please note that this demo server is **ONLY** to be used trial of new Harbor functionality. 
+ - Please note that this demo server is **ONLY** to be used for experimenting with Harbor functionality. 
  - Please **DO NOT** upload any sensitive images to this server. 
+ - This is **NOT** a production environment and we are not responsible for any loss of data, functionality, or service.
  - We will **CLEAN AND RESET** the server every **couple of days**.
  - You can only experience the non-admin functionalities on this server. Please follow the **[Installation Guide](installation_guide.md)** to set up a Harbor server to try the more advanced features.
  - Please do not push large images (>100MB) as the server has limited storage.
