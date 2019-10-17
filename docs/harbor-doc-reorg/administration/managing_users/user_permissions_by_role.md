@@ -1,4 +1,4 @@
-# Permissions
+# User Permissions By Role
 
 Users have different abilities depending on the role they in a project.
 

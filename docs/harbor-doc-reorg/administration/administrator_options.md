@@ -1,8 +1,5 @@
 # Administrator options  
-### Managing user  
-Administrator can add "Administrator" role to one or more ordinary users by checking checkboxes and clicking `SET AS ADMINISTRATOR`. To delete users, checked checkboxes and select `DELETE`. Deleting user is only supported under database authentication mode.
 
-![browse project](../img/new_set_admin_remove_user.png)
 
 ### Managing registry  
 You can list, add, edit and delete registries under `Administration->Registries`. Only registries which are not referenced by any rules can be deleted.  
@@ -10,9 +7,7 @@ You can list, add, edit and delete registries under `Administration->Registries`
 ![browse project](../img/manage_registry.png)
 
 ### Managing replication  
-You can list, add, edit and delete rules under `Administration->Replications`.   
 
-![browse project](../img/manage_replication.png)
 
 ### Managing authentication
 You can change authentication mode between **Database**(default) and **LDAP** before any user is added, when there is at least one user(besides admin) in Harbor, you cannot change the authentication mode.  

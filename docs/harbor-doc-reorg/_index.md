@@ -28,8 +28,13 @@ This section describes how to use and maintain Harbor after deployment. These da
 
 - [Managing Users](administration/managing_users/_index.md)
   - [Harbor Role Based Access Control (RBAC)](administration/managing_users/configure_rbac.md)
+  - [User Permissions By Role](administration/managing_users/user_permissions_by_role.md)
   - [Configure Harbor User Settings at the Command Line](administration/managing_users/configure_user_settings_cli.md)
   - [Manage Roles by LDAP Group](administration/managing_users/manage_role_by_ldap_group.md)
+- [Configuring Replication](administration/configuring_replication/_index.md)
+  - [Create Replication Endpoints](administration/configuring_replication/create_replication_endpoints.md)
+  - [Create Replication Rules](administration/configuring_replication/create_replication_rules.md)
+  - [Manage Replications](administration/configuring_replication/manage_replications.md) 
 - [Upgrading Harbor](administration/upgrade/_index.md)
   - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
   - [Roll Back an Upgrade](administration/upgrade/roll_back_upgrade.md)

@@ -14,7 +14,12 @@ Besides the above three roles, there are two system-level roles:
 * **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator, delete users and set vulnerability scan policy for all images. The public project "library" is also owned by the administrator.  
 * **Anonymous**: When a user is not logged in, the user is considered as an "Anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects.  
 
-See detailed permissions matrix listed here: https://github.com/goharbor/harbor/blob/master/docs/permissions.md
+For full details of the permissions of the different roles, see [User Permissions By Role](user_permissions_by_role.md).
+
+## Managing user  
+Administrator can add "Administrator" role to one or more ordinary users by checking checkboxes and clicking `SET AS ADMINISTRATOR`. To delete users, checked checkboxes and select `DELETE`. Deleting user is only supported under database authentication mode.
+
+![browse project](../img/new_set_admin_remove_user.png)
 
 ## User account
 Harbor supports different authentication modes:  
