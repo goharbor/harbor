@@ -74,6 +74,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
         'token_service_url': "http://core:8080/service/token",
         'jobservice_url': 'http://jobservice:8080',
         'clair_url': 'http://clair:6060',
+        'clair_adapter_url': 'http://clair-adapter:8080',
         'notary_url': 'http://notary-server:4443',
         'chart_repository_url': 'http://chartmuseum:9999'
     }

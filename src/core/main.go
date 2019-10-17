@@ -48,6 +48,8 @@ import (
 	_ "github.com/goharbor/harbor/src/core/notifier/topic"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/replication"
@@ -214,6 +216,19 @@ func main() {
 		}
 		if err := dao.InitClairDB(clairDB); err != nil {
 			log.Fatalf("failed to initialize clair database: %v", err)
+		}
+
+		// TODO: change to be internal adapter
+		reg := &scanner.Registration{
+			Name:        "Clair",
+			Description: "The clair scanner adapter",
+			URL:         config.ClairAdapterEndpoint(),
+			Disabled:    false,
+			IsDefault:   true,
+		}
+
+		if err := scan.EnsureScanner(reg); err != nil {
+			log.Fatalf("failed to initialize clair scanner: %v", err)
 		}
 	}
 

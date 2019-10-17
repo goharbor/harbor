@@ -4008,7 +4008,7 @@ paths:
           schema:
             type: array
             items:
-            $ref: '#/definitions/ImmutableTagRule'
+              $ref: '#/definitions/ImmutableTagRule'
         '400':
           description: Illegal format of provided ID value.
         '401':
@@ -5115,35 +5115,7 @@ definitions:
         description: 'The signature of image, defined by RepoSignature. If it is null, the image is unsigned.'
       scan_overview:
         type: object
-        description: The overview of the scan result.  This is an optional property.
-        properties:
-          digest:
-            type: string
-            description: The digest of the image.
-          scan_status:
-            type: string
-            description: 'The status of the scan job, it can be "pending", "running", "finished", "error".'
-          job_id:
-            type: integer
-            description: The ID of the job on jobservice to scan the image.
-          severity:
-            type: integer
-            description: '0-Not scanned, 1-Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High'
-          details_key:
-            type: string
-            description: 'The top layer name of this image in Clair, this is for calling Clair API to get the vulnerability list of this image.'
-          components:
-            type: object
-            description: The components overview of the image.
-            properties:
-              total:
-                type: integer
-                description: Total number of the components in this image.
-              summary:
-                description: List of number of components of different severities.
-                type: array
-                items:
-                  $ref: '#/definitions/ComponentOverviewEntry'
+        description: The overview of the scan result.
       labels:
         type: array
         description: The label list.
@@ -6274,12 +6246,10 @@ definitions:
           $ref: '#/definitions/RetentionRule'
       trigger:
         type: object
-        items:
-          $ref: '#/definitions/RetentionRuleTrigger'
+        $ref: '#/definitions/RetentionRuleTrigger'
       scope:
         type: object
-        items:
-          $ref: '#/definitions/RetentionPolicyScope'
+        $ref: '#/definitions/RetentionPolicyScope'
 
   RetentionRuleTrigger:
     type: object

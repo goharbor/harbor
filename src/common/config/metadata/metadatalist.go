@@ -73,6 +73,7 @@ var (
 		{Name: common.ClairDBSSLMode, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_DB_SSLMODE", DefaultValue: "disable", ItemType: &StringType{}, Editable: false},
 		{Name: common.ClairDBUsername, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_DB_USERNAME", DefaultValue: "postgres", ItemType: &StringType{}, Editable: false},
 		{Name: common.ClairURL, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_URL", DefaultValue: "http://clair:6060", ItemType: &StringType{}, Editable: false},
+		{Name: common.ClairAdapterURL, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_ADAPTER_URL", DefaultValue: "http://clair-adapter:8080", ItemType: &StringType{}, Editable: false},
 
 		{Name: common.CoreURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CORE_URL", DefaultValue: "http://core:8080", ItemType: &StringType{}, Editable: false},
 		{Name: common.CoreLocalURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CORE_LOCAL_URL", DefaultValue: "http://127.0.0.1:8080", ItemType: &StringType{}, Editable: false},
