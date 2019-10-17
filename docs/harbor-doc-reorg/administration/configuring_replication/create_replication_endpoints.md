@@ -36,3 +36,8 @@ To replicate image repositories from one instance of Harbor to another Harbor or
     Deselect the check box if the remote registry uses a self-signed or untrusted certificate.
 1. Click **Test Connection**.
 1. When you have successfully tested the connection, click **OK**.
+
+## Managing Registries  
+You can list, add, edit and delete registries under `Administration->Registries`. Only registries which are not referenced by any rules can be deleted.  
+
+![browse project](../img/manage_registry.png)

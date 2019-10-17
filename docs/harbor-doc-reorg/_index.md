@@ -13,14 +13,17 @@ This section describes how to install Harbor and perform the required initial co
   - [Run the Installer Script](install_config/installation/run_installer_script.md)
   - [Troubleshooting Harbor Installation
 ](install_config/installation/troubleshoot_installation.md)
-
-  You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see the [Harbor High Availability Guide](https://github.com/goharbor/harbor-helm/blob/master/docs/High%20Availability.md) in the https://github.com/goharbor/harbor-helm repository.
 - [Configuring Harbor](install_config/configuration/_index.md)
   - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/configuration/reconfigure_manage_lifecycle.md)
   - [Configure HTTPS Access to Harbor](install_config/configuration/configure_https.md)
   - [Customize the Harbor Token Service](install_config/configuration/customize_token_service.md)
+  - [Configure Notary Content Trust](install_config/configuration/configure_notary_content_trust.md)
   - [Access Harbor Logs](install_config/configuration/access_logs.md)
-
+- [Initial Configuration in the Harbor UI](install_config/configuration/initial_config_ui.md)
+  - [Configure Authentication](configure_authentication.md)
+  - [Other General Settings](general_settings.md)
+  
+You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see the [Harbor High Availability Guide](https://github.com/goharbor/harbor-helm/blob/master/docs/High%20Availability.md) in the https://github.com/goharbor/harbor-helm repository.
 
 ## Harbor Administration
 
@@ -31,10 +34,18 @@ This section describes how to use and maintain Harbor after deployment. These da
   - [User Permissions By Role](administration/managing_users/user_permissions_by_role.md)
   - [Configure Harbor User Settings at the Command Line](administration/managing_users/configure_user_settings_cli.md)
   - [Manage Roles by LDAP Group](administration/managing_users/manage_role_by_ldap_group.md)
+- [Configure Project Settings](administration/configure_project_settings/_index.md)
+  - [Set Project Quotas](administration/configure_project_settings/set_project_quotas.md)
 - [Configuring Replication](administration/configuring_replication/_index.md)
   - [Create Replication Endpoints](administration/configuring_replication/create_replication_endpoints.md)
   - [Create Replication Rules](administration/configuring_replication/create_replication_rules.md)
   - [Manage Replications](administration/configuring_replication/manage_replications.md) 
+- [Vulnerability Scanning with Clair](administration/vulnerability_scanning/_index.md)
+  - [Scan an Individual Image](scan_individual_image.md)
+  - [Scan All Images](scan_all_images.md)
+  - [Schedule Scans](schedule_scans.md)
+  - [Import Vulnerability Data to an Offline Harbor instance](import_vulnerability_data.md)
+- [Garbage Collection](administration/garbage_collection/_index.md)
 - [Upgrading Harbor](administration/upgrade/_index.md)
   - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
   - [Roll Back an Upgrade](administration/upgrade/roll_back_upgrade.md)
