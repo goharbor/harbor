@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { WebhookComponent } from './webhook.component';
 
 xdescribe('WebhookComponent', () => {
@@ -8,7 +8,13 @@ xdescribe('WebhookComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [WebhookComponent]
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [WebhookComponent],
+            providers: [
+                TranslateService
+            ]
         })
             .compileComponents();
     }));

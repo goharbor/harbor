@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ListProjectComponent } from './list-project.component';
 
 xdescribe('ListProjectComponent', () => {
@@ -8,7 +8,13 @@ xdescribe('ListProjectComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [ListProjectComponent]
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [ListProjectComponent],
+            providers: [
+                TranslateService
+            ]
         })
             .compileComponents();
     }));

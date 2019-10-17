@@ -4,6 +4,11 @@ import (
 	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
 )
 
+var (
+	// ImmuCtr is a global variable for the default immutable controller implementation
+	ImmuCtr = NewAPIController(NewDefaultRuleManager())
+)
+
 // APIController to handle the requests related with immutabletag
 type APIController interface {
 	// GetImmutableRule ...

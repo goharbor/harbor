@@ -11,9 +11,10 @@ docker_compose_yml_path = '/compose_location/docker-compose.yml'
 def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
     versions = parse_versions()
     VERSION_TAG = versions.get('VERSION_TAG') or 'dev'
-    REGISTRY_VERSION = versions.get('REGISTRY_VERSION') or 'v2.7.1'
+    REGISTRY_VERSION = versions.get('REGISTRY_VERSION') or 'v2.7.1-patch-2819-2553'
     NOTARY_VERSION = versions.get('NOTARY_VERSION') or 'v0.6.1'
     CLAIR_VERSION = versions.get('CLAIR_VERSION') or 'v2.0.9'
+    CLAIR_ADAPTER_VERSION = versions.get('CLAIR_ADAPTER_VERSION') or ''
     CHARTMUSEUM_VERSION = versions.get('CHARTMUSEUM_VERSION') or 'v0.9.0'
 
     rendering_variables = {
@@ -22,6 +23,7 @@ def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
         'redis_version': VERSION_TAG,
         'notary_version': '{}-{}'.format(NOTARY_VERSION, VERSION_TAG),
         'clair_version': '{}-{}'.format(CLAIR_VERSION, VERSION_TAG),
+        'clair_adapter_version': '{}-{}'.format(CLAIR_ADAPTER_VERSION, VERSION_TAG),
         'chartmuseum_version': '{}-{}'.format(CHARTMUSEUM_VERSION, VERSION_TAG),
         'data_volume': configs['data_volume'],
         'log_location': configs['log_location'],

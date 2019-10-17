@@ -61,26 +61,16 @@ class HarborAPI:
     def update_project_setting(self, project, public, contenttrust, preventrunning, preventseverity, scanonpush):
         r = request(url+"projects?name="+project+"", 'get')
         projectid = str(r.json()[0]['project_id'])
-        if args.version == "1.6":
-            payload = {
-                "metadata": {
-                    "public": public,
-                    "enable_content_trust": contenttrust,
-                    "prevent_vulnerable_images_from_running": preventrunning,
-                    "prevent_vulnerable_images_from_running_severity": preventseverity,
-                    "automatically_scan_images_on_push": scanonpush
-                }
+        payload = {
+            "metadata": {
+                "public": public,
+                "enable_content_trust": contenttrust,
+                "prevent_vul": preventrunning,
+                "severity": preventseverity,
+                "auto_scan": scanonpush
             }
-        else:
-            payload = {
-                "metadata": {
-                    "public": public,
-                    "enable_content_trust": contenttrust,
-                    "prevent_vul": preventrunning,
-                    "severity": preventseverity,
-                    "auto_scan": scanonpush
-                }
-            }
+        }
+
         body=dict(body=payload)
         request(url+"projects/"+projectid+"", 'put', **body)
 

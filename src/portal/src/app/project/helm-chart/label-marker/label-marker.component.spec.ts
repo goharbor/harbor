@@ -1,5 +1,5 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { LabelMarkerComponent } from './label-marker.component';
 
 xdescribe('LabelMarkerComponent', () => {
@@ -8,7 +8,13 @@ xdescribe('LabelMarkerComponent', () => {
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [LabelMarkerComponent]
+            imports: [
+                TranslateModule.forRoot()
+            ],
+            declarations: [LabelMarkerComponent],
+            providers: [
+                TranslateService
+            ]
         })
             .compileComponents();
     }));

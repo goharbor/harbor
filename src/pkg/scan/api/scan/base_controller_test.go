@@ -15,6 +15,7 @@
 package scan
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -163,7 +164,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		Action:   "pull",
 	}}
 
-	rname := fmt.Sprintf("%s%s", common.RobotPrefix, "the-uuid-123")
+	rname := "the-uuid-123"
 	account := &model.RobotCreate{
 		Name:        rname,
 		Description: "for scan",
@@ -172,7 +173,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	}
 	rc.On("CreateRobotAccount", account).Return(&model.Robot{
 		ID:          1,
-		Name:        rname,
+		Name:        common.RobotPrefix + rname,
 		Token:       "robot-account",
 		Description: "for scan",
 		ProjectID:   suite.artifact.NamespaceID,
@@ -182,7 +183,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	req := &v1.ScanRequest{
 		Registry: &v1.Registry{
 			URL:           "https://core.com",
-			Authorization: "robot-account",
+			Authorization: "Basic " + base64.StdEncoding.EncodeToString([]byte(common.RobotPrefix+"the-uuid-123:robot-account")),
 		},
 		Artifact: suite.artifact,
 	}

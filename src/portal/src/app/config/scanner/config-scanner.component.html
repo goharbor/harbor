@@ -1,0 +1,76 @@
+<div class="row">
+    <div>
+        <clr-datagrid [clrDgLoading]="onGoing" [(clrDgSingleSelected)]="selectedRow">
+            <clr-dg-action-bar>
+                <div class="clr-row">
+                    <div class="clr-col-7">
+                        <button type="button" class="btn btn-sm btn-secondary" (click)="addNewScanner()">
+                            <clr-icon shape="plus" size="16"></clr-icon>
+                            {{'SCANNER.NEW_SCANNER' | translate}}
+                        </button>
+                        <button id="set-default"  [disabled]="!(selectedRow && !selectedRow.is_default && !selectedRow.disabled)"
+                                class="btn btn-sm btn-secondary"
+                                (click)="setAsDefault()">{{'SCANNER.SET_AS_DEFAULT' | translate}}</button>
+                        <clr-dropdown  [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link" clrDropdownTrigger>
+                            <span>{{'MEMBER.ACTION' | translate}}<clr-icon class="clr-icon" shape="caret down"></clr-icon></span>
+                            <clr-dropdown-menu *clrIfOpen>
+                                <button clrDropdownItem
+                                        (click)="changeStat()"
+                                        [disabled]="!(selectedRow && !selectedRow.is_default)">
+                                    <span *ngIf="selectedRow && selectedRow.disabled">{{'BUTTON.ENABLE' | translate}}</span>
+                                    <span *ngIf="!(selectedRow && selectedRow.disabled)">{{'BUTTON.DISABLE' | translate}}</span>
+                                </button>
+                                <button clrDropdownItem
+                                        (click)="editScanner()"
+                                        class="btn btn-sm btn-secondary" [disabled]="!selectedRow">
+                                    {{'BUTTON.EDIT' | translate}}
+                                </button>
+                                <button clrDropdownItem
+                                        (click)="deleteScanners()"
+                                        class="btn btn-sm btn-secondary" [disabled]="!selectedRow">
+                                    {{'BUTTON.DELETE' | translate}}
+                                </button>
+                            </clr-dropdown-menu>
+                        </clr-dropdown>
+                    </div>
+                    <div class="clr-col-5">
+                        <div class="action-head-pos">
+                            <span (click)="getScanners()" class="refresh-btn">
+                                 <clr-icon shape="refresh" [hidden]="onGoing"></clr-icon>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </clr-dg-action-bar>
+            <clr-dg-column class="width-240" [clrDgField]="'name'">{{'SCANNER.NAME' | translate}}</clr-dg-column>
+            <clr-dg-column class="width-240" [clrDgField]="'url'">{{'SCANNER.ENDPOINT' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'SCANNER.HEALTH' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'SCANNER.DISABLED' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'SCANNER.AUTH' | translate}}</clr-dg-column>
+            <clr-dg-placeholder>
+                {{'SCANNER.NO_SCANNER' | translate}}
+            </clr-dg-placeholder>
+            <clr-dg-row *clrDgItems="let scanner of scanners" [clrDgItem]="scanner">
+                <clr-dg-cell>
+                    <span>{{scanner.name}}</span>
+                    <span *ngIf="scanner.is_default" class="label label-info ml-1">{{'SCANNER.DEFAULT' | translate}}</span>
+                </clr-dg-cell>
+                <clr-dg-cell>{{scanner.url}}</clr-dg-cell>
+                <clr-dg-cell>
+                    <span *ngIf="scanner.health;else elseBlock" class="label label-success">{{'SCANNER.HEALTHY' | translate}}</span>
+                    <ng-template #elseBlock>
+                        <span class="label label-danger">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                    </ng-template>
+                </clr-dg-cell>
+                <clr-dg-cell>{{scanner.disabled}}</clr-dg-cell>
+                <clr-dg-cell>{{scanner.auth?scanner.auth:'None'}}</clr-dg-cell>
+                <scanner-metadata *clrIfExpanded [uid]="scanner.uuid"  ngProjectAs="clr-dg-row-detail"></scanner-metadata>
+            </clr-dg-row>
+            <clr-dg-footer>
+                <span *ngIf="scanners?.length > 0">1 - {{scanners?.length}} {{'WEBHOOK.OF' | translate}} </span> {{scanners?.length}} {{'WEBHOOK.ITEMS' | translate}}
+                <clr-dg-pagination [clrDgPageSize]="10"></clr-dg-pagination>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </div>
+    <new-scanner-modal (notify)="addSuccess()"></new-scanner-modal>
+</div>

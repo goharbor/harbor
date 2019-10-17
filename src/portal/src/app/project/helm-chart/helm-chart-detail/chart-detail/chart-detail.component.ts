@@ -44,12 +44,16 @@ export class ChartDetailComponent implements OnInit {
   ngOnInit(): void {
     this.systemInfoService.getSystemInfo()
       .subscribe(systemInfo => {
-        let scheme = 'http://';
         this.systemInfo = systemInfo;
-        if (this.systemInfo.has_ca_root) {
-          scheme = 'https://';
+        if (this.systemInfo.external_url) {
+          this.repoURL = `${this.systemInfo.external_url}`;
+        } else {
+          let scheme = 'http://';
+          if (this.systemInfo.has_ca_root) {
+            scheme = 'https://';
+          }
+          this.repoURL = `${scheme}${this.systemInfo.registry_url}`;
         }
-        this.repoURL = `${scheme}${this.systemInfo.registry_url}`;
       }, error => this.errorHandler.error(error));
     this.refresh();
   }

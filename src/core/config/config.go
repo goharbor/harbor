@@ -385,6 +385,11 @@ func ClairDB() (*models.PostGreSQL, error) {
 	return clairDB, nil
 }
 
+// ClairAdapterEndpoint returns the endpoint of clair adapter instance, by default it's the one deployed within Harbor.
+func ClairAdapterEndpoint() string {
+	return cfgMgr.Get(common.ClairAdapterURL).GetString()
+}
+
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
 func AdmiralEndpoint() string {
 	if cfgMgr.Get(common.AdmiralEndpoint).GetString() == "NA" {

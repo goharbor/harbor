@@ -62,6 +62,7 @@ import { LicenseComponent } from './license/license.component';
 import { SummaryComponent } from './project/summary/summary.component';
 import { TagRetentionComponent } from './project/tag-retention/tag-retention.component';
 import { USERSTATICPERMISSION } from '@harbor/ui';
+import { ScannerComponent } from "./project/scanner/scanner.component";
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -285,6 +286,16 @@ const harborRoutes: Routes = [
               }
             },
             component: WebhookComponent
+          },
+          {
+            path: 'scanner',
+            data: {
+              permissionParam: {
+                resource: USERSTATICPERMISSION.CONFIGURATION.KEY,
+                action: USERSTATICPERMISSION.CONFIGURATION.VALUE.READ
+              }
+            },
+            component: ScannerComponent
           }
         ]
       },

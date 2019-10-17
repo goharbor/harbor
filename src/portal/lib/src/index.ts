@@ -4,6 +4,7 @@ export * from "./service/index";
 export * from "./error-handler/index";
 export * from "./shared/shared.const";
 export * from "./shared/shared.utils";
+export * from "./shared/shared.module";
 export * from "./utils";
 export * from "./log/index";
 export * from "./filter/index";

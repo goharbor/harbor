@@ -1,16 +1,20 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { LogPageComponent } from './log-page.component';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 
-xdescribe('LogPageComponent', () => {
+describe('LogPageComponent', () => {
     let component: LogPageComponent;
     let fixture: ComponentFixture<LogPageComponent>;
 
     beforeEach(async(() => {
         TestBed.configureTestingModule({
-            declarations: [LogPageComponent]
-        })
-            .compileComponents();
+            imports: [
+            ],
+            declarations: [LogPageComponent],
+            providers: [
+            ],
+            schemas: [CUSTOM_ELEMENTS_SCHEMA]
+        }).compileComponents();
     }));
 
     beforeEach(() => {

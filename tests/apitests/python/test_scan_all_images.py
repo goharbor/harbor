@@ -93,8 +93,8 @@ class TestProjects(unittest.TestCase):
         self.system.scan_now(**ADMIN_CLIENT)
 
         #5. Check if image in project_Alice and another image in project_Luca were both scanned.
-        self.repo.check_image_scan_result(TestProjects.repo_Alice_name, tag_Alice, expected_scan_status = "finished", **USER_ALICE_CLIENT)
-        self.repo.check_image_scan_result(TestProjects.repo_Luca_name, tag_Luca, expected_scan_status = "finished", **USER_LUCA_CLIENT)
+        self.repo.check_image_scan_result(TestProjects.repo_Alice_name, tag_Alice, **USER_ALICE_CLIENT)
+        self.repo.check_image_scan_result(TestProjects.repo_Luca_name, tag_Luca, **USER_LUCA_CLIENT)
 
 if __name__ == '__main__':
     unittest.main()

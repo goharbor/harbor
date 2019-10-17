@@ -99,7 +99,8 @@
         "OIDC_SCOPE": "Kapsam, kimlik doğrulama sırasında OIDC sunucusuna gönderildi. “Openid” ve “offline_access” içermelidir. Google kullanıyorsanız, lütfen “offline_access“'i bu alandan kaldırın.",
         "OIDC_VERIFYCERT": "OIDC sunucunuz kendinden imzalı sertifika ile barındırılıyorsa bu kutunun işaretini kaldırın.",
         "OIDC_GROUP_CLAIM": "The name of Claim in the ID token whose value is the list of group names.",
-        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters."
+        "OIDC_GROUP_CLAIM_WARNING": "It can only contain letters, numbers, underscores, and the input length is no more than 256 characters.",
+        "NEW_SECRET": "The secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number."
     },
     "PLACEHOLDER": {
         "CURRENT_PWD": "Güncel şifrenizi giriniz",
@@ -128,8 +129,11 @@
         "COPY_SUCCESS": "kopyalama başarılı",
         "COPY_ERROR": "kopyalama başarısız",
         "ADMIN_CIL_SECRET_BUTTON": "ŞİFRE OLUŞTUR",
-        "GENERATE_SUCCESS": "CLI şifresi oluşturma başarılı",
-        "GENERATE_ERROR": "CLI şifresi oluşturma başarısız",
+        "ADMIN_CIL_SECRET_RESET_BUTTON": "Upload Your Own Secret",
+        "NEW_SECRET": "Secret",
+        "CONFIRM_SECRET": "Re-enter Secret",
+        "GENERATE_SUCCESS": "Cli secret setting is successful",
+        "GENERATE_ERROR": "Cli secret setting is failed",
         "CONFIRM_TITLE_CLI_GENERATE": "Şifreyi yeniden oluşturabileceğine emin misin?",
         "CONFIRM_BODY_CLI_GENERATE": "Eğer cli şifresini yeniden oluşturursanız, eski cli şifresi atılır"
     },
@@ -803,7 +807,7 @@
             "LDAP_UID": "Bir kullanıcıyla eşleşmek için aramada kullanılan özellik. LDAP / AD'nize bağlı olarak, kullanıcı kimliği, cn, e-posta, sAMAccountName veya diğer özellikler olabilir.",
             "LDAP_SCOPE": "Kullanıcıları aramak için kapsam.",
             "TOKEN_EXPIRATION": "Token servisi tarafından oluşturulan bir tokenın sona erme süresi (dakika cinsinden). Varsayılan 30 dakikadır.",
-            "ROBOT_TOKEN_EXPIRATION": "Robot hesabının token son kullanma süresi (gün olarak), Varsayılan 30 gündür. Dakika ve yuvarlamadan dönüştürülen gün sayısını göster",            
+            "ROBOT_TOKEN_EXPIRATION": "Robot hesabının token son kullanma süresi (gün olarak), Varsayılan 30 gündür. Dakika ve yuvarlamadan dönüştürülen gün sayısını göster",
             "PRO_CREATION_RESTRICTION": "Hangi kullanıcıların proje oluşturma iznine sahip olduğunu belirten bayrak. Varsayılan olarak, herkes bir proje oluşturabilir. 'Yalnızca Yönetici' olarak ayarlayın, böylece yalnızca bir yönetici bir proje oluşturabilir.",
             "ROOT_CERT_DOWNLOAD": "Kayıt defteri kök sertifikasını indirin.",
             "SCANNING_POLICY": "Farklı gereksinimlere göre imaj tarama politikasını ayarlayın. 'Yok': Aktif politika yok; 'Günlük': Her gün belirtilen saatte taramayı tetikler.",
@@ -921,11 +925,10 @@
     },
     "VULNERABILITY": {
         "STATE": {
-            "STOPPED": "Taranmadı",
+            "OTHER_STATUS": "Taranmadı",
             "QUEUED": "Sıraya alındı",
             "ERROR": "Günlüğü Görüntüle",
-            "SCANNING": "Taranıyor",
-            "UNKNOWN": "Bilinmeyen"
+            "SCANNING": "Taranıyor"
         },
         "GRID": {
             "PLACEHOLDER": "Herhangi bir tarama sonucu bulamadık!",
@@ -946,6 +949,7 @@
             "TOOLTIPS_TITLE_ZERO": "Tanınabilir bir güvenlik açığı paketi bulunamadı"
         },
         "SEVERITY": {
+            "CRITICAL": "Kritik",
             "HIGH": "Yüksek",
             "MEDIUM": "Orta",
             "LOW": "Düşük",
@@ -1223,6 +1227,62 @@
         "DAYS_LARGE": "Parameter \"DAYS\" is too large",
         "EXECUTION_TYPE": "Execution Type",
         "ACTION": "ACTION"
+    },
+    "SCANNER": {
+        "DELETION_SUMMARY": "Do you want to delete scanner {{param}}?",
+        "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote registry uses a self-signed or untrusted certificate.",
+        "NAME": "Name",
+        "NAME_EXISTS": "Name already exists",
+        "NAME_REQUIRED": "Name is required",
+        "NAME_REX": "Name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "DESCRIPTION": "Description",
+        "ENDPOINT": "Endpoint",
+        "ENDPOINT_EXISTS": "EndpointUrl already exists",
+        "ENDPOINT_REQUIRED": "EndpointUrl is required",
+        "ILLEGAL_ENDPOINT": "EndpointUrl is illegal",
+        "AUTH": "Authorization",
+        "NONE": "None",
+        "BASIC": "Basic",
+        "BEARER": "Bearer",
+        "API_KEY": "APIKey",
+        "USERNAME": "Username",
+        "USERNAME_REQUIRED": "Username is required",
+        "PASSWORD": "Password",
+        "PASSWORD_REQUIRED": "Password is required",
+        "TOKEN": "Token",
+        "TOKEN_REQUIRED": "Token is required",
+        "API_KEY_REQUIRED": "APIKey is required",
+        "SKIP": "Skip Certificate Verification",
+        "ADD_SCANNER": "Add Scanner",
+        "EDIT_SCANNER": "Edit Scanner",
+        "TEST_CONNECTION": "TEST CONNECTION",
+        "ADD_SUCCESS": "Added successfully",
+        "TEST_PASS": "Test passed",
+        "TEST_FAILED": "Test failed",
+        "UPDATE_SUCCESS": "Updated successfully",
+        "SCANNER_COLON": "Scanner:",
+        "NAME_COLON": "Name:",
+        "VENDOR_COLON": "Vendor:",
+        "VERSION_COLON": "Version:",
+        "CAPABILITIES": "Capabilities",
+        "CONSUMES_MIME_TYPES_COLON": "Consumes Mime Types:",
+        "PRODUCTS_MIME_TYPES_COLON": "Produces Mime Types:",
+        "PROPERTIES": "Properties",
+        "NEW_SCANNER": "NEW SCANNER",
+        "SET_AS_DEFAULT": "SET AS DEFAULT",
+        "HEALTH": "Health",
+        "DISABLED": "Disabled",
+        "NO_SCANNER": "Can not find any scanner",
+        "DEFAULT": "Default",
+        "HEALTHY": "Healthy",
+        "UNHEALTHY": "Unhealthy",
+        "SCANNERS": "Scanners",
+        "SCANNER": "Scanner",
+        "EDIT": "Edit",
+        "NOT_AVAILABLE": "Not Available",
+        "ADAPTER": "Adapter",
+        "VENDOR": "Vendor",
+        "VERSION": "Version",
+        "SELECT_SCANNER": "Select Scanner"
     }
-
 }

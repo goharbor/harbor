@@ -4,10 +4,11 @@
         <inline-alert (confirmEvt)="confirmYes($event)" (closeEvt)="confirmNo($event)"></inline-alert>
         <form #accountSettingsFrom="ngForm" class="clr-form clr-form-horizontal">
             <div class="clr-form-control">
-                <label for="account_settings_username" aria-haspopup="true" class="clr-control-label">{{'PROFILE.USER_NAME' | translate}}</label>
+                <label for="account_settings_username" aria-haspopup="true"
+                    class="clr-control-label">{{'PROFILE.USER_NAME' | translate}}</label>
                 <div class="clr-control-container display-flex">
-                    <input class="clr-input" type="text" name="account_settings_username" [(ngModel)]="account.username" disabled id="account_settings_username"
-                        size="30">
+                    <input class="clr-input" type="text" name="account_settings_username" [(ngModel)]="account.username"
+                        disabled id="account_settings_username" size="30">
                     <div *ngIf="canRename" class="rename-tool">
                         <button [disabled]="RenameOnGoing" (click)="onRename()" class="btn btn-outline btn-sm">
                             {{'PROFILE.ADMIN_RENAME_BUTTON' | translate}}
@@ -22,11 +23,13 @@
                 </div>
             </div>
             <div class="clr-form-control">
-                <label for="account_settings_email" class="required clr-control-label">{{'PROFILE.EMAIL' | translate}}</label>
+                <label for="account_settings_email"
+                    class="required clr-control-label">{{'PROFILE.EMAIL' | translate}}</label>
                 <div class="clr-control-container" [class.clr-error]="!getValidationState('account_settings_email')">
                     <div class="clr-input-wrapper">
-                        <input name="account_settings_email" type="text" #eamilInput="ngModel" class="clr-input" [(ngModel)]="account.email" required
-                            email id="account_settings_email" size="30" (input)='handleValidation("account_settings_email", false)'
+                        <input name="account_settings_email" type="text" #eamilInput="ngModel" class="clr-input"
+                            [(ngModel)]="account.email" required email id="account_settings_email" size="30"
+                            (input)='handleValidation("account_settings_email", false)'
                             (blur)='handleValidation("account_settings_email", true)'>
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                         <span class="spinner spinner-inline" [hidden]="!checkProgress"></span>
@@ -38,8 +41,10 @@
             </div>
             <clr-input-container>
                 <label [class.required]="!account.oidc_user_meta">{{'PROFILE.FULL_NAME' | translate}}</label>
-                <input clrInput type="text" name="account_settings_full_name" #fullNameInput="ngModel" [(ngModel)]="account.realname" [required]="!account.oidc_user_meta"
-                    maxLengthExt="20" id="account_settings_full_name" size="30" (input)='handleValidation("account_settings_full_name", false)'
+                <input clrInput type="text" name="account_settings_full_name" #fullNameInput="ngModel"
+                    [(ngModel)]="account.realname" [required]="!account.oidc_user_meta" maxLengthExt="20"
+                    id="account_settings_full_name" size="30"
+                    (input)='handleValidation("account_settings_full_name", false)'
                     (blur)='handleValidation("account_settings_full_name", true)'>
                 <clr-control-error *ngIf="!getValidationState('account_settings_full_name')">
                     {{'TOOLTIP.FULL_NAME' | translate}}
@@ -47,14 +52,14 @@
             </clr-input-container>
             <clr-input-container>
                 <label>{{'PROFILE.COMMENT' | translate}}</label>
-                <input clrInput type="text" #commentInput="ngModel" maxlength="30" size="30" name="account_settings_comments" [(ngModel)]="account.comment"
-                    id="account_settings_comments">
+                <input clrInput type="text" #commentInput="ngModel" maxlength="30" size="30"
+                    name="account_settings_comments" [(ngModel)]="account.comment" id="account_settings_comments">
                 <clr-control-error *ngIf="commentInput.invalid && (commentInput.dirty || commentInput.touched)">
                     {{'TOOLTIP.COMMENT' | translate}}
                 </clr-control-error>
             </clr-input-container>
 
-            <div class="clr-form-control cli-secret" *ngIf="account.oidc_user_meta">
+                <div class="clr-form-control cli-secret" *ngIf="account.oidc_user_meta">
                 <label class="clr-control-label">{{'PROFILE.CLI_PASSWORD' | translate}}
                     <clr-tooltip>
                         <clr-icon clrTooltipTrigger shape="info-circle" size="20"></clr-icon>
@@ -63,21 +68,59 @@
                         </clr-tooltip-content>
                     </clr-tooltip>
                 </label>
-                <input class="clr-input" type="password" name="cli_password" disabled [ngModel]="'account.oidc_user_meta.secret'" size="33">
-                <button (click)="generateCli(account.user_id)" id="generate-cli-btn" class="btn btn-outline btn-sm btn-padding-less" *ngIf="showGenerateCli">
+                <input class="clr-input input-cli" type="password" name="cli_password" disabled
+                    [ngModel]="'account.oidc_user_meta.secret'" size="33">
+
+                <button (click)="generateCli(account.user_id)" id="generate-cli-btn"
+                    class="btn btn-outline btn-sm btn-padding-less" *ngIf="showGenerateCli">
                     {{'PROFILE.ADMIN_CIL_SECRET_BUTTON' | translate}}
                 </button>
+                <button (click)="showSecretDetail=true" id="reset-cli-btn" class="btn btn-outline btn-sm btn-padding-less"
+                    *ngIf="showGenerateCli">
+                    {{'PROFILE.ADMIN_CIL_SECRET_RESET_BUTTON' | translate}}
+                </button>
                 <div class="rename-tool reset-cli">
-                    <hbr-copy-input #copyInput (onCopySuccess)="onSuccess($event)" (onCopyError)="onError($event)" iconMode="true" [defaultValue]="account.oidc_user_meta.secret"></hbr-copy-input>
+                    <hbr-copy-input #copyInput (onCopySuccess)="onSuccess($event)" (onCopyError)="onError($event)"
+                        iconMode="true" [defaultValue]="account.oidc_user_meta.secret"></hbr-copy-input>
                 </div>
-                <div (click)="showGenerateCliFn()" *ngIf="!showGenerateCli" id="hidden-generate-cli" class="hidden-generate-cli">···</div>
+                <div (click)="showGenerateCliFn()" *ngIf="!showGenerateCli" id="hidden-generate-cli"
+                    class="hidden-generate-cli">···</div>
+                    
             </div>
         </form>
     </div>
     <div class="modal-footer">
         <span class="spinner spinner-inline loading-top" [hidden]="showProgress === false"></span>
         <button type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
-        <button type="button" class="btn btn-primary" [disabled]="!isValid || showProgress" (click)="submit()">{{'BUTTON.OK' | translate}}</button>
+
+        <button type="button" class="btn btn-primary" [disabled]="!isValid || showProgress"
+            (click)="submit()">{{'BUTTON.OK' | translate}}</button>
+    </div>
+</clr-modal>
+<clr-modal [(clrModalOpen)]="showSecretDetail" [clrModalSize]="'sm'" [clrModalStaticBackdrop]="staticBackdrop"
+[clrModalClosable]="false">
+
+    <h3 class="modal-title">{{'PROFILE.ADMIN_CIL_SECRET_RESET_BUTTON' | translate}}</h3>
+    <div class="modal-body">
+        <form #resetSecretFrom="ngForm" class="clr-form reset-cli-form clr-form-horizontal">
+            <clr-input-container>
+                <label>{{'PROFILE.NEW_SECRET' | translate}}</label>
+                <input clrInput type="password" maxlength="30" size="30" required pattern="^(?=.*\d)(?=.*[a-zA-Z]).{8,}$"
+                    name="input_secret" [(ngModel)]="resetForms.input_secret" id="input-secret">
+                <clr-control-error>
+                    {{'TOOLTIP.NEW_SECRET' | translate}}
+                </clr-control-error>
+            </clr-input-container>
+            <clr-input-container>
+                <label>{{'PROFILE.CONFIRM_SECRET' | translate}}</label>
+                <input clrInput type="password" maxlength="30" size="30"
+                    [(ngModel)]="resetForms.confirm_secret" name="confirm_secret" id="confirm-secret">
+            </clr-input-container>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="closeReset()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button type="button" class="btn btn-primary" [disabled]="disableChangeCliSecret()" (click)="resetCliSecret(resetSecretFrom.value.input_secret)">{{'BUTTON.CONFIRM' | translate}}</button>
     </div>
 </clr-modal>
 <confirmation-dialog #confirmationDialog (confirmAction)="confirmGenerate($event)"></confirmation-dialog>

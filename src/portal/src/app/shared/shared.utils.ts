@@ -75,4 +75,39 @@ export const maintainUrlQueryParmas = function (uri: string, key: string, value:
         }
     }
 };
+/**
+  * the password or secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number
+  * @param randomFlag
+  * @param min
+  * @param max
+  * @returns {string}
+  */
+
+ export function randomWord(max) {
+    let str = "";
+
+     let contentArray = [['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+    ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'
+    , 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x'
+    , 'y', 'z'],
+    ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'
+    , 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']];
+    for (let i = 0; i < max; i++) {
+        let randomNumber = getRandomInt(contentArray.length);
+        str += contentArray[randomNumber][getRandomInt(contentArray[randomNumber].length)];
+    }
+    if (!str.match(/\d+/g)) {
+        str += contentArray[0][getRandomInt(contentArray[0].length)];
+    }
+    if (!str.match(/[a-z]+/g)) {
+        str += contentArray[1][getRandomInt(contentArray[1].length)];
+    }
+    if (!str.match(/[A-Z]+/g)) {
+        str += contentArray[1][getRandomInt(contentArray[1].length)];
+    }
+    return str;
+  }
+  function getRandomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
+  }
 

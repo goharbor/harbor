@@ -45,7 +45,7 @@ http {
     ssl_certificate_key {{ssl_cert_key}};
   
     # Recommendations from https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
-    ssl_protocols TLSv1.1 TLSv1.2;
+    ssl_protocols TLSv1.2;
     ssl_ciphers '!aNULL:kECDH+AESGCM:ECDH+AESGCM:RSA+AESGCM:kECDH+AES:ECDH+AES:RSA+AES:';
     ssl_prefer_server_ciphers on;
     ssl_session_cache shared:SSL:10m;

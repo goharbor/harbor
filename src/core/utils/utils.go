@@ -59,7 +59,7 @@ func newRepositoryClient(endpoint, username, repository string) (*registry.Repos
 	return registry.NewRepository(repository, endpoint, client)
 }
 
-// WaitForManifestReady implements exponential sleeep to wait until manifest is ready in registry.
+// WaitForManifestReady implements exponential sleep to wait until manifest is ready in registry.
 // This is a workaround for https://github.com/docker/distribution/issues/2625
 func WaitForManifestReady(repository string, tag string, maxRetry int) bool {
 	// The initial wait interval, hard-coded to 80ms, interval will be 80ms,200ms,500ms,1.25s,3.124999936s

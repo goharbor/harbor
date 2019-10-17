@@ -30,6 +30,7 @@ import { UserPermissionDefaultService, UserPermissionService } from "../service/
 import { USERSTATICPERMISSION } from "../service/permission-static";
 import { of } from "rxjs";
 import { delay } from 'rxjs/operators';
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 
 
 class RouterStub {
@@ -161,7 +162,8 @@ describe('RepositoryComponent (inline template)', () => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
-        RouterTestingModule
+        RouterTestingModule,
+        BrowserAnimationsModule
       ],
       declarations: [
         RepositoryComponent,
