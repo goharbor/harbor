@@ -1,4 +1,4 @@
-# Configuring Harbor
+# Post-Installation Configuration
 
 After you have deployed Harbor, you must perform certain post-deployment configuration operations.
 

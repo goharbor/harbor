@@ -13,7 +13,7 @@ This section describes how to install Harbor and perform the required initial co
   - [Run the Installer Script](install_config/installation/run_installer_script.md)
   - [Troubleshooting Harbor Installation
 ](install_config/installation/troubleshoot_installation.md)
-- [Configuring Harbor](install_config/configuration/_index.md)
+- [Post-Installation Configuration](install_config/configuration/_index.md)
   - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/configuration/reconfigure_manage_lifecycle.md)
   - [Configure HTTPS Access to Harbor](install_config/configuration/configure_https.md)
   - [Customize the Harbor Token Service](install_config/configuration/customize_token_service.md)
