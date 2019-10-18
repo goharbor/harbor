@@ -339,19 +339,8 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
     }
 
     isDisabled(): boolean {
-        if (this.cveIds) {
-            let arr = this.cveIds.split(/[\n,]+/);
-            let flag = false;
-            for (let i = 0; i < arr.length; i++) {
-                let id = arr[i].trim();
-                if (!/^CVE-[\d]+-[\d]+$/.test(id)) {
-                    flag = true;
-                    break;
-                }
-            }
-            return flag;
-        }
-        return true;
+        let str = this.cveIds;
+        return !(str && str.trim());
     }
 
     get expiresDate() {

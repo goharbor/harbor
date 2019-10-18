@@ -121,7 +121,7 @@
                                  (click)="openDetail(i,execution.id)">{{execution.start_time|date:'medium'}}</clr-dg-cell>
                     <clr-dg-cell class="hand" (click)="openDetail(i,execution.id)">{{execution.duration}}</clr-dg-cell>
                     <clr-dg-row-detail *ngIf="index===i">
-                        <clr-datagrid [clrDgLoading]="loadingHistories" class="w-100">
+                        <clr-datagrid (clrDgRefresh)="loadLog()" [clrDgLoading]="loadingHistories" class="w-100">
                             <clr-dg-column>{{'TAG_RETENTION.REPOSITORY' | translate}}</clr-dg-column>
                             <clr-dg-column>{{'TAG_RETENTION.STATUS' | translate}}</clr-dg-column>
                             <clr-dg-column>{{'TAG_RETENTION.RETAINED' | translate}}/{{'TAG_RETENTION.TOTAL' | translate}}</clr-dg-column>
@@ -131,7 +131,7 @@
                             <clr-dg-placeholder>
                                 {{'TAG_RETENTION.NO_HISTORY' | translate}}
                             </clr-dg-placeholder>
-                            <clr-dg-row *clrDgItems="let task of historyList" [clrDgItem]="task">
+                            <clr-dg-row *ngFor="let task of historyList" [clrDgItem]="task">
                                 <clr-dg-cell>{{task.repository}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.status}}</clr-dg-cell>
                                 <clr-dg-cell>{{task.retained}}/{{task.total}}</clr-dg-cell>
@@ -147,7 +147,7 @@
             {{innerPagination.lastItem + 1 }} {{'ROBOT_ACCOUNT.OF' |
                 translate}} </span>
                                 {{innerPagination.totalItems }} {{'ROBOT_ACCOUNT.ITEMS' | translate}}
-                                <clr-dg-pagination #innerPagination [clrDgPageSize]="5"></clr-dg-pagination>
+                                <clr-dg-pagination [clrDgTotalItems]="totalLogCount" [(clrDgPage)]="currentLogPage" #innerPagination [clrDgPageSize]="logPageSize"></clr-dg-pagination>
                             </clr-dg-footer>
                         </clr-datagrid>
                     </clr-dg-row-detail>

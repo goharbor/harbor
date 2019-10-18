@@ -21,6 +21,7 @@ import { Project } from "../project";
 import { clone, ErrorHandler } from "@harbor/ui";
 import { OriginCron } from "@harbor/ui";
 import { CronScheduleComponent } from "@harbor/ui";
+import { finalize } from "rxjs/operators";
 
 const MIN = 60000;
 const SEC = 1000;
@@ -67,6 +68,7 @@ export class TagRetentionComponent implements OnInit {
     retention: Retention = new Retention();
     editIndex: number;
     executionList = [];
+    executionId: number;
     historyList = [];
     loadingExecutions: boolean = true;
     loadingHistories: boolean = true;
@@ -75,6 +77,10 @@ export class TagRetentionComponent implements OnInit {
     currentPage: number = 1;
     pageSize: number = 10;
     totalCount: number = 0;
+    currentLogPage: number = 1;
+    totalLogCount: number = 0;
+    logPageSize: number = 5;
+    isDetailOpened: boolean = false;
     @ViewChild('cronScheduleComponent')
     cronScheduleComponent: CronScheduleComponent;
     @ViewChild('addRule') addRuleComponent: AddRuleComponent;
@@ -251,8 +257,10 @@ export class TagRetentionComponent implements OnInit {
         this.selectedItem = null;
         this.loadingExecutions = true;
         if (this.retentionId) {
-            this.tagRetentionService.getRunNowList(this.retentionId, this.currentPage, this.pageSize).subscribe(
-              response => {
+            this.tagRetentionService.getRunNowList(this.retentionId, this.currentPage, this.pageSize)
+              .pipe(finalize(() => this.loadingExecutions = false))
+              .subscribe(
+                  (response: any) => {
                     // Get total count
                     if (response.headers) {
                         let xHeader: string = response.headers.get("x-total-count");
@@ -261,14 +269,14 @@ export class TagRetentionComponent implements OnInit {
                         }
                     }
                     this.executionList = response.body as Array<any>;
-                    this.loadingExecutions = false;
                     TagRetentionComponent.calculateDuration(this.executionList);
                 }, error => {
-                    this.loadingExecutions = false;
                     this.errorHandler.error(error);
                 });
         } else {
+          setTimeout(() => {
             this.loadingExecutions = false;
+          });
         }
     }
 
@@ -319,22 +327,36 @@ export class TagRetentionComponent implements OnInit {
         }
     }
 
+    loadLog() {
+        if (this.isDetailOpened) {
+            this.loadingHistories = true;
+            this.tagRetentionService.getExecutionHistory(this.retentionId, this.executionId, this.currentLogPage, this.logPageSize)
+                .pipe(finalize(() => this.loadingHistories = false))
+                .subscribe(
+                    (response: any) => {
+                        // Get total count
+                        if (response.headers) {
+                            let xHeader: string = response.headers.get("x-total-count");
+                            if (xHeader) {
+                                this.totalLogCount = parseInt(xHeader, 0);
+                            }
+                        }
+                        this.historyList = response.body as Array<any>;
+                        TagRetentionComponent.calculateDuration(this.historyList);
+                    }, error => {
+                        this.errorHandler.error(error);
+                    });
+        }
+    }
     openDetail(index, executionId) {
         if (this.index !== index) {
             this.index = index;
             this.historyList = [];
-            this.loadingHistories = true;
-            this.tagRetentionService.getExecutionHistory(this.retentionId, executionId).subscribe(
-                res => {
-                    this.loadingHistories = false;
-                    this.historyList = res;
-                    TagRetentionComponent.calculateDuration(this.historyList);
-                }, error => {
-                    this.loadingHistories = false;
-                    this.errorHandler.error(error);
-                });
+            this.executionId = executionId;
+            this.isDetailOpened = true;
         } else {
             this.index = -1;
+            this.isDetailOpened = false;
         }
     }
 
