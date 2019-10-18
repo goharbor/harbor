@@ -10,15 +10,15 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/core/label"
-
 	"github.com/goharbor/harbor/src/chartserver"
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/rbac"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/label"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -429,6 +429,11 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 				return err
 			}
 
+			public, err := cra.ProjectMgr.IsPublic(cra.namespace)
+			if err != nil {
+				hlog.Errorf("failed to check the public of project %s: %v", cra.namespace, err)
+				public = false
+			}
 			e := &rep_event.Event{
 				Type: rep_event.EventTypeChartUpload,
 				Resource: &model.Resource{
@@ -436,6 +441,9 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{
 							Name: fmt.Sprintf("%s/%s", cra.namespace, chartDetails.Metadata.Name),
+							Metadata: map[string]interface{}{
+								"public": strconv.FormatBool(public),
+							},
 						},
 						Vtags: []string{chartDetails.Metadata.Version},
 					},
