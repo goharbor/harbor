@@ -6,3 +6,4 @@
 - [Vulnerability Scanning with Clair](vulnerability_scanning/_index.md)
 - [Garbage Collection](garbage_collection/_index.md)
 - [Upgrading Harbor](upgrade/_index.md)
+- [Manage the Harbor Instance](manage_harbor/_index.md)

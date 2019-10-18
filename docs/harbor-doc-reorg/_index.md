@@ -7,6 +7,7 @@ This is the main table of contents for the Harbor documentation.
 This section describes how to install Harbor and perform the required initial configurations. These day 1 operations are performed by the Harbor Administrator.
 
 - [Installing Harbor](install_config/installation/_index.md)
+  - [Test Harbor with the Demo Server](install_config/installation/demo_server.md)
   - [Harbor Installation Prerequisites](install_config/installation/installation_prereqs.md)
   - [Download the Harbor Installer](install_config/installation/download_installer.md)
   - [Configure the Harbor YML File](install_config/installation/configure_yml_file.md)
@@ -17,8 +18,6 @@ This section describes how to install Harbor and perform the required initial co
   - [Configure HTTPS Access to Harbor](install_config/configuration/configure_https.md)
   - [Customize the Harbor Token Service](install_config/configuration/customize_token_service.md)
   - [Configure Notary Content Trust](install_config/configuration/configure_notary_content_trust.md)
-  - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/configuration/reconfigure_manage_lifecycle.md)
-  - [Access Harbor Logs](install_config/configuration/access_logs.md)
 - [Initial Configuration in the Harbor UI](install_config/configuration/initial_config_ui.md)
   - [Configure Authentication](configure_authentication.md)
   - [Other General Settings](general_settings.md)
@@ -49,6 +48,9 @@ This section describes how to use and maintain Harbor after deployment. These da
 - [Upgrading Harbor](administration/upgrade/_index.md)
   - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
   - [Roll Back an Upgrade](administration/upgrade/roll_back_upgrade.md)
+- [Manage the Harbor Instance](administration/manage_harbor/_index.md)
+  - [Reconfigure Harbor and Manage the Harbor Lifecycle](administration/manage_harbor/reconfigure_manage_lifecycle.md)
+  - [Access Harbor Logs](administration/manage_harbor/access_logs.md)
 
 ## Working with Harbor Projects
 
