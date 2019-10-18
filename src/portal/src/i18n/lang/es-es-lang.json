@@ -248,7 +248,8 @@
         "CONFIG": "Configuración",
         "HELMCHART": "Helm Charts",
         "ROBOT_ACCOUNTS": "Robot Accounts",
-        "WEBHOOKS": "Webhooks"
+        "WEBHOOKS": "Webhooks",
+        "IMMUTABLE_TAG": "Immutable Tag"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Registro de proyectos",
@@ -320,8 +321,8 @@
         "NEW_ROBOT_ACCOUNT": "NEW ROBOT ACCOUNT",
         "ENABLED_STATE": "Enabled state",
         "EXPIRATION": "Expiration",
-        "NUMBER_REQUIRED":"Field is required and should be an integer other than 0.",
-        "TOKEN_EXPIRATION":"Robot Token Expiration (Days)",
+        "NUMBER_REQUIRED": "Field is required and should be an integer other than 0.",
+        "TOKEN_EXPIRATION": "Robot Token Expiration (Days)",
         "DESCRIPTION": "Description",
         "ACTION": "Action",
         "EDIT": "Edit",
@@ -343,8 +344,8 @@
         "COPY_SUCCESS": "Copy token successfully of '{{param}}'",
         "DELETION_TITLE": "Confirm removal of robot accounts",
         "DELETION_SUMMARY": "Do you want to delete robot accounts {{param}}?",
-        "PULL_IS_MUST" : "Pull permission is checked by default and can not be modified.",
-        "EXPORT_TO_FILE" : "export to file"
+        "PULL_IS_MUST": "Pull permission is checked by default and can not be modified.",
+        "EXPORT_TO_FILE": "export to file"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "EDIT",
@@ -451,7 +452,7 @@
         "PLEASE_SELECT": "select an option",
         "STOP_SUCCESS": "Stop Execution {{param}} Successful",
         "STOP_SUMMARY": "De que desea detener las ejecuciones {{param}}?",
-        "TASK_ID":"Task ID",
+        "TASK_ID": "Task ID",
         "RESOURCE_TYPE": "Resource Type",
         "SOURCE": "Source",
         "DESTINATION": "Destination",
@@ -462,7 +463,7 @@
         "FAILURE": "FAILURE",
         "IN_PROGRESS": "IN PROGRESS",
         "STOP_EXECUTIONS": "Stop Execution",
-        "ID":"ID",
+        "ID": "ID",
         "REPLICATION_RULE": "Reglas de Replicación",
         "NEW_REPLICATION_RULE": "Nueva Regla de Replicación",
         "ENDPOINTS": "Endpoints",
@@ -495,7 +496,7 @@
         "REPLICATION_MODE": "Replication Mode",
         "SRC_REGISTRY": "Source registry",
         "DESTINATION_NAMESPACE": "Destination registry:Namespace",
-        "LAST_REPLICATION":"Last Replication",
+        "LAST_REPLICATION": "Last Replication",
         "DESTINATION_NAME_IS_REQUIRED": "El nombre del endpoint es obligatorio.",
         "NEW_DESTINATION": "Nuevo Endpoint",
         "DESTINATION_URL": "URL del Endpoint",
@@ -551,7 +552,7 @@
         "SOURCE_RESOURCE_FILTER": "Source resource filter",
         "SCHEDULED": "Scheduled",
         "MANUAL": "Manual",
-        "EVENT_BASED":"Event Based",
+        "EVENT_BASED": "Event Based",
         "DAILY": "Daily",
         "WEEKLY": "Weekly",
         "SETTING": "Options",
@@ -569,14 +570,14 @@
         "ACKNOWLEDGE": "Acknowledge",
         "RULE_DISABLED": "This rule has been disabled because a label used in its filter has been deleted. \n Edit the rule and update its filter to enable it.",
         "REPLI_MODE": "Replication mode",
-        "SOURCE_REGISTRY":"Source registry",
-        "SOURCE_NAMESPACES":"Source namespaces",
-        "DEST_REGISTRY":"Destination registry",
-        "DEST_NAMESPACE":"Destination namespace",
+        "SOURCE_REGISTRY": "Source registry",
+        "SOURCE_NAMESPACES": "Source namespaces",
+        "DEST_REGISTRY": "Destination registry",
+        "DEST_NAMESPACE": "Destination namespace",
         "NAMESPACE_TOOLTIP": "Namespace name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
-        "TAG":"Tag",
-        "LABEL":"Label",
-        "RESOURCE":"Resource"
+        "TAG": "Tag",
+        "LABEL": "Label",
+        "RESOURCE": "Resource"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "Nuevo Endpoint",
@@ -586,7 +587,7 @@
         "NAME_IS_REQUIRED": "El nombre del endpoint es obligatorio.",
         "URL": "URL del Endpoint",
         "URL_IS_REQUIRED": "La URL del endpoint es obligatoria.",
-        "AUTHENTICATION":"Autenticación",
+        "AUTHENTICATION": "Autenticación",
         "ACCESS_ID": "ID de acceso",
         "ACCESS_SECRET": "Secreto de acceso",
         "STATUS": "Estado",
@@ -815,9 +816,9 @@
             "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
             "GC_POLICY": "",
             "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
-            "HOURLY_CRON":"Run once an hour, beginning of hour. Equivalente a 0 0 * * * *.",
-            "WEEKLY_CRON":"Run once a week, midnight between Sat/Sun. Equivalente a 0 0 0 * * 0.",
-            "DAILY_CRON":"Run once a day, midnight. Equivalente a 0 0 0 * * *."
+            "HOURLY_CRON": "Run once an hour, beginning of hour. Equivalente a 0 0 * * * *.",
+            "WEEKLY_CRON": "Run once a week, midnight between Sat/Sun. Equivalente a 0 0 0 * * 0.",
+            "DAILY_CRON": "Run once a day, midnight. Equivalente a 0 0 0 * * *."
 
         },
         "LDAP": {

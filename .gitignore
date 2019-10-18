@@ -33,7 +33,7 @@ src/portal/typings/
 
 src/portal/src/**/*.js
 src/portal/src/**/*.js.map
-
+src/portal/lib/coverage
 **/npm*.log
 
 **/*ngsummary.json
@@ -42,3 +42,4 @@ src/portal/src/**/*.js.map
 **/dist
 **/.bin
 src/core/conf/app.conf
+

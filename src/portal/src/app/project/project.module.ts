@@ -18,6 +18,7 @@ import { SharedModule } from '../shared/shared.module';
 import { RepositoryModule } from '../repository/repository.module';
 import { ReplicationModule } from '../replication/replication.module';
 import { SummaryModule } from './summary/summary.module';
+import { ImmutableTagModule } from './immutable-tag/immutable-tag.module';
 import { LogModule } from '../log/log.module';
 
 import { ProjectComponent } from './project.component';
@@ -58,7 +59,8 @@ import { ConfigScannerService } from "../config/scanner/config-scanner.service";
     LogModule,
     RouterModule,
     HelmChartModule,
-    SummaryModule
+    SummaryModule,
+    ImmutableTagModule
   ],
   declarations: [
     ProjectComponent,

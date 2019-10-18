@@ -28,6 +28,9 @@
         <li class="nav-item" *ngIf="hasTagRetentionPermission">
             <a class="nav-link" routerLink="tag-retention" routerLinkActive="active">{{'TAG_RETENTION.TAG_RETENTION' | translate}}</a>
         </li>
+        <li class="nav-item" *ngIf="hasTagRetentionPermission">
+            <a class="nav-link" routerLink="immutable-tag" routerLinkActive="active">{{'PROJECT_DETAIL.IMMUTABLE_TAG' | translate}}</a>
+        </li>
         <li class="nav-item" *ngIf="hasWebhookListPermission">
             <a class="nav-link" routerLink="webhook" routerLinkActive="active">{{'PROJECT_DETAIL.WEBHOOKS' | translate}}</a>
         </li>

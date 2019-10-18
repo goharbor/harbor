@@ -246,7 +246,8 @@
         "CONFIG": "配置管理",
         "HELMCHART": "Helm Charts",
         "ROBOT_ACCOUNTS": "机器人账户",
-        "WEBHOOKS": "Webhooks"
+        "WEBHOOKS": "Webhooks",
+        "IMMUTABLE_TAG": "不变的Tag"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "项目仓库",
@@ -318,8 +319,8 @@
         "NEW_ROBOT_ACCOUNT": "添加机器人账户",
         "ENABLED_STATE": "启用状态",
         "EXPIRATION": "过期时间",
-        "NUMBER_REQUIRED":"此项为必填项且为不为0的整数。",
-        "TOKEN_EXPIRATION":"机器人账户令牌过期时间(天)",
+        "NUMBER_REQUIRED": "此项为必填项且为不为0的整数。",
+        "TOKEN_EXPIRATION": "机器人账户令牌过期时间(天)",
         "DESCRIPTION": "描述",
         "ACTION": "操作",
         "EDIT": "编辑",
@@ -341,8 +342,8 @@
         "COPY_SUCCESS": "成功复制 '{{param}}' 的令牌",
         "DELETION_TITLE": "删除账户确认",
         "DELETION_SUMMARY": "你确认删除机器人账户 {{param}}?",
-        "PULL_IS_MUST" : "拉取权限默认选中且不可修改。",
-        "EXPORT_TO_FILE" : "导出到文件中"
+        "PULL_IS_MUST": "拉取权限默认选中且不可修改。",
+        "EXPORT_TO_FILE": "导出到文件中"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "编辑",
@@ -450,7 +451,7 @@
         "PLEASE_SELECT": "请选择",
         "STOP_SUCCESS": "停止任务 {{param}} 成功",
         "STOP_SUMMARY": "确认停止任务{{param}}?",
-        "TASK_ID":"任务ID",
+        "TASK_ID": "任务ID",
         "RESOURCE_TYPE": "源类型",
         "SOURCE": "源",
         "DESTINATION": "目标",
@@ -461,7 +462,7 @@
         "FAILURE": "失败",
         "IN_PROGRESS": "进行中",
         "STOP_EXECUTIONS": "停止任务",
-        "ID":"ID",
+        "ID": "ID",
         "REPLICATION_RULE": "同步规则",
         "NEW_REPLICATION_RULE": "新建规则",
         "ENDPOINTS": "目标",
@@ -494,7 +495,7 @@
         "REPLICATION_MODE": "同步模式",
         "SRC_REGISTRY": "源仓库",
         "DESTINATION_NAMESPACE": "目标仓库:命名空间",
-        "LAST_REPLICATION":"最后一次同步",
+        "LAST_REPLICATION": "最后一次同步",
         "DESTINATION_NAME_IS_REQUIRED": "目标名称为必填项。",
         "NEW_DESTINATION": "创建目标",
         "DESTINATION_URL": "目标URL",
@@ -550,7 +551,7 @@
         "SOURCE_RESOURCE_FILTER": "源资源过滤器",
         "SCHEDULED": "定时",
         "MANUAL": "手动",
-        "EVENT_BASED":"事件驱动",
+        "EVENT_BASED": "事件驱动",
         "DAILY": "每天",
         "WEEKLY": "每周",
         "SETTING": "设置",
@@ -569,14 +570,14 @@
         "ACKNOWLEDGE": "确认",
         "RULE_DISABLED": "这个规则因为过滤选项中的标签被删除已经不能用了，更新过滤项以便重新启用规则。",
         "REPLI_MODE": "同步模式",
-        "SOURCE_REGISTRY":"源Registry",
-        "SOURCE_NAMESPACES":"源Namespace",
-        "DEST_REGISTRY":"目的Registry",
-        "DEST_NAMESPACE":"目的Namespace",
+        "SOURCE_REGISTRY": "源Registry",
+        "SOURCE_NAMESPACES": "源Namespace",
+        "DEST_REGISTRY": "目的Registry",
+        "DEST_NAMESPACE": "目的Namespace",
         "NAMESPACE_TOOLTIP": "Namespace名称由小写字符、数字和._-组成且至少2个字符并以字符或者数字开头。",
-        "TAG":"Tag",
-        "LABEL":"标签",
-        "RESOURCE":"资源"
+        "TAG": "Tag",
+        "LABEL": "标签",
+        "RESOURCE": "资源"
     },
     "DESTINATION": {
         "NEW_ENDPOINT": "新建目标",
@@ -586,7 +587,7 @@
         "NAME_IS_REQUIRED": "目标名为必填项。",
         "URL": "目标URL",
         "URL_IS_REQUIRED": "目标URL为必填项。",
-        "AUTHENTICATION":"认证",
+        "AUTHENTICATION": "认证",
         "ACCESS_ID": "访问ID",
         "ACCESS_SECRET": "访问密码",
         "STATUS": "状态",
@@ -816,9 +817,9 @@
             "READONLY_TOOLTIP": "选中，表示正在维护状态，不可删除仓库及标签,也不可以推送镜像。",
             "REPO_TOOLTIP": "用户在此模式下无法对镜像执行任何操作。",
             "WEBHOOK_TOOLTIP": "当执行推送，拉动，删除，扫描镜像或 chart 等特定操作时，启用 webhooks 以在指定端点接收回调",
-            "HOURLY_CRON":"每小时运行一次。相当于 0 0 * * * *",
-            "WEEKLY_CRON":"每周一次，周六/周日午夜之间开始。相当于 0 0 * * * *",
-            "DAILY_CRON":"每天午夜运行一次。相当于 0 0 * * * *"
+            "HOURLY_CRON": "每小时运行一次。相当于 0 0 * * * *",
+            "WEEKLY_CRON": "每周一次，周六/周日午夜之间开始。相当于 0 0 * * * *",
+            "DAILY_CRON": "每天午夜运行一次。相当于 0 0 * * * *"
         },
         "LDAP": {
             "URL": "LDAP URL",
