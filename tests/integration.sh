@@ -17,6 +17,8 @@ set -x
 gsutil version -l
 set +x
 
+docker-compose version
+
 ## -------------------------------------------- Pre-condition --------------------------------------------
 if [[ $DRONE_REPO != "goharbor/harbor" ]]; then
     echo "Only run tests again Harbor Repo."
