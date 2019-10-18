@@ -1,12 +1,12 @@
 # Configure Authentication
 
 You can change authentication mode between **Database**(default) and **LDAP** before any user is added, when there is at least one user(besides admin) in Harbor, you cannot change the authentication mode.  
-![browse project](../img/new_auth.png)
+![browse project](../../img/new_auth.png)
 When using LDAP mode, user's self-registration is disabled. The parameters of LDAP server must be filled in. For more information, refer to [User account](#user-account).   
-![browse project](../img/ldap_auth.png)
+![browse project](../../img/ldap_auth.png)
 
 When using OIDC mode, user will login Harbor via OIDC based SSO.  A client has to be registered on the OIDC provider and Harbor's callback URI needs to be associated to that client as a redirectURI.
-![OIDC settings](../img/oidc_auth_setting.png)
+![OIDC settings](../../img/oidc_auth_setting.png)
 
 The settings of this auth mode:
 * OIDC Provider Name: The name of the OIDC Provider.
@@ -50,12 +50,12 @@ Harbor supports different authentication modes:
     With this authentication mode, regular user will login to Harbor Portal via SSO flow.  
     After the system administrator configure Harbor to authenticate via OIDC (more details refer to [this section](#managing-authentication)),
     a button `LOGIN VIA OIDC PROVIDER` will appear on the login page.  
-    ![oidc_login](../img/oidc_login.png)
+    ![oidc_login](../../img/oidc_login.png)
     
     By clicking this button user will kick off the SSO flow and be redirected to the OIDC Provider for authentication.  After a successful
     authentication at the remote site, user will be redirected to Harbor.  There will be an "onboard" step if it's the first time the user 
     authenticate using his account, in which there will be a dialog popped up for him to set his user name in Harbor:
-    ![oidc_onboar](../img/oidc_onboard_dlg.png)
+    ![oidc_onboar](../../img/oidc_onboard_dlg.png)
     
     This user name will be the identifier for this user in Harbor, which will be used in the cases such as adding member to a project, assigning roles, etc.
     This has to be a unique user name, if another user has used this user name to onboard, user will be prompted to choose another one.
@@ -74,10 +74,10 @@ Having authenticated via OIDC SSO and onboarded to Harbor, you can use Docker/He
 As the CLI cannot handle redirection for SSO, we introduced `CLI secret`, which is only available when Harbor's authentication mode 
 is configured to OIDC based.  
 After logging into Harbor, click the drop down list to view user's profile:
-![user_profile](../img/user_profile.png)
+![user_profile](../../img/user_profile.png)
 
 You can copy your CLI secret via the dialog of profile:
-![profile_dlg](../img/profile_dlg.png)
+![profile_dlg](../../img/profile_dlg.png)
 
 After that you can authenticate using your user name in Harbor that you set during onboard process, and CLI secret as the password
 with Docker/Helm CLI, for example:

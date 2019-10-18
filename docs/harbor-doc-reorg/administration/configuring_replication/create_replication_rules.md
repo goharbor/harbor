@@ -2,7 +2,7 @@
 
 Login as a system administrator user, click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication modes, [resource filters](#resource-filter) and [trigger modes](#trigger-mode) according to the different requirements. If there is no endpoint available in the list, follow the instructions in the [Creating replication endpoints](#creating-replication-endpoints) to create one. Click `SAVE` to create a replication rule.  
 
-![browse project](../img/create_rule.png)
+![browse project](../../img/create_rule.png)
 
 #### Resource filter
 Three resource filters are supported:

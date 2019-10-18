@@ -1,6 +1,6 @@
 # Harbor Role Based Access Control (RBAC)  
 
-![rbac](../img/rbac.png)
+![rbac](../../img/rbac.png)
 
 Harbor manages images through projects. Users can be added into one project as a member with one of three different roles:  
 
@@ -19,4 +19,4 @@ For full details of the permissions of the different roles, see [User Permission
 ## Managing user  
 Administrator can add "Administrator" role to one or more ordinary users by checking checkboxes and clicking `SET AS ADMINISTRATOR`. To delete users, checked checkboxes and select `DELETE`. Deleting user is only supported under database authentication mode.
 
-![browse project](../img/new_set_admin_remove_user.png)
+![browse project](../../img/new_set_admin_remove_user.png)

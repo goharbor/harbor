@@ -19,8 +19,8 @@ This section describes how to install Harbor and perform the required initial co
   - [Customize the Harbor Token Service](install_config/configuration/customize_token_service.md)
   - [Configure Notary Content Trust](install_config/configuration/configure_notary_content_trust.md)
 - [Initial Configuration in the Harbor UI](install_config/configuration/initial_config_ui.md)
-  - [Configure Authentication](configure_authentication.md)
-  - [Other General Settings](general_settings.md)
+  - [Configure Authentication](install_config/configuration/configure_authentication.md)
+  - [Other General Settings](install_config/configuration/general_settings.md)
   
 You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see the [Harbor High Availability Guide](https://github.com/goharbor/harbor-helm/blob/master/docs/High%20Availability.md) in the https://github.com/goharbor/harbor-helm repository.
 

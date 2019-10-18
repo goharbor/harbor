@@ -9,25 +9,25 @@ You can also set quotas on individual projects. If you set a global default quot
 By default, all projects have unlimited quotas for both tags and storage use. 
 
 1. Go to **Configuration** > **Project Quotas**.
-   ![Project quotas](../img/project-quota1.png)
+   ![Project quotas](../../img/project-quota1.png)
 1. To set global default quotas on all projects, click **Edit**.
-   ![Project quotas](../img/project-quota2.png)
+   ![Project quotas](../../img/project-quota2.png)
    1. For **Default artifact count**, enter the maximum number of tags that any project can contain. 
    
    Enter `-1` to set the default to unlimited. 
    1. For **Default storage consumption**, enter the maximum quantity of storage that any project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu. 
    
    Enter `-1` to set the default to unlimited.
-   ![Project quotas](../img/project-quota3.png)
+   ![Project quotas](../../img/project-quota3.png)
    1. Click **OK**.
 1. To set quotas on an individual project, click the 3 vertical dots next to a project and select **Edit**.
-   ![Project quotas](../img/project-quota4.png)
+   ![Project quotas](../../img/project-quota4.png)
    1. For **Default artifact count**, enter the maximum number of tags that this individual project can contain, or enter `-1` to set the default to unlimited. 
    1. For **Default storage consumption**, enter the maximum quantity of storage that this individual project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu.
 
 After you set quotas, the you can see how much of their quotas each project has consumed in the **Project Quotas** tab.
 
-![Project quotas](../img/project-quota5.png)
+![Project quotas](../../img/project-quota5.png)
 
 ### How Harbor Calculates Resource Usage
 
