@@ -17,11 +17,10 @@ package scanner
 import (
 	"testing"
 
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -223,6 +222,24 @@ func (suite *ControllerTestSuite) TestGetRegistrationByProject() {
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), r)
 	assert.Equal(suite.T(), "forUT", r.Name)
+}
+
+// TestPing ...
+func (suite *ControllerTestSuite) TestPing() {
+	meta, err := suite.c.Ping(suite.sample)
+	require.NoError(suite.T(), err)
+	suite.NotNil(meta)
+}
+
+// TestGetMetadata ...
+func (suite *ControllerTestSuite) TestGetMetadata() {
+	suite.sample.UUID = "uuid"
+	suite.mMgr.On("Get", "uuid").Return(suite.sample, nil)
+
+	meta, err := suite.c.GetMetadata(suite.sample.UUID)
+	require.NoError(suite.T(), err)
+	suite.NotNil(meta)
+	suite.Equal(1, len(meta.Capabilities))
 }
 
 // MockScannerManager is mock of the scanner manager

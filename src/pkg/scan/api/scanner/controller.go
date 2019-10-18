@@ -135,4 +135,14 @@ type Controller interface {
 	//    *v1.ScannerAdapterMetadata : metadata returned by the scanner if successfully ping
 	//    error                      : non nil error if any errors occurred
 	GetMetadata(registrationUUID string) (*v1.ScannerAdapterMetadata, error)
+
+	// IsScannerAvailable checks if the scanner is available for the specified project.
+	//
+	//   Arguments:
+	//     projectID int64 : the ID of the given project
+	//
+	//   Returns:
+	//     bool  : the scanner if configured for the specified project
+	//     error : non nil error if any errors occurred
+	IsScannerAvailable(projectID int64) (bool, error)
 }

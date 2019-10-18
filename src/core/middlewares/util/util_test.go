@@ -32,6 +32,7 @@ import (
 	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	digest "github.com/opencontainers/go-digest"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -170,7 +171,7 @@ func TestPMSPolicyChecker(t *testing.T) {
 		Metadata: map[string]string{
 			models.ProMetaEnableContentTrust:   "true",
 			models.ProMetaPreventVul:           "true",
-			models.ProMetaSeverity:             "low",
+			models.ProMetaSeverity:             "Low",
 			models.ProMetaReuseSysCVEWhitelist: "false",
 		},
 	})
@@ -185,7 +186,7 @@ func TestPMSPolicyChecker(t *testing.T) {
 	assert.True(t, contentTrustFlag)
 	projectVulnerableEnabled, projectVulnerableSeverity, wl := GetPolicyChecker().VulnerablePolicy("project_for_test_get_sev_low")
 	assert.True(t, projectVulnerableEnabled)
-	assert.Equal(t, projectVulnerableSeverity, models.SevLow)
+	assert.Equal(t, projectVulnerableSeverity, vuln.Low)
 	assert.Empty(t, wl.Items)
 
 	contentTrustFlag = GetPolicyChecker().ContentTrustEnabled("non_exist_project")

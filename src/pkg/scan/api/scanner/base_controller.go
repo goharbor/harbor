@@ -230,7 +230,6 @@ func (bc *basicController) GetRegistrationByProject(projectID int64) (*scanner.R
 }
 
 // Ping ...
-// TODO: ADD UT CASES
 func (bc *basicController) Ping(registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error) {
 	if registration == nil {
 		return nil, errors.New("nil registration to ping")
@@ -289,7 +288,6 @@ func (bc *basicController) Ping(registration *scanner.Registration) (*v1.Scanner
 }
 
 // GetMetadata ...
-// TODO: ADD UT CASES
 func (bc *basicController) GetMetadata(registrationUUID string) (*v1.ScannerAdapterMetadata, error) {
 	if len(registrationUUID) == 0 {
 		return nil, errors.New("empty registration uuid")
@@ -301,4 +299,39 @@ func (bc *basicController) GetMetadata(registrationUUID string) (*v1.ScannerAdap
 	}
 
 	return bc.Ping(r)
+}
+
+// IsScannerAvailable ...
+// TODO: This method will be removed if we change the method of getting project
+//  registration without ping later.
+func (bc *basicController) IsScannerAvailable(projectID int64) (bool, error) {
+	if projectID == 0 {
+		return false, errors.New("invalid project ID")
+	}
+
+	// First, get it from the project metadata
+	m, err := bc.proMetaMgr.Get(projectID, proScannerMetaKey)
+	if err != nil {
+		return false, errors.Wrap(err, "api controller: check scanner availability")
+	}
+
+	var registration *scanner.Registration
+	if len(m) > 0 {
+		if registrationID, ok := m[proScannerMetaKey]; ok && len(registrationID) > 0 {
+			registration, err = bc.manager.Get(registrationID)
+			if err != nil {
+				return false, errors.Wrap(err, "api controller: check scanner availability")
+			}
+		}
+	}
+
+	if registration == nil {
+		// Second, get the default one
+		registration, err = bc.manager.GetDefault()
+		if err != nil {
+			return false, errors.Wrap(err, "api controller: check scanner availability")
+		}
+	}
+
+	return registration != nil && !registration.Disabled, nil
 }

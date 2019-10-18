@@ -19,15 +19,14 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
-
-	"github.com/stretchr/testify/require"
-
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	dscan "github.com/goharbor/harbor/src/pkg/scan/dao/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -187,8 +186,8 @@ func (msc *MockScanAPIController) GetReport(artifact *v1.Artifact, mimeTypes []s
 	return args.Get(0).([]*dscan.Report), args.Error(1)
 }
 
-func (msc *MockScanAPIController) GetSummary(artifact *v1.Artifact, mimeTypes []string) (map[string]interface{}, error) {
-	args := msc.Called(artifact, mimeTypes)
+func (msc *MockScanAPIController) GetSummary(artifact *v1.Artifact, mimeTypes []string, options ...report.Option) (map[string]interface{}, error) {
+	args := msc.Called(artifact, mimeTypes, options)
 
 	if args.Get(0) == nil {
 		return nil, args.Error(1)

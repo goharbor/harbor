@@ -8,6 +8,7 @@ import (
 	"github.com/goharbor/harbor/src/core/notifier"
 	"github.com/goharbor/harbor/src/core/notifier/model"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notification/model"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/pkg/errors"
 )
 
@@ -185,8 +186,8 @@ func (cd *ChartDeleteMetaData) Resolve(evt *Event) error {
 
 // ScanImageMetaData defines meta data of image scanning event
 type ScanImageMetaData struct {
-	JobID  int64
-	Status string
+	Artifact *v1.Artifact
+	Status   string
 }
 
 // Resolve image scanning metadata into common chart event
@@ -204,7 +205,7 @@ func (si *ScanImageMetaData) Resolve(evt *Event) error {
 	}
 	data := &model.ScanImageEvent{
 		EventType: eventType,
-		JobID:     si.JobID,
+		Artifact:  si.Artifact,
 		OccurAt:   time.Now(),
 		Operator:  autoTriggeredOperator,
 	}

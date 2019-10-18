@@ -21,13 +21,14 @@ import (
 // NativeReportSummary is the default supported scan report summary model.
 // Generated based on the report with v1.MimeTypeNativeReport mime type.
 type NativeReportSummary struct {
-	ReportID   string                `json:"report_id"`
-	ScanStatus string                `json:"scan_status"`
-	Severity   Severity              `json:"severity"`
-	Duration   int64                 `json:"duration"`
-	Summary    *VulnerabilitySummary `json:"summary"`
-	StartTime  time.Time             `json:"start_time"`
-	EndTime    time.Time             `json:"end_time"`
+	ReportID    string                `json:"report_id"`
+	ScanStatus  string                `json:"scan_status"`
+	Severity    Severity              `json:"severity"`
+	Duration    int64                 `json:"duration"`
+	Summary     *VulnerabilitySummary `json:"summary"`
+	CVEBypassed []string              `json:"-"`
+	StartTime   time.Time             `json:"start_time"`
+	EndTime     time.Time             `json:"end_time"`
 }
 
 // VulnerabilitySummary contains the total number of the found vulnerabilities number

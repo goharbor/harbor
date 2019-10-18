@@ -52,6 +52,9 @@ type uuidGenerator func() (string, error)
 // utility methods.
 type configGetter func(cfg string) (string, error)
 
+// jcGetter is a func template which is used to get the job service client.
+type jcGetter func() cj.Client
+
 // basicController is default implementation of api.Controller interface
 type basicController struct {
 	// Manage the scan report records
@@ -61,7 +64,7 @@ type basicController struct {
 	// Robot account controller
 	rc robot.Controller
 	// Job service client
-	jc cj.Client
+	jc jcGetter
 	// UUID generator
 	uuid uuidGenerator
 	// Configuration getter func
@@ -78,7 +81,9 @@ func NewController() Controller {
 		// Refer to the default robot account controller
 		rc: robot.RobotCtr,
 		// Refer to the default job service client
-		jc: cj.GlobalClient,
+		jc: func() cj.Client {
+			return cj.GlobalClient
+		},
 		// Generate UUID with uuid lib
 		uuid: func() (string, error) {
 			aUUID, err := uuid.NewUUID()
@@ -100,14 +105,6 @@ func NewController() Controller {
 			}
 		},
 	}
-}
-
-func (bc *basicController) jobClient() cj.Client {
-	if bc.jc == nil {
-		return cj.GlobalClient
-	}
-
-	return bc.jc
 }
 
 // Scan ...
@@ -234,7 +231,7 @@ func (bc *basicController) GetReport(artifact *v1.Artifact, mimeTypes []string) 
 }
 
 // GetSummary ...
-func (bc *basicController) GetSummary(artifact *v1.Artifact, mimeTypes []string) (map[string]interface{}, error) {
+func (bc *basicController) GetSummary(artifact *v1.Artifact, mimeTypes []string, options ...report.Option) (map[string]interface{}, error) {
 	if artifact == nil {
 		return nil, errors.New("no way to get report summaries for nil artifact")
 	}
@@ -247,7 +244,7 @@ func (bc *basicController) GetSummary(artifact *v1.Artifact, mimeTypes []string)
 
 	summaries := make(map[string]interface{}, len(rps))
 	for _, rp := range rps {
-		sum, err := report.GenerateSummary(rp)
+		sum, err := report.GenerateSummary(rp, options...)
 		if err != nil {
 			return nil, err
 		}
@@ -284,7 +281,7 @@ func (bc *basicController) GetScanLog(uuid string) ([]byte, error) {
 	}
 
 	// Job log
-	return bc.jobClient().GetJobLog(sr.JobID)
+	return bc.jc().GetJobLog(sr.JobID)
 }
 
 // HandleJobHooks ...
@@ -359,10 +356,10 @@ func (bc *basicController) makeAuthorization(pid int64, repository string, ttl i
 		return "", errors.Wrap(err, "scan controller: make robot account")
 	}
 
-	username := rb.Name
-	password := rb.Token
+	basic := fmt.Sprintf("%s:%s", rb.Name, rb.Token)
+	encoded := base64.StdEncoding.EncodeToString([]byte(basic))
 
-	return "Basic " + base64.StdEncoding.EncodeToString([]byte(username+":"+password)), nil
+	return fmt.Sprintf("Basic %s", encoded), nil
 }
 
 // launchScanJob launches a job to run scan
@@ -418,5 +415,5 @@ func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, 
 		StatusHook: hookURL,
 	}
 
-	return bc.jobClient().SubmitJob(j)
+	return bc.jc().SubmitJob(j)
 }

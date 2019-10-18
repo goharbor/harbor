@@ -24,6 +24,32 @@ import (
 	"github.com/pkg/errors"
 )
 
+// CVESet defines the CVE whitelist with a hash set way for easy query.
+type CVESet map[string]struct{}
+
+// Contains checks whether the specified CVE is in the set or not.
+func (cs CVESet) Contains(cve string) bool {
+	_, ok := cs[cve]
+
+	return ok
+}
+
+// Options provides options for getting the report w/ summary.
+type Options struct {
+	// If it is set, the returned summary will not count the CVEs in the list in.
+	CVEWhitelist CVESet
+}
+
+// Option for getting the report w/ summary with func template way.
+type Option func(options *Options)
+
+// WithCVEWhitelist is an option of setting CVE whitelist.
+func WithCVEWhitelist(set *CVESet) Option {
+	return func(options *Options) {
+		options.CVEWhitelist = *set
+	}
+}
+
 // SupportedGenerators declares mappings between mime type and summary generator func.
 var SupportedGenerators = map[string]SummaryGenerator{
 	v1.MimeTypeNativeReport: GenerateNativeSummary,
@@ -31,26 +57,34 @@ var SupportedGenerators = map[string]SummaryGenerator{
 
 // GenerateSummary is a helper function to generate report
 // summary based on the given report.
-func GenerateSummary(r *scan.Report) (interface{}, error) {
+func GenerateSummary(r *scan.Report, options ...Option) (interface{}, error) {
 	g, ok := SupportedGenerators[r.MimeType]
 	if !ok {
 		return nil, errors.Errorf("no generator bound with mime type %s", r.MimeType)
 	}
 
-	return g(r)
+	return g(r, options...)
 }
 
 // SummaryGenerator is a func template which used to generated report
 // summary for relevant mime type.
-type SummaryGenerator func(r *scan.Report) (interface{}, error)
+type SummaryGenerator func(r *scan.Report, options ...Option) (interface{}, error)
 
 // GenerateNativeSummary generates the report summary for the native report.
-func GenerateNativeSummary(r *scan.Report) (interface{}, error) {
+func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, error) {
+	ops := &Options{}
+	for _, op := range options {
+		op(ops)
+	}
+
 	sum := &vuln.NativeReportSummary{}
 	sum.ReportID = r.UUID
 	sum.StartTime = r.StartTime
 	sum.EndTime = r.EndTime
 	sum.Duration = r.EndTime.Unix() - r.EndTime.Unix()
+	if len(ops.CVEWhitelist) > 0 {
+		sum.CVEBypassed = make([]string, 0)
+	}
 
 	sum.ScanStatus = job.ErrorStatus.String()
 	if job.Status(r.Status).Code() != -1 {
@@ -84,14 +118,35 @@ func GenerateNativeSummary(r *scan.Report) (interface{}, error) {
 		Summary: make(vuln.SeveritySummary),
 	}
 
+	overallSev := vuln.None
 	for _, v := range rp.Vulnerabilities {
+		if len(ops.CVEWhitelist) > 0 && ops.CVEWhitelist.Contains(v.ID) {
+			// If whitelist is set, then check if we need to bypass it
+			// Reduce the total
+			vsum.Total--
+			// Append the by passed CVEs specified in the whitelist
+			sum.CVEBypassed = append(sum.CVEBypassed, v.ID)
+
+			continue
+		}
+
 		if num, ok := vsum.Summary[v.Severity]; ok {
 			vsum.Summary[v.Severity] = num + 1
 		} else {
 			vsum.Summary[v.Severity] = 1
 		}
+
+		// Update the overall severity if necessary
+		if v.Severity.Code() > overallSev.Code() {
+			overallSev = v.Severity
+		}
 	}
 	sum.Summary = vsum
+
+	// Override the overall severity of the filtered list if needed.
+	if len(ops.CVEWhitelist) > 0 {
+		sum.Severity = overallSev
+	}
 
 	return sum, nil
 }

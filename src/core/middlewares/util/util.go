@@ -35,12 +35,13 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/common/utils/clair"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
 	digest "github.com/opencontainers/go-digest"
+	"github.com/pkg/errors"
 )
 
 type contextKey string
@@ -327,11 +328,13 @@ func CopyResp(rec *httptest.ResponseRecorder, rw http.ResponseWriter) {
 }
 
 // PolicyChecker checks the policy of a project by project name, to determine if it's needed to check the image's status under this project.
+// TODO: The policy check related things should be moved to pkg package later
+//  and refactored to include the `check` capabilities, not just property getters.
 type PolicyChecker interface {
 	// contentTrustEnabled returns whether a project has enabled content trust.
 	ContentTrustEnabled(name string) bool
 	// vulnerablePolicy  returns whether a project has enabled vulnerable, and the project's severity.
-	VulnerablePolicy(name string) (bool, models.Severity, models.CVEWhitelist)
+	VulnerablePolicy(name string) (bool, vuln.Severity, models.CVEWhitelist)
 }
 
 // PmsPolicyChecker ...
@@ -354,28 +357,33 @@ func (pc PmsPolicyChecker) ContentTrustEnabled(name string) bool {
 }
 
 // VulnerablePolicy ...
-func (pc PmsPolicyChecker) VulnerablePolicy(name string) (bool, models.Severity, models.CVEWhitelist) {
+func (pc PmsPolicyChecker) VulnerablePolicy(name string) (bool, vuln.Severity, models.CVEWhitelist) {
 	project, err := pc.pm.Get(name)
 	wl := models.CVEWhitelist{}
 	if err != nil {
 		log.Errorf("Unexpected error when getting the project, error: %v", err)
-		return true, models.SevUnknown, wl
+		return true, vuln.Unknown, wl
 	}
 	mgr := whitelist.NewDefaultManager()
 	if project.ReuseSysCVEWhitelist() {
 		w, err := mgr.GetSys()
 		if err != nil {
-			return project.VulPrevented(), clair.ParseClairSev(project.Severity()), wl
+			log.Error(errors.Wrap(err, "policy checker: vulnerable policy"))
+			return project.VulPrevented(), vuln.Severity(project.Severity()), wl
 		}
 		wl = *w
+
+		// Use the real project ID
+		wl.ProjectID = project.ProjectID
 	} else {
 		w, err := mgr.Get(project.ProjectID)
 		if err != nil {
-			return project.VulPrevented(), clair.ParseClairSev(project.Severity()), wl
+			log.Error(errors.Wrap(err, "policy checker: vulnerable policy"))
+			return project.VulPrevented(), vuln.Severity(project.Severity()), wl
 		}
 		wl = *w
 	}
-	return project.VulPrevented(), clair.ParseClairSev(project.Severity()), wl
+	return project.VulPrevented(), vuln.Severity(project.Severity()), wl
 
 }
 
