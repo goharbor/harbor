@@ -1089,6 +1089,8 @@ paths:
           description: Forbidden.
         '404':
           description: Repository not found.
+        '412':
+          description: Precondition Failed.
     put:
       summary: Update description of the repository.
       description: |
