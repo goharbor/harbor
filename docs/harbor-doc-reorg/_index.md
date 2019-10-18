@@ -40,10 +40,11 @@ This section describes how to use and maintain Harbor after deployment. These da
   - [Create Replication Rules](administration/configuring_replication/create_replication_rules.md)
   - [Manage Replications](administration/configuring_replication/manage_replications.md) 
 - [Vulnerability Scanning with Clair](administration/vulnerability_scanning/_index.md)
-  - [Scan an Individual Image](scan_individual_image.md)
-  - [Scan All Images](scan_all_images.md)
-  - [Schedule Scans](schedule_scans.md)
-  - [Import Vulnerability Data to an Offline Harbor instance](import_vulnerability_data.md)
+  - [Scan an Individual Image](administration/vulnerability_scanning/scan_individual_image.md)
+  - [Scan All Images](administration/vulnerability_scanning/scan_all_images.md)
+  - [Schedule Scans](administration/vulnerability_scanning/schedule_scans.md)
+  - [Import Vulnerability Data to an Offline Harbor instance](administration/vulnerability_scanning/import_vulnerability_data.md)
+  - [Configure System-Wide CVE Whitelists](administration/vulnerability_scanning/configire_system_whitelist.md)
 - [Garbage Collection](administration/garbage_collection/_index.md)
 - [Upgrading Harbor](administration/upgrade/_index.md)
   - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
@@ -56,7 +57,7 @@ This section describes how to use and maintain Harbor after deployment. These da
 
 This section describes how users with the developer, master, and project administrator roles manage and participate in Harbor projects.
 
-- [](working_with_projects/)
+- [Configure a Per-Project CVE Whitelist](working_with_projects/configure_project_whitelist.md)
 - [](working_with_projects/)
 - [](working_with_projects/)
 - [](working_with_projects/)
