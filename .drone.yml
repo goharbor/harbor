@@ -27,7 +27,7 @@ pipeline:
       status: success
 
   test-and-issue-build:
-    image: vmware/harbor-e2e-engine:1.41
+    image: goharbor/harbor-e2e-engine:1.42
     pull: true
     privileged: true
     environment:
