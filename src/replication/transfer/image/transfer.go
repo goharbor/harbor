@@ -284,34 +284,35 @@ func (t *transfer) handleManifest(manifest distribution.Manifest, repository, di
 		t.logger.Errorf("failed to call the payload method for manifest of %s:%s: %v", repository, digest, err)
 		return nil, "", err
 	}
-	// manifest
-	if mediaType == schema1.MediaTypeManifest ||
-		mediaType == schema1.MediaTypeSignedManifest ||
-		mediaType == schema2.MediaTypeManifest {
+	switch mediaType {
+	case schema1.MediaTypeManifest, schema1.MediaTypeSignedManifest:
+		return nil, "", errors.New("schema v1 image is not supported")
+	case schema2.MediaTypeManifest:
 		return manifest, digest, nil
-	}
-	// manifest list
-	t.logger.Info("trying abstract a manifest from the manifest list...")
-	manifestlist, ok := manifest.(*manifestlist.DeserializedManifestList)
-	if !ok {
-		err := fmt.Errorf("the object isn't a DeserializedManifestList")
-		t.logger.Errorf(err.Error())
-		return nil, "", err
-	}
-	digest = ""
-	for _, reference := range manifestlist.Manifests {
-		if strings.ToLower(reference.Platform.Architecture) == "amd64" &&
-			strings.ToLower(reference.Platform.OS) == "linux" {
-			digest = reference.Digest.String()
-			t.logger.Infof("a manifest(architecture: amd64, os: linux) found, using this one: %s", digest)
-			break
+	default:
+		// manifest list
+		t.logger.Info("trying abstract a manifest from the manifest list...")
+		manifestlist, ok := manifest.(*manifestlist.DeserializedManifestList)
+		if !ok {
+			err := fmt.Errorf("the object isn't a DeserializedManifestList")
+			t.logger.Errorf(err.Error())
+			return nil, "", err
 		}
+		digest = ""
+		for _, reference := range manifestlist.Manifests {
+			if strings.ToLower(reference.Platform.Architecture) == "amd64" &&
+				strings.ToLower(reference.Platform.OS) == "linux" {
+				digest = reference.Digest.String()
+				t.logger.Infof("a manifest(architecture: amd64, os: linux) found, using this one: %s", digest)
+				break
+			}
+		}
+		if len(digest) == 0 {
+			digest = manifest.References()[0].Digest.String()
+			t.logger.Infof("no manifest(architecture: amd64, os: linux) found, using the first one: %s", digest)
+		}
+		return t.pullManifest(repository, digest)
 	}
-	if len(digest) == 0 {
-		digest = manifest.References()[0].Digest.String()
-		t.logger.Infof("no manifest(architecture: amd64, os: linux) found, using the first one: %s", digest)
-	}
-	return t.pullManifest(repository, digest)
 }
 
 func (t *transfer) exist(repository, tag string) (bool, string, error) {
