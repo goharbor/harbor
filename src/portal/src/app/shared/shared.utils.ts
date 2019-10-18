@@ -103,7 +103,7 @@ export const maintainUrlQueryParmas = function (uri: string, key: string, value:
         str += contentArray[1][getRandomInt(contentArray[1].length)];
     }
     if (!str.match(/[A-Z]+/g)) {
-        str += contentArray[1][getRandomInt(contentArray[1].length)];
+        str += contentArray[2][getRandomInt(contentArray[2].length)];
     }
     return str;
   }

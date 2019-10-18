@@ -204,7 +204,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
       }),
       filters: this.fb.array([]),
       deletion: false,
-      enabled: true,
       override: true
     });
   }
@@ -229,7 +228,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         }
       },
       deletion: false,
-      enabled: true,
       override: true
     });
     this.isPushMode = true;
@@ -253,7 +251,6 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         dest_registry: rule.dest_registry,
         trigger: rule.trigger,
         deletion: rule.deletion,
-        enabled: rule.enabled,
         override: rule.override
       });
       let filtersArray = this.getFilterArray(rule);
