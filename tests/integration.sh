@@ -93,6 +93,7 @@ export Harbor_UI_Version=$Harbor_UI_Version
 export Harbor_Assets_Version=$Harbor_Assets_Version
 #  the env is for online and offline package.
 export Harbor_Package_Version=$Harbor_Package_Version
+export NPM_REGISTRY=$NPM_REGISTRY
 
 echo "--------------------------------------------------"
 echo "Harbor UI version: $Harbor_UI_Version"
@@ -193,14 +194,14 @@ if [ $upload_latest_build == true ] && [ $upload_bundle_success == true ]; then
 fi
 
 ## --------------------------------------------- Upload securego results ------------------------------------------
-if [ $DRONE_BUILD_EVENT == "push" ]; then
-    go get github.com/securego/gosec/cmd/gosec
-    go get github.com/dghubble/sling
-    make gosec -e GOSECRESULTS=harbor-gosec-results-latest.json
-    echo $git_commit > ./harbor-gosec-results-latest-version
-    uploader harbor-gosec-results-latest.json $harbor_target_bucket
-    uploader harbor-gosec-results-latest-version $harbor_target_bucket
-fi
+#if [ $DRONE_BUILD_EVENT == "push" ]; then
+#    go get github.com/securego/gosec/cmd/gosec
+#    go get github.com/dghubble/sling
+#    make gosec -e GOSECRESULTS=harbor-gosec-results-latest.json
+#    echo $git_commit > ./harbor-gosec-results-latest-version
+#    uploader harbor-gosec-results-latest.json $harbor_target_bucket
+#    uploader harbor-gosec-results-latest-version $harbor_target_bucket
+#fi
 
 ## ------------------------------------------------ Tear Down -----------------------------------------------------
 if [ -f "$keyfile" ]; then
