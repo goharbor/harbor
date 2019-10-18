@@ -33,6 +33,7 @@ const (
 	RoleDeveloper    = 2
 	RoleGuest        = 3
 	RoleMaster       = 4
+	RoleLimitedGuest = 5
 
 	LabelLevelSystem  = "s"
 	LabelLevelUser    = "u"

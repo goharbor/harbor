@@ -275,6 +275,7 @@
         "PROJECT_MASTER": "维护人员",
         "DEVELOPER": "开发人员",
         "GUEST": "访客",
+        "LIMITED_GUEST": "受限访客",
         "DELETE": "删除",
         "ITEMS": "条记录",
         "ACTIONS": "操作",
@@ -738,7 +739,8 @@
         "ADMIN": "管理员",
         "MASTER": "维护人员",
         "DEVELOPER": "开发者",
-        "GUEST": "访客"
+        "GUEST": "访客",
+        "LIMITED_GUEST": "受限访客"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"

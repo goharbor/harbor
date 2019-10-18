@@ -201,6 +201,7 @@ type ProjectSummary struct {
 	MasterCount       int64 `json:"master_count"`
 	DeveloperCount    int64 `json:"developer_count"`
 	GuestCount        int64 `json:"guest_count"`
+	LimitedGuestCount int64 `json:"limited_guest_count"`
 
 	Quota struct {
 		Hard types.ResourceList `json:"hard"`

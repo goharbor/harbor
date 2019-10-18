@@ -288,6 +288,7 @@
         "PROJECT_MASTER": "préposé à la maintenance",
         "DEVELOPER": "Développeur",
         "GUEST": "Invité",
+        "LIMITED_GUEST": "Limited Guest",
         "DELETE": "Supprimer",
         "ITEMS": "items",
         "ACTIONS": "Actions",
@@ -724,7 +725,8 @@
         "ADMIN": "Admin(s)",
         "MASTER": "Master(s)",
         "DEVELOPER": "Developer(s)",
-        "GUEST": "Guest(s)"
+        "GUEST": "Guest(s)",
+        "LIMITED_GUEST": "Limited guest(s)"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Certaines modifications ne sont pas encore enregistrées. Voulez-vous annuler ?"

@@ -275,6 +275,7 @@
         "PROJECT_MASTER": "Uzman",
         "DEVELOPER": "Geliştirici",
         "GUEST": "Konuk",
+        "LIMITED_GUEST": "Limited Guest",
         "DELETE": "Sil",
         "ITEMS": "çeşit",
         "ACTIONS": "Eylemler",
@@ -736,7 +737,8 @@
         "ADMIN": "Yönetici(ler)",
         "MASTER": "Uzman(lar)",
         "DEVELOPER": "Geliştirici(ler)",
-        "GUEST": "Misafir(ler)"
+        "GUEST": "Misafir(ler)",
+        "LIMITED_GUEST": "Limited guest(s)"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Bazı değişiklikler henüz kaydedilmedi. İptal etmek istiyor musun?"

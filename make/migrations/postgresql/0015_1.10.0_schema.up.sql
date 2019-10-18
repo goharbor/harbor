@@ -57,4 +57,7 @@ DROP TABLE IF EXISTS img_scan_job;
 DROP TRIGGER IF EXISTS TRIGGER ON img_scan_overview;
 DROP TABLE IF EXISTS img_scan_overview;
 
-DROP TABLE IF EXISTS clair_vuln_timestamp
+DROP TABLE IF EXISTS clair_vuln_timestamp;
+
+/* Add limited guest role */
+INSERT INTO role (role_code, name) VALUES ('LRS', 'limitedGuest');
