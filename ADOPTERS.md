@@ -33,6 +33,7 @@ be added to this list as they transition to production deployments.
 <a href="https://pivotal.io/" target="_blank" border="0"><img alt="Pivotal" src="docs/img/pivotal.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.163yun.com" target="_blank" border="0"><img alt="Netease Cloud" src="docs/img/wangyi.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="http://www.yanrongyun.com" target="_blank" border="0"><img alt="Yanrongyun" src="docs/img/Yanrong.jpg" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://anchore.com" target="_blank" border="0"><img alt="Anchore" src="docs/img/anchore_logo.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 
 ## Success Stories
 **JD.com:** Harbor is the registry service of JD.com’s JDOS
