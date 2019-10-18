@@ -66,6 +66,11 @@ func (s *SecurityContext) IsSysAdmin() bool {
 	return false
 }
 
+// PolicyCheck ...
+func (s *SecurityContext) PolicyCheck() bool {
+	return true
+}
+
 // IsSolutionUser ...
 func (s *SecurityContext) IsSolutionUser() bool {
 	return s.IsAuthenticated()

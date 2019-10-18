@@ -52,6 +52,13 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		return
 	}
 
+	// Token bypass policy check
+	policyCheck := req.Context().Value(util.PolicyCheckCtxKey)
+	if policyCheck != nil && !policyCheck.(bool) {
+		vh.next.ServeHTTP(rw, req)
+		return
+	}
+
 	// Is vulnerable policy set?
 	projectVulnerableEnabled, projectVulnerableSeverity, wl := util.GetPolicyChecker().VulnerablePolicy(img.ProjectName)
 	if !projectVulnerableEnabled {

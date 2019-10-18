@@ -222,7 +222,7 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return MakeToken(ctx.GetUsername(), g.service, access)
+	return MakeToken(ctx.GetUsername(), g.service, access, ctx.PolicyCheck())
 }
 
 func parseScopes(u *url.URL) []string {

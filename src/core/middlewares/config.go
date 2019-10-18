@@ -26,13 +26,14 @@ const (
 	SIZEQUOTA        = "sizequota"
 	COUNTQUOTA       = "countquota"
 	IMMUTABLE        = "immutable"
+	REGTOKEN         = "REGTOKEN"
 )
 
 // ChartMiddlewares middlewares for chart server
 var ChartMiddlewares = []string{CHART}
 
 // Middlewares with sequential organization
-var Middlewares = []string{READONLY, URL, MUITIPLEMANIFEST, LISTREPO, CONTENTTRUST, VULNERABLE, SIZEQUOTA, IMMUTABLE, COUNTQUOTA}
+var Middlewares = []string{READONLY, URL, REGTOKEN, MUITIPLEMANIFEST, LISTREPO, CONTENTTRUST, VULNERABLE, SIZEQUOTA, IMMUTABLE, COUNTQUOTA}
 
 // MiddlewaresLocal ...
 var MiddlewaresLocal = []string{SIZEQUOTA, IMMUTABLE, COUNTQUOTA}

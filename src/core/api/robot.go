@@ -108,6 +108,7 @@ func (r *RobotAPI) Post() {
 		return
 	}
 	robotReq.Visible = true
+	robotReq.PolicyCheck = true
 	robotReq.ProjectID = r.project.ProjectID
 
 	if err := validateRobotReq(r.project, &robotReq); err != nil {

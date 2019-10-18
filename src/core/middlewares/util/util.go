@@ -49,6 +49,8 @@ type contextKey string
 const (
 	// ImageInfoCtxKey the context key for image information
 	ImageInfoCtxKey = contextKey("ImageInfo")
+	// PolicyCheckCtxKey the context key for image information
+	PolicyCheckCtxKey = contextKey("PolicyCheck")
 	// TokenUsername ...
 	// TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	TokenUsername = "harbor-core"
