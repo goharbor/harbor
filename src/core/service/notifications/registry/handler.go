@@ -17,6 +17,7 @@ package registry
 import (
 	"encoding/json"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -137,7 +138,6 @@ func (n *NotificationHandler) Post() {
 				log.Errorf("failed to build image push event metadata: %v", err)
 			}
 
-			// TODO: handle image delete event and chart event
 			go func() {
 				e := &rep_event.Event{
 					Type: rep_event.EventTypeImagePush,
@@ -146,7 +146,9 @@ func (n *NotificationHandler) Post() {
 						Metadata: &model.ResourceMetadata{
 							Repository: &model.Repository{
 								Name: repository,
-								// TODO filling the metadata
+								Metadata: map[string]interface{}{
+									"public": strconv.FormatBool(pro.IsPublic()),
+								},
 							},
 							Vtags: []string{tag},
 						},
