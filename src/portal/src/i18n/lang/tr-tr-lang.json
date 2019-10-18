@@ -1256,10 +1256,10 @@
         "ADD_SCANNER": "Add Scanner",
         "EDIT_SCANNER": "Edit Scanner",
         "TEST_CONNECTION": "TEST CONNECTION",
-        "ADD_SUCCESS": "Added successfully",
+        "ADD_SUCCESS": "Successfully added ",
         "TEST_PASS": "Test passed",
         "TEST_FAILED": "Test failed",
-        "UPDATE_SUCCESS": "Updated successfully",
+        "UPDATE_SUCCESS": "Successfully updated",
         "SCANNER_COLON": "Scanner:",
         "NAME_COLON": "Name:",
         "VENDOR_COLON": "Vendor:",
@@ -1283,6 +1283,10 @@
         "ADAPTER": "Adapter",
         "VENDOR": "Vendor",
         "VERSION": "Version",
-        "SELECT_SCANNER": "Select Scanner"
+        "SELECT_SCANNER": "Select Scanner",
+        "ENABLED": "Enabled",
+        "ENABLE": "Enable",
+        "DISABLE": "Disable",
+        "DELETE_SUCCESS": "Successfully deleted"
     }
 }

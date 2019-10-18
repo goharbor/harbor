@@ -723,9 +723,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   canScanNow(t: Tag[]): boolean {
     if (!this.hasScanImagePermission) { return false; }
     let st: string = this.scanStatus(t[0]);
-
-    return st !== VULNERABILITY_SCAN_STATUS.PENDING &&
-      st !== VULNERABILITY_SCAN_STATUS.RUNNING;
+    return st !== VULNERABILITY_SCAN_STATUS.RUNNING;
   }
   getImagePermissionRule(projectId: number): void {
     let hasAddLabelImagePermission = this.userPermissionService.getPermission(projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY,

@@ -55,8 +55,7 @@
     <section id="image" role="tabpanel" aria-labelledby="repo-image" [hidden]='!isCurrentTabContent("image")'>
       <div id=images-container>
         <hbr-tag ngProjectAs="clr-dg-row-detail" (tagClickEvent)="watchTagClickEvt($event)" (signatureOutput)="saveSignatures($event)"
-          class="sub-grid-custom" [repoName]="repoName" [registryUrl]="registryUrl" [withNotary]="withNotary"
-          [withClair]="withClair" [withAdmiral]="withAdmiral" [hasSignedIn]="hasSignedIn"
+          class="sub-grid-custom" [repoName]="repoName" [registryUrl]="registryUrl" [withNotary]="withNotary" [withAdmiral]="withAdmiral" [hasSignedIn]="hasSignedIn"
           [isGuest]="isGuest" [projectId]="projectId" [memberRoleID]="memberRoleID"></hbr-tag>
       </div>
     </section>
