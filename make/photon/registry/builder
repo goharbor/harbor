@@ -29,7 +29,7 @@ wget https://github.com/docker/distribution/pull/2879.patch
 git apply 2879.patch
 cd $cur
 
-echo 'build the registry binary bases on the golang:1.11...'
+echo 'build the registry binary ...'
 cp Dockerfile.binary $TEMP
 docker build -f $TEMP/Dockerfile.binary -t registry-golang $TEMP
 

@@ -30,4 +30,4 @@ cp compile.sh binary/
 docker run -it --rm -v $cur/binary:/go/bin --name golang_code_builder $GOLANG_IMAGE /bin/bash /go/bin/compile.sh $GIT_PATH $CODE_VERSION $MAIN_GO_PATH $BIN_NAME
 
 #Clear
-docker rm -f golang_code_builder
+#docker rm -f golang_code_builder
