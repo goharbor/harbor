@@ -273,6 +273,7 @@
         "PROJECT_MASTER": "Mantenedor",
         "DEVELOPER": "Desenvolvedor",
         "GUEST": "Visitante",
+        "LIMITED_GUEST": "Limited Guest",
         "DELETE": "Remover",
         "ITEMS": "itens",
         "ACTIONS": "Ações",
@@ -733,7 +734,8 @@
         "ADMIN": "Admin(s)",
         "MASTER": "Master(s)",
         "DEVELOPER": "Developer(s)",
-        "GUEST": "Guest(s)"
+        "GUEST": "Guest(s)",
+        "LIMITED_GUEST": "Limited guest(s)"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Algumas alterações ainda não foram salvas. Você deseja cancelar?"

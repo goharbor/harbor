@@ -125,6 +125,8 @@ func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 			roles = append(roles, common.RoleDeveloper)
 		case "RS":
 			roles = append(roles, common.RoleGuest)
+		case "LRS":
+			roles = append(roles, common.RoleLimitedGuest)
 		}
 	}
 	return mergeRoles(roles, s.GetRolesByGroup(projectIDOrName))

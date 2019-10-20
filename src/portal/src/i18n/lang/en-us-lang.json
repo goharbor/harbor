@@ -275,6 +275,7 @@
         "PROJECT_MASTER": "Master",
         "DEVELOPER": "Developer",
         "GUEST": "Guest",
+        "LIMITED_GUEST": "Limited Guest",
         "DELETE": "Delete",
         "ITEMS": "items",
         "ACTIONS": "Actions",
@@ -737,7 +738,8 @@
         "ADMIN": "Admin(s)",
         "MASTER": "Master(s)",
         "DEVELOPER": "Developer(s)",
-        "GUEST": "Guest(s)"
+        "GUEST": "Guest(s)",
+        "LIMITED_GUEST": "Limited guest(s)"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
