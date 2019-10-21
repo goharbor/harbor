@@ -64,7 +64,7 @@ The installation steps boil down to the following
 2. Configure **harbor.yml**;
 3. Run **install.sh** to install and start Harbor;
 
-#### Downloading the installer:
+### Downloading the installer:
 
 The binary of the installer can be downloaded from the [release](https://github.com/goharbor/harbor/releases) page. Choose either online or offline installer. Use *tar* command to extract the package.
 
@@ -80,7 +80,7 @@ Offline installer:
     $ tar xvf harbor-offline-installer-<version>.tgz
 ```
 
-#### Configuring Harbor
+## Configuring Harbor
 
 Configuration parameters are located in the file **harbor.yml**.
 
@@ -92,9 +92,13 @@ There are two categories of parameters, **required parameters** and **optional p
 
 The parameters are described below - note that at the very least, you will need to change the **hostname** attribute.
 
-##### Required parameters
+### Required parameters
 
-<table width="100%" border="1">
+**IMPORTANT**: Harbor does not ship with any certificates, and by default uses HTTP to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary, you must use HTTPS. 
+  
+You can use certificates that are signed by a trusted third-party CA, or you can use self-signed certificates. For information about how to create a CA, and how to use a CA to sign a server certificate and a client certificate, see **[Configuring Harbor with HTTPS Access](configure_https.md)**.
+
+<table width="100%" border="0">
   <caption>
     Required Parameters for Harbor
   </caption>
@@ -104,108 +108,103 @@ The parameters are described below - note that at the very least, you will need 
     <th scope="col">Description and Additional Parameters </th>
   </tr>
   <tr>
-    <td><code>hostname</code></td>
-    <td>None</td>
-    <td>The target host&rsquo;s hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., <code>192.168.1.10</code> or <code>reg.yourdomain.com</code>. <em>Do NOT use <code>localhost</code> or <code>127.0.0.1</code> or <code>0.0.0.0</code> for the hostname - the registry service needs to be accessible by external clients!</em></td>
+    <td valign="top"><code>hostname</code></td>
+    <td valign="top">None</td>
+    <td valign="top">The target host&rsquo;s hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., <code>192.168.1.10</code> or <code>reg.yourdomain.com</code>. <em>Do NOT use <code>localhost</code> or <code>127.0.0.1</code> or <code>0.0.0.0</code> for the hostname - the registry service needs to be accessible by external clients!</em></td>
   </tr>
   <tr>
-    <td><code>data_volume</code></td>
-    <td>None</td>
-    <td>The location to store harbor&rsquo;s data.</td>
+    <td valign="top"><code>https</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><p>The protocol used to access the Portal and the token/notification service. </p>
+      </td>
   </tr>
   <tr>
-    <td><code>harbor_admin_password</code></td>
-    <td>None</td>
-    <td>The administrator&rsquo;s initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator&rsquo;s password should be set in the Portal. <em>Note that the default username/password are <strong>admin/Harbor12345</strong> .</em></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>port</code></td>
+    <td valign="top">port number for HTTPS</td>
   </tr>
   <tr>
-    <td><code>database</code></td>
-    <td>&nbsp;</td>
-    <td>the configs related to local database</td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>certificate</code></td>
+    <td valign="top">The path to the SSL certificate. This is only applied when the protocol is set to HTTPS.</td>
   </tr>
   <tr>
-    <td>&nbsp;</td>
-    <td><code>password</code></td>
-    <td>The root password for the PostgreSQL database. Change this password for any production use.</td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>private_key</code></td>
+    <td valign="top">The path to the SSL key. This is only applied when the protocol is set to HTTPS.</td>
   </tr>
   <tr>
-    <td>&nbsp;</td>
-    <td><code>max_idle_conns</code></td>
-    <td>The maximum number of connections in the idle connection pool. If &lt;=0 no idle connections are retained. The default value is 50 and if it is not configured the value is 2.</td>
+    <td valign="top"><code>harbor_admin_password</code></td>
+    <td valign="top">None</td>
+    <td valign="top">The administrator&rsquo;s initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator&rsquo;s password should be set in the Portal. <em>Note that the default username/password are <strong>admin/Harbor12345</strong> .</em></td>
   </tr>
   <tr>
-    <td>&nbsp;</td>
-    <td><code>max_open_conns</code></td>
-    <td>The maximum number of open connections to the database. If &lt;= 0 there is no limit on the number of open connections. The default value is 100 for the max connections to the Harbor database. If it is not configured the value is 0.</td>
+    <td valign="top"><code>database</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">the configs related to local database</td>
   </tr>
   <tr>
-    <td><code>jobservice</code></td>
-    <td>&nbsp;</td>
-    <td>jobservice related service</td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>password</code></td>
+    <td valign="top">The root password for the PostgreSQL database. Change this password for any production use.</td>
   </tr>
   <tr>
-    <td>&nbsp;</td>
-    <td><code>max_job_workers</code></td>
-    <td>The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host.</td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>max_idle_conns</code></td>
+    <td valign="top">The maximum number of connections in the idle connection pool. If &lt;=0 no idle connections are retained. The default value is 50 and if it is not configured the value is 2.</td>
   </tr>
   <tr>
-    <td><code>log</code></td>
-    <td>&nbsp;</td>
-    <td>log related url </td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>max_open_conns</code></td>
+    <td valign="top">The maximum number of open connections to the database. If &lt;= 0 there is no limit on the number of open connections. The default value is 100 for the max connections to the Harbor database. If it is not configured the value is 0.</td>
   </tr>
   <tr>
-    <td>&nbsp;</td>
-    <td><code>level</code></td>
-    <td>log level, options are debug, info, warning, error, fatal</td>
+    <td valign="top"><code>data_volume</code></td>
+    <td valign="top">None</td>
+    <td valign="top">The location to store harbor&rsquo;s data.</td>
   </tr>
   <tr>
-    <td>&nbsp;</td>
-    <td><code>local</code></td>
-    <td>The default is to retain logs locally.<ul>
+    <td valign="top"><code>jobservice</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">jobservice related service</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>max_job_workers</code></td>
+    <td valign="top">The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host.</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>log</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">log related url </td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>level</code></td>
+    <td valign="top">log level, options are debug, info, warning, error, fatal</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>local</code></td>
+    <td valign="top">The default is to retain logs locally.<ul>
           <li><code>rotate_count</code>: Log files are rotated <strong>rotate_count</strong> times before being removed. If count is 0, old versions are removed rather than rotated.</li>
           <li><code>rotate_size</code>: Log files are rotated only if they grow bigger than <strong>rotate_size</strong> bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.</li>
           <li><code>location</code>: the directory to store logs</li>
         </ul></td>
   </tr>
   <tr>
-    <td>&nbsp;</td>
-    <td><code>external_endpoint</code></td>
-    <td>Enable this option to forward logs to a syslog server.
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>external_endpoint</code></td>
+    <td valign="top">Enable this option to forward logs to a syslog server.
       <ul>
         <li><code>protocol</code>: Transport protocol for the syslog server. Default is TCP.</li>
         <li><code>host</code>: The URL of the syslog server.</li>
         <li><code>port</code>: The port on which the syslog server listens</li>
     </ul>    </td>
   </tr>
-  <tr>
-    <td><code>https</code></td>
-    <td>&nbsp;</td>
-    <td><p>The protocol used to access the Portal and the token/notification service. </p>
-    <p><strong>IMPORTANT</strong>: Harbor does not ship with any certificates, and uses HTTP by default to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary, you must use HTTPS. </p>
-    <p>You can use certificates that are signed by a trusted third-party CA, or in you can use self-signed certificates. For information about how to create a CA, and how to use a CA to sign a server certificate and a client certificate, see <a href="configure_https.md">Configuring Harbor with HTTPS Access</a>.</p></td>
-  </tr>
-  <tr>
-    <td>&nbsp;</td>
-    <td><code>port</code></td>
-    <td>port number for HTTPS</td>
-  </tr>
-  <tr>
-    <td>&nbsp;</td>
-    <td><code>certificate</code></td>
-    <td>The path to the SSL certificate. This is only applied when the protocol is set to HTTPS.</td>
-  </tr>
-  <tr>
-    <td>&nbsp;</td>
-    <td><code>private_key</code></td>
-    <td>The path to the SSL key. This is only applied when the protocol is set to HTTPS.</td>
-  </tr>
 </table>
-
-**IMPORTANT**: Harbor does not ship with any certificates, and uses HTTP by default to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary, you must use HTTPS. 
   
-You can use certificates that are signed by a trusted third-party CA, or in  you can use self-signed certificates. For information about how to create a CA, and how to use a CA to sign a server certificate and a client certificate, see **[Configuring Harbor with HTTPS Access](configure_https.md)**.
-  
-##### optional parameters
+### Optional parameters
 
 - **http**: Do not use HTTP in production environments. Using HTTP is acceptable only in air-gapped test or development environments that do not have a connection to the external internet. Using HTTP in environments that are not air-gapped exposes you to man-in-the-middle attacks.
   - **port** : Port number for HTTP
@@ -288,11 +287,11 @@ storage_service:
 
 _NOTE: For detailed information on storage backend of a registry, refer to [Registry Configuration Reference](https://docs.docker.com/registry/configuration/) ._
 
-#### Finishing installation and starting Harbor
+## Finishing installation and starting Harbor
 
 Once **harbor.yml** and storage backend (optional) are configured, install and start Harbor using the `install.sh` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.
 
-##### Default installation (without Notary/Clair)
+### Default installation (without Notary/Clair)
 
 Harbor has integrated with Notary and Clair (for vulnerability scanning). However, the default installation does not include Notary or Clair service.
 
@@ -311,7 +310,7 @@ $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 
 **IMPORTANT:** The default installation of Harbor uses _HTTP_ - as such, you will need to add the option `--insecure-registry` to your client's Docker daemon and restart the Docker service.
 
-##### Installation with Notary
+### Installation with Notary
 To install Harbor with Notary service, add a parameter when you run `install.sh`:
 
 ```sh
@@ -322,7 +321,7 @@ To install Harbor with Notary service, add a parameter when you run `install.sh`
 
 More information about Notary and Docker Content Trust, please refer to [Docker's documentation](https://docs.docker.com/engine/security/trust/content_trust/).
 
-##### Installation with Clair
+### Installation with Clair
 
 To install Harbor with Clair service, add a parameter when you run `install.sh`:
 
@@ -333,7 +332,7 @@ To install Harbor with Clair service, add a parameter when you run `install.sh`:
 For more information about Clair, please refer to Clair's documentation:
 `https://coreos.com/clair/docs/2.0.1/`
 
-##### Installation with chart repository service
+### Installation with chart repository service
 
 To install Harbor with chart repository service, add a parameter when you run ```install.sh```:
 
@@ -349,11 +348,11 @@ To install Harbor with chart repository service, add a parameter when you run ``
 
 For information on how to use Harbor, please refer to **[User Guide of Harbor](user_guide.md)** .
 
-#### Configuring Harbor with HTTPS access
+## Configuring Harbor with HTTPS access
 
 Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.
 
-### Managing Harbor's lifecycle
+## Managing Harbor's lifecycle
 
 You can use docker-compose to manage the lifecycle of Harbor. Some useful commands are listed as follows (must run in the same directory as *docker-compose.yml*).
 
@@ -409,7 +408,7 @@ $ rm -r /data/database
 $ rm -r /data/registry
 ```
 
-#### *Managing lifecycle of Harbor when it's installed with Notary, Clair and chart repository service*
+### *Managing lifecycle of Harbor when it's installed with Notary, Clair and chart repository service*
 
 If you want to install Notary, Clair and chart repository service together, you should include all the components in the prepare commands:
 
@@ -422,7 +421,7 @@ $ sudo docker-compose up -d
 
 Please check the [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) for more on docker-compose.
 
-### Persistent data and log files
+## Persistent data and log files
 
 By default, registry data is persisted in the host's `/data/` directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated, you can edit the `data_volume` in `harbor.yml` file to change this directory.
 
