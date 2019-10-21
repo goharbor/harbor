@@ -26,6 +26,7 @@ ${HARBOR_ADMIN}  admin
 Test Case - Create An New User
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
+    Enable Self Reg
     Create An New User  url=${HARBOR_URL}  username=tester${d}  email=tester${d}@vmware.com  realname=harbortest  newPassword=Test1@34  comment=harbortest
     Close Browser
 
