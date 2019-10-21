@@ -374,6 +374,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
   }
   closeReset() {
     this.showSecretDetail = false;
+    this.showGenerateCliFn();
     this.resetSecretFrom.resetForm(new ResetSecret());
   }
 }

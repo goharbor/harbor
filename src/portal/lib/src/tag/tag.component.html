@@ -93,6 +93,7 @@
             <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
                 <clr-dg-cell class="truncated flex-max-width">
                     <a href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
+                    <span *ngIf="t.immutable" class="label label-info ml-1">{{'REPOSITORY.IMMUTABLE' | translate}}</span>
                 </clr-dg-cell>
                 <clr-dg-cell>{{sizeTransform(t.size)}}</clr-dg-cell>
                 <clr-dg-cell class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">

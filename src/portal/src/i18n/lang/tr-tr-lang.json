@@ -621,6 +621,7 @@
         "PULL_COMMAND": "İndirme Komutu",
         "PULL_TIME": "İndirme Zamanı",
         "PUSH_TIME": "Yükleme Zamanı",
+        "IMMUTABLE": "Immutable",
         "MY_REPOSITORY": "Depom",
         "PUBLIC_REPOSITORY": "Genel Depo",
         "DELETION_TITLE_REPO": "Depo Silme İşlemini Onaylayın",

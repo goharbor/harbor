@@ -623,6 +623,7 @@
         "PULL_COMMAND": "Comando Pull",
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
+        "IMMUTABLE": "Immutable",
         "MY_REPOSITORY": "Mi Repositorio",
         "PUBLIC_REPOSITORY": "Repositorio Público",
         "DELETION_TITLE_REPO": "Confirmar Eliminación de Repositorio",
