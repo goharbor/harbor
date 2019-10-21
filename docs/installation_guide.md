@@ -203,6 +203,8 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   
 ### Optional parameters
 
+The following table lists the additional parameters that you can set to  configure your Harbor deployment beyond the required settings. In most cases, you need to uncomment the parameters in `harbor.yml`.
+
 <table width="100%" border="0">
   <caption>
     Optional Parameters for Harbor
@@ -225,59 +227,59 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top"><code>external_url</code></td>
     <td valign="top">None</td>
-    <td valign="top">Enable it if use external proxy, and when it enabled the hostname will no longer used</td>
+    <td valign="top">Enable this option to use an external proxy. When  enabled, the hostname is no longer used.</td>
   </tr>
   <tr>
     <td valign="top"><code>clair</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">Clair related configs</td>
+    <td valign="top">Configure clair. </td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>updaters_interval</code></td>
-    <td valign="top">The interval of clair updaters, the unit is hour, set to 0 to disable the updaters</td>
+    <td valign="top">Set an interval for Clair updates, in hours. Set to 0 to disable the updates.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>http_proxy</code></td>
-    <td valign="top">Config http proxy for Clair, e.g. <code>http://my.proxy.com:3128</code>.</td>
+    <td valign="top">Configure an HTTP proxy for Clair, for example,  <code>http://my.proxy.com:3128</code>.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>https_proxy</code></td>
-    <td valign="top">Config https proxy for Clair, e.g. <code>http://my.proxy.com:3128</code>.</td>
+    <td valign="top">Configure an HTTPS proxy for Clair, for example,  <code>http://my.proxy.com:3128</code>.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>no_proxy</code></td>
-    <td valign="top">Config no proxy for Clair, e.g. <code>127.0.0.1,localhost,core,registry</code>.</td>
+    <td valign="top">Configure when not to use a proxy for Clair, for example, <code>127.0.0.1,localhost,core,registry</code>.</td>
   </tr>
   <tr>
     <td valign="top"><code>chart</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">chart related configs</td>
+    <td valign="top">Configure Chart settings.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>absolute_url</code></td>
-    <td valign="top">if set to enabled chart will use absolute url, otherwise set it to disabled, chart will use relative url.</td>
+    <td valign="top">Set to <code>enabled</code> for chart to use an absolute URL. Set to <code>disabled</code> for chart to use a relative URL.</td>
   </tr>
   <tr>
     <td valign="top"><code>external_database</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">external database configs, Currently only support POSTGRES.</td>
+    <td valign="top">Configure external database settings, if you disable the local database option. Harbor currently only supports POSTGRES.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>harbor</code></td>
-    <td valign="top"><p>harbor&rsquo;s core database configs</p>
+    <td valign="top"><p>Configure an external database for Harbor data.</p>
       <ul>
-        <li><code>host</code>: hostname for harbor core database</li>
-        <li><code>port</code>: port of harbor&rsquo;s core database</li>
-        <li><code>db_name</code>: database name of harbor core database</li>
-        <li><code>username</code>: username to connect harbor core database</li>
-        <li><code>password</code>: password to harbor core database</li>
-        <li><code>ssl_mode</code>: is enable ssl mode</li>
+        <li><code>host</code>: Hostname of the Harbor database.</li>
+        <li><code>port</code>: Database port.</li>
+        <li><code>db_name</code>: Database name.</li>
+        <li><code>username</code>: Username to connect to the core Harbor database.</li>
+        <li><code>password</code>: Password for the account you set in <code>username</code>.</li>
+        <li><code>ssl_mode</code>: Enable SSL mode.</li>
         <li><code>max_idle_conns</code>: The maximum number of connections in the idle connection pool. If &lt;=0 no idle connections are retained. The default value is 2.</li>
         <li><code>max_open_conns</code>: The maximum number of open connections to the database. If &lt;= 0 there is no limit on the number of open connections. The default value is 0.</li>
     </ul>      </td>
@@ -285,27 +287,27 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>clair</code></td>
-    <td valign="top">clair&rsquo;s database configs
+    <td valign="top">Configure an external database for Clair.
       <ul>
-        <li><code>host</code>: hostname for clair database</li>
-        <li><code>port</code>: port of clair database</li>
-        <li><code>db_name</code>: database name of clair database</li>
-        <li><code>username</code>: username to connect clair database</li>
-        <li><code>password</code>: password to clair database</li>
-        <li><code>ssl_mode</code>: is enable ssl mode</li>
+        <li><code>host</code>: Hostname of the Clair database</li>
+        <li><code>port</code>: Database port.</li>
+        <li><code>db_name</code>: Database name.</li>
+        <li><code>username</code>: Username to connect to the Clair database.</li>
+        <li><code>password</code>: Password for the account you set in <code>username</code>.</li>
+        <li><code>ssl_mode</code>: Enable SSL mode.</li>
       </ul>    </td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>notary_signer</code></td>
-    <td valign="top">notary&rsquo;s signer database configs
+    <td valign="top">Configure an external database for the Notary signer database
       <ul>
-        <li><code>host</code>: hostname for notary signer database</li>
-        <li><code>port</code>: port of notary signer database</li>
-        <li><code>db_name</code>: database name of notary signer database</li>
-        <li><code>username</code>: username to connect notary signer database</li>
-        <li><code>password</code>: password to notary signer database</li>
-        <li><code>ssl_mode</code>: is enable ssl mode</li>
+        <li><code>host</code>: Hostname of the Notary signer database</li>
+        <li><code>port</code>: Database port.</li>
+        <li><code>db_name</code>: Database name.</li>
+        <li><code>username</code>: Username to connect to the Notary signer database.</li>
+        <li><code>password</code>: Password for the account you set in <code>username</code>.</li>
+        <li><code>ssl_mode</code>: Enable SSL mode.</li>
       </ul>    </td>
   </tr>
   <tr>
