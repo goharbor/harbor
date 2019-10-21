@@ -53,6 +53,8 @@ var (
 
 			{Resource: rbac.ResourceLabelResource, Action: rbac.ActionList},
 
+			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
+
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionUpdate},
@@ -137,6 +139,8 @@ var (
 
 			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
 
+			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
+
 			{Resource: rbac.ResourceReplication, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceReplication, Action: rbac.ActionList},
 
@@ -220,6 +224,8 @@ var (
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
 
+			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
+
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionUpdate},
@@ -273,6 +279,8 @@ var (
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
 
+			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
+
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
@@ -302,6 +310,8 @@ var (
 
 		"limitedGuest": {
 			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
