@@ -78,8 +78,8 @@ The installation procedure involves the following steps:
 1. Select either the online or offline installer for the version you want to install.
 1. Use `tar` to extract the installer package:
 
-  - Online installer:<pre>bash $ tar xvf harbor-online-installer-<em>version</em>.tgz</pre>
-  - Offline installer:<pre>bash $ tar xvf harbor-offline-installer-<em>version</em>.tgz</pre>
+   - Online installer:<pre>bash $ tar xvf harbor-online-installer-<em>version</em>.tgz</pre>
+   - Offline installer:<pre>bash $ tar xvf harbor-offline-installer-<em>version</em>.tgz</pre>
 
 ## Configure Harbor
 
@@ -358,7 +358,7 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top"><code>storage_service</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">By default, Harbor stores images and chart on your local filesystem. In a production environment, you may consider use other storage backend instead of the local filesystem, like S3, OpenStack Swift, Ceph, etc. These parameters are configurations for registry. </td>
+    <td valign="top">By default, Harbor stores images and charts on your local filesystem. In a production environment, you may consider use other storage backend instead of the local filesystem, like S3, OpenStack Swift, Ceph, etc. These parameters are configurations for registry. See *Configuring Storage Backend* below for more information.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
