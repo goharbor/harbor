@@ -206,67 +206,181 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   
 ### Optional parameters
 
-- **http**: Do not use HTTP in production environments. Using HTTP is acceptable only in air-gapped test or development environments that do not have a connection to the external internet. Using HTTP in environments that are not air-gapped exposes you to man-in-the-middle attacks.
-  - **port** : Port number for HTTP
-
-- **external_url**: Enable it if use external proxy, and when it enabled the hostname will no longer used
-
-- **clair**: Clair related configs
-  - **updaters_interval**: The interval of clair updaters, the unit is hour, set to 0 to disable the updaters
-  - **http_proxy**: Config http proxy for Clair, e.g. `http://my.proxy.com:3128`.
-  - **https_proxy**: Config https proxy for Clair, e.g. `http://my.proxy.com:3128`.
-  - **no_proxy**: Config no proxy for Clair, e.g. `127.0.0.1,localhost,core,registry`.
-
-- **chart**: chart related configs
-  - **absolute_url**: if set to enabled chart will use absolute url, otherwise set it to disabled, chart will use relative url.
-
-- **external_database**: external database configs, Currently only support POSTGRES.
-  - **harbor**: harbor's core database configs
-    - **host**: hostname for harbor core database
-    - **port**: port of harbor's core database
-    - **db_name**: database name of harbor core database
-    - **username**: username to connect harbor core database
-    - **password**: password to harbor core database
-    - **ssl_mode**: is enable ssl mode
-    - **max_idle_conns**: The maximum number of connections in the idle connection pool. If <=0 no idle connections are retained. The default value  is 2.
-    - **max_open_conns**: The maximum number of open connections to the database. If <= 0 there is no limit on the number of open connections. The default value is 0.
-  - **clair**: clair's database configs
-    - **host**: hostname for clair database
-    - **port**: port of clair database
-    - **db_name**: database name of clair database
-    - **username**: username to connect clair database
-    - **password**: password to clair database
-    - **ssl_mode**: is enable ssl mode
-  - **notary_signer**: notary's signer database configs
-    - **host**: hostname for notary signer database
-    - **port**: port of notary signer database
-    - **db_name**: database name of notary signer database
-    - **username**: username to connect notary signer database
-    - **password**: password to notary signer database
-    - **ssl_mode**: is enable ssl mode
-  - **notary_server**:
-    - **host**: hostname for notary server database
-    - **port**: port of notary server database
-    - **db_name**: database name of notary server database
-    - **username**: username to connect notary server database
-    - **password**: password to notary server database
-    - **ssl_mode**: is enable ssl mode
-
-- **external_redis**: configs for use the external redis
-  - **host**: host for external redis
-  - **port**: port for external redis
-  - **password**: password to connect external host
-  - **registry_db_index**: db index for registry use
-  - **jobservice_db_index**: db index for jobservice
-  - **chartmuseum_db_index**: db index for chartmuseum
+<table width="100%" border="0">
+  <caption>
+    Optional Parameters for Harbor
+  </caption>
+  <tr>
+    <th scope="col">Parameter</th>
+    <th scope="col">Sub-Parameters</th>
+    <th scope="col">Description and Additional Parameters </th>
+  </tr>
+  <tr>
+    <td valign="top"><code>http</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">Do not use HTTP in production environments. Using HTTP is acceptable only in air-gapped test or development environments that do not have a connection to the external internet. Using HTTP in environments that are not air-gapped exposes you to man-in-the-middle attacks.</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>port</code></td>
+    <td valign="top">Port number for HTTP</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>external_url</code></td>
+    <td valign="top">None</td>
+    <td valign="top">Enable it if use external proxy, and when it enabled the hostname will no longer used</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>clair</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">Clair related configs</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>updaters_interval</code></td>
+    <td valign="top">The interval of clair updaters, the unit is hour, set to 0 to disable the updaters</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>http_proxy</code></td>
+    <td valign="top">Config http proxy for Clair, e.g. <code>http://my.proxy.com:3128</code>.</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>https_proxy</code></td>
+    <td valign="top">Config https proxy for Clair, e.g. <code>http://my.proxy.com:3128</code>.</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>no_proxy</code></td>
+    <td valign="top">Config no proxy for Clair, e.g. <code>127.0.0.1,localhost,core,registry</code>.</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>chart</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">chart related configs</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>absolute_url</code></td>
+    <td valign="top">if set to enabled chart will use absolute url, otherwise set it to disabled, chart will use relative url.</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>external_database</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">external database configs, Currently only support POSTGRES.</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>harbor</code></td>
+    <td valign="top"><p>harbor&rsquo;s core database configs</p>
+      <ul>
+        <li><code>host</code>: hostname for harbor core database</li>
+        <li><code>port</code>: port of harbor&rsquo;s core database</li>
+        <li><code>db_name</code>: database name of harbor core database</li>
+        <li><code>username</code>: username to connect harbor core database</li>
+        <li><code>password</code>: password to harbor core database</li>
+        <li><code>ssl_mode</code>: is enable ssl mode</li>
+        <li><code>max_idle_conns</code>: The maximum number of connections in the idle connection pool. If &lt;=0 no idle connections are retained. The default value is 2.</li>
+        <li><code>max_open_conns</code>: The maximum number of open connections to the database. If &lt;= 0 there is no limit on the number of open connections. The default value is 0.</li>
+    </ul>      </td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>clair</code></td>
+    <td valign="top">clair&rsquo;s database configs
+      <ul>
+        <li><code>host</code>: hostname for clair database</li>
+        <li><code>port</code>: port of clair database</li>
+        <li><code>db_name</code>: database name of clair database</li>
+        <li><code>username</code>: username to connect clair database</li>
+        <li><code>password</code>: password to clair database</li>
+        <li><code>ssl_mode</code>: is enable ssl mode</li>
+      </ul>    </td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>notary_signer</code></td>
+    <td valign="top">notary&rsquo;s signer database configs
+      <ul>
+        <li><code>host</code>: hostname for notary signer database</li>
+        <li><code>port</code>: port of notary signer database</li>
+        <li><code>db_name</code>: database name of notary signer database</li>
+        <li><code>username</code>: username to connect notary signer database</li>
+        <li><code>password</code>: password to notary signer database</li>
+        <li><code>ssl_mode</code>: is enable ssl mode</li>
+      </ul>    </td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>notary_server</code></td>
+    <td valign="top"><ul>
+      <li><code>host</code>: hostname for notary server database</li>
+      <li><code>port</code>: port of notary server database</li>
+      <li><code>db_name</code>: database name of notary server database</li>
+      <li><code>username</code>: username to connect notary server database</li>
+      <li><code>password</code>: password to notary server database</li>
+      <li><code>ssl_mode</code>: is enable ssl mode</li>
+    </ul>    </td>
+  </tr>
+  <tr>
+    <td valign="top"><code>external_redis</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">configs for use the external redis</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>host</code></td>
+    <td valign="top">host for external redis</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>port</code></td>
+    <td valign="top">port for external redis</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>password</code></td>
+    <td valign="top">password to connect external host</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>registry_db_index</code></td>
+    <td valign="top">db index for registry use</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>jobservice_db_index</code></td>
+    <td valign="top">db index for jobservice</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>chartmuseum_db_index</code></td>
+    <td valign="top">db index for chartmuseum </td>
+  </tr>
+  <tr>
+    <td valign="top"><code>storage_service</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">By default, Harbor stores images and chart on your local filesystem. In a production environment, you may consider use other storage backend instead of the local filesystem, like S3, OpenStack Swift, Ceph, etc. These parameters are configurations for registry. </td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>ca_bundle</code></td>
+    <td valign="top">The path to the custom root ca certificate, which will be injected into the trust store of registry's and chart repository's containers. This is usually needed when the user hosts a internal storage with self signed certificate.</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>provider_name</code></td>
+    <td valign="top">Storage configs for registry, default is filesystem. for more info about this configuration please refer&nbsp;<a href="https://docs.docker.com/registry/configuration/" rel="nofollow">https://docs.docker.com/registry/configuration/</a></td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>redirect</code></td>
+    <td valign="top"><code>disable</code>: set disable to true when you want to disable registry redirect</td>
+  </tr>
+</table>
 
 #### Configuring storage backend (optional)
-
-- **storage_service**: By default, Harbor stores images and chart on your local filesystem. In a production environment, you may consider use other storage backend instead of the local filesystem, like S3, OpenStack Swift, Ceph, etc. These parameters are configurations for registry.
-  - **ca_bundle**:  The path to the custom root ca certificate, which will be injected into the trust store of registry's and chart repository's containers.  This is usually needed when the user hosts a internal storage with self signed certificate.
-  - **provider_name**: Storage configs for registry, default is filesystem. for more info about this configuration please refer https://docs.docker.com/registry/configuration/
-  - **redirect**:
-    - **disable**: set disable to true when you want to disable registry redirect
 
 For example, if you use Openstack Swift as your storage backend, the parameters may look like this:
 
