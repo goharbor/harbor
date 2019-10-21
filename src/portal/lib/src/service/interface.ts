@@ -68,6 +68,7 @@ export interface Tag extends Base {
   labels: Label[];
   push_time?: string;
   pull_time?: string;
+  immutable?: boolean;
 }
 
 /**
