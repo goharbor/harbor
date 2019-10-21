@@ -94,35 +94,112 @@ The parameters are described below - note that at the very least, you will need 
 
 ##### Required parameters
 
-- **hostname**: The target host's hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., `192.168.1.10` or `reg.yourdomain.com`. _Do NOT use `localhost` or `127.0.0.1` or `0.0.0.0` for the hostname - the registry service needs to be accessible by external clients!_
-
-- **data_volume**: The location to store harbor's data.
-
-- **harbor_admin_password**: The administrator's initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator's password should be set in the Portal. _Note that the default username/password are **admin/Harbor12345** ._
-
-- **database**: the configs related to local database
-  - **password**: The root password for the PostgreSQL database. Change this password for any production use.
-  - **max_idle_conns**: The maximum number of connections in the idle connection pool. If <=0 no idle connections are retained. The default value is 50 and if it is not configured the value is 2.
-  - **max_open_conns**: The maximum number of open connections to the database. If <= 0 there is no limit on the number of open connections. The default value is 100 for the max connections to the Harbor database. If it is not configured the value is 0.
-
-- **jobservice**: jobservice related service
-  - **max_job_workers**: The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host.
-- **log**: log related url
-  - **level**: log level, options are debug, info, warning, error, fatal
-  - **local**: The default is to retain logs locally.
-      - **rotate_count**: Log files are rotated **rotate_count** times before being removed. If count is 0, old versions are removed rather than rotated.
-      - **rotate_size**: Log files are rotated only if they grow bigger than **rotate_size** bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.
-      - **location**: the directory to store logs
-  - **external_endpoint**: Enable this option to forward logs to a syslog server.
-       - **protocol**: Transport protocol for the syslog server. Default is TCP.
-       - **host**: The URL of the syslog server.
-       - **port**: The port on which the syslog server listens.
-
-- **https**: The protocol used to access the Portal and the token/notification service. 
-
-  - **port**: port number for HTTPS
-  - **certificate**: The path to the SSL certificate. This is only applied  when the protocol is set to HTTPS.
-  - **private_key**: The path to the SSL key. This is only applied when the protocol is set to HTTPS.
+<table width="100%" border="1">
+  <caption>
+    Required Parameters for Harbor
+  </caption>
+  <tr>
+    <th scope="col">Parameter</th>
+    <th scope="col">Sub-parameters</th>
+    <th scope="col">Description and Additional Parameters </th>
+  </tr>
+  <tr>
+    <td><code>hostname</code></td>
+    <td>None</td>
+    <td>The target host&rsquo;s hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., <code>192.168.1.10</code> or <code>reg.yourdomain.com</code>. <em>Do NOT use <code>localhost</code> or <code>127.0.0.1</code> or <code>0.0.0.0</code> for the hostname - the registry service needs to be accessible by external clients!</em></td>
+  </tr>
+  <tr>
+    <td><code>data_volume</code></td>
+    <td>None</td>
+    <td>The location to store harbor&rsquo;s data.</td>
+  </tr>
+  <tr>
+    <td><code>harbor_admin_password</code></td>
+    <td>None</td>
+    <td>The administrator&rsquo;s initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator&rsquo;s password should be set in the Portal. <em>Note that the default username/password are <strong>admin/Harbor12345</strong> .</em></td>
+  </tr>
+  <tr>
+    <td><code>database</code></td>
+    <td>&nbsp;</td>
+    <td>the configs related to local database</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td><code>password</code></td>
+    <td>The root password for the PostgreSQL database. Change this password for any production use.</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td><code>max_idle_conns</code></td>
+    <td>The maximum number of connections in the idle connection pool. If &lt;=0 no idle connections are retained. The default value is 50 and if it is not configured the value is 2.</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td><code>max_open_conns</code></td>
+    <td>The maximum number of open connections to the database. If &lt;= 0 there is no limit on the number of open connections. The default value is 100 for the max connections to the Harbor database. If it is not configured the value is 0.</td>
+  </tr>
+  <tr>
+    <td><code>jobservice</code></td>
+    <td>&nbsp;</td>
+    <td>jobservice related service</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td><code>max_job_workers</code></td>
+    <td>The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host.</td>
+  </tr>
+  <tr>
+    <td><code>log</code></td>
+    <td>&nbsp;</td>
+    <td>log related url </td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td><code>level</code></td>
+    <td>log level, options are debug, info, warning, error, fatal</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td><code>local</code></td>
+    <td>The default is to retain logs locally.<ul>
+          <li><code>rotate_count</code>: Log files are rotated <strong>rotate_count</strong> times before being removed. If count is 0, old versions are removed rather than rotated.</li>
+          <li><code>rotate_size</code>: Log files are rotated only if they grow bigger than <strong>rotate_size</strong> bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.</li>
+          <li><code>location</code>: the directory to store logs</li>
+        </ul></td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td><code>external_endpoint</code></td>
+    <td>Enable this option to forward logs to a syslog server.
+      <ul>
+        <li><code>protocol</code>: Transport protocol for the syslog server. Default is TCP.</li>
+        <li><code>host</code>: The URL of the syslog server.</li>
+        <li><code>port</code>: The port on which the syslog server listens</li>
+    </ul>    </td>
+  </tr>
+  <tr>
+    <td><code>https</code></td>
+    <td>&nbsp;</td>
+    <td><p>The protocol used to access the Portal and the token/notification service. </p>
+    <p><strong>IMPORTANT</strong>: Harbor does not ship with any certificates, and uses HTTP by default to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary, you must use HTTPS. </p>
+    <p>You can use certificates that are signed by a trusted third-party CA, or in you can use self-signed certificates. For information about how to create a CA, and how to use a CA to sign a server certificate and a client certificate, see <a href="configure_https.md">Configuring Harbor with HTTPS Access</a>.</p></td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td><code>port</code></td>
+    <td>port number for HTTPS</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td><code>certificate</code></td>
+    <td>The path to the SSL certificate. This is only applied when the protocol is set to HTTPS.</td>
+  </tr>
+  <tr>
+    <td>&nbsp;</td>
+    <td><code>private_key</code></td>
+    <td>The path to the SSL key. This is only applied when the protocol is set to HTTPS.</td>
+  </tr>
+</table>
 
 **IMPORTANT**: Harbor does not ship with any certificates, and uses HTTP by default to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary, you must use HTTPS. 
   
