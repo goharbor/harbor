@@ -85,7 +85,7 @@
             <clr-dg-column *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
             <clr-dg-column>{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgField]="'docker_version'">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
             <clr-dg-column *ngIf="!withAdmiral">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pushComparator">{{'REPOSITORY.PUSH_TIME' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pullComparator">{{'REPOSITORY.PULL_TIME' | translate}}</clr-dg-column>
@@ -111,7 +111,7 @@
                 </clr-dg-cell>
                 <clr-dg-cell class="truncated" title="{{t.author}}">{{t.author}}</clr-dg-cell>
                 <clr-dg-cell>{{t.created | date: 'short'}}</clr-dg-cell>
-                <clr-dg-cell *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
+                <clr-dg-cell>{{t.docker_version}}</clr-dg-cell>
                 <clr-dg-cell *ngIf="!withAdmiral">
                     <hbr-label-piece *ngIf="t.labels?.length" [label]="t.labels[0]" [labelWidth]="90"> </hbr-label-piece>
                     <div class="signpost-item" [hidden]="t.labels?.length<=1">

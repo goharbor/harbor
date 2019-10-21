@@ -5,7 +5,7 @@
     <div class="clr-form-control">
         <label class="clr-control-label name">{{'SCANNER.SCANNER' | translate}}</label>
         <div class="clr-control-container">
-            <button *ngIf="scanners && scanners.length > 0" id="edit-scanner" class="btn btn-link edit" (click)="open()">{{'SCANNER.EDIT' | translate}}</button>
+
             <label *ngIf="!(scanners && scanners.length > 0)" class="name">{{'SCANNER.NOT_AVAILABLE' | translate}}</label>
         </div>
     </div>
@@ -16,9 +16,10 @@
                 <div class="clr-input-wrapper">
                     <div class="clr-input-wrapper">
                         <span id="scanner-name" class="scanner-name">{{scanner?.name}}</span>
+                        <button *ngIf="scanners && scanners.length > 0" id="edit-scanner" class="btn btn-primary btn-sm" (click)="open()">{{'SCANNER.EDIT' | translate}}</button>
                         <span *ngIf="scanner?.disabled" class="label label-warning ml-1">{{'SCANNER.DISABLED' | translate}}</span>
                         <span *ngIf="scanner?.health" class="label label-success ml-1">{{'SCANNER.HEALTHY' | translate}}</span>
-                        <span *ngIf="!scanner?.health" class="label label-danger ml-1">{{'SCANNER.Unhealthy' | translate}}</span>
+                        <span *ngIf="!scanner?.health" class="label label-danger ml-1">{{'SCANNER.UNHEALTHY' | translate}}</span>
                     </div>
                 </div>
             </div>

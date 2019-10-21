@@ -21,7 +21,7 @@ export class NewScannerFormComponent implements  OnInit, AfterViewInit, OnDestro
     checkOnGoing: boolean = false;
     newScannerForm: FormGroup = this.fb.group({
         name: this.fb.control("",
-            [Validators.required, Validators.pattern(/^[a-z0-9]+(?:[._-][a-z0-9]+)*$/)]),
+            [Validators.required]),
         description: this.fb.control(""),
         url: this.fb.control("",
             [Validators.required,
@@ -57,7 +57,7 @@ export class NewScannerFormComponent implements  OnInit, AfterViewInit, OnDestro
                     if (this.isEdit && this.originValue && this.originValue.name === name) {
                         return false;
                     }
-                    return this.newScannerForm.get('name').valid && name.length > 1;
+                    return this.newScannerForm.get('name').valid && name.length > 0;
                 }),
                 debounceTime(500),
                 distinctUntilChanged(),
@@ -130,15 +130,15 @@ export class NewScannerFormComponent implements  OnInit, AfterViewInit, OnDestro
             return true;
         }
         if (this.isNameExisting) {
-            this.nameTooltip = 'NAME_EXISTS';
+            this.nameTooltip = 'SCANNER.NAME_EXISTS';
             return false;
         }
         if (this.newScannerForm.get('name').errors && this.newScannerForm.get('name').errors.required) {
-            this.nameTooltip = 'NAME_REQUIRED';
+            this.nameTooltip = 'SCANNER.NAME_REQUIRED';
             return false;
         }
         if (this.newScannerForm.get('name').errors && this.newScannerForm.get('name').errors.pattern) {
-            this.nameTooltip = 'NAME_REX';
+            this.nameTooltip = 'SCANNER.NAME_REX';
             return false;
         }
         return true;
@@ -151,11 +151,11 @@ export class NewScannerFormComponent implements  OnInit, AfterViewInit, OnDestro
             return true;
         }
         if (this.isEndpointUrlExisting) {
-            this.endpointTooltip = 'ENDPOINT_EXISTS';
+            this.endpointTooltip = 'SCANNER.ENDPOINT_EXISTS';
             return false;
         }
         if (this.newScannerForm.get('url').errors && this.newScannerForm.get('url').errors.required) {
-            this.endpointTooltip = 'ENDPOINT_REQUIRED';
+            this.endpointTooltip = 'SCANNER.ENDPOINT_REQUIRED';
             return false;
         }
         //  skip here, validate when onblur
@@ -167,7 +167,7 @@ export class NewScannerFormComponent implements  OnInit, AfterViewInit, OnDestro
     //  validate endpointUrl when onblur
     checkEndpointUrl() {
         if (this.newScannerForm.get('url').errors && this.newScannerForm.get('url').errors.pattern) {
-            this.endpointTooltip = "ILLEGAL_ENDPOINT";
+            this.endpointTooltip = "SCANNER.ILLEGAL_ENDPOINT";
             this.showEndpointError = true;
         }
     }

@@ -1283,6 +1283,10 @@
         "ADAPTER": "适配器",
         "VENDOR": "供应商",
         "VERSION": "版本",
-        "SELECT_SCANNER": "选择扫描器"
+        "SELECT_SCANNER": "选择扫描器",
+        "ENABLED": "启用",
+        "ENABLE": "启用",
+        "DISABLE": "禁用",
+        "DELETE_SUCCESS": "删除成功"
     }
 }

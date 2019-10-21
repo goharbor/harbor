@@ -35,7 +35,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
                     confirmed.state === ConfirmationState.CONFIRMED) {
                     this.configScannerService.deleteScanners(confirmed.data)
                         .subscribe(response => {
-                            this.msgHandler.showSuccess("Delete Success");
+                            this.msgHandler.showSuccess("SCANNER.DELETE_SUCCESS");
                             this.getScanners();
                         }, error => {
                             this.errorHandler.error(error);
@@ -76,7 +76,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
             scanner.disabled = !scanner.disabled;
             this.configScannerService.updateScanner(scanner)
                 .subscribe(response => {
-                    this.msgHandler.showSuccess("Update Success");
+                    this.msgHandler.showSuccess("SCANNER.UPDATE_SUCCESS");
                     this.getScanners();
                 }, error => {
                     this.errorHandler.error(error);
@@ -87,7 +87,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
         if (this.selectedRow) {
             this.configScannerService.setAsDefault(this.selectedRow.uuid)
                 .subscribe(response => {
-                    this.msgHandler.showSuccess("Update Success");
+                    this.msgHandler.showSuccess("SCANNER.UPDATE_SUCCESS");
                     this.getScanners();
                 }, error => {
                     this.errorHandler.error(error);
