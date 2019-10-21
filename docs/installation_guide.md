@@ -1,20 +1,22 @@
 # Installation and Configuration Guide
 
-Harbor can be installed by one of two approaches:
+There are two possibilities when installing Harbor.
 
-- **Online installer:** The installer downloads Harbor's images from Docker hub. For this reason, the installer is very small in size.
+- **Online installer:** The online installer downloads the Harbor images from Docker hub. For this reason, the installer is very small in size.
 
-- **Offline installer:** Use this installer when the host does not have an Internet connection. The installer contains pre-built images so its size is larger.
+- **Offline installer:** Use the offline installer if the host to which are are deploying Harbor does not have a connection to the Internet. The offline installer contains pre-built images so it is larger than the online installer.
 
-All installers can be downloaded from the **[official release](https://github.com/goharbor/harbor/releases)** page.
+You download the installers from the **[official release](https://github.com/goharbor/harbor/releases)** page.
 
-This guide describes the steps to install and configure Harbor by using the online or offline installer. The installation processes are almost the same.
+This guide describes how to install and configure Harbor by using either the online or offline installer. The installation processes are almost the same.
 
-If you run a previous version of Harbor, you may need to update ```harbor.yml``` and migrate the data to fit the new database schema. For more details, please refer to **[Harbor Migration Guide](migration_guide.md)**.
+If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see the **[Harbor Upgrade and Migration Guide](migration_guide.md)**.
 
-In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Harbor on Kubernetes](kubernetes_deployment.md) for details.
+In addition, the Harbor community created instructions describing how to deploy Harbor on Kubernetes. If you want to deploy Harbor to Kubernetes, see [Harbor on Kubernetes](kubernetes_deployment.md).
 
 ## Harbor Components
+
+The table below lists the components that are deployed when you deploy Harbor.
 
 |Component|Version|
 |---|---|
@@ -28,71 +30,66 @@ In addition, the deployment instructions on Kubernetes has been created by the c
 |Helm|2.9.1|
 |Swagger-ui|3.22.1|
 
-## Prerequisites for the target host
+## Deployment Prerequisites for the Target Host
 
-Harbor is deployed as several Docker containers, and, therefore, can be deployed on any Linux distribution that supports Docker. The target host requires Docker, and Docker Compose to be installed.
+Harbor is deployed as several Docker containers. You can therefore deploy it on any Linux distribution that supports Docker. The target host requires Docker, and Docker Compose to be installed.
 
 ### Hardware
 
-|Resource|Capacity|Description|
+The following table lists the minimum and recommended hardware configurations for deploying Harbor.
+
+|Resource|Minimum|Recommended|
 |---|---|---|
-|CPU|minimal 2 CPU|4 CPU is preferred|
-|Mem|minimal 4GB|8GB is preferred|
-|Disk|minimal 40GB|160GB is preferred|
+|CPU|2 CPU|4 CPU|
+|Mem|4 GB|8 GB|
+|Disk|40 GB|160 GB|
 
 ### Software
 
+The following table lists the software versions that must be installed on the target host.
+
 |Software|Version|Description|
 |---|---|---|
-|Docker engine|version 17.06.0-ce+ or higher|For installation instructions, please refer to: [docker engine doc](https://docs.docker.com/engine/installation/)|
-|Docker Compose|version 1.18.0 or higher|For installation instructions, please refer to: [docker compose doc](https://docs.docker.com/compose/install/)|
-|Openssl|latest is preferred|Generate certificate and keys for Harbor|
+|Docker engine|version 17.06.0-ce+ or higher|For installation instructions, see [docker engine doc](https://docs.docker.com/engine/installation/)|
+|Docker Compose|version 1.18.0 or higher|For installation instructions, see [docker compose doc](https://docs.docker.com/compose/install/)|
+|Openssl|latest is preferred|Used to generate certificate and keys for Harbor|
 
 ### Network ports
 
+Harbor requires that the following ports be open on the target host.
+
 |Port|Protocol|Description|
 |---|---|---|
-|443|HTTPS|Harbor portal and core API will accept requests on this port for https protocol, this port can change in config file|
-|4443|HTTPS|Connections to the Docker Content Trust service for Harbor, only needed when Notary is enabled, This port can change in config file|
-|80|HTTP|Harbor portal and core API will accept requests on this port for http protocol|
+|443|HTTPS|Harbor portal and core API accept HTTPS requests on this port. You can change this port in the configuration file.|
+|4443|HTTPS|Connections to the Docker Content Trust service for Harbor. Only required if Notary is enabled. You can change this port in the configuration file.|
+|80|HTTP|Harbor portal and core API accept HTTP requests on this port. You can change this port in the configuration file.|
 
-## Installation Steps
+## Installation Procedure
 
-The installation steps boil down to the following
+The installation procedure involves the following steps:
 
-1. Download the installer;
-2. Configure **harbor.yml**;
-3. Run **install.sh** to install and start Harbor;
+1. Download the installer.
+2. Configure the **harbor.yml** file.
+3. Run the **install.sh** script with the appropriate options to install and start Harbor.
 
-### Downloading the installer:
+## Download the Installer
 
-The binary of the installer can be downloaded from the [release](https://github.com/goharbor/harbor/releases) page. Choose either online or offline installer. Use *tar* command to extract the package.
+1. Go to the [Harbor releases page](https://github.com/goharbor/harbor/releases). 
+1. Select either the online or offline installer for the version you want to install.
+1. Use `tar` to extract the installer package:
 
-Online installer:
+  - Online installer:<pre>bash $ tar xvf harbor-online-installer-<em>version</em>.tgz</pre>
+  - Offline installer:<pre>bash $ tar xvf harbor-offline-installer-<em>version</em>.tgz</pre>
 
-```bash
-    $ tar xvf harbor-online-installer-<version>.tgz
-```
+## Configure Harbor
 
-Offline installer:
+You set system level parameters for Harbor in the `harbor.yml` file that is contained in the installer package. These parameters take effect when you run the `install.sh` script to install or reconfigure Harbor. 
 
-```bash
-    $ tar xvf harbor-offline-installer-<version>.tgz
-```
+After the initial deployment and after you have started Harbor, you perform additional configuration in the Harbor Web Portal. 
 
-## Configuring Harbor
+### Required Parameters
 
-Configuration parameters are located in the file **harbor.yml**.
-
-There are two categories of parameters, **required parameters** and **optional parameters**.
-
-- **System level parameters**: These parameters are required to be set in the configuration file. They will take effect if a user updates them in ```harbor.yml``` and run the ```install.sh``` script to reinstall Harbor.
-
-- **User level parameters**: These parameters can update after the first time harbor started on Web Portal. In particular, you must set the desired **auth_mode** before registering or creating any new users in Harbor. When there are users in the system (besides the default admin user), **auth_mode** cannot be changed.
-
-The parameters are described below - note that at the very least, you will need to change the **hostname** attribute.
-
-### Required parameters
+The table below lists the parameters that must be set when you deploy Harbor. At the very least, you must update the `hostname` parameter.
 
 **IMPORTANT**: Harbor does not ship with any certificates, and by default uses HTTP to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary, you must use HTTPS. 
   
@@ -100,7 +97,7 @@ You can use certificates that are signed by a trusted third-party CA, or you can
 
 <table width="100%" border="0">
   <caption>
-    Required Parameters for Harbor
+    Required Parameters for Harbor Deployment
   </caption>
   <tr>
     <th scope="col">Parameter</th>
@@ -110,48 +107,48 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top"><code>hostname</code></td>
     <td valign="top">None</td>
-    <td valign="top">The target host&rsquo;s hostname, which is used to access the Portal and the registry service. It should be the IP address or the fully qualified domain name (FQDN) of your target machine, e.g., <code>192.168.1.10</code> or <code>reg.yourdomain.com</code>. <em>Do NOT use <code>localhost</code> or <code>127.0.0.1</code> or <code>0.0.0.0</code> for the hostname - the registry service needs to be accessible by external clients!</em></td>
+    <td valign="top">Specify the IP address or the fully qualified domain name (FQDN) of the target host on which to deploy Harbor. This is the address at which you access the Harbor Portal and the registry service. For example, <code>192.168.1.10</code> or <code>reg.yourdomain.com</code>. The registry service must be accessible to external clients, so do not specify <code>localhost</code>, <code>127.0.0.1</code>, or <code>0.0.0.0</code> as the hostname.</td>
   </tr>
   <tr>
     <td valign="top"><code>https</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top"><p>The protocol used to access the Portal and the token/notification service. </p>
+    <td valign="top"><p>Use HTTPS to access the Harbor Portal and the token/notification service. </p>
       </td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>port</code></td>
-    <td valign="top">port number for HTTPS</td>
+    <td valign="top">The port number for HTTPS. The default is 443.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>certificate</code></td>
-    <td valign="top">The path to the SSL certificate. This is only applied when the protocol is set to HTTPS.</td>
+    <td valign="top">The path to the SSL certificate.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>private_key</code></td>
-    <td valign="top">The path to the SSL key. This is only applied when the protocol is set to HTTPS.</td>
+    <td valign="top">The path to the SSL key.</td>
   </tr>
   <tr>
     <td valign="top"><code>harbor_admin_password</code></td>
     <td valign="top">None</td>
-    <td valign="top">The administrator&rsquo;s initial password. This password only takes effect for the first time Harbor launches. After that, this setting is ignored and the administrator&rsquo;s password should be set in the Portal. <em>Note that the default username/password are <strong>admin/Harbor12345</strong> .</em></td>
+    <td valign="top">Set an initial password for the Harbor administrator. This password is only used on the first time that Harbor starts. On subsequent logins, this setting is ignored and the administrator's password is set in the Harbor Portal. The default username and password are `admin` and `Harbor12345`.</td>
   </tr>
   <tr>
     <td valign="top"><code>database</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">the configs related to local database</td>
+    <td valign="top">Use a local PostgreSQL database. You can optionally configure an external database, in which case disable this option.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>password</code></td>
-    <td valign="top">The root password for the PostgreSQL database. Change this password for any production use.</td>
+    <td valign="top">Set the root password for the local database. You must change this password for production deployments.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>max_idle_conns</code></td>
-    <td valign="top">The maximum number of connections in the idle connection pool. If &lt;=0 no idle connections are retained. The default value is 50 and if it is not configured the value is 2.</td>
+    <td valign="top">The maximum number of connections in the idle connection pool. If set to &lt;=0 no idle connections are retained. The default value is 50. If it is not configured the value is 2.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
@@ -161,35 +158,35 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top"><code>data_volume</code></td>
     <td valign="top">None</td>
-    <td valign="top">The location to store harbor&rsquo;s data.</td>
+    <td valign="top">The location on the target host in which to store Harbor's data. You can optionally configure external storage, in which case disable this option and enable `storage_service`.</td>
   </tr>
   <tr>
     <td valign="top"><code>jobservice</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">jobservice related service</td>
+    <td valign="top">Configure the replication job service.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>max_job_workers</code></td>
-    <td valign="top">The maximum number of replication workers in job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, please carefully pick the value of this attribute based on the hardware resource of the host.</td>
+    <td valign="top">The maximum number of replication workers in the job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, set the value of this attribute based on the hardware resource of the host.</td>
   </tr>
   <tr>
     <td valign="top"><code>log</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">log related url </td>
+    <td valign="top">Configure logging.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>level</code></td>
-    <td valign="top">log level, options are debug, info, warning, error, fatal</td>
+    <td valign="top">Set the logging level to <code>debug</code>, <code>info</code>, <code>warning</code>, <code>error</code>, or <code>fatal</code>.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>local</code></td>
-    <td valign="top">The default is to retain logs locally.<ul>
-          <li><code>rotate_count</code>: Log files are rotated <strong>rotate_count</strong> times before being removed. If count is 0, old versions are removed rather than rotated.</li>
-          <li><code>rotate_size</code>: Log files are rotated only if they grow bigger than <strong>rotate_size</strong> bytes. If size is followed by k, the size is assumed to be in kilobytes. If the M is used, the size is in megabytes, and if G is used, the size is in gigabytes. So size 100, size 100k, size 100M and size 100G are all valid.</li>
-          <li><code>location</code>: the directory to store logs</li>
+    <td valign="top">Optionally disable this option to use <code>external_endpoint</code> to send logs to Syslog. If you use local logging, set the following parameters:<ul>
+          <li><code>rotate_count</code>: Log files are rotated <code>rotate_count</code> times before being removed. If count is 0, old versions are removed rather than rotated.</li>
+          <li><code>rotate_size</code>: Log files are rotated only if they grow bigger than <code>rotate_size</code> bytes. Use <code>k</code> for kilobytes, <code>M</code> for megabytes, and <code>G</code> for gigabytes.  <code>100</code>, <code>100k</code>, <code>100M</code> and <code>100G</code> are all valid values.</li>
+          <li><code>location</code>: Set the directory in which to store the logs.</li>
         </ul></td>
   </tr>
   <tr>
@@ -552,8 +549,7 @@ To user an external database, just uncomment the `external_database` section in 
 
 ## Manage user settings
 
-After release 1.8.0, User settings are separated with system settings, and all user settings should be configured in web console or by HTTP request.
-Please refer [Configure User Settings](configure_user_settings.md) to config user settings.
+User settings are handled separately system settings. All user settings are configured in the web console or by HTTP requests at the command line. For information about using HTTP requests to configure user settings, see  [Configure User Settings at the Command Line](configure_user_settings.md) to config user settings.
 
 ## Performance tuning
 
