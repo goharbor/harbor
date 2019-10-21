@@ -33,6 +33,7 @@ const (
 	RegistryTypeJfrogArtifactory RegistryType = "jfrog-artifactory"
 	RegistryTypeQuayio           RegistryType = "quay-io"
 	RegistryTypeGitLab           RegistryType = "gitlab"
+	RegistryTypeDTR              RegistryType = "dtr"
 
 	RegistryTypeHelmHub RegistryType = "helm-hub"
 

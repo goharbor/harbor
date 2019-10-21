@@ -50,6 +50,10 @@ import (
 	_ "github.com/goharbor/harbor/src/replication/adapter/helmhub"
 	// register the GitLab adapter
 	_ "github.com/goharbor/harbor/src/replication/adapter/gitlab"
+	// register the DTR adapter
+	_ "github.com/goharbor/harbor/src/replication/adapter/dtr"
+
+
 )
 
 // Replication implements the job interface
