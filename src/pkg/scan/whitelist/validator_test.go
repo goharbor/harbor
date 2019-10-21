@@ -67,6 +67,7 @@ func TestValidate(t *testing.T) {
 			l: models.CVEWhitelist{
 				Items: []models.CVEWhitelistItem{
 					{CVEID: "breakit"},
+					{CVEID: "breakit"},
 				},
 			},
 			noError: false,
