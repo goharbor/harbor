@@ -209,6 +209,10 @@
               </clr-tooltip>
             </label>
           </div>
+          <div class="clr-checkbox-wrapper clr-form-control" [hidden]="policyId < 0">
+            <input type="checkbox" [checked]="true" id="enablePolicy" formControlName="enabled" class="clr-checkbox">
+            <label for="enablePolicy" class="clr-control-label">{{'REPLICATION.ENABLED_RULE' | translate}}</label>
+          </div>
         </div>
       </div>
       <div class="loading-center">
