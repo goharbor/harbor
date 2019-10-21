@@ -19,12 +19,12 @@ import {
   CanActivateChild
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
-import { CommonRoutes, UserPermissionService } from '@harbor/ui';
+import { CommonRoutes } from '@harbor/ui';
 import { Observable } from 'rxjs';
 
 @Injectable()
 export class SignInGuard implements CanActivate, CanActivateChild {
-  constructor(private authService: SessionService, private router: Router, private userPermission: UserPermissionService) { }
+  constructor(private authService: SessionService, private router: Router) { }
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
     // If user has logged in, should not login again
@@ -35,7 +35,6 @@ export class SignInGuard implements CanActivate, CanActivateChild {
         this.authService.signOff()
           .subscribe(() => {
             this.authService.clear(); // Destroy session cache
-            this.userPermission.clearPermissionCache();
 
             return observer.next(true);
           }, error => {
