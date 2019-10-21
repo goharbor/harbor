@@ -117,17 +117,23 @@ The parameters are described below - note that at the very least, you will need 
        - **protocol**: Transport protocol for the syslog server. Default is TCP.
        - **host**: The URL of the syslog server.
        - **port**: The port on which the syslog server listens.
-     
+
+- **https**: The protocol used to access the Portal and the token/notification service. 
+
+  - **port**: port number for HTTPS
+  - **certificate**: The path to the SSL certificate. This is only applied  when the protocol is set to HTTPS.
+  - **private_key**: The path to the SSL key. This is only applied when the protocol is set to HTTPS.
+
+**IMPORTANT**: Harbor does not ship with any certificates, and uses HTTP by default to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary, you must use HTTPS. 
+  
+You can use certificates that are signed by a trusted third-party CA, or in  you can use self-signed certificates. For information about how to create a CA, and how to use a CA to sign a server certificate and a client certificate, see **[Configuring Harbor with HTTPS Access](configure_https.md)**.
+  
 ##### optional parameters
 
 - **http**:
-  - **port** : the port number of you http
+  - **port** : Port number for HTTP
 
-- **https**: The protocol used to access the Portal and the token/notification service.  If Notary is enabled, has to set to _https_.
-refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.
-  - **port**: port number for https
-  - **certificate**: The path of SSL certificate, it's applied only when the protocol is set to https.
-  - **private_key**: The path of SSL key, it's applied only when the protocol is set to https.
+  **IMPORTANT**: Do not use HTTP in production environments. Using HTTP is acceptable only in air-gapped test or development environments that do not have a connection to the external internet. Using HTTP in environments that are not air-gapped exposes you to man-in-the-middle attacks.
 
 - **external_url**: Enable it if use external proxy, and when it enabled the hostname will no longer used
 

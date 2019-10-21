@@ -1,8 +1,10 @@
 # Configuring Harbor with HTTPS Access
 
-Because Harbor does not ship with any certificates, it uses HTTP by default to serve registry requests.  However, it is highly recommended that security be enabled for any production environment. Harbor has an Nginx instance as a reverse proxy for all services, you can use the prepare script to configure Nginx to enable https.
+Because Harbor does not ship with any certificates, it uses HTTP by default to serve registry requests. However, using HTTP is acceptable only in air-gapped test or development environments that do not have a connection to the external internet. Using HTTP in environments that are not air-gapped exposes you to man-in-the-middle attacks. In production environments, always use HTTPS. If you enable Content Trust with Notary, you must use HTTPS. 
 
-In a test or development environment, you may choose to use a self-signed certificate instead of the one from a trusted third-party CA. The followings will show you how to create your own CA, and use your CA to sign a server certificate and a client certificate. 
+Harbor uses an `nginx` instance as a reverse proxy for all services. You use the `prepare` script to configure `nginx` to enable HTTPS.
+
+You can use certificates that are signed by a trusted third-party CA, or in  you can use self-signed certificates. The following sections describe how to create a CA, and how to use your CA to sign a server certificate and a client certificate. 
 
 ## Getting Certificate Authority
 
