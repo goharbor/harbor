@@ -24,7 +24,9 @@ import (
 	"time"
 
 	"github.com/astaxie/beego"
+	"github.com/astaxie/beego/logs"
 	_ "github.com/astaxie/beego/session/redis"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
@@ -32,16 +34,14 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	quota "github.com/goharbor/harbor/src/core/api/quota"
+	_ "github.com/goharbor/harbor/src/core/api/quota/chart"
+	_ "github.com/goharbor/harbor/src/core/api/quota/registry"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	_ "github.com/goharbor/harbor/src/core/auth/oidc"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
-
-	quota "github.com/goharbor/harbor/src/core/api/quota"
-	_ "github.com/goharbor/harbor/src/core/api/quota/chart"
-	_ "github.com/goharbor/harbor/src/core/api/quota/registry"
-
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares"
@@ -165,6 +165,9 @@ func gracefulShutdown(closing, done chan struct{}) {
 func main() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.BConfig.WebConfig.Session.SessionName = "sid"
+	beego.BeeLogger.DelLogger(logs.AdapterConsole)
+	logs.Register("harboradapter", log.NewHarborAdapter)
+	beego.SetLogger("harboradapter", "{}")
 
 	redisURL := os.Getenv("_REDIS_URL")
 	if len(redisURL) > 0 {
