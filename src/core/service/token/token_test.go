@@ -119,8 +119,7 @@ func getPublicKey(crtPath string) (*rsa.PublicKey, error) {
 type harborClaims struct {
 	jwt.StandardClaims
 	// Private claims
-	Access      []*token.ResourceActions `json:"access"`
-	PolicyCheck bool                     `json:"policy_check"`
+	Access []*token.ResourceActions `json:"access"`
 }
 
 func TestMakeToken(t *testing.T) {
@@ -134,7 +133,7 @@ func TestMakeToken(t *testing.T) {
 	}}
 	svc := "harbor-registry"
 	u := "tester"
-	tokenJSON, err := MakeToken(u, svc, ra, true)
+	tokenJSON, err := MakeToken(u, svc, ra)
 	if err != nil {
 		t.Errorf("Error while making token: %v", err)
 	}
@@ -155,7 +154,6 @@ func TestMakeToken(t *testing.T) {
 		t.Errorf("Error while parsing the token: %v", err)
 	}
 	claims := tok.Claims.(*harborClaims)
-	assert.True(t, claims.PolicyCheck)
 	assert.Equal(t, *(claims.Access[0]), *(ra[0]), "Access mismatch")
 	assert.Equal(t, claims.Audience, svc, "Audience mismatch")
 }
@@ -242,9 +240,6 @@ func (f *fakeSecurityContext) IsSysAdmin() bool {
 	return f.isAdmin
 }
 func (f *fakeSecurityContext) IsSolutionUser() bool {
-	return false
-}
-func (f *fakeSecurityContext) PolicyCheck() bool {
 	return false
 }
 func (f *fakeSecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {

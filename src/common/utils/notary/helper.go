@@ -76,7 +76,7 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]model.
 				Type:    "repository",
 				Name:    fqRepo,
 				Actions: []string{"pull"},
-			}}, true)
+			}})
 	if err != nil {
 		return nil, err
 	}

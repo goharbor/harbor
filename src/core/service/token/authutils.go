@@ -42,12 +42,6 @@ func init() {
 	privateKey = config.TokenPrivateKeyPath()
 }
 
-// ClaimSet ...
-type ClaimSet struct {
-	token.ClaimSet
-	PolicyCheck bool `json:"policy_check"`
-}
-
 // GetResourceActions ...
 func GetResourceActions(scopes []string) []*token.ResourceActions {
 	log.Debugf("scopes: %+v", scopes)
@@ -106,7 +100,7 @@ func filterAccess(access []*token.ResourceActions, ctx security.Context,
 }
 
 // MakeToken makes a valid jwt token based on parms.
-func MakeToken(username, service string, access []*token.ResourceActions, policyCheck bool) (*models.Token, error) {
+func MakeToken(username, service string, access []*token.ResourceActions) (*models.Token, error) {
 	pk, err := libtrust.LoadKeyFile(privateKey)
 	if err != nil {
 		return nil, err
@@ -116,7 +110,7 @@ func MakeToken(username, service string, access []*token.ResourceActions, policy
 		return nil, err
 	}
 
-	tk, expiresIn, issuedAt, err := makeTokenCore(issuer, username, service, expiration, access, pk, policyCheck)
+	tk, expiresIn, issuedAt, err := makeTokenCore(issuer, username, service, expiration, access, pk)
 	if err != nil {
 		return nil, err
 	}
@@ -139,12 +133,15 @@ func permToActions(p string) []string {
 	if strings.Contains(p, "R") {
 		res = append(res, "pull")
 	}
+	if strings.Contains(p, "S") {
+		res = append(res, "scannerpull")
+	}
 	return res
 }
 
 // make token core
 func makeTokenCore(issuer, subject, audience string, expiration int,
-	access []*token.ResourceActions, signingKey libtrust.PrivateKey, policyCheck bool) (t *token.Token, expiresIn int, issuedAt *time.Time, err error) {
+	access []*token.ResourceActions, signingKey libtrust.PrivateKey) (t *token.Token, expiresIn int, issuedAt *time.Time, err error) {
 
 	joseHeader := &token.Header{
 		Type:       "JWT",
@@ -161,18 +158,15 @@ func makeTokenCore(issuer, subject, audience string, expiration int,
 	issuedAt = &now
 	expiresIn = expiration * 60
 
-	claimSet := &ClaimSet{
-		ClaimSet: token.ClaimSet{
-			Issuer:     issuer,
-			Subject:    subject,
-			Audience:   audience,
-			Expiration: now.Add(time.Duration(expiration) * time.Minute).Unix(),
-			NotBefore:  now.Unix(),
-			IssuedAt:   now.Unix(),
-			JWTID:      jwtID,
-			Access:     access,
-		},
-		PolicyCheck: policyCheck,
+	claimSet := &token.ClaimSet{
+		Issuer:     issuer,
+		Subject:    subject,
+		Audience:   audience,
+		Expiration: now.Add(time.Duration(expiration) * time.Minute).Unix(),
+		NotBefore:  now.Unix(),
+		IssuedAt:   now.Unix(),
+		JWTID:      jwtID,
+		Access:     access,
 	}
 
 	var joseHeaderBytes, claimSetBytes []byte

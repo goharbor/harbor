@@ -93,45 +93,45 @@ func TestMain(m *testing.M) {
 
 func TestIsAuthenticated(t *testing.T) {
 	// unauthenticated
-	ctx := NewSecurityContext(nil, nil, nil, true)
+	ctx := NewSecurityContext(nil, nil, nil)
 	assert.False(t, ctx.IsAuthenticated())
 
 	// authenticated
 	ctx = NewSecurityContext(&model.Robot{
 		Name:     "test",
 		Disabled: false,
-	}, nil, nil, true)
+	}, nil, nil)
 	assert.True(t, ctx.IsAuthenticated())
 }
 
 func TestGetUsername(t *testing.T) {
 	// unauthenticated
-	ctx := NewSecurityContext(nil, nil, nil, true)
+	ctx := NewSecurityContext(nil, nil, nil)
 	assert.Equal(t, "", ctx.GetUsername())
 
 	// authenticated
 	ctx = NewSecurityContext(&model.Robot{
 		Name:     "test",
 		Disabled: false,
-	}, nil, nil, true)
+	}, nil, nil)
 	assert.Equal(t, "test", ctx.GetUsername())
 }
 
 func TestIsSysAdmin(t *testing.T) {
 	// unauthenticated
-	ctx := NewSecurityContext(nil, nil, nil, true)
+	ctx := NewSecurityContext(nil, nil, nil)
 	assert.False(t, ctx.IsSysAdmin())
 
 	// authenticated, non admin
 	ctx = NewSecurityContext(&model.Robot{
 		Name:     "test",
 		Disabled: false,
-	}, nil, nil, true)
+	}, nil, nil)
 	assert.False(t, ctx.IsSysAdmin())
 }
 
 func TestIsSolutionUser(t *testing.T) {
-	ctx := NewSecurityContext(nil, nil, nil, true)
+	ctx := NewSecurityContext(nil, nil, nil)
 	assert.False(t, ctx.IsSolutionUser())
 }
 
@@ -147,7 +147,7 @@ func TestHasPullPerm(t *testing.T) {
 		Description: "desc",
 	}
 
-	ctx := NewSecurityContext(robot, pm, policies, true)
+	ctx := NewSecurityContext(robot, pm, policies)
 	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 }
@@ -164,7 +164,7 @@ func TestHasPushPerm(t *testing.T) {
 		Description: "desc",
 	}
 
-	ctx := NewSecurityContext(robot, pm, policies, true)
+	ctx := NewSecurityContext(robot, pm, policies)
 	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(rbac.ActionPush, resource))
 }
@@ -185,20 +185,20 @@ func TestHasPushPullPerm(t *testing.T) {
 		Description: "desc",
 	}
 
-	ctx := NewSecurityContext(robot, pm, policies, true)
+	ctx := NewSecurityContext(robot, pm, policies)
 	resource := rbac.NewProjectNamespace(private.ProjectID).Resource(rbac.ResourceRepository)
 	assert.True(t, ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource))
 }
 
 func TestGetMyProjects(t *testing.T) {
-	ctx := NewSecurityContext(nil, nil, nil, true)
+	ctx := NewSecurityContext(nil, nil, nil)
 	projects, err := ctx.GetMyProjects()
 	require.Nil(t, err)
 	assert.Nil(t, projects)
 }
 
 func TestGetProjectRoles(t *testing.T) {
-	ctx := NewSecurityContext(nil, nil, nil, true)
+	ctx := NewSecurityContext(nil, nil, nil)
 	roles := ctx.GetProjectRoles("test")
 	assert.Nil(t, roles)
 }

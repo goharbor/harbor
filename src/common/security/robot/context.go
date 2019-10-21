@@ -23,19 +23,17 @@ import (
 
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
-	robot       *model.Robot
-	pm          promgr.ProjectManager
-	policy      []*rbac.Policy
-	polichCheck bool
+	robot  *model.Robot
+	pm     promgr.ProjectManager
+	policy []*rbac.Policy
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(robot *model.Robot, pm promgr.ProjectManager, policy []*rbac.Policy, polichCheck bool) *SecurityContext {
+func NewSecurityContext(robot *model.Robot, pm promgr.ProjectManager, policy []*rbac.Policy) *SecurityContext {
 	return &SecurityContext{
-		robot:       robot,
-		pm:          pm,
-		policy:      policy,
-		polichCheck: polichCheck,
+		robot:  robot,
+		pm:     pm,
+		policy: policy,
 	}
 }
 
@@ -56,11 +54,6 @@ func (s *SecurityContext) GetUsername() string {
 // IsSysAdmin robot cannot be a system admin
 func (s *SecurityContext) IsSysAdmin() bool {
 	return false
-}
-
-// PolicyCheck ...
-func (s *SecurityContext) PolicyCheck() bool {
-	return s.polichCheck
 }
 
 // IsSolutionUser robot cannot be a system admin

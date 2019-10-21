@@ -346,7 +346,7 @@ type rawTokenGenerator struct {
 
 // generate token directly
 func (r *rawTokenGenerator) generate(scopes []*token.ResourceActions, endpoint string) (*models.Token, error) {
-	return token_util.MakeToken(r.username, r.service, scopes, true)
+	return token_util.MakeToken(r.username, r.service, scopes)
 }
 
 func buildPingURL(endpoint string) string {

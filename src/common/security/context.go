@@ -27,8 +27,6 @@ type Context interface {
 	GetUsername() string
 	// IsSysAdmin returns whether the user is system admin
 	IsSysAdmin() bool
-	// PolicyCheck returns whether the middlerwares apply to the request
-	PolicyCheck() bool
 	// IsSolutionUser returns whether the user is solution user
 	IsSolutionUser() bool
 	// Get current user's all project

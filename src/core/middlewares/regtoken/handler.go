@@ -2,15 +2,20 @@ package regtoken
 
 import (
 	"context"
+	"github.com/docker/distribution/registry/auth"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	pkg_token "github.com/goharbor/harbor/src/pkg/token"
-	"github.com/goharbor/harbor/src/pkg/token/claim"
+	"github.com/goharbor/harbor/src/pkg/token/claims/registry"
 	"net/http"
 	"strings"
 )
 
+// regTokenHandler is responsible for decoding the registry token in the docker pull request header,
+// as harbor adds customized claims action into registry auth token, the middlerware is for decode it and write it into
+// request context, then for other middlerwares in chain to use it to bypass request validation.
 type regTokenHandler struct {
 	next http.Handler
 }
@@ -24,6 +29,7 @@ func New(next http.Handler) http.Handler {
 
 // ServeHTTP ...
 func (r *regTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+
 	imgRaw := req.Context().Value(util.ImageInfoCtxKey)
 	if imgRaw == nil || !config.WithClair() {
 		r.next.ServeHTTP(rw, req)
@@ -42,14 +48,30 @@ func (r *regTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	}
 	rawToken := parts[1]
 	opt := pkg_token.DefaultTokenOptions()
-	rClaims := &claim.Registry{}
-	rtk, err := pkg_token.Parse(opt, rawToken, rClaims)
+	regTK, err := pkg_token.Parse(opt, rawToken, &registry.Claim{})
 	if err != nil {
-		log.Debug("failed to decode reg token: %v, the error is skipped and round the request to native registry.", err)
+		log.Debugf("failed to decode reg token: %v, the error is skipped and round the request to native registry.", err)
 		r.next.ServeHTTP(rw, req)
 		return
 	}
-	ctx := context.WithValue(req.Context(), util.PolicyCheckCtxKey, rtk.Claims.(*claim.Registry).PolicyCheck)
-	req = req.WithContext(ctx)
+
+	accessItems := []auth.Access{}
+	accessItems = append(accessItems, auth.Access{
+		Resource: auth.Resource{
+			Type: "repository",
+			Name: img.Repository,
+		},
+		Action: rbac.ActionScannerPull.String(),
+	})
+
+	accessSet := regTK.Claims.(*registry.Claim).GetAccessSet()
+	for _, access := range accessItems {
+		if accessSet.Contains(access) {
+			ctx := context.WithValue(req.Context(), util.ByPassPolicyCheckCtxKey, true)
+			req = req.WithContext(ctx)
+			r.next.ServeHTTP(rw, req)
+			return
+		}
+	}
 	r.next.ServeHTTP(rw, req)
 }

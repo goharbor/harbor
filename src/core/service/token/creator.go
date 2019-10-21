@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"net/http/httputil"
 )
 
 var creatorMap map[string]Creator
@@ -154,7 +155,7 @@ type repositoryFilter struct {
 
 func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManager,
 	a *token.ResourceActions) error {
-	// clear action list to assign to new acess element after perm check.
+	// clear action list to assign to new access element after perm check.
 	img, err := rep.parser.parse(a.Name)
 	if err != nil {
 		return err
@@ -180,6 +181,9 @@ func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManage
 	} else if ctx.Can(rbac.ActionPull, resource) {
 		permission = "R"
 	}
+	if ctx.Can(rbac.ActionScannerPull, resource) {
+		permission = "S"
+	}
 
 	a.Actions = permToActions(permission)
 	return nil
@@ -200,6 +204,7 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 	var err error
 	scopes := parseScopes(r.URL)
 	log.Debugf("scopes: %v", scopes)
+	httputil.DumpRequest(r, true)
 
 	ctx, err := filter.GetSecurityContext(r)
 	if err != nil {
@@ -222,7 +227,7 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return MakeToken(ctx.GetUsername(), g.service, access, ctx.PolicyCheck())
+	return MakeToken(ctx.GetUsername(), g.service, access)
 }
 
 func parseScopes(u *url.URL) []string {

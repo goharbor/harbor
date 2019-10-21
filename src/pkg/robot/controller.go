@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/token"
-	"github.com/goharbor/harbor/src/pkg/token/claim"
+	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -71,6 +72,12 @@ func (d *DefaultAPIController) CreateRobotAccount(robotReq *model.RobotCreate) (
 		ExpiresAt:   expiresAt,
 		Visible:     robotReq.Visible,
 	}
+	if robotReq.ByPassPolicyCheck {
+		robotReq.Access = append(robotReq.Access, &rbac.Policy{
+			Resource: rbac.NewProjectNamespace(robotReq.ProjectID).Resource(rbac.ResourceRepository),
+			Action:   rbac.ActionScannerPull,
+		})
+	}
 	id, err := d.manager.CreateRobotAccount(robot)
 	if err != nil {
 		return nil, err
@@ -79,11 +86,10 @@ func (d *DefaultAPIController) CreateRobotAccount(robotReq *model.RobotCreate) (
 	// generate the token, and return it with response data.
 	// token is not stored in the database.
 	opt := token.DefaultTokenOptions()
-	rClaims := &claim.Robot{
-		TokenID:     id,
-		ProjectID:   robotReq.ProjectID,
-		Access:      robotReq.Access,
-		PolicyCheck: robotReq.PolicyCheck,
+	rClaims := &robot_claim.Claim{
+		TokenID:   id,
+		ProjectID: robotReq.ProjectID,
+		Access:    robotReq.Access,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  time.Now().UTC().Unix(),
 			ExpiresAt: expiresAt,

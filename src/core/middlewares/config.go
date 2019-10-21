@@ -26,7 +26,7 @@ const (
 	SIZEQUOTA        = "sizequota"
 	COUNTQUOTA       = "countquota"
 	IMMUTABLE        = "immutable"
-	REGTOKEN         = "REGTOKEN"
+	REGTOKEN         = "regtoken"
 )
 
 // ChartMiddlewares middlewares for chart server

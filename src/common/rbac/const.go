@@ -28,7 +28,8 @@ const (
 	ActionDelete = Action("delete")
 	ActionList   = Action("list")
 
-	ActionOperate = Action("operate")
+	ActionOperate     = Action("operate")
+	ActionScannerPull = Action("scannerpull") // for robot account created by scanner to pull image, bypass the policy check
 )
 
 // const resource variables

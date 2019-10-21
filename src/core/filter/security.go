@@ -44,7 +44,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/authproxy"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	pkg_token "github.com/goharbor/harbor/src/pkg/token"
-	"github.com/goharbor/harbor/src/pkg/token/claim"
+	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
 )
 
 // ContextValueKey for content value
@@ -189,17 +189,16 @@ func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if !strings.HasPrefix(robotName, common.RobotPrefix) {
 		return false
 	}
-	rClaims := &claim.Robot{}
+	rClaims := &robot_claim.Claim{}
 	opt := pkg_token.DefaultTokenOptions()
 	rtk, err := pkg_token.Parse(opt, robotTk, rClaims)
 	if err != nil {
 		log.Errorf("failed to decrypt robot token, %v", err)
 		return false
 	}
-
 	// Do authn for robot account, as Harbor only stores the token ID, just validate the ID and disable.
 	ctr := robot.RobotCtr
-	robot, err := ctr.GetRobotAccount(rtk.Claims.(*claim.Robot).TokenID)
+	robot, err := ctr.GetRobotAccount(rtk.Claims.(*robot_claim.Claim).TokenID)
 	if err != nil {
 		log.Errorf("failed to get robot %s: %v", robotName, err)
 		return false
@@ -218,7 +217,7 @@ func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	}
 	log.Debug("creating robot account security context...")
 	pm := config.GlobalProjectMgr
-	securCtx := robotCtx.NewSecurityContext(robot, pm, rtk.Claims.(*claim.Robot).Access, rClaims.PolicyCheck)
+	securCtx := robotCtx.NewSecurityContext(robot, pm, rtk.Claims.(*robot_claim.Claim).Access)
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 	return true
 }

@@ -45,13 +45,13 @@ type RobotQuery struct {
 
 // RobotCreate ...
 type RobotCreate struct {
-	Name        string         `json:"name"`
-	ProjectID   int64          `json:"pid"`
-	Description string         `json:"description"`
-	Disabled    bool           `json:"disabled"`
-	Visible     bool           `json:"-"`
-	PolicyCheck bool           `json:"-"`
-	Access      []*rbac.Policy `json:"access"`
+	Name              string         `json:"name"`
+	ProjectID         int64          `json:"pid"`
+	Description       string         `json:"description"`
+	Disabled          bool           `json:"disabled"`
+	Visible           bool           `json:"-"`
+	ByPassPolicyCheck bool           `json:"-"`
+	Access            []*rbac.Policy `json:"access"`
 }
 
 // Pagination ...
