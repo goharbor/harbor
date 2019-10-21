@@ -130,10 +130,8 @@ You can use certificates that are signed by a trusted third-party CA, or in  you
   
 ##### optional parameters
 
-- **http**:
+- **http**: Do not use HTTP in production environments. Using HTTP is acceptable only in air-gapped test or development environments that do not have a connection to the external internet. Using HTTP in environments that are not air-gapped exposes you to man-in-the-middle attacks.
   - **port** : Port number for HTTP
-
-  **IMPORTANT**: Do not use HTTP in production environments. Using HTTP is acceptable only in air-gapped test or development environments that do not have a connection to the external internet. Using HTTP in environments that are not air-gapped exposes you to man-in-the-middle attacks.
 
 - **external_url**: Enable it if use external proxy, and when it enabled the hostname will no longer used
 

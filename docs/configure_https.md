@@ -4,7 +4,7 @@ Because Harbor does not ship with any certificates, it uses HTTP by default to s
 
 Harbor uses an `nginx` instance as a reverse proxy for all services. You use the `prepare` script to configure `nginx` to enable HTTPS.
 
-You can use certificates that are signed by a trusted third-party CA, or in  you can use self-signed certificates. The following sections describe how to create a CA, and how to use your CA to sign a server certificate and a client certificate. 
+You can use certificates that are signed by a trusted third-party CA, or  you can use self-signed certificates. The following sections describe how to create a CA, and how to use your CA to sign a server certificate and a client certificate. 
 
 ## Getting Certificate Authority
 
