@@ -18,6 +18,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
+
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -27,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	sc "github.com/goharbor/harbor/src/pkg/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/operation/hook"
 	"github.com/goharbor/harbor/src/replication/policy/scheduler"
@@ -93,15 +94,24 @@ func (h *Handler) Prepare() {
 
 // HandleScan handles the webhook of scan job
 func (h *Handler) HandleScan() {
-	log.Debugf("received san job status update event: job UUID: %s, status-%s, track id-%s", h.change.JobID, h.status, h.trackID)
+	log.Debugf("Received scan job status update event: job UUID: %s, status: %s, track_id: %s, is checkin: %v",
+		h.change.JobID,
+		h.status,
+		h.trackID,
+		len(h.checkIn) > 0,
+	)
 
 	// Trigger image scan webhook event only for JobFinished and JobError status
-	if h.status == models.JobFinished || h.status == models.JobError {
+	if h.status == models.JobFinished ||
+		h.status == models.JobError ||
+		h.status == models.JobStopped {
 		// Get the required info from the job parameters
 		req, err := sc.ExtractScanReq(h.change.Metadata.Parameters)
 		if err != nil {
 			log.Error(errors.Wrap(err, "scan job hook handler: event publish"))
 		} else {
+			log.Debugf("Scan %s for artifact: %#v", h.status, req.Artifact)
+
 			e := &event.Event{}
 			metaData := &event.ScanImageMetaData{
 				Artifact: req.Artifact,

@@ -31,6 +31,7 @@ type Metadata interface {
 type ImageDelMetaData struct {
 	Project  *models.Project
 	Tags     []string
+	Digests  map[string]string
 	OccurAt  time.Time
 	Operator string
 	RepoName string
@@ -46,7 +47,10 @@ func (i *ImageDelMetaData) Resolve(evt *Event) error {
 		RepoName:  i.RepoName,
 	}
 	for _, t := range i.Tags {
-		res := &model.ImgResource{Tag: t}
+		res := &model.ImgResource{
+			Tag:    t,
+			Digest: i.Digests[t],
+		}
 		data.Resource = append(data.Resource, res)
 	}
 	evt.Topic = model.DeleteImageTopic
@@ -194,15 +198,18 @@ type ScanImageMetaData struct {
 func (si *ScanImageMetaData) Resolve(evt *Event) error {
 	var eventType string
 	var topic string
-	if si.Status == models.JobFinished {
+
+	switch si.Status {
+	case models.JobFinished:
 		eventType = notifyModel.EventTypeScanningCompleted
 		topic = model.ScanningCompletedTopic
-	} else if si.Status == models.JobError {
+	case models.JobError, models.JobStopped:
 		eventType = notifyModel.EventTypeScanningFailed
 		topic = model.ScanningFailedTopic
-	} else {
+	default:
 		return errors.New("not supported scan hook status")
 	}
+
 	data := &model.ScanImageEvent{
 		EventType: eventType,
 		Artifact:  si.Artifact,

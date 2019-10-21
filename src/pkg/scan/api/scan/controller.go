@@ -77,4 +77,13 @@ type Controller interface {
 	//   Returns:
 	//     error  : non nil error if any errors occurred
 	HandleJobHooks(trackID string, change *job.StatusChange) error
+
+	// Delete the reports related with the specified digests
+	//
+	//  Arguments:
+	//    digests ...string : specify one or more digests whose reports will be deleted
+	//
+	//  Returns:
+	//    error        : non nil error if any errors occurred
+	DeleteReports(digests ...string) error
 }

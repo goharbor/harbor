@@ -37,6 +37,8 @@ const (
 	JobParameterRequest = "scanRequest"
 	// JobParameterMimes ...
 	JobParameterMimes = "mimeTypes"
+	// JobParameterRobotID ...
+	JobParameterRobotID = "robotID"
 
 	checkTimeout       = 30 * time.Minute
 	firstCheckInterval = 2 * time.Second
@@ -101,6 +103,10 @@ func (j *Job) Validate(params job.Parameters) error {
 		return errors.Wrap(err, "job validate")
 	}
 
+	// No need to check param robotID which os treated as an optional one.
+	// It is used to clear the generated robot account to reduce dirty data.
+	// Failure of doing this will not influence the main flow.
+
 	return nil
 }
 
@@ -125,6 +131,8 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 		return logAndWrapError(myLogger, err, "scan job: get client")
 	}
 
+	// Ignore the namespace ID here
+	req.Artifact.NamespaceID = 0
 	resp, err := client.SubmitScan(req)
 	if err != nil {
 		return logAndWrapError(myLogger, err, "scan job: submit scan request")

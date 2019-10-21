@@ -23,6 +23,8 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/scan/event"
+
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -241,6 +243,8 @@ func main() {
 
 	log.Info("initializing notification...")
 	notification.Init()
+	// Initialize the event handlers for handling artifact cascade deletion
+	event.Init()
 
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)

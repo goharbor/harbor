@@ -81,7 +81,7 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 	sum.ReportID = r.UUID
 	sum.StartTime = r.StartTime
 	sum.EndTime = r.EndTime
-	sum.Duration = r.EndTime.Unix() - r.EndTime.Unix()
+	sum.Duration = r.EndTime.Unix() - r.StartTime.Unix()
 	if len(ops.CVEWhitelist) > 0 {
 		sum.CVEBypassed = make([]string, 0)
 	}
@@ -139,6 +139,11 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 		// Update the overall severity if necessary
 		if v.Severity.Code() > overallSev.Code() {
 			overallSev = v.Severity
+		}
+
+		// If the CVE item has a fixable version
+		if len(v.FixVersion) > 0 {
+			vsum.Fixable++
 		}
 	}
 	sum.Summary = vsum

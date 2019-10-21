@@ -33,7 +33,7 @@ import (
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
-	rep_event "github.com/goharbor/harbor/src/replication/event"
+	repevent "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/pkg/errors"
 )
@@ -44,7 +44,6 @@ type NotificationHandler struct {
 }
 
 const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+(json|prettyjws)`
-const vicPrefix = "vic/"
 
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
@@ -142,8 +141,8 @@ func (n *NotificationHandler) Post() {
 
 			// TODO: handle image delete event and chart event
 			go func() {
-				e := &rep_event.Event{
-					Type: rep_event.EventTypeImagePush,
+				e := &repevent.Event{
+					Type: repevent.EventTypeImagePush,
 					Resource: &model.Resource{
 						Type: model.ResourceTypeImage,
 						Metadata: &model.ResourceMetadata{
@@ -245,7 +244,7 @@ func (n *NotificationHandler) Post() {
 }
 
 func filterEvents(notification *models.Notification) ([]*models.Event, error) {
-	events := []*models.Event{}
+	events := make([]*models.Event, 0)
 
 	for _, event := range notification.Events {
 		log.Debugf("receive an event: \n----ID: %s \n----target: %s:%s \n----digest: %s \n----action: %s \n----mediatype: %s \n----user-agent: %s", event.ID, event.Target.Repository,
@@ -285,13 +284,19 @@ func checkEvent(event *models.Event) bool {
 }
 
 func autoScanEnabled(project *models.Project) bool {
-	available, err := scanner.DefaultController.IsScannerAvailable(project.ProjectID)
+	r, err := scanner.DefaultController.GetRegistrationByProject(project.ProjectID)
 	if err != nil {
 		log.Error(errors.Wrap(err, "check auto scan enable"))
 		return false
 	}
 
-	return available && project.AutoScan()
+	// In case
+	if r == nil {
+		log.Errorf("no scanner is available for project: %s", project.Name)
+		return false
+	}
+
+	return !r.Disabled && project.AutoScan()
 }
 
 // Render returns nil as it won't render any template.

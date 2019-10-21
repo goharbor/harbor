@@ -35,6 +35,7 @@ type NativeReportSummary struct {
 // and numbers of each severity level.
 type VulnerabilitySummary struct {
 	Total   int             `json:"total"`
+	Fixable int             `json:"fixable"`
 	Summary SeveritySummary `json:"summary"`
 }
 
