@@ -315,6 +315,7 @@ export interface VulnerabilitySummary {
 }
 export interface SeveritySummary {
   total: number;
+  fixable: number;
   summary: {[key: string]: number};
 }
 

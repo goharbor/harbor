@@ -65,9 +65,9 @@ describe('NewScannerFormComponent', () => {
     nameInput.blur();
     nameInput.dispatchEvent(new Event('blur'));
     setTimeout(() => {
-      let el = fixture.nativeElement.querySelector('clr-control-error');
+      let el = fixture.nativeElement.querySelector('#name-error');
       expect(el).toBeFalsy();
-    }, 900);
+    }, 11000);
   });
 
   it('endpoint url should be valid', () => {
@@ -79,9 +79,9 @@ describe('NewScannerFormComponent', () => {
     urlInput.blur();
     urlInput.dispatchEvent(new Event('blur'));
     setTimeout(() => {
-      let el = fixture.nativeElement.querySelector('clr-control-error');
+      let el = fixture.nativeElement.querySelector('#endpoint-error');
       expect(el).toBeFalsy();
-    }, 900);
+    }, 11000);
   });
 
   it('auth should be valid', () => {
@@ -96,7 +96,7 @@ describe('NewScannerFormComponent', () => {
     passwordInput.value = "12345";
     usernameInput.dispatchEvent(new Event('input'));
     passwordInput.dispatchEvent(new Event('input'));
-    let el = fixture.nativeElement.querySelector('clr-control-error');
+    let el = fixture.nativeElement.querySelector('#pwd-error');
     expect(el).toBeFalsy();
   });
 });

@@ -73,6 +73,19 @@ export abstract class ScanningResultService {
    * @memberOf ScanningResultService
    */
   abstract startScanningAll(): Observable<any>;
+
+  /**
+   *  Get scanner metadata
+   * @param uuid
+   * @memberOf ScanningResultService
+   */
+  abstract getScannerMetadata(uuid: string): Observable<any>;
+
+  /**
+   *  Get project scanner
+   * @param projectId
+   */
+  abstract getProjectScanner(projectId: number): Observable<any>;
 }
 
 @Injectable()
@@ -152,5 +165,15 @@ export class ScanningResultDefaultService extends ScanningResultService {
         return true;
       })
       , catchError(error => observableThrowError(error)));
+  }
+  getScannerMetadata(uuid: string): Observable<any> {
+    return this.http.get(`/api/scanners/${uuid}/metadata`)
+        .pipe(map(response => response as any))
+        .pipe(catchError(error => observableThrowError(error)));
+  }
+  getProjectScanner(projectId: number): Observable<any> {
+    return this.http.get(`/api/projects/${projectId}/scanner`)
+        .pipe(map(response => response as any))
+        .pipe(catchError(error => observableThrowError(error)));
   }
 }

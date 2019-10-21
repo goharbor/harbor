@@ -1,3 +1,5 @@
+import { ScannerMetadata } from "./scanner-metadata";
+
 export class Scanner {
     name?: string;
     description?: string;
@@ -13,7 +15,8 @@ export class Scanner {
     update_time?: any;
     vendor?: string;
     version?: string;
-    health?: boolean;
+    metadata?: ScannerMetadata;
+    loadingMetadata?: boolean;
     constructor() {
     }
 }

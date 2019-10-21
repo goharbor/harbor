@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed, async, } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { DebugElement} from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 
@@ -25,7 +24,13 @@ import { ChannelService } from '../channel/index';
 import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { LabelDefaultService, LabelService } from "../service/label.service";
 import { OperationService } from "../operation/operation.service";
-import { ProjectDefaultService, ProjectService, RetagDefaultService, RetagService } from "../service";
+import {
+  ProjectDefaultService,
+  ProjectService,
+  RetagDefaultService,
+  RetagService, ScanningResultDefaultService,
+  ScanningResultService
+} from "../service";
 import { UserPermissionDefaultService, UserPermissionService } from "../service/permission.service";
 import { USERSTATICPERMISSION } from "../service/permission-static";
 import { of } from "rxjs";
@@ -158,6 +163,11 @@ describe('RepositoryComponent (inline template)', () => {
   let mockHasRetagImagePermission: boolean = true;
   let mockHasDeleteImagePermission: boolean = true;
   let mockHasScanImagePermission: boolean = true;
+  let fakedScanningResultService = {
+    getProjectScanner() {
+      return of({});
+    }
+  };
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -188,7 +198,8 @@ describe('RepositoryComponent (inline template)', () => {
         { provide: LabelService, useClass: LabelDefaultService},
         { provide: UserPermissionService, useClass: UserPermissionDefaultService},
         { provide: ChannelService},
-        { provide: OperationService }
+        { provide: OperationService },
+        { provide: ScanningResultService, useValue: fakedScanningResultService }
       ]
     });
   }));

@@ -48,6 +48,7 @@ describe("TagDetailComponent (inline template)", () => {
     end_time: new Date(),
     summary: {
       total: 124,
+      fixable: 50,
       summary: {
         "High": 5,
         "Low": 5

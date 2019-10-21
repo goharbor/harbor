@@ -39,11 +39,11 @@
                     </section>
                 </div>
             </div>
-            <div class="col-md-4 col-sm-6">
-                <div class="vulnerability" [hidden]="hasCve">
+            <div class="col-md-4 col-sm-6 margin-top-5px">
+                <div class="vulnerability" [hidden]="hasCve || showStatBar">
                     <hbr-vulnerability-bar [repoName]="repositoryId" [tagId]="tagDetails.name" [summary]="vulnerabilitySummary"></hbr-vulnerability-bar>
                 </div>
-                <histogram-chart *ngIf="hasCve" class="margin-top-5px" [metadata]="passMetadataToChart()" [isWhiteBackground]="true"></histogram-chart>
+                <histogram-chart *ngIf="hasCve" [metadata]="passMetadataToChart()" [isWhiteBackground]="true"></histogram-chart>
             </div>
             <div *ngIf="!withAdmiral && tagDetails?.labels?.length">
                 <div class="third-column detail-title">{{'TAG.LABELS' | translate }}</div>
