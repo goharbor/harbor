@@ -38,7 +38,7 @@ import { SearchTriggerService } from "../../base/global-search/search-trigger.se
 import { AppConfigService } from "../../app-config.service";
 
 import { Project } from "../project";
-import { map, catchError } from "rxjs/operators";
+import { map, catchError, finalize } from "rxjs/operators";
 import { throwError as observableThrowError } from "rxjs";
 
 @Component({
@@ -87,9 +87,6 @@ export class ListProjectComponent implements OnDestroy {
                 this.delProjects(message.data);
             }
         });
-
-        let hnd = setInterval(() => ref.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 5000);
     }
 
     get showRoleInfo(): boolean {
@@ -149,7 +146,7 @@ export class ListProjectComponent implements OnDestroy {
 
     selectedChange(): void {
         let hnd = setInterval(() => this.ref.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 2000);
+        setTimeout(() => clearInterval(hnd), 1000);
     }
 
     clrLoad(state: State) {
@@ -168,6 +165,11 @@ export class ListProjectComponent implements OnDestroy {
             passInFilteredType = this.filteredType - 1;
         }
         this.proService.listProjects(this.searchKeyword, passInFilteredType, pageNumber, this.pageSize)
+        .pipe(finalize(() => {
+            // Force refresh view
+            let hnd = setInterval(() => this.ref.markForCheck(), 100);
+            setTimeout(() => clearInterval(hnd), 1000);
+        }))
             .subscribe(response => {
                 // Get total count
                 if (response.headers) {
@@ -187,10 +189,6 @@ export class ListProjectComponent implements OnDestroy {
                 this.loading = false;
                 this.msgHandler.handleError(error);
             });
-
-        // Force refresh view
-        let hnd = setInterval(() => this.ref.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 5000);
     }
 
     newReplicationRule(p: Project) {

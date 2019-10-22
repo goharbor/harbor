@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed, fakeAsync } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { PushImageButtonComponent } from './push-image.component';
 import { CopyInputComponent } from './copy-input.component';

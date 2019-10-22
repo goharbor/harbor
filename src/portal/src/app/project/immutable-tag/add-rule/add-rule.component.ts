@@ -86,7 +86,6 @@ export class AddRuleComponent implements OnInit, OnDestroy {
 
     set tagsInput(tagsInput) {
         if (this.rule && this.rule.tag_selectors && this.rule.tag_selectors[0] && this.rule.tag_selectors[0].pattern) {
-
             if (tagsInput.indexOf(",") !== -1) {
                 this.rule.tag_selectors[0].pattern = "{" + tagsInput + "}";
             } else {
