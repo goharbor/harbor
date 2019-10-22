@@ -3,6 +3,7 @@
 The Harbor installation process involves the following stages:
 
 1. Make sure that your target host meets the [Harbor Installation Prerequisites](installation_prereqs.md).
+1. [Configure HTTPS Access to Harbor](configure_https.md)
 1. [Download the Harbor Installer](download_installer.md)
 1. [Configure the Harbor YML File](configure_yml_file.md)
 1. [Run the Installer Script](run_installer_script.md)
