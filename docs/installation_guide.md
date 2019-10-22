@@ -89,7 +89,7 @@ After the initial deployment and after you have started Harbor, you perform addi
 
 ### Required Parameters
 
-The table below lists the parameters that must be set when you deploy Harbor. At the very least, you must update the `hostname` parameter.
+The table below lists the parameters that must be set when you deploy Harbor. By default, all of the required parameters are uncommented in the `harbor.yml` file. The optional parameters are commented with `#`. You do not necessarily need to change the values of the required parameters from the defaults that are provided, but these parameters must remain uncommented. At the very least, you must update the `hostname` parameter.
 
 **IMPORTANT**: Harbor does not ship with any certificates, and by default uses HTTP to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary to properly sign all images, you must use HTTPS. 
   
@@ -133,12 +133,12 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top"><code>harbor_admin_password</code></td>
     <td valign="top">None</td>
-    <td valign="top">Set an initial password for the Harbor administrator. This password is only used on the first time that Harbor starts. On subsequent logins, this setting is ignored and the administrator's password is set in the Harbor Portal. The default username and password are `admin` and `Harbor12345`.</td>
+    <td valign="top">Set an initial password for the Harbor administrator. This password is only used on the first time that Harbor starts. On subsequent logins, this setting is ignored and the administrator's password is set in the Harbor Portal. The default username and password are <code>admin</code> and <code>Harbor12345</code>.</td>
   </tr>
   <tr>
     <td valign="top"><code>database</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">Use a local PostgreSQL database. You can optionally configure an external database, in which case disable this option.</td>
+    <td valign="top">Use a local PostgreSQL database. You can optionally configure an external database, in which case you can disable this option.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
@@ -158,17 +158,27 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top"><code>data_volume</code></td>
     <td valign="top">None</td>
-    <td valign="top">The location on the target host in which to store Harbor's data. You can optionally configure external storage, in which case disable this option and enable `storage_service`.</td>
+    <td valign="top">The location on the target host in which to store Harbor's data. You can optionally configure external storage, in which case disable this option and enable <code>storage_service</code>. The default is <code>/data</code>.</td>
+  </tr>
+  <tr>
+    <td valign="top"><code>clair</code></td>
+    <td valign="top"><code>updaters_interval</code></td>
+    <td valign="top">Set an interval for Clair updates, in hours. Set to 0 to disable the updates. The default is 12 hours.</td>
   </tr>
   <tr>
     <td valign="top"><code>jobservice</code></td>
-    <td valign="top">&nbsp;</td>
-    <td valign="top">Configure the replication job service.</td>
+    <td valign="top"><code>max_job_workers</code></td>
+    <td valign="top">The maximum number of replication workers in the job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, set the value of this attribute based on the hardware resource of the host. The default is 10.</td>
+  </tr>
+<tr>
+    <td valign="top"><code>notification</code></td>
+    <td valign="top"><code>webhook_job_max_retry</code></td>
+    <td valign="top">Set the maximum number of retries for web hook jobs. The default is 10.</td>
   </tr>
   <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>max_job_workers</code></td>
-    <td valign="top">The maximum number of replication workers in the job service. For each image replication job, a worker synchronizes all tags of a repository to the remote destination. Increasing this number allows more concurrent replication jobs in the system. However, since each worker consumes a certain amount of network/CPU/IO resources, set the value of this attribute based on the hardware resource of the host.</td>
+    <td valign="top"><code>chart</code></td>
+    <td valign="top"><code>absolute_url</code></td>
+    <td valign="top">Set to <code>enabled</code> for Chart to use an absolute URL. Set to <code>disabled</code> for Chart to use a relative URL.</td>
   </tr>
   <tr>
     <td valign="top"><code>log</code></td>
@@ -178,15 +188,15 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>level</code></td>
-    <td valign="top">Set the logging level to <code>debug</code>, <code>info</code>, <code>warning</code>, <code>error</code>, or <code>fatal</code>.</td>
+    <td valign="top">Set the logging level to <code>debug</code>, <code>info</code>, <code>warning</code>, <code>error</code>, or <code>fatal</code>. The default is <code>info</code>.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>local</code></td>
-    <td valign="top">Optionally disable this option to use <code>external_endpoint</code> to send logs to Syslog. If you use local logging, set the following parameters:<ul>
-          <li><code>rotate_count</code>: Log files are rotated <code>rotate_count</code> times before being removed. If count is 0, old versions are removed rather than rotated.</li>
-          <li><code>rotate_size</code>: Log files are rotated only if they grow bigger than <code>rotate_size</code> bytes. Use <code>k</code> for kilobytes, <code>M</code> for megabytes, and <code>G</code> for gigabytes.  <code>100</code>, <code>100k</code>, <code>100M</code> and <code>100G</code> are all valid values.</li>
-          <li><code>location</code>: Set the directory in which to store the logs.</li>
+    <td valign="top">Set the log retention parameters:<ul>
+          <li><code>rotate_count</code>: Log files are rotated <code>rotate_count</code> times before being removed. If count is 0, old versions are removed rather than rotated. The default is 50.</li>
+          <li><code>rotate_size</code>: Log files are rotated only if they grow bigger than <code>rotate_size</code> bytes. Use <code>k</code> for kilobytes, <code>M</code> for megabytes, and <code>G</code> for gigabytes.  <code>100</code>, <code>100k</code>, <code>100M</code> and <code>100G</code> are all valid values. The default is 200M.</li>
+          <li><code>location</code>: Set the directory in which to store the logs. The default is <code>/var/log/harbor</code>.</li>
         </ul></td>
   </tr>
   <tr>
@@ -199,11 +209,31 @@ You can use certificates that are signed by a trusted third-party CA, or you can
         <li><code>port</code>: The port on which the syslog server listens</li>
     </ul>    </td>
   </tr>
+  <tr>
+    <td valign="top"><code>proxy</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">Configure proxies to be used by Clair, the replication jobservice, and Harbor.</td>
+  </tr>
+    <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>http_proxy</code></td>
+    <td valign="top">Configure an HTTP proxy, for example,  <code>http://my.proxy.com:3128</code>.</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>https_proxy</code></td>
+    <td valign="top">Configure an HTTPS proxy, for example,  <code>http://my.proxy.com:3128</code>.</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>no_proxy</code></td>
+    <td valign="top">Configure when not to use a proxy, for example, <code>127.0.0.1,localhost,core,registry</code>.</td>
+  </tr>
 </table>
   
 ### Optional parameters
 
-The following table lists the additional parameters that you can set to  configure your Harbor deployment beyond the required settings. In most cases, you need to uncomment the parameters in `harbor.yml`.
+The following table lists the additional, optional parameters that you can set to configure your Harbor deployment beyond the minimum required settings. To enable a setting, you must uncomment it in `harbor.yml` by deleting the leading `#` character.
 
 <table width="100%" border="0">
   <caption>
@@ -233,53 +263,24 @@ The following table lists the additional parameters that you can set to  configu
   <tr>
     <td valign="top"><code>storage_service</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">By default, Harbor stores images and charts on your local filesystem. In a production environment, you may consider use other storage backend instead of the local filesystem, like S3, OpenStack Swift, Ceph, etc. These parameters are configurations for registry. See *Configuring Storage Backend* below for more information.</td>
+    <td valign="top">By default, Harbor stores images and charts on your local filesystem. In a production environment, you might want to use another storage backend instead of the local filesystem. The parameters listed below are the configurations for the registry. See *Configuring Storage Backend* below for more information about how to configure a different backend.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>ca_bundle</code></td>
-    <td valign="top">The path to the custom root ca certificate, which will be injected into the trust store of registry's and chart repository's containers. This is usually needed when the user hosts a internal storage with self signed certificate.</td>
+    <td valign="top">The path to the custom root CA certificate, which is injected into the trust store of registry and chart repository containers. This is usually needed if internal storage uses a self signed certificate.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
-    <td valign="top"><code>provider_name</code></td>
-    <td valign="top">Storage configs for registry, default is filesystem. for more info about this configuration please refer&nbsp;<a href="https://docs.docker.com/registry/configuration/" rel="nofollow">https://docs.docker.com/registry/configuration/</a></td>
+    <td valign="top"><code>filesystem</code></td>
+    <td valign="top">The default is <code>filesystem</code>, but you can set <code>azure</code>, <code>gcs</code>, <code>s3</code>, <code>swift</code> and <code>oss</code>. For information about how to configure other backends, see <a href="#backend">Configuring a Storage Backend</a> below. Set <code>maxthreads</code> to limit the number of threads to the external provider. The default is 100.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>redirect</code></td>
-    <td valign="top"><code>disable</code>: set disable to true when you want to disable registry redirect</td>
-  </tr>
-    <tr>
-    <td valign="top"><code>clair</code></td>
-    <td valign="top">&nbsp;</td>
-    <td valign="top">Configure clair. </td>
+    <td valign="top">Set <code>disable</code> to <code>true</code> when you want to disable registry redirect</td>
   </tr>
   <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>updaters_interval</code></td>
-    <td valign="top">Set an interval for Clair updates, in hours. Set to 0 to disable the updates.</td>
-  </tr>
-<tr>
-    <td valign="top"><code>notification</code></td>
-    <td valign="top"><code>webhook_job_max_retry</code></td>
-    <td valign="top">Set the maximum number of retries for web hook jobs. The default is 10.</td>
-  </tr>
-  <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>updaters_interval</code></td>
-    <td valign="top">Set an interval for Clair updates, in hours. Set to 0 to disable the updates.</td>
-  </tr>
-  <tr>
-    <td valign="top"><code>chart</code></td>
-    <td valign="top">&nbsp;</td>
-    <td valign="top">Configure Chart settings.</td>
-  </tr>
-  <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>absolute_url</code></td>
-    <td valign="top">Set to <code>enabled</code> for chart to use an absolute URL. Set to <code>disabled</code> for chart to use a relative URL.</td>
-  </tr>
     <td valign="top"><code>external_database</code></td>
     <td valign="top">&nbsp;</td>
     <td valign="top">Configure external database settings, if you disable the local database option. Harbor currently only supports POSTGRES.</td>
@@ -329,48 +330,48 @@ The following table lists the additional parameters that you can set to  configu
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>notary_server</code></td>
     <td valign="top"><ul>
-      <li><code>host</code>: hostname for notary server database</li>
-      <li><code>port</code>: port of notary server database</li>
-      <li><code>db_name</code>: database name of notary server database</li>
-      <li><code>username</code>: username to connect notary server database</li>
-      <li><code>password</code>: password to notary server database</li>
-      <li><code>ssl_mode</code>: is enable ssl mode</li>
+      <li><code>host</code>: Hostname of the Notary server database.</li>
+      <li><code>port</code>: Database port.</li>
+      <li><code>db_name</code>: Database name.</li>
+      <li><code>username</code>: Username to connect to the Notary server database.</li>
+      <li><code>password</code>: Password for the account you set in <code>username</code>.</li>
+      <li><code>ssl_mode</code>: Enable SSL mode.e</li>
     </ul>    </td>
   </tr>
   <tr>
     <td valign="top"><code>external_redis</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">configs for use the external redis</td>
+    <td valign="top">Configure an external Redis instance.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>host</code></td>
-    <td valign="top">host for external redis</td>
+    <td valign="top">Hostname of the external Redis instance.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>port</code></td>
-    <td valign="top">port for external redis</td>
+    <td valign="top">Redis instance port.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>password</code></td>
-    <td valign="top">password to connect external host</td>
+    <td valign="top">Password to connect to the external Redis instance.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>registry_db_index</code></td>
-    <td valign="top">db index for registry use</td>
+    <td valign="top">Database index for Harbor registry.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>jobservice_db_index</code></td>
-    <td valign="top">db index for jobservice</td>
+    <td valign="top">Database index for jobservice.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>chartmuseum_db_index</code></td>
-    <td valign="top">db index for chartmuseum </td>
+    <td valign="top">Database index for Chart museum.</td>
   </tr>
   <tr>
     <td valign="top"><code>uaa</code></td>
@@ -382,31 +383,12 @@ The following table lists the additional parameters that you can set to  configu
     <td valign="top"><code>ca_file</code></td>
     <td valign="top">The path to the self-signed certificate of the UAA instance, for example <code>/path/to/ca</code>.</td>
   </tr>
-      <tr>
-    <td valign="top"><code>proxy</code></td>
-    <td valign="top">&nbsp;</td>
-    <td valign="top">Configure proxies to be used by Clair, the replication jobservice, and Harbor.</td>
-  </tr>
-    <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>http_proxy</code></td>
-    <td valign="top">Configure an HTTP proxy, for example,  <code>http://my.proxy.com:3128</code>.</td>
-  </tr>
-  <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>https_proxy</code></td>
-    <td valign="top">Configure an HTTPS proxy, for example,  <code>http://my.proxy.com:3128</code>.</td>
-  </tr>
-  <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>no_proxy</code></td>
-    <td valign="top">Configure when not to use a proxy, for example, <code>127.0.0.1,localhost,core,registry</code>.</td>
-  </tr>
 </table>
 
-#### Configuring storage backend (optional)
+<a id="backend"></a>
+### Configuring a Storage Backend 
 
-For example, if you use Openstack Swift as your storage backend, the parameters may look like this:
+By default Harbor uses local storage for the registry, but you can optionally configure the `storage_service` setting so that Harbor uses external storage. For information about how to configure the storage backend of a registry for different storage providers, see the [Registry Configuration Reference](https://docs.docker.com/registry/configuration/#storage) in the Docker documentation. For example, if you use Openstack Swift as your storage backend, the parameters might resemble the following:
 
 ``` yaml
 storage_service:
@@ -423,78 +405,85 @@ storage_service:
     disable: false
 ```
 
-_NOTE: For detailed information on storage backend of a registry, refer to [Registry Configuration Reference](https://docs.docker.com/registry/configuration/) ._
 
-## Finishing installation and starting Harbor
+## Installating and starting Harbor
 
-Once **harbor.yml** and storage backend (optional) are configured, install and start Harbor using the `install.sh` script.  Note that it may take some time for the online installer to download Harbor images from Docker hub.
+Once you have configured **harbor.yml** optionally set up a storage backend, you install and start Harbor by using the `install.sh` script. Note that it might take some time for the online installer to download all of the `Harbor images from Docker hub.
 
-### Default installation (without Notary/Clair)
+You can install Harbor in different configurations:
 
-Harbor has integrated with Notary and Clair (for vulnerability scanning). However, the default installation does not include Notary or Clair service.
+- Just Harbor, without Notary, Clair, or Chart Repository Service
+- Harbor with Notary
+- Harbor with Clair
+- Harbor with Chart Repository Service
+- Harbor with two or all three of Notary, Clair, and Chart Repository Service
+
+### Default installation without Notary, Clair, or Chart Repository Service
+
+The default Harbor installation does not include Notary or Clair service.
 
 ``` sh
     $ sudo ./install.sh
 ```
 
-If everything worked properly, you should be able to open a browser to visit the admin portal at `http://reg.yourdomain.com` (change `reg.yourdomain.com` to the hostname configured in your `harbor.yml`). Note that the default administrator username/password are admin/Harbor12345.
+If the installation succeeds, you can open a browser to visit the Harbor Portal at `http://reg.yourdomain.com`, changing `reg.yourdomain.com` to the hostname that you configured in `harbor.yml`. If you did not change them, the default administrator username and password are `admin` and `Harbor12345`.
 
-Log in to the admin portal and create a new project, e.g. `myproject`. You can then use docker commands to login and push images (By default, the registry server listens on port 80):
+Log in to the admin portal and create a new project, for example, `myproject`. You can then use docker commands to log in and push images to Harbor. By default, the registry server listens on port 80:
 
 ```sh
 $ docker login reg.yourdomain.com
 $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 ```
 
-**IMPORTANT:** The default installation of Harbor uses _HTTP_ - as such, you will need to add the option `--insecure-registry` to your client's Docker daemon and restart the Docker service.
+**IMPORTANT:** If your installation of Harbor uses HTTP, you must add the option `--insecure-registry` to your client's Docker daemon and restart the Docker service.
 
 ### Installation with Notary
-To install Harbor with Notary service, add a parameter when you run `install.sh`:
+
+To install Harbor with the Notary service, add the `--with-notary` parameter when you run `install.sh`:
 
 ```sh
     $ sudo ./install.sh --with-notary
 ```
 
-**Note**: For installation with Notary the parameter **ui_url_protocol** must be set to "https". For configuring HTTPS please refer to the following sections.
+**Note**: For installation with Notary, you must use Harbor with HTTPS.
 
-More information about Notary and Docker Content Trust, please refer to [Docker's documentation](https://docs.docker.com/engine/security/trust/content_trust/).
+For more information about Notary and Docker Content Trust, see [Content Trust](https://docs.docker.com/engine/security/trust/content_trust/) in the Docker documentation.
 
 ### Installation with Clair
 
-To install Harbor with Clair service, add a parameter when you run `install.sh`:
+To install Harbor with Clair service, add the `--with-clair` parameter when you run `install.sh`:
 
 ```sh
     $ sudo ./install.sh --with-clair
 ```
 
-For more information about Clair, please refer to Clair's documentation:
-`https://coreos.com/clair/docs/2.0.1/`
+For more information about Clair, see the [Clair documentation](https://coreos.com/clair/docs/2.0.1/).
 
-### Installation with chart repository service
+### Installation with Chart Repository Service 
 
-To install Harbor with chart repository service, add a parameter when you run ```install.sh```:
+To install Harbor with chart repository service, add the `--with-chartmuseum` parameter when you run ```install.sh```:
 
 ```sh
     $ sudo ./install.sh --with-chartmuseum
 ```
 
-**Note**: If you want to install Notary, Clair and chart repository service, you must specify all the parameters in the same command:
+### Installation with Notary, Clair, and Chart Repository Service
+
+If you want to install all three of Notary, Clair and chart repository service, you must specify all of the parameters in the same command:
 
 ```sh
     $ sudo ./install.sh --with-notary --with-clair --with-chartmuseum
 ```
 
-For information on how to use Harbor, please refer to **[User Guide of Harbor](user_guide.md)** .
+## Using Harbor
 
-## Configuring Harbor with HTTPS access
-
-Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, please refer to **[Configuring Harbor with HTTPS Access](configure_https.md)**.
+For information on how to use Harbor, see the **[Harbor User Guide](user_guide.md)** .
 
 ## Managing Harbor's lifecycle
 
-You can use docker-compose to manage the lifecycle of Harbor. Some useful commands are listed as follows (must run in the same directory as *docker-compose.yml*).
+You can use `docker-compose` to manage the lifecycle of Harbor. Some useful commands are listed below. You must run the commands in the same directory as `docker-compose.yml`.
 
-Stopping Harbor:
+### Stop Harbor:
 
 ``` sh
 $ sudo docker-compose stop
@@ -509,7 +498,7 @@ Stopping harbor-db          ... done
 Stopping harbor-log         ... done
 ```
 
-Restarting Harbor after stopping:
+### Restart Harbor after Stopping:
 
 ``` sh
 $ sudo docker-compose start
@@ -524,7 +513,9 @@ Starting jobservice  ... done
 Starting proxy       ... done
 ```
 
-To change Harbor's configuration, first stop existing Harbor instance and update `harbor.yml`. Then run `prepare` script to populate the configuration. Finally re-create and start Harbor's instance:
+### Reconfigure Harbor
+
+To reconfigure Harbor, stop the existing Harbor instance and update `harbor.yml`. Then run `prepare` script to populate the configuration. Finally re-create and start the Harbor instance.
 
 ``` sh
 $ sudo docker-compose down -v
@@ -533,20 +524,22 @@ $ sudo prepare
 $ sudo docker-compose up -d
 ```
 
-Removing Harbor's containers while keeping the image data and Harbor's database files on the file system:
+### Other Commands
+
+Remove Harbor's containers while keeping the image data and Harbor's database files on the file system:
 
 ``` sh
 $ sudo docker-compose down -v
 ```
 
-Removing Harbor's database and image data (for a clean re-installation):
+Remove Harbor's database and image data for a clean re-installation:
 
 ``` sh
 $ rm -r /data/database
 $ rm -r /data/registry
 ```
 
-### *Managing lifecycle of Harbor when it's installed with Notary, Clair and chart repository service*
+### Managing the Harbor Lifecycle  with Notary, Clair and Chart Repository Service
 
 If you want to install Notary, Clair and chart repository service together, you should include all the components in the prepare commands:
 
@@ -559,32 +552,33 @@ $ sudo docker-compose up -d
 
 Please check the [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) for more on docker-compose.
 
-## Persistent data and log files
+## Persistent Data and Log Files
 
-By default, registry data is persisted in the host's `/data/` directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated, you can edit the `data_volume` in `harbor.yml` file to change this directory.
+By default, registry data is persisted in the host's `/data/` directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated. You can edit the `data_volume` in `harbor.yml` file to change this directory.
 
-In addition, Harbor uses *rsyslog* to collect the logs of each container. By default, these log files are stored in the directory `/var/log/harbor/` on the target host for troubleshooting, also you can change the log directory in `harbor.yml`.
+In addition, Harbor uses `rsyslog` to collect the logs for each container. By default, these log files are stored in the directory `/var/log/harbor/` on the target host. You can change the log directory in `harbor.yml`.
 
-## Configuring Harbor listening on a customized port
+## Configuring Harbor to Listening on a Customized Port
 
-By default, Harbor listens on port 80(HTTP) and 443(HTTPS, if configured) for both admin portal and docker commands, these default ports can configured in `harbor.yml`
+By default, Harbor listens on port 443(HTTPS) and 80(HTTP, if configured)  for both Harbor portal and Docker commands. You can reconfigure the default ports in `harbor.yml`
 
 ## Configuring Harbor using the external database
 
-Currently, only PostgreSQL database is supported by Harbor.
-To user an external database, just uncomment the `external_database` section in `harbor.yml` and fill the necessary information. Four databases are needed to be create first by users for Harbor core, Clair, Notary server and Notary signer. And the tables will be generated automatically when Harbor starting up.
+Currently, Harbor only supports PostgreSQL database. To user an external database, uncomment the `external_database` section in `harbor.yml` and fill the necessary information. You must create four databases for Harbor core, Clair, Notary server, and Notary signer. And the tables are generated automatically when Harbor starts up.
 
 ## Manage user settings
 
-User settings are handled separately system settings. All user settings are configured in the web console or by HTTP requests at the command line. For information about using HTTP requests to configure user settings, see  [Configure User Settings at the Command Line](configure_user_settings.md) to config user settings.
+User settings are handled separately system settings. All user settings are configured in the Harbor portal or by HTTP requests at the command line. For information about using HTTP requests to configure user settings, see  [Configure User Settings at the Command Line](configure_user_settings.md) to config user settings.
 
 ## Performance tuning
 
-By default, Harbor limits the CPU usage of Clair container to 150000 and avoids its using up all the CPU resources. This is defined in the docker-compose.clair.yml file. You can modify it based on your hardware configuration.
+By default, Harbor limits the CPU usage of the Clair container to 150000 to avoid it using up all CPU resources. This is defined in the `docker-compose.clair.yml` file. You can modify this file based on your hardware configuration.
 
 ## Troubleshooting
 
-1. When Harbor does not work properly, run the below commands to find out if all containers of Harbor are in **UP** status:
+### Harbor Doesn't Start or Functions Incorrectly
+
+When Harbor does not function correctly, run the following commands to find out if all of Harbor's containers in **UP** status:
 ```
     $ sudo docker-compose ps
         Name                     Command               State                    Ports
@@ -600,12 +594,14 @@ By default, Harbor limits the CPU usage of Clair container to 150000 and avoids 
   registryctl         /harbor/start.sh                 Up
 ```
 
-If a container is not in **UP** state, check the log file of that container in directory `/var/log/harbor`. For example, if the container `harbor-core` is not running, you should look at the log file `core.log`.
+If a container is not in the `Up` state, check the log file for that container in `/var/log/harbor`. For example, if the `harbor-core` container is not running, look at the `core.log` log file.
 
-2.When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `common/config/nginx/nginx.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.
+### Using nginx or Load Balancing
+
+When setting up Harbor behind an `nginx` proxy or elastic load balancing, look for the following line in `common/config/nginx/nginx.conf` and, if the proxy already has similar settings, remove it from the sections `location /`, `location /v2/` and `location /service/`.
 
 ``` sh
 proxy_set_header X-Forwarded-Proto $scheme;
 ```
 
-and re-deploy Harbor refer to the previous section "Managing Harbor's lifecycle".
+Then re-deploy Harbor per the instructions in "Managing Harbor Lifecycle.
