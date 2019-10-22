@@ -230,6 +230,27 @@ The following table lists the additional parameters that you can set to  configu
     <td valign="top">Enable this option to use an external proxy. When  enabled, the hostname is no longer used.</td>
   </tr>
   <tr>
+  <tr>
+    <td valign="top"><code>storage_service</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">By default, Harbor stores images and charts on your local filesystem. In a production environment, you may consider use other storage backend instead of the local filesystem, like S3, OpenStack Swift, Ceph, etc. These parameters are configurations for registry. See *Configuring Storage Backend* below for more information.</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>ca_bundle</code></td>
+    <td valign="top">The path to the custom root ca certificate, which will be injected into the trust store of registry's and chart repository's containers. This is usually needed when the user hosts a internal storage with self signed certificate.</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>provider_name</code></td>
+    <td valign="top">Storage configs for registry, default is filesystem. for more info about this configuration please refer&nbsp;<a href="https://docs.docker.com/registry/configuration/" rel="nofollow">https://docs.docker.com/registry/configuration/</a></td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>redirect</code></td>
+    <td valign="top"><code>disable</code>: set disable to true when you want to disable registry redirect</td>
+  </tr>
+    <tr>
     <td valign="top"><code>clair</code></td>
     <td valign="top">&nbsp;</td>
     <td valign="top">Configure clair. </td>
@@ -239,20 +260,15 @@ The following table lists the additional parameters that you can set to  configu
     <td valign="top"><code>updaters_interval</code></td>
     <td valign="top">Set an interval for Clair updates, in hours. Set to 0 to disable the updates.</td>
   </tr>
-  <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>http_proxy</code></td>
-    <td valign="top">Configure an HTTP proxy for Clair, for example,  <code>http://my.proxy.com:3128</code>.</td>
+<tr>
+    <td valign="top"><code>notification</code></td>
+    <td valign="top"><code>webhook_job_max_retry</code></td>
+    <td valign="top">Set the maximum number of retries for web hook jobs. The default is 10.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
-    <td valign="top"><code>https_proxy</code></td>
-    <td valign="top">Configure an HTTPS proxy for Clair, for example,  <code>http://my.proxy.com:3128</code>.</td>
-  </tr>
-  <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>no_proxy</code></td>
-    <td valign="top">Configure when not to use a proxy for Clair, for example, <code>127.0.0.1,localhost,core,registry</code>.</td>
+    <td valign="top"><code>updaters_interval</code></td>
+    <td valign="top">Set an interval for Clair updates, in hours. Set to 0 to disable the updates.</td>
   </tr>
   <tr>
     <td valign="top"><code>chart</code></td>
@@ -264,7 +280,6 @@ The following table lists the additional parameters that you can set to  configu
     <td valign="top"><code>absolute_url</code></td>
     <td valign="top">Set to <code>enabled</code> for chart to use an absolute URL. Set to <code>disabled</code> for chart to use a relative URL.</td>
   </tr>
-  <tr>
     <td valign="top"><code>external_database</code></td>
     <td valign="top">&nbsp;</td>
     <td valign="top">Configure external database settings, if you disable the local database option. Harbor currently only supports POSTGRES.</td>
@@ -358,24 +373,34 @@ The following table lists the additional parameters that you can set to  configu
     <td valign="top">db index for chartmuseum </td>
   </tr>
   <tr>
-    <td valign="top"><code>storage_service</code></td>
+    <td valign="top"><code>uaa</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">By default, Harbor stores images and charts on your local filesystem. In a production environment, you may consider use other storage backend instead of the local filesystem, like S3, OpenStack Swift, Ceph, etc. These parameters are configurations for registry. See *Configuring Storage Backend* below for more information.</td>
+    <td valign="top">Enable UAA to trust the certificate of a UAA instance that is hosted via a self-signed certificate.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
-    <td valign="top"><code>ca_bundle</code></td>
-    <td valign="top">The path to the custom root ca certificate, which will be injected into the trust store of registry's and chart repository's containers. This is usually needed when the user hosts a internal storage with self signed certificate.</td>
+    <td valign="top"><code>ca_file</code></td>
+    <td valign="top">The path to the self-signed certificate of the UAA instance, for example <code>/path/to/ca</code>.</td>
+  </tr>
+      <tr>
+    <td valign="top"><code>proxy</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">Configure proxies to be used by Clair, the replication jobservice, and Harbor.</td>
+  </tr>
+    <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>http_proxy</code></td>
+    <td valign="top">Configure an HTTP proxy, for example,  <code>http://my.proxy.com:3128</code>.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
-    <td valign="top"><code>provider_name</code></td>
-    <td valign="top">Storage configs for registry, default is filesystem. for more info about this configuration please refer&nbsp;<a href="https://docs.docker.com/registry/configuration/" rel="nofollow">https://docs.docker.com/registry/configuration/</a></td>
+    <td valign="top"><code>https_proxy</code></td>
+    <td valign="top">Configure an HTTPS proxy, for example,  <code>http://my.proxy.com:3128</code>.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
-    <td valign="top"><code>redirect</code></td>
-    <td valign="top"><code>disable</code>: set disable to true when you want to disable registry redirect</td>
+    <td valign="top"><code>no_proxy</code></td>
+    <td valign="top">Configure when not to use a proxy, for example, <code>127.0.0.1,localhost,core,registry</code>.</td>
   </tr>
 </table>
 
