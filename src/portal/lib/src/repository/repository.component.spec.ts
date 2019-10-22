@@ -158,6 +158,12 @@ describe('RepositoryComponent (inline template)', () => {
   let mockHasRetagImagePermission: boolean = true;
   let mockHasDeleteImagePermission: boolean = true;
   let mockHasScanImagePermission: boolean = true;
+  const permissions = [
+    {resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE},
+    {resource: USERSTATICPERMISSION.REPOSITORY.KEY, action:  USERSTATICPERMISSION.REPOSITORY.VALUE.PULL},
+    {resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE},
+    {resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE},
+  ];
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -213,16 +219,10 @@ describe('RepositoryComponent (inline template)', () => {
 
     spyLabels = spyOn(labelService, 'getGLabels').and.returnValues(of(mockLabels).pipe(delay(0)));
     spyLabels1 = spyOn(labelService, 'getPLabels').and.returnValues(of(mockLabels1).pipe(delay(0)));
-    spyOn(userPermissionService, "getPermission")
-    .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE )
-    .and.returnValue(of(mockHasAddLabelImagePermission))
-     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.PULL )
-     .and.returnValue(of(mockHasRetagImagePermission))
-     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG.KEY, USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE )
-     .and.returnValue(of(mockHasDeleteImagePermission))
-     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY
-      , USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE)
-     .and.returnValue(of(mockHasScanImagePermission));
+    spyOn(userPermissionService, "hasProjectPermissions")
+    .withArgs(compRepo.projectId, permissions )
+    .and.returnValue(of([mockHasAddLabelImagePermission, mockHasRetagImagePermission,
+       mockHasDeleteImagePermission, mockHasScanImagePermission]));
     fixture.detectChanges();
   });
   let originalTimeout;
