@@ -22,7 +22,7 @@ import {
   OnInit
 } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { Subscription } from "rxjs";
+import { Subscription, throwError as observableThrowError } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 
 import { EndpointService } from "../service/endpoint.service";
@@ -30,18 +30,12 @@ import { ErrorHandler } from "../error-handler/index";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { Endpoint, PingEndpoint } from "../service/interface";
 import { clone, compareValue, isEmptyObject } from "../utils";
+import { HttpClient } from "@angular/common/http";
+import { catchError } from "rxjs/operators";
 
 const FAKE_PASSWORD = "rjGcfuRu";
 const FAKE_JSON_KEY = "No Change";
-const DOCKERHUB_URL = "https://hub.docker.com";
-const HELM_HUB_URL = "https://hub.helm.sh";
-const HELM_HUB_ACCESS_KEY = "_json_key";
-const REGISTRY_NAME_LIST = {
-  DOCKER_HUB: "docker-hub",
-  HELM_HUB: "helm-hub",
-  GOOGLE_GCR: "google-gcr",
-  AWS_ECR: "aws-ecr"
-};
+const METADATA_URL = "/api/replication/adapterinfos";
 @Component({
   selector: "hbr-create-edit-endpoint",
   templateUrl: "./create-edit-endpoint.component.html",
@@ -58,7 +52,7 @@ export class CreateEditEndpointComponent
   closable: boolean = false;
   editable: boolean;
   adapterList: string[];
-  endpointList: object[] = [];
+  endpointList: any[] = [];
   target: Endpoint = this.initEndpoint();
   selectedType: string;
   initVal: Endpoint;
@@ -76,12 +70,15 @@ export class CreateEditEndpointComponent
   timerHandler: any;
   valueChangesSub: Subscription;
   formValues: { [key: string]: string } | any;
-
+  adapterInfo: object;
+  showEndpointList: boolean = false;
+  endpointOnHover: boolean = false;
   constructor(
     private endpointService: EndpointService,
     private errorHandler: ErrorHandler,
     private translateService: TranslateService,
-    private ref: ChangeDetectorRef
+    private ref: ChangeDetectorRef,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -93,8 +90,34 @@ export class CreateEditEndpointComponent
         this.errorHandler.error(error);
       }
     );
+    this.getAdapterInfo();
   }
 
+  getAdapterInfo() {
+    this.http.get(METADATA_URL)
+        .pipe(catchError(error => observableThrowError(error)))
+        .subscribe(
+            response => {
+                this.adapterInfo = response;
+            }, error => {
+                this.errorHandler.error(error);
+            });
+  }
+  isNormalCredential(): boolean {
+    return !(this.adapterInfo && this.target && this.target.type
+        && this.adapterInfo[this.target.type]
+        && this.adapterInfo[this.target.type].credential_pattern);
+  }
+  selectedEndpoint(endpoint: string) {
+    this.targetForm.controls.endpointUrl.reset(endpoint);
+    this.showEndpointList = false;
+    this.endpointOnHover = false;
+  }
+  blur() {
+    if (!this.endpointOnHover) {
+      this.showEndpointList = false;
+    }
+  }
   public get isValid(): boolean {
     return (
       !this.testOngoing &&
@@ -195,7 +218,7 @@ export class CreateEditEndpointComponent
       this.endpointService.getEndpoint(targetId).subscribe(
         target => {
           this.target = target;
-          this.urlDisabled = this.target.type === 'docker-hub' ? true : false;
+          this.urlDisabled = this.target.type === 'docker-hub';
           // Keep data cache
           this.initVal = clone(target);
           this.initVal.credential.access_secret = this.target.type === 'google-gcr' ? FAKE_JSON_KEY : FAKE_PASSWORD;
@@ -221,112 +244,21 @@ export class CreateEditEndpointComponent
   }
 
   adapterChange($event): void {
+    this.targetForm.controls.endpointUrl.reset("");
     let selectValue = this.targetForm.controls.adapter.value;
-    if (selectValue === REGISTRY_NAME_LIST.DOCKER_HUB) {
-      this.urlDisabled = true;
-      this.targetForm.controls.endpointUrl.setValue(DOCKERHUB_URL);
-    } else if (selectValue === REGISTRY_NAME_LIST.HELM_HUB) {
-      this.urlDisabled = true;
-      this.targetForm.controls.endpointUrl.setValue(HELM_HUB_URL);
-    } else {
-      this.urlDisabled = false;
-      this.targetForm.controls.endpointUrl.setValue("");
-    }
-    if (selectValue === REGISTRY_NAME_LIST.GOOGLE_GCR) {
-      this.targetForm.controls.access_key.setValue(HELM_HUB_ACCESS_KEY);
-    } else {
+    this.urlDisabled = false;
+    if (this.isNormalCredential()) {
       this.targetForm.controls.access_key.setValue("");
+    } else {
+      this.targetForm.controls.access_key.setValue(this.adapterInfo[this.target.type].credential_pattern.access_key_data);
     }
-    if (selectValue === REGISTRY_NAME_LIST.GOOGLE_GCR) {
-      this.endpointList = [
-        {
-          key: "gcr.io",
-          value: "https://gcr.io"
-        },
-        {
-          key: "us.gcr.io",
-          value: "https://us.gcr.io"
-        },
-        {
-          key: "eu.gcr.io",
-          value: "https://eu.gcr.io"
-        },
-        {
-          key: "asia.gcr.io",
-          value: "https://asia.gcr.io"
-        }
-      ];
-    } else if (selectValue === REGISTRY_NAME_LIST.AWS_ECR) {
-      this.endpointList = [
-        {
-          key: "ap-northeast-1",
-          value: "https://api.ecr.ap-northeast-1.amazonaws.com"
-        },
-        {
-          key: "us-east-1",
-          value: "https://api.ecr.us-east-1.amazonaws.com"
-        },
-        {
-          key: "us-east-2",
-          value: "https://api.ecr.us-east-2.amazonaws.com"
-        },
-        {
-          key: "us-west-1",
-          value: "https://api.ecr.us-west-1.amazonaws.com"
-        },
-        {
-          key: "us-west-2",
-          value: "https://api.ecr.us-west-2.amazonaws.com"
-        },
-        {
-          key: "ap-east-1",
-          value: "https://api.ecr.ap-east-1.amazonaws.com"
-        },
-        {
-          key: "ap-south-1",
-          value: "https://api.ecr.ap-south-1.amazonaws.com"
-        },
-        {
-          key: "ap-northeast-2",
-          value: "https://api.ecr.ap-northeast-2.amazonaws.com"
-        },
-        {
-          key: "ap-southeast-1",
-          value: "https://api.ecr.ap-southeast-1.amazonaws.com"
-        },
-        {
-          key: "ap-southeast-2",
-          value: "https://api.ecr.ap-southeast-2.amazonaws.com"
-        },
-        {
-          key: "ca-central-1",
-          value: "https://api.ecr.ca-central-1.amazonaws.com"
-        },
-        {
-          key: "eu-central-1",
-          value: "https://api.ecr.eu-central-1.amazonaws.com"
-        },
-        {
-          key: "eu-west-1",
-          value: "https://api.ecr.eu-west-1.amazonaws.com"
-        },
-        {
-          key: "eu-west-2",
-          value: "https://api.ecr.eu-west-2.amazonaws.com"
-        },
-        {
-          key: "eu-west-3",
-          value: "https://api.ecr.eu-west-3.amazonaws.com"
-        },
-        {
-          key: "eu-north-1",
-          value: "https://api.ecr.eu-north-1.amazonaws.com"
-        },
-        {
-          key: "sa-east-1",
-          value: "https://api.ecr.sa-east-1.amazonaws.com"
-        }
-      ];
+    if (this.adapterInfo && this.adapterInfo[selectValue]
+        && this.adapterInfo[selectValue].endpoint_pattern
+        && this.adapterInfo[selectValue].endpoint_pattern.endpoints) {
+      this.endpointList = this.adapterInfo[selectValue].endpoint_pattern.endpoints;
+      if (this.endpointList.length === 1) {
+        this.target.url = this.endpointList[0].value;
+      }
     } else {
       this.endpointList = [];
     }
