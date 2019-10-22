@@ -41,8 +41,8 @@ func NewClient(registry *model.Registry) *Client {
 	return client
 }
 
-// The parameter "v" must be a pointer to a slice
-func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
+// getAndIteratePagination will iterator over a paginated response from DTR
+func (c *Client) getAndIteratePagination(endpoint string, v interface{}) error {
 	urlAPI, err := url.Parse(endpoint)
 	if err != nil {
 		return err
@@ -99,6 +99,7 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 	return nil
 }
 
+// getRepositories returns a list of repositories in DTR
 func (c *Client) getRepositories() ([]*adp.Repository, error) {
 	var repositories []Repository
 	var dtrRepositories Repositories
@@ -161,12 +162,13 @@ func (c *Client) getRepositories() ([]*adp.Repository, error) {
 	return result, nil
 }
 
+// getVTags looks up a repositories tags in DTR
 func (c *Client) getVTags(repository string) ([]*adp.VTag, error) {
 	var tags []*Tag
 	// This assumes repository is of form namespace/repo
 	urlAPI := fmt.Sprintf("%s/api/v0/repositories/%s/tags?pageSize=100", c.url, repository)
 	log.Debugf("Looking up tags for %s at %s", repository, urlAPI)
-	if err := c.GetAndIteratePagination(urlAPI, &tags); err != nil {
+	if err := c.getAndIteratePagination(urlAPI, &tags); err != nil {
 		log.Debugf("Failed looking up tags for %s at %s", repository, urlAPI)
 		return nil, err
 	}
@@ -181,6 +183,7 @@ func (c *Client) getVTags(repository string) ([]*adp.VTag, error) {
 	return result, nil
 }
 
+// getNamespaces returns DTR namespaces.  DTR also calles these orgs and accounts depending on where you look
 func (c *Client) getNamespaces() ([]Account, error) {
 	var accounts []Account
 	var response Accounts
@@ -234,8 +237,7 @@ func (c *Client) getNamespaces() ([]Account, error) {
 	return accounts, nil
 }
 
-// create repository in DTR
-// The namespace/org/account must already exist
+// createRepository creates a repository in DTR.  The namespace/org/account must already exist.
 func (c *Client) createRepository(repository string) error {
 	var namespace string
 	var repositoryName string
@@ -285,11 +287,11 @@ func (c *Client) createRepository(repository string) error {
 	}
 }
 
-// create namespace in DTR
+// createNamespace creates a namespace in DTR
 // This actually hits the enzi API which appears to map to the UCP
 // accounts API.  The DTR v0 api has no official way to create a
 // namespace as of 2.7.1
-// this operation needs admin
+// this operation needs admin access
 func (c *Client) createNamespace(namespace string) error {
 	ns := newDefaultDTRNamespace(namespace)
 	body, err := json.Marshal(ns)
