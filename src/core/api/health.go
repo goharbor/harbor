@@ -22,14 +22,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/utils"
-
+	"github.com/docker/distribution/health"
 	"github.com/goharbor/harbor/src/common/dao"
 	httputil "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-
-	"github.com/docker/distribution/health"
 	"github.com/gomodule/redigo/redis"
 )
 
@@ -240,14 +238,6 @@ func chartmuseumHealthChecker() health.Checker {
 	return PeriodicHealthChecker(checker, period)
 }
 
-func clairHealthChecker() health.Checker {
-	url := config.GetClairHealthCheckServerURL() + "/health"
-	timeout := 60 * time.Second
-	period := 10 * time.Second
-	checker := HTTPStatusCodeHealthChecker(http.MethodGet, url, nil, timeout, http.StatusOK)
-	return PeriodicHealthChecker(checker, period)
-}
-
 func notaryHealthChecker() health.Checker {
 	url := config.InternalNotaryEndpoint() + "/_notary_server/health"
 	timeout := 60 * time.Second
@@ -300,9 +290,6 @@ func registerHealthCheckers() {
 	HealthCheckerRegistry["redis"] = redisHealthChecker()
 	if config.WithChartMuseum() {
 		HealthCheckerRegistry["chartmuseum"] = chartmuseumHealthChecker()
-	}
-	if config.WithClair() {
-		HealthCheckerRegistry["clair"] = clairHealthChecker()
 	}
 	if config.WithNotary() {
 		HealthCheckerRegistry["notary"] = notaryHealthChecker()
