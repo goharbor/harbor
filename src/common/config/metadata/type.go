@@ -18,6 +18,7 @@ package metadata
 import (
 	"encoding/json"
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 
@@ -139,12 +140,12 @@ type Int64Type struct {
 }
 
 func (t *Int64Type) validate(str string) error {
-	_, err := strconv.ParseInt(str, 10, 64)
+	_, err := parseInt64(str)
 	return err
 }
 
 func (t *Int64Type) get(str string) (interface{}, error) {
-	return strconv.ParseInt(str, 10, 64)
+	return parseInt64(str)
 }
 
 // BoolType ...
@@ -194,7 +195,7 @@ type QuotaType struct {
 }
 
 func (t *QuotaType) validate(str string) error {
-	val, err := strconv.ParseInt(str, 10, 64)
+	val, err := parseInt64(str)
 	if err != nil {
 		return err
 	}
@@ -204,4 +205,19 @@ func (t *QuotaType) validate(str string) error {
 	}
 
 	return nil
+}
+
+// parseInt64 returns int64 from string which support scientific notation
+func parseInt64(str string) (int64, error) {
+	val, err := strconv.ParseInt(str, 10, 64)
+	if err == nil {
+		return val, nil
+	}
+
+	fval, err := strconv.ParseFloat(str, 64)
+	if err == nil && fval == math.Trunc(fval) {
+		return int64(fval), nil
+	}
+
+	return 0, fmt.Errorf("invalid int64 string: %s", str)
 }
