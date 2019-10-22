@@ -73,7 +73,7 @@ class TestProjects(unittest.TestCase):
         #5. Get project quota
         quota = self.system.get_project_quota("project", TestProjects.project_test_quota_id, **ADMIN_CLIENT)
         self.assertEqual(quota[0].used["count"], 1)
-        self.assertEqual(quota[0].used["storage"], 2791709)
+        self.assertEqual(quota[0].used["storage"], 2789174)
 
         #6. Delete repository(RA) by user(UA);
         self.repo.delete_repoitory(TestProjects.repo_name, **ADMIN_CLIENT)

@@ -29,6 +29,8 @@ func (dmf *delmfInterceptor) HandleRequest(req *http.Request) (err error) {
 
 	artifactQuery := &models.ArtifactQuery{
 		Digest: dmf.mf.Digest,
+		Repo:   dmf.mf.Repository,
+		PID:    dmf.mf.ProjectID,
 	}
 	var afs []*models.Artifact
 	afs, err = dao.ListArtifacts(artifactQuery)
