@@ -199,6 +199,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	params[sca.JobParamRegistration] = regJSON
 	params[sca.JobParameterRequest] = rJSON
 	params[sca.JobParameterMimes] = []string{v1.MimeTypeNativeReport}
+	params[sca.JobParameterRobotID] = int64(1)
 
 	j := &jm.JobData{
 		Name: job.ImageScanJob,

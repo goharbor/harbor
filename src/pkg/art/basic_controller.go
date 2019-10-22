@@ -27,7 +27,7 @@ type basicController struct {
 	m Manager
 }
 
-// NewController
+// NewController ...
 func NewController() Controller {
 	return &basicController{
 		m: NewManager(),

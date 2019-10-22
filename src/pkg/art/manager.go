@@ -19,6 +19,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/q"
 )
 
+// Manager is designed to manage the artifact
 type Manager interface {
 	// List the artifacts with queries
 	//

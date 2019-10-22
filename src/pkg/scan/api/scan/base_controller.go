@@ -19,11 +19,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/goharbor/harbor/src/common/utils/log"
-
 	cj "github.com/goharbor/harbor/src/common/job"
 	jm "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -306,7 +305,7 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 					// Should not block the main flow, just logged
 					log.Error(errors.Wrap(err, "scan controller: handle job hook"))
 				} else {
-					log.Debugf("Robot account with id %d for the scan %s is removed", rid, trackID)
+					log.Debugf("Robot account with id %d for the scan %s is removed", int64(rid), trackID)
 				}
 			}
 		}
