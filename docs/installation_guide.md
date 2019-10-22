@@ -479,7 +479,7 @@ If you want to install all three of Notary, Clair and chart repository service, 
 
 For information on how to use Harbor, see the **[Harbor User Guide](user_guide.md)** .
 
-## Managing Harbor's lifecycle
+## Managing Harbor Lifecycle
 
 You can use `docker-compose` to manage the lifecycle of Harbor. Some useful commands are listed below. You must run the commands in the same directory as `docker-compose.yml`.
 
