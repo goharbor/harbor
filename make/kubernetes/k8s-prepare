@@ -140,7 +140,7 @@ else:
 if cert_path != '':
     if os.path.isfile(cert_path):
         with open(cert_path, 'r') as cert:
-            set_config('https_cert', cert.read())i
+            set_config('https_cert', cert.read())
     else:
         raise Exception('Error: https cert is not existing')
 else:
