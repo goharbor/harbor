@@ -32,6 +32,8 @@ const (
 
 // Repository of candidate
 type Repository struct {
+	// Namespace(project) ID
+	NamespaceID int64
 	// Namespace
 	Namespace string `json:"namespace"`
 	// Repository name
@@ -91,6 +93,13 @@ func (c *Candidate) Hash() string {
 		log.Errorf("Lack Digest of Candidate for %s/%s:%s", c.Namespace, c.Repository, c.Tag)
 	}
 	raw := fmt.Sprintf("%s:%s/%s:%s", c.Kind, c.Namespace, c.Repository, c.Digest)
+
+	return base64.StdEncoding.EncodeToString([]byte(raw))
+}
+
+// NameHash based on the candidate info for differentiation
+func (c *Candidate) NameHash() string {
+	raw := fmt.Sprintf("%s:%s/%s:%s", c.Kind, c.Namespace, c.Repository, c.Tag)
 
 	return base64.StdEncoding.EncodeToString([]byte(raw))
 }

@@ -16,6 +16,7 @@ package or
 
 import (
 	"errors"
+	"github.com/goharbor/harbor/src/common/dao"
 	"testing"
 	"time"
 
@@ -50,6 +51,7 @@ func TestProcessor(t *testing.T) {
 
 // SetupSuite ...
 func (suite *ProcessorTestSuite) SetupSuite() {
+	dao.PrepareTestForPostgresSQL()
 	suite.all = []*art.Candidate{
 		{
 			Namespace:  "library",
