@@ -73,6 +73,7 @@ type TagDetail struct {
 	Author        string    `json:"author"`
 	Created       time.Time `json:"created"`
 	Config        *TagCfg   `json:"config"`
+	Immutable     bool      `json:"immutable"`
 }
 
 // TagCfg ...
