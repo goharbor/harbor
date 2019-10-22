@@ -558,19 +558,19 @@ By default, registry data is persisted in the host's `/data/` directory.  This d
 
 In addition, Harbor uses `rsyslog` to collect the logs for each container. By default, these log files are stored in the directory `/var/log/harbor/` on the target host. You can change the log directory in `harbor.yml`.
 
-## Configuring Harbor to Listening on a Customized Port
+## Configuring Harbor to Listen on a Customized Port
 
 By default, Harbor listens on port 443(HTTPS) and 80(HTTP, if configured)  for both Harbor portal and Docker commands. You can reconfigure the default ports in `harbor.yml`
 
-## Configuring Harbor using the external database
+## Configure Harbor with an External Database
 
 Currently, Harbor only supports PostgreSQL database. To user an external database, uncomment the `external_database` section in `harbor.yml` and fill the necessary information. You must create four databases for Harbor core, Clair, Notary server, and Notary signer. And the tables are generated automatically when Harbor starts up.
 
-## Manage user settings
+## Manage User Settings
 
 User settings are handled separately system settings. All user settings are configured in the Harbor portal or by HTTP requests at the command line. For information about using HTTP requests to configure user settings, see  [Configure User Settings at the Command Line](configure_user_settings.md) to config user settings.
 
-## Performance tuning
+## Performance Tuning
 
 By default, Harbor limits the CPU usage of the Clair container to 150000 to avoid it using up all CPU resources. This is defined in the `docker-compose.clair.yml` file. You can modify this file based on your hardware configuration.
 
