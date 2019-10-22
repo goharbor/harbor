@@ -12,13 +12,24 @@ import (
 )
 
 func init() {
-	if err := adp.RegisterFactory(model.RegistryTypeGitLab, func(registry *model.Registry) (adp.Adapter, error) {
-		return newAdapter(registry)
-	}, nil); err != nil {
+	if err := adp.RegisterFactory(model.RegistryTypeGitLab, new(factory)); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeGitLab, err)
 		return
 	}
 	log.Infof("the factory for adapter %s registered", model.RegistryTypeGitLab)
+}
+
+type factory struct {
+}
+
+// Create ...
+func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	return newAdapter(r)
+}
+
+// AdapterPattern ...
+func (f *factory) AdapterPattern() *model.AdapterPattern {
+	return nil
 }
 
 type adapter struct {
@@ -31,7 +42,6 @@ type adapter struct {
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
-
 	var credential auth.Credential
 	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
 		credential = auth.NewBasicAuthCredential(

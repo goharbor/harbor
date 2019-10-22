@@ -23,12 +23,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func fakedFactory(*model.Registry) (adapter.Adapter, error) {
+type fakedFactory struct {
+}
+
+func (fakedFactory) Create(*model.Registry) (adapter.Adapter, error) {
 	return nil, nil
 }
 
+func (fakedFactory) AdapterPattern() *model.AdapterPattern {
+	return nil
+}
+
 func TestReplicationAdapterAPIList(t *testing.T) {
-	err := adapter.RegisterFactory("test", fakedFactory, nil)
+	err := adapter.RegisterFactory("test", new(fakedFactory))
 	require.Nil(t, err)
 	cases := []*codeCheckingCase{
 		// 401

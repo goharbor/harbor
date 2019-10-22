@@ -19,12 +19,25 @@ import (
 )
 
 func init() {
-	err := adp.RegisterFactory(model.RegistryTypeHuawei, AdapterFactory, nil)
+	err := adp.RegisterFactory(model.RegistryTypeHuawei, new(factory))
 	if err != nil {
 		log.Errorf("failed to register factory for Huawei: %v", err)
 		return
 	}
 	log.Infof("the factory of Huawei adapter was registered")
+}
+
+type factory struct {
+}
+
+// Create ...
+func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	return newAdapter(r)
+}
+
+// AdapterPattern ...
+func (f *factory) AdapterPattern() *model.AdapterPattern {
+	return nil
 }
 
 // Adapter is for images replications between harbor and Huawei image repository(SWR)
@@ -210,8 +223,7 @@ func (a *adapter) HealthCheck() (model.HealthStatus, error) {
 	return model.Healthy, nil
 }
 
-// AdapterFactory is the factory for huawei adapter
-func AdapterFactory(registry *model.Registry) (adp.Adapter, error) {
+func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 	dockerRegistryAdapter, err := native.NewAdapter(registry)
 	if err != nil {
 		return nil, err

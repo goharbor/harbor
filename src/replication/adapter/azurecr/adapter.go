@@ -8,14 +8,14 @@ import (
 )
 
 func init() {
-	if err := adp.RegisterFactory(model.RegistryTypeAzureAcr, factory, nil); err != nil {
+	if err := adp.RegisterFactory(model.RegistryTypeAzureAcr, new(factory)); err != nil {
 		log.Errorf("Register adapter factory for %s error: %v", model.RegistryTypeAzureAcr, err)
 		return
 	}
 	log.Infof("Factory for adapter %s registered", model.RegistryTypeAzureAcr)
 }
 
-func factory(registry *model.Registry) (adp.Adapter, error) {
+func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 	dockerRegistryAdapter, err := native.NewAdapter(registry)
 	if err != nil {
 		return nil, err
@@ -23,6 +23,19 @@ func factory(registry *model.Registry) (adp.Adapter, error) {
 	return &adapter{
 		Adapter: dockerRegistryAdapter,
 	}, nil
+}
+
+type factory struct {
+}
+
+// Create ...
+func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	return newAdapter(r)
+}
+
+// AdapterPattern ...
+func (f *factory) AdapterPattern() *model.AdapterPattern {
+	return nil
 }
 
 type adapter struct {

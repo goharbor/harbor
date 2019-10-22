@@ -407,7 +407,7 @@ func (t *RegistryAPI) GetInfo() {
 		t.SendInternalServerError(fmt.Errorf("failed to get the adapter factory for registry type %s: %v", registry.Type, err))
 		return
 	}
-	adp, err := factory(registry)
+	adp, err := factory.Create(registry)
 	if err != nil {
 		t.SendInternalServerError(fmt.Errorf("failed to create the adapter for registry %d: %v", registry.ID, err))
 		return

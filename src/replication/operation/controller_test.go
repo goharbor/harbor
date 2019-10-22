@@ -113,8 +113,15 @@ func (f *fakedScheduler) Stop(id string) error {
 	return nil
 }
 
-func fakedAdapterFactory(*model.Registry) (adapter.Adapter, error) {
+type fakedFactory struct {
+}
+
+func (fakedFactory) Create(*model.Registry) (adapter.Adapter, error) {
 	return &fakedAdapter{}, nil
+}
+
+func (fakedFactory) AdapterPattern() *model.AdapterPattern {
+	return nil
 }
 
 type fakedAdapter struct{}
@@ -212,7 +219,7 @@ func TestMain(m *testing.M) {
 }
 
 func TestStartReplication(t *testing.T) {
-	err := adapter.RegisterFactory(model.RegistryTypeHarbor, fakedAdapterFactory, nil)
+	err := adapter.RegisterFactory(model.RegistryTypeHarbor, new(fakedFactory))
 	require.Nil(t, err)
 	config.Config = &config.Configuration{}
 

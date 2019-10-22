@@ -35,9 +35,7 @@ import (
 )
 
 func init() {
-	if err := adp.RegisterFactory(model.RegistryTypeDockerRegistry, func(registry *model.Registry) (adp.Adapter, error) {
-		return NewAdapter(registry)
-	}, nil); err != nil {
+	if err := adp.RegisterFactory(model.RegistryTypeDockerRegistry, new(factory)); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeDockerRegistry, err)
 		return
 	}
@@ -45,6 +43,19 @@ func init() {
 }
 
 var _ adp.Adapter = &Adapter{}
+
+type factory struct {
+}
+
+// Create ...
+func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	return NewAdapter(r)
+}
+
+// AdapterPattern ...
+func (f *factory) AdapterPattern() *model.AdapterPattern {
+	return nil
+}
 
 // Adapter implements an adapter for Docker registry. It can be used to all registries
 // that implement the registry V2 API

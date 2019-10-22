@@ -31,10 +31,13 @@ const (
 )
 
 var registry = map[model.RegistryType]Factory{}
-var adapterInfoMap = map[model.RegistryType]*model.AdapterInfo{}
+var adapterInfoMap = map[model.RegistryType]*model.AdapterPattern{}
 
 // Factory creates a specific Adapter according to the params
-type Factory func(*model.Registry) (Adapter, error)
+type Factory interface {
+	Create(*model.Registry) (Adapter, error)
+	AdapterPattern() *model.AdapterPattern
+}
 
 // Adapter interface defines the capabilities of registry
 type Adapter interface {
@@ -123,7 +126,7 @@ func (v *VTag) GetLabels() []string {
 }
 
 // RegisterFactory registers one adapter factory to the registry
-func RegisterFactory(t model.RegistryType, factory Factory, adapterInfo *model.AdapterInfo) error {
+func RegisterFactory(t model.RegistryType, factory Factory) error {
 	if len(t) == 0 {
 		return errors.New("invalid registry type")
 	}
@@ -135,6 +138,7 @@ func RegisterFactory(t model.RegistryType, factory Factory, adapterInfo *model.A
 		return fmt.Errorf("adapter factory for %s already exists", t)
 	}
 	registry[t] = factory
+	adapterInfo := factory.AdapterPattern()
 	if adapterInfo != nil {
 		adapterInfoMap[t] = adapterInfo
 	}
@@ -166,6 +170,6 @@ func ListRegisteredAdapterTypes() []model.RegistryType {
 }
 
 // ListAdapterInfos list the adapter infos
-func ListAdapterInfos() map[model.RegistryType]*model.AdapterInfo {
+func ListAdapterInfos() map[model.RegistryType]*model.AdapterPattern {
 	return adapterInfoMap
 }

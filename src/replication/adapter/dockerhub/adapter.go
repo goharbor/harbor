@@ -18,14 +18,14 @@ import (
 )
 
 func init() {
-	if err := adp.RegisterFactory(model.RegistryTypeDockerHub, factory, getAdapterInfo()); err != nil {
+	if err := adp.RegisterFactory(model.RegistryTypeDockerHub, new(factory)); err != nil {
 		log.Errorf("Register adapter factory for %s error: %v", model.RegistryTypeDockerHub, err)
 		return
 	}
 	log.Infof("Factory for adapter %s registered", model.RegistryTypeDockerHub)
 }
 
-func factory(registry *model.Registry) (adp.Adapter, error) {
+func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 	client, err := NewClient(registry)
 	if err != nil {
 		return nil, err
@@ -45,6 +45,19 @@ func factory(registry *model.Registry) (adp.Adapter, error) {
 		registry: registry,
 		Adapter:  dockerRegistryAdapter,
 	}, nil
+}
+
+type factory struct {
+}
+
+// Create ...
+func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	return newAdapter(r)
+}
+
+// AdapterPattern ...
+func (f *factory) AdapterPattern() *model.AdapterPattern {
+	return getAdapterInfo()
 }
 
 type adapter struct {
@@ -80,12 +93,15 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	}, nil
 }
 
-func getAdapterInfo() *model.AdapterInfo {
-	info := &model.AdapterInfo{
-		SpecialEndpoints: []*model.Endpoint{
-			{
-				Key:   "hub.docker.com",
-				Value: "https://hub.docker.com",
+func getAdapterInfo() *model.AdapterPattern {
+	info := &model.AdapterPattern{
+		EndpointPattern: &model.EndpointPattern{
+			EndpointType: model.EndpointPatternTypeFix,
+			Endpoints: []*model.Endpoint{
+				{
+					Key:   "hub.docker.com",
+					Value: "https://hub.docker.com",
+				},
 			},
 		},
 	}

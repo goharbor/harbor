@@ -21,7 +21,7 @@ func init() {
 		Insecure:    false,
 		Status:      "",
 	}
-	adp, err := AdapterFactory(hwRegistry)
+	adp, err := newAdapter(hwRegistry)
 	if err != nil {
 		os.Exit(1)
 	}

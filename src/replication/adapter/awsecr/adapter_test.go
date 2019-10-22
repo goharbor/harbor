@@ -27,7 +27,7 @@ func TestAdapter_NewAdapter(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, factory)
 
-	adapter, err := factory(&model.Registry{
+	adapter, err := newAdapter(&model.Registry{
 		Type: model.RegistryTypeAwsEcr,
 		Credential: &model.Credential{
 			AccessKey:    "xxx",
@@ -38,7 +38,7 @@ func TestAdapter_NewAdapter(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, adapter)
 
-	adapter, err = factory(&model.Registry{
+	adapter, err = newAdapter(&model.Registry{
 		Type: model.RegistryTypeAwsEcr,
 		Credential: &model.Credential{
 			AccessKey:    "xxx",
@@ -49,7 +49,7 @@ func TestAdapter_NewAdapter(t *testing.T) {
 	assert.Nil(t, err)
 	assert.NotNil(t, adapter)
 
-	adapter, err = factory(&model.Registry{
+	adapter, err = newAdapter(&model.Registry{
 		Type: model.RegistryTypeAwsEcr,
 		Credential: &model.Credential{
 			AccessKey:    "xxx",
