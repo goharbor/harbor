@@ -191,7 +191,7 @@ func (pma *ProjectMemberAPI) Put() {
 		pma.SendBadRequestError(err)
 		return
 	}
-	if req.Role < 1 || req.Role > 4 {
+	if !isValidRole(req.Role) {
 		pma.SendBadRequestError(fmt.Errorf("Invalid role id %v", req.Role))
 		return
 	}
@@ -284,9 +284,22 @@ func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 		return 0, ErrDuplicateProjectMember
 	}
 
-	if member.Role < 1 || member.Role > 4 {
+	if !isValidRole(member.Role) {
 		// Return invalid role error
 		return 0, ErrInvalidRole
 	}
 	return project.AddProjectMember(member)
+}
+
+func isValidRole(role int) bool {
+	switch role {
+	case common.RoleProjectAdmin,
+		common.RoleMaster,
+		common.RoleDeveloper,
+		common.RoleGuest,
+		common.RoleLimitedGuest:
+		return true
+	default:
+		return false
+	}
 }

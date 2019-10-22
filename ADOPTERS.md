@@ -80,3 +80,6 @@ feature within Harbor before deploying images into production.
 **Allegis:** Harbor is used at Allegis as a secure private registry to store
 and scan customized container images for different business applications, like
 ELK stack, as part of their CI/CD pipeline.
+
+# Adding a logo
+If you would like to add your logo to the `Users and Partners of Harbor` section of the website, add a PNG version of your logo to the docs/img directory in this repo and submit a pull request with your change. Name the image file something that reflects your company (e.g., if your company is called Acme, name the image acme.png). We will follow up and make the change in the goharbor.io website as well.

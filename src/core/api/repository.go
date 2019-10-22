@@ -44,6 +44,8 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
+	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -729,6 +731,9 @@ func assembleTag(c chan *models.TagResp, client *registry.Repository, projectID 
 		}
 	}
 
+	// get immutable status
+	item.Immutable = isImmutable(projectID, repository, tag)
+
 	c <- item
 }
 
@@ -807,6 +812,21 @@ func populateAuthor(detail *models.TagDetail) {
 			}
 		}
 	}
+}
+
+// check whether the tag is immutable
+func isImmutable(projectID int64, repo string, tag string) bool {
+	_, repoName := utils.ParseRepository(repo)
+	matched, err := rule.NewRuleMatcher(projectID).Match(art.Candidate{
+		Repository:  repoName,
+		Tag:         tag,
+		NamespaceID: projectID,
+	})
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+	return matched
 }
 
 // GetManifests returns the manifest of a tag
@@ -954,7 +974,7 @@ func (ra *RepositoryAPI) Put() {
 	}
 
 	if !ra.SecurityCtx.IsAuthenticated() {
-		ra.SendUnAuthorizedError(errors.New("Unauthorized"))
+		ra.SendUnAuthorizedError(errors.New("unauthorized"))
 		return
 	}
 

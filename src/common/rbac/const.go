@@ -43,6 +43,7 @@ const (
 	ResourceLog                        = Resource("log")
 	ResourceMember                     = Resource("member")
 	ResourceMetadata                   = Resource("metadata")
+	ResourceQuota                      = Resource("quota")
 	ResourceReplication                = Resource("replication")     // TODO remove
 	ResourceReplicationJob             = Resource("replication-job") // TODO remove
 	ResourceReplicationExecution       = Resource("replication-execution")

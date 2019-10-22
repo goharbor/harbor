@@ -21,7 +21,8 @@ import {
 import { SessionService } from '../../shared/session.service';
 import { ProjectService } from '@harbor/ui';
 import { CommonRoutes } from '@harbor/ui';
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 @Injectable()
 export class MemberGuard implements CanActivate, CanActivateChild {
@@ -31,49 +32,39 @@ export class MemberGuard implements CanActivate, CanActivateChild {
     private router: Router) {}
 
   canActivate(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
-    let projectId = route.params['id'];
+    const projectId = route.params['id'];
     this.sessionService.setProjectMembers([]);
-    return new Observable((observer) => {
-      let user = this.sessionService.getCurrentUser();
-      if (user === null) {
-        this.sessionService.retrieveUser()
-        .subscribe(() => {
-          this.checkMemberStatus(state.url, projectId).subscribe((res) => observer.next(res));
-        }, error => {
-          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-          observer.next(false);
-        });
-      } else {
-        this.checkMemberStatus(state.url, projectId).subscribe((res) => observer.next(res));
-      }
-    });
-  }
 
-  checkMemberStatus(url: string, projectId: number): Observable<boolean> {
-    return new Observable<boolean>((observer) => {
-      this.projectService.checkProjectMember(projectId)
-      .subscribe(res => {
-        this.sessionService.setProjectMembers(res);
-        return observer.next(true);
-      },
+    const user = this.sessionService.getCurrentUser();
+    if (user !== null) {
+      return this.hasProjectPerm(state.url, projectId);
+    }
+
+    return this.sessionService.retrieveUser().pipe(
       () => {
-        // Add exception for repository in project detail router activation.
-        this.projectService.getProject(projectId).subscribe(project => {
-          if (project.metadata && project.metadata.public === 'true') {
-            return observer.next(true);
-          }
-          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-          return observer.next(false);
-        },
-        () => {
-          this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
-          return observer.next(false);
-        });
-      });
-    });
+        return this.hasProjectPerm(state.url, projectId);
+      },
+      catchError(err => {
+        this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+        return of(false);
+      })
+    );
   }
 
   canActivateChild(route: ActivatedRouteSnapshot, state: RouterStateSnapshot): Observable<boolean> | boolean {
     return this.canActivate(route, state);
+  }
+
+  hasProjectPerm(url: string, projectId: number): Observable<boolean> {
+    // Note: current user will have the permission to visit the project when the user can get response from GET /projects/:id API.
+    return this.projectService.getProject(projectId).pipe(
+      map(() => {
+        return true;
+      }),
+      catchError(err => {
+        this.router.navigate([CommonRoutes.HARBOR_DEFAULT]);
+        return of(false);
+      })
+    );
   }
 }

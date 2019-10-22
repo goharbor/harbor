@@ -256,7 +256,7 @@ export class MemberComponent implements OnInit, OnDestroy {
     // Function to delete specific member
     let deleteMember = (projectId: number, member: Member) => {
       let operMessage = new OperateInfo();
-      operMessage.name = 'OPERATION.DELETE_MEMBER';
+      operMessage.name = member.entity_type === 'u' ? 'OPERATION.DELETE_MEMBER' : 'OPERATION.DELETE_GROUP';
       operMessage.data.id = member.id;
       operMessage.state = OperationState.progressing;
       operMessage.data.name = member.entity_name;

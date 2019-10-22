@@ -275,6 +275,7 @@
         "PROJECT_MASTER": "Master",
         "DEVELOPER": "Developer",
         "GUEST": "Guest",
+        "LIMITED_GUEST": "Limited Guest",
         "DELETE": "Delete",
         "ITEMS": "items",
         "ACTIONS": "Actions",
@@ -621,6 +622,7 @@
         "PULL_COMMAND": "Pull Command",
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
+        "IMMUTABLE": "Immutable",
         "MY_REPOSITORY": "My Repository",
         "PUBLIC_REPOSITORY": "Public Repository",
         "DELETION_TITLE_REPO": "Confirm Repository Deletion",
@@ -737,7 +739,8 @@
         "ADMIN": "Admin(s)",
         "MASTER": "Master(s)",
         "DEVELOPER": "Developer(s)",
-        "GUEST": "Guest(s)"
+        "GUEST": "Guest(s)",
+        "LIMITED_GUEST": "Limited guest(s)"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Some changes are not saved yet. Do you want to cancel?"
@@ -1258,10 +1261,10 @@
         "ADD_SCANNER": "Add Scanner",
         "EDIT_SCANNER": "Edit Scanner",
         "TEST_CONNECTION": "TEST CONNECTION",
-        "ADD_SUCCESS": "Added successfully",
+        "ADD_SUCCESS": "Successfully added ",
         "TEST_PASS": "Test passed",
         "TEST_FAILED": "Test failed",
-        "UPDATE_SUCCESS": "Updated successfully",
+        "UPDATE_SUCCESS": "Successfully updated",
         "SCANNER_COLON": "Scanner:",
         "NAME_COLON": "Name:",
         "VENDOR_COLON": "Vendor:",
@@ -1285,6 +1288,10 @@
         "ADAPTER": "Adapter",
         "VENDOR": "Vendor",
         "VERSION": "Version",
-        "SELECT_SCANNER": "Select Scanner"
+        "SELECT_SCANNER": "Select Scanner",
+        "ENABLED": "Enabled",
+        "ENABLE": "Enable",
+        "DISABLE": "Disable",
+        "DELETE_SUCCESS": "Successfully deleted"
     }
 }

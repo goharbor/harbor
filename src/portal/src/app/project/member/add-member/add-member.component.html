@@ -45,6 +45,10 @@
                         <input clrRadio type="radio" name="member_role" id="checkrads_guest" [value]=3 [(ngModel)]="member.role_id">
                         <label for="checkrads_guest">{{'MEMBER.GUEST' | translate}}</label>
                     </clr-radio-wrapper>
+                    <clr-radio-wrapper>
+                        <input clrRadio type="radio" name="member_role" id="checkrads_limited_guest" [value]=5 [(ngModel)]="member.role_id">
+                        <label for="checkrads_limited_guest">{{'MEMBER.LIMITED_GUEST' | translate}}</label>
+                    </clr-radio-wrapper>
                 </div>
             </div>
         </form>

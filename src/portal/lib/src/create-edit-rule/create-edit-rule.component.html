@@ -118,7 +118,7 @@
                 <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
                   <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='name'">{{'TOOLTIP.NAME_FILTER' | translate}}</span>
                   <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='tag'">{{'TOOLTIP.TAG_FILTER' | translate}}</span>
-                  <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='label'">{{'TOOLTIP.LABEL_FILTER' | translate}}</span>
+                  <span class="tooltip-content" >{{'TOOLTIP.LABEL_FILTER' | translate}}</span>
                   <span class="tooltip-content" *ngIf="supportedFilters[i]?.type==='resource'">{{'TOOLTIP.RESOURCE_FILTER' | translate}}</span>
                 </clr-tooltip-content>
               </clr-tooltip>
@@ -209,7 +209,7 @@
               </clr-tooltip>
             </label>
           </div>
-          <div class="clr-checkbox-wrapper clr-form-control">
+          <div class="clr-checkbox-wrapper clr-form-control" [hidden]="policyId < 0">
             <input type="checkbox" [checked]="true" id="enablePolicy" formControlName="enabled" class="clr-checkbox">
             <label for="enablePolicy" class="clr-control-label">{{'REPLICATION.ENABLED_RULE' | translate}}</label>
           </div>

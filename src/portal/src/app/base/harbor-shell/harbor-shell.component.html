@@ -43,12 +43,12 @@
                         </a>
                     </clr-vertical-nav-group-children>
                 </clr-vertical-nav-group>
-                <clr-vertical-nav-group *ngIf="isSystemAdmin && (withClair || hasAdminRole)" routerLinkActive="active">
+                <clr-vertical-nav-group *ngIf="isSystemAdmin && hasAdminRole" routerLinkActive="active">
                     <clr-icon shape="event" clrVerticalNavIcon></clr-icon>
                     {{'SIDE_NAV.TASKS' | translate}}
                     <a routerLink="#" hidden aria-hidden="true"></a>
                     <clr-vertical-nav-group-children *clrIfExpanded="true">
-                        <a clrVerticalNavLink *ngIf="withClair" routerLink="/harbor/vulnerability"
+                        <a clrVerticalNavLink routerLink="/harbor/vulnerability"
                            routerLinkActive="active">
                             {{'SIDE_NAV.SYSTEM_MGMT.VULNERABILITY' | translate}}
                         </a>

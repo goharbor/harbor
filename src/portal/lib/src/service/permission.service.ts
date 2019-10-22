@@ -13,14 +13,16 @@
 // limitations under the License.
 
 import { Injectable } from '@angular/core';
-import { Observable, throwError as observableThrowError } from "rxjs";
-import { map, catchError, shareReplay } from "rxjs/operators";
-import { UserPrivilegeServeItem } from './interface';
+import { Observable, forkJoin, of, throwError as observableThrowError } from "rxjs";
+import { map, tap, publishReplay, refCount } from "rxjs/operators";
 import { HttpClient } from '@angular/common/http';
+import { CacheObservable } from '../cache';
 
+interface Permission {
+    resource: string;
+    action: string;
+}
 
-
-const CACHE_SIZE = 1;
 /**
  * Get System privilege about current backend server.
  * @abstract
@@ -35,8 +37,11 @@ export abstract class UserPermissionService {
      */
     abstract getPermission(projectId, resource, action);
     abstract clearPermissionCache();
+    abstract hasProjectPermission(projectId: any, permission: Permission): Observable<boolean>;
+    abstract hasProjectPermissions(projectId: any, permissions: Array<Permission>): Observable<Array<boolean>>;
 }
 
+// @dynamic
 @Injectable()
 export class UserPermissionDefaultService extends UserPermissionService {
     constructor(
@@ -44,36 +49,37 @@ export class UserPermissionDefaultService extends UserPermissionService {
     ) {
         super();
     }
-    private permissionCache: Observable<object>;
-    private projectId: number;
-    private getPermissionFromBackend(projectId): Observable<object> {
-        const userPermissionUrl = `/api/users/current/permissions?scope=/project/${projectId}&relative=true`;
-        return this.http.get(userPermissionUrl);
-    }
-    private processingPermissionResult(responsePermission, resource, action): boolean {
-        const permissionList = responsePermission as UserPrivilegeServeItem[];
-                for (const privilegeItem of permissionList) {
-                    if (privilegeItem.resource === resource && privilegeItem.action === action) {
-                        return true;
-                    }
-                }
-                return false;
-    }
-    public getPermission(projectId, resource, action): Observable<boolean> {
 
-        if (!this.permissionCache || this.projectId !== +projectId) {
-            this.projectId = +projectId;
-            this.permissionCache = this.getPermissionFromBackend(projectId).pipe(
-                shareReplay(CACHE_SIZE));
-        }
-        return this.permissionCache.pipe(map(response => {
-            return this.processingPermissionResult(response, resource, action);
-        }))
-        .pipe(catchError(error => observableThrowError(error)
+    @CacheObservable({ maxAge: 1000 * 60 })
+    private getPermissions(scope: string, relative?: boolean): Observable<Array<Permission>> {
+        const url = `/api/users/current/permissions?scope=${scope}&relative=${relative ? 'true' : 'false'}`;
+        return this.http.get<Array<Permission>>(url);
+    }
+
+    private hasPermission(permission: Permission, scope: string, relative?: boolean): Observable<boolean> {
+        return this.getPermissions(scope, relative).pipe(map(
+            (permissions: Array<Permission>) => {
+                return permissions.some((p: Permission) => p.resource === permission.resource && p.action === permission.action);
+            }
         ));
     }
+
+    private hasPermissions(permissions: Array<Permission>, scope: string, relative?: boolean): Observable<Array<boolean>> {
+        return forkJoin(permissions.map((permission) => this.hasPermission(permission, scope, relative)));
+    }
+
+    public hasProjectPermission(projectId: any, permission: Permission): Observable<boolean> {
+        return this.hasPermission(permission, `/project/${projectId}`, true);
+    }
+
+    public hasProjectPermissions(projectId: any, permissions: Array<Permission>): Observable<Array<boolean>> {
+        return this.hasPermissions(permissions, `/project/${projectId}`, true);
+    }
+
+    public getPermission(projectId: any, resource: string, action: string): Observable<boolean> {
+        return this.hasProjectPermission(projectId, { resource, action });
+    }
+
     public clearPermissionCache() {
-        this.permissionCache = null;
-        this.projectId = null;
     }
 }

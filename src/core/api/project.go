@@ -593,8 +593,18 @@ func (p *ProjectAPI) Summary() {
 		ChartCount: p.project.ChartCount,
 	}
 
+	var fetchSummaries []func(int64, *models.ProjectSummary)
+
+	if hasPerm, _ := p.HasProjectPermission(p.project.ProjectID, rbac.ActionRead, rbac.ResourceQuota); hasPerm {
+		fetchSummaries = append(fetchSummaries, getProjectQuotaSummary)
+	}
+
+	if hasPerm, _ := p.HasProjectPermission(p.project.ProjectID, rbac.ActionList, rbac.ResourceMember); hasPerm {
+		fetchSummaries = append(fetchSummaries, getProjectMemberSummary)
+	}
+
 	var wg sync.WaitGroup
-	for _, fn := range []func(int64, *models.ProjectSummary){getProjectQuotaSummary, getProjectMemberSummary} {
+	for _, fn := range fetchSummaries {
 		fn := fn
 
 		wg.Add(1)

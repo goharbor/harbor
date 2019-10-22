@@ -27,6 +27,7 @@
                     <button clrDropdownItem (click)="changeMembersRole(selectedRow, 4)" [disabled]="!(selectedRow.length && hasUpdateMemberPermission) || onlySelf">{{'MEMBER.PROJECT_MASTER' | translate}}</button>
                     <button clrDropdownItem (click)="changeMembersRole(selectedRow, 2)" [disabled]="!(selectedRow.length && hasUpdateMemberPermission) || onlySelf">{{'MEMBER.DEVELOPER' | translate}}</button>
                     <button clrDropdownItem (click)="changeMembersRole(selectedRow, 3)" [disabled]="!(selectedRow.length && hasUpdateMemberPermission) || onlySelf">{{'MEMBER.GUEST' | translate}}</button>
+                    <button clrDropdownItem (click)="changeMembersRole(selectedRow, 5)" [disabled]="!(selectedRow.length && hasUpdateMemberPermission) || onlySelf">{{'MEMBER.LIMITED_GUEST' | translate}}</button>
                     <div class="dropdown-divider"></div>
                     <button clrDropdownItem (click)="openDeleteMembersDialog(selectedRow)" [disabled]="!(selectedRow.length && hasDeleteMemberPermission) || onlySelf">{{'MEMBER.REMOVE' | translate}}</button>
                 </clr-dropdown-menu>

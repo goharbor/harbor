@@ -35,6 +35,9 @@ func (suite *VisitorRoleTestSuite) TestGetRoleName() {
 	guest := visitorRole{roleID: common.RoleGuest}
 	suite.Equal(guest.GetRoleName(), "guest")
 
+	limitedGuest := visitorRole{roleID: common.RoleLimitedGuest}
+	suite.Equal(limitedGuest.GetRoleName(), "limitedGuest")
+
 	unknow := visitorRole{roleID: 404}
 	suite.Equal(unknow.GetRoleName(), "")
 }

@@ -2,20 +2,8 @@
 Harbor is a large growing community devoted in creating a private enterprise-grade registry for all your cloud native assets. The community has adopted this security disclosure and response policy to ensure we responsibly handle critical issues.
 
 ## Supported Versions
-This section describes the maximum version skew supported between various Harbor releases. Harbor versions are expressed as **x.y.z**, where **x** is the major version, **y** is the minor version, and **z** is the patch version, following [Semantic Versioning terminology](https://semver.org/). 
+The Harbor project maintains release branches for the three most recent minor releases. Applicable fixes, including security fixes, may be backported to those three release branches, depending on severity and feasibility. Please refer to [RELEASES.md](https://github.com/goharbor/harbor/blob/master/RELEASES.md) for details.
 
-### Support Policy
-The Harbor project maintains release branches for the three most recent minor releases. Applicable fixes, including security fixes, may be backported to those three release branches, depending on severity and feasibility. Patch releases are cut from those branches at a regular cadence, or as needed. The Harbor project typically has a minor release approximately every 3 months, maintaining each minor release branch for approximately 9 months.
-
-There is no mandated timeline for major versions and there are currently no criteria for shipping a new major version (i.e. Harbor 2.0.0).
-
-### Minor Release Support Matrix
-| Version | Supported          |
-| ------- | ------------------ |
-| Harbor v1.7.x   | :white_check_mark: |
-| Harbor v1.8.x   | :white_check_mark: |
-| Harbor v1.9.x   | :white_check_mark: |
- 
 ## Reporting a Vulnerability - Private Disclosure Process
 Security is of the highest importance and all security vulnerabilities or suspected security vulnerabilities should be reported to Harbor privately, to minimize attacks against current users of Harbor before they are fixed. Vulnerabilities will be investigated and patched on the next patch (or minor) release as soon as possible. This information could be kept entirely internal to the project.  
 

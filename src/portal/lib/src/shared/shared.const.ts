@@ -145,6 +145,11 @@ export const PROJECT_ROOTS = [
     NAME: "guest",
     VALUE: 3,
     LABEL: "GROUP.GUEST"
+  },
+  {
+    NAME: "limited",
+    VALUE: 5,
+    LABEL: "GROUP.LIMITED_GUEST"
   }
 ];
 

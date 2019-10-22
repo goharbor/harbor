@@ -12,7 +12,7 @@
         <li>{{summaryInformation?.chart_count}}</li>
       </ul>
     </div>
-    <div class="display-flex project-detail pt-1">
+    <div *ngIf="showProjectMemberInfo" class="display-flex project-detail pt-1">
       <h5 class="mt-0">{{'SUMMARY.PROJECT_MEMBER' | translate}}</h5>
       <ul class="list-unstyled">
         <li>{{ summaryInformation?.project_admin_count }} {{'SUMMARY.ADMIN' | translate}}</li>
@@ -22,7 +22,7 @@
       </ul>
     </div>
   </div>
-  <div class="summary-right pt-1">
+  <div *ngIf="showQuotaInfo" class="summary-right pt-1">
     <div class="display-flex  project-detail">
       <h5 class="mt-0">{{'SUMMARY.PROJECT_QUOTAS' | translate}}</h5>
       <div class="ml-1">

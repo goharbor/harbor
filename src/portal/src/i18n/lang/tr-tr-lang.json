@@ -275,6 +275,7 @@
         "PROJECT_MASTER": "Uzman",
         "DEVELOPER": "Geliştirici",
         "GUEST": "Konuk",
+        "LIMITED_GUEST": "Limited Guest",
         "DELETE": "Sil",
         "ITEMS": "çeşit",
         "ACTIONS": "Eylemler",
@@ -620,6 +621,7 @@
         "PULL_COMMAND": "İndirme Komutu",
         "PULL_TIME": "İndirme Zamanı",
         "PUSH_TIME": "Yükleme Zamanı",
+        "IMMUTABLE": "Immutable",
         "MY_REPOSITORY": "Depom",
         "PUBLIC_REPOSITORY": "Genel Depo",
         "DELETION_TITLE_REPO": "Depo Silme İşlemini Onaylayın",
@@ -736,7 +738,8 @@
         "ADMIN": "Yönetici(ler)",
         "MASTER": "Uzman(lar)",
         "DEVELOPER": "Geliştirici(ler)",
-        "GUEST": "Misafir(ler)"
+        "GUEST": "Misafir(ler)",
+        "LIMITED_GUEST": "Limited guest(s)"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Bazı değişiklikler henüz kaydedilmedi. İptal etmek istiyor musun?"
@@ -1257,10 +1260,10 @@
         "ADD_SCANNER": "Add Scanner",
         "EDIT_SCANNER": "Edit Scanner",
         "TEST_CONNECTION": "TEST CONNECTION",
-        "ADD_SUCCESS": "Added successfully",
+        "ADD_SUCCESS": "Successfully added ",
         "TEST_PASS": "Test passed",
         "TEST_FAILED": "Test failed",
-        "UPDATE_SUCCESS": "Updated successfully",
+        "UPDATE_SUCCESS": "Successfully updated",
         "SCANNER_COLON": "Scanner:",
         "NAME_COLON": "Name:",
         "VENDOR_COLON": "Vendor:",
@@ -1284,6 +1287,10 @@
         "ADAPTER": "Adapter",
         "VENDOR": "Vendor",
         "VERSION": "Version",
-        "SELECT_SCANNER": "Select Scanner"
+        "SELECT_SCANNER": "Select Scanner",
+        "ENABLED": "Enabled",
+        "ENABLE": "Enable",
+        "DISABLE": "Disable",
+        "DELETE_SUCCESS": "Successfully deleted"
     }
 }

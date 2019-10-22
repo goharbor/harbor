@@ -24,6 +24,8 @@ docker cp $ID:/go/bin/notary-signer binary/
 docker cp $ID:/go/bin/migrate binary/
 docker cp $ID:/migrations binary/
 
+sed -i 's/waiting for $DB_URL/waiting for database/g' binary/migrations/migrate.sh
+
 docker rm -f $ID
 docker rmi -f notary-binary
 

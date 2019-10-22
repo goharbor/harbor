@@ -17,7 +17,6 @@ package whitelist
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/models"
-	"regexp"
 )
 
 type invalidErr struct {
@@ -46,11 +45,12 @@ const cveIDPattern = `^CVE-\d{4}-\d+$`
 // Validate help validates the CVE whitelist, to ensure the CVE ID is valid and there's no duplication
 func Validate(wl models.CVEWhitelist) error {
 	m := map[string]struct{}{}
-	re := regexp.MustCompile(cveIDPattern)
+	//	re := regexp.MustCompile(cveIDPattern)
 	for _, it := range wl.Items {
-		if !re.MatchString(it.CVEID) {
-			return &invalidErr{fmt.Sprintf("invalid CVE ID: %s", it.CVEID)}
-		}
+		//	 Bypass the cve format checking
+		//		if !re.MatchString(it.CVEID) {
+		//			return &invalidErr{fmt.Sprintf("invalid CVE ID: %s", it.CVEID)}
+		//		}
 		if _, ok := m[it.CVEID]; ok {
 			return &invalidErr{fmt.Sprintf("duplicate CVE ID in whitelist: %s", it.CVEID)}
 		}

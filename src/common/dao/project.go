@@ -78,7 +78,7 @@ func addProjectMember(member models.Member) (int, error) {
 func GetProjectByID(id int64) (*models.Project, error) {
 	o := GetOrmer()
 
-	sql := `select p.project_id, p.name, u.username as owner_name, p.owner_id, p.creation_time, p.update_time  
+	sql := `select p.project_id, p.name, u.username as owner_name, p.owner_id, p.creation_time, p.update_time
 		from project p left join harbor_user u on p.owner_id = u.user_id where p.deleted = false and p.project_id = ?`
 	queryParam := make([]interface{}, 1)
 	queryParam = append(queryParam, id)
@@ -142,7 +142,7 @@ func GetTotalOfProjects(query *models.ProjectQueryParam) (int64, error) {
 // GetProjects returns a project list according to the query conditions
 func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
 	sqlStr, queryParam := projectQueryConditions(query)
-	sqlStr = `select distinct p.project_id, p.name, p.owner_id, 
+	sqlStr = `select distinct p.project_id, p.name, p.owner_id,
 		p.creation_time, p.update_time ` + sqlStr + ` order by p.name`
 	sqlStr, queryParam = CreatePagination(query, sqlStr, queryParam)
 
@@ -158,15 +158,15 @@ func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
 // and the user is in the group which is a group member of this project.
 func GetGroupProjects(groupIDs []int, query *models.ProjectQueryParam) ([]*models.Project, error) {
 	sql, params := projectQueryConditions(query)
-	sql = `select distinct p.project_id, p.name, p.owner_id, 
+	sql = `select distinct p.project_id, p.name, p.owner_id,
 				p.creation_time, p.update_time ` + sql
 	groupIDCondition := JoinNumberConditions(groupIDs)
 	if len(groupIDs) > 0 {
 		sql = fmt.Sprintf(
-			`%s union select distinct p.project_id, p.name, p.owner_id, p.creation_time, p.update_time  
-		     from project p 
+			`%s union select distinct p.project_id, p.name, p.owner_id, p.creation_time, p.update_time
+		     from project p
 		     left join project_member pm on p.project_id = pm.project_id
-		     left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g' 
+		     left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g'
 			 where ug.id in ( %s )`,
 			sql, groupIDCondition)
 	}
@@ -188,11 +188,11 @@ func GetTotalGroupProjects(groupIDs []int, query *models.ProjectQueryParam) (int
 		sql = `select count(1) ` + sqlCondition
 	} else {
 		sql = fmt.Sprintf(
-			`select count(1) 
-			   from ( select  p.project_id %s  union select  p.project_id  
-			   from project p 
+			`select count(1)
+			   from ( select  p.project_id %s  union select  p.project_id
+			   from project p
 			   left join project_member pm on p.project_id = pm.project_id
-			   left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g' 
+			   left join user_group ug on ug.id = pm.entity_id and pm.entity_type = 'g'
 			   where ug.id in ( %s )) t`,
 			sqlCondition, groupIDCondition)
 	}
@@ -254,6 +254,8 @@ func projectQueryConditions(query *models.ProjectQueryParam) (string, []interfac
 				roleID = 3
 			case common.RoleMaster:
 				roleID = 4
+			case common.RoleLimitedGuest:
+				roleID = 5
 			}
 			params = append(params, roleID)
 		}
@@ -287,8 +289,8 @@ func DeleteProject(id int64) error {
 		return err
 	}
 	name := fmt.Sprintf("%s#%d", project.Name, project.ProjectID)
-	sql := `update project 
-		set deleted = true, name = ? 
+	sql := `update project
+		set deleted = true, name = ?
 		where project_id = ?`
 	_, err = GetOrmer().Raw(sql, name, id).Exec()
 	return err
@@ -304,8 +306,8 @@ func GetRolesByGroupID(projectID int64, groupIDs []int) ([]int, error) {
 	groupIDCondition := JoinNumberConditions(groupIDs)
 	o := GetOrmer()
 	sql := fmt.Sprintf(
-		`select distinct pm.role from project_member pm 
-		left join user_group ug on pm.entity_type = 'g' and pm.entity_id = ug.id 
+		`select distinct pm.role from project_member pm
+		left join user_group ug on pm.entity_type = 'g' and pm.entity_id = ug.id
 		where ug.id in ( %s ) and pm.project_id = ?`,
 		groupIDCondition)
 	log.Debugf("sql for GetRolesByGroupID(project ID: %d, group ids: %v):%v", projectID, groupIDs, sql)
