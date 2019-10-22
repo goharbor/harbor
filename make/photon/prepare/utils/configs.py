@@ -48,6 +48,8 @@ def validate(conf, **kwargs):
         raise Exception(
             "Error: redis_port in harbor.yml needs to point to the port of Redis server or cluster.")
 
+    # TODO:
+    # If user enable trust cert dir, need check if the files in this dir is readable.
 
 def parse_versions():
     if not versions_file_path.is_file():

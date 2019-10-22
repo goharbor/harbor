@@ -13,7 +13,7 @@ VOLUME /config
 
 EXPOSE 6060 6061
 
-RUN chmod -R 777 /etc/pki/tls/certs \
+RUN chown -R clair:clair /etc/pki/tls/certs \
     && chown -R clair:clair /home/clair \
     && chmod u+x /home/clair/clair \
     && chmod u+x /home/clair/docker-entrypoint.sh \

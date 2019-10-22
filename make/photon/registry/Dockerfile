@@ -12,7 +12,7 @@ COPY ./make/photon/common/install_cert.sh /home/harbor
 COPY ./make/photon/registry/entrypoint.sh /home/harbor
 COPY ./make/photon/registry/binary/registry /usr/bin
 
-RUN chmod -R 777 /etc/pki/tls/certs \
+RUN chown -R harbor:harbor /etc/pki/tls/certs \
     && chown harbor:harbor /home/harbor/entrypoint.sh && chmod u+x /home/harbor/entrypoint.sh \
     && chown harbor:harbor /home/harbor/install_cert.sh && chmod u+x /home/harbor/install_cert.sh \
     && chown harbor:harbor /usr/bin/registry && chmod u+x /usr/bin/registry

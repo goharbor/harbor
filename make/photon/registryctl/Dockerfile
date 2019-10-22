@@ -12,7 +12,7 @@ COPY ./make/photon/registry/binary/registry /usr/bin
 COPY ./make/photon/registryctl/start.sh /home/harbor
 COPY ./make/photon/registryctl/harbor_registryctl /home/harbor
 
-RUN chmod -R 777 /etc/pki/tls/certs \
+RUN chown -R harbor:harbor /etc/pki/tls/certs \
     && chown harbor:harbor /home/harbor/harbor_registryctl && chmod u+x /home/harbor/harbor_registryctl \
     && chown harbor:harbor /usr/bin/registry && chmod u+x /usr/bin/registry \
     && chown harbor:harbor /home/harbor/start.sh && chmod u+x /home/harbor/start.sh \

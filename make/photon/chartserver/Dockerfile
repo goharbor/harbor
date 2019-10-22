@@ -9,7 +9,7 @@ COPY ./make/photon/chartserver/binary/chartm /home/chart/
 COPY ./make/photon/chartserver/docker-entrypoint.sh /home/chart/
 COPY ./make/photon/common/install_cert.sh /home/chart/
 
-RUN chmod -R 777 /etc/pki/tls/certs \
+RUN chown -R chart:chart /etc/pki/tls/certs \
     && chown -R chart:chart /home/chart \
     && chmod u+x /home/chart/chartm \
     && chmod u+x /home/chart/docker-entrypoint.sh \
