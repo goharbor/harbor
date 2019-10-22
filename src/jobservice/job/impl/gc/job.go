@@ -17,6 +17,7 @@ package gc
 import (
 	"fmt"
 	"os"
+	"strconv"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
@@ -29,7 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/registryctl/client"
-	"strconv"
 )
 
 const (
@@ -38,6 +38,7 @@ const (
 	dialWriteTimeout      = 10 * time.Second
 	blobPrefix            = "blobs::*"
 	repoPrefix            = "repository::*"
+	uploadSizePattern     = "upload:*:size"
 )
 
 // GarbageCollector is the struct to run registry's garbage collection
@@ -156,15 +157,13 @@ func (gc *GarbageCollector) cleanCache() error {
 	// sample of keys in registry redis:
 	// 1) "blobs::sha256:1a6fd470b9ce10849be79e99529a88371dff60c60aab424c077007f6979b4812"
 	// 2) "repository::library/hello-world::blobs::sha256:4ab4c602aa5eed5528a6620ff18a1dc4faef0e1ab3a5eddeddb410714478c67f"
-	err = delKeys(con, blobPrefix)
-	if err != nil {
-		gc.logger.Errorf("failed to clean registry cache %v, pattern blobs::*", err)
-		return err
-	}
-	err = delKeys(con, repoPrefix)
-	if err != nil {
-		gc.logger.Errorf("failed to clean registry cache %v, pattern repository::*", err)
-		return err
+	// 3) "upload:fbd2e0a3-262d-40bb-abe4-2f43aa6f9cda:size"
+	patterns := []string{blobPrefix, repoPrefix, uploadSizePattern}
+	for _, pattern := range patterns {
+		if err := delKeys(con, pattern); err != nil {
+			gc.logger.Errorf("failed to clean registry cache %v, pattern %s", err, pattern)
+			return err
+		}
 	}
 
 	return nil
