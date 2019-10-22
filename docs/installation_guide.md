@@ -91,7 +91,7 @@ After the initial deployment and after you have started Harbor, you perform addi
 
 The table below lists the parameters that must be set when you deploy Harbor. At the very least, you must update the `hostname` parameter.
 
-**IMPORTANT**: Harbor does not ship with any certificates, and by default uses HTTP to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary, you must use HTTPS. 
+**IMPORTANT**: Harbor does not ship with any certificates, and by default uses HTTP to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary to properly sign all images, you must use HTTPS. 
   
 You can use certificates that are signed by a trusted third-party CA, or you can use self-signed certificates. For information about how to create a CA, and how to use a CA to sign a server certificate and a client certificate, see **[Configuring Harbor with HTTPS Access](configure_https.md)**.
 
