@@ -52,6 +52,9 @@ pipeline:
       - npm_username
       - docker_hub_username
       - docker_hub_password
+      - npm_registry
+      - harbor_sign_key
+      - harbor_sign_key_id
     commands:
       - export DOMAIN=${CI_DOMAIN}
       - export HOST_CONTAINER_ID=$(hostname)
