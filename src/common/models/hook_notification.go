@@ -50,8 +50,6 @@ func (w *NotificationPolicy) ConvertToDBModel() error {
 		w.EventTypesDB = string(eventTypes)
 	}
 
-
-
 	return nil
 }
 
@@ -112,6 +110,7 @@ type EventTarget struct {
 	SkipCertVerify bool   `json:"skip_cert_verify"`
 }
 
+// EventType defines the structure of webhook event
 type EventType struct {
 	Type string `json:"type"`
 	Enable bool `json:"enable"`
