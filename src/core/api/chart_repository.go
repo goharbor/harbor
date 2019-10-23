@@ -10,7 +10,10 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
+	"path"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
@@ -18,14 +21,10 @@ import (
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/label"
-
 	"github.com/goharbor/harbor/src/core/middlewares"
 	n_event "github.com/goharbor/harbor/src/core/notifier/event"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
-	"path"
-	"strconv"
-	"time"
 )
 
 const (
@@ -489,6 +488,12 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 			extInfo["operator"] = cra.SecurityCtx.GetUsername()
 			extInfo["projectName"] = cra.namespace
 			extInfo["chartName"] = chartDetails.Metadata.Name
+
+			public, err := cra.ProjectMgr.IsPublic(cra.namespace)
+			if err != nil {
+				hlog.Errorf("failed to check the public of project %s: %v", cra.namespace, err)
+				public = false
+			}
 			e := &rep_event.Event{
 				Type: rep_event.EventTypeChartUpload,
 				Resource: &model.Resource{
@@ -496,6 +501,9 @@ func (cra *ChartRepositoryAPI) addEventContext(files []formFile, request *http.R
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{
 							Name: fmt.Sprintf("%s/%s", cra.namespace, chartDetails.Metadata.Name),
+							Metadata: map[string]interface{}{
+								"public": strconv.FormatBool(public),
+							},
 						},
 						Vtags: []string{chartDetails.Metadata.Version},
 					},
