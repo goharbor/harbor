@@ -30,7 +30,10 @@ def main(conf, with_notary, with_clair, with_chartmuseum):
 
     delfile(config_dir)
     config_dict = parse_yaml_config(conf, with_notary=with_notary, with_clair=with_clair, with_chartmuseum=with_chartmuseum)
-    validate(config_dict, notary_mode=with_notary)
+    try:
+        validate(config_dict, notary_mode=with_notary)
+    except Exception as e:
+        print("Config validation Error: ", e)
 
     prepare_log_configs(config_dict)
     prepare_nginx(config_dict)

@@ -67,8 +67,8 @@ while [ $# -gt 0 ]; do
             with_notary=true;;
             --with-clair)
             with_clair=true;;
-			--with-chartmuseum)
-			with_chartmuseum=true;;
+            --with-chartmuseum)
+            with_chartmuseum=true;;
             *)
             note "$usage"
             exit 1;;
@@ -142,30 +142,27 @@ function check_dockercompose {
 	fi
 }
 
-h2 "[Step $item]: checking installation environment ..."; let item+=1
+h2 "[Step $item]: checking if docker is installed ..."; let item+=1
 check_docker
-check_dockercompose
 
-if [ -f harbor*.tar.gz ]
-then
-	h2 "[Step $item]: loading Harbor images ..."; let item+=1
-	docker load -i ./harbor*.tar.gz
-fi
-echo ""
+h2 "[Step $item]: checking docker-compose is installed ..."; let item+=1
+check_dockercompose
 
 h2 "[Step $item]: preparing environment ...";  let item+=1
 if [ -n "$host" ]
 then
-	sed "s/^hostname: .*/hostname: $host/g" -i ./harbor.yml
+    sed "s/^hostname: .*/hostname: $host/g" -i ./harbor.yml
 fi
+
+h2 "[Step $item]: preparing harbor configs ...";  let item+=1
 prepare_para=
 if [ $with_notary ] 
 then
-	prepare_para="${prepare_para} --with-notary"
+    prepare_para="${prepare_para} --with-notary"
 fi
 if [ $with_clair ]
 then
-	prepare_para="${prepare_para} --with-clair"
+    prepare_para="${prepare_para} --with-clair"
 fi
 if [ $with_chartmuseum ]
 then
@@ -175,32 +172,21 @@ fi
 ./prepare $prepare_para
 echo ""
 
+if [ -f harbor*.tar.gz ]
+then
+    h2 "[Step $item]: loading Harbor images ..."; let item+=1
+    docker load -i ./harbor*.tar.gz
+fi
+echo ""
+
 if [ -n "$(docker-compose ps -q)"  ]
 then
-	note "stopping existing Harbor instance ..." 
-	docker-compose down -v
+    note "stopping existing Harbor instance ..." 
+    docker-compose down -v
 fi
 echo ""
 
 h2 "[Step $item]: starting Harbor ..."
 docker-compose up -d
 
-protocol=http
-hostname=reg.mydomain.com
-
-if [ -n "$(grep '^[^#]*https:' ./harbor.yml)" ]
-then
-protocol=https
-fi
-
-if [[ $(grep '^[[:blank:]]*hostname:' ./harbor.yml) =~ hostname:[[:blank:]]*(.*) ]]
-then
-hostname=${BASH_REMATCH[1]}
-fi
-echo ""
-
-success $"----Harbor has been installed and started successfully.----
-
-Now you should be able to visit the admin portal at ${protocol}://${hostname}. 
-For more details, please visit https://github.com/goharbor/harbor .
-"
+success $"----Harbor has been installed and started successfully.----"

@@ -1,20 +1,31 @@
 import yaml
+import logging
 from g import versions_file_path
 from .misc import generate_random_string
 
 default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
 default_db_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
+default_https_cert_path = '/your/certificate/path'
+default_https_key_path = '/your/certificate/path'
+def validate(conf: dict, **kwargs):
+    # hostname validate
+    if conf.get('hostname') == '127.0.0.1':
+        raise Exception("127.0.0.1 can not be the hostname")
+    if conf.get('hostname') == 'reg.mydomain.com':
+        raise Exception("Please specify hostname")
 
-def validate(conf, **kwargs):
+    # protocol validate
     protocol = conf.get("protocol")
     if protocol != "https" and kwargs.get('notary_mode'):
         raise Exception(
             "Error: the protocol must be https when Harbor is deployed with Notary")
     if protocol == "https":
-        if not conf.get("cert_path"):
+        if not conf.get("cert_path") or conf["cert_path"] == default_https_cert_path:
             raise Exception("Error: The protocol is https but attribute ssl_cert is not set")
-        if not conf.get("cert_key_path"):
+        if not conf.get("cert_key_path") or conf['cert_key_path'] == default_https_key_path:
             raise Exception("Error: The protocol is https but attribute ssl_cert_key is not set")
+    if protocol == "http":
+        logging.warning("WARNING: HTTP protocol is insecure. Harbor will deprecate http protocol in the future. Please make sure to upgrade to https")
 
     # log endpoint validate
     if ('log_ep_host' in conf) and not conf['log_ep_host']:
