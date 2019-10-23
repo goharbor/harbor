@@ -24,6 +24,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	reportTimeout = 1 * time.Hour
+)
+
 // basicManager is a default implementation of report manager.
 type basicManager struct{}
 
@@ -72,8 +76,10 @@ func (bm *basicManager) Create(r *scan.Report) (string, error) {
 		}
 
 		// Status conflict
-		if theStatus.Compare(job.RunningStatus) <= 0 {
-			return "", errors.Errorf("conflict: a previous scanning is %s", theCopy.Status)
+		if theCopy.StartTime.Add(reportTimeout).After(time.Now()) {
+			if theStatus.Compare(job.RunningStatus) <= 0 {
+				return "", errors.Errorf("conflict: a previous scanning is %s", theCopy.Status)
+			}
 		}
 
 		// Otherwise it will be a completed report
@@ -201,7 +207,13 @@ func (bm *basicManager) DeleteByDigests(digests ...string) error {
 	}
 
 	kws := make(map[string]interface{})
-	kws["digest"] = digests
+	ds := make([]interface{}, 0)
+
+	for _, dig := range digests {
+		ds = append(ds, dig)
+	}
+
+	kws["digest"] = ds
 	query := &q.Query{
 		Keywords: kws,
 	}

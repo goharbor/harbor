@@ -82,6 +82,9 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 	sum.StartTime = r.StartTime
 	sum.EndTime = r.EndTime
 	sum.Duration = r.EndTime.Unix() - r.StartTime.Unix()
+	if sum.Duration < 0 {
+		sum.Duration = 0
+	}
 	if len(ops.CVEWhitelist) > 0 {
 		sum.CVEBypassed = make([]string, 0)
 	}

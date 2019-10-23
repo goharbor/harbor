@@ -63,6 +63,7 @@ func ListReports(query *q.Query) ([]*Report, error) {
 			for k, v := range query.Keywords {
 				if vv, ok := v.([]interface{}); ok {
 					qt = qt.Filter(fmt.Sprintf("%s__in", k), vv...)
+					continue
 				}
 
 				qt = qt.Filter(k, v)
