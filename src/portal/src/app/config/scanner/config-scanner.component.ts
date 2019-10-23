@@ -57,9 +57,26 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
             .pipe(finalize(() => this.onGoing = false))
             .subscribe(response => {
             this.scanners = response;
+            this.getMetadataForAll();
         }, error => {
             this.errorHandler.error(error);
         });
+    }
+    getMetadataForAll() {
+        if (this.scanners && this.scanners.length > 0) {
+            this.scanners.forEach((scanner, index) => {
+                if (scanner.uuid ) {
+                    this.scanners[index].loadingMetadata = true;
+                    this.configScannerService.getScannerMetadata(scanner.uuid)
+                        .pipe(finalize(() => this.scanners[index].loadingMetadata = false))
+                        .subscribe(response => {
+                            this.scanners[index].metadata = response;
+                        }, error => {
+                            this.scanners[index].metadata = null;
+                        });
+                }
+            });
+        }
     }
 
     addNewScanner(): void {

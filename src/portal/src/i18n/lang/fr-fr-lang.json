@@ -612,6 +612,7 @@
         "PULL_COMMAND": "Commande de Pull",
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
+        "IMMUTABLE": "Immutable",
         "MY_REPOSITORY": "Mon Dépôt",
         "PUBLIC_REPOSITORY": "Dépôt Public",
         "DELETION_TITLE_REPO": "Confirmer la Suppresion du Dépôt",
@@ -1260,6 +1261,9 @@
         "ENABLED": "Enabled",
         "ENABLE": "Enable",
         "DISABLE": "Disable",
-        "DELETE_SUCCESS": "Successfully deleted"
+        "DELETE_SUCCESS": "Successfully deleted",
+        "TOTAL": "Total",
+        "FIXABLE": "Fixable",
+        "DURATION": "Duration:"
     }
 }

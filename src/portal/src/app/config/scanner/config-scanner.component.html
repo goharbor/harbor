@@ -65,9 +65,12 @@
                 </clr-dg-cell>
                 <clr-dg-cell>{{scanner.url}}</clr-dg-cell>
                 <clr-dg-cell>
-                    <span *ngIf="scanner.health;else elseBlock" class="label label-success">{{'SCANNER.HEALTHY' | translate}}</span>
-                    <ng-template #elseBlock>
-                        <span class="label label-danger">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                    <span *ngIf="scanner.loadingMetadata;else elseBlockLoading" class="spinner spinner-inline ml-2"></span>
+                    <ng-template #elseBlockLoading>
+                        <span *ngIf="scanner.metadata;else elseBlock" class="label label-success">{{'SCANNER.HEALTHY' | translate}}</span>
+                        <ng-template #elseBlock>
+                            <span class="label label-danger">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                        </ng-template>
                     </ng-template>
                 </clr-dg-cell>
                 <clr-dg-cell>{{!scanner.disabled}}</clr-dg-cell>

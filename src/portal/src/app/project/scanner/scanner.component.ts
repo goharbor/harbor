@@ -56,10 +56,23 @@ export class ScannerComponent implements OnInit {
             .subscribe(response => {
                 if (response && "{}" !== JSON.stringify(response)) {
                     this.scanner = response;
+                    this.getScannerMetadata();
                 }
             }, error => {
                 this.errorHandler.error(error);
             });
+    }
+    getScannerMetadata() {
+        if (this.scanner && this.scanner.uuid) {
+            this.scanner.loadingMetadata = true;
+            this.configScannerService.getScannerMetadata(this.scanner.uuid)
+                .pipe(finalize(() => this.scanner.loadingMetadata = false))
+                .subscribe(response => {
+                    this.scanner.metadata = response;
+                }, error => {
+                    this.scanner.metadata = null;
+                });
+        }
     }
     getScanners() {
         this.loading = true;
@@ -75,6 +88,22 @@ export class ScannerComponent implements OnInit {
                 this.errorHandler.error(error);
             });
     }
+    getMetadataForAll() {
+        if (this.scanners && this.scanners.length > 0) {
+            this.scanners.forEach((scanner, index) => {
+                if (scanner.uuid ) {
+                    this.scanners[index].loadingMetadata = true;
+                    this.configScannerService.getScannerMetadata(scanner.uuid)
+                        .pipe(finalize(() => this.scanners[index].loadingMetadata = false))
+                        .subscribe(response => {
+                            this.scanners[index].metadata = response;
+                        }, error => {
+                            this.scanners[index].metadata = null;
+                        });
+                }
+            });
+        }
+    }
     close() {
         this.opened = false;
         this.selectedScanner = null;
@@ -87,6 +116,7 @@ export class ScannerComponent implements OnInit {
                 this.selectedScanner = s;
             }
         });
+        this.getMetadataForAll();
     }
     get valid(): boolean {
         return this.selectedScanner

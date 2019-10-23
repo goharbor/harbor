@@ -15,8 +15,9 @@
 package metadata
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestIntType_validate(t *testing.T) {
@@ -95,4 +96,34 @@ func TestMapType_get(t *testing.T) {
 	test := &MapType{}
 	result, _ := test.get(`{"sample":"abc", "another":"welcome"}`)
 	assert.Equal(t, map[string]interface{}{"sample": "abc", "another": "welcome"}, result)
+}
+
+func Test_parseInt64(t *testing.T) {
+	type args struct {
+		str string
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    int64
+		wantErr bool
+	}{
+		{"1", args{"1"}, int64(1), false},
+		{"1.0", args{"1.0"}, int64(1), false},
+		{"1.1", args{"1.1"}, int64(0), true},
+		{"1E2", args{"1E2"}, int64(100), false},
+		{"1.073741824e+11", args{"1.073741824e+11"}, int64(107374182400), false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got, err := parseInt64(tt.args.str)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("parseInt64() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if got != tt.want {
+				t.Errorf("parseInt64() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

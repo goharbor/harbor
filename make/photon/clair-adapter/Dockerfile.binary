@@ -1,4 +1,4 @@
-FROM golang:1.12.5
+FROM golang:1.12.12
 
 ADD .   /go/src/github.com/goharbor/harbor-scanner-clair/
 WORKDIR /go/src/github.com/goharbor/harbor-scanner-clair/

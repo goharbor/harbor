@@ -9,7 +9,7 @@
 # compile_golangimage:
 #			compile from golang image
 #			for example: make compile_golangimage -e GOBUILDIMAGE= \
-#							golang:1.11.2
+#							golang:1.12.12
 # compile_core, compile_jobservice: compile specific binary
 #
 # build:	build Harbor docker images from photon baseimage
@@ -111,6 +111,9 @@ CLAIRADAPTERVERSION=c7db8b15
 # version of chartmuseum
 CHARTMUSEUMVERSION=v0.9.0
 
+# version of registry for pulling the source code
+REGISTRY_SRC_TAG=v2.7.1
+
 define VERSIONS_FOR_PREPARE
 VERSION_TAG: $(VERSIONTAG)
 REGISTRY_VERSION: $(REGISTRYVERSION)
@@ -138,7 +141,7 @@ GOINSTALL=$(GOCMD) install
 GOTEST=$(GOCMD) test
 GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
-GOBUILDIMAGE=golang:1.12.5
+GOBUILDIMAGE=golang:1.12.12
 GOBUILDPATH=/harbor
 GOIMAGEBUILDCMD=/usr/local/go/bin/go
 GOIMAGEBUILD=$(GOIMAGEBUILDCMD) build -mod vendor

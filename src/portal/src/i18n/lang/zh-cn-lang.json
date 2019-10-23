@@ -623,6 +623,7 @@
         "PULL_COMMAND": "Pull命令",
         "PULL_TIME": "拉取时间",
         "PUSH_TIME": "推送时间",
+        "IMMUTABLE": "保留的",
         "MY_REPOSITORY": "我的仓库",
         "PUBLIC_REPOSITORY": "公共仓库",
         "DELETION_TITLE_REPO": "删除镜像仓库确认",
@@ -1287,6 +1288,9 @@
         "ENABLED": "启用",
         "ENABLE": "启用",
         "DISABLE": "禁用",
-        "DELETE_SUCCESS": "删除成功"
+        "DELETE_SUCCESS": "删除成功",
+        "TOTAL": "总计",
+        "FIXABLE": "可修复",
+        "DURATION": "扫描用时:"
     }
 }

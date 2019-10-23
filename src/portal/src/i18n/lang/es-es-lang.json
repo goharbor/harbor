@@ -623,6 +623,7 @@
         "PULL_COMMAND": "Comando Pull",
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
+        "IMMUTABLE": "Immutable",
         "MY_REPOSITORY": "Mi Repositorio",
         "PUBLIC_REPOSITORY": "Repositorio Público",
         "DELETION_TITLE_REPO": "Confirmar Eliminación de Repositorio",
@@ -637,7 +638,7 @@
         "FILTER_FOR_REPOSITORIES": "Filtrar Repositorios",
         "TAG": "Etiqueta",
         "SIZE": "Size",
-        "VULNERABILITY": "Vulnerability",
+        "VULNERABILITY": "Vulnerabilities",
         "BUILD_HISTORY": "Construir Historia",
         "SIGNED": "Firmada",
         "AUTHOR": "Autor",
@@ -1288,6 +1289,9 @@
         "ENABLED": "Enabled",
         "ENABLE": "Enable",
         "DISABLE": "Disable",
-        "DELETE_SUCCESS": "Successfully deleted"
+        "DELETE_SUCCESS": "Successfully deleted",
+        "TOTAL": "Total",
+        "FIXABLE": "Fixable",
+        "DURATION": "Duration:"
     }
 }

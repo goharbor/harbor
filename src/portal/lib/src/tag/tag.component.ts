@@ -27,7 +27,12 @@ import { catchError, debounceTime, distinctUntilChanged, finalize, map } from 'r
 import { TranslateService } from "@ngx-translate/core";
 import { Comparator, Label, State, Tag, TagClickEvent } from "../service/interface";
 
-import { RequestQueryParams, RetagService, TagService, VulnerabilitySeverity } from "../service/index";
+import {
+  RequestQueryParams,
+  RetagService,
+  ScanningResultService,
+  TagService,
+} from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { ChannelService } from "../channel/index";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../shared/shared.const";
@@ -54,7 +59,6 @@ import { operateChanges, OperateInfo, OperationState } from "../operation/operat
 import { OperationService } from "../operation/operation.service";
 import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
 import { errorHandler as errorHandFn } from "../shared/shared.utils";
-import { HttpClient } from "@angular/common/http";
 import { ClrLoadingState } from "@clr/angular";
 
 export interface LabelState {
@@ -160,7 +164,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     private ref: ChangeDetectorRef,
     private operationService: OperationService,
     private channel: ChannelService,
-    private http: HttpClient
+    private scanningService: ScanningResultService
   ) { }
 
   ngOnInit() {
@@ -220,9 +224,6 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (!this.withAdmiral) {
-      this.getAllLabels();
-    }
   }
 
   public get filterLabelPieceWidth() {
@@ -726,21 +727,24 @@ export class TagComponent implements OnInit, AfterViewInit {
     return st !== VULNERABILITY_SCAN_STATUS.RUNNING;
   }
   getImagePermissionRule(projectId: number): void {
-    let hasAddLabelImagePermission = this.userPermissionService.getPermission(projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY,
-      USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE);
-    let hasRetagImagePermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.PULL);
-    let hasDeleteImagePermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY_TAG.KEY, USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE);
-    let hasScanImagePermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE);
-    forkJoin(hasAddLabelImagePermission, hasRetagImagePermission, hasDeleteImagePermission, hasScanImagePermission)
-      .subscribe(permissions => {
-        this.hasAddLabelImagePermission = permissions[0] as boolean;
-        this.hasRetagImagePermission = permissions[1] as boolean;
-        this.hasDeleteImagePermission = permissions[2] as boolean;
-        this.hasScanImagePermission = permissions[3] as boolean;
-      }, error => this.errorHandler.error(error));
+    const permissions = [
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE},
+      {resource: USERSTATICPERMISSION.REPOSITORY.KEY, action:  USERSTATICPERMISSION.REPOSITORY.VALUE.PULL},
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE},
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE},
+    ];
+    this.userPermissionService.hasProjectPermissions(this.projectId, permissions).subscribe((results: Array<boolean>) => {
+      this.hasAddLabelImagePermission = results[0];
+        this.hasRetagImagePermission = results[1];
+        this.hasDeleteImagePermission = results[2];
+        this.hasScanImagePermission = results[3];
+        // only has label permission
+        if (this.hasAddLabelImagePermission) {
+          if (!this.withAdmiral) {
+            this.getAllLabels();
+          }
+        }
+    }, error => this.errorHandler.error(error));
   }
   // Trigger scan
   scanNow(t: Tag[]): void {
@@ -759,17 +763,25 @@ export class TagComponent implements OnInit, AfterViewInit {
   getProjectScanner(): void {
     this.hasEnabledScanner = false;
     this.scanBtnState = ClrLoadingState.LOADING;
-    this.http.get(`/api/projects/${this.projectId}/scanner`)
-        .pipe(map(response => response as any))
-        .pipe(catchError(error => observableThrowError(error)))
+    this.scanningService.getProjectScanner(this.projectId)
         .subscribe(response => {
-          if (response && "{}" !== JSON.stringify(response) && !response.disable
-          && response.health) {
-            this.hasEnabledScanner = true;
+          if (response && "{}" !== JSON.stringify(response) && !response.disabled
+          && response.uuid) {
+            this.getScannerMetadata(response.uuid);
+          } else {
+            this.scanBtnState = ClrLoadingState.ERROR;
           }
-          this.scanBtnState = ClrLoadingState.SUCCESS;
         }, error => {
           this.scanBtnState = ClrLoadingState.ERROR;
+        });
+  }
+  getScannerMetadata(uuid: string) {
+    this.scanningService.getScannerMetadata(uuid)
+        .subscribe(response => {
+            this.hasEnabledScanner = true;
+            this.scanBtnState = ClrLoadingState.SUCCESS;
+        }, error => {
+             this.scanBtnState = ClrLoadingState.ERROR;
         });
   }
   handleScanOverview(scanOverview: any) {
