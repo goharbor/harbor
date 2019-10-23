@@ -52,9 +52,9 @@ func (f *fakedNotificationPlyMgr) GetRelatedPolices(id int64, eventType string) 
 		return []*models.NotificationPolicy{
 			{
 				ID: 1,
-				EventTypes: []string{
-					notificationModel.EventTypePullImage,
-					notificationModel.EventTypePushImage,
+				EventTypes: []models.EventType{
+					{notificationModel.EventTypePullImage, true},
+					{notificationModel.EventTypePushImage, true},
 				},
 				Targets: []models.EventTarget{
 					{

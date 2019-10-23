@@ -47,12 +47,12 @@ func (f *fakedPolicyMgr) GetRelatedPolices(id int64, eventType string) ([]*model
 	return []*models.NotificationPolicy{
 		{
 			ID: 1,
-			EventTypes: []string{
-				notificationModel.EventTypeUploadChart,
-				notificationModel.EventTypeDownloadChart,
-				notificationModel.EventTypeDeleteChart,
-				notificationModel.EventTypeScanningCompleted,
-				notificationModel.EventTypeScanningFailed,
+			EventTypes: []models.EventType{
+				{notificationModel.EventTypeUploadChart, true},
+				{notificationModel.EventTypeDownloadChart, true},
+				{notificationModel.EventTypeDeleteChart, true},
+				{notificationModel.EventTypeScanningCompleted, true},
+				{notificationModel.EventTypeScanningFailed, true},
 			},
 			Targets: []models.EventTarget{
 				{

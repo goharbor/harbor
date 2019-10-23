@@ -23,9 +23,9 @@ func (f *fakedNotificationPlyMgr) List(id int64) ([]*models.NotificationPolicy, 
 	return []*models.NotificationPolicy{
 		{
 			ID: 1,
-			EventTypes: []string{
-				model.EventTypePullImage,
-				model.EventTypePushImage,
+			EventTypes: []models.EventType{
+				models.EventType{model.EventTypePullImage, true},
+				models.EventType{model.EventTypePushImage, true},
 			},
 		},
 	}, nil
@@ -168,7 +168,8 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []models.EventType{{"pullImage", true}, {"pushImage", true},
+						{"deleteImage", true}},
 					Targets: []models.EventTarget{
 						{
 							Address: "tcp://127.0.0.1:8080",
@@ -184,7 +185,8 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []models.EventType{{"pullImage", true}, {"pushImage", true},
+						{"deleteImage", true}},
 					Targets: []models.EventTarget{
 						{
 							Type:    "smn",
@@ -201,7 +203,7 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"invalidType"},
+					EventTypes: []models.EventType{{"invalidType", true}},
 					Targets: []models.EventTarget{
 						{
 							Address: "tcp://127.0.0.1:8080",
@@ -218,7 +220,8 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
 					ID:         111,
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []models.EventType{{"pullImage", true}, {"pushImage", true},
+					{"deleteImage", true}},
 					Targets: []models.EventTarget{
 						{
 							Type:           "http",
@@ -238,7 +241,8 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []models.EventType{{"pullImage", true}, {"pushImage", true},
+						{"deleteImage", true}},
 					Targets: []models.EventTarget{
 						{
 							Type:           "http",
@@ -373,7 +377,8 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []models.EventType{{"pullImage", true}, {"pushImage", true},
+						{"deleteImage", true}},
 					Targets:    []models.EventTarget{},
 				}},
 			code: http.StatusBadRequest,
@@ -385,7 +390,8 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []models.EventType{{"pullImage", true}, {"pushImage", true},
+						{"deleteImage", true}},
 					Targets: []models.EventTarget{
 						{
 							Address: "tcp://127.0.0.1:8080",
@@ -401,7 +407,8 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []models.EventType{{"pullImage", true}, {"pushImage", true},
+						{"deleteImage", true}},
 					Targets: []models.EventTarget{
 						{
 							Type:    "smn",
@@ -418,7 +425,7 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []string{"invalidType"},
+					EventTypes: []models.EventType{{"invalidType", true}},
 					Targets: []models.EventTarget{
 						{
 							Address: "tcp://127.0.0.1:8080",
@@ -435,7 +442,8 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
 					Name:       "imagePolicyTest",
-					EventTypes: []string{"pullImage", "pushImage", "deleteImage"},
+					EventTypes: []models.EventType{{"pullImage", true}, {"pushImage", true},
+						{"deleteImage", true}},
 					Targets: []models.EventTarget{
 						{
 							Type:           "http",
