@@ -21,7 +21,7 @@ type NotificationPolicy struct {
 	TargetsDB    string        `orm:"column(targets)" json:"-"`
 	Targets      []EventTarget `orm:"-" json:"targets"`
 	EventTypesDB string        `orm:"column(event_types)" json:"-"`
-	EventTypes   []string      `orm:"-" json:"event_types"`
+	EventTypes   []EventType   `orm:"-" json:"event_types"`
 	Creator      string        `orm:"column(creator)" json:"creator"`
 	CreationTime time.Time     `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time     `orm:"column(update_time);auto_now_add" json:"update_time"`
@@ -50,6 +50,8 @@ func (w *NotificationPolicy) ConvertToDBModel() error {
 		w.EventTypesDB = string(eventTypes)
 	}
 
+
+
 	return nil
 }
 
@@ -64,7 +66,7 @@ func (w *NotificationPolicy) ConvertFromDBModel() error {
 	}
 	w.Targets = targets
 
-	types := []string{}
+	types := []EventType{}
 	if len(w.EventTypesDB) != 0 {
 		err := json.Unmarshal([]byte(w.EventTypesDB), &types)
 		if err != nil {
@@ -108,4 +110,9 @@ type EventTarget struct {
 	Address        string `json:"address"`
 	AuthHeader     string `json:"auth_header,omitempty"`
 	SkipCertVerify bool   `json:"skip_cert_verify"`
+}
+
+type EventType struct {
+	Type string `json:"type"`
+	Enable bool `json:"enable"`
 }

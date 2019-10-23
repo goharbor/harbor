@@ -149,7 +149,10 @@ func (m *DefaultManager) GetRelatedPolices(projectID int64, eventType string) ([
 			continue
 		}
 		for _, t := range ply.EventTypes {
-			if t != eventType {
+			if t.Type != eventType {
+				continue
+			}
+			if !t.Enable {
 				continue
 			}
 			result = append(result, ply)

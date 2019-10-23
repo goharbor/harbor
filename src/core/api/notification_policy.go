@@ -321,9 +321,9 @@ func (w *NotificationPolicyAPI) validateEventTypes(policy *models.NotificationPo
 	}
 
 	for _, eventType := range policy.EventTypes {
-		_, ok := notification.SupportedEventTypes[eventType]
+		_, ok := notification.SupportedEventTypes[eventType.Type]
 		if !ok {
-			w.SendBadRequestError(fmt.Errorf("unsupport event type %s", eventType))
+			w.SendBadRequestError(fmt.Errorf("unsupport event type %s", eventType.Type))
 			return false
 		}
 	}
@@ -353,15 +353,15 @@ func constructPolicyWithTriggerTime(policies []*models.NotificationPolicy) ([]*n
 		for _, policy := range policies {
 			for _, t := range policy.EventTypes {
 				ply := &notificationPolicyForUI{
-					EventType:    t,
-					Enabled:      policy.Enabled,
+					EventType:    t.Type,
+					Enabled:      t.Enable,
 					CreationTime: &policy.CreationTime,
 				}
 				if !policy.CreationTime.IsZero() {
 					ply.CreationTime = &policy.CreationTime
 				}
 
-				ltTime, err := getLastTriggerTimeGroupByEventType(t, policy.ID)
+				ltTime, err := getLastTriggerTimeGroupByEventType(t.Type, policy.ID)
 				if err != nil {
 					return nil, err
 				}
