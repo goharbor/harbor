@@ -11,7 +11,7 @@ In a test or development environment, you may choose to use a self-signed certif
 ```
 ```
   openssl req -x509 -new -nodes -sha512 -days 3650 \
-    -subj "/C=TW/ST=Taipei/L=Taipei/O=example/OU=Personal/CN=yourdomain.com" \
+    -subj "/C=CN/ST=Taipei/L=Taipei/O=example/OU=Personal/CN=yourdomain.com" \
     -key ca.key \
     -out ca.crt
 ```
@@ -34,7 +34,7 @@ If you use FQDN like **yourdomain.com** to connect your registry host, then you 
 
 ```
   openssl req -sha512 -new \
-    -subj "/C=TW/ST=Taipei/L=Taipei/O=example/OU=Personal/CN=yourdomain.com" \
+    -subj "/C=CN/ST=Taipei/L=Taipei/O=example/OU=Personal/CN=yourdomain.com" \
     -key yourdomain.com.key \
     -out yourdomain.com.csr 
 ```
