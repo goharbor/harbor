@@ -18,8 +18,13 @@
                         <span id="scanner-name" class="scanner-name">{{scanner?.name}}</span>
                         <button *ngIf="scanners && scanners.length > 0" id="edit-scanner" class="btn btn-primary btn-sm" (click)="open()">{{'SCANNER.EDIT' | translate}}</button>
                         <span *ngIf="scanner?.disabled" class="label label-warning ml-1">{{'SCANNER.DISABLED' | translate}}</span>
-                        <span *ngIf="scanner?.health" class="label label-success ml-1">{{'SCANNER.HEALTHY' | translate}}</span>
-                        <span *ngIf="!scanner?.health" class="label label-danger ml-1">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                        <span *ngIf="scanner?.loadingMetadata;else elseBlockLoading" class="spinner spinner-inline ml-2"></span>
+                        <ng-template #elseBlockLoading>
+                            <span *ngIf="scanner?.metadata;else elseBlock" class="label label-success ml-1">{{'SCANNER.HEALTHY' | translate}}</span>
+                            <ng-template #elseBlock>
+                                <span class="label label-danger ml-1">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                            </ng-template>
+                        </ng-template>
                     </div>
                 </div>
             </div>
@@ -33,29 +38,29 @@
                 </div>
             </div>
         </div>
-        <div class="clr-form-control" *ngIf="scanner?.scanner">
+        <div class="clr-form-control" *ngIf="scanner?.metadata?.scanner?.name">
             <label class="clr-control-label">{{'SCANNER.ADAPTER' | translate}}</label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
-                    <input [ngModel]="scanner?.scanner" readonly class="clr-input width-240" type="text" id="scanner-scanner"
+                    <input [ngModel]="scanner?.metadata?.scanner?.name" readonly class="clr-input width-240" type="text" id="scanner-scanner"
                            autocomplete="off">
                 </div>
             </div>
         </div>
-        <div class="clr-form-control" *ngIf="scanner?.vendor">
+        <div class="clr-form-control" *ngIf="scanner?.metadata?.scanner?.vendor">
             <label class="clr-control-label">{{'SCANNER.VENDOR' | translate}}</label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
-                    <input [ngModel]="scanner?.vendor" readonly class="clr-input width-240" type="text" id="scanner-vendor"
+                    <input [ngModel]="scanner?.metadata?.scanner?.vendor" readonly class="clr-input width-240" type="text" id="scanner-vendor"
                            autocomplete="off">
                 </div>
             </div>
         </div>
-        <div class="clr-form-control" *ngIf="scanner?.version">
+        <div class="clr-form-control" *ngIf="scanner?.metadata?.scanner?.version">
             <label class="clr-control-label">{{'SCANNER.VERSION' | translate}}</label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
-                    <input [ngModel]="scanner?.version" readonly class="clr-input width-240" type="text" id="scanner-version"
+                    <input [ngModel]="scanner?.metadata?.scanner?.version" readonly class="clr-input width-240" type="text" id="scanner-version"
                            autocomplete="off">
                 </div>
             </div>
@@ -76,8 +81,13 @@
                 <clr-dg-cell>{{scanner.name}}</clr-dg-cell>
                 <clr-dg-cell>{{scanner.url}}</clr-dg-cell>
                 <clr-dg-cell>
-                    <span *ngIf="scanner.health" class="label label-success">{{'SCANNER.HEALTHY' | translate}}</span>
-                    <span *ngIf="!scanner.health"  class="label label-danger">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                    <span *ngIf="scanner.loadingMetadata;else elseBlockLoading" class="spinner spinner-inline ml-2">Loading...</span>
+                    <ng-template #elseBlockLoading>
+                        <span *ngIf="scanner.metadata;else elseBlock" class="label label-success">{{'SCANNER.HEALTHY' | translate}}</span>
+                        <ng-template #elseBlock>
+                            <span class="label label-danger">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                        </ng-template>
+                    </ng-template>
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <span *ngIf="scanner.is_default" class="label label-info">{{scanner.is_default}}</span>

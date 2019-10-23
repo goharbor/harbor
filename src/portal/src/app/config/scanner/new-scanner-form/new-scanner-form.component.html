@@ -11,7 +11,7 @@
                     <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
                 </div>
                 <clr-control-error *ngIf="!isNameValid">
-                    {{nameTooltip | translate}}
+                    <span id="name-error">{{nameTooltip | translate}}</span>
                 </clr-control-error>
             </div>
         </div>
@@ -33,7 +33,7 @@
                     <span class="spinner spinner-inline" [hidden]="!checkEndpointOnGoing"></span>
                 </div>
                 <clr-control-error *ngIf="!isEndpointValid || showEndpointError">
-                    {{endpointTooltip | translate}}
+                    <span id="endpoint-error">{{endpointTooltip | translate}}</span>
                 </clr-control-error>
             </div>
         </div>
@@ -73,7 +73,7 @@
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     </div>
                     <clr-control-error *ngIf="!isPasswordValid">
-                        {{"SCANNER.PASSWORD_REQUIRED" | translate}}
+                        <span id="pwd-error">{{"SCANNER.PASSWORD_REQUIRED" | translate}}</span>
                     </clr-control-error>
                 </div>
             </div>

@@ -56,6 +56,7 @@ export class TagDetailComponent implements OnInit {
   hasVulnerabilitiesListPermission: boolean;
   hasBuildHistoryPermission: boolean;
   @Input() projectId: number;
+  showStatBar: boolean = true;
   constructor(
     private tagService: TagService,
     public channel: ChannelService,
@@ -83,6 +84,7 @@ export class TagDetailComponent implements OnInit {
         && tagDetails.scan_overview
         && tagDetails.scan_overview[DEFAULT_SUPPORTED_MIME_TYPE]) {
       this.vulnerabilitySummary = tagDetails.scan_overview[DEFAULT_SUPPORTED_MIME_TYPE];
+      this.showStatBar = false;
     }
   }
   onBack(): void {

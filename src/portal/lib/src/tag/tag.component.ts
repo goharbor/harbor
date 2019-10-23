@@ -27,7 +27,12 @@ import { catchError, debounceTime, distinctUntilChanged, finalize, map } from 'r
 import { TranslateService } from "@ngx-translate/core";
 import { Comparator, Label, State, Tag, TagClickEvent } from "../service/interface";
 
-import { RequestQueryParams, RetagService, TagService, VulnerabilitySeverity } from "../service/index";
+import {
+  RequestQueryParams,
+  RetagService,
+  ScanningResultService,
+  TagService,
+} from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { ChannelService } from "../channel/index";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../shared/shared.const";
@@ -54,7 +59,6 @@ import { operateChanges, OperateInfo, OperationState } from "../operation/operat
 import { OperationService } from "../operation/operation.service";
 import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
 import { errorHandler as errorHandFn } from "../shared/shared.utils";
-import { HttpClient } from "@angular/common/http";
 import { ClrLoadingState } from "@clr/angular";
 
 export interface LabelState {
@@ -160,7 +164,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     private ref: ChangeDetectorRef,
     private operationService: OperationService,
     private channel: ChannelService,
-    private http: HttpClient
+    private scanningService: ScanningResultService
   ) { }
 
   ngOnInit() {
@@ -759,17 +763,25 @@ export class TagComponent implements OnInit, AfterViewInit {
   getProjectScanner(): void {
     this.hasEnabledScanner = false;
     this.scanBtnState = ClrLoadingState.LOADING;
-    this.http.get(`/api/projects/${this.projectId}/scanner`)
-        .pipe(map(response => response as any))
-        .pipe(catchError(error => observableThrowError(error)))
+    this.scanningService.getProjectScanner(this.projectId)
         .subscribe(response => {
-          if (response && "{}" !== JSON.stringify(response) && !response.disable
-          && response.health) {
-            this.hasEnabledScanner = true;
+          if (response && "{}" !== JSON.stringify(response) && !response.disabled
+          && response.uuid) {
+            this.getScannerMetadata(response.uuid);
+          } else {
+            this.scanBtnState = ClrLoadingState.ERROR;
           }
-          this.scanBtnState = ClrLoadingState.SUCCESS;
         }, error => {
           this.scanBtnState = ClrLoadingState.ERROR;
+        });
+  }
+  getScannerMetadata(uuid: string) {
+    this.scanningService.getScannerMetadata(uuid)
+        .subscribe(response => {
+            this.hasEnabledScanner = true;
+            this.scanBtnState = ClrLoadingState.SUCCESS;
+        }, error => {
+             this.scanBtnState = ClrLoadingState.ERROR;
         });
   }
   handleScanOverview(scanOverview: any) {

@@ -1286,7 +1286,10 @@
         "ENABLED": "Enabled",
         "ENABLE": "Enable",
         "DISABLE": "Disable",
-        "DELETE_SUCCESS": "Successfully deleted"
+        "DELETE_SUCCESS": "Successfully deleted",
+        "TOTAL": "Total",
+        "FIXABLE": "Fixable",
+        "DURATION": "Duration:"
     }
 
 }
