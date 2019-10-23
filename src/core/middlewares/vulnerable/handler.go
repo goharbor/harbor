@@ -52,13 +52,9 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	// Token bypass policy check
-	if bypassPC := req.Context().Value(util.ByPassPolicyCheckCtxKey); bypassPC != nil {
-		bypassPolicyCheck, ok := bypassPC.(bool)
-		if ok && bypassPolicyCheck {
-			vh.next.ServeHTTP(rw, req)
-			return
-		}
+	if bypass, ok := util.BypassPolicyCheckFromContext(req.Context()); ok && bypass {
+		vh.next.ServeHTTP(rw, req)
+		return
 	}
 
 	// Is vulnerable policy set?

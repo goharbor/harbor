@@ -49,13 +49,9 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 		cth.next.ServeHTTP(rw, req)
 		return
 	}
-	// Token bypass policy check
-	if bypassPC := req.Context().Value(util.ByPassPolicyCheckCtxKey); bypassPC != nil {
-		bypassPolicyCheck, ok := bypassPC.(bool)
-		if ok && bypassPolicyCheck {
-			cth.next.ServeHTTP(rw, req)
-			return
-		}
+	if bypass, ok := util.BypassPolicyCheckFromContext(req.Context()); ok && bypass {
+		cth.next.ServeHTTP(rw, req)
+		return
 	}
 	if !util.GetPolicyChecker().ContentTrustEnabled(img.ProjectName) {
 		cth.next.ServeHTTP(rw, req)

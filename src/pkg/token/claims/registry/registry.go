@@ -17,22 +17,22 @@ func (rc *Claim) Valid() error {
 	return rc.StandardClaims.Valid()
 }
 
-// GetAccessSet ...
-func (rc *Claim) GetAccessSet() AccessSet {
-	accessSet := make(AccessSet, len(rc.Access))
+// GetAccess ...
+func (rc *Claim) GetAccess() Accesses {
+	accesses := make(Accesses, len(rc.Access))
 	for _, resourceActions := range rc.Access {
 		resource := auth.Resource{
 			Type: resourceActions.Type,
 			Name: resourceActions.Name,
 		}
-		set, exists := accessSet[resource]
+		set, exists := accesses[resource]
 		if !exists {
-			set = newActionSet()
-			accessSet[resource] = set
+			set = newActions()
+			accesses[resource] = set
 		}
 		for _, action := range resourceActions.Actions {
 			set.add(action)
 		}
 	}
-	return accessSet
+	return accesses
 }

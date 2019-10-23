@@ -48,7 +48,7 @@ func TestGetAccessSet(t *testing.T) {
 		},
 		Action: rbac.ActionScannerPull.String(),
 	}
-	set := rClaims.GetAccessSet()
+	set := rClaims.GetAccess()
 	assert.True(t, set.Contains(auth1))
 	assert.False(t, set.Contains(auth2))
 }

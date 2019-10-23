@@ -445,6 +445,17 @@ func ManifestInfoFromContext(ctx context.Context) (*ManifestInfo, bool) {
 	return info, ok
 }
 
+// NewBypassPolicyCheckContext returns context with policy check info
+func NewBypassPolicyCheckContext(ctx context.Context, bypass bool) context.Context {
+	return context.WithValue(ctx, ByPassPolicyCheckCtxKey, bypass)
+}
+
+// BypassPolicyCheckFromContext returns whether to bypass policy check
+func BypassPolicyCheckFromContext(ctx context.Context) (bool, bool) {
+	info, ok := ctx.Value(ByPassPolicyCheckCtxKey).(bool)
+	return info, ok
+}
+
 // NewBlobInfoContext returns context with blob info
 func NewBlobInfoContext(ctx context.Context, info *BlobInfo) context.Context {
 	return context.WithValue(ctx, blobInfoKey, info)

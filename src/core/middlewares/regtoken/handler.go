@@ -1,7 +1,6 @@
 package regtoken
 
 import (
-	"context"
 	"github.com/docker/distribution/registry/auth"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -28,13 +27,7 @@ func New(next http.Handler) http.Handler {
 
 // ServeHTTP ...
 func (r *regTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-
-	imgRaw := req.Context().Value(util.ImageInfoCtxKey)
-	if imgRaw == nil {
-		r.next.ServeHTTP(rw, req)
-		return
-	}
-	img, _ := req.Context().Value(util.ImageInfoCtxKey).(util.ImageInfo)
+	img, _ := util.ImageInfoFromContext(req.Context())
 	if img.Digest == "" {
 		r.next.ServeHTTP(rw, req)
 		return
@@ -63,13 +56,10 @@ func (r *regTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		Action: rbac.ActionScannerPull.String(),
 	})
 
-	accessSet := regTK.Claims.(*registry.Claim).GetAccessSet()
+	accessSet := regTK.Claims.(*registry.Claim).GetAccess()
 	for _, access := range accessItems {
 		if accessSet.Contains(access) {
-			ctx := context.WithValue(req.Context(), util.ByPassPolicyCheckCtxKey, true)
-			req = req.WithContext(ctx)
-			r.next.ServeHTTP(rw, req)
-			return
+			*req = *(req.WithContext(util.NewBypassPolicyCheckContext(req.Context(), true)))
 		}
 	}
 	r.next.ServeHTTP(rw, req)

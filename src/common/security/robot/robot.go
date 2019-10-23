@@ -63,13 +63,7 @@ func getAllPolicies(namespace rbac.Namespace) map[string]bool {
 	for _, policy := range project.GetAllPolicies(namespace) {
 		mp[policy.String()] = true
 	}
-
-	scannerPull := &rbac.Policy{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate}
-	robotExternalPolicies := []*rbac.Policy{}
-	robotExternalPolicies = append(robotExternalPolicies, scannerPull)
-	for _, policy := range robotExternalPolicies {
-		mp[policy.String()] = true
-	}
-
+	scannerPull := &rbac.Policy{Resource: rbac.ResourceRepository, Action: rbac.ActionScannerPull}
+	mp[scannerPull.String()] = true
 	return mp
 }
