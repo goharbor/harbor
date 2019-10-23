@@ -19,6 +19,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"sort"
 	"strconv"
 	"strings"
@@ -311,6 +312,12 @@ func (ra *RepositoryAPI) Delete() {
 		}
 
 		if err = rc.DeleteManifest(digests[t]); err != nil {
+			if regErr, ok := err.(*commonhttp.Error); ok {
+				if regErr.Code == http.StatusNotFound {
+					continue
+				}
+			}
+
 			ra.ParseAndHandleError(fmt.Sprintf("failed to delete tag %s", t), err)
 			return
 		}
