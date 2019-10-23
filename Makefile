@@ -82,6 +82,7 @@ CLAIRFLAG=false
 HTTPPROXY=
 BUILDBIN=false
 MIGRATORFLAG=false
+NPM_REGISTRY=https://registry.npmjs.org
 # enable/disable chart repo supporting
 CHARTFLAG=false
 
@@ -306,7 +307,8 @@ build:
 	 -e REGISTRYVERSION=$(REGISTRYVERSION) -e NGINXVERSION=$(NGINXVERSION) -e NOTARYVERSION=$(NOTARYVERSION) -e NOTARYMIGRATEVERSION=$(NOTARYMIGRATEVERSION) \
 	 -e CLAIRVERSION=$(CLAIRVERSION) -e CLAIRDBVERSION=$(CLAIRDBVERSION) -e VERSIONTAG=$(VERSIONTAG) \
 	 -e BUILDBIN=$(BUILDBIN) -e REDISVERSION=$(REDISVERSION) -e MIGRATORVERSION=$(MIGRATORVERSION) \
-	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER)
+	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
+	 -e NPM_REGISTRY=$(NPM_REGISTRY)
 
 install: compile ui_version build prepare start
 
@@ -434,7 +436,7 @@ swagger_client:
 	mkdir harborclient
 	java -jar swagger-codegen-cli.jar generate -i docs/swagger.yaml -l python -o harborclient
 	cd harborclient; python ./setup.py install
-	pip install docker -q 
+	pip install docker -q
 	pip freeze
 
 cleanbinary:
