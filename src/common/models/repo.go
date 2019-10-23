@@ -47,6 +47,7 @@ type RepositoryQuery struct {
 	ProjectIDs  []int64
 	ProjectName string
 	LabelID     int64
+	RepositoryID int64
 	Pagination
 	Sorting
 }

@@ -152,6 +152,58 @@ func (ra *RepositoryAPI) Get() {
 	ra.ServeJSON()
 }
 
+// GetRepository ...
+func (ra *RepositoryAPI) GetRepository() {
+	repositoryID, err := ra.GetInt64FromPath(":id")
+	if err != nil || repositoryID <=0 {
+		ra.SendBadRequestError(fmt.Errorf("invalid Repository ID %d", ra.GetInt64FromPath(":id")))
+		return
+	}
+
+	projectID, err := ra.GetInt64("project_id")
+	if err != nil || projectID <= 0 {
+		ra.SendBadRequestError(fmt.Errorf("invalid project_id %s", ra.GetString("project_id")))
+		return
+	}
+
+	exist, err := ra.ProjectMgr.Exists(projectID)
+	if err != nil {
+		ra.ParseAndHandleError(fmt.Sprintf("failed to check the existence of project %d",
+			projectID), err)
+		return
+	}
+
+	if !exist {
+		ra.SendNotFoundError(fmt.Errorf("project %d not found", projectID))
+		return
+	}
+
+	if !ra.RequireProjectAccess(projectID, rbac.ActionList, rbac.ResourceRepository) {
+		return
+	}
+
+	query := &models.RepositoryQuery{
+		ProjectIDs: []int64{projectID},
+		RepositoryID: repositoryID,
+	}
+	query.Page, query.Size, err = ra.GetPaginationParams()
+	if err != nil {
+		ra.SendBadRequestError(err)
+		return
+	}
+
+	query.Sort = ra.GetString("sort")
+
+	repo, err := dao.GetRepository(query)
+	if err != nil {
+		ra.SendInternalServerError(fmt.Errorf("failed to get repository of project %d: %v",
+			projectID, err))
+		return
+	}
+	ra.Data["json"] = repo
+	ra.ServeJSON()
+}
+
 func getRepositories(query *models.RepositoryQuery) ([]*repoResp, error) {
 	repositories, err := dao.GetRepositories(query)
 	if err != nil {

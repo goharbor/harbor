@@ -157,6 +157,37 @@ func GetRepositories(query ...*models.RepositoryQuery) ([]*models.RepoRecord, er
 	return repositories, nil
 }
 
+// GetRepositories ...
+func GetRepository(query ...*models.RepositoryQuery) (*models.RepoRecord, error) {
+	order := "name asc"
+	if len(query) > 0 && query[0] != nil {
+		if s, ok := orderMap[query[0].Sort]; ok {
+			order = s
+		}
+	}
+
+	condition, params := repositoryQueryConditions(query...)
+	sql := fmt.Sprintf(`select r.repository_id, r.name, r.project_id, r.description, r.pull_count, 
+	r.star_count, r.creation_time, r.update_time %s order by r.%s `, condition, order)
+	if len(query) > 0 && query[0] != nil {
+		page, size := query[0].Page, query[0].Size
+		if size > 0 {
+			sql += `limit ? `
+			params = append(params, size)
+			if page > 0 {
+				sql += `offset ? `
+				params = append(params, size*(page-1))
+			}
+		}
+	}
+	var repository []models.RepoRecord
+	if _, err := GetOrmer().Raw(sql, params).QueryRows(&repository); err != nil {
+		return &repository[0], err
+	}
+
+	return &repository[0], nil
+}
+
 func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []interface{}) {
 	params := []interface{}{}
 	sql := `from repository r `
@@ -180,6 +211,11 @@ func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []inte
 		sql += fmt.Sprintf(`and r.project_id in ( %s ) `,
 			ParamPlaceholderForIn(len(q.ProjectIDs)))
 		params = append(params, q.ProjectIDs)
+	}
+
+	if q.RepositoryID > 0 {
+		sql += `and r.repository_id = ? `
+		params = append(params, q.RepositoryID)
 	}
 
 	if len(q.ProjectName) > 0 {
