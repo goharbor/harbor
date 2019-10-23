@@ -1,5 +1,8 @@
 FROM node:10.15.0 as nodeportal
 
+ARG npm_registry=https://registry.npmjs.org
+ENV NPM_CONFIG_REGISTRY=${npm_registry}
+
 RUN mkdir -p /portal_src
 RUN mkdir -p /build_dir
 
