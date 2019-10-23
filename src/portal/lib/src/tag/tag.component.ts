@@ -220,9 +220,6 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (!this.withAdmiral) {
-      this.getAllLabels();
-    }
   }
 
   public get filterLabelPieceWidth() {
@@ -726,21 +723,24 @@ export class TagComponent implements OnInit, AfterViewInit {
     return st !== VULNERABILITY_SCAN_STATUS.RUNNING;
   }
   getImagePermissionRule(projectId: number): void {
-    let hasAddLabelImagePermission = this.userPermissionService.getPermission(projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY,
-      USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE);
-    let hasRetagImagePermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.PULL);
-    let hasDeleteImagePermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY_TAG.KEY, USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE);
-    let hasScanImagePermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE);
-    forkJoin(hasAddLabelImagePermission, hasRetagImagePermission, hasDeleteImagePermission, hasScanImagePermission)
-      .subscribe(permissions => {
-        this.hasAddLabelImagePermission = permissions[0] as boolean;
-        this.hasRetagImagePermission = permissions[1] as boolean;
-        this.hasDeleteImagePermission = permissions[2] as boolean;
-        this.hasScanImagePermission = permissions[3] as boolean;
-      }, error => this.errorHandler.error(error));
+    const permissions = [
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE},
+      {resource: USERSTATICPERMISSION.REPOSITORY.KEY, action:  USERSTATICPERMISSION.REPOSITORY.VALUE.PULL},
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE},
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE},
+    ];
+    this.userPermissionService.hasProjectPermissions(this.projectId, permissions).subscribe((results: Array<boolean>) => {
+      this.hasAddLabelImagePermission = results[0];
+        this.hasRetagImagePermission = results[1];
+        this.hasDeleteImagePermission = results[2];
+        this.hasScanImagePermission = results[3];
+        // only has label permission
+        if (this.hasAddLabelImagePermission) {
+          if (!this.withAdmiral) {
+            this.getAllLabels();
+          }
+        }
+    }, error => this.errorHandler.error(error));
   }
   // Trigger scan
   scanNow(t: Tag[]): void {
