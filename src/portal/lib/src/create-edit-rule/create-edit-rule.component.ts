@@ -253,7 +253,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
         dest_registry: rule.dest_registry,
         trigger: rule.trigger,
         deletion: rule.deletion,
-        enabled: true,
+        enabled: rule.enabled,
         override: rule.override
       });
       let filtersArray = this.getFilterArray(rule);

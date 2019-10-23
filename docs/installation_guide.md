@@ -12,7 +12,7 @@ This guide describes the steps to install and configure Harbor by using the onli
 
 If you run a previous version of Harbor, you may need to update ```harbor.yml``` and migrate the data to fit the new database schema. For more details, please refer to **[Harbor Migration Guide](migration_guide.md)**.
 
-In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Harbor on Kubernetes](kubernetes_deployment.md) for details.
+In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Harbor on Kubernetes using Helm](https://github.com/goharbor/harbor-helm) for details.
 
 ## Harbor Components
 

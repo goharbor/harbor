@@ -28,7 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 
 	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	"github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
@@ -45,6 +45,8 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
+	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -283,11 +285,6 @@ func (ra *RepositoryAPI) Delete() {
 	}
 
 	for _, t := range tags {
-		image := fmt.Sprintf("%s:%s", repoName, t)
-		if err = dao.DeleteLabelsOfResource(common.ResourceTypeImage, image); err != nil {
-			ra.SendInternalServerError(fmt.Errorf("failed to delete labels of image %s: %v", image, err))
-			return
-		}
 		if err = rc.DeleteTag(t); err != nil {
 			if regErr, ok := err.(*commonhttp.Error); ok {
 				if regErr.Code == http.StatusNotFound {
@@ -298,6 +295,11 @@ func (ra *RepositoryAPI) Delete() {
 			return
 		}
 		log.Infof("delete tag: %s:%s", repoName, t)
+		image := fmt.Sprintf("%s:%s", repoName, t)
+		if err = dao.DeleteLabelsOfResource(common.ResourceTypeImage, image); err != nil {
+			ra.SendInternalServerError(fmt.Errorf("failed to delete labels of image %s: %v", image, err))
+			return
+		}
 
 		go func(tag string) {
 			e := &event.Event{
@@ -711,6 +713,9 @@ func assembleTag(c chan *models.TagResp, client *registry.Repository, projectID 
 		}
 	}
 
+	// get immutable status
+	item.Immutable = isImmutable(projectID, repository, tag)
+
 	c <- item
 }
 
@@ -789,6 +794,21 @@ func populateAuthor(detail *models.TagDetail) {
 			}
 		}
 	}
+}
+
+// check whether the tag is immutable
+func isImmutable(projectID int64, repo string, tag string) bool {
+	_, repoName := utils.ParseRepository(repo)
+	matched, err := rule.NewRuleMatcher(projectID).Match(art.Candidate{
+		Repository:  repoName,
+		Tag:         tag,
+		NamespaceID: projectID,
+	})
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+	return matched
 }
 
 // GetManifests returns the manifest of a tag
