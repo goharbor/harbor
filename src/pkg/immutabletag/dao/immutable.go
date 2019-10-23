@@ -12,7 +12,7 @@ import (
 type ImmutableRuleDao interface {
 	CreateImmutableRule(ir *model.ImmutableRule) (int64, error)
 	UpdateImmutableRule(projectID int64, ir *model.ImmutableRule) (int64, error)
-	ToggleImmutableRule(id int64, enabled bool) (int64, error)
+	ToggleImmutableRule(id int64, status bool) (int64, error)
 	GetImmutableRule(id int64) (*model.ImmutableRule, error)
 	QueryImmutableRuleByProjectID(projectID int64) ([]model.ImmutableRule, error)
 	QueryEnabledImmutableRuleByProjectID(projectID int64) ([]model.ImmutableRule, error)
@@ -28,7 +28,7 @@ type immutableRuleDao struct{}
 
 // CreateImmutableRule creates the Immutable Rule
 func (i *immutableRuleDao) CreateImmutableRule(ir *model.ImmutableRule) (int64, error) {
-	ir.Enabled = true
+	ir.Disabled = false
 	o := dao.GetOrmer()
 	return o.Insert(ir)
 }
@@ -41,10 +41,10 @@ func (i *immutableRuleDao) UpdateImmutableRule(projectID int64, ir *model.Immuta
 }
 
 // ToggleImmutableRule enable/disable immutable rules
-func (i *immutableRuleDao) ToggleImmutableRule(id int64, enabled bool) (int64, error) {
+func (i *immutableRuleDao) ToggleImmutableRule(id int64, status bool) (int64, error) {
 	o := dao.GetOrmer()
-	ir := &model.ImmutableRule{ID: id, Enabled: enabled}
-	return o.Update(ir, "Enabled")
+	ir := &model.ImmutableRule{ID: id, Disabled: status}
+	return o.Update(ir, "Disabled")
 }
 
 // GetImmutableRule get immutable rule
@@ -76,7 +76,7 @@ func (i *immutableRuleDao) QueryImmutableRuleByProjectID(projectID int64) ([]mod
 // QueryEnabledImmutableRuleByProjectID get all enabled immutable rule by project
 func (i *immutableRuleDao) QueryEnabledImmutableRuleByProjectID(projectID int64) ([]model.ImmutableRule, error) {
 	o := dao.GetOrmer()
-	qs := o.QueryTable(&model.ImmutableRule{}).Filter("ProjectID", projectID).Filter("Enabled", true)
+	qs := o.QueryTable(&model.ImmutableRule{}).Filter("ProjectID", projectID).Filter("Disabled", false)
 	var r []model.ImmutableRule
 	_, err := qs.All(&r)
 	if err != nil {

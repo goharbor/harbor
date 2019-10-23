@@ -9,8 +9,8 @@ var (
 	ImmuCtr = NewAPIController(NewDefaultRuleManager())
 )
 
-// APIController to handle the requests related with immutabletag
-type APIController interface {
+// Controller to handle the requests related with immutabletag
+type Controller interface {
 	// GetImmutableRule ...
 	GetImmutableRule(id int64) (*model.Metadata, error)
 
@@ -68,7 +68,7 @@ func (r *DefaultAPIController) ListImmutableRules(pid int64) ([]model.Metadata, 
 }
 
 // NewAPIController ...
-func NewAPIController(immutableMgr Manager) APIController {
+func NewAPIController(immutableMgr Manager) Controller {
 	return &DefaultAPIController{
 		manager: immutableMgr,
 	}

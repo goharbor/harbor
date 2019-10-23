@@ -110,7 +110,7 @@ func (m *managerTestingSuite) TestQueryImmutableRuleByProjectID() {
 		{
 			ID:        1,
 			ProjectID: 1,
-			Enabled:   true,
+			Disabled:  false,
 			TagFilter: "{\"id\":1, \"projectID\":1,\"priority\":0,\"disabled\":false,\"action\":\"immutable\"," +
 				"\"template\":\"immutable_template\"," +
 				"\"tag_selectors\":[{\"kind\":\"doublestar\",\"decoration\":\"matches\",\"pattern\":\"**\"}]," +
@@ -119,7 +119,7 @@ func (m *managerTestingSuite) TestQueryImmutableRuleByProjectID() {
 		{
 			ID:        2,
 			ProjectID: 1,
-			Enabled:   false,
+			Disabled:  false,
 			TagFilter: "{\"id\":2, \"projectID\":1,\"priority\":0,\"disabled\":false,\"action\":\"immutable\"," +
 				"\"template\":\"immutable_template\"," +
 				"\"tag_selectors\":[{\"kind\":\"doublestar\",\"decoration\":\"matches\",\"pattern\":\"**\"}]," +
@@ -137,7 +137,7 @@ func (m *managerTestingSuite) TestQueryEnabledImmutableRuleByProjectID() {
 		{
 			ID:        1,
 			ProjectID: 1,
-			Enabled:   true,
+			Disabled:  true,
 			TagFilter: "{\"id\":1, \"projectID\":1,\"priority\":0,\"disabled\":false,\"action\":\"immutable\"," +
 				"\"template\":\"immutable_template\"," +
 				"\"tag_selectors\":[{\"kind\":\"doublestar\",\"decoration\":\"matches\",\"pattern\":\"**\"}]," +
@@ -146,7 +146,7 @@ func (m *managerTestingSuite) TestQueryEnabledImmutableRuleByProjectID() {
 		{
 			ID:        2,
 			ProjectID: 1,
-			Enabled:   true,
+			Disabled:  true,
 			TagFilter: "{\"id\":2, \"projectID\":1,\"priority\":0,\"disabled\":false,\"action\":\"immutable\"," +
 				"\"template\":\"immutable_template\"," +
 				"\"tag_selectors\":[{\"kind\":\"doublestar\",\"decoration\":\"matches\",\"pattern\":\"**\"}]," +
@@ -163,7 +163,7 @@ func (m *managerTestingSuite) TestGetImmutableRule() {
 	m.mockImmutableDao.On("GetImmutableRule", mock.Anything).Return(&dao_model.ImmutableRule{
 		ID:        1,
 		ProjectID: 1,
-		Enabled:   true,
+		Disabled:  true,
 		TagFilter: "{\"id\":1, \"projectID\":1,\"priority\":0,\"disabled\":false,\"action\":\"immutable\"," +
 			"\"template\":\"immutable_template\"," +
 			"\"tag_selectors\":[{\"kind\":\"doublestar\",\"decoration\":\"matches\",\"pattern\":\"**\"}]," +

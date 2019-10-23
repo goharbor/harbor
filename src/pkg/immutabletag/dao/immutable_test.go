@@ -58,11 +58,11 @@ func (t *immutableRuleDaoTestSuite) TestEnableImmutableRule() {
 	t.require.Nil(err)
 	t.require.True(id > 0, "Can not create immutable tag rule")
 
-	t.dao.ToggleImmutableRule(id, false)
+	t.dao.ToggleImmutableRule(id, true)
 	newIr, err := t.dao.GetImmutableRule(id)
 
 	t.require.Nil(err)
-	t.require.False(newIr.Enabled, "Failed to disable the immutable rule")
+	t.require.True(newIr.Disabled, "Failed to disable the immutable rule")
 
 	defer t.dao.DeleteImmutableRule(id)
 }
@@ -95,9 +95,8 @@ func (t *immutableRuleDaoTestSuite) TestGetEnabledImmutableRuleByProject() {
 	for i, ir := range irs {
 		id, _ := t.dao.CreateImmutableRule(ir)
 		if i == 1 {
-			t.dao.ToggleImmutableRule(id, false)
+			t.dao.ToggleImmutableRule(id, true)
 		}
-
 	}
 
 	qrs, err := t.dao.QueryEnabledImmutableRuleByProjectID(99)

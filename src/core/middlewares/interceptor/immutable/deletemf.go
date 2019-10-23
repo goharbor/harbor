@@ -55,7 +55,7 @@ func (dmf *delmfInterceptor) HandleRequest(req *http.Request) (err error) {
 			return
 		}
 		if matched {
-			return middlerware_err.NewErrImmutable(repoName)
+			return middlerware_err.NewErrImmutable(repoName, af.Tag)
 		}
 	}
 
