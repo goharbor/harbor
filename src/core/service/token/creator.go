@@ -28,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
-	"net/http/httputil"
 )
 
 var creatorMap map[string]Creator
@@ -182,7 +181,7 @@ func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManage
 		permission = "R"
 	}
 	if ctx.Can(rbac.ActionScannerPull, resource) {
-		permission = "S"
+		permission = fmt.Sprintf("%s%s", permission, "S")
 	}
 
 	a.Actions = permToActions(permission)
@@ -204,7 +203,6 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 	var err error
 	scopes := parseScopes(r.URL)
 	log.Debugf("scopes: %v", scopes)
-	httputil.DumpRequest(r, true)
 
 	ctx, err := filter.GetSecurityContext(r)
 	if err != nil {

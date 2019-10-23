@@ -14,11 +14,7 @@ type Claim struct {
 
 // Valid valid the standard claims
 func (rc *Claim) Valid() error {
-	stdErr := rc.StandardClaims.Valid()
-	if stdErr != nil {
-		return stdErr
-	}
-	return nil
+	return rc.StandardClaims.Valid()
 }
 
 // GetAccessSet ...

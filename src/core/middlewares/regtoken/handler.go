@@ -5,7 +5,6 @@ import (
 	"github.com/docker/distribution/registry/auth"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	pkg_token "github.com/goharbor/harbor/src/pkg/token"
 	"github.com/goharbor/harbor/src/pkg/token/claims/registry"
@@ -31,7 +30,7 @@ func New(next http.Handler) http.Handler {
 func (r *regTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 
 	imgRaw := req.Context().Value(util.ImageInfoCtxKey)
-	if imgRaw == nil || !config.WithClair() {
+	if imgRaw == nil {
 		r.next.ServeHTTP(rw, req)
 		return
 	}
@@ -50,7 +49,7 @@ func (r *regTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	opt := pkg_token.DefaultTokenOptions()
 	regTK, err := pkg_token.Parse(opt, rawToken, &registry.Claim{})
 	if err != nil {
-		log.Debugf("failed to decode reg token: %v, the error is skipped and round the request to native registry.", err)
+		log.Errorf("failed to decode reg token: %v, the error is skipped and round the request to native registry.", err)
 		r.next.ServeHTTP(rw, req)
 		return
 	}
@@ -58,7 +57,7 @@ func (r *regTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	accessItems := []auth.Access{}
 	accessItems = append(accessItems, auth.Access{
 		Resource: auth.Resource{
-			Type: "repository",
+			Type: rbac.ResourceRepository.String(),
 			Name: img.Repository,
 		},
 		Action: rbac.ActionScannerPull.String(),

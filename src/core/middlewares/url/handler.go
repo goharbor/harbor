@@ -37,7 +37,7 @@ func New(next http.Handler) http.Handler {
 
 // ServeHTTP ...
 func (uh urlHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	log.Debugf("in url handler, path: %s", req.URL.Path)
+	log.Infof("in url handler, path: %s", req.URL.Path)
 	flag, repository, reference := util.MatchPullManifest(req)
 	if flag {
 		components := strings.SplitN(repository, "/", 2)

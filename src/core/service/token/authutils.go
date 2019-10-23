@@ -134,7 +134,7 @@ func permToActions(p string) []string {
 		res = append(res, "pull")
 	}
 	if strings.Contains(p, "S") {
-		res = append(res, "scannerpull")
+		res = append(res, "scanner-pull")
 	}
 	return res
 }
