@@ -41,7 +41,8 @@ func TestNotificationPolicy_ConvertFromDBModel(t *testing.T) {
 						Address: "http://10.173.32.58:9009",
 					},
 				},
-				EventTypes: []string{"pushImage", "pullImage", "deleteImage"},
+				EventTypes: []EventType{{Type:"pullImage", Enable:true}, {Type:"pushImage", Enable:true},
+					{Type:"deleteImage", Enable:true}},
 			},
 		},
 	}
@@ -77,7 +78,8 @@ func TestNotificationPolicy_ConvertToDBModel(t *testing.T) {
 						SkipCertVerify: false,
 					},
 				},
-				EventTypes: []string{"pushImage", "pullImage", "deleteImage"},
+				EventTypes: []EventType{{Type:"pullImage", Enable:true}, {Type:"pushImage", Enable:true},
+					{Type:"deleteImage", Enable:true}},
 			},
 			want: &NotificationPolicy{
 				TargetsDB:    "[{\"type\":\"http\",\"address\":\"http://127.0.0.1\",\"skip_cert_verify\":false}]",
