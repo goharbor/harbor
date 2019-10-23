@@ -119,6 +119,11 @@ func (bc *basicController) Scan(artifact *v1.Artifact) error {
 		return errors.Wrap(err, "scan controller: scan")
 	}
 
+	// Check if it is disabled
+	if r.Disabled {
+		return errors.Errorf("scanner %s is disabled", r.Name)
+	}
+
 	// Check the health of the registration by ping.
 	// The metadata of the scanner adapter is also returned.
 	meta, err := bc.sc.Ping(r)
@@ -296,9 +301,8 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 	}
 
 	// Clear robot account
-	// All final statuses (success, error and stopped) share the same code.
-	// Only need to check one of them.
-	if job.Status(change.Status).Compare(job.SuccessStatus) == 0 {
+	// Only when the job is successfully done!
+	if change.Status == job.SuccessStatus.String() {
 		if v, ok := change.Metadata.Parameters[sca.JobParameterRobotID]; ok {
 			if rid, y := v.(float64); y {
 				if err := robot.RobotCtr.DeleteRobotAccount(int64(rid)); err != nil {

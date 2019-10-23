@@ -24,6 +24,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	reportTimeout = 1 * time.Hour
+)
+
 // basicManager is a default implementation of report manager.
 type basicManager struct{}
 
@@ -72,8 +76,10 @@ func (bm *basicManager) Create(r *scan.Report) (string, error) {
 		}
 
 		// Status conflict
-		if theStatus.Compare(job.RunningStatus) <= 0 {
-			return "", errors.Errorf("conflict: a previous scanning is %s", theCopy.Status)
+		if theCopy.StartTime.Add(reportTimeout).After(time.Now()) {
+			if theStatus.Compare(job.RunningStatus) <= 0 {
+				return "", errors.Errorf("conflict: a previous scanning is %s", theCopy.Status)
+			}
 		}
 
 		// Otherwise it will be a completed report
