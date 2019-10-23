@@ -24,8 +24,8 @@ func (f *fakedNotificationPlyMgr) List(id int64) ([]*models.NotificationPolicy, 
 		{
 			ID: 1,
 			EventTypes: []models.EventType{
-				models.EventType{Type:model.EventTypePullImage, Enable:true},
-				models.EventType{Type:model.EventTypePushImage, Enable:true},
+				{Type: model.EventTypePullImage, Enable: true},
+				{Type: model.EventTypePushImage, Enable: true},
 			},
 		},
 	}, nil
@@ -168,8 +168,8 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []models.EventType{{Type:"pullImage", Enable:true}, {Type:"pushImage", Enable:true},
-						{Type:"deleteImage", Enable:true}},
+					EventTypes: []models.EventType{{Type: "pullImage", Enable: true}, {Type: "pushImage", Enable: true},
+						{Type: "deleteImage", Enable: true}},
 					Targets: []models.EventTarget{
 						{
 							Address: "tcp://127.0.0.1:8080",
@@ -185,8 +185,8 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []models.EventType{{Type:"pullImage", Enable:true}, {Type:"pushImage", Enable:true},
-						{Type:"deleteImage", Enable:true}},
+					EventTypes: []models.EventType{{Type: "pullImage", Enable: true}, {Type: "pushImage", Enable: true},
+						{Type: "deleteImage", Enable: true}},
 					Targets: []models.EventTarget{
 						{
 							Type:    "smn",
@@ -203,7 +203,7 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []models.EventType{{Type:"invalidType", Enable:true}},
+					EventTypes: []models.EventType{{Type: "invalidType", Enable: true}},
 					Targets: []models.EventTarget{
 						{
 							Address: "tcp://127.0.0.1:8080",
@@ -219,9 +219,9 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					ID:         111,
-					EventTypes: []models.EventType{{Type:"pullImage", Enable:true}, {Type:"pushImage", Enable:true},
-						{Type:"deleteImage", Enable:true}},
+					ID: 111,
+					EventTypes: []models.EventType{{Type: "pullImage", Enable: true}, {Type: "pushImage", Enable: true},
+						{Type: "deleteImage", Enable: true}},
 					Targets: []models.EventTarget{
 						{
 							Type:           "http",
@@ -241,8 +241,8 @@ func TestNotificationPolicyAPI_Post(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []models.EventType{{Type:"pullImage", Enable:true}, {Type:"pushImage", Enable:true},
-						{Type:"deleteImage", Enable:true}},
+					EventTypes: []models.EventType{{Type: "pullImage", Enable: true}, {Type: "pushImage", Enable: true},
+						{Type: "deleteImage", Enable: true}},
 					Targets: []models.EventTarget{
 						{
 							Type:           "http",
@@ -377,9 +377,9 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []models.EventType{{Type:"pullImage", Enable:true}, {Type:"pushImage", Enable:true},
-						{Type:"deleteImage", Enable:true}},
-					Targets:    []models.EventTarget{},
+					EventTypes: []models.EventType{{Type: "pullImage", Enable: true}, {Type: "pushImage", Enable: true},
+						{Type: "deleteImage", Enable: true}},
+					Targets: []models.EventTarget{},
 				}},
 			code: http.StatusBadRequest,
 		},
@@ -390,8 +390,8 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []models.EventType{{Type:"pullImage", Enable:true}, {Type:"pushImage", Enable:true},
-						{Type:"deleteImage", Enable:true}},
+					EventTypes: []models.EventType{{Type: "pullImage", Enable: true}, {Type: "pushImage", Enable: true},
+						{Type: "deleteImage", Enable: true}},
 					Targets: []models.EventTarget{
 						{
 							Address: "tcp://127.0.0.1:8080",
@@ -407,8 +407,8 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []models.EventType{{Type:"pullImage", Enable:true}, {Type:"pushImage", Enable:true},
-						{Type:"deleteImage", Enable:true}},
+					EventTypes: []models.EventType{{Type: "pullImage", Enable: true}, {Type: "pushImage", Enable: true},
+						{Type: "deleteImage", Enable: true}},
 					Targets: []models.EventTarget{
 						{
 							Type:    "smn",
@@ -425,7 +425,7 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					EventTypes: []models.EventType{{Type:"invalidType", Enable:true}},
+					EventTypes: []models.EventType{{Type: "invalidType", Enable: true}},
 					Targets: []models.EventTarget{
 						{
 							Address: "tcp://127.0.0.1:8080",
@@ -441,9 +441,9 @@ func TestNotificationPolicyAPI_Put(t *testing.T) {
 				url:        "/api/projects/1/webhook/policies/1",
 				credential: sysAdmin,
 				bodyJSON: &models.NotificationPolicy{
-					Name:       "imagePolicyTest",
-					EventTypes: []models.EventType{{Type:"pullImage", Enable:true}, {Type:"pushImage", Enable:true},
-						{Type:"deleteImage", Enable:true}},
+					Name: "imagePolicyTest",
+					EventTypes: []models.EventType{{Type: "pullImage", Enable: true}, {Type: "pushImage", Enable: true},
+						{Type: "deleteImage", Enable: true}},
 					Targets: []models.EventTarget{
 						{
 							Type:           "http",

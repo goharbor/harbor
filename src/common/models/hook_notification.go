@@ -112,6 +112,6 @@ type EventTarget struct {
 
 // EventType defines the structure of webhook event
 type EventType struct {
-	Type string `json:"type"`
-	Enable bool `json:"enable"`
+	Type   string `json:"type"`
+	Enable bool   `json:"enable"`
 }
