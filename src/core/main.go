@@ -32,16 +32,14 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	quota "github.com/goharbor/harbor/src/core/api/quota"
+	_ "github.com/goharbor/harbor/src/core/api/quota/chart"
+	_ "github.com/goharbor/harbor/src/core/api/quota/registry"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	_ "github.com/goharbor/harbor/src/core/auth/oidc"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
-
-	quota "github.com/goharbor/harbor/src/core/api/quota"
-	_ "github.com/goharbor/harbor/src/core/api/quota/chart"
-	_ "github.com/goharbor/harbor/src/core/api/quota/registry"
-
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares"
@@ -50,6 +48,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	"github.com/goharbor/harbor/src/pkg/scan/event"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/replication"
@@ -241,6 +240,8 @@ func main() {
 
 	log.Info("initializing notification...")
 	notification.Init()
+	// Initialize the event handlers for handling artifact cascade deletion
+	event.Init()
 
 	filter.Init()
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)

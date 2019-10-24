@@ -370,11 +370,3 @@ func (m *MockScannerAPIController) GetMetadata(registrationUUID string) (*v1.Sca
 
 	return sam.(*v1.ScannerAdapterMetadata), nil
 }
-
-// IsScannerAvailable ...
-// TODO: Remove it when the interface is changed
-func (m *MockScannerAPIController) IsScannerAvailable(projectID int64) (bool, error) {
-	args := m.Called(projectID)
-
-	return args.Bool(0), args.Error(1)
-}

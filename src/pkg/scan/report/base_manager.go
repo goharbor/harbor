@@ -24,6 +24,10 @@ import (
 	"github.com/pkg/errors"
 )
 
+const (
+	reportTimeout = 1 * time.Hour
+)
+
 // basicManager is a default implementation of report manager.
 type basicManager struct{}
 
@@ -72,8 +76,10 @@ func (bm *basicManager) Create(r *scan.Report) (string, error) {
 		}
 
 		// Status conflict
-		if theStatus.Compare(job.RunningStatus) <= 0 {
-			return "", errors.Errorf("conflict: a previous scanning is %s", theCopy.Status)
+		if theCopy.StartTime.Add(reportTimeout).After(time.Now()) {
+			if theStatus.Compare(job.RunningStatus) <= 0 {
+				return "", errors.Errorf("conflict: a previous scanning is %s", theCopy.Status)
+			}
 		}
 
 		// Otherwise it will be a completed report
@@ -191,4 +197,42 @@ func (bm *basicManager) UpdateReportData(uuid string, report string, rev int64) 
 	}
 
 	return scan.UpdateReportData(uuid, report, rev)
+}
+
+// DeleteByDigests ...
+func (bm *basicManager) DeleteByDigests(digests ...string) error {
+	if len(digests) == 0 {
+		// Nothing to do
+		return nil
+	}
+
+	kws := make(map[string]interface{})
+	ds := make([]interface{}, 0)
+
+	for _, dig := range digests {
+		ds = append(ds, dig)
+	}
+
+	kws["digest"] = ds
+	query := &q.Query{
+		Keywords: kws,
+	}
+
+	rs, err := scan.ListReports(query)
+	if err != nil {
+		return errors.Wrap(err, "report manager: delete by digests")
+	}
+
+	// Return the combined errors at last
+	for _, r := range rs {
+		if er := scan.DeleteReport(r.UUID); er != nil {
+			if err == nil {
+				err = er
+			} else {
+				err = errors.Wrap(er, err.Error())
+			}
+		}
+	}
+
+	return err
 }

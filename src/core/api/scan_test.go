@@ -211,3 +211,7 @@ func (msc *MockScanAPIController) HandleJobHooks(trackID string, change *job.Sta
 
 	return args.Error(0)
 }
+
+func (msc *MockScanAPIController) DeleteReports(digests ...string) error {
+	return nil
+}

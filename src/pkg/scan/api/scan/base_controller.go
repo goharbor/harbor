@@ -22,6 +22,7 @@ import (
 	cj "github.com/goharbor/harbor/src/common/job"
 	jm "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
@@ -116,6 +117,11 @@ func (bc *basicController) Scan(artifact *v1.Artifact) error {
 	r, err := bc.sc.GetRegistrationByProject(artifact.NamespaceID)
 	if err != nil {
 		return errors.Wrap(err, "scan controller: scan")
+	}
+
+	// Check if it is disabled
+	if r.Disabled {
+		return errors.Errorf("scanner %s is disabled", r.Name)
 	}
 
 	// Check the health of the registration by ping.
@@ -294,6 +300,21 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 		return errors.New("nil change object")
 	}
 
+	// Clear robot account
+	// Only when the job is successfully done!
+	if change.Status == job.SuccessStatus.String() {
+		if v, ok := change.Metadata.Parameters[sca.JobParameterRobotID]; ok {
+			if rid, y := v.(float64); y {
+				if err := robot.RobotCtr.DeleteRobotAccount(int64(rid)); err != nil {
+					// Should not block the main flow, just logged
+					log.Error(errors.Wrap(err, "scan controller: handle job hook"))
+				} else {
+					log.Debugf("Robot account with id %d for the scan %s is removed", int64(rid), trackID)
+				}
+			}
+		}
+	}
+
 	// Check in data
 	if len(change.CheckIn) > 0 {
 		checkInReport := &sca.CheckInReport{}
@@ -326,12 +347,17 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 	return bc.manager.UpdateStatus(trackID, change.Status, change.Metadata.Revision)
 }
 
+// DeleteReports ...
+func (bc *basicController) DeleteReports(digests ...string) error {
+	return bc.manager.DeleteByDigests(digests...)
+}
+
 // makeAuthorization creates authorization from a robot account based on the arguments for scanning.
-func (bc *basicController) makeAuthorization(pid int64, repository string, ttl int64) (string, error) {
+func (bc *basicController) makeAuthorization(pid int64, repository string, ttl int64) (string, int64, error) {
 	// Use uuid as name to avoid duplicated entries.
 	UUID, err := bc.uuid()
 	if err != nil {
-		return "", errors.Wrap(err, "scan controller: make robot account")
+		return "", -1, errors.Wrap(err, "scan controller: make robot account")
 	}
 
 	expireAt := time.Now().UTC().Add(time.Duration(ttl) * time.Second).Unix()
@@ -353,13 +379,13 @@ func (bc *basicController) makeAuthorization(pid int64, repository string, ttl i
 
 	rb, err := bc.rc.CreateRobotAccount(robotReq)
 	if err != nil {
-		return "", errors.Wrap(err, "scan controller: make robot account")
+		return "", -1, errors.Wrap(err, "scan controller: make robot account")
 	}
 
 	basic := fmt.Sprintf("%s:%s", rb.Name, rb.Token)
 	encoded := base64.StdEncoding.EncodeToString([]byte(basic))
 
-	return fmt.Sprintf("Basic %s", encoded), nil
+	return fmt.Sprintf("Basic %s", encoded), rb.ID, nil
 }
 
 // launchScanJob launches a job to run scan
@@ -370,7 +396,7 @@ func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, 
 	}
 
 	// Make authorization from a robot account with 30 minutes
-	authorization, err := bc.makeAuthorization(artifact.NamespaceID, artifact.Repository, 1800)
+	authorization, rID, err := bc.makeAuthorization(artifact.NamespaceID, artifact.Repository, 1800)
 	if err != nil {
 		return "", errors.Wrap(err, "scan controller: launch scan job")
 	}
@@ -398,6 +424,7 @@ func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, 
 	params[sca.JobParamRegistration] = rJSON
 	params[sca.JobParameterRequest] = sJSON
 	params[sca.JobParameterMimes] = mimes
+	params[sca.JobParameterRobotID] = rID
 
 	// Launch job
 	callbackURL, err := bc.config(configCoreInternalAddr)

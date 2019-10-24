@@ -1,6 +1,8 @@
 package notification
 
 import (
+	"time"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
@@ -97,6 +99,22 @@ func constructScanImagePayload(event *model.ScanImageEvent, project *models.Proj
 	resURL, err := buildImageResourceURL(extURL, event.Artifact.Repository, event.Artifact.Tag)
 	if err != nil {
 		return nil, errors.Wrap(err, "construct scan payload")
+	}
+
+	// Wait for reasonable time to make sure the report is ready
+	// Interval=500ms and total time = 5s
+	// If the report is still not ready in the total time, then failed at then
+	for i := 0; i < 10; i++ {
+		// First check in case it is ready
+		if re, err := scan.DefaultController.GetReport(event.Artifact, []string{v1.MimeTypeNativeReport}); err == nil {
+			if len(re) > 0 && len(re[0].Report) > 0 {
+				break
+			}
+		} else {
+			log.Error(errors.Wrap(err, "construct scan payload: wait report ready loop"))
+		}
+
+		time.Sleep(500 * time.Millisecond)
 	}
 
 	// Add scan overview

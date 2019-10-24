@@ -81,10 +81,19 @@ type Manager interface {
 	// Get the report for the given uuid.
 	//
 	//  Arguments:
-	//    uuid string           : uuid of the scan report
+	//    uuid string  : uuid of the scan report
 	//
 	//  Returns:
 	//    *scan.Report : scan report
 	//    error        : non nil error if any errors occurred
 	Get(uuid string) (*scan.Report, error)
+
+	// Delete the reports related with the specified digests (one or more...)
+	//
+	//  Arguments:
+	//    digests ...string : specify one or more digests whose reports will be deleted
+	//
+	//  Returns:
+	//    error        : non nil error if any errors occurred
+	DeleteByDigests(digests ...string) error
 }

@@ -57,12 +57,19 @@ func (suite *ScanImagePreprocessHandlerSuite) SetupSuite() {
 		Artifact:  a,
 	}
 
+	reports := []*scan.Report{
+		{
+			Report: "{}",
+		},
+	}
+
 	suite.c = sc.DefaultController
 	mc := &MockScanAPIController{}
 
 	var options []report.Option
 	s := make(map[string]interface{})
 	mc.On("GetSummary", a, []string{v1.MimeTypeNativeReport}, options).Return(s, nil)
+	mc.On("GetReport", a, []string{v1.MimeTypeNativeReport}).Return(reports, nil)
 
 	sc.DefaultController = mc
 
@@ -136,6 +143,16 @@ func (msc *MockScanAPIController) GetScanLog(uuid string) ([]byte, error) {
 
 func (msc *MockScanAPIController) HandleJobHooks(trackID string, change *job.StatusChange) error {
 	args := msc.Called(trackID, change)
+
+	return args.Error(0)
+}
+
+func (msc *MockScanAPIController) DeleteReports(digests ...string) error {
+	pl := make([]interface{}, 0)
+	for _, d := range digests {
+		pl = append(pl, d)
+	}
+	args := msc.Called(pl...)
 
 	return args.Error(0)
 }

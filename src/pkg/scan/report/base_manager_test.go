@@ -166,3 +166,25 @@ func (suite *TestManagerSuite) TestManagerUpdateReportData() {
 
 	assert.Equal(suite.T(), "{\"a\":1000}", l[0].Report)
 }
+
+// TestManagerDeleteByDigests ...
+func (suite *TestManagerSuite) TestManagerDeleteByDigests() {
+	// Mock new data
+	rp := &scan.Report{
+		Digest:           "d2000",
+		RegistrationUUID: "ruuid",
+		MimeType:         v1.MimeTypeNativeReport,
+		TrackID:          "tid002",
+	}
+
+	uuid, err := suite.m.Create(rp)
+	require.NoError(suite.T(), err)
+	require.NotEmpty(suite.T(), uuid)
+
+	err = suite.m.DeleteByDigests("d2000")
+	require.NoError(suite.T(), err)
+
+	r, err := suite.m.Get(uuid)
+	suite.NoError(err)
+	suite.Nil(r)
+}

@@ -37,20 +37,15 @@ type Registration struct {
 	URL         string `orm:"column(url);unique;size(512)" json:"url"`
 	Disabled    bool   `orm:"column(disabled);default(true)" json:"disabled"`
 	IsDefault   bool   `orm:"column(is_default);default(false)" json:"is_default"`
-	Health      bool   `orm:"-" json:"health"`
+	Health      bool   `orm:"-" json:"-"` // Reserved for future use
 
 	// Authentication settings
-	// "None","Basic" and "Bearer" can be supported
+	// "","Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key" can be supported
 	Auth             string `orm:"column(auth);size(16)" json:"auth"`
 	AccessCredential string `orm:"column(access_cred);null;size(512)" json:"access_credential,omitempty"`
 
 	// Http connection settings
 	SkipCertVerify bool `orm:"column(skip_cert_verify);default(false)" json:"skip_certVerify"`
-
-	// Extra info about the scanner
-	Scanner string `orm:"-" json:"scanner,omitempty"`
-	Vendor  string `orm:"-" json:"vendor,omitempty"`
-	Version string `orm:"-" json:"version,omitempty"`
 
 	// Timestamps
 	CreateTime time.Time `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`

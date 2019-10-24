@@ -25,11 +25,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/jobservice/logger"
-
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/rest/v1"
-
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common"
@@ -45,8 +40,11 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
+	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
+	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -260,6 +258,22 @@ func (ra *RepositoryAPI) Delete() {
 		tags = append(tags, tag)
 	}
 
+	// Retrieve the manifests of the tags first
+	// If tag not exist, mapping with empty digest
+	digests := make(map[string]string)
+	for _, t := range tags {
+		dig, exists, err := rc.ManifestExist(t)
+		if err != nil {
+			log.Errorf("Failed to check the digest of tag: %s:%s, error: %v", repoName, t, err.Error())
+			ra.SendInternalServerError(err)
+			return
+		}
+
+		if exists {
+			digests[t] = dig
+		}
+	}
+
 	if config.WithNotary() {
 		signedTags, err := getSignatures(ra.SecurityCtx.GetUsername(), repoName)
 		if err != nil {
@@ -269,14 +283,15 @@ func (ra *RepositoryAPI) Delete() {
 		}
 
 		for _, t := range tags {
-			digest, _, err := rc.ManifestExist(t)
-			if err != nil {
-				log.Errorf("Failed to Check the digest of tag: %s, error: %v", t, err.Error())
-				ra.SendInternalServerError(err)
-				return
+			dig, exists := digests[t]
+			if !exists {
+				log.Errorf("No digest found for image: %s:%s, ignore the following signature check", repoName, t)
+				continue
 			}
-			log.Debugf("Tag: %s, digest: %s", t, digest)
-			if _, ok := signedTags[digest]; ok {
+
+			log.Debugf("Tag: %s, digest: %s", t, digests[t])
+
+			if _, ok := signedTags[dig]; ok {
 				log.Errorf("Found signed tag, repository: %s, tag: %s, deletion will be canceled", repoName, t)
 				ra.SendPreconditionFailedError(fmt.Errorf("tag %s is signed", t))
 				return
@@ -285,21 +300,28 @@ func (ra *RepositoryAPI) Delete() {
 	}
 
 	for _, t := range tags {
-		if err = rc.DeleteTag(t); err != nil {
-			if regErr, ok := err.(*commonhttp.Error); ok {
-				if regErr.Code == http.StatusNotFound {
-					continue
-				}
-			}
-			ra.ParseAndHandleError(fmt.Sprintf("failed to delete tag %s", t), err)
-			return
-		}
-		log.Infof("delete tag: %s:%s", repoName, t)
 		image := fmt.Sprintf("%s:%s", repoName, t)
 		if err = dao.DeleteLabelsOfResource(common.ResourceTypeImage, image); err != nil {
 			ra.SendInternalServerError(fmt.Errorf("failed to delete labels of image %s: %v", image, err))
 			return
 		}
+
+		if len(digests[t]) == 0 {
+			log.Errorf("No digest found for image: %s:%s, ignore the following deletion", repoName, t)
+			continue
+		}
+
+		if err = rc.DeleteManifest(digests[t]); err != nil {
+			if regErr, ok := err.(*commonhttp.Error); ok {
+				if regErr.Code == http.StatusNotFound {
+					continue
+				}
+			}
+
+			ra.ParseAndHandleError(fmt.Sprintf("failed to delete tag %s", t), err)
+			return
+		}
+		log.Infof("delete tag: %s:%s", repoName, t)
 
 		go func(tag string) {
 			e := &event.Event{
@@ -339,6 +361,7 @@ func (ra *RepositoryAPI) Delete() {
 	imgDelMetadata := &notifierEvt.ImageDelMetaData{
 		Project:  project,
 		Tags:     tags,
+		Digests:  digests,
 		RepoName: repoName,
 		OccurAt:  time.Now(),
 		Operator: ra.SecurityCtx.GetUsername(),
@@ -956,7 +979,7 @@ func (ra *RepositoryAPI) Put() {
 	}
 
 	if !ra.SecurityCtx.IsAuthenticated() {
-		ra.SendUnAuthorizedError(errors.New("Unauthorized"))
+		ra.SendUnAuthorizedError(errors.New("unauthorized"))
 		return
 	}
 
