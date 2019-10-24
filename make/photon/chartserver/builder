@@ -4,7 +4,7 @@ set +e
 
 usage(){
   echo "Usage: builder <golang image:version> <code path> <code release tag> <main.go path> <binary name>"
-  echo "e.g: builder golang:1.11.2 github.com/helm/chartmuseum v0.9.0 cmd/chartmuseum chartm"
+  echo "e.g: builder golang:1.12.12 github.com/helm/chartmuseum v0.9.0 cmd/chartmuseum chartm"
   exit 1
 }
 
@@ -21,13 +21,9 @@ BIN_NAME="$5"
 set -e
 
 cd `dirname $0`
-cur=$PWD
 
 mkdir -p binary
 rm -rf binary/$BIN_NAME || true
 cp compile.sh binary/
 
-docker run -it --rm -v $cur/binary:/go/bin --name golang_code_builder $GOLANG_IMAGE /bin/bash /go/bin/compile.sh $GIT_PATH $CODE_VERSION $MAIN_GO_PATH $BIN_NAME
-
-#Clear
-docker rm -f golang_code_builder
+docker run -it --rm -v $PWD/binary:/go/bin --name chartserver_builder $GOLANG_IMAGE /bin/bash /go/bin/compile.sh $GIT_PATH $CODE_VERSION $MAIN_GO_PATH $BIN_NAME
