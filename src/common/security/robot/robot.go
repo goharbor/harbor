@@ -53,7 +53,6 @@ func filterPolicies(namespace rbac.Namespace, policies []*rbac.Policy) []*rbac.P
 			results = append(results, policy)
 		}
 	}
-
 	return results
 }
 
@@ -63,7 +62,7 @@ func getAllPolicies(namespace rbac.Namespace) map[string]bool {
 	for _, policy := range project.GetAllPolicies(namespace) {
 		mp[policy.String()] = true
 	}
-	scannerPull := &rbac.Policy{Resource: rbac.ResourceRepository, Action: rbac.ActionScannerPull}
+	scannerPull := &rbac.Policy{Resource: namespace.Resource(rbac.ResourceRepository), Action: rbac.ActionScannerPull}
 	mp[scannerPull.String()] = true
 	return mp
 }

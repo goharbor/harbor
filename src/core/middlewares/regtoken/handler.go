@@ -27,7 +27,12 @@ func New(next http.Handler) http.Handler {
 
 // ServeHTTP ...
 func (r *regTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	img, _ := util.ImageInfoFromContext(req.Context())
+	imgRaw := req.Context().Value(util.ImageInfoCtxKey)
+	if imgRaw == nil {
+		r.next.ServeHTTP(rw, req)
+		return
+	}
+	img, _ := req.Context().Value(util.ImageInfoCtxKey).(util.ImageInfo)
 	if img.Digest == "" {
 		r.next.ServeHTTP(rw, req)
 		return
@@ -59,7 +64,7 @@ func (r *regTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 	accessSet := regTK.Claims.(*registry.Claim).GetAccess()
 	for _, access := range accessItems {
 		if accessSet.Contains(access) {
-			*req = *(req.WithContext(util.NewBypassPolicyCheckContext(req.Context(), true)))
+			*req = *(req.WithContext(util.NewScannerPullContext(req.Context(), true)))
 		}
 	}
 	r.next.ServeHTTP(rw, req)

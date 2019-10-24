@@ -49,7 +49,7 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 		cth.next.ServeHTTP(rw, req)
 		return
 	}
-	if bypass, ok := util.BypassPolicyCheckFromContext(req.Context()); ok && bypass {
+	if scannerPull, ok := util.ScannerPullFromContext(req.Context()); ok && scannerPull {
 		cth.next.ServeHTTP(rw, req)
 		return
 	}

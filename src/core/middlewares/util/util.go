@@ -49,8 +49,8 @@ type contextKey string
 const (
 	// ImageInfoCtxKey the context key for image information
 	ImageInfoCtxKey = contextKey("ImageInfo")
-	// ByPassPolicyCheckCtxKey the context key for robot account to bypass the pull policy check.
-	ByPassPolicyCheckCtxKey = contextKey("ByPassPolicyCheck")
+	// ScannerPullCtxKey the context key for robot account to bypass the pull policy check.
+	ScannerPullCtxKey = contextKey("ScannerPullCheck")
 	// TokenUsername ...
 	// TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	TokenUsername = "harbor-core"
@@ -445,14 +445,14 @@ func ManifestInfoFromContext(ctx context.Context) (*ManifestInfo, bool) {
 	return info, ok
 }
 
-// NewBypassPolicyCheckContext returns context with policy check info
-func NewBypassPolicyCheckContext(ctx context.Context, bypass bool) context.Context {
-	return context.WithValue(ctx, ByPassPolicyCheckCtxKey, bypass)
+// NewScannerPullContext returns context with policy check info
+func NewScannerPullContext(ctx context.Context, scannerPull bool) context.Context {
+	return context.WithValue(ctx, ScannerPullCtxKey, scannerPull)
 }
 
-// BypassPolicyCheckFromContext returns whether to bypass policy check
-func BypassPolicyCheckFromContext(ctx context.Context) (bool, bool) {
-	info, ok := ctx.Value(ByPassPolicyCheckCtxKey).(bool)
+// ScannerPullFromContext returns whether to bypass policy check
+func ScannerPullFromContext(ctx context.Context) (bool, bool) {
+	info, ok := ctx.Value(ScannerPullCtxKey).(bool)
 	return info, ok
 }
 
