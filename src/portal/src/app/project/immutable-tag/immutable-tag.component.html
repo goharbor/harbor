@@ -1,6 +1,6 @@
 <div class="clr-row pt-1 fw8">
     <div class="clr-col">
-        <label class="label-left font-size-54">{{'TAG_RETENTION.RETENTION_RULES' | translate}}</label><span class="badge badge-3 ml-5">{{rules?.length ? rules?.length : 0}}/15</span>
+        <label class="label-left font-size-54">{{'IMMUTABLE_TAG.IMMUTABLE_RULES' | translate}}</label><span class="badge badge-3 ml-5">{{rules?.length ? rules?.length : 0}}/15</span>
         <span *ngIf="loadingRule" class="spinner spinner-inline ml-2">Loading...</span>
     </div>
 </div>
@@ -12,14 +12,14 @@
                     <div class="clr-col-2 flex-150">
                         <div class="dropdown" [ngClass]="{open:ruleIndex===i}">
                             <button (click)="openEditor(i)" id="{{'action'+i}}" class="dropdown-toggle btn btn-link btn-sm">
-                                {{'TAG_RETENTION.ACTION' | translate}}
+                                {{'IMMUTABLE_TAG.ACTION' | translate}}
                                 <clr-icon shape="caret down"></clr-icon>
                             </button>
                             <div class="dropdown-menu">
-                                <button *ngIf="!rule?.disabled" type="button" id="{{'disable-btn'+i}}" class="dropdown-item" (click)="toggleDisable(rule,true)">{{'TAG_RETENTION.DISABLE' | translate}}</button>
-                                <button *ngIf="rule?.disabled" type="button" class="dropdown-item" (click)="toggleDisable(rule,false)">{{'TAG_RETENTION.ENABLE' | translate}}</button>
-                                <button type="button" id="{{'edit-btn'+i}}" class="dropdown-item" (click)="editRuleByIndex(i)">{{'TAG_RETENTION.EDIT' | translate}}</button>
-                                <button type="button" class="dropdown-item" id="{{'delete-btn'+i}}" (click)="deleteRule(rule.id)">{{'TAG_RETENTION.DELETE' | translate}}</button>
+                                <button *ngIf="!rule?.disabled" type="button" id="{{'disable-btn'+i}}" class="dropdown-item" (click)="toggleDisable(rule,true)">{{'IMMUTABLE_TAG.DISABLE' | translate}}</button>
+                                <button *ngIf="rule?.disabled" type="button" class="dropdown-item" (click)="toggleDisable(rule,false)">{{'IMMUTABLE_TAG.ENABLE' | translate}}</button>
+                                <button type="button" id="{{'edit-btn'+i}}" class="dropdown-item" (click)="editRuleByIndex(i)">{{'IMMUTABLE_TAG.EDIT' | translate}}</button>
+                                <button type="button" class="dropdown-item" id="{{'delete-btn'+i}}" (click)="deleteRule(rule.id)">{{'IMMUTABLE_TAG.DELETE' | translate}}</button>
                             </div>
                         </div>
                     </div>
@@ -29,16 +29,16 @@
                            <clr-icon id="{{'disable-icon'+i}}" *ngIf="rule?.disabled" class="color-red" shape="error-standard"></clr-icon>
                         </span>
                         <span class="rule-name ml-5">
-                            <span>{{'TAG_RETENTION.IN_REPOSITORIES' | translate}}</span>
+                            <span>{{'IMMUTABLE_TAG.IN_REPOSITORIES' | translate}}</span>
                         <span>{{getI18nKey(rule?.scope_selectors?.repository[0]?.decoration)|translate}}</span>
                         <span>{{formatPattern(rule?.scope_selectors?.repository[0]?.pattern)}}</span>
                         <span>,</span>
-                        <span>{{'TAG_RETENTION.LOWER_TAGS' | translate}}</span> 
+                        <span>{{'IMMUTABLE_TAG.LOWER_TAGS' | translate}}</span> 
                         <span>{{getI18nKey(rule?.tag_selectors[0]?.decoration)|translate}}</span>
                         <span id="{{'tag-selectors-patten'+i}}">{{formatPattern(rule?.tag_selectors[0]?.pattern)}}</span>
                         <ng-container *ngIf="rule?.tag_selectors[1]?.pattern && rule?.tag_selectors[1]?.pattern">
-                            <span class="color-97">{{'TAG_RETENTION.AND' | translate}}</span>
-                            <span>{{'TAG_RETENTION.LOWER_LABELS' | translate}}</span>
+                            <span class="color-97">{{'IMMUTABLE_TAG.AND' | translate}}</span>
+                            <span>{{'IMMUTABLE_TAG.LOWER_LABELS' | translate}}</span>
                             <span>{{getI18nKey(rule?.tag_selectors[1]?.decoration)|translate}}</span>
                             <span>{{rule?.tag_selectors[1]?.pattern}}</span>
                         </ng-container>
@@ -50,10 +50,10 @@
         <div class="v-center clr-row" [ngClass]="{'pt-1':rules?.length > 0}">
             <div class="clr-col-2 flex-150"></div>
             <div class="clr-col-2">
-                <button [disabled]="rules?.length >= 15" id="add-rule" class="btn btn-primary btn-sm" (click)="openAddRule()">{{'TAG_RETENTION.ADD_RULE' | translate}}</button>
+                <button [disabled]="rules?.length >= 15" id="add-rule" class="btn btn-primary btn-sm" (click)="openAddRule()">{{'IMMUTABLE_TAG.ADD_RULE' | translate}}</button>
             </div>
             <div class="clr-col-8 color-97 font-size-54">
-                {{'TAG_RETENTION.ADD_RULE_HELP_1' | translate}}
+                {{'IMMUTABLE_TAG.ADD_RULE_HELP_1' | translate}}
             </div>
         </div>
     </div>

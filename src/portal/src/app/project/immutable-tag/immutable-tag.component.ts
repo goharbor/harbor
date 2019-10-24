@@ -63,10 +63,11 @@ export class ImmutableTagComponent implements OnInit {
     this.ruleIndex = -1;
   }
   toggleDisable(rule, isActionDisable) {
-    rule.disabled = isActionDisable;
+    let cloneRule = clone(rule);
+    cloneRule.disabled = isActionDisable;
     this.ruleIndex = -1;
     this.loadingRule = true;
-    this.immutableTagService.updateRule(this.projectId, rule).subscribe(
+    this.immutableTagService.updateRule(this.projectId, cloneRule).subscribe(
       response => {
         this.getRules();
       }, error => {

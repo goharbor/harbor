@@ -1,13 +1,13 @@
 <clr-modal [(clrModalOpen)]="addRuleOpened" [clrModalStaticBackdrop]="true" [clrModalClosable]="true" [clrModalSize]="'lg'">
-    <h3 class="modal-title" *ngIf="isAdd">{{'TAG_RETENTION.ADD_TITLE' | translate}}</h3>
-    <h3 class="modal-title" *ngIf="!isAdd">{{'TAG_RETENTION.EDIT_TITLE' | translate}}</h3>
+    <h3 class="modal-title" *ngIf="isAdd">{{'IMMUTABLE_TAG.ADD_TITLE' | translate}}</h3>
+    <h3 class="modal-title" *ngIf="!isAdd">{{'IMMUTABLE_TAG.EDIT_TITLE' | translate}}</h3>
     <div class="modal-body no-scrolling">
         <inline-alert class="modal-title"></inline-alert>
-        <p class="color-97">{{'TAG_RETENTION.ADD_SUBTITLE' | translate}}</p>
+        <p class="color-97">{{'IMMUTABLE_TAG.ADD_SUBTITLE' | translate}}</p>
         <div class="height-72">
             <div class="clr-row mt-1">
                 <div class="clr-col-4">
-                    <span>{{'TAG_RETENTION.IN_REPOSITORIES' | translate}}</span>
+                    <span>{{'IMMUTABLE_TAG.IN_REPOSITORIES' | translate}}</span>
                 </div>
                 <div class="clr-col-3">
                     <div class="clr-select-wrapper w-100">
@@ -26,14 +26,14 @@
             <div class="clr-row">
                 <div class="clr-col-4"></div>
                 <div class="clr-col-8">
-                    <span>{{'TAG_RETENTION.REP_SEPARATOR' | translate}}</span>
+                    <span>{{'IMMUTABLE_TAG.REP_SEPARATOR' | translate}}</span>
                 </div>
             </div>
         </div>
         <div class="height-72">
             <div class="clr-row">
                 <div class="clr-col-4">
-                    <label>{{'TAG_RETENTION.TAGS' | translate}}</label>
+                    <label>{{'IMMUTABLE_TAG.TAGS' | translate}}</label>
                 </div>
                 <div class="clr-col-3">
                     <div class="clr-select-wrapper w-100">
@@ -52,7 +52,7 @@
             <div class="clr-row">
                 <div class="clr-col-4"></div>
                 <div class="clr-col-8">
-                    <span>{{'TAG_RETENTION.TAG_SEPARATOR' | translate}}</span>
+                    <span>{{'IMMUTABLE_TAG.TAG_SEPARATOR' | translate}}</span>
                 </div>
             </div>
         </div>

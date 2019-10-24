@@ -1,0 +1,15 @@
+.ml-5 {
+  margin-left: 5px;
+}
+.dropdown-toggle {
+  outline: none;
+}
+.backdrop-transparent {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  right: 0;
+  left: 0;
+  opacity: 0;
+  z-index: 999;
+}
