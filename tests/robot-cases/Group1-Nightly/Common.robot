@@ -499,7 +499,7 @@ Test Case - Project Storage Quotas Dispaly And Control
     ${storage_quota_unit}=  Set Variable  MB
     ${image_a}=  Set Variable  redis
     ${image_b}=  Set Variable  logstash
-    ${image_a_size}=    Set Variable    34.14MB
+    ${image_a_size}=    Set Variable    34.16MB
     ${image_b_size}=    Set Variable    321.03MB
     ${image_a_ver}=  Set Variable  5.0
     ${image_b_ver}=  Set Variable  6.8.3
@@ -508,7 +508,7 @@ Test Case - Project Storage Quotas Dispaly And Control
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_b}  tag=${image_b_ver}  tag1=${image_b_ver}
     ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
     Should Be Equal As Strings  ${storage_quota_ret}  ${image_b_size} of ${storage_quota}${storage_quota_unit}
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=Quota exceeded when processing the request of adding 25.8 MiB of storage resource, which when updated to current usage of 329.3 MiB will exceed the configured upper limit of 330.0 MiB
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=Quota exceeded when processing the request of adding 25.9 MiB of storage resource, which when updated to current usage of 329.3 MiB will exceed the configured upper limit of 330.0 MiB
     Go Into Project  project${d}
     Delete Repo  project${d}/${image_b}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}  tag=${image_a_ver}  tag1=${image_a_ver}
@@ -558,6 +558,65 @@ Test Case - Project Quotas Control Under GC
     Create An New Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
     Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=Quota exceeded when processing the request of adding 82.5 MiB of storage resource, which when updated to current usage of 166.6 MiB will exceed the configured upper limit of 200.0 MiB
     GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
-    Should Be Equal As Strings  ${storage_quota_ret}  0Byte of ${storage_quota}${storage_quota_unit}
+    @{param}  Create List  project${d}
+    Retry Keyword When Return Value Mismatch  Get Project Storage Quota Text From Project Quotas List  0Byte of ${storage_quota}${storage_quota_unit}  60  @{param}
+    Close Browser
+
+Test Case - Can Not Retag Image In ReadOnly Mode
+    Init Chrome Driver
+    ${random_num1}=   Get Current Date    result_format=%m%s
+    ${random_num2}=   Evaluate  str(random.randint(1000,9999))  modules=random
+
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${random_num1}
+    Create An New Project  project${random_num2}
+
+    Go Into Project  project${random_num1}  has_image=${false}
+    Sleep  1
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${random_num1}  redis  ${image_tag}
+    Sleep  1
+    Enable Read Only
+    Go Into Repo  project${random_num1}/redis
+    Retag Image  ${image_tag}  project${random_num2}  ${target_image_name}  ${target_tag_value}
+    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
+    Navigate To Projects
+    Go Into Project  project${random_num2}  has_image=${false}
+    Sleep  10
+    Go Into Project  project${random_num2}  has_image=${false}
+    Disable Read Only
+    Close Browser
+
+Test Case - Create New Webhook
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
+    Switch To Project Webhooks
+    Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d}
+    Close Browser
+
+Test Case - Update Webhook
+   Init Chrome Driver
+   ${d}=    Get Current Date    result_format=%m%s
+   Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+   Create An New Project  project${d}
+   Go Into Project  project${d}  has_image=${false}
+   Switch To Project Webhooks
+   Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d} 
+   Sleep  3
+   ${d1}=    Get Current Date
+   Update A Webhook  101.17.109.20  auth_header=auth_header${d1}
+   Close Browser
+
+Test Case - Toggle Enable/Disable State of Webhook
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
+    Switch To Project Webhooks
+    Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d}
+    Sleep  3
+    Toggle Enable/Disable State of Same Webhook
     Close Browser

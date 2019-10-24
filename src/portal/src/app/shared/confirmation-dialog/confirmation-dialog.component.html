@@ -24,11 +24,11 @@
        </ng-template>
        <ng-template [ngSwitchCase]="4">
             <button type="button" class="btn btn-outline" (click)="cancel()">{{'BUTTON.CANCEL' | translate}}</button>
-            <button type="button" class="btn btn-primary" (click)="confirm()">{{'BUTTON.ENABLE' | translate}}</button>
+            <button type="button" id="dialog-action-enable" class="btn btn-primary" (click)="confirm()">{{'BUTTON.ENABLE' | translate}}</button>
         </ng-template>
         <ng-template [ngSwitchCase]="5">
             <button type="button" class="btn btn-outline" (click)="cancel()">{{'BUTTON.CANCEL' | translate}}</button>
-            <button type="button" class="btn btn-danger" (click)="confirm()">{{'BUTTON.DISABLE' | translate}}</button>
+            <button type="button" id="dialog-action-disable" class="btn btn-danger" (click)="confirm()">{{'BUTTON.DISABLE' | translate}}</button>
         </ng-template>
         <ng-template [ngSwitchCase]="6">
             <button type="button" class="btn btn-outline"  (click)="cancel()" [hidden]="isDelete">{{'BUTTON.CANCEL' | translate}}</button>
