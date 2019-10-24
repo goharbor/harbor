@@ -54,6 +54,20 @@ data_volume: /data
 #   redirect:
 #     disabled: false
 
+# Uncomment middleware_service setting If you want to using a registry middleware
+# middleware_service:
+#   cloudfront:
+#     baseurl: https://my.cloudfronted.domain.com/
+#     privatekey: /path/to/pem
+#     keypairid: cloudfrontkeypairid
+#     duration: 3000s
+#     ipfilteredby: awsregion
+#     awsregion: us-east-1, use-east-2
+#     updatefrenquency: 12h
+#     iprangesurl: https://ip-ranges.amazonaws.com/ip-ranges.json
+#   redirect:
+#     baseurl: https://example.com/
+
 # Clair configuration
 clair:
   # The interval of clair updaters, the unit is hour, set to 0 to disable the updaters.

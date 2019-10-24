@@ -31,6 +31,12 @@ auth:
     realm: {{public_url}}/service/token
     rootcertbundle: /etc/registry/root.crt
     service: harbor-registry
+middleware:
+{% if middleware_storage_name %}
+  storage:
+    - name: {{ middleware_storage_name }}
+      options: {{ middleware_storage_config }}
+{% endif %}
 validation:
   disabled: true
 notifications:

@@ -18,17 +18,17 @@ In addition, the Harbor community created instructions describing how to deploy 
 
 The table below lists the components that are deployed when you deploy Harbor.
 
-|Component|Version|
-|---|---|
-|Postgresql|9.6.10-1.ph2|
-|Redis|4.0.10-1.ph2|
-|Clair|2.0.8|
-|Beego|1.9.0|
-|Chartmuseum|0.9.0|
-|Docker/distribution|2.7.1|
-|Docker/notary|0.6.1|
-|Helm|2.9.1|
-|Swagger-ui|3.22.1|
+| Component           | Version      |
+| ------------------- | ------------ |
+| Postgresql          | 9.6.10-1.ph2 |
+| Redis               | 4.0.10-1.ph2 |
+| Clair               | 2.0.8        |
+| Beego               | 1.9.0        |
+| Chartmuseum         | 0.9.0        |
+| Docker/distribution | 2.7.1        |
+| Docker/notary       | 0.6.1        |
+| Helm                | 2.9.1        |
+| Swagger-ui          | 3.22.1       |
 
 ## Deployment Prerequisites for the Target Host
 
@@ -38,31 +38,31 @@ Harbor is deployed as several Docker containers. You can therefore deploy it on 
 
 The following table lists the minimum and recommended hardware configurations for deploying Harbor.
 
-|Resource|Minimum|Recommended|
-|---|---|---|
-|CPU|2 CPU|4 CPU|
-|Mem|4 GB|8 GB|
-|Disk|40 GB|160 GB|
+| Resource | Minimum | Recommended |
+| -------- | ------- | ----------- |
+| CPU      | 2 CPU   | 4 CPU       |
+| Mem      | 4 GB    | 8 GB        |
+| Disk     | 40 GB   | 160 GB      |
 
 ### Software
 
 The following table lists the software versions that must be installed on the target host.
 
-|Software|Version|Description|
-|---|---|---|
-|Docker engine|version 17.06.0-ce+ or higher|For installation instructions, see [docker engine doc](https://docs.docker.com/engine/installation/)|
-|Docker Compose|version 1.18.0 or higher|For installation instructions, see [docker compose doc](https://docs.docker.com/compose/install/)|
-|Openssl|latest is preferred|Used to generate certificate and keys for Harbor|
+| Software       | Version                       | Description                                                                                          |
+| -------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Docker engine  | version 17.06.0-ce+ or higher | For installation instructions, see [docker engine doc](https://docs.docker.com/engine/installation/) |
+| Docker Compose | version 1.18.0 or higher      | For installation instructions, see [docker compose doc](https://docs.docker.com/compose/install/)    |
+| Openssl        | latest is preferred           | Used to generate certificate and keys for Harbor                                                     |
 
 ### Network ports
 
 Harbor requires that the following ports be open on the target host.
 
-|Port|Protocol|Description|
-|---|---|---|
-|443|HTTPS|Harbor portal and core API accept HTTPS requests on this port. You can change this port in the configuration file.|
-|4443|HTTPS|Connections to the Docker Content Trust service for Harbor. Only required if Notary is enabled. You can change this port in the configuration file.|
-|80|HTTP|Harbor portal and core API accept HTTP requests on this port. You can change this port in the configuration file.|
+| Port | Protocol | Description                                                                                                                                         |
+| ---- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 443  | HTTPS    | Harbor portal and core API accept HTTPS requests on this port. You can change this port in the configuration file.                                  |
+| 4443 | HTTPS    | Connections to the Docker Content Trust service for Harbor. Only required if Notary is enabled. You can change this port in the configuration file. |
+| 80   | HTTP     | Harbor portal and core API accept HTTP requests on this port. You can change this port in the configuration file.                                   |
 
 ## Installation Procedure
 
@@ -280,6 +280,16 @@ The following table lists the additional, optional parameters that you can set t
     <td valign="top"><code>redirect</code></td>
     <td valign="top">Set <code>disable</code> to <code>true</code> when you want to disable registry redirect</td>
   </tr>
+ <tr>
+    <td valign="top"><code>middleware_service</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">By default, Harbor do not use middleware services of registry, but you can optionally configure the `middleware_service` setting so that Harbor uses middleware service.</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">None</td>
+    <td valign="top">You can set <code>cloudfront</code> or <code>redirect</code>. For information about how to configure other middleware, see <a href="#middleware">Configuring a Middleware Services</a> below.</td>
+  </tr>
   <tr>
     <td valign="top"><code>external_database</code></td>
     <td valign="top">&nbsp;</td>
@@ -405,6 +415,19 @@ storage_service:
     disable: false
 ```
 
+<a id="middleware"></a>
+### Configuring a Middleware Service
+
+By default, Harbor do not use middleware services of registry, but you can optionally configure the `middleware_service` setting so that Harbor uses middleware service. For information about how to configure the middleware service of a registry, see the [Middleware Configuration Reference](https://docs.docker.com/registry/configuration/#middleware).  For example, you may consider used a more efficient delivery like Cloudfront, Redirect ( proxy cache for the layer ).
+
+``` yaml
+middleware_service:
+  cloudfront:
+      baseurl: http://d111111abcdef8.cloudfront.net
+      privatekey: /path/to/asecret.pem
+      keypairid: asecret
+      duration: 60s
+```
 
 ## Installating and starting Harbor
 
