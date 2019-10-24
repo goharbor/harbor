@@ -15,6 +15,7 @@
 package policy
 
 import (
+	"github.com/goharbor/harbor/src/common/dao"
 	"testing"
 	"time"
 
@@ -66,6 +67,7 @@ func TestBuilder(t *testing.T) {
 
 // SetupSuite prepares the testing content if needed
 func (suite *TestBuilderSuite) SetupSuite() {
+	dao.PrepareTestForPostgresSQL()
 	suite.all = []*art.Candidate{
 		{
 			NamespaceID: 1,
