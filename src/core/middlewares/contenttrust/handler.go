@@ -49,6 +49,10 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 		cth.next.ServeHTTP(rw, req)
 		return
 	}
+	if scannerPull, ok := util.ScannerPullFromContext(req.Context()); ok && scannerPull {
+		cth.next.ServeHTTP(rw, req)
+		return
+	}
 	if !util.GetPolicyChecker().ContentTrustEnabled(img.ProjectName) {
 		cth.next.ServeHTTP(rw, req)
 		return

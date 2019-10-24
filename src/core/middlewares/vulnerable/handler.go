@@ -52,6 +52,11 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		return
 	}
 
+	if scannerPull, ok := util.ScannerPullFromContext(req.Context()); ok && scannerPull {
+		vh.next.ServeHTTP(rw, req)
+		return
+	}
+
 	// Is vulnerable policy set?
 	projectVulnerableEnabled, projectVulnerableSeverity, wl := util.GetPolicyChecker().VulnerablePolicy(img.ProjectName)
 	if !projectVulnerableEnabled {
@@ -109,10 +114,10 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		return
 	}
 
-	// Print bypass CVE list
+	// Print scannerPull CVE list
 	if len(summary.CVEBypassed) > 0 {
 		for _, cve := range summary.CVEBypassed {
-			log.Infof("Vulnerable policy check: bypass CVE %s", cve)
+			log.Infof("Vulnerable policy check: scannerPull CVE %s", cve)
 		}
 	}
 
