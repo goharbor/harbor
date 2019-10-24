@@ -44,3 +44,8 @@ func (r *ReplicationAdapterAPI) List() {
 	types = append(types, adapter.ListRegisteredAdapterTypes()...)
 	r.WriteJSONData(types)
 }
+
+// ListAdapterInfos the replication adapter infos
+func (r *ReplicationAdapterAPI) ListAdapterInfos() {
+	r.WriteJSONData(adapter.ListAdapterInfos())
+}

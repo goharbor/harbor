@@ -21,7 +21,7 @@ func getAdapter(t *testing.T) adp.Adapter {
 	assert.Nil(err)
 	assert.NotNil(factory)
 
-	adapter, err := factory(&model.Registry{
+	adapter, err := newAdapter(&model.Registry{
 		Type: model.RegistryTypeDockerHub,
 		URL:  baseURL,
 		Credential: &model.Credential{

@@ -22,8 +22,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func fakedFactory(*model.Registry) (Adapter, error) {
+type fakedFactory struct {
+}
+
+func (fakedFactory) Create(*model.Registry) (Adapter, error) {
 	return nil, nil
+}
+
+func (fakedFactory) AdapterPattern() *model.AdapterPattern {
+	return nil
 }
 
 func TestRegisterFactory(t *testing.T) {
@@ -32,14 +39,14 @@ func TestRegisterFactory(t *testing.T) {
 	// empty factory
 	assert.NotNil(t, RegisterFactory("harbor", nil))
 	// pass
-	assert.Nil(t, RegisterFactory("harbor", fakedFactory))
+	assert.Nil(t, RegisterFactory("harbor", new(fakedFactory)))
 	// already exists
-	assert.NotNil(t, RegisterFactory("harbor", fakedFactory))
+	assert.NotNil(t, RegisterFactory("harbor", new(fakedFactory)))
 }
 
 func TestGetFactory(t *testing.T) {
 	registry = map[model.RegistryType]Factory{}
-	require.Nil(t, RegisterFactory("harbor", fakedFactory))
+	require.Nil(t, RegisterFactory("harbor", new(fakedFactory)))
 	// doesn't exist
 	_, err := GetFactory("gcr")
 	assert.NotNil(t, err)
@@ -55,7 +62,7 @@ func TestListRegisteredAdapterTypes(t *testing.T) {
 	assert.Equal(t, 0, len(types))
 
 	// register one factory
-	require.Nil(t, RegisterFactory("harbor", fakedFactory))
+	require.Nil(t, RegisterFactory("harbor", new(fakedFactory)))
 
 	types = ListRegisteredAdapterTypes()
 	require.Equal(t, 1, len(types))

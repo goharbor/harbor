@@ -26,9 +26,7 @@ type adapter struct {
 }
 
 func init() {
-	err := adp.RegisterFactory(model.RegistryTypeQuayio, func(registry *model.Registry) (adp.Adapter, error) {
-		return newAdapter(registry)
-	})
+	err := adp.RegisterFactory(model.RegistryTypeQuayio, new(factory))
 	if err != nil {
 		log.Errorf("failed to register factory for Quay.io: %v", err)
 		return
@@ -66,6 +64,19 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 			modifiers...,
 		),
 	}, nil
+}
+
+type factory struct {
+}
+
+// Create ...
+func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	return newAdapter(r)
+}
+
+// AdapterPattern ...
+func (f *factory) AdapterPattern() *model.AdapterPattern {
+	return nil
 }
 
 // Info returns information of the registry

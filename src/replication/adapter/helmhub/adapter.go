@@ -22,13 +22,24 @@ import (
 )
 
 func init() {
-	if err := adp.RegisterFactory(model.RegistryTypeHelmHub, func(registry *model.Registry) (adp.Adapter, error) {
-		return newAdapter(registry)
-	}); err != nil {
+	if err := adp.RegisterFactory(model.RegistryTypeHelmHub, new(factory)); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeHelmHub, err)
 		return
 	}
 	log.Infof("the factory for adapter %s registered", model.RegistryTypeHelmHub)
+}
+
+type factory struct {
+}
+
+// Create ...
+func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	return newAdapter(r)
+}
+
+// AdapterPattern ...
+func (f *factory) AdapterPattern() *model.AdapterPattern {
+	return nil
 }
 
 type adapter struct {

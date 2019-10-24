@@ -22,12 +22,25 @@ import (
 )
 
 func init() {
-	err := adp.RegisterFactory(model.RegistryTypeJfrogArtifactory, AdapterFactory)
+	err := adp.RegisterFactory(model.RegistryTypeJfrogArtifactory, new(factory))
 	if err != nil {
 		log.Errorf("failed to register factory for jfrog artifactory: %v", err)
 		return
 	}
 	log.Infof("the factory of jfrog artifactory adapter was registered")
+}
+
+type factory struct {
+}
+
+// Create ...
+func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	return newAdapter(r)
+}
+
+// AdapterPattern ...
+func (f *factory) AdapterPattern() *model.AdapterPattern {
+	return nil
 }
 
 // Adapter is for images replications between harbor and jfrog artifactory image repository
@@ -64,8 +77,7 @@ func (a *adapter) Info() (info *model.RegistryInfo, err error) {
 	return
 }
 
-// AdapterFactory is the factory for jfrog artifactory adapter
-func AdapterFactory(registry *model.Registry) (adp.Adapter, error) {
+func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 	dockerRegistryAdapter, err := native.NewAdapter(registry)
 	if err != nil {
 		return nil, err

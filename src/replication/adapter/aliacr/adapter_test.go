@@ -26,7 +26,7 @@ func TestAdapter_NewAdapter(t *testing.T) {
 	assert.NotNil(t, factory)
 
 	// test case for URL is registry.
-	adapter, err := factory(&model.Registry{
+	adapter, err := newAdapter(&model.Registry{
 		Type: model.RegistryTypeAliAcr,
 		Credential: &model.Credential{
 			AccessKey:    "MockAccessKey",
@@ -38,7 +38,7 @@ func TestAdapter_NewAdapter(t *testing.T) {
 	assert.NotNil(t, adapter)
 
 	// test case for URL is cr service.
-	adapter, err = factory(&model.Registry{
+	adapter, err = newAdapter(&model.Registry{
 		Type: model.RegistryTypeAliAcr,
 		Credential: &model.Credential{
 			AccessKey:    "MockAccessKey",

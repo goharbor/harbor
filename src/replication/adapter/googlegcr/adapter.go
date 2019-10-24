@@ -22,9 +22,7 @@ import (
 )
 
 func init() {
-	if err := adp.RegisterFactory(model.RegistryTypeGoogleGcr, func(registry *model.Registry) (adp.Adapter, error) {
-		return newAdapter(registry)
-	}); err != nil {
+	if err := adp.RegisterFactory(model.RegistryTypeGoogleGcr, new(factory)); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeGoogleGcr, err)
 		return
 	}
@@ -41,6 +39,19 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		registry: registry,
 		Adapter:  dockerRegistryAdapter,
 	}, nil
+}
+
+type factory struct {
+}
+
+// Create ...
+func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	return newAdapter(r)
+}
+
+// AdapterPattern ...
+func (f *factory) AdapterPattern() *model.AdapterPattern {
+	return getAdapterInfo()
 }
 
 type adapter struct {
@@ -71,6 +82,39 @@ func (adapter) Info() (info *model.RegistryInfo, err error) {
 			model.TriggerTypeScheduled,
 		},
 	}, nil
+}
+
+func getAdapterInfo() *model.AdapterPattern {
+	info := &model.AdapterPattern{
+		EndpointPattern: &model.EndpointPattern{
+			EndpointType: model.EndpointPatternTypeList,
+			Endpoints: []*model.Endpoint{
+				{
+					Key:   "gcr.io",
+					Value: "https://gcr.io",
+				},
+				{
+					Key:   "us.gcr.io",
+					Value: "https://us.gcr.io",
+				},
+				{
+					Key:   "eu.gcr.io",
+					Value: "https://eu.gcr.io",
+				},
+				{
+					Key:   "asia.gcr.io",
+					Value: "https://asia.gcr.io",
+				},
+			},
+		},
+		CredentialPattern: &model.CredentialPattern{
+			AccessKeyType:    model.AccessKeyTypeFix,
+			AccessKeyData:    "_json_key",
+			AccessSecretType: model.AccessSecretTypeFile,
+			AccessSecretData: "No Change",
+		},
+	}
+	return info
 }
 
 // HealthCheck checks health status of a registry

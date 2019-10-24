@@ -195,7 +195,7 @@ func CheckHealthStatus(r *model.Registry) (model.HealthStatus, error) {
 		return model.Unknown, fmt.Errorf("get adaper for type '%s' error: %v", r.Type, err)
 	}
 
-	rAdapter, err := factory(r)
+	rAdapter, err := factory.Create(r)
 	if err != nil {
 		return model.Unknown, fmt.Errorf("generate '%s' type adapter form factory error: %v", r.Type, err)
 	}

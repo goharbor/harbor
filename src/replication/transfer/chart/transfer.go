@@ -106,7 +106,7 @@ func createRegistry(reg *model.Registry) (adapter.ChartRegistry, error) {
 	if err != nil {
 		return nil, err
 	}
-	ad, err := factory(reg)
+	ad, err := factory.Create(reg)
 	if err != nil {
 		return nil, err
 	}
