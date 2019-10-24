@@ -35,6 +35,8 @@ Resource  Harbor-Pages/Project.robot
 Resource  Harbor-Pages/Project_Elements.robot
 Resource  Harbor-Pages/Project-Members.robot
 Resource  Harbor-Pages/Project-Members_Elements.robot
+Resource  Harbor-Pages/Project-Webhooks.robot
+Resource  Harbor-Pages/Project-Webhooks_Elements.robot
 Resource  Harbor-Pages/Project-Repository.robot
 Resource  Harbor-Pages/Project-Repository_Elements.robot
 Resource  Harbor-Pages/Project-Config.robot
