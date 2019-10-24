@@ -1,4 +1,4 @@
-package robot
+package token
 
 import (
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -15,7 +15,7 @@ func TestValid(t *testing.T) {
 	policies := []*rbac.Policy{}
 	policies = append(policies, rbacPolicy)
 
-	rClaims := &Claim{
+	rClaims := &RobotClaims{
 		TokenID:   1,
 		ProjectID: 2,
 		Access:    policies,
@@ -32,7 +32,7 @@ func TestUnValidTokenID(t *testing.T) {
 	policies := []*rbac.Policy{}
 	policies = append(policies, rbacPolicy)
 
-	rClaims := &Claim{
+	rClaims := &RobotClaims{
 		TokenID:   -1,
 		ProjectID: 2,
 		Access:    policies,
@@ -49,7 +49,7 @@ func TestUnValidProjectID(t *testing.T) {
 	policies := []*rbac.Policy{}
 	policies = append(policies, rbacPolicy)
 
-	rClaims := &Claim{
+	rClaims := &RobotClaims{
 		TokenID:   1,
 		ProjectID: -2,
 		Access:    policies,
@@ -59,7 +59,7 @@ func TestUnValidProjectID(t *testing.T) {
 
 func TestUnValidPolicy(t *testing.T) {
 
-	rClaims := &Claim{
+	rClaims := &RobotClaims{
 		TokenID:   1,
 		ProjectID: 2,
 		Access:    nil,

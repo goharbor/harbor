@@ -11,9 +11,9 @@ import (
 )
 
 const (
-	defaultTTL          = 60 * time.Minute
-	defaultIssuer       = "harbor-token-defaultIssuer"
-	defaultSignedMethod = "RS256"
+	ttl          = 60 * time.Minute
+	issuer       = "harbor-token-issuer"
+	signedMethod = "RS256"
 )
 
 // Options ...
@@ -23,6 +23,23 @@ type Options struct {
 	PrivateKey []byte
 	TTL        time.Duration
 	Issuer     string
+}
+
+// DefaultOptions ...
+func DefaultOptions() *Options {
+	privateKeyFile := config.TokenPrivateKeyPath()
+	privateKey, err := ioutil.ReadFile(privateKeyFile)
+	if err != nil {
+		log.Errorf(fmt.Sprintf("failed to read private key %v", err))
+		return nil
+	}
+	opt := &Options{
+		SignMethod: jwt.GetSigningMethod(signedMethod),
+		PrivateKey: privateKey,
+		Issuer:     issuer,
+		TTL:        ttl,
+	}
+	return opt
 }
 
 // GetKey ...
@@ -58,21 +75,4 @@ func (o *Options) GetKey() (interface{}, error) {
 	default:
 		return nil, fmt.Errorf(fmt.Sprintf("unsupported sign method, %s", o.SignMethod))
 	}
-}
-
-// DefaultTokenOptions ...
-func DefaultTokenOptions() *Options {
-	privateKeyFile := config.TokenPrivateKeyPath()
-	privateKey, err := ioutil.ReadFile(privateKeyFile)
-	if err != nil {
-		log.Errorf(fmt.Sprintf("failed to read private key %v", err))
-		return nil
-	}
-	opt := &Options{
-		SignMethod: jwt.GetSigningMethod(defaultSignedMethod),
-		PrivateKey: privateKey,
-		Issuer:     defaultIssuer,
-		TTL:        defaultTTL,
-	}
-	return opt
 }

@@ -208,7 +208,7 @@ func RefreshToken(ctx context.Context, token *Token) (*Token, error) {
 	return &Token{Token: *t, IDToken: it}, nil
 }
 
-// GroupsFromToken returns the list of group name in the token, the claims of the group list is set in OIDCSetting.
+// GroupsFromToken returns the list of group name in the token, the claim of the group list is set in OIDCSetting.
 // It's designed not to return errors, in case of unexpected situation it will log and return empty list.
 func GroupsFromToken(token *gooidc.IDToken) []string {
 	if token == nil {
@@ -217,7 +217,7 @@ func GroupsFromToken(token *gooidc.IDToken) []string {
 	}
 	setting := provider.setting.Load().(models.OIDCSetting)
 	if len(setting.GroupsClaim) == 0 {
-		log.Warning("Group claims is not set in OIDC setting returning empty group list.")
+		log.Warning("Group claim is not set in OIDC setting returning empty group list.")
 		return []string{}
 	}
 	var c map[string]interface{}
@@ -233,7 +233,7 @@ func groupsFromClaim(claimMap map[string]interface{}, k string) []string {
 	var res []string
 	g, ok := claimMap[k].([]interface{})
 	if !ok {
-		log.Warningf("Unable to get groups from claims, claims: %+v, groups claims key: %s", claimMap, k)
+		log.Warningf("Unable to get groups from claims, claims: %+v, groups claim key: %s", claimMap, k)
 		return res
 	}
 	for _, e := range g {

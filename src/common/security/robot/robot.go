@@ -47,22 +47,16 @@ func filterPolicies(namespace rbac.Namespace, policies []*rbac.Policy) []*rbac.P
 		return results
 	}
 
-	mp := getAllPolicies(namespace)
+	mp := map[string]bool{}
+	for _, policy := range project.GetAllPolicies(namespace) {
+		mp[policy.String()] = true
+	}
+
 	for _, policy := range policies {
 		if mp[policy.String()] {
 			results = append(results, policy)
 		}
 	}
-	return results
-}
 
-// getAllPolicies gets all of supported policies supported in project and external policies supported for robot account
-func getAllPolicies(namespace rbac.Namespace) map[string]bool {
-	mp := map[string]bool{}
-	for _, policy := range project.GetAllPolicies(namespace) {
-		mp[policy.String()] = true
-	}
-	scannerPull := &rbac.Policy{Resource: namespace.Resource(rbac.ResourceRepository), Action: rbac.ActionScannerPull}
-	mp[scannerPull.String()] = true
-	return mp
+	return results
 }

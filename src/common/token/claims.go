@@ -1,4 +1,4 @@
-package robot
+package token
 
 import (
 	"errors"
@@ -6,8 +6,8 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 )
 
-// Claim implements the interface of jwt.Claims
-type Claim struct {
+// RobotClaims implements the interface of jwt.Claims
+type RobotClaims struct {
 	jwt.StandardClaims
 	TokenID   int64          `json:"id"`
 	ProjectID int64          `json:"pid"`
@@ -15,7 +15,7 @@ type Claim struct {
 }
 
 // Valid valid the claims "tokenID, projectID and access".
-func (rc Claim) Valid() error {
+func (rc RobotClaims) Valid() error {
 	if rc.TokenID < 0 {
 		return errors.New("Token id must an valid INT")
 	}

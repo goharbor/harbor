@@ -177,8 +177,6 @@ func (rep repositoryFilter) filter(ctx security.Context, pm promgr.ProjectManage
 		permission = "RWM"
 	} else if ctx.Can(rbac.ActionPush, resource) {
 		permission = "RW"
-	} else if ctx.Can(rbac.ActionScannerPull, resource) {
-		permission = "RS"
 	} else if ctx.Can(rbac.ActionPull, resource) {
 		permission = "R"
 	}

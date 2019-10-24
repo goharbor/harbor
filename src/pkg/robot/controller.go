@@ -2,14 +2,12 @@ package robot
 
 import (
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/token"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
-	"github.com/goharbor/harbor/src/pkg/token"
-	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
 	"github.com/pkg/errors"
 	"time"
 )
@@ -78,23 +76,13 @@ func (d *DefaultAPIController) CreateRobotAccount(robotReq *model.RobotCreate) (
 
 	// generate the token, and return it with response data.
 	// token is not stored in the database.
-	opt := token.DefaultTokenOptions()
-	rClaims := &robot_claim.Claim{
-		TokenID:   id,
-		ProjectID: robotReq.ProjectID,
-		Access:    robotReq.Access,
-		StandardClaims: jwt.StandardClaims{
-			IssuedAt:  time.Now().UTC().Unix(),
-			ExpiresAt: expiresAt,
-			Issuer:    opt.Issuer,
-		},
-	}
-	tk, err := token.New(opt, rClaims)
+	jwtToken, err := token.New(id, robotReq.ProjectID, expiresAt, robotReq.Access)
 	if err != nil {
 		deferDel = err
 		return nil, fmt.Errorf("failed to valid parameters to generate token for robot account, %v", err)
 	}
-	rawTk, err := tk.Raw()
+
+	rawTk, err := jwtToken.Raw()
 	if err != nil {
 		deferDel = err
 		return nil, fmt.Errorf("failed to sign token for robot account, %v", err)
