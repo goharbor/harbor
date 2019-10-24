@@ -227,6 +227,7 @@ func (suite *ScannerAPITestSuite) TestScannerAPIDelete() {
 		URL:         "https://a.b.c",
 	}
 
+	suite.mockC.On("GetRegistration", "uuid").Return(r, nil)
 	suite.mockC.On("DeleteRegistration", "uuid").Return(r, nil)
 
 	deleted := &scanner.Registration{}

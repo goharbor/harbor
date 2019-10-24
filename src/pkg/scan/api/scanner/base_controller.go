@@ -118,7 +118,11 @@ func (bc *basicController) UpdateRegistration(registration *scanner.Registration
 // SetDefaultRegistration ...
 func (bc *basicController) DeleteRegistration(registrationUUID string) (*scanner.Registration, error) {
 	registration, err := bc.manager.Get(registrationUUID)
-	if registration == nil && err == nil {
+	if err != nil {
+		return nil, errors.Wrap(err, "api controller: delete registration")
+	}
+
+	if registration == nil {
 		// Not found
 		return nil, nil
 	}
