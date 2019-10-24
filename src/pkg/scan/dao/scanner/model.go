@@ -47,6 +47,12 @@ type Registration struct {
 	// Http connection settings
 	SkipCertVerify bool `orm:"column(skip_cert_verify);default(false)" json:"skip_certVerify"`
 
+	// Indicate whether use internal registry addr for the scanner to pull content
+	UseInternalAddr bool `orm:"column(use_internal_addr);default(false)" json:"use_internal_addr"`
+
+	// Indicate if the registration is immutable which is not allowed to remove
+	Immutable bool `orm:"column(immutable);default(false)" json:"-"`
+
 	// Timestamps
 	CreateTime time.Time `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`
 	UpdateTime time.Time `orm:"column(update_time);auto_now;type(datetime)" json:"update_time"`
