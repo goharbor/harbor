@@ -329,4 +329,5 @@ func getChanges(e *scanner.Registration, eChange *scanner.Registration) {
 	e.AccessCredential = eChange.AccessCredential
 	e.Disabled = eChange.Disabled
 	e.SkipCertVerify = eChange.SkipCertVerify
+	e.UseInternalAddr = eChange.UseInternalAddr
 }
