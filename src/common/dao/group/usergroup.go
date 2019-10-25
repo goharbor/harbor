@@ -15,7 +15,6 @@
 package group
 
 import (
-	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils"
@@ -101,17 +100,13 @@ func GetUserGroup(id int) (*models.UserGroup, error) {
 // GetGroupIDByGroupName - Return the group ID by given group name. it is possible less group ID than the given group name if some group doesn't exist.
 func GetGroupIDByGroupName(groupName []string, groupType int) ([]int, error) {
 	var retGroupID []int
-	var conditions []string
 	if len(groupName) == 0 {
 		return retGroupID, nil
 	}
-	for _, gName := range groupName {
-		con := "'" + gName + "'"
-		conditions = append(conditions, con)
-	}
-	sql := fmt.Sprintf("select id from user_group where group_name in ( %s ) and group_type = %v", strings.Join(conditions, ","), groupType)
+	sql := fmt.Sprintf("select id from user_group where group_name in ( %s ) and group_type = ? ", dao.ParamPlaceholderForIn(len(groupName)))
+	log.Debugf("GetGroupIDByGroupName: statement sql is %v", sql)
 	o := dao.GetOrmer()
-	cnt, err := o.Raw(sql).QueryRows(&retGroupID)
+	cnt, err := o.Raw(sql, groupName, groupType).QueryRows(&retGroupID)
 	if err != nil {
 		return retGroupID, err
 	}
