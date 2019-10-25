@@ -57,7 +57,7 @@ func (pmf *pushmfInterceptor) HandleRequest(req *http.Request) (err error) {
 		return
 	}
 
-	return middlerware_err.NewErrImmutable(repoName)
+	return middlerware_err.NewErrImmutable(repoName, pmf.mf.Tag)
 }
 
 // HandleRequest ...

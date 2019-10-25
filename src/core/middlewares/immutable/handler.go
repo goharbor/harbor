@@ -60,7 +60,7 @@ func (rh *immutableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		log.Warningf("Error occurred when to handle request in immutable handler: %v", err)
 		if _, ok := err.(middlerware_err.ErrImmutable); ok {
 			http.Error(rw, util.MarshalError("DENIED",
-				fmt.Sprintf("The tag is immutable, cannot be overwrite: %v", err)), http.StatusPreconditionFailed)
+				fmt.Sprintf("%v", err)), http.StatusPreconditionFailed)
 			return
 		}
 		http.Error(rw, util.MarshalError("InternalError", fmt.Sprintf("Error occurred when to handle request in immutable handler: %v", err)),

@@ -36,7 +36,7 @@ type defaultRuleManager struct {
 
 func (drm *defaultRuleManager) CreateImmutableRule(ir *model.Metadata) (int64, error) {
 	daoRule := &dao_model.ImmutableRule{}
-	daoRule.Enabled = !ir.Disabled
+	daoRule.Disabled = ir.Disabled
 	daoRule.ProjectID = ir.ProjectID
 	data, _ := json.Marshal(ir)
 	daoRule.TagFilter = string(data)
@@ -46,6 +46,7 @@ func (drm *defaultRuleManager) CreateImmutableRule(ir *model.Metadata) (int64, e
 func (drm *defaultRuleManager) UpdateImmutableRule(projectID int64, ir *model.Metadata) (int64, error) {
 	daoRule := &dao_model.ImmutableRule{}
 	data, _ := json.Marshal(ir)
+	daoRule.ID = ir.ID
 	daoRule.TagFilter = string(data)
 	return drm.dao.UpdateImmutableRule(projectID, daoRule)
 }
@@ -63,6 +64,8 @@ func (drm *defaultRuleManager) GetImmutableRule(id int64) (*model.Metadata, erro
 	if err = json.Unmarshal([]byte(daoRule.TagFilter), rule); err != nil {
 		return nil, err
 	}
+	rule.ID = daoRule.ID
+	rule.Disabled = daoRule.Disabled
 	return rule, nil
 }
 
@@ -77,6 +80,8 @@ func (drm *defaultRuleManager) QueryImmutableRuleByProjectID(projectID int64) ([
 		if err = json.Unmarshal([]byte(daoRule.TagFilter), &rule); err != nil {
 			return nil, err
 		}
+		rule.ID = daoRule.ID
+		rule.Disabled = daoRule.Disabled
 		rules = append(rules, rule)
 	}
 	return rules, nil
@@ -93,6 +98,7 @@ func (drm *defaultRuleManager) QueryEnabledImmutableRuleByProjectID(projectID in
 		if err = json.Unmarshal([]byte(daoRule.TagFilter), &rule); err != nil {
 			return nil, err
 		}
+		rule.ID = daoRule.ID
 		rules = append(rules, rule)
 	}
 	return rules, nil

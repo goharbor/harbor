@@ -39,10 +39,10 @@ CREATE TABLE scan_report
 /** Add table for immutable tag  **/
 CREATE TABLE immutable_tag_rule
 (
-  id            SERIAL PRIMARY KEY NOT NULL,
-  project_id    int NOT NULL,
-  tag_filter   text,
-  enabled       boolean default true NOT NULL,
+  id SERIAL PRIMARY KEY NOT NULL,
+  project_id int NOT NULL,
+  tag_filter text,
+  disabled BOOLEAN NOT NULL DEFAULT FALSE,
   creation_time timestamp default CURRENT_TIMESTAMP
 );
 
