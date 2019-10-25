@@ -105,12 +105,10 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 			LdapGroupDN: groupDN,
 		}
 		userGroups, err := group.QueryUserGroup(userGroupQuery)
-		if err != nil {
+		if err != nil || len(userGroups) == 0 {
 			continue
 		}
-		if len(userGroups) == 0 {
-			continue
-		}
+
 		ugIDs = append(ugIDs, userGroups[0].ID)
 	}
 	u.GroupIDs = ugIDs
