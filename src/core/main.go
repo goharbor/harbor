@@ -219,11 +219,12 @@ func main() {
 
 		// TODO: change to be internal adapter
 		reg := &scanner.Registration{
-			Name:        "Clair",
-			Description: "The clair scanner adapter",
-			URL:         config.ClairAdapterEndpoint(),
-			Disabled:    false,
-			IsDefault:   true,
+			Name:            "Clair",
+			Description:     "The clair scanner adapter",
+			URL:             config.ClairAdapterEndpoint(),
+			IsDefault:       true,
+			UseInternalAddr: true,
+			Immutable:       true,
 		}
 
 		if err := scan.EnsureScanner(reg); err != nil {

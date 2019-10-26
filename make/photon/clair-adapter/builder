@@ -20,7 +20,7 @@ cur=$PWD
 
 # the temp folder to store distribution source code...
 TEMP=`mktemp -d ${TMPDIR-/tmp}/clair-adapter.XXXXXX`
-git clone https://github.com/danielpacak/harbor-scanner-clair.git $TEMP
+git clone https://github.com/goharbor/harbor-scanner-clair.git $TEMP
 cd $TEMP; git checkout $VERSION; cd -
 
 echo 'build the clair adapter binary bases on the golang:1.12.12'

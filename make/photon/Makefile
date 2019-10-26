@@ -146,9 +146,14 @@ _build_clair:
 	fi
 
 _build_clair_adapter:
-	# TODO: add support to fetch clair adapter binary from google storage ranther than build from source
 	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
-		cd $(DOCKERFILEPATH_CLAIR_ADAPTER) && $(DOCKERFILEPATH_CLAIR_ADAPTER)/builder $(CLAIRADAPTERVERSION) && cd - ; \
+		if [ "$(BUILDBIN)" != "true" ] ; then \
+			rm -rf $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary && mkdir -p $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary && \
+			$(call _extract_archive, https://github.com/goharbor/harbor-scanner-clair/releases/download/$(CLAIRADAPTERVERSION)/harbor-scanner-clair_$(CLAIRADAPTERVERSION:v%=%)_Linux_x86_64.tar.gz, $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary/) && \
+			mv $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary/scanner-clair $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary/harbor-scanner-clair; \
+		else \
+			cd $(DOCKERFILEPATH_CLAIR_ADAPTER) && $(DOCKERFILEPATH_CLAIR_ADAPTER)/builder $(CLAIRADAPTERVERSION) && cd - ; \
+		fi ; \
 		echo "building clair adapter container for photon..." ; \
 		$(DOCKERBUILD) -f $(DOCKERFILEPATH_CLAIR_ADAPTER)/$(DOCKERFILENAME_CLAIR_ADAPTER) -t $(DOCKERIMAGENAME_CLAIR_ADAPTER):$(CLAIRADAPTERVERSION)-$(VERSIONTAG) . ; \
 		rm -rf $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary; \
@@ -218,6 +223,10 @@ _build_migrator:
 		cd $(DOCKERFILEPATH_MIGRATOR) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_MIGRATOR)/$(DOCKERFILENAME_MIGRATOR) -t $(DOCKERIMAGENAME_MIGRATOR):$(MIGRATORVERSION) . ; \
 		echo "Done."; \
 	fi
+
+define _extract_archive
+	$(WGET) --timeout 30 --no-check-certificate -O- $1 | tar xvz -C $2
+endef
 
 define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2

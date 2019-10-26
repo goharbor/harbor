@@ -161,7 +161,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	resource := fmt.Sprintf("/project/%d/repository", suite.artifact.NamespaceID)
 	access := []*rbac.Policy{{
 		Resource: rbac.Resource(resource),
-		Action:   "pull",
+		Action:   rbac.ActionScannerPull,
 	}}
 
 	rname := "the-uuid-123"
