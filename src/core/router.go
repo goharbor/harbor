@@ -204,6 +204,7 @@ func initRouters() {
 	// Add routes for project level scanner
 	proScannerAPI := &api.ProjectScannerAPI{}
 	beego.Router("/api/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
+	beego.Router("/api/projects/:pid([0-9]+)/scanner/candidates", proScannerAPI, "get:GetProScannerCandidates")
 
 	// Add routes for scan
 	scanAPI := &api.ScanAPI{}

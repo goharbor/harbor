@@ -15,6 +15,7 @@
 package scanner
 
 import (
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/pkg/q"
@@ -26,6 +27,8 @@ import (
 
 const (
 	proScannerMetaKey = "projectScanner"
+	statusUnhealthy   = "unhealthy"
+	statusHealthy     = "healthy"
 )
 
 // DefaultController is a singleton api controller for plug scanners
@@ -212,6 +215,25 @@ func (bc *basicController) GetRegistrationByProject(projectID int64) (*scanner.R
 		if err != nil {
 			return nil, errors.Wrap(err, "api controller: get project scanner")
 		}
+	}
+
+	// No scanner configured
+	if registration == nil {
+		return nil, nil
+	}
+
+	// Get metadata of the configured registration
+	meta, err := bc.Ping(registration)
+	if err != nil {
+		// Not blocked, just logged it
+		log.Error(errors.Wrap(err, "api controller: get project scanner"))
+		registration.Health = statusUnhealthy
+	} else {
+		registration.Health = statusHealthy
+		// Fill in some metadata
+		registration.Adapter = meta.Scanner.Name
+		registration.Vendor = meta.Scanner.Vendor
+		registration.Version = meta.Scanner.Version
 	}
 
 	return registration, err

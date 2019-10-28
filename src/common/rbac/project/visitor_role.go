@@ -124,6 +124,9 @@ var (
 
 			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionCreate},
 		},
 
 		"master": {
@@ -211,6 +214,8 @@ var (
 
 			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 		},
 
 		"developer": {
@@ -266,6 +271,8 @@ var (
 
 			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 		},
 
 		"guest": {
@@ -306,6 +313,10 @@ var (
 
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 		},
 
 		"limitedGuest": {
@@ -330,6 +341,10 @@ var (
 			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 		},
 	}
 )
