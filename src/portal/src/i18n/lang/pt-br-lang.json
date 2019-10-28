@@ -945,7 +945,7 @@
             "SCANNING_TIME": "Tempo de conclusão da análise:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} de {{totalPackages}} {{package}} possuem {{vulnerability}}.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} de {{totalPackages}} {{package}} possuem {{vulnerability}}.",
-            "TOOLTIPS_TITLE_ZERO": "Nenhum pacote vulnerável reconhecido foi encontrado"
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
         },
         "SEVERITY": {
             "CRITICAL": "Crítico",
@@ -1251,7 +1251,7 @@
         "TOKEN": "Token",
         "TOKEN_REQUIRED": "Token is required",
         "API_KEY_REQUIRED": "APIKey is required",
-        "SKIP": "Skip Certificate Verification",
+        "SKIP": "Skip certificate verification",
         "ADD_SCANNER": "Add Scanner",
         "EDIT_SCANNER": "Edit Scanner",
         "TEST_CONNECTION": "TEST CONNECTION",
@@ -1289,7 +1289,11 @@
         "DELETE_SUCCESS": "Successfully deleted",
         "TOTAL": "Total",
         "FIXABLE": "Fixable",
-        "DURATION": "Duration:"
+        "DURATION": "Duration:",
+        "OPTIONS": "Options",
+        "USE_INNER": "Use internal registry address",
+        "USE_INNER_TIP": "If the option is checked, the scanner will be forced to use the internal registry address to access the related contents.",
+        "VULNERABILITY_SEVERITY": "Vulnerability severity:"
     }
 
 }

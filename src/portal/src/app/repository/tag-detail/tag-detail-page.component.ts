@@ -44,10 +44,6 @@ export class TagDetailPageComponent implements OnInit {
     return this.appConfigService.getConfig().with_admiral;
   }
 
-  get withClair(): boolean {
-    return this.appConfigService.getConfig().with_clair;
-  }
-
   goBack(tag: string): void {
     this.router.navigate(["harbor", "projects", this.projectId, "repositories", tag]);
   }

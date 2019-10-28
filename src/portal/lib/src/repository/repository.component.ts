@@ -74,11 +74,6 @@ export class RepositoryComponent implements OnInit {
   public get withNotary(): boolean {
     return this.systemInfo ? this.systemInfo.with_notary : false;
   }
-
-  public get withClair(): boolean {
-    return this.systemInfo ? this.systemInfo.with_clair : false;
-  }
-
   public get withAdmiral(): boolean {
     return this.systemInfo ? this.systemInfo.with_admiral : false;
   }

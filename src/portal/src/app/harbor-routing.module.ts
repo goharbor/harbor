@@ -302,8 +302,8 @@ const harborRoutes: Routes = [
             path: 'scanner',
             data: {
               permissionParam: {
-                resource: USERSTATICPERMISSION.CONFIGURATION.KEY,
-                action: USERSTATICPERMISSION.CONFIGURATION.VALUE.READ
+                resource: USERSTATICPERMISSION.SCANNER.KEY,
+                action: USERSTATICPERMISSION.SCANNER.VALUE.READ
               }
             },
             component: ScannerComponent

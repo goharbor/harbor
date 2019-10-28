@@ -133,6 +133,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
             resetValue['description'] = this.selectedRow.description;
             resetValue['url'] = this.selectedRow.url;
             resetValue['skipCertVerify'] = this.selectedRow.skip_certVerify;
+            resetValue['useInner'] = this.selectedRow.use_internal_addr;
             if (this.selectedRow.auth === 'Basic') {
                 resetValue['auth'] = 'Basic';
                 let username: string = this.selectedRow.access_credential.split(":")[0];
