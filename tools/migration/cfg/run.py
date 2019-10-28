@@ -13,7 +13,7 @@ import shutil
 import sys
 
 def main():
-    target_version = '1.9.0'
+    target_version = '1.10.0'
     parser = argparse.ArgumentParser(description='migrator of harbor.cfg') 
     parser.add_argument('--input', '-i', action="store", dest='input_path', required=True, help='The path to the old harbor.cfg that provides input value, this required value')
     parser.add_argument('--output','-o', action="store", dest='output_path', required=False, help='The path of the migrated harbor.cfg, if not set the input file will be overwritten')
