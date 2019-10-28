@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpClientModule, HttpClient} from '@angular/common/http';
+import { HttpClientModule, HttpClientXsrfModule, HttpClient, HttpXsrfTokenExtractor } from '@angular/common/http';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule, TranslateLoader, MissingTranslationHandler } from '@ngx-translate/core';
@@ -12,6 +12,7 @@ import { ClipboardModule } from '../third-party/ngx-clipboard/index';
 import { MyMissingTranslationHandler } from '../i18n/missing-trans.handler';
 import { TranslatorJsonLoader } from '../i18n/local-json.loader';
 import { IServiceConfig, SERVICE_CONFIG } from '../service.config';
+import { HttpXsrfTokenExtractorToBeUsed } from '../service/http-xsrf-token-extractor.service';
 
 /*export function HttpLoaderFactory(http: Http) {
     return new TranslateHttpLoader(http, 'i18n/lang/', '-lang.json');
@@ -42,6 +43,10 @@ export function GeneralTranslatorLoader(http: HttpClient, config: IServiceConfig
     imports: [
         CommonModule,
         HttpClientModule,
+        HttpClientXsrfModule.withOptions({
+            cookieName: '_xsrf',
+            headerName: 'X-Xsrftoken'
+        }),
         FormsModule,
         ReactiveFormsModule,
         ClipboardModule,
@@ -71,6 +76,8 @@ export function GeneralTranslatorLoader(http: HttpClient, config: IServiceConfig
         MarkdownModule,
         TranslateModule,
     ],
-    providers: [CookieService]
+    providers: [
+        CookieService,
+        { provide: HttpXsrfTokenExtractor, useClass: HttpXsrfTokenExtractorToBeUsed }]
 })
 export class SharedModule { }

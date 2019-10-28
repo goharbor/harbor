@@ -16,13 +16,13 @@ package admin
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/core/service/notifications"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
 	job_model "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/api"
 	j "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 )
@@ -39,7 +39,7 @@ var statusMap = map[string]string{
 
 // Handler handles request on /service/notifications/jobs/adminjob/*, which listens to the webhook of jobservice.
 type Handler struct {
-	api.BaseController
+	notifications.BaseHandler
 	id            int64
 	UUID          string
 	status        string
@@ -52,6 +52,7 @@ type Handler struct {
 
 // Prepare ...
 func (h *Handler) Prepare() {
+	h.BaseHandler.Prepare()
 	var data job_model.JobStatusChange
 	err := json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data)
 	if err != nil {

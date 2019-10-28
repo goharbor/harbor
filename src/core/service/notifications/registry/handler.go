@@ -16,6 +16,7 @@ package registry
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/core/service/notifications"
 	"regexp"
 	"strconv"
 	"strings"
@@ -25,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
 	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
@@ -41,7 +41,7 @@ import (
 
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
 type NotificationHandler struct {
-	api.BaseController
+	notifications.BaseHandler
 }
 
 const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+(json|prettyjws)`

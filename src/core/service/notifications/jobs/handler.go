@@ -16,12 +16,12 @@ package jobs
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/core/service/notifications"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/notifier/event"
 	jjob "github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notification"
@@ -45,7 +45,7 @@ var statusMap = map[string]string{
 
 // Handler handles request on /service/notifications/jobs/*, which listens to the webhook of jobservice.
 type Handler struct {
-	api.BaseController
+	notifications.BaseHandler
 	id        int64
 	status    string
 	rawStatus string
@@ -57,6 +57,7 @@ type Handler struct {
 
 // Prepare ...
 func (h *Handler) Prepare() {
+	h.BaseHandler.Prepare()
 	h.trackID = h.GetStringFromPath(":uuid")
 	if len(h.trackID) == 0 {
 		id, err := h.GetInt64FromPath(":id")
