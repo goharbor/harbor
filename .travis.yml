@@ -1,23 +1,23 @@
 sudo: true
 language: go
 go:
-- 1.11.2
+- 1.12.12
 go_import_path: github.com/goharbor/harbor
 services:
 - docker
 dist: trusty
 matrix:
   include:
-  - go: 1.11.2
+  - go: 1.12.12
     env:
     - UTTEST=true
-  - go: 1.11.2
+  - go: 1.12.12
     env:
     - APITEST_DB=true
-  - go: 1.11.2
+  - go: 1.12.12
     env:
     - APITEST_LDAP=true
-  - go: 1.11.2
+  - go: 1.12.12
     env:
     - OFFLINE=true
 env:
@@ -37,7 +37,7 @@ env:
   - REG_VERSION: v2.7.1
   - UI_BUILDER_VERSION: 1.6.0
   - TOKEN_PRIVATE_KEY_PATH: "/home/travis/gopath/src/github.com/goharbor/harbor/tests/private_key.pem"
-addons: 
+addons:
 apt:
   sources:
   - google-chrome
