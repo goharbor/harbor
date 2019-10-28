@@ -53,6 +53,7 @@ type Handler struct {
 
 // Prepare ...
 func (h *Handler) Prepare() {
+	h.EnableXSRF = false
 	id, err := h.GetInt64FromPath(":id")
 	if err != nil {
 		log.Errorf("Failed to get job ID, error: %v", err)
