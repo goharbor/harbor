@@ -4,7 +4,7 @@ import { throwError as observableThrowError, Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { Title } from '@angular/platform-browser';
 import { TranslateService } from '@ngx-translate/core';
-
+import { CookieService } from "ngx-cookie";
 
 const SwaggerUI = require('swagger-ui');
 @Component({
@@ -21,6 +21,7 @@ export class DevCenterComponent implements AfterViewInit, OnInit {
     private el: ElementRef,
     private http: Http,
     private translate: TranslateService,
+    private cookieService: CookieService,
     private titleService: Title) {
   }
 
@@ -28,14 +29,25 @@ export class DevCenterComponent implements AfterViewInit, OnInit {
     this.setTitle("APP_TITLE.HARBOR_SWAGGER");
   }
 
-
-  public setTitle( key: string) {
+  public setTitle(key: string) {
     this.translate.get(key).subscribe((res: string) => {
       this.titleService.setTitle(res);
-  });
+    });
   }
 
   ngAfterViewInit() {
+    const csrfCookie = this.cookieService.get('_xsrf');
+    const interceptor = {
+      requestInterceptor: {
+        apply: function (requestObj) {
+          const headers = requestObj.headers || {};
+          if (csrfCookie) {
+            headers["X-Xsrftoken"] = atob(csrfCookie.split("|")[0]);
+          }
+          return requestObj;
+        }
+      }
+    };
     this.http.get("/swagger.json")
     .pipe(catchError(error => observableThrowError(error)))
     .pipe(map(response => response.json())).subscribe(json => {
@@ -49,7 +61,15 @@ export class DevCenterComponent implements AfterViewInit, OnInit {
         presets: [
           SwaggerUI.presets.apis
         ],
+        requestInterceptor: interceptor.requestInterceptor,
+          authorizations: {
+            csrf: function () {
+              this.headers['X-Xsrftoken'] = csrfCookie;
+              return true;
+            }
+          }
+        });
       });
-    });
   }
+
 }

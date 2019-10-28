@@ -105,10 +105,13 @@ func TestAll(t *testing.T) {
 	proxy.Init()
 	assert := assert.New(t)
 
+	// Has to set to dev so that the xsrf panic can be rendered as 403
+	beego.BConfig.RunMode = beego.DEV
+
 	r, _ := http.NewRequest("POST", "/c/login", nil)
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(401), w.Code, "'/c/login' httpStatusCode should be 401")
+	assert.Equal(http.StatusForbidden, w.Code, "'/c/login' httpStatusCode should be 403")
 
 	r, _ = http.NewRequest("GET", "/c/log_out", nil)
 	w = httptest.NewRecorder()
@@ -119,12 +122,12 @@ func TestAll(t *testing.T) {
 	r, _ = http.NewRequest("POST", "/c/reset", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(400), w.Code, "'/c/reset' httpStatusCode should be 400")
+	assert.Equal(http.StatusForbidden, w.Code, "'/c/reset' httpStatusCode should be 403")
 
 	r, _ = http.NewRequest("POST", "/c/userExists", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(500), w.Code, "'/c/userExists' httpStatusCode should be 500")
+	assert.Equal(http.StatusForbidden, w.Code, "'/c/userExists' httpStatusCode should be 403")
 
 	r, _ = http.NewRequest("GET", "/c/sendEmail", nil)
 	w = httptest.NewRecorder()

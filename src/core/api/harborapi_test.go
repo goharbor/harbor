@@ -90,6 +90,7 @@ func init() {
 	beego.TestBeegoInit(apppath)
 
 	filter.Init()
+	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 
 	beego.Router("/api/health", &HealthAPI{}, "get:CheckHealth")
