@@ -13,7 +13,7 @@ RUN chown -R 10000:10000 /clair-adapter \
 
 EXPOSE 8080
 
-HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1:8080/healthy || exit 1
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1:8080/probe/healthy || exit 1
 
 USER clair-adapter
 

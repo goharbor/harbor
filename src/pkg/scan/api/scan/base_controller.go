@@ -378,7 +378,7 @@ func (bc *basicController) makeBasicAuthorization(pid int64, repository string, 
 	resource := rbac.NewProjectNamespace(pid).Resource(rbac.ResourceRepository)
 	access := []*rbac.Policy{{
 		Resource: resource,
-		Action:   rbac.ActionPull,
+		Action:   rbac.ActionScannerPull,
 	}}
 
 	robotReq := &model.RobotCreate{
@@ -481,7 +481,7 @@ func makeBearerAuthorization(repository string, username string) (string, error)
 		{
 			Type:    "repository",
 			Name:    repository,
-			Actions: []string{"pull"},
+			Actions: []string{rbac.ActionPull.String(), rbac.ActionScannerPull.String()},
 		},
 	}
 
