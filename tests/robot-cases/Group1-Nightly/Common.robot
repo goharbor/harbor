@@ -499,7 +499,7 @@ Test Case - Project Storage Quotas Dispaly And Control
     ${storage_quota_unit}=  Set Variable  MB
     ${image_a}=  Set Variable  redis
     ${image_b}=  Set Variable  logstash
-    ${image_a_size}=    Set Variable    34.14MB
+    ${image_a_size}=    Set Variable    34.16MB
     ${image_b_size}=    Set Variable    321.03MB
     ${image_a_ver}=  Set Variable  5.0
     ${image_b_ver}=  Set Variable  6.8.3
