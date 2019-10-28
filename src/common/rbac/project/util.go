@@ -45,6 +45,9 @@ var (
 
 		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 	}
 
 	// all policies for the projects

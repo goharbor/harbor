@@ -61,5 +61,6 @@ const (
 	ResourceRobot                      = Resource("robot")
 	ResourceNotificationPolicy         = Resource("notification-policy")
 	ResourceScan                       = Resource("scan")
+	ResourceScanner                    = Resource("scanner")
 	ResourceSelf                       = Resource("") // subresource for self
 )

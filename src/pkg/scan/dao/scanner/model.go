@@ -37,7 +37,7 @@ type Registration struct {
 	URL         string `orm:"column(url);unique;size(512)" json:"url"`
 	Disabled    bool   `orm:"column(disabled);default(true)" json:"disabled"`
 	IsDefault   bool   `orm:"column(is_default);default(false)" json:"is_default"`
-	Health      bool   `orm:"-" json:"-"` // Reserved for future use
+	Health      string `orm:"-" json:"health,omitempty"`
 
 	// Authentication settings
 	// "","Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key" can be supported
@@ -52,6 +52,11 @@ type Registration struct {
 
 	// Indicate if the registration is immutable which is not allowed to remove
 	Immutable bool `orm:"column(immutable);default(false)" json:"-"`
+
+	// Optional properties for describing the adapter
+	Adapter string `orm:"-" json:"adapter,omitempty"`
+	Vendor  string `orm:"-" json:"vendor,omitempty"`
+	Version string `orm:"-" json:"version,omitempty"`
 
 	// Timestamps
 	CreateTime time.Time `orm:"column(create_time);auto_now_add;type(datetime)" json:"create_time"`
