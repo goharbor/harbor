@@ -57,4 +57,6 @@ Test Case - Project Level CVE Whitelist
     Harbor API Test  ./tests/apitests/python/test_project_level_cve_whitelist.py
 Test Case - Tag Retention
     Harbor API Test  ./tests/apitests/python/test_retention.py
+Test Case - Health Check
+    Harbor API Test  ./tests/apitests/python/test_health_check.py
 
