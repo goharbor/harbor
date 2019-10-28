@@ -49,10 +49,10 @@
         </ul>
         <div class="v-center clr-row" [ngClass]="{'pt-1':rules?.length > 0}">
             <div class="clr-col-2 flex-150"></div>
-            <div class="clr-col-2">
+            <div class="add-rule-btn">
                 <button [disabled]="rules?.length >= 15" id="add-rule" class="btn btn-primary btn-sm" (click)="openAddRule()">{{'IMMUTABLE_TAG.ADD_RULE' | translate}}</button>
             </div>
-            <div class="clr-col-8 color-97 font-size-54">
+            <div class="clr-col-6 color-97 font-size-54">
                 {{'IMMUTABLE_TAG.ADD_RULE_HELP_1' | translate}}
             </div>
         </div>

@@ -242,7 +242,7 @@
         "HELMCHART": "Helm Charts",
         "ROBOT_ACCOUNTS": "Robot Accounts",
         "WEBHOOKS": "Webhooks",
-        "IMMUTABLE_TAG": "Immutable Tag"
+        "IMMUTABLE_TAG": "Tag Immutability"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Dépôt du Projet",
@@ -1203,20 +1203,20 @@
         "ACTION": "ACTION"
     },
     "IMMUTABLE_TAG": {
-        "IMMUTABLE_RULES": "Immutable rules",
+        "IMMUTABLE_RULES": "Immutability rules",
         "ADD_RULE": "ADD RULE",
         "ADD_RULE_HELP_1": "Click the ADD RULE button to add a rule.",
         "EDIT": "Edit",
         "DISABLE": "Disable",
         "ENABLE": "Enable",
         "DELETE": "Delete",
-        "ADD_TITLE": "Add Immutable Rule",
-        "ADD_SUBTITLE": "Specify a immutable rule for this project. All immutable rules are independently calculated and each rule can be applied to a selected list of repositories.",
+        "ADD_TITLE": "Add Tag Immutability Rule",
+        "ADD_SUBTITLE": "Specify a tag immutability rule for this project.  Note: all tag immutability rules are first independently calculated and then unioned to capture the final set of immutable tags.",
         "IN_REPOSITORIES": "For the repositories",
         "REP_SEPARATOR": "Enter multiple comma separated repos,repo*,or **",
         "TAGS": "Tags",
         "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
-        "EDIT_TITLE": "Edit Immutable Rule",
+        "EDIT_TITLE": "Edit Tag Immutability Rule",
         "EXC": " excluding ",
         "MAT": " matching ",
         "AND": " and",
