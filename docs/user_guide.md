@@ -686,7 +686,7 @@ Clicking the chart version number link will open the chart version details view.
 * **Summary:**
   * readme of the chart
   * overall metadata like home, created timestamp and application version
-  * related helm commands for reference, such as `helm add repo` and `helm install` etc.
+  * related helm commands for reference, such as `helm repo add` and `helm install` etc.
 ![chart details](img/chartrepo/chart_details.png)
 * **Dependencies:**
   * list all the dependant sun charts with 'name', 'version' and 'repository' fields
