@@ -585,3 +585,38 @@ Test Case - Can Not Retag Image In ReadOnly Mode
     Go Into Project  project${random_num2}  has_image=${false}
     Disable Read Only
     Close Browser
+
+Test Case - Create New Webhook
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
+    Switch To Project Webhooks
+    Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d}
+    Close Browser
+
+Test Case - Update Webhook
+   Init Chrome Driver
+   ${d}=    Get Current Date    result_format=%m%s
+   Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+   Create An New Project  project${d}
+   Go Into Project  project${d}  has_image=${false}
+   Switch To Project Webhooks
+   Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d} 
+   Sleep  3
+   ${d1}=    Get Current Date
+   Update A Webhook  101.17.109.20  auth_header=auth_header${d1}
+   Close Browser
+
+Test Case - Toggle Enable/Disable State of Webhook
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
+    Switch To Project Webhooks
+    Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d}
+    Sleep  3
+    Toggle Enable/Disable State of Same Webhook
+    Close Browser
