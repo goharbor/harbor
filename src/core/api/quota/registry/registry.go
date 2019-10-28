@@ -86,6 +86,11 @@ func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 			repoMap[pro.Name] = repos
 		}
 	}
+	repoMap, err = rm.appendEmptyProject(repoMap)
+	if err != nil {
+		log.Errorf("fail to add empty projects: %v", err)
+		return nil, err
+	}
 
 	wg.Add(len(repoMap))
 	errChan := make(chan error, 1)
@@ -141,6 +146,24 @@ func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 	}
 
 	return projects, nil
+}
+
+// As catalog api cannot list the empty projects in harbor, here it needs to append the empty projects into repo infor
+// so that quota syncer can add 0 usage into quota usage.
+func (rm *Migrator) appendEmptyProject(repoMap map[string][]string) (map[string][]string, error) {
+	var withEmptyProjects map[string][]string
+	all, err := dao.GetProjects(nil)
+	if err != nil {
+		return withEmptyProjects, err
+	}
+	withEmptyProjects = repoMap
+	for _, pro := range all {
+		_, exist := repoMap[pro.Name]
+		if !exist {
+			withEmptyProjects[pro.Name] = []string{}
+		}
+	}
+	return withEmptyProjects, nil
 }
 
 // Usage ...
@@ -389,7 +412,10 @@ func infoOfRepo(pid int64, repo string) (quota.RepoData, error) {
 		})
 		if err != nil {
 			log.Error(err)
-			return quota.RepoData{}, err
+			// To workaround issue: https://github.com/goharbor/harbor/issues/9299, just log the error and do not raise it.
+			// Let the sync process pass, but the 'Unknown manifest' will not be counted into size and count of quota usage.
+			// User still can view there images with size 0 in harbor.
+			continue
 		}
 		manifest, desc, err := registry.UnMarshal(mediaType, payload)
 		if err != nil {
