@@ -111,6 +111,15 @@ func (oc *OIDCController) Callback() {
 		return
 	}
 	d := &oidcUserData{}
+
+	// fetch user info for email
+	userInfo, err := oidc.FetchUserInfo(ctx, token)
+	if err == nil {
+		err = userInfo.Claims(d);
+	} else {
+		log.Warningf("OIDC endpoint does not support /userinfo, due to error: %v", err)
+	}
+	
 	err = idToken.Claims(d)
 	if err != nil {
 		oc.SendInternalServerError(err)

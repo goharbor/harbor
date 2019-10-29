@@ -208,6 +208,24 @@ func RefreshToken(ctx context.Context, token *Token) (*Token, error) {
 	return &Token{Token: *t, IDToken: it}, nil
 }
 
+// FetchUserInfo retrieving details about the logged-in user
+// https://connect2id.com/products/server/docs/api/userinfo
+// 
+// The Claims requested by the profile, email, address, and phone scope values are returned from the UserInfo Endpoint,
+// as described in Section 5.3.2, when a response_type value is used that results in an Access Token being issued. 
+// However, when no Access Token is issued (which is the case for the response_type value id_token),
+// the resulting Claims are returned in the ID Token.
+// https://openid.net/specs/openid-connect-core-1_0.html#ScopeClaims
+func FetchUserInfo(ctx context.Context, token *Token) (*gooidc.UserInfo, error) {
+	p, err := provider.get()
+	if err != nil {
+		return nil, err
+	}
+	setting := provider.setting.Load().(models.OIDCSetting)
+	ctx = clientCtx(ctx, setting.VerifyCert)
+	return p.UserInfo(ctx, oauth2.StaticTokenSource(&token.Token))
+}
+
 // GroupsFromToken returns the list of group name in the token, the claims of the group list is set in OIDCSetting.
 // It's designed not to return errors, in case of unexpected situation it will log and return empty list.
 func GroupsFromToken(token *gooidc.IDToken) []string {
