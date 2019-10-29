@@ -51,6 +51,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/event"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
 )
 
@@ -275,5 +276,7 @@ func main() {
 		log.Fatalf("quota migration error, %v", err)
 	}
 
+	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
 	beego.Run()
+
 }

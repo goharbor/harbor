@@ -6,7 +6,7 @@ RUN tdnf install sudo tzdata -y >> /dev/null \
     && mkdir /harbor/
 
 HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/ping || exit 1
-COPY ./make/photon/core/harbor_core ./UIVERSION /harbor/
+COPY ./make/photon/core/harbor_core /harbor/
 COPY ./src/core/views /harbor/views
 COPY ./make/migrations /harbor/migrations
 

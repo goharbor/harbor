@@ -17,7 +17,6 @@ package api
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -29,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/systeminfo"
 	"github.com/goharbor/harbor/src/core/systeminfo/imagestorage"
+	"github.com/goharbor/harbor/src/pkg/version"
 )
 
 // SystemInfoAPI handle requests for getting system info /api/systeminfo
@@ -37,7 +37,6 @@ type SystemInfoAPI struct {
 }
 
 const defaultRootCert = "/etc/core/ca/ca.crt"
-const harborVersionFile = "/harbor/UIVERSION"
 
 // SystemInfo models for system info.
 type SystemInfo struct {
@@ -165,12 +164,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 
 // getVersion gets harbor version.
 func (sia *SystemInfoAPI) getVersion() string {
-	version, err := ioutil.ReadFile(harborVersionFile)
-	if err != nil {
-		log.Errorf("Error occurred getting harbor version: %v", err)
-		return ""
-	}
-	return string(version[:])
+	return fmt.Sprintf("%s-%s", version.ReleaseVersion, version.GitCommit)
 }
 
 // Ping ping the harbor core service.
