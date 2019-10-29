@@ -12,7 +12,7 @@ The following table depicts the various user permission levels in a project.
 
 | Action                                  | Limited Guest | Guest | Developer | Master | Project Admin |
 | --------------------------------------- | ------------- | ----- | --------- | ------ | ------------- |
-| See the porject configurations          | ✓             | ✓     | ✓         | ✓      | ✓             |
+| See the project configurations          | ✓             | ✓     | ✓         | ✓      | ✓             |
 | Edit the project configurations         |               |       |           |        | ✓             |
 | See a list of project members           |               | ✓     | ✓         | ✓      | ✓             |
 | Create/edit/delete project members      |               |       |           |        | ✓             |
@@ -20,7 +20,7 @@ The following table depicts the various user permission levels in a project.
 | See a list of project replications      |               |       |           | ✓      | ✓             |
 | See a list of project replication jobs  |               |       |           |        | ✓             |
 | See a list of project labels            |               |       |           | ✓      | ✓             |
-| Create/edit/delete project lables       |               |       |           | ✓      | ✓             |
+| Create/edit/delete project labels       |               |       |           | ✓      | ✓             |
 | See a list of repositories              | ✓             | ✓     | ✓         | ✓      | ✓             |
 | Create repositories                     |               |       | ✓         | ✓      | ✓             |
 | Edit/delete repositories                |               |       |           | ✓      | ✓             |
