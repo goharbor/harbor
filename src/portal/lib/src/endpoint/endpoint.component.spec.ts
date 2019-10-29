@@ -20,8 +20,222 @@ import { OperationService } from "../operation/operation.service";
 
 import { click } from "../utils";
 import { of } from "rxjs";
+import { HttpClientTestingModule } from "@angular/common/http/testing";
+import { HttpClient } from "@angular/common/http";
 
 describe("EndpointComponent (inline template)", () => {
+  let adapterInfoMockData = {
+    "ali-acr": {
+      "endpoint_pattern": {
+        "endpoint_type": "EndpointPatternTypeList",
+        "endpoints": [
+          {
+            "key": "cn-hangzhou",
+            "value": "https://registry.cn-hangzhou.aliyuncs.com"
+          },
+          {
+            "key": "cn-shanghai",
+            "value": "https://registry.cn-shanghai.aliyuncs.com"
+          },
+          {
+            "key": "cn-qingdao",
+            "value": "https://registry.cn-qingdao.aliyuncs.com"
+          },
+          {
+            "key": "cn-beijing",
+            "value": "https://registry.cn-beijing.aliyuncs.com"
+          },
+          {
+            "key": "cn-zhangjiakou",
+            "value": "https://registry.cn-zhangjiakou.aliyuncs.com"
+          },
+          {
+            "key": "cn-huhehaote",
+            "value": "https://registry.cn-huhehaote.aliyuncs.com"
+          },
+          {
+            "key": "cn-shenzhen",
+            "value": "https://registry.cn-shenzhen.aliyuncs.com"
+          },
+          {
+            "key": "cn-chengdu",
+            "value": "https://registry.cn-chengdu.aliyuncs.com"
+          },
+          {
+            "key": "cn-hongkong",
+            "value": "https://registry.cn-hongkong.aliyuncs.com"
+          },
+          {
+            "key": "ap-southeast-1",
+            "value": "https://registry.ap-southeast-1.aliyuncs.com"
+          },
+          {
+            "key": "ap-southeast-2",
+            "value": "https://registry.ap-southeast-2.aliyuncs.com"
+          },
+          {
+            "key": "ap-southeast-3",
+            "value": "https://registry.ap-southeast-3.aliyuncs.com"
+          },
+          {
+            "key": "ap-southeast-5",
+            "value": "https://registry.ap-southeast-5.aliyuncs.com"
+          },
+          {
+            "key": "ap-northeast-1",
+            "value": "https://registry.ap-northeast-1.aliyuncs.com"
+          },
+          {
+            "key": "ap-south-1",
+            "value": "https://registry.ap-south-1.aliyuncs.com"
+          },
+          {
+            "key": "eu-central-1",
+            "value": "https://registry.eu-central-1.aliyuncs.com"
+          },
+          {
+            "key": "eu-west-1",
+            "value": "https://registry.eu-west-1.aliyuncs.com"
+          },
+          {
+            "key": "us-west-1",
+            "value": "https://registry.us-west-1.aliyuncs.com"
+          },
+          {
+            "key": "us-east-1",
+            "value": "https://registry.us-east-1.aliyuncs.com"
+          },
+          {
+            "key": "me-east-1",
+            "value": "https://registry.me-east-1.aliyuncs.com"
+          }
+        ]
+      },
+      "credential_pattern": null
+    },
+    "aws-ecr": {
+      "endpoint_pattern": {
+        "endpoint_type": "EndpointPatternTypeList",
+        "endpoints": [
+          {
+            "key": "ap-northeast-1",
+            "value": "https://api.ecr.ap-northeast-1.amazonaws.com"
+          },
+          {
+            "key": "us-east-1",
+            "value": "https://api.ecr.us-east-1.amazonaws.com"
+          },
+          {
+            "key": "us-east-2",
+            "value": "https://api.ecr.us-east-2.amazonaws.com"
+          },
+          {
+            "key": "us-west-1",
+            "value": "https://api.ecr.us-west-1.amazonaws.com"
+          },
+          {
+            "key": "us-west-2",
+            "value": "https://api.ecr.us-west-2.amazonaws.com"
+          },
+          {
+            "key": "ap-east-1",
+            "value": "https://api.ecr.ap-east-1.amazonaws.com"
+          },
+          {
+            "key": "ap-south-1",
+            "value": "https://api.ecr.ap-south-1.amazonaws.com"
+          },
+          {
+            "key": "ap-northeast-2",
+            "value": "https://api.ecr.ap-northeast-2.amazonaws.com"
+          },
+          {
+            "key": "ap-southeast-1",
+            "value": "https://api.ecr.ap-southeast-1.amazonaws.com"
+          },
+          {
+            "key": "ap-southeast-2",
+            "value": "https://api.ecr.ap-southeast-2.amazonaws.com"
+          },
+          {
+            "key": "ca-central-1",
+            "value": "https://api.ecr.ca-central-1.amazonaws.com"
+          },
+          {
+            "key": "eu-central-1",
+            "value": "https://api.ecr.eu-central-1.amazonaws.com"
+          },
+          {
+            "key": "eu-west-1",
+            "value": "https://api.ecr.eu-west-1.amazonaws.com"
+          },
+          {
+            "key": "eu-west-2",
+            "value": "https://api.ecr.eu-west-2.amazonaws.com"
+          },
+          {
+            "key": "eu-west-3",
+            "value": "https://api.ecr.eu-west-3.amazonaws.com"
+          },
+          {
+            "key": "eu-north-1",
+            "value": "https://api.ecr.eu-north-1.amazonaws.com"
+          },
+          {
+            "key": "sa-east-1",
+            "value": "https://api.ecr.sa-east-1.amazonaws.com"
+          }
+        ]
+      },
+      "credential_pattern": null
+    },
+    "docker-hub": {
+      "endpoint_pattern": {
+        "endpoint_type": "EndpointPatternTypeFix",
+        "endpoints": [
+          {
+            "key": "hub.docker.com",
+            "value": "https://hub.docker.com"
+          }
+        ]
+      },
+      "credential_pattern": null
+    },
+    "google-gcr": {
+      "endpoint_pattern": {
+        "endpoint_type": "EndpointPatternTypeList",
+        "endpoints": [
+          {
+            "key": "gcr.io",
+            "value": "https://gcr.io"
+          },
+          {
+            "key": "us.gcr.io",
+            "value": "https://us.gcr.io"
+          },
+          {
+            "key": "eu.gcr.io",
+            "value": "https://eu.gcr.io"
+          },
+          {
+            "key": "asia.gcr.io",
+            "value": "https://asia.gcr.io"
+          }
+        ]
+      },
+      "credential_pattern": {
+        "access_key_type": "AccessKeyTypeFix",
+        "access_key_data": "_json_key",
+        "access_secret_type": "AccessSecretTypeFile",
+        "access_secret_data": "No Change"
+      }
+    }
+  };
+  let fakedHttp = {
+    get() {
+      return of(adapterInfoMockData);
+    }
+  };
   let mockData: Endpoint[] = [
     {
       id: 1,
@@ -76,7 +290,6 @@ describe("EndpointComponent (inline template)", () => {
       url: "https://4.4.4.4"
     }
   ];
-
   let mockOne: Endpoint[] = [
     {
       id: 1,
@@ -108,7 +321,7 @@ describe("EndpointComponent (inline template)", () => {
   let spyOne: jasmine.Spy;
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      imports: [SharedModule, NoopAnimationsModule],
+      imports: [SharedModule, NoopAnimationsModule, HttpClientTestingModule],
       declarations: [
         FilterComponent,
         ConfirmationDialogComponent,
@@ -120,7 +333,8 @@ describe("EndpointComponent (inline template)", () => {
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: EndpointService, useClass: EndpointDefaultService },
-        { provide: OperationService }
+        { provide: OperationService },
+        { provide: HttpClient, useValue: fakedHttp },
       ]
     });
   }));
@@ -128,9 +342,7 @@ describe("EndpointComponent (inline template)", () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(EndpointComponent);
     comp = fixture.componentInstance;
-
     endpointService = fixture.debugElement.injector.get(EndpointService);
-
     spy = spyOn(endpointService, "getEndpoints").and.returnValues(
       of(mockData)
     );
