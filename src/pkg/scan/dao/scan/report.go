@@ -20,6 +20,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/pkg/errors"
 )
@@ -97,8 +98,10 @@ func UpdateReportData(uuid string, report string, statusRev int64) error {
 		return err
 	}
 
+	// Update has preconditions which may NOT be matched, and then count may equal 0.
+	// Just need log, no error need to be returned.
 	if count == 0 {
-		return errors.Errorf("no report with uuid %s updated", uuid)
+		log.Warningf("Data of report with uuid %s is not updated as preconditions may not be matched: status change revision %d", uuid, statusRev)
 	}
 
 	return nil
@@ -128,8 +131,10 @@ func UpdateReportStatus(trackID string, status string, statusCode int, statusRev
 		return err
 	}
 
+	// Update has preconditions which may NOT be matched, and then count may equal 0.
+	// Just need log, no error need to be returned.
 	if count == 0 {
-		return errors.Errorf("no report with track_id %s updated", trackID)
+		log.Warningf("Status of report with track ID %s is not updated as preconditions may not be matched: status change revision %d, status code %d", trackID, statusRev, statusCode)
 	}
 
 	return nil

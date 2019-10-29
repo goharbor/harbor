@@ -93,10 +93,12 @@ func (h *Handler) Prepare() {
 
 // HandleScan handles the webhook of scan job
 func (h *Handler) HandleScan() {
-	log.Debugf("Received scan job status update event: job UUID: %s, status: %s, track_id: %s, is checkin: %v",
+	log.Debugf(
+		"Received scan job status update event: job UUID: %s, status: %s, track_id: %s, revision: %d, is checkin: %v",
 		h.change.JobID,
 		h.status,
 		h.trackID,
+		h.revision,
 		len(h.checkIn) > 0,
 	)
 
