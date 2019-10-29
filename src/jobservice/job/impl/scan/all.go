@@ -95,7 +95,7 @@ func (sa *All) Run(ctx job.Context, params job.Parameters) error {
 				data, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
 					logger.Errorf("Failed to read response, error: %v", err)
-				} else if resp.StatusCode != http.StatusOK {
+				} else if resp.StatusCode != http.StatusAccepted {
 					logger.Errorf("Unexpected response code: %d, data: %v", resp.StatusCode, data)
 				}
 				resp.Body.Close()

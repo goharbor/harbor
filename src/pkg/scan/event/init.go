@@ -26,5 +26,7 @@ func Init() {
 	log.Debugf("Subscribe topic %s for cascade deletion of scan reports", model.DeleteImageTopic)
 
 	err := notifier.Subscribe(model.DeleteImageTopic, NewOnDelImageHandler())
-	log.Error(errors.Wrap(err, "register on delete image handler: init: scan"))
+	if err != nil {
+		log.Error(errors.Wrap(err, "register on delete image handler: init: scan"))
+	}
 }
