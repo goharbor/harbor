@@ -49,19 +49,20 @@ func TestAddBlobsToProject(t *testing.T) {
 		OwnerID: 1,
 	})
 	require.Nil(t, err)
+	defer DeleteProject(pid)
 
-	for i := 0; i < 88888; i++ {
+	blobsCount := 88888
+	for i := 0; i < blobsCount; i++ {
 		blob := &models.Blob{
+			ID:     int64(100000 + i), // Use fake id to speed this test
 			Digest: digest.FromString(utils.GenerateRandomString()).String(),
 			Size:   100,
 		}
-		_, err := AddBlob(blob)
-		require.Nil(t, err)
 		blobs = append(blobs, blob)
 	}
 	cnt, err := AddBlobsToProject(pid, blobs...)
 	require.Nil(t, err)
-	require.Equal(t, cnt, int64(88888))
+	require.Equal(t, cnt, int64(blobsCount))
 }
 
 func TestHasBlobInProject(t *testing.T) {
