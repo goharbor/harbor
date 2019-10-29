@@ -7,7 +7,7 @@ ENV NPM_CONFIG_REGISTRY=${npm_registry}
 
 COPY src/portal/package.json /build_dir
 COPY src/portal/package-lock.json /build_dir
-COPY ./docs/swagger.yaml /build_dir
+COPY ./API/harbor/swagger.yaml /build_dir
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python-yaml=3.12-1 \

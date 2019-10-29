@@ -438,7 +438,7 @@ swagger_client:
 	wget -q http://central.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
 	rm -rf harborclient
 	mkdir harborclient
-	java -jar swagger-codegen-cli.jar generate -i docs/swagger.yaml -l python -o harborclient
+	java -jar swagger-codegen-cli.jar generate -i API/harbor/swagger.yaml -l python -o harborclient
 	cd harborclient; python ./setup.py install
 	pip install docker -q
 	pip freeze

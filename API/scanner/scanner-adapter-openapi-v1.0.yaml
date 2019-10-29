@@ -1,0 +1,389 @@
+openapi: 3.0.0
+info:
+  title: Harbor Scanner Adapter API
+  description: |
+    ## Overview
+
+    This API must be implemented in order to register a new artifact scanner in [Harbor](https://goharbor.io) registry.
+
+    The [/scan](#operation/AcceptScanRequest) and [/scan/{scan_request_id}/report](#operation/GetScanReport) operations are responsible for the actual scanning and return a scan report that is visible in the Harbor web console.
+
+    The [/scan](#operation/AcceptScanRequest) operation is asynchronous. It should enqueue the job for processing a scan request and return the identifier. This allows Harbor to poll a corresponding scan report with the
+    [/scan/{scan_request_id}/report](#operation/GetScanReport) operation. Harbor will call the
+    [/scan/{scan_request_id}/report](#operation/GetScanReport) operation periodically periodically until it returns 200 or 500 status codes.
+
+    The [/metadata](#operation/GetMetadata) operation allows a Harbor admin to configure and register a scanner
+    and discover its capabilities.
+
+    ## Supported consumed MIME types
+
+    - `application/vnd.oci.image.manifest.v1+json`
+    - `application/vnd.docker.distribution.manifest.v2+json`
+
+    ## Supported produced MIME types
+
+    - `application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0`
+    - `application/vnd.scanner.adapter.vuln.report.raw`
+  contact:
+    email: cncf-harbor-maintainers@lists.cncf.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: "1.0"
+servers:
+  - url: /api/v1
+security:
+  - BasicAuth: []
+  - BearerAuth: []
+paths:
+  /metadata:
+    get:
+      tags:
+        - Scanner
+      summary: Get scanner metadata
+      description: |
+        Used to fetch scanner's metadata and capabilities. The operation is invoked to build an index of scanners
+        capable of analysing a given type of artifacts and making sure that scan reports can be parsed and rendered.
+      operationId: GetMetadata
+      responses:
+        200:
+          description: Scanner's metadata and capabilities
+          content:
+            "application/vnd.scanner.adapter.metadata+json; version=1.0":
+              schema:
+                $ref: '#/components/schemas/ScannerAdapterMetadata'
+        500:
+          description: Internal server error
+          content:
+            "application/vnd.scanner.adapter.error+json; version=1.0":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /scan:
+    post:
+      tags:
+        - Scanner
+      summary: Accept artifact scanning request
+      description: |
+        A non-blocking operation which enqueues a scan job and returns immediately. It returns a unique
+        identifier which can be used to poll for generated scan reports by Harbor.
+      operationId: AcceptScanRequest
+      requestBody:
+        description: |
+          Contains data required to pull the given artifact and save it for scanning in the file system or any other
+          location accessible to the scanner.
+        content:
+          "application/vnd.scanner.adapter.scan.request+json; version=1.0":
+            schema:
+              $ref: '#/components/schemas/ScanRequest'
+      responses:
+        202:
+          description: Scan request accepted
+          content:
+            "application/vnd.scanner.adapter.scan.response+json; version=1.0":
+              schema:
+                $ref: "#/components/schemas/ScanResponse"
+        400:
+          description: Received invalid JSON or the wrong type of JSON values
+          content:
+            "application/vnd.scanner.adapter.error+json; version=1.0":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        422:
+          description: Received invalid field
+          content:
+            "application/vnd.scanner.adapter.error+json; version=1.0":
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        500:
+          description: Internal server error
+          content:
+            "application/vnd.scanner.adapter.error+json; version=1.0":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  /scan/{scan_request_id}/report:
+    get:
+      tags:
+        - Scanner
+      summary: Get scan report
+      description: |
+        Get a scan report for the given scan request identifier.
+
+        Clients will periodically poll this operation and check `$response.status` until its value equals `200` or `500`.
+      operationId: GetScanReport
+      parameters:
+        - name: scan_request_id
+          in: path
+          description: The identifier of the corresponding scan request
+          required: true
+          style: simple
+          explode: false
+          schema:
+            $ref: '#/components/schemas/ScanRequestId'
+        - name: Accept
+          in: header
+          schema:
+            type: string
+          example: "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"
+      responses:
+        200:
+          description: Scan report
+          content:
+            "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0":
+              schema:
+                $ref: '#/components/schemas/HarborVulnerabilityReport'
+            "application/vnd.scanner.adapter.vuln.report.raw":
+              schema:
+                type: string
+                example: |
+                  {
+                    "vendor_specific": "vulnerabilities_report"
+                  }
+        302:
+          description: Status indicating the scan report is being generated and the request should be retried.
+          headers:
+            Refresh-After:
+              description: Indicates the interval after which the request should be retried.
+              schema:
+                type: integer
+        404:
+          description: Cannot find the corresponding scan request identifier
+        500:
+          description: Internal server error
+          content:
+            "application/vnd.scanner.adapter.error+json; version=1.0":
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    Scanner:
+      type: object
+      properties:
+        name:
+          type: string
+          description: The name of the scanner.
+          example: Microscanner
+        vendor:
+          type: string
+          description: The name of the scanner's provider.
+          example: Aqua Security
+        version:
+          type: string
+          description: The version of the scanner.
+          example: 3.0.5
+      description: |
+        Basic scanner properties such as name, vendor, and version.
+    ScannerAdapterMetadata:
+      required:
+        - scanner
+        - capabilities
+      type: object
+      properties:
+        scanner:
+          $ref: '#/components/schemas/Scanner'
+        capabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/ScannerCapability'
+        properties:
+          $ref: "#/components/schemas/ScannerProperties"
+      description: |
+        Represents metadata of a Scanner Adapter which allows Harbor to lookup a scanner capable
+        of scanning a given Artifact stored in its registry and making sure that it
+        can interpret a returned result.
+    ScannerProperties:
+      type: object
+      additionalProperties:
+        type: string
+      example:
+        "harbor.scanner-adapter/scanner-type": "os-package-vulnerability"
+        "harbor.scanner-adapter/vulnerability-database-updated-at": "2019-08-13T08:16:33.345Z"
+      description: |
+        A set of custom properties that can further describe capabilities of a given scanner.
+    ScannerCapability:
+      description: |
+        Capability consists of the set of recognized artifact MIME types and the set of scanner report MIME types.
+        For example, a scanner capable of analyzing Docker images and producing a vulnerabilities report recognizable
+        by Harbor web console might be represented with the following capability:
+        - consumes MIME types:
+          - `application/vnd.oci.image.manifest.v1+json`
+          - `application/vnd.docker.distribution.manifest.v2+json`
+        - produces MIME types:
+          - `application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0`
+      required:
+        - consumes_mime_types
+        - produces_mime_types
+      type: object
+      properties:
+        consumes_mime_types:
+          type: array
+          items:
+            type: string
+          description: |
+            The set of MIME types of the artifacts supported by the scanner to produce the reports specified in the "produces_mime_types". A given
+            mime type should only be present in one capability item.
+          example:
+            - "application/vnd.oci.image.manifest.v1+json"
+            - "application/vnd.docker.distribution.manifest.v2+json"
+        produces_mime_types:
+          type: array
+          items:
+            type: string
+          description: |
+            The set of MIME types of reports generated by the scanner for the consumes_mime_types of the same capability record.
+          example:
+            - "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"
+    ScanRequest:
+      required:
+        - registry
+        - artifact
+      type: object
+      properties:
+        registry:
+          $ref: '#/components/schemas/Registry'
+        artifact:
+          $ref: '#/components/schemas/Artifact'
+    ScanResponse:
+      required:
+        - id
+      properties:
+        id:
+          $ref: '#/components/schemas/ScanRequestId'
+    ScanRequestId:
+      description: |
+        A unique identifier returned by the [/scan](#/operation/AcceptScanRequest] operations. The format of the
+        identifier is not imposed but it should be unique enough to prevent collisons when polling for scan reports.
+      type: string
+      example: "3fa85f64-5717-4562-b3fc-2c963f66afa6"
+    Registry:
+      type: object
+      properties:
+        url:
+          type: string
+          description: A base URL or the Docker Registry v2 API.
+          format: url
+          example: https://core.harbor.domain
+        authorization:
+          type: string
+          description: |
+            An optional value of the HTTP Authorization header sent with each request to the Docker Registry v2 API.
+            It's used to exchange Base64 encoded robot account credentials to a short lived JWT access token which
+            allows the underlying scanner to pull the artifact from the Docker Registry.
+          example: "Basic BASE64_ENCODED_CREDENTIALS"
+    Artifact:
+      type: object
+      properties:
+        repository:
+          type: string
+          description: The name of the Docker Registry repository containing the artifact.
+          example: library/mongo
+        digest:
+          type: string
+          description: The artifact's digest, consisting of an algorithm and hex portion.
+          example: "sha256:6c3c624b58dbbcd3c0dd82b4c53f04194d1247c6eebdaab7c610cf7d66709b3b"
+        mime_type:
+          type: string
+          description: The MIME type of the artifact.
+          example: "application/vnd.docker.distribution.manifest.v2+json"
+    HarborVulnerabilityReport:
+      type: object
+      properties:
+        generated_at:
+          type: string
+          format: 'date-time'
+        artifact:
+          $ref: '#/components/schemas/Artifact'
+        scanner:
+          $ref: '#/components/schemas/Scanner'
+        severity:
+          $ref: "#/components/schemas/Severity"
+        vulnerabilities:
+          type: array
+          items:
+            $ref: '#/components/schemas/VulnerabilityItem'
+    VulnerabilityItem:
+      type: object
+      properties:
+        id:
+          type: string
+          description: The unique identifier of the vulnerability.
+          example: CVE-2017-8283
+        package:
+          type: string
+          description: |
+            An operating system package containing the vulnerability.
+          example: dpkg
+        version:
+          type: string
+          description: |
+            The version of the package containing the vulnerability.
+          example: 1.17.27
+        fix_version:
+          type: string
+          description: |
+            The version of the package containing the fix if available.
+          example: 1.18.0
+        severity:
+          $ref: "#/components/schemas/Severity"
+        description:
+          type: string
+          description: |
+            The detailed description of the vulnerability.
+          example: |
+            dpkg-source in dpkg 1.3.0 through 1.18.23 is able to use a non-GNU patch program
+            and does not offer a protection mechanism for blank-indented diff hunks, which
+            allows remote attackers to conduct directory traversal attacks via a crafted
+            Debian source package, as demonstrated by using of dpkg-source on NetBSD.
+        links:
+          type: array
+          items:
+            type: string
+            format: uri
+          description: |
+            The list of links to the upstream databases with the full description of the vulnerability.
+          format: uri
+          example:
+            - https://security-tracker.debian.org/tracker/CVE-2017-8283
+    Severity:
+      type: string
+      description: |
+        A standard scale for measuring the severity of a vulnerability.
+
+        * `Unknown` - either a security problem that has not been assigned to a priority yet or a priority that the
+          scanner did not recognize.
+        * `Negligible` - technically a security problem, but is only theoretical in nature, requires a very special
+          situation, has almost no install base, or does no real damage.
+        * `Low` - a security problem, but is hard to exploit due to environment, requires a user-assisted attack,
+          a small install base, or does very little damage.
+        * `Medium` - a real security problem, and is exploitable for many people. Includes network daemon denial of
+          service attacks, cross-site scripting, and gaining user privileges.
+        * `High` - a real problem, exploitable for many people in a default installation. Includes serious remote denial
+          of service, local root privilege escalations, or data loss.
+        * `Critical` - a world-burning problem, exploitable for nearly all people in a default installation. Includes
+          remote root privilege escalations, or massive data loss.
+      example: Low
+      enum:
+        - None
+        - Unknown
+        - Negligible
+        - Low
+        - Medium
+        - High
+        - Critical
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          $ref: "#/components/schemas/Error"
+    Error:
+      type: object
+      properties:
+        message:
+          type: string
+          example: "Some unexpected error"
+  securitySchemes:
+    BasicAuth:
+      type: http
+      scheme: basic
+    BearerAuth:
+      type: http
+      scheme: bearer
