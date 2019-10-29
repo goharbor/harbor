@@ -181,6 +181,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                     }, error => {
                         this.errorHandler.error(error);
                         this.loading = false;
+                        this.refresh();
                     });
                 }
             }
