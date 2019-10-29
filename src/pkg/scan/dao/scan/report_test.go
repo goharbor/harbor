@@ -116,7 +116,7 @@ func (suite *ReportTestSuite) TestReportUpdateReportData() {
 	assert.Equal(suite.T(), "{}", l[0].Report)
 
 	err = UpdateReportData("uuid", "{\"a\": 900}", 900)
-	require.Error(suite.T(), err)
+	require.NoError(suite.T(), err)
 }
 
 // TestReportUpdateStatus tests update the report status.
@@ -125,8 +125,8 @@ func (suite *ReportTestSuite) TestReportUpdateStatus() {
 	require.NoError(suite.T(), err)
 
 	err = UpdateReportStatus("track-uuid", job.RunningStatus.String(), job.RunningStatus.Code(), 900)
-	require.Error(suite.T(), err)
+	require.NoError(suite.T(), err)
 
 	err = UpdateReportStatus("track-uuid", job.PendingStatus.String(), job.PendingStatus.Code(), 1000)
-	require.Error(suite.T(), err)
+	require.NoError(suite.T(), err)
 }
