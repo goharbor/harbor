@@ -135,3 +135,13 @@ func IsNegative(a ResourceList) []ResourceName {
 	}
 	return results
 }
+
+// IsValidResource returns true when resource was supported
+func IsValidResource(resource ResourceName) bool {
+	switch resource {
+	case ResourceCount, ResourceStorage:
+		return true
+	default:
+		return false
+	}
+}
