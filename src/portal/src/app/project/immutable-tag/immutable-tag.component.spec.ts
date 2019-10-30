@@ -201,6 +201,8 @@ describe('ImmutableTagComponent', () => {
     cloneRule.tag_selectors[0].pattern = 'rep';
     let cloneRuleNoId = clone(mockRules[0]);
     cloneRuleNoId.id = null;
+    let cloneDisableRule = clone(mockRules[0]);
+    cloneDisableRule.disabled = true;
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ImmutableTagComponent, AddRuleComponent, InlineAlertComponent],
@@ -265,6 +267,8 @@ describe('ImmutableTagComponent', () => {
       .withArgs(component.projectId, mockRules[0])
       .and.returnValue(of(null))
       .withArgs(component.projectId, cloneRule)
+      .and.returnValue(of(null))
+      .withArgs(component.projectId, cloneDisableRule)
       .and.returnValue(of(null));
     spyOn(immutableTagService, "deleteRule")
       .withArgs(component.projectId, mockRules[3].id)
