@@ -21,6 +21,7 @@ import (
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/pkg/types"
 )
 
 var (
@@ -127,15 +128,19 @@ func quotaUsageOrderBy(query ...*models.QuotaUsageQuery) string {
 		} else {
 			sort := query[0].Sort
 
-			order := "asc"
+			order := "ASC"
 			if sort[0] == '-' {
-				order = "desc"
+				order = "DESC"
 				sort = sort[1:]
 			}
 
 			prefix := "used."
 			if strings.HasPrefix(sort, prefix) {
-				orderBy = fmt.Sprintf("used->>'%s' %s", strings.TrimPrefix(sort, prefix), order)
+				resource := strings.TrimPrefix(sort, prefix)
+				if types.IsValidResource(types.ResourceName(resource)) {
+					field := fmt.Sprintf("%s->>'%s'", strings.TrimSuffix(prefix, "."), resource)
+					orderBy = fmt.Sprintf("(%s) %s", castQuantity(field), order)
+				}
 			}
 		}
 	}
