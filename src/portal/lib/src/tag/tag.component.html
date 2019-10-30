@@ -92,44 +92,70 @@
             <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
             <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
                 <clr-dg-cell class="truncated flex-max-width">
-                    <a href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
-                    <span *ngIf="t.immutable" class="label label-info ml-1">{{'REPOSITORY.IMMUTABLE' | translate}}</span>
-                </clr-dg-cell>
-                <clr-dg-cell>{{sizeTransform(t.size)}}</clr-dg-cell>
-                <clr-dg-cell class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">
-                    <hbr-copy-input #copyInput (onCopyError)="onCpError($event)" iconMode="true" defaultValue="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}"></hbr-copy-input>
+                    <div class="cell">
+                        <a href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
+                        <span *ngIf="t.immutable" class="label label-info ml-1">{{'REPOSITORY.IMMUTABLE' | translate}}</span>
+                    </div>
                 </clr-dg-cell>
                 <clr-dg-cell>
-                    <hbr-vulnerability-bar [repoName]="repoName" [tagId]="t.name" [summary]="handleScanOverview(t.scan_overview)"></hbr-vulnerability-bar>
+                    <div class="cell">
+                        {{sizeTransform(t.size)}}
+                    </div>
+                </clr-dg-cell>
+                <clr-dg-cell class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">
+                    <div class="cell">
+                        <hbr-copy-input class="margin-top-m4" #copyInput (onCopyError)="onCpError($event)" iconMode="true" defaultValue="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}"></hbr-copy-input>
+                    </div>
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="cell">
+                        <hbr-vulnerability-bar  [repoName]="repoName" [tagId]="t.name" [summary]="handleScanOverview(t.scan_overview)"></hbr-vulnerability-bar>
+                    </div>
                 </clr-dg-cell>
                 <clr-dg-cell *ngIf="withNotary" [ngSwitch]="t.signature !== null">
-                    <clr-icon shape="check-circle" *ngSwitchCase="true" size="20" class="color-green"></clr-icon>
-                    <clr-icon shape="times-circle" *ngSwitchCase="false" size="16" class="color-red"></clr-icon>
-                    <a href="javascript:void(0)" *ngSwitchDefault role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
-                        <clr-icon shape="help" class="color-gray" size="16"></clr-icon>
-                        <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
-                    </a>
+                    <div class="cell">
+                        <clr-icon shape="check-circle" *ngSwitchCase="true" size="20" class="color-green"></clr-icon>
+                        <clr-icon shape="times-circle" *ngSwitchCase="false" size="16" class="color-red"></clr-icon>
+                        <a href="javascript:void(0)" *ngSwitchDefault role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
+                            <clr-icon shape="help" class="color-gray" size="16"></clr-icon>
+                            <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
+                        </a>
+                    </div>
                 </clr-dg-cell>
-                <clr-dg-cell class="truncated" title="{{t.author}}">{{t.author}}</clr-dg-cell>
-                <clr-dg-cell>{{t.created | date: 'short'}}</clr-dg-cell>
-                <clr-dg-cell>{{t.docker_version}}</clr-dg-cell>
+                <clr-dg-cell class="truncated" title="{{t.author}}">
+                    <div class="cell">
+                        {{t.author}}
+                    </div>
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="cell">{{t.created | date: 'short'}}</div>
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="cell">{{t.docker_version}}</div>
+                </clr-dg-cell>
                 <clr-dg-cell *ngIf="!withAdmiral">
-                    <hbr-label-piece *ngIf="t.labels?.length" [label]="t.labels[0]" [labelWidth]="90"> </hbr-label-piece>
-                    <div class="signpost-item" [hidden]="t.labels?.length<=1">
-                        <div class="trigger-item">
-                            <clr-signpost>
-                                <button class="btn btn-link" clrSignpostTrigger>...</button>
-                                <clr-signpost-content [clrPosition]="'left-top'" *clrIfOpen>
-                                    <div>
-                                        <hbr-label-piece *ngFor="let label of t.labels" [label]="label"></hbr-label-piece>
-                                    </div>
-                                </clr-signpost-content>
-                            </clr-signpost>
+                    <div class="cell">
+                        <hbr-label-piece *ngIf="t.labels?.length" [label]="t.labels[0]" [labelWidth]="90"> </hbr-label-piece>
+                        <div class="signpost-item" [hidden]="t.labels?.length<=1">
+                            <div class="trigger-item">
+                                <clr-signpost>
+                                    <button class="btn btn-link" clrSignpostTrigger>...</button>
+                                    <clr-signpost-content [clrPosition]="'left-top'" *clrIfOpen>
+                                        <div>
+                                            <hbr-label-piece *ngFor="let label of t.labels" [label]="label"></hbr-label-piece>
+                                        </div>
+                                    </clr-signpost-content>
+                                </clr-signpost>
+                            </div>
                         </div>
                     </div>
                 </clr-dg-cell>
-                <clr-dg-cell>{{t.push_time | date: 'short'}}</clr-dg-cell>
-                <clr-dg-cell>{{t.pull_time | date: 'short'}}</clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="cell">{{t.push_time | date: 'short'}}</div>
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="cell">{{t.pull_time | date: 'short'}}</div>
+                </clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
                 <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span> {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}&nbsp;&nbsp;&nbsp;&nbsp;

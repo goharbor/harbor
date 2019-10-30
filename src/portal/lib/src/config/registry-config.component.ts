@@ -48,11 +48,6 @@ export class RegistryConfigComponent implements OnInit {
     get hasCAFile(): boolean {
         return this.systemInfo && this.systemInfo.has_ca_root;
     }
-
-    get withClair(): boolean {
-        return this.systemInfo && this.systemInfo.with_clair;
-    }
-
     get withAdmiral(): boolean {
         return this.systemInfo && this.systemInfo.with_admiral;
     }

@@ -950,7 +950,7 @@
             "SCANNING_TIME": "Tarama tamamlanma zamanı:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} 'nın {{totalPackages}} {{package}} bilinen {{vulnerability}}.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} 'nın {{totalPackages}} {{package}} bilinen {{vulnerability}}.",
-            "TOOLTIPS_TITLE_ZERO": "Tanınabilir bir güvenlik açığı paketi bulunamadı"
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
         },
         "SEVERITY": {
             "CRITICAL": "Kritik",
@@ -1282,7 +1282,7 @@
         "TOKEN": "Token",
         "TOKEN_REQUIRED": "Token is required",
         "API_KEY_REQUIRED": "APIKey is required",
-        "SKIP": "Skip Certificate Verification",
+        "SKIP": "Skip certificate verification",
         "ADD_SCANNER": "Add Scanner",
         "EDIT_SCANNER": "Edit Scanner",
         "TEST_CONNECTION": "TEST CONNECTION",
@@ -1320,6 +1320,10 @@
         "DELETE_SUCCESS": "Successfully deleted",
         "TOTAL": "Total",
         "FIXABLE": "Fixable",
-        "DURATION": "Duration:"
+        "DURATION": "Duration:",
+        "OPTIONS": "Options",
+        "USE_INNER": "Use internal registry address",
+        "USE_INNER_TIP": "If the option is checked, the scanner will be forced to use the internal registry address to access the related contents.",
+        "VULNERABILITY_SEVERITY": "Vulnerability severity:"
     }
 }

@@ -67,4 +67,9 @@ export class ConfigScannerService {
         return this.http.patch(`/api/scanners/${uid}`, {is_default: true} )
             .pipe(catchError(error => observableThrowError(error)));
     }
+    getProjectScanners(projectId: number) {
+        return this.http.get(`/api/projects/${projectId}/scanner/candidates`)
+            .pipe(map(response => response as Scanner[]))
+            .pipe(catchError(error => observableThrowError(error)));
+    }
 }

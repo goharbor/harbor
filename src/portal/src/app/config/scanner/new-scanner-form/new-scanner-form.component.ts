@@ -33,7 +33,8 @@ export class NewScannerFormComponent implements  OnInit, AfterViewInit, OnDestro
                 token: this.fb.control("", Validators.required),
                 apiKey: this.fb.control("", Validators.required)
         }),
-        skipCertVerify: this.fb.control(false)
+        skipCertVerify: this.fb.control(false),
+        useInner: this.fb.control(false)
     });
     checkNameSubscribe: any;
     checkEndpointUrlSubscribe: any;

@@ -61,15 +61,15 @@
             <clr-dg-row *clrDgItems="let scanner of scanners" [clrDgItem]="scanner">
                 <clr-dg-cell>
                     <span>{{scanner.name}}</span>
-                    <span *ngIf="scanner.is_default" class="label label-info ml-1">{{'SCANNER.DEFAULT' | translate}}</span>
+                    <span *ngIf="scanner.is_default" class="label label-info ml-1 label-in-cell">{{'SCANNER.DEFAULT' | translate}}</span>
                 </clr-dg-cell>
                 <clr-dg-cell>{{scanner.url}}</clr-dg-cell>
                 <clr-dg-cell>
                     <span *ngIf="scanner.loadingMetadata;else elseBlockLoading" class="spinner spinner-inline ml-2"></span>
                     <ng-template #elseBlockLoading>
-                        <span *ngIf="scanner.metadata;else elseBlock" class="label label-success">{{'SCANNER.HEALTHY' | translate}}</span>
+                        <span *ngIf="scanner.metadata;else elseBlock" class="label label-success label-in-cell">{{'SCANNER.HEALTHY' | translate}}</span>
                         <ng-template #elseBlock>
-                            <span class="label label-danger">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                            <span class="label label-danger label-in-cell">{{'SCANNER.UNHEALTHY' | translate}}</span>
                         </ng-template>
                     </ng-template>
                 </clr-dg-cell>

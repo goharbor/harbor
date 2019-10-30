@@ -105,19 +105,32 @@
             </div>
         </ng-container>
         <div class="clr-form-control">
-            <label class="clr-control-label">{{"SCANNER.SKIP" | translate}}
-                <clr-tooltip>
-                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                        {{'SCANNER.SKIP_CERT_VERIFY' | translate}}
-                    </clr-tooltip-content>
-                </clr-tooltip>
-            </label>
+            <label class="clr-control-label">{{"SCANNER.OPTIONS" | translate}}</label>
             <div class="clr-control-container padding-top-3">
-                <div class="clr-checkbox-wrapper">
-                    <input clrCheckbox formControlName="skipCertVerify"
+                <clr-checkbox-wrapper>
+                    <input name="scanner-skipCertVerify" clrCheckbox formControlName="skipCertVerify"
                            type="checkbox" id="scanner-skipCertVerify">
-                </div>
+                    <label class="width-10rem"  for="scanner-skipCertVerify">{{"SCANNER.SKIP" | translate}}
+                        <clr-tooltip>
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content class="width-14rem" clrPosition="top-left" clrSize="lg" *clrIfOpen>
+                                {{'SCANNER.SKIP_CERT_VERIFY' | translate}}
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </clr-checkbox-wrapper>
+                <clr-checkbox-wrapper>
+                    <input name="scanner-use-inner" clrCheckbox formControlName="useInner"
+                           type="checkbox" id="scanner-use-inner">
+                    <label class="width-10rem" for="scanner-use-inner">{{"SCANNER.USE_INNER" | translate}}
+                        <clr-tooltip>
+                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content class="width-14rem" clrPosition="top-left" clrSize="lg" *clrIfOpen>
+                                {{"SCANNER.USE_INNER_TIP" | translate}}
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </clr-checkbox-wrapper>
             </div>
         </div>
     </form>

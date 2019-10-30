@@ -25,7 +25,7 @@ import {
 import { forkJoin, Observable, Subject, throwError as observableThrowError } from "rxjs";
 import { catchError, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
-import { Comparator, Label, State, Tag, TagClickEvent } from "../service/interface";
+import { Comparator, Label, State, Tag, TagClickEvent, VulnerabilitySummary } from "../service/interface";
 
 import {
   RequestQueryParams,
@@ -84,7 +84,6 @@ export class TagComponent implements OnInit, AfterViewInit {
   @Input() isGuest: boolean;
   @Input() registryUrl: string;
   @Input() withNotary: boolean;
-  @Input() withClair: boolean;
   @Input() withAdmiral: boolean;
   @Output() refreshRepo = new EventEmitter<boolean>();
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
@@ -766,8 +765,9 @@ export class TagComponent implements OnInit, AfterViewInit {
     this.scanningService.getProjectScanner(this.projectId)
         .subscribe(response => {
           if (response && "{}" !== JSON.stringify(response) && !response.disabled
-          && response.uuid) {
-            this.getScannerMetadata(response.uuid);
+          && response.health === "healthy") {
+            this.scanBtnState = ClrLoadingState.SUCCESS;
+            this.hasEnabledScanner = true;
           } else {
             this.scanBtnState = ClrLoadingState.ERROR;
           }
@@ -775,16 +775,8 @@ export class TagComponent implements OnInit, AfterViewInit {
           this.scanBtnState = ClrLoadingState.ERROR;
         });
   }
-  getScannerMetadata(uuid: string) {
-    this.scanningService.getScannerMetadata(uuid)
-        .subscribe(response => {
-            this.hasEnabledScanner = true;
-            this.scanBtnState = ClrLoadingState.SUCCESS;
-        }, error => {
-             this.scanBtnState = ClrLoadingState.ERROR;
-        });
-  }
-  handleScanOverview(scanOverview: any) {
+
+  handleScanOverview(scanOverview: any): VulnerabilitySummary {
     if (scanOverview) {
       return scanOverview[DEFAULT_SUPPORTED_MIME_TYPE];
     }
