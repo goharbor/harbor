@@ -44,8 +44,8 @@ Select Trigger
 
 Select Destination URL
     [Arguments]    ${type}
-    Retry Element Click    ${destination_url_xpath}
-    Retry Element Click    ${destination_url_xpath}//option[contains(.,'${type}')]
+    Retry Element Click  ${destination_url_xpath}
+    Retry Element Click  //div[contains(@class, 'selectBox')]//li[contains(.,'${type}')]
 
 Check New Rule UI Without Endpoint
     Retry Element Click    ${new_replication-rule_button}
