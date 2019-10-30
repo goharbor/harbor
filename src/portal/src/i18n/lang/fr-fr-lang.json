@@ -160,7 +160,8 @@
             "REPLICATION": "Réplication",
             "CONFIG": "Configuration",
             "VULNERABILITY": "Vulnerability",
-            "GARBAGE_COLLECTION": "Garbage Collection"
+            "GARBAGE_COLLECTION": "Garbage Collection",
+            "INTERROGATION_SERVICES": "Interrogation Services"
         },
         "LOGS": "Logs",
         "TASKS": "Tasks",

@@ -154,9 +154,7 @@ Switch To System Settings
 
 Switch To Project Quotas
     Sleep  1
-    Retry Element Click  xpath=${configuration_xpath}
-    Retry Element Click  xpath=${configuration_system_tabsheet_id}
-    Retry Element Click  xpath=${configuration_project_quotas_tabsheet_id}
+    Retry Element Click  xpath=//clr-main-container//clr-vertical-nav//a[contains(.,'Project Quotas')]
     Sleep  1
 
 Modify Token Expiration
@@ -243,8 +241,7 @@ Disable Read Only
 ## System labels
 Switch To System Labels
     Sleep  1
-    Retry Element Click  xpath=${configuration_xpath}
-    Retry Element Click  xpath=//*[@id='config-label']
+    Retry Element Click  xpath=//clr-main-container//clr-vertical-nav//a[contains(.,'Labels')]
 
 ## System labels
 Switch To Configuration System Setting
@@ -254,8 +251,7 @@ Switch To Configuration System Setting
 
 Switch To Configuration Project Quotas
     Sleep  1
-    Retry Element Click  xpath=${configuration_xpath}
-    Retry Element Click  xpath=${configuration_project_quotas}
+    Retry Element Click  xpath=//clr-main-container//clr-vertical-nav//a[contains(.,'Project Quotas')]
 
 Create New Labels
     [Arguments]  ${labelname}
