@@ -1230,15 +1230,15 @@
         "ACTION": "操作"
     },
     "IMMUTABLE_TAG": {
-        "IMMUTABLE_RULES": "不变的规则",
+        "IMMUTABLE_RULES": "不可变的Tag规则",
         "ADD_RULE": "添加新规则",
         "ADD_RULE_HELP_1": "点击添加按钮可添加规则。",
         "EDIT": "修改",
         "DISABLE": "禁用",
         "ENABLE": "启用",
         "DELETE": "删除",
-        "ADD_TITLE": "添加不变的规则",
-        "ADD_SUBTITLE": "为当前项目指定不改变规则。所有不改变的规则独立计算并且适用于所有符合条件的仓库。",
+        "ADD_TITLE": "添加不可变的Tag规则",
+        "ADD_SUBTITLE": "为此项目指定不可变的Tag规则。注意：所有不可变的Tag规则都将首先被独立计算，合并后最终获得不可变规则的集合。",
         "IN_REPOSITORIES": "应用到仓库",
         "REP_SEPARATOR": "使用逗号分隔repos,repo*和**。",
         "TAGS": "Tags",
