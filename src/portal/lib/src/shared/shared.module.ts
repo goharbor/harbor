@@ -1,6 +1,6 @@
 import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { HttpModule, Http } from '@angular/http';
+import { HttpModule, Http, XSRFStrategy, CookieXSRFStrategy } from '@angular/http';
 import { HttpClientModule, HttpClient} from '@angular/common/http';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -13,6 +13,7 @@ import { ClipboardModule } from '../third-party/ngx-clipboard/index';
 import { MyMissingTranslationHandler } from '../i18n/missing-trans.handler';
 import { TranslatorJsonLoader } from '../i18n/local-json.loader';
 import { IServiceConfig, SERVICE_CONFIG } from '../service.config';
+import { XSRFStrategyToBeUsed } from '../service/XSRDStrategyToBeUsed.service';
 
 /*export function HttpLoaderFactory(http: Http) {
     return new TranslateHttpLoader(http, 'i18n/lang/', '-lang.json');
@@ -74,6 +75,8 @@ export function GeneralTranslatorLoader(http: HttpClient, config: IServiceConfig
         MarkdownModule,
         TranslateModule,
     ],
-    providers: [CookieService]
+    providers: [CookieService,
+        { provide: XSRFStrategy, useClass: XSRFStrategyToBeUsed, deps: [ CookieService]}
+    ]
 })
 export class SharedModule { }
