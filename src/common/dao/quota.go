@@ -220,12 +220,15 @@ func quotaOrderBy(query ...*models.QuotaQuery) string {
 				sort = sort[1:]
 			}
 
-			prefix := []string{"hard.", "used."}
-			for _, p := range prefix {
-				if strings.HasPrefix(sort, p) {
-					field := fmt.Sprintf("%s->>'%s'", strings.TrimSuffix(p, "."), strings.TrimPrefix(sort, p))
-					orderBy = fmt.Sprintf("(%s) %s", castQuantity(field), order)
-					break
+			prefixes := []string{"hard.", "used."}
+			for _, prefix := range prefixes {
+				if strings.HasPrefix(sort, prefix) {
+					resource := strings.TrimPrefix(sort, prefix)
+					if types.IsValidResource(types.ResourceName(resource)) {
+						field := fmt.Sprintf("%s->>'%s'", strings.TrimSuffix(prefix, "."), resource)
+						orderBy = fmt.Sprintf("(%s) %s", castQuantity(field), order)
+						break
+					}
 				}
 			}
 		}
