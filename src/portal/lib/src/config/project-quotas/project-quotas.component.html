@@ -1,17 +1,17 @@
-<div class="color-0 pt-1">
+<div class="color-0 pt-19px font-size-13">
     <div class="row" class="label-config">
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 quota-top">
             <div class="default-quota">
                 <div>
-                    <div class="default-quota-text pr-1"><span>{{'QUOTA.PROJECT_QUOTA_DEFAULT_ARTIFACT' | translate}}</span><span
+                    <div class="default-quota-text"><span class="width-10rem">{{'QUOTA.PROJECT_QUOTA_DEFAULT_ARTIFACT' | translate}}</span><span
                             class="num-count">{{ quotaHardLimitValue?.countLimit === -1? ('QUOTA.UNLIMITED'| translate): quotaHardLimitValue?.countLimit }}</span>
                     </div>
-                    <div class="default-quota-text pr-1"><span>{{'QUOTA.PROJECT_QUOTA_DEFAULT_DISK' | translate}}</span><span class="num-count">
+                    <div class="default-quota-text"><span class="width-10rem">{{'QUOTA.PROJECT_QUOTA_DEFAULT_DISK' | translate}}</span><span class="num-count">
                             {{ quotaHardLimitValue?.storageLimit === -1?('QUOTA.UNLIMITED' | translate): getIntegerAndUnit(quotaHardLimitValue?.storageLimit, 0).partNumberHard}}
                             {{ quotaHardLimitValue?.storageLimit === -1?'':quotaHardLimitValue?.storageUnit }}</span>
                     </div>
                 </div>
-                <button class="btn btn-link btn-sm default-quota-edit-button pt-0 mt-0"
+                <button class="btn btn-link btn-sm default-quota-edit-button pt-0 mt-0 pl-0"
                     (click)="editDefaultQuota(quotaHardLimitValue)">{{'QUOTA.EDIT' | translate}}</button>
             </div>
             <div class="refresh-div mr-1">
