@@ -612,6 +612,6 @@ Test Case - Project Level Image Serverity Policy
     Scan Repo  ${sha256}  Succeed
     Navigate To Projects
     Go Into Project  project${d}
-    Set Vulnerabilty Serverity  0
+    Set Vulnerabilty Serverity  2
     Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  tag=${sha256}
     Close Browser
