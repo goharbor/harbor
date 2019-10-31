@@ -1,12 +1,14 @@
 # Installing Harbor
 
-This guide describes how to install and configure Harbor by using either the online or offline installer. The installation processes are almost the same.
+This guide describes how to install and configure Harbor for the first time.
 
-If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see the **[Harbor Upgrade and Migration Guide](migration_guide.md)**.
+If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see the [Upgrading Harbor](../../administration/upgrade/_index.md).
 
-In addition, the Harbor community created instructions describing how to deploy Harbor on Kubernetes. If you want to deploy Harbor to Kubernetes, see [Harbor on Kubernetes](kubernetes_deployment.md).
+You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see the [Harbor High Availability Guide](https://github.com/goharbor/harbor-helm/blob/master/docs/High%20Availability.md) in the https://github.com/goharbor/harbor-helm repository.
 
-The Harbor installation process involves the following stages:
+Before you install Harbor, you can test its functionality on a demo server that the Harbor team has made available. For information, see [Test Harbor with the Demo Server](demo_server.md).
+
+The standard Harbor installation process involves the following stages:
 
 1. Make sure that your target host meets the [Harbor Installation Prerequisites](installation_prereqs.md).
 1. [Configure HTTPS Access to Harbor](configure_https.md)

@@ -23,8 +23,6 @@ This section describes how to install Harbor and perform the required initial co
   - [Configure Authentication](install_config/configuration/configure_authentication.md)
   - [Other General Settings](install_config/configuration/general_settings.md)
   
-You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see the [Harbor High Availability Guide](https://github.com/goharbor/harbor-helm/blob/master/docs/High%20Availability.md) in the https://github.com/goharbor/harbor-helm repository.
-
 ## Harbor Administration
 
 This section describes how to use and maintain Harbor after deployment. These day 2 operations are performed by the Harbor Administrator.
