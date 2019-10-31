@@ -366,27 +366,28 @@ func (pc PmsPolicyChecker) VulnerablePolicy(name string) (bool, vuln.Severity, m
 		log.Errorf("Unexpected error when getting the project, error: %v", err)
 		return true, vuln.Unknown, wl
 	}
+
 	mgr := whitelist.NewDefaultManager()
 	if project.ReuseSysCVEWhitelist() {
 		w, err := mgr.GetSys()
 		if err != nil {
 			log.Error(errors.Wrap(err, "policy checker: vulnerable policy"))
-			return project.VulPrevented(), vuln.Severity(project.Severity()), wl
-		}
-		wl = *w
+		} else {
+			wl = *w
 
-		// Use the real project ID
-		wl.ProjectID = project.ProjectID
+			// Use the real project ID
+			wl.ProjectID = project.ProjectID
+		}
 	} else {
 		w, err := mgr.Get(project.ProjectID)
 		if err != nil {
 			log.Error(errors.Wrap(err, "policy checker: vulnerable policy"))
-			return project.VulPrevented(), vuln.Severity(project.Severity()), wl
+		} else {
+			wl = *w
 		}
-		wl = *w
 	}
-	return project.VulPrevented(), vuln.Severity(project.Severity()), wl
 
+	return project.VulPrevented(), getProjectVulnSeverity(project), wl
 }
 
 // NewPMSPolicyChecker returns an instance of an pmsPolicyChecker
@@ -560,4 +561,21 @@ func ParseManifestInfoFromPath(req *http.Request) (*ManifestInfo, error) {
 	}
 
 	return info, nil
+}
+
+func getProjectVulnSeverity(project *models.Project) vuln.Severity {
+	mp := map[string]vuln.Severity{
+		models.SeverityNegligible: vuln.Negligible,
+		models.SeverityLow:        vuln.Low,
+		models.SeverityMedium:     vuln.Medium,
+		models.SeverityHigh:       vuln.High,
+		models.SeverityCritical:   vuln.Critical,
+	}
+
+	severity, ok := mp[project.Severity()]
+	if !ok {
+		return vuln.Unknown
+	}
+
+	return severity
 }
