@@ -253,8 +253,18 @@ func main() {
 		log.Fatalf("init proxy error, %v", err)
 	}
 
-	if err := quotaSync(); err != nil {
-		log.Fatalf("quota migration error, %v", err)
+	syncQuota := os.Getenv("SYNC_QUOTA")
+	doSyncQuota, err := strconv.ParseBool(syncQuota)
+	if err != nil {
+		log.Errorf("Failed to parse SYNC_QUOTA: %v", err)
+		doSyncQuota = true
+	}
+	if doSyncQuota {
+		if err := quotaSync(); err != nil {
+			log.Fatalf("quota migration error, %v", err)
+		}
+	} else {
+		log.Infof("Because SYNC_QUOTA set false , no need to sync quota \n")
 	}
 
 	beego.Run()
