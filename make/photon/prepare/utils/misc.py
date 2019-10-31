@@ -1,6 +1,6 @@
 import os
 import string
-import random
+import secrets
 from pathlib import Path
 
 from g import DEFAULT_UID, DEFAULT_GID
@@ -76,7 +76,7 @@ def validate_crt_subj(dirty_subj):
 
 
 def generate_random_string(length):
-    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
+    return ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
 
 
 def prepare_dir(root: str, *args, **kwargs) -> str:
