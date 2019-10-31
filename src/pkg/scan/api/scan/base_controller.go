@@ -28,13 +28,13 @@ import (
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/pkg/errs"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
 	sc "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	"github.com/goharbor/harbor/src/pkg/scan/errs"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/google/uuid"
@@ -127,7 +127,7 @@ func (bc *basicController) Scan(artifact *v1.Artifact) error {
 
 	// In case it does not exist
 	if r == nil {
-		return errs.WithCode(errs.PreconditionFailed, errs.Errorf("no available scanner for project: %s", artifact.NamespaceID))
+		return errs.WithCode(errs.PreconditionFailed, errs.Errorf("no available scanner for project: %d", artifact.NamespaceID))
 	}
 
 	// Check if it is disabled

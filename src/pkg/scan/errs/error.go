@@ -34,7 +34,7 @@ func codeTexts(code uint16) string {
 	case Common:
 		return "common"
 	case Conflict:
-		return "not found"
+		return "conflict"
 	case PreconditionFailed:
 		return "Precondition failed"
 	default:
@@ -56,7 +56,7 @@ type Error struct {
 
 // Error message
 func (e *Error) Error() string {
-	emsg := fmt.Sprintf("error: code %d:%s : %s", e.Code, e.TextCode, e.Message)
+	emsg := fmt.Sprintf("error: %d(%s) : %s", e.Code, e.TextCode, e.Message)
 	if e.Cause != nil {
 		emsg = fmt.Sprintf("%s : cause: %s", emsg, e.Cause.Error())
 	}
