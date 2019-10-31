@@ -1444,70 +1444,6 @@ paths:
           description: Retrieved manifests from a relevant repository not found.
         '500':
           description: Unexpected internal errors.
-  '/repositories/{repo_name}/tags/{tag}/scan':
-    post:
-      summary: Scan the image.
-      description: |
-        Trigger jobservice to call Clair API to scan the image identified by the repo_name and tag.  Only project admins have permission to scan images under the project.
-      parameters:
-        - name: repo_name
-          in: path
-          type: string
-          required: true
-          description: Repository name
-        - name: tag
-          in: path
-          type: string
-          required: true
-          description: Tag name
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Successfully created the job to scan image.
-        '401':
-          description: User needs to login or call the API with correct credentials.
-        '403':
-          description: User doesn't have permission to perform the action.
-        '404':
-          description: The image does not exist in Harbor.
-        '415':
-          $ref: '#/responses/UnsupportedMediaType'
-        '503':
-          description: Harbor is not deployed with Clair.
-  '/repositories/{repo_name}/tags/{tag}/vulnerability/details':
-    get:
-      summary: Get vulnerability details of the image.
-      description: |
-        Call Clair API to get the vulnerability based on the previous successful scan.
-      parameters:
-        - name: repo_name
-          in: path
-          type: string
-          required: true
-          description: Repository name
-        - name: tag
-          in: path
-          type: string
-          required: true
-          description: Tag name
-      tags:
-        - Products
-      responses:
-        '200':
-          description: Successfully retrieved the vulnerabilities.
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/VulnerabilityItem'
-        '401':
-          description: User needs to login or call the API with correct credentials.
-        '403':
-          description: User doesn't have permission to perform the action.
-        '404':
-          description: The image does not exist in Harbor.
-        '503':
-          description: Harbor is not deployed with Clair.
   '/repositories/{repo_name}/signatures':
     get:
       summary: Get signature information of a repository
@@ -4119,7 +4055,6 @@ paths:
         '200':
           description: Get Retention Metadatas successfully.
           schema:
-            type: object
             $ref: '#/definitions/RetentionMetadata'
 
   '/retentions':
@@ -4169,7 +4104,6 @@ paths:
         '200':
           description: Get Retention Policy successfully.
           schema:
-            type: object
             $ref: '#/definitions/RetentionPolicy'
         '401':
           description: User need to log in first.
@@ -4377,6 +4311,406 @@ paths:
           description: User have no permission.
         '500':
           description: Unexpected internal errors.
+
+  '/scanners':
+    get:
+      summary: List scanner registrations
+      description: |
+        Returns a list of currently configured scanner registrations.
+      tags:
+        - Products
+        - Scanners
+      responses:
+        '200':
+          description: A list of scanner registrations.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ScannerRegistration'
+        '400':
+          description: Bad query paramters
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed, system role required
+        '500':
+          description: Internal server error happened
+
+    post:
+      summary: Create a scanner registration
+      description: |
+        Creats a new scanner registration with the given data.
+      tags:
+        - Scanners
+      parameters:
+        - name: registration
+          in: body
+          description: A scanner registration to be created.
+          required: true
+          schema:
+            $ref: '#/definitions/ScannerRegistrationReq'
+      responses:
+        '201':
+          description: Created successfully
+        '400':
+          description: Bad registration request
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed, system role required
+        '500':
+          description: Internal server error happened
+  '/scanners/ping':
+    post:
+      summary: Tests scanner registration settings
+      description: |
+        Pings scanner adapter to test endpoint URL and authorization settings.
+      tags:
+        - Products
+        - Scanners
+      parameters:
+        - name: settings
+          in: body
+          description: A scanner registration settings to be tested.
+          required: true
+          schema:
+            $ref: '#/definitions/ScannerRegistrationSettings'
+      responses:
+        '200':
+          description: Test succeeded
+        '400':
+          description: Bad registration settings
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed, system role required
+        '500':
+          description: Internal server error happened
+  '/scanners/{registration_id}':
+    get:
+      summary: Get a scanner registration details
+      description: |
+        Retruns the details of the specified scanner registration.
+      tags:
+        - Products
+        - Scanners
+      parameters:
+        - name: registration_id
+          in: path
+          description: The scanner registration identifer.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: The details of the scanner registration.
+          schema:
+            $ref: '#/definitions/ScannerRegistration'
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed, system role required
+        '404':
+          description: The requested object is not found
+        '500':
+          description: Internal server error happened
+    put:
+      summary: Update a scanner registration
+      description: |
+        Updates the specified scanner registration.
+      tags:
+        - Scanners
+      parameters:
+        - name: registration_id
+          in: path
+          description: The scanner registration identifier.
+          required: true
+          type: string
+        - name: registration
+          in: body
+          required: true
+          description: A scanner registraiton to be updated.
+          schema:
+            $ref: '#/definitions/ScannerRegistrationReq'
+      responses:
+        '200':
+          description: Updated successfully
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed, system role required
+        '404':
+          description: The requested object is not found
+        '500':
+          description: Internal server error happened
+    delete:
+      summary: Delete a scanner registration
+      description: |
+        Deletes the specified scanner registration.
+      tags:
+        - Scanners
+      parameters:
+        - name: registration_id
+          in: path
+          description: The scanner registration identifier.
+          required: true
+          type: string
+      responses:
+        '200':
+          description: Deleted successfully and return the deleted registration
+          schema:
+            $ref: '#/definitions/ScannerRegistration'
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed, system role required or registration is immutable
+        '404':
+          description: The requested object is not found
+        '500':
+          description: Internal server error happened
+    patch:
+      summary: Set system default scanner registration
+      description: |
+        Set the specified scanner registration as the system default one.
+      tags:
+        - Scanners
+      parameters:
+        - name: registration_id
+          in: path
+          description: The scanner registration identifier.
+          required: true
+          type: string
+        - name: payload
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/IsDefault'
+      responses:
+        '200':
+          description: Successfully set the specified scanner registration as system default
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed
+        '500':
+          description: Internal server error happened
+  '/scanners/{registration_id}/metadata':
+    get:
+      summary: Get the metadata of the specified scanner registration
+      description: |
+        Get the metadata of the specified scanner registration, including the capabilities and customzied properties.
+      tags:
+        - Products
+        - Scanners
+      parameters:
+        - name: registration_id
+          in: path
+          required: true
+          description: The scanner registration identifier.
+          type: string
+      responses:
+        '200':
+          description: The metadata of the specified scanner adapter
+          schema:
+            $ref: '#/definitions/ScannerAdapterMetadata'
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed
+        '500':
+          description: Internal server error happened
+  '/projects/{project_id}/scanner':
+    get:
+      summary: Get project level scanner
+      description: Get the scanner registration of the specified project. If no scanner registration is configured for the specified project, the system default scanner registration will be returned.
+      tags:
+        - Products
+        - Scanners
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The project identifier.
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The details of the scanner registration.
+          schema:
+            $ref: '#/definitions/ScannerRegistration'
+        '400':
+          description: Bad project ID
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed
+        '404':
+          description: The requested object is not found
+        '500':
+          description: Internal server error happened
+    put:
+      summary: Configure scanner for the specified project
+      description: Set one of the system configured scanner registration as the indepndent scanner of the specified project.
+      tags:
+        - Scanners
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The project identifier.
+          type: integer
+          format: int64
+        - name: payload
+          in: body
+          required: true
+          schema:
+            $ref: '#/definitions/ProjectScanner'
+      responses:
+        '200':
+          description: Successfully set the project level scanner
+        '400':
+          description: Bad project ID
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed
+        '404':
+          description: The requested object is not found
+        '500':
+          description: Internal server error happened
+  '/projects/{project_id}/scanner/candidates':
+    get:
+      summary: Get scanner registration candidates for configurating project level scanner
+      description: |
+        Retrieve the system configured scanner registrations as candidates of setting project level scanner.
+      tags:
+        - Products
+        - Scanners
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          description: The project identifier.
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: A list of scanner registrations.
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/ScannerRegistration'
+        '400':
+          description: Bad project ID or query parameters
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed
+        '500':
+          description: Internal server error happened
+  '/repositories/{repo_name}/tags/{tag}/scan':
+    post:
+      summary: Scan the image.
+      description: |
+        Trigger a scan targeting the artifact identified by the repo_name and tag.
+      tags:
+        - Products
+        - Scan
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: Repository name
+        - name: tag
+          in: path
+          type: string
+          required: true
+          description: Tag name
+      responses:
+        '202':
+          description: Scan request is successfully accepted
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed
+        '404':
+          description: The target artifact is not found
+        '500':
+          description: Internal server error happened
+    get:
+      summary: Get the scan report
+      description: |
+        Retrieve the scan report for the artifact identified by the repo_name and tag.
+      tags:
+        - Scan
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: Repository name
+        - name: tag
+          in: path
+          type: string
+          required: true
+          description: Tag name
+        - name: Accept
+          in: header
+          type: string
+          description: |
+            Mimetype in header. e.g: "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"
+      responses:
+        200:
+          description: The report details of the specified artifact identified by the repo_name and tag.
+          schema:
+            $ref: '#/definitions/Report'
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed
+        '404':
+          description: The target artifact is not found
+        '500':
+          description: Internal server error happened
+  '/repositories/{repo_name}/tags/{tag}/scan/{uuid}/log':
+    get:
+      summary: Get scan log
+      description: Get the log text stream for the given artifact and scan action.
+      tags:
+        - Products
+        - Scan
+      parameters:
+        - name: repo_name
+          in: path
+          type: string
+          required: true
+          description: Repository name
+        - name: tag
+          in: path
+          type: string
+          required: true
+          description: Tag name
+        - name: uuid
+          in: path
+          type: string
+          required: true
+          description: the scan unique identifier
+      produces:
+        - text/plain
+      responses:
+        '200':
+          description: OK
+          schema:
+            type: string
+            example: "The scan log text"
+        '401':
+          description: Unauthorized request
+        '403':
+          description: Request is not allowed
+        '404':
+          description: The target artifact is not found
+        '500':
+          description: Internal server error happened
 
 responses:
   OK:
@@ -5116,7 +5450,7 @@ definitions:
         type: object
         description: 'The signature of image, defined by RepoSignature. If it is null, the image is unsigned.'
       scan_overview:
-        type: object
+        $ref: '#/definitions/NativeReportSummary'
         description: The overview of the scan result.
       labels:
         type: array
@@ -5167,27 +5501,6 @@ definitions:
       update_time:
         type: string
         description: The update time of repository.
-  VulnerabilityItem:
-    type: object
-    properties:
-      id:
-        type: string
-        description: 'ID of the vulnerability, normally it is the CVE ID'
-      severity:
-        type: integer
-        description: '1-Negligible, 2-Unknown, 3-Low, 4-Medium, 5-High'
-      package:
-        type: string
-        description: The packge that introduces the vulnerability.
-      version:
-        type: string
-        description: The version of the package.
-      description:
-        type: string
-        description: The description of the vulnerability.
-      fixedVersion:
-        type: string
-        description: 'The version which the vulnerability is fixed, this is an optional property.'
   Configurations:
     type: object
     properties:
@@ -6376,3 +6689,306 @@ definitions:
         type: string
       enabled:
         type: boolean
+
+  ScannerRegistration:
+    type: object
+    description: |
+      Registration represents a named configuration for invoking a scanner via its adapter.
+    properties:
+      uuid:
+        type: string
+        description: The unique identifier of this registration.
+      name:
+        type: string
+        example: Clair
+        description: The name of this registration.
+      description:
+        type: string
+        description: An optional description of this registration.
+        example: |
+          A free-to-use tool that scans container images for package vulnerabilities.
+      url:
+        type: string
+        format: url
+        description: A base URL of the scanner adapter
+        example: http://harbor-scanner-clair:8080
+      disabled:
+        type: boolean
+        default: false
+        description: Indicate whether the registration is enabled or not
+      is_default:
+        type: boolean
+        default: false
+        description: Indicate if the registration is set as the system default one
+      health:
+        type: string
+        default: ""
+        description: Indicate the healthy of the registration
+        example: "healthy"
+      auth:
+        type: string
+        default: ""
+        description: |
+          Specify what authentication approach is adopted for the HTTP communications.
+          Supported types Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key"
+        example: "Bearer"
+      access_credential:
+        type: string
+        description: |
+          An optional value of the HTTP Authorization header sent with each request to the Scanner Adapter API.
+        example: "Bearer: JWTTOKENGOESHERE"
+      skip_certVerify:
+        type: boolean
+        default: false
+        description: Indicate if skip the certificate verification when sending HTTP requests
+      use_internal_addr:
+        type: boolean
+        default: false
+        description: Indicate whether use internal registry addr for the scanner to pull content or not
+      adapter:
+        type: string
+        description: Optional property to describe the name of the scanner registration
+        example: "Clair"
+      vendor:
+        type: string
+        description: Optional property to describe the vendor of the scanner registration
+        example: "CentOS"
+      version:
+        type: string
+        description: Optional property to describe the version of the scanner registration
+        example: "1.0.1"
+
+  ScannerRegistrationReq:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of this registration
+        example: Clair
+      description:
+        type: string
+        description: An optional description of this registration.
+        example: |
+          A free-to-use tool that scans container images for package vulnerabilities.
+      url:
+        type: string
+        format: url
+        description: A base URL of the scanner adapter.
+        example: http://harbor-scanner-clair:8080
+      auth:
+        type: string
+        default: ""
+        description: |
+          Specify what authentication approach is adopted for the HTTP communications.
+          Supported types Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key"
+        example: "Bearer"
+      access_credential:
+        type: string
+        description: |
+          An optional value of the HTTP Authorization header sent with each request to the Scanner Adapter API.
+        example: "Bearer: JWTTOKENGOESHERE"
+      skip_certVerify:
+        type: boolean
+        default: false
+        description: Indicate if skip the certificate verification when sending HTTP requests
+      use_internal_addr:
+        type: boolean
+        default: false
+        description: Indicate whether use internal registry addr for the scanner to pull content or not
+      disabled:
+        type: boolean
+        default: false
+        description: Indicate whether the registration is enabled or not
+
+  ScannerRegistrationSettings:
+    type: object
+    properties:
+      name:
+        type: string
+        description: The name of this registration
+        example: Clair
+      url:
+        type: string
+        format: url
+        description: A base URL of the scanner adapter.
+        example: http://harbor-scanner-clair:8080
+      auth:
+        type: string
+        default: ""
+        description: |
+          Specify what authentication approach is adopted for the HTTP communications.
+          Supported types Basic", "Bearer" and api key header "X-ScannerAdapter-API-Key"
+      access_credential:
+        type: string
+        description: |
+          An optional value of the HTTP Authorization header sent with each request to the Scanner Adapter API.
+        example: "Bearer: JWTTOKENGOESHERE"
+
+  IsDefault:
+    type: object
+    properties:
+      is_default:
+        type: boolean
+        description: A flag indicating whether a scanner registration is default.
+  Scanner:
+    type: object
+    properties:
+      name:
+        type: string
+        description: Name of the scanner
+        example: "Clair"
+      vendor:
+        type: string
+        description: Name of the scanner provider
+        example: "CentOS"
+      version:
+        type: string
+        description: Version of the scanner adapter
+        example: "1.0.1"
+
+  ScannerCapability:
+    type: object
+    properties:
+      consumes_mime_types:
+        type: array
+        items:
+          type: string
+          example: "application/vnd.docker.distribution.manifest.v2+json"
+      produces_mime_types:
+        type: array
+        items:
+          type: string
+          example: "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"
+
+  ScannerAdapterMetadata:
+    type: object
+    description: The metadata info of the scanner adapter
+    properties:
+      name:
+        $ref: '#/definitions/Scanner'
+      capabilities:
+        type: array
+        items:
+          $ref: '#/definitions/ScannerCapability'
+      properties:
+        type: object
+        additionalProperties:
+          type: string
+        example:
+          harbor.scanner-adapter/registry-authorization-type: 'Bearer'
+
+  ProjectScanner:
+    type: object
+    properties:
+      uuid:
+        type: string
+        description: The identifier of the scanner registration
+
+  VulnerabilityItem:
+    type: object
+    properties:
+      id:
+        type: string
+        description: ID of the CVE.
+        example: 'CVE-2017-8283'
+      package:
+        type: string
+        description: 'An operating system or software dependency package containing the vulnerability.'
+        example: 'dpkg'
+      version:
+        type: string
+        description: 'The version of the package containing the vulnerability.'
+        example: '1.17.27'
+      fix_version:
+        type: string
+        description: 'The version of the package containing the fix if available.'
+        example: '1.18.0'
+      severity:
+        type: string
+        description: 'A standard scale for measuring the severity of a vulnerability.'
+        example: 'high'
+      description:
+        type: string
+        description: 'Description of the CVE'
+        example: 'dpkg-source in dpkg 1.3.0 through 1.18.23 is able to use a non-GNU patch program'
+      links:
+        type: array
+        description: 'The list of link to the upstream database with the full description of the vulnerability.'
+        items:
+          type: string
+          example: 'https://security-tracker.debian.org/tracker/CVE-2017-8283'
+  Report:
+    type: object
+    description: 'The harbor native report format'
+    properties:
+      generated_at:
+        type: string
+        description: 'Time of generating this report'
+        example: '2006-01-02T15:04:05'
+      severity:
+        type: string
+        description: 'A standard scale for measuring the severity of a vulnerability.'
+        example: 'high'
+      vulnerabilities:
+        type: array
+        items:
+          $ref: '#/definitions/VulnerabilityItem'
+      scanner:
+        $ref: '#/definitions/Scanner'
+
+  NativeReportSummary:
+    type: object
+    description: 'The summary for the native report'
+    properties:
+      report_id:
+        type: string
+        description: 'id of the native scan report'
+        example: '5f62c830-f996-11e9-957f-0242c0a89008'
+      scan_status:
+        type: string
+        description: 'The status of the report generating process'
+        example: 'Success'
+      severity:
+        type: string
+        description: 'The overall severity'
+        example: 'High'
+      duration:
+        type: integer
+        format: int64
+        description: 'The seconds spent for generating the report'
+        example: 300
+      summary:
+        $ref: '#/definitions/VulnerabilitySummary'
+      start_time:
+        type: string
+        format: date-time
+        description: 'The start time of the scan process that generating report'
+        example: '2006-01-02T14:04:05'
+      end_time:
+        type: string
+        format: date-time
+        description: 'The end time of the scan process that generating report'
+        example: '2006-01-02T15:04:05'
+
+  VulnerabilitySummary:
+    type: object
+    description: |
+      VulnerabilitySummary contains the total number of the foun d vulnerabilities number and numbers of each severity level.
+    properties:
+      total:
+        type: integer
+        format: int
+        description: 'The total number of the found vulnerabilities'
+        example: 500
+      fixable:
+        type: integer
+        format: int
+        description: 'The number of the fixable vulnerabilities'
+        example: 100
+      summary:
+        type: object
+        description: 'Numbers of the vulnerabilities with different severity'
+        additionalProperties:
+          type: integer
+          format: int
+          example: 10
