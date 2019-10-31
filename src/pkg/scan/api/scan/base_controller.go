@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/errs"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
@@ -124,9 +125,14 @@ func (bc *basicController) Scan(artifact *v1.Artifact) error {
 		return errors.Wrap(err, "scan controller: scan")
 	}
 
+	// In case it does not exist
+	if r == nil {
+		return errs.WithCode(errs.PreconditionFailed, errs.Errorf("no available scanner for project: %s", artifact.NamespaceID))
+	}
+
 	// Check if it is disabled
 	if r.Disabled {
-		return errors.Errorf("scanner %s is disabled", r.Name)
+		return errs.WithCode(errs.PreconditionFailed, errs.Errorf("scanner %s is disabled", r.Name))
 	}
 
 	// Check the health of the registration by ping.
@@ -145,6 +151,7 @@ func (bc *basicController) Scan(artifact *v1.Artifact) error {
 
 	producesMimes := make([]string, 0)
 	matched := false
+	statusConflict := false
 	for _, ca := range meta.Capabilities {
 		for _, cm := range ca.ConsumesMimeTypes {
 			if cm == artifact.MimeType {
@@ -166,6 +173,12 @@ func (bc *basicController) Scan(artifact *v1.Artifact) error {
 				}
 				_, e := bc.manager.Create(reportPlaceholder)
 				if e != nil {
+					// Check if it is a status conflict error with common error format.
+					// Common error returned if and only if status conflicts.
+					if !statusConflict {
+						statusConflict = errs.AsError(e, errs.Conflict)
+					}
+
 					// Recorded by error wrap and logged at the same time.
 					if err == nil {
 						err = e
@@ -192,6 +205,10 @@ func (bc *basicController) Scan(artifact *v1.Artifact) error {
 	// If all the record are created failed.
 	if len(producesMimes) == 0 {
 		// Return the last error
+		if statusConflict {
+			return errs.WithCode(errs.Conflict, errs.Wrap(err, "scan controller: scan"))
+		}
+
 		return errors.Wrap(err, "scan controller: scan")
 	}
 
@@ -241,7 +258,7 @@ func (bc *basicController) GetReport(artifact *v1.Artifact, mimeTypes []string) 
 	}
 
 	if r == nil {
-		return nil, errors.New("no scanner registration configured")
+		return nil, errs.WithCode(errs.PreconditionFailed, errs.Errorf("no scanner registration configured for project: %d", artifact.NamespaceID))
 	}
 
 	return bc.manager.GetBy(artifact.Digest, r.UUID, mimes)

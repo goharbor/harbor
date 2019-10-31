@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/errs"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/google/uuid"
@@ -78,7 +79,7 @@ func (bm *basicManager) Create(r *scan.Report) (string, error) {
 		// Status conflict
 		if theCopy.StartTime.Add(reportTimeout).After(time.Now()) {
 			if theStatus.Compare(job.RunningStatus) <= 0 {
-				return "", errors.Errorf("conflict: a previous scanning is %s", theCopy.Status)
+				return "", errs.WithCode(errs.Conflict, errs.Errorf("a previous scan process is %s", theCopy.Status))
 			}
 		}
 

@@ -18,14 +18,14 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/pkg/scan/report"
-
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/errs"
 	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/pkg/errors"
 )
@@ -94,7 +94,19 @@ func (sa *ScanAPI) Scan() {
 	}
 
 	if err := scan.DefaultController.Scan(sa.artifact); err != nil {
-		sa.SendInternalServerError(errors.Wrap(err, "scan API: scan"))
+		e := errors.Wrap(err, "scan API: scan")
+
+		if errs.AsError(err, errs.PreconditionFailed) {
+			sa.SendPreconditionFailedError(e)
+			return
+		}
+
+		if errs.AsError(err, errs.Conflict) {
+			sa.SendConflictError(e)
+			return
+		}
+
+		sa.SendInternalServerError(e)
 		return
 	}
 
@@ -117,7 +129,14 @@ func (sa *ScanAPI) Report() {
 	// Get the reports
 	reports, err := scan.DefaultController.GetReport(sa.artifact, producesMimes)
 	if err != nil {
-		sa.SendInternalServerError(errors.Wrap(err, "scan API: get report"))
+		e := errors.Wrap(err, "scan API: get report")
+
+		if errs.AsError(err, errs.PreconditionFailed) {
+			sa.SendPreconditionFailedError(e)
+			return
+		}
+
+		sa.SendInternalServerError(e)
 		return
 	}
 
