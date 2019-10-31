@@ -1,6 +1,6 @@
 # Configuring Harbor with HTTPS Access
 
-Because Harbor does not ship with any certificates, it uses HTTP by default to serve registry requests. However, using HTTP is acceptable only in air-gapped test or development environments that do not have a connection to the external internet. Using HTTP in environments that are not air-gapped exposes you to man-in-the-middle attacks. In production environments, always use HTTPS. If you enable Content Trust with Notary to properly sign all images, you must use HTTPS. 
+In versions up to and including 1.9.x, by default Harbor uses HTTP to serve registry requests. However, using HTTP is acceptable only in air-gapped test or development environments that do not have a connection to the external internet. Using HTTP in environments that are not air-gapped exposes you to man-in-the-middle attacks. In production environments, always use HTTPS. If you enable Content Trust with Notary to properly sign all images, you must use HTTPS. 
 
 Harbor uses an `nginx` instance as a reverse proxy for all services. You use the `prepare` script to configure `nginx` to enable HTTPS.
 
