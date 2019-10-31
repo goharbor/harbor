@@ -16,6 +16,7 @@ This section describes how to install Harbor and perform the required initial co
   - [Troubleshooting Harbor Installation
 ](install_config/installation/troubleshoot_installation.md)
 - [Post-Installation Configuration](install_config/configuration/_index.md)
+  - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/configuration/reconfigure_manage_lifecycle.md)
   - [Customize the Harbor Token Service](install_config/configuration/customize_token_service.md)
   - [Configure Notary Content Trust](install_config/configuration/configure_notary_content_trust.md)
 - [Initial Configuration in the Harbor UI](install_config/configuration/initial_config_ui.md)
@@ -50,7 +51,7 @@ This section describes how to use and maintain Harbor after deployment. These da
   - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
   - [Roll Back an Upgrade](administration/upgrade/roll_back_upgrade.md)
 - [Manage the Harbor Instance](administration/manage_harbor/_index.md)
-  - [Reconfigure Harbor and Manage the Harbor Lifecycle](administration/manage_harbor/reconfigure_manage_lifecycle.md)
+  - 
   - [Access Harbor Logs](administration/manage_harbor/access_logs.md)
 
 ## Working with Harbor Projects

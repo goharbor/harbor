@@ -1,6 +1,8 @@
 # Troubleshooting Harbor Installation
 
-1. When Harbor does not work properly, run the below commands to find out if all containers of Harbor are in **UP** status:
+## Harbor Doesn't Start or Functions Incorrectly
+
+When Harbor does not function correctly, run the following commands to find out if all of Harbor's containers in **UP** status:
 ```
     $ sudo docker-compose ps
         Name                     Command               State                    Ports
@@ -16,12 +18,14 @@
   registryctl         /harbor/start.sh                 Up
 ```
 
-If a container is not in **UP** state, check the log file of that container in directory `/var/log/harbor`. For example, if the container `harbor-core` is not running, you should look at the log file `core.log`.
+If a container is not in the `Up` state, check the log file for that container in `/var/log/harbor`. For example, if the `harbor-core` container is not running, look at the `core.log` log file.
 
-2.When setting up Harbor behind an nginx proxy or elastic load balancing, look for the line below, in `common/config/nginx/nginx.conf` and remove it from the sections if the proxy already has similar settings: `location /`, `location /v2/` and `location /service/`.
+## Using nginx or Load Balancing
+
+When setting up Harbor behind an `nginx` proxy or elastic load balancing, look for the following line in `common/config/nginx/nginx.conf` and, if the proxy already has similar settings, remove it from the sections `location /`, `location /v2/` and `location /service/`.
 
 ``` sh
 proxy_set_header X-Forwarded-Proto $scheme;
 ```
 
-and re-deploy Harbor refer to the previous section "Managing Harbor's lifecycle".
+Then re-deploy Harbor per the instructions in "Managing Harbor Lifecycle.

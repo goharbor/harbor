@@ -1,5 +1,11 @@
 # Installing Harbor
 
+This guide describes how to install and configure Harbor by using either the online or offline installer. The installation processes are almost the same.
+
+If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see the **[Harbor Upgrade and Migration Guide](migration_guide.md)**.
+
+In addition, the Harbor community created instructions describing how to deploy Harbor on Kubernetes. If you want to deploy Harbor to Kubernetes, see [Harbor on Kubernetes](kubernetes_deployment.md).
+
 The Harbor installation process involves the following stages:
 
 1. Make sure that your target host meets the [Harbor Installation Prerequisites](installation_prereqs.md).
@@ -8,15 +14,9 @@ The Harbor installation process involves the following stages:
 1. [Configure the Harbor YML File](configure_yml_file.md)
 1. [Run the Installer Script](run_installer_script.md)
 
-Harbor does not ship with any certificates, and, by default, uses HTTP to serve requests. While this makes it relatively simple to set up and run - especially for a development or testing environment - it is **not** recommended for a production environment.  To enable HTTPS, see [Configure HTTPS Access to Harbor](../configuration/configure_https.md).
-
-**NOTE**: If you run a previous version of Harbor, you may need to update ```harbor.yml``` and migrate the data to fit the new database schema. For more details, please refer to **[Harbor Migration Guide](migration_guide.md)**.
-
-In addition, the deployment instructions on Kubernetes has been created by the community. Refer to [Harbor on Kubernetes](kubernetes_deployment.md) for details.
-
 ## Harbor Components
 
-The table below lists the components that are deployed when you install this version of Harbor.
+The table below lists the components that are deployed when you deploy Harbor.
 
 |Component|Version|
 |---|---|

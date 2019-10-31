@@ -1,26 +1,22 @@
 # Download the Harbor Installer:
 
-The binary of the installer can be downloaded from the [release](https://github.com/goharbor/harbor/releases) page. Choose either online or offline installer. 
+You download the installers from the **[official release](https://github.com/goharbor/harbor/releases)** page. Choose either the online or the offline installer. 
 
-- **Online installer:** The installer downloads Harbor's images from Docker hub. For this reason, the installer is very small in size.
+- **Online installer:** The online installer downloads the Harbor images from Docker hub. For this reason, the installer is very small in size.
 
-- **Offline installer:** Use this installer when the host does not have an Internet connection. The installer contains pre-built images so its size is larger.
+- **Offline installer:** Use the offline installer if the host to which are are deploying Harbor does not have a connection to the Internet. The offline installer contains pre-built images so it is larger than the online installer.
 
-All installers can be downloaded from the **[official release](https://github.com/goharbor/harbor/releases)** page.
+The installation processes are almost the same for both the online and offline installers.
 
-This guide describes the steps to install and configure Harbor by using the online or offline installer. The installation processes are almost the same.
+## Download and Unpack the Installer
 
+1. Go to the [Harbor releases page](https://github.com/goharbor/harbor/releases). 
+1. Select either the online or offline installer for the version you want to install.
+1. Use `tar` to extract the installer package:
 
-Use *tar* command to extract the package.
+   - Online installer:<pre>bash $ tar xvf harbor-online-installer-<em>version</em>.tgz</pre>
+   - Offline installer:<pre>bash $ tar xvf harbor-offline-installer-<em>version</em>.tgz</pre>
+   
+## Next Steps
 
-Online installer:
-
-```bash
-    $ tar xvf harbor-online-installer-<version>.tgz
-```
-
-Offline installer:
-
-```bash
-    $ tar xvf harbor-offline-installer-<version>.tgz
-```
+XXXX
