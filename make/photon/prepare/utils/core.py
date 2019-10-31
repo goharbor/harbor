@@ -35,8 +35,13 @@ def prepare_core(config_dict, with_notary, with_clair, with_chartmuseum):
         with_chartmuseum=with_chartmuseum,
         **config_dict)
 
-    # Copy Core app.conf
-    copy_core_config(core_conf_template_path, core_conf)
+    render_jinja(
+        core_conf_template_path,
+        core_conf,
+        uid=DEFAULT_UID,
+        gid=DEFAULT_GID,
+        xsrf_key=generate_random_string(40))
+
 
 
 def copy_core_config(core_templates_path, core_config_path):

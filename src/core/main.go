@@ -161,7 +161,7 @@ func gracefulShutdown(closing, done chan struct{}) {
 
 func main() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
-	beego.BConfig.WebConfig.Session.SessionName = "sid"
+	beego.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
 
 	redisURL := os.Getenv("_REDIS_URL")
 	if len(redisURL) > 0 {
@@ -227,9 +227,9 @@ func main() {
 	notification.Init()
 
 	filter.Init()
+	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)
-	beego.InsertFilter("/api/*", beego.BeforeRouter, filter.MediaTypeFilter("application/json", "multipart/form-data", "application/octet-stream"))
 
 	initRouters()
 

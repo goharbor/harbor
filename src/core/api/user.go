@@ -17,6 +17,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/core/filter"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -314,6 +315,11 @@ func (ua *UserAPI) Post() {
 	if !(ua.SelfRegistration || ua.IsAdmin) {
 		log.Warning("Registration can only be used by admin role user when self-registration is off.")
 		ua.SendForbiddenError(errors.New(""))
+		return
+	}
+
+	if !ua.IsAdmin && !filter.ReqCarriesSession(ua.Ctx.Request) {
+		ua.SendForbiddenError(errors.New("self-registration cannot be triggered via API"))
 		return
 	}
 

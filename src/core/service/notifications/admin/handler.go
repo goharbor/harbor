@@ -46,6 +46,7 @@ type Handler struct {
 
 // Prepare ...
 func (h *Handler) Prepare() {
+	h.EnableXSRF = false
 	var data job_model.JobStatusChange
 	err := json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data)
 	if err != nil {
