@@ -74,12 +74,8 @@ echo $container_ip
 ## --------------------------------------------- Init Version -----------------------------------------------
 buildinfo=$(drone build info goharbor/harbor $DRONE_BUILD_NUMBER)
 echo $buildinfo
-git_commit=$(git rev-parse --short=8 HEAD)
-
 #  the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
 target_release_version=$(cat ./VERSION)
-#  the harbor ui version will be shown in the about dialog.
-Harbor_UI_Version=$target_release_version-$git_commit
 #  the harbor package version is for both online and offline installer.
 #  harbor-offline-installer-v1.5.2-build.8.tgz
 Harbor_Package_Version=$target_release_version-'build.'$DRONE_BUILD_NUMBER
@@ -91,14 +87,12 @@ if [[ $DRONE_BRANCH == "master" ]]; then
 else
   Harbor_Assets_Version=$target_release_version
 fi
-export Harbor_UI_Version=$Harbor_UI_Version
 export Harbor_Assets_Version=$Harbor_Assets_Version
 #  the env is for online and offline package.
 export Harbor_Package_Version=$Harbor_Package_Version
 export NPM_REGISTRY=$NPM_REGISTRY
 
 echo "--------------------------------------------------"
-echo "Harbor UI version: $Harbor_UI_Version"
 echo "Harbor Package version: $Harbor_Package_Version"
 echo "Harbor Assets version: $Harbor_Assets_Version"
 echo "--------------------------------------------------"

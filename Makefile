@@ -90,10 +90,6 @@ CHARTFLAG=false
 VERSIONTAG=dev
 # for harbor package name
 PKGVERSIONTAG=dev
-# for harbor about dialog
-UIVERSIONTAG=dev
-VERSIONFILEPATH=$(CURDIR)
-VERSIONFILENAME=UIVERSION
 
 PREPARE_VERSION_NAME=versions
 
@@ -143,8 +139,24 @@ GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
 GOBUILDIMAGE=golang:1.12.12
 GOBUILDPATH=/harbor
-GOIMAGEBUILDCMD=/usr/local/go/bin/go
-GOIMAGEBUILD=$(GOIMAGEBUILDCMD) build -mod vendor
+
+# go build
+PKG_PATH=github.com/goharbor/harbor/src/pkg
+GITCOMMIT := $(shell git rev-parse --short=8 HEAD)
+RELEASEVERSION := $(shell cat VERSION)
+GOFLAGS=
+GOTAGS=$(if $(GOBUILDTAGS),-tags "$(GOBUILDTAGS)",)
+GOLDFLAGS=$(if $(GOBUILDLDFLAGS),--ldflags "-w -s $(GOBUILDLDFLAGS)",)
+CORE_LDFLAGS=-X $(PKG_PATH)/version.GitCommit=$(GITCOMMIT) -X $(PKG_PATH)/version.ReleaseVersion=$(RELEASEVERSION)
+ifneq ($(GOBUILDLDFLAGS),)
+	CORE_LDFLAGS += $(GOBUILDLDFLAGS)
+endif
+
+# go build command
+GOIMAGEBUILDCMD=/usr/local/go/bin/go build -mod vendor
+GOIMAGEBUILD_COMMON=$(GOIMAGEBUILDCMD) $(GOFLAGS) ${GOTAGS} ${GOLDFLAGS}
+GOIMAGEBUILD_CORE=$(GOIMAGEBUILDCMD) $(GOFLAGS) ${GOTAGS} --ldflags "-w -s $(CORE_LDFLAGS)"
+
 GOBUILDPATH_CORE=$(GOBUILDPATH)/src/core
 GOBUILDPATH_JOBSERVICE=$(GOBUILDPATH)/src/jobservice
 GOBUILDPATH_REGISTRYCTL=$(GOBUILDPATH)/src/registryctl
@@ -267,9 +279,6 @@ ifeq ($(CHARTFLAG), true)
 endif
 
 export VERSIONS_FOR_PREPARE
-ui_version:
-	@printf $(UIVERSIONTAG) > $(VERSIONFILEPATH)/$(VERSIONFILENAME);
-
 versions_prepare:
 	@echo "$$VERSIONS_FOR_PREPARE" > $(MAKE_PREPARE_PATH)/$(PREPARE_VERSION_NAME)
 
@@ -279,22 +288,22 @@ check_environment:
 compile_core:
 	@echo "compiling binary for core (golang image)..."
 	@echo $(GOBUILDPATH)
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_CORE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_CORE)/$(CORE_BINARYNAME)
+	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_CORE) $(GOBUILDIMAGE) $(GOIMAGEBUILD_CORE) -o $(GOBUILDMAKEPATH_CORE)/$(CORE_BINARYNAME)
 	@echo "Done."
 
 compile_jobservice:
 	@echo "compiling binary for jobservice (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
+	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_JOBSERVICE) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDMAKEPATH_JOBSERVICE)/$(JOBSERVICEBINARYNAME)
 	@echo "Done."
 
 compile_registryctl:
 	@echo "compiling binary for harbor registry controller (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_REGISTRYCTL) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_REGISTRYCTL)/$(REGISTRYCTLBINARYNAME)
+	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_REGISTRYCTL) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDMAKEPATH_REGISTRYCTL)/$(REGISTRYCTLBINARYNAME)
 	@echo "Done."
 
 compile_notary_migrate_patch:
 	@echo "compiling binary for migrate patch (golang image)..."
-	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_MIGRATEPATCH) $(GOBUILDIMAGE) $(GOIMAGEBUILD) -o $(GOBUILDMAKEPATH_NOTARY)/$(MIGRATEPATCHBINARYNAME)
+	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATH) -w $(GOBUILDPATH_MIGRATEPATCH) $(GOBUILDIMAGE) $(GOIMAGEBUILD_COMMON) -o $(GOBUILDMAKEPATH_NOTARY)/$(MIGRATEPATCHBINARYNAME)
 	@echo "Done."
 
 compile: check_environment versions_prepare compile_core compile_jobservice compile_registryctl compile_notary_migrate_patch
@@ -315,7 +324,7 @@ build:
 	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
 	 -e NPM_REGISTRY=$(NPM_REGISTRY)
 
-install: compile ui_version build prepare start
+install: compile build prepare start
 
 package_online: update_prepare_version
 	@echo "packing online package ..."
@@ -330,7 +339,7 @@ package_online: update_prepare_version
 	@rm -rf $(HARBORPKG)
 	@echo "Done."
 
-package_offline: update_prepare_version compile ui_version build
+package_offline: update_prepare_version compile build
 
 	@echo "packing offline package ..."
 	@cp -r make $(HARBORPKG)
@@ -460,10 +469,6 @@ cleandockercomposefile:
 	@find $(DOCKERCOMPOSEFILEPATH) -maxdepth 1 -name "docker-compose*.yml" -exec rm -f {} \;
 	@find $(DOCKERCOMPOSEFILEPATH) -maxdepth 1 -name "docker-compose*.yml-e" -exec rm -f {} \;
 
-cleanversiontag:
-	@echo "cleaning version TAG"
-	@rm -rf $(VERSIONFILEPATH)/$(VERSIONFILENAME)
-
 cleanpackage:
 	@echo "cleaning harbor install package"
 	@if [ -d $(BUILDPATH)/harbor ] ; then rm -rf $(BUILDPATH)/harbor ; fi
@@ -473,7 +478,7 @@ cleanpackage:
 	then rm $(BUILDPATH)/harbor-offline-installer-$(VERSIONTAG).tgz ; fi
 
 .PHONY: cleanall
-cleanall: cleanbinary cleanimage cleandockercomposefile cleanversiontag cleanpackage
+cleanall: cleanbinary cleanimage cleandockercomposefile cleanpackage
 
 clean:
 	@echo "  make cleanall:		remove binary, Harbor images, specific version docker-compose"
@@ -481,7 +486,6 @@ clean:
 	@echo "  make cleanbinary:		remove core and jobservice binary"
 	@echo "  make cleanimage:		remove Harbor images"
 	@echo "  make cleandockercomposefile:	remove specific version docker-compose"
-	@echo "  make cleanversiontag:		cleanpackageremove specific version tag"
 	@echo "  make cleanpackage:		remove online and offline install package"
 
 all: install
