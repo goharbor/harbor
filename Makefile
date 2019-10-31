@@ -71,9 +71,6 @@ TOOLSPATH=$(BUILDPATH)/tools
 CORE_PATH=$(BUILDPATH)/src/core
 PORTAL_PATH=$(BUILDPATH)/src/portal
 CHECKENVCMD=checkenv.sh
-GITCOMMIT := $(shell git rev-parse --short=8 HEAD)
-RELEASEVERSION := $(shell cat VERSION)
-PKG_PATH=github.com/goharbor/harbor/src/pkg
 
 # parameters
 REGISTRYSERVER=
@@ -142,10 +139,24 @@ GODEP=$(GOTEST) -i
 GOFMT=gofmt -w
 GOBUILDIMAGE=golang:1.12.12
 GOBUILDPATH=/harbor
+
+# go build
+PKG_PATH=github.com/goharbor/harbor/src/pkg
+GITCOMMIT := $(shell git rev-parse --short=8 HEAD)
+RELEASEVERSION := $(shell cat VERSION)
+GOFLAGS=
+GOTAGS=$(if $(GOBUILDTAGS),-tags "$(GOBUILDTAGS)",)
+GOLDFLAGS=$(if $(GOBUILDLDFLAGS),--ldflags "-w -s $(GOBUILDLDFLAGS)",)
+CORE_LDFLAGS=-X $(PKG_PATH)/version.GitCommit=$(GITCOMMIT) -X $(PKG_PATH)/version.ReleaseVersion=$(RELEASEVERSION)
+ifneq ($(GOBUILDLDFLAGS),)
+	CORE_LDFLAGS += $(GOBUILDLDFLAGS)
+endif
+
+# go build command
 GOIMAGEBUILDCMD=/usr/local/go/bin/go build -mod vendor
-GOIMAGEBUILD_COMMON=$(GOIMAGEBUILDCMD) --ldflags "$(ADDITIONAL_LDFLAGS)"
-CORE_BASE_LDFLAGS=-X $(PKG_PATH)/version.GitCommit=$(GITCOMMIT) -X $(PKG_PATH)/version.ReleaseVersion=$(RELEASEVERSION)
-GOIMAGEBUILD_CORE=$(GOIMAGEBUILDCMD) --ldflags "$(CORE_BASE_LDFLAGS) $(ADDITIONAL_LDFLAGS)"
+GOIMAGEBUILD_COMMON=$(GOIMAGEBUILDCMD) $(GOFLAGS) ${GOTAGS} ${GOLDFLAGS}
+GOIMAGEBUILD_CORE=$(GOIMAGEBUILDCMD) $(GOFLAGS) ${GOTAGS} --ldflags "-w -s $(CORE_LDFLAGS)"
+
 GOBUILDPATH_CORE=$(GOBUILDPATH)/src/core
 GOBUILDPATH_JOBSERVICE=$(GOBUILDPATH)/src/jobservice
 GOBUILDPATH_REGISTRYCTL=$(GOBUILDPATH)/src/registryctl
