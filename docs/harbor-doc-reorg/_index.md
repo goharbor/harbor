@@ -54,16 +54,19 @@ This section describes how to use and maintain Harbor after deployment. These da
 
 This section describes how users with the developer, master, and project administrator roles manage and participate in Harbor projects.
 
-- [Working with Projects](working_with_projects/)
+- [Working with Projects](working_with_projects/_index.md)
   - [Create a Project](working_with_projects/create_projects.md)
   - [Assign Users to a Project](working_with_projects/add_users.md)
-  - [Create Labels](working_with_projects/create_labels.md)
+- [Project Configuration](working_with_projects/project_configuration.md)
   - [Access and Search Project Logs](working_with_projects/access_project_logs.md)
   - [Create Robot Accounts](working_with_projects/create_robot_accounts.md)
-  - [Create Tag Retention Rules](working_with_projects/create_tag_retention_rules.md)
   - [Configure Webhook Notifications](working_with_projects/configure_webhooks.md)
-  - [Project Configuration](working_with_projects/project_configuration.md)
   - [Configure a Per-Project CVE Whitelist](working_with_projects/configure_project_whitelist.md)
+- [Working with Images and Tags](working_with_projects/working_with_images.md)
+  - [Pulling and Pushing Images](working_with_projects/pulling_pushing_images.md)
+  - [Create Labels](working_with_projects/create_labels.md)
+  - [Retag Images](retagging_images.md) 
+  - [Create Tag Retention Rules](working_with_projects/create_tag_retention_rules.md)
 
 ## Build, Customize, and Contribute to Harbor
 
