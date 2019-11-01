@@ -66,3 +66,10 @@ If you want to install all three of Notary, Clair and chart repository service, 
 ```sh
     $ sudo ./install.sh --with-notary --with-clair --with-chartmuseum
 ```
+
+## What to Do Next ##
+
+If installation succeeds, continue to set up Harbor by following the instructions in [Post-Installation Configuration](install_config/configuration/_index.md) and [Initial Configuration in the Harbor UI](install_config/configuration/initial_config_ui.md).
+
+If installation fails, see [Troubleshooting Harbor Installation
+](install_config/installation/troubleshoot_installation.md).

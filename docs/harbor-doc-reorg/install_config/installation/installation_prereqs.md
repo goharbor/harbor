@@ -31,3 +31,7 @@ Harbor requires that the following ports be open on the target host.
 |443|HTTPS|Harbor portal and core API accept HTTPS requests on this port. You can change this port in the configuration file.|
 |4443|HTTPS|Connections to the Docker Content Trust service for Harbor. Only required if Notary is enabled. You can change this port in the configuration file.|
 |80|HTTP|Harbor portal and core API accept HTTP requests on this port. You can change this port in the configuration file.|
+
+## What to Do Next ##
+
+To secure the connections the Harbor, you must [Configure HTTPS Access to Harbor](configure_https.md).

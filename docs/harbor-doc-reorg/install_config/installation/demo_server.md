@@ -45,3 +45,7 @@ If you encounter any problems while using the demo server, open an [issue on Git
    docker push demo.goharbor.io/your-project/your-image
    ```   
 1. In the Harbor interface, go to **Projects** > *your_project* >  **Repositories** to view the image repository that you pushed to your Harbor project.
+
+## What to Do Next ##
+
+Verify that your target host meets the [Harbor Installation Prerequisites](installation_prereqs.md).

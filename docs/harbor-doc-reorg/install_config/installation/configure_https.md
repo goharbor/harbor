@@ -192,3 +192,7 @@ If you've mapped nginx 443 port to another, you need to add the port to login, l
     cp yourdomain.com.crt /etc/pki/ca-trust/source/anchors/yourdomain.com.crt
     update-ca-trust
     ```
+
+## What to Do Next ##
+
+To start the installation process, [Download the Harbor Installer](download_installer.md).
