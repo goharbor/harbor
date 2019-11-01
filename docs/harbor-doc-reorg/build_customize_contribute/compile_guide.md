@@ -1,4 +1,4 @@
-## Introduction
+# Build Harbor from Source Code
 
 This guide provides instructions for developers to build and run Harbor from source code.
 

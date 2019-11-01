@@ -72,9 +72,10 @@ This section describes how users with the developer, master, and project adminis
 
 This section describes how developers can build from Harbor source code, customize their deployments, and contribute to the open-source Harbor project.
 
-- [](build_customize_contribute/)
-- [](build_customize_contribute/)
-- [](build_customize_contribute/)
-- [](build_customize_contribute/)
-- [](build_customize_contribute/)
-- [](build_customize_contribute/)
+- [Build Harbor from Source Code](build_customize_contribute/compile_guide.md)
+- [Developing the Harbor Frontend](build_customize_contribute/ui_contribution_get_started.md)
+- [Customize the Harbor Look & Feel ](build_customize_contribute/customize_look_feel.md)
+- [Developing for Internationalization](build_customize_contribute/developer_guide_i18n.md)
+- [Using Make](build_customize_contribute/use_make.md)
+- [View and test Harbor REST API via Swagger](build_customize_contribute/configure_swagger.md)
+- [Registry Landscape](build_customize_contribute/registry_landscape.md)

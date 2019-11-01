@@ -1,4 +1,4 @@
-### Variables
+# Using Make
 Variable           | Description
 -------------------|-------------
 BASEIMAGE          | Container base image, default: photon

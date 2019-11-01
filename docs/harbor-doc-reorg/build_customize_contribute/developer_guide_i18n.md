@@ -1,4 +1,4 @@
-## Developer's Guide for Internationalization (i18n)
+## Developing for Internationalization
 
 *NOTE: All the files you created should use UTF-8 encoding.*
 
