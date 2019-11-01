@@ -26,7 +26,7 @@ This section describes how to install Harbor and perform the required initial co
 
 This section describes how to use and maintain Harbor after deployment. These day 2 operations are performed by the Harbor Administrator.
 
-- [Managing Users](administration/managing_users/_index.md)
+- [Manage Users](administration/managing_users/_index.md)
   - [Harbor Role Based Access Control (RBAC)](administration/managing_users/configure_rbac.md)
   - [User Permissions By Role](administration/managing_users/user_permissions_by_role.md)
   - [Configure Harbor User Settings at the Command Line](administration/managing_users/configure_user_settings_cli.md)
@@ -62,11 +62,12 @@ This section describes how users with the developer, master, and project adminis
   - [Create Robot Accounts](working_with_projects/create_robot_accounts.md)
   - [Configure Webhook Notifications](working_with_projects/configure_webhooks.md)
   - [Configure a Per-Project CVE Whitelist](working_with_projects/configure_project_whitelist.md)
-- [Working with Images and Tags](working_with_projects/working_with_images.md)
+- [Working with Images, Tags, and Helm Charts](working_with_projects/working_with_images.md)
   - [Pulling and Pushing Images](working_with_projects/pulling_pushing_images.md)
   - [Create Labels](working_with_projects/create_labels.md)
   - [Retag Images](retagging_images.md) 
   - [Create Tag Retention Rules](working_with_projects/create_tag_retention_rules.md)
+  - [Manage Kubernetes Packages with Helm Charts](working_with_projects/managing_helm_charts.md)
 
 ## Build, Customize, and Contribute to Harbor
 
