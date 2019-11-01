@@ -1,8 +1,4 @@
-# Managing projects
-
-
-
-
+# Project Configuration
 
 Project properties can be changed by clicking "Configuration".
 

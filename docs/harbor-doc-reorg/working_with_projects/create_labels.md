@@ -1,4 +1,5 @@
-# Managing labels
+# Create Labels
+
 Harbor provides two kinds of labels to isolate kinds of resources(only images for now):
 * **Global Level Label**: Managed by system administrators and used to manage the images of the whole system. They can be added to images under any projects.
 * **Project Level Label**: Managed by project administrators under a project and can only be added to the images of the project.

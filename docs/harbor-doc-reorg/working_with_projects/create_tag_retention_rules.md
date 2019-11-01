@@ -1,4 +1,4 @@
-#Creating Tag Retention Rules
+#Create Tag Retention Rules
 
 A repository can rapidly accumulate a large number of image tags, many of which might not be required after a given time or once they have been superseded by a subsequent image build. These excess tags can obviously consume large quantities of storage capacity. As a system administrator, you can define rules that govern how many tags of a given repository to retain, or for how long to retain certain tags. 
 
