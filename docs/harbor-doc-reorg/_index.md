@@ -48,7 +48,6 @@ This section describes how to use and maintain Harbor after deployment. These da
   - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
   - [Roll Back an Upgrade](administration/upgrade/roll_back_upgrade.md)
 - [Manage the Harbor Instance](administration/manage_harbor/_index.md)
-  - 
   - [Access Harbor Logs](administration/manage_harbor/access_logs.md)
 
 ## Working with Harbor Projects
