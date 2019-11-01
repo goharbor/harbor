@@ -165,7 +165,8 @@
             "REPLICATION": "同步管理",
             "CONFIG": "配置管理",
             "VULNERABILITY": "漏洞",
-            "GARBAGE_COLLECTION": "垃圾清理"
+            "GARBAGE_COLLECTION": "垃圾清理",
+            "INTERROGATION_SERVICES": "审查服务"
         },
         "LOGS": "日志",
         "TASKS": "任务",

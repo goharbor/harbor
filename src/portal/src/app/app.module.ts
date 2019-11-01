@@ -39,6 +39,10 @@ import { VulnerabilityPageComponent } from './vulnerability-page/vulnerability-p
 import { GcPageComponent } from './gc-page/gc-page.component';
 import { OidcOnboardModule } from './oidc-onboard/oidc-onboard.module';
 import { LicenseModule } from './license/license.module';
+import { InterrogationServicesComponent } from "./interrogation-services/interrogation-services.component";
+import { LabelsComponent } from './labels/labels.component';
+import { ProjectQuotasComponent } from './project-quotas/project-quotas.component';
+
 registerLocaleData(zh, 'zh-cn');
 registerLocaleData(es, 'es-es');
 registerLocaleData(localeFr, 'fr-fr');
@@ -61,7 +65,10 @@ export function getCurrentLanguage(translateService: TranslateService) {
         AppComponent,
         ProjectConfigComponent,
         VulnerabilityPageComponent,
-        GcPageComponent
+        GcPageComponent,
+        InterrogationServicesComponent,
+        LabelsComponent,
+        ProjectQuotasComponent
     ],
     imports: [
         BrowserModule,

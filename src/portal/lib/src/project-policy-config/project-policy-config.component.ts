@@ -70,6 +70,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
     projectPolicy = new ProjectPolicy();
     hasChangeConfigRole: boolean;
     severityOptions = [
+        {severity: 'critical', severityLevel: 'VULNERABILITY.SEVERITY.CRITICAL'},
         {severity: 'high', severityLevel: 'VULNERABILITY.SEVERITY.HIGH'},
         {severity: 'medium', severityLevel: 'VULNERABILITY.SEVERITY.MEDIUM'},
         {severity: 'low', severityLevel: 'VULNERABILITY.SEVERITY.LOW'},
