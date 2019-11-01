@@ -5,12 +5,10 @@ Resource  ../../resources/Util.robot
 
 Retag Image
     [Arguments]  ${tag}  ${projectname}  ${reponame}  ${tagname}
-    Click Element  xpath=//clr-dg-row[contains(.,'${tag}')]//label
-    Sleep  1
-    Click Element  xpath=${retag_btn}
-    Sleep  1
+    Retry Element Click  xpath=//clr-dg-row[contains(.,'${tag}')]//label
+    Retry Element Click  xpath=${retag_btn}
     #input necessary info
-    Input Text  xpath=${project-name_xpath}  ${projectname}
-    Input Text  xpath=${repo-name_xpath}  ${reponame}
-    Input Text  xpath=${tag-name_xpath}  ${tagname}
-    Click Element  xpath=${confirm_btn}
+    Retry Text Input  xpath=${project-name_xpath}  ${projectname}
+    Retry Text Input  xpath=${repo-name_xpath}  ${reponame}
+    Retry Text Input  xpath=${tag-name_xpath}  ${tagname}
+    Retry Double Keywords When Error  Retry Element Click  ${confirm_btn}  Retry Wait Until Page Not Contains Element  ${confirm_btn}

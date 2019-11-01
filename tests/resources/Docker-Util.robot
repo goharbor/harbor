@@ -71,12 +71,13 @@ Cannot Pull Unsigned Image
     Should Contain  ${output}  The image is not signed in Notary
 
 Cannot Push image
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${err_msg}=${null}
     Log To Console  \nRunning docker push ${image}...
     Wait Unitl Command Success  docker pull ${image}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     Wait Unitl Command Success  docker tag ${image} ${ip}/${project}/${image}
-    Command Should be Failed  docker push ${ip}/${project}/${image}
+    ${output}=  Command Should be Failed  docker push ${ip}/${project}/${image}
+    Run Keyword If  '${err_msg}' != '${null}'  Should Contain  ${output}  ${err_msg}
     Wait Unitl Command Success  docker logout ${ip}
 
 Wait Until Container Stops
