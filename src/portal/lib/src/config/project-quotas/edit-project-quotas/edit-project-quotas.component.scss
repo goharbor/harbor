@@ -7,18 +7,21 @@
   padding-top: 0.8rem;
   overflow-y: visible;
   overflow-x: visible;
-
+.body-label {
+  color: #565656;
+  font-size: 14px
+}
   .clr-form {
+    padding-left: 0;
     .left-label {
       width: 9.5rem;
+      font-weight: 100;
+      color: #000;
+      position: relative;
     }
 
     .mr-3px {
       margin-right: 3px;
-    }
-
-    .left-label {
-      position: relative;
     }
 
     .quota-input {
@@ -45,7 +48,7 @@
 
   .clr-form-compact-common {
     .left-label {
-      width: 7.5rem;
+      width: 7.3rem;
     }
 
     .quota-input {
@@ -61,7 +64,9 @@
     }
   }
 }
-
+select {
+  font-weight: 100;
+}
 .progress-block {
   width: 8rem;
 }
@@ -71,7 +76,7 @@
   padding-right: 0.6rem;
   width: 9rem;
   top: 0.2rem;
-  right: -13.1rem;
+  right: -13.3rem;
 }
 
 .progress-label {
