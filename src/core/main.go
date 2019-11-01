@@ -218,12 +218,10 @@ func main() {
 			log.Fatalf("failed to initialize clair database: %v", err)
 		}
 
-		// TODO: change to be internal adapter
 		reg := &scanner.Registration{
 			Name:            "Clair",
 			Description:     "The clair scanner adapter",
 			URL:             config.ClairAdapterEndpoint(),
-			IsDefault:       true,
 			UseInternalAddr: true,
 			Immutable:       true,
 		}
