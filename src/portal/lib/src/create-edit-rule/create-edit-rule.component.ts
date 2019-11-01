@@ -123,7 +123,7 @@ export class CreateEditRuleComponent implements OnInit, OnDestroy {
             this.inNameChecking = true;
             this.repService.getReplicationRules(0, ruleName)
               .subscribe(response => {
-                if (response.some(rule => rule.name === ruleName)) {
+                if (response.some(rule => (rule.name === ruleName && rule.id !== this.policyId))) {
                   this.ruleNameTooltip = "TOOLTIP.RULE_USER_EXISTING";
                   this.isRuleNameValid = false;
                 }
