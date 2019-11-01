@@ -15,10 +15,16 @@
 package scan
 
 import (
+	"fmt"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/q"
-	sc "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	sc "github.com/goharbor/harbor/src/pkg/scan/scanner"
+)
+
+var (
+	scannerManager = sc.New()
 )
 
 // EnsureScanner ensure the scanner which specially name exists in the system
@@ -27,13 +33,22 @@ func EnsureScanner(registration *scanner.Registration) error {
 		Keywords: map[string]interface{}{"url": registration.URL},
 	}
 
-	registrations, err := sc.DefaultController.ListRegistrations(q)
+	// Check if the registration with the url already existing.
+	registrations, err := scannerManager.List(q)
 	if err != nil {
 		return err
 	}
 
 	if len(registrations) == 0 {
-		if _, err := sc.DefaultController.CreateRegistration(registration); err != nil {
+		defaultReg, err := scannerManager.GetDefault()
+		if err != nil {
+			return fmt.Errorf("failed to get the default scanner, error: %v", err)
+		}
+
+		// Set the registration to be default one when no default registration exist in the system
+		registration.IsDefault = defaultReg == nil
+
+		if _, err := scannerManager.Create(registration); err != nil {
 			return err
 		}
 

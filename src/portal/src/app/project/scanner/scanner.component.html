@@ -74,7 +74,7 @@
             <clr-dg-row *clrDgItems="let scanner of scanners" [clrDgItem]="scanner">
                 <clr-dg-cell>{{scanner.name}}</clr-dg-cell>
                 <clr-dg-cell>{{scanner.url}}</clr-dg-cell>
-                <clr-dg-cell>
+                <clr-dg-cell class="position-relative">
                     <span *ngIf="scanner.is_default" class="label label-info label-in-cell">{{scanner.is_default}}</span>
                     <span *ngIf="!scanner.is_default">{{scanner.is_default}}</span>
                 </clr-dg-cell>

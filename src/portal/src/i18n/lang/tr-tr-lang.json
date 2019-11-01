@@ -166,7 +166,8 @@
             "REPLICATION": "Kopyalama",
             "CONFIG": "Yapılandırma",
             "VULNERABILITY": "Güvenlik Açığı",
-            "GARBAGE_COLLECTION": "Çöp toplama"
+            "GARBAGE_COLLECTION": "Çöp toplama",
+            "INTERROGATION_SERVICES": "Interrogation Services"
         },
         "LOGS": "Kayıtlar",
         "TASKS": "Görevler",
