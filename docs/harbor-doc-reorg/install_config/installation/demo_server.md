@@ -24,14 +24,24 @@ If you encounter any problems while using the demo server, open an [issue on Git
 1. Explore the default project, `library` and create your own project.
 
    For information about how to create a project, see [Managing Projects](../../working_with_projects/managing_projects.md).
-1. Open a Docker client and log in to Harbor.
+1. Open a Docker client and log in to Harbor with the credentials that you created above.
 
    ```
    docker login demo.goharbor.io
    ```
-1. Build an image, tag it, and push it to a project in Harbor.
+1. Create a very simple `Dockerfile` with the following contents.
 
    ```
-   docker push demo.goharbor.io/your-project/test-container
+   FROM busybox:latest
+   ```
+1. Build an image from this Dockerfile and tag it.
+
+   ```
+    docker build -t demo.goharbor.io/your-project/your-image .
    ```   
-1. In the Harbor interface, go to the project and select the **Repositories** tab to view the image repository in the Harbor project.
+1. Push the image to your project in Harbor.
+
+   ```
+   docker push demo.goharbor.io/your-project/your-image
+   ```   
+1. In the Harbor interface, go to **Projects** > *your_project* >  **Repositories** to view the image repository that you pushed to your Harbor project.
