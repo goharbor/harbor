@@ -54,8 +54,11 @@ This section describes how to use and maintain Harbor after deployment. These da
 
 This section describes how users with the developer, master, and project administrator roles manage and participate in Harbor projects.
 
-- [Configure a Per-Project CVE Whitelist](working_with_projects/configure_project_whitelist.md)
-- [](working_with_projects/)
+- [Working with Projects](working_with_projects/)
+  - [Create a Project](working_with_projects/create_projects.md)
+  - [Assign Users to a Project](working_with_projects/add_users.md)
+  - [Configure a Per-Project CVE Whitelist](working_with_projects/configure_project_whitelist.md)
+  - [Access Project Logs](working_with_projects/access_project_logs.md)
 - [](working_with_projects/)
 - [](working_with_projects/)
 - [](working_with_projects/)

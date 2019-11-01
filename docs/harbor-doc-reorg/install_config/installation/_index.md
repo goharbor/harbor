@@ -1,6 +1,6 @@
 # Installing Harbor
 
-This guide describes how to install and configure Harbor for the first time.
+This guide describes how to install for the first time.
 
 If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see the [Upgrading Harbor](../../administration/upgrade/_index.md).
 
@@ -16,7 +16,7 @@ The standard Harbor installation process involves the following stages:
 1. [Configure the Harbor YML File](configure_yml_file.md)
 1. [Run the Installer Script](run_installer_script.md)
 
-IF installation fails, see [Troubleshooting Harbor Installation
+If installation fails, see [Troubleshooting Harbor Installation
 ](troubleshoot_installation.md).
 
 ## Harbor Components

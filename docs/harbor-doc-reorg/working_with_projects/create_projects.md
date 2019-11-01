@@ -1,0 +1,31 @@
+# Create a Project
+
+In Harbor, you create different projects to which you assign users so that they can push and pull image repositories. You also configure project-specific settings. When you first deploy Harbor, a default public project named `library` is created. 
+
+## Prerequisites
+
+Log in to Harbor with a Harbor administrator or project administrator account.
+
+## Procedure
+
+1. Go to  **Projects** and click **New Project**.
+1. Provide a name for the project.
+1. (Optional) Check the **Public** check box to make the project public.
+
+   If you set the project to **Public**, any user can pull images from this project. If you leave the project set to **Private**, only users who are members of the project can pull images. You can toggle projects from public to private, or the reverse, at any moment after you create the project.
+   
+   ![create project](../img/new_create_project.png)  
+   
+5. Click **OK**.
+
+After the project is created, you can browse repositories, members, logs, replication and configuration using the navigation tab.
+
+![browse project](../img/new_browse_project.png)
+
+There are two views to show repositories, list view and card view, you can switch between them by clicking the corresponding icon.
+
+![browse repositories](../img/browse_project_repositories.png)
+
+## What to Do Next
+
+[Assign Users to a Project](add_users.md)

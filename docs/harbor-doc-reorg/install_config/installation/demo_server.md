@@ -21,9 +21,10 @@ If you encounter any problems while using the demo server, open an [issue on Git
 1. Click **Sign up for an account**.
 1. Create a user account by providing a username, your email address, your name, and a password.
 1. Log in to the Harbor interface using the account you created.
-1. Explore the default project, `library` and create your own project.
+1. Explore the default project, `library`.
+1. Click  **New Project** to create your own project.
 
-   For information about how to create a project, see [Managing Projects](../../working_with_projects/managing_projects.md).
+   For information about how to create a project, see [Create a  Project](../../working_with_projects/create_projects.md).
 1. Open a Docker client and log in to Harbor with the credentials that you created above.
 
    ```
@@ -37,15 +38,15 @@ If you encounter any problems while using the demo server, open an [issue on Git
 1. Build an image from this Dockerfile and tag it.
 
    ```
-    docker build -t demo.goharbor.io/your-project/your-image .
+   docker build -t demo.goharbor.io/your-project/test-image .
    ```   
 1. Push the image to your project in Harbor.
 
    ```
-   docker push demo.goharbor.io/your-project/your-image
+   docker push demo.goharbor.io/your-project/test-image
    ```   
 1. In the Harbor interface, go to **Projects** > *your_project* >  **Repositories** to view the image repository that you pushed to your Harbor project.
 
 ## What to Do Next ##
 
-Verify that your target host meets the [Harbor Installation Prerequisites](installation_prereqs.md).
+If you decide to install Harbor, verify that your target host meets the [Harbor Installation Prerequisites](installation_prereqs.md).
