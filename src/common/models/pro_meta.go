@@ -26,7 +26,7 @@ const (
 	ProMetaSeverity             = "severity"
 	ProMetaAutoScan             = "auto_scan"
 	ProMetaReuseSysCVEWhitelist = "reuse_sys_cve_whitelist"
-	SeverityNone                = "negligible"
+	SeverityNegligible          = "negligible"
 	SeverityLow                 = "low"
 	SeverityMedium              = "medium"
 	SeverityHigh                = "high"

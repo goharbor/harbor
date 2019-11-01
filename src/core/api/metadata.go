@@ -231,7 +231,7 @@ func validateProjectMetadata(metas map[string]string) (map[string]string, error)
 	value, exist := metas[models.ProMetaSeverity]
 	if exist {
 		switch strings.ToLower(value) {
-		case models.SeverityHigh, models.SeverityMedium, models.SeverityLow, models.SeverityNone:
+		case models.SeverityHigh, models.SeverityMedium, models.SeverityLow, models.SeverityNegligible:
 			metas[models.ProMetaSeverity] = strings.ToLower(value)
 		default:
 			return nil, fmt.Errorf("invalid severity %s", value)
