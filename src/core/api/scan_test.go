@@ -117,7 +117,7 @@ func (suite *ScanAPITestSuite) TestScanAPIScan() {
 			request: &testingRequest{
 				url:        scanBaseURL,
 				method:     http.MethodPost,
-				credential: projDeveloper,
+				credential: projAdmin,
 			},
 			code: http.StatusAccepted,
 		},
