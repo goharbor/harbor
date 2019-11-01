@@ -16,6 +16,9 @@ The standard Harbor installation process involves the following stages:
 1. [Configure the Harbor YML File](configure_yml_file.md)
 1. [Run the Installer Script](run_installer_script.md)
 
+IF installation fails, see [Troubleshooting Harbor Installation
+](troubleshoot_installation.md).
+
 ## Harbor Components
 
 The table below lists the components that are deployed when you deploy Harbor.
