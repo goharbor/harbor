@@ -43,6 +43,11 @@ type NotificationHandler struct {
 const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+(json|prettyjws)`
 const vicPrefix = "vic/"
 
+// Prepare turns off xsrf check for notification handler
+func (n *NotificationHandler) Prepare() {
+	n.EnableXSRF = false
+}
+
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
 	var notification models.Notification

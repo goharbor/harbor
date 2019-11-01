@@ -41,6 +41,11 @@ type Handler struct {
 	api.BaseController
 }
 
+// Prepare turns off xsrf check for notification handler
+func (h *Handler) Prepare() {
+	h.EnableXSRF = false
+}
+
 // Handle ...
 func (h *Handler) Handle() {
 	if clairClient == nil {
