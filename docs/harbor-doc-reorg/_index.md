@@ -57,12 +57,13 @@ This section describes how users with the developer, master, and project adminis
 - [Working with Projects](working_with_projects/)
   - [Create a Project](working_with_projects/create_projects.md)
   - [Assign Users to a Project](working_with_projects/add_users.md)
-  - [Configure a Per-Project CVE Whitelist](working_with_projects/configure_project_whitelist.md)
+  - [Create Labels](working_with_projects/create_labels.md)
   - [Access and Search Project Logs](working_with_projects/access_project_logs.md)
-- [](working_with_projects/)
-- [](working_with_projects/)
-- [](working_with_projects/)
-- [](working_with_projects/)
+  - [Create Robot Accounts](working_with_projects/create_robot_accounts.md)
+  - [Create Tag Retention Rules](working_with_projects/create_tag_retention_rules.md)
+  - [Configure Webhook Notifications](working_with_projects/configure_webhooks.md)
+  - [Project Configuration](working_with_projects/project_configuration.md)
+  - [Configure a Per-Project CVE Whitelist](working_with_projects/configure_project_whitelist.md)
 
 ## Build, Customize, and Contribute to Harbor
 
