@@ -21,8 +21,12 @@ import (
 	"github.com/goharbor/harbor/src/common/job"
 	job_model "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/models"
+	cutils "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	"github.com/goharbor/harbor/src/core/utils"
+	"github.com/goharbor/harbor/src/pkg/repository"
+	"github.com/pkg/errors"
 )
 
 var statusMap = map[string]string{
@@ -90,4 +94,87 @@ func (h *Handler) HandleAdminJob() {
 		h.SendInternalServerError(err)
 		return
 	}
+}
+
+// scanAllArtifacts implements a post action for the scan all job,
+// which now is used to send signal of requesting scan all. The purpose of
+// implementing such way is avoid scan all related data migration.
+// Obviously, this is not good way but it's an accept way at present.
+//
+// Once the status of scan all job is success, this method will be called
+// in a non-blocking way.
+//
+// This is a try-best approach, failures will not cause the whole process exit.
+func (h *Handler) scanAllArtifacts() error {
+	// Ignore the input arguments as the methods called here will not depend on them.
+	// This is technically wrong, but it's a simple way to leverage this manager.
+	repositoryMgr := repository.New(nil, nil)
+
+	// Get all the repositories first.
+	repos, err := repositoryMgr.ListImageRepositories()
+	if err != nil {
+		return errors.Wrap(err, "admin job handler: scan all artifacts")
+	}
+
+	if len(repos) == 0 {
+		// Treat as complete work
+		return nil
+	}
+
+	// Used to collect errors in the retrieving goroutines.
+	errs := make([]error, len(repos))
+	// Used to control the scale of goroutines.
+	tokens := make(chan interface{}, 10)
+
+	for i, repo := range repos {
+		// Get one token first for processing
+		<-tokens
+
+		go func(repoName string) {
+			defer func() {
+				// Return the token
+				tokens <- struct{}{}
+			}()
+
+			rclient, err := utils.NewRepositoryClientForUI("harbor-core", repoName)
+			if err != nil {
+				errs[i] = errors.Wrap(err, "scan controller: scan all")
+				return
+			}
+
+			// Retrieve all tags
+			tags, err := rclient.ListTag()
+			if err != nil {
+				errs[i] = errors.Wrap(err, "scan controller: scan all")
+				return
+			}
+
+			// Scan one by one
+			for _, tag := range tags {
+				_, exits, er := rclient.ManifestExist(tag)
+				if er == nil && !exits {
+					er = errors.Errorf("tag %s does not exists in repository %s", tag, repoName)
+				}
+
+				if er != nil {
+					// Append
+					if err != nil {
+						err = errors.Wrap(er, err.Error())
+					} else {
+						err = er
+					}
+
+					continue
+				}
+
+				proName, _ := cutils.ParseRepository(repoName)
+				_, err := h.ProjectMgr.Get(proName)
+				if err != nil {
+					errs[i] = err
+				}
+			}
+		}(repo.Name)
+	}
+
+	return nil
 }

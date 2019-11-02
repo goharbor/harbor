@@ -24,9 +24,10 @@ import (
 // Manager is used for repository management
 // currently, the interface only defines the methods needed for tag retention
 // will expand it when doing refactor
+// TODO: Based on the current usage scenario, this manager may need to refactor.
 type Manager interface {
 	// List image repositories under the project specified by the ID
-	ListImageRepositories(projectID int64) ([]*models.RepoRecord, error)
+	ListImageRepositories(projectIDs ...int64) ([]*models.RepoRecord, error)
 	// List chart repositories under the project specified by the ID
 	ListChartRepositories(projectID int64) ([]*chartserver.ChartInfo, error)
 }
@@ -45,9 +46,14 @@ type manager struct {
 }
 
 // List image repositories under the project specified by the ID
-func (m *manager) ListImageRepositories(projectID int64) ([]*models.RepoRecord, error) {
+func (m *manager) ListImageRepositories(projectIDs ...int64) ([]*models.RepoRecord, error) {
+	// If project ID is not specified, then return all the repositories.
+	if len(projectIDs) == 0 {
+		return dao.GetRepositories()
+	}
+
 	return dao.GetRepositories(&models.RepositoryQuery{
-		ProjectIDs: []int64{projectID},
+		ProjectIDs: projectIDs,
 	})
 }
 

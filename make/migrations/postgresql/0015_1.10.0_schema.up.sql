@@ -27,6 +27,7 @@ CREATE TABLE scan_report
     mime_type VARCHAR(256) NOT NULL,
     job_id VARCHAR(64),
     track_id VARCHAR(64),
+    request_id VARCHAR(64),
     status VARCHAR(1024) NOT NULL,
     status_code INTEGER DEFAULT 0,
     status_rev BIGINT DEFAULT 0,

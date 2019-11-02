@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
@@ -51,6 +52,24 @@ const (
 	authorizationBearer    = "Bearer"
 	authorizationBasic     = "Basic"
 )
+
+// Options keep the settings/configurations for scanning.
+type Options struct {
+	// Mark the scan triggered by who
+	RequestID string
+}
+
+// Option represents an option item by func template.
+type Option func(options *Options) error
+
+// WithRequestID sets request ID option.
+func WithRequestID(requestID string) Option {
+	return func(options *Options) error {
+		options.RequestID = requestID
+
+		return nil
+	}
+}
 
 // uuidGenerator is a func template which is for generating UUID.
 type uuidGenerator func() (string, error)
@@ -76,6 +95,8 @@ type basicController struct {
 	uuid uuidGenerator
 	// Configuration getter func
 	config configGetter
+	// Manager for managing repository
+	repositoryMgr repository.Manager
 }
 
 // NewController news a scan API controller
@@ -84,8 +105,10 @@ func NewController() Controller {
 		// New report manager
 		manager: report.NewManager(),
 		// Refer to the default scanner controller
+		// TODO: Move up to API handler later
 		sc: sc.DefaultController,
 		// Refer to the default robot account controller
+		// TODO: Move up to API handler later
 		rc: robot.RobotCtr,
 		// Refer to the default job service client
 		jc: func() cj.Client {
@@ -111,13 +134,26 @@ func NewController() Controller {
 				return "", errors.Errorf("configuration option %s not defined", cfg)
 			}
 		},
+		// Ignore the input arguments as the methods called here will not depend on them.
+		// This is technically wrong, but it's a simple way to leverage this manager.
+		repositoryMgr: repository.New(nil, nil),
 	}
 }
 
 // Scan ...
-func (bc *basicController) Scan(artifact *v1.Artifact) error {
+func (bc *basicController) Scan(artifact *v1.Artifact, options ...Option) error {
 	if artifact == nil {
 		return errors.New("nil artifact to scan")
+	}
+
+	// Apply options
+	scanOpts := &Options{}
+	if len(options) > 0 {
+		for _, opt := range options {
+			if err := opt(scanOpts); err != nil {
+				return errors.Wrap(err, "scan controller: scan")
+			}
+		}
 	}
 
 	r, err := bc.sc.GetRegistrationByProject(artifact.NamespaceID)
@@ -169,8 +205,15 @@ func (bc *basicController) Scan(artifact *v1.Artifact) error {
 					Status:           job.PendingStatus.String(),
 					StatusCode:       job.PendingStatus.Code(),
 					TrackID:          trackID,
+					RequestID:        trackID, // use track id as default
 					MimeType:         pm,
 				}
+
+				// If the request ID is explicitly figured out, then set it.
+				if len(scanOpts.RequestID) > 0 {
+					reportPlaceholder.RequestID = scanOpts.RequestID
+				}
+
 				_, e := bc.manager.Create(reportPlaceholder)
 				if e != nil {
 					// Check if it is a status conflict error with common error format.
@@ -319,6 +362,7 @@ func (bc *basicController) GetScanLog(uuid string) ([]byte, error) {
 }
 
 // HandleJobHooks ...
+// TODO: Move to a separate interface as it is not very related to the current interface.
 func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChange) error {
 	if len(trackID) == 0 {
 		return errors.New("empty track ID")
@@ -378,6 +422,11 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 // DeleteReports ...
 func (bc *basicController) DeleteReports(digests ...string) error {
 	return bc.manager.DeleteByDigests(digests...)
+}
+
+// ScanAllStats ...
+func (bc *basicController) ScanAllStats(requestID string) (*report.AllStats, error) {
+	return nil, nil
 }
 
 // makeBasicAuthorization creates authorization from a robot account based on the arguments for scanning.

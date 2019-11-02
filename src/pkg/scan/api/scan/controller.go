@@ -29,10 +29,11 @@ type Controller interface {
 	//
 	//   Arguments:
 	//     artifact *v1.Artifact : artifact to be scanned
+	//     options ...Option     : optional scan options
 	//
 	//   Returns:
 	//     error  : non nil error if any errors occurred
-	Scan(artifact *v1.Artifact) error
+	Scan(artifact *v1.Artifact, options ...Option) error
 
 	// GetReport gets the reports for the given artifact identified by the digest
 	//
@@ -86,4 +87,15 @@ type Controller interface {
 	//  Returns:
 	//    error        : non nil error if any errors occurred
 	DeleteReports(digests ...string) error
+
+	// ScanAllStats returns the stats that indicating the overall progress of the scan
+	// all process.
+	//
+	//   Arguments:
+	//     requestID string : refer the trigger which is the scan all job at present
+	//
+	//   Returns:
+	//     *report.AllStats : stats metrics
+	//     error            : non nil error if any errors occurred
+	ScanAllStats(requestID string) (*report.AllStats, error)
 }

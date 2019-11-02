@@ -83,7 +83,7 @@ func (bm *basicManager) Create(r *scan.Report) (string, error) {
 			}
 		}
 
-		// Otherwise it will be a completed report
+		// Otherwise it will be a completed or timeout report
 		// Clear it before insert this new one
 		if err := scan.DeleteReport(theCopy.UUID); err != nil {
 			return "", errors.Wrap(err, "create report: clear old scan report")
