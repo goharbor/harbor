@@ -364,6 +364,7 @@
         "CREATE_WEBHOOK": "Ağ kancaları ile başladı",
         "EDIT_WEBHOOK_DESC": "Ağ kancası bildirimleri almak için bitiş noktasını belirtin",
         "CREATE_WEBHOOK_DESC": "Ağ kancalarına başlamak için, web kanca sunucusuna erişmek için bir uç nokta ve kimlik bilgisi sağlayın.",
+        "VERIFY_REMOTE_CERT_TOOLTIP": "Determine whether the webhook should verify the certificate of a remote url Uncheck this box when the remote url uses a self-signed or untrusted certificate.",
         "ENDPOINT_URL": "Uç Nokta URL",
         "URL_IS_REQUIRED": "Uç Nokra URL gereklidir.",
         "AUTH_HEADER": "Yetkilendirme Başlığı",

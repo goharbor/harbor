@@ -365,6 +365,7 @@
         "CREATE_WEBHOOK": "Getting started with webhooks",
         "EDIT_WEBHOOK_DESC": "Specify the endpoint for receiving webhook notifications",
         "CREATE_WEBHOOK_DESC": "To get started with webhooks, provide an endpoint and credentials to access the webhook server.",
+        "VERIFY_REMOTE_CERT_TOOLTIP": "Determine whether the webhook should verify the certificate of a remote url Uncheck this box when the remote url uses a self-signed or untrusted certificate.",
         "ENDPOINT_URL": "Endpoint URL",
         "URL_IS_REQUIRED": "Endpoint URL is required.",
         "AUTH_HEADER": "Auth Header",

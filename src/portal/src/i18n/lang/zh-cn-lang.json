@@ -248,7 +248,7 @@
         "HELMCHART": "Helm Charts",
         "ROBOT_ACCOUNTS": "机器人账户",
         "WEBHOOKS": "Webhooks",
-        "IMMUTABLE_TAG": "不变的Tag"
+        "IMMUTABLE_TAG": "不可变的Tag"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "项目仓库",
@@ -363,6 +363,7 @@
         "CREATE_WEBHOOK": "创建 Webhooks",
         "EDIT_WEBHOOK_DESC": "指定接收 Webhook 通知的目标",
         "CREATE_WEBHOOK_DESC": "为了启用 webhook, 请提供 Endpoint 和凭据以访问 Webhook 服务器。",
+        "VERIFY_REMOTE_CERT_TOOLTIP": "勾选此框表示Webhook需要验证远程地址的证书。当远程地址使用自签名或不受信任的证书时，请取消选中。",
         "ENDPOINT_URL": "Endpoint 地址",
         "URL_IS_REQUIRED": "Endpoint 地址必填",
         "AUTH_HEADER": "Auth Header",
@@ -1244,7 +1245,7 @@
         "REP_SEPARATOR": "使用逗号分隔repos,repo*和**。",
         "TAGS": "Tags",
         "TAG_SEPARATOR": "使用逗号分割tags,tag*和**。",
-        "EDIT_TITLE": "编辑不改变的规则",
+        "EDIT_TITLE": "编辑不改变的Tag规则",
         "EXC": "排除",
         "MAT": "匹配",
         "AND": "且",
