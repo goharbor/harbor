@@ -16,6 +16,7 @@ package scan
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/astaxie/beego/orm"
@@ -123,9 +124,18 @@ func UpdateReportStatus(trackID string, status string, statusCode int, statusRev
 		data["end_time"] = time.Now().UTC()
 	}
 
-	count, err := qt.Filter("track_id", trackID).
-		Filter("status_rev__lte", statusRev).
-		Filter("status_code__lte", statusCode).Update(data)
+	// qt generates sql statements:
+	// UPDATE "scan_report" SET "end_time" = $1, "status" = $2, "status_code" = $3, "status_rev" = $4
+	// WHERE "id" IN ( SELECT T0."id" FROM "scan_report" T0 WHERE ( T0."status_rev" = $5 AND T0."status_code" < $6 )
+	// OR ( T0."status_rev" < $7 ) AND T0."track_id" = $8  )
+	cond := orm.NewCondition()
+	c1 := cond.And("status_rev", statusRev).And("status_code__lt", statusCode)
+	c2 := cond.And("status_rev__lt", statusRev)
+	c := cond.AndCond(c1).OrCond(c2)
+
+	count, err := qt.SetCond(c).
+		Filter("track_id", trackID).
+		Update(data)
 
 	if err != nil {
 		return err
@@ -150,4 +160,29 @@ func UpdateJobID(trackID string, jobID string) error {
 	_, err := qt.Filter("track_id", trackID).Update(params)
 
 	return err
+}
+
+// GetScanStats gets the scan stats organized by status
+func GetScanStats(requester string) (map[string]uint, error) {
+	res := make(orm.Params)
+
+	o := dao.GetOrmer()
+	if _, err := o.Raw("select status, count(status) from (select status from scan_report where requester=? group by track_id, status) as scan_status group by status").
+		SetArgs(requester).
+		RowsToMap(&res, "status", "count"); err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]uint)
+	for k, v := range res {
+		vl, err := strconv.ParseInt(v.(string), 10, 32)
+		if err != nil {
+			log.Error(errors.Wrap(err, "get scan stats"))
+			continue
+		}
+
+		m[k] = uint(vl)
+	}
+
+	return m, nil
 }

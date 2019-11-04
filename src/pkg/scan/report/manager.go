@@ -14,7 +14,10 @@
 
 package report
 
-import "github.com/goharbor/harbor/src/pkg/scan/dao/scan"
+import (
+	"github.com/goharbor/harbor/src/pkg/scan/all"
+	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
+)
 
 // Manager is used to manage the scan reports.
 type Manager interface {
@@ -96,4 +99,14 @@ type Manager interface {
 	//  Returns:
 	//    error        : non nil error if any errors occurred
 	DeleteByDigests(digests ...string) error
+
+	// GetStats retrieves and calculates the overall report stats organized by status targeting the
+	// given requester.
+	//  Arguments:
+	//    requester string : the requester of the scan (all)
+	//
+	//  Returns:
+	//    *all.AllStats: stats object including the related metric data
+	//    error        : non nil error if any errors occurred
+	GetStats(requester string) (*all.Stats, error)
 }

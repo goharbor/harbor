@@ -159,8 +159,8 @@ func testForAll(m *testing.M) int {
 func clearAll() {
 	tables := []string{"project_member",
 		"project_metadata", "access_log", "repository", "replication_policy",
-		"registry", "replication_execution", "replication_task", "img_scan_job",
-		"replication_schedule_job", "img_scan_overview", "clair_vuln_timestamp", "project", "harbor_user"}
+		"registry", "replication_execution", "replication_task",
+		"replication_schedule_job", "project", "harbor_user"}
 	for _, t := range tables {
 		if err := ClearTable(t); err != nil {
 			log.Errorf("Failed to clear table: %s,error: %v", t, err)

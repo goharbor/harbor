@@ -34,7 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/sample"
-	"github.com/goharbor/harbor/src/jobservice/job/impl/scan"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/mgt"
@@ -43,6 +42,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/worker/cworker"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	sc "github.com/goharbor/harbor/src/pkg/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
@@ -243,7 +243,7 @@ func (bs *Bootstrap) loadAndRunRedisWorkerPool(
 			job.SampleJob: (*sample.Job)(nil),
 			// Functional jobs
 			job.ImageScanJob:           (*sc.Job)(nil),
-			job.ImageScanAllJob:        (*scan.All)(nil),
+			job.ImageScanAllJob:        (*all.Job)(nil),
 			job.ImageGC:                (*gc.GarbageCollector)(nil),
 			job.Replication:            (*replication.Replication)(nil),
 			job.ReplicationScheduler:   (*replication.Scheduler)(nil),
