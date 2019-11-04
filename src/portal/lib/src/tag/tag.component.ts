@@ -22,7 +22,7 @@ import {
   Output,
   ViewChild
 } from "@angular/core";
-import { forkJoin, Observable, Subject, throwError as observableThrowError } from "rxjs";
+import { forkJoin, Observable, Subject, throwError as observableThrowError, of } from "rxjs";
 import { catchError, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
 import { Comparator, Label, State, Tag, TagClickEvent, VulnerabilitySummary } from "../service/interface";
@@ -629,9 +629,12 @@ export class TagComponent implements OnInit, AfterViewInit {
           observableLists.push(this.delOperate(tag));
         });
 
-        forkJoin(...observableLists).subscribe((item) => {
-          this.selectedRow = [];
-          this.retrieve();
+        forkJoin(...observableLists).subscribe((items) => {
+          // if delete one success  refresh list
+          if (items.some(item => !item)) {
+            this.selectedRow = [];
+            this.retrieve();
+          }
         });
       }
     }
@@ -669,7 +672,7 @@ export class TagComponent implements OnInit, AfterViewInit {
             this.translateService.get(message).subscribe(res =>
               operateChanges(operMessage, OperationState.failure, res)
             );
-            return observableThrowError(message);
+            return of(error);
           }));
     }
   }
