@@ -1,0 +1,6 @@
+[photon-updates-2.0]
+name=VMware WDC Photon Linux 2.0(x86_64) Updates
+baseurl=harbor_tdnf_repo
+gpgkey=file:///etc/pki/rpm-gpg/VMWARE-RPM-GPG-KEY
+gpgcheck=1
+enabled=1

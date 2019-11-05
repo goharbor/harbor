@@ -55,6 +55,8 @@ pipeline:
       - npm_registry
       - harbor_sign_key
       - harbor_sign_key_id
+      - use_internal_tdnf
+      - harbor_tdnf_repo
     commands:
       - export DOMAIN=${CI_DOMAIN}
       - export HOST_CONTAINER_ID=$(hostname)

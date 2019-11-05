@@ -91,6 +91,7 @@ export Harbor_Assets_Version=$Harbor_Assets_Version
 #  the env is for online and offline package.
 export Harbor_Package_Version=$Harbor_Package_Version
 export NPM_REGISTRY=$NPM_REGISTRY
+export USE_INTERNAL_TDNF=$USE_INTERNAL_TDNF
 
 echo "--------------------------------------------------"
 echo "Harbor Package version: $Harbor_Package_Version"
@@ -105,6 +106,8 @@ function uploader {
 
 function package_offline_installer {
     echo "Package Harbor offline installer."
+    sed "s/harbor_tdnf_repo/$HARBOR_TDNF_REPO/" -i make/photon/tdnf/photon-local.repo
+    sed "s/harbor_tdnf_repo/$HARBOR_TDNF_REPO/" -i make/photon/tdnf/photon-updates-local.repo
     pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
     harbor_build_bundle=$(basename harbor-offline-installer-*.tgz)
     upload_build=true
