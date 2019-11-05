@@ -148,6 +148,13 @@ check_docker
 h2 "[Step $item]: checking docker-compose is installed ..."; let item+=1
 check_dockercompose
 
+if [ -f harbor*.tar.gz ]
+then
+    h2 "[Step $item]: loading Harbor images ..."; let item+=1
+    docker load -i ./harbor*.tar.gz
+fi
+echo ""
+
 h2 "[Step $item]: preparing environment ...";  let item+=1
 if [ -n "$host" ]
 then
@@ -170,13 +177,6 @@ then
 fi
 
 ./prepare $prepare_para
-echo ""
-
-if [ -f harbor*.tar.gz ]
-then
-    h2 "[Step $item]: loading Harbor images ..."; let item+=1
-    docker load -i ./harbor*.tar.gz
-fi
 echo ""
 
 if [ -n "$(docker-compose ps -q)"  ]
