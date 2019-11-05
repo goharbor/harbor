@@ -40,11 +40,14 @@ import (
 const refreshDuration = 2 * time.Second
 const userEntryComment = "By Authproxy"
 
-var secureTransport = &http.Transport{}
+var secureTransport = &http.Transport{
+	Proxy: http.ProxyFromEnvironment,
+}
 var insecureTransport = &http.Transport{
 	TLSClientConfig: &tls.Config{
 		InsecureSkipVerify: true,
 	},
+	Proxy: http.ProxyFromEnvironment,
 }
 
 // Auth implements HTTP authenticator the required attributes.
@@ -56,8 +59,12 @@ type Auth struct {
 	TokenReviewEndpoint string
 	SkipCertVerify      bool
 	SkipSearch          bool
-	settingTimeStamp    time.Time
-	client              *http.Client
+	// When this attribute is set to false, the name of user/group will be converted to lower-case when onboarded to Harbor, so
+	// as long as the authentication is successful there's no difference in terms of upper or lower case that is used.
+	// It will be mapped to one entry in Harbor's User/Group table.
+	CaseSensitive    bool
+	settingTimeStamp time.Time
+	client           *http.Client
 }
 
 type session struct {
@@ -84,7 +91,8 @@ func (a *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
-		user := &models.User{Username: m.Principal}
+		name := a.normalizeName(m.Principal)
+		user := &models.User{Username: name}
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Warningf("Failed to read response body, error: %v", err)
@@ -108,7 +116,12 @@ func (a *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		ugList := reviewResponse.Status.User.Groups
 		log.Debugf("user groups %+v", ugList)
 		if len(ugList) > 0 {
-			groupIDList, err := group.GetGroupIDByGroupName(ugList, common.HTTPGroupType)
+			var gl []string
+			for _, e := range ugList {
+				e = a.normalizeName(e)
+				gl = append(gl, e)
+			}
+			groupIDList, err := group.GetGroupIDByGroupName(gl, common.HTTPGroupType)
 			if err != nil {
 				return nil, err
 			}
@@ -140,6 +153,7 @@ func (a *Auth) tokenReview(sessionID string) (*k8s_api_v1beta1.TokenReview, erro
 
 // OnBoardUser delegates to dao pkg to insert/update data in DB.
 func (a *Auth) OnBoardUser(u *models.User) error {
+	u.Username = a.normalizeName(u.Username)
 	return dao.OnBoardUser(u)
 }
 
@@ -155,12 +169,14 @@ func (a *Auth) PostAuthenticate(u *models.User) error {
 }
 
 // SearchUser returns nil as authproxy does not have such capability.
-// When SkipSearch is set it always return the default model.
+// When SkipSearch is set it always return the default model,
+// the username will be switch to lowercase if it's configured as case-insensitive
 func (a *Auth) SearchUser(username string) (*models.User, error) {
 	err := a.ensure()
 	if err != nil {
 		log.Warningf("Failed to refresh configuration for HTTP Auth Proxy Authenticator, error: %v, the default settings will be used", err)
 	}
+	username = a.normalizeName(username)
 	var u *models.User
 	if a.SkipSearch {
 		u = &models.User{Username: username}
@@ -177,6 +193,7 @@ func (a *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
 	if err != nil {
 		log.Warningf("Failed to refresh configuration for HTTP Auth Proxy Authenticator, error: %v, the default settings will be used", err)
 	}
+	groupKey = a.normalizeName(groupKey)
 	var ug *models.UserGroup
 	if a.SkipSearch {
 		ug = &models.UserGroup{
@@ -195,6 +212,7 @@ func (a *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
 		return errors.New("Should provide a group name")
 	}
 	u.GroupType = common.HTTPGroupType
+	u.GroupName = a.normalizeName(u.GroupName)
 	err := group.OnBoardUserGroup(u)
 	if err != nil {
 		return err
@@ -238,6 +256,13 @@ func (a *Auth) ensure() error {
 	}
 
 	return nil
+}
+
+func (a *Auth) normalizeName(n string) string {
+	if !a.CaseSensitive {
+		return strings.ToLower(n)
+	}
+	return n
 }
 
 func init() {
