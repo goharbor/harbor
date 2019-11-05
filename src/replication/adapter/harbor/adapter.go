@@ -26,6 +26,7 @@ import (
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
+	"github.com/goharbor/harbor/src/core/config"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -301,7 +302,7 @@ func (a *adapter) getRepositories(projectID int64) ([]*adp.Repository, error) {
 // when harbor is deployed on Kubernetes
 func (a *adapter) getURL() string {
 	if a.registry.Type == model.RegistryTypeHarbor && a.registry.Name == "Local" {
-		return "http://127.0.0.1:8080"
+		return config.LocalCoreURL()
 	}
 	return a.url
 }
