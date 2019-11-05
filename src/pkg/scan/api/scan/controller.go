@@ -16,6 +16,7 @@ package scan
 
 import (
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -29,10 +30,11 @@ type Controller interface {
 	//
 	//   Arguments:
 	//     artifact *v1.Artifact : artifact to be scanned
+	//     options ...Option     : options for triggering a scan
 	//
 	//   Returns:
 	//     error  : non nil error if any errors occurred
-	Scan(artifact *v1.Artifact) error
+	Scan(artifact *v1.Artifact, options ...Option) error
 
 	// GetReport gets the reports for the given artifact identified by the digest
 	//
@@ -86,4 +88,14 @@ type Controller interface {
 	//  Returns:
 	//    error        : non nil error if any errors occurred
 	DeleteReports(digests ...string) error
+
+	// Get the stats of the scan reports requested by the given requester.
+	//
+	//  Arguments:
+	//    requester string : requester identity
+	//
+	//  Returns:
+	//    *all.AllStats: stats object including the related metric data
+	//    error        : non nil error if any errors occurred
+	GetStats(requester string) (*all.Stats, error)
 }

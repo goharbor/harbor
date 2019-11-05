@@ -31,6 +31,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/robot"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/all"
 	sc "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
@@ -115,9 +116,15 @@ func NewController() Controller {
 }
 
 // Scan ...
-func (bc *basicController) Scan(artifact *v1.Artifact) error {
+func (bc *basicController) Scan(artifact *v1.Artifact, options ...Option) error {
 	if artifact == nil {
 		return errors.New("nil artifact to scan")
+	}
+
+	// Parse options
+	ops, err := parseOptions(options...)
+	if err != nil {
+		return errors.Wrap(err, "scan controller: scan")
 	}
 
 	r, err := bc.sc.GetRegistrationByProject(artifact.NamespaceID)
@@ -171,6 +178,14 @@ func (bc *basicController) Scan(artifact *v1.Artifact) error {
 					TrackID:          trackID,
 					MimeType:         pm,
 				}
+				// Set requester if it is specified
+				if len(ops.Requester) > 0 {
+					reportPlaceholder.Requester = ops.Requester
+				} else {
+					// Use the trackID as the requester
+					reportPlaceholder.Requester = trackID
+				}
+
 				_, e := bc.manager.Create(reportPlaceholder)
 				if e != nil {
 					// Check if it is a status conflict error with common error format.
@@ -377,7 +392,21 @@ func (bc *basicController) HandleJobHooks(trackID string, change *job.StatusChan
 
 // DeleteReports ...
 func (bc *basicController) DeleteReports(digests ...string) error {
-	return bc.manager.DeleteByDigests(digests...)
+	if err := bc.manager.DeleteByDigests(digests...); err != nil {
+		return errors.Wrap(err, "scan controller: delete reports")
+	}
+
+	return nil
+}
+
+// GetStats ...
+func (bc *basicController) GetStats(requester string) (*all.Stats, error) {
+	sts, err := bc.manager.GetStats(requester)
+	if err != nil {
+		return nil, errors.Wrap(err, "scan controller: delete reports")
+	}
+
+	return sts, nil
 }
 
 // makeBasicAuthorization creates authorization from a robot account based on the arguments for scanning.
@@ -508,4 +537,15 @@ func makeBearerAuthorization(repository string, username string) (string, error)
 	}
 
 	return fmt.Sprintf("Bearer %s", accessToken.Token), nil
+}
+
+func parseOptions(options ...Option) (*Options, error) {
+	ops := &Options{}
+	for _, op := range options {
+		if err := op(ops); err != nil {
+			return nil, err
+		}
+	}
+
+	return ops, nil
 }

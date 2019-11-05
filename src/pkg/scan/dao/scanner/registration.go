@@ -109,6 +109,9 @@ func ListRegistrations(query *q.Query) ([]*Registration, error) {
 		}
 	}
 
+	// Order the list
+	qt = qt.OrderBy("-is_default", "-create_time")
+
 	l := make([]*Registration, 0)
 	_, err := qt.All(&l)
 

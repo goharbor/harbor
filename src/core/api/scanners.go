@@ -221,7 +221,7 @@ func (sa *ScannerAPI) Delete() {
 
 	// Immutable registration is not allowed
 	if r.Immutable {
-		sa.SendForbiddenError(errors.Errorf("registration %s is not allowed to delete as it is immutable: scanner API: update", r.Name))
+		sa.SendForbiddenError(errors.Errorf("registration %s is not allowed to delete as it is immutable: scanner API: delete", r.Name))
 		return
 	}
 

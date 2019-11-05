@@ -1,13 +1,15 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
 
-	"github.com/goharbor/harbor/src/pkg/q"
-
 	common_job "github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/core/api/models"
+	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/pkg/scan/all"
+	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/api/scanner"
 	"github.com/pkg/errors"
 )
@@ -95,6 +97,41 @@ func (sc *ScanAllAPI) Get() {
 // List returns the top 10 executions of scan all which includes manual and cron.
 func (sc *ScanAllAPI) List() {
 	sc.list(common_job.ImageScanAllJob)
+}
+
+// GetScheduleMetrics returns the progress metrics for the latest scheduled scan all job
+func (sc *ScanAllAPI) GetScheduleMetrics() {
+	sc.getMetrics(common_job.JobKindPeriodic)
+}
+
+// GetScanAllMetrics returns the progress metrics for the latest manually triggered scan all job
+func (sc *ScanAllAPI) GetScanAllMetrics() {
+	sc.getMetrics(common_job.JobKindGeneric)
+}
+
+func (sc *ScanAllAPI) getMetrics(kind string) {
+	id, err := sc.getLatestScanAllJobIDByKind(kind)
+	if err != nil {
+		sc.SendInternalServerError(errors.Wrap(err, "get metrics: scan all API"))
+		return
+	}
+
+	var sts *all.Stats
+	if id > 0 {
+		sts, err = scan.DefaultController.GetStats(fmt.Sprintf("%d", id))
+		if err != nil {
+			sc.SendInternalServerError(errors.Wrap(err, "get metrics: scan all API"))
+			return
+		}
+	}
+
+	// Return empty
+	if sts == nil {
+		sts = &all.Stats{}
+	}
+
+	sc.Data["json"] = sts
+	sc.ServeJSON()
 }
 
 func isScanEnabled() (bool, error) {

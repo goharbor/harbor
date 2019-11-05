@@ -19,6 +19,8 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/goharbor/harbor/src/pkg/scan/all"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	dscan "github.com/goharbor/harbor/src/pkg/scan/dao/scan"
@@ -170,7 +172,7 @@ type MockScanAPIController struct {
 }
 
 // Scan ...
-func (msc *MockScanAPIController) Scan(artifact *v1.Artifact) error {
+func (msc *MockScanAPIController) Scan(artifact *v1.Artifact, option ...scan.Option) error {
 	args := msc.Called(artifact)
 
 	return args.Error(0)
@@ -214,4 +216,14 @@ func (msc *MockScanAPIController) HandleJobHooks(trackID string, change *job.Sta
 
 func (msc *MockScanAPIController) DeleteReports(digests ...string) error {
 	return nil
+}
+
+func (msc *MockScanAPIController) GetStats(requester string) (*all.Stats, error) {
+	args := msc.Called(requester)
+
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(*all.Stats), args.Error(1)
 }

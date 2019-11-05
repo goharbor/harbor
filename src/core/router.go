@@ -214,6 +214,11 @@ func initRouters() {
 	// Handle scan hook
 	beego.Router("/service/notifications/jobs/scan/:uuid", &jobs.Handler{}, "post:HandleScan")
 
+	// Add routes for scan all metrics
+	scanAllAPI := &api.ScanAllAPI{}
+	beego.Router("/api/scans/all/metrics", scanAllAPI, "get:GetScanAllMetrics")
+	beego.Router("/api/scans/schedule/metrics", scanAllAPI, "get:GetScheduleMetrics")
+
 	// Error pages
 	beego.ErrorController(&controllers.ErrorController{})
 

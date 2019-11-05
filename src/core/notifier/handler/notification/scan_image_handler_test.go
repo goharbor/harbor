@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/scan/all"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier"
@@ -105,7 +107,7 @@ type MockScanAPIController struct {
 }
 
 // Scan ...
-func (msc *MockScanAPIController) Scan(artifact *v1.Artifact) error {
+func (msc *MockScanAPIController) Scan(artifact *v1.Artifact, option ...sc.Option) error {
 	args := msc.Called(artifact)
 
 	return args.Error(0)
@@ -155,6 +157,15 @@ func (msc *MockScanAPIController) DeleteReports(digests ...string) error {
 	args := msc.Called(pl...)
 
 	return args.Error(0)
+}
+
+func (msc *MockScanAPIController) GetStats(requester string) (*all.Stats, error) {
+	args := msc.Called(requester)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(*all.Stats), args.Error(1)
 }
 
 // MockHTTPHandler ...

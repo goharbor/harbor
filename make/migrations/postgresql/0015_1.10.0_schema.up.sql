@@ -27,6 +27,7 @@ CREATE TABLE scan_report
     mime_type VARCHAR(256) NOT NULL,
     job_id VARCHAR(64),
     track_id VARCHAR(64),
+    requester VARCHAR(64),
     status VARCHAR(1024) NOT NULL,
     status_code INTEGER DEFAULT 0,
     status_rev BIGINT DEFAULT 0,
@@ -63,3 +64,7 @@ DROP TABLE IF EXISTS clair_vuln_timestamp;
 
 /* Add limited guest role */
 INSERT INTO role (role_code, name) VALUES ('LRS', 'limitedGuest');
+
+/* Add revision and status code columns for admin job table */
+ALTER TABLE admin_job ADD COLUMN revision BIGINT DEFAULT 0;
+ALTER TABLE admin_job ADD COLUMN status_code INTEGER DEFAULT 0;
