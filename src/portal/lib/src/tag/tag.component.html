@@ -154,7 +154,7 @@
                     <div class="cell">{{t.push_time | date: 'short'}}</div>
                 </clr-dg-cell>
                 <clr-dg-cell>
-                    <div class="cell">{{t.pull_time | date: 'short'}}</div>
+                    <div class="cell">{{t.pull_time === availableTime ? "" : (t.pull_time| date: 'short')}}</div>
                 </clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
