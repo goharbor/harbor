@@ -38,10 +38,17 @@ Since the migration might alter the database schema and the settings of `harbor.
 3. Get the latest Harbor release package from Github:
    [https://github.com/goharbor/harbor/releases](https://github.com/goharbor/harbor/releases)
 
-4. Before upgrading Harbor, perform a migration first. The migration tool is delivered as a docker image, so you should pull the image from docker hub. Replace [tag] with the release version of Harbor (for example, v1.9.0) in the command below:
+4. Before upgrading Harbor, perform migration first.  The migration tool is delivered as a docker image.
 
+    You can pull the image from docker hub. Replace [tag] with the release version of Harbor (e.g. v1.5.0) in the below command:
     ```sh
     docker pull goharbor/harbor-migrator:[tag]
+    ```
+
+    Alternatively, if you are using an offline installer package you can load it from the image tarball included in the offline installer package. Replace [version] with the release version of Harbor (e.g. v1.5.0) in the below command:
+    ```sh
+    tar zxf <offline package>
+    docker image load -i harbor/harbor.[version].tar.gz
     ```
 
 5. If you are current version is v1.7.x or earlier, i.e. migrate config file from `harbor.cfg` to `harbor.yml`.
