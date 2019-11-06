@@ -19,7 +19,7 @@ sleep 2
 sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
-sudo make -f make/photon/Makefile _build_db _build_registry _build_prepare -e VERSIONTAG=dev -e CLAIRDBVERSION=dev -e REGISTRYVERSION=${REG_VERSION}
+sudo make -f make/photon/Makefile _build_db _build_registry _build_prepare -e VERSIONTAG=dev -e REGISTRYVERSION=${REG_VERSION}
 sudo MAKEPATH=$(pwd)/make ./make/prepare
 sudo mkdir -p "/data/redis"
 sudo mkdir -p /etc/core/ca/ && sudo mv ./tests/ca.crt /etc/core/ca/
