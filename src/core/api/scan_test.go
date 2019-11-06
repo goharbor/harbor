@@ -19,9 +19,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/scan/all"
-
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	dscan "github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
@@ -119,7 +118,7 @@ func (suite *ScanAPITestSuite) TestScanAPIScan() {
 			request: &testingRequest{
 				url:        scanBaseURL,
 				method:     http.MethodPost,
-				credential: projDeveloper,
+				credential: projAdmin,
 			},
 			code: http.StatusAccepted,
 		},

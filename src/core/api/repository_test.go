@@ -18,8 +18,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 	"github.com/stretchr/testify/assert"
@@ -230,24 +228,6 @@ func TestPopulateAuthor(t *testing.T) {
 }
 
 func TestPutOfRepository(t *testing.T) {
-	u, err := dao.GetUser(models.User{
-		Username: projAdmin.Name,
-	})
-	if err != nil {
-		t.Errorf("Error occurred when Register user: %v", err)
-	}
-	pmid, err := project.AddProjectMember(
-		models.Member{
-			ProjectID:  1,
-			Role:       1,
-			EntityID:   int(u.UserID),
-			EntityType: "u"},
-	)
-	if err != nil {
-		t.Errorf("Error occurred when add project member: %v", err)
-	}
-	defer project.DeleteProjectMemberByID(pmid)
-
 	base := "/api/repositories/"
 	desc := struct {
 		Description string `json:"description"`
@@ -329,7 +309,7 @@ func TestPutOfRepository(t *testing.T) {
 
 	// verify that the description is changed
 	repositories := []*repoResp{}
-	err = handleAndParse(&testingRequest{
+	err := handleAndParse(&testingRequest{
 		method: http.MethodGet,
 		url:    base,
 		queryStruct: struct {
