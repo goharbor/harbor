@@ -5602,6 +5602,24 @@ definitions:
       ldap_group_admin_dn:
         type: string
         description: Specify the ldap group which have the same privilege with Harbor admin.
+      oidc_client_id:
+        type: string
+        description: The client id of the OIDC.
+      oidc_client_secret:
+        type: string
+        description: The client secret of the OIDC.
+      oidc_endpoint:
+        type: string
+        description: The URL of an OIDC-complaint server, must start with 'https://'.
+      oidc_name:
+        type: string
+        description: The name of the OIDC provider.
+      oidc_scope:
+        type: string
+        description: The scope sent to OIDC server during authentication, should be separated by comma. It has to contain “openid”, and “offline_access”. If you are using google, please remove “offline_access” from this field.
+      oidc_verify_cert:
+        type: boolean
+        description: Whether verify your OIDC server certificate, disable it if your OIDC server is hosted via self-hosted certificate.
       project_creation_restriction:
         type: string
         description: This attribute restricts what users have the permission to create project.  It can be "everyone" or "adminonly".
@@ -5702,6 +5720,21 @@ definitions:
       ldap_group_admin_dn:
         $ref: '#/definitions/StringConfigItem'
         description: Specify the ldap group which have the same privilege with Harbor admin.
+      oidc_client_id:
+        $ref: '#/definitions/StringConfigItem'
+        description: The client id of the OIDC.
+      oidc_endpoint:
+        $ref: '#/definitions/StringConfigItem'
+        description: The URL of an OIDC-complaint server, must start with 'https://'.
+      oidc_name:
+        $ref: '#/definitions/StringConfigItem'
+        description: The name of the OIDC provider.
+      oidc_scope:
+        $ref: '#/definitions/StringConfigItem'
+        description: The scope sent to OIDC server during authentication, should be separated by comma. It has to contain “openid”, and “offline_access”. If you are using google, please remove “offline_access” from this field.
+      oidc_verify_cert:
+        $ref: '#/definitions/BoolConfigItem'
+        description: Whether verify your OIDC server certificate, disable it if your OIDC server is hosted via self-hosted certificate.
       project_creation_restriction:
         $ref: '#/definitions/StringConfigItem'
         description: This attribute restricts what users have the permission to create project.  It can be "everyone" or "adminonly".
