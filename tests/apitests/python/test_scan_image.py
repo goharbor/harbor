@@ -71,7 +71,7 @@ class TestProjects(unittest.TestCase):
             expected_project_id = TestProjects.project_scan_image_id, **TestProjects.USER_SCAN_IMAGE_CLIENT)
 
         #Note: Please make sure that this Image has never been pulled before by any other cases,
-        #          so it is a not-scanned image rigth after rpository creation.
+        #          so it is a not-scanned image right after repository creation.
         #image = "tomcat"
         image = "docker"
         src_tag = "1.13"
