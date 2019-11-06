@@ -875,16 +875,28 @@
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Tümünü başarılı bir şekilde tara!",
-            "TRIGGER_SCAN_ALL_FAIL": "Tüm taramayı hatayla tetikleyemedi:{{error}",
+            "TRIGGER_SCAN_ALL_FAIL": "Tüm taramayı hatayla tetikleyemedi:{{error}}",
             "TITLE": "Güvenlik açığı taraması",
             "SCAN_ALL": "Hepsini Tara",
+            "SCHEDULE_TO_SCAN_ALL": "Schedule to scan all",
             "SCAN_NOW": "ŞİMDİ TARA",
+            "SCAN": "SCAN",
             "NONE_POLICY": "Hiçbiri",
             "DAILY_POLICY": "Günlük",
             "REFRESH_POLICY": "Yenileme üzerine",
             "DB_REFRESH_TIME": "Veri tabanı güncellendi",
             "DB_NOT_READY": "Güvenlik açığı veritabanı tam olarak hazır olmayabilir!",
-            "NEXT_SCAN": "Sonra kullanılabilir"
+            "NEXT_SCAN": "Sonra kullanılabilir",
+            "STATUS": {
+                "PENDING": "Pending",
+                "RUNNING": "Running",
+                "STOPPED": "Stopped",
+                "ERROR": "Error",
+                "SUCCESS": "Success",
+                "SCHEDULED": "Scheduled"
+            },
+            "MANUAL": "Manual",
+            "SCHEDULED": "Scheduled"
         },
         "TEST_MAIL_SUCCESS": "Posta sunucusuyla bağlantı doğrulandı.",
         "TEST_LDAP_SUCCESS": "LDAP sunucusuna bağlantı doğrulandı.",

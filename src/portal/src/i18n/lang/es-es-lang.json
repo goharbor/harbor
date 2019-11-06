@@ -875,16 +875,28 @@
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Trigger scan all successfully!",
-            "TRIGGER_SCAN_ALL_FAIL": "Failed to trigger scan all with error: {{error}",
+            "TRIGGER_SCAN_ALL_FAIL": "Failed to trigger scan all with error: {{error}}",
             "TITLE": "Vulnerability Scanning",
             "SCAN_ALL": "Scan All",
+            "SCHEDULE_TO_SCAN_ALL": "Schedule to scan all",
             "SCAN_NOW": "SCAN NOW",
+            "SCAN": "SCAN",
             "NONE_POLICY": "None",
             "DAILY_POLICY": "Daily At",
             "REFRESH_POLICY": "Upon Refresh",
             "DB_REFRESH_TIME": "Database updated on",
             "DB_NOT_READY": "Vulnerability database might not be fully ready!",
-            "NEXT_SCAN": "Available after"
+            "NEXT_SCAN": "Available after",
+            "STATUS": {
+                "PENDING": "Pending",
+                "RUNNING": "Running",
+                "STOPPED": "Stopped",
+                "ERROR": "Error",
+                "SUCCESS": "Success",
+                "SCHEDULED": "Scheduled"
+            },
+            "MANUAL": "Manual",
+            "SCHEDULED": "Scheduled"
         },
         "TEST_MAIL_SUCCESS": "La conexión al servidor de correo ha sido verificada.",
         "TEST_LDAP_SUCCESS": "La conexión al servidor LDAP ha sido verificada.",

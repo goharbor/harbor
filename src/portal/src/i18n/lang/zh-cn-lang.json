@@ -875,16 +875,28 @@
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
-            "TRIGGER_SCAN_ALL_FAIL": "启动扫描所有镜像任务失败:{{error}",
+            "TRIGGER_SCAN_ALL_FAIL": "启动扫描所有镜像任务失败:{{error}}",
             "TITLE": "缺陷扫描",
             "SCAN_ALL": "扫描所有",
+            "SCHEDULE_TO_SCAN_ALL": "定时扫描所有",
             "SCAN_NOW": "开始扫描",
+            "SCAN": "扫描",
             "NONE_POLICY": "无",
             "DAILY_POLICY": "每日定时",
             "REFRESH_POLICY": "缺陷库刷新后",
             "DB_REFRESH_TIME": "数据库更新于",
             "DB_NOT_READY": "缺陷数据库可能没有完全准备好!",
-            "NEXT_SCAN": "下次可用时间"
+            "NEXT_SCAN": "下次可用时间",
+            "STATUS": {
+                "PENDING": "等待",
+                "RUNNING": "扫描中",
+                "STOPPED": "中止",
+                "ERROR": "出错",
+                "SUCCESS": "成功",
+                "SCHEDULED": "已入计划"
+            },
+            "MANUAL": "手动触发",
+            "SCHEDULED": "定时触发"
         },
         "TEST_MAIL_SUCCESS": "邮件服务器的连通正常。",
         "TEST_LDAP_SUCCESS": "LDAP服务器的连通正常。",
