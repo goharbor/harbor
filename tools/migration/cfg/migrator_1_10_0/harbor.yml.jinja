@@ -5,10 +5,14 @@
 hostname: {{ hostname }}
 
 # http related config
-{% if http %}
+{% if http is defined %}
 http:
   # port for http, default is 80. If https enabled, this port will redirect to https port
   port: {{ http.port }}
+{% else %}
+# http:
+#   # port for http, default is 80. If https enabled, this port will redirect to https port
+#   port: 80
 {% endif %}
 
 {% if https is defined %}
