@@ -33,7 +33,7 @@
           </svg>
           <span>{{ 'REPOSITORY.MARKDOWN' | translate }}</span>
         </div>
-        <div *ngIf="!editing">
+        <div id="no-editing"  *ngIf="!editing">
           <div *ngIf="!hasInfo()" class="no-info-div">
             <p>{{'REPOSITORY.NO_INFO' | translate }}<p>
           </div>
@@ -45,8 +45,8 @@
           <textarea rows="5" id="info-edit-textarea" name="info-edit-textarea" [(ngModel)]="imageInfo"></textarea>
         </div>
         <div class="btn-sm" *ngIf="editing">
-          <button class="btn btn-primary" [disabled]="!hasChanges()" (click)="saveInfo()">{{'BUTTON.SAVE' | translate}}</button>
-          <button class="btn" (click)="cancelInfo()">{{'BUTTON.CANCEL' | translate}}</button>
+          <button id="edit-save" class="btn btn-primary" [disabled]="!hasChanges()" (click)="saveInfo()">{{'BUTTON.SAVE' | translate}}</button>
+          <button class="btn" id="edit-cancel" (click)="cancelInfo()">{{'BUTTON.CANCEL' | translate}}</button>
         </div>
         <confirmation-dialog #confirmationDialog (confirmAction)="confirmCancel($event)"></confirmation-dialog>
       </form>

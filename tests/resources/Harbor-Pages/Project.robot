@@ -201,7 +201,7 @@ Edit Repo Info
     Input Text  xpath=//*[@id='info-edit-textarea']  test_description_info
     Retry Element Click  xpath=//*[@id='edit-save']
     Retry Wait Until Page Contains  test_description_info
-    Capture Page Screenshot RepoInfo.png
+    Capture Page Screenshot  RepoInfo.png
 
 Switch To Project Label
     Retry Element Click  xpath=//project-detail//a[contains(.,'Labels')]

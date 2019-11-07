@@ -8,11 +8,11 @@
             <div class="flex-xs-middle option-left">
               <div>
                 <span class="endpoint-label">Webhook endpoint</span>: {{endpoint}}
-                <button class="btn btn-link" (click)="openAddWebhookModal()">{{'WEBHOOK.EDIT_BUTTON' | translate}}</button>
+                <button class="btn btn-link" id="edit-webhook" (click)="openAddWebhookModal()">{{'WEBHOOK.EDIT_BUTTON' | translate}}</button>
               </div>
               <div [ngSwitch]="isEnabled">
-                <button *ngSwitchCase="false" class="btn btn-link" (click)="switchWebhookStatus(true)">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</button>
-                <button *ngSwitchCase="true" class="btn btn-link disabled-btn" (click)="switchWebhookStatus(false)">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</button>
+                <button *ngSwitchCase="false" id="enable-webhook-action" class="btn btn-link" (click)="switchWebhookStatus(true)">{{'WEBHOOK.ENABLED_BUTTON' | translate}}</button>
+                <button *ngSwitchCase="true" id="disable-webhook-action" class="btn btn-link disabled-btn" (click)="switchWebhookStatus(false)">{{'WEBHOOK.DISABLED_BUTTON' | translate}}</button>
               </div>
             </div>
         </div>
