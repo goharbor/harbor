@@ -51,7 +51,8 @@ func TestUsersPost(t *testing.T) {
 		t.Error("Error occurred while add a test User", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(400, code, "case 1: Add user status should be 400")
+		// Should be 403 as only admin can call this API, otherwise it has to be called from browser, with session id
+		assert.Equal(http.StatusForbidden, code, "case 1: Add user status should be 400")
 	}
 
 	// case 2: register a new user with admin auth, but username is empty, expect 400
