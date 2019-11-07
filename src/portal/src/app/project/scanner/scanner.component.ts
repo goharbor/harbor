@@ -20,6 +20,7 @@ import { ActivatedRoute } from "@angular/router";
 import { ClrLoadingState } from "@clr/angular";
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
 import { finalize } from "rxjs/operators";
+import { TranslateService } from "@ngx-translate/core";
 
 
 @Component({
@@ -43,6 +44,7 @@ export class ScannerComponent implements OnInit {
                  private errorHandler: ErrorHandler,
                  private route: ActivatedRoute,
                  private userPermissionService: UserPermissionService,
+                 private translate: TranslateService
     ) {
     }
     ngOnInit() {
@@ -65,13 +67,20 @@ export class ScannerComponent implements OnInit {
     init() {
         this.getScanner();
     }
-    getScanner() {
+    getScanner(isCheckHealth?: boolean) {
         this.loading = true;
         this.configScannerService.getProjectScanner(this.projectId)
             .pipe(finalize(() => this.loading = false))
             .subscribe(response => {
                 if (response && "{}" !== JSON.stringify(response)) {
                     this.scanner = response;
+                    if (isCheckHealth && this.scanner.health !== 'healthy') {
+                        this.translate.get("SCANNER.SET_UNHEALTHY_SCANNER", {name: this.scanner.name})
+                            .subscribe(res => {
+                                 this.errorHandler.warning(res);
+                            }
+                        );
+                    }
                 }
             }, error => {
                 this.errorHandler.error(error);
@@ -112,7 +121,7 @@ export class ScannerComponent implements OnInit {
             .subscribe(response => {
                 this.close();
                 this.msgHandler.showSuccess('Update Success');
-                this.getScanner();
+                this.getScanner(true);
                 this.saveBtnState = ClrLoadingState.SUCCESS;
             }, error => {
                 this.inlineAlert.showInlineError(error);

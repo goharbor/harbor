@@ -7,6 +7,7 @@
         <div class="clr-control-container">
             <button *ngIf="(!scanner) && hasCreatePermission && scanners && scanners.length > 0" id="edit-scanner-copy" class="btn btn-primary btn-sm" (click)="open()">{{'SCANNER.EDIT' | translate}}</button>
             <label *ngIf="(!scanner) && hasCreatePermission && !(scanners && scanners.length > 0)" class="name">{{'SCANNER.NOT_AVAILABLE' | translate}}</label>
+            <label *ngIf="(!scanner) && !hasCreatePermission" class="name">{{'SCANNER.NO_PROJECT_SCANNER' | translate}}</label>
         </div>
     </div>
     <ng-container *ngIf="scanner">
