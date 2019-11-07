@@ -1285,7 +1285,7 @@
         "TEST_CONNECTION": "TEST CONNECTION",
         "ADD_SUCCESS": "Successfully added ",
         "TEST_PASS": "Test passed",
-        "TEST_FAILED": "Test failed",
+        "TEST_FAILED": "Ping: registration {{name}}:{{url}} is unreachable",
         "UPDATE_SUCCESS": "Successfully updated",
         "SCANNER_COLON": "Scanner:",
         "NAME_COLON": "Name:",
@@ -1321,7 +1321,8 @@
         "OPTIONS": "Options",
         "USE_INNER": "Use internal registry address",
         "USE_INNER_TIP": "If the option is checked, the scanner will be forced to use the internal registry address to access the related contents.",
-        "VULNERABILITY_SEVERITY": "Vulnerability severity:"
+        "VULNERABILITY_SEVERITY": "Vulnerability severity:",
+        "CONFIRM_DELETION": "Confirm Scanner deletion"
     }
 
 }

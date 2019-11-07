@@ -1287,7 +1287,7 @@
         "TEST_CONNECTION": "测试连接",
         "ADD_SUCCESS": "添加成功",
         "TEST_PASS": "测试成功",
-        "TEST_FAILED": "测试失败",
+        "TEST_FAILED": "Ping:  目标地址{{name}}:{{url}}连接失败",
         "UPDATE_SUCCESS": "更新成功",
         "SCANNER_COLON": "扫描器:",
         "NAME_COLON": "Name:",
@@ -1323,6 +1323,7 @@
         "OPTIONS": "选项",
         "USE_INNER": "使用仓库内部地址",
         "USE_INNER_TIP": "选中此项，扫描器将使用仓库内部地址访问其相关内容",
-        "VULNERABILITY_SEVERITY": "漏洞严重度："
+        "VULNERABILITY_SEVERITY": "漏洞严重度：",
+        "CONFIRM_DELETION": "删除扫描器确认"
     }
 }
