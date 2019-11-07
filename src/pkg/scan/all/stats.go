@@ -22,6 +22,7 @@ type Stats struct {
 	Completed uint          `json:"completed"`
 	Metrics   StatusMetrics `json:"metrics"`
 	Requester string        `json:"requester"`
+	Ongoing   bool          `json:"ongoing"` // Indicate if the metrics data is stable now
 }
 
 // StatusMetrics contains the metrics of each status.
