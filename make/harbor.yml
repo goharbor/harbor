@@ -96,7 +96,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 1.9.0
+_version: 1.10.0
 
 # Uncomment external_database if using external database.
 # external_database:
