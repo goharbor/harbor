@@ -870,16 +870,28 @@
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Disparo de análise geral efetuado com sucesso!",
-            "TRIGGER_SCAN_ALL_FAIL": "Falha ao disparar análise geral com erro: {{error}",
+            "TRIGGER_SCAN_ALL_FAIL": "Falha ao disparar análise geral com erro: {{error}}",
             "TITLE": "Análise de vulnerabilidades",
             "SCAN_ALL": "Analisar todos",
+            "SCHEDULE_TO_SCAN_ALL": "Schedule to scan all",
             "SCAN_NOW": "ANALISAR AGORA",
+            "SCAN": "SCAN",
             "NONE_POLICY": "Nenhum",
             "DAILY_POLICY": "Diário em",
             "REFRESH_POLICY": "na atualização",
             "DB_REFRESH_TIME": "Banco de dados atualizado em",
             "DB_NOT_READY": "Banco de dados de vulnerabilidade pode não estar totalmente preparado!",
-            "NEXT_SCAN": "Disponível após"
+            "NEXT_SCAN": "Disponível após",
+            "STATUS": {
+                "PENDING": "Pending",
+                "RUNNING": "Running",
+                "STOPPED": "Stopped",
+                "ERROR": "Error",
+                "SUCCESS": "Success",
+                "SCHEDULED": "Scheduled"
+            },
+            "MANUAL": "Manual",
+            "SCHEDULED": "Scheduled"
         },
         "TEST_MAIL_SUCCESS": "Conexão ao servidor de Email foi verificada.",
         "TEST_LDAP_SUCCESS": "Conexão ao servidor de LDAP foi verificada.",

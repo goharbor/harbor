@@ -41,7 +41,7 @@ export class RecentLogComponent implements OnInit {
     defaultFilter = "username";
     isOpenFilterTag: boolean;
     @Input() withTitle: boolean = false;
-    pageSize: number = 3;
+    pageSize: number = 15;
     currentPage: number = 1; // Double bound to pagination component
     constructor(
         private logService: AccessLogService,

@@ -59,10 +59,9 @@ export class RegistryConfigComponent implements OnInit {
     }
 
     isValid(): boolean {
-        return this.systemSettings &&
+        return !!(this.systemSettings &&
             this.systemSettings.isValid &&
-            this.vulnerabilityCfg &&
-            this.vulnerabilityCfg.isValid;
+            this.vulnerabilityCfg);
     }
 
     hasChanges(): boolean {
