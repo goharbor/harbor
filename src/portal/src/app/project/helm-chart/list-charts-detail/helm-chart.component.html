@@ -48,9 +48,9 @@
                         </span>
                         <a href="javascript:void(0)" (click)="onChartClick(chart)">{{ chart.name }}</a>
                     </clr-dg-cell>
-                    <clr-dg-cell>{{ getStatusString(chart) | translate }}</clr-dg-cell>
-                    <clr-dg-cell>{{ chart.total_versions }}</clr-dg-cell>
-                    <clr-dg-cell>{{ chart.created | date }}</clr-dg-cell>
+                    <clr-dg-cell class="table-center">{{ getStatusString(chart) | translate }}</clr-dg-cell>
+                    <clr-dg-cell class="table-center">{{ chart.total_versions }}</clr-dg-cell>
+                    <clr-dg-cell class="table-center">{{ chart.created | date }}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
                     <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount">

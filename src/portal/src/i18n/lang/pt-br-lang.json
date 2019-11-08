@@ -1030,7 +1030,8 @@
         "STORAGE_DEFAULT_QUOTA": "Default storage quota",
         "SAVE_SUCCESS": "Quota edit success",
         "UNLIMITED": "unlimited",
-        "INVALID_INPUT": "invalid input"
+        "INVALID_INPUT": "invalid input",
+        "PLACEHOLDER": "We couldn't find any project quotas"
     },
     "WEEKLY": {
         "MONDAY": "Segunda Feira",

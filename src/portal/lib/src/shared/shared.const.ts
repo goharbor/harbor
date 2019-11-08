@@ -121,7 +121,8 @@ export const CONFIG_AUTH_MODE = {
   HTTP_AUTH: "http_auth",
   LDAP_AUTH: "ldap_auth",
   OIDC_AUTH: "oidc_auth",
-  UAA_AUTH: "uaa_auth"
+  UAA_AUTH: "uaa_auth",
+  DB_AUTH: "db_auth",
 };
 export const QUOTA_DANGER_COEFFICIENT = 0.9;
 export const QUOTA_WARNING_COEFFICIENT = 0.7;
