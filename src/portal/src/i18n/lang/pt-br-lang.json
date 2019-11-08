@@ -141,7 +141,7 @@
         "NEW_PWD": "Nova senha",
         "CONFIRM_PWD": "Confirmar senha",
         "SAVE_SUCCESS": "Senha do usuário alterada com sucesso.",
-        "PASS_TIPS": "8-20 caracteres com 1 maiuscula, 1 minuscula e 1 número"
+        "PASS_TIPS": "8-128 caracteres com 1 maiuscula, 1 minuscula e 1 número"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Perfil do usuário",

@@ -143,7 +143,7 @@
         "NEW_PWD": "Nueva contraseña",
         "CONFIRM_PWD": "Confirmar contraseña",
         "SAVE_SUCCESS": "Contraseña de usuario guardada satisfactoriamente.",
-        "PASS_TIPS": "8-20 caracteres con 1 letra mayúscula, 1 minúscula y 1 número"
+        "PASS_TIPS": "8-128 caracteres con 1 letra mayúscula, 1 minúscula y 1 número"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Perfil de usuario",
