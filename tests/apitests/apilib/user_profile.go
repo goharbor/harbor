@@ -23,9 +23,8 @@
 package apilib
 
 type UserProfile struct {
-	Email string `json:"email,omitempty"`
-
+	UserID   int    `json:"user_id,omitempty"`
+	Email    string `json:"email,omitempty"`
 	Realname string `json:"realname,omitempty"`
-
-	Comment string `json:"comment,omitempty"`
+	Comment  string `json:"comment,omitempty"`
 }

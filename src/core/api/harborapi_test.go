@@ -834,16 +834,11 @@ func (a testapi) UsersSearch(userName string, authInfo ...usrInfo) (int, []apili
 }
 
 // Get registered users by userid.
-func (a testapi) UsersGetByID(userName string, authInfo usrInfo, userID int) (int, apilib.User, error) {
+func (a testapi) UsersGetByID(userID int, authInfo usrInfo) (int, apilib.User, error) {
 	_sling := sling.New().Get(a.basePath)
 	// create path and map variables
 	path := "/api/users/" + fmt.Sprintf("%d", userID)
 	_sling = _sling.Path(path)
-	// body params
-	type QueryParams struct {
-		UserName string `url:"username, omitempty"`
-	}
-	_sling = _sling.QueryStruct(&QueryParams{UserName: userName})
 	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
 	var successPayLoad apilib.User
 	if 200 == httpStatusCode && nil == err {
