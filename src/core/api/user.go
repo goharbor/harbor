@@ -261,11 +261,12 @@ func (ua *UserAPI) Put() {
 		ua.SendForbiddenError(fmt.Errorf("User with ID %d cannot be modified", ua.userID))
 		return
 	}
-	user := models.User{UserID: ua.userID}
+	user := models.User{}
 	if err := ua.DecodeJSONReq(&user); err != nil {
 		ua.SendBadRequestError(err)
 		return
 	}
+	user.UserID = ua.userID
 	err := commonValidate(user)
 	if err != nil {
 		log.Warningf("Bad request in change user profile: %v", err)
