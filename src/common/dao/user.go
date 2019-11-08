@@ -290,8 +290,5 @@ func CleanUser(id int64) error {
 
 // MatchPassword returns true is password matched
 func matchPassword(u *models.User, password string) bool {
-	if u.Password != utils.Encrypt(password, u.Salt, u.PasswordVersion) {
-		return false
-	}
-	return true
+	return utils.Encrypt(password, u.Salt, u.PasswordVersion) == u.Password
 }
