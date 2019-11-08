@@ -105,6 +105,7 @@ func GetUnitTestConfig() map[string]interface{} {
 		common.PostGreSQLUsername:     "postgres",
 		common.PostGreSQLPassword:     "root123",
 		common.PostGreSQLDatabase:     "registry",
+		common.LDAPNestedGroupSearch:  false,
 		common.LDAPURL:                "ldap://ldap.vmware.com",
 		common.LDAPSearchDN:           "cn=admin,dc=example,dc=com",
 		common.LDAPSearchPwd:          "admin",

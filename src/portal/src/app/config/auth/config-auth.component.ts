@@ -15,8 +15,10 @@ import { Component, Input, ViewChild, SimpleChanges, OnChanges, OnInit, Output, 
 import { NgForm } from '@angular/forms';
 import { Subscription } from "rxjs";
 
-import { Configuration, clone, isEmpty, getChanges, StringValueItem, BoolValueItem, SystemInfoService, ErrorHandler
-    , CONFIG_AUTH_MODE } from '@harbor/ui';
+import {
+    Configuration, clone, isEmpty, getChanges, StringValueItem, BoolValueItem, SystemInfoService, ErrorHandler
+    , CONFIG_AUTH_MODE
+} from '@harbor/ui';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ConfirmMessageHandler } from '../config.msg.utils';
 import { AppConfigService } from '../../app-config.service';
@@ -37,7 +39,7 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
     // tslint:disable-next-line:no-input-rename
     @Input('allConfig') currentConfig: Configuration = new Configuration();
     private originalConfig: Configuration;
-    @ViewChild('authConfigFrom', {static: false}) authForm: NgForm;
+    @ViewChild('authConfigFrom', { static: false }) authForm: NgForm;
     @Output() refreshAllconfig = new EventEmitter<any>();
 
     constructor(
@@ -106,6 +108,10 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
 
     setVerifyCertValue($event: any) {
         this.currentConfig.ldap_verify_cert.value = $event;
+    }
+
+    setLdapNestedGroupSearchValue($event: any) {
+        this.currentConfig.ldap_nested_group_search.value = $event;
     }
 
     public pingTestServer(): void {

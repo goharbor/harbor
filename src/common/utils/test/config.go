@@ -28,6 +28,7 @@ var defaultConfig = map[string]interface{}{
 	common.PostGreSQLPassword:         "root123",
 	common.PostGreSQLDatabase:         "registry",
 	common.SelfRegistration:           true,
+	common.LDAPNestedGroupSearch:      false,
 	common.LDAPURL:                    "ldap://127.0.0.1",
 	common.LDAPSearchDN:               "uid=searchuser,ou=people,dc=mydomain,dc=com",
 	common.LDAPSearchPwd:              "password",

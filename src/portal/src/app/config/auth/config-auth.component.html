@@ -2,12 +2,12 @@
     <div class="clr-form-control">
         <label for="authMode" class="clr-control-label">
             {{'CONFIG.AUTH_MODE' | translate}}
-                <clr-tooltip>
-                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                        <span>{{'CONFIG.TOOLTIP.AUTH_MODE' | translate}}</span>
-                    </clr-tooltip-content>
-                </clr-tooltip></label>
+            <clr-tooltip>
+                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                    <span>{{'CONFIG.TOOLTIP.AUTH_MODE' | translate}}</span>
+                </clr-tooltip-content>
+            </clr-tooltip></label>
         <div class="clr-control-container">
             <div class="clr-select-wrapper">
                 <select class="clr-select" id="authMode" name="authMode" (change)="handleOnChange($event)"
@@ -61,7 +61,7 @@
             <clr-control-error>{{'TOOLTIP.ITEM_REQUIRED' | translate}}</clr-control-error>
         </clr-input-container>
         <clr-input-container>
-            <label for="ldapSearchDN" >{{'CONFIG.LDAP.SEARCH_DN' | translate}}
+            <label for="ldapSearchDN">{{'CONFIG.LDAP.SEARCH_DN' | translate}}
                 <clr-tooltip>
                     <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                     <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
@@ -226,17 +226,16 @@
     </section>
     <clr-checkbox-container *ngIf="showSelfReg">
         <label for="selfReg">{{'CONFIG.SELF_REGISTRATION' | translate}}
-                <clr-tooltip>
-                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                        <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                            <span *ngIf="checkable; else elseBlock" class="tooltip-content">{{'CONFIG.TOOLTIP.SELF_REGISTRATION_ENABLE'
+            <clr-tooltip>
+                <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                    <span *ngIf="checkable; else elseBlock" class="tooltip-content">{{'CONFIG.TOOLTIP.SELF_REGISTRATION_ENABLE'
                                                             | translate}}</span>
-                            <ng-template #elseBlock>
-                                <span
-                                    class="tooltip-content">{{'CONFIG.TOOLTIP.SELF_REGISTRATION_DISABLE' | translate}}</span>
-                            </ng-template>
-                        </clr-tooltip-content>
-                    </clr-tooltip>
+                    <ng-template #elseBlock>
+                        <span class="tooltip-content">{{'CONFIG.TOOLTIP.SELF_REGISTRATION_DISABLE' | translate}}</span>
+                    </ng-template>
+                </clr-tooltip-content>
+            </clr-tooltip>
         </label>
         <clr-checkbox-wrapper>
             <input type="checkbox" clrCheckbox name="selfReg" id="selfReg"
@@ -248,13 +247,30 @@
     <section *ngIf="showLdap">
 
         <clr-checkbox-container>
+            <label for="ldapNestedGroupSearch">{{'CONFIG.LDAP.NESTED_GROUP_SEARCH' | translate}}
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'CONFIG.TOOLTIP.NESTED_GROUP_SEARCH' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input type="checkbox" clrCheckbox name="ldapNestedGroupSearch" id="ldapNestedGroupSearch"
+                    [ngModel]="currentConfig.ldap_nested_group_search.value"
+                    [disabled]="disabled(currentConfig.ldap_scope)"
+                    (ngModelChange)="setLdapNestedGroupSearchValue($event)" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
+
+        <clr-checkbox-container>
             <label for="ldapVerifyCert">{{'CONFIG.LDAP.VERIFY_CERT' | translate}}
-                    <clr-tooltip>
-                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                                <span>{{'CONFIG.TOOLTIP.VERIFY_CERT' | translate}}</span>
-                            </clr-tooltip-content>
-                        </clr-tooltip>
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'CONFIG.TOOLTIP.VERIFY_CERT' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
             </label>
             <clr-checkbox-wrapper>
                 <input type="checkbox" clrCheckbox name="ldapVerifyCert" id="ldapVerifyCert"
@@ -328,9 +344,8 @@
                 </clr-tooltip>
             </label>
             <input clrInput name="oidcEndpoint" type="text" #oidcEndpointInput="ngModel" required
-            [(ngModel)]="currentConfig.oidc_endpoint.value" id="oidcEndpoint" size="40"
-            [disabled]="disabled(currentConfig.oidc_endpoint)"
-            pattern="^([hH][tT]{2}[pP][sS]:\/\/)(.*?)*$" />
+                [(ngModel)]="currentConfig.oidc_endpoint.value" id="oidcEndpoint" size="40"
+                [disabled]="disabled(currentConfig.oidc_endpoint)" pattern="^([hH][tT]{2}[pP][sS]:\/\/)(.*?)*$" />
             <clr-control-error>{{'TOOLTIP.OIDC_ENDPOIT_FORMAT' | translate}}</clr-control-error>
         </clr-input-container>
         <clr-input-container>
@@ -348,7 +363,7 @@
             <clr-control-error>{{'TOOLTIP.ITEM_REQUIRED' | translate}}</clr-control-error>
         </clr-input-container>
         <clr-input-container>
-            <label  for="oidcGroupClaim">{{'CONFIG.OIDC.GROUP_CLAIM_NAME' | translate}}
+            <label for="oidcGroupClaim">{{'CONFIG.OIDC.GROUP_CLAIM_NAME' | translate}}
                 <clr-tooltip>
                     <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                     <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
@@ -358,38 +373,38 @@
             </label>
             <input clrInput name="oidcGroupClaim" type="text" #oidcClientSecretInput="ngModel"
                 [(ngModel)]="currentConfig.oidc_groups_claim.value" id="oidcGroupClaim" size="40"
-                 [disabled]="disabled(currentConfig.oidc_groups_claim)" />
+                [disabled]="disabled(currentConfig.oidc_groups_claim)" />
         </clr-input-container>
 
         <clr-input-container>
-                <label class="required" for="oidcScope">{{'CONFIG.OIDC.SCOPE' | translate}}
-                    <clr-tooltip>
-                        <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                        <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                            <span>{{'TOOLTIP.OIDC_SCOPE' | translate}}</span>
-                        </clr-tooltip-content>
-                    </clr-tooltip>
-                </label>
-                <input clrInput name="oidcScope" type="text" #oidcScopeInput="ngModel"
+            <label class="required" for="oidcScope">{{'CONFIG.OIDC.SCOPE' | translate}}
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'TOOLTIP.OIDC_SCOPE' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <input clrInput name="oidcScope" type="text" #oidcScopeInput="ngModel"
                 [(ngModel)]="currentConfig.oidc_scope.value" id="oidcScope" size="40" required
                 [disabled]="disabled(currentConfig.oidc_scope)" pattern="^(\w+,){0,}openid(,\w+){0,}$" />
-                <clr-control-error>{{'TOOLTIP.SCOPE_REQUIRED' | translate}}</clr-control-error>
-            </clr-input-container>
-            <clr-checkbox-container>
-                    <label for="oidc_verify_cert">{{'CONFIG.OIDC.OIDC_VERIFYCERT' | translate}}
-                            <clr-tooltip>
-                                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                                        <span>{{'TOOLTIP.OIDC_VERIFYCERT' | translate}}</span>
-                                    </clr-tooltip-content>
-                                </clr-tooltip>
-                    </label>
-                    <clr-checkbox-wrapper>
-                        <input type="checkbox" clrCheckbox name="oidc_verify_cert" id="oidc_verify_cert"
-                        [disabled]="disabled(currentConfig.oidc_verify_cert)"
-                        [(ngModel)]="currentConfig.oidc_verify_cert.value" />
-                    </clr-checkbox-wrapper>
-                </clr-checkbox-container>
+            <clr-control-error>{{'TOOLTIP.SCOPE_REQUIRED' | translate}}</clr-control-error>
+        </clr-input-container>
+        <clr-checkbox-container>
+            <label for="oidc_verify_cert">{{'CONFIG.OIDC.OIDC_VERIFYCERT' | translate}}
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'TOOLTIP.OIDC_VERIFYCERT' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input type="checkbox" clrCheckbox name="oidc_verify_cert" id="oidc_verify_cert"
+                    [disabled]="disabled(currentConfig.oidc_verify_cert)"
+                    [(ngModel)]="currentConfig.oidc_verify_cert.value" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
         <div class="oidc-tip">{{ 'CONFIG.OIDC.OIDC_REDIREC_URL' | translate}}
             <span>{{redirectUrl}}/c/oidc/callback</span></div>
     </section>

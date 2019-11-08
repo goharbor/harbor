@@ -60,6 +60,7 @@ const (
 	CoreURL                          = "core_url"
 	CoreLocalURL                     = "core_local_url"
 	JobServiceURL                    = "jobservice_url"
+	LDAPNestedGroupSearch            = "ldap_nested_group_search"
 	LDAPURL                          = "ldap_url"
 	LDAPSearchDN                     = "ldap_search_dn"
 	LDAPSearchPwd                    = "ldap_search_password"

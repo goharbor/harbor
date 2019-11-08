@@ -30,23 +30,24 @@ import (
 )
 
 var testConfig = map[string]interface{}{
-	common.ExtEndpoint:          "host01.com",
-	common.AUTHMode:             "db_auth",
-	common.DatabaseType:         "postgresql",
-	common.PostGreSQLHOST:       "127.0.0.1",
-	common.PostGreSQLPort:       5432,
-	common.PostGreSQLUsername:   "postgres",
-	common.PostGreSQLPassword:   "root123",
-	common.PostGreSQLDatabase:   "registry",
-	common.LDAPURL:              "ldap://127.0.0.1",
-	common.LDAPSearchDN:         "cn=admin,dc=example,dc=com",
-	common.LDAPSearchPwd:        "admin",
-	common.LDAPBaseDN:           "dc=example,dc=com",
-	common.LDAPUID:              "uid",
-	common.LDAPFilter:           "",
-	common.LDAPScope:            3,
-	common.LDAPTimeout:          30,
-	common.AdminInitialPassword: "password",
+	common.ExtEndpoint:           "host01.com",
+	common.AUTHMode:              "db_auth",
+	common.DatabaseType:          "postgresql",
+	common.PostGreSQLHOST:        "127.0.0.1",
+	common.PostGreSQLPort:        5432,
+	common.PostGreSQLUsername:    "postgres",
+	common.PostGreSQLPassword:    "root123",
+	common.PostGreSQLDatabase:    "registry",
+	common.LDAPNestedGroupSearch: false,
+	common.LDAPURL:               "ldap://127.0.0.1",
+	common.LDAPSearchDN:          "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd:         "admin",
+	common.LDAPBaseDN:            "dc=example,dc=com",
+	common.LDAPUID:               "uid",
+	common.LDAPFilter:            "",
+	common.LDAPScope:             3,
+	common.LDAPTimeout:           30,
+	common.AdminInitialPassword:  "password",
 }
 
 func TestMain(m *testing.M) {
@@ -124,6 +125,7 @@ func TestAuthenticateHelperSearchUser(t *testing.T) {
 
 func TestLdapConnectionTest(t *testing.T) {
 	var ldapConfig = models.LdapConf{
+		LdapNestedGroupSearch: false,
 		LdapURL:               "ldap://127.0.0.1",
 		LdapSearchDn:          "cn=admin,dc=example,dc=com",
 		LdapSearchPassword:    "admin",

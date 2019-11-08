@@ -23,15 +23,16 @@ var ldapTestConfig = map[string]interface{}{
 	common.PostGreSQLPassword: "root123",
 	common.PostGreSQLDatabase: "registry",
 	// config.SelfRegistration: true,
-	common.LDAPURL:              "ldap://127.0.0.1",
-	common.LDAPSearchDN:         "cn=admin,dc=example,dc=com",
-	common.LDAPSearchPwd:        "admin",
-	common.LDAPBaseDN:           "dc=example,dc=com",
-	common.LDAPUID:              "uid",
-	common.LDAPFilter:           "",
-	common.LDAPScope:            3,
-	common.LDAPTimeout:          30,
-	common.AdminInitialPassword: "password",
+	common.LDAPNestedGroupSearch: false,
+	common.LDAPURL:               "ldap://127.0.0.1",
+	common.LDAPSearchDN:          "cn=admin,dc=example,dc=com",
+	common.LDAPSearchPwd:         "admin",
+	common.LDAPBaseDN:            "dc=example,dc=com",
+	common.LDAPUID:               "uid",
+	common.LDAPFilter:            "",
+	common.LDAPScope:             3,
+	common.LDAPTimeout:           30,
+	common.AdminInitialPassword:  "password",
 }
 
 var defaultConfigWithVerifyCert = map[string]interface{}{
@@ -44,6 +45,7 @@ var defaultConfigWithVerifyCert = map[string]interface{}{
 	common.PostGreSQLPassword:         "root123",
 	common.PostGreSQLDatabase:         "registry",
 	common.SelfRegistration:           true,
+	common.LDAPNestedGroupSearch:      false,
 	common.LDAPURL:                    "ldap://127.0.0.1:389",
 	common.LDAPSearchDN:               "cn=admin,dc=example,dc=com",
 	common.LDAPSearchPwd:              "admin",
@@ -191,7 +193,38 @@ func TestSearchUser(t *testing.T) {
 	if len(result2[0].GroupDNList) < 1 && result2[0].GroupDNList[0] != "cn=harbor_users,ou=groups,dc=example,dc=com" {
 		t.Fatalf("failed to search user mike's memberof")
 	}
+}
 
+func TestSearchNestedGroup(t *testing.T) {
+	session, err := LoadSystemLdapConfig()
+	if err != nil {
+		t.Fatalf("Can not load system ldap config")
+	}
+	err = session.Open()
+	if err != nil {
+		t.Fatalf("failed to create ldap session %v", err)
+	}
+
+	err = session.Bind(session.ldapConfig.LdapSearchDn, session.ldapConfig.LdapSearchPassword)
+	if err != nil {
+		t.Fatalf("failed to bind search dn")
+	}
+
+	defer session.Close()
+
+	result, err := session.searchNestedGroups("test")
+	if err != nil || len(result) == 0 {
+		t.Fatalf("failed to search user test!")
+	}
+
+	result2, err := session.SearchUser("mike")
+	if err != nil || len(result2) == 0 {
+		t.Fatalf("failed to search user mike!")
+	}
+
+	if len(result2[0].GroupDNList) < 1 && result2[0].GroupDNList[0] != "cn=harbor_users,ou=groups,dc=example,dc=com" {
+		t.Fatalf("failed to search user mike's memberof")
+	}
 }
 
 func TestFormatURL(t *testing.T) {

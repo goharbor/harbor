@@ -203,6 +203,7 @@ func LDAPConf() (*models.LdapConf, error) {
 		return nil, err
 	}
 	return &models.LdapConf{
+		LdapNestedGroupSearch: cfgMgr.Get(common.LDAPNestedGroupSearch).GetBool(),
 		LdapURL:               cfgMgr.Get(common.LDAPURL).GetString(),
 		LdapSearchDn:          cfgMgr.Get(common.LDAPSearchDN).GetString(),
 		LdapSearchPassword:    cfgMgr.Get(common.LDAPSearchPwd).GetString(),

@@ -23,6 +23,7 @@
 package apilib
 
 type LdapConf struct {
+	LdapNestedGroupSearch string `json:"ldap_nested_group_search"`
 	LdapURL               string `json:"ldap_url"`
 	LdapSearchDn          string `json:"ldap_search_dn"`
 	LdapSearchPassword    string `json:"ldap_search_password"`

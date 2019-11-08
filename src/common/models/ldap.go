@@ -16,6 +16,7 @@ package models
 
 // LdapConf holds information about ldap configuration
 type LdapConf struct {
+	LdapNestedGroupSearch bool   `json:"ldap_nested_group_search"`
 	LdapURL               string `json:"ldap_url"`
 	LdapSearchDn          string `json:"ldap_search_dn"`
 	LdapSearchPassword    string `json:"ldap_search_password"`

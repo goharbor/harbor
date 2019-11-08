@@ -221,6 +221,14 @@ func (session *Session) SearchUser(username string) ([]models.LdapUser, error) {
 			u.GroupDNList = groupDNList
 		}
 
+		if session.ldapConfig.LdapNestedGroupSearch {
+			u.GroupDNList, err = session.searchNestedGroups(ldapEntry.DN)
+
+			if err != nil {
+				return nil, err
+			}
+		}
+
 		u.DN = ldapEntry.DN
 		ldapUsers = append(ldapUsers, u)
 
@@ -375,6 +383,25 @@ func (session *Session) SearchGroupByDN(groupDN string) ([]models.LdapGroup, err
 	return groupList, err
 }
 
+func (session *Session) searchNestedGroups(dn string) ([]string, error) {
+	log.Debugf("Searching for nested groups membership")
+	nestedGroupDNList := []string{}
+	nestedGroupFilter := createNestedGroupSearchFilter(dn)
+	result, err := session.SearchLdap(nestedGroupFilter)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, groupEntry := range result.Entries {
+		nestedGroupDNList = append(nestedGroupDNList, strings.TrimSpace(groupEntry.DN))
+		log.Debugf("Found group %v", groupEntry.DN)
+	}
+
+	log.Debugf("Done searching for nested groups")
+
+	return nestedGroupDNList, nil
+}
+
 func (session *Session) searchGroup(baseDN, filter, groupName, groupNameAttribute string) ([]models.LdapGroup, error) {
 	ldapGroups := make([]models.LdapGroup, 0)
 	log.Debugf("Groupname: %v, basedn: %v", groupName, baseDN)
@@ -419,6 +446,12 @@ func createGroupSearchFilter(oldFilter, groupName, groupNameAttribute string) st
 			filter = "(&(" + oldFilter + ")(" + groupNameAttribute + "=*" + groupName + "*))"
 		}
 	}
+	return filter
+}
+
+func createNestedGroupSearchFilter(userDN string) string {
+	filter := ""
+	filter = "(&(objectClass=group)(member:1.2.840.113556.1.4.1941:=" + userDN + "))"
 	return filter
 }
 
