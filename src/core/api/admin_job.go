@@ -249,22 +249,13 @@ func (aj *AJAPI) submit(ajr *models.AdminJobReq) {
 		// Only needs to care the 1st generic job.
 		// Check if there are still ongoing scan jobs triggered by the previous admin job.
 		// TODO: REPLACE WITH TASK MANAGER METHODS IN FUTURE
-		query := &common_models.AdminJobQuery{
-			Name: ajr.Name,
-			Kind: common_job.JobKindGeneric,
-		}
-		query.Size = 1
-		query.Page = 1
-
-		ajbs, err := dao.GetAdminJobs(query)
+		jb, err := aj.getLatestAdminJob(ajr.Name, common_job.JobKindGeneric)
 		if err != nil {
 			aj.SendInternalServerError(errors.Wrap(err, "AJAPI"))
 			return
 		}
 
-		if len(ajbs) > 0 {
-			jb := ajbs[0]
-
+		if jb != nil {
 			// With a reasonable timeout duration
 			if jb.UpdateTime.Add(2 * time.Hour).After(time.Now()) {
 				if isOnGoing(jb.Status) {
@@ -284,7 +275,6 @@ func (aj *AJAPI) submit(ajr *models.AdminJobReq) {
 
 					if stats.Total != stats.Completed {
 						// Not all scan processes are completed
-						// In case status is hang, add outdated timeout
 						err := errors.Errorf("scan processes started by %s job with ID %d is in progress: %s", jb.Name, jb.ID, progress(stats.Completed, stats.Total))
 						aj.SendPreconditionFailedError(errors.Wrap(err, "submit : AJAPI"))
 						return
@@ -322,9 +312,9 @@ func (aj *AJAPI) submit(ajr *models.AdminJobReq) {
 	}
 }
 
-func (aj *AJAPI) getLatestScanAllJobIDByKind(kind string) (int64, error) {
+func (aj *AJAPI) getLatestAdminJob(name, kind string) (*common_models.AdminJob, error) {
 	query := &common_models.AdminJobQuery{
-		Name: common_job.ImageScanAllJob,
+		Name: name,
 		Kind: kind,
 	}
 	query.Size = 1
@@ -333,16 +323,16 @@ func (aj *AJAPI) getLatestScanAllJobIDByKind(kind string) (int64, error) {
 	jbs, err := dao.GetAdminJobs(query)
 
 	if err != nil {
-		return 0, err
+		return nil, err
 	}
 
 	if len(jbs) == 0 {
 		// Not exist
-		return 0, nil
+		return nil, nil
 	}
 
 	// Return the latest one (with biggest ID)
-	return jbs[0].ID, nil
+	return jbs[0], nil
 }
 
 func convertToAdminJobRep(job *common_models.AdminJob) (models.AdminJobRep, error) {
