@@ -49,6 +49,10 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 		cth.next.ServeHTTP(rw, req)
 		return
 	}
+	if pullWithBearer, ok := util.DockerPullAuthFromContext(req.Context()); ok && !pullWithBearer {
+		cth.next.ServeHTTP(rw, req)
+		return
+	}
 	if scannerPull, ok := util.ScannerPullFromContext(req.Context()); ok && scannerPull {
 		cth.next.ServeHTTP(rw, req)
 		return

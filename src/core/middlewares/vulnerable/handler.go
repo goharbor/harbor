@@ -52,6 +52,11 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 		return
 	}
 
+	if pullWithBearer, ok := util.DockerPullAuthFromContext(req.Context()); ok && !pullWithBearer {
+		vh.next.ServeHTTP(rw, req)
+		return
+	}
+
 	if scannerPull, ok := util.ScannerPullFromContext(req.Context()); ok && scannerPull {
 		vh.next.ServeHTTP(rw, req)
 		return
