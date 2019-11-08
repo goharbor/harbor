@@ -5,6 +5,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/immutabletag/dao"
 	dao_model "github.com/goharbor/harbor/src/pkg/immutabletag/dao/model"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
+	"sort"
 )
 
 var (
@@ -84,6 +85,9 @@ func (drm *defaultRuleManager) QueryImmutableRuleByProjectID(projectID int64) ([
 		rule.Disabled = daoRule.Disabled
 		rules = append(rules, rule)
 	}
+	sort.Slice(rules, func(i, j int) bool {
+		return rules[i].ID < rules[j].ID
+	})
 	return rules, nil
 }
 
