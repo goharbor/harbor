@@ -256,6 +256,18 @@ export const VULNERABILITY_SEVERITY = {
     CRITICAL: "Critical",
     NONE: "None"
 };
+/**
+ * The level of vulnerability severity for comparing
+ */
+export const SEVERITY_LEVEL_MAP = {
+    "Critical": 6,
+    "High": 5,
+    "Medium": 4,
+    "Low": 3,
+    "Negligible": 2,
+    "Unknown": 1,
+    "None": 0
+};
 
 /**
  * Calculate page number by state

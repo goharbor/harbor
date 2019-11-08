@@ -135,9 +135,16 @@ export class AddRuleComponent implements OnInit, OnDestroy {
         this.rule.scope_selectors.repository[0].pattern = this.rule.scope_selectors.repository[0].pattern.replace(/\s+/g, "");
         this.rule.tag_selectors[0].pattern = this.rule.tag_selectors[0].pattern.replace(/\s+/g, "");
         if (this.rule.scope_selectors.repository[0].decoration !== "repoMatches"
-            && this.rule.scope_selectors.repository[0].pattern.indexOf("**") !== -1) {
-            this.inlineAlert.showInlineError(INVALID_RULE);
-            return;
+            && this.rule.scope_selectors.repository[0].pattern) {
+            let str = this.rule.scope_selectors.repository[0].pattern;
+            str = str.replace(/[{}]/g, "");
+            const arr = str.split(',');
+            for (let i = 0; i < arr.length; i++) {
+                if (arr[i] && arr[i].trim() && arr[i] === "**") {
+                    this.inlineAlert.showInlineError(INVALID_RULE);
+                    return;
+                }
+            }
         }
         if (this.isExistingRule()) {
             this.inlineAlert.showInlineError(EXISTING_RULE);

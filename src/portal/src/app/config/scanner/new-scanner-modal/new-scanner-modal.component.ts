@@ -6,6 +6,7 @@ import { ClrLoadingState } from "@clr/angular";
 import { finalize } from "rxjs/operators";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: "new-scanner-modal",
@@ -29,7 +30,8 @@ export class NewScannerModalComponent {
     @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
     constructor(
         private configScannerService: ConfigScannerService,
-        private msgHandler: MessageHandlerService
+        private msgHandler: MessageHandlerService,
+        private translate: TranslateService,
     ) {}
     open(): void {
         // reset
@@ -192,8 +194,12 @@ export class NewScannerModalComponent {
                 this.checkBtnState = ClrLoadingState.SUCCESS;
                 this.testMap[this.newScannerFormComponent.newScannerForm.get('url').value] = true;
             }, error => {
-                this.inlineAlert.showInlineError({
-                    message: "SCANNER.TEST_FAILED"
+                this.translate.get("SCANNER.TEST_FAILED",
+               {
+                   name: this.newScannerFormComponent.newScannerForm.get('name').value,
+                   url: this.newScannerFormComponent.newScannerForm.get('url').value
+               }).subscribe((res: string) => {
+                    this.inlineAlert.showInlineError(res);
                 });
                 this.checkBtnState = ClrLoadingState.ERROR;
             });

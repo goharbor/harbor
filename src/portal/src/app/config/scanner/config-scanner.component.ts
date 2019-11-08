@@ -115,7 +115,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
         if (this.selectedRow) {
             // Confirm deletion
             let msg: ConfirmationMessage = new ConfirmationMessage(
-                "Confirm Scanner deletion",
+                "SCANNER.CONFIRM_DELETION",
                 "SCANNER.DELETION_SUMMARY",
                 this.selectedRow.name,
                 [this.selectedRow],

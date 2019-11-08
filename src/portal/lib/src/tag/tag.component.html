@@ -104,7 +104,7 @@
                 </clr-dg-cell>
                 <clr-dg-cell class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">
                     <div class="cell">
-                        <hbr-copy-input class="margin-top-m4" #copyInput (onCopyError)="onCpError($event)" iconMode="true" defaultValue="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}"></hbr-copy-input>
+                        <hbr-copy-input #copyInput (onCopyError)="onCpError($event)" iconMode="true" defaultValue="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}"></hbr-copy-input>
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell>
