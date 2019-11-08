@@ -91,7 +91,7 @@ export class TagComponent implements OnInit, AfterViewInit {
 
 
   tags: Tag[];
-
+  availableTime = AVAILABLE_TIME;
   showTagManifestOpened: boolean;
   retagDialogOpened: boolean;
   manifestInfoTitle: string;
@@ -133,14 +133,14 @@ export class TagComponent implements OnInit, AfterViewInit {
   };
   filterOneLabel: Label = this.initFilter;
 
-  @ViewChild("confirmationDialog", {static: false})
+  @ViewChild("confirmationDialog", { static: false })
   confirmationDialog: ConfirmationDialogComponent;
 
-  @ViewChild("imageNameInput", {static: false})
+  @ViewChild("imageNameInput", { static: false })
   imageNameInput: ImageNameInputComponent;
 
-  @ViewChild("digestTarget", {static: false}) textInput: ElementRef;
-  @ViewChild("copyInput", {static: false}) copyInput: CopyInputComponent;
+  @ViewChild("digestTarget", { static: false }) textInput: ElementRef;
+  @ViewChild("copyInput", { static: false }) copyInput: CopyInputComponent;
 
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage = 1;
@@ -273,10 +273,6 @@ export class TagComponent implements OnInit, AfterViewInit {
         // Do filtering and sorting
         this.tags = doFiltering<Tag>(tags, state);
         this.tags = doSorting<Tag>(this.tags, state);
-        this.tags = this.tags.map(tag => {
-          tag.pull_time = tag.pull_time === AVAILABLE_TIME ? '' : tag.pull_time;
-          return tag;
-        });
         this.loading = false;
       }, error => {
         this.loading = false;
@@ -533,10 +529,7 @@ export class TagComponent implements OnInit, AfterViewInit {
             signatures.push(t.name);
           }
         });
-        this.tags = items.map(tag => {
-          tag.pull_time = tag.pull_time === AVAILABLE_TIME ? '' : tag.pull_time;
-          return tag;
-        });
+        this.tags = items;
         let signedName: { [key: string]: string[] } = {};
         signedName[this.repoName] = signatures;
         this.signatureOutput.emit(signedName);
