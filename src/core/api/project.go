@@ -460,14 +460,8 @@ func (p *ProjectAPI) List() {
 func (p *ProjectAPI) populateProperties(project *models.Project) error {
 	if p.SecurityCtx.IsAuthenticated() {
 		roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
-		if len(roles) != 0 {
-			project.Role = roles[0]
-		}
-
-		if project.Role == common.RoleProjectAdmin ||
-			p.SecurityCtx.IsSysAdmin() {
-			project.Togglable = true
-		}
+		project.RoleList = roles
+		project.Role = highestRole(roles)
 	}
 
 	total, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
@@ -711,4 +705,28 @@ func getProjectMemberSummary(projectID int64, summary *models.ProjectSummary) {
 	}
 
 	wg.Wait()
+}
+
+// Returns the highest role in the role list.
+// This func should be removed once we deprecate the "current_user_role_id" in project API
+// A user can have multiple roles and they may not have a strict ranking relationship
+func highestRole(roles []int) int {
+	if roles == nil {
+		return 0
+	}
+	rolePower := map[int]int{
+		common.RoleProjectAdmin: 50,
+		common.RoleMaster:       40,
+		common.RoleDeveloper:    30,
+		common.RoleGuest:        20,
+		common.RoleLimitedGuest: 10,
+	}
+	var highest, highestPower int
+	for _, role := range roles {
+		if p, ok := rolePower[role]; ok && p > highestPower {
+			highest = role
+			highestPower = p
+		}
+	}
+	return highest
 }
