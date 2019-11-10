@@ -239,18 +239,8 @@ func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if !ok {
 		return false
 	}
-
-	user, err := dao.GetUser(models.User{
-		Username: username,
-	})
+	user, err := oidc.VerifySecret(ctx.Request.Context(), username, secret)
 	if err != nil {
-		log.Errorf("Failed to get user: %v", err)
-		return false
-	}
-	if user == nil {
-		return false
-	}
-	if err := oidc.VerifySecret(ctx.Request.Context(), user.UserID, secret); err != nil {
 		log.Errorf("Failed to verify secret: %v", err)
 		return false
 	}
@@ -289,11 +279,17 @@ func (it *idTokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Warning("User matches token's claims is not onboarded.")
 		return false
 	}
-	groupNames := oidc.GroupsFromToken(claims)
-	groups := models.UserGroupsFromName(groupNames, common.OIDCGroupType)
-	u.GroupIDs, err = group.PopulateGroup(groups)
+	settings, err := config.OIDCSetting()
 	if err != nil {
-		log.Errorf("Failed to get group ID list for OIDC user: %s, error: %v", u.Username, err)
+		log.Errorf("Failed to get OIDC settings, error: %v", err)
+	}
+	if groupNames, ok := oidc.GroupsFromClaims(claims, settings.GroupsClaim); ok {
+		groups := models.UserGroupsFromName(groupNames, common.OIDCGroupType)
+		u.GroupIDs, err = group.PopulateGroup(groups)
+		if err != nil {
+			log.Errorf("Failed to get group ID list for OIDC user: %s, error: %v", u.Username, err)
+			return false
+		}
 	}
 	pm := config.GlobalProjectMgr
 	sc := local.NewSecurityContext(u, pm)
