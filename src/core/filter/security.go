@@ -289,7 +289,9 @@ func (it *idTokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Warning("User matches token's claims is not onboarded.")
 		return false
 	}
-	u.GroupIDs, err = group.GetGroupIDByGroupName(oidc.GroupsFromToken(claims), common.OIDCGroupType)
+	groupNames := oidc.GroupsFromToken(claims)
+	groups := models.UserGroupsFromName(groupNames, common.OIDCGroupType)
+	u.GroupIDs, err = group.PopulateGroup(groups)
 	if err != nil {
 		log.Errorf("Failed to get group ID list for OIDC user: %s, error: %v", u.Username, err)
 	}

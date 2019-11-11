@@ -116,7 +116,9 @@ func (oc *OIDCController) Callback() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	d.GroupIDs, err = group.GetGroupIDByGroupName(oidc.GroupsFromToken(idToken), common.OIDCGroupType)
+	groupNames := oidc.GroupsFromToken(idToken)
+	oidcGroups := models.UserGroupsFromName(groupNames, common.OIDCGroupType)
+	d.GroupIDs, err = group.PopulateGroup(oidcGroups)
 	if err != nil {
 		log.Warningf("Failed to get group ID list, due to error: %v, setting empty list into user model.", err)
 	}

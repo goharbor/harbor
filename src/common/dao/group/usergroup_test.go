@@ -17,7 +17,6 @@ package group
 import (
 	"fmt"
 	"os"
-	"reflect"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
@@ -25,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/stretchr/testify/assert"
 )
 
 var createdUserGroupID int
@@ -52,6 +52,7 @@ func TestMain(m *testing.M) {
 			`insert into project (name, owner_id) values ('group_project2', 1)`,
 			`insert into project (name, owner_id) values ('group_project_private', 1)`,
 			"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_group_01', 1, 'cn=harbor_users,ou=sample,ou=vmware,dc=harbor,dc=com')",
+			"insert into user_group (group_name, group_type, ldap_group_dn) values ('sync_user_group4', 1, 'cn=sync_user_group4,dc=example,dc=com')",
 			"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_http_group', 2, '')",
 			"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_myhttp_group', 2, '')",
 			"update project set owner_id = (select user_id from harbor_user where username = 'member_test_01') where name = 'member_test_01'",
@@ -119,7 +120,7 @@ func TestQueryUserGroup(t *testing.T) {
 		wantErr bool
 	}{
 		{"Query all user group", args{query: models.UserGroup{GroupName: "test_group_01"}}, 1, false},
-		{"Query all ldap group", args{query: models.UserGroup{GroupType: common.LDAPGroupType}}, 2, false},
+		{"Query all ldap group", args{query: models.UserGroup{GroupType: common.LDAPGroupType}}, 3, false},
 		{"Query ldap group with group property", args{query: models.UserGroup{GroupType: common.LDAPGroupType, LdapGroupDN: "CN=harbor_users,OU=sample,OU=vmware,DC=harbor,DC=com"}}, 1, false},
 	}
 	for _, tt := range tests {
@@ -399,7 +400,13 @@ func TestGetRolesByLDAPGroup(t *testing.T) {
 	if err != nil || len(userGroupList) < 1 {
 		t.Errorf("failed to query user group, err %v", err)
 	}
-	gl2, err2 := GetGroupIDByGroupName([]string{"test_http_group", "test_myhttp_group"}, common.HTTPGroupType)
+
+	userGroups := []models.UserGroup{
+		{GroupName: "test_http_group", GroupType: common.HTTPGroupType},
+		{GroupName: "test_myhttp_group", GroupType: common.HTTPGroupType},
+	}
+
+	gl2, err2 := PopulateGroup(userGroups)
 	if err2 != nil || len(gl2) != 2 {
 		t.Errorf("failed to query http user group, err %v", err)
 	}
@@ -439,44 +446,61 @@ func TestGetRolesByLDAPGroup(t *testing.T) {
 	}
 }
 
-func TestGetGroupIDByGroupName(t *testing.T) {
-	groupList, err := QueryUserGroup(models.UserGroup{GroupName: "test_http_group", GroupType: 2})
-	if err != nil {
-		t.Error(err)
+func TestSyncGroupByGroupKey(t *testing.T) {
+	type args []models.UserGroup
+	type result struct {
+		wantError bool
 	}
-	if len(groupList) < 0 {
-		t.Error(err)
-	}
-	groupList2, err := QueryUserGroup(models.UserGroup{GroupName: "test_myhttp_group", GroupType: 2})
-	if err != nil {
-		t.Error(err)
-	}
-	if len(groupList2) < 0 {
-		t.Error(err)
-	}
-	var expectGroupID []int
-	type args struct {
-		groupName []string
-	}
-	tests := []struct {
-		name    string
-		args    args
-		want    []int
-		wantErr bool
+	cases := []struct {
+		name string
+		in   args
+		want result
 	}{
-		{"empty query", args{groupName: []string{}}, expectGroupID, false},
-		{"normal query", args{groupName: []string{"test_http_group", "test_myhttp_group"}}, []int{groupList[0].ID, groupList2[0].ID}, false},
+		{
+			name: `normal test http group`,
+			in: args{
+				models.UserGroup{GroupName: "orange", GroupType: common.HTTPGroupType},
+				models.UserGroup{GroupName: "apple", GroupType: common.HTTPGroupType},
+				models.UserGroup{GroupName: "pearl", GroupType: common.HTTPGroupType}},
+			want: result{false},
+		},
+		{
+			name: `normal test oidc group`,
+			in: args{
+				models.UserGroup{GroupName: "dog", GroupType: common.OIDCGroupType},
+				models.UserGroup{GroupName: "cat", GroupType: common.OIDCGroupType},
+				models.UserGroup{GroupName: "bee", GroupType: common.OIDCGroupType},
+			},
+			want: result{false},
+		},
+		{
+			name: `normal test oidc group`,
+			in: args{
+				models.UserGroup{GroupName: "cn=sync_user_group1,dc=example,dc=com", LdapGroupDN: "cn=sync_user_group1,dc=example,dc=com", GroupType: common.LDAPGroupType},
+				models.UserGroup{GroupName: "cn=sync_user_group2,dc=example,dc=com", LdapGroupDN: "cn=sync_user_group2,dc=example,dc=com", GroupType: common.LDAPGroupType},
+				models.UserGroup{GroupName: "cn=sync_user_group3,dc=example,dc=com", LdapGroupDN: "cn=sync_user_group3,dc=example,dc=com", GroupType: common.LDAPGroupType},
+				models.UserGroup{GroupName: "cn=sync_user_group4,dc=example,dc=com", LdapGroupDN: "cn=sync_user_group4,dc=example,dc=com", GroupType: common.LDAPGroupType},
+			},
+			want: result{false},
+		},
 	}
-	for _, tt := range tests {
+
+	for _, tt := range cases {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := GetGroupIDByGroupName(tt.args.groupName, common.HTTPGroupType)
-			if (err != nil) != tt.wantErr {
-				t.Errorf("GetHTTPGroupIDByGroupName() error = %v, wantErr %v", err, tt.wantErr)
-				return
+
+			got, err := PopulateGroup(tt.in)
+
+			if err != nil && !tt.want.wantError {
+				t.Errorf("error %v", err)
 			}
-			if !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("GetHTTPGroupIDByGroupName() = %#v, want %#v", got, tt.want)
+			if !assert.Equal(t, len(tt.in), len(got)) {
+				t.Errorf(`(%v) != %v; want "%v"`, len(tt.in), len(got), len(tt.in))
 			}
+
+			for _, id := range got {
+				DeleteUserGroup(id)
+			}
+
 		})
 	}
 }
