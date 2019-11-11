@@ -54,14 +54,14 @@ export class NewScannerFormComponent implements  OnInit, AfterViewInit, OnDestro
         if (!this.checkNameSubscribe) {
             this.checkNameSubscribe = fromEvent(this.scannerName.nativeElement, 'input').pipe(
                 map((e: any) => e.target.value),
+                debounceTime(500),
+                distinctUntilChanged(),
                 filter(name => {
                     if (this.isEdit && this.originValue && this.originValue.name === name) {
                         return false;
                     }
                     return this.newScannerForm.get('name').valid && name.length > 0;
                 }),
-                debounceTime(500),
-                distinctUntilChanged(),
                 switchMap((name) => {
                     this.isNameExisting = false;
                     this.checkOnGoing = true;
@@ -83,14 +83,14 @@ export class NewScannerFormComponent implements  OnInit, AfterViewInit, OnDestro
         if (!this.checkEndpointUrlSubscribe) {
             this.checkEndpointUrlSubscribe = fromEvent(this.scannerEndpointUrl.nativeElement, 'input').pipe(
                 map((e: any) => e.target.value),
+                debounceTime(800),
+                distinctUntilChanged(),
                 filter(endpointUrl => {
                     if (this.isEdit && this.originValue && this.originValue.url === endpointUrl) {
                         return false;
                     }
                     return this.newScannerForm.get('url').valid && endpointUrl.length > 6;
                 }),
-                debounceTime(800),
-                distinctUntilChanged(),
                 switchMap((endpointUrl) => {
                     this.isEndpointUrlExisting = false;
                     this.checkEndpointOnGoing = true;
