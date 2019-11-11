@@ -88,7 +88,7 @@
         </clr-datagrid>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
-        <button type="button" [clrLoading]="saveBtnState" class="btn btn-primary" [disabled]="!valid" (click)="save()">{{'BUTTON.OK' | translate}}</button>
+        <button id="cancel" type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button id="save-scanner" type="button" [clrLoading]="saveBtnState" class="btn btn-primary" [disabled]="!valid" (click)="save()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>
