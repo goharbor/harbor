@@ -24,14 +24,12 @@ ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
 *** Test Cases ***
-Test Case - Vulnerability Data Not Ready
-#This case must run before vulnerability db ready
+Test Case - Clair Is Default Scanner And It Is Immutable
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Go Into Project  library  has_image=${false}
-    Vulnerability Not Ready Project Hint
-    Switch To Vulnerability Page
-    Vulnerability Not Ready Config Hint
+    Switch To Scanners Page
+    Should Display The Default Clair Scanner
+    Clair Is Immutable Scanner
 
 Test Case - Disable Scan Schedule
     Init Chrome Driver
@@ -66,7 +64,7 @@ Test Case - Scan Image With Empty Vul
     Go Into Repo  busybox
     Scan Repo  latest  Succeed
     Move To Summary Chart
-    Wait Until Page Contains  Unknow
+    Wait Until Page Contains  No vulnerability
     Close Browser
 
 Test Case - Manual Scan All
@@ -96,7 +94,6 @@ Test Case - View Scan Error
 
 Test Case - Scan Image On Push
     [Tags]  run-once
-    Wait Unitl Vul Data Ready  ${HARBOR_URL}  7200  30
     Init Chrome Driver
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}

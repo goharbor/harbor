@@ -12,7 +12,7 @@
                                 class="btn btn-sm btn-secondary"
                                 (click)="setAsDefault()">{{'SCANNER.SET_AS_DEFAULT' | translate}}</button>
                         <clr-dropdown  [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link" clrDropdownTrigger>
-                            <span>{{'MEMBER.ACTION' | translate}}<clr-icon class="clr-icon" shape="caret down"></clr-icon></span>
+                            <span id="action-scanner">{{'MEMBER.ACTION' | translate}}<clr-icon class="clr-icon" shape="caret down"></clr-icon></span>
                             <clr-dropdown-menu *clrIfOpen>
                                 <button clrDropdownItem
                                         (click)="changeStat()"
@@ -36,7 +36,7 @@
                                         (click)="deleteScanners()"
                                         class="btn btn-sm btn-secondary" [disabled]="!selectedRow">
                                     <clr-icon class="margin-top-0" size="16" shape="times"></clr-icon>
-                                    <span class="margin-left-10">{{'BUTTON.DELETE' | translate}}</span>
+                                    <span id="delete-scanner-action" class="margin-left-10">{{'BUTTON.DELETE' | translate}}</span>
                                 </button>
                             </clr-dropdown-menu>
                         </clr-dropdown>

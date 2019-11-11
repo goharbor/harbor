@@ -203,18 +203,6 @@ Clear Field Of Characters
     : FOR  ${index}  IN RANGE  ${character count}
     \    Press Key  ${field}  \\8
 
-Wait Unitl Vul Data Ready
-    [Arguments]  ${url}  ${timeout}  ${interval}
-    ${n}=  Evaluate  ${timeout}/${interval}
-    :FOR  ${i}  IN RANGE  ${n}
-    \    Log  Checking the vul data: ${i} ...  console=True
-    \    ${rc}  ${output}=  Run And Return Rc And Output  curl -k ${url}/api/systeminfo
-    \    Should Be Equal As Integers  ${rc}  0
-    \    ${contains}=  Run Keyword And Return Status  Should Contain  ${output}  overall_last_update
-    \    Exit For Loop If  ${contains}
-    \    Sleep  ${interval}
-    Run Keyword If  ${i+1}==${n}  Fail  The vul data is not ready
-
 Wait Unitl Command Success
     [Arguments]  ${cmd}  ${times}=8
     :FOR  ${n}  IN RANGE  1  ${times}
