@@ -1,8 +1,4 @@
-FROM photon:2.0
-
-RUN tdnf install sudo tzdata -y >> /dev/null \
-    && tdnf clean all \
-    && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor
+FROM goharbor/harbor-jobservice-base:${harbor_base_image_version}
 
 COPY ./make/photon/jobservice/harbor_jobservice /harbor/
 

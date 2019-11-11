@@ -1,6 +1,4 @@
-FROM photon:2.0
-
-RUN tdnf install -y redis sudo 
+FROM goharbor/harbor-redis-base:${harbor_base_image_version}
 
 VOLUME /var/lib/redis
 WORKDIR /var/lib/redis

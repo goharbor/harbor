@@ -17,7 +17,7 @@ WGET=$(shell which wget)
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
-DOCKERBUILD=$(DOCKERCMD) build --pull
+DOCKERBUILD=$(DOCKERCMD) build
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERIMASES=$(DOCKERCMD) images
 
@@ -81,9 +81,11 @@ DOCKERFILENAME_REGISTRYCTL=Dockerfile
 DOCKERIMAGENAME_REGISTRYCTL=goharbor/harbor-registryctl
 
 DOCKERFILEPATH_NOTARY=$(DOCKERFILEPATH)/notary
-DOCKERFILENAME_NOTARYSIGNER=signer.Dockerfile
+DOCKERFILEPATH_NOTARYSERVER=$(DOCKERFILEPATH)/notary-server
+DOCKERFILENAME_NOTARYSIGNER=Dockerfile
 DOCKERIMAGENAME_NOTARYSIGNER=goharbor/notary-signer-photon
-DOCKERFILENAME_NOTARYSERVER=server.Dockerfile
+DOCKERFILEPATH_NOTARYSIGNER=$(DOCKERFILEPATH)/notary-signer
+DOCKERFILENAME_NOTARYSERVER=Dockerfile
 DOCKERIMAGENAME_NOTARYSERVER=goharbor/notary-server-photon
 
 DOCKERFILEPATH_REDIS=$(DOCKERFILEPATH)/redis
@@ -189,8 +191,8 @@ _build_notary:
 			cd $(DOCKERFILEPATH_NOTARY) && $(DOCKERFILEPATH_NOTARY)/builder $(NOTARYVERSION) $(NOTARYMIGRATEVERSION) && cd - ; \
 		fi ; \
 		echo "building notary container for photon..."; \
-		chmod 655 $(DOCKERFILEPATH_NOTARY)/binary/notary-signer && $(DOCKERBUILD) -f $(DOCKERFILEPATH_NOTARY)/$(DOCKERFILENAME_NOTARYSIGNER) -t $(DOCKERIMAGENAME_NOTARYSIGNER):$(NOTARYVERSION)-$(VERSIONTAG) . ; \
-		chmod 655 $(DOCKERFILEPATH_NOTARY)/binary/notary-server && $(DOCKERBUILD) -f $(DOCKERFILEPATH_NOTARY)/$(DOCKERFILENAME_NOTARYSERVER) -t $(DOCKERIMAGENAME_NOTARYSERVER):$(NOTARYVERSION)-$(VERSIONTAG) . ; \
+		chmod 655 $(DOCKERFILEPATH_NOTARY)/binary/notary-signer && $(DOCKERBUILD) -f $(DOCKERFILEPATH_NOTARYSIGNER)/$(DOCKERFILENAME_NOTARYSIGNER) -t $(DOCKERIMAGENAME_NOTARYSIGNER):$(NOTARYVERSION)-$(VERSIONTAG) . ; \
+		chmod 655 $(DOCKERFILEPATH_NOTARY)/binary/notary-server && $(DOCKERBUILD) -f $(DOCKERFILEPATH_NOTARYSERVER)/$(DOCKERFILENAME_NOTARYSERVER) -t $(DOCKERIMAGENAME_NOTARYSERVER):$(NOTARYVERSION)-$(VERSIONTAG) . ; \
 		rm -rf $(DOCKERFILEPATH_NOTARY)/binary; \
 		echo "Done."; \
 	fi
@@ -224,6 +226,23 @@ _build_migrator:
 		echo "Done."; \
 	fi
 
+set_base_image_version:
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/chartserver/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/clair/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/clair-adapter/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/core/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/db/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/jobservice/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/log/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/nginx/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/notary-server/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/notary-signer/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/portal/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/prepare/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/redis/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/registry/Dockerfile
+	@$(SEDCMD) -i -e 's/\$${harbor_base_image_version}/$(BASEIMAGETAG)/' $(DOCKERFILEPATH)/registryctl/Dockerfile
+
 define _extract_archive
 	$(WGET) --timeout 30 --no-check-certificate -O- $1 | tar xvz -C $2
 endef
@@ -232,7 +251,7 @@ define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2
 endef
 
-build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_clair_adapter _build_redis _build_migrator _build_chart_server
+build: set_base_image_version _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_clair_adapter _build_redis _build_migrator _build_chart_server
 
 cleanimage:
 	@echo "cleaning image for photon..."

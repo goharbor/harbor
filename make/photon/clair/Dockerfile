@@ -1,9 +1,5 @@
-FROM photon:2.0
+FROM goharbor/harbor-clair-base:${harbor_base_image_version}
 
-RUN tdnf install -y git shadow sudo rpm xz python-xml >>/dev/null\
-    && tdnf clean all \
-    && groupadd -r -g 10000 clair \
-    && useradd --no-log-init -m -g 10000 -u 10000 clair
 COPY ./make/photon/clair/binary/clair /home/clair/
 COPY ./make/photon/clair/docker-entrypoint.sh /home/clair/
 COPY ./make/photon/clair/dumb-init /home/clair/
