@@ -38,13 +38,13 @@ export class ProjectComponent implements OnInit {
 
   loading: boolean = true;
 
-  get selecteType(): number {
-    return this.currentFilteredType;
+  get selecteType(): string {
+    return this.currentFilteredType + "";
   }
-  set selecteType(_project: number) {
-    this.currentFilteredType = _project;
+  set selecteType(_project: string) {
+    this.currentFilteredType = +_project;
     if (window.sessionStorage) {
-      window.sessionStorage['projectTypeValue'] = _project;
+      window.sessionStorage['projectTypeValue'] = +_project;
     }
   }
 
@@ -91,7 +91,7 @@ export class ProjectComponent implements OnInit {
   }
 
   doFilterProjects(): void {
-    this.listProject.doFilterProject(this.selecteType);
+    this.listProject.doFilterProject(+this.selecteType);
   }
 
   refresh(): void {

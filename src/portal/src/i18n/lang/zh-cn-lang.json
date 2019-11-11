@@ -1050,7 +1050,8 @@
         "STORAGE_DEFAULT_QUOTA": "默认配额存储",
         "SAVE_SUCCESS": "项目容量修改成功",
         "UNLIMITED": "不设限",
-        "INVALID_INPUT": "输入错误"
+        "INVALID_INPUT": "输入错误",
+        "PLACEHOLDER": "我们找不到任何可以配置定额的项目"
     },
     "WEEKLY": {
         "MONDAY": "周一",

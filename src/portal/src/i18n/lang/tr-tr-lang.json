@@ -1050,7 +1050,8 @@
         "STORAGE_DEFAULT_QUOTA": "Varsayılan depolama tüketimi",
         "SAVE_SUCCESS": "Kota düzenleme başarısı",
         "UNLIMITED": "sınırsız",
-        "INVALID_INPUT": "geçersiz giriş"
+        "INVALID_INPUT": "geçersiz giriş",
+        "PLACEHOLDER": "We couldn't find any project quotas"
     },
     "WEEKLY": {
         "MONDAY": "Pazartesi",
