@@ -45,6 +45,8 @@ Resource  Harbor-Pages/Project-Helmcharts.robot
 Resource  Harbor-Pages/Project-Helmcharts_Elements.robot
 Resource  Harbor-Pages/Project-Retag.robot
 Resource  Harbor-Pages/Project-Retag_Elements.robot
+Resource  Harbor-Pages/Project-Tag-Retention.robot
+Resource  Harbor-Pages/Project-Tag-Retention_Elements.robot
 Resource  Harbor-Pages/Replication.robot
 Resource  Harbor-Pages/Replication_Elements.robot
 Resource  Harbor-Pages/UserProfile.robot

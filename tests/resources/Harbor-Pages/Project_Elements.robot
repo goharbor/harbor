@@ -26,6 +26,7 @@ ${project_replication_xpath}  //project-detail//a[contains(.,'Replication')]
 ${project_log_xpath}  //project-detail//li[contains(.,'Logs')]
 ${project_member_xpath}  //project-detail//li[contains(.,'Members')]
 ${project_config_tabsheet}  xpath=//project-detail//a[contains(.,'Configuration')]
+${project_tag_retention_xpath}  //nav//li//a[contains(.,'Tag')]
 
 ${create_project_CANCEL_button_xpath}  xpath=//button[contains(.,'CANCEL')]
 ${create_project_OK_button_xpath}  xpath=//button[contains(.,'OK')]
