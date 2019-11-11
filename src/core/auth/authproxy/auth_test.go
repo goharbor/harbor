@@ -75,7 +75,17 @@ func TestMain(m *testing.M) {
 }
 
 func TestAuth_Authenticate(t *testing.T) {
-	groupIDs, err := group.GetGroupIDByGroupName([]string{"vsphere.local\\users", "vsphere.local\\administrators"}, common.HTTPGroupType)
+	userGroups := []models.UserGroup{
+		{GroupName: "vsphere.local\\users", GroupType: common.HTTPGroupType},
+		{GroupName: "vsphere.local\\administrators", GroupType: common.HTTPGroupType},
+		{GroupName: "vsphere.local\\caadmins", GroupType: common.HTTPGroupType},
+		{GroupName: "vsphere.local\\systemconfiguration.bashshelladministrators", GroupType: common.HTTPGroupType},
+		{GroupName: "vsphere.local\\systemconfiguration.administrators", GroupType: common.HTTPGroupType},
+		{GroupName: "vsphere.local\\licenseservice.administrators", GroupType: common.HTTPGroupType},
+		{GroupName: "vsphere.local\\everyone", GroupType: common.HTTPGroupType},
+	}
+
+	groupIDs, err := group.PopulateGroup(userGroups)
 	if err != nil {
 		t.Fatal("Failed to get groupIDs")
 	}

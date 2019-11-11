@@ -108,7 +108,8 @@ func (a *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		ugList := reviewResponse.Status.User.Groups
 		log.Debugf("user groups %+v", ugList)
 		if len(ugList) > 0 {
-			groupIDList, err := group.GetGroupIDByGroupName(ugList, common.HTTPGroupType)
+			userGroups := models.UserGroupsFromName(ugList, common.HTTPGroupType)
+			groupIDList, err := group.PopulateGroup(userGroups)
 			if err != nil {
 				return nil, err
 			}

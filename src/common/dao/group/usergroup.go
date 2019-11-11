@@ -19,8 +19,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common/utils"
 
-	"fmt"
-
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -97,21 +95,16 @@ func GetUserGroup(id int) (*models.UserGroup, error) {
 	return nil, nil
 }
 
-// GetGroupIDByGroupName - Return the group ID by given group name. it is possible less group ID than the given group name if some group doesn't exist.
-func GetGroupIDByGroupName(groupName []string, groupType int) ([]int, error) {
-	var retGroupID []int
-	if len(groupName) == 0 {
-		return retGroupID, nil
+// PopulateGroup -  Return the group ID by given group name. if not exist in Harbor DB, create one
+func PopulateGroup(userGroups []models.UserGroup) ([]int, error) {
+	var ugList []int
+	for _, group := range userGroups {
+		OnBoardUserGroup(&group)
+		if group.ID > 0 {
+			ugList = append(ugList, group.ID)
+		}
 	}
-	sql := fmt.Sprintf("select id from user_group where group_name in ( %s ) and group_type = ? ", dao.ParamPlaceholderForIn(len(groupName)))
-	log.Debugf("GetGroupIDByGroupName: statement sql is %v", sql)
-	o := dao.GetOrmer()
-	cnt, err := o.Raw(sql, groupName, groupType).QueryRows(&retGroupID)
-	if err != nil {
-		return retGroupID, err
-	}
-	log.Debugf("Found rows %v", cnt)
-	return retGroupID, nil
+	return ugList, nil
 }
 
 // DeleteUserGroup ...
