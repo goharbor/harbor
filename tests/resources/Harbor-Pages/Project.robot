@@ -65,6 +65,10 @@ Switch To Project Configuration
     Retry Element Click  ${project_config_tabsheet}
     Sleep  1
 
+Switch To Tag Retention
+    Retry Element Click  xpath=${project_tag_retention_xpath}
+    Sleep  1
+
 Navigate To Projects
     Retry Element Click  xpath=${projects_xpath}
     Sleep  2

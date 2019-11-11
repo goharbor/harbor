@@ -58,7 +58,7 @@
         <div class="v-center clr-row" [ngClass]="{'pt-1':retention?.rules?.length > 0}">
             <div class="clr-col-2 flex-150"></div>
             <div class="flex-8p">
-                <button [disabled]="retention?.rules?.length >= 15" class="btn btn-primary btn-sm" (click)="openAddRule()">{{'TAG_RETENTION.ADD_RULE' | translate}}</button>
+                <button id="add-rule" [disabled]="retention?.rules?.length >= 15" class="btn btn-primary btn-sm" (click)="openAddRule()">{{'TAG_RETENTION.ADD_RULE' | translate}}</button>
             </div>
             <div class="clr-col-6 color-97 font-size-54">
                 {{'TAG_RETENTION.ADD_RULE_HELP_1' | translate}}
@@ -73,11 +73,11 @@
     <div class="clr-col-2 pt-2 flex-150"><label class="label-left font-size-54">{{'TAG_RETENTION.RETENTION_RUNS' | translate}}</label></div>
     <div class="clr-col-10">
         <clr-dg-action-bar>
-                <button [disabled]="!(retention?.rules?.length > 0)" class="btn btn-outline"
+                <button id="run-now" [disabled]="!(retention?.rules?.length > 0)" class="btn btn-outline"
                         (click)="isRetentionRunOpened=true">
                     <clr-icon shape="play"></clr-icon>
                     <span class="ml-5">{{'TAG_RETENTION.RUN_NOW' | translate}}</span></button>
-                <button [disabled]="!(retention?.rules?.length > 0)" class="btn btn-outline"
+                <button id="dry-run" [disabled]="!(retention?.rules?.length > 0)" class="btn btn-outline"
                         (click)="whatIfRun()">{{'TAG_RETENTION.WHAT_IF_RUN' | translate}}</button>
                 <button [disabled]="!(selectedItem && (selectedItem.status ==='InProgress' || selectedItem.status ==='Running'))"
                         class="btn btn-outline" (click)="abortRun()">
@@ -188,7 +188,7 @@
     <div class="modal-footer">
         <button type="button" class="btn btn-outline"
                 (click)="isRetentionRunOpened=false">{{'BUTTON.CANCEL' | translate}}</button>
-        <button type="button" class="btn btn-primary" (click)="runRetention()">{{'BUTTON.RUN' | translate}}</button>
+        <button id="execute-run" type="button" class="btn btn-primary" (click)="runRetention()">{{'BUTTON.RUN' | translate}}</button>
     </div>
 </clr-modal>
 <clr-modal [(clrModalOpen)]="isAbortedOpened"
@@ -220,7 +220,7 @@
         </div>
     </div>
     <div class="modal-footer">
-        <button type="button" (click)="closeConfirm()" class="btn btn-primary">{{'BUTTON.OK' | translate}}</button>
+        <button id="schedule-ok" type="button" (click)="closeConfirm()" class="btn btn-primary">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>
 <div class="backdrop-transparent" (click)="ruleIndex = -1" *ngIf="ruleIndex !== -1"></div>
