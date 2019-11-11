@@ -140,3 +140,17 @@ def check_permission(path: str, uid:int = None, gid:int = None, mode:int = None)
     if mode is not None and (path.stat().st_mode - mode) % 0o1000 != 0:
         return False
     return True
+
+
+def owner_can_read(st_mode: int) -> bool:
+    """
+    Check if owner have the read permission of this st_mode
+    """
+    return True if st_mode & 0o400 else False
+
+
+def other_can_read(st_mode: int) -> bool:
+    """
+    Check if other user have the read permission of this st_mode
+    """
+    return True if st_mode & 0o004 else False

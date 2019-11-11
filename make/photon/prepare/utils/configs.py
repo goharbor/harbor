@@ -1,12 +1,15 @@
+import os
 import yaml
 import logging
-from g import versions_file_path
-from .misc import generate_random_string
+from g import versions_file_path, host_root_dir, DEFAULT_UID
+from utils.misc import generate_random_string, owner_can_read, other_can_read
 
 default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
 default_db_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
 default_https_cert_path = '/your/certificate/path'
 default_https_key_path = '/your/certificate/path'
+
+
 def validate(conf: dict, **kwargs):
     # hostname validate
     if conf.get('hostname') == '127.0.0.1':
@@ -47,6 +50,21 @@ def validate(conf: dict, **kwargs):
         if storage_provider_config == "":
             raise Exception(
                 "Error: no provider configurations are provided for provider %s" % storage_provider_name)
+    # ca_bundle validate
+    if conf.get('registry_custom_ca_bundle_path'):
+        registry_custom_ca_bundle_path = conf.get('registry_custom_ca_bundle_path') or ''
+        ca_bundle_host_path = os.path.join(host_root_dir, registry_custom_ca_bundle_path)
+        try:
+            uid = os.stat(ca_bundle_host_path).st_uid
+            st_mode = os.stat(ca_bundle_host_path).st_mode
+        except Exception as e:
+            logging.error(e)
+            raise Exception('Can not get file info')
+        err_msg = 'Cert File {} should be owned by user with uid 10000 or readable by others'.format(registry_custom_ca_bundle_path)
+        if uid == DEFAULT_UID and not owner_can_read(st_mode):
+            raise Exception(err_msg)
+        if uid != DEFAULT_UID and not other_can_read(st_mode):
+            raise Exception(err_msg)
 
     # Redis validate
     redis_host = conf.get("redis_host")
