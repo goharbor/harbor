@@ -4871,7 +4871,14 @@ definitions:
         description: Correspond to the UI about whether the project's publicity is  updatable (for UI)
       current_user_role_id:
         type: integer
-        description: The role ID of the current user who triggered the API (for UI)
+        description: The role ID with highest permission of the current user who triggered the API (for UI)
+        deprecated: true
+      current_user_role_ids:
+        type: array
+        items:
+          type: integer
+          format: int32
+        description: The list of role ID of the current user who triggered the API (for UI)
       repo_count:
         type: integer
         description: The number of the repositories under this project.

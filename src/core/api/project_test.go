@@ -15,6 +15,7 @@ package api
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/common"
 	"net/http"
 	"strconv"
 	"testing"
@@ -528,4 +529,55 @@ func TestProjectSummary(t *testing.T) {
 	}
 
 	fmt.Printf("\n")
+}
+
+func TestHighestRole(t *testing.T) {
+	cases := []struct {
+		input  []int
+		expect int
+	}{
+		{
+			[]int{},
+			0,
+		},
+		{
+			[]int{
+				common.RoleDeveloper,
+				common.RoleMaster,
+				common.RoleLimitedGuest,
+			},
+			common.RoleMaster,
+		},
+		{
+			[]int{
+				common.RoleProjectAdmin,
+				common.RoleMaster,
+				common.RoleMaster,
+			},
+			common.RoleProjectAdmin,
+		},
+		{
+			[]int{
+				99,
+				33,
+				common.RoleLimitedGuest,
+			},
+			common.RoleLimitedGuest,
+		},
+		{
+			[]int{
+				99,
+				99,
+				99,
+			},
+			0,
+		},
+		{
+			nil,
+			0,
+		},
+	}
+	for _, c := range cases {
+		assert.Equal(t, c.expect, highestRole(c.input))
+	}
 }
