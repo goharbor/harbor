@@ -12,7 +12,7 @@ type ErrImmutable struct {
 
 // Error ...
 func (ei ErrImmutable) Error() string {
-	return fmt.Sprintf("Failed to process request, due to '%s:%s' is a immutable tag.", ei.repo, ei.tag)
+	return fmt.Sprintf("Failed to process request due to '%s:%s' configured as immutable.", ei.repo, ei.tag)
 }
 
 // NewErrImmutable ...
