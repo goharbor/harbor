@@ -20,7 +20,7 @@ COPY src/portal /build_dir
 RUN ls -la \
     && npm run build_lib \
     && npm run link_lib \
-    && node --max_old_space_size=8192 'node_modules/@angular/cli/bin/ng' build --prod
+    && node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --prod
 
 
 FROM photon:2.0
