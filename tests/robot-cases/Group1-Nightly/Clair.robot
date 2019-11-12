@@ -72,7 +72,7 @@ Test Case - Manual Scan All
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Vulnerability Page
-    Trigger Scan Now
+    Trigger Scan Now And Wait Until The Result Appears
     Navigate To Projects
     Go Into Project  library
     Go Into Repo  redis
