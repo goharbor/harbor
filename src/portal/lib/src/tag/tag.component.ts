@@ -153,6 +153,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   hasScanImagePermission: boolean;
   hasEnabledScanner: boolean;
   scanBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  onSendingScanCommand: boolean;
   constructor(
     private errorHandler: ErrorHandler,
     private tagService: TagService,
@@ -318,11 +319,11 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  addLabels(tag: Tag[]): void {
+  addLabels(): void {
     this.labelListOpen = true;
-    this.selectedTag = tag;
+    this.selectedTag = this.selectedRow;
     this.stickName = '';
-    this.labelSelectedChange(tag);
+    this.labelSelectedChange(this.selectedRow);
   }
 
   stickLabel(labelInfo: LabelState): void {
@@ -558,10 +559,10 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  retag(tags: Tag[]) {
-    if (tags && tags.length) {
+  retag() {
+    if (this.selectedRow && this.selectedRow.length) {
       this.retagDialogOpened = true;
-      this.retagSrcImage = this.repoName + ":" + tags[0].digest;
+      this.retagSrcImage = this.repoName + ":" + this.selectedRow[0].digest;
     } else {
       this.errorHandler.error("One tag should be selected before retag.");
     }
@@ -588,10 +589,10 @@ export class TagComponent implements OnInit, AfterViewInit {
       });
   }
 
-  deleteTags(tags: Tag[]) {
-    if (tags && tags.length) {
+  deleteTags() {
+    if (this.selectedRow && this.selectedRow.length) {
       let tagNames: string[] = [];
-      tags.forEach(tag => {
+      this.selectedRow.forEach(tag => {
         tagNames.push(tag.name);
       });
 
@@ -604,7 +605,7 @@ export class TagComponent implements OnInit, AfterViewInit {
         titleKey,
         summaryKey,
         content,
-        tags,
+        this.selectedRow,
         ConfirmationTargets.TAG,
         buttons);
       this.confirmationDialog.open(message);
@@ -670,10 +671,10 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  showDigestId(tag: Tag[]) {
-    if (tag && (tag.length === 1)) {
+  showDigestId() {
+    if (this.selectedRow && (this.selectedRow.length === 1)) {
       this.manifestInfoTitle = "REPOSITORY.COPY_DIGEST_ID";
-      this.digestId = tag[0].digest;
+      this.digestId = this.selectedRow[0].digest;
       this.showTagManifestOpened = true;
       this.copyFailed = false;
     }
@@ -716,9 +717,10 @@ export class TagComponent implements OnInit, AfterViewInit {
     return VULNERABILITY_SCAN_STATUS.NOT_SCANNED;
   }
   // Whether show the 'scan now' menu
-  canScanNow(t: Tag[]): boolean {
+  canScanNow(): boolean {
     if (!this.hasScanImagePermission) { return false; }
-    let st: string = this.scanStatus(t[0]);
+    if (this.onSendingScanCommand) { return false; }
+    let st: string = this.scanStatus(this.selectedRow[0]);
     return st !== VULNERABILITY_SCAN_STATUS.RUNNING;
   }
   getImagePermissionRule(projectId: number): void {
@@ -742,15 +744,18 @@ export class TagComponent implements OnInit, AfterViewInit {
     }, error => this.errorHandler.error(error));
   }
   // Trigger scan
-  scanNow(t: Tag[]): void {
-    if (t && t.length) {
-      t.forEach((data: any) => {
+  scanNow(): void {
+    if (this.selectedRow && this.selectedRow.length) {
+      this.selectedRow.forEach((data: any) => {
         let tagId = data.name;
+        this.onSendingScanCommand = true;
         this.channel.publishScanEvent(this.repoName + "/" + tagId);
       });
     }
   }
-
+  submitFinish(e: boolean) {
+    this.onSendingScanCommand = e;
+  }
   // pull command
   onCpError($event: any): void {
     this.copyInput.setPullCommendShow();
