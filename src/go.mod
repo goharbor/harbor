@@ -5,14 +5,13 @@ go 1.12
 replace github.com/goharbor/harbor => ../
 
 require (
-	github.com/Knetic/govaluate v3.0.0+incompatible // indirect
 	github.com/Masterminds/semver v1.4.2
 	github.com/Microsoft/go-winio v0.4.12 // indirect
 	github.com/Shopify/logrus-bugsnag v0.0.0-20171204204709-577dee27f20d // indirect
 	github.com/Unknwon/goconfig v0.0.0-20160216183935-5f601ca6ef4d // indirect
 	github.com/agl/ed25519 v0.0.0-20170116200512-5312a6153412 // indirect
 	github.com/aliyun/alibaba-cloud-sdk-go v0.0.0-20190726115642-cd293c93fd97
-	github.com/astaxie/beego v1.9.0
+	github.com/astaxie/beego v1.11.1
 	github.com/aws/aws-sdk-go v1.19.47
 	github.com/beego/i18n v0.0.0-20140604031826-e87155e8f0c0
 	github.com/bitly/go-hostpool v0.0.0-20171023180738-a3a6125de932 // indirect
