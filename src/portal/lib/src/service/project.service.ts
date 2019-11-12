@@ -70,7 +70,6 @@ export abstract class ProjectService {
     pageSize?: number
   ): Observable<HttpResponse<Project[]>>;
   abstract createProject(name: string, metadata: any, countLimit: number, storageLimit: number): Observable<any>;
-  abstract toggleProjectPublic(projectId: number, isPublic: string): Observable<any>;
   abstract deleteProject(projectId: number): Observable<any>;
   abstract checkProjectExists(projectName: string): Observable<any>;
   abstract checkProjectMember(projectId: number): Observable<any>;
@@ -159,12 +158,6 @@ export class ProjectDefaultService extends ProjectService {
                 count_limit: countLimit, storage_limit: storageLimit
               })
                 , HTTP_JSON_OPTIONS).pipe(
-               catchError(error => observableThrowError(error)), );
-  }
-
-  public toggleProjectPublic(projectId: number, isPublic: string): Observable<any> {
-    return this.http
-               .put(`/api/projects/${projectId}`, { 'metadata': {'public': isPublic} }, HTTP_JSON_OPTIONS).pipe(
                catchError(error => observableThrowError(error)), );
   }
 
