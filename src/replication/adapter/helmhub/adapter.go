@@ -16,6 +16,7 @@ package helmhub
 
 import (
 	"errors"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -39,7 +40,17 @@ func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
 
 // AdapterPattern ...
 func (f *factory) AdapterPattern() *model.AdapterPattern {
-	return nil
+	return &model.AdapterPattern{
+		EndpointPattern: &model.EndpointPattern{
+			EndpointType: model.EndpointPatternTypeFix,
+			Endpoints: []*model.Endpoint{
+				{
+					Key:   "hub.helm.sh",
+					Value: "https://hub.helm.sh",
+				},
+			},
+		},
+	}
 }
 
 type adapter struct {
