@@ -103,7 +103,7 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		}
 
 	}
-	var userGroups []models.UserGroup
+	userGroups := make([]models.UserGroup, 0)
 	for _, dn := range ldapUsers[0].GroupDNList {
 		userGroups = append(userGroups, models.UserGroup{GroupName: dn, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
 	}

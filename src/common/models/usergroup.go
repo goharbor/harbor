@@ -32,7 +32,7 @@ func (u *UserGroup) TableName() string {
 
 // UserGroupsFromName ...
 func UserGroupsFromName(groupNames []string, groupType int) []UserGroup {
-	var groups []UserGroup
+	groups := make([]UserGroup, 0)
 	for _, name := range groupNames {
 		groups = append(groups, UserGroup{GroupName: name, GroupType: groupType})
 	}
