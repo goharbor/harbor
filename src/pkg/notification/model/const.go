@@ -11,6 +11,7 @@ const (
 	EventTypeScanningCompleted = "scanningCompleted"
 	EventTypeScanningFailed    = "scanningFailed"
 	EventTypeTestEndpoint      = "testEndpoint"
+	EventTypeProjectQuota      = "projectQuota"
 
 	NotifyTypeHTTP = "http"
 )
