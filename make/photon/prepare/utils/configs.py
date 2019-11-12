@@ -320,7 +320,6 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
 
 def get_redis_url(db, redis=None):
     """Returns redis url with format `redis://[arbitrary_username:password@]ipaddress:port/database_index`
-
     >>> get_redis_url(1)
     'redis://redis:6379/1'
     >>> get_redis_url(1, {'host': 'localhost', 'password': 'password'})
@@ -341,7 +340,6 @@ def get_redis_url(db, redis=None):
 
 def get_redis_configs(external_redis=None, with_clair=True):
     """Returns configs for redis
-
     >>> get_redis_configs()['external_redis']
     False
     >>> get_redis_configs()['redis_url_reg']
@@ -350,7 +348,6 @@ def get_redis_configs(external_redis=None, with_clair=True):
     'redis://redis:6379/2'
     >>> get_redis_configs()['redis_url_clair']
     'redis://redis:6379/4'
-
     >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['external_redis']
     True
     >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_reg']
@@ -359,7 +356,6 @@ def get_redis_configs(external_redis=None, with_clair=True):
     'redis://anonymous:pass@localhost:6379/2'
     >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_clair']
     'redis://anonymous:pass@localhost:6379/4'
-
     >>> 'redis_url_clair' not in get_redis_configs(with_clair=False)
     True
     """
@@ -375,6 +371,7 @@ def get_redis_configs(external_redis=None, with_clair=True):
         'jobservice_db_index': 2,
         'chartmuseum_db_index': 3,
         'clair_db_index': 4,
+        'idle_timeout_seconds': 30,
     }
 
     # overwriting existing keys by external_redis
@@ -386,6 +383,7 @@ def get_redis_configs(external_redis=None, with_clair=True):
     configs['redis_db_index_reg'] = redis['registry_db_index']
     configs['redis_db_index_js'] = redis['jobservice_db_index']
     configs['redis_db_index_chart'] = redis['chartmuseum_db_index']
+    configs['redis_idle_timeout_seconds'] = redis['idle_timeout_seconds']
 
     configs['redis_url_js'] = get_redis_url(configs['redis_db_index_js'], redis)
     configs['redis_url_reg'] = get_redis_url(configs['redis_db_index_reg'], redis)
