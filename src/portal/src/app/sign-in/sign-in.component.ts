@@ -20,7 +20,7 @@ import { SessionService } from '../shared/session.service';
 import { SignInCredential } from '../shared/sign-in-credential';
 
 import { SignUpComponent } from '../account/sign-up/sign-up.component';
-import { CommonRoutes } from '@harbor/ui';
+import { CommonRoutes, CONFIG_AUTH_MODE } from '@harbor/ui';
 import { ForgotPasswordComponent } from '../account/password-setting/forgot-password/forgot-password.component';
 
 import { AppConfigService } from '../app-config.service';
@@ -138,15 +138,15 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     // Whether show the 'sign up' link
     public get selfSignUp(): boolean {
-        return this.appConfig.auth_mode === 'db_auth'
+        return this.appConfig.auth_mode === CONFIG_AUTH_MODE.DB_AUTH
             && this.appConfig.self_registration;
     }
     public get isOidcLoginMode(): boolean {
-        return this.appConfig.auth_mode === 'oidc_auth';
+        return this.appConfig.auth_mode === CONFIG_AUTH_MODE.OIDC_AUTH;
     }
     public get showForgetPwd(): boolean {
-        return this.appConfig.auth_mode !== 'ldap_auth' && this.appConfig.auth_mode !== 'uaa_auth'
-            && this.appConfig.auth_mode !== 'oidc_auth';
+        return this.appConfig.auth_mode !== CONFIG_AUTH_MODE.LDAP_AUTH && this.appConfig.auth_mode !== CONFIG_AUTH_MODE.UAA_AUTH
+            && this.appConfig.auth_mode !== CONFIG_AUTH_MODE.OIDC_AUTH && this.appConfig.auth_mode !== CONFIG_AUTH_MODE.HTTP_AUTH;
     }
     clickRememberMe($event: any): void {
         if ($event && $event.target) {
