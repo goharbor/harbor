@@ -17,14 +17,16 @@ describe('ScannerComponent', () => {
     name: 'test1',
     description: 'just a sample',
     version: '1.0.0',
-    url: 'http://168.0.0.1'
+    url: 'http://168.0.0.1',
+    health: 'healthy'
   };
   const mockScanner2: Scanner = {
     uuid: 'def',
     name: 'test2',
     description: 'just a sample',
     version: '2.0.0',
-    url: 'http://168.0.0.2'
+    url: 'http://168.0.0.2',
+    health: 'healthy'
   };
   let component: ScannerComponent;
   let fixture: ComponentFixture<ScannerComponent>;
