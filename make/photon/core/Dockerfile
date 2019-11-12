@@ -1,3 +1,4 @@
+ARG harbor_base_image_version
 FROM goharbor/harbor-core-base:${harbor_base_image_version}
 
 HEALTHCHECK CMD curl --fail -s http://127.0.0.1:8080/api/ping || exit 1

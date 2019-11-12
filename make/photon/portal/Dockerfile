@@ -1,3 +1,4 @@
+ARG harbor_base_image_version
 FROM node:10.15.0 as nodeportal
 
 WORKDIR /build_dir

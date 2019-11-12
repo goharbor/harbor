@@ -1,3 +1,4 @@
+ARG harbor_base_image_version
 FROM goharbor/harbor-registryctl-base:${harbor_base_image_version}
 
 COPY ./make/photon/common/install_cert.sh /home/harbor

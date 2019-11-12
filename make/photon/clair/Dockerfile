@@ -1,3 +1,4 @@
+ARG harbor_base_image_version
 FROM goharbor/harbor-clair-base:${harbor_base_image_version}
 
 COPY ./make/photon/clair/binary/clair /home/clair/

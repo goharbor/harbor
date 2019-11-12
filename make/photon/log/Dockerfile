@@ -1,3 +1,4 @@
+ARG harbor_base_image_version
 FROM goharbor/harbor-log-base:${harbor_base_image_version}
 
 COPY ./make/photon/log/rsyslog.conf /etc/rsyslog.conf

@@ -1,3 +1,4 @@
+ARG harbor_base_image_version
 FROM goharbor/harbor-jobservice-base:${harbor_base_image_version}
 
 COPY ./make/photon/jobservice/harbor_jobservice /harbor/

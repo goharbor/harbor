@@ -1,3 +1,4 @@
+ARG harbor_base_image_version
 FROM goharbor/harbor-clair-adapter-base:${harbor_base_image_version}
 
 COPY ./make/photon/clair-adapter/binary/harbor-scanner-clair /clair-adapter/clair-adapter

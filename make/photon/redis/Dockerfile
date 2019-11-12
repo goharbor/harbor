@@ -1,3 +1,4 @@
+ARG harbor_base_image_version
 FROM goharbor/harbor-redis-base:${harbor_base_image_version}
 
 VOLUME /var/lib/redis

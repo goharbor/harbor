@@ -1,3 +1,4 @@
+ARG harbor_base_image_version
 FROM goharbor/harbor-nginx-base:${harbor_base_image_version}
 
 VOLUME /var/cache/nginx /var/log/nginx /run
