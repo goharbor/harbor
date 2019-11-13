@@ -16,8 +16,6 @@ import {forkJoin as observableForkJoin,  Subscription, forkJoin } from "rxjs";
 import {
     Component,
     Output,
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
     OnDestroy, EventEmitter
 } from "@angular/core";
 import { Router } from "@angular/router";
@@ -43,8 +41,7 @@ import { throwError as observableThrowError } from "rxjs";
 
 @Component({
     selector: "list-project",
-    templateUrl: "list-project.component.html",
-    changeDetection: ChangeDetectionStrategy.OnPush
+    templateUrl: "list-project.component.html"
 })
 export class ListProjectComponent implements OnDestroy {
     loading = true;
@@ -53,7 +50,7 @@ export class ListProjectComponent implements OnDestroy {
     searchKeyword = "";
     selectedRow: Project[]  = [];
 
-  @Output() addProject = new EventEmitter<void>();
+    @Output() addProject = new EventEmitter<void>();
 
     roleInfo = RoleInfo;
     repoCountComparator: Comparator<Project> = new CustomComparator<Project>("repo_count", "number");
@@ -78,8 +75,7 @@ export class ListProjectComponent implements OnDestroy {
         private translate: TranslateService,
         private deletionDialogService: ConfirmationDialogService,
         private operationService: OperationService,
-        private translateService: TranslateService,
-        private ref: ChangeDetectorRef) {
+        private translateService: TranslateService) {
         this.subscription = deletionDialogService.confirmationConfirm$.subscribe(message => {
             if (message &&
                 message.state === ConfirmationState.CONFIRMED &&
@@ -87,10 +83,6 @@ export class ListProjectComponent implements OnDestroy {
                 this.delProjects(message.data);
             }
         });
-    }
-
-    get showRoleInfo(): boolean {
-        return this.filteredType !== 2;
     }
 
     get projectCreationRestriction(): boolean {
@@ -144,12 +136,10 @@ export class ListProjectComponent implements OnDestroy {
         this.router.navigate(linkUrl);
     }
 
-    selectedChange(): void {
-        let hnd = setInterval(() => this.ref.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 1000);
-    }
-
     clrLoad(state: State) {
+        if (!state || !state.page) {
+            return;
+        }
         this.selectedRow = [];
 
         // Keep state for future filtering and sorting
@@ -166,10 +156,8 @@ export class ListProjectComponent implements OnDestroy {
         }
         this.proService.listProjects(this.searchKeyword, passInFilteredType, pageNumber, this.pageSize)
         .pipe(finalize(() => {
-            // Force refresh view
-            let hnd = setInterval(() => this.ref.markForCheck(), 100);
-            setTimeout(() => clearInterval(hnd), 1000);
-        }))
+            this.loading = false;
+          }))
             .subscribe(response => {
                 // Get total count
                 if (response.headers) {
@@ -184,9 +172,7 @@ export class ListProjectComponent implements OnDestroy {
                 this.projects = doFiltering<Project>(this.projects, state);
                 this.projects = doSorting<Project>(this.projects, state);
 
-                this.loading = false;
             }, error => {
-                this.loading = false;
                 this.msgHandler.handleError(error);
             });
     }
@@ -194,29 +180,6 @@ export class ListProjectComponent implements OnDestroy {
     newReplicationRule(p: Project) {
         if (p) {
             this.router.navigateByUrl(`/harbor/projects/${p.project_id}/replications?is_create=true`);
-        }
-    }
-
-    toggleProject(p: Project) {
-        if (p) {
-            p.metadata.public === "true" ? p.metadata.public = "false" : p.metadata.public = "true";
-            this.proService
-                .toggleProjectPublic(p.project_id, p.metadata.public)
-                .subscribe(
-                response => {
-                    this.msgHandler.showSuccess("PROJECT.TOGGLED_SUCCESS");
-                    let pp: Project = this.projects.find((item: Project) => item.project_id === p.project_id);
-                    if (pp) {
-                        pp.metadata.public = p.metadata.public;
-                        this.statisticHandler.refresh();
-                    }
-                },
-                error => this.msgHandler.handleError(error)
-                );
-
-            // Force refresh view
-            let hnd = setInterval(() => this.ref.markForCheck(), 100);
-            setTimeout(() => clearInterval(hnd), 2000);
         }
     }
 

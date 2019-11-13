@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, TestBed, ComponentFixtureAutoDetect } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { ListProjectComponent } from './list-project.component';
 import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
@@ -14,6 +14,7 @@ import { StatisticHandler } from "../../shared/statictics/statistic-handler.serv
 import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
 import { of } from 'rxjs';
 import { BrowserAnimationsModule, NoopAnimationsModule } from "@angular/platform-browser/animations";
+import { delay } from 'rxjs/operators';
 describe('ListProjectComponent', () => {
     let component: ListProjectComponent;
     let fixture: ComponentFixture<ListProjectComponent>;
@@ -21,7 +22,7 @@ describe('ListProjectComponent', () => {
         listProjects: () => {
             return of({
                 body: []
-            });
+            }).pipe(delay(0));
         }
     };
     const mockSessionService = {
@@ -85,6 +86,7 @@ describe('ListProjectComponent', () => {
                 { provide: StatisticHandler, useValue: mockStatisticHandler },
                 { provide: ConfirmationDialogService, useValue: mockConfirmationDialogService },
                 { provide: OperationService, useValue: mockOperationService },
+                { provide: ComponentFixtureAutoDetect, useValue: true }
 
             ]
         })
