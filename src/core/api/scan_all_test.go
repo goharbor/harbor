@@ -56,7 +56,7 @@ func (suite *ScanAllAPITestSuite) TestScanAllPost() {
 	// case 1: add a new scan all job
 	code, err := apiTest.AddScanAll(*admin, adminJob002)
 	require.NoError(suite.T(), err, "Error occurred while add a scan all job")
-	suite.Equal(200, code, "Add scan all status should be 200")
+	suite.Equal(201, code, "Add scan all status should be 201")
 }
 
 func (suite *ScanAllAPITestSuite) TestScanAllGet() {

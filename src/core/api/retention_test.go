@@ -3,14 +3,15 @@ package api
 import (
 	"encoding/json"
 	"fmt"
+	"net/http"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/pkg/retention/dao"
 	"github.com/goharbor/harbor/src/pkg/retention/dao/models"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/stretchr/testify/require"
-	"net/http"
-	"testing"
-	"time"
 )
 
 func TestGetMetadatas(t *testing.T) {
@@ -408,7 +409,7 @@ func TestPolicy(t *testing.T) {
 				},
 				credential: sysAdmin,
 			},
-			code: http.StatusOK,
+			code: http.StatusCreated,
 		},
 		{
 			request: &testingRequest{

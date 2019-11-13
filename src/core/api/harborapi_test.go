@@ -30,6 +30,7 @@ import (
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/job/test"
 	"github.com/goharbor/harbor/src/common/models"
 	testutils "github.com/goharbor/harbor/src/common/utils/test"
@@ -41,6 +42,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 )
@@ -245,6 +247,11 @@ func init() {
 	// Init mock jobservice
 	mockServer := test.NewJobServiceServer()
 	defer mockServer.Close()
+
+	// Init related objects/configurations for the API controllers
+	job.GlobalClient = job.NewDefaultClient(mockServer.URL, config.CoreSecret())
+	scheduler.Init()
+	Init()
 }
 
 func request(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, []byte, error) {
