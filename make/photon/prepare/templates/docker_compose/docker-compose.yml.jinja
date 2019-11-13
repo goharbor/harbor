@@ -258,8 +258,13 @@ services:
       harbor:
   {% if with_chartmuseum %}
       harbor-chartmuseum:
-          aliases:
-            - redis
+        aliases:
+          - redis
+  {% endif %}
+  {% if with_clair %}
+      harbor-clair:
+        aliases:
+          - redis
   {% endif %}
     dns_search: .
     depends_on:
@@ -422,6 +427,9 @@ services:
     dns_search: .
     depends_on:
       - clair
+{% if external_redis == False %}
+      - redis
+{% endif %}
     logging:
       driver: "syslog"
       options:
