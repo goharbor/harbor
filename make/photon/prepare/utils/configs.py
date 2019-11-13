@@ -303,35 +303,8 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
     else:
         config_dict['external_database'] = False
 
-
-    # redis config
-    redis_configs = configs.get("external_redis")
-    if redis_configs:
-        config_dict['external_redis'] = True
-        # using external_redis
-        config_dict['redis_host'] = redis_configs['host']
-        config_dict['redis_port'] = redis_configs['port']
-        config_dict['redis_password'] = redis_configs.get("password") or ''
-        config_dict['redis_db_index_reg'] = redis_configs.get('registry_db_index') or 1
-        config_dict['redis_db_index_js'] = redis_configs.get('jobservice_db_index') or 2
-        config_dict['redis_db_index_chart'] = redis_configs.get('chartmuseum_db_index') or 3
-    else:
-        config_dict['external_redis'] = False
-        ## Using local redis
-        config_dict['redis_host'] = 'redis'
-        config_dict['redis_port'] = 6379
-        config_dict['redis_password'] = ''
-        config_dict['redis_db_index_reg'] = 1
-        config_dict['redis_db_index_js'] = 2
-        config_dict['redis_db_index_chart'] = 3
-
-    # redis://[arbitrary_username:password@]ipaddress:port/database_index
-    if config_dict.get('redis_password'):
-        config_dict['redis_url_js'] = "redis://anonymous:%s@%s:%s/%s" % (config_dict['redis_password'], config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_js'])
-        config_dict['redis_url_reg'] = "redis://anonymous:%s@%s:%s/%s" % (config_dict['redis_password'], config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_reg'])
-    else:
-        config_dict['redis_url_js'] = "redis://%s:%s/%s" % (config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_js'])
-        config_dict['redis_url_reg'] = "redis://%s:%s/%s" % (config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_reg'])
+    # update redis configs
+    config_dict.update(get_redis_configs(configs.get("external_redis", None), with_clair))
 
     # auto generated secret string for core
     config_dict['core_secret'] = generate_random_string(16)
@@ -343,3 +316,82 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
     config_dict['uaa'] = configs.get('uaa') or {}
 
     return config_dict
+
+
+def get_redis_url(db, redis=None):
+    """Returns redis url with format `redis://[arbitrary_username:password@]ipaddress:port/database_index`
+
+    >>> get_redis_url(1)
+    'redis://redis:6379/1'
+    >>> get_redis_url(1, {'host': 'localhost', 'password': 'password'})
+    'redis://anonymous:password@localhost:6379/1'
+    """
+    kwargs = {
+        'host': 'redis',
+        'port': 6379,
+        'password': '',
+    }
+    kwargs.update(redis or {})
+    kwargs['db'] = db
+
+    if kwargs['password']:
+        return "redis://anonymous:{password}@{host}:{port}/{db}".format(**kwargs)
+    return "redis://{host}:{port}/{db}".format(**kwargs)
+
+
+def get_redis_configs(external_redis=None, with_clair=True):
+    """Returns configs for redis
+
+    >>> get_redis_configs()['external_redis']
+    False
+    >>> get_redis_configs()['redis_url_reg']
+    'redis://redis:6379/1'
+    >>> get_redis_configs()['redis_url_js']
+    'redis://redis:6379/2'
+    >>> get_redis_configs()['redis_url_clair']
+    'redis://redis:6379/4'
+
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['external_redis']
+    True
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_reg']
+    'redis://anonymous:pass@localhost:6379/1'
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_js']
+    'redis://anonymous:pass@localhost:6379/2'
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_clair']
+    'redis://anonymous:pass@localhost:6379/4'
+
+    >>> 'redis_url_clair' not in get_redis_configs(with_clair=False)
+    True
+    """
+
+    configs = dict(external_redis=bool(external_redis))
+
+    # internal redis config as the default
+    redis = {
+        'host': 'redis',
+        'port': 6379,
+        'password': '',
+        'registry_db_index': 1,
+        'jobservice_db_index': 2,
+        'chartmuseum_db_index': 3,
+        'clair_db_index': 4,
+    }
+
+    # overwriting existing keys by external_redis
+    redis.update(external_redis or {})
+
+    configs['redis_host'] = redis['host']
+    configs['redis_port'] = redis['port']
+    configs['redis_password'] = redis['password']
+    configs['redis_db_index_reg'] = redis['registry_db_index']
+    configs['redis_db_index_js'] = redis['jobservice_db_index']
+    configs['redis_db_index_chart'] = redis['chartmuseum_db_index']
+
+    configs['redis_url_js'] = get_redis_url(configs['redis_db_index_js'], redis)
+    configs['redis_url_reg'] = get_redis_url(configs['redis_db_index_reg'], redis)
+
+    if with_clair:
+        configs['redis_db_index_clair'] = redis['clair_db_index']
+        configs['redis_url_clair'] = get_redis_url(configs['redis_db_index_clair'], redis)
+
+    return configs

@@ -286,6 +286,7 @@ external_redis:
   registry_db_index: {{ external_redis.registry_db_index }}
   jobservice_db_index: {{ external_redis.jobservice_db_index }}
   chartmuseum_db_index: {{ external_redis.chartmuseum_db_index }}
+  clair_db_index: 4
 {% else %}
 # Umcomments external_redis if using external Redis server
 # external_redis:
@@ -296,6 +297,7 @@ external_redis:
 #   registry_db_index: 1
 #   jobservice_db_index: 2
 #   chartmuseum_db_index: 3
+#   clair_db_index: 4
 {% endif %}
 
 {% if uaa is defined %}
