@@ -30,6 +30,8 @@ import (
 // ReplicationOperationAPI handles the replication operation requests
 type ReplicationOperationAPI struct {
 	BaseController
+	execution *models.Execution
+	task      *models.Task
 }
 
 // Prepare ...
@@ -44,6 +46,46 @@ func (r *ReplicationOperationAPI) Prepare() {
 		}
 		r.SendForbiddenError(errors.New(r.SecurityCtx.GetUsername()))
 		return
+	}
+
+	// check the existence of execution if execution ID is provided in the request path
+	executionIDStr := r.GetStringFromPath(":id")
+	if len(executionIDStr) > 0 {
+		executionID, err := strconv.ParseInt(executionIDStr, 10, 64)
+		if err != nil || executionID <= 0 {
+			r.SendBadRequestError(fmt.Errorf("invalid execution ID: %s", executionIDStr))
+			return
+		}
+		execution, err := replication.OperationCtl.GetExecution(executionID)
+		if err != nil {
+			r.SendInternalServerError(fmt.Errorf("failed to get execution %d: %v", executionID, err))
+			return
+		}
+		if execution == nil {
+			r.SendNotFoundError(fmt.Errorf("execution %d not found", executionID))
+			return
+		}
+		r.execution = execution
+
+		// check the existence of task if task ID is provided in the request path
+		taskIDStr := r.GetStringFromPath(":tid")
+		if len(taskIDStr) > 0 {
+			taskID, err := strconv.ParseInt(taskIDStr, 10, 64)
+			if err != nil || taskID <= 0 {
+				r.SendBadRequestError(fmt.Errorf("invalid task ID: %s", taskIDStr))
+				return
+			}
+			task, err := replication.OperationCtl.GetTask(taskID)
+			if err != nil {
+				r.SendInternalServerError(fmt.Errorf("failed to get task %d: %v", taskID, err))
+				return
+			}
+			if task == nil || task.ExecutionID != executionID {
+				r.SendNotFoundError(fmt.Errorf("task %d not found", taskID))
+				return
+			}
+			r.task = task
+		}
 	}
 }
 
@@ -146,68 +188,21 @@ func (r *ReplicationOperationAPI) CreateExecution() {
 
 // GetExecution gets one execution of the replication
 func (r *ReplicationOperationAPI) GetExecution() {
-	executionID, err := r.GetInt64FromPath(":id")
-	if err != nil || executionID <= 0 {
-		r.SendBadRequestError(errors.New("invalid execution ID"))
-		return
-	}
-	execution, err := replication.OperationCtl.GetExecution(executionID)
-	if err != nil {
-		r.SendInternalServerError(fmt.Errorf("failed to get execution %d: %v", executionID, err))
-		return
-	}
-
-	if execution == nil {
-		r.SendNotFoundError(fmt.Errorf("execution %d not found", executionID))
-		return
-	}
-	r.WriteJSONData(execution)
+	r.WriteJSONData(r.execution)
 }
 
 // StopExecution stops one execution of the replication
 func (r *ReplicationOperationAPI) StopExecution() {
-	executionID, err := r.GetInt64FromPath(":id")
-	if err != nil || executionID <= 0 {
-		r.SendBadRequestError(errors.New("invalid execution ID"))
-		return
-	}
-	execution, err := replication.OperationCtl.GetExecution(executionID)
-	if err != nil {
-		r.SendInternalServerError(fmt.Errorf("failed to get execution %d: %v", executionID, err))
-		return
-	}
-
-	if execution == nil {
-		r.SendNotFoundError(fmt.Errorf("execution %d not found", executionID))
-		return
-	}
-
-	if err := replication.OperationCtl.StopReplication(executionID); err != nil {
-		r.SendInternalServerError(fmt.Errorf("failed to stop execution %d: %v", executionID, err))
+	if err := replication.OperationCtl.StopReplication(r.execution.ID); err != nil {
+		r.SendInternalServerError(fmt.Errorf("failed to stop execution %d: %v", r.execution.ID, err))
 		return
 	}
 }
 
 // ListTasks ...
 func (r *ReplicationOperationAPI) ListTasks() {
-	executionID, err := r.GetInt64FromPath(":id")
-	if err != nil || executionID <= 0 {
-		r.SendBadRequestError(errors.New("invalid execution ID"))
-		return
-	}
-
-	execution, err := replication.OperationCtl.GetExecution(executionID)
-	if err != nil {
-		r.SendInternalServerError(fmt.Errorf("failed to get execution %d: %v", executionID, err))
-		return
-	}
-	if execution == nil {
-		r.SendNotFoundError(fmt.Errorf("execution %d not found", executionID))
-		return
-	}
-
 	query := &models.TaskQuery{
-		ExecutionID:  executionID,
+		ExecutionID:  r.execution.ID,
 		ResourceType: r.GetString("resource_type"),
 	}
 	status := r.GetString("status")
@@ -232,53 +227,22 @@ func (r *ReplicationOperationAPI) ListTasks() {
 
 // GetTaskLog ...
 func (r *ReplicationOperationAPI) GetTaskLog() {
-	executionID, err := r.GetInt64FromPath(":id")
-	if err != nil || executionID <= 0 {
-		r.SendBadRequestError(errors.New("invalid execution ID"))
-		return
-	}
-
-	execution, err := replication.OperationCtl.GetExecution(executionID)
-	if err != nil {
-		r.SendInternalServerError(fmt.Errorf("failed to get execution %d: %v", executionID, err))
-		return
-	}
-	if execution == nil {
-		r.SendNotFoundError(fmt.Errorf("execution %d not found", executionID))
-		return
-	}
-
-	taskID, err := r.GetInt64FromPath(":tid")
-	if err != nil || taskID <= 0 {
-		r.SendBadRequestError(errors.New("invalid task ID"))
-		return
-	}
-	task, err := replication.OperationCtl.GetTask(taskID)
-	if err != nil {
-		r.SendInternalServerError(fmt.Errorf("failed to get task %d: %v", taskID, err))
-		return
-	}
-	if task == nil {
-		r.SendNotFoundError(fmt.Errorf("task %d not found", taskID))
-		return
-	}
-
-	logBytes, err := replication.OperationCtl.GetTaskLog(taskID)
+	logBytes, err := replication.OperationCtl.GetTaskLog(r.task.ID)
 	if err != nil {
 		if httpErr, ok := err.(*common_http.Error); ok {
 			if ok && httpErr.Code == http.StatusNotFound {
-				r.SendNotFoundError(fmt.Errorf("the log of task %d not found", taskID))
+				r.SendNotFoundError(fmt.Errorf("the log of task %d not found", r.task.ID))
 				return
 			}
 		}
-		r.SendInternalServerError(fmt.Errorf("failed to get log of task %d: %v", taskID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to get log of task %d: %v", r.task.ID, err))
 		return
 	}
 	r.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Length"), strconv.Itoa(len(logBytes)))
 	r.Ctx.ResponseWriter.Header().Set(http.CanonicalHeaderKey("Content-Type"), "text/plain")
 	_, err = r.Ctx.ResponseWriter.Write(logBytes)
 	if err != nil {
-		r.SendInternalServerError(fmt.Errorf("failed to write log of task %d: %v", taskID, err))
+		r.SendInternalServerError(fmt.Errorf("failed to write log of task %d: %v", r.task.ID, err))
 		return
 	}
 }

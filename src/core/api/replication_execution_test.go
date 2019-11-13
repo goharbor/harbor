@@ -19,7 +19,6 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/replication"
-
 	"github.com/goharbor/harbor/src/replication/dao/models"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -50,7 +49,7 @@ func (f *fakedOperationController) GetExecution(id int64) (*models.Execution, er
 	return nil, nil
 }
 func (f *fakedOperationController) ListTasks(...*models.TaskQuery) (int64, []*models.Task, error) {
-	return 1, []*models.Task{
+	return 2, []*models.Task{
 		{
 			ID:          1,
 			ExecutionID: 1,
@@ -62,6 +61,12 @@ func (f *fakedOperationController) GetTask(id int64) (*models.Task, error) {
 		return &models.Task{
 			ID:          1,
 			ExecutionID: 1,
+		}, nil
+	}
+	if id == 3 {
+		return &models.Task{
+			ID:          3,
+			ExecutionID: 2,
 		}, nil
 	}
 	return nil, nil
@@ -410,6 +415,15 @@ func TestGetTaskLog(t *testing.T) {
 			request: &testingRequest{
 				method:     http.MethodGet,
 				url:        "/api/replication/executions/1/tasks/2/log",
+				credential: sysAdmin,
+			},
+			code: http.StatusNotFound,
+		},
+		// 404, task not found
+		{
+			request: &testingRequest{
+				method:     http.MethodGet,
+				url:        "/api/replication/executions/1/tasks/3/log",
 				credential: sysAdmin,
 			},
 			code: http.StatusNotFound,
