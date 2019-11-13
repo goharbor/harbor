@@ -40,13 +40,22 @@ func (itr *ImmutableTagRuleAPI) Prepare() {
 		return
 	}
 	itr.projectID = pid
-
+	itr.ctr = immutabletag.ImmuCtr
 	ruleID, err := itr.GetInt64FromPath(":id")
 	if err == nil || ruleID > 0 {
 		itr.ID = ruleID
-	}
+		itRule, err := itr.ctr.GetImmutableRule(itr.ID)
+		if err != nil {
+			itr.SendInternalServerError(err)
+			return
+		}
+		if itRule == nil || itRule.ProjectID != itr.projectID {
+			err := fmt.Errorf("immutable tag rule %v not found", itr.ID)
+			itr.SendNotFoundError(err)
+			return
+		}
 
-	itr.ctr = immutabletag.ImmuCtr
+	}
 
 	if strings.EqualFold(itr.Ctx.Request.Method, "get") {
 		if !itr.requireAccess(rbac.ActionList) {
