@@ -78,13 +78,13 @@
                 </div>
                 <clr-radio-container clrInline>
                     <clr-radio-wrapper>
-                        <input id="use-system" [disabled]="!hasChangeConfigRole" type="radio" clrRadio
+                        <input id="use-system" [attr.disabled]="!hasChangeConfigRole?'disabled':null" type="radio" clrRadio
                             name="systemWhitelistOrProjectWhitelist" required value="true"
                             [(ngModel)]="systemWhitelistOrProjectWhitelist" />
                         <label>{{'CVE_WHITELIST.SYS_WHITELIST'|translate}}</label>
                     </clr-radio-wrapper>
                     <clr-radio-wrapper>
-                        <input id="use-project" [disabled]="!hasChangeConfigRole" type="radio" clrRadio
+                        <input id="use-project" [attr.disabled]="!hasChangeConfigRole?'disabled':null" type="radio" clrRadio
                             name="systemWhitelistOrProjectWhitelist" required value="false"
                             [(ngModel)]="systemWhitelistOrProjectWhitelist" />
                         <label>{{'CVE_WHITELIST.PRO_WHITELIST'|translate}}</label>
