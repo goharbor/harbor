@@ -745,12 +745,9 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
   // Trigger scan
   scanNow(): void {
-    if (this.selectedRow && this.selectedRow.length) {
-      this.selectedRow.forEach((data: any) => {
-        let tagId = data.name;
+    if (this.selectedRow && this.selectedRow.length === 1) {
         this.onSendingScanCommand = true;
-        this.channel.publishScanEvent(this.repoName + "/" + tagId);
-      });
+        this.channel.publishScanEvent(this.repoName + "/" + this.selectedRow[0].name);
     }
   }
   submitFinish(e: boolean) {
