@@ -40,7 +40,6 @@ type RobotAPI struct {
 // Prepare ...
 func (r *RobotAPI) Prepare() {
 	r.BaseController.Prepare()
-	method := r.Ctx.Request.Method
 
 	if !r.SecurityCtx.IsAuthenticated() {
 		r.SendUnAuthorizedError(errors.New("UnAuthorized"))
@@ -69,10 +68,10 @@ func (r *RobotAPI) Prepare() {
 	}
 	r.project = project
 
-	if method == http.MethodPut || method == http.MethodDelete {
+	if r.ParamExistsInPath(":id") {
 		id, err := r.GetInt64FromPath(":id")
 		if err != nil || id <= 0 {
-			r.SendBadRequestError(errors.New("invalid robot ID"))
+			r.SendBadRequestError(fmt.Errorf("invalid robot ID %s", r.GetStringFromPath(":id")))
 			return
 		}
 
@@ -84,6 +83,11 @@ func (r *RobotAPI) Prepare() {
 
 		if robot == nil {
 			r.SendNotFoundError(fmt.Errorf("robot %d not found", id))
+			return
+		}
+
+		if robot.ProjectID != pid {
+			r.SendNotFoundError(fmt.Errorf("robot %d not found in project %d", id, pid))
 			return
 		}
 
@@ -204,23 +208,7 @@ func (r *RobotAPI) Get() {
 		return
 	}
 
-	id, err := r.GetInt64FromPath(":id")
-	if err != nil || id <= 0 {
-		r.SendBadRequestError(fmt.Errorf("invalid robot ID: %s", r.GetStringFromPath(":id")))
-		return
-	}
-
-	robot, err := dao.GetRobotByID(id)
-	if err != nil {
-		r.SendInternalServerError(fmt.Errorf("failed to get robot %d: %v", id, err))
-		return
-	}
-	if robot == nil {
-		r.SendNotFoundError(fmt.Errorf("robot %d not found", id))
-		return
-	}
-
-	r.Data["json"] = robot
+	r.Data["json"] = r.robot
 	r.ServeJSON()
 }
 
