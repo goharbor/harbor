@@ -97,9 +97,12 @@ func GetUserGroup(id int) (*models.UserGroup, error) {
 
 // PopulateGroup -  Return the group ID by given group name. if not exist in Harbor DB, create one
 func PopulateGroup(userGroups []models.UserGroup) ([]int, error) {
-	var ugList []int
+	ugList := make([]int, 0)
 	for _, group := range userGroups {
-		OnBoardUserGroup(&group)
+		err := OnBoardUserGroup(&group)
+		if err != nil {
+			return ugList, err
+		}
 		if group.ID > 0 {
 			ugList = append(ugList, group.ID)
 		}
