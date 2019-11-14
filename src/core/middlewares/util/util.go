@@ -51,8 +51,6 @@ const (
 	ImageInfoCtxKey = contextKey("ImageInfo")
 	// ScannerPullCtxKey the context key for robot account to bypass the pull policy check.
 	ScannerPullCtxKey = contextKey("ScannerPullCheck")
-	// DockerPullAuthCtxKey the context key to index whether docker pull request with bearer token
-	DockerPullAuthCtxKey = contextKey("DockerPullWithBearer")
 	// TokenUsername ...
 	// TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	TokenUsername = "harbor-core"
@@ -456,17 +454,6 @@ func NewScannerPullContext(ctx context.Context, scannerPull bool) context.Contex
 // ScannerPullFromContext returns whether to bypass policy check
 func ScannerPullFromContext(ctx context.Context) (bool, bool) {
 	info, ok := ctx.Value(ScannerPullCtxKey).(bool)
-	return info, ok
-}
-
-// NewDockerPullAuthContext returns context with bearer token
-func NewDockerPullAuthContext(ctx context.Context, withBearer bool) context.Context {
-	return context.WithValue(ctx, DockerPullAuthCtxKey, withBearer)
-}
-
-// DockerPullAuthFromContext returns whether the docker pull with bearer
-func DockerPullAuthFromContext(ctx context.Context) (bool, bool) {
-	info, ok := ctx.Value(DockerPullAuthCtxKey).(bool)
 	return info, ok
 }
 

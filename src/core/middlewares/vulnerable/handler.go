@@ -17,6 +17,7 @@ package vulnerable
 import (
 	"net/http"
 
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	sc "github.com/goharbor/harbor/src/pkg/scan/api/scan"
@@ -24,6 +25,7 @@ import (
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/pkg/errors"
+	"net/http/httptest"
 )
 
 type vulnerableHandler struct {
@@ -39,94 +41,96 @@ func New(next http.Handler) http.Handler {
 
 // ServeHTTP ...
 func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	imgRaw := req.Context().Value(util.ImageInfoCtxKey)
-	if imgRaw == nil {
+	doVulCheck, img, projectVulnerableSeverity, wl := validate(req)
+	if !doVulCheck {
 		vh.next.ServeHTTP(rw, req)
 		return
+	}
+
+	rec := httptest.NewRecorder()
+	vh.next.ServeHTTP(rec, req)
+	// only enable vul policy check the response 200
+	if rec.Result().StatusCode == http.StatusOK {
+		// Invalid project ID
+		if wl.ProjectID == 0 {
+			err := errors.Errorf("project verification error: project %s", img.ProjectName)
+			vh.sendError(err, rw)
+			return
+		}
+
+		// Get the vulnerability summary
+		artifact := &v1.Artifact{
+			NamespaceID: wl.ProjectID,
+			Repository:  img.Repository,
+			Tag:         img.Reference,
+			Digest:      img.Digest,
+			MimeType:    v1.MimeTypeDockerArtifact,
+		}
+
+		cve := report.CVESet(wl.CVESet())
+		summaries, err := sc.DefaultController.GetSummary(
+			artifact,
+			[]string{v1.MimeTypeNativeReport},
+			report.WithCVEWhitelist(&cve),
+		)
+
+		if err != nil {
+			err = errors.Wrap(err, "middleware: vulnerable handler")
+			vh.sendError(err, rw)
+			return
+		}
+
+		rawSummary, ok := summaries[v1.MimeTypeNativeReport]
+		// No report yet?
+		if !ok {
+			err = errors.Errorf("no scan report existing for the artifact: %s:%s@%s", img.Repository, img.Reference, img.Digest)
+			vh.sendError(err, rw)
+			return
+		}
+
+		summary := rawSummary.(*vuln.NativeReportSummary)
+
+		// Do judgement
+		if summary.Severity.Code() >= projectVulnerableSeverity.Code() {
+			err = errors.Errorf("the pulling image severity %q is higher than or equal with the project setting %q, reject the response.", summary.Severity, projectVulnerableSeverity)
+			vh.sendError(err, rw)
+			return
+		}
+
+		// Print scannerPull CVE list
+		if len(summary.CVEBypassed) > 0 {
+			for _, cve := range summary.CVEBypassed {
+				log.Infof("Vulnerable policy check: scannerPull CVE %s", cve)
+			}
+		}
+	}
+	util.CopyResp(rec, rw)
+}
+
+func validate(req *http.Request) (bool, util.ImageInfo, vuln.Severity, models.CVEWhitelist) {
+	var vs vuln.Severity
+	var wl models.CVEWhitelist
+	var img util.ImageInfo
+	imgRaw := req.Context().Value(util.ImageInfoCtxKey)
+	if imgRaw == nil {
+		return false, img, vs, wl
 	}
 
 	// Expected artifact specified?
 	img, ok := imgRaw.(util.ImageInfo)
 	if !ok || len(img.Digest) == 0 {
-		vh.next.ServeHTTP(rw, req)
-		return
-	}
-
-	if pullWithBearer, ok := util.DockerPullAuthFromContext(req.Context()); ok && !pullWithBearer {
-		vh.next.ServeHTTP(rw, req)
-		return
+		return false, img, vs, wl
 	}
 
 	if scannerPull, ok := util.ScannerPullFromContext(req.Context()); ok && scannerPull {
-		vh.next.ServeHTTP(rw, req)
-		return
+		return false, img, vs, wl
 	}
-
 	// Is vulnerable policy set?
 	projectVulnerableEnabled, projectVulnerableSeverity, wl := util.GetPolicyChecker().VulnerablePolicy(img.ProjectName)
 	if !projectVulnerableEnabled {
-		vh.next.ServeHTTP(rw, req)
-		return
+		return false, img, vs, wl
 	}
-
-	// Invalid project ID
-	if wl.ProjectID == 0 {
-		err := errors.Errorf("project verification error: project %s", img.ProjectName)
-		vh.sendError(err, rw)
-
-		return
-	}
-
-	// Get the vulnerability summary
-	artifact := &v1.Artifact{
-		NamespaceID: wl.ProjectID,
-		Repository:  img.Repository,
-		Tag:         img.Reference,
-		Digest:      img.Digest,
-		MimeType:    v1.MimeTypeDockerArtifact,
-	}
-
-	cve := report.CVESet(wl.CVESet())
-	summaries, err := sc.DefaultController.GetSummary(
-		artifact,
-		[]string{v1.MimeTypeNativeReport},
-		report.WithCVEWhitelist(&cve),
-	)
-
-	if err != nil {
-		err = errors.Wrap(err, "middleware: vulnerable handler")
-		vh.sendError(err, rw)
-
-		return
-	}
-
-	rawSummary, ok := summaries[v1.MimeTypeNativeReport]
-	// No report yet?
-	if !ok {
-		err = errors.Errorf("no scan report existing for the artifact: %s:%s@%s", img.Repository, img.Reference, img.Digest)
-		vh.sendError(err, rw)
-
-		return
-	}
-
-	summary := rawSummary.(*vuln.NativeReportSummary)
-
-	// Do judgement
-	if summary.Severity.Code() >= projectVulnerableSeverity.Code() {
-		err = errors.Errorf("the pulling image severity %q is higher than or equal with the project setting %q, reject the response.", summary.Severity, projectVulnerableSeverity)
-		vh.sendError(err, rw)
-
-		return
-	}
-
-	// Print scannerPull CVE list
-	if len(summary.CVEBypassed) > 0 {
-		for _, cve := range summary.CVEBypassed {
-			log.Infof("Vulnerable policy check: scannerPull CVE %s", cve)
-		}
-	}
-
-	vh.next.ServeHTTP(rw, req)
+	return true, img, projectVulnerableSeverity, wl
 }
 
 func (vh vulnerableHandler) sendError(err error, rw http.ResponseWriter) {

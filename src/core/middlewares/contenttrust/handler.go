@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"net/http"
+	"net/http/httptest"
 )
 
 // NotaryEndpoint ...
@@ -39,39 +40,45 @@ func New(next http.Handler) http.Handler {
 
 // ServeHTTP ...
 func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+	doContentTrustCheck, image := validate(req)
+	if !doContentTrustCheck {
+		cth.next.ServeHTTP(rw, req)
+		return
+	}
+	rec := httptest.NewRecorder()
+	cth.next.ServeHTTP(rec, req)
+	if rec.Result().StatusCode == http.StatusOK {
+		match, err := matchNotaryDigest(image)
+		if err != nil {
+			http.Error(rw, util.MarshalError("PROJECT_POLICY_VIOLATION", "Failed in communication with Notary please check the log"), http.StatusInternalServerError)
+			return
+		}
+		if !match {
+			log.Debugf("digest mismatch, failing the response.")
+			http.Error(rw, util.MarshalError("PROJECT_POLICY_VIOLATION", "The image is not signed in Notary."), http.StatusPreconditionFailed)
+			return
+		}
+	}
+	util.CopyResp(rec, rw)
+}
+
+func validate(req *http.Request) (bool, util.ImageInfo) {
+	var img util.ImageInfo
 	imgRaw := req.Context().Value(util.ImageInfoCtxKey)
 	if imgRaw == nil || !config.WithNotary() {
-		cth.next.ServeHTTP(rw, req)
-		return
+		return false, img
 	}
-	img, _ := req.Context().Value(util.ImageInfoCtxKey).(util.ImageInfo)
+	img, _ = req.Context().Value(util.ImageInfoCtxKey).(util.ImageInfo)
 	if img.Digest == "" {
-		cth.next.ServeHTTP(rw, req)
-		return
-	}
-	if pullWithBearer, ok := util.DockerPullAuthFromContext(req.Context()); ok && !pullWithBearer {
-		cth.next.ServeHTTP(rw, req)
-		return
+		return false, img
 	}
 	if scannerPull, ok := util.ScannerPullFromContext(req.Context()); ok && scannerPull {
-		cth.next.ServeHTTP(rw, req)
-		return
+		return false, img
 	}
 	if !util.GetPolicyChecker().ContentTrustEnabled(img.ProjectName) {
-		cth.next.ServeHTTP(rw, req)
-		return
+		return false, img
 	}
-	match, err := matchNotaryDigest(img)
-	if err != nil {
-		http.Error(rw, util.MarshalError("PROJECT_POLICY_VIOLATION", "Failed in communication with Notary please check the log"), http.StatusInternalServerError)
-		return
-	}
-	if !match {
-		log.Debugf("digest mismatch, failing the response.")
-		http.Error(rw, util.MarshalError("PROJECT_POLICY_VIOLATION", "The image is not signed in Notary."), http.StatusPreconditionFailed)
-		return
-	}
-	cth.next.ServeHTTP(rw, req)
+	return true, img
 }
 
 func matchNotaryDigest(img util.ImageInfo) (bool, error) {

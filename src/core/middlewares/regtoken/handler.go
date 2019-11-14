@@ -43,7 +43,6 @@ func (r *regTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
 		r.next.ServeHTTP(rw, req)
 		return
 	}
-	*req = *(req.WithContext(util.NewDockerPullAuthContext(req.Context(), true)))
 
 	rawToken := parts[1]
 	opt := pkg_token.DefaultTokenOptions()
