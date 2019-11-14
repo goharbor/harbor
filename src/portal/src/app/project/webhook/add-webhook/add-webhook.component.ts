@@ -16,7 +16,7 @@ import { AddWebhookFormComponent } from "../add-webhook-form/add-webhook-form.co
 })
 export class AddWebhookComponent implements OnInit {
   isOpen: boolean = false;
-  closable: boolean = true;
+  closable: boolean = false;
   staticBackdrop: boolean = true;
 
   @Input() projectId: number;
