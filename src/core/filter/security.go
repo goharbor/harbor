@@ -17,9 +17,12 @@ package filter
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"net/http"
 	"regexp"
+
+	"github.com/goharbor/harbor/src/common/utils/oidc"
+
+	"strings"
 
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/docker/distribution/reference"
@@ -39,7 +42,6 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/admiral"
-	"strings"
 
 	"github.com/goharbor/harbor/src/pkg/authproxy"
 )
