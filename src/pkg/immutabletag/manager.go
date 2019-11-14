@@ -2,10 +2,11 @@ package immutabletag
 
 import (
 	"encoding/json"
+	"sort"
+
 	"github.com/goharbor/harbor/src/pkg/immutabletag/dao"
 	dao_model "github.com/goharbor/harbor/src/pkg/immutabletag/dao/model"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
-	"sort"
 )
 
 var (
@@ -62,6 +63,9 @@ func (drm *defaultRuleManager) GetImmutableRule(id int64) (*model.Metadata, erro
 		return nil, err
 	}
 	rule := &model.Metadata{}
+	if daoRule == nil {
+		return nil, nil
+	}
 	if err = json.Unmarshal([]byte(daoRule.TagFilter), rule); err != nil {
 		return nil, err
 	}

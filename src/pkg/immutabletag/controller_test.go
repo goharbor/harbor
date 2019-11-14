@@ -1,6 +1,8 @@
 package immutabletag
 
 import (
+	"testing"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/test"
@@ -8,7 +10,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type ControllerTestSuite struct {
@@ -88,7 +89,7 @@ func (s *ControllerTestSuite) TestImmutableRule() {
 		},
 		Disabled: false,
 	}
-	err = s.ctr.UpdateImmutableRule(1, update)
+	err = s.ctr.UpdateImmutableRule(projectID, update)
 	s.require.Nil(err)
 
 	getRule, err := s.ctr.GetImmutableRule(s.ruleID)
@@ -119,7 +120,7 @@ func (s *ControllerTestSuite) TestImmutableRule() {
 		},
 		Disabled: true,
 	}
-	err = s.ctr.UpdateImmutableRule(1, update2)
+	err = s.ctr.UpdateImmutableRule(projectID, update2)
 	s.require.Nil(err)
 	getRule, err = s.ctr.GetImmutableRule(s.ruleID)
 	s.require.Nil(err)
@@ -150,7 +151,7 @@ func (s *ControllerTestSuite) TestImmutableRule() {
 	s.ruleID, err = s.ctr.CreateImmutableRule(rule2)
 	s.require.Nil(err)
 
-	rules, err := s.ctr.ListImmutableRules(1)
+	rules, err := s.ctr.ListImmutableRules(projectID)
 	s.require.Nil(err)
 	s.require.Equal(2, len(rules))
 
