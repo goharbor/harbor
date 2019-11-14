@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
@@ -194,19 +195,25 @@ func init() {
 	defer mockServer.Close()
 }
 
-func request(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, []byte, error) {
+func request0(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, http.Header, []byte, error) {
 	_sling = _sling.Set("Accept", acceptHeader)
 	req, err := _sling.Request()
 	if err != nil {
-		return 400, nil, err
+		return 400, nil, nil, err
 	}
 	if len(authInfo) > 0 {
 		req.SetBasicAuth(authInfo[0].Name, authInfo[0].Passwd)
 	}
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, req)
+
 	body, err := ioutil.ReadAll(w.Body)
-	return w.Code, body, err
+	return w.Code, w.Header(), body, err
+}
+
+func request(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, []byte, error) {
+	code, _, body, err := request0(_sling, acceptHeader, authInfo...)
+	return code, body, err
 }
 
 // Search for projects and repositories
@@ -473,23 +480,35 @@ func (a testapi) GetProjectMembersByProID(prjUsr usrInfo, projectID string) (int
 }
 
 // Add project role member accompany with  projectID
-// func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, error) {
-func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, member *models.MemberReq) (int, error) {
+// func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, int, error) {
+func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, member *models.MemberReq) (int, int, error) {
 	_sling := sling.New().Post(a.basePath)
 
 	path := "/api/projects/" + projectID + "/members/"
 	_sling = _sling.Path(path)
 	_sling = _sling.BodyJSON(member)
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
-	return httpStatusCode, err
+	httpStatusCode, header, _, err := request0(_sling, jsonAcceptHeader, prjUsr)
 
+	var memberID int
+	location := header.Get("Location")
+	if location != "" {
+		parts := strings.Split(location, "/")
+		if len(parts) > 0 {
+			i, err := strconv.Atoi(parts[len(parts)-1])
+			if err == nil {
+				memberID = i
+			}
+		}
+	}
+
+	return httpStatusCode, memberID, err
 }
 
 // Delete project role member accompany with  projectID
-func (a testapi) DeleteProjectMember(authInfo usrInfo, projectID string, userID string) (int, error) {
+func (a testapi) DeleteProjectMember(authInfo usrInfo, projectID string, memberID string) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
 
-	path := "/api/projects/" + projectID + "/members/" + userID
+	path := "/api/projects/" + projectID + "/members/" + memberID
 	_sling = _sling.Path(path)
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, err

@@ -152,7 +152,8 @@ func TestListProjects(t *testing.T) {
 		},
 	}
 	projectID := strconv.Itoa(addPID)
-	httpStatusCode, err = apiTest.AddProjectMember(*admin, projectID, member)
+	var memberID int
+	httpStatusCode, memberID, err = apiTest.AddProjectMember(*admin, projectID, member)
 	if err != nil {
 		t.Error("Error whihle add project role member", err.Error())
 		t.Log(err)
@@ -172,8 +173,7 @@ func TestListProjects(t *testing.T) {
 		assert.Equal("true", result[0].Metadata[models.ProMetaPublic], "Public is wrong")
 		assert.Equal(int32(2), result[0].CurrentUserRoleId, "User project role is wrong")
 	}
-	id := strconv.Itoa(CommonGetUserID())
-	httpStatusCode, err = apiTest.DeleteProjectMember(*admin, projectID, id)
+	httpStatusCode, err = apiTest.DeleteProjectMember(*admin, projectID, strconv.Itoa(memberID))
 	if err != nil {
 		t.Error("Error whihle add project role member", err.Error())
 		t.Log(err)
