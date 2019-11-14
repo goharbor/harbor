@@ -17,22 +17,32 @@
 .eventTarget{display: inline-flex; width: 172px; font-size: 12px; flex-shrink:1; overflow: hidden; text-overflow: ellipsis;white-space: nowrap;}
 .eventTime{ float: right; font-size: 12px;}
 :host >>> .nav{padding-left: 38px;}
-.operDiv{position: fixed; top: 60px; right: 0; z-index:100}
-.toolBar{
-    float: left;border-top: 1px solid #ccc;
-    transform: rotate(-90deg);
+
+.operDiv {
+    position: fixed;
+    top: 60px;
+    z-index: 600;
+    width: 350px;
+    bottom: 0
+}
+
+.toolBar {
+    position: absolute;
+    transform-origin: top right;
+    border-top: 1px solid #ccc;
+    transform: translate(-100%, 0) rotate(-90deg);
     margin-top: 10px;
-    padding: 2px 4px;
-    width: 86px;
-    height: 84px;
+    padding: 0 10px;
+    height: 25px;
+    line-height: 25px;
     background-color: white;
     letter-spacing: 1.2px;
     font-weight: 500;
     box-shadow: -2px -1px 3px #bebbbb;
     cursor: pointer;
-    text-align: center;
+    text-align: left;
     text-decoration: none;
-   }
+}
 .freshIcon{float: right;     margin-right: 20px;  margin-top: -10px;cursor: pointer;}
 #contentFailed, #contentAll, #contentRun{
     position: absolute;
@@ -64,4 +74,7 @@
 
 .hidden-info {
     display: none;
+}
+.margin-left-5 {
+    margin-left: 5px;
 }

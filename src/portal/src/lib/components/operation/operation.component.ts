@@ -16,12 +16,15 @@ export class OperationComponent implements OnInit, OnDestroy {
   batchInfoSubscription: Subscription;
   resultLists: OperateInfo[] = [];
   animationState = "out";
+  private _newMessageCount: number = 0;
+  private _timeoutInterval;
 
   @HostListener('window:beforeunload', ['$event'])
   beforeUnloadHander(event) {
     // storage to localStorage
     let timp = new Date().getTime();
     localStorage.setItem('operaion', JSON.stringify({timp: timp,  data: this.resultLists}));
+    localStorage.setItem('newMessageCount', this._newMessageCount.toString());
   }
 
   constructor(
@@ -29,8 +32,9 @@ export class OperationComponent implements OnInit, OnDestroy {
     private translate: TranslateService) {
 
     this.batchInfoSubscription = operationService.operationInfo$.subscribe(data => {
-      // this.resultLists = data;
-      this.openSlide();
+      if (this.animationState === 'out') {
+        this._newMessageCount += 1;
+      }
       if (data) {
         if (this.resultLists.length >= 50) {
           this.resultLists.splice(49, this.resultLists.length - 49);
@@ -40,6 +44,31 @@ export class OperationComponent implements OnInit, OnDestroy {
     });
   }
 
+  getNewMessageCountStr(): string {
+    if (this._newMessageCount) {
+      if (this._newMessageCount > 50) {
+        return this._newMessageCount + '+';
+      }
+      return this._newMessageCount.toString();
+    }
+    return '';
+  }
+  resetNewMessageCount() {
+    this._newMessageCount = 0;
+  }
+  mouseover() {
+    if (this._timeoutInterval) {
+      clearInterval(this._timeoutInterval);
+      this._timeoutInterval = null;
+    }
+  }
+  mouseleave() {
+    if (!this._timeoutInterval) {
+      this._timeoutInterval = setTimeout(() => {
+          this.animationState = 'out';
+      }, 5000);
+    }
+  }
   public get runningLists(): OperateInfo[] {
     let runningList: OperateInfo[] = [];
     this.resultLists.forEach(data => {
@@ -61,6 +90,7 @@ export class OperationComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    this._newMessageCount = +localStorage.getItem('newMessageCount');
     let requestCookie = localStorage.getItem('operaion');
     if (requestCookie) {
       let operInfors: any = JSON.parse(requestCookie);
@@ -86,6 +116,10 @@ export class OperationComponent implements OnInit, OnDestroy {
     if (this.batchInfoSubscription) {
       this.batchInfoSubscription.unsubscribe();
     }
+    if (this._timeoutInterval) {
+      clearInterval(this._timeoutInterval);
+      this._timeoutInterval = null;
+    }
   }
 
   toggleTitle(errorSpan: any) {
@@ -94,10 +128,14 @@ export class OperationComponent implements OnInit, OnDestroy {
 
   slideOut(): void {
     this.animationState = this.animationState === 'out' ? 'in' : 'out';
+    if (this.animationState === 'in') {
+      this.resetNewMessageCount();
+    }
   }
 
   openSlide(): void {
     this.animationState = 'in';
+    this.resetNewMessageCount();
   }
 
 
