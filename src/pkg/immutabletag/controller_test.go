@@ -150,7 +150,7 @@ func (s *ControllerTestSuite) TestImmutableRule() {
 	s.ruleID, err = s.ctr.CreateImmutableRule(rule2)
 	s.require.Nil(err)
 
-	rules, err := s.ctr.ListImmutableRules(1)
+	rules, err := s.ctr.ListImmutableRules(projectID)
 	s.require.Nil(err)
 	s.require.Equal(2, len(rules))
 

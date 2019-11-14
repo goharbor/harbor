@@ -44,7 +44,8 @@ CREATE TABLE immutable_tag_rule
   project_id int NOT NULL,
   tag_filter text,
   disabled BOOLEAN NOT NULL DEFAULT FALSE,
-  creation_time timestamp default CURRENT_TIMESTAMP
+  creation_time timestamp default CURRENT_TIMESTAMP,
+  UNIQUE(project_id, tag_filter)
 );
 
 ALTER TABLE robot ADD COLUMN visible boolean DEFAULT true NOT NULL;

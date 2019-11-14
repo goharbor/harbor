@@ -92,6 +92,10 @@ func (itr *ImmutableTagRuleAPI) Post() {
 	}
 	ir.ProjectID = itr.projectID
 	id, err := itr.ctr.CreateImmutableRule(ir)
+	if err != nil && strings.Contains(err.Error(), "duplicate key") {
+		itr.RenderError(http.StatusConflict, "immutable tag rule duplicated")
+		return
+	}
 	if err != nil {
 		itr.SendInternalServerError(err)
 		return
