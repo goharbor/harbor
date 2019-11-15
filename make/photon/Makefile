@@ -17,7 +17,7 @@ WGET=$(shell which wget)
 
 # docker parameters
 DOCKERCMD=$(shell which docker)
-DOCKERBUILD=$(DOCKERCMD) build --pull
+DOCKERBUILD=$(DOCKERCMD) build
 DOCKERRMIMAGE=$(DOCKERCMD) rmi
 DOCKERIMASES=$(DOCKERCMD) images
 
@@ -81,9 +81,11 @@ DOCKERFILENAME_REGISTRYCTL=Dockerfile
 DOCKERIMAGENAME_REGISTRYCTL=goharbor/harbor-registryctl
 
 DOCKERFILEPATH_NOTARY=$(DOCKERFILEPATH)/notary
-DOCKERFILENAME_NOTARYSIGNER=signer.Dockerfile
+DOCKERFILEPATH_NOTARYSERVER=$(DOCKERFILEPATH)/notary-server
+DOCKERFILENAME_NOTARYSIGNER=Dockerfile
 DOCKERIMAGENAME_NOTARYSIGNER=goharbor/notary-signer-photon
-DOCKERFILENAME_NOTARYSERVER=server.Dockerfile
+DOCKERFILEPATH_NOTARYSIGNER=$(DOCKERFILEPATH)/notary-signer
+DOCKERFILENAME_NOTARYSERVER=Dockerfile
 DOCKERIMAGENAME_NOTARYSERVER=goharbor/notary-server-photon
 
 DOCKERFILEPATH_REDIS=$(DOCKERFILEPATH)/redis
@@ -103,32 +105,32 @@ CHART_SERVER_BIN_NAME=chartm
 
 _build_prepare:
 	@echo "building prepare container for photon..."
-	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_PREPARE)/$(DOCKERFILENAME_PREPARE) -t $(DOCKERIMAGENAME_PREPARE):$(VERSIONTAG) .
+	@$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_PREPARE)/$(DOCKERFILENAME_PREPARE) -t $(DOCKERIMAGENAME_PREPARE):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_db:
 	@echo "building db container for photon..."
-	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
+	@$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_DB)/$(DOCKERFILENAME_DB) -t $(DOCKERIMAGENAME_DB):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_portal:
 	@echo "building portal container for photon..."
-	$(DOCKERBUILD) --build-arg npm_registry=$(NPM_REGISTRY) -f $(DOCKERFILEPATH_PORTAL)/$(DOCKERFILENAME_PORTAL) -t $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) .
+	$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg npm_registry=$(NPM_REGISTRY) -f $(DOCKERFILEPATH_PORTAL)/$(DOCKERFILENAME_PORTAL) -t $(DOCKERIMAGENAME_PORTAL):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_core:
 	@echo "building core container for photon..."
-	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_CORE)/$(DOCKERFILENAME_CORE) -t $(DOCKERIMAGENAME_CORE):$(VERSIONTAG) .
+	@$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_CORE)/$(DOCKERFILENAME_CORE) -t $(DOCKERIMAGENAME_CORE):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_jobservice:
 	@echo "building jobservice container for photon..."
-	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_JOBSERVICE)/$(DOCKERFILENAME_JOBSERVICE) -t $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) .
+	@$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_JOBSERVICE)/$(DOCKERFILENAME_JOBSERVICE) -t $(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_log:
 	@echo "building log container for photon..."
-	$(DOCKERBUILD) -f $(DOCKERFILEPATH_LOG)/$(DOCKERFILENAME_LOG) -t $(DOCKERIMAGENAME_LOG):$(VERSIONTAG) .
+	$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_LOG)/$(DOCKERFILENAME_LOG) -t $(DOCKERIMAGENAME_LOG):$(VERSIONTAG) .
 	@echo "Done."
 
 _build_clair:
@@ -140,7 +142,7 @@ _build_clair:
 			cd $(DOCKERFILEPATH_CLAIR) && $(DOCKERFILEPATH_CLAIR)/builder $(CLAIRVERSION) && cd - ; \
 		fi ; \
 		echo "building clair container for photon..." ; \
-		$(DOCKERBUILD) -f $(DOCKERFILEPATH_CLAIR)/$(DOCKERFILENAME_CLAIR) -t $(DOCKERIMAGENAME_CLAIR):$(CLAIRVERSION)-$(VERSIONTAG) . ; \
+		$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_CLAIR)/$(DOCKERFILENAME_CLAIR) -t $(DOCKERIMAGENAME_CLAIR):$(CLAIRVERSION)-$(VERSIONTAG) . ; \
 		rm -rf $(DOCKERFILEPATH_CLAIR)/binary; \
 		echo "Done." ; \
 	fi
@@ -155,7 +157,7 @@ _build_clair_adapter:
 			cd $(DOCKERFILEPATH_CLAIR_ADAPTER) && $(DOCKERFILEPATH_CLAIR_ADAPTER)/builder $(CLAIRADAPTERVERSION) && cd - ; \
 		fi ; \
 		echo "building clair adapter container for photon..." ; \
-		$(DOCKERBUILD) -f $(DOCKERFILEPATH_CLAIR_ADAPTER)/$(DOCKERFILENAME_CLAIR_ADAPTER) -t $(DOCKERIMAGENAME_CLAIR_ADAPTER):$(CLAIRADAPTERVERSION)-$(VERSIONTAG) . ; \
+		$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_CLAIR_ADAPTER)/$(DOCKERFILENAME_CLAIR_ADAPTER) -t $(DOCKERIMAGENAME_CLAIR_ADAPTER):$(CLAIRADAPTERVERSION)-$(VERSIONTAG) . ; \
 		rm -rf $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary; \
 		echo "Done." ; \
 	fi
@@ -169,14 +171,14 @@ _build_chart_server:
 			cd $(DOCKERFILEPATH_CHART_SERVER) && $(DOCKERFILEPATH_CHART_SERVER)/builder $(GOBUILDIMAGE) $(CHART_SERVER_CODE_BASE) $(CHARTMUSEUMVERSION) $(CHART_SERVER_MAIN_PATH) $(CHART_SERVER_BIN_NAME) && cd - ; \
 		fi ; \
 		echo "building chartmuseum container for photon..." ; \
-		$(DOCKERBUILD) -f $(DOCKERFILEPATH_CHART_SERVER)/$(DOCKERFILENAME_CHART_SERVER) -t $(DOCKERIMAGENAME_CHART_SERVER):$(CHARTMUSEUMVERSION)-$(VERSIONTAG) . ; \
+		$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_CHART_SERVER)/$(DOCKERFILENAME_CHART_SERVER) -t $(DOCKERIMAGENAME_CHART_SERVER):$(CHARTMUSEUMVERSION)-$(VERSIONTAG) . ; \
 		rm -rf $(DOCKERFILEPATH_CHART_SERVER)/binary; \
 		echo "Done." ; \
 	fi
 
 _build_nginx:
 	@echo "building nginx container for photon..."
-	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_NGINX)/$(DOCKERFILENAME_NGINX) -t $(DOCKERIMAGENAME_NGINX):$(NGINXVERSION) .
+	@$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_NGINX)/$(DOCKERFILENAME_NGINX) -t $(DOCKERIMAGENAME_NGINX):$(NGINXVERSION) .
 	@echo "Done."
 
 _build_notary:
@@ -189,8 +191,8 @@ _build_notary:
 			cd $(DOCKERFILEPATH_NOTARY) && $(DOCKERFILEPATH_NOTARY)/builder $(NOTARYVERSION) $(NOTARYMIGRATEVERSION) && cd - ; \
 		fi ; \
 		echo "building notary container for photon..."; \
-		chmod 655 $(DOCKERFILEPATH_NOTARY)/binary/notary-signer && $(DOCKERBUILD) -f $(DOCKERFILEPATH_NOTARY)/$(DOCKERFILENAME_NOTARYSIGNER) -t $(DOCKERIMAGENAME_NOTARYSIGNER):$(NOTARYVERSION)-$(VERSIONTAG) . ; \
-		chmod 655 $(DOCKERFILEPATH_NOTARY)/binary/notary-server && $(DOCKERBUILD) -f $(DOCKERFILEPATH_NOTARY)/$(DOCKERFILENAME_NOTARYSERVER) -t $(DOCKERIMAGENAME_NOTARYSERVER):$(NOTARYVERSION)-$(VERSIONTAG) . ; \
+		chmod 655 $(DOCKERFILEPATH_NOTARY)/binary/notary-signer && $(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_NOTARYSIGNER)/$(DOCKERFILENAME_NOTARYSIGNER) -t $(DOCKERIMAGENAME_NOTARYSIGNER):$(NOTARYVERSION)-$(VERSIONTAG) . ; \
+		chmod 655 $(DOCKERFILEPATH_NOTARY)/binary/notary-server && $(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_NOTARYSERVER)/$(DOCKERFILENAME_NOTARYSERVER) -t $(DOCKERIMAGENAME_NOTARYSERVER):$(NOTARYVERSION)-$(VERSIONTAG) . ; \
 		rm -rf $(DOCKERFILEPATH_NOTARY)/binary; \
 		echo "Done."; \
 	fi
@@ -203,24 +205,24 @@ _build_registry:
 		cd $(DOCKERFILEPATH_REG) && $(DOCKERFILEPATH_REG)/builder $(REGISTRY_SRC_TAG) && cd - ; \
 	fi
 	@echo "building registry container for photon..."
-	@chmod 655 $(DOCKERFILEPATH_REG)/binary/registry && $(DOCKERBUILD) -f $(DOCKERFILEPATH_REG)/$(DOCKERFILENAME_REG) -t $(DOCKERIMAGENAME_REG):$(REGISTRYVERSION)-$(VERSIONTAG) .
+	@chmod 655 $(DOCKERFILEPATH_REG)/binary/registry && $(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_REG)/$(DOCKERFILENAME_REG) -t $(DOCKERIMAGENAME_REG):$(REGISTRYVERSION)-$(VERSIONTAG) .
 	@echo "Done."
 
 _build_registryctl:
 	@echo "building registry controller for photon..."
-	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_REGISTRYCTL)/$(DOCKERFILENAME_REGISTRYCTL) -t $(DOCKERIMAGENAME_REGISTRYCTL):$(VERSIONTAG) .
+	@$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_REGISTRYCTL)/$(DOCKERFILENAME_REGISTRYCTL) -t $(DOCKERIMAGENAME_REGISTRYCTL):$(VERSIONTAG) .
 	@rm -rf $(DOCKERFILEPATH_REG)/binary
 	@echo "Done."
 
 _build_redis:
 	@echo "building redis container for photon..."
-	@$(DOCKERBUILD) -f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) -t $(DOCKERIMAGENAME_REDIS):$(REDISVERSION) .
+	@$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_REDIS)/$(DOCKERFILENAME_REDIS) -t $(DOCKERIMAGENAME_REDIS):$(REDISVERSION) .
 	@echo "Done."
 
 _build_migrator:
 	@if [ "$(MIGRATORFLAG)" = "true" ] ; then \
 		echo "building db migrator container for photon..."; \
-		cd $(DOCKERFILEPATH_MIGRATOR) && $(DOCKERBUILD) -f $(DOCKERFILEPATH_MIGRATOR)/$(DOCKERFILENAME_MIGRATOR) -t $(DOCKERIMAGENAME_MIGRATOR):$(MIGRATORVERSION) . ; \
+		cd $(DOCKERFILEPATH_MIGRATOR) && $(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_MIGRATOR)/$(DOCKERFILENAME_MIGRATOR) -t $(DOCKERIMAGENAME_MIGRATOR):$(MIGRATORVERSION) . ; \
 		echo "Done."; \
 	fi
 

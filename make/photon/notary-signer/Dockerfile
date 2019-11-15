@@ -1,9 +1,6 @@
-FROM photon:2.0
+ARG harbor_base_image_version
+FROM goharbor/harbor-notary-signer-base:${harbor_base_image_version}
 
-RUN tdnf install -y shadow sudo \
-    && tdnf clean all \
-    && groupadd -r -g 10000 notary \
-    && useradd --no-log-init -r -g 10000 -u 10000 notary
 COPY ./make/photon/notary/migrate-patch /bin/migrate-patch
 COPY ./make/photon/notary/binary/notary-signer /bin/notary-signer
 COPY ./make/photon/notary/binary/migrate /bin/migrate

@@ -88,6 +88,8 @@ CHARTFLAG=false
 # version prepare
 # for docker image tag
 VERSIONTAG=dev
+# for base docker image tag
+BASEIMAGETAG=dev
 # for harbor package name
 PKGVERSIONTAG=dev
 
@@ -321,7 +323,14 @@ build:
 	 -e CLAIRVERSION=$(CLAIRVERSION) -e CLAIRADAPTERVERSION=$(CLAIRADAPTERVERSION) -e VERSIONTAG=$(VERSIONTAG) \
 	 -e BUILDBIN=$(BUILDBIN) -e REDISVERSION=$(REDISVERSION) -e MIGRATORVERSION=$(MIGRATORVERSION) \
 	 -e CHARTMUSEUMVERSION=$(CHARTMUSEUMVERSION) -e DOCKERIMAGENAME_CHART_SERVER=$(DOCKERIMAGENAME_CHART_SERVER) \
-	 -e NPM_REGISTRY=$(NPM_REGISTRY)
+	 -e NPM_REGISTRY=$(NPM_REGISTRY) -e BASEIMAGETAG=${BASEIMAGETAG}
+
+build_base_docker:
+	@for name in chartserver clair clair-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+		echo $$name ; \
+		$(DOCKERBUILD) --pull -f $(MAKEFILEPATH_PHOTON)/$$name/Dockerfile.base -t goharbor/harbor-$$name-base:$(BASEIMAGETAG) . ; \
+		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) goharbor/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) ; \
+	done
 
 install: compile build prepare start
 

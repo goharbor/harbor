@@ -1,12 +1,5 @@
-FROM photon:2.0
-
-LABEL maintainer="wangyan@vmware.com"
-
-# The original script in the docker offical registry image.
-RUN tdnf install sudo -y >> /dev/null\
-    && tdnf clean all \
-    && mkdir -p /etc/registry \
-    && groupadd -r -g 10000 harbor && useradd --no-log-init -m -g 10000 -u 10000 harbor  
+ARG harbor_base_image_version
+FROM goharbor/harbor-registry-base:${harbor_base_image_version}
 
 COPY ./make/photon/common/install_cert.sh /home/harbor
 COPY ./make/photon/registry/entrypoint.sh /home/harbor
