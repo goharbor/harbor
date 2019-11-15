@@ -109,7 +109,7 @@
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">
-                        <hbr-vulnerability-bar (submitFinish)="submitFinish($event)"  [repoName]="repoName" [tagId]="t.name" [summary]="handleScanOverview(t.scan_overview)"></hbr-vulnerability-bar>
+                        <hbr-vulnerability-bar [scanner]="handleScanOverview(t.scan_overview)?.scanner" (submitFinish)="submitFinish($event)"  [repoName]="repoName" [tagId]="t.name" [summary]="handleScanOverview(t.scan_overview)"></hbr-vulnerability-bar>
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell *ngIf="withNotary" [ngSwitch]="t.signature !== null">

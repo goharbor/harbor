@@ -231,6 +231,11 @@ export const DEFAULT_PAGE_SIZE: number = 15;
 export const DEFAULT_SUPPORTED_MIME_TYPE = "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0";
 
 /**
+ *  the property name of vulnerability database updated time
+ */
+export const DATABASE_UPDATED_PROPERTY = "harbor.scanner-adapter/vulnerability-database-updated-at";
+
+/**
  * The state of vulnerability scanning
  */
 export const VULNERABILITY_SCAN_STATUS = {

@@ -1312,6 +1312,7 @@
         "VULNERABILITY_SEVERITY": "Vulnerability severity:",
         "CONFIRM_DELETION": "Confirm Scanner deletion",
         "NO_PROJECT_SCANNER": "No Scanner",
-        "SET_UNHEALTHY_SCANNER": "Selected scanner:{{name}} is unhealthy"
+        "SET_UNHEALTHY_SCANNER": "Selected scanner:{{name}} is unhealthy",
+        "SCANNED_BY": "Scanned by:"
     }
 }
