@@ -70,7 +70,7 @@ func (a *adapter) ManifestExist(repository, reference string) (exist bool, diges
 	r.Header.Add("content-type", "application/json; charset=utf-8")
 	r.Header.Add("Authorization", "Bearer "+token.Token)
 
-	resp, err := a.client.Do(r)
+	resp, err := a.oriClient.Do(r)
 	if err != nil {
 		return exist, digest, err
 	}
@@ -113,7 +113,7 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 	r.Header.Add("content-type", "application/json; charset=utf-8")
 	r.Header.Add("Authorization", "Bearer "+token.Token)
 
-	resp, err := a.client.Do(r)
+	resp, err := a.oriClient.Do(r)
 	if err != nil {
 		return err
 	}
