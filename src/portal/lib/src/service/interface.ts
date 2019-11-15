@@ -312,6 +312,12 @@ export interface VulnerabilitySummary {
     summary?: SeveritySummary;
     start_time?: Date;
     end_time?: Date;
+    scanner?: ScannerVo;
+}
+export interface ScannerVo {
+    name?: string;
+    vendor?: string;
+    version?: string;
 }
 export interface SeveritySummary {
   total: number;

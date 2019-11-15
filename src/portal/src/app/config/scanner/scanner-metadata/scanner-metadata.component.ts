@@ -1,12 +1,13 @@
 import {
-    Component, Inject, Input, LOCALE_ID,
+    Component, Input,
     OnInit
 } from "@angular/core";
 import { ConfigScannerService } from "../config-scanner.service";
 import { finalize } from "rxjs/operators";
-import { ErrorHandler } from "@harbor/ui";
+import { ErrorHandler, DATABASE_UPDATED_PROPERTY } from "@harbor/ui";
 import { ScannerMetadata } from "../scanner-metadata";
 import { DatePipe } from "@angular/common";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: 'scanner-metadata',
@@ -19,7 +20,7 @@ export class ScannerMetadataComponent implements  OnInit {
     scannerMetadata: ScannerMetadata;
     constructor(private configScannerService: ConfigScannerService,
                 private errorHandler: ErrorHandler,
-    @Inject(LOCALE_ID) private _locale: string) {
+                private translate: TranslateService) {
     }
     ngOnInit(): void {
         this.loading = true;
@@ -31,15 +32,14 @@ export class ScannerMetadataComponent implements  OnInit {
                 this.errorHandler.error(error);
             });
     }
-    parseDate(str: string): string {
-        try {
-            if (str === new Date(str).toISOString()) {
-                return new DatePipe(this._locale).transform(str, 'short');
-            }
-        } catch (e) {
-            return str;
+    parseDate(item: any): string {
+        if (item && item.value && item.key === DATABASE_UPDATED_PROPERTY) {
+            return new DatePipe(this.translate.currentLang).transform(item.value, 'short');
         }
-        return str;
+        if (item && item.value) {
+            return item.value;
+        }
+        return '';
     }
     toString(arr: string[]) {
         if (arr && arr.length > 0) {
