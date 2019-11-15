@@ -37,6 +37,8 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/filter"
+	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
@@ -561,6 +563,49 @@ func ParseManifestInfoFromPath(req *http.Request) (*ManifestInfo, error) {
 	}
 
 	return info, nil
+}
+
+// FireQuotaEvent ...
+func FireQuotaEvent(req *http.Request, level int, msg string) {
+	go func() {
+		info, err := ParseManifestInfoFromReq(req)
+		if err != nil {
+			log.Errorf("Quota exceed event: failed to get manifest from request: %v", err)
+			return
+		}
+		pm, err := filter.GetProjectManager(req)
+		if err != nil {
+			log.Errorf("Quota exceed event: failed to get project manager: %v", err)
+			return
+		}
+		project, err := pm.Get(info.ProjectID)
+		if err != nil {
+			log.Errorf(fmt.Sprintf("Quota exceed event: failed to get the project %d", info.ProjectID), err)
+			return
+		}
+		if project == nil {
+			log.Errorf(fmt.Sprintf("Quota exceed event: no project found %d", info.ProjectID), err)
+			return
+		}
+
+		evt := &notifierEvt.Event{}
+		quotaMetadata := &notifierEvt.QuotaMetaData{
+			Project:  project,
+			Tag:      info.Tag,
+			Digest:   info.Digest,
+			RepoName: info.Repository,
+			Level:    level,
+			Msg:      msg,
+			OccurAt:  time.Now(),
+		}
+		if err := evt.Build(quotaMetadata); err == nil {
+			if err := evt.Publish(); err != nil {
+				log.Errorf("failed to publish quota event: %v", err)
+			}
+		} else {
+			log.Errorf("failed to build quota event metadata: %v", err)
+		}
+	}()
 }
 
 func getProjectVulnSeverity(project *models.Project) vuln.Severity {
