@@ -22,6 +22,9 @@
   .filter-tag {
       float: left;
       margin-top: 8px;
+      .clr-form-control {
+        margin-top: 0;
+      }
   }
   .refresh-btn {
       cursor: pointer;
@@ -79,4 +82,9 @@ clr-datagrid {
   ::ng-deep .datagrid-table {
     position: static;
   }
+}
+
+.flex-items-xs-between {
+  display: flex;
+  justify-content: space-between;
 }
