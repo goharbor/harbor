@@ -127,8 +127,8 @@ Test Case - Project Level Image Serverity Policy
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${d}=  get current date  result_format=%m%s
-    ${sha256}=  Set Variable  68b49a280d2fbe9330c0031970ebb72015e1272dfa25f0ed7557514f9e5ad7b7
-    ${image}=  Set Variable  postgres
+    ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
+    ${image}=  Set Variable  redis
     Create An New Project  project${d}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}
     Go Into Project  project${d}
@@ -136,7 +136,7 @@ Test Case - Project Level Image Serverity Policy
     Scan Repo  ${sha256}  Succeed
     Navigate To Projects
     Go Into Project  project${d}
-    Set Vulnerabilty Serverity  0
+    Set Vulnerabilty Serverity  3
     Cannot pull image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  tag=${sha256}
     Close Browser
 
@@ -153,7 +153,7 @@ Test Case - Verfiy System Level CVE Whitelist
     Create An New Project    project${d}
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
-    Set Vulnerabilty Serverity  1
+    Set Vulnerabilty Serverity  2
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image}
@@ -162,9 +162,9 @@ Test Case - Verfiy System Level CVE Whitelist
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Switch To Configuration System Setting
-    Add Items To System CVE Whitelist    CVE-2019-12904\nCVE-2011-3389\nCVE-2018-12886\nCVE-2019-3843\nCVE-2018-20839\nCVE-2019-5094\nCVE-2019-15847\nCVE-2019-13627
+    Add Items To System CVE Whitelist    CVE-2019-18224\nCVE-2018-12886\nCVE-2019-12290\nCVE-2019-5094\nCVE-2019-13627
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Add Items To System CVE Whitelist    CVE-2019-3844
+    Add Items To System CVE Whitelist    CVE-2019-17543
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Delete Top Item In System CVE Whitelist  count=6
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
@@ -183,15 +183,15 @@ Test Case - Verfiy Project Level CVE Whitelist
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
-    Set Vulnerabilty Serverity  1
+    Set Vulnerabilty Serverity  2
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image}
     Scan Repo  ${sha256}  Succeed
     Go Into Project  project${d}
-    Add Items to Project CVE Whitelist    CVE-2019-12904\nCVE-2011-3389\nCVE-2018-12886\nCVE-2019-3843\nCVE-2018-20839\nCVE-2019-5094\nCVE-2019-15847\nCVE-2019-13627
+    Add Items to Project CVE Whitelist    CVE-2019-18224\nCVE-2018-12886\nCVE-2019-12290\nCVE-2019-5094\nCVE-2019-13627
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Add Items to Project CVE Whitelist    CVE-2019-3844
+    Add Items to Project CVE Whitelist    CVE-2019-17543
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Delete Top Item In Project CVE Whitelist
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
@@ -208,13 +208,13 @@ Test Case - Verfiy Project Level CVE Whitelist By Quick Way of Add System
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Switch To Configuration System Setting
-    Add Items To System CVE Whitelist    CVE-2019-12904\nCVE-2011-3389\nCVE-2018-12886\nCVE-2019-3843\nCVE-2018-20839\nCVE-2019-3844\nCVE-2019-5094\nCVE-2019-15847\nCVE-2019-13627
+    Add Items To System CVE Whitelist    CVE-2019-18224\nCVE-2018-12886\nCVE-2019-12290\nCVE-2019-5094\nCVE-2019-13627\nCVE-2019-17543
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
     Create An New Project    project${d}
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
-    Set Vulnerabilty Serverity  1
+    Set Vulnerabilty Serverity  2
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image}
     Scan Repo  ${sha256}  Succeed
