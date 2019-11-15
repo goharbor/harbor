@@ -92,9 +92,9 @@
             <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
             <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
                 <clr-dg-cell class="truncated flex-max-width">
-                    <div class="cell">
-                        <a href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
-                        <span *ngIf="t.immutable" class="label label-info ml-1">{{'REPOSITORY.IMMUTABLE' | translate}}</span>
+                    <div class="cell white-normal" [class.immutable]="t.immutable">
+                        <a href="javascript:void(0)" class="max-width-100" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
+                        <span *ngIf="t.immutable" class="label label-info ml-5">{{'REPOSITORY.IMMUTABLE' | translate}}</span>
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell>
