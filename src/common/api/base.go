@@ -48,6 +48,11 @@ func (b *BaseAPI) GetInt64FromPath(key string) (int64, error) {
 	return strconv.ParseInt(value, 10, 64)
 }
 
+// ParamExistsInPath returns true when param exists in the path
+func (b *BaseAPI) ParamExistsInPath(key string) bool {
+	return b.GetStringFromPath(key) != ""
+}
+
 // Render returns nil as it won't render template
 func (b *BaseAPI) Render() error {
 	return nil
