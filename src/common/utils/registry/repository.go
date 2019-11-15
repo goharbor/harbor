@@ -69,49 +69,61 @@ func parseError(err error) error {
 // ListTag ...
 func (r *Repository) ListTag() ([]string, error) {
 	tags := []string{}
-	req, err := http.NewRequest("GET", buildTagListURL(r.Endpoint.String(), r.Name), nil)
-	if err != nil {
-		return tags, err
-	}
+	aurl := buildTagListURL(r.Endpoint.String(), r.Name)
 
-	resp, err := r.client.Do(req)
-	if err != nil {
-		return tags, parseError(err)
-	}
-
-	defer resp.Body.Close()
-
-	b, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return tags, err
-	}
-
-	if resp.StatusCode == http.StatusOK {
-		tagsResp := struct {
-			Tags []string `json:"tags"`
-		}{}
-
-		if err := json.Unmarshal(b, &tagsResp); err != nil {
+	for len(aurl) > 0 {
+		req, err := http.NewRequest("GET", aurl, nil)
+		if err != nil {
 			return tags, err
 		}
-		sort.Strings(tags)
-		tags = tagsResp.Tags
+		resp, err := r.client.Do(req)
+		if err != nil {
+			return nil, parseError(err)
+		}
 
-		return tags, nil
-	} else if resp.StatusCode == http.StatusNotFound {
+		defer resp.Body.Close()
+		b, err := ioutil.ReadAll(resp.Body)
+		if err != nil {
+			return tags, err
+		}
 
-		// TODO remove the logic if the bug of registry is fixed
-		// It's a workaround for a bug of registry: when listing tags of
-		// a repository which is being pushed, a "NAME_UNKNOWN" error will
-		// been returned, while the catalog API can list this repository.
-		return tags, nil
+		if resp.StatusCode == http.StatusOK {
+			tagsResp := struct {
+				Tags []string `json:"tags"`
+			}{}
+
+			if err := json.Unmarshal(b, &tagsResp); err != nil {
+				return tags, err
+			}
+
+			tags = append(tags, tagsResp.Tags...)
+			// Link: </v2/_catalog?last=library%2Fhello-world-25&n=100>; rel="next"
+			// Link: <http://domain.com/v2/_catalog?last=library%2Fhello-world-25&n=100>; rel="next"
+			link := resp.Header.Get("Link")
+			if strings.HasSuffix(link, `rel="next"`) && strings.Index(link, "<") >= 0 && strings.Index(link, ">") >= 0 {
+				aurl = link[strings.Index(link, "<")+1 : strings.Index(link, ">")]
+				if strings.Index(aurl, ":") < 0 {
+					aurl = r.Endpoint.String() + aurl
+				}
+			} else {
+				aurl = ""
+			}
+		} else if resp.StatusCode == http.StatusNotFound {
+
+			// TODO remove the logic if the bug of registry is fixed
+			// It's a workaround for a bug of registry: when listing tags of
+			// a repository which is being pushed, a "NAME_UNKNOWN" error will
+			// been returned, while the catalog API can list this repository.
+			return tags, nil
+		} else {
+			return tags, &commonhttp.Error{
+				Code:    resp.StatusCode,
+				Message: string(b),
+			}
+		}
 	}
-
-	return tags, &commonhttp.Error{
-		Code:    resp.StatusCode,
-		Message: string(b),
-	}
-
+	sort.Strings(tags)
+	return tags, nil
 }
 
 // ManifestExist ...
