@@ -226,8 +226,12 @@ func main() {
 			Immutable:       true,
 		}
 
-		if err := scan.EnsureScanner(reg); err != nil {
+		if err := scan.EnsureScanner(reg, true); err != nil {
 			log.Fatalf("failed to initialize clair scanner: %v", err)
+		}
+	} else {
+		if err := scan.RemoveImmutableScanners(); err != nil {
+			log.Warningf("failed to remove immutable scanners: %v", err)
 		}
 	}
 

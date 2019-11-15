@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	sc "github.com/goharbor/harbor/src/pkg/scan/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/scanner/mocks"
+	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -32,6 +33,7 @@ type managerOptions struct {
 	getError        error
 	getDefaultError error
 	createError     error
+	createErrorFn   func(*scanner.Registration) error
 }
 
 func newManager(opts *managerOptions) sc.Manager {
@@ -95,10 +97,18 @@ func newManager(opts *managerOptions) sc.Manager {
 		return reg.URL
 	}
 
+	createError := func(reg *scanner.Registration) error {
+		if opts.createErrorFn != nil {
+			return opts.createErrorFn(reg)
+		}
+
+		return opts.createError
+	}
+
 	mgr.On("List", mock.AnythingOfType("*q.Query")).Return(listFn, opts.listError)
 	mgr.On("Get", mock.AnythingOfType("string")).Return(getFn, opts.getError)
 	mgr.On("GetDefault").Return(getDefaultFn, opts.getDefaultError)
-	mgr.On("Create", mock.AnythingOfType("*scanner.Registration")).Return(createFn, opts.createError)
+	mgr.On("Create", mock.AnythingOfType("*scanner.Registration")).Return(createFn, createError)
 
 	return mgr
 }
@@ -175,4 +185,31 @@ func TestEnsureScanner(t *testing.T) {
 	assert.Nil(err)
 	assert.NotNil(reg3)
 	assert.False(reg3.IsDefault)
+}
+
+func TestEnsureScannerWithResolveConflict(t *testing.T) {
+	assert := assert.New(t)
+
+	registrations := []*scanner.Registration{
+		{URL: "reg1"},
+	}
+
+	// create registration got ErrDupRows when its name is Clair
+	scannerManager = newManager(
+		&managerOptions{
+			registrations: registrations,
+
+			createErrorFn: func(reg *scanner.Registration) error {
+				if reg.Name == "Clair" {
+					return errors.Wrap(types.ErrDupRows, "failed to create reg")
+				}
+
+				return nil
+			},
+		},
+	)
+
+	assert.Nil(EnsureScanner(&scanner.Registration{Name: "Clair", URL: "reg1"}))
+	assert.Error(EnsureScanner(&scanner.Registration{Name: "Clair", URL: "reg2"}))
+	assert.Nil(EnsureScanner(&scanner.Registration{Name: "Clair", URL: "reg2"}, true))
 }
