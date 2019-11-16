@@ -408,7 +408,8 @@
         "PROJECT_ADMIN": "Proje Yöneticisi",
         "PROJECT_MASTER": "Uzman",
         "DEVELOPER": "Geliştirici",
-        "GUEST": "Misafir"
+        "GUEST": "Misafir",
+        "LIMITED_GUEST": "Limited Guest"
     },
     "AUDIT_LOG": {
         "USERNAME": "Kullanıcı Adı",

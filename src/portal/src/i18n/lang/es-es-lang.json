@@ -408,7 +408,8 @@
         "PROJECT_ADMIN": "Project Admin",
         "PROJECT_MASTER": "Master",
         "DEVELOPER": "Developer",
-        "GUEST": "Guest"
+        "GUEST": "Guest",
+        "LIMITED_GUEST": "Limited Guest"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nombre de usuario",
