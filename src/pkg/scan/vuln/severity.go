@@ -14,6 +14,10 @@
 
 package vuln
 
+import (
+	"strings"
+)
+
 const (
 	// None - only used to mark the overall severity of the scanned artifacts,
 	// means no vulnerabilities attached with the artifacts,
@@ -60,5 +64,25 @@ func (s Severity) Code() int {
 	default:
 		// Assign the highest code to the unknown severity to provide more secure protection.
 		return 99
+	}
+}
+
+func (s Severity) String() string {
+	return string(s)
+}
+
+// ParseSeverityVersion3 returns severity of CVSS v3.0 Ratings
+func ParseSeverityVersion3(str string) Severity {
+	severity := Severity(strings.Title(str))
+
+	// There are `None`, `Low`, `Medium`, `High` and `Critical` severity rankings in CVSS v3.0 Ratings,
+	// so map `negligible` severity to `none`
+	switch severity {
+	case None, Low, Medium, High, Critical:
+		return severity
+	case Negligible:
+		return None
+	default:
+		return Unknown
 	}
 }

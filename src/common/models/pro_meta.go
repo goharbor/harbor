@@ -26,11 +26,6 @@ const (
 	ProMetaSeverity             = "severity"
 	ProMetaAutoScan             = "auto_scan"
 	ProMetaReuseSysCVEWhitelist = "reuse_sys_cve_whitelist"
-	SeverityNegligible          = "negligible"
-	SeverityLow                 = "low"
-	SeverityMedium              = "medium"
-	SeverityHigh                = "high"
-	SeverityCritical            = "critical"
 )
 
 // ProjectMetadata holds the metadata of a project.

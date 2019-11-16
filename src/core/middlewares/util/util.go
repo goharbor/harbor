@@ -389,7 +389,7 @@ func (pc PmsPolicyChecker) VulnerablePolicy(name string) (bool, vuln.Severity, m
 		}
 	}
 
-	return project.VulPrevented(), getProjectVulnSeverity(project), wl
+	return project.VulPrevented(), vuln.ParseSeverityVersion3(project.Severity()), wl
 }
 
 // NewPMSPolicyChecker returns an instance of an pmsPolicyChecker
@@ -606,21 +606,4 @@ func FireQuotaEvent(req *http.Request, level int, msg string) {
 			log.Errorf("failed to build quota event metadata: %v", err)
 		}
 	}()
-}
-
-func getProjectVulnSeverity(project *models.Project) vuln.Severity {
-	mp := map[string]vuln.Severity{
-		models.SeverityNegligible: vuln.Negligible,
-		models.SeverityLow:        vuln.Low,
-		models.SeverityMedium:     vuln.Medium,
-		models.SeverityHigh:       vuln.High,
-		models.SeverityCritical:   vuln.Critical,
-	}
-
-	severity, ok := mp[project.Severity()]
-	if !ok {
-		return vuln.Unknown
-	}
-
-	return severity
 }

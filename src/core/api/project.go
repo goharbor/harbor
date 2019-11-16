@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,6 +33,7 @@ import (
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/pkg/errors"
 )
@@ -458,6 +460,11 @@ func (p *ProjectAPI) List() {
 }
 
 func (p *ProjectAPI) populateProperties(project *models.Project) error {
+	// Transform the severity to severity of CVSS v3.0 Ratings
+	if severity, ok := project.GetMetadata(models.ProMetaSeverity); ok {
+		project.SetMetadata(models.ProMetaSeverity, strings.ToLower(vuln.ParseSeverityVersion3(severity).String()))
+	}
+
 	if p.SecurityCtx.IsAuthenticated() {
 		roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
 		project.RoleList = roles
