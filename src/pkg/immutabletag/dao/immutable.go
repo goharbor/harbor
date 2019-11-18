@@ -65,7 +65,7 @@ func (i *immutableRuleDao) GetImmutableRule(id int64) (*model.ImmutableRule, err
 func (i *immutableRuleDao) QueryImmutableRuleByProjectID(projectID int64) ([]model.ImmutableRule, error) {
 	o := dao.GetOrmer()
 	qs := o.QueryTable(&model.ImmutableRule{}).Filter("ProjectID", projectID)
-	var r []model.ImmutableRule
+	r := make([]model.ImmutableRule, 0)
 	_, err := qs.All(&r)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get immutable tag rule by projectID %d, error: %v", projectID, err)
