@@ -81,3 +81,12 @@
   flex: 0 0 8.3%;
   padding-left: 0.5rem;
 }
+:host::ng-deep {
+  .datagrid-row-flex {
+    .datagrid-row-detail {
+      .datagrid-cell {
+        padding: 11px 12px;
+      }
+    }
+  }
+}

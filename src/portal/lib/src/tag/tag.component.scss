@@ -225,7 +225,8 @@ hbr-image-name-input {
 
 .datagrid-top {
   .flex-max-width {
-    max-width: 220px
+    max-width: 220px;
+    min-width: 130px;
   }
 }
 
@@ -252,13 +253,16 @@ clr-datagrid {
   width: 100%;
   height: 100%;
 }
-// todo :can be improved
-:host::ng-deep clr-dg-row {
-  .datagrid-select {
-    .clr-checkbox-wrapper {
-      input[type=checkbox] + label {
-        margin: 0;
-      }
-    }
-  }
+
+.ml-5 {
+  margin-left: 8px !important;
+}
+.immutable {
+  padding-right: 80px;
+}
+.white-normal {
+  white-space: normal;
+}
+.max-width-100 {
+  max-width: 100%;
 }

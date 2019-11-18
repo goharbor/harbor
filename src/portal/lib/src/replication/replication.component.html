@@ -27,10 +27,12 @@
         <div class="row flex-items-xs-between flex-items-xs-bottom fiter-task">
           <div class="execution-select">
             <div class="select filter-tag" [hidden]="!isOpenFilterTag">
-              <select (change)="doFilterJob($event)">
-                <option value="trigger">{{'REPLICATION.REPLICATION_TRIGGER' |translate}}</option>
-                <option value="status">{{'REPLICATION.STATUS' | translate}}</option>
-              </select>
+              <clr-select-container>
+                  <select clrSelect (change)="doFilterJob($event)" >
+                      <option value="trigger">{{'REPLICATION.REPLICATION_TRIGGER' |translate}}</option>
+                      <option value="status">{{'REPLICATION.STATUS' | translate}}</option>
+                  </select>
+              </clr-select-container>
             </div>
             <hbr-filter id="filter-executions" [withDivider]="true" (openFlag)="openFilter($event)"
               filterPlaceholder='{{"REPLICATION.FILTER_EXECUTIONS_PLACEHOLDER" | translate}}'
