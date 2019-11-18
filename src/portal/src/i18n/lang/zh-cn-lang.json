@@ -407,7 +407,8 @@
         "PROJECT_ADMIN": "项目管理员",
         "PROJECT_MASTER": "维护人员",
         "DEVELOPER": "开发者",
-        "GUEST": "访客"
+        "GUEST": "访客",
+        "LIMITED_GUEST": "受限访客"
     },
     "AUDIT_LOG": {
         "USERNAME": "用户名",

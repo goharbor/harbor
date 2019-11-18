@@ -375,7 +375,8 @@
         "PROJECT_ADMIN": "Project Admin",
         "PROJECT_MASTER": "Master",
         "DEVELOPER": "Developer",
-        "GUEST": "Guest"
+        "GUEST": "Guest",
+        "LIMITED_GUEST": "Limited Guest"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "EDIT",
