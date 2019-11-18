@@ -4905,7 +4905,7 @@ definitions:
         description: 'Whether prevent the vulnerable images from running. The valid values are "true", "false".'
       severity:
         type: string
-        description: 'If the vulnerability is high than severity defined here, the images can''t be pulled. The valid values are "negligible", "low", "medium", "high", "critical".'
+        description: 'If the vulnerability is high than severity defined here, the images can''t be pulled. The valid values are "none", "low", "medium", "high", "critical".'
       auto_scan:
         type: string
         description: 'Whether scan images automatically when pushing. The valid values are "true", "false".'

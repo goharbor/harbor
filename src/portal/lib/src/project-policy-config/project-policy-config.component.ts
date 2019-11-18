@@ -74,7 +74,7 @@ export class ProjectPolicyConfigComponent implements OnInit {
         {severity: 'high', severityLevel: 'VULNERABILITY.SEVERITY.HIGH'},
         {severity: 'medium', severityLevel: 'VULNERABILITY.SEVERITY.MEDIUM'},
         {severity: 'low', severityLevel: 'VULNERABILITY.SEVERITY.LOW'},
-        {severity: 'negligible', severityLevel: 'VULNERABILITY.SEVERITY.NEGLIGIBLE'},
+        {severity: 'none', severityLevel: 'VULNERABILITY.SEVERITY.NONE'},
     ];
     userSystemWhitelist: boolean = true;
     showAddModal: boolean = false;
