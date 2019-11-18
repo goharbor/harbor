@@ -152,7 +152,7 @@ func TestImmutableTagRuleAPI_Post(t *testing.T) {
 			},
 			code: http.StatusCreated,
 		},
-		// 201
+		// 409
 		{
 			request: &testingRequest{
 				method:     http.MethodPost,
@@ -160,7 +160,7 @@ func TestImmutableTagRuleAPI_Post(t *testing.T) {
 				credential: projAdmin,
 				bodyJSON:   metadata,
 			},
-			code: http.StatusCreated,
+			code: http.StatusConflict,
 		},
 		// 403
 		{
