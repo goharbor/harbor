@@ -352,11 +352,6 @@ const harborRoutes: Routes = [
         canActivate: [SystemAdminGuard]
       },
       {
-        path: 'vulnerability',
-        component: VulnerabilityPageComponent,
-        canActivate: [SystemAdminGuard]
-      },
-      {
         path: 'gc',
         component: GcPageComponent,
         canActivate: [SystemAdminGuard]
