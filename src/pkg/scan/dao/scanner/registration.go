@@ -21,6 +21,7 @@ import (
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/pkg/errors"
 )
 
@@ -31,7 +32,16 @@ func init() {
 // AddRegistration adds a new registration
 func AddRegistration(r *Registration) (int64, error) {
 	o := dao.GetOrmer()
-	return o.Insert(r)
+
+	id, err := o.Insert(r)
+	if err != nil {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
+			return 0, types.ErrDupRows
+		}
+		return 0, err
+	}
+
+	return id, nil
 }
 
 // GetRegistration gets the specified registration
