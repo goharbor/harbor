@@ -122,7 +122,7 @@ func (r *Repository) ListTag() ([]string, error) {
 			}
 		}
 	}
-	sort.Strings(tags)
+	tags = sort.Strings(tags)
 	return tags, nil
 }
 
