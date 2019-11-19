@@ -58,6 +58,17 @@
 .font-size-54 {
   font-size: .541667rem;
 }
+
 .padding-left-4 {
   padding-left: 4px;
+}
+
+::ng-deep {
+  .datagrid-row-flex {
+    .datagrid-row-detail {
+      .datagrid-cell {
+        padding: 11px 12px;
+      }
+    }
+  }
 }
