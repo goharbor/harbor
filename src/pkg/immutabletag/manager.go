@@ -79,7 +79,7 @@ func (drm *defaultRuleManager) QueryImmutableRuleByProjectID(projectID int64) ([
 	if err != nil {
 		return nil, err
 	}
-	var rules []model.Metadata
+	rules := make([]model.Metadata, 0)
 	for _, daoRule := range daoRules {
 		rule := model.Metadata{}
 		if err = json.Unmarshal([]byte(daoRule.TagFilter), &rule); err != nil {
