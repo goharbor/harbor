@@ -58,6 +58,39 @@
 .font-size-54 {
   font-size: .541667rem;
 }
+
 .padding-left-4 {
   padding-left: 4px;
+}
+::ng-deep {
+  .normal-wrapper-box {
+    .normal-wrapper {
+      .font-style {
+        width: 150px!important;
+      }
+    }
+    .btn {
+      margin-left: 150px!important;
+    }
+  }
+}
+.flex-150 {
+  flex: 0 0 150px;
+  max-width: 150px;
+}
+.padding-left-0 {
+  padding-left: 0;
+}
+.flex-8p {
+  flex: 0 0 8.3%;
+  padding-left: 0.5rem;
+}
+::ng-deep {
+  .datagrid-row-flex {
+    .datagrid-row-detail {
+      .datagrid-cell {
+        padding: 11px 12px;
+      }
+    }
+  }
 }
