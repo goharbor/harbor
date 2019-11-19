@@ -45,7 +45,8 @@ upload_bundle_success=false
 latest_build_file='latest.build'
 publish_npm=true
 
-harbor_build_bundle=""
+harbor_offline_build_bundle=""
+harbor_online_build_bundle=""
 harbor_logs_bucket="harbor-ci-logs"
 harbor_builds_bucket="harbor-builds"
 harbor_releases_bucket="harbor-releases"
@@ -103,13 +104,14 @@ function uploader {
     gsutil -D setacl public-read gs://$2/$1 &> /dev/null
 }
 
-function package_offline_installer {
+function package_installer {
     echo "Package Harbor offline installer."
     pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
-    harbor_build_bundle=$(basename harbor-offline-installer-*.tgz)
+    harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
+    harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
     upload_build=true
-    echo "Package name is: $harbor_build_bundle"
-    du -ks $harbor_build_bundle | awk '{print $1 / 1024}' | { read x; echo $x MB; }
+    echo "Package name is: $harbor_offline_build_bundle"
+    du -ks $harbor_offline_build_bundle | awk '{print $1 / 1024}' | { read x; echo $x MB; }
 }
 
 # publish images to Docker Hub
@@ -143,10 +145,11 @@ echo "--------------------------------------------------"
 ##
 if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]]; then
     if [[ $DRONE_BUILD_EVENT == "push" ]]; then
-        package_offline_installer
+        package_installer
         upload_latest_build=true
         echo -en "$HARBOR_SIGN_KEY" | gpg --import
-        gpg -v -ab -u $HARBOR_SIGN_KEY_ID $harbor_build_bundle
+        gpg -v -ab -u $HARBOR_SIGN_KEY_ID $harbor_offline_build_bundle
+        gpg -v -ab -u $HARBOR_SIGN_KEY_ID $harbor_online_build_bundle
     fi
 fi
 
@@ -164,10 +167,12 @@ fi
 #
 set -e
 if [ $upload_build == true ]; then
-    cp ${harbor_build_bundle}     harbor-offline-installer-latest.tgz
-    cp ${harbor_build_bundle}.asc harbor-offline-installer-latest.tgz.asc
-    uploader ${harbor_build_bundle}     $harbor_target_bucket
-    uploader ${harbor_build_bundle}.asc $harbor_target_bucket
+    cp ${harbor_offline_build_bundle}     harbor-offline-installer-latest.tgz
+    cp ${harbor_offline_build_bundle}.asc harbor-offline-installer-latest.tgz.asc
+    uploader ${harbor_offline_build_bundle}     $harbor_target_bucket
+    uploader ${harbor_offline_build_bundle}.asc $harbor_target_bucket
+    uploader ${harbor_online_build_bundle}     $harbor_target_bucket
+    uploader ${harbor_online_build_bundle}.asc $harbor_target_bucket
     uploader harbor-offline-installer-latest.tgz     $harbor_target_bucket
     uploader harbor-offline-installer-latest.tgz.asc $harbor_target_bucket
     upload_bundle_success=true
@@ -190,7 +195,7 @@ fi
 # latest.build file holds the latest offline installer url, it must be sure that the installer has been uploaded successfull.
 #
 if [ $upload_latest_build == true ] && [ $upload_bundle_success == true ]; then
-    echo 'https://storage.googleapis.com/'$harbor_target_bucket/$harbor_build_bundle > $latest_build_file
+    echo 'https://storage.googleapis.com/'$harbor_target_bucket/$harbor_offline_build_bundle > $latest_build_file
     uploader $latest_build_file $harbor_target_bucket
 fi
 
