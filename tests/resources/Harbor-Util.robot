@@ -56,7 +56,7 @@ Package Harbor Offline
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
     Log To Console  \n\nmake package_offline NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
-    ${rc}  ${output}=  Run And Return Rc And Output  make package_offline VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
+    ${rc}  ${output}=  Run And Return Rc And Output  make package_offline NPM_REGISTRY=%{NPM_REGISTRY} VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
     Log To Console  ${rc}
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
@@ -65,7 +65,7 @@ Package Harbor Online
     [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_migrator}=false  ${with_chartmuseum}=true
     Log To Console  \nStart Docker Daemon
     Start Docker Daemon Locally
-    Log To Console  \nmake package_online VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} UIVERSIONTAG=%{Harbor_UI_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
+    Log To Console  \nmake package_online VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
     ${rc}  ${output}=  Run And Return Rc And Output  make package_online VERSIONTAG=%{Harbor_Assets_Version} PKGVERSIONTAG=%{Harbor_Package_Version} NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} MIGRATORFLAG=${with_migrator} CHARTFLAG=${with_chartmuseum} HTTPPROXY=
     Log  ${rc}
     Log  ${output}
