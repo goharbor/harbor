@@ -314,7 +314,7 @@ func Test_native_FetchImages(t *testing.T) {
 				for i, resource := range resources {
 					require.NotNil(t, resource.Metadata)
 					assert.Equal(t, tt.want[i].Metadata.Repository, resource.Metadata.Repository)
-					assert.Equal(t, tt.want[i].Metadata.Vtags, resource.Metadata.Vtags)
+					assert.Contains(t, tt.want[i].Metadata.Vtags, resource.Metadata.Vtags)
 				}
 			}
 		})
