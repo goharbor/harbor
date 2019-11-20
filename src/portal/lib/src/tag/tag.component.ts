@@ -583,6 +583,9 @@ export class TagComponent implements OnInit, AfterViewInit {
       .subscribe(response => {
         this.translateService.get('RETAG.MSG_SUCCESS').subscribe((res: string) => {
           this.errorHandler.info(res);
+          if (`${this.imageNameInput.projectName.value}/${this.imageNameInput.repoName.value}` === this.repoName) {
+            this.retrieve();
+          }
         });
       }, error => {
         this.errorHandler.error(error);
