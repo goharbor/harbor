@@ -430,20 +430,20 @@ Test Case - Retag A Image Tag
 
     Sign In Harbor  ${HARBOR_URL}  user028  Test1@34
     Create An New Project  project${random_num1}
-    Create An New Project  project${random_num2}
+    Create An New Project  project${random_num1}${random_num2}
 
     Go Into Project  project${random_num1}  has_image=${false}
     Sleep  1
     Push Image With Tag  ${ip}  user028  Test1@34  project${random_num1}  redis  ${image_tag}
     Sleep  1
     Go Into Repo  project${random_num1}/redis
-    Retag Image  ${image_tag}  project${random_num2}  ${target_image_name}  ${target_tag_value}
+    Retag Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}  ${target_tag_value}
     Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Navigate To Projects
-    Go Into Project  project${random_num2}
+    Go Into Project  project${random_num1}${random_num2}
     Sleep  1
     Page Should Contain  ${target_image_name}
-    Go Into Repo  project${random_num2}/${target_image_name}
+    Go Into Repo  project${random_num1}${random_num2}/${target_image_name}
     Sleep  1
     Page Should Contain Element  xpath=${tag_value_xpath}
     Close Browser
@@ -569,7 +569,7 @@ Test Case - Can Not Retag Image In ReadOnly Mode
 
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${random_num1}
-    Create An New Project  project${random_num2}
+    Create An New Project  project${random_num1}${random_num2}
 
     Go Into Project  project${random_num1}  has_image=${false}
     Sleep  1
@@ -577,12 +577,12 @@ Test Case - Can Not Retag Image In ReadOnly Mode
     Sleep  1
     Enable Read Only
     Go Into Repo  project${random_num1}/redis
-    Retag Image  ${image_tag}  project${random_num2}  ${target_image_name}  ${target_tag_value}
+    Retag Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}  ${target_tag_value}
     Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
     Navigate To Projects
-    Go Into Project  project${random_num2}  has_image=${false}
+    Go Into Project  project${random_num1}${random_num2}  has_image=${false}
     Sleep  10
-    Go Into Project  project${random_num2}  has_image=${false}
+    Go Into Project  project${random_num1}${random_num2}  has_image=${false}
     Disable Read Only
     Close Browser
 
