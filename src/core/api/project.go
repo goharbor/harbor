@@ -696,6 +696,7 @@ func getProjectMemberSummary(projectID int64, summary *models.ProjectSummary) {
 		{common.RoleMaster, &summary.MasterCount},
 		{common.RoleDeveloper, &summary.DeveloperCount},
 		{common.RoleGuest, &summary.GuestCount},
+		{common.RoleLimitedGuest, &summary.LimitedGuestCount},
 	} {
 		wg.Add(1)
 		go func(role int, count *int64) {
