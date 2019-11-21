@@ -16,6 +16,7 @@ import { WebhookService } from "../webhook.service";
 import { WebhookEventTypes } from '../../../shared/shared.const';
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
   selector: 'add-webhook-form',
@@ -42,7 +43,8 @@ export class AddWebhookFormComponent implements OnInit, OnChanges {
 
   constructor(
     private webhookService: WebhookService,
-    private messageHandlerService: MessageHandlerService
+    private messageHandlerService: MessageHandlerService,
+    private translate: TranslateService
   ) { }
 
   ngOnInit() {
@@ -70,8 +72,11 @@ export class AddWebhookFormComponent implements OnInit, OnChanges {
               message: "WEBHOOK.TEST_ENDPOINT_SUCCESS"
             });
           } else {
-            this.checkBtnState = ClrLoadingState.SUCCESS;
+            this.translate.get("WEBHOOK.TEST_ENDPOINT_SUCCESS").subscribe((res: string) => {
+              this.messageHandlerService.info(res);
+            });
           }
+          this.checkBtnState = ClrLoadingState.SUCCESS;
         },
         error => {
           if (this.isModify) {

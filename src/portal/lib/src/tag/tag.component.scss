@@ -254,11 +254,17 @@ clr-datagrid {
   height: 100%;
 }
 
-.ml-5 {
-  margin-left: 8px !important;
+.ml-8 {
+  margin-left: 8px;
 }
 .immutable {
-  padding-right: 80px;
+  padding-right: 94px;
+  position: relative;
+  span {
+    position: absolute;
+    right: 0;
+    margin-right: 0;
+  }
 }
 .white-normal {
   white-space: normal;
