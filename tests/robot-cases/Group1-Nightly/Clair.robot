@@ -145,8 +145,8 @@ Test Case - Verfiy System Level CVE Whitelist
     [Tags]  run-once
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    ${image}=    Set Variable    redis
-    ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
+    ${image}=    Set Variable    mariadb
+    ${sha256}=  Set Variable  c396eb803be99041e69eed84b0eb880d5474a6b2c1fd5a84268ce0420088d20d
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
@@ -162,9 +162,9 @@ Test Case - Verfiy System Level CVE Whitelist
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Switch To Configuration System Setting
-    Add Items To System CVE Whitelist    CVE-2019-18224\nCVE-2018-12886\nCVE-2019-12290\nCVE-2019-5094\nCVE-2019-13627
+    Add Items To System CVE Whitelist    CVE-2019-13050\nCVE-2018-19591\nCVE-2018-11236\nCVE-2018-11237\nCVE-2019-13627\nCVE-2018-20839\nCVE-2019-2923\nCVE-2019-2922\nCVE-2019-2911\nCVE-2019-2914\nCVE-2019-2924\nCVE-2019-2910\nCVE-2019-2938\nCVE-2019-2993\nCVE-2019-2974\nCVE-2019-2960\nCVE-2019-2948\nCVE-2019-2946
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Add Items To System CVE Whitelist    CVE-2019-17543
+    Add Items To System CVE Whitelist    CVE-2019-2969
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Delete Top Item In System CVE Whitelist  count=6
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
@@ -174,8 +174,8 @@ Test Case - Verfiy Project Level CVE Whitelist
     [Tags]  run-once
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    ${image}=    Set Variable    redis
-    ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
+    ${image}=    Set Variable    mariadb
+    ${sha256}=  Set Variable  c396eb803be99041e69eed84b0eb880d5474a6b2c1fd5a84268ce0420088d20d
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
@@ -189,9 +189,9 @@ Test Case - Verfiy Project Level CVE Whitelist
     Go Into Repo  project${d}/${image}
     Scan Repo  ${sha256}  Succeed
     Go Into Project  project${d}
-    Add Items to Project CVE Whitelist    CVE-2019-18224\nCVE-2018-12886\nCVE-2019-12290\nCVE-2019-5094\nCVE-2019-13627
+    Add Items to Project CVE Whitelist    CVE-2019-13050\nCVE-2018-19591\nCVE-2018-11236\nCVE-2018-11237\nCVE-2019-13627\nCVE-2018-20839\nCVE-2019-2923\nCVE-2019-2922\nCVE-2019-2911\nCVE-2019-2914\nCVE-2019-2924\nCVE-2019-2910\nCVE-2019-2938\nCVE-2019-2993\nCVE-2019-2974\nCVE-2019-2960\nCVE-2019-2948\nCVE-2019-2946
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
-    Add Items to Project CVE Whitelist    CVE-2019-17543
+    Add Items to Project CVE Whitelist    CVE-2019-2969
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Delete Top Item In Project CVE Whitelist
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
@@ -201,14 +201,14 @@ Test Case - Verfiy Project Level CVE Whitelist By Quick Way of Add System
     [Tags]  run-once
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
-    ${image}=    Set Variable    redis
-    ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
+    ${image}=    Set Variable    mariadb
+    ${sha256}=  Set Variable  c396eb803be99041e69eed84b0eb880d5474a6b2c1fd5a84268ce0420088d20d
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
     Switch To Configuration System Setting
-    Add Items To System CVE Whitelist    CVE-2019-18224\nCVE-2018-12886\nCVE-2019-12290\nCVE-2019-5094\nCVE-2019-13627\nCVE-2019-17543
+    Add Items To System CVE Whitelist    CVE-2019-13050\nCVE-2018-19591\nCVE-2018-11236\nCVE-2018-11237\nCVE-2019-13627\nCVE-2018-20839\nCVE-2019-2923\nCVE-2019-2922\nCVE-2019-2911\nCVE-2019-2914\nCVE-2019-2924\nCVE-2019-2910\nCVE-2019-2938\nCVE-2019-2993\nCVE-2019-2974\nCVE-2019-2960\nCVE-2019-2948\nCVE-2019-2946\nCVE-2019-2969
     Logout Harbor
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
     Create An New Project    project${d}
