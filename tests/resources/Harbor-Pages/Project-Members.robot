@@ -25,17 +25,13 @@ Go Into Project
     Retry Wait Element  ${search_input}
     Input Text  ${search_input}  ${project}
     Retry Wait Until Page Contains  ${project}
-    Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a
+
     #To prevent waiting for a fixed-period of time for page loading and failure caused by exception, we add loop to re-run <Wait Until Element Is Visible And Enabled> when
     #    exception was caught.
-    :For  ${n}  IN RANGE  1  5
-    \    ${out}  Run Keyword If  ${has_image}==${false}  Run Keyword And Ignore Error  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]
-    \    ...  ELSE  Run Keyword And Ignore Error  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-cell[contains(.,'${project}/')]
-    \    Log To Console  ${out[0]}
-    \    ${result}  Set Variable If  '${out[0]}'=='PASS'  ${true}  ${false}
-    \    Run Keyword If  ${result} == ${true}  Exit For Loop
-    \    Sleep  1
-    Should Be Equal  ${result}  ${true}
+    ${out}  Run Keyword If  ${has_image}==${false}  Retry Double Keywords When Error  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]
+    ...  ELSE  Retry Double Keywords When Error  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  Wait Until Element Is Visible And Enabled  xpath=//project-detail//hbr-repository-gridview//clr-dg-cell[contains(.,'${project}/')]
+    Log To Console  ${out}
+    Should Be Equal  ${out}  'PASS'
     Sleep  1
 
 Add User To Project Admin
