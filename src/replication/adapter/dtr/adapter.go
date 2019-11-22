@@ -16,13 +16,25 @@ import (
 )
 
 func init() {
-	if err := adp.RegisterFactory(model.RegistryTypeDTR, func(registry *model.Registry) (adp.Adapter, error) {
-		return newAdapter(registry)
-	}); err != nil {
-		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeDTR, err)
+	err := adp.RegisterFactory(model.RegistryTypeDTR, new(factory))
+	if err != nil {
+		log.Errorf("failed to register factory for dtr: %v", err)
 		return
 	}
-	log.Infof("the factory for adapter %s registered", model.RegistryTypeDTR)
+	log.Infof("the factory of dtr adapter was registered")
+}
+
+type factory struct {
+}
+
+// Create ...
+func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	return newAdapter(r)
+}
+
+// AdapterPattern ...
+func (f *factory) AdapterPattern() *model.AdapterPattern {
+	return nil
 }
 
 type adapter struct {
