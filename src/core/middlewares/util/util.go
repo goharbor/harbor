@@ -37,6 +37,8 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/filter"
+	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
@@ -49,6 +51,8 @@ type contextKey string
 const (
 	// ImageInfoCtxKey the context key for image information
 	ImageInfoCtxKey = contextKey("ImageInfo")
+	// ScannerPullCtxKey the context key for robot account to bypass the pull policy check.
+	ScannerPullCtxKey = contextKey("ScannerPullCheck")
 	// TokenUsername ...
 	// TODO: temp solution, remove after vmware/harbor#2242 is resolved.
 	TokenUsername = "harbor-core"
@@ -364,27 +368,28 @@ func (pc PmsPolicyChecker) VulnerablePolicy(name string) (bool, vuln.Severity, m
 		log.Errorf("Unexpected error when getting the project, error: %v", err)
 		return true, vuln.Unknown, wl
 	}
+
 	mgr := whitelist.NewDefaultManager()
 	if project.ReuseSysCVEWhitelist() {
 		w, err := mgr.GetSys()
 		if err != nil {
 			log.Error(errors.Wrap(err, "policy checker: vulnerable policy"))
-			return project.VulPrevented(), vuln.Severity(project.Severity()), wl
-		}
-		wl = *w
+		} else {
+			wl = *w
 
-		// Use the real project ID
-		wl.ProjectID = project.ProjectID
+			// Use the real project ID
+			wl.ProjectID = project.ProjectID
+		}
 	} else {
 		w, err := mgr.Get(project.ProjectID)
 		if err != nil {
 			log.Error(errors.Wrap(err, "policy checker: vulnerable policy"))
-			return project.VulPrevented(), vuln.Severity(project.Severity()), wl
+		} else {
+			wl = *w
 		}
-		wl = *w
 	}
-	return project.VulPrevented(), vuln.Severity(project.Severity()), wl
 
+	return project.VulPrevented(), vuln.ParseSeverityVersion3(project.Severity()), wl
 }
 
 // NewPMSPolicyChecker returns an instance of an pmsPolicyChecker
@@ -440,6 +445,17 @@ func ImageInfoFromContext(ctx context.Context) (*ImageInfo, bool) {
 // ManifestInfoFromContext returns manifest info from context
 func ManifestInfoFromContext(ctx context.Context) (*ManifestInfo, bool) {
 	info, ok := ctx.Value(manifestInfoKey).(*ManifestInfo)
+	return info, ok
+}
+
+// NewScannerPullContext returns context with policy check info
+func NewScannerPullContext(ctx context.Context, scannerPull bool) context.Context {
+	return context.WithValue(ctx, ScannerPullCtxKey, scannerPull)
+}
+
+// ScannerPullFromContext returns whether to bypass policy check
+func ScannerPullFromContext(ctx context.Context) (bool, bool) {
+	info, ok := ctx.Value(ScannerPullCtxKey).(bool)
 	return info, ok
 }
 
@@ -547,4 +563,47 @@ func ParseManifestInfoFromPath(req *http.Request) (*ManifestInfo, error) {
 	}
 
 	return info, nil
+}
+
+// FireQuotaEvent ...
+func FireQuotaEvent(req *http.Request, level int, msg string) {
+	go func() {
+		info, err := ParseManifestInfoFromReq(req)
+		if err != nil {
+			log.Errorf("Quota exceed event: failed to get manifest from request: %v", err)
+			return
+		}
+		pm, err := filter.GetProjectManager(req)
+		if err != nil {
+			log.Errorf("Quota exceed event: failed to get project manager: %v", err)
+			return
+		}
+		project, err := pm.Get(info.ProjectID)
+		if err != nil {
+			log.Errorf(fmt.Sprintf("Quota exceed event: failed to get the project %d", info.ProjectID), err)
+			return
+		}
+		if project == nil {
+			log.Errorf(fmt.Sprintf("Quota exceed event: no project found %d", info.ProjectID), err)
+			return
+		}
+
+		evt := &notifierEvt.Event{}
+		quotaMetadata := &notifierEvt.QuotaMetaData{
+			Project:  project,
+			Tag:      info.Tag,
+			Digest:   info.Digest,
+			RepoName: info.Repository,
+			Level:    level,
+			Msg:      msg,
+			OccurAt:  time.Now(),
+		}
+		if err := evt.Build(quotaMetadata); err == nil {
+			if err := evt.Publish(); err != nil {
+				log.Errorf("failed to publish quota event: %v", err)
+			}
+		} else {
+			log.Errorf("failed to build quota event metadata: %v", err)
+		}
+	}()
 }

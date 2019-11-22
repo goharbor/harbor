@@ -16,78 +16,74 @@ package immutable
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/models"
-	common_util "github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
-	"github.com/goharbor/harbor/src/pkg/art"
-	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
+	middlerware_err "github.com/goharbor/harbor/src/core/middlewares/util/error"
 	"net/http"
 )
 
 type immutableHandler struct {
-	next http.Handler
+	builders []interceptor.Builder
+	next     http.Handler
 }
 
 // New ...
-func New(next http.Handler) http.Handler {
+func New(next http.Handler, builders ...interceptor.Builder) http.Handler {
+	if len(builders) == 0 {
+		builders = defaultBuilders
+	}
+
 	return &immutableHandler{
-		next: next,
+		builders: builders,
+		next:     next,
 	}
 }
 
 // ServeHTTP ...
-func (rh immutableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	if match, _, _ := util.MatchPushManifest(req); !match {
+func (rh *immutableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
+
+	interceptor, err := rh.getInterceptor(req)
+	if err != nil {
+		log.Warningf("Error occurred when to handle request in immutable handler: %v", err)
+		http.Error(rw, util.MarshalError("InternalError", fmt.Sprintf("Error occurred when to handle request in immutable handler: %v", err)),
+			http.StatusInternalServerError)
+		return
+	}
+
+	if interceptor == nil {
 		rh.next.ServeHTTP(rw, req)
 		return
 	}
-	info, ok := util.ManifestInfoFromContext(req.Context())
-	if !ok {
-		var err error
-		info, err = util.ParseManifestInfoFromPath(req)
-		if err != nil {
-			log.Error(err)
-			rh.next.ServeHTTP(rw, req)
+
+	if err := interceptor.HandleRequest(req); err != nil {
+		log.Warningf("Error occurred when to handle request in immutable handler: %v", err)
+		if _, ok := err.(middlerware_err.ErrImmutable); ok {
+			http.Error(rw, util.MarshalError("DENIED",
+				fmt.Sprintf("%v", err)), http.StatusPreconditionFailed)
 			return
+		}
+		http.Error(rw, util.MarshalError("InternalError", fmt.Sprintf("Error occurred when to handle request in immutable handler: %v", err)),
+			http.StatusInternalServerError)
+		return
+	}
+
+	rh.next.ServeHTTP(rw, req)
+
+	interceptor.HandleResponse(rw, req)
+}
+
+func (rh *immutableHandler) getInterceptor(req *http.Request) (interceptor.Interceptor, error) {
+	for _, builder := range rh.builders {
+		interceptor, err := builder.Build(req)
+		if err != nil {
+			return nil, err
+		}
+
+		if interceptor != nil {
+			return interceptor, nil
 		}
 	}
 
-	_, repoName := common_util.ParseRepository(info.Repository)
-	matched, err := rule.NewRuleMatcher(info.ProjectID).Match(art.Candidate{
-		Repository:  repoName,
-		Tag:         info.Tag,
-		NamespaceID: info.ProjectID,
-	})
-	if err != nil {
-		log.Error(err)
-		rh.next.ServeHTTP(rw, req)
-		return
-	}
-	if !matched {
-		rh.next.ServeHTTP(rw, req)
-		return
-	}
-
-	artifactQuery := &models.ArtifactQuery{
-		PID:  info.ProjectID,
-		Repo: info.Repository,
-		Tag:  info.Tag,
-	}
-	afs, err := dao.ListArtifacts(artifactQuery)
-	if err != nil {
-		log.Error(err)
-		rh.next.ServeHTTP(rw, req)
-		return
-	}
-	if len(afs) == 0 {
-		rh.next.ServeHTTP(rw, req)
-		return
-	}
-
-	// rule matched and non-existent is a immutable tag
-	http.Error(rw, util.MarshalError("DENIED",
-		fmt.Sprintf("The tag:%s:%s is immutable, cannot be overwrite.", info.Repository, info.Tag)), http.StatusPreconditionFailed)
-	return
+	return nil, nil
 }

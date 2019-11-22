@@ -100,6 +100,10 @@ func (suite *SummaryTestSuite) TestSummaryGenerateSummaryNoOptions() {
 	suite.Equal(vuln.High, nativeSummary.Severity)
 	suite.Nil(nativeSummary.CVEBypassed)
 	suite.Equal(2, nativeSummary.Summary.Total)
+
+	suite.Equal("Clair", nativeSummary.Scanner.Name)
+	suite.Equal("Harbor", nativeSummary.Scanner.Vendor)
+	suite.Equal("0.1.0", nativeSummary.Scanner.Version)
 }
 
 // TestSummaryGenerateSummaryWithOptions ...

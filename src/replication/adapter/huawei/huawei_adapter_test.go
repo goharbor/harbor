@@ -24,7 +24,7 @@ func init() {
 		Status:      "",
 	}
 
-	hwAdapter, err = AdapterFactory(hwRegistry)
+	hwAdapter, err = newAdapter(hwRegistry)
 	if err != nil {
 		os.Exit(1)
 	}

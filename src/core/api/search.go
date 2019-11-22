@@ -18,7 +18,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -96,13 +95,7 @@ func (s *SearchAPI) Get() {
 
 		if isAuthenticated {
 			roles := s.SecurityCtx.GetProjectRoles(p.ProjectID)
-			if len(roles) != 0 {
-				p.Role = roles[0]
-			}
-
-			if p.Role == common.RoleProjectAdmin || isSysAdmin {
-				p.Togglable = true
-			}
+			p.Role = highestRole(roles)
 		}
 
 		total, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{

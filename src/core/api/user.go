@@ -17,6 +17,7 @@ package api
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/core/filter"
 	"net/http"
 	"regexp"
 	"strconv"
@@ -260,11 +261,12 @@ func (ua *UserAPI) Put() {
 		ua.SendForbiddenError(fmt.Errorf("User with ID %d cannot be modified", ua.userID))
 		return
 	}
-	user := models.User{UserID: ua.userID}
+	user := models.User{}
 	if err := ua.DecodeJSONReq(&user); err != nil {
 		ua.SendBadRequestError(err)
 		return
 	}
+	user.UserID = ua.userID
 	err := commonValidate(user)
 	if err != nil {
 		log.Warningf("Bad request in change user profile: %v", err)
@@ -314,6 +316,11 @@ func (ua *UserAPI) Post() {
 	if !(ua.SelfRegistration || ua.IsAdmin) {
 		log.Warning("Registration can only be used by admin role user when self-registration is off.")
 		ua.SendForbiddenError(errors.New(""))
+		return
+	}
+
+	if !ua.IsAdmin && !filter.ReqCarriesSession(ua.Ctx.Request) {
+		ua.SendForbiddenError(errors.New("self-registration cannot be triggered via API"))
 		return
 	}
 

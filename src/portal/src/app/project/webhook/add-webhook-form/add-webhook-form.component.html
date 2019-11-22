@@ -8,7 +8,7 @@
         <div class="clr-control-container" [class.clr-error]="enpointURL.errors && enpointURL.errors.required && (enpointURL.dirty || enpointURL.touched)">
           <div class="clr-input-wrapper">
             <input class="clr-input" type="text" id="edit_endpoint_url" [disabled]="checking" [(ngModel)]="webhookTarget.address"
-                   size="25" name="edit_endpoint_url" #enpointURL="ngModel" required placeholder="http(s)://192.168.1.1">
+                   size="30" name="edit_endpoint_url" #enpointURL="ngModel" required placeholder="http(s)://192.168.1.1">
             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
           </div>
           <clr-control-error *ngIf="enpointURL.errors && enpointURL.errors.required && (enpointURL.dirty || enpointURL.touched)" class="tooltip-content">
@@ -23,7 +23,7 @@
         <div class="clr-control-container">
           <div class="clr-input-wrapper">
             <input class="clr-input" type="text" id="auth_header" [disabled]="checking"
-                   [(ngModel)]="webhookTarget.auth_header" size="28" name="auth_header">
+                   [(ngModel)]="webhookTarget.auth_header" size="30" name="auth_header">
           </div>
         </div>
       </div>
@@ -34,7 +34,7 @@
           <clr-tooltip>
             <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
             <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-              {{'CONFIG.TOOLTIP.VERIFY_REMOTE_CERT' | translate}}
+              {{'WEBHOOK.VERIFY_REMOTE_CERT_TOOLTIP' | translate}}
             </clr-tooltip-content>
           </clr-tooltip>
         </label>
@@ -45,12 +45,12 @@
     </section>
   </form>
   <div class="mt-1" *ngIf="!isModify">
-      <button type="button" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.CONTINUE' | translate}}</button>
+      <button type="button" id="new-webhook-continue" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.CONTINUE' | translate}}</button>
       <button type="button" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
   </div>
   <div class="mt-1" *ngIf="isModify">
-      <button type="button" [clrLoading]="checkBtnState" class="btn btn-outline" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
-      <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
-      <button type="button" class="btn btn-primary" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.SAVE' | translate}}</button>
+      <button type="button" [clrLoading]="checkBtnState" class="btn btn-outline" id="webhook-test" (click)="onTestEndpoint()" [disabled]="checking || enpointURL.errors">{{'WEBHOOK.TEST_ENDPOINT_BUTTON' | translate}}</button>
+      <button type="button" class="btn btn-outline" id="edit-webhook-cancel" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+      <button type="button" class="btn btn-primary" id="edit-webhook-save" [disabled]="!isValid" (click)="onSubmit()">{{'BUTTON.SAVE' | translate}}</button>
   </div>
 </div>

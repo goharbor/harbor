@@ -164,6 +164,12 @@ func (sa *ScannerAPI) Update() {
 		return
 	}
 
+	// Immutable registration is not allowed
+	if r.Immutable {
+		sa.SendForbiddenError(errors.Errorf("registration %s is not allowed to update as it is immutable: scanner API: update", r.Name))
+		return
+	}
+
 	// full dose updated
 	rr := &scanner.Registration{}
 	if err := sa.DecodeJSONReq(rr); err != nil {
@@ -207,17 +213,21 @@ func (sa *ScannerAPI) Update() {
 
 // Delete the scanner
 func (sa *ScannerAPI) Delete() {
-	uid := sa.GetStringFromPath(":uuid")
-
-	deleted, err := sa.c.DeleteRegistration(uid)
-	if err != nil {
-		sa.SendInternalServerError(errors.Wrap(err, "scanner API: delete"))
+	r := sa.get()
+	if r == nil {
+		// meet error
 		return
 	}
 
-	if deleted == nil {
-		// Not found
-		sa.SendNotFoundError(errors.Errorf("scanner registration: %s", uid))
+	// Immutable registration is not allowed
+	if r.Immutable {
+		sa.SendForbiddenError(errors.Errorf("registration %s is not allowed to delete as it is immutable: scanner API: delete", r.Name))
+		return
+	}
+
+	deleted, err := sa.c.DeleteRegistration(r.UUID)
+	if err != nil {
+		sa.SendInternalServerError(errors.Wrap(err, "scanner API: delete"))
 		return
 	}
 
@@ -319,4 +329,5 @@ func getChanges(e *scanner.Registration, eChange *scanner.Registration) {
 	e.AccessCredential = eChange.AccessCredential
 	e.Disabled = eChange.Disabled
 	e.SkipCertVerify = eChange.SkipCertVerify
+	e.UseInternalAddr = eChange.UseInternalAddr
 }

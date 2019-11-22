@@ -41,6 +41,16 @@ type ScanImageEvent struct {
 	Operator  string
 }
 
+// QuotaEvent is project quota related event data to publish
+type QuotaEvent struct {
+	EventType string
+	Project   *models.Project
+	Resource  *ImgResource
+	OccurAt   time.Time
+	RepoName  string
+	Msg       string
+}
+
 // HookEvent is hook related event data to publish
 type HookEvent struct {
 	PolicyID  int64
@@ -53,14 +63,15 @@ type HookEvent struct {
 type Payload struct {
 	Type      string     `json:"type"`
 	OccurAt   int64      `json:"occur_at"`
-	EventData *EventData `json:"event_data,omitempty"`
 	Operator  string     `json:"operator"`
+	EventData *EventData `json:"event_data,omitempty"`
 }
 
 // EventData of notification event payload
 type EventData struct {
-	Resources  []*Resource `json:"resources"`
-	Repository *Repository `json:"repository"`
+	Resources  []*Resource       `json:"resources"`
+	Repository *Repository       `json:"repository"`
+	Custom     map[string]string `json:"custom_attributes,omitempty"`
 }
 
 // Resource describe infos of resource triggered notification

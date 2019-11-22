@@ -79,8 +79,6 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	u.Username = ldapUsers[0].Username
 	u.Email = strings.TrimSpace(ldapUsers[0].Email)
 	u.Realname = ldapUsers[0].Realname
-	ugIDs := []int{}
-
 	dn := ldapUsers[0].DN
 	if err = ldapSession.Bind(dn, m.Password); err != nil {
 		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
@@ -90,6 +88,10 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	// Retrieve ldap related info in login to avoid too many traffic with LDAP server.
 	// Get group admin dn
 	groupCfg, err := config.LDAPGroupConf()
+	if err != nil {
+		log.Warningf("Failed to fetch ldap group configuration:%v", err)
+		// most likely user doesn't configure user group info, it should not block user login
+	}
 	groupAdminDN := utils.TrimLower(groupCfg.LdapGroupAdminDN)
 	// Attach user group
 	for _, groupDN := range ldapUsers[0].GroupDNList {
@@ -100,20 +102,15 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 			u.HasAdminRole = true
 		}
 
-		userGroupQuery := models.UserGroup{
-			GroupType:   1,
-			LdapGroupDN: groupDN,
-		}
-		userGroups, err := group.QueryUserGroup(userGroupQuery)
-		if err != nil {
-			continue
-		}
-		if len(userGroups) == 0 {
-			continue
-		}
-		ugIDs = append(ugIDs, userGroups[0].ID)
 	}
-	u.GroupIDs = ugIDs
+	userGroups := make([]models.UserGroup, 0)
+	for _, dn := range ldapUsers[0].GroupDNList {
+		userGroups = append(userGroups, models.UserGroup{GroupName: dn, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
+	}
+	u.GroupIDs, err = group.PopulateGroup(userGroups)
+	if err != nil {
+		log.Warningf("Failed to fetch ldap group configuration:%v", err)
+	}
 
 	return &u, nil
 }

@@ -175,9 +175,10 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 
 		for _, repositoryCandidate := range repositoryCandidates {
 			reposit := art.Repository{
-				Namespace: repositoryCandidate.Namespace,
-				Name:      repositoryCandidate.Repository,
-				Kind:      repositoryCandidate.Kind,
+				NamespaceID: repositoryCandidate.NamespaceID,
+				Namespace:   repositoryCandidate.Namespace,
+				Name:        repositoryCandidate.Repository,
+				Kind:        repositoryCandidate.Kind,
 			}
 			if repositoryRules[reposit] == nil {
 				repositoryRules[reposit] = &lwp.Metadata{
@@ -352,9 +353,10 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 	for _, r := range imageRepositories {
 		namespace, repo := utils.ParseRepository(r.Name)
 		candidates = append(candidates, &art.Candidate{
-			Namespace:  namespace,
-			Repository: repo,
-			Kind:       "image",
+			NamespaceID: projectID,
+			Namespace:   namespace,
+			Repository:  repo,
+			Kind:        "image",
 		})
 	}
 	// currently, doesn't support retention for chart

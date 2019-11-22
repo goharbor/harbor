@@ -172,7 +172,8 @@ func (ia *InternalAPI) SyncQuota() {
 			cfgMgr.Save()
 		}()
 		log.Info("start to sync quota(API), the system will be set to ReadOnly and back it normal once it done.")
-		err := quota.Sync(ia.ProjectMgr, false)
+		// As the sync function ignores all of duplicate error, it's safe to enable persist DB.
+		err := quota.Sync(ia.ProjectMgr, true)
 		if err != nil {
 			log.Errorf("fail to sync quota(API), but with error: %v, please try to do it again.", err)
 			return

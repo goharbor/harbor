@@ -351,8 +351,5 @@ func UpdateTaskStatus(id int64, status string, statusRevision int64, statusCondi
 }
 
 func taskFinished(status string) bool {
-	if status == models.TaskStatusFailed || status == models.TaskStatusStopped || status == models.TaskStatusSucceed {
-		return true
-	}
-	return false
+	return status == models.TaskStatusFailed || status == models.TaskStatusStopped || status == models.TaskStatusSucceed
 }

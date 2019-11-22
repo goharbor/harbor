@@ -6,6 +6,7 @@ import { ClrLoadingState } from "@clr/angular";
 import { finalize } from "rxjs/operators";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: "new-scanner-modal",
@@ -29,7 +30,8 @@ export class NewScannerModalComponent {
     @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
     constructor(
         private configScannerService: ConfigScannerService,
-        private msgHandler: MessageHandlerService
+        private msgHandler: MessageHandlerService,
+        private translate: TranslateService,
     ) {}
     open(): void {
         // reset
@@ -63,11 +65,12 @@ export class NewScannerModalComponent {
             scanner.access_credential = value.accessCredential.token;
         }
         scanner.skip_certVerify = !!value.skipCertVerify;
+        scanner.use_internal_addr = !!value.useInner;
         this.configScannerService.addScanner(scanner)
             .pipe(finalize(() => this.onSaving = false))
             .subscribe(response => {
                 this.close();
-                this.msgHandler.showSuccess("ADD_SUCCESS");
+                this.msgHandler.showSuccess("SCANNER.ADD_SUCCESS");
                 this.notify.emit();
                 this.saveBtnState = ClrLoadingState.SUCCESS;
             }, error => {
@@ -133,6 +136,9 @@ export class NewScannerModalComponent {
         if (this.originValue.skipCertVerify !== this.newScannerFormComponent.newScannerForm.get('skipCertVerify').value) {
             return true;
         }
+        if (this.originValue.useInner !== this.newScannerFormComponent.newScannerForm.get('useInner').value) {
+            return true;
+        }
         if (this.originValue.auth === "Basic") {
             if (this.originValue.accessCredential.username !==
                 this.newScannerFormComponent.newScannerForm.get('accessCredential').get('username').value) {
@@ -178,17 +184,22 @@ export class NewScannerModalComponent {
             scanner.access_credential = value.accessCredential.token;
         }
         scanner.skip_certVerify = !!value.skipCertVerify;
+        scanner.use_internal_addr = !!value.useInner;
         this.configScannerService.testEndpointUrl(scanner)
             .pipe(finalize(() => this.onTesting = false))
             .subscribe(response => {
                 this.inlineAlert.showInlineSuccess({
-                    message: "TEST_PASS"
+                    message: "SCANNER.TEST_PASS"
                 });
                 this.checkBtnState = ClrLoadingState.SUCCESS;
                 this.testMap[this.newScannerFormComponent.newScannerForm.get('url').value] = true;
             }, error => {
-                this.inlineAlert.showInlineError({
-                    message: "TEST_FAILED"
+                this.translate.get("SCANNER.TEST_FAILED",
+               {
+                   name: this.newScannerFormComponent.newScannerForm.get('name').value,
+                   url: this.newScannerFormComponent.newScannerForm.get('url').value
+               }).subscribe((res: string) => {
+                    this.inlineAlert.showInlineError(res);
                 });
                 this.checkBtnState = ClrLoadingState.ERROR;
             });
@@ -213,12 +224,13 @@ export class NewScannerModalComponent {
             this.editScanner.access_credential = value.accessCredential.token;
         }
         this.editScanner.skip_certVerify = !!value.skipCertVerify;
+        this.editScanner.use_internal_addr = !!value.useInner;
         this.editScanner.uuid = this.uid;
         this.configScannerService.updateScanner(this.editScanner)
             .pipe(finalize(() => this.onSaving = false))
             .subscribe(response => {
                 this.close();
-                this.msgHandler.showSuccess("UPDATE_SUCCESS");
+                this.msgHandler.showSuccess("SCANNER.UPDATE_SUCCESS");
                 this.notify.emit();
                 this.saveBtnState = ClrLoadingState.SUCCESS;
             }, error => {

@@ -4,6 +4,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/scan/all"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier"
@@ -57,12 +59,19 @@ func (suite *ScanImagePreprocessHandlerSuite) SetupSuite() {
 		Artifact:  a,
 	}
 
+	reports := []*scan.Report{
+		{
+			Report: "{}",
+		},
+	}
+
 	suite.c = sc.DefaultController
 	mc := &MockScanAPIController{}
 
 	var options []report.Option
 	s := make(map[string]interface{})
 	mc.On("GetSummary", a, []string{v1.MimeTypeNativeReport}, options).Return(s, nil)
+	mc.On("GetReport", a, []string{v1.MimeTypeNativeReport}).Return(reports, nil)
 
 	sc.DefaultController = mc
 
@@ -98,7 +107,7 @@ type MockScanAPIController struct {
 }
 
 // Scan ...
-func (msc *MockScanAPIController) Scan(artifact *v1.Artifact) error {
+func (msc *MockScanAPIController) Scan(artifact *v1.Artifact, option ...sc.Option) error {
 	args := msc.Called(artifact)
 
 	return args.Error(0)
@@ -138,6 +147,25 @@ func (msc *MockScanAPIController) HandleJobHooks(trackID string, change *job.Sta
 	args := msc.Called(trackID, change)
 
 	return args.Error(0)
+}
+
+func (msc *MockScanAPIController) DeleteReports(digests ...string) error {
+	pl := make([]interface{}, 0)
+	for _, d := range digests {
+		pl = append(pl, d)
+	}
+	args := msc.Called(pl...)
+
+	return args.Error(0)
+}
+
+func (msc *MockScanAPIController) GetStats(requester string) (*all.Stats, error) {
+	args := msc.Called(requester)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(*all.Stats), args.Error(1)
 }
 
 // MockHTTPHandler ...

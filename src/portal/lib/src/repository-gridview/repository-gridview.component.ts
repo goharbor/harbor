@@ -104,11 +104,6 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     public get registryUrl(): string {
         return this.systemInfo ? this.systemInfo.registry_url : "";
     }
-
-    public get withClair(): boolean {
-        return this.systemInfo ? this.systemInfo.with_clair : false;
-    }
-
     public get isClairDBReady(): boolean {
         return (
             this.systemInfo &&
@@ -120,11 +115,6 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     public get withAdmiral(): boolean {
         return this.mode === "admiral";
     }
-
-    public get showDBStatusWarning(): boolean {
-        return this.withClair && !this.isClairDBReady;
-    }
-
     get canDownloadCert(): boolean {
         return this.systemInfo && this.systemInfo.has_ca_root;
     }
@@ -181,6 +171,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                     }, error => {
                         this.errorHandler.error(error);
                         this.loading = false;
+                        this.refresh();
                     });
                 }
             }

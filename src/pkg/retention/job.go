@@ -32,9 +32,10 @@ import (
 )
 
 const (
-	actionMarkRetain   = "RETAIN"
-	actionMarkDeletion = "DEL"
-	actionMarkError    = "ERR"
+	actionMarkRetain    = "RETAIN"
+	actionMarkDeletion  = "DEL"
+	actionMarkError     = "ERR"
+	actionMarkImmutable = "IMMUTABLE"
 )
 
 // Job of running retention process
@@ -116,9 +117,9 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	return saveRetainNum(ctx, results, allCandidates)
 }
 
-func saveRetainNum(ctx job.Context, retained []*art.Result, allCandidates []*art.Candidate) error {
+func saveRetainNum(ctx job.Context, results []*art.Result, allCandidates []*art.Candidate) error {
 	var delNum int
-	for _, r := range retained {
+	for _, r := range results {
 		if r.Error == nil {
 			delNum++
 		}
@@ -146,9 +147,12 @@ func logResults(logger logger.Interface, all []*art.Candidate, results []*art.Re
 		}
 	}
 
-	op := func(art *art.Candidate) string {
-		if e, exists := hash[art.Hash()]; exists {
+	op := func(c *art.Candidate) string {
+		if e, exists := hash[c.Hash()]; exists {
 			if e != nil {
+				if _, ok := e.(*art.ImmutableError); ok {
+					return actionMarkImmutable
+				}
 				return actionMarkError
 			}
 

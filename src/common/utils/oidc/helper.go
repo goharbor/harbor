@@ -31,7 +31,13 @@ import (
 	"time"
 )
 
-const googleEndpoint = "https://accounts.google.com"
+const (
+	googleEndpoint = "https://accounts.google.com"
+)
+
+type claimsProvider interface {
+	Claims(v interface{}) error
+}
 
 type providerHelper struct {
 	sync.Mutex
@@ -106,7 +112,18 @@ var insecureTransport = &http.Transport{
 // Token wraps the attributes of a oauth2 token plus the attribute of ID token
 type Token struct {
 	oauth2.Token
-	IDToken string `json:"id_token,omitempty"`
+	RawIDToken string `json:"id_token,omitempty"`
+}
+
+// UserInfo wraps the information that is extracted via token.  It will be transformed to data object that is persisted
+// in the DB
+type UserInfo struct {
+	Issuer        string   `json:"iss"`
+	Subject       string   `json:"sub"`
+	Username      string   `json:"name"`
+	Email         string   `json:"email"`
+	Groups        []string `json:"groups"`
+	hasGroupClaim bool
 }
 
 func getOauthConf() (*oauth2.Config, error) {
@@ -115,7 +132,7 @@ func getOauthConf() (*oauth2.Config, error) {
 		return nil, err
 	}
 	setting := provider.setting.Load().(models.OIDCSetting)
-	scopes := []string{}
+	scopes := make([]string, 0)
 	for _, sc := range setting.Scope {
 		if strings.HasPrefix(p.Endpoint().AuthURL, googleEndpoint) && sc == gooidc.ScopeOfflineAccess {
 			log.Warningf("Dropped unsupported scope: %s ", sc)
@@ -159,18 +176,31 @@ func ExchangeToken(ctx context.Context, code string) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &Token{Token: *oauthToken, IDToken: oauthToken.Extra("id_token").(string)}, nil
+	return &Token{Token: *oauthToken, RawIDToken: oauthToken.Extra("id_token").(string)}, nil
+}
+
+func parseIDToken(ctx context.Context, rawIDToken string) (*gooidc.IDToken, error) {
+	conf := &gooidc.Config{SkipClientIDCheck: true, SkipExpiryCheck: true}
+	return verifyTokenWithConfig(ctx, rawIDToken, conf)
 }
 
 // VerifyToken verifies the ID token based on the OIDC settings
 func VerifyToken(ctx context.Context, rawIDToken string) (*gooidc.IDToken, error) {
+	return verifyTokenWithConfig(ctx, rawIDToken, nil)
+}
+
+func verifyTokenWithConfig(ctx context.Context, rawIDToken string, conf *gooidc.Config) (*gooidc.IDToken, error) {
+	log.Debugf("Raw ID token for verification: %s", rawIDToken)
 	p, err := provider.get()
 	if err != nil {
 		return nil, err
 	}
-	verifier := p.Verifier(&gooidc.Config{ClientID: provider.setting.Load().(models.OIDCSetting).ClientID})
-	setting := provider.setting.Load().(models.OIDCSetting)
-	ctx = clientCtx(ctx, setting.VerifyCert)
+	settings := provider.setting.Load().(models.OIDCSetting)
+	if conf == nil {
+		conf = &gooidc.Config{ClientID: settings.ClientID}
+	}
+	verifier := p.Verifier(conf)
+	ctx = clientCtx(ctx, settings.VerifyCert)
 	return verifier.Verify(ctx, rawIDToken)
 }
 
@@ -186,55 +216,120 @@ func clientCtx(ctx context.Context, verifyCert bool) context.Context {
 	return gooidc.ClientContext(ctx, client)
 }
 
-// RefreshToken refreshes the token passed in parameter, and return the new token.
-func RefreshToken(ctx context.Context, token *Token) (*Token, error) {
-	oauth, err := getOauthConf()
+// refreshToken tries to refresh the token if it's expired, if it doesn't the
+// original one will be returned.
+func refreshToken(ctx context.Context, token *Token) (*Token, error) {
+	oauthCfg, err := getOauthConf()
 	if err != nil {
-		log.Errorf("Failed to get OAuth configuration, error: %v", err)
 		return nil, err
 	}
 	setting := provider.setting.Load().(models.OIDCSetting)
-	ctx = clientCtx(ctx, setting.VerifyCert)
-	ts := oauth.TokenSource(ctx, &token.Token)
-	t, err := ts.Token()
+	cctx := clientCtx(ctx, setting.VerifyCert)
+	ts := oauthCfg.TokenSource(cctx, &token.Token)
+	nt, err := ts.Token()
 	if err != nil {
 		return nil, err
 	}
-
-	it, ok := t.Extra("id_token").(string)
+	it, ok := nt.Extra("id_token").(string)
 	if !ok {
-		log.Debugf("id_token not exist in refresh response")
+		log.Debug("id_token not exist in refresh response")
 	}
-	return &Token{Token: *t, IDToken: it}, nil
+	return &Token{Token: *nt, RawIDToken: it}, nil
 }
 
-// GroupsFromToken returns the list of group name in the token, the claim of the group list is set in OIDCSetting.
-// It's designed not to return errors, in case of unexpected situation it will log and return empty list.
-func GroupsFromToken(token *gooidc.IDToken) []string {
-	if token == nil {
-		log.Warning("Return empty list for nil token")
-		return []string{}
-	}
+// UserInfoFromToken tries to call the UserInfo endpoint of the OIDC provider, and consolidate with ID token
+// to generate a UserInfo object, if the ID token is not in the input token struct, some attributes will be empty
+func UserInfoFromToken(ctx context.Context, token *Token) (*UserInfo, error) {
 	setting := provider.setting.Load().(models.OIDCSetting)
-	if len(setting.GroupsClaim) == 0 {
-		log.Warning("Group claim is not set in OIDC setting returning empty group list.")
-		return []string{}
-	}
-	var c map[string]interface{}
-	err := token.Claims(&c)
+	local, err := userInfoFromIDToken(ctx, token, setting)
 	if err != nil {
-		log.Warningf("Failed to get claims map, error: %v", err)
-		return []string{}
+		return nil, err
 	}
-	return groupsFromClaim(c, setting.GroupsClaim)
+	remote, err := userInfoFromRemote(ctx, token, setting)
+	if err != nil {
+		log.Warningf("Failed to get userInfo by calling remote userinfo endpoint, error: %v ", err)
+	}
+	if remote != nil && local != nil {
+		if remote.Subject != local.Subject {
+			return nil, fmt.Errorf("the subject from userinfo: %s does not match the subject from ID token: %s, probably a security attack happened", remote.Subject, local.Subject)
+		}
+		return mergeUserInfo(remote, local), nil
+	} else if remote != nil && local == nil {
+		return remote, nil
+	} else if local != nil && remote == nil {
+		log.Debugf("Fall back to user data from ID token.")
+		return local, nil
+	}
+	return nil, fmt.Errorf("failed to get userinfo from both remote and ID token")
 }
 
-func groupsFromClaim(claimMap map[string]interface{}, k string) []string {
-	var res []string
+func mergeUserInfo(remote, local *UserInfo) *UserInfo {
+	res := &UserInfo{
+		// data only contained in ID token
+		Subject: local.Subject,
+		Issuer:  local.Issuer,
+		// Used data from userinfo
+		Username: remote.Username,
+		Email:    remote.Email,
+	}
+	if remote.hasGroupClaim {
+		res.Groups = remote.Groups
+		res.hasGroupClaim = true
+	} else if local.hasGroupClaim {
+		res.Groups = local.Groups
+		res.hasGroupClaim = true
+	} else {
+		res.Groups = []string{}
+	}
+	return res
+}
+
+func userInfoFromRemote(ctx context.Context, token *Token, setting models.OIDCSetting) (*UserInfo, error) {
+	p, err := provider.get()
+	if err != nil {
+		return nil, err
+	}
+	cctx := clientCtx(ctx, setting.VerifyCert)
+	u, err := p.UserInfo(cctx, oauth2.StaticTokenSource(&token.Token))
+	if err != nil {
+		return nil, err
+	}
+	return userInfoFromClaims(u, setting.GroupsClaim)
+}
+
+func userInfoFromIDToken(ctx context.Context, token *Token, setting models.OIDCSetting) (*UserInfo, error) {
+	if token.RawIDToken == "" {
+		return nil, nil
+	}
+	idt, err := parseIDToken(ctx, token.RawIDToken)
+	if err != nil {
+		return nil, err
+	}
+	return userInfoFromClaims(idt, setting.GroupsClaim)
+}
+
+func userInfoFromClaims(c claimsProvider, g string) (*UserInfo, error) {
+	res := &UserInfo{}
+	if err := c.Claims(res); err != nil {
+		return nil, err
+	}
+	res.Groups, res.hasGroupClaim = GroupsFromClaims(c, g)
+	return res, nil
+}
+
+// GroupsFromClaims fetches the group name list from claimprovider, such as decoded ID token.
+// If the claims does not have the claim defined as k, the second return value will be false, otherwise true
+func GroupsFromClaims(gp claimsProvider, k string) ([]string, bool) {
+	res := make([]string, 0)
+	claimMap := make(map[string]interface{})
+	if err := gp.Claims(&claimMap); err != nil {
+		log.Errorf("failed to fetch claims, error: %v", err)
+		return res, false
+	}
 	g, ok := claimMap[k].([]interface{})
 	if !ok {
-		log.Warningf("Unable to get groups from claims, claims: %+v, groups claim key: %s", claimMap, k)
-		return res
+		log.Warningf("Unable to get groups from claims, claims: %+v, groups claims key: %s", claimMap, k)
+		return res, false
 	}
 	for _, e := range g {
 		s, ok := e.(string)
@@ -244,7 +339,7 @@ func groupsFromClaim(claimMap map[string]interface{}, k string) []string {
 		}
 		res = append(res, s)
 	}
-	return res
+	return res, true
 }
 
 // Conn wraps connection info of an OIDC endpoint

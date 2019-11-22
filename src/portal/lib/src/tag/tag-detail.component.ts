@@ -34,8 +34,6 @@ export class TagDetailComponent implements OnInit {
   repositoryId: string;
   @Input()
   withAdmiral: boolean;
-  @Input()
-  withClair: boolean;
   tagDetails: Tag = {
     name: "--",
     size: "--",
@@ -56,6 +54,7 @@ export class TagDetailComponent implements OnInit {
   hasVulnerabilitiesListPermission: boolean;
   hasBuildHistoryPermission: boolean;
   @Input() projectId: number;
+  showStatBar: boolean = true;
   constructor(
     private tagService: TagService,
     public channel: ChannelService,
@@ -83,6 +82,7 @@ export class TagDetailComponent implements OnInit {
         && tagDetails.scan_overview
         && tagDetails.scan_overview[DEFAULT_SUPPORTED_MIME_TYPE]) {
       this.vulnerabilitySummary = tagDetails.scan_overview[DEFAULT_SUPPORTED_MIME_TYPE];
+      this.showStatBar = false;
     }
   }
   onBack(): void {
@@ -154,7 +154,8 @@ export class TagDetailComponent implements OnInit {
   }
   get hasCve(): boolean {
     return this.vulnerabilitySummary
-           && this.vulnerabilitySummary.scan_status === VULNERABILITY_SCAN_STATUS.SUCCESS;
+           && this.vulnerabilitySummary.scan_status === VULNERABILITY_SCAN_STATUS.SUCCESS
+           && this.vulnerabilitySummary.severity !== VULNERABILITY_SEVERITY.NONE;
   }
   public get scanCompletedDatetime(): Date {
     return this.tagDetails && this.tagDetails.scan_overview

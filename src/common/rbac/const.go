@@ -28,7 +28,8 @@ const (
 	ActionDelete = Action("delete")
 	ActionList   = Action("list")
 
-	ActionOperate = Action("operate")
+	ActionOperate     = Action("operate")
+	ActionScannerPull = Action("scanner-pull") // for robot account created by scanner to pull image, bypass the policy check
 )
 
 // const resource variables
@@ -43,6 +44,7 @@ const (
 	ResourceLog                        = Resource("log")
 	ResourceMember                     = Resource("member")
 	ResourceMetadata                   = Resource("metadata")
+	ResourceQuota                      = Resource("quota")
 	ResourceReplication                = Resource("replication")     // TODO remove
 	ResourceReplicationJob             = Resource("replication-job") // TODO remove
 	ResourceReplicationExecution       = Resource("replication-execution")
@@ -59,5 +61,6 @@ const (
 	ResourceRobot                      = Resource("robot")
 	ResourceNotificationPolicy         = Resource("notification-policy")
 	ResourceScan                       = Resource("scan")
+	ResourceScanner                    = Resource("scanner")
 	ResourceSelf                       = Resource("") // subresource for self
 )

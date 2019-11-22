@@ -53,6 +53,12 @@ export const USERSTATICPERMISSION = {
             "READ": "read",
         }
     },
+    "QUOTA": {
+        "KEY": "quota",
+        "VALUE": {
+            "READ": "read"
+        }
+    },
     "REPOSITORY": {
         'KEY': 'repository',
         'VALUE': {
@@ -151,5 +157,12 @@ export const USERSTATICPERMISSION = {
             "READ": "read",
         }
     },
+    "SCANNER": {
+        "KEY": "scanner",
+        "VALUE": {
+            "READ": "read",
+            "CREATE": "create"
+        }
+    }
 };
 

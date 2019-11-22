@@ -35,6 +35,8 @@ Resource  Harbor-Pages/Project.robot
 Resource  Harbor-Pages/Project_Elements.robot
 Resource  Harbor-Pages/Project-Members.robot
 Resource  Harbor-Pages/Project-Members_Elements.robot
+Resource  Harbor-Pages/Project-Webhooks.robot
+Resource  Harbor-Pages/Project-Webhooks_Elements.robot
 Resource  Harbor-Pages/Project-Repository.robot
 Resource  Harbor-Pages/Project-Repository_Elements.robot
 Resource  Harbor-Pages/Project-Config.robot
@@ -43,6 +45,8 @@ Resource  Harbor-Pages/Project-Helmcharts.robot
 Resource  Harbor-Pages/Project-Helmcharts_Elements.robot
 Resource  Harbor-Pages/Project-Retag.robot
 Resource  Harbor-Pages/Project-Retag_Elements.robot
+Resource  Harbor-Pages/Project-Tag-Retention.robot
+Resource  Harbor-Pages/Project-Tag-Retention_Elements.robot
 Resource  Harbor-Pages/Replication.robot
 Resource  Harbor-Pages/Replication_Elements.robot
 Resource  Harbor-Pages/UserProfile.robot
@@ -200,18 +204,6 @@ Clear Field Of Characters
     [Documentation]  This keyword pushes the delete key (ascii: \8) a specified number of times in a specified field.
     : FOR  ${index}  IN RANGE  ${character count}
     \    Press Key  ${field}  \\8
-
-Wait Unitl Vul Data Ready
-    [Arguments]  ${url}  ${timeout}  ${interval}
-    ${n}=  Evaluate  ${timeout}/${interval}
-    :FOR  ${i}  IN RANGE  ${n}
-    \    Log  Checking the vul data: ${i} ...  console=True
-    \    ${rc}  ${output}=  Run And Return Rc And Output  curl -k ${url}/api/systeminfo
-    \    Should Be Equal As Integers  ${rc}  0
-    \    ${contains}=  Run Keyword And Return Status  Should Contain  ${output}  overall_last_update
-    \    Exit For Loop If  ${contains}
-    \    Sleep  ${interval}
-    Run Keyword If  ${i+1}==${n}  Fail  The vul data is not ready
 
 Wait Unitl Command Success
     [Arguments]  ${cmd}  ${times}=8

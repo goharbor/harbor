@@ -46,14 +46,6 @@ type onboardReq struct {
 	Username string `json:"username"`
 }
 
-type oidcUserData struct {
-	Issuer   string `json:"iss"`
-	Subject  string `json:"sub"`
-	Username string `json:"name"`
-	Email    string `json:"email"`
-	GroupIDs []int  `json:"group_ids"`
-}
-
 // Prepare include public code path for call request handler of OIDCController
 func (oc *OIDCController) Prepare() {
 	if mode, _ := config.AuthMode(); mode != common.OIDCAuth {
@@ -103,34 +95,26 @@ func (oc *OIDCController) Callback() {
 		oc.SendBadRequestError(err)
 		return
 	}
-	log.Debugf("ID token from provider: %s", token.IDToken)
-
-	idToken, err := oidc.VerifyToken(ctx, token.IDToken)
+	_, err = oidc.VerifyToken(ctx, token.RawIDToken)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return
 	}
-	d := &oidcUserData{}
-	err = idToken.Claims(d)
+	info, err := oidc.UserInfoFromToken(ctx, token)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return
 	}
-	d.GroupIDs, err = group.GetGroupIDByGroupName(oidc.GroupsFromToken(idToken), common.OIDCGroupType)
-	if err != nil {
-		log.Warningf("Failed to get group ID list, due to error: %v, setting empty list into user model.", err)
-	}
-	ouDataStr, err := json.Marshal(d)
+	ouDataStr, err := json.Marshal(info)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return
 	}
-	u, err := dao.GetUserBySubIss(d.Subject, d.Issuer)
+	u, err := dao.GetUserBySubIss(info.Subject, info.Issuer)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return
 	}
-
 	tokenBytes, err := json.Marshal(token)
 	if err != nil {
 		oc.SendInternalServerError(err)
@@ -140,10 +124,14 @@ func (oc *OIDCController) Callback() {
 
 	if u == nil {
 		oc.SetSession(userInfoKey, string(ouDataStr))
-		oc.Controller.Redirect(fmt.Sprintf("/oidc-onboard?username=%s", strings.Replace(d.Username, " ", "_", -1)),
+		oc.Controller.Redirect(fmt.Sprintf("/oidc-onboard?username=%s", strings.Replace(info.Username, " ", "_", -1)),
 			http.StatusFound)
 	} else {
-		u.GroupIDs = d.GroupIDs
+		gids, err := group.PopulateGroup(models.UserGroupsFromName(info.Groups, common.OIDCGroupType))
+		if err != nil {
+			log.Warningf("Failed to populate groups, error: %v, user will have empty group list, username: %s", err, info.Username)
+		}
+		u.GroupIDs = gids
 		oidcUser, err := dao.GetOIDCUserByUserID(u.UserID)
 		if err != nil {
 			oc.SendInternalServerError(err)
@@ -193,11 +181,15 @@ func (oc *OIDCController) Onboard() {
 		oc.SendInternalServerError(err)
 		return
 	}
-	d := &oidcUserData{}
+	d := &oidc.UserInfo{}
 	err = json.Unmarshal([]byte(userInfoStr), &d)
 	if err != nil {
 		oc.SendInternalServerError(err)
 		return
+	}
+	gids, err := group.PopulateGroup(models.UserGroupsFromName(d.Groups, common.OIDCGroupType))
+	if err != nil {
+		log.Warningf("Failed to populate group user will have empty group list. username: %s", username)
 	}
 	oidcUser := models.OIDCUser{
 		SubIss: d.Subject + d.Issuer,
@@ -210,7 +202,7 @@ func (oc *OIDCController) Onboard() {
 		Username:     username,
 		Realname:     d.Username,
 		Email:        email,
-		GroupIDs:     d.GroupIDs,
+		GroupIDs:     gids,
 		OIDCUserMeta: &oidcUser,
 		Comment:      oidcUserComment,
 	}
@@ -218,7 +210,7 @@ func (oc *OIDCController) Onboard() {
 	err = dao.OnBoardOIDCUser(&user)
 	if err != nil {
 		if strings.Contains(err.Error(), dao.ErrDupUser.Error()) {
-			oc.RenderError(http.StatusConflict, "Conflict in username, the user with same username has been onboarded.")
+			oc.RenderError(http.StatusConflict, "Conflict, the user with same username or email has been onboarded.")
 			return
 		}
 		oc.SendInternalServerError(err)

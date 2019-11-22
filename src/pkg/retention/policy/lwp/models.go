@@ -25,6 +25,8 @@ import (
 // Metadata contains partial metadata of policy
 // It's a lightweight version of policy.Metadata
 type Metadata struct {
+	// ID of the policy
+	ID int64 `json:"id"`
 	// Algorithm applied to the rules
 	// "OR" / "AND"
 	Algorithm string `json:"algorithm"`

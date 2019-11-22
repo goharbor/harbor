@@ -19,6 +19,7 @@ func init() {
 		model.DeleteChartTopic:       {&notification.ChartPreprocessHandler{}},
 		model.ScanningCompletedTopic: {&notification.ScanImagePreprocessHandler{}},
 		model.ScanningFailedTopic:    {&notification.ScanImagePreprocessHandler{}},
+		model.QuotaExceedTopic:       {&notification.QuotaPreprocessHandler{}},
 	}
 
 	for t, handlers := range handlersMap {

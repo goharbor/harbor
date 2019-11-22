@@ -21,7 +21,7 @@ import { Member } from '../project/member/member';
 
 import { SignInCredential } from './sign-in-credential';
 import { enLang } from '../shared/shared.const';
-import { HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from "@harbor/ui";
+import { HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS, FlushAll } from "@harbor/ui";
 
 const signInUrl = '/c/login';
 const currentUserEndpoint = "/api/users/current";
@@ -62,6 +62,7 @@ export class SessionService {
     clear(): void {
         this.currentUser = null;
         this.projectMembers = [];
+        FlushAll();
     }
 
     // Submit signin form to backend (NOT restful service)

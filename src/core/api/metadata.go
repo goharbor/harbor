@@ -15,18 +15,18 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
 
-	"errors"
-
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 )
 
 // MetadataAPI ...
@@ -230,12 +230,12 @@ func validateProjectMetadata(metas map[string]string) (map[string]string, error)
 
 	value, exist := metas[models.ProMetaSeverity]
 	if exist {
-		switch strings.ToLower(value) {
-		case models.SeverityHigh, models.SeverityMedium, models.SeverityLow, models.SeverityNone:
-			metas[models.ProMetaSeverity] = strings.ToLower(value)
-		default:
+		severity := vuln.ParseSeverityVersion3(strings.ToLower(value))
+		if severity == vuln.Unknown {
 			return nil, fmt.Errorf("invalid severity %s", value)
 		}
+
+		metas[models.ProMetaSeverity] = strings.ToLower(severity.String())
 	}
 
 	return metas, nil

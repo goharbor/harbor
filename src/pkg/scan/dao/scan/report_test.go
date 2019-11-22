@@ -21,6 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/q"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -48,17 +49,13 @@ func (suite *ReportTestSuite) SetupTest() {
 		TrackID:          "track-uuid",
 		Digest:           "digest1001",
 		RegistrationUUID: "ruuid",
+		Requester:        "requester",
 		MimeType:         v1.MimeTypeNativeReport,
 		Status:           job.PendingStatus.String(),
 		StatusCode:       job.PendingStatus.Code(),
 	}
 
-	id, err := CreateReport(r)
-	require.NoError(suite.T(), err)
-	require.Condition(suite.T(), func() (success bool) {
-		success = id > 0
-		return
-	})
+	suite.create(r)
 }
 
 // TearDownTest clears enf for test case.
@@ -116,7 +113,7 @@ func (suite *ReportTestSuite) TestReportUpdateReportData() {
 	assert.Equal(suite.T(), "{}", l[0].Report)
 
 	err = UpdateReportData("uuid", "{\"a\": 900}", 900)
-	require.Error(suite.T(), err)
+	require.NoError(suite.T(), err)
 }
 
 // TestReportUpdateStatus tests update the report status.
@@ -124,9 +121,112 @@ func (suite *ReportTestSuite) TestReportUpdateStatus() {
 	err := UpdateReportStatus("track-uuid", job.RunningStatus.String(), job.RunningStatus.Code(), 1000)
 	require.NoError(suite.T(), err)
 
-	err = UpdateReportStatus("track-uuid", job.RunningStatus.String(), job.RunningStatus.Code(), 900)
-	require.Error(suite.T(), err)
+	err = checkStatus("track-uuid", job.RunningStatus.String())
+	suite.NoError(err, "regular status update")
+
+	err = UpdateReportStatus("track-uuid", job.SuccessStatus.String(), job.SuccessStatus.Code(), 900)
+	require.NoError(suite.T(), err)
+
+	err = checkStatus("track-uuid", job.RunningStatus.String())
+	suite.NoError(err, "update with outdated revision")
 
 	err = UpdateReportStatus("track-uuid", job.PendingStatus.String(), job.PendingStatus.Code(), 1000)
-	require.Error(suite.T(), err)
+	require.NoError(suite.T(), err)
+
+	err = checkStatus("track-uuid", job.RunningStatus.String())
+	suite.NoError(err, "update with same revision and previous status")
+
+	err = UpdateReportStatus("track-uuid", job.PendingStatus.String(), job.PendingStatus.Code(), 1001)
+	require.NoError(suite.T(), err)
+
+	err = checkStatus("track-uuid", job.PendingStatus.String())
+	suite.NoError(err, "update latest revision and previous status")
+}
+
+// TestReportGetStats ...
+func (suite *ReportTestSuite) TestReportGetStats() {
+	// Two more for getting stats
+	r2 := &Report{
+		UUID:             "uuid2",
+		TrackID:          "track-uuid2",
+		Digest:           "digest1003",
+		RegistrationUUID: "ruuid",
+		Requester:        "requester",
+		MimeType:         v1.MimeTypeNativeReport,
+		Status:           job.RunningStatus.String(),
+		StatusCode:       job.RunningStatus.Code(),
+	}
+	suite.create(r2)
+
+	r3 := &Report{
+		UUID:             "uuid3",
+		TrackID:          "track-uuid2",
+		Digest:           "digest1003",
+		RegistrationUUID: "ruuid",
+		Requester:        "requester",
+		MimeType:         v1.MimeTypeRawReport,
+		Status:           job.RunningStatus.String(),
+		StatusCode:       job.RunningStatus.Code(),
+	}
+	suite.create(r3)
+
+	defer func() {
+		err := DeleteReport("uuid2")
+		suite.NoError(err)
+
+		err = DeleteReport("uuid3")
+		suite.NoError(err)
+	}()
+
+	m, err := GetScanStats("requester")
+	require.NoError(suite.T(), err)
+	suite.Equal(2, len(m))
+	suite.Condition(func() (success bool) {
+		v, ok := m[job.RunningStatus.String()]
+		vv, ook := m[job.PendingStatus.String()]
+
+		success = ok && ook && v == 1 && vv == 1
+
+		return
+	})
+
+}
+
+func (suite *ReportTestSuite) create(r *Report) {
+	id, err := CreateReport(r)
+	require.NoError(suite.T(), err)
+	require.Condition(suite.T(), func() (success bool) {
+		success = id > 0
+		return
+	})
+}
+
+func list(trackID string) ([]*Report, error) {
+	kws := make(map[string]interface{})
+	kws["track_id"] = trackID
+	query := &q.Query{
+		Keywords: kws,
+	}
+
+	l, err := ListReports(query)
+	if err != nil {
+		return nil, err
+	}
+
+	return l, nil
+}
+
+func checkStatus(trackID string, status string) error {
+	l, err := list(trackID)
+	if err != nil {
+		return err
+	}
+
+	for _, r := range l {
+		if r.Status != status {
+			return errors.Errorf("status is not matched: current %s : expected %s", r.Status, status)
+		}
+	}
+
+	return nil
 }

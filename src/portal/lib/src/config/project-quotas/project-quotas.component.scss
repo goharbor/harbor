@@ -3,28 +3,38 @@
 
   .default-quota-text {
     display: flex;
-    justify-content: space-between;
-    min-width: 14rem;
+    .width-10rem {
+      width: 10.3rem;
+    }
 
     .num-count {
       display: inline-block;
-      min-width: 3rem;
+      min-width: 2rem;
     }
   }
 }
 
 .color-0 {
-  color: #000;
+  color: #333;
+}
+.pt-19px {
+  padding-top: 19px;
+}
+.font-size-13 {
+  font-size: 13px;
 }
 
 .progress-block {
   label {
     font-weight: 400 !important;
+    width: 30%;
+    font-size: 10px;
   }
 }
 
 .default-quota-edit-button {
   height: 1rem;
+  font-size: 12px;
 }
 
 .min-label-width {
@@ -34,6 +44,8 @@
 .quota-top {
   display: flex;
   justify-content: space-between;
+  line-height: 1.55;
+  margin-bottom: .35rem;
 }
 
 .refresh-div {
@@ -53,6 +65,9 @@
       &::-moz-progress-bar {
         background-color: orange;
       }
+    }
+    &>progress {
+      height: 75%;
     }
   }
 }

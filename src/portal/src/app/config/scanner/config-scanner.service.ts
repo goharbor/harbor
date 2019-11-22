@@ -10,11 +10,13 @@ export class ConfigScannerService {
 
     constructor( private http: HttpClient) {}
     getScannersByName(name: string): Observable<Scanner[]> {
+        name = encodeURIComponent(name);
             return this.http.get(`/api/scanners?ex_name=${name}`)
                 .pipe(catchError(error => observableThrowError(error)))
                 .pipe(map(response => response as Scanner[]));
     }
     getScannersByEndpointUrl(endpointUrl: string): Observable<Scanner[]> {
+        endpointUrl = encodeURIComponent(endpointUrl);
         return this.http.get(`/api/scanners?ex_url=${endpointUrl}`)
             .pipe(catchError(error => observableThrowError(error)))
             .pipe(map(response => response as Scanner[]));
@@ -65,6 +67,11 @@ export class ConfigScannerService {
     }
     setAsDefault(uid: string): Observable<any> {
         return this.http.patch(`/api/scanners/${uid}`, {is_default: true} )
+            .pipe(catchError(error => observableThrowError(error)));
+    }
+    getProjectScanners(projectId: number) {
+        return this.http.get(`/api/projects/${projectId}/scanner/candidates`)
+            .pipe(map(response => response as Scanner[]))
             .pipe(catchError(error => observableThrowError(error)));
     }
 }

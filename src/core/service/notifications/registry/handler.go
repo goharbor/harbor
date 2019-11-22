@@ -16,7 +16,9 @@ package registry
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/core/service/notifications"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
 	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
@@ -33,18 +34,17 @@ import (
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
-	rep_event "github.com/goharbor/harbor/src/replication/event"
+	repevent "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/pkg/errors"
 )
 
 // NotificationHandler handles request on /service/notifications/, which listens to registry's events.
 type NotificationHandler struct {
-	api.BaseController
+	notifications.BaseHandler
 }
 
 const manifestPattern = `^application/vnd.docker.distribution.manifest.v\d\+(json|prettyjws)`
-const vicPrefix = "vic/"
 
 // Post handles POST request, and records audit log or refreshes cache based on event.
 func (n *NotificationHandler) Post() {
@@ -140,16 +140,17 @@ func (n *NotificationHandler) Post() {
 				log.Errorf("failed to build image push event metadata: %v", err)
 			}
 
-			// TODO: handle image delete event and chart event
 			go func() {
-				e := &rep_event.Event{
-					Type: rep_event.EventTypeImagePush,
+				e := &repevent.Event{
+					Type: repevent.EventTypeImagePush,
 					Resource: &model.Resource{
 						Type: model.ResourceTypeImage,
 						Metadata: &model.ResourceMetadata{
 							Repository: &model.Repository{
 								Name: repository,
-								// TODO filling the metadata
+								Metadata: map[string]interface{}{
+									"public": strconv.FormatBool(pro.IsPublic()),
+								},
 							},
 							Vtags: []string{tag},
 						},
@@ -245,7 +246,7 @@ func (n *NotificationHandler) Post() {
 }
 
 func filterEvents(notification *models.Notification) ([]*models.Event, error) {
-	events := []*models.Event{}
+	events := make([]*models.Event, 0)
 
 	for _, event := range notification.Events {
 		log.Debugf("receive an event: \n----ID: %s \n----target: %s:%s \n----digest: %s \n----action: %s \n----mediatype: %s \n----user-agent: %s", event.ID, event.Target.Repository,
@@ -285,13 +286,19 @@ func checkEvent(event *models.Event) bool {
 }
 
 func autoScanEnabled(project *models.Project) bool {
-	available, err := scanner.DefaultController.IsScannerAvailable(project.ProjectID)
+	r, err := scanner.DefaultController.GetRegistrationByProject(project.ProjectID)
 	if err != nil {
 		log.Error(errors.Wrap(err, "check auto scan enable"))
 		return false
 	}
 
-	return available && project.AutoScan()
+	// In case
+	if r == nil {
+		log.Errorf("no scanner is available for project: %s", project.Name)
+		return false
+	}
+
+	return !r.Disabled && project.AutoScan()
 }
 
 // Render returns nil as it won't render any template.

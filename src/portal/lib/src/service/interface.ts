@@ -68,6 +68,7 @@ export interface Tag extends Base {
   labels: Label[];
   push_time?: string;
   pull_time?: string;
+  immutable?: boolean;
 }
 
 /**
@@ -311,9 +312,16 @@ export interface VulnerabilitySummary {
     summary?: SeveritySummary;
     start_time?: Date;
     end_time?: Date;
+    scanner?: ScannerVo;
+}
+export interface ScannerVo {
+    name?: string;
+    vendor?: string;
+    version?: string;
 }
 export interface SeveritySummary {
   total: number;
+  fixable: number;
   summary: {[key: string]: number};
 }
 

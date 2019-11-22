@@ -142,7 +142,7 @@
         "NEW_PWD": "新密码",
         "CONFIRM_PWD": "确认密码",
         "SAVE_SUCCESS": "成功更改用户密码。",
-        "PASS_TIPS": "8到20个字符且需包含至少一个大写字符、小写字符或者数字"
+        "PASS_TIPS": "8到128个字符且需包含至少一个大写字符、小写字符或者数字"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "用户设置",
@@ -165,7 +165,8 @@
             "REPLICATION": "同步管理",
             "CONFIG": "配置管理",
             "VULNERABILITY": "漏洞",
-            "GARBAGE_COLLECTION": "垃圾清理"
+            "GARBAGE_COLLECTION": "垃圾清理",
+            "INTERROGATION_SERVICES": "审查服务"
         },
         "LOGS": "日志",
         "TASKS": "任务",
@@ -247,7 +248,7 @@
         "HELMCHART": "Helm Charts",
         "ROBOT_ACCOUNTS": "机器人账户",
         "WEBHOOKS": "Webhooks",
-        "IMMUTABLE_TAG": "不变的Tag"
+        "IMMUTABLE_TAG": "不可变的Tag"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "项目仓库",
@@ -275,6 +276,7 @@
         "PROJECT_MASTER": "维护人员",
         "DEVELOPER": "开发人员",
         "GUEST": "访客",
+        "LIMITED_GUEST": "受限访客",
         "DELETE": "删除",
         "ITEMS": "条记录",
         "ACTIONS": "操作",
@@ -361,6 +363,7 @@
         "CREATE_WEBHOOK": "创建 Webhooks",
         "EDIT_WEBHOOK_DESC": "指定接收 Webhook 通知的目标",
         "CREATE_WEBHOOK_DESC": "为了启用 webhook, 请提供 Endpoint 和凭据以访问 Webhook 服务器。",
+        "VERIFY_REMOTE_CERT_TOOLTIP": "勾选此框表示Webhook需要验证远程地址的证书。当远程地址使用自签名或不受信任的证书时，请取消选中。",
         "ENDPOINT_URL": "Endpoint 地址",
         "URL_IS_REQUIRED": "Endpoint 地址必填",
         "AUTH_HEADER": "Auth Header",
@@ -404,7 +407,8 @@
         "PROJECT_ADMIN": "项目管理员",
         "PROJECT_MASTER": "维护人员",
         "DEVELOPER": "开发者",
-        "GUEST": "访客"
+        "GUEST": "访客",
+        "LIMITED_GUEST": "受限访客"
     },
     "AUDIT_LOG": {
         "USERNAME": "用户名",
@@ -622,6 +626,7 @@
         "PULL_COMMAND": "Pull命令",
         "PULL_TIME": "拉取时间",
         "PUSH_TIME": "推送时间",
+        "IMMUTABLE": "不可变的",
         "MY_REPOSITORY": "我的仓库",
         "PUBLIC_REPOSITORY": "公共仓库",
         "DELETION_TITLE_REPO": "删除镜像仓库确认",
@@ -738,7 +743,8 @@
         "ADMIN": "管理员",
         "MASTER": "维护人员",
         "DEVELOPER": "开发者",
-        "GUEST": "访客"
+        "GUEST": "访客",
+        "LIMITED_GUEST": "受限访客"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "表单内容改变，确认是否取消?"
@@ -870,16 +876,28 @@
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "启动扫描所有镜像任务成功!",
-            "TRIGGER_SCAN_ALL_FAIL": "启动扫描所有镜像任务失败:{{error}",
+            "TRIGGER_SCAN_ALL_FAIL": "启动扫描所有镜像任务失败:{{error}}",
             "TITLE": "缺陷扫描",
             "SCAN_ALL": "扫描所有",
+            "SCHEDULE_TO_SCAN_ALL": "定时扫描所有",
             "SCAN_NOW": "开始扫描",
+            "SCAN": "扫描",
             "NONE_POLICY": "无",
             "DAILY_POLICY": "每日定时",
             "REFRESH_POLICY": "缺陷库刷新后",
             "DB_REFRESH_TIME": "数据库更新于",
             "DB_NOT_READY": "缺陷数据库可能没有完全准备好!",
-            "NEXT_SCAN": "下次可用时间"
+            "NEXT_SCAN": "下次可用时间",
+            "STATUS": {
+                "PENDING": "等待",
+                "RUNNING": "扫描中",
+                "STOPPED": "中止",
+                "ERROR": "出错",
+                "SUCCESS": "成功",
+                "SCHEDULED": "已入计划"
+            },
+            "MANUAL": "手动触发",
+            "SCHEDULED": "定时触发"
         },
         "TEST_MAIL_SUCCESS": "邮件服务器的连通正常。",
         "TEST_LDAP_SUCCESS": "LDAP服务器的连通正常。",
@@ -947,7 +965,7 @@
             "SCANNING_TIME": "扫描完成时间:",
             "TOOLTIPS_TITLE": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}。",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalPackages}}个{{package}}中的{{totalVulnerability}}个含有{{vulnerability}}。",
-            "TOOLTIPS_TITLE_ZERO": "没有发现可识别的漏洞包"
+            "TOOLTIPS_TITLE_ZERO": "没有发现可识别的漏洞"
         },
         "SEVERITY": {
             "CRITICAL": "危急",
@@ -1033,7 +1051,8 @@
         "STORAGE_DEFAULT_QUOTA": "默认配额存储",
         "SAVE_SUCCESS": "项目容量修改成功",
         "UNLIMITED": "不设限",
-        "INVALID_INPUT": "输入错误"
+        "INVALID_INPUT": "输入错误",
+        "PLACEHOLDER": "我们找不到任何可以配置定额的项目"
     },
     "WEEKLY": {
         "MONDAY": "周一",
@@ -1226,6 +1245,32 @@
         "EXECUTION_TYPE": "执行类型",
         "ACTION": "操作"
     },
+    "IMMUTABLE_TAG": {
+        "IMMUTABLE_RULES": "不可变的Tag规则",
+        "ADD_RULE": "添加新规则",
+        "ADD_RULE_HELP_1": "点击添加按钮可添加规则。",
+        "EDIT": "修改",
+        "DISABLE": "禁用",
+        "ENABLE": "启用",
+        "DELETE": "删除",
+        "ADD_TITLE": "添加不可变的Tag规则",
+        "ADD_SUBTITLE": "为此项目指定不可变的Tag规则。注意：所有不可变的Tag规则都将首先被独立计算，合并后最终获得不可变规则的集合。",
+        "IN_REPOSITORIES": "应用到仓库",
+        "REP_SEPARATOR": "使用逗号分隔repos,repo*和**。",
+        "TAGS": "Tags",
+        "TAG_SEPARATOR": "使用逗号分割tags,tag*和**。",
+        "EDIT_TITLE": "编辑不改变的Tag规则",
+        "EXC": "排除",
+        "MAT": "匹配",
+        "AND": "且",
+        "WITH": "有",
+        "WITHOUT": "没有",
+        "LOWER_LABELS": "标签",
+        "LOWER_TAGS": " tags",
+        "NONE": " 无",
+        "EXISTING_RULE": "规则已存在。",
+        "ACTION": "操作"
+    },
     "SCANNER": {
         "DELETION_SUMMARY": "确定删除扫描器{{param}}？",
         "SKIP_CERT_VERIFY": "当远程注册使用自签或不可信证书时可勾选此项以跳过证书认证。",
@@ -1238,7 +1283,7 @@
         "ENDPOINT_EXISTS": "地址已存在",
         "ENDPOINT_REQUIRED": "地址为必填项",
         "ILLEGAL_ENDPOINT": "非法地址",
-        "AUTH": "Authorization",
+        "AUTH": "认证模型",
         "NONE": "None",
         "BASIC": "Basic",
         "BEARER": "Bearer",
@@ -1256,7 +1301,7 @@
         "TEST_CONNECTION": "测试连接",
         "ADD_SUCCESS": "添加成功",
         "TEST_PASS": "测试成功",
-        "TEST_FAILED": "测试失败",
+        "TEST_FAILED": "Ping:  目标地址{{name}}:{{url}}连接失败",
         "UPDATE_SUCCESS": "更新成功",
         "SCANNER_COLON": "扫描器:",
         "NAME_COLON": "Name:",
@@ -1281,6 +1326,21 @@
         "ADAPTER": "适配器",
         "VENDOR": "供应商",
         "VERSION": "版本",
-        "SELECT_SCANNER": "选择扫描器"
+        "SELECT_SCANNER": "选择扫描器",
+        "ENABLED": "启用",
+        "ENABLE": "启用",
+        "DISABLE": "禁用",
+        "DELETE_SUCCESS": "删除成功",
+        "TOTAL": "总计",
+        "FIXABLE": "可修复",
+        "DURATION": "扫描用时:",
+        "OPTIONS": "选项",
+        "USE_INNER": "使用仓库内部地址",
+        "USE_INNER_TIP": "选中此项，扫描器将使用仓库内部地址访问其相关内容",
+        "VULNERABILITY_SEVERITY": "漏洞严重度：",
+        "CONFIRM_DELETION": "删除扫描器确认",
+        "NO_PROJECT_SCANNER": "无扫描器",
+        "SET_UNHEALTHY_SCANNER": "选择的扫描器:{{name}}是不健康的",
+        "SCANNED_BY": "扫描器:"
     }
 }

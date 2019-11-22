@@ -32,16 +32,14 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
+	quota "github.com/goharbor/harbor/src/core/api/quota"
+	_ "github.com/goharbor/harbor/src/core/api/quota/chart"
+	_ "github.com/goharbor/harbor/src/core/api/quota/registry"
 	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	_ "github.com/goharbor/harbor/src/core/auth/oidc"
 	_ "github.com/goharbor/harbor/src/core/auth/uaa"
-
-	quota "github.com/goharbor/harbor/src/core/api/quota"
-	_ "github.com/goharbor/harbor/src/core/api/quota/chart"
-	_ "github.com/goharbor/harbor/src/core/api/quota/registry"
-
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares"
@@ -50,8 +48,10 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
+	"github.com/goharbor/harbor/src/pkg/scan/event"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
 )
 
@@ -164,7 +164,7 @@ func gracefulShutdown(closing, done chan struct{}) {
 
 func main() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
-	beego.BConfig.WebConfig.Session.SessionName = "sid"
+	beego.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
 
 	redisURL := os.Getenv("_REDIS_URL")
 	if len(redisURL) > 0 {
@@ -218,17 +218,20 @@ func main() {
 			log.Fatalf("failed to initialize clair database: %v", err)
 		}
 
-		// TODO: change to be internal adapter
 		reg := &scanner.Registration{
-			Name:        "Clair",
-			Description: "The clair scanner adapter",
-			URL:         config.ClairAdapterEndpoint(),
-			Disabled:    false,
-			IsDefault:   true,
+			Name:            "Clair",
+			Description:     "The clair scanner adapter",
+			URL:             config.ClairAdapterEndpoint(),
+			UseInternalAddr: true,
+			Immutable:       true,
 		}
 
-		if err := scan.EnsureScanner(reg); err != nil {
+		if err := scan.EnsureScanner(reg, true); err != nil {
 			log.Fatalf("failed to initialize clair scanner: %v", err)
+		}
+	} else {
+		if err := scan.RemoveImmutableScanners(); err != nil {
+			log.Warningf("failed to remove immutable scanners: %v", err)
 		}
 	}
 
@@ -241,11 +244,13 @@ func main() {
 
 	log.Info("initializing notification...")
 	notification.Init()
+	// Initialize the event handlers for handling artifact cascade deletion
+	event.Init()
 
 	filter.Init()
+	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)
-	beego.InsertFilter("/api/*", beego.BeforeRouter, filter.MediaTypeFilter("application/json", "multipart/form-data", "application/octet-stream"))
 
 	initRouters()
 
@@ -269,9 +274,21 @@ func main() {
 		log.Fatalf("init proxy error, %v", err)
 	}
 
-	if err := quotaSync(); err != nil {
-		log.Fatalf("quota migration error, %v", err)
+	syncQuota := os.Getenv("SYNC_QUOTA")
+	doSyncQuota, err := strconv.ParseBool(syncQuota)
+	if err != nil {
+		log.Errorf("Failed to parse SYNC_QUOTA: %v", err)
+		doSyncQuota = true
+	}
+	if doSyncQuota {
+		if err := quotaSync(); err != nil {
+			log.Fatalf("quota migration error, %v", err)
+		}
+	} else {
+		log.Infof("Because SYNC_QUOTA set false , no need to sync quota \n")
 	}
 
+	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
 	beego.Run()
+
 }

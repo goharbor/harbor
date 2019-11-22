@@ -2,6 +2,8 @@ package immutabletag
 
 import (
 	"encoding/json"
+	"sort"
+
 	"github.com/goharbor/harbor/src/pkg/immutabletag/dao"
 	dao_model "github.com/goharbor/harbor/src/pkg/immutabletag/dao/model"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
@@ -36,7 +38,7 @@ type defaultRuleManager struct {
 
 func (drm *defaultRuleManager) CreateImmutableRule(ir *model.Metadata) (int64, error) {
 	daoRule := &dao_model.ImmutableRule{}
-	daoRule.Enabled = !ir.Disabled
+	daoRule.Disabled = ir.Disabled
 	daoRule.ProjectID = ir.ProjectID
 	data, _ := json.Marshal(ir)
 	daoRule.TagFilter = string(data)
@@ -46,6 +48,7 @@ func (drm *defaultRuleManager) CreateImmutableRule(ir *model.Metadata) (int64, e
 func (drm *defaultRuleManager) UpdateImmutableRule(projectID int64, ir *model.Metadata) (int64, error) {
 	daoRule := &dao_model.ImmutableRule{}
 	data, _ := json.Marshal(ir)
+	daoRule.ID = ir.ID
 	daoRule.TagFilter = string(data)
 	return drm.dao.UpdateImmutableRule(projectID, daoRule)
 }
@@ -60,9 +63,14 @@ func (drm *defaultRuleManager) GetImmutableRule(id int64) (*model.Metadata, erro
 		return nil, err
 	}
 	rule := &model.Metadata{}
+	if daoRule == nil {
+		return nil, nil
+	}
 	if err = json.Unmarshal([]byte(daoRule.TagFilter), rule); err != nil {
 		return nil, err
 	}
+	rule.ID = daoRule.ID
+	rule.Disabled = daoRule.Disabled
 	return rule, nil
 }
 
@@ -71,14 +79,19 @@ func (drm *defaultRuleManager) QueryImmutableRuleByProjectID(projectID int64) ([
 	if err != nil {
 		return nil, err
 	}
-	var rules []model.Metadata
+	rules := make([]model.Metadata, 0)
 	for _, daoRule := range daoRules {
 		rule := model.Metadata{}
 		if err = json.Unmarshal([]byte(daoRule.TagFilter), &rule); err != nil {
 			return nil, err
 		}
+		rule.ID = daoRule.ID
+		rule.Disabled = daoRule.Disabled
 		rules = append(rules, rule)
 	}
+	sort.Slice(rules, func(i, j int) bool {
+		return rules[i].ID < rules[j].ID
+	})
 	return rules, nil
 }
 
@@ -93,6 +106,7 @@ func (drm *defaultRuleManager) QueryEnabledImmutableRuleByProjectID(projectID in
 		if err = json.Unmarshal([]byte(daoRule.TagFilter), &rule); err != nil {
 			return nil, err
 		}
+		rule.ID = daoRule.ID
 		rules = append(rules, rule)
 	}
 	return rules, nil

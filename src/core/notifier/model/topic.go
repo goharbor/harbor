@@ -18,6 +18,10 @@ const (
 	ScanningFailedTopic = "OnScanningFailed"
 	// ScanningCompletedTopic is topic for scanning completed event
 	ScanningCompletedTopic = "OnScanningCompleted"
+	// QuotaExceedTopic is topic for quota warning event, the usage reaches the warning bar of limitation, like 85%
+	QuotaWarningTopic = "OnQuotaWarning"
+	// QuotaExceedTopic is topic for quota exceeded event
+	QuotaExceedTopic = "OnQuotaExceed"
 
 	// WebhookTopic is topic for sending webhook payload
 	WebhookTopic = "http"

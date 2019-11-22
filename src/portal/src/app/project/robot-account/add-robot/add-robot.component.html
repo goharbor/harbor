@@ -79,7 +79,7 @@
                                                [(ngModel)]="imagePermissionPull" clrCheckbox>
                                     </td>
                                 </tr>
-                                <tr>
+                                <tr *ngIf="withHelmChart">
                                     <td class="left">{{'ROBOT_ACCOUNT.PERMISSIONS_HELMCHART' | translate}}</td>
                                     <td>
                                         <input type="checkbox"

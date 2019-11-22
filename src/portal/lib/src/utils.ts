@@ -231,6 +231,11 @@ export const DEFAULT_PAGE_SIZE: number = 15;
 export const DEFAULT_SUPPORTED_MIME_TYPE = "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0";
 
 /**
+ *  the property name of vulnerability database updated time
+ */
+export const DATABASE_UPDATED_PROPERTY = "harbor.scanner-adapter/vulnerability-database-updated-at";
+
+/**
  * The state of vulnerability scanning
  */
 export const VULNERABILITY_SCAN_STATUS = {
@@ -253,7 +258,20 @@ export const VULNERABILITY_SEVERITY = {
     LOW: "Low",
     MEDIUM: "Medium",
     HIGH: "High",
-    CRITICAL: "Critical"
+    CRITICAL: "Critical",
+    NONE: "None"
+};
+/**
+ * The level of vulnerability severity for comparing
+ */
+export const SEVERITY_LEVEL_MAP = {
+    "Critical": 6,
+    "High": 5,
+    "Medium": 4,
+    "Low": 3,
+    "Negligible": 2,
+    "Unknown": 1,
+    "None": 0
 };
 
 /**

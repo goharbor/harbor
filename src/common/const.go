@@ -33,6 +33,7 @@ const (
 	RoleDeveloper    = 2
 	RoleGuest        = 3
 	RoleMaster       = 4
+	RoleLimitedGuest = 5
 
 	LabelLevelSystem  = "s"
 	LabelLevelUser    = "u"
@@ -104,6 +105,7 @@ const (
 	HTTPAuthProxyTokenReviewEndpoint = "http_authproxy_tokenreview_endpoint"
 	HTTPAuthProxyVerifyCert          = "http_authproxy_verify_cert"
 	HTTPAuthProxySkipSearch          = "http_authproxy_skip_search"
+	HTTPAuthProxyCaseSensitive       = "http_authproxy_case_sensitive"
 	OIDCName                         = "oidc_name"
 	OIDCEndpoint                     = "oidc_endpoint"
 	OIDCCLientID                     = "oidc_client_id"
@@ -136,7 +138,6 @@ const (
 	DefaultChartRepoURL               = "http://chartmuseum:9999"
 	DefaultPortalURL                  = "http://portal:8080"
 	DefaultRegistryCtlURL             = "http://registryctl:8080"
-	DefaultClairHealthCheckServerURL  = "http://clair:6061"
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.
 	RobotPrefix = "robot$"
 	// Use this prefix to index user who tries to login with web hook token.

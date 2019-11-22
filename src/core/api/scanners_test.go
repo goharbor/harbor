@@ -227,6 +227,7 @@ func (suite *ScannerAPITestSuite) TestScannerAPIDelete() {
 		URL:         "https://a.b.c",
 	}
 
+	suite.mockC.On("GetRegistration", "uuid").Return(r, nil)
 	suite.mockC.On("DeleteRegistration", "uuid").Return(r, nil)
 
 	deleted := &scanner.Registration{}
@@ -369,12 +370,4 @@ func (m *MockScannerAPIController) GetMetadata(registrationUUID string) (*v1.Sca
 	}
 
 	return sam.(*v1.ScannerAdapterMetadata), nil
-}
-
-// IsScannerAvailable ...
-// TODO: Remove it when the interface is changed
-func (m *MockScannerAPIController) IsScannerAvailable(projectID int64) (bool, error) {
-	args := m.Called(projectID)
-
-	return args.Bool(0), args.Error(1)
 }

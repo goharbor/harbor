@@ -16,8 +16,10 @@ package api
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
@@ -26,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
 	utils_core "github.com/goharbor/harbor/src/core/utils"
+	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	"github.com/pkg/errors"
 )
 
@@ -241,6 +244,44 @@ func (aj *AJAPI) submit(ajr *models.AdminJobReq) {
 			aj.SendPreconditionFailedError(errors.New("fail to set schedule for admin job as always had one, please delete it firstly then to re-schedule"))
 			return
 		}
+	} else {
+		// So far, it should be a generic job for the manually trigger case.
+		// Only needs to care the 1st generic job.
+		// Check if there are still ongoing scan jobs triggered by the previous admin job.
+		// TODO: REPLACE WITH TASK MANAGER METHODS IN FUTURE
+		jb, err := aj.getLatestAdminJob(ajr.Name, common_job.JobKindGeneric)
+		if err != nil {
+			aj.SendInternalServerError(errors.Wrap(err, "AJAPI"))
+			return
+		}
+
+		if jb != nil {
+			// With a reasonable timeout duration
+			if jb.UpdateTime.Add(2 * time.Hour).After(time.Now()) {
+				if isOnGoing(jb.Status) {
+					err := errors.Errorf("reject job submitting: job %s with ID %d is %s", jb.Name, jb.ID, jb.Status)
+					aj.SendInternalServerError(errors.Wrap(err, "submit : AJAPI"))
+					return
+				}
+
+				// For scan all job, check more
+				if jb.Name == common_job.ImageScanAllJob {
+					// Get the overall stats with the ID of the previous job
+					stats, err := scan.DefaultController.GetStats(fmt.Sprintf("%d", jb.ID))
+					if err != nil {
+						aj.SendInternalServerError(errors.Wrap(err, "submit : AJAPI"))
+						return
+					}
+
+					if stats.Total != stats.Completed {
+						// Not all scan processes are completed
+						err := errors.Errorf("scan processes started by %s job with ID %d is in progress: %s", jb.Name, jb.ID, progress(stats.Completed, stats.Total))
+						aj.SendPreconditionFailedError(errors.Wrap(err, "submit : AJAPI"))
+						return
+					}
+				}
+			}
+		}
 	}
 
 	id, err := dao.AddAdminJob(&common_models.AdminJob{
@@ -271,6 +312,29 @@ func (aj *AJAPI) submit(ajr *models.AdminJobReq) {
 	}
 }
 
+func (aj *AJAPI) getLatestAdminJob(name, kind string) (*common_models.AdminJob, error) {
+	query := &common_models.AdminJobQuery{
+		Name: name,
+		Kind: kind,
+	}
+	query.Size = 1
+	query.Page = 1
+
+	jbs, err := dao.GetAdminJobs(query)
+
+	if err != nil {
+		return nil, err
+	}
+
+	if len(jbs) == 0 {
+		// Not exist
+		return nil, nil
+	}
+
+	// Return the latest one (with biggest ID)
+	return jbs[0], nil
+}
+
 func convertToAdminJobRep(job *common_models.AdminJob) (models.AdminJobRep, error) {
 	if job == nil {
 		return models.AdminJobRep{}, nil
@@ -293,4 +357,23 @@ func convertToAdminJobRep(job *common_models.AdminJob) (models.AdminJobRep, erro
 		AdminJobRep.Schedule = &schedule
 	}
 	return AdminJobRep, nil
+}
+
+func progress(completed, total uint) string {
+	if total == 0 {
+		return fmt.Sprintf("0%s", "%")
+	}
+
+	v := float64(completed)
+	vv := float64(total)
+
+	p := (int)(math.Round((v / vv) * 100))
+
+	return fmt.Sprintf("%d%s", p, "%")
+}
+
+func isOnGoing(status string) bool {
+	return status == common_models.JobRunning ||
+		status == common_models.JobScheduled ||
+		status == common_models.JobPending
 }

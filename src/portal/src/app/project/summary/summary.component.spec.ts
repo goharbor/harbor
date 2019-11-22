@@ -2,11 +2,12 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClarityModule } from '@clr/angular';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ProjectService, ErrorHandler} from '@harbor/ui';
+import { ProjectService, ErrorHandler, UserPermissionService } from '@harbor/ui';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { AppConfigService } from "../../app-config.service";
 import { SummaryComponent } from './summary.component';
+
 
 describe('SummaryComponent', () => {
   let component: SummaryComponent;
@@ -18,6 +19,11 @@ describe('SummaryComponent', () => {
     }
   };
   let fakeErrorHandler = null;
+  let fakeUserPermissionService = {
+    hasProjectPermissions: function() {
+      return of([true, true]);
+    }
+  };
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -34,6 +40,7 @@ describe('SummaryComponent', () => {
         { provide: AppConfigService, useValue: fakeAppConfigService },
         { provide: ProjectService, useValue: fakeProjectService },
         { provide: ErrorHandler, useValue: fakeErrorHandler },
+        { provide: UserPermissionService, useValue: fakeUserPermissionService },
         {
           provide: ActivatedRoute, useValue: {
             paramMap: of({ get: (key) => 'value' }),

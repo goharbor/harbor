@@ -24,7 +24,7 @@
     <div class="clr-control-label">{{'SCANNER.PROPERTIES' | translate}}</div>
     <div class="ml-1" *ngFor="let item of scannerMetadata?.properties | keyvalue">
         <span>{{item?.key}}:</span>
-        <span class="ml-1">{{parseDate(item?.value)}}</span>
+        <span class="ml-1">{{parseDate(item)}}</span>
     </div>
 </div>
 

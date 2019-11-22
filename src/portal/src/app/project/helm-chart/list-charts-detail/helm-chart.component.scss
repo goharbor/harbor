@@ -67,8 +67,7 @@ $size60:60px;
 }
 
 .size-24 {
-    width:$size24;
-    height:$size24;
+    width: 60px;
 }
 
 .size-60 {
@@ -115,4 +114,9 @@ button {
 
 .mb-10 {
     margin-bottom:10px;
+}
+.table-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

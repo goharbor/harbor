@@ -266,11 +266,6 @@ export class SystemSettingsComponent implements OnChanges, OnInit {
             .subscribe(systemInfo => this.systemInfo = systemInfo
                 , error => this.errorHandler.error(error));
     }
-
-    get withClair(): boolean {
-        return this.systemInfo ? this.systemInfo.with_clair : false;
-    }
-
     getSystemWhitelist() {
         this.onGoing = true;
         this.systemInfoService.getSystemWhitelist()

@@ -141,7 +141,7 @@
         "NEW_PWD": "Nova senha",
         "CONFIRM_PWD": "Confirmar senha",
         "SAVE_SUCCESS": "Senha do usuário alterada com sucesso.",
-        "PASS_TIPS": "8-20 caracteres com 1 maiuscula, 1 minuscula e 1 número"
+        "PASS_TIPS": "8-128 caracteres com 1 maiuscula, 1 minuscula e 1 número"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Perfil do usuário",
@@ -164,7 +164,8 @@
             "REPLICATION": "Replicações",
             "CONFIG": "Configuração",
             "VULNERABILITY": "Vulnerability",
-            "GARBAGE_COLLECTION": "Garbage Collection"
+            "GARBAGE_COLLECTION": "Garbage Collection",
+            "INTERROGATION_SERVICES": "Interrogation Services"
         },
         "LOGS": "Logs",
         "TASKS": "Tasks",
@@ -246,7 +247,7 @@
         "HELMCHART": "Helm Charts",
         "ROBOT_ACCOUNTS": "Robot Accounts",
         "WEBHOOKS": "Webhooks",
-        "IMMUTABLE_TAG": "Immutable Tag"
+        "IMMUTABLE_TAG": "Tag Immutability"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Registro do Projeto",
@@ -273,6 +274,7 @@
         "PROJECT_MASTER": "Mantenedor",
         "DEVELOPER": "Desenvolvedor",
         "GUEST": "Visitante",
+        "LIMITED_GUEST": "Limited Guest",
         "DELETE": "Remover",
         "ITEMS": "itens",
         "ACTIONS": "Ações",
@@ -373,7 +375,8 @@
         "PROJECT_ADMIN": "Project Admin",
         "PROJECT_MASTER": "Master",
         "DEVELOPER": "Developer",
-        "GUEST": "Guest"
+        "GUEST": "Guest",
+        "LIMITED_GUEST": "Limited Guest"
     },
     "WEBHOOK": {
         "EDIT_BUTTON": "EDIT",
@@ -391,6 +394,7 @@
         "CREATE_WEBHOOK": "Getting started with webhooks",
         "EDIT_WEBHOOK_DESC": "Specify the endpoint for receiving webhook notifications",
         "CREATE_WEBHOOK_DESC": "To get started with webhooks, provide an endpoint and credentials to access the webhook server.",
+        "VERIFY_REMOTE_CERT_TOOLTIP": "Determine whether the webhook should verify the certificate of a remote url Uncheck this box when the remote url uses a self-signed or untrusted certificate.",
         "ENDPOINT_URL": "Endpoint URL",
         "URL_IS_REQUIRED": "Endpoint URL is required.",
         "AUTH_HEADER": "Auth Header",
@@ -621,6 +625,7 @@
         "PULL_COMMAND": "Comando de Pull",
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
+        "IMMUTABLE": "Immutable",
         "MY_REPOSITORY": "Meu Repositório",
         "PUBLIC_REPOSITORY": "Repositório Público",
         "DELETION_TITLE_REPO": "Confirmar remoção de repositório",
@@ -733,7 +738,8 @@
         "ADMIN": "Admin(s)",
         "MASTER": "Master(s)",
         "DEVELOPER": "Developer(s)",
-        "GUEST": "Guest(s)"
+        "GUEST": "Guest(s)",
+        "LIMITED_GUEST": "Limited guest(s)"
     },
     "ALERT": {
         "FORM_CHANGE_CONFIRMATION": "Algumas alterações ainda não foram salvas. Você deseja cancelar?"
@@ -865,16 +871,28 @@
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Disparo de análise geral efetuado com sucesso!",
-            "TRIGGER_SCAN_ALL_FAIL": "Falha ao disparar análise geral com erro: {{error}",
+            "TRIGGER_SCAN_ALL_FAIL": "Falha ao disparar análise geral com erro: {{error}}",
             "TITLE": "Análise de vulnerabilidades",
             "SCAN_ALL": "Analisar todos",
+            "SCHEDULE_TO_SCAN_ALL": "Schedule to scan all",
             "SCAN_NOW": "ANALISAR AGORA",
+            "SCAN": "SCAN",
             "NONE_POLICY": "Nenhum",
             "DAILY_POLICY": "Diário em",
             "REFRESH_POLICY": "na atualização",
             "DB_REFRESH_TIME": "Banco de dados atualizado em",
             "DB_NOT_READY": "Banco de dados de vulnerabilidade pode não estar totalmente preparado!",
-            "NEXT_SCAN": "Disponível após"
+            "NEXT_SCAN": "Disponível após",
+            "STATUS": {
+                "PENDING": "Pending",
+                "RUNNING": "Running",
+                "STOPPED": "Stopped",
+                "ERROR": "Error",
+                "SUCCESS": "Success",
+                "SCHEDULED": "Scheduled"
+            },
+            "MANUAL": "Manual",
+            "SCHEDULED": "Scheduled"
         },
         "TEST_MAIL_SUCCESS": "Conexão ao servidor de Email foi verificada.",
         "TEST_LDAP_SUCCESS": "Conexão ao servidor de LDAP foi verificada.",
@@ -942,7 +960,7 @@
             "SCANNING_TIME": "Tempo de conclusão da análise:",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} de {{totalPackages}} {{package}} possuem {{vulnerability}}.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} de {{totalPackages}} {{package}} possuem {{vulnerability}}.",
-            "TOOLTIPS_TITLE_ZERO": "Nenhum pacote vulnerável reconhecido foi encontrado"
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
         },
         "SEVERITY": {
             "CRITICAL": "Crítico",
@@ -1025,7 +1043,8 @@
         "STORAGE_DEFAULT_QUOTA": "Default storage quota",
         "SAVE_SUCCESS": "Quota edit success",
         "UNLIMITED": "unlimited",
-        "INVALID_INPUT": "invalid input"
+        "INVALID_INPUT": "invalid input",
+        "PLACEHOLDER": "We couldn't find any project quotas"
     },
     "WEEKLY": {
         "MONDAY": "Segunda Feira",
@@ -1224,6 +1243,32 @@
         "EXECUTION_TYPE": "Execution Type",
         "ACTION": "ACTION"
     },
+    "IMMUTABLE_TAG": {
+        "IMMUTABLE_RULES": "Immutability rules",
+        "ADD_RULE": "ADD RULE",
+        "ADD_RULE_HELP_1": "Click the ADD RULE button to add a rule.",
+        "EDIT": "Edit",
+        "DISABLE": "Disable",
+        "ENABLE": "Enable",
+        "DELETE": "Delete",
+        "ADD_TITLE": "Add Tag Immutability Rule",
+        "ADD_SUBTITLE": "Specify a tag immutability rule for this project.  Note: all tag immutability rules are first independently calculated and then unioned to capture the final set of immutable tags.",
+        "IN_REPOSITORIES": "For the repositories",
+        "REP_SEPARATOR": "Enter multiple comma separated repos,repo*,or **",
+        "TAGS": "Tags",
+        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
+        "EDIT_TITLE": "Edit Tag Immutability Rule",
+        "EXC": " excluding ",
+        "MAT": " matching ",
+        "AND": " and",
+        "WITH": " with ",
+        "WITHOUT": " without ",
+        "LOWER_LABELS": " labels",
+        "LOWER_TAGS": " tags",
+        "NONE": " none",
+        "EXISTING_RULE": "Existing rule",
+        "ACTION": "ACTION"
+    },
     "SCANNER": {
         "DELETION_SUMMARY": "Do you want to delete scanner {{param}}?",
         "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote registry uses a self-signed or untrusted certificate.",
@@ -1248,14 +1293,14 @@
         "TOKEN": "Token",
         "TOKEN_REQUIRED": "Token is required",
         "API_KEY_REQUIRED": "APIKey is required",
-        "SKIP": "Skip Certificate Verification",
+        "SKIP": "Skip certificate verification",
         "ADD_SCANNER": "Add Scanner",
         "EDIT_SCANNER": "Edit Scanner",
         "TEST_CONNECTION": "TEST CONNECTION",
-        "ADD_SUCCESS": "Added successfully",
+        "ADD_SUCCESS": "Successfully added ",
         "TEST_PASS": "Test passed",
-        "TEST_FAILED": "Test failed",
-        "UPDATE_SUCCESS": "Updated successfully",
+        "TEST_FAILED": "Ping: registration {{name}}:{{url}} is unreachable",
+        "UPDATE_SUCCESS": "Successfully updated",
         "SCANNER_COLON": "Scanner:",
         "NAME_COLON": "Name:",
         "VENDOR_COLON": "Vendor:",
@@ -1279,7 +1324,22 @@
         "ADAPTER": "Adapter",
         "VENDOR": "Vendor",
         "VERSION": "Version",
-        "SELECT_SCANNER": "Select Scanner"
+        "SELECT_SCANNER": "Select Scanner",
+        "ENABLED": "Enabled",
+        "ENABLE": "Enable",
+        "DISABLE": "Disable",
+        "DELETE_SUCCESS": "Successfully deleted",
+        "TOTAL": "Total",
+        "FIXABLE": "Fixable",
+        "DURATION": "Duration:",
+        "OPTIONS": "Options",
+        "USE_INNER": "Use internal registry address",
+        "USE_INNER_TIP": "If the option is checked, the scanner will be forced to use the internal registry address to access the related contents.",
+        "VULNERABILITY_SEVERITY": "Vulnerability severity:",
+        "CONFIRM_DELETION": "Confirm Scanner deletion",
+        "NO_PROJECT_SCANNER": "No Scanner",
+        "SET_UNHEALTHY_SCANNER": "Selected scanner:{{name}} is unhealthy",
+        "SCANNED_BY": "Scanned by:"
     }
 
 }

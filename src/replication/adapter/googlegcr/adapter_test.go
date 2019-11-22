@@ -88,10 +88,10 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 	factory, err := adp.GetFactory(model.RegistryTypeGoogleGcr)
 	assert.Nil(t, err)
 	assert.NotNil(t, factory)
-	a, err := factory(registry)
+	a, err := newAdapter(registry)
 
 	assert.Nil(t, err)
-	return a.(*adapter), server
+	return a, server
 }
 
 func TestAdapter_Info(t *testing.T) {

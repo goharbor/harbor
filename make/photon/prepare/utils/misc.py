@@ -1,6 +1,6 @@
 import os
 import string
-import random
+import secrets
 from pathlib import Path
 
 from g import DEFAULT_UID, DEFAULT_GID
@@ -76,7 +76,7 @@ def validate_crt_subj(dirty_subj):
 
 
 def generate_random_string(length):
-    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
+    return ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
 
 
 def prepare_dir(root: str, *args, **kwargs) -> str:
@@ -140,3 +140,17 @@ def check_permission(path: str, uid:int = None, gid:int = None, mode:int = None)
     if mode is not None and (path.stat().st_mode - mode) % 0o1000 != 0:
         return False
     return True
+
+
+def owner_can_read(st_mode: int) -> bool:
+    """
+    Check if owner have the read permission of this st_mode
+    """
+    return True if st_mode & 0o400 else False
+
+
+def other_can_read(st_mode: int) -> bool:
+    """
+    Check if other user have the read permission of this st_mode
+    """
+    return True if st_mode & 0o004 else False

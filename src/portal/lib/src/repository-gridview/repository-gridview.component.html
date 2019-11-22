@@ -39,10 +39,6 @@
                     <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
-          <span *ngIf="showDBStatusWarning" class="db-status-warning">
-            <clr-icon shape="warning" class="is-warning" size="24"></clr-icon>
-            {{'CONFIG.SCANNING.DB_NOT_READY' | translate }}
-          </span>
                     <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
                     {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}
                     <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount"></clr-dg-pagination>

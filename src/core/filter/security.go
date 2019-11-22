@@ -34,7 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/common/security/local"
 	robotCtx "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/common/security/secret"
-	"github.com/goharbor/harbor/src/common/token"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
@@ -44,6 +43,8 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/authproxy"
 	"github.com/goharbor/harbor/src/pkg/robot"
+	pkg_token "github.com/goharbor/harbor/src/pkg/token"
+	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
 )
 
 // ContextValueKey for content value
@@ -188,15 +189,16 @@ func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if !strings.HasPrefix(robotName, common.RobotPrefix) {
 		return false
 	}
-	rClaims := &token.RobotClaims{}
-	htk, err := token.ParseWithClaims(robotTk, rClaims)
+	rClaims := &robot_claim.Claim{}
+	opt := pkg_token.DefaultTokenOptions()
+	rtk, err := pkg_token.Parse(opt, robotTk, rClaims)
 	if err != nil {
 		log.Errorf("failed to decrypt robot token, %v", err)
 		return false
 	}
 	// Do authn for robot account, as Harbor only stores the token ID, just validate the ID and disable.
 	ctr := robot.RobotCtr
-	robot, err := ctr.GetRobotAccount(htk.Claims.(*token.RobotClaims).TokenID)
+	robot, err := ctr.GetRobotAccount(rtk.Claims.(*robot_claim.Claim).TokenID)
 	if err != nil {
 		log.Errorf("failed to get robot %s: %v", robotName, err)
 		return false
@@ -215,7 +217,7 @@ func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	}
 	log.Debug("creating robot account security context...")
 	pm := config.GlobalProjectMgr
-	securCtx := robotCtx.NewSecurityContext(robot, pm, htk.Claims.(*token.RobotClaims).Access)
+	securCtx := robotCtx.NewSecurityContext(robot, pm, rtk.Claims.(*robot_claim.Claim).Access)
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 	return true
 }
@@ -237,18 +239,8 @@ func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if !ok {
 		return false
 	}
-
-	user, err := dao.GetUser(models.User{
-		Username: username,
-	})
+	user, err := oidc.VerifySecret(ctx.Request.Context(), username, secret)
 	if err != nil {
-		log.Errorf("Failed to get user: %v", err)
-		return false
-	}
-	if user == nil {
-		return false
-	}
-	if err := oidc.VerifySecret(ctx.Request.Context(), user.UserID, secret); err != nil {
 		log.Errorf("Failed to verify secret: %v", err)
 		return false
 	}
@@ -287,9 +279,17 @@ func (it *idTokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Warning("User matches token's claims is not onboarded.")
 		return false
 	}
-	u.GroupIDs, err = group.GetGroupIDByGroupName(oidc.GroupsFromToken(claims), common.OIDCGroupType)
+	settings, err := config.OIDCSetting()
 	if err != nil {
-		log.Errorf("Failed to get group ID list for OIDC user: %s, error: %v", u.Username, err)
+		log.Errorf("Failed to get OIDC settings, error: %v", err)
+	}
+	if groupNames, ok := oidc.GroupsFromClaims(claims, settings.GroupsClaim); ok {
+		groups := models.UserGroupsFromName(groupNames, common.OIDCGroupType)
+		u.GroupIDs, err = group.PopulateGroup(groups)
+		if err != nil {
+			log.Errorf("Failed to get group ID list for OIDC user: %s, error: %v", u.Username, err)
+			return false
+		}
 	}
 	pm := config.GlobalProjectMgr
 	sc := local.NewSecurityContext(u, pm)

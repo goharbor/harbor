@@ -35,7 +35,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
                     confirmed.state === ConfirmationState.CONFIRMED) {
                     this.configScannerService.deleteScanners(confirmed.data)
                         .subscribe(response => {
-                            this.msgHandler.showSuccess("Delete Success");
+                            this.msgHandler.showSuccess("SCANNER.DELETE_SUCCESS");
                             this.getScanners();
                         }, error => {
                             this.errorHandler.error(error);
@@ -57,9 +57,26 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
             .pipe(finalize(() => this.onGoing = false))
             .subscribe(response => {
             this.scanners = response;
+            this.getMetadataForAll();
         }, error => {
             this.errorHandler.error(error);
         });
+    }
+    getMetadataForAll() {
+        if (this.scanners && this.scanners.length > 0) {
+            this.scanners.forEach((scanner, index) => {
+                if (scanner.uuid ) {
+                    this.scanners[index].loadingMetadata = true;
+                    this.configScannerService.getScannerMetadata(scanner.uuid)
+                        .pipe(finalize(() => this.scanners[index].loadingMetadata = false))
+                        .subscribe(response => {
+                            this.scanners[index].metadata = response;
+                        }, error => {
+                            this.scanners[index].metadata = null;
+                        });
+                }
+            });
+        }
     }
 
     addNewScanner(): void {
@@ -76,7 +93,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
             scanner.disabled = !scanner.disabled;
             this.configScannerService.updateScanner(scanner)
                 .subscribe(response => {
-                    this.msgHandler.showSuccess("Update Success");
+                    this.msgHandler.showSuccess("SCANNER.UPDATE_SUCCESS");
                     this.getScanners();
                 }, error => {
                     this.errorHandler.error(error);
@@ -87,7 +104,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
         if (this.selectedRow) {
             this.configScannerService.setAsDefault(this.selectedRow.uuid)
                 .subscribe(response => {
-                    this.msgHandler.showSuccess("Update Success");
+                    this.msgHandler.showSuccess("SCANNER.UPDATE_SUCCESS");
                     this.getScanners();
                 }, error => {
                     this.errorHandler.error(error);
@@ -98,7 +115,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
         if (this.selectedRow) {
             // Confirm deletion
             let msg: ConfirmationMessage = new ConfirmationMessage(
-                "Confirm Scanner deletion",
+                "SCANNER.CONFIRM_DELETION",
                 "SCANNER.DELETION_SUMMARY",
                 this.selectedRow.name,
                 [this.selectedRow],
@@ -116,6 +133,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
             resetValue['description'] = this.selectedRow.description;
             resetValue['url'] = this.selectedRow.url;
             resetValue['skipCertVerify'] = this.selectedRow.skip_certVerify;
+            resetValue['useInner'] = this.selectedRow.use_internal_addr;
             if (this.selectedRow.auth === 'Basic') {
                 resetValue['auth'] = 'Basic';
                 let username: string = this.selectedRow.access_credential.split(":")[0];

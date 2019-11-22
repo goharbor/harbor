@@ -15,7 +15,7 @@ import (
 // ImmutableTagRuleAPI ...
 type ImmutableTagRuleAPI struct {
 	BaseController
-	ctr       immutabletag.APIController
+	ctr       immutabletag.Controller
 	projectID int64
 	ID        int64
 }
@@ -40,13 +40,22 @@ func (itr *ImmutableTagRuleAPI) Prepare() {
 		return
 	}
 	itr.projectID = pid
-
+	itr.ctr = immutabletag.ImmuCtr
 	ruleID, err := itr.GetInt64FromPath(":id")
 	if err == nil || ruleID > 0 {
 		itr.ID = ruleID
-	}
+		itRule, err := itr.ctr.GetImmutableRule(itr.ID)
+		if err != nil {
+			itr.SendInternalServerError(err)
+			return
+		}
+		if itRule == nil || itRule.ProjectID != itr.projectID {
+			err := fmt.Errorf("immutable tag rule %v not found", itr.ID)
+			itr.SendNotFoundError(err)
+			return
+		}
 
-	itr.ctr = immutabletag.ImmuCtr
+	}
 
 	if strings.EqualFold(itr.Ctx.Request.Method, "get") {
 		if !itr.requireAccess(rbac.ActionList) {
@@ -92,6 +101,10 @@ func (itr *ImmutableTagRuleAPI) Post() {
 	}
 	ir.ProjectID = itr.projectID
 	id, err := itr.ctr.CreateImmutableRule(ir)
+	if err != nil && strings.Contains(err.Error(), "duplicate key") {
+		itr.RenderError(http.StatusConflict, "immutable tag rule duplicated")
+		return
+	}
 	if err != nil {
 		itr.SendInternalServerError(err)
 		return

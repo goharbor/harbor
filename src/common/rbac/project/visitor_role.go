@@ -53,6 +53,8 @@ var (
 
 			{Resource: rbac.ResourceLabelResource, Action: rbac.ActionList},
 
+			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
+
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionUpdate},
@@ -122,6 +124,9 @@ var (
 
 			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionCreate},
 		},
 
 		"master": {
@@ -136,6 +141,8 @@ var (
 			{Resource: rbac.ResourceMetadata, Action: rbac.ActionDelete},
 
 			{Resource: rbac.ResourceLog, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceReplication, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceReplication, Action: rbac.ActionList},
@@ -207,6 +214,8 @@ var (
 
 			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 		},
 
 		"developer": {
@@ -219,6 +228,8 @@ var (
 
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
@@ -258,8 +269,9 @@ var (
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
 
-			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 		},
 
 		"guest": {
@@ -272,6 +284,8 @@ var (
 
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
@@ -298,6 +312,38 @@ var (
 
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
+		},
+
+		"limitedGuest": {
+			{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceQuota, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
+			{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
+
+			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceRepositoryTagVulnerability, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceRepositoryTagManifest, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 		},
 	}
 )
@@ -319,6 +365,8 @@ func (role *visitorRole) GetRoleName() string {
 		return "developer"
 	case common.RoleGuest:
 		return "guest"
+	case common.RoleLimitedGuest:
+		return "limitedGuest"
 	default:
 		return ""
 	}

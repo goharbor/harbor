@@ -102,6 +102,7 @@ func initRouters() {
 	beego.Router("/api/logs", &api.LogAPI{})
 
 	beego.Router("/api/replication/adapters", &api.ReplicationAdapterAPI{}, "get:List")
+	beego.Router("/api/replication/adapterinfos", &api.ReplicationAdapterAPI{}, "get:ListAdapterInfos")
 	beego.Router("/api/replication/executions", &api.ReplicationOperationAPI{}, "get:ListExecutions;post:CreateExecution")
 	beego.Router("/api/replication/executions/:id([0-9]+)", &api.ReplicationOperationAPI{}, "get:GetExecution;put:StopExecution")
 	beego.Router("/api/replication/executions/:id([0-9]+)/tasks", &api.ReplicationOperationAPI{}, "get:ListTasks")
@@ -203,6 +204,7 @@ func initRouters() {
 	// Add routes for project level scanner
 	proScannerAPI := &api.ProjectScannerAPI{}
 	beego.Router("/api/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
+	beego.Router("/api/projects/:pid([0-9]+)/scanner/candidates", proScannerAPI, "get:GetProScannerCandidates")
 
 	// Add routes for scan
 	scanAPI := &api.ScanAPI{}
@@ -211,6 +213,11 @@ func initRouters() {
 
 	// Handle scan hook
 	beego.Router("/service/notifications/jobs/scan/:uuid", &jobs.Handler{}, "post:HandleScan")
+
+	// Add routes for scan all metrics
+	scanAllAPI := &api.ScanAllAPI{}
+	beego.Router("/api/scans/all/metrics", scanAllAPI, "get:GetScanAllMetrics")
+	beego.Router("/api/scans/schedule/metrics", scanAllAPI, "get:GetScheduleMetrics")
 
 	// Error pages
 	beego.ErrorController(&controllers.ErrorController{})

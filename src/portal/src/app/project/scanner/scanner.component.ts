@@ -15,11 +15,12 @@ import { Component, OnInit, ViewChild } from "@angular/core";
 import { ConfigScannerService } from "../../config/scanner/config-scanner.service";
 import { Scanner } from "../../config/scanner/scanner";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
-import { ErrorHandler } from "@harbor/ui";
+import { ErrorHandler, UserPermissionService, USERSTATICPERMISSION } from "@harbor/ui";
 import { ActivatedRoute } from "@angular/router";
 import { ClrLoadingState } from "@clr/angular";
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
 import { finalize } from "rxjs/operators";
+import { TranslateService } from "@ngx-translate/core";
 
 
 @Component({
@@ -36,44 +37,66 @@ export class ScannerComponent implements OnInit {
     selectedScanner: Scanner;
     saveBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
     onSaving: boolean = false;
+    hasCreatePermission: boolean = false;
     @ViewChild(InlineAlertComponent, { static: false }) inlineAlert: InlineAlertComponent;
     constructor( private configScannerService: ConfigScannerService,
                  private msgHandler: MessageHandlerService,
                  private errorHandler: ErrorHandler,
                  private route: ActivatedRoute,
+                 private userPermissionService: UserPermissionService,
+                 private translate: TranslateService
     ) {
     }
     ngOnInit() {
         this.projectId = +this.route.snapshot.parent.params['id'];
+        this.getPermission();
         this.init();
+    }
+    getPermission() {
+        if (this.projectId) {
+            this.userPermissionService.getPermission(this.projectId,
+                USERSTATICPERMISSION.SCANNER.KEY, USERSTATICPERMISSION.SCANNER.VALUE.CREATE)
+                .subscribe( permission => {
+                    this.hasCreatePermission = permission;
+                    if (this.hasCreatePermission) {
+                        this.getScanners();
+                    }
+                 });
+        }
     }
     init() {
         this.getScanner();
-        this.getScanners();
     }
-    getScanner() {
+    getScanner(isCheckHealth?: boolean) {
+        this.loading = true;
         this.configScannerService.getProjectScanner(this.projectId)
+            .pipe(finalize(() => this.loading = false))
             .subscribe(response => {
                 if (response && "{}" !== JSON.stringify(response)) {
                     this.scanner = response;
+                    if (isCheckHealth && this.scanner.health !== 'healthy') {
+                        this.translate.get("SCANNER.SET_UNHEALTHY_SCANNER", {name: this.scanner.name})
+                            .subscribe(res => {
+                                 this.errorHandler.warning(res);
+                            }
+                        );
+                    }
                 }
             }, error => {
                 this.errorHandler.error(error);
             });
     }
     getScanners() {
-        this.loading = true;
-        this.configScannerService.getScanners()
-            .pipe(finalize(() => this.loading = false))
-            .subscribe(response => {
-                if (response && response.length > 0) {
-                    this.scanners = response.filter(scanner => {
-                       return !scanner.disabled;
-                   });
-                }
-            }, error => {
-                this.errorHandler.error(error);
-            });
+        if (this.projectId) {
+            this.configScannerService.getProjectScanners(this.projectId)
+                .subscribe(response => {
+                    if (response && response.length > 0) {
+                        this.scanners = response.filter(scanner => {
+                            return !scanner.disabled;
+                        });
+                    }
+                });
+        }
     }
     close() {
         this.opened = false;
@@ -98,7 +121,7 @@ export class ScannerComponent implements OnInit {
             .subscribe(response => {
                 this.close();
                 this.msgHandler.showSuccess('Update Success');
-                this.getScanner();
+                this.getScanner(true);
                 this.saveBtnState = ClrLoadingState.SUCCESS;
             }, error => {
                 this.inlineAlert.showInlineError(error);

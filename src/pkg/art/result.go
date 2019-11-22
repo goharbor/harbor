@@ -20,3 +20,15 @@ type Result struct {
 	// nil error means success
 	Error error `json:"error"`
 }
+
+// ImmutableError ...
+type ImmutableError struct {
+	IsShareDigest bool
+}
+
+func (e *ImmutableError) Error() string {
+	if e.IsShareDigest {
+		return "Same digest with other immutable tag"
+	}
+	return "Immutable tag"
+}

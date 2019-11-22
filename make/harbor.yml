@@ -10,12 +10,12 @@ http:
   port: 80
 
 # https related config
-# https:
-#   # https port for harbor, default is 443
-#   port: 443
-#   # The path of cert and key files for nginx
-#   certificate: /your/certificate/path
-#   private_key: /your/private/key/path
+https:
+  # https port for harbor, default is 443
+  port: 443
+  # The path of cert and key files for nginx
+  certificate: /your/certificate/path
+  private_key: /your/private/key/path
 
 # Uncomment external_url if you want to enable external proxy
 # And when it enabled the hostname will no longer used
@@ -96,7 +96,7 @@ log:
   #   port: 5140
 
 #This attribute is for migrator to detect the version of the .cfg file, DO NOT MODIFY!
-_version: 1.9.0
+_version: 1.10.0
 
 # Uncomment external_database if using external database.
 # external_database:
@@ -140,6 +140,7 @@ _version: 1.9.0
 #   registry_db_index: 1
 #   jobservice_db_index: 2
 #   chartmuseum_db_index: 3
+#   clair_db_index: 4
 
 # Uncomment uaa for trusting the certificate of uaa instance that is hosted via self-signed cert.
 # uaa:

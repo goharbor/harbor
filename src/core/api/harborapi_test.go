@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strconv"
+	"strings"
 
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
@@ -92,6 +93,7 @@ func init() {
 	beego.TestBeegoInit(apppath)
 
 	filter.Init()
+	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 
 	beego.Router("/api/health", &HealthAPI{}, "get:CheckHealth")
@@ -217,6 +219,7 @@ func init() {
 	// Add routes for project level scanner
 	proScannerAPI := &ProjectScannerAPI{}
 	beego.Router("/api/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
+	beego.Router("/api/projects/:pid([0-9]+)/scanner/candidates", proScannerAPI, "get:GetProScannerCandidates")
 
 	// Add routes for scan
 	scanAPI := &ScanAPI{}
@@ -245,19 +248,25 @@ func init() {
 	defer mockServer.Close()
 }
 
-func request(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, []byte, error) {
+func request0(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, http.Header, []byte, error) {
 	_sling = _sling.Set("Accept", acceptHeader)
 	req, err := _sling.Request()
 	if err != nil {
-		return 400, nil, err
+		return 400, nil, nil, err
 	}
 	if len(authInfo) > 0 {
 		req.SetBasicAuth(authInfo[0].Name, authInfo[0].Passwd)
 	}
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, req)
+
 	body, err := ioutil.ReadAll(w.Body)
-	return w.Code, body, err
+	return w.Code, w.Header(), body, err
+}
+
+func request(_sling *sling.Sling, acceptHeader string, authInfo ...usrInfo) (int, []byte, error) {
+	code, _, body, err := request0(_sling, acceptHeader, authInfo...)
+	return code, body, err
 }
 
 // Search for projects and repositories
@@ -541,23 +550,35 @@ func (a testapi) GetProjectMembersByProID(prjUsr usrInfo, projectID string) (int
 }
 
 // Add project role member accompany with  projectID
-// func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, error) {
-func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, member *models.MemberReq) (int, error) {
+// func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, roles apilib.RoleParam) (int, int, error) {
+func (a testapi) AddProjectMember(prjUsr usrInfo, projectID string, member *models.MemberReq) (int, int, error) {
 	_sling := sling.New().Post(a.basePath)
 
 	path := "/api/projects/" + projectID + "/members/"
 	_sling = _sling.Path(path)
 	_sling = _sling.BodyJSON(member)
-	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, prjUsr)
-	return httpStatusCode, err
+	httpStatusCode, header, _, err := request0(_sling, jsonAcceptHeader, prjUsr)
 
+	var memberID int
+	location := header.Get("Location")
+	if location != "" {
+		parts := strings.Split(location, "/")
+		if len(parts) > 0 {
+			i, err := strconv.Atoi(parts[len(parts)-1])
+			if err == nil {
+				memberID = i
+			}
+		}
+	}
+
+	return httpStatusCode, memberID, err
 }
 
 // Delete project role member accompany with  projectID
-func (a testapi) DeleteProjectMember(authInfo usrInfo, projectID string, userID string) (int, error) {
+func (a testapi) DeleteProjectMember(authInfo usrInfo, projectID string, memberID string) (int, error) {
 	_sling := sling.New().Delete(a.basePath)
 
-	path := "/api/projects/" + projectID + "/members/" + userID
+	path := "/api/projects/" + projectID + "/members/" + memberID
 	_sling = _sling.Path(path)
 	httpStatusCode, _, err := request(_sling, jsonAcceptHeader, authInfo)
 	return httpStatusCode, err
@@ -902,16 +923,11 @@ func (a testapi) UsersSearch(userName string, authInfo ...usrInfo) (int, []apili
 }
 
 // Get registered users by userid.
-func (a testapi) UsersGetByID(userName string, authInfo usrInfo, userID int) (int, apilib.User, error) {
+func (a testapi) UsersGetByID(userID int, authInfo usrInfo) (int, apilib.User, error) {
 	_sling := sling.New().Get(a.basePath)
 	// create path and map variables
 	path := "/api/users/" + fmt.Sprintf("%d", userID)
 	_sling = _sling.Path(path)
-	// body params
-	type QueryParams struct {
-		UserName string `url:"username, omitempty"`
-	}
-	_sling = _sling.QueryStruct(&QueryParams{UserName: userName})
 	httpStatusCode, body, err := request(_sling, jsonAcceptHeader, authInfo)
 	var successPayLoad apilib.User
 	if 200 == httpStatusCode && nil == err {

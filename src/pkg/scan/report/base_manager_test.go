@@ -53,6 +53,7 @@ func (suite *TestManagerSuite) SetupTest() {
 		RegistrationUUID: "ruuid",
 		MimeType:         v1.MimeTypeNativeReport,
 		TrackID:          "tid001",
+		Requester:        "requester",
 	}
 
 	uuid, err := suite.m.Create(rp)
@@ -165,4 +166,60 @@ func (suite *TestManagerSuite) TestManagerUpdateReportData() {
 	require.Equal(suite.T(), 1, len(l))
 
 	assert.Equal(suite.T(), "{\"a\":1000}", l[0].Report)
+}
+
+// TestManagerDeleteByDigests ...
+func (suite *TestManagerSuite) TestManagerDeleteByDigests() {
+	// Mock new data
+	rp := &scan.Report{
+		Digest:           "d2000",
+		RegistrationUUID: "ruuid",
+		MimeType:         v1.MimeTypeNativeReport,
+		TrackID:          "tid002",
+	}
+
+	uuid, err := suite.m.Create(rp)
+	require.NoError(suite.T(), err)
+	require.NotEmpty(suite.T(), uuid)
+
+	err = suite.m.DeleteByDigests("d2000")
+	require.NoError(suite.T(), err)
+
+	r, err := suite.m.Get(uuid)
+	suite.NoError(err)
+	suite.Nil(r)
+}
+
+// TestManagerGetStats ...
+func (suite *TestManagerSuite) TestManagerGetStats() {
+	// Mock new data
+	rp := &scan.Report{
+		Digest:           "d1001",
+		RegistrationUUID: "ruuid",
+		MimeType:         v1.MimeTypeNativeReport,
+		TrackID:          "tid002",
+		Requester:        "requester",
+	}
+
+	uuid, err := suite.m.Create(rp)
+	require.NoError(suite.T(), err)
+	require.NotEmpty(suite.T(), uuid)
+
+	defer func() {
+		err := scan.DeleteReport(uuid)
+		suite.NoError(err, "clear test data")
+	}()
+
+	err = suite.m.UpdateStatus("tid002", job.SuccessStatus.String(), 1000)
+	require.NoError(suite.T(), err)
+
+	st, err := suite.m.GetStats("requester")
+	require.NoError(suite.T(), err)
+	require.NotNil(suite.T(), st)
+
+	suite.Equal(uint(2), st.Total)
+	suite.Equal(uint(1), st.Completed)
+	suite.Equal(2, len(st.Metrics))
+	suite.Equal(uint(1), st.Metrics[job.SuccessStatus.String()])
+	suite.Equal(uint(1), st.Metrics[job.PendingStatus.String()])
 }

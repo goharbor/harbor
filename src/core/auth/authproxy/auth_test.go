@@ -43,11 +43,11 @@ func TestMain(m *testing.M) {
 	}
 	mockSvr = test.NewMockServer(map[string]string{"jt": "pp", "Admin@vsphere.local": "Admin!23"})
 	defer mockSvr.Close()
-	defer dao.ExecuteBatchSQL([]string{"delete from user_group where group_name='OnBoardTest'"})
 	a = &Auth{
 		Endpoint:            mockSvr.URL + "/test/login",
 		TokenReviewEndpoint: mockSvr.URL + "/test/tokenreview",
 		SkipCertVerify:      true,
+		CaseSensitive:       false,
 		// So it won't require mocking the cfgManager
 		settingTimeStamp: time.Now(),
 	}
@@ -56,6 +56,7 @@ func TestMain(m *testing.M) {
 		common.HTTPAuthProxyEndpoint:            a.Endpoint,
 		common.HTTPAuthProxyTokenReviewEndpoint: a.TokenReviewEndpoint,
 		common.HTTPAuthProxyVerifyCert:          !a.SkipCertVerify,
+		common.HTTPAuthProxyCaseSensitive:       a.CaseSensitive,
 		common.PostGreSQLSSLMode:                cfgMap[common.PostGreSQLSSLMode],
 		common.PostGreSQLUsername:               cfgMap[common.PostGreSQLUsername],
 		common.PostGreSQLPort:                   cfgMap[common.PostGreSQLPort],
@@ -65,6 +66,7 @@ func TestMain(m *testing.M) {
 	}
 
 	config.InitWithSettings(conf)
+	defer dao.ExecuteBatchSQL([]string{"delete from user_group where group_name='onboardtest'"})
 	rc := m.Run()
 	if err := dao.ClearHTTPAuthProxyUsers(); err != nil {
 		panic(err)
@@ -75,7 +77,17 @@ func TestMain(m *testing.M) {
 }
 
 func TestAuth_Authenticate(t *testing.T) {
-	groupIDs, err := group.GetGroupIDByGroupName([]string{"vsphere.local\\users", "vsphere.local\\administrators"}, common.HTTPGroupType)
+	userGroups := []models.UserGroup{
+		{GroupName: "vsphere.local\\users", GroupType: common.HTTPGroupType},
+		{GroupName: "vsphere.local\\administrators", GroupType: common.HTTPGroupType},
+		{GroupName: "vsphere.local\\caadmins", GroupType: common.HTTPGroupType},
+		{GroupName: "vsphere.local\\systemconfiguration.bashshelladministrators", GroupType: common.HTTPGroupType},
+		{GroupName: "vsphere.local\\systemconfiguration.administrators", GroupType: common.HTTPGroupType},
+		{GroupName: "vsphere.local\\licenseservice.administrators", GroupType: common.HTTPGroupType},
+		{GroupName: "vsphere.local\\everyone", GroupType: common.HTTPGroupType},
+	}
+
+	groupIDs, err := group.PopulateGroup(userGroups)
 	if err != nil {
 		t.Fatal("Failed to get groupIDs")
 	}
@@ -107,7 +119,7 @@ func TestAuth_Authenticate(t *testing.T) {
 			},
 			expect: output{
 				user: models.User{
-					Username: "Admin@vsphere.local",
+					Username: "admin@vsphere.local",
 					GroupIDs: groupIDs,
 					// Email:    "Admin@placeholder.com",
 					// Password: pwd,
@@ -162,12 +174,12 @@ func TestAuth_PostAuthenticate(t *testing.T) {
 		},
 		{
 			input: &models.User{
-				Username: "Admin@vsphere.local",
+				Username: "admin@vsphere.local",
 			},
 			expect: models.User{
-				Username: "Admin@vsphere.local",
-				Email:    "Admin@vsphere.local",
-				Realname: "Admin@vsphere.local",
+				Username: "admin@vsphere.local",
+				Email:    "admin@vsphere.local",
+				Realname: "admin@vsphere.local",
 				Password: pwd,
 				Comment:  userEntryComment,
 			},
@@ -191,6 +203,9 @@ func TestAuth_OnBoardGroup(t *testing.T) {
 	a.OnBoardGroup(input, "")
 
 	assert.True(t, input.ID > 0, "The OnBoardGroup should have a valid group ID")
+	g, er := group.GetUserGroup(input.ID)
+	assert.Nil(t, er)
+	assert.Equal(t, "onboardtest", g.GroupName)
 
 	emptyGroup := &models.UserGroup{}
 	err := a.OnBoardGroup(emptyGroup, "")

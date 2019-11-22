@@ -106,6 +106,7 @@ func (bc *basicClient) GetCandidates(repository *art.Repository) ([]*art.Candida
 			}
 			candidate := &art.Candidate{
 				Kind:         art.Image,
+				NamespaceID:  repository.NamespaceID,
 				Namespace:    repository.Namespace,
 				Repository:   repository.Name,
 				Tag:          image.Name,

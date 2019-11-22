@@ -284,3 +284,44 @@
 .text-xs-center {
   text-align: center !important;
 }
+
+.float-lg-right {
+  float: right;
+}
+
+.position-relative {
+  position: relative;
+}
+clr-datagrid {
+  clr-dg-row {
+    .datagrid-scrolling-cells {
+      align-items: center;
+      width: 100%;
+    }
+    clr-dg-cell {
+      overflow-wrap: break-word;
+    }
+    .datagrid-expandable-caret-icon {
+      margin-top: 0;
+    }
+  }
+  .datagrid-select {
+    display: flex;
+    align-items: center;
+    clr-checkbox-wrapper,
+    clr-radio-wrapper {
+      .clr-control-label {
+        min-height: 0.8rem;
+        width: 0.5rem;
+      }
+    }
+  }
+  .datagrid-table {
+    .datagrid-column {
+      .datagrid-column-title,
+      clr-dg-filter {
+        align-self: center;
+      }
+    }
+  }
+}

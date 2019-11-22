@@ -171,7 +171,7 @@ func TestPMSPolicyChecker(t *testing.T) {
 		Metadata: map[string]string{
 			models.ProMetaEnableContentTrust:   "true",
 			models.ProMetaPreventVul:           "true",
-			models.ProMetaSeverity:             "Low",
+			models.ProMetaSeverity:             "low", // validateProjectMetadata function make the severity to lowercase
 			models.ProMetaReuseSysCVEWhitelist: "false",
 		},
 	})

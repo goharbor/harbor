@@ -2,13 +2,13 @@
   <h3 class="modal-title">{{ defaultTextsObj.editQuota }}</h3>
   <hbr-inline-alert class="modal-title p-0" ></hbr-inline-alert>
   <div class="modal-body">
-    <label>{{defaultTextsObj.setQuota}}</label>
+    <label class="body-label">{{defaultTextsObj.setQuota}}</label>
 
     <form #quotaForm="ngForm" class=" clr-form clr-form-horizontal"
       [class.clr-form-compact-common]="!defaultTextsObj.isSystemDefaultQuota">
 
       <clr-input-container>
-          <label class="left-label required" for="storage">{{ defaultTextsObj?.storageQuota | translate}}
+          <label class="left-label required" for="storage">{{ defaultTextsObj?.countQuota | translate}}
               <clr-tooltip>
                   <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                   <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
@@ -33,7 +33,7 @@
       </clr-input-container>
 
       <clr-input-container>
-          <label for="count" class="left-label required">{{ defaultTextsObj.countQuota | translate}}
+          <label for="count" class="left-label required">{{ defaultTextsObj.storageQuota | translate}}
               <clr-tooltip>
                   <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
                   <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>

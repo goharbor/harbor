@@ -115,6 +115,7 @@ func TestSysCVEWhitelistAPIPut(t *testing.T) {
 					ExpiresAt: &s,
 					Items: []models.CVEWhitelistItem{
 						{CVEID: "CVE-2019-12310"},
+						{CVEID: "RHSA-2019:2237"},
 					},
 				},
 				credential: sysAdmin,

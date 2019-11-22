@@ -22,12 +22,17 @@ import {
   Output,
   ViewChild
 } from "@angular/core";
-import { forkJoin, Observable, Subject, throwError as observableThrowError } from "rxjs";
+import { forkJoin, Observable, Subject, throwError as observableThrowError, of } from "rxjs";
 import { catchError, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
-import { Comparator, Label, State, Tag, TagClickEvent } from "../service/interface";
+import { Comparator, Label, State, Tag, TagClickEvent, VulnerabilitySummary } from "../service/interface";
 
-import { RequestQueryParams, RetagService, TagService, VulnerabilitySeverity } from "../service/index";
+import {
+  RequestQueryParams,
+  RetagService,
+  ScanningResultService,
+  TagService,
+} from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { ChannelService } from "../channel/index";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../shared/shared.const";
@@ -54,7 +59,6 @@ import { operateChanges, OperateInfo, OperationState } from "../operation/operat
 import { OperationService } from "../operation/operation.service";
 import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
 import { errorHandler as errorHandFn } from "../shared/shared.utils";
-import { HttpClient } from "@angular/common/http";
 import { ClrLoadingState } from "@clr/angular";
 
 export interface LabelState {
@@ -80,7 +84,6 @@ export class TagComponent implements OnInit, AfterViewInit {
   @Input() isGuest: boolean;
   @Input() registryUrl: string;
   @Input() withNotary: boolean;
-  @Input() withClair: boolean;
   @Input() withAdmiral: boolean;
   @Output() refreshRepo = new EventEmitter<boolean>();
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
@@ -88,7 +91,7 @@ export class TagComponent implements OnInit, AfterViewInit {
 
 
   tags: Tag[];
-
+  availableTime = AVAILABLE_TIME;
   showTagManifestOpened: boolean;
   retagDialogOpened: boolean;
   manifestInfoTitle: string;
@@ -130,14 +133,14 @@ export class TagComponent implements OnInit, AfterViewInit {
   };
   filterOneLabel: Label = this.initFilter;
 
-  @ViewChild("confirmationDialog", {static: false})
+  @ViewChild("confirmationDialog", { static: false })
   confirmationDialog: ConfirmationDialogComponent;
 
-  @ViewChild("imageNameInput", {static: false})
+  @ViewChild("imageNameInput", { static: false })
   imageNameInput: ImageNameInputComponent;
 
-  @ViewChild("digestTarget", {static: false}) textInput: ElementRef;
-  @ViewChild("copyInput", {static: false}) copyInput: CopyInputComponent;
+  @ViewChild("digestTarget", { static: false }) textInput: ElementRef;
+  @ViewChild("copyInput", { static: false }) copyInput: CopyInputComponent;
 
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage = 1;
@@ -150,6 +153,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   hasScanImagePermission: boolean;
   hasEnabledScanner: boolean;
   scanBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  onSendingScanCommand: boolean;
   constructor(
     private errorHandler: ErrorHandler,
     private tagService: TagService,
@@ -160,7 +164,7 @@ export class TagComponent implements OnInit, AfterViewInit {
     private ref: ChangeDetectorRef,
     private operationService: OperationService,
     private channel: ChannelService,
-    private http: HttpClient
+    private scanningService: ScanningResultService
   ) { }
 
   ngOnInit() {
@@ -220,9 +224,6 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (!this.withAdmiral) {
-      this.getAllLabels();
-    }
   }
 
   public get filterLabelPieceWidth() {
@@ -273,10 +274,6 @@ export class TagComponent implements OnInit, AfterViewInit {
         // Do filtering and sorting
         this.tags = doFiltering<Tag>(tags, state);
         this.tags = doSorting<Tag>(this.tags, state);
-        this.tags = this.tags.map(tag => {
-          tag.pull_time = tag.pull_time === AVAILABLE_TIME ? '' : tag.pull_time;
-          return tag;
-        });
         this.loading = false;
       }, error => {
         this.loading = false;
@@ -322,11 +319,11 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  addLabels(tag: Tag[]): void {
+  addLabels(): void {
     this.labelListOpen = true;
-    this.selectedTag = tag;
+    this.selectedTag = this.selectedRow;
     this.stickName = '';
-    this.labelSelectedChange(tag);
+    this.labelSelectedChange(this.selectedRow);
   }
 
   stickLabel(labelInfo: LabelState): void {
@@ -533,10 +530,7 @@ export class TagComponent implements OnInit, AfterViewInit {
             signatures.push(t.name);
           }
         });
-        this.tags = items.map(tag => {
-          tag.pull_time = tag.pull_time === AVAILABLE_TIME ? '' : tag.pull_time;
-          return tag;
-        });
+        this.tags = items;
         let signedName: { [key: string]: string[] } = {};
         signedName[this.repoName] = signatures;
         this.signatureOutput.emit(signedName);
@@ -565,10 +559,10 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  retag(tags: Tag[]) {
-    if (tags && tags.length) {
+  retag() {
+    if (this.selectedRow && this.selectedRow.length) {
       this.retagDialogOpened = true;
-      this.retagSrcImage = this.repoName + ":" + tags[0].digest;
+      this.retagSrcImage = this.repoName + ":" + this.selectedRow[0].digest;
     } else {
       this.errorHandler.error("One tag should be selected before retag.");
     }
@@ -589,16 +583,19 @@ export class TagComponent implements OnInit, AfterViewInit {
       .subscribe(response => {
         this.translateService.get('RETAG.MSG_SUCCESS').subscribe((res: string) => {
           this.errorHandler.info(res);
+          if (`${this.imageNameInput.projectName.value}/${this.imageNameInput.repoName.value}` === this.repoName) {
+            this.retrieve();
+          }
         });
       }, error => {
         this.errorHandler.error(error);
       });
   }
 
-  deleteTags(tags: Tag[]) {
-    if (tags && tags.length) {
+  deleteTags() {
+    if (this.selectedRow && this.selectedRow.length) {
       let tagNames: string[] = [];
-      tags.forEach(tag => {
+      this.selectedRow.forEach(tag => {
         tagNames.push(tag.name);
       });
 
@@ -611,7 +608,7 @@ export class TagComponent implements OnInit, AfterViewInit {
         titleKey,
         summaryKey,
         content,
-        tags,
+        this.selectedRow,
         ConfirmationTargets.TAG,
         buttons);
       this.confirmationDialog.open(message);
@@ -629,9 +626,12 @@ export class TagComponent implements OnInit, AfterViewInit {
           observableLists.push(this.delOperate(tag));
         });
 
-        forkJoin(...observableLists).subscribe((item) => {
-          this.selectedRow = [];
-          this.retrieve();
+        forkJoin(...observableLists).subscribe((items) => {
+          // if delete one success  refresh list
+          if (items.some(item => !item)) {
+            this.selectedRow = [];
+            this.retrieve();
+          }
         });
       }
     }
@@ -669,15 +669,15 @@ export class TagComponent implements OnInit, AfterViewInit {
             this.translateService.get(message).subscribe(res =>
               operateChanges(operMessage, OperationState.failure, res)
             );
-            return observableThrowError(message);
+            return of(error);
           }));
     }
   }
 
-  showDigestId(tag: Tag[]) {
-    if (tag && (tag.length === 1)) {
+  showDigestId() {
+    if (this.selectedRow && (this.selectedRow.length === 1)) {
       this.manifestInfoTitle = "REPOSITORY.COPY_DIGEST_ID";
-      this.digestId = tag[0].digest;
+      this.digestId = this.selectedRow[0].digest;
       this.showTagManifestOpened = true;
       this.copyFailed = false;
     }
@@ -720,40 +720,42 @@ export class TagComponent implements OnInit, AfterViewInit {
     return VULNERABILITY_SCAN_STATUS.NOT_SCANNED;
   }
   // Whether show the 'scan now' menu
-  canScanNow(t: Tag[]): boolean {
+  canScanNow(): boolean {
     if (!this.hasScanImagePermission) { return false; }
-    let st: string = this.scanStatus(t[0]);
-
-    return st !== VULNERABILITY_SCAN_STATUS.PENDING &&
-      st !== VULNERABILITY_SCAN_STATUS.RUNNING;
+    if (this.onSendingScanCommand) { return false; }
+    let st: string = this.scanStatus(this.selectedRow[0]);
+    return st !== VULNERABILITY_SCAN_STATUS.RUNNING;
   }
   getImagePermissionRule(projectId: number): void {
-    let hasAddLabelImagePermission = this.userPermissionService.getPermission(projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY,
-      USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE);
-    let hasRetagImagePermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.PULL);
-    let hasDeleteImagePermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY_TAG.KEY, USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE);
-    let hasScanImagePermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE);
-    forkJoin(hasAddLabelImagePermission, hasRetagImagePermission, hasDeleteImagePermission, hasScanImagePermission)
-      .subscribe(permissions => {
-        this.hasAddLabelImagePermission = permissions[0] as boolean;
-        this.hasRetagImagePermission = permissions[1] as boolean;
-        this.hasDeleteImagePermission = permissions[2] as boolean;
-        this.hasScanImagePermission = permissions[3] as boolean;
-      }, error => this.errorHandler.error(error));
+    const permissions = [
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE},
+      {resource: USERSTATICPERMISSION.REPOSITORY.KEY, action:  USERSTATICPERMISSION.REPOSITORY.VALUE.PULL},
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE},
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE},
+    ];
+    this.userPermissionService.hasProjectPermissions(this.projectId, permissions).subscribe((results: Array<boolean>) => {
+      this.hasAddLabelImagePermission = results[0];
+        this.hasRetagImagePermission = results[1];
+        this.hasDeleteImagePermission = results[2];
+        this.hasScanImagePermission = results[3];
+        // only has label permission
+        if (this.hasAddLabelImagePermission) {
+          if (!this.withAdmiral) {
+            this.getAllLabels();
+          }
+        }
+    }, error => this.errorHandler.error(error));
   }
   // Trigger scan
-  scanNow(t: Tag[]): void {
-    if (t && t.length) {
-      t.forEach((data: any) => {
-        let tagId = data.name;
-        this.channel.publishScanEvent(this.repoName + "/" + tagId);
-      });
+  scanNow(): void {
+    if (this.selectedRow && this.selectedRow.length === 1) {
+        this.onSendingScanCommand = true;
+        this.channel.publishScanEvent(this.repoName + "/" + this.selectedRow[0].name);
     }
   }
-
+  submitFinish(e: boolean) {
+    this.onSendingScanCommand = e;
+  }
   // pull command
   onCpError($event: any): void {
     this.copyInput.setPullCommendShow();
@@ -761,20 +763,21 @@ export class TagComponent implements OnInit, AfterViewInit {
   getProjectScanner(): void {
     this.hasEnabledScanner = false;
     this.scanBtnState = ClrLoadingState.LOADING;
-    this.http.get(`/api/projects/${this.projectId}/scanner`)
-        .pipe(map(response => response as any))
-        .pipe(catchError(error => observableThrowError(error)))
+    this.scanningService.getProjectScanner(this.projectId)
         .subscribe(response => {
-          if (response && "{}" !== JSON.stringify(response) && !response.disable
-          && response.health) {
+          if (response && "{}" !== JSON.stringify(response) && !response.disabled
+          && response.health === "healthy") {
+            this.scanBtnState = ClrLoadingState.SUCCESS;
             this.hasEnabledScanner = true;
+          } else {
+            this.scanBtnState = ClrLoadingState.ERROR;
           }
-          this.scanBtnState = ClrLoadingState.SUCCESS;
         }, error => {
           this.scanBtnState = ClrLoadingState.ERROR;
         });
   }
-  handleScanOverview(scanOverview: any) {
+
+  handleScanOverview(scanOverview: any): VulnerabilitySummary {
     if (scanOverview) {
       return scanOverview[DEFAULT_SUPPORTED_MIME_TYPE];
     }

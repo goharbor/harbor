@@ -62,8 +62,13 @@ import { LicenseComponent } from './license/license.component';
 import { SummaryComponent } from './project/summary/summary.component';
 import { TagRetentionComponent } from './project/tag-retention/tag-retention.component';
 import { ImmutableTagComponent } from './project/immutable-tag/immutable-tag.component';
-import { USERSTATICPERMISSION } from '@harbor/ui';
+import { USERSTATICPERMISSION, VulnerabilityConfigComponent } from '@harbor/ui';
 import { ScannerComponent } from "./project/scanner/scanner.component";
+import { InterrogationServicesComponent } from "./interrogation-services/interrogation-services.component";
+import { ConfigurationScannerComponent } from "./config/scanner/config-scanner.component";
+import { LabelsComponent } from "./labels/labels.component";
+import { ProjectQuotasComponent } from "./project-quotas/project-quotas.component";
+
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -121,6 +126,37 @@ const harborRoutes: Routes = [
         component: TotalReplicationPageComponent,
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard]
+      },
+      {
+        path: 'interrogation-services',
+        component: InterrogationServicesComponent,
+        canActivate: [SystemAdminGuard],
+        canActivateChild: [SystemAdminGuard],
+        children: [
+          {
+            path: 'scanners',
+            component: ConfigurationScannerComponent
+          },
+          {
+            path: 'vulnerability',
+            component: VulnerabilityConfigComponent
+          },
+          {
+            path: '',
+            redirectTo: 'scanners',
+            pathMatch: 'full'
+          },
+        ]
+      },
+      {
+        path: 'labels',
+        component: LabelsComponent,
+        canActivate: [SystemAdminGuard],
+      },
+      {
+        path: 'project-quotas',
+        component: ProjectQuotasComponent,
+        canActivate: [SystemAdminGuard],
       },
       {
         path: 'replications/:id/:tasks',
@@ -302,8 +338,8 @@ const harborRoutes: Routes = [
             path: 'scanner',
             data: {
               permissionParam: {
-                resource: USERSTATICPERMISSION.CONFIGURATION.KEY,
-                action: USERSTATICPERMISSION.CONFIGURATION.VALUE.READ
+                resource: USERSTATICPERMISSION.SCANNER.KEY,
+                action: USERSTATICPERMISSION.SCANNER.VALUE.READ
               }
             },
             component: ScannerComponent
@@ -313,11 +349,6 @@ const harborRoutes: Routes = [
       {
         path: 'configs',
         component: ConfigurationComponent,
-        canActivate: [SystemAdminGuard]
-      },
-      {
-        path: 'vulnerability',
-        component: VulnerabilityPageComponent,
         canActivate: [SystemAdminGuard]
       },
       {

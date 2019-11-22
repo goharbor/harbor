@@ -10,44 +10,45 @@ System admin have all permissions for the project.
 
 The following table depicts the various user permission levels in a project.
 
-| Action                                  | Guest | Developer | Master | Project Admin |
-| --------------------------------------- | ----- | --------- | ------ | ------------- |
-| See the porject configurations          | ✓     | ✓         | ✓      | ✓             |
-| Edit the project configurations         |       |           |        | ✓             |
-| See a list of project members           | ✓     | ✓         | ✓      | ✓             |
-| Create/edit/delete project members      |       |           |        | ✓             |
-| See a list of project logs              | ✓     | ✓         | ✓      | ✓             |
-| See a list of project replications      |       |           | ✓      | ✓             |
-| See a list of project replication jobs  |       |           |        | ✓             |
-| See a list of project labels            |       |           | ✓      | ✓             |
-| Create/edit/delete project lables       |       |           | ✓      | ✓             |
-| See a list of repositories              | ✓     | ✓         | ✓      | ✓             |
-| Create repositories                     |       | ✓         | ✓      | ✓             |
-| Edit/delete repositories                |       |           | ✓      | ✓             |
-| See a list of images                    | ✓     | ✓         | ✓      | ✓             |
-| Retag image                             | ✓     | ✓         | ✓      | ✓             |
-| Pull image                              | ✓     | ✓         | ✓      | ✓             |
-| Push image                              |       | ✓         | ✓      | ✓             |
-| Scan/delete image                       |       |           | ✓      | ✓             |
-| See a list of image vulnerabilities     | ✓     | ✓         | ✓      | ✓             |
-| See image build history                 | ✓     | ✓         | ✓      | ✓             |
-| Add/Remove labels of image              |       | ✓         | ✓      | ✓             |
-| See a list of helm charts               | ✓     | ✓         | ✓      | ✓             |
-| Download helm charts                    | ✓     | ✓         | ✓      | ✓             |
-| Upload helm charts                      |       | ✓         | ✓      | ✓             |
-| Delete helm charts                      |       |           | ✓      | ✓             |
-| See a list of helm chart versions       | ✓     | ✓         | ✓      | ✓             |
-| Download helm chart versions            | ✓     | ✓         | ✓      | ✓             |
-| Upload helm chart versions              |       | ✓         | ✓      | ✓             |
-| Delete helm chart versions              |       |           | ✓      | ✓             |
-| Add/Remove labels of helm chart version |       | ✓         | ✓      | ✓             |
-| See a list of project robots            |       |           | ✓      | ✓             |
-| Create/edit/delete project robots       |       |           |        | ✓             |
-| See configured CVE whitelist            | ✓     | ✓         | ✓      | ✓             |
-| Create/edit/remove CVE whitelist        |       |           |        | ✓             |
-| Enable/disable webhooks                 |       | ✓         | ✓      | ✓             |
-| Create/delete tag retention rules       |       | ✓         | ✓      | ✓             |
-| Enable/disable tag retention rules      |       | ✓         | ✓      | ✓             |
-| See project quotas                      | ✓     | ✓         | ✓      | ✓             |
-| Edit project quotas                     |       |           |        |               |
+| Action                                  | Limited Guest | Guest | Developer | Master | Project Admin |
+| --------------------------------------- | ------------- | ----- | --------- | ------ | ------------- |
+| See the project configurations          | ✓             | ✓     | ✓         | ✓      | ✓             |
+| Edit the project configurations         |               |       |           |        | ✓             |
+| See a list of project members           |               | ✓     | ✓         | ✓      | ✓             |
+| Create/edit/delete project members      |               |       |           |        | ✓             |
+| See a list of project logs              |               | ✓     | ✓         | ✓      | ✓             |
+| See a list of project replications      |               |       |           | ✓      | ✓             |
+| See a list of project replication jobs  |               |       |           |        | ✓             |
+| See a list of project labels            |               |       |           | ✓      | ✓             |
+| Create/edit/delete project labels       |               |       |           | ✓      | ✓             |
+| See a list of repositories              | ✓             | ✓     | ✓         | ✓      | ✓             |
+| Create repositories                     |               |       | ✓         | ✓      | ✓             |
+| Edit/delete repositories                |               |       |           | ✓      | ✓             |
+| See a list of images                    | ✓             | ✓     | ✓         | ✓      | ✓             |
+| Retag image                             |               | ✓     | ✓         | ✓      | ✓             |
+| Pull image                              | ✓             | ✓     | ✓         | ✓      | ✓             |
+| Push image                              |               |       | ✓         | ✓      | ✓             |
+| Scan/delete image                       |               |       |           | ✓      | ✓             |
+| See a list of image vulnerabilities     | ✓             | ✓     | ✓         | ✓      | ✓             |
+| See image build history                 | ✓             | ✓     | ✓         | ✓      | ✓             |
+| Add/Remove labels of image              |               |       | ✓         | ✓      | ✓             |
+| See a list of helm charts               | ✓             | ✓     | ✓         | ✓      | ✓             |
+| Download helm charts                    | ✓             | ✓     | ✓         | ✓      | ✓             |
+| Upload helm charts                      |               |       | ✓         | ✓      | ✓             |
+| Delete helm charts                      |               |       |           | ✓      | ✓             |
+| See a list of helm chart versions       | ✓             | ✓     | ✓         | ✓      | ✓             |
+| Download helm chart versions            | ✓             | ✓     | ✓         | ✓      | ✓             |
+| Upload helm chart versions              |               |       | ✓         | ✓      | ✓             |
+| Delete helm chart versions              |               |       |           | ✓      | ✓             |
+| Add/Remove labels of helm chart version |               |       | ✓         | ✓      | ✓             |
+| See a list of project robots            |               |       |           | ✓      | ✓             |
+| Create/edit/delete project robots       |               |       |           |        | ✓             |
+| See configured CVE whitelist            | ✓             | ✓     | ✓         | ✓      | ✓             |
+| Create/edit/remove CVE whitelist        |               |       |           |        | ✓             |
+| Enable/disable webhooks                 |               |       | ✓         | ✓      | ✓             |
+| Create/delete tag retention rules       |               |       | ✓         | ✓      | ✓             |
+| Enable/disable tag retention rules      |               |       | ✓         | ✓      | ✓             |
+| See project quotas                      | ✓             | ✓     | ✓         | ✓      | ✓             |
+| Edit project quotas                     |               |       |           |        |               |
+
 

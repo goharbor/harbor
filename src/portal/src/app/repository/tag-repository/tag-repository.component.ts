@@ -65,11 +65,6 @@ export class TagRepositoryComponent implements OnInit {
   get withNotary(): boolean {
     return this.appConfigService.getConfig().with_notary;
   }
-
-  get withClair(): boolean {
-    return this.appConfigService.getConfig().with_clair;
-  }
-
   get withAdmiral(): boolean {
     return this.appConfigService.getConfig().with_admiral;
   }

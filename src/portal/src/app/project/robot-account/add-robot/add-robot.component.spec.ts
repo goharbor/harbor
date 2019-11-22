@@ -8,6 +8,7 @@ import { of } from "rxjs";
 import { ErrorHandler } from "@harbor/ui";
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
+import { AppConfigService } from "../../../app-config.service";
 
 describe('AddRobotComponent', () => {
   let component: AddRobotComponent;
@@ -23,6 +24,13 @@ describe('AddRobotComponent', () => {
   };
   let fakeMessageHandlerService = {
     showSuccess: function() {}
+  };
+  let fakeAppConfigService = {
+    getConfig: function() {
+      return {
+        with_chartmuseum: true
+      };
+    }
   };
 
   beforeEach(async(() => {
@@ -40,6 +48,7 @@ describe('AddRobotComponent', () => {
         TranslateService,
         ErrorHandler,
         { provide: MessageHandlerService, useValue: fakeMessageHandlerService },
+        { provide: AppConfigService, useValue: fakeAppConfigService },
         { provide: RobotService, useValue: fakeRobotService }
       ]
     }).compileComponents();

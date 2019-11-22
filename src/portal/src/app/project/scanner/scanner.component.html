@@ -5,8 +5,9 @@
     <div class="clr-form-control">
         <label class="clr-control-label name">{{'SCANNER.SCANNER' | translate}}</label>
         <div class="clr-control-container">
-            <button *ngIf="scanners && scanners.length > 0" id="edit-scanner" class="btn btn-link edit" (click)="open()">{{'SCANNER.EDIT' | translate}}</button>
-            <label *ngIf="!(scanners && scanners.length > 0)" class="name">{{'SCANNER.NOT_AVAILABLE' | translate}}</label>
+            <button *ngIf="(!scanner) && hasCreatePermission && scanners && scanners.length > 0" id="edit-scanner-copy" class="btn btn-primary btn-sm" (click)="open()">{{'SCANNER.EDIT' | translate}}</button>
+            <label *ngIf="(!scanner) && hasCreatePermission && !(scanners && scanners.length > 0)" class="name">{{'SCANNER.NOT_AVAILABLE' | translate}}</label>
+            <label *ngIf="(!scanner) && !hasCreatePermission" class="name">{{'SCANNER.NO_PROJECT_SCANNER' | translate}}</label>
         </div>
     </div>
     <ng-container *ngIf="scanner">
@@ -16,9 +17,10 @@
                 <div class="clr-input-wrapper">
                     <div class="clr-input-wrapper">
                         <span id="scanner-name" class="scanner-name">{{scanner?.name}}</span>
+                        <button *ngIf="hasCreatePermission && scanners && scanners.length > 0" id="edit-scanner" class="btn btn-primary btn-sm" (click)="open()">{{'SCANNER.EDIT' | translate}}</button>
                         <span *ngIf="scanner?.disabled" class="label label-warning ml-1">{{'SCANNER.DISABLED' | translate}}</span>
-                        <span *ngIf="scanner?.health" class="label label-success ml-1">{{'SCANNER.HEALTHY' | translate}}</span>
-                        <span *ngIf="!scanner?.health" class="label label-danger ml-1">{{'SCANNER.Unhealthy' | translate}}</span>
+                        <span *ngIf="scanner?.health === 'unhealthy'" class="label label-danger ml-1">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                        <span *ngIf="scanner?.health === 'healthy'" class="label label-success ml-1">{{'SCANNER.HEALTHY' | translate}}</span>
                     </div>
                 </div>
             </div>
@@ -32,11 +34,11 @@
                 </div>
             </div>
         </div>
-        <div class="clr-form-control" *ngIf="scanner?.scanner">
+        <div class="clr-form-control" *ngIf="scanner?.adapter">
             <label class="clr-control-label">{{'SCANNER.ADAPTER' | translate}}</label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
-                    <input [ngModel]="scanner?.scanner" readonly class="clr-input width-240" type="text" id="scanner-scanner"
+                    <input [ngModel]="scanner?.adapter" readonly class="clr-input width-240" type="text" id="scanner-scanner"
                            autocomplete="off">
                 </div>
             </div>
@@ -68,21 +70,16 @@
         <clr-datagrid [(clrDgSingleSelected)]="selectedScanner">
             <clr-dg-column [clrDgField]="'name'">{{'SCANNER.NAME' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'url'">{{'SCANNER.ENDPOINT' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'SCANNER.HEALTH' | translate}}</clr-dg-column>
             <clr-dg-column>{{'SCANNER.DEFAULT' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'SCANNER.AUTH' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'SCANNER.DESCRIPTION' | translate}}</clr-dg-column>
             <clr-dg-row *clrDgItems="let scanner of scanners" [clrDgItem]="scanner">
                 <clr-dg-cell>{{scanner.name}}</clr-dg-cell>
                 <clr-dg-cell>{{scanner.url}}</clr-dg-cell>
-                <clr-dg-cell>
-                    <span *ngIf="scanner.health" class="label label-success">{{'SCANNER.HEALTHY' | translate}}</span>
-                    <span *ngIf="!scanner.health"  class="label label-danger">{{'SCANNER.UNHEALTHY' | translate}}</span>
-                </clr-dg-cell>
-                <clr-dg-cell>
+                <clr-dg-cell class="position-relative">
                     <span *ngIf="scanner.is_default" class="label label-info">{{scanner.is_default}}</span>
                     <span *ngIf="!scanner.is_default">{{scanner.is_default}}</span>
                 </clr-dg-cell>
-                <clr-dg-cell>{{scanner.auth?scanner.auth:('SCANNER.NONE'|translate)}}</clr-dg-cell>
+                <clr-dg-cell>{{scanner.description}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
                 <span *ngIf="scanners?.length > 0">1 - {{scanners?.length}} {{'WEBHOOK.OF' | translate}} </span> {{scanners?.length}} {{'WEBHOOK.ITEMS' | translate}}
@@ -91,7 +88,7 @@
         </clr-datagrid>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
-        <button type="button" [clrLoading]="saveBtnState" class="btn btn-primary" [disabled]="!valid" (click)="save()">{{'BUTTON.OK' | translate}}</button>
+        <button id="cancel" type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button id="save-scanner" type="button" [clrLoading]="saveBtnState" class="btn btn-primary" [disabled]="!valid" (click)="save()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>

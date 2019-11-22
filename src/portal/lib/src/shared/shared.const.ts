@@ -121,7 +121,8 @@ export const CONFIG_AUTH_MODE = {
   HTTP_AUTH: "http_auth",
   LDAP_AUTH: "ldap_auth",
   OIDC_AUTH: "oidc_auth",
-  UAA_AUTH: "uaa_auth"
+  UAA_AUTH: "uaa_auth",
+  DB_AUTH: "db_auth",
 };
 export const QUOTA_DANGER_COEFFICIENT = 0.9;
 export const QUOTA_WARNING_COEFFICIENT = 0.7;
@@ -145,6 +146,11 @@ export const PROJECT_ROOTS = [
     NAME: "guest",
     VALUE: 3,
     LABEL: "GROUP.GUEST"
+  },
+  {
+    NAME: "limited",
+    VALUE: 5,
+    LABEL: "GROUP.LIMITED_GUEST"
   }
 ];
 

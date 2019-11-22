@@ -15,6 +15,7 @@
 package scanner
 
 import (
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/pkg/q"
@@ -26,6 +27,8 @@ import (
 
 const (
 	proScannerMetaKey = "projectScanner"
+	statusUnhealthy   = "unhealthy"
+	statusHealthy     = "healthy"
 )
 
 // DefaultController is a singleton api controller for plug scanners
@@ -57,17 +60,16 @@ func (bc *basicController) ListRegistrations(query *q.Query) ([]*scanner.Registr
 		return nil, errors.Wrap(err, "api controller: list registrations")
 	}
 
-	for _, r := range l {
-		_, err = bc.Ping(r)
-		r.Health = err == nil
-	}
-
 	return l, nil
 }
 
 // CreateRegistration ...
 func (bc *basicController) CreateRegistration(registration *scanner.Registration) (string, error) {
-	// TODO: Check connection of the registration.
+	// Check if the registration is available
+	if _, err := bc.Ping(registration); err != nil {
+		return "", errors.Wrap(err, "api controller: create registration")
+	}
+
 	// Check if there are any registrations already existing.
 	l, err := bc.manager.List(&q.Query{
 		PageSize:   1,
@@ -89,11 +91,8 @@ func (bc *basicController) CreateRegistration(registration *scanner.Registration
 func (bc *basicController) GetRegistration(registrationUUID string) (*scanner.Registration, error) {
 	r, err := bc.manager.Get(registrationUUID)
 	if err != nil {
-		return nil, err
+		return nil, errors.Wrap(err, "api controller: get registration")
 	}
-
-	_, err = bc.Ping(r)
-	r.Health = err == nil
 
 	return r, nil
 }
@@ -122,7 +121,11 @@ func (bc *basicController) UpdateRegistration(registration *scanner.Registration
 // SetDefaultRegistration ...
 func (bc *basicController) DeleteRegistration(registrationUUID string) (*scanner.Registration, error) {
 	registration, err := bc.manager.Get(registrationUUID)
-	if registration == nil && err == nil {
+	if err != nil {
+		return nil, errors.Wrap(err, "api controller: delete registration")
+	}
+
+	if registration == nil {
 		// Not found
 		return nil, nil
 	}
@@ -214,16 +217,23 @@ func (bc *basicController) GetRegistrationByProject(projectID int64) (*scanner.R
 		}
 	}
 
-	// Check status by the client later
-	if registration != nil {
-		if meta, err := bc.Ping(registration); err == nil {
-			registration.Scanner = meta.Scanner.Name
-			registration.Vendor = meta.Scanner.Vendor
-			registration.Version = meta.Scanner.Version
-			registration.Health = true
-		} else {
-			registration.Health = false
-		}
+	// No scanner configured
+	if registration == nil {
+		return nil, nil
+	}
+
+	// Get metadata of the configured registration
+	meta, err := bc.Ping(registration)
+	if err != nil {
+		// Not blocked, just logged it
+		log.Error(errors.Wrap(err, "api controller: get project scanner"))
+		registration.Health = statusUnhealthy
+	} else {
+		registration.Health = statusHealthy
+		// Fill in some metadata
+		registration.Adapter = meta.Scanner.Name
+		registration.Vendor = meta.Scanner.Vendor
+		registration.Version = meta.Scanner.Version
 	}
 
 	return registration, err
@@ -299,39 +309,4 @@ func (bc *basicController) GetMetadata(registrationUUID string) (*v1.ScannerAdap
 	}
 
 	return bc.Ping(r)
-}
-
-// IsScannerAvailable ...
-// TODO: This method will be removed if we change the method of getting project
-//  registration without ping later.
-func (bc *basicController) IsScannerAvailable(projectID int64) (bool, error) {
-	if projectID == 0 {
-		return false, errors.New("invalid project ID")
-	}
-
-	// First, get it from the project metadata
-	m, err := bc.proMetaMgr.Get(projectID, proScannerMetaKey)
-	if err != nil {
-		return false, errors.Wrap(err, "api controller: check scanner availability")
-	}
-
-	var registration *scanner.Registration
-	if len(m) > 0 {
-		if registrationID, ok := m[proScannerMetaKey]; ok && len(registrationID) > 0 {
-			registration, err = bc.manager.Get(registrationID)
-			if err != nil {
-				return false, errors.Wrap(err, "api controller: check scanner availability")
-			}
-		}
-	}
-
-	if registration == nil {
-		// Second, get the default one
-		registration, err = bc.manager.GetDefault()
-		if err != nil {
-			return false, errors.Wrap(err, "api controller: check scanner availability")
-		}
-	}
-
-	return registration != nil && !registration.Disabled, nil
 }

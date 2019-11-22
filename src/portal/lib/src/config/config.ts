@@ -159,3 +159,14 @@ export class Configuration {
         this.storage_per_project = new NumberValueItem(-1, true);
     }
 }
+
+export class ScanningMetrics {
+    total?: number;
+    completed?: number;
+    metrics: {
+        [key: string]: number;
+    };
+    requester?: string;
+    isScheduled?: boolean;
+    ongoing: boolean;
+}

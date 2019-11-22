@@ -284,17 +284,11 @@ func IsSuperUser(username string) bool {
 
 // CleanUser - Clean this user information from DB
 func CleanUser(id int64) error {
-	if _, err := GetOrmer().QueryTable(&models.User{}).
-		Filter("UserID", id).Delete(); err != nil {
-		return err
-	}
-	return nil
+	_, err := GetOrmer().QueryTable(&models.User{}).Filter("UserID", id).Delete()
+	return err
 }
 
 // MatchPassword returns true is password matched
 func matchPassword(u *models.User, password string) bool {
-	if u.Password != utils.Encrypt(password, u.Salt, u.PasswordVersion) {
-		return false
-	}
-	return true
+	return utils.Encrypt(password, u.Salt, u.PasswordVersion) == u.Password
 }

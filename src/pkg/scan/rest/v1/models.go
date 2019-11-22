@@ -68,7 +68,7 @@ type ScannerAdapterMetadata struct {
 // Artifact represents an artifact stored in Registry.
 type Artifact struct {
 	// ID of the namespace (project). It will not be sent to scanner adapter.
-	NamespaceID int64 `json:"-"`
+	NamespaceID int64 `json:"namespace_id,omitempty"`
 	// The full name of a Harbor repository containing the artifact, including the namespace.
 	// For example, `library/oracle/nosql`.
 	Repository string `json:"repository"`
@@ -87,8 +87,8 @@ type Artifact struct {
 type Registry struct {
 	// A base URL of the Docker Registry v2 API exposed by Harbor.
 	URL string `json:"url"`
-	// An optional value of the HTTP Authorization header sent with each request to the Docker Registry v2 API.
-	// For example, `Bearer: JWTTOKENGOESHERE`.
+	// An optional value of the HTTP Authorization header sent with each request to the Docker Registry for getting or exchanging token.
+	// For example, `Basic: Base64(username:password)`.
 	Authorization string `json:"authorization"`
 }
 

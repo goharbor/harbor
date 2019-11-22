@@ -8,34 +8,14 @@ import { HTTP_JSON_OPTIONS } from "@harbor/ui";
 @Injectable()
 export class ImmutableTagService {
     private I18nMap: object = {
-        "retain": "ACTION_RETAIN",
-        "lastXDays": "RULE_NAME_1",
-        "latestActiveK": "RULE_NAME_2",
-        "latestPushedK": "RULE_NAME_3",
-        "latestPulledN": "RULE_NAME_4",
-        "always": "RULE_NAME_5",
-        "nDaysSinceLastPull": "RULE_NAME_6",
-        "nDaysSinceLastPush": "RULE_NAME_7",
-        "the images from the last # days": "RULE_TEMPLATE_1",
-        "the most recent active # images": "RULE_TEMPLATE_2",
-        "the most recently pushed # images": "RULE_TEMPLATE_3",
-        "the most recently pulled # images": "RULE_TEMPLATE_4",
-        "pulled within the last # days": "RULE_TEMPLATE_6",
-        "pushed within the last # days": "RULE_TEMPLATE_7",
         "repoMatches": "MAT",
         "repoExcludes": "EXC",
         "matches": "MAT",
         "excludes": "EXC",
         "withLabels": "WITH",
         "withoutLabels": "WITHOUT",
-        "COUNT": "UNIT_COUNT",
-        "DAYS": "UNIT_DAY",
         "none": "NONE",
-        "nothing": "NONE",
-        "Parameters nDaysSinceLastPull is too large": "DAYS_LARGE",
-        "Parameters nDaysSinceLastPush is too large": "DAYS_LARGE",
-        "Parameters latestPushedK is too large": "COUNT_LARGE",
-        "Parameters latestPulledN is too large": "COUNT_LARGE"
+        "nothing": "NONE"
     };
 
     constructor(
@@ -45,7 +25,7 @@ export class ImmutableTagService {
 
     getI18nKey(str: string): string {
         if (this.I18nMap[str.trim()]) {
-            return "TAG_RETENTION." + this.I18nMap[str.trim()];
+            return "IMMUTABLE_TAG." + this.I18nMap[str.trim()];
         }
         return str;
     }

@@ -17,7 +17,7 @@ export class LabelFilterComponent implements ClrDatagridFilterInterface<any>, On
     @Input() labels: Label[] = [];
     @Input() resourceType: ResourceType;
 
-    @ViewChild('filterInput', {static: false}) filterInputRef: ElementRef;
+    @ViewChild('filterInput', {static: true}) filterInputRef: ElementRef;
 
     selectedLabels: Map<number, boolean> = new Map<number, boolean>();
 

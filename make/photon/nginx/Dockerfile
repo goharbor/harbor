@@ -1,10 +1,5 @@
-FROM photon:2.0
-
-RUN tdnf install sudo nginx -y >> /dev/null\
-    && tdnf clean all \
-    && groupadd -r -g 10000 nginx && useradd --no-log-init -r -g 10000 -u 10000 nginx \
-    && ln -sf /dev/stdout /var/log/nginx/access.log \
-    && ln -sf /dev/stderr /var/log/nginx/error.log
+ARG harbor_base_image_version
+FROM goharbor/harbor-nginx-base:${harbor_base_image_version}
 
 VOLUME /var/cache/nginx /var/log/nginx /run
 

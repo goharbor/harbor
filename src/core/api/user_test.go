@@ -51,7 +51,8 @@ func TestUsersPost(t *testing.T) {
 		t.Error("Error occurred while add a test User", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(400, code, "case 1: Add user status should be 400")
+		// Should be 403 as only admin can call this API, otherwise it has to be called from browser, with session id
+		assert.Equal(http.StatusForbidden, code, "case 1: Add user status should be 400")
 	}
 
 	// case 2: register a new user with admin auth, but username is empty, expect 400
@@ -256,7 +257,7 @@ func TestUsersGetByID(t *testing.T) {
 	apiTest := newHarborAPI()
 
 	// case 1: Get user2 with userID and his own auth, expect 200
-	code, user, err := apiTest.UsersGetByID(testUser0002.Username, *testUser0002Auth, testUser0002ID)
+	code, user, err := apiTest.UsersGetByID(testUser0002ID, *testUser0002Auth)
 	if err != nil {
 		t.Error("Error occurred while get users", err.Error())
 		t.Log(err)
@@ -279,7 +280,7 @@ func TestUsersGetByID(t *testing.T) {
 	}
 
 	testUser0003Auth = &usrInfo{"testUser0003", "testUser0003"}
-	code, user, err = apiTest.UsersGetByID(testUser0002.Username, *testUser0003Auth, testUser0002ID)
+	code, user, err = apiTest.UsersGetByID(testUser0002ID, *testUser0003Auth)
 	if err != nil {
 		t.Error("Error occurred while get users", err.Error())
 		t.Log(err)
@@ -287,7 +288,7 @@ func TestUsersGetByID(t *testing.T) {
 		assert.Equal(403, code, "Get users status should be 403")
 	}
 	// case 3: Get user that does not exist with user2 auth, expect 404 not found.
-	code, user, err = apiTest.UsersGetByID(testUser0002.Username, *testUser0002Auth, 1000)
+	code, user, err = apiTest.UsersGetByID(1000, *testUser0002Auth)
 	if err != nil {
 		t.Error("Error occurred while get users", err.Error())
 		t.Log(err)
@@ -319,7 +320,31 @@ func TestUsersPut(t *testing.T) {
 	} else {
 		assert.Equal(403, code, "Change user profile status should be 403")
 	}
-	// case 2: change user2 profile with user2 auth, but bad parameters format.
+	// case 2: change user3 profile with user2 auth
+	realname := "new realname"
+	email := "new_email@mydomain.com"
+	comment := "new comment"
+	profile.UserID = testUser0003ID
+	profile.Realname = realname
+	profile.Email = email
+	profile.Comment = comment
+	code, err = apiTest.UsersPut(testUser0002ID, profile, *testUser0002Auth)
+	if err != nil {
+		t.Error("Error occurred while change user profile", err.Error())
+		t.Log(err)
+	} else {
+		assert.Equal(200, code, "Change user profile status should be 200")
+	}
+	_, user, err := apiTest.UsersGetByID(testUser0003ID, *testUser0003Auth)
+	if err != nil {
+		t.Error("Error occurred while get user", err.Error())
+	} else {
+		assert.NotEqual(realname, user.Realname)
+		assert.NotEqual(email, user.Email)
+		assert.NotEqual(comment, user.Comment)
+	}
+	// case 3: change user2 profile with user2 auth, but bad parameters format.
+	profile = apilib.UserProfile{}
 	code, err = apiTest.UsersPut(testUser0002ID, profile, *testUser0002Auth)
 	if err != nil {
 		t.Error("Error occurred while change user profile", err.Error())
@@ -327,7 +352,7 @@ func TestUsersPut(t *testing.T) {
 	} else {
 		assert.Equal(400, code, "Change user profile status should be 400")
 	}
-	// case 3: change user2 profile with user2 auth, but duplicate email.
+	// case 4: change user2 profile with user2 auth, but duplicate email.
 	profile.Realname = "test user"
 	profile.Email = "testUser0003@mydomain.com"
 	profile.Comment = "change profile"
@@ -338,7 +363,7 @@ func TestUsersPut(t *testing.T) {
 	} else {
 		assert.Equal(409, code, "Change user profile status should be 409")
 	}
-	// case 4: change user2 profile with user2 auth, right parameters format.
+	// case 5: change user2 profile with user2 auth, right parameters format.
 	profile.Realname = "test user"
 	profile.Email = "testUser0002@vmware.com"
 	profile.Comment = "change profile"

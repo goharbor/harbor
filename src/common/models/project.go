@@ -39,8 +39,8 @@ type Project struct {
 	UpdateTime   time.Time         `orm:"column(update_time);auto_now" json:"update_time"`
 	Deleted      bool              `orm:"column(deleted)" json:"deleted"`
 	OwnerName    string            `orm:"-" json:"owner_name"`
-	Togglable    bool              `orm:"-" json:"togglable"`
 	Role         int               `orm:"-" json:"current_user_role_id"`
+	RoleList     []int             `orm:"-" json:"current_user_role_ids"`
 	RepoCount    int64             `orm:"-" json:"repo_count"`
 	ChartCount   uint64            `orm:"-" json:"chart_count"`
 	Metadata     map[string]string `orm:"-" json:"metadata"`
@@ -201,6 +201,7 @@ type ProjectSummary struct {
 	MasterCount       int64 `json:"master_count"`
 	DeveloperCount    int64 `json:"developer_count"`
 	GuestCount        int64 `json:"guest_count"`
+	LimitedGuestCount int64 `json:"limited_guest_count"`
 
 	Quota struct {
 		Hard types.ResourceList `json:"hard"`

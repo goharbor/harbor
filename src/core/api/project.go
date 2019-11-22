@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,6 +33,7 @@ import (
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/pkg/errors"
 )
@@ -458,16 +460,15 @@ func (p *ProjectAPI) List() {
 }
 
 func (p *ProjectAPI) populateProperties(project *models.Project) error {
+	// Transform the severity to severity of CVSS v3.0 Ratings
+	if severity, ok := project.GetMetadata(models.ProMetaSeverity); ok {
+		project.SetMetadata(models.ProMetaSeverity, strings.ToLower(vuln.ParseSeverityVersion3(severity).String()))
+	}
+
 	if p.SecurityCtx.IsAuthenticated() {
 		roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
-		if len(roles) != 0 {
-			project.Role = roles[0]
-		}
-
-		if project.Role == common.RoleProjectAdmin ||
-			p.SecurityCtx.IsSysAdmin() {
-			project.Togglable = true
-		}
+		project.RoleList = roles
+		project.Role = highestRole(roles)
 	}
 
 	total, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
@@ -593,8 +594,18 @@ func (p *ProjectAPI) Summary() {
 		ChartCount: p.project.ChartCount,
 	}
 
+	var fetchSummaries []func(int64, *models.ProjectSummary)
+
+	if hasPerm, _ := p.HasProjectPermission(p.project.ProjectID, rbac.ActionRead, rbac.ResourceQuota); hasPerm {
+		fetchSummaries = append(fetchSummaries, getProjectQuotaSummary)
+	}
+
+	if hasPerm, _ := p.HasProjectPermission(p.project.ProjectID, rbac.ActionList, rbac.ResourceMember); hasPerm {
+		fetchSummaries = append(fetchSummaries, getProjectMemberSummary)
+	}
+
 	var wg sync.WaitGroup
-	for _, fn := range []func(int64, *models.ProjectSummary){getProjectQuotaSummary, getProjectMemberSummary} {
+	for _, fn := range fetchSummaries {
 		fn := fn
 
 		wg.Add(1)
@@ -685,6 +696,7 @@ func getProjectMemberSummary(projectID int64, summary *models.ProjectSummary) {
 		{common.RoleMaster, &summary.MasterCount},
 		{common.RoleDeveloper, &summary.DeveloperCount},
 		{common.RoleGuest, &summary.GuestCount},
+		{common.RoleLimitedGuest, &summary.LimitedGuestCount},
 	} {
 		wg.Add(1)
 		go func(role int, count *int64) {
@@ -701,4 +713,28 @@ func getProjectMemberSummary(projectID int64, summary *models.ProjectSummary) {
 	}
 
 	wg.Wait()
+}
+
+// Returns the highest role in the role list.
+// This func should be removed once we deprecate the "current_user_role_id" in project API
+// A user can have multiple roles and they may not have a strict ranking relationship
+func highestRole(roles []int) int {
+	if roles == nil {
+		return 0
+	}
+	rolePower := map[int]int{
+		common.RoleProjectAdmin: 50,
+		common.RoleMaster:       40,
+		common.RoleDeveloper:    30,
+		common.RoleGuest:        20,
+		common.RoleLimitedGuest: 10,
+	}
+	var highest, highestPower int
+	for _, role := range roles {
+		if p, ok := rolePower[role]; ok && p > highestPower {
+			highest = role
+			highestPower = p
+		}
+	}
+	return highest
 }

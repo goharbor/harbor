@@ -11,17 +11,16 @@
 
 |![notification](docs/img/bell-outline-badged.svg)Community Meeting|
 |------------------|
-|The Harbor Project holds bi-weekly community calls, to join them and watch previous meeting notes and recordings, please see [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
+|The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
  
-Welcome to join below Harbor community events and meet with project maintainers and users:
+We welcome you to join the below Harbor community events and meet with project maintainers and users:
 
-**May 20-24, 2019**, [KubeCon EU, Barcelona](https://events.linuxfoundation.org/events/kubecon-cloudnativecon-europe-2019/): Harbor Community Reception, Intro and Deep-dive sessions.
+**November 18-21, 2019**, [KubeCon US, San Diego](https://events19.linuxfoundation.org/events/kubecon-cloudnativecon-north-america-2019): Harbor Lunch & Learn led by Joe Beda, Intro and Deep-dive sessions.
 
-**June 24-26, 2019**, [KubeCon Shanghai](https://www.lfasiallc.com/events/kubecon-cloudnativecon-china-2019/): Harbor community meetup, Harbor session. 
 </br> </br>
 
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
-Please use [releases](https://github.com/vmware/harbor/releases) instead of the `master` branch in order to get stable binaries.
+Please use [releases](https://github.com/vmware/harbor/releases) instead of the `master` branch in order to get a stable set of binaries.
 
 <img alt="Harbor" src="docs/img/harbor_logo.png">
 
@@ -44,6 +43,11 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 * **Auditing**: All the operations to the repositories are tracked.
 * **RESTful API**: RESTful APIs for most administrative operations, easy to integrate with external systems. An embedded Swagger UI is available for exploring and testing the API.
 * **Easy deployment**: Provide both an online and offline installer. In addition, a Helm Chart can be used to deploy Harbor on Kubernetes.
+
+## API
+
+* [Harbor RESTful API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/API/harbor/swagger.yaml): The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically. 
+* [Scanner Open API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/API/scanner/scanner-adapter-openapi-v1.0.yaml): This API must be implemented in order to register a new artifact scanner in Harbor registry. 
 
 ## Install & Run
 

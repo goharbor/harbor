@@ -1,7 +1,8 @@
 # pylint: disable=no-value-for-parameter
 
+import sys
+import logging
 import click
-
 from utils.misc import delfile
 from utils.configs import validate, parse_yaml_config
 from utils.cert import prepare_ca, SSL_CERT_KEY_PATH, SSL_CERT_PATH, get_secret_key
@@ -31,7 +32,12 @@ def main(conf, with_notary, with_clair, with_chartmuseum):
 
     delfile(config_dir)
     config_dict = parse_yaml_config(conf, with_notary=with_notary, with_clair=with_clair, with_chartmuseum=with_chartmuseum)
-    validate(config_dict, notary_mode=with_notary)
+    try:
+        validate(config_dict, notary_mode=with_notary)
+    except Exception as e:
+        logging.info('Error happend in config validation...')
+        logging.error(e)
+        sys.exit(-1)
 
     prepare_log_configs(config_dict)
     prepare_nginx(config_dict)

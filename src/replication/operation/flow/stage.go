@@ -38,7 +38,7 @@ func initialize(policy *model.Policy) (adp.Adapter, adp.Adapter, error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", policy.SrcRegistry.Type, err)
 	}
-	srcAdapter, err = srcFactory(policy.SrcRegistry)
+	srcAdapter, err = srcFactory.Create(policy.SrcRegistry)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create adapter for source registry %s: %v", policy.SrcRegistry.URL, err)
 	}
@@ -48,7 +48,7 @@ func initialize(policy *model.Policy) (adp.Adapter, adp.Adapter, error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", policy.DestRegistry.Type, err)
 	}
-	dstAdapter, err = dstFactory(policy.DestRegistry)
+	dstAdapter, err = dstFactory.Create(policy.DestRegistry)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create adapter for destination registry %s: %v", policy.DestRegistry.URL, err)
 	}

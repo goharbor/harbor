@@ -59,17 +59,35 @@ func DeleteAdminJob(id int64) error {
 }
 
 // UpdateAdminJobStatus ...
-func UpdateAdminJobStatus(id int64, status string) error {
+func UpdateAdminJobStatus(id int64, status string, statusCode uint16, revision int64) error {
 	o := GetOrmer()
-	j := models.AdminJob{
-		ID:         id,
-		Status:     status,
-		UpdateTime: time.Now(),
-	}
-	n, err := o.Update(&j, "Status", "UpdateTime")
+	qt := o.QueryTable(&models.AdminJob{})
+
+	// The generated sql statement example:{
+	//
+	// UPDATE "admin_job" SET "update_time" = $1, "status" = $2, "status_code" = $3, "revision" = $4
+	// WHERE "id" IN ( SELECT T0."id" FROM "admin_job" T0 WHERE
+	// ( T0."revision" = $5 AND T0."status_code" < $6 ) OR ( T0."revision" < $7 )
+	// AND T0."id" = $8  )
+	//
+	// }
+	cond := orm.NewCondition()
+	c1 := cond.And("revision", revision).And("status_code__lt", statusCode)
+	c2 := cond.And("revision__lt", revision)
+	c := cond.AndCond(c1).OrCond(c2)
+
+	data := make(orm.Params)
+	data["status"] = status
+	data["status_code"] = statusCode
+	data["revision"] = revision
+	data["update_time"] = time.Now()
+
+	n, err := qt.SetCond(c).Filter("id", id).Update(data)
+
 	if n == 0 {
 		log.Warningf("no records are updated when updating admin job %d", id)
 	}
+
 	return err
 }
 
@@ -92,7 +110,7 @@ func GetTop10AdminJobsOfName(name string) ([]*models.AdminJob, error) {
 	o := GetOrmer()
 	jobs := []*models.AdminJob{}
 	n, err := o.Raw(`select * from admin_job 
-		where deleted = false and job_name = ? order by update_time desc limit 10`, name).QueryRows(&jobs)
+		where deleted = false and job_name = ? order by id desc limit 10`, name).QueryRows(&jobs)
 	if err != nil {
 		return nil, err
 	}
@@ -137,6 +155,6 @@ func adminQueryConditions(query *models.AdminJobQuery) orm.QuerySeter {
 		qs = qs.Filter("UUID", query.UUID)
 	}
 	qs = qs.Filter("Deleted", false)
-	return qs
+	return qs.OrderBy("-ID")
 
 }

@@ -268,6 +268,23 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when add project member: %v", err)
 	}
+
+	projectID, err := dao.AddProject(models.Project{Name: "memberputanddelete", OwnerID: 1})
+	if err != nil {
+		t.Errorf("Error occurred when add project: %v", err)
+	}
+	defer dao.DeleteProject(projectID)
+
+	memberID, err := project.AddProjectMember(models.Member{
+		ProjectID:  projectID,
+		Role:       1,
+		EntityID:   int(userID),
+		EntityType: "u",
+	})
+	if err != nil {
+		t.Errorf("Error occurred when add project member: %v", err)
+	}
+
 	URL := fmt.Sprintf("/api/projects/1/members/%v", ID)
 	badURL := fmt.Sprintf("/api/projects/1/members/%v", 0)
 	cases := []*codeCheckingCase{
@@ -330,6 +347,18 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 			},
 			code: http.StatusBadRequest,
 		},
+		// 404
+		{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    fmt.Sprintf("/api/projects/1/members/%v", memberID),
+				bodyJSON: &models.Member{
+					Role: 2,
+				},
+				credential: admin,
+			},
+			code: http.StatusNotFound,
+		},
 		// 200
 		{
 			request: &testingRequest{
@@ -339,8 +368,45 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 			},
 			code: http.StatusOK,
 		},
+		// 404
+		{
+			request: &testingRequest{
+				method: http.MethodDelete,
+				url:    fmt.Sprintf("/api/projects/1/members/%v", memberID),
+				bodyJSON: &models.Member{
+					Role: 2,
+				},
+				credential: admin,
+			},
+			code: http.StatusNotFound,
+		},
 	}
 
 	runCodeCheckingCases(t, cases...)
 
+}
+
+func Test_isValidRole(t *testing.T) {
+	type args struct {
+		role int
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"project admin", args{1}, true},
+		{"master", args{4}, true},
+		{"developer", args{2}, true},
+		{"guest", args{3}, true},
+		{"limited guest", args{5}, true},
+		{"unknow", args{6}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isValidRole(tt.args.role); got != tt.want {
+				t.Errorf("isValidRole() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

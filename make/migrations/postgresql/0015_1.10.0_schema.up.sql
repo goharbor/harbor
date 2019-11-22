@@ -10,6 +10,8 @@ CREATE TABLE scanner_registration
     access_cred VARCHAR(512) NULL,
     disabled BOOLEAN NOT NULL DEFAULT FALSE,
     is_default BOOLEAN NOT NULL DEFAULT FALSE,
+    use_internal_addr BOOLEAN NOT NULL DEFAULT FALSE,
+    immutable BOOLEAN NOT NULL DEFAULT FALSE,
     skip_cert_verify BOOLEAN NOT NULL DEFAULT FALSE,
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     update_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -25,6 +27,7 @@ CREATE TABLE scan_report
     mime_type VARCHAR(256) NOT NULL,
     job_id VARCHAR(64),
     track_id VARCHAR(64),
+    requester VARCHAR(64),
     status VARCHAR(1024) NOT NULL,
     status_code INTEGER DEFAULT 0,
     status_rev BIGINT DEFAULT 0,
@@ -37,11 +40,12 @@ CREATE TABLE scan_report
 /** Add table for immutable tag  **/
 CREATE TABLE immutable_tag_rule
 (
-  id            SERIAL PRIMARY KEY NOT NULL,
-  project_id    int NOT NULL,
-  tag_filter   text,
-  enabled       boolean default true NOT NULL,
-  creation_time timestamp default CURRENT_TIMESTAMP
+  id SERIAL PRIMARY KEY NOT NULL,
+  project_id int NOT NULL,
+  tag_filter text,
+  disabled BOOLEAN NOT NULL DEFAULT FALSE,
+  creation_time timestamp default CURRENT_TIMESTAMP,
+  UNIQUE(project_id, tag_filter)
 );
 
 ALTER TABLE robot ADD COLUMN visible boolean DEFAULT true NOT NULL;
@@ -57,4 +61,11 @@ DROP TABLE IF EXISTS img_scan_job;
 DROP TRIGGER IF EXISTS TRIGGER ON img_scan_overview;
 DROP TABLE IF EXISTS img_scan_overview;
 
-DROP TABLE IF EXISTS clair_vuln_timestamp
+DROP TABLE IF EXISTS clair_vuln_timestamp;
+
+/* Add limited guest role */
+INSERT INTO role (role_code, name) VALUES ('LRS', 'limitedGuest');
+
+/* Add revision and status code columns for admin job table */
+ALTER TABLE admin_job ADD COLUMN revision BIGINT DEFAULT 0;
+ALTER TABLE admin_job ADD COLUMN status_code INTEGER DEFAULT 0;

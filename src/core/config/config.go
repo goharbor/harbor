@@ -42,6 +42,9 @@ const (
 	defaultKeyPath                     = "/etc/core/key"
 	defaultTokenFilePath               = "/etc/core/token/tokens.properties"
 	defaultRegistryTokenPrivateKeyPath = "/etc/core/private_key.pem"
+
+	// SessionCookieName is the name of the cookie for session ID
+	SessionCookieName = "sid"
 )
 
 var (
@@ -461,16 +464,6 @@ func GetRegistryCtlURL() string {
 	return url
 }
 
-// GetClairHealthCheckServerURL returns the URL of
-// the health check server of Clair
-func GetClairHealthCheckServerURL() string {
-	url := os.Getenv("CLAIR_HEALTH_CHECK_SERVER_URL")
-	if len(url) == 0 {
-		return common.DefaultClairHealthCheckServerURL
-	}
-	return url
-}
-
 // HTTPAuthProxySetting returns the setting of HTTP Auth proxy.  the settings are only meaningful when the auth_mode is
 // set to http_auth
 func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
@@ -482,8 +475,8 @@ func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
 		TokenReviewEndpoint: cfgMgr.Get(common.HTTPAuthProxyTokenReviewEndpoint).GetString(),
 		VerifyCert:          cfgMgr.Get(common.HTTPAuthProxyVerifyCert).GetBool(),
 		SkipSearch:          cfgMgr.Get(common.HTTPAuthProxySkipSearch).GetBool(),
+		CaseSensitive:       cfgMgr.Get(common.HTTPAuthProxyCaseSensitive).GetBool(),
 	}, nil
-
 }
 
 // OIDCSetting returns the setting of OIDC provider, currently there's only one OIDC provider allowed for Harbor and it's

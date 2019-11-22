@@ -64,7 +64,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
   staticBackdrop: boolean = true;
   closable: boolean = false;
 
-  @ViewChild('memberForm', {static: false})
+  @ViewChild('memberForm', {static: true})
   currentForm: NgForm;
 
   hasChanged: boolean;

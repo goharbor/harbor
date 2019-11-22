@@ -4,21 +4,21 @@
             <label class="required clr-control-label">{{"SCANNER.NAME" | translate}}</label>
             <div class="clr-control-container" [class.clr-error]="!isNameValid">
                 <div class="clr-input-wrapper">
-                    <input autocomplete="off" #name formControlName="name" class="clr-input width-312"
+                    <input autocomplete="off" #name formControlName="name" class="clr-input width-280"
                            type="text"
                            id="scanner-name">
                     <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
                 </div>
                 <clr-control-error *ngIf="!isNameValid">
-                    {{nameTooltip | translate}}
+                    <span id="name-error">{{nameTooltip | translate}}</span>
                 </clr-control-error>
             </div>
         </div>
         <div class="clr-form-control">
             <label class="clr-control-label">{{"SCANNER.DESCRIPTION" | translate}}</label>
             <div class="clr-control-container">
-                <textarea  autocomplete="off"  formControlName="description"  class="clr-textarea width-312" type="text"
+                <textarea  autocomplete="off"  formControlName="description"  class="clr-textarea width-280" type="text"
                           id="description">
                 </textarea>
             </div>
@@ -28,12 +28,12 @@
             <div class="clr-control-container" [class.clr-error]="!isEndpointValid || showEndpointError">
                 <div class="clr-input-wrapper">
                     <input (focus)="showEndpointError=false" (blur)="checkEndpointUrl()" #endpointUrl placeholder="http(s)://192.168.1.1" autocomplete="off"  formControlName="url"
-                           class="clr-input width-312" type="text" id="scanner-endpoint">
+                           class="clr-input width-280" type="text" id="scanner-endpoint">
                     <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     <span class="spinner spinner-inline" [hidden]="!checkEndpointOnGoing"></span>
                 </div>
                 <clr-control-error *ngIf="!isEndpointValid || showEndpointError">
-                    {{endpointTooltip | translate}}
+                    <span id="endpoint-error">{{endpointTooltip | translate}}</span>
                 </clr-control-error>
             </div>
         </div>
@@ -41,7 +41,7 @@
             <label class="clr-control-label">{{"SCANNER.AUTH" | translate}}</label>
             <div class="clr-control-container">
                 <div class="clr-select-wrapper">
-                    <select formControlName="auth"  class="clr-select width-312"  id="scanner-authorization">
+                    <select formControlName="auth"  class="clr-select width-280"  id="scanner-authorization">
                         <option value="None">{{"SCANNER.NONE" | translate}}</option>
                         <option value="Basic">{{"SCANNER.BASIC" | translate}}</option>
                         <option value="Bearer">{{"SCANNER.BEARER" | translate}}</option>
@@ -56,7 +56,7 @@
                 <div class="clr-control-container" [class.clr-error]="!isUserNameValid">
                     <div class="clr-input-wrapper">
                         <input formControlName="username" autocomplete="off"
-                               class="clr-input width-312" type="text" id="scanner-username">
+                               class="clr-input width-280" type="text" id="scanner-username">
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     </div>
                     <clr-control-error *ngIf="!isUserNameValid">
@@ -69,11 +69,11 @@
                 <div class="clr-control-container" [class.clr-error]="!isPasswordValid">
                     <div class="clr-input-wrapper">
                         <input formControlName="password" autocomplete="off"
-                               class="clr-input width-312" type="password" id="scanner-password">
+                               class="clr-input width-280" type="password" id="scanner-password">
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     </div>
                     <clr-control-error *ngIf="!isPasswordValid">
-                        {{"SCANNER.PASSWORD_REQUIRED" | translate}}
+                        <span id="pwd-error">{{"SCANNER.PASSWORD_REQUIRED" | translate}}</span>
                     </clr-control-error>
                 </div>
             </div>
@@ -82,7 +82,7 @@
                 <div class="clr-control-container" [class.clr-error]="!isTokenValid">
                     <div class="clr-input-wrapper">
                         <input formControlName="token" autocomplete="off"
-                               class="clr-input width-312" type="text" id="scanner-token">
+                               class="clr-input width-280" type="text" id="scanner-token">
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     </div>
                     <clr-control-error *ngIf="!isTokenValid">
@@ -95,7 +95,7 @@
                 <div class="clr-control-container" [class.clr-error]="!isApiKeyValid">
                     <div class="clr-input-wrapper">
                         <input formControlName="apiKey" autocomplete="off"
-                               class="clr-input width-312" type="text" id="scanner-apiKey">
+                               class="clr-input width-280" type="text" id="scanner-apiKey">
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                     </div>
                     <clr-control-error *ngIf="!isApiKeyValid">
@@ -105,19 +105,32 @@
             </div>
         </ng-container>
         <div class="clr-form-control">
-            <label class="clr-control-label">{{"SCANNER.SKIP" | translate}}
-                <clr-tooltip>
-                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
-                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
-                        {{'SCANNER.SKIP_CERT_VERIFY' | translate}}
-                    </clr-tooltip-content>
-                </clr-tooltip>
-            </label>
+            <label class="clr-control-label">{{"SCANNER.OPTIONS" | translate}}</label>
             <div class="clr-control-container padding-top-3">
-                <div class="clr-checkbox-wrapper">
-                    <input clrCheckbox formControlName="skipCertVerify"
+                <clr-checkbox-wrapper>
+                    <input name="scanner-skipCertVerify" clrCheckbox formControlName="skipCertVerify"
                            type="checkbox" id="scanner-skipCertVerify">
-                </div>
+                    <label for="scanner-skipCertVerify">{{"SCANNER.SKIP" | translate}}
+                        <clr-tooltip>
+                            <clr-icon class="color-57"  clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content  clrPosition="top-left" clrSize="md" *clrIfOpen>
+                                {{'SCANNER.SKIP_CERT_VERIFY' | translate}}
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </clr-checkbox-wrapper>
+                <clr-checkbox-wrapper>
+                    <input name="scanner-use-inner" clrCheckbox formControlName="useInner"
+                           type="checkbox" id="scanner-use-inner">
+                    <label for="scanner-use-inner">{{"SCANNER.USE_INNER" | translate}}
+                        <clr-tooltip>
+                            <clr-icon class="color-57"  clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                            <clr-tooltip-content clrPosition="top-left" clrSize="md" *clrIfOpen>
+                                {{"SCANNER.USE_INNER_TIP" | translate}}
+                            </clr-tooltip-content>
+                        </clr-tooltip>
+                    </label>
+                </clr-checkbox-wrapper>
             </div>
         </div>
     </form>

@@ -16,6 +16,9 @@ package api
 
 import (
 	"fmt"
+	"net/http"
+	"strconv"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -24,8 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/robot"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/pkg/errors"
-	"net/http"
-	"strconv"
 )
 
 // RobotAPI ...
@@ -40,7 +41,6 @@ type RobotAPI struct {
 func (r *RobotAPI) Prepare() {
 
 	r.BaseController.Prepare()
-	method := r.Ctx.Request.Method
 
 	if !r.SecurityCtx.IsAuthenticated() {
 		r.SendUnAuthorizedError(errors.New("UnAuthorized"))
@@ -70,10 +70,10 @@ func (r *RobotAPI) Prepare() {
 	r.project = project
 	r.ctr = robot.RobotCtr
 
-	if method == http.MethodPut || method == http.MethodDelete {
+	if r.ParamExistsInPath(":id") {
 		id, err := r.GetInt64FromPath(":id")
 		if err != nil || id <= 0 {
-			r.SendBadRequestError(errors.New("invalid robot ID"))
+			r.SendBadRequestError(fmt.Errorf("invalid robot ID %s", r.GetStringFromPath(":id")))
 			return
 		}
 		robot, err := r.ctr.GetRobotAccount(id)
@@ -84,6 +84,11 @@ func (r *RobotAPI) Prepare() {
 
 		if robot == nil {
 			r.SendNotFoundError(fmt.Errorf("robot %d not found", id))
+			return
+		}
+
+		if robot.ProjectID != pid {
+			r.SendNotFoundError(fmt.Errorf("robot %d not found in project %d", id, pid))
 			return
 		}
 
@@ -173,27 +178,7 @@ func (r *RobotAPI) Get() {
 		return
 	}
 
-	id, err := r.GetInt64FromPath(":id")
-	if err != nil || id <= 0 {
-		r.SendBadRequestError(fmt.Errorf("invalid robot ID: %s", r.GetStringFromPath(":id")))
-		return
-	}
-
-	robot, err := r.ctr.GetRobotAccount(id)
-	if err != nil {
-		r.SendInternalServerError(errors.Wrap(err, "robot API: get robot"))
-		return
-	}
-	if robot == nil {
-		r.SendNotFoundError(fmt.Errorf("robot API: robot %d not found", id))
-		return
-	}
-	if !robot.Visible {
-		r.SendForbiddenError(fmt.Errorf("robot API: robot %d is invisible", id))
-		return
-	}
-
-	r.Data["json"] = robot
+	r.Data["json"] = r.robot
 	r.ServeJSON()
 }
 

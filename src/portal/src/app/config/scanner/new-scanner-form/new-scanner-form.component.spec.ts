@@ -1,4 +1,4 @@
-import { async, ComponentFixture, ComponentFixtureAutoDetect, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, ComponentFixtureAutoDetect, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { NewScannerFormComponent } from "./new-scanner-form.component";
 import { FormBuilder } from "@angular/forms";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
@@ -7,6 +7,7 @@ import { SharedModule } from "../../../shared/shared.module";
 import { ConfigScannerService } from "../config-scanner.service";
 import { of } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
+import { delay } from "rxjs/operators";
 
 describe('NewScannerFormComponent', () => {
   let mockScanner1 = {
@@ -19,7 +20,10 @@ describe('NewScannerFormComponent', () => {
   let fixture: ComponentFixture<NewScannerFormComponent>;
   let fakedConfigScannerService = {
     getScannersByName() {
-      return of([mockScanner1]);
+      return of([mockScanner1]).pipe(delay(500));
+    },
+    getScannersByEndpointUrl() {
+      return of([mockScanner1]).pipe(delay(500));
     }
   };
   beforeEach(async(() => {
@@ -57,32 +61,48 @@ describe('NewScannerFormComponent', () => {
     let el = fixture.nativeElement.querySelector('clr-control-error');
     expect(el).toBeTruthy();
   });
-
-  it('name should be valid', () => {
+  it('name should be existed', fakeAsync(() => {
+    let nameInput = fixture.nativeElement.querySelector('#scanner-name');
+    nameInput.value = "test1";
+    nameInput.dispatchEvent(new Event('input'));
+    nameInput.blur();
+    nameInput.dispatchEvent(new Event('blur'));
+    let el = null;
+    setTimeout(() => {
+      el = fixture.nativeElement.querySelector('#name-error');
+      expect(el).toBeTruthy();
+    }, 20000);
+    tick(20000);
+  }));
+  it('name should be valid', fakeAsync(() => {
     let nameInput = fixture.nativeElement.querySelector('#scanner-name');
     nameInput.value = "test2";
     nameInput.dispatchEvent(new Event('input'));
     nameInput.blur();
     nameInput.dispatchEvent(new Event('blur'));
+    let el = null;
     setTimeout(() => {
-      let el = fixture.nativeElement.querySelector('clr-control-error');
+      el = fixture.nativeElement.querySelector('#name-error');
       expect(el).toBeFalsy();
-    }, 900);
-  });
+    }, 20000);
+    tick(20000);
+  }));
 
-  it('endpoint url should be valid', () => {
+  it('endpoint url should be valid', fakeAsync(() => {
     let nameInput = fixture.nativeElement.querySelector('#scanner-name');
     nameInput.value = "test2";
     let urlInput = fixture.nativeElement.querySelector('#scanner-endpoint');
-    urlInput.value = "http://168.0.0.1";
+    urlInput.value = "http://168.0.0.2";
     urlInput.dispatchEvent(new Event('input'));
     urlInput.blur();
     urlInput.dispatchEvent(new Event('blur'));
+    let el = null;
     setTimeout(() => {
-      let el = fixture.nativeElement.querySelector('clr-control-error');
-      expect(el).toBeFalsy();
-    }, 900);
-  });
+       el = fixture.nativeElement.querySelector('#endpoint-error');
+    }, 20000);
+    tick(20000);
+    expect(el).toBeFalsy();
+  }));
 
   it('auth should be valid', () => {
     let authInput = fixture.nativeElement.querySelector('#scanner-authorization');
@@ -96,7 +116,7 @@ describe('NewScannerFormComponent', () => {
     passwordInput.value = "12345";
     usernameInput.dispatchEvent(new Event('input'));
     passwordInput.dispatchEvent(new Event('input'));
-    let el = fixture.nativeElement.querySelector('clr-control-error');
+    let el = fixture.nativeElement.querySelector('#pwd-error');
     expect(el).toBeFalsy();
   });
 });

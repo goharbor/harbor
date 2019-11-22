@@ -10,7 +10,7 @@ import (
 
 func getMockAdapter(t *testing.T) adp.Adapter {
 	factory, _ := adp.GetFactory(model.RegistryTypeQuayio)
-	adapter, err := factory(&model.Registry{
+	adapter, err := factory.Create(&model.Registry{
 		Type: model.RegistryTypeQuayio,
 		URL:  "https://quay.io",
 	})

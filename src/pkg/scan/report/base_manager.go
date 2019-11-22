@@ -17,11 +17,18 @@ package report
 import (
 	"time"
 
+	"github.com/goharbor/harbor/src/pkg/scan/all"
+
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/errs"
 	"github.com/google/uuid"
 	"github.com/pkg/errors"
+)
+
+const (
+	reportTimeout = 1 * time.Hour
 )
 
 // basicManager is a default implementation of report manager.
@@ -72,8 +79,10 @@ func (bm *basicManager) Create(r *scan.Report) (string, error) {
 		}
 
 		// Status conflict
-		if theStatus.Compare(job.RunningStatus) <= 0 {
-			return "", errors.Errorf("conflict: a previous scanning is %s", theCopy.Status)
+		if theCopy.StartTime.Add(reportTimeout).After(time.Now()) {
+			if theStatus.Compare(job.RunningStatus) <= 0 {
+				return "", errs.WithCode(errs.Conflict, errs.Errorf("a previous scan process is %s", theCopy.Status))
+			}
 		}
 
 		// Otherwise it will be a completed report
@@ -191,4 +200,88 @@ func (bm *basicManager) UpdateReportData(uuid string, report string, rev int64) 
 	}
 
 	return scan.UpdateReportData(uuid, report, rev)
+}
+
+// DeleteByDigests ...
+func (bm *basicManager) DeleteByDigests(digests ...string) error {
+	if len(digests) == 0 {
+		// Nothing to do
+		return nil
+	}
+
+	kws := make(map[string]interface{})
+	ds := make([]interface{}, 0)
+
+	for _, dig := range digests {
+		ds = append(ds, dig)
+	}
+
+	kws["digest"] = ds
+	query := &q.Query{
+		Keywords: kws,
+	}
+
+	rs, err := scan.ListReports(query)
+	if err != nil {
+		return errors.Wrap(err, "report manager: delete by digests")
+	}
+
+	// Return the combined errors at last
+	for _, r := range rs {
+		if er := scan.DeleteReport(r.UUID); er != nil {
+			if err == nil {
+				err = er
+			} else {
+				err = errors.Wrap(er, err.Error())
+			}
+		}
+	}
+
+	return err
+}
+
+// GetStats ...
+func (bm *basicManager) GetStats(requester string) (*all.Stats, error) {
+	if len(requester) == 0 {
+		return nil, errors.New("empty requester")
+	}
+
+	m, err := scan.GetScanStats(requester)
+	if err != nil {
+		return nil, errors.Wrap(err, "report manager: get stats")
+	}
+
+	sts := &all.Stats{
+		Metrics: make(all.StatusMetrics),
+	}
+
+	for k, v := range m {
+		// Increase the total metrics
+		sts.Total += v
+
+		s := job.Status(k)
+		// Increase the completed metrics if the status is not predefined ones or
+		// the status is the final status.
+		if s.Validate() != nil || s.Final() {
+			sts.Completed += v
+		}
+
+		// Not standard error status.
+		// Convert it to standard error status.
+		if s.Validate() != nil {
+			tv := v
+
+			if val, ok := sts.Metrics[job.ErrorStatus.String()]; ok {
+				tv = val + v
+			}
+			sts.Metrics[job.ErrorStatus.String()] = tv
+
+			continue
+		}
+
+		sts.Metrics[k] = v
+	}
+	sts.Requester = requester
+
+	return sts, nil
 }

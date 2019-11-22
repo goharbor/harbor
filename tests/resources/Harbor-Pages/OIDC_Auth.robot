@@ -54,6 +54,6 @@ Generate And Return Secret
     Retry Element Click  ${more_btn}
     Retry Element Click  ${generate_secret_btn}
     Retry Double Keywords When Error  Retry Element Click  ${confirm_btn}  Retry Wait Until Page Not Contains Element  ${confirm_btn}
-    Retry Wait Until Page Contains  generate CLI secret success
+    Retry Wait Until Page Contains  Cli secret setting is successful
     ${secret}=  Get Secrete By API  ${url}
     [Return]  ${secret}

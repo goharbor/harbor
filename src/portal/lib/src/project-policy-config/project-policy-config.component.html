@@ -10,7 +10,7 @@
             <clr-control-helper class="config-subtext"> {{ 'PROJECT_CONFIG.PUBLIC_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        <clr-checkbox-container *ngIf="withNotary || withClair">
+        <clr-checkbox-container *ngIf="withNotary">
             <label><span *ngIf="withNotary">{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label>
             <clr-checkbox-wrapper *ngIf="withNotary">
                 <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.ContentTrust" name="content-trust"
@@ -20,9 +20,9 @@
             <clr-control-helper class="config-subtext"> {{ 'PROJECT_CONFIG.CONTENT_TRUST_POLCIY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        <clr-checkbox-container id="prevent-vulenrability-image" *ngIf="withNotary || withClair">
-            <label><span *ngIf="!withNotary">{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label>
-            <clr-checkbox-wrapper *ngIf="withClair">
+        <clr-checkbox-container id="prevent-vulenrability-image">
+            <label><span>{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label>
+            <clr-checkbox-wrapper>
                 <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.PreventVulImg"
                     name="prevent-vulenrability-image-input" [disabled]="!hasChangeConfigRole" />
                 <label>{{ 'PROJECT_CONFIG.PREVENT_VULNERABLE_TOGGLE' | translate }}</label>
@@ -46,7 +46,7 @@
                 </div>
             </clr-control-helper>
         </clr-checkbox-container>
-        <clr-checkbox-container *ngIf="withClair">
+        <clr-checkbox-container>
             <label>{{ 'PROJECT_CONFIG.SCAN' | translate }}</label>
             <clr-checkbox-wrapper id="scan-image-on-push-wrapper">
                 <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.ScanImgOnPush"
@@ -56,7 +56,7 @@
             <clr-control-helper class="config-subtext"> {{ 'PROJECT_CONFIG.AUTOSCAN_POLICY' | translate }}
             </clr-control-helper>
         </clr-checkbox-container>
-        <div class="clr-form-control" [class.clr-form-control-disabled]="!hasChangeConfigRole" *ngIf="withClair">
+        <div *ngIf="systemInfo" class="clr-form-control" [class.clr-form-control-disabled]="!hasChangeConfigRole">
             <label for="systemWhitelist" class="clr-control-label">{{'CVE_WHITELIST.CVE_WHITELIST'|translate}}</label>
             <div class="w-100 clr-control-container">
                 <div class="config-subtext">
@@ -78,13 +78,13 @@
                 </div>
                 <clr-radio-container clrInline>
                     <clr-radio-wrapper>
-                        <input id="use-system" [disabled]="!hasChangeConfigRole" type="radio" clrRadio
+                        <input id="use-system" [attr.disabled]="!hasChangeConfigRole?'disabled':null" type="radio" clrRadio
                             name="systemWhitelistOrProjectWhitelist" required value="true"
                             [(ngModel)]="systemWhitelistOrProjectWhitelist" />
                         <label>{{'CVE_WHITELIST.SYS_WHITELIST'|translate}}</label>
                     </clr-radio-wrapper>
                     <clr-radio-wrapper>
-                        <input id="use-project" [disabled]="!hasChangeConfigRole" type="radio" clrRadio
+                        <input id="use-project" [attr.disabled]="!hasChangeConfigRole?'disabled':null" type="radio" clrRadio
                             name="systemWhitelistOrProjectWhitelist" required value="false"
                             [(ngModel)]="systemWhitelistOrProjectWhitelist" />
                         <label>{{'CVE_WHITELIST.PRO_WHITELIST'|translate}}</label>
@@ -134,10 +134,10 @@
                             </li>
                         </ul>
                     </div>
-                    <div class="clr-col padding-top-8 ">
+                    <div class="clr-col padding-top-16 pl-2">
                         <div class="clr-row expire-data">
                             <label for="expires"
-                                class="bottom-line clr-col-4">{{'CVE_WHITELIST.EXPIRES_AT'|translate}}</label>
+                                class="bottom-line clr-col-3">{{'CVE_WHITELIST.EXPIRES_AT'|translate}}</label>
                             <div class="underline">
                                 <input #dateSystemInput readonly type="date" [(clrDate)]="systemExpiresDate">
                                 <input [disabled]="!hasChangeConfigRole" *ngIf="!isUseSystemWhitelist()" #dateInput
@@ -149,7 +149,7 @@
                             </div>
                         </div>
                         <div class="clr-row">
-                            <label for="expires" class="clr-col-4"></label>
+                            <label for="expires" class="clr-col-3"></label>
                             <clr-checkbox-wrapper>
                                 <input [disabled]="isUseSystemWhitelist() || !hasChangeConfigRole"
                                     [checked]="neverExpires" [(ngModel)]="neverExpires" type="checkbox" clrCheckbox

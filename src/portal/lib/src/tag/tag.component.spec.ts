@@ -112,6 +112,15 @@ describe("TagComponent (inline template)", () => {
   let mockHasRetagImagePermission: boolean = true;
   let mockHasDeleteImagePermission: boolean = true;
   let mockHasScanImagePermission: boolean = true;
+  const mockErrorHandler = {
+    error: () => {}
+  };
+  const permissions = [
+    {resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE},
+    {resource: USERSTATICPERMISSION.REPOSITORY.KEY, action:  USERSTATICPERMISSION.REPOSITORY.VALUE.PULL},
+    {resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE},
+    {resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE},
+  ];
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -141,6 +150,7 @@ describe("TagComponent (inline template)", () => {
         { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         { provide: LabelService, useClass: LabelDefaultService },
         { provide: UserPermissionService, useClass: UserPermissionDefaultService },
+        { provide: mockErrorHandler, useValue: ErrorHandler },
         { provide: OperationService },
       ]
     }).compileComponents();
@@ -169,15 +179,10 @@ describe("TagComponent (inline template)", () => {
     let http: HttpClient;
     http = fixture.debugElement.injector.get(HttpClient);
     spyScanner = spyOn(http, "get").and.returnValue(of(scannerMock));
-    spyOn(userPermissionService, "getPermission")
-    .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE )
-    .and.returnValue(of(mockHasAddLabelImagePermission))
-     .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.PULL )
-     .and.returnValue(of(mockHasRetagImagePermission))
-     .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY_TAG.KEY, USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE )
-     .and.returnValue(of(mockHasDeleteImagePermission))
-     .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE)
-     .and.returnValue(of(mockHasScanImagePermission));
+    spyOn(userPermissionService, "hasProjectPermissions")
+    .withArgs(comp.projectId, permissions )
+    .and.returnValue(of([mockHasAddLabelImagePermission, mockHasRetagImagePermission,
+       mockHasDeleteImagePermission, mockHasScanImagePermission]));
 
     labelService = fixture.debugElement.injector.get(LabelService);
 

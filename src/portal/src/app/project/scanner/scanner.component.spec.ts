@@ -9,13 +9,24 @@ import { ScannerComponent } from "./scanner.component";
 import { ConfigScannerService } from "../../config/scanner/config-scanner.service";
 import { SharedModule } from "../../shared/shared.module";
 import { ActivatedRoute } from "@angular/router";
+import { Scanner } from "../../config/scanner/scanner";
 
-xdescribe('ScannerComponent', () => {
-  let mockScanner1 = {
+describe('ScannerComponent', () => {
+  const mockScanner1: Scanner = {
+    uuid: 'abc',
     name: 'test1',
     description: 'just a sample',
     version: '1.0.0',
-    url: 'http://168.0.0.1'
+    url: 'http://168.0.0.1',
+    health: 'healthy'
+  };
+  const mockScanner2: Scanner = {
+    uuid: 'def',
+    name: 'test2',
+    description: 'just a sample',
+    version: '2.0.0',
+    url: 'http://168.0.0.2',
+    health: 'healthy'
   };
   let component: ScannerComponent;
   let fixture: ComponentFixture<ScannerComponent>;
@@ -24,7 +35,13 @@ xdescribe('ScannerComponent', () => {
       return of(mockScanner1);
     },
     getScanners() {
-      return of([mockScanner1]);
+      return of([mockScanner1, mockScanner2]);
+    },
+    getProjectScanners() {
+      return of([mockScanner1, mockScanner2]);
+    },
+    updateProjectScanner() {
+      return of(true);
     }
   };
   let fakedRoute = {
@@ -57,21 +74,30 @@ xdescribe('ScannerComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ScannerComponent);
     component = fixture.componentInstance;
+    spyOn(component, 'getPermission').and.returnValue(undefined);
     fixture.detectChanges();
   });
   it('should creat', () => {
     expect(component).toBeTruthy();
   });
   it('should get scanner and render', () => {
-    fixture.whenStable().then(() => {
-      let el: HTMLElement = fixture.nativeElement.querySelector('#scanner-name');
-      expect(el.textContent.trim).toEqual('test1');
-    });
+    component.hasCreatePermission = true;
+    let el: HTMLElement = fixture.nativeElement.querySelector('#scanner-name');
+    expect(el.textContent.trim()).toEqual('test1');
   });
-  it('should get scanners and edit button is available', () => {
-    fixture.whenStable().then(() => {
-      let el: HTMLElement = fixture.nativeElement.querySelector('#edit-scanner');
-      expect(el).toBeTruthy();
-    });
+  it('select another scanner', () => {
+    component.hasCreatePermission = true;
+    component.getScanners();
+    fixture.detectChanges();
+    const editButton = fixture.nativeElement.querySelector('#edit-scanner');
+    expect(editButton).toBeTruthy();
+    editButton.click();
+    fixture.detectChanges();
+    component.selectedScanner = mockScanner2;
+    fixture.detectChanges();
+    const saveButton = fixture.nativeElement.querySelector('#save-scanner');
+    saveButton.click();
+    fixture.detectChanges();
+    expect(component.opened).toBeFalsy();
   });
 });

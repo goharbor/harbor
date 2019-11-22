@@ -117,6 +117,58 @@ type FilterStyle struct {
 	Values []string   `json:"values,omitempty"`
 }
 
+// EndpointPattern ...
+type EndpointPattern struct {
+	EndpointType EndpointType `json:"endpoint_type"`
+	Endpoints    []*Endpoint  `json:"endpoints"`
+}
+
+// EndpointType ..
+type EndpointType string
+
+const (
+	// EndpointPatternTypeStandard ...
+	EndpointPatternTypeStandard EndpointType = "EndpointPatternTypeStandard"
+	// EndpointPatternTypeFix ...
+	EndpointPatternTypeFix EndpointType = "EndpointPatternTypeFix"
+	// EndpointPatternTypeList ...
+	EndpointPatternTypeList EndpointType = "EndpointPatternTypeList"
+)
+
+// Endpoint ...
+type Endpoint struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
+// CredentialPattern ...
+type CredentialPattern struct {
+	AccessKeyType    AccessKeyType    `json:"access_key_type"`
+	AccessKeyData    string           `json:"access_key_data"`
+	AccessSecretType AccessSecretType `json:"access_secret_type"`
+	AccessSecretData string           `json:"access_secret_data"`
+}
+
+// AccessKeyType ..
+type AccessKeyType string
+
+const (
+	// AccessKeyTypeStandard ...
+	AccessKeyTypeStandard AccessKeyType = "AccessKeyTypeStandard"
+	// AccessKeyTypeFix ...
+	AccessKeyTypeFix AccessKeyType = "AccessKeyTypeFix"
+)
+
+// AccessSecretType ...
+type AccessSecretType string
+
+const (
+	// AccessSecretTypeStandard ...
+	AccessSecretTypeStandard AccessSecretType = "AccessSecretTypePass"
+	// AccessSecretTypeFile ...
+	AccessSecretTypeFile AccessSecretType = "AccessSecretTypeFile"
+)
+
 // RegistryInfo provides base info and capability declarations of the registry
 type RegistryInfo struct {
 	Type                     RegistryType   `json:"type"`
@@ -124,4 +176,33 @@ type RegistryInfo struct {
 	SupportedResourceTypes   []ResourceType `json:"-"`
 	SupportedResourceFilters []*FilterStyle `json:"supported_resource_filters"`
 	SupportedTriggers        []TriggerType  `json:"supported_triggers"`
+}
+
+// AdapterPattern provides base info and capability declarations of the registry
+type AdapterPattern struct {
+	EndpointPattern   *EndpointPattern   `json:"endpoint_pattern"`
+	CredentialPattern *CredentialPattern `json:"credential_pattern"`
+}
+
+// NewDefaultAdapterPattern ...
+func NewDefaultAdapterPattern() *AdapterPattern {
+	return &AdapterPattern{
+		EndpointPattern:   NewDefaultEndpointPattern(),
+		CredentialPattern: NewDefaultCredentialPattern(),
+	}
+}
+
+// NewDefaultEndpointPattern ...
+func NewDefaultEndpointPattern() *EndpointPattern {
+	return &EndpointPattern{
+		EndpointType: EndpointPatternTypeStandard,
+	}
+}
+
+// NewDefaultCredentialPattern ...
+func NewDefaultCredentialPattern() *CredentialPattern {
+	return &CredentialPattern{
+		AccessKeyType:    AccessKeyTypeStandard,
+		AccessSecretType: AccessSecretTypeStandard,
+	}
 }

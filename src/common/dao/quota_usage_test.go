@@ -133,3 +133,33 @@ func (suite *QuotaUsageDaoSuite) TestListQuotaUsages() {
 func TestRunQuotaUsageDaoSuite(t *testing.T) {
 	suite.Run(t, new(QuotaUsageDaoSuite))
 }
+
+func Test_quotaUsageOrderBy(t *testing.T) {
+	query := func(sort string) []*models.QuotaUsageQuery {
+		return []*models.QuotaUsageQuery{
+			{Sorting: models.Sorting{Sort: sort}},
+		}
+	}
+
+	type args struct {
+		query []*models.QuotaUsageQuery
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"no query", args{nil}, ""},
+		{"order by unsupport field", args{query("unknow")}, ""},
+		{"order by count of used", args{query("used.count")}, "(CAST( (CASE WHEN (used->>'count') IS NULL THEN '0' WHEN (used->>'count') = '-1' THEN '9223372036854775807' ELSE (used->>'count') END) AS BIGINT )) ASC"},
+		{"order by storage of used", args{query("used.storage")}, "(CAST( (CASE WHEN (used->>'storage') IS NULL THEN '0' WHEN (used->>'storage') = '-1' THEN '9223372036854775807' ELSE (used->>'storage') END) AS BIGINT )) ASC"},
+		{"order by unsupport used resource", args{query("used.unknow")}, ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := quotaUsageOrderBy(tt.args.query...); got != tt.want {
+				t.Errorf("quotaUsageOrderBy() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

@@ -19,7 +19,7 @@ sleep 2
 sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
-sudo make -f make/photon/Makefile _build_db _build_registry _build_prepare -e VERSIONTAG=dev -e CLAIRDBVERSION=dev -e REGISTRYVERSION=${REG_VERSION}
+sudo make -f make/photon/Makefile _build_db _build_registry _build_prepare -e VERSIONTAG=dev -e REGISTRYVERSION=${REG_VERSION} -e BASEIMAGETAG=dev
 sudo MAKEPATH=$(pwd)/make ./make/prepare
 sudo mkdir -p "/data/redis"
 sudo mkdir -p /etc/core/ca/ && sudo mv ./tests/ca.crt /etc/core/ca/
@@ -30,3 +30,4 @@ cd tests && sudo ./ldapprepare.sh && sudo ./admiral.sh && cd ..
 sudo sed -i 's/__reg_version__/${REG_VERSION}-dev/g' ./make/docker-compose.test.yml
 sudo sed -i 's/__version__/dev/g' ./make/docker-compose.test.yml
 sudo mkdir -p ./make/common/config/registry/ && sudo mv ./tests/reg_config.yml ./make/common/config/registry/config.yml
+sudo mkdir /storage && sudo chown 10000:10000 -R /storage

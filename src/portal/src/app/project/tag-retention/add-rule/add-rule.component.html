@@ -20,7 +20,7 @@
                 </div>
                 <div class="clr-col-5">
                     <div class="w-100">
-                        <input required [(ngModel)]="repositories" class="clr-input w-100">
+                        <input id="repos" required [(ngModel)]="repositories" class="clr-input w-100">
                     </div>
                 </div>
             </div>
@@ -40,7 +40,7 @@
                 <div class="clr-col-5">
                     <div class="over-line"></div>
                     <div class="clr-select-wrapper w-100">
-                        <select [(ngModel)]="template" class="clr-select w-100">
+                        <select id="template" [(ngModel)]="template" class="clr-select w-100">
                             <option class="display-none" value=""></option>
                             <option *ngFor="let t of metadata?.templates"
                                     value="{{t?.rule_template}}">{{getI18nKey(t?.action)|translate}}{{getI18nKey(t?.display_text)|translate}}</option>
@@ -52,7 +52,7 @@
                         <span *ngIf="hasParam()">{{getI18nKey(unit)|translate}}</span>
                     </div>
                     <div class="w-100 disabled">
-                        <input *ngIf="hasParam()" [(ngModel)]="num" class="clr-input w-100">
+                        <input id="param" *ngIf="hasParam()" [(ngModel)]="num" class="clr-input w-100">
                     </div>
                 </div>
             </div>
@@ -72,7 +72,7 @@
                 </div>
                 <div class="clr-col-5">
                     <div class="w-100">
-                        <input required [(ngModel)]="tagsInput" class="clr-input w-100">
+                        <input id="tags" required [(ngModel)]="tagsInput" class="clr-input w-100">
                     </div>
                 </div>
             </div>
@@ -86,7 +86,7 @@
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-outline" (click)="cancel()">{{'BUTTON.CANCEL' | translate}}</button>
-        <button [disabled]="canNotAdd()" type="button" class="btn btn-primary" (click)="add()">
+        <button id="save-add" [disabled]="canNotAdd()" type="button" class="btn btn-primary" (click)="add()">
             <span *ngIf="isAdd">{{'BUTTON.ADD' | translate}}</span>
             <span *ngIf="!isAdd">{{'BUTTON.SAVE' | translate}}</span>
         </button>

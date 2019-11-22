@@ -1,4 +1,4 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, ComponentFixtureAutoDetect, TestBed } from '@angular/core/testing';
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { ClarityModule } from "@clr/angular";
 import { of } from "rxjs";
@@ -39,6 +39,9 @@ describe('ConfigurationScannerComponent', () => {
     },
     getScanners() {
       return of([mockScanner1]);
+    },
+    updateScanner() {
+      return of(true);
     }
   };
   beforeEach(async(() => {
@@ -60,6 +63,8 @@ describe('ConfigurationScannerComponent', () => {
         ConfirmationDialogService,
         TranslateService,
         { provide: ConfigScannerService, useValue: fakedConfigScannerService },
+          // open auto detect
+        { provide: ComponentFixtureAutoDetect, useValue: true }
       ]
     })
     .compileComponents();
@@ -80,5 +85,15 @@ describe('ConfigurationScannerComponent', () => {
       let el: HTMLElement = fixture.nativeElement.querySelector('#set-default');
       expect(el.getAttribute('disable')).toBeFalsy();
     });
+  });
+  it('edit a scanner', () => {
+    component.selectedRow = mockScanner1;
+    component.editScanner();
+    expect(component.newScannerDialog.opened).toBeTruthy();
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('#scanner-name').value = 'test456';
+    fixture.nativeElement.querySelector('#button-save').click();
+    fixture.detectChanges();
+    expect(component.newScannerDialog.opened).toBeFalsy();
   });
 });

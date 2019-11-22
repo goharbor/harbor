@@ -18,7 +18,7 @@ type MatchTestSuite struct {
 	t       *testing.T
 	assert  *assert.Assertions
 	require *require.Assertions
-	ctr     immutabletag.APIController
+	ctr     immutabletag.Controller
 	ruleID  int64
 	ruleID2 int64
 }

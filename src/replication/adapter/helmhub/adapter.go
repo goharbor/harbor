@@ -16,19 +16,41 @@ package helmhub
 
 import (
 	"errors"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
 func init() {
-	if err := adp.RegisterFactory(model.RegistryTypeHelmHub, func(registry *model.Registry) (adp.Adapter, error) {
-		return newAdapter(registry)
-	}); err != nil {
+	if err := adp.RegisterFactory(model.RegistryTypeHelmHub, new(factory)); err != nil {
 		log.Errorf("failed to register factory for %s: %v", model.RegistryTypeHelmHub, err)
 		return
 	}
 	log.Infof("the factory for adapter %s registered", model.RegistryTypeHelmHub)
+}
+
+type factory struct {
+}
+
+// Create ...
+func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	return newAdapter(r)
+}
+
+// AdapterPattern ...
+func (f *factory) AdapterPattern() *model.AdapterPattern {
+	return &model.AdapterPattern{
+		EndpointPattern: &model.EndpointPattern{
+			EndpointType: model.EndpointPatternTypeFix,
+			Endpoints: []*model.Endpoint{
+				{
+					Key:   "hub.helm.sh",
+					Value: "https://hub.helm.sh",
+				},
+			},
+		},
+	}
 }
 
 type adapter struct {

@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/robot/model"
 	sca "github.com/goharbor/harbor/src/pkg/scan"
+	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -105,6 +106,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		Status:           "Pending",
 		StatusCode:       0,
 		TrackID:          "the-uuid-123",
+		Requester:        "the-uuid-123",
 	}).Return("r-uuid", nil)
 	mgr.On("UpdateScanJobID", "the-uuid-123", "the-job-id").Return(nil)
 
@@ -161,7 +163,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	resource := fmt.Sprintf("/project/%d/repository", suite.artifact.NamespaceID)
 	access := []*rbac.Policy{{
 		Resource: rbac.Resource(resource),
-		Action:   "pull",
+		Action:   rbac.ActionScannerPull,
 	}}
 
 	rname := "the-uuid-123"
@@ -199,6 +201,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	params[sca.JobParamRegistration] = regJSON
 	params[sca.JobParameterRequest] = rJSON
 	params[sca.JobParameterMimes] = []string{v1.MimeTypeNativeReport}
+	params[sca.JobParameterRobotID] = int64(1)
 
 	j := &jm.JobData{
 		Name: job.ImageScanJob,
@@ -343,6 +346,22 @@ func (mrm *MockReportManager) Get(uuid string) (*scan.Report, error) {
 	}
 
 	return args.Get(0).(*scan.Report), args.Error(1)
+}
+
+func (mrm *MockReportManager) DeleteByDigests(digests ...string) error {
+	args := mrm.Called(digests)
+
+	return args.Error(0)
+}
+
+func (mrm *MockReportManager) GetStats(requester string) (*all.Stats, error) {
+	args := mrm.Called(requester)
+
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
+
+	return args.Get(0).(*all.Stats), args.Error(1)
 }
 
 // MockScannerController ...

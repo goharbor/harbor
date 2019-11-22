@@ -1,4 +1,4 @@
-<clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
+<clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRow">
     <clr-dg-action-bar>
         <button type="button" class="btn btn-sm btn-secondary" (click)="addNewProject()" *ngIf="projectCreationRestriction">
             <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'PROJECT.NEW_PROJECT' | translate}}</button>
@@ -8,7 +8,7 @@
     </clr-dg-action-bar>
     <clr-dg-column [clrDgField]="'name'">{{'PROJECT.NAME' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="accessLevelComparator">{{'PROJECT.ACCESS_LEVEL' | translate}}</clr-dg-column>
-    <clr-dg-column *ngIf="showRoleInfo" [clrDgSortBy]="roleComparator">{{'PROJECT.ROLE' | translate}}</clr-dg-column>
+    <clr-dg-column [clrDgSortBy]="roleComparator">{{'PROJECT.ROLE' | translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="repoCountComparator">{{'PROJECT.REPO_COUNT'| translate}}</clr-dg-column>
     <clr-dg-column *ngIf="withChartMuseum" [clrDgSortBy]="chartCountComparator">{{'PROJECT.CHART_COUNT'| translate}}</clr-dg-column>
     <clr-dg-column [clrDgSortBy]="timeComparator">{{'PROJECT.CREATION_TIME' | translate}}</clr-dg-column>
@@ -17,13 +17,13 @@
             <a href="javascript:void(0)" (click)="goToLink(p.project_id)">{{p.name}}</a>
         </clr-dg-cell>
         <clr-dg-cell>{{ (p.metadata.public === 'true' ? 'PROJECT.PUBLIC' : 'PROJECT.PRIVATE') | translate}}</clr-dg-cell>
-        <clr-dg-cell *ngIf="showRoleInfo">{{roleInfo[p.current_user_role_id] | translate}}</clr-dg-cell>
+        <clr-dg-cell>{{ roleInfo[p.current_user_role_id]? (roleInfo[p.current_user_role_id] | translate): "-"}}</clr-dg-cell>
         <clr-dg-cell>{{p.repo_count}}</clr-dg-cell>
         <clr-dg-cell *ngIf="withChartMuseum">{{p.chart_count}}</clr-dg-cell>
         <clr-dg-cell>{{p.creation_time | date: 'short'}}</clr-dg-cell>
     </clr-dg-row>
     <clr-dg-footer>
-        <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'PROJECT.OF' | translate}} </span> {{pagination.totalItems
+        <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem +1 }} {{'PROJECT.OF' | translate}} </span> {{pagination.totalItems
         }} {{'PROJECT.ITEMS' | translate}}
         <clr-dg-pagination #pagination [clrDgPageSize]="pageSize" [(clrDgPage)]="currentPage" [clrDgTotalItems]="totalCount"></clr-dg-pagination>
     </clr-dg-footer>
