@@ -223,7 +223,8 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
     # Clair configs, optional
     clair_configs = configs.get("clair") or {}
     config_dict['clair_db'] = 'postgres'
-    config_dict['clair_updaters_interval'] = clair_configs.get("updaters_interval") or 12
+    updaters_interval = clair_configs.get("updaters_interval", None)
+    config_dict['clair_updaters_interval'] = 12 if updaters_interval is None else updaters_interval
 
     # Chart configs
     chart_configs = configs.get("chart") or {}
