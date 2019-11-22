@@ -1,6 +1,6 @@
 <clr-main-container>
     <global-message [isAppLevel]="true"></global-message>
-    <navigator></navigator>
+    <navigator (showPwdChangeModal)="openModal($event)"></navigator>
     <search-result></search-result>
     <div class="login-wrapper" [ngStyle]="{'background-image': customLoginBgImg? 'url(/images/' + customLoginBgImg + ')': ''}">
         <form #signInForm="ngForm" class="login">
@@ -46,3 +46,4 @@
 </clr-main-container>
 <sign-up #signupDialog (userCreation)="handleUserCreation($event)"></sign-up>
 <forgot-password #forgotPwdDialog></forgot-password>
+<about-dialog></about-dialog>
