@@ -156,7 +156,7 @@ _version: 1.9.0
 proxy:
   http_proxy:
   https_proxy:
-  no_proxy: 127.0.0.1,localhost,.local,.internal,log,db,redis,nginx,core,portal,postgresql,jobservice,registry,registryctl,clair
+  no_proxy: 127.0.0.1,localhost,.local,.internal,log,db,redis,nginx,core,portal,postgresql,jobservice,registry,registryctl,clair,chartmuseum,notary-server
   components:
     - core
     - jobservice
