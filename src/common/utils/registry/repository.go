@@ -97,7 +97,7 @@ func (r *Repository) ListTag() ([]string, error) {
 			}
 
 			tags = append(tags, tagsResp.Tags...)
-			// Link: </v2/_catalog?last=library%2Fhello-world-25&n=100>; rel="next"
+			// Link: <https://444571669415.dkr.ecr.ap-northeast-1.amazonaws.com/v2/test/nginx-photon/tags/list?last=ukD72mdD%2FmC8b5xV3susmJzzaTgp3hKwR9nRUW1yZZ4R3Jc13zaALoZQP9ut3IYattOaKlXMRmYYgRHibI9VTKT2qZ%2BXD7PV4LjLE6OjHmQkRwXypd7HXj%2FSnA9iMm3YvNsd4LmPQrO4fpYZgnZZ8rzIIYqex6%2B3A3%2FmKcTsNKkkKwRror1sjGrDqkw6MRYRWLUC5ZAd%2B7VjpfVsS5HLLEZltW%2Fl3aYbulKYdpdl0Z46tIb6CcBgfvi1ECZhEkEGPnTgU%2B5oeI8mpMftGK6i3j6U6Vn0rYXucTE2coh%2BlSCEpI6Nkzh%2F1RptJZioNqEf24qDS8t0eYzqJ%2B1%2BtWGyBvnC1qYWEFgixqfhcN8hb1g%3D; rel="next"
 			// Link: <http://domain.com/v2/_catalog?last=library%2Fhello-world-25&n=100>; rel="next"
 			link := resp.Header.Get("Link")
 			if strings.HasSuffix(link, `rel="next"`) && strings.Index(link, "<") >= 0 && strings.Index(link, ">") >= 0 {
