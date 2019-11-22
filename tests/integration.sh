@@ -99,7 +99,7 @@ if [[ $DRONE_BRANCH == "release-"* ]]; then
 else
   Harbor_Build_Base_Tag=dev
 fi
-export Harbor_Build_Base_Tag=Harbor_Build_Base_Tag
+export Harbor_Build_Base_Tag=$Harbor_Build_Base_Tag
 
 echo "--------------------------------------------------"
 echo "Harbor Package version: $Harbor_Package_Version"
