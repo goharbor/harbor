@@ -31,8 +31,10 @@
 }
 
 .nav-about-link {
-    padding-left: 12px !important;
-    padding-right: 12px !important;
+    padding-left: 1.6rem !important;
+    padding-right: 1rem !important;
+    min-width: 125px;
+    text-align: left !important;
 }
 
 .harbor-logo {
@@ -47,7 +49,7 @@
         left: -8px;
     }
     .currentLang {
-        padding-right: 8px;
+        padding-right: 30px;
     }
 }
 
@@ -62,4 +64,7 @@
 }
 .dropdown-item {
     outline: none;
+}
+.dropdown-lang {
+    padding-right: 1.3rem;
 }
