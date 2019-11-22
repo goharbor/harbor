@@ -193,7 +193,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 
 	dtrNamespaces, err := a.clientDTRAPI.getNamespaces()
 	if err != nil {
-		log.Error("Failed to lookup namespaces from DTR: %v", err)
+		log.Errorf("Failed to lookup namespaces from DTR: %v", err)
 		return err
 	}
 
@@ -216,7 +216,7 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 
 	repositories, err := a.clientDTRAPI.getRepositories()
 	if err != nil {
-		log.Error("Failed to lookup repositories from DTR: %v", err)
+		log.Errorf("Failed to lookup repositories from DTR: %v", err)
 		return err
 	}
 

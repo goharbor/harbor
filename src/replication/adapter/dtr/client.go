@@ -82,7 +82,7 @@ func (c *Client) getAndIteratePagination(endpoint string, v interface{}) error {
 
 		res := reflect.New(elemType)
 		if err = json.Unmarshal(data, res.Interface()); err != nil {
-			log.Error("Failed to parse json response: %v", data)
+			log.Errorf("Failed to parse json response: %v", data)
 			return err
 		}
 		resources = reflect.AppendSlice(resources, reflect.Indirect(res))
