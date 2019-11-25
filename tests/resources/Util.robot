@@ -246,7 +246,7 @@ Retry Keyword When Return Value Mismatch
     Should Be Equal As Strings  ${status}  'PASS'
 
 Retry Double Keywords When Error
-    [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}
+    [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}  ${DoAssert}=${true}
     :For  ${n}  IN RANGE  1  5
     \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
     \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
@@ -257,8 +257,8 @@ Retry Double Keywords When Error
     \    Log To Console  Return value is ${out1[0]} ${out2[0]}
     \    Exit For Loop If  '${out2[0]}'=='PASS'
     \    Sleep  1
+    Return From Keyword If  ${DoAssert} == ${false}  '${out2[0]}'
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
-    [Return]  'PASS'
 
 Run Curl And Return Json
     [Arguments]  ${curl_cmd}
