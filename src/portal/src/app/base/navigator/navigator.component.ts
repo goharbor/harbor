@@ -38,7 +38,7 @@ import { SkinableConfig } from "../../skinable-config.service";
 export class NavigatorComponent implements OnInit {
     // constructor(private router: Router){}
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
-    @Output() showPwdChangeModal = new EventEmitter<ModalEvent>();
+    @Output() showDialogModalAction = new EventEmitter<ModalEvent>();
 
     selectedLang: string = enLang;
     appTitle: string = 'APP_TITLE.HARBOR';
@@ -132,7 +132,7 @@ export class NavigatorComponent implements OnInit {
 
     // Open change password dialog
     openChangePwdModal(): void {
-        this.showPwdChangeModal.emit({
+        this.showDialogModalAction.emit({
             modalName: modalEvents.CHANGE_PWD,
             modalFlag: true
         });
@@ -140,7 +140,7 @@ export class NavigatorComponent implements OnInit {
 
     // Open about dialog
     openAboutDialog(): void {
-        this.showPwdChangeModal.emit({
+        this.showDialogModalAction.emit({
             modalName: modalEvents.ABOUT,
             modalFlag: true
         });
