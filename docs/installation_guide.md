@@ -4,7 +4,7 @@ There are two possibilities when installing Harbor.
 
 - **Online installer:** The online installer downloads the Harbor images from Docker hub. For this reason, the installer is very small in size.
 
-- **Offline installer:** Use the offline installer if the host to which are are deploying Harbor does not have a connection to the Internet. The offline installer contains pre-built images so it is larger than the online installer.
+- **Offline installer:** Use the offline installer if the host to which you are deploying Harbor does not have a connection to the Internet. The offline installer contains pre-built images so it is larger than the online installer.
 
 You download the installers from the **[official release](https://github.com/goharbor/harbor/releases)** page.
 
