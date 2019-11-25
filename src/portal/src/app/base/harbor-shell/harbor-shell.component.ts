@@ -14,7 +14,7 @@
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Subscription } from "rxjs";
-import { AppConfigService } from '../..//app-config.service';
+import { AppConfigService } from '../../app-config.service';
 
 import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';
@@ -23,10 +23,9 @@ import { AccountSettingsModalComponent } from '../../account/account-settings/ac
 import { PasswordSettingComponent } from '../../account/password-setting/password-setting.component';
 import { NavigatorComponent } from '../navigator/navigator.component';
 import { SessionService } from '../../shared/session.service';
-
 import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
-import { CommonRoutes } from '@harbor/ui';
+import { CommonRoutes } from "../../../lib/entities/shared.const";
 
 @Component({
     selector: 'harbor-shell',

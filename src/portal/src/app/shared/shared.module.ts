@@ -16,17 +16,10 @@ import { RouterModule } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
 import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { CookieService } from "ngx-cookie";
-import {
-  IServiceConfig,
-  SERVICE_CONFIG,
-  ErrorHandler,
-  HarborLibraryModule
-} from "@harbor/ui";
-
 import { SessionService } from "../shared/session.service";
 import { MessageService } from "../global-message/message.service";
 import { MessageComponent } from "../global-message/message.component";
-import { DateValidatorDirective } from "../shared/date-validator.directive";
+import { DateValidatorDirective } from "./date-validator.directive";
 import { CoreModule } from "../core/core.module";
 
 import { AuthCheckGuard } from "./route/auth-user-activate.service";
@@ -54,6 +47,9 @@ import { ConfirmationDialogComponent } from "./confirmation-dialog/confirmation-
 import { ConfirmationDialogService } from "./confirmation-dialog/confirmation-dialog.service";
 import { MessageHandlerService } from "./message-handler/message-handler.service";
 import { ListChartVersionRoComponent } from "./list-chart-version-ro/list-chart-version-ro.component";
+import { IServiceConfig, SERVICE_CONFIG } from "../../lib/entities/service.config";
+import { ErrorHandler } from "../../lib/utils/error-handler";
+import { HarborLibraryModule } from "../../lib/harbor-library.module";
 
 const uiLibConfig: IServiceConfig = {
   enablei18Support: true,

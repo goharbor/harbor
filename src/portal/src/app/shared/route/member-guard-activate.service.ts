@@ -19,10 +19,10 @@ import {
   CanActivateChild
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
-import { ProjectService } from '@harbor/ui';
-import { CommonRoutes } from '@harbor/ui';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
+import { ProjectService } from "../../../lib/services";
+import { CommonRoutes } from "../../../lib/entities/shared.const";
 
 @Injectable()
 export class MemberGuard implements CanActivate, CanActivateChild {

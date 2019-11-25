@@ -9,11 +9,11 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { of } from 'rxjs';
 import { ActivatedRoute } from '@angular/router';
-
 import { SessionService } from '../../shared/session.service';
-
 import { AppConfigService } from "../../app-config.service";
-import { UserPermissionService, USERSTATICPERMISSION, ErrorHandler, ProjectService } from "@harbor/ui";
+import { ProjectService, UserPermissionService } from "../../../lib/services";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+
 describe('ProjectDetailComponent', () => {
     let component: ProjectDetailComponent;
     let fixture: ComponentFixture<ProjectDetailComponent>;

@@ -58,7 +58,7 @@
 .font-size-54 {
   font-size: .541667rem;
 }
-::ng-deep {
+:host::ng-deep {
   .normal-wrapper-box {
     .normal-wrapper {
       .font-style {

@@ -1,8 +1,8 @@
 import { TestBed, inject } from '@angular/core/testing';
-import { ProjectService } from '@harbor/ui';
 import { SessionService } from '../shared/session.service';
 import { ProjectRoutingResolver } from './project-routing-resolver.service';
 import { RouterTestingModule } from '@angular/router/testing';
+import { ProjectService } from "../../lib/services";
 
 describe('ProjectRoutingResolverService', () => {
   beforeEach(() => {

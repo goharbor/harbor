@@ -1,9 +1,9 @@
 import { Component, OnInit } from '@angular/core';
-import { Configuration } from "@harbor/ui";
 import { SessionService } from "../shared/session.service";
 import { ConfigurationService } from "../config/config.service";
 import { MessageHandlerService } from "../shared/message-handler/message-handler.service";
 import { finalize } from "rxjs/operators";
+import { Configuration } from "../../lib/components/config/config";
 
 @Component({
   selector: 'app-project-quotas',

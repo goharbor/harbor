@@ -15,12 +15,13 @@ import { Component, OnInit, ViewChild } from "@angular/core";
 import { ConfigScannerService } from "../../config/scanner/config-scanner.service";
 import { Scanner } from "../../config/scanner/scanner";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
-import { ErrorHandler, UserPermissionService, USERSTATICPERMISSION } from "@harbor/ui";
 import { ActivatedRoute } from "@angular/router";
 import { ClrLoadingState } from "@clr/angular";
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
 import { finalize } from "rxjs/operators";
 import { TranslateService } from "@ngx-translate/core";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
 
 
 @Component({

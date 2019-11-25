@@ -4,10 +4,11 @@ import {
   ChangeDetectionStrategy,
   Input
 } from "@angular/core";
-
 import { HelmChartMetaData, HelmChartSecurity } from "./../../helm-chart.interface.service";
-import { downloadFile, Label, ErrorHandler } from '@harbor/ui';
 import { HelmChartService } from "../../helm-chart.service";
+import { Label } from "../../../../../lib/services";
+import { ErrorHandler } from "../../../../../lib/utils/error-handler";
+import { downloadFile } from "../../../../../lib/utils/utils";
 
 @Component({
   selector: "hbr-chart-detail-summary",

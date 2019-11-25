@@ -16,8 +16,9 @@ import { CreateProjectComponent } from './create-project/create-project.componen
 import { ListProjectComponent } from './list-project/list-project.component';
 import { ProjectTypes } from '../shared/shared.const';
 import { ConfigurationService } from '../config/config.service';
-import { Configuration, QuotaHardInterface } from '@harbor/ui';
 import { SessionService } from "../shared/session.service";
+import { QuotaHardInterface } from "../../lib/services";
+import { Configuration } from "../../lib/components/config/config";
 
 @Component({
   selector: 'project',

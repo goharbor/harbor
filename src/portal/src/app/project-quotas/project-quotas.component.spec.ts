@@ -6,8 +6,8 @@ import { MessageHandlerService } from "../shared/message-handler/message-handler
 import { SessionService } from "../shared/session.service";
 import { SessionUser } from "../shared/session-user";
 import { ConfigurationService } from "../config/config.service";
-import { Configuration } from "@harbor/ui";
 import { of } from "rxjs";
+import { Configuration } from "../../lib/components/config/config";
 
 describe('ProjectQuotasComponent', () => {
   let component: ProjectQuotasComponent;

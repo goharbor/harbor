@@ -15,10 +15,7 @@ import {filter} from 'rxjs/operators';
 // limitations under the License.
 import { Component, Input, Output, OnDestroy, EventEmitter, ChangeDetectionStrategy, ChangeDetectorRef, OnInit } from '@angular/core';
 import { Router, NavigationEnd } from '@angular/router';
-import { State } from '../../../../lib/src/service/interface';
-import { Repository } from '@harbor/ui';
-
-
+import { Repository, State } from '../../../lib/services/interface';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 import {Subscription} from "rxjs";
 

@@ -1,11 +1,9 @@
-
 import {throwError as observableThrowError,  Observable} from "rxjs";
-
 import {catchError, map} from 'rxjs/operators';
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { UserGroup } from "./group";
-import { HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from "@harbor/ui";
+import { HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../lib/utils/utils";
 
 const userGroupEndpoint = "/api/usergroups";
 const ldapGroupSearchEndpoint = "/api/ldap/groups/search?groupname=";

@@ -4,10 +4,10 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AddGroupComponent } from './add-group.component';
-import { OperationService } from "@harbor/ui";
 import { GroupService } from "../../../group/group.service";
-import { MemberService } from "./../member.service";
+import { MemberService } from "../member.service";
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
+import { OperationService } from "../../../../lib/components/operation/operation.service";
 
 describe('AddGroupComponent', () => {
   let component: AddGroupComponent;

@@ -15,23 +15,19 @@ import { Component, OnInit } from '@angular/core';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Input, ViewChild, AfterViewChecked } from '@angular/core';
 import { NgForm } from '@angular/forms';
-
 import { SessionService } from '../shared/session.service';
 import { SignInCredential } from '../shared/sign-in-credential';
-
 import { SignUpComponent } from '../account/sign-up/sign-up.component';
-import { CommonRoutes, CONFIG_AUTH_MODE } from '@harbor/ui';
 import { ForgotPasswordComponent } from '../account/password-setting/forgot-password/forgot-password.component';
-
 import { AppConfigService } from '../app-config.service';
 import { AppConfig } from '../app-config';
 import { User } from '../user/user';
-
 import { CookieService, CookieOptions } from 'ngx-cookie';
 import { SkinableConfig } from "../skinable-config.service";
 import {ModalEvent} from "../base/modal-event";
 import {modalEvents} from "../base/modal-events.const";
 import {AboutDialogComponent} from "../shared/about-dialog/about-dialog.component";
+import { CommonRoutes, CONFIG_AUTH_MODE } from "../../lib/entities/shared.const";
 
 // Define status flags for signing in states
 export const signInStatusNormal = 0;

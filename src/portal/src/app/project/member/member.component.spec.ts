@@ -7,19 +7,17 @@ import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
-
-import { ActivatedRoute, Router } from "@angular/router";
-import { OperationService, UserPermissionService, ErrorHandler } from "@harbor/ui";
-
+import { ActivatedRoute } from "@angular/router";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
 import { SessionService } from "../../shared/session.service";
-import { AddGroupComponent } from './add-group/add-group.component';
-import { AddHttpAuthGroupComponent } from './add-http-auth-group/add-http-auth-group.component';
 import { MemberService } from "./member.service";
-import { AddMemberComponent } from "./add-member/add-member.component";
 import { AppConfigService } from "../../app-config.service";
 import { of } from 'rxjs';
+import { OperationService } from "../../../lib/components/operation/operation.service";
+import { UserPermissionService } from "../../../lib/services";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+
 describe('MemberComponent', () => {
     let component: MemberComponent;
     let fixture: ComponentFixture<MemberComponent>;

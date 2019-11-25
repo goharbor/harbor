@@ -12,10 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { NgForm } from '@angular/forms';
-
 import { MessageService } from '../global-message/message.service';
-import { httpStatusCode } from '@harbor/ui';
 import { AlertType } from '../shared/shared.const';
+import { httpStatusCode } from "../../lib/entities/shared.const";
 
 /**
  * To check if form is empty

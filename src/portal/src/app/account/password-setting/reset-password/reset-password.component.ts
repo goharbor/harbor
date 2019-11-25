@@ -18,7 +18,7 @@ import { NgForm } from '@angular/forms';
 import { PasswordSettingService } from '../password-setting.service';
 import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
-import { CommonRoutes } from '@harbor/ui';
+import { CommonRoutes } from "../../../../lib/entities/shared.const";
 
 @Component({
     selector: 'reset-password',

@@ -9,7 +9,6 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
 import { ImmutableRetentionRule } from "../../tag-retention/retention";
-import { compareValue } from "@harbor/ui";
 describe('AddRuleComponent', () => {
   let component: AddRuleComponent;
   let fixture: ComponentFixture<AddRuleComponent>;

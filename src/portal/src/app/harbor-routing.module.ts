@@ -62,12 +62,13 @@ import { LicenseComponent } from './license/license.component';
 import { SummaryComponent } from './project/summary/summary.component';
 import { TagRetentionComponent } from './project/tag-retention/tag-retention.component';
 import { ImmutableTagComponent } from './project/immutable-tag/immutable-tag.component';
-import { USERSTATICPERMISSION, VulnerabilityConfigComponent } from '@harbor/ui';
 import { ScannerComponent } from "./project/scanner/scanner.component";
 import { InterrogationServicesComponent } from "./interrogation-services/interrogation-services.component";
 import { ConfigurationScannerComponent } from "./config/scanner/config-scanner.component";
 import { LabelsComponent } from "./labels/labels.component";
 import { ProjectQuotasComponent } from "./project-quotas/project-quotas.component";
+import { VulnerabilityConfigComponent } from "../lib/components/config/vulnerability/vulnerability-config.component";
+import { USERSTATICPERMISSION } from "../lib/services";
 
 
 const harborRoutes: Routes = [

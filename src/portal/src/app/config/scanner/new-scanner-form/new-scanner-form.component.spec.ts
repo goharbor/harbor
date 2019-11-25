@@ -26,7 +26,7 @@ describe('NewScannerFormComponent', () => {
       return of([mockScanner1]).pipe(delay(500));
     }
   };
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
@@ -41,9 +41,8 @@ describe('NewScannerFormComponent', () => {
           // open auto detect
         { provide: ComponentFixtureAutoDetect, useValue: true }
       ]
-    })
-    .compileComponents();
-  }));
+    });
+  });
   beforeEach(() => {
     fixture = TestBed.createComponent(NewScannerFormComponent);
     component = fixture.componentInstance;

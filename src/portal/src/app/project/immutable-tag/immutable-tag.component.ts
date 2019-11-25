@@ -3,8 +3,9 @@ import { ActivatedRoute } from '@angular/router';
 import { AddRuleComponent } from "./add-rule/add-rule.component";
 import { ImmutableTagService } from "./immutable-tag.service";
 import { ImmutableRetentionRule } from "../tag-retention/retention";
-import { clone, ErrorHandler } from "@harbor/ui";
 import { finalize } from "rxjs/operators";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { clone } from "../../../lib/utils/utils";
 
 @Component({
   selector: 'app-immutable-tag',

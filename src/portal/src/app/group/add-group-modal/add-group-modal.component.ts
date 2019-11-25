@@ -3,13 +3,12 @@ import { finalize } from 'rxjs/operators';
 import { Subscription } from "rxjs";
 import { Component, OnInit, EventEmitter, Output, ChangeDetectorRef, OnDestroy, ViewChild } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { GroupType } from "@harbor/ui";
-
 import { GroupService } from "../group.service";
 import { MessageHandlerService } from "./../../shared/message-handler/message-handler.service";
 import { SessionService } from "./../../shared/session.service";
 import { UserGroup } from "./../group";
 import { AppConfigService } from "../../app-config.service";
+import { GroupType } from "../../../lib/entities/shared.const";
 
 @Component({
   selector: "hbr-add-group-modal",

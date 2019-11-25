@@ -15,10 +15,9 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
-
-import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS, buildHttpRequestOptionsWithObserveResponse} from "@harbor/ui";
 import { User, LDAPUser } from './user';
 import LDAPUsertoUser from './user';
+import { buildHttpRequestOptionsWithObserveResponse, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../lib/utils/utils";
 
 
 const userMgmtEndpoint = '/api/users';

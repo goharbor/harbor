@@ -18,9 +18,9 @@ import {
   RouterStateSnapshot,
   CanActivateChild
 } from '@angular/router';
-import { CommonRoutes } from '@harbor/ui';
 import { AppConfigService } from '../../app-config.service';
 import { Observable } from 'rxjs';
+import { CommonRoutes } from "../../../lib/entities/shared.const";
 
 @Injectable()
 export class ModeGuard implements CanActivate, CanActivateChild {

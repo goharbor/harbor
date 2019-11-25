@@ -44,7 +44,7 @@
                     </button>
                     <button type="button" class="btn btn-sm btn-secondary"
                         [disabled]="selectedRows.length<=0 || !hasDeleteHelmChartVersionPermission"
-                        (click)="openVersionDeleteModal(selectedRows)">
+                        (click)="openVersionDeleteModal()">
                         <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'BUTTON.DELETE' | translate}}
                     </button>
                     <clr-dropdown>
