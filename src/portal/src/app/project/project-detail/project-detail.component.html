@@ -2,7 +2,7 @@
 <a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']">&lt; {{'SEARCH.BACK' | translate}}</a>
 
 <h1 class="custom-h2" sub-header-title>{{currentProject.name}} <span class="role-label" *ngIf="isMember">{{roleName | translate}}</span></h1>
-<nav class="subnav sub-nav-bg-color">
+<nav class="subnav sub-nav-bg-color" id="project-nav">
     <ul class="nav">
         <li class="nav-item" *ngIf="hasProjectReadPermission">
             <a class="nav-link" routerLink="summary" routerLinkActive="active">{{'PROJECT_DETAIL.SUMMARY' | translate}}</a>

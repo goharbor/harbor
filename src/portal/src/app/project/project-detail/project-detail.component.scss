@@ -20,4 +20,22 @@
 .backStyle{
   color: #007cbb;
   font-size: 12px;
-  cursor: pointer;}
+  cursor: pointer;
+}
+clr-main-container {
+  overflow: hidden;
+}
+#project-nav {
+  box-shadow: none;
+  .nav {
+    box-shadow: inherit;
+    .nav-item {
+      padding-right: 1rem;
+      margin-right: 0;
+      box-shadow: 0 -1px 0 #ccc inset; 
+    }
+    .nav-item:last-child {
+      width: 100%;
+    }
+  }
+}
