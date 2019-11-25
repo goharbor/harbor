@@ -508,11 +508,16 @@ Test Case - Project Storage Quotas Dispaly And Control
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_b}  tag=${image_b_ver}  tag1=${image_b_ver}
     ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
     Should Be Equal As Strings  ${storage_quota_ret}  ${image_b_size} of ${storage_quota}${storage_quota_unit}
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=Quota exceeded when processing the request of adding 25.9 MiB of storage resource, which when updated to current usage of 329.3 MiB will exceed the configured upper limit of 330.0 MiB
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=Quota exceeded when processing the request of adding 25.8 MiB of storage resource, which when updated to current usage of 329.3 MiB will exceed the configured upper limit of 330.0 MiB
     Go Into Project  project${d}
     Delete Repo  project${d}/${image_b}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}  tag=${image_a_ver}  tag1=${image_a_ver}
     ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
+    ${storage_quota_ret_str_left}  Fetch From Left  ${storage_quota_ret}  25.
+    Log  ${storage_quota_ret_str_left}
+    ${storage_quota_ret_str_right}  Fetch From Left  ${storage_quota_ret}  25.
+    Log  ${storage_quota_ret_str_right}
+    Log  ${storage_quota_ret_str_left}${storage_quota_ret_str_right}
     Should Be Equal As Strings  ${storage_quota_ret}  ${image_a_size} of ${storage_quota}${storage_quota_unit}
     Close Browser
 
@@ -603,7 +608,7 @@ Test Case - Update Webhook
    Create An New Project  project${d}
    Go Into Project  project${d}  has_image=${false}
    Switch To Project Webhooks
-   Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d} 
+   Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d}
    Sleep  3
    ${d1}=    Get Current Date
    Update A Webhook  101.17.109.20  auth_header=auth_header${d1}
