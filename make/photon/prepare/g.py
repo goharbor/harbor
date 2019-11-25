@@ -33,3 +33,24 @@ versions_file_path = Path('/usr/src/app/versions')
 
 cert_dir = os.path.join(config_dir, "nginx", "cert")
 core_cert_dir = os.path.join(config_dir, "core", "certificates")
+
+INTERNAL_NO_PROXY_DN = {
+    '127.0.0.1',
+    'localhost',
+    '.local',
+    '.internal',
+    'log',
+    'db',
+    'redis',
+    'nginx',
+    'core',
+    'portal',
+    'postgresql',
+    'jobservice',
+    'registry',
+    'registryctl',
+    'clair',
+    'chartmuseum',
+    'notary-server',
+    'notary-signer'
+    }
