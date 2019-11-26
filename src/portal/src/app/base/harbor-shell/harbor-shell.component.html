@@ -1,6 +1,6 @@
 <clr-main-container>
     <global-message [isAppLevel]="true"></global-message>
-    <navigator (showAccountSettingsModal)="openModal($event)" (showPwdChangeModal)="openModal($event)"></navigator>
+    <navigator (showAccountSettingsModal)="openModal($event)" (showDialogModalAction)="openModal($event)"></navigator>
     <div class="content-container">
         <div class="content-area" [class.container-override]="showSearch"
              [class.content-area-override]="!shouldOverrideContent"
