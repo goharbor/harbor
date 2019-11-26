@@ -12,10 +12,6 @@
 |![notification](docs/img/bell-outline-badged.svg)Community Meeting|
 |------------------|
 |The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
- 
-We welcome you to join the below Harbor community events and meet with project maintainers and users:
-
-**November 18-21, 2019**, [KubeCon US, San Diego](https://events19.linuxfoundation.org/events/kubecon-cloudnativecon-north-america-2019): Harbor Lunch & Learn led by Joe Beda, Intro and Deep-dive sessions.
 
 </br> </br>
 
