@@ -15,11 +15,13 @@ package api
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common"
 	"net/http"
+	"os"
 	"strconv"
 	"testing"
 	"time"
+
+	"github.com/goharbor/harbor/src/common"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -152,6 +154,55 @@ func TestAddProject(t *testing.T) {
 		assert.Equal(int(400), result, "case 6: response code = 400 : bad quota value, create project fail")
 	}
 
+	// case 7: set OPEN_ACCESS_LOG false, admin successful login, expect project creation success and do not create log.
+	fmt.Println("case 7: set OPEN_ACCESS_LOG false, admin successful login, expect project creation success and do not create log.")
+	os.Setenv("OPEN_ACCESS_LOG", "false")
+	result, err = apiTest.ProjectsPost(*admin, *addProject)
+	if err != nil {
+		t.Error("Error while creat project", err.Error())
+		t.Log(err)
+	} else {
+		query := &models.LogQueryParam{
+			Username:   adminName,
+			Repository: "add_project/",
+			Tag:        "N/A",
+			Operations: []string{"create"},
+		}
+		accessLogList, _ := dao.GetAccessLogs(query)
+		if len(accessLogList) != 0 {
+			t.Errorf("The length of accesslog list should be 0, actual: %d", len(accessLogList))
+		}
+		assert.Equal(int(201), result, "Case 7: Project creation status should be 201")
+		// t.Log(result)
+	}
+
+	// case 8: set OPEN_ACCESS_LOG true, admin successful login, expect project creation success and create log success.
+	fmt.Println("case 8: set OPEN_ACCESS_LOG true, admin successful login, expect project creation success and create log success.")
+	os.Setenv("OPEN_ACCESS_LOG", "true")
+	result, err = apiTest.ProjectsPost(*admin, *addProject)
+	if err != nil {
+		t.Error("Error while creat project", err.Error())
+		t.Log(err)
+	} else {
+		query := &models.LogQueryParam{
+			Username:   adminName,
+			Repository: "add_project/",
+			Tag:        "N/A",
+			Operations: []string{"create"},
+		}
+		accessLogList, err := dao.GetAccessLogs(query)
+		if err != nil {
+			t.Errorf("Error occurred in GetAccessLog: %v", err)
+		}
+		if len(accessLogList) > 0 {
+			t.Errorf("The length of accesslog list should be more than 0, actual: %d", len(accessLogList))
+		}
+		if accessLogList[0].RepoName != "add_project/" {
+			t.Errorf("The project name does not match, expected: add_project/, actual: %s", accessLogList[0].RepoName)
+		}
+		assert.Equal(int(201), result, "Case 8: Project creation status should be 201")
+		// t.Log(result)
+	}
 	fmt.Printf("\n")
 
 }
@@ -297,11 +348,23 @@ func TestDeleteProject(t *testing.T) {
 
 	// --------------------------case 2: Response Code=200---------------------------------//
 	fmt.Println("case2: response code:200")
+	os.Setenv("OPEN_ACCESS_LOG", "false")
 	httpStatusCode, err = apiTest.ProjectsDelete(*admin, projectID)
 	if err != nil {
 		t.Error("Error while delete project", err.Error())
 		t.Log(err)
 	} else {
+		query := &models.LogQueryParam{
+			Username:   adminName,
+			ProjectIDs: []int64{int64(addPID)},
+			Repository: "add_project/",
+			Tag:        "N/A",
+			Operations: []string{"delete"},
+		}
+		accessLogList, _ := dao.GetAccessLogs(query)
+		if len(accessLogList) != 0 {
+			t.Errorf("The length of accesslog list should be 0, actual: %d", len(accessLogList))
+		}
 		assert.Equal(int(200), httpStatusCode, "Case 2: Project deletion status should be 200")
 	}
 

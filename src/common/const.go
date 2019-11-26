@@ -138,6 +138,7 @@ const (
 	DefaultChartRepoURL               = "http://chartmuseum:9999"
 	DefaultPortalURL                  = "http://portal:8080"
 	DefaultRegistryCtlURL             = "http://registryctl:8080"
+	OpenAccessLog                     = "open_access_log"
 	// Use this prefix to distinguish harbor user, the prefix contains a special character($), so it cannot be registered as a harbor user.
 	RobotPrefix = "robot$"
 	// Use this prefix to index user who tries to login with web hook token.

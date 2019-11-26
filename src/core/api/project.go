@@ -216,20 +216,21 @@ func (p *ProjectAPI) Post() {
 			return
 		}
 	}
-
-	go func() {
-		if err = dao.AddAccessLog(
-			models.AccessLog{
-				Username:  p.SecurityCtx.GetUsername(),
-				ProjectID: projectID,
-				RepoName:  pro.Name + "/",
-				RepoTag:   "N/A",
-				Operation: "create",
-				OpTime:    time.Now(),
-			}); err != nil {
-			log.Errorf("failed to add access log: %v", err)
-		}
-	}()
+	if config.OpenAccessLog() {
+		go func() {
+			if err = dao.AddAccessLog(
+				models.AccessLog{
+					Username:  p.SecurityCtx.GetUsername(),
+					ProjectID: projectID,
+					RepoName:  pro.Name + "/",
+					RepoTag:   "N/A",
+					Operation: "create",
+					OpTime:    time.Now(),
+				}); err != nil {
+				log.Errorf("failed to add access log: %v", err)
+			}
+		}()
+	}
 
 	p.Redirect(http.StatusCreated, strconv.FormatInt(projectID, 10))
 }
@@ -306,19 +307,20 @@ func (p *ProjectAPI) Delete() {
 		p.SendInternalServerError(fmt.Errorf("failed to delete quota for project: %v", err))
 		return
 	}
-
-	go func() {
-		if err := dao.AddAccessLog(models.AccessLog{
-			Username:  p.SecurityCtx.GetUsername(),
-			ProjectID: p.project.ProjectID,
-			RepoName:  p.project.Name + "/",
-			RepoTag:   "N/A",
-			Operation: "delete",
-			OpTime:    time.Now(),
-		}); err != nil {
-			log.Errorf("failed to add access log: %v", err)
-		}
-	}()
+	if config.OpenAccessLog() {
+		go func() {
+			if err := dao.AddAccessLog(models.AccessLog{
+				Username:  p.SecurityCtx.GetUsername(),
+				ProjectID: p.project.ProjectID,
+				RepoName:  p.project.Name + "/",
+				RepoTag:   "N/A",
+				Operation: "delete",
+				OpTime:    time.Now(),
+			}); err != nil {
+				log.Errorf("failed to add access log: %v", err)
+			}
+		}()
+	}
 }
 
 // Deletable ...

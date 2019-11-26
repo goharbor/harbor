@@ -342,18 +342,20 @@ func (ra *RepositoryAPI) Delete() {
 			}
 		}(t)
 
-		go func(tag string) {
-			if err := dao.AddAccessLog(models.AccessLog{
-				Username:  ra.SecurityCtx.GetUsername(),
-				ProjectID: project.ProjectID,
-				RepoName:  repoName,
-				RepoTag:   tag,
-				Operation: "delete",
-				OpTime:    time.Now(),
-			}); err != nil {
-				log.Errorf("failed to add access log: %v", err)
-			}
-		}(t)
+		if config.OpenAccessLog() {
+			go func(tag string) {
+				if err := dao.AddAccessLog(models.AccessLog{
+					Username:  ra.SecurityCtx.GetUsername(),
+					ProjectID: project.ProjectID,
+					RepoName:  repoName,
+					RepoTag:   tag,
+					Operation: "delete",
+					OpTime:    time.Now(),
+				}); err != nil {
+					log.Errorf("failed to add access log: %v", err)
+				}
+			}(t)
+		}
 	}
 
 	// build and publish image delete event

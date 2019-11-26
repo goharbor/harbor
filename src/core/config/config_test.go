@@ -169,6 +169,9 @@ func TestConfig(t *testing.T) {
 	if AdmiralEndpoint() != "http://www.vmware.com" {
 		t.Errorf("Unexpected admiral endpoint: %s", AdmiralEndpoint())
 	}
+	if OpenAccessLog() != false {
+		t.Errorf("OpenAccessLog should be false")
+	}
 
 	extURL, err := ExtURL()
 	if err != nil {

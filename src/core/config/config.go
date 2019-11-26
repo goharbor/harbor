@@ -464,6 +464,11 @@ func GetRegistryCtlURL() string {
 	return url
 }
 
+// OpenAccessLog returns a bool for wheather store the access log.
+func OpenAccessLog() bool {
+	return cfgMgr.Get(common.OpenAccessLog).GetBool()
+}
+
 // HTTPAuthProxySetting returns the setting of HTTP Auth proxy.  the settings are only meaningful when the auth_mode is
 // set to http_auth
 func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {

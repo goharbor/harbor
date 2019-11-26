@@ -83,18 +83,20 @@ func (n *NotificationHandler) Post() {
 			continue
 		}
 
-		go func() {
-			if err := dao.AddAccessLog(models.AccessLog{
-				Username:  user,
-				ProjectID: pro.ProjectID,
-				RepoName:  repository,
-				RepoTag:   tag,
-				Operation: action,
-				OpTime:    time.Now(),
-			}); err != nil {
-				log.Errorf("failed to add access log: %v", err)
-			}
-		}()
+		if config.OpenAccessLog() {
+			go func() {
+				if err := dao.AddAccessLog(models.AccessLog{
+					Username:  user,
+					ProjectID: pro.ProjectID,
+					RepoName:  repository,
+					RepoTag:   tag,
+					Operation: action,
+					OpTime:    time.Now(),
+				}); err != nil {
+					log.Errorf("failed to add access log: %v", err)
+				}
+			}()
+		}
 
 		if action == "push" {
 			// discard the notification without tag.
