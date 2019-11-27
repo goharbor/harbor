@@ -43,7 +43,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 
 Harbor manages images through projects. Users can be added into one project as a member with one of the following different roles:  
 
-* **Limited Guest**: A Limited Guest does not have full read privileges for a project. They can pull images but cannot push, and they cannot see logs or the other members of a project.
+* **Limited Guest**: A Limited Guest does not have full read privileges for a project. They can pull images but cannot push, and they cannot see logs or the other members of a project. For example, assign this role if users from a different organization need access to a project.
 * **Guest**: Guest has read-only privilege for a specified project. They can pull and retag images, but cannot push.
 * **Developer**: Developer has read and write privileges for a project.
 * **Master**: Master has elevated permissions beyond those of 'Developer' including the ability to scan images, view replications jobs, and delete images and helm charts. 
