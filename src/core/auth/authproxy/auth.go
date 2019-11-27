@@ -34,7 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/authproxy"
-	k8s_api_v1beta1 "k8s.io/api/authentication/v1beta1"
 )
 
 const refreshDuration = 2 * time.Second
@@ -101,31 +100,12 @@ func (a *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		s := session{}
 		err = json.Unmarshal(data, &s)
 		if err != nil {
-			log.Errorf("failed to read session %v", err)
+			return nil, auth.NewErrAuth(fmt.Sprintf("failed to read session %v", err))
 		}
-
-		reviewResponse, err := a.tokenReview(s.SessionID)
-		if err != nil {
-			return nil, err
-		}
-		if reviewResponse == nil {
-			return nil, auth.ErrAuth{}
-		}
-
-		// Attach user group ID information
-		ugList := reviewResponse.Status.User.Groups
-		log.Debugf("user groups %+v", ugList)
-		if len(ugList) > 0 {
-			userGroups := models.UserGroupsFromName(ugList, common.HTTPGroupType)
-			groupIDList, err := group.PopulateGroup(userGroups)
-			if err != nil {
-				return nil, err
-			}
-			log.Debugf("current user's group ID list is %+v", groupIDList)
-			user.GroupIDs = groupIDList
+		if err := a.tokenReview(s.SessionID, user); err != nil {
+			return nil, auth.NewErrAuth(err.Error())
 		}
 		return user, nil
-
 	} else if resp.StatusCode == http.StatusUnauthorized {
 		return nil, auth.ErrAuth{}
 	} else {
@@ -134,17 +114,24 @@ func (a *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 			log.Warningf("Failed to read response body, error: %v", err)
 		}
 		return nil, fmt.Errorf("failed to authenticate, status code: %d, text: %s", resp.StatusCode, string(data))
-
 	}
-
 }
 
-func (a *Auth) tokenReview(sessionID string) (*k8s_api_v1beta1.TokenReview, error) {
+func (a *Auth) tokenReview(sessionID string, user *models.User) error {
 	httpAuthProxySetting, err := config.HTTPAuthProxySetting()
 	if err != nil {
-		return nil, err
+		return err
 	}
-	return authproxy.TokenReview(sessionID, httpAuthProxySetting)
+	reviewStatus, err := authproxy.TokenReview(sessionID, httpAuthProxySetting)
+	if err != nil {
+		return err
+	}
+	u2, err := authproxy.UserFromReviewStatus(reviewStatus)
+	if err != nil {
+		return err
+	}
+	user.GroupIDs = u2.GroupIDs
+	return nil
 }
 
 // OnBoardUser delegates to dao pkg to insert/update data in DB.
