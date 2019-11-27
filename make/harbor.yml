@@ -6,7 +6,7 @@ hostname: reg.mydomain.com
 
 # core related config
 core:
-  ca_bundle: /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+  ca_bundle: /etc/pki/tls/certs/ca-bundle.crt
 
 # http related config
 http:
