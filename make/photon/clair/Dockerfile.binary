@@ -1,4 +1,4 @@
-FROM golang:1.11.2
+FROM golang:1.13.4
 
 ADD .   /go/src/github.com/coreos/clair/
 WORKDIR /go/src/github.com/coreos/clair/

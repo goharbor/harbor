@@ -13,11 +13,10 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { ErrorHandler, UserPermissionService } from '@harbor/ui';
+import { ErrorHandler, httpStatusCode, errorHandler } from '@harbor/ui';
 
+import { AlertType } from '../../shared/shared.const';
 import { MessageService } from '../../global-message/message.service';
-import { AlertType, httpStatusCode } from '../../shared/shared.const';
-import { errorHandler } from '../../shared/shared.utils';
 import { SessionService } from '../../shared/session.service';
 
 
@@ -27,7 +26,6 @@ export class MessageHandlerService implements ErrorHandler {
     constructor(
         private msgService: MessageService,
         private translate: TranslateService,
-        private userPermissionService: UserPermissionService,
         private session: SessionService) { }
 
     // Handle the error and map it to the suitable message
@@ -47,7 +45,6 @@ export class MessageHandlerService implements ErrorHandler {
                 this.msgService.announceAppLevelMessage(code, msg, AlertType.DANGER);
                 // Session is invalid now, clare session cache
                 this.session.clear();
-                this.userPermissionService.clearPermissionCache();
             } else {
                 this.msgService.announceMessage(code, msg, AlertType.DANGER);
             }

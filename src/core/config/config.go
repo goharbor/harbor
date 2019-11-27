@@ -20,7 +20,6 @@ package config
 import (
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
@@ -43,6 +42,9 @@ const (
 	defaultKeyPath                     = "/etc/core/key"
 	defaultTokenFilePath               = "/etc/core/token/tokens.properties"
 	defaultRegistryTokenPrivateKeyPath = "/etc/core/private_key.pem"
+
+	// SessionCookieName is the name of the cookie for session ID
+	SessionCookieName = "sid"
 )
 
 var (
@@ -224,7 +226,7 @@ func LDAPGroupConf() (*models.LdapGroupConf, error) {
 		LdapGroupFilter:              cfgMgr.Get(common.LDAPGroupSearchFilter).GetString(),
 		LdapGroupNameAttribute:       cfgMgr.Get(common.LDAPGroupAttributeName).GetString(),
 		LdapGroupSearchScope:         cfgMgr.Get(common.LDAPGroupSearchScope).GetInt(),
-		LdapGroupAdminDN:             cfgMgr.Get(common.LdapGroupAdminDn).GetString(),
+		LdapGroupAdminDN:             cfgMgr.Get(common.LDAPGroupAdminDn).GetString(),
 		LdapGroupMembershipAttribute: cfgMgr.Get(common.LDAPGroupMembershipAttribute).GetString(),
 	}, nil
 }
@@ -280,7 +282,11 @@ func InternalJobServiceURL() string {
 // InternalCoreURL returns the local harbor core url
 func InternalCoreURL() string {
 	return strings.TrimSuffix(cfgMgr.Get(common.CoreURL).GetString(), "/")
+}
 
+// LocalCoreURL returns the local harbor core url
+func LocalCoreURL() string {
+	return cfgMgr.Get(common.CoreLocalURL).GetString()
 }
 
 // InternalTokenServiceEndpoint returns token service endpoint for internal communication between Harbor containers
@@ -327,12 +333,14 @@ func Database() (*models.Database, error) {
 	database := &models.Database{}
 	database.Type = cfgMgr.Get(common.DatabaseType).GetString()
 	postgresql := &models.PostGreSQL{
-		Host:     cfgMgr.Get(common.PostGreSQLHOST).GetString(),
-		Port:     cfgMgr.Get(common.PostGreSQLPort).GetInt(),
-		Username: cfgMgr.Get(common.PostGreSQLUsername).GetString(),
-		Password: cfgMgr.Get(common.PostGreSQLPassword).GetString(),
-		Database: cfgMgr.Get(common.PostGreSQLDatabase).GetString(),
-		SSLMode:  cfgMgr.Get(common.PostGreSQLSSLMode).GetString(),
+		Host:         cfgMgr.Get(common.PostGreSQLHOST).GetString(),
+		Port:         cfgMgr.Get(common.PostGreSQLPort).GetInt(),
+		Username:     cfgMgr.Get(common.PostGreSQLUsername).GetString(),
+		Password:     cfgMgr.Get(common.PostGreSQLPassword).GetString(),
+		Database:     cfgMgr.Get(common.PostGreSQLDatabase).GetString(),
+		SSLMode:      cfgMgr.Get(common.PostGreSQLSSLMode).GetString(),
+		MaxIdleConns: cfgMgr.Get(common.PostGreSQLMaxIdleConns).GetInt(),
+		MaxOpenConns: cfgMgr.Get(common.PostGreSQLMaxOpenConns).GetInt(),
 	}
 	database.PostGreSQL = postgresql
 
@@ -380,23 +388,17 @@ func ClairDB() (*models.PostGreSQL, error) {
 	return clairDB, nil
 }
 
+// ClairAdapterEndpoint returns the endpoint of clair adapter instance, by default it's the one deployed within Harbor.
+func ClairAdapterEndpoint() string {
+	return cfgMgr.Get(common.ClairAdapterURL).GetString()
+}
+
 // AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
 func AdmiralEndpoint() string {
 	if cfgMgr.Get(common.AdmiralEndpoint).GetString() == "NA" {
 		return ""
 	}
 	return cfgMgr.Get(common.AdmiralEndpoint).GetString()
-}
-
-// ScanAllPolicy returns the policy which controls the scan all.
-func ScanAllPolicy() models.ScanAllPolicy {
-	var res models.ScanAllPolicy
-	log.Infof("Scan all policy %v", cfgMgr.Get(common.ScanAllPolicy).GetString())
-	if err := json.Unmarshal([]byte(cfgMgr.Get(common.ScanAllPolicy).GetString()), &res); err != nil {
-		log.Errorf("Failed to unmarshal the value in configuration for Scan All policy, error: %v, returning the default policy", err)
-		return models.DefaultScanAllPolicy
-	}
-	return res
 }
 
 // WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.
@@ -462,16 +464,6 @@ func GetRegistryCtlURL() string {
 	return url
 }
 
-// GetClairHealthCheckServerURL returns the URL of
-// the health check server of Clair
-func GetClairHealthCheckServerURL() string {
-	url := os.Getenv("CLAIR_HEALTH_CHECK_SERVER_URL")
-	if len(url) == 0 {
-		return common.DefaultClairHealthCheckServerURL
-	}
-	return url
-}
-
 // HTTPAuthProxySetting returns the setting of HTTP Auth proxy.  the settings are only meaningful when the auth_mode is
 // set to http_auth
 func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
@@ -482,9 +474,9 @@ func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
 		Endpoint:            cfgMgr.Get(common.HTTPAuthProxyEndpoint).GetString(),
 		TokenReviewEndpoint: cfgMgr.Get(common.HTTPAuthProxyTokenReviewEndpoint).GetString(),
 		VerifyCert:          cfgMgr.Get(common.HTTPAuthProxyVerifyCert).GetBool(),
-		AlwaysOnBoard:       cfgMgr.Get(common.HTTPAuthProxyAlwaysOnboard).GetBool(),
+		SkipSearch:          cfgMgr.Get(common.HTTPAuthProxySkipSearch).GetBool(),
+		CaseSensitive:       cfgMgr.Get(common.HTTPAuthProxyCaseSensitive).GetBool(),
 	}, nil
-
 }
 
 // OIDCSetting returns the setting of OIDC provider, currently there's only one OIDC provider allowed for Harbor and it's
@@ -506,7 +498,29 @@ func OIDCSetting() (*models.OIDCSetting, error) {
 		VerifyCert:   cfgMgr.Get(common.OIDCVerifyCert).GetBool(),
 		ClientID:     cfgMgr.Get(common.OIDCCLientID).GetString(),
 		ClientSecret: cfgMgr.Get(common.OIDCClientSecret).GetString(),
+		GroupsClaim:  cfgMgr.Get(common.OIDCGroupsClaim).GetString(),
 		RedirectURL:  extEndpoint + common.OIDCCallbackPath,
 		Scope:        scope,
+	}, nil
+}
+
+// NotificationEnable returns a bool to indicates if notification enabled in harbor
+func NotificationEnable() bool {
+	return cfgMgr.Get(common.NotificationEnable).GetBool()
+}
+
+// QuotaPerProjectEnable returns a bool to indicates if quota per project enabled in harbor
+func QuotaPerProjectEnable() bool {
+	return cfgMgr.Get(common.QuotaPerProjectEnable).GetBool()
+}
+
+// QuotaSetting returns the setting of quota.
+func QuotaSetting() (*models.QuotaSetting, error) {
+	if err := cfgMgr.Load(); err != nil {
+		return nil, err
+	}
+	return &models.QuotaSetting{
+		CountPerProject:   cfgMgr.Get(common.CountPerProject).GetInt64(),
+		StoragePerProject: cfgMgr.Get(common.StoragePerProject).GetInt64(),
 	}, nil
 }

@@ -29,8 +29,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func fakedAdapterFactory(*model.Registry) (adapter.Adapter, error) {
+type fakedFactory struct {
+}
+
+func (fakedFactory) Create(*model.Registry) (adapter.Adapter, error) {
 	return &fakedAdapter{}, nil
+}
+
+func (fakedFactory) AdapterPattern() *model.AdapterPattern {
+	return nil
 }
 
 type fakedAdapter struct{}
@@ -176,7 +183,7 @@ func (f *fakedExecutionManager) GetTask(int64) (*models.Task, error) {
 func (f *fakedExecutionManager) UpdateTask(*models.Task, ...string) error {
 	return nil
 }
-func (f *fakedExecutionManager) UpdateTaskStatus(int64, string, ...string) error {
+func (f *fakedExecutionManager) UpdateTaskStatus(int64, string, int64, ...string) error {
 	return nil
 }
 func (f *fakedExecutionManager) RemoveTask(int64) error {
@@ -194,7 +201,7 @@ func TestMain(m *testing.M) {
 	config.Config = &config.Configuration{
 		CoreURL: url,
 	}
-	if err := adapter.RegisterFactory(model.RegistryTypeHarbor, fakedAdapterFactory); err != nil {
+	if err := adapter.RegisterFactory(model.RegistryTypeHarbor, new(fakedFactory)); err != nil {
 		os.Exit(1)
 	}
 	os.Exit(m.Run())

@@ -180,6 +180,7 @@ func runCodeCheckingCases(t *testing.T, cases ...*codeCheckingCase) {
 		if c.postFunc != nil {
 			if err := c.postFunc(resp); err != nil {
 				t.Logf("error in running post function: %v", err)
+				t.Error(err)
 			}
 		}
 	}
@@ -207,6 +208,17 @@ func TestMain(m *testing.M) {
 	if err := prepare(); err != nil {
 		panic(err)
 	}
+	dao.ExecuteBatchSQL([]string{
+		"insert into user_group (group_name, group_type, ldap_group_dn) values ('test_group_01_api', 1, 'cn=harbor_users,ou=sample,ou=vmware,dc=harbor,dc=com')",
+		"insert into user_group (group_name, group_type, ldap_group_dn) values ('vsphere.local\\administrators', 2, '')",
+	})
+
+	defer dao.ExecuteBatchSQL([]string{
+		"delete from harbor_label",
+		"delete from robot",
+		"delete from user_group",
+		"delete from project_member",
+	})
 
 	ret := m.Run()
 	clean()

@@ -16,10 +16,13 @@ package api
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/rbac"
 	"net/http"
 	"testing"
+
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 )
 
 var (
@@ -28,9 +31,10 @@ var (
 )
 
 func TestRobotAPIPost(t *testing.T) {
+	res := rbac.Resource("/project/1")
 
 	rbacPolicy := &rbac.Policy{
-		Resource: "/project/libray/repository",
+		Resource: res.Subresource(rbac.ResourceRepository),
 		Action:   "pull",
 	}
 	policies := []*rbac.Policy{}
@@ -51,7 +55,7 @@ func TestRobotAPIPost(t *testing.T) {
 			request: &testingRequest{
 				method:     http.MethodPost,
 				url:        robotPath,
-				bodyJSON:   &models.RobotReq{},
+				bodyJSON:   &model.RobotCreate{},
 				credential: nonSysAdmin,
 			},
 			code: http.StatusForbidden,
@@ -61,7 +65,7 @@ func TestRobotAPIPost(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    robotPath,
-				bodyJSON: &models.RobotReq{
+				bodyJSON: &model.RobotCreate{
 					Name:        "test",
 					Description: "test desc",
 					Access:      policies,
@@ -75,9 +79,54 @@ func TestRobotAPIPost(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    robotPath,
-				bodyJSON: &models.RobotReq{
+				bodyJSON: &model.RobotCreate{
 					Name:        "testIllgel#",
 					Description: "test desc",
+				},
+				credential: projAdmin4Robot,
+			},
+			code: http.StatusBadRequest,
+		},
+		{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    robotPath,
+				bodyJSON: &model.RobotCreate{
+					Name:        "test",
+					Description: "resource not exist",
+					Access: []*rbac.Policy{
+						{Resource: res.Subresource("foo"), Action: rbac.ActionCreate},
+					},
+				},
+				credential: projAdmin4Robot,
+			},
+			code: http.StatusBadRequest,
+		},
+		{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    robotPath,
+				bodyJSON: &model.RobotCreate{
+					Name:        "test",
+					Description: "action not exist",
+					Access: []*rbac.Policy{
+						{Resource: res.Subresource(rbac.ResourceRepository), Action: "foo"},
+					},
+				},
+				credential: projAdmin4Robot,
+			},
+			code: http.StatusBadRequest,
+		},
+		{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    robotPath,
+				bodyJSON: &model.RobotCreate{
+					Name:        "test",
+					Description: "policy not exit",
+					Access: []*rbac.Policy{
+						{Resource: res.Subresource(rbac.ResourceMember), Action: rbac.ActionPush},
+					},
 				},
 				credential: projAdmin4Robot,
 			},
@@ -88,7 +137,7 @@ func TestRobotAPIPost(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    robotPath,
-				bodyJSON: &models.RobotReq{
+				bodyJSON: &model.RobotCreate{
 					Name:        "test2",
 					Description: "test2 desc",
 				},
@@ -102,7 +151,7 @@ func TestRobotAPIPost(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPost,
 				url:    robotPath,
-				bodyJSON: &models.RobotReq{
+				bodyJSON: &model.RobotCreate{
 					Name:        "test",
 					Description: "test desc",
 					Access:      policies,
@@ -116,6 +165,12 @@ func TestRobotAPIPost(t *testing.T) {
 }
 
 func TestRobotAPIGet(t *testing.T) {
+	projectID, err := dao.AddProject(models.Project{Name: "robotget", OwnerID: 1})
+	if err != nil {
+		t.Errorf("Error occurred when add project: %v", err)
+	}
+	defer dao.DeleteProject(projectID)
+
 	cases := []*codeCheckingCase{
 		// 400
 		{
@@ -132,6 +187,16 @@ func TestRobotAPIGet(t *testing.T) {
 				method:     http.MethodGet,
 				url:        fmt.Sprintf("%s/%d", robotPath, 1000),
 				credential: projDeveloper,
+			},
+			code: http.StatusNotFound,
+		},
+
+		// 404 robot 1 not belong to the project
+		{
+			request: &testingRequest{
+				method:     http.MethodGet,
+				url:        fmt.Sprintf("/api/projects/%d/robots/1", projectID),
+				credential: sysAdmin,
 			},
 			code: http.StatusNotFound,
 		},
@@ -204,6 +269,12 @@ func TestRobotAPIList(t *testing.T) {
 }
 
 func TestRobotAPIPut(t *testing.T) {
+	projectID, err := dao.AddProject(models.Project{Name: "robotput", OwnerID: 1})
+	if err != nil {
+		t.Errorf("Error occurred when add project: %v", err)
+	}
+	defer dao.DeleteProject(projectID)
+
 	cases := []*codeCheckingCase{
 		// 401
 		{
@@ -234,6 +305,16 @@ func TestRobotAPIPut(t *testing.T) {
 			code: http.StatusNotFound,
 		},
 
+		// 404 robot 1 not belong to the project
+		{
+			request: &testingRequest{
+				method:     http.MethodPut,
+				url:        fmt.Sprintf("/api/projects/%d/robots/1", projectID),
+				credential: sysAdmin,
+			},
+			code: http.StatusNotFound,
+		},
+
 		// 403 non-member user
 		{
 			request: &testingRequest{
@@ -259,7 +340,7 @@ func TestRobotAPIPut(t *testing.T) {
 			request: &testingRequest{
 				method: http.MethodPut,
 				url:    fmt.Sprintf("%s/%d", robotPath, 1),
-				bodyJSON: &models.Robot{
+				bodyJSON: &model.Robot{
 					Disabled: true,
 				},
 				credential: projAdmin4Robot,
@@ -272,6 +353,12 @@ func TestRobotAPIPut(t *testing.T) {
 }
 
 func TestRobotAPIDelete(t *testing.T) {
+	projectID, err := dao.AddProject(models.Project{Name: "robotdelete", OwnerID: 1})
+	if err != nil {
+		t.Errorf("Error occurred when add project: %v", err)
+	}
+	defer dao.DeleteProject(projectID)
+
 	cases := []*codeCheckingCase{
 		// 401
 		{
@@ -298,6 +385,16 @@ func TestRobotAPIDelete(t *testing.T) {
 				method:     http.MethodDelete,
 				url:        fmt.Sprintf("%s/%d", robotPath, 10000),
 				credential: projAdmin4Robot,
+			},
+			code: http.StatusNotFound,
+		},
+
+		// 404 robot 1 not belong to the project
+		{
+			request: &testingRequest{
+				method:     http.MethodDelete,
+				url:        fmt.Sprintf("/api/projects/%d/robots/1", projectID),
+				credential: sysAdmin,
 			},
 			code: http.StatusNotFound,
 		},

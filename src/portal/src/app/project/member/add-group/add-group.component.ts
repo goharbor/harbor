@@ -7,7 +7,7 @@ import { Component, OnInit, Input, Output, EventEmitter } from "@angular/core";
 import { NgForm } from '@angular/forms';
 
 import { TranslateService } from '@ngx-translate/core';
-import {operateChanges, OperateInfo, OperationService, OperationState} from "@harbor/ui";
+import { operateChanges, OperateInfo, OperationService, OperationState, errorHandler as errorHandFn } from "@harbor/ui";
 
 import { UserGroup } from "./../../../group/group";
 import { MemberService } from "./../member.service";
@@ -16,7 +16,6 @@ import { ProjectRoles } from "../../../shared/shared.const";
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
 import { Member } from "../member";
 import { throwError as observableThrowError } from "rxjs";
-import { errorHandler as errorHandFn } from "../../../shared/shared.utils";
 @Component({
   selector: "add-group",
   templateUrl: "./add-group.component.html",
@@ -31,7 +30,7 @@ export class AddGroupComponent implements OnInit {
   currentTerm = '';
 
   selectedRole = 1;
-  group = new UserGroup();
+  group = new UserGroup(1);
   selectedGroups: UserGroup[] = [];
   groups: UserGroup[] = [];
   totalCount = 0;
@@ -42,7 +41,7 @@ export class AddGroupComponent implements OnInit {
   @Input() memberList: Member[] = [];
   @Output() added = new EventEmitter<boolean>();
 
-  @ViewChild('groupForm')
+  @ViewChild('groupForm', { static: false })
   groupForm: NgForm;
 
   constructor(
@@ -90,7 +89,7 @@ export class AddGroupComponent implements OnInit {
 
   resetModaldata() {
     this.createGroupMode = false;
-    this.group = new UserGroup();
+    this.group = new UserGroup(1);
     this.selectedRole = 1;
     this.selectedGroups = [];
     this.groups = [];

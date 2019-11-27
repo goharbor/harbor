@@ -1,52 +1,35 @@
 <clr-modal [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
-    <h3 class="modal-title" *ngIf="mode === 'create'">{{'GROUP.IMPORT_LDAP_GROUP' | translate}}</h3>
+    <h3 class="modal-title" *ngIf="mode === 'create' && isLdapMode">{{'GROUP.IMPORT_LDAP_GROUP' | translate}}</h3>
+    <h3 class="modal-title" *ngIf="mode === 'create' && isHttpAuthMode">{{'GROUP.IMPORT_HTTP_GROUP' | translate}}</h3>
+    <h3 class="modal-title" *ngIf="mode === 'create' && isOidcMode">{{'GROUP.IMPORT_OIDC_GROUP' | translate}}</h3>
     <h3 class="modal-title" *ngIf="mode !== 'create'">{{'GROUP.EDIT' | translate}}</h3>
 
     <div class="modal-body">
-        <form class="form" #groupForm="ngForm">
-            <section class="form-block">
-                <div class="form-group">
+        <form class="clr-form clr-form-horizontal" #groupForm="ngForm">
+            <section>
+                <clr-input-container *ngIf="isLdapMode">
                     <label for="ldap_group_dn" class="required">{{ 'GROUP.GROUP_DN' | translate}}</label>
-                    <label for="ldap_group_dn"
-                    aria-haspopup="true"
-                    role="tooltip"
-                    class="tooltip tooltip-validation tooltip-sm tooltip-right" 
-                    [class.invalid]="isDNInvalid">
-                        <input type="text" id="ldap_group_dn" name="ldap_group_dn"
-                        required
-                        [disabled]="mode !== 'create'"
-                        [(ngModel)]="group.ldap_group_dn"
-                        #groupDN="ngModel">
-                        <span class="tooltip-content">
-                            {{dnTooltip | translate}}
-                        </span>
-                    </label>
+                    <input clrInput type="text" id="ldap_group_dn" name="ldap_group_dn" required
+                        [disabled]="mode !== 'create'" [(ngModel)]="group.ldap_group_dn" #groupDN="ngModel" />
+                    <clr-control-error>{{dnTooltip | translate}}</clr-control-error>
+                </clr-input-container>
+                <div class="clr-form-control" *ngIf="isLdapMode">
+                    <label class="clr-control-label" for="type">{{'GROUP.TYPE' | translate}}</label>
+                    <label class="padding-left-6" id="type">{{'GROUP.LDAP_TYPE' | translate}}</label>
                 </div>
-                <div class="form-group">
-                    <label for="type">{{'GROUP.TYPE' | translate}}</label>
-                    <label id="type">LDAP</label>
-                </div>
-                <div class="form-group">
-                    <label for="group_name" class="required">{{'GROUP.NAME' | translate}}</label>
-                    <label for="group_name"
-                    aria-haspopup="true"
-                    role="tooltip"
-                    class="tooltip tooltip-validation tooltip-sm tooltip-right"
-                    [class.invalid]="isNameInvalid">
-                        <input type="text" id="group_name" name="group_name"
-                        required
-                        [(ngModel)]="group.group_name"
-                        #groupName="ngModel">
-                        <span class="tooltip-content">
-                            {{dnTooltip | translate}}
-                        </span>
-                    </label>
-                </div>
+                <clr-input-container>
+                    <label for="group_name" class="required">{{ 'GROUP.NAME' | translate}}</label>
+                    <input clrInput type="text" id="group_name" name="group_name" required
+                        [(ngModel)]="group.group_name" #groupName="ngModel" />
+                    <clr-control-error>{{dnTooltip | translate}}</clr-control-error>
+                </clr-input-container>
             </section>
         </form>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate | translate}}</button>
-        <button type="button" class="btn btn-primary" [disabled]="!isFormValid"  (click)="save()">{{'BUTTON.SAVE' | translate | translate}}</button>
+        <button type="button" class="btn btn-outline"
+            (click)="close()">{{'BUTTON.CANCEL' | translate | translate}}</button>
+        <button type="button" class="btn btn-primary" [disabled]="!isFormValid"
+            (click)="save()">{{'BUTTON.SAVE' | translate | translate}}</button>
     </div>
 </clr-modal>

@@ -22,7 +22,7 @@ import {
   OnInit
 } from "@angular/core";
 import { NgForm } from "@angular/forms";
-import { Subscription } from "rxjs";
+import { Subscription, throwError as observableThrowError } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 
 import { EndpointService } from "../service/endpoint.service";
@@ -30,9 +30,12 @@ import { ErrorHandler } from "../error-handler/index";
 import { InlineAlertComponent } from "../inline-alert/inline-alert.component";
 import { Endpoint, PingEndpoint } from "../service/interface";
 import { clone, compareValue, isEmptyObject } from "../utils";
+import { HttpClient } from "@angular/common/http";
+import { catchError } from "rxjs/operators";
 
 const FAKE_PASSWORD = "rjGcfuRu";
-const DOCKERHUB_URL = "https://hub.docker.com";
+const FAKE_JSON_KEY = "No Change";
+const METADATA_URL = "/api/replication/adapterinfos";
 @Component({
   selector: "hbr-create-edit-endpoint",
   templateUrl: "./create-edit-endpoint.component.html",
@@ -49,29 +52,33 @@ export class CreateEditEndpointComponent
   closable: boolean = false;
   editable: boolean;
   adapterList: string[];
+  endpointList: any[] = [];
   target: Endpoint = this.initEndpoint();
   selectedType: string;
   initVal: Endpoint;
   targetForm: NgForm;
-  @ViewChild("targetForm") currentForm: NgForm;
-
+  @ViewChild("targetForm", {static: false}) currentForm: NgForm;
+  targetEndpoint;
   testOngoing: boolean;
   onGoing: boolean;
   endpointId: number | string;
 
-  @ViewChild(InlineAlertComponent) inlineAlert: InlineAlertComponent;
+  @ViewChild(InlineAlertComponent, {static: false}) inlineAlert: InlineAlertComponent;
 
   @Output() reload = new EventEmitter<boolean>();
 
   timerHandler: any;
   valueChangesSub: Subscription;
   formValues: { [key: string]: string } | any;
-
+  adapterInfo: object;
+  showEndpointList: boolean = false;
+  endpointOnHover: boolean = false;
   constructor(
     private endpointService: EndpointService,
     private errorHandler: ErrorHandler,
     private translateService: TranslateService,
-    private ref: ChangeDetectorRef
+    private ref: ChangeDetectorRef,
+    private http: HttpClient
   ) {}
 
   ngOnInit(): void {
@@ -83,8 +90,34 @@ export class CreateEditEndpointComponent
         this.errorHandler.error(error);
       }
     );
+    this.getAdapterInfo();
   }
 
+  getAdapterInfo() {
+    this.http.get(METADATA_URL)
+        .pipe(catchError(error => observableThrowError(error)))
+        .subscribe(
+            response => {
+                this.adapterInfo = response;
+            }, error => {
+                this.errorHandler.error(error);
+            });
+  }
+  isNormalCredential(): boolean {
+    return !(this.adapterInfo && this.target && this.target.type
+        && this.adapterInfo[this.target.type]
+        && this.adapterInfo[this.target.type].credential_pattern);
+  }
+  selectedEndpoint(endpoint: string) {
+    this.targetForm.controls.endpointUrl.reset(endpoint);
+    this.showEndpointList = false;
+    this.endpointOnHover = false;
+  }
+  blur() {
+    if (!this.endpointOnHover) {
+      this.showEndpointList = false;
+    }
+  }
   public get isValid(): boolean {
     return (
       !this.testOngoing &&
@@ -185,11 +218,11 @@ export class CreateEditEndpointComponent
       this.endpointService.getEndpoint(targetId).subscribe(
         target => {
           this.target = target;
-          this.urlDisabled = this.target.type === 'docker-hub' ? true : false;
+          this.urlDisabled = this.target.type === 'docker-hub';
           // Keep data cache
           this.initVal = clone(target);
-          this.initVal.credential.access_secret = FAKE_PASSWORD;
-          this.target.credential.access_secret = FAKE_PASSWORD;
+          this.initVal.credential.access_secret = this.target.type === 'google-gcr' ? FAKE_JSON_KEY : FAKE_PASSWORD;
+          this.target.credential.access_secret = this.target.type === 'google-gcr' ? FAKE_JSON_KEY : FAKE_PASSWORD;
 
           // Open the modal now
           this.open();
@@ -211,13 +244,23 @@ export class CreateEditEndpointComponent
   }
 
   adapterChange($event): void {
+    this.targetForm.controls.endpointUrl.reset("");
     let selectValue = this.targetForm.controls.adapter.value;
-    if (selectValue === 'docker-hub') {
-      this.urlDisabled = true;
-      this.targetForm.controls.endpointUrl.setValue(DOCKERHUB_URL);
+    this.urlDisabled = false;
+    if (this.isNormalCredential()) {
+      this.targetForm.controls.access_key.setValue("");
     } else {
-      this.urlDisabled = false;
-      this.targetForm.controls.endpointUrl.setValue("");
+      this.targetForm.controls.access_key.setValue(this.adapterInfo[this.target.type].credential_pattern.access_key_data);
+    }
+    if (this.adapterInfo && this.adapterInfo[selectValue]
+        && this.adapterInfo[selectValue].endpoint_pattern
+        && this.adapterInfo[selectValue].endpoint_pattern.endpoints) {
+      this.endpointList = this.adapterInfo[selectValue].endpoint_pattern.endpoints;
+      if (this.endpointList.length === 1) {
+        this.target.url = this.endpointList[0].value;
+      }
+    } else {
+      this.endpointList = [];
     }
   }
 

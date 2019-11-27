@@ -17,7 +17,6 @@ package flow
 import (
 	"errors"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -39,7 +38,7 @@ func initialize(policy *model.Policy) (adp.Adapter, adp.Adapter, error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", policy.SrcRegistry.Type, err)
 	}
-	srcAdapter, err = srcFactory(policy.SrcRegistry)
+	srcAdapter, err = srcFactory.Create(policy.SrcRegistry)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create adapter for source registry %s: %v", policy.SrcRegistry.URL, err)
 	}
@@ -49,7 +48,7 @@ func initialize(policy *model.Policy) (adp.Adapter, adp.Adapter, error) {
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to get adapter factory for registry type %s: %v", policy.DestRegistry.Type, err)
 	}
-	dstAdapter, err = dstFactory(policy.DestRegistry)
+	dstAdapter, err = dstFactory.Create(policy.DestRegistry)
 	if err != nil {
 		return nil, nil, fmt.Errorf("failed to create adapter for destination registry %s: %v", policy.DestRegistry.URL, err)
 	}
@@ -280,23 +279,27 @@ func schedule(scheduler scheduler.Scheduler, executionMgr execution.Manager, ite
 	for _, result := range results {
 		// if the task is failed to be submitted, update the status of the
 		// task as failure
+		now := time.Now()
 		if result.Error != nil {
 			log.Errorf("failed to schedule the task %d: %v", result.TaskID, result.Error)
-			if err = executionMgr.UpdateTaskStatus(result.TaskID, models.TaskStatusFailed); err != nil {
+			if err = executionMgr.UpdateTask(&models.Task{
+				ID:      result.TaskID,
+				Status:  models.TaskStatusFailed,
+				EndTime: now,
+			}, "Status", "EndTime"); err != nil {
 				log.Errorf("failed to update the task status %d: %v", result.TaskID, err)
 			}
 			continue
 		}
 		allFailed = false
 		// if the task is submitted successfully, update the status, job ID and start time
-		if err = executionMgr.UpdateTaskStatus(result.TaskID, models.TaskStatusPending, models.TaskStatusInitialized); err != nil {
+		if err = executionMgr.UpdateTaskStatus(result.TaskID, models.TaskStatusPending, 0, models.TaskStatusInitialized); err != nil {
 			log.Errorf("failed to update the task status %d: %v", result.TaskID, err)
 		}
-		now := time.Now()
 		if err = executionMgr.UpdateTask(&models.Task{
 			ID:        result.TaskID,
 			JobID:     result.JobID,
-			StartTime: &now,
+			StartTime: now,
 		}, "JobID", "StartTime"); err != nil {
 			log.Errorf("failed to update the task %d: %v", result.TaskID, err)
 		}
@@ -331,15 +334,16 @@ func getResourceName(res *model.Resource) string {
 	if meta == nil {
 		return ""
 	}
+	repositoryName := meta.Repository.Name
 	if len(meta.Vtags) == 0 {
-		return meta.Repository.Name
+		return repositoryName
 	}
 
-	if len(meta.Vtags) <= 5 {
-		return meta.Repository.Name + ":[" + strings.Join(meta.Vtags, ",") + "]"
+	if len(meta.Vtags) == 1 {
+		return repositoryName + ":[" + meta.Vtags[0] + "]"
 	}
 
-	return fmt.Sprintf("%s:[%s ... %d in total]", meta.GetResourceName(), strings.Join(meta.Vtags[:5], ","), len(meta.Vtags))
+	return fmt.Sprintf("%s:[%s ... %d in total]", repositoryName, meta.Vtags[0], len(meta.Vtags))
 }
 
 // repository:c namespace:n -> n/c

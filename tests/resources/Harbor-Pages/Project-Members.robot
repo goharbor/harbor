@@ -17,25 +17,22 @@ Documentation  This resource provides any keywords related to the Harbor private
 Resource  ../../resources/Util.robot
 
 *** Variables ***
-${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Go Into Project
     [Arguments]  ${project}  ${has_image}=${true}
-    Retry Wait Element  ${search_input}
-    Input Text  ${search_input}  ${project}
-    Retry Wait Until Page Contains  ${project}
-    Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a
-    #To prevent waiting for a fixed-period of time for page loading and failure caused by exception, we add loop to re-run <Wait Until Element Is Visible And Enabled> when
-    #    exception was caught.
     :For  ${n}  IN RANGE  1  5
-    \    ${out}  Run Keyword If  ${has_image}==${false}  Run Keyword And Ignore Error  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]
-    \    ...  ELSE  Run Keyword And Ignore Error  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-cell[contains(.,'${project}/')]
-    \    Log To Console  ${out[0]}
-    \    ${result}  Set Variable If  '${out[0]}'=='PASS'  ${true}  ${false}
-    \    Run Keyword If  ${result} == ${true}  Exit For Loop
+    \    Sleep  2
+    \    Retry Wait Element  ${search_input}
+    \    Retry Clear Element Text  ${search_input}
+    \    Input Text  ${search_input}  ${project}
+    \    ${out}  Run Keyword If  ${has_image}==${false}  Retry Double Keywords When Error  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]  DoAssert=${false}
+    \    ...  ELSE  Retry Double Keywords When Error  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  Wait Until Element Is Visible And Enabled  xpath=//project-detail//hbr-repository-gridview//clr-dg-cell[contains(.,'${project}/')]  DoAssert=${false}
+    \    Log To Console  ${out}
+    \    Run Keyword If  ${out} == 'PASS'  Exit For Loop
     \    Sleep  1
-    Should Be Equal  ${result}  ${true}
+    Should Be Equal  ${out}  'PASS'
+    Sleep  1
 
 Add User To Project Admin
     [Arguments]  ${project}  ${user}
@@ -61,7 +58,7 @@ Change Project Member Role
     [Arguments]  ${project}  ${user}  ${role}
     Retry Element Click  xpath=//clr-dg-cell//a[contains(.,'${project}')]
     Retry Element Click  xpath=${project_member_tag_xpath}
-    Retry Element Click  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//label
+    Retry Element Click  xpath=//project-detail//clr-dg-row[contains(.,'${user}')]//clr-checkbox-wrapper
     #change role
     Retry Element Click  ${project_member_action_xpath}
     Retry Element Click  //button[contains(.,'${role}')]
@@ -72,13 +69,13 @@ Change Project Member Role
 User Can Change Role
      [arguments]  ${username}
      Retry Element Click  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
-     Retry Element Click  xpath=//clr-dropdown[@id='member-action']
+     Retry Element Click  xpath=//*[@id='member-action']
      Page Should Not Contain Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
 User Can Not Change Role
      [arguments]  ${username}
      Retry Element Click  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
-     Retry Element Click  xpath=//clr-dropdown[@id='member-action']
+     Retry Element Click  xpath=//*[@id='member-action']
      Page Should Contain Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
 #this keyworkd seems will not use any more, will delete in the future
@@ -142,7 +139,7 @@ Change User Role In Project
     [Arguments]  ${admin}  ${pwd}  ${project}  ${user}  ${role}  ${is_oidc_mode}=${false}
     Run Keyword If  ${is_oidc_mode} == ${false}  Sign In Harbor   ${HARBOR_URL}  ${admin}  ${pwd}
     ...    ELSE  Sign In Harbor With OIDC User  ${HARBOR_URL}  username=${admin}
-    Wait Until Element Is Visible  //clr-dg-cell//a[contains(.,'${project}')]
+    Retry Wait Element Visible  //clr-dg-cell//a[contains(.,'${project}')]
     Change Project Member Role  ${project}  ${user}  ${role}
     Logout Harbor
 

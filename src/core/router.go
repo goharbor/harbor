@@ -15,17 +15,16 @@
 package main
 
 import (
+	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/controllers"
 	"github.com/goharbor/harbor/src/core/service/notifications/admin"
-	"github.com/goharbor/harbor/src/core/service/notifications/clair"
 	"github.com/goharbor/harbor/src/core/service/notifications/jobs"
 	"github.com/goharbor/harbor/src/core/service/notifications/registry"
+	"github.com/goharbor/harbor/src/core/service/notifications/scheduler"
 	"github.com/goharbor/harbor/src/core/service/token"
-
-	"github.com/astaxie/beego"
 )
 
 func initRouters() {
@@ -53,7 +52,7 @@ func initRouters() {
 		beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
 		beego.Router("/api/users/:id/permissions", &api.UserAPI{}, "get:ListUserPermissions")
 		beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
-		beego.Router("/api/users/:id/gen_cli_secret", &api.UserAPI{}, "post:GenCLISecret")
+		beego.Router("/api/users/:id/cli_secret", &api.UserAPI{}, "put:SetCLISecret")
 		beego.Router("/api/usergroups/?:ugid([0-9]+)", &api.UserGroupAPI{})
 		beego.Router("/api/ldap/ping", &api.LdapAPI{}, "post:Ping")
 		beego.Router("/api/ldap/users/search", &api.LdapAPI{}, "get:Search")
@@ -67,6 +66,7 @@ func initRouters() {
 	beego.Router("/api/ping", &api.SystemInfoAPI{}, "get:Ping")
 	beego.Router("/api/search", &api.SearchAPI{})
 	beego.Router("/api/projects/", &api.ProjectAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:id([0-9]+)/summary", &api.ProjectAPI{}, "get:Summary")
 	beego.Router("/api/projects/:id([0-9]+)/logs", &api.ProjectAPI{}, "get:Logs")
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &api.ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
@@ -76,6 +76,9 @@ func initRouters() {
 	beego.Router("/api/projects/:pid([0-9]+)/robots", &api.RobotAPI{}, "post:Post;get:List")
 	beego.Router("/api/projects/:pid([0-9]+)/robots/:id([0-9]+)", &api.RobotAPI{}, "get:Get;put:Put;delete:Delete")
 
+	beego.Router("/api/quotas", &api.QuotaAPI{}, "get:List")
+	beego.Router("/api/quotas/:id([0-9]+)", &api.QuotaAPI{}, "get:Get;put:Put")
+
 	beego.Router("/api/repositories", &api.RepositoryAPI{}, "get:Get")
 	beego.Router("/api/repositories/*", &api.RepositoryAPI{}, "delete:Delete;put:Put")
 	beego.Router("/api/repositories/*/labels", &api.RepositoryLabelAPI{}, "get:GetOfRepository;post:AddToRepository")
@@ -84,22 +87,22 @@ func initRouters() {
 	beego.Router("/api/repositories/*/tags/:tag/labels", &api.RepositoryLabelAPI{}, "get:GetOfImage;post:AddToImage")
 	beego.Router("/api/repositories/*/tags/:tag/labels/:id([0-9]+)", &api.RepositoryLabelAPI{}, "delete:RemoveFromImage")
 	beego.Router("/api/repositories/*/tags", &api.RepositoryAPI{}, "get:GetTags;post:Retag")
-	beego.Router("/api/repositories/*/tags/:tag/scan", &api.RepositoryAPI{}, "post:ScanImage")
-	beego.Router("/api/repositories/*/tags/:tag/vulnerability/details", &api.RepositoryAPI{}, "Get:VulnerabilityDetails")
 	beego.Router("/api/repositories/*/tags/:tag/manifest", &api.RepositoryAPI{}, "get:GetManifests")
 	beego.Router("/api/repositories/*/signatures", &api.RepositoryAPI{}, "get:GetSignatures")
 	beego.Router("/api/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
-	beego.Router("/api/jobs/scan/:id([0-9]+)/log", &api.ScanJobAPI{}, "get:GetLog")
 
 	beego.Router("/api/system/gc", &api.GCAPI{}, "get:List")
 	beego.Router("/api/system/gc/:id", &api.GCAPI{}, "get:GetGC")
 	beego.Router("/api/system/gc/:id([0-9]+)/log", &api.GCAPI{}, "get:GetLog")
 	beego.Router("/api/system/gc/schedule", &api.GCAPI{}, "get:Get;put:Put;post:Post")
 	beego.Router("/api/system/scanAll/schedule", &api.ScanAllAPI{}, "get:Get;put:Put;post:Post")
+	beego.Router("/api/system/CVEWhitelist", &api.SysCVEWhitelistAPI{}, "get:Get;put:Put")
+	beego.Router("/api/system/oidc/ping", &api.OIDCAPI{}, "post:Ping")
 
 	beego.Router("/api/logs", &api.LogAPI{})
 
 	beego.Router("/api/replication/adapters", &api.ReplicationAdapterAPI{}, "get:List")
+	beego.Router("/api/replication/adapterinfos", &api.ReplicationAdapterAPI{}, "get:ListAdapterInfos")
 	beego.Router("/api/replication/executions", &api.ReplicationOperationAPI{}, "get:ListExecutions;post:CreateExecution")
 	beego.Router("/api/replication/executions/:id([0-9]+)", &api.ReplicationOperationAPI{}, "get:GetExecution;put:StopExecution")
 	beego.Router("/api/replication/executions/:id([0-9]+)/tasks", &api.ReplicationOperationAPI{}, "get:ListTasks")
@@ -107,6 +110,17 @@ func initRouters() {
 
 	beego.Router("/api/replication/policies", &api.ReplicationPolicyAPI{}, "get:List;post:Create")
 	beego.Router("/api/replication/policies/:id([0-9]+)", &api.ReplicationPolicyAPI{}, "get:Get;put:Update;delete:Delete")
+
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies", &api.NotificationPolicyAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/:id([0-9]+)", &api.NotificationPolicyAPI{})
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/policies/test", &api.NotificationPolicyAPI{}, "post:Test")
+
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/lasttrigger", &api.NotificationPolicyAPI{}, "get:ListGroupByEventType")
+
+	beego.Router("/api/projects/:pid([0-9]+)/webhook/jobs/", &api.NotificationJobAPI{}, "get:List")
+
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules", &api.ImmutableTagRuleAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &api.ImmutableTagRuleAPI{})
 
 	beego.Router("/api/internal/configurations", &api.ConfigAPI{}, "get:GetInternalConfig;put:Put")
 	beego.Router("/api/configurations", &api.ConfigAPI{}, "get:Get;put:Put")
@@ -121,14 +135,17 @@ func initRouters() {
 
 	beego.Router("/api/internal/syncregistry", &api.InternalAPI{}, "post:SyncRegistry")
 	beego.Router("/api/internal/renameadmin", &api.InternalAPI{}, "post:RenameAdmin")
+	beego.Router("/api/internal/switchquota", &api.InternalAPI{}, "put:SwitchQuota")
+	beego.Router("/api/internal/syncquota", &api.InternalAPI{}, "post:SyncQuota")
 
 	// external service that hosted on harbor process:
 	beego.Router("/service/notifications", &registry.NotificationHandler{})
-	beego.Router("/service/notifications/clair", &clair.Handler{}, "post:Handle")
-	beego.Router("/service/notifications/jobs/scan/:id([0-9]+)", &jobs.Handler{}, "post:HandleScan")
 	beego.Router("/service/notifications/jobs/adminjob/:id([0-9]+)", &admin.Handler{}, "post:HandleAdminJob")
 	beego.Router("/service/notifications/jobs/replication/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationScheduleJob")
 	beego.Router("/service/notifications/jobs/replication/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleReplicationTask")
+	beego.Router("/service/notifications/jobs/webhook/:id([0-9]+)", &jobs.Handler{}, "post:HandleNotificationJob")
+	beego.Router("/service/notifications/jobs/retention/task/:id([0-9]+)", &jobs.Handler{}, "post:HandleRetentionTask")
+	beego.Router("/service/notifications/schedules/:id([0-9]+)", &scheduler.Handler{}, "post:Handle")
 	beego.Router("/service/token", &token.Handler{})
 
 	beego.Router("/api/registries", &api.RegistryAPI{}, "get:List;post:Post")
@@ -137,6 +154,18 @@ func initRouters() {
 	// we use "0" as the ID of the local Harbor registry, so don't add "([0-9]+)" in the path
 	beego.Router("/api/registries/:id/info", &api.RegistryAPI{}, "get:GetInfo")
 	beego.Router("/api/registries/:id/namespace", &api.RegistryAPI{}, "get:GetNamespace")
+
+	beego.Router("/api/retentions/metadatas", &api.RetentionAPI{}, "get:GetMetadatas")
+	beego.Router("/api/retentions/:id", &api.RetentionAPI{}, "get:GetRetention")
+	beego.Router("/api/retentions", &api.RetentionAPI{}, "post:CreateRetention")
+	beego.Router("/api/retentions/:id", &api.RetentionAPI{}, "put:UpdateRetention")
+	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "post:TriggerRetentionExec")
+	beego.Router("/api/retentions/:id/executions/:eid", &api.RetentionAPI{}, "patch:OperateRetentionExec")
+	beego.Router("/api/retentions/:id/executions", &api.RetentionAPI{}, "get:ListRetentionExecs")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks", &api.RetentionAPI{}, "get:ListRetentionExecTasks")
+	beego.Router("/api/retentions/:id/executions/:eid/tasks/:tid", &api.RetentionAPI{}, "get:GetRetentionExecTaskLog")
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules", &api.ImmutableTagRuleAPI{}, "get:List;post:Post")
+	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &api.ImmutableTagRuleAPI{})
 
 	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 
@@ -164,6 +193,31 @@ func initRouters() {
 		beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
 		beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
 	}
+
+	// Add routes for plugin scanner management
+	scannerAPI := &api.ScannerAPI{}
+	beego.Router("/api/scanners", scannerAPI, "post:Create;get:List")
+	beego.Router("/api/scanners/:uuid", scannerAPI, "get:Get;delete:Delete;put:Update;patch:SetAsDefault")
+	beego.Router("/api/scanners/:uuid/metadata", scannerAPI, "get:Metadata")
+	beego.Router("/api/scanners/ping", scannerAPI, "post:Ping")
+
+	// Add routes for project level scanner
+	proScannerAPI := &api.ProjectScannerAPI{}
+	beego.Router("/api/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
+	beego.Router("/api/projects/:pid([0-9]+)/scanner/candidates", proScannerAPI, "get:GetProScannerCandidates")
+
+	// Add routes for scan
+	scanAPI := &api.ScanAPI{}
+	beego.Router("/api/repositories/*/tags/:tag/scan", scanAPI, "post:Scan;get:Report")
+	beego.Router("/api/repositories/*/tags/:tag/scan/:uuid/log", scanAPI, "get:Log")
+
+	// Handle scan hook
+	beego.Router("/service/notifications/jobs/scan/:uuid", &jobs.Handler{}, "post:HandleScan")
+
+	// Add routes for scan all metrics
+	scanAllAPI := &api.ScanAllAPI{}
+	beego.Router("/api/scans/all/metrics", scanAllAPI, "get:GetScanAllMetrics")
+	beego.Router("/api/scans/schedule/metrics", scanAllAPI, "get:GetScheduleMetrics")
 
 	// Error pages
 	beego.ErrorController(&controllers.ErrorController{})

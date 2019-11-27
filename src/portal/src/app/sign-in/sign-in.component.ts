@@ -20,7 +20,7 @@ import { SessionService } from '../shared/session.service';
 import { SignInCredential } from '../shared/sign-in-credential';
 
 import { SignUpComponent } from '../account/sign-up/sign-up.component';
-import { CommonRoutes } from '../shared/shared.const';
+import { CommonRoutes, CONFIG_AUTH_MODE } from '@harbor/ui';
 import { ForgotPasswordComponent } from '../account/password-setting/forgot-password/forgot-password.component';
 
 import { AppConfigService } from '../app-config.service';
@@ -29,6 +29,9 @@ import { User } from '../user/user';
 
 import { CookieService, CookieOptions } from 'ngx-cookie';
 import { SkinableConfig } from "../skinable-config.service";
+import {ModalEvent} from "../base/modal-event";
+import {modalEvents} from "../base/modal-events.const";
+import {AboutDialogComponent} from "../shared/about-dialog/about-dialog.component";
 
 // Define status flags for signing in states
 export const signInStatusNormal = 0;
@@ -54,9 +57,10 @@ export class SignInComponent implements AfterViewChecked, OnInit {
     customAppTitle: string;
     // Form reference
     signInForm: NgForm;
-    @ViewChild('signInForm') currentForm: NgForm;
-    @ViewChild('signupDialog') signUpDialog: SignUpComponent;
-    @ViewChild('forgotPwdDialog') forgotPwdDialog: ForgotPasswordComponent;
+    @ViewChild('signInForm', {static: true}) currentForm: NgForm;
+    @ViewChild('signupDialog', {static: false}) signUpDialog: SignUpComponent;
+    @ViewChild('forgotPwdDialog', {static: false}) forgotPwdDialog: ForgotPasswordComponent;
+    @ViewChild(AboutDialogComponent, {static: false}) aboutDialog: AboutDialogComponent;
 
     // Status flag
     signInStatus: number = signInStatusNormal;
@@ -138,15 +142,15 @@ export class SignInComponent implements AfterViewChecked, OnInit {
 
     // Whether show the 'sign up' link
     public get selfSignUp(): boolean {
-        return this.appConfig.auth_mode === 'db_auth'
+        return this.appConfig.auth_mode === CONFIG_AUTH_MODE.DB_AUTH
             && this.appConfig.self_registration;
     }
     public get isOidcLoginMode(): boolean {
-        return this.appConfig.auth_mode === 'oidc_auth';
+        return this.appConfig.auth_mode === CONFIG_AUTH_MODE.OIDC_AUTH;
     }
     public get showForgetPwd(): boolean {
-        return this.appConfig.auth_mode !== 'ldap_auth' && this.appConfig.auth_mode !== 'uaa_auth'
-            && this.appConfig.auth_mode !== 'oidc_auth';
+        return this.appConfig.auth_mode !== CONFIG_AUTH_MODE.LDAP_AUTH && this.appConfig.auth_mode !== CONFIG_AUTH_MODE.UAA_AUTH
+            && this.appConfig.auth_mode !== CONFIG_AUTH_MODE.OIDC_AUTH && this.appConfig.auth_mode !== CONFIG_AUTH_MODE.HTTP_AUTH;
     }
     clickRememberMe($event: any): void {
         if ($event && $event.target) {
@@ -283,6 +287,16 @@ export class SignInComponent implements AfterViewChecked, OnInit {
         this.forgotPwdDialog.open();
     }
 
+    // Open modal dialog
+    openModal(event: ModalEvent): void {
+        switch (event.modalName) {
+            case modalEvents.ABOUT:
+                this.aboutDialog.open();
+                break;
+            default:
+                break;
+        }
+    }
 }
 
 

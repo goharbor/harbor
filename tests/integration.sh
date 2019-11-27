@@ -17,6 +17,8 @@ set -x
 gsutil version -l
 set +x
 
+docker-compose version
+
 ## -------------------------------------------- Pre-condition --------------------------------------------
 if [[ $DRONE_REPO != "goharbor/harbor" ]]; then
     echo "Only run tests again Harbor Repo."
@@ -43,7 +45,8 @@ upload_bundle_success=false
 latest_build_file='latest.build'
 publish_npm=true
 
-harbor_build_bundle=""
+harbor_offline_build_bundle=""
+harbor_online_build_bundle=""
 harbor_logs_bucket="harbor-ci-logs"
 harbor_builds_bucket="harbor-builds"
 harbor_releases_bucket="harbor-releases"
@@ -72,12 +75,8 @@ echo $container_ip
 ## --------------------------------------------- Init Version -----------------------------------------------
 buildinfo=$(drone build info goharbor/harbor $DRONE_BUILD_NUMBER)
 echo $buildinfo
-git_commit=$(git rev-parse --short=8 HEAD)
-
 #  the target release version is the version of next release(RC or GA). It needs to be updated on creating new release branch.
 target_release_version=$(cat ./VERSION)
-#  the harbor ui version will be shown in the about dialog.
-Harbor_UI_Version=$target_release_version-$git_commit
 #  the harbor package version is for both online and offline installer.
 #  harbor-offline-installer-v1.5.2-build.8.tgz
 Harbor_Package_Version=$target_release_version-'build.'$DRONE_BUILD_NUMBER
@@ -89,13 +88,20 @@ if [[ $DRONE_BRANCH == "master" ]]; then
 else
   Harbor_Assets_Version=$target_release_version
 fi
-export Harbor_UI_Version=$Harbor_UI_Version
 export Harbor_Assets_Version=$Harbor_Assets_Version
 #  the env is for online and offline package.
 export Harbor_Package_Version=$Harbor_Package_Version
+export NPM_REGISTRY=$NPM_REGISTRY
+
+# release branch must have their own base image with branch name, master and others will use the dev as base.
+if [[ $DRONE_BRANCH == "release-"* ]]; then
+  Harbor_Build_Base_Tag=$DRONE_BRANCH
+else
+  Harbor_Build_Base_Tag=dev
+fi
+export Harbor_Build_Base_Tag=$Harbor_Build_Base_Tag
 
 echo "--------------------------------------------------"
-echo "Harbor UI version: $Harbor_UI_Version"
 echo "Harbor Package version: $Harbor_Package_Version"
 echo "Harbor Assets version: $Harbor_Assets_Version"
 echo "--------------------------------------------------"
@@ -106,23 +112,32 @@ function uploader {
     gsutil -D setacl public-read gs://$2/$1 &> /dev/null
 }
 
-function package_offline_installer {
+function package_installer {
     echo "Package Harbor offline installer."
     pybot --removekeywords TAG:secret --include Bundle tests/robot-cases/Group0-Distro-Harbor
-    harbor_build_bundle=$(basename harbor-offline-installer-*.tgz)
+    harbor_offline_build_bundle=$(basename harbor-offline-installer-*.tgz)
+    harbor_online_build_bundle=$(basename harbor-online-installer-*.tgz)
     upload_build=true
-    echo "Package name is: $harbor_build_bundle"
-    du -ks $harbor_build_bundle | awk '{print $1 / 1024}' | { read x; echo $x MB; }
+    echo "Package name is: $harbor_offline_build_bundle"
+    du -ks $harbor_offline_build_bundle | awk '{print $1 / 1024}' | { read x; echo $x MB; }
 }
 
 # publish images to Docker Hub
 function publishImage {
     echo "Publishing images to Docker Hub..."
     echo "The images on the host:"
+    # for master, will use 'dev' as the tag name
+    # for release-*, will use 'release-*-dev' as the tag name, like release-v1.8.0-dev
+    if [[ $DRONE_BRANCH == "master" ]]; then
+      image_tag=dev
+    fi
+    if [[ $DRONE_BRANCH == "release-"* ]]; then
+      image_tag=$Harbor_Assets_Version-dev
+    fi
+    # rename the images with tag "dev" and push to Docker Hub
     docker images
     docker login -u $DOCKER_HUB_USERNAME -p $DOCKER_HUB_PASSWORD
-    # rename the images with tag "dev" and push to Docker Hub
-    docker images | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:dev;docker push \1:dev|p" | bash
+    docker images | sed -n "s|\(goharbor/[-._a-z0-9]*\)\s*\(.*$Harbor_Assets_Version\).*|docker tag \1:\2 \1:$image_tag;docker push \1:$image_tag|p" | bash
     echo "Images are published successfully"
     docker images
 }
@@ -138,8 +153,11 @@ echo "--------------------------------------------------"
 ##
 if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == *"refs/tags"* || $DRONE_BRANCH == "release-"* ]]; then
     if [[ $DRONE_BUILD_EVENT == "push" ]]; then
-        package_offline_installer
+        package_installer
         upload_latest_build=true
+        echo -en "$HARBOR_SIGN_KEY" | gpg --import
+        gpg -v -ab -u $HARBOR_SIGN_KEY_ID $harbor_offline_build_bundle
+        gpg -v -ab -u $HARBOR_SIGN_KEY_ID $harbor_online_build_bundle
     fi
 fi
 
@@ -157,14 +175,27 @@ fi
 #
 set -e
 if [ $upload_build == true ]; then
-    cp $harbor_build_bundle harbor-offline-installer-latest.tgz
-    uploader $harbor_build_bundle $harbor_target_bucket
-    uploader harbor-offline-installer-latest.tgz $harbor_target_bucket
+    cp ${harbor_offline_build_bundle}     harbor-offline-installer-latest.tgz
+    cp ${harbor_offline_build_bundle}.asc harbor-offline-installer-latest.tgz.asc
+    uploader ${harbor_offline_build_bundle}     $harbor_target_bucket
+    uploader ${harbor_offline_build_bundle}.asc $harbor_target_bucket
+    uploader ${harbor_online_build_bundle}     $harbor_target_bucket
+    uploader ${harbor_online_build_bundle}.asc $harbor_target_bucket
+    uploader harbor-offline-installer-latest.tgz     $harbor_target_bucket
+    uploader harbor-offline-installer-latest.tgz.asc $harbor_target_bucket
     upload_bundle_success=true
 fi
 
-if [ $DRONE_BRANCH = "master" ] && [ $DRONE_BUILD_EVENT = "push" ]; then
-    publishImage
+
+## --------------------------------------------- Upload Harbor Dev Images ---------------------------------------
+#
+# Any merge code(PUSH) on branch master, release-* will trigger push dev images.
+#
+##
+if [[ $DRONE_BRANCH == "master" || $DRONE_BRANCH == "release-"* ]]; then
+    if [[ $DRONE_BUILD_EVENT == "push" ]]; then
+        publishImage
+    fi
 fi
 
 ## --------------------------------------------- Upload Harbor Latest Build File ----------------------------------
@@ -172,19 +203,19 @@ fi
 # latest.build file holds the latest offline installer url, it must be sure that the installer has been uploaded successfull.
 #
 if [ $upload_latest_build == true ] && [ $upload_bundle_success == true ]; then
-    echo 'https://storage.googleapis.com/'$harbor_target_bucket/$harbor_build_bundle > $latest_build_file
+    echo 'https://storage.googleapis.com/'$harbor_target_bucket/$harbor_offline_build_bundle > $latest_build_file
     uploader $latest_build_file $harbor_target_bucket
 fi
 
 ## --------------------------------------------- Upload securego results ------------------------------------------
-if [ $DRONE_BUILD_EVENT == "push" ]; then
-    go get github.com/securego/gosec/cmd/gosec
-    go get github.com/dghubble/sling
-    make gosec -e GOSECRESULTS=harbor-gosec-results-latest.json
-    echo $git_commit > ./harbor-gosec-results-latest-version
-    uploader harbor-gosec-results-latest.json $harbor_target_bucket
-    uploader harbor-gosec-results-latest-version $harbor_target_bucket
-fi
+#if [ $DRONE_BUILD_EVENT == "push" ]; then
+#    go get github.com/securego/gosec/cmd/gosec
+#    go get github.com/dghubble/sling
+#    make gosec -e GOSECRESULTS=harbor-gosec-results-latest.json
+#    echo $git_commit > ./harbor-gosec-results-latest-version
+#    uploader harbor-gosec-results-latest.json $harbor_target_bucket
+#    uploader harbor-gosec-results-latest-version $harbor_target_bucket
+#fi
 
 ## ------------------------------------------------ Tear Down -----------------------------------------------------
 if [ -f "$keyfile" ]; then

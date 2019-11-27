@@ -18,9 +18,11 @@ package metadata
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/common"
+	"math"
 	"strconv"
 	"strings"
+
+	"github.com/goharbor/harbor/src/common"
 )
 
 // Type - Use this interface to define and encapsulate the behavior of validation and transformation
@@ -138,12 +140,12 @@ type Int64Type struct {
 }
 
 func (t *Int64Type) validate(str string) error {
-	_, err := strconv.ParseInt(str, 10, 64)
+	_, err := parseInt64(str)
 	return err
 }
 
 func (t *Int64Type) get(str string) (interface{}, error) {
-	return strconv.ParseInt(str, 10, 64)
+	return parseInt64(str)
 }
 
 // BoolType ...
@@ -185,4 +187,37 @@ func (t *MapType) get(str string) (interface{}, error) {
 	result := map[string]interface{}{}
 	err := json.Unmarshal([]byte(str), &result)
 	return result, err
+}
+
+// QuotaType ...
+type QuotaType struct {
+	Int64Type
+}
+
+func (t *QuotaType) validate(str string) error {
+	val, err := parseInt64(str)
+	if err != nil {
+		return err
+	}
+
+	if val <= 0 && val != -1 {
+		return fmt.Errorf("quota value should be -1 or great than zero")
+	}
+
+	return nil
+}
+
+// parseInt64 returns int64 from string which support scientific notation
+func parseInt64(str string) (int64, error) {
+	val, err := strconv.ParseInt(str, 10, 64)
+	if err == nil {
+		return val, nil
+	}
+
+	fval, err := strconv.ParseFloat(str, 64)
+	if err == nil && fval == math.Trunc(fval) {
+		return int64(fval), nil
+	}
+
+	return 0, fmt.Errorf("invalid int64 string: %s", str)
 }

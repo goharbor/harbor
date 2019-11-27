@@ -9,24 +9,30 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
 )
 
 func init() {
-	if err := adp.RegisterFactory(model.RegistryTypeDockerHub, factory); err != nil {
+	if err := adp.RegisterFactory(model.RegistryTypeDockerHub, new(factory)); err != nil {
 		log.Errorf("Register adapter factory for %s error: %v", model.RegistryTypeDockerHub, err)
 		return
 	}
 	log.Infof("Factory for adapter %s registered", model.RegistryTypeDockerHub)
 }
 
-func factory(registry *model.Registry) (adp.Adapter, error) {
-	client, err := NewClient(&model.Registry{
-		URL:        baseURL, // specify the URL of Docker Hub
+func newAdapter(registry *model.Registry) (adp.Adapter, error) {
+	client, err := NewClient(registry)
+	if err != nil {
+		return nil, err
+	}
+
+	dockerRegistryAdapter, err := native.NewAdapter(&model.Registry{
+		URL:        registryURL,
 		Credential: registry.Credential,
 		Insecure:   registry.Insecure,
 	})
@@ -34,38 +40,28 @@ func factory(registry *model.Registry) (adp.Adapter, error) {
 		return nil, err
 	}
 
-	// if the registry.Credentail isn't specified, the credential here is nil
-	// the client will request the token with no authentication
-	// this is needed for pulling images from public repositories
-	var credential auth.Credential
-	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
-		credential = auth.NewBasicAuthCredential(
-			registry.Credential.AccessKey,
-			registry.Credential.AccessSecret)
-	}
-	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
-		Transport: util.GetHTTPTransport(registry.Insecure),
-	}, credential)
-
-	reg, err := adp.NewDefaultImageRegistryWithCustomizedAuthorizer(&model.Registry{
-		Name:       registry.Name,
-		URL:        registryURL, // specify the URL of Docker Hub registry service
-		Credential: registry.Credential,
-		Insecure:   registry.Insecure,
-	}, authorizer)
-	if err != nil {
-		return nil, err
-	}
-
 	return &adapter{
-		client:               client,
-		registry:             registry,
-		DefaultImageRegistry: reg,
+		client:   client,
+		registry: registry,
+		Adapter:  dockerRegistryAdapter,
 	}, nil
 }
 
+type factory struct {
+}
+
+// Create ...
+func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
+	return newAdapter(r)
+}
+
+// AdapterPattern ...
+func (f *factory) AdapterPattern() *model.AdapterPattern {
+	return getAdapterInfo()
+}
+
 type adapter struct {
-	*adp.DefaultImageRegistry
+	*native.Adapter
 	registry *model.Registry
 	client   *Client
 }
@@ -95,6 +91,21 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 			model.TriggerTypeScheduled,
 		},
 	}, nil
+}
+
+func getAdapterInfo() *model.AdapterPattern {
+	info := &model.AdapterPattern{
+		EndpointPattern: &model.EndpointPattern{
+			EndpointType: model.EndpointPatternTypeFix,
+			Endpoints: []*model.Endpoint{
+				{
+					Key:   "hub.docker.com",
+					Value: "https://hub.docker.com",
+				},
+			},
+		},
+	}
+	return info
 }
 
 // PrepareForPush does the prepare work that needed for pushing/uploading the resource
@@ -264,65 +275,83 @@ func (a *adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		log.Debugf("got %d repositories for namespace %s", n, ns)
 	}
 
-	var resources []*model.Resource
-	// TODO(ChenDe): Get tags for repos in parallel
-	for _, repo := range repos {
-		name := fmt.Sprintf("%s/%s", repo.Namespace, repo.Name)
-		// If name filter set, skip repos that don't match the filter pattern.
-		if len(nameFilter) != 0 {
-			m, err := util.Match(nameFilter, name)
-			if err != nil {
-				return nil, fmt.Errorf("match repo name '%s' against pattern '%s' error: %v", name, nameFilter, err)
-			}
-			if !m {
-				continue
-			}
-		}
+	var rawResources = make([]*model.Resource, len(repos))
+	runner := utils.NewLimitedConcurrentRunner(adp.MaxConcurrency)
+	defer runner.Cancel()
+	for i, r := range repos {
+		index := i
+		repo := r
+		runner.AddTask(func() error {
+			name := fmt.Sprintf("%s/%s", repo.Namespace, repo.Name)
+			log.Infof("Routine started to collect tags for repo: %s", name)
 
-		var tags []string
-		page := 1
-		pageSize := 100
-		for {
-			pageTags, err := a.getTags(repo.Namespace, repo.Name, page, pageSize)
-			if err != nil {
-				return nil, fmt.Errorf("get tags for repo '%s/%s' from DockerHub error: %v", repo.Namespace, repo.Name, err)
-			}
-			for _, t := range pageTags.Tags {
-				// If tag filter set, skip tags that don't match the filter pattern.
-				if len(tagFilter) != 0 {
-					m, err := util.Match(tagFilter, t.Name)
-					if err != nil {
-						return nil, fmt.Errorf("match tag name '%s' against pattern '%s' error: %v", t.Name, tagFilter, err)
-					}
-
-					if !m {
-						continue
-					}
+			// If name filter set, skip repos that don't match the filter pattern.
+			if len(nameFilter) != 0 {
+				m, err := util.Match(nameFilter, name)
+				if err != nil {
+					return fmt.Errorf("match repo name '%s' against pattern '%s' error: %v", name, nameFilter, err)
 				}
-				tags = append(tags, t.Name)
+				if !m {
+					return nil
+				}
 			}
 
-			if len(pageTags.Next) == 0 {
-				break
+			var tags []string
+			page := 1
+			pageSize := 100
+			for {
+				pageTags, err := a.getTags(repo.Namespace, repo.Name, page, pageSize)
+				if err != nil {
+					return fmt.Errorf("get tags for repo '%s/%s' from DockerHub error: %v", repo.Namespace, repo.Name, err)
+				}
+				for _, t := range pageTags.Tags {
+					// If tag filter set, skip tags that don't match the filter pattern.
+					if len(tagFilter) != 0 {
+						m, err := util.Match(tagFilter, t.Name)
+						if err != nil {
+							return fmt.Errorf("match tag name '%s' against pattern '%s' error: %v", t.Name, tagFilter, err)
+						}
+
+						if !m {
+							continue
+						}
+					}
+					tags = append(tags, t.Name)
+				}
+
+				if len(pageTags.Next) == 0 {
+					break
+				}
+				page++
 			}
-			page++
-		}
 
-		// If the repo has no tags, skip it
-		if len(tags) == 0 {
-			continue
-		}
+			if len(tags) > 0 {
+				rawResources[index] = &model.Resource{
+					Type:     model.ResourceTypeImage,
+					Registry: a.registry,
+					Metadata: &model.ResourceMetadata{
+						Repository: &model.Repository{
+							Name: name,
+						},
+						Vtags: tags,
+					},
+				}
+			}
 
-		resources = append(resources, &model.Resource{
-			Type:     model.ResourceTypeImage,
-			Registry: a.registry,
-			Metadata: &model.ResourceMetadata{
-				Repository: &model.Repository{
-					Name: name,
-				},
-				Vtags: tags,
-			},
+			return nil
 		})
+	}
+	runner.Wait()
+
+	if runner.IsCancelled() {
+		return nil, fmt.Errorf("FetchImages error when collect tags for repos")
+	}
+
+	var resources []*model.Resource
+	for _, r := range rawResources {
+		if r != nil {
+			resources = append(resources, r)
+		}
 	}
 
 	return resources, nil

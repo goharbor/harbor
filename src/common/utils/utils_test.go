@@ -17,6 +17,7 @@ package utils
 import (
 	"encoding/base64"
 	"net/http/httptest"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -91,12 +92,21 @@ func TestParseRepository(t *testing.T) {
 }
 
 func TestEncrypt(t *testing.T) {
-	content := "content"
-	salt := "salt"
-	result := Encrypt(content, salt)
+	tests := map[string]struct {
+		content string
+		salt    string
+		alg     string
+		want    string
+	}{
+		"sha1 test":   {content: "content", salt: "salt", alg: SHA1, want: "dc79e76c88415c97eb089d9cc80b4ab0"},
+		"sha256 test": {content: "content", salt: "salt", alg: SHA256, want: "83d3d6f3e7cacb040423adf7ced63d21"},
+	}
 
-	if result != "dc79e76c88415c97eb089d9cc80b4ab0" {
-		t.Errorf("unexpected result: %s != %s", result, "dc79e76c88415c97eb089d9cc80b4ab0")
+	for name, tc := range tests {
+		got := Encrypt(tc.content, tc.salt, tc.alg)
+		if !reflect.DeepEqual(tc.want, got) {
+			t.Errorf("%s: expected: %v, got: %v", name, tc.want, got)
+		}
 	}
 }
 
@@ -380,4 +390,38 @@ func TestTrimLower(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGetStrValueOfAnyType(t *testing.T) {
+	type args struct {
+		value interface{}
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"float", args{float32(1048576.1)}, "1048576.1"},
+		{"float", args{float64(1048576.12)}, "1048576.12"},
+		{"float", args{1048576.000}, "1048576"},
+		{"int", args{1048576}, "1048576"},
+		{"int", args{9223372036854775807}, "9223372036854775807"},
+		{"string", args{"hello world"}, "hello world"},
+		{"bool", args{true}, "true"},
+		{"bool", args{false}, "false"},
+		{"map", args{map[string]interface{}{"key1": "value1"}}, "{\"key1\":\"value1\"}"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := GetStrValueOfAnyType(tt.args.value); got != tt.want {
+				t.Errorf("GetStrValueOfAnyType() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestIsDigest(t *testing.T) {
+	assert := assert.New(t)
+	assert.False(IsDigest("latest"))
+	assert.True(IsDigest("sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"))
 }

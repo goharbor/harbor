@@ -18,10 +18,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/tests/apitests/apilib"
+	"github.com/goharbor/harbor/src/testing/apitests/apilib"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -42,7 +40,7 @@ func TestGetRepos(t *testing.T) {
 	} else {
 		assert.Equal(int(200), code, "response code should be 200")
 		if repos, ok := repositories.([]repoResp); ok {
-			assert.Equal(int(1), len(repos), "the length of repositories should be 1")
+			require.Equal(t, int(1), len(repos), "the length of repositories should be 1")
 			assert.Equal(repos[0].Name, "library/hello-world", "unexpected repository name")
 		} else {
 			t.Error("unexpected response")
@@ -96,7 +94,7 @@ func TestGetReposTags(t *testing.T) {
 		t.Errorf("failed to get tags of repository %s: %v", repository, err)
 	} else {
 		assert.Equal(int(200), code, "httpStatusCode should be 200")
-		if tg, ok := tags.([]tagResp); ok {
+		if tg, ok := tags.([]models.TagResp); ok {
 			assert.Equal(1, len(tg), fmt.Sprintf("there should be only one tag, but now %v", tg))
 			assert.Equal(tg[0].Name, "latest", "the tag should be latest")
 		} else {
@@ -207,19 +205,19 @@ func TestGetReposTop(t *testing.T) {
 
 func TestPopulateAuthor(t *testing.T) {
 	author := "author"
-	detail := &tagDetail{
+	detail := &models.TagDetail{
 		Author: author,
 	}
 	populateAuthor(detail)
 	assert.Equal(t, author, detail.Author)
 
-	detail = &tagDetail{}
+	detail = &models.TagDetail{}
 	populateAuthor(detail)
 	assert.Equal(t, "", detail.Author)
 
 	maintainer := "maintainer"
-	detail = &tagDetail{
-		Config: &cfg{
+	detail = &models.TagDetail{
+		Config: &models.TagCfg{
 			Labels: map[string]string{
 				"Maintainer": maintainer,
 			},
@@ -230,24 +228,6 @@ func TestPopulateAuthor(t *testing.T) {
 }
 
 func TestPutOfRepository(t *testing.T) {
-	u, err := dao.GetUser(models.User{
-		Username: projAdmin.Name,
-	})
-	if err != nil {
-		t.Errorf("Error occurred when Register user: %v", err)
-	}
-	pmid, err := project.AddProjectMember(
-		models.Member{
-			ProjectID:  1,
-			Role:       1,
-			EntityID:   int(u.UserID),
-			EntityType: "u"},
-	)
-	if err != nil {
-		t.Errorf("Error occurred when add project member: %v", err)
-	}
-	defer project.DeleteProjectMemberByID(pmid)
-
 	base := "/api/repositories/"
 	desc := struct {
 		Description string `json:"description"`
@@ -329,7 +309,7 @@ func TestPutOfRepository(t *testing.T) {
 
 	// verify that the description is changed
 	repositories := []*repoResp{}
-	err = handleAndParse(&testingRequest{
+	err := handleAndParse(&testingRequest{
 		method: http.MethodGet,
 		url:    base,
 		queryStruct: struct {

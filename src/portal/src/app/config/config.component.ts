@@ -15,8 +15,7 @@ import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from "rxjs";
 import {
     Configuration, StringValueItem, SystemSettingsComponent,
-    isEmpty, clone, getChanges, GcRepoService } from '@harbor/ui';
-
+    isEmpty, clone } from '@harbor/ui';
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { SessionService } from '../shared/session.service';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
@@ -49,9 +48,9 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
     originalCopy: Configuration = new Configuration();
     confirmSub: Subscription;
 
-    @ViewChild(SystemSettingsComponent) systemSettingsConfig: SystemSettingsComponent;
-    @ViewChild(ConfigurationEmailComponent) mailConfig: ConfigurationEmailComponent;
-    @ViewChild(ConfigurationAuthComponent) authConfig: ConfigurationAuthComponent;
+    @ViewChild(SystemSettingsComponent, {static: false}) systemSettingsConfig: SystemSettingsComponent;
+    @ViewChild(ConfigurationEmailComponent, {static: false}) mailConfig: ConfigurationEmailComponent;
+    @ViewChild(ConfigurationAuthComponent, {static: false}) authConfig: ConfigurationAuthComponent;
 
     constructor(
         private msgHandler: MessageHandlerService,

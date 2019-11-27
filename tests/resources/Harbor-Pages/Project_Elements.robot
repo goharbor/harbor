@@ -26,6 +26,7 @@ ${project_replication_xpath}  //project-detail//a[contains(.,'Replication')]
 ${project_log_xpath}  //project-detail//li[contains(.,'Logs')]
 ${project_member_xpath}  //project-detail//li[contains(.,'Members')]
 ${project_config_tabsheet}  xpath=//project-detail//a[contains(.,'Configuration')]
+${project_tag_retention_xpath}  //nav//li//a[contains(.,'Tag')]
 
 ${create_project_CANCEL_button_xpath}  xpath=//button[contains(.,'CANCEL')]
 ${create_project_OK_button_xpath}  xpath=//button[contains(.,'OK')]
@@ -39,13 +40,30 @@ ${repo_delete_btn}  xpath=//repository//button[contains(.,'Delete')]
 ${project_delete_btn}  xpath=//list-project//clr-datagrid//button[contains(.,'Delete')]
 ${tag_delete_btn}  xpath=//tag-repository//clr-datagrid//button[contains(.,'Delete')]
 ${user_delete_btn}  xpath=/clr-dropdown-menu//button[contains(.,'Delete')]
-${repo_search_icon}  xpath=//hbr-filter//clr-icon
-${repo_search_input}  xpath=//hbr-filter//input
+#${repo_search_icon}  xpath=//hbr-filter//clr-icon
+#${repo_search_input}  xpath=//hbr-filter//input
+${repo_search_icon}  xpath=//hbr-repository-gridview//clr-datagrid//clr-dg-column[contains(.,'Name')]//clr-dg-string-filter//button//clr-icon
+${repo_search_input}  xpath=//div[@class[contains(.,'datagrid-filter')]]//input
 ${repo_tag_1st_checkbox}  xpath=//clr-datagrid//clr-dg-row//clr-checkbox-wrapper
-${tag_table_column_signed}  xpath=//clr-dg-column//span[contains(.,'Signed')]
+${tag_table_column_pull_command}  xpath=//clr-dg-column//span[contains(.,'Pull Command')]
+${tag_table_column_tag}  xpath=//clr-dg-column//span[contains(.,'Tag')]
+${tag_table_column_size}  xpath=//clr-dg-column//span[contains(.,'Size')]
 ${tag_table_column_vulnerability}  xpath=//clr-dg-column//span[contains(.,'Vulnerability')]
 ${tag_images_btn}  xpath=//hbr-repository//button[contains(.,'Images')]
 ${project_member_action_xpath}  xpath=//*[@id='member-action']
 ${project_member_set_role_xpath}  xpath=//clr-dropdown-menu//label[contains(.,'SET ROLE')]
 ${project_config_public_checkbox}  xpath=//input[@name='public']
-${project_config_public_checkbox_label}  xpath=//div[@id='clr-wrapper-public']//label[contains(.,'Public')]
+${project_config_content_trust_checkbox}  xpath=//input[@name='content-trust']
+${project_config_scan_images_on_push_checkbox}  xpath=//input[@name='scan-image-on-push']
+${project_config_prevent_vulnerable_images_from_running_checkbox}  xpath=//input[@name='prevent-vulenrability-image-input']
+${project_config_severity_select}  xpath=//select[@id='severity']
+${project_config_public_checkbox_label}  xpath=//*[@id="clr-wrapper-public"]/div/clr-checkbox-wrapper/label
+${project_config_prevent_vulenrability_checkbox_label}    xpath=//*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
+${project_config_system_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(.,'System whitelist')]
+${project_config_project_wl_radio_input}    xpath=//clr-radio-wrapper//label[contains(.,'Project whitelist')]
+${project_config_project_wl_add_btn}    xpath=//*[@id='show-add-modal']
+${project_config_project_wl_add_confirm_btn}    xpath=//*[@id='add-to-whitelist']
+${project_config_save_btn}    xpath=//hbr-project-policy-config//button[contains(.,'SAVE')]
+${project_add_count_quota_input_text_id}    xpath=//*[@id='create_project_count_limit']
+${project_add_storage_quota_input_text_id}    xpath=//*[@id='create_project_storage_limit']
+${project_add_storage_quota_unit_id}    xpath=//*[@id='create_project_storage_limit_unit']

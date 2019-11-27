@@ -189,7 +189,7 @@ func (c *CfgManager) Save() error {
 func (c *CfgManager) Get(key string) *metadata.ConfigureValue {
 	configValue, err := c.store.Get(key)
 	if err != nil {
-		log.Errorf("failed to get key %v, error: %v", key, err)
+		log.Debugf("failed to get key %v, error: %v", key, err)
 		configValue = &metadata.ConfigureValue{}
 	}
 	return configValue
@@ -210,12 +210,14 @@ func (c *CfgManager) GetDatabaseCfg() *models.Database {
 	return &models.Database{
 		Type: c.Get(common.DatabaseType).GetString(),
 		PostGreSQL: &models.PostGreSQL{
-			Host:     c.Get(common.PostGreSQLHOST).GetString(),
-			Port:     c.Get(common.PostGreSQLPort).GetInt(),
-			Username: c.Get(common.PostGreSQLUsername).GetString(),
-			Password: c.Get(common.PostGreSQLPassword).GetString(),
-			Database: c.Get(common.PostGreSQLDatabase).GetString(),
-			SSLMode:  c.Get(common.PostGreSQLSSLMode).GetString(),
+			Host:         c.Get(common.PostGreSQLHOST).GetString(),
+			Port:         c.Get(common.PostGreSQLPort).GetInt(),
+			Username:     c.Get(common.PostGreSQLUsername).GetString(),
+			Password:     c.Get(common.PostGreSQLPassword).GetString(),
+			Database:     c.Get(common.PostGreSQLDatabase).GetString(),
+			SSLMode:      c.Get(common.PostGreSQLSSLMode).GetString(),
+			MaxIdleConns: c.Get(common.PostGreSQLMaxIdleConns).GetInt(),
+			MaxOpenConns: c.Get(common.PostGreSQLMaxOpenConns).GetInt(),
 		},
 	}
 }

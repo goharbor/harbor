@@ -75,6 +75,16 @@ ${filter_tag}    //*[@id='filter_tag']
 ${is_overide_xpath}    //label[contains(.,'Replace the destination resources if name exists')]
 ${enable_rule_xpath}    //label[contains(.,'Enable rule')]
 ${targetCron_id}    //*[@id='targetCron']
+${rule_name_input}    //*[@id='ruleName']
+${src_registry_dropdown_list}    //select[@id='src_registry_id']
+${dest_registry_dropdown_list}    //select[@id='dest_registry']
+${rule_confirm_btn}    //*[@id='ruleBtnOk']
+${rule_cancel_btn}    //*[@id='ruleBtnCancel']
+${filter_rules_btn}    //*[@id='filter-rules']
+${filter_rules_input}  //*[@id='filter-rules']//input
+
+
+
 
 
 

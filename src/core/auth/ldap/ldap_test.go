@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/api"
 
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/core/auth"
 	coreConfig "github.com/goharbor/harbor/src/core/config"
 )
@@ -55,7 +56,7 @@ var ldapTestConfig = map[string]interface{}{
 	common.LDAPGroupBaseDN:        "dc=example,dc=com",
 	common.LDAPGroupAttributeName: "cn",
 	common.LDAPGroupSearchScope:   2,
-	common.LdapGroupAdminDn:       "cn=harbor_users,ou=groups,dc=example,dc=com",
+	common.LDAPGroupAdminDn:       "cn=harbor_users,ou=groups,dc=example,dc=com",
 }
 
 func TestMain(m *testing.M) {
@@ -92,8 +93,8 @@ func TestMain(m *testing.M) {
 		"delete from user_group",
 		"delete from project_member",
 	}
-	dao.PrepareTestData(clearSqls, initSqls)
-
+	dao.ExecuteBatchSQL(initSqls)
+	defer dao.ExecuteBatchSQL(clearSqls)
 	retCode := m.Run()
 	os.Exit(retCode)
 }
@@ -224,7 +225,7 @@ func TestOnBoardUser_02(t *testing.T) {
 		t.Errorf("Failed to onboard user")
 	}
 
-	assert.Equal(t, "sample02@placeholder.com", user.Email)
+	assert.Equal(t, "", user.Email)
 	dao.CleanUser(int64(user.UserID))
 }
 
@@ -401,10 +402,12 @@ func TestAddProjectMemberWithLdapGroup(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}
+	userGroups := []models.UserGroup{{GroupName: "cn=harbor_users,ou=groups,dc=example,dc=com", LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com", GroupType: common.LDAPGroupType}}
+	groupIds, err := group.PopulateGroup(userGroups)
 	member := models.MemberReq{
 		ProjectID: currentProject.ProjectID,
 		MemberGroup: models.UserGroup{
-			LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
+			ID: groupIds[0],
 		},
 		Role: models.PROJECTADMIN,
 	}

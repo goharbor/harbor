@@ -17,6 +17,7 @@ package utils
 
 import (
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -33,7 +34,20 @@ func NewRepositoryClientForUI(username, repository string) (*registry.Repository
 	if err != nil {
 		return nil, err
 	}
+	return newRepositoryClient(endpoint, username, repository)
+}
 
+// NewRepositoryClientForLocal creates a repository client that can only be used to
+// access the internal registry with 127.0.0.1
+func NewRepositoryClientForLocal(username, repository string) (*registry.Repository, error) {
+	// The 127.0.0.1:8080 is not reachable as we do not enable core in UT env.
+	if os.Getenv("UTTEST") == "true" {
+		return NewRepositoryClientForUI(username, repository)
+	}
+	return newRepositoryClient(config.LocalCoreURL(), username, repository)
+}
+
+func newRepositoryClient(endpoint, username, repository string) (*registry.Repository, error) {
 	uam := &auth.UserAgentModifier{
 		UserAgent: "harbor-registry-client",
 	}
@@ -45,17 +59,22 @@ func NewRepositoryClientForUI(username, repository string) (*registry.Repository
 	return registry.NewRepository(repository, endpoint, client)
 }
 
-// WaitForManifestReady implements exponential sleeep to wait until manifest is ready in registry.
+// WaitForManifestReady implements exponential sleep to wait until manifest is ready in registry.
 // This is a workaround for https://github.com/docker/distribution/issues/2625
 func WaitForManifestReady(repository string, tag string, maxRetry int) bool {
-	// The initial wait interval, hard-coded to 50ms
-	interval := 50 * time.Millisecond
+	// The initial wait interval, hard-coded to 80ms, interval will be 80ms,200ms,500ms,1.25s,3.124999936s
+	interval := 80 * time.Millisecond
 	repoClient, err := NewRepositoryClientForUI("harbor-core", repository)
 	if err != nil {
 		log.Errorf("Failed to create repo client.")
 		return false
 	}
 	for i := 0; i < maxRetry; i++ {
+		if i != 0 {
+			log.Warningf("manifest for image %s:%s is not ready, retry after %v", repository, tag, interval)
+			time.Sleep(interval)
+			interval = time.Duration(int64(float32(interval) * 2.5))
+		}
 		_, exist, err := repoClient.ManifestExist(tag)
 		if err != nil {
 			log.Errorf("Unexpected error when checking manifest existence, image:  %s:%s, error: %v", repository, tag, err)
@@ -64,9 +83,6 @@ func WaitForManifestReady(repository string, tag string, maxRetry int) bool {
 		if exist {
 			return true
 		}
-		log.Warningf("manifest for image %s:%s is not ready, retry after %v", repository, tag, interval)
-		time.Sleep(interval)
-		interval = interval * 2
 	}
 	return false
 }

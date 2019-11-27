@@ -18,7 +18,7 @@ import { NgForm } from '@angular/forms';
 import { PasswordSettingService } from '../password-setting.service';
 import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
-import { CommonRoutes } from '../../../shared/shared.const';
+import { CommonRoutes } from '@harbor/ui';
 
 @Component({
     selector: 'reset-password',
@@ -37,8 +37,8 @@ export class ResetPasswordComponent implements OnInit {
     resetOk: boolean = false;
     confirmPwd: string = "";
 
-    @ViewChild("resetPwdForm") resetPwdForm: NgForm;
-    @ViewChild(InlineAlertComponent)
+    @ViewChild("resetPwdForm", {static: false}) resetPwdForm: NgForm;
+    @ViewChild(InlineAlertComponent, {static: false})
     inlineAlert: InlineAlertComponent;
 
     constructor(

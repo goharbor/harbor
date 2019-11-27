@@ -30,7 +30,7 @@ const (
 	service = "harbor-registry"
 )
 
-// GetToken requests a token against the endpoint using credetial provided
+// GetToken requests a token against the endpoint using credential provided
 func GetToken(endpoint string, insecure bool, credential Credential,
 	scopes []*token.ResourceActions) (*models.Token, error) {
 	client := &http.Client{

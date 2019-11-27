@@ -15,12 +15,12 @@ import { Subscription, forkJoin, Observable, throwError as observableThrowError 
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { RobotService } from "./robot-account.service";
 import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
+import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
 import {
   ConfirmationTargets,
   ConfirmationState,
   ConfirmationButtons
 } from "../../shared/shared.const";
-import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
 import {
   operateChanges,
   OperateInfo,
@@ -28,16 +28,16 @@ import {
   OperationState,
   UserPermissionService,
   USERSTATICPERMISSION,
-  ErrorHandler
+  ErrorHandler,
+  errorHandler as errorHandFn
 } from "@harbor/ui";
-import { errorHandler as errorHandFn } from "../../shared/shared.utils";
 @Component({
   selector: "app-robot-account",
   templateUrl: "./robot-account.component.html",
   styleUrls: ["./robot-account.component.scss"]
 })
 export class RobotAccountComponent implements OnInit, OnDestroy {
-  @ViewChild(AddRobotComponent)
+  @ViewChild(AddRobotComponent, {static: false})
   addRobotComponent: AddRobotComponent;
   selectedRow: Robot[] = [];
   robotsCopy: Robot[] = [];

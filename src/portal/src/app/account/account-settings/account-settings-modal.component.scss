@@ -5,6 +5,7 @@ clr-modal {
     .rename-tool {
         .btn {
             margin-right: 6px;
+            margin-left: 5px;
             padding-left: 3px;
             padding-right: 3px;
         }
@@ -22,6 +23,10 @@ clr-modal {
         .btn-padding-less {
             padding-left: 5px;
             padding-right: 5px;
+            margin-left: 5px;
+        }
+        .input-cli {
+            width: 9.5rem;
         }
     }
     .hidden-generate-cli {
@@ -31,4 +36,13 @@ clr-modal {
         cursor: pointer;
         line-height: 30px;
     }
+}
+.reset-cli-form {
+    width: 19.5rem;
+}
+.display-flex {
+    display: flex;
+}
+.set-btns {
+    display: flex;
 }

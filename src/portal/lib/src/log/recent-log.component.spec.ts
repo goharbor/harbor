@@ -11,7 +11,7 @@ import { FilterComponent } from '../filter/filter.component';
 
 import { click } from '../utils';
 import { of } from 'rxjs';
-import { startWith, delay } from 'rxjs/operators';
+import { delay } from 'rxjs/operators';
 
 describe('RecentLogComponent (inline template)', () => {
   let component: RecentLogComponent;
@@ -76,7 +76,7 @@ describe('RecentLogComponent (inline template)', () => {
     spy = spyOn(logService, 'getRecentLogs')
       .and.callFake(function (params: RequestQueryParams) {
         if (params && params.get('username')) {
-          return of(mockData2).pipe(delay(0));
+          return of(mockData2);
         } else {
           if (params.get('page') === '1') {
             mockData.data = mockItems.slice(0, 15);
@@ -127,7 +127,7 @@ describe('RecentLogComponent (inline template)', () => {
   }));
 
   // Will fail after upgrade to angular 6. todo: need to fix it.
-  xit('should support pagination', async(() => {
+  xit('should support pagination', () => {
     fixture.detectChanges();
 
     fixture.whenStable().then(() => {
@@ -136,7 +136,7 @@ describe('RecentLogComponent (inline template)', () => {
       let el: HTMLButtonElement = fixture.nativeElement.querySelector('.pagination-next');
       expect(el).toBeTruthy();
       el.click();
-
+      jasmine.clock().tick(100);
       fixture.detectChanges();
 
       fixture.whenStable().then(() => {
@@ -147,7 +147,7 @@ describe('RecentLogComponent (inline template)', () => {
         expect(els.length).toEqual(4);
       });
     });
-  }));
+  });
 
   it('should support filtering list by keywords', async(() => {
     fixture.detectChanges();
@@ -203,7 +203,7 @@ describe('RecentLogComponent (inline template)', () => {
           fixture.detectChanges();
           expect(component.recentLogs).toBeTruthy();
           expect(component.logsCache).toBeTruthy();
-          expect(component.recentLogs.length).toEqual(3);
+          expect(component.recentLogs.length).toEqual(15);
         });
 
       });

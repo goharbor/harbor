@@ -50,7 +50,7 @@ Test Case - OIDC User Sign In
 
 Test Case - Create An New Project
     Sign In Harbor With OIDC User  ${HARBOR_URL}
-    ${d}=    Get Current Date    result_format=%M%S
+    ${d}=    Get Current Date    result_format=%m%s
     Create An New Project  test${d}
     Close Browser
 
@@ -83,3 +83,9 @@ Test Case - Generate User CLI Secret
     Cannot Docker Login Harbor  ${ip}  ${OIDC_USERNAME}  ${secret_old}
     Pull image  ${ip}  ${OIDC_USERNAME}  ${secret_new}  project${d}  ${image}
     Push image  ${ip}  ${OIDC_USERNAME}  ${secret_new}  project${d}  ${image}
+
+Test Case - Helm CLI Push
+    Init Chrome Driver
+    Sign In Harbor With OIDC User  ${HARBOR_URL}
+    ${secret}=  Get Secrete By API  ${HARBOR_URL}
+    Helm CLI Push Without Sign In Harbor  ${OIDC_USERNAME}  ${secret}

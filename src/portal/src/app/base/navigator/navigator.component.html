@@ -2,9 +2,9 @@
     <div class="branding">
         <a href="javascript:void(0)" class="nav-link" (click)="homeAction()">
             <!-- <clr-icon shape="vm-bug"  *ngIf="!customStyle?.headerLogo"></clr-icon> -->
-            <img [src]="'images/harbor-logo.svg'" class="harbor-logo" />
-            <img [attr.src]="'static/images/'+customStyle?.headerLogo" *ngIf="customStyle?.headerLogo" class="headerLogo">
-            <span class="title">{{customProjectName?.projectName? customProjectName?.projectName:(appTitle | translate)}}</span>
+            <img [attr.src]="'images/'+customStyle?.headerLogo" *ngIf="customStyle?.headerLogo;else elseBlock" class="headerLogo">
+            <ng-template #elseBlock><img [src]="'images/harbor-logo.svg'" class="harbor-logo" /></ng-template>
+            <span class="title">{{customProjectName?.name? customProjectName?.name:(appTitle | translate)}}</span>
         </a>
     </div>
     <div class="header-nav">
@@ -13,7 +13,7 @@
     </div>
     <global-search></global-search>
     <div class="header-actions">
-        <clr-dropdown class="dropdown bottom-left" *ngIf="!isIntegrationMode">
+        <clr-dropdown class="dropdown-lang dropdown bottom-left" *ngIf="!isIntegrationMode">
             <button class="nav-icon nav-icon-width" clrDropdownToggle>
                 <clr-icon shape="world" class="icon-left"></clr-icon>
                 <span class="currentLang">{{currentLang}}</span>
@@ -25,8 +25,10 @@
                 <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("es-es")' [class.lang-selected]='matchLang("es-es")'>Español</a>
                 <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("fr-fr")' [class.lang-selected]='matchLang("fr-fr")'>Français</a>
                 <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("pt-br")' [class.lang-selected]='matchLang("pt-br")'>Português do Brasil</a>
+                <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("tr-tr")' [class.lang-selected]='matchLang("tr-tr")'>Türkçe</a>
             </clr-dropdown-menu>
         </clr-dropdown>
+        <div class="nav-divider"></div>
         <clr-dropdown class="dropdown" *ngIf="isSessionValid">
             <button class="nav-text" clrDropdownToggle>
               <clr-icon shape="user" class="is-inverse user-icon" size="24"></clr-icon>
@@ -41,7 +43,6 @@
                 <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">{{'ACCOUNT_SETTINGS.LOGOUT' | translate}}</a>
             </clr-dropdown-menu>
         </clr-dropdown>
-        <div class="nav-divider" *ngIf="!isSessionValid"></div>
         <a href="javascript:void(0)" id="aboutMenu" class="nav-link nav-text nav-about-link" (click)="openAboutDialog()" *ngIf="!isSessionValid">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
     </div>
 </clr-header>

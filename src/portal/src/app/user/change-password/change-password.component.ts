@@ -11,13 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import {Component, ViewChild, ChangeDetectorRef} from '@angular/core';
+import { Component, ViewChild, ChangeDetectorRef } from '@angular/core';
 import { NgForm } from '@angular/forms';
 
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
-import {UserService} from "../user.service";
-import {TranslateService} from "@ngx-translate/core";
+import { UserService } from "../user.service";
+import { TranslateService } from "@ngx-translate/core";
 
 @Component({
     selector: 'change-password',
@@ -35,8 +35,8 @@ export class ChangePasswordComponent {
     confirmPwd: string = "";
     userId: number;
 
-    @ViewChild("resetPwdForm") resetPwdForm: NgForm;
-    @ViewChild(InlineAlertComponent)
+    @ViewChild("resetPwdForm", { static: false }) resetPwdForm: NgForm;
+    @ViewChild(InlineAlertComponent, { static: false })
     inlineAlert: InlineAlertComponent;
 
     constructor(
@@ -109,7 +109,7 @@ export class ChangePasswordComponent {
                 this.onGoing = false;
                 if (error.status === 400) {
                     this.translateService.get("USER.EXISTING_PASSWORD").subscribe(
-                        res => {this.inlineAlert.showInlineError(res); });
+                        res => { this.inlineAlert.showInlineError(res); });
                 } else {
                     this.inlineAlert.showInlineError(error);
                 }

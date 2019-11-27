@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed, async } from "@angular/core/testing";
-import { DebugElement } from "@angular/core";
+import { CUSTOM_ELEMENTS_SCHEMA, DebugElement } from "@angular/core";
 
 import { SharedModule } from "../shared/shared.module";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
@@ -23,8 +23,11 @@ import { LabelDefaultService, LabelService } from "../service/label.service";
 import { UserPermissionService, UserPermissionDefaultService } from "../service/permission.service";
 import { USERSTATICPERMISSION } from "../service/permission-static";
 import { OperationService } from "../operation/operation.service";
-import { Observable, of } from "rxjs";
+import { of } from "rxjs";
 import { delay } from "rxjs/operators";
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { HttpClientTestingModule } from "@angular/common/http/testing";
+import { HttpClient } from "@angular/common/http";
 
 describe("TagComponent (inline template)", () => {
 
@@ -35,7 +38,11 @@ describe("TagComponent (inline template)", () => {
   let spy: jasmine.Spy;
   let spyLabels: jasmine.Spy;
   let spyLabels1: jasmine.Spy;
-
+  let spyScanner: jasmine.Spy;
+  let scannerMock = {
+    disabled: false,
+    name: "Clair"
+  };
   let mockTags: Tag[] = [
     {
       "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
@@ -105,10 +112,24 @@ describe("TagComponent (inline template)", () => {
   let mockHasRetagImagePermission: boolean = true;
   let mockHasDeleteImagePermission: boolean = true;
   let mockHasScanImagePermission: boolean = true;
+  const mockErrorHandler = {
+    error: () => {}
+  };
+  const permissions = [
+    {resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE},
+    {resource: USERSTATICPERMISSION.REPOSITORY.KEY, action:  USERSTATICPERMISSION.REPOSITORY.VALUE.PULL},
+    {resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE},
+    {resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE},
+  ];
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        SharedModule
+        SharedModule,
+        BrowserAnimationsModule,
+        HttpClientTestingModule
+      ],
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
       ],
       declarations: [
         TagComponent,
@@ -129,9 +150,10 @@ describe("TagComponent (inline template)", () => {
         { provide: ScanningResultService, useClass: ScanningResultDefaultService },
         { provide: LabelService, useClass: LabelDefaultService },
         { provide: UserPermissionService, useClass: UserPermissionDefaultService },
-        { provide: OperationService }
+        { provide: mockErrorHandler, useValue: ErrorHandler },
+        { provide: OperationService },
       ]
-    });
+    }).compileComponents();
   }));
 
   beforeEach(() => {
@@ -154,16 +176,13 @@ describe("TagComponent (inline template)", () => {
     tagService = fixture.debugElement.injector.get(TagService);
     spy = spyOn(tagService, "getTags").and.returnValues(of(mockTags).pipe(delay(0)));
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
-
-    spyOn(userPermissionService, "getPermission")
-    .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE )
-    .and.returnValue(of(mockHasAddLabelImagePermission))
-     .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.PULL )
-     .and.returnValue(of(mockHasRetagImagePermission))
-     .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY_TAG.KEY, USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE )
-     .and.returnValue(of(mockHasDeleteImagePermission))
-     .withArgs(comp.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE)
-     .and.returnValue(of(mockHasScanImagePermission));
+    let http: HttpClient;
+    http = fixture.debugElement.injector.get(HttpClient);
+    spyScanner = spyOn(http, "get").and.returnValue(of(scannerMock));
+    spyOn(userPermissionService, "hasProjectPermissions")
+    .withArgs(comp.projectId, permissions )
+    .and.returnValue(of([mockHasAddLabelImagePermission, mockHasRetagImagePermission,
+       mockHasDeleteImagePermission, mockHasScanImagePermission]));
 
     labelService = fixture.debugElement.injector.get(LabelService);
 
@@ -174,6 +193,10 @@ describe("TagComponent (inline template)", () => {
   });
   it("should load data", async(() => {
     expect(spy.calls.any).toBeTruthy();
+  }));
+
+  it("should load project scanner", async(() => {
+    expect(spyScanner.calls.count()).toEqual(1);
   }));
 
   it("should load and render data", () => {

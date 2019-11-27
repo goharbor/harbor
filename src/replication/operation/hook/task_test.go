@@ -46,7 +46,7 @@ func (f *fakedOperationController) ListTasks(...*models.TaskQuery) (int64, []*mo
 func (f *fakedOperationController) GetTask(int64) (*models.Task, error) {
 	return nil, nil
 }
-func (f *fakedOperationController) UpdateTaskStatus(id int64, status string, statusCondition ...string) error {
+func (f *fakedOperationController) UpdateTaskStatus(id int64, status string, statusRevision int64, statusCondition ...string) error {
 	f.status = status
 	return nil
 }
@@ -87,7 +87,7 @@ func TestUpdateTask(t *testing.T) {
 	}
 
 	for _, c := range cases {
-		err := UpdateTask(mgr, 1, c.inputStatus)
+		err := UpdateTask(mgr, 1, c.inputStatus, 1)
 		require.Nil(t, err)
 		assert.Equal(t, c.expectedStatus, mgr.status)
 	}

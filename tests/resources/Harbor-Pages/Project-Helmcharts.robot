@@ -18,19 +18,21 @@ Upload Chart files
     ${prometheus_file_path}  Set Variable  ${current_dir}/${prometheus_chart_filename}
     Choose File  xpath=${chart_file_browse}  ${prometheus_file_path}
     Retry Double Keywords When Error  Retry Element Click  xpath=${upload_action_button}  Retry Wait Until Page Not Contains Element  xpath=${upload_action_button}
-
     Retry Double Keywords When Error  Retry Element Click  xpath=${upload_chart_button}  Retry Wait Until Page Contains Element  xpath=${upload_action_button}
+    Retry Wait Until Page Contains  ${prometheus_chart_name}
+    Capture Page Screenshot
     ${harbor_file_path}  Set Variable  ${current_dir}/${harbor_chart_filename}
     ${harbor_prov_file_path}  Set Variable  ${current_dir}/${harbor_chart_prov_filename}
     Choose File  xpath=${chart_file_browse}  ${harbor_file_path}
     Choose File  xpath=${chart_prov_browse}  ${harbor_prov_file_path}
     Retry Double Keywords When Error  Retry Element Click  xpath=${upload_action_button}  Retry Wait Until Page Not Contains Element  xpath=${upload_action_button}
-
-    Retry Wait Until Page Contains  ${prometheus_chart_name}
+    Retry Wait Until Page Contains  ${harbor_chart_name}
+    Capture Page Screenshot
 
 Go Into Chart Version
     [Arguments]  ${chart_name}
     Retry Element Click  xpath=//hbr-helm-chart//a[contains(., '${chart_name}')]
+    Sleep  3
     Capture Page Screenshot  viewchartversion.png
 
 Go Into Chart Detail
@@ -38,16 +40,16 @@ Go Into Chart Detail
     Retry Element Click  xpath=//hbr-helm-chart-version//a[contains(., '${version_name}')]
     Retry Wait Until Page Contains Element  ${chart_detail}
 
-Go Back To Versions And Delete
-    Retry Element Click  xpath=${version_bread_crumbs}
-    Retry Element Click  xpath=${version_checkbox}
-    Retry Element Click  xpath=${version_delete}
-    :For  ${n}  IN RANGE  1  6
-    \    Log To Console  Trying Go Back To Versions And Delete ${n} times ...
-    \    Retry Element Click  xpath=${version_confirm_delete}
-    \    Capture Page Screenshot
-    \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  xpath=${helmchart_content}
-    \    Capture Page Screenshot
-    \    Log To Console  Return value is ${out[0]}
-    \    Exit For Loop If  '${out[0]}'=='PASS'
-    \    Sleep  1
+Multi-delete Chart Files
+    [Arguments]    @{obj}
+    Switch To Project Charts
+    :For  ${obj}  in  @{obj}
+    \    Retry Element Click  //clr-dg-row[contains(.,'${obj}')]//label
+    #Retry Element Click  xpath=${version_checkbox}
+    Capture Page Screenshot
+    Retry Double Keywords When Error  Retry Element Click  xpath=${version_delete}  Retry Wait Until Page Contains Element  ${version_confirm_delete}
+    Capture Page Screenshot
+    Retry Double Keywords When Error  Retry Element Click  ${version_confirm_delete}  Retry Wait Until Page Not Contains Element  xpath=${version_confirm_delete}
+    Retry Wait Element  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any charts!\")]
+    Capture Page Screenshot
+

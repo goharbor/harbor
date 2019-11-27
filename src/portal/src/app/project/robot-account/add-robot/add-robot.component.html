@@ -1,130 +1,143 @@
 <clr-modal [(clrModalOpen)]="addRobotOpened"
-  [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
-  <h3 class="modal-title">{{'ROBOT_ACCOUNT.CREAT_ROBOT_ACCOUNT' | translate}}</h3>
-  <inline-alert #copyAlert class="modal-title"></inline-alert>
-  <div class="modal-body">
-    <form #robotForm="ngForm">
-      <section class="form-block">
-        <div class="form-group">
-          <label class="col-md-3
-            form-group-label-override required" for="robot_name">
-            {{'ROBOT_ACCOUNT.NAME' | translate}}
-          </label>
-          <label aria-haspopup="true" role="tooltip" class="tooltip
-            tooltip-validation
-            tooltip-md tooltip-bottom-left" for="robot_name"
-            [class.invalid]="!isRobotNameValid">
-            <input type="text"
-              [(ngModel)]="robot.name"
-              size="30" class="input-width"
-              name="robot_name"
-              id="robot_name"
-              #robotName="ngModel"
-              required
-              pattern='[^" ~#$%]+'
-              maxLengthExt="255"
-              autocomplete="off"
-              (keyup)='handleValidation()'>
-            <span class="tooltip-content">
-              {{ nameTooltipText | translate }}
-            </span>
-          </label>
-          <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
-        </div>
-        <div class="form-group">
-          <label class="form-group-label-override">{{'REPLICATION.DESCRIPTION' |
-            translate}}</label>
-          <input type="text" size="255" class="input-width"
-            [(ngModel)]="robot.description"
-            name="robot_desc" id="robot_desc">
-        </div>
-        <div class="form-group">
-          <label class="col-md-3">
-            {{'ROBOT_ACCOUNT.PERMISSIONS' | translate}}
-          </label>
-          <label class="clr-col-md-8 no-margin padding-left-0">
-          <clr-checkbox-wrapper>
-            <input type="checkbox" clrCheckbox [checked]="true"
-              [(ngModel)]="robot.access.isPullImage" name="isPullImage"
-              id="permission-pull" class="clr-checkbox">
-            <label for="permission-pull" class="clr-control-label">
-              {{'ROBOT_ACCOUNT.PULL_PERMISSION' | translate}}
-            </label>
-          </clr-checkbox-wrapper>
-        </label>
-        <label class="clr-col-md-8 no-margin padding-left-0">
-          <clr-checkbox-wrapper>
-            <input type="checkbox" clrCheckbox [checked]="true"
-              [(ngModel)]="robot.access.isPushOrPullImage" name="isPushOrPullImage"
-              id="permission-push" class="clr-checkbox">
-            <label for="permission-push" class="clr-control-label">
-              {{'ROBOT_ACCOUNT.PULL_PUSH_PERMISSION' | translate}}
-            </label>
-          </clr-checkbox-wrapper>
-        </label>
-        <label class="clr-col-md-8 no-margin padding-left-0">
-          <clr-checkbox-wrapper>
-            <input type="checkbox" clrCheckbox [checked]="true"
-              [(ngModel)]="robot.access.isPushChart" name="isPushChart"
-              id="permission-push-chart" class="clr-checkbox">
-            <label for="permission-push-chart" class="clr-control-label">
-              {{'ROBOT_ACCOUNT.PUSH_CHART_PERMISSION' | translate}}
-            </label>
-          </clr-checkbox-wrapper>
-        </label>
-        <label class="clr-col-md-8 no-margin padding-left-0">
-          <clr-checkbox-wrapper>
-            <input type="checkbox" clrCheckbox [checked]="true"
-              [(ngModel)]="robot.access.isPullChart" name="isPullChart"
-              id="permission-pull-chart" class="clr-checkbox">
-            <label for="permission-pull-chart" class="clr-control-label">
-              {{'ROBOT_ACCOUNT.PULL_CHART_PERMISSION' | translate}}
-            </label>
-          </clr-checkbox-wrapper>
-        </label>
-        </div>
-      </section>
-    </form>
-  </div>
-  <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL'
-      | translate}}</button>
-    <button type="button" [disabled]="shouldDisable" class="btn btn-primary"
-      (click)="onSubmit()">{{'BUTTON.SAVE'
-      | translate}}</button>
-  </div>
+           [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
+    <h3 class="modal-title">{{'ROBOT_ACCOUNT.CREAT_ROBOT_ACCOUNT' | translate}}</h3>
+    <inline-alert #copyAlert class="modal-title"></inline-alert>
+    <div class="modal-body">
+        <form #robotForm="ngForm">
+            <section class="form-block">
+                <div class="clr-row">
+                    <div class="clr-col-3 permission">
+                        <label class="col-md-3 required">
+                            {{'ROBOT_ACCOUNT.NAME' | translate}}
+                        </label>
+                    </div>
+                    <div class="clr-col padding-left-0">
+                        <div class="clr-control-container" [class.clr-error]="!isRobotNameValid">
+                            <div class="clr-input-wrapper">
+                                <input class="clr-input input-width" type="text"
+                                       [(ngModel)]="robot.name"
+                                       size="30"
+                                       name="robot_name"
+                                       id="robot_name"
+                                       #robotName="ngModel"
+                                       required
+                                       pattern='[^" ~#$%]+'
+                                       maxLengthExt="255"
+                                       autocomplete="off"
+                                       (keyup)='handleValidation()'>
+                                <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                            </div>
+                            <clr-control-error *ngIf="!isRobotNameValid" class="tooltip-content">
+                                {{ nameTooltipText | translate }}
+                            </clr-control-error>
+                        </div>
+                    </div>
+                </div>
+                <div class="clr-row mt-1">
+                    <div class="clr-col-3 permission">
+                        <label class="col-md-3">{{'REPLICATION.DESCRIPTION' |translate}}</label>
+                    </div>
+                    <div class="clr-col padding-left-0">
+                        <div class="clr-control-container">
+                            <div class="clr-input-wrapper">
+                        <input class="clr-input input-width" type="text" size="255"
+                               [(ngModel)]="robot.description"
+                               name="robot_desc" id="robot_desc">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="clr-row mt-1">
+                    <div class="clr-col-3 permission">
+                        <label class="col-md-3">
+                            {{'ROBOT_ACCOUNT.PERMISSIONS' | translate}}
+                        </label>
+                    </div>
+                    <div class="clr-col padding-left-0">
+                        <table class="table table-noborder m-0 w-90">
+                                <tr>
+                                    <th></th>
+                                    <th class="left">{{'ROBOT_ACCOUNT.PUSH' | translate}}</th>
+                                    <th class="left">{{'ROBOT_ACCOUNT.PULL' | translate}}</th>
+                                </tr>
+                                <tr>
+                                    <td class="left">
+                                        <span>{{'ROBOT_ACCOUNT.PERMISSIONS_IMAGE' | translate}}</span>
+                                        <clr-tooltip>
+                                            <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                                            <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                                                <span>{{'ROBOT_ACCOUNT.PULL_IS_MUST' | translate}}</span>
+                                            </clr-tooltip-content>
+                                        </clr-tooltip>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox" name="image-permission-push"
+                                               [(ngModel)]="imagePermissionPush" clrCheckbox>
+                                    </td>
+                                    <td class="clr-form-control-disabled">
+                                        <input  disabled type="checkbox" name="image-permission-pull"
+                                               [(ngModel)]="imagePermissionPull" clrCheckbox>
+                                    </td>
+                                </tr>
+                                <tr *ngIf="withHelmChart">
+                                    <td class="left">{{'ROBOT_ACCOUNT.PERMISSIONS_HELMCHART' | translate}}</td>
+                                    <td>
+                                        <input type="checkbox"
+                                               [(ngModel)]="robot.access.isPushChart"
+                                               name="helm-permission" clrCheckbox>
+                                    </td>
+                                    <td>
+                                        <input type="checkbox"
+                                               [(ngModel)]="robot.access.isPullChart"
+                                               name="helm-permission" clrCheckbox>
+                                    </td>
+                                </tr>
+                            </table>
+                    </div>
+                </div>
+            </section>
+        </form>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL'
+            | translate}}</button>
+        <button type="button" [disabled]="shouldDisable" class="btn btn-primary"
+                (click)="onSubmit()">{{'BUTTON.SAVE'
+            | translate}}</button>
+    </div>
 </clr-modal>
 <clr-modal [(clrModalOpen)]="copyToken" class="copy-token"
-  [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
-  <div class="modal-title">
-    <h3 class="modal-title">
-      <clr-icon class="alert-icon success-icon" shape="check-circle" size="50"></clr-icon>
-      {{ createSuccess | translate}}</h3>
-    <div class="alert alert-info" role="alert">
-      <div class="alert-items">
-        <div class="alert-item static">
-          <div class="alert-icon-wrapper">
-            <clr-icon class="alert-icon" shape="info-circle"></clr-icon>
-          </div>
-          <span class="alert-text">{{'ROBOT_ACCOUNT.ALERT_TEXT' | translate}}</span>
+           [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
+    <div class="modal-title">
+        <h3 class="modal-title">
+            <clr-icon class="alert-icon success-icon" shape="check-circle" size="50"></clr-icon>
+            {{ createSuccess | translate}}</h3>
+        <div class="alert alert-info" role="alert">
+            <div class="alert-items">
+                <div class="alert-item static">
+                    <div class="alert-icon-wrapper">
+                        <clr-icon class="alert-icon" shape="info-circle"></clr-icon>
+                    </div>
+                    <span class="alert-text">{{'ROBOT_ACCOUNT.ALERT_TEXT' | translate}}</span>
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </div>
-  <div class="modal-body">
-    <section class="form-block show-info">
-      <div class="form-group robot-name">
-        <label class="form-group-label-override">{{'ROBOT_ACCOUNT.NAME'
-          | translate}}</label>
-        <span>{{robotAccount}}</span>
-      </div>
-      <div class="form-group robot-token">
-        <label class="form-group-label-override">{{'ROBOT_ACCOUNT.TOKEN' |
-          translate}}</label>
-        <hbr-copy-input (onCopySuccess)="onCpSuccess($event)"
-          (onCopyError)="onCpError($event)" inputSize="50" headerTitle=""
-          defaultValue="{{robotToken}}" class="copy-input"></hbr-copy-input>
-      </div>
-    </section>
-  </div>
+    <div class="modal-body">
+        <section class="form-block show-info">
+            <div class="form-group robot-name">
+                <label class="form-group-label-override">{{'ROBOT_ACCOUNT.NAME'
+                    | translate}}</label>
+                <span>{{robotAccount}}</span>
+            </div>
+            <div class="form-group robot-token">
+                <label class="form-group-label-override">{{'ROBOT_ACCOUNT.TOKEN' |
+                    translate}}</label>
+                <hbr-copy-input (onCopySuccess)="onCpSuccess($event)"
+                                (onCopyError)="onCpError($event)" inputSize="50" headerTitle=""
+                                defaultValue="{{robotToken}}" class="copy-input"></hbr-copy-input>
+            </div>
+            <a [href]="downLoadHref" [download]="downLoadFileName"><button class="btn mr-0" (click)="closeModal()">{{'ROBOT_ACCOUNT.EXPORT_TO_FILE' | translate}}</button></a>
+        </section>
+    </div>
 </clr-modal>

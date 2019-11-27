@@ -15,14 +15,29 @@
 package dao
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
+	"github.com/stretchr/testify/suite"
 )
 
-func TestAddAdminJob(t *testing.T) {
+// AdminJobSuite is a test suite for testing admin job
+type AdminJobSuite struct {
+	suite.Suite
+
+	job0 *models.AdminJob
+	ids  []int64
+}
+
+// TestAdminJob is the entry point of AdminJobSuite
+func TestAdminJob(t *testing.T) {
+	suite.Run(t, &AdminJobSuite{})
+}
+
+// SetupSuite prepares testing env for the suite
+func (suite *AdminJobSuite) SetupSuite() {
 	job := &models.AdminJob{
 		Name: "job",
 		Kind: "jobKind",
@@ -33,43 +48,96 @@ func TestAddAdminJob(t *testing.T) {
 		Kind: "testKind",
 	}
 
+	suite.ids = make([]int64, 0)
+
 	// add
 	id, err := AddAdminJob(job0)
-	require.Nil(t, err)
+	require.NoError(suite.T(), err)
 	job0.ID = id
+	suite.job0 = job0
+	suite.ids = append(suite.ids, id)
 
+	id1, err := AddAdminJob(job)
+	require.NoError(suite.T(), err)
+	suite.ids = append(suite.ids, id1)
+}
+
+// TearDownSuite cleans testing env
+func (suite *AdminJobSuite) TearDownSuite() {
+	for _, id := range suite.ids {
+		err := DeleteAdminJob(id)
+		suite.NoError(err, fmt.Sprintf("clear admin job: %d", id))
+	}
+}
+
+// TestAdminJobBase ...
+func (suite *AdminJobSuite) TestAdminJobBase() {
 	// get
-	job1, err := GetAdminJob(id)
-	require.Nil(t, err)
-	assert.Equal(t, job1.ID, job0.ID)
-	assert.Equal(t, job1.Name, job0.Name)
-
-	// update status
-	err = UpdateAdminJobStatus(id, "testStatus")
-	require.Nil(t, err)
-	job2, err := GetAdminJob(id)
-	assert.Equal(t, job2.Status, "testStatus")
+	job1, err := GetAdminJob(suite.job0.ID)
+	require.Nil(suite.T(), err)
+	suite.Equal(job1.ID, suite.job0.ID)
+	suite.Equal(job1.Name, suite.job0.Name)
 
 	// set uuid
-	err = SetAdminJobUUID(id, "f5ef34f4cb3588d663176132")
-	require.Nil(t, err)
-	job3, err := GetAdminJob(id)
-	require.Nil(t, err)
-	assert.Equal(t, job3.UUID, "f5ef34f4cb3588d663176132")
+	err = SetAdminJobUUID(suite.job0.ID, "f5ef34f4cb3588d663176132")
+	require.Nil(suite.T(), err)
+	job3, err := GetAdminJob(suite.job0.ID)
+	require.Nil(suite.T(), err)
+	suite.Equal(job3.UUID, "f5ef34f4cb3588d663176132")
 
 	// get admin jobs
-	_, err = AddAdminJob(job)
-	require.Nil(t, err)
 	query := &models.AdminJobQuery{
 		Name: "job",
 	}
 	jobs, err := GetAdminJobs(query)
-	assert.Equal(t, len(jobs), 1)
+	suite.Equal(len(jobs), 1)
 
 	// get top 10
-	_, err = AddAdminJob(job)
-	require.Nil(t, err)
-
 	jobs, _ = GetTop10AdminJobsOfName("job")
-	assert.Equal(t, len(jobs), 2)
+	suite.Equal(len(jobs), 1)
+}
+
+// TestAdminJobUpdateStatus ...
+func (suite *AdminJobSuite) TestAdminJobUpdateStatus() {
+	// update status
+	err := UpdateAdminJobStatus(suite.job0.ID, "testStatus", 1, 10000)
+	require.Nil(suite.T(), err)
+
+	job2, err := GetAdminJob(suite.job0.ID)
+	require.Nil(suite.T(), err)
+	suite.Equal(job2.Status, "testStatus")
+
+	// Update status with same rev
+	err = UpdateAdminJobStatus(suite.job0.ID, "testStatus3", 3, 10000)
+	require.Nil(suite.T(), err)
+
+	job3, err := GetAdminJob(suite.job0.ID)
+	require.Nil(suite.T(), err)
+	suite.Equal(job3.Status, "testStatus3")
+
+	// Update status with same rev, previous status
+	err = UpdateAdminJobStatus(suite.job0.ID, "testStatus2", 2, 10000)
+	require.Nil(suite.T(), err)
+
+	job4, err := GetAdminJob(suite.job0.ID)
+	require.Nil(suite.T(), err)
+	// No status change
+	suite.Equal(job4.Status, "testStatus3")
+
+	// Update status with previous rev
+	err = UpdateAdminJobStatus(suite.job0.ID, "testStatus4", 4, 9999)
+	require.Nil(suite.T(), err)
+
+	job5, err := GetAdminJob(suite.job0.ID)
+	require.Nil(suite.T(), err)
+	// No status change
+	suite.Equal(job5.Status, "testStatus3")
+
+	// Update status with latest rev
+	err = UpdateAdminJobStatus(suite.job0.ID, "testStatus", 1, 10001)
+	require.Nil(suite.T(), err)
+
+	job6, err := GetAdminJob(suite.job0.ID)
+	require.Nil(suite.T(), err)
+	suite.Equal(job6.Status, "testStatus")
 }

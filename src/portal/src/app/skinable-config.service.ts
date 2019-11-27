@@ -23,7 +23,7 @@ export class SkinableConfig {
 
     public getProject() {
         if (this.customSkinData) {
-            return this.customSkinData.project;
+            return this.customSkinData.product;
         } else {
             return null;
         }

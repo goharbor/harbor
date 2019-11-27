@@ -4,9 +4,9 @@ set +e
 
 SWAGGER_ONLINE_VALIDATOR="http://online.swagger.io/validator"
 if [ $TRAVIS_EVENT_TYPE = "push" ]; then
-	HARBOR_SWAGGER_FILE="https://raw.githubusercontent.com/$TRAVIS_REPO_SLUG/$TRAVIS_COMMIT/docs/swagger.yaml"
+	HARBOR_SWAGGER_FILE="https://raw.githubusercontent.com/$TRAVIS_REPO_SLUG/$TRAVIS_COMMIT/API/harbor/swagger.yaml"
 elif [ $TRAVIS_EVENT_TYPE = "pull_request" ]; then
-	HARBOR_SWAGGER_FILE="https://raw.githubusercontent.com/$TRAVIS_PULL_REQUEST_SLUG/$TRAVIS_PULL_REQUEST_SHA/docs/swagger.yaml"
+	HARBOR_SWAGGER_FILE="https://raw.githubusercontent.com/$TRAVIS_PULL_REQUEST_SLUG/$TRAVIS_PULL_REQUEST_SHA/API/harbor/swagger.yaml"
 else
 	echo "* don't support this kinds of action ($TRAVIS_EVENT_TYPE), but don't fail the travis CI."
 	exit 0

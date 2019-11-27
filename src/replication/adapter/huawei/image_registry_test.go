@@ -1,6 +1,7 @@
 package huawei
 
 import (
+	"os"
 	"strings"
 	"testing"
 
@@ -20,7 +21,11 @@ func init() {
 		Insecure:    false,
 		Status:      "",
 	}
-	HWAdapter.registry = hwRegistry
+	adp, err := newAdapter(hwRegistry)
+	if err != nil {
+		os.Exit(1)
+	}
+	HWAdapter = *adp.(*adapter)
 }
 
 func TestAdapter_FetchImages(t *testing.T) {

@@ -12,55 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { NgForm } from '@angular/forms';
-import { Comparator, State } from '../../../lib/src/service/interface';
-import { RequestQueryParams } from "@harbor/ui";
 
 import { MessageService } from '../global-message/message.service';
-import { httpStatusCode, AlertType } from './shared.const';
-
-/**
- * To handle the error message body
- *
- **
- * returns {string}
- */
-export const errorHandler = function (error: any): string {
-    if (!error) {
-        return "UNKNOWN_ERROR";
-    }
-    try {
-        return JSON.parse(error.error).message;
-    } catch (err) { }
-    if (typeof error.error === "string") {
-        return error.error;
-    }
-    if (error.error && error.error.message) {
-        return error.error.message;
-    }
-    if (!(error.statusCode || error.status)) {
-        // treat as string message
-        return '' + error;
-    } else {
-        switch (error.statusCode || error.status) {
-            case 400:
-                return "BAD_REQUEST_ERROR";
-            case 401:
-                return "UNAUTHORIZED_ERROR";
-            case 403:
-                return "FORBIDDEN_ERROR";
-            case 404:
-                return "NOT_FOUND_ERROR";
-            case 412:
-                return "PRECONDITION_FAILED";
-            case 409:
-                return "CONFLICT_ERROR";
-            case 500:
-                return "SERVER_ERROR";
-            default:
-                return "UNKNOWN_ERROR";
-        }
-    }
-};
+import { httpStatusCode } from '@harbor/ui';
+import { AlertType } from '../shared/shared.const';
 
 /**
  * To check if form is empty
@@ -120,149 +75,39 @@ export const maintainUrlQueryParmas = function (uri: string, key: string, value:
         }
     }
 };
-
-// Copy from ui library utils.ts
-
 /**
- * Calculate page number by state
- */
-export function calculatePage(state: State): number {
-    if (!state || !state.page) {
-        return 1;
+  * the password or secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number
+  * @param randomFlag
+  * @param min
+  * @param max
+  * @returns {string}
+  */
+
+ export function randomWord(max) {
+    let str = "";
+
+     let contentArray = [['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+    ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l'
+    , 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x'
+    , 'y', 'z'],
+    ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'
+    , 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z']];
+    for (let i = 0; i < max; i++) {
+        let randomNumber = getRandomInt(contentArray.length);
+        str += contentArray[randomNumber][getRandomInt(contentArray[randomNumber].length)];
     }
-
-    return Math.ceil((state.page.to + 1) / state.page.size);
-}
-
-/**
- * Comparator for fields with specific type.
- *
- */
-export class CustomComparator<T> implements Comparator<T> {
-
-    fieldName: string;
-    type: string;
-
-    constructor(fieldName: string, type: string) {
-        this.fieldName = fieldName;
-        this.type = type;
+    if (!str.match(/\d+/g)) {
+        str += contentArray[0][getRandomInt(contentArray[0].length)];
     }
-
-    compare(a: { [key: string]: any | any[] }, b: { [key: string]: any | any[] }) {
-        let comp = 0;
-        if (a && b) {
-            let fieldA, fieldB;
-            for (let key of Object.keys(a)) {
-                if (key === this.fieldName) {
-                    fieldA = a[key];
-                    fieldB = b[key];
-                    break;
-                } else if (typeof a[key] === 'object') {
-                    let insideObject = a[key];
-                    for (let insideKey in insideObject) {
-                        if (insideKey === this.fieldName) {
-                            fieldA = insideObject[insideKey];
-                            fieldB = b[key][insideKey];
-                            break;
-                        }
-                    }
-                }
-            }
-            switch (this.type) {
-                case "number":
-                    comp = fieldB - fieldA;
-                    break;
-                case "date":
-                    comp = new Date(fieldB).getTime() - new Date(fieldA).getTime();
-                    break;
-                case "string":
-                    comp = fieldB.localeCompare(fieldA);
-                    break;
-            }
-        }
-        return comp;
+    if (!str.match(/[a-z]+/g)) {
+        str += contentArray[1][getRandomInt(contentArray[1].length)];
     }
-}
-
-
-
-/**
- * Filter columns via RegExp
- *
- **
- *  ** deprecated param {State} state
- * returns {void}
- */
-export function doFiltering<T extends { [key: string]: any | any[] }>(items: T[], state: State): T[] {
-    if (!items || items.length === 0) {
-        return items;
+    if (!str.match(/[A-Z]+/g)) {
+        str += contentArray[2][getRandomInt(contentArray[2].length)];
     }
+    return str;
+  }
+  function getRandomInt(max) {
+    return Math.floor(Math.random() * Math.floor(max));
+  }
 
-    if (!state || !state.filters || state.filters.length === 0) {
-        return items;
-    }
-
-    state.filters.forEach((filter: {
-        property: string;
-        value: string;
-    }) => {
-        items = items.filter(item => regexpFilter(filter["value"], item[filter["property"]]));
-    });
-
-    return items;
-}
-
-/**
- * Match items via RegExp
- *
- **
- *  ** deprecated param {string} terms
- *  ** deprecated param {*} testedValue
- * returns {boolean}
- */
-export function regexpFilter(terms: string, testedValue: any): boolean {
-    let reg = new RegExp('.*' + terms + '.*', 'i');
-    return reg.test(testedValue);
-}
-
-/**
- * Sorting the data by column
- *
- **
- * template T
- *  ** deprecated param {T[]} items
- *  ** deprecated param {State} state
- * returns {T[]}
- */
-export function doSorting<T extends { [key: string]: any | any[] }>(items: T[], state: State): T[] {
-    if (!items || items.length === 0) {
-        return items;
-    }
-    if (!state || !state.sort) {
-        return items;
-    }
-
-    return items.sort((a: T, b: T) => {
-        let comp: number = 0;
-        if (typeof state.sort.by !== "string") {
-            comp = state.sort.by.compare(a, b);
-        } else {
-            let propA = a[state.sort.by.toString()], propB = b[state.sort.by.toString()];
-            if (typeof propA === "string") {
-                comp = propA.localeCompare(propB);
-            } else {
-                if (propA > propB) {
-                    comp = 1;
-                } else if (propA < propB) {
-                    comp = -1;
-                }
-            }
-        }
-
-        if (state.sort.reverse) {
-            comp = -comp;
-        }
-
-        return comp;
-    });
-}

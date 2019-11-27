@@ -20,6 +20,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 )
@@ -52,6 +53,15 @@ func TestProjectMemberAPI_Get(t *testing.T) {
 			},
 			code: http.StatusBadRequest,
 		},
+		// 200
+		{
+			request: &testingRequest{
+				method:     http.MethodGet,
+				url:        fmt.Sprintf("/api/projects/1/members/%d", projAdminPMID),
+				credential: admin,
+			},
+			code: http.StatusOK,
+		},
 		// 404
 		{
 			request: &testingRequest{
@@ -83,6 +93,21 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 	defer dao.DeleteUser(int(userID))
 	if err != nil {
 		t.Errorf("Error occurred when create user: %v", err)
+	}
+
+	ugList, err := group.QueryUserGroup(models.UserGroup{GroupType: 1, LdapGroupDN: "cn=harbor_users,ou=sample,ou=vmware,dc=harbor,dc=com"})
+	if err != nil {
+		t.Errorf("Failed to query the user group")
+	}
+	if len(ugList) <= 0 {
+		t.Errorf("Failed to query the user group")
+	}
+	httpUgList, err := group.QueryUserGroup(models.UserGroup{GroupType: 2, GroupName: "vsphere.local\\administrators"})
+	if err != nil {
+		t.Errorf("Failed to query the user group")
+	}
+	if len(httpUgList) <= 0 {
+		t.Errorf("Failed to query the user group")
 	}
 
 	cases := []*codeCheckingCase{
@@ -158,6 +183,66 @@ func TestProjectMemberAPI_Post(t *testing.T) {
 			},
 			code: http.StatusOK,
 		},
+		{
+			request: &testingRequest{
+				method:     http.MethodPost,
+				url:        "/api/projects/1/members",
+				credential: admin,
+				bodyJSON: &models.MemberReq{
+					Role: 1,
+					MemberGroup: models.UserGroup{
+						GroupType:   1,
+						LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
+					},
+				},
+			},
+			code: http.StatusInternalServerError,
+		},
+		{
+			request: &testingRequest{
+				method:     http.MethodPost,
+				url:        "/api/projects/1/members",
+				credential: admin,
+				bodyJSON: &models.MemberReq{
+					Role: 1,
+					MemberGroup: models.UserGroup{
+						GroupType: 2,
+						ID:        httpUgList[0].ID,
+					},
+				},
+			},
+			code: http.StatusCreated,
+		},
+		{
+			request: &testingRequest{
+				method:     http.MethodPost,
+				url:        "/api/projects/1/members",
+				credential: admin,
+				bodyJSON: &models.MemberReq{
+					Role: 1,
+					MemberGroup: models.UserGroup{
+						GroupType: 1,
+						ID:        ugList[0].ID,
+					},
+				},
+			},
+			code: http.StatusCreated,
+		},
+		{
+			request: &testingRequest{
+				method:     http.MethodPost,
+				url:        "/api/projects/1/members",
+				credential: admin,
+				bodyJSON: &models.MemberReq{
+					Role: 1,
+					MemberGroup: models.UserGroup{
+						GroupType: 2,
+						GroupName: "vsphere.local/users",
+					},
+				},
+			},
+			code: http.StatusInternalServerError,
+		},
 	}
 	runCodeCheckingCases(t, cases...)
 }
@@ -183,6 +268,23 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when add project member: %v", err)
 	}
+
+	projectID, err := dao.AddProject(models.Project{Name: "memberputanddelete", OwnerID: 1})
+	if err != nil {
+		t.Errorf("Error occurred when add project: %v", err)
+	}
+	defer dao.DeleteProject(projectID)
+
+	memberID, err := project.AddProjectMember(models.Member{
+		ProjectID:  projectID,
+		Role:       1,
+		EntityID:   int(userID),
+		EntityType: "u",
+	})
+	if err != nil {
+		t.Errorf("Error occurred when add project member: %v", err)
+	}
+
 	URL := fmt.Sprintf("/api/projects/1/members/%v", ID)
 	badURL := fmt.Sprintf("/api/projects/1/members/%v", 0)
 	cases := []*codeCheckingCase{
@@ -245,6 +347,18 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 			},
 			code: http.StatusBadRequest,
 		},
+		// 404
+		{
+			request: &testingRequest{
+				method: http.MethodPut,
+				url:    fmt.Sprintf("/api/projects/1/members/%v", memberID),
+				bodyJSON: &models.Member{
+					Role: 2,
+				},
+				credential: admin,
+			},
+			code: http.StatusNotFound,
+		},
 		// 200
 		{
 			request: &testingRequest{
@@ -254,8 +368,45 @@ func TestProjectMemberAPI_PutAndDelete(t *testing.T) {
 			},
 			code: http.StatusOK,
 		},
+		// 404
+		{
+			request: &testingRequest{
+				method: http.MethodDelete,
+				url:    fmt.Sprintf("/api/projects/1/members/%v", memberID),
+				bodyJSON: &models.Member{
+					Role: 2,
+				},
+				credential: admin,
+			},
+			code: http.StatusNotFound,
+		},
 	}
 
 	runCodeCheckingCases(t, cases...)
 
+}
+
+func Test_isValidRole(t *testing.T) {
+	type args struct {
+		role int
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"project admin", args{1}, true},
+		{"master", args{4}, true},
+		{"developer", args{2}, true},
+		{"guest", args{3}, true},
+		{"limited guest", args{5}, true},
+		{"unknow", args{6}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := isValidRole(tt.args.role); got != tt.want {
+				t.Errorf("isValidRole() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

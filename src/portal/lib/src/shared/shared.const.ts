@@ -11,14 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-export const supportedLangs = ['en-us', 'zh-cn', 'es-es', 'fr-fr'];
-export const enLang = "en-us";
-export const languageNames = {
-  "en-us": "English",
-  "zh-cn": "中文简体",
-  "es-es": "Español",
-  "fr-fr": "Français"
-};
+
 export const enum AlertType {
   DANGER, WARNING, INFO, SUCCESS
 }
@@ -68,9 +61,41 @@ export const CommonRoutes = {
 export const enum ConfirmationState {
   NA, CONFIRMED, CANCEL
 }
+export const FilterType = {
+  NAME: "name",
+  TAG: "tag",
+  LABEL: "label",
+  RESOURCE: "resource"
+};
 
 export const enum ConfirmationButtons {
-  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, REPLICATE_CANCEL, STOP_CANCEL
+  CONFIRM_CANCEL, YES_NO, DELETE_CANCEL, CLOSE, ENABLE_CANCEL, DISABLE_CANCEL, REPLICATE_CANCEL, STOP_CANCEL
+}
+export const  QuotaUnits = [
+  {
+    UNIT: "Byte",
+  },
+  {
+    UNIT: "KB",
+  },
+  {
+    UNIT: "MB",
+  },
+  {
+    UNIT: "GB",
+  },
+  {
+    UNIT: "TB",
+  },
+];
+export const QuotaUnlimited = -1;
+export const StorageMultipleConstant = 1024;
+export const LimitCount = 100000000;
+export enum QuotaUnit {
+  TB = "TB", GB = "GB", MB = "MB", KB = "KB", BIT = "Byte"
+}
+export enum QuotaProgress {
+  COUNT_USED = "COUNT_USED", COUNT_HARD = "COUNT_HARD", STROAGE_USED = "STORAGE_USED", STORAGE_HARD = "STORAGE_HARD"
 }
 
 export const LabelColor = [
@@ -92,20 +117,46 @@ export const LabelColor = [
   { 'color': '#F57600', 'textColor': 'black' }, { 'color': '#FFDC0B', 'textColor': 'black' },
 ];
 
-export const RoleMapping = { 'projectAdmin': 'MEMBER.PROJECT_ADMIN', 'master': 'MEMBER.PROJECT_MASTER',
-'developer': 'MEMBER.DEVELOPER', 'guest': 'MEMBER.GUEST' };
+export const CONFIG_AUTH_MODE = {
+  HTTP_AUTH: "http_auth",
+  LDAP_AUTH: "ldap_auth",
+  OIDC_AUTH: "oidc_auth",
+  UAA_AUTH: "uaa_auth",
+  DB_AUTH: "db_auth",
+};
+export const QUOTA_DANGER_COEFFICIENT = 0.9;
+export const QUOTA_WARNING_COEFFICIENT = 0.7;
+export const PROJECT_ROOTS = [
+  {
+    NAME: "admin",
+    VALUE: 1,
+    LABEL: "GROUP.PROJECT_ADMIN"
+  },
+  {
+    NAME: "master",
+    VALUE: 4,
+    LABEL: "GROUP.PROJECT_MASTER"
+  },
+  {
+    NAME: "developer",
+    VALUE: 2,
+    LABEL: "GROUP.DEVELOPER"
+  },
+  {
+    NAME: "guest",
+    VALUE: 3,
+    LABEL: "GROUP.GUEST"
+  },
+  {
+    NAME: "limited",
+    VALUE: 5,
+    LABEL: "GROUP.LIMITED_GUEST"
+  }
+];
 
-
-export enum Roles {
-  PROJECT_ADMIN = 1,
-  PROJECT_MASTER = 4,
-  DEVELOPER = 2,
-  GUEST = 3,
-  OTHER = 0,
+export enum GroupType {
+  LDAP_TYPE = 1,
+  HTTP_TYPE = 2,
+  OIDC_TYPE = 3
 }
-
-export enum ResourceType {
-  REPOSITORY = 1,
-  CHART_VERSION = 2,
-  REPOSITORY_TAG = 3,
-}
+export const REFRESH_TIME_DIFFERENCE = 10000;

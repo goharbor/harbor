@@ -67,6 +67,7 @@ type StatsInfo struct {
 	UpstreamJobID string     `json:"upstream_job_id,omitempty"`   // Ref the upstream job if existing
 	NumericPID    int64      `json:"numeric_policy_id,omitempty"` // The numeric policy ID of the periodic job
 	Parameters    Parameters `json:"parameters,omitempty"`
+	Revision      int64      `json:"revision,omitempty"` // For differentiating the each retry of the same job
 }
 
 // ActionRequest defines for triggering job action like stop/cancel.

@@ -12,43 +12,43 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import {
-  Component,
-  OnInit,
-  ViewChild,
-  Input,
-  Output,
-  EventEmitter,
+  AfterViewInit,
   ChangeDetectorRef,
-  ElementRef, AfterViewInit
+  Component,
+  ElementRef,
+  EventEmitter,
+  Input,
+  OnInit,
+  Output,
+  ViewChild
 } from "@angular/core";
-import { Subject, forkJoin } from "rxjs";
-import { debounceTime, distinctUntilChanged, finalize } from 'rxjs/operators';
+import { forkJoin, Observable, Subject, throwError as observableThrowError, of } from "rxjs";
+import { catchError, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
-import { State, Comparator } from "../service/interface";
+import { Comparator, Label, State, Tag, TagClickEvent, VulnerabilitySummary } from "../service/interface";
 
-import { TagService, RetagService, VulnerabilitySeverity, RequestQueryParams } from "../service/index";
+import {
+  RequestQueryParams,
+  RetagService,
+  ScanningResultService,
+  TagService,
+} from "../service/index";
 import { ErrorHandler } from "../error-handler/error-handler";
 import { ChannelService } from "../channel/index";
-import {
-  ConfirmationTargets,
-  ConfirmationState,
-  ConfirmationButtons, Roles
-} from "../shared/shared.const";
+import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../shared/shared.const";
 
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { ConfirmationMessage } from "../confirmation-dialog/confirmation-message";
 import { ConfirmationAcknowledgement } from "../confirmation-dialog/confirmation-state-message";
 
-import { Label, Tag, TagClickEvent, RetagRequest } from "../service/interface";
-
 import {
-  CustomComparator,
   calculatePage,
+  clone,
+  CustomComparator,
+  DEFAULT_PAGE_SIZE, DEFAULT_SUPPORTED_MIME_TYPE,
   doFiltering,
   doSorting,
   VULNERABILITY_SCAN_STATUS,
-  DEFAULT_PAGE_SIZE,
-  clone,
 } from "../utils";
 
 import { CopyInputComponent } from "../push-image/copy-input.component";
@@ -58,15 +58,15 @@ import { USERSTATICPERMISSION } from "../service/permission-static";
 import { operateChanges, OperateInfo, OperationState } from "../operation/operate";
 import { OperationService } from "../operation/operation.service";
 import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
-import { map, catchError } from "rxjs/operators";
 import { errorHandler as errorHandFn } from "../shared/shared.utils";
-import { Observable, throwError as observableThrowError } from "rxjs";
+import { ClrLoadingState } from "@clr/angular";
+
 export interface LabelState {
   iconsShow: boolean;
   label: Label;
   show: boolean;
 }
-
+export const AVAILABLE_TIME = '0001-01-01T00:00:00Z';
 @Component({
   selector: 'hbr-tag',
   templateUrl: './tag.component.html',
@@ -84,7 +84,6 @@ export class TagComponent implements OnInit, AfterViewInit {
   @Input() isGuest: boolean;
   @Input() registryUrl: string;
   @Input() withNotary: boolean;
-  @Input() withClair: boolean;
   @Input() withAdmiral: boolean;
   @Output() refreshRepo = new EventEmitter<boolean>();
   @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
@@ -92,7 +91,7 @@ export class TagComponent implements OnInit, AfterViewInit {
 
 
   tags: Tag[];
-
+  availableTime = AVAILABLE_TIME;
   showTagManifestOpened: boolean;
   retagDialogOpened: boolean;
   manifestInfoTitle: string;
@@ -107,6 +106,8 @@ export class TagComponent implements OnInit, AfterViewInit {
   showlabel: boolean;
 
   createdComparator: Comparator<Tag> = new CustomComparator<Tag>("created", "date");
+  pullComparator: Comparator<Tag> = new CustomComparator<Tag>("pull_time", "date");
+  pushComparator: Comparator<Tag> = new CustomComparator<Tag>("push_time", "date");
 
   loading = false;
   copyFailed = false;
@@ -132,14 +133,14 @@ export class TagComponent implements OnInit, AfterViewInit {
   };
   filterOneLabel: Label = this.initFilter;
 
-  @ViewChild("confirmationDialog")
+  @ViewChild("confirmationDialog", { static: false })
   confirmationDialog: ConfirmationDialogComponent;
 
-  @ViewChild("imageNameInput")
+  @ViewChild("imageNameInput", { static: false })
   imageNameInput: ImageNameInputComponent;
 
-  @ViewChild("digestTarget") textInput: ElementRef;
-  @ViewChild("copyInput") copyInput: CopyInputComponent;
+  @ViewChild("digestTarget", { static: false }) textInput: ElementRef;
+  @ViewChild("copyInput", { static: false }) copyInput: CopyInputComponent;
 
   pageSize: number = DEFAULT_PAGE_SIZE;
   currentPage = 1;
@@ -150,6 +151,9 @@ export class TagComponent implements OnInit, AfterViewInit {
   hasRetagImagePermission: boolean;
   hasDeleteImagePermission: boolean;
   hasScanImagePermission: boolean;
+  hasEnabledScanner: boolean;
+  scanBtnState: ClrLoadingState = ClrLoadingState.DEFAULT;
+  onSendingScanCommand: boolean;
   constructor(
     private errorHandler: ErrorHandler,
     private tagService: TagService,
@@ -159,7 +163,8 @@ export class TagComponent implements OnInit, AfterViewInit {
     private translateService: TranslateService,
     private ref: ChangeDetectorRef,
     private operationService: OperationService,
-    private channel: ChannelService
+    private channel: ChannelService,
+    private scanningService: ScanningResultService
   ) { }
 
   ngOnInit() {
@@ -167,6 +172,7 @@ export class TagComponent implements OnInit, AfterViewInit {
       this.errorHandler.error("Project ID cannot be unset.");
       return;
     }
+    this.getProjectScanner();
     if (!this.repoName) {
       this.errorHandler.error("Repo name cannot be unset.");
       return;
@@ -218,9 +224,6 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   ngAfterViewInit() {
-    if (!this.withAdmiral) {
-      this.getAllLabels();
-    }
   }
 
   public get filterLabelPieceWidth() {
@@ -271,7 +274,6 @@ export class TagComponent implements OnInit, AfterViewInit {
         // Do filtering and sorting
         this.tags = doFiltering<Tag>(tags, state);
         this.tags = doSorting<Tag>(this.tags, state);
-
         this.loading = false;
       }, error => {
         this.loading = false;
@@ -317,11 +319,11 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  addLabels(tag: Tag[]): void {
+  addLabels(): void {
     this.labelListOpen = true;
-    this.selectedTag = tag;
+    this.selectedTag = this.selectedRow;
     this.stickName = '';
-    this.labelSelectedChange(tag);
+    this.labelSelectedChange(this.selectedRow);
   }
 
   stickLabel(labelInfo: LabelState): void {
@@ -524,17 +526,6 @@ export class TagComponent implements OnInit, AfterViewInit {
       .subscribe(items => {
         // To keep easy use for vulnerability bar
         items.forEach((t: Tag) => {
-          if (!t.scan_overview) {
-            t.scan_overview = {
-              scan_status: VULNERABILITY_SCAN_STATUS.stopped,
-              severity: VulnerabilitySeverity.UNKNOWN,
-              update_time: new Date(),
-              components: {
-                total: 0,
-                summary: []
-              }
-            };
-          }
           if (t.signature !== null) {
             signatures.push(t.name);
           }
@@ -568,10 +559,10 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  retag(tags: Tag[]) {
-    if (tags && tags.length) {
+  retag() {
+    if (this.selectedRow && this.selectedRow.length) {
       this.retagDialogOpened = true;
-      this.retagSrcImage = this.repoName + ":" + tags[0].digest;
+      this.retagSrcImage = this.repoName + ":" + this.selectedRow[0].digest;
     } else {
       this.errorHandler.error("One tag should be selected before retag.");
     }
@@ -592,16 +583,19 @@ export class TagComponent implements OnInit, AfterViewInit {
       .subscribe(response => {
         this.translateService.get('RETAG.MSG_SUCCESS').subscribe((res: string) => {
           this.errorHandler.info(res);
+          if (`${this.imageNameInput.projectName.value}/${this.imageNameInput.repoName.value}` === this.repoName) {
+            this.retrieve();
+          }
         });
       }, error => {
         this.errorHandler.error(error);
       });
   }
 
-  deleteTags(tags: Tag[]) {
-    if (tags && tags.length) {
+  deleteTags() {
+    if (this.selectedRow && this.selectedRow.length) {
       let tagNames: string[] = [];
-      tags.forEach(tag => {
+      this.selectedRow.forEach(tag => {
         tagNames.push(tag.name);
       });
 
@@ -614,7 +608,7 @@ export class TagComponent implements OnInit, AfterViewInit {
         titleKey,
         summaryKey,
         content,
-        tags,
+        this.selectedRow,
         ConfirmationTargets.TAG,
         buttons);
       this.confirmationDialog.open(message);
@@ -632,9 +626,12 @@ export class TagComponent implements OnInit, AfterViewInit {
           observableLists.push(this.delOperate(tag));
         });
 
-        forkJoin(...observableLists).subscribe((item) => {
-          this.selectedRow = [];
-          this.retrieve();
+        forkJoin(...observableLists).subscribe((items) => {
+          // if delete one success  refresh list
+          if (items.some(item => !item)) {
+            this.selectedRow = [];
+            this.retrieve();
+          }
         });
       }
     }
@@ -672,15 +669,15 @@ export class TagComponent implements OnInit, AfterViewInit {
             this.translateService.get(message).subscribe(res =>
               operateChanges(operMessage, OperationState.failure, res)
             );
-            return observableThrowError(message);
+            return of(error);
           }));
     }
   }
 
-  showDigestId(tag: Tag[]) {
-    if (tag && (tag.length === 1)) {
+  showDigestId() {
+    if (this.selectedRow && (this.selectedRow.length === 1)) {
       this.manifestInfoTitle = "REPOSITORY.COPY_DIGEST_ID";
-      this.digestId = tag[0].digest;
+      this.digestId = this.selectedRow[0].digest;
       this.showTagManifestOpened = true;
       this.copyFailed = false;
     }
@@ -714,58 +711,76 @@ export class TagComponent implements OnInit, AfterViewInit {
 
   // Get vulnerability scanning status
   scanStatus(t: Tag): string {
-    if (t && t.scan_overview && t.scan_overview.scan_status) {
-      return t.scan_overview.scan_status;
+    if (t) {
+      let so = this.handleScanOverview(t.scan_overview);
+      if (so && so.scan_status) {
+        return so.scan_status;
+      }
     }
-
-    return VULNERABILITY_SCAN_STATUS.unknown;
+    return VULNERABILITY_SCAN_STATUS.NOT_SCANNED;
   }
-
-  existObservablePackage(t: Tag): boolean {
-    return t.scan_overview &&
-      t.scan_overview.components &&
-      t.scan_overview.components.total &&
-      t.scan_overview.components.total > 0 ? true : false;
-  }
-
   // Whether show the 'scan now' menu
-  canScanNow(t: Tag[]): boolean {
-    if (!this.withClair) { return false; }
+  canScanNow(): boolean {
     if (!this.hasScanImagePermission) { return false; }
-    let st: string = this.scanStatus(t[0]);
-
-    return st !== VULNERABILITY_SCAN_STATUS.pending &&
-      st !== VULNERABILITY_SCAN_STATUS.running;
+    if (this.onSendingScanCommand) { return false; }
+    let st: string = this.scanStatus(this.selectedRow[0]);
+    return st !== VULNERABILITY_SCAN_STATUS.RUNNING;
   }
   getImagePermissionRule(projectId: number): void {
-    let hasAddLabelImagePermission = this.userPermissionService.getPermission(projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY,
-      USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE);
-    let hasRetagImagePermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.PULL);
-    let hasDeleteImagePermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY_TAG.KEY, USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE);
-    let hasScanImagePermission = this.userPermissionService.getPermission(projectId,
-      USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE);
-    forkJoin(hasAddLabelImagePermission, hasRetagImagePermission, hasDeleteImagePermission, hasScanImagePermission)
-      .subscribe(permissions => {
-        this.hasAddLabelImagePermission = permissions[0] as boolean;
-        this.hasRetagImagePermission = permissions[1] as boolean;
-        this.hasDeleteImagePermission = permissions[2] as boolean;
-        this.hasScanImagePermission = permissions[3] as boolean;
-      }, error => this.errorHandler.error(error));
+    const permissions = [
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE},
+      {resource: USERSTATICPERMISSION.REPOSITORY.KEY, action:  USERSTATICPERMISSION.REPOSITORY.VALUE.PULL},
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE},
+      {resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE},
+    ];
+    this.userPermissionService.hasProjectPermissions(this.projectId, permissions).subscribe((results: Array<boolean>) => {
+      this.hasAddLabelImagePermission = results[0];
+        this.hasRetagImagePermission = results[1];
+        this.hasDeleteImagePermission = results[2];
+        this.hasScanImagePermission = results[3];
+        // only has label permission
+        if (this.hasAddLabelImagePermission) {
+          if (!this.withAdmiral) {
+            this.getAllLabels();
+          }
+        }
+    }, error => this.errorHandler.error(error));
   }
   // Trigger scan
-  scanNow(t: Tag[]): void {
-    if (t && t.length) {
-      t.forEach((data: any) => {
-        let tagId = data.name;
-        this.channel.publishScanEvent(this.repoName + "/" + tagId);
-      });
+  scanNow(): void {
+    if (this.selectedRow && this.selectedRow.length === 1) {
+        this.onSendingScanCommand = true;
+        this.channel.publishScanEvent(this.repoName + "/" + this.selectedRow[0].name);
     }
   }
-
+  submitFinish(e: boolean) {
+    this.onSendingScanCommand = e;
+  }
   // pull command
   onCpError($event: any): void {
     this.copyInput.setPullCommendShow();
+  }
+  getProjectScanner(): void {
+    this.hasEnabledScanner = false;
+    this.scanBtnState = ClrLoadingState.LOADING;
+    this.scanningService.getProjectScanner(this.projectId)
+        .subscribe(response => {
+          if (response && "{}" !== JSON.stringify(response) && !response.disabled
+          && response.health === "healthy") {
+            this.scanBtnState = ClrLoadingState.SUCCESS;
+            this.hasEnabledScanner = true;
+          } else {
+            this.scanBtnState = ClrLoadingState.ERROR;
+          }
+        }, error => {
+          this.scanBtnState = ClrLoadingState.ERROR;
+        });
+  }
+
+  handleScanOverview(scanOverview: any): VulnerabilitySummary {
+    if (scanOverview) {
+      return scanOverview[DEFAULT_SUPPORTED_MIME_TYPE];
+    }
+    return null;
   }
 }

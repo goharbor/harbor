@@ -1,4 +1,4 @@
-# Copyright Project Harbor Authors
+f# Copyright Project Harbor Authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -35,29 +35,37 @@ Resource  Harbor-Pages/Project.robot
 Resource  Harbor-Pages/Project_Elements.robot
 Resource  Harbor-Pages/Project-Members.robot
 Resource  Harbor-Pages/Project-Members_Elements.robot
+Resource  Harbor-Pages/Project-Webhooks.robot
+Resource  Harbor-Pages/Project-Webhooks_Elements.robot
 Resource  Harbor-Pages/Project-Repository.robot
 Resource  Harbor-Pages/Project-Repository_Elements.robot
 Resource  Harbor-Pages/Project-Config.robot
+Resource  Harbor-Pages/Project-Config-Elements.robot
 Resource  Harbor-Pages/Project-Helmcharts.robot
 Resource  Harbor-Pages/Project-Helmcharts_Elements.robot
 Resource  Harbor-Pages/Project-Retag.robot
 Resource  Harbor-Pages/Project-Retag_Elements.robot
+Resource  Harbor-Pages/Project-Tag-Retention.robot
+Resource  Harbor-Pages/Project-Tag-Retention_Elements.robot
 Resource  Harbor-Pages/Replication.robot
 Resource  Harbor-Pages/Replication_Elements.robot
 Resource  Harbor-Pages/UserProfile.robot
 Resource  Harbor-Pages/UserProfile_Elements.robot
 Resource  Harbor-Pages/Administration-Users.robot
 Resource  Harbor-Pages/Administration-Users_Elements.robot
+Resource  Harbor-Pages/GC.robot
 Resource  Harbor-Pages/Configuration.robot
 Resource  Harbor-Pages/Configuration_Elements.robot
 Resource  Harbor-Pages/ToolKit.robot
 Resource  Harbor-Pages/ToolKit_Elements.robot
 Resource  Harbor-Pages/Vulnerability.robot
+Resource  Harbor-Pages/Vulnerability_Elements.robot
 Resource  Harbor-Pages/LDAP-Mode.robot
 Resource  Harbor-Pages/OIDC_Auth.robot
 Resource  Harbor-Pages/OIDC_Auth_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
+Resource  Helm-Util.robot
 Resource  Admiral-Util.robot
 Resource  OVA-Util.robot
 Resource  Cert-Util.robot
@@ -81,10 +89,20 @@ Retry Wait Element
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Wait Until Element Is Visible And Enabled  @{param}
 
+Retry Wait Element Visible
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Wait Until Element Is Visible  @{param}
+
 Retry Wait Element Not Visible
     [Arguments]  ${element_xpath}
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Wait Until Element Is Not Visible  @{param}
+
+Retry Wait Element Should Be Disabled
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Element Should Be Disabled  @{param}
 
 Retry Element Click
     [Arguments]  ${element_xpath}
@@ -100,6 +118,11 @@ Retry Text Input
     [Arguments]  ${element_xpath}  ${text}
     @{param}  Create List  ${element_xpath}  ${text}
     Retry Action Keyword  Text Input  @{param}
+
+Retry Clear Element Text
+    [Arguments]  ${element_xpath}
+    @{param}  Create List  ${element_xpath}
+    Retry Action Keyword  Clear Element Text  @{param}
 
 Retry Link Click
     [Arguments]  ${element_xpath}
@@ -131,14 +154,40 @@ Retry Wait Until Page Not Contains Element
     @{param}  Create List  ${element_xpath}
     Retry Action Keyword  Wait Until Page Does Not Contain Element  @{param}
 
+Retry Select Object
+    [Arguments]  ${obj_name}
+    @{param}  Create List  ${obj_name}
+    Retry Action Keyword  Select Object  @{param}
+
+Retry Textfield Value Should Be
+    [Arguments]  ${element}  ${text}
+    @{param}  Create List  ${element}  ${text}
+    Retry Action Keyword  Wait And Textfield Value Should Be  @{param}
+
+Retry List Selection Should Be
+    [Arguments]  ${element}  ${text}
+    @{param}  Create List  ${element}  ${text}
+    Retry Action Keyword  Wait And List Selection Should Be  @{param}
+
 Link Click
     [Arguments]  ${element_xpath}
     Click Link  ${element_xpath}
+
+Wait And List Selection Should Be
+    [Arguments]  ${element}  ${text}
+    Wait Until Element Is Visible And Enabled  ${element}
+    List Selection Should Be  ${element}  ${text}
+
+Wait And Textfield Value Should Be
+    [Arguments]  ${element}  ${text}
+    Wait Until Element Is Visible And Enabled  ${element}
+    Textfield Value Should Be  ${element}  ${text}
 
 Element Click
     [Arguments]  ${element_xpath}
     Wait Until Element Is Visible And Enabled  ${element_xpath}
     Click Element  ${element_xpath}
+    Sleep  1
 
 Button Click
     [Arguments]  ${element_xpath}
@@ -150,17 +199,11 @@ Text Input
     Wait Until Element Is Visible And Enabled  ${element_xpath}
     Input Text  ${element_xpath}  ${text}
 
-Wait Unitl Vul Data Ready
-    [Arguments]  ${url}  ${timeout}  ${interval}
-    ${n}=  Evaluate  ${timeout}/${interval}
-    :FOR  ${i}  IN RANGE  ${n}
-    \    Log  Checking the vul data: ${i} ...  console=True
-    \    ${rc}  ${output}=  Run And Return Rc And Output  curl -k ${url}/api/systeminfo
-    \    Should Be Equal As Integers  ${rc}  0
-    \    ${contains}=  Run Keyword And Return Status  Should Contain  ${output}  overall_last_update
-    \    Exit For Loop If  ${contains}
-    \    Sleep  ${interval}
-    Run Keyword If  ${i+1}==${n}  Fail  The vul data is not ready
+Clear Field Of Characters
+    [Arguments]  ${field}  ${character count}
+    [Documentation]  This keyword pushes the delete key (ascii: \8) a specified number of times in a specified field.
+    : FOR  ${index}  IN RANGE  ${character count}
+    \    Press Key  ${field}  \\8
 
 Wait Unitl Command Success
     [Arguments]  ${cmd}  ${times}=8
@@ -190,18 +233,31 @@ Retry Keyword When Error
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
 
+Retry Keyword When Return Value Mismatch
+    [Arguments]  ${keyword}  ${expected_value}  ${count}  @{elements}
+    :For  ${n}  IN RANGE  1  ${count}
+    \    Log To Console  Trying ${keyword} ${n} times ...
+    \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
+    \    Log To Console  Return value is ${out[1]}
+    \    ${status}=  Set Variable If  '${out[1]}'=='${expected_value}'  'PASS'  'FAIL'
+    \    Exit For Loop If  '${out[1]}'=='${expected_value}'
+    \    Sleep  2
+    Run Keyword If  ${status}=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  ${status}  'PASS'
+
 Retry Double Keywords When Error
-    [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}
-    :For  ${n}  IN RANGE  1  6
+    [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}  ${DoAssert}=${true}
+    :For  ${n}  IN RANGE  1  5
     \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
     \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
     \    Capture Page Screenshot
+    \    Sleep  1
     \    ${out2}  Run Keyword And Ignore Error  ${keyword2}  ${element2}
     \    Capture Page Screenshot
     \    Log To Console  Return value is ${out1[0]} ${out2[0]}
-    \    Exit For Loop If  '${out1[0]}'=='PASS' and '${out2[0]}'=='PASS'
-    \    Sleep  2
-    Should Be Equal As Strings  '${out1[0]}'  'PASS'
+    \    Exit For Loop If  '${out2[0]}'=='PASS'
+    \    Sleep  1
+    Return From Keyword If  ${DoAssert} == ${false}  '${out2[0]}'
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
 
 Run Curl And Return Json

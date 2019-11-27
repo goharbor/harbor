@@ -21,7 +21,6 @@
 .embeded-datagrid {
   width: 98%;
   float: right;
-  /*add for issue #2688*/
 }
 
 .hidden-tag {
@@ -226,7 +225,8 @@ hbr-image-name-input {
 
 .datagrid-top {
   .flex-max-width {
-    max-width: 220px
+    max-width: 220px;
+    min-width: 130px;
   }
 }
 
@@ -245,4 +245,30 @@ clr-datagrid {
   ::ng-deep .datagrid-table {
     position: static;
   }
+}
+
+.cell {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+}
+
+.ml-8 {
+  margin-left: 8px;
+}
+.immutable {
+  padding-right: 94px;
+  position: relative;
+  span {
+    position: absolute;
+    right: 0;
+    margin-right: 0;
+  }
+}
+.white-normal {
+  white-space: normal;
+}
+.max-width-100 {
+  max-width: 100%;
 }

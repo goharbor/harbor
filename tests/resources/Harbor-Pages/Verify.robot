@@ -27,6 +27,7 @@ Verify Project
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     :FOR    ${project}    IN    @{project}
     \    Page Should Contain    ${project}
+    Verify Project Metadata  ${json}
     Close Browser
 
 Verify Image Tag
@@ -38,10 +39,37 @@ Verify Image Tag
     \    @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
     \    ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
     \    Go Into Project  ${project}  has_image=${has_image}
-    \    @{repo}=  Get Value From Json  ${json}  $.projects[?(@name=${project})]..repo..name
-    \    Loop Image Repo  @{repo}
+    \    @{repo}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..repo..name
+    \    Run Keyword If  ${has_image} == ${true}  Loop Image Repo  @{repo}
     \    Navigate To Projects
     Close Browser
+
+Verify Project Metadata
+    [Arguments]    ${json}
+    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    :FOR    ${project}    IN    @{project}
+    \    @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+    \    ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+    \    Go Into Project  ${project}  has_image=${has_image}
+    \    Switch To Project Configuration
+    \    Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.public  ${project_config_public_checkbox}
+    \    Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.enable_content_trust  ${project_config_content_trust_checkbox}
+    \    Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.automatically_scan_images_on_push  ${project_config_scan_images_on_push_checkbox}
+    \    Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.prevent_vulnerable_images_from_running  ${project_config_prevent_vulnerable_images_from_running_checkbox}
+    \    ${ret}    Get Selected List Value    ${project_config_severity_select}
+    \    @{severity}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.prevent_vlunerable_images_from_running_severity
+    \    Should Contain    ${ret}    @{severity}[0]
+    \    Navigate To Projects
+    Close Browser
+
+Verify Checkbox
+    [Arguments]    ${json}    ${key}    ${checkbox}
+    @{out}=    Get Value From Json    ${json}    ${key}
+    Run Keyword If    '@{out}[0]'=='true'    Checkbox Should Be Selected    ${checkbox}
+    ...    ELSE    Checkbox Should Not Be Selected    ${checkbox}
+
 
 Loop Image Repo
     [Arguments]    @{repo}
@@ -58,7 +86,7 @@ Verify Member Exist
     \   ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
     \   Go Into Project  ${project}  has_image=${has_image}
     \   Switch To Member
-    \   @{members}=  Get Value From Json  ${json}  $.projects[?(@name=${project})].member..name
+    \   @{members}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].member..name
     \   Loop Member  @{members}
     \   Navigate To Projects
     Close Browser
@@ -74,10 +102,10 @@ Verify User System Admin Role
     Init Chrome Driver
     :FOR    ${user}    IN    @{user}
     \    Sign In Harbor  ${HARBOR_URL}  ${user}  ${HARBOR_PASSWORD}
-    \    Page Should Contain  Administration 
+    \    Page Should Contain  Administration
     \    Logout Harbor
     Close Browser
-  
+
 Verify System Label
     [Arguments]    ${json}
     @{label}=   Get Value From Json  ${json}  $..syslabel..name
@@ -104,7 +132,7 @@ Verify Project Label
     \    \    Page Should Contain    ${projectlabel}
     \    Navigate To Projects
    Close Browser
-      
+
 Verify Endpoint
     [Arguments]    ${json}
     @{endpoint}=  Get Value From Json  ${json}  $.endpoint..name
@@ -133,7 +161,7 @@ Verify Project Setting
     \    ${contenttrust}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..enable_content_trust
     \    ${preventrunning}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..prevent_vulnerable_images_from_running
     \    ${scanonpush}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})]..automatically_scan_images_on_push
-    \    Init Chrome Driver 
+    \    Init Chrome Driver
     \    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     \    @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
     \    ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
@@ -142,8 +170,8 @@ Verify Project Setting
     \    Run Keyword If  ${public} == "public"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@name='public']//label
     \    Run Keyword If  ${contenttrust} == "true"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@name='content-trust']//label
     \    Run Keyword If  ${contenttrust} == "false"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@name='content-trust']//label
-    \    Run Keyword If  ${preventrunning} == "true"  Checkbox Should Be Checked  //div[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
-    \    Run Keyword If  ${preventrunning} == "false"  Checkbox Should Not Be Checked    //div[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
+    \    Run Keyword If  ${preventrunning} == "true"  Checkbox Should Be Checked  //*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
+    \    Run Keyword If  ${preventrunning} == "false"  Checkbox Should Not Be Checked    //*[@id='prevent-vulenrability-image']//clr-checkbox-wrapper//label
     \    Run Keyword If  ${scanonpush} == "true"  Checkbox Should Be Checked  //clr-checkbox-wrapper[@id='scan-image-on-push-wrapper']//input
     \    Run Keyword If  ${scanonpush} == "true"  Checkbox Should Not Be Checked  //clr-checkbox-wrapper[@id='scan-image-on-push-wrapper']//input
     \   Close Browser
@@ -171,9 +199,11 @@ Verify System Setting
     Textfield Value Should Be  xpath=//*[@id='emailUsername']  @{emailuser}[0]
     Textfield Value Should Be  xpath=//*[@id='emailFrom']  @{emailfrom}[0]
     Switch To System Settings
-    Page Should Contain  @{creation}[0]
+    ${ret}  Get Selected List Value  xpath=//select[@id='proCreation']
+    Should Be Equal As Strings  ${ret}  @{creation}[0]
     Token Must Be Match  @{token}[0]
-    Switch To Vulnerability Page
-    Page Should Contain  None
+    #ToDo:These 2 lines below should be uncommented right after issue 9211 was fixed
+    #Switch To Vulnerability Page
+    #Page Should Contain  None
     Close Browser
 

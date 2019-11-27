@@ -14,13 +14,11 @@
 package config
 
 import (
-	"encoding/json"
 	"os"
 	"path"
 	"runtime"
 	"testing"
 
-	"fmt"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -188,10 +186,6 @@ func TestConfig(t *testing.T) {
 		t.Errorf("unexpected mode: %s != %s", mode, "db_auth")
 	}
 
-	if s := ScanAllPolicy(); s.Type != "none" {
-		t.Errorf("unexpected scan all policy %v", s)
-	}
-
 	if tokenKeyPath := TokenPrivateKeyPath(); tokenKeyPath != "/etc/core/private_key.pem" {
 		t.Errorf("Unexpected token private key path: %s, expected: %s", tokenKeyPath, "/etc/core/private_key.pem")
 	}
@@ -207,6 +201,10 @@ func TestConfig(t *testing.T) {
 	assert.Equal("http://myjob:8888", InternalJobServiceURL())
 	assert.Equal("http://myui:8888/service/token", InternalTokenServiceEndpoint())
 
+	localCoreURL := LocalCoreURL()
+	assert.Equal("http://127.0.0.1:8080", localCoreURL)
+
+	assert.True(NotificationEnable())
 }
 
 func currPath() string {
@@ -216,20 +214,12 @@ func currPath() string {
 	}
 	return path.Dir(f)
 }
-func TestConfigureValue_GetMap(t *testing.T) {
-	var policy models.ScanAllPolicy
-	value2 := `{"parameter":{"daily_time":0},"type":"daily"}`
-	err := json.Unmarshal([]byte(value2), &policy)
-	if err != nil {
-		t.Errorf("Failed with error %v", err)
-	}
-	fmt.Printf("%+v\n", policy)
-}
 
 func TestHTTPAuthProxySetting(t *testing.T) {
 	m := map[string]interface{}{
-		common.HTTPAuthProxyAlwaysOnboard: "true",
+		common.HTTPAuthProxySkipSearch:    "true",
 		common.HTTPAuthProxyVerifyCert:    "true",
+		common.HTTPAuthProxyCaseSensitive: "false",
 		common.HTTPAuthProxyEndpoint:      "https://auth.proxy/suffix",
 	}
 	InitWithSettings(m)
@@ -237,8 +227,9 @@ func TestHTTPAuthProxySetting(t *testing.T) {
 	assert.Nil(t, e)
 	assert.Equal(t, *v, models.HTTPAuthProxy{
 		Endpoint:      "https://auth.proxy/suffix",
-		AlwaysOnBoard: true,
+		SkipSearch:    true,
 		VerifyCert:    true,
+		CaseSensitive: false,
 	})
 }
 
@@ -248,6 +239,7 @@ func TestOIDCSetting(t *testing.T) {
 		common.OIDCEndpoint:     "https://oidc.test",
 		common.OIDCVerifyCert:   "true",
 		common.OIDCScope:        "openid, profile",
+		common.OIDCGroupsClaim:  "my_group",
 		common.OIDCCLientID:     "client",
 		common.OIDCClientSecret: "secret",
 		common.ExtEndpoint:      "https://harbor.test",
@@ -258,6 +250,7 @@ func TestOIDCSetting(t *testing.T) {
 	assert.Equal(t, "test", v.Name)
 	assert.Equal(t, "https://oidc.test", v.Endpoint)
 	assert.True(t, v.VerifyCert)
+	assert.Equal(t, "my_group", v.GroupsClaim)
 	assert.Equal(t, "client", v.ClientID)
 	assert.Equal(t, "secret", v.ClientSecret)
 	assert.Equal(t, "https://harbor.test/c/oidc/callback", v.RedirectURL)

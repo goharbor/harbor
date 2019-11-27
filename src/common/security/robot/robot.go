@@ -9,7 +9,7 @@ import (
 type robot struct {
 	username  string
 	namespace rbac.Namespace
-	policy    []*rbac.Policy
+	policies  []*rbac.Policy
 }
 
 // GetUserName get the robot name.
@@ -23,7 +23,7 @@ func (r *robot) GetPolicies() []*rbac.Policy {
 	if r.namespace.IsPublic() {
 		policies = append(policies, project.PoliciesForPublicProject(r.namespace)...)
 	}
-	policies = append(policies, r.policy...)
+	policies = append(policies, r.policies...)
 	return policies
 }
 
@@ -33,10 +33,36 @@ func (r *robot) GetRoles() []rbac.Role {
 }
 
 // NewRobot ...
-func NewRobot(username string, namespace rbac.Namespace, policy []*rbac.Policy) rbac.User {
+func NewRobot(username string, namespace rbac.Namespace, policies []*rbac.Policy) rbac.User {
 	return &robot{
 		username:  username,
 		namespace: namespace,
-		policy:    policy,
+		policies:  filterPolicies(namespace, policies),
 	}
+}
+
+func filterPolicies(namespace rbac.Namespace, policies []*rbac.Policy) []*rbac.Policy {
+	var results []*rbac.Policy
+	if len(policies) == 0 {
+		return results
+	}
+
+	mp := getAllPolicies(namespace)
+	for _, policy := range policies {
+		if mp[policy.String()] {
+			results = append(results, policy)
+		}
+	}
+	return results
+}
+
+// getAllPolicies gets all of supported policies supported in project and external policies supported for robot account
+func getAllPolicies(namespace rbac.Namespace) map[string]bool {
+	mp := map[string]bool{}
+	for _, policy := range project.GetAllPolicies(namespace) {
+		mp[policy.String()] = true
+	}
+	scannerPull := &rbac.Policy{Resource: namespace.Resource(rbac.ResourceRepository), Action: rbac.ActionScannerPull}
+	mp[scannerPull.String()] = true
+	return mp
 }

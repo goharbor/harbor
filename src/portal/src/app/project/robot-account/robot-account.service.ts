@@ -26,23 +26,23 @@ export class RobotService {
   ) { }
 
   /** addRobotAccount
-   * projecId
+   * projectId
    * robot: Robot
    * projectName
    */
-  public addRobotAccount(projecId: number, robot: Robot, projectName: string): Observable<any> {
+  public addRobotAccount(projectId: number, robot: Robot, projectName: string): Observable<any> {
     let access = [];
     if (robot.access.isPullImage) {
-      access.push({ "resource": `/project/${projectName}/repository`, "action": "pull" });
+      access.push({ "resource": `/project/${projectId}/repository`, "action": "pull" });
     }
     if (robot.access.isPushOrPullImage) {
-      access.push({ "resource": `/project/${projectName}/repository`, "action": "push" });
+      access.push({ "resource": `/project/${projectId}/repository`, "action": "push" });
     }
     if (robot.access.isPullChart) {
-      access.push({ "resource": `/project/${projectName}/helm-chart`, "action": "read" });
+      access.push({ "resource": `/project/${projectId}/helm-chart`, "action": "read" });
     }
     if (robot.access.isPushChart) {
-      access.push({ "resource": `/project/${projectName}/helm-chart-version`, "action": "create" });
+      access.push({ "resource": `/project/${projectId}/helm-chart-version`, "action": "create" });
     }
 
     let param = {
@@ -51,25 +51,25 @@ export class RobotService {
       access
     };
 
-    return this.robotApiRepository.postRobot(projecId, param);
+    return this.robotApiRepository.postRobot(projectId, param);
   }
 
-  public deleteRobotAccount(projecId, id): Observable<any> {
-    return this.robotApiRepository.deleteRobot(projecId, id);
+  public deleteRobotAccount(projectId, id): Observable<any> {
+    return this.robotApiRepository.deleteRobot(projectId, id);
   }
 
-  public listRobotAccount(projecId): Observable<any> {
-    return this.robotApiRepository.listRobot(projecId);
+  public listRobotAccount(projectId): Observable<any> {
+    return this.robotApiRepository.listRobot(projectId);
   }
 
-  public getRobotAccount(projecId, id): Observable<any> {
-    return this.robotApiRepository.getRobot(projecId, id);
+  public getRobotAccount(projectId, id): Observable<any> {
+    return this.robotApiRepository.getRobot(projectId, id);
   }
 
-  public toggleDisabledAccount(projecId, id, isDisabled): Observable<any> {
+  public toggleDisabledAccount(projectId, id, isDisabled): Observable<any> {
     let data = {
       Disabled: isDisabled
     };
-    return this.robotApiRepository.toggleDisabledAccount(projecId, id, data);
+    return this.robotApiRepository.toggleDisabledAccount(projectId, id, data);
   }
 }

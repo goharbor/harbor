@@ -26,7 +26,7 @@ import { SessionService } from '../../shared/session.service';
 
 import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
-import { CommonRoutes } from '../../shared/shared.const';
+import { CommonRoutes } from '@harbor/ui';
 
 @Component({
     selector: 'harbor-shell',
@@ -36,16 +36,16 @@ import { CommonRoutes } from '../../shared/shared.const';
 
 export class HarborShellComponent implements OnInit, OnDestroy {
 
-    @ViewChild(AccountSettingsModalComponent)
+    @ViewChild(AccountSettingsModalComponent, {static: false})
     accountSettingsModal: AccountSettingsModalComponent;
 
-    @ViewChild(PasswordSettingComponent)
+    @ViewChild(PasswordSettingComponent, {static: false})
     pwdSetting: PasswordSettingComponent;
 
-    @ViewChild(NavigatorComponent)
+    @ViewChild(NavigatorComponent, {static: false})
     navigator: NavigatorComponent;
 
-    @ViewChild(AboutDialogComponent)
+    @ViewChild(AboutDialogComponent, {static: false})
     aboutDialog: AboutDialogComponent;
 
     // To indicator whwther or not the search results page is displayed
@@ -54,6 +54,9 @@ export class HarborShellComponent implements OnInit, OnDestroy {
 
     searchSub: Subscription;
     searchCloseSub: Subscription;
+    isLdapMode: boolean;
+    isOidcMode: boolean;
+    isHttpAuthMode: boolean;
 
     constructor(
         private route: ActivatedRoute,
@@ -63,6 +66,13 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         private appConfigService: AppConfigService) { }
 
     ngOnInit() {
+        if (this.appConfigService.isLdapMode()) {
+            this.isLdapMode = true;
+        } else if (this.appConfigService.isHttpAuthMode()) {
+            this.isHttpAuthMode = true;
+        } else if (this.appConfigService.isOidcMode()) {
+            this.isOidcMode = true;
+        }
         this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(searchEvt => {
             if (searchEvt && searchEvt.trim() !== "") {
                 this.isSearchResultsOpened = true;
@@ -70,7 +80,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         });
 
         this.searchCloseSub = this.searchTrigger.searchCloseChan$.subscribe(close => {
-           this.isSearchResultsOpened = false;
+            this.isSearchResultsOpened = false;
         });
     }
 
@@ -97,25 +107,17 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         return account != null && account.has_admin_role;
     }
 
-    public get isLdapMode(): boolean {
-        let appConfig = this.appConfigService.getConfig();
-        return appConfig.auth_mode === 'ldap_auth';
-    }
-
     public get isUserExisting(): boolean {
         let account = this.session.getCurrentUser();
         return account != null;
     }
-
-    public get withClair(): boolean {
-        return this.appConfigService.getConfig().with_clair;
-    }
-
     public get hasAdminRole(): boolean {
         return this.session.getCurrentUser() &&
             this.session.getCurrentUser().has_admin_role;
     }
-
+    public get withAdmiral(): boolean {
+        return this.appConfigService.getConfig().with_admiral;
+    }
     // Open modal dialog
     openModal(event: ModalEvent): void {
         switch (event.modalName) {

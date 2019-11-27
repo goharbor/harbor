@@ -20,11 +20,11 @@ import (
 	"strings"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/utils"
 	goldap "gopkg.in/ldap.v2"
 
-	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	ldapUtils "github.com/goharbor/harbor/src/common/utils/ldap"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -79,8 +79,6 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	u.Username = ldapUsers[0].Username
 	u.Email = strings.TrimSpace(ldapUsers[0].Email)
 	u.Realname = ldapUsers[0].Realname
-	userGroups := make([]*models.UserGroup, 0)
-
 	dn := ldapUsers[0].DN
 	if err = ldapSession.Bind(dn, m.Password); err != nil {
 		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
@@ -90,29 +88,29 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	// Retrieve ldap related info in login to avoid too many traffic with LDAP server.
 	// Get group admin dn
 	groupCfg, err := config.LDAPGroupConf()
+	if err != nil {
+		log.Warningf("Failed to fetch ldap group configuration:%v", err)
+		// most likely user doesn't configure user group info, it should not block user login
+	}
 	groupAdminDN := utils.TrimLower(groupCfg.LdapGroupAdminDN)
 	// Attach user group
 	for _, groupDN := range ldapUsers[0].GroupDNList {
 
 		groupDN = utils.TrimLower(groupDN)
+		// Attach LDAP group admin
 		if len(groupAdminDN) > 0 && groupAdminDN == groupDN {
 			u.HasAdminRole = true
 		}
 
-		userGroupQuery := models.UserGroup{
-			GroupType:   1,
-			LdapGroupDN: groupDN,
-		}
-		userGroupList, err := group.QueryUserGroup(userGroupQuery)
-		if err != nil {
-			continue
-		}
-		if len(userGroupList) == 0 {
-			continue
-		}
-		userGroups = append(userGroups, userGroupList[0])
 	}
-	u.GroupList = userGroups
+	userGroups := make([]models.UserGroup, 0)
+	for _, dn := range ldapUsers[0].GroupDNList {
+		userGroups = append(userGroups, models.UserGroup{GroupName: dn, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
+	}
+	u.GroupIDs, err = group.PopulateGroup(userGroups)
+	if err != nil {
+		log.Warningf("Failed to fetch ldap group configuration:%v", err)
+	}
 
 	return &u, nil
 }
@@ -123,8 +121,6 @@ func (l *Auth) OnBoardUser(u *models.User) error {
 	if u.Email == "" {
 		if strings.Contains(u.Username, "@") {
 			u.Email = u.Username
-		} else {
-			u.Email = u.Username + "@placeholder.com"
 		}
 	}
 	u.Password = "12345678AbC" // Password is not kept in local db
@@ -204,7 +200,7 @@ func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
 	if len(altGroupName) > 0 {
 		u.GroupName = altGroupName
 	}
-	u.GroupType = common.LdapGroupType
+	u.GroupType = common.LDAPGroupType
 	// Check duplicate LDAP DN in usergroup, if usergroup exist, return error
 	userGroupList, err := group.QueryUserGroup(models.UserGroup{LdapGroupDN: u.LdapGroupDN})
 	if err != nil {
@@ -213,7 +209,7 @@ func (l *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
 	if len(userGroupList) > 0 {
 		return auth.ErrDuplicateLDAPGroup
 	}
-	return group.OnBoardUserGroup(u, "LdapGroupDN", "GroupType")
+	return group.OnBoardUserGroup(u)
 }
 
 // PostAuthenticate -- If user exist in harbor DB, sync email address, if not exist, call OnBoardUser
@@ -266,5 +262,5 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 }
 
 func init() {
-	auth.Register("ldap_auth", &Auth{})
+	auth.Register(common.LDAPAuth, &Auth{})
 }

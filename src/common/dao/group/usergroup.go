@@ -15,26 +15,35 @@
 package group
 
 import (
-	"strings"
 	"time"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils"
 
+	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/pkg/errors"
 )
+
+// ErrGroupNameDup ...
+var ErrGroupNameDup = errors.New("duplicated user group name")
 
 // AddUserGroup - Add User Group
 func AddUserGroup(userGroup models.UserGroup) (int, error) {
+	userGroupList, err := QueryUserGroup(models.UserGroup{GroupName: userGroup.GroupName, GroupType: common.HTTPGroupType})
+	if err != nil {
+		return 0, ErrGroupNameDup
+	}
+	if len(userGroupList) > 0 {
+		return 0, ErrGroupNameDup
+	}
 	o := dao.GetOrmer()
-
 	sql := "insert into user_group (group_name, group_type, ldap_group_dn, creation_time, update_time) values (?, ?, ?, ?, ?) RETURNING id"
 	var id int
 	now := time.Now()
 
-	err := o.Raw(sql, userGroup.GroupName, userGroup.GroupType, utils.TrimLower(userGroup.LdapGroupDN), now, now).QueryRow(&id)
+	err = o.Raw(sql, userGroup.GroupName, userGroup.GroupType, utils.TrimLower(userGroup.LdapGroupDN), now, now).QueryRow(&id)
 	if err != nil {
 		return 0, err
 	}
@@ -47,10 +56,10 @@ func QueryUserGroup(query models.UserGroup) ([]*models.UserGroup, error) {
 	o := dao.GetOrmer()
 	sql := `select id, group_name, group_type, ldap_group_dn from user_group where 1=1 `
 	sqlParam := make([]interface{}, 1)
-	groups := []*models.UserGroup{}
+	var groups []*models.UserGroup
 	if len(query.GroupName) != 0 {
-		sql += ` and group_name like ? `
-		sqlParam = append(sqlParam, `%`+dao.Escape(query.GroupName)+`%`)
+		sql += ` and group_name = ? `
+		sqlParam = append(sqlParam, query.GroupName)
 	}
 
 	if query.GroupType != 0 {
@@ -86,6 +95,21 @@ func GetUserGroup(id int) (*models.UserGroup, error) {
 	return nil, nil
 }
 
+// PopulateGroup -  Return the group ID by given group name. if not exist in Harbor DB, create one
+func PopulateGroup(userGroups []models.UserGroup) ([]int, error) {
+	ugList := make([]int, 0)
+	for _, group := range userGroups {
+		err := OnBoardUserGroup(&group)
+		if err != nil {
+			return ugList, err
+		}
+		if group.ID > 0 {
+			ugList = append(ugList, group.ID)
+		}
+	}
+	return ugList, nil
+}
+
 // DeleteUserGroup ...
 func DeleteUserGroup(id int) error {
 	userGroup := models.UserGroup{ID: id}
@@ -111,11 +135,7 @@ func UpdateUserGroupName(id int, groupName string) error {
 	return err
 }
 
-// OnBoardUserGroup will check if a usergroup exists in usergroup table, if not insert the usergroup and
-// put the id in the pointer of usergroup model, if it does exist, return the usergroup's profile.
-// This is used for ldap and uaa authentication, such the usergroup can have an ID in Harbor.
-// the keyAttribute and combinedKeyAttribute are key columns used to check duplicate usergroup in harbor
-func OnBoardUserGroup(g *models.UserGroup, keyAttribute string, combinedKeyAttributes ...string) error {
+func onBoardCommonUserGroup(g *models.UserGroup, keyAttribute string, combinedKeyAttributes ...string) error {
 	g.LdapGroupDN = utils.TrimLower(g.LdapGroupDN)
 
 	o := dao.GetOrmer()
@@ -140,19 +160,11 @@ func OnBoardUserGroup(g *models.UserGroup, keyAttribute string, combinedKeyAttri
 	return nil
 }
 
-// GetGroupDNQueryCondition get the part of IN ('XXX', 'XXX') condition
-func GetGroupDNQueryCondition(userGroupList []*models.UserGroup) string {
-	result := make([]string, 0)
-	count := 0
-	for _, userGroup := range userGroupList {
-		if userGroup.GroupType == common.LdapGroupType {
-			result = append(result, "'"+userGroup.LdapGroupDN+"'")
-			count++
-		}
+// OnBoardUserGroup will check if a usergroup exists in usergroup table, if not insert the usergroup and
+// put the id in the pointer of usergroup model, if it does exist, return the usergroup's profile.
+func OnBoardUserGroup(g *models.UserGroup) error {
+	if g.GroupType == common.LDAPGroupType {
+		return onBoardCommonUserGroup(g, "LdapGroupDN", "GroupType")
 	}
-	// No LDAP Group found
-	if count == 0 {
-		return ""
-	}
-	return strings.Join(result, ",")
+	return onBoardCommonUserGroup(g, "GroupName", "GroupType")
 }

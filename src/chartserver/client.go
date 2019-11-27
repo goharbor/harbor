@@ -1,16 +1,16 @@
 package chartserver
 
 import (
-	"errors"
 	"fmt"
-	commonhttp "github.com/goharbor/harbor/src/common/http"
-	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/pkg/errors"
 )
 
 const (
@@ -49,11 +49,13 @@ func NewChartClient(credential *Credential) *ChartClient { // Create http client
 func (cc *ChartClient) GetContent(addr string) ([]byte, error) {
 	response, err := cc.sendRequest(addr, http.MethodGet, nil)
 	if err != nil {
+		err = errors.Wrap(err, "get content failed")
 		return nil, err
 	}
 
 	content, err := ioutil.ReadAll(response.Body)
 	if err != nil {
+		err = errors.Wrap(err, "Read response body error")
 		return nil, err
 	}
 	defer response.Body.Close()
@@ -61,6 +63,7 @@ func (cc *ChartClient) GetContent(addr string) ([]byte, error) {
 	if response.StatusCode != http.StatusOK {
 		text, err := extractError(content)
 		if err != nil {
+			err = errors.Wrap(err, "Extract content error failed")
 			return nil, err
 		}
 		return nil, &commonhttp.Error{
@@ -106,7 +109,8 @@ func (cc *ChartClient) sendRequest(addr string, method string, body io.Reader) (
 
 	fullURI, err := url.Parse(addr)
 	if err != nil {
-		return nil, fmt.Errorf("invalid url: %s", err.Error())
+		err = errors.Wrap(err, "Invalid url")
+		return nil, err
 	}
 
 	request, err := http.NewRequest(method, addr, body)
@@ -121,7 +125,7 @@ func (cc *ChartClient) sendRequest(addr string, method string, body io.Reader) (
 
 	response, err := cc.httpClient.Do(request)
 	if err != nil {
-		hlog.Errorf("%s '%s' failed with error: %s", method, fullURI.Path, err)
+		err = errors.Wrap(err, fmt.Sprintf("send request %s %s failed", method, fullURI.Path))
 		return nil, err
 	}
 

@@ -15,9 +15,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
-import { Repository } from '@harbor/ui';
+import { Repository, HTTP_GET_OPTIONS } from '@harbor/ui';
 
-import {HTTP_GET_OPTIONS} from "@harbor/ui";
 
 export const topRepoEndpoint = "/api/repositories/top";
 /**

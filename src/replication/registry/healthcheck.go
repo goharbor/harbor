@@ -29,17 +29,19 @@ const MinInterval = time.Minute * 5
 type HealthChecker struct {
 	interval time.Duration
 	closing  chan struct{}
+	done     chan struct{}
 	manager  Manager
 }
 
 // NewHealthChecker creates a new health checker
 // - interval specifies the time interval to perform health check for registries
 // - closing is a channel to stop the health checker
-func NewHealthChecker(interval time.Duration, closing chan struct{}) *HealthChecker {
+func NewHealthChecker(interval time.Duration, closing, done chan struct{}) *HealthChecker {
 	return &HealthChecker{
 		interval: interval,
 		manager:  NewDefaultManager(),
 		closing:  closing,
+		done:     done,
 	}
 }
 
@@ -66,6 +68,8 @@ func (c *HealthChecker) Run() {
 			log.Debug("Health Check succeeded")
 		case <-c.closing:
 			log.Info("Stop health checker")
+			// No cleanup works to do, signal done directly
+			close(c.done)
 			return
 		}
 	}

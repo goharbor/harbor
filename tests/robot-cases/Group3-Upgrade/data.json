@@ -30,8 +30,8 @@
            {
               "url":"http://url",
               "name":"endpoint1",
-              "user":"endpointuser",
-              "pass":"endpointpass"
+              "user":"admin",
+              "pass":"Harbor12345"
            }
         ],
         "replicationrule":[
@@ -99,12 +99,12 @@
                  {
                     "name":"busybox",
                     "tag":"latest",
-                    "signed":"False"
+                    "signed":"false"
                  },
                  {
                     "name":"alpine",
                     "tag":"latest",
-                    "signed":"True"
+                    "signed":"true"
                  }
               ],
               "member":[
@@ -144,10 +144,11 @@
                  }
               ],
               "configuration":{
+                 "public":"true",
                  "enable_content_trust":"true",
                  "automatically_scan_images_on_push":"true",
                  "prevent_vulnerable_images_from_running":"true",
-                 "prevent_vlunerable_images_from_running_severity":"High"
+                 "prevent_vlunerable_images_from_running_severity":"high"
               }
            },
            {
@@ -159,12 +160,12 @@
                  {
                     "name":"busybox",
                     "tag":"latest",
-                    "signed":"False"
+                    "signed":"false"
                  },
                  {
                     "name":"alpine",
                     "tag":"latest",
-                    "signed":"True"
+                    "signed":"true"
                  }
               ],
               "member":[
@@ -204,10 +205,11 @@
                  }
               ],
               "configuration":{
-                 "enable_content_trust":"True",
-                 "automatically_scan_images_on_push":"True",
-                 "prevent_vulnerable_images_from_running":"True",
-                 "prevent_vlunerable_images_from_running_severity":"High"
+                 "public":"false",
+                 "enable_content_trust":"false",
+                 "automatically_scan_images_on_push":"false",
+                 "prevent_vulnerable_images_from_running":"true",
+                 "prevent_vlunerable_images_from_running_severity":"medium"
               }
            }
         ]

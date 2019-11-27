@@ -1,0 +1,11 @@
+# Rsyslog configuration file for docker.
+
+template(name="DynaFile" type="string" string="/var/log/docker/%programname%.log")
+
+if $programname != "rsyslogd" then {
+{%if log_external %}
+	action(type="omfwd" Target="{{log_ep_host}}" Port="{{log_ep_port}}" Protocol="{{log_ep_protocol}}" Template="RSYSLOG_SyslogProtocol23Format")
+{% else %}
+	action(type="omfile" dynaFile="DynaFile")
+{% endif %}
+}

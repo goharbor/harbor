@@ -1,0 +1,81 @@
+<clr-modal [(clrModalOpen)]="openEditQuota" class="quota-modal" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
+  <h3 class="modal-title">{{ defaultTextsObj.editQuota }}</h3>
+  <hbr-inline-alert class="modal-title p-0" ></hbr-inline-alert>
+  <div class="modal-body">
+    <label class="body-label">{{defaultTextsObj.setQuota}}</label>
+
+    <form #quotaForm="ngForm" class=" clr-form clr-form-horizontal"
+      [class.clr-form-compact-common]="!defaultTextsObj.isSystemDefaultQuota">
+
+      <clr-input-container>
+          <label class="left-label required" for="storage">{{ defaultTextsObj?.countQuota | translate}}
+              <clr-tooltip>
+                  <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                  <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                      <span>{{'PROJECT.QUOTA_UNLIMIT_TIP' | translate }}</span>
+                  </clr-tooltip-content>
+              </clr-tooltip>
+              <div class="progress-block progress-min-width progress-div" *ngIf="!defaultTextsObj.isSystemDefaultQuota">
+                  <div class="progress success" [class.warning]="isWarningColor(+quotaHardLimitValue.countLimit, quotaHardLimitValue.countUsed)"
+                  [class.danger]="isDangerColor(+quotaHardLimitValue.countLimit, quotaHardLimitValue.countUsed)">
+                    <progress value="{{countInput.invalid || +quotaHardLimitValue.countLimit===-1?0:quotaHardLimitValue.countUsed}}"
+                      max="{{countInput.invalid?100:quotaHardLimitValue.countLimit}}" data-displayval="100%"></progress>
+                  </div>
+                  <label class="progress-label">{{ quotaHardLimitValue?.countUsed }} {{ 'QUOTA.OF' | translate }}
+                    {{ countInput?.valid?+quotaHardLimitValue?.countLimit===-1 ? ('QUOTA.UNLIMITED' | translate): quotaHardLimitValue?.countLimit:('QUOTA.INVALID_INPUT' | translate)}}
+                  </label>
+                </div>
+          </label>
+          <input clrInput type="text" name="count" #countInput="ngModel" class="quota-input"
+          [(ngModel)]="quotaHardLimitValue.countLimit" pattern="(^-1$)|(^([1-9]+)([0-9]+)*$)" required id="count"
+          size="40" />
+          <clr-control-error>{{ 'PROJECT.COUNT_QUOTA_TIP' | translate }}</clr-control-error>
+      </clr-input-container>
+
+      <clr-input-container>
+          <label for="count" class="left-label required">{{ defaultTextsObj.storageQuota | translate}}
+              <clr-tooltip>
+                  <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                  <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                      <span>{{'PROJECT.QUOTA_UNLIMIT_TIP' | translate }}</span>
+                  </clr-tooltip-content>
+              </clr-tooltip>
+              <div class="clr-select-wrapper">
+                  <select id="select-error" class="clr-select" name="storageUnit" [(ngModel)]="quotaHardLimitValue.storageUnit">
+                      <ng-template ngFor let-quotaUnit [ngForOf]="quotaUnits" let-i="index">
+                          <option *ngIf="i>1" [value]="quotaUnit.UNIT">{{ quotaUnit?.UNIT }}</option>
+                        </ng-template>
+                    </select>
+              </div>
+              
+              <div class="progress-block progress-min-width progress-div" *ngIf="!defaultTextsObj.isSystemDefaultQuota">
+                  <div class="progress success" [class.danger]="isDangerColor(+quotaHardLimitValue.storageLimit,quotaHardLimitValue.storageUsed, quotaHardLimitValue.storageUnit)"
+                  [class.warning]="isWarningColor(+quotaHardLimitValue.storageLimit,quotaHardLimitValue.storageUsed, quotaHardLimitValue.storageUnit)" >
+                    <progress value="{{storageInput.invalid || +quotaHardLimitValue.storageLimit === -1 ?0:quotaHardLimitValue.storageUsed}}"
+                      max="{{storageInput.invalid?0:getByte(+quotaHardLimitValue.storageLimit, quotaHardLimitValue.storageUnit)}}"
+                      data-displayval="100%"></progress>
+                  </div>
+                  <label class="progress-label">
+                    <!-- the comments of progress , when storageLimit !=-1  get integet and unit  in hard storage and used storage;and the unit of used storage <= the unit of hard storage 
+                    the other : get suitable number and unit-->
+                    {{ +quotaHardLimitValue.storageLimit !== -1 ?(getIntegerAndUnit(getByte(quotaHardLimitValue.storageLimit,quotaHardLimitValue.storageUnit), quotaHardLimitValue.storageUsed).partNumberUsed
+                      + getIntegerAndUnit(getByte(quotaHardLimitValue.storageLimit,quotaHardLimitValue.storageUnit), quotaHardLimitValue.storageUsed).partCharacterUsed) : getSuitableUnit(quotaHardLimitValue.storageUsed)}}
+                      {{ 'QUOTA.OF' | translate }}
+                    {{ storageInput?.valid? +quotaHardLimitValue?.storageLimit ===-1? ('QUOTA.UNLIMITED' | translate): quotaHardLimitValue?.storageLimit :('QUOTA.INVALID_INPUT' | translate)}}
+                    {{+quotaHardLimitValue?.storageLimit ===-1?'':quotaHardLimitValue?.storageUnit }}
+                  </label>
+                </div>
+          </label>
+          <input clrInput name="storage" type="text" #storageInput="ngModel" class="quota-input"
+          [(ngModel)]="quotaHardLimitValue.storageLimit"
+          id="storage" size="40"/>
+          <clr-control-error>{{ 'PROJECT.STORAGE_QUOTA_TIP' | translate }}</clr-control-error>
+      </clr-input-container>
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline" (click)="onCancel()">{{'BUTTON.CANCEL' | translate}}</button>
+    <button type="button" class="btn btn-primary" [disabled]="!isValid"
+      (click)="onSubmit()">{{'BUTTON.OK' | translate}}</button>
+  </div>
+</clr-modal>

@@ -10,8 +10,8 @@ import { throwError as observableThrowError, Observable } from 'rxjs';
 export class AccountSettingsModalService {
 
   constructor(private http: HttpClient) { }
-  generateCli(userId): Observable<any> {
-    return this.http.post(`/api/users/${userId}/gen_cli_secret`, {}).pipe( map(response => response)
+  saveNewCli(userId, secretObj): Observable<any> {
+    return this.http.put(`/api/users/${userId}/cli_secret`, secretObj).pipe( map(response => response)
     , catchError(error => observableThrowError(error)));
   }
 }

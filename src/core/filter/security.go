@@ -25,6 +25,7 @@ import (
 	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	secstore "github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/security"
@@ -33,7 +34,6 @@ import (
 	"github.com/goharbor/harbor/src/common/security/local"
 	robotCtx "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/common/security/secret"
-	"github.com/goharbor/harbor/src/common/token"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
@@ -41,15 +41,10 @@ import (
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/admiral"
 	"strings"
 
-	"encoding/json"
-	k8s_api_v1beta1 "k8s.io/api/authentication/v1beta1"
-	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"k8s.io/apimachinery/pkg/runtime/schema"
-	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"github.com/goharbor/harbor/src/pkg/authproxy"
+	"github.com/goharbor/harbor/src/pkg/robot"
+	pkg_token "github.com/goharbor/harbor/src/pkg/token"
+	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
 )
 
 // ContextValueKey for content value
@@ -194,14 +189,16 @@ func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if !strings.HasPrefix(robotName, common.RobotPrefix) {
 		return false
 	}
-	rClaims := &token.RobotClaims{}
-	htk, err := token.ParseWithClaims(robotTk, rClaims)
+	rClaims := &robot_claim.Claim{}
+	opt := pkg_token.DefaultTokenOptions()
+	rtk, err := pkg_token.Parse(opt, robotTk, rClaims)
 	if err != nil {
 		log.Errorf("failed to decrypt robot token, %v", err)
 		return false
 	}
 	// Do authn for robot account, as Harbor only stores the token ID, just validate the ID and disable.
-	robot, err := dao.GetRobotByID(htk.Claims.(*token.RobotClaims).TokenID)
+	ctr := robot.RobotCtr
+	robot, err := ctr.GetRobotAccount(rtk.Claims.(*robot_claim.Claim).TokenID)
 	if err != nil {
 		log.Errorf("failed to get robot %s: %v", robotName, err)
 		return false
@@ -220,7 +217,7 @@ func (r *robotAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	}
 	log.Debug("creating robot account security context...")
 	pm := config.GlobalProjectMgr
-	securCtx := robotCtx.NewSecurityContext(robot, pm, htk.Claims.(*token.RobotClaims).Access)
+	securCtx := robotCtx.NewSecurityContext(robot, pm, rtk.Claims.(*robot_claim.Claim).Access)
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 	return true
 }
@@ -229,8 +226,10 @@ type oidcCliReqCtxModifier struct{}
 
 func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	path := ctx.Request.URL.Path
-	if path != "/service/token" && !strings.HasPrefix(path, "/chartrepo/") {
-		log.Debug("OIDC CLI modifer only handles request by docker CLI or helm CLI")
+	if path != "/service/token" &&
+		!strings.HasPrefix(path, "/chartrepo/") &&
+		!strings.HasPrefix(path, "/api/chartrepo/") {
+		log.Debug("OIDC CLI modifier only handles request by docker CLI or helm CLI")
 		return false
 	}
 	if ctx.Request.Context().Value(AuthModeKey).(string) != common.OIDCAuth {
@@ -240,18 +239,8 @@ func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if !ok {
 		return false
 	}
-
-	user, err := dao.GetUser(models.User{
-		Username: username,
-	})
+	user, err := oidc.VerifySecret(ctx.Request.Context(), username, secret)
 	if err != nil {
-		log.Errorf("Failed to get user: %v", err)
-		return false
-	}
-	if user == nil {
-		return false
-	}
-	if err := oidc.VerifySecret(ctx.Request.Context(), user.UserID, secret); err != nil {
 		log.Errorf("Failed to verify secret: %v", err)
 		return false
 	}
@@ -290,6 +279,18 @@ func (it *idTokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Warning("User matches token's claims is not onboarded.")
 		return false
 	}
+	settings, err := config.OIDCSetting()
+	if err != nil {
+		log.Errorf("Failed to get OIDC settings, error: %v", err)
+	}
+	if groupNames, ok := oidc.GroupsFromClaims(claims, settings.GroupsClaim); ok {
+		groups := models.UserGroupsFromName(groupNames, common.OIDCGroupType)
+		u.GroupIDs, err = group.PopulateGroup(groups)
+		if err != nil {
+			log.Errorf("Failed to get group ID list for OIDC user: %s, error: %v", u.Username, err)
+			return false
+		}
+	}
 	pm := config.GlobalProjectMgr
 	sc := local.NewSecurityContext(u, pm)
 	setSecurCtxAndPM(ctx.Request, sc, pm)
@@ -319,64 +320,21 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Errorf("User name %s doesn't meet the auth proxy name pattern", proxyUserName)
 		return false
 	}
-
 	httpAuthProxyConf, err := config.HTTPAuthProxySetting()
 	if err != nil {
 		log.Errorf("fail to get auth proxy settings, %v", err)
 		return false
 	}
-
-	// Init auth client with the auth proxy endpoint.
-	authClientCfg := &rest.Config{
-		Host: httpAuthProxyConf.TokenReviewEndpoint,
-		ContentConfig: rest.ContentConfig{
-			GroupVersion:         &schema.GroupVersion{},
-			NegotiatedSerializer: serializer.DirectCodecFactory{CodecFactory: scheme.Codecs},
-		},
-		BearerToken: proxyPwd,
-		TLSClientConfig: rest.TLSClientConfig{
-			Insecure: !httpAuthProxyConf.VerifyCert,
-		},
-	}
-	authClient, err := rest.RESTClientFor(authClientCfg)
+	tokenReviewStatus, err := authproxy.TokenReview(proxyPwd, httpAuthProxyConf)
 	if err != nil {
-		log.Errorf("fail to create auth client, %v", err)
+		log.Errorf("fail to review token, %v", err)
+		return false
+	}
+	if rawUserName != tokenReviewStatus.User.Username {
+		log.Errorf("user name doesn't match with token: %s", rawUserName)
 		return false
 	}
 
-	// Do auth with the token.
-	tokenReviewRequest := &k8s_api_v1beta1.TokenReview{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "TokenReview",
-			APIVersion: "authentication.k8s.io/v1beta1",
-		},
-		Spec: k8s_api_v1beta1.TokenReviewSpec{
-			Token: proxyPwd,
-		},
-	}
-	res := authClient.Post().Body(tokenReviewRequest).Do()
-	err = res.Error()
-	if err != nil {
-		log.Errorf("fail to POST auth request, %v", err)
-		return false
-	}
-	resRaw, err := res.Raw()
-	if err != nil {
-		log.Errorf("fail to get raw data of token review, %v", err)
-		return false
-	}
-
-	// Parse the auth response, check the user name and authenticated status.
-	tokenReviewResponse := &k8s_api_v1beta1.TokenReview{}
-	err = json.Unmarshal(resRaw, &tokenReviewResponse)
-	if err != nil {
-		log.Errorf("fail to decode token review, %v", err)
-		return false
-	}
-	if !tokenReviewResponse.Status.Authenticated {
-		log.Errorf("fail to auth user: %s", rawUserName)
-		return false
-	}
 	user, err := dao.GetUser(models.User{
 		Username: rawUserName,
 	})
@@ -388,11 +346,12 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Errorf("User: %s has not been on boarded yet.", rawUserName)
 		return false
 	}
-	if rawUserName != tokenReviewResponse.Status.User.Username {
-		log.Errorf("user name doesn't match with token: %s", rawUserName)
+	u2, err := authproxy.UserFromReviewStatus(tokenReviewStatus)
+	if err != nil {
+		log.Errorf("Failed to get user information from token review status, error: %v", err)
 		return false
 	}
-
+	user.GroupIDs = u2.GroupIDs
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context for auth proxy...")
 	securCtx := local.NewSecurityContext(user, pm)
@@ -497,26 +456,12 @@ func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Info("can not get user information from session")
 		return false
 	}
-	if ctx.Request.Context().Value(AuthModeKey).(string) == common.OIDCAuth {
-		ou, err := dao.GetOIDCUserByUserID(user.UserID)
-		if err != nil {
-			log.Errorf("Failed to get OIDC user info, error: %v", err)
-			return false
-		}
-		if ou != nil { // If user does not have OIDC metadata, it means he is not onboarded via OIDC authn,
-			// so we can skip checking the token.
-			if err := oidc.VerifyAndPersistToken(ctx.Request.Context(), ou); err != nil {
-				log.Errorf("Failed to verify secret, error: %v", err)
-				return false
-			}
-		}
-	}
 	log.Debug("using local database project manager")
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context...")
-	securCtx := local.NewSecurityContext(&user, pm)
+	securityCtx := local.NewSecurityContext(&user, pm)
 
-	setSecurCtxAndPM(ctx.Request, securCtx, pm)
+	setSecurCtxAndPM(ctx.Request, securityCtx, pm)
 
 	return true
 }

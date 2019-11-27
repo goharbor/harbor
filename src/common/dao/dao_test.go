@@ -47,8 +47,8 @@ func cleanByUser(username string) {
 	o := GetOrmer()
 	o.Begin()
 
-	err = execUpdate(o, `delete 
-		from project_member 
+	err = execUpdate(o, `delete
+		from project_member
 		where entity_id = (
 			select user_id
 			from harbor_user
@@ -59,7 +59,7 @@ func cleanByUser(username string) {
 		log.Error(err)
 	}
 
-	err = execUpdate(o, `delete  
+	err = execUpdate(o, `delete
 		from project_member
 		where project_id = (
 			select project_id
@@ -71,8 +71,8 @@ func cleanByUser(username string) {
 		log.Error(err)
 	}
 
-	err = execUpdate(o, `delete 
-		from access_log 
+	err = execUpdate(o, `delete
+		from access_log
 		where username = ?
 		`, username)
 	if err != nil {
@@ -80,7 +80,7 @@ func cleanByUser(username string) {
 		log.Error(err)
 	}
 
-	err = execUpdate(o, `delete 
+	err = execUpdate(o, `delete
 		from access_log
 		where project_id = (
 			select project_id
@@ -159,8 +159,8 @@ func testForAll(m *testing.M) int {
 func clearAll() {
 	tables := []string{"project_member",
 		"project_metadata", "access_log", "repository", "replication_policy",
-		"registry", "replication_execution", "replication_task", "img_scan_job",
-		"replication_schedule_job", "img_scan_overview", "clair_vuln_timestamp", "project", "harbor_user"}
+		"registry", "replication_execution", "replication_task",
+		"replication_schedule_job", "project", "harbor_user"}
 	for _, t := range tables {
 		if err := ClearTable(t); err != nil {
 			log.Errorf("Failed to clear table: %s,error: %v", t, err)
@@ -302,9 +302,6 @@ func TestListUsers(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred in ListUsers: %v", err)
 	}
-	if len(users) != 1 {
-		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
-	}
 	users2, err := ListUsers(&models.UserQuery{Username: username})
 	if len(users2) != 1 {
 		t.Errorf("Expect one user in list, but the acutal length is %d, the list: %+v", len(users), users)
@@ -327,7 +324,12 @@ func TestResetUserPassword(t *testing.T) {
 		t.Errorf("Error occurred in UpdateUserResetUuid: %v", err)
 	}
 
-	err = ResetUserPassword(models.User{UserID: currentUser.UserID, Password: "HarborTester12345", ResetUUID: uuid, Salt: currentUser.Salt})
+	err = ResetUserPassword(
+		models.User{
+			UserID:          currentUser.UserID,
+			PasswordVersion: utils.SHA256,
+			ResetUUID:       uuid,
+			Salt:            currentUser.Salt}, "HarborTester12345")
 	if err != nil {
 		t.Errorf("Error occurred in ResetUserPassword: %v", err)
 	}
@@ -349,7 +351,12 @@ func TestChangeUserPassword(t *testing.T) {
 		t.Errorf("Error occurred when get user salt")
 	}
 	currentUser.Salt = query.Salt
-	err = ChangeUserPassword(models.User{UserID: currentUser.UserID, Password: "NewHarborTester12345", Salt: currentUser.Salt})
+	err = ChangeUserPassword(
+		models.User{
+			UserID:          currentUser.UserID,
+			Password:        "NewHarborTester12345",
+			PasswordVersion: utils.SHA256,
+			Salt:            currentUser.Salt})
 	if err != nil {
 		t.Errorf("Error occurred in ChangeUserPassword: %v", err)
 	}
@@ -752,181 +759,6 @@ func TestDeleteRepository(t *testing.T) {
 	}
 }
 
-var sj1 = models.ScanJob{
-	Status:     models.JobPending,
-	Repository: "library/ubuntu",
-	Tag:        "14.04",
-}
-
-var sj2 = models.ScanJob{
-	Status:     models.JobPending,
-	Repository: "library/ubuntu",
-	Tag:        "15.10",
-	Digest:     "sha256:0204dc6e09fa57ab99ac40e415eb637d62c8b2571ecbbc9ca0eb5e2ad2b5c56f",
-}
-
-func TestAddScanJob(t *testing.T) {
-	assert := assert.New(t)
-	id, err := AddScanJob(sj1)
-	assert.Nil(err)
-	r1, err := GetScanJob(id)
-	assert.Nil(err)
-	assert.Equal(sj1.Tag, r1.Tag)
-	assert.Equal(sj1.Status, r1.Status)
-	assert.Equal(sj1.Repository, r1.Repository)
-	err = ClearTable(models.ScanJobTable)
-	assert.Nil(err)
-}
-
-func TestGetScanJobs(t *testing.T) {
-	assert := assert.New(t)
-	_, err := AddScanJob(sj1)
-	assert.Nil(err)
-	id2, err := AddScanJob(sj1)
-	assert.Nil(err)
-	_, err = AddScanJob(sj2)
-	assert.Nil(err)
-	r, err := GetScanJobsByImage("library/ubuntu", "14.04")
-	assert.Nil(err)
-	assert.Equal(2, len(r))
-	assert.Equal(id2, r[0].ID)
-	r, err = GetScanJobsByImage("library/ubuntu", "14.04", 1)
-	assert.Nil(err)
-	assert.Equal(1, len(r))
-	r, err = GetScanJobsByDigest("sha256:nono")
-	assert.Nil(err)
-	assert.Equal(0, len(r))
-	r, err = GetScanJobsByDigest(sj2.Digest)
-	assert.Equal(1, len(r))
-	assert.Equal(sj2.Tag, r[0].Tag)
-	assert.Nil(err)
-	err = ClearTable(models.ScanJobTable)
-	assert.Nil(err)
-}
-
-func TestSetScanJobUUID(t *testing.T) {
-	uuid := "u-scan-job-uuid"
-	assert := assert.New(t)
-	id, err := AddScanJob(sj1)
-	assert.Nil(err)
-	err = SetScanJobUUID(id, uuid)
-	assert.Nil(err)
-	j, err := GetScanJob(id)
-	assert.Nil(err)
-	assert.Equal(uuid, j.UUID)
-	err = ClearTable(models.ScanJobTable)
-	assert.Nil(err)
-
-}
-
-func TestUpdateScanJobStatus(t *testing.T) {
-	assert := assert.New(t)
-	id, err := AddScanJob(sj1)
-	assert.Nil(err)
-	err = UpdateScanJobStatus(id, "newstatus")
-	assert.Nil(err)
-	j, err := GetScanJob(id)
-	assert.Nil(err)
-	assert.Equal("newstatus", j.Status)
-	err = ClearTable(models.ScanJobTable)
-	assert.Nil(err)
-}
-
-func TestImgScanOverview(t *testing.T) {
-	assert := assert.New(t)
-	err := ClearTable(models.ScanOverviewTable)
-	assert.Nil(err)
-	digest := "sha256:0204dc6e09fa57ab99ac40e415eb637d62c8b2571ecbbc9ca0eb5e2ad2b5c56f"
-	res, err := GetImgScanOverview(digest)
-	assert.Nil(err)
-	assert.Nil(res)
-	err = SetScanJobForImg(digest, 33)
-	assert.Nil(err)
-	res, err = GetImgScanOverview(digest)
-	assert.Nil(err)
-	assert.Equal(int64(33), res.JobID)
-	err = SetScanJobForImg(digest, 22)
-	assert.Nil(err)
-	res, err = GetImgScanOverview(digest)
-	assert.Nil(err)
-	assert.Equal(int64(22), res.JobID)
-	pk := "22-sha256:sdfsdfarfwefwr23r43t34ggregergerger"
-	comp := &models.ComponentsOverview{
-		Total: 2,
-		Summary: []*models.ComponentsOverviewEntry{
-			{
-				Sev:   int(models.SevMedium),
-				Count: 2,
-			},
-		},
-	}
-	err = UpdateImgScanOverview(digest, pk, models.SevMedium, comp)
-	assert.Nil(err)
-	res, err = GetImgScanOverview(digest)
-	assert.Nil(err)
-	assert.Equal(pk, res.DetailsKey)
-	assert.Equal(int(models.SevMedium), res.Sev)
-	assert.Equal(2, res.CompOverview.Summary[0].Count)
-}
-
-func TestVulnTimestamp(t *testing.T) {
-
-	assert := assert.New(t)
-	err := ClearTable(models.ClairVulnTimestampTable)
-	assert.Nil(err)
-	ns := "ubuntu:14"
-	res, err := ListClairVulnTimestamps()
-	assert.Nil(err)
-	assert.Equal(0, len(res))
-	err = SetClairVulnTimestamp(ns, time.Now())
-	assert.Nil(err)
-	res, err = ListClairVulnTimestamps()
-	assert.Nil(err)
-	assert.Equal(1, len(res))
-	assert.Equal(ns, res[0].Namespace)
-	old := time.Now()
-	t.Logf("Sleep 3 seconds")
-	time.Sleep(3 * time.Second)
-	err = SetClairVulnTimestamp(ns, time.Now())
-	assert.Nil(err)
-	res, err = ListClairVulnTimestamps()
-	assert.Nil(err)
-	assert.Equal(1, len(res))
-
-	d := res[0].LastUpdate.Sub(old)
-	if d < 2*time.Second {
-		t.Errorf("Delta should be larger than 2 seconds! old: %v, lastupdate: %v", old, res[0].LastUpdate)
-	}
-}
-
-func TestListScanOverviews(t *testing.T) {
-	assert := assert.New(t)
-	err := ClearTable(models.ScanOverviewTable)
-	assert.Nil(err)
-	l, err := ListImgScanOverviews()
-	assert.Nil(err)
-	assert.Equal(0, len(l))
-	err = ClearTable(models.ScanOverviewTable)
-	assert.Nil(err)
-}
-
-func TestGetScanJobsByStatus(t *testing.T) {
-	assert := assert.New(t)
-	err := ClearTable(models.ScanOverviewTable)
-	assert.Nil(err)
-	id, err := AddScanJob(sj1)
-	assert.Nil(err)
-	err = UpdateScanJobStatus(id, models.JobRunning)
-	assert.Nil(err)
-	r1, err := GetScanJobsByStatus(models.JobPending, models.JobCanceled)
-	assert.Nil(err)
-	assert.Equal(0, len(r1))
-	r2, err := GetScanJobsByStatus(models.JobPending, models.JobRunning)
-	assert.Nil(err)
-	assert.Equal(1, len(r2))
-	assert.Equal(sj1.Repository, r2[0].Repository)
-}
-
 func TestIsSuperUser(t *testing.T) {
 	assert := assert.New(t)
 	assert.True(IsSuperUser("admin"))
@@ -1034,4 +866,54 @@ func TestSaveConfigEntries(t *testing.T) {
 func TestIsDupRecError(t *testing.T) {
 	assert.True(t, isDupRecErr(fmt.Errorf("pq: duplicate key value violates unique constraint \"properties_k_key\"")))
 	assert.False(t, isDupRecErr(fmt.Errorf("other error")))
+}
+
+func TestWithTransaction(t *testing.T) {
+	reference := "transaction"
+
+	quota := models.Quota{
+		Reference:   reference,
+		ReferenceID: "1",
+		Hard:        "{}",
+	}
+
+	failed := func(o orm.Ormer) error {
+		o.Insert(&quota)
+
+		return fmt.Errorf("failed")
+	}
+
+	var quotaID int64
+	success := func(o orm.Ormer) error {
+		id, err := o.Insert(&quota)
+		if err != nil {
+			return err
+		}
+
+		quotaID = id
+		return nil
+	}
+
+	assert := assert.New(t)
+
+	if assert.Error(WithTransaction(failed)) {
+		var quota models.Quota
+		quota.Reference = reference
+		quota.ReferenceID = "1"
+		err := GetOrmer().Read(&quota, "reference", "reference_id")
+		assert.Error(err)
+		assert.False(quota.ID != 0)
+	}
+
+	if assert.Nil(WithTransaction(success)) {
+		var quota models.Quota
+		quota.Reference = reference
+		quota.ReferenceID = "1"
+		err := GetOrmer().Read(&quota, "reference", "reference_id")
+		assert.Nil(err)
+		assert.True(quota.ID != 0)
+		assert.Equal(quotaID, quota.ID)
+
+		GetOrmer().Delete(&models.Quota{ID: quotaID}, "id")
+	}
 }

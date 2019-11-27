@@ -24,10 +24,8 @@ import { ErrorHandler } from '../error-handler/index';
 import { CustomComparator } from '../utils';
 import {
     DEFAULT_PAGE_SIZE,
-    calculatePage,
-    doFiltering,
-    doSorting
 } from '../utils';
+import { finalize } from "rxjs/operators";
 
 @Component({
     selector: 'hbr-log',
@@ -43,14 +41,8 @@ export class RecentLogComponent implements OnInit {
     defaultFilter = "username";
     isOpenFilterTag: boolean;
     @Input() withTitle: boolean = false;
-
-    pageSize: number = DEFAULT_PAGE_SIZE;
+    pageSize: number = 15;
     currentPage: number = 1; // Double bound to pagination component
-    currentPagePvt: number = 0; // Used to confirm whether page is changed
-    currentState: State;
-
-    opTimeComparator: Comparator<AccessLogItem> = new CustomComparator<AccessLogItem>('op_time', 'date');
-
     constructor(
         private logService: AccessLogService,
         private errorHandler: ErrorHandler) { }
@@ -67,29 +59,14 @@ export class RecentLogComponent implements OnInit {
     }
 
     public doFilter(terms: string): void {
-        if (!terms) {
+        // allow search by null characters
+        if (terms === undefined || terms === null) {
             return;
         }
         this.currentTerm = terms.trim();
-        // Trigger data loading and start from first page
         this.loading = true;
         this.currentPage = 1;
-        if (this.currentPagePvt === 1) {
-            // Force reloading
-            let st: State = this.currentState;
-            if (!st) {
-                st = {
-                    page: {}
-                };
-            }
-            st.page.from = 0;
-            st.page.to = this.pageSize - 1;
-            st.page.size = this.pageSize;
-
-            this.currentPagePvt = 0; // Reset pvt
-
-            this.load(st);
-        }
+        this.load({page: {}});
     }
 
     public refresh(): void {
@@ -109,57 +86,23 @@ export class RecentLogComponent implements OnInit {
         this.doFilter(this.currentTerm);
     }
 
-    load(state: State) {
+    load(state) {
         if (!state || !state.page) {
             return;
         }
         // Keep it for future filter
-        this.currentState = state;
-
-        let pageNumber: number = calculatePage(state);
-        if (pageNumber !== this.currentPagePvt) {
-            // load data
-            let params: RequestQueryParams = new RequestQueryParams().set("page", '' + pageNumber).set("page_size", '' + this.pageSize);
-            if (this.currentTerm && this.currentTerm !== "") {
-                params = params.set(this.defaultFilter, this.currentTerm);
-            }
-
-            this.loading = true;
-            this.logService.getRecentLogs(params)
-                .subscribe(response => {
-                    this.logsCache = response; // Keep the data
-                    this.recentLogs = this.logsCache.data.filter(log => log.username !== ""); // To display
-
-                    // Do customized filter
-                    this.recentLogs = doFiltering<AccessLogItem>(this.recentLogs, state);
-
-                    // Do customized sorting
-                    this.recentLogs = doSorting<AccessLogItem>(this.recentLogs, state);
-
-                    this.currentPagePvt = pageNumber;
-
-                    this.loading = false;
+        // this.currentState = state;
+        let params: RequestQueryParams = new RequestQueryParams().set("page", '' + this.currentPage).set("page_size", '' + this.pageSize);
+        if (this.currentTerm && this.currentTerm !== "") {
+            params = params.set(this.defaultFilter, this.currentTerm);
+        }
+        this.loading = true;
+        this.logService.getRecentLogs(params).pipe(finalize(() => (this.loading = false)))
+          .subscribe(response => {
+              this.logsCache = response; // Keep the data
+              this.recentLogs = response.data;
                 }, error => {
-                    this.loading = false;
                     this.errorHandler.error(error);
                 });
-        } else {
-            // Column sorting and filtering
-
-            this.recentLogs = this.logsCache.data.filter(log => log.username !== ""); // Reset data
-
-            // Do customized filter
-            this.recentLogs = doFiltering<AccessLogItem>(this.recentLogs, state);
-
-            // Do customized sorting
-            this.recentLogs = doSorting<AccessLogItem>(this.recentLogs, state);
-        }
-    }
-    isMatched(terms: string, log: AccessLogItem): boolean {
-        let reg = new RegExp('.*' + terms + '.*', 'i');
-        return reg.test(log.username) ||
-            reg.test(log.repo_name) ||
-            reg.test(log.operation) ||
-            reg.test(log.repo_tag);
     }
 }

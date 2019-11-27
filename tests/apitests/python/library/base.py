@@ -3,6 +3,10 @@
 import sys
 import time
 import swagger_client
+try:
+    from urllib import getproxies
+except ImportError:
+    from urllib.request import getproxies
 
 class Server:
     def __init__(self, endpoint, verify_ssl):
@@ -23,6 +27,12 @@ def _create_client(server, credential, debug):
     cfg.username = credential.username
     cfg.password = credential.password
     cfg.debug = debug
+
+    proxies = getproxies()
+    proxy = proxies.get('http', proxies.get('all', None))
+    if proxy:
+        cfg.proxy = proxy
+
     return swagger_client.ProductsApi(swagger_client.ApiClient(cfg))
 
 def _assert_status_code(expect_code, return_code):
@@ -39,7 +49,7 @@ def _random_name(prefix):
 def _get_id_from_header(header):
     try:
         location = header["Location"]
-        return location.split("/")[-1]
+        return int(location.split("/")[-1])
     except Exception:
         return None
 
@@ -51,7 +61,7 @@ def _get_string_from_unicode(udata):
     return result
 
 class Base:
-    def __init__(self, 
+    def __init__(self,
         server = Server(endpoint="http://localhost:8080/api", verify_ssl=False),
         credential = Credential(type="basic_auth", username="admin", password="Harbor12345"),
         debug = True):

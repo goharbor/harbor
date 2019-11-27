@@ -14,7 +14,7 @@
 import { Component, Output, EventEmitter } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 
-import { errorHandler } from '../shared.utils';
+import { errorHandler } from '@harbor/ui';
 import { Subscription } from "rxjs";
 
 @Component({

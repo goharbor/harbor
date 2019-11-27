@@ -25,7 +25,8 @@ import { State,
   operateChanges,
   OperationService,
   UserPermissionService,
-  USERSTATICPERMISSION } from "@harbor/ui";
+  USERSTATICPERMISSION,
+  errorHandler as errorHandFn } from "@harbor/ui";
 
 import { HelmChartVersion, HelmChartMaintainer } from "../../helm-chart.interface.service";
 import { HelmChartService } from "../../helm-chart.service";
@@ -39,9 +40,7 @@ import {
   ConfirmationState,
   DefaultHelmIcon,
   ResourceType,
-  Roles
 } from "../../../../shared/shared.const";
-import { errorHandler as errorHandFn } from "../../../../shared/shared.utils";
 
 @Component({
   selector: "hbr-helm-chart-version",
@@ -83,7 +82,7 @@ export class ChartVersionComponent implements OnInit {
 
   addLabelHeaders = 'HELM_CHART.ADD_LABEL_TO_CHART_VERSION';
 
-  @ViewChild("confirmationDialog")
+  @ViewChild("confirmationDialog", {static: false})
   confirmationDialog: ConfirmationDialogComponent;
   hasAddRemoveHelmChartVersionPermission: boolean;
   hasDownloadHelmChartVersionPermission: boolean;

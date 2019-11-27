@@ -32,6 +32,8 @@ type AdminJob struct {
 	Cron         string    `orm:"column(cron_str)"  json:"cron_str"`
 	Status       string    `orm:"column(status)"  json:"job_status"`
 	UUID         string    `orm:"column(job_uuid)" json:"-"`
+	Revision     int64     `orm:"column(revision)" json:"-"`
+	StatusCode   uint16    `orm:"column(status_code)" json:"-"`
 	Deleted      bool      `orm:"column(deleted)" json:"deleted"`
 	CreationTime time.Time `orm:"column(creation_time);auto_now_add" json:"creation_time"`
 	UpdateTime   time.Time `orm:"column(update_time);auto_now" json:"update_time"`

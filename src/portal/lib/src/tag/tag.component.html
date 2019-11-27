@@ -3,7 +3,7 @@
     <h3 class="modal-title">{{ manifestInfoTitle | translate }}</h3>
     <div class="modal-body">
         <div class="row col-md-12">
-            <textarea rows="2" #digestTarget>{{digestId}}</textarea>
+            <textarea class="clr-textarea w-100" rows="2" #digestTarget>{{digestId}}</textarea>
         </div>
     </div>
     <div class="modal-footer">
@@ -34,7 +34,7 @@
                     <div class="labelFilterPanel" *ngIf="!withAdmiral" [hidden]="!openLabelFilterPanel">
                         <a class="filterClose" (click)="closeFilter()">&times;</a>
                         <label class="filterLabelHeader">{{'REPOSITORY.FILTER_BY_LABEL' | translate}}</label>
-                        <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]="filterName" (keyup)="handleInputFilter()"></div>
+                        <div class="form-group"><input clrInput type="text" placeholder="Filter labels" [(ngModel)]="filterName" (keyup)="handleInputFilter()"></div>
                         <div [hidden]='imageFilterLabels.length' class="no-labels">{{'LABEL.NO_LABELS' | translate }}</div>
                         <div [hidden]='!imageFilterLabels.length' class="has-label">
                             <button type="button" class="labelBtn" *ngFor='let label of imageFilterLabels' [hidden]="!label.show" (click)="rightFilterLabel(label)">
@@ -55,73 +55,106 @@
     <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
         <clr-datagrid [clrDgLoading]="loading" class="datagrid-top" [class.embeded-datagrid]="isEmbedded" [(clrDgSelected)]="selectedRow">
             <clr-dg-action-bar>
-                <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(canScanNow(selectedRow) && selectedRow.length==1)" (click)="scanNow(selectedRow)"><clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
-                <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length==1)" (click)="showDigestId(selectedRow)"><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
+                <button [clrLoading]="scanBtnState" type="button" class="btn btn-sm btn-secondary" [disabled]="!(canScanNow() && selectedRow.length==1 && hasEnabledScanner)" (click)="scanNow()"><clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
+                <button type="button" class="btn btn-sm btn-secondary" [disabled]="!(selectedRow.length==1)" (click)="showDigestId()"><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.COPY_DIGEST_ID' | translate}}</button>
                 <clr-dropdown *ngIf="!withAdmiral">
-                    <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1)||!hasAddLabelImagePermission" (click)="addLabels(selectedRow)"><clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}</button>
+                    <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger [disabled]="!(selectedRow.length==1)||!hasAddLabelImagePermission" (click)="addLabels()"><clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}</button>
                     <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
-                        <div class="filter-grid">
-                            <label class="dropdown-header">{{'REPOSITORY.ADD_LABEL_TO_IMAGE' | translate}}</label>
-                            <div class="form-group"><input type="text" placeholder="Filter labels" [(ngModel)]="stickName" (keyup)="handleStickInputFilter()"></div>
-                            <div [hidden]='imageStickLabels.length' class="no-labels">{{'LABEL.NO_LABELS' | translate }}</div>
-                            <div [hidden]='!imageStickLabels.length' class="has-label">
-                                <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' [hidden]='!label.show' (click)="stickLabel(label)">
+                        <clr-dropdown>
+                            <div class="filter-grid">
+                                <label class="dropdown-header">{{'REPOSITORY.ADD_LABEL_TO_IMAGE' | translate}}</label>
+                                <div class="form-group"><input clrInput type="text" placeholder="Filter labels" [(ngModel)]="stickName" (keyup)="handleStickInputFilter()"></div>
+                                <div [hidden]='imageStickLabels.length' class="no-labels">{{'LABEL.NO_LABELS' | translate }}</div>
+                                <div [hidden]='!imageStickLabels.length' class="has-label">
+                                    <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels' [hidden]='!label.show' (click)="stickLabel(label)">
                                   <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
                                   <div class='labelDiv'><hbr-label-piece [label]="label.label"  [labelWidth]="130"></hbr-label-piece></div>
                                 </button>
+                                </div>
                             </div>
-                        </div>
+                        </clr-dropdown>
                     </clr-dropdown-menu>
                 </clr-dropdown>
-                <button type="button" class="btn btn-sm btn-secondary" *ngIf="!withAdmiral" [disabled]="!(selectedRow.length===1)|| !hasRetagImagePermission" (click)="retag(selectedRow)"><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.RETAG' | translate}}</button>
-                <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasDeleteImagePermission" (click)="deleteTags(selectedRow)" [disabled]="!hasDeleteImagePermission||!selectedRow.length"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
+                <button type="button" class="btn btn-sm btn-secondary" *ngIf="!withAdmiral" [disabled]="!(selectedRow.length===1)|| !hasRetagImagePermission" (click)="retag()"><clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.RETAG' | translate}}</button>
+                <button type="button" class="btn btn-sm btn-secondary" *ngIf="hasDeleteImagePermission" (click)="deleteTags()" [disabled]="!hasDeleteImagePermission||!selectedRow.length"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
             </clr-dg-action-bar>
             <clr-dg-column class="flex-max-width" [clrDgField]="'name'">{{'REPOSITORY.TAG' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'size'">{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
             <clr-dg-column>{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column>
-            <clr-dg-column *ngIf="withClair">{{'REPOSITORY.VULNERABILITY' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'REPOSITORY.VULNERABILITY' | translate}}</clr-dg-column>
             <clr-dg-column *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
             <clr-dg-column>{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'docker_version'" *ngIf="!withClair">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgField]="'docker_version'">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
             <clr-dg-column *ngIf="!withAdmiral">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="pushComparator">{{'REPOSITORY.PUSH_TIME' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="pullComparator">{{'REPOSITORY.PULL_TIME' | translate}}</clr-dg-column>
             <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
             <clr-dg-row *clrDgItems="let t of tags" [clrDgItem]='t'>
                 <clr-dg-cell class="truncated flex-max-width">
-                    <a href="javascript:void(0)" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
+                    <div class="cell white-normal" [class.immutable]="t.immutable">
+                        <a href="javascript:void(0)" class="max-width-100" (click)="onTagClick(t)" title="{{t.name}}">{{t.name}}</a>
+                        <span *ngIf="t.immutable" class="label label-info ml-8">{{'REPOSITORY.IMMUTABLE' | translate}}</span>
+                    </div>
                 </clr-dg-cell>
-                <clr-dg-cell>{{sizeTransform(t.size)}}</clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="cell">
+                        {{sizeTransform(t.size)}}
+                    </div>
+                </clr-dg-cell>
                 <clr-dg-cell class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}">
-                    <hbr-copy-input #copyInput (onCopyError)="onCpError($event)" iconMode="true" defaultValue="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}"></hbr-copy-input>
+                    <div class="cell">
+                        <hbr-copy-input #copyInput (onCopyError)="onCpError($event)" iconMode="true" defaultValue="docker pull {{registryUrl}}/{{repoName}}:{{t.name}}"></hbr-copy-input>
+                    </div>
                 </clr-dg-cell>
-                <clr-dg-cell *ngIf="withClair">
-                    <hbr-vulnerability-bar [tagStatus]="t.scan_overview?.scan_status" [repoName]="repoName" [tagId]="t.name" [summary]="t.scan_overview"></hbr-vulnerability-bar>
+                <clr-dg-cell>
+                    <div class="cell">
+                        <hbr-vulnerability-bar [scanner]="handleScanOverview(t.scan_overview)?.scanner" (submitFinish)="submitFinish($event)"  [repoName]="repoName" [tagId]="t.name" [summary]="handleScanOverview(t.scan_overview)"></hbr-vulnerability-bar>
+                    </div>
                 </clr-dg-cell>
                 <clr-dg-cell *ngIf="withNotary" [ngSwitch]="t.signature !== null">
-                    <clr-icon shape="check-circle" *ngSwitchCase="true" size="20" class="color-green"></clr-icon>
-                    <clr-icon shape="times-circle" *ngSwitchCase="false" size="16" class="color-red"></clr-icon>
-                    <a href="javascript:void(0)" *ngSwitchDefault role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
-                        <clr-icon shape="help" class="color-gray" size="16"></clr-icon>
-                        <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
-                    </a>
+                    <div class="cell">
+                        <clr-icon shape="check-circle" *ngSwitchCase="true" size="20" class="color-green"></clr-icon>
+                        <clr-icon shape="times-circle" *ngSwitchCase="false" size="16" class="color-red"></clr-icon>
+                        <a href="javascript:void(0)" *ngSwitchDefault role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
+                            <clr-icon shape="help" class="color-gray" size="16"></clr-icon>
+                            <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
+                        </a>
+                    </div>
                 </clr-dg-cell>
-                <clr-dg-cell class="truncated" title="{{t.author}}">{{t.author}}</clr-dg-cell>
-                <clr-dg-cell>{{t.created | date: 'short'}}</clr-dg-cell>
-                <clr-dg-cell *ngIf="!withClair">{{t.docker_version}}</clr-dg-cell>
+                <clr-dg-cell class="truncated" title="{{t.author}}">
+                    <div class="cell">
+                        {{t.author}}
+                    </div>
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="cell">{{t.created | date: 'short'}}</div>
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="cell">{{t.docker_version}}</div>
+                </clr-dg-cell>
                 <clr-dg-cell *ngIf="!withAdmiral">
-                    <hbr-label-piece *ngIf="t.labels?.length" [label]="t.labels[0]" [labelWidth]="90"> </hbr-label-piece>
-                    <div class="signpost-item" [hidden]="t.labels?.length<=1">
-                        <div class="trigger-item">
-                            <clr-signpost>
-                                <button class="btn btn-link" clrSignpostTrigger>...</button>
-                                <clr-signpost-content [clrPosition]="'left-top'" *clrIfOpen>
-                                    <div>
-                                        <hbr-label-piece *ngFor="let label of t.labels" [label]="label"></hbr-label-piece>
-                                    </div>
-                                </clr-signpost-content>
-                            </clr-signpost>
+                    <div class="cell">
+                        <hbr-label-piece *ngIf="t.labels?.length" [label]="t.labels[0]" [labelWidth]="90"> </hbr-label-piece>
+                        <div class="signpost-item" [hidden]="t.labels?.length<=1">
+                            <div class="trigger-item">
+                                <clr-signpost>
+                                    <button class="btn btn-link" clrSignpostTrigger>...</button>
+                                    <clr-signpost-content [clrPosition]="'left-top'" *clrIfOpen>
+                                        <div>
+                                            <hbr-label-piece *ngFor="let label of t.labels" [label]="label"></hbr-label-piece>
+                                        </div>
+                                    </clr-signpost-content>
+                                </clr-signpost>
+                            </div>
                         </div>
                     </div>
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="cell">{{t.push_time | date: 'short'}}</div>
+                </clr-dg-cell>
+                <clr-dg-cell>
+                    <div class="cell">{{t.pull_time === availableTime ? "" : (t.pull_time| date: 'short')}}</div>
                 </clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>

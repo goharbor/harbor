@@ -16,15 +16,9 @@
 package utils
 
 import (
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
-	jobmodels "github.com/goharbor/harbor/src/common/job/models"
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 
-	"encoding/json"
-	"fmt"
 	"sync"
 )
 
@@ -41,81 +35,4 @@ func GetJobServiceClient() job.Client {
 		jobServiceClient = job.NewDefaultClient(config.InternalJobServiceURL(), config.CoreSecret())
 	}
 	return jobServiceClient
-}
-
-// TriggerImageScan triggers an image scan job on jobservice.
-func TriggerImageScan(repository string, tag string) error {
-	repoClient, err := NewRepositoryClientForUI("harbor-core", repository)
-	if err != nil {
-		return err
-	}
-	digest, exist, err := repoClient.ManifestExist(tag)
-	if !exist {
-		return fmt.Errorf("unable to perform scan: the manifest of image %s:%s does not exist", repository, tag)
-	}
-	if err != nil {
-		log.Errorf("Failed to get Manifest for %s:%s", repository, tag)
-		return err
-	}
-	return triggerImageScan(repository, tag, digest, GetJobServiceClient())
-}
-
-func triggerImageScan(repository, tag, digest string, client job.Client) error {
-	id, err := dao.AddScanJob(models.ScanJob{
-		Repository: repository,
-		Digest:     digest,
-		Tag:        tag,
-		Status:     models.JobPending,
-	})
-	if err != nil {
-		return err
-	}
-	err = dao.SetScanJobForImg(digest, id)
-	if err != nil {
-		return err
-	}
-	data, err := buildScanJobData(id, repository, tag, digest)
-	if err != nil {
-		return err
-	}
-	uuid, err := client.SubmitJob(data)
-	if err != nil {
-		return err
-	}
-	err = dao.SetScanJobUUID(id, uuid)
-	if err != nil {
-		log.Warningf("Failed to set UUID for scan job, ID: %d, UUID: %v, repository: %s, tag: %s", id, uuid, repository, tag)
-	}
-	return nil
-}
-
-func buildScanJobData(jobID int64, repository, tag, digest string) (*jobmodels.JobData, error) {
-	parms := job.ScanJobParms{
-		JobID:      jobID,
-		Repository: repository,
-		Digest:     digest,
-		Tag:        tag,
-	}
-	parmsMap := make(map[string]interface{})
-	b, err := json.Marshal(parms)
-	if err != nil {
-		return nil, err
-	}
-	err = json.Unmarshal(b, &parmsMap)
-	if err != nil {
-		return nil, err
-	}
-	meta := jobmodels.JobMetadata{
-		JobKind:  job.JobKindGeneric,
-		IsUnique: false,
-	}
-
-	data := &jobmodels.JobData{
-		Name:       job.ImageScanJob,
-		Parameters: jobmodels.Parameters(parmsMap),
-		Metadata:   &meta,
-		StatusHook: fmt.Sprintf("%s/service/notifications/jobs/scan/%d", config.InternalCoreURL(), jobID),
-	}
-
-	return data, nil
 }

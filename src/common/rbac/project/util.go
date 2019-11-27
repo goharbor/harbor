@@ -45,105 +45,13 @@ var (
 
 		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
+
+		{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 	}
 
 	// all policies for the projects
-	allPolicies = []*rbac.Policy{
-		{Resource: rbac.ResourceSelf, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceSelf, Action: rbac.ActionUpdate},
-		{Resource: rbac.ResourceSelf, Action: rbac.ActionDelete},
-
-		{Resource: rbac.ResourceMember, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceMember, Action: rbac.ActionUpdate},
-		{Resource: rbac.ResourceMember, Action: rbac.ActionDelete},
-		{Resource: rbac.ResourceMember, Action: rbac.ActionList},
-
-		{Resource: rbac.ResourceMetadata, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceMetadata, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceMetadata, Action: rbac.ActionUpdate},
-		{Resource: rbac.ResourceMetadata, Action: rbac.ActionDelete},
-
-		{Resource: rbac.ResourceLog, Action: rbac.ActionList},
-
-		{Resource: rbac.ResourceReplication, Action: rbac.ActionList},
-		{Resource: rbac.ResourceReplication, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceReplication, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceReplication, Action: rbac.ActionUpdate},
-		{Resource: rbac.ResourceReplication, Action: rbac.ActionDelete},
-
-		{Resource: rbac.ResourceReplicationJob, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceReplicationJob, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceReplicationJob, Action: rbac.ActionList},
-
-		{Resource: rbac.ResourceReplicationExecution, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceReplicationExecution, Action: rbac.ActionList},
-		{Resource: rbac.ResourceReplicationExecution, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceReplicationExecution, Action: rbac.ActionUpdate},
-		{Resource: rbac.ResourceReplicationExecution, Action: rbac.ActionDelete},
-
-		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionList},
-		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionUpdate},
-		{Resource: rbac.ResourceReplicationTask, Action: rbac.ActionDelete},
-
-		{Resource: rbac.ResourceLabel, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceLabel, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceLabel, Action: rbac.ActionUpdate},
-		{Resource: rbac.ResourceLabel, Action: rbac.ActionDelete},
-		{Resource: rbac.ResourceLabel, Action: rbac.ActionList},
-
-		{Resource: rbac.ResourceLabelResource, Action: rbac.ActionList},
-
-		{Resource: rbac.ResourceRepository, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceRepository, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceRepository, Action: rbac.ActionUpdate},
-		{Resource: rbac.ResourceRepository, Action: rbac.ActionDelete},
-		{Resource: rbac.ResourceRepository, Action: rbac.ActionList},
-		{Resource: rbac.ResourceRepository, Action: rbac.ActionPull},
-		{Resource: rbac.ResourceRepository, Action: rbac.ActionPush},
-
-		{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionDelete},
-		{Resource: rbac.ResourceRepositoryLabel, Action: rbac.ActionList},
-
-		{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionDelete},
-		{Resource: rbac.ResourceRepositoryTag, Action: rbac.ActionList},
-
-		{Resource: rbac.ResourceRepositoryTagScanJob, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceRepositoryTagScanJob, Action: rbac.ActionRead},
-
-		{Resource: rbac.ResourceRepositoryTagVulnerability, Action: rbac.ActionList},
-
-		{Resource: rbac.ResourceRepositoryTagManifest, Action: rbac.ActionRead},
-
-		{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionDelete},
-		{Resource: rbac.ResourceRepositoryTagLabel, Action: rbac.ActionList},
-
-		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionDelete},
-		{Resource: rbac.ResourceHelmChart, Action: rbac.ActionList},
-
-		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionDelete},
-		{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
-
-		{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceHelmChartVersionLabel, Action: rbac.ActionDelete},
-
-		{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceConfiguration, Action: rbac.ActionUpdate},
-
-		{Resource: rbac.ResourceRobot, Action: rbac.ActionCreate},
-		{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
-		{Resource: rbac.ResourceRobot, Action: rbac.ActionUpdate},
-		{Resource: rbac.ResourceRobot, Action: rbac.ActionDelete},
-		{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
-	}
+	allPolicies = computeAllPolicies()
 )
 
 // PoliciesForPublicProject ...
@@ -174,4 +82,20 @@ func GetAllPolicies(namespace rbac.Namespace) []*rbac.Policy {
 	}
 
 	return policies
+}
+
+func computeAllPolicies() []*rbac.Policy {
+	var results []*rbac.Policy
+
+	mp := map[string]bool{}
+	for _, policies := range rolePoliciesMap {
+		for _, policy := range policies {
+			if !mp[policy.String()] {
+				results = append(results, policy)
+				mp[policy.String()] = true
+			}
+		}
+	}
+
+	return results
 }

@@ -2,50 +2,55 @@
     <h3 class="modal-title">{{'MEMBER.NEW_MEMBER' | translate}}</h3>
     <div class="modal-body">
         <label>{{ 'MEMBER.NEW_USER_INFO' | translate}}</label>
-
-        <form #memberForm="ngForm">
-            <section class="form-block">
-                <div class="form-group">
-                    <label for="member_name" class="col-md-4 form-group-label-override required">{{'MEMBER.NAME' | translate}}</label>
-                    <label for="member_name" aria-haspopup="true" role="tooltip" [class.invalid]="!isMemberNameValid"
-                           class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left"  (mouseleave)="leaveInput()">
-            <input type="text" id="member_name"  [(ngModel)]="member.entity_name"
-            name="member_name"
-            size="20"
-            #memberName="ngModel"
-            required
-            (keyup)='handleValidation()' autocomplete="off">
-            <span class="tooltip-content">
-              {{ memberTooltip | translate }}
-            </span>
-            <div class="selectBox"  [style.display]="selectUserName.length ? 'block' : 'none'" >
-                <ul>
-                    <li *ngFor="let name of selectUserName" (click)="selectedName(name)">{{name}}</li>
-                </ul>
+        <form #memberForm="ngForm" class="clr-form clr-form-horizontal">
+            <div class="clr-form-control">
+                <label class="required clr-control-label">{{'MEMBER.NAME' | translate}}</label>
+                <div class="clr-control-container" [class.clr-error]="!isMemberNameValid">
+                    <div class="clr-input-wrapper" (mouseleave)="leaveInput()">
+                        <input class="clr-input" type="text" id="member_name"  [(ngModel)]="member.entity_name"
+                               name="member_name"
+                               size="20"
+                               #memberName="ngModel"
+                               required
+                               (keyup)="handleValidation()" autocomplete="off">
+                        <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                        <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
+                        <div class="selectBox"  [style.display]="selectUserName.length ? 'block' : 'none'" >
+                            <ul>
+                                <li *ngFor="let name of selectUserName" (click)="selectedName(name)">{{name}}</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <clr-control-error *ngIf="!isMemberNameValid" class="tooltip-content">
+                        {{ memberTooltip | translate }}
+                    </clr-control-error>
+                </div>
             </div>
-          </label>
-                    <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
-                </div>
-                <div class="form-group">
-                    <label class="col-md-4 form-group-label-override">{{'MEMBER.ROLE' | translate}}</label>
-                    <div class="radio">
-                        <input type="radio" name="member_role" id="checkrads_project_admin" [value]=1 [(ngModel)]="member.role_id">
+            <div class="clr-form-control">
+                <label class="clr-control-label">{{'MEMBER.ROLE' | translate}}</label>
+                <div class="clr-control-container">
+                    <clr-radio-wrapper>
+                        <input clrRadio type="radio" name="member_role" id="checkrads_project_admin" [value]=1 [(ngModel)]="member.role_id">
                         <label for="checkrads_project_admin">{{'MEMBER.PROJECT_ADMIN' | translate}}</label>
-                    </div>
-                    <div class="radio">
-                        <input type="radio" name="member_role" id="checkrads_project_master" [value]=4 [(ngModel)]="member.role_id">
+                    </clr-radio-wrapper>
+                    <clr-radio-wrapper>
+                        <input clrRadio type="radio" name="member_role" id="checkrads_project_master" [value]=4 [(ngModel)]="member.role_id">
                         <label for="checkrads_project_master">{{'MEMBER.PROJECT_MASTER' | translate}}</label>
-                    </div>
-                    <div class="radio">
-                        <input type="radio" name="member_role" id="checkrads_developer" [value]=2 [(ngModel)]="member.role_id">
+                    </clr-radio-wrapper>
+                    <clr-radio-wrapper>
+                        <input clrRadio type="radio" name="member_role" id="checkrads_developer" [value]=2 [(ngModel)]="member.role_id">
                         <label for="checkrads_developer">{{'MEMBER.DEVELOPER' | translate}}</label>
-                    </div>
-                    <div class="radio">
-                        <input type="radio" name="member_role" id="checkrads_guest" [value]=3 [(ngModel)]="member.role_id">
+                    </clr-radio-wrapper>
+                    <clr-radio-wrapper>
+                        <input clrRadio type="radio" name="member_role" id="checkrads_guest" [value]=3 [(ngModel)]="member.role_id">
                         <label for="checkrads_guest">{{'MEMBER.GUEST' | translate}}</label>
-                    </div>
+                    </clr-radio-wrapper>
+                    <clr-radio-wrapper>
+                        <input clrRadio type="radio" name="member_role" id="checkrads_limited_guest" [value]=5 [(ngModel)]="member.role_id">
+                        <label for="checkrads_limited_guest">{{'MEMBER.LIMITED_GUEST' | translate}}</label>
+                    </clr-radio-wrapper>
                 </div>
-            </section>
+            </div>
         </form>
     </div>
     <div class="modal-footer">

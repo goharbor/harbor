@@ -16,13 +16,15 @@ package admin
 
 import (
 	"encoding/json"
+	"github.com/goharbor/harbor/src/core/service/notifications"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
 	job_model "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/api"
+	j "github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 )
 
 var statusMap = map[string]string{
@@ -35,17 +37,22 @@ var statusMap = map[string]string{
 	job.JobServiceStatusScheduled: models.JobScheduled,
 }
 
-// Handler handles reqeust on /service/notifications/jobs/adminjob/*, which listens to the webhook of jobservice.
+// Handler handles request on /service/notifications/jobs/adminjob/*, which listens to the webhook of jobservice.
 type Handler struct {
-	api.BaseController
+	notifications.BaseHandler
 	id            int64
 	UUID          string
 	status        string
 	UpstreamJobID string
+	revision      int64
+	jobName       string
+	checkIn       string
+	statusCode    uint16
 }
 
 // Prepare ...
 func (h *Handler) Prepare() {
+	h.BaseHandler.Prepare()
 	var data job_model.JobStatusChange
 	err := json.Unmarshal(h.Ctx.Input.CopyBody(1<<32), &data)
 	if err != nil {
@@ -74,20 +81,30 @@ func (h *Handler) Prepare() {
 		h.Abort("200")
 		return
 	}
+	h.statusCode = (uint16)(j.Status(data.Status).Code())
 	h.status = status
+	h.revision = data.Metadata.Revision
+	h.jobName = data.Metadata.JobName
+	h.checkIn = data.CheckIn
 }
 
 // HandleAdminJob handles the webhook of admin jobs
 func (h *Handler) HandleAdminJob() {
-	log.Infof("received admin job status update event: job-%d, status-%s", h.id, h.status)
+	log.Infof("received admin job status update event: job-%d, job_uuid-%s, status-%s, revision-%d", h.id, h.UUID, h.status, h.revision)
+
 	// create the mapping relationship between the jobs in database and jobservice
 	if err := dao.SetAdminJobUUID(h.id, h.UUID); err != nil {
 		h.SendInternalServerError(err)
 		return
 	}
-	if err := dao.UpdateAdminJobStatus(h.id, h.status); err != nil {
+	if err := dao.UpdateAdminJobStatus(h.id, h.status, h.statusCode, h.revision); err != nil {
 		log.Errorf("Failed to update job status, id: %d, status: %s", h.id, h.status)
 		h.SendInternalServerError(err)
 		return
+	}
+
+	// For scan all job
+	if h.jobName == job.ImageScanAllJob {
+		scan.HandleCheckIn(h.checkIn)
 	}
 }

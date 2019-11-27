@@ -34,7 +34,7 @@ export class TagRepositoryComponent implements OnInit {
   isGuest: boolean;
   registryUrl: string;
 
-  @ViewChild(RepositoryComponent)
+  @ViewChild(RepositoryComponent, {static: false})
   repositoryComponent: RepositoryComponent;
 
   constructor(
@@ -65,11 +65,6 @@ export class TagRepositoryComponent implements OnInit {
   get withNotary(): boolean {
     return this.appConfigService.getConfig().with_notary;
   }
-
-  get withClair(): boolean {
-    return this.appConfigService.getConfig().with_clair;
-  }
-
   get withAdmiral(): boolean {
     return this.appConfigService.getConfig().with_admiral;
   }

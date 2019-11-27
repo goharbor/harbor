@@ -16,17 +16,18 @@
             <button class="btn btn-sm btn-secondary" (click)="openAddMemberModal()" [disabled]="!hasCreateMemberPermission">
                 <span><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'MEMBER.USER' | translate }}</span>
             </button>
-            <button class="btn btn-sm btn-secondary" (click)="openAddGroupModal()" [disabled]="!hasCreateMemberPermission || !isLdapMode">
+            <button class="btn btn-sm btn-secondary" (click)="openAddGroupModal()" [disabled]="!hasCreateMemberPermission || !(isLdapMode || isHttpAuthMode || isOidcMode)">
                 <span><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'MEMBER.LDAP_GROUP' | translate}}</span>
             </button>
-            <clr-dropdown id='member-action' [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link" clrDropdownTrigger>
-                <span>{{'MEMBER.ACTION' | translate}}<clr-icon shape="caret down"></clr-icon></span>
+            <clr-dropdown [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link" clrDropdownTrigger>
+                <span id='member-action'>{{'MEMBER.ACTION' | translate}}<clr-icon shape="caret down"></clr-icon></span>
                 <clr-dropdown-menu *clrIfOpen>
                     <label class="dropdown-header">{{'MEMBER.SET_ROLE' | translate}}</label>
                     <button clrDropdownItem (click)="changeMembersRole(selectedRow, 1)" [disabled]="!(selectedRow.length && hasUpdateMemberPermission) || onlySelf">{{'MEMBER.PROJECT_ADMIN' | translate}}</button>
                     <button clrDropdownItem (click)="changeMembersRole(selectedRow, 4)" [disabled]="!(selectedRow.length && hasUpdateMemberPermission) || onlySelf">{{'MEMBER.PROJECT_MASTER' | translate}}</button>
                     <button clrDropdownItem (click)="changeMembersRole(selectedRow, 2)" [disabled]="!(selectedRow.length && hasUpdateMemberPermission) || onlySelf">{{'MEMBER.DEVELOPER' | translate}}</button>
                     <button clrDropdownItem (click)="changeMembersRole(selectedRow, 3)" [disabled]="!(selectedRow.length && hasUpdateMemberPermission) || onlySelf">{{'MEMBER.GUEST' | translate}}</button>
+                    <button clrDropdownItem (click)="changeMembersRole(selectedRow, 5)" [disabled]="!(selectedRow.length && hasUpdateMemberPermission) || onlySelf">{{'MEMBER.LIMITED_GUEST' | translate}}</button>
                     <div class="dropdown-divider"></div>
                     <button clrDropdownItem (click)="openDeleteMembersDialog(selectedRow)" [disabled]="!(selectedRow.length && hasDeleteMemberPermission) || onlySelf">{{'MEMBER.REMOVE' | translate}}</button>
                 </clr-dropdown-menu>
@@ -53,4 +54,5 @@
     </div>
     <add-member [projectId]="projectId" [memberList]="members" (added)="addedMember($event)"></add-member>
     <add-group [projectId]="projectId" [memberList]="members" (added)="addedGroup($event)"></add-group>
+    <add-http-auth-group [projectId]="projectId" (added)="addedGroup($event)"></add-http-auth-group>
 </div>

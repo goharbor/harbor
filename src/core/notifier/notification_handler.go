@@ -8,7 +8,7 @@ type NotificationHandler interface {
 	Handle(value interface{}) error
 
 	// IsStateful returns whether the handler is stateful or not.
-	// If handler is stateful, it will not be triggerred in parallel.
+	// If handler is stateful, it will not be triggered in parallel.
 	// Otherwise, the handler will be triggered concurrently if more
 	// than one same handler are matched the topics.
 	IsStateful() bool

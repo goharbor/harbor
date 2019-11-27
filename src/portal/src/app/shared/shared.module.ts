@@ -14,7 +14,7 @@
 import { NgModule } from "@angular/core";
 import { RouterModule } from "@angular/router";
 import { TranslateModule } from "@ngx-translate/core";
-import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule } from "@angular/forms";
 import { CookieService } from "ngx-cookie";
 import {
   IServiceConfig,
@@ -33,6 +33,7 @@ import { AuthCheckGuard } from "./route/auth-user-activate.service";
 import { SignInGuard } from "./route/sign-in-guard-activate.service";
 import { SystemAdminGuard } from "./route/system-admin-activate.service";
 import { MemberGuard } from "./route/member-guard-activate.service";
+import { MemberPermissionGuard } from "./route/member-permission-guard-activate.service";
 import { OidcGuard } from "./route/oidc-guard-active.service";
 import { LeavingRepositoryRouteDeactivate } from "./route/leaving-repository-deactivate.service";
 
@@ -52,7 +53,7 @@ import { GaugeComponent } from "./gauge/gauge.component";
 import { ConfirmationDialogComponent } from "./confirmation-dialog/confirmation-dialog.component";
 import { ConfirmationDialogService } from "./confirmation-dialog/confirmation-dialog.service";
 import { MessageHandlerService } from "./message-handler/message-handler.service";
-import { ListChartVersionRoComponent } from './list-chart-version-ro/list-chart-version-ro.component';
+import { ListChartVersionRoComponent } from "./list-chart-version-ro/list-chart-version-ro.component";
 
 const uiLibConfig: IServiceConfig = {
   enablei18Support: true,
@@ -76,7 +77,8 @@ const uiLibConfig: IServiceConfig = {
   helmChartEndpoint: "/api/chartrepo",
   downloadChartEndpoint: "/chartrepo",
   gcEndpoint: "/api/system/gc",
-  ScanAllEndpoint: "/api/system/scanAll"
+  ScanAllEndpoint: "/api/system/scanAll",
+  quotaUrl: "/api/quotas"
 };
 
 @NgModule({
@@ -140,6 +142,7 @@ const uiLibConfig: IServiceConfig = {
     SignInGuard,
     LeavingRepositoryRouteDeactivate,
     MemberGuard,
+    MemberPermissionGuard,
     OidcGuard,
     MessageHandlerService,
     StatisticHandler

@@ -77,7 +77,7 @@ body {
 }
 
 .datagrid-header{
-    z-index: 1 !important;
+    z-index: 0 !important;
 }
 
 .color-green {
@@ -87,3 +87,21 @@ body {
 .color-red {
     color: red;
 }
+
+.datagrid-table,.datagrid-header{
+    position: inherit !important;
+}
+
+.required:after {
+    content: '*';
+    font-size: .58479532rem;
+    line-height: .5rem;
+    color: #c92100;
+    margin-left: .25rem;
+}
+
+.flex-items-xs-right {
+    justify-content: flex-end;
+}
+
+

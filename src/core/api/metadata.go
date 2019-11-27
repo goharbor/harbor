@@ -15,17 +15,18 @@
 package api
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 	"reflect"
 	"strconv"
 	"strings"
 
-	"errors"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr/metamgr"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 )
 
 // MetadataAPI ...
@@ -90,18 +91,7 @@ func (m *MetadataAPI) Prepare() {
 }
 
 func (m *MetadataAPI) requireAccess(action rbac.Action) bool {
-	resource := rbac.NewProjectNamespace(m.project.ProjectID).Resource(rbac.ResourceMetadata)
-
-	if !m.SecurityCtx.Can(action, resource) {
-		if !m.SecurityCtx.IsAuthenticated() {
-			m.SendUnAuthorizedError(errors.New("Unauthorized"))
-		} else {
-			m.SendForbiddenError(errors.New(m.SecurityCtx.GetUsername()))
-		}
-		return false
-	}
-
-	return true
+	return m.RequireProjectAccess(m.project.ProjectID, action, rbac.ResourceMetadata)
 }
 
 // Get ...
@@ -240,12 +230,12 @@ func validateProjectMetadata(metas map[string]string) (map[string]string, error)
 
 	value, exist := metas[models.ProMetaSeverity]
 	if exist {
-		switch strings.ToLower(value) {
-		case models.SeverityHigh, models.SeverityMedium, models.SeverityLow, models.SeverityNone:
-			metas[models.ProMetaSeverity] = strings.ToLower(value)
-		default:
+		severity := vuln.ParseSeverityVersion3(strings.ToLower(value))
+		if severity == vuln.Unknown {
 			return nil, fmt.Errorf("invalid severity %s", value)
 		}
+
+		metas[models.ProMetaSeverity] = strings.ToLower(severity.String())
 	}
 
 	return metas, nil

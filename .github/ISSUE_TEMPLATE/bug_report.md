@@ -1,7 +1,6 @@
 ---
 name: Bug report
 about: Create a report to help us improve
-
 ---
 
 If you are reporting a problem, please make sure the following information are provided:
@@ -14,10 +13,12 @@ Please provide the steps to reproduce this problem.
 
 **Versions:**
 Please specify the versions of following systems.
+
 - harbor version: [x.x.x]
 - docker engine version: [y.y.y]
 - docker-compose version: [z.z.z]
 
 **Additional context:**
-* **Harbor config files:** You can get them by packaging `harbor.cfg` and files in the same directory, including subdirectory.
-* **Log files:** You can get them by package the `/var/log/harbor/` .
+
+- **Harbor config files:** You can get them by packaging `harbor.yml` and files in the same directory, including subdirectory.
+- **Log files:** You can get them by package the `/var/log/harbor/` .

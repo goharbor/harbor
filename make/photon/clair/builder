@@ -23,7 +23,7 @@ TEMP=`mktemp -d /$TMPDIR/clair.XXXXXX`
 git clone https://github.com/coreos/clair.git $TEMP
 cd $TEMP; git checkout $VERSION; cd -
 
-echo 'build the clair binary bases on the golang:1.11.2...'
+echo 'build the clair binary bases on the golang:1.13.4'
 cp Dockerfile.binary $TEMP
 docker build -f $TEMP/Dockerfile.binary -t clair-golang $TEMP
 

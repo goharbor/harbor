@@ -14,7 +14,7 @@
 import { Directive, OnChanges, Input, SimpleChanges } from '@angular/core';
 import { NG_ASYNC_VALIDATORS, Validator, Validators, ValidatorFn, AbstractControl } from '@angular/forms';
 
-import { ProjectService } from '../project/project.service';
+import { ProjectService, ProjectDefaultService } from '@harbor/ui';
 
 import { MemberService } from '../project/member/member.service';
 import { Member } from '../project/member/member';
@@ -23,7 +23,8 @@ import { Observable } from 'rxjs';
 @Directive({
   selector: '[targetExists]',
   providers: [
-    ProjectService, MemberService,
+     MemberService,
+    { provide: ProjectService, useClass: ProjectDefaultService },
     { provide: NG_ASYNC_VALIDATORS, useExisting: TargetExistsValidatorDirective, multi: true },
   ]
 })

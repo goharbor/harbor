@@ -21,7 +21,7 @@ import {
   ScanningResultDefaultService
 } from "../service/index";
 import { FilterComponent } from "../filter/index";
-import { VULNERABILITY_SCAN_STATUS } from "../utils";
+import { VULNERABILITY_SCAN_STATUS, VULNERABILITY_SEVERITY } from "../utils";
 import { VULNERABILITY_DIRECTIVES } from "../vulnerability-scanning/index";
 import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { ChannelService } from "../channel/channel.service";
@@ -43,29 +43,16 @@ describe("TagDetailComponent (inline template)", () => {
   let vulSpy: jasmine.Spy;
   let manifestSpy: jasmine.Spy;
   let mockVulnerability: VulnerabilitySummary = {
-    scan_status: VULNERABILITY_SCAN_STATUS.finished,
-    severity: 5,
-    update_time: new Date(),
-    components: {
+    scan_status: VULNERABILITY_SCAN_STATUS.SUCCESS,
+    severity: "High",
+    end_time: new Date(),
+    summary: {
       total: 124,
-      summary: [
-        {
-          severity: 1,
-          count: 90
-        },
-        {
-          severity: 3,
-          count: 10
-        },
-        {
-          severity: 4,
-          count: 10
-        },
-        {
-          severity: 5,
-          count: 13
-        }
-      ]
+      fixable: 50,
+      summary: {
+        "High": 5,
+        "Low": 5
+      }
     }
   };
   let mockTag: Tag = {
@@ -80,7 +67,9 @@ describe("TagDetailComponent (inline template)", () => {
     author: "steven",
     created: new Date("2016-11-08T22:41:15.912313785Z"),
     signature: null,
-    scan_overview: mockVulnerability,
+    scan_overview: {
+      "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": mockVulnerability
+    },
     labels: []
   };
 
@@ -141,13 +130,13 @@ describe("TagDetailComponent (inline template)", () => {
         id: "CVE-2016-" + (8859 + i),
         severity:
           i % 2 === 0
-            ? VulnerabilitySeverity.HIGH
-            : VulnerabilitySeverity.MEDIUM,
+            ? VULNERABILITY_SEVERITY.HIGH
+            : VULNERABILITY_SEVERITY.MEDIUM,
         package: "package_" + i,
-        link: "https://security-tracker.debian.org/tracker/CVE-2016-4484",
+        links: ["https://security-tracker.debian.org/tracker/CVE-2016-4484"],
         layer: "layer_" + i,
         version: "4." + i + ".0",
-        fixedVersion: "4." + i + ".11",
+        fix_version: "4." + i + ".11",
         description: "Mock data"
       };
       mockData.push(res);

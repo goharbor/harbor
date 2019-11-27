@@ -1,4 +1,5 @@
 worker_processes auto;
+pid /tmp/nginx.pid;
 
 events {
   worker_connections 1024;
@@ -7,6 +8,11 @@ events {
 }
 
 http {
+  client_body_temp_path /tmp/client_body_temp;
+  proxy_temp_path /tmp/proxy_temp;
+  fastcgi_temp_path /tmp/fastcgi_temp;
+  uwsgi_temp_path /tmp/uwsgi_temp;
+  scgi_temp_path /tmp/scgi_temp;
   tcp_nodelay on;
   include /etc/nginx/conf.d/*.upstream.conf;
 
@@ -18,7 +24,7 @@ http {
   }
 
   upstream portal {
-    server portal:80;
+    server portal:8080;
   }
   
   log_format timed_combined '$remote_addr - '
@@ -31,7 +37,7 @@ http {
   include /etc/nginx/conf.d/*.server.conf;
 
   server {
-    listen 443 ssl;
+    listen 8443 ssl;
 #    server_name harbordomain.com;
     server_tokens off;
     # SSL
@@ -39,7 +45,7 @@ http {
     ssl_certificate_key {{ssl_cert_key}};
   
     # Recommendations from https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
-    ssl_protocols TLSv1.1 TLSv1.2;
+    ssl_protocols TLSv1.2;
     ssl_ciphers '!aNULL:kECDH+AESGCM:ECDH+AESGCM:RSA+AESGCM:kECDH+AES:ECDH+AES:RSA+AES:';
     ssl_prefer_server_ciphers on;
     ssl_session_cache shared:SSL:10m;
@@ -50,6 +56,11 @@ http {
     # required to avoid HTTP 411: see Issue #1486 (https://github.com/docker/docker/issues/1486)
     chunked_transfer_encoding on;
 
+    # Add extra headers
+    add_header Strict-Transport-Security "max-age=31536000; includeSubdomains; preload";
+    add_header X-Frame-Options DENY;
+    add_header Content-Security-Policy "frame-ancestors 'none'";
+  
     # costumized location config file can place to /etc/nginx dir with prefix harbor.https. and suffix .conf
     include /etc/nginx/conf.d/harbor.https.*.conf;
 
@@ -62,8 +73,7 @@ http {
       # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
       proxy_set_header X-Forwarded-Proto $scheme;
 
-      # Add Secure flag when serving HTTPS
-      proxy_cookie_path / "/; secure";
+      proxy_cookie_path / "/; HttpOnly; Secure";
 
       proxy_buffering off;
       proxy_request_buffering off;
@@ -77,7 +87,9 @@ http {
 
       # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
       proxy_set_header X-Forwarded-Proto $scheme;
-      
+
+      proxy_cookie_path / "/; Secure";
+
       proxy_buffering off;
       proxy_request_buffering off;
     }
@@ -90,6 +102,8 @@ http {
 
       # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
       proxy_set_header X-Forwarded-Proto $scheme;
+
+      proxy_cookie_path / "/; Secure";
       
       proxy_buffering off;
       proxy_request_buffering off;
@@ -103,6 +117,8 @@ http {
 
       # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
       proxy_set_header X-Forwarded-Proto $scheme;
+
+      proxy_cookie_path / "/; Secure";
       
       proxy_buffering off;
       proxy_request_buffering off;
@@ -133,16 +149,18 @@ http {
       # When setting up Harbor behind other proxy, such as an Nginx instance, remove the below line if the proxy already has similar settings.
       proxy_set_header X-Forwarded-Proto $scheme;
 
+      proxy_cookie_path / "/; Secure";
+
       proxy_buffering off;
       proxy_request_buffering off;
     }
-	
-	location /service/notifications {
+
+    location /service/notifications {
       return 404;
     }
   }
-    server {
-      listen 80;
+  server {
+      listen 8080;
       #server_name harbordomain.com;
       return 308 https://$host$request_uri;
   } 

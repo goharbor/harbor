@@ -1,9 +1,11 @@
 import { Observable } from "rxjs";
 
-import { HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpHeaders } from '@angular/common/http';
 import { RequestQueryParams } from './service/RequestQueryParams';
 import { DebugElement } from '@angular/core';
-import { Comparator, State, HttpOptionInterface, HttpOptionTextInterface } from './service/interface';
+import { Comparator, State, HttpOptionInterface, HttpOptionTextInterface, QuotaUnitInterface } from './service/interface';
+import { QuotaUnits, StorageMultipleConstant, LimitCount } from './shared/shared.const';
+import { AbstractControl } from "@angular/forms";
 
 /**
  * Convert the different async channels to the Promise<T> type.
@@ -185,14 +187,32 @@ export class CustomComparator<T> implements Comparator<T> {
     compare(a: { [key: string]: any | any[] }, b: { [key: string]: any | any[] }) {
         let comp = 0;
         if (a && b) {
-            let fieldA = a[this.fieldName];
-            let fieldB = b[this.fieldName];
+            let fieldA, fieldB;
+            for (let key of Object.keys(a)) {
+                if (key === this.fieldName) {
+                    fieldA = a[key];
+                    fieldB = b[key];
+                    break;
+                } else if (typeof a[key] === 'object') {
+                    let insideObject = a[key];
+                    for (let insideKey in insideObject) {
+                        if (insideKey === this.fieldName) {
+                            fieldA = insideObject[insideKey];
+                            fieldB = b[key][insideKey];
+                            break;
+                        }
+                    }
+                }
+            }
             switch (this.type) {
                 case "number":
                     comp = fieldB - fieldA;
                     break;
                 case "date":
                     comp = new Date(fieldB).getTime() - new Date(fieldA).getTime();
+                    break;
+                case "string":
+                    comp = fieldB.localeCompare(fieldA);
                     break;
             }
         }
@@ -206,15 +226,52 @@ export class CustomComparator<T> implements Comparator<T> {
 export const DEFAULT_PAGE_SIZE: number = 15;
 
 /**
+ *  The default supported mime type
+ */
+export const DEFAULT_SUPPORTED_MIME_TYPE = "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0";
+
+/**
+ *  the property name of vulnerability database updated time
+ */
+export const DATABASE_UPDATED_PROPERTY = "harbor.scanner-adapter/vulnerability-database-updated-at";
+
+/**
  * The state of vulnerability scanning
  */
 export const VULNERABILITY_SCAN_STATUS = {
-    unknown: "n/a",
-    pending: "pending",
-    running: "running",
-    error: "error",
-    stopped: "stopped",
-    finished: "finished"
+    // front-end status
+    NOT_SCANNED: "Not Scanned",
+    // back-end status
+    PENDING: "Pending",
+    RUNNING: "Running",
+    ERROR: "Error",
+    STOPPED: "Stopped",
+    SUCCESS: "Success",
+    SCHEDULED: "Scheduled"
+};
+/**
+ * The severity of vulnerability scanning
+ */
+export const VULNERABILITY_SEVERITY = {
+    NEGLIGIBLE: "Negligible",
+    UNKNOWN: "Unknown",
+    LOW: "Low",
+    MEDIUM: "Medium",
+    HIGH: "High",
+    CRITICAL: "Critical",
+    NONE: "None"
+};
+/**
+ * The level of vulnerability severity for comparing
+ */
+export const SEVERITY_LEVEL_MAP = {
+    "Critical": 6,
+    "High": 5,
+    "Medium": 4,
+    "Low": 3,
+    "Negligible": 2,
+    "Unknown": 1,
+    "None": 0
 };
 
 /**
@@ -225,7 +282,12 @@ export function calculatePage(state: State): number {
         return 1;
     }
 
-    return Math.ceil((state.page.to + 1) / state.page.size);
+    let pageNumber = Math.ceil((state.page.to + 1) / state.page.size);
+    if (pageNumber === 0) {
+        return 1;
+    } else {
+        return pageNumber;
+    }
 }
 
 /**
@@ -252,8 +314,8 @@ export function doFiltering<T extends { [key: string]: any | any[] }>(items: T[]
             if (filter['property'].indexOf('.') !== -1) {
                 let arr = filter['property'].split('.');
                 if (Array.isArray(item[arr[0]]) && item[arr[0]].length) {
-                     return item[arr[0]].some((data: any) => {
-                         return filter['value'] === data[arr[1]];
+                    return item[arr[0]].some((data: any) => {
+                        return filter['value'] === data[arr[1]];
                     });
                 }
             } else {
@@ -364,14 +426,14 @@ export function isEmpty(obj: any): boolean {
 
 export function downloadFile(fileData) {
     let url = window.URL.createObjectURL(fileData.data);
-        let a = document.createElement("a");
-        document.body.appendChild(a);
-        a.setAttribute("style", "display: none");
-        a.href = url;
-        a.download = fileData.filename;
-        a.click();
-        window.URL.revokeObjectURL(url);
-        a.remove();
+    let a = document.createElement("a");
+    document.body.appendChild(a);
+    a.setAttribute("style", "display: none");
+    a.href = url;
+    a.download = fileData.filename;
+    a.click();
+    window.URL.revokeObjectURL(url);
+    a.remove();
 }
 
 export function getChanges(original: any, afterChange: any): { [key: string]: any | any[] } {
@@ -411,3 +473,104 @@ export function cronRegex(testValue: any): boolean {
     let reg = new RegExp(regEx, "i");
     return reg.test(testValue.trim());
 }
+
+/**
+ * Keep decimal digits
+ * @param count number
+ * @param decimals number 1、2、3 ···
+ */
+export const roundDecimals = (count, decimals = 0) => {
+    return Number(`${Math.round(+`${count}e${decimals}`)}e-${decimals}`);
+};
+/**
+   * get suitable unit
+   * @param count number  ;bit
+   * @param quotaUnitsDeep Array link  QuotaUnits;
+   */
+export const getSuitableUnit = (count: number, quotaUnitsDeep: QuotaUnitInterface[]): string => {
+    for (let unitObj of quotaUnitsDeep) {
+        if (count / StorageMultipleConstant >= 1 && quotaUnitsDeep.length > 1) {
+            quotaUnitsDeep.shift();
+            return getSuitableUnit(count / StorageMultipleConstant, quotaUnitsDeep);
+        } else {
+            return +count ? `${roundDecimals(count, 2)}${unitObj.UNIT}` : `0${unitObj.UNIT}`;
+        }
+    }
+    return `${roundDecimals(count, 2)}${QuotaUnits[0].UNIT}`;
+};
+/**
+ * get byte from GB、MB、TB
+ * @param count number
+ * @param unit MB /GB / TB
+ */
+export const getByte = (count: number, unit: string): number => {
+    let flagIndex;
+    return QuotaUnits.reduce((totalValue, currentValue, index) => {
+        if (currentValue.UNIT === unit) {
+            flagIndex = index;
+            return totalValue;
+        } else {
+            if (!flagIndex) {
+                return totalValue * StorageMultipleConstant;
+            }
+            return totalValue;
+        }
+    }, count);
+};
+/**
+ * get integet and unit  in hard storage and used storage;and the unit of used storage <= the unit of hard storage
+ * @param hardNumber hard storage number
+ * @param quotaUnitsDeep clone(Quotas)
+ * @param usedNumber used storage number
+ * @param quotaUnitsDeepClone clone(Quotas)
+ */
+export const GetIntegerAndUnit = (hardNumber: number, quotaUnitsDeep: QuotaUnitInterface[]
+    , usedNumber: number, quotaUnitsDeepClone: QuotaUnitInterface[]) => {
+
+    for (let unitObj of quotaUnitsDeep) {
+        if (hardNumber % StorageMultipleConstant === 0 && quotaUnitsDeep.length > 1) {
+            quotaUnitsDeep.shift();
+            if (usedNumber / StorageMultipleConstant >= 1) {
+                quotaUnitsDeepClone.shift();
+                return GetIntegerAndUnit(hardNumber / StorageMultipleConstant
+                    , quotaUnitsDeep, usedNumber / StorageMultipleConstant, quotaUnitsDeepClone);
+            } else {
+                return GetIntegerAndUnit(hardNumber / StorageMultipleConstant, quotaUnitsDeep, usedNumber, quotaUnitsDeepClone);
+            }
+        } else {
+            return {
+                partNumberHard: +hardNumber,
+                partCharacterHard: unitObj.UNIT,
+                partNumberUsed: roundDecimals(+usedNumber, 2),
+                partCharacterUsed: quotaUnitsDeepClone[0].UNIT
+            };
+        }
+    }
+};
+
+export const validateCountLimit = () => {
+  return (control: AbstractControl) => {
+    if (control.value > LimitCount) {
+      return {
+        error: true
+      };
+    }
+    return null;
+  };
+};
+
+export const validateLimit = unitContrl => {
+  return (control: AbstractControl) => {
+    if (
+      // 1024TB
+      getByte(control.value, unitContrl.value) >
+      Math.pow(StorageMultipleConstant, 5)
+    ) {
+      return {
+        error: true
+      };
+    }
+    return null;
+  };
+};
+

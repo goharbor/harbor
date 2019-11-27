@@ -127,6 +127,9 @@ Harbor backend is written in [Go](http://golang.org/). If you don't have a Harbo
 |   1.6    |    1.9.2      |
 |   1.7    |    1.9.2      |
 |   1.8    |    1.11.2     |
+|   1.9    |    1.12.12    |
+|   1.10   |    1.12.12    |
+|   1.11   |    1.13.4     |
 
 Ensure your GOPATH and PATH have been configured in accordance with the Go environment instructions.
 
@@ -212,8 +215,8 @@ Write code on the new branch in your fork. The coding style used in Harbor is su
 
 Try to limit column width to 120 characters for both code and markdown documents such as this one.
 
-Always run [golint](https://github.com/golang/lint) on source code before
-committing your changes.
+As we are enforcing standards set by [golint](https://github.com/golang/lint), please always run golint on source code before committing your changes. If it reports an issue, in general, the preferred action is to fix the code to comply with the linter's recommendation 
+because golint gives suggestions according to the stylistic conventions listed in [Effective Go](https://golang.org/doc/effective_go.html) and the [CodeReviewComments](https://github.com/golang/go/wiki/CodeReviewComments).
 ```
 #Install fgt and golint
 
@@ -244,16 +247,16 @@ To build code, please refer to [build](docs/compile_guide.md) guideline.
 
 ###  Keep sync with upstream
 
-```
+
 Once your branch gets out of sync with the goharbor/master branch, use the following commands to update:
-```
+```bash
 git checkout my_feature
 git fetch -a
 git rebase goharbor/master
 
 ```
 
-Please don't use `git pull` instead of the above `fetch / rebase`. `git pull` does a merge, which leaves merge commits. These make the commit history messy and violate the principle that commits ought to be individually understandable and useful (see below). You can also consider changing your `.git/config` file via git config `branch.autoSetupRebase` always to change the behavior of `git pull`.
+Please use `fetch / rebase` (as shown above) instead of `git pull`. `git pull` does a merge, which leaves merge commits. These make the commit history messy and violate the principle that commits ought to be individually understandable and useful (see below). You can also consider changing your `.git/config` file via git config `branch.autoSetupRebase` always to change the behavior of `git pull`.
 
 ### Commit
 
@@ -264,15 +267,15 @@ $ git commit -s -m 'This is my commit message'
 ```
 
 Commit your changes if they're ready:
-```
-#git add -A
+```bash
+git add -A
 git commit -s #-a
 git push --force-with-lease $user my_feature
 ```
 
 The commit message should follow the convention on [How to Write a Git Commit Message](http://chris.beams.io/posts/git-commit/). Be sure to include any related GitHub issue references in the commit message. See [GFM syntax](https://guides.github.com/features/mastering-markdown/#GitHub-flavored-markdown) for referencing issues and commits.
 
-To help write conforming commit messages, it is recommended to set up the [git-good-commit](https://github.com/tommarshall/git-good-commit) commit hook. Run this command in the Harbor repo's root directory:
+To help write conformant commit messages, it is recommended to set up the [git-good-commit](https://github.com/tommarshall/git-good-commit) commit hook. Run this command in the Harbor repo's root directory:
 
 ```
 curl https://cdn.rawgit.com/tommarshall/git-good-commit/v0.6.1/hook.sh > .git/hooks/commit-msg && chmod +x .git/hooks/commit-msg
@@ -283,7 +286,7 @@ Once your pull request has been opened, harbor will run two CI pipelines against
 1. In the travis CI, your source code will be checked via `golint`, `go vet` and `go race` that makes sure the code is readable, safe and correct. Also all of unit tests will be triggered via `go test` against the pull request. What you need to pay attention to is the travis result and the coverage report.
 * If any failure in travis, you need to figure out whether it is introduced by your commits.
 * If the coverage dramatic decline, you need to commit unit test to coverage your code.
-2. In the drone CI, the E2E test will be triggered against the pull request. The pipeline is about to build and install harbor from source code, then to run four very basic E2E tests to validate the basic functionalities of harbor, like:
+2. In the drone CI, the E2E test will be triggered against the pull request. Also, the source code will be checked via `gosec`, and the result is stored in google storage for later analysis. The pipeline is about to build and install harbor from source code, then to run four very basic E2E tests to validate the basic functionalities of harbor, like:
 * Registry Basic Verification, to validate the image can be pulled and pushed successful.
 * Clair Basic Verification, to validate the image can be scanned successful.
 * Notary Basic Verification, to validate the image can be signed successful.

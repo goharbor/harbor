@@ -1,5 +1,4 @@
 import { ComponentFixture, TestBed, async, } from '@angular/core/testing';
-import { By } from '@angular/platform-browser';
 import { DebugElement} from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 
@@ -25,11 +24,18 @@ import { ChannelService } from '../channel/index';
 import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { LabelDefaultService, LabelService } from "../service/label.service";
 import { OperationService } from "../operation/operation.service";
-import { ProjectDefaultService, ProjectService, RetagDefaultService, RetagService } from "../service";
+import {
+  ProjectDefaultService,
+  ProjectService,
+  RetagDefaultService,
+  RetagService, ScanningResultDefaultService,
+  ScanningResultService
+} from "../service";
 import { UserPermissionDefaultService, UserPermissionService } from "../service/permission.service";
 import { USERSTATICPERMISSION } from "../service/permission-static";
 import { of } from "rxjs";
 import { delay } from 'rxjs/operators';
+import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 
 
 class RouterStub {
@@ -157,11 +163,23 @@ describe('RepositoryComponent (inline template)', () => {
   let mockHasRetagImagePermission: boolean = true;
   let mockHasDeleteImagePermission: boolean = true;
   let mockHasScanImagePermission: boolean = true;
+  let fakedScanningResultService = {
+    getProjectScanner() {
+      return of({});
+    }
+  };
+  const permissions = [
+    {resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE},
+    {resource: USERSTATICPERMISSION.REPOSITORY.KEY, action:  USERSTATICPERMISSION.REPOSITORY.VALUE.PULL},
+    {resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE},
+    {resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE},
+  ];
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
-        RouterTestingModule
+        RouterTestingModule,
+        BrowserAnimationsModule
       ],
       declarations: [
         RepositoryComponent,
@@ -186,7 +204,8 @@ describe('RepositoryComponent (inline template)', () => {
         { provide: LabelService, useClass: LabelDefaultService},
         { provide: UserPermissionService, useClass: UserPermissionDefaultService},
         { provide: ChannelService},
-        { provide: OperationService }
+        { provide: OperationService },
+        { provide: ScanningResultService, useValue: fakedScanningResultService }
       ]
     });
   }));
@@ -211,16 +230,10 @@ describe('RepositoryComponent (inline template)', () => {
 
     spyLabels = spyOn(labelService, 'getGLabels').and.returnValues(of(mockLabels).pipe(delay(0)));
     spyLabels1 = spyOn(labelService, 'getPLabels').and.returnValues(of(mockLabels1).pipe(delay(0)));
-    spyOn(userPermissionService, "getPermission")
-    .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE )
-    .and.returnValue(of(mockHasAddLabelImagePermission))
-     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.PULL )
-     .and.returnValue(of(mockHasRetagImagePermission))
-     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG.KEY, USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE )
-     .and.returnValue(of(mockHasDeleteImagePermission))
-     .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY
-      , USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE)
-     .and.returnValue(of(mockHasScanImagePermission));
+    spyOn(userPermissionService, "hasProjectPermissions")
+    .withArgs(compRepo.projectId, permissions )
+    .and.returnValue(of([mockHasAddLabelImagePermission, mockHasRetagImagePermission,
+       mockHasDeleteImagePermission, mockHasScanImagePermission]));
     fixture.detectChanges();
   });
   let originalTimeout;

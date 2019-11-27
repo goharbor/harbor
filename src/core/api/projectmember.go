@@ -23,20 +23,21 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/auth"
+	"github.com/goharbor/harbor/src/core/config"
 )
 
 // ProjectMemberAPI handles request to /api/projects/{}/members/{}
 type ProjectMemberAPI struct {
 	BaseController
-	id         int
-	entityID   int
-	entityType string
-	project    *models.Project
+	id        int
+	project   *models.Project
+	member    *models.Member
+	groupType int
 }
 
 // ErrDuplicateProjectMember ...
@@ -64,42 +65,51 @@ func (pma *ProjectMemberAPI) Prepare() {
 		pma.SendBadRequestError(errors.New(text))
 		return
 	}
-	project, err := pma.ProjectMgr.Get(pid)
+	pro, err := pma.ProjectMgr.Get(pid)
 	if err != nil {
 		pma.ParseAndHandleError(fmt.Sprintf("failed to get project %d", pid), err)
 		return
 	}
-	if project == nil {
+	if pro == nil {
 		pma.SendNotFoundError(fmt.Errorf("project %d not found", pid))
 		return
 	}
-	pma.project = project
+	pma.project = pro
 
-	pmid, err := pma.GetInt64FromPath(":pmid")
+	if pma.ParamExistsInPath(":pmid") {
+		pmid, err := pma.GetInt64FromPath(":pmid")
+		if err != nil || pmid <= 0 {
+			pma.SendBadRequestError(fmt.Errorf("The project member id is invalid, pmid:%s", pma.GetStringFromPath(":pmid")))
+			return
+		}
+		pma.id = int(pmid)
+
+		members, err := project.GetProjectMember(models.Member{ProjectID: pid, ID: pma.id})
+		if err != nil {
+			pma.SendInternalServerError(err)
+			return
+		}
+		if len(members) == 0 {
+			pma.SendNotFoundError(fmt.Errorf("project member %d not found in project %d", pmid, pid))
+			return
+		}
+
+		pma.member = members[0]
+	}
+
+	authMode, err := config.AuthMode()
 	if err != nil {
-		log.Warningf("Failed to get pmid from path, error %v", err)
+		pma.SendInternalServerError(fmt.Errorf("failed to get authentication mode"))
 	}
-	if pmid <= 0 && (pma.Ctx.Input.IsPut() || pma.Ctx.Input.IsDelete()) {
-		pma.SendBadRequestError(fmt.Errorf("The project member id is invalid, pmid:%s", pma.GetStringFromPath(":pmid")))
-		return
+	if authMode == common.LDAPAuth {
+		pma.groupType = common.LDAPGroupType
+	} else if authMode == common.HTTPAuth {
+		pma.groupType = common.HTTPGroupType
 	}
-	pma.id = int(pmid)
 }
 
 func (pma *ProjectMemberAPI) requireAccess(action rbac.Action) bool {
-	resource := rbac.NewProjectNamespace(pma.project.ProjectID).Resource(rbac.ResourceMember)
-
-	if !pma.SecurityCtx.Can(action, resource) {
-		if !pma.SecurityCtx.IsAuthenticated() {
-			pma.SendUnAuthorizedError(errors.New("Unauthorized"))
-		} else {
-			pma.SendForbiddenError(errors.New(pma.SecurityCtx.GetUsername()))
-		}
-
-		return false
-	}
-
-	return true
+	return pma.RequireProjectAccess(pma.project.ProjectID, action, rbac.ResourceMember)
 }
 
 // Get ...
@@ -123,22 +133,10 @@ func (pma *ProjectMemberAPI) Get() {
 		}
 
 	} else {
-		// return a specific member
-		queryMember.ID = pma.id
-		memberList, err := project.GetProjectMember(queryMember)
-		if err != nil {
-			pma.SendInternalServerError(fmt.Errorf("Failed to query database for member list, error: %v", err))
-			return
-		}
-		if len(memberList) == 0 {
-			pma.SendNotFoundError(fmt.Errorf("The project member does not exit, pmid:%v", pma.id))
-			return
-		}
-
 		if !pma.requireAccess(rbac.ActionRead) {
 			return
 		}
-		pma.Data["json"] = memberList[0]
+		pma.Data["json"] = pma.member
 	}
 	pma.ServeJSON()
 }
@@ -161,10 +159,10 @@ func (pma *ProjectMemberAPI) Post() {
 		pma.SendBadRequestError(fmt.Errorf("Failed to add project member, error: %v", err))
 		return
 	} else if err == auth.ErrDuplicateLDAPGroup {
-		pma.SendConflictError(fmt.Errorf("Failed to add project member, already exist LDAP group or project member, groupDN:%v", request.MemberGroup.LdapGroupDN))
+		pma.SendConflictError(fmt.Errorf("Failed to add project member, already exist group or project member, groupDN:%v", request.MemberGroup.LdapGroupDN))
 		return
 	} else if err == ErrDuplicateProjectMember {
-		pma.SendConflictError(fmt.Errorf("Failed to add project member, already exist LDAP group or project member, groupMemberID:%v", request.MemberGroup.ID))
+		pma.SendConflictError(fmt.Errorf("Failed to add project member, already exist group or project member, groupMemberID:%v", request.MemberGroup.ID))
 		return
 	} else if err == ErrInvalidRole {
 		pma.SendBadRequestError(fmt.Errorf("Invalid role ID, role ID %v", request.Role))
@@ -191,7 +189,7 @@ func (pma *ProjectMemberAPI) Put() {
 		pma.SendBadRequestError(err)
 		return
 	}
-	if req.Role < 1 || req.Role > 4 {
+	if !isValidRole(req.Role) {
 		pma.SendBadRequestError(fmt.Errorf("Invalid role id %v", req.Role))
 		return
 	}
@@ -220,12 +218,13 @@ func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 	var member models.Member
 	member.ProjectID = projectID
 	member.Role = request.Role
+	member.EntityType = common.GroupMember
+
 	if request.MemberUser.UserID > 0 {
 		member.EntityID = request.MemberUser.UserID
 		member.EntityType = common.UserMember
 	} else if request.MemberGroup.ID > 0 {
 		member.EntityID = request.MemberGroup.ID
-		member.EntityType = common.GroupMember
 	} else if len(request.MemberUser.Username) > 0 {
 		var userID int
 		member.EntityType = common.UserMember
@@ -243,14 +242,28 @@ func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 		}
 		member.EntityID = userID
 	} else if len(request.MemberGroup.LdapGroupDN) > 0 {
-
+		request.MemberGroup.GroupType = common.LDAPGroupType
 		// If groupname provided, use the provided groupname to name this group
 		groupID, err := auth.SearchAndOnBoardGroup(request.MemberGroup.LdapGroupDN, request.MemberGroup.GroupName)
 		if err != nil {
 			return 0, err
 		}
 		member.EntityID = groupID
-		member.EntityType = common.GroupMember
+	} else if len(request.MemberGroup.GroupName) > 0 && request.MemberGroup.GroupType == common.HTTPGroupType || request.MemberGroup.GroupType == common.OIDCGroupType {
+		ugs, err := group.QueryUserGroup(models.UserGroup{GroupName: request.MemberGroup.GroupName, GroupType: request.MemberGroup.GroupType})
+		if err != nil {
+			return 0, err
+		}
+		if len(ugs) == 0 {
+			groupID, err := auth.SearchAndOnBoardGroup(request.MemberGroup.GroupName, "")
+			if err != nil {
+				return 0, err
+			}
+			member.EntityID = groupID
+		} else {
+			member.EntityID = ugs[0].ID
+		}
+
 	}
 	if member.EntityID <= 0 {
 		return 0, fmt.Errorf("Can not get valid member entity, request: %+v", request)
@@ -269,9 +282,22 @@ func AddProjectMember(projectID int64, request models.MemberReq) (int, error) {
 		return 0, ErrDuplicateProjectMember
 	}
 
-	if member.Role < 1 || member.Role > 4 {
+	if !isValidRole(member.Role) {
 		// Return invalid role error
 		return 0, ErrInvalidRole
 	}
 	return project.AddProjectMember(member)
+}
+
+func isValidRole(role int) bool {
+	switch role {
+	case common.RoleProjectAdmin,
+		common.RoleMaster,
+		common.RoleDeveloper,
+		common.RoleGuest,
+		common.RoleLimitedGuest:
+		return true
+	default:
+		return false
+	}
 }

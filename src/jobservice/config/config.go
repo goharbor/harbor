@@ -23,20 +23,23 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
-	"gopkg.in/yaml.v2"
+	yaml "gopkg.in/yaml.v2"
 )
 
 const (
-	jobServiceProtocol          = "JOB_SERVICE_PROTOCOL"
-	jobServicePort              = "JOB_SERVICE_PORT"
-	jobServiceHTTPCert          = "JOB_SERVICE_HTTPS_CERT"
-	jobServiceHTTPKey           = "JOB_SERVICE_HTTPS_KEY"
-	jobServiceWorkerPoolBackend = "JOB_SERVICE_POOL_BACKEND"
-	jobServiceWorkers           = "JOB_SERVICE_POOL_WORKERS"
-	jobServiceRedisURL          = "JOB_SERVICE_POOL_REDIS_URL"
-	jobServiceRedisNamespace    = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
-	jobServiceAuthSecret        = "JOBSERVICE_SECRET"
+	jobServiceProtocol                   = "JOB_SERVICE_PROTOCOL"
+	jobServicePort                       = "JOB_SERVICE_PORT"
+	jobServiceHTTPCert                   = "JOB_SERVICE_HTTPS_CERT"
+	jobServiceHTTPKey                    = "JOB_SERVICE_HTTPS_KEY"
+	jobServiceWorkerPoolBackend          = "JOB_SERVICE_POOL_BACKEND"
+	jobServiceWorkers                    = "JOB_SERVICE_POOL_WORKERS"
+	jobServiceRedisURL                   = "JOB_SERVICE_POOL_REDIS_URL"
+	jobServiceRedisNamespace             = "JOB_SERVICE_POOL_REDIS_NAMESPACE"
+	jobServiceRedisIdleConnTimeoutSecond = "JOB_SERVICE_POOL_REDIS_CONN_IDLE_TIMEOUT_SECOND"
+	jobServiceAuthSecret                 = "JOBSERVICE_SECRET"
+	coreURL                              = "CORE_URL"
 
 	// JobServiceProtocolHTTPS points to the 'https' protocol
 	JobServiceProtocolHTTPS = "https"
@@ -87,6 +90,10 @@ type HTTPSConfig struct {
 type RedisPoolConfig struct {
 	RedisURL  string `yaml:"redis_url"`
 	Namespace string `yaml:"namespace"`
+	// IdleTimeoutSecond closes connections after remaining idle for this duration. If the value
+	// is zero, then idle connections are not closed. Applications should set
+	// the timeout to a value less than the server's timeout.
+	IdleTimeoutSecond int64 `yaml:"idle_timeout_second"`
 }
 
 // PoolConfig keeps worker worker configurations.
@@ -161,6 +168,11 @@ func (c *Configuration) Load(yamlFilePath string, detectEnv bool) error {
 // GetAuthSecret get the auth secret from the env
 func GetAuthSecret() string {
 	return utils.ReadEnv(jobServiceAuthSecret)
+}
+
+// GetCoreURL get the core url from the env
+func GetCoreURL() string {
+	return utils.ReadEnv(coreURL)
 }
 
 // GetUIAuthSecret get the auth secret of UI side
@@ -240,6 +252,19 @@ func (c *Configuration) loadEnvs() {
 				c.PoolConfig.RedisPoolCfg = &RedisPoolConfig{}
 			}
 			c.PoolConfig.RedisPoolCfg.Namespace = rn
+		}
+
+		it := utils.ReadEnv(jobServiceRedisIdleConnTimeoutSecond)
+		if !utils.IsEmptyStr(it) {
+			if c.PoolConfig.RedisPoolCfg == nil {
+				c.PoolConfig.RedisPoolCfg = &RedisPoolConfig{}
+			}
+			v, err := strconv.Atoi(it)
+			if err != nil {
+				log.Warningf("Invalid idle timeout second: %s, will use 0 instead", it)
+			} else {
+				c.PoolConfig.RedisPoolCfg.IdleTimeoutSecond = int64(v)
+			}
 		}
 	}
 

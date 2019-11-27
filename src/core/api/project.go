@@ -18,19 +18,24 @@ import (
 	"fmt"
 	"net/http"
 	"regexp"
+	"strconv"
+	"strings"
+	"sync"
+	"time"
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-
-	"errors"
-	"strconv"
-	"time"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
+	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/pkg/errors"
 )
 
 type deletableResp struct {
@@ -45,7 +50,7 @@ type ProjectAPI struct {
 }
 
 const projectNameMaxLen int = 255
-const projectNameMinLen int = 2
+const projectNameMinLen int = 1
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
 
 // Prepare validates the URL and the user
@@ -83,20 +88,8 @@ func (p *ProjectAPI) requireAccess(action rbac.Action, subresource ...rbac.Resou
 	if len(subresource) == 0 {
 		subresource = append(subresource, rbac.ResourceSelf)
 	}
-	resource := rbac.NewProjectNamespace(p.project.ProjectID).Resource(subresource...)
 
-	if !p.SecurityCtx.Can(action, resource) {
-		if !p.SecurityCtx.IsAuthenticated() {
-			p.SendUnAuthorizedError(errors.New("Unauthorized"))
-
-		} else {
-			p.SendForbiddenError(errors.New(p.SecurityCtx.GetUsername()))
-		}
-
-		return false
-	}
-
-	return true
+	return p.RequireProjectAccess(p.project.ProjectID, action, subresource...)
 }
 
 // Post ...
@@ -128,11 +121,34 @@ func (p *ProjectAPI) Post() {
 		p.SendBadRequestError(err)
 		return
 	}
+
 	err = validateProjectReq(pro)
 	if err != nil {
 		log.Errorf("Invalid project request, error: %v", err)
 		p.SendBadRequestError(fmt.Errorf("invalid request: %v", err))
 		return
+	}
+
+	var hardLimits types.ResourceList
+	if config.QuotaPerProjectEnable() {
+		setting, err := config.QuotaSetting()
+		if err != nil {
+			log.Errorf("failed to get quota setting: %v", err)
+			p.SendInternalServerError(fmt.Errorf("failed to get quota setting: %v", err))
+			return
+		}
+
+		if !p.SecurityCtx.IsSysAdmin() {
+			pro.CountLimit = &setting.CountPerProject
+			pro.StorageLimit = &setting.StoragePerProject
+		}
+
+		hardLimits, err = projectQuotaHardLimits(pro, setting)
+		if err != nil {
+			log.Errorf("Invalid project request, error: %v", err)
+			p.SendBadRequestError(fmt.Errorf("invalid request: %v", err))
+			return
+		}
 	}
 
 	exist, err := p.ProjectMgr.Exists(pro.Name)
@@ -158,6 +174,7 @@ func (p *ProjectAPI) Post() {
 	if _, ok := pro.Metadata[models.ProMetaPublic]; !ok {
 		pro.Metadata[models.ProMetaPublic] = strconv.FormatBool(false)
 	}
+	// populate
 
 	owner := p.SecurityCtx.GetUsername()
 	// set the owner as the system admin when the API being called by replication
@@ -188,6 +205,18 @@ func (p *ProjectAPI) Post() {
 		return
 	}
 
+	if config.QuotaPerProjectEnable() {
+		quotaMgr, err := quota.NewManager("project", strconv.FormatInt(projectID, 10))
+		if err != nil {
+			p.SendInternalServerError(fmt.Errorf("failed to get quota manager: %v", err))
+			return
+		}
+		if _, err := quotaMgr.NewQuota(hardLimits); err != nil {
+			p.SendInternalServerError(fmt.Errorf("failed to create quota for project: %v", err))
+			return
+		}
+	}
+
 	go func() {
 		if err = dao.AddAccessLog(
 			models.AccessLog{
@@ -207,6 +236,12 @@ func (p *ProjectAPI) Post() {
 
 // Head ...
 func (p *ProjectAPI) Head() {
+
+	if !p.SecurityCtx.IsAuthenticated() {
+		p.SendUnAuthorizedError(errors.New("Unauthorized"))
+		return
+	}
+
 	name := p.GetString("project_name")
 	if len(name) == 0 {
 		p.SendBadRequestError(errors.New("project_name is needed"))
@@ -231,7 +266,10 @@ func (p *ProjectAPI) Get() {
 		return
 	}
 
-	p.populateProperties(p.project)
+	err := p.populateProperties(p.project)
+	if err != nil {
+		log.Errorf("populate project properties failed with : %+v", err)
+	}
 
 	p.Data["json"] = p.project
 	p.ServeJSON()
@@ -256,6 +294,16 @@ func (p *ProjectAPI) Delete() {
 
 	if err = p.ProjectMgr.Delete(p.project.ProjectID); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to delete project %d", p.project.ProjectID), err)
+		return
+	}
+
+	quotaMgr, err := quota.NewManager("project", strconv.FormatInt(p.project.ProjectID, 10))
+	if err != nil {
+		p.SendInternalServerError(fmt.Errorf("failed to get quota manager: %v", err))
+		return
+	}
+	if err := quotaMgr.DeleteQuota(); err != nil {
+		p.SendInternalServerError(fmt.Errorf("failed to delete quota for project: %v", err))
 		return
 	}
 
@@ -401,34 +449,34 @@ func (p *ProjectAPI) List() {
 	}
 
 	for _, project := range result.Projects {
-		p.populateProperties(project)
+		err = p.populateProperties(project)
+		if err != nil {
+			log.Errorf("populate project properties failed %v", err)
+		}
 	}
-
 	p.SetPaginationHeader(result.Total, page, size)
 	p.Data["json"] = result.Projects
 	p.ServeJSON()
 }
 
-func (p *ProjectAPI) populateProperties(project *models.Project) {
+func (p *ProjectAPI) populateProperties(project *models.Project) error {
+	// Transform the severity to severity of CVSS v3.0 Ratings
+	if severity, ok := project.GetMetadata(models.ProMetaSeverity); ok {
+		project.SetMetadata(models.ProMetaSeverity, strings.ToLower(vuln.ParseSeverityVersion3(severity).String()))
+	}
+
 	if p.SecurityCtx.IsAuthenticated() {
 		roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
-		if len(roles) != 0 {
-			project.Role = roles[0]
-		}
-
-		if project.Role == common.RoleProjectAdmin ||
-			p.SecurityCtx.IsSysAdmin() {
-			project.Togglable = true
-		}
+		project.RoleList = roles
+		project.Role = highestRole(roles)
 	}
 
 	total, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
 		ProjectIDs: []int64{project.ProjectID},
 	})
 	if err != nil {
-		log.Errorf("failed to get total of repositories of project %d: %v", project.ProjectID, err)
-		p.SendInternalServerError(errors.New(""))
-		return
+		err = errors.Wrap(err, fmt.Sprintf("get repo count of project %d failed", project.ProjectID))
+		return err
 	}
 
 	project.RepoCount = total
@@ -437,13 +485,13 @@ func (p *ProjectAPI) populateProperties(project *models.Project) {
 	if config.WithChartMuseum() {
 		count, err := chartController.GetCountOfCharts([]string{project.Name})
 		if err != nil {
-			log.Errorf("Failed to get total of charts under project %s: %v", project.Name, err)
-			p.SendInternalServerError(errors.New(""))
-			return
+			err = errors.Wrap(err, fmt.Sprintf("get chart count of project %d failed", project.ProjectID))
+			return err
 		}
 
 		project.ChartCount = count
 	}
+	return nil
 }
 
 // Put ...
@@ -460,7 +508,8 @@ func (p *ProjectAPI) Put() {
 
 	if err := p.ProjectMgr.Update(p.project.ProjectID,
 		&models.Project{
-			Metadata: req.Metadata,
+			Metadata:     req.Metadata,
+			CVEWhitelist: req.CVEWhitelist,
 		}); err != nil {
 		p.ParseAndHandleError(fmt.Sprintf("failed to update project %d",
 			p.project.ProjectID), err)
@@ -530,6 +579,47 @@ func (p *ProjectAPI) Logs() {
 	p.ServeJSON()
 }
 
+// Summary returns the summary of the project
+func (p *ProjectAPI) Summary() {
+	if !p.requireAccess(rbac.ActionRead) {
+		return
+	}
+
+	if err := p.populateProperties(p.project); err != nil {
+		log.Warningf("populate project properties failed with : %+v", err)
+	}
+
+	summary := &models.ProjectSummary{
+		RepoCount:  p.project.RepoCount,
+		ChartCount: p.project.ChartCount,
+	}
+
+	var fetchSummaries []func(int64, *models.ProjectSummary)
+
+	if hasPerm, _ := p.HasProjectPermission(p.project.ProjectID, rbac.ActionRead, rbac.ResourceQuota); hasPerm {
+		fetchSummaries = append(fetchSummaries, getProjectQuotaSummary)
+	}
+
+	if hasPerm, _ := p.HasProjectPermission(p.project.ProjectID, rbac.ActionList, rbac.ResourceMember); hasPerm {
+		fetchSummaries = append(fetchSummaries, getProjectMemberSummary)
+	}
+
+	var wg sync.WaitGroup
+	for _, fn := range fetchSummaries {
+		fn := fn
+
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			fn(p.project.ProjectID, summary)
+		}()
+	}
+	wg.Wait()
+
+	p.Data["json"] = summary
+	p.ServeJSON()
+}
+
 // TODO move this to pa ckage models
 func validateProjectReq(req *models.ProjectRequest) error {
 	pn := req.Name
@@ -549,4 +639,102 @@ func validateProjectReq(req *models.ProjectRequest) error {
 
 	req.Metadata = metas
 	return nil
+}
+
+func projectQuotaHardLimits(req *models.ProjectRequest, setting *models.QuotaSetting) (types.ResourceList, error) {
+	hardLimits := types.ResourceList{}
+	if req.CountLimit != nil {
+		hardLimits[types.ResourceCount] = *req.CountLimit
+	} else {
+		hardLimits[types.ResourceCount] = setting.CountPerProject
+	}
+
+	if req.StorageLimit != nil {
+		hardLimits[types.ResourceStorage] = *req.StorageLimit
+	} else {
+		hardLimits[types.ResourceStorage] = setting.StoragePerProject
+	}
+
+	if err := quota.Validate("project", hardLimits); err != nil {
+		return nil, err
+	}
+
+	return hardLimits, nil
+}
+
+func getProjectQuotaSummary(projectID int64, summary *models.ProjectSummary) {
+	if !config.QuotaPerProjectEnable() {
+		log.Debug("Quota per project disabled")
+		return
+	}
+
+	quotas, err := dao.ListQuotas(&models.QuotaQuery{Reference: "project", ReferenceID: strconv.FormatInt(projectID, 10)})
+	if err != nil {
+		log.Debugf("failed to get quota for project: %d", projectID)
+		return
+	}
+
+	if len(quotas) == 0 {
+		log.Debugf("quota not found for project: %d", projectID)
+		return
+	}
+
+	quota := quotas[0]
+
+	summary.Quota.Hard, _ = types.NewResourceList(quota.Hard)
+	summary.Quota.Used, _ = types.NewResourceList(quota.Used)
+}
+
+func getProjectMemberSummary(projectID int64, summary *models.ProjectSummary) {
+	var wg sync.WaitGroup
+
+	for _, e := range []struct {
+		role  int
+		count *int64
+	}{
+		{common.RoleProjectAdmin, &summary.ProjectAdminCount},
+		{common.RoleMaster, &summary.MasterCount},
+		{common.RoleDeveloper, &summary.DeveloperCount},
+		{common.RoleGuest, &summary.GuestCount},
+		{common.RoleLimitedGuest, &summary.LimitedGuestCount},
+	} {
+		wg.Add(1)
+		go func(role int, count *int64) {
+			defer wg.Done()
+
+			total, err := project.GetTotalOfProjectMembers(projectID, role)
+			if err != nil {
+				log.Debugf("failed to get total of project members of role %d", role)
+				return
+			}
+
+			*count = total
+		}(e.role, e.count)
+	}
+
+	wg.Wait()
+}
+
+// Returns the highest role in the role list.
+// This func should be removed once we deprecate the "current_user_role_id" in project API
+// A user can have multiple roles and they may not have a strict ranking relationship
+func highestRole(roles []int) int {
+	if roles == nil {
+		return 0
+	}
+	rolePower := map[int]int{
+		common.RoleProjectAdmin: 50,
+		common.RoleMaster:       40,
+		common.RoleDeveloper:    30,
+		common.RoleGuest:        20,
+		common.RoleLimitedGuest: 10,
+	}
+	var highest, highestPower int
+	for _, role := range roles {
+		if p, ok := rolePower[role]; ok && p > highestPower {
+			highest = role
+			highestPower = p
+		}
+	}
+	return highest
 }

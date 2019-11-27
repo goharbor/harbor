@@ -4,10 +4,12 @@
   "deleteDestPath": false,
   "lib": {
     "entryFile": "index.ts",
-    "externals": {
-      "@ngx-translate/core": "ngx-translate-core",
-      "@ngx-translate/core/index": "ngx-translate-core",
-      "ngx-markdown": "ngx-markdown"
-     }
+     "umdModuleIds": {
+      "@clr/angular" : "angular",
+      "ngx-markdown" : "ngxMarkdown",
+      "@ngx-translate/http-loader" : "httpLoader",
+      "ngx-cookie" : "ngxCookie",
+      "@ngx-translate/core" : "core$1"
+    }
   }
 }

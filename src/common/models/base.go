@@ -24,9 +24,7 @@ func init() {
 		new(Project),
 		new(Role),
 		new(AccessLog),
-		new(ScanJob),
 		new(RepoRecord),
-		new(ImgScanOverview),
 		new(ClairVulnTimestamp),
 		new(ProjectMetadata),
 		new(ConfigEntry),
@@ -35,6 +33,15 @@ func init() {
 		new(UserGroup),
 		new(AdminJob),
 		new(JobLog),
-		new(Robot),
-		new(OIDCUser))
+		new(OIDCUser),
+		new(NotificationPolicy),
+		new(NotificationJob),
+		new(Blob),
+		new(ProjectBlob),
+		new(Artifact),
+		new(ArtifactAndBlob),
+		new(CVEWhitelist),
+		new(Quota),
+		new(QuotaUsage),
+	)
 }

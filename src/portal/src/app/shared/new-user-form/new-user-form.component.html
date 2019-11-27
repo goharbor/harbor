@@ -1,89 +1,69 @@
 <div>
-    <form #newUserFrom="ngForm" class="form">
-        <section class="form-block">
-            <div class="form-group form-group-override">
-                <label for="username" class="required form-group-label-override">{{'PROFILE.USER_NAME' | translate}}</label>
-                <label for="username" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("username")'>
-                    <input type="text" required pattern='[^"~#$%]+' maxLengthExt="255" #usernameInput="ngModel" name="username" [(ngModel)]="newUser.username" id="username" size="30"
-                    (input)='handleValidation("username", false)' 
-                    (blur)='handleValidation("username", true)'>
-                    <span class="tooltip-content">
-                        {{usernameTooltip | translate}}
-                    </span>
-                </label>
-                <span class="spinner spinner-inline spinner-pos" [hidden]='isChecking("username")'></span>
+    <form #newUserFrom="ngForm" class="clr-form clr-form-horizontal">
+        <div class="clr-form-control">
+            <label class="required clr-control-label">{{'PROFILE.USER_NAME' | translate}}</label>
+            <div class="clr-control-container" [class.clr-error]='getValidationState("username")'>
+                <div class="clr-input-wrapper">
+                    <input type="text" class="clr-input" required pattern='[^"~#$%]+' maxLengthExt="255" #usernameInput="ngModel" name="username"
+                        [(ngModel)]="newUser.username" id="username" size="30" (input)='handleValidation("username", false)'
+                        (blur)='handleValidation("username", true)'>
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <span class="spinner spinner-inline spinner-pos" [hidden]='isChecking("username")'></span>
+                </div>
+                <clr-control-error *ngIf='getValidationState("username")'>
+                    {{usernameTooltip | translate}}
+                </clr-control-error>
             </div>
-            <div class="form-group form-group-override">
-                <label for="email" class="required form-group-label-override">{{'PROFILE.EMAIL' | translate}}</label>
-                <label for="email" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("email")'>
-                      <input name="email" type="text" #eamilInput="ngModel" [(ngModel)]="newUser.email" 
-                      required 
-                      email
-                      id="email" size="30"
-                      (input)='handleValidation("email", false)' 
-                (blur)='handleValidation("email", true)'>
-                      <span class="tooltip-content">
-                          {{emailTooltip | translate}}
-                      </span>
-                </label>
-                <span class="spinner spinner-inline spinner-pos" [hidden]='isChecking("email")'></span>
-                <label class="sub-label-for-input" *ngIf="isSelfRegistration">{{'TOOLTIP.SIGN_UP_MAIL' | translate}}</label>
+        </div>
+        <div class="clr-form-control">
+            <label class="required clr-control-label">{{'PROFILE.EMAIL' | translate}}</label>
+            <div class="clr-control-container" [class.clr-error]='getValidationState("email")'>
+                <div class="clr-input-wrapper">
+                    <input name="email" type="text" #eamilInput="ngModel" [(ngModel)]="newUser.email" required email id="email" size="30" (input)='handleValidation("email", false)'
+                        (blur)='handleValidation("email", true)' class="clr-input">
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <span class="spinner spinner-inline spinner-pos" [hidden]='isChecking("email")'></span>
+                    <clr-control-helper *ngIf="isSelfRegistration">{{'TOOLTIP.SIGN_UP_MAIL' | translate}}</clr-control-helper>
+                    <clr-control-error *ngIf='getValidationState("email")'>
+                        {{emailTooltip | translate}}
+                    </clr-control-error>
+                </div>
             </div>
-            <div class="form-group form-group-override">
-                <label for="realname" class="required form-group-label-override">{{'PROFILE.FULL_NAME' | translate}}</label>
-                <label for="realname" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("realname")'>
-                      <input type="text" name="realname" #fullNameInput="ngModel" [(ngModel)]="newUser.realname" required maxLengthExt="80" id="realname" size="30"
-                      (input)='handleValidation("realname", false)' 
-                (blur)='handleValidation("realname", true)'>
-                      <span class="tooltip-content">
-                          {{'TOOLTIP.FULL_NAME' | translate}}
-                      </span>
-                </label>
-            </div>
-            <div class="form-group form-group-override">
-                <label for="newPassword" class="required form-group-label-override">{{'PROFILE.PASSWORD' | translate}}</label>
-                <label for="newPassword" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("newPassword")'>
-                <input type="password" id="newPassword" 
-                required
-                    pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,20}$"
-                    name="newPassword"
-                    [(ngModel)]="newUser.password"
-                    #newPassInput="ngModel" size="30" 
-                    (input)='handleValidation("newPassword", false)' 
+        </div>
+        <clr-input-container>
+            <label class="required">{{'PROFILE.FULL_NAME' | translate}}</label>
+            <input clrInput type="text" name="realname" #fullNameInput="ngModel" [(ngModel)]="newUser.realname" required maxLengthExt="80"
+                id="realname" size="30" (input)='handleValidation("realname", false)' (blur)='handleValidation("realname", true)'>
+            <clr-control-error *ngIf='getValidationState("realname")'>
+                {{'TOOLTIP.FULL_NAME' | translate}}
+            </clr-control-error>
+        </clr-input-container>
+        <clr-input-container>
+            <label class="required">{{'PROFILE.PASSWORD' | translate}}</label>
+            <input clrInput type="password" id="newPassword" required pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,128}$" name="newPassword"
+                [(ngModel)]="newUser.password" #newPassInput="ngModel" size="30" (input)='handleValidation("newPassword", false)'
                 (blur)='handleValidation("newPassword", true)'>
-                <span class="tooltip-content">
-                    {{'TOOLTIP.PASSWORD' | translate}}
-                </span>
-                </label>
-                <label class="sub-label-for-input" *ngIf="isSelfRegistration">{{'CHANGE_PWD.PASS_TIPS' | translate}}</label>
-            </div>
-            <div class="form-group form-group-override">
-                <label for="confirmPassword" class="required form-group-label-override">{{'CHANGE_PWD.CONFIRM_PWD' | translate}}</label>
-                <label for="confirmPassword" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("confirmPassword")'>
-                <input type="password" id="confirmPassword"
-                    required
-                    pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,20}$"
-                    name="confirmPassword"
-                    [(ngModel)]="confirmedPwd"
-                    #confirmPassInput="ngModel" size="30" 
-                    (input)='handleValidation("confirmPassword", false)' 
+            <clr-control-helper *ngIf="isSelfRegistration">{{'CHANGE_PWD.PASS_TIPS' | translate}}</clr-control-helper>
+            <clr-control-error *ngIf='getValidationState("newPassword")'>
+                {{'TOOLTIP.PASSWORD' | translate}}
+            </clr-control-error>
+        </clr-input-container>
+        <clr-input-container>
+            <label class="required">{{'CHANGE_PWD.CONFIRM_PWD' | translate}}</label>
+            <input clrInput type="password" id="confirmPassword" required pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,128}$" name="confirmPassword"
+                [(ngModel)]="confirmedPwd" #confirmPassInput="ngModel" size="30" (input)='handleValidation("confirmPassword", false)'
                 (blur)='handleValidation("confirmPassword", true)'>
-                <span class="tooltip-content">
-                    {{'TOOLTIP.CONFIRM_PWD' | translate}}
-                </span>
-            </label>
-            </div>
-            <div class="form-group form-group-override">
-                <label for="comment" class="form-group-label-override">{{'PROFILE.COMMENT' | translate}}</label>
-                <label for="comment" aria-haspopup="true" role="tooltip" class="tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='getValidationState("comment")'>
-                <input type="text" #commentInput="ngModel" name="comment" [(ngModel)]="newUser.comment" maxLengthExt="20" id="comment" size="30" 
-                (input)='handleValidation("comment", false)' 
-                (blur)='handleValidation("comment", true)'>
-                <span class="tooltip-content">
-                    {{'TOOLTIP.COMMENT' | translate}}
-                </span>
-                </label>
-            </div>
-        </section>
+            <clr-control-error *ngIf='getValidationState("confirmPassword")'>
+                {{'TOOLTIP.CONFIRM_PWD' | translate}}
+            </clr-control-error>
+        </clr-input-container>
+        <clr-input-container>
+            <label>{{'PROFILE.COMMENT' | translate}}</label>
+            <input clrInput type="text" #commentInput="ngModel" name="comment" [(ngModel)]="newUser.comment" maxLengthExt="20" id="comment" size="30"
+                (input)='handleValidation("comment", false)' (blur)='handleValidation("comment", true)'>
+            <clr-control-error *ngIf='getValidationState("comment")'>
+                {{'TOOLTIP.COMMENT' | translate}}
+            </clr-control-error>
+        </clr-input-container>
     </form>
 </div>

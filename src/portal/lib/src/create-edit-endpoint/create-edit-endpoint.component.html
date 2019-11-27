@@ -1,7 +1,7 @@
 <clr-modal [(clrModalOpen)]="createEditDestinationOpened" [clrModalStaticBackdrop]="staticBackdrop" [clrModalClosable]="closable">
   <h3 class="modal-title">{{modalTitle}}</h3>
   <hbr-inline-alert class="modal-title" (confirmEvt)="confirmCancel($event)"></hbr-inline-alert>
-  <div class="modal-body">
+  <div class="modal-body overflow-visible">
     <div class="alert alert-warning" *ngIf="!editable">
       <div class="alert-item static">
         <span class="alert-text">
@@ -9,90 +9,101 @@
         </span>
       </div>
     </div>
-    <form #targetForm="ngForm">
-      <section class="form-block">
-        <!-- provider -->
-        <div class="form-group">
-          <label class="form-group-label-override required">{{'DESTINATION.PROVIDER' | translate}}</label>
-          <div class="form-select">
-            <div class="select inputWidth pull-left">
-              <select name="adapter" id="adapter" (change)="adapterChange($event)" [(ngModel)]="target.type" [disabled]="testOngoing || editDisabled">
-                <option *ngFor="let adapter of adapterList" value="{{adapter}}">{{adapter}}</option>
-              </select>
+    <form #targetForm="ngForm" class="clr-form clr-form-horizontal">
+      <!-- provider -->
+      <clr-select-container>
+        <label class="required">{{'DESTINATION.PROVIDER' | translate}}</label>
+        <select clrSelect name="adapter" id="adapter" (change)="adapterChange($event)" [(ngModel)]="target.type" [disabled]="testOngoing || editDisabled">
+          <option *ngFor="let adapter of adapterList" value="{{adapter}}">{{adapter}}</option>
+        </select>
+      </clr-select-container>
+      <!-- Endpoint name -->
+      <clr-input-container>
+        <label class="required">{{ 'DESTINATION.NAME' | translate }}</label>
+        <input clrInput type="text" id="destination_name" [disabled]="testOngoing" [readonly]="!editable" [(ngModel)]="target.name"
+          name="targetName" size="30" #targetName="ngModel" required>
+        <clr-control-error *ngIf="targetName.errors && targetName.errors.required && (targetName.dirty || targetName.touched)">
+          {{ 'DESTINATION.NAME_IS_REQUIRED' | translate }}
+        </clr-control-error>
+      </clr-input-container>
+      <!--Description-->
+      <clr-textarea-container>
+        <label>{{'REPLICATION.DESCRIPTION' | translate}}</label>
+        <textarea clrTextarea type="text" class="inputWidth" row=3 name="description" [(ngModel)]="target.description"></textarea>
+      </clr-textarea-container>
+      <!-- Endpoint Url -->
+      <div class="clr-form-control">
+        <label for="destination_url" class="required clr-control-label">{{ 'DESTINATION.URL' | translate }}</label>
+        <div class="clr-control-container" [class.clr-error]="targetEndpoint?.errors && targetEndpoint.errors.required && (targetEndpoint.dirty || targetEndpoint.touched)">
+          <div class="clr-input-wrapper position-relative">
+            <clr-icon *ngIf="!(!showEndpointList
+            && targetEndpoint?.errors
+            && targetEndpoint.errors.required
+            && (targetEndpoint.dirty || targetEndpoint.touched))
+             && endpointList?.length" class="down" shape="caret" dir="down"
+            (click)="showEndpointList=true"></clr-icon>
+            <input autocomplete="off" (blur)="blur()" (focus)="showEndpointList=true" class="clr-input endpoint-input" type="text" id="destination_url" [disabled]="testOngoing || urlDisabled" [readonly]="!editable"
+              [(ngModel)]="target.url" size="28" name="endpointUrl" #targetEndpoint="ngModel" required placeholder="http(s)://192.168.1.1">
+            <div class="selectBox" (mouseleave)="endpointOnHover=false" (mouseover)="endpointOnHover=true" *ngIf="endpointList?.length && showEndpointList">
+              <ul>
+                <li *ngFor="let endpoint of endpointList" (click)="selectedEndpoint(endpoint.value)">{{endpoint.key}}</li>
+              </ul>
             </div>
+            <clr-icon *ngIf="!showEndpointList && targetEndpoint?.errors && targetEndpoint.errors.required && (targetEndpoint.dirty || targetEndpoint.touched)"
+                      class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+          </div>
+          <clr-control-error *ngIf="!showEndpointList && targetEndpoint?.errors && targetEndpoint.errors.required && (targetEndpoint.dirty || targetEndpoint.touched)">
+            {{ 'DESTINATION.URL_IS_REQUIRED' | translate }}
+          </clr-control-error>
+        </div>
+      </div>
+      <!-- access_key -->
+      <clr-input-container>
+        <label>{{ 'DESTINATION.ACCESS_ID' | translate }}</label>
+        <input autocomplete="off" clrInput type="text" placeholder="Access ID" id="destination_access_key" [disabled]="testOngoing" [readonly]="target.type ==='google-gcr' || !editable"
+          [(ngModel)]="target.credential.access_key" size="30" name="access_key" #access_key="ngModel">
+      </clr-input-container>
+      <!-- access_secret -->
+      <div class="clr-form-control">
+        <label for="destination_password" class="clr-control-label">{{ 'DESTINATION.ACCESS_SECRET' | translate }}</label>
+        <div class="clr-control-container">
+          <div class="clr-textarea-wrapper">
+            <input autocomplete="off" class="clr-input" *ngIf="isNormalCredential();else gcr_secret" type="password" placeholder="Access Secret"
+              id="destination_password" [disabled]="testOngoing" [readonly]="!editable" [(ngModel)]="target.credential.access_secret"
+              size="30" name="access_secret" #access_secret="ngModel">
+            <ng-template #gcr_secret>
+              <textarea autocomplete="off" type="text" row="3" placeholder="Json Secret" class="clr-textarea" id="destination_password" [disabled]="testOngoing"
+                [readonly]="!editable" [(ngModel)]="target.credential.access_secret" name="access_secret" #access_secret="ngModel"></textarea>
+            </ng-template>
           </div>
         </div>
-        <!-- Endpoint name -->
-        <div class="form-group">
-          <label for="destination_name" class="col-md-4 form-group-label-override required">{{ 'DESTINATION.NAME' |
-            translate }}</label>
-          <label class="col-md-8" for="destination_name" aria-haspopup="true" role="tooltip" [class.invalid]="targetName.errors && (targetName.dirty || targetName.touched)"
-            [class.valid]="targetName.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
-            <input type="text" id="destination_name" [disabled]="testOngoing" [readonly]="!editable" [(ngModel)]="target.name"
-              name="targetName" size="25" #targetName="ngModel" required>
-            <span class="tooltip-content" *ngIf="targetName.errors && targetName.errors.required && (targetName.dirty || targetName.touched)">
-              {{ 'DESTINATION.NAME_IS_REQUIRED' | translate }}
-            </span>
-          </label>
-        </div>
-        <!--Description-->
-        <div class="form-group">
-          <label class="form-group-label-override">{{'REPLICATION.DESCRIPTION' | translate}}</label>
-          <textarea type="text" class="inputWidth" row=3 name="description" [(ngModel)]="target.description"></textarea>
-        </div>
-        <!-- Endpoint Url -->
-        <div class="form-group">
-          <label for="destination_url" class="col-md-4 form-group-label-override required">{{ 'DESTINATION.URL' |
-            translate }}</label>
-          <label class="col-md-8" for="destination_url" aria-haspopup="true" role="tooltip" [class.invalid]="targetEndpoint.errors && (targetEndpoint.dirty || targetEndpoint.touched)"
-            [class.valid]="targetEndpoint.valid" class="tooltip tooltip-validation tooltip-sm tooltip-bottom-left">
-            <input type="text" id="destination_url" [disabled]="testOngoing || urlDisabled" [readonly]="!editable" [(ngModel)]="target.url"
-              size="25" name="endpointUrl" #targetEndpoint="ngModel" required placeholder="http(s)://192.168.1.1">
-            <span class="tooltip-content" *ngIf="targetEndpoint.errors && targetEndpoint.errors.required && (targetEndpoint.dirty || targetEndpoint.touched)">
-              {{ 'DESTINATION.URL_IS_REQUIRED' | translate }}
-            </span>
-          </label>
-        </div>
-        <!-- access_key -->
-        <div class="form-group">
-          <label for="destination_access_key" class="col-md-4 form-group-label-override">{{ 'DESTINATION.ACCESS_ID' |
-            translate }}</label>
-          <input type="text" placeholder="Access ID" class="col-md-8" id="destination_access_key" [disabled]="testOngoing" [readonly]="!editable"
-            [(ngModel)]="target.credential.access_key" size="28" name="access_key" #access_key="ngModel">
-        </div>
-        <!-- access_secret -->
-        <div class="form-group">
-          <label for="destination_password" class="col-md-4 form-group-label-override">{{ 'DESTINATION.ACCESS_SECRET' |
-            translate }}</label>
-          <input type="password" placeholder="Access Secret" class="col-md-8" id="destination_password" [disabled]="testOngoing" [readonly]="!editable"
-            [(ngModel)]="target.credential.access_secret" size="28" name="access_secret" #access_secret="ngModel">
-        </div>
-        <!-- Verify Remote Cert -->
-        <div class="form-group">
-          <label for="destination_insecure" id="destination_insecure_checkbox">{{'CONFIG.VERIFY_REMOTE_CERT' |
-            translate }}</label>
-          <input type="checkbox" clrCheckbox #insecure id="destination_insecure" [disabled]="testOngoing || !editable"
-            name="insecure" [ngModel]="!target.insecure" (ngModelChange)="setInsecureValue($event)" class="clr-checkbox">
+      </div>
+      <!-- Verify Remote Cert -->
+      <clr-checkbox-container>
+        <label id="destination_insecure_checkbox"
+          for="destination_insecure">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}
           <clr-tooltip>
             <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
             <clr-tooltip-content clrPosition="top-right" clrSize="md" *clrIfOpen>
               {{'CONFIG.TOOLTIP.VERIFY_REMOTE_CERT' | translate}}
             </clr-tooltip-content>
           </clr-tooltip>
-        </div>
-        <div class="form-group" class="form-height">
-          <label for="spin" class="col-md-4"></label>
-          <span class="col-md-8 spinner spinner-inline" [hidden]="!inProgress"></span>
-        </div>
-      </section>
+        </label>
+        <clr-checkbox-wrapper>
+          <input type="checkbox" clrCheckbox #insecure id="destination_insecure" [disabled]="testOngoing || !editable" name="insecure"
+            [ngModel]="!target.insecure" (ngModelChange)="setInsecureValue($event)">
+        </clr-checkbox-wrapper>
+      </clr-checkbox-container>
+      <div class="clr-form-control" class="form-height">
+        <label for="spin" class="col-md-4"></label>
+        <span class="col-md-8 spinner spinner-inline" [hidden]="!inProgress"></span>
+      </div>
     </form>
   </div>
   <div class="modal-footer">
-    <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="inProgress || targetEndpoint.errors">{{
-      'DESTINATION.TEST_CONNECTION' | translate }}</button>
-    <button type="button" class="btn btn-outline" (click)="onCancel()" [disabled]="inProgress">{{ 'BUTTON.CANCEL' |
-      translate }}</button>
-    <button type="submit" class="btn btn-primary" (click)="onSubmit()" [disabled]="!isValid">{{ 'BUTTON.OK' | translate
-      }}</button>
+    <button type="button" class="btn btn-outline" (click)="testConnection()" [disabled]="inProgress || (targetEndpoint?.errors)">{{ 'DESTINATION.TEST_CONNECTION' | translate }}</button>
+    <button type="button" class="btn btn-outline" (click)="onCancel()" [disabled]="inProgress">{{ 'BUTTON.CANCEL' | translate }}</button>
+    <button type="submit" class="btn btn-primary" (click)="onSubmit()" [disabled]="!isValid">{{ 'BUTTON.OK' | translate }}
+    </button>
   </div>
 </clr-modal>

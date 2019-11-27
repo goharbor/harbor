@@ -18,17 +18,18 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/promgr"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 )
 
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
-	robot  *models.Robot
+	robot  *model.Robot
 	pm     promgr.ProjectManager
 	policy []*rbac.Policy
 }
 
 // NewSecurityContext ...
-func NewSecurityContext(robot *models.Robot, pm promgr.ProjectManager, policy []*rbac.Policy) *SecurityContext {
+func NewSecurityContext(robot *model.Robot, pm promgr.ProjectManager, policy []*rbac.Policy) *SecurityContext {
 	return &SecurityContext{
 		robot:  robot,
 		pm:     pm,
@@ -76,9 +77,9 @@ func (s *SecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
 	if err == nil {
 		switch ns.Kind() {
 		case "project":
-			projectIDOrName := ns.Identity()
-			isPublicProject, _ := s.pm.IsPublic(projectIDOrName)
-			projectNamespace := rbac.NewProjectNamespace(projectIDOrName, isPublicProject)
+			projectID := ns.Identity().(int64)
+			isPublicProject, _ := s.pm.IsPublic(projectID)
+			projectNamespace := rbac.NewProjectNamespace(projectID, isPublicProject)
 			robot := NewRobot(s.GetUsername(), projectNamespace, s.policy)
 			return rbac.HasPermission(robot, resource, action)
 		}

@@ -88,10 +88,10 @@ func (f *fakedTransfer) Transfer(src *model.Resource, dst *model.Resource) error
 }
 
 func TestRun(t *testing.T) {
-	err := transfer.RegisterFactory("res", fakedTransferFactory)
+	err := transfer.RegisterFactory("art", fakedTransferFactory)
 	require.Nil(t, err)
 	params := map[string]interface{}{
-		"src_resource": `{"type":"res"}`,
+		"src_resource": `{"type":"art"}`,
 		"dst_resource": `{}`,
 	}
 	rep := &Replication{}

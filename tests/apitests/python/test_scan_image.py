@@ -71,7 +71,7 @@ class TestProjects(unittest.TestCase):
             expected_project_id = TestProjects.project_scan_image_id, **TestProjects.USER_SCAN_IMAGE_CLIENT)
 
         #Note: Please make sure that this Image has never been pulled before by any other cases,
-        #          so it is a not-scanned image rigth after rpository creation.
+        #          so it is a not-scanned image right after repository creation.
         #image = "tomcat"
         image = "docker"
         src_tag = "1.13"
@@ -80,7 +80,7 @@ class TestProjects(unittest.TestCase):
 
         #6. Send scan image command and get tag(TA) information to check scan result, it should be finished;
         self.repo.scan_image(TestProjects.repo_name, tag, **TestProjects.USER_SCAN_IMAGE_CLIENT)
-        self.repo.check_image_scan_result(TestProjects.repo_name, tag, expected_scan_status = "finished", **TestProjects.USER_SCAN_IMAGE_CLIENT)
+        self.repo.check_image_scan_result(TestProjects.repo_name, tag, **TestProjects.USER_SCAN_IMAGE_CLIENT)
 
 if __name__ == '__main__':
     unittest.main()

@@ -15,6 +15,9 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { CreateProjectComponent } from './create-project/create-project.component';
 import { ListProjectComponent } from './list-project/list-project.component';
 import { ProjectTypes } from '../shared/shared.const';
+import { ConfigurationService } from '../config/config.service';
+import { Configuration, QuotaHardInterface } from '@harbor/ui';
+import { SessionService } from "../shared/session.service";
 
 @Component({
   selector: 'project',
@@ -23,11 +26,11 @@ import { ProjectTypes } from '../shared/shared.const';
 })
 export class ProjectComponent implements OnInit {
   projectTypes = ProjectTypes;
-
-  @ViewChild(CreateProjectComponent)
+  quotaObj: QuotaHardInterface;
+  @ViewChild(CreateProjectComponent, {static: false})
   creationProject: CreateProjectComponent;
 
-  @ViewChild(ListProjectComponent)
+  @ViewChild(ListProjectComponent, {static: false})
   listProject: ListProjectComponent;
 
   currentFilteredType: number = 0; // all projects
@@ -35,26 +38,43 @@ export class ProjectComponent implements OnInit {
 
   loading: boolean = true;
 
-  get selecteType(): number {
-    return this.currentFilteredType;
+  get selecteType(): string {
+    return this.currentFilteredType + "";
   }
-  set selecteType(_project: number) {
-    this.currentFilteredType = _project;
+  set selecteType(_project: string) {
+    this.currentFilteredType = +_project;
     if (window.sessionStorage) {
-      window.sessionStorage['projectTypeValue'] = _project;
+      window.sessionStorage['projectTypeValue'] = +_project;
     }
   }
 
-  constructor() {
-  }
+  constructor(
+    public configService: ConfigurationService,
+    private session: SessionService
+  ) { }
 
   ngOnInit(): void {
     if (window.sessionStorage && window.sessionStorage['projectTypeValue'] && window.sessionStorage['fromDetails']) {
       this.currentFilteredType = +window.sessionStorage['projectTypeValue'];
       window.sessionStorage.removeItem('fromDetails');
     }
+    if (this.isSystemAdmin) {
+      this.getConfigration();
+    }
   }
-
+  getConfigration() {
+    this.configService.getConfiguration()
+      .subscribe((configurations: Configuration) => {
+        this.quotaObj = {
+          count_per_project: configurations.count_per_project ? configurations.count_per_project.value : -1,
+          storage_per_project: configurations.storage_per_project ? configurations.storage_per_project.value : -1
+        };
+      });
+  }
+  public get isSystemAdmin(): boolean {
+    let account = this.session.getCurrentUser();
+    return account != null && account.has_admin_role;
+  }
   openModal(): void {
     this.creationProject.newProject();
   }
@@ -71,7 +91,7 @@ export class ProjectComponent implements OnInit {
   }
 
   doFilterProjects(): void {
-    this.listProject.doFilterProject(this.selecteType);
+    this.listProject.doFilterProject(+this.selecteType);
   }
 
   refresh(): void {

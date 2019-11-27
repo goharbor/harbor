@@ -4,7 +4,7 @@ set +e
 
 usage(){
   echo "Usage: builder <golang image:version> <code path> <code release tag> <main.go path> <binary name>"
-  echo "e.g: builder golang:1.11.2 github.com/helm/chartmuseum v0.8.1 cmd/chartmuseum chartm"
+  echo "e.g: builder golang:1.13.4 https://github.com/helm/chartmuseum v0.9.0 cmd/chartmuseum chartm"
   exit 1
 }
 
@@ -13,7 +13,7 @@ if [ $# != 5 ]; then
 fi
 
 GOLANG_IMAGE="$1"
-CODE_PATH="$2"
+GIT_PATH="$2"
 CODE_VERSION="$3"
 MAIN_GO_PATH="$4"
 BIN_NAME="$5"
@@ -27,7 +27,7 @@ mkdir -p binary
 rm -rf binary/$BIN_NAME || true
 cp compile.sh binary/
 
-docker run -it -v $cur/binary:/go/bin --name golang_code_builder $GOLANG_IMAGE /bin/bash /go/bin/compile.sh $CODE_PATH $CODE_VERSION $MAIN_GO_PATH $BIN_NAME
+docker run -it --rm -v $cur/binary:/go/bin --name golang_code_builder $GOLANG_IMAGE /bin/bash /go/bin/compile.sh $GIT_PATH $CODE_VERSION $MAIN_GO_PATH $BIN_NAME
 
 #Clear
-docker rm -f golang_code_builder
+#docker rm -f golang_code_builder

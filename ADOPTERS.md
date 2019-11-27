@@ -10,7 +10,6 @@ be added to this list as they transition to production deployments.
 
 <a href="https://www.jd.com" border="0" target="_blank"><img alt="JD.com" src="docs/img/jd.png" height="50"></a>&nbsp; &nbsp; &nbsp;
 <a href="https://www.trendmicro.com" border="0" target="_blank"><img alt="trendmicro" src="docs/img/trendmicro.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
-<a href="https://www.onstar.com.cn" border="0" target="_blank"><img alt="OnStar" src="docs/img/onstar.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.datayes.com" border="0" target="_blank"><img alt="DataYes" src="docs/img/datayes.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.axatp.com" border="0" target="_blank"><img alt="axatp" src="docs/img/axatp.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp; <br/><br/>
 <a href="https://www.360totalsecurity.com/en/" target="_blank" border="0"><img alt="360 Total Security" src="docs/img/360.png" height="50"></a>&nbsp; &nbsp; &nbsp;
@@ -34,6 +33,7 @@ be added to this list as they transition to production deployments.
 <a href="https://pivotal.io/" target="_blank" border="0"><img alt="Pivotal" src="docs/img/pivotal.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="https://www.163yun.com" target="_blank" border="0"><img alt="Netease Cloud" src="docs/img/wangyi.png" height="50"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 <a href="http://www.yanrongyun.com" target="_blank" border="0"><img alt="Yanrongyun" src="docs/img/Yanrong.jpg" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
+<a href="https://anchore.com" target="_blank" border="0"><img alt="Anchore" src="docs/img/anchore_logo.png" height="40"></a>&nbsp; &nbsp; &nbsp; &nbsp;
 
 ## Success Stories
 **JD.com:** Harbor is the registry service of JD.com’s JDOS
@@ -81,3 +81,6 @@ feature within Harbor before deploying images into production.
 **Allegis:** Harbor is used at Allegis as a secure private registry to store
 and scan customized container images for different business applications, like
 ELK stack, as part of their CI/CD pipeline.
+
+# Adding a logo
+If you would like to add your logo to the `Users and Partners of Harbor` section of the website, add a PNG version of your logo to the docs/img directory in this repo and submit a pull request with your change. Name the image file something that reflects your company (e.g., if your company is called Acme, name the image acme.png). We will follow up and make the change in the goharbor.io website as well.

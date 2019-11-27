@@ -20,6 +20,7 @@ worker_pool:
     #redis://[arbitrary_username:password@]ipaddress:port/database_index
     redis_url: {{redis_url}}
     namespace: "harbor_job_service_namespace"
+    idle_timeout_second: 3600
 #Loggers for the running job
 job_loggers:
   - name: "STD_OUTPUT" # logger backend name, only support "FILE" and "STD_OUTPUT"

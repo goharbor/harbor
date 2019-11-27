@@ -17,20 +17,19 @@ Documentation  This resource provides any keywords related to the Harbor private
 Resource  ../../resources/Util.robot
 
 *** Variables ***
-${HARBOR_VERSION}  v1.1.1
 
 *** Keywords ***
 Delete Success
     [Arguments]  @{obj}
     :For  ${obj}  in  @{obj}
-    \    Retry Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape='success-standard']
+    \    Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${obj}')]/../div/clr-icon[@shape='success-standard']
     Sleep  1
     Capture Page Screenshot
 
 Delete Fail
     [Arguments]  @{obj}
     :For  ${obj}  in  @{obj}
-    \    Retry Wait Until Page Contains Element  //clr-tab-content//div[contains(.,'${obj}')]/../div/clr-icon[@shape='error-standard']
+    \    Retry Wait Until Page Contains Element  //*[@id='contentAll']//div[contains(.,'${obj}')]/../div/clr-icon[@shape='error-standard']
     Sleep  1
     Capture Page Screenshot
 
@@ -69,16 +68,16 @@ Multi-delete User
     :For  ${obj}  in  @{obj}
     \    Retry Element Click  //clr-dg-row[contains(.,'${obj}')]//label
     Retry Element Click  ${member_action_xpath}
-    Retry Element Click  //clr-dropdown/clr-dropdown-menu/button[2]
+    Retry Element Click  //*[@id='deleteUser']
     Retry Double Keywords When Error  Retry Element Click  ${delete_btn}  Retry Wait Until Page Not Contains Element  ${delete_btn}
 
 
 Multi-delete Member
     [Arguments]    @{obj}
     :For  ${obj}  in  @{obj}
-    \    Retry Element Click  //clr-dg-row[contains(.,'${obj}')]//label
-    Retry Element Click  ${member_action_xpath}
-    Retry Element Click  ${delete_action_xpath}
+    \    Retry Element Click  //clr-dg-row[contains(.,'${obj}')]//clr-checkbox-wrapper/label
+    Retry Double Keywords When Error  Retry Element Click  ${member_action_xpath}  Retry Wait Until Page Contains Element  ${delete_action_xpath}
+    Retry Double Keywords When Error  Retry Element Click  ${delete_action_xpath}  Retry Wait Until Page Contains Element  ${delete_btn}
     Retry Double Keywords When Error  Retry Element Click  ${delete_btn}  Retry Wait Until Page Not Contains Element  ${delete_btn}
 
 

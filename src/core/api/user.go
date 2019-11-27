@@ -17,6 +17,11 @@ package api
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/core/filter"
+	"net/http"
+	"regexp"
+	"strconv"
+
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -25,9 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"net/http"
-	"regexp"
-	"strconv"
 )
 
 // UserAPI handles request to /api/users/{}
@@ -51,7 +53,7 @@ type userSearch struct {
 	Username string `json:"username"`
 }
 
-type secretResp struct {
+type secretReq struct {
 	Secret string `json:"secret"`
 }
 
@@ -221,11 +223,14 @@ func (ua *UserAPI) Search() {
 	}
 	query := &models.UserQuery{
 		Username: ua.GetString("username"),
-		Email:    ua.GetString("email"),
 		Pagination: &models.Pagination{
 			Page: page,
 			Size: size,
 		},
+	}
+	if len(query.Username) == 0 {
+		ua.SendBadRequestError(errors.New("username is required"))
+		return
 	}
 
 	total, err := dao.GetTotalOfUsers(query)
@@ -256,11 +261,12 @@ func (ua *UserAPI) Put() {
 		ua.SendForbiddenError(fmt.Errorf("User with ID %d cannot be modified", ua.userID))
 		return
 	}
-	user := models.User{UserID: ua.userID}
+	user := models.User{}
 	if err := ua.DecodeJSONReq(&user); err != nil {
 		ua.SendBadRequestError(err)
 		return
 	}
+	user.UserID = ua.userID
 	err := commonValidate(user)
 	if err != nil {
 		log.Warningf("Bad request in change user profile: %v", err)
@@ -313,6 +319,11 @@ func (ua *UserAPI) Post() {
 		return
 	}
 
+	if !ua.IsAdmin && !filter.ReqCarriesSession(ua.Ctx.Request) {
+		ua.SendForbiddenError(errors.New("self-registration cannot be triggered via API"))
+		return
+	}
+
 	user := models.User{}
 	if err := ua.DecodeJSONReq(&user); err != nil {
 		ua.SendBadRequestError(err)
@@ -324,6 +335,14 @@ func (ua *UserAPI) Post() {
 		ua.RenderError(http.StatusBadRequest, "register error:"+err.Error())
 		return
 	}
+
+	if !ua.IsAdmin && user.HasAdminRole {
+		msg := "Non-admin cannot create an admin user."
+		log.Errorf(msg)
+		ua.SendForbiddenError(errors.New(msg))
+		return
+	}
+
 	userExist, err := dao.UserExists(user, "username")
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
@@ -346,6 +365,7 @@ func (ua *UserAPI) Post() {
 		ua.SendConflictError(errors.New("email has already been used"))
 		return
 	}
+
 	userID, err := dao.Register(user)
 	if err != nil {
 		log.Errorf("Error occurred in Register: %v", err)
@@ -392,8 +412,8 @@ func (ua *UserAPI) ChangePassword() {
 		return
 	}
 
-	if len(req.NewPassword) == 0 {
-		ua.SendBadRequestError(errors.New("empty new_password"))
+	if err := validateSecret(req.NewPassword); err != nil {
+		ua.SendBadRequestError(err)
 		return
 	}
 
@@ -407,20 +427,21 @@ func (ua *UserAPI) ChangePassword() {
 		return
 	}
 	if changePwdOfOwn {
-		if user.Password != utils.Encrypt(req.OldPassword, user.Salt) {
+		if user.Password != utils.Encrypt(req.OldPassword, user.Salt, user.PasswordVersion) {
 			log.Info("incorrect old_password")
 			ua.SendForbiddenError(errors.New("incorrect old_password"))
 			return
 		}
 	}
-	if user.Password == utils.Encrypt(req.NewPassword, user.Salt) {
+	if user.Password == utils.Encrypt(req.NewPassword, user.Salt, user.PasswordVersion) {
 		ua.SendBadRequestError(errors.New("the new password can not be same with the old one"))
 		return
 	}
 
 	updatedUser := models.User{
-		UserID:   ua.userID,
-		Password: req.NewPassword,
+		UserID:          ua.userID,
+		Password:        req.NewPassword,
+		PasswordVersion: user.PasswordVersion,
 	}
 	if err = dao.ChangeUserPassword(updatedUser); err != nil {
 		ua.SendInternalServerError(fmt.Errorf("failed to change password of user %d: %v", ua.userID, err))
@@ -498,8 +519,8 @@ func (ua *UserAPI) ListUserPermissions() {
 	return
 }
 
-// GenCLISecret generates a new CLI secret and replace the old one
-func (ua *UserAPI) GenCLISecret() {
+// SetCLISecret handles request PUT /api/users/:id/cli_secret to update the CLI secret of the user
+func (ua *UserAPI) SetCLISecret() {
 	if ua.AuthMode != common.OIDCAuth {
 		ua.SendPreconditionFailedError(errors.New("the auth mode has to be oidc auth"))
 		return
@@ -520,8 +541,17 @@ func (ua *UserAPI) GenCLISecret() {
 		return
 	}
 
-	sec := utils.GenerateRandomString()
-	encSec, err := utils.ReversibleEncrypt(sec, ua.secretKey)
+	s := &secretReq{}
+	if err := ua.DecodeJSONReq(s); err != nil {
+		ua.SendBadRequestError(err)
+		return
+	}
+	if err := validateSecret(s.Secret); err != nil {
+		ua.SendBadRequestError(err)
+		return
+	}
+
+	encSec, err := utils.ReversibleEncrypt(s.Secret, ua.secretKey)
 	if err != nil {
 		log.Errorf("Failed to encrypt secret, error: %v", err)
 		ua.SendInternalServerError(errors.New("failed to encrypt secret"))
@@ -534,8 +564,6 @@ func (ua *UserAPI) GenCLISecret() {
 		ua.SendInternalServerError(errors.New("failed to update secret in DB"))
 		return
 	}
-	ua.Data["json"] = secretResp{sec}
-	ua.ServeJSON()
 }
 
 func (ua *UserAPI) getOIDCUserInfo() (*models.OIDCUser, error) {
@@ -574,10 +602,22 @@ func validate(user models.User) error {
 	if utils.IsContainIllegalChar(user.Username, []string{",", "~", "#", "$", "%"}) {
 		return fmt.Errorf("username contains illegal characters")
 	}
-	if utils.IsIllegalLength(user.Password, 8, 20) {
-		return fmt.Errorf("password with illegal length")
+
+	if err := validateSecret(user.Password); err != nil {
+		return err
 	}
+
 	return commonValidate(user)
+}
+
+func validateSecret(in string) error {
+	hasLower := regexp.MustCompile(`[a-z]`)
+	hasUpper := regexp.MustCompile(`[A-Z]`)
+	hasNumber := regexp.MustCompile(`[0-9]`)
+	if len(in) >= 8 && hasLower.MatchString(in) && hasUpper.MatchString(in) && hasNumber.MatchString(in) {
+		return nil
+	}
+	return errors.New("the password or secret must longer than 8 chars with at least 1 uppercase letter, 1 lowercase letter and 1 number")
 }
 
 // commonValidate validates email, realname, comment information when user register or change their profile

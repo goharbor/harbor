@@ -56,7 +56,7 @@ func (sa *SecretAuthenticator) DoAuth(req *http.Request) error {
 	}
 
 	if !strings.HasPrefix(h, secretPrefix) {
-		return fmt.Errorf("'%s' should start with '%s' but got '%s' now", authHeader, secretPrefix, h)
+		return fmt.Errorf("'%s' should start with '%s'", authHeader, secretPrefix)
 	}
 
 	secret := strings.TrimSpace(strings.TrimPrefix(h, secretPrefix))

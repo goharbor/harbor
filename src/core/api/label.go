@@ -49,7 +49,7 @@ func (l *LabelAPI) Prepare() {
 	if method == http.MethodPut || method == http.MethodDelete {
 		id, err := l.GetInt64FromPath(":id")
 		if err != nil || id <= 0 {
-			l.SendBadRequestError(errors.New("invalid lable ID"))
+			l.SendBadRequestError(errors.New("invalid label ID"))
 			return
 		}
 
@@ -78,8 +78,7 @@ func (l *LabelAPI) requireAccess(label *models.Label, action rbac.Action, subres
 		if len(subresources) == 0 {
 			subresources = append(subresources, rbac.ResourceLabel)
 		}
-		resource := rbac.NewProjectNamespace(label.ProjectID).Resource(subresources...)
-		hasPermission = l.SecurityCtx.Can(action, resource)
+		hasPermission, _ = l.HasProjectPermission(label.ProjectID, action, subresources...)
 	}
 
 	if !hasPermission {
@@ -203,13 +202,7 @@ func (l *LabelAPI) List() {
 			return
 		}
 
-		resource := rbac.NewProjectNamespace(projectID).Resource(rbac.ResourceLabel)
-		if !l.SecurityCtx.Can(rbac.ActionList, resource) {
-			if !l.SecurityCtx.IsAuthenticated() {
-				l.SendUnAuthorizedError(errors.New("UnAuthorized"))
-				return
-			}
-			l.SendForbiddenError(errors.New(l.SecurityCtx.GetUsername()))
+		if !l.RequireProjectAccess(projectID, rbac.ActionList, rbac.ResourceLabel) {
 			return
 		}
 		query.ProjectID = projectID

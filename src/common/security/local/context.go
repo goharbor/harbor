@@ -17,7 +17,6 @@ package local
 import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/rbac/project"
@@ -73,10 +72,10 @@ func (s *SecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
 	if err == nil {
 		switch ns.Kind() {
 		case "project":
-			projectIDOrName := ns.Identity()
-			isPublicProject, _ := s.pm.IsPublic(projectIDOrName)
-			projectNamespace := rbac.NewProjectNamespace(projectIDOrName, isPublicProject)
-			user := project.NewUser(s, projectNamespace, s.GetProjectRoles(projectIDOrName)...)
+			projectID := ns.Identity().(int64)
+			isPublicProject, _ := s.pm.IsPublic(projectID)
+			projectNamespace := rbac.NewProjectNamespace(projectID, isPublicProject)
+			user := project.NewUser(s, projectNamespace, s.GetProjectRoles(projectID)...)
 			return rbac.HasPermission(user, resource, action)
 		}
 	}
@@ -126,12 +125,28 @@ func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 			roles = append(roles, common.RoleDeveloper)
 		case "RS":
 			roles = append(roles, common.RoleGuest)
+		case "LRS":
+			roles = append(roles, common.RoleLimitedGuest)
 		}
 	}
-	if len(roles) != 0 {
-		return roles
+	return mergeRoles(roles, s.GetRolesByGroup(projectIDOrName))
+}
+
+func mergeRoles(rolesA, rolesB []int) []int {
+	type void struct{}
+	var roles []int
+	var placeHolder void
+	roleSet := make(map[int]void)
+	for _, r := range rolesA {
+		roleSet[r] = placeHolder
 	}
-	return s.GetRolesByGroup(projectIDOrName)
+	for _, r := range rolesB {
+		roleSet[r] = placeHolder
+	}
+	for r := range roleSet {
+		roles = append(roles, r)
+	}
+	return roles
 }
 
 // GetRolesByGroup - Get the group role of current user to the project
@@ -140,12 +155,11 @@ func (s *SecurityContext) GetRolesByGroup(projectIDOrName interface{}) []int {
 	user := s.user
 	project, err := s.pm.Get(projectIDOrName)
 	// No user, group or project info
-	if err != nil || project == nil || user == nil || len(user.GroupList) == 0 {
+	if err != nil || project == nil || user == nil || len(user.GroupIDs) == 0 {
 		return roles
 	}
-	// Get role by LDAP group
-	groupDNConditions := group.GetGroupDNQueryCondition(user.GroupList)
-	roles, err = dao.GetRolesByLDAPGroup(project.ProjectID, groupDNConditions)
+	// Get role by Group ID
+	roles, err = dao.GetRolesByGroupID(project.ProjectID, user.GroupIDs)
 	if err != nil {
 		return nil
 	}
@@ -157,8 +171,8 @@ func (s *SecurityContext) GetMyProjects() ([]*models.Project, error) {
 	result, err := s.pm.List(
 		&models.ProjectQueryParam{
 			Member: &models.MemberQuery{
-				Name:      s.GetUsername(),
-				GroupList: s.user.GroupList,
+				Name:     s.GetUsername(),
+				GroupIDs: s.user.GroupIDs,
 			},
 		})
 	if err != nil {
