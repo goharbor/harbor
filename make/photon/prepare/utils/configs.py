@@ -54,7 +54,7 @@ def validate(conf: dict, **kwargs):
     for conf_key in ('registry_custom_ca_bundle_path', 'core_custom_ca_bundle_path'):
         if conf.get(conf_key):
             custom_ca_bundle_path = conf.get(conf_key) or ''
-            ca_bundle_host_path = os.path.join(host_root_dir, custom_ca_bundle_path)
+            ca_bundle_host_path = os.path.join(host_root_dir, custom_ca_bundle_path.strip('/'))
             try:
                 uid = os.stat(ca_bundle_host_path).st_uid
                 st_mode = os.stat(ca_bundle_host_path).st_mode
