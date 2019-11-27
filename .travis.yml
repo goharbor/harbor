@@ -1,23 +1,23 @@
 sudo: true
 language: go
 go:
-- 1.12.12
+- 1.13.4
 go_import_path: github.com/goharbor/harbor
 services:
 - docker
 dist: trusty
 matrix:
   include:
-  - go: 1.12.12
+  - go: 1.13.4
     env:
     - UTTEST=true
-  - go: 1.12.12
+  - go: 1.13.4
     env:
     - APITEST_DB=true
-  - go: 1.12.12
+  - go: 1.13.4
     env:
     - APITEST_LDAP=true
-  - go: 1.12.12
+  - go: 1.13.4
     env:
     - OFFLINE=true
   - language: node_js
