@@ -14,6 +14,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, APP_INITIALIZER, LOCALE_ID, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AppComponent } from './app.component';
+import { InterceptHttpService } from './intercept-http.service';
 
 import { BaseModule } from './base/base.module';
 import { HarborRoutingModule } from './harbor-routing.module';
@@ -43,6 +44,8 @@ import { InterrogationServicesComponent } from "./interrogation-services/interro
 import { LabelsComponent } from './labels/labels.component';
 import { ProjectQuotasComponent } from './project-quotas/project-quotas.component';
 import { HarborLibraryModule } from "../lib/harbor-library.module";
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+
 
 registerLocaleData(zh, 'zh-cn');
 registerLocaleData(es, 'es-es');
@@ -95,7 +98,9 @@ export function getCurrentLanguage(translateService: TranslateService) {
         deps: [ AppConfigService, SkinableConfig],
         multi: true
       },
-      {provide: LOCALE_ID, useValue: "en-US"}
+      {provide: LOCALE_ID, useValue: "en-US"},
+      { provide: HTTP_INTERCEPTORS, useClass: InterceptHttpService, multi: true }
+
     ],
     schemas: [
         CUSTOM_ELEMENTS_SCHEMA

@@ -26,9 +26,8 @@ Go Into Project
     \    Retry Wait Element  ${search_input}
     \    Retry Clear Element Text  ${search_input}
     \    Input Text  ${search_input}  ${project}
-    \    Retry Wait Until Page Contains  ${project}
-    \    ${out}  Run Keyword If  ${has_image}==${false}  Retry Double Keywords When Error  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]
-    \    ...  ELSE  Retry Double Keywords When Error  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  Wait Until Element Is Visible And Enabled  xpath=//project-detail//hbr-repository-gridview//clr-dg-cell[contains(.,'${project}/')]
+    \    ${out}  Run Keyword If  ${has_image}==${false}  Retry Double Keywords When Error  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  Wait Until Element Is Visible And Enabled  xpath=//clr-dg-placeholder[contains(.,\"We couldn\'t find any repositories!\")]  DoAssert=${false}
+    \    ...  ELSE  Retry Double Keywords When Error  Retry Element Click  xpath=//*[@id='project-results']//clr-dg-cell[contains(.,'${project}')]/a  Wait Until Element Is Visible And Enabled  xpath=//project-detail//hbr-repository-gridview//clr-dg-cell[contains(.,'${project}/')]  DoAssert=${false}
     \    Log To Console  ${out}
     \    Run Keyword If  ${out} == 'PASS'  Exit For Loop
     \    Sleep  1

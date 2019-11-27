@@ -325,16 +325,16 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Errorf("fail to get auth proxy settings, %v", err)
 		return false
 	}
-	tokenReviewResponse, err := authproxy.TokenReview(proxyPwd, httpAuthProxyConf)
+	tokenReviewStatus, err := authproxy.TokenReview(proxyPwd, httpAuthProxyConf)
 	if err != nil {
 		log.Errorf("fail to review token, %v", err)
 		return false
 	}
-
-	if !tokenReviewResponse.Status.Authenticated {
-		log.Errorf("fail to auth user: %s", rawUserName)
+	if rawUserName != tokenReviewStatus.User.Username {
+		log.Errorf("user name doesn't match with token: %s", rawUserName)
 		return false
 	}
+
 	user, err := dao.GetUser(models.User{
 		Username: rawUserName,
 	})
@@ -346,11 +346,12 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Errorf("User: %s has not been on boarded yet.", rawUserName)
 		return false
 	}
-	if rawUserName != tokenReviewResponse.Status.User.Username {
-		log.Errorf("user name doesn't match with token: %s", rawUserName)
+	u2, err := authproxy.UserFromReviewStatus(tokenReviewStatus)
+	if err != nil {
+		log.Errorf("Failed to get user information from token review status, error: %v", err)
 		return false
 	}
-
+	user.GroupIDs = u2.GroupIDs
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context for auth proxy...")
 	securCtx := local.NewSecurityContext(user, pm)
