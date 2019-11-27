@@ -14,6 +14,7 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule, APP_INITIALIZER, LOCALE_ID } from '@angular/core';
 import { AppComponent } from './app.component';
+import { InterceptHttpService } from './intercept-http.service';
 
 import { BaseModule } from './base/base.module';
 import { HarborRoutingModule } from './harbor-routing.module';
@@ -39,6 +40,8 @@ import { VulnerabilityPageComponent } from './vulnerability-page/vulnerability-p
 import { GcPageComponent } from './gc-page/gc-page.component';
 import { OidcOnboardModule } from './oidc-onboard/oidc-onboard.module';
 import { LicenseModule } from './license/license.module';
+
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
 registerLocaleData(zh, 'zh-cn');
 registerLocaleData(es, 'es-es');
 registerLocaleData(localeFr, 'fr-fr');
@@ -91,7 +94,9 @@ export function getCurrentLanguage(translateService: TranslateService) {
         provide: LOCALE_ID,
         useFactory: getCurrentLanguage,
         deps: [ TranslateService ]
-      }
+      },
+      { provide: HTTP_INTERCEPTORS, useClass: InterceptHttpService, multi: true }
+
     ],
     bootstrap: [AppComponent]
 })
