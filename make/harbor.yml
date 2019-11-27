@@ -4,6 +4,10 @@
 # DO NOT use localhost or 127.0.0.1, because Harbor needs to be accessed by external clients.
 hostname: reg.mydomain.com
 
+# core related config
+core:
+  ca_bundle: /etc/pki/ca-trust/extracted/pem/tls-ca-bundle.pem
+
 # http related config
 http:
   # port for http, default is 80. If https enabled, this port will redirect to https port
