@@ -235,3 +235,17 @@ Delete Replication Rule
     Retry Element Click  ${action_bar_delete}
     Wait Until Page Contains Element  ${dialog_delete}
     Retry Element Click  ${dialog_delete}
+
+Image Should Be Replicated To Project
+    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=10
+    :For  ${n}  IN RANGE  1  ${times}
+    \    Sleep  ${period}
+    \    Go Into Project    ${project}
+    \    Switch To Project Repo
+    \    #In AWS-ECR, under repository a, there're only several images: httpd,alpine,hello-world.
+    \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains  ${project}/${image}
+    \    Log To Console  Return value is ${out[0]}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    \    Sleep  5
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out[0]}'  'PASS'
