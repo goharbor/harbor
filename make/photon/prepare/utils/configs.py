@@ -53,7 +53,10 @@ def validate(conf: dict, **kwargs):
     # ca_bundle validate
     if conf.get('registry_custom_ca_bundle_path'):
         registry_custom_ca_bundle_path = conf.get('registry_custom_ca_bundle_path') or ''
-        ca_bundle_host_path = os.path.join(host_root_dir, registry_custom_ca_bundle_path)
+        if registry_custom_ca_bundle_path.startswith('/data/'):
+            ca_bundle_host_path = registry_custom_ca_bundle_path
+        else:
+            ca_bundle_host_path = os.path.join(host_root_dir, registry_custom_ca_bundle_path.lstrip('/'))
         try:
             uid = os.stat(ca_bundle_host_path).st_uid
             st_mode = os.stat(ca_bundle_host_path).st_mode
