@@ -4,7 +4,6 @@ FROM node:10.15.0 as nodeportal
 WORKDIR /build_dir
 
 ARG npm_registry=https://registry.npmjs.org
-ENV NPM_CONFIG_REGISTRY=${npm_registry}
 
 COPY src/portal/package.json /build_dir
 COPY src/portal/package-lock.json /build_dir
@@ -17,6 +16,8 @@ RUN apt-get update \
 
 COPY ./LICENSE /build_dir
 COPY src/portal /build_dir
+
+ENV NPM_CONFIG_REGISTRY=${npm_registry}
 
 RUN node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --prod
 
