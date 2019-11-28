@@ -15,16 +15,21 @@
 package robot
 
 import (
+	"sync"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr"
 )
 
 // SecurityContext implements security.Context interface based on database
 type SecurityContext struct {
-	robot  *models.Robot
-	pm     promgr.ProjectManager
-	policy []*rbac.Policy
+	robot     *models.Robot
+	pm        promgr.ProjectManager
+	policy    []*rbac.Policy
+	evaluator rbac.Evaluator
+	once      sync.Once
 }
 
 // NewSecurityContext ...
@@ -72,17 +77,22 @@ func (s *SecurityContext) GetProjectRoles(projectIDOrName interface{}) []int {
 
 // Can returns whether the robot can do action on resource
 func (s *SecurityContext) Can(action rbac.Action, resource rbac.Resource) bool {
-	ns, err := resource.GetNamespace()
-	if err == nil {
-		switch ns.Kind() {
-		case "project":
+	s.once.Do(func() {
+		s.evaluator = rbac.NewNamespaceEvaluator("project", func(ns rbac.Namespace) rbac.Evaluator {
 			projectID := ns.Identity().(int64)
-			isPublicProject, _ := s.pm.IsPublic(projectID)
-			projectNamespace := rbac.NewProjectNamespace(projectID, isPublicProject)
-			robot := NewRobot(s.GetUsername(), projectNamespace, s.policy)
-			return rbac.HasPermission(robot, resource, action)
-		}
-	}
+			proj, err := s.pm.Get(projectID)
+			if err != nil {
+				log.Errorf("failed to get project %d, error: %v", projectID, err)
+				return nil
+			}
+			if proj == nil {
+				return nil
+			}
 
-	return false
+			robot := NewRobot(s.GetUsername(), rbac.NewProjectNamespace(projectID, proj.IsPublic()), s.policy)
+			return rbac.NewUserEvaluator(robot)
+		})
+	})
+
+	return s.evaluator != nil && s.evaluator.HasPermission(resource, action)
 }
