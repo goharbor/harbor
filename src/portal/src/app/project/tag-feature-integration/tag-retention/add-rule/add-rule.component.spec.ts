@@ -9,7 +9,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TagRetentionService } from "../tag-retention.service";
-import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
+import { InlineAlertComponent } from "../../../../shared/inline-alert/inline-alert.component";
 import { delay } from 'rxjs/operators';
 describe('AddRuleComponent', () => {
     let component: AddRuleComponent;

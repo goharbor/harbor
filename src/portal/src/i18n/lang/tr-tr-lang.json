@@ -248,7 +248,8 @@
         "HELMCHART": "Helm Tabloları",
         "ROBOT_ACCOUNTS": "Robot Hesapları",
         "WEBHOOKS": "Ağ Kancaları",
-        "IMMUTABLE_TAG": "Tag Immutability"
+        "IMMUTABLE_TAG": "Tag Immutability",
+        "TAG_STRATEGY": "Tag Strategy"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Proje kaydı",

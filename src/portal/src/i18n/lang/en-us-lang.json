@@ -248,7 +248,8 @@
         "HELMCHART": "Helm Charts",
         "ROBOT_ACCOUNTS": "Robot Accounts",
         "WEBHOOKS": "Webhooks",
-        "IMMUTABLE_TAG": "Tag Immutability"
+        "IMMUTABLE_TAG": "Tag Immutability",
+        "TAG_STRATEGY": "Tag Strategy"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Project registry",

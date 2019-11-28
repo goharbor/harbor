@@ -7,8 +7,8 @@ import {
 } from "@angular/core";
 import { ImmutableRetentionRule, RuleMetadate } from "../../tag-retention/retention";
 import { ImmutableTagService } from "../immutable-tag.service";
-import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
-import { compareValue } from "../../../../lib/utils/utils";
+import { compareValue } from "../../../../../lib/utils/utils";
+import { InlineAlertComponent } from "../../../../shared/inline-alert/inline-alert.component";
 
 const EXISTING_RULE = "TAG_RETENTION.EXISTING_RULE";
 const INVALID_RULE = "TAG_RETENTION.INVALID_RULE";

@@ -16,8 +16,8 @@ import { HttpClient, HttpParams, HttpResponse } from "@angular/common/http";
 import { Retention, RuleMetadate } from "./retention";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { map, catchError } from "rxjs/operators";
-import { Project } from "../project";
-import { buildHttpRequestOptionsWithObserveResponse } from "../../../lib/utils/utils";
+import { Project } from "../../project";
+import { buildHttpRequestOptionsWithObserveResponse } from "../../../../lib/utils/utils";
 
 @Injectable()
 export class TagRetentionService {

@@ -247,7 +247,8 @@
         "HELMCHART": "Helm Charts",
         "ROBOT_ACCOUNTS": "机器人账户",
         "WEBHOOKS": "Webhooks",
-        "IMMUTABLE_TAG": "不可变的Tag"
+        "IMMUTABLE_TAG": "不可变的Tag",
+        "TAG_STRATEGY": "Tag 策略"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "项目仓库",

@@ -7,7 +7,7 @@ import { TranslateModule } from '@ngx-translate/core';
 import { ImmutableTagService } from '../immutable-tag.service';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
-import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
+import { InlineAlertComponent } from "../../../../shared/inline-alert/inline-alert.component";
 import { ImmutableRetentionRule } from "../../tag-retention/retention";
 describe('AddRuleComponent', () => {
   let component: AddRuleComponent;

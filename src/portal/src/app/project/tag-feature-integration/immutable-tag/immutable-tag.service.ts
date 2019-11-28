@@ -3,8 +3,9 @@ import { HttpClient } from "@angular/common/http";
 import { ImmutableRetentionRule, RuleMetadate } from "../tag-retention/retention";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { map, catchError } from "rxjs/operators";
-import { Project } from "../project";
-import { HTTP_JSON_OPTIONS } from "../../../lib/utils/utils";
+import { Project } from "../../project";
+import { HTTP_JSON_OPTIONS } from "../../../../lib/utils/utils";
+
 
 @Injectable()
 export class ImmutableTagService {
