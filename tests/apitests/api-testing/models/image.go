@@ -8,10 +8,10 @@ type Repository struct {
 
 //Tag : For /api/repositories/:repo/tags
 type Tag struct {
-	Digest       string                 `json:"digest"`
-	Name         string                 `json:"name"`
-	Signature    map[string]interface{} `json:"signature, omitempty"`
-	ScanOverview *ScanOverview          `json:"scan_overview, omitempty"`
+	Digest       string                  `json:"digest"`
+	Name         string                  `json:"name"`
+	Signature    map[string]interface{}  `json:"signature, omitempty"`
+	ScanOverview map[string]ScanOverview `json:"scan_overview, omitempty"`
 }
 
 //ScanOverview : For scanning

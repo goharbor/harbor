@@ -17,6 +17,11 @@ type ImageUtil struct {
 	testingClient *client.APIClient
 }
 
+const (
+	// MimeTypeNativeReport defines the mime type for native report
+	MimeTypeNativeReport = "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0"
+)
+
 //NewImageUtil : Constructor
 func NewImageUtil(rootURI string, httpClient *client.APIClient) *ImageUtil {
 	if len(strings.TrimSpace(rootURI)) == 0 || httpClient == nil {
@@ -76,8 +81,11 @@ func (iu *ImageUtil) ScanTag(repoName string, tagName string) error {
 				return
 			}
 
-			if tag.ScanOverview != nil && tag.ScanOverview.Status == "finished" {
-				done <- true
+			if tag.ScanOverview != nil {
+				summary, ok := tag.ScanOverview[MimeTypeNativeReport]
+				if ok && summary.Status == "Success" {
+					done <- true
+				}
 			}
 		}
 	}()
@@ -86,7 +94,7 @@ func (iu *ImageUtil) ScanTag(repoName string, tagName string) error {
 	case <-done:
 		return nil
 	case <-time.After(20 * time.Second):
-		return errors.New("Scan timeout after 30 seconds")
+		return errors.New("Scan timeout after 20 seconds")
 	}
 }
 
