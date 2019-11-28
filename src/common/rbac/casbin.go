@@ -17,17 +17,20 @@ package rbac
 import (
 	"errors"
 	"fmt"
+	"math/rand"
 	"regexp"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/casbin/casbin"
 	"github.com/casbin/casbin/model"
 	"github.com/casbin/casbin/persist"
-	"github.com/casbin/casbin/util"
+	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 var (
-	errNotImplemented = errors.New("Not implemented")
+	errNotImplemented = errors.New("not implemented")
 )
 
 // Syntax for models see https://casbin.org/docs/en/syntax-for-models
@@ -53,12 +56,59 @@ e = some(where (p.eft == allow)) && !some(where (p.eft == deny))
 m = g(r.sub, p.sub) && keyMatch2(r.obj, p.obj) && (r.act == p.act || p.act == '*')
 `
 
-// keyMatch2 determines whether key1 matches the pattern of key2, its behavior most likely the builtin KeyMatch2
-// except that the match of ("/project/1/robot", "/project/1") will return false
-func keyMatch2(key1 string, key2 string) bool {
-	key2 = strings.Replace(key2, "/*", "/.*", -1)
+type regexpStore struct {
+	entries sync.Map
+}
 
+func (s *regexpStore) Get(key string, build func(string) *regexp.Regexp) *regexp.Regexp {
+	value, ok := s.entries.Load(key)
+	if !ok {
+		value = build(key)
+		s.entries.Store(key, value)
+	}
+
+	return value.(*regexp.Regexp)
+}
+
+func (s *regexpStore) Purge() {
+	var keys []interface{}
+	s.entries.Range(func(key, value interface{}) bool {
+		keys = append(keys, key)
+		return true
+	})
+
+	for _, key := range keys {
+		s.entries.Delete(key)
+	}
+}
+
+var (
+	store = &regexpStore{}
+)
+
+func init() {
+	startRegexpStorePurging(store, time.Hour*24)
+}
+
+func startRegexpStorePurging(s *regexpStore, intervalDuration time.Duration) {
+	go func() {
+		rand.Seed(time.Now().Unix())
+		jitter := time.Duration(rand.Int()%60) * time.Minute
+		log.Debugf("Starting regexp store purge in %s", jitter)
+		time.Sleep(jitter)
+
+		for {
+			s.Purge()
+			log.Debugf("Starting regexp store purge in %s", intervalDuration)
+			time.Sleep(intervalDuration)
+		}
+	}()
+}
+
+func keyMatch2Build(key2 string) *regexp.Regexp {
 	re := regexp.MustCompile(`(.*):[^/]+(.*)`)
+
+	key2 = strings.Replace(key2, "/*", "/.*", -1)
 	for {
 		if !strings.Contains(key2, "/:") {
 			break
@@ -67,7 +117,13 @@ func keyMatch2(key1 string, key2 string) bool {
 		key2 = re.ReplaceAllString(key2, "$1[^/]+$2")
 	}
 
-	return util.RegexMatch(key1, "^"+key2+"$")
+	return regexp.MustCompile("^" + key2 + "$")
+}
+
+// keyMatch2 determines whether key1 matches the pattern of key2, its behavior most likely the builtin KeyMatch2
+// except that the match of ("/project/1/robot", "/project/1") will return false
+func keyMatch2(key1 string, key2 string) bool {
+	return store.Get(key2, keyMatch2Build).MatchString(key1)
 }
 
 func keyMatch2Func(args ...interface{}) (interface{}, error) {

@@ -146,8 +146,3 @@ func (u *BaseUser) GetUserName() string {
 func (u *BaseUser) GetPolicies() []*Policy {
 	return nil
 }
-
-// HasPermission returns whether the user has action permission on resource
-func HasPermission(user User, resource Resource, action Action) bool {
-	return enforcerForUser(user).Enforce(user.GetUserName(), resource.String(), action.String())
-}
