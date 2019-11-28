@@ -15,7 +15,6 @@ src/common/dao/dao.test
 jobservice/test
 
 src/portal/coverage/
-src/portal/lib/coverage/
 src/portal/dist/
 src/portal/html-report/
 src/portal/node_modules/
@@ -33,7 +32,7 @@ src/portal/typings/
 
 src/portal/src/**/*.js
 src/portal/src/**/*.js.map
-src/portal/lib/coverage
+src/portal/src/lib/coverage
 **/npm*.log
 
 **/*ngsummary.json

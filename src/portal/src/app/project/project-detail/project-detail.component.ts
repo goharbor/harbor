@@ -13,14 +13,12 @@
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-
 import { Project } from '../project';
-
 import { SessionService } from '../../shared/session.service';
-
 import { AppConfigService } from "../../app-config.service";
-import { UserPermissionService, USERSTATICPERMISSION, ErrorHandler, ProjectService } from "@harbor/ui";
 import { forkJoin } from "rxjs";
+import { ProjectService, UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
 @Component({
   selector: 'project-detail',
   templateUrl: 'project-detail.component.html',

@@ -1,4 +1,4 @@
-@import "../../../../../lib/src/mixin";
+@import "../../../../lib/mixin";
 $size24:24px;
 $size60:60px;
 
@@ -67,7 +67,8 @@ $size60:60px;
 }
 
 .size-24 {
-    width: 60px;
+    width:$size24;
+    height:$size24;
 }
 
 .size-60 {

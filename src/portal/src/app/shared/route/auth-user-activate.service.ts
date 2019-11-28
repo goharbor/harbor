@@ -21,13 +21,12 @@ import {
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
 import { AdmiralQueryParamKey } from '../../shared/shared.const';
-import { CommonRoutes } from '@harbor/ui';
 import { AppConfigService } from '../../app-config.service';
 import { maintainUrlQueryParmas } from '../../shared/shared.utils';
 import { MessageHandlerService } from '../message-handler/message-handler.service';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-import { map, catchError } from "rxjs/operators";
-import { Observable, throwError as observableThrowError, observable } from "rxjs";
+import { Observable } from "rxjs";
+import { CommonRoutes } from "../../../lib/entities/shared.const";
 @Injectable()
 export class AuthCheckGuard implements CanActivate, CanActivateChild {
   constructor(

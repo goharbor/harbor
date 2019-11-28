@@ -12,18 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Component, OnInit, ViewChild, OnDestroy } from '@angular/core';
-
 import { Subscription, Observable, forkJoin } from "rxjs";
-
 import { TranslateService } from '@ngx-translate/core';
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../shared/shared.const';
-import {
-    operateChanges,
-    OperateInfo,
-    OperationService,
-    OperationState,
-    errorHandler as errorHandFn,
-} from '@harbor/ui';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { ConfirmationMessage } from '../shared/confirmation-dialog/confirmation-message';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
@@ -35,6 +26,9 @@ import { User } from './user';
 import { ChangePasswordComponent } from "./change-password/change-password.component";
 import { map, catchError } from 'rxjs/operators';
 import { throwError as observableThrowError } from "rxjs";
+import { OperationService } from "../../lib/components/operation/operation.service";
+import { operateChanges, OperateInfo, OperationState } from "../../lib/components/operation/operate";
+import { errorHandler } from "../../lib/utils/shared/shared.utils";
 
 /**
  * NOTES:
@@ -289,7 +283,7 @@ export class UserComponent implements OnInit, OnDestroy {
                 operateChanges(operMessage, OperationState.success);
             });
         }), catchError(error => {
-            const message = errorHandFn(error);
+            const message = errorHandler(error);
             this.translate.get(message).subscribe(res =>
                 operateChanges(operMessage, OperationState.failure, res)
             );

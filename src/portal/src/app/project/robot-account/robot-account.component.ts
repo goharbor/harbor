@@ -21,16 +21,12 @@ import {
   ConfirmationState,
   ConfirmationButtons
 } from "../../shared/shared.const";
-import {
-  operateChanges,
-  OperateInfo,
-  OperationService,
-  OperationState,
-  UserPermissionService,
-  USERSTATICPERMISSION,
-  ErrorHandler,
-  errorHandler as errorHandFn
-} from "@harbor/ui";
+import { OperationService } from "../../../lib/components/operation/operation.service";
+import { UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { operateChanges, OperateInfo, OperationState } from "../../../lib/components/operation/operate";
+import { errorHandler as errorHandlerFn } from "../../../lib/utils/shared/shared.utils";
+
 @Component({
   selector: "app-robot-account",
   templateUrl: "./robot-account.component.html",
@@ -164,7 +160,7 @@ export class RobotAccountComponent implements OnInit, OnDestroy {
         map(
           () => operateChanges(operMessage, OperationState.success),
           catchError(error => {
-            const errorMsg = errorHandFn(error);
+            const errorMsg = errorHandlerFn(error);
             this.translate.get(errorMsg).subscribe(res =>
               operateChanges(operMessage, OperationState.failure, res)
             );

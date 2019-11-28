@@ -12,7 +12,8 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { ActivatedRoute } from '@angular/router';
 import { of, throwError } from 'rxjs';
-import { ErrorHandler, DefaultErrorHandler, clone } from '@harbor/ui';
+import { DefaultErrorHandler, ErrorHandler } from "../../../lib/utils/error-handler";
+import { clone } from "../../../lib/utils/utils";
 
 describe('ImmutableTagComponent', () => {
   let component: ImmutableTagComponent;

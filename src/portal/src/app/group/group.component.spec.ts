@@ -4,13 +4,13 @@ import { ClarityModule } from '@clr/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { FormsModule } from '@angular/forms';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
-import { OperationService } from "@harbor/ui";
 import { SessionService } from "./../shared/session.service";
 import { GroupService } from "./group.service";
 import { of } from "rxjs";
 import { ConfirmationDialogService } from "./../shared/confirmation-dialog/confirmation-dialog.service";
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
 import { AppConfigService } from '../app-config.service';
+import { OperationService } from "../../lib/components/operation/operation.service";
 
 describe('GroupComponent', () => {
   let component: GroupComponent;

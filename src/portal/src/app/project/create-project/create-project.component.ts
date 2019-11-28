@@ -1,5 +1,3 @@
-
-import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +11,7 @@ import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import {debounceTime, distinctUntilChanged} from 'rxjs/operators';
 import {
   Component,
   EventEmitter,
@@ -25,16 +24,15 @@ import {
   SimpleChanges
 } from "@angular/core";
 import { NgForm, Validators, AbstractControl } from "@angular/forms";
-
 import { Subject } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
-
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
-
 import { Project } from "../project";
-import { ProjectService, QuotaUnits, QuotaHardInterface, QuotaUnlimited, getByte
-  , GetIntegerAndUnit, clone, validateLimit, validateCountLimit} from "@harbor/ui";
+import { QuotaUnits, QuotaUnlimited } from "../../../lib/entities/shared.const";
+import { ProjectService, QuotaHardInterface } from "../../../lib/services";
+import { clone, getByte, GetIntegerAndUnit, validateCountLimit, validateLimit } from "../../../lib/utils/utils";
+
 
 @Component({
   selector: "create-project",

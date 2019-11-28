@@ -84,17 +84,11 @@ If you already have a harbor backend environment, you can build a frontend devel
     npm install
     ```
 
-3. Compile the frontend code by the following command.
-
-   ```
-   npm run build_all
-   ```
-
-4. Execute the following command，serve Harbor locally.
+3. Execute the following command，serve Harbor locally.
 
     ```
     npm run start
     ```
 
-5. Then you can visit the Harbor by address:  https://localhost:4200.
+4. Then you can visit the Harbor by address:  https://localhost:4200.
 

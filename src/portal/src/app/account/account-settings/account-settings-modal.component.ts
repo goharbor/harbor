@@ -22,7 +22,6 @@ import { SessionService } from "../../shared/session.service";
 import { InlineAlertComponent } from "../../shared/inline-alert/inline-alert.component";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { SearchTriggerService } from "../../base/global-search/search-trigger.service";
-import { CopyInputComponent, CommonRoutes } from "@harbor/ui";
 import { AccountSettingsModalService } from './account-settings-modal-service.service';
 import {  ConfirmationDialogComponent } from "../../shared/confirmation-dialog/confirmation-dialog.component";
 import {
@@ -31,6 +30,8 @@ import {
 } from "../../shared/shared.const";
 import { randomWord } from '../../shared/shared.utils';
 import { ResetSecret } from './account';
+import { CopyInputComponent } from "../../../lib/components/push-image/copy-input.component";
+import { CommonRoutes } from "../../../lib/entities/shared.const";
 @Component({
   selector: "account-settings-modal",
   templateUrl: "account-settings-modal.component.html",

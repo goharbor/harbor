@@ -11,14 +11,13 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { RepositoryComponent, TagClickEvent} from '@harbor/ui';
-
 import { AppConfigService } from '../../app-config.service';
 import { SessionService } from '../../shared/session.service';
 import { Project } from '../../project/project';
+import { RepositoryComponent } from "../../../lib/components/repository/repository.component";
+import { TagClickEvent } from "../../../lib/services";
 
 @Component({
   selector: 'tag-repository',

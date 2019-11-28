@@ -13,10 +13,9 @@
 // limitations under the License.
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { RepositoryItem } from '@harbor/ui';
-
 import { Project } from '../project/project';
 import { SessionService } from '../shared/session.service';
+import { RepositoryItem } from "../../lib/services";
 @Component({
   selector: 'repository',
   templateUrl: 'repository-page.component.html'

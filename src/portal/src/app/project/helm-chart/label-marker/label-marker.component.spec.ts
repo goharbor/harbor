@@ -4,8 +4,9 @@ import { LabelMarkerComponent } from './label-marker.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
-import { Label, LabelService, ErrorHandler } from '@harbor/ui';
 import { of } from 'rxjs';
+import { LabelService } from "../../../../lib/services";
+import { ErrorHandler } from "../../../../lib/utils/error-handler";
 
 describe('LabelMarkerComponent', () => {
     const mockErrorHandler = null;

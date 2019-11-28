@@ -13,19 +13,17 @@
 // limitations under the License.
 import { Component, OnInit, OnDestroy, ViewChild } from '@angular/core';
 import { Subscription } from "rxjs";
-import {
-    Configuration, StringValueItem, SystemSettingsComponent,
-    isEmpty, clone } from '@harbor/ui';
 import { ConfirmationTargets, ConfirmationState } from '../shared/shared.const';
 import { SessionService } from '../shared/session.service';
 import { ConfirmationDialogService } from '../shared/confirmation-dialog/confirmation-dialog.service';
 import { MessageHandlerService } from '../shared/message-handler/message-handler.service';
-
 import { AppConfigService } from '../app-config.service';
 import { ConfigurationAuthComponent } from './auth/config-auth.component';
 import { ConfigurationEmailComponent } from './email/config-email.component';
 import { ConfigurationService } from './config.service';
-
+import { Configuration, StringValueItem } from "../../lib/components/config/config";
+import { SystemSettingsComponent } from "../../lib/components/config/system/system-settings.component";
+import { clone, isEmpty } from "../../lib/utils/utils";
 
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 const TabLinkContentMap = {

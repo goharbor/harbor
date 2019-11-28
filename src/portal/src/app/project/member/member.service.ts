@@ -1,7 +1,3 @@
-
-import {throwError as observableThrowError,  Observable } from "rxjs";
-
-import {map, catchError} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,16 +13,11 @@ import {map, catchError} from 'rxjs/operators';
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-
-
-
-
-
-import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "@harbor/ui";
-// import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";
 import { User } from '../../user/user';
 import { Member } from './member';
-
+import {throwError as observableThrowError,  Observable } from "rxjs";
+import {map, catchError} from 'rxjs/operators';
+import { HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../../lib/utils/utils";
 
 @Injectable()
 export class MemberService {

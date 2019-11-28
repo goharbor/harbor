@@ -1,10 +1,8 @@
-import { RoleMapping } from './../../../shared/shared.const';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Component, OnInit } from "@angular/core";
 import { Project } from '../../project';
 import { SessionService } from './../../../shared/session.service';
 import { SessionUser } from './../../../shared/session-user';
-import {finalize} from "rxjs/operators";
 
 @Component({
   selector: "project-chart-detail",

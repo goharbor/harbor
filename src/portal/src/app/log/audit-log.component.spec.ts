@@ -10,8 +10,8 @@ import { of } from 'rxjs';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { RouterTestingModule } from '@angular/router/testing';
-import { HarborLibraryModule } from '@harbor/ui';
 import { delay } from 'rxjs/operators';
+import { HarborLibraryModule } from "../../lib/harbor-library.module";
 
 describe('AuditLogComponent', () => {
     let component: AuditLogComponent;

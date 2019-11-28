@@ -7,9 +7,9 @@ import { NewScannerFormComponent } from "../new-scanner-form/new-scanner-form.co
 import { FormBuilder } from "@angular/forms";
 import { of, Subscription } from "rxjs";
 import { delay } from "rxjs/operators";
-import { SharedModule } from "@harbor/ui";
 import { SharedModule as AppSharedModule } from "../../../shared/shared.module";
 import { Scanner } from "../scanner";
+import { SharedModule } from "../../../../lib/utils/shared/shared.module";
 
 describe('NewScannerModalComponent', () => {
   let component: NewScannerModalComponent;

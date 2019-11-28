@@ -1,5 +1,3 @@
-
-import { finalize } from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,22 +11,17 @@ import { finalize } from 'rxjs/operators';
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import { finalize } from 'rxjs/operators';
 import { Component, OnInit, ViewChild, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRef } from "@angular/core";
 import { ActivatedRoute, Router } from "@angular/router";
 import { Subscription, forkJoin, Observable } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
-import {
-  operateChanges, OperateInfo, OperationService, OperationState, UserPermissionService, USERSTATICPERMISSION, ErrorHandler
-  , errorHandler as errorHandFn
-} from "@harbor/ui";
-
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { ConfirmationTargets, ConfirmationState, ConfirmationButtons } from "../../shared/shared.const";
 import { ConfirmationDialogService } from "../../shared/confirmation-dialog/confirmation-dialog.service";
 import { ConfirmationMessage } from "../../shared/confirmation-dialog/confirmation-message";
 import { SessionService } from "../../shared/session.service";
 import { RoleInfo } from "../../shared/shared.const";
-import { Project } from "../../project/project";
 import { Member } from "./member";
 import { SessionUser } from "../../shared/session-user";
 import { AddGroupComponent } from './add-group/add-group.component';
@@ -38,6 +31,11 @@ import { AddMemberComponent } from "./add-member/add-member.component";
 import { AppConfigService } from "../../app-config.service";
 import { map, catchError } from "rxjs/operators";
 import { throwError as observableThrowError } from "rxjs";
+import { OperationService } from "../../../lib/components/operation/operation.service";
+import { UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { operateChanges, OperateInfo, OperationState } from "../../../lib/components/operation/operate";
+import { errorHandler as errorHandlerFn } from "../../../lib/utils/shared/shared.utils";
 @Component({
   templateUrl: "member.component.html",
   styleUrls: ["./member.component.scss"],
@@ -276,7 +274,7 @@ export class MemberComponent implements OnInit, OnDestroy {
             operateChanges(operMessage, OperationState.success);
           });
         }), catchError(error => {
-          const message = errorHandFn(error);
+          const message = errorHandlerFn(error);
           this.translate.get(message).subscribe(res =>
             operateChanges(operMessage, OperationState.failure, res)
           );

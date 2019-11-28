@@ -2,11 +2,12 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { ClarityModule } from '@clr/angular';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ProjectService, ErrorHandler, UserPermissionService } from '@harbor/ui';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
 import { AppConfigService } from "../../app-config.service";
 import { SummaryComponent } from './summary.component';
+import { ProjectService, UserPermissionService } from "../../../lib/services";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
 
 
 describe('SummaryComponent', () => {

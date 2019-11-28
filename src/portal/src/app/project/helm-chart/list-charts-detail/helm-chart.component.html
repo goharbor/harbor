@@ -28,7 +28,7 @@
                         <clr-icon shape="upload" size="16"></clr-icon>{{'HELM_CHART.UPLOAD' | translate}}
                     </button>
                     <button type="button" class="btn btn-sm btn-secondary" [disabled]="!hasDeleteHelmChartsPermission || selectedRows.length<1"
-                        (click)="openChartDeleteModal(selectedRows)">
+                        (click)="openChartDeleteModal()">
                         <clr-icon shape="trash" size="16"></clr-icon>{{'BUTTON.DELETE' | translate}}
                     </button>
                     <button type="button" class="btn btn-sm btn-secondary" [disabled]="!hasDownloadHelmChartsPermission ||selectedRows.length!==1"

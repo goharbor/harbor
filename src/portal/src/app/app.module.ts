@@ -43,7 +43,9 @@ import { LicenseModule } from './license/license.module';
 import { InterrogationServicesComponent } from "./interrogation-services/interrogation-services.component";
 import { LabelsComponent } from './labels/labels.component';
 import { ProjectQuotasComponent } from './project-quotas/project-quotas.component';
+import { HarborLibraryModule } from "../lib/harbor-library.module";
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
+
 
 registerLocaleData(zh, 'zh-cn');
 registerLocaleData(es, 'es-es');
@@ -82,7 +84,8 @@ export function getCurrentLanguage(translateService: TranslateService) {
         ConfigurationModule,
         DeveloperCenterModule,
         OidcOnboardModule,
-        LicenseModule
+        LicenseModule,
+        HarborLibraryModule
     ],
     exports: [
     ],

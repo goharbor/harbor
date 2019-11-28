@@ -4,7 +4,6 @@ import { ListProjectComponent } from './list-project.component';
 import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
-import { OperationService, ProjectService } from "@harbor/ui";
 import { SessionService } from "../../shared/session.service";
 import { AppConfigService } from "../../app-config.service";
 import { RouterTestingModule } from '@angular/router/testing';
@@ -15,6 +14,8 @@ import { ConfirmationDialogService } from "../../shared/confirmation-dialog/conf
 import { of } from 'rxjs';
 import { BrowserAnimationsModule, NoopAnimationsModule } from "@angular/platform-browser/animations";
 import { delay } from 'rxjs/operators';
+import { ProjectService } from "../../../lib/services";
+import { OperationService } from "../../../lib/components/operation/operation.service";
 describe('ListProjectComponent', () => {
     let component: ListProjectComponent;
     let fixture: ComponentFixture<ListProjectComponent>;

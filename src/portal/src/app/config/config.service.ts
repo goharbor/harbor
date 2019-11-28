@@ -15,9 +15,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
-
-import { Configuration, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from '@harbor/ui';
-
+import { Configuration } from "../../lib/components/config/config";
+import { HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../lib/utils/utils";
 
 const configEndpoint = "/api/configurations";
 const emailEndpoint = "/api/email/ping";

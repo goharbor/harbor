@@ -18,10 +18,11 @@ import { ClrDatagridStringFilterInterface } from "@clr/angular";
 import { TagRetentionService } from "./tag-retention.service";
 import { Retention, Rule } from "./retention";
 import { Project } from "../project";
-import { clone, ErrorHandler } from "@harbor/ui";
-import { OriginCron } from "@harbor/ui";
-import { CronScheduleComponent } from "@harbor/ui";
 import { finalize } from "rxjs/operators";
+import { CronScheduleComponent } from "../../../lib/components/cron-schedule";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { OriginCron } from "../../../lib/services";
+import { clone } from "../../../lib/utils/utils";
 
 const MIN = 60000;
 const SEC = 1000;
@@ -329,7 +330,9 @@ export class TagRetentionComponent implements OnInit {
 
     loadLog() {
         if (this.isDetailOpened) {
-            this.loadingHistories = true;
+            setTimeout(() => {
+                this.loadingHistories = true;
+            }, 0);
             this.tagRetentionService.getExecutionHistory(this.retentionId, this.executionId, this.currentLogPage, this.logPageSize)
                 .pipe(finalize(() => this.loadingHistories = false))
                 .subscribe(

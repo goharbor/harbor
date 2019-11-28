@@ -5,7 +5,7 @@ import { SharedModule } from "../../../shared/shared.module";
 import { ConfigScannerService } from "../config-scanner.service";
 import { of } from "rxjs";
 import { ScannerMetadataComponent } from "./scanner-metadata.component";
-import { ErrorHandler } from "@harbor/ui";
+import { ErrorHandler } from "../../../../lib/utils/error-handler";
 
 describe('ScannerMetadataComponent', () => {
   let mockScannerMetadata = {

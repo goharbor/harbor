@@ -18,10 +18,7 @@ RUN apt-get update \
 COPY ./LICENSE /build_dir
 COPY src/portal /build_dir
 
-RUN ls -la \
-    && npm run build_lib \
-    && npm run link_lib \
-    && node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --prod
+RUN node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --prod
 
 FROM goharbor/harbor-portal-base:${harbor_base_image_version}
 

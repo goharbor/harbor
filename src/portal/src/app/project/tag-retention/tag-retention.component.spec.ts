@@ -12,8 +12,8 @@ import { ActivatedRoute } from '@angular/router';
 import { AddRuleComponent } from "./add-rule/add-rule.component";
 import { TagRetentionService } from "./tag-retention.service";
 import { RuleMetadate, Retention } from './retention';
-import { ErrorHandler } from "@harbor/ui";
 import { delay } from 'rxjs/operators';
+import { ErrorHandler } from "../../../lib/utils/error-handler";
 
 describe('TagRetentionComponent', () => {
     let component: TagRetentionComponent;

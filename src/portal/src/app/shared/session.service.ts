@@ -15,13 +15,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
-
 import { SessionUser } from './session-user';
 import { Member } from '../project/member/member';
-
 import { SignInCredential } from './sign-in-credential';
-import { enLang } from '../shared/shared.const';
-import { HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS, FlushAll } from "@harbor/ui";
+import { enLang } from './shared.const';
+import { HTTP_FORM_OPTIONS, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../lib/utils/utils";
+import { FlushAll } from "../../lib/utils/cache-util";
 
 const signInUrl = '/c/login';
 const currentUserEndpoint = "/api/users/current";

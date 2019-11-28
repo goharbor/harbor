@@ -4,7 +4,8 @@ import { ImmutableRetentionRule, RuleMetadate } from "../tag-retention/retention
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { map, catchError } from "rxjs/operators";
 import { Project } from "../project";
-import { HTTP_JSON_OPTIONS } from "@harbor/ui";
+import { HTTP_JSON_OPTIONS } from "../../../lib/utils/utils";
+
 @Injectable()
 export class ImmutableTagService {
     private I18nMap: object = {

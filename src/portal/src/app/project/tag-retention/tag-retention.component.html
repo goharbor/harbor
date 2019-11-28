@@ -145,7 +145,7 @@
                                 </clr-dg-cell>
                             </clr-dg-row>
                             <clr-dg-footer>
-        <span *ngIf="innerPagination.totalItems">{{innerPagination.firstItem + 1}}
+        <span *ngIf="logPageSize">{{innerPagination.firstItem + 1}}
             -
             {{innerPagination.lastItem + 1 }} {{'ROBOT_ACCOUNT.OF' |
                 translate}} </span>
