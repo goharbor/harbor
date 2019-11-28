@@ -253,7 +253,7 @@ func ExtURL() (string, error) {
 		log.Errorf("failed to load config, error %v", err)
 	}
 	l := strings.Split(endpoint, "://")
-	if len(l) > 0 {
+	if len(l) > 1 {
 		return l[1], nil
 	}
 	return endpoint, nil
