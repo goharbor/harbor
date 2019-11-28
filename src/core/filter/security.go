@@ -17,9 +17,8 @@ package filter
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"net/http"
-	"regexp"
+	"strings"
 
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/docker/distribution/reference"
@@ -29,18 +28,14 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	secstore "github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/security"
-	admr "github.com/goharbor/harbor/src/common/security/admiral"
-	"github.com/goharbor/harbor/src/common/security/admiral/authcontext"
 	"github.com/goharbor/harbor/src/common/security/local"
 	robotCtx "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/common/security/secret"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
-	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/admiral"
-	"strings"
-
 	"github.com/goharbor/harbor/src/pkg/authproxy"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	pkg_token "github.com/goharbor/harbor/src/pkg/token"
@@ -95,17 +90,6 @@ var (
 
 // Init ReqCtxMofiers list
 func Init() {
-	// integration with admiral
-	if config.WithAdmiral() {
-		reqCtxModifiers = []ReqCtxModifier{
-			&secretReqCtxModifier{config.SecretStore},
-			&tokenReqCtxModifier{},
-			&basicAuthReqCtxModifier{},
-			&unauthorizedReqCtxModifier{}}
-		return
-	}
-
-	// standalone
 	reqCtxModifiers = []ReqCtxModifier{
 		&configCtxModifier{},
 		&secretReqCtxModifier{config.SecretStore},
@@ -375,53 +359,6 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	}
 	log.Debug("got user information via basic auth")
 
-	// integration with admiral
-	if config.WithAdmiral() {
-		// Can't get a token from Admiral's login API, we can only
-		// create a project manager with the token of the solution user.
-		// That way may cause some wrong permission promotion in some API
-		// calls, so we just handle the requests which are necessary
-		match := false
-		var err error
-		path := ctx.Request.URL.Path
-		for _, pattern := range basicAuthReqPatterns {
-			match, err = regexp.MatchString(pattern.path, path)
-			if err != nil {
-				log.Errorf("failed to match %s with pattern %s", path, pattern)
-				continue
-			}
-			if match {
-				break
-			}
-		}
-		if !match {
-			log.Debugf("basic auth is not supported for request %s %s, skip",
-				ctx.Request.Method, ctx.Request.URL.Path)
-			return false
-		}
-
-		token, err := config.TokenReader.ReadToken()
-		if err != nil {
-			log.Errorf("failed to read solution user token: %v", err)
-			return false
-		}
-		authCtx, err := authcontext.Login(config.AdmiralClient,
-			config.AdmiralEndpoint(), username, password, token)
-		if err != nil {
-			log.Errorf("failed to authenticate %s: %v", username, err)
-			return false
-		}
-
-		log.Debug("using global project manager...")
-		pm := config.GlobalProjectMgr
-		log.Debug("creating admiral security context...")
-		securCtx := admr.NewSecurityContext(authCtx, pm)
-
-		setSecurCtxAndPM(ctx.Request, securCtx, pm)
-		return true
-	}
-
-	// standalone
 	user, err := auth.Login(models.AuthModel{
 		Principal: username,
 		Password:  password,
@@ -466,61 +403,15 @@ func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	return true
 }
 
-type tokenReqCtxModifier struct{}
-
-func (t *tokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
-	token := ctx.Request.Header.Get(authcontext.AuthTokenHeader)
-	if len(token) == 0 {
-		return false
-	}
-
-	log.Debug("got token from request")
-
-	authContext, err := authcontext.GetAuthCtx(config.AdmiralClient,
-		config.AdmiralEndpoint(), token)
-	if err != nil {
-		log.Errorf("failed to get auth context: %v", err)
-		return false
-	}
-
-	log.Debug("creating PMS project manager...")
-	driver := admiral.NewDriver(config.AdmiralClient,
-		config.AdmiralEndpoint(), &admiral.RawTokenReader{
-			Token: token,
-		})
-
-	pm := promgr.NewDefaultProjectManager(driver, false)
-
-	log.Debug("creating admiral security context...")
-	securCtx := admr.NewSecurityContext(authContext, pm)
-	setSecurCtxAndPM(ctx.Request, securCtx, pm)
-
-	return true
-}
-
 // use this one as the last modifier in the modifier list for unauthorized request
 type unauthorizedReqCtxModifier struct{}
 
 func (u *unauthorizedReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	log.Debug("user information is nil")
-
-	var securCtx security.Context
-	var pm promgr.ProjectManager
-	if config.WithAdmiral() {
-		// integration with admiral
-		log.Debug("creating PMS project manager...")
-		driver := admiral.NewDriver(config.AdmiralClient,
-			config.AdmiralEndpoint(), nil)
-		pm = promgr.NewDefaultProjectManager(driver, false)
-		log.Debug("creating admiral security context...")
-		securCtx = admr.NewSecurityContext(nil, pm)
-	} else {
-		// standalone
-		log.Debug("using local database project manager")
-		pm = config.GlobalProjectMgr
-		log.Debug("creating local database security context...")
-		securCtx = local.NewSecurityContext(nil, pm)
-	}
+	log.Debug("using local database project manager")
+	pm := config.GlobalProjectMgr
+	log.Debug("creating local database security context...")
+	securCtx := local.NewSecurityContext(nil, pm)
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 	return true
 }

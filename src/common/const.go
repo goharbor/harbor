@@ -87,7 +87,6 @@ const (
 	MaxJobWorkers                    = "max_job_workers"
 	TokenExpiration                  = "token_expiration"
 	AdminInitialPassword             = "admin_initial_password"
-	AdmiralEndpoint                  = "admiral_url"
 	WithNotary                       = "with_notary"
 	WithClair                        = "with_clair"
 	ScanAllPolicy                    = "scan_all_policy"

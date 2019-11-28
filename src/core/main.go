@@ -175,9 +175,7 @@ func main() {
 	beego.AddTemplateExt("htm")
 
 	log.Info("initializing configurations...")
-	if err := config.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
+	config.Init()
 	log.Info("configurations initialization completed")
 	token.InitCreators()
 	database, err := config.Database()

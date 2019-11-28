@@ -30,7 +30,6 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
-	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
 var endpoint = "10.117.4.142"
@@ -45,9 +44,7 @@ func TestMain(m *testing.M) {
 		common.TokenExpiration: 30,
 	}
 
-	if err := config.Init(); err != nil {
-		log.Fatalf("failed to initialize config: %v", err)
-	}
+	config.Init()
 	test.InitDatabaseFromEnv()
 	config.Upload(defaultConfig)
 	notaryCachePath = "/tmp/notary"

@@ -28,40 +28,33 @@ import (
 )
 
 func initRouters() {
+	// Controller API:
+	beego.Router("/c/login", &controllers.CommonController{}, "post:Login")
+	beego.Router("/c/log_out", &controllers.CommonController{}, "get:LogOut")
+	beego.Router("/c/reset", &controllers.CommonController{}, "post:ResetPassword")
+	beego.Router("/c/userExists", &controllers.CommonController{}, "post:UserExists")
+	beego.Router("/c/sendEmail", &controllers.CommonController{}, "get:SendResetEmail")
+	beego.Router(common.OIDCLoginPath, &controllers.OIDCController{}, "get:RedirectLogin")
+	beego.Router("/c/oidc/onboard", &controllers.OIDCController{}, "post:Onboard")
+	beego.Router(common.OIDCCallbackPath, &controllers.OIDCController{}, "get:Callback")
 
-	// standalone
-	if !config.WithAdmiral() {
-		// Controller API:
-		beego.Router("/c/login", &controllers.CommonController{}, "post:Login")
-		beego.Router("/c/log_out", &controllers.CommonController{}, "get:LogOut")
-		beego.Router("/c/reset", &controllers.CommonController{}, "post:ResetPassword")
-		beego.Router("/c/userExists", &controllers.CommonController{}, "post:UserExists")
-		beego.Router("/c/sendEmail", &controllers.CommonController{}, "get:SendResetEmail")
-		beego.Router(common.OIDCLoginPath, &controllers.OIDCController{}, "get:RedirectLogin")
-		beego.Router("/c/oidc/onboard", &controllers.OIDCController{}, "post:Onboard")
-		beego.Router(common.OIDCCallbackPath, &controllers.OIDCController{}, "get:Callback")
-
-		// API:
-		beego.Router("/api/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &api.ProjectMemberAPI{})
-		beego.Router("/api/projects/", &api.ProjectAPI{}, "head:Head")
-		beego.Router("/api/projects/:id([0-9]+)", &api.ProjectAPI{})
-
-		beego.Router("/api/users/:id", &api.UserAPI{}, "get:Get;delete:Delete;put:Put")
-		beego.Router("/api/users", &api.UserAPI{}, "get:List;post:Post")
-		beego.Router("/api/users/search", &api.UserAPI{}, "get:Search")
-		beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
-		beego.Router("/api/users/:id/permissions", &api.UserAPI{}, "get:ListUserPermissions")
-		beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
-		beego.Router("/api/users/:id/cli_secret", &api.UserAPI{}, "put:SetCLISecret")
-		beego.Router("/api/usergroups/?:ugid([0-9]+)", &api.UserGroupAPI{})
-		beego.Router("/api/ldap/ping", &api.LdapAPI{}, "post:Ping")
-		beego.Router("/api/ldap/users/search", &api.LdapAPI{}, "get:Search")
-		beego.Router("/api/ldap/groups/search", &api.LdapAPI{}, "get:SearchGroup")
-		beego.Router("/api/ldap/users/import", &api.LdapAPI{}, "post:ImportUser")
-		beego.Router("/api/email/ping", &api.EmailAPI{}, "post:Ping")
-	}
-
-	// API
+	// API:
+	beego.Router("/api/projects/:pid([0-9]+)/members/?:pmid([0-9]+)", &api.ProjectMemberAPI{})
+	beego.Router("/api/projects/", &api.ProjectAPI{}, "head:Head")
+	beego.Router("/api/projects/:id([0-9]+)", &api.ProjectAPI{})
+	beego.Router("/api/users/:id", &api.UserAPI{}, "get:Get;delete:Delete;put:Put")
+	beego.Router("/api/users", &api.UserAPI{}, "get:List;post:Post")
+	beego.Router("/api/users/search", &api.UserAPI{}, "get:Search")
+	beego.Router("/api/users/:id([0-9]+)/password", &api.UserAPI{}, "put:ChangePassword")
+	beego.Router("/api/users/:id/permissions", &api.UserAPI{}, "get:ListUserPermissions")
+	beego.Router("/api/users/:id/sysadmin", &api.UserAPI{}, "put:ToggleUserAdminRole")
+	beego.Router("/api/users/:id/cli_secret", &api.UserAPI{}, "put:SetCLISecret")
+	beego.Router("/api/usergroups/?:ugid([0-9]+)", &api.UserGroupAPI{})
+	beego.Router("/api/ldap/ping", &api.LdapAPI{}, "post:Ping")
+	beego.Router("/api/ldap/users/search", &api.LdapAPI{}, "get:Search")
+	beego.Router("/api/ldap/groups/search", &api.LdapAPI{}, "get:SearchGroup")
+	beego.Router("/api/ldap/users/import", &api.LdapAPI{}, "post:ImportUser")
+	beego.Router("/api/email/ping", &api.EmailAPI{}, "post:Ping")
 	beego.Router("/api/health", &api.HealthAPI{}, "get:CheckHealth")
 	beego.Router("/api/ping", &api.SystemInfoAPI{}, "get:Ping")
 	beego.Router("/api/search", &api.SearchAPI{})
@@ -71,8 +64,6 @@ func initRouters() {
 	beego.Router("/api/projects/:id([0-9]+)/_deletable", &api.ProjectAPI{}, "get:Deletable")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/?:name", &api.MetadataAPI{}, "get:Get")
 	beego.Router("/api/projects/:id([0-9]+)/metadatas/", &api.MetadataAPI{}, "post:Post")
-	beego.Router("/api/projects/:id([0-9]+)/metadatas/:name", &api.MetadataAPI{}, "put:Put;delete:Delete")
-
 	beego.Router("/api/projects/:pid([0-9]+)/robots", &api.RobotAPI{}, "post:Post;get:List")
 	beego.Router("/api/projects/:pid([0-9]+)/robots/:id([0-9]+)", &api.RobotAPI{}, "get:Get;put:Put;delete:Delete")
 

@@ -15,20 +15,19 @@
 package contenttrust
 
 import (
+	"net/http/httptest"
+	"os"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common"
 	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"github.com/stretchr/testify/assert"
-	"net/http/httptest"
-	"os"
-	"testing"
 )
 
 var endpoint = "10.117.4.142"
 var notaryServer *httptest.Server
-
-var admiralEndpoint = "http://127.0.0.1:8282"
 var token = ""
 
 func TestMain(m *testing.M) {

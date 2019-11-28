@@ -146,7 +146,7 @@ func TestMatchPushManifest(t *testing.T) {
 }
 
 func TestPMSPolicyChecker(t *testing.T) {
-	var defaultConfigAdmiral = map[string]interface{}{
+	var defaultConfig = map[string]interface{}{
 		common.ExtEndpoint:        "https://" + endpoint,
 		common.WithNotary:         true,
 		common.TokenExpiration:    30,
@@ -158,11 +158,9 @@ func TestPMSPolicyChecker(t *testing.T) {
 		common.PostGreSQLDatabase: "registry",
 	}
 
-	if err := config.Init(); err != nil {
-		panic(err)
-	}
+	config.Init()
 
-	config.Upload(defaultConfigAdmiral)
+	config.Upload(defaultConfig)
 
 	name := "project_for_test_get_sev_low"
 	id, err := config.GlobalProjectMgr.Create(&models.Project{

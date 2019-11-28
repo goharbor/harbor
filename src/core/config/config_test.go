@@ -32,7 +32,6 @@ func TestConfig(t *testing.T) {
 	dao.PrepareTestData([]string{"delete from properties where k='scan_all_policy'"}, []string{})
 	defaultCACertPath = path.Join(currPath(), "test", "ca.crt")
 	c := map[string]interface{}{
-		common.AdmiralEndpoint: "https://www.vmware.com",
 		common.WithClair:       false,
 		common.WithChartMuseum: false,
 		common.WithNotary:      false,
@@ -59,9 +58,7 @@ func TestConfig(t *testing.T) {
 	}
 	defer os.Setenv("TOKEN_PRIVATE_KEY_PATH", oriKeyPath)
 
-	if err := Init(); err != nil {
-		t.Fatalf("failed to initialize configurations: %v", err)
-	}
+	Init()
 
 	if err := Load(); err != nil {
 		t.Fatalf("failed to load configurations: %v", err)
@@ -143,7 +140,6 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get clair DB %v", err)
 	}
 	defaultConfig := test.GetDefaultConfigMap()
-	defaultConfig[common.AdmiralEndpoint] = "http://www.vmware.com"
 	Upload(defaultConfig)
 	assert.Equal(defaultConfig[common.ClairDB], clairDB.Database)
 	assert.Equal(defaultConfig[common.ClairDBUsername], clairDB.Username)
@@ -160,14 +156,8 @@ func TestConfig(t *testing.T) {
 	if WithClair() {
 		t.Errorf("WithClair should be false")
 	}
-	if !WithAdmiral() {
-		t.Errorf("WithAdmiral should be true")
-	}
 	if ReadOnly() {
 		t.Errorf("ReadOnly should be false")
-	}
-	if AdmiralEndpoint() != "http://www.vmware.com" {
-		t.Errorf("Unexpected admiral endpoint: %s", AdmiralEndpoint())
 	}
 
 	extURL, err := ExtURL()

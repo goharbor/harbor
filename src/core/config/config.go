@@ -18,12 +18,7 @@
 package config
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"errors"
-	"fmt"
-	"io/ioutil"
-	"net/http"
 	"os"
 	"strings"
 
@@ -33,14 +28,11 @@ import (
 	"github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/promgr"
-	"github.com/goharbor/harbor/src/core/promgr/pmsdriver"
-	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/admiral"
 	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/local"
 )
 
 const (
 	defaultKeyPath                     = "/etc/core/key"
-	defaultTokenFilePath               = "/etc/core/token/tokens.properties"
 	defaultRegistryTokenPrivateKeyPath = "/etc/core/private_key.pem"
 
 	// SessionCookieName is the name of the cookie for session ID
@@ -53,18 +45,13 @@ var (
 	// GlobalProjectMgr is initialized based on the deploy mode
 	GlobalProjectMgr promgr.ProjectManager
 	keyProvider      comcfg.KeyProvider
-	// AdmiralClient is initialized only under integration deploy mode
-	// and can be passed to project manager as a parameter
-	AdmiralClient *http.Client
-	// TokenReader is used in integration mode to read token
-	TokenReader admiral.TokenReader
 	// defined as a var for testing.
 	defaultCACertPath = "/etc/core/ca/ca.crt"
 	cfgMgr            *comcfg.CfgManager
 )
 
 // Init configurations
-func Init() error {
+func Init() {
 	// init key provider
 	initKeyProvider()
 
@@ -73,13 +60,9 @@ func Init() error {
 	log.Info("init secret store")
 	// init secret store
 	initSecretStore()
-	log.Info("init project manager based on deploy mode")
-	// init project manager based on deploy mode
-	if err := initProjectManager(); err != nil {
-		log.Errorf("Failed to initialise project manager, error: %v", err)
-		return err
-	}
-	return nil
+	log.Info("init project manager")
+	// init project manager
+	initProjectManager()
 }
 
 // InitWithSettings init config with predefined configs, and optionally overwrite the keyprovider
@@ -108,46 +91,9 @@ func initSecretStore() {
 	SecretStore = secret.NewStore(m)
 }
 
-func initProjectManager() error {
-	var driver pmsdriver.PMSDriver
-	if WithAdmiral() {
-		log.Debugf("Initialising Admiral client with certificate: %s", defaultCACertPath)
-		content, err := ioutil.ReadFile(defaultCACertPath)
-		if err != nil {
-			return err
-		}
-		pool := x509.NewCertPool()
-		if ok := pool.AppendCertsFromPEM(content); !ok {
-			return fmt.Errorf("failed to append cert content into cert worker")
-		}
-		AdmiralClient = &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-				TLSClientConfig: &tls.Config{
-					RootCAs: pool,
-				},
-			},
-		}
-
-		// integration with admiral
-		log.Info("initializing the project manager based on PMS...")
-		path := os.Getenv("SERVICE_TOKEN_FILE_PATH")
-		if len(path) == 0 {
-			path = defaultTokenFilePath
-		}
-		log.Infof("service token file path: %s", path)
-		TokenReader = &admiral.FileTokenReader{
-			Path: path,
-		}
-		driver = admiral.NewDriver(AdmiralClient, AdmiralEndpoint(), TokenReader)
-	} else {
-		// standalone
-		log.Info("initializing the project manager based on local database...")
-		driver = local.NewDriver()
-	}
-	GlobalProjectMgr = promgr.NewDefaultProjectManager(driver, true)
-	return nil
-
+func initProjectManager() {
+	log.Info("initializing the project manager based on local database...")
+	GlobalProjectMgr = promgr.NewDefaultProjectManager(local.NewDriver(), true)
 }
 
 // GetCfgManager return the current config manager
@@ -391,19 +337,6 @@ func ClairDB() (*models.PostGreSQL, error) {
 // ClairAdapterEndpoint returns the endpoint of clair adapter instance, by default it's the one deployed within Harbor.
 func ClairAdapterEndpoint() string {
 	return cfgMgr.Get(common.ClairAdapterURL).GetString()
-}
-
-// AdmiralEndpoint returns the URL of admiral, if Harbor is not deployed with admiral it should return an empty string.
-func AdmiralEndpoint() string {
-	if cfgMgr.Get(common.AdmiralEndpoint).GetString() == "NA" {
-		return ""
-	}
-	return cfgMgr.Get(common.AdmiralEndpoint).GetString()
-}
-
-// WithAdmiral returns a bool to indicate if Harbor's deployed with admiral.
-func WithAdmiral() bool {
-	return len(AdmiralEndpoint()) > 0
 }
 
 // UAASettings returns the UAASettings to access UAA service.

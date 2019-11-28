@@ -54,7 +54,6 @@ var defaultConfig = map[string]interface{}{
 	common.MaxJobWorkers:              3,
 	common.TokenExpiration:            30,
 	common.AdminInitialPassword:       "password",
-	common.AdmiralEndpoint:            "",
 	common.WithNotary:                 false,
 	common.WithClair:                  false,
 	common.ClairDBUsername:            "postgres",

@@ -142,7 +142,6 @@ services:
       - SETUID
     volumes:
       - {{data_volume}}/ca_download/:/etc/core/ca/:z
-      - {{data_volume}}/psc/:/etc/core/token/:z
       - {{data_volume}}/:/data/:z
       - ./common/config/core/certificates/:/etc/core/certificates/:z
       - type: bind
