@@ -301,7 +301,7 @@ The images can be filtered by labels:
 
 ## Set Project Quotas
 
-To exercise control over resource use, as a system administrator you can set  quotas on projects. You can limit the number of tags that a project can contain and limit the amount of storage capacity that a project can consume. You can set default quotas that apply to all projects globally.
+To exercise control over resource use, as a Harbor administrator you can set  quotas on projects. You can limit the number of tags that a project can contain and limit the amount of storage capacity that a project can consume. You can set default quotas that apply to all projects globally.
 
 **NOTE**: Default quotas apply to projects that are created after you set or change the default quota. The default quota is not applied to projects that already existed before you set it.
 
@@ -309,16 +309,12 @@ You can also set quotas on individual projects. If you set a global default quot
 
 By default, all projects have unlimited quotas for both tags and storage use. 
 
-1. Go to **Configuration** > **Project Quotas**.
+1. Select the **Project Quotas** view.
    ![Project quotas](img/project-quota1.png)
 1. To set global default quotas on all projects, click **Edit**.
    ![Project quotas](img/project-quota2.png)
-   1. For **Default artifact count**, enter the maximum number of tags that any project can contain. 
-   
-   Enter `-1` to set the default to unlimited. 
-   1. For **Default storage consumption**, enter the maximum quantity of storage that any project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu. 
-   
-   Enter `-1` to set the default to unlimited.
+   1. For **Default artifact count**, enter the maximum number of tags that any project can contain, or enter `-1` to set the default to unlimited.   
+   1. For **Default storage consumption**, enter the maximum quantity of storage that any project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu, or enter `-1` to set the default to unlimited.  
    ![Project quotas](img/project-quota3.png)
    1. Click **OK**.
 1. To set quotas on an individual project, click the 3 vertical dots next to a project and select **Edit**.
@@ -326,7 +322,7 @@ By default, all projects have unlimited quotas for both tags and storage use.
    1. For **Default artifact count**, enter the maximum number of tags that this individual project can contain, or enter `-1` to set the default to unlimited. 
    1. For **Default storage consumption**, enter the maximum quantity of storage that this individual project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu.
 
-After you set quotas, the you can see how much of their quotas each project has consumed in the **Project Quotas** tab.
+After you set quotas, the you can see how much of their quotas each project has consumed.
 
 ![Project quotas](img/project-quota5.png)
 
