@@ -8,7 +8,6 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Retag images within Harbor](#retag-images)
 * [Search projects and repositories](#searching-projects-and-repositories)
 * [Manage labels](#managing-labels)
-* [Configure CVE Whitelists](#configure-cve-whitelists)
 * [Set Project Quotas](#set-project-quotas)
 * [Manage Harbor system if you are the system administrator:](#administrator-options)
   * [Manage users](#managing-user)
@@ -24,7 +23,8 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Add description to repositories](#add-description-to-repositories)
 * [Delete repositories and images](#deleting-repositories)
 * [Content trust](#content-trust)
-* [Vulnerability scanning via Clair](#vulnerability-scanning-via-clair)
+* [Vulnerability Scanning](#vulnerability-scanning-via-clair)
+* [Configure CVE Whitelists](#configure-cve-whitelists)
 * [Pull image from Harbor in Kubernetes](#pull-image-from-harbor-in-kubernetes)
 * [Manage Helm Charts](#manage-helm-charts)
   * [Manage Helm Charts via portal](#manage-helm-charts-via-portal)
@@ -299,54 +299,6 @@ The images can be filtered by labels:
 
 ![filter images by labels](img/filter_images_by_label.png)
 
-## Configure CVE Whitelists
-
-When you run vulnerability scans, images that are subject to Common Vulnerabilities and Exposures (CVE) are identified. According to the severity of the CVE and your security settings, these images might not be permitted to run. As a system administrator, you can create whitelists of CVEs to ignore during vulnerability scanning. 
-
-You can set a system-wide CVE whitelist or you can set CVE whitelists on a per-project basis.
-
-### Configure a System-Wide CVE Whitelist
-
-System-wide CVE whitelists apply to all of the projects in a Harbor instance.
-
-1. Go to **Configuration** > **System Settings**.
-1. Under **Deployment security**, click **Add**. 
-   ![System-wide CVE whitelist](img/cve-whitelist1.png)
-1. Enter the list of CVE IDs to ignore during vulnerability scanning. 
-   ![Add system CVE whitelist](img/cve-whitelist2.png)
-
-   Either use a comma-separated list or newlines to add multiple CVE IDs to the list.
-1. Click **Add** at the bottom of the window to add the list.
-1. Optionally uncheck the **Never expires** checkbox and use the calendar selector to set an expiry date for the whitelist.
-   ![Add system CVEs](img/cve-whitelist3.png)
-1. Click **Save** at the bottom of the page to save your settings.
-   
-After you have created a system whitelist, you can remove CVE IDs from the list by clicking the delete button next to it in the list. You can click **Add** to add more CVE IDs to the system whitelist.
-
-![Add and remove system CVEs](img/cve-whitelist4.png)
-
-### Configure a Per-Project CVE Whitelist
-
-By default, the system whitelist is applied to all projects. You can configure different CVE whitelists for individual projects, that override the system whitelist. 
-
-1. Go to **Projects**, select a project, and select **Configuration**.
-1. Under **CVE whitelist**, select **Project whitelist**. 
-   ![Project CVE whitelist](img/cve-whitelist5.png)
-1. Optionally click **Copy From System** to add all of the CVE IDs from the system CVE whitelist to this project whitelist.
-1. Click **Add** and enter a list of additional CVE IDs to ignore during vulnerability scanning of this project. 
-   ![Add project CVEs](img/cve-whitelist6.png)
-
-   Either use a comma-separated list or newlines to add multiple CVE IDs to the list.
-1. Click **Add** at the bottom of the window to add the CVEs to the project whitelist.
-1. Optionally uncheck the **Never expires** checkbox and use the calendar selector to set an expiry date for the whitelist.
-1. Click **Save** at the bottom of the page to save your settings.
-
-After you have created a project whitelist, you can remove CVE IDs from the list by clicking the delete button next to it in the list. You can click **Add** at any time to add more CVE IDs to the whitelist for this project. 
-
-If CVEs are added to the system whitelist after you have created a project whitelist, click **Copy From System** to add the new entries from the system whitelist to the project whitelist. 
-
-**NOTE**: If CVEs are deleted from the system whitelist after you have created a project whitelist, and if you added the system whitelist to the project whitelist, you must manually remove the deleted CVEs from the project whitelist. If you click **Copy From System** after CVEs have been deleted from the system whitelist, the deleted CVEs are not automatically removed from the project whitelist.
-
 ## Set Project Quotas
 
 To exercise control over resource use, as a system administrator you can set  quotas on projects. You can limit the number of tags that a project can contain and limit the amount of storage capacity that a project can consume. You can set default quotas that apply to all projects globally.
@@ -457,6 +409,7 @@ The push refers to a repository [10.117.169.182/demo/ubuntu]
 0271b8eebde3: Preparing 
 denied: The system is in read only mode. Any modification is prohibited.  
 ```
+
 ### Managing role by LDAP group
 
 If auth_mode is ldap_auth, you can manage project role by LDAP/AD group. please refer [manage role by ldap group guide](manage_role_by_ldap_group.md).
@@ -467,7 +420,9 @@ If auth_mode is ldap_auth, you can manage project role by LDAP/AD group. please 
 
 Harbor supports HTTP by default and Docker client tries to connect to Harbor using HTTPS first, so if you encounter an error as below when you pull or push images, you need to configure insecure registry. Please, read [this document](https://docs.docker.com/registry/insecure/) in order to understand how to do this. 
 
-```Error response from daemon: Get https://myregistrydomain.com/v1/users/: dial tcp myregistrydomain.com:443 getsockopt: connection refused.```   
+```
+Error response from daemon: Get https://myregistrydomain.com/v1/users/: dial tcp myregistrydomain.com:443 getsockopt: connection refused.
+```   
 
 If this private registry supports only HTTP or HTTPS with an unknown CA certificate, please add   
 `--insecure-registry myregistrydomain.com` to the daemon's start up arguments.  
@@ -477,36 +432,41 @@ In the case of HTTPS, if you have access to the registry's CA certificate, simpl
 ### Pulling images  
 If the project that the image belongs to is private, you should sign in first:  
 
-```sh
+```
+sh
 $ docker login 10.117.169.182  
 ```
 
 You can now pull the image:  
 
-```sh
+```
+sh 
 $ docker pull 10.117.169.182/library/ubuntu:14.04  
 ```
 
-**Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. You cannot pull an unsigned image if you enabled content trust.**
+**Note**: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. You cannot pull an unsigned image if you enabled content trust.
 
 ### Pushing images  
 Before pushing an image, you must create a corresponding project on Harbor web UI. 
 
 First, log in from Docker client:  
 
-```sh
+```
+sh
 $ docker login 10.117.169.182  
 ```
 
 Tag the image:  
 
-```sh
+```
+sh
 $ docker tag ubuntu:14.04 10.117.169.182/demo/ubuntu:14.04  
 ```
 
 Push the image:
 
-```sh
+```
+sh
 $ docker push 10.117.169.182/demo/ubuntu:14.04  
 ```
 
@@ -540,7 +500,7 @@ the repository is no longer managed in Harbor, however, the files of the reposit
 
 Next, delete the actual files of the repository using the [garbage collection](#online-garbage-collection) in Harbor's UI. 
 
-### Content trust  
+## Content trust  
 **NOTE: Notary is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.**  
 If you want to enable content trust to ensure that images are signed, please set two environment variables in the command line before pushing or pulling any image:
 ```sh
@@ -557,76 +517,174 @@ If you are using a self-signed cert, make sure to copy the CA cert into ```/etc/
 When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) is displayed instead.  
 ![browse project](img/content_trust.png)
 
-### Vulnerability scanning via Clair 
-**CAUTION: Clair is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.**
+## Vulnerability Scanning
 
-Static analysis of vulnerabilities is provided through open source project [Clair](https://github.com/coreos/clair). You can initiate scanning on a particular image, or on all images in Harbor. Additionally, you can also set a policy to scan all the images at a specified time everyday.
+Harbor provides static analysis of vulnerabilities in images through the open source [Clair](https://github.com/coreos/clair) project. You can also connect Harbor to additional vulnerability scanners, also known as interrogation services. The additional scanners that are currently supported are [Anchore](https://anchore.com/harbor/) and [Aqua](https://github.com/aquasecurity/harbor-scanner-aqua).
 
-**Vulnerability metadata** 
+You might need to connect Harbor to other scanners for corporate compliance reasons, or because your organization already uses a particular scanner. Different scanners also use different vulnerability databases, capture different CVE sets, and apply different severity thresholds. By connecting Harbor to more than one vulnerability scanner, you broaden the scope of your protection against vulnerabilities.
 
-Clair depends on the vulnerability metadata to complete the analysis process. After the first initial installation, Clair will automatically start to update the metadata database from different vulnerability repositories. The updating process may take a while based on the data size and network connection. If the database has not been fully populated, there is a warning message at the footer of the repository datagrid view.
-![browse project](img/clair_not_ready.png)
+**IMPORTANT**: Clair is provided as an optional component. You must enable Clair when you install your Harbor instance. You connect to additional scanners in the Harbor interface, after you have installed Harbor. 
 
-The 'database not fully ready' warning message is also displayed in the **'Vulnerability'** tab of **'Configuration'** section under **'Administration'** for your awareness.
-![browse project](img/clair_not_ready2.png)
+- For information about installing Harbor with Clair, see the [Installation and Configuration Guide](installation_guide.md). 
+- For information about adding additional scanners, see [Connect Harbor to Additional Vulnerability Scanners](#pluggable-scanners) below.
 
-Once the database is ready, an overall database updated timestamp will be shown in the **'Vulnerability'** tab of **'Configuration'** section under **'Administration'**. 
+You can initiate scanning on a particular image, or on all images in Harbor. Additionally, you can also set a policy to scan all the images at a specified time every day.
+
+<a id="pluggable-scanners"></a>
+### Connect Harbor to Additional Vulnerability Scanners
+
+To connect Harbor to additional vulnerability scanners, you must have enabled the default Clair scanner when you deployed Harbor. You must install and configure an instance of the additional scanner according to the scanner vendor's requirements. The scanner must expose an API endpoint to Harbor that permits image pushes and pulls. You can deploy multiple different scanners, and multiple instances of the same type of scanner.
+
+1. Log in to the Harbor interface with an account that has Harbor administrator privileges.
+1. Expand **Administration**, and select **Interrogation Services**. 
+   ![Interrogation Services](img/interrogation-services.png)
+1. Click the **New Scanner** button.
+1. Enter the information to identify the scanner.
+   - A name for this scanner instance, to display in the Harbor interface.
+   - An optional description of this scanner instance.
+   - The address of the API endpoint that the scanner exposes to Harbor.
+   ![Add scanner](img/add-scanner.png)
+1. Select how to connect to the scanner from the **Authorization** drop-down menu.
+   ![Select scanner authentication method](img/scanner-auth.png)
+   - **None**: The scanner allows all connections without any security.
+   - **Basic**: Enter a username and password for an account that can connect to the scanner.
+   - **Bearer**: Paste the contents of a bearer token in the **Token** text box.
+   - **APIKey**: Paste the contents of an API key for the scanner in the **APIKey** text box.
+1. Optionally select **Skip certificate verification** if the scanner uses a self-signed or untrusted certificate. 
+1. Optionally select **Use internal registry address** if the scanner should connect to Harbor using an internal network address rather its external URL.
+1. Click Test Connection to make sure that Harbor can connect successfully to the scanner. 
+   ![Test scanner connection](img/test-scanner-connection.png)
+1. Click **Add** to connect Harbor to the scanner.
+1. Optionally repeat the procedure to add more scanners.
+1. If you configure multiple scanners, select one and click **Set as Default** to designate it as the default scanner.
+
+### Updating the Vulnerability Metadata in the Database
+
+Vulnerability scanners depend on the vulnerability metadata to complete the analysis process. After the first initial installation, the vulnerability scanner automatically starts to update the metadata database from different vulnerability repositories. The database update might take a while, based on the data size and network connection. 
+
+Once the database is ready, the timestamp of the last update is shown in the **Interrogation Services** > **Vulnerability'** tab. 
 ![browse project](img/clair_ready.png)
 
-**Scanning an image** 
+Until the database has been fully populated, the timestamp is replaced by a warning symbol. When the database is ready, you can scan images invidually or scan all images across all projects.
 
-Enter your project, select the repository. For each tag there will be an 'Vulnerability' column to display vulnerability scanning status and related information. You can select the image and click the "SCAN" button to trigger the vulnerability scan process. 
-![browse project](img/scan_image.png)
-**NOTES: Only the users with 'Project Admin' role have the privilege to launch the analysis process.**
+### Scan an Individual Image
 
-The analysis process may have the following status that are indicated in the 'Vulnerability' column:
-* **Not Scanned:** The tag has never been scanned.
-* **Queued:** The scanning task is scheduled but not executed yet.
-* **Scanning:** The scanning process is in progress.
-* **Error:** The scanning process failed to complete.
-* **Complete:** The scanning process was successfully completed.
+1. Log in to the Harbor interface with an account that has at least project administrator privileges.
+1. Go to **Projects** and select a project. 
+1. Select the **Scanner** tab.
+   The **Scanner** tab shows the details of the scanner that is currently set as the scanner to use for this project.
+   ![Project scanner tab](img/project-scanners.png)
+1. Click **Edit** to select a different scanner from the list of scanners that are connected to this Harbor instance, and click **OK**.
+   ![Project scanner tab](img/select-scanner.png)
+1. Select the **Repositories** tab and select a repository.
 
-For the **'Not Scanned'** and **'Queued'** statuses, a text label with status information is shown. For the **'Scanning'**, a progress bar will be displayed.
-If an error occurred, you can click on the **'View Log'** link to view the related logs.
-![browse project](img/log_viewer.png)
+   For each tag in the repository, the **Vulnerabilities** column displays the vulnerability scanning status and related information.
+   ![Tag vulnerability status](img/tag-vulnerability-status.png)
+1. Select the tag and click the **Scan** button to run the vulnerability scan on this image.
+   ![Scan an image](img/scan_image.png)
 
-If the process was successfully completed, a result bar is created. The width of the different colored sections indicates the percentage of features with vulnerabilities for a particular severity level.
-* **Red:** **High** level of vulnerabilities
-* **Orange:** **Medium** level of vulnerabilities
-* **Yellow:** **Low** level of vulnerabilities
-* **Grey:** **Unknown** level of vulnerabilities
-* **Green:** **No** vulnerabilities
-![browse project](img/bar_chart.png)
+   **NOTE**: You can start a scan at any time, unless the status is **Queued** or **Scanning**. If the database has not been fully populated, there is a warning message at the footer of the **Projects** > **Repositories** view and you cannot run the scan. The following statuses are displayed in the **Vulnerabilities** column:
+   
+   * **Not Scanned:** The tag has never been scanned.
+   * **Queued:** The scanning task is scheduled but has not run yet.
+   * **Scanning:** The scanning task is in progress and a progress bar is displayed.
+   * **View log:** The scanning task failed to complete. Click **View Log** link to view the related logs.
+   * **Complete:** The scanning task completed successfully.
 
-Move the cursor over the bar, a tooltip with summary report will be displayed. Besides showing the total number of features with vulnerabilities and the total number of features in the scanned image tag, the report also lists the counts of features with vulnerabilities of different severity levels. The completion time of the last analysis process is shown at the bottom of the tooltip.
-![browse project](img/summary_tooltip.png)
+   If the process completes successfully, the result indicates the number of vulnerabilities with each severity level and the number of vulnerabilities that are fixable.
 
-Click on the tag name link, the detail page will be opened. Besides the information about the tag, all the vulnerabilities found in the last analysis process will be listed with the related information. You can order or filter the list by columns.
-![browse project](img/tag_detail.png)
+   ![Scan result](img/scan-result.png)
 
-**NOTES: You can initiate the vulnerability analysis for a tag at anytime you want as long as the status is not 'Queued' or 'Scanning'.** 
+   * **Red:** **Critical** level of vulnerabilities
+   * **Orange:** **High** level of vulnerabilities
+   * **Yellow:** **Medium** level of vulnerabilities
+   * **Blue:** **Low** level of vulnerabilities
+   * **Green:** **Negligible** vulnerabilities
+   * **Grey:** **Unknown** level of vulnerabilities
+1. Hover over the number of fixable vulnerabilities to see a summary of the vulnerability report. 
+   ![Vulnerability summary](img/vulnerability-summary.png)
+1. Click on the tag name to see a detailed vulnerability report. 
+  ![Vulnerability report](img/tag_detail.png)
+  
+   In addition to information about the tag, all of the vulnerabilities found in the last scan are listed. You can order or filter the list by the different columns.
 
-**Scanning all images**
+### Scan All Images
 
-In the **'Vulnerability'** tab of **'Configuration'** section under **'Administration'**, click on the **'SCAN NOW'** button to start the analysis process for all the existing images. 
+1. Log in to the Harbor interface with an account that has Harbor administrator privileges.
+1. Expand **Administration**, and select **Interrogation Services**. 
+1. Select the **Vulnerability** tab and click **Scan Now** to scan all of the images in all projects.
+   ![Scan all images](img/scan_all.png)
 
-**NOTES: The scanning process is executed via multiple concurrent asynchronous tasks. There is no guarantee on the order of scanning or the returned results.** 
-![browse project](img/scan_all.png)
+The scanning process runs multiple concurrent asynchronous tasks. The order in which the tasks are run and the results returned is not guaranteed.
 
-To avoid frequently triggering the resource intensive scanning process, the availability of the button is restricted. It can be only triggered once in a predefined period. The next available time will be displayed besides the button.
-![browse project](img/scan_all2.png)
+Scanning requires intensive resource consumption. To avoid frequently triggering scans too frequently, scans can be only triggered once in a defined period. If scanning is unavailable, the next available time is displayed next to the **Scan Now** button.
 
-**Scheduled Scan by Policy** 
+### Schedule Scans
 
-You can set policies to control the vulnerability analysis process. Currently, two options are available:
-* **None:** No policy is selected.
-* **Daily:** Policy is activated daily. It means an analysis job is scheduled to be executed at the specified time everyday. The scheduled job will scan all the images in Harbor.
-![browse project](img/scan_policy.png)
+You can set policies to control when vulnerability scanning should run.
 
-**NOTES: Once the scheduled job is executed, the completion time of scanning all images will be updated accordingly. Please be aware that the completion time of the images may be different because the execution of analysis for each image may be carried out at different time.**
+1. Log in to the Harbor interface with an account that has Harbor administrator privileges.
+1. Expand **Administration**, and select **Interrogation Services**. 
+1. Select the **Vulnerability** tab and click the **Edit** button next to **Schedule to scan all**.  
+1. Use the drop down-menu to select how often to run scans.
+   ![browse project](img/scan_policy.png)
+   * **None**: No scans are scheduled.
+   * **Hourly**: Run a scan at the beginning of every hour.
+   * **Daily**: Run a scan at midnight every day.
+   * **Weekly**: Run a scan at midnight every Saturday.
+   * **Custom**: Run a scan according to a `cron` job.
+1. Click **Save**.
 
-### Pull image from Harbor in Kubernetes
-Kubernetes users can easily deploy pods with images stored in Harbor.  The settings are similar to that of another private registry.  There are two major issues:
+## Configure CVE Whitelists
+
+When you run vulnerability scans, images that are subject to Common Vulnerabilities and Exposures (CVE) are identified. According to the severity of the CVE and your security settings, these images might not be permitted to run. As a system administrator, you can create whitelists of CVEs to ignore during vulnerability scanning. 
+
+You can set a system-wide CVE whitelist or you can set CVE whitelists on a per-project basis.
+
+### Configure a System-Wide CVE Whitelist
+
+System-wide CVE whitelists apply to all of the projects in a Harbor instance.
+
+1. Go to **Configuration** > **System Settings**.
+1. Under **Deployment security**, click **Add**. 
+   ![System-wide CVE whitelist](img/cve-whitelist1.png)
+1. Enter the list of CVE IDs to ignore during vulnerability scanning. 
+   ![Add system CVE whitelist](img/cve-whitelist2.png)
+
+   Either use a comma-separated list or newlines to add multiple CVE IDs to the list.
+1. Click **Add** at the bottom of the window to add the list.
+1. Optionally uncheck the **Never expires** checkbox and use the calendar selector to set an expiry date for the whitelist.
+   ![Add system CVEs](img/cve-whitelist3.png)
+1. Click **Save** at the bottom of the page to save your settings.
+   
+After you have created a system whitelist, you can remove CVE IDs from the list by clicking the delete button next to it in the list. You can click **Add** to add more CVE IDs to the system whitelist.
+
+![Add and remove system CVEs](img/cve-whitelist4.png)
+
+### Configure a Per-Project CVE Whitelist
+
+By default, the system whitelist is applied to all projects. You can configure different CVE whitelists for individual projects, that override the system whitelist. 
+
+1. Go to **Projects**, select a project, and select **Configuration**.
+1. Under **CVE whitelist**, select **Project whitelist**. 
+   ![Project CVE whitelist](img/cve-whitelist5.png)
+1. Optionally click **Copy From System** to add all of the CVE IDs from the system CVE whitelist to this project whitelist.
+1. Click **Add** and enter a list of additional CVE IDs to ignore during vulnerability scanning of this project. 
+   ![Add project CVEs](img/cve-whitelist6.png)
+
+   Either use a comma-separated list or newlines to add multiple CVE IDs to the list.
+1. Click **Add** at the bottom of the window to add the CVEs to the project whitelist.
+1. Optionally uncheck the **Never expires** checkbox and use the calendar selector to set an expiry date for the whitelist.
+1. Click **Save** at the bottom of the page to save your settings.
+
+After you have created a project whitelist, you can remove CVE IDs from the list by clicking the delete button next to it in the list. You can click **Add** at any time to add more CVE IDs to the whitelist for this project. 
+
+If CVEs are added to the system whitelist after you have created a project whitelist, click **Copy From System** to add the new entries from the system whitelist to the project whitelist. 
+
+**NOTE**: If CVEs are deleted from the system whitelist after you have created a project whitelist, and if you added the system whitelist to the project whitelist, you must manually remove the deleted CVEs from the project whitelist. If you click **Copy From System** after CVEs have been deleted from the system whitelist, the deleted CVEs are not automatically removed from the project whitelist.
+
+## Pull image from Harbor in Kubernetes
+Kubernetes users can easily deploy pods with images stored in Harbor.  The settings are similar to that of another private registry. There are two major issues:
 
 1. When your Harbor instance is hosting http and the certificate is self signed.  You need to modify daemon.json on each work node of your cluster, for details please refer to: https://docs.docker.com/registry/insecure/#deploy-a-plain-http-registry
 2. If your pod references an image under private project, you need to create a secret with the credentials of user who has permission to pull image from this project, for details refer to: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
