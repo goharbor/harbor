@@ -313,6 +313,7 @@ By default, all projects have unlimited quotas for both tags and storage use.
 1. Select the **Project Quotas** view.
    ![Project quotas](img/project-quota1.png)
 1. To set global default quotas on all projects, click **Edit**.
+
    ![Project quotas](img/project-quota2.png)
    1. For **Default artifact count**, enter the maximum number of tags that any project can contain, or enter `-1` to set the default to unlimited.   
    1. For **Default storage consumption**, enter the maximum quantity of storage that any project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu, or enter `-1` to set the default to unlimited.  
