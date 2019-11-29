@@ -177,6 +177,8 @@ Do Log Advanced Search
 
 Go Into Repo
     [Arguments]  ${repoName}
+    Sleep  2
+    Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
     ${repo_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${repoName}')]/a
     Retry Element Click  ${repo_search_icon}
     :For  ${n}  IN RANGE  1  10
@@ -184,12 +186,13 @@ Go Into Repo
     \    Retry Text Input  ${repo_search_input}  ${repoName}
     \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  ${repo_name_element}
     \    Exit For Loop If  '${out[0]}'=='PASS'
-    \    Capture Page Screenshot  gointo_${repoName}.png
     \    Sleep  2
+    Capture Page Screenshot
     Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}  Retry Wait Until Page Not Contains Element  ${repo_name_element}
+    Capture Page Screenshot
     Retry Wait Element  ${tag_table_column_pull_command}
     Retry Wait Element  ${tag_images_btn}
-    Capture Page Screenshot  gointo_${repoName}.png
+    Capture Page Screenshot
 
 Switch To CardView
     Retry Element Click  xpath=//hbr-repository-gridview//span[@class='card-btn']/clr-icon

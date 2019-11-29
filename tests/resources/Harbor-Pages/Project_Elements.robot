@@ -42,6 +42,7 @@ ${tag_delete_btn}  xpath=//tag-repository//clr-datagrid//button[contains(.,'Dele
 ${user_delete_btn}  xpath=/clr-dropdown-menu//button[contains(.,'Delete')]
 #${repo_search_icon}  xpath=//hbr-filter//clr-icon
 #${repo_search_input}  xpath=//hbr-filter//input
+${repo_list_spinner}  xpath=//clr-datagrid//clr-spinner
 ${repo_search_icon}  xpath=//hbr-repository-gridview//clr-datagrid//clr-dg-column[contains(.,'Name')]//clr-dg-string-filter//button//clr-icon
 ${repo_search_input}  xpath=//div[@class[contains(.,'datagrid-filter')]]//input
 ${repo_tag_1st_checkbox}  xpath=//clr-datagrid//clr-dg-row//clr-checkbox-wrapper
