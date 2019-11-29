@@ -497,12 +497,12 @@ Test Case - Project Storage Quotas Dispaly And Control
     ${d}=  Get Current Date  result_format=%m%s
     ${storage_quota}=  Set Variable  330
     ${storage_quota_unit}=  Set Variable  MB
-    ${image_a}=  Set Variable  redis
-    ${image_b}=  Set Variable  logstash
+    ${image_a}=  Set Variable  ${LOCAL_REGISTRY}/harbor-ci/redis
+    ${image_b}=  Set Variable  ${LOCAL_REGISTRY}/harbor-ci/logstash
     ${image_a_size}=    Set Variable    34.15MB
     ${image_b_size}=    Set Variable    321.03MB
-    ${image_a_ver}=  Set Variable  5.0
-    ${image_b_ver}=  Set Variable  6.8.3
+    ${image_a_ver}=  Set Variable  donotremove5.0
+    ${image_b_ver}=  Set Variable  do_not_remove_6.8.3
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_b}  tag=${image_b_ver}  tag1=${image_b_ver}
