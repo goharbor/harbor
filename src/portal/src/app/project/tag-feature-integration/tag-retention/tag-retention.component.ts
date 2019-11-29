@@ -17,12 +17,14 @@ import { AddRuleComponent } from "./add-rule/add-rule.component";
 import { ClrDatagridStringFilterInterface } from "@clr/angular";
 import { TagRetentionService } from "./tag-retention.service";
 import { Retention, Rule } from "./retention";
-import { Project } from "../project";
+
+import { Project } from "../../project";
+
 import { finalize } from "rxjs/operators";
-import { CronScheduleComponent } from "../../../lib/components/cron-schedule";
-import { ErrorHandler } from "../../../lib/utils/error-handler";
-import { OriginCron } from "../../../lib/services";
-import { clone } from "../../../lib/utils/utils";
+import { CronScheduleComponent } from "../../../../lib/components/cron-schedule";
+import { ErrorHandler } from "../../../../lib/utils/error-handler";
+import { OriginCron } from "../../../../lib/services";
+import { clone } from "../../../../lib/utils/utils";
 
 const MIN = 60000;
 const SEC = 1000;
@@ -112,7 +114,7 @@ export class TagRetentionComponent implements OnInit {
     }
 
     ngOnInit() {
-        this.projectId = +this.route.snapshot.parent.params['id'];
+        this.projectId = +this.route.snapshot.parent.parent.params['id'];
         this.retention.scope = {
             level: "project",
             ref: this.projectId

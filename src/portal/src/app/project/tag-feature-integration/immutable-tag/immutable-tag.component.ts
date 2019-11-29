@@ -4,8 +4,8 @@ import { AddRuleComponent } from "./add-rule/add-rule.component";
 import { ImmutableTagService } from "./immutable-tag.service";
 import { ImmutableRetentionRule } from "../tag-retention/retention";
 import { finalize } from "rxjs/operators";
-import { ErrorHandler } from "../../../lib/utils/error-handler";
-import { clone } from "../../../lib/utils/utils";
+import { ErrorHandler } from "../../../../lib/utils/error-handler";
+import { clone } from "../../../../lib/utils/utils";
 
 @Component({
   selector: 'app-immutable-tag',
@@ -30,7 +30,7 @@ export class ImmutableTagComponent implements OnInit {
   }
 
   ngOnInit() {
-    this.projectId = +this.route.snapshot.parent.params['id'];
+    this.projectId = +this.route.snapshot.parent.parent.params['id'];
     this.getRules();
     this.getMetadata();
   }

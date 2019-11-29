@@ -20,8 +20,8 @@ import {
 } from "@angular/core";
 import { Retention, Rule, RuleMetadate } from "../retention";
 import { TagRetentionService } from "../tag-retention.service";
-import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
-import { compareValue } from "../../../../lib/utils/utils";
+import { InlineAlertComponent } from "../../../../shared/inline-alert/inline-alert.component";
+import { compareValue } from "../../../../../lib/utils/utils";
 
 const EXISTING_RULE = "TAG_RETENTION.EXISTING_RULE";
 const ILLEGAL_RULE = "TAG_RETENTION.ILLEGAL_RULE";

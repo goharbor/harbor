@@ -12,12 +12,44 @@
 }
 
 .role-label {
-  color: #CCCCCC;
+  color: #cccccc;
   font-size: 14px;
   font-style: italic;
   letter-spacing: 0.01em;
 }
-.backStyle{
+.backStyle {
   color: #007cbb;
   font-size: 12px;
-  cursor: pointer;}
+  cursor: pointer;
+}
+
+button {
+  outline: none;
+}
+#project-tabs {
+  .clear-default-active {
+    box-shadow: none;
+    &:hover {
+      box-shadow: 0 -3px 0 #0077b8 inset;
+    }
+  }
+}
+
+.tabs {
+  .nav-link {
+    padding: 0;
+  }
+}
+
+.in-overflow {
+  ::ng-deep {
+    .tabs-overflow {
+      > .nav-item {
+        > button {
+          box-shadow: 0 -3px 0 #0077b8 inset;
+          color: 0077b8;
+        }
+      }
+    }
+  }
+}

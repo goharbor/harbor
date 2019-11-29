@@ -13,7 +13,7 @@ import { AddRuleComponent } from "./add-rule/add-rule.component";
 import { TagRetentionService } from "./tag-retention.service";
 import { RuleMetadate, Retention } from './retention';
 import { delay } from 'rxjs/operators';
-import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { ErrorHandler } from "../../../../lib/utils/error-handler";
 
 describe('TagRetentionComponent', () => {
     let component: TagRetentionComponent;
@@ -42,11 +42,13 @@ describe('TagRetentionComponent', () => {
     const mockActivatedRoute = {
         snapshot: {
             parent: {
-                params: { id: 1 },
-                data: {
-                    projectResolver: {
-                        metadata: {
-                            retention_id: 1
+                parent: {
+                    params: { id: 1 },
+                    data: {
+                        projectResolver: {
+                            metadata: {
+                                retention_id: 1
+                            }
                         }
                     }
                 }
@@ -54,7 +56,7 @@ describe('TagRetentionComponent', () => {
         }
     };
     const mockErrorHandler = {
-        error: () => {}
+        error: () => { }
     };
     beforeEach(async(() => {
         TestBed.configureTestingModule({

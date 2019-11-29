@@ -44,6 +44,74 @@ export class ProjectDetailComponent implements OnInit {
   hasTagRetentionPermission: boolean;
   hasWebhookListPermission: boolean;
   hasScannerReadPermission: boolean;
+  tabLinkNavList = [
+    {
+      linkName: "summary",
+      tabLinkInOverflow: false,
+      showTabName: "PROJECT_DETAIL.SUMMARY",
+      permissions: () => this.hasProjectReadPermission
+    },
+    {
+      linkName: "repositories",
+      tabLinkInOverflow: false,
+      showTabName: "PROJECT_DETAIL.REPOSITORIES",
+      permissions: () => this.hasRepositoryListPermission
+    },
+    {
+      linkName: "helm-charts",
+      tabLinkInOverflow: false,
+      showTabName: "PROJECT_DETAIL.HELMCHART",
+      permissions: () => this.withHelmChart && this.hasHelmChartsListPermission
+    },
+    {
+      linkName: "members",
+      tabLinkInOverflow: false,
+      showTabName: "PROJECT_DETAIL.USERS",
+      permissions: () => this.hasMemberListPermission
+    },
+    {
+      linkName: "labels",
+      tabLinkInOverflow: false,
+      showTabName: "PROJECT_DETAIL.LABELS",
+      permissions: () => (this.hasLabelListPermission && this.hasLabelCreatePermission) && !this.withAdmiral
+    },
+    {
+      linkName: "scanner",
+      tabLinkInOverflow: false,
+      showTabName: "SCANNER.SCANNER",
+      permissions: () => this.hasScannerReadPermission
+    },
+    {
+      linkName: "configs",
+      tabLinkInOverflow: false,
+      showTabName: "PROJECT_DETAIL.CONFIG",
+      permissions: () => this.isSessionValid && this.hasConfigurationListPermission
+    },
+    {
+      linkName: "tag-strategy",
+      tabLinkInOverflow: true,
+      showTabName: "PROJECT_DETAIL.TAG_STRATEGY",
+      permissions: () => this.hasTagRetentionPermission
+    },
+    {
+      linkName: "robot-account",
+      tabLinkInOverflow: true,
+      showTabName: "PROJECT_DETAIL.ROBOT_ACCOUNTS",
+      permissions: () => this.hasRobotListPermission
+    },
+    {
+      linkName: "webhook",
+      tabLinkInOverflow: true,
+      showTabName: "PROJECT_DETAIL.WEBHOOKS",
+      permissions: () => this.hasWebhookListPermission
+    },
+    {
+      linkName: "logs",
+      tabLinkInOverflow: true,
+      showTabName: "PROJECT_DETAIL.LOGS",
+      permissions: () => this.hasLogListPermission
+    }
+  ];
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -116,6 +184,14 @@ export class ProjectDetailComponent implements OnInit {
       window.sessionStorage.setItem('fromDetails', 'true');
     }
     this.router.navigate(['/harbor', 'projects']);
+  }
+  isDefaultTab(tab, index) {
+    return this.route.snapshot.children[0].routeConfig.path !== tab.linkName && index === 0;
+  }
+  isTabLinkInOverFlow() {
+    return this.tabLinkNavList.some(tab => {
+      return tab.tabLinkInOverflow && this.route.snapshot.children[0].routeConfig.path === tab.linkName;
+    });
   }
 
 }
