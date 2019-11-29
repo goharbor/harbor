@@ -182,6 +182,9 @@ To replicate image repositories from one instance of Harbor to another Harbor or
    - Google Container Registry
    - Huawei SWR
    - Helm Hub
+   - Gitlab
+   - Quay.io
+   - Jfrog Artifactory
 
    ![Replication providers](img/replication-endpoint2.png)
 
