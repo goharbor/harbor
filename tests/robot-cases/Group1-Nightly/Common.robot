@@ -42,20 +42,6 @@ Test Case - Delete A Project
     Delete A Project Without Sign In Harbor
     Close Browser
 
-Test Case - Read Only Mode
-    Init Chrome Driver
-    ${d}=   Get Current Date    result_format=%m%s
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  project${d}
-
-    Enable Read Only
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
-
-    Disable Read Only
-    Sleep  5
-    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
-    Close Browser
-
 Test Case - Repo Size
     Init Chrome Driver
     ${d}=  Get Current Date    result_format=%m%s
@@ -567,30 +553,6 @@ Test Case - Project Quotas Control Under GC
     Retry Keyword When Return Value Mismatch  Get Project Storage Quota Text From Project Quotas List  0Byte of ${storage_quota}${storage_quota_unit}  60  @{param}
     Close Browser
 
-Test Case - Can Not Retag Image In ReadOnly Mode
-    Init Chrome Driver
-    ${random_num1}=   Get Current Date    result_format=%m%s
-    ${random_num2}=   Evaluate  str(random.randint(1000,9999))  modules=random
-
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Create An New Project  project${random_num1}
-    Create An New Project  project${random_num1}${random_num2}
-
-    Go Into Project  project${random_num1}  has_image=${false}
-    Sleep  1
-    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${random_num1}  redis  ${image_tag}
-    Sleep  1
-    Enable Read Only
-    Go Into Repo  project${random_num1}/redis
-    Retag Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}  ${target_tag_value}
-    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
-    Navigate To Projects
-    Go Into Project  project${random_num1}${random_num2}  has_image=${false}
-    Sleep  10
-    Go Into Project  project${random_num1}${random_num2}  has_image=${false}
-    Disable Read Only
-    Close Browser
-
 Test Case - Create New Webhook
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
@@ -642,3 +604,54 @@ Test Case - Tag Retention
     Execute Dry Run
     Execute Run
     Close Browser
+
+Test Case - Robot Account
+    Init Chrome Driver
+    ${d}=    Get Current Date    result_format=%m%s
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Create An New Project    project${d}
+    ${token}=    Create A Robot Account And Return Token    project${d}    robot${d}
+    Log To Console    ${token}
+    Log    ${token}
+    Push image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
+    Pull image  ${ip}  robot${d}  ${token}  project${d}  hello-world:latest  is_robot=${true}
+
+Test Case - Read Only Mode
+    Init Chrome Driver
+    ${d}=   Get Current Date    result_format=%m%s
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${d}
+
+    Enable Read Only
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
+
+    Disable Read Only
+    Sleep  5
+    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox:latest
+    Close Browser
+
+Test Case - Can Not Retag Image In ReadOnly Mode
+    Init Chrome Driver
+    ${random_num1}=   Get Current Date    result_format=%m%s
+    ${random_num2}=   Evaluate  str(random.randint(1000,9999))  modules=random
+
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Create An New Project  project${random_num1}
+    Create An New Project  project${random_num1}${random_num2}
+
+    Go Into Project  project${random_num1}  has_image=${false}
+    Sleep  1
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${random_num1}  redis  ${image_tag}
+    Sleep  1
+    Enable Read Only
+    Go Into Repo  project${random_num1}/redis
+    Retag Image  ${image_tag}  project${random_num1}${random_num2}  ${target_image_name}  ${target_tag_value}
+    Retry Wait Element Not Visible  ${repo_retag_confirm_dlg}
+    Navigate To Projects
+    Go Into Project  project${random_num1}${random_num2}  has_image=${false}
+    Sleep  10
+    Go Into Project  project${random_num1}${random_num2}  has_image=${false}
+    Disable Read Only
+    Close Browser
+
+

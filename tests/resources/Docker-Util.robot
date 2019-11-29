@@ -23,22 +23,24 @@ Run Docker Info
     Wait Unitl Command Success  docker ${docker-params} info
 
 Pull image
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}=${null}
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}=${null}  ${is_robot}=${false}
     Log To Console  \nRunning docker pull ${image}...
     ${image_with_tag}=  Set Variable If  '${tag}'=='${null}'  ${image}  ${image}:${tag}
-    Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
+    Run Keyword If  ${is_robot}==${false}  Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
+    ...  ELSE  Wait Unitl Command Success  docker login -u robot\\\$${user} -p ${pwd} ${ip}
     ${output}=  Wait Unitl Command Success  docker pull ${ip}/${project}/${image_with_tag}
     Should Contain  ${output}  Digest:
     Should Contain  ${output}  Status:
     Should Not Contain  ${output}  No such image:
 
 Push image
-    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${sha256}=${null}
+    [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${sha256}=${null}  ${is_robot}=${false}
     ${image_with_sha256}=  Set Variable If  '${sha256}'=='${null}'  ${image}  ${image}@sha256:${sha256}
     ${image_with_tag}=  Set Variable If  '${sha256}'=='${null}'  ${image}  ${image}:${sha256}
     Log To Console  \nRunning docker push ${image}...
     Wait Unitl Command Success  docker pull ${image_with_sha256}
-    Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
+    Run Keyword If  ${is_robot}==${false}  Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
+    ...  ELSE  Wait Unitl Command Success  docker login -u robot\\\$${user} -p ${pwd} ${ip}
     Wait Unitl Command Success  docker tag ${image_with_sha256} ${ip}/${project}/${image_with_tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image_with_tag}
     Wait Unitl Command Success  docker logout ${ip}
