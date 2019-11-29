@@ -1073,6 +1073,35 @@ To modify an existing rule, click the three vertical dots next to a rule to disa
 
 ![Modify tag retention rules](img/tag-retention5.png)
 
+## Configure Tag Immutability
+
+By default, users can repeatedly push an image with the same tag to repositories in Harbor. This causes the previous image to effectively be overwritten with each push, in that the tag now points to a different image and the image that previously used the tag now becomes tagless. This is due to the Docker implementation, that does not enforce the mapping between an image tag and the image digest. This can be undesirable in certain cases, because the tag can no longer be trusted to identify the image version. The sha256 digest remains reliable and always points to the same build, but it is not rendered in a human-friendly format.  
+
+Moreover, the Docker implementation means that deleting a tag results in the deletion of all other tags that point to the same digest, causing unwanted image deletions.
+
+To prevent this, Harbor allows you to configure tag immutability at the project level, so that images with certain tags cannot be pushed into Harbor if their tags match existing tags. This prevents existing images from being overwritten. Tag immutability guarantees that an immutable tagged image will always have the same behavior regardless of how subsequent images are pushed, tagged, retagged, and so on.
+
+1. Log in to the Harbor interface with an account that has at least project administrator privileges.
+1. Go to **Projects** and select a project. 
+1. Select the **Tag Immutability** tab.
+   ![Add an immutability rule](img/tag-immutability.png)
+1. Click **Add Rule**.
+
+   - In the **For the respositories** row, enter a comma-separated list of repositories to which to either apply or exclude from the rule by selecting either **matching** or **excluding**.
+   - In the **Tags** row, enter a comma-separated list of tags to which to either apply or exclude from the rule by selecting either **matching** or **excluding**.
+   ![Add an immutability rule](img/add-immutability-rule.png)
+1. Click **Add** to save the rule.
+
+For example, to make all tags for all repositories in the project immutable, set the following options:
+
+- Set **For the respositories** to **matching** and enter `**`.
+- Set **Tags** to **matching** and enter `**`.
+
+To allow the tags `rc`, `test`, and `nightly` to be overwritten but make all other tags immutable, set the following options:
+
+- Set **For the respositories** to **matching** and enter `**`.
+- Set **Tags** to **excluding** and enter `rc,test,nightly`.
+
 ## Webhook Notifications
 
 If you are a project administrator, you can configure a connection from a project in Harbor to a webhook endpoint. If you configure webhooks, Harbor notifies the webhook endpoint of certain events that occur in the project. Webhooks allow you to integrate Harbor with other tools to streamline continuous integration and development processes. 
