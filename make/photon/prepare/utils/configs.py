@@ -46,10 +46,9 @@ def validate(conf: dict, **kwargs):
             storage_provider_name, ",".join(valid_storage_drivers)))
 
     storage_provider_config = conf.get("storage_provider_config") ## original is registry_storage_provider_config
-    if storage_provider_name != "filesystem":
-        if storage_provider_config == "":
-            raise Exception(
-                "Error: no provider configurations are provided for provider %s" % storage_provider_name)
+    if storage_provider_name != "filesystem" and storage_provider_config == "":
+        raise Exception(
+            "Error: no provider configurations are provided for provider %s" % storage_provider_name)
     # ca_bundle validate
     if conf.get('registry_custom_ca_bundle_path'):
         registry_custom_ca_bundle_path = conf.get('registry_custom_ca_bundle_path') or ''
