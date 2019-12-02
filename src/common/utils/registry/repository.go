@@ -277,9 +277,9 @@ func (r *Repository) MountBlob(digest, from string) error {
 	if err != nil {
 		return err
 	}
+	defer resp.Body.Close()
 
 	if resp.StatusCode/100 != 2 {
-		defer resp.Body.Close()
 		b, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			return err
@@ -356,9 +356,10 @@ func (r *Repository) PullBlob(digest string) (size int64, data io.ReadCloser, er
 	}
 
 	if resp.StatusCode == http.StatusOK {
-		contengLength := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
-		size, err = strconv.ParseInt(contengLength, 10, 64)
+		contentLength := resp.Header.Get(http.CanonicalHeaderKey("Content-Length"))
+		size, err = strconv.ParseInt(contentLength, 10, 64)
 		if err != nil {
+			resp.Body.Close()
 			return
 		}
 		data = resp.Body

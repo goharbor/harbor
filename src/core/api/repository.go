@@ -787,6 +787,7 @@ func getTagDetail(client *registry.Repository, tag string) (*models.TagDetail, e
 	if err != nil {
 		return detail, err
 	}
+	defer reader.Close()
 
 	configData, err := ioutil.ReadAll(reader)
 	if err != nil {
@@ -913,6 +914,7 @@ func getManifest(client *registry.Repository,
 		if err != nil {
 			return nil, err
 		}
+		defer data.Close()
 
 		b, err := ioutil.ReadAll(data)
 		if err != nil {

@@ -121,6 +121,7 @@ func TestPullBlob(t *testing.T) {
 	if err != nil {
 		t.Fatalf("failed to pull blob: %v", err)
 	}
+	defer reader.Close()
 
 	if size != int64(len(blob)) {
 		t.Errorf("unexpected size of blob: %d != %d", size, len(blob))
