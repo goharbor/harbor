@@ -32,6 +32,9 @@ var orderMap = map[string]string{
 	"update_time":    "update_time asc",
 	"+update_time":   "update_time asc",
 	"-update_time":   "update_time desc",
+	"pull_count":     "pull_count asc",
+	"+pull_count":    "pull_count asc",
+	"-pull_count":    "pull_count desc",
 }
 
 // AddRepository adds a repo to the database.

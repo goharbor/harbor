@@ -27,7 +27,7 @@ import {
     TagService
 } from '../../services';
 import { ErrorHandler } from '../../utils/error-handler/error-handler';
-import { CustomComparator, DEFAULT_PAGE_SIZE, calculatePage, doFiltering, doSorting, clone } from '../../utils/utils';
+import { DEFAULT_PAGE_SIZE, calculatePage, clone } from '../../utils/utils';
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../../entities/shared.const';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
@@ -42,6 +42,7 @@ import { SERVICE_CONFIG, IServiceConfig } from '../../entities/service.config';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { errorHandler as errorHandFn } from "../../utils/shared/shared.utils";
+import { ClrDatagridStateInterface } from "@clr/angular";
 @Component({
     selector: "hbr-repository-gridview",
     templateUrl: "./repository-gridview.component.html",
@@ -71,9 +72,6 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     isCardView: boolean;
     cardHover = false;
     listHover = false;
-
-    pullCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('pull_count', 'number');
-    tagsCountComparator: Comparator<RepositoryItem> = new CustomComparator<RepositoryItem>('tags_count', 'number');
 
     pageSize: number = DEFAULT_PAGE_SIZE;
     currentPage = 1;
@@ -351,15 +349,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 this.totalCount = repo.metadata.xTotalCount;
                 this.repositoriesCopy = repo.data;
                 this.signedCon = {};
-                // Do filtering and sorting
-                this.repositoriesCopy = doFiltering<RepositoryItem>(
-                    this.repositoriesCopy,
-                    this.currentState
-                );
-                this.repositoriesCopy = doSorting<RepositoryItem>(
-                    this.repositoriesCopy,
-                    this.currentState
-                );
+
                 this.repositories = this.repositories.concat(this.repositoriesCopy);
                 this.loading = false;
             }, error => {
@@ -370,7 +360,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         setTimeout(() => clearInterval(hnd), 5000);
     }
 
-    clrLoad(state: State): void {
+    clrLoad(state: ClrDatagridStateInterface): void {
         if (!state || !state.page) {
             return;
         }
@@ -385,7 +375,14 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
 
         // Pagination
         let params: RequestQueryParams = new RequestQueryParams().set("page", "" + pageNumber).set("page_size", "" + this.pageSize);
-
+        if (state.filters && state.filters.length) {
+            state.filters.forEach(item => {
+                params = params.set(item.property, item.value);
+            });
+        }
+        if (state.sort && state.sort.by) {
+            params = params.set(`sort`, `${(state.sort.reverse ? `-` : ``)}${state.sort.by as string}`);
+        }
         this.loading = true;
 
         this.repositoryService.getRepositories(
@@ -399,12 +396,6 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 this.repositories = repo.data;
 
                 this.signedCon = {};
-                // Do filtering and sorting
-                this.repositories = doFiltering<RepositoryItem>(
-                    this.repositories,
-                    state
-                );
-                this.repositories = doSorting<RepositoryItem>(this.repositories, state);
                 this.loading = false;
             }, error => {
                 this.loading = false;
