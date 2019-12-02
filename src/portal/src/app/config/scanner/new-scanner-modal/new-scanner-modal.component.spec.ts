@@ -35,7 +35,7 @@ describe('NewScannerModalComponent', () => {
       return of(true).pipe(delay(200));
     }
   };
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
@@ -52,9 +52,8 @@ describe('NewScannerModalComponent', () => {
         // open auto detect
         { provide: ComponentFixtureAutoDetect, useValue: true }
       ]
-    })
-    .compileComponents();
-  }));
+    });
+  });
   beforeEach(() => {
     fixture = TestBed.createComponent(NewScannerModalComponent);
     component = fixture.componentInstance;
@@ -62,6 +61,16 @@ describe('NewScannerModalComponent', () => {
     component.newScannerFormComponent.checkNameSubscribe = new Subscription();
     component.newScannerFormComponent.checkEndpointUrlSubscribe = new Subscription();
     fixture.detectChanges();
+  });
+  afterEach(() => {
+      if (component && component.newScannerFormComponent && component.newScannerFormComponent.checkNameSubscribe) {
+          component.newScannerFormComponent.checkNameSubscribe.unsubscribe();
+          component.newScannerFormComponent.checkNameSubscribe = null;
+      }
+      if (component && component.newScannerFormComponent && component.newScannerFormComponent.checkEndpointUrlSubscribe) {
+          component.newScannerFormComponent.checkEndpointUrlSubscribe.unsubscribe();
+          component.newScannerFormComponent.checkEndpointUrlSubscribe = null;
+      }
   });
   it('should creat', () => {
     expect(component).toBeTruthy();
@@ -97,10 +106,11 @@ describe('NewScannerModalComponent', () => {
     expect(component.validForSaving).toBeTruthy();
     el.click();
     el.dispatchEvent(new Event('click'));
-    setTimeout(() => {
-      expect(component.opened).toBeFalsy();
-    }, 10000);
     tick(10000);
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+       expect(component.opened).toBeFalsy();
+    });
   }));
   it('test connection button should not be disabled', fakeAsync(() => {
     let nameInput = fixture.nativeElement.querySelector('#scanner-name');
@@ -114,10 +124,11 @@ describe('NewScannerModalComponent', () => {
     el.click();
     el.dispatchEvent(new Event('click'));
     expect(component.checkBtnState).toBe(ClrLoadingState.LOADING);
-    setTimeout(() => {
-      expect(component.checkBtnState).toBe(ClrLoadingState.SUCCESS);
-    }, 10000);
     tick(10000);
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+       expect(component.checkBtnState).toBe(ClrLoadingState.SUCCESS);
+    });
   }));
   it('add button should not be disabled', fakeAsync(() => {
     fixture.nativeElement.querySelector('#scanner-name').value = "test2";
@@ -137,10 +148,11 @@ describe('NewScannerModalComponent', () => {
     expect(component.valid).toBeFalsy();
     el.click();
     el.dispatchEvent(new Event('click'));
-    setTimeout(() => {
-      expect(component.opened).toBeFalsy();
-    }, 10000);
     tick(10000);
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+       expect(component.opened).toBeFalsy();
+    });
   }));
 });
 

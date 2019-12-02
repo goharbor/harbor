@@ -44,7 +44,7 @@ describe('ConfigurationScannerComponent', () => {
       return of(true);
     }
   };
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
@@ -66,9 +66,8 @@ describe('ConfigurationScannerComponent', () => {
           // open auto detect
         { provide: ComponentFixtureAutoDetect, useValue: true }
       ]
-    })
-    .compileComponents();
-  }));
+    });
+  });
   beforeEach(() => {
     fixture = TestBed.createComponent(ConfigurationScannerComponent);
     component = fixture.componentInstance;
