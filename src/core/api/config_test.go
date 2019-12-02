@@ -108,20 +108,8 @@ func TestPutConfigMaxLength(t *testing.T) {
 	assert := assert.New(t)
 	apiTest := newHarborAPI()
 
-	// length is 512，expected code: 200
+	// length is 1059，expected code: 200
 	cfg := map[string]interface{}{
-		common.LDAPGroupSearchFilter: "OSWvgTrQJuhiPRZt7eCReNku29vrtMBBD2cZt6jl7LQN4OZQcirqEhS2vCnkW8X1OAHMJxiO1LyEY26j" +
-			"YhBEiUFliPKDUt8Q9endowT3H60nJibEnCkSRVjix7QujXKRzlmvxcOK76v1oZAoWeHSwwtv7tZrOk16Jj5LTGYdLOnZd2LIgBniTKmceL" +
-			"VY5WOgcpmgQCfI5HLbzWsmAqmFfbsDbadirrEDiXYYfZQ0LnF8s6sD4H13eImgenAumXEsBRH43FT37AbNXNxzlaSs8IQYEdPLaMyKoXFb" +
-			"rfa0LPipwXnU7bl54IlWOTXwCwum0JGS4qBiMl6LwKUBle34ObZ9fTLh5dFOVE1GdzrGE0kQ7qUmYjMZafQbSXzV80zTc22aZt3RQa9Gxt" +
-			"Dn2VqtgcoKAiZHkEySStiwOJtZpwuplyy1jcM3DcN0R9b8IidYAWOsriqetUBThqb75XIZTXAaRWhHLw4ayROYiaw8dPuLRjeVKhdyznqq" +
-			"AKxQGyvm",
-	}
-	code200, _ := apiTest.PutConfig(*admin, cfg)
-	assert.Equal(200, code200, "the status code of modifying configurations with admin user should be 200")
-
-	// length is 1059，expected code: 500
-	cfg = map[string]interface{}{
 		common.LDAPGroupSearchFilter: "YU2YcM13JtSx5jtBiftTjfaEM9KZFQ0XA5fKQHU02E9Xe0aLYaSy7YBokrTA8oHFjSkWFSgWZJ6FEmTS" +
 			"Vy5Ovsy5to2kWnFtbVNX3pzbeQpZeAqK3mEGnXdMkMSQu9WTq74s99GpwjEdA628pcZqLx6wCR0IvwryqIcNoRtqPlUcuRGODWA8ZXaC0d" +
 			"Qs7cRUYSe8onHsM2c9JWuUS8Jv4E7KggfytrxeKAT0WGP5DBZsB7rHZKxoAppE3C0NueEeC4yV791PUOODJt9rc0RrcD6ORUIO5RriCwym" +
@@ -134,6 +122,6 @@ func TestPutConfigMaxLength(t *testing.T) {
 			"kkqQmtFREitKWl5njO8wLJw0XyeIVAej75NsGKKZWVjyaupaM9Bqn6NFrWjELFacLox6OCcRIDSDl3ntNN8tIzGOF7aXVCIqljJl0IL9Pz" +
 			"NenmmubaNm48YjfkBk8MqOUSYJYaFkO1qCKbVdMg7yTqKEHgSUqEkoFPoJMH6GAozC",
 	}
-	code500, _ := apiTest.PutConfig(*admin, cfg)
-	assert.Equal(500, code500, "the status code of modifying configurations with admin user should be 500")
+	sc, _ := apiTest.PutConfig(*admin, cfg)
+	assert.Equal(200, sc, "the status code of modifying configurations with admin user should be 200")
 }
