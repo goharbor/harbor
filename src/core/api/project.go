@@ -48,7 +48,7 @@ type ProjectAPI struct {
 }
 
 const projectNameMaxLen int = 255
-const projectNameMinLen int = 2
+const projectNameMinLen int = 1
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
 
 // Prepare validates the URL and the user
