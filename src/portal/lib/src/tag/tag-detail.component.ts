@@ -77,6 +77,10 @@ export class TagDetailComponent implements OnInit {
     });
   }
   getTagDetails(tagDetails): void {
+    this._highCount = 0;
+    this._mediumCount = 0;
+    this._lowCount = 0;
+    this._unknownCount = 0;
     this.tagDetails = tagDetails;
     if (
       this.tagDetails &&
