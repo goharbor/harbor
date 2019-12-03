@@ -23,14 +23,8 @@ ${HARBOR_URL}  https://${ip}
 ${SSH_USER}  root
 ${HARBOR_ADMIN}  admin
 
-*** Test Cases ***
-Test Case - Clair Is Default Scanner And It Is Immutable
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Scanners Page
-    Should Display The Default Clair Scanner
-    Clair Is Immutable Scanner
 
+*** Test Cases ***
 Test Case - Disable Scan Schedule
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -64,7 +58,7 @@ Test Case - Scan Image With Empty Vul
     Go Into Repo  busybox
     Scan Repo  latest  Succeed
     Move To Summary Chart
-    Wait Until Page Contains  No vulnerability
+    Wait Until Page Contains  Unknow
     Close Browser
 
 Test Case - Manual Scan All
@@ -72,7 +66,7 @@ Test Case - Manual Scan All
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  redis
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Vulnerability Page
-    Trigger Scan Now And Wait Until The Result Appears
+    Trigger Scan Now
     Navigate To Projects
     Go Into Project  library
     Go Into Repo  redis
@@ -94,6 +88,7 @@ Test Case - View Scan Error
 
 Test Case - Scan Image On Push
     [Tags]  run-once
+    Wait Unitl Vul Data Ready  ${HARBOR_URL}  7200  30
     Init Chrome Driver
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -153,7 +148,7 @@ Test Case - Verfiy System Level CVE Whitelist
     Create An New Project    project${d}
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
-    Set Vulnerabilty Serverity  2
+    Set Vulnerabilty Serverity  1
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image}
@@ -183,7 +178,7 @@ Test Case - Verfiy Project Level CVE Whitelist
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Pull Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
-    Set Vulnerabilty Serverity  2
+    Set Vulnerabilty Serverity  1
     Cannot Pull image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    tag=${sha256}
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image}
@@ -214,7 +209,7 @@ Test Case - Verfiy Project Level CVE Whitelist By Quick Way of Add System
     Create An New Project    project${d}
     Push Image    ${ip}    ${signin_user}    ${signin_pwd}    project${d}    ${image}    sha256=${sha256}
     Go Into Project  project${d}
-    Set Vulnerabilty Serverity  2
+    Set Vulnerabilty Serverity  1
     Go Into Project  project${d}
     Go Into Repo  project${d}/${image}
     Scan Repo  ${sha256}  Succeed
