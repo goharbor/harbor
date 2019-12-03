@@ -168,7 +168,7 @@
     <button type="button" id="config_system_save" class="btn btn-primary" (click)="save()"
         [disabled]="(!isValid() || !hasChanges()) && (!hasWhitelistChanged) || inProgress">{{'BUTTON.SAVE'
         | translate}}</button>
-    <button type="button" class="btn btn-outline" (click)="cancel()"
+    <button type="button" id="config_system_cancel" class="btn btn-outline" (click)="cancel()"
         [disabled]="(!isValid() || !hasChanges()) && (!hasWhitelistChanged) || inProgress">{{'BUTTON.CANCEL'
         | translate}}</button>
 </div>
