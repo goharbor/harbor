@@ -1005,7 +1005,7 @@ paths:
     get:
       summary: Get repositories accompany with relevant project and repo name.
       description: |
-        This endpoint lets user search repositories accompanying with relevant project ID and repo name. Repositories can be sorted by repo name, creation_time, update_time in either ascending or descending order.
+        This endpoint lets user search repositories accompanying with relevant project ID and repo name. Repositories can be sorted by repo name, creation_time, update_time, pull_count in either ascending or descending order.
       parameters:
         - name: project_id
           in: query
