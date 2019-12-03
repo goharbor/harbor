@@ -32,8 +32,17 @@ describe('GcComponent', () => {
     delete: false
     }
   ];
+  const fakedErrorHandler = {
+    error(error) {
+      return error;
+    },
+    info(info) {
+      return info;
+    }
+  };
   let spySchedule: jasmine.Spy;
   let spyJobs: jasmine.Spy;
+  let spyGcNow: jasmine.Spy;
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -43,8 +52,8 @@ describe('GcComponent', () => {
       providers: [
         { provide: GcApiRepository, useClass: GcApiDefaultRepository },
         { provide: SERVICE_CONFIG, useValue: config },
+        { provide: ErrorHandler, useValue: fakedErrorHandler },
         GcRepoService,
-        ErrorHandler,
         GcViewModelFactory
       ]
     })
@@ -58,9 +67,20 @@ describe('GcComponent', () => {
     gcRepoService = fixture.debugElement.injector.get(GcRepoService);
     spySchedule = spyOn(gcRepoService, "getSchedule").and.returnValues(of(mockSchedule));
     spyJobs = spyOn(gcRepoService, "getJobs").and.returnValues(of(mockJobs));
+    spyGcNow = spyOn(gcRepoService, "manualGc").and.returnValues(of(true));
     fixture.detectChanges();
   });
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+  it('should get schedule and job', () => {
+    expect(spySchedule.calls.count()).toEqual(1);
+    expect(spyJobs.calls.count()).toEqual(1);
+  });
+  it('should trigger gcNow', () => {
+    const ele: HTMLButtonElement = fixture.nativeElement.querySelector('.gc-start-btn');
+    ele.click();
+    fixture.detectChanges();
+    expect(spyGcNow.calls.count()).toEqual(1);
   });
 });

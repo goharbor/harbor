@@ -26,7 +26,7 @@ describe('ScannerMetadataComponent', () => {
       return of(mockScannerMetadata);
     }
   };
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
@@ -40,9 +40,8 @@ describe('ScannerMetadataComponent', () => {
         ErrorHandler,
         { provide: ConfigScannerService, useValue: fakedConfigScannerService },
       ]
-    })
-    .compileComponents();
-  }));
+    });
+  });
   beforeEach(() => {
     fixture = TestBed.createComponent(ScannerMetadataComponent);
     component = fixture.componentInstance;
