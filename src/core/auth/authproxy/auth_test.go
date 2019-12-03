@@ -47,7 +47,6 @@ func TestMain(m *testing.M) {
 		Endpoint:            mockSvr.URL + "/test/login",
 		TokenReviewEndpoint: mockSvr.URL + "/test/tokenreview",
 		SkipCertVerify:      true,
-		CaseSensitive:       false,
 		// So it won't require mocking the cfgManager
 		settingTimeStamp: time.Now(),
 	}
@@ -56,7 +55,6 @@ func TestMain(m *testing.M) {
 		common.HTTPAuthProxyEndpoint:            a.Endpoint,
 		common.HTTPAuthProxyTokenReviewEndpoint: a.TokenReviewEndpoint,
 		common.HTTPAuthProxyVerifyCert:          !a.SkipCertVerify,
-		common.HTTPAuthProxyCaseSensitive:       a.CaseSensitive,
 		common.PostGreSQLSSLMode:                cfgMap[common.PostGreSQLSSLMode],
 		common.PostGreSQLUsername:               cfgMap[common.PostGreSQLUsername],
 		common.PostGreSQLPort:                   cfgMap[common.PostGreSQLPort],
@@ -205,7 +203,7 @@ func TestAuth_OnBoardGroup(t *testing.T) {
 	assert.True(t, input.ID > 0, "The OnBoardGroup should have a valid group ID")
 	g, er := group.GetUserGroup(input.ID)
 	assert.Nil(t, er)
-	assert.Equal(t, "onboardtest", g.GroupName)
+	assert.Equal(t, "OnBoardTest", g.GroupName)
 
 	emptyGroup := &models.UserGroup{}
 	err := a.OnBoardGroup(emptyGroup, "")

@@ -475,7 +475,6 @@ func HTTPAuthProxySetting() (*models.HTTPAuthProxy, error) {
 		TokenReviewEndpoint: cfgMgr.Get(common.HTTPAuthProxyTokenReviewEndpoint).GetString(),
 		VerifyCert:          cfgMgr.Get(common.HTTPAuthProxyVerifyCert).GetBool(),
 		SkipSearch:          cfgMgr.Get(common.HTTPAuthProxySkipSearch).GetBool(),
-		CaseSensitive:       cfgMgr.Get(common.HTTPAuthProxyCaseSensitive).GetBool(),
 	}, nil
 }
 

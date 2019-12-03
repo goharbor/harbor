@@ -217,19 +217,17 @@ func currPath() string {
 
 func TestHTTPAuthProxySetting(t *testing.T) {
 	m := map[string]interface{}{
-		common.HTTPAuthProxySkipSearch:    "true",
-		common.HTTPAuthProxyVerifyCert:    "true",
-		common.HTTPAuthProxyCaseSensitive: "false",
-		common.HTTPAuthProxyEndpoint:      "https://auth.proxy/suffix",
+		common.HTTPAuthProxySkipSearch: "true",
+		common.HTTPAuthProxyVerifyCert: "true",
+		common.HTTPAuthProxyEndpoint:   "https://auth.proxy/suffix",
 	}
 	InitWithSettings(m)
 	v, e := HTTPAuthProxySetting()
 	assert.Nil(t, e)
 	assert.Equal(t, *v, models.HTTPAuthProxy{
-		Endpoint:      "https://auth.proxy/suffix",
-		SkipSearch:    true,
-		VerifyCert:    true,
-		CaseSensitive: false,
+		Endpoint:   "https://auth.proxy/suffix",
+		SkipSearch: true,
+		VerifyCert: true,
 	})
 }
 
