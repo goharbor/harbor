@@ -1,7 +1,7 @@
 import os
 import yaml
 import logging
-from g import versions_file_path, host_root_dir, DEFAULT_UID
+from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
 from utils.misc import generate_random_string, owner_can_read, other_can_read
 
 default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
@@ -218,10 +218,15 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
     # Global proxy configs
     proxy_config = configs.get('proxy') or {}
     proxy_components = proxy_config.get('components') or []
+    no_proxy_config = proxy_config.get('no_proxy')
+    all_no_proxy = INTERNAL_NO_PROXY_DN
+    if no_proxy_config:
+        all_no_proxy |= set(no_proxy_config.split(','))
+
     for proxy_component in proxy_components:
       config_dict[proxy_component + '_http_proxy'] = proxy_config.get('http_proxy') or ''
       config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
-      config_dict[proxy_component + '_no_proxy'] = proxy_config.get('no_proxy') or '127.0.0.1,localhost,core,registry'
+      config_dict[proxy_component + '_no_proxy'] = ','.join(all_no_proxy)
 
     # Clair configs, optional
     clair_configs = configs.get("clair") or {}
