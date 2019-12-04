@@ -88,6 +88,12 @@ type image struct {
 	tag       string
 }
 
+type parseImageError struct{}
+
+func (e *parseImageError) Error() string {
+	return "ParseImageError"
+}
+
 type basicParser struct{}
 
 func (b basicParser) parse(s string) (*image, error) {
@@ -101,7 +107,8 @@ type endpointParser struct {
 func (e endpointParser) parse(s string) (*image, error) {
 	repo := strings.SplitN(s, "/", 2)
 	if len(repo) < 2 {
-		return nil, fmt.Errorf("Unable to parse image from string: %s", s)
+		log.Errorf("Unable to parse image from string: %s", s)
+		return nil, &parseImageError{}
 	}
 	if repo[0] != e.endpoint {
 		return nil, fmt.Errorf("Mismatch endpoint from string: %s, expected endpoint: %s", s, e.endpoint)
@@ -113,7 +120,8 @@ func (e endpointParser) parse(s string) (*image, error) {
 func parseImg(s string) (*image, error) {
 	repo := strings.SplitN(s, "/", 2)
 	if len(repo) < 2 {
-		return nil, fmt.Errorf("Unable to parse image from string: %s", s)
+		log.Errorf("Unable to parse image from string: %s", s)
+		return nil, &parseImageError{}
 	}
 	i := strings.SplitN(repo[1], ":", 2)
 	res := &image{

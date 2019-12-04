@@ -44,6 +44,10 @@ func (h *Handler) Get() {
 	if err != nil {
 		if _, ok := err.(*unauthorizedError); ok {
 			h.CustomAbort(http.StatusUnauthorized, "")
+		} else if _, ok :=err.(*parseImageError); ok {
+			errMsg := fmt.Sprintf("invalid project name")
+			log.Errorf(errMsg)
+			h.CustomAbort(http.StatusBadRequest, "")
 		}
 		log.Errorf("Unexpected error when creating the token, error: %v", err)
 		h.CustomAbort(http.StatusInternalServerError, "")
