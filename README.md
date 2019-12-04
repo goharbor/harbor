@@ -81,6 +81,21 @@ Tools layered on top of Harbor and contributed by community.
 
 For a list of users, please refer to [ADOPTERS.md](ADOPTERS.md).
 
+## Security
+
+### Security Audit
+
+A third party security audit was performed by Cure53 in October of 2019. You can see the full report [here](docs/security/Harbor_Security_Audit_Oct2019.pdf).
+
+### Reporting security vulnerabilities
+
+If you've found a security related issue, a vulnerability, or a potential vulnerability in Harbor please let the [Harbor Security Team](mailto:cncf-harbor-security@lists.cncf.io) know with the details of the vulnerability. We'll send a confirmation
+email to acknowledge your report, and we'll send an additional email when we've identified the issue
+positively or negatively.
+
+For further details please see our complete [security release process](SECURITY.md).
+
+
 ## License
 
 Harbor is available under the [Apache 2 license](LICENSE).
