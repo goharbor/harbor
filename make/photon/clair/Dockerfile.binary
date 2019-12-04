@@ -1,7 +1,7 @@
 FROM golang:1.12.12
 
-ADD .   /go/src/github.com/coreos/clair/
-WORKDIR /go/src/github.com/coreos/clair/
+ADD .   /go/src/github.com/quay/clair/
+WORKDIR /go/src/github.com/quay/clair/
 
-RUN export CLAIR_VERSION=$(git describe --tag --always --dirty) && \
-	go build -ldflags "-X github.com/coreos/clair/pkg/version.Version=$CLAIR_VERSION" github.com/coreos/clair/cmd/clair
+RUN export CLAIR_VERSION=$(git describe --tag --always --dirty) GO111MODULE=on && \
+	go build -ldflags "-X github.com/quay/clair/pkg/version.Version=$CLAIR_VERSION" ./cmd/clair
