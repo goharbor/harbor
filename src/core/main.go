@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	common_quota "github.com/goharbor/harbor/src/common/quota"
-	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api"
 	quota "github.com/goharbor/harbor/src/core/api/quota"
@@ -69,9 +68,6 @@ func updateInitPassword(userID int, password string) error {
 		return fmt.Errorf("user id: %d does not exist", userID)
 	}
 	if user.Salt == "" {
-		salt := utils.GenerateRandomString()
-
-		user.Salt = salt
 		user.Password = password
 		err = dao.ChangeUserPassword(*user)
 		if err != nil {
