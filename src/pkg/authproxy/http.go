@@ -26,10 +26,8 @@ func TokenReview(rawToken string, authProxyConfig *models.HTTPAuthProxy) (k8s_ap
 			GroupVersion:         &schema.GroupVersion{},
 			NegotiatedSerializer: serializer.DirectCodecFactory{CodecFactory: scheme.Codecs},
 		},
-		BearerToken: rawToken,
-		TLSClientConfig: rest.TLSClientConfig{
-			Insecure: !authProxyConfig.VerifyCert,
-		},
+		BearerToken:     rawToken,
+		TLSClientConfig: getTLSConfig(authProxyConfig),
 	}
 	authClient, err := rest.RESTClientFor(authClientCfg)
 	if err != nil {
@@ -66,6 +64,17 @@ func TokenReview(rawToken string, authProxyConfig *models.HTTPAuthProxy) (k8s_ap
 	}
 	return tokenReviewResponse.Status, nil
 
+}
+
+func getTLSConfig(config *models.HTTPAuthProxy) rest.TLSClientConfig {
+	if config.VerifyCert && len(config.ServerCertificate) > 0 {
+		return rest.TLSClientConfig{
+			CAData: []byte(config.ServerCertificate),
+		}
+	}
+	return rest.TLSClientConfig{
+		Insecure: !config.VerifyCert,
+	}
 }
 
 // UserFromReviewStatus transform a review status to a user model.
