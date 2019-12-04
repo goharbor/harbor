@@ -5314,12 +5314,6 @@ definitions:
       with_clair:
         type: boolean
         description: If the Harbor instance is deployed with nested clair.
-      with_admiral:
-        type: boolean
-        description: If the Harbor instance is deployed with Admiral.
-      admiral_endpoint:
-        type: string
-        description: The url of the endpoint of admiral instance.
       registry_url:
         type: string
         description: The url of registry against which the docker command should be issued.

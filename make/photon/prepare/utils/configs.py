@@ -318,9 +318,6 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
     # auto generated secret string for core
     config_dict['core_secret'] = generate_random_string(16)
 
-     # Admiral configs
-    config_dict['admiral_url'] = configs.get("admiral_url") or ""
-
     # UAA configs
     config_dict['uaa'] = configs.get('uaa') or {}
 

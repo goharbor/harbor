@@ -21,10 +21,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	err := config.Init()
-	if err != nil {
-		panic(err)
-	}
+	config.Init()
 	rc := m.Run()
 	os.Exit(rc)
 

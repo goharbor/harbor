@@ -186,8 +186,6 @@ func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []inte
 	}
 
 	if len(q.ProjectName) > 0 {
-		// use "like" rather than "table joining" because that
-		// in integration mode the projects are saved in Admiral side
 		sql += `and r.name like ? `
 		params = append(params, q.ProjectName+"/%")
 	}
