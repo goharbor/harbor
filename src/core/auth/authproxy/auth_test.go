@@ -44,13 +44,11 @@ func TestMain(m *testing.M) {
 	a = &Auth{
 		Endpoint:            mockSvr.URL + "/test/login",
 		TokenReviewEndpoint: mockSvr.URL + "/test/tokenreview",
-		CaseSensitive:       false,
 	}
 	cfgMap := cut.GetUnitTestConfig()
 	conf := map[string]interface{}{
 		common.HTTPAuthProxyEndpoint:            a.Endpoint,
 		common.HTTPAuthProxyTokenReviewEndpoint: a.TokenReviewEndpoint,
-		common.HTTPAuthProxyCaseSensitive:       a.CaseSensitive,
 		common.HTTPAuthProxyVerifyCert:          false,
 		common.PostGreSQLSSLMode:                cfgMap[common.PostGreSQLSSLMode],
 		common.PostGreSQLUsername:               cfgMap[common.PostGreSQLUsername],
@@ -200,7 +198,7 @@ func TestAuth_OnBoardGroup(t *testing.T) {
 	assert.True(t, input.ID > 0, "The OnBoardGroup should have a valid group ID")
 	g, er := group.GetUserGroup(input.ID)
 	assert.Nil(t, er)
-	assert.Equal(t, "onboardtest", g.GroupName)
+	assert.Equal(t, "OnBoardTest", g.GroupName)
 
 	emptyGroup := &models.UserGroup{}
 	err := a.OnBoardGroup(emptyGroup, "")
@@ -226,7 +224,6 @@ func TestGetTLSConfig(t *testing.T) {
 				VerifyCert:          false,
 				SkipSearch:          false,
 				ServerCertificate:   "",
-				CaseSensitive:       false,
 			},
 			expect: result{
 				hasError:  false,
@@ -241,7 +238,6 @@ func TestGetTLSConfig(t *testing.T) {
 				VerifyCert:          false,
 				SkipSearch:          false,
 				ServerCertificate:   "This does not look like a cert",
-				CaseSensitive:       false,
 			},
 			expect: result{
 				hasError:  false,
@@ -256,7 +252,6 @@ func TestGetTLSConfig(t *testing.T) {
 				VerifyCert:          true,
 				SkipSearch:          false,
 				ServerCertificate:   "This does not look like a cert",
-				CaseSensitive:       false,
 			},
 			expect: result{
 				hasError: true,
@@ -269,7 +264,6 @@ func TestGetTLSConfig(t *testing.T) {
 				VerifyCert:          true,
 				SkipSearch:          false,
 				ServerCertificate:   "",
-				CaseSensitive:       false,
 			},
 			expect: result{
 				hasError:  false,
@@ -315,7 +309,6 @@ pkgODrJUf0p5dhcnLyA2nZolRV1rtwlgJstnEV4JpG1MwtmAZYZUilLvnfpVxTtA
 y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 -----END CERTIFICATE-----
 `,
-				CaseSensitive: false,
 			},
 			expect: result{
 				hasError:  false,
