@@ -44,7 +44,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 
 Harbor manages images through projects. Users can be added into one project as a member with one of the following different roles:  
 
-* **Limited Guest**: A Limited Guest does not have full read privileges for a project. They can pull images but cannot push, and they cannot see logs or the other members of a project. For example, assign this role if users from a different organization need access to a project.
+* **Limited Guest**: A Limited Guest does not have full read privileges for a project. They can pull images but cannot push, and they cannot see logs or the other members of a project. For example, you can create limited guests for users from different organizations who share access to a project.
 * **Guest**: Guest has read-only privilege for a specified project. They can pull and retag images, but cannot push.
 * **Developer**: Developer has read and write privileges for a project.
 * **Master**: Master has elevated permissions beyond those of 'Developer' including the ability to scan images, view replications jobs, and delete images and helm charts. 
@@ -318,7 +318,7 @@ By default, all projects have unlimited quotas for both tags and storage use.
 1. To set global default quotas on all projects, click **Edit**.
 
    ![Project quotas](img/project-quota2.png)
-   1. For **Default artifact count**, enter the maximum number of tags that any project can contain, or enter `-1` to set the default to unlimited.   
+   1. For **Default artifact count**, enter the maximum number of tags that any project can contain at a given time, or enter `-1` to set the default to unlimited.   
    1. For **Default storage consumption**, enter the maximum quantity of storage that any project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu, or enter `-1` to set the default to unlimited.  
    ![Project quotas](img/project-quota3.png)
    1. Click **OK**.
@@ -327,7 +327,7 @@ By default, all projects have unlimited quotas for both tags and storage use.
    1. For **Default artifact count**, enter the maximum number of tags that this individual project can contain, or enter `-1` to set the default to unlimited. 
    1. For **Default storage consumption**, enter the maximum quantity of storage that this individual project can consume, selecting `MB`, `GB`, or `TB` from the drop-down menu.
 
-After you set quotas, the you can see how much of their quotas each project has consumed.
+After you set quotas, you can see how much of their quotas each project has consumed.
 
 ![Project quotas](img/project-quota5.png)
 
@@ -520,16 +520,16 @@ When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) i
 
 ## Vulnerability Scanning
 
-Harbor provides static analysis of vulnerabilities in images through the open source [Clair](https://github.com/coreos/clair) project. You can also connect Harbor to additional vulnerability scanners, also known as interrogation services. The additional scanners that are currently supported are [Anchore](https://anchore.com/harbor/) and [Aqua](https://github.com/aquasecurity/harbor-scanner-aqua).
+Harbor provides static analysis of vulnerabilities in images through the open source [Clair](https://github.com/coreos/clair) project. You can also connect Harbor to additional vulnerability scanners by using an interrogation service. The additional scanners that are currently supported are [Anchore](https://anchore.com/harbor/) and [Aqua](https://github.com/aquasecurity/harbor-scanner-aqua).
 
-You might need to connect Harbor to other scanners for corporate compliance reasons, or because your organization already uses a particular scanner. Different scanners also use different vulnerability databases, capture different CVE sets, and apply different severity thresholds. By connecting Harbor to more than one vulnerability scanner, you broaden the scope of your protection against vulnerabilities.
+It might be necessary to connect Harbor to other scanners for corporate compliance reasons, or because your organization already uses a particular scanner. Different scanners also use different vulnerability databases, capture different CVE sets, and apply different severity thresholds. By connecting Harbor to more than one vulnerability scanner, you broaden the scope of your protection against vulnerabilities.
 
-**IMPORTANT**: Clair is provided as an optional component. You must enable Clair when you install your Harbor instance. You connect to additional scanners in the Harbor interface, after you have installed Harbor. 
+**IMPORTANT**: Clair is an optional component. To be able to use Clair, you must enable it when you install your Harbor instance. You connect to additional scanners in the Harbor interface, after you have installed Harbor. 
 
 - For information about installing Harbor with Clair, see the [Installation and Configuration Guide](installation_guide.md). 
 - For information about adding additional scanners, see [Connect Harbor to Additional Vulnerability Scanners](#pluggable-scanners) below.
 
-You can initiate scanning on a particular image, or on all images in Harbor. Additionally, you can also set a policy to scan all the images at a specified time every day.
+You can manually initiate scanning on a particular image, or on all images in Harbor. Additionally, you can also set a policy to automatically scan all of the images at specific intervals.
 
 <a id="pluggable-scanners"></a>
 ### Connect Harbor to Additional Vulnerability Scanners
@@ -553,7 +553,7 @@ To connect Harbor to additional vulnerability scanners, you must have enabled th
    - **APIKey**: Paste the contents of an API key for the scanner in the **APIKey** text box.
 1. Optionally select **Skip certificate verification** if the scanner uses a self-signed or untrusted certificate. 
 1. Optionally select **Use internal registry address** if the scanner should connect to Harbor using an internal network address rather its external URL.
-1. Click Test Connection to make sure that Harbor can connect successfully to the scanner. 
+1. Click **Test Connection** to make sure that Harbor can connect successfully to the scanner. 
    ![Test scanner connection](img/test-scanner-connection.png)
 1. Click **Add** to connect Harbor to the scanner.
 1. Optionally repeat the procedure to add more scanners.
@@ -615,9 +615,7 @@ Until the database has been fully populated, the timestamp is replaced by a warn
 1. Expand **Administration**, and select **Interrogation Services**. 
 1. Select the **Vulnerability** tab and click **Scan Now** to scan all of the images in all projects.
    ![Scan all images](img/scan_all.png)
-
-The scanning process runs multiple concurrent asynchronous tasks. The order in which the tasks are run and the results returned is not guaranteed.
-
+   
 Scanning requires intensive resource consumption. To avoid frequently triggering scans too frequently, scans can be only triggered once in a defined period. If scanning is unavailable, the next available time is displayed next to the **Scan Now** button.
 
 ### Schedule Scans
@@ -678,7 +676,7 @@ By default, the system whitelist is applied to all projects. You can configure d
 1. Optionally uncheck the **Never expires** checkbox and use the calendar selector to set an expiry date for the whitelist.
 1. Click **Save** at the bottom of the page to save your settings.
 
-After you have created a project whitelist, you can remove CVE IDs from the list by clicking the delete button next to it in the list. You can click **Add** at any time to add more CVE IDs to the whitelist for this project. 
+After you have created a project whitelist, you can remove CVE IDs from the list by clicking the delete button next to it in the list. You can click **Add** at any time to add more CVE IDs to this project whitelist. 
 
 If CVEs are added to the system whitelist after you have created a project whitelist, click **Copy From System** to add the new entries from the system whitelist to the project whitelist. 
 
@@ -815,11 +813,7 @@ For other more helm commands like how to sign a chart, please refer to the [helm
 
 ## Garbage Collection
 
-Garbage collection enables you to trigger Docker registry garbage collection from the Harbor interface.
-
-When you delete images from Harbor, space is not automatically freed up. You must run garbage collection to free up space by removing blobs that are no longer referenced by a manifest from the file system.
-
-For more information about garbage collection, see [Garbage Collection](https://docs.docker.com/registry/garbage-collection/) in the Docker documentation.  
+When you delete images from Harbor, space is not automatically freed up. You must run garbage collection to free up space by removing blobs that are no longer referenced by a manifest from the file system.  
 
 ### Run Garbage Collection
 
@@ -1082,9 +1076,9 @@ To modify an existing rule, click the three vertical dots next to a rule to disa
 
 By default, users can repeatedly push an image with the same tag to repositories in Harbor. This causes the previous image to effectively be overwritten with each push, in that the tag now points to a different image and the image that previously used the tag now becomes tagless. This is due to the Docker implementation, that does not enforce the mapping between an image tag and the image digest. This can be undesirable in certain cases, because the tag can no longer be trusted to identify the image version. The sha256 digest remains reliable and always points to the same build, but it is not rendered in a human-friendly format.  
 
-Moreover, the Docker implementation means that deleting a tag results in the deletion of all other tags that point to the same digest, causing unwanted image deletions.
+Moreover, the Docker implementation requires that deleting a tag results in the deletion of all other tags that point to the same digest, causing unwanted image deletions.
 
-To prevent this, Harbor allows you to configure tag immutability at the project level, so that images with certain tags cannot be pushed into Harbor if their tags match existing tags. This prevents existing images from being overwritten. Tag immutability guarantees that an immutable tagged image will always have the same behavior regardless of how subsequent images are pushed, tagged, retagged, and so on.
+To prevent this, Harbor allows you to configure tag immutability at the project level, so that images with certain tags cannot be pushed into Harbor if their tags match existing tags. This prevents existing images from being overwritten. Tag immutability guarantees that an immutable tagged image cannot be deleted, and cannot be altered through repushing, retagging, or replication.
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
 1. Go to **Projects** and select a project. 
