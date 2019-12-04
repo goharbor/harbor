@@ -53,12 +53,8 @@ type Auth struct {
 	Endpoint            string
 	TokenReviewEndpoint string
 	SkipSearch          bool
-	// When this attribute is set to false, the name of user/group will be converted to lower-case when onboarded to Harbor, so
-	// as long as the authentication is successful there's no difference in terms of upper or lower case that is used.
-	// It will be mapped to one entry in Harbor's User/Group table.
-	CaseSensitive    bool
-	settingTimeStamp time.Time
-	client           *http.Client
+	settingTimeStamp    time.Time
+	client              *http.Client
 }
 
 type session struct {
@@ -83,26 +79,25 @@ func (a *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Warningf("Failed to read response body, error: %v", err)
+		return nil, auth.ErrAuth{}
+	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
-		name := a.normalizeName(m.Principal)
-		user := &models.User{Username: name}
-		data, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Warningf("Failed to read response body, error: %v", err)
-			return nil, auth.ErrAuth{}
-		}
 		s := session{}
 		err = json.Unmarshal(data, &s)
 		if err != nil {
 			return nil, auth.NewErrAuth(fmt.Sprintf("failed to read session %v", err))
 		}
-		if err := a.tokenReview(s.SessionID, user); err != nil {
-			return nil, auth.NewErrAuth(err.Error())
+		user, err := a.tokenReview(s.SessionID)
+		if err != nil {
+			return nil, auth.NewErrAuth(fmt.Sprintf("failed to do token review, error: %v", err))
 		}
 		return user, nil
 	} else if resp.StatusCode == http.StatusUnauthorized {
-		return nil, auth.ErrAuth{}
+		return nil, auth.NewErrAuth(string(data))
 	} else {
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
@@ -112,26 +107,24 @@ func (a *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 }
 
-func (a *Auth) tokenReview(sessionID string, user *models.User) error {
+func (a *Auth) tokenReview(sessionID string) (*models.User, error) {
 	httpAuthProxySetting, err := config.HTTPAuthProxySetting()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	reviewStatus, err := authproxy.TokenReview(sessionID, httpAuthProxySetting)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	u2, err := authproxy.UserFromReviewStatus(reviewStatus)
+	u, err := authproxy.UserFromReviewStatus(reviewStatus)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	user.GroupIDs = u2.GroupIDs
-	return nil
+	return u, nil
 }
 
 // OnBoardUser delegates to dao pkg to insert/update data in DB.
 func (a *Auth) OnBoardUser(u *models.User) error {
-	u.Username = a.normalizeName(u.Username)
 	return dao.OnBoardUser(u)
 }
 
@@ -154,7 +147,6 @@ func (a *Auth) SearchUser(username string) (*models.User, error) {
 	if err != nil {
 		log.Warningf("Failed to refresh configuration for HTTP Auth Proxy Authenticator, error: %v, the default settings will be used", err)
 	}
-	username = a.normalizeName(username)
 	var u *models.User
 	if a.SkipSearch {
 		u = &models.User{Username: username}
@@ -171,7 +163,6 @@ func (a *Auth) SearchGroup(groupKey string) (*models.UserGroup, error) {
 	if err != nil {
 		log.Warningf("Failed to refresh configuration for HTTP Auth Proxy Authenticator, error: %v, the default settings will be used", err)
 	}
-	groupKey = a.normalizeName(groupKey)
 	var ug *models.UserGroup
 	if a.SkipSearch {
 		ug = &models.UserGroup{
@@ -190,7 +181,6 @@ func (a *Auth) OnBoardGroup(u *models.UserGroup, altGroupName string) error {
 		return errors.New("Should provide a group name")
 	}
 	u.GroupType = common.HTTPGroupType
-	u.GroupName = a.normalizeName(u.GroupName)
 	err := group.OnBoardUserGroup(u)
 	if err != nil {
 		return err
@@ -246,13 +236,6 @@ func getTLSConfig(setting *models.HTTPAuthProxy) (*tls.Config, error) {
 		return &tls.Config{RootCAs: certs}, nil
 	}
 	return &tls.Config{InsecureSkipVerify: !setting.VerifyCert}, nil
-}
-
-func (a *Auth) normalizeName(n string) string {
-	if !a.CaseSensitive {
-		return strings.ToLower(n)
-	}
-	return n
 }
 
 func init() {

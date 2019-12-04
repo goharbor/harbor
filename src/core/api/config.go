@@ -126,7 +126,7 @@ func (c *ConfigAPI) validateCfg(cfgs map[string]interface{}) (bool, error) {
 		return true, err
 	}
 	if !flag {
-		if failedKeys := checkUnmodifiable(c.cfgManager, cfgs, common.AUTHMode, common.HTTPAuthProxyCaseSensitive); len(failedKeys) > 0 {
+		if failedKeys := checkUnmodifiable(c.cfgManager, cfgs, common.AUTHMode); len(failedKeys) > 0 {
 			return false, fmt.Errorf("the keys %v can not be modified as new users have been inserted into database", failedKeys)
 		}
 	}
