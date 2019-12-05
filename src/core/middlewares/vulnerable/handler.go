@@ -92,7 +92,8 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 
 		// Do judgement
 		if summary.Severity.Code() >= projectVulnerableSeverity.Code() {
-			err = errors.Errorf("the pulling image severity %q is higher than or equal with the project setting %q, reject the response.", summary.Severity, projectVulnerableSeverity)
+			err = errors.Errorf("current image with '%q vulnerable' cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of %q from running.' "+
+				"Please contact your project administrator for help'", summary.Severity, projectVulnerableSeverity)
 			vh.sendError(err, rw)
 			return
 		}
