@@ -524,7 +524,7 @@ Harbor provides static analysis of vulnerabilities in images through the open so
 
 It might be necessary to connect Harbor to other scanners for corporate compliance reasons, or because your organization already uses a particular scanner. Different scanners also use different vulnerability databases, capture different CVE sets, and apply different severity thresholds. By connecting Harbor to more than one vulnerability scanner, you broaden the scope of your protection against vulnerabilities.
 
-**IMPORTANT**: Clair is an optional component. To be able to use Clair, you must enable it when you install your Harbor instance. You connect to additional scanners in the Harbor interface, after you have installed Harbor. 
+**IMPORTANT**: Clair is an optional component. To be able to use Clair or to configure additional scanners, you must have enabled Clair when you installed your Harbor instance. You configure additional scanners in the Harbor interface, after you have installed Harbor. 
 
 - For information about installing Harbor with Clair, see the [Installation and Configuration Guide](installation_guide.md). 
 - For information about adding additional scanners, see [Connect Harbor to Additional Vulnerability Scanners](#pluggable-scanners) below.
