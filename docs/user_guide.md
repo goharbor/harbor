@@ -1207,20 +1207,23 @@ You can configure your continuous integration and development infrastructure so 
 
 ### Configure Webhooks
 
-1. Select a project and go to the Webhooks tab.
+1. Log in to the Harbor interface with an account that has at least project administrator privileges.
+1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Webhooks**.
+
   ![Webhooks option](img/webhooks1.png)  
 1. Enter the URL for your webhook endpoint listener.
-  ![Webhook URL](img/webhooks2.png)
 1. If your webhook listener implements authentication, enter the authentication header. 
 1. To implement `HTTPS POST` instead of `HTTP POST`, select the **Verifiy Remote Certficate** check box.
+
+  ![Webhook URL](img/webhooks2.png)
 1. Click **Test Endpoint** to make sure that Harbor can connect to the listener.
 1. Click **Continue** to create the webhook.
 
-When you have created the webhook, you see the status of the different notifications and the timestamp of the last time each notification was triggered. You can click **Disable** to disable notifications.
-
-![Webhook Status](img/webhooks3.png)
+When you have created the webhook, you see the status of the different notifications and the timestamp of the last time each notification was triggered. You can click **Disable** to disable notifications. 
 
 **NOTE**: You can only disable and reenable all notifications. You cannot disable and enable selected notifications.
+
+![Webhook Status](img/webhooks3.png)
 
 If a webhook notification fails to send, or if it receives an HTTP error response with a code other than `2xx`, the notification is re-sent based on the configuration that you set in `harbor.yml`. 
 
