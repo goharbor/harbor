@@ -1,6 +1,7 @@
-<div class="operDiv" [@SlideInOutAnimation]="animationState">
-    <a class="toolBar" (click)="slideOut()">{{'OPERATION.EVENT_LOG' | translate}}<!--<clr-icon shape="angle-double" style="transform: rotate(90deg)"></clr-icon>--></a>
-    <div class="side-form">
+<div class="operDiv" [@SlideInOutAnimation]="animationState" (mouseover)="mouseover()" (mouseleave)="mouseleave()" >
+    <div class="position-relative w-100 h-100">
+        <a class="toolBar" (click)="slideOut()">{{'OPERATION.EVENT_LOG' | translate}}<span *ngIf="getNewMessageCountStr()" class="badge badge-danger margin-left-5">{{getNewMessageCountStr()}}</span></a>
+        <div class="side-form">
         <clr-icon shape="refresh" class="freshIcon" (click)="TabEvent()"></clr-icon>
         <h3 class="custom-h2 event-text">{{'OPERATION.LOCAL_EVENT' | translate}}</h3>
         <div class="tab-top">
@@ -59,6 +60,7 @@
                 </clr-tab>
             </clr-tabs>
         </div>
+    </div>
     </div>
 </div>
 
