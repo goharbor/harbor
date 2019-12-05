@@ -1031,12 +1031,18 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 
 ### Configure Tag Retention Rules
 
-1. Select a project and go to the **Tag Retention** tab.
-  ![Tag Retention option](img/tag-retention1.png)
+1. Log in to the Harbor interface with an account that has at least developer privileges.
+1. Go to **Projects**, select a project, click the More ellipsis (`...`), and select **Tag Strategy**.
+
+   ![Tag Retention option](img/tag-retention1.png)
+1. Select **Tag Retention**.
+
+   ![Tag Retention option](img/tag-retention1a.png)
+  
 1. Click **Add Rule** to add a rule.
 1. In the **For the repositories** drop-down menu, select **matching** or **excluding**.
   ![Select repositories](img/tag-retention2.png)
-1. Identify the repositories on which to apply the rule.
+1. In the **For the repositories** text box, identify the repositories on which to apply the rule.
   
    You can define the repositories on which to apply the rule by entering the following information:
   
@@ -1046,7 +1052,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
    - `**` to apply the rule to all of the repositories in the project. 
   
    If you selected **matching**, the rule is applied to the repositories you identified. If you selected **excluding**, the rule is applied to all of the repositories in the project except for the ones that you identified.
-1. Define how many tags to retain or how the period to retain tags.
+1. In the **By image count or number of days** drop-down menu, define how many tags to retain or the period to retain tags.
   ![Select retention criteria](img/tag-retention3.png)
   
    |Option|Description|
@@ -1058,7 +1064,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
    |**retain always**|Always retain the images identified by this rule.| 
 
 1. In the **Tags** drop-down menu, select **matching** or **excluding**.
-1. Identify the tags on which to apply the rule.
+1.  In the **Tags** text box, identify the tags on which to apply the rule.
   
    You can define the tags on which to apply the rule by entering the following information:
   
@@ -1071,7 +1077,9 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 1. Click **Add** to save the rule.
 1. (Optional) Click **Add Rule** to add more rules, up to a maximum of 15 per project.
 1. (Optional) Under Schedule, click **Edit** and select how often to run the rule.
+
    ![Select retention criteria](img/tag-retention4.png)
+   
    If you select **Custom**, enter a cron job command to schedule the rule. 
   
    **NOTE**: If you define multiple rules, the schedule is applied to all of the rules. You cannot schedule different rules to run at different times. 
@@ -1080,7 +1088,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 
 **WARNING**: You cannot revert a rule after you run it. It is strongly recommended to perform a dry run before you run rules. 
 
-To modify an existing rule, click the three vertical dots next to a rule to disable, edit, or delete that rule. 
+To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule. 
 
 ![Modify tag retention rules](img/tag-retention5.png)
 
