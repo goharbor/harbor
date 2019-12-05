@@ -32,7 +32,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Garbage Collection](#garbage-collection)
 * [View build history](#build-history)
 * [Using CLI after login via OIDC based SSO](#using-oidc-cli-secret)
-* [Manage robot account of a project](#robot-account)
+* [Robot Accounts](#robot-accounts)
 * [Tag Retention Rules](#tag-retention-rules)
 * [Configure Tag Immutability](#configure-tag-immutability)
 * [Webhook Notifications](#webhook-notifications)
@@ -892,43 +892,60 @@ reason, the CLI secret will become invalid.  In that case you can logout and log
 new ID token and the CLI secret will work again.
 
 
-## Robot Account
-Robot Accounts are accounts created by project admins that are intended for automated operations. They have the following limitations:
+## Robot Accounts
 
-1, Robot Accounts cannot login Harbor portal
-2, Robot Accounts can only perform operations by using the Docker and Helm CLIs.
+You can create robot accounts to run automated operations. Robot accounts have the following limitations:
+
+1. Robot Accounts cannot log in to the Harbor interface.
+1. Robot Accounts can only perform operations by using the Docker and Helm CLIs.
 
 ### Add a Robot Account
-If you are a project admin, you can create a Robot Account by clicking "New Robot Account" in the `Robot Accounts` tab of a project, and enter a name, a description, and grant permission to the account to push and pull images and Helm charts.
-![add_robot_account](img/robotaccount/add_robot_account.png)
 
-![add_robot_account](img/robotaccount/add_robot_account_2.png)
+1. Log in to the Harbor interface with an account that has at least project administrator privileges.
+1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Robot Accounts**.
 
-> **NOTE:** The name will become `robot$<accountname>` and will be used to distinguish a robot account from a normal harbor user.
+   ![Robot accounts](img/robotaccount/add_robot_account.png)
+1. Click **New Robot Account**.
+1. Enter a name and an optional description for this robot account.
+1. Grant permission to the robot account to push images and to push and pull Helm charts.
 
-![copy_robot_account_token](img/robotaccount/copy_robot_account_token.png)
-As Harbor doesn't store your account token, please make sure to copy it in the pop up dialog after creating, otherwise, there is no way to get it from Harbor.
+   Robot accounts can always pull images, so you cannot deselect this option.
+   
+   ![Add a robot account](img/robotaccount/add_robot_account_2.png)
+1. Click **Save**.
+1. In the confirmation window, click **Export to File** to download the access token as a JSON file, or click the clipboard icon to copy its contents to the clipboard.
+   
+   ![copy_robot_account_token](img/robotaccount/copy_robot_account_token.png)
 
-### Configure duration of robot account
-If you are a system admin, you can configure the robot account token duration in days. 
-![set_robot_account_token_duration](img/robotaccount/set_robot_account_token_duration.png)
+   **IMPORTANT**: Harbor does not store robot account tokens, so you must either download the token JSON or copy and paste its contents into a text file. There is no way to get the token from Harbor after you have created the robot account.
+   
+The new robot account appears as `robot$account_name` in the list of robot accounts. The `robot$` prefix makes it easily distinguishable from a normal Harbor user account.
 
-### Authenticate with a robot account
-To authenticate with a Robot Account, use `docker login` as below,
+![New robot account](img/robotaccount/new_robot_account.png)
 
-```
-docker login harbor.io
-Username: robot$accountname
-Password: Thepasswordgeneratedbyprojectadmin
-```
+To delete or disable a robot account, select the account in the list, and select **Disable account** or **Delete** from the Action drop-down menu.
 
-### Disable a robot account
-If you are a project admin, you can disable a Robot Account by clicking "Disable Account" in the `Robot Accounts` tab of a project.
-![disable_robot_account](img/robotaccount/disable_delete_robot_account.png)
+![Disable or delete a robot account](img/robotaccount/disable_delete_robot_account.png)
 
-### Delete a robot account
-If you are a project admin, you can delete a Robot Account by clicking "Delete" in the `Robot Accounts` tab of a project.
-![delete_robot_account](img/robotaccount/disable_delete_robot_account.png)
+### Configure the Expiry Period of Robot Accounts
+
+By default, robot accounts expire after 30 days. You can set a longer or shorter lifespan for robot accounts by modifying the expiry period for robot account tokens. The expiry period applies to all robot accounts in all projects.
+
+1. Log in to the Harbor interface with an account that has Harbor administrator privileges.
+1. Go to **Configuration** and select **System Settings**.
+1. In the **Robot Token Expiration (Days)** row, modify the number of days after which robot account tokens expire. 
+   
+   ![Set robot account token expiry](img/robotaccount/set_robot_account_token_duration.png)
+
+### Authenticate with a Robot Account
+
+To use a robot account in an automated process, for example a script, use `docker login` and provide the credentials of the robot account.
+
+<pre>
+docker login <i>harbor_address</i>
+Username: robot$<i>account_name</i>
+Password: <i>robot_account_token</i>
+</pre>
 
 ## Tag Retention Rules
 
@@ -1034,7 +1051,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
 1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Tag Strategy**.
 
-   ![Tag Retention option](img/tag-retention1.png)
+   ![Tag options](img/tag-retention1.png)
 1. Select **Tag Retention**.
 
    ![Tag Retention option](img/tag-retention1a.png)
@@ -1103,7 +1120,7 @@ To prevent this, Harbor allows you to configure tag immutability at the project 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
 1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Tag Strategy**.
 
-   ![Tag Retention option](img/tag-retention1.png)
+   ![Tag options](img/tag-retention1.png)
 1. Select **Tag Immutability**.
 
    ![Add an immutability rule](img/tag-immutability.png)
