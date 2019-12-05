@@ -919,13 +919,12 @@ You can create robot accounts to run automated operations. Robot accounts have t
 
    **IMPORTANT**: Harbor does not store robot account tokens, so you must either download the token JSON or copy and paste its contents into a text file. There is no way to get the token from Harbor after you have created the robot account.
    
-The new robot account appears as `robot$account_name` in the list of robot accounts. The `robot$` prefix makes it easily distinguishable from a normal Harbor user account.
+   The new robot account appears as `robot$account_name` in the list of robot accounts. The `robot$` prefix makes it easily distinguishable from a normal Harbor user account.
 
-![New robot account](img/robotaccount/new_robot_account.png)
+   ![New robot account](img/robotaccount/new_robot_account.png)
+1. To delete or disable a robot account, select the account in the list, and select **Disable account** or **Delete** from the Action drop-down menu.
 
-To delete or disable a robot account, select the account in the list, and select **Disable account** or **Delete** from the Action drop-down menu.
-
-![Disable or delete a robot account](img/robotaccount/disable_delete_robot_account.png)
+   ![Disable or delete a robot account](img/robotaccount/disable_delete_robot_account.png)
 
 ### Configure the Expiry Period of Robot Accounts
 
