@@ -1,13 +1,14 @@
 #!/bin/bash
+set -x
 
 set +e
 sudo rm -fr /data/*
 sudo mkdir -p /data
 
 set -e
+if [ -z "$1" ]; then echo no ip specified; exit 1;fi
 # prepare cert ...
-sudo sed "s/127.0.0.1/$1/" -i tests/generateCerts.sh
-sudo ./tests/generateCerts.sh
+sudo ./tests/generateCerts.sh $1
 sudo mkdir -p /etc/docker/certs.d/$1 && sudo cp ./tests/harbor_ca.crt /etc/docker/certs.d/$1/ && rm -rf ~/.docker/ &&  mkdir -p ~/.docker/tls/$1:4443/ && sudo cp ./tests/harbor_ca.crt ~/.docker/tls/$1:4443/
 
 sudo ./tests/hostcfg.sh

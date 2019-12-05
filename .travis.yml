@@ -38,7 +38,7 @@ env:
   - CORE_SECRET: tempString
   - KEY_PATH: "/data/secret/keys/secretkey"
   - REDIS_HOST: localhost
-  - REG_VERSION: v2.7.1
+  - REG_VERSION: v2.7.1-patch-2819-2553
   - UI_BUILDER_VERSION: 1.6.0
   - TOKEN_PRIVATE_KEY_PATH: "/home/travis/gopath/src/github.com/goharbor/harbor/tests/private_key.pem"
 addons: 
@@ -56,16 +56,18 @@ before_install:
 - IP=`ip addr s eth0 |grep "inet "|awk '{print $2}' |awk -F "/" '{print $1}'`
 - sudo sed -i '$a DOCKER_OPTS=\"--insecure-registry '$IP':5000\"' /etc/default/docker
 - export IP=$IP
+- sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
+- sudo update-ca-certificates
 - sudo service docker restart
 install:
-- if [ "$UTTEST" == true ]; then bash ./tests/travis/ut_install.sh ; fi
-- if [ "$APITEST_DB" == true ]; then bash ./tests/travis/api_common_install.sh $IP
+- if [ "$UTTEST" == true ]; then bash ./tests/showtime.sh ./tests/travis/ut_install.sh ; fi
+- if [ "$APITEST_DB" == true ]; then bash ./tests/showtime.sh ./tests/travis/api_common_install.sh $IP
   DB; fi
-- if [ "$APITEST_LDAP" == true ]; then bash ./tests/travis/api_common_install.sh $IP
+- if [ "$APITEST_LDAP" == true ]; then bash ./tests/showtime.sh ./tests/travis/api_common_install.sh $IP
   LDAP; fi
 script:
-- if [ "$UTTEST" == true ]; then bash ./tests/travis/ut_run.sh $IP; fi
-- if [ "$APITEST_DB" == true ]; then bash ./tests/travis/api_run.sh DB $IP; fi
-- if [ "$APITEST_LDAP" == true ]; then bash ./tests/travis/api_run.sh LDAP $IP; fi
-- if [ "$OFFLINE" == true ]; then bash ./tests/travis/distro_installer.sh; fi
-- if [ "$UI_UT" == true ]; then bash ./tests/travis/ui_ut_run.sh ; fi
+- if [ "$UTTEST" == true ]; then bash ./tests/showtime.sh ./tests/travis/ut_run.sh $IP; fi
+- if [ "$APITEST_DB" == true ]; then bash ./tests/showtime.sh ./tests/travis/api_run.sh DB $IP; fi
+- if [ "$APITEST_LDAP" == true ]; then bash ./tests/showtime.sh ./tests/travis/api_run.sh LDAP $IP; fi
+- if [ "$OFFLINE" == true ]; then bash ./tests/showtime.sh ./tests/travis/distro_installer.sh; fi
+- if [ "$UI_UT" == true ]; then bash ./tests/showtime.sh ./tests/travis/ui_ut_run.sh ; fi
