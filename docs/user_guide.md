@@ -3,6 +3,7 @@
 This guide walks you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
 
 * [Manage your projects](#managing-projects)
+* [Access Project Logs](#access-project-logs)
 * [Manage members of a project](#managing-members-of-a-project)
 * [Replicate resources between Harbor and non-Harbor registries](#replicating-resources)
 * [Retag images within Harbor](#retag-images)
@@ -141,20 +142,18 @@ Project properties can be changed by clicking "Configuration".
 1. Log in to the Harbor interface with an account that has at least developer privileges.
 1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Logs**.
 
-   ![browse project](img/new_project_log.png)  
+   ![Project logs](img/new_project_log.png)  
 
    All logs for the project are displayed.
 1. Click the **Search** icon and start typing to filter the logs by name.
 
-   ![browse project](img/log_filter.png)  
+   ![Filter logs](img/log_filter.png)  
 1. Click **Advanced** and use the **Operations** drop-down menu to filter by operation type. 
 
-   ![browse project](img/log_search_advanced.png)
+   ![Advanced log search](img/log_search_advanced.png)
 1. Click the calendar icons to enter dates between which to search for logs of the types you set in the **Operations** drop-down menu. 
 
-   ![browse project](img/log_search_advanced_date.png)
-
-
+   ![Filter logs by date](img/log_search_advanced_date.png)
 
 
 ## Managing members of a project  
