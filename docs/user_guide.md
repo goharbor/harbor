@@ -1031,8 +1031,8 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 
 ### Configure Tag Retention Rules
 
-1. Log in to the Harbor interface with an account that has at least developer privileges.
-1. Go to **Projects**, select a project, click the More ellipsis (`...`), and select **Tag Strategy**.
+1. Log in to the Harbor interface with an account that has at least project administrator privileges.
+1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Tag Strategy**.
 
    ![Tag Retention option](img/tag-retention1.png)
 1. Select **Tag Retention**.
@@ -1064,7 +1064,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
    |**retain always**|Always retain the images identified by this rule.| 
 
 1. In the **Tags** drop-down menu, select **matching** or **excluding**.
-1.  In the **Tags** text box, identify the tags on which to apply the rule.
+1. In the **Tags** text box, identify the tags on which to apply the rule.
   
    You can define the tags on which to apply the rule by entering the following information:
   
@@ -1101,13 +1101,17 @@ Moreover, the Docker implementation requires that deleting a tag results in the 
 To prevent this, Harbor allows you to configure tag immutability at the project level, so that images with certain tags cannot be pushed into Harbor if their tags match existing tags. This prevents existing images from being overwritten. Tag immutability guarantees that an immutable tagged image cannot be deleted, and cannot be altered through repushing, retagging, or replication.
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
-1. Go to **Projects** and select a project. 
-1. Select the **Tag Immutability** tab.
+1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Tag Strategy**.
+
+   ![Tag Retention option](img/tag-retention1.png)
+1. Select **Tag Immutability**.
+
    ![Add an immutability rule](img/tag-immutability.png)
 1. Click **Add Rule**.
 
-   - In the **For the respositories** row, enter a comma-separated list of repositories to which to either apply or exclude from the rule by selecting either **matching** or **excluding**.
-   - In the **Tags** row, enter a comma-separated list of tags to which to either apply or exclude from the rule by selecting either **matching** or **excluding**.
+   - In the **For the respositories** row, enter a comma-separated list of repositories to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
+   - In the **Tags** row, enter a comma-separated list of tags to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
+ 
    ![Add an immutability rule](img/add-immutability-rule.png)
 1. Click **Add** to save the rule.
 
@@ -1120,6 +1124,10 @@ To allow the tags `rc`, `test`, and `nightly` to be overwritten but make all oth
 
 - Set **For the respositories** to **matching** and enter `**`.
 - Set **Tags** to **excluding** and enter `rc,test,nightly`.
+
+To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule. 
+
+![Modify tag retention rules](img/edit-tag-immutability.png)
 
 ## Webhook Notifications
 
