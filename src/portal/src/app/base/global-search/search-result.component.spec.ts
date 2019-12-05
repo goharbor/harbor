@@ -18,11 +18,15 @@ describe('SearchResultComponent', () => {
     let fakeMessageHandlerService = null;
     let fakeSearchTriggerService = {
         searchTriggerChan$: {
-            subscribe: function () {
+            pipe() {
+                return {
+                    subscribe() {
+                    }
+                };
             }
         },
         searchCloseChan$: {
-            subscribe: function () {
+            subscribe() {
             }
         }
     };
