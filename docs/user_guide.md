@@ -105,7 +105,6 @@ Harbor supports different authentication modes:
     local admin to login when Harbor is configured authentication via OIDC.
     2. Similar to LDAP authentication mode, self-registration, updating profile, deleting user, changing password and 
     resetting password are not supported.
- 
 
 ## Managing projects
 A project in Harbor contains all repositories of an application. No images can be pushed to Harbor before the project is created. RBAC is applied to a project. There are two types of projects in Harbor:  
@@ -125,12 +124,6 @@ There are two views to show repositories, list view and card view, you can switc
 
 ![browse repositories](img/browse_project_repositories.png)
 
-All logs can be listed by clicking "Logs". You can apply a filter by username, or operations and dates under "Advanced Search".  
-
-![browse project](img/log_search_advanced.png)
-
-![browse project](img/new_project_log.png)  
-
 Project properties can be changed by clicking "Configuration".
 
 * To make all repositories under the project accessible to everyone, select the `Public` checkbox.
@@ -142,6 +135,27 @@ Project properties can be changed by clicking "Configuration".
 * To activate an immediate vulnerability scan on new images that are pushed to the project, select the `Automatically scan images on push` checkbox.
 
 ![browse project](img/project_configuration.png) 
+
+## Access Project Logs
+
+1. Log in to the Harbor interface with an account that has at least developer privileges.
+1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Logs**.
+
+   ![browse project](img/new_project_log.png)  
+
+   All logs for the project are displayed.
+1. Click the **Search** icon and start typing to filter the logs by name.
+
+   ![browse project](img/log_filter.png)  
+1. Click **Advanced** and use the **Operations** drop-down menu to filter by operation type. 
+
+   ![browse project](img/log_search_advanced.png)
+1. Click the calendar icons to enter dates between which to search for logs of the types you set in the **Operations** drop-down menu. 
+
+   ![browse project](img/log_search_advanced_date.png)
+
+
+
 
 ## Managing members of a project  
 ### Adding members  
