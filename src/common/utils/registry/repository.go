@@ -100,9 +100,9 @@ func (r *Repository) ListTag() ([]string, error) {
 			// Link: </v2/library/hello-world/tags/list?last=......>; rel="next"
 			// Link: <http://domain.com/v2/library/hello-world/tags/list?last=......>; rel="next"
 			link := resp.Header.Get("Link")
-			if strings.HasSuffix(link, `rel="next"`) && strings.Index(link, "<") >= 0 && strings.Index(link, ">") >= 0 {
+			if strings.HasSuffix(link, `rel="next"`) && strings.Contains(link, "<") && strings.Contains(link, ">") {
 				aurl = link[strings.Index(link, "<")+1 : strings.Index(link, ">")]
-				if strings.Index(aurl, ":") < 0 {
+				if !strings.Contains(aurl, ":") {
 					aurl = r.Endpoint.String() + aurl
 				}
 			} else {

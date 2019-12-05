@@ -111,9 +111,9 @@ func (r *Registry) Catalog() ([]string, error) {
 			// Link: </v2/_catalog?last=library%2Fhello-world-25&n=100>; rel="next"
 			// Link: <http://domain.com/v2/_catalog?last=library%2Fhello-world-25&n=100>; rel="next"
 			link := resp.Header.Get("Link")
-			if strings.HasSuffix(link, `rel="next"`) && strings.Index(link, "<") >= 0 && strings.Index(link, ">") >= 0 {
+			if strings.HasSuffix(link, `rel="next"`) && strings.Contains(link, "<") && strings.Contains(link, ">") {
 				aurl = link[strings.Index(link, "<")+1 : strings.Index(link, ">")]
-				if strings.Index(aurl, ":") < 0 {
+				if !strings.Contains(aurl, ":") {
 					aurl = r.Endpoint.String() + aurl
 				}
 			} else {
