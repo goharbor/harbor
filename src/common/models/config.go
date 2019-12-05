@@ -74,7 +74,6 @@ type HTTPAuthProxy struct {
 	VerifyCert          bool   `json:"verify_cert"`
 	SkipSearch          bool   `json:"skip_search"`
 	ServerCertificate   string `json:"server_certificate"`
-	CaseSensitive       bool   `json:"case_sensitive"`
 }
 
 // OIDCSetting wraps the settings for OIDC auth endpoint
