@@ -563,25 +563,30 @@ To connect Harbor to additional vulnerability scanners, you must have enabled th
 
 Vulnerability scanners depend on the vulnerability metadata to complete the analysis process. After the first initial installation, the vulnerability scanner automatically starts to update the metadata database from different vulnerability repositories. The database update might take a while, based on the data size and network connection. 
 
-Once the database is ready, the timestamp of the last update is shown in the **Interrogation Services** > **Vulnerability'** tab. 
+Once the database is ready, the timestamp of the last update is shown in the **Interrogation Services** > **Vulnerability** tab. 
 ![browse project](img/clair_ready.png)
 
-Until the database has been fully populated, the timestamp is replaced by a warning symbol. When the database is ready, you can scan images invidually or scan all images across all projects.
+Until the database has been fully populated, the timestamp is replaced by a warning symbol. When the database is ready, you can scan images individually or scan all images across all projects.
 
-### Scan an Individual Image
+### Scan Individual Images
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
 1. Go to **Projects** and select a project. 
 1. Select the **Scanner** tab.
+
    The **Scanner** tab shows the details of the scanner that is currently set as the scanner to use for this project.
+   
    ![Project scanner tab](img/project-scanners.png)
 1. Click **Edit** to select a different scanner from the list of scanners that are connected to this Harbor instance, and click **OK**.
+
    ![Project scanner tab](img/select-scanner.png)
 1. Select the **Repositories** tab and select a repository.
 
    For each tag in the repository, the **Vulnerabilities** column displays the vulnerability scanning status and related information.
+   
    ![Tag vulnerability status](img/tag-vulnerability-status.png)
-1. Select the tag and click the **Scan** button to run the vulnerability scan on this image.
+1. Select a tag, or use the check box at the top to select all tags in the repository, and click the **Scan** button to run the vulnerability scan on this image.
+
    ![Scan an image](img/scan_image.png)
 
    **NOTE**: You can start a scan at any time, unless the status is **Queued** or **Scanning**. If the database has not been fully populated, there is a warning message at the footer of the **Projects** > **Repositories** view and you cannot run the scan. The following statuses are displayed in the **Vulnerabilities** column:
@@ -596,24 +601,29 @@ Until the database has been fully populated, the timestamp is replaced by a warn
 
    ![Scan result](img/scan-result.png)
 
-   * **Red:** **Critical** level of vulnerabilities
-   * **Orange:** **High** level of vulnerabilities
-   * **Yellow:** **Medium** level of vulnerabilities
-   * **Blue:** **Low** level of vulnerabilities
-   * **Green:** **Negligible** vulnerabilities
-   * **Grey:** **Unknown** level of vulnerabilities
+   * **Red:** Critical level of vulnerabilities
+   * **Orange:** High level of vulnerabilities
+   * **Yellow:** Medium level of vulnerabilities
+   * **Blue:** Low level of vulnerabilities
+   * **Green:** No vulnerability
+   * **Grey:** Unknown level of vulnerabilities
 1. Hover over the number of fixable vulnerabilities to see a summary of the vulnerability report. 
+
    ![Vulnerability summary](img/vulnerability-summary.png)
-1. Click on the tag name to see a detailed vulnerability report. 
+1. Click on the tag name to see a detailed vulnerability report.
+ 
   ![Vulnerability report](img/tag_detail.png)
   
    In addition to information about the tag, all of the vulnerabilities found in the last scan are listed. You can order or filter the list by the different columns.
 
 ### Scan All Images
 
+In addition to scanning individual images in projects, you can run global scans on all of the images in a Harbor instance, across all projects.
+
 1. Log in to the Harbor interface with an account that has Harbor administrator privileges.
 1. Expand **Administration**, and select **Interrogation Services**. 
 1. Select the **Vulnerability** tab and click **Scan Now** to scan all of the images in all projects.
+
    ![Scan all images](img/scan_all.png)
    
 Scanning requires intensive resource consumption. To avoid frequently triggering scans too frequently, scans can be only triggered once in a defined period. If scanning is unavailable, the next available time is displayed next to the **Scan Now** button.
@@ -626,7 +636,9 @@ You can set policies to control when vulnerability scanning should run.
 1. Expand **Administration**, and select **Interrogation Services**. 
 1. Select the **Vulnerability** tab and click the **Edit** button next to **Schedule to scan all**.  
 1. Use the drop down-menu to select how often to run scans.
+
    ![browse project](img/scan_policy.png)
+   
    * **None**: No scans are scheduled.
    * **Hourly**: Run a scan at the beginning of every hour.
    * **Daily**: Run a scan at midnight every day.
