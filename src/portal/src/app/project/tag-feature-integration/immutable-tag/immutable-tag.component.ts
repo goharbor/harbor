@@ -6,6 +6,7 @@ import { ImmutableRetentionRule } from "../tag-retention/retention";
 import { finalize } from "rxjs/operators";
 import { ErrorHandler } from "../../../../lib/utils/error-handler";
 import { clone } from "../../../../lib/utils/utils";
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-immutable-tag',
@@ -19,7 +20,7 @@ export class ImmutableTagComponent implements OnInit {
   index: number = -1;
   rules: ImmutableRetentionRule[] = [];
   editIndex: number;
-  loadingRule: boolean = false;
+  loadingRule: boolean = true;
 
   @ViewChild('addRule', { static: false }) addRuleComponent: AddRuleComponent;
   constructor(
@@ -31,17 +32,23 @@ export class ImmutableTagComponent implements OnInit {
 
   ngOnInit() {
     this.projectId = +this.route.snapshot.parent.parent.params['id'];
-    this.getRules();
-    this.getMetadata();
+    forkJoin(this.immutableTagService.getRules(this.projectId), this.getMetadata())
+    .pipe(finalize(() => {
+      this.loadingRule = false;
+    }))
+    .subscribe(
+      response => {
+        this.rules = response[0] as ImmutableRetentionRule[];
+        this.addRuleComponent.metadata = response[1];
+        this.loadingRule = false;
+      }, error => {
+        this.errorHandler.error(error);
+        this.loadingRule = false;
+      });
   }
 
   getMetadata() {
-    this.immutableTagService.getRetentionMetadata().subscribe(
-      response => {
-        this.addRuleComponent.metadata = response;
-      }, error => {
-        this.errorHandler.error(error);
-      });
+    return this.immutableTagService.getRetentionMetadata();
   }
 
   getRules() {

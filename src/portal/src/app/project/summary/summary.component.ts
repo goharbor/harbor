@@ -5,6 +5,8 @@ import { QUOTA_DANGER_COEFFICIENT, QUOTA_WARNING_COEFFICIENT, QuotaUnits } from 
 import { ProjectService, UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
 import { ErrorHandler } from "../../../lib/utils/error-handler";
 import { clone, GetIntegerAndUnit, getSuitableUnit as getSuitableUnitFn } from "../../../lib/utils/utils";
+import { forkJoin } from 'rxjs';
+import { finalize } from 'rxjs/operators';
 
 @Component({
   selector: 'summary',
@@ -14,7 +16,7 @@ import { clone, GetIntegerAndUnit, getSuitableUnit as getSuitableUnitFn } from "
 export class SummaryComponent implements OnInit {
   showProjectMemberInfo: boolean;
   showQuotaInfo: boolean;
-
+  loading = true;
   projectId: number;
   summaryInformation: any;
   quotaDangerCoefficient: number = QUOTA_DANGER_COEFFICIENT;
@@ -35,13 +37,14 @@ export class SummaryComponent implements OnInit {
       { resource: USERSTATICPERMISSION.QUOTA.KEY, action: USERSTATICPERMISSION.QUOTA.VALUE.READ },
     ];
 
-    this.userPermissionService.hasProjectPermissions(this.projectId, permissions).subscribe((results: Array<boolean>) => {
-      this.showProjectMemberInfo = results[0];
-      this.showQuotaInfo = results[1];
-    });
-
-    this.projectService.getProjectSummary(this.projectId).subscribe(res => {
-      this.summaryInformation = res;
+    forkJoin(this.userPermissionService.hasProjectPermissions(this.projectId, permissions),
+    this.projectService.getProjectSummary(this.projectId)
+    ).pipe(finalize(() => {
+      this.loading = false;
+    })).subscribe(res => {
+      this.showProjectMemberInfo = res[0][0];
+      this.showQuotaInfo = res[0][1];
+      this.summaryInformation = res[1];
     }, error => {
       this.errorHandler.error(error);
     });
