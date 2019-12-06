@@ -21,7 +21,7 @@
             </clr-control-helper>
         </clr-checkbox-container>
         <clr-checkbox-container id="prevent-vulenrability-image" class="margin-top-05">
-            <label></label>
+            <label><span *ngIf="!withNotary">{{ 'PROJECT_CONFIG.SECURITY' | translate }}</span></label>
             <clr-checkbox-wrapper>
                 <input type="checkbox" clrCheckbox [(ngModel)]="projectPolicy.PreventVulImg"
                     name="prevent-vulenrability-image-input" [disabled]="!hasChangeConfigRole" />
