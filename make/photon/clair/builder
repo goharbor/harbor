@@ -20,8 +20,7 @@ cur=$PWD
 
 # the temp folder to store distribution source code...
 TEMP=`mktemp -d /$TMPDIR/clair.XXXXXX`
-git clone https://github.com/coreos/clair.git $TEMP
-cd $TEMP; git checkout $VERSION; cd -
+git clone -b $VERSION --single-branch https://github.com/quay/clair.git $TEMP
 
 echo 'build the clair binary bases on the golang:1.13.4'
 cp Dockerfile.binary $TEMP
@@ -29,7 +28,7 @@ docker build -f $TEMP/Dockerfile.binary -t clair-golang $TEMP
 
 echo 'copy the clair binary to local...'
 ID=$(docker create clair-golang)
-docker cp $ID:/go/src/github.com/coreos/clair/clair binary
+docker cp $ID:/go/src/github.com/quay/clair/clair binary
 
 docker rm -f $ID
 docker rmi -f clair-golang
