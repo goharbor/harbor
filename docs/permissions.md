@@ -48,7 +48,7 @@ The following table depicts the various user permission levels in a project.
 | Enable/disable webhooks                 |               |       | ✓         | ✓      | ✓             |
 | Create/delete tag retention rules       |               |       | ✓         | ✓      | ✓             |
 | Enable/disable tag retention rules      |               |       | ✓         | ✓      | ✓             |
-| Create/delete tag immutability rules       |               |       | ✓         | ✓      | ✓             |
+| Create/delete tag immutability rules       |               |       |          |       | ✓             |
 | Enable/disable tag immutability rules      |               |       |          |       | ✓             |
 | See project quotas                      | ✓             | ✓     | ✓         | ✓      | ✓             |
 | Edit project quotas                     |               |       |           |        |               |
