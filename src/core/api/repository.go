@@ -615,21 +615,24 @@ func (ra *RepositoryAPI) GetTags() {
 		}
 		tags = ts
 	}
-
+	result := []*models.TagResp{}
 	detail, err := ra.GetBool("detail", true)
 	if !detail && err == nil {
-		ra.Data["json"] = simpleTags(tags)
-		ra.ServeJSON()
-		return
+		result = simpleTags(tags)
+	} else {
+		result = assembleTagsInParallel(
+			client,
+			project.ProjectID,
+			repoName,
+			tags,
+			ra.SecurityCtx.GetUsername(),
+		)
 	}
-
-	ra.Data["json"] = assembleTagsInParallel(
-		client,
-		project.ProjectID,
-		repoName,
-		tags,
-		ra.SecurityCtx.GetUsername(),
-	)
+	// sort by tag name
+	sort.Slice(result, func(i, j int) bool {
+		return result[i].Name < result[j].Name
+	})
+	ra.Data["json"] = result
 	ra.ServeJSON()
 }
 
