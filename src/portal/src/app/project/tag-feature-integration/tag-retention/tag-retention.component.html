@@ -12,7 +12,7 @@
                 <div class="clr-row">
                     <div class="clr-col-2 flex-150">
                         <div class="dropdown" [ngClass]="{open:ruleIndex===i}">
-                            <button (click)="openEditor(i)" class="padding-left-0 dropdown-toggle btn btn-link btn-sm">
+                            <button (click)="openEditor(i)" class="padding-left-0 dropdown-toggle btn btn-sm btn-link ">
                                 {{'TAG_RETENTION.ACTION' | translate}}
                                 <clr-icon shape="caret down"></clr-icon>
                             </button>
@@ -58,7 +58,7 @@
         <div class="v-center clr-row" [ngClass]="{'pt-1':retention?.rules?.length > 0}">
             <div class="clr-col-2 flex-150"></div>
             <div class="flex-8p">
-                <button id="add-rule" [disabled]="retention?.rules?.length >= 15" class="btn btn-primary btn-sm" (click)="openAddRule()">{{'TAG_RETENTION.ADD_RULE' | translate}}</button>
+                <button id="add-rule" [disabled]="retention?.rules?.length >= 15" class="btn btn-primary " (click)="openAddRule()">{{'TAG_RETENTION.ADD_RULE' | translate}}</button>
             </div>
             <div class="clr-col-6 color-97 font-size-54">
                 {{'TAG_RETENTION.ADD_RULE_HELP_1' | translate}}

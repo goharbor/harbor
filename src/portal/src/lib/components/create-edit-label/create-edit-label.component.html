@@ -15,7 +15,7 @@
             <label>
                 <label for="color">{{'LABEL.COLOR' | translate}}</label>
                 <clr-dropdown [clrCloseMenuOnItemClick]="false" clrDropdownTrigger>
-                    <clr-icon shape="caret down" class="btn btn-outline btnColor btn-sm"></clr-icon>
+                    <clr-icon shape="caret down" class="btn btn-outline btnColor "></clr-icon>
                     <clr-dropdown-menu *clrIfOpen>
                         <label class="dropdown-item" (click)="labelModel.color=i.color" *ngFor="let i of labelColor"
                             [class.borderSty]="i.color == '#FFFFFF'"   [ngStyle]="{'background-color': i.color, 'color': i.textColor }">Aa</label>
@@ -29,10 +29,10 @@
                        #description="ngModel">
             </label>
             <label>
-                <button type="button" class="btn btn-sm btn-outline" (click)="onCancel()" [disabled]="inProgress">{{
+                <button type="button" class="btn  btn-outline" (click)="onCancel()" [disabled]="inProgress">{{
                     'BUTTON.CANCEL' | translate }}
                 </button>
-                <button type="submit" class="btn btn-sm btn-primary" (click)="onSubmit()" [disabled]="!isValid">{{
+                <button type="submit" class="btn  btn-primary" (click)="onSubmit()" [disabled]="!isValid">{{
                     'BUTTON.OK' | translate }}
                 </button>
             </label>

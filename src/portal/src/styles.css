@@ -52,7 +52,6 @@ body {
     -o-transform: rotate(-90deg);
     transform: rotate(-90deg);
 }
-.datagrid-spinner{margin-top: 24px;}
 
 /* set overflow bar style */
 ::-webkit-scrollbar {
@@ -72,7 +71,6 @@ body {
     background: rgba(255,0,0,0.4);
 }
 .custom-h2 {
-    margin-top: 0 !important;
     line-height: 24px;
 }
 
@@ -104,4 +102,10 @@ body {
     justify-content: flex-end;
 }
 
+.clr-vertical-nav .nav-link {
+    border-radius: 5px;
+}
 
+button:focus {
+  outline: none;
+}

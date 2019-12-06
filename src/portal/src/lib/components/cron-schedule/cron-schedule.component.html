@@ -17,7 +17,7 @@
     <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
     <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ oriCron }}</span>
   </div>
-  <button [style.margin-left]="buttonMarginLeft" [disabled]="disabled" class="btn btn-primary btn-sm" (click)="editSchedule()" id="editSchedule">
+  <button [style.margin-left]="buttonMarginLeft" [disabled]="disabled" class="btn btn-primary " (click)="editSchedule()" id="editSchedule">
     {{ "BUTTON.EDIT" | translate }}
   </button>
 </div>
@@ -49,11 +49,11 @@
     </a>
   </div>
   <div class="confirm-button">
-    <button [style.margin-left]="buttonMarginLeft" class="btn btn-primary btn-sm"
+    <button [style.margin-left]="buttonMarginLeft" class="btn btn-primary "
     (click)="save()" id="config-save">
     {{ "BUTTON.SAVE" | translate }}
     </button>
-    <button class="btn btn-primary btn-sm" (click)="isEditMode=false">
+    <button class="btn btn-primary " (click)="isEditMode=false">
       {{ "BUTTON.CANCEL" | translate }}
     </button>
   </div>
