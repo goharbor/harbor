@@ -132,7 +132,6 @@ y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 				VerifyCert:          false,
 				SkipSearch:          false,
 				ServerCertificate:   "",
-				CaseSensitive:       false,
 			},
 			expect: rest.TLSClientConfig{
 				Insecure: true,
