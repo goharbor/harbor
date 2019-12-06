@@ -5,19 +5,19 @@ WORKDIR /build_dir
 
 ARG npm_registry=https://registry.npmjs.org
 
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends python-yaml=3.12-1
+
 COPY src/portal/package.json /build_dir
 COPY src/portal/package-lock.json /build_dir
-COPY ./API/harbor/swagger.yaml /build_dir
+ENV NPM_CONFIG_REGISTRY=${npm_registry}
+RUN npm install
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends python-yaml=3.12-1 \
-    && python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger.yaml > swagger.json \
-    && npm install
+COPY ./API/harbor/swagger.yaml /build_dir
+RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger.yaml > swagger.json
 
 COPY ./LICENSE /build_dir
 COPY src/portal /build_dir
-
-ENV NPM_CONFIG_REGISTRY=${npm_registry}
 
 RUN node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --prod
 
