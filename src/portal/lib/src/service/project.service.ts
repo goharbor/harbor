@@ -1,5 +1,5 @@
 
-import {throwError as observableThrowError,  Observable } from "rxjs";
+import { throwError as observableThrowError, Observable, of } from "rxjs";
 import {Injectable, Inject} from "@angular/core";
 import { HttpClient, HttpParams, HttpResponse } from "@angular/common/http";
 import { catchError } from "rxjs/operators";
@@ -169,8 +169,13 @@ export class ProjectDefaultService extends ProjectService {
 
   public checkProjectExists(projectName: string): Observable<any> {
     return this.http
-               .head(`/api/projects/?project_name=${projectName}`).pipe(
-               catchError(error => observableThrowError(error)), );
+        .head(`/api/projects/?project_name=${projectName}`).pipe(
+            catchError(error => {
+              if (error && error.status === 404) {
+                return of(error);
+              }
+              return observableThrowError(error);
+            }));
   }
 
   public checkProjectMember(projectId: number): Observable<any> {

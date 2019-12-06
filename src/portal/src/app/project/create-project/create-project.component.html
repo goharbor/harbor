@@ -8,8 +8,7 @@
                 <div class="clr-control-container" [class.clr-error]="!isNameValid">
                     <div class="clr-input-wrapper">
                         <input type="text" id="create_project_name" [(ngModel)]="project.name" name="create_project_name" class="clr-input input-width"
-                               required pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" #projectName="ngModel" autocomplete="off"
-                               (keyup)='handleValidation()'>
+                               required pattern="^[a-z0-9]+(?:[._-][a-z0-9]+)*$" #projectName autocomplete="off">
                         <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                         <span class="spinner spinner-inline" [hidden]="!checkOnGoing"></span>
                     </div>
