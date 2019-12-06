@@ -267,7 +267,6 @@ y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 	m := map[string]interface{}{
 		common.HTTPAuthProxySkipSearch:        "true",
 		common.HTTPAuthProxyVerifyCert:        "true",
-		common.HTTPAuthProxyCaseSensitive:     "false",
 		common.HTTPAuthProxyEndpoint:          "https://auth.proxy/suffix",
 		common.HTTPAuthProxyServerCertificate: certificate,
 	}
@@ -278,7 +277,6 @@ y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
 		Endpoint:          "https://auth.proxy/suffix",
 		SkipSearch:        true,
 		VerifyCert:        true,
-		CaseSensitive:     false,
 		ServerCertificate: certificate,
 	})
 }

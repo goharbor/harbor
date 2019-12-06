@@ -256,7 +256,6 @@ func TestAuthProxyReqCtxModifier(t *testing.T) {
 		Endpoint:            "https://auth.proxy/suffix",
 		SkipSearch:          true,
 		VerifyCert:          false,
-		CaseSensitive:       true,
 		TokenReviewEndpoint: server.URL,
 	})
 
