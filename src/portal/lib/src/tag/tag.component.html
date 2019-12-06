@@ -159,7 +159,7 @@
             </clr-dg-row>
             <clr-dg-footer>
                 <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span> {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}&nbsp;&nbsp;&nbsp;&nbsp;
-                <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>
+                <clr-dg-pagination #pagination [clrDgPageSize]="50"></clr-dg-pagination>
             </clr-dg-footer>
         </clr-datagrid>
     </div>

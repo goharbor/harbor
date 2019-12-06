@@ -321,6 +321,7 @@
         "TOKEN": "Token",
         "NEW_ROBOT_ACCOUNT": "NEW ROBOT ACCOUNT",
         "ENABLED_STATE": "Enabled state",
+        "CREATETION": "Created time",
         "EXPIRATION": "Expiration",
         "NUMBER_REQUIRED": "Field is required and should be an integer other than 0.",
         "TOKEN_EXPIRATION": "Robot Token Expiration (Days)",
@@ -633,7 +634,7 @@
         "DELETION_SUMMARY_REPO_SIGNED": "Repository '{{repoName}}' cannot be deleted because the following signed images existing.\n{{signedImages}} \nYou should unsign all the signed images before deleting the repository!",
         "DELETION_SUMMARY_REPO": "¿Quiere eliminar el repositorio {{repoName}}?",
         "DELETION_TITLE_TAG": "Confirmación de Eliminación de Etiqueta",
-        "DELETION_SUMMARY_TAG": "¿Quiere eliminar la etiqueta {{param}}?",
+        "DELETION_SUMMARY_TAG": "¿Quiere eliminar la etiqueta {{param}}? If you delete this tag, all other tags referenced by the same digest will also be deleted",
         "DELETION_TITLE_TAG_DENIED": "La etiqueta firmada no puede ser eliminada",
         "DELETION_SUMMARY_TAG_DENIED": "La etiqueta debe ser eliminada de la Notaría antes de eliminarla.\nEliminarla de la Notaría con este comando:\n",
         "TAGS_NO_DELETE": "Delete is prohibited in read only mode.",
@@ -986,7 +987,7 @@
         "JOB_LOG_VIEWER": "View Scanning Job Log"
     },
     "PUSH_IMAGE": {
-        "TITLE": "Push Image",
+        "TITLE": "Push Image Docker Command",
         "TOOLTIP": "Command references for pushing an image to this project.",
         "TAG_COMMAND": "Tag an image for this project:",
         "PUSH_COMMAND": "Push an image to this project:",
