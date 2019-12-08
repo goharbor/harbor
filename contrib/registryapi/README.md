@@ -5,7 +5,7 @@ api for docker registry by token authorization
 between docker registry and the vendor authorization platform like harbor.
 ```
 usage:
-from registryapi import RegistryApi
+from registry import RegistryApi
 api = RegistryApi('username', 'password', 'http://www.your_registry_url.com/')
 repos = api.getRepositoryList()
 tags = api.getTagList('public/ubuntu')

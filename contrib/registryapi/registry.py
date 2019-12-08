@@ -20,7 +20,7 @@ class RegistryApi(object):
     def __init__(self, username, password, registry_endpoint):
         self.username = username
         self.password = password
-        self.basic_token = base64.encodestring("%s:%s" % (str(username), str(password)))[0:-1]
+        self.basic_token = base64.b64encode("%s:%s" % (str(username), str(password)))
         self.registry_endpoint = registry_endpoint.rstrip('/')
         auth = self.pingRegistry("%s/v2/_catalog" % (self.registry_endpoint,))
         if auth is None:
@@ -63,7 +63,7 @@ class RegistryApi(object):
         if n is not None:
             url = "%s?n=%s" % (url, str(n))
         req = urllib2.Request(url)
-        req.add_header('Authorization', r'Bearer %s' % (bear_token,))
+        req.add_header('Authorization', 'Bearer %s' % (bear_token,))
         try:
             response = urllib2.urlopen(req)
             return json.loads(response.read())
