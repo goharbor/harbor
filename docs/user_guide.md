@@ -533,11 +533,13 @@ When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) i
 
 ## Vulnerability Scanning
 
-Harbor provides static analysis of vulnerabilities in images through the open source [Clair](https://github.com/coreos/clair) project. You can also connect Harbor to additional vulnerability scanners by using an interrogation service. For the list of additional scanners that are currently supported, see the [Harbor Compatibility List](harbor_compatibility_list.md#scanner-adapters).
+Harbor provides static analysis of vulnerabilities in images through the open source [Clair](https://github.com/coreos/clair) project. 
+
+**IMPORTANT**: Clair is an optional component. To be able to use Clair you must have enabled Clair when you installed your Harbor instance. 
+
+You can also connect Harbor to your own instance of Clair or to additional vulnerability scanners by using an interrogation service. You configure additional scanners in the Harbor interface, after you have installed Harbor. For the list of additional scanners that are currently supported, see the [Harbor Compatibility List](harbor_compatibility_list.md#scanner-adapters).
 
 It might be necessary to connect Harbor to other scanners for corporate compliance reasons, or because your organization already uses a particular scanner. Different scanners also use different vulnerability databases, capture different CVE sets, and apply different severity thresholds. By connecting Harbor to more than one vulnerability scanner, you broaden the scope of your protection against vulnerabilities.
-
-**IMPORTANT**: Clair is an optional component. To be able to use Clair or to configure additional scanners, you must have enabled Clair when you installed your Harbor instance. You configure additional scanners in the Harbor interface, after you have installed Harbor. 
 
 - For information about installing Harbor with Clair, see the [Installation and Configuration Guide](installation_guide.md). 
 - For information about adding additional scanners, see [Connect Harbor to Additional Vulnerability Scanners](#pluggable-scanners) below.
@@ -547,14 +549,14 @@ You can manually initiate scanning on a particular image, or on all images in Ha
 <a id="pluggable-scanners"></a>
 ### Connect Harbor to Additional Vulnerability Scanners
 
-To connect Harbor to additional vulnerability scanners, you must have enabled the default Clair scanner when you deployed Harbor. You must install and configure an instance of the additional scanner according to the scanner vendor's requirements. The scanner must expose an API endpoint to Harbor that permits image pushes and pulls. You can deploy multiple different scanners, and multiple instances of the same type of scanner.
+To connect Harbor to additional vulnerability scanners, you must install and configure an instance of the additional scanner according to the scanner vendor's requirements. The scanner must expose an API endpoint to allow Harbor to trigger the scan process or get reports. You can deploy multiple different scanners, and multiple instances of the same type of scanner.
 
 1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
 1. Expand **Administration**, and select **Interrogation Services**. 
    ![Interrogation Services](img/interrogation-services.png)
 1. Click the **New Scanner** button.
 1. Enter the information to identify the scanner.
-   - A name for this scanner instance, to display in the Harbor interface.
+   - A unique name for this scanner instance, to display in the Harbor interface.
    - An optional description of this scanner instance.
    - The address of the API endpoint that the scanner exposes to Harbor.
    ![Add scanner](img/add-scanner.png)
@@ -604,7 +606,7 @@ Until the database has been fully populated, the timestamp is replaced by a warn
 
    ![Scan an image](img/scan_image.png)
 
-   **NOTE**: You can start a scan at any time, unless the status is **Queued** or **Scanning**. If the database has not been fully populated, there is a warning message at the footer of the **Projects** > **Repositories** view and you cannot run the scan. The following statuses are displayed in the **Vulnerabilities** column:
+   **NOTE**: You can start a scan at any time, unless the status is **Queued** or **Scanning**. If the database has not been fully populated, you cannot run the scan. The following statuses are displayed in the **Vulnerabilities** column:
    
    * **Not Scanned:** The tag has never been scanned.
    * **Queued:** The scanning task is scheduled but has not run yet.
@@ -612,16 +614,16 @@ Until the database has been fully populated, the timestamp is replaced by a warn
    * **View log:** The scanning task failed to complete. Click **View Log** link to view the related logs.
    * **Complete:** The scanning task completed successfully.
 
-   If the process completes successfully, the result indicates the number of vulnerabilities with each severity level and the number of vulnerabilities that are fixable.
+   If the process completes successfully, the result indicates the total number of vulnerabilities found for each severity level, and the number of fixable vulnerabilities.
 
    ![Scan result](img/scan-result.png)
 
-   * **Red:** Critical level of vulnerabilities
-   * **Orange:** High level of vulnerabilities
-   * **Yellow:** Medium level of vulnerabilities
-   * **Blue:** Low level of vulnerabilities
-   * **Green:** No vulnerability
-   * **Grey:** Unknown level of vulnerabilities
+   * **Red:** At least one critical vulnerability found
+   * **Orange:** At least one high level vulnerability found
+   * **Yellow:** At least one medium level vulnerability found
+   * **Blue:** At least one low level vulnerability found
+   * **Green:** No vulnerabilities found
+   * **Grey:** Unknown vulnerabilities
 1. Hover over the number of fixable vulnerabilities to see a summary of the vulnerability report. 
 
    ![Vulnerability summary](img/vulnerability-summary.png)
@@ -629,7 +631,7 @@ Until the database has been fully populated, the timestamp is replaced by a warn
  
   ![Vulnerability report](img/tag_detail.png)
   
-   In addition to information about the tag, all of the vulnerabilities found in the last scan are listed. You can order or filter the list by the different columns.
+   In addition to information about the tag, all of the vulnerabilities found in the last scan are listed. You can order or filter the list by the different columns. You can also click **Scan** in the report page to run a scan on this image tag.
 
 ### Scan All Images
 
@@ -641,7 +643,7 @@ In addition to scanning individual images in projects, you can run global scans 
 
    ![Scan all images](img/scan_all.png)
    
-Scanning requires intensive resource consumption. To avoid frequently triggering scans too frequently, scans can be only triggered once in a defined period. If scanning is unavailable, the next available time is displayed next to the **Scan Now** button.
+Scanning requires intensive resource consumption. If scanning is in progress, the **Scan Now** button is unavailable.
 
 ### Schedule Scans
 
@@ -1131,6 +1133,8 @@ Moreover, the Docker implementation requires that deleting a tag results in the 
 
 To prevent this, Harbor allows you to configure tag immutability at the project level, so that images with certain tags cannot be pushed into Harbor if their tags match existing tags. This prevents existing images from being overwritten. Tag immutability guarantees that an immutable tagged image cannot be deleted, and cannot be altered through repushing, retagging, or replication.
 
+Immutability rules use `OR` logic, so if you set multiple rules and a tag is matched by any of those rules, it is marked as immutable. 
+
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
 1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Tag Strategy**.
 
@@ -1146,6 +1150,15 @@ To prevent this, Harbor allows you to configure tag immutability at the project 
    ![Add an immutability rule](img/add-immutability-rule.png)
 1. Click **Add** to save the rule.
 
+   You can add a maximum of 15 immutability rules per project. 
+
+   After you add a rule, any tags that are identified by the rule are marked **Immutable** in the Repositories tab.
+1. To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule. 
+
+![Modify tag retention rules](img/edit-tag-immutability.png)
+
+### Example
+
 For example, to make all tags for all repositories in the project immutable, set the following options:
 
 - Set **For the respositories** to **matching** and enter `**`.
@@ -1155,10 +1168,6 @@ To allow the tags `rc`, `test`, and `nightly` to be overwritten but make all oth
 
 - Set **For the respositories** to **matching** and enter `**`.
 - Set **Tags** to **excluding** and enter `rc,test,nightly`.
-
-To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule. 
-
-![Modify tag retention rules](img/edit-tag-immutability.png)
 
 ## Webhook Notifications
 
