@@ -15,8 +15,8 @@ import (
 
 	"github.com/aws/aws-sdk-go/service/cloudfront/sign"
 	dcontext "github.com/docker/distribution/context"
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	"github.com/docker/distribution/registry/storage/driver/middleware"
+	storagedriver "github.com/goharbor/harbor/src/registryctl/storage/driver"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver/middleware"
 )
 
 // cloudFrontStorageMiddleware provides a simple implementation of layerHandler that

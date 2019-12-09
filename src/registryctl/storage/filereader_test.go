@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/docker/distribution/context"
-	"github.com/docker/distribution/registry/storage/driver/inmemory"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver/inmemory"
 	"github.com/opencontainers/go-digest"
 )
 

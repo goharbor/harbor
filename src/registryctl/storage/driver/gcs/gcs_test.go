@@ -9,8 +9,8 @@ import (
 	"testing"
 
 	dcontext "github.com/docker/distribution/context"
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	"github.com/docker/distribution/registry/storage/driver/testsuites"
+	storagedriver "github.com/goharbor/harbor/src/registryctl/storage/driver"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver/testsuites"
 	"golang.org/x/oauth2"
 	"golang.org/x/oauth2/google"
 	"google.golang.org/api/googleapi"

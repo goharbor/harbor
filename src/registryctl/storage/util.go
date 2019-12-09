@@ -3,7 +3,7 @@ package storage
 import (
 	"context"
 
-	"github.com/docker/distribution/registry/storage/driver"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver"
 )
 
 // Exists provides a utility method to test whether or not a path exists in

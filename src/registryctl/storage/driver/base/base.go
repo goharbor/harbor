@@ -44,8 +44,8 @@ import (
 
 	dcontext "github.com/docker/distribution/context"
 	prometheus "github.com/docker/distribution/metrics"
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/go-metrics"
+	storagedriver "github.com/goharbor/harbor/src/registryctl/storage/driver"
 )
 
 var (

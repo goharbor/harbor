@@ -3,7 +3,7 @@ package memory
 import (
 	"testing"
 
-	"github.com/docker/distribution/registry/storage/cache/cachecheck"
+	"github.com/goharbor/harbor/src/registryctl/storage/cache/cachecheck"
 )
 
 // TestInMemoryBlobInfoCache checks the in memory implementation is working

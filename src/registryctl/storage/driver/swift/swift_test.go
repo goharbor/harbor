@@ -11,8 +11,8 @@ import (
 	"github.com/ncw/swift/swifttest"
 
 	"github.com/docker/distribution/context"
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	"github.com/docker/distribution/registry/storage/driver/testsuites"
+	storagedriver "github.com/goharbor/harbor/src/registryctl/storage/driver"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver/testsuites"
 
 	"gopkg.in/check.v1"
 )

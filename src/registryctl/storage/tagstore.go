@@ -5,7 +5,7 @@ import (
 	"path"
 
 	"github.com/docker/distribution"
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
+	storagedriver "github.com/goharbor/harbor/src/registryctl/storage/driver"
 	"github.com/opencontainers/go-digest"
 )
 

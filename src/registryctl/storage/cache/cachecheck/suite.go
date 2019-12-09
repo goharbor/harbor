@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/registry/storage/cache"
+	"github.com/goharbor/harbor/src/registryctl/storage/cache"
 	"github.com/opencontainers/go-digest"
 )
 

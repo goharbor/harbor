@@ -8,7 +8,10 @@ import (
 	"github.com/docker/distribution/context"
 	"github.com/docker/distribution/manifest"
 	"github.com/docker/distribution/manifest/schema2"
-	"github.com/docker/distribution/registry/storage/driver/inmemory"
+	"github.com/docker/distribution/reference"
+	"github.com/docker/libtrust"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver/inmemory"
 )
 
 func TestVerifyManifestForeignLayer(t *testing.T) {
@@ -133,4 +136,44 @@ func TestVerifyManifestForeignLayer(t *testing.T) {
 			t.Errorf("%#v: expected %v, got %v", l, c.Err, err)
 		}
 	}
+}
+
+func createRegistry(t *testing.T, driver driver.StorageDriver, options ...RegistryOption) distribution.Namespace {
+	ctx := context.Background()
+	k, err := libtrust.GenerateECP256PrivateKey()
+	if err != nil {
+		t.Fatal(err)
+	}
+	options = append([]RegistryOption{EnableDelete, Schema1SigningKey(k), EnableSchema1}, options...)
+	registry, err := NewRegistry(ctx, driver, options...)
+	if err != nil {
+		t.Fatalf("Failed to construct namespace")
+	}
+	return registry
+}
+
+func makeRepository(t *testing.T, registry distribution.Namespace, name string) distribution.Repository {
+	ctx := context.Background()
+
+	// Initialize a dummy repository
+	named, err := reference.WithName(name)
+	if err != nil {
+		t.Fatalf("Failed to parse name %s:  %v", name, err)
+	}
+
+	repo, err := registry.Repository(ctx, named)
+	if err != nil {
+		t.Fatalf("Failed to construct repository: %v", err)
+	}
+	return repo
+}
+
+func makeManifestService(t *testing.T, repository distribution.Repository) distribution.ManifestService {
+	ctx := context.Background()
+
+	manifestService, err := repository.Manifests(ctx)
+	if err != nil {
+		t.Fatalf("Failed to construct manifest store: %v", err)
+	}
+	return manifestService
 }

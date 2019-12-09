@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/docker/distribution/reference"
-	"github.com/docker/distribution/registry/storage/driver"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver"
 )
 
 // Returns a list, or partial list, of repositories in the registry.

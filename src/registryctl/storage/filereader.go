@@ -8,7 +8,7 @@ import (
 	"io"
 	"io/ioutil"
 
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
+	storagedriver "github.com/goharbor/harbor/src/registryctl/storage/driver"
 )
 
 // TODO(stevvooe): Set an optimal buffer size here. We'll have to

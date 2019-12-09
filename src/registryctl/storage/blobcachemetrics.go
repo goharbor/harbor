@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 
 	dcontext "github.com/docker/distribution/context"
-	"github.com/docker/distribution/registry/storage/cache"
+	"github.com/goharbor/harbor/src/registryctl/storage/cache"
 )
 
 type blobStatCollector struct {

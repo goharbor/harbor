@@ -6,7 +6,7 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/reference"
-	"github.com/docker/distribution/registry/storage/driver/inmemory"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver/inmemory"
 )
 
 type tagsTestEnv struct {

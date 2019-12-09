@@ -10,8 +10,8 @@ import (
 	"github.com/docker/distribution"
 	dcontext "github.com/docker/distribution/context"
 	"github.com/docker/distribution/reference"
-	"github.com/docker/distribution/registry/storage/driver"
 	"github.com/docker/distribution/uuid"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver"
 	"github.com/opencontainers/go-digest"
 )
 

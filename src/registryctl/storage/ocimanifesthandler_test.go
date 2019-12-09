@@ -8,7 +8,7 @@ import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest"
 	"github.com/docker/distribution/manifest/ocischema"
-	"github.com/docker/distribution/registry/storage/driver/inmemory"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver/inmemory"
 	"github.com/opencontainers/image-spec/specs-go/v1"
 )
 

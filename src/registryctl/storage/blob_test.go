@@ -13,9 +13,9 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/reference"
-	"github.com/docker/distribution/registry/storage/cache/memory"
-	"github.com/docker/distribution/registry/storage/driver/testdriver"
 	"github.com/docker/distribution/testutil"
+	"github.com/goharbor/harbor/src/registryctl/storage/cache/memory"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver/testdriver"
 	"github.com/opencontainers/go-digest"
 )
 

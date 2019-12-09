@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/url"
 
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	storagemiddleware "github.com/docker/distribution/registry/storage/driver/middleware"
+	storagedriver "github.com/goharbor/harbor/src/registryctl/storage/driver"
+	storagemiddleware "github.com/goharbor/harbor/src/registryctl/storage/driver/middleware"
 )
 
 type redirectStorageMiddleware struct {

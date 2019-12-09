@@ -8,7 +8,6 @@
 // time for directories (directories are an abstraction for key, value stores)
 //
 // +build include_oss
-
 package oss
 
 import (
@@ -24,9 +23,9 @@ import (
 	"time"
 
 	"github.com/denverdino/aliyungo/oss"
-	storagedriver "github.com/docker/distribution/registry/storage/driver"
-	"github.com/docker/distribution/registry/storage/driver/base"
-	"github.com/docker/distribution/registry/storage/driver/factory"
+	storagedriver "github.com/goharbor/harbor/src/registryctl/storage/driver"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver/base"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver/factory"
 	"github.com/sirupsen/logrus"
 )
 

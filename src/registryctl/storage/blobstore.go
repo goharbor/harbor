@@ -6,7 +6,7 @@ import (
 
 	"github.com/docker/distribution"
 	dcontext "github.com/docker/distribution/context"
-	"github.com/docker/distribution/registry/storage/driver"
+	"github.com/goharbor/harbor/src/registryctl/storage/driver"
 	"github.com/opencontainers/go-digest"
 )
 
