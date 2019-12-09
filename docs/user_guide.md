@@ -140,7 +140,7 @@ Project properties can be changed by clicking "Configuration".
 ## Access Project Logs
 
 1. Log in to the Harbor interface with an account that has at least developer privileges.
-1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Logs**.
+1. Go to **Projects**, select a project, and select **Logs**.
 
    ![Project logs](img/new_project_log.png)  
 
@@ -919,7 +919,7 @@ You can create robot accounts to run automated operations. Robot accounts have t
 ### Add a Robot Account
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
-1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Robot Accounts**.
+1. Go to **Projects**, select a project, and select **Robot Accounts**.
 
    ![Robot accounts](img/robotaccount/add_robot_account.png)
 1. Click **New Robot Account**.
@@ -1065,7 +1065,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 ### Configure Tag Retention Rules
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
-1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Tag Strategy**.
+1. Go to **Projects**, select a project, and select **Tag Retention**.
 
    ![Tag options](img/tag-retention1.png)
 1. Select **Tag Retention**.
@@ -1136,10 +1136,9 @@ To prevent this, Harbor allows you to configure tag immutability at the project 
 Immutability rules use `OR` logic, so if you set multiple rules and a tag is matched by any of those rules, it is marked as immutable. 
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
-1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Tag Strategy**.
+1. Go to **Projects**, select a project, and select **Tag Immutability**.
 
    ![Tag options](img/tag-retention1.png)
-1. Select **Tag Immutability**.
 
    ![Add an immutability rule](img/tag-immutability.png)
 1. Click **Add Rule**.
@@ -1232,7 +1231,7 @@ You can configure your continuous integration and development infrastructure so 
 ### Configure Webhooks
 
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
-1. Go to **Projects**, select a project, click the **More** ellipsis (`...`), and select **Webhooks**.
+1. Go to **Projects**, select a project, and select **Webhooks**.
 
    ![Webhooks option](img/webhooks1.png)  
 1. Enter the URL for your webhook endpoint listener.
