@@ -133,7 +133,7 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top"><code>harbor_admin_password</code></td>
     <td valign="top">None</td>
-    <td valign="top">Set an initial password for the Harbor administrator. This password is only used on the first time that Harbor starts. On subsequent logins, this setting is ignored and the administrator's password is set in the Harbor Portal. The default username and password are <code>admin</code> and <code>Harbor12345</code>.</td>
+    <td valign="top">Set an initial password for the Harbor system administrator. This password is only used on the first time that Harbor starts. On subsequent logins, this setting is ignored and the administrator's password is set in the Harbor Portal. The default username and password are <code>admin</code> and <code>Harbor12345</code>.</td>
   </tr>
   <tr>
     <td valign="top"><code>database</code></td>

@@ -10,7 +10,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Search projects and repositories](#searching-projects-and-repositories)
 * [Manage labels](#managing-labels)
 * [Set Project Quotas](#set-project-quotas)
-* [Manage Harbor system if you are the system administrator:](#administrator-options)
+* [Manage Harbor system if you are the Harbor system administrator:](#administrator-options)
   * [Manage users](#managing-user)
   * [Manage registries](#managing-registry)
   * [Manage replication rules](#managing-replication)
@@ -53,7 +53,7 @@ Harbor manages images through projects. Users can be added into one project as a
 
 Besides the above roles, there are two system-level roles:  
 
-* **SysAdmin**: "SysAdmin" has the most privileges. In addition to the privileges mentioned above, "SysAdmin" can also list all projects, set an ordinary user as administrator, delete users and set vulnerability scan policy for all images. The public project "library" is also owned by the administrator.  
+* **Harbor system administrator**: "Harbor system administrator" has the most privileges. In addition to the privileges mentioned above, "Harbor system administrator" can also list all projects, set an ordinary user as administrator, delete users and set vulnerability scan policy for all images. The public project "library" is also owned by the administrator.  
 * **Anonymous**: When a user is not logged in, the user is considered as an "Anonymous" user. An anonymous user has no access to private projects and has read-only access to public projects.  
 
 See detailed permissions matrix listed here: https://github.com/goharbor/harbor/blob/master/docs/permissions.md
@@ -65,7 +65,7 @@ Harbor supports different authentication modes:
 
 	Users are stored in the local database.  
 	
-	A user can register himself/herself in Harbor in this mode. To disable user self-registration, refer to the [installation guide](installation_guide.md) for initial configuration, or disable this feature in [Administrator Options](#administrator-options). When self-registration is disabled, the system administrator can add users into Harbor.  
+	A user can register himself/herself in Harbor in this mode. To disable user self-registration, refer to the [installation guide](installation_guide.md) for initial configuration, or disable this feature in [Administrator Options](#administrator-options). When self-registration is disabled, the Harbor system administrator can add users into Harbor.  
 	
 	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.
 	
@@ -87,7 +87,7 @@ Harbor supports different authentication modes:
 * **OIDC Provider (oidc_auth)**
 
     With this authentication mode, regular user will login to Harbor Portal via SSO flow.  
-    After the system administrator configure Harbor to authenticate via OIDC (more details refer to [this section](#managing-authentication)),
+    After the Harbor system administrator configure Harbor to authenticate via OIDC (more details refer to [this section](#managing-authentication)),
     a button `LOGIN VIA OIDC PROVIDER` will appear on the login page.  
     ![oidc_login](img/oidc_login.png)
     
@@ -170,7 +170,7 @@ You can check one or more members, then click `ACTION`, choose one role to batch
 ## Replicating resources  
 Replication allows users to replicate resources (images/charts) between Harbor and non-Harbor registries in both pull or push mode. 
 
-Once the system administrator has set a rule, all resources that match the defined [filter](#resource-filter) patterns will be replicated to the destination registry when the [triggering condition](#trigger-mode) is matched. Each resource will start a task to run. If the namespace does not exist on the destination registry, a new namespace will be created automatically. If it already exists and the user configured in the policy has no write privilege to it, the process will fail. The member information will not be replicated.  
+Once the Harbor system administrator has set a rule, all resources that match the defined [filter](#resource-filter) patterns will be replicated to the destination registry when the [triggering condition](#trigger-mode) is matched. Each resource will start a task to run. If the namespace does not exist on the destination registry, a new namespace will be created automatically. If it already exists and the user configured in the policy has no write privilege to it, the process will fail. The member information will not be replicated.  
 
 There may be a bit of delay during replication based on the situation of the network. If a replication task fails, it will be re-scheduled a few minutes later and retried times.  
 
@@ -219,7 +219,7 @@ To replicate image repositories from one instance of Harbor to another Harbor or
 1. When you have successfully tested the connection, click **OK**.
 
 ### Creating a replication rule
-Login as a system administrator user, click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication modes, [resource filters](#resource-filter) and [trigger modes](#trigger-mode) according to the different requirements. If there is no endpoint available in the list, follow the instructions in the [Creating replication endpoints](#creating-replication-endpoints) to create one. Click `SAVE` to create a replication rule.  
+Login as a Harbor system administrator user, click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication modes, [resource filters](#resource-filter) and [trigger modes](#trigger-mode) according to the different requirements. If there is no endpoint available in the list, follow the instructions in the [Creating replication endpoints](#creating-replication-endpoints) to create one. Click `SAVE` to create a replication rule.  
 
 ![browse project](img/create_rule.png)
 
@@ -293,21 +293,21 @@ Entering a keyword in the search field at the top lists all matching projects an
 
 ## Managing labels
 Harbor provides two kinds of labels to isolate kinds of resources(only images for now):
-* **Global Level Label**: Managed by system administrators and used to manage the images of the whole system. They can be added to images under any projects.
+* **Global Level Label**: Managed by Harbor system administrators and used to manage the images of the whole system. They can be added to images under any projects.
 * **Project Level Label**: Managed by project administrators under a project and can only be added to the images of the project.
 
 ### Managing global level labels
-The system administrators can list, create, update and delete the global level labels under `Administration->Configuration->Labels`:
+The Harbor system administrators can list, create, update and delete the global level labels under `Administration->Configuration->Labels`:
 
 ![manage global level labels](img/manage_global_level_labels.png)
 
 ### Managing project level labels
-The project administrators and system administrators can list, create, update and delete the project level labels under `Labels` tab of the project detail page:
+The project administrators and Harbor system administrators can list, create, update and delete the project level labels under `Labels` tab of the project detail page:
 
 ![manage project level labels](img/manage_project_level_labels.png)
 
 ### Adding labels to/remove labels from images
-Users who have system administrator, project administrator or project developer role can click the `ADD LABELS` button to add labels to or remove labels from images. The label list contains both globel level labels(come first) and project level labels:
+Users who have Harbor system administrator, project administrator or project developer role can click the `ADD LABELS` button to add labels to or remove labels from images. The label list contains both globel level labels(come first) and project level labels:
 
 ![add labels to images](img/add_labels_to_images.png)
 
@@ -318,7 +318,7 @@ The images can be filtered by labels:
 
 ## Set Project Quotas
 
-To exercise control over resource use, as a Harbor administrator you can set  quotas on projects. You can limit the number of tags that a project can contain and limit the amount of storage capacity that a project can consume. You can set default quotas that apply to all projects globally.
+To exercise control over resource use, as a Harbor system administrator you can set  quotas on projects. You can limit the number of tags that a project can contain and limit the amount of storage capacity that a project can consume. You can set default quotas that apply to all projects globally.
 
 **NOTE**: Default quotas apply to projects that are created after you set or change the default quota. The default quota is not applied to projects that already existed before you set it.
 
@@ -549,7 +549,7 @@ You can manually initiate scanning on a particular image, or on all images in Ha
 
 To connect Harbor to additional vulnerability scanners, you must have enabled the default Clair scanner when you deployed Harbor. You must install and configure an instance of the additional scanner according to the scanner vendor's requirements. The scanner must expose an API endpoint to Harbor that permits image pushes and pulls. You can deploy multiple different scanners, and multiple instances of the same type of scanner.
 
-1. Log in to the Harbor interface with an account that has Harbor administrator privileges.
+1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
 1. Expand **Administration**, and select **Interrogation Services**. 
    ![Interrogation Services](img/interrogation-services.png)
 1. Click the **New Scanner** button.
@@ -593,6 +593,8 @@ Until the database has been fully populated, the timestamp is replaced by a warn
 1. Click **Edit** to select a different scanner from the list of scanners that are connected to this Harbor instance, and click **OK**.
 
    ![Project scanner tab](img/select-scanner.png)
+   
+   **NOTE**: If you have selected the **Prevent vulnerable images from running** option in the project **Configuration** tab, different scanners  might or might not permit certain images to run.
 1. Select the **Repositories** tab and select a repository.
 
    For each tag in the repository, the **Vulnerabilities** column displays the vulnerability scanning status and related information.
@@ -633,7 +635,7 @@ Until the database has been fully populated, the timestamp is replaced by a warn
 
 In addition to scanning individual images in projects, you can run global scans on all of the images in a Harbor instance, across all projects.
 
-1. Log in to the Harbor interface with an account that has Harbor administrator privileges.
+1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
 1. Expand **Administration**, and select **Interrogation Services**. 
 1. Select the **Vulnerability** tab and click **Scan Now** to scan all of the images in all projects.
 
@@ -645,7 +647,7 @@ Scanning requires intensive resource consumption. To avoid frequently triggering
 
 You can set policies to control when vulnerability scanning should run.
 
-1. Log in to the Harbor interface with an account that has Harbor administrator privileges.
+1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
 1. Expand **Administration**, and select **Interrogation Services**. 
 1. Select the **Vulnerability** tab and click the **Edit** button next to **Schedule to scan all**.  
 1. Use the drop down-menu to select how often to run scans.
@@ -661,7 +663,7 @@ You can set policies to control when vulnerability scanning should run.
 
 ## Configure CVE Whitelists
 
-When you run vulnerability scans, images that are subject to Common Vulnerabilities and Exposures (CVE) are identified. According to the severity of the CVE and your security settings, these images might not be permitted to run. As a system administrator, you can create whitelists of CVEs to ignore during vulnerability scanning. 
+When you run vulnerability scans, images that are subject to Common Vulnerabilities and Exposures (CVE) are identified. According to the severity of the CVE and your security settings, these images might not be permitted to run. As a Harbor system administrator, you can create whitelists of CVEs to ignore during vulnerability scanning. 
 
 You can set a system-wide CVE whitelist or you can set CVE whitelists on a per-project basis.
 
@@ -754,7 +756,7 @@ Check the checkbox at the 1st column to select the specified chart versions:
 * Click the `UPLOAD` button to upload the new chart version for the current chart
 
 #### Adding labels to/remove labels from chart versions
-Users who have system administrator, project administrator or project developer role can click the `ADD LABELS` button to add labels to or remove labels from chart versions.
+Users who have Harbor system administrator, project administrator or project developer role can click the `ADD LABELS` button to add labels to or remove labels from chart versions.
 
 ![add labels to chart versions](img/chartrepo/add_labesl_to_chart_versions.png)
 
@@ -842,7 +844,7 @@ When you delete images from Harbor, space is not automatically freed up. You mus
 
 ### Run Garbage Collection
 
-1. Log in to the Harbor interface with an account that has Harbor administrator privileges.
+1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
 1. Expand **Administration**, and select **Garbage Collection**. 
 1. Select the **'Garbage Collection'** tab.
   ![Garbage collection](img/garbage-collection.png)
@@ -943,7 +945,7 @@ You can create robot accounts to run automated operations. Robot accounts have t
 
 By default, robot accounts expire after 30 days. You can set a longer or shorter lifespan for robot accounts by modifying the expiry period for robot account tokens. The expiry period applies to all robot accounts in all projects.
 
-1. Log in to the Harbor interface with an account that has Harbor administrator privileges.
+1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
 1. Go to **Configuration** and select **System Settings**.
 1. In the **Robot Token Expiration (Days)** row, modify the number of days after which robot account tokens expire. 
    
@@ -961,7 +963,7 @@ Password: <i>robot_account_token</i>
 
 ## Tag Retention Rules
 
-A repository can rapidly accumulate a large number of image tags, many of which might not be required after a given time or once they have been superseded by a subsequent image build. These excess tags can obviously consume large quantities of storage capacity. As a system administrator, you can define rules that govern how many tags of a given repository to retain, or for how long to retain certain tags. 
+A repository can rapidly accumulate a large number of image tags, many of which might not be required after a given time or once they have been superseded by a subsequent image build. These excess tags can obviously consume large quantities of storage capacity. As a Harbor system administrator, you can define rules that govern how many tags of a given repository to retain, or for how long to retain certain tags. 
 
 ### How Tag Retention Rules Work
 
@@ -1054,7 +1056,7 @@ In this example, the rules are applied to the following 7 tags:
 
 ### How Tag Retention Rules Interact with Project Quotas
 
-The system administrator can set a maximum on the number of tags that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Set Project Quotas](#set-project-quotas). 
+The Harbor system administrator can set a maximum on the number of tags that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Set Project Quotas](#set-project-quotas). 
 
 If you set a quota on a project, this quota cannot be exceeded. The quota is applied to a project even if you set a retention rule that would exceed it. In other words, you cannot use retention rules to bypass quotas.
 
@@ -1069,9 +1071,9 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
    ![Tag Retention option](img/tag-retention1a.png)
   
 1. Click **Add Rule** to add a rule.
-1. In the **For the repositories** drop-down menu, select **matching** or **excluding**.
+1. In the **Repositories** drop-down menu, select **matching** or **excluding**.
   ![Select repositories](img/tag-retention2.png)
-1. In the **For the repositories** text box, identify the repositories on which to apply the rule.
+1. In the **Repositories** text box, identify the repositories on which to apply the rule.
   
    You can define the repositories on which to apply the rule by entering the following information:
   
@@ -1242,7 +1244,7 @@ If a webhook notification fails to send, or if it receives an HTTP error respons
 
 ### Globally Enable and Disable Webhooks
 
-As a system administrator, you can enable and disable webhook notifications for all projects.
+As a Harbor system administrator, you can enable and disable webhook notifications for all projects.
 
 1. Go to **Configuration** > **System Settings**.
 1. Scroll down and check or uncheck the **Webhooks enabled** check box.
