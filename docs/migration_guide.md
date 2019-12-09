@@ -16,59 +16,71 @@ Since the migration might alter the database schema and the settings of `harbor.
 
 ## Upgrading Harbor and Migrating Data
 
-1. Log in to the host that Harbor runs on, stop and remove existing Harbor instance if it is still running:
+#### Shut Down the Harbor Service
 
-    ```sh
-    cd harbor
-    docker-compose down
-    ```
+Log in to the host on which Harbor is running. Stop the existing Harbor instance if it is still running, and delete it:
 
-2. Back up Harbor's current files so that you can roll back to the current version if necessary.
+```sh
+cd harbor
+docker-compose down
+```
 
-    ```sh
-    mv harbor /my_backup_dir/harbor
-    ```
+#### Backup Harbor Data
 
-    Back up database (by default in directory `/data/database`)
+Back up Harbor's data, so that you can roll back to the current version if necessary.
 
-    ```sh
-    cp -r /data/database /my_backup_dir/
-    ```
+```sh
+mv harbor /my_backup_dir/harbor
+```
 
-3. Get the latest Harbor release package from Github:
-   [https://github.com/goharbor/harbor/releases](https://github.com/goharbor/harbor/releases)
+Back up database (by default in directory `/data/database`)
 
-4. Before upgrading Harbor, perform migration first.  The migration tool is delivered as a docker image.
+```sh
+cp -r /data/database /my_backup_dir/
+```
 
-    You can pull the image from docker hub. Replace [tag] with the release version of Harbor (e.g. v1.5.0) in the below command:
+#### Get Package of Latest Harbor Installer
+
+Download the latest version of Harbor from [https://github.com/goharbor/harbor/releases](https://github.com/goharbor/harbor/releases).
+
+#### Migrating Configuration
+
+Before you upgrade Harbor, you must first perform migration. The migration tool is delivered as a Docker image.
+
+1. **Online installer** Pull the migration image from Docker Hub. Replace `[tag]` with the Harbor release version, for example, `v1.5.0`, in the following command:
+
     ```sh
     docker pull goharbor/harbor-migrator:[tag]
     ```
 
-    Alternatively, if you are using an offline installer package you can load it from the image tarball included in the offline installer package. Replace [version] with the release version of Harbor (e.g. v1.5.0) in the below command:
+    **Offline installer** The offline installer loads the migration image from the tarball that is included in the offline installer package. Replace `[version]` with the Harbor release version, for example, `v1.5.0`, in the following command:
+
     ```sh
     tar zxf <offline package>
     docker image load -i harbor/harbor.[version].tar.gz
     ```
 
-5. If you are current version is v1.7.x or earlier, i.e. migrate config file from `harbor.cfg` to `harbor.yml`.
+2. **If your current Harbor version is v1.7.x or earlier**, you must migrate the configuration file from `harbor.cfg` to `harbor.yml`. You must mount both `harbor.cfg` and `harbor.yml` to be able to run the command.
 
-    **NOTE:** You can find the ${harbor_yml} in the extracted installer you got in step `3`, after the migration the file `harbor.yml`
-    in that path will be updated with the values from ${harbor_cfg}
+    **NOTE:** After the migration the `harbor.yml` is updated with the values from `${harbor_cfg}`
 
     ```sh
     docker run -it --rm -v ${harbor_cfg}:/harbor-migration/harbor-cfg/harbor.yml -v ${harbor_yml}:/harbor-migration/harbor-cfg-out/harbor.yml goharbor/harbor-migrator:[tag] --cfg up
     ```
 
-    Otherwise, If your version is 1.8.x or higher, just upgrade the `harbor.yml` file.
+    **If your current Harbor version is v1.8.0 or above**, there is no `harbor.cfg` file. So, you only need to mount `harbor.yml`.
+
+    **NOTE:** This command only updates ` ${harbor_yml}`. Manually copy this file to the correct location after the upgrade.
 
     ```sh
     docker run -it --rm -v ${harbor_yml}:/harbor-migration/harbor-cfg/harbor.yml goharbor/harbor-migrator:[tag] --cfg up
     ```
 
-    **NOTE:** The schema upgrade and data migration of the database is performed by core when Harbor starts, if the migration fails, please check the log of core to debug.
+    **NOTE:** The schema upgrade and data migration of the database is performed by core when Harbor starts. If the migration fails, check the core log to debug.
 
-6. Under the directory `./harbor`, run the `./install.sh` script to install the new Harbor instance. If you choose to install Harbor with components such as Notary, Clair, and chartmuseum, refer to [Installation & Configuration Guide](../docs/installation_guide.md) for more information.
+#### Install Harbor
+
+Run `./install.sh` in the `./harbor` directory to install the new Harbor instance. For instructions about how to install Harbor with components such as Notary, Clair, and chartmuseum, see the [Installation & Configuration Guide](../docs/installation_guide.md)
 
 ## Roll Back from an Upgrade
 
