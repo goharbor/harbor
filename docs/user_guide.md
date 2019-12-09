@@ -533,7 +533,7 @@ When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) i
 
 ## Vulnerability Scanning
 
-Harbor provides static analysis of vulnerabilities in images through the open source [Clair](https://github.com/coreos/clair) project. You can also connect Harbor to additional vulnerability scanners by using an interrogation service. The additional scanners that are currently supported are [Anchore](https://anchore.com/harbor/) and [Aqua](https://github.com/aquasecurity/harbor-scanner-aqua).
+Harbor provides static analysis of vulnerabilities in images through the open source [Clair](https://github.com/coreos/clair) project. You can also connect Harbor to additional vulnerability scanners by using an interrogation service. For the list of additional scanners that are currently supported, see the [Harbor Compatibility List](harbor_compatibility_list.md#scanner-adapters).
 
 It might be necessary to connect Harbor to other scanners for corporate compliance reasons, or because your organization already uses a particular scanner. Different scanners also use different vulnerability databases, capture different CVE sets, and apply different severity thresholds. By connecting Harbor to more than one vulnerability scanner, you broaden the scope of your protection against vulnerabilities.
 
