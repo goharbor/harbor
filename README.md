@@ -46,8 +46,7 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 
 ## API
 
-* [Harbor RESTful API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/API/harbor/swagger.yaml): The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically. 
-* [Scanner Open API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/API/scanner/scanner-adapter-openapi-v1.0.yaml): This API must be implemented in order to register a new artifact scanner in Harbor registry. 
+* [Harbor RESTful API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/harbor/swagger.yaml): The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically.
 
 ## Install & Run
 
