@@ -307,9 +307,9 @@ A replication endpoint must exist before you create a replication rule. To creat
 
 1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
 1. Expand **Administration**, and select **Replications**.
+1. Select a replication rule and click **Replicate**. 
 
    ![Add a replication rule](img/replication-rule6.png)
-1. Select a replication rule and click **Replicate**. 
 
    The resources to which the rule is applied start to replicate from the source registry to the destination immediately.     
 1. Click the rule to see its execution status.
