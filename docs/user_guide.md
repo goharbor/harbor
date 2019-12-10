@@ -148,9 +148,10 @@ Project properties can be changed by clicking "Configuration".
 1. Click the **Search** icon and start typing to filter the logs by name.
  
    ![Filter logs](img/log_filter.png)  
-1. Click **Advanced** and use the **Operations** drop-down menu to filter by operation type. 
+1. Click **Advanced**. 
 
    ![Advanced log search](img/log_search_advanced.png)
+1. Use the **Operations** drop-down menu to filter by operation type.
    ![Search logs by operation type](img/new_project_log.png) 
 1. Click the calendar icons to enter dates between which to search for logs of the types you set in the **Operations** drop-down menu. 
 
