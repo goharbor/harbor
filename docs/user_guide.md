@@ -1070,10 +1070,6 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 1. Go to **Projects**, select a project, and select **Tag Retention**.
 
    ![Tag options](img/tag-retention1.png)
-1. Select **Tag Retention**.
-
-   ![Tag Retention option](img/tag-retention1a.png)
-  
 1. Click **Add Rule** to add a rule.
 1. In the **Repositories** drop-down menu, select **matching** or **excluding**.
   ![Select repositories](img/tag-retention2.png)
@@ -1140,12 +1136,10 @@ Immutability rules use `OR` logic, so if you set multiple rules and a tag is mat
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
 1. Go to **Projects**, select a project, and select **Tag Immutability**.
 
-   ![Tag options](img/tag-retention1.png)
-
    ![Add an immutability rule](img/tag-immutability.png)
 1. Click **Add Rule**.
 
-   - In the **For the respositories** row, enter a comma-separated list of repositories to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
+   - In the **Respositories** row, enter a comma-separated list of repositories to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
    - In the **Tags** row, enter a comma-separated list of tags to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
  
    ![Add an immutability rule](img/add-immutability-rule.png)
@@ -1156,7 +1150,7 @@ Immutability rules use `OR` logic, so if you set multiple rules and a tag is mat
    After you add a rule, any tags that are identified by the rule are marked **Immutable** in the Repositories tab.
 1. To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule. 
 
-![Modify tag retention rules](img/edit-tag-immutability.png)
+![Immutability rules](img/edit-tag-immutability.png)
 
 ### Example
 
