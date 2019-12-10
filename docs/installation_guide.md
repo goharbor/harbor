@@ -72,10 +72,19 @@ The installation procedure involves the following steps:
 2. Configure the **harbor.yml** file.
 3. Run the **install.sh** script with the appropriate options to install and start Harbor.
 
-## Download the Installer
+## Download and Unpack the Installer
 
 1. Go to the [Harbor releases page](https://github.com/goharbor/harbor/releases). 
-1. Select either the online or offline installer for the version you want to install.
+1. Download either the online or offline installer for the version you want to install.
+1. Optionally download the corresponding `*.asc` file. 
+  
+   The `*.asc` file is an OpenPGP key file that allows you to verify that the downloaded bundle is genuine. 
+1. To verify that the package is genuine, run the `gpg` command.
+
+   <pre>gpg --verify harbor-offline-installer-<i>version</i>.tgz.asc harbor-offline-installer-<i>version</i>.tgz</pre>
+   
+   <pre>gpg --verify harbor-online-installer-<i>version</i>.tgz.asc harbor-offline-installer-<i>version</i>.tgz</pre>
+   The `gpg` command verifies that the signature of the bundle matches that of the `*.asc` key file.
 1. Use `tar` to extract the installer package:
 
    - Online installer:<pre>bash $ tar xvf harbor-online-installer-<em>version</em>.tgz</pre>
