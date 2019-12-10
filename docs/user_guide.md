@@ -5,20 +5,15 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Role Based Access Control(RBAC)](#rbac)
 * [Authentication Modes and User Accounts](#auth)
 * [Manage your projects](#managing-projects)
-* [Access Project Logs](#access-project-logs)
 * [Manage members of a project](#managing-members-of-a-project)
+* [Access Project Logs](#access-project-logs)
 * [Replicate resources between Harbor and non-Harbor registries](#replicating-resources)
 * [Retag images within Harbor](#retag-images)
 * [Search projects and repositories](#searching-projects-and-repositories)
 * [Manage labels](#managing-labels)
 * [Set Project Quotas](#set-project-quotas)
 * [Manage Harbor system if you are the Harbor system administrator:](#administrator-options)
-  * [Manage users](#managing-user)
-  * [Manage registries](#managing-registry)
-  * [Manage replication rules](#managing-replication)
-  * [Manage authentication](#managing-authentication)
   * [Manage project creation](#managing-project-creation)
-  * [Manage self-registration](#managing-self-registration)
   * [Manage email settings](#managing-email-settings)
   * [Manage registry read only](#managing-registry-read-only)
   * [Manage role by LDAP group](#managing-role-by-ldap-group)
@@ -110,7 +105,12 @@ Under this authentication mode, users whose credentials are stored in an externa
 	
 When an LDAP/AD user logs in by *username* and *password*, Harbor binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide.md). If it succeeded, Harbor looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server. Uncheck **"LDAP Verify Cert"** if the LDAP/AD server uses a self-signed or an untrusted certificate.
 	
-Self-registration, deleting user, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
+Self-registration, deleting users, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
+
+You can change authentication mode between **Database**(default) and **LDAP** before any user is added, when there is at least one user(besides admin) in Harbor, you cannot change the authentication mode.  
+![browse project](img/new_auth.png)
+When using LDAP mode, user's self-registration is disabled. The parameters of LDAP server must be filled in. For more information, refer to [User account](#user-account).   
+![browse project](img/ldap_auth.png)
 
 ### OIDC Provider
 
@@ -128,6 +128,20 @@ This user name will be the identifier for this user in Harbor, which will be use
 This has to be a unique user name, if another user has used this user name to onboard, user will be prompted to choose another one.
     
 Regarding this user to use docker CLI, please refer to [Using CLI after login via OIDC based SSO](#using-oidc-cli-secret)
+
+When using OIDC mode, user will login Harbor via OIDC based SSO.  A client has to be registered on the OIDC provider and Harbor's callback URI needs to be associated to that client as a redirectURI.
+![OIDC settings](img/oidc_auth_setting.png)
+
+The settings of this auth mode:
+* OIDC Provider Name: The name of the OIDC Provider.
+* OIDC Provider Endpoint: The URL of the endpoint of the OIDC provider(a.k.a the Authorization Server in OAuth's terminology), 
+which must service the "well-known" URI for its configuration, more details please refer to https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationRequest
+* OIDC Client ID: The ID of client configured on OIDC Provider.
+* OIDC Client Secret: The secret for this client.
+* OIDC Scope: The scope values to be used during the authentication.  It is the comma separated string, which must contain `openid`.  
+Normally it should also contain `profile` and `email`.  For getting the refresh token it should also contain `offline_access`.  Please check with the administrator of the OIDC Provider.
+* Verify Certificate: Whether to check the certificate when accessing the OIDC Provider. if you are running the OIDC Provider with self-signed
+certificate, make sure this value is set to false.
    
 **NOTE:**
 1. After the onboard process, you still have to login to Harbor via SSO flow, the `Username` and `Password` fields are only for
@@ -160,6 +174,17 @@ Project properties can be changed by clicking "Configuration".
 
 ![browse project](img/project_configuration.png) 
 
+## Managing members of a project  
+### Adding members  
+You can add members with different roles to an existing project. You can add an LDAP/AD user to project members under LDAP/AD authentication mode. 
+
+![browse project](img/new_add_member.png)
+
+### Updating and removing members
+You can check one or more members, then click `ACTION`, choose one role to batch switch checked members' roles or remove them from the project.
+
+![browse project](img/new_remove_update_member.png)
+
 ## Access Project Logs
 
 1. Log in to the Harbor interface with an account that has at least developer privileges.
@@ -179,18 +204,6 @@ Project properties can be changed by clicking "Configuration".
 1. Click the calendar icons to enter dates between which to search for logs of the types you set in the **Operations** drop-down menu. 
 
    ![Filter logs by date](img/log_search_advanced_date.png)
-
-
-## Managing members of a project  
-### Adding members  
-You can add members with different roles to an existing project. You can add an LDAP/AD user to project members under LDAP/AD authentication mode. 
-
-![browse project](img/new_add_member.png)
-
-### Updating and removing members
-You can check one or more members, then click `ACTION`, choose one role to batch switch checked members' roles or remove them from the project.
-
-![browse project](img/new_remove_update_member.png)
 
 ## Replicating Resources  
 Replication allows users to replicate resources, namely images and charts, between Harbor and non-Harbor registries, in both pull or push mode. 
@@ -418,37 +431,6 @@ When setting project quotas, it is useful to know how Harbor calculates tag numb
 Administrator can add "Administrator" role to one or more ordinary users by checking checkboxes and clicking `SET AS ADMINISTRATOR`. To delete users, checked checkboxes and select `DELETE`. Deleting user is only supported under database authentication mode.
 
 ![browse project](img/new_set_admin_remove_user.png)
-
-### Managing registry  
-You can list, add, edit and delete registries under `Administration->Registries`. Only registries which are not referenced by any rules can be deleted.  
-
-![browse project](img/manage_registry.png)
-
-### Managing replication  
-You can list, add, edit and delete rules under `Administration->Replications`.   
-
-![browse project](img/manage_replication.png)
-
-### Managing authentication
-You can change authentication mode between **Database**(default) and **LDAP** before any user is added, when there is at least one user(besides admin) in Harbor, you cannot change the authentication mode.  
-![browse project](img/new_auth.png)
-When using LDAP mode, user's self-registration is disabled. The parameters of LDAP server must be filled in. For more information, refer to [User account](#user-account).   
-![browse project](img/ldap_auth.png)
-
-When using OIDC mode, user will login Harbor via OIDC based SSO.  A client has to be registered on the OIDC provider and Harbor's callback URI needs to be associated to that client as a redirectURI.
-![OIDC settings](img/oidc_auth_setting.png)
-
-The settings of this auth mode:
-* OIDC Provider Name: The name of the OIDC Provider.
-* OIDC Provider Endpoint: The URL of the endpoint of the OIDC provider(a.k.a the Authorization Server in OAuth's terminology), 
-which must service the "well-known" URI for its configuration, more details please refer to https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationRequest
-* OIDC Client ID: The ID of client configured on OIDC Provider.
-* OIDC Client Secret: The secret for this client.
-* OIDC Scope: The scope values to be used during the authentication.  It is the comma separated string, which must contain `openid`.  
-Normally it should also contain `profile` and `email`.  For getting the refresh token it should also contain `offline_access`.  Please check with the administrator of the OIDC Provider.
-* Verify Certificate: Whether to check the certificate when accessing the OIDC Provider. if you are running the OIDC Provider with self-signed
-certificate, make sure this value is set to false.
-
 
 ### Managing project creation
 Use the **Project Creation** drop-down menu to set which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Administrator role to create projects.  
