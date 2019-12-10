@@ -691,7 +691,7 @@ You can configure projects so that images with vulnerabilities cannot be run, an
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
 1. Go to **Projects** and select a project. 
 1. Select the **Configuration** tab.
-1. To prevent vulnerable images under the project from being pulled, select the `Prevent vulnerable images from running` checkbox.
+1. To prevent vulnerable images under the project from being pulled, select the **Prevent vulnerable images from running** checkbox.
 
    ![Prevent vulnerable images from running](img/prevent_vulnerable_images.png)
 
@@ -700,7 +700,7 @@ You can configure projects so that images with vulnerabilities cannot be run, an
    ![Set vulnerability threshold](img/set_vulnerability_threshold.png)
    
    Images cannot be pulled if their level is equal to or higher than the selected level of severity. Harbor does not prevent images with a vulnerability severity of `negligible` from running.
-1. To activate an immediate vulnerability scan on new images that are pushed to the project, select the `Automatically scan images on push` check box.
+1. To activate an immediate vulnerability scan on new images that are pushed to the project, select the **Automatically scan images on push** check box.
 
    ![Automatically scan images on push](img/scan_on_push.png)
 
