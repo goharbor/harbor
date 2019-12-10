@@ -2,6 +2,8 @@
 ## Overview  
 This guide walks you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
 
+* [Role Based Access Control(RBAC)](#rbac)
+* [Authentication Modes and User Accounts](#auth)
 * [Manage your projects](#managing-projects)
 * [Access Project Logs](#access-project-logs)
 * [Manage members of a project](#managing-members-of-a-project)
@@ -39,6 +41,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
 * [Webhook Notifications](#webhook-notifications)
 * [Using API Explorer](#api-explorer)
 
+<a id="rbac"></a>
 ## Role Based Access Control(RBAC)  
 
 ![rbac](img/rbac.png)
@@ -58,54 +61,78 @@ Besides the above roles, there are two system-level roles:
 
 See detailed permissions matrix listed here: https://github.com/goharbor/harbor/blob/master/docs/permissions.md
 
-## User account
-Harbor supports different authentication modes:  
+<a id="auth"></a>
+## Authentication Modes and User Accounts
+Harbor supports different modes for authenticating users and managing user accounts.
 
-* **Database(db_auth)**  
+**IMPORTANT**: Once you set the authentication mode, you cannot change it. If you create users before you select the authentication mode, it is set to the default database mode.
 
-	Users are stored in the local database.  
-	
-	A user can register himself/herself in Harbor in this mode. To disable user self-registration, refer to the [installation guide](installation_guide.md) for initial configuration, or disable this feature in [Administrator Options](#administrator-options). When self-registration is disabled, the Harbor system administrator can add users into Harbor.  
-	
-	When registering or adding a new user, the username and email must be unique in the Harbor system. The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character.
-	
-	When you forgot your password, you can follow the below steps to reset the password:  
+### Database Authentication
 
-	1. Click the link "Forgot Password" in the sign in page.  
-	2. Input the email address entered when you signed up, an email will be sent out to you for password reset.  
-	3. After receiving the email, click on the link in the email which directs you to a password reset web page.  
-	4. Input your new password and click "Save".  
-	
-* **LDAP/Active Directory (ldap_auth)**  
+In database authentication mode, user accounts are stored in the local database. By default, only the Harbor system administrator can create user accounts to add users to Harbor.  
 
-	Under this authentication mode, users whose credentials are stored in an external LDAP or AD server can log in to Harbor directly.  
-	
-	When an LDAP/AD user logs in by *username* and *password*, Harbor binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide.md). If it succeeded, Harbor looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server. Uncheck **"LDAP Verify Cert"** if the LDAP/AD server uses a self-signed or an untrusted certificate.
-	
-	Self-registration, deleting user, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
+1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
+1. Under **Administration**, go to **Configuration** and select the **Authentication** tab.
+1. Leave **Auth Mode** set to the default **Database** option.
 
-* **OIDC Provider (oidc_auth)**
-
-    With this authentication mode, regular user will login to Harbor Portal via SSO flow.  
-    After the Harbor system administrator configure Harbor to authenticate via OIDC (more details refer to [this section](#managing-authentication)),
-    a button `LOGIN VIA OIDC PROVIDER` will appear on the login page.  
-    ![oidc_login](img/oidc_login.png)
-    
-    By clicking this button user will kick off the SSO flow and be redirected to the OIDC Provider for authentication.  After a successful
-    authentication at the remote site, user will be redirected to Harbor.  There will be an "onboard" step if it's the first time the user 
-    authenticate using his account, in which there will be a dialog popped up for him to set his user name in Harbor:
-    ![oidc_onboar](img/oidc_onboard_dlg.png)
-    
-    This user name will be the identifier for this user in Harbor, which will be used in the cases such as adding member to a project, assigning roles, etc.
-    This has to be a unique user name, if another user has used this user name to onboard, user will be prompted to choose another one.
-    
-    Regarding this user to use docker CLI, please refer to [Using CLI after login via OIDC based SSO](#using-oidc-cli-secret)
+   ![Database authentication](img/db_auth.png)
    
-    **NOTE:**
-    1. After the onboard process, you still have to login to Harbor via SSO flow, the `Username` and `Password` fields are only for
-    local admin to login when Harbor is configured authentication via OIDC.
-    2. Similar to LDAP authentication mode, self-registration, updating profile, deleting user, changing password and 
-    resetting password are not supported.
+1. Optionally select the **Allow Self-Registration** check box.
+
+   ![Enable self-registration](img/new_self_reg.png)
+    
+   If you enable self registration option, users can register themselves in Harbor. Self-registration is disabled by default. If you enable self-registration, unregistered users can sign up for a Harbor account by clicking **Sign up for an account** in the Harbor log in page.
+    
+    ![Enable self-registration](img/self-registration-login.png)
+    
+#### Create User Accounts
+	
+In database authentication mode, the Harbor system administrator creates user accounts manually. 
+
+1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
+1. Under **Administration**, go to **Users**.
+
+   ![Create user account](img/create_user.png)
+1. Click **New User**.
+1. Enter information about the new user.
+
+   ![Provide user information](img/new_user.png)
+
+   - The username must be unique in the Harbor system
+   - The email address is used for password recovery
+   - The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character
+
+If users forget their password, there is a **Forgot Password** in the Harbor log in page.
+
+### LDAP/Active Directory  
+
+Under this authentication mode, users whose credentials are stored in an external LDAP or AD server can log in to Harbor directly.  
+	
+When an LDAP/AD user logs in by *username* and *password*, Harbor binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide.md). If it succeeded, Harbor looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server. Uncheck **"LDAP Verify Cert"** if the LDAP/AD server uses a self-signed or an untrusted certificate.
+	
+Self-registration, deleting user, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
+
+### OIDC Provider
+
+With this authentication mode, regular user will login to Harbor Portal via SSO flow.  
+After the Harbor system administrator configure Harbor to authenticate via OIDC (more details refer to [this section](#managing-authentication)),
+a button `LOGIN VIA OIDC PROVIDER` will appear on the login page.  
+![oidc_login](img/oidc_login.png)
+    
+By clicking this button user will kick off the SSO flow and be redirected to the OIDC Provider for authentication.  After a successful
+authentication at the remote site, user will be redirected to Harbor.  There will be an "onboard" step if it's the first time the user 
+authenticate using his account, in which there will be a dialog popped up for him to set his user name in Harbor:
+![oidc_onboar](img/oidc_onboard_dlg.png)
+    
+This user name will be the identifier for this user in Harbor, which will be used in the cases such as adding member to a project, assigning roles, etc.
+This has to be a unique user name, if another user has used this user name to onboard, user will be prompted to choose another one.
+    
+Regarding this user to use docker CLI, please refer to [Using CLI after login via OIDC based SSO](#using-oidc-cli-secret)
+   
+**NOTE:**
+1. After the onboard process, you still have to login to Harbor via SSO flow, the `Username` and `Password` fields are only for
+local admin to login when Harbor is configured authentication via OIDC.
+2. Similar to LDAP authentication mode, self-registration, updating profile, deleting user, changing password and resetting password are not supported.
 
 ## Managing projects
 A project in Harbor contains all repositories of an application. No images can be pushed to Harbor before the project is created. RBAC is applied to a project. There are two types of projects in Harbor:  
@@ -402,10 +429,6 @@ certificate, make sure this value is set to false.
 ### Managing project creation
 Use the **Project Creation** drop-down menu to set which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Administrator role to create projects.  
 ![browse project](img/new_proj_create.png)
-
-### Managing self-registration
-You can manage whether a user can sign up for a new account. This option is not available if you use LDAP authentication.  
-![browse project](img/new_self_reg.png)
 
 ### Managing email settings
 You can change Harbor's email settings, the mail server is used to send out responses to users who request to reset their password.  
