@@ -272,7 +272,9 @@ Pattern | String(Match or not)
 #### Trigger mode
 * **Manual**: Replicate the resources manually when needed. **Note**: The deletion operations are not replicated. 
 * **Scheduled**: Replicate the resources periodically. **Note**: The deletion operations are not replicated. 
-* **Event Based**: When a new resource is pushed to the project, it is replicated to the remote registry immediately. Same to the deletion operation if the `Delete remote resources when locally deleted` checkbox is selected.
+* **Event Based**: When a new resource is pushed to the project, or an image is retagged, it is replicated to the remote registry immediately. If you select the `Delete remote resources when locally deleted`, if you delete an image, it is automatically deleted from the replication target.
+
+   **NOTE**: You can filter images for replication based on the labels that are applied to the images. However, changing a label on an image does not trigger replication. Event-based replication is limited to pushing, retagging, and deleting images.
 
 ### Starting a replication manually
 Select a replication rule and click `REPLICATE`, the resources which the rule is applied to will be replicated from the source registry to the destination immediately.  
