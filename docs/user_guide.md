@@ -192,16 +192,16 @@ You can check one or more members, then click `ACTION`, choose one role to batch
 
 ![browse project](img/new_remove_update_member.png)
 
-## Replicating resources  
-Replication allows users to replicate resources (images/charts) between Harbor and non-Harbor registries in both pull or push mode. 
+## Replicating Resources  
+Replication allows users to replicate resources, namely images and charts, between Harbor and non-Harbor registries, in both pull or push mode. 
 
-Once the Harbor system administrator has set a rule, all resources that match the defined [filter](#resource-filter) patterns will be replicated to the destination registry when the [triggering condition](#trigger-mode) is matched. Each resource will start a task to run. If the namespace does not exist on the destination registry, a new namespace will be created automatically. If it already exists and the user configured in the policy has no write privilege to it, the process will fail. The member information will not be replicated.  
+When the Harbor system administrator has set a replication rule, all resources that match the defined filter patterns are replicated to the destination registry when the triggering condition is met. Each resource that is replicated starts a replication task. If the namespace does not exist in the destination registry, a new namespace is created automatically. If it already exists and the user account that is configured in the replication policy does not have write privileges in it, the process fails. Member information is not replicated.  
 
-There may be a bit of delay during replication based on the situation of the network. If a replication task fails, it will be re-scheduled a few minutes later and retried times.  
+There might be some delay during replication based on the condition of the network. If a replication task fails, it is re-scheduled for a few minutes later and retried several times.  
 
-**Note:** Due to API changes, replication between different versions of Harbor is not supported.
+**NOTE:** Due to API changes, replication between different versions of Harbor is not supported.
 
-### Creating replication endpoints
+### Creating Replication Endpoints
 
 To replicate image repositories from one instance of Harbor to another Harbor or non-Harbor registry, you first create replication endpoints.
 
@@ -243,59 +243,85 @@ To replicate image repositories from one instance of Harbor to another Harbor or
 1. Click **Test Connection**.
 1. When you have successfully tested the connection, click **OK**.
 
-### Creating a replication rule
-Login as a Harbor system administrator user, click `NEW REPLICATION RULE` under `Administration->Replications` and fill in the necessary fields. You can choose different replication modes, [resource filters](#resource-filter) and [trigger modes](#trigger-mode) according to the different requirements. If there is no endpoint available in the list, follow the instructions in the [Creating replication endpoints](#creating-replication-endpoints) to create one. Click `SAVE` to create a replication rule.  
+### Creating a Replication Rule
 
-![browse project](img/create_rule.png)
+A replication endpoint must exist before you create a replication rule. To create an endpoint, follow the instructions in the [Creating replication endpoints](#creating-replication-endpoints).
 
-#### Resource filter
-Three resource filters are supported:
-* **Name**: Filter resources according to the name.
-* **Tag**: Filter resources according to the tag.
-* **Resource**: Filter images according to the resource type.
+1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
+1. Expand **Administration**, and select **Replications**.
 
-The terms supported in the pattern used by name filter and tag filter are as follows:
-* **\***: Matches any sequence of non-separator characters `/`.
-* **\*\***: Matches any sequence of characters, including path separators `/`.
-* **?**: Matches any single non-separator character `/`.
-* **{alt1,...}**: Matches a sequence of characters if one of the comma-separated alternatives matches.
+   ![Add a replication rule](img/replication-rule1.png)
+1. Click **New Replication Rule**.
+1. Provide a name and description for the replication rule.
+1. Select **Push-based** or **Pull-based** replication, depending on whether you want to replicate images to or from the remote registry.
 
-**Note:** `library` must be added if you want to replicate the official images of Docker Hub. For example, `library/hello-world` matches the official hello-world images.  
+   ![Replication mode](img/replication-rule2.png)
+1. For **Source resource filter**, identify the images to replicate.  
 
-Pattern | String(Match or not)
----------- | -------
-`library/*`      | `library/hello-world`(Y)<br> `library/my/hello-world`(N)
-`library/**`     | `library/hello-world`(Y)<br> `library/my/hello-world`(Y)
-`{library,goharbor}/**` | `library/hello-world`(Y)<br> `goharbor/harbor-core`(Y)<br> `google/hello-world`(N)
-`1.?`      | `1.0`(Y)<br> `1.01`(N)
+   ![Replication filters](img/replication-rule3.png)
 
-#### Trigger mode
-* **Manual**: Replicate the resources manually when needed. **Note**: The deletion operations are not replicated. 
-* **Scheduled**: Replicate the resources periodically. **Note**: The deletion operations are not replicated. 
-* **Event Based**: When a new resource is pushed to the project, or an image is retagged, it is replicated to the remote registry immediately. If you select the `Delete remote resources when locally deleted`, if you delete an image, it is automatically deleted from the replication target.
+   * **Name**: Replicate resources with a given name by entering an image name or fragment.
+   * **Tag**: Replicate resources with a given tag by entering a tag name or fragment.
+   * **Label**: Replicate resources with a given label by using the drop-down menu to select from the available labels.
+   * **Resource**: Replicate images, charts, or both.
+   
+   The name filter and tag filters support the following the patterns:
+   
+   * **\***: Matches any sequence of non-separator characters `/`.
+   * **\*\***: Matches any sequence of characters, including path separators `/`.
+   * **?**: Matches any single non-separator character `/`.
+   * **{alt1,...}**: Matches a sequence of characters if one of the comma-separated alternatives matches. are as follows:
+   * **\***: Matches any sequence of non-separator characters `/`.
+   * **\*\***: Matches any sequence of characters, including path separators `/`.
+   * **?**: Matches any single non-separator character `/`.
+   * **{alt1,...}**: Matches a sequence of characters if one of the comma-separated alternatives matches.
+   
+   **NOTE:** `library` must be added if you want to replicate the official images of Docker Hub. For example, `library/hello-world` matches the official hello-world images.  
+   
+   Pattern | String(Match or not)
+   ---------- | -------
+   `library/*`      | `library/hello-world`(Y)<br> `library/my/hello-world`(N)
+   `library/**`     | `library/hello-world`(Y)<br> `library/my/hello-world`(Y)
+   `{library,goharbor}/**` | `library/hello-world`(Y)<br> `goharbor/harbor-core`(Y)<br> `google/hello-world`(N)
+   `1.?`      | `1.0`(Y)<br> `1.01`(N)
+1. Use the **Destination Registry** drop-down menu to select from the configured replication endpoints. 
+1. Enter the name of the namespace in which to replicate resources in the **Destination namespace** text box.
 
-   **NOTE**: You can filter images for replication based on the labels that are applied to the images. However, changing a label on an image does not trigger replication. Event-based replication is limited to pushing, retagging, and deleting images.
+   If you do not enter a namespace, resources are placed in the same namespace as in the source registry. 
 
-### Starting a replication manually
-Select a replication rule and click `REPLICATE`, the resources which the rule is applied to will be replicated from the source registry to the destination immediately.  
+   ![Destination and namespaces](img/replication-rule4.png)
+1. Use the Trigger Mode drop-down menu to select how and when to run the rule.
+   * **Manual**: Replicate the resources manually when needed. **Note**: Deletion operations are not replicated. 
+   * **Scheduled**: Replicate the resources periodically by defining a cron job. **Note**: Deletion operations are not replicated. 
+   * **Event Based**: When a new resource is pushed to the project, or an image is retagged, it is replicated to the remote registry immediately. If you select the `Delete remote resources when locally deleted`, if you delete an image, it is automatically deleted from the replication target.
 
-![browse project](img/start_replicate.png)
+      **NOTE**: You can filter images for replication based on the labels that are applied to the images. However, changing a label on an image does not trigger replication. Event-based replication is limited to pushing, retagging, and deleting images.
 
-### Listing and stopping replication executions
-Click a rule, the execution records which belong to this rule will be listed. Each record represents the summary of one execution of the rule. Click `STOP` to stop the executions which are in progress.  
+   ![Trigger mode](img/replication-rule5.png)
+      
+1. Optionally select the Override checkbox to force replicated resources to replace resources at the destination with the same name.
+1. Click **Save** to create the replication rule.  
 
-![browse project](img/list_stop_executions.png)
 
-### Listing tasks
-Click the ID of one execution, you can get the execution summary and the task list. Click the log icon can get the detail information for the replication progress.  
-**Note**: The count of `IN PROGRESS` status in the summary includes both `Pending` and `In Progress` tasks.  
+### Running Replication Manually
 
-![browse project](img/list_tasks.png)
+1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
+1. Expand **Administration**, and select **Replications**.
 
-### Deleting the replication rule
-Select the replication rule and click `DELETE` to delete it. Only rules which have no in progress executions can be deleted.  
+   ![Add a replication rule](img/replication-rule6.png)
+1. Select a replication rule and click **Replicate**. 
 
-![browse project](img/delete_rule.png)
+   The resources to which the rule is applied start to replicate from the source registry to the destination immediately.     
+1. Click the rule to see its execution status.
+1. Click the **ID** of the execution to see the details of the replication  and the task list. The count of `IN PROGRESS` status in the summary includes both `Pending` and `In Progress` tasks.  
+1. Optionally click **STOP** to stop the replication. 
+1. Click the log icon to see detailed information about the replication task. 
+
+![View replication task](img/list_tasks.png)
+
+To edit or delete a replication rule, select the replication rule in the **Replications** view and click **Edit** or **Delete**. Only rules which have no executions in progress can be edited deleted.  
+
+![Delete or edit rule](img/replication-rule6.png)
 
 ## Retag Images
 
