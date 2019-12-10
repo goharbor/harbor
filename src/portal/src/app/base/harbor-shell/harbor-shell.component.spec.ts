@@ -9,6 +9,7 @@ import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { HarborShellComponent } from './harbor-shell.component';
 import { ClarityModule } from "@clr/angular";
 import { of } from 'rxjs';
+import { ConfigScannerService } from "../../config/scanner/config-scanner.service";
 
 describe('HarborShellComponent', () => {
     let component: HarborShellComponent;
@@ -44,7 +45,11 @@ describe('HarborShellComponent', () => {
             };
         }
     };
-
+    let fakeConfigScannerService = {
+        getScanners() {
+            return of(true);
+        }
+    };
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             imports: [
@@ -58,7 +63,8 @@ describe('HarborShellComponent', () => {
                 TranslateService,
                 { provide: SessionService, useValue: fakeSessionService },
                 { provide: SearchTriggerService, useValue: fakeSearchTriggerService },
-                { provide: AppConfigService, useValue: fakeAppConfigService }
+                { provide: AppConfigService, useValue: fakeAppConfigService },
+                { provide: ConfigScannerService, useValue: fakeConfigScannerService }
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
         }).compileComponents();
@@ -67,6 +73,7 @@ describe('HarborShellComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(HarborShellComponent);
         component = fixture.componentInstance;
+        component.showScannerInfo = true;
         fixture.detectChanges();
     });
 

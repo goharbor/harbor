@@ -1341,6 +1341,11 @@
         "CONFIRM_DELETION": "删除扫描器确认",
         "NO_PROJECT_SCANNER": "无扫描器",
         "SET_UNHEALTHY_SCANNER": "选择的扫描器:{{name}}是不健康的",
-        "SCANNED_BY": "扫描器:"
+        "SCANNED_BY": "扫描器:",
+        "IMAGE_SCANNERS": "镜像扫描器",
+        "VIEW_DOC": "查看文档",
+        "ALL_SCANNERS": "全部扫描器",
+        "HELP_INFO_1": "默认扫描器已安装。获取扫描器安装帮助，请查看",
+        "HELP_INFO_2": "文档。"
     }
 }
