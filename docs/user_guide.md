@@ -1150,7 +1150,7 @@ Immutability rules use `OR` logic, so if you set multiple rules and a tag is mat
    After you add a rule, any tags that are identified by the rule are marked **Immutable** in the Repositories tab.
 1. To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule. 
 
-![Immutability rules](img/edit-tag-immutability.png)
+   ![Immutability rules](img/edit-tag-immutability.png)
 
 ### Example
 
