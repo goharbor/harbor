@@ -142,15 +142,16 @@ Project properties can be changed by clicking "Configuration".
 1. Log in to the Harbor interface with an account that has at least developer privileges.
 1. Go to **Projects**, select a project, and select **Logs**.
 
-   ![Project logs](img/new_project_log.png)  
+   ![Filter logs](img/project_logs.png)
 
    All logs for the project are displayed.
 1. Click the **Search** icon and start typing to filter the logs by name.
-
+ 
    ![Filter logs](img/log_filter.png)  
 1. Click **Advanced** and use the **Operations** drop-down menu to filter by operation type. 
 
    ![Advanced log search](img/log_search_advanced.png)
+   ![Search logs by operation type](img/new_project_log.png) 
 1. Click the calendar icons to enter dates between which to search for logs of the types you set in the **Operations** drop-down menu. 
 
    ![Filter logs by date](img/log_search_advanced_date.png)
