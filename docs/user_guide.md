@@ -158,10 +158,6 @@ Project properties can be changed by clicking "Configuration".
 
 * To prevent un-signed images under the project from being pulled, select the `Enable content trust` checkbox.
 
-* To prevent vulnerable images under the project from being pulled, select the `Prevent vulnerable images from running` checkbox and change the severity level of vulnerabilities. Images cannot be pulled if their level equals to or higher than the currently selected level.
-
-* To activate an immediate vulnerability scan on new images that are pushed to the project, select the `Automatically scan images on push` checkbox.
-
 ![browse project](img/project_configuration.png) 
 
 ## Access Project Logs
@@ -687,6 +683,26 @@ You can set policies to control when vulnerability scanning should run.
    * **Weekly**: Run a scan at midnight every Saturday.
    * **Custom**: Run a scan according to a `cron` job.
 1. Click **Save**.
+
+### Configure Vulnerability Settings in Projects
+
+You can configure projects so that images with vulnerabilities cannot be run, and to automatically scan images as soon as they are pushed into the project.
+
+1. Log in to the Harbor interface with an account that has at least project administrator privileges.
+1. Go to **Projects** and select a project. 
+1. Select the **Configuration** tab.
+1. To prevent vulnerable images under the project from being pulled, select the `Prevent vulnerable images from running` checkbox.
+
+   ![Prevent vulnerable images from running](img/prevent_vulnerable_images.png)
+
+1. Select the severity level of vulnerabilities to prevent images from running.
+
+   ![Set vulnerability threshold](img/set_vulnerability_threshold.png)
+   
+   Images cannot be pulled if their level is equal to or higher than the selected level of severity. Harbor does not prevent images with a vulnerability severity of `negligible` from running.
+1. To activate an immediate vulnerability scan on new images that are pushed to the project, select the `Automatically scan images on push` check box.
+
+   ![Automatically scan images on push](img/scan_on_push.png)
 
 ## Configure CVE Whitelists
 
