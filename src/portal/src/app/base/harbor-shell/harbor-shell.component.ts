@@ -26,6 +26,10 @@ import { SessionService } from '../../shared/session.service';
 import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { CommonRoutes } from "../../../lib/entities/shared.const";
+import { ConfigScannerService, SCANNERS_DOC } from "../../config/scanner/config-scanner.service";
+
+const HAS_SHOWED_SCANNER_INFO: string = 'hasShowScannerInfo';
+const YES: string = 'yes';
 
 @Component({
     selector: 'harbor-shell',
@@ -56,13 +60,16 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     isLdapMode: boolean;
     isOidcMode: boolean;
     isHttpAuthMode: boolean;
+    showScannerInfo: boolean = false;
+    scannerDocUrl: string = SCANNERS_DOC;
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private session: SessionService,
         private searchTrigger: SearchTriggerService,
-        private appConfigService: AppConfigService) { }
+        private appConfigService: AppConfigService,
+        private scannerService: ConfigScannerService) { }
 
     ngOnInit() {
         if (this.appConfigService.isLdapMode()) {
@@ -81,8 +88,25 @@ export class HarborShellComponent implements OnInit, OnDestroy {
         this.searchCloseSub = this.searchTrigger.searchCloseChan$.subscribe(close => {
             this.isSearchResultsOpened = false;
         });
+        if (!(localStorage && localStorage.getItem(HAS_SHOWED_SCANNER_INFO) === YES)) {
+           this.getDefaultScanner();
+        }
+    }
+    closeInfo() {
+        if (localStorage) {
+            localStorage.setItem(HAS_SHOWED_SCANNER_INFO, YES);
+        }
+        this.showScannerInfo = false;
     }
 
+    getDefaultScanner() {
+        this.scannerService.getScanners()
+            .subscribe(scanners => {
+                if (scanners && scanners.length) {
+                    this.showScannerInfo = scanners.some(scanner => scanner.is_default);
+                }
+            });
+    }
     ngOnDestroy(): void {
         if (this.searchSub) {
             this.searchSub.unsubscribe();

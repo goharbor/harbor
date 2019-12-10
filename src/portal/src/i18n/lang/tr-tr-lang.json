@@ -1345,6 +1345,11 @@
         "CONFIRM_DELETION": "Confirm Scanner deletion",
         "NO_PROJECT_SCANNER": "No Scanner",
         "SET_UNHEALTHY_SCANNER": "Selected scanner:{{name}} is unhealthy",
-        "SCANNED_BY": "Scanned by:"
+        "SCANNED_BY": "Scanned by:",
+        "IMAGE_SCANNERS": "Image Scanners",
+        "VIEW_DOC": "view documentation",
+        "ALL_SCANNERS": "All scanners",
+        "HELP_INFO_1": "The default scanner has been installed. To install other scanners refer to the ",
+        "HELP_INFO_2": "documentation."
     }
 }
