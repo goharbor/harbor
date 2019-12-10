@@ -265,7 +265,7 @@ A replication endpoint must exist before you create a replication rule. To creat
    * **Label**: Replicate resources with a given label by using the drop-down menu to select from the available labels.
    * **Resource**: Replicate images, charts, or both.
    
-   The name filter and tag filters support the following the patterns:
+   The name filter and tag filters support the following patterns:
    
    * **\***: Matches any sequence of non-separator characters `/`.
    * **\*\***: Matches any sequence of characters, including path separators `/`.
@@ -276,7 +276,7 @@ A replication endpoint must exist before you create a replication rule. To creat
    * **?**: Matches any single non-separator character `/`.
    * **{alt1,...}**: Matches a sequence of characters if one of the comma-separated alternatives matches.
    
-   **NOTE:** `library` must be added if you want to replicate the official images of Docker Hub. For example, `library/hello-world` matches the official hello-world images.  
+   **NOTE:** You must add `library` if you want to replicate the official images of Docker Hub. For example, `library/hello-world` matches the official hello-world images.  
    
    Pattern | String(Match or not)
    ---------- | -------
