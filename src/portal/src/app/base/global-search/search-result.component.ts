@@ -140,7 +140,13 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     // Call search service to complete the search request
     doSearch(term: string): void  {
         // Only search none empty term
+        // If term is empty, then clear the results
         if (!term || term.trim() === "") {
+            this.searchResults.project = [];
+            this.searchResults.repository = [];
+            if (this.withHelmChart) {
+                this.searchResults.chart = [];
+            }
             return;
         }
         // Do nothing if search is ongoing
@@ -154,15 +160,6 @@ export class SearchResultComponent implements OnInit, OnDestroy {
 
         this.currentTerm = term;
 
-        // If term is empty, then clear the results
-        if (term === "") {
-            this.searchResults.project = [];
-            this.searchResults.repository = [];
-            if (this.withHelmChart) {
-                this.searchResults.chart = [];
-            }
-            return;
-        }
         // Show spinner
         this.onGoing = true;
 

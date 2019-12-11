@@ -1,5 +1,5 @@
-import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-import { HttpClientTestingModule } from '@angular/common/http/testing';
+import { async, ComponentFixture, TestBed, getTestBed } from '@angular/core/testing';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { DevCenterComponent } from './dev-center.component';
 import { CookieService } from 'ngx-cookie';
@@ -12,6 +12,9 @@ describe('DevCenterComponent', () => {
       return "xsrf";
     }
   };
+  let cookie = "fdsa|ds";
+  let injector: TestBed;
+  let httpMock: HttpTestingController;
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [DevCenterComponent],
@@ -27,16 +30,25 @@ describe('DevCenterComponent', () => {
       ],
     })
       .compileComponents();
+    injector = getTestBed();
+    httpMock = injector.get(HttpTestingController);
   }));
 
   beforeEach(() => {
     fixture = TestBed.createComponent(DevCenterComponent);
     component = fixture.componentInstance;
-    fixture.detectChanges();
+    fixture.autoDetectChanges();
   });
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+  it('get swagger should return data', () => {
+    const req = httpMock.expectOne('/swagger.json');
+    expect(req.request.method).toBe('GET');
+    req.flush({
+      "host": '122.33',
+    });
   });
 
 });
