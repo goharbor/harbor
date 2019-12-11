@@ -14,9 +14,10 @@ go get github.com/stretchr/testify
 go get golang.org/x/tools/cmd/cover
 go get github.com/mattn/goveralls
 go get -u github.com/client9/misspell/cmd/misspell
-sudo service postgresql stop
+sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2
 
+sudo rm -rf /data/*
 sudo -E env "PATH=$PATH" make go_check
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
@@ -28,7 +29,10 @@ sudo mkdir -p /harbor && sudo mv ./VERSION /harbor/UIVERSION
 sudo ./tests/testprepare.sh
 
 cd tests && sudo ./ldapprepare.sh && cd ..
-sudo sed -i 's/__reg_version__/${REG_VERSION}-dev/g' ./make/docker-compose.test.yml
+env
+docker images
+sudo sed -i "s/__reg_version__/${REG_VERSION}-dev/g" ./make/docker-compose.test.yml
 sudo sed -i 's/__version__/dev/g' ./make/docker-compose.test.yml
+cat ./make/docker-compose.test.yml
 sudo mkdir -p ./make/common/config/registry/ && sudo mv ./tests/reg_config.yml ./make/common/config/registry/config.yml
-sudo mkdir /storage && sudo chown 10000:10000 -R /storage
+sudo mkdir -p /storage && sudo chown 10000:10000 -R /storage

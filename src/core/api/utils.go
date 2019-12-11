@@ -64,7 +64,7 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 	}
 
 	if len(reposToAdd) > 0 {
-		log.Debugf("Start adding repositories into DB... ")
+		log.Infof("Start adding repositories into DB %v ... ", len(reposToAdd))
 		for _, repoToAdd := range reposToAdd {
 			project, _ := utils.ParseRepository(repoToAdd)
 			pullCount, err := dao.CountPull(repoToAdd)
@@ -85,7 +85,7 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 			if err := dao.AddRepository(repoRecord); err != nil {
 				log.Errorf("Error happens when adding the missing repository: %v", err)
 			} else {
-				log.Debugf("Add repository: %s success.", repoToAdd)
+				log.Infof("Add repository: %s success.", repoToAdd)
 			}
 		}
 	}
