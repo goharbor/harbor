@@ -29,7 +29,7 @@ This guide walks you through the fundamentals of using Harbor. You'll learn how 
   * [Working with Helm CLI](#working-with-helm-cli)
 * [Garbage Collection](#garbage-collection)
 * [View build history](#build-history)
-* [Using CLI after login via OIDC based SSO](#using-oidc-cli-secret)
+* [Using CLI after login via OIDC based SSO](#uoidc_cli)
 * [Robot Accounts](#robot-accounts)
 * [Tag Retention Rules](#tag-retention-rules)
 * [Configure Tag Immutability](#configure-tag-immutability)
@@ -64,12 +64,12 @@ Harbor supports different modes for authenticating users and managing user accou
 - [LDAP/Active Directory Authentication](#ldap_auth)
 - [OIDC Provider Authentication](#oidc_auth)
 
-**IMPORTANT**: Once you set the authentication mode, you cannot change it. If you create users in the database before you select the authentication mode, Harbor is locked in database mode.
+**IMPORTANT**: If you create users in the database, Harbor is locked in database mode. You cannot change to a different authentication mode after you have created local users.
 
 <a id="db_auth"></a>
 ### Database Authentication
 
-In database authentication mode, user accounts are stored in the local database. By default, only the Harbor system administrator can create user accounts to add users to Harbor.  
+In database authentication mode, user accounts are stored in the local database. By default, only the Harbor system administrator can create user accounts to add users to Harbor. You can optionally configure Harbor to allow self-registration.  
 
 1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
 1. Under **Administration**, go to **Configuration** and select the **Authentication** tab.
@@ -111,9 +111,9 @@ If you select LDAP/AD authentication, users whose credentials are stored in an e
 
 **IMPORTANT**: You can change the authentication mode from database to LDAP only if no local users have been added to the database. If there is at least one user other than `admin` in the Harbor database, you cannot change the authentication mode.
 
-Because the users are managed by LDAP or AD, self-registration, deleting users, changing passwords, and resetting passwords are not supported in LDAP/AD authentication mode.  
+Because the users are managed by LDAP or AD, self-registration, creating users, deleting users, changing passwords, and resetting passwords are not supported in LDAP/AD authentication mode.  
 
-If you want to manage user authentication by using LDAP groups, you must enable the `memberof` feature on the LDAP/AD server. With the `memberof` feature, the LDAP/AD user entity's `memberof` attribute is updated when the group entity's `member` attribute is updated, for example by adding or removing an LDAP/AD user from the LDAP/AD group. This feature is enabled by default in Active Directory. For information about how to enable and verify `memberof` overlay in OpenLDAP, see https://technicalnotes.wordpress.com/2014/04/19/openldap-setup-with-memberof-overlay/.
+If you want to manage user authentication by using LDAP groups, you must enable the `memberof` feature on the LDAP/AD server. With the `memberof` feature, the LDAP/AD user entity's `memberof` attribute is updated when the group entity's `member` attribute is updated, for example by adding or removing an LDAP/AD user from the LDAP/AD group. This feature is enabled by default in Active Directory. For information about how to enable and verify `memberof` overlay in OpenLDAP, see [this technical note]( https://technicalnotes.wordpress.com/2014/04/19/openldap-setup-with-memberof-overlay/).
 
 1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
 1. Under **Administration**, go to **Configuration** and select the **Authentication** tab.
@@ -130,7 +130,7 @@ If you want to manage user authentication by using LDAP groups, you must enable 
    - **LDAP Scope**: The scope to search for LDAP/AD users. Select from **Subtree**, **Base**, and **OneLevel**.
    
      ![Basic LDAP configuration](img/ldap_auth.png)  
-1. If you manage user authentication with LDAP groups, configure the group settings.
+1. If you want to manage user authentication with LDAP groups, configure the group settings.
    - **LDAP Group Base DN**: The base DN from which to lookup a group in LDAP/AD. For example, `ou=groups,dc=example,dc=com`.
    - **LDAP Group Filter**: The filter to search for LDAP/AD groups. For example, `objectclass=groupOfNames`. 
    - **LDAP Group GID**: The attribute used to name an LDAP/AD group. For example, `cn`.  
@@ -148,39 +148,91 @@ If you want to manage user authentication by using LDAP groups, you must enable 
 <a id="oidc_auth"></a>
 ### OIDC Provider Authentication
 
-With this authentication mode, regular user will login to Harbor Portal via SSO flow.  
-After the Harbor system administrator configure Harbor to authenticate via OIDC (more details refer to [this section](#managing-authentication)),
-a button `LOGIN VIA OIDC PROVIDER` will appear on the login page.  
-![oidc_login](img/oidc_login.png)
-    
-By clicking this button user will kick off the SSO flow and be redirected to the OIDC Provider for authentication.  After a successful
-authentication at the remote site, user will be redirected to Harbor.  There will be an "onboard" step if it's the first time the user 
-authenticate using his account, in which there will be a dialog popped up for him to set his user name in Harbor:
-![oidc_onboar](img/oidc_onboard_dlg.png)
-    
-This user name will be the identifier for this user in Harbor, which will be used in the cases such as adding member to a project, assigning roles, etc.
-This has to be a unique user name, if another user has used this user name to onboard, user will be prompted to choose another one.
-    
-Regarding this user to use docker CLI, please refer to [Using CLI after login via OIDC based SSO](#using-oidc-cli-secret)
+If you select OpenID Connect (OIDC) authentication, users log in to the Harbor interface via an OIDC single sign-on (SSO) provider, such as Okta, KeyCloak, or dex. In this case, you do not create user accounts in Harbor.
 
-When using OIDC mode, user will login Harbor via OIDC based SSO.  A client has to be registered on the OIDC provider and Harbor's callback URI needs to be associated to that client as a redirectURI.
-![OIDC settings](img/oidc_auth_setting.png)
+**IMPORTANT**: You can change the authentication mode from database to OIDC only if no local users have been added to the database. If there is at least one user other than `admin` in the Harbor database, you cannot change the authentication mode.
 
-The settings of this auth mode:
-* OIDC Provider Name: The name of the OIDC Provider.
-* OIDC Provider Endpoint: The URL of the endpoint of the OIDC provider(a.k.a the Authorization Server in OAuth's terminology), 
-which must service the "well-known" URI for its configuration, more details please refer to https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationRequest
-* OIDC Client ID: The ID of client configured on OIDC Provider.
-* OIDC Client Secret: The secret for this client.
-* OIDC Scope: The scope values to be used during the authentication.  It is the comma separated string, which must contain `openid`.  
-Normally it should also contain `profile` and `email`.  For getting the refresh token it should also contain `offline_access`.  Please check with the administrator of the OIDC Provider.
-* Verify Certificate: Whether to check the certificate when accessing the OIDC Provider. if you are running the OIDC Provider with self-signed
-certificate, make sure this value is set to false.
+Because the users are managed by the OIDC provider, self-registration, creating users, deleting users, changing passwords, and resetting passwords are not supported in OIDC authentication mode.  
+
+#### Configure Your OIDC Provider
+
+You must configure your OIDC provider so that you can use it with Harbor. For precise information about how to perform these configurations, see the documentation for your OIDC provider.
+
+- Set up the users and groups that will use the OIDC provider to log in to Harbor. You do not need to assign any specific OIDC roles to users or groups as these do not get mapped to Harbor roles.
+- The URL of the OIDC provider endpoint, known as the Authorization Server in OAuth terminology, must service the well-known URI for its configuration document. For more information about the configuration document, see the [OpenID documentation] (https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationRequest).
+- To manage users by using OIDC groups, create a custom group claim that contains all of the user groups that you want to register in Harbor. The group claim must be mapped in the ID token that is sent to Harbor when users log in. 
+- Register Harbor as a client application with the OIDC provider. Associate Harbor's callback URI to the client application as a `redirectURI`. This is the address to which the OIDC provider sends ID tokens.
+
+#### Configure an OIDC Provider in Harbor
+
+Before configuring an OIDC provider in Harbor, make sure that your provider is configured correctly according to the preceding section.
+
+1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
+1. Under **Administration**, go to **Configuration** and select the **Authentication** tab.
+1. Use the **Auth Mode** drop-down menu to select **OIDC**.
+
+   ![LDAP authentication](img/select_oidc_auth.png)
+1. Enter information about your OIDC provider.   
+
+   - **OIDC Provider Name**: The name of the OIDC provider.
+   - **OIDC Provider Endpoint**: The URL of the endpoint of the OIDC provider.
+   - **OIDC Client ID**: The client ID with which Harbor is registered as  client application with the OIDC provider.
+   - **OIDC Client Secret**: The secret for the Harbor client application.
+   - **Group Claim Name**: The name of a custom group claim that you have configured in your OIDC provider, that includes the groups to add to Harbor.
+   - **OIDC Scope**: A comma-separated string listing the scopes to be used during authentication. 
    
-**NOTE:**
-1. After the onboard process, you still have to login to Harbor via SSO flow, the `Username` and `Password` fields are only for
-local admin to login when Harbor is configured authentication via OIDC.
-2. Similar to LDAP authentication mode, self-registration, updating profile, deleting user, changing password and resetting password are not supported.
+       The OIDC scope must contain `openid` and usually also contains `profile` and `email`. To obtain refresh tokens it should also contain `offline_access`. If you are using OIDC groups, a scope must identify the group claim. Check with your OIDC provider administrator for precise details of how to identify the group claim scope, as this differs from vendor to vendor.
+       
+       ![OIDC settings](img/oidc_auth_setting.png)
+1. Uncheck **Verify Certificate** if the OIDC Provider uses a self-signed or untrusted certificate.
+1. Verify that the Redirect URI that you configured in your OIDC provider is the same as the one displayed at the bottom of the page. 
+      
+     ![OIDC certificate verification, URI, and test ](img/oidc_cert_verification.png)
+1. Click **Test OIDC Server** to make sure that your configuration is correct.
+1. Click **Save** to complete the configuration.
+
+#### Log In to Harbor via an OIDC Provider
+
+When the Harbor system administrator has configured Harbor to authenticate via OIDC a **Login via OIDC Provider** button appears on the Harbor login page.  
+
+![oidc_login](img/oidc_login.png)
+
+**NOTE:** When Harbor is configured authentication via OIDC, the **Username** and **Password** fields are reserved for the local Harbor system administrator to log in.
+    
+1. As a Harbor user, click the **Login via OIDC Provider** button.
+ 
+   This redirects you to the OIDC Provider for authentication.  
+1. If this is the first time that you are logging in to Harbor with OIDC, specify a user name for Harbor to associate with your OIDC username.
+
+   ![Specify Harbor username for OIDC](img/oidc_onboard_dlg.png)
+    
+   This is the user name by which you are identified in Harbor, which is used when adding you to projects, assigning roles, and so on. If the username is already taken, you are prompted to choose another one.
+1. After the OIDC provider has authenticated you, you are redirected back to Harbor.
+
+### Using OIDC from the Docker or Helm CLI
+
+After you have authenticated via OIDC and logged into the Harbor interface for the first time, you can use the Docker or Helm CLI to access Harbor.
+
+The Docker and Helm CLIs cannot handle redirection for OIDC, so Harbor provides a CLI secret for use when logging in from Docker or Helm. This is only available when Harbor uses OIDC authentication.  
+
+1. Log in to Harbor with an OIDC user account.
+1. Click your username at the top of the screen and select **User Profile**.
+
+   ![Access user profile](img/user_profile.png)
+1. Click the clipboard icon to copy the CLI secret associated with your account.
+
+   ![Copy CLI secret](img/profile_dlg.png)
+1. Optionally click the **...** icon in your user profile to display a button for generating new CLI secret. 
+
+   A user can only have one CLI secret, so when a new secret is generated, the old one becomes invalid.
+
+You can now use your CLI secret as the password when logging in to Harbor from the Docker or Helm CLI.
+
+<pre>
+sh docker login -u testuser -p <i>cli_secret</i> jt-test.local.goharbor.io
+</pre> 
+
+**NOTE**: The CLI secret is associated with the OIDC ID token. Harbor will try to refresh the token, so the CLI secret will be valid after the ID token expires. However, if the OIDC Provider does not provide a refresh token or the refresh fails, the CLI secret becomes invalid. In this case, log out and log back in to Harbor via your OIDC provider so that Harbor can get a new ID token. The CLI secret will then work again.
 
 ## Managing projects
 A project in Harbor contains all repositories of an application. No images can be pushed to Harbor before the project is created. RBAC is applied to a project. There are two types of projects in Harbor:  
@@ -208,30 +260,56 @@ Project properties can be changed by clicking "Configuration".
 
 ![browse project](img/project_configuration.png) 
 
-## Managing members of a project  
-### Adding members  
-You can add members with different roles to an existing project. You can add an LDAP/AD user to project members under LDAP/AD authentication mode. 
+## Managing Members of a Project  
 
-![browse project](img/new_add_member.png)
+You can add individual users to an existing project and assign a role to them. You can add an LDAP/AD or OIDC user to the project members if you  use LDAP/AD or OIDC authentication, or a user that you have already created if you use database authentication. If you use LDAP/AD or OIDC authentication, you can add groups to projects and assign a role to the group.
 
-### Updating and removing members
-You can check one or more members, then click `ACTION`, choose one role to batch switch checked members' roles or remove them from the project.
+### Add Individual Members to Projects 
 
-![browse project](img/new_remove_update_member.png)
+1. Log in to the Harbor interface with an account that has at least project administrator privileges.
+1. Go to **Projects** and select a project. 
+1. Select the **Members** tab and click **+User**.
 
-### Assign a Project Role to a Group
+   ![browse project](img/project_members.png) 
+1. Enter the name of an existing database, LDAP/AD, or OIDC user and select a role for this user.
 
-In "Project" -> "Members" -> "+ GROUP".
+   ![browse project](img/new_add_member.png)
+1. Optionally select one or more members, click **Action**, and select a different role for the user or users, or select **Remove** to remove them from the project.
 
-![Screenshot of add group](img/group/ldap_group_addgroup.png)
+   ![browse project](img/new_remove_update_member.png)
 
-You can "Add an existing user group to project member" or "Add a group from LDAP to project member".
+### Add LDAP/AD Groups to Projects
 
-![Screenshot of add group dialog](img/group/ldap_group_addgroup_dialog.png)
+1. Log in to the Harbor interface with an account that has at least project administrator privileges.
+1. Go to **Projects** and select a project. 
+1. Select the **Members** tab and click **+Group**.
 
-Once an LDAP group is assigned a project role, log in with an LDAP/AD user in this group, the user should have the privilege of its group role. If a user has both user-level role and group-level role, these privileges are merged together.
+   ![Add group](img/add_group.png)
+1. Select **Add an existing user group to project members** or **Add a group from LDAP to project member**.
 
-If a user is in the LDAP groups with admin privilege (ldap_group_admin_dn), the user should have the same privileges with Harbor admin.
+   ![Screenshot of add group dialog](img/group/ldap_group_addgroup_dialog.png)
+   
+   - If you selected **Add an existing user group to project members**, enter the name of a group that you have already used in Harbor and assign a role to that group.
+   - If you selected **Add a group from LDAP to project member**, enter the LDAP Group DN and assign a role to that group.
+
+Once an LDAP group has been assigned a role in a project, all LDAP/AD users in this group have the privileges of the role you assigned to the group. If a user has both user-level role and group-level role, these privileges are merged.
+
+If a user in the LDAP group has admin privilege, the user has the same privileges as the Harbor system administrator.
+
+### Add OIDC Groups to Projects
+
+To be able to add OIDC groups to projects, your OIDC provider and Harbor instance must be configured correctly. For information about how to configure OIDC so that Harbor can use groups, see [OIDC Provider Authentication](#oidc_auth).
+
+1. Log in to the Harbor interface with an account that has at least project administrator privileges.
+1. Go to **Projects** and select a project. 
+1. Select the **Members** tab and click **+Group**.
+
+   ![Add group](img/add_group.png)
+1. Enter the name of a group that already exists in your OIDC provider and assign a role to that group.
+
+   ![Add group](img/add_oidc_group.png)
+   
+**NOTE**: Unlike with LDAP groups, Harbor cannot check whether OIDC groups exist when you add them to a project. If you mistype the group name, or if the group does not exist in your OIDC provider, Harbor still creates the group.
 
 ## Access Project Logs
 
@@ -973,35 +1051,6 @@ Build history make it easy to see the contents of a container image, find the co
 In Harbor portal, enter your project, select the repository, click on the link of tag name you'd like to see its build history, the detail page will be opened. Then switch to `Build History` tab, you can see the build history information.
 
 ![build_ history](img/build_history.png)
-
-## Using OIDC CLI secret
-
-Having authenticated via OIDC SSO and onboarded to Harbor, you can use Docker/Helm CLI to access Harbor to read/write the artifacts.
-As the CLI cannot handle redirection for SSO, we introduced `CLI secret`, which is only available when Harbor's authentication mode 
-is configured to OIDC based.  
-After logging into Harbor, click the drop down list to view user's profile:
-![user_profile](img/user_profile.png)
-
-You can copy your CLI secret via the dialog of profile:
-![profile_dlg](img/profile_dlg.png)
-
-After that you can authenticate using your user name in Harbor that you set during onboard process, and CLI secret as the password
-with Docker/Helm CLI, for example:
-```sh
-docker login -u testuser -p xxxxxx jt-test.local.goharbor.io
-
-``` 
-
-When you click the "..." icon in the profile dialog, a button for generating new CLI secret will appear, and you can generate a new 
-CLI secret by clicking this button.  Please be reminded one user can only have one CLI secret, so when a new secret is generated, the
-old one becomes invalid at once.
-
-**NOTE**:
-Under the hood the CLI secret is associated with the ID token, and Harbor will try to refresh the token, so the CLI secret will
-be valid after th ID token expires. However, if the OIDC Provider does not provide refresh token or the refresh fails for some 
-reason, the CLI secret will become invalid.  In that case you can logout and login Harbor via SSO flow again so Harbor can get a 
-new ID token and the CLI secret will work again.
-
 
 ## Robot Accounts
 
