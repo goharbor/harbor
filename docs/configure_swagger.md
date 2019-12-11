@@ -14,7 +14,7 @@ From time to time, you may need to mannually test Harbor REST API. You can deplo
 
 * Download _prepare-swagger.sh_ and _swagger.yaml_ under the _docs_ directory to your local Harbor directory, e.g. **~/harbor**.
 ```sh
-  wget https://raw.githubusercontent.com/goharbor/harbor/master/docs/prepare-swagger.sh https://raw.githubusercontent.com/goharbor/harbor/master/API/harbor/swagger.yaml
+  wget https://raw.githubusercontent.com/goharbor/harbor/master/docs/prepare-swagger.sh https://raw.githubusercontent.com/goharbor/harbor/master/api/harbor/swagger.yaml
 ```
 * Edit the script file _prepare-swagger.sh_.
 ```sh

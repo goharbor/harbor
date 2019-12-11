@@ -13,7 +13,7 @@ COPY src/portal/package-lock.json /build_dir
 ENV NPM_CONFIG_REGISTRY=${npm_registry}
 RUN npm install
 
-COPY ./API/harbor/swagger.yaml /build_dir
+COPY ./api/harbor/swagger.yaml /build_dir
 RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger.yaml > swagger.json
 
 COPY ./LICENSE /build_dir
