@@ -60,12 +60,13 @@ See detailed permissions matrix listed here: https://github.com/goharbor/harbor/
 ## Authentication Modes and User Accounts
 Harbor supports different modes for authenticating users and managing user accounts.
 
-- Database Authentication
-- LDAP/Active Directory Authentication
-- OIDC Provider Authentication
+- [Database Authentication](#db_auth)
+- [LDAP/Active Directory Authentication](#ldap_auth)
+- [OIDC Provider Authentication](#oidc_auth)
 
-**IMPORTANT**: Once you set the authentication mode, you cannot change it. If you create users before you select the authentication mode, it is set to the default database mode.
+**IMPORTANT**: Once you set the authentication mode, you cannot change it. If you create users in the database before you select the authentication mode, Harbor is locked in database mode.
 
+<a id="db_auth"></a>
 ### Database Authentication
 
 In database authentication mode, user accounts are stored in the local database. By default, only the Harbor system administrator can create user accounts to add users to Harbor.  
@@ -103,6 +104,7 @@ In database authentication mode, the Harbor system administrator creates user ac
 
 If users forget their password, there is a **Forgot Password** in the Harbor log in page.
 
+<a id="ldap_auth"></a>
 ### LDAP/Active Directory Authentication 
 
 If you select LDAP/AD authentication, users whose credentials are stored in an external LDAP or AD server can log in to Harbor directly. In this case, you do not create user accounts in Harbor.
@@ -143,6 +145,7 @@ If you want to manage user authentication by using LDAP groups, you must enable 
 1. Click **Test LDAP Server** to make sure that your configuration is correct.
 1. Click **Save** to complete the configuration.
 
+<a id="oidc_auth"></a>
 ### OIDC Provider Authentication
 
 With this authentication mode, regular user will login to Harbor Portal via SSO flow.  
