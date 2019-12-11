@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
+	internal_errors "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -93,7 +94,7 @@ func (b *BaseController) Prepare() {
 // otherwise send Unauthorized response and returns false
 func (b *BaseController) RequireAuthenticated() bool {
 	if !b.SecurityCtx.IsAuthenticated() {
-		b.SendUnAuthorizedError(errors.New("Unauthorized"))
+		b.SendError(internal_errors.UnauthorizedError(errors.New("Unauthorized")))
 		return false
 	}
 
@@ -132,10 +133,10 @@ func (b *BaseController) HasProjectPermission(projectIDOrName interface{}, actio
 func (b *BaseController) RequireProjectAccess(projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) bool {
 	hasPermission, err := b.HasProjectPermission(projectIDOrName, action, subresource...)
 	if err != nil {
-		if err == errNotFound {
-			b.SendNotFoundError(fmt.Errorf("project %v not found", projectIDOrName))
+		if errors.Is(err, errNotFound) {
+			b.SendError(internal_errors.New(errors.New(b.SecurityCtx.GetUsername())).WithCode(internal_errors.NotFoundCode))
 		} else {
-			b.SendInternalServerError(err)
+			b.SendError(err)
 		}
 
 		return false
@@ -143,9 +144,9 @@ func (b *BaseController) RequireProjectAccess(projectIDOrName interface{}, actio
 
 	if !hasPermission {
 		if !b.SecurityCtx.IsAuthenticated() {
-			b.SendUnAuthorizedError(errors.New("UnAuthorized"))
+			b.SendError(internal_errors.UnauthorizedError(errors.New("Unauthorized")))
 		} else {
-			b.SendForbiddenError(errors.New(b.SecurityCtx.GetUsername()))
+			b.SendError(internal_errors.New(errors.New(b.SecurityCtx.GetUsername())).WithCode(internal_errors.ForbiddenCode))
 		}
 
 		return false
