@@ -209,7 +209,7 @@ When the Harbor system administrator has configured Harbor to authenticate via O
    This is the user name by which you are identified in Harbor, which is used when adding you to projects, assigning roles, and so on. If the username is already taken, you are prompted to choose another one.
 1. After the OIDC provider has authenticated you, you are redirected back to Harbor.
 
-### Using OIDC from the Docker or Helm CLI
+#### Using OIDC from the Docker or Helm CLI
 
 After you have authenticated via OIDC and logged into the Harbor interface for the first time, you can use the Docker or Helm CLI to access Harbor.
 
