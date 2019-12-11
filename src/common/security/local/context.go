@@ -52,13 +52,18 @@ func (s *SecurityContext) GetUsername() string {
 	return s.user.Username
 }
 
+// User get the current user
+func (s *SecurityContext) User() *models.User {
+	return s.user
+}
+
 // IsSysAdmin returns whether the authenticated user is system admin
 // It returns false if the user has not been authenticated
 func (s *SecurityContext) IsSysAdmin() bool {
 	if !s.IsAuthenticated() {
 		return false
 	}
-	return s.user.HasAdminRole
+	return s.user.SysAdminFlag || s.user.AdminRoleInAuth
 }
 
 // IsSolutionUser ...

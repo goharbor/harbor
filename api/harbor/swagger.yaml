@@ -938,12 +938,12 @@ paths:
           format: int
           required: true
           description: Registered user ID
-        - name: has_admin_role
+        - name: sysadmin_flag
           in: body
           description: Toggle a user to admin or not.
           required: true
           schema:
-            $ref: '#/definitions/HasAdminRole'
+            $ref: '#/definitions/SysAdminFlag'
       tags:
         - Products
       responses:
@@ -4976,8 +4976,11 @@ definitions:
       role_id:
         type: integer
         format: int
-      has_admin_role:
+      sysadmin_flag:
         type: boolean
+      admin_role_in_auth:
+        type: boolean
+        description: indicate the admin privilege is grant by authenticator (LDAP), is always false unless it is the current login user        
       reset_uuid:
         type: string
       Salt:
@@ -5276,12 +5279,12 @@ definitions:
       insecure:
         type: boolean
         description: Whether or not the certificate will be verified when Harbor tries to access the server.
-  HasAdminRole:
+  SysAdminFlag:
     type: object
     properties:
-      has_admin_role:
+      sysadmin_flag:
         type: boolean
-        description: '1-has admin, 0-not.'
+        description: 'true-admin, false-not admin.'
   UserProfile:
     type: object
     properties:
