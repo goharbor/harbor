@@ -79,12 +79,26 @@ The installation procedure involves the following steps:
 1. Optionally download the corresponding `*.asc` file. 
   
    The `*.asc` file is an OpenPGP key file that allows you to verify that the downloaded bundle is genuine. 
-1. To verify that the package is genuine, run the `gpg` command.
-
-   <pre>gpg --verify harbor-offline-installer-<i>version</i>.tgz.asc harbor-offline-installer-<i>version</i>.tgz</pre>
    
-   <pre>gpg --verify harbor-online-installer-<i>version</i>.tgz.asc harbor-offline-installer-<i>version</i>.tgz</pre>
-   The `gpg` command verifies that the signature of the bundle matches that of the `*.asc` key file.
+   1. Obtain the public key for the `*.asc` file.
+      
+      <pre>gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C</pre>
+      
+      You should see the message ` public key "Harbor-sign (The key for signing Harbor build) <jiangd@vmware.com>" imported`
+   1. Verify that the package is genuine.
+
+      <pre> gpg -v --keyserver hkps://keyserver.ubuntu.com --verify harbor-offline-installer-<i>version</i>.tgz.asc</pre>
+   
+      <pre> gpg -v --keyserver hkps://keyserver.ubuntu.com --verify harbor-online-installer-<i>version</i>.tgz.asc</pre>
+      
+      The `gpg` command verifies that the signature of the bundle matches that of the `*.asc` key file. You should see confirmation that the signature is correct.
+      
+      <pre>gpg: armor header: Version: GnuPG v1
+gpg: assuming signed data in 'harbor-offline-installer-v1.10.0-rc2.tgz'
+gpg: Signature made Fri, Dec  6, 2019  5:04:17 AM WEST
+gpg:                using RSA key 644FF454C0B4115C
+gpg: using pgp trust model
+gpg: Good signature from "Harbor-sign (The key for signing Harbor build) &lt;jiangd@vmware.com&gt; [unknown]</pre>
 1. Use `tar` to extract the installer package:
 
    - Online installer:<pre>bash $ tar xvf harbor-online-installer-<em>version</em>.tgz</pre>
