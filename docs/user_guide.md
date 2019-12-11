@@ -60,6 +60,10 @@ See detailed permissions matrix listed here: https://github.com/goharbor/harbor/
 ## Authentication Modes and User Accounts
 Harbor supports different modes for authenticating users and managing user accounts.
 
+- Database Authentication
+- LDAP/Active Directory Authentication
+- OIDC Provider Authentication
+
 **IMPORTANT**: Once you set the authentication mode, you cannot change it. If you create users before you select the authentication mode, it is set to the default database mode.
 
 ### Database Authentication
@@ -99,20 +103,47 @@ In database authentication mode, the Harbor system administrator creates user ac
 
 If users forget their password, there is a **Forgot Password** in the Harbor log in page.
 
-### LDAP/Active Directory  
+### LDAP/Active Directory Authentication 
 
-Under this authentication mode, users whose credentials are stored in an external LDAP or AD server can log in to Harbor directly.  
-	
-When an LDAP/AD user logs in by *username* and *password*, Harbor binds to the LDAP/AD server with the **"LDAP Search DN"** and **"LDAP Search Password"** described in [installation guide](installation_guide.md). If it succeeded, Harbor looks up the user under the LDAP entry **"LDAP Base DN"** including substree. The attribute (such as uid, cn) specified by **"LDAP UID"** is used to match a user with the *username*. If a match is found, the user's *password* is verified by a bind request to the LDAP/AD server. Uncheck **"LDAP Verify Cert"** if the LDAP/AD server uses a self-signed or an untrusted certificate.
-	
-Self-registration, deleting users, changing password and resetting password are not supported under LDAP/AD authentication mode because the users are managed by LDAP or AD.  
+If you select LDAP/AD authentication, users whose credentials are stored in an external LDAP or AD server can log in to Harbor directly. In this case, you do not create user accounts in Harbor.
 
-You can change authentication mode between **Database**(default) and **LDAP** before any user is added, when there is at least one user(besides admin) in Harbor, you cannot change the authentication mode.  
-![browse project](img/new_auth.png)
-When using LDAP mode, user's self-registration is disabled. The parameters of LDAP server must be filled in. For more information, refer to [User account](#user-account).   
-![browse project](img/ldap_auth.png)
+**IMPORTANT**: You can change the authentication mode from database to LDAP only if no local users have been added to the database. If there is at least one user other than `admin` in the Harbor database, you cannot change the authentication mode.
 
-### OIDC Provider
+Because the users are managed by LDAP or AD, self-registration, deleting users, changing passwords, and resetting passwords are not supported in LDAP/AD authentication mode.  
+
+If you want to manage user authentication by using LDAP groups, you must enable the `memberof` feature on the LDAP/AD server. With the `memberof` feature, the LDAP/AD user entity's `memberof` attribute is updated when the group entity's `member` attribute is updated, for example by adding or removing an LDAP/AD user from the LDAP/AD group. This feature is enabled by default in Active Directory. For information about how to enable and verify `memberof` overlay in OpenLDAP, see https://technicalnotes.wordpress.com/2014/04/19/openldap-setup-with-memberof-overlay/.
+
+1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
+1. Under **Administration**, go to **Configuration** and select the **Authentication** tab.
+1. Use the **Auth Mode** drop-down menu to select **LDAP**.
+
+   ![LDAP authentication](img/select_ldap_auth.png)
+1. Enter the address of your LDAP server, for example `ldaps://10.162.16.194`.
+1. Enter information about your LDAP server.
+
+   - **LDAP Search DN** and **LDAP Search Password**: When a user logs in to Harbor with their LDAP username and password, Harbor uses these values to bind to the LDAP/AD server. For example, `cn=admin,dc=example.com`.
+   - **LDAP Base DN**: Harbor looks up the user under the LDAP Base DN entry, including the subtree. For example, `dc=example.com`.
+   - **LDAP Filter**: The filter to search for LDAP/AD users. For example, `objectclass=user`. 
+   - **LDAP UID**: An attribute, for example `uid`, or `cn`, that is used to match a user with the username. If a match is found, the user's password is verified by a bind request to the LDAP/AD server. 
+   - **LDAP Scope**: The scope to search for LDAP/AD users. Select from **Subtree**, **Base**, and **OneLevel**.
+   
+     ![Basic LDAP configuration](img/ldap_auth.png)  
+1. If you manage user authentication with LDAP groups, configure the group settings.
+   - **LDAP Group Base DN**: The base DN from which to lookup a group in LDAP/AD. For example, `ou=groups,dc=example,dc=com`.
+   - **LDAP Group Filter**: The filter to search for LDAP/AD groups. For example, `objectclass=groupOfNames`. 
+   - **LDAP Group GID**: The attribute used to name an LDAP/AD group. For example, `cn`.  
+   - **LDAP Group Admin DN**: All LDAP/AD users in this group DN have Harbor system administrator privileges.
+   - **LDAP Group Membership**: The user attribute usd to identify a user as a member of a group. By default this is `memberof`.
+   - **LDAP Scope**: The scope to search for LDAP/AD groups. Select from **Subtree**, **Base**, and **OneLevel**.
+   
+     ![LDAP group configuration](img/ldap_groups.png)
+1. Uncheck **LDAP Verify Cert** if the LDAP/AD server uses a self-signed or untrusted certificate.
+
+   ![LDAP certificate verification](img/ldap_cert_test.png)
+1. Click **Test LDAP Server** to make sure that your configuration is correct.
+1. Click **Save** to complete the configuration.
+
+### OIDC Provider Authentication
 
 With this authentication mode, regular user will login to Harbor Portal via SSO flow.  
 After the Harbor system administrator configure Harbor to authenticate via OIDC (more details refer to [this section](#managing-authentication)),
@@ -184,6 +215,20 @@ You can add members with different roles to an existing project. You can add an 
 You can check one or more members, then click `ACTION`, choose one role to batch switch checked members' roles or remove them from the project.
 
 ![browse project](img/new_remove_update_member.png)
+
+### Assign a Project Role to a Group
+
+In "Project" -> "Members" -> "+ GROUP".
+
+![Screenshot of add group](img/group/ldap_group_addgroup.png)
+
+You can "Add an existing user group to project member" or "Add a group from LDAP to project member".
+
+![Screenshot of add group dialog](img/group/ldap_group_addgroup_dialog.png)
+
+Once an LDAP group is assigned a project role, log in with an LDAP/AD user in this group, the user should have the privilege of its group role. If a user has both user-level role and group-level role, these privileges are merged together.
+
+If a user is in the LDAP groups with admin privilege (ldap_group_admin_dn), the user should have the same privileges with Harbor admin.
 
 ## Access Project Logs
 
@@ -454,11 +499,6 @@ The push refers to a repository [10.117.169.182/demo/ubuntu]
 0271b8eebde3: Preparing 
 denied: The system is in read only mode. Any modification is prohibited.  
 ```
-
-### Managing role by LDAP group
-
-If auth_mode is ldap_auth, you can manage project role by LDAP/AD group. please refer [manage role by ldap group guide](manage_role_by_ldap_group.md).
-
 ## Pulling and pushing images using Docker client  
 
 **NOTE: Harbor only supports Registry V2 API. You need to use Docker client 1.6.0 or higher.**  
