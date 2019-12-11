@@ -76,9 +76,9 @@ The installation procedure involves the following steps:
 
 1. Go to the [Harbor releases page](https://github.com/goharbor/harbor/releases). 
 1. Download either the online or offline installer for the version you want to install.
-1. Optionally download the corresponding `*.asc` file. 
+1. Optionally download the corresponding `*.asc` file to verify that the package is genuine. 
   
-   The `*.asc` file is an OpenPGP key file that allows you to verify that the downloaded bundle is genuine. 
+   The `*.asc` file is an OpenPGP key file. Perform the following steps to verify that the downloaded bundle is genuine. 
    
    1. Obtain the public key for the `*.asc` file.
       
