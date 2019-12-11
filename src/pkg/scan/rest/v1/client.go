@@ -158,6 +158,9 @@ func (c *basicClient) SubmitScan(req *ScanRequest) (*ScanResponse, error) {
 		return nil, errors.Wrap(err, "v1 client: submit scan")
 	}
 
+	// Resolve header
+	def.Resolver(request)
+
 	respData, err := c.send(request, generalResponseHandler(http.StatusAccepted))
 	if err != nil {
 		return nil, errors.Wrap(err, "v1 client: submit scan")
@@ -187,6 +190,9 @@ func (c *basicClient) GetScanReport(scanRequestID, reportMIMEType string) (strin
 	if err != nil {
 		return "", errors.Wrap(err, "v1 client: get scan report")
 	}
+
+	// Resolve header
+	def.Resolver(req)
 
 	respData, err := c.send(req, reportResponseHandler())
 	if err != nil {
