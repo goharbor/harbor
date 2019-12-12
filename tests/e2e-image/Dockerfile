@@ -16,7 +16,10 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     sshpass \
     ant \
 	ant-optional \
-    openjdk-7-jdk \
+	xvfb \
+    libxi6 \
+    libgconf-2-4 \
+    openjdk-8-jdk \
     rpcbind \
     nfs-common \
     unzip \
@@ -32,7 +35,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     netcat \
     # Add headless chrome support
     google-chrome-stable \
-    Xvfb \
     # Speed up ISO builds with already installed reqs
     yum \
     yum-utils \
@@ -46,14 +48,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*
 
+RUN wget -N http://chromedriver.storage.googleapis.com/2.40/chromedriver_linux64.zip && \
+    unzip chromedriver_linux64.zip && \
+    chmod +x chromedriver && \
+    mv -f chromedriver /usr/local/share/chromedriver && \
+    ln -s /usr/local/share/chromedriver /usr/local/bin/chromedriver && \
+    ln -s /usr/local/share/chromedriver /usr/bin/chromedriver
+
+RUN apt-get update && apt install libnss3-tools && \
+    mkdir -p $HOME/.pki/nssdb && \
+    echo Harbor12345 > password.ca && \
+    certutil -d sql:$HOME/.pki/nssdb -N -f password.ca
+
 RUN wget https://bootstrap.pypa.io/get-pip.py && \
     python ./get-pip.py  && \
-    pip install pyasn1 google-apitools==0.5.15 gsutil robotframework robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-selenium2library robotframework-pabot --upgrade
+    pip install pyasn1 google-apitools==0.5.15 gsutil robotframework==3.0.4 robotframework-sshlibrary robotframework-httplibrary requests dbbot robotframework-selenium2library robotframework-pabot robotframework-JSONLibrary --upgrade
 
 # Install docker, docker compose
-RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-17.12.0-ce.tgz && \
-    tar --strip-components=1 -xvzf docker-17.12.0-ce.tgz -C /usr/bin &&  \
-    curl -L https://github.com/docker/compose/releases/download/1.11.2/docker-compose-`uname -s`-`uname -m` > /usr/local/bin/docker-compose && \
+RUN wget https://download.docker.com/linux/static/stable/x86_64/docker-18.06.3-ce.tgz && \
+    tar --strip-components=1 -xvzf docker-18.06.3-ce.tgz -C /usr/bin &&  \
+    curl -L "https://github.com/docker/compose/releases/download/1.24.0/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose && \
     chmod +x /usr/local/bin/docker-compose
 
 RUN wget https://github.com/drone/drone-cli/releases/download/v0.8.3/drone_linux_amd64.tar.gz && tar zxf drone_linux_amd64.tar.gz && \
@@ -62,8 +76,16 @@ RUN wget https://github.com/drone/drone-cli/releases/download/v0.8.3/drone_linux
 RUN curl -sSL https://github.com/vmware/govmomi/releases/download/v0.16.0/govc_linux_amd64.gz | gzip -d > /usr/local/bin/govc && \
     chmod +x /usr/local/bin/govc
 
-RUN  wget https://launchpad.net/ubuntu/+source/wget/1.18-2ubuntu1/+build/10470166/+files/wget_1.18-2ubuntu1_amd64.deb && \
-     dpkg -i wget_1.18-2ubuntu1_amd64.deb
+RUN wget https://get.helm.sh/helm-v2.14.1-linux-386.tar.gz && tar zxvf helm-v2.14.1-linux-386.tar.gz && \
+    mv linux-386/helm /usr/local/bin/helm && \
+	helm init --client-only && \
+	helm plugin install https://github.com/chartmuseum/helm-push
+
+RUN wget https://get.helm.sh/helm-v3.0.0-linux-386.tar.gz && tar zxvf helm-v3.0.0-linux-386.tar.gz && \
+    mv linux-386/helm /usr/local/bin/helm3 && \
+	helm3 plugin install https://github.com/chartmuseum/helm-push
+
+
 
 # Add docker in docker support
 # version: docker:1.13-dind

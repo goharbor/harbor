@@ -150,7 +150,18 @@ Helm CLI Push Without Sign In Harbor
     ${d}=   Get Current Date    result_format=%m%s
     Create An New Project  project${d}
     Helm Repo Add  ${HARBOR_URL}  ${sign_in_user}  ${sign_in_pwd}  project_name=project${d}
-    Helm Repo Push  ${HARBOR_URL}  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}  project_name=project${d}
+    Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}
+    Go Into Project  project${d}  has_image=${false}
+    Switch To Project Charts
+    Go Into Chart Version  ${harbor_chart_name}
+    Retry Wait Until Page Contains  ${harbor_chart_version}
+    Capture Page Screenshot
+
+Helm3 CLI Push Without Sign In Harbor
+    [Arguments]  ${sign_in_user}  ${sign_in_pwd}
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project  project${d}
+    Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}  helm_repo_name=${HARBOR_URL}/chartrepo/project${d}
     Go Into Project  project${d}  has_image=${false}
     Switch To Project Charts
     Go Into Chart Version  ${harbor_chart_name}

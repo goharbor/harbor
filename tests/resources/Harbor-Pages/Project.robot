@@ -177,7 +177,7 @@ Do Log Advanced Search
     Retry Text Input  xpath=//audit-log//hbr-filter//input  harbor
     Sleep  1
     Capture Page Screenshot  LogAdvancedSearch2.png
-    ${rc} =  Get Matching Xpath Count  //audit-log//clr-dg-row
+    ${rc} =  Get Element Count  //audit-log//clr-dg-row
     Should Be Equal As Integers  ${rc}  0
 
 Go Into Repo
