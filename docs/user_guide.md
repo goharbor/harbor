@@ -10,7 +10,7 @@ This guide walks you through the fundamentals of using the different Harbor feat
 * [Replicating Resources](#replicating-resources)
 * [Retagging Images](#retagging-images)
 * [Searching Projects and Repositories](#searching-projects-and-repositories)
-* [Managing labels](#managing-labels)
+* [Managing Labels](#managing-labels)
 * [Set Project Quotas](#set-project-quotas)
 * [Administrator Options](#administrator-options)
 * [Pulling and Pushing Images using Docker Client](#pulling-and-pushing-images-in-the-docker-client)
@@ -57,12 +57,14 @@ Harbor supports different modes for authenticating users and managing user accou
 - [LDAP/Active Directory Authentication](#ldap_auth)
 - [OIDC Provider Authentication](#oidc_auth)
 
-**IMPORTANT**: If you create users in the database, Harbor is locked in database mode. You cannot change to a different authentication mode after you have created local users.
+**NOTE**: The Harbor interface offers an option to configure UAA authentication. This authentication mode is not recommended and is not documented in this guide.
 
 <a id="db_auth"></a>
 ### Database Authentication
 
 In database authentication mode, user accounts are stored in the local database. By default, only the Harbor system administrator can create user accounts to add users to Harbor. You can optionally configure Harbor to allow self-registration.  
+
+**IMPORTANT**: If you create users in the database, Harbor is locked in database mode. You cannot change to a different authentication mode after you have created local users.
 
 1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
 1. Under **Administration**, go to **Configuration** and select the **Authentication** tab.

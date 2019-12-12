@@ -397,8 +397,9 @@ The following table lists the additional, optional parameters that you can set t
     <td valign="top"><code>chartmuseum_db_index</code></td>
     <td valign="top">Database index for Chart museum.</td>
   </tr>
- 
 </table>
+
+**NOTE**: The `harbor.yml` file includes options to configure a UAA CA certificate. This authentication mode is not recommended and is not documented.
 
 <a id="backend"></a>
 ### Configuring a Storage Backend 
