@@ -1,4 +1,4 @@
-# Installation and Configuration Guide
+# Harbor Installation and Configuration Guide
 
 There are two possibilities when installing Harbor.
 
@@ -72,10 +72,34 @@ The installation procedure involves the following steps:
 2. Configure the **harbor.yml** file.
 3. Run the **install.sh** script with the appropriate options to install and start Harbor.
 
-## Download the Installer
+## Download and Unpack the Installer
 
 1. Go to the [Harbor releases page](https://github.com/goharbor/harbor/releases). 
-1. Select either the online or offline installer for the version you want to install.
+1. Download either the online or offline installer for the version you want to install.
+1. Optionally download the corresponding `*.asc` file to verify that the package is genuine. 
+  
+   The `*.asc` file is an OpenPGP key file. Perform the following steps to verify that the downloaded bundle is genuine. 
+   
+   1. Obtain the public key for the `*.asc` file.
+      
+      <pre>gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C</pre>
+      
+      You should see the message ` public key "Harbor-sign (The key for signing Harbor build) <jiangd@vmware.com>" imported`
+   1. Verify that the package is genuine by running one of the following commands.
+
+      - Online installer: <pre>gpg -v --keyserver hkps://keyserver.ubuntu.com --verify harbor-online-installer-<i>version</i>.tgz.asc</pre>
+      - Offline installer: <pre>gpg -v --keyserver hkps://keyserver.ubuntu.com --verify harbor-offline-installer-<i>version</i>.tgz.asc</pre>
+      
+      The `gpg` command verifies that the signature of the bundle matches that of the `*.asc` key file. You should see confirmation that the signature is correct.
+      
+      <pre>
+      gpg: armor header: Version: GnuPG v1
+      gpg: assuming signed data in 'harbor-offline-installer-v1.10.0-rc2.tgz'
+      gpg: Signature made Fri, Dec  6, 2019  5:04:17 AM WEST
+      gpg:                using RSA key 644FF454C0B4115C
+      gpg: using pgp trust model
+      gpg: Good signature from "Harbor-sign (The key for signing Harbor build) &lt;jiangd@vmware.com&gt; [unknown]
+      </pre>
 1. Use `tar` to extract the installer package:
 
    - Online installer:<pre>bash $ tar xvf harbor-online-installer-<em>version</em>.tgz</pre>
@@ -133,7 +157,7 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top"><code>harbor_admin_password</code></td>
     <td valign="top">None</td>
-    <td valign="top">Set an initial password for the Harbor administrator. This password is only used on the first time that Harbor starts. On subsequent logins, this setting is ignored and the administrator's password is set in the Harbor Portal. The default username and password are <code>admin</code> and <code>Harbor12345</code>.</td>
+    <td valign="top">Set an initial password for the Harbor system administrator. This password is only used on the first time that Harbor starts. On subsequent logins, this setting is ignored and the administrator's password is set in the Harbor Portal. The default username and password are <code>admin</code> and <code>Harbor12345</code>.</td>
   </tr>
   <tr>
     <td valign="top"><code>database</code></td>
@@ -373,17 +397,9 @@ The following table lists the additional, optional parameters that you can set t
     <td valign="top"><code>chartmuseum_db_index</code></td>
     <td valign="top">Database index for Chart museum.</td>
   </tr>
-  <tr>
-    <td valign="top"><code>uaa</code></td>
-    <td valign="top">&nbsp;</td>
-    <td valign="top">Enable UAA to trust the certificate of a UAA instance that is hosted via a self-signed certificate.</td>
-  </tr>
-  <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>ca_file</code></td>
-    <td valign="top">The path to the self-signed certificate of the UAA instance, for example <code>/path/to/ca</code>.</td>
-  </tr>
 </table>
+
+**NOTE**: The `harbor.yml` file includes options to configure a UAA CA certificate. This authentication mode is not recommended and is not documented.
 
 <a id="backend"></a>
 ### Configuring a Storage Backend 
@@ -406,7 +422,7 @@ storage_service:
 ```
 
 
-## Installating and starting Harbor
+## Installing and starting Harbor
 
 Once you have configured **harbor.yml** optionally set up a storage backend, you install and start Harbor by using the `install.sh` script. Note that it might take some time for the online installer to download all of the `Harbor images from Docker hub.
 
@@ -434,8 +450,6 @@ Log in to the admin portal and create a new project, for example, `myproject`. Y
 $ docker login reg.yourdomain.com
 $ docker push reg.yourdomain.com/myproject/myrepo:mytag
 ```
-
-**IMPORTANT:** If your installation of Harbor uses HTTP, you must add the option `--insecure-registry` to your client's Docker daemon and restart the Docker service.
 
 ### Installation with Notary
 
@@ -474,6 +488,31 @@ If you want to install all three of Notary, Clair and chart repository service, 
 ```sh
     $ sudo ./install.sh --with-notary --with-clair --with-chartmuseum
 ```
+
+<a id="connect_http"></a>
+## Connecting to Harbor via HTTP
+
+**IMPORTANT:** If your installation of Harbor uses HTTP rather than HTTPS, you must add the option `--insecure-registry` to your client's Docker daemon. By default, the daemon file is located at `/etc/docker/daemon.json`.
+
+For example, add the following to your `daemon.json` file:
+
+<pre>
+{
+"insecure-registries" : ["<i>myregistrydomain.com</i>:5000", "0.0.0.0"]
+}
+</pre>
+
+After you update `daemon.json`, you must restart both Docker Engine and Harbor.
+
+1. Restart Docker Engine.
+
+   `systemctl restart docker`
+1. Stop Harbor.
+
+   `docker-compose down -v`
+1. Restart Harbor.
+
+   `docker-compose up -d`
 
 ## Using Harbor
 
