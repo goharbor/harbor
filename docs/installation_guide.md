@@ -397,16 +397,7 @@ The following table lists the additional, optional parameters that you can set t
     <td valign="top"><code>chartmuseum_db_index</code></td>
     <td valign="top">Database index for Chart museum.</td>
   </tr>
-  <tr>
-    <td valign="top"><code>uaa</code></td>
-    <td valign="top">&nbsp;</td>
-    <td valign="top">Enable UAA to trust the certificate of a UAA instance that is hosted via a self-signed certificate.</td>
-  </tr>
-  <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>ca_file</code></td>
-    <td valign="top">The path to the self-signed certificate of the UAA instance, for example <code>/path/to/ca</code>.</td>
-  </tr>
+ 
 </table>
 
 <a id="backend"></a>
