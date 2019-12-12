@@ -38,6 +38,10 @@ http {
 
   server {
     listen 8443 ssl;
+
+    if ($scheme = http ) {
+       return 301 https://$host:5000$request_uri; }
+
 #    server_name harbordomain.com;
     server_tokens off;
     # SSL
