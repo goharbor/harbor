@@ -217,9 +217,12 @@ The Docker and Helm CLIs cannot handle redirection for OIDC, so Harbor provides 
 1. Click the clipboard icon to copy the CLI secret associated with your account.
 
    ![Copy CLI secret](img/profile_dlg.png)
-1. Optionally click the **...** icon in your user profile to display a button for generating new CLI secret. 
+1. Optionally click the **...** icon in your user profile to display buttons for automatically generating or manually creating a new CLI secret.
 
-   A user can only have one CLI secret, so when a new secret is generated, the old one becomes invalid.
+   ![Copy CLI secret](img/generate_create_new_secret.png) 
+
+   A user can only have one CLI secret, so when a new secret is generated or create, the old one becomes invalid.
+1. If you generated a new CLI secret, click the clipboard icon to copy it.
 
 You can now use your CLI secret as the password when logging in to Harbor from the Docker or Helm CLI.
 
