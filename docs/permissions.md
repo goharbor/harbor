@@ -29,6 +29,8 @@ The following table depicts the various user permission levels in a project.
 | Pull image                              | ✓             | ✓     | ✓         | ✓      | ✓             |
 | Push image                              |               |       | ✓         | ✓      | ✓             |
 | Scan/delete image                       |               |       |           | ✓      | ✓             |
+| Add scanners to Harbor                  |               |       |           |       |               |
+| Edit scanners in projects               |               |       |           |         | ✓             |
 | See a list of image vulnerabilities     | ✓             | ✓     | ✓         | ✓      | ✓             |
 | See image build history                 | ✓             | ✓     | ✓         | ✓      | ✓             |
 | Add/Remove labels of image              |               |       | ✓         | ✓      | ✓             |
@@ -48,7 +50,9 @@ The following table depicts the various user permission levels in a project.
 | Enable/disable webhooks                 |               |       | ✓         | ✓      | ✓             |
 | Create/delete tag retention rules       |               |       | ✓         | ✓      | ✓             |
 | Enable/disable tag retention rules      |               |       | ✓         | ✓      | ✓             |
+| Create/delete tag immutability rules       |               |       |          |       | ✓             |
+| Enable/disable tag immutability rules      |               |       |          |       | ✓             |
 | See project quotas                      | ✓             | ✓     | ✓         | ✓      | ✓             |
-| Edit project quotas                     |               |       |           |        |               |
+| Edit project quotas  *                   |               |       |           |        |               |
 
-
+&ast; Only the Harbor system administrator can edit project quotas and add new scanners.
