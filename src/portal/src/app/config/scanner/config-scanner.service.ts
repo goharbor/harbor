@@ -5,6 +5,8 @@ import { catchError, map } from "rxjs/operators";
 import { HttpClient } from "@angular/common/http";
 import { ScannerMetadata } from "./scanner-metadata";
 
+export const SCANNERS_DOC: string = "https://github.com/goharbor/harbor/blob/master/docs/harbor_compatibility_list.md";
+
 @Injectable()
 export class ConfigScannerService {
 

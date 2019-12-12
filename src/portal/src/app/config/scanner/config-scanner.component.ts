@@ -1,7 +1,7 @@
 import { Component, ViewChild, OnInit, OnDestroy } from "@angular/core";
 import { Scanner } from "./scanner";
 import { NewScannerModalComponent } from "./new-scanner-modal/new-scanner-modal.component";
-import { ConfigScannerService } from "./config-scanner.service";
+import { ConfigScannerService, SCANNERS_DOC } from "./config-scanner.service";
 import { finalize } from "rxjs/operators";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../shared/shared.const";
@@ -22,6 +22,7 @@ export class ConfigurationScannerComponent implements OnInit, OnDestroy {
     @ViewChild(NewScannerModalComponent, {static: false})
     newScannerDialog: NewScannerModalComponent;
     deletionSubscription: any;
+    scannerDocUrl: string = SCANNERS_DOC;
     constructor(
         private configScannerService: ConfigScannerService,
         private errorHandler: ErrorHandler,
