@@ -48,6 +48,14 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 
 * [Harbor RESTful API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/harbor/swagger.yaml): The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically.
 
+## Compatibility
+
+The [compatibility list](./docs/harbor_compatibility_list.md) document provides compatibility information for the Harbor components.
+
+- [Replication adapters](./docs/harbor_compatibility_list.md#Replication-Adapters)
+- [OIDC adapters](./docs/harbor_compatibility_list.md#OIDC-Adapters)
+- [Scanner adapters](./docs/harbor_compatibility_list.md#Scanner-Adapters)
+
 ## Install & Run
 
 **System requirements:**
