@@ -204,7 +204,7 @@ Clear Field Of Characters
     [Arguments]  ${field}  ${character count}
     [Documentation]  This keyword pushes the delete key (ascii: \8) a specified number of times in a specified field.
     : FOR  ${index}  IN RANGE  ${character count}
-    \    Press Key  ${field}  \\8
+    \    Press Keys  ${field}  \\8
 
 Wait Unitl Command Success
     [Arguments]  ${cmd}  ${times}=8
