@@ -40,4 +40,7 @@ Test Case - Project Level Policy Content Trust
     Close Browser
 
 Test Case - Admin Push Signed Image
-    Body Of Admin Push Signed Image
+    Body Of Admin Push Signed Image  tomcat
+
+Test Case - Admin Push Signed Image And Remove Signature
+    Body Of Admin Push Signed Image  redis  with_remove=${true}

@@ -1,9 +1,11 @@
 #!/bin/bash
 
-docker pull tomcat:latest
-
 IP=$1
 notaryServerEndpoint=$2
+image=$3
+
+docker pull $image:latest
+
 PASSHRASE='Harbor12345'
 
 echo $IP
@@ -21,5 +23,5 @@ export DOCKER_CONTENT_TRUST_OFFLINE_PASSPHRASE=$PASSHRASE
 export DOCKER_CONTENT_TRUST_TAGGING_PASSPHRASE=$PASSHRASE
 
 docker login -u admin -p Harbor12345 $IP
-docker tag tomcat $IP/library/tomcat:latest
-docker push $IP/library/tomcat:latest
+docker tag $image $IP/library/$image:latest
+docker push $IP/library/$image:latest

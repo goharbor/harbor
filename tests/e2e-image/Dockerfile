@@ -85,7 +85,9 @@ RUN wget https://get.helm.sh/helm-v3.0.0-linux-386.tar.gz && tar zxvf helm-v3.0.
     mv linux-386/helm /usr/local/bin/helm3 && \
 	helm3 plugin install https://github.com/chartmuseum/helm-push
 
-
+RUN wget https://github.com/theupdateframework/notary/releases/download/v0.6.1/notary-Linux-amd64 && \
+    chmod +x notary-Linux-amd64 && \
+    mv notary-Linux-amd64 /usr/local/bin/notary
 
 # Add docker in docker support
 # version: docker:1.13-dind
