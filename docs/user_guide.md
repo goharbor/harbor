@@ -719,7 +719,9 @@ To connect Harbor to additional vulnerability scanners, you must install and con
    - **Bearer**: Paste the contents of a bearer token in the **Token** text box.
    - **APIKey**: Paste the contents of an API key for the scanner in the **APIKey** text box.
 1. Optionally select **Skip certificate verification** if the scanner uses a self-signed or untrusted certificate. 
-1. Optionally select **Use internal registry address** if the scanner should connect to Harbor using an internal network address rather its external URL.
+1. Optionally select **Use internal registry address** if the scanner should connect to Harbor using an internal network address rather than its external URL.
+
+   **NOTE**: To use this option, the scanner must be deployed in a network that allows the scanner to reach Harbor via Harbor's internal network.
 1. Click **Test Connection** to make sure that Harbor can connect successfully to the scanner. 
    ![Test scanner connection](img/test-scanner-connection.png)
 1. Click **Add** to connect Harbor to the scanner.
@@ -730,7 +732,7 @@ To connect Harbor to additional vulnerability scanners, you must install and con
 
 Vulnerability scanners depend on the vulnerability metadata to complete the analysis process. After the first initial installation, the vulnerability scanner automatically starts to update the metadata database from different vulnerability repositories. The database update might take a while, based on the data size and network connection. 
 
-Once the database is ready, the timestamp of the last update is shown in the **Interrogation Services** > **Vulnerability** tab. 
+Depending on the scanner that you use, once the database is ready, the timestamp of the last update is shown in the **Interrogation Services** > **Vulnerability** tab. Currently, only Clair and Anchore provide timestamp information.
 ![browse project](img/clair_ready.png)
 
 Until the database has been fully populated, the timestamp is replaced by a warning symbol. When the database is ready, you can scan images individually or scan all images across all projects.
@@ -748,7 +750,7 @@ Until the database has been fully populated, the timestamp is replaced by a warn
 
    ![Project scanner tab](img/select-scanner.png)
    
-   **NOTE**: If you have selected the **Prevent vulnerable images from running** option in the project **Configuration** tab, different scanners  might or might not permit certain images to run.
+   **NOTE**: If you have selected the **Prevent vulnerable images from running** option in the project **Configuration** tab, the prevention of pulling vulnerable images is determined by the scanner that is set in the project, or by the global default scanner if no scanner is configured specifically for the project. Different scanners might apply different levels of severity to image vulnerabilities.
 1. Select the **Repositories** tab and select a repository.
 
    For each tag in the repository, the **Vulnerabilities** column displays the vulnerability scanning status and related information.
@@ -758,7 +760,7 @@ Until the database has been fully populated, the timestamp is replaced by a warn
 
    ![Scan an image](img/scan_image.png)
 
-   **NOTE**: You can start a scan at any time, unless the status is **Queued** or **Scanning**. If the database has not been fully populated, you cannot run the scan. The following statuses are displayed in the **Vulnerabilities** column:
+   **NOTE**: You can start a scan at any time, unless the status is **Queued** or **Scanning**. If the database has not been fully populated, you should not run a scan. The following statuses are displayed in the **Vulnerabilities** column:
    
    * **Not Scanned:** The tag has never been scanned.
    * **Queued:** The scanning task is scheduled but has not run yet.
@@ -766,7 +768,7 @@ Until the database has been fully populated, the timestamp is replaced by a warn
    * **View log:** The scanning task failed to complete. Click **View Log** link to view the related logs.
    * **Complete:** The scanning task completed successfully.
 
-   If the process completes successfully, the result indicates the total number of vulnerabilities found for each severity level, and the number of fixable vulnerabilities.
+   If the process completes successfully, the result indicates the overall severity level, with the total number of vulnerabilities found for each severity level, and the number of fixable vulnerabilities.
 
    ![Scan result](img/scan-result.png)
 
