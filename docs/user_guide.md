@@ -1,38 +1,31 @@
 # Harbor User Guide  
 
-This guide walks you through the fundamentals of using Harbor. You'll learn how to use Harbor to:  
+This guide walks you through the fundamentals of using Harbor.
 
 * [Role Based Access Control(RBAC)](#rbac)
 * [Authentication Modes and User Accounts](#auth)
-* [Manage your projects](#managing-projects)
-* [Manage members of a project](#managing-members-of-a-project)
+* [Managing Projects](#managing-projects)
+* [Managing Members of a Project](#managing-members-of-a-project)
 * [Access Project Logs](#access-project-logs)
-* [Replicate resources between Harbor and non-Harbor registries](#replicating-resources)
-* [Retag images within Harbor](#retag-images)
-* [Search projects and repositories](#searching-projects-and-repositories)
-* [Manage labels](#managing-labels)
+* [Replicating Resources](#replicating-resources)
+* [Retagging Images](#retagging-images)
+* [Searching Projects and Repositories](#searching-projects-and-repositories)
+* [Managing labels](#managing-labels)
 * [Set Project Quotas](#set-project-quotas)
-* [Manage Harbor system if you are the Harbor system administrator:](#administrator-options)
-  * [Manage project creation](#managing-project-creation)
-  * [Manage email settings](#managing-email-settings)
-  * [Manage registry read only](#managing-registry-read-only)
-  * [Manage role by LDAP group](#managing-role-by-ldap-group)
-* [Pull and push images using Docker client](#pulling-and-pushing-images-using-docker-client)
-* [Add description to repositories](#add-description-to-repositories)
-* [Delete repositories and images](#deleting-repositories)
-* [Content trust](#content-trust)
+* [Administrator Options](#administrator-options)
+* [Pulling and Pushing Images using Docker Client](#pulling-and-pushing-images-in-the-docker-client)
+* [Add Descriptions to Repositories](#add-descriptions-to-repositories)
+* [Deleting Repositories](#deleting-repositories)
+* [Content Trust](#content-trust)
 * [Vulnerability Scanning](#vulnerability-scanning)
 * [Configure CVE Whitelists](#configure-cve-whitelists)
-* [Pull image from Harbor in Kubernetes](#pull-image-from-harbor-in-kubernetes)
-* [Manage Helm Charts](#manage-helm-charts)
-  * [Manage Helm Charts via portal](#manage-helm-charts-via-portal)
-  * [Working with Helm CLI](#working-with-helm-cli)
+* [Pulling Images from Harbor in Kubernetes](#pulling-images-from-harbor-in-kubernetes)
+* [Managing Helm Charts](#managing-helm-charts)
 * [Garbage Collection](#garbage-collection)
-* [View build history](#build-history)
-* [Using CLI after login via OIDC based SSO](#uoidc_cli)
+* [View Build History](#build-history)
 * [Robot Accounts](#robot-accounts)
 * [Tag Retention Rules](#tag-retention-rules)
-* [Configure Tag Immutability](#configure-tag-immutability)
+* [Tag Immutability Rules](#tag-immutability-rules)
 * [Webhook Notifications](#webhook-notifications)
 * [Using API Explorer](#api-explorer)
 
@@ -234,7 +227,7 @@ sh docker login -u testuser -p <i>cli_secret</i> jt-test.local.goharbor.io
 
 **NOTE**: The CLI secret is associated with the OIDC ID token. Harbor will try to refresh the token, so the CLI secret will be valid after the ID token expires. However, if the OIDC Provider does not provide a refresh token or the refresh fails, the CLI secret becomes invalid. In this case, log out and log back in to Harbor via your OIDC provider so that Harbor can get a new ID token. The CLI secret will then work again.
 
-## Managing projects
+## Managing Projects
 A project in Harbor contains all repositories of an application. No images can be pushed to Harbor before the project is created. RBAC is applied to a project. There are two types of projects in Harbor:  
 
 * **Public**: All users have the read privilege to a public project, it's convenient for you to share some repositories with others in this way.
@@ -462,7 +455,7 @@ To edit or delete a replication rule, select the replication rule in the **Repli
 
 ![Delete or edit rule](img/replication-rule6.png)
 
-## Retag Images
+## Retagging Images
 
 Images retag helps users to tag images in Harbor, images can be tagged to  different repositories and projects, as long as the users have sufficient permissions. For example,
 
@@ -478,12 +471,12 @@ In Harbor portal, select the image you'd like to retag, and click the enabled `R
 
 In the retag dialog, project name, repository name and the new tag should be specified. On click the `CONFIRM` button, the new tag would be created instantly. You can check the new tag in the corresponding project. 
 
-## Searching projects and repositories
+## Searching Projects and Repositories
 Entering a keyword in the search field at the top lists all matching projects and repositories. The search result includes both public and private repositories you have access to.  
 
 ![browse project](img/new_search.png)
 
-## Managing labels
+## Managing Labels
 Harbor provides two kinds of labels to isolate kinds of resources(only images for now):
 * **Global Level Label**: Managed by Harbor system administrators and used to manage the images of the whole system. They can be added to images under any projects.
 * **Project Level Label**: Managed by project administrators under a project and can only be added to the images of the project.
@@ -552,21 +545,21 @@ When setting project quotas, it is useful to know how Harbor calculates tag numb
 - If the tag count reaches the limit, image blobs can be pushed into a project and storage usage is updated accordingly. You can consider these blobs to be untagged blobs. They can be removed by garbage collection, and the storage that they consume is returned after garbage colletion.
 - Helm chart size is not calculated. Only tag counts are calculated.
 
-## Administrator options  
-### Managing user  
+## Administrator Options  
+### Managing Users
 Administrator can add "Administrator" role to one or more ordinary users by checking checkboxes and clicking `SET AS ADMINISTRATOR`. To delete users, checked checkboxes and select `DELETE`. Deleting user is only supported under database authentication mode.
 
 ![browse project](img/new_set_admin_remove_user.png)
 
-### Managing project creation
+### Managing Project Creation
 Use the **Project Creation** drop-down menu to set which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Administrator role to create projects.  
 ![browse project](img/new_proj_create.png)
 
-### Managing email settings
+### Managing Email Settings
 You can change Harbor's email settings, the mail server is used to send out responses to users who request to reset their password.  
 ![browse project](img/new_config_email.png)
 
-### Managing registry read only
+### Managing Registry Read Only
 You can change Harbor's registry read only settings, read only mode will allow 'docker pull' while preventing 'docker push' and the deletion of repository and tag.
 ![browse project](img/read_only.png)
 
@@ -580,7 +573,7 @@ The push refers to a repository [10.117.169.182/demo/ubuntu]
 0271b8eebde3: Preparing 
 denied: The system is in read only mode. Any modification is prohibited.  
 ```
-## Pulling and Pushing Images in the Docker Client  
+## Pulling and Pushing Images in the Docker Client
 
 **NOTE**: Harbor only supports the Registry V2 API. You must use Docker client 1.6.0 or higher.  
 
@@ -594,7 +587,7 @@ For information about how to add insecure registries to your Docker client, see 
 
 You also see this error if Harbor uses HTTPS with an unknown CA certificate. In this case, obtain the registry's CA certificate, and copy it to <code>/etc/docker/certs.d/<i>myregistrydomain.com</i>/ca.crt</code>.   
 
-### Pulling images  
+### Pulling Images  
 If the project that the image belongs to is private, you should sign in first:  
 
 ```
@@ -611,7 +604,7 @@ $ docker pull 10.117.169.182/library/ubuntu:14.04
 
 **Note**: Replace "10.117.169.182" with the IP address or domain name of your Harbor node. You cannot pull an unsigned image if you enabled content trust.
 
-### Pushing images  
+### Pushing Images  
 Before pushing an image, you must create a corresponding project on Harbor web UI. 
 
 First, log in from Docker client:  
@@ -637,7 +630,7 @@ $ docker push 10.117.169.182/demo/ubuntu:14.04
 
 **Note: Replace "10.117.169.182" with the IP address or domain name of your Harbor node.**
 
-###  Add description to repositories
+##  Add Descriptions to Repositories
 
 After pushing an image, an Information can be added by project admin to describe this repository.
 
@@ -645,13 +638,13 @@ Go into the repository and select the "Info" tab, and click the "EDIT" button.  
 
 ![edit info](img/edit_description.png)
 
-### Download the harbor certs
+## Download the Harbor Certificate
 
 Users  can click the "registry certificate" link to download the registry certificate.
 
 ![browse project](img/download_harbor_certs.png)
 
-###  Deleting repositories  
+##  Deleting Repositories  
 
 Repository deletion runs in two steps.  
 
@@ -665,7 +658,7 @@ the repository is no longer managed in Harbor, however, the files of the reposit
 
 Next, delete the actual files of the repository using the [garbage collection](#online-garbage-collection) in Harbor's UI. 
 
-## Content trust  
+## Content Trust  
 **NOTE: Notary is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.**  
 If you want to enable content trust to ensure that images are signed, please set two environment variables in the command line before pushing or pulling any image:
 ```sh
@@ -884,13 +877,13 @@ If CVEs are added to the system whitelist after you have created a project white
 
 **NOTE**: If CVEs are deleted from the system whitelist after you have created a project whitelist, and if you added the system whitelist to the project whitelist, you must manually remove the deleted CVEs from the project whitelist. If you click **Copy From System** after CVEs have been deleted from the system whitelist, the deleted CVEs are not automatically removed from the project whitelist.
 
-## Pull image from Harbor in Kubernetes
+## Pulling Images from Harbor in Kubernetes
 Kubernetes users can easily deploy pods with images stored in Harbor.  The settings are similar to that of another private registry. There are two major issues:
 
 1. When your Harbor instance is hosting http and the certificate is self signed.  You need to modify daemon.json on each work node of your cluster, for details please refer to: https://docs.docker.com/registry/insecure/#deploy-a-plain-http-registry
 2. If your pod references an image under private project, you need to create a secret with the credentials of user who has permission to pull image from this project, for details refer to: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 
-## Manage Helm Charts
+## Managing Helm Charts
 [Helm](https://helm.sh) is a package manager for [Kubernetes](https://kubernetes.io). Helm uses a packaging format called [charts](https://docs.helm.sh/developing_charts). Since version 1.6.0 Harbor is now a composite cloud-native registry which supports both container image management and Helm charts management. Access to Helm charts in Harbor is controlled by [role-based access controls (RBAC)](https://en.wikipedia.org/wiki/Role-based_access_control) and is restricted by projects.
 
 ### Manage Helm Charts via portal
@@ -1265,7 +1258,7 @@ To modify an existing rule, use the **Action** drop-down menu next to a rule to 
 
 ![Modify tag retention rules](img/tag-retention5.png)
 
-## Configure Tag Immutability
+## Tag Immutability Rules
 
 By default, users can repeatedly push an image with the same tag to repositories in Harbor. This causes the previous image to effectively be overwritten with each push, in that the tag now points to a different image and the image that previously used the tag now becomes tagless. This is due to the Docker implementation, that does not enforce the mapping between an image tag and the image digest. This can be undesirable in certain cases, because the tag can no longer be trusted to identify the image version. The sha256 digest remains reliable and always points to the same build, but it is not rendered in a human-readable format.  
 
