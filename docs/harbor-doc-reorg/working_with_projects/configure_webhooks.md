@@ -18,6 +18,7 @@ You can define one webhook endpoint per project. Webhook notifications provide i
 |Delete Helm chart from registry|`CHART DELETE`|Repository name, chart name, chart type, chart version, chart size, tag, timestamp of delete, username of user who deleted chart|
 |Image scan completed|`IMAGE SCAN COMPLETED`|Repository namespace name, repository name, tag scanned, image name, number of critical issues, number of major issues, number of minor issues, last scan status, scan completion time timestamp, vulnerability information (CVE ID, description, link to CVE, criticality, URL for any fix), username of user who performed scan|
 |Image scan failed|`IMAGE SCAN FAILED`|Repository namespace name, repository name, tag scanned, image name, error that occurred, username of user who performed scan|
+|Project quota exceeded|`PROJECT QUOTA EXCEED`|Repository namespace name, repository name, tags, manifest digest, image name, push time timestamp, username of user who pushed image|
 
 #### JSON Payload Format
 
@@ -59,28 +60,31 @@ You can configure your continuous integration and development infrastructure so 
 
 ### Configure Webhooks
 
-1. Select a project and go to the Webhooks tab.
-  ![Webhooks option](../img/webhooks1.png)  
+1. Log in to the Harbor interface with an account that has at least project administrator privileges.
+1. Go to **Projects**, select a project, and select **Webhooks**.
+
+   ![Webhooks option](../img/webhooks1.png)  
 1. Enter the URL for your webhook endpoint listener.
-  ![Webhook URL](../img/webhooks2.png)
 1. If your webhook listener implements authentication, enter the authentication header. 
 1. To implement `HTTPS POST` instead of `HTTP POST`, select the **Verifiy Remote Certficate** check box.
+
+   ![Webhook URL](../img/webhooks2.png)
 1. Click **Test Endpoint** to make sure that Harbor can connect to the listener.
 1. Click **Continue** to create the webhook.
 
-When you have created the webhook, you see the status of the different notifications and the timestamp of the last time each notification was triggered. You can click **Disable** to disable notifications.
-
-![Webhook Status](../img/webhooks3.png)
+When you have created the webhook, you see the status of the different notifications and the timestamp of the last time each notification was triggered. You can click **Disable** to disable notifications. 
 
 **NOTE**: You can only disable and reenable all notifications. You cannot disable and enable selected notifications.
+
+![Webhook Status](../img/webhooks3.png)
 
 If a webhook notification fails to send, or if it receives an HTTP error response with a code other than `2xx`, the notification is re-sent based on the configuration that you set in `harbor.yml`. 
 
 ### Globally Enable and Disable Webhooks
 
-As a system administrator, you can enable and disable webhook notifications for all projects.
+As a Harbor system administrator, you can enable and disable webhook notifications for all projects.
 
 1. Go to **Configuration** > **System Settings**.
 1. Scroll down and check or uncheck the **Webhooks enabled** check box.
 
-  ![Enable/disable webhooks](../img/webhooks4.png)
+   ![Enable/disable webhooks](../img/webhooks4.png)

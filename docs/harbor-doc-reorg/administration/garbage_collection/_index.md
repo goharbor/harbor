@@ -1,29 +1,31 @@
 # Garbage Collection
-Online Garbage Collection enables user to trigger docker registry garbage collection by clicking button on UI.
 
-**NOTES:** The space is not freed when the images are deleted from Harbor, Garbage Collection is the task to free up the space by removing blobs from the filesystem when they are no longer referenced by a manifest.
+When you delete images from Harbor, space is not automatically freed up. You must run garbage collection to free up space by removing blobs that are no longer referenced by a manifest from the file system.  
 
-For more information about Garbage Collection, please see [Garbage Collection](https://github.com/docker/docker.github.io/blob/master/registry/garbage-collection.md).  
+### Run Garbage Collection
 
-## Set up Garbage Collection
-If you are a system admin, you can trigger garbage collection by clicking "GC Now" in the **'Garbage Collection'** tab of **'Configuration'** section under **'Administration'**.
+1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
+1. Expand **Administration**, and select **Garbage Collection**. 
+1. Select the **'Garbage Collection'** tab.
+  ![Garbage collection](../../img/garbage-collection.png)
+1. To run garbage collection immediately, click **GC Now**.
 
-![browse project](../../img/gc_now.png)
-**NOTES:** Harbor is put into read-only mode when to execute Garbage Collection, and any modification on docker registry is prohibited.
+When you run garbage collection, Harbor goes into read-only mode. All modifications to the registry are prohibited.
 
-To avoid frequently triggering the garbage collection process, the availability of the button is restricted. It can be only triggered once in one minute.
-![browse project](../../img/gc_now2.png)
+To avoid triggering the garbage collection process too frequently, the availability of the **GC Now** button is restricted. Garbage collection can be only run once per minute.
 
-## Scheduled Garbage Collection by Policy
-* **None:** No policy is selected.
-* **Daily:** Policy is activated daily. It means an analysis job is scheduled to be executed at the specified time everyday. The scheduled job will do garbage collection in Harbor.
-* **Weekly:** Policy is activated weekly. It means an analysis job is scheduled to be executed at the specified time every week. The scheduled job will do garbage collection in Harbor.
-Once the policy has been configured, you have the option to save the schedule.
-![browse project](../../img/gc_policy.png)
+### Schedule Garbage Collection
 
-## Garbage Collection history
-If you are a system admin, you can view the latest 10 records of garbage collection execution.
-![browse project](../../img/gc_history.png)
-
-You can click on the 'details' link to view the related logs.
-![browse project](../../img/gc_details.png)
+1. Expand **Administration**, and select **Garbage Collection**. 
+1. Select the **'Garbage Collection'** tab.
+1. Use the drop down-menu to select how often to run garbage collection.
+   ![Schedule garbage collection](../../img/gc_policy.png)
+   * **None**: No garbage collection is scheduled.
+   * **Hourly**: Run garbage collection at the beginning of every hour.
+   * **Daily**: Run garbage collection at midnight every day.
+   * **Weekly**: Run garbage collection at midnight every Saturday.
+   * **Custom**: Run garbage collection according to a `cron` job.
+1. Click **Save**.
+1. Select the **History** tab to view records of the 10 most recent garbage collection runs.
+   ![Garbage collection history](../../img/gc_history.png)
+1. Click on the **Logs** link to view the related logs.

@@ -16,12 +16,12 @@ This section describes how to install Harbor and perform the required initial co
       - [Run the Installer Script](install_config/installation/run_installer_script.md)
       - **[Troubleshooting Harbor Installation](install_config/installation/troubleshoot_installation.md)**
   - [Post-Installation Configuration](install_config/configuration/_index.md)
-      - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/configuration/reconfigure_manage_lifecycle.md)
-      - [Customize the Harbor Token Service](install_config/configuration/customize_token_service.md)
-      - [Configure Notary Content Trust](install_config/configuration/configure_notary_content_trust.md)
+      - **[Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/configuration/reconfigure_manage_lifecycle.md)**
+      - **[Customize the Harbor Token Service](install_config/configuration/customize_token_service.md)**
+      - **[Configure Notary Content Trust](install_config/configuration/configure_notary_content_trust.md)**
   - [Initial Configuration in the Harbor UI](install_config/configuration/initial_config_ui.md)
       - [Configure Authentication](install_config/configuration/configure_authentication.md)
-      - [Other General Settings](install_config/configuration/general_settings.md)
+      - **[Administrator Options](install_config/configuration/general_settings.md)**
   
 ## Harbor Administration
 
@@ -29,17 +29,17 @@ This section describes how to use and maintain Harbor after deployment. These da
 
 - [Harbor Administration](administration/_index.md)
   - [Manage Users](administration/managing_users/_index.md)
-      - [Harbor Role Based Access Control (RBAC)](administration/managing_users/configure_rbac.md)
+      - **[Harbor Role Based Access Control (RBAC)](administration/managing_users/configure_rbac.md)**
       - [User Permissions By Role](administration/managing_users/user_permissions_by_role.md)
-      - [Configure Harbor User Settings at the Command Line](administration/managing_users/configure_user_settings_cli.md)
-      - [Manage Roles by LDAP Group](administration/managing_users/manage_role_by_ldap_group.md)
+      - **[Configure Harbor User Settings at the Command Line](administration/managing_users/configure_user_settings_cli.md)**
   - [Configure Project Settings](administration/configure_project_settings/_index.md)
       - [Set Project Quotas](administration/configure_project_settings/set_project_quotas.md)
   - [Configuring Replication](administration/configuring_replication/_index.md)
       - [Create Replication Endpoints](administration/configuring_replication/create_replication_endpoints.md)
       - [Create Replication Rules](administration/configuring_replication/create_replication_rules.md)
       - [Manage Replications](administration/configuring_replication/manage_replications.md) 
-  - [Vulnerability Scanning with Clair](administration/vulnerability_scanning/_index.md)
+  - [Vulnerability Scanning](administration/vulnerability_scanning/_index.md)
+      - [Connect Harbor to Additional Vulnerability Scanners](administration/vulnerability_scanning/pluggable_scanners.md)
       - [Scan an Individual Image](administration/vulnerability_scanning/scan_individual_image.md)
       - [Scan All Images](administration/vulnerability_scanning/scan_all_images.md)
       - [Schedule Scans](administration/vulnerability_scanning/schedule_scans.md)
@@ -61,10 +61,11 @@ This section describes how users with the developer, master, and project adminis
       - [Create a Project](working_with_projects/create_projects.md)
       - [Assign Users to a Project](working_with_projects/add_users.md)
   - [Project Configuration](working_with_projects/project_configuration.md)
-      - [Access and Search Project Logs](working_with_projects/access_project_logs.md)
+      - **[Access and Search Project Logs](working_with_projects/access_project_logs.md)**
       - [Create Robot Accounts](working_with_projects/create_robot_accounts.md)
       - [Configure Webhook Notifications](working_with_projects/configure_webhooks.md)
       - [Configure a Per-Project CVE Whitelist](working_with_projects/configure_project_whitelist.md)
+      - **[Implementing Content Trust](working_with_projects/implementing_content_trust.md)**
   - [Working with Images, Tags, and Helm Charts](working_with_projects/working_with_images.md)
       - [Pulling and Pushing Images](working_with_projects/pulling_pushing_images.md)
       - [Create Labels](working_with_projects/create_labels.md)

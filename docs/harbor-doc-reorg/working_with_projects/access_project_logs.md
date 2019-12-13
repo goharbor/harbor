@@ -7,21 +7,25 @@ Harbor keeps a log of all of the operations that users perform in a project. You
 Log in to Harbor with a Harbor administrator, project administrator, master, developer, or guest account.
 
 ## Procedure
+    
+1. Go to **Projects**, select a project, and select **Logs**.
 
-1. Select **Projects**, select your project, and select the **Logs** tab.
+   ![View logs](../img/project_logs.png)
 
-    In the **Logs** view you can see system logs for all of the events that have occurred in the project.
-1. To see a reduced list of operations, enter text in the search box.
+   All logs for the project are displayed.
+1. Click the **Search** icon and start typing to filter the logs by name.
+ 
+   ![Filter logs](../img/log_filter.png)  
+1. Click **Advanced**. 
 
-    For example, enter the name of a repository or a user to see events that apply to that repository or user.
-1. If your project has a lot of events, click **Advanced** to refine your search.
+   ![Advanced log search](../img/log_search_advanced.png)
+1. Use the **Operations** drop-down menu to filter by operation type.
+   ![Search logs by operation type](../img/new_project_log.png) 
+1. Click the calendar icons to enter dates between which to search for logs of the types you set in the **Operations** drop-down menu. 
 
-   - To search by operation type, click **Operations** and select or deselect **Pull**, **Push**, **Create**, **Delete**, or **Others**.
-   - To search for events within a certain time period, click the calendar icons and set dates to search between.
-   
-      ![Search logs](../img/new_project_log.png)  
-
+   ![Filter logs by date](../img/log_search_advanced_date.png)      
 
 ## What to Do Next
 
 TBD
+

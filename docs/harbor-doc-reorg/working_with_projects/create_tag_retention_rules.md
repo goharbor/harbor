@@ -1,8 +1,8 @@
 # Create Tag Retention Rules
 
-A repository can rapidly accumulate a large number of image tags, many of which might not be required after a given time or once they have been superseded by a subsequent image build. These excess tags can obviously consume large quantities of storage capacity. As a system administrator, you can define rules that govern how many tags of a given repository to retain, or for how long to retain certain tags. 
+A repository can rapidly accumulate a large number of image tags, many of which might not be required after a given time or once they have been superseded by a subsequent image build. These excess tags can obviously consume large quantities of storage capacity. As a Harbor system administrator, you can define rules that govern how many tags of a given repository to retain, or for how long to retain certain tags. 
 
-### How Tag Retention Rules Work
+## How Tag Retention Rules Work
 
 You define tag retention rules on repositories, not on projects. This allows for greater granularity when defining your retention rules. As the name suggests, when you define a retention rule for a repository, you are identifying which tags to retain. You do not define rules to explicitly remove tags. Rather, when you set a rule, any tags in a repository that are not identified as being eligible for retention are discarded. 
 
@@ -16,7 +16,7 @@ A tag retention rule has 3 filters that are applied sequentially, as described i
 
 For information about how the `**` wildcard is applied, see https://github.com/bmatcuk/doublestar#patterns.
 
-#### Example 1
+### Example 1
 
 - You have 5 repositories in a project, repositories A to E.
   - Repository A has 100 image tags, all of which have been pulled in the last week.
@@ -27,13 +27,13 @@ For information about how the `**` wildcard is applied, see https://github.com/b
 
 In this example the rule retains the 10 most recently pulled images in repository A, and all 6 of the images in each of the 4 repositories B to E. So, a total of 34 image tags are retained in the project. In other words, the rule does not treat all of the images in repositories A to E as a single pool from which to choose the 10 most recent images. So, even if the 11th to 100th tags in repository A have been pulled more recently than any of the tags in repositories B to E, all of the tags in repositories B to E are retained, because each of those repositories has fewer than 10 tags.
 
-#### Example 2
+### Example 2
 
 This example uses the same project and repositories as example 1, but sets the retention policy to retain the images in each repository that have been pulled in the last 7 days.
 
 In this case, all of the images in repository A are retained because they have been pulled in the last 7 days. None of the images in repositories B to E are retained, because none of them has been pulled in the last week. In this example, 100 images are retained, as opposed to 34 images in example 1.
 
-#### Tag Retention Rules and Native Docker Tag Deletion
+### Tag Retention Rules and Native Docker Tag Deletion
 
 **WARNING**: Due to native Docker tag deletion behavior, there is an issue with the current retention policy implementation. If you have multiple tags that refer to the same SHA digest, and if a subset of these tags are marked for deletion by a configured retention policy, all of the remaining tags would also be deleted. This violates the retention policy, so in this case all of the tags are retained. This issue will be addressed in a future update release, so that tag retention policies can delete tags without deleting the digest and other shared tags.
 
@@ -46,11 +46,11 @@ For example, you have following tags, listed according to their push time, and a
 
 You configure a retention policy to retain the two latest tags that match `harbor-*`, so that `harbor-rc` and `harbor-latest` are deleted. However, since all tags refer to the same SHA digest, this policy would also delete the tags `harbor-1.8` and `harbor-release`, so all tags are retained.
 
-### Combining Rules on a Repository
+## Combining Rules on a Repository
 
 You can define up to 15 rules per project. You can apply multiple rules to a repository or set of repositories. When you apply multiple rules to a repository, they are applied with `OR` logic rather than with `AND` logic. In this way, there is no prioritization of application of the rules on a given repository. Rules run concurrently in the background, and the resulting sets from each rule are combined at the end of the run.
 
-#### Example 3
+### Example 3
 
 This example uses the same project and repositories as examples 1 and 2, but sets two rules:
 
@@ -63,7 +63,7 @@ For repositories B-E, rule 1 will retain 0 images as no images are pulled in the
 
 In this example, all of the images are retained.
 
-#### Example 4
+### Example 4
 
 This example uses a different repository to the previous examples.
 
@@ -91,20 +91,22 @@ In this example, the rules are applied to the following 7 tags:
 - `3.1-your_repo-prod`
 - `4.4-your_repo-prod`
 
-### How Tag Retention Rules Interact with Project Quotas
+## How Tag Retention Rules Interact with Project Quotas
 
-The system administrator can set a maximum on the number of tags that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Set Project Quotas](#set-project-quotas). 
+The Harbor system administrator can set a maximum on the number of tags that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Set Project Quotas](#set-project-quotas). 
 
 If you set a quota on a project, this quota cannot be exceeded. The quota is applied to a project even if you set a retention rule that would exceed it. In other words, you cannot use retention rules to bypass quotas.
 
-### Configure Tag Retention Rules
+## Configure Tag Retention Rules
 
-1. Select a project and go to the **Tag Retention** tab.
-  ![Tag Retention option](../img/tag-retention1.png)
+1. Log in to the Harbor interface with an account that has at least project administrator privileges.
+1. Go to **Projects**, select a project, and select **Tag Retention**.
+
+   ![Tag options](../img/tag-retention1.png)
 1. Click **Add Rule** to add a rule.
-1. In the **For the repositories** drop-down menu, select **matching** or **excluding**.
+1. In the **Repositories** drop-down menu, select **matching** or **excluding**.
   ![Select repositories](../img/tag-retention2.png)
-1. Identify the repositories on which to apply the rule.
+1. In the **Repositories** text box, identify the repositories on which to apply the rule.
   
    You can define the repositories on which to apply the rule by entering the following information:
   
@@ -114,7 +116,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
    - `**` to apply the rule to all of the repositories in the project. 
   
    If you selected **matching**, the rule is applied to the repositories you identified. If you selected **excluding**, the rule is applied to all of the repositories in the project except for the ones that you identified.
-1. Define how many tags to retain or how the period to retain tags.
+1. In the **By image count or number of days** drop-down menu, define how many tags to retain or the period to retain tags.
   ![Select retention criteria](../img/tag-retention3.png)
   
    |Option|Description|
@@ -126,7 +128,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
    |**retain always**|Always retain the images identified by this rule.| 
 
 1. In the **Tags** drop-down menu, select **matching** or **excluding**.
-1. Identify the tags on which to apply the rule.
+1. In the **Tags** text box, identify the tags on which to apply the rule.
   
    You can define the tags on which to apply the rule by entering the following information:
   
@@ -139,7 +141,9 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 1. Click **Add** to save the rule.
 1. (Optional) Click **Add Rule** to add more rules, up to a maximum of 15 per project.
 1. (Optional) Under Schedule, click **Edit** and select how often to run the rule.
+
    ![Select retention criteria](../img/tag-retention4.png)
+   
    If you select **Custom**, enter a cron job command to schedule the rule. 
   
    **NOTE**: If you define multiple rules, the schedule is applied to all of the rules. You cannot schedule different rules to run at different times. 
@@ -148,6 +152,6 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 
 **WARNING**: You cannot revert a rule after you run it. It is strongly recommended to perform a dry run before you run rules. 
 
-To modify an existing rule, click the three vertical dots next to a rule to disable, edit, or delete that rule. 
+To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule. 
 
 ![Modify tag retention rules](../img/tag-retention5.png)

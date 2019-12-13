@@ -1,19 +1,19 @@
-# Other General Settings
+# Administrator Options
 
-## Managing self-registration
-You can manage whether a user can sign up for a new account. This option is not available if you use LDAP authentication.  
-![browse project](../../img/new_self_reg.png)
+## Managing Project Creation
+Use the **Project Creation** drop-down menu to set which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Administrator role to create projects.  
+![browse project](../../img//new_proj_create.png)
 
-## Managing email settings
+## Managing Email Settings
 You can change Harbor's email settings, the mail server is used to send out responses to users who request to reset their password.  
-![browse project](../../img/new_config_email.png)
+![browse project](../../img//new_config_email.png)
 
-## Managing registry read only
+## Managing Registry Read Only
 You can change Harbor's registry read only settings, read only mode will allow 'docker pull' while preventing 'docker push' and the deletion of repository and tag.
-![browse project](../../img/read_only.png)
+![browse project](../../img//read_only.png)
 
 If it set to true, deleting repository, tag and pushing image will be disabled. 
-![browse project](../../img/read_only_enable.png)
+![browse project](../../img//read_only_enable.png)
 
 
 ```
