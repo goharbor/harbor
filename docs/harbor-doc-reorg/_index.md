@@ -44,7 +44,7 @@ This section describes how to use and maintain Harbor after deployment. These da
       - [Scan All Images](administration/vulnerability_scanning/scan_all_images.md)
       - [Schedule Scans](administration/vulnerability_scanning/schedule_scans.md)
       - [Import Vulnerability Data to an Offline Harbor instance](administration/vulnerability_scanning/import_vulnerability_data.md)
-      - [Configure System-Wide CVE Whitelists](administration/vulnerability_scanning/configire_system_whitelist.md)
+      - [Configure System-Wide CVE Whitelists](administration/vulnerability_scanning/configure_system_whitelist.md)
   - [Garbage Collection](administration/garbage_collection/_index.md)
   - [Upgrading Harbor](administration/upgrade/_index.md)
       - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
