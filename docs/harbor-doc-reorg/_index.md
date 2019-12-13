@@ -7,10 +7,10 @@ This is the main table of contents for the Harbor documentation.
 This section describes how to install Harbor and perform the required initial configurations. These day 1 operations are performed by the Harbor Administrator.
 
 - [Harbor Installation and Configuration](install_config/_index.md)
-  - [Installing Harbor](install_config/installation/_index.md)
+  - [Installing Harbor](install_config/installation/_index.md) 
       - [Test Harbor with the Demo Server](install_config/installation/demo_server.md)
       - [Harbor Installation Prerequisites](install_config/installation/installation_prereqs.md)
-      - [Configure HTTPS Access to Harbor](install_config/installation/configure_https.md)
+      - **[Configure HTTPS Access to Harbor](install_config/installation/configure_https.md)**
       - [Download the Harbor Installer](install_config/installation/download_installer.md)
       - [Configure the Harbor YML File](install_config/installation/configure_yml_file.md)
       - [Run the Installer Script](install_config/installation/run_installer_script.md)

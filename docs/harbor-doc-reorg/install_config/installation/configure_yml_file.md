@@ -50,7 +50,7 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top"><code>harbor_admin_password</code></td>
     <td valign="top">None</td>
-    <td valign="top">Set an initial password for the Harbor administrator. This password is only used on the first time that Harbor starts. On subsequent logins, this setting is ignored and the administrator's password is set in the Harbor Portal. The default username and password are <code>admin</code> and <code>Harbor12345</code>.</td>
+    <td valign="top">Set an initial password for the Harbor system administrator. This password is only used on the first time that Harbor starts. On subsequent logins, this setting is ignored and the administrator's password is set in the Harbor Portal. The default username and password are <code>admin</code> and <code>Harbor12345</code>.</td>
   </tr>
   <tr>
     <td valign="top"><code>database</code></td>
@@ -148,7 +148,7 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   </tr>
 </table>
   
-## Optional parameters
+### Optional parameters
 
 The following table lists the additional, optional parameters that you can set to configure your Harbor deployment beyond the minimum required settings. To enable a setting, you must uncomment it in `harbor.yml` by deleting the leading `#` character.
 
@@ -290,20 +290,12 @@ The following table lists the additional, optional parameters that you can set t
     <td valign="top"><code>chartmuseum_db_index</code></td>
     <td valign="top">Database index for Chart museum.</td>
   </tr>
-  <tr>
-    <td valign="top"><code>uaa</code></td>
-    <td valign="top">&nbsp;</td>
-    <td valign="top">Enable UAA to trust the certificate of a UAA instance that is hosted via a self-signed certificate.</td>
-  </tr>
-  <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>ca_file</code></td>
-    <td valign="top">The path to the self-signed certificate of the UAA instance, for example <code>/path/to/ca</code>.</td>
-  </tr>
 </table>
 
+**NOTE**: The `harbor.yml` file includes options to configure a UAA CA certificate. This authentication mode is not recommended and is not documented.
+
 <a id="backend"></a>
-## Configuring a Storage Backend 
+### Configuring a Storage Backend 
 
 By default Harbor uses local storage for the registry, but you can optionally configure the `storage_service` setting so that Harbor uses external storage. For information about how to configure the storage backend of a registry for different storage providers, see the [Registry Configuration Reference](https://docs.docker.com/registry/configuration/#storage) in the Docker documentation. For example, if you use Openstack Swift as your storage backend, the parameters might resemble the following:
 
@@ -322,13 +314,13 @@ storage_service:
     disable: false
 ```
 
-## Configure Persistent Data and Log Files
+## Persistent Data and Log Files
 
 By default, registry data is persisted in the host's `/data/` directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated. You can edit the `data_volume` in `harbor.yml` file to change this directory.
 
 In addition, Harbor uses `rsyslog` to collect the logs for each container. By default, these log files are stored in the directory `/var/log/harbor/` on the target host. You can change the log directory in `harbor.yml`.
 
-## Configure Harbor to Listen on a Customized Port
+## Configuring Harbor to Listen on a Customized Port
 
 By default, Harbor listens on port 443(HTTPS) and 80(HTTP, if configured)  for both Harbor portal and Docker commands. You can reconfigure the default ports in `harbor.yml`
 

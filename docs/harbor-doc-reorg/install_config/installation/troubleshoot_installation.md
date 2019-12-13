@@ -2,6 +2,8 @@
 
 ## Harbor Doesn't Start or Functions Incorrectly
 
+Harbor Doesn't Start or Functions Incorrectly
+
 When Harbor does not function correctly, run the following commands to find out if all of Harbor's containers in **UP** status:
 ```
     $ sudo docker-compose ps
@@ -20,7 +22,7 @@ When Harbor does not function correctly, run the following commands to find out 
 
 If a container is not in the `Up` state, check the log file for that container in `/var/log/harbor`. For example, if the `harbor-core` container is not running, look at the `core.log` log file.
 
-## Using nginx or Load Balancing
+### Using nginx or Load Balancing
 
 When setting up Harbor behind an `nginx` proxy or elastic load balancing, look for the following line in `common/config/nginx/nginx.conf` and, if the proxy already has similar settings, remove it from the sections `location /`, `location /v2/` and `location /service/`.
 
