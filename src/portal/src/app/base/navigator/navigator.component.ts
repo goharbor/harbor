@@ -26,6 +26,10 @@ import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { SkinableConfig } from "../../skinable-config.service";
 import { CommonRoutes } from "../../../lib/entities/shared.const";
+import { ThemeInterface, themeArray } from '../../theme';
+import { clone } from '../../../lib/utils/utils';
+import { ThemeService } from '../../theme.service';
+const HAS_STYLE_MODE: string = 'styleModeLocal';
 
 @Component({
     selector: 'navigator',
@@ -42,7 +46,9 @@ export class NavigatorComponent implements OnInit {
     appTitle: string = 'APP_TITLE.HARBOR';
     customStyle: { [key: string]: any };
     customProjectName: { [key: string]: any };
+    themeArray: ThemeInterface[] = clone(themeArray);
 
+    styleMode = this.themeArray[0].showStyle;
     constructor(
         private session: SessionService,
         private router: Router,
@@ -52,6 +58,7 @@ export class NavigatorComponent implements OnInit {
         private appConfigService: AppConfigService,
         private msgHandler: MessageHandlerService,
         private searchTrigger: SearchTriggerService,
+        public theme: ThemeService,
         private skinableConfig: SkinableConfig) {
     }
 
@@ -79,6 +86,8 @@ export class NavigatorComponent implements OnInit {
         if (this.appConfigService.getConfig().read_only) {
             this.msgHandler.handleReadOnly();
         }
+        // set local in app
+        this.styleMode = localStorage.getItem(HAS_STYLE_MODE);
     }
 
     public get isSessionValid(): boolean {
@@ -186,5 +195,11 @@ export class NavigatorComponent implements OnInit {
 
     registryAction(): void {
         this.searchTrigger.closeSearch(true);
+    }
+
+    themeChanged(theme) {
+        this.styleMode = theme.mode;
+        this.theme.loadStyle(theme.toggleFileName);
+        localStorage.setItem(HAS_STYLE_MODE, this.styleMode);
     }
 }

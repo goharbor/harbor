@@ -8,16 +8,17 @@
             </span>
         </div>
         <div class="clr-col-2 right">
-            <a class="all-scanners" href="#" routerLink="/harbor/interrogation-services/scanners">{{'SCANNER.ALL_SCANNERS' | translate }}</a>
+            <a class="all-scanners" href="#"
+                routerLink="/harbor/interrogation-services/scanners">{{'SCANNER.ALL_SCANNERS' | translate }}</a>
             <clr-icon (click)="closeInfo()" class="close-icon" shape="times" size="24"></clr-icon>
         </div>
     </div>
-    <global-message  [isAppLevel]="true"></global-message>
+    <global-message [isAppLevel]="true" ></global-message>
     <navigator (showAccountSettingsModal)="openModal($event)" (showDialogModalAction)="openModal($event)"></navigator>
     <div class="content-container">
         <div class="content-area" [class.container-override]="showSearch"
-             [class.content-area-override]="!shouldOverrideContent"
-             [class.start-content-padding]="shouldOverrideContent">
+            [class.content-area-override]="!shouldOverrideContent"
+            [class.start-content-padding]="shouldOverrideContent">
             <global-message [isAppLevel]="false"></global-message>
             <!-- Only appear when searching -->
             <search-result></search-result>
@@ -42,7 +43,8 @@
                             <clr-icon shape="users" clrVerticalNavIcon></clr-icon>
                             {{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}
                         </a>
-                        <a *ngIf='isLdapMode || isHttpAuthMode || isOidcMode' clrVerticalNavLink routerLink="/harbor/groups" routerLinkActive="active">
+                        <a *ngIf='isLdapMode || isHttpAuthMode || isOidcMode' clrVerticalNavLink
+                            routerLink="/harbor/groups" routerLinkActive="active">
                             <clr-icon shape="users" clrVerticalNavIcon></clr-icon>
                             {{'SIDE_NAV.SYSTEM_MGMT.GROUP' | translate}}
                         </a>
@@ -54,7 +56,8 @@
                             <clr-icon shape="cloud-traffic" clrVerticalNavIcon></clr-icon>
                             {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}
                         </a>
-                        <a *ngIf="!withAdmiral" clrVerticalNavLink routerLink="/harbor/labels" routerLinkActive="active">
+                        <a *ngIf="!withAdmiral" clrVerticalNavLink routerLink="/harbor/labels"
+                            routerLinkActive="active">
                             <clr-icon shape="tag" clrVerticalNavIcon></clr-icon>
                             {{'CONFIG.LABEL' | translate }}
                         </a>
@@ -84,6 +87,7 @@
                     </button>
                 </a>
             </div>
+
         </clr-vertical-nav>
         <hbr-operation-model *ngIf="isUserExisting"></hbr-operation-model>
     </div>

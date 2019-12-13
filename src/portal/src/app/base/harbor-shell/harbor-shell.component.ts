@@ -39,16 +39,16 @@ const YES: string = 'yes';
 
 export class HarborShellComponent implements OnInit, OnDestroy {
 
-    @ViewChild(AccountSettingsModalComponent, {static: false})
+    @ViewChild(AccountSettingsModalComponent, { static: false })
     accountSettingsModal: AccountSettingsModalComponent;
 
-    @ViewChild(PasswordSettingComponent, {static: false})
+    @ViewChild(PasswordSettingComponent, { static: false })
     pwdSetting: PasswordSettingComponent;
 
-    @ViewChild(NavigatorComponent, {static: false})
+    @ViewChild(NavigatorComponent, { static: false })
     navigator: NavigatorComponent;
 
-    @ViewChild(AboutDialogComponent, {static: false})
+    @ViewChild(AboutDialogComponent, { static: false })
     aboutDialog: AboutDialogComponent;
 
     // To indicator whwther or not the search results page is displayed
@@ -62,14 +62,14 @@ export class HarborShellComponent implements OnInit, OnDestroy {
     isHttpAuthMode: boolean;
     showScannerInfo: boolean = false;
     scannerDocUrl: string = SCANNERS_DOC;
-
     constructor(
         private route: ActivatedRoute,
         private router: Router,
         private session: SessionService,
         private searchTrigger: SearchTriggerService,
         private appConfigService: AppConfigService,
-        private scannerService: ConfigScannerService) { }
+        private scannerService: ConfigScannerService
+    ) { }
 
     ngOnInit() {
         if (this.appConfigService.isLdapMode()) {
@@ -89,7 +89,7 @@ export class HarborShellComponent implements OnInit, OnDestroy {
             this.isSearchResultsOpened = false;
         });
         if (!(localStorage && localStorage.getItem(HAS_SHOWED_SCANNER_INFO) === YES)) {
-           this.getDefaultScanner();
+            this.getDefaultScanner();
         }
     }
     closeInfo() {

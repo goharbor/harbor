@@ -134,7 +134,7 @@
   @include dropdown-as-action-button;
 }
 
-.labelFilterPanel {
+.label-filter-panel {
   display: flex;
   position: relative;
   -ms-flex-direction: column;
@@ -198,7 +198,6 @@
   padding: 0 .5rem;
   line-height: .75rem;
   margin: 0;
-  color: #313131;
 }
 
 .filterClose {

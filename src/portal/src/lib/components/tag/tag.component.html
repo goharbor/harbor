@@ -31,9 +31,9 @@
                 </div>
                 <div class="flex-xs-middle">
                     <hbr-filter [readonly]="'readonly'" [withDivider]="true" filterPlaceholder="{{'TAG.FILTER_FOR_TAGS' | translate}}" (filterEvt)="doSearchTagNames($event)" (openFlag)="openFlagEvent($event)" [currentValue]="lastFilteredTagName"></hbr-filter>
-                    <div class="labelFilterPanel" *ngIf="!withAdmiral" [hidden]="!openLabelFilterPanel">
+                    <div class="label-filter-panel" *ngIf="!withAdmiral" [hidden]="!openLabelFilterPanel">
                         <a class="filterClose" (click)="closeFilter()">&times;</a>
-                        <label class="filterLabelHeader">{{'REPOSITORY.FILTER_BY_LABEL' | translate}}</label>
+                        <label class="filterLabelHeader filter-dark">{{'REPOSITORY.FILTER_BY_LABEL' | translate}}</label>
                         <div class="form-group"><input clrInput type="text" placeholder="Filter labels" [(ngModel)]="filterName" (keyup)="handleInputFilter()"></div>
                         <div [hidden]='imageFilterLabels.length' class="no-labels">{{'LABEL.NO_LABELS' | translate }}</div>
                         <div [hidden]='!imageFilterLabels.length' class="has-label">

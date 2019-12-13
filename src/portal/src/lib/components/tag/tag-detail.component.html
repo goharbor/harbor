@@ -43,7 +43,7 @@
                 <div class="vulnerability" [hidden]="hasCve || showStatBar">
                     <hbr-vulnerability-bar [repoName]="repositoryId" [tagId]="tagDetails.name" [summary]="vulnerabilitySummary"></hbr-vulnerability-bar>
                 </div>
-                <histogram-chart *ngIf="hasCve" [metadata]="passMetadataToChart()" [isWhiteBackground]="true"></histogram-chart>
+                <histogram-chart *ngIf="hasCve" [metadata]="passMetadataToChart()" [isWhiteBackground]="isThemeLight()"></histogram-chart>
             </div>
             <div *ngIf="!withAdmiral && tagDetails?.labels?.length">
                 <div class="third-column detail-title">{{'TAG.LABELS' | translate }}</div>

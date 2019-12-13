@@ -325,3 +325,6 @@ clr-datagrid {
     }
   }
 }
+button:focus {
+  outline: none !important;
+}
