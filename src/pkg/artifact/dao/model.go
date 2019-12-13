@@ -22,7 +22,6 @@ import (
 
 func init() {
 	orm.RegisterModel(&Artifact{})
-	orm.RegisterModel(&Tag{})
 	orm.RegisterModel(&ArtifactReference{})
 }
 
@@ -37,10 +36,9 @@ type Artifact struct {
 	Digest            string    `orm:"column(digest)"`
 	Size              int64     `orm:"column(size)"`
 	PushTime          time.Time `orm:"column(push_time)"`
-	Platform          string    `orm:"column(platform)"`                // json string
+	PullTime          time.Time `orm:"column(pull_time)"`
 	ExtraAttrs        string    `orm:"column(extra_attrs)"`             // json string
 	Annotations       string    `orm:"column(annotations);type(jsonb)"` // json string
-	Revision          string    `orm:"column(revision)"`                // record data revision, when updating the data the revision MUST be checked and updated
 }
 
 // TableName for artifact
@@ -49,27 +47,12 @@ func (a *Artifact) TableName() string {
 	return "artifact_2"
 }
 
-// Tag model in database
-type Tag struct {
-	ID           int64     `orm:"pk;auto;column(id)"`
-	RepositoryID int64     `orm:"column(repository_id)"` // tags are the resources of repository, one repository only contains one same name tag
-	ArtifactID   int64     `orm:"column(artifact_id)"`   // the artifact ID that the tag attaches to, it changes when pushing a same name but different digest artifact
-	Name         string    `orm:"column(name)"`
-	PushTime     time.Time `orm:"column(push_time)"`
-	PullTime     time.Time `orm:"column(pull_time)"`
-	Revision     string    `orm:"column(revision)"` // record data revision, when updating the data the revision MUST be checked and updated
-}
-
-// TableName for tag
-func (t *Tag) TableName() string {
-	return "tag"
-}
-
 // ArtifactReference records the child artifact referenced by parent artifact
 type ArtifactReference struct {
-	ID       int64 `orm:"pk;auto;column(id)"`
-	ParentID int64 `orm:"column(parent_id)"`
-	ChildID  int64 `orm:"column(child_id)"`
+	ID       int64  `orm:"pk;auto;column(id)"`
+	ParentID int64  `orm:"column(parent_id)"`
+	ChildID  int64  `orm:"column(child_id)"`
+	Platform string `orm:"column(platform)"` // json string
 }
 
 // TableName for artifact reference
