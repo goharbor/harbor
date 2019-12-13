@@ -63,7 +63,7 @@
             </clr-datagrid>
         </div>
     </div>
-    <div *ngIf="isCardView" class="row card-container">
+    <div *ngIf="isCardView" class="row card-container version-position">
         <div *ngFor="let item of charts;" class="chart-card">
             <a let i=index; class="card clickable" (click)="onChartClick(item)">
                 <div class="card-header">
@@ -88,7 +88,7 @@
                 </div>
             </a>
         </div>
-        <div *ngIf="loading">
+        <div *ngIf="loading" class="center-x">
             <span class="vertical-helper"></span>
             <span class="spinner"></span>
         </div>

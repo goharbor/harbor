@@ -44,5 +44,16 @@
             </clr-dropdown-menu>
         </clr-dropdown>
         <a href="javascript:void(0)" id="aboutMenu" class="nav-link nav-text nav-about-link" (click)="openAboutDialog()" *ngIf="!isSessionValid">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
+        <div class="nav-divider"></div>
+        <ng-container *ngFor="let theme of themeArray;let i=index">
+                <ng-container *ngIf="theme.showStyle === styleMode">
+                    <a class="nav-link nav-icon theme-select"
+                        (click)="themeChanged(theme)">
+                        <clr-icon size="20" *ngIf="styleMode ==='DARK'" shape="sun" class="is-solid"></clr-icon>
+                        <clr-icon size="20" *ngIf="styleMode ==='LIGHT'" shape="moon" class="is-solid"></clr-icon>
+                        {{ theme.text | translate }}
+                    </a>
+                </ng-container>
+            </ng-container>
     </div>
 </clr-header>

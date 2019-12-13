@@ -5,7 +5,9 @@
         "VIC": "vSphere Entegre Konteynerler",
         "MGMT": "Yönetim",
         "REG": "Kayıt",
-        "HARBOR_SWAGGER": "Harbor Swagger"
+        "HARBOR_SWAGGER": "Harbor Swagger",
+        "THEME_DARK_TEXT": "DARK",
+        "THEME_LIGHT_TEXT": "LIGHT"
     },
     "SIGN_IN": {
         "REMEMBER": "Beni Hatırla",

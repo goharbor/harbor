@@ -15,6 +15,7 @@
             "index": "src/index.html",
             "main": "src/main.ts",
             "tsConfig": "src/tsconfig.app.json",
+            "extractCss": true,
             "assets": [
               "src/images",
               "src/favicon.ico",
@@ -23,11 +24,20 @@
             ],
             "styles": [
               "node_modules/@clr/icons/clr-icons.min.css",
-              "node_modules/@clr/ui/clr-ui.min.css",
               "node_modules/swagger-ui/dist/swagger-ui.css",
               "node_modules/prismjs/themes/prism-solarizedlight.css",
               "src/global.scss",
-              "src/styles.css"
+              "src/styles.css",
+              {
+                "input": "src/css/dark-custom.scss",
+                "lazy": true,
+                "bundleName": "dark-theme"
+              },
+              {
+                "input":"src/css/light-custom.scss",
+                "lazy": true,
+                "bundleName": "light-theme"
+              }
             ],
             "scripts": [
               "node_modules/core-js/client/shim.min.js",

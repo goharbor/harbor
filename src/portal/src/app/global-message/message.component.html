@@ -1,5 +1,5 @@
-<div [class.alert-app-level]="!isAppLevel">
-    <clr-alert [clrAlertType]="globalMessage.type" [clrAlertAppLevel]="isAppLevel" [(clrAlertClosed)]="!globalMessageOpened" (clrAlertClosedChange)="onClose()">
+<div [class.alert-app-level]="!isAppLevel" [hidden]="!globalMessageOpened">
+    <clr-alert  [clrAlertType]="globalMessage.type" [clrAlertAppLevel]="isAppLevel" [(clrAlertClosed)]="!globalMessageOpened" (clrAlertClosedChange)="onClose()">
         <div class="alert-item">
             <span class="alert-text">{{message}}</span>
             <div class="alert-actions alert-style" *ngIf="needAuth">

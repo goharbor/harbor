@@ -5,7 +5,9 @@
         "VIC": "vSphere Integrated Containers",
         "MGMT": "Management",
         "REG": "Registry",
-        "HARBOR_SWAGGER": "Harbor Swagger"
+        "HARBOR_SWAGGER": "Harbor Swagger",
+        "THEME_DARK_TEXT": "深色模式",
+        "THEME_LIGHT_TEXT": "浅色模式"
     },
     "SIGN_IN": {
         "REMEMBER": "记住我",
