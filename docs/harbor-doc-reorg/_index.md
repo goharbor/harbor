@@ -12,9 +12,9 @@ This section describes how to install Harbor and perform the required initial co
       - [Harbor Installation Prerequisites](install_config/installation/installation_prereqs.md)
       - **[Configure HTTPS Access to Harbor](install_config/installation/configure_https.md)**
       - [Download the Harbor Installer](install_config/installation/download_installer.md)
-      - [Configure the Harbor YML File](install_config/installation/configure_yml_file.md)
+      - **[Configure the Harbor YML File](install_config/installation/configure_yml_file.md)**
       - [Run the Installer Script](install_config/installation/run_installer_script.md)
-      - [Troubleshooting Harbor Installation](install_config/installation/troubleshoot_installation.md)
+      - **[Troubleshooting Harbor Installation](install_config/installation/troubleshoot_installation.md)**
   - [Post-Installation Configuration](install_config/configuration/_index.md)
       - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/configuration/reconfigure_manage_lifecycle.md)
       - [Customize the Harbor Token Service](install_config/configuration/customize_token_service.md)

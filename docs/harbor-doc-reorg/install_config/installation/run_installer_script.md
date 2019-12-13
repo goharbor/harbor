@@ -1,6 +1,6 @@
 # Run the Installer Script
 
-Once you have configured **harbor.yml** optionally set up a storage backend, you install and start Harbor by using the `install.sh` script. Note that it might take some time for the online installer to download all of the `Harbor images from Docker hub.
+Once you have configured **harbor.yml** and optionally set up a storage backend, you install and start Harbor by using the `install.sh` script. Note that it might take some time for the online installer to download all of the Harbor images from Docker hub.
 
 You can install Harbor in different configurations:
 
@@ -96,7 +96,7 @@ After you update `daemon.json`, you must restart both Docker Engine and Harbor.
 
 ## What to Do Next ##
 
-If installation succeeds, continue to set up Harbor by following the instructions in [Post-Installation Configuration](install_config/configuration/_index.md) and [Initial Configuration in the Harbor UI](install_config/configuration/initial_config_ui.md).
+If the installation succeeds, continue to set up Harbor by following the instructions in [Post-Installation Configuration](../configuration/_index.md) and [Initial Configuration in the Harbor UI](../configuration/initial_config_ui.md).
 
 If installation fails, see [Troubleshooting Harbor Installation
-](install_config/installation/troubleshoot_installation.md).
+](troubleshoot_installation.md).

@@ -326,7 +326,7 @@ By default, Harbor listens on port 443(HTTPS) and 80(HTTP, if configured)  for b
 
 ## Configure Harbor with an External Database
 
-Currently, Harbor only supports PostgreSQL database. To user an external database, uncomment the `external_database` section in `harbor.yml` and fill the necessary information. You must create four databases for Harbor core, Clair, Notary server, and Notary signer. And the tables are generated automatically when Harbor starts up.
+Currently, Harbor only supports PostgreSQL database. To use an external database, uncomment the `external_database` section in `harbor.yml` and fill the necessary information. You must create four databases for Harbor core, Clair, Notary server, and Notary signer. And the tables are generated automatically when Harbor starts up.
 
 ## What to Do Next ##
 

@@ -1,6 +1,6 @@
 # Download the Harbor Installer:
 
-You download the installers from the **[official release](https://github.com/goharbor/harbor/releases)** page. Choose either the online or the offline installer. 
+You download the installers from the **[official releases](https://github.com/goharbor/harbor/releases)** page. Choose either the online or the offline installer. 
 
 - **Online installer:** The online installer downloads the Harbor images from Docker hub. For this reason, the installer is very small in size.
 
