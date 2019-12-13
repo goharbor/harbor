@@ -1,4 +1,4 @@
-# Create Replication Endpoints
+# Creating Replication Endpoints
 
 To replicate image repositories from one instance of Harbor to another Harbor or non-Harbor registry, you first create replication endpoints.
 
@@ -17,6 +17,9 @@ To replicate image repositories from one instance of Harbor to another Harbor or
    - Google Container Registry
    - Huawei SWR
    - Helm Hub
+   - Gitlab
+   - Quay.io
+   - Jfrog Artifactory
 
    ![Replication providers](../../img/replication-endpoint2.png)
 
@@ -36,6 +39,7 @@ To replicate image repositories from one instance of Harbor to another Harbor or
     Deselect the check box if the remote registry uses a self-signed or untrusted certificate.
 1. Click **Test Connection**.
 1. When you have successfully tested the connection, click **OK**.
+
 
 ## Managing Registries  
 You can list, add, edit and delete registries under `Administration->Registries`. Only registries which are not referenced by any rules can be deleted.  

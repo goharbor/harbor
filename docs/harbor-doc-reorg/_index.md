@@ -68,8 +68,8 @@ This section describes how users with the developer, master, and project adminis
       - **[Implementing Content Trust](working_with_projects/implementing_content_trust.md)**
   - [Working with Images, Tags, and Helm Charts](working_with_projects/working_with_images.md)
       - [Pulling and Pushing Images](working_with_projects/pulling_pushing_images.md)
-      - [Create Labels](working_with_projects/create_labels.md)
-      - [Retag Images](retagging_images.md) 
+      - **[Create Labels](working_with_projects/create_labels.md)**
+      - **[Retag Images](working_with_projects/retagging_images.md) **
       - [Create Tag Retention Rules](working_with_projects/create_tag_retention_rules.md)
       - [Manage Kubernetes Packages with Helm Charts](working_with_projects/managing_helm_charts.md)
 
