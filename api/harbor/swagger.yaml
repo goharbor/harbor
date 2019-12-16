@@ -4871,8 +4871,7 @@ definitions:
         description: Correspond to the UI about whether the project's publicity is  updatable (for UI)
       current_user_role_id:
         type: integer
-        description: The role ID with highest permission of the current user who triggered the API (for UI)
-        deprecated: true
+        description: The role ID with highest permission of the current user who triggered the API (for UI).  This attribute is deprecated and will be removed in future versions.
       current_user_role_ids:
         type: array
         items:
