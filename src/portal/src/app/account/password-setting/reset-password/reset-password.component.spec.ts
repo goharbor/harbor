@@ -6,6 +6,9 @@ import { FormsModule } from '@angular/forms';
 import { PasswordSettingService } from '../password-setting.service';
 import { RouterTestingModule } from '@angular/router/testing';
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { ClarityModule } from '@clr/angular';
+import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
 
 describe('ResetPasswordComponent', () => {
     let component: ResetPasswordComponent;
@@ -18,9 +21,11 @@ describe('ResetPasswordComponent', () => {
             imports: [
                 TranslateModule.forRoot(),
                 FormsModule,
-                RouterTestingModule
+                RouterTestingModule,
+                BrowserAnimationsModule,
+                ClarityModule
             ],
-            declarations: [ResetPasswordComponent],
+            declarations: [ResetPasswordComponent, InlineAlertComponent],
             providers: [
                 TranslateService,
                 { provide: PasswordSettingService, useValue: fakePasswordSettingService },
@@ -33,7 +38,9 @@ describe('ResetPasswordComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(ResetPasswordComponent);
         component = fixture.componentInstance;
-        fixture.detectChanges();
+        component.inlineAlert = TestBed.createComponent(InlineAlertComponent).componentInstance;
+        component.open();
+        fixture.autoDetectChanges();
     });
 
     it('should create', () => {

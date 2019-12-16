@@ -8,20 +8,41 @@ import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { NewUserFormComponent } from '../../shared/new-user-form/new-user-form.component';
 import { FormsModule } from '@angular/forms';
 import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { of } from 'rxjs';
 
 describe('SignUpComponent', () => {
     let component: SignUpComponent;
     let fixture: ComponentFixture<SignUpComponent>;
-    let fakeSessionService = null;
-    let fakeUserService = null;
-
+    let fakeSessionService = {
+        checkUserExisting: () => of(true)
+    };
+    let fakeUserService = {
+        addUser: () => of(null)
+    };
+    const mockUser = {
+        user_id: 1,
+        username: 'string',
+        realname: 'string',
+        email: 'string',
+        password: 'string',
+        comment: 'string',
+        deleted: false,
+        role_name: 'string',
+        role_id: 1,
+        has_admin_role: true,
+        reset_uuid: 'string',
+        creation_time: 'string',
+        update_time: 'string',
+    };
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             declarations: [SignUpComponent, NewUserFormComponent, InlineAlertComponent],
             imports: [
                 FormsModule,
                 ClarityModule,
-                TranslateModule.forRoot()
+                TranslateModule.forRoot(),
+                BrowserAnimationsModule
             ],
             providers: [
                 TranslateService,
@@ -39,10 +60,35 @@ describe('SignUpComponent', () => {
             TestBed.createComponent(NewUserFormComponent).componentInstance;
         component.inlineAlert =
             TestBed.createComponent(InlineAlertComponent).componentInstance;
-        fixture.detectChanges();
+        component.opened = true;
+        fixture.autoDetectChanges();
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+
+    it('should close when no form change', async () => {
+        component.open();
+        await fixture.whenStable();
+        const closeBtn: HTMLButtonElement = fixture.nativeElement.querySelector("#close-btn");
+        expect(closeBtn).toBeTruthy();
+        closeBtn.dispatchEvent(new Event('click'));
+        await fixture.whenStable();
+        const closeBtn1: HTMLButtonElement = fixture.nativeElement.querySelector("#close-btn");
+        expect(closeBtn1).toBeNull();
+
+    });
+    it('should create new user', async () => {
+        component.open();
+        component.getNewUser = () => mockUser;
+        await fixture.whenStable();
+        const createBtn = fixture.nativeElement.querySelector('#create-btn');
+        createBtn.dispatchEvent(new Event('click'));
+
+        await fixture.whenStable();
+        const closeBtn1: HTMLButtonElement = fixture.nativeElement.querySelector("#close-btn");
+        expect(closeBtn1).toBeNull();
+
     });
 });

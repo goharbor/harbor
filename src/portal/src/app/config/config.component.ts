@@ -70,13 +70,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         return this.appConfigService.getConfig().with_admiral;
     }
 
-    isCurrentTabLink(tabId: string): boolean {
-        return this.currentTabId === tabId;
-    }
-
-    isCurrentTabContent(contentId: string): boolean {
-        return TabLinkContentMap[this.currentTabId] === contentId;
-    }
     refreshAllconfig() {
         this.retrieveConfig();
     }
@@ -122,10 +115,6 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         // Reload bootstrap option
         this.appConfigService.load().subscribe(() => {}
         , error => console.error('Failed to reload bootstrap option with error: ', error));
-    }
-
-    public tabLinkClick(tabLink: string) {
-        this.currentTabId = tabLink;
     }
 
     retrieveConfig(): void {
