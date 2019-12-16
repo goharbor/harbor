@@ -21,7 +21,7 @@ import {
   EventEmitter
 } from "@angular/core";
 import { Comparator, State } from "../../services/interface";
-import { finalize, catchError, map } from "rxjs/operators";
+import { finalize, catchError, map, debounceTime, distinctUntilChanged, switchMap, delay } from "rxjs/operators";
 import { Subscription, forkJoin, timer, Observable, throwError as observableThrowError, observable } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 
@@ -62,6 +62,7 @@ import {
 import { OperationService } from "../operation/operation.service";
 import { Router } from "@angular/router";
 import { errorHandler as errorHandFn } from "../../utils/shared/shared.utils";
+import { FilterComponent } from "../filter/filter.component";
 const ONE_HOUR_SECONDS: number = 3600;
 const ONE_MINUTE_SECONDS: number = 60;
 const ONE_DAY_SECONDS: number = 24 * ONE_HOUR_SECONDS;
@@ -146,6 +147,9 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   currentState: State;
   jobsLoading: boolean = false;
   timerDelay: Subscription;
+  @ViewChild(FilterComponent, {static: true})
+  filterComponent: FilterComponent;
+  searchSub: Subscription;
 
   constructor(
     private router: Router,
@@ -160,12 +164,33 @@ export class ReplicationComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
+    if (!this.searchSub) {
+      this.searchSub = this.filterComponent.filterTerms.pipe(
+          debounceTime(500),
+          distinctUntilChanged(),
+          switchMap( ruleName => {
+            this.loading = true;
+            return this.replicationService.getReplicationRules(this.projectId, ruleName);
+          })
+      ).subscribe(rules => {
+                this.hideJobs();
+                this.listReplicationRule.changedRules = rules || [];
+                this.loading = false;
+            }, error => {
+                this.errorHandler.error(error);
+                this.loading = false;
+            });
+    }
     this.currentRuleStatus = this.ruleStatus[0];
   }
 
   ngOnDestroy() {
     if (this.timerDelay) {
       this.timerDelay.unsubscribe();
+    }
+    if (this.searchSub) {
+      this.searchSub.unsubscribe();
+      this.searchSub = null;
     }
   }
 

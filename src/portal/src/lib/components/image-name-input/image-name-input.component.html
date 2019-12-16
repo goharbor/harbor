@@ -1,45 +1,51 @@
-<form [formGroup]="imageNameForm" class="clr-form clr-form-compact" (mouseleave)="leaveProjectInput()">
-    <div class="clr-form-control clr-row">
-        <label for="project-name" class="required clr-control-label clr-col-xs-12 clr-col-md-4">{{ 'PROJECT.NAME' | translate }}</label>
-        <div class="clr-control-container clr-col-xs-12 clr-col-md-8">
+<form [formGroup]="imageNameForm" class="clr-form clr-form-horizontal" (mouseleave)="leaveProjectInput()">
+    <div class="clr-form-control">
+        <label class="required clr-control-label">{{ 'PROJECT.NAME' | translate }}</label>
+        <div class="clr-control-container"
+             [class.clr-error]="noProjectInfo && (projectName.dirty || projectName.touched)">
             <div class="clr-input-wrapper">
-                <label aria-haspopup="true" role="tooltip" class="wrap-label tooltip tooltip-validation tooltip-md tooltip-top-left" [class.invalid]='noProjectInfo'>
-                    <input type="text" 
-                    id="project-name" 
-                    class="clr-input"
-                    (keyup)='validateProjectName()'
-                    (blur)='blurProjectInput()'
-                    formControlName="projectName"/>
-                    <span *ngIf="noProjectInfo && (projectName.dirty || projectName.touched)" class="tooltip-content">{{noProjectInfo | translate}}</span>
-                </label>
+                <input type="text"
+                       id="project-name"
+                       class="clr-input w-90"
+                       (keyup)='validateProjectName()'
+                       (blur)='blurProjectInput()'
+                       formControlName="projectName" autocomplete="off" />
+                <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
                 <div class="select-box" [style.display]="selectedProjectList.length ? 'block' : 'none'">
                     <ul>
-                        <li *ngFor="let project of selectedProjectList" (click)="selectedProjectName(project?.name)">{{project?.name}}</li>
+                        <li *ngFor="let project of selectedProjectList"
+                            (click)="selectedProjectName(project?.name)">{{project?.name}}</li>
                     </ul>
                 </div>
             </div>
+            <clr-control-error *ngIf="noProjectInfo && (projectName.dirty || projectName.touched)"
+                               class="tooltip-content">
+                {{noProjectInfo | translate}}
+            </clr-control-error>
         </div>
     </div>
-    <div class="clr-form-control clr-row">
-        <label for="repo-name" class="required clr-control-label clr-col-xs-12 clr-col-md-4">{{ 'REPOSITORY.REPO_NAME' | translate }}</label>
-        <div class="clr-control-container clr-col-xs-12 clr-col-md-8">
+    <div class="clr-form-control">
+        <label class="required clr-control-label">{{ 'REPOSITORY.REPO_NAME' | translate }}</label>
+        <div class="clr-control-container" [class.clr-error]="repoName.invalid && (repoName.dirty || repoName.touched)">
             <div class="clr-input-wrapper">
-                <label aria-haspopup="true" role="tooltip" class="wrap-label tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='repoName.invalid && (repoName.dirty || repoName.touched)'>
-                    <input type="text" id="repo-name" class="clr-input" formControlName="repoName" />
-                    <span *ngIf="repoName.invalid && (repoName.dirty || repoName.touched)" class="tooltip-content">{{ 'RETAG.TIP_REPO' | translate }}</span>
-                </label>
+                <input type="text" id="repo-name" class="clr-input w-90" formControlName="repoName" autocomplete="off" />
+                <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
             </div>
+            <clr-control-error *ngIf="repoName.invalid && (repoName.dirty || repoName.touched)" class="tooltip-content">
+                {{ 'RETAG.TIP_REPO' | translate }}
+            </clr-control-error>
         </div>
     </div>
-    <div class="clr-form-control clr-row">
-        <label for="tag-name" class="required clr-control-label clr-col-xs-12 clr-col-md-4">{{ 'REPOSITORY.TAG' | translate }}</label>
-        <div class="clr-control-container clr-col-xs-12 clr-col-md-8">
+    <div class="clr-form-control">
+        <label class="required clr-control-label">{{ 'REPOSITORY.TAG' | translate }}</label>
+        <div class="clr-control-container" [class.clr-error]="tagName.invalid && (tagName.dirty || tagName.touched)">
             <div class="clr-input-wrapper">
-                <label aria-haspopup="true" role="tooltip" class="wrap-label tooltip tooltip-validation tooltip-md tooltip-bottom-left" [class.invalid]='tagName.invalid && (tagName.dirty || tagName.touched)'>
-                    <input type="text" id="tag-name" class="clr-input" formControlName="tagName" />
-                    <span *ngIf="tagName.invalid && (tagName.dirty || tagName.touched)" class="tooltip-content">{{ 'RETAG.TIP_TAG' | translate }}</span>
-                </label>
+                <input type="text" id="tag-name" class="clr-input w-90" formControlName="tagName"  autocomplete="off" />
+                <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
             </div>
+            <clr-control-error *ngIf="tagName.invalid && (tagName.dirty || tagName.touched)" class="tooltip-content">
+                {{ 'RETAG.TIP_TAG' | translate }}
+            </clr-control-error>
         </div>
     </div>
 </form>

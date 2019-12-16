@@ -8,10 +8,6 @@
     .normal-wrapper {
       position: absolute;
       width: 700px;
-      > span:first-child {
-        width: 200px;
-      }
-    
       > span:not(:first-child) {
         margin-right: 18px;
       }
@@ -20,18 +16,14 @@
       }
     }
     button {
-      margin: 35px 20px 0 200px;
+      margin: 35px 20px 0;
     }
   }
   
   .setting-wrapper {
     position: relative;
-    > span:first-child {
-      width: 200px;
-    }
-
     .confirm-button {
-      margin: 20px 0px 0 200px;
+      margin: 20px 0 0;
     }
   
     *:not(:first-child) {
@@ -65,7 +57,6 @@
     display: inline-block;
     color: #000;
     font-size: .541667rem;
-    width: 200px;
   }
 
   span.required {
