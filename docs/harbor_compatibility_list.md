@@ -36,16 +36,13 @@ This document provides compatibility information for all Harbor components.
 
 ## Scanner Adapters
 
-|   | Scanners | Providers | Evaluated | As Default | Onboard in Release |
-|---|----------|-----------|-----------|------------|--------------------|
-| [Clair](https://github.com/goharbor/harbor-scanner-clair)    |![Clair](img/scanners/clair.png)| CentOS    |![Y](img/replication_adapters/right.png)|![Y](img/replication_adapters/right.png)| v1.10 |
-| [Anchore](https://github.com/anchore/harbor-scanner-adapter) |![Anchore](img/scanners/anchore.png)   | Anchore    |![Y](img/replication_adapters/right.png)| N | v1.10 |
-| [Trivy](https://github.com/aquasecurity/harbor-scanner-trivy)|![Trivy](img/scanners/trivy.png)| Aqua    |![Y](img/replication_adapters/right.png)| N | v1.10 |
-| [CSP](https://github.com/aquasecurity/harbor-scanner-aqua)   |![Aqua](img/scanners/aqua.png)| Aqua    | N | N | v1.10 |
-| [DoSec](https://github.com/dosec-cn/harbor-scanner/blob/master/README_en.md)|![DoSec](img/scanners/dosec.png)    | DoSec    | N | N | v1.10 |
+|   | Scanners | Providers | As Default | Onboard in Release |
+|---|----------|-----------|------------|--------------------|
+| [Clair](https://github.com/goharbor/harbor-scanner-clair)    |![Clair](img/scanners/clair.png)| CentOS    |![Y](img/replication_adapters/right.png)| v1.10 |
+| [Anchore](https://github.com/anchore/harbor-scanner-adapter) |![Anchore](img/scanners/anchore.png)   | Anchore   | N | v1.10 |
+| [Trivy](https://github.com/aquasecurity/harbor-scanner-trivy)|![Trivy](img/scanners/trivy.png)| Aqua    | N | v1.10 |
 
 **Notes:**
 
-* `Evaluated` means that the scanner implementation has been officially tested and verified.
 * `As Default` means that the scanner is provided as a default option and can be deployed together with the main Harbor components by providing extra options during installation. You must install other scanners manually.
 
