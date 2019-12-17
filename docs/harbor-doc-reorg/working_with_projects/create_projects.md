@@ -26,6 +26,20 @@ There are two views to show repositories, list view and card view, you can switc
 
 ![browse repositories](../img/browse_project_repositories.png)
 
+Project properties can be changed by clicking "Configuration".
+
+* To make all repositories under the project accessible to everyone, select the `Public` checkbox.
+
+* To prevent un-signed images under the project from being pulled, select the `Enable content trust` checkbox.
+
+![browse project](../img/project_configuration.png) 
+
+
+## Searching Projects and Repositories
+Entering a keyword in the search field at the top lists all matching projects and repositories. The search result includes both public and private repositories you have access to.  
+
+![browse project](../img/new_search.png)
+
 ## What to Do Next
 
 [Assign Users to a Project](add_users.md)
