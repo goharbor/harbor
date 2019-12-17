@@ -100,3 +100,5 @@ If the installation succeeds, continue to set up Harbor by following the instruc
 
 If installation fails, see [Troubleshooting Harbor Installation
 ](troubleshoot_installation.md).
+
+[Table of Contents](../../index.md)

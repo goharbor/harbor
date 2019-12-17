@@ -34,3 +34,5 @@ The table below lists the components that are deployed when you deploy Harbor.
 |Docker/notary|0.6.1|
 |Helm|2.9.1|
 |Swagger-ui|3.22.1|
+
+[Table of Contents](../../index.md)

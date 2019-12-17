@@ -31,3 +31,5 @@ proxy_set_header X-Forwarded-Proto $scheme;
 ```
 
 Then re-deploy Harbor per the instructions in "Managing Harbor Lifecycle.
+
+[Table of Contents](../../index.md)
