@@ -1,3 +1,7 @@
+[Back to table of contents](../../_index.md)
+
+----------
+
 # Configure Notary Content Trust
 
 In harbor.yml, make sure https is enabled, and the attributes `ssl_cert` and `ssl_cert_key` are pointed to valid certificates. For more information about generating https certificate please refer to: [Configuring HTTPS for Harbor](configure_https.md)
@@ -24,3 +28,7 @@ Because by default the local directory for storing meta files for notary client 
 alias notary="notary -s https://192.168.0.5:4443 -d ~/.docker/trust --tlscacert  /etc/docker/certs.d/192.168.0.5/ca.crt"
 
 ```
+
+----------
+
+[Back to table of contents](../../_index.md)

@@ -1,3 +1,7 @@
+[Back to table of contents](../../_index.md)
+
+----------
+
 # Administrator Options
 
 ## Managing Project Creation
@@ -22,3 +26,7 @@ The push refers to a repository [10.117.169.182/demo/ubuntu]
 0271b8eebde3: Preparing 
 denied: The system is in read only mode. Any modification is prohibited.  
 ```
+
+----------
+
+[Back to table of contents](../../_index.md)

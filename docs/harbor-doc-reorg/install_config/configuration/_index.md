@@ -6,3 +6,7 @@ After you have deployed Harbor, you must perform certain post-deployment configu
 - [Configure Notary Content Trust](configure_notary_content_trust.md)
 - [Reconfigure Harbor and Manage the Harbor Lifecycle](reconfigure_manage_lifecycle.md)
 - [Access Harbor Logs](access_logs.md)
+
+----------
+
+[Back to table of contents](../../_index.md)

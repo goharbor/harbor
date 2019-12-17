@@ -1,3 +1,7 @@
+[Back to table of contents](../../_index.md)
+
+----------
+
 # Authentication Modes and User Accounts
 Harbor supports different modes for authenticating users and managing user accounts.
 
@@ -160,3 +164,7 @@ sh docker login -u testuser -p <i>cli_secret</i> jt-test.local.goharbor.io
 </pre> 
 
 **NOTE**: The CLI secret is associated with the OIDC ID token. Harbor will try to refresh the token, so the CLI secret will be valid after the ID token expires. However, if the OIDC Provider does not provide a refresh token or the refresh fails, the CLI secret becomes invalid. In this case, log out and log back in to Harbor via your OIDC provider so that Harbor can get a new ID token. The CLI secret will then work again.
+
+----------
+
+[Back to table of contents](../../_index.md)

@@ -1,3 +1,7 @@
+[Back to table of contents](../../_index.md)
+
+----------
+
 # Reconfigure Harbor and Manage the Harbor Lifecycle 
 
 You can use `docker-compose` to manage the lifecycle of Harbor. Some useful commands are listed below. You must run the commands in the same directory as `docker-compose.yml`.
@@ -71,3 +75,6 @@ $ sudo docker-compose up -d
 
 Please check the [Docker Compose command-line reference](https://docs.docker.com/compose/reference/) for more on docker-compose.
 
+----------
+
+[Back to table of contents](../../_index.md)
