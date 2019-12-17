@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from "@angular/core";
 import { Project } from "../project-policy-config/project";
 import { Subject } from "rxjs/index";
-import { debounceTime, distinctUntilChanged } from "rxjs/operators";
+import { debounceTime, distinctUntilChanged, switchMap } from "rxjs/operators";
 import { ProjectService } from "../../services/project.service";
 import { AbstractControl, FormBuilder, FormGroup, Validators } from "@angular/forms";
 import { ErrorHandler } from "../../utils/error-handler/error-handler";
@@ -42,36 +42,33 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
             ])],
         });
     }
+
     ngOnInit(): void {
         this.proNameChecker
             .pipe(debounceTime(200))
-            .pipe(distinctUntilChanged())
-            .subscribe((name: string) => {
-                this.noProjectInfo = "";
-                this.selectedProjectList = [];
-                const prolist: any = this.proService.listProjects(name, undefined);
-                if (prolist.subscribe) {
-                    prolist.subscribe(response => {
-                        if (response.body) {
-                            this.selectedProjectList = response.body.slice(0, 10);
-                            // if input project name exist in the project list
-                            let exist = response.body.find((data: any) => data.name === name);
-                            if (!exist) {
-                                this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-                            } else {
-                                this.noProjectInfo = "";
-                            }
-                        } else {
-                            this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-                        }
-                    }, (error: any) => {
-                        this.errorHandler.error(error);
-                        this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
-                    });
+            .pipe(distinctUntilChanged(),
+                switchMap(name => {
+                    this.noProjectInfo = "";
+                    this.selectedProjectList = [];
+                    return this.proService.listProjects(name, undefined);
+                })
+            ).subscribe(response => {
+            if (response.body) {
+                this.selectedProjectList = response.body.slice(0, 10);
+                // if input project name exist in the project list
+                let exist = response.body.find((data: any) => data.name === this.imageNameForm.controls["projectName"].value);
+                if (!exist) {
+                    this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
                 } else {
-                    this.errorHandler.error("not Observable type");
+                    this.noProjectInfo = "";
                 }
-            });
+            } else {
+                this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
+            }
+        }, (error: any) => {
+            this.errorHandler.error(error);
+            this.noProjectInfo = "REPLICATION.NO_PROJECT_INFO";
+        });
     }
 
     validateProjectName(): void {

@@ -2,7 +2,7 @@
   <div>
     <div class="row flex-items-xs-between rightPos">
       <div class="flex-xs-middle option-right">
-        <hbr-filter id="filter-rules" [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_POLICIES_PLACEHOLDER" | translate}}' (filterEvt)="doSearchRules($event)"
+        <hbr-filter id="filter-rules" [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_POLICIES_PLACEHOLDER" | translate}}'
           [currentValue]="search.ruleName"></hbr-filter>
         <span class="refresh-btn" (click)="refreshRules()">
           <clr-icon shape="refresh"></clr-icon>

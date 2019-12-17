@@ -1,6 +1,6 @@
 <div class="normal-wrapper-box flex-layout" *ngIf="!isEditMode">
   <div class="normal-wrapper">
-    <span class="font-style">{{ labelCurrent | translate }}</span>
+    <span [style.width]="buttonMarginLeft" class="font-style">{{ labelCurrent | translate }}</span>
     <span>{{(originScheduleType ? 'SCHEDULE.'+ originScheduleType.toUpperCase(): "") | translate}}</span>
     <a [hidden]="originScheduleType!==SCHEDULE_TYPE.HOURLY" href="javascript:void(0)" role="tooltip" aria-haspopup="true" class="tooltip tooltip-top-right">
         <clr-icon shape="info-circle" class="info-tips-icon" size="24"></clr-icon>
@@ -17,12 +17,12 @@
     <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ "SCHEDULE.CRON" | translate }} :</span>
     <span [hidden]="originScheduleType!==SCHEDULE_TYPE.CUSTOM">{{ oriCron }}</span>
   </div>
-  <button [disabled]="disabled" class="btn btn-primary btn-sm" (click)="editSchedule()" id="editSchedule">
+  <button [style.margin-left]="buttonMarginLeft" [disabled]="disabled" class="btn btn-primary btn-sm" (click)="editSchedule()" id="editSchedule">
     {{ "BUTTON.EDIT" | translate }}
   </button>
 </div>
 <div class="setting-wrapper flex-layout" *ngIf="isEditMode">
-  <span class="font-style">{{ labelEdit | translate }}</span>
+  <span [style.width]="buttonMarginLeft" class="font-style">{{ labelEdit | translate }}</span>
   <div class="select select-schedule clr-select-wrapper">
     <select  name="selectPolicy" id="selectPolicy" [(ngModel)]="scheduleType">
       <option [value]="SCHEDULE_TYPE.NONE">{{'SCHEDULE.NONE' | translate}}</option>
@@ -49,7 +49,7 @@
     </a>
   </div>
   <div class="confirm-button">
-    <button class="btn btn-primary btn-sm"
+    <button [style.margin-left]="buttonMarginLeft" class="btn btn-primary btn-sm"
     (click)="save()" id="config-save">
     {{ "BUTTON.SAVE" | translate }}
     </button>
