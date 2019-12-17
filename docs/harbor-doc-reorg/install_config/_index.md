@@ -1,3 +1,5 @@
+<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
+
 # Harbor Installation and Configuration
 
 This document describes how to install Harbor, and how to perform initial configuration.
@@ -6,4 +8,4 @@ This document describes how to install Harbor, and how to perform initial config
 - [Post-Installation Configuration](configuration/_index.md)
 - [Initial Configuration in the Harbor UI](configuration/initial_config_ui.md)
 
-[Back to table of contents](../../_index.md)
+<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>

@@ -1,3 +1,5 @@
+<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
+
 # Test Harbor with the Demo Server
 
 The Harbor team has made available a demo Harbor instance that you can use to experiment with Harbor and test its functionalities.

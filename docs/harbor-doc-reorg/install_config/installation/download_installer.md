@@ -1,3 +1,5 @@
+<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
+
 # Download the Harbor Installer:
 
 You download the installers from the **[official releases](https://github.com/goharbor/harbor/releases)** page. Choose either the online or the offline installer. 
@@ -45,4 +47,4 @@ The installation processes are almost the same for both the online and offline i
 
 To prepare your Harbor installation, [Configure the Harbor YML File](configure_yml_file.md).
 
-[Back to table of contents](../../_index.md)
+<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>

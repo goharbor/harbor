@@ -1,3 +1,5 @@
+<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
+
 # Harbor Compatibility List
 
 This document provides compatibility information for all Harbor components.
@@ -49,4 +51,4 @@ This document provides compatibility information for all Harbor components.
 * `Evaluated` means that the scanner implementation has been officially tested and verified.
 * `As Default` means that the scanner is provided as a default option and can be deployed together with the main Harbor components by providing extra options during installation. You must install other scanners manually.
 
-[Back to table of contents](../../_index.md)
+<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>

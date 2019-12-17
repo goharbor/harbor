@@ -1,3 +1,5 @@
+<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
+
 # Run the Installer Script
 
 Once you have configured **harbor.yml** and optionally set up a storage backend, you install and start Harbor by using the `install.sh` script. Note that it might take some time for the online installer to download all of the Harbor images from Docker hub.
@@ -101,4 +103,4 @@ If the installation succeeds, continue to set up Harbor by following the instruc
 If installation fails, see [Troubleshooting Harbor Installation
 ](troubleshoot_installation.md).
 
-[Back to table of contents](../../_index.md)
+<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
