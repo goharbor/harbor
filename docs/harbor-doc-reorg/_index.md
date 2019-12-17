@@ -72,7 +72,7 @@ This section describes how users with the developer, master, and project adminis
     - [Create Tag Immutability  Rules](working_with_projects/create_tag_immutability_rules.md)
     - [Manage Kubernetes Packages with Helm Charts](working_with_projects/managing_helm_charts.md)
 
-## Build, Customize, and Contribute to Harbor
+## [Build, Customize, and Contribute to Harbor](build_customize_contribute/_index.md)
 
 This section describes how developers can build from Harbor source code, customize their deployments, and contribute to the open-source Harbor project.
 

@@ -1,12 +1,12 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../../_index.md)
 
 ----------
 
 # Installing Harbor
 
-This section describes how to install for the first time.
+This section describes how to perform a new installation of Harbor.
 
-If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see the [Upgrading Harbor](../../administration/upgrade/_index.md).
+If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see [Upgrading Harbor](../../administration/upgrade/_index.md).
 
 You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see the [Harbor High Availability Guide](https://github.com/goharbor/harbor-helm/blob/master/docs/High%20Availability.md) in the https://github.com/goharbor/harbor-helm repository.
 
@@ -44,4 +44,4 @@ The table below lists the components that are deployed when you deploy Harbor.
 |Swagger-ui|3.22.1|
 
 ----------
-[Back to table of contents](../_index.md)
+[Back to table of contents](../../_index.md)
