@@ -1,4 +1,4 @@
-<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>
+[Back to table of contents](../../_index.md)
 
 # Download the Harbor Installer:
 
@@ -47,4 +47,6 @@ The installation processes are almost the same for both the online and offline i
 
 To prepare your Harbor installation, [Configure the Harbor YML File](configure_yml_file.md).
 
-<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>
+----------
+
+[Back to table of contents](../../_index.md)

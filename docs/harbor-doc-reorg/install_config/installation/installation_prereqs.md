@@ -1,4 +1,4 @@
-<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>
+[Back to table of contents](../../_index.md)
 
 # Harbor Installation Prerequisites
 
@@ -38,4 +38,6 @@ Harbor requires that the following ports be open on the target host.
 
 To secure the connections the Harbor, you must [Configure HTTPS Access to Harbor](configure_https.md).
 
-<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>
+----------
+
+[Back to table of contents](../../_index.md)

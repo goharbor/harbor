@@ -1,4 +1,4 @@
-<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>
+[Back to table of contents](../../_index.md)
 
 # Run the Installer Script
 
@@ -103,4 +103,6 @@ If the installation succeeds, continue to set up Harbor by following the instruc
 If installation fails, see [Troubleshooting Harbor Installation
 ](troubleshoot_installation.md).
 
-<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>
+----------
+
+[Back to table of contents](../../_index.md)

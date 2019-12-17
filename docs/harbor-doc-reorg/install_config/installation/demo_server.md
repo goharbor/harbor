@@ -1,4 +1,4 @@
-<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>
+[Back to table of contents](../../_index.md)
 
 # Test Harbor with the Demo Server
 
@@ -52,3 +52,8 @@ If you encounter any problems while using the demo server, open an [issue on Git
 ## What to Do Next ##
 
 If you decide to install Harbor, verify that your target host meets the [Harbor Installation Prerequisites](installation_prereqs.md).
+
+
+----------
+
+[Back to table of contents](../../_index.md)
