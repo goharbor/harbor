@@ -71,6 +71,7 @@ This section describes how users with the developer, master, and project adminis
       - **[Create Labels](working_with_projects/create_labels.md)**
       - **[Retag Images](working_with_projects/retagging_images.md) **
       - [Create Tag Retention Rules](working_with_projects/create_tag_retention_rules.md)
+      - [Create Tag Immutability  Rules](working_with_projects/create_tag_immutability_rules.md)
       - [Manage Kubernetes Packages with Helm Charts](working_with_projects/managing_helm_charts.md)
 
 ## Build, Customize, and Contribute to Harbor
