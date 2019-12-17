@@ -5611,7 +5611,7 @@ definitions:
         description: The client secret of the OIDC.
       oidc_endpoint:
         type: string
-        description: The URL of an OIDC-complaint server, must start with 'https://'.
+        description: The URL of an OIDC-compliant server, must start with 'https://'.
       oidc_name:
         type: string
         description: The name of the OIDC provider.
@@ -5726,7 +5726,7 @@ definitions:
         description: The client id of the OIDC.
       oidc_endpoint:
         $ref: '#/definitions/StringConfigItem'
-        description: The URL of an OIDC-complaint server, must start with 'https://'.
+        description: The URL of an OIDC-compliant server, must start with 'https://'.
       oidc_name:
         $ref: '#/definitions/StringConfigItem'
         description: The name of the OIDC provider.
