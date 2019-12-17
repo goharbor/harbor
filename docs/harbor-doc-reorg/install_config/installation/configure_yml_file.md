@@ -1,5 +1,4 @@
-[Table of Contents](../../index.md)
-
+[Back to table of contents](../../_index.md)
 # Configure the Harbor YML File
 
 You set system level parameters for Harbor in the `harbor.yml` file that is contained in the installer package. These parameters take effect when you run the `install.sh` script to install or reconfigure Harbor. 
@@ -334,4 +333,4 @@ Currently, Harbor only supports PostgreSQL database. To use an external database
 
 To install Harbor, [Run the Installer Script](run_installer_script.md).
 
-[Table of Contents](../../index.md)
+[Back to table of contents](../../_index.md)

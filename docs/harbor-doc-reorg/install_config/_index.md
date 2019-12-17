@@ -6,4 +6,4 @@ This document describes how to install Harbor, and how to perform initial config
 - [Post-Installation Configuration](configuration/_index.md)
 - [Initial Configuration in the Harbor UI](configuration/initial_config_ui.md)
 
-[Table of Contents](../../index.md)
+[Back to table of contents](../../_index.md)

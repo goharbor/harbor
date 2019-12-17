@@ -197,4 +197,4 @@ If you've mapped nginx 443 port to another, you need to add the port to login, l
 
 To start the installation process, [Download the Harbor Installer](download_installer.md).
 
-[Table of Contents](../../index.md)
+[Back to table of contents](../../_index.md)

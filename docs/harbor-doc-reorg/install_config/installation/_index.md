@@ -35,4 +35,4 @@ The table below lists the components that are deployed when you deploy Harbor.
 |Helm|2.9.1|
 |Swagger-ui|3.22.1|
 
-[Table of Contents](../../index.md)
+[Back to table of contents](../index.md)

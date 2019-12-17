@@ -45,4 +45,4 @@ The installation processes are almost the same for both the online and offline i
 
 To prepare your Harbor installation, [Configure the Harbor YML File](configure_yml_file.md).
 
-[Table of Contents](../../index.md)
+[Back to table of contents](../../_index.md)
