@@ -1,5 +1,7 @@
 [Back to table of contents](../../_index.md)
 
+----------
+
 # Harbor Compatibility List
 
 This document provides compatibility information for all Harbor components.
