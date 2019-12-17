@@ -1,5 +1,7 @@
 [Back to table of contents](../../_index.md)
 
+----------
+
 # Configure HTTPS Access to Harbor
 
 By default, Harbor does not ship with certificates. It is possible to deploy Harbor without security, so that you can connect to it over HTTP. However, using HTTP is acceptable only in air-gapped test or development environments that do not have a connection to the external internet. Using HTTP in environments that are not air-gapped exposes you to man-in-the-middle attacks. In production environments, always use HTTPS. If you enable Content Trust with Notary to properly sign all images, you must use HTTPS. 
@@ -198,5 +200,7 @@ If you've mapped nginx 443 port to another, you need to add the port to login, l
 ## What to Do Next ##
 
 To start the installation process, [Download the Harbor Installer](download_installer.md).
+
+----------
 
 [Back to table of contents](../../_index.md)

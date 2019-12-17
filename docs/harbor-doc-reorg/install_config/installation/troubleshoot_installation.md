@@ -1,5 +1,7 @@
 [Back to table of contents](../../_index.md)
 
+----------
+
 # Troubleshooting Harbor Installation
 
 ## Harbor Doesn't Start or Functions Incorrectly

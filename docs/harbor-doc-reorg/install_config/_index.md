@@ -1,5 +1,7 @@
 [Back to table of contents](../../_index.md)
 
+----------
+
 # Harbor Installation and Configuration
 
 This document describes how to install Harbor, and how to perform initial configuration.

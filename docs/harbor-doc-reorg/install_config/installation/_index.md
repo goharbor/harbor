@@ -1,8 +1,10 @@
-<a style="font-size:9px" href="../_index.md">Back to table of contents</a>
+[Back to table of contents](../_index.md)
+
+----------
 
 # Installing Harbor
 
-This guide describes how to install for the first time.
+This section describes how to install for the first time.
 
 If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see the [Upgrading Harbor](../../administration/upgrade/_index.md).
 
@@ -10,11 +12,15 @@ You can also use Helm to install Harbor on a Kubernetes cluster, to make it high
 
 Before you install Harbor, you can test its functionality on a demo server that the Harbor team has made available. For information, see [Test Harbor with the Demo Server](demo_server.md).
 
+You can use Harbor with different 3rd party replication adapters, OIDC adapters, and scanner adapters. For information about the supported adapters, see the [Harbor Compatibility List](harbor_compatibility_list.md).
+
+## Installation Process
+
 The standard Harbor installation process involves the following stages:
 
 1. Make sure that your target host meets the [Harbor Installation Prerequisites](installation_prereqs.md).
-1. [Configure HTTPS Access to Harbor](configure_https.md)
 1. [Download the Harbor Installer](download_installer.md)
+1. [Configure HTTPS Access to Harbor](configure_https.md)
 1. [Configure the Harbor YML File](configure_yml_file.md)
 1. [Run the Installer Script](run_installer_script.md)
 
@@ -37,4 +43,5 @@ The table below lists the components that are deployed when you deploy Harbor.
 |Helm|2.9.1|
 |Swagger-ui|3.22.1|
 
-<a style="font-size:9px" href="../_index.md">Back to table of contents</a>
+----------
+[Back to table of contents](../_index.md)

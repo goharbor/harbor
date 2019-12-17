@@ -1,5 +1,7 @@
 [Back to table of contents](../../_index.md)
 
+----------
+
 # Download the Harbor Installer:
 
 You download the installers from the **[official releases](https://github.com/goharbor/harbor/releases)** page. Choose either the online or the offline installer. 

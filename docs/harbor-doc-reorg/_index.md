@@ -11,18 +11,18 @@ This section describes how to install Harbor and perform the required initial co
       - [Test Harbor with the Demo Server](install_config/installation/demo_server.md)
       - [Harbor Compatibility List](install_config/installation/harbor_compatibility_list.md)
       - [Harbor Installation Prerequisites](install_config/installation/installation_prereqs.md)
-      - **[Configure HTTPS Access to Harbor](install_config/installation/configure_https.md)**
       - [Download the Harbor Installer](install_config/installation/download_installer.md)
-      - **[Configure the Harbor YML File](install_config/installation/configure_yml_file.md)**
+      - [Configure HTTPS Access to Harbor](install_config/installation/configure_https.md)
+      - [Configure the Harbor YML File](install_config/installation/configure_yml_file.md)
       - [Run the Installer Script](install_config/installation/run_installer_script.md)
-      - **[Troubleshooting Harbor Installation](install_config/installation/troubleshoot_installation.md)**
+      - [Troubleshooting Harbor Installation](install_config/installation/troubleshoot_installation.md)
   - [Post-Installation Configuration](install_config/configuration/_index.md)
-      - **[Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/configuration/reconfigure_manage_lifecycle.md)**
-      - **[Customize the Harbor Token Service](install_config/configuration/customize_token_service.md)**
-      - **[Configure Notary Content Trust](install_config/configuration/configure_notary_content_trust.md)**
+      - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/configuration/reconfigure_manage_lifecycle.md)
+      - [Customize the Harbor Token Service](install_config/configuration/customize_token_service.md)
+      - [Configure Notary Content Trust](install_config/configuration/configure_notary_content_trust.md)
   - [Initial Configuration in the Harbor UI](install_config/configuration/initial_config_ui.md)
       - [Configure Authentication](install_config/configuration/configure_authentication.md)
-      - **[Administrator Options](install_config/configuration/general_settings.md)**
+      - [Administrator Options](install_config/configuration/general_settings.md)
   
 ## Harbor Administration
 
@@ -30,9 +30,9 @@ This section describes how to use and maintain Harbor after deployment. These da
 
 - [Harbor Administration](administration/_index.md)
   - [Manage Users](administration/managing_users/_index.md)
-      - **[Harbor Role Based Access Control (RBAC)](administration/managing_users/configure_rbac.md)**
+      - [Harbor Role Based Access Control (RBAC)](administration/managing_users/configure_rbac.md)
       - [User Permissions By Role](administration/managing_users/user_permissions_by_role.md)
-      - **[Configure Harbor User Settings at the Command Line](administration/managing_users/configure_user_settings_cli.md)**
+      - [Configure Harbor User Settings at the Command Line](administration/managing_users/configure_user_settings_cli.md)
   - [Configure Project Settings](administration/configure_project_settings/_index.md)
       - [Set Project Quotas](administration/configure_project_settings/set_project_quotas.md)
   - [Configuring Replication](administration/configuring_replication/_index.md)
@@ -62,15 +62,15 @@ This section describes how users with the developer, master, and project adminis
       - [Create a Project](working_with_projects/create_projects.md)
       - [Assign Users to a Project](working_with_projects/add_users.md)
   - [Project Configuration](working_with_projects/project_configuration.md)
-      - **[Access and Search Project Logs](working_with_projects/access_project_logs.md)**
+      - [Access and Search Project Logs](working_with_projects/access_project_logs.md)
       - [Create Robot Accounts](working_with_projects/create_robot_accounts.md)
       - [Configure Webhook Notifications](working_with_projects/configure_webhooks.md)
       - [Configure a Per-Project CVE Whitelist](working_with_projects/configure_project_whitelist.md)
-      - **[Implementing Content Trust](working_with_projects/implementing_content_trust.md)**
+      - [Implementing Content Trust](working_with_projects/implementing_content_trust.md)
   - [Working with Images, Tags, and Helm Charts](working_with_projects/working_with_images.md)
       - [Pulling and Pushing Images](working_with_projects/pulling_pushing_images.md)
-      - **[Create Labels](working_with_projects/create_labels.md)**
-      - **[Retag Images](working_with_projects/retagging_images.md) **
+      - [Create Labels](working_with_projects/create_labels.md)
+      - [Retag Images](working_with_projects/retagging_images.md) **
       - [Create Tag Retention Rules](working_with_projects/create_tag_retention_rules.md)
       - [Create Tag Immutability  Rules](working_with_projects/create_tag_immutability_rules.md)
       - [Manage Kubernetes Packages with Helm Charts](working_with_projects/managing_helm_charts.md)

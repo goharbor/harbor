@@ -1,5 +1,7 @@
 [Back to table of contents](../../_index.md)
 
+----------
+
 # Test Harbor with the Demo Server
 
 The Harbor team has made available a demo Harbor instance that you can use to experiment with Harbor and test its functionalities.
@@ -51,8 +53,7 @@ If you encounter any problems while using the demo server, open an [issue on Git
 
 ## What to Do Next ##
 
-If you decide to install Harbor, verify that your target host meets the [Harbor Installation Prerequisites](installation_prereqs.md).
-
+See the [Harbor Installation Prerequisites](installation_prereqs.md).
 
 ----------
 

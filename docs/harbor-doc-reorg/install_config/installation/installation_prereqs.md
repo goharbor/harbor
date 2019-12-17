@@ -1,5 +1,7 @@
 [Back to table of contents](../../_index.md)
 
+----------
+
 # Harbor Installation Prerequisites
 
 Harbor is deployed as several Docker containers. You can therefore deploy it on any Linux distribution that supports Docker. The target host requires Docker, and Docker Compose to be installed.
@@ -20,9 +22,9 @@ The following table lists the software versions that must be installed on the ta
 
 |Software|Version|Description|
 |---|---|---|
-|Docker engine|version 17.06.0-ce+ or higher|For installation instructions, see [docker engine doc](https://docs.docker.com/engine/installation/)|
-|Docker Compose|version 1.18.0 or higher|For installation instructions, see [docker compose doc](https://docs.docker.com/compose/install/)|
-|Openssl|latest is preferred|Used to generate certificate and keys for Harbor|
+|Docker engine|Version 17.06.0-ce+ or higher|For installation instructions, see [docker engine doc](https://docs.docker.com/engine/installation/)|
+|Docker Compose|Version 1.18.0 or higher|For installation instructions, see [docker compose doc](https://docs.docker.com/compose/install/)|
+|Openssl|Latest is preferred|Used to generate certificate and keys for Harbor|
 
 ### Network ports
 
