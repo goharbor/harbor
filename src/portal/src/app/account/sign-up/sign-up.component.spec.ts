@@ -83,7 +83,7 @@ describe('SignUpComponent', () => {
         component.open();
         component.getNewUser = () => mockUser;
         await fixture.whenStable();
-        const createBtn = fixture.nativeElement.querySelector('#create-btn');
+        const createBtn = fixture.nativeElement.querySelector('#sign-up');
         createBtn.dispatchEvent(new Event('click'));
 
         await fixture.whenStable();
