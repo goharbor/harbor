@@ -1,4 +1,4 @@
-<a style="font-size:10px" href="../_index.md">Back to table of contents</a>
+<a style="font-size:9px" href="../_index.md">Back to table of contents</a>
 
 # Installing Harbor
 
@@ -37,4 +37,4 @@ The table below lists the components that are deployed when you deploy Harbor.
 |Helm|2.9.1|
 |Swagger-ui|3.22.1|
 
-<a style="font-size:10px" href="../_index.md">Back to table of contents</a>
+<a style="font-size:9px" href="../_index.md">Back to table of contents</a>

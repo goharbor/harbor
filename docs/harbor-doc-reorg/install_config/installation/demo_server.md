@@ -1,4 +1,4 @@
-<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
+<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>
 
 # Test Harbor with the Demo Server
 

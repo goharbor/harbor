@@ -1,4 +1,4 @@
-<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
+<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>
 
 # Configure HTTPS Access to Harbor
 
@@ -199,4 +199,4 @@ If you've mapped nginx 443 port to another, you need to add the port to login, l
 
 To start the installation process, [Download the Harbor Installer](download_installer.md).
 
-<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
+<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>

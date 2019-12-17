@@ -1,4 +1,4 @@
-<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
+<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>
 
 # Troubleshooting Harbor Installation
 
@@ -34,4 +34,4 @@ proxy_set_header X-Forwarded-Proto $scheme;
 
 Then re-deploy Harbor per the instructions in "Managing Harbor Lifecycle.
 
-<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
+<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>

@@ -1,4 +1,4 @@
-<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
+<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>
 
 # Configure the Harbor YML File
 
@@ -334,4 +334,4 @@ Currently, Harbor only supports PostgreSQL database. To use an external database
 
 To install Harbor, [Run the Installer Script](run_installer_script.md).
 
-<a style="font-size:10px" href="../../_index.md">Back to table of contents</a>
+<a style="font-size:9px" href="../../_index.md">Back to table of contents</a>
