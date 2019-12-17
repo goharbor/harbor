@@ -1,4 +1,4 @@
-# Roll Back an Upgrade
+# Roll Back from an Upgrade
 
 If, for any reason, you want to roll back to the previous version of Harbor, perform the following steps:
 

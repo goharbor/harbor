@@ -14,7 +14,7 @@ Since the migration might alter the database schema and the settings of `harbor.
 - With the introduction of storage and artifact quotas in version 1.9.0, migration from 1.7.x and 1.8.x might take a few minutes. This is because the `core` walks through all blobs in the registry and populates the database with information about the layers and artifacts in projects.
 - With the introduction of storage and artifact quotas in version 1.9.0, replication between version 1.9.0 and a previous version of Harbor does not work. You must upgrade all Harbor nodes to 1.9.0 if you have configured replication between them.
 
-## Procedure
+## Upgrading Harbor and Migrating Data
 
 1. Log in to the host that Harbor runs on, stop and remove existing Harbor instance if it is still running:
 
@@ -38,10 +38,17 @@ Since the migration might alter the database schema and the settings of `harbor.
 3. Get the latest Harbor release package from Github:
    [https://github.com/goharbor/harbor/releases](https://github.com/goharbor/harbor/releases)
 
-4. Before upgrading Harbor, perform a migration first. The migration tool is delivered as a docker image, so you should pull the image from docker hub. Replace [tag] with the release version of Harbor (for example, v1.9.0) in the command below:
+4. Before upgrading Harbor, perform migration first.  The migration tool is delivered as a docker image.
 
+    You can pull the image from docker hub. Replace [tag] with the release version of Harbor (e.g. v1.5.0) in the below command:
     ```sh
     docker pull goharbor/harbor-migrator:[tag]
+    ```
+
+    Alternatively, if you are using an offline installer package you can load it from the image tarball included in the offline installer package. Replace [version] with the release version of Harbor (e.g. v1.5.0) in the below command:
+    ```sh
+    tar zxf <offline package>
+    docker image load -i harbor/harbor.[version].tar.gz
     ```
 
 5. If you are current version is v1.7.x or earlier, i.e. migrate config file from `harbor.cfg` to `harbor.yml`.

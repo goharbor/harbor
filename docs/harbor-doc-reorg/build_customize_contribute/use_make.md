@@ -1,4 +1,4 @@
-# Using Make
+### Variables
 Variable           | Description
 -------------------|-------------
 BASEIMAGE          | Container base image, default: photon
@@ -36,10 +36,10 @@ version				 | set harbor version
 #### EXAMPLE:
 
 #### Build and run harbor from source code.
-make install GOBUILDIMAGE=golang:1.12.5 COMPILETAG=compile_golangimage NOTARYFLAG=true
+make install GOBUILDIMAGE=golang:1.13.4 COMPILETAG=compile_golangimage NOTARYFLAG=true
 
 ### Package offline installer
-make package_offline GOBUILDIMAGE=golang:1.12.5 COMPILETAG=compile_golangimage NOTARYFLAG=true
+make package_offline GOBUILDIMAGE=golang:1.13.4 COMPILETAG=compile_golangimage NOTARYFLAG=true
 
 ### Start harbor with notary
 make -e NOTARYFLAG=true start
