@@ -2,7 +2,7 @@
 
 ----------
 
-# OIDC Provider Authentication
+# Configure OIDC Provider Authentication
 
 If you select OpenID Connect (OIDC) authentication, users log in to the Harbor interface via an OIDC single sign-on (SSO) provider, such as Okta, KeyCloak, or dex. In this case, you do not create user accounts in Harbor.
 

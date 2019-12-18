@@ -17,6 +17,8 @@ Besides the above roles, there are two system-level roles:
 
 For full details of the permissions of the different roles, see [User Permissions By Role](user_permissions_by_role.md).
 
+[Configure Harbor User Settings at the Command Line](configure_user_settings_cli.md)
+
 ## Create User Accounts
 	
 In database authentication mode, the Harbor system administrator creates user accounts manually. 

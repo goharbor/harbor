@@ -17,6 +17,7 @@ This section describes how to install Harbor and perform the required initial co
 - [Troubleshooting Harbor Installation](install_config/troubleshoot_installation.md)
 - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/reconfigure_manage_lifecycle.md)
 - [Customize the Harbor Token Service](install_config/customize_token_service.md)
+- [Configure Harbor User Settings at the Command Line](install_config/configure_user_settings_cli.md)
   
 ## Harbor Administration
 
@@ -24,13 +25,11 @@ This section describes how to use and maintain Harbor after deployment. These da
 
 - [Introduction](administration/_index.md)
 - [Configuring Authentication](administration/configure_authentication/configure_authentication.md)
-   - [Database Authentication](administration/configure_authentication/db_auth.md)
-   - [LDAP/Active Directory Authentication](administration/configure_authentication/ldap_auth.md)
-   - [OIDC Provider Authentication](administration/configure_authentication/oidc_auth.md)
-- [Manage Users](administration/managing_users/managing_users.md)
-    - [Harbor Role Based Access Control (RBAC)](administration/managing_users/rbac.md)
+   - [Configure Database Authentication](administration/configure_authentication/db_auth.md)
+   - [Configure LDAP/Active Directory Authentication](administration/configure_authentication/ldap_auth.md)
+   - [Configure OIDC Provider Authentication](administration/configure_authentication/oidc_auth.md)
+- [Role Based Access Control](administration/managing_users/rbac.md)
     - [User Permissions By Role](administration/managing_users/user_permissions_by_role.md)
-    - [Configure Harbor User Settings at the Command Line](administration/managing_users/configure_user_settings_cli.md)
 - [Administrator Options](administration/general_settings.md)
 - [Configure Project Settings](administration/configure_project_settings.md)
 - [Set Project Quotas](administration/set_project_quotas.md)

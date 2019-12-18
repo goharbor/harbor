@@ -2,7 +2,7 @@
 
 ----------
 
-# Database Authentication
+# Configure Database Authentication
 
 In database authentication mode, user accounts are stored in the local database. By default, only the Harbor system administrator can create user accounts to add users to Harbor. You can optionally configure Harbor to allow self-registration.  
 
