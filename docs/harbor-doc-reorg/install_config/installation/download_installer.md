@@ -2,13 +2,13 @@
 
 ----------
 
-# Download the Harbor Installer:
+# Download the Harbor Installer
 
-You download the installers from the **[official releases](https://github.com/goharbor/harbor/releases)** page. Choose either the online or the offline installer. 
+You download the Harbor installers from the [official releases](https://github.com/goharbor/harbor/releases) page. Download either the online installer or the offline installer. 
 
 - **Online installer:** The online installer downloads the Harbor images from Docker hub. For this reason, the installer is very small in size.
 
-- **Offline installer:** Use the offline installer if the host to which are are deploying Harbor does not have a connection to the Internet. The offline installer contains pre-built images so it is larger than the online installer.
+- **Offline installer:** Use the offline installer if the host to which are are deploying Harbor does not have a connection to the Internet. The offline installer contains pre-built images, so it is larger than the online installer.
 
 The installation processes are almost the same for both the online and offline installers.
 
@@ -36,7 +36,7 @@ The installation processes are almost the same for both the online and offline i
       gpg: armor header: Version: GnuPG v1
       gpg: assuming signed data in 'harbor-offline-installer-v1.10.0-rc2.tgz'
       gpg: Signature made Fri, Dec  6, 2019  5:04:17 AM WEST
-      gpg:                using RSA key 644FF454C0B4115C
+      gpg: using RSA key 644FF454C0B4115C
       gpg: using pgp trust model
       gpg: Good signature from "Harbor-sign (The key for signing Harbor build) &lt;jiangd@vmware.com&gt; [unknown]
       </pre>
@@ -47,7 +47,8 @@ The installation processes are almost the same for both the online and offline i
    
 ## Next Steps
 
-To prepare your Harbor installation, [Configure the Harbor YML File](configure_yml_file.md).
+- To use Harbor in a production environment, you must [Configure HTTPS Access to Harbor](configure_https.md).
+- To configure your Harbor installation, see [Configure the Harbor YML File](configure_yml_file.md).
 
 ----------
 

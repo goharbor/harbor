@@ -22,8 +22,8 @@ The following table lists the software versions that must be installed on the ta
 
 |Software|Version|Description|
 |---|---|---|
-|Docker engine|Version 17.06.0-ce+ or higher|For installation instructions, see [docker engine doc](https://docs.docker.com/engine/installation/)|
-|Docker Compose|Version 1.18.0 or higher|For installation instructions, see [docker compose doc](https://docs.docker.com/compose/install/)|
+|Docker engine|Version 17.06.0-ce+ or higher|For installation instructions, see [Docker Engine documentation](https://docs.docker.com/engine/installation/)|
+|Docker Compose|Version 1.18.0 or higher|For installation instructions, see [Docker Compose documentation](https://docs.docker.com/compose/install/)|
 |Openssl|Latest is preferred|Used to generate certificate and keys for Harbor|
 
 ### Network ports
@@ -38,7 +38,7 @@ Harbor requires that the following ports be open on the target host.
 
 ## What to Do Next ##
 
-To secure the connections the Harbor, you must [Configure HTTPS Access to Harbor](configure_https.md).
+[Download the Harbor Installer](download_installer.md).
 
 ----------
 
