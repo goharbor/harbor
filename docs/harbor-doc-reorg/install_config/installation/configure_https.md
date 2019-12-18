@@ -16,19 +16,19 @@ In a production environment, you should obtain a certificate from a CA. In a tes
 
 1. Generate a CA certificate private key.
 
-   ```
-   openssl genrsa -out ca.key 4096
-   ```   
+    ```
+    openssl genrsa -out ca.key 4096
+    ```   
 1. Generate the CA certificate.
 
    Adapt the values in the `-subj` option to reflect your organization. If you use an FQDN to connect your Harbor host, you must specify it as the common name (`CN`) attribute.
    
-   ```
-   openssl req -x509 -new -nodes -sha512 -days 3650 \
-    -subj "/C=CN/ST=Beijing/L=Beijing/O=example/OU=Personal/CN=yourdomain.com" \
-    -key ca.key \
-    -out ca.crt
-   ```
+    ```
+    openssl req -x509 -new -nodes -sha512 -days 3650 \
+     -subj "/C=CN/ST=Beijing/L=Beijing/O=example/OU=Personal/CN=yourdomain.com" \
+     -key ca.key \
+     -out ca.crt
+    ```
 
 ## Generate a Server Certificate
 
@@ -36,19 +36,19 @@ The certificate usually contains a `.crt` file and a `.key` file, for example, `
 
 1. Generate a private key.
 
-```
-  openssl genrsa -out yourdomain.com.key 4096
-```
+    ```
+    openssl genrsa -out yourdomain.com.key 4096
+    ```
 1. Generate a certificate signing request (CSR).
 
    Adapt the values in the `-subj` option to reflect your organization. If you use an FQDN to connect your Harbor host, you must specify it as the common name (`CN`) attribute and use it in the key and CSR filenames.
 
-```
-  openssl req -sha512 -new \
-    -subj "/C=CN/ST=Beijing/L=Beijing/O=example/OU=Personal/CN=yourdomain.com" \
-    -key yourdomain.com.key \
-    -out yourdomain.com.csr
-```
+    ```
+    openssl req -sha512 -new \
+        -subj "/C=CN/ST=Beijing/L=Beijing/O=example/OU=Personal/CN=yourdomain.com" \
+        -key yourdomain.com.key \
+        -out yourdomain.com.csr
+    ```
 1. Generate an x509 v3 extension file.
 
    Regardless of whether you're using either an FQDN or an IP address to connect to your Harbor host, you must create this file so that you can generate a certificate for your Harbor host that complies with the Subject Alternative Name (SAN) and x509 v3 extension requirements. Replace the `DNS` entries to reflect your domain.
@@ -85,32 +85,32 @@ After generating the `ca.crt`, `yourdomain.com.crt`, and `yourdomain.com.key` fi
 
 1. Copy the server certificate and key into the certficates folder on your Harbor host.
 
-  ```
-  cp yourdomain.com.crt /data/cert/
-  ```
-  ```  
-  cp yourdomain.com.key /data/cert/
-  ```
+   ```
+   cp yourdomain.com.crt /data/cert/
+   ```
+   ```  
+   cp yourdomain.com.key /data/cert/
+   ```
 1. Convert `yourdomain.com.crt` to `yourdomain.com.cert`, for use by Docker.
 
    The Docker daemon interprets `.crt` files as CA certificates and `.cert` files as client certificates.
-   ```
-   openssl x509 -inform PEM -in yourdomain.com.crt -out yourdomain.com.cert
-   ```
+   
+    ```
+    openssl x509 -inform PEM -in yourdomain.com.crt -out yourdomain.com.cert
+    ```
 1. Copy the server certificate, key and CA files into the Docker certificates folder on the Harbor host. You must create the appropriate folders first.
 
-   ```
-  cp yourdomain.com.cert /etc/docker/certs.d/yourdomain.com/
-  ```
-  ```  
-  cp yourdomain.com.key /etc/docker/certs.d/yourdomain.com/
-  ```
-  ```  
-  cp ca.crt /etc/docker/certs.d/yourdomain.com/
-   ```
+    ```
+    cp yourdomain.com.cert /etc/docker/certs.d/yourdomain.com/
+    ```
+    ```  
+    cp yourdomain.com.key /etc/docker/certs.d/yourdomain.com/
+    ```
+    ```  
+    cp ca.crt /etc/docker/certs.d/yourdomain.com/
+    ```
    
-   If you mapped the default `nginx` port 443 to a different port, create the folder `/etc/docker/certs.d/yourdomain.com:port`, or `/etc/docker/certs.d/harbor_IP:port`.    
-   
+   If you mapped the default `nginx` port 443 to a different port, create the folder `/etc/docker/certs.d/yourdomain.com:port`, or `/etc/docker/certs.d/harbor_IP:port`.        
 1. Restart Docker Engine.
 
    `systemctl restart docker`
