@@ -1,8 +1,8 @@
 # Harbor Role Based Access Control (RBAC)  
 
-![rbac](../../img/rbac.png)
+Harbor manages images through projects. You provide access to these images to users by including the users in projects and assigning one of the following roles to them.  
 
-Harbor manages images through projects. Users can be added into one project as a member with one of the following different roles:  
+![rbac](../../img/rbac.png)
 
 * **Limited Guest**: A Limited Guest does not have full read privileges for a project. They can pull images but cannot push, and they cannot see logs or the other members of a project. For example, you can create limited guests for users from different organizations who share access to a project.
 * **Guest**: Guest has read-only privilege for a specified project. They can pull and retag images, but cannot push.
@@ -17,30 +17,13 @@ Besides the above roles, there are two system-level roles:
 
 For full details of the permissions of the different roles, see [User Permissions By Role](user_permissions_by_role.md).
 
-[Configure Harbor User Settings at the Command Line](configure_user_settings_cli.md)
+If you run Harbor in database authentication mode, you create user accounts directly in the Harbor interface. For information about how to create local user accounts, see [Create User Accounts in Database Mode](create_users_db.md). 
 
-## Create User Accounts
-	
-In database authentication mode, the Harbor system administrator creates user accounts manually. 
+If you run Harbor in LDAP/AD or OIDC authentication mode, you create and manage user accounts in your LDAP/AD or OIDC provider. Harbor obtains the users from the LDAP/AD or OIDC server and displays them in the **Users** tab of the Harbor interface.
 
-1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
-1. Under **Administration**, go to **Users**.
+## Assigning the Harbor System Administrator Role
 
-   ![Create user account](../../img/create_user.png)
-1. Click **New User**.
-1. Enter information about the new user.
-
-   ![Provide user information](../../img/new_user.png)
-
-   - The username must be unique in the Harbor system
-   - The email address is used for password recovery
-   - The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character
-
-If users forget their password, there is a **Forgot Password** in the Harbor log in page.
-
-## Assigning the Administrator Role
-
-Harbor system administrators can assign the Harbor system administrator role to other users by selecting usernames and clicking Set as Administrator in the **Users** tab. 
+Harbor system administrators can assign the Harbor system administrator role to other users by selecting usernames and clicking **Set as Administrator** in the **Users** tab. 
 
 ![browse project](../../img/new_set_admin_remove_user.png)
 

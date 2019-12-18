@@ -30,6 +30,7 @@ This section describes how to use and maintain Harbor after deployment. These da
    - [Configure OIDC Provider Authentication](administration/configure_authentication/oidc_auth.md)
 - [Role Based Access Control](administration/managing_users/rbac.md)
     - [User Permissions By Role](administration/managing_users/user_permissions_by_role.md)
+    - [Create User Accounts in Database Mode](administration/managing_users/create_users_db.md)
 - [Administrator Options](administration/general_settings.md)
 - [Configure Project Settings](administration/configure_project_settings.md)
 - [Set Project Quotas](administration/set_project_quotas.md)
