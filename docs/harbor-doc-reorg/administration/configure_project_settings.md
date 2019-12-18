@@ -4,7 +4,11 @@
 
 # Configure Project Settings
 
-Use the **Project Creation** drop-down menu to set which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Administrator role to create projects.  
+You can configure Harbor so that only system administrators can create projects, and set limits on the amounts of resources that projects can consume.
+
+## Set Who Can Create Projects
+
+Use the **Project Creation** drop-down menu to set which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Harbor system administrator role to create projects.  
 ![browse project](../../img/new_proj_create.png)
 
 ## Set Project Quotas

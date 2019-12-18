@@ -2,17 +2,17 @@
 
 ----------
 
-# Administrator Options
+# Configure Global Settings
 
-## Managing Project Creation
-Use the **Project Creation** drop-down menu to set which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Administrator role to create projects.  
-![browse project](../../img//new_proj_create.png)
+You can configure Harbor to connect to an email server, and set the registry in read-only mode.
 
-## Managing Email Settings
+## Configure an Email Server
+
 You can change Harbor's email settings, the mail server is used to send out responses to users who request to reset their password.  
 ![browse project](../../img//new_config_email.png)
 
-## Managing Registry Read Only
+## Make the Registry Read Only
+
 You can change Harbor's registry read only settings, read only mode will allow 'docker pull' while preventing 'docker push' and the deletion of repository and tag.
 ![browse project](../../img//read_only.png)
 
