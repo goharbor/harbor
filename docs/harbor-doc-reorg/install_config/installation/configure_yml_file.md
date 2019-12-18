@@ -14,7 +14,7 @@ The table below lists the parameters that must be set when you deploy Harbor. By
 
 **IMPORTANT**: Harbor does not ship with any certificates. In versions up to and including 1.9.x, by default Harbor uses HTTP to serve registry requests. This is acceptable only in air-gapped test or development environments. In production environments, always use HTTPS. If you enable Content Trust with Notary to properly sign all images, you must use HTTPS. 
   
-You can use certificates that are signed by a trusted third-party CA, or you can use self-signed certificates. For information about how to create a CA, and how to use a CA to sign a server certificate and a client certificate, see **[Configuring Harbor with HTTPS Access](configure_https.md)**.
+You can use certificates that are signed by a trusted third-party CA, or you can use self-signed certificates. For information about how to create a CA, and how to use a CA to sign a server certificate and a client certificate, see [Configuring Harbor with HTTPS Access](configure_https.md).
 
 <table width="100%" border="0">
   <caption>
@@ -31,15 +31,25 @@ You can use certificates that are signed by a trusted third-party CA, or you can
     <td valign="top">Specify the IP address or the fully qualified domain name (FQDN) of the target host on which to deploy Harbor. This is the address at which you access the Harbor Portal and the registry service. For example, <code>192.168.1.10</code> or <code>reg.yourdomain.com</code>. The registry service must be accessible to external clients, so do not specify <code>localhost</code>, <code>127.0.0.1</code>, or <code>0.0.0.0</code> as the hostname.</td>
   </tr>
   <tr>
+    <td valign="top"><code>http</code></td>
+    <td valign="top">&nbsp;</td>
+    <td valign="top">Do not use HTTP in production environments. Using HTTP is acceptable only in air-gapped test or development environments that do not have a connection to the external internet. Using HTTP in environments that are not air-gapped exposes you to man-in-the-middle attacks.</td>
+  </tr>
+  <tr>
+    <td valign="top">&nbsp;</td>
+    <td valign="top"><code>port</code></td>
+    <td valign="top">Port number for HTTP, for both Harbor portal and Docker commands.</td>
+  </tr>
+  <tr>
     <td valign="top"><code>https</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top"><p>Use HTTPS to access the Harbor Portal and the token/notification service. Always use HTTPS in production environments and environments that are not air-gapped.</p>
+    <td valign="top">Use HTTPS to access the Harbor Portal and the token/notification service. Always use HTTPS in production environments and environments that are not air-gapped.
       </td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>port</code></td>
-    <td valign="top">The port number for HTTPS. The default is 443.</td>
+    <td valign="top">The port number for HTTPS, for both Harbor portal and Docker commands.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
@@ -79,7 +89,7 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top"><code>data_volume</code></td>
     <td valign="top">None</td>
-    <td valign="top">The location on the target host in which to store Harbor's data. You can optionally configure external storage, in which case disable this option and enable <code>storage_service</code>. The default is <code>/data</code>.</td>
+    <td valign="top">The location on the target host in which to store Harbor's data. This data remains unchanged even when Harbor's containers are removed and/or recreated. You can optionally configure external storage, in which case disable this option and enable <code>storage_service</code>. The default is <code>/data</code>.</td>
   </tr>
   <tr>
     <td valign="top"><code>clair</code></td>
@@ -104,7 +114,7 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top"><code>log</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">Configure logging.</td>
+    <td valign="top">Configure logging. Harbor uses `rsyslog` to collect the logs for each container.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
@@ -166,16 +176,6 @@ The following table lists the additional, optional parameters that you can set t
     <th scope="col">Description and Additional Parameters </th>
   </tr>
   <tr>
-    <td valign="top"><code>http</code></td>
-    <td valign="top">&nbsp;</td>
-    <td valign="top">Do not use HTTP in production environments. Using HTTP is acceptable only in air-gapped test or development environments that do not have a connection to the external internet. Using HTTP in environments that are not air-gapped exposes you to man-in-the-middle attacks.</td>
-  </tr>
-  <tr>
-    <td valign="top">&nbsp;</td>
-    <td valign="top"><code>port</code></td>
-    <td valign="top">Port number for HTTP</td>
-  </tr>
-  <tr>
     <td valign="top"><code>external_url</code></td>
     <td valign="top">None</td>
     <td valign="top">Enable this option to use an external proxy. When  enabled, the hostname is no longer used.</td>
@@ -204,7 +204,7 @@ The following table lists the additional, optional parameters that you can set t
   <tr>
     <td valign="top"><code>external_database</code></td>
     <td valign="top">&nbsp;</td>
-    <td valign="top">Configure external database settings, if you disable the local database option. Harbor currently only supports POSTGRES.</td>
+    <td valign="top">Configure external database settings, if you disable the local database option. Currently, Harbor only supports PostgreSQL database. You must create four databases for Harbor core, Clair, Notary server, and Notary signer. The tables are generated automatically when Harbor starts up.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
@@ -317,20 +317,6 @@ storage_service:
   redirect:
     disable: false
 ```
-
-## Persistent Data and Log Files
-
-By default, registry data is persisted in the host's `/data/` directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated. You can edit the `data_volume` in `harbor.yml` file to change this directory.
-
-In addition, Harbor uses `rsyslog` to collect the logs for each container. By default, these log files are stored in the directory `/var/log/harbor/` on the target host. You can change the log directory in `harbor.yml`.
-
-## Configuring Harbor to Listen on a Customized Port
-
-By default, Harbor listens on port 443(HTTPS) and 80(HTTP, if configured)  for both Harbor portal and Docker commands. You can reconfigure the default ports in `harbor.yml`
-
-## Configure Harbor with an External Database
-
-Currently, Harbor only supports PostgreSQL database. To use an external database, uncomment the `external_database` section in `harbor.yml` and fill the necessary information. You must create four databases for Harbor core, Clair, Notary server, and Notary signer. And the tables are generated automatically when Harbor starts up.
 
 ## What to Do Next ##
 
