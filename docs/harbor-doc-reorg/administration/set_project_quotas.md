@@ -1,3 +1,7 @@
+[Back to table of contents](../_index.md)
+
+----------
+
 # Set Project Quotas
 
 To exercise control over resource use, as a Harbor system administrator you can set  quotas on projects. You can limit the number of tags that a project can contain and limit the amount of storage capacity that a project can consume. You can set default quotas that apply to all projects globally.
@@ -41,3 +45,7 @@ When setting project quotas, it is useful to know how Harbor calculates tag numb
 - During garbage collection, Harbor frees the storage used by untagged blobs in the project.
 - If the tag count reaches the limit, image blobs can be pushed into a project and storage usage is updated accordingly. You can consider these blobs to be untagged blobs. They can be removed by garbage collection, and the storage that they consume is returned after garbage colletion.
 - Helm chart size is not calculated. Only tag counts are calculated.
+- 
+----------
+
+[Back to table of contents](../_index.md)

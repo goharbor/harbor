@@ -178,7 +178,7 @@ After setting up HTTPS for Harbor, you can verify the HTTPS connection by perfor
    
 ## What to Do Next ##
 
-- If the verification succeeds, continue to set up Harbor by following the instructions in [Post-Installation Configuration](../configuration/_index.md) and [Initial Configuration in the Harbor UI](../configuration/initial_config_ui.md), or continue using Harbor.
+- If the verification succeeds, see [Harbor Administration](../administration/_index.md) for information about using Harbor.
 - If installation fails, see [Troubleshooting Harbor Installation
 ](troubleshoot_installation.md).
 

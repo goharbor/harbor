@@ -1,3 +1,7 @@
+[Back to table of contents](../_index.md)
+
+----------
+
 # Garbage Collection
 
 When you delete images from Harbor, space is not automatically freed up. You must run garbage collection to free up space by removing blobs that are no longer referenced by a manifest from the file system.  
@@ -29,3 +33,7 @@ To avoid triggering the garbage collection process too frequently, the availabil
 1. Select the **History** tab to view records of the 10 most recent garbage collection runs.
    ![Garbage collection history](../../img/gc_history.png)
 1. Click on the **Logs** link to view the related logs.
+
+----------
+
+[Back to table of contents](../_index.md)

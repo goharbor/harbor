@@ -1,80 +1,8 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../../_index.md)
 
 ----------
 
-# Authentication Modes and User Accounts
-Harbor supports different modes for authenticating users and managing user accounts.
-
-- [Database Authentication](#db_auth)
-- [LDAP/Active Directory Authentication](#ldap_auth)
-- [OIDC Provider Authentication](#oidc_auth)
-
-**NOTE**: The Harbor interface offers an option to configure UAA authentication. This authentication mode is not recommended and is not documented in this guide.
-
-<a id="db_auth"></a>
-## Database Authentication
-
-In database authentication mode, user accounts are stored in the local database. By default, only the Harbor system administrator can create user accounts to add users to Harbor. You can optionally configure Harbor to allow self-registration.  
-
-**IMPORTANT**: If you create users in the database, Harbor is locked in database mode. You cannot change to a different authentication mode after you have created local users.
-
-1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
-1. Under **Administration**, go to **Configuration** and select the **Authentication** tab.
-1. Leave **Auth Mode** set to the default **Database** option.
-
-   ![Database authentication](../../img/db_auth.png)
-   
-1. Optionally select the **Allow Self-Registration** check box.
-
-   ![Enable self-registration](../../img/new_self_reg.png)
-    
-   If you enable self registration option, users can register themselves in Harbor. Self-registration is disabled by default. If you enable self-registration, unregistered users can sign up for a Harbor account by clicking **Sign up for an account** in the Harbor log in page.
-    
-    ![Enable self-registration](../../img/self-registration-login.png)
-
-<a id="ldap_auth"></a>
-## LDAP/Active Directory Authentication 
-
-If you select LDAP/AD authentication, users whose credentials are stored in an external LDAP or AD server can log in to Harbor directly. In this case, you do not create user accounts in Harbor.
-
-**IMPORTANT**: You can change the authentication mode from database to LDAP only if no local users have been added to the database. If there is at least one user other than `admin` in the Harbor database, you cannot change the authentication mode.
-
-Because the users are managed by LDAP or AD, self-registration, creating users, deleting users, changing passwords, and resetting passwords are not supported in LDAP/AD authentication mode.  
-
-If you want to manage user authentication by using LDAP groups, you must enable the `memberof` feature on the LDAP/AD server. With the `memberof` feature, the LDAP/AD user entity's `memberof` attribute is updated when the group entity's `member` attribute is updated, for example by adding or removing an LDAP/AD user from the LDAP/AD group. This feature is enabled by default in Active Directory. For information about how to enable and verify `memberof` overlay in OpenLDAP, see [this technical note]( https://technicalnotes.wordpress.com/2014/04/19/openldap-setup-with-memberof-overlay/).
-
-1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
-1. Under **Administration**, go to **Configuration** and select the **Authentication** tab.
-1. Use the **Auth Mode** drop-down menu to select **LDAP**.
-
-   ![LDAP authentication](../../img/select_ldap_auth.png)
-1. Enter the address of your LDAP server, for example `ldaps://10.162.16.194`.
-1. Enter information about your LDAP server.
-
-   - **LDAP Search DN** and **LDAP Search Password**: When a user logs in to Harbor with their LDAP username and password, Harbor uses these values to bind to the LDAP/AD server. For example, `cn=admin,dc=example.com`.
-   - **LDAP Base DN**: Harbor looks up the user under the LDAP Base DN entry, including the subtree. For example, `dc=example.com`.
-   - **LDAP Filter**: The filter to search for LDAP/AD users. For example, `objectclass=user`. 
-   - **LDAP UID**: An attribute, for example `uid`, or `cn`, that is used to match a user with the username. If a match is found, the user's password is verified by a bind request to the LDAP/AD server. 
-   - **LDAP Scope**: The scope to search for LDAP/AD users. Select from **Subtree**, **Base**, and **OneLevel**.
-   
-     ![Basic LDAP configuration](../../img/ldap_auth.png)  
-1. If you want to manage user authentication with LDAP groups, configure the group settings.
-   - **LDAP Group Base DN**: The base DN from which to lookup a group in LDAP/AD. For example, `ou=groups,dc=example,dc=com`.
-   - **LDAP Group Filter**: The filter to search for LDAP/AD groups. For example, `objectclass=groupOfNames`. 
-   - **LDAP Group GID**: The attribute used to name an LDAP/AD group. For example, `cn`.  
-   - **LDAP Group Admin DN**: All LDAP/AD users in this group DN have Harbor system administrator privileges.
-   - **LDAP Group Membership**: The user attribute usd to identify a user as a member of a group. By default this is `memberof`.
-   - **LDAP Scope**: The scope to search for LDAP/AD groups. Select from **Subtree**, **Base**, and **OneLevel**.
-   
-     ![LDAP group configuration](../../img/ldap_groups.png)
-1. Uncheck **LDAP Verify Cert** if the LDAP/AD server uses a self-signed or untrusted certificate.
-
-   ![LDAP certificate verification](../../img/ldap_cert_test.png)
-1. Click **Test LDAP Server** to make sure that your configuration is correct.
-1. Click **Save** to complete the configuration.
-
-<a id="oidc_auth"></a>
-## OIDC Provider Authentication
+# OIDC Provider Authentication
 
 If you select OpenID Connect (OIDC) authentication, users log in to the Harbor interface via an OIDC single sign-on (SSO) provider, such as Okta, KeyCloak, or dex. In this case, you do not create user accounts in Harbor.
 
@@ -167,4 +95,4 @@ sh docker login -u testuser -p <i>cli_secret</i> jt-test.local.goharbor.io
 
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../../_index.md)

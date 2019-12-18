@@ -4,3 +4,7 @@ Use the **Project Creation** drop-down menu to set which users can create projec
 ![browse project](../../img/new_proj_create.png)
 
 [Set Project Quotas](set_project_quotas.md)
+
+----------
+
+[Back to table of contents](../_index.md)
