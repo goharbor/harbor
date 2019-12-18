@@ -24,6 +24,6 @@ services:
     image: goharbor/redis-photon:4.0
     restart: always
     volumes:
-      - /data/redis:/data
+      - /data/redis:/var/lib/redis
     ports:
       - 6379:6379

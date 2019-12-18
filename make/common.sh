@@ -89,13 +89,12 @@ function check_docker {
 		docker_version_part1=${BASH_REMATCH[2]}
 		docker_version_part2=${BASH_REMATCH[3]}
 
+		note "docker version: $docker_version"
 		# the version of docker does not meet the requirement
 		if [ "$docker_version_part1" -lt 17 ] || ([ "$docker_version_part1" -eq 17 ] && [ "$docker_version_part2" -lt 6 ])
 		then
 			error "Need to upgrade docker package to 17.06.0+."
 			exit 1
-		else
-			note "docker version: $docker_version"
 		fi
 	else
 		error "Failed to parse docker version."
@@ -117,13 +116,12 @@ function check_dockercompose {
 		docker_compose_version_part1=${BASH_REMATCH[2]}
 		docker_compose_version_part2=${BASH_REMATCH[3]}
 
+		note "docker-compose version: $docker_compose_version"
 		# the version of docker-compose does not meet the requirement
 		if [ "$docker_compose_version_part1" -lt 1 ] || ([ "$docker_compose_version_part1" -eq 1 ] && [ "$docker_compose_version_part2" -lt 18 ])
 		then
 			error "Need to upgrade docker-compose package to 1.18.0+."
-                        exit 1
-		else
-			note "docker-compose version: $docker_compose_version"
+			exit 1
 		fi
 	else
 		error "Failed to parse docker-compose version."

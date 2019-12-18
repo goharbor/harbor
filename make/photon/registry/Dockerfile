@@ -16,5 +16,5 @@ USER harbor
 
 ENTRYPOINT ["/home/harbor/entrypoint.sh"]
 
-VOLUME ["/var/lib/registry"]
+VOLUME ["/storage"]
 EXPOSE 5000
