@@ -38,7 +38,7 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>port</code></td>
-    <td valign="top">Port number for HTTP, for both Harbor portal and Docker commands.</td>
+    <td valign="top">Port number for HTTP, for both Harbor portal and Docker commands. The default is 80.</td>
   </tr>
   <tr>
     <td valign="top"><code>https</code></td>
@@ -49,7 +49,7 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   <tr>
     <td valign="top">&nbsp;</td>
     <td valign="top"><code>port</code></td>
-    <td valign="top">The port number for HTTPS, for both Harbor portal and Docker commands.</td>
+    <td valign="top">The port number for HTTPS, for both Harbor portal and Docker commands. The default is 443.</td>
   </tr>
   <tr>
     <td valign="top">&nbsp;</td>
