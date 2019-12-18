@@ -98,20 +98,23 @@ Body Of List Helm Charts
     Close Browser
 
 Body Of Admin Push Signed Image
+    [Arguments]  ${image}  ${with_remove}=${false}
     Enable Notary Client
 
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
     Log  ${output}
 
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world:latest
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${notaryServerEndpoint}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} library ${image} latest
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/${image}/signatures"
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  sha256
+
+    Run Keyword If  ${with_remove} == ${true}  Remove Notary Signature  ${ip}  ${image}
 
 Delete A Project Without Sign In Harbor
     [Arguments]  ${harbor_ip}=${ip}  ${username}=${HARBOR_ADMIN}  ${password}=${HARBOR_PASSWORD}

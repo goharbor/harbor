@@ -114,6 +114,13 @@ Enable Notary Client
     ${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${notaryServerEndpointNoSubDir}/
     Log  ${output}
 
+Remove Notary Signature
+    [Arguments]  ${ip}  ${image}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-remove-image-signature.expect ${ip} library ${image}
+    Log To Console  ${output}
+    Log  ${output}
+    Should Be Equal As Integers  ${rc}  0
+
 Prepare
     [Arguments]  ${with_notary}=true  ${with_clair}=true  ${with_chartmuseum}=true
     ${rc}  ${output}=  Run And Return Rc And Output  make prepare -e NOTARYFLAG=${with_notary} CLAIRFLAG=${with_clair} CHARTFLAG=${with_chartmuseum}
