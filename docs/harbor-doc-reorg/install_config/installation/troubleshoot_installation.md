@@ -6,6 +6,12 @@
 
 The following sections help you to solve problems when installing Harbor.
 
+## Access Harbor Logs
+
+By default, registry data is persisted in the host's `/data/` directory.  This data remains unchanged even when Harbor's containers are removed and/or recreated, you can edit the `data_volume` in `harbor.yml` file to change this directory.
+
+In addition, Harbor uses `rsyslog` to collect the logs of each container. By default, these log files are stored in the directory `/var/log/harbor/` on the target host for troubleshooting, also you can change the log directory in `harbor.yml`.
+
 ## Harbor Does Not Start or Functions Incorrectly
 
 If Harbor does not start or functions incorrectly, run the following command to check whether all of Harbor's containers are in the `Up` state.
@@ -29,7 +35,7 @@ If a container is not in the `Up` state, check the log file for that container i
 
 ## Using `nginx` or Load Balancing
 
-If Harbor is running behind an `nginx` proxy or elastic load balancing, look for the line below in `common/config/nginx/nginx.conf`.
+If Harbor is running behind an `nginx` proxy or elastic load balancing, open the file `common/config/nginx/nginx.conf` and search for the following line.
 
 ```
 proxy_set_header X-Forwarded-Proto $scheme;
@@ -37,29 +43,30 @@ proxy_set_header X-Forwarded-Proto $scheme;
 
 If the proxy already has similar settings, remove it from the sections `location /`, `location /v2/` and `location /service/` and redeploy Harbor. For instructions about how to redeploy Harbor, see [Reconfigure Harbor and Manage the Harbor Lifecycle](../configuration/reconfigure_manage_lifecycle.md).
 
-----------
-
-[Back to table of contents](../../_index.md)
-
 <a id="https"></a>
 ## Troubleshoot HTTPS Connections
 
-You may get an intermediate certificate from a certificate issuer. In this case, you should merge the intermediate certificate with your own certificate to create a certificate bundle. You can achieve this by the below command:
+If you use an intermediate certificate from a certificate issuer, merge the intermediate certificate with your own certificate to create a certificate bundle. Run the following command.
+
+```
+cat intermediate-certificate.pem >> yourdomain.com.crt
+```
+When the Docker daemon runs on certain operating systems, you might need to trust the certificate at the OS level. For example, run the following commands.
+
+- Ubuntu:
 
     ```
-    cat intermediate-certificate.pem >> yourdomain.com.crt
-    ```
-On some systems where docker daemon runs, you may need to trust the certificate at OS level.
-   On Ubuntu, this can be done by below commands:
-
-    ```sh
-    cp yourdomain.com.crt /usr/local/share/ca-certificates/yourdomain.com.crt
+    cp yourdomain.com.crt /usr/local/share/ca-certificates/yourdomain.com.crt 
     update-ca-certificates
     ```
 
-   On Red Hat (CentOS etc), the commands are:
+- Red Hat (CentOS etc):
 
-    ```sh
+    ```
     cp yourdomain.com.crt /etc/pki/ca-trust/source/anchors/yourdomain.com.crt
     update-ca-trust
     ```
+    
+----------
+
+[Back to table of contents](../../_index.md)
