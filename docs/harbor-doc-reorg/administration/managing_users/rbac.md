@@ -1,3 +1,7 @@
+[Back to table of contents](../../_index.md)
+
+----------
+
 # Harbor Role Based Access Control (RBAC)  
 
 Harbor manages images through projects. You provide access to these images to users by including the users in projects and assigning one of the following roles to them.  
@@ -28,3 +32,7 @@ Harbor system administrators can assign the Harbor system administrator role to 
 ![browse project](../../img/new_set_admin_remove_user.png)
 
 To delete users, select a user and click `DELETE`. Deleting user is only supported under database authentication mode.
+
+----------
+
+[Back to table of contents](../../_index.md)
