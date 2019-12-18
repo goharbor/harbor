@@ -66,7 +66,7 @@ By default, Harbor limits the CPU usage of the Clair container to 150000 to avoi
 To install Harbor with chart repository service, add the `--with-chartmuseum` parameter when you run `install.sh`:
 
 ```
-    $ sudo ./install.sh --with-chartmuseum
+sudo ./install.sh --with-chartmuseum
 ```
 
 ## Installation with Notary, Clair, and Chart Repository Service
@@ -74,7 +74,7 @@ To install Harbor with chart repository service, add the `--with-chartmuseum` pa
 If you want to install all three of Notary, Clair and chart repository service, specify all of the parameters in the same command:
 
 ```
-    $ sudo ./install.sh --with-notary --with-clair --with-chartmuseum
+sudo ./install.sh --with-notary --with-clair --with-chartmuseum
 ```
 
 <a id="connect_http"></a>
