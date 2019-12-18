@@ -4,13 +4,14 @@
 
 # Troubleshooting Harbor Installation
 
-## Harbor Doesn't Start or Functions Incorrectly
+The following sections help you to solve problems when installing Harbor.
 
-Harbor Doesn't Start or Functions Incorrectly
+## Harbor Does Not Start or Functions Incorrectly
 
-When Harbor does not function correctly, run the following commands to find out if all of Harbor's containers in **UP** status:
+If Harbor does not start or functions incorrectly, run the following command to check whether all of Harbor's containers are in the `Up` state.
+
 ```
-    $ sudo docker-compose ps
+sudo docker-compose ps
         Name                     Command               State                    Ports
   -----------------------------------------------------------------------------------------------------------------------------
   harbor-core         /harbor/start.sh                 Up
@@ -26,15 +27,15 @@ When Harbor does not function correctly, run the following commands to find out 
 
 If a container is not in the `Up` state, check the log file for that container in `/var/log/harbor`. For example, if the `harbor-core` container is not running, look at the `core.log` log file.
 
-## Using nginx or Load Balancing
+## Using `nginx` or Load Balancing
 
-When setting up Harbor behind an `nginx` proxy or elastic load balancing, look for the following line in `common/config/nginx/nginx.conf` and, if the proxy already has similar settings, remove it from the sections `location /`, `location /v2/` and `location /service/`.
+If Harbor is running behind an `nginx` proxy or elastic load balancing, look for the line below in `common/config/nginx/nginx.conf`.
 
-``` sh
+```
 proxy_set_header X-Forwarded-Proto $scheme;
 ```
 
-Then re-deploy Harbor per the instructions in "Managing Harbor Lifecycle.
+If the proxy already has similar settings, remove it from the sections `location /`, `location /v2/` and `location /service/` and redeploy Harbor. For instructions about how to redeploy Harbor, see [Reconfigure Harbor and Manage the Harbor Lifecycle](../configuration/reconfigure_manage_lifecycle.md).
 
 ----------
 
