@@ -47,7 +47,7 @@ The installation processes are almost the same for both the online and offline i
    
 ## Next Steps
 
-- To use Harbor in a production environment, you must [Configure HTTPS Access to Harbor](configure_https.md).
+- To secure the connections to Harbor, see [Configure HTTPS Access to Harbor](configure_https.md).
 - To configure your Harbor installation, see [Configure the Harbor YML File](configure_yml_file.md).
 
 ----------

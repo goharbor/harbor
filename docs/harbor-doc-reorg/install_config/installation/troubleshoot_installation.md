@@ -26,7 +26,7 @@ When Harbor does not function correctly, run the following commands to find out 
 
 If a container is not in the `Up` state, check the log file for that container in `/var/log/harbor`. For example, if the `harbor-core` container is not running, look at the `core.log` log file.
 
-### Using nginx or Load Balancing
+## Using nginx or Load Balancing
 
 When setting up Harbor behind an `nginx` proxy or elastic load balancing, look for the following line in `common/config/nginx/nginx.conf` and, if the proxy already has similar settings, remove it from the sections `location /`, `location /v2/` and `location /service/`.
 
@@ -39,3 +39,26 @@ Then re-deploy Harbor per the instructions in "Managing Harbor Lifecycle.
 ----------
 
 [Back to table of contents](../../_index.md)
+
+<a id="https"></a>
+## Troubleshoot HTTPS Connections
+
+You may get an intermediate certificate from a certificate issuer. In this case, you should merge the intermediate certificate with your own certificate to create a certificate bundle. You can achieve this by the below command:
+
+    ```
+    cat intermediate-certificate.pem >> yourdomain.com.crt
+    ```
+On some systems where docker daemon runs, you may need to trust the certificate at OS level.
+   On Ubuntu, this can be done by below commands:
+
+    ```sh
+    cp yourdomain.com.crt /usr/local/share/ca-certificates/yourdomain.com.crt
+    update-ca-certificates
+    ```
+
+   On Red Hat (CentOS etc), the commands are:
+
+    ```sh
+    cp yourdomain.com.crt /etc/pki/ca-trust/source/anchors/yourdomain.com.crt
+    update-ca-trust
+    ```
