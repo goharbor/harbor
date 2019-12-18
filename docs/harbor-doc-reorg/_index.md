@@ -23,7 +23,7 @@ This section describes how to install Harbor and perform the required initial co
 This section describes how to use and maintain Harbor after deployment. These day 2 operations are performed by the Harbor Administrator.
 
 - [Introduction](administration/_index.md)
-- [Configuring Authentication](administration/configure_authentication.md)
+- [Configuring Authentication](administration/configure_authentication/configure_authentication.md)
    - [Database Authentication](administration/configure_authentication/db_auth.md)
    - [LDAP/Active Directory Authentication](administration/configure_authentication/ldap_auth.md)
    - [OIDC Provider Authentication](administration/configure_authentication/oidc_auth.md)
