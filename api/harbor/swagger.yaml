@@ -46,11 +46,9 @@ paths:
         - Products
       responses:
         '200':
-          description: An array of search results
+          description: Search results
           schema:
-            type: array
-            items:
-              $ref: '#/definitions/Search'
+            $ref: '#/definitions/Search'
         '500':
           description: Unexpected internal errors.
   /projects:
