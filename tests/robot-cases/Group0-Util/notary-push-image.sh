@@ -10,8 +10,8 @@ echo $IP
 mkdir -p /etc/docker/certs.d/$IP/
 mkdir -p ~/.docker/tls/$IP:4443/
 
-cp /notary_ca/ca.crt /etc/docker/certs.d/$IP/
-cp /notary_ca/ca.crt ~/.docker/tls/$IP:4443/
+cp /notary_ca.crt /etc/docker/certs.d/$IP/
+cp /notary_ca.crt ~/.docker/tls/$IP:4443/
 
 export DOCKER_CONTENT_TRUST=1
 export DOCKER_CONTENT_TRUST_SERVER=https://$IP:4443

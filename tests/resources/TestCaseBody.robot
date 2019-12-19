@@ -98,7 +98,7 @@ Body Of List Helm Charts
     Close Browser
 
 Body Of Admin Push Signed Image
-    [Arguments]  ${image}  ${with_remove}=${false}
+    [Arguments]  ${image}=tomcat  ${with_remove}=${false}
     Enable Notary Client
 
     ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest

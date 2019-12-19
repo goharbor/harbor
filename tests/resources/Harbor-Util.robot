@@ -95,24 +95,9 @@ Switch To LDAP
 Enable Notary Client
     ${rc}  ${output}=  Run And Return Rc And Output  rm -rf ~/.docker/
     Log  ${rc}
-    Should Be Equal As Integers  ${rc}  0
-    Log  ${ip}
-    Log To Console  ${ip}
-    ${rc}=  Run And Return Rc  mkdir -p /etc/docker/certs.d/${ip}/
-    Should Be Equal As Integers  ${rc}  0
-    Log To Console  ${notaryServerEndpointNoSubDir}
-    ${rc}=  Run And Return Rc  mkdir -p ~/.docker/tls/${notaryServerEndpointNoSubDir}/
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt /etc/docker/certs.d/${ip}/
+    ${rc}  ${output}=  Run And Return Rc and Output  curl -o /notary_ca.crt -s -k -X GET --header 'Accept: application/json' -u 'admin:Harbor12345' 'https://${ip}/api/systeminfo/getcert'
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  cp ./harbor_ca.crt ~/.docker/tls/${notaryServerEndpointNoSubDir}/
-    Log  ${output}
-    Should Be Equal As Integers  ${rc}  0
-    ${rc}  ${output}=  Run And Return Rc And Output  ls -la /etc/docker/certs.d/${ip}/
-    Log  ${output}
-    ${rc}  ${output}=  Run And Return Rc And Output  ls -la ~/.docker/tls/${notaryServerEndpointNoSubDir}/
-    Log  ${output}
 
 Remove Notary Signature
     [Arguments]  ${ip}  ${image}
