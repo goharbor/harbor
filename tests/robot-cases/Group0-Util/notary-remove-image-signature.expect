@@ -5,7 +5,7 @@ set PROJECT [lindex $argv 1]
 set IMAGE [lindex $argv 2]
 set timeout 30
 
-spawn notary -s https://$HOST:4443 --tlscacert /notary_ca/ca.crt -d /root/.docker/trust remove -p $HOST/$PROJECT/$IMAGE latest
+spawn notary -s https://$HOST:4443 --tlscacert /notary_ca.crt -d /root/.docker/trust remove -p $HOST/$PROJECT/$IMAGE latest
 
 expect {
         "Enter username:" {send "admin\r";exp_continue}
