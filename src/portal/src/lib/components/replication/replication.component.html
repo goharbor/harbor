@@ -48,7 +48,7 @@
       <clr-datagrid [(clrDgSelected)]="selectedRow" [clrDgLoading]="jobsLoading" (clrDgRefresh)="clrLoadJobs($event)">
         <clr-dg-action-bar>
           <div class="btn-group">
-            <button type="button" class="btn btn-sm btn-secondary" *ngIf="isSystemAdmin" [disabled]="!(jobs && jobs.length>0) || isStopOnGoing || !selectedRow.length"
+            <button type="button" class="btn  btn-secondary" *ngIf="isSystemAdmin" [disabled]="!(jobs && jobs.length>0) || isStopOnGoing || !selectedRow.length"
               (click)="openStopExecutionsDialog(selectedRow)">{{'REPLICATION.STOPJOB' | translate}}</button>
           </div>
         </clr-dg-action-bar>

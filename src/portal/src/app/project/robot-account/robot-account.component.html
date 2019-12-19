@@ -14,13 +14,13 @@
   </div>
   <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
     <clr-dg-action-bar>
-      <button class="btn btn-sm btn-secondary" [disabled]="!hasRobotCreatePermission" (click)="openAddRobotModal()">
+      <button class="btn  btn-secondary" [disabled]="!hasRobotCreatePermission" (click)="openAddRobotModal()">
         <span>
           <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'ROBOT_ACCOUNT.NEW_ROBOT_ACCOUNT'
           | translate }}
         </span>
       </button>
-      <clr-dropdown [clrCloseMenuOnItemClick]="false" class="btn btn-sm
+      <clr-dropdown [clrCloseMenuOnItemClick]="false" class="btn
         btn-link" clrDropdownTrigger>
         <span>{{'MEMBER.ACTION' | translate}}<clr-icon shape="caret
             down"></clr-icon></span>

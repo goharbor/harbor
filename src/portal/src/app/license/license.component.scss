@@ -6,3 +6,10 @@
   margin: 1em 0px;
   font-size: 1rem;
 }
+
+.overflow-y-scroll {
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  overflow-y: auto;
+}

@@ -3,16 +3,18 @@
         <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12 quota-top">
             <div class="default-quota">
                 <div>
-                    <div class="default-quota-text"><span class="width-10rem">{{'QUOTA.PROJECT_QUOTA_DEFAULT_ARTIFACT' | translate}}</span><span
-                            class="num-count">{{ quotaHardLimitValue?.countLimit === -1? ('QUOTA.UNLIMITED'| translate): quotaHardLimitValue?.countLimit }}</span>
+                    <div class="default-quota-text">
+                        <span class="width-10rem">{{'QUOTA.PROJECT_QUOTA_DEFAULT_ARTIFACT' | translate}}</span>
+                        <span class="num-count">{{ quotaHardLimitValue?.countLimit === -1 ? ('QUOTA.UNLIMITED'| translate) : quotaHardLimitValue?.countLimit }}</span>
+                        <button class="btn btn-link btn-sm  default-quota-edit-button"
+                    (click)="editDefaultQuota(quotaHardLimitValue)">{{'QUOTA.EDIT' | translate}}</button>
                     </div>
-                    <div class="default-quota-text"><span class="width-10rem">{{'QUOTA.PROJECT_QUOTA_DEFAULT_DISK' | translate}}</span><span class="num-count">
-                            {{ quotaHardLimitValue?.storageLimit === -1?('QUOTA.UNLIMITED' | translate): getIntegerAndUnit(quotaHardLimitValue?.storageLimit, 0).partNumberHard}}
+                    <div class="default-quota-text">
+                        <span class="width-10rem">{{'QUOTA.PROJECT_QUOTA_DEFAULT_DISK' | translate}}</span>
+                        <span class="num-count">{{ quotaHardLimitValue?.storageLimit === -1?('QUOTA.UNLIMITED' | translate): getIntegerAndUnit(quotaHardLimitValue?.storageLimit, 0).partNumberHard}}
                             {{ quotaHardLimitValue?.storageLimit === -1?'':quotaHardLimitValue?.storageUnit }}</span>
                     </div>
                 </div>
-                <button class="btn btn-link btn-sm default-quota-edit-button pt-0 mt-0 pl-0"
-                    (click)="editDefaultQuota(quotaHardLimitValue)">{{'QUOTA.EDIT' | translate}}</button>
             </div>
             <div class="refresh-div mr-1">
                 <span class="refresh-btn" (click)="refresh()">

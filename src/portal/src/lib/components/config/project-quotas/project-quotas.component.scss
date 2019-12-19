@@ -3,13 +3,18 @@
 
   .default-quota-text {
     display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    font-family: Metropolis, "Avenir Next", "Helvetica Neue", Arial, sans-serif;
     .width-10rem {
-      width: 10.3rem;
+      width: 15rem;
     }
 
     .num-count {
       display: inline-block;
       min-width: 2rem;
+      font-weight: 600;
+      font-size: 18px;
     }
   }
 }
@@ -33,8 +38,8 @@
 }
 
 .default-quota-edit-button {
-  height: 1rem;
-  font-size: 12px;
+  font-size: 14px;
+  margin-left: 60px;
 }
 
 .min-label-width {

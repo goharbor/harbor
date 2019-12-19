@@ -25,7 +25,7 @@
     <section id="info" role="tabpanel" aria-labelledby="repo-info" [hidden]='!isCurrentTabContent("info")'>
       <form #repoInfoForm="ngForm">
         <div id="info-edit-button">
-          <button class="btn btn-sm" [disabled]="editing || !hasProjectAdminRole " (click)="editInfo()">
+          <button class="btn " [disabled]="editing || !hasProjectAdminRole " (click)="editInfo()">
             <clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{'BUTTON.EDIT' | translate}}
           </button>
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 1024" preserveAspectRatio="xMinYMin" class="markdown">
@@ -45,7 +45,7 @@
           <textarea id="info-edit-textarea" class="clr-textarea w-100" rows="5" name="info-edit-textarea"
             [(ngModel)]="imageInfo"></textarea>
         </div>
-        <div class="btn-sm" *ngIf="editing">
+        <div class="" *ngIf="editing">
           <button id="edit-save" class="btn btn-primary" [disabled]="!hasChanges()" (click)="saveInfo()">{{'BUTTON.SAVE' | translate}}</button>
           <button id="edit-cancel" class="btn" (click)="cancelInfo()">{{'BUTTON.CANCEL' | translate}}</button>
         </div>

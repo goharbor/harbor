@@ -1,8 +1,10 @@
 <div>
     <div class="arrow-block" *ngIf="!withAdmiral">
-        <a (click)="goBackPro()">< {{'SIDE_NAV.PROJECTS'| translate}}</a>
-        <a (click)="goBackRep()">< {{'REPOSITORY.REPOSITORIES'| translate}}</a>
-        <a (click)="goBack(repositoryId)">< {{repositoryId}}</a>
+        <a (click)="goBackPro()">{{'SIDE_NAV.PROJECTS'| translate}}</a>
+        <span class="back-icon"><</span>
+        <a (click)="goBackRep()">{{'REPOSITORY.REPOSITORIES'| translate}}</a>
+        <span class="back-icon"><</span>
+        <a (click)="goBack(repositoryId)">{{repositoryId}}</a>
     </div>
     <hbr-tag-detail (backEvt)="goBack($event)" 
     [tagId]="tagId"

@@ -28,7 +28,7 @@
             </div>
           </div>
           <div>
-            <button class="btn btn-primary btn-sm" (click)="stopJob()"
+            <button class="btn btn-primary " (click)="stopJob()"
               [disabled]="stopOnGoing">{{'REPLICATION.STOPJOB' | translate}}</button>
             <span class="spinner spinner-inline" [hidden]="inProgress === false"></span>
           </div>

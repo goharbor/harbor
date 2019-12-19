@@ -12,14 +12,14 @@
             <clr-dg-action-bar>
                 <div class="clr-row">
                     <div class="clr-col-7">
-                        <button type="button" class="btn btn-sm btn-secondary" (click)="addNewScanner()">
+                        <button type="button" class="btn  btn-secondary" (click)="addNewScanner()">
                             <clr-icon shape="plus" size="16"></clr-icon>
                             {{'SCANNER.NEW_SCANNER' | translate}}
                         </button>
                         <button id="set-default"  [disabled]="!(selectedRow && !selectedRow.is_default && !selectedRow.disabled)"
-                                class="btn btn-sm btn-secondary"
+                                class="btn  btn-secondary"
                                 (click)="setAsDefault()">{{'SCANNER.SET_AS_DEFAULT' | translate}}</button>
-                        <clr-dropdown  [clrCloseMenuOnItemClick]="false" class="btn btn-sm btn-link" clrDropdownTrigger>
+                        <clr-dropdown  [clrCloseMenuOnItemClick]="false" class="btn  btn-link" clrDropdownTrigger>
                             <span id="action-scanner">{{'MEMBER.ACTION' | translate}}<clr-icon class="clr-icon" shape="caret down"></clr-icon></span>
                             <clr-dropdown-menu *clrIfOpen>
                                 <button clrDropdownItem
@@ -36,13 +36,13 @@
                                 </button>
                                 <button clrDropdownItem
                                         (click)="editScanner()"
-                                        class="btn btn-sm btn-secondary" [disabled]="!selectedRow">
+                                        class="btn  btn-secondary" [disabled]="!selectedRow">
                                     <clr-icon class="margin-top-0" size="16" shape="pencil"></clr-icon>
                                     <span class="margin-left-10">{{'BUTTON.EDIT' | translate}}</span>
                                 </button>
                                 <button clrDropdownItem
                                         (click)="deleteScanners()"
-                                        class="btn btn-sm btn-secondary" [disabled]="!selectedRow">
+                                        class="btn  btn-secondary" [disabled]="!selectedRow">
                                     <clr-icon class="margin-top-0" size="16" shape="times"></clr-icon>
                                     <span id="delete-scanner-action" class="margin-left-10">{{'BUTTON.DELETE' | translate}}</span>
                                 </button>

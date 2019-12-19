@@ -1,5 +1,5 @@
-<a *ngIf="hasSignedIn" (click)="backToProject()" class="backStyle">&lt; {{'PROJECT_DETAIL.PROJECTS' | translate}}</a>
-<a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']">&lt; {{'SEARCH.BACK' | translate}}</a>
+<a *ngIf="hasSignedIn" (click)="backToProject()" class="backStyle"> {{'PROJECT_DETAIL.PROJECTS' | translate}}</a>
+<a *ngIf="!hasSignedIn" [routerLink]="['/harbor', 'sign-in']"> {{'SEARCH.BACK' | translate}}</a>
 
 <h1 class="custom-h2" sub-header-title>{{currentProject.name}} <span class="role-label"
         *ngIf="isMember">{{roleName | translate}}</span></h1>

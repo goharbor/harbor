@@ -37,18 +37,18 @@
         <div *ngIf="!isCardView" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <clr-datagrid (clrDgRefresh)="refresh()" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRows">
                 <clr-dg-action-bar>
-                    <button type="button" class="btn btn-sm btn-secondary"
+                    <button type="button" class="btn  btn-secondary"
                         [disabled]="!(selectedRows.length===1) || !hasDownloadHelmChartVersionPermission"
                         (click)="versionDownload()">
                         <clr-icon shape="download" size="16"></clr-icon>&nbsp;{{'HELM_CHART.DOWNLOAD' | translate}}
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary"
+                    <button type="button" class="btn  btn-secondary"
                         [disabled]="selectedRows.length<=0 || !hasDeleteHelmChartVersionPermission"
                         (click)="openVersionDeleteModal()">
                         <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'BUTTON.DELETE' | translate}}
                     </button>
                     <clr-dropdown>
-                        <button type="button" class="btn btn-sm btn-secondary" clrDropdownTrigger
+                        <button type="button" class="btn  btn-secondary" clrDropdownTrigger
                             [disabled]="!(selectedRows.length===1)|| !hasAddRemoveHelmChartVersionPermission">
                             <clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}
                         </button>
