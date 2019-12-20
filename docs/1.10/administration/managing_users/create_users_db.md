@@ -1,4 +1,4 @@
-[Back to table of contents](../../_index.md)
+[Back to table of contents](../../index.md)
 
 ----------
 
@@ -23,4 +23,4 @@ If users forget their password, there is a **Forgot Password** in the Harbor log
 
 ----------
 
-[Back to table of contents](../../_index.md)
+[Back to table of contents](../../index.md)

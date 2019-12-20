@@ -1,4 +1,4 @@
-[Back to table of contents](../../_index.md)
+[Back to table of contents](../../index.md)
 
 ----------
 
@@ -28,4 +28,4 @@ For information about how to create users in database authentication mode, see [
 
 ----------
 
-[Back to table of contents](../../_index.md)
+[Back to table of contents](../../index.md)

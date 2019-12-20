@@ -1,4 +1,4 @@
-[Back to table of contents](../../_index.md)
+[Back to table of contents](../../index.md)
 
 ----------
 
@@ -95,4 +95,4 @@ sh docker login -u testuser -p <i>cli_secret</i> jt-test.local.goharbor.io
 
 ----------
 
-[Back to table of contents](../../_index.md)
+[Back to table of contents](../../index.md)

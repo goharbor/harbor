@@ -1,4 +1,4 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
 
 ----------
 
@@ -89,4 +89,4 @@ $ rm -r /data/registry
 
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)

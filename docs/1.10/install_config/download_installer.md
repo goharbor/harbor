@@ -1,4 +1,4 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
 
 ----------
 
@@ -52,4 +52,4 @@ The installation processes are almost the same for both the online and offline i
 
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)

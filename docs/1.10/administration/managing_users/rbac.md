@@ -1,4 +1,4 @@
-[Back to table of contents](../../_index.md)
+[Back to table of contents](../../index.md)
 
 ----------
 
@@ -35,4 +35,4 @@ To delete users, select a user and click `DELETE`. Deleting user is only support
 
 ----------
 
-[Back to table of contents](../../_index.md)
+[Back to table of contents](../../index.md)

@@ -1,4 +1,4 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
 
 ----------
 
@@ -42,4 +42,4 @@ Harbor requires that the following ports be open on the target host.
 
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)

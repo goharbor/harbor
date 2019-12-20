@@ -13,4 +13,4 @@ The Harbor interface offers an option to configure UAA authentication. This auth
 
 ----------
 
-[Back to table of contents](../../_index.md)
+[Back to table of contents](../../index.md)

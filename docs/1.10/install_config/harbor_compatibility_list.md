@@ -1,4 +1,4 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
 
 ----------
 
@@ -55,4 +55,4 @@ This document provides compatibility information for all Harbor components.
 
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)

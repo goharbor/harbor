@@ -1,4 +1,4 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
 
 ----------
 
@@ -324,4 +324,4 @@ To install Harbor, [Run the Installer Script](run_installer_script.md).
 
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)

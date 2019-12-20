@@ -1,4 +1,4 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
 
 ----------
 
@@ -29,4 +29,4 @@ denied: The system is in read only mode. Any modification is prohibited.
 
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)

@@ -1,4 +1,4 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
 
 ----------
 
@@ -69,4 +69,4 @@ When the Docker daemon runs on certain operating systems, you might need to trus
     
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)

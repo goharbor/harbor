@@ -1,4 +1,4 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
 
 ----------
 
@@ -124,4 +124,4 @@ alias notary="notary -s https://192.168.0.5:4443 -d ~/.docker/trust --tlscacert 
 
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)

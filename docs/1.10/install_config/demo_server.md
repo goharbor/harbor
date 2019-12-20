@@ -1,4 +1,4 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
 
 ----------
 
@@ -57,4 +57,4 @@ See the [Harbor Installation Prerequisites](installation_prereqs.md).
 
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)

@@ -1,4 +1,4 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
 
 ----------
 
@@ -62,4 +62,4 @@ $ cp /root/cert/root.crt ../registry/root.crt
 
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)

@@ -1,4 +1,4 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
 
 ----------
 
@@ -57,4 +57,4 @@ When setting project quotas, it is useful to know how Harbor calculates tag numb
 
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)

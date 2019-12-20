@@ -6,7 +6,7 @@ This is the main table of contents for the Harbor documentation.
 
 This section describes how to install Harbor and perform the required initial configurations. These day 1 operations are performed by the Harbor Administrator.
 
-- [Introduction](install_config/_index.md) 
+- [Introduction](install_config/index.md) 
 - [Test Harbor with the Demo Server](install_config/demo_server.md)
 - [Harbor Compatibility List](install_config/harbor_compatibility_list.md)
 - [Harbor Installation Prerequisites](install_config/installation_prereqs.md)
@@ -23,7 +23,7 @@ This section describes how to install Harbor and perform the required initial co
 
 This section describes how to use and maintain Harbor after deployment. These day 2 operations are performed by the Harbor Administrator.
 
-- [Introduction](administration/_index.md)
+- [Introduction](administration/index.md)
 - [Configuring Authentication](administration/configure_authentication/configure_authentication.md)
    - [Configure Database Authentication](administration/configure_authentication/db_auth.md)
    - [Configure LDAP/Active Directory Authentication](administration/configure_authentication/ldap_auth.md)
@@ -45,7 +45,7 @@ This section describes how to use and maintain Harbor after deployment. These da
     - [Import Vulnerability Data to an Offline Harbor instance](administration/vulnerability_scanning/import_vulnerability_data.md)
     - [Configure System-Wide CVE Whitelists](administration/vulnerability_scanning/configure_system_whitelist.md)
 - [Garbage Collection](administration/garbage_collection.md)
-- [Upgrading Harbor](administration/upgrade/_index.md)
+- [Upgrading Harbor](administration/upgrade/index.md)
   - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
   - [Roll Back an Upgrade](administration/upgrade/roll_back_upgrade.md)
 
@@ -53,7 +53,7 @@ This section describes how to use and maintain Harbor after deployment. These da
 
 This section describes how users with the developer, master, and project administrator roles manage and participate in Harbor projects.
 
-- [Introduction](working_with_projects/_index.md)
+- [Introduction](working_with_projects/index.md)
 - [Project Creation](working_with_projects/project_overview.md)
     - [Create a Project](working_with_projects/create_projects.md)
     - [Assign Users to a Project](working_with_projects/add_users.md)
@@ -75,7 +75,7 @@ This section describes how users with the developer, master, and project adminis
 
 This section describes how developers can build from Harbor source code, customize their deployments, and contribute to the open-source Harbor project.
 
-- [Introduction](build_customize_contribute/_index.md)
+- [Introduction](build_customize_contribute/index.md)
 - [Build Harbor from Source Code](build_customize_contribute/compile_guide.md)
 - [Developing the Harbor Frontend](build_customize_contribute/ui_contribution_get_started.md)
 - [Customize the Harbor Look & Feel ](build_customize_contribute/customize_look_feel.md)

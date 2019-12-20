@@ -1,4 +1,4 @@
-[Back to table of contents](../../_index.md)
+[Back to table of contents](../../index.md)
 
 ----------
 
@@ -44,4 +44,4 @@ If you want to manage user authentication by using LDAP groups, you must enable 
 
 ----------
 
-[Back to table of contents](../../_index.md)
+[Back to table of contents](../../index.md)

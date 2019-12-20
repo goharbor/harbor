@@ -1,4 +1,4 @@
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
 
 ----------
 
@@ -36,4 +36,4 @@ To avoid triggering the garbage collection process too frequently, the availabil
 
 ----------
 
-[Back to table of contents](../_index.md)
+[Back to table of contents](../index.md)
