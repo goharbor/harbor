@@ -15,13 +15,14 @@
 package registry
 
 import (
+	"github.com/goharbor/harbor/src/pkg/project"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/goharbor/harbor/src/server/v2.0/registry/catalog"
-	"github.com/goharbor/harbor/src/server/v2.0/registry/manifest"
-	"github.com/goharbor/harbor/src/server/v2.0/registry/tag"
+	"github.com/goharbor/harbor/src/server/registry/catalog"
+	"github.com/goharbor/harbor/src/server/registry/manifest"
+	"github.com/goharbor/harbor/src/server/registry/tag"
 	"github.com/gorilla/mux"
 )
 
@@ -39,17 +40,17 @@ func New(url *url.URL) http.Handler {
 	rootRouter.Path("/v2/_catalog").Methods(http.MethodGet).Handler(catalog.NewHandler())
 
 	// handle list tag
-	rootRouter.Path("/v2/{name}/tags/list").Methods(http.MethodGet).Handler(tag.NewHandler())
+	rootRouter.Path("/v2/{name:.*}/tags/list").Methods(http.MethodGet).Handler(tag.NewHandler())
 
 	// handle manifest
 	// TODO maybe we should split it into several sub routers based on the method
-	manifestRouter := rootRouter.Path("/v2/{name}/manifests/{reference}").Subrouter()
+	manifestRouter := rootRouter.Path("/v2/{name:.*}/manifests/{reference}").Subrouter()
 	manifestRouter.NewRoute().Methods(http.MethodGet, http.MethodHead, http.MethodPut, http.MethodDelete).
-		Handler(manifest.NewHandler(proxy))
+		Handler(manifest.NewHandler(project.Mgr, proxy))
 
 	// handle blob
 	// as we need to apply middleware to the blob requests, so create a sub router to handle the blob APIs
-	blobRouter := rootRouter.Path("/v2/{name}/blobs/").Subrouter()
+	blobRouter := rootRouter.PathPrefix("/v2/{name:.*}/blobs/").Subrouter()
 	blobRouter.NewRoute().Methods(http.MethodGet, http.MethodHead, http.MethodPost, http.MethodPut, http.MethodPatch, http.MethodDelete).
 		Handler(proxy)
 
