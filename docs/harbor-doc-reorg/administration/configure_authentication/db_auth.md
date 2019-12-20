@@ -25,6 +25,7 @@ In database authentication mode, user accounts are stored in the local database.
 ## What to Do Next
 
 For information about how to create users in database authentication mode, see [Create User Accounts in Database Mode](../managing_users/create_users_db.md).
+
 ----------
 
 [Back to table of contents](../../_index.md)
