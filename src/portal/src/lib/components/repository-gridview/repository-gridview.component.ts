@@ -9,14 +9,12 @@ import {
     EventEmitter,
     OnChanges,
     SimpleChanges,
-    Inject
+    Inject, OnDestroy
 } from "@angular/core";
 import { Router } from "@angular/router";
-import { forkJoin } from "rxjs";
-import { finalize } from "rxjs/operators";
+import { forkJoin, Subscription } from "rxjs";
+import { debounceTime, distinctUntilChanged, finalize, switchMap } from "rxjs/operators";
 import { TranslateService } from "@ngx-translate/core";
-import { Comparator, State } from "../../services/interface";
-
 import {
     Repository,
     SystemInfo,
@@ -26,7 +24,7 @@ import {
     RepositoryItem,
     TagService
 } from '../../services';
-import { ErrorHandler } from '../../utils/error-handler/error-handler';
+import { ErrorHandler } from '../../utils/error-handler';
 import { DEFAULT_PAGE_SIZE, calculatePage, clone } from '../../utils/utils';
 import { ConfirmationState, ConfirmationTargets, ConfirmationButtons } from '../../entities/shared.const';
 import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
@@ -43,13 +41,13 @@ import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { errorHandler as errorHandFn } from "../../utils/shared/shared.utils";
 import { ClrDatagridStateInterface } from "@clr/angular";
+import { FilterComponent } from "../filter/filter.component";
 @Component({
     selector: "hbr-repository-gridview",
     templateUrl: "./repository-gridview.component.html",
     styleUrls: ["./repository-gridview.component.scss"],
-    changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class RepositoryGridviewComponent implements OnChanges, OnInit {
+export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy {
     signedCon: { [key: string]: any | string[] } = {};
     downloadLink: string;
     @Input() projectId: number;
@@ -76,7 +74,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     pageSize: number = DEFAULT_PAGE_SIZE;
     currentPage = 1;
     totalCount = 0;
-    currentState: State;
+    currentState: ClrDatagridStateInterface;
 
     @ViewChild("confirmationDialog", {static: false})
     confirmationDialog: ConfirmationDialogComponent;
@@ -84,6 +82,9 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     @ViewChild("gridView", {static: false}) gridView: GridViewComponent;
     hasCreateRepositoryPermission: boolean;
     hasDeleteRepositoryPermission: boolean;
+    @ViewChild(FilterComponent, {static: true})
+    filterComponent: FilterComponent;
+    searchSub: Subscription;
     constructor(@Inject(SERVICE_CONFIG) private configInfo: IServiceConfig,
         private errorHandler: ErrorHandler,
         private translateService: TranslateService,
@@ -92,8 +93,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         private tagService: TagService,
         private operationService: OperationService,
         public userPermissionService: UserPermissionService,
-        private ref: ChangeDetectorRef,
-        private router: Router) {
+        ) {
         if (this.configInfo && this.configInfo.systemInfoEndpoint) {
             this.downloadLink = this.configInfo.systemInfoEndpoint + "/getcert";
         }
@@ -129,14 +129,40 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
             .subscribe(systemInfo => (this.systemInfo = systemInfo)
                 , error => this.errorHandler.error(error));
 
-        if (this.mode === "admiral") {
-            this.isCardView = true;
-        } else {
-            this.isCardView = false;
-        }
+        this.isCardView = this.mode === "admiral";
 
         this.lastFilteredRepoName = "";
         this.getHelmChartVersionPermission(this.projectId);
+        if (!this.searchSub) {
+            this.searchSub = this.filterComponent.filterTerms.pipe(
+                debounceTime(500),
+                distinctUntilChanged(),
+                switchMap(repoName => {
+                    this.lastFilteredRepoName = repoName;
+                    this.currentPage = 1;
+                   // Pagination
+                    let params: RequestQueryParams = new RequestQueryParams()
+                       .set("page", "" + this.currentPage).set("page_size", "" + this.pageSize);
+                    this.loading = true;
+                    return this.repositoryService.getRepositories(this.projectId, this.lastFilteredRepoName, params);
+                })
+            ).subscribe((repo: Repository) => {
+                this.totalCount = repo.metadata.xTotalCount;
+                this.repositories = repo.data;
+                this.signedCon = {};
+                this.loading = false;
+            }, error => {
+                this.loading = false;
+                this.errorHandler.error(error);
+            });
+        }
+    }
+
+    ngOnDestroy() {
+        if (this.searchSub) {
+            this.searchSub.unsubscribe();
+            this.searchSub = null;
+        }
     }
 
     confirmDeletion(message: ConfirmationAcknowledgement) {
@@ -160,7 +186,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                     forkJoin(observableLists).subscribe((item) => {
                         this.selectedRow = [];
                         this.refresh();
-                        let st: State = this.getStateAfterDeletion();
+                        let st: ClrDatagridStateInterface = this.getStateAfterDeletion();
                         if (!st) {
                             this.refresh();
                         } else {
@@ -214,7 +240,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
     doSearchRepoNames(repoName: string) {
         this.lastFilteredRepoName = repoName;
         this.currentPage = 1;
-        let st: State = this.currentState;
+        let st: ClrDatagridStateInterface = this.currentState;
         if (!st || !st.page) {
             st = { page: {} };
         }
@@ -264,11 +290,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
             {
                 repoName: repoName,
                 signedImages: signature,
-            }).pipe(finalize(() => {
-                let hnd = setInterval(() => this.ref.markForCheck(), 100);
-                setTimeout(() => clearInterval(hnd), 5000);
-            }))
-            .subscribe((res: string) => {
+            }).subscribe((res: string) => {
                 summaryKey = res;
                 let message = new ConfirmationMessage(
                     summaryTitle,
@@ -324,12 +346,6 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
         evt.stopPropagation();
         this.deleteRepos([item]);
     }
-
-    selectedChange(): void {
-        let hnd = setInterval(() => this.ref.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 2000);
-    }
-
     refresh() {
         this.doSearchRepoNames("");
     }
@@ -356,8 +372,6 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 this.loading = false;
                 this.errorHandler.error(error);
             });
-        let hnd = setInterval(() => this.ref.markForCheck(), 500);
-        setTimeout(() => clearInterval(hnd), 5000);
     }
 
     clrLoad(state: ClrDatagridStateInterface): void {
@@ -401,13 +415,9 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
                 this.loading = false;
                 this.errorHandler.error(error);
             });
-
-        // Force refresh view
-        let hnd = setInterval(() => this.ref.markForCheck(), 100);
-        setTimeout(() => clearInterval(hnd), 5000);
     }
 
-    getStateAfterDeletion(): State {
+    getStateAfterDeletion(): ClrDatagridStateInterface {
         let total: number = this.totalCount - 1;
         if (total <= 0) {
             return null;
@@ -420,7 +430,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit {
             targetPageNumber = totalPages; // Should == currentPage -1
         }
 
-        let st: State = this.currentState;
+        let st: ClrDatagridStateInterface = this.currentState;
         if (!st) {
             st = { page: {} };
         }

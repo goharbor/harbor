@@ -1,40 +1,31 @@
 import { ComponentFixture, TestBed, async } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { DebugElement } from '@angular/core';
-
 import { RouterTestingModule } from '@angular/router/testing';
-
 import { SharedModule } from '../../utils/shared/shared.module';
-import { ConfirmationDialogComponent } from '../confirmation-dialog/confirmation-dialog.component';
-import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
 import { RepositoryGridviewComponent } from './repository-gridview.component';
-import { TagComponent } from '../tag/tag.component';
-import { FilterComponent } from '../filter/filter.component';
-
 import { ErrorHandler } from '../../utils/error-handler/error-handler';
 import { Repository, RepositoryItem, SystemInfo } from '../../services/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../../entities/service.config';
-import { RepositoryService, RepositoryDefaultService } from '../../services/repository.service';
+import { RepositoryService } from '../../services/repository.service';
 import { TagService, TagDefaultService } from '../../services/tag.service';
-import { SystemInfoService, SystemInfoDefaultService } from '../../services/system-info.service';
-import { LabelPieceComponent } from "../label-piece/label-piece.component";
+import { SystemInfoService } from '../../services/system-info.service';
 import { OperationService } from "../operation/operation.service";
-import { ProjectDefaultService, ProjectService, RetagDefaultService, RetagService } from "../../services";
-import { UserPermissionService, UserPermissionDefaultService } from "../../services/permission.service";
-import { USERSTATICPERMISSION } from "../../services/permission-static";
+import {
+  ProjectDefaultService,
+  ProjectService,
+  RequestQueryParams,
+  RetagDefaultService,
+  RetagService
+} from "../../services";
+import { UserPermissionService } from "../../services/permission.service";
 import { of } from "rxjs";
 import { HarborLibraryModule } from "../../harbor-library.module";
+import { delay } from 'rxjs/operators';
 describe('RepositoryComponentGridview (inline template)', () => {
 
   let compRepo: RepositoryGridviewComponent;
   let fixtureRepo: ComponentFixture<RepositoryGridviewComponent>;
-  let repositoryService: RepositoryService;
-  let systemInfoService: SystemInfoService;
-  let userPermissionService: UserPermissionService;
-
-  let spyRepos: jasmine.Spy;
-  let spySystemInfo: jasmine.Spy;
-
   let mockSystemInfo: SystemInfo = {
     "with_notary": true,
     "with_admiral": false,
@@ -46,7 +37,6 @@ describe('RepositoryComponentGridview (inline template)', () => {
     "has_ca_root": false,
     "harbor_version": "v1.1.1-rc1-160-g565110d"
   };
-
   let mockRepoData: RepositoryItem[] = [
     {
       "id": 1,
@@ -87,27 +77,33 @@ describe('RepositoryComponentGridview (inline template)', () => {
     metadata: { xTotalCount: 2 },
     data: mockRepoNginxData
   };
-  let mockHasCreateRepositoryPermission: boolean = true;
-  let mockHasDeleteRepositoryPermission: boolean = true;
-  // let mockTagData: Tag[] = [
-  //   {
-  //     "digest": "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
-  //     "name": "1.11.5",
-  //     "size": "2049",
-  //     "architecture": "amd64",
-  //     "os": "linux",
-  //     "docker_version": "1.12.3",
-  //     "author": "NGINX Docker Maintainers \"docker-maint@nginx.com\"",
-  //     "created": new Date("2016-11-08T22:41:15.912313785Z"),
-  //     "signature": null,
-  //     "labels": []
-  //   }
-  // ];
-
   let config: IServiceConfig = {
     repositoryBaseEndpoint: '/api/repository/testing',
     systemInfoEndpoint: '/api/systeminfo/testing',
     targetBaseEndpoint: '/api/tag/testing'
+  };
+  const fakedErrorHandler = {
+    error() {
+      return undefined;
+    }
+  };
+  const fakedSystemInfoService = {
+    getSystemInfo() {
+      return of(mockSystemInfo);
+    }
+  };
+  const fakedRepositoryService = {
+    getRepositories(projectId: number, name: string, param?: RequestQueryParams) {
+      if (name === 'nginx') {
+          return of(mockNginxRepo);
+        }
+        return of(mockRepo).pipe(delay(0));
+    }
+  };
+  const fakedUserPermissionService = {
+    getPermission() {
+      return of(true);
+    }
   };
 
   beforeEach(async(() => {
@@ -118,15 +114,15 @@ describe('RepositoryComponentGridview (inline template)', () => {
         HarborLibraryModule
       ],
       providers: [
-        ErrorHandler,
+        { provide: ErrorHandler, useValue: fakedErrorHandler },
         { provide: SERVICE_CONFIG, useValue: config },
-        { provide: RepositoryService, useClass: RepositoryDefaultService },
+        { provide: RepositoryService, useValue: fakedRepositoryService },
         { provide: TagService, useClass: TagDefaultService },
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: RetagService, useClass: RetagDefaultService },
-        { provide: SystemInfoService, useClass: SystemInfoDefaultService },
-        { provide: UserPermissionService, useClass: UserPermissionDefaultService },
-        { provide: OperationService }
+        { provide: SystemInfoService, useValue: fakedSystemInfoService },
+        { provide: UserPermissionService, useValue: fakedUserPermissionService },
+        { provide: OperationService },
       ]
     });
   }));
@@ -137,34 +133,14 @@ describe('RepositoryComponentGridview (inline template)', () => {
     compRepo.projectId = 1;
     compRepo.mode = '';
     compRepo.hasProjectAdminRole = true;
-
-    repositoryService = fixtureRepo.debugElement.injector.get(RepositoryService);
-    systemInfoService = fixtureRepo.debugElement.injector.get(SystemInfoService);
-
-    spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(of(mockSystemInfo));
-    spyRepos = spyOn(repositoryService, 'getRepositories')
-      .and.callFake(function (projectId: number, name: string) {
-        if (name === 'nginx') {
-          return of(mockNginxRepo);
-        }
-        return of(mockRepo);
-      });
-    userPermissionService = fixtureRepo.debugElement.injector.get(UserPermissionService);
-    spyOn(userPermissionService, "getPermission")
-      .withArgs(compRepo.projectId,
-        USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.CREATE)
-      .and.returnValue(of(mockHasCreateRepositoryPermission))
-      .withArgs(compRepo.projectId, USERSTATICPERMISSION.REPOSITORY.KEY, USERSTATICPERMISSION.REPOSITORY.VALUE.DELETE)
-      .and.returnValue(of(mockHasDeleteRepositoryPermission));
+    compRepo.isCardView = false;
     fixtureRepo.detectChanges();
   });
   let originalTimeout;
-
   beforeEach(function () {
     originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
     jasmine.DEFAULT_TIMEOUT_INTERVAL = 100000;
   });
-
   afterEach(function () {
     jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
   });
@@ -183,23 +159,19 @@ describe('RepositoryComponentGridview (inline template)', () => {
       expect(elRepo.textContent).toEqual('library/busybox');
     });
   }));
-  // Will fail after upgrade to angular 6. todo: need to fix it.
-  it('should filter data by keyword', async(() => {
-    fixtureRepo.whenStable().then(() => {
-      fixtureRepo.detectChanges();
 
-      compRepo.doSearchRepoNames('nginx');
-      fixtureRepo.whenStable().then(() => {
-
-        fixtureRepo.detectChanges();
-        let de: DebugElement[] = fixtureRepo.debugElement.queryAll(By.css('.datagrid-cell'));
-        expect(de).toBeTruthy();
-        expect(compRepo.repositories.length).toEqual(1);
-        expect(de.length).toEqual(1);
-        let el: HTMLElement = de[0].nativeElement;
-        expect(el).toBeTruthy();
-        expect(el.textContent).toEqual('library/nginx');
-      });
-    });
-  }));
+  it('should filter data by keyword',  async () => {
+    fixtureRepo.detectChanges();
+    await fixtureRepo.whenStable();
+    compRepo.doSearchRepoNames('nginx');
+    fixtureRepo.detectChanges();
+    await fixtureRepo.whenStable();
+    let de: DebugElement[] = fixtureRepo.debugElement.queryAll(By.css('.datagrid-cell'));
+    expect(de).toBeTruthy();
+    expect(compRepo.repositories.length).toEqual(1);
+    expect(de.length).toEqual(4);
+    let el: HTMLElement = de[1].nativeElement;
+    expect(el).toBeTruthy();
+    expect(el.textContent).toEqual('library/nginx');
+  });
 });

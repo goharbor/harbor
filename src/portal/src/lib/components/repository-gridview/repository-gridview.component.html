@@ -8,7 +8,7 @@
                         {{'CONFIG.REGISTRY_CERTIFICATE' | translate | uppercase}}
                     </a>
                     <hbr-push-image-button class="push-image-button" *ngIf="hasCreateRepositoryPermission" [registryUrl]="registryUrl" [projectName]="projectName"></hbr-push-image-button>
-                    <hbr-filter [withDivider]="true" filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" (filterEvt)="doSearchRepoNames($event)" [currentValue]="lastFilteredRepoName"></hbr-filter>
+                    <hbr-filter [withDivider]="true" filterPlaceholder="{{'REPOSITORY.FILTER_FOR_REPOSITORIES' | translate}}" [currentValue]="lastFilteredRepoName"></hbr-filter>
                     <span class="card-btn" (click)="showCard(true)" (mouseenter) ="mouseEnter('card') "  (mouseleave) ="mouseLeave('card')">
                         <clr-icon [ngClass]="{'is-highlight': isCardView || isHovering('card') }" shape="view-cards"></clr-icon>
                     </span>
@@ -23,7 +23,7 @@
     </div>
     <div class="row">
         <div *ngIf="!isCardView" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
-            <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
+            <clr-datagrid (clrDgRefresh)="clrLoad($event)" [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow">
                 <clr-dg-action-bar>
                     <button *ngIf="withAdmiral" type="button" class="btn  btn-secondary" (click)="provisionItemEvent($event, selectedRow[0])" [disabled]="!(selectedRow.length===1 && hasProjectAdminRole)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DEPLOY' | translate}}</button>
                     <button *ngIf="withAdmiral" type="button" class="btn  btn-secondary" (click)="itemAddInfoEvent($event, selectedRow[0])" [disabled]="!(selectedRow.length===1 && hasProjectAdminRole)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.ADDITIONAL_INFO' | translate}}</button>
@@ -39,7 +39,7 @@
                     <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>
                 </clr-dg-row>
                 <clr-dg-footer>
-                    <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
+                    <span *ngIf="totalCount">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'REPOSITORY.OF' | translate}}</span>
                     {{pagination.totalItems}} {{'REPOSITORY.ITEMS' | translate}}
                     <clr-dg-pagination #pagination [(clrDgPage)]="currentPage" [clrDgPageSize]="pageSize" [clrDgTotalItems]="totalCount"></clr-dg-pagination>
                 </clr-dg-footer>
