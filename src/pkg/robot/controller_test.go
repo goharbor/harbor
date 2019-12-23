@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"testing"
+	"time"
 )
 
 type ControllerTestSuite struct {
@@ -47,9 +48,13 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 	policies := []*rbac.Policy{}
 	policies = append(policies, rbacPolicy)
 
+	tokenDuration := time.Duration(30) * time.Minute
+	expiresAt := time.Now().UTC().Add(tokenDuration).Unix()
+
 	robot1 := &model.RobotCreate{
 		Name:        "robot1",
 		Description: "TestCreateRobotAccount",
+		ExpiresAt:   expiresAt,
 		ProjectID:   int64(1),
 		Access:      policies,
 	}
@@ -74,6 +79,7 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 	robot2 := &model.RobotCreate{
 		Name:        "robot2",
 		Description: "TestCreateRobotAccount",
+		ExpiresAt:   expiresAt,
 		ProjectID:   int64(1),
 		Access:      policies,
 	}

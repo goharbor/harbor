@@ -18,6 +18,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -39,6 +40,9 @@ func TestRobotAPIPost(t *testing.T) {
 	}
 	policies := []*rbac.Policy{}
 	policies = append(policies, rbacPolicy)
+
+	tokenDuration := time.Duration(30) * time.Minute
+	expiresAt := time.Now().UTC().Add(tokenDuration).Unix()
 
 	cases := []*codeCheckingCase{
 		// 401
@@ -68,6 +72,7 @@ func TestRobotAPIPost(t *testing.T) {
 				bodyJSON: &model.RobotCreate{
 					Name:        "test",
 					Description: "test desc",
+					ExpiresAt:   expiresAt,
 					Access:      policies,
 				},
 				credential: projAdmin4Robot,
@@ -82,6 +87,20 @@ func TestRobotAPIPost(t *testing.T) {
 				bodyJSON: &model.RobotCreate{
 					Name:        "testIllgel#",
 					Description: "test desc",
+					ExpiresAt:   expiresAt,
+				},
+				credential: projAdmin4Robot,
+			},
+			code: http.StatusBadRequest,
+		},
+		{
+			request: &testingRequest{
+				method: http.MethodPost,
+				url:    robotPath,
+				bodyJSON: &model.RobotCreate{
+					Name:        "test not set expiration",
+					Description: "test desc",
+					ExpiresAt:   -100,
 				},
 				credential: projAdmin4Robot,
 			},
@@ -94,6 +113,7 @@ func TestRobotAPIPost(t *testing.T) {
 				bodyJSON: &model.RobotCreate{
 					Name:        "test",
 					Description: "resource not exist",
+					ExpiresAt:   expiresAt,
 					Access: []*rbac.Policy{
 						{Resource: res.Subresource("foo"), Action: rbac.ActionCreate},
 					},
@@ -109,6 +129,7 @@ func TestRobotAPIPost(t *testing.T) {
 				bodyJSON: &model.RobotCreate{
 					Name:        "test",
 					Description: "action not exist",
+					ExpiresAt:   expiresAt,
 					Access: []*rbac.Policy{
 						{Resource: res.Subresource(rbac.ResourceRepository), Action: "foo"},
 					},
@@ -124,6 +145,7 @@ func TestRobotAPIPost(t *testing.T) {
 				bodyJSON: &model.RobotCreate{
 					Name:        "test",
 					Description: "policy not exit",
+					ExpiresAt:   expiresAt,
 					Access: []*rbac.Policy{
 						{Resource: res.Subresource(rbac.ResourceMember), Action: rbac.ActionPush},
 					},
@@ -140,6 +162,7 @@ func TestRobotAPIPost(t *testing.T) {
 				bodyJSON: &model.RobotCreate{
 					Name:        "test2",
 					Description: "test2 desc",
+					ExpiresAt:   expiresAt,
 				},
 				credential: projDeveloper,
 			},
@@ -154,6 +177,7 @@ func TestRobotAPIPost(t *testing.T) {
 				bodyJSON: &model.RobotCreate{
 					Name:        "test",
 					Description: "test desc",
+					ExpiresAt:   expiresAt,
 					Access:      policies,
 				},
 				credential: projAdmin4Robot,

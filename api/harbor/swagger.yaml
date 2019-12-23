@@ -6239,6 +6239,9 @@ definitions:
       description:
         type: string
         description: The description of robot account
+      expires_at:
+        type: integer
+        description: The expiration time on or after which the JWT MUST NOT be accepted for processing.
       access:
         type: array
         description: The permission of robot account
