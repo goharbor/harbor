@@ -173,7 +173,7 @@ class Project(base.Base):
         base._assert_status_code(expect_status_code, status_code)
         return base._get_id_from_header(header)
 
-    def add_project_robot_account(self, project_id, project_name, robot_name = None, robot_desc = None, has_pull_right = True,  has_push_right = True,  expect_status_code = 201, **kwargs):
+    def add_project_robot_account(self, project_id, project_name, expires_at, robot_name = None, robot_desc = None, has_pull_right = True,  has_push_right = True,  expect_status_code = 201, **kwargs):
         if robot_name is None:
             robot_name = base._random_name("robot")
         if robot_desc is None:
@@ -190,7 +190,7 @@ class Project(base.Base):
         if has_push_right is True:
             robotAccountAccess = swagger_client.RobotAccountAccess(resource = resource_by_project_id, action = action_push)
             access_list.append(robotAccountAccess)
-        robotAccountCreate = swagger_client.RobotAccountCreate(robot_name, robot_desc, access_list)
+        robotAccountCreate = swagger_client.RobotAccountCreate(robot_name, robot_desc, expires_at, access_list)
         client = self._get_client(**kwargs)
         data = []
         data, status_code, header = client.projects_project_id_robots_post_with_http_info(project_id, robotAccountCreate)
