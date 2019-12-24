@@ -140,10 +140,10 @@ Self Reg Should Be Enabled
     Checkbox Should Be Selected  xpath=${self_reg_xpath}
 
 Project Creation Should Display
-    Page Should Contain Element  xpath=${project_create_xpath}
+    Retry Wait Until Page Contains Element  xpath=${project_create_xpath}
 
 Project Creation Should Not Display
-    Page Should Not Contain Element  xpath=${project_create_xpath}
+    Retry Wait Until Page Not Contains Element  xpath=${project_create_xpath}
 
 ## System settings
 Switch To System Settings

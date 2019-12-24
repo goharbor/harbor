@@ -70,13 +70,13 @@ User Can Change Role
      [arguments]  ${username}
      Retry Element Click  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
      Retry Element Click  xpath=//*[@id='member-action']
-     Page Should Not Contain Element  xpath=//button[@disabled='' and contains(.,'Admin')]
+     Retry Wait Until Page Not Contains Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
 User Can Not Change Role
      [arguments]  ${username}
      Retry Element Click  xpath=//clr-dg-row[contains(.,'${username}')]//input/../label
      Retry Element Click  xpath=//*[@id='member-action']
-     Page Should Contain Element  xpath=//button[@disabled='' and contains(.,'Admin')]
+     Retry Wait Until Page Contains Element  xpath=//button[@disabled='' and contains(.,'Admin')]
 
 #this keyworkd seems will not use any more, will delete in the future
 Non-admin View Member Account
@@ -84,7 +84,7 @@ Non-admin View Member Account
     Xpath Should Match X Times  //clr-dg-row-master  ${times}
 
 User Can Not Add Member
-    Page Should Contain Element  xpath=//button[@disabled='' and contains(.,'User')]
+    Retry Wait Until Page Contains Element  xpath=//button[@disabled='' and contains(.,'User')]
 
 Add Guest Member To Project
     [arguments]  ${member}
@@ -153,7 +153,7 @@ User Should Be Guest
     Go Into Project  ${project}
     Switch To Member
     User Can Not Add Member
-    Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Guest')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Guest')]
     Logout Harbor
     Pull image  ${ip}  ${user}  ${password}  ${project}  hello-world
     Cannot Push image  ${ip}  ${user}  ${password}  ${project}  hello-world
@@ -168,7 +168,7 @@ User Should Be Developer
     Go Into Project  ${project}
     Switch To Member
     User Can Not Add Member
-    Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Developer')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Developer')]
     Logout Harbor
     Push Image With Tag  ${ip}  ${user}  ${password}  ${project}  hello-world  v1
 
@@ -183,7 +183,7 @@ User Should Be Admin
     Switch To Member
     Add Guest Member To Project  ${guest}
     User Can Change Role  ${guest}
-    Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Admin')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Admin')]
     Logout Harbor
     Push Image With Tag  ${ip}  ${user}  ${password}  ${project}  hello-world  v2
 
@@ -197,7 +197,7 @@ User Should Be Master
     Go Into Project  ${project}
     Delete Repo  ${project}
     Switch To Member
-    Page Should Contain Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Master')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-row[contains(.,'${user}')]//clr-dg-cell[contains(.,'Master')]
     Logout Harbor
     Push Image With Tag  ${ip}  ${user}  ${password}  ${project}  hello-world  v3
 
@@ -206,5 +206,5 @@ Project Should Have Member
     Sign In Harbor  ${HARBOR_URL}  %{HARBOR_ADMIN}  %{HARBOR_PASSWORD}
     Go Into Project  ${project}
     Switch To Member
-    Page Should Contain Element  xpath=//clr-dg-cell[contains(., '${user}')]
+    Retry Wait Until Page Contains Element  xpath=//clr-dg-cell[contains(., '${user}')]
     Logout Harbor
