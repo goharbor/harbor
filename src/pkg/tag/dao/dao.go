@@ -12,4 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package manager
+package dao
+
+import (
+	"github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
+)
+
+func init() {
+	orm.RegisterModel(&tag.Tag{})
+}

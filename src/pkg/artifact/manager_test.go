@@ -13,3 +13,5 @@
 // limitations under the License.
 
 package artifact
+
+// TODO add test cases after implementing the manager
