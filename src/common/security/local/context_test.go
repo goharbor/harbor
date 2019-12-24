@@ -162,7 +162,7 @@ func TestIsSysAdmin(t *testing.T) {
 	// authenticated, admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "test",
-		HasAdminRole: true,
+		SysAdminFlag: true,
 	}, nil)
 	assert.True(t, ctx.IsSysAdmin())
 }
@@ -197,7 +197,7 @@ func TestHasPullPerm(t *testing.T) {
 	// private project, authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
-		HasAdminRole: true,
+		SysAdminFlag: true,
 	}, pm)
 	assert.True(t, ctx.Can(rbac.ActionPull, resource))
 }
@@ -220,7 +220,7 @@ func TestHasPushPerm(t *testing.T) {
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
-		HasAdminRole: true,
+		SysAdminFlag: true,
 	}, pm)
 	assert.True(t, ctx.Can(rbac.ActionPush, resource))
 }
@@ -239,7 +239,7 @@ func TestHasPushPullPerm(t *testing.T) {
 	// authenticated, system admin
 	ctx = NewSecurityContext(&models.User{
 		Username:     "admin",
-		HasAdminRole: true,
+		SysAdminFlag: true,
 	}, pm)
 	assert.True(t, ctx.Can(rbac.ActionPush, resource) && ctx.Can(rbac.ActionPull, resource))
 }

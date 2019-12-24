@@ -978,7 +978,7 @@ func (a testapi) UsersToggleAdminRole(userID int, authInfo usrInfo, hasAdminRole
 	path := "/api/users/" + fmt.Sprintf("%d", userID) + "/sysadmin"
 	_sling = _sling.Path(path)
 	type QueryParams struct {
-		HasAdminRole bool `json:"has_admin_role,omitempty"`
+		HasAdminRole bool `json:"sysadmin_flag,omitempty"`
 	}
 
 	_sling = _sling.BodyJSON(&QueryParams{HasAdminRole: hasAdminRole})

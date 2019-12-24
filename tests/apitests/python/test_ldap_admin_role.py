@@ -56,6 +56,12 @@ class TestLdapAdminRole(unittest.TestCase):
         projects = self.mike_product_api.projects_get(name="test_private")
         self.assertTrue(projects.count>1)
         self.project_id = projects[0].project_id
+
+        # check the mike is not admin in Database
+        user_list = self.product_api.users_get(username="mike")
+        pprint(user_list[0])
+        self.assertFalse(user_list[0].sysadmin_flag)
+
         pass
 
 

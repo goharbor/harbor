@@ -328,7 +328,7 @@ func TestSessionReqCtxModifier(t *testing.T) {
 		Username:     "admin",
 		UserID:       1,
 		Email:        "admin@example.com",
-		HasAdminRole: true,
+		SysAdminFlag: true,
 	}
 	req, err := http.NewRequest(http.MethodGet,
 		"http://127.0.0.1/api/projects/", nil)

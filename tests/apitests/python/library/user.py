@@ -79,8 +79,8 @@ class User(base.Base):
 
     def update_user_role_as_sysadmin(self, user_id, IsAdmin, **kwargs):
         client = self._get_client(**kwargs)
-        has_admin_role = swagger_client.HasAdminRole(IsAdmin)
-        print "has_admin_role:", has_admin_role
-        _, status_code, _ = client.users_user_id_sysadmin_put_with_http_info(user_id, has_admin_role)
+        sysadmin_flag = swagger_client.SysAdminFlag(IsAdmin)
+        print "sysadmin_flag:", sysadmin_flag
+        _, status_code, _ = client.users_user_id_sysadmin_put_with_http_info(user_id, sysadmin_flag)
         base._assert_status_code(200, status_code)
         return user_id

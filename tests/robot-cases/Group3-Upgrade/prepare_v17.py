@@ -28,9 +28,9 @@ class HarborAPI:
         r = request(url+"users?username="+user+"", 'get')
         userid = str(r.json()[0]['user_id'])
         if args.version == "1.6":
-            body=dict(body={"has_admin_role": True})
+            body=dict(body={"sysadmin_flag": True})
         else:
-            body=dict(body={"has_admin_role": 1})
+            body=dict(body={"sysadmin_flag": 1})
         request(url+"users/"+userid+"/sysadmin", 'put', **body)
 
     def add_member(self, project, user, role):
