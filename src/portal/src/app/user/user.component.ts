@@ -115,7 +115,7 @@ export class UserComponent implements OnInit, OnDestroy {
             if (user.user_id === 0 || this.isMySelf(user.user_id)) {
                 return false;
             }
-            if (user.has_admin_role) {
+            if (user.sysadmin_flag) {
                 usersRole.push(1);
             } else {
                 usersRole.push(0);
@@ -136,7 +136,7 @@ export class UserComponent implements OnInit, OnDestroy {
         if (!u) {
             return "{{MISS}}";
         }
-        let key: string = u.has_admin_role ? "USER.IS_ADMIN" : "USER.IS_NOT_ADMIN";
+        let key: string = u.sysadmin_flag ? "USER.IS_ADMIN" : "USER.IS_NOT_ADMIN";
         this.translate.get(key).subscribe((res: string) => this.adminColumn = res);
         return this.adminColumn;
     }
@@ -145,7 +145,7 @@ export class UserComponent implements OnInit, OnDestroy {
         if (!u) {
             return "{{MISS}}";
         }
-        let key: string = u.has_admin_role ? "USER.DISABLE_ADMIN_ACTION" : "USER.ENABLE_ADMIN_ACTION";
+        let key: string = u.sysadmin_flag ? "USER.DISABLE_ADMIN_ACTION" : "USER.ENABLE_ADMIN_ACTION";
         this.translate.get(key).subscribe((res: string) => this.adminMenuText = res);
         return this.adminMenuText;
     }
@@ -196,7 +196,7 @@ export class UserComponent implements OnInit, OnDestroy {
                     let updatedUser: User = new User();
                     updatedUser.user_id = this.selectedRow[i].user_id;
 
-                    updatedUser.has_admin_role = true; // Set as admin
+                    updatedUser.sysadmin_flag = true; // Set as admin
                     observableLists.push(this.userService.updateUserRole(updatedUser));
                 }
             }
@@ -209,7 +209,7 @@ export class UserComponent implements OnInit, OnDestroy {
                     let updatedUser: User = new User();
                     updatedUser.user_id = this.selectedRow[i].user_id;
 
-                    updatedUser.has_admin_role = false; // Set as none admin
+                    updatedUser.sysadmin_flag = false; // Set as none admin
                     observableLists.push(this.userService.updateUserRole(updatedUser));
                 }
             }

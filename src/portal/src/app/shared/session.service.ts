@@ -15,11 +15,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
-import { SessionUser } from './session-user';
+import { SessionUser, SessionUserBackend } from './session-user';
 import { Member } from '../project/member/member';
 import { SignInCredential } from './sign-in-credential';
 import { enLang } from './shared.const';
-import { HTTP_FORM_OPTIONS, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../lib/utils/utils";
+import { SessionViewmodelFactory } from './session.viewmodel.factory';
+import { HTTP_FORM_OPTIONS, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS, clone } from "../../lib/utils/utils";
 import { FlushAll } from "../../lib/utils/cache-util";
 
 const signInUrl = '/c/login';
@@ -50,7 +51,7 @@ export class SessionService {
         "Content-Type": 'application/x-www-form-urlencoded'
     });*/
 
-    constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient, public sessionViewmodel: SessionViewmodelFactory) { }
 
     // Handle the related exceptions
     handleError(error: any): Observable<any> {
@@ -83,12 +84,11 @@ export class SessionService {
      *
      * @memberOf SessionService
      */
-    retrieveUser(): Observable<SessionUser> {
+    retrieveUser(): Observable<SessionUserBackend> {
         return this.http.get(currentUserEndpoint, HTTP_GET_OPTIONS)
-            .pipe(map(response => this.currentUser = response as SessionUser)
+            .pipe(map((response: SessionUserBackend) => this.currentUser = this.sessionViewmodel.getCurrentUser(response) as SessionUser)
             , catchError(error => this.handleError(error)));
     }
-
     /**
      * For getting info
      */
