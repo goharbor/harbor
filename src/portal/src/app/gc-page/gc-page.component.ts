@@ -14,7 +14,7 @@ export class GcPageComponent implements OnInit {
   public get hasAdminRole(): boolean {
     return (
       this.session.getCurrentUser() &&
-      this.session.getCurrentUser().has_admin_role
+      (this.session.getCurrentUser().admin_role_in_auth || this.session.getCurrentUser().sysadmin_flag)
     );
   }
 

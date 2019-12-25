@@ -185,7 +185,7 @@ export class AccountSettingsModalComponent implements OnInit, AfterViewChecked {
   public get canRename(): boolean {
     return (
       this.account &&
-      this.account.has_admin_role &&
+      (this.account.admin_role_in_auth || this.account.sysadmin_flag) &&
       this.originalStaticData.username === "admin" &&
       this.account.user_id === 1
     );

@@ -17,7 +17,8 @@ describe('ProjectQuotasComponent', () => {
     username: 'admin',
     email: 'harbor@vmware.com',
     realname: 'admin',
-    has_admin_role: true,
+    sysadmin_flag: true,
+    admin_role_in_auth: true,
     comment: 'no comment'
   };
   let mockedConfig: Configuration = new Configuration();

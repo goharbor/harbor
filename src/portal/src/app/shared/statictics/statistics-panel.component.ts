@@ -94,7 +94,7 @@ export class StatisticsPanelComponent implements OnInit, OnDestroy {
 
     public get isValidSession(): boolean {
         let user = this.session.getCurrentUser();
-        return user && user.has_admin_role;
+        return user && (user.admin_role_in_auth || user.sysadmin_flag);
     }
 
     public get isValidStorage(): boolean {

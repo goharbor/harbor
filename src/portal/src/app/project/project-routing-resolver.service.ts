@@ -43,7 +43,7 @@ export class ProjectRoutingResolver implements Resolve<Project> {
         if (project) {
           let currentUser = this.sessionService.getCurrentUser();
           if (currentUser) {
-            if (currentUser.has_admin_role) {
+            if (currentUser.sysadmin_flag || currentUser.admin_role_in_auth) {
               project.has_project_admin_role = true;
               project.is_member = true;
               project.role_name = 'MEMBER.SYS_ADMIN';

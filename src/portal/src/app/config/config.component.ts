@@ -59,7 +59,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
 
     public get hasAdminRole(): boolean {
         return this.session.getCurrentUser() &&
-            this.session.getCurrentUser().has_admin_role;
+            (this.session.getCurrentUser().admin_role_in_auth || this.session.getCurrentUser().sysadmin_flag);
     }
 
     public get hasCAFile(): boolean {
@@ -77,7 +77,7 @@ export class ConfigurationComponent implements OnInit, OnDestroy {
         // First load
         // Double confirm the current use has admin role
         let currentUser = this.session.getCurrentUser();
-        if (currentUser && currentUser.has_admin_role) {
+        if (currentUser && (currentUser.sysadmin_flag || currentUser.admin_role_in_auth)) {
             this.retrieveConfig();
         }
 

@@ -19,7 +19,8 @@ export class SessionUser {
     realname: string;
     role_name?: string;
     role_id?: number;
-    has_admin_role?: boolean;
+    sysadmin_flag?: boolean;
+    admin_role_in_auth?: boolean;
     comment: string;
     oidc_user_meta?: OidcUserMeta;
 }

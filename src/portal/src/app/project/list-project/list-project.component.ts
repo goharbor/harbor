@@ -87,7 +87,7 @@ export class ListProjectComponent implements OnDestroy {
         if (account) {
             switch (this.appConfigService.getConfig().project_creation_restriction) {
                 case "adminonly":
-                    return (account.has_admin_role);
+                    return (account.admin_role_in_auth || account.sysadmin_flag);
                 case "everyone":
                     return true;
             }
@@ -105,7 +105,7 @@ export class ListProjectComponent implements OnDestroy {
 
     public get isSystemAdmin(): boolean {
         let account = this.session.getCurrentUser();
-        return account != null && account.has_admin_role;
+        return account != null && (account.admin_role_in_auth || account.sysadmin_flag);
     }
 
     public get canDelete(): boolean {

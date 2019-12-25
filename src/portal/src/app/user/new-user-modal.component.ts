@@ -110,7 +110,7 @@ export class NewUserModalComponent {
 
         // Session is ok and role is matched
         let account = this.session.getCurrentUser();
-        if (!account || !account.has_admin_role) {
+        if (!account || !(account.sysadmin_flag || account.admin_role_in_auth)) {
             return;
         }
 

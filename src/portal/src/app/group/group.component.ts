@@ -174,19 +174,19 @@ export class GroupComponent implements OnInit, OnDestroy {
     this.loadData();
   }
   get canAddGroup(): boolean {
-    return this.session.currentUser.has_admin_role;
+    return this.session.currentUser.admin_role_in_auth || this.session.currentUser.sysadmin_flag;
   }
 
   get canEditGroup(): boolean {
     return (
       this.selectedGroups.length === 1 &&
-      this.session.currentUser.has_admin_role && this.isLdapMode
+      (this.session.currentUser.admin_role_in_auth || this.session.currentUser.sysadmin_flag) && this.isLdapMode
     );
   }
   get canDeleteGroup(): boolean {
     return (
       this.selectedGroups.length === 1 &&
-      this.session.currentUser.has_admin_role
+      (this.session.currentUser.admin_role_in_auth || this.session.currentUser.sysadmin_flag)
     );
   }
 }

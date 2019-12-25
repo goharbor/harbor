@@ -19,7 +19,7 @@ export class ProjectQuotasComponent implements OnInit {
 
   ngOnInit() {
     let currentUser = this.session.getCurrentUser();
-    if (currentUser && currentUser.has_admin_role) {
+    if (currentUser && (currentUser.sysadmin_flag || currentUser.admin_role_in_auth)) {
       this.retrieveConfig();
     }
   }

@@ -30,7 +30,10 @@ describe('AppComponent', () => {
     let fakeCookieService = null;
     let fakeSessionService = {
         getCurrentUser: function () {
-            return { has_admin_role: true };
+            return {
+                sysadmin_flag: true,
+                admin_role_in_auth: true
+            };
         }
     };
     let fakeAppConfigService = {

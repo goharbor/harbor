@@ -26,7 +26,10 @@ describe('HarborShellComponent', () => {
     let fixture: ComponentFixture<HarborShellComponent>;
     let fakeSessionService = {
         getCurrentUser: function () {
-            return { has_admin_role: true };
+            return {
+                sysadmin_flag: true,
+                admin_role_in_auth: true,
+            };
         }
     };
     let fakeSearchTriggerService = {
@@ -106,19 +109,19 @@ describe('HarborShellComponent', () => {
         expect(component).toBeTruthy();
     });
     it('should open users profile', async () => {
-        component.openModal({modalName: modalEvents.USER_PROFILE, modalFlag: false });
+        component.openModal({ modalName: modalEvents.USER_PROFILE, modalFlag: false });
         await fixture.whenStable();
         const accountSettingsUsernameInput = fixture.nativeElement.querySelector("#account_settings_username");
         expect(accountSettingsUsernameInput).toBeTruthy();
     });
     it('should open users changPwd', async () => {
-        component.openModal({modalName: modalEvents.CHANGE_PWD, modalFlag: false });
+        component.openModal({ modalName: modalEvents.CHANGE_PWD, modalFlag: false });
         await fixture.whenStable();
         const oldPasswordInput = fixture.nativeElement.querySelector("#oldPassword");
         expect(oldPasswordInput).toBeTruthy();
     });
     it('should open users about-dialog', async () => {
-        component.openModal({modalName: modalEvents.ABOUT, modalFlag: false });
+        component.openModal({ modalName: modalEvents.ABOUT, modalFlag: false });
         await fixture.whenStable();
         const aboutVersionEl = fixture.nativeElement.querySelector(".about-version");
         expect(aboutVersionEl).toBeTruthy();

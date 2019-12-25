@@ -101,13 +101,6 @@ export class NavigatorComponent implements OnInit {
         return this.appConfigService.isIntegrationMode();
     }
 
-    public get canDownloadCert(): boolean {
-        return this.session.getCurrentUser() &&
-            this.session.getCurrentUser().has_admin_role &&
-            this.appConfigService.getConfig() &&
-            this.appConfigService.getConfig().has_ca_root;
-    }
-
     public get canChangePassword(): boolean {
         let user = this.session.getCurrentUser();
         let config = this.appConfigService.getConfig();

@@ -18,7 +18,8 @@ describe('NavigatorComponent', () => {
         getCurrentUser: function () {
             return {
                 username: 'abc',
-                has_admin_role: true
+                sysadmin_flag: true,
+                admin_role_in_auth: true
             };
         }
     };

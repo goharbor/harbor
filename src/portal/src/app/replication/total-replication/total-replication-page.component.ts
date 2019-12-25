@@ -39,7 +39,7 @@ export class TotalReplicationPageComponent {
 
   public get isSystemAdmin(): boolean {
     let account = this.session.getCurrentUser();
-    return account != null && account.has_admin_role;
+    return account != null && (account.admin_role_in_auth || account.sysadmin_flag);
   }
 
   get withAdmiral(): boolean {
