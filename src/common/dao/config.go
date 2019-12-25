@@ -61,7 +61,7 @@ func SaveConfigEntries(entries []models.ConfigEntry) error {
 		tempEntry.Key = entry.Key
 		tempEntry.Value = entry.Value
 		created, _, err := o.ReadOrCreate(&tempEntry, "k")
-		if err != nil && !isDupRecErr(err) {
+		if err != nil && !IsDupRecErr(err) {
 			log.Errorf("Error create configuration entry: %v", err)
 			return err
 		}

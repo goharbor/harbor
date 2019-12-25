@@ -893,8 +893,8 @@ func TestSaveConfigEntries(t *testing.T) {
 }
 
 func TestIsDupRecError(t *testing.T) {
-	assert.True(t, isDupRecErr(fmt.Errorf("pq: duplicate key value violates unique constraint \"properties_k_key\"")))
-	assert.False(t, isDupRecErr(fmt.Errorf("other error")))
+	assert.True(t, IsDupRecErr(fmt.Errorf("pq: duplicate key value violates unique constraint \"properties_k_key\"")))
+	assert.False(t, IsDupRecErr(fmt.Errorf("other error")))
 }
 
 func TestWithTransaction(t *testing.T) {
