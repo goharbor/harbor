@@ -39,6 +39,7 @@ import (
 	"github.com/goharbor/harbor/src/common/security/local"
 	"github.com/goharbor/harbor/src/common/security/secret"
 	"github.com/goharbor/harbor/src/common/utils/test"
+	_ "github.com/goharbor/harbor/src/core/auth/authproxy"
 	_ "github.com/goharbor/harbor/src/core/auth/db"
 	_ "github.com/goharbor/harbor/src/core/auth/ldap"
 	"github.com/goharbor/harbor/src/core/config"
@@ -269,33 +270,13 @@ func TestAuthProxyReqCtxModifier(t *testing.T) {
 	addToReqContext(req, AuthModeKey, common.HTTPAuth)
 	ctx, err := newContext(req)
 	if err != nil {
-		t.Fatalf("failed to crate context: %v", err)
+		t.Fatalf("failed to create context: %v", err)
 	}
 
 	modifier := &authProxyReqCtxModifier{}
 	modified := modifier.Modify(ctx)
-	assert.False(t, modified)
-
-	// Onboard
-	err = dao.OnBoardUser(&models.User{
-		Username: "administrator@vsphere.local",
-	})
-	assert.Nil(t, err)
-	req, err = http.NewRequest(http.MethodGet,
-		"http://127.0.0.1/service/token", nil)
-	if err != nil {
-		t.Fatalf("failed to create request: %v", req)
-	}
-	req.SetBasicAuth("tokenreview$administrator@vsphere.local", "reviEwt0k3n")
-	addToReqContext(req, AuthModeKey, common.HTTPAuth)
-	ctx, err = newContext(req)
-	if err != nil {
-		t.Fatalf("failed to crate context: %v", err)
-	}
-
-	modifier = &authProxyReqCtxModifier{}
-	modified = modifier.Modify(ctx)
 	assert.True(t, modified)
+
 }
 
 func TestBasicAuthReqCtxModifier(t *testing.T) {
@@ -346,7 +327,7 @@ func TestSessionReqCtxModifier(t *testing.T) {
 	addToReqContext(req, AuthModeKey, common.DBAuth)
 	ctx, err := newContext(req)
 	if err != nil {
-		t.Fatalf("failed to crate context: %v", err)
+		t.Fatalf("failed to create context: %v", err)
 	}
 
 	modifier := &sessionReqCtxModifier{}
