@@ -35,7 +35,7 @@ def main(conf, with_notary, with_clair, with_chartmuseum):
     try:
         validate(config_dict, notary_mode=with_notary)
     except Exception as e:
-        logging.info('Error happend in config validation...')
+        logging.info('Error happened in config validation...')
         logging.error(e)
         sys.exit(-1)
 
