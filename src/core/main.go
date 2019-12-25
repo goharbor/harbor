@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/astaxie/beego"
+	_ "github.com/astaxie/beego/cache/memcache"
 	_ "github.com/astaxie/beego/session/redis"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"

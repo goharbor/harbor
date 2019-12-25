@@ -27,6 +27,7 @@ github.com/astaxie/beego/cache/redis
 github.com/astaxie/beego
 github.com/astaxie/beego/validation
 github.com/astaxie/beego/orm
+github.com/astaxie/beego/cache/memcache
 github.com/astaxie/beego/session/redis
 github.com/astaxie/beego/context
 github.com/astaxie/beego/config
@@ -73,6 +74,8 @@ github.com/aws/aws-sdk-go/private/protocol/xml/xmlutil
 github.com/beego/i18n
 # github.com/bmatcuk/doublestar v1.1.1
 github.com/bmatcuk/doublestar
+# github.com/bradfitz/gomemcache v0.0.0-20190913173617-a41fca850d0b
+github.com/bradfitz/gomemcache/memcache
 # github.com/casbin/casbin v1.7.0
 github.com/casbin/casbin
 github.com/casbin/casbin/model

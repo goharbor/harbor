@@ -19,6 +19,7 @@ require (
 	github.com/bitly/go-simplejson v0.5.0 // indirect
 	github.com/bmatcuk/doublestar v1.1.1
 	github.com/bmizerany/assert v0.0.0-20160611221934-b7ed37b82869 // indirect
+	github.com/bradfitz/gomemcache v0.0.0-20190913173617-a41fca850d0b // indirect
 	github.com/bugsnag/bugsnag-go v1.5.2 // indirect
 	github.com/bugsnag/panicwrap v1.2.0 // indirect
 	github.com/casbin/casbin v1.7.0

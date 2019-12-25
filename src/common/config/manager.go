@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"time"
 )
 
 // CfgManager ... Configure Manager
@@ -36,7 +37,11 @@ type CfgManager struct {
 
 // NewDBCfgManager - create DB config manager
 func NewDBCfgManager() *CfgManager {
-	manager := &CfgManager{store: store.NewConfigStore(&driver.Database{})}
+	cd := &driver.CachedDriver{
+		Driver:   &driver.Database{},
+		Interval: common.DefaultCfgCacheIntSec * time.Second}
+	cd.Init()
+	manager := &CfgManager{store: store.NewConfigStore(cd)}
 	// load default value
 	manager.loadDefault()
 	// load system config from env

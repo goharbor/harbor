@@ -74,6 +74,8 @@ const (
 	LDAPGroupAttributeName           = "ldap_group_attribute_name"
 	LDAPGroupSearchScope             = "ldap_group_search_scope"
 	TokenServiceURL                  = "token_service_url"
+	DefaultCfgCacheIntSec            = 20
+	CfgCacheIntervalSeconds          = "cfg_cache_interval_seconds"
 	RegistryURL                      = "registry_url"
 	EmailHost                        = "email_host"
 	EmailPort                        = "email_port"
