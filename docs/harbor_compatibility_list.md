@@ -41,6 +41,7 @@ This document provides compatibility information for all Harbor components.
 | [Clair](https://github.com/goharbor/harbor-scanner-clair)    |![Clair](img/scanners/clair.png)| CentOS    |![Y](img/replication_adapters/right.png)| v1.10 |
 | [Anchore](https://github.com/anchore/harbor-scanner-adapter) |![Anchore](img/scanners/anchore.png)   | Anchore   | N | v1.10 |
 | [Trivy](https://github.com/aquasecurity/harbor-scanner-trivy)|![Trivy](img/scanners/trivy.png)| Aqua    | N | v1.10 |
+| [Dosec](https://github.com/dosec-cn/harbor-scanner)          |![Dosec](img/scanners/dosec.png)| Dosec   | N | v1.10 |
 
 **Notes:**
 
