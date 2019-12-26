@@ -226,6 +226,11 @@ Select Rule And Replicate
     Retry Element Click    ${replication_exec_id}
     Retry Double Keywords When Error    Retry Element Click    xpath=${dialog_replicate}    Retry Wait Until Page Not Contains Element    xpath=${dialog_replicate}
 
+Select Rule And Click Edit Button
+    [Arguments]  ${rule_name}
+    Retry Element Click  //clr-dg-row[contains(.,'${rule_name}')]//clr-radio-wrapper/label
+    Retry Element Click  ${edit_replication_rule_id}
+
 Delete Replication Rule
     [Arguments]  ${name}
     Retry Element Click  ${endpoint_filter_search}

@@ -226,7 +226,7 @@ Command Should be Failed
 Retry Keyword When Error
     [Arguments]  ${keyword}  @{elements}
     :For  ${n}  IN RANGE  1  6
-    \    Log To Console  Trying ${keyword} ${n} times ...
+    \    Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
     \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
     \    Log To Console  Return value is ${out[0]}
     \    Exit For Loop If  '${out[0]}'=='PASS'
