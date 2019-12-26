@@ -20,6 +20,7 @@ import { SearchTriggerService } from './search-trigger.service';
 
 import { AppConfigService } from './../../app-config.service';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
+import { filter, switchMap } from 'rxjs/operators';
 
 @Component({
     selector: "search-result",
@@ -54,9 +55,35 @@ export class SearchResultComponent implements OnInit, OnDestroy {
         private appConfigService: AppConfigService) { }
 
     ngOnInit() {
-        this.searchSub = this.searchTrigger.searchTriggerChan$.subscribe(term => {
-            this.doSearch(term);
-        });
+        this.searchSub = this.searchTrigger.searchTriggerChan$
+            .pipe(filter(term => {
+                    if (term === "") {
+                        this.searchResults.project = [];
+                        this.searchResults.repository = [];
+                        if (this.withHelmChart) {
+                            this.searchResults.chart = [];
+                        }
+                    }
+                    return !!(term && term.trim());
+                }),
+                switchMap(term => {
+                    // Confirm page is displayed
+                    if (!this.stateIndicator) {
+                        this.show();
+                    }
+                    this.currentTerm = term;
+                    // Show spinner
+                    this.onGoing = true;
+                    return this.search.doSearch(term);
+                }))
+            .subscribe(searchResults => {
+                this.onGoing = false;
+                this.originalCopy = searchResults; // Keep the original data
+                this.searchResults = this.clone(searchResults);
+            }, error => {
+                this.onGoing = false;
+                this.msgHandler.handleError(error);
+            });
         this.closeSearchSub = this.searchTrigger.searchCloseChan$.subscribe(close => {
             this.close();
         });
@@ -65,6 +92,7 @@ export class SearchResultComponent implements OnInit, OnDestroy {
     ngOnDestroy() {
         if (this.searchSub) {
             this.searchSub.unsubscribe();
+            this.searchSub = null;
         }
 
         if (this.closeSearchSub) {
