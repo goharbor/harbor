@@ -19,18 +19,29 @@ import { CookieService } from 'ngx-cookie';
 
 import { SessionService } from './shared/session.service';
 import { AppConfigService } from './app-config.service';
+import { ThemeService } from './theme.service';
+import { themeArray, ThemeInterface } from './theme';
+import { clone } from '../lib/utils/utils';
+
+const HAS_STYLE_MODE: string = 'styleModeLocal';
 
 @Component({
     selector: 'harbor-app',
     templateUrl: 'app.component.html'
 })
 export class AppComponent {
+    themeArray: ThemeInterface[] = clone(themeArray);
+
+    styleMode: string = this.themeArray[0].showStyle;
     constructor(
         private translate: TranslateService,
         private cookie: CookieService,
         private session: SessionService,
         private appConfigService: AppConfigService,
-        private titleService: Title) {
+        private titleService: Title,
+        public theme: ThemeService
+
+        ) {
         // Override page title
         let key: string = "APP_TITLE.HARBOR";
         if (this.appConfigService.isIntegrationMode()) {
@@ -39,6 +50,21 @@ export class AppComponent {
 
         translate.get(key).subscribe((res: string) => {
             this.titleService.setTitle(res);
+        });
+        this.setTheme();
+    }
+    setTheme () {
+        let styleMode = this.themeArray[0].showStyle;
+        const localHasStyle = localStorage && localStorage.getItem(HAS_STYLE_MODE);
+        if (localHasStyle) {
+            styleMode = localStorage.getItem(HAS_STYLE_MODE);
+        } else {
+            localStorage.setItem(HAS_STYLE_MODE, styleMode);
+        }
+        this.themeArray.forEach((themeItem) => {
+            if (themeItem.showStyle === styleMode) {
+                this.theme.loadStyle(themeItem.currentFileName);
+            }
         });
     }
 }

@@ -103,3 +103,16 @@ hbr-resource-label-signpost {
     height: 100%;
     vertical-align: middle;
 }
+
+.center-x {
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    top: 6.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.version-position {
+    position: relative;
+}

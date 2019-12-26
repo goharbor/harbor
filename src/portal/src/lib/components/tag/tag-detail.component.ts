@@ -256,4 +256,7 @@ export class TagDetailComponent implements OnInit {
       },
     ];
   }
+  isThemeLight()  {
+    return localStorage.getItem('styleModeLocal') === 'LIGHT';
+  }
 }

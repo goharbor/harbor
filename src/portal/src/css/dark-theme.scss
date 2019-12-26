@@ -1,0 +1,113 @@
+@import "../../node_modules/@clr/ui/clr-ui-dark.min.css";
+$dark-background-color: rgb(27, 42, 50) !important;
+$dark-font-color1: #acbac3 !important;
+$dark-font-color-title1: #eaedf0 !important;
+
+.label-form {
+  background-color: #212129 !important;
+}
+.esxc-gauge-circle-bgc-dark {
+  background-color: $dark-background-color;
+}
+
+.harbor-icon {
+  filter: drop-shadow(#ccc 58px 2px) !important;
+}
+
+.color-white-dark {
+  color: white;
+}
+
+.label-filter-panel {
+  background-color: $dark-background-color;
+}
+
+.filter-dark {
+  color: $dark-font-color1;
+}
+.side-form {
+  background-color: $dark-background-color;
+}
+.toolBar {
+  background-color: $dark-background-color;
+}
+
+.search-overlay {
+  background-color: $dark-background-color;
+}
+
+.add-modal-dark {
+  background: $dark-background-color;
+}
+.license {
+  background-color: $dark-background-color;
+}
+
+.pagination-list {
+  .pagination-current {
+    color: $dark-font-color1;
+  }
+}
+.no-info-div,
+.info-div {
+  background-color: $dark-background-color;
+}
+.bottom-line-project-config {
+  color: $dark-font-color1;
+}
+.config-subtext {
+  color: $dark-font-color1;
+}
+.permission-dark {
+  color: $dark-font-color1;
+}
+.scanner-name {
+  color: $dark-font-color1;
+}
+.permission-dark {
+  color: $dark-font-color1;
+}
+.summary-dark {
+  color: $dark-font-color1;
+  h5 {
+    color: $dark-font-color1;
+  }
+}
+.about-version {
+  color: $dark-font-color-title1;
+}
+.update-time {
+  color: $dark-font-color1;
+}
+.font-style {
+  color: $dark-font-color1;
+}
+.go-link {
+  color: #4aaed9 !important; 
+  border-bottom-color: #4aaed9 !important; 
+}
+.circle-block {
+  color: $dark-font-color1;
+}
+.executions-detail {
+  color: $dark-font-color1;
+}
+.black-point {
+  background-color: $dark-font-color1;
+}
+clr-dg-action-overflow {
+  clr-icon {
+    fill: $dark-font-color1;
+  }
+}
+.oidc-tip {
+  color: $dark-font-color1;
+}
+.clr-select-wrapper{
+  select {
+    option {
+      background: $dark-font-color1;
+      color: #1b2a32;
+    }
+  } 
+}
