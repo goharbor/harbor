@@ -334,17 +334,26 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Errorf("user name doesn't match with token: %s", rawUserName)
 		return false
 	}
-
 	user, err := dao.GetUser(models.User{
 		Username: rawUserName,
 	})
 	if err != nil {
-		log.Errorf("fail to get user: %v", err)
+		log.Errorf("fail to get user: %s, error: %v", rawUserName, err)
 		return false
 	}
-	if user == nil {
-		log.Errorf("User: %s has not been on boarded yet.", rawUserName)
-		return false
+	if user == nil { // onboard user if it's not yet onboarded.
+		uid, err := auth.SearchAndOnBoardUser(rawUserName)
+		if err != nil {
+			log.Errorf("Failed to search and onboard user, username: %s, error: %v", rawUserName, err)
+			return false
+		}
+		user, err = dao.GetUser(models.User{
+			UserID: uid,
+		})
+		if err != nil {
+			log.Errorf("Fail to get user, name: %s, ID: %d, error: %v", rawUserName, uid, err)
+			return false
+		}
 	}
 	u2, err := authproxy.UserFromReviewStatus(tokenReviewStatus)
 	if err != nil {
