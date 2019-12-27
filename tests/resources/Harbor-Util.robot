@@ -101,7 +101,7 @@ Enable Notary Client
 
 Remove Notary Signature
     [Arguments]  ${ip}  ${image}
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-remove-image-signature.expect ${ip} library ${image}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-remove-image-signature.expect ${ip} library ${image} ${notaryServerEndpoint}
     Log To Console  ${output}
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0

@@ -4,7 +4,7 @@ docker pull $3:$4
 
 IP=$1
 PASSHRASE='Harbor12345'
-
+notaryServerEndpoint=$5
 echo $IP
 
 mkdir -p /etc/docker/certs.d/$IP/
@@ -13,8 +13,11 @@ mkdir -p ~/.docker/tls/$IP:4443/
 cp /notary_ca.crt /etc/docker/certs.d/$IP/
 cp /notary_ca.crt ~/.docker/tls/$IP:4443/
 
+mkdir -p ~/.docker/tls/$notaryServerEndpoint/
+cp /notary_ca.crt ~/.docker/tls/$notaryServerEndpoint/
+
 export DOCKER_CONTENT_TRUST=1
-export DOCKER_CONTENT_TRUST_SERVER=https://$IP:4443
+export DOCKER_CONTENT_TRUST_SERVER=https://$notaryServerEndpoint
 
 export NOTARY_ROOT_PASSPHRASE=$PASSHRASE
 export NOTARY_TARGETS_PASSPHRASE=$PASSHRASE
