@@ -68,7 +68,6 @@ Resource  Harbor-Pages/OIDC_Auth_Elements.robot
 Resource  Harbor-Pages/Verify.robot
 Resource  Docker-Util.robot
 Resource  Helm-Util.robot
-Resource  Admiral-Util.robot
 Resource  OVA-Util.robot
 Resource  Cert-Util.robot
 Resource  SeleniumUtil.robot
@@ -205,7 +204,7 @@ Clear Field Of Characters
     [Arguments]  ${field}  ${character count}
     [Documentation]  This keyword pushes the delete key (ascii: \8) a specified number of times in a specified field.
     : FOR  ${index}  IN RANGE  ${character count}
-    \    Press Key  ${field}  \\8
+    \    Press Keys  ${field}  \\8
 
 Wait Unitl Command Success
     [Arguments]  ${cmd}  ${times}=8
@@ -227,13 +226,14 @@ Command Should be Failed
 Retry Keyword When Error
     [Arguments]  ${keyword}  @{elements}
     :For  ${n}  IN RANGE  1  6
-    \    Log To Console  Trying ${keyword} ${n} times ...
+    \    Log To Console  Trying ${keyword} elements @{elements} ${n} times ...
     \    ${out}  Run Keyword And Ignore Error  ${keyword}  @{elements}
     \    Log To Console  Return value is ${out[0]}
     \    Exit For Loop If  '${out[0]}'=='PASS'
     \    Sleep  2
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
+    [Return]  ${out[1]}
 
 Retry Keyword When Return Value Mismatch
     [Arguments]  ${keyword}  ${expected_value}  ${count}  @{elements}
@@ -248,8 +248,8 @@ Retry Keyword When Return Value Mismatch
     Should Be Equal As Strings  ${status}  'PASS'
 
 Retry Double Keywords When Error
-    [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}
-    :For  ${n}  IN RANGE  1  3
+    [Arguments]  ${keyword1}  ${element1}  ${keyword2}  ${element2}  ${DoAssert}=${true}
+    :For  ${n}  IN RANGE  1  5
     \    Log To Console  Trying ${keyword1} and ${keyword2} ${n} times ...
     \    ${out1}  Run Keyword And Ignore Error  ${keyword1}  ${element1}
     \    Capture Page Screenshot
@@ -259,6 +259,7 @@ Retry Double Keywords When Error
     \    Log To Console  Return value is ${out1[0]} ${out2[0]}
     \    Exit For Loop If  '${out2[0]}'=='PASS'
     \    Sleep  1
+    Return From Keyword If  ${DoAssert} == ${false}  '${out2[0]}'
     Should Be Equal As Strings  '${out2[0]}'  'PASS'
 
 Run Curl And Return Json

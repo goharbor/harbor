@@ -393,7 +393,7 @@ TestCase - Developer Operate Labels
     Sign In Harbor  ${HARBOR_URL}  bob${d}  Test1@34
     Go Into Project  project${d}  has_image=${false}
     Sleep  3
-    Page Should Not Contain Element  xpath=//a[contains(.,'Labels')]
+    Retry Wait Until Page Not Contains Element  xpath=//a[contains(.,'Labels')]
     Close Browser
 
 Test Case - Scan A Tag In The Repo

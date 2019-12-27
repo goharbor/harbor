@@ -27,7 +27,7 @@ Create An New Project
     Capture Page Screenshot
     Retry Text Input  xpath=${project_name_xpath}  ${projectname}
     ${element_project_public}=  Set Variable  xpath=${project_public_xpath}
-    Run Keyword If  '${public}' == 'true'  Run Keywords  Wait Until Element Is Visible And Enabled  ${element_project_public}  AND  Click Element  ${element_project_public}
+    Run Keyword If  '${public}' == 'true'  Run Keywords  Wait Until Element Is Visible And Enabled  ${element_project_public}  AND  Retry Element Click  ${element_project_public}
     Run Keyword If  '${count_quota}'!='${null}'  Input Count Quota  ${count_quota}
     Run Keyword If  '${storage_quota}'!='${null}'  Input Storage Quota  ${storage_quota}  ${storage_quota_unit}
     Capture Page Screenshot
@@ -45,6 +45,7 @@ Create An New Project With New User
 
 #It's the log of project.
 Go To Project Log
+    #Switch To Project Tab Overflow
     Retry Element Click  xpath=${project_log_xpath}
     Sleep  2
 
@@ -183,7 +184,7 @@ Do Log Advanced Search
     Retry Text Input  xpath=//audit-log//hbr-filter//input  harbor
     Sleep  1
     Capture Page Screenshot  LogAdvancedSearch2.png
-    ${rc} =  Get Matching Xpath Count  //audit-log//clr-dg-row
+    ${rc} =  Get Element Count  //audit-log//clr-dg-row
     Should Be Equal As Integers  ${rc}  0
 
 Go Into Repo
@@ -200,7 +201,6 @@ Go Into Repo
     \    Sleep  2
     Capture Page Screenshot
     Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}  Retry Wait Until Page Not Contains Element  ${repo_name_element}
-    Capture Page Screenshot
     Retry Wait Element  ${tag_table_column_pull_command}
     Retry Wait Element  ${tag_images_btn}
     Capture Page Screenshot

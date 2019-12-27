@@ -30,4 +30,5 @@ ${login_btn}  //*[@id='log_in']
 ${harbor_span_title}  //span[contains(., 'Harbor')]
 ${login_name}  //*[@id='login_username']
 ${login_pwd}  //*[@id='login_password']
+${close_scan_plugin_mesg}  //clr-icon[@class='close-icon']
 

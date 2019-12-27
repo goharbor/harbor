@@ -117,8 +117,7 @@ Test Case - Project Level Policy Public
     # Here logout and login to try avoid a bug only in autotest
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Filter Object  project${d}
-    Project Should Be Public  project${d}
+    Retry Double Keywords When Error  Filter Project  project${d}  Project Should Be Public  project${d}
     Close Browser
 
 Test Case - Verify Download Ca Link
@@ -406,7 +405,7 @@ Test Case - Developer Operate Labels
     Sign In Harbor  ${HARBOR_URL}  user022  Test1@34
     Go Into Project  project${d}  has_image=${false}
     Sleep  3
-    Page Should Not Contain Element  xpath=//a[contains(.,'Labels')]
+    Retry Wait Until Page Not Contains Element  xpath=//a[contains(.,'Labels')]
     Close Browser
 
 Test Case - Retag A Image Tag
@@ -431,7 +430,7 @@ Test Case - Retag A Image Tag
     Page Should Contain  ${target_image_name}
     Go Into Repo  project${random_num1}${random_num2}/${target_image_name}
     Sleep  1
-    Page Should Contain Element  xpath=${tag_value_xpath}
+    Retry Wait Until Page Contains Element  xpath=${tag_value_xpath}
     Close Browser
 
 Test Case - Create An New Project With Quotas Set
@@ -550,8 +549,11 @@ Test Case - Project Quotas Control Under GC
     ${image_a_size}=    Set Variable    321.03MB
     ${image_a_ver}=  Set Variable  6.8.3
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Capture Page Screenshot
     Create An New Project  project${d}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=Quota exceeded when processing the request of adding 82.5 MiB of storage resource, which when updated to current usage of 166.6 MiB will exceed the configured upper limit of 200.0 MiB
+    Capture Page Screenshot
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=will exceed the configured upper limit of 200.0 MiB
+    Capture Page Screenshot
     GC Now  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     @{param}  Create List  project${d}
     Retry Keyword When Return Value Mismatch  Get Project Storage Quota Text From Project Quotas List  0Byte of ${storage_quota}${storage_quota_unit}  60  @{param}
@@ -574,7 +576,7 @@ Test Case - Update Webhook
    Create An New Project  project${d}
    Go Into Project  project${d}  has_image=${false}
    Switch To Project Webhooks
-   Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d} 
+   Create A New Webhook  ${HARBOR_URL}  auth_header=auth_header${d}
    Sleep  3
    ${d1}=    Get Current Date
    Update A Webhook  101.17.109.20  auth_header=auth_header${d1}

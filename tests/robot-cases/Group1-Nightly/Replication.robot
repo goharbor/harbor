@@ -37,7 +37,7 @@ Test Case - Get Harbor Version
 
 Test Case - Pro Replication Rules Add
     Init Chrome Driver
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}  is_close_scan_plugin_mesg=${true}
     Switch To Replication Manage
     Check New Rule UI Without Endpoint
     Close Browser
@@ -156,21 +156,16 @@ Test Case - Replication Of Pull Images from DockerHub To Self
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    rule${d}    pull    danfengliu/*    image    e${d}    project${d}
     Select Rule And Replicate  rule${d}
-    Sleep    30
-    Go Into Project    project${d}
-    Switch To Project Repo
     #In docker-hub, under repository danfengliu, there're only 2 images: centos,mariadb.
-    Retry Wait Until Page Contains    project${d}/centos
-    Go Into Project    project${d}
-    Switch To Project Repo
-    Retry Wait Until Page Contains    project${d}/mariadb
+    Image Should Be Replicated To Project  project${d}  centos
+    Image Should Be Replicated To Project  project${d}  mariadb
     Close Browser
 
 Test Case - Replication Of Push Images from Self To Harbor
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     #login source
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}  is_close_scan_plugin_mesg=${true}
     Create An New Project    project${d}
     Push Image    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    hello-world
     Push Image    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    busybox:latest
@@ -181,27 +176,25 @@ Test Case - Replication Of Push Images from Self To Harbor
     Create A Rule With Existing Endpoint    rule${d}    push    project${d}/*    image    e${d}    project_dest${d}
     #logout and login target
     Logout Harbor
-    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}  is_close_scan_plugin_mesg=${true}
     Create An New Project    project_dest${d}
     #logout and login source
     Logout Harbor
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}  is_close_scan_plugin_mesg=${true}
     Switch To Replication Manage
     Select Rule And Replicate  rule${d}
-    Sleep    20
+    Sleep  20
     Logout Harbor
-    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Go Into Project    project_dest${d}
-    Switch To Project Repo
-    Retry Wait Until Page Contains    project_dest${d}/hello-world
-    Retry Wait Until Page Contains    project_dest${d}/busybox
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}  is_close_scan_plugin_mesg=${true}
+    Image Should Be Replicated To Project  project_dest${d}  hello-world
+    Image Should Be Replicated To Project  project_dest${d}  busybox
     Close Browser
 
 Test Case - Replication Of Push Chart from Self To Harbor
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     #login source
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}  is_close_scan_plugin_mesg=${true}
     Create An New Project    project${d}
     Go Into Project  project${d}  has_image=${false}
     Switch To Project Charts
@@ -212,16 +205,16 @@ Test Case - Replication Of Push Chart from Self To Harbor
     Create A Rule With Existing Endpoint    rule${d}    push    project${d}/*    chart    e${d}    project_dest${d}
     #logout and login target
     Logout Harbor
-    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}  is_close_scan_plugin_mesg=${true}
     Create An New Project    project_dest${d}
     #logout and login source
     Logout Harbor
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}  is_close_scan_plugin_mesg=${true}
     Switch To Replication Manage
     Select Rule And Replicate    rule${d}
     Sleep    20
     Logout Harbor
-    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}  is_close_scan_plugin_mesg=${true}
     Go Into Project    project_dest${d}    has_image=${false}
     Switch To Project Charts
     Go Into Chart Version    ${harbor_chart_name}
@@ -233,7 +226,7 @@ Test Case - Replication Of Push Images from Self To Harbor By Push Event
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     #login source
-    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}  is_close_scan_plugin_mesg=${true}
     Create An New Project    project${d}
     Switch To Registries
     Create A New Endpoint    harbor    e${d}    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
@@ -242,13 +235,10 @@ Test Case - Replication Of Push Images from Self To Harbor By Push Event
     ...    Event Based
     #logout and login target
     Logout Harbor
-    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}  is_close_scan_plugin_mesg=${true}
     Create An New Project    project_dest${d}
     Push Image    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    centos
-    Sleep  10
-    Go Into Project    project_dest${d}
-    Switch To Project Repo
-    Retry Wait Until Page Contains    project_dest${d}/centos
+    Image Should Be Replicated To Project  project_dest${d}  centos
     Close Browser
 
 Test Case - Replication Of Pull Images from AWS-ECR To Self
@@ -262,15 +252,9 @@ Test Case - Replication Of Pull Images from AWS-ECR To Self
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    rule${d}    pull    a/*    image    e${d}    project${d}
     Select Rule And Replicate  rule${d}
-    Sleep    60
-    Go Into Project    project${d}
-    Switch To Project Repo
-    #In AWS-ECR, under repository a, there're only several images: httpd,alpine,hello-world.
-    Retry Wait Until Page Contains    project${d}/httpd
-    Go Into Project    project${d}
-    Switch To Project Repo
-    Retry Wait Until Page Contains    project${d}/alpine
-    Retry Wait Until Page Contains    project${d}/hello-world
+    Image Should Be Replicated To Project  project${d}  httpd
+    Image Should Be Replicated To Project  project${d}  alpine
+    Image Should Be Replicated To Project  project${d}  hello-world
     Close Browser
 
 Test Case - Replication Of Pull Images from Google-GCR To Self
@@ -285,12 +269,6 @@ Test Case - Replication Of Pull Images from Google-GCR To Self
     Create A Rule With Existing Endpoint    rule${d}    pull    eminent-nation-87317/*    image    e${d}    project${d}
     Filter Replicatin Rule  rule${d}
     Select Rule And Replicate  rule${d}
-    Sleep    30
-    Go Into Project    project${d}
-    Switch To Project Repo
-    #In Google-GCR, under repository a, there're only several images: httpd,tomcat.
-    Retry Wait Until Page Contains    project${d}/httpd
-    Go Into Project    project${d}
-    Switch To Project Repo
-    Retry Wait Until Page Contains    project${d}/tomcat
+    Image Should Be Replicated To Project  project${d}  httpd
+    Image Should Be Replicated To Project  project${d}  tomcat
     Close Browser

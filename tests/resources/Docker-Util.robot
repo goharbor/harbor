@@ -28,7 +28,9 @@ Pull image
     ${image_with_tag}=  Set Variable If  '${tag}'=='${null}'  ${image}  ${image}:${tag}
     Run Keyword If  ${is_robot}==${false}  Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     ...  ELSE  Wait Unitl Command Success  docker login -u robot\\\$${user} -p ${pwd} ${ip}
-    ${output}=  Wait Unitl Command Success  docker pull ${ip}/${project}/${image_with_tag}
+    ${output}=  Docker Pull  ${ip}/${project}/${image_with_tag}
+    Log  ${output}
+    Log To Console  ${output}
     Should Contain  ${output}  Digest:
     Should Contain  ${output}  Status:
     Should Not Contain  ${output}  No such image:
@@ -140,7 +142,10 @@ Docker Login
 
 Docker Pull
     [Arguments]  ${image}
-    Wait Unitl Command Success  docker pull ${image}
+    ${output}=  Retry Keyword When Error  Wait Unitl Command Success  docker pull ${image}
+    Log  ${output}
+    Log To Console  Docker Pull: \n ${output}
+    [Return]  ${output}
 
 Docker Tag
     [Arguments]  ${src_image}   ${dst_image}
