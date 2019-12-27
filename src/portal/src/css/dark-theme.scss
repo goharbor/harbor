@@ -1,7 +1,9 @@
+// Variables for dark theme should be defined here.
 @import "../../node_modules/@clr/ui/clr-ui-dark.min.css";
 $dark-background-color: rgb(27, 42, 50) !important;
 $dark-font-color1: #acbac3 !important;
 $dark-font-color-title1: #eaedf0 !important;
+$dark-active-tab-color: #4aaed9;
 
 .label-form {
   background-color: #212129 !important;
@@ -111,3 +113,5 @@ clr-dg-action-overflow {
     }
   } 
 }
+
+@import "./common.scss";

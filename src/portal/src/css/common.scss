@@ -1,0 +1,11 @@
+// styles for dark and light theme should be defined here.
+.in-overflow {
+    .tabs-overflow {
+      > .nav-item {
+        > button {
+          box-shadow: 0 -3px 0 $dark-active-tab-color inset;
+          color: 0077b8;
+        }
+      }
+    }
+}

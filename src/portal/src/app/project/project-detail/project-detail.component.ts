@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, HostListener } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Project } from '../project';
 import { SessionService } from '../../shared/session.service';
@@ -19,13 +19,14 @@ import { AppConfigService } from "../../app-config.service";
 import { forkJoin } from "rxjs";
 import { ProjectService, UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
 import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { SHOW_ELLIPSIS_WIDTH, ELLIPSIS_NUMBER } from './project-detail.const';
+
 @Component({
   selector: 'project-detail',
   templateUrl: 'project-detail.component.html',
   styleUrls: ['project-detail.component.scss']
 })
 export class ProjectDetailComponent implements OnInit {
-
   hasSignedIn: boolean;
   currentProject: Project;
 
@@ -89,25 +90,25 @@ export class ProjectDetailComponent implements OnInit {
     },
     {
       linkName: "tag-strategy",
-      tabLinkInOverflow: true,
+      tabLinkInOverflow: false,
       showTabName: "PROJECT_DETAIL.TAG_STRATEGY",
       permissions: () => this.hasTagRetentionPermission
     },
     {
       linkName: "robot-account",
-      tabLinkInOverflow: true,
+      tabLinkInOverflow: false,
       showTabName: "PROJECT_DETAIL.ROBOT_ACCOUNTS",
       permissions: () => this.hasRobotListPermission
     },
     {
       linkName: "webhook",
-      tabLinkInOverflow: true,
+      tabLinkInOverflow: false,
       showTabName: "PROJECT_DETAIL.WEBHOOKS",
       permissions: () => this.hasWebhookListPermission
     },
     {
       linkName: "logs",
-      tabLinkInOverflow: true,
+      tabLinkInOverflow: false,
       showTabName: "PROJECT_DETAIL.LOGS",
       permissions: () => this.hasLogListPermission
     }
@@ -129,6 +130,7 @@ export class ProjectDetailComponent implements OnInit {
     });
   }
   ngOnInit() {
+    this.resetTabs();
     this.projectId = this.route.snapshot.params['id'];
     this.getPermissionsList(this.projectId);
   }
@@ -153,17 +155,17 @@ export class ProjectDetailComponent implements OnInit {
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.LABEL.KEY, USERSTATICPERMISSION.LABEL.VALUE.CREATE));
     permissionsList.push(this.userPermissionService.getPermission(projectId,
-        USERSTATICPERMISSION.TAG_RETENTION.KEY, USERSTATICPERMISSION.TAG_RETENTION.VALUE.READ));
+      USERSTATICPERMISSION.TAG_RETENTION.KEY, USERSTATICPERMISSION.TAG_RETENTION.VALUE.READ));
     permissionsList.push(this.userPermissionService.getPermission(projectId,
       USERSTATICPERMISSION.WEBHOOK.KEY, USERSTATICPERMISSION.WEBHOOK.VALUE.LIST));
     permissionsList.push(this.userPermissionService.getPermission(projectId,
-        USERSTATICPERMISSION.SCANNER.KEY, USERSTATICPERMISSION.SCANNER.VALUE.READ));
+      USERSTATICPERMISSION.SCANNER.KEY, USERSTATICPERMISSION.SCANNER.VALUE.READ));
 
     forkJoin(...permissionsList).subscribe(Rules => {
       [this.hasProjectReadPermission, this.hasLogListPermission, this.hasConfigurationListPermission, this.hasMemberListPermission
         , this.hasLabelListPermission, this.hasRepositoryListPermission, this.hasHelmChartsListPermission, this.hasRobotListPermission
         , this.hasLabelCreatePermission, this.hasTagRetentionPermission, this.hasWebhookListPermission,
-        this.hasScannerReadPermission] = Rules;
+      this.hasScannerReadPermission] = Rules;
     }, error => this.errorHandler.error(error));
   }
 
@@ -188,10 +190,32 @@ export class ProjectDetailComponent implements OnInit {
   isDefaultTab(tab, index) {
     return this.route.snapshot.children[0].routeConfig.path !== tab.linkName && index === 0;
   }
+
   isTabLinkInOverFlow() {
     return this.tabLinkNavList.some(tab => {
       return tab.tabLinkInOverflow && this.route.snapshot.children[0].routeConfig.path === tab.linkName;
     });
+  }
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event) {
+    this.resetTabs();
+  }
+
+  /** Helper function to show tabs in ellipsis dropdown menu. */
+  resetTabs(): void {
+    let innerWidth = window.innerWidth;
+    if (innerWidth < SHOW_ELLIPSIS_WIDTH) {
+      for (let i = this.tabLinkNavList.length - 1; i >= 0; i--) {
+        if (this.tabLinkNavList.length - i <= ELLIPSIS_NUMBER) {
+          this.tabLinkNavList[i].tabLinkInOverflow = true;
+        } else {
+          this.tabLinkNavList[i].tabLinkInOverflow = false;
+        }
+      }
+    } else {
+      this.tabLinkNavList.forEach(item => item.tabLinkInOverflow = false);
+    }
   }
 
 }
