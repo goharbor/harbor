@@ -42,16 +42,3 @@ button {
     padding: 0;
   }
 }
-
-.in-overflow {
-  ::ng-deep {
-    .tabs-overflow {
-      > .nav-item {
-        > button {
-          box-shadow: 0 -3px 0 #0077b8 inset;
-          color: 0077b8;
-        }
-      }
-    }
-  }
-}
