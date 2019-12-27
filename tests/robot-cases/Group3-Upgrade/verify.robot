@@ -38,7 +38,7 @@ Test Case - Upgrade Verify
     Run Keyword  Verify Project  ${data}
     Run Keyword  Verify Member Exist  ${data}
     #Run Keyword  Verify Robot Account Exist  ${data}
-    Run Keyword  Verify Project-level Whitelist  ${data}
+    #Run Keyword  Verify Project-level Whitelist  ${data}
     #Run Keyword  Verify Webhook  ${data}
     Run Keyword  Verify User System Admin Role  ${data}
     Run Keyword  Verify Endpoint  ${data}
