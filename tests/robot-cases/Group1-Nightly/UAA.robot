@@ -36,7 +36,7 @@ Test Case - Home Page Differences With DB Mode
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Logout Harbor
     Sleep  2
-    Page Should Not Contain  Sign up 
+    Page Should Not Contain  Sign up
     Page Should Not Contain  Forgot password
     Close Browser
 
