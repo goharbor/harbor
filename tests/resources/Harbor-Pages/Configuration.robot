@@ -154,6 +154,8 @@ Switch To System Settings
 
 Switch To Project Quotas
     Sleep  1
+    Retry Element Click  xpath=${configuration_xpath}
+    Sleep  1
     Retry Element Click  xpath=//clr-main-container//clr-vertical-nav//a[contains(.,'Project Quotas')]
     Sleep  1
 
