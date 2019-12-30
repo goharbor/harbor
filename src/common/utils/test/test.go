@@ -41,7 +41,7 @@ type RequestHandlerMapping struct {
 
 // ServeHTTP ...
 func (rhm *RequestHandlerMapping) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if len(rhm.Method) != 0 && r.Method != strings.ToUpper(rhm.Method) {
+	if len(rhm.Method) != 0 && rhm.Method != "*" && r.Method != strings.ToUpper(rhm.Method) {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
@@ -87,7 +87,16 @@ func NewServer(mappings ...*RequestHandlerMapping) *httptest.Server {
 	r := mux.NewRouter()
 
 	for _, mapping := range mappings {
-		r.PathPrefix(mapping.Pattern).Handler(mapping).Methods(mapping.Method)
+		if mapping.Method == "*" {
+			r.PathPrefix(mapping.Pattern).Handler(mapping).Methods("GET")
+			r.PathPrefix(mapping.Pattern).Handler(mapping).Methods("POST")
+			r.PathPrefix(mapping.Pattern).Handler(mapping).Methods("PUT")
+			r.PathPrefix(mapping.Pattern).Handler(mapping).Methods("PATCH")
+			r.PathPrefix(mapping.Pattern).Handler(mapping).Methods("HEAD")
+			r.PathPrefix(mapping.Pattern).Handler(mapping).Methods("DELETE")
+		} else {
+			r.PathPrefix(mapping.Pattern).Handler(mapping).Methods(mapping.Method)
+		}
 	}
 
 	return httptest.NewServer(r)
