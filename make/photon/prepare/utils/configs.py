@@ -9,6 +9,8 @@ default_db_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.S
 default_https_cert_path = '/your/certificate/path'
 default_https_key_path = '/your/certificate/path'
 
+REGISTRY_USER_NAME = 'harbor_registry_user'
+
 
 def validate(conf: dict, **kwargs):
     # hostname validate
@@ -83,12 +85,14 @@ def validate(conf: dict, **kwargs):
     # TODO:
     # If user enable trust cert dir, need check if the files in this dir is readable.
 
+
 def parse_versions():
     if not versions_file_path.is_file():
         return {}
     with open('versions') as f:
         versions = yaml.load(f)
     return versions
+
 
 def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseum):
     '''
@@ -320,6 +324,12 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
 
     # UAA configs
     config_dict['uaa'] = configs.get('uaa') or {}
+
+    config_dict['registry_username'] = REGISTRY_USER_NAME
+    config_dict['registry_password'] = generate_random_string(32)
+
+    # TODO: remove the flag before release
+    config_dict['registry_use_basic_auth'] = configs['registry_use_basic_auth']
 
     return config_dict
 

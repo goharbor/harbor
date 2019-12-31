@@ -1,4 +1,4 @@
-import os, copy
+import os, copy, subprocess
 
 from g import config_dir, templates_dir, DEFAULT_GID, DEFAULT_UID, data_dir
 from utils.misc import prepare_dir
@@ -8,6 +8,7 @@ from utils.jinja import render_jinja
 registry_config_dir = os.path.join(config_dir, "registry")
 registry_config_template_path = os.path.join(templates_dir, "registry", "config.yml.jinja")
 registry_conf = os.path.join(config_dir, "registry", "config.yml")
+registry_passwd_path = os.path.join(config_dir, "registry", "passwd")
 registry_data_dir = os.path.join(data_dir, 'registry')
 
 levels_map = {
@@ -18,10 +19,13 @@ levels_map = {
     'fatal': 'fatal'
 }
 
+
 def prepare_registry(config_dict):
     prepare_dir(registry_data_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
     prepare_dir(registry_config_dir)
 
+    if config_dict['registry_use_basic_auth']:
+        gen_passwd_file(config_dict)
     storage_provider_info = get_storage_provider_info(
     config_dict['storage_provider_name'],
     config_dict['storage_provider_config'])
@@ -55,3 +59,8 @@ def get_storage_provider_info(provider_name, provider_config):
         storage_provider_conf_list.append('{}: {}'.format(config[0], value))
     storage_provider_info = ('\n' + ' ' * 4).join(storage_provider_conf_list)
     return storage_provider_info
+
+
+def gen_passwd_file(config_dict):
+    return subprocess.call(["/usr/bin/htpasswd", "-bcB", registry_passwd_path, config_dict['registry_username'],
+                            config_dict['registry_password']], stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
