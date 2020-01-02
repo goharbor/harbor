@@ -1,10 +1,9 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { EditProjectQuotasComponent } from './edit-project-quotas.component';
-import { SharedModule } from '../../../../utils/shared/shared.module';
-import { InlineAlertComponent } from '../../../inline-alert/inline-alert.component';
 import { SERVICE_CONFIG, IServiceConfig } from '../../../../entities/service.config';
-import { RouterModule } from '@angular/router';
+import { EditQuotaQuotaInterface } from '../../../../services';
+import { HarborLibraryModule } from '../../../../harbor-library.module';
+import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 
 describe('EditProjectQuotasComponent', () => {
   let component: EditProjectQuotasComponent;
@@ -12,13 +11,20 @@ describe('EditProjectQuotasComponent', () => {
   let config: IServiceConfig = {
     quotaUrl: "/api/quotas/testing"
   };
+  const mockedEditQuota: EditQuotaQuotaInterface = {
+    editQuota: "Edit Default Project Quotas",
+    setQuota: "Set the default project quotas when creating new projects",
+    countQuota: "Default artifact count",
+    storageQuota: "Default storage consumption",
+    quotaHardLimitValue: {storageLimit: -1, storageUnit: "Byte", countLimit: -1},
+    isSystemDefaultQuota: true
+  };
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
-        SharedModule,
-        RouterModule.forRoot([])
+        HarborLibraryModule,
+        BrowserAnimationsModule
       ],
-      declarations: [ EditProjectQuotasComponent, InlineAlertComponent ],
       providers: [
         { provide: SERVICE_CONFIG, useValue: config },
       ]
@@ -33,5 +39,19 @@ describe('EditProjectQuotasComponent', () => {
   });
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+  it('should open', async () => {
+    component.openEditQuota = true;
+    fixture.detectChanges();
+    await fixture.whenStable();
+    component.openEditQuotaModal(mockedEditQuota);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    let countInput: HTMLInputElement = fixture.nativeElement.querySelector('#count');
+    countInput.value = "100";
+    countInput.dispatchEvent(new Event("input"));
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(component.isValid).toBeTruthy();
   });
 });

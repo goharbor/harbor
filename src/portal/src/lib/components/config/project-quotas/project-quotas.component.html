@@ -6,7 +6,7 @@
                     <div class="default-quota-text">
                         <span class="width-10rem">{{'QUOTA.PROJECT_QUOTA_DEFAULT_ARTIFACT' | translate}}</span>
                         <span class="num-count">{{ quotaHardLimitValue?.countLimit === -1 ? ('QUOTA.UNLIMITED'| translate) : quotaHardLimitValue?.countLimit }}</span>
-                        <button class="btn btn-link btn-sm  default-quota-edit-button"
+                        <button id="open-edit" class="btn btn-link btn-sm  default-quota-edit-button"
                     (click)="editDefaultQuota(quotaHardLimitValue)">{{'QUOTA.EDIT' | translate}}</button>
                     </div>
                     <div class="default-quota-text">
