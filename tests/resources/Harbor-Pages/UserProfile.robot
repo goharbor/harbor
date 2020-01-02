@@ -43,4 +43,4 @@ Logout Harbor
     Retry Link Click  Log Out
     Capture Page Screenshot  Logout.png
     Sleep  2
-    Wait Until Keyword Succeeds  5x  1  Page Should Contain Element  ${sign_in_title_xpath}
+    Wait Until Keyword Succeeds  5x  1  Retry Wait Until Page Contains Element  ${sign_in_title_xpath}

@@ -406,7 +406,7 @@ Test Case - Developer Operate Labels
     Sign In Harbor  ${HARBOR_URL}  user022  Test1@34
     Go Into Project  project${d}  has_image=${false}
     Sleep  3
-    Page Should Not Contain Element  xpath=//a[contains(.,'Labels')]
+    Retry Wait Until Page Not Contains Element  xpath=//a[contains(.,'Labels')]
     Close Browser
 
 Test Case - Retag A Image Tag
@@ -431,7 +431,7 @@ Test Case - Retag A Image Tag
     Page Should Contain  ${target_image_name}
     Go Into Repo  project${random_num1}${random_num2}/${target_image_name}
     Sleep  1
-    Page Should Contain Element  xpath=${tag_value_xpath}
+    Retry Wait Until Page Contains Element  xpath=${tag_value_xpath}
     Close Browser
 
 Test Case - Create An New Project With Quotas Set

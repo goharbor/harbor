@@ -299,6 +299,11 @@ func CoreSecret() string {
 	return os.Getenv("CORE_SECRET")
 }
 
+// RegistryCredential returns the username and password the core uses to access registry
+func RegistryCredential() (string, string) {
+	return os.Getenv("REGISTRY_CREDENTIAL_USERNAME"), os.Getenv("REGISTRY_CREDENTIAL_PASSWORD")
+}
+
 // JobserviceSecret returns a secret to mark Jobservice when communicate with
 // other component
 // TODO replace it with method of SecretStore
