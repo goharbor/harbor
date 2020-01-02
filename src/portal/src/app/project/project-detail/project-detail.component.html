@@ -6,7 +6,7 @@
 <clr-tabs id="project-tabs" class="tabs" [class.in-overflow]="isTabLinkInOverFlow()">
     <ng-container *ngFor="let tab of tabLinkNavList;let i=index">
         <ng-container *ngIf="tab.permissions()">
-            <clr-tab >
+            <clr-tab>
                 <button [class.clear-default-active]="isDefaultTab(tab, i)" [clrTabLinkInOverflow]="tab.tabLinkInOverflow" id="{{'project-'+tab.linkName}}" clrTabLink
                     routerLink="{{tab.linkName}}" routerLinkActive="active" type="button">
                     <a class="nav-link">{{tab.showTabName | translate}}</a></button>
