@@ -130,7 +130,7 @@ func ListRegistrations(query *q.Query) ([]*Registration, error) {
 
 // SetDefaultRegistration sets the specified registration as default one
 func SetDefaultRegistration(UUID string) error {
-	o := dao.GetOrmer()
+	o := orm.NewOrm()
 	err := o.Begin()
 	if err != nil {
 		return err
