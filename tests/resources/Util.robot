@@ -233,6 +233,7 @@ Retry Keyword When Error
     \    Sleep  2
     Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
     Should Be Equal As Strings  '${out[0]}'  'PASS'
+    [Return]  ${out[1]}
 
 Retry Keyword When Return Value Mismatch
     [Arguments]  ${keyword}  ${expected_value}  ${count}  @{elements}

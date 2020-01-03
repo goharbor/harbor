@@ -101,8 +101,7 @@ Body Of Admin Push Signed Image
     [Arguments]  ${image}=tomcat  ${with_remove}=${false}
     Enable Notary Client
 
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
-    Log  ${output}
+    Docker Pull  hello-world:latest
 
     Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world:latest
     ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} library ${image} latest ${notaryServerEndpoint}

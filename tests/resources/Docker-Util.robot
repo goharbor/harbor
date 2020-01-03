@@ -28,7 +28,9 @@ Pull image
     ${image_with_tag}=  Set Variable If  '${tag}'=='${null}'  ${image}  ${image}:${tag}
     Run Keyword If  ${is_robot}==${false}  Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     ...  ELSE  Wait Unitl Command Success  docker login -u robot\\\$${user} -p ${pwd} ${ip}
-    ${output}=  Wait Unitl Command Success  docker pull ${ip}/${project}/${image_with_tag}
+    ${output}=  Docker Pull  ${ip}/${project}/${image_with_tag}
+    Log  ${output}
+    Log To Console  ${output}
     Should Contain  ${output}  Digest:
     Should Contain  ${output}  Status:
     Should Not Contain  ${output}  No such image:
@@ -38,7 +40,7 @@ Push image
     ${image_with_sha256}=  Set Variable If  '${sha256}'=='${null}'  ${image}  ${image}@sha256:${sha256}
     ${image_with_tag}=  Set Variable If  '${sha256}'=='${null}'  ${image}  ${image}:${sha256}
     Log To Console  \nRunning docker push ${image}...
-    Wait Unitl Command Success  docker pull ${image_with_sha256}
+    Docker Pull  ${image_with_sha256}
     Run Keyword If  ${is_robot}==${false}  Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     ...  ELSE  Wait Unitl Command Success  docker login -u robot\\\$${user} -p ${pwd} ${ip}
     Wait Unitl Command Success  docker tag ${image_with_sha256} ${ip}/${project}/${image_with_tag}
@@ -50,7 +52,7 @@ Push Image With Tag
 #tag1 is tag of image on docker hub,default latest,use a version existing if you do not want to use latest
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${tag}  ${tag1}=latest
     Log To Console  \nRunning docker push ${image}...
-    Wait Unitl Command Success  docker pull ${image}:${tag1}
+    Docker Pull  ${image}:${tag1}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     Wait Unitl Command Success  docker tag ${image}:${tag1} ${ip}/${project}/${image}:${tag}
     Wait Unitl Command Success  docker push ${ip}/${project}/${image}:${tag}
@@ -75,7 +77,7 @@ Cannot Pull Unsigned Image
 Cannot Push image
     [Arguments]  ${ip}  ${user}  ${pwd}  ${project}  ${image}  ${err_msg}=${null}
     Log To Console  \nRunning docker push ${image}...
-    Wait Unitl Command Success  docker pull ${image}
+    Docker Pull  ${image}
     Wait Unitl Command Success  docker login -u ${user} -p ${pwd} ${ip}
     Wait Unitl Command Success  docker tag ${image} ${ip}/${project}/${image}
     ${output}=  Command Should be Failed  docker push ${ip}/${project}/${image}
@@ -140,7 +142,10 @@ Docker Login
 
 Docker Pull
     [Arguments]  ${image}
-    Wait Unitl Command Success  docker pull ${image}
+    ${output}=  Retry Keyword When Error  Wait Unitl Command Success  docker pull ${image}
+    Log  ${output}
+    Log To Console  Docker Pull: \n ${output}
+    [Return]  ${output}
 
 Docker Tag
     [Arguments]  ${src_image}   ${dst_image}
