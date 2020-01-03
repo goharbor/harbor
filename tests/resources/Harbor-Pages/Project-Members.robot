@@ -88,7 +88,7 @@ User Can Not Add Member
 
 Add Guest Member To Project
     [arguments]  ${member}
-    Retry Element Click  xpath=${project_member_add_button_xpath}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${project_member_add_button_xpath}  Retry Wait Until Page Contains Element  xpath=${project_member_add_button_xpath}
     Retry Text Input  xpath=${project_member_add_username_xpath}  ${member}
     #select guest
     Mouse Down  xpath=${project_member_guest_radio_checkbox}
@@ -98,10 +98,9 @@ Add Guest Member To Project
 Delete Project Member
     [arguments]  ${member}
     Retry Element Click  xpath=//clr-dg-row[contains(.,'${member}')]//input/../label
-    Retry Element Click  ${member_action_xpath}
-    Retry Element Click  ${delete_action_xpath}
-    Retry Element Click  ${repo_delete_on_card_view_btn}
-    Retry Wait Element  xpath=${project_member_xpath}
+    Retry Double Keywords When Error  Retry Element Click  ${member_action_xpath}  Retry Wait Until Page Contains Element  ${delete_action_xpath}
+    Retry Double Keywords When Error  Retry Element Click  ${delete_action_xpath}  Retry Wait Until Page Contains Element  ${repo_delete_on_card_view_btn}
+    Retry Double Keywords When Error  Retry Element Click  ${repo_delete_on_card_view_btn}  Retry Wait Element  xpath=${project_member_xpath}
     Sleep  1
 
 User Should Be Owner Of Project
