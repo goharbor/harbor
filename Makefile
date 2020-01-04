@@ -79,7 +79,7 @@ DEVFLAG=true
 NOTARYFLAG=false
 CLAIRFLAG=false
 HTTPPROXY=
-BUILDBIN=false
+BUILDBIN=true
 MIGRATORFLAG=false
 NPM_REGISTRY=https://registry.npmjs.org
 # enable/disable chart repo supporting
