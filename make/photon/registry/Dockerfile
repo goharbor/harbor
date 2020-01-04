@@ -1,4 +1,4 @@
-FROM photon:2.0
+FROM photon:3.0
 
 MAINTAINER wangyan@vmware.com
 
@@ -11,7 +11,7 @@ RUN tdnf install sudo -y >> /dev/null\
 
 COPY ./make/photon/common/install_cert.sh /harbor
 COPY ./make/photon/registry/entrypoint.sh /
-COPY ./make/photon/registry/binary/registry /usr/bin
+COPY ./make/photon/registry/binary/bin/registry /usr/bin
 
 RUN chmod u+x /entrypoint.sh \
     && chmod u+x /usr/bin/registry

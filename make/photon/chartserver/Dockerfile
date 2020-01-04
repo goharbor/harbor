@@ -1,4 +1,4 @@
-FROM photon:2.0
+FROM photon:3.0
 
 RUN tdnf install -y shadow sudo >>/dev/null\
     && tdnf clean all \

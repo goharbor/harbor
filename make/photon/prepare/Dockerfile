@@ -1,4 +1,4 @@
-FROM photon:2.0
+FROM photon:3.0
 
 ENV LANG en_US.UTF-8
 

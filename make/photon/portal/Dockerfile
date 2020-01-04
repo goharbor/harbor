@@ -23,7 +23,7 @@ RUN ls -la \
     && node --max_old_space_size=8192 'node_modules/@angular/cli/bin/ng' build --prod
 
 
-FROM photon:2.0
+FROM photon:3.0
 
 COPY --from=nodeportal /build_dir/dist /usr/share/nginx/html
 COPY --from=nodeportal /build_dir/swagger.yaml /usr/share/nginx/html

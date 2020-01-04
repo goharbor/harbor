@@ -1,4 +1,4 @@
-FROM photon:2.0
+FROM photon:3.0
 
 MAINTAINER wangyan@vmware.com
 
@@ -9,7 +9,7 @@ RUN tdnf install sudo -y >> /dev/null \
     && mkdir /harbor/
 
 COPY ./make/photon/common/install_cert.sh /harbor
-COPY ./make/photon/registry/binary/registry /usr/bin
+COPY ./make/photon/registry/binary/bin/registry /usr/bin
 COPY ./make/photon/registryctl/start.sh /harbor/
 COPY ./make/photon/registryctl/harbor_registryctl /harbor/
 

@@ -1,4 +1,4 @@
-FROM photon:2.0
+FROM photon:3.0
 
 ENV PGDATA /var/lib/postgresql/data
 
