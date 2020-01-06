@@ -5,7 +5,6 @@
     height: 100%;
     left:28px;
     padding-top: 20px;
-    background: #fff;
     border-left: 1px solid #e0e0e0;
 }
 .eventInfo {display: flex; justify-content: flex-start; align-content: flex-start;
@@ -35,7 +34,6 @@
     padding: 0 10px;
     height: 25px;
     line-height: 25px;
-    background-color: white;
     letter-spacing: 1.2px;
     font-weight: 500;
     box-shadow: -2px -1px 3px #bebbbb;

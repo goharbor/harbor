@@ -156,6 +156,7 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
                     settings['verify_cert'] = this.currentConfig[prop].value;
                 }
             }
+            this.testingOnGoing = true;
             this.configService.testOIDCServer(settings)
                 .subscribe(respone => {
                     this.testingOnGoing = false;
