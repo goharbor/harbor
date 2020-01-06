@@ -27,7 +27,23 @@ Add A Tag Retention Rule
     Retry Element Click  xpath=${project_tag_retention_save_add_button_xpath}
     Retry Wait Until Page Contains Element   xpath=${project_tag_retention_rule_name_xpath}
 
+Add A Tag Immutability Rule
+    [Arguments]  ${scope}  ${tag}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${project_tag_retention_add_rule_xpath}  Retry Wait Until Page Contains Element  xpath=${project_tag_immutability_save_add_button_xpath}
+    Retry Clear Element Text  ${project_tag_immutability_scope_input_xpath}
+    Retry Text Input  ${project_tag_immutability_scope_input_xpath}  ${scope}
+    Retry Clear Element Text  ${project_tag_immutability_tag_input_xpath}
+    Retry Text Input  ${project_tag_immutability_tag_input_xpath}  ${tag}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${project_tag_immutability_save_add_button_xpath}  Retry Wait Until Page Contains Element  xpath=${project_tag_retention_rule_name_xpath}
+    Retry Wait Until Page Contains  ${scope}
+    Retry Wait Until Page Contains  ${tag}
+
 Delete A Tag Retention Rule
+    Retry Element Click  xpath=${project_tag_retention_action_button_xpath}
+    Retry Element Click  xpath=${project_tag_retention_delete_button_xpath}
+    Retry Wait Until Page Not Contains Element   xpath=${project_tag_retention_rule_name_xpath}
+
+Delete A Tag Immutability Rule
     Retry Element Click  xpath=${project_tag_retention_action_button_xpath}
     Retry Element Click  xpath=${project_tag_retention_delete_button_xpath}
     Retry Wait Until Page Not Contains Element   xpath=${project_tag_retention_rule_name_xpath}
@@ -41,6 +57,18 @@ Edit A Tag Retention Rule
     Input Text  ${project_tag_retention_tags_input_xpath}  ${tags}
     Retry Element Click  xpath=${project_tag_retention_save_add_button_xpath}
     Retry Wait Until Page Contains Element   xpath=//span[contains(@class, 'rule-name')]//span[contains(.,'${tags}')]
+
+Edit A Tag Immutability Rule
+    [Arguments]  ${scope}  ${tag}
+    Retry Element Click  xpath=${project_tag_retention_action_button_xpath}
+    Retry Element Click  xpath=${project_tag_retention_edit_button_xpath}
+    Retry Clear Element Text  ${project_tag_immutability_scope_input_xpath}
+    Retry Text Input  ${project_tag_immutability_scope_input_xpath}  ${scope}
+    Retry Clear Element Text  ${project_tag_immutability_tag_input_xpath}
+    Retry Text Input  ${project_tag_immutability_tag_input_xpath}  ${tag}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${project_tag_immutability_save_add_button_xpath}  Retry Wait Until Page Contains Element  xpath=${project_tag_retention_rule_name_xpath}
+    Retry Wait Until Page Contains  ${scope}
+    Retry Wait Until Page Contains  ${tag}
 
 Set Daily Schedule
     Retry Element Click  xpath=${project_tag_retention_edit_schedule_xpath}

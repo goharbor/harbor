@@ -98,7 +98,7 @@ Body Of List Helm Charts
     Close Browser
 
 Body Of Admin Push Signed Image
-    [Arguments]  ${image}  ${with_remove}=${false}
+    [Arguments]  ${image}=tomcat  ${with_remove}=${false}
     Enable Notary Client
 
     Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}

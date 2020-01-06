@@ -487,8 +487,8 @@ Test Case - Project Storage Quotas Dispaly And Control
     ${d}=  Get Current Date  result_format=%m%s
     ${storage_quota}=  Set Variable  330
     ${storage_quota_unit}=  Set Variable  MB
-    ${image_a}=  Set Variable  ${LOCAL_REGISTRY}/harbor-ci/redis
-    ${image_b}=  Set Variable  ${LOCAL_REGISTRY}/harbor-ci/logstash
+    ${image_a}=  Set Variable  redis
+    ${image_b}=  Set Variable  logstash
     ${image_a_size}=    Set Variable    34.15MB
     ${image_b_size}=    Set Variable    321.03MB
     ${image_a_ver}=  Set Variable  donotremove5.0
@@ -608,6 +608,28 @@ Test Case - Tag Retention
     Execute Dry Run
     Execute Run
     Close Browser
+
+Test Case - Tag Immutability
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
+    Switch To Tag Immutability
+    Add A Tag Immutability Rule  1212  3434
+    Delete A Tag Immutability Rule
+    Add A Tag Immutability Rule  5566  7788
+    Edit A Tag Immutability Rule  hello-world  latest
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox  latest
+    Go Into Project  project${d}
+    @{repo_list}  Create List  hello-world  busybox
+    Multi-delete Object  ${repo_delete_btn}  @{repo_list}
+    # Verify
+    Delete Fail  hello-world
+    Delete Success  busybox
+    Close Browser
+
 
 Test Case - Robot Account
     Init Chrome Driver

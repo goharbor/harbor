@@ -26,7 +26,10 @@ ${project_replication_xpath}  //project-detail//a[contains(.,'Replication')]
 ${project_log_xpath}  //project-detail//li[contains(.,'Logs')]
 ${project_member_xpath}  //project-detail//li[contains(.,'Members')]
 ${project_config_tabsheet}  xpath=//project-detail//a[contains(.,'Configuration')]
-${project_tag_retention_xpath}  //nav//li//a[contains(.,'Tag')]
+${project_tag_strategy_xpath}  //clr-tabs//a[contains(.,'Tag')]
+${project_tab_overflow_btn}  //clr-tabs//li//button[contains(@class,"dropdown-toggle")]
+
+${project_tag_immutability_switch}  //project-detail/app-tag-feature-integration//label/a[contains(.,'Tag Immutability')]
 
 ${create_project_CANCEL_button_xpath}  xpath=//button[contains(.,'CANCEL')]
 ${create_project_OK_button_xpath}  xpath=//button[contains(.,'OK')]
@@ -40,11 +43,11 @@ ${repo_delete_btn}  xpath=//repository//button[contains(.,'Delete')]
 ${project_delete_btn}  xpath=//list-project//clr-datagrid//button[contains(.,'Delete')]
 ${tag_delete_btn}  xpath=//tag-repository//clr-datagrid//button[contains(.,'Delete')]
 ${user_delete_btn}  xpath=/clr-dropdown-menu//button[contains(.,'Delete')]
-#${repo_search_icon}  xpath=//hbr-filter//clr-icon
-#${repo_search_input}  xpath=//hbr-filter//input
+${repo_search_icon}  xpath=//hbr-filter//clr-icon
+${repo_search_input}  xpath=//hbr-filter//input
 ${repo_list_spinner}  xpath=//clr-datagrid//clr-spinner
-${repo_search_icon}  xpath=//hbr-repository-gridview//clr-datagrid//clr-dg-column[contains(.,'Name')]//clr-dg-string-filter//button//clr-icon
-${repo_search_input}  xpath=//div[@class[contains(.,'datagrid-filter')]]//input
+#${repo_search_icon}  xpath=//hbr-repository-gridview//clr-datagrid//clr-dg-column[contains(.,'Name')]//clr-dg-string-filter//button//clr-icon
+#${repo_search_input}  xpath=//div[@class[contains(.,'datagrid-filter')]]//input
 ${repo_tag_1st_checkbox}  xpath=//clr-datagrid//clr-dg-row//clr-checkbox-wrapper
 ${tag_table_column_pull_command}  xpath=//clr-dg-column//span[contains(.,'Pull Command')]
 ${tag_table_column_tag}  xpath=//clr-dg-column//span[contains(.,'Tag')]
