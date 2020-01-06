@@ -58,17 +58,19 @@ func (d *DefaultAPIController) GetRobotAccount(id int64) (*model.Robot, error) {
 func (d *DefaultAPIController) CreateRobotAccount(robotReq *model.RobotCreate) (*model.Robot, error) {
 
 	var deferDel error
-	// Token duration in minutes
-	tokenDuration := time.Duration(config.RobotTokenDuration()) * time.Minute
-	expiresAt := time.Now().UTC().Add(tokenDuration).Unix()
 	createdName := common.RobotPrefix + robotReq.Name
+
+	if robotReq.ExpiresAt == 0 {
+		tokenDuration := time.Duration(config.RobotTokenDuration()) * time.Minute
+		robotReq.ExpiresAt = time.Now().UTC().Add(tokenDuration).Unix()
+	}
 
 	// first to add a robot account, and get its id.
 	robot := &model.Robot{
 		Name:        createdName,
 		Description: robotReq.Description,
 		ProjectID:   robotReq.ProjectID,
-		ExpiresAt:   expiresAt,
+		ExpiresAt:   robotReq.ExpiresAt,
 		Visible:     robotReq.Visible,
 	}
 	id, err := d.manager.CreateRobotAccount(robot)
@@ -85,7 +87,7 @@ func (d *DefaultAPIController) CreateRobotAccount(robotReq *model.RobotCreate) (
 		Access:    robotReq.Access,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  time.Now().UTC().Unix(),
-			ExpiresAt: expiresAt,
+			ExpiresAt: robotReq.ExpiresAt,
 			Issuer:    opt.Issuer,
 		},
 	}
