@@ -47,7 +47,7 @@ export class OperationComponent implements OnInit, OnDestroy {
   getNewMessageCountStr(): string {
     if (this._newMessageCount) {
       if (this._newMessageCount > 50) {
-        return this._newMessageCount + '+';
+        return 50 + '+';
       }
       return this._newMessageCount.toString();
     }
@@ -154,9 +154,9 @@ export class OperationComponent implements OnInit, OnDestroy {
     } else if (dist >= 60 && Math.floor(dist / 60) < 24) {
       return Math.floor(dist / 60) + ' hour(s) ago';
     } else if (Math.floor(dist / 60) >= 24)  {
-      return Math.floor(dist / 60 / 24) + ' day ago';
+      return Math.floor(dist / 60 / 24) + ' day(s) ago';
     } else {
-      return 'less 1 minute';
+      return 'less than 1 minute';
     }
 
   }
