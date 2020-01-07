@@ -608,6 +608,28 @@ Test Case - Tag Retention
     Execute Run
     Close Browser
 
+Test Case - Tag Immutability
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
+    Switch To Tag Immutability
+    Add A Tag Immutability Rule  1212  3434
+    Delete A Tag Immutability Rule
+    Add A Tag Immutability Rule  5566  7788
+    Edit A Tag Immutability Rule  hello-world  latest
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox  latest
+    Go Into Project  project${d}
+    @{repo_list}  Create List  hello-world  busybox
+    Multi-delete Object  ${repo_delete_btn}  @{repo_list}
+    # Verify
+    Delete Fail  hello-world
+    Delete Success  busybox
+    Close Browser
+
+
 Test Case - Robot Account
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
