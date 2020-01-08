@@ -23,6 +23,13 @@ const (
 	// The image requested does not exist in the specified repository.
 	ErrCodeImageNotFoundException = "ImageNotFoundException"
 
+	// ErrCodeImageTagAlreadyExistsException for service response error code
+	// "ImageTagAlreadyExistsException".
+	//
+	// The specified image is tagged with a tag that already exists. The repository
+	// is configured for tag immutability.
+	ErrCodeImageTagAlreadyExistsException = "ImageTagAlreadyExistsException"
+
 	// ErrCodeInvalidLayerException for service response error code
 	// "InvalidLayerException".
 	//
@@ -102,7 +109,7 @@ const (
 	//
 	// The operation did not succeed because it would have exceeded a service limit
 	// for your account. For more information, see Amazon ECR Default Service Limits
-	// (http://docs.aws.amazon.com/AmazonECR/latest/userguide/service_limits.html)
+	// (https://docs.aws.amazon.com/AmazonECR/latest/userguide/service_limits.html)
 	// in the Amazon Elastic Container Registry User Guide.
 	ErrCodeLimitExceededException = "LimitExceededException"
 
@@ -132,6 +139,13 @@ const (
 	// The specified repository and registry combination does not have an associated
 	// repository policy.
 	ErrCodeRepositoryPolicyNotFoundException = "RepositoryPolicyNotFoundException"
+
+	// ErrCodeScanNotFoundException for service response error code
+	// "ScanNotFoundException".
+	//
+	// The specified image scan could not be found. Ensure that image scanning is
+	// enabled on the repository and try again.
+	ErrCodeScanNotFoundException = "ScanNotFoundException"
 
 	// ErrCodeServerException for service response error code
 	// "ServerException".

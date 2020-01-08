@@ -15,6 +15,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/awserr"
 	"github.com/aws/aws-sdk-go/aws/request"
+	awsStrings "github.com/aws/aws-sdk-go/internal/strings"
 	"github.com/aws/aws-sdk-go/private/protocol"
 )
 
@@ -120,7 +121,7 @@ func unmarshalLocationElements(r *request.Request, v reflect.Value) {
 				}
 			case "headers":
 				prefix := field.Tag.Get("locationName")
-				err := unmarshalHeaderMap(m, r.HTTPResponse.Header, prefix)
+				err := unmarshalHeaderMap(m, r.HTTPResponse.Header, prefix, aws.BoolValue(r.Config.LowerCaseHeaderMaps))
 				if err != nil {
 					r.Error = awserr.New(request.ErrCodeSerialization, "failed to decode REST response", err)
 					break
@@ -145,29 +146,45 @@ func unmarshalStatusCode(v reflect.Value, statusCode int) {
 	}
 }
 
-func unmarshalHeaderMap(r reflect.Value, headers http.Header, prefix string) error {
+func unmarshalHeaderMap(r reflect.Value, headers http.Header, prefix string, normalize bool) error {
+	if len(headers) == 0 {
+		return nil
+	}
 	switch r.Interface().(type) {
 	case map[string]*string: // we only support string map value types
 		out := map[string]*string{}
 		for k, v := range headers {
-			k = http.CanonicalHeaderKey(k)
-			if strings.HasPrefix(strings.ToLower(k), strings.ToLower(prefix)) {
+			if awsStrings.HasPrefixFold(k, prefix) {
+				if normalize == true {
+					k = strings.ToLower(k)
+				} else {
+					k = http.CanonicalHeaderKey(k)
+				}
 				out[k[len(prefix):]] = &v[0]
 			}
 		}
-		r.Set(reflect.ValueOf(out))
+		if len(out) != 0 {
+			r.Set(reflect.ValueOf(out))
+		}
+
 	}
 	return nil
 }
 
 func unmarshalHeader(v reflect.Value, header string, tag reflect.StructTag) error {
-	isJSONValue := tag.Get("type") == "jsonvalue"
-	if isJSONValue {
+	switch tag.Get("type") {
+	case "jsonvalue":
 		if len(header) == 0 {
 			return nil
 		}
-	} else if !v.IsValid() || (header == "" && v.Elem().Kind() != reflect.String) {
-		return nil
+	case "blob":
+		if len(header) == 0 {
+			return nil
+		}
+	default:
+		if !v.IsValid() || (header == "" && v.Elem().Kind() != reflect.String) {
+			return nil
+		}
 	}
 
 	switch v.Interface().(type) {
@@ -178,7 +195,7 @@ func unmarshalHeader(v reflect.Value, header string, tag reflect.StructTag) erro
 		if err != nil {
 			return err
 		}
-		v.Set(reflect.ValueOf(&b))
+		v.Set(reflect.ValueOf(b))
 	case *bool:
 		b, err := strconv.ParseBool(header)
 		if err != nil {
