@@ -185,11 +185,14 @@ Find Item And Click Delete Button
     Retry Select Object    ${name}
     Retry Element Click    ${action_bar_delete}
 
-Edit Replication Rule By Name
+Switch To Replication Manage Page
     [Arguments]    ${name}
     Switch To Registries
     Switch To Replication Manage
-    Find Item And Click Edit Button  ${name}
+
+Edit Replication Rule By Name
+    [Arguments]    ${name}
+    Retry Double Keywords When Error  Switch To Replication Manage Page  "NULL"  Find Item And Click Edit Button  ${name}
 
 Delete Replication Rule By Name
     [Arguments]    ${name}
