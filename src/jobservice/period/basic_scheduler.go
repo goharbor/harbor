@@ -15,10 +15,9 @@
 package period
 
 import (
-	"encoding/json"
+	"context"
 	"time"
 
-	"context"
 	"github.com/gocraft/work"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
@@ -52,27 +51,13 @@ func NewScheduler(ctx context.Context, namespace string, pool *redis.Pool, ctl l
 }
 
 // Start the periodic scheduling process
-// Blocking call here
-func (bs *basicScheduler) Start() error {
-	defer func() {
-		logger.Info("Basic scheduler is stopped")
-	}()
-
+func (bs *basicScheduler) Start() {
+	// Run once clean
 	// Try best to do
 	go bs.clearDirtyJobs()
 
-	logger.Info("Basic scheduler is started")
-
 	// start enqueuer
-	return bs.enqueuer.start()
-}
-
-// Stop the periodic scheduling process
-func (bs *basicScheduler) Stop() error {
-	// stop everything
-	bs.enqueuer.stopChan <- true
-
-	return nil
+	bs.enqueuer.start()
 }
 
 // Schedule is implementation of the same method in period.Interface
@@ -99,24 +84,10 @@ func (bs *basicScheduler) Schedule(p *Policy) (int64, error) {
 		return -1, err
 	}
 
-	// Prepare publish message
-	m := &message{
-		Event: changeEventSchedule,
-		Data:  p,
-	}
-
-	msgJSON, err := json.Marshal(m)
-	if err != nil {
-		return -1, err
-	}
-
 	pid := time.Now().Unix()
 
-	// Save to redis db and publish notification via redis transaction
-	err = conn.Send("MULTI")
-	err = conn.Send("ZADD", rds.KeyPeriodicPolicy(bs.namespace), pid, rawJSON)
-	err = conn.Send("PUBLISH", rds.KeyPeriodicNotification(bs.namespace), msgJSON)
-	if _, err := conn.Do("EXEC"); err != nil {
+	// Save to redis db
+	if _, err := conn.Do("ZADD", rds.KeyPeriodicPolicy(bs.namespace), pid, rawJSON); err != nil {
 		return -1, err
 	}
 
@@ -166,25 +137,9 @@ func (bs *basicScheduler) UnSchedule(policyID string) error {
 		return errors.Errorf("no valid periodic job policy found: %s:%d", policyID, numericID)
 	}
 
-	notification := &message{
-		Event: changeEventUnSchedule,
-		Data:  p,
-	}
-
-	msgJSON, err := json.Marshal(notification)
-	if err != nil {
-		return err
-	}
-
-	// REM from redis db with transaction way
-	err = conn.Send("MULTI")
-	err = conn.Send("ZREMRANGEBYSCORE", rds.KeyPeriodicPolicy(bs.namespace), numericID, numericID) // Accurately remove the item with the specified score
-	err = conn.Send("PUBLISH", rds.KeyPeriodicNotification(bs.namespace), msgJSON)
-	if err != nil {
-		return err
-	}
-	_, err = conn.Do("EXEC")
-	if err != nil {
+	// REM from redis db
+	// Accurately remove the item with the specified score
+	if _, err := conn.Do("ZREMRANGEBYSCORE", rds.KeyPeriodicPolicy(bs.namespace), numericID, numericID); err != nil {
 		return err
 	}
 
