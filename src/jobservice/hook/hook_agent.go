@@ -17,31 +17,22 @@ package hook
 import (
 	"context"
 	"encoding/json"
-	"math/rand"
 	"net/url"
-	"time"
-
-	"github.com/pkg/errors"
-
-	"github.com/goharbor/harbor/src/jobservice/job"
-
 	"sync"
+	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/env"
-	"github.com/goharbor/harbor/src/jobservice/lcm"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/gomodule/redigo/redis"
+	"github.com/pkg/errors"
 )
 
 const (
-	// Influenced by the worker number setting
-	maxEventChanBuffer = 1024
-	// Max concurrent client handlers
-	maxHandlers = 5
 	// The max time for expiring the retrying events
-	// 180 days
-	maxEventExpireTime = 3600 * 24 * 180
+	// 1 day
+	maxEventExpireTime = 3600 * 24
 	// Waiting a short while if any errors occurred
 	shortLoopInterval = 5 * time.Second
 	// Waiting for long while if no retrying elements found
@@ -52,10 +43,9 @@ const (
 type Agent interface {
 	// Trigger hooks
 	Trigger(evt *Event) error
-	// Serves events now
+
+	// Serves retry loop now
 	Serve() error
-	// Attach a job life cycle controller
-	Attach(ctl lcm.Controller)
 }
 
 // Event contains the hook URL and the data
@@ -95,47 +85,53 @@ type basicAgent struct {
 	context   context.Context
 	namespace string
 	client    Client
-	ctl       lcm.Controller
-	events    chan *Event
-	tokens    chan bool
 	redisPool *redis.Pool
 	wg        *sync.WaitGroup
 }
 
 // NewAgent is constructor of basic agent
 func NewAgent(ctx *env.Context, ns string, redisPool *redis.Pool) Agent {
-	tks := make(chan bool, maxHandlers)
-	// Put tokens
-	for i := 0; i < maxHandlers; i++ {
-		tks <- true
-	}
 	return &basicAgent{
 		context:   ctx.SystemContext,
 		namespace: ns,
 		client:    NewClient(ctx.SystemContext),
-		events:    make(chan *Event, maxEventChanBuffer),
-		tokens:    tks,
 		redisPool: redisPool,
 		wg:        ctx.WG,
 	}
 }
 
-// Attach a job life cycle controller
-func (ba *basicAgent) Attach(ctl lcm.Controller) {
-	ba.ctl = ctl
-}
-
 // Trigger implements the same method of interface @Agent
 func (ba *basicAgent) Trigger(evt *Event) error {
 	if evt == nil {
-		return errors.New("nil event")
+		return errors.New("nil web hook event")
 	}
 
 	if err := evt.Validate(); err != nil {
-		return err
+		return errors.Wrap(err, "trigger error")
 	}
 
-	ba.events <- evt
+	// Treat hook event is success if it is successfully sent or cached in the retry queue.
+	if err := ba.client.SendEvent(evt); err != nil {
+		// Push event to the retry queue
+		if er := ba.pushForRetry(evt); er != nil {
+			// Failed to push to the hook event retry queue, return error with all context
+			return errors.Wrap(er, err.Error())
+		}
+
+		logger.Warningf("Send hook event '%s' to '%s' failed with error: %s; push hook event to the queue for retrying later", evt.Message, evt.URL, err)
+		// Treat as successful hook event as the event has been put into the retry queue for future resending.
+		return nil
+	}
+
+	// Mark event hook ACK including "revision", "status" and "check_in_at" in the job stats to indicate
+	// the related hook event has been successfully fired.
+	// The ACK can be used by the reaper to justify if the hook event should be resent again.
+	// The failure of persisting this ACK may cause duplicated hook event resending issue, which
+	// can be ignored.
+	if err := ba.ack(evt); err != nil {
+		// Just log error
+		logger.Error(errors.Wrap(err, "trigger"))
+	}
 
 	return nil
 }
@@ -144,62 +140,12 @@ func (ba *basicAgent) Trigger(evt *Event) error {
 // Termination depends on the system context
 // Blocking call
 func (ba *basicAgent) Serve() error {
-	if ba.ctl == nil {
-		return errors.New("nil life cycle controller of hook agent")
-	}
-
 	ba.wg.Add(1)
+
 	go ba.loopRetry()
 	logger.Info("Hook event retrying loop is started")
 
-	ba.wg.Add(1)
-	go ba.serve()
-	logger.Info("Basic hook agent is started")
-
 	return nil
-}
-
-func (ba *basicAgent) serve() {
-	defer func() {
-		logger.Info("Basic hook agent is stopped")
-		ba.wg.Done()
-	}()
-
-	for {
-		select {
-		case evt := <-ba.events:
-			// if exceed, wait here
-			// avoid too many request connections at the same time
-			<-ba.tokens
-			go func(evt *Event) {
-				defer func() {
-					ba.tokens <- true // return token
-				}()
-
-				if err := ba.client.SendEvent(evt); err != nil {
-					logger.Errorf("Send hook event '%s' to '%s' failed with error: %s; push to the queue for retrying later", evt.Message, evt.URL, err)
-					// Push event to the retry queue
-					if err := ba.pushForRetry(evt); err != nil {
-						// Failed to push to the retry queue, let's directly push it
-						// to the event channel of this node with reasonable backoff time.
-						logger.Errorf("Failed to push hook event to the retry queue: %s", err)
-
-						// Put to the event chan after waiting for a reasonable while,
-						// waiting is important, it can avoid sending large scale failure expecting
-						// requests in a short while.
-						// As 'pushForRetry' has checked the timestamp and expired event
-						// will be directly discarded and nil error is returned, no need to
-						// check it again here.
-						<-time.After(time.Duration(rand.Int31n(55)+5) * time.Second)
-						ba.events <- evt
-					}
-				}
-			}(evt)
-
-		case <-ba.context.Done():
-			return
-		}
-	}
 }
 
 func (ba *basicAgent) pushForRetry(evt *Event) error {
@@ -248,11 +194,7 @@ func (ba *basicAgent) loopRetry() {
 		ba.wg.Done()
 	}()
 
-	token := make(chan bool, 1)
-	token <- true
-
 	for {
-		<-token
 		if err := ba.reSend(); err != nil {
 			waitInterval := shortLoopInterval
 			if err == rds.ErrNoElements {
@@ -270,44 +212,47 @@ func (ba *basicAgent) loopRetry() {
 				return
 			}
 		}
-
-		// Put token back
-		token <- true
 	}
 }
 
 func (ba *basicAgent) reSend() error {
-	evt, err := ba.popMinOne()
-	if err != nil {
-		return err
-	}
-
-	jobID, status, err := extractJobID(evt.Data)
-	if err != nil {
-		return err
-	}
-
-	t, err := ba.ctl.Track(jobID)
-	if err != nil {
-		return err
-	}
-
-	diff := status.Compare(job.Status(t.Job().Info.Status))
-	if diff > 0 ||
-		(diff == 0 && t.Job().Info.CheckIn != evt.Data.CheckIn) {
-		ba.events <- evt
-		return nil
-	}
-
-	return errors.Errorf("outdated hook event: %s, latest job status: %s", evt.Message, t.Job().Info.Status)
-}
-
-func (ba *basicAgent) popMinOne() (*Event, error) {
 	conn := ba.redisPool.Get()
 	defer func() {
-		_ = conn.Close()
+		if err := conn.Close(); err != nil {
+			logger.Error(errors.Wrap(err, "resend"))
+		}
 	}()
 
+	// Pick up one queued event for resending
+	evt, err := ba.popMinOne(conn)
+	if err != nil {
+		return err
+	}
+
+	// Args for executing script
+	args := []interface{}{
+		rds.KeyJobStats(ba.namespace, evt.Data.JobID),
+		evt.Data.Status,
+		evt.Data.Metadata.Revision,
+		evt.Data.Metadata.CheckInAt,
+	}
+
+	// If failed to check the status matching, just ignore it, continue the resending
+	reply, err := redis.String(rds.CheckStatusMatchScript.Do(conn, args...))
+	if err != nil {
+		// Log error
+		logger.Error(errors.Wrap(err, "resend"))
+	} else {
+		if reply != "ok" {
+			return errors.Errorf("outdated hook event: %s", evt.Message)
+		}
+	}
+
+	return ba.Trigger(evt)
+}
+
+// popMinOne picks up one event for retrying
+func (ba *basicAgent) popMinOne(conn redis.Conn) (*Event, error) {
 	key := rds.KeyHookEventRetryQueue(ba.namespace)
 	minOne, err := rds.ZPopMin(conn, key)
 	if err != nil {
@@ -327,17 +272,33 @@ func (ba *basicAgent) popMinOne() (*Event, error) {
 	return evt, nil
 }
 
-// Extract the job ID and status from the event data field
-// First return is job ID
-// Second return is job status
-// Last one is error
-func extractJobID(data *job.StatusChange) (string, job.Status, error) {
-	if data != nil && len(data.JobID) > 0 {
-		status := job.Status(data.Status)
-		if status.Validate() == nil {
-			return data.JobID, status, nil
+// ack hook event
+func (ba *basicAgent) ack(evt *Event) error {
+	conn := ba.redisPool.Get()
+	defer func() {
+		if err := conn.Close(); err != nil {
+			logger.Error(errors.Wrap(err, "ack"))
 		}
+	}()
+
+	k := rds.KeyJobStats(ba.namespace, evt.Data.JobID)
+	k2 := rds.KeyJobTrackInProgress(ba.namespace)
+	reply, err := redis.String(rds.HookAckScript.Do(
+		conn,
+		k,
+		k2,
+		evt.Data.Status,
+		evt.Data.Metadata.Revision,
+		evt.Data.Metadata.CheckInAt,
+		evt.Data.JobID,
+	))
+	if err != nil {
+		return errors.Wrap(err, "ack")
 	}
 
-	return "", "", errors.New("malform job status change data")
+	if reply != "ok" {
+		return errors.Errorf("no ack done for event: %s", evt.Message)
+	}
+
+	return nil
 }

@@ -17,14 +17,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/suite"
 	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
+
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
 // HookClientTestSuite tests functions of hook client
@@ -57,7 +58,7 @@ func (suite *HookClientTestSuite) SetupSuite() {
 			return
 		}
 
-		fmt.Fprintln(w, "ok")
+		_, _ = fmt.Fprintln(w, "ok")
 	}))
 }
 

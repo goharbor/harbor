@@ -18,15 +18,7 @@ package period
 type Scheduler interface {
 	// Start to serve periodic job scheduling process
 	//
-	// Returns:
-	//  error if any problems happened
-	Start() error
-
-	// Stop the working periodic job scheduling process
-	//
-	// Returns;
-	//  error if any problems happened
-	Stop() error
+	Start()
 
 	// Schedule the specified cron job policy.
 	//

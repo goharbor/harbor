@@ -14,25 +14,23 @@
 package period
 
 import (
-	"context"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/gomodule/redigo/redis"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 // PolicyStoreTestSuite tests functions of policy store
 type PolicyStoreTestSuite struct {
 	suite.Suite
 
-	store     *policyStore
 	namespace string
 	pool      *redis.Pool
-	cancel    context.CancelFunc
 }
 
 // TestPolicyStoreTestSuite is entry of go test
@@ -44,37 +42,20 @@ func TestPolicyStoreTestSuite(t *testing.T) {
 func (suite *PolicyStoreTestSuite) SetupSuite() {
 	suite.namespace = tests.GiveMeTestNamespace()
 	suite.pool = tests.GiveMeRedisPool()
-	ctx, cancel := context.WithCancel(context.Background())
-	suite.cancel = cancel
-
-	suite.store = newPolicyStore(ctx, suite.namespace, suite.pool)
 }
 
 // TearDownSuite clears the test suite
 func (suite *PolicyStoreTestSuite) TearDownSuite() {
-	suite.cancel()
-
 	conn := suite.pool.Get()
 	defer func() {
-		_ = conn.Close()
+		if err := conn.Close(); err != nil {
+			suite.NoError(err, "close redis connection")
+		}
 	}()
 
-	_ = tests.ClearAll(suite.namespace, conn)
-}
-
-// TestStore tests policy store serve
-func (suite *PolicyStoreTestSuite) TestServe() {
-	var err error
-
-	defer func() {
-		suite.store.stopChan <- true
-		assert.Nil(suite.T(), err, "serve exit: nil error expected but got %s", err)
-	}()
-
-	go func() {
-		err = suite.store.serve()
-	}()
-	<-time.After(1 * time.Second)
+	if err := tests.ClearAll(suite.namespace, conn); err != nil {
+		suite.NoError(err, "clear redis namespace")
+	}
 }
 
 // TestLoad tests load policy from backend
@@ -91,47 +72,17 @@ func (suite *PolicyStoreTestSuite) TestLoad() {
 
 	conn := suite.pool.Get()
 	defer func() {
-		_ = conn.Close()
+		if err := conn.Close(); err != nil {
+			suite.NoError(err, "close redis connection")
+		}
 	}()
 
 	_, err = conn.Do("ZADD", key, time.Now().Unix(), rawData)
 	assert.Nil(suite.T(), err, "add data: nil error expected but got %s", err)
 
-	err = suite.store.load()
-	assert.Nil(suite.T(), err, "load: nil error expected but got %s", err)
-
-	p1 := &Policy{
-		ID:       "fake_policy_1",
-		JobName:  job.SampleJob,
-		CronSpec: "5 * * * * *",
-	}
-	m := &message{
-		Event: changeEventSchedule,
-		Data:  p1,
-	}
-	err = suite.store.sync(m)
-	assert.Nil(suite.T(), err, "sync schedule: nil error expected but got %s", err)
-
-	count := 0
-	suite.store.Iterate(func(id string, p *Policy) bool {
-		count++
-		return true
-	})
-	assert.Equal(suite.T(), 2, count, "expected 2 policies but got %d", count)
-
-	m1 := &message{
-		Event: changeEventUnSchedule,
-		Data:  p1,
-	}
-	err = suite.store.sync(m1)
-	assert.Nil(suite.T(), err, "sync unschedule: nil error expected but got %s", err)
-
-	count = 0
-	suite.store.Iterate(func(id string, p *Policy) bool {
-		count++
-		return true
-	})
-	assert.Equal(suite.T(), 1, count, "expected 1 policies but got %d", count)
+	ps, err := Load(suite.namespace, conn)
+	suite.NoError(err, "load: nil error expected but got %s", err)
+	suite.Equal(1, len(ps), "count of loaded policies")
 }
 
 // TestPolicy tests policy itself

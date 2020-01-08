@@ -68,6 +68,14 @@ type StatsInfo struct {
 	NumericPID    int64      `json:"numeric_policy_id,omitempty"` // The numeric policy ID of the periodic job
 	Parameters    Parameters `json:"parameters,omitempty"`
 	Revision      int64      `json:"revision,omitempty"` // For differentiating the each retry of the same job
+	HookAck       *ACK       `json:"ack,omitempty"`
+}
+
+// ACK is the acknowledge of hook event
+type ACK struct {
+	Status    string `json:"status"`
+	Revision  int64  `json:"revision"`
+	CheckInAt int64  `json:"check_in_at"`
 }
 
 // ActionRequest defines for triggering job action like stop/cancel.
@@ -87,6 +95,7 @@ type StatusChange struct {
 type SimpleStatusChange struct {
 	JobID        string `json:"job_id"`
 	TargetStatus string `json:"target_status"`
+	Revision     int64  `json:"revision"`
 }
 
 // Validate the job stats
