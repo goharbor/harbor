@@ -45,7 +45,6 @@ const (
 // the managers/controllers used globally
 var (
 	projectMgr          project.Manager
-	repositoryMgr       repository.Manager
 	retentionScheduler  scheduler.Scheduler
 	retentionMgr        retention.Manager
 	retentionLauncher   retention.Launcher
@@ -193,16 +192,13 @@ func Init() error {
 	// init project manager
 	initProjectManager()
 
-	// init repository manager
-	initRepositoryManager()
-
 	initRetentionScheduler()
 
 	retentionMgr = retention.NewManager()
 
-	retentionLauncher = retention.NewLauncher(projectMgr, repositoryMgr, retentionMgr)
+	retentionLauncher = retention.NewLauncher(projectMgr, repository.Mgr, retentionMgr)
 
-	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
+	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, retentionScheduler, retentionLauncher)
 
 	callbackFun := func(p interface{}) error {
 		str, ok := p.(string)
@@ -237,11 +233,7 @@ func initChartController() error {
 }
 
 func initProjectManager() {
-	projectMgr = project.New()
-}
-
-func initRepositoryManager() {
-	repositoryMgr = repository.New(projectMgr, chartController)
+	projectMgr = project.Mgr
 }
 
 func initRetentionScheduler() {

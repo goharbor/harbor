@@ -29,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/project"
+	pq "github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
@@ -346,7 +347,12 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 		}
 	*/
 	// get image repositories
-	imageRepositories, err := repositoryMgr.ListImageRepositories(projectID)
+	// TODO set the context which contains the ORM
+	_, imageRepositories, err := repositoryMgr.List(nil, &pq.Query{
+		Keywords: map[string]interface{}{
+			"ProjectID": projectID,
+		},
+	})
 	if err != nil {
 		return nil, err
 	}

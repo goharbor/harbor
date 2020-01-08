@@ -25,7 +25,7 @@ import (
 	"github.com/astaxie/beego/validation"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	internal_errors "github.com/goharbor/harbor/src/internal/error"
+	serror "github.com/goharbor/harbor/src/server/error"
 )
 
 const (
@@ -262,35 +262,6 @@ func (b *BaseAPI) SendStatusServiceUnavailableError(err error) {
 //	]
 // }
 func (b *BaseAPI) SendError(err error) {
-	var statusCode int
-	var send error
-
-	var e *internal_errors.Error
-	if errors.As(err, &e) {
-		code := e.Code
-		statusCode = b.getStatusCode(code)
-		if statusCode == 0 {
-			statusCode = http.StatusInternalServerError
-		}
-		send = e
-
-	} else {
-		statusCode = http.StatusInternalServerError
-		send = internal_errors.UnknownError(err)
-	}
-
-	b.RenderError(statusCode, internal_errors.NewErrs(send).Error())
-}
-
-func (b *BaseAPI) getStatusCode(code string) int {
-	statusCodeMap := map[string]int{
-		internal_errors.NotFoundCode:     http.StatusNotFound,
-		internal_errors.ConflictCode:     http.StatusConflict,
-		internal_errors.UnAuthorizedCode: http.StatusUnauthorized,
-		internal_errors.BadRequestCode:   http.StatusBadRequest,
-		internal_errors.ForbiddenCode:    http.StatusForbidden,
-		internal_errors.PreconditionCode: http.StatusPreconditionFailed,
-		internal_errors.GeneralCode:      http.StatusInternalServerError,
-	}
-	return statusCodeMap[code]
+	statusCode, payload := serror.APIError(err)
+	b.RenderError(statusCode, payload)
 }
