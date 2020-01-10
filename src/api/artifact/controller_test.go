@@ -15,11 +15,16 @@
 package artifact
 
 import (
+	"context"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	htesting "github.com/goharbor/harbor/src/testing"
+	"github.com/goharbor/harbor/src/testing/lib"
+	artifacttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
+	repositorytesting "github.com/goharbor/harbor/src/testing/pkg/repository"
+	tagtesting "github.com/goharbor/harbor/src/testing/pkg/tag"
 	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
@@ -28,15 +33,21 @@ import (
 type controllerTestSuite struct {
 	suite.Suite
 	ctl     *controller
-	repoMgr *htesting.FakeRepositoryManager
-	artMgr  *htesting.FakeArtifactManager
-	tagMgr  *htesting.FakeTagManager
+	repoMgr *repositorytesting.FakeRepositoryManager
+	artMgr  *artifacttesting.FakeArtifactManager
+	tagMgr  *tagtesting.FakeTagManager
+	ctx     context.Context
+}
+
+func (c *controllerTestSuite) SetupSuite() {
+	// populate the fake Ormer
+	c.ctx = orm.NewContext(nil, &lib.FakeOrmer{})
 }
 
 func (c *controllerTestSuite) SetupTest() {
-	c.repoMgr = &htesting.FakeRepositoryManager{}
-	c.artMgr = &htesting.FakeArtifactManager{}
-	c.tagMgr = &htesting.FakeTagManager{}
+	c.repoMgr = &repositorytesting.FakeRepositoryManager{}
+	c.artMgr = &artifacttesting.FakeArtifactManager{}
+	c.tagMgr = &tagtesting.FakeTagManager{}
 	c.ctl = &controller{
 		repoMgr: c.repoMgr,
 		artMgr:  c.artMgr,
@@ -184,7 +195,7 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.artMgr.On("Create").Return(1, nil)
 	c.tagMgr.On("List").Return(1, []*tag.Tag{}, nil)
 	c.tagMgr.On("Create").Return(1, nil)
-	_, id, err := c.ctl.Ensure(nil, 1, digest, "latest")
+	_, id, err := c.ctl.Ensure(c.ctx, 1, digest, "latest")
 	c.Require().Nil(err)
 	c.repoMgr.AssertExpectations(c.T())
 	c.artMgr.AssertExpectations(c.T())
@@ -244,7 +255,7 @@ func (c *controllerTestSuite) TestDelete() {
 		},
 	}, nil)
 	c.tagMgr.On("Delete").Return(nil)
-	err := c.ctl.Delete(nil, 1)
+	err := c.ctl.Delete(c.ctx, 1)
 	c.Require().Nil(err)
 	c.artMgr.AssertExpectations(c.T())
 	c.tagMgr.AssertExpectations(c.T())
@@ -282,7 +293,7 @@ func (c *controllerTestSuite) TestUpdatePullTime() {
 	}, nil)
 	c.artMgr.On("UpdatePullTime").Return(nil)
 	c.tagMgr.On("Update").Return(nil)
-	err := c.ctl.UpdatePullTime(nil, 1, 1, time.Now())
+	err := c.ctl.UpdatePullTime(c.ctx, 1, 1, time.Now())
 	c.Require().Nil(err)
 	c.artMgr.AssertExpectations(c.T())
 	c.tagMgr.AssertExpectations(c.T())
@@ -295,7 +306,7 @@ func (c *controllerTestSuite) TestUpdatePullTime() {
 		ID:         1,
 		ArtifactID: 2,
 	}, nil)
-	err = c.ctl.UpdatePullTime(nil, 1, 1, time.Now())
+	err = c.ctl.UpdatePullTime(c.ctx, 1, 1, time.Now())
 	c.Require().NotNil(err)
 	c.tagMgr.AssertExpectations(c.T())
 

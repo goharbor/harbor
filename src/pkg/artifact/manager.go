@@ -17,6 +17,7 @@ package artifact
 import (
 	"context"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"strconv"
@@ -86,15 +87,24 @@ func (m *manager) Get(ctx context.Context, id int64) (*Artifact, error) {
 	return m.assemble(ctx, art)
 }
 func (m *manager) Create(ctx context.Context, artifact *Artifact) (int64, error) {
-	id, err := m.dao.Create(ctx, artifact.To())
-	if err != nil {
-		return 0, err
-	}
-	for _, reference := range artifact.References {
-		reference.ParentID = id
-		if _, err = m.dao.CreateReference(ctx, reference.To()); err != nil {
-			return 0, err
+	var (
+		id  int64
+		err error
+	)
+	if err = orm.WithTransaction(func(ctx context.Context) error {
+		id, err = m.dao.Create(ctx, artifact.To())
+		if err != nil {
+			return err
 		}
+		for _, reference := range artifact.References {
+			reference.ParentID = id
+			if _, err = m.dao.CreateReference(ctx, reference.To()); err != nil {
+				return err
+			}
+		}
+		return nil
+	})(ctx); err != nil {
+		return 0, err
 	}
 	return id, nil
 }
@@ -116,13 +126,15 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 		return ierror.PreconditionFailedError(nil).
 			WithMessage("artifact %d is referenced by other artifacts: %s", id, strings.Join(ids, ","))
 	}
-
-	// delete references
-	if err := m.dao.DeleteReferences(ctx, id); err != nil {
-		return err
-	}
-	// delete artifact
-	return m.dao.Delete(ctx, id)
+	err = orm.WithTransaction(func(ctx context.Context) error {
+		// delete references
+		if err := m.dao.DeleteReferences(ctx, id); err != nil {
+			return err
+		}
+		// delete artifact
+		return m.dao.Delete(ctx, id)
+	})(ctx)
+	return err
 }
 func (m *manager) UpdatePullTime(ctx context.Context, artifactID int64, time time.Time) error {
 	return m.dao.Update(ctx, &dao.Artifact{

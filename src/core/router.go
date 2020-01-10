@@ -26,7 +26,6 @@ import (
 	"github.com/goharbor/harbor/src/core/service/notifications/scheduler"
 	"github.com/goharbor/harbor/src/core/service/token"
 	reg "github.com/goharbor/harbor/src/server/registry"
-	"net/url"
 )
 
 func initRouters() {
@@ -161,11 +160,8 @@ func initRouters() {
 	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &api.ImmutableTagRuleAPI{})
 
 	// TODO remove
-	regURL, _ := config.RegistryURL()
-	url, _ := url.Parse(regURL)
-	registryHandler := reg.New(url)
-	_ = registryHandler
-	// beego.Handler("/v2/*", registryHandler)
+	reg.Init()
+	// beego.Router("/v2/*", &reg.BeegoController{}, "*:Run")
 	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 
 	// APIs for chart repository

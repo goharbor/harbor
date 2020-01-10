@@ -17,8 +17,10 @@ package artifact
 import (
 	"context"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
 	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/testing/lib"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -70,6 +72,12 @@ type managerTestSuite struct {
 	suite.Suite
 	mgr *manager
 	dao *fakeDao
+	ctx context.Context
+}
+
+func (m *managerTestSuite) SetupSuite() {
+	// populate the fake Ormer
+	m.ctx = orm.NewContext(nil, &lib.FakeOrmer{})
 }
 
 func (m *managerTestSuite) SetupTest() {
@@ -167,7 +175,7 @@ func (m *managerTestSuite) TestGet() {
 func (m *managerTestSuite) TestCreate() {
 	m.dao.On("Create", mock.Anything).Return(1, nil)
 	m.dao.On("CreateReference").Return(1, nil)
-	id, err := m.mgr.Create(nil, &Artifact{
+	id, err := m.mgr.Create(m.ctx, &Artifact{
 		References: []*Reference{
 			{
 				ChildID: 2,
@@ -187,7 +195,7 @@ func (m *managerTestSuite) TestDelete() {
 			ChildID:  1,
 		},
 	}, nil)
-	err := m.mgr.Delete(nil, 1)
+	err := m.mgr.Delete(m.ctx, 1)
 	m.Require().NotNil(err)
 	m.dao.AssertExpectations(m.T())
 	e, ok := err.(*ierror.Error)
@@ -201,7 +209,7 @@ func (m *managerTestSuite) TestDelete() {
 	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{}, nil)
 	m.dao.On("Delete", mock.Anything).Return(nil)
 	m.dao.On("DeleteReferences").Return(nil)
-	err = m.mgr.Delete(nil, 1)
+	err = m.mgr.Delete(m.ctx, 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }

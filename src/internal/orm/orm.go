@@ -16,8 +16,7 @@ package orm
 
 import (
 	"context"
-	"fmt"
-
+	"errors"
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
@@ -25,22 +24,28 @@ import (
 type ormKey struct{}
 
 // FromContext returns orm from context
-func FromContext(ctx context.Context) (orm.Ormer, bool) {
+func FromContext(ctx context.Context) (orm.Ormer, error) {
 	o, ok := ctx.Value(ormKey{}).(orm.Ormer)
-	return o, ok
+	if !ok {
+		return nil, errors.New("cannot get the ORM from context")
+	}
+	return o, nil
 }
 
 // NewContext returns new context with orm
 func NewContext(ctx context.Context, o orm.Ormer) context.Context {
+	if ctx == nil {
+		ctx = context.Background()
+	}
 	return context.WithValue(ctx, ormKey{}, o)
 }
 
 // WithTransaction a decorator which make f run in transaction
 func WithTransaction(f func(ctx context.Context) error) func(ctx context.Context) error {
 	return func(ctx context.Context) error {
-		o, ok := FromContext(ctx)
-		if !ok {
-			return fmt.Errorf("ormer value not found in context")
+		o, err := FromContext(ctx)
+		if err != nil {
+			return err
 		}
 
 		tx := ormerTx{Ormer: o}

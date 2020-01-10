@@ -16,7 +16,7 @@ package retention
 
 import (
 	"fmt"
-	htesting "github.com/goharbor/harbor/src/testing"
+	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/job"
@@ -132,7 +132,7 @@ func (f *fakeRetentionManager) ListHistories(executionID int64, query *q.Query) 
 type launchTestSuite struct {
 	suite.Suite
 	projectMgr       project.Manager
-	repositoryMgr    *htesting.FakeRepositoryManager
+	repositoryMgr    *repository.FakeRepositoryManager
 	retentionMgr     Manager
 	jobserviceClient job.Client
 }
@@ -150,7 +150,7 @@ func (l *launchTestSuite) SetupTest() {
 		projects: []*models.Project{
 			pro1, pro2,
 		}}
-	l.repositoryMgr = &htesting.FakeRepositoryManager{}
+	l.repositoryMgr = &repository.FakeRepositoryManager{}
 	l.retentionMgr = &fakeRetentionManager{}
 	l.jobserviceClient = &hjob.MockJobClient{
 		JobUUID: []string{"1"},

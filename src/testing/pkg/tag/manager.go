@@ -12,46 +12,46 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package testing
+package tag
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"github.com/stretchr/testify/mock"
 )
 
-// FakeRepositoryManager is a fake repository manager that implement src/pkg/repository.Manager interface
-type FakeRepositoryManager struct {
+// FakeTagManager is a fake tag manager that implement the src/pkg/tag.Manager interface
+type FakeTagManager struct {
 	mock.Mock
 }
 
 // List ...
-func (f *FakeRepositoryManager) List(ctx context.Context, query *q.Query) (int64, []*models.RepoRecord, error) {
+func (f *FakeTagManager) List(ctx context.Context, query *q.Query) (int64, []*tag.Tag, error) {
 	args := f.Called()
-	return int64(args.Int(0)), args.Get(1).([]*models.RepoRecord), args.Error(2)
+	return int64(args.Int(0)), args.Get(1).([]*tag.Tag), args.Error(2)
 }
 
 // Get ...
-func (f *FakeRepositoryManager) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
+func (f *FakeTagManager) Get(ctx context.Context, id int64) (*tag.Tag, error) {
 	args := f.Called()
-	return args.Get(0).(*models.RepoRecord), args.Error(1)
-}
-
-// Delete ...
-func (f *FakeRepositoryManager) Delete(ctx context.Context, id int64) error {
-	args := f.Called()
-	return args.Error(0)
+	return args.Get(0).(*tag.Tag), args.Error(1)
 }
 
 // Create ...
-func (f *FakeRepositoryManager) Create(ctx context.Context, repository *models.RepoRecord) (int64, error) {
+func (f *FakeTagManager) Create(ctx context.Context, tag *tag.Tag) (int64, error) {
 	args := f.Called()
 	return int64(args.Int(0)), args.Error(1)
 }
 
 // Update ...
-func (f *FakeRepositoryManager) Update(ctx context.Context, repository *models.RepoRecord, props ...string) error {
+func (f *FakeTagManager) Update(ctx context.Context, tag *tag.Tag, props ...string) error {
+	args := f.Called()
+	return args.Error(0)
+}
+
+// Delete ...
+func (f *FakeTagManager) Delete(ctx context.Context, id int64) error {
 	args := f.Called()
 	return args.Error(0)
 }

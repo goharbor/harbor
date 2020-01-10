@@ -1,7 +1,7 @@
 package retention
 
 import (
-	htesting "github.com/goharbor/harbor/src/testing"
+	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"strings"
 	"testing"
 
@@ -29,7 +29,7 @@ func TestController(t *testing.T) {
 
 func (s *ControllerTestSuite) TestPolicy() {
 	projectMgr := &fakeProjectManager{}
-	repositoryMgr := &htesting.FakeRepositoryManager{}
+	repositoryMgr := &repository.FakeRepositoryManager{}
 	retentionScheduler := &fakeRetentionScheduler{}
 	retentionLauncher := &fakeLauncher{}
 	retentionMgr := NewManager()
@@ -127,7 +127,7 @@ func (s *ControllerTestSuite) TestPolicy() {
 
 func (s *ControllerTestSuite) TestExecution() {
 	projectMgr := &fakeProjectManager{}
-	repositoryMgr := &htesting.FakeRepositoryManager{}
+	repositoryMgr := &repository.FakeRepositoryManager{}
 	retentionScheduler := &fakeRetentionScheduler{}
 	retentionLauncher := &fakeLauncher{}
 	retentionMgr := NewManager()

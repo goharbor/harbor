@@ -57,11 +57,19 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 			Keywords: query.Keywords,
 		}
 	}
-	return orm.QuerySetter(ctx, &tag.Tag{}, query).Count()
+	qs, err := orm.QuerySetter(ctx, &tag.Tag{}, query)
+	if err != nil {
+		return 0, err
+	}
+	return qs.Count()
 }
 func (d *dao) List(ctx context.Context, query *q.Query) ([]*tag.Tag, error) {
 	tags := []*tag.Tag{}
-	if _, err := orm.QuerySetter(ctx, &tag.Tag{}, query).All(&tags); err != nil {
+	qs, err := orm.QuerySetter(ctx, &tag.Tag{}, query)
+	if err != nil {
+		return nil, err
+	}
+	if _, err = qs.All(&tags); err != nil {
 		return nil, err
 	}
 	return tags, nil
@@ -70,7 +78,11 @@ func (d *dao) Get(ctx context.Context, id int64) (*tag.Tag, error) {
 	tag := &tag.Tag{
 		ID: id,
 	}
-	if err := orm.GetOrmer(ctx).Read(tag); err != nil {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := ormer.Read(tag); err != nil {
 		if e, ok := orm.IsNotFoundError(err, "tag %d not found", id); ok {
 			err = e
 		}
@@ -79,7 +91,11 @@ func (d *dao) Get(ctx context.Context, id int64) (*tag.Tag, error) {
 	return tag, nil
 }
 func (d *dao) Create(ctx context.Context, tag *tag.Tag) (int64, error) {
-	id, err := orm.GetOrmer(ctx).Insert(tag)
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+	id, err := ormer.Insert(tag)
 	if e, ok := orm.IsConflictError(err, "tag %s already exists under the repository %d",
 		tag.Name, tag.RepositoryID); ok {
 		err = e
@@ -87,7 +103,11 @@ func (d *dao) Create(ctx context.Context, tag *tag.Tag) (int64, error) {
 	return id, err
 }
 func (d *dao) Update(ctx context.Context, tag *tag.Tag, props ...string) error {
-	n, err := orm.GetOrmer(ctx).Update(tag, props...)
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	n, err := ormer.Update(tag, props...)
 	if err != nil {
 		return err
 	}
@@ -97,7 +117,11 @@ func (d *dao) Update(ctx context.Context, tag *tag.Tag, props ...string) error {
 	return nil
 }
 func (d *dao) Delete(ctx context.Context, id int64) error {
-	n, err := orm.GetOrmer(ctx).Delete(&tag.Tag{
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	n, err := ormer.Delete(&tag.Tag{
 		ID: id,
 	})
 	if err != nil {

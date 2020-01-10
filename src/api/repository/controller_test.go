@@ -16,7 +16,7 @@ package repository
 
 import (
 	"github.com/goharbor/harbor/src/common/models"
-	htesting "github.com/goharbor/harbor/src/testing"
+	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -24,11 +24,11 @@ import (
 type controllerTestSuite struct {
 	suite.Suite
 	ctl     *controller
-	repoMgr *htesting.FakeRepositoryManager
+	repoMgr *repository.FakeRepositoryManager
 }
 
 func (c *controllerTestSuite) SetupTest() {
-	c.repoMgr = &htesting.FakeRepositoryManager{}
+	c.repoMgr = &repository.FakeRepositoryManager{}
 	c.ctl = &controller{
 		repoMgr: c.repoMgr,
 	}

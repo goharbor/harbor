@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/repository"
@@ -82,14 +83,24 @@ type controller struct {
 }
 
 func (c *controller) Ensure(ctx context.Context, repositoryID int64, digest string, tags ...string) (bool, int64, error) {
-	created, id, err := c.ensureArtifact(ctx, repositoryID, digest)
-	if err != nil {
-		return false, 0, err
-	}
-	for _, tag := range tags {
-		if err = c.ensureTag(ctx, repositoryID, id, tag); err != nil {
-			return false, 0, err
+	var (
+		created bool
+		id      int64
+		err     error
+	)
+	if err = orm.WithTransaction(func(ctx context.Context) error {
+		created, id, err = c.ensureArtifact(ctx, repositoryID, digest)
+		if err != nil {
+			return err
 		}
+		for _, tag := range tags {
+			if err = c.ensureTag(ctx, repositoryID, id, tag); err != nil {
+				return err
+			}
+		}
+		return nil
+	})(ctx); err != nil {
+		return false, 0, err
 	}
 	return created, id, nil
 }
@@ -200,25 +211,31 @@ func (c *controller) Get(ctx context.Context, id int64, option *Option) (*Artifa
 }
 
 func (c *controller) Delete(ctx context.Context, id int64) error {
-	// delete artifact first in case the artifact is referenced by other artifact
-	if err := c.artMgr.Delete(ctx, id); err != nil {
+	if err := orm.WithTransaction(func(ctx context.Context) error {
+		// delete artifact first in case the artifact is referenced by other artifact
+		if err := c.artMgr.Delete(ctx, id); err != nil {
+			return err
+		}
+
+		// delete all tags that attached to the artifact
+		_, tags, err := c.tagMgr.List(ctx, &q.Query{
+			Keywords: map[string]interface{}{
+				"artifact_id": id,
+			},
+		})
+		if err != nil {
+			return err
+		}
+		for _, tag := range tags {
+			if err = c.DeleteTag(ctx, tag.ID); err != nil {
+				return err
+			}
+		}
+		return nil
+	})(ctx); err != nil {
 		return err
 	}
 
-	// delete all tags that attached to the artifact
-	_, tags, err := c.tagMgr.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
-			"artifact_id": id,
-		},
-	})
-	if err != nil {
-		return err
-	}
-	for _, tag := range tags {
-		if err = c.DeleteTag(ctx, tag.ID); err != nil {
-			return err
-		}
-	}
 	// TODO fire delete artifact event
 	return nil
 }
@@ -250,12 +267,14 @@ func (c *controller) UpdatePullTime(ctx context.Context, artifactID int64, tagID
 	if tag.ArtifactID != artifactID {
 		return fmt.Errorf("tag %d isn't attached to artifact %d", tagID, artifactID)
 	}
-	if err := c.artMgr.UpdatePullTime(ctx, artifactID, time); err != nil {
-		return err
-	}
-	return c.tagMgr.Update(ctx, &tm.Tag{
-		ID: tagID,
-	}, "PullTime")
+	return orm.WithTransaction(func(ctx context.Context) error {
+		if err := c.artMgr.UpdatePullTime(ctx, artifactID, time); err != nil {
+			return err
+		}
+		return c.tagMgr.Update(ctx, &tm.Tag{
+			ID: tagID,
+		}, "PullTime")
+	})(ctx)
 }
 func (c *controller) GetSubResource(ctx context.Context, artifactID int64, resource string) (*Resource, error) {
 	// TODO implement
