@@ -4979,7 +4979,7 @@ definitions:
         type: boolean
       admin_role_in_auth:
         type: boolean
-        description: indicate the admin privilege is grant by authenticator (LDAP), is always false unless it is the current login user        
+        description: indicate the admin privilege is grant by authenticator (LDAP), is always false unless it is the current login user
       reset_uuid:
         type: string
       Salt:

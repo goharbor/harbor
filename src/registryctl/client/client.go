@@ -25,7 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/registryctl/api"
+	"github.com/goharbor/harbor/src/registryctl/api/registry/gc"
 )
 
 // Client defines methods that an Registry client should implement
@@ -33,7 +33,7 @@ type Client interface {
 	// Health tests the connection with registry server
 	Health() error
 	// StartGC enable the gc of registry server
-	StartGC() (*api.GCResult, error)
+	StartGC() (*gc.Result, error)
 }
 
 type client struct {
@@ -72,9 +72,9 @@ func (c *client) Health() error {
 }
 
 // StartGC ...
-func (c *client) StartGC() (*api.GCResult, error) {
+func (c *client) StartGC() (*gc.Result, error) {
 	url := c.baseURL + "/api/registry/gc"
-	gcr := &api.GCResult{}
+	gcr := &gc.Result{}
 
 	req, err := http.NewRequest(http.MethodPost, url, nil)
 	if err != nil {
@@ -99,4 +99,16 @@ func (c *client) StartGC() (*api.GCResult, error) {
 	}
 
 	return gcr, nil
+}
+
+// DeleteBlob ...
+func (c *client) DeleteBlob() error {
+	//ToDo impl
+	return nil
+}
+
+// DeleteManifest ...
+func (c *client) DeleteManifest() error {
+	//ToDo impl
+	return nil
 }

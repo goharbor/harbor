@@ -5,6 +5,9 @@ go 1.12
 replace github.com/goharbor/harbor => ../
 
 require (
+	github.com/Azure/azure-sdk-for-go v37.2.0+incompatible // indirect
+	github.com/Azure/go-autorest/autorest v0.9.3 // indirect
+	github.com/Azure/go-autorest/autorest/to v0.3.0 // indirect
 	github.com/Knetic/govaluate v3.0.0+incompatible // indirect
 	github.com/Masterminds/semver v1.4.2
 	github.com/Microsoft/go-winio v0.4.12 // indirect
@@ -25,8 +28,10 @@ require (
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e // indirect
 	github.com/coreos/go-oidc v2.0.0+incompatible
+	github.com/denverdino/aliyungo v0.0.0-20191227032621-df38c6fa730c // indirect
 	github.com/dghubble/sling v1.1.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
+	github.com/dnaeon/go-vcr v1.0.1 // indirect
 	github.com/docker/distribution v2.7.1+incompatible
 	github.com/docker/docker v1.13.1 // indirect
 	github.com/docker/go v0.0.0-20160303222718-d30aec9fd63c // indirect
@@ -57,6 +62,7 @@ require (
 	github.com/lib/pq v1.1.0
 	github.com/mattn/go-runewidth v0.0.4 // indirect
 	github.com/miekg/pkcs11 v0.0.0-20170220202408-7283ca79f35e // indirect
+	github.com/ncw/swift v1.0.49 // indirect
 	github.com/olekukonko/tablewriter v0.0.1
 	github.com/opencontainers/go-digest v1.0.0-rc0
 	github.com/opencontainers/image-spec v1.0.1
@@ -69,8 +75,9 @@ require (
 	github.com/spf13/viper v1.4.0 // indirect
 	github.com/stretchr/testify v1.3.0
 	github.com/theupdateframework/notary v0.6.1
-	golang.org/x/crypto v0.0.0-20190325154230-a5d413f7728c
+	golang.org/x/crypto v0.0.0-20191206172530-e9b2fee46413
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
+	google.golang.org/cloud v0.0.0-20151119220103-975617b05ea8 // indirect
 	gopkg.in/asn1-ber.v1 v1.0.0-20150924051756-4e86f4367175 // indirect
 	gopkg.in/dancannon/gorethink.v3 v3.0.5 // indirect
 	gopkg.in/fatih/pool.v2 v2.0.0 // indirect

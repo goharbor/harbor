@@ -16,24 +16,40 @@ package api
 
 import (
 	"encoding/json"
+	"errors"
+	"github.com/goharbor/harbor/src/jobservice/logger"
 	"net/http"
 )
 
-func handleInternalServerError(w http.ResponseWriter) {
-	http.Error(w, http.StatusText(http.StatusInternalServerError),
-		http.StatusInternalServerError)
+func HandleInternalServerError(w http.ResponseWriter, req *http.Request) {
+	handleError(w, req, http.StatusInternalServerError, errors.New("internalerror"))
 }
 
-func handleUnauthorized(w http.ResponseWriter) {
-	http.Error(w, http.StatusText(http.StatusUnauthorized),
-		http.StatusUnauthorized)
+func HandleForbidden(w http.ResponseWriter, req *http.Request) {
+	handleError(w, req, http.StatusForbidden, errors.New("forbidden"))
 }
 
-// response status code will be written automatically if there is an error
-func writeJSON(w http.ResponseWriter, v interface{}) error {
+func HandleBadRequest(w http.ResponseWriter, req *http.Request, err error) {
+	handleError(w, req, http.StatusBadRequest, err)
+}
+
+func handleError(w http.ResponseWriter, req *http.Request, code int, err error) {
+	logger.Errorf("Serve http request '%s %s' error: %d %s", req.Method, req.URL.String(), code, err.Error())
+	w.WriteHeader(code)
+	writeDate(w, []byte(err.Error()))
+}
+
+func writeDate(w http.ResponseWriter, bytes []byte) {
+	if _, err := w.Write(bytes); err != nil {
+		logger.Errorf("writer write error: %s", err)
+	}
+}
+
+// WriteJSON response status code will be written automatically if there is an error
+func WriteJSON(w http.ResponseWriter, req *http.Request, v interface{}) error {
 	b, err := json.Marshal(v)
 	if err != nil {
-		handleInternalServerError(w)
+		HandleInternalServerError(w, req)
 		return err
 	}
 

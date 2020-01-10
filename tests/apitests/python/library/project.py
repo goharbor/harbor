@@ -103,9 +103,9 @@ class Project(base.Base):
         count = 0
         for each_access_log in list(access_logs):
             if each_access_log.username == operator and \
-               each_access_log.repo_name.strip(r'/') == repository and \
-               each_access_log.repo_tag == tag and \
-               each_access_log.operation == operation_type:
+                    each_access_log.repo_name.strip(r'/') == repository and \
+                    each_access_log.repo_tag == tag and \
+                    each_access_log.operation == operation_type:
                 count = count + 1
         return count
 

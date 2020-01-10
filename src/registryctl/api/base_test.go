@@ -22,7 +22,7 @@ import (
 
 func TestHandleInternalServerError(t *testing.T) {
 	w := httptest.NewRecorder()
-	handleInternalServerError(w)
+	HandleInternalServerError(w)
 
 	if w.Code != http.StatusInternalServerError {
 		t.Errorf("unexpected status code: %d != %d", w.Code, http.StatusInternalServerError)
