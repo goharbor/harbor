@@ -6,6 +6,7 @@ Resource  ../../resources/Util.robot
 
 Verify User
     [Arguments]    ${json}
+    Log To Console  "Verify User..."
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To User Tag
@@ -22,6 +23,7 @@ Verify User
 
 Verify Project
     [Arguments]    ${json}
+    Log To Console  "Verify Project..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -32,6 +34,7 @@ Verify Project
 
 Verify Image Tag
     [Arguments]    ${json}
+    Log To Console  "Verify Image Tag..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -65,9 +68,10 @@ Verify Project Metadata
     Close Browser
 
 Verify Checkbox
-    [Arguments]    ${json}    ${key}    ${checkbox}
+    [Arguments]    ${json}    ${key}    ${checkbox}  ${is_opposite}=${false}
     @{out}=    Get Value From Json    ${json}    ${key}
-    Run Keyword If    '@{out}[0]'=='true'    Checkbox Should Be Selected    ${checkbox}
+    ${value}=  Set Variable If  '${is_opposite}'=='${true}'  'false'  'true'
+    Run Keyword If    '@{out}[0]'==${value}    Checkbox Should Be Selected    ${checkbox}
     ...    ELSE    Checkbox Should Not Be Selected    ${checkbox}
 
 
@@ -78,6 +82,7 @@ Loop Image Repo
 
 Verify Member Exist
     [Arguments]    ${json}
+    Log To Console  "Verify Member Exist..."
     @{project}=  Get Value From Json  ${json}  $.projects.[*].name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -91,13 +96,108 @@ Verify Member Exist
     \   Navigate To Projects
     Close Browser
 
+Verify Webhook
+    [Arguments]    ${json}
+    Log To Console  "Verify Webhook..."
+    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    :For    ${project}    In    @{project}
+    \   @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+    \   ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+    \   Go Into Project  ${project}  has_image=${has_image}
+    \   Switch To Project Webhooks
+    \   @{enabled}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.enabled
+    \   ${enable_count}  Get Matching Xpath Count  xpath=//span[contains(.,'Enabled')]
+    \   ${disable_count}  Get Matching Xpath Count  xpath=//span[contains(.,'Disabled')]
+    \   Log To Console  '@{enabled}[0]'
+    \   Log To Console  '${true}'
+    \   Run Keyword If  '@{enabled}[0]' == '${true}'  Page Should Contain  Enabled
+    \   ...  ELSE  Page Should Contain  Disabled
+    \   @{address}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].webhook.address
+    \   Log To Console  '@{address}[0]'
+    \   Page Should Contain  @{address}[0]
+    \   Page Should Contain  policy
+    \   Page Should Contain  http
+    \   Navigate To Projects
+    Close Browser
+
+Verify Tag Retention Rule
+    [Arguments]    ${json}
+    Log To Console  "Verify Tag Retention Rule..."
+    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    :For    ${project}    In    @{project}
+    \   @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+    \   ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+    \   Go Into Project  ${project}  has_image=${has_image}
+    \   Switch To Tag Retention
+    \   ${actions_count}=  Set Variable  8
+    \   @{repository_patten}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule.repository_patten
+    \   @{tag_decoration}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule.tag_decoration
+    \   @{latestPushedK}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule.latestPushedK
+    \   @{cron}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_retention_rule.cron
+    \   Log To Console  '@{repository_patten}[0]'
+    \   Page Should Contain  @{repository_patten}[0]
+    \   Page Should Contain  @{tag_decoration}[0]
+    \   Page Should Contain  @{latestPushedK}[0]
+    \   Page Should Contain  @{cron}[0]
+    \   Navigate To Projects
+    Close Browser
+
+Verify Tag Immutability Rule
+    [Arguments]    ${json}
+    Log To Console  "Verify Tag Immutability Rule..."
+    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    :For    ${project}    In    @{project}
+    \   @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+    \   ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+    \   Go Into Project  ${project}  has_image=${has_image}
+    \   Switch To Tag Immutability
+    \   @{repo_decoration}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_immutability_rule.repo_decoration
+    \   @{tag_decoration}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_immutability_rule.tag_decoration
+    \   @{repo_pattern}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_immutability_rule.repo_pattern
+    \   @{tag_pattern}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].tag_immutability_rule.tag_pattern
+    \   Log To Console  '@{repo_decoration}[0]'
+    #\   Page Should Contain  @{repo_decoration}[0]
+    #\   Page Should Contain  @{tag_decoration}[0]
+    \   Page Should Contain  @{repo_pattern}[0]
+    \   Page Should Contain  @{tag_pattern}[0]
+    \   Navigate To Projects
+    Close Browser
+
 Loop Member
     [Arguments]    @{members}
     :For    ${member}    In    @{members}
     \    Page Should Contain    ${member}
 
+Verify Robot Account Exist
+    [Arguments]    ${json}
+    Log To Console  "Verify Robot Account Exist..."
+    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    :For    ${project}    In    @{project}
+    \   @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+    \   ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+    \   Go Into Project  ${project}  has_image=${has_image}
+    \   Switch To Project Robot Account
+    \   @{robot_accounts}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].robot_account..name
+    \   Loop Verify Robot Account  @{robot_accounts}
+    \   Navigate To Projects
+    Close Browser
+
+Loop Verify Robot Account
+    [Arguments]    @{robot_accounts}
+    :For    ${robot_account}    In    @{robot_accounts}
+    \    Page Should Contain    ${robot_account}
+
 Verify User System Admin Role
     [Arguments]    ${json}
+    Log To Console  "Verify User System Admin Role..."
     @{user}=  Get Value From Json  ${json}  $.admin..name
     Init Chrome Driver
     :FOR    ${user}    IN    @{user}
@@ -108,6 +208,7 @@ Verify User System Admin Role
 
 Verify System Label
     [Arguments]    ${json}
+    Log To Console  "Verify  System Label..."
     @{label}=   Get Value From Json  ${json}  $..syslabel..name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -119,6 +220,7 @@ Verify System Label
 
 Verify Project Label
    [Arguments]    ${json}
+   Log To Console  "Verify Project Label..."
    @{project}= Get Value From Json  ${json}  $.peoject.[*].name
    Init Chrome Driver
    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -135,6 +237,7 @@ Verify Project Label
 
 Verify Endpoint
     [Arguments]    ${json}
+    Log To Console  "Verify Endpoint..."
     @{endpoint}=  Get Value From Json  ${json}  $.endpoint..name
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
@@ -145,6 +248,7 @@ Verify Endpoint
 
 Verify Replicationrule
     [Arguments]    ${json}
+    Log To Console  "Verify Replicationrule..."
     @{replicationrules}=    Get Value From Json    ${json}    $.replicationrule.[*].rulename
     @{endpoints}=    Get Value From Json    ${json}    $.endpoint.[*].name
     : FOR    ${replicationrule}    IN    @{replicationrules}
@@ -183,6 +287,7 @@ Verify Replicationrule
 
 Verify Project Setting
     [Arguments]    ${json}
+    Log To Console  "Verify Project Setting..."
     @{projects}=  Get Value From Json  ${json}  $.projects.[*].name
     :For    ${project}    In    @{Projects}
     \    ${public}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].accesslevel
@@ -206,6 +311,7 @@ Verify Project Setting
 
 Verify System Setting
     [Arguments]    ${json}
+    Log To Console  "Verify System Setting..."
     @{authtype}=  Get Value From Json  ${json}  $.configuration.authmode
     @{creation}=  Get Value From Json  ${json}  $.configuration..projectcreation
     @{selfreg}=  Get Value From Json  ${json}  $.configuration..selfreg
@@ -215,6 +321,7 @@ Verify System Setting
     @{emailfrom}=  Get Value From Json  ${json}  $.configuration..emailfrom
     @{token}=  Get Value From Json  ${json}  $.configuration..token
     @{scanschedule}=  Get Value From Json  ${json}  $.configuration..scanall
+    @{cve_ids}=  Get Value From Json  ${json}  $.configuration..cve
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Switch To Configure
@@ -235,3 +342,45 @@ Verify System Setting
     #Page Should Contain  None
     Close Browser
 
+Verify Project-level Whitelist
+    [Arguments]    ${json}
+    Log To Console  "Verify Project-level Whitelist..."
+    @{project}=  Get Value From Json  ${json}  $.projects.[*].name
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    :FOR    ${project}    IN    @{project}
+    \    @{out_has_image}=  Get Value From Json  ${json}  $.projects[?(@.name=${project})].has_image
+    \    ${has_image}  Set Variable If  @{out_has_image}[0] == ${true}  ${true}  ${false}
+    \    Go Into Project  ${project}  has_image=${has_image}
+    \    Switch To Project Configuration
+    \    @{is_reuse_sys_cve_whitelist}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.reuse_sys_cve_whitelist
+    \    Run Keyword If  "@{is_reuse_sys_cve_whitelist}[0]" == "true"  Retry Wait Element Should Be Disabled   ${project_config_project_wl_add_btn}
+    \    ...  ELSE  Retry Wait Element  ${project_config_project_wl_add_btn}
+    \    @{cve_ids}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.cve
+    \    Loop Verifiy CVE_IDs  @{cve_ids}
+    \    Navigate To Projects
+    Close Browser
+
+Loop Verifiy CVE_IDs
+    [Arguments]    @{cve_ids}
+    :For    ${cve_id}    In    @{cve_ids}
+    \    Page Should Contain    ${cve_id}
+
+Verify System Setting Whitelist
+    [Arguments]    ${json}
+    Log To Console  "Verify Verify System Setting Whitelist..."
+    @{cve_ids}=  Get Value From Json  ${json}  $.configuration..cve..id
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Configure
+    Switch To System Settings
+    Log To Console  "@{cve_ids}"
+    Loop Verifiy CVE_IDs  @{cve_ids}
+    Close Browser
+
+Verify Clair Is Default Scanner
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    Switch To Scanners Page
+    Should Display The Default Clair Scanner
+    Close Browser
