@@ -12,6 +12,7 @@ package image
 
 import (
 	"context"
+	"encoding/json"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -35,6 +36,13 @@ func (m *manifestV1Resolver) ArtifactType() string {
 }
 
 func (m *manifestV1Resolver) Resolve(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
-	// TODO implement
+	mani := &schema1.Manifest{}
+	if err := json.Unmarshal([]byte(manifest), mani); err != nil {
+		return err
+	}
+	if artifact.ExtraAttrs == nil {
+		artifact.ExtraAttrs = map[string]interface{}{}
+	}
+	artifact.ExtraAttrs["architecture"] = mani.Architecture
 	return nil
 }
