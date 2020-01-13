@@ -1,3 +1,7 @@
+[Back to table of contents](../../index.md)
+
+----------
+
 # User Permissions By Role
 
 Users have different abilities depending on the role they in a project.
@@ -56,3 +60,7 @@ The following table depicts the various user permission levels in a project.
 | Edit project quotas  *                   |               |       |           |        |               |
 
 &ast; Only the Harbor system administrator can edit project quotas and add new scanners.
+
+----------
+
+[Back to table of contents](../../index.md)
