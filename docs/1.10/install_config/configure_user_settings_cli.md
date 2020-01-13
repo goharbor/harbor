@@ -1,16 +1,22 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Configure Harbor User Settings at the Command Line
 
-After release 1.8.0, all user settings are separated from system settings, it can not be configured in config file anymore. Users need to configure it with admin privileges in web console or via HTTP request.
+From release 1.8.0 onwards, user settings are configured separately from the system settings. You do not configure user settings in the `harbor.yml` file, but rather in the Harbor interface or via HTTP requests.
+
+## Example Configuration Commands:
+
+Add a new user in the local database:
 
 `curl -X PUT -u "<username>:<password>" -H "Content-Type: application/json" -ki <Harbor Server URL>/api/configurations -d'{"<item_name>":"<item_value>"}'`
 
-Get current configurations
+Get the current configuration, run the following command:
 
 `curl -u "<username>:<password>" -H "Content-Type: application/json" -ki <Harbor Server URL>/api/configurations`
 
-## Sample config commands:
-
-1. Update Harbor to use LDAP auth
+Update Harbor to use LDAP authentication:
 
     Command
     ```shell
@@ -27,7 +33,7 @@ Get current configurations
     Set-Cookie: sid=a5803a1265e2b095cf65ce1d8bbd79b1; Path=/; HttpOnly
     ```
 
-1. Restrict project creation to admin only
+Restrict project creation to Harbor administrators:
 
     Command
     ```shell
@@ -45,7 +51,7 @@ Get current configurations
     Set-Cookie: sid=b7925eaf7af53bdefb13bdcae201a14a; Path=/; HttpOnly
     ```
 
-1. Update the token expiration time
+Update the token expiration time:
 
     Command
     ```shell
@@ -99,14 +105,19 @@ uaa_client_id | UAA client ID | string | required(uaa_auth)
 uaa_client_secret | UAA certificate | string | required(uaa_auth)
 uaa_endpoint | UAA endpoint | string |  required(uaa_auth)
 uaa_verify_cert | UAA verify cert, true or false | boolean | optional | true
-oidc_name | name for OIDC authentication | string | required(oidc_auth)
-oidc_endpoint | endpoint for OIDC auth | string | required(oidc_auth)
-oidc_client_id | client id for OIDC auth | string | required(oidc_auth)
-oidc_client_secret | client secret for OIDC auth |string | required(oidc_auth)
-oidc_scope | scope for OIDC auth | string| required(oidc_auth)
-oidc_verify_cert | verify cert for OIDC auth, true or false | boolean | optional| true
+oidc_name | Name for OIDC authentication | string | required(oidc_auth)
+oidc_endpoint | Endpoint for OIDC auth | string | required(oidc_auth)
+oidc_client_id | Client id for OIDC auth | string | required(oidc_auth)
+oidc_client_secret | Client secret for OIDC auth |string | required(oidc_auth)
+oidc_scope | Ccope for OIDC auth | string| required(oidc_auth)
+oidc_verify_cert | Verify certificate for OIDC auth, true or false | boolean | optional| true
 robot_token_duration | Robot token expiration time in minutes | number | optional | 43200 (30days)
 
 
 
-**Note:** Both boolean and number can be enclosed with double quote in the request json, for example: `123`, `"123"`, `"true"` or `true` is OK. 
+**Note:** Both booleans and numbers can be enclosed with double quote in the request json, for example: `123`, `"123"`, `"true"` or `true` is OK. 
+
+
+----------
+
+[Back to table of contents](../index.md)

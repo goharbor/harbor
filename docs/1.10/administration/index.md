@@ -11,7 +11,7 @@ The operations that are performed by the Harbor system administrator are the fol
 - Set up replication of images between Harbor and another Harbor instance or a 3rd party replication target. For information, see [Configuring Replication](configuring_replication/configuring_replication.md).
 - Set up vulnerability scanners to check the images in the registry for CVE vulnerabilities. For information, see [Vulnerability Scanning](vulnerability_scanning/vulnerability_scanning.md).
 - Perform garbage collection, to remove unnecessary data from Harbor. For information, see [Garbage Collection](garbage_collection.md).
-- Upgrade Harbor when a new version becomes available. For information, see [Upgrading Harbor](upgrade/upgrade_harbor.md).
+- Upgrade Harbor when a new version becomes available. For information, see [Upgrading Harbor](upgrade/upgrade_migrate_data.md).
 
 ----------
 
