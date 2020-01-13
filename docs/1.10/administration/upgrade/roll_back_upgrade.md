@@ -6,6 +6,8 @@
 
 If, for any reason, you need to roll back to the previous version of Harbor, perform the following steps.
 
+**NOTE**: To roll back from an upgrade, you must have backed up the previous version of Harbor. For information about backing up Harbor before an upgrade, see [Upgrade Harbor and Migrate Data](upgrade_migrate_data.md).
+
 1. Stop and remove the current Harbor service if it is still running.
 
     ```sh

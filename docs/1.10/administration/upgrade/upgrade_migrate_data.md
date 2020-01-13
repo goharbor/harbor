@@ -38,7 +38,7 @@ Since the migration might alter the database schema and the settings of `harbor.
     cp -r /data/database /my_backup_dir/
     ```
 
-1. Get the latest Harbor release package from [https://github.com/goharbor/harbor/releases](https://github.com/goharbor/harbor/releases)
+1. Get the latest Harbor release package from [https://github.com/goharbor/harbor/releases](https://github.com/goharbor/harbor/releases).
 1. Before upgrading Harbor, perform migration. 
 
     The migration tool is delivered as a docker image. You can pull the image from docker hub. Replace [tag] with the new Harbor version, for example v1.10.0, in the following command:
@@ -65,6 +65,8 @@ Since the migration might alter the database schema and the settings of `harbor.
 1. In the `./harbor` directory, run the `./install.sh` script to install the new Harbor instance. 
 
    To install Harbor with components such as Notary, Clair, and chartmuseum, see [Run the Installer Script](../../install_config/run_installer_script.md) for more information.
+   
+If you need to roll back to the previous version of Harbor, see [Roll Back from an Upgrade](roll_back_upgrade.md).
 
 ----------
 
