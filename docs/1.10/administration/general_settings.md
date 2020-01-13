@@ -35,11 +35,6 @@ denied: The system is in read only mode. Any modification is prohibited.
 Use the **Project Creation** drop-down menu to set which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Harbor system administrator role to create projects.  
 ![browse project](../../img/new_proj_create.png)
 
-## Set Who Can Create Projects
-
-Use the **Project Creation** drop-down menu to set which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Harbor system administrator role to create projects.  
-![browse project](../../img/new_proj_create.png)
-
 ----------
 
 [Back to table of contents](../index.md)
