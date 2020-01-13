@@ -1,10 +1,10 @@
 # User and Developer Documentation
 
-The Harbor user and developer documentation has moved. For the 1.10 docs, please go to https://github.com/goharbor/harbor/blob/master/docs/1.10/index.md. 
+For the Harbor 1.10 docs, please go to https://github.com/goharbor/harbor/blob/master/docs/1.10/index.md. 
 
 For older versions of the docs, please select the appropriate `release-1.xx.x` branch and go to the `docs` folder.
 
-See also the [Harbor Architecture Overview](https://github.com/vmware/harbor/wiki/Architecture-Overview-of-Harbor)  
+See also the [Harbor Architecture Overview](https://github.com/vmware/harbor/wiki/Architecture-Overview-of-Harbor).
 
 # Articles from the community
 
