@@ -8,66 +8,73 @@ From release 1.8.0 onwards, user settings are configured separately from the sys
 
 ## Example Configuration Commands:
 
-Add a new user in the local database:
+**Add a new user in the local database:**
 
 `curl -X PUT -u "<username>:<password>" -H "Content-Type: application/json" -ki <Harbor Server URL>/api/configurations -d'{"<item_name>":"<item_value>"}'`
 
-Get the current configuration, run the following command:
+**Get the current configuration:**
 
 `curl -u "<username>:<password>" -H "Content-Type: application/json" -ki <Harbor Server URL>/api/configurations`
 
-Update Harbor to use LDAP authentication:
+**Update Harbor to use LDAP authentication:**
 
-    Command
-    ```shell
-    curl -X PUT -u "<username>:<password>" -H "Content-Type: application/json" -ki https://harbor.sample.domain/api/configurations -d'{"auth_mode":"ldap_auth"}'
-    ```
-    Output
-    ```
-    HTTP/1.1 200 OK
-    Server: nginx
-    Date: Wed, 08 May 2019 08:22:02 GMT
-    Content-Type: text/plain; charset=utf-8
-    Content-Length: 0
-    Connection: keep-alive
-    Set-Cookie: sid=a5803a1265e2b095cf65ce1d8bbd79b1; Path=/; HttpOnly
-    ```
+Command
 
-Restrict project creation to Harbor administrators:
+```shell
+curl -X PUT -u "<username>:<password>" -H "Content-Type: application/json" -ki https://harbor.sample.domain/api/configurations -d'{"auth_mode":"ldap_auth"}'
+```
 
-    Command
-    ```shell
-    curl -X PUT -u "<username>:<password>" -H "Content-Type: application/json" -ki https://harbor.sample.domain/api/configurations -d'{"project_creation_restriction":"adminonly"}'
-    ```
+Output
 
-    Output
-    ```
-    HTTP/1.1 200 OK
-    Server: nginx
-    Date: Wed, 08 May 2019 08:24:32 GMT
-    Content-Type: text/plain; charset=utf-8
-    Content-Length: 0
-    Connection: keep-alive
-    Set-Cookie: sid=b7925eaf7af53bdefb13bdcae201a14a; Path=/; HttpOnly
-    ```
+```
+HTTP/1.1 200 OK
+Server: nginx
+Date: Wed, 08 May 2019 08:22:02 GMT
+Content-Type: text/plain; charset=utf-8
+Content-Length: 0
+Connection: keep-alive
+Set-Cookie: sid=a5803a1265e2b095cf65ce1d8bbd79b1; Path=/; HttpOnly
+```
 
-Update the token expiration time:
+**Restrict project creation to Harbor administrators:**
 
-    Command
-    ```shell
-    curl -X PUT -u "<username>:<password>" -H "Content-Type: application/json" -ki https://harbor.sample.domain/api/configurations -d'{"token_expiration":"300"}'
-    ```
+Command
 
-    Output
-    ```
-    HTTP/1.1 200 OK
-    Server: nginx
-    Date: Wed, 08 May 2019 08:23:38 GMT
-    Content-Type: text/plain; charset=utf-8
-    Content-Length: 0
-    Connection: keep-alive
-    Set-Cookie: sid=cc1bc93ffa2675253fc62b4bf3d9de0e; Path=/; HttpOnly
-    ```
+```shell
+curl -X PUT -u "<username>:<password>" -H "Content-Type: application/json" -ki https://harbor.sample.domain/api/configurations -d'{"project_creation_restriction":"adminonly"}'
+```
+
+Output
+
+```
+HTTP/1.1 200 OK
+Server: nginx
+Date: Wed, 08 May 2019 08:24:32 GMT
+Content-Type: text/plain; charset=utf-8
+Content-Length: 0
+Connection: keep-alive
+Set-Cookie: sid=b7925eaf7af53bdefb13bdcae201a14a; Path=/; HttpOnly
+```
+
+**Update the token expiration time:**
+
+Command
+
+```shell
+curl -X PUT -u "<username>:<password>" -H "Content-Type: application/json" -ki https://harbor.sample.domain/api/configurations -d'{"token_expiration":"300"}'
+```
+
+Output
+
+```
+HTTP/1.1 200 OK
+Server: nginx
+Date: Wed, 08 May 2019 08:23:38 GMT
+Content-Type: text/plain; charset=utf-8
+Content-Length: 0
+Connection: keep-alive
+Set-Cookie: sid=cc1bc93ffa2675253fc62b4bf3d9de0e; Path=/; HttpOnly
+```
 
 ## Harbor user settings
 
