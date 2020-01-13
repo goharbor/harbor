@@ -1,6 +1,6 @@
 # Harbor Documentation 
 
-This is the main table of contents for the Harbor documentation.
+This is the main table of contents for the Harbor 1.10.x documentation.
 
 ## Harbor Installation and Configuration
 

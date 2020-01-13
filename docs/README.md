@@ -1,46 +1,22 @@
-## Table of Content
+# Table of Contents
 
-### User documents
+## User and Developer Documentation
 
-**[Installation and Configuration Guide](installation_guide.md)   
-Read this first!**  
-Guide for Harbor online installer and offline installer.
+The Harbor user and developer documentation has moved. For the 1.10 docs, please go to https://github.com/goharbor/harbor/blob/master/docs/1.10/index.md. 
 
-**[Harbor User Guide](user_guide.md)**  
-How to use Harbor to manage images, projects, replications and users.
+For older versions of the docs, please select the appropriate `release-1.xx.x` branch and go to the `docs` folder.
 
-[Configuring HTTPS for Harbor](configure_https.md)  
-Configure security connection between Harbor and Docker client.
+See also the [Harbor Architecture Overview](https://github.com/vmware/harbor/wiki/Architecture-Overview-of-Harbor)  
 
-[Upgrade and Data Migration Guide](migration_guide.md)  
-Data migration may be needed when upgrading Harbor to a newer version.
+## Articles from the community
 
-[Deploy Harbor on Kubernetes](kubernetes_deployment.md)  
-Guide to deploy Harbor on Kubernetes. (maintained by community)
+[Python SDK](../contrib/registryapi)
 
-### Developer documents
+[Harbor CLI](https://github.com/int32bit/harborclient)
 
-[Architecture Overview of Harbor](https://github.com/vmware/harbor/wiki/Architecture-Overview-of-Harbor)  
-Developers read this first.
+[Deploy Harbor using Docker Machine](../contrib/deploying_using_docker_machine.md)
 
-[Build Harbor from Source](compile_guide.md)  
-How to build Harbor from source code.
-
-[Harbor API Specs by Swagger](configure_swagger.md)  
-Use Swagger to find out the specs of Harbor API.
-
-[Internationalization Guide](developer_guide_i18n.md)  
-How to add your local language to Harbor.
-
-[Python SDK](../contrib/registryapi) (by community)
-
-[Harbor CLI](https://github.com/int32bit/harborclient) (by community)
-
-[Deploy Harbor using Docker Machine](../contrib/deploying_using_docker_machine.md) ( by community)
-
-[Configuring Harbor as a local registry mirror](../contrib/Configure_mirror.md) (by community)
-
-### Articles from the community
+[Configuring Harbor as a local registry mirror](../contrib/Configure_mirror.md)
 
 [Remote site replicated Docker Registries with VMware Harbor](http://www.vmtocloud.com/remote-site-replicated-docker-registries-with-vmware-harbor/)
 
