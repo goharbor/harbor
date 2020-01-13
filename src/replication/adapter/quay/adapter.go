@@ -1,13 +1,16 @@
-package quayio
+package quay
 
 import (
 	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
+
+	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
@@ -25,31 +28,51 @@ var (
 
 type adapter struct {
 	*native.Adapter
-	registry *model.Registry
-	client   *common_http.Client
+	autoCreateNs bool
+	registry     *model.Registry
+	client       *common_http.Client
 }
 
 func init() {
-	err := adp.RegisterFactory(model.RegistryTypeQuayio, new(factory))
+	err := adp.RegisterFactory(model.RegistryTypeQuay, new(factory))
 	if err != nil {
-		log.Errorf("failed to register factory for Quay.io: %v", err)
+		log.Errorf("failed to register factory for Quay: %v", err)
 		return
 	}
-	log.Infof("the factory of Quay.io adapter was registered")
+	log.Infof("the factory of Quay adapter was registered")
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
-	modifiers := []modifier.Modifier{}
-	var authorizer modifier.Modifier
-	if registry.Credential != nil && len(registry.Credential.AccessKey) != 0 {
-		authorizer = NewAPIKeyAuthorizer("Authorization", fmt.Sprintf("Bearer %s", registry.Credential.AccessKey), APIKeyInHeader)
+	var modifiers []modifier.Modifier
+
+	var (
+		autoCreateNs                      bool
+		basicAuthorizer, apiKeyAuthorizer modifier.Modifier
+	)
+
+	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
+		var jsonCred cred
+		err := json.Unmarshal([]byte(registry.Credential.AccessSecret), &jsonCred)
+		if err != nil {
+			return nil, err
+		}
+		basicAuthorizer = basic.NewAuthorizer(jsonCred.AccountName, jsonCred.DockerCliPassword)
+		if len(jsonCred.OAuth2Token) != 0 {
+			autoCreateNs = true
+			apiKeyAuthorizer = NewAPIKeyAuthorizer("Authorization", fmt.Sprintf("Bearer %s", jsonCred.OAuth2Token), APIKeyInHeader)
+		}
 	}
-	if authorizer != nil {
-		modifiers = append(modifiers, authorizer)
+
+	nativeRegistryAdapter := native.NewAdapterWithAuthorizer(registry, basicAuthorizer)
+
+	if apiKeyAuthorizer != nil {
+		modifiers = append(modifiers, apiKeyAuthorizer)
 	}
+
 	return &adapter{
-		Adapter:  native.NewAdapterWithAuthorizer(registry, authorizer),
-		registry: registry,
+		Adapter:      nativeRegistryAdapter,
+		autoCreateNs: autoCreateNs,
+		registry:     registry,
 		client: common_http.NewClient(
 			&http.Client{
 				Transport: util.GetHTTPTransport(registry.Insecure),
@@ -69,13 +92,22 @@ func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
 
 // AdapterPattern ...
 func (f *factory) AdapterPattern() *model.AdapterPattern {
-	return nil
+	info := &model.AdapterPattern{
+		EndpointPattern: model.NewDefaultEndpointPattern(),
+		CredentialPattern: &model.CredentialPattern{
+			AccessKeyType:    model.AccessKeyTypeFix,
+			AccessKeyData:    "json_file",
+			AccessSecretType: model.AccessSecretTypeFile,
+			AccessSecretData: "",
+		},
+	}
+	return info
 }
 
 // Info returns information of the registry
 func (a *adapter) Info() (*model.RegistryInfo, error) {
 	return &model.RegistryInfo{
-		Type: model.RegistryTypeQuayio,
+		Type: model.RegistryTypeQuay,
 		SupportedResourceTypes: []model.ResourceType{
 			model.ResourceTypeImage,
 		},
@@ -109,6 +141,9 @@ func (a *adapter) HealthCheck() (model.HealthStatus, error) {
 // PrepareForPush does the prepare work that needed for pushing/uploading the resource
 // eg: create the namespace or repository
 func (a *adapter) PrepareForPush(resources []*model.Resource) error {
+	if !a.autoCreateNs {
+		return nil
+	}
 	namespaces := []string{}
 	for _, resource := range resources {
 		if resource == nil {
@@ -133,14 +168,14 @@ func (a *adapter) PrepareForPush(resources []*model.Resource) error {
 			Name: namespace,
 		})
 		if err != nil {
-			return fmt.Errorf("create namespace '%s' in Quay.io error: %v", namespace, err)
+			return fmt.Errorf("create namespace '%s' in Quay error: %v", namespace, err)
 		}
 		log.Debugf("namespace %s created", namespace)
 	}
 	return nil
 }
 
-// createNamespace creates a new namespace in Quay.io
+// createNamespace creates a new namespace in Quay
 func (a *adapter) createNamespace(namespace *model.Namespace) error {
 	ns, err := a.getNamespace(namespace.Name)
 	if err != nil {
@@ -149,24 +184,25 @@ func (a *adapter) createNamespace(namespace *model.Namespace) error {
 
 	// If the namespace already exist, return succeeded directly.
 	if ns != nil {
-		log.Infof("Namespace %s already exist in Quay.io, skip it.", namespace.Name)
+		log.Infof("Namespace %s already exist in Quay, skip it.", namespace.Name)
 		return nil
 	}
 
 	org := &orgCreate{
 		Name:  namespace.Name,
-		Email: namespace.GetStringMetadata("email", namespace.Name),
+		Email: fmt.Sprintf("%s@quay.io", namespace.Name),
 	}
 	b, err := json.Marshal(org)
 	if err != nil {
 		return err
 	}
 
-	req, err := http.NewRequest(http.MethodPost, buildOrgURL(""), bytes.NewReader(b))
+	req, err := http.NewRequest(http.MethodPost, buildOrgURL(a.registry.URL, ""), bytes.NewBuffer(b))
 	if err != nil {
 		return err
 	}
 
+	req.Header.Set("Content-Type", "application/json")
 	resp, err := a.client.Do(req)
 	if err != nil {
 		return err
@@ -185,9 +221,9 @@ func (a *adapter) createNamespace(namespace *model.Namespace) error {
 	return fmt.Errorf("%d -- %s", resp.StatusCode, body)
 }
 
-// getNamespace get namespace from Quay.io, if the namespace not found, two nil would be returned.
+// getNamespace get namespace from Quay, if the namespace not found, two nil would be returned.
 func (a *adapter) getNamespace(namespace string) (*model.Namespace, error) {
-	req, err := http.NewRequest(http.MethodGet, buildOrgURL(namespace), nil)
+	req, err := http.NewRequest(http.MethodGet, buildOrgURL(a.registry.URL, namespace), nil)
 	if err != nil {
 		return nil, err
 	}
@@ -215,4 +251,36 @@ func (a *adapter) getNamespace(namespace string) (*model.Namespace, error) {
 	return &model.Namespace{
 		Name: namespace,
 	}, nil
+}
+
+// PushManifest ...
+func (a *adapter) PushManifest(repository, reference, mediaType string, payload []byte) (string, error) {
+	digest, err := a.Adapter.PushManifest(repository, reference, mediaType, payload)
+	if err != nil {
+		if comErr, ok := err.(*common_http.Error); ok {
+			if comErr.Code == http.StatusAccepted {
+				return digest, nil
+			}
+		}
+	}
+	return digest, err
+}
+
+// PullBlob ...
+func (a *adapter) PullBlob(repository, digest string) (size int64, blob io.ReadCloser, err error) {
+	size, blob, err = a.Adapter.PullBlob(repository, digest)
+	if err != nil && blob != nil {
+		if size == 0 {
+			var data []byte
+			defer blob.Close()
+			data, err = ioutil.ReadAll(blob)
+			if err != nil {
+				return
+			}
+			size = int64(len(data))
+			blob = ioutil.NopCloser(bytes.NewReader(data))
+			return size, blob, nil
+		}
+	}
+	return
 }
