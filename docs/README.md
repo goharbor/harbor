@@ -1,6 +1,4 @@
-# Table of Contents
-
-## User and Developer Documentation
+# User and Developer Documentation
 
 The Harbor user and developer documentation has moved. For the 1.10 docs, please go to https://github.com/goharbor/harbor/blob/master/docs/1.10/index.md. 
 
@@ -8,7 +6,7 @@ For older versions of the docs, please select the appropriate `release-1.xx.x` b
 
 See also the [Harbor Architecture Overview](https://github.com/vmware/harbor/wiki/Architecture-Overview-of-Harbor)  
 
-## Articles from the community
+# Articles from the community
 
 [Python SDK](../contrib/registryapi)
 
