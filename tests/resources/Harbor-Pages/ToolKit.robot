@@ -39,8 +39,16 @@ Filter Object
     Retry Element Click  xpath=//hbr-filter//clr-icon
     ${element}=  Set Variable  xpath=//hbr-filter//input
     Wait Until Element Is Visible And Enabled  ${element}
-    Input Text   ${element}  ${kw}
+    Retry Clear Element Text  ${element}
+    Retry Text Input   ${element}  ${kw}
     Sleep  3
+
+Filter Project
+#Filter project repo user tag.
+    [Arguments]    ${kw}
+    Retry Element Click  ${log_xpath} 
+    Retry Element Click  ${projects_xpath}
+    Filter Object  ${kw}
 
 Select Object
 #select single element such as user project repo tag

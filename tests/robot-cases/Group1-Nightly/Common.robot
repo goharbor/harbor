@@ -117,8 +117,7 @@ Test Case - Project Level Policy Public
     # Here logout and login to try avoid a bug only in autotest
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Filter Object  project${d}
-    Project Should Be Public  project${d}
+    Retry Double Keywords When Error  Filter Project  project${d}  Project Should Be Public  project${d}
     Close Browser
 
 Test Case - Verify Download Ca Link
