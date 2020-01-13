@@ -1,7 +1,4 @@
-This guide is for Harbor upgrade test  
-=======
-
-# Before upgrade
+# Test Harbor Upgrade
 
 ## Prepare data  
 1. Add user usera userb userc userd usere, set usera userb as system admin.  

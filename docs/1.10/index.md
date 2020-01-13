@@ -47,6 +47,7 @@ This section describes how to use and maintain Harbor after deployment. These da
 - [Garbage Collection](administration/garbage_collection.md)
 - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
   - [Roll Back an Upgrade](administration/upgrade/roll_back_upgrade.md)
+  - [Test Harbor Upgrade](administration/upgrade/upgradetest.md)
 
 ## Working with Harbor Projects
 
