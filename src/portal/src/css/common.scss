@@ -4,7 +4,7 @@
       > .nav-item {
         > button {
           box-shadow: 0 -3px 0 $mode-link-color2 inset;
-          color: 0077b8;
+          color: #0077b8;
         }
       }
     }
@@ -115,4 +115,9 @@ clr-dg-action-overflow {
       color: $select-option-color;
     }
   } 
+}
+hbr-tag {
+  .color-green {
+    color: $light-color-green !important;
+  }
 }
