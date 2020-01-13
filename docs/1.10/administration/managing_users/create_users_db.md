@@ -19,7 +19,7 @@ In database authentication mode, the Harbor system administrator creates user ac
    - The email address is used for password recovery
    - The password must contain at least 8 characters with 1 lowercase letter, 1 uppercase letter and 1 numeric character
 
-If users forget their password, there is a **Forgot Password** in the Harbor log in page.
+If users forget their password, there is a **Forgot Password** in the Harbor log in page. To use this feature, you must [configure an email server](general_settings.md).
 
 ----------
 

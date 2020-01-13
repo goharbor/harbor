@@ -2,16 +2,7 @@
 
 ----------
 
-# Configure Project Settings
-
-You can configure Harbor so that only system administrators can create projects, and set limits on the amounts of resources that projects can consume.
-
-## Set Who Can Create Projects
-
-Use the **Project Creation** drop-down menu to set which users can create projects. Select **Everyone** to allow all users to create projects. Select **Admin Only** to allow only users with the Harbor system administrator role to create projects.  
-![browse project](../../img/new_proj_create.png)
-
-## Set Project Quotas
+# Configure Project Quotas
 
 To exercise control over resource use, as a Harbor system administrator you can set  quotas on projects. You can limit the number of tags that a project can contain and limit the amount of storage capacity that a project can consume. You can set default quotas that apply to all projects globally.
 
