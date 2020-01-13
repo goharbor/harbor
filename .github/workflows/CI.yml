@@ -70,6 +70,8 @@ jobs:
           env
           bash ./tests/showtime.sh ./tests/travis/ut_install.sh
       - name: script
+        env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo IP: $IP
           bash ./tests/showtime.sh ./tests/travis/ut_run.sh $IP
