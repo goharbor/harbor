@@ -5,3 +5,7 @@ This section describes how users with the developer, master, and project adminis
 - [Project Creation](project_overview.md)
 - [Project Configuration](project_configuration.md)
 - [Working with Images, Tags, and Helm Charts](working_with_images.md)
+
+----------
+
+[Back to table of contents](../index.md)

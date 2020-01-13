@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Access and Search Project Logs
 
 Harbor keeps a log of all of the operations that users perform in a project. You can apply filters to help you to search the logs.
@@ -25,7 +29,6 @@ Log in to Harbor with a Harbor administrator, project administrator, master, dev
 
    ![Filter logs by date](../img/log_search_advanced_date.png)      
 
-## What to Do Next
+----------
 
-TBD
-
+[Back to table of contents](../index.md)

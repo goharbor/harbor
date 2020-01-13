@@ -6,3 +6,8 @@ There are two types of project in Harbor:
 
 * **Public**: Any user can pull images from this project. This is a convenient way for you to share repositories with others.
 * **Private**: Only users who are members of the project can pull images
+
+----------
+
+[Back to table of contents](../index.md)
+

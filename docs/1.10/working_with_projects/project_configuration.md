@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Project Configuration
 
 Project properties can be changed by clicking "Configuration".
@@ -44,3 +48,7 @@ Build history makes it easy to see the contents of a container image, find the c
 In Harbor portal, enter your project, select the repository, click on the link of tag name you'd like to see its build history, the detail page will be opened. Then switch to `Build History` tab, you can see the build history information.
 
 ![build_ history](../img/build_history.png)
+
+----------
+
+[Back to table of contents](../index.md)

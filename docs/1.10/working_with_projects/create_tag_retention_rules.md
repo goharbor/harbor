@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Create Tag Retention Rules
 
 A repository can rapidly accumulate a large number of image tags, many of which might not be required after a given time or once they have been superseded by a subsequent image build. These excess tags can obviously consume large quantities of storage capacity. As a Harbor system administrator, you can define rules that govern how many tags of a given repository to retain, or for how long to retain certain tags. 
@@ -155,3 +159,7 @@ If you set a quota on a project, this quota cannot be exceeded. The quota is app
 To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule. 
 
 ![Modify tag retention rules](../img/tag-retention5.png)
+
+----------
+
+[Back to table of contents](../index.md)

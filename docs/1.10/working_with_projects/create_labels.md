@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Managing Labels
 
 Harbor provides two kinds of labels to isolate different kinds of resources:
