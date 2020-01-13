@@ -54,8 +54,7 @@ This section describes how to use and maintain Harbor after deployment. These da
 This section describes how users with the developer, master, and project administrator roles manage and participate in Harbor projects.
 
 - [Introduction](working_with_projects/index.md)
-- [Project Creation](working_with_projects/project_overview.md)
-    - [Create a Project](working_with_projects/create_projects.md)
+- [Create Projects](working_with_projects/create_projects.md)
     - [Assign Users to a Project](working_with_projects/add_users.md)
 - [Project Configuration](working_with_projects/project_configuration.md)
     - [Access and Search Project Logs](working_with_projects/access_project_logs.md)

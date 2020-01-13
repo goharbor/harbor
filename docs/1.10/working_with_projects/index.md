@@ -2,7 +2,7 @@
 
 This section describes how users with the developer, master, and project administrator roles manage and participate in Harbor projects. The Harbor administrator can also perform all of these tasks.
 
-- [Project Creation](project_overview.md)
+- [Create Projects](create_projects.md)
 - [Project Configuration](project_configuration.md)
 - [Working with Images, Tags, and Helm Charts](working_with_images.md)
 
