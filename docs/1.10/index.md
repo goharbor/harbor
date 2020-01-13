@@ -39,7 +39,7 @@ This section describes how to use and maintain Harbor after deployment. These da
     - [Manage Replications](administration/configuring_replication/manage_replications.md) 
 - [Vulnerability Scanning](administration/vulnerability_scanning/vulnerability_scanning.md)
     - [Connect Harbor to Additional Vulnerability Scanners](administration/vulnerability_scanning/pluggable_scanners.md)
-    - [Scan an Individual Image](administration/vulnerability_scanning/scan_individual_image.md)
+    - [Scan Individual Images](administration/vulnerability_scanning/scan_individual_image.md)
     - [Scan All Images](administration/vulnerability_scanning/scan_all_images.md)
     - [Schedule Scans](administration/vulnerability_scanning/schedule_scans.md)
     - [Import Vulnerability Data to an Offline Harbor instance](administration/vulnerability_scanning/import_vulnerability_data.md)
