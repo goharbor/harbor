@@ -15,32 +15,46 @@
 package artifact
 
 import (
+	"context"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	htesting "github.com/goharbor/harbor/src/testing"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"testing"
 	"time"
 )
 
+type fakeAbstractor struct {
+	mock.Mock
+}
+
+func (f *fakeAbstractor) Abstract(ctx context.Context, artifact *artifact.Artifact) error {
+	args := f.Called()
+	return args.Error(0)
+}
+
 type controllerTestSuite struct {
 	suite.Suite
-	ctl     *controller
-	repoMgr *htesting.FakeRepositoryManager
-	artMgr  *htesting.FakeArtifactManager
-	tagMgr  *htesting.FakeTagManager
+	ctl        *controller
+	repoMgr    *htesting.FakeRepositoryManager
+	artMgr     *htesting.FakeArtifactManager
+	tagMgr     *htesting.FakeTagManager
+	abstractor *fakeAbstractor
 }
 
 func (c *controllerTestSuite) SetupTest() {
 	c.repoMgr = &htesting.FakeRepositoryManager{}
 	c.artMgr = &htesting.FakeArtifactManager{}
 	c.tagMgr = &htesting.FakeTagManager{}
+	c.abstractor = &fakeAbstractor{}
 	c.ctl = &controller{
-		repoMgr: c.repoMgr,
-		artMgr:  c.artMgr,
-		tagMgr:  c.tagMgr,
+		repoMgr:    c.repoMgr,
+		artMgr:     c.artMgr,
+		tagMgr:     c.tagMgr,
+		abstractor: c.abstractor,
 	}
 }
 
@@ -94,10 +108,6 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 	// TODO check other fields of option
 }
 
-func (c *controllerTestSuite) TestAbstract() {
-	// TODO add test case
-}
-
 func (c *controllerTestSuite) TestEnsureArtifact() {
 	digest := "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180"
 
@@ -117,16 +127,18 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	// reset the mock
 	c.SetupTest()
 
+	// the artifact doesn't exist
 	c.repoMgr.On("Get").Return(&models.RepoRecord{
 		ProjectID: 1,
 	}, nil)
-	// the artifact doesn't exist
 	c.artMgr.On("List").Return(1, []*artifact.Artifact{}, nil)
 	c.artMgr.On("Create").Return(1, nil)
+	c.abstractor.On("Abstract").Return(nil)
 	created, id, err = c.ctl.ensureArtifact(nil, 1, digest)
 	c.Require().Nil(err)
 	c.repoMgr.AssertExpectations(c.T())
 	c.artMgr.AssertExpectations(c.T())
+	c.abstractor.AssertExpectations(c.T())
 	c.True(created)
 	c.Equal(int64(1), id)
 }
@@ -184,11 +196,13 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.artMgr.On("Create").Return(1, nil)
 	c.tagMgr.On("List").Return(1, []*tag.Tag{}, nil)
 	c.tagMgr.On("Create").Return(1, nil)
+	c.abstractor.On("Abstract").Return(nil)
 	_, id, err := c.ctl.Ensure(nil, 1, digest, "latest")
 	c.Require().Nil(err)
 	c.repoMgr.AssertExpectations(c.T())
 	c.artMgr.AssertExpectations(c.T())
 	c.tagMgr.AssertExpectations(c.T())
+	c.abstractor.AssertExpectations(c.T())
 	c.Equal(int64(1), id)
 }
 

@@ -17,6 +17,9 @@ package artifact
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/api/artifact/abstractor"
+	// registry image resolvers
+	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -29,7 +32,7 @@ import (
 
 var (
 	// Ctl is a global artifact controller instance
-	Ctl = NewController(repository.Mgr, artifact.Mgr, tag.Mgr)
+	Ctl = NewController()
 )
 
 // Controller defines the operations related with artifacts and tags
@@ -63,11 +66,12 @@ type Controller interface {
 }
 
 // NewController creates an instance of the default artifact controller
-func NewController(repoMgr repository.Manager, artMgr artifact.Manager, tagMgr tag.Manager) Controller {
+func NewController() Controller {
 	return &controller{
-		repoMgr: repoMgr,
-		artMgr:  artMgr,
-		tagMgr:  tagMgr,
+		repoMgr:    repository.Mgr,
+		artMgr:     artifact.Mgr,
+		tagMgr:     tag.Mgr,
+		abstractor: abstractor.NewAbstractor(),
 	}
 }
 
@@ -76,9 +80,10 @@ func NewController(repoMgr repository.Manager, artMgr artifact.Manager, tagMgr t
 // for artifacts and tags？？
 
 type controller struct {
-	repoMgr repository.Manager
-	artMgr  artifact.Manager
-	tagMgr  tag.Manager
+	repoMgr    repository.Manager
+	artMgr     artifact.Manager
+	tagMgr     tag.Manager
+	abstractor abstractor.Abstractor
 }
 
 func (c *controller) Ensure(ctx context.Context, repositoryID int64, digest string, tags ...string) (bool, int64, error) {
@@ -123,7 +128,10 @@ func (c *controller) ensureArtifact(ctx context.Context, repositoryID int64, dig
 		PushTime:     time.Now(),
 	}
 	// abstract the specific information for the artifact
-	c.abstract(ctx, artifact)
+	if err = c.abstractor.Abstract(ctx, artifact); err != nil {
+		return false, 0, err
+	}
+
 	// create it
 	id, err := c.artMgr.Create(ctx, artifact)
 	if err != nil {
@@ -300,9 +308,4 @@ func (c *controller) assembleTag(ctx context.Context, tag *tm.Tag, option *TagOp
 	}
 	// TODO populate label, signature, immutable status for tag
 	return t
-}
-
-func (c *controller) abstract(ctx context.Context, artifact *artifact.Artifact) {
-	// TODO abstract the specific info for the artifact
-	// handler references
 }
