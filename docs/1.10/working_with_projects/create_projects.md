@@ -41,7 +41,7 @@ Project properties can be changed by clicking "Configuration".
 
 * To make all repositories under the project accessible to everyone, select the `Public` checkbox.
 
-* To prevent un-signed images under the project from being pulled, select the `Enable content trust` checkbox.
+* To prevent un-signed images under the project from being pulled, select the `Enable content trust` checkbox. For more information about content trust, see [Implementing Content Trust](implementing_content_trust.md).
 
 ![browse project](../img/project_configuration.png) 
 
@@ -54,3 +54,7 @@ Entering a keyword in the search field at the top lists all matching projects an
 ## What to Do Next
 
 [Assign Users to a Project](add_users.md)
+
+----------
+
+[Back to table of contents](../index.md)
