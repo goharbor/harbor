@@ -271,3 +271,38 @@ func (a *adapter) createRepository(repository string) error {
 	}
 	return nil
 }
+
+// DeleteManifest ...
+func (a *adapter) DeleteManifest(repository, reference string) error {
+	// AWS doesn't implement standard OCI delete manifest API, so use it's sdk.
+	if a.registry.Credential == nil ||
+		len(a.registry.Credential.AccessKey) == 0 || len(a.registry.Credential.AccessSecret) == 0 {
+		return errors.New("no credential ")
+	}
+	cred := credentials.NewStaticCredentials(
+		a.registry.Credential.AccessKey,
+		a.registry.Credential.AccessSecret,
+		"")
+	if a.region == "" {
+		return errors.New("no region parsed")
+	}
+	config := &aws.Config{
+		Credentials: cred,
+		Region:      &a.region,
+		HTTPClient: &http.Client{
+			Transport: registry.GetHTTPTransport(a.registry.Insecure),
+		},
+	}
+	if a.forceEndpoint != nil {
+		config.Endpoint = a.forceEndpoint
+	}
+	sess := session.Must(session.NewSession(config))
+
+	svc := awsecrapi.New(sess)
+
+	_, err := svc.BatchDeleteImage(&awsecrapi.BatchDeleteImageInput{
+		RepositoryName: &repository,
+		ImageIds:       []*awsecrapi.ImageIdentifier{{ImageTag: &reference}},
+	})
+	return err
+}
