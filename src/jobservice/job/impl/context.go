@@ -16,12 +16,12 @@ package impl
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"sync"
 	"time"
 
-	"errors"
 	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -53,7 +53,7 @@ type Context struct {
 // NewContext ...
 func NewContext(sysCtx context.Context, cfgMgr *comcfg.CfgManager) *Context {
 	return &Context{
-		sysContext: sysCtx,
+		sysContext: comcfg.NewContext(sysCtx, cfgMgr),
 		cfgMgr:     *cfgMgr,
 		properties: make(map[string]interface{}),
 	}

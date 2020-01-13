@@ -123,8 +123,7 @@ func (s *ScanRequest) ToJSON() (string, error) {
 // Validate ScanRequest
 func (s *ScanRequest) Validate() error {
 	if s.Registry == nil ||
-		len(s.Registry.URL) == 0 ||
-		len(s.Registry.Authorization) == 0 {
+		len(s.Registry.URL) == 0 {
 		return errors.New("scan request: invalid registry")
 	}
 

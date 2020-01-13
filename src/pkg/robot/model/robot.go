@@ -1,11 +1,14 @@
 package model
 
 import (
+	"encoding/json"
+	"errors"
+	"time"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/astaxie/beego/validation"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
-	"time"
 )
 
 // RobotTable is the name of table in DB that holds the robot object
@@ -32,6 +35,25 @@ type Robot struct {
 // TableName ...
 func (r *Robot) TableName() string {
 	return RobotTable
+}
+
+// FromJSON parses robot from json data
+func (r *Robot) FromJSON(jsonData string) error {
+	if len(jsonData) == 0 {
+		return errors.New("empty json data to parse")
+	}
+
+	return json.Unmarshal([]byte(jsonData), r)
+}
+
+// ToJSON marshals Robot to JSON data
+func (r *Robot) ToJSON() (string, error) {
+	data, err := json.Marshal(r)
+	if err != nil {
+		return "", err
+	}
+
+	return string(data), nil
 }
 
 // RobotQuery ...

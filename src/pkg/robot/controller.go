@@ -2,6 +2,8 @@ package robot
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/dgrijalva/jwt-go"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -11,8 +13,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/token"
 	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
 	"github.com/pkg/errors"
-	"time"
 )
+
+// go:generate mockery -case underscore -name Controller
 
 var (
 	// RobotCtr is a global variable for the default robot account controller implementation

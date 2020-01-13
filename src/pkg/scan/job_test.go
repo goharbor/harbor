@@ -22,6 +22,7 @@ import (
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
@@ -77,7 +78,7 @@ func (suite *JobTestSuite) TestJob() {
 	sr := &v1.ScanRequest{
 		Registry: &v1.Registry{
 			URL:           "http://localhost:5000",
-			Authorization: "the_token",
+			Authorization: "Basic cm9ib3Q6dG9rZW4=",
 		},
 		Artifact: &v1.Artifact{
 			Repository: "library/test_job",
@@ -89,12 +90,23 @@ func (suite *JobTestSuite) TestJob() {
 	sData, err := sr.ToJSON()
 	require.NoError(suite.T(), err)
 
+	robot := &model.Robot{
+		ID:    1,
+		Name:  "robot",
+		Token: "token",
+	}
+
+	robotData, err := robot.ToJSON()
+	require.NoError(suite.T(), err)
+
 	mimeTypes := []string{v1.MimeTypeNativeReport}
 
 	jp := make(job.Parameters)
 	jp[JobParamRegistration] = rData
 	jp[JobParameterRequest] = sData
 	jp[JobParameterMimes] = mimeTypes
+	jp[JobParameterAuthType] = "Basic"
+	jp[JobParameterRobot] = robotData
 
 	mc := &MockClient{}
 	sre := &v1.ScanResponse{
