@@ -34,6 +34,7 @@ src/portal/typings/
 src/portal/src/**/*.js
 src/portal/src/**/*.js.map
 src/portal/src/lib/coverage
+src/portal/ng-swagger-gen
 **/npm*.log
 
 **/*ngsummary.json

@@ -4,6 +4,7 @@
   "description": "Harbor UI with Clarity",
   "angular-cli": {},
   "scripts": {
+    "postinstall": "node scripts/convert-yaml-to-json.js && ng-swagger-gen -i ng-swagger-gen/swagger.json -o ng-swagger-gen && node scripts/delete-swagger-json.js",
     "start": "ng serve --ssl true --ssl-key ssl/server.key --ssl-cert ssl/server.crt --host 0.0.0.0 --proxy-config proxy.config.json",
     "lint": "tslint \"src/**/*.ts\"",
     "lint_fix": "tslint --fix \"src/**/*.ts\"",
@@ -73,6 +74,7 @@
     "enhanced-resolve": "^3.0.0",
     "express": "^4.17.1",
     "jasmine-spec-reporter": "~4.2.1",
+    "js-yaml": "^3.13.1",
     "karma": "^4.4.1",
     "karma-chrome-launcher": "~2.2.0",
     "karma-cli": "^1.0.1",
@@ -82,6 +84,7 @@
     "karma-jasmine-html-reporter": "^0.2.2",
     "karma-mocha-reporter": "^2.2.4",
     "karma-remap-istanbul": "^0.6.0",
+    "ng-swagger-gen": "^1.8.1",
     "protractor": "^5.4.2",
     "rollup": "^0.41.6",
     "rollup-plugin-commonjs": "^8.0.2",
