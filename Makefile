@@ -280,6 +280,30 @@ ifeq ($(CHARTFLAG), true)
 	DOCKERSAVE_PARA+= $(DOCKERIMAGENAME_CHART_SERVER):$(CHARTMUSEUMVERSION)-$(VERSIONTAG)
 endif
 
+SWAGGER_IMAGENAME=goharbor/swagger
+SWAGGER_VERSION=v0.21.0
+SWAGGER=$(DOCKERCMD) run --rm -u $(shell id -u):$(shell id -g) -v $(BUILDPATH):$(BUILDPATH) -w $(BUILDPATH) ${SWAGGER_IMAGENAME}:${SWAGGER_VERSION}
+SWAGGER_GENERATE_SERVER=${SWAGGER} generate server --template-dir=$(TOOLSPATH)/swagger/templates --exclude-main
+
+SWAGGER_IMAGENAME:
+	@if [ "$(shell ${DOCKERIMASES} -q ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) 2> /dev/null)" == "" ]; then \
+		${DOCKERBUILD} -f ${TOOLSPATH}/swagger/Dockerfile --build-arg SWAGGER_VERSION=${SWAGGER_VERSION} -t ${SWAGGER_IMAGENAME}:$(SWAGGER_VERSION) . ; \
+		echo "build swagger image done"; \
+	fi
+
+# $1 the path of swagger spec
+# $2 the path of base directory for generating the files
+# $3 the name of the application
+define swagger_generate_server
+	@echo "generate all the files for API from $(1)"
+	@rm -rf $(2)/{models,restapi}
+	@mkdir -p $(2)
+	@$(SWAGGER_GENERATE_SERVER) -f $(1) -A $(3) --target $(2)
+endef
+
+gen_apis: SWAGGER_IMAGENAME
+	$(call swagger_generate_server,api/v2.0/swagger.yaml,src/server/v2.0,harbor)
+
 export VERSIONS_FOR_PREPARE
 versions_prepare:
 	@echo "$$VERSIONS_FOR_PREPARE" > $(MAKE_PREPARE_PATH)/$(PREPARE_VERSION_NAME)
@@ -287,7 +311,7 @@ versions_prepare:
 check_environment:
 	@$(MAKEPATH)/$(CHECKENVCMD)
 
-compile_core:
+compile_core: gen_apis
 	@echo "compiling binary for core (golang image)..."
 	@echo $(GOBUILDPATHINCONTAINER)
 	@$(DOCKERCMD) run --rm -v $(BUILDPATH):$(GOBUILDPATHINCONTAINER) -w $(GOBUILDPATH_CORE) $(GOBUILDIMAGE) $(GOIMAGEBUILD_CORE) -o $(GOBUILDPATHINCONTAINER)/$(GOBUILDMAKEPATH_CORE)/$(CORE_BINARYNAME)
@@ -368,7 +392,7 @@ gosec:
 		$(GOPATH)/bin/gosec -fmt=json -out=harbor_gas_output.json -quiet ./... | true ; \
 	fi
 
-go_check: misspell golint govet gofmt commentfmt
+go_check: gen_apis misspell golint govet gofmt commentfmt
 
 gofmt:
 	@echo checking gofmt...
