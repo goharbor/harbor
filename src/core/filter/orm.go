@@ -25,6 +25,8 @@ func OrmFilter(ctx *context.Context) {
 	if ctx == nil || ctx.Request == nil {
 		return
 	}
-
-	ctx.Request = ctx.Request.WithContext(orm.NewContext(ctx.Request.Context(), o.NewOrm()))
+	// This is a temp workaround for beego bug: https://github.com/goharbor/harbor/issues/10446
+	// After we upgrading beego to the latest version and moving the filter to middleware,
+	// this workaround can be removed
+	*(ctx.Request) = *(ctx.Request.WithContext(orm.NewContext(ctx.Request.Context(), o.NewOrm())))
 }

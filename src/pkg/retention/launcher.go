@@ -16,6 +16,8 @@ package retention
 
 import (
 	"fmt"
+	beegoorm "github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/internal/orm"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -348,7 +350,7 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 	*/
 	// get image repositories
 	// TODO set the context which contains the ORM
-	_, imageRepositories, err := repositoryMgr.List(nil, &pq.Query{
+	_, imageRepositories, err := repositoryMgr.List(orm.NewContext(nil, beegoorm.NewOrm()), &pq.Query{
 		Keywords: map[string]interface{}{
 			"ProjectID": projectID,
 		},

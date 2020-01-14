@@ -26,18 +26,18 @@ import (
 )
 
 func addProject(ctx context.Context, project models.Project) (int64, error) {
-	o, ok := FromContext(ctx)
-	if !ok {
-		return 0, errors.New("orm not found in context")
+	o, err := FromContext(ctx)
+	if err != nil {
+		return 0, err
 	}
 
 	return o.Insert(&project)
 }
 
 func readProject(ctx context.Context, id int64) (*models.Project, error) {
-	o, ok := FromContext(ctx)
-	if !ok {
-		return nil, errors.New("orm not found in context")
+	o, err := FromContext(ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	project := &models.Project{
@@ -52,22 +52,21 @@ func readProject(ctx context.Context, id int64) (*models.Project, error) {
 }
 
 func deleteProject(ctx context.Context, id int64) error {
-	o, ok := FromContext(ctx)
-	if !ok {
-		return errors.New("orm not found in context")
+	o, err := FromContext(ctx)
+	if err != nil {
+		return err
 	}
-
 	project := &models.Project{
 		ProjectID: id,
 	}
 
-	_, err := o.Delete(project, "project_id")
+	_, err = o.Delete(project, "project_id")
 	return err
 }
 
 func existProject(ctx context.Context, id int64) bool {
-	o, ok := FromContext(ctx)
-	if !ok {
+	o, err := FromContext(ctx)
+	if err != nil {
 		return false
 	}
 
@@ -95,12 +94,11 @@ func (suite *OrmSuite) SetupSuite() {
 func (suite *OrmSuite) TestContext() {
 	ctx := context.TODO()
 
-	o, ok := FromContext(ctx)
-	suite.False(ok)
-	suite.Nil(o)
+	o, err := FromContext(ctx)
+	suite.NotNil(err)
 
-	o, ok = FromContext(NewContext(ctx, orm.NewOrm()))
-	suite.True(ok)
+	o, err = FromContext(NewContext(ctx, orm.NewOrm()))
+	suite.Nil(err)
 	suite.NotNil(o)
 }
 
