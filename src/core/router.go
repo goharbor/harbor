@@ -15,6 +15,8 @@
 package main
 
 import (
+	"net/url"
+
 	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
@@ -26,7 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/core/service/notifications/scheduler"
 	"github.com/goharbor/harbor/src/core/service/token"
 	reg "github.com/goharbor/harbor/src/server/registry"
-	"net/url"
+	"github.com/goharbor/harbor/src/server/v2.0/handler"
 )
 
 func initRouters() {
@@ -217,6 +219,9 @@ func initRouters() {
 	scanAllAPI := &api.ScanAllAPI{}
 	beego.Router("/api/scans/all/metrics", scanAllAPI, "get:GetScanAllMetrics")
 	beego.Router("/api/scans/schedule/metrics", scanAllAPI, "get:GetScheduleMetrics")
+
+	// Add handler for api v2.0
+	beego.Handler("/api/v2.0/*", handler.New())
 
 	// Error pages
 	beego.ErrorController(&controllers.ErrorController{})

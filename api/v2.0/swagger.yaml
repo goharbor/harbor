@@ -1,0 +1,243 @@
+swagger: '2.0'
+info:
+  title: Harbor API
+  description: These APIs provide services for manipulating Harbor project.
+  version: '2.0'
+host: localhost
+schemes:
+  - http
+  - https
+basePath: /api/v2.0
+produces:
+  - application/json
+consumes:
+  - application/json
+securityDefinitions:
+  basicAuth:
+    type: basic
+security:
+  - basicAuth: []
+paths:
+  /projects/{project_id}/repositories/{repository_id}/artifacts/{artifact_id}:
+    get:
+      summary: Read artifact by id
+      description: endpoint returns artifact by id
+      tags:
+        - artifact
+      operationId: readArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectId'
+        - $ref: '#/parameters/repositoryId'
+        - $ref: '#/parameters/artifactId'
+      responses:
+        '200':
+          description: OK
+          schema:
+            $ref: '#/definitions/Artifact'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete artifact by id
+      description: endpoint to delete the artifact by id
+      tags:
+        - artifact
+      operationId: deleteArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectId'
+        - $ref: '#/parameters/repositoryId'
+        - $ref: '#/parameters/artifactId'
+      responses:
+        '200':
+          description: Artifact is deleted successfully.
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_id}/repositories/{repository_id}/artifacts:
+    get:
+      summary: List artifacts of the repository
+      description: endpoint returns all artifacts of the repository.
+      tags:
+        - artifact
+      operationId: listArtifacts
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectId'
+        - $ref: '#/parameters/repositoryId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: label
+          in: query
+          description: Response for artifact include label info when it's true
+          type: boolean
+          required: false
+          default: false
+        - name: signature
+          in: query
+          description: Response for artifact include signature info when it's true
+          type: boolean
+          required: false
+          default: false
+        - name: vulnerability
+          in: query
+          description: Response for artifact include vulnerability info when it's true
+          type: boolean
+          required: false
+          default: false
+      responses:
+        '200':
+          description: OK
+          headers:
+            X-Total-Count:
+              description: The total count of artifacts
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Artifact'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '500':
+          $ref: '#/responses/500'
+parameters:
+  requestId:
+    name: X-Request-Id
+    description: A unique id for the request
+    in: header
+    type: string
+    required: false
+    minLength: 1
+  projectId:
+    name: project_id
+    in: path
+    description: The id of the project
+    required: true
+    type: integer
+    format: int64
+  repositoryId:
+    name: repository_id
+    in: path
+    description: The id of the repository
+    required: true
+    type: integer
+    format: int64
+  artifactId:
+    name: artifact_id
+    in: path
+    description: The id of the artifact
+    required: true
+    type: integer
+    format: int64
+  page:
+    name: page
+    in: query
+    type: integer
+    format: int32
+    required: false
+    description: 'The page number, default is 1.'
+    default: 1
+  pageSize:
+    name: page_size
+    in: query
+    type: integer
+    format: int32
+    required: false
+    description: 'The size of per page, default is 10, maximum is 100.'
+    default: 10
+responses:
+  '401':
+    description: UnauthorizedError
+    headers:
+      X-Request-Id:
+        description: The request id this is a response to
+        type: string
+    schema:
+      $ref: '#/definitions/Error'
+  '403':
+    description: ForbiddenError
+    headers:
+      X-Request-Id:
+        description: The request id this is a response to
+        type: string
+    schema:
+      $ref: '#/definitions/Error'
+  '500':
+    description: InternalServerError
+    headers:
+      X-Request-Id:
+        description: The request id this is a response to
+        type: string
+    schema:
+      $ref: '#/definitions/Error'
+definitions:
+  Error:
+    description: a model for all the error response coming from harbor
+    type: object
+    properties:
+      code:
+        type: string
+        description: The error code
+      message:
+        type: string
+        description: The error message
+    x-go-type:
+      import:
+        package: "github.com/goharbor/harbor/src/internal/error"
+        alias: "ierrors"
+      type: "Error"
+  Artifact:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The id of the artifact
+      type:
+        type: string
+        description: The type of the artifact, eg image, chart, etc
+      repository:
+        $ref: '#/definitions/Repository'
+        description: The repository of the artifact
+      tags:
+        description: The list of tags that attached to the artifact
+      media_type:
+        type: string
+        description: The specific media type for the artifact
+      digest:
+        type: string
+        description: The digest of the artifact
+      size:
+        type: string
+        format: int64
+        description: The size of the artifact
+      upload_time:
+        type: string
+        format: date-time
+        description: The upload time for the artifact
+      labels:
+        description: The list of labels that attached to the artifact
+      signature:
+        description: The signature attached to the artifact
+  Repository:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The id of the repository
+      name:
+        type: string
+        description: The name of repository.
