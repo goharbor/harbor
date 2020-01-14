@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
 
-python ./migrator.py "$@"
+python3 ./migrator.py "$@"

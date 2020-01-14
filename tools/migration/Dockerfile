@@ -6,9 +6,9 @@ ENV PGDATA /var/lib/postgresql/data
 RUN tdnf distro-sync -y \
     && tdnf remove -y toybox \
     && tdnf install -y sed shadow procps-ng gawk gzip sudo net-tools glibc-i18n >> /dev/null\
-    && tdnf install -y python2 python2-devel python-pip gcc PyYAML python-jinja2 \
-    linux-api-headers glibc-devel binutils zlib-devel openssl-devel postgresql python-psycopg2 >> /dev/null \
-    && pip install alembic \
+    && tdnf install -y python3 python3-devel python3-pip python3-setuptools gcc python3-PyYAML python3-jinja2 \
+    linux-api-headers glibc-devel binutils zlib-devel openssl-devel postgresql python3-psycopg2 >> /dev/null \
+    && pip3 install alembic \
     && mkdir /docker-entrypoint-initdb.d /docker-entrypoint-updatedb.d \
     && chmod 777 /docker-entrypoint-initdb.d /docker-entrypoint-updatedb.d \
     && mkdir -p /harbor-migration \
