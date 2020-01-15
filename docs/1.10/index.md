@@ -15,7 +15,6 @@ This section describes how to install Harbor and perform the required initial co
 - [Configure the Harbor YML File](install_config/configure_yml_file.md)
 - [Run the Installer Script](install_config/run_installer_script.md)
 - [Deploying Harbor with High Availability via Helm](install_config/harbor_ha_helm.md)
-   - [Upgrading Harbor Deployed with Helm](install_config/helm_upgrade.md)
 - [Troubleshooting Harbor Installation](install_config/troubleshoot_installation.md)
 - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/reconfigure_manage_lifecycle.md)
 - [Customize the Harbor Token Service](install_config/customize_token_service.md)
@@ -48,6 +47,7 @@ This section describes how to use and maintain Harbor after deployment. These da
     - [Configure System-Wide CVE Whitelists](administration/vulnerability_scanning/configure_system_whitelist.md)
 - [Garbage Collection](administration/garbage_collection.md)
 - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
+  - [Upgrading Harbor Deployed with Helm](administration/upgrade/helm_upgrade.md)
   - [Roll Back an Upgrade](administration/upgrade/roll_back_upgrade.md)
   - [Test Harbor Upgrade](administration/upgrade/upgradetest.md)
 
