@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Customize the look & feel of Harbor
 
 The primary look & feel of Harbor supports to be customized with several simple steps. All the relevant customization in configurations are saved in the `setting.json` file under `$HARBOR_DIR/src/portal/src` folder with `json` format and will be loaded when Harbor is launched. 
@@ -36,3 +40,9 @@ Change the values of configuration if you want to override the default style to 
 ## Build
 
 Once the `setting.json` configurations has been updated, re-[build](#configure) your product to apply the new changes.
+
+
+
+----------
+
+[Back to table of contents](../index.md)

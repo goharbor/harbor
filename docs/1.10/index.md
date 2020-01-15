@@ -74,7 +74,6 @@ This section describes how users with the developer, master, and project adminis
 
 This section describes how developers can build from Harbor source code, customize their deployments, and contribute to the open-source Harbor project.
 
-- [Introduction](build_customize_contribute/index.md)
 - [Build Harbor from Source Code](build_customize_contribute/compile_guide.md)
 - [Developing the Harbor Frontend](build_customize_contribute/ui_contribution_get_started.md)
 - [Customize the Harbor Look & Feel ](build_customize_contribute/customize_look_feel.md)

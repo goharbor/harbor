@@ -97,7 +97,7 @@ In this example, the rules are applied to the following 7 tags:
 
 ## How Tag Retention Rules Interact with Project Quotas
 
-The Harbor system administrator can set a maximum on the number of tags that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Set Project Quotas](#set-project-quotas). 
+The Harbor system administrator can set a maximum on the number of tags that a project can contain and the amount of storage that it can consume. For information about project quotas, see [Configure Project Quotas](../administration/configure_project_quotas.md). 
 
 If you set a quota on a project, this quota cannot be exceeded. The quota is applied to a project even if you set a retention rule that would exceed it. In other words, you cannot use retention rules to bypass quotas.
 

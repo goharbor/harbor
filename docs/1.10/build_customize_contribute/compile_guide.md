@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Build Harbor from Source Code
 
 This guide provides instructions for developers to build and run Harbor from source code.
@@ -176,3 +180,8 @@ The `Makefile` contains these configurable parameters:
    $ make XXXX -e DEVFLAG=false
 
 ```
+
+
+----------
+
+[Back to table of contents](../index.md)
