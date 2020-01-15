@@ -8,6 +8,7 @@ Images retag helps users to tag images in Harbor, images can be tagged to  diffe
 release/app:stg  -->  release/app:prd
 develop/app:v1.0 --> release/app:v1.0
 ```
+
 To retag an image, users should have read permission (guest role or above) to the source project and write permission (developer role or above) to the target project.
 
 In Harbor portal, select the image you'd like to retag, and click the enabled `Retag` button to open the retag dialog.
