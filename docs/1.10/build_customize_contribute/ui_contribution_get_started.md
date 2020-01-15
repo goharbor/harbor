@@ -2,7 +2,7 @@
 
 ----------
 
-# Harbor frontend environment get started guide
+# Developing the Harbor Frontend
 
 If you already have a harbor backend environment, you can build a frontend development environment with the following configuration.
 
