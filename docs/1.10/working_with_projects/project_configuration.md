@@ -4,20 +4,20 @@
 
 # Project Configuration
 
-Project properties can be changed by clicking "Configuration".
+After the initial creation of a project, you can configure or reconfigure its properties in the **Configuration** tab for that project.
 
-* To make all repositories under the project accessible to everyone, select the `Public` checkbox.
 
-* To prevent un-signed images under the project from being pulled, select the `Enable content trust` checkbox.
-
-* To activate an immediate vulnerability scan on new images that are pushed to the project, select the `Automatically scan images on push` checkbox.
+1. Log in to the Harbor interface with an account that has at least project administrator privileges.
+1. Go to **Projects** and select a project. 
+1. Select the **Configuration** tab.
+1. To make all repositories under the project accessible to everyone, select the `Public` checkbox, or deselect this checkbox to make the project private.
+1. To prevent un-signed images under the project from being pulled, select the `Enable content trust` checkbox.
 
 ![browse project](../img/project_configuration.png) 
 
-
-
 ## Searching projects and repositories
-Entering a keyword in the search field at the top lists all matching projects and repositories. The search result includes both public and private repositories you have access to.  
+
+Enter a keyword in the search field at the top to list all matching projects and repositories. The search result includes both public and private repositories you have access to.  
 
 ![browse project](../img/new_search.png)
 
