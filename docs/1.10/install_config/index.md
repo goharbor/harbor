@@ -8,7 +8,7 @@ This section describes how to perform a new installation of Harbor.
 
 If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see [Upgrading Harbor](../../administration/upgrade/upgrade_migrate_data.md).
 
-You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see the [Harbor High Availability Guide](https://github.com/goharbor/harbor-helm/blob/master/docs/High%20Availability.md) in the https://github.com/goharbor/harbor-helm repository.
+You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see the [Deploying Harbor with High Availability via Helm](harbor_ha_helm.md).
 
 Before you install Harbor, you can test its functionality on a demo server that the Harbor team has made available. For information, see [Test Harbor with the Demo Server](demo_server.md).
 
