@@ -8,8 +8,6 @@ This section describes how to perform a new installation of Harbor.
 
 If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see [Upgrading Harbor](../../administration/upgrade/upgrade_migrate_data.md).
 
-You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see the [Deploying Harbor with High Availability via Helm](harbor_ha_helm.md).
-
 Before you install Harbor, you can test its functionality on a demo server that the Harbor team has made available. For information, see [Test Harbor with the Demo Server](demo_server.md).
 
 You can use Harbor with different 3rd party replication adapters, OIDC adapters, and scanner adapters. For information about the supported adapters, see the [Harbor Compatibility List](harbor_compatibility_list.md).
@@ -23,6 +21,8 @@ The standard Harbor installation process involves the following stages:
 1. [Configure HTTPS Access to Harbor](configure_https.md)
 1. [Configure the Harbor YML File](configure_yml_file.md)
 1. [Run the Installer Script](run_installer_script.md)
+
+You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see the [Deploying Harbor with High Availability via Helm](harbor_ha_helm.md).
 
 If installation fails, see [Troubleshooting Harbor Installation](troubleshoot_installation.md).
 

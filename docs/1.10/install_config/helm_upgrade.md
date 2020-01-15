@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Upgrading Harbor Deployed with Helm
 
 This guide is used to upgrade Harbor deployed by chart since version 0.3.0.
@@ -63,3 +67,8 @@ helm upgrade release-name --force .
 ## Known issues
 
 - The job logs will be lost if you upgrade from version 0.3.0 as the logs are store in a `emptyDir` in 0.3.0.
+
+
+----------
+
+[Back to table of contents](../index.md)

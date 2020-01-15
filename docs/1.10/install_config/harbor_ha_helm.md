@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Deploying Harbor with High Availability via Helm
 
 ## Goal
@@ -74,3 +78,8 @@ helm 3:
 ```
 helm install my-release .
 ```
+
+
+----------
+
+[Back to table of contents](../index.md)
