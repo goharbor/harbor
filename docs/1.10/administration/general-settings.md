@@ -12,7 +12,7 @@ You can change Harbor's email settings, the mail server is used to send out resp
 
 ## Make the Registry Read Only
 
-You can change Harbor's registry read only settings, read only mode will allow 'docker pull' while preventing 'docker push' and the deletion of repository and tag.
+You can change Harbor's registry read only settings, read only mode will allow `docker pull` while preventing 'docker push' and the deletion of repository and tag.
 
 ![browse project](../../img//read-only.png)
 
