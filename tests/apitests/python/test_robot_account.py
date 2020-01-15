@@ -72,9 +72,9 @@ class TestProjects(unittest.TestCase):
         admin_name = ADMIN_CLIENT["username"]
         admin_password = ADMIN_CLIENT["password"]
         user_ra_password = "Aa123456"
-        image_project_a = "tomcat"
+        image_project_a = "haproxy"
         image_project_b = "hello-world"
-        image_project_c = "mysql"
+        image_project_c = "httpd"
         image_robot_account = "mariadb"
         tag = "latest"
 

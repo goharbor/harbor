@@ -39,7 +39,7 @@ jobs:
           docker_channel: stable
       - uses: actions/checkout@v1
         with:
-         fetch-depth: 1
+         fetch-depth: 2
          path: src/github.com/goharbor/harbor
       - name: setup env
         run: |
@@ -93,7 +93,7 @@ jobs:
           docker_channel: stable
       - uses: actions/checkout@v1
         with:
-          fetch-depth: 1
+          fetch-depth: 2
           path: src/github.com/goharbor/harbor
       - name: setup env
         run: |
@@ -147,7 +147,7 @@ jobs:
           docker_channel: stable
       - uses: actions/checkout@v1
         with:
-          fetch-depth: 1
+          fetch-depth: 2
           path: src/github.com/goharbor/harbor
       - name: setup env
         run: |
@@ -201,7 +201,7 @@ jobs:
           docker_channel: stable
       - uses: actions/checkout@v1
         with:
-          fetch-depth: 1
+          fetch-depth: 2
           path: src/github.com/goharbor/harbor
       - name: setup env
         run: |
@@ -245,7 +245,7 @@ jobs:
           node-version: '10.16.2'
       - uses: actions/checkout@v1
         with:
-          fetch-depth: 1
+          fetch-depth: 2
           path: src/github.com/goharbor/harbor
       - name: setup env
         run: |
