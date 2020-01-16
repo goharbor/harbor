@@ -39,15 +39,15 @@ http {
   server {
     listen 8443 ssl;
 
-    if ($scheme = http ) {
-       return 301 https://$host:8443$request_uri; }
-
 #    server_name harbordomain.com;
     server_tokens off;
     # SSL
     ssl_certificate {{ssl_cert}};
     ssl_certificate_key {{ssl_cert_key}};
-  
+
+    # use nginx 497 error code to redirect http request to https
+    error_page 497 301 =307 https://$host:$server_port$request_uri;
+
     # Recommendations from https://raymii.org/s/tutorials/Strong_SSL_Security_On_nginx.html
     ssl_protocols TLSv1.2;
     ssl_ciphers '!aNULL:kECDH+AESGCM:ECDH+AESGCM:RSA+AESGCM:kECDH+AES:ECDH+AES:RSA+AES:';
