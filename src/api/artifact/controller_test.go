@@ -68,7 +68,6 @@ func (c *controllerTestSuite) TestAssembleTag() {
 		PullTime:     time.Now(),
 	}
 	option := &TagOption{
-		WithLabel:           true,
 		WithImmutableStatus: true,
 	}
 
@@ -85,11 +84,12 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 	option := &Option{
 		WithTag: true,
 		TagOption: &TagOption{
-			WithLabel:           false,
+
 			WithImmutableStatus: false,
 		},
-		WithScanResult: true,
-		WithSignature:  true,
+		WithLabel:        false,
+		WithScanOverview: true,
+		WithSignature:    true,
 	}
 	tg := &tag.Tag{
 		ID:           1,
@@ -209,9 +209,9 @@ func (c *controllerTestSuite) TestEnsure() {
 func (c *controllerTestSuite) TestList() {
 	query := &q.Query{}
 	option := &Option{
-		WithTag:        true,
-		WithScanResult: true,
-		WithSignature:  true,
+		WithTag:          true,
+		WithScanOverview: true,
+		WithSignature:    true,
 	}
 	c.artMgr.On("List").Return(1, []*artifact.Artifact{
 		{

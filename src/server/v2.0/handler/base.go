@@ -14,6 +14,8 @@
 
 package handler
 
+// TODO move this file out of v2.0 folder as this is common for all versions of API
+
 import (
 	"context"
 
