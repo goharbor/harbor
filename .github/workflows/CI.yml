@@ -275,3 +275,14 @@ jobs:
         run: |
           echo IP: $IP
           bash ./tests/showtime.sh ./tests/travis/ui_ut_run.sh
+      - name: Coveralls
+          uses: coverallsapp/github-action@master
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            parallel: true
+            path-to-lcov: ./src/portal/coverage/lcov.info
+      - name: Coveralls Finished
+          uses: coverallsapp/github-action@master
+          with:
+            github-token: ${{ secrets.GITHUB_TOKEN }}
+            parallel-finished: true
