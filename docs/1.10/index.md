@@ -15,6 +15,7 @@ This section describes how to install Harbor and perform the required initial co
 - [Configure the Harbor YML File](install_config/configure_yml_file.md)
 - [Run the Installer Script](install_config/run_installer_script.md)
 - [Deploying Harbor with High Availability via Helm](install_config/harbor_ha_helm.md)
+- [Deploy Harbor with the Quick Installation Script](install_config/quick_install_script.md)
 - [Troubleshooting Harbor Installation](install_config/troubleshoot_installation.md)
 - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/reconfigure_manage_lifecycle.md)
 - [Customize the Harbor Token Service](install_config/customize_token_service.md)

@@ -22,9 +22,15 @@ The standard Harbor installation process involves the following stages:
 1. [Configure the Harbor YML File](configure_yml_file.md)
 1. [Run the Installer Script](run_installer_script.md)
 
-You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see the [Deploying Harbor with High Availability via Helm](harbor_ha_helm.md).
-
 If installation fails, see [Troubleshooting Harbor Installation](troubleshoot_installation.md).
+
+## Quick Installation
+
+You can run a script that deploys Harbor to Ubuntu 18.04 with a single command. For information, see [Deploy Harbor with the Quick Installation Script](quick_install_script.md).
+
+## Deploy Harbor on Kubernetes
+
+You can also use Helm to install Harbor on a Kubernetes cluster, to make it highly available. For information about installing Harbor with Helm on a Kubernetes cluster, see [Deploying Harbor with High Availability via Helm](harbor_ha_helm.md).
 
 ## Post-Installation Configuration
 
