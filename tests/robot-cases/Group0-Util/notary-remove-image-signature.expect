@@ -1,0 +1,18 @@
+#!/usr/local/bin/expect
+
+set HOST [lindex $argv 0]
+set PROJECT [lindex $argv 1]
+set IMAGE [lindex $argv 2]
+set timeout 30
+
+spawn notary -s https://$HOST:4443 --tlscacert /notary_ca/ca.crt -d /root/.docker/trust remove -p $HOST/$PROJECT/$IMAGE latest
+
+expect {
+        "Enter username:" {send "admin\r";exp_continue}
+        "Enter password:" {send "Harbor12345\r";exp_continue}
+        "Enter passphrase for targets key with ID*" {send "Harbor12345\r"}
+        timeout {exit 1}
+}
+expect eof
+exit 0
+

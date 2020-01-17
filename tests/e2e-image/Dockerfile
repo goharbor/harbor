@@ -62,8 +62,34 @@ RUN wget https://github.com/drone/drone-cli/releases/download/v0.8.3/drone_linux
 RUN curl -sSL https://github.com/vmware/govmomi/releases/download/v0.16.0/govc_linux_amd64.gz | gzip -d > /usr/local/bin/govc && \
     chmod +x /usr/local/bin/govc
 
-RUN  wget https://launchpad.net/ubuntu/+source/wget/1.18-2ubuntu1/+build/10470166/+files/wget_1.18-2ubuntu1_amd64.deb && \
-     dpkg -i wget_1.18-2ubuntu1_amd64.deb
+RUN wget https://get.helm.sh/helm-v2.14.1-linux-386.tar.gz && tar zxvf helm-v2.14.1-linux-386.tar.gz && \
+    mv linux-386/helm /usr/local/bin/helm && \
+	helm init --client-only && \
+	helm plugin install https://github.com/chartmuseum/helm-push
+
+RUN wget https://get.helm.sh/helm-v3.0.0-linux-386.tar.gz && tar zxvf helm-v3.0.0-linux-386.tar.gz && \
+    mv linux-386/helm /usr/local/bin/helm3 && \
+	helm3 plugin install https://github.com/chartmuseum/helm-push
+
+RUN wget http://nchc.dl.sourceforge.net/sourceforge/tcl/tcl8.4.11-src.tar.gz && \
+    tar xfvz tcl8.4.11-src.tar.gz && \
+    cd tcl8.4.11/unix && \
+    sed -i "s/relid'/relid/" configure && \
+    ./configure --prefix=/ixdba.net && \
+    make && \
+    make install && \
+    cp -r * ../tools && \
+    cd .. && \
+    cp -r tools / && \
+    cd /  && \
+    wget http://sourceforge.net/projects/expect/files/Expect/5.45/expect5.45.tar.gz && \
+    tar xzvf expect5.45.tar.gz && \
+    cd expect5.45 && \
+    ./configure --prefix=/tools --with-tcl=/tools --with-x=no && \
+    make && \
+    make install && \
+    cd /ixdba.net/bin && \
+    mv  expect /usr/local/bin/expect
 
 # Add docker in docker support
 # version: docker:1.13-dind
