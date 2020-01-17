@@ -469,7 +469,11 @@ Test Case - Project Image And Chart Artifact Count Quotas Dispaly And Control
     ${storage_quota}=  Set Variable  500
     ${storage_quota_unit}=  Set Variable  MB
     ${image}=  Set Variable  redis
-    ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
+    #For docker-hub registry
+    #${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
+    #For internal CPE harbor registry
+    ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
+
     ${image_size}=    Set Variable    34.14MB
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${d}  count_quota=${count_quota}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
@@ -508,11 +512,16 @@ Test Case - Project Storage Quotas Dispaly And Control
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_b}  tag=${image_b_ver}  tag1=${image_b_ver}
     ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
     Should Be Equal As Strings  ${storage_quota_ret}  ${image_b_size} of ${storage_quota}${storage_quota_unit}
-    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=Quota exceeded when processing the request of adding 25.9 MiB of storage resource, which when updated to current usage of 329.3 MiB will exceed the configured upper limit of 330.0 MiB
+    Cannot Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}:${image_a_ver}  err_msg=Quota exceeded when processing the request of adding 25.8 MiB of storage resource, which when updated to current usage of 329.3 MiB will exceed the configured upper limit of 330.0 MiB
     Go Into Project  project${d}
     Delete Repo  project${d}/${image_b}
     Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image_a}  tag=${image_a_ver}  tag1=${image_a_ver}
     ${storage_quota_ret}=  Get Project Storage Quota Text From Project Quotas List  project${d}
+    ${storage_quota_ret_str_left}  Fetch From Left  ${storage_quota_ret}  25.
+    Log  ${storage_quota_ret_str_left}
+    ${storage_quota_ret_str_right}  Fetch From Left  ${storage_quota_ret}  25.
+    Log  ${storage_quota_ret_str_right}
+    Log  ${storage_quota_ret_str_left}${storage_quota_ret_str_right}
     Should Be Equal As Strings  ${storage_quota_ret}  ${image_a_size} of ${storage_quota}${storage_quota_unit}
     Close Browser
 
