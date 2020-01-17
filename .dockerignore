@@ -1,1 +1,5 @@
 src/portal/node_modules/
+doc/
+docs/
+.git
+
