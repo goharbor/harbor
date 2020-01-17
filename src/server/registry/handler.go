@@ -55,7 +55,6 @@ func New(url *url.URL) http.Handler {
 	manifestRouter := rootRouter.Path("/v2/{name:.*}/manifests/{reference}").Subrouter()
 	manifestRouter.NewRoute().Methods(http.MethodGet).Handler(middleware.WithMiddlewares(manifest.NewHandler(project.Mgr, proxy), manifestinfo.Middleware(), regtoken.Middleware()))
 	manifestRouter.NewRoute().Methods(http.MethodHead).Handler(manifest.NewHandler(project.Mgr, proxy))
-	manifestRouter.NewRoute().Methods(http.MethodPut).Handler(middleware.WithMiddlewares(manifest.NewHandler(project.Mgr, proxy), readonly.Middleware(), manifestinfo.Middleware(), immutable.MiddlewarePush()))
 	manifestRouter.NewRoute().Methods(http.MethodDelete).Handler(middleware.WithMiddlewares(manifest.NewHandler(project.Mgr, proxy), readonly.Middleware(), manifestinfo.Middleware(), immutable.MiddlewareDelete()))
 
 	// handle blob

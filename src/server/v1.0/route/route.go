@@ -12,11 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package route
 
 import (
-	"net/url"
-
 	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/api"
@@ -27,11 +25,11 @@ import (
 	"github.com/goharbor/harbor/src/core/service/notifications/registry"
 	"github.com/goharbor/harbor/src/core/service/notifications/scheduler"
 	"github.com/goharbor/harbor/src/core/service/token"
-	reg "github.com/goharbor/harbor/src/server/registry"
-	"github.com/goharbor/harbor/src/server/v2.0/handler"
 )
 
-func initRouters() {
+// RegisterRoutes for Harbor v1.0 APIs
+// TODO split the APIs and other services/controllers
+func RegisterRoutes() {
 	// Controller API:
 	beego.Router("/c/login", &controllers.CommonController{}, "post:Login")
 	beego.Router("/c/log_out", &controllers.CommonController{}, "get:LogOut")
@@ -162,14 +160,6 @@ func initRouters() {
 	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules", &api.ImmutableTagRuleAPI{}, "get:List;post:Post")
 	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &api.ImmutableTagRuleAPI{})
 
-	// TODO remove
-	regURL, _ := config.RegistryURL()
-	url, _ := url.Parse(regURL)
-	registryHandler := reg.New(url)
-	_ = registryHandler
-	// beego.Handler("/v2/*", registryHandler)
-	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
-
 	// APIs for chart repository
 	if config.WithChartMuseum() {
 		// Charts are controlled under projects
@@ -220,10 +210,8 @@ func initRouters() {
 	beego.Router("/api/scans/all/metrics", scanAllAPI, "get:GetScanAllMetrics")
 	beego.Router("/api/scans/schedule/metrics", scanAllAPI, "get:GetScheduleMetrics")
 
-	// Add handler for api v2.0
-	beego.Handler("/api/v2.0/*", handler.New())
-
 	// Error pages
 	beego.ErrorController(&controllers.ErrorController{})
 
+	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 }

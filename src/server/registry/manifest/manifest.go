@@ -23,13 +23,14 @@ import (
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/server/registry/error"
-	"github.com/gorilla/mux"
+	"github.com/goharbor/harbor/src/server/router"
 	"github.com/opencontainers/go-digest"
 	"net/http"
 	"net/http/httputil"
 )
 
 // NewHandler returns the handler to handler manifest requests
+// TODO the parameters aren't required, use the global variables instead
 func NewHandler(proMgr project.Manager, proxy *httputil.ReverseProxy) http.Handler {
 	return &handler{
 		proMgr: proMgr,
@@ -72,8 +73,11 @@ func (h *handler) delete(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h *handler) put(w http.ResponseWriter, req *http.Request) {
-	vars := mux.Vars(req)
-	repositoryName := vars["name"]
+	repositoryName, err := router.Param(req.Context(), ":splat")
+	if err != nil {
+		error.Handle(w, req, err)
+		return
+	}
 	projectName, _ := utils.ParseRepository(repositoryName)
 	project, err := h.proMgr.Get(projectName)
 	if err != nil {
@@ -109,7 +113,11 @@ func (h *handler) put(w http.ResponseWriter, req *http.Request) {
 
 	var tags []string
 	var dgt string
-	reference := vars["reference"]
+	reference, err := router.Param(req.Context(), ":reference")
+	if err != nil {
+		error.Handle(w, req, err)
+		return
+	}
 	dg, err := digest.Parse(reference)
 	if err == nil {
 		// the reference is digest
