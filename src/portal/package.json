@@ -71,6 +71,7 @@
     "@types/jasminewd2": "~2.0.3",
     "@types/node": "~8.9.4",
     "codelyzer": "~5.0.0",
+    "coveralls": "^3.0.9",
     "enhanced-resolve": "^3.0.0",
     "express": "^4.17.1",
     "jasmine-spec-reporter": "~4.2.1",

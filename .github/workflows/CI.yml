@@ -15,7 +15,7 @@ env:
    REG_VERSION: v2.7.1-patch-2819-2553
    UI_BUILDER_VERSION: 1.6.0
 
-on: 
+on:
   pull_request:
   push:
 
@@ -275,3 +275,8 @@ jobs:
         run: |
           echo IP: $IP
           bash ./tests/showtime.sh ./tests/travis/ui_ut_run.sh
+      - name: Codecov For UI
+          uses: codecov/codecov-action@v1
+          with:
+            token: ${{ secrets.CODECOV_TOKEN }}
+            file:  ./src/portal/coverage/cobertura-coverage.xml
