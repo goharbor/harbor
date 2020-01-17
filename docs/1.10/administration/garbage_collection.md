@@ -6,7 +6,7 @@
 
 When you delete images from Harbor, space is not automatically freed up. You must run garbage collection to free up space by removing blobs that are no longer referenced by a manifest from the file system.  
 
-### Run Garbage Collection
+## Run Garbage Collection
 
 1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
 1. Expand **Administration**, and select **Garbage Collection**. 
@@ -18,7 +18,7 @@ When you run garbage collection, Harbor goes into read-only mode. All modificati
 
 To avoid triggering the garbage collection process too frequently, the availability of the **GC Now** button is restricted. Garbage collection can be only run once per minute.
 
-### Schedule Garbage Collection
+## Schedule Garbage Collection
 
 1. Expand **Administration**, and select **Garbage Collection**. 
 1. Select the **'Garbage Collection'** tab.

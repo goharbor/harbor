@@ -1,4 +1,10 @@
-### Variables
+[Back to table of contents](../index.md)
+
+----------
+# Using Make
+
+## Variables
+
 Variable           | Description
 -------------------|-------------
 BASEIMAGE          | Container base image, default: photon
@@ -8,7 +14,8 @@ GOBUILDIMAGE       | Golang image to compile harbor go source code.
 NOTARYFLAG         | Whether to enable notary in harbor, default:false
 HTTPPROXY          | Clarity proxy to build UI.
 
-### Targets
+## Targets
+
 Target              | Description
 --------------------|-------------
 all                 | prepare env, compile binaries, build images and install images
@@ -33,9 +40,9 @@ cleanversiontag     | remove specific version tag
 cleanpackage        | remove online/offline install package
 version				 | set harbor version
 
-#### EXAMPLE:
+## Examples
 
-#### Build and run harbor from source code.
+### Build and run harbor from source code.
 make install GOBUILDIMAGE=golang:1.13.4 COMPILETAG=compile_golangimage NOTARYFLAG=true
 
 ### Package offline installer
@@ -46,3 +53,8 @@ make -e NOTARYFLAG=true start
 
 ### Stop harbor with notary
 make -e NOTARYFLAG=true down
+
+
+----------
+
+[Back to table of contents](../index.md)

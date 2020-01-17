@@ -1,8 +1,12 @@
-## Developing for Internationalization
+[Back to table of contents](../index.md)
+
+----------
+
+# Developing for Internationalization
 
 *NOTE: All the files you created should use UTF-8 encoding.*
 
-### Steps to localize the UI in your language
+Steps to localize the UI in your language
 
 1. In the folder `src/portal/src/i18n/lang`, copy json file `en-us-lang.json` to a new file and rename it to `<language>-<locale>-lang.json` .
 
@@ -56,3 +60,8 @@
     ```
 
 4. Next, please refer [compile guideline](compile_guide.md) to rebuild and restart Harbor.
+
+
+----------
+
+[Back to table of contents](../index.md)

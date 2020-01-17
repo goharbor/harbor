@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Managing Labels
 
 Harbor provides two kinds of labels to isolate different kinds of resources:
@@ -24,3 +28,7 @@ Users who have Harbor system administrator, project administrator or project dev
 The images can be filtered by labels:
 
 ![filter images by labels](../img/filter_images_by_label.png)
+
+----------
+
+[Back to table of contents](../index.md)

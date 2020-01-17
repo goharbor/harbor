@@ -10,4 +10,9 @@ There might be some delay during replication based on the condition of the netwo
 
 - [Create Replication Endpoints](create_replication_endpoints.md)
 - [Create Replication Rules](create_replication_rules.md)
-- [Manage Replications](manage_replications.md)
+- [Running Replication Manually](manage_replications.md)
+
+
+----------
+
+[Back to table of contents](../../index.md)

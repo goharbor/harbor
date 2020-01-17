@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Managing Helm Charts
 [Helm](https://helm.sh) is a package manager for [Kubernetes](https://kubernetes.io). Helm uses a packaging format called [charts](https://docs.helm.sh/developing_charts). Since version 1.6.0 Harbor is now a composite cloud-native registry which supports both container image management and Helm charts management. Access to Helm charts in Harbor is controlled by [role-based access controls (RBAC)](https://en.wikipedia.org/wiki/Role-based_access_control) and is restricted by projects.
 
@@ -120,3 +124,7 @@ helm install --ca-file=ca.crt --username=admin --password=Passw0rd --version 0.1
 ```
 
 For other more helm commands like how to sign a chart, please refer to the [helm doc](https://docs.helm.sh/helm/#helm).
+
+----------
+
+[Back to table of contents](../index.md)

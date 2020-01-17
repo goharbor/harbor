@@ -1,6 +1,6 @@
-# Harbor Documentation 
+# Harbor 1.10 Documentation 
 
-This is the main table of contents for the Harbor documentation.
+This is the main table of contents for the Harbor 1.10.x documentation.
 
 ## Harbor Installation and Configuration
 
@@ -14,6 +14,7 @@ This section describes how to install Harbor and perform the required initial co
 - [Configure HTTPS Access to Harbor](install_config/configure_https.md)
 - [Configure the Harbor YML File](install_config/configure_yml_file.md)
 - [Run the Installer Script](install_config/run_installer_script.md)
+- [Deploying Harbor with High Availability via Helm](install_config/harbor_ha_helm.md)
 - [Troubleshooting Harbor Installation](install_config/troubleshoot_installation.md)
 - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/reconfigure_manage_lifecycle.md)
 - [Customize the Harbor Token Service](install_config/customize_token_service.md)
@@ -32,30 +33,30 @@ This section describes how to use and maintain Harbor after deployment. These da
     - [User Permissions By Role](administration/managing_users/user_permissions_by_role.md)
     - [Create User Accounts in Database Mode](administration/managing_users/create_users_db.md)
 - [Configure Global Settings](administration/general_settings.md)
-- [Configure Project Settings](administration/configure_project_settings.md)
+- [Configure Project Quotas](administration/configure_project_quotas.md)
 - [Configuring Replication](administration/configuring_replication/configuring_replication.md)
     - [Create Replication Endpoints](administration/configuring_replication/create_replication_endpoints.md)
     - [Create Replication Rules](administration/configuring_replication/create_replication_rules.md)
     - [Manage Replications](administration/configuring_replication/manage_replications.md) 
 - [Vulnerability Scanning](administration/vulnerability_scanning/vulnerability_scanning.md)
     - [Connect Harbor to Additional Vulnerability Scanners](administration/vulnerability_scanning/pluggable_scanners.md)
-    - [Scan an Individual Image](administration/vulnerability_scanning/scan_individual_image.md)
+    - [Scan Individual Images](administration/vulnerability_scanning/scan_individual_image.md)
     - [Scan All Images](administration/vulnerability_scanning/scan_all_images.md)
     - [Schedule Scans](administration/vulnerability_scanning/schedule_scans.md)
     - [Import Vulnerability Data to an Offline Harbor instance](administration/vulnerability_scanning/import_vulnerability_data.md)
     - [Configure System-Wide CVE Whitelists](administration/vulnerability_scanning/configure_system_whitelist.md)
 - [Garbage Collection](administration/garbage_collection.md)
-- [Upgrading Harbor](administration/upgrade/index.md)
-  - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
+- [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade_migrate_data.md)
+  - [Upgrading Harbor Deployed with Helm](administration/upgrade/helm_upgrade.md)
   - [Roll Back an Upgrade](administration/upgrade/roll_back_upgrade.md)
+  - [Test Harbor Upgrade](administration/upgrade/upgradetest.md)
 
 ## Working with Harbor Projects
 
 This section describes how users with the developer, master, and project administrator roles manage and participate in Harbor projects.
 
 - [Introduction](working_with_projects/index.md)
-- [Project Creation](working_with_projects/project_overview.md)
-    - [Create a Project](working_with_projects/create_projects.md)
+- [Create Projects](working_with_projects/create_projects.md)
     - [Assign Users to a Project](working_with_projects/add_users.md)
 - [Project Configuration](working_with_projects/project_configuration.md)
     - [Access and Search Project Logs](working_with_projects/access_project_logs.md)
@@ -75,7 +76,6 @@ This section describes how users with the developer, master, and project adminis
 
 This section describes how developers can build from Harbor source code, customize their deployments, and contribute to the open-source Harbor project.
 
-- [Introduction](build_customize_contribute/index.md)
 - [Build Harbor from Source Code](build_customize_contribute/compile_guide.md)
 - [Developing the Harbor Frontend](build_customize_contribute/ui_contribution_get_started.md)
 - [Customize the Harbor Look & Feel ](build_customize_contribute/customize_look_feel.md)

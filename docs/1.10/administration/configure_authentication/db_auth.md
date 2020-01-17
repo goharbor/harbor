@@ -18,7 +18,7 @@ In database authentication mode, user accounts are stored in the local database.
 
    ![Enable self-registration](../../img/new_self_reg.png)
     
-   If you enable self registration option, users can register themselves in Harbor. Self-registration is disabled by default. If you enable self-registration, unregistered users can sign up for a Harbor account by clicking **Sign up for an account** in the Harbor log in page.
+   If you enable the self registration option, users can register themselves in Harbor. Self-registration is disabled by default. If you enable self-registration, unregistered users can sign up for a Harbor account by clicking **Sign up for an account** in the Harbor log in page.
     
     ![Enable self-registration](../../img/self-registration-login.png)
     

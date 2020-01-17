@@ -1,6 +1,17 @@
-# Create a Project
+[Back to table of contents](../index.md)
 
-In Harbor, you create different projects to which you assign users so that they can push and pull image repositories. You also configure project-specific settings. When you first deploy Harbor, a default public project named `library` is created. 
+----------
+
+# Create Projects
+
+A project in Harbor contains all repositories of an application. Images cannot be pushed to Harbor before a project is created. Role-Based Access Control (RBAC) is applied to projects, so that only users with the appropriate roles can perform certain operations. 
+
+There are two types of project in Harbor:  
+
+* **Public**: Any user can pull images from this project. This is a convenient way for you to share repositories with others.
+* **Private**: Only users who are members of the project can pull images
+
+You create different projects to which you assign users so that they can push and pull image repositories. You also configure project-specific settings. When you first deploy Harbor, a default public project named `library` is created. 
 
 ## Prerequisites
 
@@ -30,7 +41,7 @@ Project properties can be changed by clicking "Configuration".
 
 * To make all repositories under the project accessible to everyone, select the `Public` checkbox.
 
-* To prevent un-signed images under the project from being pulled, select the `Enable content trust` checkbox.
+* To prevent un-signed images under the project from being pulled, select the `Enable content trust` checkbox. For more information about content trust, see [Implementing Content Trust](implementing_content_trust.md).
 
 ![browse project](../img/project_configuration.png) 
 
@@ -43,3 +54,7 @@ Entering a keyword in the search field at the top lists all matching projects an
 ## What to Do Next
 
 [Assign Users to a Project](add_users.md)
+
+----------
+
+[Back to table of contents](../index.md)

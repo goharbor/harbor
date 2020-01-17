@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Implementing Content Trust  
 
 **NOTE: Notary is an optional component, please make sure you have already installed it in your Harbor instance before you go through this section.** 
@@ -15,3 +19,7 @@ If you are using a self-signed cert, make sure to copy the CA cert into ```/etc/
 
 When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) is displayed instead.  
 ![browse project](../img/content_trust.png)
+
+----------
+
+[Back to table of contents](../index.md)

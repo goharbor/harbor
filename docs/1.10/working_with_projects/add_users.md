@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Assign Users to a Project
 
 You can add individual users to an existing project and assign a role to them. You can add an LDAP/AD or OIDC user to the project members if you  use LDAP/AD or OIDC authentication, or a user that you have already created if you use database authentication. If you use LDAP/AD or OIDC authentication, you can add groups to projects and assign a role to the group.
@@ -51,6 +55,6 @@ To be able to add OIDC groups to projects, your OIDC provider and Harbor instanc
    
 **NOTE**: Unlike with LDAP groups, Harbor cannot check whether OIDC groups exist when you add them to a project. If you mistype the group name, or if the group does not exist in your OIDC provider, Harbor still creates the group.
 
-## What to Do Next
+----------
 
-TBD
+[Back to table of contents](../index.md)

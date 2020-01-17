@@ -1,3 +1,7 @@
+[Back to table of contents](../../index.md)
+
+----------
+
 # Creating Replication Endpoints
 
 To replicate image repositories from one instance of Harbor to another Harbor or non-Harbor registry, you first create replication endpoints.
@@ -45,3 +49,8 @@ To replicate image repositories from one instance of Harbor to another Harbor or
 You can list, add, edit and delete registries under `Administration->Registries`. Only registries which are not referenced by any rules can be deleted.  
 
 ![browse project](../../img/manage_registry.png)
+
+
+----------
+
+[Back to table of contents](../../index.md)
