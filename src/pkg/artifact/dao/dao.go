@@ -57,11 +57,19 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 			Keywords: query.Keywords,
 		}
 	}
-	return orm.QuerySetter(ctx, &Artifact{}, query).Count()
+	qs, err := orm.QuerySetter(ctx, &Artifact{}, query)
+	if err != nil {
+		return 0, err
+	}
+	return qs.Count()
 }
 func (d *dao) List(ctx context.Context, query *q.Query) ([]*Artifact, error) {
 	artifacts := []*Artifact{}
-	if _, err := orm.QuerySetter(ctx, &Artifact{}, query).All(&artifacts); err != nil {
+	qs, err := orm.QuerySetter(ctx, &Artifact{}, query)
+	if err != nil {
+		return nil, err
+	}
+	if _, err = qs.All(&artifacts); err != nil {
 		return nil, err
 	}
 	return artifacts, nil
@@ -70,7 +78,11 @@ func (d *dao) Get(ctx context.Context, id int64) (*Artifact, error) {
 	artifact := &Artifact{
 		ID: id,
 	}
-	if err := orm.GetOrmer(ctx).Read(artifact); err != nil {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err = ormer.Read(artifact); err != nil {
 		if e, ok := orm.IsNotFoundError(err, "artifact %d not found", id); ok {
 			err = e
 		}
@@ -79,15 +91,25 @@ func (d *dao) Get(ctx context.Context, id int64) (*Artifact, error) {
 	return artifact, nil
 }
 func (d *dao) Create(ctx context.Context, artifact *Artifact) (int64, error) {
-	id, err := orm.GetOrmer(ctx).Insert(artifact)
-	if e, ok := orm.IsConflictError(err, "artifact %s already exists under the repository %d",
-		artifact.Digest, artifact.RepositoryID); ok {
-		err = e
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+	id, err := ormer.Insert(artifact)
+	if err != nil {
+		if e, ok := orm.IsConflictError(err, "artifact %s already exists under the repository %d",
+			artifact.Digest, artifact.RepositoryID); ok {
+			err = e
+		}
 	}
 	return id, err
 }
 func (d *dao) Delete(ctx context.Context, id int64) error {
-	n, err := orm.GetOrmer(ctx).Delete(&Artifact{
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	n, err := ormer.Delete(&Artifact{
 		ID: id,
 	})
 	if err != nil {
@@ -99,7 +121,11 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 func (d *dao) Update(ctx context.Context, artifact *Artifact, props ...string) error {
-	n, err := orm.GetOrmer(ctx).Update(artifact, props...)
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	n, err := ormer.Update(artifact, props...)
 	if err != nil {
 		return err
 	}
@@ -109,7 +135,11 @@ func (d *dao) Update(ctx context.Context, artifact *Artifact, props ...string) e
 	return nil
 }
 func (d *dao) CreateReference(ctx context.Context, reference *ArtifactReference) (int64, error) {
-	id, err := orm.GetOrmer(ctx).Insert(reference)
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+	id, err := ormer.Insert(reference)
 	if e, ok := orm.IsConflictError(err, "reference already exists, parent artifact ID: %d, child artifact ID: %d",
 		reference.ParentID, reference.ChildID); ok {
 		err = e
@@ -118,7 +148,11 @@ func (d *dao) CreateReference(ctx context.Context, reference *ArtifactReference)
 }
 func (d *dao) ListReferences(ctx context.Context, query *q.Query) ([]*ArtifactReference, error) {
 	references := []*ArtifactReference{}
-	if _, err := orm.QuerySetter(ctx, &ArtifactReference{}, query).All(&references); err != nil {
+	qs, err := orm.QuerySetter(ctx, &ArtifactReference{}, query)
+	if err != nil {
+		return nil, err
+	}
+	if _, err = qs.All(&references); err != nil {
 		return nil, err
 	}
 	return references, nil
@@ -129,10 +163,14 @@ func (d *dao) DeleteReferences(ctx context.Context, parentID int64) error {
 	if err != nil {
 		return err
 	}
-	_, err = orm.QuerySetter(ctx, &ArtifactReference{}, &q.Query{
+	qs, err := orm.QuerySetter(ctx, &ArtifactReference{}, &q.Query{
 		Keywords: map[string]interface{}{
 			"parent_id": parentID,
 		},
-	}).Delete()
+	})
+	if err != nil {
+		return err
+	}
+	_, err = qs.Delete()
 	return err
 }
