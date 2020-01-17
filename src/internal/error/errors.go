@@ -89,6 +89,9 @@ const (
 	PreconditionCode = "PRECONDITION"
 	// GeneralCode ...
 	GeneralCode = "UNKNOWN"
+
+	// DENIED it's used by middleware(readonly, vul and content trust) and returned to docker client to index the request is denied.
+	DENIED = "DENIED"
 )
 
 // New ...
