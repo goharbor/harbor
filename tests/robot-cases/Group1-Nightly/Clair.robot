@@ -127,7 +127,10 @@ Test Case - Project Level Image Serverity Policy
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     ${d}=  get current date  result_format=%m%s
-    ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
+    #For docker-hub registry
+    #${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
+    #For internal CPE harbor registry
+    ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
     ${image}=  Set Variable  redis
     Create An New Project  project${d}
     Push Image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  ${image}  sha256=${sha256}
@@ -146,7 +149,10 @@ Test Case - Verfiy System Level CVE Whitelist
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${image}=    Set Variable    mariadb
-    ${sha256}=  Set Variable  c396eb803be99041e69eed84b0eb880d5474a6b2c1fd5a84268ce0420088d20d
+    #For docker-hub registry
+    #${sha256}=  Set Variable  c396eb803be99041e69eed84b0eb880d5474a6b2c1fd5a84268ce0420088d20d
+    #For internal CPE harbor registry
+    ${sha256}=  Set Variable  b5e273ed46d2b5a1c96bf8f3ae37aa5e90c6c481e7f7ae66744610d7df79cbd1
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
@@ -175,7 +181,10 @@ Test Case - Verfiy Project Level CVE Whitelist
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${image}=    Set Variable    mariadb
-    ${sha256}=  Set Variable  c396eb803be99041e69eed84b0eb880d5474a6b2c1fd5a84268ce0420088d20d
+    #For docker-hub registry
+    #${sha256}=  Set Variable  c396eb803be99041e69eed84b0eb880d5474a6b2c1fd5a84268ce0420088d20d
+    #For internal CPE harbor registry
+    ${sha256}=  Set Variable  b5e273ed46d2b5a1c96bf8f3ae37aa5e90c6c481e7f7ae66744610d7df79cbd1
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${signin_user}    ${signin_pwd}
@@ -202,7 +211,10 @@ Test Case - Verfiy Project Level CVE Whitelist By Quick Way of Add System
     Init Chrome Driver
     ${d}=    Get Current Date    result_format=%m%s
     ${image}=    Set Variable    mariadb
-    ${sha256}=  Set Variable  c396eb803be99041e69eed84b0eb880d5474a6b2c1fd5a84268ce0420088d20d
+    #For docker-hub registry
+    #${sha256}=  Set Variable  c396eb803be99041e69eed84b0eb880d5474a6b2c1fd5a84268ce0420088d20d
+    #For internal CPE harbor registry
+    ${sha256}=  Set Variable  b5e273ed46d2b5a1c96bf8f3ae37aa5e90c6c481e7f7ae66744610d7df79cbd1
     ${signin_user}=    Set Variable  user025
     ${signin_pwd}=    Set Variable  Test1@34
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
