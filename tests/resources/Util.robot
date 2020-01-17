@@ -223,6 +223,14 @@ Command Should be Failed
     Should Not Be Equal As Strings  '${rc}'  '0'
     [Return]  ${output}
 
+Click Element If Visible
+    [Arguments]  ${elements}
+    :For  ${n}  IN RANGE  1  6
+    \    ${out}  Run Keyword And Ignore Error  Wait Until Page Contains Element  ${elements}
+    \    Exit For Loop If  '${out[0]}'=='FAIL'
+    \    Retry Element Click  ${elements}
+    Should Be Equal As Strings  '${out[0]}'  'FAIL'
+
 Retry Keyword When Error
     [Arguments]  ${keyword}  @{elements}
     :For  ${n}  IN RANGE  1  6
