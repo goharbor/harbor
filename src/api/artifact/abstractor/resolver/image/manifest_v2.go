@@ -66,11 +66,12 @@ func (m *manifestV2Resolver) Resolve(ctx context.Context, content []byte, artifa
 	if err := json.Unmarshal(layer, image); err != nil {
 		return err
 	}
-	artifact.ExtraAttrs = map[string]interface{}{
-		"created":      image.Created,
-		"author":       image.Author,
-		"architecture": image.Architecture,
-		"os":           image.OS,
+	if artifact.ExtraAttrs == nil {
+		artifact.ExtraAttrs = map[string]interface{}{}
 	}
+	artifact.ExtraAttrs["created"] = image.Created
+	artifact.ExtraAttrs["author"] = image.Author
+	artifact.ExtraAttrs["architecture"] = image.Architecture
+	artifact.ExtraAttrs["os"] = image.OS
 	return nil
 }
