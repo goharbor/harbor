@@ -16,6 +16,8 @@ package registry
 
 import (
 	"github.com/goharbor/harbor/src/pkg/project"
+	pkg_repo "github.com/goharbor/harbor/src/pkg/repository"
+	pkg_tag "github.com/goharbor/harbor/src/pkg/tag"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/goharbor/harbor/src/server/registry/blob"
 	"net/http"
@@ -39,10 +41,10 @@ func New(url *url.URL) http.Handler {
 	rootRouter.StrictSlash(true)
 
 	// handle catalog
-	rootRouter.Path("/v2/_catalog").Methods(http.MethodGet).Handler(catalog.NewHandler())
+	rootRouter.Path("/v2/_catalog").Methods(http.MethodGet).Handler(catalog.NewHandler(pkg_repo.Mgr))
 
 	// handle list tag
-	rootRouter.Path("/v2/{name:.*}/tags/list").Methods(http.MethodGet).Handler(tag.NewHandler())
+	rootRouter.Path("/v2/{name:.*}/tags/list").Methods(http.MethodGet).Handler(tag.NewHandler(pkg_repo.Mgr, pkg_tag.Mgr))
 
 	// handle manifest
 	// TODO maybe we should split it into several sub routers based on the method
