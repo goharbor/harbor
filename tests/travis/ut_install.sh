@@ -18,7 +18,7 @@ sudo service postgresql stop || echo no postgresql need to be stopped
 sleep 2
 
 sudo rm -rf /data/*
-sudo -E env "PATH=$PATH" make go_check
+sudo -E env "PATH=$PATH" make gen_apis
 sudo ./tests/hostcfg.sh
 sudo ./tests/generateCerts.sh
 sudo make -f make/photon/Makefile _build_db _build_registry _build_prepare -e VERSIONTAG=dev -e REGISTRYVERSION=${REG_VERSION} -e BASEIMAGETAG=dev
