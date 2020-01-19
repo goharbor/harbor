@@ -14,8 +14,9 @@ env:
    REDIS_HOST: localhost
    REG_VERSION: v2.7.1-patch-2819-2553
    UI_BUILDER_VERSION: 1.6.0
+   CODECOV_TOKEN: 89c7b95b-dbce-431e-8cb3-55691a9dcc64 #codecov token: visit https://github.com/codecov/codecov-action to learn more
 
-on: 
+on:
   pull_request:
   push:
 
@@ -23,7 +24,7 @@ jobs:
   UTTEST:
     env:
        UTTEST: true
-    runs-on: 
+    runs-on:
       #- self-hosted
       - ubuntu-latest
     steps:
@@ -75,7 +76,13 @@ jobs:
         run: |
           echo IP: $IP
           bash ./tests/showtime.sh ./tests/travis/ut_run.sh $IP
-        
+      - name: Codecov For BackEnd
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${CODECOV_TOKEN}
+          file: ./profile.cov
+          yml: ./.github/codecov-ut-config/codecov.yml
+
   APITEST_DB:
     env:
       APITEST_DB: true
@@ -129,7 +136,7 @@ jobs:
         run: |
           echo IP: $IP
           bash ./tests/showtime.sh ./tests/travis/api_run.sh DB $IP
-        
+
   APITEST_LDAP:
     env:
       APITEST_LDAP: true
@@ -277,3 +284,9 @@ jobs:
         run: |
           echo IP: $IP
           bash ./tests/showtime.sh ./tests/travis/ui_ut_run.sh
+      - name: Codecov For UI
+        uses: codecov/codecov-action@v1.0.5
+        with:
+          token: ${CODECOV_TOKEN}
+          file:  ./src/portal/coverage/lcov.info
+          yml: ./.github/codecov-ut-config/codecov.yml
