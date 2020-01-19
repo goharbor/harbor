@@ -17,7 +17,7 @@ env:
 
 on: 
   pull_request:
-  push:
+   - master
 
 jobs:
   UTTEST:
@@ -32,49 +32,7 @@ jobs:
         with:
            go-version: 1.13.4
         id: go
-      - name: setup Docker
-        uses: docker-practice/actions-setup-docker@0.0.1
-        with:
-          docker_version: 18.09
-          docker_channel: stable
-      - uses: actions/checkout@v1
-        with:
-         fetch-depth: 2
-         path: src/github.com/goharbor/harbor
-      - name: setup env
-        run: |
-          pwd
-          go env
-          echo "::set-env name=GOPATH::$(go env GOPATH):$RUNNER_WORKSPACE"
-          echo "::add-path::$(go env GOPATH)/bin"
-          echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/tests/private_key.pem"
-        shell: bash
-      - name: before_install
-        run: |
-          set -x
-          pwd
-          env
-          #sudo apt install -y xvfb
-          #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/local/bin
-          IP=`hostname -I | awk '{print $1}'`
-          echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
-          echo "::set-env name=IP::$IP"
-          sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
-          sudo update-ca-certificates
-          sudo service docker restart
-      - name: install
-        run: |
-          env
-          bash ./tests/showtime.sh ./tests/travis/ut_install.sh
-      - name: script
-        env:
-          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          echo IP: $IP
-          bash ./tests/showtime.sh ./tests/travis/ut_run.sh $IP
+
         
   APITEST_DB:
     env:
@@ -88,47 +46,6 @@ jobs:
         with:
           go-version: 1.13.4
         id: go
-      - name: setup Docker
-        uses: docker-practice/actions-setup-docker@0.0.1
-        with:
-          docker_version: 18.09
-          docker_channel: stable
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
-          path: src/github.com/goharbor/harbor
-      - name: setup env
-        run: |
-          pwd
-          go env
-          echo "::set-env name=GOPATH::$(go env GOPATH):$RUNNER_WORKSPACE"
-          echo "::add-path::$(go env GOPATH)/bin"
-          echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/tests/private_key.pem"
-        shell: bash
-      - name: before_install
-        run: |
-          set -x
-          pwd
-          env
-          #sudo apt install -y xvfb
-          #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/local/bin
-          IP=`hostname -I | awk '{print $1}'`
-          echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
-          echo "::set-env name=IP::$IP"
-          sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
-          sudo update-ca-certificates
-          sudo service docker restart
-      - name: install
-        run: |
-          env
-          bash ./tests/showtime.sh ./tests/travis/api_common_install.sh $IP DB
-      - name: script
-        run: |
-          echo IP: $IP
-          bash ./tests/showtime.sh ./tests/travis/api_run.sh DB $IP
         
   APITEST_LDAP:
     env:
@@ -142,47 +59,6 @@ jobs:
         with:
           go-version: 1.13.4
         id: go
-      - name: setup Docker
-        uses: docker-practice/actions-setup-docker@0.0.1
-        with:
-          docker_version: 18.09
-          docker_channel: stable
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
-          path: src/github.com/goharbor/harbor
-      - name: setup env
-        run: |
-          pwd
-          go env
-          echo "::set-env name=GOPATH::$(go env GOPATH):$RUNNER_WORKSPACE"
-          echo "::add-path::$(go env GOPATH)/bin"
-          echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/tests/private_key.pem"
-        shell: bash
-      - name: before_install
-        run: |
-          set -x
-          pwd
-          env
-          #sudo apt install -y xvfb
-          #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/local/bin
-          IP=`hostname -I | awk '{print $1}'`
-          echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
-          echo "::set-env name=IP::$IP"
-          sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
-          sudo update-ca-certificates
-          sudo service docker restart
-      - name: install
-        run: |
-          env
-          bash ./tests/showtime.sh ./tests/travis/api_common_install.sh $IP LDAP
-      - name: script
-        run: |
-          echo IP: $IP
-          bash ./tests/showtime.sh ./tests/travis/api_run.sh LDAP $IP
 
   OFFLINE:
     env:
@@ -196,44 +72,6 @@ jobs:
         with:
           go-version: 1.13.4
         id: go
-      - name: setup Docker
-        uses: docker-practice/actions-setup-docker@0.0.1
-        with:
-          docker_version: 18.09
-          docker_channel: stable
-      - uses: actions/checkout@v1
-        with:
-          fetch-depth: 2
-          path: src/github.com/goharbor/harbor
-      - name: setup env
-        run: |
-          pwd
-          docker version
-          go env
-          echo "::set-env name=GOPATH::$(go env GOPATH):$RUNNER_WORKSPACE"
-          echo "::add-path::$(go env GOPATH)/bin"
-          echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/tests/private_key.pem"
-        shell: bash
-      - name: before_install
-        run: |
-          set -x
-          pwd
-          env
-          #sudo apt install -y xvfb
-          #xvfb-run ls
-          curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/local/bin
-          IP=`hostname -I | awk '{print $1}'`
-          echo '{"insecure-registries" : ["'$IP':5000"]}' | sudo tee /etc/docker/daemon.json
-          echo "::set-env name=IP::$IP"
-          sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
-          sudo update-ca-certificates
-          sudo service docker restart
-      - name: script
-        run: |
-          echo IP: $IP
-          bash ./tests/showtime.sh ./tests/travis/distro_installer.sh
 
   UI_UT:
     env:
