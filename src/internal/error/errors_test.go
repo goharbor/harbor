@@ -12,24 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package handler
+package error
 
 import (
-	"context"
-
-	"github.com/go-openapi/runtime/middleware"
-	errs "github.com/goharbor/harbor/src/server/error"
+	"errors"
+	"testing"
 )
 
-// BaseAPI base API handler
-type BaseAPI struct{}
-
-// Prepare default prepare for operation
-func (*BaseAPI) Prepare(ctx context.Context, operation string, params interface{}) middleware.Responder {
-	return nil
-}
-
-// SendError returns response for the err
-func (*BaseAPI) SendError(ctx context.Context, err error) middleware.Responder {
-	return errs.NewErrResponder(err)
+func TestErrCode(t *testing.T) {
+	type args struct {
+		err error
+	}
+	tests := []struct {
+		name string
+		args args
+		want string
+	}{
+		{"nil", args{nil}, ""},
+		{"general err", args{errors.New("general err")}, GeneralCode},
+		{"code in err", args{&Error{Code: "code in err"}}, "code in err"},
+		{"code in cause", args{&Error{Cause: &Error{Code: "code in cause"}}}, "code in cause"},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := ErrCode(tt.args.err); got != tt.want {
+				t.Errorf("ErrCode() = %v, want %v", got, tt.want)
+			}
+		})
+	}
 }

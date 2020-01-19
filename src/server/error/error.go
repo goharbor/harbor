@@ -16,8 +16,11 @@ package error
 
 import (
 	"errors"
-	ierror "github.com/goharbor/harbor/src/internal/error"
 	"net/http"
+
+	"github.com/go-openapi/runtime"
+	"github.com/go-openapi/runtime/middleware"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 )
 
 var (
@@ -34,14 +37,7 @@ var (
 
 // APIError generates the HTTP status code and error payload based on the input err
 func APIError(err error) (int, string) {
-	var e *ierror.Error
-	statusCode := 0
-	if errors.As(err, &e) {
-		statusCode = getHTTPStatusCode(e.Code)
-	} else {
-		statusCode = http.StatusInternalServerError
-	}
-	return statusCode, ierror.NewErrs(err).Error()
+	return getHTTPStatusCode(ierror.ErrCode(err)), ierror.NewErrs(err).Error()
 }
 
 func getHTTPStatusCode(errCode string) int {
@@ -50,4 +46,34 @@ func getHTTPStatusCode(errCode string) int {
 		statusCode = http.StatusInternalServerError
 	}
 	return statusCode
+}
+
+var _ middleware.Responder = &ErrResponder{}
+
+// ErrResponder error responder
+type ErrResponder struct {
+	err error
+}
+
+// WriteResponse ...
+func (r *ErrResponder) WriteResponse(rw http.ResponseWriter, producer runtime.Producer) {
+	code := ierror.ErrCode(r.err)
+	rw.WriteHeader(getHTTPStatusCode(code))
+
+	var e *ierror.Error
+	if !errors.As(r.err, &e) {
+		e = &ierror.Error{
+			Code:    code,
+			Message: r.err.Error(),
+		}
+	}
+
+	if err := producer.Produce(rw, e); err != nil {
+		panic(err) // let the recovery middleware deal with this
+	}
+}
+
+// NewErrResponder returns responder for err
+func NewErrResponder(err error) *ErrResponder {
+	return &ErrResponder{err: err}
 }
