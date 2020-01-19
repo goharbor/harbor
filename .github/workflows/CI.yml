@@ -15,9 +15,10 @@ env:
    REG_VERSION: v2.7.1-patch-2819-2553
    UI_BUILDER_VERSION: 1.6.0
 
-on: 
+on:
   pull_request:
-   - master
+    branches:
+      - master
 
 jobs:
   UTTEST:
