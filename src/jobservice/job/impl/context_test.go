@@ -19,6 +19,8 @@ import (
 	"os"
 	"testing"
 
+	"github.com/goharbor/harbor/src/jobservice/common/list"
+
 	comcfg "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -87,6 +89,7 @@ func (suite *ContextImplTestSuite) SetupSuite() {
 		suite.namespace,
 		suite.pool,
 		nil,
+		list.New(),
 	)
 
 	err := suite.tracker.Save()

@@ -17,6 +17,9 @@ package mgt
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
+
 	"github.com/gocraft/work"
 	"github.com/goharbor/harbor/src/jobservice/common/query"
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
@@ -27,8 +30,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/period"
 	"github.com/gomodule/redigo/redis"
 	"github.com/pkg/errors"
-	"strconv"
-	"strings"
 )
 
 // Manager defies the related operations to handle the management of job stats.
@@ -154,7 +155,7 @@ func (bm *basicManager) GetJobs(q *query.Parameter) ([]*job.Stats, int64, error)
 			statsKey := string(bytes)
 			if i := strings.LastIndex(statsKey, ":"); i != -1 {
 				jID := statsKey[i+1:]
-				t := job.NewBasicTrackerWithID(bm.ctx, jID, bm.namespace, bm.pool, nil)
+				t := job.NewBasicTrackerWithID(bm.ctx, jID, bm.namespace, bm.pool, nil, nil)
 				if err := t.Load(); err != nil {
 					logger.Errorf("retrieve stats data of job %s error: %s", jID, err)
 					continue
@@ -174,7 +175,7 @@ func (bm *basicManager) GetPeriodicExecution(pID string, q *query.Parameter) (re
 		return nil, 0, errors.New("nil periodic job ID")
 	}
 
-	tracker := job.NewBasicTrackerWithID(bm.ctx, pID, bm.namespace, bm.pool, nil)
+	tracker := job.NewBasicTrackerWithID(bm.ctx, pID, bm.namespace, bm.pool, nil, nil)
 	err = tracker.Load()
 	if err != nil {
 		return nil, 0, err
@@ -239,7 +240,7 @@ func (bm *basicManager) GetPeriodicExecution(pID string, q *query.Parameter) (re
 	}
 
 	for _, eID := range executionIDs {
-		t := job.NewBasicTrackerWithID(bm.ctx, eID, bm.namespace, bm.pool, nil)
+		t := job.NewBasicTrackerWithID(bm.ctx, eID, bm.namespace, bm.pool, nil, nil)
 		if er := t.Load(); er != nil {
 			logger.Errorf("track job %s error: %s", eID, err)
 			continue
@@ -273,7 +274,7 @@ func (bm *basicManager) GetScheduledJobs(q *query.Parameter) ([]*job.Stats, int6
 				jID = fmt.Sprintf("%s@%d", sJob.ID, sJob.RunAt)
 			}
 		}
-		t := job.NewBasicTrackerWithID(bm.ctx, jID, bm.namespace, bm.pool, nil)
+		t := job.NewBasicTrackerWithID(bm.ctx, jID, bm.namespace, bm.pool, nil, nil)
 		err = t.Load()
 		if err != nil {
 			// Just log it
@@ -293,7 +294,7 @@ func (bm *basicManager) GetJob(jobID string) (*job.Stats, error) {
 		return nil, errs.BadRequestError("empty job ID")
 	}
 
-	t := job.NewBasicTrackerWithID(bm.ctx, jobID, bm.namespace, bm.pool, nil)
+	t := job.NewBasicTrackerWithID(bm.ctx, jobID, bm.namespace, bm.pool, nil, nil)
 	if err := t.Load(); err != nil {
 		return nil, err
 	}
@@ -307,7 +308,7 @@ func (bm *basicManager) SaveJob(j *job.Stats) error {
 		return errs.BadRequestError("nil saving job stats")
 	}
 
-	t := job.NewBasicTrackerWithStats(bm.ctx, j, bm.namespace, bm.pool, nil)
+	t := job.NewBasicTrackerWithStats(bm.ctx, j, bm.namespace, bm.pool, nil, nil)
 	return t.Save()
 }
 
