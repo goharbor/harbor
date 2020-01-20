@@ -83,7 +83,7 @@ func (d *dao) Get(ctx context.Context, id int64) (*Artifact, error) {
 		return nil, err
 	}
 	if err = ormer.Read(artifact); err != nil {
-		if e, ok := orm.IsNotFoundError(err, "artifact %d not found", id); ok {
+		if e := orm.AsNotFoundError(err, "artifact %d not found", id); e != nil {
 			err = e
 		}
 		return nil, err
@@ -97,8 +97,8 @@ func (d *dao) Create(ctx context.Context, artifact *Artifact) (int64, error) {
 	}
 	id, err := ormer.Insert(artifact)
 	if err != nil {
-		if e, ok := orm.IsConflictError(err, "artifact %s already exists under the repository %d",
-			artifact.Digest, artifact.RepositoryID); ok {
+		if e := orm.AsConflictError(err, "artifact %s already exists under the repository %d",
+			artifact.Digest, artifact.RepositoryID); e != nil {
 			err = e
 		}
 	}
@@ -113,6 +113,10 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 		ID: id,
 	})
 	if err != nil {
+		if e := orm.AsForeignKeyError(err,
+			"the artifact %d is referenced by other resources", id); e != nil {
+			err = e
+		}
 		return err
 	}
 	if n == 0 {
@@ -140,8 +144,11 @@ func (d *dao) CreateReference(ctx context.Context, reference *ArtifactReference)
 		return 0, err
 	}
 	id, err := ormer.Insert(reference)
-	if e, ok := orm.IsConflictError(err, "reference already exists, parent artifact ID: %d, child artifact ID: %d",
-		reference.ParentID, reference.ChildID); ok {
+	if e := orm.AsConflictError(err, "reference already exists, parent artifact ID: %d, child artifact ID: %d",
+		reference.ParentID, reference.ChildID); e != nil {
+		err = e
+	} else if e := orm.AsForeignKeyError(err, "the reference tries to reference a non existing artifact, parent artifact ID: %d, child artifact ID: %d",
+		reference.ParentID, reference.ChildID); e != nil {
 		err = e
 	}
 	return id, err

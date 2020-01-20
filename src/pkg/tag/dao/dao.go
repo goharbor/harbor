@@ -83,7 +83,7 @@ func (d *dao) Get(ctx context.Context, id int64) (*tag.Tag, error) {
 		return nil, err
 	}
 	if err := ormer.Read(tag); err != nil {
-		if e, ok := orm.IsNotFoundError(err, "tag %d not found", id); ok {
+		if e := orm.AsNotFoundError(err, "tag %d not found", id); e != nil {
 			err = e
 		}
 		return nil, err
@@ -96,8 +96,11 @@ func (d *dao) Create(ctx context.Context, tag *tag.Tag) (int64, error) {
 		return 0, err
 	}
 	id, err := ormer.Insert(tag)
-	if e, ok := orm.IsConflictError(err, "tag %s already exists under the repository %d",
-		tag.Name, tag.RepositoryID); ok {
+	if e := orm.AsConflictError(err, "tag %s already exists under the repository %d",
+		tag.Name, tag.RepositoryID); e != nil {
+		err = e
+	} else if e := orm.AsForeignKeyError(err, "the tag %s tries to attach to a non existing artifact %d",
+		tag.Name, tag.ArtifactID); e != nil {
 		err = e
 	}
 	return id, err
@@ -109,6 +112,10 @@ func (d *dao) Update(ctx context.Context, tag *tag.Tag, props ...string) error {
 	}
 	n, err := ormer.Update(tag, props...)
 	if err != nil {
+		if e := orm.AsForeignKeyError(err, "the tag %d tries to attach to a non existing artifact %d",
+			tag.ID, tag.ArtifactID); e != nil {
+			err = e
+		}
 		return err
 	}
 	if n == 0 {
