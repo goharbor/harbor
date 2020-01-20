@@ -216,7 +216,7 @@
         "PUBLIC_PROJECTS": "Public Projects",
         "PROJECT": "Project",
         "NEW_PROJECT": "New Project",
-        "NAME_TOOLTIP": "Project name should be 1~255 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "NAME_TOOLTIP": "Project name should be 1~255 characters long with lower case characters, numbers and ._- and must start with characters or numbers.",
         "NAME_IS_REQUIRED": "Project name is required.",
         "NAME_ALREADY_EXISTS": "Project name already exists.",
         "NAME_IS_ILLEGAL": "Project name is invalid.",
@@ -910,7 +910,7 @@
     "ABOUT": {
         "VERSION": "Version",
         "BUILD": "Build",
-        "COPYRIGHT": "Project Harbor is an an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Harbor supports advanced features such as user management, access control, activity monitoring, and replication between instances. Having a registry closer to the build and run environment can also improve image transfer efficiency.",
+        "COPYRIGHT": "Project Harbor is an open source trusted cloud native registry project that stores, signs, and scans content. Harbor extends the open source Docker Distribution by adding the functionalities usually required by users such as security, identity and management. Harbor supports advanced features such as user management, access control, activity monitoring, and replication between instances. Having a registry closer to the build and run environment can also improve image transfer efficiency.",
         "COPYRIGHT_SUFIX": ".",
         "TRADEMARK": "VMware is a registered trademark or trademark of VMware, Inc. in the United States and other jurisdictions. All other marks and names mentioned herein may be trademark of their respective companies.",
         "END_USER_LICENSE": "End User License Agreement",
