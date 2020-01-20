@@ -617,6 +617,7 @@
         "DELETE": "删除",
         "NAME": "名称",
         "TAGS_COUNT": "Tag 数量",
+        "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "下载数",
         "PULL_COMMAND": "Pull命令",
         "PULL_TIME": "拉取时间",
@@ -635,6 +636,8 @@
         "TAGS_NO_DELETE": "在只读模式下删除是被禁止的",
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "Tag",
+        "ARTIFACT": "Aarifact",
+        "ARTIFACTS": "Aarifacts",
         "SIZE": "大小",
         "VULNERABILITY": "漏洞",
         "BUILD_HISTORY": "构建历史",
@@ -663,6 +666,7 @@
         "ADD_LABELS": "添加标签",
         "RETAG": "Tag 拷贝",
         "FILTER_BY_LABEL": "过滤标签",
+        "FILTER_ARTIFACT_BY_LABEL": "通过标签过滤Artifact",
         "ACTION": "操作",
         "DEPLOY": "部署",
         "ADDITIONAL_INFO": "添加信息",
@@ -986,6 +990,9 @@
         "PUSH_COMMAND": "推送镜像到当前项目：",
         "COPY_ERROR": "拷贝失败，请尝试手动拷贝参考命令。"
     },
+    "ARTIFACT": {
+        "FILTER_FOR_ARTIFACTS": "Filter Artifacts"
+    },
     "TAG": {
         "CREATION_TIME_PREFIX": "创建时间：",
         "CREATOR_PREFIX": "创建者：",
@@ -1006,7 +1013,8 @@
         "AUTHOR": "作者",
         "LABELS": "标签",
         "CREATION": "创建时间",
-        "COMMAND": "命令"
+        "COMMAND": "命令",
+        "UPLOADTIME": "上传时间"
     },
     "LABEL": {
         "LABEL": "标签",

@@ -1,0 +1,52 @@
+.stack-view {
+  border-left: none;
+  width: 100%;
+  border-bottom: 0;
+  border-right: 0;
+  .list-index {
+    padding-left: 3rem;
+  }
+  dt {
+    display: flex;
+    align-items: center;
+  }
+  .flex-1 {
+    min-width: 100%;
+
+    //   padding-left: 3rem;
+  }
+  .stack-children {
+    .stack-block-label {
+      padding-left: 0;
+      padding-right: 0;
+    }
+    .list-index {
+      padding-left: 3rem;
+    }
+  }
+
+  .icon-folder {
+    margin: 0 6px 0 7px;
+  }
+  .stack-block-expandable {
+    .stack-block-label {
+      &::before {
+        margin: 0;
+      }
+    }
+    .artifact-name {
+      &::before {
+        margin-right: 9px;
+      }
+    }
+  }
+  #stack-block-label {
+    &::before {
+      height: 0;
+      margin: 0;
+    }
+  }
+}
+artifact-list {
+  width: 100%;
+}

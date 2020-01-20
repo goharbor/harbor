@@ -29,7 +29,9 @@ import {
   RetagService,
   RetagDefaultService,
   UserPermissionService,
-  UserPermissionDefaultService
+  UserPermissionDefaultService,
+  ArtifactDefaultService,
+  ArtifactService
 } from './services';
 import { GcRepoService } from './components/config/gc/gc.service';
 import { ScanAllRepoService } from './components/config/vulnerability/scanAll.service';
@@ -74,9 +76,16 @@ import { ReplicationTasksComponent } from "./components/replication/replication-
 import { ReplicationComponent } from "./components/replication/replication.component";
 import { RepositoryComponent } from "./components/repository/repository.component";
 import { RepositoryGridviewComponent } from "./components/repository-gridview/repository-gridview.component";
-import { TagComponent } from "./components/tag/tag.component";
-import { TagDetailComponent } from "./components/tag/tag-detail.component";
-import { TagHistoryComponent } from "./components/tag/tag-history.component";
+import { ArtifactListComponent } from "./components/artifact/artifact-list/artifact-list.component";
+import { ArtifactListTabComponent } from "./components/artifact/artifact-list-tab.component";
+import { ArtifactSummaryComponent } from "./components/artifact/artifact-summary.component";
+import { ArtifactCommonPropertiesComponent } from './components/artifact/artifact-common-properties/artifact-common-properties.component';
+import { ArtifactLocalPropertiesComponent } from './components/artifact/artifact-local-properties/artifact-local-properties.component';
+import { ArtifactTagComponent } from './components/artifact/artifact-tag/artifact-tag.component';
+import { ArtifactAdditionalLinkComponent } from './components/artifact/artifact-additional-link/artifact-additional-link.component';
+import { ArtifactAdditionsComponent } from './components/artifact/artifact-additions/artifact-additions.component';
+
+import { TagHistoryComponent } from "./components/artifact/tag-history.component";
 import { HistogramChartComponent } from "./components/vulnerability-scanning/histogram-chart/histogram-chart.component";
 import { ResultTipHistogramComponent } from "./components/vulnerability-scanning/result-tip-histogram/result-tip-histogram.component";
 import { ResultBarChartComponent } from "./components/vulnerability-scanning/result-bar-chart.component";
@@ -88,6 +97,7 @@ import { ClipboardDirective } from "./components/third-party/ngx-clipboard/clipb
 import { ChannelService } from "./services/channel.service";
 import { SharedModule } from "./utils/shared/shared.module";
 import { TranslateServiceInitializer } from "./i18n";
+import { TagCardsComponent } from './components/artifact/tag-cards/tag-cards.component';
 
 /**
  * Declare default service configuration; all the endpoints will be defined in
@@ -194,6 +204,7 @@ export interface HarborModuleConfig {
   helmChartService?: Provider;
   // Service implementation for userPermission
   userPermissionService?: Provider;
+  artifactService?: Provider;
 
   // Service implementation for gc
   gcApiRepository?: Provider;
@@ -244,14 +255,21 @@ export interface HarborModuleConfig {
       ReplicationComponent,
       RepositoryComponent,
       RepositoryGridviewComponent,
-      TagComponent,
-      TagDetailComponent,
+      ArtifactListTabComponent,
+      ArtifactSummaryComponent,
+      ArtifactCommonPropertiesComponent,
+      ArtifactLocalPropertiesComponent,
+      ArtifactTagComponent,
+      ArtifactAdditionalLinkComponent,
+      ArtifactAdditionsComponent,
       TagHistoryComponent,
       HistogramChartComponent,
       ResultTipHistogramComponent,
       ResultBarChartComponent,
       ResultGridComponent,
-      ResultTipComponent
+      ResultTipComponent,
+      TagCardsComponent,
+      ArtifactListComponent
   ],
   exports: [
       SharedModule,
@@ -290,14 +308,20 @@ export interface HarborModuleConfig {
       ReplicationComponent,
       RepositoryComponent,
       RepositoryGridviewComponent,
-      TagComponent,
-      TagDetailComponent,
+      ArtifactListTabComponent,
+      ArtifactSummaryComponent,
+      ArtifactCommonPropertiesComponent,
+      ArtifactLocalPropertiesComponent,
+      ArtifactTagComponent,
+      ArtifactAdditionalLinkComponent,
+      ArtifactAdditionsComponent,
       TagHistoryComponent,
       HistogramChartComponent,
       ResultTipHistogramComponent,
       ResultBarChartComponent,
       ResultGridComponent,
-      ResultTipComponent
+      ResultTipComponent,
+      ArtifactListComponent
   ],
   providers: []
 })
@@ -323,6 +347,7 @@ export class HarborLibraryModule {
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
         config.labelService || { provide: LabelService, useClass: LabelDefaultService },
         config.userPermissionService || { provide: UserPermissionService, useClass: UserPermissionDefaultService },
+        config.artifactService || { provide: ArtifactService, useClass: ArtifactDefaultService },
         config.gcApiRepository || {provide: GcApiRepository, useClass: GcApiDefaultRepository},
         config.ScanApiRepository || {provide: ScanApiRepository, useClass: ScanApiDefaultRepository},
           // Do initializing
@@ -362,6 +387,7 @@ export class HarborLibraryModule {
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
         config.labelService || { provide: LabelService, useClass: LabelDefaultService },
         config.userPermissionService || { provide: UserPermissionService, useClass: UserPermissionDefaultService },
+        config.artifactService || { provide: ArtifactService, useClass: ArtifactDefaultService },
         config.gcApiRepository || {provide: GcApiRepository, useClass: GcApiDefaultRepository},
         config.ScanApiRepository || {provide: ScanApiRepository, useClass: ScanApiDefaultRepository},
         ChannelService,

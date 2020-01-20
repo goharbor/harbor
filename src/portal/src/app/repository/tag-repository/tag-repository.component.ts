@@ -17,7 +17,7 @@ import { AppConfigService } from '../../app-config.service';
 import { SessionService } from '../../shared/session.service';
 import { Project } from '../../project/project';
 import { RepositoryComponent } from "../../../lib/components/repository/repository.component";
-import { TagClickEvent } from "../../../lib/services";
+import { ArtifactClickEvent } from "../../../lib/services";
 
 @Component({
   selector: 'tag-repository',
@@ -29,6 +29,7 @@ export class TagRepositoryComponent implements OnInit {
   projectId: number;
   projectMemberRoleId: number;
   repoName: string;
+  referArtifactName: string;
   hasProjectAdminRole: boolean = false;
   isGuest: boolean;
   registryUrl: string;
@@ -56,8 +57,7 @@ export class TagRepositoryComponent implements OnInit {
       this.isGuest = (<Project>resolverData['projectResolver']).current_user_role_id === 3;
       this.projectMemberRoleId = (<Project>resolverData['projectResolver']).current_user_role_id;
     }
-    this.repoName = this.route.snapshot.params['repo'];
-
+    this.repoName = this.route.snapshot.params['repo']
     this.registryUrl = this.appConfigService.getConfig().registry_url;
   }
 
@@ -76,8 +76,9 @@ export class TagRepositoryComponent implements OnInit {
     return this.repositoryComponent.hasChanges();
   }
 
-  watchTagClickEvt(tagEvt: TagClickEvent): void {
-    let linkUrl = ['harbor', 'projects', tagEvt.project_id, 'repositories', tagEvt.repository_name, 'tags', tagEvt.tag_name];
+  watchTagClickEvt(artifactEvt: ArtifactClickEvent): void {
+    let linkUrl = ['harbor', 'projects', artifactEvt.project_id, 'repositories'
+    , artifactEvt.repository_name, 'artifacts', artifactEvt.digest];
     this.router.navigate(linkUrl);
   }
 

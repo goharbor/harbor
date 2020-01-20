@@ -2,7 +2,7 @@ import { ComponentFixture, TestBed, async } from "@angular/core/testing";
 
 import { SharedModule } from "../../utils/shared/shared.module";
 import { ResultGridComponent } from "../vulnerability-scanning/result-grid.component";
-import { TagDetailComponent } from "./tag-detail.component";
+import { ArtifactSummaryComponent } from "./artifact-summary.component";
 import { TagHistoryComponent } from "./tag-history.component";
 
 import { ErrorHandler } from "../../utils/error-handler/error-handler";
@@ -33,9 +33,9 @@ import { USERSTATICPERMISSION } from "../../services/permission-static";
 import { FilterComponent } from "../filter/filter.component";
 import { HarborLibraryModule } from "../../harbor-library.module";
 
-describe("TagDetailComponent (inline template)", () => {
-  let comp: TagDetailComponent;
-  let fixture: ComponentFixture<TagDetailComponent>;
+describe("ArtifactSummaryComponent (inline template)", () => {
+  let comp: ArtifactSummaryComponent;
+  let fixture: ComponentFixture<ArtifactSummaryComponent>;
   let tagService: TagService;
   let userPermissionService: UserPermissionService;
   let scanningService: ScanningResultService;
@@ -106,10 +106,10 @@ describe("TagDetailComponent (inline template)", () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TagDetailComponent);
+    fixture = TestBed.createComponent(ArtifactSummaryComponent);
     comp = fixture.componentInstance;
 
-    comp.tagId = "mock_tag";
+    comp.artifactDigest = 'sha256:23456';
     comp.repositoryId = "mock_repo";
     comp.projectId = 1;
 

@@ -13,7 +13,8 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Observable, Subject} from "rxjs";
-import { Tag } from './index';
+// import { Tag } from './index';
+import { Artifact } from '../components/artifact/artifact';
 
 @Injectable()
 export class ChannelService {
@@ -25,5 +26,5 @@ export class ChannelService {
   publishScanEvent(tagId: string): void {
     this.scanCommandSource.next(tagId);
   }
-  tagDetail$ = new Subject<Tag>();
+  tagDetail$ = new Subject<Artifact>();
 }
