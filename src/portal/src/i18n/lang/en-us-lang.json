@@ -343,7 +343,7 @@
         "FILTER_PLACEHOLDER": "Filter Robot Accounts",
         "ROBOT_NAME": "Cannot contain special characters(~#$%) and maximum length should be 255 characters.",
         "ACCOUNT_EXISTING": "Robot Account is already exists.",
-        "ALERT_TEXT": "This is the only time to copy your personal access token.You wont't have another opportunity",
+        "ALERT_TEXT": "This is the only time to copy your personal access token. You won't have another opportunity",
         "CREATED_SUCCESS": "Created '{{param}}' successfully.",
         "COPY_SUCCESS": "Copy token successfully of '{{param}}'",
         "DELETION_TITLE": "Confirm removal of robot accounts",
