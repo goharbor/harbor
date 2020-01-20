@@ -42,7 +42,7 @@ Public Should Be Selected
 
 Project Should Be Public
     [Arguments]  ${projectName}
-    Page Should Contain Element  //clr-dg-row[contains(.,'${projectName}')]//clr-dg-cell[contains(.,'Public')]
+    Retry Wait Until Page Contains Element  //clr-dg-row[contains(.,'${projectName}')]//clr-dg-cell[contains(.,'Public')]
 
 Content Trust Should Be Selected
     Checkbox Should Be Selected  //hbr-project-policy-config//input[@name='content-trust']

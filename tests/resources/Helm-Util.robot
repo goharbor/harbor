@@ -28,7 +28,7 @@ Helm Repo Add
     Wait Unitl Command Success  helm repo add --ca-file /helm_ca/server.crt --username=${user} --password=${pwd} ${helm_repo_name} ${harbor_url}/chartrepo/${project_name}
 
 Helm Repo Push
-    [Arguments]  ${harbor_url}  ${user}  ${pwd}  ${chart_filename}  ${project_name}=library  ${helm_repo_name}=myrepo
+    [Arguments]  ${user}  ${pwd}  ${chart_filename}  ${helm_repo_name}=myrepo
     ${current_dir}=  Run  pwd
     Run  cd ${current_dir}
     Run  wget ${harbor_chart_file_url}

@@ -31,24 +31,53 @@
               "url":"http://url",
               "name":"endpoint1",
               "user":"admin",
-              "pass":"Harbor12345"
-           }
+              "pass":"Harbor12345",
+              "insecure":true,
+              "type":"harbor"
+           },
+           {
+               "url":"https://hub.docker.com",
+               "name":"endpoint2",
+               "user":"",
+               "pass":"",
+               "insecure":false,
+               "type":"docker-hub"
+            }
         ],
         "replicationrule":[
            {
               "project":"project1",
               "endpoint":"endpoint1",
               "trigger":"Manual",
-              "rulename":"rulename"
+              "rulename":"rulename",
+              "is_src_registry":false,
+              "dest_namespace":"rule1-namespace",
+              "trigger_type":"event_based",
+              "cron":"",
+              "deletion":true,
+              "enabled":true,
+              "override":true,
+              "name_filters":"namefilter1",
+              "tag_filters":"tagfilter1"
            },
            {
               "project":"library",
-              "endpoint":"endpoint1",
+              "endpoint":"endpoint2",
               "trigger":"Manual",
-              "rulename":"rulelibrary"
-           }
-        ],
-        "configuration":{
+              "rulename":"rulelibrary",
+              "endpoint_type":"harbor",
+              "is_src_registry":true,
+              "dest_namespace":"rule2-namespace",
+              "trigger_type":"scheduled",
+              "cron":"6 7 8 * * *",
+              "deletion":false,
+              "enabled":true,
+              "override":true,
+              "name_filters":"namefilter2",
+              "tag_filters":"tagfilter2"
+            }
+         ],
+         "configuration":{
            "authmode":"Database",
            "projectcreation":"everyone",
            "selfreg":false,
@@ -68,6 +97,25 @@
                  "daily":0
               }
            },
+           "deployment_security":{
+               "cve":[
+                  {
+                     "id":"CVE-2019-12904"
+                     },
+                  {
+                     "id":"CVE-2011-3389"
+                  },
+                  {
+                     "id":"CVE-2018-12886"
+                  },
+                  {
+                     "id":"CVE-2019-3844"
+                  }
+               ],
+              "never_expires":false,
+              "expires_at":"2572969600"
+           },
+           "webhooks_enabled":true,
            "syslabel":[
               {
                  "name":"label1"
@@ -121,6 +169,10 @@
                     "role":3
                  }
               ],
+              "count_limit":1234,
+              "storage_limit":53687091200,
+              "storage_limit_for_verify":50,
+              "storage_unit_for_verify":"GB",
               "replications":{
                  "rulename":"ruleproject1",
                  "endpointname":"endpoint1",
@@ -143,12 +195,50 @@
                     "operation":"create"
                  }
               ],
+              "robot_account":[
+                  {
+                     "name":"robot0",
+                     "access": [
+                        {
+                        "action": "pull"
+                        },
+                        {
+                        "action": "push"
+                        }
+                     ]
+                  }
+               ],
+               "webhook":{
+                  "address":"https://1.1.1.1",
+                  "skip_cert_verify":true,
+                  "auth_header":"aaa",
+                  "enabled":true
+               },
               "configuration":{
                  "public":"true",
                  "enable_content_trust":"true",
-                 "automatically_scan_images_on_push":"true",
-                 "prevent_vulnerable_images_from_running":"true",
-                 "prevent_vlunerable_images_from_running_severity":"high"
+                 "auto_scan":"true",
+                 "prevent_vul":"true",
+                 "severity":"high",
+                 "reuse_sys_cve_whitelist":"false",
+                 "deployment_security":{
+                  "cve":[
+                     {
+                        "id":"CVE-2019-111"
+                        },
+                     {
+                        "id":"CVE-2011-2222"
+                     },
+                     {
+                        "id":"CVE-2018-33333"
+                     },
+                     {
+                        "id":"CVE-2019-44444"
+                     }
+                  ],
+                 "never_expires":false,
+                 "expires_at":"2572969600"
+               }
               }
            },
            {
@@ -182,6 +272,10 @@
                     "role":3
                  }
               ],
+              "count_limit":-1,
+              "storage_limit":32985348833280,
+              "storage_limit_for_verify":30,
+              "storage_unit_for_verify":"TB",
               "replications":{
                  "rulename":"rulename1",
                  "endpointname":"endpoint1",
@@ -204,12 +298,52 @@
                     "operation":"create"
                  }
               ],
+              "robot_account":[
+                  {
+                     "name":"robot1",
+                     "access": [
+                        {
+                          "action": "pull"
+                        },
+                        {
+                          "action": "push"
+                        }
+                      ]
+                  },
+                  {
+                     "name":"robot2",
+                     "access": [
+                        {
+                          "action": "pull"
+                        }
+                      ]
+                  },
+                  {
+                     "name":"robot3",
+                     "access": [
+                        {
+                          "action": "push"
+                        }
+                      ]
+                  }
+               ],
+               "webhook":{
+                  "address":"https://1.1.1.1",
+                  "skip_cert_verify":true,
+                  "auth_header":"aaa",
+                  "enabled":true
+               },
               "configuration":{
                  "public":"false",
                  "enable_content_trust":"false",
-                 "automatically_scan_images_on_push":"false",
-                 "prevent_vulnerable_images_from_running":"true",
-                 "prevent_vlunerable_images_from_running_severity":"medium"
+                 "auto_scan":"false",
+                 "prevent_vul":"true",
+                 "severity":"medium",
+                 "reuse_sys_cve_whitelist":"true",
+                 "deployment_security":{
+                  "cve":[
+                  ]
+               }
               }
            }
         ]
