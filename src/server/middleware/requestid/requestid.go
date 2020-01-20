@@ -12,29 +12,28 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package middleware
+package requestid
 
 import (
 	"net/http"
 
+	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/google/uuid"
 )
 
 // HeaderXRequestID X-Request-ID header
 const HeaderXRequestID = "X-Request-ID"
 
-// RequestID middleware which add X-Request-ID header in the http request when not exist
-func RequestID() func(http.Handler) http.Handler {
-	return func(next http.Handler) http.Handler {
-		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			rid := r.Header.Get(HeaderXRequestID)
-			if rid == "" {
-				rid = uuid.New().String()
-				r.Header.Set(HeaderXRequestID, rid)
-			}
+// Middleware middleware which add X-Request-ID header in the http request when not exist
+func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler {
+	return middleware.New(func(w http.ResponseWriter, r *http.Request, next http.Handler) {
+		rid := r.Header.Get(HeaderXRequestID)
+		if rid == "" {
+			rid = uuid.New().String()
+			r.Header.Set(HeaderXRequestID, rid)
+		}
 
-			w.Header().Set(HeaderXRequestID, rid)
-			next.ServeHTTP(w, r)
-		})
-	}
+		w.Header().Set(HeaderXRequestID, rid)
+		next.ServeHTTP(w, r)
+	}, skippers...)
 }

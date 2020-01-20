@@ -17,9 +17,11 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"net/http"
 	"os"
 	"os/signal"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -53,6 +55,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/server/middleware/orm"
+	"github.com/goharbor/harbor/src/server/middleware/requestid"
 )
 
 const (
@@ -247,7 +251,6 @@ func main() {
 
 	filter.Init()
 	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
-	beego.InsertFilter("/*", beego.BeforeRouter, filter.OrmFilter)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)
 
@@ -288,6 +291,22 @@ func main() {
 	}
 
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
-	beego.Run()
 
+	middlewares := []beego.MiddleWare{
+		requestid.Middleware(),
+		orm.Middleware(legacyAPISkipper),
+	}
+	beego.RunWithMiddleWares("", middlewares...)
+
+}
+
+// legacyAPISkipper skip middleware for legacy APIs
+func legacyAPISkipper(r *http.Request) bool {
+	for _, prefix := range []string{"/v2/", "/api/v2.0/"} {
+		if strings.HasPrefix(r.URL.Path, prefix) {
+			return false
+		}
+	}
+
+	return true
 }
