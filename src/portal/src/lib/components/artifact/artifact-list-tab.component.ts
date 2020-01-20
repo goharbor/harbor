@@ -20,18 +20,21 @@ import {
   Input,
   OnInit,
   Output,
-  ViewChild
+  ViewChild,
+  
 } from "@angular/core";
 import { forkJoin, Observable, Subject, throwError as observableThrowError, of } from "rxjs";
 import { catchError, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
 import { TranslateService } from "@ngx-translate/core";
-import { Comparator, Label, State, Tag, TagClickEvent, VulnerabilitySummary } from "../../services/interface";
+import { Comparator, Label, State, Tag, ArtifactClickEvent, VulnerabilitySummary } from "../../services/interface";
 
 import {
   RequestQueryParams,
   RetagService,
   ScanningResultService,
   TagService,
+  ProjectService,
+  ArtifactService
 } from "../../services";
 import { ErrorHandler } from "../../utils/error-handler/error-handler";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../entities/shared.const";
@@ -60,6 +63,8 @@ import { ImageNameInputComponent } from "../image-name-input/image-name-input.co
 import { errorHandler as errorHandFn } from "../../utils/shared/shared.utils";
 import { ClrLoadingState } from "@clr/angular";
 import { ChannelService } from "../../services/channel.service";
+import { Artifact, Reference } from "./artifact";
+import { Router } from "@angular/router";
 
 export interface LabelState {
   iconsShow: boolean;
@@ -68,16 +73,18 @@ export interface LabelState {
 }
 export const AVAILABLE_TIME = '0001-01-01T00:00:00Z';
 @Component({
-  selector: 'hbr-tag',
-  templateUrl: './tag.component.html',
-  styleUrls: ['./tag.component.scss']
+  selector: 'artifact-list-tab',
+  templateUrl: './artifact-list-tab.component.html',
+  styleUrls: ['./artifact-list-tab.component.scss']
 })
-export class TagComponent implements OnInit, AfterViewInit {
+export class ArtifactListTabComponent implements OnInit, AfterViewInit {
 
   signedCon: { [key: string]: any | string[] } = {};
   @Input() projectId: number;
+  projectName: string;
   @Input() memberRoleID: number;
   @Input() repoName: string;
+  @Input() referArtifactName: string;
   @Input() isEmbedded: boolean;
 
   @Input() hasSignedIn: boolean;
@@ -86,11 +93,12 @@ export class TagComponent implements OnInit, AfterViewInit {
   @Input() withNotary: boolean;
   @Input() withAdmiral: boolean;
   @Output() refreshRepo = new EventEmitter<boolean>();
-  @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
+  @Output() tagClickEvent = new EventEmitter<ArtifactClickEvent>();
   @Output() signatureOutput = new EventEmitter<any>();
 
 
   tags: Tag[];
+  artifactList: Artifact[];
   availableTime = AVAILABLE_TIME;
   showTagManifestOpened: boolean;
   retagDialogOpened: boolean;
@@ -105,20 +113,20 @@ export class TagComponent implements OnInit, AfterViewInit {
   retagSrcImage: string;
   showlabel: boolean;
 
-  createdComparator: Comparator<Tag> = new CustomComparator<Tag>("created", "date");
-  pullComparator: Comparator<Tag> = new CustomComparator<Tag>("pull_time", "date");
-  pushComparator: Comparator<Tag> = new CustomComparator<Tag>("push_time", "date");
+  createdComparator: Comparator<Artifact> = new CustomComparator<Artifact>("created", "date");
+  pullComparator: Comparator<Artifact> = new CustomComparator<Artifact>("pull_time", "date");
+  pushComparator: Comparator<Artifact> = new CustomComparator<Artifact>("push_time", "date");
 
   loading = false;
   copyFailed = false;
-  selectedRow: Tag[] = [];
+  selectedRow: Artifact[] = [];
 
   imageLabels: LabelState[] = [];
   imageStickLabels: LabelState[] = [];
   imageFilterLabels: LabelState[] = [];
 
   labelListOpen = false;
-  selectedTag: Tag[];
+  selectedTag: Artifact[];
   labelNameFilter: Subject<string> = new Subject<string>();
   stickLabelNameFilter: Subject<string> = new Subject<string>();
   filterOnGoing: boolean;
@@ -156,14 +164,17 @@ export class TagComponent implements OnInit, AfterViewInit {
   onSendingScanCommand: boolean;
   constructor(
     private errorHandler: ErrorHandler,
-    private tagService: TagService,
     private retagService: RetagService,
     private userPermissionService: UserPermissionService,
     private labelService: LabelService,
+    private artifactService: ArtifactService,
     private translateService: TranslateService,
     private ref: ChangeDetectorRef,
     private operationService: OperationService,
+    private router: Router,
+    private cdf: ChangeDetectorRef,
     private channel: ChannelService,
+    private projectService: ProjectService,
     private scanningService: ScanningResultService
   ) { }
 
@@ -230,9 +241,10 @@ export class TagComponent implements OnInit, AfterViewInit {
     let len = this.lastFilteredTagName.length ? this.lastFilteredTagName.length * 6 + 60 : 115;
     return len > 210 ? 210 : len;
   }
-
-  doSearchTagNames(tagName: string) {
-    this.lastFilteredTagName = tagName;
+  doSearchArtifactByFilter() {
+  }
+  doSearchArtifactNames(artifactName: string) {
+    this.lastFilteredTagName = artifactName;
     this.currentPage = 1;
 
     let st: State = this.currentState;
@@ -266,14 +278,15 @@ export class TagComponent implements OnInit, AfterViewInit {
 
     this.loading = true;
 
-    this.tagService.getTags(
+    this.artifactService.getArtifactList(
+      this.projectName,
       this.repoName,
       params)
-      .subscribe((tags: Tag[]) => {
+      .subscribe((artifactList: Artifact[]) => {
         this.signedCon = {};
         // Do filtering and sorting
-        this.tags = doFiltering<Tag>(tags, state);
-        this.tags = doSorting<Tag>(this.tags, state);
+        this.artifactList = doFiltering<Artifact>(artifactList, state);
+        this.artifactList = doSorting<Artifact>(this.artifactList, state);
         this.loading = false;
       }, error => {
         this.loading = false;
@@ -286,7 +299,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   refresh() {
-    this.doSearchTagNames("");
+    this.doSearchArtifactNames("");
   }
 
   getAllLabels(): void {
@@ -301,14 +314,14 @@ export class TagComponent implements OnInit, AfterViewInit {
     }, error => this.errorHandler.error(error));
   }
 
-  labelSelectedChange(tag?: Tag[]): void {
-    if (tag && tag[0].labels) {
+  labelSelectedChange(artifact?: Artifact[]): void {
+    if (artifact && artifact[0].labels) {
       this.imageStickLabels.forEach(data => {
         data.iconsShow = false;
         data.show = true;
       });
-      if (tag[0].labels.length) {
-        tag[0].labels.forEach((labelInfo: Label) => {
+      if (artifact[0].labels.length) {
+        artifact[0].labels.forEach((labelInfo: Label) => {
           let findedLabel = this.imageStickLabels.find(data => labelInfo.id === data['label'].id);
           this.imageStickLabels.splice(this.imageStickLabels.indexOf(findedLabel), 1);
           this.imageStickLabels.unshift(findedLabel);
@@ -340,7 +353,9 @@ export class TagComponent implements OnInit, AfterViewInit {
       this.inprogress = true;
       let labelId = labelInfo.label.id;
       this.selectedRow = this.selectedTag;
-      this.tagService.addLabelToImages(this.repoName, this.selectedRow[0].name, labelId).subscribe(res => {
+
+      this.artifactService.addLabelToImages(this.projectName, this.repoName, this.selectedRow[0].id, labelId).subscribe(res => {
+      // this.tagService.addLabelToImages(this.repoName, this.selectedRow[0].name, labelId).subscribe(res => {
         this.refresh();
 
         // set the selected label in front
@@ -371,7 +386,7 @@ export class TagComponent implements OnInit, AfterViewInit {
       this.inprogress = true;
       let labelId = labelInfo.label.id;
       this.selectedRow = this.selectedTag;
-      this.tagService.deleteLabelToImages(this.repoName, this.selectedRow[0].name, labelId).subscribe(res => {
+      this.artifactService.deleteLabelToImages(this.projectName, this.repoName, this.selectedRow[0].id, labelId).subscribe(res => {
         this.refresh();
 
         // insert the unselected label to groups with the same icons
@@ -517,34 +532,271 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   retrieve() {
-    this.tags = [];
+    this.artifactList = [];
     let signatures: string[] = [];
     this.loading = true;
-
-    this.tagService
-      .getTags(this.repoName)
-      .subscribe(items => {
-        // To keep easy use for vulnerability bar
-        items.forEach((t: Tag) => {
-          if (t.signature !== null) {
-            signatures.push(t.name);
-          }
-        });
-        this.tags = items;
-        let signedName: { [key: string]: string[] } = {};
-        signedName[this.repoName] = signatures;
-        this.signatureOutput.emit(signedName);
+    this.projectService.getProject(this.projectId).subscribe(project => {
+      this.projectName = project.name;
+      if (this.referArtifactName) {
+        
+        let referArtifactArray = this.referArtifactName.split('sha256:');
+        this.artifactService.getArtifactFromId(this.projectName, this.repoName,
+          `sha256:${referArtifactArray[referArtifactArray.length - 1]}`).subscribe(artifact => {
+          artifact.references
+        })
+      }
+      this.artifactService.getArtifactList(this.projectName, this.repoName).subscribe(artifacts => {
+        this.artifactList = artifacts;
         this.loading = false;
-        if (this.tags && this.tags.length === 0) {
-          this.refreshRepo.emit(true);
-        }
       }, error => {
-        this.errorHandler.error(error);
+        // error
+        this.artifactList = [
+          {
+            "id": 1,
+            type: 'image',
+            repository: "goharbor/harbor-portal",
+            tags: [{
+              id: '1',
+              name: 'tag1ecccc',
+              upload_time: '2020-01-06T09:40:08.036866579Z',
+              latest_download_time: '2020-01-06T09:40:08.036866579Z',
+          },
+          {
+              id: '2',
+              name: 'tag2111',
+              upload_time: '2020-01-06T09:40:08.036866579Z',
+              latest_download_time: '2020-01-06T09:40:08.036866579Z',
+          },
+          {
+              id: '3',
+              name: 'tag222',
+              upload_time: '2020-01-06T09:40:08.036866579Z',
+              latest_download_time: '2020-01-06T09:40:08.036866579Z',
+          }
+        ],
+            references: [new Reference(1), new Reference(2)],
+            media_type: 'string',
+            "digest": "sha256:4875cda368906fd670c9629b5e416ab3d6c0292015f3c3f12ef37dc9a32fc8d4",
+            "size": 20372934,
+            "scan_overview": {
+              "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+                "report_id": "5e64bc05-3102-11ea-93ae-0242ac140004",
+                "scan_status": "Error",
+                "severity": "",
+                "duration": 118,
+                "summary": null,
+                "start_time": "2020-01-07T04:01:23.157711Z",
+                "end_time": "2020-01-07T04:03:21.662766Z"
+              }
+            },
+            "labels": [
+              {
+                "id": 3,
+                "name": "aaa",
+                "description": "",
+                "color": "#0095D3",
+                "scope": "g",
+                "project_id": 0,
+                "creation_time": "2020-01-13T05:44:00.580198Z",
+                "update_time": "2020-01-13T05:44:00.580198Z",
+                "deleted": false
+              },
+              {
+                "id": 6,
+                "name": "dbc",
+                "description": "",
+                "color": "",
+                "scope": "g",
+                "project_id": 0,
+                "creation_time": "2020-01-13T08:27:19.279123Z",
+                "update_time": "2020-01-13T08:27:19.279123Z",
+                "deleted": false
+              }
+            ],
+            "push_time": "2020-01-07T03:33:41.162319Z",
+            "pull_time": "0001-01-01T00:00:00Z",
+            hasReferenceArtifactList: [],
+            noReferenceArtifactList: []
+          },
+          {
+            "id": 2,
+            type: 'chart',
+            repository: "goharbor/harbor-portal",
+            tags: [{
+                id: '1',
+                name: 'tag1',
+                upload_time: '2020-01-06T09:40:08.036866579Z',
+                latest_download_time: '2020-01-06T09:40:08.036866579Z',
+            },
+            {
+                id: '2',
+                name: 'tag2',
+                upload_time: '2020-01-06T09:40:08.036866579Z',
+                latest_download_time: '2020-01-06T09:40:08.036866579Z',
+            },],
+            references: [new Reference(1), new Reference(2)],
+            media_type: 'string',
+            "digest": "sha256:12306fd670c9629b5e416ab3d6c0292015f3c3f12ef37dc9a32fc8d4",
+            "size": 20372934,
+            "scan_overview": {
+              "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+                "report_id": "5e64bc05-3102-11ea-93ae-0242ac140004",
+                "scan_status": "Error",
+                "severity": "",
+                "duration": 118,
+                "summary": null,
+                "start_time": "2020-01-07T04:01:23.157711Z",
+                "end_time": "2020-01-07T04:03:21.662766Z"
+              }
+            },
+            "labels": [
+              {
+                "id": 3,
+                "name": "aaa",
+                "description": "",
+                "color": "#0095D3",
+                "scope": "g",
+                "project_id": 0,
+                "creation_time": "2020-01-13T05:44:00.580198Z",
+                "update_time": "2020-01-13T05:44:00.580198Z",
+                "deleted": false
+              },
+              {
+                "id": 6,
+                "name": "dbc",
+                "description": "",
+                "color": "",
+                "scope": "g",
+                "project_id": 0,
+                "creation_time": "2020-01-13T08:27:19.279123Z",
+                "update_time": "2020-01-13T08:27:19.279123Z",
+                "deleted": false
+              }
+            ],
+            "push_time": "2020-01-07T03:33:41.162319Z",
+            "pull_time": "0001-01-01T00:00:00Z",
+            hasReferenceArtifactList: [],
+            noReferenceArtifactList: []
+          },
+          {
+            "id": 3,
+            type: 'chart1',
+            repository: "goharbor/harbor-portal",
+            tags: [{
+                id: '1',
+                name: 'tag1',
+                upload_time: '2020-01-06T09:40:08.036866579Z',
+                latest_download_time: '2020-01-06T09:40:08.036866579Z',
+            },
+            {
+                id: '2',
+                name: 'tag2',
+                upload_time: '2020-01-06T09:40:08.036866579Z',
+                latest_download_time: '2020-01-06T09:40:08.036866579Z',
+            },],
+            references: [],
+            media_type: 'string',
+            "digest": "sha256:12306fd670c9629b5e416ab3d6c0292015f3c3f12ef37dc9a32fc8d4",
+            "size": 20372934,
+            "scan_overview": {
+              "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+                "report_id": "5e64bc05-3102-11ea-93ae-0242ac140004",
+                "scan_status": "Error",
+                "severity": "",
+                "duration": 118,
+                "summary": null,
+                "start_time": "2020-01-07T04:01:23.157711Z",
+                "end_time": "2020-01-07T04:03:21.662766Z"
+              }
+            },
+            "labels": [
+              {
+                "id": 3,
+                "name": "aaa",
+                "description": "",
+                "color": "#0095D3",
+                "scope": "g",
+                "project_id": 0,
+                "creation_time": "2020-01-13T05:44:00.580198Z",
+                "update_time": "2020-01-13T05:44:00.580198Z",
+                "deleted": false
+              },
+              {
+                "id": 6,
+                "name": "dbc",
+                "description": "",
+                "color": "",
+                "scope": "g",
+                "project_id": 0,
+                "creation_time": "2020-01-13T08:27:19.279123Z",
+                "update_time": "2020-01-13T08:27:19.279123Z",
+                "deleted": false
+              }
+            ],
+            "push_time": "2020-01-07T03:33:41.162319Z",
+            "pull_time": "0001-01-01T00:00:00Z",
+            hasReferenceArtifactList: [],
+            noReferenceArtifactList: []
+          },
+        ];
         this.loading = false;
-      });
-    let hnd = setInterval(() => this.ref.markForCheck(), 100);
-    setTimeout(() => clearInterval(hnd), 5000);
+
+    //     this.tagService
+    //   .getTags(this.repoName)
+    //   .subscribe(items => {
+    //     // To keep easy use for vulnerability bar
+    //     items.forEach((t: Tag) => {
+    //       if (t.signature !== null) {
+    //         signatures.push(t.name);
+    //       }
+    //     });
+    //     this.artifactList = items as any;
+    //     let signedName: { [key: string]: string[] } = {};
+    //     signedName[this.repoName] = signatures;
+    //     this.signatureOutput.emit(signedName);
+    //     this.loading = false;
+    //     if (this.artifactList && this.artifactList.length === 0) {
+    //       this.refreshRepo.emit(true);
+    //     }
+    //   }, err => {
+    //     this.errorHandler.error(error);
+    //     this.loading = false;
+    //   });
+    //   let hnd = setInterval(() => this.ref.markForCheck(), 100);
+    // setTimeout(() => clearInterval(hnd), 5000);
+      })
+    })
+    
   }
+  // retrieve() {
+  //   this.tags = [];
+  //   let signatures: string[] = [];
+  //   this.loading = true;
+
+  //   this.tagService
+  //     .getTags(this.repoName)
+  //     .subscribe(items => {
+  //       // To keep easy use for vulnerability bar
+  //       items.forEach((t: Tag) => {
+  //         if (t.signature !== null) {
+  //           signatures.push(t.name);
+  //         }
+  //       });
+  //       this.tags = items;
+  //       let signedName: { [key: string]: string[] } = {};
+  //       signedName[this.repoName] = signatures;
+  //       this.signatureOutput.emit(signedName);
+  //       this.loading = false;
+  //       if (this.tags && this.tags.length === 0) {
+  //         this.refreshRepo.emit(true);
+  //       }
+  //     }, error => {
+  //       this.errorHandler.error(error);
+  //       this.loading = false;
+  //     });
+  //   let hnd = setInterval(() => this.ref.markForCheck(), 100);
+  //   setTimeout(() => clearInterval(hnd), 5000);
+  // }
 
   sizeTransform(tagSize: string): string {
     let size: number = Number.parseInt(tagSize);
@@ -592,11 +844,11 @@ export class TagComponent implements OnInit, AfterViewInit {
       });
   }
 
-  deleteTags() {
+  deleteArtifact() {
     if (this.selectedRow && this.selectedRow.length) {
       let tagNames: string[] = [];
-      this.selectedRow.forEach(tag => {
-        tagNames.push(tag.name);
+      this.selectedRow.forEach(artifact => {
+        tagNames.push(artifact.digest);
       });
 
       let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;
@@ -619,11 +871,11 @@ export class TagComponent implements OnInit, AfterViewInit {
     if (message &&
       message.source === ConfirmationTargets.TAG
       && message.state === ConfirmationState.CONFIRMED) {
-      let tags: Tag[] = message.data;
-      if (tags && tags.length) {
+      let artifactList: Artifact[] = message.data;
+      if (artifactList && artifactList.length) {
         let observableLists: any[] = [];
-        tags.forEach(tag => {
-          observableLists.push(this.delOperate(tag));
+        artifactList.forEach(artifact => {
+          observableLists.push(this.delOperate(artifact));
         });
 
         forkJoin(...observableLists).subscribe((items) => {
@@ -637,27 +889,27 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  delOperate(tag: Tag): Observable<any> | null {
+  delOperate(artifact: Artifact): Observable<any> | null {
     // init operation info
     let operMessage = new OperateInfo();
     operMessage.name = 'OPERATION.DELETE_TAG';
-    operMessage.data.id = tag.id;
+    operMessage.data.id = artifact.id;
     operMessage.state = OperationState.progressing;
-    operMessage.data.name = tag.name;
+    operMessage.data.name = artifact.digest;
     this.operationService.publishInfo(operMessage);
-
-    if (tag.signature) {
-      forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
-        this.translateService.get("REPOSITORY.DELETION_SUMMARY_TAG_DENIED")).subscribe(res => {
-          let wrongInfo: string = res[1] + "notary -s https://" + this.registryUrl +
-            ":4443 -d ~/.docker/trust remove -p " +
-            this.registryUrl + "/" + this.repoName +
-            " " + name;
-          operateChanges(operMessage, OperationState.failure, wrongInfo);
-        });
-    } else {
-      return this.tagService
-        .deleteTag(this.repoName, tag.name)
+    // to do signature
+    // if (tag.signature) {
+    //   forkJoin(this.translateService.get("BATCH.DELETED_FAILURE"),
+    //     this.translateService.get("REPOSITORY.DELETION_SUMMARY_TAG_DENIED")).subscribe(res => {
+    //       let wrongInfo: string = res[1] + "notary -s https://" + this.registryUrl +
+    //         ":4443 -d ~/.docker/trust remove -p " +
+    //         this.registryUrl + "/" + this.repoName +
+    //         " " + name;
+    //       operateChanges(operMessage, OperationState.failure, wrongInfo);
+    //     });
+    // } else {
+      return this.artifactService
+        .deleteArtifact(this.projectName, this.repoName, artifact.id)
         .pipe(map(
           response => {
             this.translateService.get("BATCH.DELETED_SUCCESS")
@@ -671,7 +923,7 @@ export class TagComponent implements OnInit, AfterViewInit {
             );
             return of(error);
           }));
-    }
+    // }
   }
 
   showDigestId() {
@@ -683,12 +935,13 @@ export class TagComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onTagClick(tag: Tag): void {
-    if (tag) {
-      let evt: TagClickEvent = {
+  onTagClick(artifact: Artifact): void {
+    if (artifact) {
+      let evt: ArtifactClickEvent = {
         project_id: this.projectId,
         repository_name: this.repoName,
-        tag_name: tag.name
+        digest: artifact.digest,
+        artifact_id: artifact.id,
       };
       this.tagClickEvent.emit(evt);
     }
@@ -710,9 +963,9 @@ export class TagComponent implements OnInit, AfterViewInit {
   }
 
   // Get vulnerability scanning status
-  scanStatus(t: Tag): string {
-    if (t) {
-      let so = this.handleScanOverview(t.scan_overview);
+  scanStatus(artifact: Artifact): string {
+    if (artifact) {
+      let so = this.handleScanOverview(artifact.scan_overview);
       if (so && so.scan_status) {
         return so.scan_status;
       }
@@ -750,7 +1003,7 @@ export class TagComponent implements OnInit, AfterViewInit {
   scanNow(): void {
     if (this.selectedRow && this.selectedRow.length === 1) {
         this.onSendingScanCommand = true;
-        this.channel.publishScanEvent(this.repoName + "/" + this.selectedRow[0].name);
+        this.channel.publishScanEvent(this.repoName + "/" + this.selectedRow[0].digest);
     }
   }
   submitFinish(e: boolean) {
@@ -782,5 +1035,82 @@ export class TagComponent implements OnInit, AfterViewInit {
       return scanOverview[DEFAULT_SUPPORTED_MIME_TYPE];
     }
     return null;
+  }
+
+  // hasReferenceArtifactList: Artifact[] = [];
+  // noReferenceArtifactList: Artifact[] = [];
+  // referenceIndexOpenState = false;
+  // referenceDigestOpenState = false;
+  paddingLeftIndex = 1;
+  ctrlIndex = -1;
+  openArtifact(artifact: Artifact) {
+    if ( artifact.isOpen ) {
+      artifact.isOpen = false;
+      artifact.referenceIndexOpenState = false;
+      artifact.referenceDigestOpenState = false;
+      return;
+    }
+    if (artifact.hasReferenceArtifactList.length || artifact.noReferenceArtifactList.length) {
+      artifact.isOpen = true;
+      return;
+    }
+    // this.getArtifactListFromReference(artifact);
+  }
+  openArtifactContent(artifact, indexOrDigest: string) {
+    if (indexOrDigest === 'index') {
+      if (artifact.referenceIndexOpenState) {
+        artifact.referenceIndexOpenState = false;
+        return;
+      }
+
+      if (artifact.hasReferenceArtifactList.length) {
+        artifact.referenceIndexOpenState = true;
+        return;
+      }
+    }
+    if (indexOrDigest === 'digest') {
+      if (artifact.referenceDigestOpenState) {
+        artifact.referenceDigestOpenState = false;
+        return;
+      }
+      if (artifact.noReferenceArtifactList.length) {
+        artifact.referenceDigestOpenState = true;
+        return;
+      }
+    }
+    // this.getArtifactListFromReference(references, indexOrDigest);
+  }
+  // getArtifactListFromReference(artifact: Artifact) {
+  //   let artifactObList =
+  //   artifact.references.map(reference => this.artifactService.getArtifactFromId(this.projectName, this.repoName, reference.artifact_id));
+  //   console.log(artifactObList);
+  //   forkJoin(artifactObList).subscribe(newArtifactList => {
+
+  //     // indexOrDigest === 'index' ? this.referenceIndexOpenState = true : this.referenceDigestOpenState = true;
+  //     // this.referenceArtifactList = newArtifact;
+  //     newArtifactList.forEach(newArtifact => {
+  //       if (newArtifact.references.length) {
+  //         artifact.hasReferenceArtifactList.push(newArtifact);
+  //       } else {
+  //         artifact.noReferenceArtifactList.push(newArtifact);
+  //       }
+  //     });
+  //     artifact.isOpen = true;
+  //   }, error => {
+  //     artifact.hasReferenceArtifactList.push(new Artifact('sha2560987','e'));
+  //     artifact.noReferenceArtifactList.push(new Artifact('sha2560123'),new Artifact('sha2560987'));
+  //     // this.referenceArtifactList = [new Artifact('sha2560987')];
+  //     // indexOrDigest === 'index' ? this.referenceIndexOpenState = true : this.referenceDigestOpenState = true;
+  //     artifact.isOpen = true;
+
+  //   });
+  // }
+  refer(artifact: Artifact) {
+    this.referArtifactName = this.referArtifactName ? `${this.referArtifactName}:${artifact.digest}` : artifact.digest;
+    let linkUrl = ['harbor', 'projects', this.projectId, 'repositories'
+    , `${this.repoName}:${this.referArtifactName}`];
+    this.router.navigate(linkUrl);
+    // this.cdf.detectChanges();
+    this.ngOnInit();
   }
 }

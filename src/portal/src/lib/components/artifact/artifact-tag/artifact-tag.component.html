@@ -1,0 +1,61 @@
+<div class="stack-block stack-block-expandable stack-block-expanded">
+    <dt class="stack-block-label" aria-level="1" aria-posinset="2" aria-setsize="3">Tags</dt>
+    <dd class="stack-block-content stack-block-content-50">
+        <span *ngFor="let tag of artifactDetails?.tags">
+            {{tag.name}}
+        </span>
+    </dd>
+    <dd class="stack-block-content stack-block-content-10 cursor-pointer text-align-r" (click)="addTag()">ADD TAG</dd>
+    <div class="stack-children">
+        <!-- <div class="stack-block">
+            <dt class="stack-block-label" aria-level="2" aria-posinset="1" aria-setsize="3"><label
+                    for="name">Name</label></dt>
+            <dd class="stack-block-content  stack-block-content-45"><label class="clr-control-container"
+                    [class.clr-error]="isTagNameExist">
+                    <input clrInput type="text" id="name" name="name" required size="20" autocomplete="off"
+                        [(ngModel)]="newTagName.name" #name="ngModel" (keyup)="existValid(newTagName.name)">
+                    <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                    <clr-control-error class="position-ab" *ngIf="isLabelNameExist">
+                        {{'LABEL.NAME_ALREADY_EXISTS' | translate }}
+                    </clr-control-error>
+                </label></dd>
+            <dd class="stack-block-content  stack-block-content-10"> <label>
+                    <button type="button" class="btn  btn-outline" (click)="cancelAddTag()" [disabled]="inProgress">{{
+                                    'BUTTON.CANCEL' | translate }}
+                    </button>
+                    <button type="submit" class="btn  btn-primary" (click)="saveAddTag()" [disabled]="!isValid">{{
+                                    'BUTTON.OK' | translate }}
+                    </button>
+                </label></dd>
+        </div> -->
+        <form #labelForm="ngForm" [hidden]="!newTagformShow" class="label-form stack-block-label">
+
+            <section>
+                <label>
+                    <label for="name">Name</label>
+                    <label class="clr-control-container" [class.clr-error]="isTagNameExist">
+                        <input clrInput type="text" id="name" name="name" required size="20" autocomplete="off"
+                            [(ngModel)]="newTagName.name" #name="ngModel" (keyup)="existValid(newTagName.name)">
+                        <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
+                        <clr-control-error class="position-ab" *ngIf="isLabelNameExist">
+                            {{'LABEL.NAME_ALREADY_EXISTS' | translate }}
+                        </clr-control-error>
+                    </label>
+                </label>
+                <label>
+                    <button type="button" class="btn  btn-outline" (click)="cancelAddTag()" [disabled]="inProgress">{{
+                            'BUTTON.CANCEL' | translate }}
+                    </button>
+                    <button type="submit" class="btn  btn-primary" (click)="saveAddTag()" [disabled]="!isValid">{{
+                            'BUTTON.OK' | translate }}
+                    </button>
+                </label>
+            </section>
+        </form>
+        <div class="stack-block" *ngFor="let tag of artifactDetails?.tags">
+            <dt class="stack-block-label" aria-level="2" aria-posinset="1" aria-setsize="3">{{tag.name}}</dt>
+            <dd class="stack-block-content  stack-block-content-45"></dd>
+            <dd class="stack-block-content  stack-block-content-10 cursor-pointer text-align-r" (click)="removeTag(tag)">REMOVE TAG</dd>
+        </div>
+    </div>
+</div>

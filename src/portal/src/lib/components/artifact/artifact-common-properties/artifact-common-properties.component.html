@@ -1,0 +1,18 @@
+<div class="stack-block stack-block-expandable stack-block-expanded">
+        <dt class="stack-block-label" aria-level="1" aria-posinset="2" aria-setsize="3">Common Properties</dt>
+        <dd class="stack-block-content">Common properties across all digest</dd>
+        <div class="stack-children">
+            <div class="stack-block">
+                <dt class="stack-block-label" aria-level="2" aria-posinset="1" aria-setsize="3">Type</dt>
+                <dd class="stack-block-content">{{artifactDetails?.type}}</dd>
+            </div>
+            <div class="stack-block">
+                <dt class="stack-block-label" aria-level="2" aria-posinset="2" aria-setsize="3">Repository</dt>
+                <dd class="stack-block-content">{{artifactDetails?.repository}}</dd>
+            </div>
+            <div class="stack-block">
+                <dt class="stack-block-label" aria-level="2" aria-posinset="3" aria-setsize="3">Digest Upload Time</dt>
+                <dd class="stack-block-content">{{artifactDetails?.upload_time | date: 'short'}}</dd>
+            </div>
+        </div>
+    </div>

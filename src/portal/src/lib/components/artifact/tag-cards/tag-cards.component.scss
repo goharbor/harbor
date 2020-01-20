@@ -1,0 +1,124 @@
+@import '../../../mixin';
+
+.card-width {
+    width: 13rem;
+}
+.card-margin {
+    margin-right: 1rem;
+}
+.card-block {
+    margin-top: 24px;
+    min-height: 100px;
+}
+.trigger-item,
+.signpost-item {
+  display: inline;
+  margin-left: 1px;
+}
+.text-overflow {
+    line-height: .5rem;
+    height: 1rem;
+}
+.form-group {
+    display: flex;
+}
+
+.form-group > label {
+    width: 100px;
+}
+
+.card-media-block > img {
+    height: 45px;
+    width: 45px;
+}
+
+.card-media-title {
+    height: 24px;
+    @include text-overflow;
+}
+.card-media-text {
+    overflow: hidden;
+    height: 21px
+}
+
+.card-media-description {
+    height: 45px;
+}
+.card-media-description > p {
+    margin-top:  0px;
+}
+
+.card-text {
+    height: 45px;
+    overflow: hidden;
+    margin-bottom: 18px;
+}
+
+.card-block {
+    margin-top: 0px;
+}
+
+.card-footer {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+.dropdown-menu .dropdown-item {
+    position: relative;
+    padding-left: .5rem;
+    padding-right: .5rem;
+    height: 1.2rem;
+  }
+  .btn-group .dropdown-menu clr-icon {
+    display: block;
+  }
+  .pull-left {
+    display: inline-block;
+    float: left;
+  }
+  
+  .pull-right {
+    display: inline-block;
+    float: right;
+  }
+  .labelDiv {
+    position: absolute;
+    left: 34px;
+    top: 5px;
+  }
+  .trigger-item,
+.signpost-item {
+  display: inline;
+}
+
+.signpost-content-body .label {
+  margin: .3rem;
+}
+
+.labelDiv {
+  position: absolute;
+  left: 34px;
+  top: 5px;
+}
+
+.trigger-item hbr-label-piece {
+  display: flex !important;
+  margin: 6px 0;
+}
+
+:host>>>.signpost-content {
+  min-width: 4rem;
+}
+
+:host>>>.signpost-content-body {
+  padding: 0 .4rem;
+}
+
+:host>>>.signpost-content-header {
+  display: none;
+}
+
+.filterLabelPiece {
+  position: absolute;
+  top: 8px;
+  z-index: 1;
+}

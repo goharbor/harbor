@@ -11,7 +11,7 @@
 }
 
 .refresh-btn:hover {
-  color: #007CBB;
+  color: #007cbb;
 }
 
 .sub-header-title {
@@ -28,7 +28,7 @@
   height: 0;
 }
 
-:host>>>.datagrid-placeholder {
+:host >>> .datagrid-placeholder {
   display: none;
 }
 
@@ -44,7 +44,7 @@
   margin-right: 6px;
 }
 
-:host>>>.datagrid clr-dg-column {
+:host >>> .datagrid clr-dg-column {
   min-width: 80px;
 }
 
@@ -62,16 +62,16 @@
 
 .dropdown-menu .dropdown-item {
   position: relative;
-  padding-left: .5rem;
-  padding-right: .5rem;
-  line-height: 1.0;
+  padding-left: 0.5rem;
+  padding-right: 0.5rem;
+  line-height: 1;
   height: 1.2rem;
 }
 
 .dropdown-menu input {
   position: relative;
-  margin-left: .5rem;
-  margin-right: .5rem;
+  margin-left: 0.5rem;
+  margin-right: 0.5rem;
 }
 
 .pull-left {
@@ -86,9 +86,7 @@
 
 .btn-link {
   display: inline-flex;
-  width: 15px;
   min-width: 15px;
-  color: black;
   vertical-align: super;
 }
 
@@ -98,7 +96,7 @@
 }
 
 .signpost-content-body .label {
-  margin: .3rem;
+  margin: 0.3rem;
 }
 
 .labelDiv {
@@ -112,15 +110,15 @@
   margin: 6px 0;
 }
 
-:host>>>.signpost-content {
+:host >>> .signpost-content {
   min-width: 4rem;
 }
 
-:host>>>.signpost-content-body {
-  padding: 0 .4rem;
+:host >>> .signpost-content-body {
+  padding: 0 0.4rem;
 }
 
-:host>>>.signpost-content-header {
+:host >>> .signpost-content-header {
   display: none;
 }
 
@@ -141,14 +139,14 @@
   flex-direction: column;
   padding: .5rem 0;
   border: 1px solid #ccc;
-  box-shadow: 0 1px 0.125rem hsla(0, 0%, 45%, .25);
+  box-shadow: 0 1px 0.125rem hsla(0, 0%, 45%, 0.25);
   min-width: 5rem;
   max-width: 15rem;
-  border-radius: .125rem;
+  border-radius: 0.125rem;
   .form-group input {
     position: relative;
-    margin-left: .5rem;
-    margin-right: .5rem;
+    margin-left: 0.5rem;
+    margin-right: 0.5rem;
   }
 }
 
@@ -168,7 +166,7 @@
 .labelBtn {
   position: relative;
   overflow: hidden;
-  font-size: .58333rem;
+  font-size: 0.58333rem;
   letter-spacing: normal;
   font-weight: 400;
   background: transparent;
@@ -191,11 +189,11 @@
 }
 
 .filterLabelHeader {
-  font-size: .5rem;
+  font-size: 0.5rem;
   font-weight: 600;
   letter-spacing: normal;
-  padding: 0 .5rem;
-  line-height: .75rem;
+  padding: 0 0.5rem;
+  line-height: 0.75rem;
   margin: 0;
 }
 
@@ -224,16 +222,23 @@ hbr-image-name-input {
 .datagrid-top {
   .flex-max-width {
     max-width: 220px;
-    min-width: 130px;
+    min-width: 200px;
+  }
+  .icon-cell {
+    max-width: 1.5rem;
+    min-width: 1.5rem;
+    clr-icon {
+      cursor: pointer;
+    }
   }
 }
 
 .color-green {
-  color: #1D5100;
+  color: #1d5100;
 }
 
 .color-red {
-  color: #C92100;
+  color: #c92100;
 }
 
 .color-gray {
@@ -270,7 +275,117 @@ clr-datagrid {
 .max-width-100 {
   max-width: 100%;
 }
+.max-width-38 {
+  max-width: 38px !important;
+  min-width: 0 !important;
+}
 
 clr-datagrid {
   height: auto !important;
+}
+.artifact-accordion {
+  width: 100%;
+}
+// clr-accordion-content {
+//   display: block;
+// }
+clr-dg-row-detail {
+  padding: 0 !important;
+  ::ng-deep {
+    .datagrid-cell {
+      max-width: 0 !important;
+      min-width: 0 !important;
+      padding: 0 !important;
+    }
+    .clr-accordion-header,
+    .clr-accordion-content {
+      padding-left: 3rem !important;
+    }
+  }
+  artifact-list {
+    width: 100%;
+  }
+  .stack-view {
+    width: 100%;
+    .flex-1 {
+      min-width: 100%;
+      padding-left: 3.7rem;
+      display: flex;
+      align-items: center;
+    }
+    .pl-4 {
+      padding-left: 4rem;
+    }
+    .stack-block-expandable {
+      >.stack-block-label::before {
+        margin: 0;
+      }
+    }
+    .icon-folder {
+      margin: 0 6px 0 7px;
+    }
+  }
+}
+.artifact-icon {
+  width: 0.8rem;
+  height: 0.8rem;
+}
+.width-p-100 {
+  width: 100%;
+}
+.w-rem-4 {
+  width: 4rem !important;
+}
+.tag-header-color {
+  color: #fff;
+}
+.tag-body-color {
+  color: #ccc;
+}
+.table {
+  .tag-tr {
+    td {
+      padding-top: 8px;
+      padding-bottom: 2px;
+    }
+  }
+  .tag-thead {
+    th {
+      padding-top: 0;
+      padding-bottom: 5px;
+      border: none;
+      font-weight: 400;
+    }
+  }
+}
+
+.action-dropdown {
+  .action-dropdown-item {
+    position: static;
+    padding-left: 1rem;
+    line-height: inherit;
+    height: auto;
+    &::before {
+      margin-top: .5rem;
+    }
+  }
+  .dropdown-header {
+    text-transform: none;
+  }
+}
+.filter-label-input {
+  ::ng-deep {
+    .clr-input-wrapper {
+      max-height: 2rem;
+    }
+
+  }
+
+}
+.scan-btn{
+  margin-top: -.3rem;
+}
+
+.eslip {
+  margin-left: -3px;
 }

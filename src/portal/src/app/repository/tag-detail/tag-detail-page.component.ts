@@ -23,6 +23,7 @@ import { SessionService } from '../../shared/session.service';
 })
 export class TagDetailPageComponent implements OnInit {
   tagId: string;
+  artifactDigest: string;
   repositoryId: string;
   projectId: string | number;
 
@@ -36,7 +37,7 @@ export class TagDetailPageComponent implements OnInit {
 
   ngOnInit(): void {
     this.repositoryId = this.route.snapshot.params["repo"];
-    this.tagId = this.route.snapshot.params["tag"];
+    this.artifactDigest = this.route.snapshot.params["digest"];
     this.projectId = this.route.snapshot.params["id"];
   }
 

@@ -615,6 +615,7 @@
         "DELETE": "Sil",
         "NAME": "İsim",
         "TAGS_COUNT": "Etiketler",
+        "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "İndirmeler",
         "PULL_COMMAND": "İndirme Komutu",
         "PULL_TIME": "İndirme Zamanı",
@@ -633,6 +634,8 @@
         "TAGS_NO_DELETE": "Salt okunur modda silmek yasaktır.",
         "FILTER_FOR_REPOSITORIES": "Depoları Filtrele",
         "TAG": "Etiket",
+        "ARTIFACT": "Aarifact",
+        "ARTIFACTS": "Aarifacts",
         "SIZE": "Boyut",
         "VULNERABILITY": "Güvenlik Açığı",
         "BUILD_HISTORY": "Geçmişi Oluştur",
@@ -659,8 +662,9 @@
         "LABELS": "Etiketler",
         "ADD_LABEL_TO_IMAGE": "Bu imaja etiketler ekle",
         "FILTER_BY_LABEL": "İmajları etikete göre filtrele",
+        "FILTER_ARTIFACT_BY_LABEL": "Filter actifact by label",
         "ADD_LABELS": "Etiketler Ekle",
-        "RETAG": "Yeniden etiketleme",
+        "RETAG": "Copy tag",
         "ACTION": "AKSİYON",
         "DEPLOY": "YÜKLE",
         "ADDITIONAL_INFO": "Ek Bilgi Ekle",
@@ -986,6 +990,9 @@
         "PUSH_COMMAND": "Bu projeye bir imaj gönder:",
         "COPY_ERROR": "Kopyalama başarısız oldu, lütfen komut referanslarını el ile kopyalamayı deneyin."
     },
+    "ARTIFACT": {
+        "FILTER_FOR_ARTIFACTS": "Filter Artifacts"
+    },
     "TAG": {
         "CREATION_TIME_PREFIX": "Oluştur",
         "CREATOR_PREFIX": "tarafından",
@@ -1006,7 +1013,8 @@
         "AUTHOR": "Yazar",
         "LABELS": "Etiketler",
         "CREATION": "Oluşturma",
-        "COMMAND": "Komutlar"
+        "COMMAND": "Komutlar",
+        "UPLOADTIME": "Upload Time"
     },
     "LABEL": {
         "LABEL": "Etiket",

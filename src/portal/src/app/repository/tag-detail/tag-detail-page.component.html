@@ -6,9 +6,9 @@
         <span class="back-icon"><</span>
         <a (click)="goBack(repositoryId)">{{repositoryId}}</a>
     </div>
-    <hbr-tag-detail (backEvt)="goBack($event)" 
-    [tagId]="tagId"
+    <artifact-summary (backEvt)="goBack($event)" 
+    [artifactDigest]="artifactDigest"
     [withAdmiral]="withAdmiral"
     [projectId]="projectId"
-    [repositoryId]="repositoryId"></hbr-tag-detail>
+    [repositoryId]="repositoryId"></artifact-summary>
 </div>

@@ -185,7 +185,7 @@ const harborRoutes: Routes = [
         }
       },
       {
-        path: 'projects/:id/repositories/:repo/tags/:tag',
+        path: 'projects/:id/repositories/:repo/artifacts/:digest',
         component: TagDetailPageComponent,
         canActivate: [MemberGuard],
         resolve: {

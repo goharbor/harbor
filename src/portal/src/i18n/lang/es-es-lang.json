@@ -617,6 +617,7 @@
         "DELETE": "Eliminar",
         "NAME": "Nombre",
         "TAGS_COUNT": "Etiquetas",
+        "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Comando Pull",
         "PULL_TIME": "Pull Time",
@@ -635,6 +636,8 @@
         "TAGS_NO_DELETE": "Delete is prohibited in read only mode.",
         "FILTER_FOR_REPOSITORIES": "Filtrar Repositorios",
         "TAG": "Etiqueta",
+        "ARTIFACT": "Aarifact",
+        "ARTIFACTS": "Aarifacts",
         "SIZE": "Size",
         "VULNERABILITY": "Vulnerabilities",
         "BUILD_HISTORY": "Construir Historia",
@@ -661,8 +664,9 @@
         "LABELS": "Labels",
         "ADD_LABEL_TO_IMAGE": "Add labels to this image",
         "FILTER_BY_LABEL": "Filter images by label",
+        "FILTER_ARTIFACT_BY_LABEL": "Filter actifact by label",
         "ADD_LABELS": "Add labels",
-        "RETAG": "Retag",
+        "RETAG": "Copy tag",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Add Additional Info",
@@ -986,6 +990,9 @@
         "PUSH_COMMAND": "Push an image to this project:",
         "COPY_ERROR": "Copy failed, please try to manually copy the command references."
     },
+    "ARTIFACT": {
+        "FILTER_FOR_ARTIFACTS": "Filter Artifacts"
+    },
     "TAG": {
         "CREATION_TIME_PREFIX": "Create on",
         "CREATOR_PREFIX": "by",
@@ -1006,7 +1013,8 @@
         "AUTHOR": "Author",
         "LABELS": "Labels",
         "CREATION": "Tiempo de creación",
-        "COMMAND": "Mando"
+        "COMMAND": "Mando",
+        "UPLOADTIME": "Upload Time"
 
     },
     "LABEL": {
