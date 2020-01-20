@@ -29,3 +29,23 @@ func WithMiddlewares(handler http.Handler, middlewares ...Middleware) http.Handl
 	}
 	return handler
 }
+
+// Skipper defines a function to skip middleware.
+// Returning true skips processing the middleware.
+type Skipper func(*http.Request) bool
+
+// New make a middleware from fn which type is func(w http.ResponseWriter, r *http.Request, next http.Handler)
+func New(fn func(http.ResponseWriter, *http.Request, http.Handler), skippers ...Skipper) func(http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			for _, skipper := range skippers {
+				if skipper(r) {
+					next.ServeHTTP(w, r)
+					return
+				}
+			}
+
+			fn(w, r, next)
+		})
+	}
+}

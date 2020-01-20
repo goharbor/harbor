@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package middleware
+package requestid
 
 import (
 	"net/http"
@@ -26,22 +26,22 @@ func TestRequestID(t *testing.T) {
 	assert := assert.New(t)
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		w.WriteHeader(200)
+		w.WriteHeader(http.StatusOK)
 	})
 
 	req1 := httptest.NewRequest(http.MethodGet, "/req1", nil)
-	rr1 := httptest.NewRecorder()
-	next.ServeHTTP(rr1, req1)
-	assert.Equal(rr1.Header().Get(HeaderXRequestID), "")
+	rec1 := httptest.NewRecorder()
+	next.ServeHTTP(rec1, req1)
+	assert.Equal("", rec1.Header().Get(HeaderXRequestID))
 
 	req2 := httptest.NewRequest(http.MethodGet, "/req2", nil)
-	rr2 := httptest.NewRecorder()
-	RequestID()(next).ServeHTTP(rr2, req2)
-	assert.NotEqual(rr2.Header().Get(HeaderXRequestID), "")
+	rec2 := httptest.NewRecorder()
+	Middleware()(next).ServeHTTP(rec2, req2)
+	assert.NotEqual("", rec2.Header().Get(HeaderXRequestID))
 
-	req3 := httptest.NewRequest(http.MethodGet, "/req2", nil)
+	req3 := httptest.NewRequest(http.MethodGet, "/req3", nil)
 	req3.Header.Add(HeaderXRequestID, "852803be-e5fe-499b-bbea-c9e5b5f43916")
-	rr3 := httptest.NewRecorder()
-	RequestID()(next).ServeHTTP(rr3, req3)
-	assert.Equal(rr3.Header().Get(HeaderXRequestID), "852803be-e5fe-499b-bbea-c9e5b5f43916")
+	rec3 := httptest.NewRecorder()
+	Middleware()(next).ServeHTTP(rec3, req3)
+	assert.Equal("852803be-e5fe-499b-bbea-c9e5b5f43916", rec3.Header().Get(HeaderXRequestID))
 }
