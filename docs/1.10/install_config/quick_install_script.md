@@ -2,9 +2,11 @@
 
 The Harbor community has provided a script that with a single command prepares an Ubuntu 18.04 machine for Harbor and deploys the latest stable version.
 
+This script installs Harbor with an HTTP connection, Clair, and the Chart Repository Service. It does not install Notary, which requires HTTPS.
+
 ## Prerequisites
 
-You have a machine or VM that is running Ubuntu 18.04.
+You have a machine or VM that is running Ubuntu 18.04. The script does not work on earlier versions of Ubuntu.
 
 ## Procedure
 
@@ -31,3 +33,5 @@ You have a machine or VM that is running Ubuntu 18.04.
    - User name: `admin`
    - Password: `VMware12345` 
 1. Enter the Harbor address in a browser to log in to the Harbor interface.
+
+After deployment, you can enable HTTPS and Notary by reconfiguring the installation. For information, see [Reconfigure Harbor and Manage the Harbor Lifecycle](reconfigure_manage_lifecycle.md).
