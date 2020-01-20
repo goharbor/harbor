@@ -27,12 +27,12 @@ func New(next http.Handler) http.Handler {
 
 // ServeHTTP ...
 func (r *regTokenHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request) {
-	imgRaw := req.Context().Value(util.ImageInfoCtxKey)
+	imgRaw := req.Context().Value(util.ArtifactInfoCtxKey)
 	if imgRaw == nil {
 		r.next.ServeHTTP(rw, req)
 		return
 	}
-	img, _ := req.Context().Value(util.ImageInfoCtxKey).(util.ImageInfo)
+	img, _ := req.Context().Value(util.ArtifactInfoCtxKey).(util.ArtifactInfo)
 	if img.Digest == "" {
 		r.next.ServeHTTP(rw, req)
 		return
