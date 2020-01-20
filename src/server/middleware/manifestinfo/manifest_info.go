@@ -49,8 +49,9 @@ func parseManifestInfoFromPath(req *http.Request) (*middleware.ManifestInfo, err
 	}
 
 	info := &middleware.ManifestInfo{
-		ProjectID:  project.ProjectID,
-		Repository: repository,
+		ProjectID:   project.ProjectID,
+		ProjectName: projectName,
+		Repository:  repository,
 	}
 
 	dgt, err := digest.Parse(reference)
