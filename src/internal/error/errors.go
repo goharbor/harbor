@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
@@ -154,4 +155,20 @@ func IsErr(err error, code string) bool {
 // IsConflictErr checks whether the err chain contains conflict error
 func IsConflictErr(err error) bool {
 	return IsErr(err, ConflictCode)
+}
+
+// ErrCode returns code of err
+func ErrCode(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	var e *Error
+	if ok := errors.As(err, &e); ok && e.Code != "" {
+		return e.Code
+	} else if ok && e.Cause != nil {
+		return ErrCode(e.Cause)
+	}
+
+	return GeneralCode
 }
