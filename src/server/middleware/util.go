@@ -9,6 +9,8 @@ type contextKey string
 const (
 	// manifestInfoKey the context key for manifest info
 	manifestInfoKey = contextKey("ManifestInfo")
+	// ScannerPullCtxKey the context key for robot account to bypass the pull policy check.
+	ScannerPullCtxKey = contextKey("ScannerPullCheck")
 )
 
 // ManifestInfo ...
@@ -28,4 +30,9 @@ func NewManifestInfoContext(ctx context.Context, info *ManifestInfo) context.Con
 func ManifestInfoFromContext(ctx context.Context) (*ManifestInfo, bool) {
 	info, ok := ctx.Value(manifestInfoKey).(*ManifestInfo)
 	return info, ok
+}
+
+// NewScannerPullContext returns context with policy check info
+func NewScannerPullContext(ctx context.Context, scannerPull bool) context.Context {
+	return context.WithValue(ctx, ScannerPullCtxKey, scannerPull)
 }

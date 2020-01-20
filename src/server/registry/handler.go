@@ -19,6 +19,8 @@ import (
 	pkg_repo "github.com/goharbor/harbor/src/pkg/repository"
 	pkg_tag "github.com/goharbor/harbor/src/pkg/tag"
 	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/goharbor/harbor/src/server/middleware/manifestinfo"
+	"github.com/goharbor/harbor/src/server/middleware/regtoken"
 	"github.com/goharbor/harbor/src/server/registry/blob"
 	"net/http"
 	"net/http/httputil"
@@ -49,7 +51,7 @@ func New(url *url.URL) http.Handler {
 	// handle manifest
 	// TODO maybe we should split it into several sub routers based on the method
 	manifestRouter := rootRouter.Path("/v2/{name:.*}/manifests/{reference}").Subrouter()
-	manifestRouter.NewRoute().Methods(http.MethodGet).Handler(manifest.NewHandler(project.Mgr, proxy))
+	manifestRouter.NewRoute().Methods(http.MethodGet).Handler(middleware.WithMiddlewares(manifest.NewHandler(project.Mgr, proxy), manifestinfo.Middleware(), regtoken.Middleware()))
 	manifestRouter.NewRoute().Methods(http.MethodHead).Handler(manifest.NewHandler(project.Mgr, proxy))
 	manifestRouter.NewRoute().Methods(http.MethodPut).Handler(middleware.WithMiddlewares(manifest.NewHandler(project.Mgr, proxy), middleware.ReadOnly()))
 	manifestRouter.NewRoute().Methods(http.MethodDelete).Handler(middleware.WithMiddlewares(manifest.NewHandler(project.Mgr, proxy), middleware.ReadOnly()))
