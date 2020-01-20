@@ -7,7 +7,7 @@ import { ImageNameInputComponent } from "../image-name-input/image-name-input.co
 import { RepositoryComponent } from './repository.component';
 import { GridViewComponent } from '../gridview/grid-view.component';
 import { FilterComponent } from '../filter/filter.component';
-import { TagComponent } from '../tag/tag.component';
+import { ArtifactListTabComponent } from '../artifact/artifact-list-tab.component';
 import { ErrorHandler } from '../../utils/error-handler';
 import { Repository, RepositoryItem, Tag, SystemInfo, Label } from '../../services';
 import { SERVICE_CONFIG, IServiceConfig } from '../../entities/service.config';

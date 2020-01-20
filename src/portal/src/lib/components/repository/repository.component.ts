@@ -16,7 +16,7 @@ import { TranslateService } from '@ngx-translate/core';
 import { State } from '../../services/interface';
 
 import { RepositoryService } from '../../services/repository.service';
-import { Repository, RepositoryItem, Tag, TagClickEvent,
+import { Repository, RepositoryItem, Tag, ArtifactClickEvent,
   SystemInfo, SystemInfoService, TagService } from '../../services';
 import { ErrorHandler } from '../../utils/error-handler';
 import { ConfirmationState, ConfirmationTargets } from '../../entities/shared.const';
@@ -38,10 +38,11 @@ export class RepositoryComponent implements OnInit {
   @Input() projectId: number;
   @Input() memberRoleID: number;
   @Input() repoName: string;
+  @Input() referArtifactName: string;
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
   @Input() isGuest: boolean;
-  @Output() tagClickEvent = new EventEmitter<TagClickEvent>();
+  @Output() tagClickEvent = new EventEmitter<ArtifactClickEvent>();
   @Output() backEvt: EventEmitter<any> = new EventEmitter<any>();
 
   onGoing = false;
@@ -79,6 +80,10 @@ export class RepositoryComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    let repoName = this.repoName.split("sha256:")[0];
+    this.referArtifactName = `${this.repoName.split(repoName)[1]}` ? `${this.repoName.split(repoName)[1]}` : "";
+    this.repoName = this.repoName.split('/')[1] || this.repoName.split('/')[0];
+    this.repoName = this.repoName.split(":sha256:")[0];
     if (!this.projectId) {
       this.errorHandler.error('Project ID cannot be unset.');
       return;
@@ -107,7 +112,7 @@ export class RepositoryComponent implements OnInit {
     this.retrieve();
   }
 
-  watchTagClickEvt(tagClickEvt: TagClickEvent): void {
+  watchTagClickEvt(tagClickEvt: ArtifactClickEvent): void {
     this.tagClickEvent.emit(tagClickEvt);
   }
 

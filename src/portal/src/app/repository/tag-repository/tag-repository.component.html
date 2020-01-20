@@ -4,7 +4,7 @@
         <span class="back-icon"><</span>
         <a (click)="watchGoBackEvt(projectId)">{{'REPOSITORY.REPOSITORIES'| translate}}</a>
     </div>
-    <hbr-repository [repoName]="repoName" [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole"
+    <hbr-repository [repoName]="repoName" [referArtifactName]="referArtifactName"  [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole"
                     [projectId]="projectId" [memberRoleID]="projectMemberRoleId" [isGuest]="isGuest"
                     (tagClickEvent)="watchTagClickEvt($event)" (backEvt)="watchGoBackEvt($event)"></hbr-repository>
 </div>

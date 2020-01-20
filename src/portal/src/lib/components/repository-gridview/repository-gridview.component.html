@@ -30,11 +30,12 @@
                     <button type="button" class="btn  btn-secondary" (click)="deleteRepos(selectedRow)" [disabled]="!(selectedRow.length)|| !hasDeleteRepositoryPermission"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}</button>
                 </clr-dg-action-bar>
                 <clr-dg-column [clrDgField]="'q'" [clrDgSortBy]="'name'">{{'REPOSITORY.NAME' | translate}}</clr-dg-column>
-                <clr-dg-column>{{'REPOSITORY.TAGS_COUNT' | translate}}</clr-dg-column>
+                <clr-dg-column>{{'REPOSITORY.ARTIFACTS_COUNT' | translate}}</clr-dg-column>
                 <clr-dg-column [clrDgSortBy]="'pull_count'">{{'REPOSITORY.PULL_COUNT' | translate}}</clr-dg-column>
                 <clr-dg-placeholder>{{'REPOSITORY.PLACEHOLDER' | translate }}</clr-dg-placeholder>
                 <clr-dg-row *ngFor="let r of repositories"  [clrDgItem]="r">
                     <clr-dg-cell><a href="javascript:void(0)" (click)="watchRepoClickEvt(r)"><span *ngIf="withAdmiral" class="list-img"><img [src]="getImgLink(r)"/></span>{{r.name}}</a></clr-dg-cell>
+                    <!-- to do -->
                     <clr-dg-cell>{{r.tags_count}}</clr-dg-cell>
                     <clr-dg-cell>{{r.pull_count}}</clr-dg-cell>
                 </clr-dg-row>
@@ -72,7 +73,7 @@
                         {{item.description || ('REPOSITORY.NO_INFO' | translate)}}
                     </div>
                     <div class="form-group">
-                        <label>{{'REPOSITORY.TAGS_COUNT' | translate}}</label>
+                        <label>{{'REPOSITORY.ARTIFACTS_COUNT' | translate}}</label>
                         <div>{{item.tags_count}}</div>
                     </div>
                     <div class="form-group">

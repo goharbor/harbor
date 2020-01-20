@@ -616,6 +616,7 @@
         "DELETE": "Remover",
         "NAME": "Nome",
         "TAGS_COUNT": "Tags",
+        "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Comando de Pull",
         "PULL_TIME": "Pull Time",
@@ -634,6 +635,8 @@
         "TAGS_NO_DELETE": "Remover é proibido em modo somente leitura.",
         "FILTER_FOR_REPOSITORIES": "Filtrar repositórios",
         "TAG": "Tag",
+        "ARTIFACT": "Aarifact",
+        "ARTIFACTS": "Aarifacts",
         "SIZE": "Tamanho",
         "VULNERABILITY": "Vulnerabilidade",
         "SIGNED": "Assinada",
@@ -660,7 +663,9 @@
         "LABELS": "Labels",
         "ADD_LABEL_TO_IMAGE": "Adicionar labels a essa imagem",
         "FILTER_BY_LABEL": "Filtrar imagens por label",
+        "FILTER_ARTIFACT_BY_LABEL": "Filter actifact by label",
         "ADD_LABELS": "Adicionar labels",
+        "RETAG": "Copy tag",
         "ACTION": "AÇÃO",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Adicionar informação adicional",
@@ -981,6 +986,9 @@
         "PUSH_COMMAND": "Envia uma imagem para esse projeto:",
         "COPY_ERROR": "Copia falhou, por favor tente copiar o comando de referência manualmente."
     },
+    "ARTIFACT": {
+        "FILTER_FOR_ARTIFACTS": "Filter Artifacts"
+    },
     "TAG": {
         "CREATION_TIME_PREFIX": "Criado em",
         "CREATOR_PREFIX": "por",
@@ -998,7 +1006,8 @@
         "COPY_ERROR": "Cópia falhou, por favor tente copiar manualmente.",
         "FILTER_FOR_TAGS": "Filtrar Tags",
         "AUTHOR": "Autor",
-        "LABELS": "Labels"
+        "LABELS": "Labels",
+        "UPLOADTIME": "Upload Time"
     },
     "LABEL": {
         "LABEL": "Label",

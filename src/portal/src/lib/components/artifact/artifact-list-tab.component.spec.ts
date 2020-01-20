@@ -4,7 +4,7 @@ import { CUSTOM_ELEMENTS_SCHEMA, DebugElement } from "@angular/core";
 import { SharedModule } from "../../utils/shared/shared.module";
 import { ConfirmationDialogComponent } from "../confirmation-dialog/confirmation-dialog.component";
 import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
-import { TagComponent } from "./tag.component";
+import { ArtifactListTabComponent } from "./artifact-list-tab.component";
 
 import { ErrorHandler } from "../../utils/error-handler/error-handler";
 import { Label, Tag } from "../../services/interface";
@@ -26,10 +26,10 @@ import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { HttpClient } from "@angular/common/http";
 import { ChannelService } from "../../services/channel.service";
 
-describe("TagComponent (inline template)", () => {
+describe("ArtifactListTabComponent (inline template)", () => {
 
-  let comp: TagComponent;
-  let fixture: ComponentFixture<TagComponent>;
+  let comp: ArtifactListTabComponent;
+  let fixture: ComponentFixture<ArtifactListTabComponent>;
   let tagService: TagService;
   let userPermissionService: UserPermissionService;
   let spy: jasmine.Spy;
@@ -129,7 +129,7 @@ describe("TagComponent (inline template)", () => {
         CUSTOM_ELEMENTS_SCHEMA
       ],
       declarations: [
-        TagComponent,
+        ArtifactListTabComponent,
         LabelPieceComponent,
         ConfirmationDialogComponent,
         ImageNameInputComponent,
@@ -152,7 +152,7 @@ describe("TagComponent (inline template)", () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(TagComponent);
+    fixture = TestBed.createComponent(ArtifactListTabComponent);
     comp = fixture.componentInstance;
 
     comp.projectId = 1;
