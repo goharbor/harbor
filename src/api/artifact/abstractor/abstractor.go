@@ -26,7 +26,14 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/opencontainers/image-spec/specs-go/v1"
+	"regexp"
+	"strings"
 )
+
+// ArtifactTypeUnknown defines the type for the unknown artifacts
+const ArtifactTypeUnknown = "UNKNOWN"
+
+var artifactTypeRegExp = regexp.MustCompile(`^application/vnd\.[^.]*\.(.*)\.config\.[^.]*\+json$`)
 
 // Abstractor abstracts the specific information for different types of artifacts
 type Abstractor interface {
@@ -109,10 +116,22 @@ func (a *abstractor) Abstract(ctx context.Context, artifact *artifact.Artifact) 
 		return fmt.Errorf("unsupported manifest media type: %s", artifact.ManifestMediaType)
 	}
 
-	resolver, err := resolver.Get(artifact.MediaType)
-	if err != nil {
-		return err
+	resolver := resolver.Get(artifact.MediaType)
+	if resolver != nil {
+		artifact.Type = resolver.ArtifactType()
+		return resolver.Resolve(ctx, content, artifact)
 	}
-	artifact.Type = resolver.ArtifactType()
-	return resolver.Resolve(ctx, content, artifact)
+
+	// if got no resolver, try to parse the artifact type based on the media type
+	artifact.Type = parseArtifactType(artifact.MediaType)
+	return nil
+}
+
+func parseArtifactType(mediaType string) string {
+	strs := artifactTypeRegExp.FindStringSubmatch(mediaType)
+	if len(strs) == 2 {
+		return strings.ToUpper(strs[1])
+	}
+	// can not get the artifact type from the media type, return unknown
+	return ArtifactTypeUnknown
 }
