@@ -18,8 +18,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor"
-	// registry image resolvers
+	// register image resolvers
 	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
+	// register chart resolver
+	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/chart"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
