@@ -73,7 +73,6 @@ func (a *abstractor) Abstract(ctx context.Context, artifact *artifact.Artifact) 
 	switch artifact.ManifestMediaType {
 	// docker manifest v1
 	case "", "application/json", schema1.MediaTypeSignedManifest:
-		// TODO as the manifestmediatype isn't null, so add not null constraint in database
 		// unify the media type of v1 manifest to "schema1.MediaTypeSignedManifest"
 		artifact.ManifestMediaType = schema1.MediaTypeSignedManifest
 		// as no config layer in the docker v1 manifest, use the "schema1.MediaTypeSignedManifest"

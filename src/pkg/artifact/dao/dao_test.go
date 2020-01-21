@@ -16,7 +16,6 @@ package dao
 
 import (
 	"context"
-	"errors"
 	beegoorm "github.com/astaxie/beego/orm"
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	ierror "github.com/goharbor/harbor/src/internal/error"
@@ -38,9 +37,10 @@ var (
 
 type daoTestSuite struct {
 	suite.Suite
-	dao        DAO
-	artifactID int64
-	ctx        context.Context
+	dao         DAO
+	artifactID  int64
+	referenceID int64
+	ctx         context.Context
 }
 
 func (d *daoTestSuite) SetupSuite() {
@@ -66,10 +66,19 @@ func (d *daoTestSuite) SetupTest() {
 	id, err := d.dao.Create(d.ctx, artifact)
 	d.Require().Nil(err)
 	d.artifactID = id
+
+	id, err = d.dao.CreateReference(d.ctx, &ArtifactReference{
+		ParentID: d.artifactID,
+		ChildID:  d.artifactID,
+	})
+	d.Require().Nil(err)
+	d.referenceID = id
 }
 
 func (d *daoTestSuite) TearDownTest() {
-	err := d.dao.Delete(d.ctx, d.artifactID)
+	err := d.dao.DeleteReferences(d.ctx, d.artifactID)
+	d.Require().Nil(err)
+	err = d.dao.Delete(d.ctx, d.artifactID)
 	d.Require().Nil(err)
 }
 
@@ -188,9 +197,12 @@ func (d *daoTestSuite) TestDelete() {
 	// not exist
 	err := d.dao.Delete(d.ctx, 100021)
 	d.Require().NotNil(err)
-	var e *ierror.Error
-	d.Require().True(errors.As(err, &e))
-	d.Equal(ierror.NotFoundCode, e.Code)
+	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+
+	// foreign key constraint
+	err = d.dao.Delete(d.ctx, d.artifactID)
+	d.Require().NotNil(err)
+	d.True(ierror.IsErr(err, ierror.ViolateForeignKeyConstraintCode))
 }
 
 func (d *daoTestSuite) TestUpdate() {
@@ -212,46 +224,47 @@ func (d *daoTestSuite) TestUpdate() {
 		ID: 10000,
 	})
 	d.Require().NotNil(err)
-	var e *ierror.Error
-	d.Require().True(errors.As(err, &e))
-	d.Equal(ierror.NotFoundCode, e.Code)
+	d.True(ierror.IsErr(err, ierror.NotFoundCode))
 }
 
-func (d *daoTestSuite) TestReference() {
-	// create reference
-	id, err := d.dao.CreateReference(d.ctx, &ArtifactReference{
-		ParentID: d.artifactID,
-		ChildID:  10000,
-	})
-	d.Require().Nil(err)
+func (d *daoTestSuite) TestCreateReference() {
+	// happy pass is covered in SetupTest
 
 	// conflict
-	_, err = d.dao.CreateReference(d.ctx, &ArtifactReference{
+	_, err := d.dao.CreateReference(d.ctx, &ArtifactReference{
 		ParentID: d.artifactID,
-		ChildID:  10000,
+		ChildID:  d.artifactID,
 	})
 	d.Require().NotNil(err)
 	d.True(ierror.IsErr(err, ierror.ConflictCode))
 
-	// list reference
+	// foreign key constraint
+	_, err = d.dao.CreateReference(d.ctx, &ArtifactReference{
+		ParentID: d.artifactID,
+		ChildID:  1000,
+	})
+	d.Require().NotNil(err)
+	d.True(ierror.IsErr(err, ierror.ViolateForeignKeyConstraintCode))
+}
+
+func (d *daoTestSuite) TestListReferences() {
 	references, err := d.dao.ListReferences(d.ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"parent_id": d.artifactID,
 		},
 	})
-	d.Require().Equal(1, len(references))
-	d.Equal(id, references[0].ID)
-
-	// delete reference
-	err = d.dao.DeleteReferences(d.ctx, d.artifactID)
 	d.Require().Nil(err)
+	d.Require().Equal(1, len(references))
+	d.Equal(d.referenceID, references[0].ID)
+}
+
+func (d *daoTestSuite) TestDeleteReferences() {
+	// happy pass is covered in TearDownTest
 
 	// parent artifact not exist
-	err = d.dao.DeleteReferences(d.ctx, 10000)
+	err := d.dao.DeleteReferences(d.ctx, 10000)
 	d.Require().NotNil(err)
-	var e *ierror.Error
-	d.Require().True(errors.As(err, &e))
-	d.Equal(ierror.NotFoundCode, e.Code)
+	d.True(ierror.IsErr(err, ierror.NotFoundCode))
 }
 
 func TestDaoTestSuite(t *testing.T) {

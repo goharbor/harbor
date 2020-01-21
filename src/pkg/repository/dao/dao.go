@@ -79,7 +79,7 @@ func (d *dao) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
 		return nil, err
 	}
 	if err := ormer.Read(repository); err != nil {
-		if e, ok := orm.IsNotFoundError(err, "repository %d not found", id); ok {
+		if e := orm.AsNotFoundError(err, "repository %d not found", id); e != nil {
 			err = e
 		}
 		return nil, err
@@ -93,7 +93,7 @@ func (d *dao) Create(ctx context.Context, repository *models.RepoRecord) (int64,
 		return 0, err
 	}
 	id, err := ormer.Insert(repository)
-	if e, ok := orm.IsConflictError(err, "repository %s already exists", repository.Name); ok {
+	if e := orm.AsConflictError(err, "repository %s already exists", repository.Name); e != nil {
 		err = e
 	}
 	return id, err

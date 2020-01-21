@@ -18,34 +18,44 @@ import (
 	"errors"
 	"github.com/astaxie/beego/orm"
 	ierror "github.com/goharbor/harbor/src/internal/error"
-	"strings"
+	"github.com/lib/pq"
 )
 
-// IsNotFoundError checks whether the err is orm.ErrNoRows. If it it, wrap it
-// as a src/internal/error.Error with not found error code
-func IsNotFoundError(err error, messageFormat string, args ...interface{}) (*ierror.Error, bool) {
+// AsNotFoundError checks whether the err is orm.ErrNoRows. If it it, wrap it
+// as a src/internal/error.Error with not found error code, else return nil
+func AsNotFoundError(err error, messageFormat string, args ...interface{}) *ierror.Error {
 	if errors.Is(err, orm.ErrNoRows) {
 		e := ierror.NotFoundError(err)
 		if len(messageFormat) > 0 {
 			e.WithMessage(messageFormat, args...)
 		}
-		return e, true
+		return e
 	}
-	return nil, false
+	return nil
 }
 
-// IsConflictError checks whether the err is duplicate key error. If it it, wrap it
-// as a src/internal/error.Error with conflict error code
-func IsConflictError(err error, messageFormat string, args ...interface{}) (*ierror.Error, bool) {
-	if err == nil {
-		return nil, false
+// AsConflictError checks whether the err is duplicate key error. If it it, wrap it
+// as a src/internal/error.Error with conflict error code, else return nil
+func AsConflictError(err error, messageFormat string, args ...interface{}) *ierror.Error {
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+		e := ierror.New(err).
+			WithCode(ierror.ConflictCode).
+			WithMessage(messageFormat, args...)
+		return e
 	}
-	if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-		e := ierror.ConflictError(err)
-		if len(messageFormat) > 0 {
-			e.WithMessage(messageFormat, args...)
-		}
-		return e, true
+	return nil
+}
+
+// AsForeignKeyError checks whether the err is violating foreign key constraint error. If it it, wrap it
+// as a src/internal/error.Error with violating foreign key constraint error code, else return nil
+func AsForeignKeyError(err error, messageFormat string, args ...interface{}) *ierror.Error {
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) && pqErr.Code == "23503" {
+		e := ierror.New(err).
+			WithCode(ierror.ViolateForeignKeyConstraintCode).
+			WithMessage(messageFormat, args...)
+		return e
 	}
-	return nil, false
+	return nil
 }

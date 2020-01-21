@@ -77,9 +77,7 @@ func NewController() Controller {
 	}
 }
 
-// TODO handle concurrency, the redis lock doesn't cover all cases
-// TODO As a redis lock is applied during the artifact pushing, we do not to handle the concurrent issues
-// for artifacts and tags？？
+// TODO concurrency summary
 
 type controller struct {
 	repoMgr    repository.Manager

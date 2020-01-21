@@ -25,13 +25,14 @@ import (
 
 var (
 	codeMap = map[string]int{
-		ierror.BadRequestCode:   http.StatusBadRequest,
-		ierror.UnAuthorizedCode: http.StatusUnauthorized,
-		ierror.ForbiddenCode:    http.StatusForbidden,
-		ierror.NotFoundCode:     http.StatusNotFound,
-		ierror.ConflictCode:     http.StatusConflict,
-		ierror.PreconditionCode: http.StatusPreconditionFailed,
-		ierror.GeneralCode:      http.StatusInternalServerError,
+		ierror.BadRequestCode:                  http.StatusBadRequest,
+		ierror.UnAuthorizedCode:                http.StatusUnauthorized,
+		ierror.ForbiddenCode:                   http.StatusForbidden,
+		ierror.NotFoundCode:                    http.StatusNotFound,
+		ierror.ConflictCode:                    http.StatusConflict,
+		ierror.PreconditionCode:                http.StatusPreconditionFailed,
+		ierror.ViolateForeignKeyConstraintCode: http.StatusPreconditionFailed,
+		ierror.GeneralCode:                     http.StatusInternalServerError,
 	}
 )
 
