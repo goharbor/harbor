@@ -16,11 +16,8 @@ package artifact
 
 import (
 	"context"
-	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
 	"github.com/goharbor/harbor/src/pkg/q"
-	"strconv"
-	"strings"
 	"time"
 )
 
@@ -99,24 +96,6 @@ func (m *manager) Create(ctx context.Context, artifact *Artifact) (int64, error)
 	return id, nil
 }
 func (m *manager) Delete(ctx context.Context, id int64) error {
-	// check whether the artifact is referenced by other artifacts
-	references, err := m.dao.ListReferences(ctx, &q.Query{
-		Keywords: map[string]interface{}{
-			"child_id": id,
-		},
-	})
-	if err != nil {
-		return err
-	}
-	if len(references) > 0 {
-		var ids []string
-		for _, reference := range references {
-			ids = append(ids, strconv.FormatInt(reference.ParentID, 10))
-		}
-		return ierror.PreconditionFailedError(nil).
-			WithMessage("artifact %d is referenced by other artifacts: %s", id, strings.Join(ids, ","))
-	}
-
 	// delete references
 	if err := m.dao.DeleteReferences(ctx, id); err != nil {
 		return err

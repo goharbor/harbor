@@ -16,7 +16,6 @@ package registry
 
 import (
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/server/middleware/immutable"
 	"github.com/goharbor/harbor/src/server/middleware/manifestinfo"
 	"github.com/goharbor/harbor/src/server/middleware/readonly"
@@ -41,5 +40,5 @@ func RegisterRoutes() {
 		Middleware(readonly.Middleware()).
 		Middleware(manifestinfo.Middleware()).
 		Middleware(immutable.MiddlewarePush()).
-		Handler(manifest.NewHandler(project.Mgr, proxy))
+		Handler(manifest.NewHandler(proxy))
 }
