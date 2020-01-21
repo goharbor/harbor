@@ -16,14 +16,20 @@ package scan
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"reflect"
 	"sync"
 	"time"
 
+	"github.com/docker/distribution/registry/auth/token"
+	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/config"
+	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
+	"github.com/goharbor/harbor/src/pkg/robot/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
@@ -37,11 +43,16 @@ const (
 	JobParameterRequest = "scanRequest"
 	// JobParameterMimes ...
 	JobParameterMimes = "mimeTypes"
-	// JobParameterRobotID ...
-	JobParameterRobotID = "robotID"
+	// JobParameterAuthType ...
+	JobParameterAuthType = "authType"
+	// JobParameterRobot ...
+	JobParameterRobot = "robotAccount"
 
 	checkTimeout       = 30 * time.Minute
 	firstCheckInterval = 2 * time.Second
+
+	authorizationBearer = "Bearer"
+	authorizationBasic  = "Basic"
 )
 
 // CheckInReport defines model for checking in the scan report with specified mime.
@@ -103,9 +114,18 @@ func (j *Job) Validate(params job.Parameters) error {
 		return errors.Wrap(err, "job validate")
 	}
 
-	// No need to check param robotID which os treated as an optional one.
-	// It is used to clear the generated robot account to reduce dirty data.
-	// Failure of doing this will not influence the main flow.
+	if _, err := extractRobotAccount(params); err != nil {
+		return errors.Wrap(err, "job validate")
+	}
+
+	authType, err := extractAuthType(params)
+	if err != nil {
+		return errors.Wrap(err, "job validate")
+	}
+
+	if authType != authorizationBearer && authType != authorizationBasic {
+		return errors.Wrapf(err, "job validate: not support auth type %s", authType)
+	}
 
 	return nil
 }
@@ -133,6 +153,25 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 
 	// Ignore the namespace ID here
 	req.Artifact.NamespaceID = 0
+
+	robotAccount, _ := extractRobotAccount(params)
+
+	var authorization string
+	authType, _ := extractAuthType(params)
+	if authType == authorizationBearer {
+		tokenURL, err := getInternalTokenServiceEndpoint(ctx)
+		if err != nil {
+			return errors.Wrap(err, "scan job: get token service endpoint")
+		}
+		authorization, err = makeBearerAuthorization(robotAccount, tokenURL, req.Artifact.Repository)
+	} else {
+		authorization, err = makeBasicAuthorization(robotAccount)
+	}
+	if err != nil {
+		logAndWrapError(myLogger, err, "scan job: make authorization")
+	}
+
+	req.Registry.Authorization = authorization
 	resp, err := client.SubmitScan(req)
 	if err != nil {
 		return logAndWrapError(myLogger, err, "scan job: submit scan request")
@@ -331,6 +370,29 @@ func extractRegistration(params job.Parameters) (*scanner.Registration, error) {
 	return r, nil
 }
 
+func extractRobotAccount(params job.Parameters) (*model.Robot, error) {
+	v, ok := params[JobParameterRobot]
+	if !ok {
+		return nil, errors.Errorf("missing job parameter '%s'", JobParameterRobot)
+	}
+
+	jsonData, ok := v.(string)
+	if !ok {
+		return nil, errors.Errorf(
+			"malformed job parameter '%s', expecting string but got %s",
+			JobParameterRobot,
+			reflect.TypeOf(v).String(),
+		)
+	}
+	r := &model.Robot{}
+
+	if err := r.FromJSON(jsonData); err != nil {
+		return nil, err
+	}
+
+	return r, nil
+}
+
 func extractMimeTypes(params job.Parameters) ([]string, error) {
 	v, ok := params[JobParameterMimes]
 	if !ok {
@@ -357,4 +419,61 @@ func extractMimeTypes(params job.Parameters) ([]string, error) {
 	}
 
 	return mimes, nil
+}
+
+func extractAuthType(params job.Parameters) (string, error) {
+	v, ok := params[JobParameterAuthType]
+	if !ok {
+		return "", errors.Errorf("missing job parameter '%s'", JobParameterAuthType)
+	}
+
+	authType, ok := v.(string)
+	if !ok {
+		return "", errors.Errorf(
+			"malformed job parameter '%s', expecting string but got %s",
+			JobParameterAuthType,
+			reflect.TypeOf(v).String(),
+		)
+	}
+
+	return authType, nil
+}
+
+func getInternalTokenServiceEndpoint(ctx job.Context) (string, error) {
+	cfgMgr, ok := config.FromContext(ctx.SystemContext())
+	if !ok {
+		return "", errors.Errorf("failed to get config manager")
+	}
+
+	return cfgMgr.Get(common.CoreURL).GetString() + "/service/token", nil
+}
+
+// makeBasicAuthorization creates authorization from a robot account based on the arguments for scanning.
+func makeBasicAuthorization(robotAccount *model.Robot) (string, error) {
+	basic := fmt.Sprintf("%s:%s", robotAccount.Name, robotAccount.Token)
+	encoded := base64.StdEncoding.EncodeToString([]byte(basic))
+
+	return fmt.Sprintf("Basic %s", encoded), nil
+}
+
+// makeBearerAuthorization creates bearer token from a robot account
+func makeBearerAuthorization(robotAccount *model.Robot, tokenURL string, repository string) (string, error) {
+	cred := auth.NewBasicAuthCredential(robotAccount.Name, robotAccount.Token)
+	scopes := []*token.ResourceActions{
+		{
+			Type:    "repository",
+			Name:    repository,
+			Actions: []string{"pull"},
+		},
+	}
+	t, err := auth.GetToken(tokenURL, false, cred, scopes)
+	if err != nil {
+		return "", errors.Wrap(err, "scan job: make bearer token")
+	}
+
+	if t.GetToken() == "" {
+		return "", errors.New("scan job: bearer token is empty string")
+	}
+
+	return fmt.Sprintf("Bearer %s", t.GetToken()), nil
 }

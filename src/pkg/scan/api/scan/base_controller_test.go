@@ -15,7 +15,6 @@
 package scan
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"testing"
@@ -184,8 +183,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	// Set job parameters
 	req := &v1.ScanRequest{
 		Registry: &v1.Registry{
-			URL:           "https://core.com",
-			Authorization: "Basic " + base64.StdEncoding.EncodeToString([]byte(common.RobotPrefix+"the-uuid-123:robot-account")),
+			URL: "https://core.com",
 		},
 		Artifact: suite.artifact,
 	}
@@ -196,12 +194,17 @@ func (suite *ControllerTestSuite) SetupSuite() {
 	regJSON, err := suite.registration.ToJSON()
 	require.NoError(suite.T(), err)
 
+	rb, _ := rc.CreateRobotAccount(account)
+	robotJSON, err := rb.ToJSON()
+	require.NoError(suite.T(), err)
+
 	jc := &MockJobServiceClient{}
 	params := make(map[string]interface{})
 	params[sca.JobParamRegistration] = regJSON
 	params[sca.JobParameterRequest] = rJSON
 	params[sca.JobParameterMimes] = []string{v1.MimeTypeNativeReport}
-	params[sca.JobParameterRobotID] = int64(1)
+	params[sca.JobParameterAuthType] = "Basic"
+	params[sca.JobParameterRobot] = robotJSON
 
 	j := &jm.JobData{
 		Name: job.ImageScanJob,
