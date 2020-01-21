@@ -6,7 +6,7 @@ This is the main table of contents for the Harbor 1.10.x documentation.
 
 This section describes how to install Harbor and perform the required initial configurations. These day 1 operations are performed by the Harbor Administrator.
 
-- [Introduction](install_config/index.md) 
+- [Introduction](install_config/README.md) 
 - [Test Harbor with the Demo Server](install_config/demo_server.md)
 - [Harbor Compatibility List](install_config/harbor_compatibility_list.md)
 - [Harbor Installation Prerequisites](install_config/installation_prereqs.md)
@@ -25,7 +25,7 @@ This section describes how to install Harbor and perform the required initial co
 
 This section describes how to use and maintain Harbor after deployment. These day 2 operations are performed by the Harbor Administrator.
 
-- [Introduction](administration/index.md)
+- [Introduction](administration/README.md)
 - [Configuring Authentication](administration/configure_authentication/configure_authentication.md)
    - [Configure Database Authentication](administration/configure_authentication/db_auth.md)
    - [Configure LDAP/Active Directory Authentication](administration/configure_authentication/ldap_auth.md)
@@ -56,7 +56,7 @@ This section describes how to use and maintain Harbor after deployment. These da
 
 This section describes how users with the developer, master, and project administrator roles manage and participate in Harbor projects.
 
-- [Introduction](working_with_projects/index.md)
+- [Introduction](working_with_projects/README.md)
 - [Create Projects](working_with_projects/create_projects.md)
     - [Assign Users to a Project](working_with_projects/add_users.md)
 - [Project Configuration](working_with_projects/project_configuration.md)
