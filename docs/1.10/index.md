@@ -84,3 +84,5 @@ This section describes how developers can build from Harbor source code, customi
 - [Using Make](build_customize_contribute/use_make.md)
 - [View and test Harbor REST API via Swagger](build_customize_contribute/configure_swagger.md)
 - [Registry Landscape](build_customize_contribute/registry_landscape.md)
+
+See also the list of [Articles from the community](../docs#articles-from-the-community).
