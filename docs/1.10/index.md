@@ -85,4 +85,4 @@ This section describes how developers can build from Harbor source code, customi
 - [View and test Harbor REST API via Swagger](build_customize_contribute/configure_swagger.md)
 - [Registry Landscape](build_customize_contribute/registry_landscape.md)
 
-See also the list of [Articles from the community](https://github.com/goharbor/harbor/blob/master/docs/README.md#articles-from-the-community).
+See also the list of [Articles from the Harbor Community](https://github.com/goharbor/harbor/blob/master/docs/README.md#articles-from-the-community).
