@@ -93,4 +93,10 @@ func TestLogGet(t *testing.T) {
 	assert.Equal(t, repository, logs[0].RepoName)
 	assert.Equal(t, tag, logs[0].RepoTag)
 	assert.Equal(t, operation, logs[0].Operation)
+
+	// Limited Guest 200 && no logs
+	c.credential = projLimitedGuest
+	err = handleAndParse(c, &logs)
+	require.Nil(t, err)
+	require.Equal(t, 0, len(logs))
 }
