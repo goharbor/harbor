@@ -29,13 +29,21 @@ type FakeTagManager struct {
 // List ...
 func (f *FakeTagManager) List(ctx context.Context, query *q.Query) (int64, []*tag.Tag, error) {
 	args := f.Called()
-	return int64(args.Int(0)), args.Get(1).([]*tag.Tag), args.Error(2)
+	var tags []*tag.Tag
+	if args.Get(1) != nil {
+		tags = args.Get(1).([]*tag.Tag)
+	}
+	return int64(args.Int(0)), tags, args.Error(2)
 }
 
 // Get ...
 func (f *FakeTagManager) Get(ctx context.Context, id int64) (*tag.Tag, error) {
 	args := f.Called()
-	return args.Get(0).(*tag.Tag), args.Error(1)
+	var tg *tag.Tag
+	if args.Get(0) != nil {
+		tg = args.Get(0).(*tag.Tag)
+	}
+	return tg, args.Error(1)
 }
 
 // Create ...

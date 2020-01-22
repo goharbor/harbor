@@ -18,21 +18,52 @@ securityDefinitions:
 security:
   - basicAuth: []
 paths:
-  /projects/{project_id}/repositories/{repository_id}/artifacts/{artifact_id}:
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{digest}:
     get:
-      summary: Read artifact by id
-      description: endpoint returns artifact by id
+      summary: Get the specific artifact
+      description: Get the artifact specified by the digest under the project and repository
       tags:
         - artifact
-      operationId: readArtifact
+      operationId: getArtifact
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectId'
-        - $ref: '#/parameters/repositoryId'
-        - $ref: '#/parameters/artifactId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/digest'
+        - name: with_tag
+          in: query
+          description: Specify whether the tags are inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: true
+        - name: with_label
+          in: query
+          description: Specify whether the labels are inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_scan_overview
+          in: query
+          description: Specify whether the scan overview is inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        # should be in tag level
+        - name: with_signatrue
+          in: query
+          description: Specify whether the signature is inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_immutable_status
+          in: query
+          description: Specify whether the immutable status is inclued inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          type: boolean
+          required: false
+          default: false
       responses:
         '200':
-          description: OK
+          description: Success
           schema:
             $ref: '#/definitions/Artifact'
         '401':
@@ -42,59 +73,78 @@ paths:
         '500':
           $ref: '#/responses/500'
     delete:
-      summary: Delete artifact by id
-      description: endpoint to delete the artifact by id
+      summary: Delete the specific artifact
+      description: Delete the artifact specified by the digest under the project and repository
       tags:
         - artifact
       operationId: deleteArtifact
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectId'
-        - $ref: '#/parameters/repositoryId'
-        - $ref: '#/parameters/artifactId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/digest'
       responses:
         '200':
-          description: Artifact is deleted successfully.
+          description: Success
         '401':
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
         '500':
           $ref: '#/responses/500'
-  /projects/{project_id}/repositories/{repository_id}/artifacts:
+  /projects/{project_name}/repositories/{repository_name}/artifacts:
     get:
-      summary: List artifacts of the repository
-      description: endpoint returns all artifacts of the repository.
+      summary: List artifacts
+      description: List artifacts under the specific project and repository.
       tags:
         - artifact
       operationId: listArtifacts
       parameters:
         - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectId'
-        - $ref: '#/parameters/repositoryId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
-        - name: label
+        - name: type
           in: query
-          description: Response for artifact include label info when it's true
+          description: Query the artifacts by type. Valid values can be "IMAGE", "CHART", etc.
+          type: string
+          required: false
+        - name: with_tag
+          in: query
+          description: Specify whether the tags are inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: true
+        - name: with_label
+          in: query
+          description: Specify whether the labels are inclued inside the returning artifacts
           type: boolean
           required: false
           default: false
-        - name: signature
+        - name: with_scan_overview
           in: query
-          description: Response for artifact include signature info when it's true
+          description: Specify whether the scan overview is inclued inside the returning artifacts
           type: boolean
           required: false
           default: false
-        - name: vulnerability
+        # should be in tag level
+        - name: with_signatrue
           in: query
-          description: Response for artifact include vulnerability info when it's true
+          description: Specify whether the signature is inclued inside the returning artifacts
           type: boolean
           required: false
           default: false
+        - name: with_immutable_status
+          in: query
+          description: Specify whether the immutable status is inclued inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          type: boolean
+          required: false
+          default: false
+        # TODO add other query string: type, ....
       responses:
         '200':
-          description: OK
+          description: Success
           headers:
             X-Total-Count:
               description: The total count of artifacts
@@ -115,70 +165,67 @@ paths:
 parameters:
   requestId:
     name: X-Request-Id
-    description: A unique id for the request
+    description: An unique ID for the request
     in: header
     type: string
     required: false
     minLength: 1
-  projectId:
-    name: project_id
+  projectName:
+    name: project_name
     in: path
-    description: The id of the project
+    description: The name of the project
     required: true
-    type: integer
-    format: int64
-  repositoryId:
-    name: repository_id
+    type: string
+  repositoryName:
+    name: repository_name
     in: path
-    description: The id of the repository
+    description: The name of the repository
     required: true
-    type: integer
-    format: int64
-  artifactId:
-    name: artifact_id
+    type: string
+  digest:
+    name: digest
     in: path
-    description: The id of the artifact
+    description: The digest of the artifact
     required: true
-    type: integer
-    format: int64
+    type: string
   page:
     name: page
     in: query
     type: integer
-    format: int32
+    format: int64
     required: false
-    description: 'The page number, default is 1.'
+    description: The page number
     default: 1
   pageSize:
     name: page_size
     in: query
     type: integer
-    format: int32
+    format: int64
     required: false
-    description: 'The size of per page, default is 10, maximum is 100.'
+    description: The size of per page
     default: 10
 responses:
   '401':
-    description: UnauthorizedError
+    description: Unauthorized
     headers:
       X-Request-Id:
-        description: The request id this is a response to
+        description: The ID of the corresponding request for the response
         type: string
     schema:
       $ref: '#/definitions/Error'
   '403':
-    description: ForbiddenError
+    description: Forbidden
     headers:
       X-Request-Id:
-        description: The request id this is a response to
+        description: The ID of the corresponding request for the response
         type: string
     schema:
       $ref: '#/definitions/Error'
   '500':
-    description: InternalServerError
+    description: Internal server error
     headers:
       X-Request-Id:
-        description: The request id this is a response to
+        description: The ID of the corresponding request for the response
         type: string
     schema:
       $ref: '#/definitions/Error'
@@ -204,40 +251,132 @@ definitions:
       id:
         type: integer
         format: int64
-        description: The id of the artifact
+        description: The ID of the artifact
       type:
         type: string
-        description: The type of the artifact, eg image, chart, etc
-      repository:
-        $ref: '#/definitions/Repository'
-        description: The repository of the artifact
-      tags:
-        description: The list of tags that attached to the artifact
+        description: The type of the artifact, e.g. image, chart, etc
       media_type:
         type: string
-        description: The specific media type for the artifact
+        description: The media type of the artifact
+      manifest_media_type:
+        type: string
+        description: The manifest media type of the artifact
+      project_id:
+        type: integer
+        format: int64
+        description: The ID of the project that the artifact belongs to
+      repository_id:
+        type: integer
+        format: int64
+        description: The ID of the repository that the artifact belongs to
       digest:
         type: string
         description: The digest of the artifact
       size:
-        type: string
+        type: integer
         format: int64
         description: The size of the artifact
-      upload_time:
+      push_time:
         type: string
         format: date-time
-        description: The upload time for the artifact
-      labels:
-        description: The list of labels that attached to the artifact
-      signature:
-        description: The signature attached to the artifact
-  Repository:
+        description: The push time of the artifact
+      pull_time:
+        type: string
+        format: date-time
+        description: The latest pull time of the artifact
+      extra_attrs:
+        $ref: '#/definitions/ExtraAttrs'
+      annotations:
+        $ref: '#/definitions/Annotations'
+      references:
+        type: array
+        items:
+          $ref: '#/definitions/Reference'
+      tags:
+        type: array
+        items:
+          $ref: '#/definitions/Tag'
+      sub_resource_links:
+        $ref: '#/definitions/SubResourceLinks'
+  Tag:
     type: object
     properties:
       id:
         type: integer
         format: int64
-        description: The id of the repository
+        description: The ID of the tag
+      repository_id:
+        type: integer
+        format: int64
+        description: The ID of the repository that the tag belongs to
+      artifact_id:
+        type: integer
+        format: int64
+        description: The ID of the artifact that the tag attached to
       name:
         type: string
-        description: The name of repository.
+        description: The name of the tag
+      push_time:
+        type: string
+        format: date-time
+        description: The push time of the tag
+      pull_time:
+        type: string
+        format: date-time
+        description: The latest pull time of the tag
+  ExtraAttrs:
+    type: object
+    additionalProperties:
+      type: object
+  Annotations:
+    type: object
+    additionalProperties:
+      type: string
+  SubResourceLinks:
+    type: object
+    additionalProperties:
+      type: array
+      items:
+        $ref: '#/definitions/ResourceLink'
+  ResourceLink:
+    type: object
+    properties:
+      href:
+        type: string
+        description: The link of the resource
+      absolute:
+        type: boolean
+        description: Determine whether the link is an absolute URL or not
+  Reference:
+    type: object
+    properties:
+      parent_id:
+        type: integer
+        format: int64
+        description: The parent ID of the reference
+      child_id:
+        type: integer
+        format: int64
+        description: The child ID of the reference
+      platform:
+        $ref: '#/definitions/Platform'
+  Platform:
+    type: object
+    properties:
+      architecture:
+        type: string
+        description: The architecture that the artifact applys to
+      os:
+        type: string
+        description: The OS that the artifact applys to
+      os.version:
+        type: string
+        description: The version of the OS that the artifact applys to
+      os.features:
+        type: array
+        description: The features of the OS that the artifact applys to
+        items:
+          type: string
+      variant:
+        type: string
+        description: The variant of the CPU

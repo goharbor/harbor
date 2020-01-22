@@ -17,6 +17,7 @@ package repository
 import (
 	"context"
 	"github.com/goharbor/harbor/src/common/models"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/repository/dao"
 )
@@ -30,6 +31,8 @@ type Manager interface {
 	List(ctx context.Context, query *q.Query) (total int64, repositories []*models.RepoRecord, err error)
 	// Get the repository specified by ID
 	Get(ctx context.Context, id int64) (repository *models.RepoRecord, err error)
+	// GetByName gets the repository specified by name
+	GetByName(ctx context.Context, name string) (repository *models.RepoRecord, err error)
 	// Create a repository
 	Create(ctx context.Context, repository *models.RepoRecord) (id int64, err error)
 	// Delete the repository specified by ID
@@ -63,6 +66,22 @@ func (m *manager) List(ctx context.Context, query *q.Query) (int64, []*models.Re
 
 func (m *manager) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
 	return m.dao.Get(ctx, id)
+}
+
+func (m *manager) GetByName(ctx context.Context, name string) (repository *models.RepoRecord, err error) {
+	_, repositories, err := m.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"Name": name,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(repositories) == 0 {
+		return nil, ierror.New(nil).WithCode(ierror.NotFoundCode).
+			WithMessage("repository %s not found", name)
+	}
+	return repositories[0], nil
 }
 
 func (m *manager) Create(ctx context.Context, repository *models.RepoRecord) (int64, error) {

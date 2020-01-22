@@ -294,7 +294,13 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 			log.Errorf("failed to list tag of artifact %d: %v", artifact.ID, err)
 		}
 	}
-	// TODO populate other properties: scan, signature etc.
+	if option.WithLabel {
+		// TODO populate label
+	}
+	if option.WithScanOverview {
+		// TODO populate scan overview
+	}
+	// TODO populate signature on artifact or label level?
 	return artifact
 }
 
@@ -306,6 +312,9 @@ func (c *controller) assembleTag(ctx context.Context, tag *tm.Tag, option *TagOp
 	if option == nil {
 		return t
 	}
-	// TODO populate label, signature, immutable status for tag
+	if option.WithImmutableStatus {
+		// TODO populate immutable status
+	}
+	// TODO populate signature on tag level?
 	return t
 }

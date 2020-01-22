@@ -29,13 +29,31 @@ type FakeRepositoryManager struct {
 // List ...
 func (f *FakeRepositoryManager) List(ctx context.Context, query *q.Query) (int64, []*models.RepoRecord, error) {
 	args := f.Called()
-	return int64(args.Int(0)), args.Get(1).([]*models.RepoRecord), args.Error(2)
+	var repositories []*models.RepoRecord
+	if args.Get(1) != nil {
+		repositories = args.Get(1).([]*models.RepoRecord)
+	}
+	return int64(args.Int(0)), repositories, args.Error(2)
 }
 
 // Get ...
 func (f *FakeRepositoryManager) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
 	args := f.Called()
-	return args.Get(0).(*models.RepoRecord), args.Error(1)
+	var repository *models.RepoRecord
+	if args.Get(0) != nil {
+		repository = args.Get(0).(*models.RepoRecord)
+	}
+	return repository, args.Error(1)
+}
+
+// GetByName ...
+func (f *FakeRepositoryManager) GetByName(ctx context.Context, name string) (*models.RepoRecord, error) {
+	args := f.Called()
+	var repository *models.RepoRecord
+	if args.Get(0) != nil {
+		repository = args.Get(0).(*models.RepoRecord)
+	}
+	return repository, args.Error(1)
 }
 
 // Delete ...

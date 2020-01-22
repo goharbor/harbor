@@ -30,13 +30,21 @@ type FakeArtifactManager struct {
 // List ...
 func (f *FakeArtifactManager) List(ctx context.Context, query *q.Query) (int64, []*artifact.Artifact, error) {
 	args := f.Called()
-	return int64(args.Int(0)), args.Get(1).([]*artifact.Artifact), args.Error(2)
+	var artifacts []*artifact.Artifact
+	if args.Get(1) != nil {
+		artifacts = args.Get(1).([]*artifact.Artifact)
+	}
+	return int64(args.Int(0)), artifacts, args.Error(2)
 }
 
 // Get ...
 func (f *FakeArtifactManager) Get(ctx context.Context, id int64) (*artifact.Artifact, error) {
 	args := f.Called()
-	return args.Get(0).(*artifact.Artifact), args.Error(1)
+	var art *artifact.Artifact
+	if args.Get(0) != nil {
+		art = args.Get(0).(*artifact.Artifact)
+	}
+	return art, args.Error(1)
 }
 
 // Create ...
