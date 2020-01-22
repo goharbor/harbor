@@ -17,6 +17,12 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"os"
+	"os/signal"
+	"strconv"
+	"syscall"
+	"time"
+
 	"github.com/astaxie/beego"
 	_ "github.com/astaxie/beego/session/redis"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -48,15 +54,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/server"
-	"github.com/goharbor/harbor/src/server/middleware/orm"
-	"github.com/goharbor/harbor/src/server/middleware/requestid"
-	"net/http"
-	"os"
-	"os/signal"
-	"strconv"
-	"strings"
-	"syscall"
-	"time"
 )
 
 const (
@@ -292,21 +289,5 @@ func main() {
 
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
 
-	middlewares := []beego.MiddleWare{
-		requestid.Middleware(),
-		orm.Middleware(legacyAPISkipper),
-	}
-	beego.RunWithMiddleWares("", middlewares...)
-
-}
-
-// legacyAPISkipper skip middleware for legacy APIs
-func legacyAPISkipper(r *http.Request) bool {
-	for _, prefix := range []string{"/v2/", "/api/v2.0/"} {
-		if strings.HasPrefix(r.URL.Path, prefix) {
-			return false
-		}
-	}
-
-	return true
+	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }

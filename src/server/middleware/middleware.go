@@ -14,7 +14,9 @@
 
 package middleware
 
-import "net/http"
+import (
+	"net/http"
+)
 
 // Middleware receives a handler and returns another handler.
 // The returned handler can do some customized task according to
@@ -29,10 +31,6 @@ func WithMiddlewares(handler http.Handler, middlewares ...Middleware) http.Handl
 	}
 	return handler
 }
-
-// Skipper defines a function to skip middleware.
-// Returning true skips processing the middleware.
-type Skipper func(*http.Request) bool
 
 // New make a middleware from fn which type is func(w http.ResponseWriter, r *http.Request, next http.Handler)
 func New(fn func(http.ResponseWriter, *http.Request, http.Handler), skippers ...Skipper) func(http.Handler) http.Handler {
