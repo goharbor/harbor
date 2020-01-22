@@ -64,6 +64,7 @@ func TestSend(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 	}
+
 }
 
 func TestPing(t *testing.T) {
@@ -101,5 +102,20 @@ func TestPing(t *testing.T) {
 		if !strings.Contains(err.Error(), "535") {
 			t.Errorf("unexpected error: %v", err)
 		}
+	}
+}
+
+func TestEmailNoUsernameStillOk(t *testing.T) {
+	host := "smtp.gmail.com"
+	identity := ""
+	username := ""
+	password := ""
+
+	a, err := handleAuth(host, identity, username, password, "CRAM-MD5")
+	if err != nil {
+		t.Errorf("there should be no error")
+	}
+	if a != nil {
+		t.Errorf("no auth method should be returned")
 	}
 }

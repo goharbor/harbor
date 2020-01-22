@@ -16,6 +16,7 @@ package email
 
 import (
 	tlspkg "crypto/tls"
+	"errors"
 	"fmt"
 	"net"
 	"net/smtp"
@@ -120,7 +121,7 @@ func newClient(addr, identity, username, password string,
 		return nil, err
 	}
 
-	// try to swith to SSL/TLS
+	// try to switch to SSL/TLS
 	if !tls {
 		if ok, _ := client.Extension("STARTTLS"); ok {
 			log.Debugf("switching the connection with %s to SSL/TLS ...", addr)
@@ -130,22 +131,22 @@ func newClient(addr, identity, username, password string,
 			}); err != nil {
 				return nil, err
 			}
-			tls = true
 		} else {
 			log.Debugf("the email server %s does not support STARTTLS", addr)
 		}
 	}
 
-	if ok, _ := client.Extension("AUTH"); ok {
+	if ok, mechs := client.Extension("AUTH"); ok {
 		log.Debug("authenticating the client...")
-		var auth smtp.Auth
-		if tls {
-			auth = smtp.PlainAuth(identity, username, password, host)
-		} else {
-			auth = smtp.CRAMMD5Auth(username, password)
-		}
-		if err = client.Auth(auth); err != nil {
+		auth, err := handleAuth(host, identity, username, password, mechs)
+		if err != nil {
 			return nil, err
+		}
+
+		if auth != nil {
+			if err = client.Auth(auth); err != nil {
+				return nil, err
+			}
 		}
 	} else {
 		log.Debugf("the email server %s does not support AUTH, skip",
@@ -155,4 +156,22 @@ func newClient(addr, identity, username, password string,
 	log.Debug("create smtp client successfully")
 
 	return client, nil
+}
+
+func handleAuth(host, identity, username, password, mechs string) (smtp.Auth, error) {
+	if username == "" {
+		log.Debug("username is not configured, attempting to send email without authenticating")
+		return nil, nil
+	}
+
+	for _, mech := range strings.Split(mechs, " ") {
+		switch mech {
+		case "CRAM-MD5":
+			return smtp.CRAMMD5Auth(username, password), nil
+		case "PLAIN":
+			return smtp.PlainAuth(identity, username, password, host), nil
+		}
+	}
+
+	return nil, errors.New("unknown auth mechanism: " + mechs)
 }
