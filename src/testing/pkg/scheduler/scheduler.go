@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package testing
+package scheduler
 
 import (
 	"fmt"
@@ -20,14 +20,14 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scheduler/model"
 )
 
-// FakeSchedulerManager ...
-type FakeSchedulerManager struct {
+// FakeManager ...
+type FakeManager struct {
 	idCounter int64
 	Schedules []*model.Schedule
 }
 
 // Create ...
-func (f *FakeSchedulerManager) Create(schedule *model.Schedule) (int64, error) {
+func (f *FakeManager) Create(schedule *model.Schedule) (int64, error) {
 	f.idCounter++
 	id := f.idCounter
 	schedule.ID = id
@@ -36,7 +36,7 @@ func (f *FakeSchedulerManager) Create(schedule *model.Schedule) (int64, error) {
 }
 
 // Update ...
-func (f *FakeSchedulerManager) Update(schedule *model.Schedule, props ...string) error {
+func (f *FakeManager) Update(schedule *model.Schedule, props ...string) error {
 	for i, sch := range f.Schedules {
 		if sch.ID == schedule.ID {
 			f.Schedules[i] = schedule
@@ -47,7 +47,7 @@ func (f *FakeSchedulerManager) Update(schedule *model.Schedule, props ...string)
 }
 
 // Delete ...
-func (f *FakeSchedulerManager) Delete(id int64) error {
+func (f *FakeManager) Delete(id int64) error {
 	length := len(f.Schedules)
 	for i, sch := range f.Schedules {
 		if sch.ID == id {
@@ -62,7 +62,7 @@ func (f *FakeSchedulerManager) Delete(id int64) error {
 }
 
 // Get ...
-func (f *FakeSchedulerManager) Get(id int64) (*model.Schedule, error) {
+func (f *FakeManager) Get(id int64) (*model.Schedule, error) {
 	for _, sch := range f.Schedules {
 		if sch.ID == id {
 			return sch, nil
@@ -72,6 +72,6 @@ func (f *FakeSchedulerManager) Get(id int64) (*model.Schedule, error) {
 }
 
 // List ...
-func (f *FakeSchedulerManager) List(...*model.ScheduleQuery) ([]*model.Schedule, error) {
+func (f *FakeManager) List(...*model.ScheduleQuery) ([]*model.Schedule, error) {
 	return f.Schedules, nil
 }

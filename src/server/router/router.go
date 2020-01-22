@@ -16,11 +16,11 @@ package router
 
 import (
 	"context"
-	"errors"
 	"github.com/astaxie/beego"
 	beegocontext "github.com/astaxie/beego/context"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"net/http"
+	"path/filepath"
 )
 
 type contextKeyInput struct{}
@@ -32,9 +32,17 @@ func NewRoute() *Route {
 
 // Route stores the information that matches a request
 type Route struct {
+	parent      *Route
 	methods     []string
 	path        string
 	middlewares []middleware.Middleware
+}
+
+// NewRoute returns a sub route based on the current one
+func (r *Route) NewRoute() *Route {
+	return &Route{
+		parent: r,
+	}
 }
 
 // Method sets the method that the route matches
@@ -57,33 +65,49 @@ func (r *Route) Middleware(middleware middleware.Middleware) *Route {
 
 // Handler sets the handler that handles the request
 func (r *Route) Handler(handler http.Handler) {
+	methods := r.methods
+	if len(methods) == 0 && r.parent != nil {
+		methods = r.parent.methods
+	}
+
+	path := r.path
+	if r.parent != nil {
+		path = filepath.Join(r.parent.path, path)
+	}
+
+	var middlewares []middleware.Middleware
+	if r.parent != nil {
+		middlewares = r.parent.middlewares
+	}
+
+	middlewares = append(middlewares, r.middlewares...)
 	filterFunc := beego.FilterFunc(func(ctx *beegocontext.Context) {
 		ctx.Request = ctx.Request.WithContext(
 			context.WithValue(ctx.Request.Context(), contextKeyInput{}, ctx.Input))
 		// TODO remove the WithMiddlewares?
-		middleware.WithMiddlewares(handler, r.middlewares...).
+		middleware.WithMiddlewares(handler, middlewares...).
 			ServeHTTP(ctx.ResponseWriter, ctx.Request)
 	})
-	if len(r.methods) == 0 {
+	if len(methods) == 0 {
 		beego.Any(r.path, filterFunc)
 		return
 	}
-	for _, method := range r.methods {
+	for _, method := range methods {
 		switch method {
 		case http.MethodGet:
-			beego.Get(r.path, filterFunc)
+			beego.Get(path, filterFunc)
 		case http.MethodHead:
-			beego.Head(r.path, filterFunc)
+			beego.Head(path, filterFunc)
 		case http.MethodPut:
-			beego.Put(r.path, filterFunc)
+			beego.Put(path, filterFunc)
 		case http.MethodPatch:
-			beego.Patch(r.path, filterFunc)
+			beego.Patch(path, filterFunc)
 		case http.MethodPost:
-			beego.Post(r.path, filterFunc)
+			beego.Post(path, filterFunc)
 		case http.MethodDelete:
-			beego.Delete(r.path, filterFunc)
+			beego.Delete(path, filterFunc)
 		case http.MethodOptions:
-			beego.Options(r.path, filterFunc)
+			beego.Options(path, filterFunc)
 		}
 	}
 }
@@ -93,28 +117,14 @@ func (r *Route) HandlerFunc(f http.HandlerFunc) {
 	r.Handler(f)
 }
 
-// GetInput returns the input object from the context
-func GetInput(context context.Context) (*beegocontext.BeegoInput, error) {
-	if context == nil {
-		return nil, errors.New("context is nil")
+// Param returns the beego router param by a given key from the context
+func Param(ctx context.Context, key string) string {
+	if ctx == nil {
+		return ""
 	}
-	input, ok := context.Value(contextKeyInput{}).(*beegocontext.BeegoInput)
+	input, ok := ctx.Value(contextKeyInput{}).(*beegocontext.BeegoInput)
 	if !ok {
-		return nil, errors.New("input not found in the context")
+		return ""
 	}
-	return input, nil
-}
-
-// Param returns the router param by a given key from the context
-func Param(ctx context.Context, key string) (string, error) {
-	input, err := GetInput(ctx)
-	if err != nil {
-		return "", err
-	}
-	return input.Param(key), nil
-}
-
-// Middleware registers the global middleware that executed for all requests that match the path
-func Middleware(path string, middleware middleware.Middleware) {
-	// TODO add middleware function to register global middleware after upgrading to the latest version of beego
+	return input.Param(key)
 }

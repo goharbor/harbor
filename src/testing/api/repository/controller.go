@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package testing
+package repository
 
 import (
 	"context"
@@ -21,23 +21,30 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// FakeRepositoryManager is a fake repository manager that implement src/pkg/repository.Manager interface
-type FakeRepositoryManager struct {
+// FakeController is a fake repository controller that implement src/api/repository.Controller interface
+type FakeController struct {
 	mock.Mock
 }
 
+// Ensure ...
+func (f *FakeController) Ensure(ctx context.Context, name string) (bool, int64, error) {
+	args := f.Called()
+	return args.Bool(0), int64(args.Int(1)), args.Error(2)
+}
+
 // List ...
-func (f *FakeRepositoryManager) List(ctx context.Context, query *q.Query) (int64, []*models.RepoRecord, error) {
+func (f *FakeController) List(ctx context.Context, query *q.Query) (int64, []*models.RepoRecord, error) {
 	args := f.Called()
 	var repositories []*models.RepoRecord
 	if args.Get(1) != nil {
 		repositories = args.Get(1).([]*models.RepoRecord)
 	}
 	return int64(args.Int(0)), repositories, args.Error(2)
+
 }
 
 // Get ...
-func (f *FakeRepositoryManager) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
+func (f *FakeController) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
 	args := f.Called()
 	var repository *models.RepoRecord
 	if args.Get(0) != nil {
@@ -47,29 +54,11 @@ func (f *FakeRepositoryManager) Get(ctx context.Context, id int64) (*models.Repo
 }
 
 // GetByName ...
-func (f *FakeRepositoryManager) GetByName(ctx context.Context, name string) (*models.RepoRecord, error) {
+func (f *FakeController) GetByName(ctx context.Context, name string) (*models.RepoRecord, error) {
 	args := f.Called()
 	var repository *models.RepoRecord
 	if args.Get(0) != nil {
 		repository = args.Get(0).(*models.RepoRecord)
 	}
 	return repository, args.Error(1)
-}
-
-// Delete ...
-func (f *FakeRepositoryManager) Delete(ctx context.Context, id int64) error {
-	args := f.Called()
-	return args.Error(0)
-}
-
-// Create ...
-func (f *FakeRepositoryManager) Create(ctx context.Context, repository *models.RepoRecord) (int64, error) {
-	args := f.Called()
-	return int64(args.Int(0)), args.Error(1)
-}
-
-// Update ...
-func (f *FakeRepositoryManager) Update(ctx context.Context, repository *models.RepoRecord, props ...string) error {
-	args := f.Called()
-	return args.Error(0)
 }

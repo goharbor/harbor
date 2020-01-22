@@ -21,7 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/core/config"
-	coreutils "github.com/goharbor/harbor/src/core/utils"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"io/ioutil"
 	"net/http"
@@ -69,7 +68,7 @@ func (f *fetcher) FetchManifest(repository, digest string) (string, []byte, erro
 // TODO re-implement it based on OCI registry driver
 func (f *fetcher) FetchLayer(repository, digest string) ([]byte, error) {
 	// TODO read from cache first
-	client, err := coreutils.NewRepositoryClientForLocal("admin", repository)
+	client, err := newRepositoryClient(repository)
 	if err != nil {
 		return nil, err
 	}

@@ -15,13 +15,12 @@
 package scheduler
 
 import (
-	"testing"
-
-	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/goharbor/harbor/src/testing/job"
+	schedulertesting "github.com/goharbor/harbor/src/testing/pkg/scheduler"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"testing"
 )
 
 var sch *scheduler
@@ -41,7 +40,7 @@ func (s *schedulerTestSuite) SetupTest() {
 	// recreate the scheduler object
 	sch = &scheduler{
 		jobserviceClient: &job.MockJobClient{},
-		manager:          &htesting.FakeSchedulerManager{},
+		manager:          &schedulertesting.FakeManager{},
 	}
 }
 

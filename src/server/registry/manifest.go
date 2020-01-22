@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package manifest
+package registry
 
 import (
 	"github.com/goharbor/harbor/src/api/artifact"
@@ -21,45 +21,16 @@ import (
 	"github.com/goharbor/harbor/src/internal"
 	"github.com/goharbor/harbor/src/server/registry/error"
 	"github.com/goharbor/harbor/src/server/router"
-	"github.com/gorilla/mux"
 	"github.com/opencontainers/go-digest"
 	"net/http"
-	"net/http/httputil"
 	"strings"
 )
 
-// NewHandler returns the handler to handler manifest requests
-func NewHandler(proxy *httputil.ReverseProxy) http.Handler {
-	return &handler{
-		repoCtl: repository.Ctl,
-		artCtl:  artifact.Ctl,
-		proxy:   proxy,
-	}
-}
-
-type handler struct {
-	repoCtl repository.Controller
-	artCtl  artifact.Controller
-	proxy   *httputil.ReverseProxy
-}
-
-func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	switch req.Method {
-	case http.MethodHead, http.MethodGet:
-		h.get(w, req)
-	case http.MethodDelete:
-		h.delete(w, req)
-	case http.MethodPut:
-		h.put(w, req)
-	}
-}
-
 // make sure the artifact exist before proxying the request to the backend registry
-func (h *handler) get(w http.ResponseWriter, req *http.Request) {
-	// check the existence in the database first
-	vars := mux.Vars(req)
-	reference := vars["reference"]
-	artifact, err := h.artCtl.GetByReference(req.Context(), vars["name"], reference, nil)
+func getManifest(w http.ResponseWriter, req *http.Request) {
+	repository := router.Param(req.Context(), ":splat")
+	reference := router.Param(req.Context(), ":reference")
+	artifact, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
 		error.Handle(w, req, err)
 		return
@@ -69,23 +40,23 @@ func (h *handler) get(w http.ResponseWriter, req *http.Request) {
 	if _, err = digest.Parse(reference); err != nil {
 		req = req.Clone(req.Context())
 		req.URL.Path = strings.TrimSuffix(req.URL.Path, reference) + artifact.Digest
-		req.URL.RawPath = ""
 		req.URL.RawPath = req.URL.EscapedPath()
 	}
-	h.proxy.ServeHTTP(w, req)
+	proxy.ServeHTTP(w, req)
 
 	// TODO fire event(only for GET method), add access log in the event handler
 }
 
-func (h *handler) delete(w http.ResponseWriter, req *http.Request) {
-	// just delete the artifact from database
-	vars := mux.Vars(req)
-	artifact, err := h.artCtl.GetByReference(req.Context(), vars["name"], vars["reference"], nil)
+// just delete the artifact from database
+func deleteManifest(w http.ResponseWriter, req *http.Request) {
+	repository := router.Param(req.Context(), ":splat")
+	reference := router.Param(req.Context(), ":reference")
+	art, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
 		error.Handle(w, req, err)
 		return
 	}
-	if err = h.artCtl.Delete(req.Context(), artifact.ID); err != nil {
+	if err = artifact.Ctl.Delete(req.Context(), art.ID); err != nil {
 		error.Handle(w, req, err)
 		return
 	}
@@ -94,20 +65,12 @@ func (h *handler) delete(w http.ResponseWriter, req *http.Request) {
 	// TODO fire event, add access log in the event handler
 }
 
-func (h *handler) put(w http.ResponseWriter, req *http.Request) {
-	repository, err := router.Param(req.Context(), ":splat")
-	if err != nil {
-		error.Handle(w, req, err)
-		return
-	}
-	reference, err := router.Param(req.Context(), ":reference")
-	if err != nil {
-		error.Handle(w, req, err)
-		return
-	}
+func putManifest(w http.ResponseWriter, req *http.Request) {
+	repo := router.Param(req.Context(), ":splat")
+	reference := router.Param(req.Context(), ":reference")
 
 	// make sure the repository exist before pushing the manifest
-	_, repositoryID, err := h.repoCtl.Ensure(req.Context(), repository)
+	_, repositoryID, err := repository.Ctl.Ensure(req.Context(), repo)
 	if err != nil {
 		error.Handle(w, req, err)
 		return
@@ -115,7 +78,7 @@ func (h *handler) put(w http.ResponseWriter, req *http.Request) {
 
 	buffer := internal.NewResponseBuffer(w)
 	// proxy the req to the backend docker registry
-	h.proxy.ServeHTTP(buffer, req)
+	proxy.ServeHTTP(buffer, req)
 	if !buffer.Success() {
 		if _, err := buffer.Flush(); err != nil {
 			log.Errorf("failed to flush: %v", err)
@@ -135,7 +98,7 @@ func (h *handler) put(w http.ResponseWriter, req *http.Request) {
 		tags = append(tags, reference)
 	}
 
-	_, _, err = h.artCtl.Ensure(req.Context(), repositoryID, dgt, tags...)
+	_, _, err = artifact.Ctl.Ensure(req.Context(), repositoryID, dgt, tags...)
 	if err != nil {
 		error.Handle(w, req, err)
 		return

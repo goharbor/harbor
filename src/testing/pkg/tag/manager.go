@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package testing
+package tag
 
 import (
 	"context"
@@ -21,13 +21,13 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// FakeTagManager is a fake tag manager that implement the src/pkg/tag.Manager interface
-type FakeTagManager struct {
+// FakeManager is a fake tag manager that implement the src/pkg/tag.Manager interface
+type FakeManager struct {
 	mock.Mock
 }
 
 // List ...
-func (f *FakeTagManager) List(ctx context.Context, query *q.Query) (int64, []*tag.Tag, error) {
+func (f *FakeManager) List(ctx context.Context, query *q.Query) (int64, []*tag.Tag, error) {
 	args := f.Called()
 	var tags []*tag.Tag
 	if args.Get(1) != nil {
@@ -37,7 +37,7 @@ func (f *FakeTagManager) List(ctx context.Context, query *q.Query) (int64, []*ta
 }
 
 // Get ...
-func (f *FakeTagManager) Get(ctx context.Context, id int64) (*tag.Tag, error) {
+func (f *FakeManager) Get(ctx context.Context, id int64) (*tag.Tag, error) {
 	args := f.Called()
 	var tg *tag.Tag
 	if args.Get(0) != nil {
@@ -47,19 +47,19 @@ func (f *FakeTagManager) Get(ctx context.Context, id int64) (*tag.Tag, error) {
 }
 
 // Create ...
-func (f *FakeTagManager) Create(ctx context.Context, tag *tag.Tag) (int64, error) {
+func (f *FakeManager) Create(ctx context.Context, tag *tag.Tag) (int64, error) {
 	args := f.Called()
 	return int64(args.Int(0)), args.Error(1)
 }
 
 // Update ...
-func (f *FakeTagManager) Update(ctx context.Context, tag *tag.Tag, props ...string) error {
+func (f *FakeManager) Update(ctx context.Context, tag *tag.Tag, props ...string) error {
 	args := f.Called()
 	return args.Error(0)
 }
 
 // Delete ...
-func (f *FakeTagManager) Delete(ctx context.Context, id int64) error {
+func (f *FakeManager) Delete(ctx context.Context, id int64) error {
 	args := f.Called()
 	return args.Error(0)
 }

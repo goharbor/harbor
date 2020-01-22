@@ -12,13 +12,13 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package catalog
+package registry
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/api/repository"
 	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/pkg/repository"
 	reg_error "github.com/goharbor/harbor/src/server/registry/error"
 	"github.com/goharbor/harbor/src/server/registry/util"
 	"net/http"
@@ -26,26 +26,17 @@ import (
 	"strconv"
 )
 
-// NewHandler returns the handler to handler catalog request
-func NewHandler(repoMgr repository.Manager) http.Handler {
-	return &handler{
-		repoMgr: repoMgr,
+func newRepositoryHandler() http.Handler {
+	return &repositoryHandler{
+		repoCtl: repository.Ctl,
 	}
 }
 
-type handler struct {
-	repoMgr repository.Manager
+type repositoryHandler struct {
+	repoCtl repository.Controller
 }
 
-// ServeHTTP ...
-func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	switch req.Method {
-	case http.MethodGet:
-		h.get(w, req)
-	}
-}
-
-func (h *handler) get(w http.ResponseWriter, req *http.Request) {
+func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	var maxEntries int
 	var err error
 
@@ -64,13 +55,13 @@ func (h *handler) get(w http.ResponseWriter, req *http.Request) {
 	var repoNames []string
 	// get all repositories
 	// ToDo filter out the untagged repos
-	total, repoRecords, err := h.repoMgr.List(req.Context(), nil)
+	total, repoRecords, err := r.repoCtl.List(req.Context(), nil)
 	if err != nil {
 		reg_error.Handle(w, req, err)
 		return
 	}
 	if total <= 0 {
-		h.sendResponse(w, req, repoNames)
+		r.sendResponse(w, req, repoNames)
 		return
 	}
 	for _, r := range repoRecords {
@@ -78,7 +69,7 @@ func (h *handler) get(w http.ResponseWriter, req *http.Request) {
 	}
 	sort.Strings(repoNames)
 	if !withN {
-		h.sendResponse(w, req, repoNames)
+		r.sendResponse(w, req, repoNames)
 		return
 	}
 
@@ -109,12 +100,12 @@ func (h *handler) get(w http.ResponseWriter, req *http.Request) {
 		w.Header().Set("Link", urlStr)
 	}
 
-	h.sendResponse(w, req, resRepos)
+	r.sendResponse(w, req, resRepos)
 	return
 }
 
 // sendResponse ...
-func (h *handler) sendResponse(w http.ResponseWriter, req *http.Request, repositoryNames []string) {
+func (r *repositoryHandler) sendResponse(w http.ResponseWriter, req *http.Request, repositoryNames []string) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	enc := json.NewEncoder(w)
 	if err := enc.Encode(catalogAPIResponse{

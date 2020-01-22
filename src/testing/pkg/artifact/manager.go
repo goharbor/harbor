@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package testing
+package artifact
 
 import (
 	"context"
@@ -22,13 +22,13 @@ import (
 	"time"
 )
 
-// FakeArtifactManager is a fake artifact manager that implement src/pkg/artifact.Manager interface
-type FakeArtifactManager struct {
+// FakeManager is a fake artifact manager that implement src/pkg/artifact.Manager interface
+type FakeManager struct {
 	mock.Mock
 }
 
 // List ...
-func (f *FakeArtifactManager) List(ctx context.Context, query *q.Query) (int64, []*artifact.Artifact, error) {
+func (f *FakeManager) List(ctx context.Context, query *q.Query) (int64, []*artifact.Artifact, error) {
 	args := f.Called()
 	var artifacts []*artifact.Artifact
 	if args.Get(1) != nil {
@@ -38,7 +38,7 @@ func (f *FakeArtifactManager) List(ctx context.Context, query *q.Query) (int64, 
 }
 
 // Get ...
-func (f *FakeArtifactManager) Get(ctx context.Context, id int64) (*artifact.Artifact, error) {
+func (f *FakeManager) Get(ctx context.Context, id int64) (*artifact.Artifact, error) {
 	args := f.Called()
 	var art *artifact.Artifact
 	if args.Get(0) != nil {
@@ -48,19 +48,19 @@ func (f *FakeArtifactManager) Get(ctx context.Context, id int64) (*artifact.Arti
 }
 
 // Create ...
-func (f *FakeArtifactManager) Create(ctx context.Context, artifact *artifact.Artifact) (int64, error) {
+func (f *FakeManager) Create(ctx context.Context, artifact *artifact.Artifact) (int64, error) {
 	args := f.Called()
 	return int64(args.Int(0)), args.Error(1)
 }
 
 // Delete ...
-func (f *FakeArtifactManager) Delete(ctx context.Context, id int64) error {
+func (f *FakeManager) Delete(ctx context.Context, id int64) error {
 	args := f.Called()
 	return args.Error(0)
 }
 
 // UpdatePullTime ...
-func (f *FakeArtifactManager) UpdatePullTime(ctx context.Context, artifactID int64, time time.Time) error {
+func (f *FakeManager) UpdatePullTime(ctx context.Context, artifactID int64, time time.Time) error {
 	args := f.Called()
 	return args.Error(0)
 }
