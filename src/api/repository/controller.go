@@ -35,8 +35,12 @@ type Controller interface {
 	// The "name" should contain the namespace part. The "created" will be set as true
 	// when the repository is created
 	Ensure(ctx context.Context, name string) (created bool, id int64, err error)
+	// List repositories according to the query
+	List(ctx context.Context, query *q.Query) (total int64, repositories []*models.RepoRecord, err error)
 	// Get the repository specified by ID
 	Get(ctx context.Context, id int64) (repository *models.RepoRecord, err error)
+	// GetByName gets the repository specified by name
+	GetByName(ctx context.Context, name string) (repository *models.RepoRecord, err error)
 }
 
 // NewController creates an instance of the default repository controller
@@ -93,6 +97,14 @@ func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, erro
 	return true, id, nil
 }
 
+func (c *controller) List(ctx context.Context, query *q.Query) (int64, []*models.RepoRecord, error) {
+	return c.repoMgr.List(ctx, query)
+}
+
 func (c *controller) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
 	return c.repoMgr.Get(ctx, id)
+}
+
+func (c *controller) GetByName(ctx context.Context, name string) (*models.RepoRecord, error) {
+	return c.repoMgr.GetByName(ctx, name)
 }

@@ -12,44 +12,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package tag
+package registry
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/api/repository"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/pkg/tag"
 	reg_error "github.com/goharbor/harbor/src/server/registry/error"
 	"github.com/goharbor/harbor/src/server/registry/util"
-	"github.com/gorilla/mux"
+	"github.com/goharbor/harbor/src/server/router"
 	"net/http"
 	"sort"
 	"strconv"
 )
 
-// NewHandler returns the handler to handle listing tag request
-func NewHandler(repoMgr repository.Manager, tagMgr tag.Manager) http.Handler {
-	return &handler{
-		repoMgr: repoMgr,
-		tagMgr:  tagMgr,
+func newTagHandler() http.Handler {
+	return &tagHandler{
+		repoCtl: repository.Ctl,
+		artCtl:  artifact.Ctl,
 	}
 }
 
-type handler struct {
-	repoMgr repository.Manager
-	tagMgr  tag.Manager
-
+type tagHandler struct {
+	repoCtl        repository.Controller
+	artCtl         artifact.Controller
 	repositoryName string
-}
-
-// ServeHTTP ...
-func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	switch req.Method {
-	case http.MethodGet:
-		h.get(w, req)
-	}
 }
 
 // get return the list of tags
@@ -64,7 +54,7 @@ func (h *handler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 //      ...
 //    ]
 // }
-func (h *handler) get(w http.ResponseWriter, req *http.Request) {
+func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	var maxEntries int
 	var err error
 
@@ -80,29 +70,26 @@ func (h *handler) get(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	var repoID int64
 	var tagNames []string
-	vars := mux.Vars(req)
-	h.repositoryName = vars["name"]
 
-	repoID, err = h.getRepoID(req)
+	t.repositoryName = router.Param(req.Context(), ":splat")
+	repository, err := t.repoCtl.GetByName(req.Context(), t.repositoryName)
 	if err != nil {
 		reg_error.Handle(w, req, err)
 		return
 	}
 
 	// get tags ...
-	total, tags, err := h.tagMgr.List(req.Context(), &q.Query{
+	total, tags, err := t.artCtl.Tags(req.Context(), &q.Query{
 		Keywords: map[string]interface{}{
-			"RepositoryID": repoID,
-		},
-	})
+			"RepositoryID": repository.RepositoryID,
+		}}, nil)
 	if err != nil {
 		reg_error.Handle(w, req, err)
 		return
 	}
 	if total == 0 {
-		h.sendResponse(w, req, tagNames)
+		t.sendResponse(w, req, tagNames)
 		return
 	}
 
@@ -111,7 +98,7 @@ func (h *handler) get(w http.ResponseWriter, req *http.Request) {
 	}
 	sort.Strings(tagNames)
 	if !withN {
-		h.sendResponse(w, req, tagNames)
+		t.sendResponse(w, req, tagNames)
 		return
 	}
 
@@ -141,33 +128,16 @@ func (h *handler) get(w http.ResponseWriter, req *http.Request) {
 		}
 		w.Header().Set("Link", urlStr)
 	}
-	h.sendResponse(w, req, resTags)
+	t.sendResponse(w, req, resTags)
 	return
 }
 
-// getRepoID ...
-func (h *handler) getRepoID(req *http.Request) (int64, error) {
-	total, repoRecord, err := h.repoMgr.List(req.Context(), &q.Query{
-		Keywords: map[string]interface{}{
-			"name": h.repositoryName,
-		},
-	})
-	if err != nil {
-		return 0, err
-	}
-	if total <= 0 {
-		err := ierror.New(nil).WithCode(ierror.NotFoundCode).WithMessage("repositoryNotFound")
-		return 0, err
-	}
-	return repoRecord[0].RepositoryID, nil
-}
-
 // sendResponse ...
-func (h *handler) sendResponse(w http.ResponseWriter, req *http.Request, tagNames []string) {
+func (t *tagHandler) sendResponse(w http.ResponseWriter, req *http.Request, tagNames []string) {
 	w.Header().Set("Content-Type", "application/json; charset=utf-8")
 	enc := json.NewEncoder(w)
 	if err := enc.Encode(tagsAPIResponse{
-		Name: h.repositoryName,
+		Name: t.repositoryName,
 		Tags: tagNames,
 	}); err != nil {
 		reg_error.Handle(w, req, err)

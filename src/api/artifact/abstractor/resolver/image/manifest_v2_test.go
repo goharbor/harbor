@@ -17,8 +17,8 @@ package image
 import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/goharbor/harbor/src/testing/api/artifact/abstractor/blob"
+	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -26,12 +26,12 @@ import (
 type manifestV2ResolverTestSuite struct {
 	suite.Suite
 	resolver    *manifestV2Resolver
-	repoMgr     *htesting.FakeRepositoryManager
+	repoMgr     *repository.FakeManager
 	blobFetcher *blob.FakeFetcher
 }
 
 func (m *manifestV2ResolverTestSuite) SetupTest() {
-	m.repoMgr = &htesting.FakeRepositoryManager{}
+	m.repoMgr = &repository.FakeManager{}
 	m.blobFetcher = &blob.FakeFetcher{}
 	m.resolver = &manifestV2Resolver{
 		repoMgr:     m.repoMgr,

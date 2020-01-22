@@ -12,20 +12,20 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package testing
+package project
 
 import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/stretchr/testify/mock"
 )
 
-// FakeProjectManager is a fake project manager that implement src/pkg/project.Manager interface
-type FakeProjectManager struct {
+// FakeManager is a fake project manager that implement src/pkg/project.Manager interface
+type FakeManager struct {
 	mock.Mock
 }
 
 // List ...
-func (f *FakeProjectManager) List(query ...*models.ProjectQueryParam) ([]*models.Project, error) {
+func (f *FakeManager) List(query ...*models.ProjectQueryParam) ([]*models.Project, error) {
 	args := f.Called()
 	var projects []*models.Project
 	if args.Get(0) != nil {
@@ -35,7 +35,7 @@ func (f *FakeProjectManager) List(query ...*models.ProjectQueryParam) ([]*models
 }
 
 // Get ...
-func (f *FakeProjectManager) Get(interface{}) (*models.Project, error) {
+func (f *FakeManager) Get(interface{}) (*models.Project, error) {
 	args := f.Called()
 	var project *models.Project
 	if args.Get(0) != nil {

@@ -36,9 +36,8 @@ Test Case - Edit Project Creation
 #    Harbor API Test  ./tests/apitests/python/test_scan_image.py
 Test Case - Manage Project Member
     Harbor API Test  ./tests/apitests/python/test_manage_project_member.py
-# TODO uncomment this after enable content trust middleware
-# Test Case - Project Level Policy Content Trust
-#    Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
+Test Case - Project Level Policy Content Trust
+    Harbor API Test  ./tests/apitests/python/test_project_level_policy_content_trust.py
 # TODO uncomment this after we move the accesslog away from registry notificaiton
 # TODO potentially #10602 may also fix this.
 # Test Case - User View Logs

@@ -32,6 +32,12 @@ func (r *routerTestSuite) SetupTest() {
 	r.route = NewRoute()
 }
 
+func (r *routerTestSuite) TestNewRoute() {
+	sub := r.route.Path("/v2").NewRoute()
+	r.Require().NotNil(sub.parent)
+	r.Equal("/v2", sub.parent.path)
+}
+
 func (r *routerTestSuite) TestMethod() {
 	r.route.Method(http.MethodGet)
 	r.Equal(http.MethodGet, r.route.methods[0])
@@ -53,27 +59,19 @@ func (r *routerTestSuite) TestMiddleware() {
 	r.Len(r.route.middlewares, 2)
 }
 
-func (r *routerTestSuite) TestGetInput() {
+func (r *routerTestSuite) TestParam() {
 	// nil context
-	_, err := GetInput(nil)
-	r.Require().NotNil(err)
+	value := Param(nil, "key")
+	r.Empty(value)
 
 	// context contains wrong type input
-	_, err = GetInput(context.WithValue(context.Background(), contextKeyInput{}, &Route{}))
-	r.Require().NotNil(err)
+	value = Param(context.WithValue(context.Background(), contextKeyInput{}, &Route{}), "key")
+	r.Empty(value)
 
-	// context contains input
-	input, err := GetInput(context.WithValue(context.Background(), contextKeyInput{}, &beegocontext.BeegoInput{}))
-	r.Require().Nil(err)
-	r.Assert().NotNil(input)
-}
-
-func (r *routerTestSuite) TestParam() {
+	// success
 	input := &beegocontext.BeegoInput{}
 	input.SetParam("key", "value")
-	value, err := Param(context.WithValue(context.Background(), contextKeyInput{}, input), "key")
-	r.Require().Nil(err)
-	r.Assert().NotNil(input)
+	value = Param(context.WithValue(context.Background(), contextKeyInput{}, input), "key")
 	r.Equal("value", value)
 }
 

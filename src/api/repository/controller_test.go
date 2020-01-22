@@ -16,7 +16,8 @@ package repository
 
 import (
 	"github.com/goharbor/harbor/src/common/models"
-	htesting "github.com/goharbor/harbor/src/testing"
+	"github.com/goharbor/harbor/src/testing/pkg/project"
+	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -24,13 +25,13 @@ import (
 type controllerTestSuite struct {
 	suite.Suite
 	ctl     *controller
-	proMgr  *htesting.FakeProjectManager
-	repoMgr *htesting.FakeRepositoryManager
+	proMgr  *project.FakeManager
+	repoMgr *repository.FakeManager
 }
 
 func (c *controllerTestSuite) SetupTest() {
-	c.proMgr = &htesting.FakeProjectManager{}
-	c.repoMgr = &htesting.FakeRepositoryManager{}
+	c.proMgr = &project.FakeManager{}
+	c.repoMgr = &repository.FakeManager{}
 	c.ctl = &controller{
 		proMgr:  c.proMgr,
 		repoMgr: c.repoMgr,
@@ -69,11 +70,35 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.Equal(int64(1), id)
 }
 
+func (c *controllerTestSuite) TestList() {
+	c.repoMgr.On("List").Return(1, []*models.RepoRecord{
+		{
+			RepositoryID: 1,
+		},
+	}, nil)
+	total, repositories, err := c.ctl.List(nil, nil)
+	c.Require().Nil(err)
+	c.repoMgr.AssertExpectations(c.T())
+	c.Equal(int64(1), total)
+	c.Require().Len(repositories, 1)
+	c.Equal(int64(1), repositories[0].RepositoryID)
+}
+
 func (c *controllerTestSuite) TestGet() {
 	c.repoMgr.On("Get").Return(&models.RepoRecord{
 		RepositoryID: 1,
 	}, nil)
 	repository, err := c.ctl.Get(nil, 1)
+	c.Require().Nil(err)
+	c.repoMgr.AssertExpectations(c.T())
+	c.Equal(int64(1), repository.RepositoryID)
+}
+
+func (c *controllerTestSuite) TestGetByName() {
+	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
+		RepositoryID: 1,
+	}, nil)
+	repository, err := c.ctl.GetByName(nil, "library/hello-world")
 	c.Require().Nil(err)
 	c.repoMgr.AssertExpectations(c.T())
 	c.Equal(int64(1), repository.RepositoryID)
