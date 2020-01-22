@@ -16,6 +16,7 @@ package internal
 
 import (
 	"bytes"
+	"errors"
 	"net/http"
 )
 
@@ -26,6 +27,7 @@ type ResponseBuffer struct {
 	header      http.Header
 	buffer      bytes.Buffer
 	wroteHeader bool
+	flushed     bool
 }
 
 // NewResponseBuffer creates a ResponseBuffer object
@@ -48,7 +50,9 @@ func (r *ResponseBuffer) WriteHeader(statusCode int) {
 
 // Write writes the data into the buffer without writing to the underlying response writer
 func (r *ResponseBuffer) Write(data []byte) (int, error) {
-	r.WriteHeader(http.StatusOK)
+	if !r.wroteHeader {
+		r.WriteHeader(http.StatusOK)
+	}
 	return r.buffer.Write(data)
 }
 
@@ -59,6 +63,8 @@ func (r *ResponseBuffer) Header() http.Header {
 
 // Flush the status code, header and data into the underlying response writer
 func (r *ResponseBuffer) Flush() (int, error) {
+	r.flushed = true
+
 	header := r.w.Header()
 	for k, vs := range r.header {
 		for _, v := range vs {
@@ -73,5 +79,19 @@ func (r *ResponseBuffer) Flush() (int, error) {
 
 // Success checks whether the status code is >= 200 & <= 399
 func (r *ResponseBuffer) Success() bool {
-	return r.code >= 200 && r.code <= 399
+	return r.code >= http.StatusOK && r.code < http.StatusBadRequest
+}
+
+// Reset reset the response buffer
+func (r *ResponseBuffer) Reset() error {
+	if r.flushed {
+		return errors.New("response flushed")
+	}
+
+	r.code = 0
+	r.wroteHeader = false
+	r.header = http.Header{}
+	r.buffer = bytes.Buffer{}
+
+	return nil
 }
