@@ -177,7 +177,7 @@ After setting up HTTPS for Harbor, you can verify the HTTPS connection by perfor
    
 ## What to Do Next ##
 
-- If the verification succeeds, see [Harbor Administration](../administration/index.md) for information about using Harbor.
+- If the verification succeeds, see [Harbor Administration](../administration/README.md) for information about using Harbor.
 - If installation fails, see [Troubleshooting Harbor Installation](troubleshoot_installation.md).
 
 ----------

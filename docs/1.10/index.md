@@ -6,7 +6,7 @@ This is the main table of contents for the Harbor 1.10.x documentation.
 
 This section describes how to install Harbor and perform the required initial configurations. These day 1 operations are performed by the Harbor Administrator.
 
-- [Introduction](install_config/index.md) 
+- [Introduction](install_config/README.md) 
 - [Test Harbor with the Demo Server](install_config/demo_server.md)
 - [Harbor Compatibility List](install_config/harbor_compatibility_list.md)
 - [Harbor Installation Prerequisites](install_config/installation_prereqs.md)
@@ -15,6 +15,7 @@ This section describes how to install Harbor and perform the required initial co
 - [Configure the Harbor YML File](install_config/configure_yml_file.md)
 - [Run the Installer Script](install_config/run_installer_script.md)
 - [Deploying Harbor with High Availability via Helm](install_config/harbor_ha_helm.md)
+- [Deploy Harbor with the Quick Installation Script](install_config/quick_install_script.md)
 - [Troubleshooting Harbor Installation](install_config/troubleshoot_installation.md)
 - [Reconfigure Harbor and Manage the Harbor Lifecycle](install_config/reconfigure_manage_lifecycle.md)
 - [Customize the Harbor Token Service](install_config/customize_token_service.md)
@@ -24,7 +25,7 @@ This section describes how to install Harbor and perform the required initial co
 
 This section describes how to use and maintain Harbor after deployment. These day 2 operations are performed by the Harbor Administrator.
 
-- [Introduction](administration/index.md)
+- [Introduction](administration/README.md)
 - [Configuring Authentication](administration/configure_authentication/configure_authentication.md)
    - [Configure Database Authentication](administration/configure_authentication/db_auth.md)
    - [Configure LDAP/Active Directory Authentication](administration/configure_authentication/ldap_auth.md)
@@ -55,7 +56,7 @@ This section describes how to use and maintain Harbor after deployment. These da
 
 This section describes how users with the developer, master, and project administrator roles manage and participate in Harbor projects.
 
-- [Introduction](working_with_projects/index.md)
+- [Introduction](working_with_projects/README.md)
 - [Create Projects](working_with_projects/create_projects.md)
     - [Assign Users to a Project](working_with_projects/add_users.md)
 - [Project Configuration](working_with_projects/project_configuration.md)
@@ -83,3 +84,5 @@ This section describes how developers can build from Harbor source code, customi
 - [Using Make](build_customize_contribute/use_make.md)
 - [View and test Harbor REST API via Swagger](build_customize_contribute/configure_swagger.md)
 - [Registry Landscape](build_customize_contribute/registry_landscape.md)
+
+See also the list of [Articles from the Harbor Community](https://github.com/goharbor/harbor/blob/master/docs/README.md#articles-from-the-community).

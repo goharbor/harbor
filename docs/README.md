@@ -6,7 +6,7 @@ For older versions of the docs, please select the appropriate `release-1.xx.x` b
 
 See also the [Harbor Architecture Overview](https://github.com/vmware/harbor/wiki/Architecture-Overview-of-Harbor).
 
-# Articles from the community
+# Articles from the Harbor Community
 
 [Python SDK](../contrib/registryapi)
 

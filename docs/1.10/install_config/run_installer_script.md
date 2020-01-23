@@ -104,7 +104,7 @@ After you update `daemon.json`, you must restart both Docker Engine and Harbor.
 
 ## What to Do Next ##
 
-- If the installation succeeds, see [Harbor Administration](../administration/index.md) for information about using Harbor.
+- If the installation succeeds, see [Harbor Administration](../administration/README.md) for information about using Harbor.
 - If you deployed Harbor with HTTP and you want to secure the connections to Harbor, see [Configure HTTPS Access to Harbor](configure_https.md).
 - If installation fails, see [Troubleshooting Harbor Installation](troubleshoot_installation.md).
 
