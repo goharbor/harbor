@@ -15,23 +15,21 @@ package controllers
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/core/filter"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	// "net/url"
+	"os"
 	"path/filepath"
 	"runtime"
-	"testing"
-
-	"fmt"
-	"os"
 	"strings"
+	"testing"
 
 	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/stretchr/testify/assert"
 )
@@ -41,6 +39,7 @@ func init() {
 	dir := filepath.Dir(file)
 	dir = filepath.Join(dir, "..")
 	apppath, _ := filepath.Abs(dir)
+	beego.BConfig.WebConfig.EnableXSRF = true
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 	beego.AddTemplateExt("htm")
@@ -105,9 +104,6 @@ func TestAll(t *testing.T) {
 	assert := assert.New(t)
 	err := middlewares.Init()
 	assert.Nil(err)
-
-	// Has to set to dev so that the xsrf panic can be rendered as 403
-	beego.BConfig.RunMode = beego.DEV
 
 	r, _ := http.NewRequest("POST", "/c/login", nil)
 	w := httptest.NewRecorder()

@@ -1,13 +1,17 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # View and test Harbor REST API via Swagger
 A Swagger file is provided for viewing and testing Harbor REST API.
 
-### Viewing Harbor REST API
+## Viewing Harbor REST API
 * Open the file **swagger.yaml** under the _docs_ directory in Harbor project;
 * Paste all its content into the online Swagger Editor at http://editor.swagger.io. The descriptions of Harbor API will be shown on the right pane of the page.
 
 ![Swagger Editor](img/swaggerEditor.png)
 
-### Testing Harbor REST API
+## Testing Harbor REST API
 From time to time, you may need to mannually test Harbor REST API. You can deploy the Swagger file into Harbor's service node. Suppose you install Harbor through online or offline installer, you should have a Harbor directory after you un-tar the installer, such as **~/harbor**.
 
 **Caution:** When using Swagger to send REST requests to Harbor, you may alter the data of Harbor accidentally. For this reason, it is NOT recommended using Swagger against a production Harbor instance.
@@ -69,3 +73,8 @@ ui:
 * You should see a Swagger UI page with Harbor API _swagger.yaml_ file loaded in the same domain, **be aware that your REST request submitted by Swagger may change the data of Harbor**.
 
 ![Harbor API](img/renderedSwagger.png)
+
+
+----------
+
+[Back to table of contents](../index.md)

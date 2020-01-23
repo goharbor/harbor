@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
 
@@ -89,6 +90,10 @@ const (
 	PreconditionCode = "PRECONDITION"
 	// GeneralCode ...
 	GeneralCode = "UNKNOWN"
+	// DENIED it's used by middleware(readonly, vul and content trust) and returned to docker client to index the request is denied.
+	DENIED = "DENIED"
+	// ViolateForeignKeyConstraintCode is the error code for violating foreign key constraint error
+	ViolateForeignKeyConstraintCode = "VIOLATE_FOREIGN_KEY_CONSTRAINT"
 )
 
 // New ...
@@ -151,4 +156,20 @@ func IsErr(err error, code string) bool {
 // IsConflictErr checks whether the err chain contains conflict error
 func IsConflictErr(err error) bool {
 	return IsErr(err, ConflictCode)
+}
+
+// ErrCode returns code of err
+func ErrCode(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	var e *Error
+	if ok := errors.As(err, &e); ok && e.Code != "" {
+		return e.Code
+	} else if ok && e.Cause != nil {
+		return ErrCode(e.Cause)
+	}
+
+	return GeneralCode
 }

@@ -1,3 +1,7 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Configure Webhook Notifications
 
 If you are a project administrator, you can configure a connection from a project in Harbor to a webhook endpoint. If you configure webhooks, Harbor notifies the webhook endpoint of certain events that occur in the project. Webhooks allow you to integrate Harbor with other tools to streamline continuous integration and development processes. 
@@ -88,3 +92,7 @@ As a Harbor system administrator, you can enable and disable webhook notificatio
 1. Scroll down and check or uncheck the **Webhooks enabled** check box.
 
    ![Enable/disable webhooks](../img/webhooks4.png)
+
+----------
+
+[Back to table of contents](../index.md)

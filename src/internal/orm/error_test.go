@@ -18,40 +18,63 @@ import (
 	"errors"
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/internal/error"
+	"github.com/lib/pq"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"testing"
 )
 
 func TestIsNotFoundError(t *testing.T) {
 	// nil error
-	_, ok := IsNotFoundError(nil, "")
-	assert.False(t, ok)
+	err := AsNotFoundError(nil, "")
+	assert.Nil(t, err)
 
 	// common error
-	_, ok = IsNotFoundError(errors.New("common error"), "")
-	assert.False(t, ok)
+	err = AsNotFoundError(errors.New("common error"), "")
+	assert.Nil(t, err)
 
 	// pass
 	message := "message"
-	e, ok := IsNotFoundError(orm.ErrNoRows, message)
-	assert.True(t, ok)
-	assert.Equal(t, error.NotFoundCode, e.Code)
-	assert.Equal(t, message, e.Message)
+	err = AsNotFoundError(orm.ErrNoRows, message)
+	require.NotNil(t, err)
+	assert.Equal(t, error.NotFoundCode, err.Code)
+	assert.Equal(t, message, err.Message)
 }
 
 func TestIsConflictError(t *testing.T) {
 	// nil error
-	_, ok := IsConflictError(nil, "")
-	assert.False(t, ok)
+	err := AsConflictError(nil, "")
+	assert.Nil(t, err)
 
 	// common error
-	_, ok = IsConflictError(errors.New("common error"), "")
-	assert.False(t, ok)
+	err = AsConflictError(errors.New("common error"), "")
+	assert.Nil(t, err)
 
 	// pass
 	message := "message"
-	e, ok := IsConflictError(errors.New("duplicate key value violates unique constraint"), message)
-	assert.True(t, ok)
-	assert.Equal(t, error.ConflictCode, e.Code)
-	assert.Equal(t, message, e.Message)
+	err = AsConflictError(&pq.Error{
+		Code: "23505",
+	}, message)
+	require.NotNil(t, err)
+	assert.Equal(t, error.ConflictCode, err.Code)
+	assert.Equal(t, message, err.Message)
+}
+
+func TestIsForeignKeyError(t *testing.T) {
+	// nil error
+	err := AsForeignKeyError(nil, "")
+	assert.Nil(t, err)
+
+	// common error
+	err = AsForeignKeyError(errors.New("common error"), "")
+	assert.Nil(t, err)
+
+	// pass
+	message := "message"
+	err = AsForeignKeyError(&pq.Error{
+		Code: "23503",
+	}, message)
+	require.NotNil(t, err)
+	assert.Equal(t, error.ViolateForeignKeyConstraintCode, err.Code)
+	assert.Equal(t, message, err.Message)
 }

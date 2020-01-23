@@ -5,8 +5,7 @@ CREATE TABLE artifact_2
   /* image, chart, etc */
   type          varchar(255) NOT NULL,
   media_type    varchar(255) NOT NULL,
-  /* the media type of some classical image manifest can be null, so don't add the "NOT NULL" constraint*/
-  manifest_media_type varchar(255),
+  manifest_media_type varchar(255) NOT NULL,
   project_id    int NOT NULL,
   repository_id int NOT NULL,
   digest        varchar(255) NOT NULL,
@@ -26,6 +25,8 @@ CREATE TABLE tag
   name          varchar(255) NOT NULL,
   push_time     timestamp default CURRENT_TIMESTAMP,
   pull_time     timestamp,
+  /* TODO replace artifact_2 after finishing the upgrade work */
+  FOREIGN KEY (artifact_id) REFERENCES artifact_2(id),
   CONSTRAINT unique_tag UNIQUE (repository_id, name)
 );
 
@@ -36,5 +37,8 @@ CREATE TABLE artifact_reference
   parent_id   int NOT NULL,
   child_id    int NOT NULL,
   platform    varchar(255),
+  /* TODO replace artifact_2 after finishing the upgrade work */
+  FOREIGN KEY (parent_id) REFERENCES artifact_2(id),
+  FOREIGN KEY (child_id) REFERENCES artifact_2(id),
   CONSTRAINT  unique_reference UNIQUE (parent_id, child_id)
 );

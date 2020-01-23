@@ -95,6 +95,21 @@ func (m *managerTestSuite) TestGet() {
 	m.Equal(repository.RepositoryID, repo.RepositoryID)
 }
 
+func (m *managerTestSuite) TestGetByName() {
+	repository := &models.RepoRecord{
+		RepositoryID: 1,
+		ProjectID:    1,
+		Name:         "library/hello-world",
+	}
+	m.dao.On("Count", mock.Anything).Return(1, nil)
+	m.dao.On("List", mock.Anything).Return([]*models.RepoRecord{repository}, nil)
+	repo, err := m.mgr.GetByName(nil, "library/hello-world")
+	m.Require().Nil(err)
+	m.dao.AssertExpectations(m.T())
+	m.Require().NotNil(repo)
+	m.Equal(repository.RepositoryID, repo.RepositoryID)
+}
+
 func (m *managerTestSuite) TestCreate() {
 	m.dao.On("Create", mock.Anything).Return(1, nil)
 	id, err := m.mgr.Create(nil, &models.RepoRecord{

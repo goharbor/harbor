@@ -1,3 +1,7 @@
+[Back to table of contents](../../index.md)
+
+----------
+
 # Creating a Replication Rule
 
 A replication endpoint must exist before you create a replication rule. To create an endpoint, follow the instructions in [Creating Replication Endpoints](create_replication_endpoints.md).
@@ -56,3 +60,8 @@ A replication endpoint must exist before you create a replication rule. To creat
       
 1. Optionally select the Override checkbox to force replicated resources to replace resources at the destination with the same name.
 1. Click **Save** to create the replication rule.  
+
+
+----------
+
+[Back to table of contents](../../index.md)

@@ -14,10 +14,13 @@
 
 package handler
 
+// TODO move this file out of v2.0 folder as this is common for all versions of API
+
 import (
 	"context"
 
 	"github.com/go-openapi/runtime/middleware"
+	errs "github.com/goharbor/harbor/src/server/error"
 )
 
 // BaseAPI base API handler
@@ -30,6 +33,5 @@ func (*BaseAPI) Prepare(ctx context.Context, operation string, params interface{
 
 // SendError returns response for the err
 func (*BaseAPI) SendError(ctx context.Context, err error) middleware.Responder {
-	// TODO: implement send error
-	return nil
+	return errs.NewErrResponder(err)
 }

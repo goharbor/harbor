@@ -1,3 +1,7 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    http://www.apache.org/licenses/LICENSE-2.0
@@ -292,6 +296,28 @@ func (a *abstractorTestSuite) TestAbstractUnsupported() {
 	a.Require().NotNil(err)
 	a.repoMgr.AssertExpectations(a.T())
 	a.fetcher.AssertExpectations(a.T())
+}
+
+func (a *abstractorTestSuite) TestParseArtifactType() {
+	mediaType := ""
+	typee := parseArtifactType(mediaType)
+	a.Equal(ArtifactTypeUnknown, typee)
+
+	mediaType = "unknown"
+	typee = parseArtifactType(mediaType)
+	a.Equal(ArtifactTypeUnknown, typee)
+
+	mediaType = "application/vnd.oci.image.config.v1+json"
+	typee = parseArtifactType(mediaType)
+	a.Equal("IMAGE", typee)
+
+	mediaType = "application/vnd.cncf.helm.chart.config.v1+json"
+	typee = parseArtifactType(mediaType)
+	a.Equal("HELM.CHART", typee)
+
+	mediaType = "application/vnd.sylabs.sif.config.v1+json"
+	typee = parseArtifactType(mediaType)
+	a.Equal("SIF", typee)
 }
 
 func TestAbstractorTestSuite(t *testing.T) {

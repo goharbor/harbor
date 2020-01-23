@@ -111,7 +111,8 @@ func (r *Reference) From(ref *dao.ArtifactReference) {
 	r.ParentID = ref.ParentID
 	r.ChildID = ref.ChildID
 	if len(ref.Platform) > 0 {
-		if err := json.Unmarshal([]byte(ref.Platform), r); err != nil {
+		r.Platform = &v1.Platform{}
+		if err := json.Unmarshal([]byte(ref.Platform), r.Platform); err != nil {
 			log.Errorf("failed to unmarshal the platform of reference: %v", err)
 		}
 	}

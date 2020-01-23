@@ -1,4 +1,9 @@
+[Back to table of contents](../index.md)
+
+----------
+
 # Registry Landscape  
+
 The cloud native ecosystem is moving rapidly–registries and their feature sets are no exception. We've made our best effort to survey the container registry landscape and compare to our core feature set.
 
 If you find something outdated or outright erroneous, please submit a PR and we'll fix it right away.
@@ -30,3 +35,8 @@ Table updated on 10/21/2019 against Harbor 1.9.
 | Vulnerability Scanning Plugin Framework                | ✓      | ✗                       | ✗       | ✗                                 | ✗                           | ✗           | ✗        |
 | Vulnerability Whitelisting                             | ✓      | ✗                       | ✗       | ✗                                 | ✗                           | ✗           | ✗        |
 | Webhooks                                               | ✓      | ✓                       | ✓       | ✓                                 | ✓                           | ✓           | ✓        |
+
+
+----------
+
+[Back to table of contents](../index.md)

@@ -53,6 +53,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/server"
 )
 
 const (
@@ -247,11 +248,10 @@ func main() {
 
 	filter.Init()
 	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
-	beego.InsertFilter("/*", beego.BeforeRouter, filter.OrmFilter)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)
 
-	initRouters()
+	server.RegisterRoutes()
 
 	syncRegistry := os.Getenv("SYNC_REGISTRY")
 	sync, err := strconv.ParseBool(syncRegistry)
@@ -288,6 +288,6 @@ func main() {
 	}
 
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
-	beego.Run()
 
+	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }

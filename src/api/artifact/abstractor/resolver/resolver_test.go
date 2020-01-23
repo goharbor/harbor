@@ -1,3 +1,7 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    http://www.apache.org/licenses/LICENSE-2.0
@@ -11,9 +15,21 @@
 package resolver
 
 import (
+	"context"
+	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
+
+type fakeResolver struct{}
+
+func (f *fakeResolver) ArtifactType() string {
+	return ""
+
+}
+func (f *fakeResolver) Resolve(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
+	return nil
+}
 
 type resolverTestSuite struct {
 	suite.Suite
@@ -37,16 +53,16 @@ func (r *resolverTestSuite) TestRegister() {
 func (r *resolverTestSuite) TestGet() {
 	// registry a resolver
 	mediaType := "fake_media_type"
-	err := Register(nil, mediaType)
+	err := Register(&fakeResolver{}, mediaType)
 	r.Assert().Nil(err)
 
 	// get the resolver
-	_, err = Get(mediaType)
-	r.Assert().Nil(err)
+	resolver := Get(mediaType)
+	r.Assert().NotNil(resolver)
 
 	// get the not exist resolver
-	_, err = Get("not_existing_media_type")
-	r.Assert().NotNil(err)
+	resolver = Get("not_existing_media_type")
+	r.Assert().Nil(resolver)
 }
 
 func TestResolverTestSuite(t *testing.T) {

@@ -1,3 +1,7 @@
+// Copyright Project Harbor Authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
 //    http://www.apache.org/licenses/LICENSE-2.0
@@ -66,11 +70,12 @@ func (m *manifestV2Resolver) Resolve(ctx context.Context, content []byte, artifa
 	if err := json.Unmarshal(layer, image); err != nil {
 		return err
 	}
-	artifact.ExtraAttrs = map[string]interface{}{
-		"created":      image.Created,
-		"author":       image.Author,
-		"architecture": image.Architecture,
-		"os":           image.OS,
+	if artifact.ExtraAttrs == nil {
+		artifact.ExtraAttrs = map[string]interface{}{}
 	}
+	artifact.ExtraAttrs["created"] = image.Created
+	artifact.ExtraAttrs["author"] = image.Author
+	artifact.ExtraAttrs["architecture"] = image.Architecture
+	artifact.ExtraAttrs["os"] = image.OS
 	return nil
 }

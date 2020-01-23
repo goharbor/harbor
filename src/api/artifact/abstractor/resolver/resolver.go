@@ -49,10 +49,6 @@ func Register(resolver Resolver, mediaTypes ...string) error {
 }
 
 // Get the resolver according to the media type
-func Get(mediaType string) (Resolver, error) {
-	resolver, exist := registry[mediaType]
-	if !exist {
-		return nil, fmt.Errorf("resolver resolves %s not found", mediaType)
-	}
-	return resolver, nil
+func Get(mediaType string) Resolver {
+	return registry[mediaType]
 }

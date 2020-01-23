@@ -1,3 +1,7 @@
+[Back to table of contents](../../index.md)
+
+----------
+
 # Running Replication Manually
 
 1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
@@ -17,3 +21,8 @@
 To edit or delete a replication rule, select the replication rule in the **Replications** view and click **Edit** or **Delete**. Only rules which have no executions in progress can be edited deleted.  
 
 ![Delete or edit rule](../../img/replication-rule6.png)
+
+
+----------
+
+[Back to table of contents](../../index.md)

@@ -30,7 +30,7 @@ import (
 // New returns http handler for API V2.0
 func New() http.Handler {
 	h, api, err := restapi.HandlerAPI(restapi.Config{
-		ArtifactAPI: NewArtifactAPI(),
+		ArtifactAPI: newArtifactAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

@@ -18,8 +18,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor"
-	// registry image resolvers
+	// register image resolvers
 	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
+	// register chart resolver
+	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/chart"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -75,9 +77,7 @@ func NewController() Controller {
 	}
 }
 
-// TODO handle concurrency, the redis lock doesn't cover all cases
-// TODO As a redis lock is applied during the artifact pushing, we do not to handle the concurrent issues
-// for artifacts and tags？？
+// TODO concurrency summary
 
 type controller struct {
 	repoMgr    repository.Manager
@@ -294,7 +294,13 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 			log.Errorf("failed to list tag of artifact %d: %v", artifact.ID, err)
 		}
 	}
-	// TODO populate other properties: scan, signature etc.
+	if option.WithLabel {
+		// TODO populate label
+	}
+	if option.WithScanOverview {
+		// TODO populate scan overview
+	}
+	// TODO populate signature on artifact or label level?
 	return artifact
 }
 
@@ -306,6 +312,9 @@ func (c *controller) assembleTag(ctx context.Context, tag *tm.Tag, option *TagOp
 	if option == nil {
 		return t
 	}
-	// TODO populate label, signature, immutable status for tag
+	if option.WithImmutableStatus {
+		// TODO populate immutable status
+	}
+	// TODO populate signature on tag level?
 	return t
 }

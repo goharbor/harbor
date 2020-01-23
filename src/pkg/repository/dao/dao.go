@@ -52,11 +52,19 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 			Keywords: query.Keywords,
 		}
 	}
-	return orm.QuerySetter(ctx, &models.RepoRecord{}, query).Count()
+	qs, err := orm.QuerySetter(ctx, &models.RepoRecord{}, query)
+	if err != nil {
+		return 0, err
+	}
+	return qs.Count()
 }
 func (d *dao) List(ctx context.Context, query *q.Query) ([]*models.RepoRecord, error) {
 	repositories := []*models.RepoRecord{}
-	if _, err := orm.QuerySetter(ctx, &models.RepoRecord{}, query).All(&repositories); err != nil {
+	qs, err := orm.QuerySetter(ctx, &models.RepoRecord{}, query)
+	if err != nil {
+		return nil, err
+	}
+	if _, err = qs.All(&repositories); err != nil {
 		return nil, err
 	}
 	return repositories, nil
@@ -66,8 +74,12 @@ func (d *dao) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
 	repository := &models.RepoRecord{
 		RepositoryID: id,
 	}
-	if err := orm.GetOrmer(ctx).Read(repository); err != nil {
-		if e, ok := orm.IsNotFoundError(err, "repository %d not found", id); ok {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if err := ormer.Read(repository); err != nil {
+		if e := orm.AsNotFoundError(err, "repository %d not found", id); e != nil {
 			err = e
 		}
 		return nil, err
@@ -76,15 +88,23 @@ func (d *dao) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
 }
 
 func (d *dao) Create(ctx context.Context, repository *models.RepoRecord) (int64, error) {
-	id, err := orm.GetOrmer(ctx).Insert(repository)
-	if e, ok := orm.IsConflictError(err, "repository %s already exists", repository.Name); ok {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return 0, err
+	}
+	id, err := ormer.Insert(repository)
+	if e := orm.AsConflictError(err, "repository %s already exists", repository.Name); e != nil {
 		err = e
 	}
 	return id, err
 }
 
 func (d *dao) Delete(ctx context.Context, id int64) error {
-	n, err := orm.GetOrmer(ctx).Delete(&models.RepoRecord{
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	n, err := ormer.Delete(&models.RepoRecord{
 		RepositoryID: id,
 	})
 	if err != nil {
@@ -97,7 +117,11 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 }
 
 func (d *dao) Update(ctx context.Context, repository *models.RepoRecord, props ...string) error {
-	n, err := orm.GetOrmer(ctx).Update(repository, props...)
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	n, err := ormer.Update(repository, props...)
 	if err != nil {
 		return err
 	}

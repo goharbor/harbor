@@ -17,15 +17,18 @@ package orm
 import (
 	"context"
 	"github.com/astaxie/beego/orm"
-	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/pkg/q"
 )
 
 // QuerySetter generates the query setter according to the query
-func QuerySetter(ctx context.Context, model interface{}, query *q.Query) orm.QuerySeter {
-	qs := GetOrmer(ctx).QueryTable(model)
+func QuerySetter(ctx context.Context, model interface{}, query *q.Query) (orm.QuerySeter, error) {
+	ormer, err := FromContext(ctx)
+	if err != nil {
+		return nil, err
+	}
+	qs := ormer.QueryTable(model)
 	if query == nil {
-		return qs
+		return qs, nil
 	}
 	for k, v := range query.Keywords {
 		qs = qs.Filter(k, v)
@@ -36,11 +39,5 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query) orm.Que
 			qs = qs.Offset(query.PageSize * (query.PageNumber - 1))
 		}
 	}
-	return qs
-}
-
-// GetOrmer returns an ormer
-// TODO remove it after weiwei's PR merged
-func GetOrmer(ctx context.Context) orm.Ormer {
-	return dao.GetOrmer()
+	return qs, nil
 }
