@@ -39,3 +39,7 @@ ${project_tag_retention_action_button_xpath}  //button[contains(.,'ACTION')]
 ${project_tag_retention_delete_button_xpath}  //div[contains(@class,'dropdown-menu')]//button[contains(.,'Delete')]
 ${project_tag_retention_edit_button_xpath}  //div[contains(@class,'dropdown-menu')]//button[contains(.,'Edit')]
 ${project_tag_retention_modal_title_edit_xpath}  //h3[contains(.,'Edit Tag Retention Rule')]
+
+${project_tag_immutability_scope_input_xpath}  //*[@id='scope-input']
+${project_tag_immutability_tag_input_xpath}  //*[@id='tag-input']
+${project_tag_immutability_save_add_button_xpath}  //*[@id='add-edit-btn']

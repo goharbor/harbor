@@ -6,7 +6,7 @@ Resource  ../../resources/Util.robot
 
 *** Keywords ***
 Switch To Project Robot Account
-    Switch To Project Tab Overflow
+    #Switch To Project Tab Overflow
     Retry Element Click  ${project_robot_account_tabpage}
     Retry Wait Until Page Contains Element  ${project_robot_account_create_btn}
 

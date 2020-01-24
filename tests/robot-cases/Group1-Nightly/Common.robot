@@ -117,8 +117,7 @@ Test Case - Project Level Policy Public
     # Here logout and login to try avoid a bug only in autotest
     Logout Harbor
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Filter Object  project${d}
-    Project Should Be Public  project${d}
+    Retry Double Keywords When Error  Filter Project  project${d}  Project Should Be Public  project${d}
     Close Browser
 
 Test Case - Verify Download Ca Link
@@ -455,7 +454,11 @@ Test Case - Project Image And Chart Artifact Count Quotas Dispaly And Control
     ${storage_quota}=  Set Variable  500
     ${storage_quota_unit}=  Set Variable  MB
     ${image}=  Set Variable  redis
-    ${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
+    #For docker-hub registry
+    #${sha256}=  Set Variable  9755880356c4ced4ff7745bafe620f0b63dd17747caedba72504ef7bac882089
+    #For internal CPE harbor registry
+    ${sha256}=  Set Variable  0e67625224c1da47cb3270e7a861a83e332f708d3d89dde0cbed432c94824d9a
+
     ${image_size}=    Set Variable    34.14MB
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     Create An New Project  project${d}  count_quota=${count_quota}  storage_quota=${storage_quota}  storage_quota_unit=${storage_quota_unit}
@@ -483,8 +486,8 @@ Test Case - Project Storage Quotas Dispaly And Control
     ${d}=  Get Current Date  result_format=%m%s
     ${storage_quota}=  Set Variable  330
     ${storage_quota_unit}=  Set Variable  MB
-    ${image_a}=  Set Variable  ${LOCAL_REGISTRY}/harbor-ci/redis
-    ${image_b}=  Set Variable  ${LOCAL_REGISTRY}/harbor-ci/logstash
+    ${image_a}=  Set Variable  redis
+    ${image_b}=  Set Variable  logstash
     ${image_a_size}=    Set Variable    34.15MB
     ${image_b_size}=    Set Variable    321.03MB
     ${image_a_ver}=  Set Variable  donotremove5.0
@@ -607,6 +610,28 @@ Test Case - Tag Retention
     Execute Dry Run
     Execute Run
     Close Browser
+
+Test Case - Tag Immutability
+    Init Chrome Driver
+    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
+    ${d}=    Get Current Date    result_format=%m%s
+    Create An New Project  project${d}
+    Go Into Project  project${d}  has_image=${false}
+    Switch To Tag Immutability
+    Add A Tag Immutability Rule  1212  3434
+    Delete A Tag Immutability Rule
+    Add A Tag Immutability Rule  5566  7788
+    Edit A Tag Immutability Rule  hello-world  latest
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  hello-world  latest
+    Push Image With Tag  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  project${d}  busybox  latest
+    Go Into Project  project${d}
+    @{repo_list}  Create List  hello-world  busybox
+    Multi-delete Object  ${repo_delete_btn}  @{repo_list}
+    # Verify
+    Delete Fail  hello-world
+    Delete Success  busybox
+    Close Browser
+
 
 Test Case - Robot Account
     Init Chrome Driver

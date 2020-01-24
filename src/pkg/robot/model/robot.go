@@ -49,6 +49,7 @@ type RobotCreate struct {
 	ProjectID   int64          `json:"pid"`
 	Description string         `json:"description"`
 	Disabled    bool           `json:"disabled"`
+	ExpiresAt   int64          `json:"expires_at"`
 	Visible     bool           `json:"-"`
 	Access      []*rbac.Policy `json:"access"`
 }
@@ -66,6 +67,9 @@ func (rq *RobotCreate) Valid(v *validation.Validation) {
 	}
 	if utils.IsContainIllegalChar(rq.Name, []string{",", "~", "#", "$", "%"}) {
 		v.SetError("name", "robot name contains illegal characters")
+	}
+	if rq.ExpiresAt < 0 {
+		v.SetError("expires_at", "expiration time must be a positive integer if set")
 	}
 }
 

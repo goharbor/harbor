@@ -2,9 +2,10 @@ package error
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"strings"
 )
 
 // Error ...
@@ -20,8 +21,8 @@ func (e *Error) Error() string {
 }
 
 // WithMessage ...
-func (e *Error) WithMessage(msg string) *Error {
-	e.Message = msg
+func (e *Error) WithMessage(format string, v ...interface{}) *Error {
+	e.Message = fmt.Sprintf(format, v...)
 	return e
 }
 
@@ -51,7 +52,7 @@ func (errs Errors) Error() string {
 		case *Error:
 			err = e.(*Error)
 		default:
-			err = UnknownError(e).WithMessage(err.Error())
+			err = UnknownError(e).WithMessage(e.Error())
 		}
 		tmpErrs.Errors = append(tmpErrs.Errors, *err.(*Error))
 	}
@@ -84,22 +85,28 @@ const (
 	// BadRequestCode ...
 	BadRequestCode = "BAD_REQUEST"
 	// ForbiddenCode ...
-	ForbiddenCode = "FORBIDDER"
+	ForbiddenCode = "FORBIDDEN"
 	// PreconditionCode ...
 	PreconditionCode = "PRECONDITION"
 	// GeneralCode ...
 	GeneralCode = "UNKNOWN"
+	// DENIED it's used by middleware(readonly, vul and content trust) and returned to docker client to index the request is denied.
+	DENIED = "DENIED"
+	// ViolateForeignKeyConstraintCode is the error code for violating foreign key constraint error
+	ViolateForeignKeyConstraintCode = "VIOLATE_FOREIGN_KEY_CONSTRAINT"
 )
 
 // New ...
 func New(err error) *Error {
-	if _, ok := err.(*Error); ok {
-		err = err.(*Error).Unwrap()
+	e := &Error{}
+	if err != nil {
+		e.Cause = err
+		e.Message = err.Error()
+		if ee, ok := err.(*Error); ok {
+			e.Cause = ee
+		}
 	}
-	return &Error{
-		Cause:   err,
-		Message: err.Error(),
-	}
+	return e
 }
 
 // NotFoundError is error for the case of object not found
@@ -129,7 +136,7 @@ func ForbiddenError(err error) *Error {
 
 // PreconditionFailedError is error for the case of precondition failed
 func PreconditionFailedError(err error) *Error {
-	return New(err).WithCode(PreconditionCode).WithMessage("preconfition")
+	return New(err).WithCode(PreconditionCode).WithMessage("precondition failed")
 }
 
 // UnknownError ...
@@ -137,11 +144,32 @@ func UnknownError(err error) *Error {
 	return New(err).WithCode(GeneralCode).WithMessage("unknown")
 }
 
-// IsErr ...
+// IsErr checks whether the err chain contains error matches the code
 func IsErr(err error, code string) bool {
-	_, ok := err.(*Error)
-	if !ok {
-		return false
+	var e *Error
+	if errors.As(err, &e) {
+		return e.Code == code
 	}
-	return strings.Compare(err.(*Error).Code, code) == 0
+	return false
+}
+
+// IsConflictErr checks whether the err chain contains conflict error
+func IsConflictErr(err error) bool {
+	return IsErr(err, ConflictCode)
+}
+
+// ErrCode returns code of err
+func ErrCode(err error) string {
+	if err == nil {
+		return ""
+	}
+
+	var e *Error
+	if ok := errors.As(err, &e); ok && e.Code != "" {
+		return e.Code
+	} else if ok && e.Cause != nil {
+		return ErrCode(e.Cause)
+	}
+
+	return GeneralCode
 }

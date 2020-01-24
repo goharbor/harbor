@@ -15,7 +15,7 @@
                         <option value="2">{{projectTypes[2] | translate}}</option>
                     </select>
                 </div>
-                <hbr-filter [withDivider]="true" filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}' (filterEvt)="doSearchProjects($event)"
+                <hbr-filter [withDivider]="true" filterPlaceholder='{{"PROJECT.FILTER_PLACEHOLDER" | translate}}'
                     [currentValue]="projectName"></hbr-filter>
                 <span class="refresh-btn" (click)="refresh()">
                     <clr-icon shape="refresh"></clr-icon>

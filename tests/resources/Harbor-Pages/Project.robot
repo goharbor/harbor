@@ -45,7 +45,7 @@ Create An New Project With New User
 
 #It's the log of project.
 Go To Project Log
-    Switch To Project Tab Overflow
+    #Switch To Project Tab Overflow
     Retry Element Click  xpath=${project_log_xpath}
     Sleep  2
 
@@ -67,9 +67,16 @@ Switch To Project Configuration
     Sleep  1
 
 Switch To Tag Retention
-    Switch To Project Tab Overflow
+    #Switch To Project Tab Overflow
     Retry Element Click  xpath=${project_tag_strategy_xpath}
     Sleep  1
+
+Switch To Tag Immutability
+    #Switch To Project Tab Overflow
+    Retry Double Keywords When Error  Retry Element Click  xpath=${project_tag_strategy_xpath}  Retry Wait Until Page Contains Element  ${project_tag_immutability_switch}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${project_tag_immutability_switch}  Retry Wait Until Page Contains  Immutability rules
+    Sleep  1
+
 Switch To Project Tab Overflow
     Retry Element Click  xpath=${project_tab_overflow_btn}
     Sleep  1

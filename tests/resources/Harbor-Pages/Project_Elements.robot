@@ -29,6 +29,8 @@ ${project_config_tabsheet}  xpath=//project-detail//a[contains(.,'Configuration'
 ${project_tag_strategy_xpath}  //clr-tabs//a[contains(.,'Tag')]
 ${project_tab_overflow_btn}  //clr-tabs//li//button[contains(@class,"dropdown-toggle")]
 
+${project_tag_immutability_switch}  //project-detail/app-tag-feature-integration//label/a[contains(.,'Tag Immutability')]
+
 ${create_project_CANCEL_button_xpath}  xpath=//button[contains(.,'CANCEL')]
 ${create_project_OK_button_xpath}  xpath=//button[contains(.,'OK')]
 ${delete_confirm_btn}  xpath=//confirmation-dialog//button[contains(.,'DELETE')]

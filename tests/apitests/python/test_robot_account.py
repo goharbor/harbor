@@ -72,9 +72,9 @@ class TestProjects(unittest.TestCase):
         admin_name = ADMIN_CLIENT["username"]
         admin_password = ADMIN_CLIENT["password"]
         user_ra_password = "Aa123456"
-        image_project_a = "tomcat"
+        image_project_a = "haproxy"
         image_project_b = "hello-world"
-        image_project_c = "mysql"
+        image_project_c = "httpd"
         image_robot_account = "mariadb"
         tag = "latest"
 
@@ -93,7 +93,8 @@ class TestProjects(unittest.TestCase):
         TestProjects.repo_name_in_project_c, tag_c = push_image_to_project(project_ra_name_c, harbor_server, user_ra_name, user_ra_password, image_project_c, tag)
 
         print "#4. Create a new robot account(RA) with pull and push privilige in project(PA) by user(UA);"
-        robot_id, robot_account = self.project.add_project_robot_account(TestProjects.project_ra_id_a, project_ra_name_a, **TestProjects.USER_RA_CLIENT)
+        robot_id, robot_account = self.project.add_project_robot_account(TestProjects.project_ra_id_a, project_ra_name_a,
+                                                                         2441000531 ,**TestProjects.USER_RA_CLIENT)
         print robot_account.name
         print robot_account.token
 

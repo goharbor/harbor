@@ -226,7 +226,7 @@ func (aj *AJAPI) getLog(id int64) {
 // submit submits a job to job service per request
 func (aj *AJAPI) submit(ajr *models.AdminJobReq) {
 	// when the schedule is saved as None without any schedule, just return 200 and do nothing.
-	if ajr.Schedule.Type == models.ScheduleNone {
+	if ajr.Schedule == nil || ajr.Schedule.Type == models.ScheduleNone {
 		return
 	}
 

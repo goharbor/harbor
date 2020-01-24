@@ -37,6 +37,9 @@ const SCHEDULE_TYPE = {
     HOURLY: "Hourly",
     CUSTOM: "Custom"
 };
+const RUNNING: string = "Running";
+const PENDING: string = "pending";
+const TIMEOUT: number = 5000;
 @Component({
     selector: 'tag-retention',
     templateUrl: './tag-retention.component.html',
@@ -341,6 +344,14 @@ export class TagRetentionComponent implements OnInit {
                         }
                         this.historyList = response.body as Array<any>;
                         TagRetentionComponent.calculateDuration(this.historyList);
+                        if (this.historyList && this.historyList.length
+                            && this.historyList.some(item => {
+                                return item.status === RUNNING || item.status === PENDING;
+                            })) {
+                            setTimeout(() => {
+                                 this.loadLog();
+                            }, TIMEOUT);
+                        }
                     }, error => {
                         this.errorHandler.error(error);
                     });
@@ -362,6 +373,7 @@ export class TagRetentionComponent implements OnInit {
         this.tagRetentionService.getProjectInfo(this.projectId).subscribe(
             response => {
                 this.retentionId = response.metadata.retention_id;
+                this.refreshList();
                 this.getRetention();
             }, error => {
                 this.loadingRule = false;
@@ -435,6 +447,7 @@ export class TagRetentionComponent implements OnInit {
         return this.tagRetentionService.getI18nKey(str);
     }
     clrLoad() {
+
         this.refreshList();
     }
 }

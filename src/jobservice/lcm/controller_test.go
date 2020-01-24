@@ -16,8 +16,10 @@ package lcm
 
 import (
 	"context"
-	"encoding/json"
-	"github.com/goharbor/harbor/src/jobservice/common/rds"
+	"sync"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -26,9 +28,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"sync"
-	"testing"
-	"time"
 )
 
 // LcmControllerTestSuite tests functions of life cycle controller
@@ -65,48 +64,36 @@ func TestLcmControllerTestSuite(t *testing.T) {
 	suite.Run(t, new(LcmControllerTestSuite))
 }
 
-// TestNewAndTrack tests controller.New() and controller.Track()
-func (suite *LcmControllerTestSuite) TestNewAndTrack() {
+// TestController tests lcm controller
+func (suite *LcmControllerTestSuite) TestController() {
+	// Prepare mock data
 	jobID := utils.MakeIdentifier()
-	suite.newsStats(jobID)
+	rev := time.Now().Unix()
+	suite.newsStats(jobID, rev)
+
+	simpleChange := job.SimpleStatusChange{
+		JobID:        jobID,
+		TargetStatus: job.RunningStatus.String(),
+		Revision:     rev,
+	}
+
+	// Just test if the server can be started
+	err := suite.ctl.Serve()
+	require.NoError(suite.T(), err, "lcm: nil error expected but got %s", err)
+
+	// Test retry loop
+	bc := suite.ctl.(*basicController)
+	bc.retryList.Push(simpleChange)
+	bc.retryLoop()
 
 	t, err := suite.ctl.Track(jobID)
 	require.Nil(suite.T(), err, "lcm track: nil error expected but got %s", err)
 	assert.Equal(suite.T(), job.SampleJob, t.Job().Info.JobName, "lcm new: expect job name %s but got %s", job.SampleJob, t.Job().Info.JobName)
-}
-
-// TestNew tests controller.Serve()
-func (suite *LcmControllerTestSuite) TestServe() {
-	// Prepare mock data
-	jobID := utils.MakeIdentifier()
-	suite.newsStats(jobID)
-
-	conn := suite.pool.Get()
-	defer func() {
-		_ = conn.Close()
-	}()
-	simpleChange := &job.SimpleStatusChange{
-		JobID:        jobID,
-		TargetStatus: job.RunningStatus.String(),
-	}
-	rawJSON, err := json.Marshal(simpleChange)
-	require.Nil(suite.T(), err, "json marshal: nil error expected but got %s", err)
-	key := rds.KeyStatusUpdateRetryQueue(suite.namespace)
-	args := []interface{}{key, "NX", time.Now().Unix(), rawJSON}
-	_, err = conn.Do("ZADD", args...)
-	require.Nil(suite.T(), err, "prepare mock data: nil error expected but got %s", err)
-
-	err = suite.ctl.Serve()
-	require.NoError(suite.T(), err, "lcm: nil error expected but got %s", err)
-	<-time.After(1 * time.Second)
-
-	count, err := redis.Int(conn.Do("ZCARD", key))
-	require.Nil(suite.T(), err, "get total dead status: nil error expected but got %s", err)
-	assert.Equal(suite.T(), 0, count)
+	assert.Equal(suite.T(), job.RunningStatus.String(), t.Job().Info.Status)
 }
 
 // newsStats create job stats
-func (suite *LcmControllerTestSuite) newsStats(jobID string) {
+func (suite *LcmControllerTestSuite) newsStats(jobID string, revision int64) {
 	stats := &job.Stats{
 		Info: &job.StatsInfo{
 			JobID:    jobID,
@@ -114,6 +101,7 @@ func (suite *LcmControllerTestSuite) newsStats(jobID string) {
 			JobName:  job.SampleJob,
 			IsUnique: true,
 			Status:   job.PendingStatus.String(),
+			Revision: revision,
 		},
 	}
 

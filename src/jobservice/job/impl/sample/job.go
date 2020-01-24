@@ -80,8 +80,8 @@ func (j *Job) Run(ctx job.Context, params job.Parameters) error {
 	ctx.Checkin("progress data: %60")
 
 	// HOLD ON FOR A WHILE
-	logger.Warning("Holding for 10 seconds")
-	<-time.After(10 * time.Second)
+	logger.Warning("Holding for 30 seconds")
+	<-time.After(30 * time.Second)
 
 	if cmd, ok := ctx.OPCommand(); ok {
 		if cmd == job.StopCommand {
