@@ -296,7 +296,7 @@ The following table lists the additional, optional parameters that you can set t
 
 {{< note >}}
 The `harbor.yml` file includes options to configure a UAA CA certificate. This authentication mode is not recommended and is not documented.
-{{< /notee >}}
+{{< /note >}}
 
 ### Configuring a Storage Backend {#backend}
 

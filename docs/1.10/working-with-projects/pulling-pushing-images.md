@@ -79,9 +79,9 @@ First, you delete a repository in the Harbor interface. This is soft deletion. Y
 ![browse project](../img/new-delete-repo.png)
 ![browse project](../img/new-delete-tag.png)
 
-{{< caution >}}
+{{< danger >}}
 If both tag A and tag B refer to the same image, after deleting tag A, B will also get deleted. if you enabled content trust, you need to use notary command line tool to delete the tag's signature before you delete an image.
-{{< /caution >}}
+{{< /danger >}}
 
 Next, delete the repository files by running [garbage collection](../administration/garbage-collection.md) in the Harbor interface. 
 
