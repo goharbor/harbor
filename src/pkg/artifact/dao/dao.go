@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+	beegoorm "github.com/astaxie/beego/orm"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/q"
@@ -43,6 +44,27 @@ type DAO interface {
 	DeleteReferences(ctx context.Context, parentID int64) (err error)
 }
 
+const (
+	// TODO replace the table name "artifact_2" after upgrade
+	// both tagged and untagged artifacts
+	all = `IN (
+		SELECT DISTINCT art.id FROM artifact_2 art
+		LEFT JOIN tag ON art.id=tag.artifact_id 
+		LEFT JOIN artifact_reference ref ON art.id=ref.child_id
+		WHERE tag.id IS NOT NULL OR ref.id IS NULL)`
+	// only untagged artifacts
+	untagged = `IN (
+		SELECT DISTINCT art.id FROM artifact_2 art
+		LEFT JOIN tag ON art.id=tag.artifact_id 
+		LEFT JOIN artifact_reference ref ON art.id=ref.child_id
+		WHERE tag.id IS NULL AND ref.id IS NULL)`
+	// only tagged artifacts
+	tagged = `IN (
+		SELECT DISTINCT art.id FROM artifact_2 art
+		LEFT JOIN tag ON art.id=tag.artifact_id
+		WHERE tag.id IS NOT NULL)`
+)
+
 // New returns an instance of the default DAO
 func New() DAO {
 	return &dao{}
@@ -57,7 +79,7 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 			Keywords: query.Keywords,
 		}
 	}
-	qs, err := orm.QuerySetter(ctx, &Artifact{}, query)
+	qs, err := querySetter(ctx, query)
 	if err != nil {
 		return 0, err
 	}
@@ -65,7 +87,7 @@ func (d *dao) Count(ctx context.Context, query *q.Query) (int64, error) {
 }
 func (d *dao) List(ctx context.Context, query *q.Query) ([]*Artifact, error) {
 	artifacts := []*Artifact{}
-	qs, err := orm.QuerySetter(ctx, &Artifact{}, query)
+	qs, err := querySetter(ctx, query)
 	if err != nil {
 		return nil, err
 	}
@@ -180,4 +202,34 @@ func (d *dao) DeleteReferences(ctx context.Context, parentID int64) error {
 	}
 	_, err = qs.Delete()
 	return err
+}
+
+func querySetter(ctx context.Context, query *q.Query) (beegoorm.QuerySeter, error) {
+	// as we modify the query in this method, copy it to avoid the impact for the original one
+	query = q.Copy(query)
+	// show both tagged and untagged artifacts by default
+	rawFilter := all
+	if query != nil && len(query.Keywords) > 0 {
+		value, ok := query.Keywords["Tags"]
+		if ok {
+			switch value.(string) {
+			case "nil":
+				// only show untagged artifacts
+				rawFilter = untagged
+			case "*":
+				// only show tagged artifacts
+				rawFilter = tagged
+			default:
+				return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
+					WithMessage("invalid value of tags: %s", value.(string))
+			}
+			// as the "Tags" isn't a table column, remove the "Tags" from the query to avoid orm error
+			delete(query.Keywords, "Tags")
+		}
+	}
+	qs, err := orm.QuerySetter(ctx, &Artifact{}, query)
+	if err != nil {
+		return nil, err
+	}
+	return qs.FilterRaw("id", rawFilter), nil
 }
