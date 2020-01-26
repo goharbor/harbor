@@ -385,7 +385,7 @@ func (c *controllerTestSuite) TestDelete() {
 	c.tagMgr.AssertExpectations(c.T())
 }
 
-func (c *controllerTestSuite) TestTags() {
+func (c *controllerTestSuite) TestListTags() {
 	c.tagMgr.On("List").Return(1, []*tag.Tag{
 		{
 			ID:           1,
@@ -394,12 +394,19 @@ func (c *controllerTestSuite) TestTags() {
 			Name:         "latest",
 		},
 	}, nil)
-	total, tags, err := c.ctl.Tags(nil, nil, nil)
+	total, tags, err := c.ctl.ListTags(nil, nil, nil)
 	c.Require().Nil(err)
 	c.Equal(int64(1), total)
 	c.Len(tags, 1)
 	c.tagMgr.AssertExpectations(c.T())
 	// TODO check other properties: label, etc
+}
+
+func (c *controllerTestSuite) TestCreateTag() {
+	c.tagMgr.On("Create").Return(1, nil)
+	id, err := c.ctl.CreateTag(nil, &Tag{})
+	c.Require().Nil(err)
+	c.Equal(int64(1), id)
 }
 
 func (c *controllerTestSuite) TestDeleteTag() {

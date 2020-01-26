@@ -54,8 +54,10 @@ type Controller interface {
 	GetByReference(ctx context.Context, repository, reference string, option *Option) (artifact *Artifact, err error)
 	// Delete the artifact specified by ID. All tags attached to the artifact are deleted as well
 	Delete(ctx context.Context, id int64) (err error)
-	// Tags returns the tags according to the query, specify the properties returned with option
-	Tags(ctx context.Context, query *q.Query, option *TagOption) (total int64, tags []*Tag, err error)
+	// ListTags lists the tags according to the query, specify the properties returned with option
+	ListTags(ctx context.Context, query *q.Query, option *TagOption) (total int64, tags []*Tag, err error)
+	// CreateTag creates a tag
+	CreateTag(ctx context.Context, tag *Tag) (id int64, err error)
 	// DeleteTag deletes the tag specified by tagID
 	DeleteTag(ctx context.Context, tagID int64) (err error)
 	// UpdatePullTime updates the pull time for the artifact. If the tagID is provides, update the pull
@@ -285,7 +287,11 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	// TODO fire delete artifact event
 	return nil
 }
-func (c *controller) Tags(ctx context.Context, query *q.Query, option *TagOption) (int64, []*Tag, error) {
+
+func (c *controller) CreateTag(ctx context.Context, tag *Tag) (int64, error) {
+	return c.tagMgr.Create(ctx, &(tag.Tag))
+}
+func (c *controller) ListTags(ctx context.Context, query *q.Query, option *TagOption) (int64, []*Tag, error) {
 	total, tgs, err := c.tagMgr.List(ctx, query)
 	if err != nil {
 		return 0, nil, err

@@ -18,80 +18,6 @@ securityDefinitions:
 security:
   - basicAuth: []
 paths:
-  /projects/{project_name}/repositories/{repository_name}/artifacts/{digest}:
-    get:
-      summary: Get the specific artifact
-      description: Get the artifact specified by the digest under the project and repository
-      tags:
-        - artifact
-      operationId: getArtifact
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectName'
-        - $ref: '#/parameters/repositoryName'
-        - $ref: '#/parameters/digest'
-        - name: with_tag
-          in: query
-          description: Specify whether the tags are inclued inside the returning artifacts
-          type: boolean
-          required: false
-          default: true
-        - name: with_label
-          in: query
-          description: Specify whether the labels are inclued inside the returning artifacts
-          type: boolean
-          required: false
-          default: false
-        - name: with_scan_overview
-          in: query
-          description: Specify whether the scan overview is inclued inside the returning artifacts
-          type: boolean
-          required: false
-          default: false
-        # should be in tag level
-        - name: with_signatrue
-          in: query
-          description: Specify whether the signature is inclued inside the returning artifacts
-          type: boolean
-          required: false
-          default: false
-        - name: with_immutable_status
-          in: query
-          description: Specify whether the immutable status is inclued inside the tags of the returning artifacts. Only works when setting "with_tag=true"
-          type: boolean
-          required: false
-          default: false
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/Artifact'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '500':
-          $ref: '#/responses/500'
-    delete:
-      summary: Delete the specific artifact
-      description: Delete the artifact specified by the digest under the project and repository
-      tags:
-        - artifact
-      operationId: deleteArtifact
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectName'
-        - $ref: '#/parameters/repositoryName'
-        - $ref: '#/parameters/digest'
-      responses:
-        '200':
-          description: Success
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '500':
-          $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts:
     get:
       summary: List artifacts
@@ -129,7 +55,7 @@ paths:
           required: false
           default: false
         # should be in tag level
-        - name: with_signatrue
+        - name: with_signature
           in: query
           description: Specify whether the signature is inclued inside the returning artifacts
           type: boolean
@@ -156,10 +82,151 @@ paths:
             type: array
             items:
               $ref: '#/definitions/Artifact'
+        '400':
+          $ref: '#/responses/400'
         '401':
           $ref: '#/responses/401'
         '403':
           $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}:
+    get:
+      summary: Get the specific artifact
+      description: Get the artifact specified by the reference under the project and repository. The reference can be digest or tag.
+      tags:
+        - artifact
+      operationId: getArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: with_tag
+          in: query
+          description: Specify whether the tags are inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: true
+        - name: with_label
+          in: query
+          description: Specify whether the labels are inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_scan_overview
+          in: query
+          description: Specify whether the scan overview is inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        # should be in tag level
+        - name: with_signature
+          in: query
+          description: Specify whether the signature is inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_immutable_status
+          in: query
+          description: Specify whether the immutable status is inclued inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          type: boolean
+          required: false
+          default: false
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Artifact'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete the specific artifact
+      description: Delete the artifact specified by the reference under the project and repository. The reference can be digest or tag
+      tags:
+        - artifact
+      operationId: deleteArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags:
+    post:
+      summary: Create tag
+      description: Create a tag for the specified artifact
+      tags:
+        - artifact
+      operationId: createTag
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: tag
+          in: body
+          description: The JSON object of tag.
+          required: true
+          schema:
+            $ref: '#/definitions/Tag'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags/{tag_name}:
+    delete:
+      summary: Delete tag
+      description: Delete the tag of the specified artifact
+      tags:
+        - artifact
+      operationId: deleteTag
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - $ref: '#/parameters/tagName'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
 parameters:
@@ -182,10 +249,16 @@ parameters:
     description: The name of the repository
     required: true
     type: string
-  digest:
-    name: digest
+  reference:
+    name: reference
     in: path
-    description: The digest of the artifact
+    description: The reference of the artifact, can be digest or tag
+    required: true
+    type: string
+  tagName:
+    name: tag_name
+    in: path
+    description: The name of the tag
     required: true
     type: string
   page:
@@ -205,6 +278,26 @@ parameters:
     description: The size of per page
     default: 10
 responses:
+  '200':
+    description: Success
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+  '201':
+    description: Created
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+  '400':
+    description: Bad request
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Error'
   '401':
     description: Unauthorized
     headers:
@@ -215,6 +308,22 @@ responses:
       $ref: '#/definitions/Error'
   '403':
     description: Forbidden
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Error'
+  '404':
+    description: Not found
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Error'
+  '409':
+    description: Conflict
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response
