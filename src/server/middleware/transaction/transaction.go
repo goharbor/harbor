@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	serror "github.com/goharbor/harbor/src/server/error"
 	"net/http"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -77,7 +78,7 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 		}
 
 		if err := orm.WithTransaction(h)(r.Context()); err != nil && err != errNonSuccess {
-			log.Errorf("deal with %s request in transaction failed: %v", r.URL.Path, err)
+			err = fmt.Errorf("deal with %s request in transaction failed: %v", r.URL.Path, err)
 
 			// begin, commit or rollback transaction db error happened,
 			// reset the response and set status code to 500
@@ -85,7 +86,7 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 				log.Errorf("reset the response failed: %v", err)
 				return
 			}
-			res.WriteHeader(http.StatusInternalServerError)
+			serror.SendError(res, err)
 		}
 	}, skippers...)
 }

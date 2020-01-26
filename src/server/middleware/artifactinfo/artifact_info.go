@@ -17,16 +17,15 @@ package artifactinfo
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/common/utils/log"
+	ierror "github.com/goharbor/harbor/src/internal/error"
+	serror "github.com/goharbor/harbor/src/server/error"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/opencontainers/go-digest"
 	"net/http"
 	"net/url"
 	"regexp"
 	"strings"
-
-	"github.com/goharbor/harbor/src/common/utils/log"
-	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/server/middleware"
-	reg_err "github.com/goharbor/harbor/src/server/registry/error"
-	"github.com/opencontainers/go-digest"
 )
 
 const (
@@ -58,7 +57,7 @@ func Middleware() func(http.Handler) http.Handler {
 			repo := m[middleware.RepositorySubexp]
 			pn, err := projectNameFromRepo(repo)
 			if err != nil {
-				reg_err.Handle(rw, req, ierror.BadRequestError(err))
+				serror.SendError(rw, ierror.BadRequestError(err))
 				return
 			}
 			art := &middleware.ArtifactInfo{
@@ -77,7 +76,7 @@ func Middleware() func(http.Handler) http.Handler {
 				// it's not clear in OCI spec how to handle invalid from parm
 				bmp, err := projectNameFromRepo(bmr)
 				if err != nil {
-					reg_err.Handle(rw, req, ierror.BadRequestError(err))
+					serror.SendError(rw, ierror.BadRequestError(err))
 					return
 				}
 				art.BlobMountDigest = m[blobMountDigest]

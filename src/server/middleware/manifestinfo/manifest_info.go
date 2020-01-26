@@ -5,8 +5,8 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	project2 "github.com/goharbor/harbor/src/pkg/project"
+	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
-	reg_err "github.com/goharbor/harbor/src/server/registry/error"
 	"github.com/opencontainers/go-digest"
 	"net/http"
 	"regexp"
@@ -23,7 +23,7 @@ func Middleware() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			mf, err := parseManifestInfoFromPath(req)
 			if err != nil {
-				reg_err.Handle(rw, req, err)
+				serror.SendError(rw, err)
 				return
 			}
 			*req = *(req.WithContext(middleware.NewManifestInfoContext(req.Context(), mf)))

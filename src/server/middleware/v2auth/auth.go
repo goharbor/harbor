@@ -17,6 +17,7 @@ package v2auth
 import (
 	"context"
 	"fmt"
+	serror "github.com/goharbor/harbor/src/server/error"
 	"net/http"
 	"sync"
 
@@ -27,7 +28,6 @@ import (
 	"github.com/goharbor/harbor/src/core/promgr"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/server/middleware"
-	reg_err "github.com/goharbor/harbor/src/server/registry/error"
 )
 
 type reqChecker struct {
@@ -131,7 +131,7 @@ func Middleware() func(http.Handler) http.Handler {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			if err := checker.check(req); err != nil {
-				reg_err.Handle(rw, req, ierror.UnauthorizedError(err).WithMessage(err.Error()))
+				serror.SendError(rw, ierror.UnauthorizedError(err).WithMessage(err.Error()))
 				return
 			}
 			next.ServeHTTP(rw, req)

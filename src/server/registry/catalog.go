@@ -19,7 +19,7 @@ import (
 	"fmt"
 	"github.com/goharbor/harbor/src/api/repository"
 	ierror "github.com/goharbor/harbor/src/internal/error"
-	reg_error "github.com/goharbor/harbor/src/server/registry/error"
+	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/registry/util"
 	"net/http"
 	"sort"
@@ -47,7 +47,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		maxEntries, err = strconv.Atoi(reqQ.Get("n"))
 		if err != nil || maxEntries < 0 {
 			err := ierror.New(err).WithCode(ierror.BadRequestCode).WithMessage("the N must be a positive int type")
-			reg_error.Handle(w, req, err)
+			serror.SendError(w, err)
 			return
 		}
 	}
@@ -57,7 +57,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	// ToDo filter out the untagged repos
 	total, repoRecords, err := r.repoCtl.List(req.Context(), nil)
 	if err != nil {
-		reg_error.Handle(w, req, err)
+		serror.SendError(w, err)
 		return
 	}
 	if total <= 0 {
@@ -81,7 +81,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		lastEntryIndex := util.IndexString(repoNames, lastEntry)
 		if lastEntryIndex == -1 {
 			err := ierror.New(nil).WithCode(ierror.BadRequestCode).WithMessage(fmt.Sprintf("the last: %s should be a valid repository name.", lastEntry))
-			reg_error.Handle(w, req, err)
+			serror.SendError(w, err)
 			return
 		}
 		resRepos = repoNames[lastEntryIndex+1 : lastEntryIndex+maxEntries]
@@ -94,7 +94,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	if repoNames[len(repoNames)-1] != resRepos[len(resRepos)-1] {
 		urlStr, err := util.SetLinkHeader(req.URL.String(), maxEntries, resRepos[len(resRepos)-1])
 		if err != nil {
-			reg_error.Handle(w, req, err)
+			serror.SendError(w, err)
 			return
 		}
 		w.Header().Set("Link", urlStr)
@@ -111,7 +111,7 @@ func (r *repositoryHandler) sendResponse(w http.ResponseWriter, req *http.Reques
 	if err := enc.Encode(catalogAPIResponse{
 		Repositories: repositoryNames,
 	}); err != nil {
-		reg_error.Handle(w, req, err)
+		serror.SendError(w, err)
 		return
 	}
 }

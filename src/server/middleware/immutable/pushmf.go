@@ -6,6 +6,7 @@ import (
 	"github.com/goharbor/harbor/src/api/artifact"
 	common_util "github.com/goharbor/harbor/src/common/utils"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
+	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"net/http"
 )
@@ -18,13 +19,12 @@ func MiddlewarePush() func(http.Handler) http.Handler {
 				var e *ErrImmutable
 				if errors.As(err, &e) {
 					pkgE := internal_errors.New(e).WithCode(internal_errors.PreconditionCode)
-					msg := internal_errors.NewErrs(pkgE).Error()
-					http.Error(rw, msg, http.StatusPreconditionFailed)
+					serror.SendError(rw, pkgE)
 					return
 				}
 				pkgE := internal_errors.New(fmt.Errorf("error occurred when to handle request in immutable handler: %v", err)).WithCode(internal_errors.GeneralCode)
-				msg := internal_errors.NewErrs(pkgE).Error()
-				http.Error(rw, msg, http.StatusInternalServerError)
+				serror.SendError(rw, pkgE)
+				return
 			}
 			next.ServeHTTP(rw, req)
 		})

@@ -6,6 +6,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
+	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"net/http"
 	"net/http/httptest"
@@ -28,16 +29,12 @@ func Middleware() func(http.Handler) http.Handler {
 			if rec.Result().StatusCode == http.StatusOK {
 				match, err := matchNotaryDigest(mf)
 				if err != nil {
-					pkgE := internal_errors.New(nil).WithCode(internal_errors.PROJECTPOLICYVIOLATION).WithMessage("Failed in communication with Notary please check the log")
-					msg := internal_errors.NewErrs(pkgE).Error()
-					http.Error(rw, msg, http.StatusInternalServerError)
+					serror.SendError(rw, err)
 					return
 				}
 				if !match {
-					log.Debugf("digest mismatch, failing the response.")
 					pkgE := internal_errors.New(nil).WithCode(internal_errors.PROJECTPOLICYVIOLATION).WithMessage("The image is not signed in Notary.")
-					msg := internal_errors.NewErrs(pkgE).Error()
-					http.Error(rw, msg, http.StatusPreconditionFailed)
+					serror.SendError(rw, pkgE)
 					return
 				}
 			}
