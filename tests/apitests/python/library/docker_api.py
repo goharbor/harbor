@@ -49,7 +49,7 @@ class DockerAPI(object):
         if caught_err == False:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
-                    raise Exception(r" Failed to catch error [{}] when pull image {}".format (expected_error_message, image))
+                    raise Exception(r" Failed to catch error [{}] when pull image {}, return message: {}".format (expected_error_message, image, str(ret)))
             else:
                 if str(ret).lower().find("error".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when pull image {}, return message is [{}]".format (image, ret))
@@ -82,10 +82,12 @@ class DockerAPI(object):
         if caught_err == False:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
-                    raise Exception(r" Failed to catch error [{}] when push image {}".format (expected_error_message, harbor_registry))
+                    raise Exception(r" Failed to catch error [{}] when push image {}, return message: {}".
+                                    format (expected_error_message, harbor_registry, str(ret)))
             else:
                 if str(ret).lower().find("errorDetail".lower()) >= 0:
-                    raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".format (harbor_registry, ret))
+                    raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".
+                                    format (harbor_registry, ret))
 
     def docker_image_build(self, harbor_registry, tags=None, size=1, expected_error_message = None):
         caught_err = False
@@ -122,7 +124,8 @@ class DockerAPI(object):
         if caught_err == False:
             if expected_error_message is not None:
                 if str(ret).lower().find(expected_error_message.lower()) < 0:
-                    raise Exception(r" Failed to catch error [{}] when push image {}".format (expected_error_message, harbor_registry))
+                    raise Exception(r" Failed to catch error [{}] when build image {}, return message: {}".
+                                    format (expected_error_message, harbor_registry, str(ret)))
             else:
                 if str(ret).lower().find("errorDetail".lower()) >= 0:
                     raise Exception(r" It's was not suppose to catch error when push image {}, return message is [{}]".format (harbor_registry, ret))

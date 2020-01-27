@@ -26,17 +26,9 @@ http:
   debug:
     addr: localhost:5001
 auth:
-{% if registry_use_basic_auth %}
   htpasswd:
     realm: harbor-registry-basic-realm
     path: /etc/registry/passwd
-{% else %}
-  token:
-    issuer: harbor-token-issuer
-    realm: {{public_url}}/service/token
-    rootcertbundle: /etc/registry/root.crt
-    service: harbor-registry
-{% endif %}
 validation:
   disabled: true
 notifications:

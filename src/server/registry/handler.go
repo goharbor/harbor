@@ -15,6 +15,7 @@
 package registry
 
 import (
+	"github.com/goharbor/harbor/src/core/config"
 	pkg_repo "github.com/goharbor/harbor/src/pkg/repository"
 	pkg_tag "github.com/goharbor/harbor/src/pkg/tag"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -34,9 +35,9 @@ import (
 
 // New return the registry instance to handle the registry APIs
 func New(url *url.URL) http.Handler {
-	// TODO add a director to add the basic auth for docker registry
 	// TODO customize the reverse proxy to improve the performance?
 	proxy := httputil.NewSingleHostReverseProxy(url)
+	proxy.Director = basicAuthDirector(proxy.Director)
 
 	// create the root rooter
 	rootRouter := mux.NewRouter()
@@ -74,4 +75,14 @@ func New(url *url.URL) http.Handler {
 	// rootRouter.Use(mux.MiddlewareFunc(middleware))
 
 	return rootRouter
+}
+
+func basicAuthDirector(d func(*http.Request)) func(*http.Request) {
+	return func(r *http.Request) {
+		d(r)
+		if r != nil && !middleware.SkipInjectRegistryCred(r.Context()) {
+			u, p := config.RegistryCredential()
+			r.SetBasicAuth(u, p)
+		}
+	}
 }
