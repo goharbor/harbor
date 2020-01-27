@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package authz
+package v2auth
 
 import (
 	"github.com/goharbor/harbor/src/common/models"

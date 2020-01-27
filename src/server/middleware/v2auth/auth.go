@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package authz
+package v2auth
 
 import (
 	"fmt"
@@ -36,6 +36,7 @@ func (rc *reqChecker) check(req *http.Request) error {
 	if err != nil {
 		return err
 	}
+
 	if a, ok := middleware.ArtifactInfoFromContext(req.Context()); ok {
 		action := getAction(req)
 		if action == "" {
@@ -62,6 +63,8 @@ func (rc *reqChecker) check(req *http.Request) error {
 		}
 	} else if len(middleware.V2CatalogURLRe.FindStringSubmatch(req.URL.Path)) == 1 && !securityCtx.IsSysAdmin() {
 		return fmt.Errorf("unauthorized to list catalog")
+	} else if req.URL.Path == "/v2/" && !securityCtx.IsAuthenticated() {
+		return fmt.Errorf("not authenticated")
 	}
 	return nil
 }

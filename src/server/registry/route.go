@@ -17,8 +17,11 @@ package registry
 import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/server/middleware/immutable"
+
+	"github.com/goharbor/harbor/src/server/middleware/artifactinfo"
 	"github.com/goharbor/harbor/src/server/middleware/manifestinfo"
 	"github.com/goharbor/harbor/src/server/middleware/readonly"
+	"github.com/goharbor/harbor/src/server/middleware/v2auth"
 	"github.com/goharbor/harbor/src/server/registry/manifest"
 	"github.com/goharbor/harbor/src/server/router"
 	"net/http"
@@ -33,7 +36,10 @@ func RegisterRoutes() {
 	url, _ := url.Parse(regURL)
 	proxy := httputil.NewSingleHostReverseProxy(url)
 
-	router.NewRoute().Path("/v2/*").Handler(New(url))
+	router.NewRoute().Path("/v2/*").
+		Middleware(artifactinfo.Middleware()).
+		Middleware(v2auth.Middleware()).
+		Handler(New(url))
 	router.NewRoute().
 		Method(http.MethodPut).
 		Path("/v2/*/manifests/:reference").

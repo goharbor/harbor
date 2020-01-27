@@ -327,10 +327,6 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
 
     config_dict['registry_username'] = REGISTRY_USER_NAME
     config_dict['registry_password'] = generate_random_string(32)
-
-    # TODO: remove the flag before release
-    config_dict['registry_use_basic_auth'] = configs['registry_use_basic_auth']
-
     return config_dict
 
 
