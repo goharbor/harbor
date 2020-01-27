@@ -135,6 +135,9 @@ var (
 
 			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceTag, Action: rbac.ActionDelete},
+
+			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
 		},
 
 		"master": {
@@ -232,6 +235,9 @@ var (
 
 			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceTag, Action: rbac.ActionDelete},
+
+			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
 		},
 
 		"developer": {
@@ -294,6 +300,9 @@ var (
 			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
+
+			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
 		},
 
 		"guest": {

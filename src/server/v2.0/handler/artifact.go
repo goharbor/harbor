@@ -193,6 +193,34 @@ func (a *artifactAPI) GetAddition(ctx context.Context, params operation.GetAddit
 	})
 }
 
+func (a *artifactAPI) AddLabel(ctx context.Context, params operation.AddLabelParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceArtifactLabel); err != nil {
+		return a.SendError(ctx, err)
+	}
+	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if err = a.artCtl.AddLabel(ctx, art.ID, params.Label.ID); err != nil {
+		return a.SendError(ctx, err)
+	}
+	return operation.NewAddLabelOK()
+}
+
+func (a *artifactAPI) RemoveLabel(ctx context.Context, params operation.RemoveLabelParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionDelete, rbac.ResourceArtifactLabel); err != nil {
+		return a.SendError(ctx, err)
+	}
+	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if err = a.artCtl.RemoveLabel(ctx, art.ID, params.LabelID); err != nil {
+		return a.SendError(ctx, err)
+	}
+	return operation.NewRemoveLabelOK()
+}
+
 func option(withTag, withImmutableStatus, withLabel, withScanOverview, withSignature *bool) *artifact.Option {
 	option := &artifact.Option{
 		WithTag: true, // return the tag by default

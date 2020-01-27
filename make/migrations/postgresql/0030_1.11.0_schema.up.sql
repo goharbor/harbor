@@ -42,3 +42,18 @@ CREATE TABLE artifact_reference
   FOREIGN KEY (child_id) REFERENCES artifact_2(id),
   CONSTRAINT  unique_reference UNIQUE (parent_id, child_id)
 );
+
+
+/* TODO upgrade: how about keep the table "harbor_resource_label" only for helm v2 chart and use the new table for artifact label reference? */
+/* label_reference records the labels added to the artifact */
+CREATE TABLE label_reference (
+ id SERIAL PRIMARY KEY NOT NULL,
+ label_id int NOT NULL,
+ artifact_id int NOT NULL,
+ creation_time timestamp default CURRENT_TIMESTAMP,
+ update_time timestamp default CURRENT_TIMESTAMP,
+ FOREIGN KEY (label_id) REFERENCES harbor_label(id),
+ /* TODO replace artifact_2 after finishing the upgrade work */
+ FOREIGN KEY (artifact_id) REFERENCES artifact_2(id),
+ CONSTRAINT unique_label_reference UNIQUE (label_id,artifact_id)
+ );

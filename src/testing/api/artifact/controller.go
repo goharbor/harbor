@@ -107,3 +107,15 @@ func (f *FakeController) GetAddition(ctx context.Context, artifactID int64, addi
 	}
 	return res, args.Error(1)
 }
+
+// AddLabel ...
+func (f *FakeController) AddLabel(ctx context.Context, artifactID int64, labelID int64) error {
+	args := f.Called()
+	return args.Error(0)
+}
+
+// RemoveLabel ...
+func (f *FakeController) RemoveLabel(ctx context.Context, artifactID int64, labelID int64) error {
+	args := f.Called()
+	return args.Error(0)
+}
