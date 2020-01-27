@@ -31,6 +31,8 @@ import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/docker/distribution/reference"
+
 	"github.com/garyburd/redigo/redis"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
@@ -49,8 +51,15 @@ import (
 type contextKey string
 
 const (
-	// ImageInfoCtxKey the context key for image information
-	ImageInfoCtxKey = contextKey("ImageInfo")
+	// RepositorySubexp is the name for sub regex that maps to repository name in the url
+	RepositorySubexp = "repository"
+	// ReferenceSubexp is the name for sub regex that maps to reference (tag or digest) url
+	ReferenceSubexp = "reference"
+	// DigestSubexp is the name for sub regex that maps to digest in the url
+	DigestSubexp = "digest"
+
+	// ArtifactInfoCtxKey the context key for artifact information
+	ArtifactInfoCtxKey = contextKey("ArtifactInfo")
 	// ScannerPullCtxKey the context key for robot account to bypass the pull policy check.
 	ScannerPullCtxKey = contextKey("ScannerPullCheck")
 	// TokenUsername ...
@@ -73,7 +82,16 @@ const (
 )
 
 var (
-	manifestURLRe = regexp.MustCompile(`^/v2/((?:[a-z0-9]+(?:[._-][a-z0-9]+)*/)+)manifests/([\w][\w.:-]{0,127})`)
+	// ManifestURLRe is the regular expression for matching request v2 handler to view/delete manifest
+	ManifestURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/manifests/(?P<%s>%s|%s)$`, RepositorySubexp, reference.NameRegexp.String(), ReferenceSubexp, reference.TagRegexp.String(), digest.DigestRegexp.String()))
+	// TagListURLRe is the regular expression for matching request to v2 handler to list tags
+	TagListURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/tags/list`, RepositorySubexp, reference.NameRegexp.String()))
+	// BlobURLRe is the regular expression for matching request to v2 handler to retrieve delete a blob
+	BlobURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/blobs/(?P<%s>%s)$`, RepositorySubexp, reference.NameRegexp.String(), DigestSubexp, digest.DigestRegexp.String()))
+	// BlobUploadURLRe is the regular expression for matching the request to v2 handler to upload a blob, the upload uuid currently is not put into a group
+	BlobUploadURLRe = regexp.MustCompile(fmt.Sprintf(`^/v2/(?P<%s>%s)/blobs/uploads[/a-zA-Z0-9\-_\.=]*$`, RepositorySubexp, reference.NameRegexp.String()))
+	// CatalogURLRe is the regular expression for mathing the request to v2 handler to list catalog
+	CatalogURLRe = regexp.MustCompile(`^/v2/_catalog$`)
 )
 
 // ChartVersionInfo ...
@@ -91,8 +109,8 @@ func (info *ChartVersionInfo) MutexKey(suffix ...string) string {
 	return strings.Join(append(a, suffix...), ":")
 }
 
-// ImageInfo ...
-type ImageInfo struct {
+// ArtifactInfo ...
+type ArtifactInfo struct {
 	Repository  string
 	Reference   string
 	ProjectName string
@@ -281,7 +299,7 @@ func MarshalError(code, msg string) string {
 
 // MatchManifestURL ...
 func MatchManifestURL(req *http.Request) (bool, string, string) {
-	s := manifestURLRe.FindStringSubmatch(req.URL.Path)
+	s := ManifestURLRe.FindStringSubmatch(req.URL.Path)
 	if len(s) == 3 {
 		s[1] = strings.TrimSuffix(s[1], "/")
 		return true, s[1], s[2]
@@ -437,8 +455,8 @@ func ChartVersionInfoFromContext(ctx context.Context) (*ChartVersionInfo, bool) 
 }
 
 // ImageInfoFromContext returns image info from context
-func ImageInfoFromContext(ctx context.Context) (*ImageInfo, bool) {
-	info, ok := ctx.Value(ImageInfoCtxKey).(*ImageInfo)
+func ImageInfoFromContext(ctx context.Context) (*ArtifactInfo, bool) {
+	info, ok := ctx.Value(ArtifactInfoCtxKey).(*ArtifactInfo)
 	return info, ok
 }
 
@@ -470,8 +488,8 @@ func NewChartVersionInfoContext(ctx context.Context, info *ChartVersionInfo) con
 }
 
 // NewImageInfoContext returns context with image info
-func NewImageInfoContext(ctx context.Context, info *ImageInfo) context.Context {
-	return context.WithValue(ctx, ImageInfoCtxKey, info)
+func NewImageInfoContext(ctx context.Context, info *ArtifactInfo) context.Context {
+	return context.WithValue(ctx, ArtifactInfoCtxKey, info)
 }
 
 // NewManifestInfoContext returns context with manifest info
