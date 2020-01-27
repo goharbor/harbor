@@ -12,14 +12,14 @@ Steps to localize the UI in your language
 
     The file contains a JSON object including all the key-value pairs of UI strings:
 
-    ```json
+    ```javascript
     {
-        "APP_TITLE": {
-            "VMW_HARBOR": "Harbor",
-            "HARBOR": "Harbor",
-            ...
-        },
-        ...
+      "APP_TITLE": {
+        "VMW_HARBOR": "Harbor",
+        "HARBOR": "Harbor",
+        // ...
+      },
+      // ...
     }
     ```
     
@@ -31,12 +31,13 @@ Steps to localize the UI in your language
 
     Append `<language>-<locale>` to the language supporting list:
 
-    ```
+    ```typescript
     export const supportedLangs = ['en-us', 'zh-cn', '<language>-<locale>'];
     ```
+
     Define the language display name and append it to the name list:
 
-    ```
+    ```typescript
     export const languageNames = {
         "en-us": "English",
         "zh-cn": "中文简体",
@@ -44,9 +45,9 @@ Steps to localize the UI in your language
     };
     ```
 
-    {{< note >}}
-    Don't miss the comma before the new key-value item you've added.
-    {{< /note >}}
+  {{< note >}}
+  Don't miss the comma before the new key-value item you've added.
+  {{< /note >}}
 
 3. Enable the new language in the view.
 
@@ -54,8 +55,8 @@ Steps to localize the UI in your language
 
     ```html
     <div class="dropdown-menu">
-        <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("en-us")' [class.lang-selected]='matchLang("en-us")'>English</a>
-        <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("zh-cn")' [class.lang-selected]='matchLang("zh-cn")'>中文简体</a>
+      <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("en-us")' [class.lang-selected]='matchLang("en-us")'>English</a>
+      <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("zh-cn")' [class.lang-selected]='matchLang("zh-cn")'>中文简体</a>
     </div>
     ```
 
@@ -63,9 +64,9 @@ Steps to localize the UI in your language
 
     ```html
     <div class="dropdown-menu">
-        <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("en-us")' [class.lang-selected]='matchLang("en-us")'>English</a>
-        <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("zh-cn")' [class.lang-selected]='matchLang("zh-cn")'>中文简体</a>
-        <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("<language>-<locale>")' [class.lang-selected]='matchLang("<language>-<locale>")'>DISPLAY_NAME</a>
+      <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("en-us")' [class.lang-selected]='matchLang("en-us")'>English</a>
+      <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("zh-cn")' [class.lang-selected]='matchLang("zh-cn")'>中文简体</a>
+      <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("<language>-<locale>")' [class.lang-selected]='matchLang("<language>-<locale>")'>DISPLAY_NAME</a>
     </div>
     ```
 

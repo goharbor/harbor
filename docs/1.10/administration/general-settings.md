@@ -20,9 +20,8 @@ If it set to true, deleting repositories, tags and pushing images are not permit
 
 ![browse project](../../img/read-only-enable.png)
 
-
 ```sh
-$ docker push 10.117.169.182/demo/ubuntu:14.04
+docker push 10.117.169.182/demo/ubuntu:14.04
 The push refers to a repository [10.117.169.182/demo/ubuntu]
 0271b8eebde3: Preparing 
 denied: The system is in read only mode. Any modification is prohibited.

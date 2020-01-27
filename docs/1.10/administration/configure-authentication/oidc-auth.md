@@ -27,7 +27,7 @@ Before configuring an OIDC provider in Harbor, make sure that your provider is c
 1. Under **Administration**, go to **Configuration** and select the **Authentication** tab.
 1. Use the **Auth Mode** drop-down menu to select **OIDC**.
 
-   ![LDAP authentication](../../img/select-oidc-auth.png)
+   ![LDAP authentication](../../../img/select-oidc-auth.png)
 1. Enter information about your OIDC provider.   
 
    - **OIDC Provider Name**: The name of the OIDC provider.
@@ -39,11 +39,11 @@ Before configuring an OIDC provider in Harbor, make sure that your provider is c
    
        The OIDC scope must contain `openid` and usually also contains `profile` and `email`. To obtain refresh tokens it should also contain `offline_access`. If you are using OIDC groups, a scope must identify the group claim. Check with your OIDC provider administrator for precise details of how to identify the group claim scope, as this differs from vendor to vendor.
        
-       ![OIDC settings](../../img/oidc-auth-setting.png)
+       ![OIDC settings](../../../img/oidc-auth-setting.png)
 1. Uncheck **Verify Certificate** if the OIDC Provider uses a self-signed or untrusted certificate.
 1. Verify that the Redirect URI that you configured in your OIDC provider is the same as the one displayed at the bottom of the page. 
       
-     ![OIDC certificate verification, URI, and test ](../../img/oidc-cert-verification.png)
+     ![OIDC certificate verification, URI, and test ](../../../img/oidc-cert-verification.png)
 1. Click **Test OIDC Server** to make sure that your configuration is correct.
 1. Click **Save** to complete the configuration.
 
@@ -51,7 +51,7 @@ Before configuring an OIDC provider in Harbor, make sure that your provider is c
 
 When the Harbor system administrator has configured Harbor to authenticate via OIDC a **Login via OIDC Provider** button appears on the Harbor login page.  
 
-![oidc_login](../../img/oidc-login.png)
+![oidc_login](../../../img/oidc-login.png)
 
 **NOTE:** When Harbor is configured authentication via OIDC, the **Username** and **Password** fields are reserved for the local Harbor system administrator to log in.
     
@@ -60,7 +60,7 @@ When the Harbor system administrator has configured Harbor to authenticate via O
    This redirects you to the OIDC Provider for authentication.  
 1. If this is the first time that you are logging in to Harbor with OIDC, specify a user name for Harbor to associate with your OIDC username.
 
-   ![Specify Harbor username for OIDC](../../img/oidc-onboard-dlg.png)
+   ![Specify Harbor username for OIDC](../../../img/oidc-onboard-dlg.png)
     
    This is the user name by which you are identified in Harbor, which is used when adding you to projects, assigning roles, and so on. If the username is already taken, you are prompted to choose another one.
 1. After the OIDC provider has authenticated you, you are redirected back to Harbor.
@@ -74,13 +74,13 @@ The Docker and Helm CLIs cannot handle redirection for OIDC, so Harbor provides 
 1. Log in to Harbor with an OIDC user account.
 1. Click your username at the top of the screen and select **User Profile**.
 
-   ![Access user profile](../../img/user-profile.png)
+   ![Access user profile](../../../img/user-profile.png)
 1. Click the clipboard icon to copy the CLI secret associated with your account.
 
-   ![Copy CLI secret](../../img/profile-dlg.png)
+   ![Copy CLI secret](../../../img/profile-dlg.png)
 1. Optionally click the **...** icon in your user profile to display buttons for automatically generating or manually creating a new CLI secret.
 
-   ![Copy CLI secret](../../img/generate-create-new-secret.png) 
+   ![Copy CLI secret](../../../img/generate-create-new-secret.png) 
 
    A user can only have one CLI secret, so when a new secret is generated or create, the old one becomes invalid.
 1. If you generated a new CLI secret, click the clipboard icon to copy it.
@@ -88,8 +88,8 @@ The Docker and Helm CLIs cannot handle redirection for OIDC, so Harbor provides 
 You can now use your CLI secret as the password when logging in to Harbor from the Docker or Helm CLI.
 
 <pre>
-sh docker login -u testuser -p <i>cli_secret</i> jt-test.local.goharbor.io
-</pre> 
+docker login -u testuser -p <i>cli_secret</i> jt-test.local.goharbor.io
+</pre>
 
 {{< note >}}
 The CLI secret is associated with the OIDC ID token. Harbor will try to refresh the token, so the CLI secret will be valid after the ID token expires. However, if the OIDC Provider does not provide a refresh token or the refresh fails, the CLI secret becomes invalid. In this case, log out and log back in to Harbor via your OIDC provider so that Harbor can get a new ID token. The CLI secret will then work again.

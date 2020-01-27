@@ -4,7 +4,7 @@ title: Harbor Role Based Access Control (RBAC)
 
 Harbor manages images through projects. You provide access to these images to users by including the users in projects and assigning one of the following roles to them.
 
-![rbac](../../img/rbac.png)
+![RBAC](../../../img/rbac.png)
 
 * **Limited Guest**: A Limited Guest does not have full read privileges for a project. They can pull images but cannot push, and they cannot see logs or the other members of a project. For example, you can create limited guests for users from different organizations who share access to a project.
 * **Guest**: Guest has read-only privilege for a specified project. They can pull and retag images, but cannot push.
@@ -27,6 +27,6 @@ If you run Harbor in LDAP/AD or OIDC authentication mode, you create and manage 
 
 Harbor system administrators can assign the Harbor system administrator role to other users by selecting usernames and clicking **Set as Administrator** in the **Users** tab.
 
-![browse project](../../img/new-set-admin-remove-user.png)
+![browse project](../../../img/new-set-admin-remove-user.png)
 
-To delete users, select a user and click `DELETE`. Deleting user is only supported under database authentication mode.
+To delete users, select a user and click `DELETE`. Deleting users is only supported under database authentication mode.

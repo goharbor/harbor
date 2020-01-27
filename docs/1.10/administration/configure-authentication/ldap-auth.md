@@ -16,7 +16,7 @@ If you want to manage user authentication by using LDAP groups, you must enable 
 1. Under **Administration**, go to **Configuration** and select the **Authentication** tab.
 1. Use the **Auth Mode** drop-down menu to select **LDAP**.
 
-   ![LDAP authentication](../../img/select-ldap-auth.png)
+   ![LDAP authentication](../../../img/select-ldap-auth.png)
 1. Enter the address of your LDAP server, for example `ldaps://10.162.16.194`.
 1. Enter information about your LDAP server.
 
@@ -26,7 +26,7 @@ If you want to manage user authentication by using LDAP groups, you must enable 
    - **LDAP UID**: An attribute, for example `uid`, or `cn`, that is used to match a user with the username. If a match is found, the user's password is verified by a bind request to the LDAP/AD server. 
    - **LDAP Scope**: The scope to search for LDAP/AD users. Select from **Subtree**, **Base**, and **OneLevel**.
    
-     ![Basic LDAP configuration](../../img/ldap-auth.png)  
+     ![Basic LDAP configuration](../../../img/ldap-auth.png)  
 1. If you want to manage user authentication with LDAP groups, configure the group settings.
    - **LDAP Group Base DN**: The base DN from which to lookup a group in LDAP/AD. For example, `ou=groups,dc=example,dc=com`.
    - **LDAP Group Filter**: The filter to search for LDAP/AD groups. For example, `objectclass=groupOfNames`. 
@@ -35,9 +35,9 @@ If you want to manage user authentication by using LDAP groups, you must enable 
    - **LDAP Group Membership**: The user attribute usd to identify a user as a member of a group. By default this is `memberof`.
    - **LDAP Scope**: The scope to search for LDAP/AD groups. Select from **Subtree**, **Base**, and **OneLevel**.
    
-     ![LDAP group configuration](../../img/ldap-groups.png)
+     ![LDAP group configuration](../../../img/ldap-groups.png)
 1. Uncheck **LDAP Verify Cert** if the LDAP/AD server uses a self-signed or untrusted certificate.
 
-   ![LDAP certificate verification](../../img/ldap-cert-test.png)
+   ![LDAP certificate verification](../../../img/ldap-cert-test.png)
 1. Click **Test LDAP Server** to make sure that your configuration is correct.
 1. Click **Save** to complete the configuration.

@@ -20,7 +20,9 @@ The installation processes are almost the same for both the online and offline i
    
    1. Obtain the public key for the `*.asc` file.
       
-      <pre>gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C</pre>
+      ```sh
+      gpg --keyserver hkps://keyserver.ubuntu.com --receive-keys 644FF454C0B4115C
+      ```
       
       You should see the message ` public key "Harbor-sign (The key for signing Harbor build) <jiangd@vmware.com>" imported`
    1. Verify that the package is genuine by running one of the following commands.
@@ -30,7 +32,7 @@ The installation processes are almost the same for both the online and offline i
       
       The `gpg` command verifies that the signature of the bundle matches that of the `*.asc` key file. You should see confirmation that the signature is correct.
       
-      ```
+      ```sh
       gpg: armor header: Version: GnuPG v1
       gpg: assuming signed data in 'harbor-offline-installer-v1.10.0-rc2.tgz'
       gpg: Signature made Fri, Dec  6, 2019  5:04:17 AM WEST

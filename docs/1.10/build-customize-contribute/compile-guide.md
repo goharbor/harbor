@@ -22,7 +22,7 @@ Harbor is deployed as several Docker containers and most of the code is written 
 ## Step 2: Getting the source code
 
 ```sh
-   $ git clone https://github.com/goharbor/harbor
+git clone https://github.com/goharbor/harbor
 ```
 
 ## Step 3: Building and installing Harbor
@@ -44,21 +44,21 @@ You can compile the code by one of the three approaches:
 
 - Get official Golang image from docker hub:
 
-   ```sh
-   docker pull golang:1.12.5
-   ```
+    ```sh
+    docker pull golang:1.12.5
+    ```
 
 - Build, install and bring up Harbor without Notary:
 
-   ```sh
-   make install GOBUILDIMAGE=golang:1.12.5 COMPILETAG=compile_golangimage
-   ```
+    ```sh
+    make install GOBUILDIMAGE=golang:1.12.5 COMPILETAG=compile_golangimage
+    ```
 
 - Build, install and bring up Harbor with Notary:
 
-   ```sh
-   make install GOBUILDIMAGE=golang:1.12.5 COMPILETAG=compile_golangimage NOTARYFLAG=true
-   ```
+    ```sh
+    make install GOBUILDIMAGE=golang:1.12.5 COMPILETAG=compile_golangimage NOTARYFLAG=true
+    ```
 
 - Build, install and bring up Harbor with Clair:
 
@@ -68,27 +68,27 @@ You can compile the code by one of the three approaches:
 
 #### II. Compile code with your own Golang environment, then build Harbor
 
-- Move source code to \$GOPATH
+- Move source code to `$GOPATH`
 
-   ```sh
-   mkdir $GOPATH/src/github.com/goharbor/
-   cd ..
-   mv harbor $GOPATH/src/github.com/goharbor/.
-   ```
+    ```sh
+    mkdir $GOPATH/src/github.com/goharbor/
+    cd ..
+    mv harbor $GOPATH/src/github.com/goharbor/.
+    ```
 
 - Build, install and run Harbor without Notary and Clair:
 
-   ```sh
-   cd $GOPATH/src/github.com/goharbor/harbor
-   $ make install
-   ```
+    ```sh
+    cd $GOPATH/src/github.com/goharbor/harbor
+    $ make install
+    ```
 
 - Build, install and run Harbor with Notary and Clair:
 
-   ```sh
-   cd $GOPATH/src/github.com/goharbor/harbor
-   make install -e NOTARYFLAG=true CLAIRFLAG=true
-   ```
+    ```sh
+    cd $GOPATH/src/github.com/goharbor/harbor
+    make install -e NOTARYFLAG=true CLAIRFLAG=true
+    ```
 
 ### Verify your installation
 
@@ -99,7 +99,7 @@ If everything worked properly, you will see this message:
 Start complete. You can visit harbor now.
 ```
 
-Refer to [Installation and Configuration Guide](../installation-guide.md#managing-harbors-lifecycle) for more information about managing your Harbor instance.
+Refer to the [Installation and Configuration Guide](../installation-guide.md#managing-harbors-lifecycle) for more information about managing your Harbor instance.
 
 ## Appendix
 
@@ -167,7 +167,9 @@ make pushimage -e DEVFLAG=false REGISTRYUSER=[$USERNAME] REGISTRYPASSWORD=[$PASS
 make clean -e VERSIONTAG=[TAG]
 ```
 
-**Note**: If new code had been added to Github, the git commit TAG will change. Better use this command to clean up images and files of previous TAG.
+{{< note >}}
+If new code has been added to Github, the git commit TAG will change. Better use this command to clean up images and files of previous TAG.
+{{< /note >}}
 
 #### By default, the make process create a development build. To create a release build of Harbor, set the below flag to false.
 
