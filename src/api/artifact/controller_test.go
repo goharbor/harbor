@@ -16,7 +16,10 @@ package artifact
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
+	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/internal"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/q"
@@ -35,9 +38,29 @@ type fakeAbstractor struct {
 	mock.Mock
 }
 
-func (f *fakeAbstractor) Abstract(ctx context.Context, artifact *artifact.Artifact) error {
+func (f *fakeAbstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact) error {
 	args := f.Called()
 	return args.Error(0)
+}
+func (f *fakeAbstractor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, additionType string) (*resolver.Addition, error) {
+	args := f.Called()
+	var addition *resolver.Addition
+	if args.Get(0) != nil {
+		addition = args.Get(0).(*resolver.Addition)
+	}
+	return addition, args.Error(1)
+}
+
+type fakeDescriptor struct {
+	mock.Mock
+}
+
+func (f *fakeDescriptor) GetArtifactType() string {
+	return "IMAGE"
+}
+
+func (f *fakeDescriptor) ListAdditionTypes() []string {
+	return []string{"BUILD_HISTORY"}
 }
 
 type controllerTestSuite struct {
@@ -63,6 +86,7 @@ func (c *controllerTestSuite) SetupTest() {
 		abstractor:   c.abstractor,
 		immutableMtr: c.immutableMtr,
 	}
+	descriptor.Register(&fakeDescriptor{}, "")
 }
 
 func (c *controllerTestSuite) TestAssembleTag() {
@@ -93,12 +117,12 @@ func (c *controllerTestSuite) TestAssembleTag() {
 
 func (c *controllerTestSuite) TestAssembleArtifact() {
 	art := &artifact.Artifact{
-		ID: 1,
+		ID:     1,
+		Digest: "sha256:123",
 	}
 	option := &Option{
 		WithTag: true,
 		TagOption: &TagOption{
-
 			WithImmutableStatus: false,
 		},
 		WithLabel:        false,
@@ -114,11 +138,19 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 		PullTime:     time.Now(),
 	}
 	c.tagMgr.On("List").Return(1, []*tag.Tag{tg}, nil)
-	artifact := c.ctl.assembleArtifact(nil, art, option)
+	c.repoMgr.On("Get").Return(&models.RepoRecord{
+		Name: "library/hello-world",
+	}, nil)
+	ctx := internal.SetAPIVersion(nil, "2.0")
+	artifact := c.ctl.assembleArtifact(ctx, art, option)
 	c.Require().NotNil(artifact)
-	c.tagMgr.AssertExpectations(c.T())
 	c.Equal(art.ID, artifact.ID)
 	c.Contains(artifact.Tags, &Tag{Tag: *tg})
+	c.Require().NotNil(artifact.AdditionLinks)
+	c.Require().NotNil(artifact.AdditionLinks["build_history"])
+	c.False(artifact.AdditionLinks["build_history"].Absolute)
+	c.Equal("/api/2.0/projects/library/repositories/hello-world/artifacts/sha256:123/additions/build_history",
+		artifact.AdditionLinks["build_history"].HREF)
 	// TODO check other fields of option
 }
 
@@ -133,8 +165,6 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	}, nil)
 	created, id, err := c.ctl.ensureArtifact(nil, 1, digest)
 	c.Require().Nil(err)
-	c.repoMgr.AssertExpectations(c.T())
-	c.artMgr.AssertExpectations(c.T())
 	c.False(created)
 	c.Equal(int64(1), id)
 
@@ -147,12 +177,9 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	}, nil)
 	c.artMgr.On("List").Return(1, []*artifact.Artifact{}, nil)
 	c.artMgr.On("Create").Return(1, nil)
-	c.abstractor.On("Abstract").Return(nil)
+	c.abstractor.On("AbstractMetadata").Return(nil)
 	created, id, err = c.ctl.ensureArtifact(nil, 1, digest)
 	c.Require().Nil(err)
-	c.repoMgr.AssertExpectations(c.T())
-	c.artMgr.AssertExpectations(c.T())
-	c.abstractor.AssertExpectations(c.T())
 	c.True(created)
 	c.Equal(int64(1), id)
 }
@@ -210,7 +237,7 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.artMgr.On("Create").Return(1, nil)
 	c.tagMgr.On("List").Return(1, []*tag.Tag{}, nil)
 	c.tagMgr.On("Create").Return(1, nil)
-	c.abstractor.On("Abstract").Return(nil)
+	c.abstractor.On("AbstractMetadata").Return(nil)
 	_, id, err := c.ctl.Ensure(nil, 1, digest, "latest")
 	c.Require().Nil(err)
 	c.repoMgr.AssertExpectations(c.T())
@@ -241,10 +268,12 @@ func (c *controllerTestSuite) TestList() {
 			Name:         "latest",
 		},
 	}, nil)
+	c.repoMgr.On("Get").Return(&models.RepoRecord{
+		Name: "library/hello-world",
+	}, nil)
+	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	total, artifacts, err := c.ctl.List(nil, query, option)
 	c.Require().Nil(err)
-	c.artMgr.AssertExpectations(c.T())
-	c.tagMgr.AssertExpectations(c.T())
 	c.Equal(int64(1), total)
 	c.Require().Len(artifacts, 1)
 	c.Equal(int64(1), artifacts[0].ID)
@@ -257,9 +286,9 @@ func (c *controllerTestSuite) TestGet() {
 		ID:           1,
 		RepositoryID: 1,
 	}, nil)
+	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	art, err := c.ctl.Get(nil, 1, nil)
 	c.Require().Nil(err)
-	c.artMgr.AssertExpectations(c.T())
 	c.Require().NotNil(art)
 	c.Equal(int64(1), art.ID)
 }
@@ -270,11 +299,10 @@ func (c *controllerTestSuite) TestGetByDigest() {
 		RepositoryID: 1,
 	}, nil)
 	c.artMgr.On("List").Return(0, nil, nil)
+	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	art, err := c.ctl.getByDigest(nil, "library/hello-world",
 		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
 	c.Require().NotNil(err)
-	c.repoMgr.AssertExpectations(c.T())
-	c.artMgr.AssertExpectations(c.T())
 	c.True(ierror.IsErr(err, ierror.NotFoundCode))
 
 	// reset the mock
@@ -290,11 +318,10 @@ func (c *controllerTestSuite) TestGetByDigest() {
 			RepositoryID: 1,
 		},
 	}, nil)
+	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	art, err = c.ctl.getByDigest(nil, "library/hello-world",
 		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
 	c.Require().Nil(err)
-	c.repoMgr.AssertExpectations(c.T())
-	c.artMgr.AssertExpectations(c.T())
 	c.Require().NotNil(art)
 	c.Equal(int64(1), art.ID)
 }
@@ -305,10 +332,9 @@ func (c *controllerTestSuite) TestGetByTag() {
 		RepositoryID: 1,
 	}, nil)
 	c.tagMgr.On("List").Return(0, nil, nil)
+	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	art, err := c.ctl.getByTag(nil, "library/hello-world", "latest", nil)
 	c.Require().NotNil(err)
-	c.repoMgr.AssertExpectations(c.T())
-	c.tagMgr.AssertExpectations(c.T())
 	c.True(ierror.IsErr(err, ierror.NotFoundCode))
 
 	// reset the mock
@@ -329,11 +355,9 @@ func (c *controllerTestSuite) TestGetByTag() {
 	c.artMgr.On("Get").Return(&artifact.Artifact{
 		ID: 1,
 	}, nil)
+	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	art, err = c.ctl.getByTag(nil, "library/hello-world", "latest", nil)
 	c.Require().Nil(err)
-	c.repoMgr.AssertExpectations(c.T())
-	c.tagMgr.AssertExpectations(c.T())
-	c.artMgr.AssertExpectations(c.T())
 	c.Require().NotNil(art)
 	c.Equal(int64(1), art.ID)
 }
@@ -349,11 +373,10 @@ func (c *controllerTestSuite) TestGetByReference() {
 			RepositoryID: 1,
 		},
 	}, nil)
+	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	art, err := c.ctl.GetByReference(nil, "library/hello-world",
 		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
 	c.Require().Nil(err)
-	c.repoMgr.AssertExpectations(c.T())
-	c.artMgr.AssertExpectations(c.T())
 	c.Require().NotNil(art)
 	c.Equal(int64(1), art.ID)
 
@@ -375,11 +398,9 @@ func (c *controllerTestSuite) TestGetByReference() {
 	c.artMgr.On("Get").Return(&artifact.Artifact{
 		ID: 1,
 	}, nil)
+	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	art, err = c.ctl.GetByReference(nil, "library/hello-world", "latest", nil)
 	c.Require().Nil(err)
-	c.repoMgr.AssertExpectations(c.T())
-	c.tagMgr.AssertExpectations(c.T())
-	c.artMgr.AssertExpectations(c.T())
 	c.Require().NotNil(art)
 	c.Equal(int64(1), art.ID)
 }
@@ -457,8 +478,11 @@ func (c *controllerTestSuite) TestUpdatePullTime() {
 
 }
 
-func (c *controllerTestSuite) TestGetSubResource() {
-	// TODO
+func (c *controllerTestSuite) TestGetAddition() {
+	c.artMgr.On("Get").Return(nil, nil)
+	c.abstractor.On("AbstractAddition").Return(nil, nil)
+	_, err := c.ctl.GetAddition(nil, 1, "addition")
+	c.Require().Nil(err)
 }
 
 func TestControllerTestSuite(t *testing.T) {

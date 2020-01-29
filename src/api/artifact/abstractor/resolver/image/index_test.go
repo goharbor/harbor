@@ -15,6 +15,7 @@
 package image
 
 import (
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	arttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	"github.com/stretchr/testify/suite"
@@ -35,11 +36,7 @@ func (i *indexResolverTestSuite) SetupTest() {
 
 }
 
-func (i *indexResolverTestSuite) TestArtifactType() {
-	i.Assert().Equal(ArtifactTypeImage, i.resolver.ArtifactType())
-}
-
-func (i *indexResolverTestSuite) TestResolve() {
+func (i *indexResolverTestSuite) TestResolveMetadata() {
 	manifest := `{
   "manifests": [
     {
@@ -128,12 +125,26 @@ func (i *indexResolverTestSuite) TestResolve() {
 			ID: 1,
 		},
 	}, nil)
-	err := i.resolver.Resolve(nil, []byte(manifest), art)
+	err := i.resolver.ResolveMetadata(nil, []byte(manifest), art)
 	i.Require().Nil(err)
 	i.artMgr.AssertExpectations(i.T())
 	i.Assert().Len(art.References, 8)
 	i.Assert().Equal(int64(1), art.References[0].ChildID)
 	i.Assert().Equal("amd64", art.References[0].Platform.Architecture)
+}
+
+func (i *indexResolverTestSuite) TestResolveAddition() {
+	_, err := i.resolver.ResolveAddition(nil, nil, AdditionTypeBuildHistory)
+	i.True(ierror.IsErr(err, ierror.BadRequestCode))
+}
+
+func (i *indexResolverTestSuite) TestGetArtifactType() {
+	i.Assert().Equal(ArtifactTypeImage, i.resolver.GetArtifactType())
+}
+
+func (i *indexResolverTestSuite) TestListAdditionTypes() {
+	additions := i.resolver.ListAdditionTypes()
+	i.Len(additions, 0)
 }
 
 func TestIndexResolverTestSuite(t *testing.T) {

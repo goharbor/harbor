@@ -17,6 +17,7 @@ package artifact
 import (
 	"context"
 	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/stretchr/testify/mock"
 	"time"
@@ -97,12 +98,12 @@ func (f *FakeController) UpdatePullTime(ctx context.Context, artifactID int64, t
 	return args.Error(0)
 }
 
-// GetSubResource ...
-func (f *FakeController) GetSubResource(ctx context.Context, artifactID int64, resource string) (*artifact.Resource, error) {
+// GetAddition ...
+func (f *FakeController) GetAddition(ctx context.Context, artifactID int64, addition string) (*resolver.Addition, error) {
 	args := f.Called()
-	var res *artifact.Resource
+	var res *resolver.Addition
 	if args.Get(0) != nil {
-		res = args.Get(0).(*artifact.Resource)
+		res = args.Get(0).(*resolver.Addition)
 	}
 	return res, args.Error(1)
 }

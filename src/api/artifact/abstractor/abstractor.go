@@ -23,6 +23,7 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/blob"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/opencontainers/image-spec/specs-go/v1"
@@ -37,9 +38,13 @@ var artifactTypeRegExp = regexp.MustCompile(`^application/vnd\.[^.]*\.(.*)\.conf
 
 // Abstractor abstracts the specific information for different types of artifacts
 type Abstractor interface {
-	// Abstract the specific information for the specific artifact type into the artifact model,
-	// the information can be got from the manifest or other layers referenced by the manifest.
-	Abstract(ctx context.Context, artifact *artifact.Artifact) error
+	// AbstractMetadata abstracts the metadata for the specific artifact type into the artifact model,
+	// the metadata can be got from the manifest or other layers referenced by the manifest.
+	AbstractMetadata(ctx context.Context, artifact *artifact.Artifact) error
+	// AbstractAddition abstracts the addition of the artifact.
+	// The additions are different for different artifacts:
+	// build history for image; values.yaml, readme and dependencies for chart, etc
+	AbstractAddition(ctx context.Context, artifact *artifact.Artifact, additionType string) (addition *resolver.Addition, err error)
 }
 
 // NewAbstractor returns an instance of the default abstractor
@@ -58,7 +63,7 @@ type abstractor struct {
 // TODO try CNAB, how to forbid CNAB
 
 // TODO add white list for supported artifact type
-func (a *abstractor) Abstract(ctx context.Context, artifact *artifact.Artifact) error {
+func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact) error {
 	repository, err := a.repoMgr.Get(ctx, artifact.RepositoryID)
 	if err != nil {
 		return err
@@ -117,13 +122,21 @@ func (a *abstractor) Abstract(ctx context.Context, artifact *artifact.Artifact) 
 
 	resolver := resolver.Get(artifact.MediaType)
 	if resolver != nil {
-		artifact.Type = resolver.ArtifactType()
-		return resolver.Resolve(ctx, content, artifact)
+		return resolver.ResolveMetadata(ctx, content, artifact)
 	}
 
 	// if got no resolver, try to parse the artifact type based on the media type
 	artifact.Type = parseArtifactType(artifact.MediaType)
 	return nil
+}
+
+func (a *abstractor) AbstractAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*resolver.Addition, error) {
+	resolver := resolver.Get(artifact.MediaType)
+	if resolver == nil {
+		return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
+			WithMessage("the resolver for artifact %s not found, cannot get the addition", artifact.Type)
+	}
+	return resolver.ResolveAddition(ctx, artifact, addition)
 }
 
 func parseArtifactType(mediaType string) string {
