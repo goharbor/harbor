@@ -17,38 +17,42 @@ package repository
 import (
 	"context"
 	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/repository"
 )
 
 var (
 	// Ctl is a global repository controller instance
-	Ctl = NewController(repository.Mgr)
+	Ctl = NewController()
 )
 
 // Controller defines the operations related with repositories
 type Controller interface {
-	// Ensure the repository specified by the "name" exists under the project,
-	// creates it if it doesn't exist. The "name" should contain the namespace part.
-	// The "created" will be set as true when the repository is created
-	Ensure(ctx context.Context, projectID int64, name string) (created bool, id int64, err error)
+	// Ensure the repository specified by the "name" exists, creates it if it doesn't exist.
+	// The "name" should contain the namespace part. The "created" will be set as true
+	// when the repository is created
+	Ensure(ctx context.Context, name string) (created bool, id int64, err error)
 	// Get the repository specified by ID
 	Get(ctx context.Context, id int64) (repository *models.RepoRecord, err error)
 }
 
 // NewController creates an instance of the default repository controller
-func NewController(repoMgr repository.Manager) Controller {
+func NewController() Controller {
 	return &controller{
-		repoMgr: repoMgr,
+		proMgr:  project.Mgr,
+		repoMgr: repository.Mgr,
 	}
 }
 
 type controller struct {
+	proMgr  project.Manager
 	repoMgr repository.Manager
 }
 
-func (c *controller) Ensure(ctx context.Context, projectID int64, name string) (bool, int64, error) {
+func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, error) {
 	query := &q.Query{
 		Keywords: map[string]interface{}{
 			"name": name,
@@ -64,8 +68,13 @@ func (c *controller) Ensure(ctx context.Context, projectID int64, name string) (
 	}
 
 	// the repository doesn't exist, create it first
+	projectName, _ := utils.ParseRepository(name)
+	project, err := c.proMgr.Get(projectName)
+	if err != nil {
+		return false, 0, err
+	}
 	id, err := c.repoMgr.Create(ctx, &models.RepoRecord{
-		ProjectID: projectID,
+		ProjectID: project.ProjectID,
 		Name:      name,
 	})
 	if err != nil {

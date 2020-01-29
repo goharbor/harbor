@@ -24,12 +24,15 @@ import (
 type controllerTestSuite struct {
 	suite.Suite
 	ctl     *controller
+	proMgr  *htesting.FakeProjectManager
 	repoMgr *htesting.FakeRepositoryManager
 }
 
 func (c *controllerTestSuite) SetupTest() {
+	c.proMgr = &htesting.FakeProjectManager{}
 	c.repoMgr = &htesting.FakeRepositoryManager{}
 	c.ctl = &controller{
+		proMgr:  c.proMgr,
 		repoMgr: c.repoMgr,
 	}
 }
@@ -43,7 +46,7 @@ func (c *controllerTestSuite) TestEnsure() {
 			Name:         "library/hello-world",
 		},
 	}, nil)
-	created, id, err := c.ctl.Ensure(nil, 1, "library/hello-world")
+	created, id, err := c.ctl.Ensure(nil, "library/hello-world")
 	c.Require().Nil(err)
 	c.repoMgr.AssertExpectations(c.T())
 	c.False(created)
@@ -54,10 +57,14 @@ func (c *controllerTestSuite) TestEnsure() {
 
 	// doesn't exist
 	c.repoMgr.On("List").Return(0, []*models.RepoRecord{}, nil)
+	c.proMgr.On("Get").Return(&models.Project{
+		ProjectID: 1,
+	}, nil)
 	c.repoMgr.On("Create").Return(1, nil)
-	created, id, err = c.ctl.Ensure(nil, 1, "library/hello-world")
+	created, id, err = c.ctl.Ensure(nil, "library/hello-world")
 	c.Require().Nil(err)
 	c.repoMgr.AssertExpectations(c.T())
+	c.proMgr.AssertExpectations(c.T())
 	c.True(created)
 	c.Equal(int64(1), id)
 }

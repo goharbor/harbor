@@ -16,7 +16,6 @@ package artifact
 
 import (
 	"context"
-	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/stretchr/testify/mock"
@@ -180,28 +179,9 @@ func (m *managerTestSuite) TestCreate() {
 }
 
 func (m *managerTestSuite) TestDelete() {
-	// referenced by other artifacts, delete failed
-	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{
-		{
-			ParentID: 1,
-			ChildID:  1,
-		},
-	}, nil)
-	err := m.mgr.Delete(nil, 1)
-	m.Require().NotNil(err)
-	m.dao.AssertExpectations(m.T())
-	e, ok := err.(*ierror.Error)
-	m.Require().True(ok)
-	m.Equal(ierror.PreconditionCode, e.Code)
-
-	// reset the mock
-	m.SetupTest()
-
-	// // referenced by no artifacts
-	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{}, nil)
 	m.dao.On("Delete", mock.Anything).Return(nil)
 	m.dao.On("DeleteReferences").Return(nil)
-	err = m.mgr.Delete(nil, 1)
+	err := m.mgr.Delete(nil, 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }

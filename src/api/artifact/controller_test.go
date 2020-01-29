@@ -17,6 +17,7 @@ package artifact
 import (
 	"context"
 	"github.com/goharbor/harbor/src/common/models"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
@@ -245,6 +246,126 @@ func (c *controllerTestSuite) TestGet() {
 	}, nil)
 	art, err := c.ctl.Get(nil, 1, nil)
 	c.Require().Nil(err)
+	c.artMgr.AssertExpectations(c.T())
+	c.Require().NotNil(art)
+	c.Equal(int64(1), art.ID)
+}
+
+func (c *controllerTestSuite) TestGetByDigest() {
+	// not found
+	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
+		RepositoryID: 1,
+	}, nil)
+	c.artMgr.On("List").Return(0, nil, nil)
+	art, err := c.ctl.getByDigest(nil, "library/hello-world",
+		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
+	c.Require().NotNil(err)
+	c.repoMgr.AssertExpectations(c.T())
+	c.artMgr.AssertExpectations(c.T())
+	c.True(ierror.IsErr(err, ierror.NotFoundCode))
+
+	// reset the mock
+	c.SetupTest()
+
+	// success
+	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
+		RepositoryID: 1,
+	}, nil)
+	c.artMgr.On("List").Return(1, []*artifact.Artifact{
+		{
+			ID:           1,
+			RepositoryID: 1,
+		},
+	}, nil)
+	art, err = c.ctl.getByDigest(nil, "library/hello-world",
+		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
+	c.Require().Nil(err)
+	c.repoMgr.AssertExpectations(c.T())
+	c.artMgr.AssertExpectations(c.T())
+	c.Require().NotNil(art)
+	c.Equal(int64(1), art.ID)
+}
+
+func (c *controllerTestSuite) TestGetByTag() {
+	// not found
+	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
+		RepositoryID: 1,
+	}, nil)
+	c.tagMgr.On("List").Return(0, nil, nil)
+	art, err := c.ctl.getByTag(nil, "library/hello-world", "latest", nil)
+	c.Require().NotNil(err)
+	c.repoMgr.AssertExpectations(c.T())
+	c.tagMgr.AssertExpectations(c.T())
+	c.True(ierror.IsErr(err, ierror.NotFoundCode))
+
+	// reset the mock
+	c.SetupTest()
+
+	// success
+	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
+		RepositoryID: 1,
+	}, nil)
+	c.tagMgr.On("List").Return(1, []*tag.Tag{
+		{
+			ID:           1,
+			RepositoryID: 1,
+			Name:         "latest",
+			ArtifactID:   1,
+		},
+	}, nil)
+	c.artMgr.On("Get").Return(&artifact.Artifact{
+		ID: 1,
+	}, nil)
+	art, err = c.ctl.getByTag(nil, "library/hello-world", "latest", nil)
+	c.Require().Nil(err)
+	c.repoMgr.AssertExpectations(c.T())
+	c.tagMgr.AssertExpectations(c.T())
+	c.artMgr.AssertExpectations(c.T())
+	c.Require().NotNil(art)
+	c.Equal(int64(1), art.ID)
+}
+
+func (c *controllerTestSuite) TestGetByReference() {
+	// reference is digest
+	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
+		RepositoryID: 1,
+	}, nil)
+	c.artMgr.On("List").Return(1, []*artifact.Artifact{
+		{
+			ID:           1,
+			RepositoryID: 1,
+		},
+	}, nil)
+	art, err := c.ctl.GetByReference(nil, "library/hello-world",
+		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
+	c.Require().Nil(err)
+	c.repoMgr.AssertExpectations(c.T())
+	c.artMgr.AssertExpectations(c.T())
+	c.Require().NotNil(art)
+	c.Equal(int64(1), art.ID)
+
+	// reset the mock
+	c.SetupTest()
+
+	// reference is tag
+	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
+		RepositoryID: 1,
+	}, nil)
+	c.tagMgr.On("List").Return(1, []*tag.Tag{
+		{
+			ID:           1,
+			RepositoryID: 1,
+			Name:         "latest",
+			ArtifactID:   1,
+		},
+	}, nil)
+	c.artMgr.On("Get").Return(&artifact.Artifact{
+		ID: 1,
+	}, nil)
+	art, err = c.ctl.GetByReference(nil, "library/hello-world", "latest", nil)
+	c.Require().Nil(err)
+	c.repoMgr.AssertExpectations(c.T())
+	c.tagMgr.AssertExpectations(c.T())
 	c.artMgr.AssertExpectations(c.T())
 	c.Require().NotNil(art)
 	c.Equal(int64(1), art.ID)
