@@ -212,6 +212,4 @@ func RegisterRoutes() {
 
 	// Error pages
 	beego.ErrorController(&controllers.ErrorController{})
-
-	beego.Router("/v2/*", &controllers.RegistryProxy{}, "*:Handle")
 }
