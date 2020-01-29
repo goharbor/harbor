@@ -211,18 +211,22 @@ func TestSearchNestedGroup(t *testing.T) {
 
 	defer session.Close()
 
-	result, err := session.searchNestedGroups("test")
-	if err != nil || len(result) == 0 {
-		t.Fatalf("failed to search user test!")
-	}
-
-	result2, err := session.SearchUser("mike")
-	if err != nil || len(result2) == 0 {
+	user, err := session.SearchUser("mike")
+	if err != nil || len(user) == 0 {
 		t.Fatalf("failed to search user mike!")
 	}
 
-	if len(result2[0].GroupDNList) < 1 && result2[0].GroupDNList[0] != "cn=harbor_users,ou=groups,dc=example,dc=com" {
+	if len(user[0].GroupDNList) < 1 && user[0].GroupDNList[0] != "cn=harbor_users,ou=groups,dc=example,dc=com" {
 		t.Fatalf("failed to search user mike's memberof")
+	}
+
+	result, err := session.searchNestedGroups(user[0].DN)
+	if err != nil || len(result) == 0 {
+		t.Fatalf("failed to get nested groups for user mike!")
+	}
+
+	if len(result) < 1 && result[0] != "cn=harbor_users,ou=groups,dc=example,dc=com" {
+		t.Fatalf("failed to search user mike's nested groups")
 	}
 }
 
