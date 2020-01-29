@@ -158,6 +158,7 @@ func LDAPConf() (*models.LdapConf, error) {
 		LdapScope:             cfgMgr.Get(common.LDAPScope).GetInt(),
 		LdapConnectionTimeout: cfgMgr.Get(common.LDAPTimeout).GetInt(),
 		LdapVerifyCert:        cfgMgr.Get(common.LDAPVerifyCert).GetBool(),
+		LdapNestedGroupSearch: cfgMgr.Get(common.LDAPNestedGroupSearch).GetBool(),
 	}, nil
 }
 

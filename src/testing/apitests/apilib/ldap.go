@@ -31,4 +31,5 @@ type LdapConf struct {
 	LdapUID               string `json:"ldap_uid"`
 	LdapScope             int    `json:"ldap_scope"`
 	LdapConnectionTimeout int    `json:"ldap_connection_timeout"`
+	LdapNestedGroupSearch string `json:"ldap_nested_group_search"`
 }

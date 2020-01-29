@@ -109,6 +109,10 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
         this.currentConfig.ldap_verify_cert.value = $event;
     }
 
+    setLdapNestedGroupSearchValue($event: any) {
+        this.currentConfig.ldap_nested_group_search.value = $event;
+    }
+
     public pingTestServer(): void {
         if (this.testingOnGoing) {
             return; // Should not come here

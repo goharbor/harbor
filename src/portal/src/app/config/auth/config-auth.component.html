@@ -248,6 +248,23 @@
     <section *ngIf="showLdap">
 
         <clr-checkbox-container>
+            <label for="ldapNestedGroupSearch">{{'CONFIG.LDAP.NESTED_GROUP_SEARCH' | translate}}
+                <clr-tooltip>
+                    <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>
+                    <clr-tooltip-content clrPosition="top-right" clrSize="lg" *clrIfOpen>
+                        <span>{{'CONFIG.TOOLTIP.NESTED_GROUP_SEARCH' | translate}}</span>
+                    </clr-tooltip-content>
+                </clr-tooltip>
+            </label>
+            <clr-checkbox-wrapper>
+                <input type="checkbox" clrCheckbox name="ldapNestedGroupSearch" id="ldapNestedGroupSearch"
+                    [ngModel]="currentConfig.ldap_nested_group_search.value"
+                    [disabled]="disabled(currentConfig.ldap_scope)"
+                    (ngModelChange)="setLdapNestedGroupSearchValue($event)" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
+
+        <clr-checkbox-container>
             <label for="ldapVerifyCert">{{'CONFIG.LDAP.VERIFY_CERT' | translate}}
                     <clr-tooltip>
                             <clr-icon clrTooltipTrigger shape="info-circle" size="24"></clr-icon>

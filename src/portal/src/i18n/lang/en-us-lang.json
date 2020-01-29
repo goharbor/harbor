@@ -814,6 +814,7 @@
             "PRO_CREATION_RESTRICTION": "The flag to define what users have permission to create projects. By default, everyone can create a project. Set to 'Admin Only' so that only an administrator can create a project.",
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
+            "NESTED_GROUP_SEARCH": "Use LDAP/AD Nested Groups. Requires special LDAP Config, mostly for Active Directory.",
             "VERIFY_CERT": "Verify Cert from LDAP Server",
             "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
             "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
@@ -829,6 +830,7 @@
             "FILTER": "LDAP Filter",
             "UID": "LDAP UID",
             "SCOPE": "LDAP Scope",
+            "NESTED_GROUP_SEARCH": "LDAP Nested Groups (EXPERIMENTAL)",
             "VERIFY_CERT": "LDAP Verify Certificate",
             "LDAP_GROUP_BASE_DN": "LDAP Group Base DN",
             "LDAP_GROUP_BASE_DN_INFO": "The base DN from which to look up a group in LDAP/AD.",
@@ -842,7 +844,6 @@
             "LDAP_GROUP_MEMBERSHIP_INFO": "The attribute indicates the membership of LDAP group, default value is memberof, in some LDAP server it could be \"ismemberof\"",
             "GROUP_SCOPE": "LDAP Group Scope",
             "GROUP_SCOPE_INFO": "The scope to search for groups, select Subtree by default."
-
         },
         "UAA": {
             "ENDPOINT": "UAA Endpoint",
@@ -1117,7 +1118,6 @@
         "ON": "on",
         "AT": "at",
         "NOSCHEDULE": "An error occurred in Get schedule"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Current Schedule",
@@ -1344,6 +1344,5 @@
         "ALL_SCANNERS": "All scanners",
         "HELP_INFO_1": "The default scanner has been installed. To install other scanners refer to the ",
         "HELP_INFO_2": "documentation."
-
     }
 }

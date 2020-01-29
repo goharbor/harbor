@@ -46,6 +46,7 @@ var testConfig = map[string]interface{}{
 	common.LDAPFilter:           "",
 	common.LDAPScope:            3,
 	common.LDAPTimeout:          30,
+	common.LDAPNestedGroupSearch: false,
 	common.AdminInitialPassword: "password",
 }
 
@@ -131,6 +132,7 @@ func TestLdapConnectionTest(t *testing.T) {
 		LdapScope:             3,
 		LdapConnectionTimeout: 10,
 		LdapVerifyCert:        false,
+		LdapNestedGroupSearch: false,
 	}
 	// Test ldap connection under auth_mod is db_auth
 	err := ldap.ConnectionTestWithConfig(ldapConfig)

@@ -25,6 +25,7 @@ type LdapConf struct {
 	LdapScope             int    `json:"ldap_scope"`
 	LdapConnectionTimeout int    `json:"ldap_connection_timeout"`
 	LdapVerifyCert        bool   `json:"ldap_verify_cert"`
+	LdapNestedGroupSearch bool   `json:"ldap_nested_group_search"`
 }
 
 // LdapGroupConf holds information about ldap group

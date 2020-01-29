@@ -73,6 +73,7 @@ const (
 	LDAPGroupSearchFilter            = "ldap_group_search_filter"
 	LDAPGroupAttributeName           = "ldap_group_attribute_name"
 	LDAPGroupSearchScope             = "ldap_group_search_scope"
+	LDAPNestedGroupSearch            = "ldap_nested_group_search"
 	TokenServiceURL                  = "token_service_url"
 	RegistryURL                      = "registry_url"
 	EmailHost                        = "email_host"

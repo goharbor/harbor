@@ -40,6 +40,7 @@ var defaultConfig = map[string]interface{}{
 	common.LDAPGroupSearchFilter:      "objectClass=groupOfNames",
 	common.LDAPGroupSearchScope:       2,
 	common.LDAPGroupAttributeName:     "cn",
+	common.LDAPNestedGroupSearch:      false,
 	common.TokenServiceURL:            "http://token_service",
 	common.RegistryURL:                "http://registry",
 	common.EmailHost:                  "127.0.0.1",
