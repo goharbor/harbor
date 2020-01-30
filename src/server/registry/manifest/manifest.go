@@ -89,6 +89,7 @@ func (h *handler) delete(w http.ResponseWriter, req *http.Request) {
 		error.Handle(w, req, err)
 		return
 	}
+	w.WriteHeader(http.StatusAccepted)
 
 	// TODO fire event, add access log in the event handler
 }

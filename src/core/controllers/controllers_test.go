@@ -49,7 +49,6 @@ func init() {
 	beego.Router("/c/reset", &CommonController{}, "post:ResetPassword")
 	beego.Router("/c/userExists", &CommonController{}, "post:UserExists")
 	beego.Router("/c/sendEmail", &CommonController{}, "get:SendResetEmail")
-	beego.Router("/v2/*", &RegistryProxy{}, "*:Handle")
 }
 
 func TestMain(m *testing.M) {
@@ -130,20 +129,4 @@ func TestAll(t *testing.T) {
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 	assert.Equal(int(400), w.Code, "'/c/sendEmail' httpStatusCode should be 400")
-
-	r, _ = http.NewRequest("GET", "/v2/", nil)
-	w = httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(200), w.Code, "ping v2 should get a 200 response")
-
-	r, _ = http.NewRequest("GET", "/v2/noproject/manifests/1.0", nil)
-	w = httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(400), w.Code, "GET v2/noproject/manifests/1.0 should get a 400 response")
-
-	r, _ = http.NewRequest("GET", "/v2/project/notexist/manifests/1.0", nil)
-	w = httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(404), w.Code, "GET v2/noproject/manifests/1.0 should get a 404 response")
-
 }
