@@ -222,7 +222,7 @@ func TestSearchNestedGroup(t *testing.T) {
 
 	result, err := session.searchNestedGroups(user[0].DN)
 	if err != nil || len(result) == 0 {
-		t.Fatalf("failed to get nested groups for user mike!")
+		t.Fatalf("failed to get nested groups for user mike!: %v", err)
 	}
 
 	if len(result) < 1 && result[0] != "cn=harbor_users,ou=groups,dc=example,dc=com" {
