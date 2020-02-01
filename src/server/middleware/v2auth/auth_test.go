@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package authz
+package v2auth
 
 import (
 	"github.com/goharbor/harbor/src/common/models"
@@ -165,14 +165,25 @@ func TestMiddleware(t *testing.T) {
 	}
 	ctx1 := context.WithValue(baseCtx, middleware.ArtifactInfoKey, ar1)
 	ctx2 := context.WithValue(baseCtx, middleware.ArtifactInfoKey, ar2)
+	ctx2x := context.WithValue(context.Background(), middleware.ArtifactInfoKey, ar2) // no securityCtx
 	ctx3 := context.WithValue(baseCtx, middleware.ArtifactInfoKey, ar3)
 	ctx4 := context.WithValue(baseCtx, middleware.ArtifactInfoKey, ar4)
 	req1a, _ := http.NewRequest(http.MethodGet, "/v2/project_1/hello-world/manifest/v1", nil)
 	req1b, _ := http.NewRequest(http.MethodDelete, "/v2/project_1/hello-world/manifest/v1", nil)
 	req2, _ := http.NewRequest(http.MethodGet, "/v2/library/ubuntu/manifest/14.04", nil)
+	req2x, _ := http.NewRequest(http.MethodGet, "/v2/library/ubuntu/manifest/14.04", nil)
 	req3, _ := http.NewRequest(http.MethodGet, "/v2/_catalog", nil)
 	req4, _ := http.NewRequest(http.MethodPost, "/v2/project_1/ubuntu/blobs/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_2/ubuntu", nil)
 	req5, _ := http.NewRequest(http.MethodPost, "/v2/project_1/ubuntu/blobs/uploads/mount=?mount=sha256:08e4a417ff4e3913d8723a05cc34055db01c2fd165b588e049c5bad16ce6094f&from=project_3/ubuntu", nil)
+
+	os.Setenv("REGISTRY_CREDENTIAL_USERNAME", "testuser")
+	os.Setenv("REGISTRY_CREDENTIAL_PASSWORD", "testpassword")
+	defer func() {
+		os.Unsetenv("REGISTRY_CREDENTIAL_USERNAME")
+		os.Unsetenv("REGISTRY_CREDENTIAL_PASSWORD")
+	}()
+
+	req2x.SetBasicAuth("testuser", "testpassword")
 
 	cases := []struct {
 		input  *http.Request
@@ -189,6 +200,10 @@ func TestMiddleware(t *testing.T) {
 		{
 			input:  req2.WithContext(ctx2),
 			status: http.StatusUnauthorized,
+		},
+		{
+			input:  req2x.WithContext(ctx2x),
+			status: http.StatusOK,
 		},
 		{
 			input:  req3.WithContext(baseCtx),

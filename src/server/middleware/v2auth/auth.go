@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package authz
+package v2auth
 
 import (
 	"fmt"
@@ -24,7 +24,9 @@ import (
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	reg_err "github.com/goharbor/harbor/src/server/registry/error"
+	"golang.org/x/net/context"
 	"net/http"
+	"sync"
 )
 
 type reqChecker struct {
@@ -32,6 +34,10 @@ type reqChecker struct {
 }
 
 func (rc *reqChecker) check(req *http.Request) error {
+	if rc.hasRegistryCred(req) {
+		// TODO: May consider implement a local authorizer for registry, more details see #10602
+		return nil
+	}
 	securityCtx, err := filter.GetSecurityContext(req)
 	if err != nil {
 		return err
@@ -62,6 +68,9 @@ func (rc *reqChecker) check(req *http.Request) error {
 		}
 	} else if len(middleware.V2CatalogURLRe.FindStringSubmatch(req.URL.Path)) == 1 && !securityCtx.IsSysAdmin() {
 		return fmt.Errorf("unauthorized to list catalog")
+	} else if req.URL.Path == "/v2/" && !securityCtx.IsAuthenticated() {
+		ctx := context.WithValue(req.Context(), middleware.SkipInjectRegistryCredKey, true)
+		*req = *(req.WithContext(ctx))
 	}
 	return nil
 }
@@ -75,6 +84,12 @@ func (rc *reqChecker) projectID(name string) (int64, error) {
 		return 0, fmt.Errorf("project not found, name: %s", name)
 	}
 	return p.ProjectID, nil
+}
+
+func (rc *reqChecker) hasRegistryCred(req *http.Request) bool {
+	u, p, ok := req.BasicAuth()
+	regUser, regPass := config.RegistryCredential()
+	return ok && u == regUser && p == regPass
 }
 
 func getAction(req *http.Request) rbac.Action {
@@ -98,16 +113,24 @@ func getAction(req *http.Request) rbac.Action {
 
 }
 
-var checker = reqChecker{
-	pm: config.GlobalProjectMgr,
-}
+var (
+	once    sync.Once
+	checker reqChecker
+)
 
 // Middleware checks the permission of the request to access the artifact
 func Middleware() func(http.Handler) http.Handler {
+	once.Do(func() {
+		if checker.pm == nil { // for UT, where pm has been set to a mock value
+			checker = reqChecker{
+				pm: config.GlobalProjectMgr,
+			}
+		}
+	})
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			if err := checker.check(req); err != nil {
-				reg_err.Handle(rw, req, ierror.UnauthorizedError(err))
+				reg_err.Handle(rw, req, ierror.UnauthorizedError(err).WithMessage(err.Error()))
 				return
 			}
 			next.ServeHTTP(rw, req)

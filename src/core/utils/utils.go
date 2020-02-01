@@ -24,7 +24,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/service/token"
 )
 
 // NewRepositoryClientForUI creates a repository client that can only be used to
@@ -51,7 +50,7 @@ func newRepositoryClient(endpoint, username, repository string) (*registry.Repos
 	uam := &auth.UserAgentModifier{
 		UserAgent: "harbor-registry-client",
 	}
-	authorizer := auth.NewRawTokenAuthorizer(username, token.Registry)
+	authorizer := auth.DefaultBasicAuthorizer()
 	transport := registry.NewTransport(http.DefaultTransport, authorizer, uam)
 	client := &http.Client{
 		Transport: transport,

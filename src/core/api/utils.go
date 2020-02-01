@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
-	"github.com/goharbor/harbor/src/core/service/token"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 )
 
@@ -248,7 +247,7 @@ func initRegistryClient() (r *registry.Registry, err error) {
 		return nil, err
 	}
 
-	authorizer := auth.NewRawTokenAuthorizer("harbor-core", token.Registry)
+	authorizer := auth.DefaultBasicAuthorizer()
 	return registry.NewRegistry(endpoint, &http.Client{
 		Transport: registry.NewTransport(registry.GetHTTPTransport(), authorizer),
 	})

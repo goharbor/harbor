@@ -21,7 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/service/token"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"io/ioutil"
@@ -86,7 +85,7 @@ func newRepositoryClient(repository string) (*registry.Repository, error) {
 	uam := &auth.UserAgentModifier{
 		UserAgent: "harbor-registry-client",
 	}
-	authorizer := auth.NewRawTokenAuthorizer("admin", token.Registry)
+	authorizer := auth.DefaultBasicAuthorizer()
 	transport := registry.NewTransport(http.DefaultTransport, authorizer, uam)
 	client := &http.Client{
 		Transport: transport,
