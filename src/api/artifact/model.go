@@ -47,8 +47,9 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 	}
 	for _, reference := range a.References {
 		ref := &models.Reference{
-			ChildID:  reference.ChildID,
-			ParentID: reference.ParentID,
+			ChildID:     reference.ChildID,
+			ChildDigest: reference.ChildDigest,
+			ParentID:    reference.ParentID,
 		}
 		if reference.Platform != nil {
 			ref.Platform = &models.Platform{
