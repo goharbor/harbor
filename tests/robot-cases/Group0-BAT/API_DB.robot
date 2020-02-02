@@ -26,9 +26,8 @@ Test Case - Delete a Repository of a Certain Project Created by Normal User
     Harbor API Test  ./tests/apitests/python/test_del_repo.py
 Test Case - Add a System Global Label to a Certain Tag
     Harbor API Test  ./tests/apitests/python/test_add_sys_label_to_tag.py
-# TODO uncomment this after replication works with basic auth - #10509
-# Test Case - Add Replication Rule
-#    Harbor API Test  ./tests/apitests/python/test_add_replication_rule.py
+Test Case - Add Replication Rule
+    Harbor API Test  ./tests/apitests/python/test_add_replication_rule.py
 Test Case - Edit Project Creation
     Harbor API Test  ./tests/apitests/python/test_edit_project_creation.py
 # TODO uncomment this after image scan work with basic auth - #10277
