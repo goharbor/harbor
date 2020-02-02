@@ -127,6 +127,11 @@ func (m *manager) assemble(ctx context.Context, art *dao.Artifact) (*Artifact, e
 	for _, ref := range refs {
 		reference := &Reference{}
 		reference.From(ref)
+		art, err := m.dao.Get(ctx, reference.ChildID)
+		if err != nil {
+			return nil, err
+		}
+		reference.ChildDigest = art.Digest
 		artifact.References = append(artifact.References, reference)
 	}
 	return artifact, nil
