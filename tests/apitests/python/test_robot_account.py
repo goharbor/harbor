@@ -41,7 +41,7 @@ class TestProjects(unittest.TestCase):
         self.project.delete_project(TestProjects.project_ra_id_b, **TestProjects.USER_RA_CLIENT)
         self.project.delete_project(TestProjects.project_ra_id_c, **TestProjects.USER_RA_CLIENT)
 
-        #3. Delete user(UA);
+        #3. Delete user(UA).
         self.user.delete_user(TestProjects.user_ra_id, **ADMIN_CLIENT)
 
     def testRobotAccount(self):
@@ -63,10 +63,11 @@ class TestProjects(unittest.TestCase):
 			12. Update action property of robot account(RA);
 			13. Pull image(ImagePA) from project(PA) by robot account(RA), it must be not successful;
 			14. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;
-			15. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;
+			15. Delete robot account(RA), it must be not successful.
         Tear down:
-            1. Delete project(PA) (PB) (PC);
-            2. Delete user(UA).
+            1. Delete repository(RA) by user(UA);
+            2. Delete project(PA);
+            3. Delete user(UA).
         """
         url = ADMIN_CLIENT["endpoint"]
         admin_name = ADMIN_CLIENT["username"]
@@ -128,7 +129,7 @@ class TestProjects(unittest.TestCase):
         print "#14. Push image(ImageRA) to project(PA) by robot account(RA), it must be not successful;"
         push_image_to_project(project_ra_name_a, harbor_server, robot_account.name, robot_account.token, image_robot_account, tag, expected_login_error_message = "401 Client Error: Unauthorized")
 
-        print "#15. Delete robot account(RA), it must be not successful;"
+        print "#15. Delete robot account(RA), it must be not successful."
         self.project.delete_project_robot_account(TestProjects.project_ra_id_a, robot_id, **TestProjects.USER_RA_CLIENT)
 
 if __name__ == '__main__':
