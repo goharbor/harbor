@@ -38,6 +38,11 @@ func NewSecurityContext(user *models.User, pm promgr.ProjectManager) *SecurityCo
 	}
 }
 
+// Name returns the name of the security context
+func (s *SecurityContext) Name() string {
+	return "local"
+}
+
 // IsAuthenticated returns true if the user has been authenticated
 func (s *SecurityContext) IsAuthenticated() bool {
 	return s.user != nil

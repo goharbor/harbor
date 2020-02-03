@@ -51,9 +51,6 @@ type pathMethod struct {
 }
 
 const (
-	// SecurCtxKey is context value key for security context
-	SecurCtxKey ContextValueKey = "harbor_security_context"
-
 	// PmKey is context value key for the project manager
 	PmKey ContextValueKey = "harbor_project_manager"
 	// AuthModeKey is context key for auth mode
@@ -426,31 +423,12 @@ func (u *unauthorizedReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 }
 
 func setSecurCtxAndPM(req *http.Request, ctx security.Context, pm promgr.ProjectManager) {
-	addToReqContext(req, SecurCtxKey, ctx)
+	*req = *(req.WithContext(security.NewContext(req.Context(), ctx)))
 	addToReqContext(req, PmKey, pm)
 }
 
 func addToReqContext(req *http.Request, key, value interface{}) {
 	*req = *(req.WithContext(context.WithValue(req.Context(), key, value)))
-}
-
-// GetSecurityContext tries to get security context from request and returns it
-func GetSecurityContext(req *http.Request) (security.Context, error) {
-	if req == nil {
-		return nil, fmt.Errorf("request is nil")
-	}
-
-	ctx := req.Context().Value(SecurCtxKey)
-	if ctx == nil {
-		return nil, fmt.Errorf("the security context got from request is nil")
-	}
-
-	c, ok := ctx.(security.Context)
-	if !ok {
-		return nil, fmt.Errorf("the variable got from request is not security context type")
-	}
-
-	return c, nil
 }
 
 // GetProjectManager tries to get project manager from request and returns it

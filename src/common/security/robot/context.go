@@ -37,6 +37,11 @@ func NewSecurityContext(robot *model.Robot, pm promgr.ProjectManager, policy []*
 	}
 }
 
+// Name returns the name of the security context
+func (s *SecurityContext) Name() string {
+	return "robot"
+}
+
 // IsAuthenticated returns true if the user has been authenticated
 func (s *SecurityContext) IsAuthenticated() bool {
 	return s.robot != nil

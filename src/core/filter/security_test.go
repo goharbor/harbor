@@ -432,9 +432,13 @@ func addSessionIDToCookie(req *http.Request, sessionID string) {
 }
 
 func securityContext(ctx *beegoctx.Context) interface{} {
-	c, err := GetSecurityContext(ctx.Request)
-	if err != nil {
-		log.Printf("failed to get security context: %v \n", err)
+	if ctx.Request == nil {
+		return nil
+	}
+
+	c, ok := security.FromContext(ctx.Request.Context())
+	if !ok {
+		log.Printf("failed to get security context")
 		return nil
 	}
 	return c
@@ -445,36 +449,6 @@ func projectManager(ctx *beegoctx.Context) interface{} {
 		return nil
 	}
 	return ctx.Request.Context().Value(PmKey)
-}
-
-func TestGetSecurityContext(t *testing.T) {
-	// nil request
-	ctx, err := GetSecurityContext(nil)
-	assert.NotNil(t, err)
-
-	// the request contains no security context
-	req, err := http.NewRequest("", "", nil)
-	assert.Nil(t, err)
-	ctx, err = GetSecurityContext(req)
-	assert.NotNil(t, err)
-
-	// the request contains a variable which is not the correct type
-	req, err = http.NewRequest("", "", nil)
-	assert.Nil(t, err)
-	req = req.WithContext(context.WithValue(req.Context(),
-		SecurCtxKey, "test"))
-	ctx, err = GetSecurityContext(req)
-	assert.NotNil(t, err)
-
-	// the request contains a correct variable
-	req, err = http.NewRequest("", "", nil)
-	assert.Nil(t, err)
-	req = req.WithContext(context.WithValue(req.Context(),
-		SecurCtxKey, local.NewSecurityContext(nil, nil)))
-	ctx, err = GetSecurityContext(req)
-	assert.Nil(t, err)
-	_, ok := ctx.(security.Context)
-	assert.True(t, ok)
 }
 
 func TestGetProjectManager(t *testing.T) {

@@ -18,11 +18,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/models"
 	"net/http"
 
 	"github.com/ghodss/yaml"
 	"github.com/goharbor/harbor/src/common/api"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -68,9 +68,9 @@ type BaseController struct {
 // Prepare inits security context and project manager from request
 // context
 func (b *BaseController) Prepare() {
-	ctx, err := filter.GetSecurityContext(b.Ctx.Request)
-	if err != nil {
-		log.Errorf("failed to get security context: %v", err)
+	ctx, ok := security.FromContext(b.Ctx.Request.Context())
+	if !ok {
+		log.Errorf("failed to get security context")
 		b.SendInternalServerError(errors.New(""))
 		return
 	}
