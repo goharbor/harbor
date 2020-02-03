@@ -10,15 +10,17 @@ RUN apt-get update \
 
 COPY src/portal/package.json /build_dir
 COPY src/portal/package-lock.json /build_dir
-ENV NPM_CONFIG_REGISTRY=${npm_registry}
-RUN npm install
-
+COPY src/portal/scripts /build_dir
 COPY ./api/harbor/swagger.yaml /build_dir
+COPY ./api/v2.0/swagger.yaml /build_dir/swagger2.yaml
+
 RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger.yaml > swagger.json
 
 COPY ./LICENSE /build_dir
 COPY src/portal /build_dir
 
+ENV NPM_CONFIG_REGISTRY=${npm_registry}
+RUN npm install --unsafe-perm
 RUN node --max_old_space_size=2048 'node_modules/@angular/cli/bin/ng' build --prod
 
 FROM goharbor/harbor-portal-base:${harbor_base_image_version}

@@ -4,12 +4,15 @@
  2.npm install ng-swagger-gen --save-dev
  */
 //configuration
-const inputFile = '../../api/v2.0/swagger.yaml';
+let inputFile = '../../api/v2.0/swagger.yaml';
 const outputDir = 'ng-swagger-gen';
 
 //convert swagger.yaml to swagger.json
 const yaml = require('js-yaml');
 const fs = require('fs');
+if (fs.existsSync('swagger2.yaml')) {
+   inputFile = 'swagger2.yaml';
+}
 if (!fs.existsSync(outputDir)) {
     fs.mkdirSync(outputDir);
 }
