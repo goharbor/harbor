@@ -392,7 +392,7 @@ gosec:
 		$(GOPATH)/bin/gosec -fmt=json -out=harbor_gas_output.json -quiet ./... | true ; \
 	fi
 
-go_check: gen_apis misspell golint govet gofmt commentfmt
+go_check: gen_apis misspell golint govet gofmt commentfmt goimports
 
 gofmt:
 	@echo checking gofmt...
@@ -424,6 +424,18 @@ golint:
 govet:
 	@echo checking govet...
 	@go list ./... | grep -v -E 'vendor|test' | xargs -L1 go vet
+
+goimports:
+	@echo checking goimports...
+	@ret=0 ; \
+	for file in $$(git show --name-only --oneline HEAD | grep -v vendor | grep \\.go\\b); do \
+		out=$$(goimports -l $$file) ; \
+		if [ -n "$${out}" ]; then \
+			echo "$$file imports need fix" ; \
+			ret=1 ; \
+		fi; \
+	done ; \
+	exit $$ret
 
 pushimage:
 	@echo "pushing harbor images ..."
