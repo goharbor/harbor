@@ -9,7 +9,7 @@
 
 </br>
 
-|![notification](docs/img/bell-outline-badged.svg)Community Meeting|
+|Community Meeting|
 |------------------|
 |The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
 
