@@ -65,7 +65,7 @@ func DeleteArtifact(id int64) error {
 
 // DeleteArtifactByDigest ...
 func DeleteArtifactByDigest(projectID int64, repo, digest string) error {
-	_, err := GetOrmer().Raw(`delete from artifact where project_id = ? and repo = ? and digest = ? `,
+	_, err := GetOrmer().Raw(`delete from artifact_2 where project_id = ? and repo = ? and digest = ? `,
 		projectID, repo, digest).Exec()
 	if err != nil {
 		return err
@@ -75,7 +75,7 @@ func DeleteArtifactByDigest(projectID int64, repo, digest string) error {
 
 // DeleteArtifactByTag ...
 func DeleteArtifactByTag(projectID int64, repo, tag string) error {
-	_, err := GetOrmer().Raw(`delete from artifact where project_id = ? and repo = ? and tag = ? `,
+	_, err := GetOrmer().Raw(`delete from artifact_2 where project_id = ? and repo = ? and tag = ? `,
 		projectID, repo, tag).Exec()
 	if err != nil {
 		return err

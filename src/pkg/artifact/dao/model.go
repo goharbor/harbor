@@ -43,8 +43,7 @@ type Artifact struct {
 
 // TableName for artifact
 func (a *Artifact) TableName() string {
-	// TODO use "artifact" after finishing the upgrade/migration work
-	return "artifact_2"
+	return "artifact"
 }
 
 // ArtifactReference records the child artifact referenced by parent artifact

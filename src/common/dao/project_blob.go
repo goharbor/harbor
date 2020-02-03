@@ -127,7 +127,7 @@ SELECT
     bb.content_type,
     bb.size,
     bb.creation_time
-FROM artifact af
+FROM artifact_2 af
 JOIN artifact_blob afnb
     ON af.digest = afnb.digest_af
 JOIN BLOB bb
@@ -158,7 +158,7 @@ SELECT
     bb.content_type,
     bb.size,
     bb.creation_time
-FROM artifact af
+FROM artifact_2 af
 JOIN artifact_blob afnb
     ON af.digest = afnb.digest_af
 JOIN BLOB bb

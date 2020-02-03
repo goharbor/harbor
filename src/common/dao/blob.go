@@ -190,7 +190,7 @@ FROM
     SELECT
       digest
     FROM
-      artifact
+      artifact_2
     WHERE
       (
         project_id = ?
