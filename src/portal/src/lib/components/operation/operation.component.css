@@ -1,0 +1,78 @@
+/* side form */
+.side-form {
+    position: absolute;
+    width: 325px;
+    height: 100%;
+    left:28px;
+    padding-top: 20px;
+    border-left: 1px solid #e0e0e0;
+}
+.eventInfo {display: flex; justify-content: flex-start; align-content: flex-start;
+    padding: 8px 5px 8px 10px; border-bottom: 1px solid #ccc;}
+.iconsArea{ flex-shrink: 1;}
+.infoArea{ margin-left: 10px; width: 270px;}
+.eventName{display: block; margin-bottom: -5px;font-size: 16px; color: rgb(11, 127, 189); }
+.eventErrorInf {display:block; font-size: 12px;color:red;line-height: .6rem;}
+.eventTarget{display: inline-flex; width: 172px; font-size: 12px; flex-shrink:1; overflow: hidden; text-overflow: ellipsis;white-space: nowrap;}
+.eventTime{ float: right; font-size: 12px;}
+:host >>> .nav{padding-left: 38px;}
+
+.operDiv {
+    position: fixed;
+    top: 60px;
+    z-index: 600;
+    width: 350px;
+    bottom: 0
+}
+
+.toolBar {
+    position: absolute;
+    transform-origin: top right;
+    border-top: 1px solid #ccc;
+    transform: translate(-100%, 0) rotate(-90deg);
+    margin-top: 10px;
+    padding: 0 10px;
+    height: 25px;
+    line-height: 25px;
+    letter-spacing: 1.2px;
+    font-weight: 500;
+    box-shadow: -2px -1px 3px #bebbbb;
+    cursor: pointer;
+    text-align: left;
+    text-decoration: none;
+}
+.freshIcon{float: right;     margin-right: 20px;  margin-top: -10px;cursor: pointer;}
+#contentFailed, #contentAll, #contentRun{
+    position: absolute;
+    top: 95px;
+    bottom: 0;
+    width: 100%;
+    overflow-y: auto;
+}
+
+.event-text {
+    margin-left: 34px;
+}
+
+.color-red {
+    color: red;
+}
+
+.color-green {
+    color: green;
+}
+
+.color-orange {
+    color: orange;
+}
+
+.tab-top {
+    margin-top: 10px;
+}
+
+.hidden-info {
+    display: none;
+}
+.margin-left-5 {
+    margin-left: 5px;
+}

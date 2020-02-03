@@ -15,9 +15,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
-
 import { SearchResults } from './search-results';
-import { HTTP_GET_OPTIONS } from "@harbor/ui";
+import { HTTP_GET_OPTIONS } from "../../../lib/utils/utils";
 
 const searchEndpoint = "/api/search";
 /**

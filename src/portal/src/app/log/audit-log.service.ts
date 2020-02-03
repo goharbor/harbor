@@ -17,9 +17,9 @@ import {map, catchError} from 'rxjs/operators';
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
-
 import { AuditLog } from './audit-log';
-import {RequestQueryParams, buildHttpRequestOptions, buildHttpRequestOptionsWithObserveResponse} from '@harbor/ui';
+import { buildHttpRequestOptions, buildHttpRequestOptionsWithObserveResponse } from "../../lib/utils/utils";
+import { RequestQueryParams } from "../../lib/services";
 
 export const logEndpoint = '/api/logs';
 

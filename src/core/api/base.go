@@ -18,11 +18,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/models"
 	"net/http"
 
 	"github.com/ghodss/yaml"
 	"github.com/goharbor/harbor/src/common/api"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
+	internal_errors "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention"
@@ -44,7 +45,6 @@ const (
 // the managers/controllers used globally
 var (
 	projectMgr          project.Manager
-	repositoryMgr       repository.Manager
 	retentionScheduler  scheduler.Scheduler
 	retentionMgr        retention.Manager
 	retentionLauncher   retention.Launcher
@@ -68,9 +68,9 @@ type BaseController struct {
 // Prepare inits security context and project manager from request
 // context
 func (b *BaseController) Prepare() {
-	ctx, err := filter.GetSecurityContext(b.Ctx.Request)
-	if err != nil {
-		log.Errorf("failed to get security context: %v", err)
+	ctx, ok := security.FromContext(b.Ctx.Request.Context())
+	if !ok {
+		log.Errorf("failed to get security context")
 		b.SendInternalServerError(errors.New(""))
 		return
 	}
@@ -93,7 +93,7 @@ func (b *BaseController) Prepare() {
 // otherwise send Unauthorized response and returns false
 func (b *BaseController) RequireAuthenticated() bool {
 	if !b.SecurityCtx.IsAuthenticated() {
-		b.SendUnAuthorizedError(errors.New("Unauthorized"))
+		b.SendError(internal_errors.UnauthorizedError(errors.New("Unauthorized")))
 		return false
 	}
 
@@ -132,10 +132,10 @@ func (b *BaseController) HasProjectPermission(projectIDOrName interface{}, actio
 func (b *BaseController) RequireProjectAccess(projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) bool {
 	hasPermission, err := b.HasProjectPermission(projectIDOrName, action, subresource...)
 	if err != nil {
-		if err == errNotFound {
-			b.SendNotFoundError(fmt.Errorf("project %v not found", projectIDOrName))
+		if errors.Is(err, errNotFound) {
+			b.SendError(internal_errors.New(errors.New(b.SecurityCtx.GetUsername())).WithCode(internal_errors.NotFoundCode))
 		} else {
-			b.SendInternalServerError(err)
+			b.SendError(err)
 		}
 
 		return false
@@ -143,9 +143,9 @@ func (b *BaseController) RequireProjectAccess(projectIDOrName interface{}, actio
 
 	if !hasPermission {
 		if !b.SecurityCtx.IsAuthenticated() {
-			b.SendUnAuthorizedError(errors.New("UnAuthorized"))
+			b.SendError(internal_errors.UnauthorizedError(errors.New("Unauthorized")))
 		} else {
-			b.SendForbiddenError(errors.New(b.SecurityCtx.GetUsername()))
+			b.SendError(internal_errors.New(errors.New(b.SecurityCtx.GetUsername())).WithCode(internal_errors.ForbiddenCode))
 		}
 
 		return false
@@ -192,16 +192,13 @@ func Init() error {
 	// init project manager
 	initProjectManager()
 
-	// init repository manager
-	initRepositoryManager()
-
 	initRetentionScheduler()
 
 	retentionMgr = retention.NewManager()
 
-	retentionLauncher = retention.NewLauncher(projectMgr, repositoryMgr, retentionMgr)
+	retentionLauncher = retention.NewLauncher(projectMgr, repository.Mgr, retentionMgr)
 
-	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repositoryMgr, retentionScheduler, retentionLauncher)
+	retentionController = retention.NewAPIController(retentionMgr, projectMgr, repository.Mgr, retentionScheduler, retentionLauncher)
 
 	callbackFun := func(p interface{}) error {
 		str, ok := p.(string)
@@ -236,11 +233,7 @@ func initChartController() error {
 }
 
 func initProjectManager() {
-	projectMgr = project.New()
-}
-
-func initRepositoryManager() {
-	repositoryMgr = repository.New(projectMgr, chartController)
+	projectMgr = project.Mgr
 }
 
 func initRetentionScheduler() {

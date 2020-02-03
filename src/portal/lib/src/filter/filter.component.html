@@ -1,6 +1,0 @@
-<span>
-    <clr-icon shape="search" size="20" class="search-btn" [class.filter-icon]="isShowSearchBox" (click)="onClick()"></clr-icon>
-    <input [hidden]="!isShowSearchBox" type="text" class="filter-input clr-input" autofocus (keyup)="valueChange()" (focus)="inputFocus()"
-        placeholder="{{placeHolder}}" [(ngModel)]="currentValue" />
-    <span class="filter-divider" *ngIf="withDivider"></span>
-</span>

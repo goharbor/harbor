@@ -19,8 +19,8 @@ import {
   CanActivateChild
 } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
-import { CommonRoutes } from '@harbor/ui';
 import { Observable } from 'rxjs';
+import { CommonRoutes } from "../../../lib/entities/shared.const";
 
 @Injectable()
 export class SignInGuard implements CanActivate, CanActivateChild {

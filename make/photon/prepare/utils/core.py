@@ -11,11 +11,9 @@ core_conf_template_path = os.path.join(templates_dir, "core", "app.conf.jinja")
 core_conf = os.path.join(config_dir, "core", "app.conf")
 
 ca_download_dir = os.path.join(data_dir, 'ca_download')
-psc_dir = os.path.join(data_dir, 'psc')
 
 
 def prepare_core(config_dict, with_notary, with_clair, with_chartmuseum):
-    prepare_dir(psc_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
     prepare_dir(ca_download_dir, uid=DEFAULT_UID, gid=DEFAULT_GID)
     prepare_dir(core_config_dir)
     # Render Core

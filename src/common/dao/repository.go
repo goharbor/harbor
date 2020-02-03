@@ -32,6 +32,9 @@ var orderMap = map[string]string{
 	"update_time":    "update_time asc",
 	"+update_time":   "update_time asc",
 	"-update_time":   "update_time desc",
+	"pull_count":     "pull_count asc",
+	"+pull_count":    "pull_count asc",
+	"-pull_count":    "pull_count desc",
 }
 
 // AddRepository adds a repo to the database.
@@ -183,8 +186,6 @@ func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []inte
 	}
 
 	if len(q.ProjectName) > 0 {
-		// use "like" rather than "table joining" because that
-		// in integration mode the projects are saved in Admiral side
 		sql += `and r.name like ? `
 		params = append(params, q.ProjectName+"/%")
 	}

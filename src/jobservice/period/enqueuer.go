@@ -40,17 +40,14 @@ const (
 )
 
 type enqueuer struct {
-	namespace   string
-	context     context.Context
-	pool        *redis.Pool
-	policyStore *policyStore
-	ctl         lcm.Controller
+	namespace string
+	context   context.Context
+	pool      *redis.Pool
+	ctl       lcm.Controller
 	// Diff with other nodes
 	nodeID string
 	// Track the error of enqueuing
 	lastEnqueueErr error
-	// For stop
-	stopChan chan bool
 }
 
 func newEnqueuer(ctx context.Context, namespace string, pool *redis.Pool, ctl lcm.Controller) *enqueuer {
@@ -61,32 +58,23 @@ func newEnqueuer(ctx context.Context, namespace string, pool *redis.Pool, ctl lc
 	}
 
 	return &enqueuer{
-		context:     ctx,
-		namespace:   namespace,
-		pool:        pool,
-		policyStore: newPolicyStore(ctx, namespace, pool),
-		ctl:         ctl,
-		stopChan:    make(chan bool, 1),
-		nodeID:      nodeID.(string),
+		context:   ctx,
+		namespace: namespace,
+		pool:      pool,
+		ctl:       ctl,
+		nodeID:    nodeID.(string),
 	}
 }
 
 // Blocking call
-func (e *enqueuer) start() error {
-	// Load policies first when starting
-	if err := e.policyStore.load(); err != nil {
-		return err
-	}
-
+func (e *enqueuer) start() {
 	go e.loop()
-	logger.Info("Periodic enqueuer is started")
-
-	return e.policyStore.serve()
+	logger.Info("Scheduler: periodic enqueuer is started")
 }
 
 func (e *enqueuer) loop() {
 	defer func() {
-		logger.Info("Periodic enqueuer is stopped")
+		logger.Info("Scheduler: periodic enqueuer is stopped")
 	}()
 
 	// Do enqueue immediately when starting
@@ -98,10 +86,8 @@ func (e *enqueuer) loop() {
 
 	for {
 		select {
-		case <-e.stopChan:
-			// Stop policy store now
-			e.policyStore.stopChan <- true
-			return
+		case <-e.context.Done():
+			return // exit
 		case <-timer.C:
 			// Pause the timer for completing the processing this time
 			timer.Reset(neverExecuted)
@@ -157,10 +143,17 @@ func (e *enqueuer) enqueue() {
 	// Reset error track
 	e.lastEnqueueErr = nil
 
-	e.policyStore.Iterate(func(id string, p *Policy) bool {
+	// Load policies and schedule next jobs for them
+	pls, err := Load(e.namespace, conn)
+	if err != nil {
+		// Log error
+		logger.Errorf("%s:%s", err, "enqueue error: enqueuer")
+		return
+	}
+
+	for _, p := range pls {
 		e.scheduleNextJobs(p, conn)
-		return true
-	})
+	}
 }
 
 // scheduleNextJobs schedules job for next time slots based on the policy

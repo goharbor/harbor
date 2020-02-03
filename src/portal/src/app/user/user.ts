@@ -27,7 +27,7 @@ export class User {
     deleted?: boolean;
     role_name?: string;
     role_id?: number;
-    has_admin_role?: boolean;
+    sysadmin_flag?: boolean;
     reset_uuid?: string;
     creation_time?: string;
     update_time?: string;

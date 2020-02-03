@@ -79,7 +79,7 @@
         | translate}}</button>
     <button type="button" class="btn btn-outline" (click)="cancel()" [disabled]="!isValid() || !hasChanges()">{{'BUTTON.CANCEL'
         | translate}}</button>
-    <button type="button" class="btn btn-outline" (click)="testMailServer()" [disabled]="!isMailConfigValid()">{{'BUTTON.TEST_MAIL'
+    <button type="button" id="ping-test" class="btn btn-outline" (click)="testMailServer()" [disabled]="!isMailConfigValid()">{{'BUTTON.TEST_MAIL'
         | translate}}</button>
     <span id="forTestingMail" class="spinner spinner-inline" [hidden]="hideMailTestingSpinner"></span>
 </div>

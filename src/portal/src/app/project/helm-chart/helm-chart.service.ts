@@ -1,13 +1,12 @@
-
 import {throwError as observableThrowError,  Observable } from "rxjs";
 import { Injectable, Inject } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { map, catchError } from "rxjs/operators";
 import {HttpErrorResponse} from "@angular/common/http";
-
 import { HelmChartItem, HelmChartVersion, HelmChartDetail } from "./helm-chart.interface.service";
-import { HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS, SERVICE_CONFIG, IServiceConfig, RequestQueryParams } from "@harbor/ui";
-
+import { RequestQueryParams } from "../../../lib/services";
+import { IServiceConfig, SERVICE_CONFIG } from "../../../lib/entities/service.config";
+import { HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../../lib/utils/utils";
 
 /**
  * Define service methods for handling the helmchart related things.

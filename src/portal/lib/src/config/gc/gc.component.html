@@ -1,4 +1,0 @@
-<div class="cron-selection">
-  <cron-selection [labelCurrent]="getLabelCurrent" #CronScheduleComponent [labelEdit]='getText' [originCron]='originCron' (inputvalue)="scheduleGc($event)"></cron-selection>
-  <button class="btn btn-outline btn-sm gc-start-btn" (click)="gcNow()" [disabled]="disableGC">{{'GC.GC_NOW' | translate}}</button>
-</div>

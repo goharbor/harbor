@@ -9,6 +9,17 @@ import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { HarborShellComponent } from './harbor-shell.component';
 import { ClarityModule } from "@clr/angular";
 import { of } from 'rxjs';
+import { ConfigScannerService } from "../../config/scanner/config-scanner.service";
+import { modalEvents } from '../modal-events.const';
+import { AccountSettingsModalComponent } from '../../account/account-settings/account-settings-modal.component';
+import { PasswordSettingComponent } from '../../account/password-setting/password-setting.component';
+import { AboutDialogComponent } from '../../shared/about-dialog/about-dialog.component';
+import { FormsModule } from '@angular/forms';
+import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
+import { AccountSettingsModalService } from '../../account/account-settings/account-settings-modal-service.service';
+import { PasswordSettingService } from '../../account/password-setting/password-setting.service';
+import { SkinableConfig } from '../../skinable-config.service';
+import { InlineAlertComponent } from '../../shared/inline-alert/inline-alert.component';
 
 describe('HarborShellComponent', () => {
     let component: HarborShellComponent;
@@ -19,13 +30,18 @@ describe('HarborShellComponent', () => {
         }
     };
     let fakeSearchTriggerService = {
-        searchTriggerChan$: {
-            subscribe: function () {
-            }
-        },
-        searchCloseChan$: {
-            subscribe: function () {
-            }
+        searchTriggerChan$: of('null')
+        ,
+        searchCloseChan$: of(null)
+    };
+    let mockMessageHandlerService = null;
+    let mockAccountSettingsModalService = null;
+    let mockPasswordSettingService = null;
+    let mockSkinableConfig = {
+        getProject: function () {
+            return {
+                introduction: {}
+            };
         }
     };
     let fakeAppConfigService = {
@@ -44,21 +60,32 @@ describe('HarborShellComponent', () => {
             };
         }
     };
-
+    let fakeConfigScannerService = {
+        getScanners() {
+            return of(true);
+        }
+    };
     beforeEach(async(() => {
         TestBed.configureTestingModule({
             imports: [
                 RouterTestingModule,
                 TranslateModule.forRoot(),
                 ClarityModule,
-                BrowserAnimationsModule
+                BrowserAnimationsModule,
+                FormsModule
             ],
-            declarations: [HarborShellComponent],
+            declarations: [HarborShellComponent, AccountSettingsModalComponent
+                , PasswordSettingComponent, AboutDialogComponent, InlineAlertComponent],
             providers: [
                 TranslateService,
                 { provide: SessionService, useValue: fakeSessionService },
                 { provide: SearchTriggerService, useValue: fakeSearchTriggerService },
-                { provide: AppConfigService, useValue: fakeAppConfigService }
+                { provide: AppConfigService, useValue: fakeAppConfigService },
+                { provide: ConfigScannerService, useValue: fakeConfigScannerService },
+                { provide: MessageHandlerService, useValue: mockMessageHandlerService },
+                { provide: AccountSettingsModalService, useValue: mockAccountSettingsModalService },
+                { provide: PasswordSettingService, useValue: mockPasswordSettingService },
+                { provide: SkinableConfig, useValue: mockSkinableConfig },
             ],
             schemas: [CUSTOM_ELEMENTS_SCHEMA, NO_ERRORS_SCHEMA]
         }).compileComponents();
@@ -67,10 +94,33 @@ describe('HarborShellComponent', () => {
     beforeEach(() => {
         fixture = TestBed.createComponent(HarborShellComponent);
         component = fixture.componentInstance;
-        fixture.detectChanges();
+        component.showScannerInfo = true;
+        component.accountSettingsModal = TestBed.createComponent(AccountSettingsModalComponent).componentInstance;
+        component.accountSettingsModal.inlineAlert = TestBed.createComponent(InlineAlertComponent).componentInstance;
+        component.pwdSetting = TestBed.createComponent(PasswordSettingComponent).componentInstance;
+        component.aboutDialog = TestBed.createComponent(AboutDialogComponent).componentInstance;
+        fixture.autoDetectChanges();
     });
 
     it('should create', () => {
         expect(component).toBeTruthy();
+    });
+    it('should open users profile', async () => {
+        component.openModal({modalName: modalEvents.USER_PROFILE, modalFlag: false });
+        await fixture.whenStable();
+        const accountSettingsUsernameInput = fixture.nativeElement.querySelector("#account_settings_username");
+        expect(accountSettingsUsernameInput).toBeTruthy();
+    });
+    it('should open users changPwd', async () => {
+        component.openModal({modalName: modalEvents.CHANGE_PWD, modalFlag: false });
+        await fixture.whenStable();
+        const oldPasswordInput = fixture.nativeElement.querySelector("#oldPassword");
+        expect(oldPasswordInput).toBeTruthy();
+    });
+    it('should open users about-dialog', async () => {
+        component.openModal({modalName: modalEvents.ABOUT, modalFlag: false });
+        await fixture.whenStable();
+        const aboutVersionEl = fixture.nativeElement.querySelector(".about-version");
+        expect(aboutVersionEl).toBeTruthy();
     });
 });

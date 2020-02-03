@@ -43,7 +43,7 @@ type User struct {
 
 	RoleId int32 `json:"role_id,omitempty"`
 
-	HasAdminRole bool `json:"has_admin_role,omitempty"`
+	HasAdminRole bool `json:"sysadmin_flag,omitempty"`
 
 	ResetUuid string `json:"reset_uuid,omitempty"`
 

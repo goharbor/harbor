@@ -10,7 +10,7 @@
                     <input class="clr-input" type="text" name="account_settings_username" [(ngModel)]="account.username"
                         disabled id="account_settings_username" size="30">
                     <div *ngIf="canRename" class="rename-tool">
-                        <button [disabled]="RenameOnGoing" (click)="onRename()" class="btn btn-outline btn-sm">
+                        <button id="rename-btn" [disabled]="RenameOnGoing" (click)="onRename()" class="btn btn-outline ">
                             {{'PROFILE.ADMIN_RENAME_BUTTON' | translate}}
                         </button>
                         <clr-tooltip>
@@ -68,14 +68,14 @@
                         </clr-tooltip-content>
                     </clr-tooltip>
                 </label>
-                <input class="clr-input input-cli" type="password" name="cli_password" disabled
+                <input id="cli_password" class="clr-input input-cli" type="password" name="cli_password" disabled
                     [ngModel]="'account.oidc_user_meta.secret'" size="33">
 
                 <button (click)="generateCli(account.user_id)" id="generate-cli-btn"
-                    class="btn btn-outline btn-sm btn-padding-less" *ngIf="showGenerateCli">
+                    class="btn btn-outline  btn-padding-less" *ngIf="showGenerateCli">
                     {{'PROFILE.ADMIN_CIL_SECRET_BUTTON' | translate}}
                 </button>
-                <button (click)="showSecretDetail=true" id="reset-cli-btn" class="btn btn-outline btn-sm btn-padding-less"
+                <button (click)="showSecretDetail=true" id="reset-cli-btn" class="btn btn-outline  btn-padding-less"
                     *ngIf="showGenerateCli">
                     {{'PROFILE.ADMIN_CIL_SECRET_RESET_BUTTON' | translate}}
                 </button>
@@ -91,9 +91,9 @@
     </div>
     <div class="modal-footer">
         <span class="spinner spinner-inline loading-top" [hidden]="showProgress === false"></span>
-        <button type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button type="button" id="cancel-btn" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
 
-        <button type="button" class="btn btn-primary" [disabled]="!isValid || showProgress"
+        <button type="button" id="submit-btn" class="btn btn-primary" [disabled]="!isValid || showProgress"
             (click)="submit()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>

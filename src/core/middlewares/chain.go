@@ -23,7 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/core/middlewares/countquota"
 	"github.com/goharbor/harbor/src/core/middlewares/immutable"
 	"github.com/goharbor/harbor/src/core/middlewares/listrepo"
-	"github.com/goharbor/harbor/src/core/middlewares/multiplmanifest"
 	"github.com/goharbor/harbor/src/core/middlewares/readonly"
 	"github.com/goharbor/harbor/src/core/middlewares/regtoken"
 	"github.com/goharbor/harbor/src/core/middlewares/sizequota"
@@ -63,17 +62,16 @@ func (b *DefaultCreator) Create() *alice.Chain {
 
 func (b *DefaultCreator) geMiddleware(mName string) alice.Constructor {
 	middlewares := map[string]alice.Constructor{
-		CHART:            func(next http.Handler) http.Handler { return chart.New(next) },
-		READONLY:         func(next http.Handler) http.Handler { return readonly.New(next) },
-		URL:              func(next http.Handler) http.Handler { return url.New(next) },
-		MUITIPLEMANIFEST: func(next http.Handler) http.Handler { return multiplmanifest.New(next) },
-		LISTREPO:         func(next http.Handler) http.Handler { return listrepo.New(next) },
-		CONTENTTRUST:     func(next http.Handler) http.Handler { return contenttrust.New(next) },
-		VULNERABLE:       func(next http.Handler) http.Handler { return vulnerable.New(next) },
-		SIZEQUOTA:        func(next http.Handler) http.Handler { return sizequota.New(next) },
-		COUNTQUOTA:       func(next http.Handler) http.Handler { return countquota.New(next) },
-		IMMUTABLE:        func(next http.Handler) http.Handler { return immutable.New(next) },
-		REGTOKEN:         func(next http.Handler) http.Handler { return regtoken.New(next) },
+		CHART:        func(next http.Handler) http.Handler { return chart.New(next) },
+		READONLY:     func(next http.Handler) http.Handler { return readonly.New(next) },
+		URL:          func(next http.Handler) http.Handler { return url.New(next) },
+		LISTREPO:     func(next http.Handler) http.Handler { return listrepo.New(next) },
+		CONTENTTRUST: func(next http.Handler) http.Handler { return contenttrust.New(next) },
+		VULNERABLE:   func(next http.Handler) http.Handler { return vulnerable.New(next) },
+		SIZEQUOTA:    func(next http.Handler) http.Handler { return sizequota.New(next) },
+		COUNTQUOTA:   func(next http.Handler) http.Handler { return countquota.New(next) },
+		IMMUTABLE:    func(next http.Handler) http.Handler { return immutable.New(next) },
+		REGTOKEN:     func(next http.Handler) http.Handler { return regtoken.New(next) },
 	}
 	return middlewares[mName]
 }

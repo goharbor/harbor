@@ -6,15 +6,12 @@ import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { HelmChartService } from "../../helm-chart.service";
 import { LabelFilterComponent } from "../../label-filter/label-filter.component";
-
-import {
-    ErrorHandler,
-    SystemInfoService,
-    LabelService,
-    OperationService,
-    UserPermissionService
-} from "@harbor/ui";
 import { of } from 'rxjs';
+import { LabelService, SystemInfoService, UserPermissionService } from "../../../../../lib/services";
+import { ErrorHandler } from "../../../../../lib/utils/error-handler";
+import { OperationService } from "../../../../../lib/components/operation/operation.service";
+import { delay } from "rxjs/operators";
+
 describe('ChartVersionComponent', () => {
     let component: ChartVersionComponent;
     let fixture: ComponentFixture<ChartVersionComponent>;
@@ -79,7 +76,7 @@ describe('ChartVersionComponent', () => {
                     digest: "string",
                     labels: []
                 }]
-            );
+            ).pipe(delay(0));
         }
     };
     beforeEach(async(() => {

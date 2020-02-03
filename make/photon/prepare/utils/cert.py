@@ -1,14 +1,14 @@
 # Get or generate private key
-import os, sys, subprocess, shutil
+import os, subprocess, shutil
 from pathlib import Path
 from subprocess import DEVNULL
-from functools import wraps
 
 from g import DEFAULT_GID, DEFAULT_UID
 from .misc import (
     mark_file,
     generate_random_string,
-    check_permission)
+    check_permission,
+    stat_decorator)
 
 SSL_CERT_PATH = os.path.join("/etc/cert", "server.crt")
 SSL_CERT_KEY_PATH = os.path.join("/etc/cert", "server.key")
@@ -43,19 +43,6 @@ def get_secret_key(path):
 def get_alias(path):
     alias = _get_secret(path, "defaultalias", length=8)
     return alias
-
-## decorator actions
-def stat_decorator(func):
-    @wraps(func)
-    def check_wrapper(*args, **kw):
-        stat = func(*args, **kw)
-        if stat == 0:
-            print("Generated certificate, key file: {key_path}, cert file: {cert_path}".format(**kw))
-        else:
-            print("Fail to generate key file: {key_path}, cert file: {cert_path}".format(**kw))
-            sys.exit(1)
-    return check_wrapper
-
 
 @stat_decorator
 def create_root_cert(subj, key_path="./k.key", cert_path="./cert.crt"):

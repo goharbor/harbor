@@ -4,12 +4,12 @@ import { ClarityModule } from "@clr/angular";
 import { of } from "rxjs";
 import { TranslateService } from "@ngx-translate/core";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
-import { ErrorHandler } from "@harbor/ui";
 import { ScannerComponent } from "./scanner.component";
 import { ConfigScannerService } from "../../config/scanner/config-scanner.service";
 import { SharedModule } from "../../shared/shared.module";
 import { ActivatedRoute } from "@angular/router";
 import { Scanner } from "../../config/scanner/scanner";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
 
 describe('ScannerComponent', () => {
   const mockScanner1: Scanner = {

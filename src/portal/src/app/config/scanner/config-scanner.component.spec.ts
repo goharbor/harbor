@@ -2,7 +2,6 @@ import { async, ComponentFixture, ComponentFixtureAutoDetect, TestBed } from '@a
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { ClarityModule } from "@clr/angular";
 import { of } from "rxjs";
-import { ErrorHandler } from "@harbor/ui";
 import { ConfigurationScannerComponent } from "./config-scanner.component";
 import { ConfigScannerService } from "./config-scanner.service";
 import { MessageHandlerService } from "../../shared/message-handler/message-handler.service";
@@ -12,6 +11,7 @@ import { ScannerMetadataComponent } from "./scanner-metadata/scanner-metadata.co
 import { NewScannerModalComponent } from "./new-scanner-modal/new-scanner-modal.component";
 import { NewScannerFormComponent } from "./new-scanner-form/new-scanner-form.component";
 import { TranslateService } from "@ngx-translate/core";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
 
 describe('ConfigurationScannerComponent', () => {
   let mockScannerMetadata = {
@@ -44,7 +44,7 @@ describe('ConfigurationScannerComponent', () => {
       return of(true);
     }
   };
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
@@ -66,9 +66,8 @@ describe('ConfigurationScannerComponent', () => {
           // open auto detect
         { provide: ComponentFixtureAutoDetect, useValue: true }
       ]
-    })
-    .compileComponents();
-  }));
+    });
+  });
   beforeEach(() => {
     fixture = TestBed.createComponent(ConfigurationScannerComponent);
     component = fixture.componentInstance;

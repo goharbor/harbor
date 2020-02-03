@@ -1,8 +1,8 @@
 import { TestBed, async, inject } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SessionService } from '../../shared/session.service';
-import { ProjectService } from '@harbor/ui';
 import { MemberGuard } from './member-guard-activate.service';
+import { ProjectService } from "../../../lib/services";
 
 describe('MemberGuard', () => {
   const fakeSessionService = null;

@@ -20,11 +20,12 @@ import (
 	"net/http"
 	"strconv"
 
+	"errors"
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/validation"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/pkg/errors"
+	serror "github.com/goharbor/harbor/src/server/error"
 )
 
 const (
@@ -247,4 +248,20 @@ func (b *BaseAPI) SendPreconditionFailedError(err error) {
 // SendStatusServiceUnavailableError sends service unavailable error to the client.
 func (b *BaseAPI) SendStatusServiceUnavailableError(err error) {
 	b.RenderFormattedError(http.StatusServiceUnavailable, err.Error())
+}
+
+// SendError return the error defined in OCI spec: https://github.com/opencontainers/distribution-spec/blob/master/spec.md#errors
+// {
+//	"errors:" [{
+//			"code": <error identifier>,
+//			"message": <message describing condition>,
+//			// optional
+//			"detail": <unstructured>
+//		},
+//		...
+//	]
+// }
+func (b *BaseAPI) SendError(err error) {
+	statusCode, payload := serror.APIError(err)
+	b.RenderError(statusCode, payload)
 }

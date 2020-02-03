@@ -16,7 +16,6 @@ package image
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	"github.com/docker/distribution/manifest/manifestlist"
@@ -259,6 +258,7 @@ func (t *transfer) pullManifest(repository, reference string) (
 		return nil, "", nil
 	}
 	t.logger.Infof("pulling the manifest of image %s:%s ...", repository, reference)
+	// TODO add OCI media types
 	manifest, digest, err := t.src.PullManifest(repository, reference, []string{
 		schema1.MediaTypeManifest,
 		schema1.MediaTypeSignedManifest,
@@ -271,47 +271,7 @@ func (t *transfer) pullManifest(repository, reference string) (
 	}
 	t.logger.Infof("the manifest of image %s:%s pulled", repository, reference)
 
-	// this is a solution to work around that harbor doesn't support manifest list
-	return t.handleManifest(manifest, repository, digest)
-}
-
-// if the media type of the specified manifest is manifest list, just abstract one
-// manifest from the list and return it
-func (t *transfer) handleManifest(manifest distribution.Manifest, repository, digest string) (
-	distribution.Manifest, string, error) {
-	mediaType, _, err := manifest.Payload()
-	if err != nil {
-		t.logger.Errorf("failed to call the payload method for manifest of %s:%s: %v", repository, digest, err)
-		return nil, "", err
-	}
-	// manifest
-	if mediaType == schema1.MediaTypeManifest ||
-		mediaType == schema1.MediaTypeSignedManifest ||
-		mediaType == schema2.MediaTypeManifest {
-		return manifest, digest, nil
-	}
-	// manifest list
-	t.logger.Info("trying abstract a manifest from the manifest list...")
-	manifestlist, ok := manifest.(*manifestlist.DeserializedManifestList)
-	if !ok {
-		err := fmt.Errorf("the object isn't a DeserializedManifestList")
-		t.logger.Errorf(err.Error())
-		return nil, "", err
-	}
-	digest = ""
-	for _, reference := range manifestlist.Manifests {
-		if strings.ToLower(reference.Platform.Architecture) == "amd64" &&
-			strings.ToLower(reference.Platform.OS) == "linux" {
-			digest = reference.Digest.String()
-			t.logger.Infof("a manifest(architecture: amd64, os: linux) found, using this one: %s", digest)
-			break
-		}
-	}
-	if len(digest) == 0 {
-		digest = manifest.References()[0].Digest.String()
-		t.logger.Infof("no manifest(architecture: amd64, os: linux) found, using the first one: %s", digest)
-	}
-	return t.pullManifest(repository, digest)
+	return manifest, digest, nil
 }
 
 func (t *transfer) exist(repository, tag string) (bool, string, error) {

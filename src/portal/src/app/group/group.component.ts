@@ -1,11 +1,8 @@
-
 import { of, Subscription, forkJoin } from "rxjs";
 import { flatMap, catchError } from "rxjs/operators";
 import { SessionService } from "./../shared/session.service";
 import { TranslateService } from "@ngx-translate/core";
 import { Component, OnInit, ViewChild, OnDestroy } from "@angular/core";
-import { operateChanges, OperateInfo, OperationService, OperationState, errorHandler as errorHandFn, GroupType } from "@harbor/ui";
-
 import {
   ConfirmationTargets,
   ConfirmationState,
@@ -20,6 +17,10 @@ import { GroupService } from "./group.service";
 import { MessageHandlerService } from "../shared/message-handler/message-handler.service";
 import { throwError as observableThrowError } from "rxjs";
 import { AppConfigService } from '../app-config.service';
+import { OperationService } from "../../lib/components/operation/operation.service";
+import { operateChanges, OperateInfo, OperationState } from "../../lib/components/operation/operate";
+import { errorHandler } from "../../lib/utils/shared/shared.utils";
+import { GroupType } from "../../lib/entities/shared.const";
 
 @Component({
   selector: "app-group",
@@ -138,7 +139,7 @@ export class GroupComponent implements OnInit, OnDestroy {
           }));
         }))
         .pipe(catchError(error => {
-          const message = errorHandFn(error);
+          const message = errorHandler(error);
           this.translateService.get(message).subscribe(res =>
             operateChanges(operMessage, OperationState.failure, res)
           );

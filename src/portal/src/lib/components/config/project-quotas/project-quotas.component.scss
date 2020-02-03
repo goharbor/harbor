@@ -1,0 +1,75 @@
+.default-quota {
+  display: flex;
+
+  .default-quota-text {
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    font-family: Metropolis, "Avenir Next", "Helvetica Neue", Arial, sans-serif;
+    .width-10rem {
+      width: 15rem;
+    }
+
+    .num-count {
+      display: inline-block;
+      min-width: 2rem;
+      font-weight: 600;
+      font-size: 18px;
+    }
+  }
+}
+
+.pt-19px {
+  padding-top: 19px;
+}
+.font-size-13 {
+  font-size: 13px;
+}
+
+.progress-block {
+  label {
+    font-weight: 400 !important;
+    width: 30%;
+    font-size: 10px;
+  }
+}
+
+.default-quota-edit-button {
+  font-size: 14px;
+  margin-left: 60px;
+}
+
+.min-label-width {
+  min-width: 120px;
+}
+
+.quota-top {
+  display: flex;
+  justify-content: space-between;
+  line-height: 1.55;
+  margin-bottom: .35rem;
+}
+
+.refresh-div {
+  margin-top: auto;
+  cursor: pointer;
+}
+
+::ng-deep {
+  .progress {
+    &.warning>progress {
+      color: orange;
+
+      &::-webkit-progress-value {
+        background-color: orange;
+      }
+
+      &::-moz-progress-bar {
+        background-color: orange;
+      }
+    }
+    &>progress {
+      height: 75%;
+    }
+  }
+}

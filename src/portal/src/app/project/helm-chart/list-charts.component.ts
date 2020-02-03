@@ -1,9 +1,9 @@
-import { Project } from '../../project/project';
+import { Project } from '../project';
 import { Component, OnInit } from "@angular/core";
 import { ActivatedRoute, Router } from '@angular/router';
 
-import { SessionService } from './../../shared/session.service';
-import { SessionUser } from './../../shared/session-user';
+import { SessionService } from '../../shared/session.service';
+import { SessionUser } from '../../shared/session-user';
 
 
 @Component({

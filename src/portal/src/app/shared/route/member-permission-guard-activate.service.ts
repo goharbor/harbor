@@ -6,13 +6,10 @@ import {
   RouterStateSnapshot,
   CanActivateChild,
 } from "@angular/router";
-import {
-  UserPrivilegeServeItem,
-  UserPermissionService,
-  ErrorHandler,
-  CommonRoutes
-} from "@harbor/ui";
 import { Observable } from "rxjs";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { UserPermissionService, UserPrivilegeServeItem } from "../../../lib/services";
+import { CommonRoutes } from "../../../lib/entities/shared.const";
 
 @Injectable()
 export class MemberPermissionGuard implements CanActivate, CanActivateChild {

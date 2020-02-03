@@ -18,16 +18,18 @@ import { TranslateService } from '@ngx-translate/core';
 import { PlatformLocation } from '@angular/common';
 import { ModalEvent } from '../modal-event';
 import { modalEvents } from '../modal-events.const';
-
 import { SessionService } from '../../shared/session.service';
 import { CookieService, CookieOptions } from 'ngx-cookie';
-
 import { supportedLangs, enLang, languageNames } from '../../shared/shared.const';
-import { CommonRoutes } from '@harbor/ui';
 import { AppConfigService } from '../../app-config.service';
 import { SearchTriggerService } from '../global-search/search-trigger.service';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { SkinableConfig } from "../../skinable-config.service";
+import { CommonRoutes } from "../../../lib/entities/shared.const";
+import { ThemeInterface, themeArray } from '../../theme';
+import { clone } from '../../../lib/utils/utils';
+import { ThemeService } from '../../theme.service';
+const HAS_STYLE_MODE: string = 'styleModeLocal';
 
 @Component({
     selector: 'navigator',
@@ -38,13 +40,15 @@ import { SkinableConfig } from "../../skinable-config.service";
 export class NavigatorComponent implements OnInit {
     // constructor(private router: Router){}
     @Output() showAccountSettingsModal = new EventEmitter<ModalEvent>();
-    @Output() showPwdChangeModal = new EventEmitter<ModalEvent>();
+    @Output() showDialogModalAction = new EventEmitter<ModalEvent>();
 
     selectedLang: string = enLang;
     appTitle: string = 'APP_TITLE.HARBOR';
     customStyle: { [key: string]: any };
     customProjectName: { [key: string]: any };
+    themeArray: ThemeInterface[] = clone(themeArray);
 
+    styleMode = this.themeArray[0].showStyle;
     constructor(
         private session: SessionService,
         private router: Router,
@@ -54,6 +58,7 @@ export class NavigatorComponent implements OnInit {
         private appConfigService: AppConfigService,
         private msgHandler: MessageHandlerService,
         private searchTrigger: SearchTriggerService,
+        public theme: ThemeService,
         private skinableConfig: SkinableConfig) {
     }
 
@@ -81,6 +86,8 @@ export class NavigatorComponent implements OnInit {
         if (this.appConfigService.getConfig().read_only) {
             this.msgHandler.handleReadOnly();
         }
+        // set local in app
+        this.styleMode = localStorage.getItem(HAS_STYLE_MODE);
     }
 
     public get isSessionValid(): boolean {
@@ -132,7 +139,7 @@ export class NavigatorComponent implements OnInit {
 
     // Open change password dialog
     openChangePwdModal(): void {
-        this.showPwdChangeModal.emit({
+        this.showDialogModalAction.emit({
             modalName: modalEvents.CHANGE_PWD,
             modalFlag: true
         });
@@ -140,7 +147,7 @@ export class NavigatorComponent implements OnInit {
 
     // Open about dialog
     openAboutDialog(): void {
-        this.showPwdChangeModal.emit({
+        this.showDialogModalAction.emit({
             modalName: modalEvents.ABOUT,
             modalFlag: true
         });
@@ -188,5 +195,11 @@ export class NavigatorComponent implements OnInit {
 
     registryAction(): void {
         this.searchTrigger.closeSearch(true);
+    }
+
+    themeChanged(theme) {
+        this.styleMode = theme.mode;
+        this.theme.loadStyle(theme.toggleFileName);
+        localStorage.setItem(HAS_STYLE_MODE, this.styleMode);
     }
 }

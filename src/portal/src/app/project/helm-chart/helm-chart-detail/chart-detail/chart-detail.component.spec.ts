@@ -5,11 +5,9 @@ import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { HelmChartService } from "../../helm-chart.service";
-
-import {
-    ErrorHandler, SystemInfoService
-} from "@harbor/ui";
 import { of } from 'rxjs';
+import { ErrorHandler } from "../../../../../lib/utils/error-handler";
+import { SystemInfoService } from "../../../../../lib/services";
 describe('ChartDetailComponent', () => {
     let component: ChartDetailComponent;
     let fixture: ComponentFixture<ChartDetailComponent>;

@@ -15,11 +15,12 @@
 package immutable
 
 import (
+	"errors"
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
-	"github.com/goharbor/harbor/src/core/middlewares/util"
 	middlerware_err "github.com/goharbor/harbor/src/core/middlewares/util/error"
+	internal_errors "github.com/goharbor/harbor/src/internal/error"
 	"net/http"
 )
 
@@ -46,8 +47,9 @@ func (rh *immutableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 	interceptor, err := rh.getInterceptor(req)
 	if err != nil {
 		log.Warningf("Error occurred when to handle request in immutable handler: %v", err)
-		http.Error(rw, util.MarshalError("InternalError", fmt.Sprintf("Error occurred when to handle request in immutable handler: %v", err)),
-			http.StatusInternalServerError)
+		pkgE := internal_errors.New(fmt.Errorf("error occurred when to handle request in immutable handler: %v", err)).WithCode(internal_errors.GeneralCode)
+		msg := internal_errors.NewErrs(pkgE).Error()
+		http.Error(rw, msg, http.StatusInternalServerError)
 		return
 	}
 
@@ -58,13 +60,17 @@ func (rh *immutableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 
 	if err := interceptor.HandleRequest(req); err != nil {
 		log.Warningf("Error occurred when to handle request in immutable handler: %v", err)
-		if _, ok := err.(middlerware_err.ErrImmutable); ok {
-			http.Error(rw, util.MarshalError("DENIED",
-				fmt.Sprintf("%v", err)), http.StatusPreconditionFailed)
+		var e *middlerware_err.ErrImmutable
+		if errors.As(err, &e) {
+			pkgE := internal_errors.New(e).WithCode(internal_errors.PreconditionCode)
+			msg := internal_errors.NewErrs(pkgE).Error()
+			http.Error(rw, msg, http.StatusPreconditionFailed)
 			return
 		}
-		http.Error(rw, util.MarshalError("InternalError", fmt.Sprintf("Error occurred when to handle request in immutable handler: %v", err)),
-			http.StatusInternalServerError)
+
+		pkgE := internal_errors.New(fmt.Errorf("error occurred when to handle request in immutable handler: %v", err)).WithCode(internal_errors.GeneralCode)
+		msg := internal_errors.NewErrs(pkgE).Error()
+		http.Error(rw, msg, http.StatusInternalServerError)
 		return
 	}
 

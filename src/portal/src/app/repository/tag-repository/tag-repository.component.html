@@ -1,7 +1,8 @@
 <div>
     <div class="breadcrumb" *ngIf="!withAdmiral">
         <a (click)="goProBack()">{{'SIDE_NAV.PROJECTS'| translate}}</a>
-        <a (click)="watchGoBackEvt(projectId)">&lt; {{'REPOSITORY.REPOSITORIES'| translate}}</a>
+        <span class="back-icon"><</span>
+        <a (click)="watchGoBackEvt(projectId)">{{'REPOSITORY.REPOSITORIES'| translate}}</a>
     </div>
     <hbr-repository [repoName]="repoName" [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole"
                     [projectId]="projectId" [memberRoleID]="projectMemberRoleId" [isGuest]="isGuest"

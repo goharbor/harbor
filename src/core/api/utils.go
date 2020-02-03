@@ -29,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
-	"github.com/goharbor/harbor/src/core/service/token"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 )
 
@@ -64,7 +63,7 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 	}
 
 	if len(reposToAdd) > 0 {
-		log.Debugf("Start adding repositories into DB... ")
+		log.Infof("Start adding repositories into DB %v ... ", len(reposToAdd))
 		for _, repoToAdd := range reposToAdd {
 			project, _ := utils.ParseRepository(repoToAdd)
 			pullCount, err := dao.CountPull(repoToAdd)
@@ -85,7 +84,7 @@ func SyncRegistry(pm promgr.ProjectManager) error {
 			if err := dao.AddRepository(repoRecord); err != nil {
 				log.Errorf("Error happens when adding the missing repository: %v", err)
 			} else {
-				log.Debugf("Add repository: %s success.", repoToAdd)
+				log.Infof("Add repository: %s success.", repoToAdd)
 			}
 		}
 	}
@@ -248,7 +247,7 @@ func initRegistryClient() (r *registry.Registry, err error) {
 		return nil, err
 	}
 
-	authorizer := auth.NewRawTokenAuthorizer("harbor-core", token.Registry)
+	authorizer := auth.DefaultBasicAuthorizer()
 	return registry.NewRegistry(endpoint, &http.Client{
 		Transport: registry.NewTransport(registry.GetHTTPTransport(), authorizer),
 	})

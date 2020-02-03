@@ -62,13 +62,13 @@ func (cth contentTrustHandler) ServeHTTP(rw http.ResponseWriter, req *http.Reque
 	util.CopyResp(rec, rw)
 }
 
-func validate(req *http.Request) (bool, util.ImageInfo) {
-	var img util.ImageInfo
-	imgRaw := req.Context().Value(util.ImageInfoCtxKey)
+func validate(req *http.Request) (bool, util.ArtifactInfo) {
+	var img util.ArtifactInfo
+	imgRaw := req.Context().Value(util.ArtifactInfoCtxKey)
 	if imgRaw == nil || !config.WithNotary() {
 		return false, img
 	}
-	img, _ = req.Context().Value(util.ImageInfoCtxKey).(util.ImageInfo)
+	img, _ = req.Context().Value(util.ArtifactInfoCtxKey).(util.ArtifactInfo)
 	if img.Digest == "" {
 		return false, img
 	}
@@ -81,7 +81,7 @@ func validate(req *http.Request) (bool, util.ImageInfo) {
 	return true, img
 }
 
-func matchNotaryDigest(img util.ImageInfo) (bool, error) {
+func matchNotaryDigest(img util.ArtifactInfo) (bool, error) {
 	if NotaryEndpoint == "" {
 		NotaryEndpoint = config.InternalNotaryEndpoint()
 	}

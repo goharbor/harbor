@@ -1,5 +1,6 @@
 !/contrib/helm/harbor
 
+make/harbor.yml
 make/docker-compose.yml
 make/common/config/*
 make/dev/adminserver/harbor_adminserver
@@ -15,7 +16,6 @@ src/common/dao/dao.test
 jobservice/test
 
 src/portal/coverage/
-src/portal/lib/coverage/
 src/portal/dist/
 src/portal/html-report/
 src/portal/node_modules/
@@ -33,7 +33,8 @@ src/portal/typings/
 
 src/portal/src/**/*.js
 src/portal/src/**/*.js.map
-src/portal/lib/coverage
+src/portal/src/lib/coverage
+src/portal/ng-swagger-gen
 **/npm*.log
 
 **/*ngsummary.json
@@ -43,3 +44,5 @@ src/portal/lib/coverage
 **/.bin
 src/core/conf/app.conf
 
+src/server/v2.0/models/
+src/server/v2.0/restapi/

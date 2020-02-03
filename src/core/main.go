@@ -53,6 +53,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/server"
 )
 
 const (
@@ -175,9 +176,7 @@ func main() {
 	beego.AddTemplateExt("htm")
 
 	log.Info("initializing configurations...")
-	if err := config.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
+	config.Init()
 	log.Info("configurations initialization completed")
 	token.InitCreators()
 	database, err := config.Database()
@@ -252,7 +251,7 @@ func main() {
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)
 
-	initRouters()
+	server.RegisterRoutes()
 
 	syncRegistry := os.Getenv("SYNC_REGISTRY")
 	sync, err := strconv.ParseBool(syncRegistry)
@@ -289,6 +288,6 @@ func main() {
 	}
 
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
-	beego.Run()
 
+	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }

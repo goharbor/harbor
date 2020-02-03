@@ -9,7 +9,6 @@
 SHELL := /bin/bash
 BUILDPATH=$(CURDIR)
 MAKEPATH=$(BUILDPATH)/make
-MAKEDEVPATH=$(MAKEPATH)/dev
 SRCPATH=./src
 TOOLSPATH=$(CURDIR)/tools
 SEDCMD=$(shell which sed)
@@ -23,10 +22,8 @@ DOCKERIMASES=$(DOCKERCMD) images
 
 # binary
 CORE_SOURCECODE=$(SRCPATH)/core
-CORE_BINARYPATH=$(MAKEDEVPATH)/core
 CORE_BINARYNAME=harbor_core
 JOBSERVICESOURCECODE=$(SRCPATH)/jobservice
-JOBSERVICEBINARYPATH=$(MAKEDEVPATH)/jobservice
 JOBSERVICEBINARYNAME=harbor_jobservice
 
 # photon dockerfile
@@ -231,7 +228,7 @@ define _extract_archive
 endef
 
 define _get_binary
-	$(WGET) --timeout 30 --no-check-certificate $1 -O $2
+	$(WGET) --timeout 30 --no-check-certificate $1 -O $2 || exit 1
 endef
 
 build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_clair_adapter _build_redis _build_migrator _build_chart_server

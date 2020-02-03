@@ -13,11 +13,12 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-import { ErrorHandler, httpStatusCode, errorHandler } from '@harbor/ui';
-
 import { AlertType } from '../../shared/shared.const';
 import { MessageService } from '../../global-message/message.service';
 import { SessionService } from '../../shared/session.service';
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { errorHandler } from "../../../lib/utils/shared/shared.utils";
+import { httpStatusCode } from "../../../lib/entities/shared.const";
 
 
 @Injectable()

@@ -32,7 +32,6 @@ func TestConfig(t *testing.T) {
 	dao.PrepareTestData([]string{"delete from properties where k='scan_all_policy'"}, []string{})
 	defaultCACertPath = path.Join(currPath(), "test", "ca.crt")
 	c := map[string]interface{}{
-		common.AdmiralEndpoint: "https://www.vmware.com",
 		common.WithClair:       false,
 		common.WithChartMuseum: false,
 		common.WithNotary:      false,
@@ -59,9 +58,7 @@ func TestConfig(t *testing.T) {
 	}
 	defer os.Setenv("TOKEN_PRIVATE_KEY_PATH", oriKeyPath)
 
-	if err := Init(); err != nil {
-		t.Fatalf("failed to initialize configurations: %v", err)
-	}
+	Init()
 
 	if err := Load(); err != nil {
 		t.Fatalf("failed to load configurations: %v", err)
@@ -143,7 +140,6 @@ func TestConfig(t *testing.T) {
 		t.Fatalf("failed to get clair DB %v", err)
 	}
 	defaultConfig := test.GetDefaultConfigMap()
-	defaultConfig[common.AdmiralEndpoint] = "http://www.vmware.com"
 	Upload(defaultConfig)
 	assert.Equal(defaultConfig[common.ClairDB], clairDB.Database)
 	assert.Equal(defaultConfig[common.ClairDBUsername], clairDB.Username)
@@ -160,14 +156,8 @@ func TestConfig(t *testing.T) {
 	if WithClair() {
 		t.Errorf("WithClair should be false")
 	}
-	if !WithAdmiral() {
-		t.Errorf("WithAdmiral should be true")
-	}
 	if ReadOnly() {
 		t.Errorf("ReadOnly should be false")
-	}
-	if AdmiralEndpoint() != "http://www.vmware.com" {
-		t.Errorf("Unexpected admiral endpoint: %s", AdmiralEndpoint())
 	}
 
 	extURL, err := ExtURL()
@@ -216,20 +206,52 @@ func currPath() string {
 }
 
 func TestHTTPAuthProxySetting(t *testing.T) {
+	certificate := `-----BEGIN CERTIFICATE-----
+MIIFXzCCA0egAwIBAgIUY7f2ECRISPMeb1iVNvV5iQsIErUwDQYJKoZIhvcNAQEL
+BQAwUjELMAkGA1UEBhMCQ04xDDAKBgNVBAgMA1BFSzERMA8GA1UEBwwIQmVpIEpp
+bmcxDzANBgNVBAoMBlZNd2FyZTERMA8GA1UEAwwISGFyYm9yQ0EwHhcNMTkxMTE2
+MjI1NjQ0WhcNMjAxMTE1MjI1NjQ0WjBdMQswCQYDVQQGEwJDTjEMMAoGA1UECAwD
+UEVLMREwDwYDVQQHDAhCZWkgSmluZzEPMA0GA1UECgwGVk13YXJlMRwwGgYDVQQD
+DBNqdC1kZXYuaGFyYm9yLmxvY2FsMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIIC
+CgKCAgEAwQ/TQTHwnHwEC/KyHP8Tyv/v35GwXRGW6s1MYoqVnyQMPud0scLHAA2u
+PZv2F5jy7PtnhcR0ZHGf05L/igY1utV7/4F2aFgOq0ExYMKxvzilitdcvsxmfTLI
+m2pwS8+kH/1s1xR9/7ZPlPSdHuxcHgjtMqorljJykRyq0RBLvXCG+fmAY91kdLil
+XWiuIU73lNpZHuXEDl4m2XUzb9cuhwvaHYs7aT6BhwqAJZUjwURUqMe1PIOo7vkQ
+cKUHe3u3Fg/vbxfecEr3AHcKfIqm5fwI9vdzj5BP3lGT9hrxduAwI6SgehxGGWP4
+aN/cKGIKt/2kzgFoQi/d5p3RBkLVNP/sEyAt9dLJj12ovkQwJzdKDVOy50t3ws9g
+Mf3rUUb/wdZADK26lxolep9EXVe4kuWpOo1RvdI+lJJvWc3QaJIoVbr9LM8QN3e7
+Iyk3pYRyaQj9EKZ4k0RgWVbIZfRLy1LkGMqmCcIqunHVdGDDjbO/ri8z0sKocMGl
+qrqcBTPYmsau7PEcfzJY8k/HUDYdhZgIv2C1iLBl6eoTVDRbrGFcu8LzleWx2/19
+OA1Cx7S8WyzN+9mjygqwEYc6qMtoeutAkOA5J8JkxBp0yqjUEnAB6E7R07xQP8AY
+IKq5oVpkbD8WRI3w7l/X0AAkDtnijbgYWTfPVGihXHhRtkr/b9cCAwEAAaMiMCAw
+HgYDVR0RBBcwFYITanQtZGV2LmhhcmJvci5sb2NhbDANBgkqhkiG9w0BAQsFAAOC
+AgEAqwU10WwhI5W8w62vOpT+PKSXRVjHKhm3ltaIzAN7S772hiGl6L81cP9dXZ5y
+FN0tFUtUVK01JRJHJaduXNwx24HlwRPNp7mLa4IPpeeVfG14/QCoOd8vxHtKG+V6
+zE7Jx2FBVfUJ7P4SngEv4QfvZPt+lCXGK3V1RRTpkLD2knhBfu85rjPi+VW56Z7b
+Jb2IEmVRlfR7Z0oYm8z3Obt2XuLIC1/8NtfxthggKr6DeSwZSJXrdGVbyvdiAmk2
+iHQch0+UTkRDinL0je6WWbxBoAPXsWA9Hc69o8kmjcXUa99/i8FrC2QxPDUoxxMn
+1zWk0jct2Tsr3VZ5HnaI5e8ifG7RUcE5Vr6w7MI5P44Q88zhboP1ShYQ/s513cu2
+heELKvO3+mqv96lERtkUUwe8tm1zoPKzQI6ecGuqaTcMbXAGax+ud5XnUlz4xzTI
+cByAsQ9DNhYIcOftnfz349zkHeWmMum4uiQwfp/+OrqX+O8U0eJYhlfu9vqCU05T
+3mE8Hw5veNdLaZx+mzUVIDzrOB3fh/O62J9CsaZKtxwgLlGiT2ltuC1xUqn3DL8s
+pkgODrJUf0p5dhcnLyA2nZolRV1rtwlgJstnEV4JpG1MwtmAZYZUilLvnfpVxTtA
+y1bQusZMygQezfCuEzsewF+OpANFovCTUEs6s5vyoVNP8lk=
+-----END CERTIFICATE-----
+`
 	m := map[string]interface{}{
-		common.HTTPAuthProxySkipSearch:    "true",
-		common.HTTPAuthProxyVerifyCert:    "true",
-		common.HTTPAuthProxyCaseSensitive: "false",
-		common.HTTPAuthProxyEndpoint:      "https://auth.proxy/suffix",
+		common.HTTPAuthProxySkipSearch:        "true",
+		common.HTTPAuthProxyVerifyCert:        "true",
+		common.HTTPAuthProxyEndpoint:          "https://auth.proxy/suffix",
+		common.HTTPAuthProxyServerCertificate: certificate,
 	}
 	InitWithSettings(m)
 	v, e := HTTPAuthProxySetting()
 	assert.Nil(t, e)
 	assert.Equal(t, *v, models.HTTPAuthProxy{
-		Endpoint:      "https://auth.proxy/suffix",
-		SkipSearch:    true,
-		VerifyCert:    true,
-		CaseSensitive: false,
+		Endpoint:          "https://auth.proxy/suffix",
+		SkipSearch:        true,
+		VerifyCert:        true,
+		ServerCertificate: certificate,
 	})
 }
 

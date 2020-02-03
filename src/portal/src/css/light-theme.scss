@@ -1,0 +1,24 @@
+// Variables for light theme should be defined here.
+@import "../../node_modules/@clr/ui/clr-ui.min.css";
+
+  
+$mode-background-color: #fff;
+$mode-background-color1: $mode-background-color;
+$mode-background-color2: #fafafa;
+$mode-background-color3: #eee;
+$fill-color1: #000;
+
+$mode-font-color1: #313131;
+$mode-font-color3: $fill-color1;
+$mode-font-color4: unset;
+$mode-font-color5: #575757;
+$mode-font-color2: #565656;
+$mode-link-color1: blue;
+$mode-link-color2: #0077b8;
+$select-option-color: #1b2a32;
+$select-back-color: $mode-background-color;
+
+$label-form-color: $mode-background-color3;
+$right-status-fill-color: #1d5100;
+$light-color-green: $right-status-fill-color;
+@import "./common.scss";

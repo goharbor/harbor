@@ -26,11 +26,9 @@ http:
   debug:
     addr: localhost:5001
 auth:
-  token:
-    issuer: harbor-token-issuer
-    realm: {{public_url}}/service/token
-    rootcertbundle: /etc/registry/root.crt
-    service: harbor-registry
+  htpasswd:
+    realm: harbor-registry-basic-realm
+    path: /etc/registry/passwd
 validation:
   disabled: true
 notifications:

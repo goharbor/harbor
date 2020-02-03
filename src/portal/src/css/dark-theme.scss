@@ -1,0 +1,23 @@
+// Variables for dark theme should be defined here.
+@import "../../node_modules/@clr/ui/clr-ui-dark.min.css";
+$mode-background-color: rgb(27, 42, 50);
+$mode-background-color1: $mode-background-color !important;
+$mode-background-color2: $mode-background-color;
+$mode-background-color3: #17242b;
+
+$mode-font-color1: #acbac3;
+$mode-font-color3: $mode-font-color1;
+$mode-font-color4: $mode-font-color1;
+$mode-font-color5: $mode-font-color1;
+$mode-font-color2: #eaedf0;
+$mode-link-color1: #4aaed9;
+$mode-link-color2: $mode-link-color1;
+$select-option-color: #1b2a32;
+$select-back-color: #acbac3;
+
+$label-form-color: #212129;
+$fill-color1: #ccc;
+$right-status-fill-color: white;
+$light-color-green: #4cd400;
+
+@import "./common.scss";

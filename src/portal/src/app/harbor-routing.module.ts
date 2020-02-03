@@ -60,14 +60,17 @@ import { HelmChartDetailComponent } from './project/helm-chart/helm-chart-detail
 import { OidcOnboardComponent } from './oidc-onboard/oidc-onboard.component';
 import { LicenseComponent } from './license/license.component';
 import { SummaryComponent } from './project/summary/summary.component';
-import { TagRetentionComponent } from './project/tag-retention/tag-retention.component';
-import { ImmutableTagComponent } from './project/immutable-tag/immutable-tag.component';
-import { USERSTATICPERMISSION, VulnerabilityConfigComponent } from '@harbor/ui';
+
+import { TagFeatureIntegrationComponent } from './project/tag-feature-integration/tag-feature-integration.component';
+import { TagRetentionComponent } from './project/tag-feature-integration/tag-retention/tag-retention.component';
+import { ImmutableTagComponent } from './project/tag-feature-integration/immutable-tag/immutable-tag.component';
 import { ScannerComponent } from "./project/scanner/scanner.component";
 import { InterrogationServicesComponent } from "./interrogation-services/interrogation-services.component";
 import { ConfigurationScannerComponent } from "./config/scanner/config-scanner.component";
 import { LabelsComponent } from "./labels/labels.component";
 import { ProjectQuotasComponent } from "./project-quotas/project-quotas.component";
+import { VulnerabilityConfigComponent } from "../lib/components/config/vulnerability/vulnerability-config.component";
+import { USERSTATICPERMISSION } from "../lib/services";
 
 
 const harborRoutes: Routes = [
@@ -209,13 +212,13 @@ const harborRoutes: Routes = [
         path: 'projects/:id',
         component: ProjectDetailComponent,
         canActivate: [MemberGuard],
-        canActivateChild: [MemberPermissionGuard],
         resolve: {
           projectResolver: ProjectRoutingResolver
         },
         children: [
           {
             path: 'summary',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.PROJECT.KEY,
@@ -226,6 +229,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'repositories',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.REPOSITORY.KEY,
@@ -236,6 +240,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'helm-charts',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.HELM_CHART.KEY,
@@ -246,6 +251,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'repositories/:repo/tags',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.REPOSITORY.KEY,
@@ -256,6 +262,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'members',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.MEMBER.KEY,
@@ -266,6 +273,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'logs',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.LOG.KEY,
@@ -276,6 +284,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'labels',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.LABEL.KEY,
@@ -286,6 +295,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'configs',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.CONFIGURATION.KEY,
@@ -296,6 +306,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'robot-account',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.ROBOT.KEY,
@@ -305,27 +316,31 @@ const harborRoutes: Routes = [
             component: RobotAccountComponent
           },
           {
-            path: 'tag-retention',
+            path: 'tag-strategy',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.TAG_RETENTION.KEY,
                 action: USERSTATICPERMISSION.TAG_RETENTION.VALUE.READ
               }
             },
-            component: TagRetentionComponent
-          },
-          {
-            path: 'immutable-tag',
-            data: {
-              permissionParam: {
-                resource: USERSTATICPERMISSION.TAG_RETENTION.KEY,
-                action: USERSTATICPERMISSION.TAG_RETENTION.VALUE.READ
-              }
-            },
-            component: ImmutableTagComponent
+            component: TagFeatureIntegrationComponent,
+            children: [
+              {
+                path: 'tag-retention',
+                component: TagRetentionComponent
+              },
+              {
+                path: 'immutable-tag',
+                component: ImmutableTagComponent
+              },
+              { path: '', redirectTo: 'tag-retention', pathMatch: 'full' },
+
+            ]
           },
           {
             path: 'webhook',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.WEBHOOK.KEY,
@@ -336,6 +351,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'scanner',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.SCANNER.KEY,

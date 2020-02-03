@@ -1,4 +1,3 @@
-import { finalize } from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,6 +11,7 @@ import { finalize } from 'rxjs/operators';
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import { finalize } from 'rxjs/operators';
 import {
   Component,
   Input,
@@ -21,20 +21,15 @@ import {
   OnInit
 } from '@angular/core';
 import { NgForm } from '@angular/forms';
-
-
-
 import { TranslateService } from '@ngx-translate/core';
-
 import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
 import { UserService } from '../../../user/user.service';
-
-
-import { errorHandler as errorHandFn, PROJECT_ROOTS, ProjectRootInterface, GroupType } from "@harbor/ui";
-
 import { MemberService } from '../member.service';
-import { UserGroup } from "./../../../group/group";
+import { UserGroup } from "../../../group/group";
 import { AppConfigService } from "../../../app-config.service";
+import { ProjectRootInterface } from "../../../../lib/services";
+import { GroupType, PROJECT_ROOTS } from "../../../../lib/entities/shared.const";
+import { errorHandler } from "../../../../lib/utils/shared/shared.utils";
 
 
 @Component({
@@ -91,7 +86,7 @@ export class AddHttpAuthGroupComponent implements OnInit {
           this.added.emit(true);
         },
         err => {
-          let errorMessageKey: string = errorHandFn(err);
+          let errorMessageKey: string = errorHandler(err);
           this.translateService
             .get(errorMessageKey)
             .subscribe(errorMessage => this.inlineAlert.showInlineError(errorMessage));

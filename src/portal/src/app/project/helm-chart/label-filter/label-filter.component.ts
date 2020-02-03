@@ -2,10 +2,9 @@ import { OnInit, Input, EventEmitter, Component, ViewChild, ElementRef, ChangeDe
 import {ClrDatagridFilterInterface} from "@clr/angular";
 import { fromEvent } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
-
-import { Label, Tag } from '@harbor/ui';
 import { HelmChartVersion } from '../helm-chart.interface.service';
 import { ResourceType } from '../../../shared/shared.const';
+import { Label, Tag } from "../../../../lib/services";
 
 @Component({
     selector: "hbr-chart-version-label-filter",

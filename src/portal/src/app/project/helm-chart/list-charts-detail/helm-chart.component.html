@@ -23,15 +23,15 @@
         <div *ngIf="!isCardView" class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
             <clr-datagrid (clrDgRefresh)="refresh()" [clrDgLoading]="loading" [(clrDgSelected)]="selectedRows">
                 <clr-dg-action-bar>
-                    <button type="button" id="helm-chart-upload" class="btn btn-sm btn-secondary"
+                    <button type="button" id="helm-chart-upload" class="btn  btn-secondary"
                         [disabled]="!hasUploadHelmChartsPermission" (click)="onChartUpload()">
                         <clr-icon shape="upload" size="16"></clr-icon>{{'HELM_CHART.UPLOAD' | translate}}
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="!hasDeleteHelmChartsPermission || selectedRows.length<1"
-                        (click)="openChartDeleteModal(selectedRows)">
+                    <button type="button" class="btn  btn-secondary" [disabled]="!hasDeleteHelmChartsPermission || selectedRows.length<1"
+                        (click)="openChartDeleteModal()">
                         <clr-icon shape="trash" size="16"></clr-icon>{{'BUTTON.DELETE' | translate}}
                     </button>
-                    <button type="button" class="btn btn-sm btn-secondary" [disabled]="!hasDownloadHelmChartsPermission ||selectedRows.length!==1"
+                    <button type="button" class="btn  btn-secondary" [disabled]="!hasDownloadHelmChartsPermission ||selectedRows.length!==1"
                         (click)="downloadLatestVersion()">
                         <clr-icon shape="download" size="16"></clr-icon>{{'HELM_CHART.DOWNLOAD' | translate}}
                     </button>
@@ -63,7 +63,7 @@
             </clr-datagrid>
         </div>
     </div>
-    <div *ngIf="isCardView" class="row card-container">
+    <div *ngIf="isCardView" class="row card-container version-position">
         <div *ngFor="let item of charts;" class="chart-card">
             <a let i=index; class="card clickable" (click)="onChartClick(item)">
                 <div class="card-header">
@@ -88,7 +88,7 @@
                 </div>
             </a>
         </div>
-        <div *ngIf="loading">
+        <div *ngIf="loading" class="center-x">
             <span class="vertical-helper"></span>
             <span class="spinner"></span>
         </div>
@@ -103,7 +103,7 @@
                     <div class="clr-input-wrapper">
                         <input class="filename-input clr-input" type="text" placeholder="{{this.chartFile?.name || 'BUTTON.NO_FILE' | translate}}"
                             disabled>
-                        <label for="chart" class="btn btn-secondary btn-sm file-browser-btn">{{'BUTTON.BROWSE' | translate}}
+                        <label for="chart" class="btn btn-secondary  file-browser-btn">{{'BUTTON.BROWSE' | translate}}
                         </label>
                         <input class="file-input" type="file" id="chart" name="chart" ngModel (change)="onChartFileChangeEvent($event)">
                     </div>
@@ -113,7 +113,7 @@
                     <div class="clr-input-wrapper">
                         <input class="filename-input clr-input" type="text" placeholder="{{this.provFile?.name || 'BUTTON.NO_FILE' | translate}}"
                             disabled>
-                        <label for="prov" class="btn btn-secondary btn-sm file-browser-btn">{{'BUTTON.BROWSE' | translate}}
+                        <label for="prov" class="btn btn-secondary  file-browser-btn">{{'BUTTON.BROWSE' | translate}}
                         </label>
                         <input class="file-input" type="file" id="prov" name="prov" ngModel (change)="onProvFileChangeEvent($event)">
                     </div>

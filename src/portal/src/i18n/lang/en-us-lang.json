@@ -5,7 +5,9 @@
         "VIC": "vSphere Integrated Containers",
         "MGMT": "Management",
         "REG": "Registry",
-        "HARBOR_SWAGGER": "Harbor Swagger"
+        "HARBOR_SWAGGER": "Harbor Swagger",
+        "THEME_DARK_TEXT": "DARK",
+        "THEME_LIGHT_TEXT": "LIGHT"
     },
     "SIGN_IN": {
         "REMEMBER": "Remember me",
@@ -214,9 +216,8 @@
         "PUBLIC_PROJECTS": "Public Projects",
         "PROJECT": "Project",
         "NEW_PROJECT": "New Project",
-        "NAME_TOOLTIP": "Project name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
+        "NAME_TOOLTIP": "Project name should be 1~255 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "NAME_IS_REQUIRED": "Project name is required.",
-        "NAME_MINIMUM_LENGTH": "Project name is too short, it should be greater than 2 characters.",
         "NAME_ALREADY_EXISTS": "Project name already exists.",
         "NAME_IS_ILLEGAL": "Project name is invalid.",
         "UNKNOWN_ERROR": "An unknown error occurred while creating the project.",
@@ -249,7 +250,8 @@
         "HELMCHART": "Helm Charts",
         "ROBOT_ACCOUNTS": "Robot Accounts",
         "WEBHOOKS": "Webhooks",
-        "IMMUTABLE_TAG": "Tag Immutability"
+        "IMMUTABLE_TAG": "Tag Immutability",
+        "TAG_STRATEGY": "Tag Strategy"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Project registry",
@@ -323,6 +325,7 @@
         "ENABLED_STATE": "Enabled state",
         "NUMBER_REQUIRED": "Field is required and should be an integer other than 0.",
         "DESCRIPTION": "Description",
+        "CREATETION": "Created time",
         "EXPIRATION": "Expiration",
         "TOKEN_EXPIRATION": "Robot Token Expiration (Days)",
         "ACTION": "Action",
@@ -498,7 +501,6 @@
         "REPLICATION_MODE": "Replication Mode",
         "SRC_REGISTRY": "Source registry",
         "DESTINATION_NAMESPACE": "Destination registry:Namespace",
-        "LAST_REPLICATION": "Last Replication",
         "DESTINATION_NAME_IS_REQUIRED": "Endpoint name is required.",
         "NEW_DESTINATION": "New Endpoint",
         "DESTINATION_URL": "Endpoint URL",
@@ -533,22 +535,16 @@
         "ITEMS": "items",
         "NO_LOGS": "No log",
         "TOGGLE_ENABLE_TITLE": "Enable Rule",
-        "CONFIRM_TOGGLE_ENABLE_POLICY": "After enabling the replication rule, all repositories under the project will be replicated to the destination registry. \nPlease confirm to continue.",
         "TOGGLE_DISABLE_TITLE": "Disable Rule",
-        "CONFIRM_TOGGLE_DISABLE_POLICY": "After disabling the rule, all unfinished replication jobs of this rule will be stopped and canceled. \nPlease confirm to continue.",
         "CREATED_SUCCESS": "Created replication rule successfully.",
         "UPDATED_SUCCESS": "Updated replication rule successfully.",
         "DELETED_SUCCESS": "Deleted replications rule successfully.",
         "DELETED_FAILED": "Deleted replications rule failed.",
         "TOGGLED_SUCCESS": "Toggled replication rule status successfully.",
         "CANNOT_EDIT": "Replication rule cannot be changed while it is enabled.",
-        "POLICY_ALREADY_EXISTS": "Replication rule already exists.",
-        "FAILED_TO_DELETE_POLICY_ENABLED": "Cannot delete rule: rule has unfinished job(s)",
-        "FOUND_ERROR_IN_JOBS": "Found errors in the replication job(s), please check.",
         "INVALID_DATE": "Invalid date.",
         "PLACEHOLDER": "We couldn't find any replication rules!",
         "JOB_PLACEHOLDER": "We couldn't find any replication jobs!",
-        "JOB_LOG_VIEWER": "View Replication Job Log",
         "NO_ENDPOINT_INFO": "Please add an endpoint first",
         "NO_PROJECT_INFO": "This project is not exist",
         "SOURCE_RESOURCE_FILTER": "Source resource filter",
@@ -566,7 +562,6 @@
         "REPLICATE": "Replicate",
         "DELETE_REMOTE_IMAGES": "Delete remote resources when locally deleted",
         "DELETE_ENABLED": "Enabled this policy",
-        "REPLICATE_IMMEDIATE": "Replicate existing images immediately",
         "NEW": "New",
         "NAME_TOOLTIP": "replication rule name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "DESTINATION_NAME_TOOLTIP": "Destination name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
@@ -633,7 +628,7 @@
         "DELETION_SUMMARY_REPO_SIGNED": "Repository '{{repoName}}' cannot be deleted because the following signed images existing.\n{{signedImages}} \nYou should unsign all the signed images before deleting the repository!",
         "DELETION_SUMMARY_REPO": "Do you want to delete repository {{repoName}}?",
         "DELETION_TITLE_TAG": "Confirm Tag Deletion",
-        "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}?",
+        "DELETION_SUMMARY_TAG": "Do you want to delete tag {{param}}? If you delete this tag, all other tags referenced by the same digest will also be deleted",
         "DELETION_TITLE_TAG_DENIED": "Signed tag cannot be deleted",
         "DELETION_SUMMARY_TAG_DENIED": "The tag must be removed from the Notary before it can be deleted.\nDelete from Notary via this command:\n",
         "TAGS_NO_DELETE": "Delete is prohibited in read only mode.",
@@ -733,10 +728,10 @@
     },
     "SUMMARY": {
         "QUOTAS": "quotas",
-        "PROJECT_REPOSITORY": "Project repositories",
-        "PROJECT_HELM_CHART": "Project Helm Chart",
-        "PROJECT_MEMBER": "Project members",
-        "PROJECT_QUOTAS": "Project quotas",
+        "PROJECT_REPOSITORY": "Repositories",
+        "PROJECT_HELM_CHART": "Helm Chart",
+        "PROJECT_MEMBER": "Members",
+        "PROJECT_QUOTAS": "Quotas",
         "ARTIFACT_COUNT": "Artifact count",
         "STORAGE_CONSUMPTION": "Storage consumption",
         "ADMIN": "Admin(s)",
@@ -820,7 +815,6 @@
             "ROOT_CERT_DOWNLOAD": "Download the root certificate of registry.",
             "SCANNING_POLICY": "Set image scanning policy based on different requirements. 'None': No active policy; 'Daily At': Triggering scanning at the specified time everyday.",
             "VERIFY_CERT": "Verify Cert from LDAP Server",
-            "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
             "REPO_TOOLTIP": "Users can not do any operations to the images in this mode.",
             "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
             "HOURLY_CRON": "Run once an hour, beginning of hour. Equivalent to 0 0 * * * *.",
@@ -984,11 +978,10 @@
         "PLACEHOLDER": "Filter Vulnerabilities",
         "PACKAGE": "package",
         "PACKAGES": "packages",
-        "SCAN_NOW": "Scan",
-        "JOB_LOG_VIEWER": "View Scanning Job Log"
+        "SCAN_NOW": "Scan"
     },
     "PUSH_IMAGE": {
-        "TITLE": "Push Image",
+        "TITLE": "Push Image Docker Command",
         "TOOLTIP": "Command references for pushing an image to this project.",
         "TAG_COMMAND": "Tag an image for this project:",
         "PUSH_COMMAND": "Push an image to this project:",
@@ -1345,6 +1338,12 @@
         "CONFIRM_DELETION": "Confirm Scanner deletion",
         "NO_PROJECT_SCANNER": "No Scanner",
         "SET_UNHEALTHY_SCANNER": "Selected scanner:{{name}} is unhealthy",
-        "SCANNED_BY": "Scanned by:"
+        "SCANNED_BY": "Scanned by:",
+        "IMAGE_SCANNERS": "Image Scanners",
+        "VIEW_DOC": "view documentation",
+        "ALL_SCANNERS": "All scanners",
+        "HELP_INFO_1": "The default scanner has been installed. To install other scanners refer to the ",
+        "HELP_INFO_2": "documentation."
+
     }
 }

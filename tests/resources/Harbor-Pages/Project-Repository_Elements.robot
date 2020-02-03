@@ -21,3 +21,6 @@ ${first_cve_xpath}  //clr-dg-row[1]//clr-dg-cell//a
 ${view_log_xpath}  //clr-dg-row[1]//clr-dg-cell[4]//a
 ${build_history_btn}  //button[contains(.,'Build History')]
 ${build_history_data}  //clr-dg-row
+${push_image_command_btn}  //hbr-push-image-button//button
+
+

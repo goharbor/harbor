@@ -14,7 +14,7 @@
 package token
 
 import (
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/stretchr/testify/assert"
 
@@ -35,9 +35,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	if err := config.Init(); err != nil {
-		panic(err)
-	}
+	config.Init()
 	InitCreators()
 	result := m.Run()
 	if result != 0 {
@@ -226,6 +224,10 @@ func TestEndpointParser(t *testing.T) {
 
 type fakeSecurityContext struct {
 	isAdmin bool
+}
+
+func (f *fakeSecurityContext) Name() string {
+	return "fake"
 }
 
 func (f *fakeSecurityContext) IsAuthenticated() bool {

@@ -9,7 +9,8 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { of } from 'rxjs';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
-import { ProjectService } from '@harbor/ui';
+import { ProjectService } from "../../../lib/services";
+
 
 describe('ListChartVersionRoComponent', () => {
     let component: ListChartVersionRoComponent;

@@ -15,10 +15,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
-
 import { Statistics } from './statistics';
 import { Volumes } from './volumes';
-import {HTTP_GET_OPTIONS} from "@harbor/ui";
+import { HTTP_GET_OPTIONS } from "../../../lib/utils/utils";
+
 
 const statisticsEndpoint = "/api/statistics";
 const volumesEndpoint = "/api/systeminfo/volumes";

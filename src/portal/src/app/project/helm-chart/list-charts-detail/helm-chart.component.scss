@@ -1,4 +1,4 @@
-@import "../../../../../lib/src/mixin";
+@import "../../../../lib/mixin";
 $size24:24px;
 $size60:60px;
 
@@ -67,7 +67,8 @@ $size60:60px;
 }
 
 .size-24 {
-    width: 60px;
+    width:$size24;
+    height:$size24;
 }
 
 .size-60 {
@@ -102,7 +103,7 @@ clr-modal {
 
     .file-browser-btn {
         margin-left: 15px;
-        max-width: 32%;
+        max-width: 34%;
     }
 }
 
@@ -119,4 +120,17 @@ button {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+.center-x {
+    display: flex;
+    justify-content: center;
+    position: absolute;
+    top: 2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.version-position {
+    position: relative;
 }

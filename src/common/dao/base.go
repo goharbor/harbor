@@ -150,9 +150,9 @@ func GetOrmer() orm.Ormer {
 	return globalOrm
 }
 
-// isDupRecErr checks if the error is due to a duplication of record, currently this
+// IsDupRecErr checks if the error is due to a duplication of record, currently this
 // works only for pgSQL
-func isDupRecErr(e error) bool {
+func IsDupRecErr(e error) bool {
 	return strings.Contains(e.Error(), "duplicate key value violates unique constraint")
 }
 

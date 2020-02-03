@@ -98,20 +98,20 @@ Body Of List Helm Charts
     Close Browser
 
 Body Of Admin Push Signed Image
+    [Arguments]  ${image}=tomcat  ${with_remove}=${false}
     Enable Notary Client
 
-    ${rc}  ${output}=  Run And Return Rc And Output  docker pull hello-world:latest
-    Log  ${output}
-
-    Push image  ${ip}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}  library  hello-world:latest
-    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} ${notaryServerEndpoint}
+    Docker Pull  ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}
+    ${rc}  ${output}=  Run And Return Rc And Output  ./tests/robot-cases/Group0-Util/notary-push-image.sh ${ip} library ${image} latest ${notaryServerEndpoint} ${LOCAL_REGISTRY}/${LOCAL_REGISTRY_NAMESPACE}/${image}:latest
     Log  ${output}
     Should Be Equal As Integers  ${rc}  0
 
-    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/tomcat/signatures"
+    ${rc}  ${output}=  Run And Return Rc And Output  curl -u admin:Harbor12345 -s --insecure -H "Content-Type: application/json" -X GET "https://${ip}/api/repositories/library/${image}/signatures"
     Log To Console  ${output}
     Should Be Equal As Integers  ${rc}  0
     Should Contain  ${output}  sha256
+
+    Run Keyword If  ${with_remove} == ${true}  Remove Notary Signature  ${ip}  ${image}
 
 Delete A Project Without Sign In Harbor
     [Arguments]  ${harbor_ip}=${ip}  ${username}=${HARBOR_ADMIN}  ${password}=${HARBOR_PASSWORD}
@@ -150,7 +150,18 @@ Helm CLI Push Without Sign In Harbor
     ${d}=   Get Current Date    result_format=%m%s
     Create An New Project  project${d}
     Helm Repo Add  ${HARBOR_URL}  ${sign_in_user}  ${sign_in_pwd}  project_name=project${d}
-    Helm Repo Push  ${HARBOR_URL}  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}  project_name=project${d}
+    Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}
+    Go Into Project  project${d}  has_image=${false}
+    Switch To Project Charts
+    Go Into Chart Version  ${harbor_chart_name}
+    Retry Wait Until Page Contains  ${harbor_chart_version}
+    Capture Page Screenshot
+
+Helm3 CLI Push Without Sign In Harbor
+    [Arguments]  ${sign_in_user}  ${sign_in_pwd}
+    ${d}=   Get Current Date    result_format=%m%s
+    Create An New Project  project${d}
+    Helm Repo Push  ${sign_in_user}  ${sign_in_pwd}  ${harbor_chart_filename}  helm_repo_name=${HARBOR_URL}/chartrepo/project${d}
     Go Into Project  project${d}  has_image=${false}
     Switch To Project Charts
     Go Into Chart Version  ${harbor_chart_name}

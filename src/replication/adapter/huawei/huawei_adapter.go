@@ -45,6 +45,10 @@ type adapter struct {
 	*native.Adapter
 	registry *model.Registry
 	client   *common_http.Client
+	// original http client with no modifer,
+	// huawei's some api interface with basic authorization,
+	// some with bearer token authorization.
+	oriClient *http.Client
 }
 
 // Info gets info about Huawei SWR
@@ -243,15 +247,19 @@ func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 		modifiers = append(modifiers, authorizer)
 	}
 
+	transport := util.GetHTTPTransport(registry.Insecure)
 	return &adapter{
 		Adapter:  dockerRegistryAdapter,
 		registry: registry,
 		client: common_http.NewClient(
 			&http.Client{
-				Transport: util.GetHTTPTransport(registry.Insecure),
+				Transport: transport,
 			},
 			modifiers...,
 		),
+		oriClient: &http.Client{
+			Transport: transport,
+		},
 	}, nil
 
 }

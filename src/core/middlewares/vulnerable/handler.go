@@ -92,7 +92,8 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 
 		// Do judgement
 		if summary.Severity.Code() >= projectVulnerableSeverity.Code() {
-			err = errors.Errorf("the pulling image severity %q is higher than or equal with the project setting %q, reject the response.", summary.Severity, projectVulnerableSeverity)
+			err = errors.Errorf("current image with '%q vulnerable' cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of %q from running.' "+
+				"Please contact your project administrator for help'", summary.Severity, projectVulnerableSeverity)
 			vh.sendError(err, rw)
 			return
 		}
@@ -107,17 +108,17 @@ func (vh vulnerableHandler) ServeHTTP(rw http.ResponseWriter, req *http.Request)
 	util.CopyResp(rec, rw)
 }
 
-func validate(req *http.Request) (bool, util.ImageInfo, vuln.Severity, models.CVEWhitelist) {
+func validate(req *http.Request) (bool, util.ArtifactInfo, vuln.Severity, models.CVEWhitelist) {
 	var vs vuln.Severity
 	var wl models.CVEWhitelist
-	var img util.ImageInfo
-	imgRaw := req.Context().Value(util.ImageInfoCtxKey)
+	var img util.ArtifactInfo
+	imgRaw := req.Context().Value(util.ArtifactInfoCtxKey)
 	if imgRaw == nil {
 		return false, img, vs, wl
 	}
 
 	// Expected artifact specified?
-	img, ok := imgRaw.(util.ImageInfo)
+	img, ok := imgRaw.(util.ArtifactInfo)
 	if !ok || len(img.Digest) == 0 {
 		return false, img, vs, wl
 	}

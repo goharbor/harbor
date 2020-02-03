@@ -33,3 +33,10 @@ Test Case - Helm CLI Push
     ${pwd}=    Set Variable    Test1@34
     Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
     Helm CLI Push Without Sign In Harbor  ${user}  ${pwd}
+
+Test Case - Helm3 CLI Push
+    Init Chrome Driver
+    ${user}=    Set Variable    user004
+    ${pwd}=    Set Variable    Test1@34
+    Sign In Harbor  ${HARBOR_URL}  ${user}  ${pwd}
+    Helm3 CLI Push Without Sign In Harbor  ${user}  ${pwd}

@@ -5,7 +5,9 @@
         "VIC": "vSphere Integrated Containers",
         "MGMT": "Management",
         "REG": "Registre",
-        "HARBOR_SWAGGER": "Harbor Swagger"
+        "HARBOR_SWAGGER": "Harbor Swagger",
+        "THEME_DARK_TEXT": "DARK",
+        "THEME_LIGHT_TEXT": "LIGHT"
     },
     "SIGN_IN": {
         "REMEMBER": "Se souvenir de moi",
@@ -208,9 +210,8 @@
         "PUBLIC_PROJECTS": "Projets Publics",
         "PROJECT": "Projet",
         "NEW_PROJECT": "Nouveau Projet",
-        "NAME_TOOLTIP": "Le nom du projet doit comporter au moins 2 caractères avec des minuscules, des chiffres et. _- et doit commencer par des caractères ou des chiffres.",
+        "NAME_TOOLTIP": "Le nom du projet doit comporter 1~255 caractères avec des minuscules, des chiffres et. _- et doit commencer par des caractères ou des chiffres.",
         "NAME_IS_REQUIRED": "Le nom du projet est obligatoire.",
-        "NAME_MINIMUM_LENGTH": "Le nom du projet est trop court, il doit être supérieur à 2 caractères.",
         "NAME_ALREADY_EXISTS": "Le nom du projet existe déjà.",
         "NAME_IS_ILLEGAL": "Le nom du projet est invalide.",
         "UNKNOWN_ERROR": "Une erreur inconnue s'est produite lors de la création du projet.",
@@ -243,7 +244,8 @@
         "HELMCHART": "Helm Charts",
         "ROBOT_ACCOUNTS": "Robot Accounts",
         "WEBHOOKS": "Webhooks",
-        "IMMUTABLE_TAG": "Tag Immutability"
+        "IMMUTABLE_TAG": "Tag Immutability",
+        "TAG_STRATEGY": "Tag Strategy"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Dépôt du Projet",
@@ -313,6 +315,7 @@
         "TOKEN": "gage ",
         "NEW_ROBOT_ACCOUNT": "nouveau robot compte ",
         "ENABLED_STATE": "état d 'activation",
+        "CREATETION": "Created time",
         "EXPIRATION": "Expiration",
         "NUMBER_REQUIRED": "Field is required and should be an integer other than 0.",
         "TOKEN_EXPIRATION": "Robot Token Expiration (Days)",
@@ -490,7 +493,6 @@
         "REPLICATION_MODE": "Replication Mode",
         "SRC_REGISTRY": "Source registry",
         "DESTINATION_NAMESPACE": "Destination registry:Namespace",
-        "LAST_REPLICATION": "Last Replication",
         "DESTINATION_NAME_IS_REQUIRED": "Le nom du Point Final est obligatoire.",
         "NEW_DESTINATION": "Nouveau Point Final",
         "DESTINATION_URL": "URL du Point Final",
@@ -524,22 +526,16 @@
         "ITEMS": "items",
         "NO_LOGS": "Pas de log",
         "TOGGLE_ENABLE_TITLE": "Activer la Règle",
-        "CONFIRM_TOGGLE_ENABLE_POLICY": "Après avoir activé la règle de réplication, tous les dépôts du projet seront répliqués dans le registre de destination. Veuillez confirmer pour continuer.",
         "TOGGLE_DISABLE_TITLE": "Désactiver la Règle",
-        "CONFIRM_TOGGLE_DISABLE_POLICY": "Après avoir désactivé la règle, tous les travaux de réplication inachevés de cette règle seront arrêtés et annulés. Veuillez confirmer pour continuer.",
         "CREATED_SUCCESS": "Règle de réplication créée avec succès.",
         "UPDATED_SUCCESS": "Règle de réplication mise à jour avec succès.",
         "DELETED_SUCCESS": "Règle de réplication supprimée avec succès.",
         "DELETED_FAILED": "La suppression de la règle de réplication a échoué.",
         "TOGGLED_SUCCESS": "Modification du statut de la règle de réplication avec succés.",
         "CANNOT_EDIT": "La règle de réplication ne peut pas être modifiée lorsqu'elle est activée.",
-        "POLICY_ALREADY_EXISTS": "La règle de réplication existe déjà.",
-        "FAILED_TO_DELETE_POLICY_ENABLED": "Impossible de supprimer une règle : la règle a une (des) tâche(s) inachevé(s) ou la règle est activée.",
-        "FOUND_ERROR_IN_JOBS": "Erreurs trouvées dans les travaux de réplication, veuillez vérifier.",
         "INVALID_DATE": "Date non valide.",
         "PLACEHOLDER": "Nous n'avons trouvé aucune règle de réplication !",
         "JOB_PLACEHOLDER": "Nous n'avons trouvé aucun travail de réplication !",
-        "JOB_LOG_VIEWER": "Afficher les logs des travaux de réplication",
         "NO_ENDPOINT_INFO": "Please add an endpoint first",
         "NO_PROJECT_INFO": "This project is not exist",
         "SOURCE_RESOURCE_FILTER": "Source resource filter",
@@ -557,7 +553,6 @@
         "REPLICATE": "Replicate",
         "DELETE_REMOTE_IMAGES": "Delete remote resources when locally deleted",
         "DELETE_ENABLED": "Enabled this policy",
-        "REPLICATE_IMMEDIATE": "Replicate existing images immediately",
         "NEW": "New",
         "NAME_TOOLTIP": "replication rule name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "DESTINATION_NAME_TOOLTIP": "Destination name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
@@ -623,7 +618,7 @@
         "DELETION_SUMMARY_REPO_SIGNED": "Le Dépôt '{{repoName}}' ne peut pas être supprimé parce que les images suivantes signées existent. \n{{signedImages}} \nVous devez retirer la signature de toutes les images signées avant de supprimer le dépôt !",
         "DELETION_SUMMARY_REPO": "Voulez-vous supprimer le dépôt {{repoName}} ?",
         "DELETION_TITLE_TAG": "Confirmer la suppression du Tag",
-        "DELETION_SUMMARY_TAG": "Voulez-vous supprimer le tag {{param}}?",
+        "DELETION_SUMMARY_TAG": "Voulez-vous supprimer le tag {{param}}, If you delete this tag, all other tags referenced by the same digest will also be deleted?",
         "DELETION_TITLE_TAG_DENIED": "Un tag signé ne peut être supprimé",
         "DELETION_SUMMARY_TAG_DENIED": "La balise doit être supprimée du Résumé avant qu'elle ne puisse être supprimée. \nSupprimer du Résumé via cette commande: \n",
         "TAGS_NO_DELETE": "Upload/Delete is prohibited in read only mode.",
@@ -720,10 +715,10 @@
     },
     "SUMMARY": {
         "QUOTAS": "quotas",
-        "PROJECT_REPOSITORY": "Project repositories",
-        "PROJECT_HELM_CHART": "Project Helm Chart",
-        "PROJECT_MEMBER": "Project members",
-        "PROJECT_QUOTAS": "Project quotas",
+        "PROJECT_REPOSITORY": "Repositories",
+        "PROJECT_HELM_CHART": "Helm Chart",
+        "PROJECT_MEMBER": "Members",
+        "PROJECT_QUOTAS": "Quotas",
         "ARTIFACT_COUNT": "Artifact count",
         "STORAGE_CONSUMPTION": "Storage consumption",
         "ADMIN": "Admin(s)",
@@ -800,7 +795,6 @@
             "PRO_CREATION_RESTRICTION": "L'indicateur pour définir quels utilisateurs ont le droit de créer des projets. Par défaut, tout le monde peut créer un projet. Définissez sur 'Administrateur Seulement' pour que seul un administrateur puisse créer un projet.",
             "ROOT_CERT_DOWNLOAD": "Téléchargez le certificat racine du dépôt.",
             "SCANNING_POLICY": "Définissez la politique d'analyse des images en fonction des différentes exigences. 'Aucune' : pas de politique active; 'Tousles jours à' : déclenchement du balayage à l'heure spécifiée tous les jours.",
-            "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
             "GC_POLICY": "",
             "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
             "HOURLY_CRON": "Run once an hour, beginning of hour. Équivalent à 0 0 * * * *.",
@@ -957,8 +951,7 @@
         "PLACEHOLDER": "Filtrer les Vulnérabilitiés",
         "PACKAGE": "paquet",
         "PACKAGES": "paquets",
-        "SCAN_NOW": "Analyser",
-        "JOB_LOG_VIEWER": "Voir le log des travaux d'analyse"
+        "SCAN_NOW": "Analyser"
     },
     "PUSH_IMAGE": {
         "TITLE": "Pousser l'Image",
@@ -1314,6 +1307,11 @@
         "CONFIRM_DELETION": "Confirm Scanner deletion",
         "NO_PROJECT_SCANNER": "No Scanner",
         "SET_UNHEALTHY_SCANNER": "Selected scanner:{{name}} is unhealthy",
-        "SCANNED_BY": "Scanned by:"
+        "SCANNED_BY": "Scanned by:",
+        "IMAGE_SCANNERS": "Image Scanners",
+        "VIEW_DOC": "view documentation",
+        "ALL_SCANNERS": "All scanners",
+        "HELP_INFO_1": "The default scanner has been installed. To install other scanners refer to the ",
+        "HELP_INFO_2": "documentation."
     }
 }

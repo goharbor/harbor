@@ -80,13 +80,10 @@ func NewRegistry(endpoint string, client *http.Client) (*Registry, error) {
 // Catalog ...
 func (r *Registry) Catalog() ([]string, error) {
 	repos := []string{}
-	suffix := "/v2/_catalog?n=1000"
-	var url string
+	aurl := r.Endpoint.String() + "/v2/_catalog?n=1000"
 
-	for len(suffix) > 0 {
-		url = r.Endpoint.String() + suffix
-
-		req, err := http.NewRequest("GET", url, nil)
+	for len(aurl) > 0 {
+		req, err := http.NewRequest("GET", aurl, nil)
 		if err != nil {
 			return repos, err
 		}
@@ -112,11 +109,15 @@ func (r *Registry) Catalog() ([]string, error) {
 
 			repos = append(repos, catalogResp.Repositories...)
 			// Link: </v2/_catalog?last=library%2Fhello-world-25&n=100>; rel="next"
+			// Link: <http://domain.com/v2/_catalog?last=library%2Fhello-world-25&n=100>; rel="next"
 			link := resp.Header.Get("Link")
 			if strings.HasSuffix(link, `rel="next"`) && strings.Index(link, "<") >= 0 && strings.Index(link, ">") >= 0 {
-				suffix = link[strings.Index(link, "<")+1 : strings.Index(link, ">")]
+				aurl = link[strings.Index(link, "<")+1 : strings.Index(link, ">")]
+				if strings.Index(aurl, ":") < 0 {
+					aurl = r.Endpoint.String() + aurl
+				}
 			} else {
-				suffix = ""
+				aurl = ""
 			}
 		} else {
 			return repos, &commonhttp.Error{

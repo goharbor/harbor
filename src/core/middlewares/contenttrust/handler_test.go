@@ -15,20 +15,19 @@
 package contenttrust
 
 import (
+	"net/http/httptest"
+	"os"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common"
 	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"github.com/stretchr/testify/assert"
-	"net/http/httptest"
-	"os"
-	"testing"
 )
 
 var endpoint = "10.117.4.142"
 var notaryServer *httptest.Server
-
-var admiralEndpoint = "http://127.0.0.1:8282"
 var token = ""
 
 func TestMain(m *testing.M) {
@@ -50,8 +49,8 @@ func TestMain(m *testing.M) {
 func TestMatchNotaryDigest(t *testing.T) {
 	assert := assert.New(t)
 	// The data from common/utils/notary/helper_test.go
-	img1 := util.ImageInfo{Repository: "notary-demo/busybox", Reference: "1.0", ProjectName: "notary-demo", Digest: "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"}
-	img2 := util.ImageInfo{Repository: "notary-demo/busybox", Reference: "2.0", ProjectName: "notary-demo", Digest: "sha256:12345678"}
+	img1 := util.ArtifactInfo{Repository: "notary-demo/busybox", Reference: "1.0", ProjectName: "notary-demo", Digest: "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"}
+	img2 := util.ArtifactInfo{Repository: "notary-demo/busybox", Reference: "2.0", ProjectName: "notary-demo", Digest: "sha256:12345678"}
 
 	res1, err := matchNotaryDigest(img1)
 	assert.Nil(err, "Unexpected error: %v, image: %#v", err, img1)
