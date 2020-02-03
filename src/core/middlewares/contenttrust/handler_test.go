@@ -49,8 +49,8 @@ func TestMain(m *testing.M) {
 func TestMatchNotaryDigest(t *testing.T) {
 	assert := assert.New(t)
 	// The data from common/utils/notary/helper_test.go
-	img1 := util.ImageInfo{Repository: "notary-demo/busybox", Reference: "1.0", ProjectName: "notary-demo", Digest: "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"}
-	img2 := util.ImageInfo{Repository: "notary-demo/busybox", Reference: "2.0", ProjectName: "notary-demo", Digest: "sha256:12345678"}
+	img1 := util.ArtifactInfo{Repository: "notary-demo/busybox", Reference: "1.0", ProjectName: "notary-demo", Digest: "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7"}
+	img2 := util.ArtifactInfo{Repository: "notary-demo/busybox", Reference: "2.0", ProjectName: "notary-demo", Digest: "sha256:12345678"}
 
 	res1, err := matchNotaryDigest(img1)
 	assert.Nil(err, "Unexpected error: %v, image: %#v", err, img1)

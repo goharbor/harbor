@@ -18,9 +18,13 @@ import (
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/goharbor/harbor/src/common/utils/registry"
+	"github.com/goharbor/harbor/src/common/utils/registry/auth"
+	"github.com/goharbor/harbor/src/core/config"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"io/ioutil"
+	"net/http"
 )
 
 var (
@@ -54,7 +58,7 @@ type fetcher struct{}
 // TODO re-implement it based on OCI registry driver
 func (f *fetcher) FetchManifest(repository, digest string) (string, []byte, error) {
 	// TODO read from cache first
-	client, err := coreutils.NewRepositoryClientForLocal("admin", repository)
+	client, err := newRepositoryClient(repository)
 	if err != nil {
 		return "", nil, err
 	}
@@ -75,4 +79,20 @@ func (f *fetcher) FetchLayer(repository, digest string) ([]byte, error) {
 	}
 	defer reader.Close()
 	return ioutil.ReadAll(reader)
+}
+
+func newRepositoryClient(repository string) (*registry.Repository, error) {
+	uam := &auth.UserAgentModifier{
+		UserAgent: "harbor-registry-client",
+	}
+	authorizer := auth.DefaultBasicAuthorizer()
+	transport := registry.NewTransport(http.DefaultTransport, authorizer, uam)
+	client := &http.Client{
+		Transport: transport,
+	}
+	endpoint, err := config.RegistryURL()
+	if err != nil {
+		return nil, err
+	}
+	return registry.NewRepository(repository, endpoint, client)
 }

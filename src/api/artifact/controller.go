@@ -18,7 +18,8 @@ import (
 	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor"
-	// register image resolvers
+	"github.com/opencontainers/go-digest"
+	// registry image resolvers
 	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
 	// register chart resolver
 	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/chart"
@@ -48,6 +49,9 @@ type Controller interface {
 	List(ctx context.Context, query *q.Query, option *Option) (total int64, artifacts []*Artifact, err error)
 	// Get the artifact specified by ID, specify the properties returned with option
 	Get(ctx context.Context, id int64, option *Option) (artifact *Artifact, err error)
+	// Get the artifact specified by repository name and reference, the reference can be tag or digest,
+	// specify the properties returned with option
+	GetByReference(ctx context.Context, repository, reference string, option *Option) (artifact *Artifact, err error)
 	// Delete the artifact specified by ID. All tags attached to the artifact are deleted as well
 	Delete(ctx context.Context, id int64) (err error)
 	// Tags returns the tags according to the query, specify the properties returned with option
@@ -207,12 +211,58 @@ func (c *controller) Get(ctx context.Context, id int64, option *Option) (*Artifa
 	return c.assembleArtifact(ctx, art, option), nil
 }
 
-func (c *controller) Delete(ctx context.Context, id int64) error {
-	// delete artifact first in case the artifact is referenced by other artifact
-	if err := c.artMgr.Delete(ctx, id); err != nil {
-		return err
+func (c *controller) GetByReference(ctx context.Context, repository, reference string, option *Option) (*Artifact, error) {
+	// the reference is tag
+	if _, err := digest.Parse(reference); err != nil {
+		return c.getByTag(ctx, repository, reference, option)
 	}
+	// the reference is digest
+	return c.getByDigest(ctx, repository, reference, option)
+}
 
+func (c *controller) getByDigest(ctx context.Context, repository, digest string, option *Option) (*Artifact, error) {
+	repo, err := c.repoMgr.GetByName(ctx, repository)
+	if err != nil {
+		return nil, err
+	}
+	_, artifacts, err := c.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"RepositoryID": repo.RepositoryID,
+			"Digest":       digest,
+		},
+	}, option)
+	if err != nil {
+		return nil, err
+	}
+	if len(artifacts) == 0 {
+		return nil, ierror.New(nil).WithCode(ierror.NotFoundCode).
+			WithMessage("artifact %s@%s not found", repository, digest)
+	}
+	return artifacts[0], nil
+}
+
+func (c *controller) getByTag(ctx context.Context, repository, tag string, option *Option) (*Artifact, error) {
+	repo, err := c.repoMgr.GetByName(ctx, repository)
+	if err != nil {
+		return nil, err
+	}
+	_, tags, err := c.tagMgr.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"RepositoryID": repo.RepositoryID,
+			"Name":         tag,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	if len(tags) == 0 {
+		return nil, ierror.New(nil).WithCode(ierror.NotFoundCode).
+			WithMessage("artifact %s:%s not found", repository, tag)
+	}
+	return c.Get(ctx, tags[0].ArtifactID, option)
+}
+
+func (c *controller) Delete(ctx context.Context, id int64) error {
 	// delete all tags that attached to the artifact
 	_, tags, err := c.tagMgr.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
@@ -227,6 +277,11 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 			return err
 		}
 	}
+
+	if err := c.artMgr.Delete(ctx, id); err != nil {
+		return err
+	}
+
 	// TODO fire delete artifact event
 	return nil
 }

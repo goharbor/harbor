@@ -22,7 +22,7 @@ import (
 
 // Handle generates the HTTP status code and error payload and writes them to the response
 func Handle(w http.ResponseWriter, req *http.Request, err error) {
-	log.Errorf("failed to handle the request %s: %v", req.URL.Path, err)
+	log.Errorf("failed to handle the request %s %s: %v", req.Method, req.URL, err)
 	statusCode, payload := serror.APIError(err)
 	w.WriteHeader(statusCode)
 	w.Write([]byte(payload))
