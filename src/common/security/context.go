@@ -15,12 +15,16 @@
 package security
 
 import (
+	"context"
+
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 )
 
 // Context abstracts the operations related with authN and authZ
 type Context interface {
+	// Name returns the name of the security context
+	Name() string
 	// IsAuthenticated returns whether the context has been authenticated or not
 	IsAuthenticated() bool
 	// GetUsername returns the username of user related to the context
@@ -35,4 +39,17 @@ type Context interface {
 	GetProjectRoles(projectIDOrName interface{}) []int
 	// Can returns whether the user can do action on resource
 	Can(action rbac.Action, resource rbac.Resource) bool
+}
+
+type securityKey struct{}
+
+// NewContext returns context with security context
+func NewContext(ctx context.Context, security Context) context.Context {
+	return context.WithValue(ctx, securityKey{}, security)
+}
+
+// FromContext returns security context from the context
+func FromContext(ctx context.Context) (Context, bool) {
+	c, ok := ctx.Value(securityKey{}).(Context)
+	return c, ok
 }

@@ -23,11 +23,10 @@ import (
 	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/config/metadata"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/security/secret"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
 	corecfg "github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 )
 
 // ConfigAPI ...
@@ -47,7 +46,7 @@ func (c *ConfigAPI) Prepare() {
 
 	// Only internal container can access /api/internal/configurations
 	if strings.EqualFold(c.Ctx.Request.RequestURI, "/api/internal/configurations") {
-		if _, ok := c.Ctx.Request.Context().Value(filter.SecurCtxKey).(*secret.SecurityContext); !ok {
+		if s, ok := security.FromContext(c.Ctx.Request.Context()); !ok || s.Name() != "secret" {
 			c.SendUnAuthorizedError(errors.New("UnAuthorized"))
 			return
 		}

@@ -16,11 +16,12 @@ package middlewares
 
 import (
 	"errors"
+	"net/http"
+
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares/registryproxy"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
-	"net/http"
 )
 
 var head http.Handler
@@ -37,9 +38,9 @@ func Init() error {
 
 // Handle handles the request.
 func Handle(rw http.ResponseWriter, req *http.Request) {
-	securityCtx, err := filter.GetSecurityContext(req)
-	if err != nil {
-		log.Errorf("failed to get security context in middlerware: %v", err)
+	securityCtx, ok := security.FromContext(req.Context())
+	if !ok {
+		log.Errorf("failed to get security context in middlerware")
 		// error to get security context, use the default chain.
 		head = New(Middlewares).Create().Then(proxy)
 	} else {

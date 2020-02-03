@@ -15,19 +15,20 @@
 package v2auth
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/src/core/promgr/metamgr"
-	"github.com/goharbor/harbor/src/server/middleware"
-	"github.com/stretchr/testify/assert"
-	"golang.org/x/net/context"
+	"context"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"strconv"
 	"strings"
 	"testing"
+
+	"github.com/goharbor/harbor/src/common/models"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
+	"github.com/goharbor/harbor/src/core/promgr/metamgr"
+	"github.com/goharbor/harbor/src/server/middleware"
+	"github.com/stretchr/testify/assert"
 )
 
 type mockPM struct{}
@@ -77,6 +78,10 @@ func (mockPM) GetMetadataManager() metamgr.ProjectMetadataManager {
 }
 
 type mockSC struct{}
+
+func (mockSC) Name() string {
+	return "mock"
+}
 
 func (mockSC) IsAuthenticated() bool {
 	return true
@@ -136,7 +141,7 @@ func TestMiddleware(t *testing.T) {
 		w.WriteHeader(200)
 	})
 
-	baseCtx := context.WithValue(context.Background(), filter.SecurCtxKey, mockSC{})
+	baseCtx := security.NewContext(context.Background(), mockSC{})
 	ar1 := &middleware.ArtifactInfo{
 		Repository:  "project_1/hello-world",
 		Reference:   "v1",

@@ -15,18 +15,19 @@
 package v2auth
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"sync"
+
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/promgr"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	reg_err "github.com/goharbor/harbor/src/server/registry/error"
-	"golang.org/x/net/context"
-	"net/http"
-	"sync"
 )
 
 type reqChecker struct {
@@ -38,9 +39,9 @@ func (rc *reqChecker) check(req *http.Request) error {
 		// TODO: May consider implement a local authorizer for registry, more details see #10602
 		return nil
 	}
-	securityCtx, err := filter.GetSecurityContext(req)
-	if err != nil {
-		return err
+	securityCtx, ok := security.FromContext(req.Context())
+	if !ok {
+		return fmt.Errorf("the security context got from request is nil")
 	}
 	if a, ok := middleware.ArtifactInfoFromContext(req.Context()); ok {
 		action := getAction(req)
