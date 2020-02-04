@@ -73,7 +73,11 @@ func (r *robotAccountDao) ListRobotAccounts(query *q.Query) ([]*model.Robot, err
 	if query != nil {
 		if len(query.Keywords) > 0 {
 			for k, v := range query.Keywords {
-				qt = qt.Filter(fmt.Sprintf("%s__icontains", k), v)
+				if k == "ProjectID" {
+					qt = qt.Filter("ProjectID", v)
+				} else {
+					qt = qt.Filter(fmt.Sprintf("%s__icontains", k), v)
+				}
 			}
 		}
 
