@@ -80,7 +80,7 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// get tags ...
-	total, tags, err := t.artCtl.Tags(req.Context(), &q.Query{
+	total, tags, err := t.artCtl.ListTags(req.Context(), &q.Query{
 		Keywords: map[string]interface{}{
 			"RepositoryID": repository.RepositoryID,
 		}}, nil)
