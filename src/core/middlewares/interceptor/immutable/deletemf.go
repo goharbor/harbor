@@ -45,7 +45,7 @@ func (dmf *delmfInterceptor) HandleRequest(req *http.Request) (err error) {
 	for _, af := range afs {
 		_, repoName := common_util.ParseRepository(dmf.mf.Repository)
 		var matched bool
-		matched, err = rule.NewRuleMatcher(dmf.mf.ProjectID).Match(art.Candidate{
+		matched, err = rule.NewRuleMatcher().Match(dmf.mf.ProjectID, art.Candidate{
 			Repository:  repoName,
 			Tag:         af.Tag,
 			NamespaceID: dmf.mf.ProjectID,

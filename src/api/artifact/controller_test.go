@@ -22,6 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	arttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
+	immutesting "github.com/goharbor/harbor/src/testing/pkg/immutabletag"
 	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
 	tagtesting "github.com/goharbor/harbor/src/testing/pkg/tag"
 	"github.com/stretchr/testify/mock"
@@ -41,11 +42,12 @@ func (f *fakeAbstractor) Abstract(ctx context.Context, artifact *artifact.Artifa
 
 type controllerTestSuite struct {
 	suite.Suite
-	ctl        *controller
-	repoMgr    *repotesting.FakeManager
-	artMgr     *arttesting.FakeManager
-	tagMgr     *tagtesting.FakeManager
-	abstractor *fakeAbstractor
+	ctl          *controller
+	repoMgr      *repotesting.FakeManager
+	artMgr       *arttesting.FakeManager
+	tagMgr       *tagtesting.FakeManager
+	abstractor   *fakeAbstractor
+	immutableMtr *immutesting.FakeMatcher
 }
 
 func (c *controllerTestSuite) SetupTest() {
@@ -53,11 +55,13 @@ func (c *controllerTestSuite) SetupTest() {
 	c.artMgr = &arttesting.FakeManager{}
 	c.tagMgr = &tagtesting.FakeManager{}
 	c.abstractor = &fakeAbstractor{}
+	c.immutableMtr = &immutesting.FakeMatcher{}
 	c.ctl = &controller{
-		repoMgr:    c.repoMgr,
-		artMgr:     c.artMgr,
-		tagMgr:     c.tagMgr,
-		abstractor: c.abstractor,
+		repoMgr:      c.repoMgr,
+		artMgr:       c.artMgr,
+		tagMgr:       c.tagMgr,
+		abstractor:   c.abstractor,
+		immutableMtr: c.immutableMtr,
 	}
 }
 
@@ -74,9 +78,16 @@ func (c *controllerTestSuite) TestAssembleTag() {
 		WithImmutableStatus: true,
 	}
 
+	c.repoMgr.On("Get").Return(&models.RepoRecord{
+		ProjectID: 1,
+		Name:      "hello-world",
+	}, nil)
+
+	c.immutableMtr.On("Match").Return(true, nil)
 	tag := c.ctl.assembleTag(nil, tg, option)
 	c.Require().NotNil(tag)
 	c.Equal(tag.ID, tg.ID)
+	c.Equal(true, tag.Immutable)
 	// TODO check other fields of option
 }
 
@@ -392,8 +403,8 @@ func (c *controllerTestSuite) TestListTags() {
 		{
 			ID:           1,
 			RepositoryID: 1,
-			ArtifactID:   1,
 			Name:         "latest",
+			ArtifactID:   1,
 		},
 	}, nil)
 	total, tags, err := c.ctl.ListTags(nil, nil, nil)
@@ -401,6 +412,7 @@ func (c *controllerTestSuite) TestListTags() {
 	c.Equal(int64(1), total)
 	c.Len(tags, 1)
 	c.tagMgr.AssertExpectations(c.T())
+	c.Equal(tags[0].Immutable, false)
 	// TODO check other properties: label, etc
 }
 

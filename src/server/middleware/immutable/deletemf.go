@@ -84,7 +84,7 @@ func handleDelete(req *http.Request) error {
 
 	for _, tag := range tags {
 		var matched bool
-		matched, err = rule.NewRuleMatcher(mf.ProjectID).Match(art.Candidate{
+		matched, err = rule.NewRuleMatcher().Match(mf.ProjectID, art.Candidate{
 			Repository:  repoName,
 			Tag:         tag.Name,
 			NamespaceID: mf.ProjectID,

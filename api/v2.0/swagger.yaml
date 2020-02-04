@@ -433,6 +433,9 @@ definitions:
         type: string
         format: date-time
         description: The latest pull time of the tag
+      immutable:
+        type: boolean
+        description: The immutable status of the tag
   ExtraAttrs:
     type: object
     additionalProperties:

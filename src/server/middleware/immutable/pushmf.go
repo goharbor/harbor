@@ -47,7 +47,7 @@ func handlePush(req *http.Request) error {
 
 	_, repoName := common_util.ParseRepository(mf.Repository)
 	var matched bool
-	matched, err := rule.NewRuleMatcher(mf.ProjectID).Match(art.Candidate{
+	matched, err := rule.NewRuleMatcher().Match(mf.ProjectID, art.Candidate{
 		Repository:  repoName,
 		Tag:         mf.Tag,
 		NamespaceID: mf.ProjectID,
