@@ -80,6 +80,15 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 	r2, _ := s.ctr.CreateRobotAccount(robot2)
 	s.robotID = r2.ID
 
+	robot3 := &model.RobotCreate{
+		Name:        "robot3",
+		Description: "TestCreateRobotAccount",
+		ExpiresAt:   expiresAt,
+		ProjectID:   int64(11),
+		Access:      policies,
+	}
+	r3, _ := s.ctr.CreateRobotAccount(robot3)
+
 	keywords := make(map[string]interface{})
 	keywords["ProjectID"] = int64(1)
 	query := &q.Query{
@@ -91,6 +100,8 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 	s.require.Equal(robots[1].Name, common.RobotPrefix+"robot2")
 
 	err = s.ctr.DeleteRobotAccount(robot.ID)
+	s.require.Nil(err)
+	err = s.ctr.DeleteRobotAccount(r3.ID)
 	s.require.Nil(err)
 
 	robots, err = s.ctr.ListRobotAccount(query)
