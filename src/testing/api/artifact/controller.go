@@ -69,14 +69,20 @@ func (f *FakeController) Delete(ctx context.Context, id int64) (err error) {
 	return args.Error(0)
 }
 
-// Tags ...
-func (f *FakeController) Tags(ctx context.Context, query *q.Query, option *artifact.TagOption) (int64, []*artifact.Tag, error) {
+// ListTags ...
+func (f *FakeController) ListTags(ctx context.Context, query *q.Query, option *artifact.TagOption) (int64, []*artifact.Tag, error) {
 	args := f.Called()
 	var tags []*artifact.Tag
 	if args.Get(1) != nil {
 		tags = args.Get(1).([]*artifact.Tag)
 	}
 	return int64(args.Int(0)), tags, args.Error(2)
+}
+
+// CreateTag ...
+func (f *FakeController) CreateTag(ctx context.Context, tag *artifact.Tag) (int64, error) {
+	args := f.Called()
+	return int64(args.Int(0)), args.Error(1)
 }
 
 // DeleteTag ...
