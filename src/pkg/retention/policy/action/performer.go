@@ -104,7 +104,7 @@ func isImmutable(c *art.Candidate) bool {
 	repo := c.Repository
 	tag := c.Tag
 	_, repoName := utils.ParseRepository(repo)
-	matched, err := rule.NewRuleMatcher(projectID).Match(art.Candidate{
+	matched, err := rule.NewRuleMatcher().Match(projectID, art.Candidate{
 		Repository:  repoName,
 		Tag:         tag,
 		NamespaceID: projectID,
