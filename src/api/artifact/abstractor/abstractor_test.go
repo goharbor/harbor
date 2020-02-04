@@ -21,8 +21,8 @@ import (
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/goharbor/harbor/src/testing/api/artifact/abstractor/blob"
+	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -212,7 +212,7 @@ type abstractorTestSuite struct {
 	suite.Suite
 	abstractor Abstractor
 	fetcher    *blob.FakeFetcher
-	repoMgr    *htesting.FakeRepositoryManager
+	repoMgr    *repotesting.FakeManager
 }
 
 func (a *abstractorTestSuite) SetupSuite() {
@@ -222,7 +222,7 @@ func (a *abstractorTestSuite) SetupSuite() {
 
 func (a *abstractorTestSuite) SetupTest() {
 	a.fetcher = &blob.FakeFetcher{}
-	a.repoMgr = &htesting.FakeRepositoryManager{}
+	a.repoMgr = &repotesting.FakeManager{}
 	a.abstractor = &abstractor{
 		repoMgr:     a.repoMgr,
 		blobFetcher: a.fetcher,

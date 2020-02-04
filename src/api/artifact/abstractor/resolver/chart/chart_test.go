@@ -17,8 +17,8 @@ package chart
 import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	htesting "github.com/goharbor/harbor/src/testing"
 	"github.com/goharbor/harbor/src/testing/api/artifact/abstractor/blob"
+	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -26,12 +26,12 @@ import (
 type resolverTestSuite struct {
 	suite.Suite
 	resolver    *resolver
-	repoMgr     *htesting.FakeRepositoryManager
+	repoMgr     *repository.FakeManager
 	blobFetcher *blob.FakeFetcher
 }
 
 func (r *resolverTestSuite) SetupTest() {
-	r.repoMgr = &htesting.FakeRepositoryManager{}
+	r.repoMgr = &repository.FakeManager{}
 	r.blobFetcher = &blob.FakeFetcher{}
 	r.resolver = &resolver{
 		repoMgr:     r.repoMgr,

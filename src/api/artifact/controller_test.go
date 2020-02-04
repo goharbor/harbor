@@ -21,7 +21,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	htesting "github.com/goharbor/harbor/src/testing"
+	arttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
+	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
+	tagtesting "github.com/goharbor/harbor/src/testing/pkg/tag"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -40,16 +42,16 @@ func (f *fakeAbstractor) Abstract(ctx context.Context, artifact *artifact.Artifa
 type controllerTestSuite struct {
 	suite.Suite
 	ctl        *controller
-	repoMgr    *htesting.FakeRepositoryManager
-	artMgr     *htesting.FakeArtifactManager
-	tagMgr     *htesting.FakeTagManager
+	repoMgr    *repotesting.FakeManager
+	artMgr     *arttesting.FakeManager
+	tagMgr     *tagtesting.FakeManager
 	abstractor *fakeAbstractor
 }
 
 func (c *controllerTestSuite) SetupTest() {
-	c.repoMgr = &htesting.FakeRepositoryManager{}
-	c.artMgr = &htesting.FakeArtifactManager{}
-	c.tagMgr = &htesting.FakeTagManager{}
+	c.repoMgr = &repotesting.FakeManager{}
+	c.artMgr = &arttesting.FakeManager{}
+	c.tagMgr = &tagtesting.FakeManager{}
 	c.abstractor = &fakeAbstractor{}
 	c.ctl = &controller{
 		repoMgr:    c.repoMgr,

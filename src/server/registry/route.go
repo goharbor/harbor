@@ -15,39 +15,70 @@
 package registry
 
 import (
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/server/middleware/immutable"
-
 	"github.com/goharbor/harbor/src/server/middleware/artifactinfo"
+	"github.com/goharbor/harbor/src/server/middleware/contenttrust"
+	"github.com/goharbor/harbor/src/server/middleware/immutable"
 	"github.com/goharbor/harbor/src/server/middleware/manifestinfo"
 	"github.com/goharbor/harbor/src/server/middleware/readonly"
+	"github.com/goharbor/harbor/src/server/middleware/regtoken"
 	"github.com/goharbor/harbor/src/server/middleware/v2auth"
-	"github.com/goharbor/harbor/src/server/registry/manifest"
+	"github.com/goharbor/harbor/src/server/middleware/vulnerable"
 	"github.com/goharbor/harbor/src/server/router"
 	"net/http"
-	"net/http/httputil"
-	"net/url"
 )
 
 // RegisterRoutes for OCI registry APIs
 func RegisterRoutes() {
-	// TODO remove
-	regURL, _ := config.RegistryURL()
-	url, _ := url.Parse(regURL)
-	proxy := httputil.NewSingleHostReverseProxy(url)
-	proxy.Director = basicAuthDirector(proxy.Director)
-
-	router.NewRoute().Path("/v2/*").
+	root := router.NewRoute().
+		Path("/v2").
 		Middleware(artifactinfo.Middleware()).
-		Middleware(v2auth.Middleware()).
-		Handler(New(url))
-	router.NewRoute().
+		Middleware(v2auth.Middleware())
+	// catalog
+	root.NewRoute().
+		Method(http.MethodGet).
+		Path("/_catalog").
+		Handler(newRepositoryHandler())
+	// list tags
+	root.NewRoute().
+		Method(http.MethodGet).
+		Path("/*/tags/list").
+		Handler(newTagHandler())
+	// manifest
+	root.NewRoute().
+		Method(http.MethodGet).
+		Path("/*/manifests/:reference").
+		Middleware(manifestinfo.Middleware()).
+		Middleware(regtoken.Middleware()).
+		Middleware(contenttrust.Middleware()).
+		Middleware(vulnerable.Middleware()).
+		HandlerFunc(getManifest)
+	root.NewRoute().
+		Method(http.MethodHead).
+		Path("/*/manifests/:reference").
+		HandlerFunc(getManifest)
+	root.NewRoute().
+		Method(http.MethodDelete).
+		Path("/*/manifests/:reference").
+		Middleware(readonly.Middleware()).
+		Middleware(manifestinfo.Middleware()).
+		Middleware(immutable.MiddlewareDelete()).
+		HandlerFunc(deleteManifest)
+	root.NewRoute().
 		Method(http.MethodPut).
-		Path("/v2/*/manifests/:reference").
-		Middleware(artifactinfo.Middleware()).
-		Middleware(v2auth.Middleware()).
+		Path("/*/manifests/:reference").
 		Middleware(readonly.Middleware()).
 		Middleware(manifestinfo.Middleware()).
 		Middleware(immutable.MiddlewarePush()).
-		Handler(manifest.NewHandler(proxy))
+		HandlerFunc(putManifest)
+	// blob
+	root.NewRoute().
+		Method(http.MethodPost).
+		Method(http.MethodPut).
+		Method(http.MethodPatch).
+		Method(http.MethodDelete).
+		Path("/{name:.*}/blobs/").
+		Middleware(readonly.Middleware()).
+		Handler(proxy)
+	// others
+	root.NewRoute().Path("/*").Handler(proxy)
 }

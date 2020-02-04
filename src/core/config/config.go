@@ -217,7 +217,11 @@ func SelfRegistration() (bool, error) {
 
 // RegistryURL ...
 func RegistryURL() (string, error) {
-	return cfgMgr.Get(common.RegistryURL).GetString(), nil
+	url := os.Getenv("REGISTRY_URL")
+	if len(url) == 0 {
+		url = "http://registry:5000"
+	}
+	return url, nil
 }
 
 // InternalJobServiceURL returns jobservice URL for internal communication between Harbor containers

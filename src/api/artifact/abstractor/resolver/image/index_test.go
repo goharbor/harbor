@@ -16,7 +16,7 @@ package image
 
 import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	htesting "github.com/goharbor/harbor/src/testing"
+	arttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -24,11 +24,11 @@ import (
 type indexResolverTestSuite struct {
 	suite.Suite
 	resolver *indexResolver
-	artMgr   *htesting.FakeArtifactManager
+	artMgr   *arttesting.FakeManager
 }
 
 func (i *indexResolverTestSuite) SetupTest() {
-	i.artMgr = &htesting.FakeArtifactManager{}
+	i.artMgr = &arttesting.FakeManager{}
 	i.resolver = &indexResolver{
 		artMgr: i.artMgr,
 	}
