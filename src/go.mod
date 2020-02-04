@@ -76,6 +76,7 @@ require (
 	github.com/stretchr/testify v1.4.0
 	github.com/theupdateframework/notary v0.6.1
 	golang.org/x/crypto v0.0.0-20190617133340-57b3e21c3d56
+	golang.org/x/net v0.0.0-20190827160401-ba9fcec4b297
 	golang.org/x/oauth2 v0.0.0-20190226205417-e64efc72b421
 	gopkg.in/asn1-ber.v1 v1.0.0-20150924051756-4e86f4367175 // indirect
 	gopkg.in/dancannon/gorethink.v3 v3.0.5 // indirect

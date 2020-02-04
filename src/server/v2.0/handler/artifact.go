@@ -19,11 +19,13 @@ import (
 	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/api/artifact"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/artifact"
+	"time"
 )
 
 func newArtifactAPI() *artifactAPI {
@@ -64,28 +66,8 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	query.Keywords["RepositoryID"] = repository.RepositoryID
 
 	// set option
-	option := &artifact.Option{
-		WithTag: true, // return the tag by default
-	}
-	if params.WithTag != nil {
-		option.WithTag = *(params.WithTag)
-	}
-	if option.WithTag {
-		if params.WithImmutableStatus != nil {
-			option.TagOption = &artifact.TagOption{
-				WithImmutableStatus: *(params.WithImmutableStatus),
-			}
-		}
-	}
-	if params.WithLabel != nil {
-		option.WithLabel = *(params.WithLabel)
-	}
-	if params.WithScanOverview != nil {
-		option.WithScanOverview = *(params.WithScanOverview)
-	}
-	if params.WithSignatrue != nil {
-		option.WithSignature = *(params.WithSignatrue)
-	}
+	option := option(params.WithTag, params.WithImmutableStatus,
+		params.WithLabel, params.WithScanOverview, params.WithSignature)
 
 	// list artifacts according to the query and option
 	total, arts, err := a.artCtl.List(ctx, query, option)
@@ -103,11 +85,98 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 }
 
 func (a *artifactAPI) GetArtifact(ctx context.Context, params operation.GetArtifactParams) middleware.Responder {
-	// TODO implement
-	return operation.NewGetArtifactOK()
+	// set option
+	option := option(params.WithTag, params.WithImmutableStatus,
+		params.WithLabel, params.WithScanOverview, params.WithSignature)
+
+	// get the artifact
+	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, option)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	return operation.NewGetArtifactOK().WithPayload(artifact.ToSwagger())
 }
 
 func (a *artifactAPI) DeleteArtifact(ctx context.Context, params operation.DeleteArtifactParams) middleware.Responder {
-	// TODO implement
+	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	if err = a.artCtl.Delete(ctx, artifact.ID); err != nil {
+		return a.SendError(ctx, err)
+	}
 	return operation.NewDeleteArtifactOK()
+}
+
+func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagParams) middleware.Responder {
+	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName),
+		params.Reference, &artifact.Option{
+			WithTag: true,
+		})
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	tag := &artifact.Tag{}
+	tag.RepositoryID = art.RepositoryID
+	tag.ArtifactID = art.ID
+	tag.Name = params.Tag.Name
+	tag.PushTime = time.Now()
+	if _, err = a.artCtl.CreateTag(ctx, tag); err != nil {
+		return a.SendError(ctx, err)
+	}
+	// TODO set location header?
+	return operation.NewCreateTagCreated()
+}
+
+func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagParams) middleware.Responder {
+	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName),
+		params.Reference, &artifact.Option{
+			WithTag: true,
+		})
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	var id int64
+	for _, tag := range artifact.Tags {
+		if tag.Name == params.TagName {
+			id = tag.ID
+			break
+		}
+	}
+	// the tag not found
+	if id == 0 {
+		err = ierror.New(nil).WithCode(ierror.NotFoundCode).WithMessage(
+			"tag %s attached to artifact %d not found", params.TagName, artifact.ID)
+		return a.SendError(ctx, err)
+	}
+	if err = a.artCtl.DeleteTag(ctx, id); err != nil {
+		return a.SendError(ctx, err)
+	}
+	return operation.NewDeleteTagOK()
+}
+
+func option(withTag, withImmutableStatus, withLabel, withScanOverview, withSignature *bool) *artifact.Option {
+	option := &artifact.Option{
+		WithTag: true, // return the tag by default
+	}
+	if withTag != nil {
+		option.WithTag = *(withTag)
+	}
+	if option.WithTag {
+		if withImmutableStatus != nil {
+			option.TagOption = &artifact.TagOption{
+				WithImmutableStatus: *(withImmutableStatus),
+			}
+		}
+	}
+	if withLabel != nil {
+		option.WithLabel = *(withLabel)
+	}
+	if withScanOverview != nil {
+		option.WithScanOverview = *(withScanOverview)
+	}
+	if withSignature != nil {
+		option.WithSignature = *(withSignature)
+	}
+	return option
 }
