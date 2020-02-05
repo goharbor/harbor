@@ -15,8 +15,6 @@ consumes:
 securityDefinitions:
   basicAuth:
     type: basic
-security:
-  - basicAuth: []
 paths:
   /projects/{project_name}/repositories/{repository_name}/artifacts:
     get:

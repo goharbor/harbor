@@ -53,7 +53,7 @@ const (
 	ResourceTagRetention               = Resource("tag-retention")
 	ResourceImmutableTag               = Resource("immutable-tag")
 	ResourceRepositoryLabel            = Resource("repository-label")
-	ResourceRepositoryTag              = Resource("repository-tag")
+	ResourceRepositoryTag              = Resource("repository-tag") // TODO remove
 	ResourceRepositoryTagLabel         = Resource("repository-tag-label")
 	ResourceRepositoryTagManifest      = Resource("repository-tag-manifest")
 	ResourceRepositoryTagScanJob       = Resource("repository-tag-scan-job")      // TODO: remove
@@ -62,5 +62,7 @@ const (
 	ResourceNotificationPolicy         = Resource("notification-policy")
 	ResourceScan                       = Resource("scan")
 	ResourceScanner                    = Resource("scanner")
+	ResourceArtifact                   = Resource("artifact")
+	ResourceTag                        = Resource("tag")
 	ResourceSelf                       = Resource("") // subresource for self
 )
