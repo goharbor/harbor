@@ -29,7 +29,7 @@ func (pmf *pushmfInterceptor) HandleRequest(req *http.Request) (err error) {
 
 	_, repoName := common_util.ParseRepository(pmf.mf.Repository)
 	var matched bool
-	matched, err = rule.NewRuleMatcher(pmf.mf.ProjectID).Match(art.Candidate{
+	matched, err = rule.NewRuleMatcher().Match(pmf.mf.ProjectID, art.Candidate{
 		Repository:  repoName,
 		Tag:         pmf.mf.Tag,
 		NamespaceID: pmf.mf.ProjectID,

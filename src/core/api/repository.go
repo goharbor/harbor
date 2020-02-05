@@ -825,7 +825,7 @@ func populateAuthor(detail *models.TagDetail) {
 // check whether the tag is immutable
 func isImmutable(projectID int64, repo string, tag string) bool {
 	_, repoName := utils.ParseRepository(repo)
-	matched, err := rule.NewRuleMatcher(projectID).Match(art.Candidate{
+	matched, err := rule.NewRuleMatcher().Match(projectID, art.Candidate{
 		Repository:  repoName,
 		Tag:         tag,
 		NamespaceID: projectID,

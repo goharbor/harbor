@@ -18,6 +18,10 @@ import (
 	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor"
+	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
+	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/opencontainers/go-digest"
 	// registry image resolvers
 	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
@@ -76,20 +80,22 @@ type Controller interface {
 // NewController creates an instance of the default artifact controller
 func NewController() Controller {
 	return &controller{
-		repoMgr:    repository.Mgr,
-		artMgr:     artifact.Mgr,
-		tagMgr:     tag.Mgr,
-		abstractor: abstractor.NewAbstractor(),
+		repoMgr:      repository.Mgr,
+		artMgr:       artifact.Mgr,
+		tagMgr:       tag.Mgr,
+		abstractor:   abstractor.NewAbstractor(),
+		immutableMtr: rule.NewRuleMatcher(),
 	}
 }
 
 // TODO concurrency summary
 
 type controller struct {
-	repoMgr    repository.Manager
-	artMgr     artifact.Manager
-	tagMgr     tag.Manager
-	abstractor abstractor.Abstractor
+	repoMgr      repository.Manager
+	artMgr       artifact.Manager
+	tagMgr       tag.Manager
+	abstractor   abstractor.Abstractor
+	immutableMtr match.ImmutableTagMatcher
 }
 
 func (c *controller) Ensure(ctx context.Context, repositoryID int64, digest string, tags ...string) (bool, int64, error) {
@@ -304,7 +310,7 @@ func (c *controller) ListTags(ctx context.Context, query *q.Query, option *TagOp
 }
 
 func (c *controller) DeleteTag(ctx context.Context, tagID int64) error {
-	// immutable checking is covered in middleware
+	// Immutable checking is covered in middleware
 	// TODO check signature
 	// TODO delete label
 	// TODO fire delete tag event
@@ -374,8 +380,28 @@ func (c *controller) assembleTag(ctx context.Context, tag *tm.Tag, option *TagOp
 		return t
 	}
 	if option.WithImmutableStatus {
-		// TODO populate immutable status
+		repo, err := c.repoMgr.Get(ctx, tag.RepositoryID)
+		if err != nil {
+			log.Error(err)
+		} else {
+			t.Immutable = c.isImmutable(repo.ProjectID, repo.Name, tag.Name)
+		}
 	}
 	// TODO populate signature on tag level?
 	return t
+}
+
+// check whether the tag is Immutable
+func (c *controller) isImmutable(projectID int64, repo string, tag string) bool {
+	_, repoName := utils.ParseRepository(repo)
+	matched, err := c.immutableMtr.Match(projectID, art.Candidate{
+		Repository:  repoName,
+		Tag:         tag,
+		NamespaceID: projectID,
+	})
+	if err != nil {
+		log.Error(err)
+		return false
+	}
+	return matched
 }
