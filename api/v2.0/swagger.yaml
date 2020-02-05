@@ -467,6 +467,9 @@ definitions:
         type: integer
         format: int64
         description: The child ID of the reference
+      child_digest:
+        type: string
+        description: The digest of the child artifact
       platform:
         $ref: '#/definitions/Platform'
   Platform:

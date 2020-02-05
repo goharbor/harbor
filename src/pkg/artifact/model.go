@@ -101,9 +101,10 @@ func (a *Artifact) To() *dao.Artifact {
 
 // Reference records the child artifact referenced by parent artifact
 type Reference struct {
-	ParentID int64
-	ChildID  int64
-	Platform *v1.Platform
+	ParentID    int64
+	ChildID     int64
+	ChildDigest string // As we only provide the API based on digest rather than ID, the digest of child artifact is needed
+	Platform    *v1.Platform
 }
 
 // From converts the data level reference to business level

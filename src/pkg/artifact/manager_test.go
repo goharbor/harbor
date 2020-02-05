@@ -105,6 +105,9 @@ func (m *managerTestSuite) TestAssemble() {
 			ChildID:  3,
 		},
 	}, nil)
+	m.dao.On("Get").Return(&dao.Artifact{
+		Digest: "digest",
+	}, nil)
 	artifact, err := m.mgr.assemble(nil, art)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
