@@ -48,6 +48,9 @@ var (
 
 		{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
 		{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
+
+		{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
+		{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
 	}
 
 	// all policies for the projects
