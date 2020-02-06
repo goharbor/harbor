@@ -4,16 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/docker/distribution/reference"
+	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
-	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/scan/whitelist"
-	"github.com/goharbor/harbor/src/pkg/tag"
 	"github.com/opencontainers/go-digest"
 	"github.com/pkg/errors"
 	"net/http"
@@ -70,50 +67,13 @@ type ManifestInfo struct {
 // ManifestExists ...
 func (info *ManifestInfo) ManifestExists(ctx context.Context) (bool, error) {
 	info.manifestExistOnce.Do(func() {
-
-		// ToDo: use the artifact controller method
-		total, repos, err := repository.Mgr.List(ctx, &q.Query{
-			Keywords: map[string]interface{}{
-				"Name": info.Repository,
-			},
-		})
+		af, err := artifact.Ctl.GetByReference(ctx, info.Repository, info.Tag, nil)
 		if err != nil {
 			info.manifestExistErr = err
 			return
 		}
-		if total == 0 {
-			return
-		}
-
-		total, tags, err := tag.Mgr.List(ctx, &q.Query{
-			Keywords: map[string]interface{}{
-				"Name":         info.Tag,
-				"RepositoryID": repos[0].RepositoryID,
-			},
-		})
-		if err != nil {
-			info.manifestExistErr = err
-			return
-		}
-		if total == 0 {
-			return
-		}
-
-		total, afs, err := artifact.Mgr.List(ctx, &q.Query{
-			Keywords: map[string]interface{}{
-				"ID": tags[0].ArtifactID,
-			},
-		})
-		if err != nil {
-			info.manifestExistErr = err
-			return
-		}
-		if total == 0 {
-			return
-		}
-
-		info.Digest = afs[0].Digest
-		info.manifestExist = total > 0
+		info.manifestExist = true
+		info.Digest = af.Digest
 	})
 
 	return info.manifestExist, info.manifestExistErr
