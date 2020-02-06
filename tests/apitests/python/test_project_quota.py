@@ -67,7 +67,7 @@ class TestProjects(unittest.TestCase):
 
         #4.Push an image to project(PA) by user(UA), then check the project quota usage; -- {"count": 1, "storage": 2791709}
         #image = "harbor-repo.vmware.com/harbor-ci/alpine"
-        image = "alpine"
+        image = "goharbor/alpine"
         src_tag = "3.10"
         TestProjects.repo_name, _ = push_image_to_project(project_test_quota_name, harbor_server, user_test_quota_name, user_001_password, image, src_tag)
 
