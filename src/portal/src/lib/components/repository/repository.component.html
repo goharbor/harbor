@@ -4,7 +4,7 @@
       <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="goBack()"></clr-icon>
     </div>
     <div class="title-block">
-      <h2 sub-header-title class="custom-h2">{{repoName}}</h2>
+      <h2 sub-header-title class="custom-h2">{{showCurrentTitle | slice:0:15}}</h2>
     </div>
   </div>
 </section>
@@ -55,8 +55,8 @@
     <section id="image" role="tabpanel" aria-labelledby="repo-image" [hidden]='!isCurrentTabContent("image")'>
       <div id=images-container>
         <artifact-list-tab ngProjectAs="clr-dg-row-detail" (tagClickEvent)="watchTagClickEvt($event)" (signatureOutput)="saveSignatures($event)"
-          class="sub-grid-custom" [referArtifactName]="referArtifactName" [repoName]="repoName" [registryUrl]="registryUrl" [withNotary]="withNotary" [withAdmiral]="withAdmiral" [hasSignedIn]="hasSignedIn"
-          [isGuest]="isGuest" [projectId]="projectId" [memberRoleID]="memberRoleID"></artifact-list-tab>
+          class="sub-grid-custom" [repoName]="repoName" artifact [registryUrl]="registryUrl" [withNotary]="withNotary" [withAdmiral]="withAdmiral" [hasSignedIn]="hasSignedIn"
+          [isGuest]="isGuest" [projectId]="projectId" [memberRoleID]="memberRoleID" (putReferArtifactArray)="putReferArtifactArray($event)"></artifact-list-tab>
       </div>
     </section>
   </div>

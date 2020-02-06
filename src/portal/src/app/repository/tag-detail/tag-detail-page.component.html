@@ -4,11 +4,11 @@
         <span class="back-icon"><</span>
         <a (click)="goBackRep()">{{'REPOSITORY.REPOSITORIES'| translate}}</a>
         <span class="back-icon"><</span>
-        <a (click)="goBack(repositoryId)">{{repositoryId}}</a>
+        <a (click)="goBack(repositoryName)">{{repositoryName}}</a>
     </div>
     <artifact-summary (backEvt)="goBack($event)" 
     [artifactDigest]="artifactDigest"
     [withAdmiral]="withAdmiral"
     [projectId]="projectId"
-    [repositoryId]="repositoryId"></artifact-summary>
+    [repositoryName]="repositoryName"></artifact-summary>
 </div>
