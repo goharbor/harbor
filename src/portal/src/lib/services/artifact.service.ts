@@ -11,7 +11,7 @@ import { RequestQueryParams } from "./RequestQueryParams";
 import { Tag, Manifest } from "./interface";
 import { Artifact } from "../components/artifact/artifact";
 import { map, catchError } from "rxjs/operators";
-import { Observable, throwError as observableThrowError } from "rxjs";
+import { Observable, throwError as observableThrowError, Subject } from "rxjs";
 import { ArtifactListTabComponent } from "../components/artifact/artifact-list-tab.component";
 
 /**
@@ -36,6 +36,8 @@ import { ArtifactListTabComponent } from "../components/artifact/artifact-list-t
  * class TagService
  */
 export abstract class ArtifactService {
+  triggerUploadArtifact = new Subject<string>();
+  TriggerArtifactChan$ = this.triggerUploadArtifact.asObservable();
   /**
    * Get all the tags under the specified repository.
    * NOTES: If the Notary is enabled, the signatures should be included in the returned data.
@@ -130,6 +132,9 @@ export abstract class ArtifactService {
 export class ArtifactDefaultService extends ArtifactService {
   _baseUrl: string;
   _labelUrl: string;
+  triggerUploadArtifact = new Subject<string>();
+  TriggerArtifactChan$ = this.triggerUploadArtifact.asObservable();
+
   constructor(
     private http: HttpClient,
     @Inject(SERVICE_CONFIG) private config: IServiceConfig

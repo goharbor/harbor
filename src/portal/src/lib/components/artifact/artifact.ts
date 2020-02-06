@@ -48,11 +48,11 @@ export class Artifact {
     }
 }
 export class Reference {
-    id: number;
-    artifact_id: number;
-    reference_id: number;
+    child_id: number;
+    child_digest: string;
+    parent_id: number;
     platform?: any; // json
     constructor(artifact_id) {
-        this.artifact_id = artifact_id;
+        this.child_id = artifact_id;
     }
 }

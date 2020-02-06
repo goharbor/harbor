@@ -24,7 +24,7 @@ import { SessionService } from '../../shared/session.service';
 export class TagDetailPageComponent implements OnInit {
   tagId: string;
   artifactDigest: string;
-  repositoryId: string;
+  repositoryName: string;
   projectId: string | number;
 
   constructor(
@@ -36,7 +36,7 @@ export class TagDetailPageComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.repositoryId = this.route.snapshot.params["repo"];
+    this.repositoryName = this.route.snapshot.params["repo"];
     this.artifactDigest = this.route.snapshot.params["digest"];
     this.projectId = this.route.snapshot.params["id"];
   }

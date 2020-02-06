@@ -97,7 +97,6 @@ import { ClipboardDirective } from "./components/third-party/ngx-clipboard/clipb
 import { ChannelService } from "./services/channel.service";
 import { SharedModule } from "./utils/shared/shared.module";
 import { TranslateServiceInitializer } from "./i18n";
-import { TagCardsComponent } from './components/artifact/tag-cards/tag-cards.component';
 
 /**
  * Declare default service configuration; all the endpoints will be defined in
@@ -268,7 +267,6 @@ export interface HarborModuleConfig {
       ResultBarChartComponent,
       ResultGridComponent,
       ResultTipComponent,
-      TagCardsComponent,
       ArtifactListComponent
   ],
   exports: [

@@ -3,8 +3,13 @@
         <a (click)="goProBack()">{{'SIDE_NAV.PROJECTS'| translate}}</a>
         <span class="back-icon"><</span>
         <a (click)="watchGoBackEvt(projectId)">{{'REPOSITORY.REPOSITORIES'| translate}}</a>
+        <span *ngIf="referArtifactNameArray.length===1">&lt;<a (click)="backInitRepo()">{{repoName}}</a></span>
+        <span *ngIf="referArtifactNameArray.length>=2" >
+            <span *ngFor="let digest of referArtifactNameArray;let i = index">
+                &lt;<a (click)="jumpDigest(referArtifactNameArray,i)" >{{digest | slice:0:15}}</a></span>
+        </span>
     </div>
-    <hbr-repository [repoName]="repoName" [referArtifactName]="referArtifactName"  [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole"
+    <hbr-repository [repoName]="repoName"  [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole"
                     [projectId]="projectId" [memberRoleID]="projectMemberRoleId" [isGuest]="isGuest"
-                    (tagClickEvent)="watchTagClickEvt($event)" (backEvt)="watchGoBackEvt($event)"></hbr-repository>
+                    (tagClickEvent)="watchTagClickEvt($event)" (backEvt)="watchGoBackEvt($event)" (putArtifactReferenceArr)="putArtifactReferenceArr($event)"></hbr-repository>
 </div>

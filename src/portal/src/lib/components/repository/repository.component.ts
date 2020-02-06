@@ -17,7 +17,7 @@ import { State } from '../../services/interface';
 
 import { RepositoryService } from '../../services/repository.service';
 import { Repository, RepositoryItem, Tag, ArtifactClickEvent,
-  SystemInfo, SystemInfoService, TagService } from '../../services';
+  SystemInfo, SystemInfoService, TagService, ArtifactService } from '../../services';
 import { ErrorHandler } from '../../utils/error-handler';
 import { ConfirmationState, ConfirmationTargets } from '../../entities/shared.const';
 import { ConfirmationDialogComponent, ConfirmationMessage, ConfirmationAcknowledgement } from '../confirmation-dialog';
@@ -38,12 +38,13 @@ export class RepositoryComponent implements OnInit {
   @Input() projectId: number;
   @Input() memberRoleID: number;
   @Input() repoName: string;
-  @Input() referArtifactName: string;
+  // @Input() referArtifactName: string;
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
   @Input() isGuest: boolean;
   @Output() tagClickEvent = new EventEmitter<ArtifactClickEvent>();
   @Output() backEvt: EventEmitter<any> = new EventEmitter<any>();
+  @Output() putArtifactReferenceArr: EventEmitter<string[]> = new EventEmitter<[]>();
 
   onGoing = false;
   editing = false;
@@ -59,12 +60,13 @@ export class RepositoryComponent implements OnInit {
 
   @ViewChild('confirmationDialog', {static: false})
   confirmationDlg: ConfirmationDialogComponent;
-
+  showCurrentTitle: string ;
   constructor(
     private errorHandler: ErrorHandler,
     private repositoryService: RepositoryService,
     private systemInfoService: SystemInfoService,
     private tagService: TagService,
+    private artifactService: ArtifactService,
     private translate: TranslateService,
   ) {  }
 
@@ -80,16 +82,25 @@ export class RepositoryComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    let repoName = this.repoName.split("sha256:")[0];
-    this.referArtifactName = `${this.repoName.split(repoName)[1]}` ? `${this.repoName.split(repoName)[1]}` : "";
-    this.repoName = this.repoName.split('/')[1] || this.repoName.split('/')[0];
-    this.repoName = this.repoName.split(":sha256:")[0];
+    // let repoName = this.repoName.split("sha256:")[0];
+    // this.referArtifactName = `${this.repoName.split(repoName)[1]}` ? `${this.repoName.split(repoName)[1]}` : "";
+    // this.repoName = this.repoName.split('/')[1];
+    // this.repoName = this.repoName.split(":sha256:")[0];
     if (!this.projectId) {
       this.errorHandler.error('Project ID cannot be unset.');
       return;
     }
+    this.showCurrentTitle = this.repoName || 'null';
     this.retrieve();
     this.inProgress = false;
+    this.artifactService.TriggerArtifactChan$.subscribe(res => {
+      if (res === 'repoName') {
+        this.showCurrentTitle = this.repoName;
+      }
+      else {
+        this.showCurrentTitle = res[res.length-1]
+      }
+    })
   }
 
   retrieve(state?: State) {
@@ -199,5 +210,16 @@ export class RepositoryComponent implements OnInit {
         ack.state === ConfirmationState.CONFIRMED) {
         this.reset();
     }
+  }
+  ngOnDestroy(): void {
+    localStorage.setItem('reference', JSON.stringify([]));
+  }
+  putReferArtifactArray(referArtifactArray) {
+    if (referArtifactArray.length) {
+      this.showCurrentTitle = referArtifactArray[referArtifactArray.length - 1];
+      // referArtifactArray.pop();
+      this.putArtifactReferenceArr.emit(referArtifactArray);
+    }
+
   }
 }
