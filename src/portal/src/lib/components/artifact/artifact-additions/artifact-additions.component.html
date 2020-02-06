@@ -1,18 +1,30 @@
-<div class="stack-block stack-block-expandable stack-block-expanded">
-    <dt class="stack-block-label" aria-level="1" aria-posinset="2" aria-setsize="3">Additions</dt>
-    <dd class="stack-block-content">Annotations and References</dd>
-    <div class="stack-children">
-        <div class="stack-block">
-            <dt class="stack-block-label" aria-level="2" aria-posinset="1" aria-setsize="3">Sub-label 1</dt>
-            <dd class="stack-block-content">Sub-content 1</dd>
-        </div>
-        <div class="stack-block">
-            <dt class="stack-block-label" aria-level="2" aria-posinset="2" aria-setsize="3">Sub-label 2</dt>
-            <dd class="stack-block-content">Sub-content 2</dd>
-        </div>
-        <div class="stack-block">
-            <dt class="stack-block-label" aria-level="2" aria-posinset="3" aria-setsize="3">Sub-label 3</dt>
-            <dd class="stack-block-content">Sub-content 3</dd>
-        </div>
-    </div>
-</div>
+<h4 class="margin-bottom-025">Additions</h4>
+<clr-tabs>
+    <clr-tab>
+        <button clrTabLink id="build-history">{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</button>
+        <clr-tab-content *clrIfActive>
+            <hbr-artifact-build-history></hbr-artifact-build-history>
+        </clr-tab-content>
+    </clr-tab>
+    <clr-tab>
+        <button clrTabLink id="summary-link">{{'HELM_CHART.SUMMARY' | translate}}</button>
+        <clr-tab-content id="summary-content" *clrIfActive>
+            <hbr-artifact-summary></hbr-artifact-summary>
+        </clr-tab-content>
+    </clr-tab>
+    <clr-tab>
+        <button clrTabLink id="depend-link">{{'HELM_CHART.DEPENDENCIES' | translate}}</button>
+        <clr-tab-content id="depend-content" *clrIfActive>
+            <hbr-artifact-dependencies></hbr-artifact-dependencies>
+        </clr-tab-content>
+    </clr-tab>
+    <clr-tab>
+        <button clrTabLink id="value-link">{{'HELM_CHART.VALUES' | translate}}</button>
+        <clr-tab-content id="value-content" *clrIfActive>
+            <hbr-artifact-values></hbr-artifact-values>
+        </clr-tab-content>
+    </clr-tab>
+</clr-tabs>
+
+
+
