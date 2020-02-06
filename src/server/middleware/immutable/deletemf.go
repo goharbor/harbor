@@ -3,14 +3,9 @@ package immutable
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/api/artifact"
 	common_util "github.com/goharbor/harbor/src/common/utils"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/pkg/art"
-	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
-	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/pkg/tag"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"net/http"
 )
@@ -43,56 +38,20 @@ func handleDelete(req *http.Request) error {
 		return errors.New("cannot get the manifest information from request context")
 	}
 
-	_, repoName := common_util.ParseRepository(mf.Repository)
-	total, repos, err := repository.Mgr.List(req.Context(), &q.Query{
-		Keywords: map[string]interface{}{
-			"Name": mf.Repository,
-		},
+	af, err := artifact.Ctl.GetByReference(req.Context(), mf.Repository, mf.Digest, &artifact.Option{
+		WithTag:   true,
+		TagOption: &artifact.TagOption{WithImmutableStatus: true},
 	})
 	if err != nil {
-		return err
-	}
-	if total == 0 {
-		return nil
-	}
-
-	total, afs, err := artifact.Mgr.List(req.Context(), &q.Query{
-		Keywords: map[string]interface{}{
-			"ProjectID":    mf.ProjectID,
-			"RepositoryID": repos[0].RepositoryID,
-			"Digest":       mf.Digest,
-		},
-	})
-	if err != nil {
-		return err
-	}
-	if total == 0 {
-		return nil
-	}
-
-	total, tags, err := tag.Mgr.List(req.Context(), &q.Query{
-		Keywords: map[string]interface{}{
-			"ArtifactID": afs[0].ID,
-		},
-	})
-	if err != nil {
-		return err
-	}
-	if total == 0 {
-		return nil
-	}
-
-	for _, tag := range tags {
-		var matched bool
-		matched, err = rule.NewRuleMatcher().Match(mf.ProjectID, art.Candidate{
-			Repository:  repoName,
-			Tag:         tag.Name,
-			NamespaceID: mf.ProjectID,
-		})
-		if err != nil {
-			return err
+		if internal_errors.IsErr(err, internal_errors.NotFoundCode) {
+			return nil
 		}
-		if matched {
+		return err
+	}
+
+	_, repoName := common_util.ParseRepository(mf.Repository)
+	for _, tag := range af.Tags {
+		if tag.Immutable {
 			return NewErrImmutable(repoName, tag.Name)
 		}
 	}
