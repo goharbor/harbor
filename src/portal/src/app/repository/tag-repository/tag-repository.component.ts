@@ -17,7 +17,7 @@ import { AppConfigService } from '../../app-config.service';
 import { SessionService } from '../../shared/session.service';
 import { Project } from '../../project/project';
 import { RepositoryComponent } from "../../../lib/components/repository/repository.component";
-import { ArtifactClickEvent } from "../../../lib/services";
+import { ArtifactClickEvent, ArtifactService } from "../../../lib/services";
 
 @Component({
   selector: 'tag-repository',
@@ -29,7 +29,7 @@ export class TagRepositoryComponent implements OnInit {
   projectId: number;
   projectMemberRoleId: number;
   repoName: string;
-  referArtifactName: string;
+  referArtifactNameArray: string[] = [];
   hasProjectAdminRole: boolean = false;
   isGuest: boolean;
   registryUrl: string;
@@ -40,6 +40,7 @@ export class TagRepositoryComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private router: Router,
+    private artifactService: ArtifactService,
     private appConfigService: AppConfigService,
     private session: SessionService) {
   }
@@ -57,7 +58,7 @@ export class TagRepositoryComponent implements OnInit {
       this.isGuest = (<Project>resolverData['projectResolver']).current_user_role_id === 3;
       this.projectMemberRoleId = (<Project>resolverData['projectResolver']).current_user_role_id;
     }
-    this.repoName = this.route.snapshot.params['repo']
+    this.repoName = this.route.snapshot.params['repo'];
     this.registryUrl = this.appConfigService.getConfig().registry_url;
   }
 
@@ -87,5 +88,24 @@ export class TagRepositoryComponent implements OnInit {
   }
   goProBack(): void {
     this.router.navigate(["harbor", "projects"]);
+  }
+  backInitRepo() {
+    this.referArtifactNameArray = [];
+    localStorage.setItem('reference', JSON.stringify([]));
+    this.updateArtifactList('repoName');
+  }
+  jumpDigest(referArtifactNameArray: string[], index: number) {
+    this.referArtifactNameArray = referArtifactNameArray.slice(index);
+    this.referArtifactNameArray.pop();
+    this.referArtifactNameArray = referArtifactNameArray.slice(index);
+    localStorage.setItem('reference', JSON.stringify(referArtifactNameArray.slice(index)));
+    this.updateArtifactList(referArtifactNameArray.slice(index));
+  }
+  updateArtifactList(res): void {
+      this.artifactService.triggerUploadArtifact.next(res);
+  }
+  putArtifactReferenceArr(digestArray) {
+    this.referArtifactNameArray = digestArray;
+    console.log(this.referArtifactNameArray);
   }
 }

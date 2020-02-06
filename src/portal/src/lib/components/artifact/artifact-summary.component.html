@@ -1,24 +1,34 @@
 <div class="title-wrapper">
-        <div class="title-block arrow-block" *ngIf="withAdmiral">
-            <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
-        </div>
-        <div class="title-block">
-            <h2 class="custom-h2">{{repositoryId}}:{{artifactDetails?.name}}</h2>
-        </div>
+    <div class="title-block arrow-block" *ngIf="withAdmiral">
+        <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
     </div>
-    <dl class="stack-view">
-        <!-- common properties -->
-        <artifact-common-properties [artifactDetails]="artifactDetails"></artifact-common-properties>
+    <div class="title-block">
+        <h2 class="custom-h2">{{repositoryName}}:{{artifactDetails?.name}}</h2>
+    </div>
+</div>
+<dl class="stack-view">
+    <!-- common properties -->
+    <artifact-common-properties [artifactDetails]="artifactDetails"></artifact-common-properties>
+</dl>
+<!-- local properties -->
+<dl class="stack-view">
+    <artifact-local-properties [artifactDetails]="artifactDetails"></artifact-local-properties>
+</dl>
 
-        <!-- local properties -->
-        <artifact-local-properties [artifactDetails]="artifactDetails"></artifact-local-properties>
-        <!-- tags -->
-        <artifact-tag [artifactDetails]="artifactDetails"></artifact-tag>
-        <!-- Additional Links -->
-        <artifact-additional-link [artifactDetails]="artifactDetails"></artifact-additional-link>
-        <!-- Additions -->
-        <artifact-additions [artifactDetails]="artifactDetails"></artifact-additions>
-    </dl>
+<!-- tags -->
+<!-- <dl class="stack-view"> -->
+    <artifact-tag [artifactDetails]="artifactDetails" [projectName]="projectName" [repositoryName]="repositoryName"
+        (refreshArtifact)="refreshArtifact()"></artifact-tag>
+
+<!-- </dl> -->
+<!-- Additional Links -->
+<dl class="stack-view">
+    <artifact-additional-link [artifactDetails]="artifactDetails"></artifact-additional-link>
+</dl>
+<!-- Additions -->
+<dl class="stack-view">
+    <artifact-additions [artifactDetails]="artifactDetails"></artifact-additions>
+</dl>
 
 <!-- <div>
     <section class="overview-section">

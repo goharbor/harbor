@@ -45,6 +45,7 @@ export abstract class TagService {
    *
    * @memberOf TagService
    */
+  // to delete
   abstract getTags(
     repositoryName: string,
     queryParams?: RequestQueryParams
@@ -61,8 +62,10 @@ export abstract class TagService {
    * @memberOf TagService
    */
   abstract deleteTag(
+    projectName: string,
     repositoryName: string,
-    tag: string
+    digest: string,
+    tagName: string
   ): Observable<any>;
 
   /**
@@ -146,7 +149,7 @@ export class TagDefaultService extends TagService {
     return this.http
       .get(url, buildHttpRequestOptions(queryParams))
       .pipe(map(response => response as Tag[])
-      , catchError(error => observableThrowError(error)));
+        , catchError(error => observableThrowError(error)));
   }
 
   _getSignatures(repositoryName: string): Observable<VerifiedSignature[]> {
@@ -154,7 +157,7 @@ export class TagDefaultService extends TagService {
     return this.http
       .get(url, HTTP_GET_OPTIONS)
       .pipe(map(response => response as VerifiedSignature[])
-      , catchError(error => observableThrowError(error)));
+        , catchError(error => observableThrowError(error)));
   }
 
   public getTags(
@@ -168,18 +171,20 @@ export class TagDefaultService extends TagService {
   }
 
   public deleteTag(
+    projectName: string,
     repositoryName: string,
-    tag: string
+    digest: string,
+    tagName: string
   ): Observable<any> {
-    if (!repositoryName || !tag) {
+    if (!projectName || !repositoryName || !digest || !tagName) {
       return observableThrowError("Bad argument");
     }
 
-    let url: string = `${this._baseUrl}/${repositoryName}/tags/${tag}`;
+    let url: string = `/api/v2.0/projects/${projectName}/repositories/${repositoryName}/artifacts/${digest}/tags/${tagName}`;
     return this.http
       .delete(url, HTTP_JSON_OPTIONS)
       .pipe(map(response => response)
-      , catchError(error => observableThrowError(error)));
+        , catchError(error => observableThrowError(error)));
   }
 
   public getTag(
@@ -195,7 +200,7 @@ export class TagDefaultService extends TagService {
     return this.http
       .get(url, HTTP_GET_OPTIONS)
       .pipe(map(response => response as Tag)
-      , catchError(error => observableThrowError(error)));
+        , catchError(error => observableThrowError(error)));
   }
 
   public addLabelToImages(
@@ -209,7 +214,7 @@ export class TagDefaultService extends TagService {
 
     let _addLabelToImageUrl = `${
       this._baseUrl
-    }/${repoName}/tags/${tagName}/labels`;
+      }/${repoName}/tags/${tagName}/labels`;
     return this.http
       .post(_addLabelToImageUrl, { id: labelId }, HTTP_JSON_OPTIONS)
       .pipe(catchError(error => observableThrowError(error)));
@@ -226,7 +231,7 @@ export class TagDefaultService extends TagService {
 
     let _addLabelToImageUrl = `${
       this._baseUrl
-    }/${repoName}/tags/${tagName}/labels/${labelId}`;
+      }/${repoName}/tags/${tagName}/labels/${labelId}`;
     return this.http
       .delete(_addLabelToImageUrl)
       .pipe(catchError(error => observableThrowError(error)));
@@ -243,6 +248,6 @@ export class TagDefaultService extends TagService {
     return this.http
       .get(url, HTTP_GET_OPTIONS)
       .pipe(map(response => response as Manifest)
-      , catchError(error => observableThrowError(error)));
+        , catchError(error => observableThrowError(error)));
   }
 }

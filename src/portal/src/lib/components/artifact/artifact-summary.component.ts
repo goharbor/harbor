@@ -8,7 +8,6 @@ import { UserPermissionService } from "../../services/permission.service";
 import { USERSTATICPERMISSION } from "../../services/permission-static";
 import { ChannelService } from "../../services/channel.service";
 import { DEFAULT_SUPPORTED_MIME_TYPE, VULNERABILITY_SCAN_STATUS, VULNERABILITY_SEVERITY } from "../../utils/utils";
-import { TagUi } from "./tag-cards/tag";
 import { Reference, Artifact } from "./artifact";
 
 const TabLinkContentMap: { [index: string]: string } = {
@@ -33,7 +32,7 @@ export class ArtifactSummaryComponent implements OnInit {
   @Input()
   artifactDigest: string;
   @Input()
-  repositoryId: string;
+  repositoryName: string;
   @Input()
   withAdmiral: boolean;
   artifactDetails: Artifact;
@@ -109,68 +108,7 @@ export class ArtifactSummaryComponent implements OnInit {
   @Input() projectId: number;
   projectName: string;
   showStatBar: boolean = true;
-  tagList: TagUi[] = [
-    { 
-      name: 'dev',
-      pull_time: '2020-01-07T03:33:41.162319Z', push_time: '2020-01-01T03:33:41.162319Z',
-      showLabels: [], // private
-      labelFilterName: '', // private
-      labels: [
-        {
-          "id": 1,
-          "name": "ewsq",
-          "description": "",
-          "color": "#A9B6BE",
-          "scope": "g",
-          "project_id": 0,
-          "creation_time": "2020-01-10T06:51:28.559519Z",
-          "update_time": "2020-01-10T06:51:28.559519Z",
-          "deleted": false
-        },
-        {
-          "id": 1,
-          "name": "ewsq",
-          "description": "",
-          "color": "#A9B6BE",
-          "scope": "g",
-          "project_id": 0,
-          "creation_time": "2020-01-10T06:51:28.559519Z",
-          "update_time": "2020-01-10T06:51:28.559519Z",
-          "deleted": false
-        }
-      ]
-    },
-    {
-      name: "v1.10.0",
-      pull_time: '2020-01-07T03:33:41.162319Z', push_time: '2020-01-01T03:33:41.162319Z',
-      showLabels: [],
-      labelFilterName: '',
-      labels: [
-        {
-          "id": 2,
-          "name": "ewsq",
-          "description": "",
-          "color": "#A9B6BE",
-          "scope": "g",
-          "project_id": 0,
-          "creation_time": "2020-01-10T06:51:28.559519Z",
-          "update_time": "2020-01-10T06:51:28.559519Z",
-          "deleted": false
-        },
-        {
-          "id": 1,
-          "name": "ewsq",
-          "description": "",
-          "color": "#A9B6BE",
-          "scope": "g",
-          "project_id": 0,
-          "creation_time": "2020-01-10T06:51:28.559519Z",
-          "update_time": "2020-01-10T06:51:28.559519Z",
-          "deleted": false
-        }
-      ]
-    }
-  ];
+
   constructor(
     private projectService: ProjectService,
     private artifactService: ArtifactService,
@@ -180,16 +118,11 @@ export class ArtifactSummaryComponent implements OnInit {
   ) { }
 
   ngOnInit(): void {
-    if (this.repositoryId && this.artifactDigest) {
+    if (this.repositoryName && this.artifactDigest) {
       // this.tagService.getTag(this.repositoryId, this.tagId).subscribe(
         this.projectService.getProject(this.projectId).subscribe(project => {
           this.projectName = project.name;
-          this.artifactService.getArtifactFromId(this.projectName, this.repositoryId, this.artifactDigest).subscribe(
-            response => {
-              this.getArtifactDetails(response);
-            },
-            error => this.errorHandler.error(error)
-          );
+          this.getArtifact();
         })
       
     }
@@ -197,6 +130,14 @@ export class ArtifactSummaryComponent implements OnInit {
     this.channel.tagDetail$.subscribe(artifact => {
       this.getArtifactDetails(artifact);
     });
+  }
+  getArtifact() {
+    this.artifactService.getArtifactFromId(this.projectName, this.repositoryName, this.artifactDigest).subscribe(
+      response => {
+        this.getArtifactDetails(response);
+      },
+      error => this.errorHandler.error(error)
+    );
   }
   getArtifactDetails(artifactDetails: Artifact): void {
     this.artifactDetails = artifactDetails;
@@ -209,7 +150,7 @@ export class ArtifactSummaryComponent implements OnInit {
     }
   }
   onBack(): void {
-    this.backEvt.emit(this.repositoryId);
+    this.backEvt.emit(this.repositoryName);
   }
 
   getPackageText(count: number): string {
@@ -381,5 +322,8 @@ export class ArtifactSummaryComponent implements OnInit {
   }
   isThemeLight() {
     return localStorage.getItem('styleModeLocal') === 'LIGHT';
+  }
+  refreshArtifact() {
+    this.getArtifact();
   }
 }

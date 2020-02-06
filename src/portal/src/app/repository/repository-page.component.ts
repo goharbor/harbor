@@ -46,7 +46,7 @@ export class RepositoryPageComponent implements OnInit {
   }
 
   watchRepoClickEvent(repoEvt: RepositoryItem): void {
-    let linkUrl = ['harbor', 'projects', repoEvt.project_id, 'repositories', repoEvt.name];
+    let linkUrl = ['harbor', 'projects', repoEvt.project_id, 'repositories', repoEvt.name.split('/')[1]];
     this.router.navigate(linkUrl);
   }
 }

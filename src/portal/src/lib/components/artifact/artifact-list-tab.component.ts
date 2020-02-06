@@ -21,7 +21,7 @@ import {
   OnInit,
   Output,
   ViewChild,
-  
+
 } from "@angular/core";
 import { forkJoin, Observable, Subject, throwError as observableThrowError, of } from "rxjs";
 import { catchError, debounceTime, distinctUntilChanged, finalize, map } from 'rxjs/operators';
@@ -84,7 +84,7 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
   projectName: string;
   @Input() memberRoleID: number;
   @Input() repoName: string;
-  @Input() referArtifactName: string;
+  referArtifactArray: string[];
   @Input() isEmbedded: boolean;
 
   @Input() hasSignedIn: boolean;
@@ -95,6 +95,7 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
   @Output() refreshRepo = new EventEmitter<boolean>();
   @Output() tagClickEvent = new EventEmitter<ArtifactClickEvent>();
   @Output() signatureOutput = new EventEmitter<any>();
+  @Output() putReferArtifactArray = new EventEmitter<string[]>();
 
 
   tags: Tag[];
@@ -188,6 +189,19 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
       this.errorHandler.error("Repo name cannot be unset.");
       return;
     }
+    this.referArtifactArray = localStorage.getItem('reference') ? JSON.parse(localStorage.getItem('reference')) : [];
+    if (this.referArtifactArray.length) {
+      this.putReferArtifactArray.emit(this.referArtifactArray);
+    }
+    this.artifactService.TriggerArtifactChan$.subscribe(res => {
+      // if (res === 'repoName') {
+        this.referArtifactArray = localStorage.getItem('reference') ? JSON.parse(localStorage.getItem('reference')) : [];
+        this.retrieve();
+      // }
+      // else {
+      //   this.showCurrentTitle = res[res.length-1]
+      // }
+    })
     this.retrieve();
     this.lastFilteredTagName = '';
 
@@ -355,7 +369,7 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
       this.selectedRow = this.selectedTag;
 
       this.artifactService.addLabelToImages(this.projectName, this.repoName, this.selectedRow[0].id, labelId).subscribe(res => {
-      // this.tagService.addLabelToImages(this.repoName, this.selectedRow[0].name, labelId).subscribe(res => {
+        // this.tagService.addLabelToImages(this.repoName, this.selectedRow[0].name, labelId).subscribe(res => {
         this.refresh();
 
         // set the selected label in front
@@ -537,236 +551,60 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
     this.loading = true;
     this.projectService.getProject(this.projectId).subscribe(project => {
       this.projectName = project.name;
-      if (this.referArtifactName) {
-        
-        let referArtifactArray = this.referArtifactName.split('sha256:');
+      if (this.referArtifactArray.length) {
+
+        // let referArtifactArray = this.referArtifactName.split('sha256:');
+        let observableLists: Observable<Artifact>[] = [];
+
+
         this.artifactService.getArtifactFromId(this.projectName, this.repoName,
-          `sha256:${referArtifactArray[referArtifactArray.length - 1]}`).subscribe(artifact => {
-          artifact.references
+          this.referArtifactArray[this.referArtifactArray.length - 1]).subscribe(artifact => {
+            artifact.references.forEach(child => {
+              observableLists.push(this.artifactService.getArtifactFromId(this.projectName, this.repoName,
+                child.child_digest));
+            });
+            forkJoin(observableLists).subscribe(artifacts => {
+              this.loading = false;
+
+              this.artifactList = artifacts;
+            });
+          });
+      } else {
+        this.artifactService.getArtifactList(this.projectName, this.repoName).subscribe(artifacts => {
+          this.artifactList = artifacts;
+          this.loading = false;
+        }, error => {
+          // error
+          this.loading = false;
+
+          //     this.tagService
+          //   .getTags(this.repoName)
+          //   .subscribe(items => {
+          //     // To keep easy use for vulnerability bar
+          //     items.forEach((t: Tag) => {
+          //       if (t.signature !== null) {
+          //         signatures.push(t.name);
+          //       }
+          //     });
+          //     this.artifactList = items as any;
+          //     let signedName: { [key: string]: string[] } = {};
+          //     signedName[this.repoName] = signatures;
+          //     this.signatureOutput.emit(signedName);
+          //     this.loading = false;
+          //     if (this.artifactList && this.artifactList.length === 0) {
+          //       this.refreshRepo.emit(true);
+          //     }
+          //   }, err => {
+          //     this.errorHandler.error(error);
+          //     this.loading = false;
+          //   });
+          //   let hnd = setInterval(() => this.ref.markForCheck(), 100);
+          // setTimeout(() => clearInterval(hnd), 5000);
         })
       }
-      this.artifactService.getArtifactList(this.projectName, this.repoName).subscribe(artifacts => {
-        this.artifactList = artifacts;
-        this.loading = false;
-      }, error => {
-        // error
-        this.artifactList = [
-          {
-            "id": 1,
-            type: 'image',
-            repository: "goharbor/harbor-portal",
-            tags: [{
-              id: '1',
-              name: 'tag1ecccc',
-              upload_time: '2020-01-06T09:40:08.036866579Z',
-              latest_download_time: '2020-01-06T09:40:08.036866579Z',
-          },
-          {
-              id: '2',
-              name: 'tag2111',
-              upload_time: '2020-01-06T09:40:08.036866579Z',
-              latest_download_time: '2020-01-06T09:40:08.036866579Z',
-          },
-          {
-              id: '3',
-              name: 'tag222',
-              upload_time: '2020-01-06T09:40:08.036866579Z',
-              latest_download_time: '2020-01-06T09:40:08.036866579Z',
-          }
-        ],
-            references: [new Reference(1), new Reference(2)],
-            media_type: 'string',
-            "digest": "sha256:4875cda368906fd670c9629b5e416ab3d6c0292015f3c3f12ef37dc9a32fc8d4",
-            "size": 20372934,
-            "scan_overview": {
-              "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
-                "report_id": "5e64bc05-3102-11ea-93ae-0242ac140004",
-                "scan_status": "Error",
-                "severity": "",
-                "duration": 118,
-                "summary": null,
-                "start_time": "2020-01-07T04:01:23.157711Z",
-                "end_time": "2020-01-07T04:03:21.662766Z"
-              }
-            },
-            "labels": [
-              {
-                "id": 3,
-                "name": "aaa",
-                "description": "",
-                "color": "#0095D3",
-                "scope": "g",
-                "project_id": 0,
-                "creation_time": "2020-01-13T05:44:00.580198Z",
-                "update_time": "2020-01-13T05:44:00.580198Z",
-                "deleted": false
-              },
-              {
-                "id": 6,
-                "name": "dbc",
-                "description": "",
-                "color": "",
-                "scope": "g",
-                "project_id": 0,
-                "creation_time": "2020-01-13T08:27:19.279123Z",
-                "update_time": "2020-01-13T08:27:19.279123Z",
-                "deleted": false
-              }
-            ],
-            "push_time": "2020-01-07T03:33:41.162319Z",
-            "pull_time": "0001-01-01T00:00:00Z",
-            hasReferenceArtifactList: [],
-            noReferenceArtifactList: []
-          },
-          {
-            "id": 2,
-            type: 'chart',
-            repository: "goharbor/harbor-portal",
-            tags: [{
-                id: '1',
-                name: 'tag1',
-                upload_time: '2020-01-06T09:40:08.036866579Z',
-                latest_download_time: '2020-01-06T09:40:08.036866579Z',
-            },
-            {
-                id: '2',
-                name: 'tag2',
-                upload_time: '2020-01-06T09:40:08.036866579Z',
-                latest_download_time: '2020-01-06T09:40:08.036866579Z',
-            },],
-            references: [new Reference(1), new Reference(2)],
-            media_type: 'string',
-            "digest": "sha256:12306fd670c9629b5e416ab3d6c0292015f3c3f12ef37dc9a32fc8d4",
-            "size": 20372934,
-            "scan_overview": {
-              "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
-                "report_id": "5e64bc05-3102-11ea-93ae-0242ac140004",
-                "scan_status": "Error",
-                "severity": "",
-                "duration": 118,
-                "summary": null,
-                "start_time": "2020-01-07T04:01:23.157711Z",
-                "end_time": "2020-01-07T04:03:21.662766Z"
-              }
-            },
-            "labels": [
-              {
-                "id": 3,
-                "name": "aaa",
-                "description": "",
-                "color": "#0095D3",
-                "scope": "g",
-                "project_id": 0,
-                "creation_time": "2020-01-13T05:44:00.580198Z",
-                "update_time": "2020-01-13T05:44:00.580198Z",
-                "deleted": false
-              },
-              {
-                "id": 6,
-                "name": "dbc",
-                "description": "",
-                "color": "",
-                "scope": "g",
-                "project_id": 0,
-                "creation_time": "2020-01-13T08:27:19.279123Z",
-                "update_time": "2020-01-13T08:27:19.279123Z",
-                "deleted": false
-              }
-            ],
-            "push_time": "2020-01-07T03:33:41.162319Z",
-            "pull_time": "0001-01-01T00:00:00Z",
-            hasReferenceArtifactList: [],
-            noReferenceArtifactList: []
-          },
-          {
-            "id": 3,
-            type: 'chart1',
-            repository: "goharbor/harbor-portal",
-            tags: [{
-                id: '1',
-                name: 'tag1',
-                upload_time: '2020-01-06T09:40:08.036866579Z',
-                latest_download_time: '2020-01-06T09:40:08.036866579Z',
-            },
-            {
-                id: '2',
-                name: 'tag2',
-                upload_time: '2020-01-06T09:40:08.036866579Z',
-                latest_download_time: '2020-01-06T09:40:08.036866579Z',
-            },],
-            references: [],
-            media_type: 'string',
-            "digest": "sha256:12306fd670c9629b5e416ab3d6c0292015f3c3f12ef37dc9a32fc8d4",
-            "size": 20372934,
-            "scan_overview": {
-              "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
-                "report_id": "5e64bc05-3102-11ea-93ae-0242ac140004",
-                "scan_status": "Error",
-                "severity": "",
-                "duration": 118,
-                "summary": null,
-                "start_time": "2020-01-07T04:01:23.157711Z",
-                "end_time": "2020-01-07T04:03:21.662766Z"
-              }
-            },
-            "labels": [
-              {
-                "id": 3,
-                "name": "aaa",
-                "description": "",
-                "color": "#0095D3",
-                "scope": "g",
-                "project_id": 0,
-                "creation_time": "2020-01-13T05:44:00.580198Z",
-                "update_time": "2020-01-13T05:44:00.580198Z",
-                "deleted": false
-              },
-              {
-                "id": 6,
-                "name": "dbc",
-                "description": "",
-                "color": "",
-                "scope": "g",
-                "project_id": 0,
-                "creation_time": "2020-01-13T08:27:19.279123Z",
-                "update_time": "2020-01-13T08:27:19.279123Z",
-                "deleted": false
-              }
-            ],
-            "push_time": "2020-01-07T03:33:41.162319Z",
-            "pull_time": "0001-01-01T00:00:00Z",
-            hasReferenceArtifactList: [],
-            noReferenceArtifactList: []
-          },
-        ];
-        this.loading = false;
 
-    //     this.tagService
-    //   .getTags(this.repoName)
-    //   .subscribe(items => {
-    //     // To keep easy use for vulnerability bar
-    //     items.forEach((t: Tag) => {
-    //       if (t.signature !== null) {
-    //         signatures.push(t.name);
-    //       }
-    //     });
-    //     this.artifactList = items as any;
-    //     let signedName: { [key: string]: string[] } = {};
-    //     signedName[this.repoName] = signatures;
-    //     this.signatureOutput.emit(signedName);
-    //     this.loading = false;
-    //     if (this.artifactList && this.artifactList.length === 0) {
-    //       this.refreshRepo.emit(true);
-    //     }
-    //   }, err => {
-    //     this.errorHandler.error(error);
-    //     this.loading = false;
-    //   });
-    //   let hnd = setInterval(() => this.ref.markForCheck(), 100);
-    // setTimeout(() => clearInterval(hnd), 5000);
-      })
     })
-    
+
   }
   // retrieve() {
   //   this.tags = [];
@@ -908,21 +746,21 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
     //       operateChanges(operMessage, OperationState.failure, wrongInfo);
     //     });
     // } else {
-      return this.artifactService
-        .deleteArtifact(this.projectName, this.repoName, artifact.id)
-        .pipe(map(
-          response => {
-            this.translateService.get("BATCH.DELETED_SUCCESS")
-              .subscribe(res => {
-                operateChanges(operMessage, OperationState.success);
-              });
-          }), catchError(error => {
-            const message = errorHandFn(error);
-            this.translateService.get(message).subscribe(res =>
-              operateChanges(operMessage, OperationState.failure, res)
-            );
-            return of(error);
-          }));
+    return this.artifactService
+      .deleteArtifact(this.projectName, this.repoName, artifact.id)
+      .pipe(map(
+        response => {
+          this.translateService.get("BATCH.DELETED_SUCCESS")
+            .subscribe(res => {
+              operateChanges(operMessage, OperationState.success);
+            });
+        }), catchError(error => {
+          const message = errorHandFn(error);
+          this.translateService.get(message).subscribe(res =>
+            operateChanges(operMessage, OperationState.failure, res)
+          );
+          return of(error);
+        }));
     // }
   }
 
@@ -981,29 +819,29 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
   }
   getImagePermissionRule(projectId: number): void {
     const permissions = [
-      {resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE},
-      {resource: USERSTATICPERMISSION.REPOSITORY.KEY, action:  USERSTATICPERMISSION.REPOSITORY.VALUE.PULL},
-      {resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE},
-      {resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE},
+      { resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE },
+      { resource: USERSTATICPERMISSION.REPOSITORY.KEY, action: USERSTATICPERMISSION.REPOSITORY.VALUE.PULL },
+      { resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE },
+      { resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE },
     ];
     this.userPermissionService.hasProjectPermissions(this.projectId, permissions).subscribe((results: Array<boolean>) => {
       this.hasAddLabelImagePermission = results[0];
-        this.hasRetagImagePermission = results[1];
-        this.hasDeleteImagePermission = results[2];
-        this.hasScanImagePermission = results[3];
-        // only has label permission
-        if (this.hasAddLabelImagePermission) {
-          if (!this.withAdmiral) {
-            this.getAllLabels();
-          }
+      this.hasRetagImagePermission = results[1];
+      this.hasDeleteImagePermission = results[2];
+      this.hasScanImagePermission = results[3];
+      // only has label permission
+      if (this.hasAddLabelImagePermission) {
+        if (!this.withAdmiral) {
+          this.getAllLabels();
         }
+      }
     }, error => this.errorHandler.error(error));
   }
   // Trigger scan
   scanNow(): void {
     if (this.selectedRow && this.selectedRow.length === 1) {
-        this.onSendingScanCommand = true;
-        this.channel.publishScanEvent(this.repoName + "/" + this.selectedRow[0].digest);
+      this.onSendingScanCommand = true;
+      this.channel.publishScanEvent(this.repoName + "/" + this.selectedRow[0].digest);
     }
   }
   submitFinish(e: boolean) {
@@ -1017,17 +855,17 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
     this.hasEnabledScanner = false;
     this.scanBtnState = ClrLoadingState.LOADING;
     this.scanningService.getProjectScanner(this.projectId)
-        .subscribe(response => {
-          if (response && "{}" !== JSON.stringify(response) && !response.disabled
+      .subscribe(response => {
+        if (response && "{}" !== JSON.stringify(response) && !response.disabled
           && response.health === "healthy") {
-            this.scanBtnState = ClrLoadingState.SUCCESS;
-            this.hasEnabledScanner = true;
-          } else {
-            this.scanBtnState = ClrLoadingState.ERROR;
-          }
-        }, error => {
+          this.scanBtnState = ClrLoadingState.SUCCESS;
+          this.hasEnabledScanner = true;
+        } else {
           this.scanBtnState = ClrLoadingState.ERROR;
-        });
+        }
+      }, error => {
+        this.scanBtnState = ClrLoadingState.ERROR;
+      });
   }
 
   handleScanOverview(scanOverview: any): VulnerabilitySummary {
@@ -1044,7 +882,7 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
   paddingLeftIndex = 1;
   ctrlIndex = -1;
   openArtifact(artifact: Artifact) {
-    if ( artifact.isOpen ) {
+    if (artifact.isOpen) {
       artifact.isOpen = false;
       artifact.referenceIndexOpenState = false;
       artifact.referenceDigestOpenState = false;
@@ -1106,11 +944,12 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
   //   });
   // }
   refer(artifact: Artifact) {
-    this.referArtifactName = this.referArtifactName ? `${this.referArtifactName}:${artifact.digest}` : artifact.digest;
-    let linkUrl = ['harbor', 'projects', this.projectId, 'repositories'
-    , `${this.repoName}:${this.referArtifactName}`];
-    this.router.navigate(linkUrl);
+    this.referArtifactArray.push(artifact.digest);
+    // let linkUrl = ['harbor', 'projects', this.projectId, 'repositories'
+    //   , `${this.repoName}:${this.referArtifactName}`];
+    // this.router.navigate(linkUrl);
     // this.cdf.detectChanges();
+    localStorage.setItem('reference', JSON.stringify(this.referArtifactArray))
     this.ngOnInit();
   }
 }
