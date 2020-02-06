@@ -16,35 +16,34 @@ package hook
 
 import (
 	"context"
-	"fmt"
-	"net/http"
-	"net/http/httptest"
-	"sync/atomic"
 	"testing"
 	"time"
 
+	"github.com/goharbor/harbor/src/jobservice/common/list"
+
+	"github.com/goharbor/harbor/src/jobservice/common/utils"
+
+	"github.com/pkg/errors"
+
 	"github.com/goharbor/harbor/src/jobservice/common/rds"
-	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/gomodule/redigo/redis"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"sync"
 )
 
 // HookAgentTestSuite tests functions of hook agent
 type HookAgentTestSuite struct {
 	suite.Suite
 
-	pool      *redis.Pool
 	namespace string
-	lcmCtl    lcm.Controller
+	pool      *redis.Pool
+	agent     *basicAgent
 
-	envContext *env.Context
-	cancel     context.CancelFunc
+	event *Event
+	jid   string
 }
 
 // TestHookAgentTestSuite is entry of go test
@@ -57,14 +56,11 @@ func (suite *HookAgentTestSuite) SetupSuite() {
 	suite.pool = tests.GiveMeRedisPool()
 	suite.namespace = tests.GiveMeTestNamespace()
 
-	ctx, cancel := context.WithCancel(context.Background())
-	suite.envContext = &env.Context{
-		SystemContext: ctx,
-		WG:            new(sync.WaitGroup),
+	suite.agent = &basicAgent{
+		context:   context.TODO(),
+		namespace: suite.namespace,
+		redisPool: suite.pool,
 	}
-	suite.cancel = cancel
-
-	suite.lcmCtl = lcm.NewController(suite.envContext, suite.namespace, suite.pool, func(hookURL string, change *job.StatusChange) error { return nil })
 }
 
 // TearDownSuite prepares test suites
@@ -77,126 +73,121 @@ func (suite *HookAgentTestSuite) TearDownSuite() {
 	_ = tests.ClearAll(suite.namespace, conn)
 }
 
+func (suite *HookAgentTestSuite) SetupTest() {
+	suite.jid = utils.MakeIdentifier()
+	rev := time.Now().Unix()
+	stats := &job.Stats{
+		Info: &job.StatsInfo{
+			JobID:    suite.jid,
+			Status:   job.RunningStatus.String(),
+			Revision: rev,
+			JobKind:  job.KindGeneric,
+			JobName:  job.SampleJob,
+		},
+	}
+	t := job.NewBasicTrackerWithStats(context.TODO(), stats, suite.namespace, suite.pool, nil, list.New())
+	err := t.Save()
+	suite.NoError(err, "mock job stats")
+
+	suite.event = &Event{
+		URL:       "http://domian.com",
+		Message:   "HookAgentTestSuite",
+		Timestamp: time.Now().Unix(),
+		Data: &job.StatusChange{
+			JobID:  suite.jid,
+			Status: job.SuccessStatus.String(),
+			Metadata: &job.StatsInfo{
+				JobID:    suite.jid,
+				Status:   job.SuccessStatus.String(),
+				Revision: rev,
+				JobKind:  job.KindGeneric,
+				JobName:  job.SampleJob,
+			},
+		},
+	}
+}
+
+func (suite *HookAgentTestSuite) TearDownTest() {
+	conn := suite.pool.Get()
+	defer func() {
+		err := conn.Close()
+		suite.NoError(err, "close redis connection")
+	}()
+
+	k := rds.KeyHookEventRetryQueue(suite.namespace)
+	_, err := conn.Do("DEL", k)
+	suite.NoError(err, "tear down test cases")
+}
+
 // TestEventSending ...
 func (suite *HookAgentTestSuite) TestEventSending() {
-	done := make(chan bool, 1)
+	mc := &mockClient{}
+	mc.On("SendEvent", suite.event).Return(nil)
+	suite.agent.client = mc
 
-	expected := uint32(1300) // >1024 max
-	count := uint32(0)
-	counter := &count
+	err := suite.agent.Trigger(suite.event)
+	require.Nil(suite.T(), err, "agent trigger: nil error expected but got %s", err)
 
-	ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		defer func() {
-			c := atomic.AddUint32(counter, 1)
-			if c == expected {
-				done <- true
-			}
-		}()
-		_, _ = fmt.Fprintln(w, "ok")
-	}))
-	defer ts.Close()
+	// check
+	suite.checkStatus()
+}
 
-	// in case test failed and avoid dead lock
-	go func() {
-		<-time.After(time.Duration(10) * time.Second)
-		done <- true // time out
-	}()
+// TestEventSending ...
+func (suite *HookAgentTestSuite) TestEventSendingError() {
+	mc := &mockClient{}
+	mc.On("SendEvent", suite.event).Return(errors.New("internal server error: for testing"))
+	suite.agent.client = mc
 
-	agent := NewAgent(suite.envContext, suite.namespace, suite.pool)
-	agent.Attach(suite.lcmCtl)
-	err := agent.Serve()
-	require.NoError(suite.T(), err, "agent serve: nil error expected but got %s", err)
+	err := suite.agent.Trigger(suite.event)
 
-	go func() {
-		defer func() {
-			suite.cancel()
-		}()
-
-		for i := uint32(0); i < expected; i++ {
-			changeData := &job.StatusChange{
-				JobID:  fmt.Sprintf("job-%d", i),
-				Status: "running",
-			}
-
-			evt := &Event{
-				URL:       ts.URL,
-				Message:   fmt.Sprintf("status of job %s change to %s", changeData.JobID, changeData.Status),
-				Data:      changeData,
-				Timestamp: time.Now().Unix(),
-			}
-
-			err := agent.Trigger(evt)
-			require.Nil(suite.T(), err, "agent trigger: nil error expected but got %s", err)
-		}
-
-		// Check results
-		<-done
-		require.Equal(suite.T(), expected, count, "expected %d hook events but only got %d", expected, count)
-	}()
-
-	// Wait
-	suite.envContext.WG.Wait()
+	// Failed to send by client, it should be put into retry queue, check it
+	// The return should still be nil
+	suite.NoError(err, "agent trigger: nil error expected but got %s", err)
+	suite.checkRetryQueue(1)
 }
 
 // TestRetryAndPopMin ...
 func (suite *HookAgentTestSuite) TestRetryAndPopMin() {
-	ctx := context.Background()
+	mc := &mockClient{}
+	mc.On("SendEvent", suite.event).Return(nil)
+	suite.agent.client = mc
 
-	tks := make(chan bool, maxHandlers)
-	// Put tokens
-	for i := 0; i < maxHandlers; i++ {
-		tks <- true
-	}
+	err := suite.agent.pushForRetry(suite.event)
+	suite.NoError(err, "push event for retry")
 
-	agent := &basicAgent{
-		context:   ctx,
-		namespace: suite.namespace,
-		client:    NewClient(ctx),
-		events:    make(chan *Event, maxEventChanBuffer),
-		tokens:    tks,
-		redisPool: suite.pool,
-	}
-	agent.Attach(suite.lcmCtl)
+	err = suite.agent.reSend()
+	require.NoError(suite.T(), err, "resend error: %v", err)
 
-	changeData := &job.StatusChange{
-		JobID:  "fake_job_ID",
-		Status: job.RunningStatus.String(),
-	}
+	// Check
+	suite.checkRetryQueue(0)
+	suite.checkStatus()
+}
 
-	evt := &Event{
-		URL:       "https://fake.js.com",
-		Message:   fmt.Sprintf("status of job %s change to %s", changeData.JobID, changeData.Status),
-		Data:      changeData,
-		Timestamp: time.Now().Unix(),
-	}
+func (suite *HookAgentTestSuite) checkStatus() {
+	t := job.NewBasicTrackerWithID(context.TODO(), suite.jid, suite.namespace, suite.pool, nil, list.New())
+	err := t.Load()
+	suite.NoError(err, "load updated job stats")
+	suite.Equal(job.SuccessStatus.String(), t.Job().Info.HookAck.Status, "ack status")
+}
 
-	// Mock job stats
+func (suite *HookAgentTestSuite) checkRetryQueue(size int) {
 	conn := suite.pool.Get()
 	defer func() {
-		_ = conn.Close()
+		err := conn.Close()
+		suite.NoError(err, "close redis connection")
 	}()
 
-	key := rds.KeyJobStats(suite.namespace, "fake_job_ID")
-	_, err := conn.Do("HSET", key, "status", job.SuccessStatus.String())
-	require.Nil(suite.T(), err, "prepare job stats: nil error returned but got %s", err)
+	k := rds.KeyHookEventRetryQueue(suite.namespace)
+	c, err := redis.Int(conn.Do("ZCARD", k))
+	suite.NoError(err, "check retry queue")
+	suite.Equal(size, c, "retry queue count")
+}
 
-	err = agent.pushForRetry(evt)
-	require.Nil(suite.T(), err, "push for retry: nil error expected but got %s", err)
+type mockClient struct {
+	mock.Mock
+}
 
-	err = agent.reSend()
-	require.Error(suite.T(), err, "resend: non nil error expected but got nil")
-	assert.Equal(suite.T(), 0, len(agent.events), "the hook event should be discard but actually not")
-
-	// Change status
-	_, err = conn.Do("HSET", key, "status", job.PendingStatus.String())
-	require.Nil(suite.T(), err, "prepare job stats: nil error returned but got %s", err)
-
-	err = agent.pushForRetry(evt)
-	require.Nil(suite.T(), err, "push for retry: nil error expected but got %s", err)
-	err = agent.reSend()
-	require.Nil(suite.T(), err, "resend: nil error should be returned but got %s", err)
-
-	<-time.After(time.Duration(1) * time.Second)
-
-	assert.Equal(suite.T(), 1, len(agent.events), "the hook event should be requeued but actually not: %d", len(agent.events))
+func (mc *mockClient) SendEvent(evt *Event) error {
+	args := mc.Called(evt)
+	return args.Error(0)
 }
