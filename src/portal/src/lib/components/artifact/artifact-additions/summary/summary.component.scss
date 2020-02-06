@@ -1,0 +1,80 @@
+.content-wrapper {
+  margin-top: 20px;
+  padding: 0 0 0 15px;
+  .md-container {
+    border: solid 1px #ddd;
+  }
+  .summary-container {
+    padding: 0;
+    table {
+      background-color: #f2f2f2;
+      margin-top: 0.5rem;
+    }
+    .content-group {
+      margin-bottom: 30px;
+    }
+    .content-icon {
+      margin-right: 6px;
+    }
+    .text-wrapper {
+      word-break: break-all;
+    }
+  }
+  .cmd-title {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+  .cmd-content {
+    width: 100%;
+  }
+}
+
+@mixin align-text-mixin($values...) {
+  @each $var in $values {
+    &[align="$var"] {
+      text-align: $var;
+    }
+  }
+}
+
+%code-block {
+  background: #ddd;
+  border-radius: 2px;
+  padding: 2px 4px;
+}
+
+.md-div {
+  ::ng-deep {
+    code:not([class*="language-"]) {
+      @extend %code-block;
+      color: #657b83;
+    }
+    pre:not([class*="language-"]) {
+      background: #fdf6e3;
+      code:not([class*="language-"]) {
+        @extend %code-block;
+        background: transparent;
+      }
+    }
+    table {
+      display: block;
+      width: 100%;
+      overflow: auto;
+      padding: 0;
+      border-spacing: 0;
+      border-collapse: collapse;
+      margin-bottom: 16px;
+      td,
+      th {
+        padding: 6px 13px;
+        border: 1px solid #ddd;
+        @include align-text-mixin(left, right, center);
+      }
+      tr {
+        &:nth-child(2n) {
+          background-color: #f2f2f2;
+        }
+      }
+    }
+  }
+}

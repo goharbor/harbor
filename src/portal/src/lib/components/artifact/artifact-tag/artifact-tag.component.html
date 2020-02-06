@@ -1,20 +1,4 @@
 <h4>Tags</h4>
-<!-- <div class="stack-block stack-block-expandable " [class.stack-block-expanded]="openTag">
-    <dt class="stack-block-label" (click)="toggleTagListOpenOrClose()" aria-level="1" aria-posinset="2" aria-setsize="3">Tags</dt>
-    <dd class="stack-block-content stack-block-content-45">
-        <span *ngIf="!openTag">
-           <span *ngFor="let tag of artifactDetails?.tags">
-            {{tag.name}}
-            <span *ngIf="tag!==artifactDetails.tags[artifactDetails.tags.length-1]">,</span>
-        </span> 
-        </span>
-        
-    </dd> -->
-<!-- <dd class="stack-block-content stack-block-content-10 cursor-pointer text-align-r pt-0 pb-0 pr-0" > <button *ngIf="openTag" (click)="addTag()" class="text-align-r btn btn-link mt-0 mb-0">ADD TAG</button></dd> -->
-<!-- <button (click)="addTag()" class="text-align-r btn btn-link mt-0 mb-0">ADD TAG</button> -->
-<!-- <div class="stack-children" *ngIf="openTag"> -->
-
-
 <clr-datagrid [clrDgLoading]="loading" [(clrDgSelected)]="selectedRow" [clrDgRowSelection]="true">
     <clr-dg-action-bar>
         <button type="button" class="btn btn-secondary"  (click)="addTag()">

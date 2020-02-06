@@ -84,8 +84,6 @@ import { ArtifactLocalPropertiesComponent } from './components/artifact/artifact
 import { ArtifactTagComponent } from './components/artifact/artifact-tag/artifact-tag.component';
 import { ArtifactAdditionalLinkComponent } from './components/artifact/artifact-additional-link/artifact-additional-link.component';
 import { ArtifactAdditionsComponent } from './components/artifact/artifact-additions/artifact-additions.component';
-
-import { TagHistoryComponent } from "./components/artifact/tag-history.component";
 import { HistogramChartComponent } from "./components/vulnerability-scanning/histogram-chart/histogram-chart.component";
 import { ResultTipHistogramComponent } from "./components/vulnerability-scanning/result-tip-histogram/result-tip-histogram.component";
 import { ResultBarChartComponent } from "./components/vulnerability-scanning/result-bar-chart.component";
@@ -93,10 +91,14 @@ import { ResultGridComponent } from "./components/vulnerability-scanning/result-
 import { ResultTipComponent } from "./components/vulnerability-scanning/result-tip.component";
 import { FilterComponent } from "./components/filter/filter.component";
 import { ListReplicationRuleComponent } from "./components/list-replication-rule/list-replication-rule.component";
-import { ClipboardDirective } from "./components/third-party/ngx-clipboard/clipboard.directive";
 import { ChannelService } from "./services/channel.service";
 import { SharedModule } from "./utils/shared/shared.module";
 import { TranslateServiceInitializer } from "./i18n";
+import {BuildHistoryComponent} from "./components/artifact/artifact-additions/build-history/build-history.component";
+import { DependenciesComponent } from "./components/artifact/artifact-additions/dependencies/dependencies.component";
+import { SummaryComponent } from "./components/artifact/artifact-additions/summary/summary.component";
+import { ValuesComponent } from "./components/artifact/artifact-additions/values/values.component";
+
 
 /**
  * Declare default service configuration; all the endpoints will be defined in
@@ -216,7 +218,7 @@ export interface HarborModuleConfig {
 
 @NgModule({
     imports: [
-      SharedModule
+        SharedModule,
     ],
     declarations: [
       GcHistoryComponent,
@@ -261,13 +263,16 @@ export interface HarborModuleConfig {
       ArtifactTagComponent,
       ArtifactAdditionalLinkComponent,
       ArtifactAdditionsComponent,
-      TagHistoryComponent,
+      BuildHistoryComponent,
       HistogramChartComponent,
       ResultTipHistogramComponent,
       ResultBarChartComponent,
       ResultGridComponent,
       ResultTipComponent,
-      ArtifactListComponent
+      ArtifactListComponent,
+      DependenciesComponent,
+      SummaryComponent,
+      ValuesComponent
   ],
   exports: [
       SharedModule,
@@ -313,13 +318,16 @@ export interface HarborModuleConfig {
       ArtifactTagComponent,
       ArtifactAdditionalLinkComponent,
       ArtifactAdditionsComponent,
-      TagHistoryComponent,
+      BuildHistoryComponent,
       HistogramChartComponent,
       ResultTipHistogramComponent,
       ResultBarChartComponent,
       ResultGridComponent,
       ResultTipComponent,
-      ArtifactListComponent
+      ArtifactListComponent,
+      DependenciesComponent,
+      SummaryComponent,
+      ValuesComponent
   ],
   providers: []
 })

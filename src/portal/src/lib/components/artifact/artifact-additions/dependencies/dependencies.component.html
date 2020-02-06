@@ -1,0 +1,20 @@
+<div class="row flex-items-xs-center dep-container">
+    <div class="col-md-12">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="left">{{'HELM_CHART.NAME' | translate}}</th>
+                    <th class="left">{{'HELM_CHART.VERSION' | translate}}</th>
+                    <th class="left">{{'HELM_CHART.REPO' | translate}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let dep of dependencyList">
+                    <td class="left">{{dep.name}}</td>
+                    <td class="left">{{dep.version}}</td>
+                    <td class="left"><a href="{{dep.repository}}">{{dep.repository}}</a></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
