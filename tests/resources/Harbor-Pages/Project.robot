@@ -106,7 +106,9 @@ Make Project Private
     Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
     Retry Double Keywords When Error  Retry Element Click  ${project_config_public_checkbox_label}  Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
     Retry Element Click  //button[contains(.,'SAVE')]
-    Retry Wait Until Page Contains  Configuration has been successfully saved
+    Go Into Project  ${project name}
+    Switch To Project Configuration
+    Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
 
 Make Project Public
     [Arguments]  ${projectname}
@@ -115,7 +117,9 @@ Make Project Public
     Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
     Retry Double Keywords When Error  Retry Element Click  ${project_config_public_checkbox_label}  Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
     Retry Element Click  //button[contains(.,'SAVE')]
-    Retry Wait Until Page Contains  Configuration has been successfully saved
+    Go Into Project  ${project name}
+    Switch To Project Configuration
+    Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
 
 Delete Repo
     [Arguments]  ${projectname}
