@@ -41,3 +41,27 @@ func Test_fetchBlobAPISkipper(t *testing.T) {
 		})
 	}
 }
+
+func Test_legacyAPISkipper(t *testing.T) {
+	type args struct {
+		r *http.Request
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"/api/v2.0/projects", args{httptest.NewRequest(http.MethodGet, "/api/v2.0/projects", nil)}, false},
+		{"//api/v2.0/projects", args{httptest.NewRequest(http.MethodGet, "//api/v2.0/projects", nil)}, false},
+		{"/api/v2.0//projects", args{httptest.NewRequest(http.MethodGet, "/api/v2.0//projects", nil)}, false},
+		{"/v2/library/photon/tags", args{httptest.NewRequest(http.MethodGet, "/v2/library/photon/tags", nil)}, false},
+		{"/api/projects", args{httptest.NewRequest(http.MethodGet, "/api/projects", nil)}, true},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := legacyAPISkipper(tt.args.r); got != tt.want {
+				t.Errorf("legacyAPISkipper() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}

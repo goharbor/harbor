@@ -16,6 +16,7 @@ package middlewares
 
 import (
 	"net/http"
+	"path"
 	"regexp"
 	"strings"
 
@@ -37,8 +38,9 @@ var (
 
 // legacyAPISkipper skip middleware for legacy APIs
 func legacyAPISkipper(r *http.Request) bool {
+	path := path.Clean(r.URL.EscapedPath())
 	for _, prefix := range []string{"/v2/", "/api/v2.0/"} {
-		if strings.HasPrefix(r.URL.Path, prefix) {
+		if strings.HasPrefix(path, prefix) {
 			return false
 		}
 	}
