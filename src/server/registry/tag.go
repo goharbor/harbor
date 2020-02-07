@@ -104,6 +104,7 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 
 	// handle the pagination
 	resTags := tagNames
+	tagNamesLen := len(tagNames)
 	// with "last", get items form lastEntryIndex+1 to lastEntryIndex+maxEntries
 	// without "last", get items from 0 to maxEntries'
 	if lastEntry != "" {
@@ -113,9 +114,21 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 			serror.SendError(w, err)
 			return
 		}
-		resTags = tagNames[lastEntryIndex+1 : lastEntryIndex+maxEntries]
+		if lastEntryIndex+1+maxEntries > tagNamesLen {
+			resTags = tagNames[lastEntryIndex+1 : tagNamesLen]
+		} else {
+			resTags = tagNames[lastEntryIndex+1 : lastEntryIndex+1+maxEntries]
+		}
 	} else {
+		if maxEntries > tagNamesLen {
+			maxEntries = tagNamesLen
+		}
 		resTags = tagNames[0:maxEntries]
+	}
+
+	if len(resTags) == 0 {
+		t.sendResponse(w, req, resTags)
+		return
 	}
 
 	// compare the last item to define whether return the link header.
