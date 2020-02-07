@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {AppConfigService} from "../../app-config.service";
 import { SessionService } from '../../shared/session.service';
@@ -22,7 +22,7 @@ import { ArtifactService } from '../../../lib/services';
   templateUrl: 'tag-detail-page.component.html',
   styleUrls: ["tag-detail-page.component.scss"]
 })
-export class TagDetailPageComponent implements OnInit {
+export class TagDetailPageComponent implements OnInit, OnDestroy {
   tagId: string;
   artifactDigest: string;
   repositoryName: string;
@@ -57,10 +57,10 @@ export class TagDetailPageComponent implements OnInit {
   goBackPro(): void {
     this.router.navigate(["harbor", "projects"]);
   }
+  ngOnDestroy(): void {
+    this.artifactService.referenceSummary = [];
+  }
   jumpDigest(referArtifactNameArray: string[], index: number) {
-    // this.referArtifactNameArray = referArtifactNameArray.slice(index);
-    // this.referArtifactNameArray.pop();
-    // this.referArtifactNameArray = referArtifactNameArray.slice(index);
     this.artifactService.referenceSummary = [];
     this.artifactService.reference = referArtifactNameArray.slice(index);
 

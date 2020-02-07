@@ -32,6 +32,7 @@ import { UserPermissionService, UserPermissionDefaultService } from "../../servi
 import { USERSTATICPERMISSION } from "../../services/permission-static";
 import { FilterComponent } from "../filter/filter.component";
 import { HarborLibraryModule } from "../../harbor-library.module";
+import { Artifact } from "./artifact";
 
 describe("ArtifactSummaryComponent (inline template)", () => {
   let comp: ArtifactSummaryComponent;
@@ -55,22 +56,68 @@ describe("ArtifactSummaryComponent (inline template)", () => {
       }
     }
   };
-  let mockTag: Tag = {
-    digest:
-      "sha256:e5c82328a509aeb7c18c1d7fb36633dc638fcf433f651bdcda59c1cc04d3ee55",
-    name: "nginx",
-    size: "2049",
-    architecture: "amd64",
-    os: "linux",
-    'os.version': "",
-    docker_version: "1.12.3",
-    author: "steven",
-    created: new Date("2016-11-08T22:41:15.912313785Z"),
-    signature: null,
-    scan_overview: {
-      "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": mockVulnerability
+  let mockTag: Artifact  =
+    {
+      "id": 1,
+      type: 'image',
+      repository: "goharbor/harbor-portal",
+      tags: [{
+        id: '1',
+        name: 'tag1',
+        artifact_id: 1,
+        upload_time: '2020-01-06T09:40:08.036866579Z',
     },
-    labels: []
+    {
+        id: '2',
+        name: 'tag2',
+        artifact_id: 2,
+        pull_time: '2020-01-06T09:40:08.036866579Z',
+        push_time: '2020-01-06T09:40:08.036866579Z',
+    },],
+      references: [new Reference(1), new Reference(2)],
+      media_type: 'string',
+      "digest": "sha256:4875cda368906fd670c9629b5e416ab3d6c0292015f3c3f12ef37dc9a32fc8d4",
+      "size": 20372934,
+      "scan_overview": {
+        "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+          "report_id": "5e64bc05-3102-11ea-93ae-0242ac140004",
+          "scan_status": "Error",
+          "severity": "",
+          "duration": 118,
+          "summary": null,
+          "start_time": "2020-01-07T04:01:23.157711Z",
+          "end_time": "2020-01-07T04:03:21.662766Z"
+        }
+      },
+      "labels": [
+        {
+          "id": 3,
+          "name": "aaa",
+          "description": "",
+          "color": "#0095D3",
+          "scope": "g",
+          "project_id": 0,
+          "creation_time": "2020-01-13T05:44:00.580198Z",
+          "update_time": "2020-01-13T05:44:00.580198Z",
+          "deleted": false
+        },
+        {
+          "id": 6,
+          "name": "dbc",
+          "description": "",
+          "color": "",
+          "scope": "g",
+          "project_id": 0,
+          "creation_time": "2020-01-13T08:27:19.279123Z",
+          "update_time": "2020-01-13T08:27:19.279123Z",
+          "deleted": false
+        }
+      ],
+      "push_time": "2020-01-07T03:33:41.162319Z",
+      "pull_time": "0001-01-01T00:00:00Z",
+      hasReferenceArtifactList: [],
+      noReferenceArtifactList: []
+
   };
 
   let config: IServiceConfig = {

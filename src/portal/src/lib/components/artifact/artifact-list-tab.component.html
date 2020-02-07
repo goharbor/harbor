@@ -157,8 +157,8 @@
                     <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}
                 </button> -->
             </clr-dg-action-bar>
-            <clr-dg-column class="max-width-38">Type</clr-dg-column>
-            <clr-dg-column class="max-width-38"></clr-dg-column>
+            <!-- <clr-dg-column class="max-width-38"></clr-dg-column> -->
+            <!-- <clr-dg-column class="max-width-38"></clr-dg-column> -->
 
             <clr-dg-column class="flex-max-width" [clrDgField]="'name'">{{'REPOSITORY.ARTIFACTS_COUNT' | translate}}
             </clr-dg-column>
@@ -175,21 +175,27 @@
             <clr-dg-column [clrDgSortBy]="pullComparator">{{'REPOSITORY.PULL_TIME' | translate}}</clr-dg-column> -->
             <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
             <clr-dg-row *clrDgItems="let artifact of artifactList" [clrDgItem]='artifact'>
-                <clr-dg-cell class="max-width-38">
+                <!-- <clr-dg-cell class="max-width-38">
                         <img class="artifact-icon"
                         [src]="artifact.type==='IMAGE'||artifact.type==='CHART'?'images/artifact-'+artifact.type.toLowerCase()+'.svg':'images/artifact-default.svg'" />
-                </clr-dg-cell>
-                <clr-dg-cell class="max-width-38">
+                </clr-dg-cell> -->
+                <!-- <clr-dg-cell class="max-width-38">
                         <a href="javascript:void(0)" *ngIf="artifact.references" (click)="refer(artifact)"><clr-icon class="icon-folder" shape="folder"></clr-icon></a>
                         <span href="javascript:void(0)" *ngIf="!artifact.references" (click)="refer(artifact)"><clr-icon class="icon-folder" shape="file"></clr-icon></span>
-                </clr-dg-cell>
+                </clr-dg-cell> -->
                 <clr-dg-cell class="truncated flex-max-width">
                     <div class="cell white-normal">
+                            <img class="artifact-icon"
+                            [src]="artifact.type==='IMAGE'||artifact.type==='CHART'?'images/artifact-'+artifact.type.toLowerCase()+'.svg':'images/artifact-default.svg'" />
+                            &nbsp; &nbsp; 
                         <a href="javascript:void(0)" class="max-width-100" (click)="onTagClick(artifact)"
                             title="{{artifact.name}}">
                             
-                            {{ artifact.digest  | slice:0:15}}</a>&nbsp; &nbsp; 
-                            <!-- <a href="javascript:void(0)" *ngIf="artifact.references" (click)="refer(artifact)"><clr-icon class="icon-folder" shape="file"></clr-icon></a> -->
+                            <!-- {{ artifact.digest}}</a>  -->
+                            {{ artifact.digest  | slice:0:15}}</a> 
+                            <a href="javascript:void(0)" *ngIf="artifact.references" (click)="refer(artifact)"><clr-icon class="icon-folder" shape="folder"></clr-icon></a>
+                        <span href="javascript:void(0)" *ngIf="!artifact.references"><clr-icon class="icon-folder" shape="file"></clr-icon></span>
+
                     </div>
                 </clr-dg-cell>
                 
