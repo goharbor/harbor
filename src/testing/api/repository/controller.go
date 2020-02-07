@@ -62,3 +62,9 @@ func (f *FakeController) GetByName(ctx context.Context, name string) (*models.Re
 	}
 	return repository, args.Error(1)
 }
+
+// Delete ...
+func (f *FakeController) Delete(ctx context.Context, id int64) error {
+	args := f.Called()
+	return args.Error(0)
+}
