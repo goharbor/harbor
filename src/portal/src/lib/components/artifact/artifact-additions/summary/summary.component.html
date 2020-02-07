@@ -1,0 +1,51 @@
+<div class="row">
+    <div class="col-md-12">
+        <p>{{summary.description}}</p>
+    </div>
+</div>
+<div class="row content-wrapper">
+    <div class="col-md-8 md-container pl-1">
+        <div *ngIf="readme" class="md-div" [innerHTML]="readme | markdown"></div>
+        <div *ngIf="!readme">{{'HELM_CHART.NO_README' | translate}}</div>
+    </div>
+    <div class="col-md-4 summary-container">
+        <div class="col-md-12 content-group">
+            <div>
+                <label>{{'HELM_CHART.OVERVIEW' | translate }}</label>
+            </div>
+            <table class="table">
+                <tbody>
+                    <tr>
+                        <td class="left">{{'HELM_CHART.HOME' | translate }}</td>
+                        <td class="left text-wrapper">
+                            <a href="{{summary.home}}">{{summary.home}}</a>
+                        </td>
+                    </tr>
+                    <tr *ngFor="let src of summary.sources; let i = index">
+                        <td class="left" *ngIf="i === 0">{{'HELM_CHART.SRC_REPO' | translate }}</td>
+                        <td class="left" *ngIf="i !== 0"></td>
+                        <td class="left text-wrapper">
+                            <a href="{{src}}">{{src}}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="left">{{'HELM_CHART.CREATED' | translate }}</td>
+                        <td class="left">{{summary.created | date}}</td>
+                    </tr>
+                    <tr *ngFor="let maintainer of summary.maintainers; let i = index">
+                        <td class="left" *ngIf="i === 0">{{'HELM_CHART.MAINTAINERS' | translate }}</td>
+                        <td class="left" *ngIf="i !== 0"></td>
+                        <td class="left">
+                            <a href="mailto:{{maintainer.email}}">{{maintainer.name}}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="left">{{'HELM_CHART.APP_VERSION' | translate }}</td>
+                        <td class="left">{{ summary.appVersion }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>

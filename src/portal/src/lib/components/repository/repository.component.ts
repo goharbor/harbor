@@ -211,6 +211,7 @@ export class RepositoryComponent implements OnInit, OnDestroy {
         this.reset();
     }
   }
+
   ngOnDestroy(): void {
     this.artifactService.reference = [];
   }

@@ -7,87 +7,15 @@
         <h2 class="custom-h2">{{artifactDetails?.digest | slice:0:15}}</h2>
     </div>
 </div>
-<dl class="stack-view">
-    <!-- common properties -->
-    <artifact-common-properties [artifactDetails]="artifactDetails"></artifact-common-properties>
-</dl>
-<!-- local properties -->
-<dl class="stack-view">
-    <artifact-local-properties [artifactDetails]="artifactDetails"></artifact-local-properties>
-</dl>
+
+<!-- common properties -->
+<artifact-common-properties [artifactDetails]="artifactDetails"></artifact-common-properties>
 
 <!-- tags -->
-<!-- <dl class="stack-view"> -->
-    <artifact-tag [artifactDetails]="artifactDetails" [projectName]="projectName" [repositoryName]="repositoryName"
+
+<artifact-tag [artifactDetails]="artifactDetails" [projectName]="projectName" [repositoryName]="repositoryName"
         (refreshArtifact)="refreshArtifact()"></artifact-tag>
 
-<!-- </dl> -->
-<!-- Additional Links -->
-<dl class="stack-view">
-    <artifact-additional-link [artifactDetails]="artifactDetails"></artifact-additional-link>
-</dl>
 <!-- Additions -->
-<dl class="stack-view">
-    <artifact-additions [artifactDetails]="artifactDetails"></artifact-additions>
-</dl>
 
-<!-- <div>
-    <section class="overview-section">
-        
-        <div class="summary-block row">
-            <div class="image-summary col-md-4 col-sm-6">
-                <div class="flex-block">
-                    <section class="image-detail-label">
-                        <section class="detail-row">
-                            <label class="detail-label">{{'TAG.AUTHOR' | translate }}</label>
-                            <div class="image-details" [title]="author | translate">{{author | translate}}</div>
-                        </section>
-                        <section class="detail-row">
-                            <label class="detail-label">{{'TAG.ARCHITECTURE' | translate }}</label>
-                            <div class="image-details" [title]="artifactDetails.architecture">{{artifactDetails.architecture}}</div>
-                        </section>
-                        <section class="detail-row">
-                            <label class="detail-label">{{'TAG.OS' | translate }}</label>
-                            <div class="image-details" [title]="artifactDetails.os">{{artifactDetails.os}}</div>
-                        </section>
-                        <section class="detail-row">
-                            <label class="detail-label">{{'TAG.OS_VERSION' | translate }}</label>
-                            <div class="image-details" [title]="artifactDetails['os.version']">{{artifactDetails['os.version']}}</div>
-                        </section>
-                        <section class="detail-row">
-                            <label class="detail-label">{{'TAG.DOCKER_VERSION' | translate }}</label>
-                            <div class="image-details" [title]="artifactDetails.docker_version">{{artifactDetails.docker_version}}</div>
-                        </section>
-                        <section class="detail-row" *ngIf="hasCve">
-                            <label class="detail-label">{{'TAG.SCAN_COMPLETION_TIME' | translate }}</label>
-                            <div class="image-details" [title]="scanCompletedDatetime | date">{{scanCompletedDatetime | date}}</div>
-                        </section>
-                    </section>
-                </div>
-            </div>
-            <div class="col-md-4 col-sm-6 margin-top-5px">
-                <div class="vulnerability" [hidden]="hasCve || showStatBar">
-                    <hbr-vulnerability-bar [repoName]="repositoryId" [artifactId]="artifactDetails.id" [summary]="vulnerabilitySummary"></hbr-vulnerability-bar>
-                </div>
-                <histogram-chart *ngIf="hasCve" [metadata]="passMetadataToChart()" [isWhiteBackground]="isThemeLight()"></histogram-chart>
-            </div>
-        </div>
-    </section>
-    <section>
-    </section>
-
-    <clr-tabs>
-        <clr-tab *ngIf="hasVulnerabilitiesListPermission">
-            <button clrTabLink [clrTabLinkInOverflow]="false" class="btn btn-link nav-link" id="tag-vulnerability" [class.active]='isCurrentTabLink("tag-vulnerability")' type="button" (click)='tabLinkClick("tag-vulnerability")'>{{'REPOSITORY.VULNERABILITY' | translate}}</button>
-            <clr-tab-content id="content1" *clrIfActive="true">
-                <hbr-vulnerabilities-grid [repositoryId]="repositoryId" [projectId]="projectId" [tagId]="tagId"></hbr-vulnerabilities-grid>
-            </clr-tab-content>
-        </clr-tab>
-        <clr-tab *ngIf="hasBuildHistoryPermission">
-            <button [clrTabLinkInOverflow]="false" id="tag-history" clrTabLink class="btn btn-link nav-link" [class.active]='isCurrentTabLink("tag-history")' type="button" (click)='tabLinkClick("tag-history")'>{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</button>
-            <clr-tab-content *clrIfActive>
-                <hbr-tag-history [repositoryId]="repositoryId" [tagId]="tagId">{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</hbr-tag-history>
-            </clr-tab-content>
-        </clr-tab>
-    </clr-tabs>
-</div> -->
+<artifact-additions></artifact-additions>
