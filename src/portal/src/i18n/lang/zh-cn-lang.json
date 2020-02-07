@@ -637,7 +637,7 @@
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "Tag",
         "ARTIFACT": "Aarifact",
-        "ARTIFACTS": "Aarifacts",
+        "ARTIFACTS": "Arifacts",
         "SIZE": "大小",
         "VULNERABILITY": "漏洞",
         "BUILD_HISTORY": "构建历史",

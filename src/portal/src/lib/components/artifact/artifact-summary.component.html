@@ -3,7 +3,8 @@
         <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
     </div>
     <div class="title-block">
-        <h2 class="custom-h2">{{repositoryName}}:{{artifactDetails?.name}}</h2>
+        <!-- <h2 class="custom-h2">{{repositoryName}}:{{artifactDetails?.digest | slice:0:15}}</h2> -->
+        <h2 class="custom-h2">{{artifactDetails?.digest | slice:0:15}}</h2>
     </div>
 </div>
 <dl class="stack-view">
