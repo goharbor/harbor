@@ -11,7 +11,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { Component, OnInit, ViewChild, Input, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, ViewChild, Input, Output, EventEmitter, OnDestroy } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import { State } from '../../services/interface';
 
@@ -33,7 +33,7 @@ const TabLinkContentMap: {[index: string]: string} = {
   templateUrl: './repository.component.html',
   styleUrls: ['./repository.component.scss']
 })
-export class RepositoryComponent implements OnInit {
+export class RepositoryComponent implements OnInit, OnDestroy {
   signedCon: {[key: string]: any | string[]} = {};
   @Input() projectId: number;
   @Input() memberRoleID: number;
@@ -212,7 +212,7 @@ export class RepositoryComponent implements OnInit {
     }
   }
   ngOnDestroy(): void {
-    localStorage.setItem('reference', JSON.stringify([]));
+    this.artifactService.reference = [];
   }
   putReferArtifactArray(referArtifactArray) {
     if (referArtifactArray.length) {

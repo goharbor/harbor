@@ -36,6 +36,8 @@ import { ArtifactListTabComponent } from "../components/artifact/artifact-list-t
  * class TagService
  */
 export abstract class ArtifactService {
+  reference: string[];
+  referenceSummary: string[];
   triggerUploadArtifact = new Subject<string>();
   TriggerArtifactChan$ = this.triggerUploadArtifact.asObservable();
   /**
@@ -132,6 +134,8 @@ export abstract class ArtifactService {
 export class ArtifactDefaultService extends ArtifactService {
   _baseUrl: string;
   _labelUrl: string;
+  reference: string[] = [];
+  referenceSummary: string[] = [];
   triggerUploadArtifact = new Subject<string>();
   TriggerArtifactChan$ = this.triggerUploadArtifact.asObservable();
 

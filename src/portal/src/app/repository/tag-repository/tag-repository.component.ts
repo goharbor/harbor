@@ -18,6 +18,7 @@ import { SessionService } from '../../shared/session.service';
 import { Project } from '../../project/project';
 import { RepositoryComponent } from "../../../lib/components/repository/repository.component";
 import { ArtifactClickEvent, ArtifactService } from "../../../lib/services";
+import { clone } from '../../../lib/utils/utils';
 
 @Component({
   selector: 'tag-repository',
@@ -78,6 +79,8 @@ export class TagRepositoryComponent implements OnInit {
   }
 
   watchTagClickEvt(artifactEvt: ArtifactClickEvent): void {
+    //  
+    this.artifactService.referenceSummary = clone(this.referArtifactNameArray);
     let linkUrl = ['harbor', 'projects', artifactEvt.project_id, 'repositories'
     , artifactEvt.repository_name, 'artifacts', artifactEvt.digest];
     this.router.navigate(linkUrl);
@@ -91,14 +94,15 @@ export class TagRepositoryComponent implements OnInit {
   }
   backInitRepo() {
     this.referArtifactNameArray = [];
-    localStorage.setItem('reference', JSON.stringify([]));
+    this.artifactService.reference = [];
     this.updateArtifactList('repoName');
   }
   jumpDigest(referArtifactNameArray: string[], index: number) {
     this.referArtifactNameArray = referArtifactNameArray.slice(index);
     this.referArtifactNameArray.pop();
     this.referArtifactNameArray = referArtifactNameArray.slice(index);
-    localStorage.setItem('reference', JSON.stringify(referArtifactNameArray.slice(index)));
+    this.artifactService.reference = referArtifactNameArray.slice(index);
+
     this.updateArtifactList(referArtifactNameArray.slice(index));
   }
   updateArtifactList(res): void {
@@ -106,6 +110,5 @@ export class TagRepositoryComponent implements OnInit {
   }
   putArtifactReferenceArr(digestArray) {
     this.referArtifactNameArray = digestArray;
-    console.log(this.referArtifactNameArray);
   }
 }
