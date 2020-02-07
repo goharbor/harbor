@@ -18,6 +18,7 @@ import (
 	"io"
 	"net/textproto"
 	"strconv"
+	"strings"
 
 	"golang.org/x/crypto/openpgp/armor"
 	"golang.org/x/crypto/openpgp/errors"
@@ -27,7 +28,7 @@ import (
 // A Block represents a clearsigned message. A signature on a Block can
 // be checked by passing Bytes into openpgp.CheckDetachedSignature.
 type Block struct {
-	Headers          textproto.MIMEHeader // Optional message headers
+	Headers          textproto.MIMEHeader // Optional unverified Hash headers
 	Plaintext        []byte               // The original message text
 	Bytes            []byte               // The signed message
 	ArmoredSignature *armor.Block         // The signature block
@@ -69,8 +70,13 @@ func getLine(data []byte) (line, rest []byte) {
 	return data[0:i], data[j:]
 }
 
-// Decode finds the first clearsigned message in data and returns it, as well
-// as the suffix of data which remains after the message.
+// Decode finds the first clearsigned message in data and returns it, as well as
+// the suffix of data which remains after the message. Any prefix data is
+// discarded.
+//
+// If no message is found, or if the message is invalid, Decode returns nil and
+// the whole data slice. The only allowed header type is Hash, and it is not
+// verified against the signature hash.
 func Decode(data []byte) (b *Block, rest []byte) {
 	// start begins with a newline. However, at the very beginning of
 	// the byte array, we'll accept the start string without it.
@@ -83,8 +89,11 @@ func Decode(data []byte) (b *Block, rest []byte) {
 		return nil, data
 	}
 
-	// Consume the start line.
-	_, rest = getLine(rest)
+	// Consume the start line and check it does not have a suffix.
+	suffix, rest := getLine(rest)
+	if len(suffix) != 0 {
+		return nil, data
+	}
 
 	var line []byte
 	b = &Block{
@@ -103,15 +112,25 @@ func Decode(data []byte) (b *Block, rest []byte) {
 			break
 		}
 
+		// Reject headers with control or Unicode characters.
+		if i := bytes.IndexFunc(line, func(r rune) bool {
+			return r < 0x20 || r > 0x7e
+		}); i != -1 {
+			return nil, data
+		}
+
 		i := bytes.Index(line, []byte{':'})
 		if i == -1 {
 			return nil, data
 		}
 
-		key, val := line[0:i], line[i+1:]
-		key = bytes.TrimSpace(key)
-		val = bytes.TrimSpace(val)
-		b.Headers.Add(string(key), string(val))
+		key, val := string(line[0:i]), string(line[i+1:])
+		key = strings.TrimSpace(key)
+		if key != "Hash" {
+			return nil, data
+		}
+		val = strings.TrimSpace(val)
+		b.Headers.Add(key, val)
 	}
 
 	firstLine := true
