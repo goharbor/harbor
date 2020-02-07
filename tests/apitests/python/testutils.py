@@ -12,14 +12,14 @@ admin_pwd = "Harbor12345"
 
 harbor_server = os.environ["HARBOR_HOST"]
 #CLIENT=dict(endpoint="https://"+harbor_server+"/api")
-ADMIN_CLIENT=dict(endpoint = os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api", username = admin_user, password =  admin_pwd)
+ADMIN_CLIENT=dict(endpoint = os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api/v2.0", username = admin_user, password =  admin_pwd)
 USER_ROLE=dict(admin=0,normal=1)
 TEARDOWN = True
 
 def GetProductApi(username, password, harbor_server= os.environ["HARBOR_HOST"]):
 
     cfg = swagger_client.Configuration()
-    cfg.host = "https://"+harbor_server+"/api"
+    cfg.host = "https://"+harbor_server+"/api/v2.0"
     cfg.username = username
     cfg.password = password
     cfg.verify_ssl = False
