@@ -131,8 +131,10 @@ func Test_getRegion(t *testing.T) {
 		{"registry hangzhou", "https://registry.cn-hangzhou.aliyuncs.com", "cn-hangzhou", false},
 		{"cr shanghai", "https://cr.cn-shanghai.aliyuncs.com", "cn-shanghai", false},
 		{"cr hangzhou", "https://cr.cn-hangzhou.aliyuncs.com", "cn-hangzhou", false},
+		{"enterprise edition url", "https://test-image-registry.cn-beijing.cr.aliyuncs.com", "cn-beijing", false},
 		{"invalid cr url", "https://acr.cn-hangzhou.aliyuncs.com", "", true},
 		{"invalid registry url", "https://registry.cn-hangzhou.ali.com", "", true},
+		{"invalid enterprise edition url", "https://test-image-registry.cn-beijing.cr.ali.com", "", true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
