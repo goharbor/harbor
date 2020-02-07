@@ -31,15 +31,15 @@ export class Artifact {
         this.tags = [
             {
                 id: '1',
+                artifact_id: 1,
                 name: 'tag1',
-                upload_time: '2020-01-06T09:40:08.036866579Z',
-                latest_download_time: '2020-01-06T09:40:08.036866579Z',
+                upload_time: '2020-01-06T09:40:08.036866579Z'
             },
             {
                 id: '2',
+                artifact_id: 2,
                 name: 'tag2',
                 upload_time: '2020-01-06T09:40:08.036866579Z',
-                latest_download_time: '2020-01-06T09:40:08.036866579Z',
             },
         ];
         // tslint:disable-next-line: no-use-before-declare
