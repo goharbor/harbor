@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { DependenciesComponent } from './chart-detail-dependency.component';
+import { DependenciesComponent } from "./dependencies.component";
 
 describe('ChartDetailDependencyComponent', () => {
     let component: DependenciesComponent;

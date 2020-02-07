@@ -1,11 +1,11 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { ValuesComponent } from './chart-detail-value.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { ClarityModule } from '@clr/angular';
 import { FormsModule } from '@angular/forms';
 import { MarkdownModule, MarkdownService, MarkedOptions  } from 'ngx-markdown';
 import { BrowserModule } from '@angular/platform-browser';
+import { ValuesComponent } from "./values.component";
 
 describe('ChartDetailValueComponent', () => {
     let component: ValuesComponent;
