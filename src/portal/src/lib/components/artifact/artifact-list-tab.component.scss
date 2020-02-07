@@ -273,7 +273,10 @@ clr-datagrid {
   white-space: normal;
 }
 .max-width-100 {
-  max-width: 100%;
+  width: 128px;
+    // overflow: hidden;
+    // white-space: nowrap;
+    // text-overflow: ellipsis;
 }
 .max-width-38 {
   max-width: 38px !important;
