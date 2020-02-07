@@ -15,6 +15,7 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {AppConfigService} from "../../app-config.service";
 import { SessionService } from '../../shared/session.service';
+import { ArtifactService } from '../../../lib/services';
 
 @Component({
   selector: 'repository',
@@ -26,11 +27,12 @@ export class TagDetailPageComponent implements OnInit {
   artifactDigest: string;
   repositoryName: string;
   projectId: string | number;
-
+  referArtifactNameArray: string[];
   constructor(
     private route: ActivatedRoute,
     private appConfigService: AppConfigService,
     private router: Router,
+    private artifactService: ArtifactService,
     private session: SessionService
   ) {
   }
@@ -39,19 +41,29 @@ export class TagDetailPageComponent implements OnInit {
     this.repositoryName = this.route.snapshot.params["repo"];
     this.artifactDigest = this.route.snapshot.params["digest"];
     this.projectId = this.route.snapshot.params["id"];
+    this.referArtifactNameArray = this.artifactService.referenceSummary;
   }
 
   get withAdmiral(): boolean {
     return this.appConfigService.getConfig().with_admiral;
   }
 
-  goBack(tag: string): void {
-    this.router.navigate(["harbor", "projects", this.projectId, "repositories", tag]);
+  goBack(repositoryName: string): void {
+    this.router.navigate(["harbor", "projects", this.projectId, "repositories", repositoryName]);
   }
   goBackRep(): void {
     this.router.navigate(["harbor", "projects", this.projectId, "repositories"]);
   }
   goBackPro(): void {
     this.router.navigate(["harbor", "projects"]);
+  }
+  jumpDigest(referArtifactNameArray: string[], index: number) {
+    // this.referArtifactNameArray = referArtifactNameArray.slice(index);
+    // this.referArtifactNameArray.pop();
+    // this.referArtifactNameArray = referArtifactNameArray.slice(index);
+    this.artifactService.referenceSummary = [];
+    this.artifactService.reference = referArtifactNameArray.slice(index);
+
+    this.router.navigate(["harbor", "projects", this.projectId, "repositories", this.repositoryName]);
   }
 }
