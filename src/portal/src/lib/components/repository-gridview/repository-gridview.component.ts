@@ -269,12 +269,12 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
                 ConfirmationButtons.DELETE_CANCEL);
         }
     }
-
+    // to do  component cannot find user
     getTagInfo(repoName: string): Observable<void> {
         this.signedCon[repoName] = [];
         return this.tagService.getTags(repoName)
             .pipe(map(items => {
-                items.forEach((t: Tag) => {
+                items.forEach((t: any) => {
                     if (t.signature !== null) {
                         this.signedCon[repoName].push(t.name);
                     }

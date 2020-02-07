@@ -145,7 +145,7 @@ export class RepositoryComponent implements OnInit, OnDestroy {
     return this.tagService
            .getTags(repoName)
            .pipe(map(items => {
-             items.forEach((t: Tag) => {
+             items.forEach((t: any) => {
                if (t.signature !== null) {
                  this.signedCon[repoName].push(t.name);
                }
@@ -221,5 +221,6 @@ export class RepositoryComponent implements OnInit, OnDestroy {
       this.putArtifactReferenceArr.emit(referArtifactArray);
     }
 
-  }
+}
+
 }

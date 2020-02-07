@@ -32,7 +32,7 @@ import { UserPermissionService, UserPermissionDefaultService } from "../../servi
 import { USERSTATICPERMISSION } from "../../services/permission-static";
 import { FilterComponent } from "../filter/filter.component";
 import { HarborLibraryModule } from "../../harbor-library.module";
-import { Artifact } from "./artifact";
+import { Artifact, Reference } from "./artifact";
 
 describe("ArtifactSummaryComponent (inline template)", () => {
   let comp: ArtifactSummaryComponent;
@@ -157,7 +157,7 @@ describe("ArtifactSummaryComponent (inline template)", () => {
     comp = fixture.componentInstance;
 
     comp.artifactDigest = 'sha256:23456';
-    comp.repositoryId = "mock_repo";
+    comp.repositoryName = "mock_repo";
     comp.projectId = 1;
 
 
