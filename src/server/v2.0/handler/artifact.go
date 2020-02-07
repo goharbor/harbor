@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/common/rbac"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/q"
@@ -43,9 +44,10 @@ type artifactAPI struct {
 	repoMgr repository.Manager
 }
 
-// TODO do auth in a separate middleware
-
 func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListArtifactsParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceArtifact); err != nil {
+		return a.SendError(ctx, err)
+	}
 	// set query
 	query := &q.Query{
 		Keywords: map[string]interface{}{},
@@ -85,6 +87,9 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 }
 
 func (a *artifactAPI) GetArtifact(ctx context.Context, params operation.GetArtifactParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourceArtifact); err != nil {
+		return a.SendError(ctx, err)
+	}
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
 		params.WithLabel, params.WithScanOverview, params.WithSignature)
@@ -98,6 +103,9 @@ func (a *artifactAPI) GetArtifact(ctx context.Context, params operation.GetArtif
 }
 
 func (a *artifactAPI) DeleteArtifact(ctx context.Context, params operation.DeleteArtifactParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionDelete, rbac.ResourceArtifact); err != nil {
+		return a.SendError(ctx, err)
+	}
 	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
 	if err != nil {
 		return a.SendError(ctx, err)
@@ -109,6 +117,9 @@ func (a *artifactAPI) DeleteArtifact(ctx context.Context, params operation.Delet
 }
 
 func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceTag); err != nil {
+		return a.SendError(ctx, err)
+	}
 	art, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName),
 		params.Reference, &artifact.Option{
 			WithTag: true,
@@ -129,6 +140,9 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 }
 
 func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionDelete, rbac.ResourceTag); err != nil {
+		return a.SendError(ctx, err)
+	}
 	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName),
 		params.Reference, &artifact.Option{
 			WithTag: true,

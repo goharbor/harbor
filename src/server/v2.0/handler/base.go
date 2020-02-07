@@ -18,6 +18,8 @@ package handler
 
 import (
 	"context"
+	"errors"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -45,7 +47,7 @@ func (*BaseAPI) SendError(ctx context.Context, err error) middleware.Responder {
 func (*BaseAPI) HasPermission(ctx context.Context, action rbac.Action, resource rbac.Resource) bool {
 	s, ok := security.FromContext(ctx)
 	if !ok {
-		log.Warningf("security not found in the contxt")
+		log.Warningf("security not found in the context")
 		return false
 	}
 
@@ -76,4 +78,20 @@ func (b *BaseAPI) HasProjectPermission(ctx context.Context, projectIDOrName inte
 
 	resource := rbac.NewProjectNamespace(projectID).Resource(subresource...)
 	return b.HasPermission(ctx, action, resource)
+}
+
+// RequireProjectAccess checks the permission against the resources according to the context
+// An error will be returned if it doesn't meet the requirement
+func (b *BaseAPI) RequireProjectAccess(ctx context.Context, projectIDOrName interface{}, action rbac.Action, subresource ...rbac.Resource) error {
+	if b.HasProjectPermission(ctx, projectIDOrName, action, subresource...) {
+		return nil
+	}
+	secCtx, ok := security.FromContext(ctx)
+	if !ok {
+		return ierror.UnauthorizedError(errors.New("security context not found"))
+	}
+	if !secCtx.IsAuthenticated() {
+		return ierror.UnauthorizedError(nil)
+	}
+	return ierror.ForbiddenError(nil)
 }
