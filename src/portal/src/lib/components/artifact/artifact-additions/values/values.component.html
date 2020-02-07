@@ -1,0 +1,32 @@
+<div class="row flex-items-xs-between values-header">
+    <div *ngIf="valueMode" class="title-container">
+        <label>{{'HELM_CHART.SHOW_KV' | translate }}</label>
+    </div>
+    <div *ngIf="!valueMode" class="title-container">
+        <label>{{'HELM_CHART.SHOW_YAML' | translate }}</label>
+    </div>
+    <div class="switch-container">
+        <span class="card-btn" (click)="showYamlFile(false)" (mouseenter)="mouseEnter('value') " (mouseleave)="mouseLeave('value')">
+            <clr-icon size="24" shape="view-list" title='list values' [ngClass]="{'is-highlight': isValueMode || isHovering('value') }"></clr-icon>
+        </span>
+        <span class="list-btn" (click)="showYamlFile(true)" (mouseenter)="mouseEnter('yaml') " (mouseleave)="mouseLeave('yaml')">
+            <clr-icon size="24" shape="file" title="yaml file" [ngClass]="{'is-highlight': !isValueMode || isHovering('yaml') }"></clr-icon>
+        </span>
+    </div>
+</div>
+
+<div class="row value-container">
+    <div class="col-xs-8" *ngIf="valueMode">
+        <table class="table">
+            <tbody>
+                <tr *ngFor="let key of objKeys(values)">
+                    <td class="left">{{key}}</td>
+                    <td class="left">{{values[key]}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="col-xs-8" *ngIf="!valueMode">
+        <div class="yaml-container" [innerHTML]="yaml | language : 'yaml' | markdown"></div>
+    </div>
+</div>

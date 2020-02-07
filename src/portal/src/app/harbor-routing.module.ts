@@ -182,7 +182,16 @@ const harborRoutes: Routes = [
         canDeactivate: [LeavingRepositoryRouteDeactivate],
         resolve: {
           projectResolver: ProjectRoutingResolver
-        }
+        },
+      },
+      {
+        path: 'projects/:id/repositories/:repo/depth/:depth',
+        component: TagRepositoryComponent,
+        canActivate: [MemberGuard],
+        canDeactivate: [LeavingRepositoryRouteDeactivate],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        },
       },
       {
         path: 'projects/:id/repositories/:repo/artifacts/:digest',
