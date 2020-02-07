@@ -11,8 +11,24 @@ import (
 )
 
 func TestProjects(t *testing.T) {
-	// chart museum enabled
 	server := test.NewServer(
+		&test.RequestHandlerMapping{
+			Method:  http.MethodPost,
+			Pattern: "/api/v0/repositories",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(201)
+				w.Write([]byte(`{
+  "enableManifestLists": true,
+  "immutableTags": true,
+  "longDescription": "string",
+  "name": "mynamespace/myrepo",
+  "scanOnPush": true,
+  "shortDescription": "string",
+  "tagLimit": 0,
+  "visibility": "public"
+}`))
+			},
+		},
 		&test.RequestHandlerMapping{
 			Method:  http.MethodGet,
 			Pattern: "/api/v0/repositories/mynamespace/myrepo/tags",
@@ -69,6 +85,13 @@ func TestProjects(t *testing.T) {
 		},
 		&test.RequestHandlerMapping{
 			Method:  http.MethodGet,
+			Pattern: "/api/v0/repositories/mynamespace/missingimage/tags",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(http.StatusNotFound)
+			},
+		},
+		&test.RequestHandlerMapping{
+			Method:  http.MethodGet,
 			Pattern: "/api/v0/repositories",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("X-Next-Page-Start", "")
@@ -118,6 +141,22 @@ func TestProjects(t *testing.T) {
   "usersCount": 0
 }`))
 			},
+		},
+		&test.RequestHandlerMapping{
+			Method:  http.MethodPost,
+			Pattern: "/enzi/v0/accounts",
+			Handler: func(w http.ResponseWriter, r *http.Request) {
+				w.WriteHeader(201)
+				w.Write([]byte(`{
+  "fullName": "string",
+  "isActive": true,
+  "isAdmin": false,
+  "isOrg": true,
+  "name": "mynamespace",
+  "password": "string",
+  "searchLDAP": false
+}`))
+			},
 		})
 	client := &Client{
 		url:      server.URL,
@@ -142,5 +181,15 @@ func TestProjects(t *testing.T) {
 	require.Nil(t, e)
 	assert.Equal(t, 1, len(tags))
 	assert.Equal(t, "mytag", tags[0].Name)
+
+	// List tags for missign image
+	_, e = client.getVTags("mynamespace/missingimage")
+	require.NotNil(t, e)
+
+	e = client.createRepository("mynamespace/myrepo")
+	require.Nil(t, e)
+
+	e = client.createNamespace("mynamespace")
+	require.Nil(t, e)
 
 }

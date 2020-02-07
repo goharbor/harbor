@@ -46,7 +46,7 @@ type adapter struct {
 	clientDTRAPI *Client
 }
 
-func newAdapter(registry *model.Registry) (*adapter, error) {
+func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 	log.Debugf("Entering DTR newAdapter")
 
 	var credential auth.Credential
