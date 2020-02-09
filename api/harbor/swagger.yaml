@@ -691,6 +691,13 @@ paths:
       responses:
         '200':
           description: Searched for users of Harbor successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of users
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:
@@ -800,6 +807,13 @@ paths:
       responses:
         '200':
           description: Search users by username, email successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of users
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:
@@ -1547,6 +1561,13 @@ paths:
       responses:
         '200':
           description: Get the required logs successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of logs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:
@@ -1593,6 +1614,13 @@ paths:
       responses:
         '200':
           description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of replication executions
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:
@@ -1705,6 +1733,13 @@ paths:
       responses:
         '200':
           description: Success.
+          headers:
+            X-Total-Count:
+              description: The total count of replication execution tasks
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:
@@ -1780,6 +1815,13 @@ paths:
       responses:
         '200':
           description: Get policy successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of replication policies
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:
@@ -1957,6 +1999,13 @@ paths:
       responses:
         '200':
           description: Get successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of labels
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:
@@ -3350,6 +3399,13 @@ paths:
       responses:
         '200':
           description: Get project robot accounts successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of project robot accounts
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:
@@ -3921,6 +3977,13 @@ paths:
       responses:
         '200':
           description: List project webhook jobs successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of project webhook jobs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:
@@ -4180,8 +4243,8 @@ paths:
         '500':
           description: Unexpected internal errors.
     get:
-      summary: Get a Retention job
-      description: Get a Retention job, job status may be delayed before job service schedule it up.
+      summary: Get a Retention job execution
+      description: Get a Retention job execution, job status may be delayed before job service schedule it up.
       tags:
         - Products
         - Retention
@@ -4194,7 +4257,14 @@ paths:
           description: Retention ID.
       responses:
         '200':
-          description: Get a Retention job successfully.
+          description: Get a Retention job execution successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of retention job executions
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:
@@ -4269,6 +4339,13 @@ paths:
       responses:
         '200':
           description: Get Retention job tasks successfully.
+          headers:
+            X-Total-Count:
+              description: The total count of retention job execution tasks
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
           schema:
             type: array
             items:
