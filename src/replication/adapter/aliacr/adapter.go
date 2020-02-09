@@ -29,8 +29,7 @@ func init() {
 // example:
 // https://registry.%s.aliyuncs.com
 // https://cr.%s.aliyuncs.com
-// for aliacr Enterprise edition
-// https://(%s)registry.%s.cr.aliyuncs.com
+// https://*registry.%s.cr.aliyuncs.com
 var regRegion = regexp.MustCompile("https://(.*registry|cr)\\.([\\w\\-]+)\\..*aliyuncs\\.com")
 
 func getRegion(url string) (region string, err error) {
