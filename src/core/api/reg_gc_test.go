@@ -20,7 +20,7 @@ func TestGCPost(t *testing.T) {
 		t.Error("Error occurred while add a admin job", err.Error())
 		t.Log(err)
 	} else {
-		assert.Equal(200, code, "Add adminjob status should be 200")
+		assert.Equal(201, code, "Add adminjob status should be 201")
 	}
 }
 
