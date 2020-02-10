@@ -12,25 +12,23 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package blob
+package apiversion
 
 import (
-	"github.com/stretchr/testify/mock"
+	"github.com/goharbor/harbor/src/internal"
+	"github.com/stretchr/testify/assert"
+	"net/http"
+	"net/http/httptest"
+	"testing"
 )
 
-// FakeFetcher is a fake blob fetcher that implement the src/api/artifact/abstractor/blob.Fetcher interface
-type FakeFetcher struct {
-	mock.Mock
-}
-
-// FetchManifest ...
-func (f *FakeFetcher) FetchManifest(repoFullName, digest string) (string, []byte, error) {
-	args := f.Called(mock.Anything)
-	return args.String(0), args.Get(1).([]byte), args.Error(2)
-}
-
-// FetchLayer ...
-func (f *FakeFetcher) FetchLayer(repoFullName, digest string) (content []byte, err error) {
-	args := f.Called(mock.Anything)
-	return args.Get(0).([]byte), args.Error(1)
+func TestMiddleware(t *testing.T) {
+	version := ""
+	middleware := Middleware("1.0")
+	req := httptest.NewRequest("GET", "http://localhost", nil)
+	handler := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		version = internal.GetAPIVersion(req.Context())
+	})
+	middleware(handler).ServeHTTP(nil, req)
+	assert.Equal(t, "1.0", version)
 }

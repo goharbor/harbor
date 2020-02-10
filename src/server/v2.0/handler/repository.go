@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/api/repository"
+	"github.com/goharbor/harbor/src/common/rbac"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/repository"
 )
 
@@ -34,6 +35,9 @@ type repositoryAPI struct {
 }
 
 func (r *repositoryAPI) DeleteRepository(ctx context.Context, params operation.DeleteRepositoryParams) middleware.Responder {
+	if err := r.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionDelete, rbac.ResourceRepository); err != nil {
+		return r.SendError(ctx, err)
+	}
 	repository, err := r.repoCtl.GetByName(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName))
 	if err != nil {
 		return r.SendError(ctx, err)

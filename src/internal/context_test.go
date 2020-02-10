@@ -12,25 +12,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package blob
+package internal
 
 import (
-	"github.com/stretchr/testify/mock"
+	"context"
+	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
-// FakeFetcher is a fake blob fetcher that implement the src/api/artifact/abstractor/blob.Fetcher interface
-type FakeFetcher struct {
-	mock.Mock
+func TestSetAPIVersion(t *testing.T) {
+	ctx := SetAPIVersion(context.Background(), "1.0")
+	assert.NotNil(t, ctx)
 }
 
-// FetchManifest ...
-func (f *FakeFetcher) FetchManifest(repoFullName, digest string) (string, []byte, error) {
-	args := f.Called(mock.Anything)
-	return args.String(0), args.Get(1).([]byte), args.Error(2)
-}
+func TestGetAPIVersion(t *testing.T) {
+	// nil context
+	version := GetAPIVersion(nil)
+	assert.Empty(t, version)
 
-// FetchLayer ...
-func (f *FakeFetcher) FetchLayer(repoFullName, digest string) (content []byte, err error) {
-	args := f.Called(mock.Anything)
-	return args.Get(0).([]byte), args.Error(1)
+	// no version set in context
+	version = GetAPIVersion(context.Background())
+	assert.Empty(t, version)
+
+	// version set in context
+	ctx := SetAPIVersion(context.Background(), "1.0")
+	version = GetAPIVersion(ctx)
+	assert.Equal(t, "1.0", version)
 }

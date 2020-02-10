@@ -16,6 +16,7 @@ package image
 
 import (
 	"github.com/goharbor/harbor/src/common/models"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/api/artifact/abstractor/blob"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
@@ -23,29 +24,8 @@ import (
 	"testing"
 )
 
-type manifestV2ResolverTestSuite struct {
-	suite.Suite
-	resolver    *manifestV2Resolver
-	repoMgr     *repository.FakeManager
-	blobFetcher *blob.FakeFetcher
-}
-
-func (m *manifestV2ResolverTestSuite) SetupTest() {
-	m.repoMgr = &repository.FakeManager{}
-	m.blobFetcher = &blob.FakeFetcher{}
-	m.resolver = &manifestV2Resolver{
-		repoMgr:     m.repoMgr,
-		blobFetcher: m.blobFetcher,
-	}
-
-}
-
-func (m *manifestV2ResolverTestSuite) TestArtifactType() {
-	m.Assert().Equal(ArtifactTypeImage, m.resolver.ArtifactType())
-}
-
-func (m *manifestV2ResolverTestSuite) TestResolve() {
-	content := `{
+var (
+	manifest = `{
    "schemaVersion": 2,
    "mediaType": "application/vnd.docker.distribution.manifest.v2+json",
    "config": {
@@ -61,7 +41,7 @@ func (m *manifestV2ResolverTestSuite) TestResolve() {
       }
    ]
 }`
-	config := `{
+	config = `{
   "architecture": "amd64",
   "config": {
     "Hostname": "",
@@ -138,15 +118,60 @@ func (m *manifestV2ResolverTestSuite) TestResolve() {
     ]
   }
 }`
+)
+
+type manifestV2ResolverTestSuite struct {
+	suite.Suite
+	resolver    *manifestV2Resolver
+	repoMgr     *repository.FakeManager
+	blobFetcher *blob.FakeFetcher
+}
+
+func (m *manifestV2ResolverTestSuite) SetupTest() {
+	m.repoMgr = &repository.FakeManager{}
+	m.blobFetcher = &blob.FakeFetcher{}
+	m.resolver = &manifestV2Resolver{
+		repoMgr:     m.repoMgr,
+		blobFetcher: m.blobFetcher,
+	}
+
+}
+
+func (m *manifestV2ResolverTestSuite) TestResolveMetadata() {
 	artifact := &artifact.Artifact{}
 	m.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	m.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
-	err := m.resolver.Resolve(nil, []byte(content), artifact)
+	err := m.resolver.ResolveMetadata(nil, []byte(manifest), artifact)
 	m.Require().Nil(err)
 	m.repoMgr.AssertExpectations(m.T())
 	m.blobFetcher.AssertExpectations(m.T())
 	m.Assert().Equal("amd64", artifact.ExtraAttrs["architecture"].(string))
 	m.Assert().Equal("linux", artifact.ExtraAttrs["os"].(string))
+}
+
+func (m *manifestV2ResolverTestSuite) TestResolveAddition() {
+	// unknown addition
+	_, err := m.resolver.ResolveAddition(nil, nil, "unknown_addition")
+	m.True(ierror.IsErr(err, ierror.BadRequestCode))
+
+	// build history
+	artifact := &artifact.Artifact{}
+	m.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
+	m.blobFetcher.On("FetchManifest").Return("", []byte(manifest), nil)
+	m.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
+	addition, err := m.resolver.ResolveAddition(nil, artifact, AdditionTypeBuildHistory)
+	m.Require().Nil(err)
+	m.Equal("application/json; charset=utf-8", addition.ContentType)
+	m.Equal(`[{"created":"2019-01-01T01:29:27.416803627Z","created_by":"/bin/sh -c #(nop) COPY file:f77490f70ce51da25bd21bfc30cb5e1a24b2b65eb37d4af0c327ddc24f0986a6 in / "},{"created":"2019-01-01T01:29:27.650294696Z","created_by":"/bin/sh -c #(nop)  CMD [\"/hello\"]","empty_layer":true}]`, string(addition.Content))
+}
+
+func (m *manifestV2ResolverTestSuite) TestGetArtifactType() {
+	m.Assert().Equal(ArtifactTypeImage, m.resolver.GetArtifactType())
+}
+
+func (m *manifestV2ResolverTestSuite) TestListAdditionTypes() {
+	additions := m.resolver.ListAdditionTypes()
+	m.EqualValues([]string{AdditionTypeBuildHistory, AdditionTypeVulnerabilities}, additions)
 }
 
 func TestManifestV2ResolverTestSuite(t *testing.T) {

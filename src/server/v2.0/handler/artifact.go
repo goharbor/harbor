@@ -17,6 +17,7 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -26,6 +27,8 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/artifact"
+	"net/http"
+	"strings"
 	"time"
 )
 
@@ -167,6 +170,24 @@ func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagP
 		return a.SendError(ctx, err)
 	}
 	return operation.NewDeleteTagOK()
+}
+
+func (a *artifactAPI) GetAddition(ctx context.Context, params operation.GetAdditionParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourceArtifactAddition); err != nil {
+		return a.SendError(ctx, err)
+	}
+	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	addition, err := a.artCtl.GetAddition(ctx, artifact.ID, strings.ToUpper(params.Addition))
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	return middleware.ResponderFunc(func(w http.ResponseWriter, p runtime.Producer) {
+		w.Header().Set("Content-Type", addition.ContentType)
+		w.Write(addition.Content)
+	})
 }
 
 func option(withTag, withImmutableStatus, withLabel, withScanOverview, withSignature *bool) *artifact.Option {

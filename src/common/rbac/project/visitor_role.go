@@ -131,6 +131,7 @@ var (
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
+			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceTag, Action: rbac.ActionDelete},
@@ -227,6 +228,7 @@ var (
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
+			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceTag, Action: rbac.ActionDelete},
@@ -289,6 +291,7 @@ var (
 
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
+			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
 
 			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
 		},
@@ -338,6 +341,7 @@ var (
 
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
+			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
 		},
 
 		"limitedGuest": {
@@ -369,6 +373,7 @@ var (
 
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
+			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
 		},
 	}
 )

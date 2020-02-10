@@ -18,11 +18,17 @@ import (
 	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor"
+	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
+	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
+	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/internal"
 	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/opencontainers/go-digest"
+	"strings"
+
 	// registry image resolvers
 	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
 	// register chart resolver
@@ -67,10 +73,10 @@ type Controller interface {
 	// UpdatePullTime updates the pull time for the artifact. If the tagID is provides, update the pull
 	// time of the tag as well
 	UpdatePullTime(ctx context.Context, artifactID int64, tagID int64, time time.Time) (err error)
-	// GetSubResource returns the sub resource of the artifact
-	// The sub resource is different according to the artifact type:
+	// GetAddition returns the addition of the artifact.
+	// The addition is different according to the artifact type:
 	// build history for image; values.yaml, readme and dependencies for chart, etc
-	GetSubResource(ctx context.Context, artifactID int64, resource string) (*Resource, error)
+	GetAddition(ctx context.Context, artifactID int64, additionType string) (addition *resolver.Addition, err error)
 	// TODO move this to GC controller?
 	// Prune removes the useless artifact records. The underlying registry data will
 	// be removed during garbage collection
@@ -139,10 +145,17 @@ func (c *controller) ensureArtifact(ctx context.Context, repositoryID int64, dig
 		Digest:       digest,
 		PushTime:     time.Now(),
 	}
-	// abstract the specific information for the artifact
-	if err = c.abstractor.Abstract(ctx, artifact); err != nil {
+	// abstract the metadata for the artifact
+	if err = c.abstractor.AbstractMetadata(ctx, artifact); err != nil {
 		return false, 0, err
 	}
+
+	// populate the artifact type
+	typee, err := descriptor.GetArtifactType(artifact.MediaType)
+	if err != nil {
+		return false, 0, err
+	}
+	artifact.Type = typee
 
 	// create it
 	id, err := c.artMgr.Create(ctx, artifact)
@@ -333,9 +346,20 @@ func (c *controller) UpdatePullTime(ctx context.Context, artifactID int64, tagID
 		ID: tagID,
 	}, "PullTime")
 }
-func (c *controller) GetSubResource(ctx context.Context, artifactID int64, resource string) (*Resource, error) {
-	// TODO implement
-	return nil, nil
+
+func (c *controller) GetAddition(ctx context.Context, artifactID int64, addition string) (*resolver.Addition, error) {
+	artifact, err := c.artMgr.Get(ctx, artifactID)
+	if err != nil {
+		return nil, err
+	}
+	switch addition {
+	case image.AdditionTypeVulnerabilities:
+		// get the vulnerabilities from scan service
+		// TODO implement
+		return &resolver.Addition{}, nil
+	default:
+		return c.abstractor.AbstractAddition(ctx, artifact, addition)
+	}
 }
 
 // assemble several part into a single artifact
@@ -368,6 +392,8 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 	if option.WithScanOverview {
 		// TODO populate scan overview
 	}
+	// populate addition links
+	c.populateAdditionLinks(ctx, artifact)
 	// TODO populate signature on artifact or label level?
 	return artifact
 }
@@ -405,4 +431,43 @@ func (c *controller) isImmutable(projectID int64, repo string, tag string) bool 
 		return false
 	}
 	return matched
+}
+
+func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifact) {
+	types, err := descriptor.ListAdditionTypes(artifact.MediaType)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	if len(types) == 0 {
+		return
+	}
+	repository, err := c.repoMgr.Get(ctx, artifact.RepositoryID)
+	if err != nil {
+		log.Error(err.Error())
+		return
+	}
+	pro, repo := utils.ParseRepository(repository.Name)
+	version := internal.GetAPIVersion(ctx)
+	if artifact.AdditionLinks == nil {
+		artifact.AdditionLinks = make(map[string]*AdditionLink)
+	}
+	href := ""
+	for _, t := range types {
+		t = strings.ToLower(t)
+		switch t {
+		case image.AdditionTypeVulnerabilities:
+			// check whether the scan service is enabled and set the addition link
+			// TODO implement
+			href = fmt.Sprintf("/api/%s/projects/%s/repositories/%s/artifacts/%s/vulnerabilities",
+				version, pro, repo, artifact.Digest)
+		default:
+			href = fmt.Sprintf("/api/%s/projects/%s/repositories/%s/artifacts/%s/additions/%s",
+				version, pro, repo, artifact.Digest, t)
+		}
+		artifact.AdditionLinks[t] = &AdditionLink{
+			HREF:     href,
+			Absolute: false,
+		}
+	}
 }

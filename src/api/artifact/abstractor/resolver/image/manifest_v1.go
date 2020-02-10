@@ -19,14 +19,20 @@ import (
 	"encoding/json"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
+	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 )
 
 func init() {
 	rslver := &manifestV1Resolver{}
 	if err := resolver.Register(rslver, schema1.MediaTypeSignedManifest); err != nil {
-		log.Errorf("failed to register resolver for artifact %s: %v", rslver.ArtifactType(), err)
+		log.Errorf("failed to register resolver for media type %s: %v", schema1.MediaTypeSignedManifest, err)
+		return
+	}
+	if err := descriptor.Register(rslver, schema1.MediaTypeSignedManifest); err != nil {
+		log.Errorf("failed to register descriptor for media type %s: %v", schema1.MediaTypeSignedManifest, err)
 		return
 	}
 }
@@ -35,11 +41,7 @@ func init() {
 type manifestV1Resolver struct {
 }
 
-func (m *manifestV1Resolver) ArtifactType() string {
-	return ArtifactTypeImage
-}
-
-func (m *manifestV1Resolver) Resolve(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
+func (m *manifestV1Resolver) ResolveMetadata(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
 	mani := &schema1.Manifest{}
 	if err := json.Unmarshal([]byte(manifest), mani); err != nil {
 		return err
@@ -48,5 +50,18 @@ func (m *manifestV1Resolver) Resolve(ctx context.Context, manifest []byte, artif
 		artifact.ExtraAttrs = map[string]interface{}{}
 	}
 	artifact.ExtraAttrs["architecture"] = mani.Architecture
+	return nil
+}
+
+func (m *manifestV1Resolver) ResolveAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*resolver.Addition, error) {
+	return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
+		WithMessage("addition %s isn't supported for %s(manifest version 1)", addition, ArtifactTypeImage)
+}
+
+func (m *manifestV1Resolver) GetArtifactType() string {
+	return ArtifactTypeImage
+}
+
+func (m *manifestV1Resolver) ListAdditionTypes() []string {
 	return nil
 }

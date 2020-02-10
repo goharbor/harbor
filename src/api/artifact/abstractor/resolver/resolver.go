@@ -27,12 +27,14 @@ var (
 
 // Resolver resolves the detail information for a specific kind of artifact
 type Resolver interface {
-	// ArtifactType returns the type of artifact that the resolver handles
-	ArtifactType() string
-	// Resolve receives the manifest content, resolves the detail information
+	// ResolveMetadata receives the manifest content, resolves the metadata
 	// from the manifest or the layers referenced by the manifest, and populates
-	// the detail information into the artifact
-	Resolve(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error
+	// the metadata into the artifact
+	ResolveMetadata(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error
+	// ResolveAddition returns the addition of the artifact.
+	// The additions are different for different artifacts:
+	// build history for image; values.yaml, readme and dependencies for chart, etc
+	ResolveAddition(ctx context.Context, artifact *artifact.Artifact, additionType string) (addition *Addition, err error)
 }
 
 // Register resolver, one resolver can handle multiple media types for one kind of artifact
@@ -51,4 +53,10 @@ func Register(resolver Resolver, mediaTypes ...string) error {
 // Get the resolver according to the media type
 func Get(mediaType string) Resolver {
 	return registry[mediaType]
+}
+
+// Addition defines the specific addition of different artifacts: build history for image, values.yaml for chart, etc
+type Addition struct {
+	Content     []byte // the content of the addition
+	ContentType string // the content type of the addition, returned as "Content-Type" header in API
 }

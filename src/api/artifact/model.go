@@ -24,8 +24,8 @@ import (
 // Artifact is the overall view of artifact
 type Artifact struct {
 	artifact.Artifact
-	Tags             []*Tag                     // the list of tags that attached to the artifact
-	SubResourceLinks map[string][]*ResourceLink // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
+	Tags          []*Tag                   // the list of tags that attached to the artifact
+	AdditionLinks map[string]*AdditionLink // the link for build history(image), values.yaml(chart), dependency(chart), etc
 	// TODO add other attrs: signature, scan result, etc
 }
 
@@ -73,15 +73,13 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 			Immutable:    tag.Immutable,
 		})
 	}
-	for resource, links := range a.SubResourceLinks {
-		for _, link := range links {
-			art.SubResourceLinks[resource] = []models.ResourceLink{}
-			if link != nil {
-				art.SubResourceLinks[resource] = append(art.SubResourceLinks[resource], models.ResourceLink{
-					Absolute: link.Absolute,
-					Href:     link.HREF,
-				})
-			}
+	for addition, link := range a.AdditionLinks {
+		if art.AdditionLinks == nil {
+			art.AdditionLinks = make(map[string]models.AdditionLink)
+		}
+		art.AdditionLinks[addition] = models.AdditionLink{
+			Absolute: link.Absolute,
+			Href:     link.HREF,
 		}
 	}
 	return art
@@ -94,14 +92,8 @@ type Tag struct {
 	// TODO add other attrs: signature, label, etc
 }
 
-// Resource defines the specific resource of different artifacts: build history for image, values.yaml for chart, etc
-type Resource struct {
-	Content     []byte // the content of the resource
-	ContentType string // the content type of the resource, returned as "Content-Type" header in API
-}
-
-// ResourceLink is a link via that a resource can be fetched
-type ResourceLink struct {
+// AdditionLink is a link via that the addition can be fetched
+type AdditionLink struct {
 	HREF     string
 	Absolute bool // specify the href is an absolute URL or not
 }
