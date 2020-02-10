@@ -41,7 +41,7 @@ export class TagDetailPageComponent implements OnInit, OnDestroy {
     this.repositoryName = this.route.snapshot.params["repo"];
     this.artifactDigest = this.route.snapshot.params["digest"];
     this.projectId = this.route.snapshot.params["id"];
-    this.referArtifactNameArray = this.artifactService.referenceSummary;
+    this.referArtifactNameArray = JSON.parse(sessionStorage.getItem('referenceSummary')) || [];
   }
 
   get withAdmiral(): boolean {
@@ -58,11 +58,11 @@ export class TagDetailPageComponent implements OnInit, OnDestroy {
     this.router.navigate(["harbor", "projects"]);
   }
   ngOnDestroy(): void {
-    this.artifactService.referenceSummary = [];
+    sessionStorage.setItem('referenceSummary', JSON.stringify([]));
   }
   jumpDigest(referArtifactNameArray: string[], index: number) {
-    this.artifactService.referenceSummary = [];
-    this.artifactService.reference = referArtifactNameArray.slice(index);
+    sessionStorage.setItem('referenceSummary', JSON.stringify([]));
+    sessionStorage.setItem('reference', JSON.stringify(referArtifactNameArray.slice(index)));
 
     this.router.navigate(["harbor", "projects", this.projectId, "repositories", this.repositoryName]);
   }

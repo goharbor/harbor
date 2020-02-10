@@ -189,13 +189,14 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
       this.errorHandler.error("Repo name cannot be unset.");
       return;
     }
-    this.referArtifactArray = this.artifactService.reference || [];
-    if (this.referArtifactArray.length) {
-      this.putReferArtifactArray.emit(this.referArtifactArray);
-    }
+    this.referArtifactArray = JSON.parse(sessionStorage.getItem('reference')) || [];
+
+    // if (this.referArtifactArray.length) {
+    //   this.putReferArtifactArray.emit(this.referArtifactArray);
+    // }
     this.artifactService.TriggerArtifactChan$.subscribe(res => {
       // if (res === 'repoName') {
-        this.referArtifactArray = this.artifactService.reference;
+        this.referArtifactArray = JSON.parse(sessionStorage.getItem('reference')) || [];
         this.retrieve();
       // }
       // else {
@@ -949,7 +950,11 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
     //   , `${this.repoName}:${this.referArtifactName}`];
     // this.router.navigate(linkUrl);
     // this.cdf.detectChanges();
-    this.artifactService.reference = this.referArtifactArray;
+    sessionStorage.setItem('reference', JSON.stringify(this.referArtifactArray));
+
+    if (this.referArtifactArray.length) {
+      this.putReferArtifactArray.emit(this.referArtifactArray);
+    }
     this.ngOnInit();
   }
 }
