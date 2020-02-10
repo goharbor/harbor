@@ -37,4 +37,4 @@ Harbor requires that the following ports be open on the target host.
 
 ## What to Do Next ##
 
-[Download the Harbor Installer](../download-installer.md).
+[Download the Harbor Installer](download-installer.md).

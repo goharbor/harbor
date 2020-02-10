@@ -320,4 +320,4 @@ storage_service:
 
 ## What to Do Next
 
-To install Harbor, [Run the Installer Script](../run-installer-script.md).
+To install Harbor, [Run the Installer Script](run-installer-script.md).
