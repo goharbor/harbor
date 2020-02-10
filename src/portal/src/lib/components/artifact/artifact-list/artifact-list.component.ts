@@ -43,7 +43,8 @@ export class ArtifactListComponent implements OnInit, OnChanges {
     }
   }
 
-  openArtifact(references: Reference[], indexOrDigest: string) {
+  // openArtifact(references: Reference[], indexOrDigest: string) {
+  openArtifact(references: Reference[]) {
       
       if (this.referenceNameOpenState === true) {
         this.referenceNameOpenState = false;

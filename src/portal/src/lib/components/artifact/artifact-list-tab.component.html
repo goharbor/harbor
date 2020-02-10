@@ -168,11 +168,11 @@
             <clr-dg-column>{{'REPOSITORY.VULNERABILITY' | translate}}</clr-dg-column>
             <clr-dg-column *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
             <!-- <clr-dg-column>{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column> -->
-            <clr-dg-column [clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgField]="'docker_version'">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column>
+            <!-- <clr-dg-column [clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column> -->
+            <!-- <clr-dg-column [clrDgField]="'docker_version'">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column> -->
             <clr-dg-column *ngIf="!withAdmiral">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
-            <!-- <clr-dg-column [clrDgSortBy]="pushComparator">{{'REPOSITORY.PUSH_TIME' | translate}}</clr-dg-column>
-            <clr-dg-column [clrDgSortBy]="pullComparator">{{'REPOSITORY.PULL_TIME' | translate}}</clr-dg-column> -->
+            <clr-dg-column [clrDgSortBy]="pushComparator">{{'REPOSITORY.PUSH_TIME' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="pullComparator">{{'REPOSITORY.PULL_TIME' | translate}}</clr-dg-column>
             <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
             <clr-dg-row *clrDgItems="let artifact of artifactList" [clrDgItem]='artifact'>
                 <!-- <clr-dg-cell class="max-width-38">
@@ -215,12 +215,13 @@
                                     </div>
                                 </div>
                             </div>
-                            <clr-tooltip-content [clrPosition]="'top-right'" [clrSize]="'md'" *clrIfOpen>
+                            <clr-tooltip-content [clrPosition]="'top-right'" [clrSize]="'lg'" *clrIfOpen>
                                 <table class="table table-noborder mt-0">
                                     <thead class="tag-thead">
                                         <tr >
                                             <th class="left tag-header-color" >{{'REPOSITORY.TAGS_COUNT' | translate | uppercase}}</th>
-                                            <th class="left tag-header-color">{{'TAG.UPLOADTIME' | translate | uppercase}}</th>
+                                            <th class="left tag-header-color">{{'REPOSITORY.PUSH_TIME' | translate | uppercase}}</th>
+                                            <th class="left tag-header-color">{{'REPOSITORY.PULL_TIME' | translate | uppercase}}</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -228,6 +229,7 @@
                                             <td class="left tag-body-color">{{tag.name}}</td>
                                             <!-- to do -->
                                             <td class="left tag-body-color">{{tag.push_time | date: 'short'}}</td>
+                                            <td class="left tag-body-color">{{tag.pull_time | date: 'short'}}</td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -271,12 +273,12 @@
                         {{artifact.author}}
                     </div>
                 </clr-dg-cell> -->
-                <clr-dg-cell>
+                <!-- <clr-dg-cell>
                     <div class="cell">{{artifact.created | date: 'short'}}</div>
-                </clr-dg-cell>
-                <clr-dg-cell>
+                </clr-dg-cell> -->
+                <!-- <clr-dg-cell>
                     <div class="cell">{{artifact.docker_version}}</div>
-                </clr-dg-cell>
+                </clr-dg-cell> -->
                 <clr-dg-cell *ngIf="!withAdmiral">
                     <div class="cell">
                         <hbr-label-piece *ngIf="artifact.labels?.length" [label]="artifact.labels[0]" [labelWidth]="90">
@@ -296,12 +298,12 @@
                         </div>
                     </div>
                 </clr-dg-cell>
-                <!-- <clr-dg-cell>
+                <clr-dg-cell>
                     <div class="cell">{{artifact.push_time | date: 'short'}}</div>
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">{{artifact.pull_time === availableTime ? "" : (artifact.pull_time| date: 'short')}}</div>
-                </clr-dg-cell> -->
+                </clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
                 <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}

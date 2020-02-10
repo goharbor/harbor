@@ -16,16 +16,16 @@
                             <input clrInput type="text" id="name" name="name" required size="20" autocomplete="off"
                                 [(ngModel)]="newTagName.name" #name="ngModel" (keyup)="existValid(newTagName.name)">
                             <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
-                            <clr-control-error class="position-ab" *ngIf="isLabelNameExist">
+                            <clr-control-error class="position-ab" >
                                 {{'LABEL.NAME_ALREADY_EXISTS' | translate }}
                             </clr-control-error>
                         </label>
                     </label>
                     <label>
-                        <button type="button" class="btn btn-sm btn-outline" (click)="cancelAddTag()" [disabled]="inProgress">{{
+                        <button type="button" class="btn btn-sm btn-outline" (click)="cancelAddTag()">{{
                                         'BUTTON.CANCEL' | translate }}
                         </button>
-                        <button type="submit" class="btn btn-sm btn-primary" (click)="saveAddTag()" [disabled]="!isValid">{{
+                        <button type="submit" class="btn btn-sm btn-primary" (click)="saveAddTag()">{{
                                         'BUTTON.OK' | translate }}
                         </button>
                     </label>
