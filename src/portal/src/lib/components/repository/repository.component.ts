@@ -16,14 +16,16 @@ import { TranslateService } from '@ngx-translate/core';
 import { State } from '../../services/interface';
 
 import { RepositoryService } from '../../services/repository.service';
-import { Repository, RepositoryItem, Tag, ArtifactClickEvent,
-  SystemInfo, SystemInfoService, TagService, ArtifactService } from '../../services';
+import {
+  Repository, RepositoryItem, Tag, ArtifactClickEvent,
+  SystemInfo, SystemInfoService, TagService, ArtifactService
+} from '../../services';
 import { ErrorHandler } from '../../utils/error-handler';
 import { ConfirmationState, ConfirmationTargets } from '../../entities/shared.const';
 import { ConfirmationDialogComponent, ConfirmationMessage, ConfirmationAcknowledgement } from '../confirmation-dialog';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
-const TabLinkContentMap: {[index: string]: string} = {
+const TabLinkContentMap: { [index: string]: string } = {
   'repo-info': 'info',
   'repo-image': 'image'
 };
@@ -34,7 +36,7 @@ const TabLinkContentMap: {[index: string]: string} = {
   styleUrls: ['./repository.component.scss']
 })
 export class RepositoryComponent implements OnInit, OnDestroy {
-  signedCon: {[key: string]: any | string[]} = {};
+  signedCon: { [key: string]: any | string[] } = {};
   @Input() projectId: number;
   @Input() memberRoleID: number;
   @Input() repoName: string;
@@ -58,9 +60,9 @@ export class RepositoryComponent implements OnInit, OnDestroy {
 
   timerHandler: any;
 
-  @ViewChild('confirmationDialog', {static: false})
+  @ViewChild('confirmationDialog', { static: false })
   confirmationDlg: ConfirmationDialogComponent;
-  showCurrentTitle: string ;
+  showCurrentTitle: string;
   constructor(
     private errorHandler: ErrorHandler,
     private repositoryService: RepositoryService,
@@ -68,7 +70,7 @@ export class RepositoryComponent implements OnInit, OnDestroy {
     private tagService: TagService,
     private artifactService: ArtifactService,
     private translate: TranslateService,
-  ) {  }
+  ) { }
 
   public get registryUrl(): string {
     return this.systemInfo ? this.systemInfo.registry_url : '';
@@ -96,16 +98,17 @@ export class RepositoryComponent implements OnInit, OnDestroy {
     this.artifactService.TriggerArtifactChan$.subscribe(res => {
       if (res === 'repoName') {
         this.showCurrentTitle = this.repoName;
+      } else {
+        this.showCurrentTitle = res[res.length - 1];
       }
-      else {
-        this.showCurrentTitle = res[res.length-1]
-      }
-    })
+    });
+    let reference = JSON.parse(sessionStorage.getItem('reference')) || [];
+    this.putReferArtifactArray(reference);
   }
 
   retrieve(state?: State) {
     this.repositoryService.getRepositories(this.projectId, this.repoName)
-      .subscribe( response => {
+      .subscribe(response => {
         if (response.metadata.xTotalCount > 0) {
           this.orgImageInfo = response.data[0].description;
           this.imageInfo = response.data[0].description;
@@ -115,7 +118,7 @@ export class RepositoryComponent implements OnInit, OnDestroy {
       .subscribe(systemInfo => this.systemInfo = systemInfo, error => this.errorHandler.error(error));
   }
 
-  saveSignatures(event: {[key: string]: string[]}): void {
+  saveSignatures(event: { [key: string]: string[] }): void {
     Object.assign(this.signedCon, event);
   }
 
@@ -141,22 +144,22 @@ export class RepositoryComponent implements OnInit, OnDestroy {
 
   getTagInfo(repoName: string): Observable<void> {
     // this.signedNameArr = [];
-   this.signedCon[repoName] = [];
+    this.signedCon[repoName] = [];
     return this.tagService
-           .getTags(repoName)
-           .pipe(map(items => {
-             items.forEach((t: any) => {
-               if (t.signature !== null) {
-                 this.signedCon[repoName].push(t.name);
-               }
-             });
-           })
-           , catchError(error => observableThrowError(error)));
- }
+      .getTags(repoName)
+      .pipe(map(items => {
+        items.forEach((t: any) => {
+          if (t.signature !== null) {
+            this.signedCon[repoName].push(t.name);
+          }
+        });
+      })
+        , catchError(error => observableThrowError(error)));
+  }
 
-    goBack(): void {
-        this.backEvt.emit(this.projectId);
-    }
+  goBack(): void {
+    this.backEvt.emit(this.projectId);
+  }
 
   hasChanges() {
     return this.imageInfo !== this.orgImageInfo;
@@ -207,13 +210,14 @@ export class RepositoryComponent implements OnInit, OnDestroy {
   confirmCancel(ack: ConfirmationAcknowledgement): void {
     this.editing = false;
     if (ack && ack.source === ConfirmationTargets.CONFIG &&
-        ack.state === ConfirmationState.CONFIRMED) {
-        this.reset();
+      ack.state === ConfirmationState.CONFIRMED) {
+      this.reset();
     }
   }
 
   ngOnDestroy(): void {
-    this.artifactService.reference = [];
+    sessionStorage.setItem('reference', JSON.stringify([]));
+
   }
   putReferArtifactArray(referArtifactArray) {
     if (referArtifactArray.length) {
@@ -222,6 +226,6 @@ export class RepositoryComponent implements OnInit, OnDestroy {
       this.putArtifactReferenceArr.emit(referArtifactArray);
     }
 
-}
+  }
 
 }

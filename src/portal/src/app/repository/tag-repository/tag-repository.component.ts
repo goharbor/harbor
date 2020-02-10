@@ -61,6 +61,8 @@ export class TagRepositoryComponent implements OnInit {
     }
     this.repoName = this.route.snapshot.params['repo'];
     this.registryUrl = this.appConfigService.getConfig().registry_url;
+    this.referArtifactNameArray = JSON.parse(sessionStorage.getItem('reference')) || [];
+
   }
 
   get withNotary(): boolean {
@@ -80,7 +82,8 @@ export class TagRepositoryComponent implements OnInit {
 
   watchTagClickEvt(artifactEvt: ArtifactClickEvent): void {
     //  
-    this.artifactService.referenceSummary = clone(this.referArtifactNameArray);
+    sessionStorage.setItem('referenceSummary', JSON.stringify(this.referArtifactNameArray));
+    
     let linkUrl = ['harbor', 'projects', artifactEvt.project_id, 'repositories'
     , artifactEvt.repository_name, 'artifacts', artifactEvt.digest];
     this.router.navigate(linkUrl);
@@ -94,14 +97,15 @@ export class TagRepositoryComponent implements OnInit {
   }
   backInitRepo() {
     this.referArtifactNameArray = [];
-    this.artifactService.reference = [];
+    sessionStorage.setItem('reference', JSON.stringify([]));
+
     this.updateArtifactList('repoName');
   }
   jumpDigest(referArtifactNameArray: string[], index: number) {
     this.referArtifactNameArray = referArtifactNameArray.slice(index);
     this.referArtifactNameArray.pop();
     this.referArtifactNameArray = referArtifactNameArray.slice(index);
-    this.artifactService.reference = referArtifactNameArray.slice(index);
+    sessionStorage.setItem('reference', JSON.stringify(referArtifactNameArray.slice(index)));
 
     this.updateArtifactList(referArtifactNameArray.slice(index));
   }
