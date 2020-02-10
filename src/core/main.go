@@ -208,7 +208,22 @@ func main() {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
 	}
 
+	if config.WithTrivy() {
+		log.Info("Registering Trivy scanner adapter")
+		reg := &scanner.Registration{
+			Name:            "Trivy",
+			Description:     "The Trivy scanner adapter",
+			URL:             config.TrivyAdapterURL(),
+			UseInternalAddr: true,
+			Immutable:       true,
+		}
+		if err := scan.EnsureScanner(reg, true); err != nil {
+			log.Fatalf("failed to initialize Trivy scanner: %v", err)
+		}
+	}
+
 	if config.WithClair() {
+		log.Info("Registering Clair scanner adapter")
 		clairDB, err := config.ClairDB()
 		if err != nil {
 			log.Fatalf("failed to load clair database information: %v", err)
@@ -228,11 +243,12 @@ func main() {
 		if err := scan.EnsureScanner(reg, true); err != nil {
 			log.Fatalf("failed to initialize clair scanner: %v", err)
 		}
-	} else {
-		if err := scan.RemoveImmutableScanners(); err != nil {
-			log.Warningf("failed to remove immutable scanners: %v", err)
-		}
 	}
+	//} else {
+	//	if err := scan.RemoveImmutableScanners(); err != nil {
+	//		log.Warningf("failed to remove immutable scanners: %v", err)
+	//	}
+	//}
 
 	closing := make(chan struct{})
 	done := make(chan struct{})

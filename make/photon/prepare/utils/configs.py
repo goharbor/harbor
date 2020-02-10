@@ -94,7 +94,7 @@ def parse_versions():
     return versions
 
 
-def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseum):
+def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, with_chartmuseum):
     '''
     :param configs: config_parser object
     :returns: dict of configs
@@ -113,6 +113,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
         'jobservice_url': 'http://jobservice:8080',
         'clair_url': 'http://clair:6060',
         'clair_adapter_url': 'http://clair-adapter:8080',
+        'trivy_adapter_url': 'http://trivy-adapter:8080',
         'notary_url': 'http://notary-server:4443',
         'chart_repository_url': 'http://chartmuseum:9999'
     }

@@ -73,6 +73,7 @@ var (
 		{Name: common.ClairDBUsername, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_DB_USERNAME", DefaultValue: "postgres", ItemType: &StringType{}, Editable: false},
 		{Name: common.ClairURL, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_URL", DefaultValue: "http://clair:6060", ItemType: &StringType{}, Editable: false},
 		{Name: common.ClairAdapterURL, Scope: SystemScope, Group: ClairGroup, EnvKey: "CLAIR_ADAPTER_URL", DefaultValue: "http://clair-adapter:8080", ItemType: &StringType{}, Editable: false},
+		{Name: common.TrivyAdapterURL, Scope: SystemScope, Group: ClairGroup, EnvKey: "TRIVY_ADAPTER_URL", DefaultValue: "http://trivy-adapter:8080", ItemType: &StringType{}, Editable: false},
 
 		{Name: common.CoreURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CORE_URL", DefaultValue: "http://core:8080", ItemType: &StringType{}, Editable: false},
 		{Name: common.CoreLocalURL, Scope: SystemScope, Group: BasicGroup, EnvKey: "CORE_LOCAL_URL", DefaultValue: "http://127.0.0.1:8080", ItemType: &StringType{}, Editable: false},
@@ -150,6 +151,7 @@ var (
 
 		{Name: common.WithChartMuseum, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_CHARTMUSEUM", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		{Name: common.WithClair, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_CLAIR", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
+		{Name: common.WithTrivy, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_TRIVY", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		{Name: common.WithNotary, Scope: SystemScope, Group: BasicGroup, EnvKey: "WITH_NOTARY", DefaultValue: "false", ItemType: &BoolType{}, Editable: true},
 		// the unit of expiration is minute, 43200 minutes = 30 days
 		{Name: common.RobotTokenDuration, Scope: UserScope, Group: BasicGroup, EnvKey: "ROBOT_TOKEN_DURATION", DefaultValue: "43200", ItemType: &IntType{}, Editable: true},
