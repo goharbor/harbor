@@ -12,7 +12,6 @@ import { Tag, Manifest } from "./interface";
 import { Artifact } from "../components/artifact/artifact";
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError, Subject } from "rxjs";
-import { ArtifactListTabComponent } from "../components/artifact/artifact-list-tab.component";
 
 /**
  * For getting tag signatures.
@@ -37,7 +36,6 @@ import { ArtifactListTabComponent } from "../components/artifact/artifact-list-t
  */
 export abstract class ArtifactService {
   reference: string[];
-  referenceSummary: string[];
   triggerUploadArtifact = new Subject<string>();
   TriggerArtifactChan$ = this.triggerUploadArtifact.asObservable();
   /**
@@ -89,12 +87,6 @@ export abstract class ArtifactService {
    *
    * @memberOf TagService
    */
-  abstract getTag(
-    projectName: string,
-    repositoryName: string,
-    artifactId: number,
-    queryParams?: RequestQueryParams
-  ): Observable<Tag>;
 
   abstract addLabelToImages(
     projectName: string,
@@ -135,7 +127,6 @@ export class ArtifactDefaultService extends ArtifactService {
   _baseUrl: string;
   _labelUrl: string;
   reference: string[] = [];
-  referenceSummary: string[] = [];
   triggerUploadArtifact = new Subject<string>();
   TriggerArtifactChan$ = this.triggerUploadArtifact.asObservable();
 
@@ -152,24 +143,7 @@ export class ArtifactDefaultService extends ArtifactService {
       : "/api/labels";
   }
 
-  // Private methods
-  // These two methods are temporary, will be deleted in future after API refactored
-  _getTags(
-    repositoryName: string,
-    queryParams?: RequestQueryParams
-  ): Observable<Tag[]> {
-    if (!queryParams) {
-      queryParams = queryParams = new RequestQueryParams();
-    }
 
-    queryParams = queryParams.set("detail", "true");
-    let url: string = `${this._baseUrl}/${repositoryName}/tags`;
-
-    return this.http
-      .get(url, buildHttpRequestOptions(queryParams))
-      .pipe(map(response => response as Tag[])
-      , catchError(error => observableThrowError(error)));
-  }
   _getArtifacts(
     project_id: string, repositoryName: string,
     queryParams?: RequestQueryParams
@@ -224,22 +198,6 @@ export class ArtifactDefaultService extends ArtifactService {
       , catchError(error => observableThrowError(error)));
   }
 
-  public getTag(
-    projectName: string,
-    repositoryName: string,
-    artifactId: number,
-    queryParams?: RequestQueryParams
-  ): Observable<Tag> {
-    if (!repositoryName || !artifactId) {
-      return observableThrowError("Bad argument");
-    }
-
-    let url: string = `/api/v2.0/projects/${projectName}/repositories/${repositoryName}/artifacts/${artifactId}`;
-    return this.http
-      .get(url, HTTP_GET_OPTIONS)
-      .pipe(map(response => response as Tag)
-      , catchError(error => observableThrowError(error)));
-  }
 
   public addLabelToImages(
     projectName: string,
