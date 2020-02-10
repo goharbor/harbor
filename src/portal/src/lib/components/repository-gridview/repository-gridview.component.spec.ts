@@ -22,6 +22,7 @@ import { UserPermissionService } from "../../services/permission.service";
 import { of } from "rxjs";
 import { HarborLibraryModule } from "../../harbor-library.module";
 import { delay } from 'rxjs/operators';
+import { RepositoryService as NewRepositoryService } from "../../../../ng-swagger-gen/services/repository.service";
 describe('RepositoryComponentGridview (inline template)', () => {
 
   let compRepo: RepositoryGridviewComponent;
@@ -117,6 +118,7 @@ describe('RepositoryComponentGridview (inline template)', () => {
         { provide: ErrorHandler, useValue: fakedErrorHandler },
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: RepositoryService, useValue: fakedRepositoryService },
+        { provide: NewRepositoryService, useValue: fakedRepositoryService },
         { provide: TagService, useClass: TagDefaultService },
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: RetagService, useClass: RetagDefaultService },
