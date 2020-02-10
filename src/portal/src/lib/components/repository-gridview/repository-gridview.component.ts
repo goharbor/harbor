@@ -42,6 +42,7 @@ import { Observable, throwError as observableThrowError } from "rxjs";
 import { errorHandler as errorHandFn } from "../../utils/shared/shared.utils";
 import { ClrDatagridStateInterface } from "@clr/angular";
 import { FilterComponent } from "../filter/filter.component";
+import { RepositoryService as NewRepositoryService} from "../../../../ng-swagger-gen/services/repository.service";
 @Component({
     selector: "hbr-repository-gridview",
     templateUrl: "./repository-gridview.component.html",
@@ -89,6 +90,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         private errorHandler: ErrorHandler,
         private translateService: TranslateService,
         private repositoryService: RepositoryService,
+        private newRepoService: NewRepositoryService,
         private systemInfoService: SystemInfoService,
         private tagService: TagService,
         private operationService: OperationService,
@@ -220,8 +222,10 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
                     operateChanges(operMessage, OperationState.failure, res[1]);
                 }));
         } else {
-            return this.repositoryService
-                .deleteRepository(repo.name)
+            return this.newRepoService
+                .deleteRepository({
+                    repositoryName: repo.name,
+                    projectName: this.projectName})
                 .pipe(map(
                     response => {
                         this.translateService.get('BATCH.DELETED_SUCCESS').subscribe(res => {

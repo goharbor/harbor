@@ -15,7 +15,9 @@
 package repository
 
 import (
+	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/models"
+	artifacttesting "github.com/goharbor/harbor/src/testing/api/artifact"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
@@ -27,14 +29,17 @@ type controllerTestSuite struct {
 	ctl     *controller
 	proMgr  *project.FakeManager
 	repoMgr *repository.FakeManager
+	artCtl  *artifacttesting.FakeController
 }
 
 func (c *controllerTestSuite) SetupTest() {
 	c.proMgr = &project.FakeManager{}
 	c.repoMgr = &repository.FakeManager{}
+	c.artCtl = &artifacttesting.FakeController{}
 	c.ctl = &controller{
 		proMgr:  c.proMgr,
 		repoMgr: c.repoMgr,
+		artCtl:  c.artCtl,
 	}
 }
 
@@ -102,6 +107,16 @@ func (c *controllerTestSuite) TestGetByName() {
 	c.Require().Nil(err)
 	c.repoMgr.AssertExpectations(c.T())
 	c.Equal(int64(1), repository.RepositoryID)
+}
+
+func (c *controllerTestSuite) TestDelete() {
+	art := &artifact.Artifact{}
+	art.ID = 1
+	c.artCtl.On("List").Return(1, []*artifact.Artifact{art}, nil)
+	c.artCtl.On("Delete").Return(nil)
+	c.repoMgr.On("Delete").Return(nil)
+	err := c.ctl.Delete(nil, 1)
+	c.Require().Nil(err)
 }
 
 func TestControllerTestSuite(t *testing.T) {

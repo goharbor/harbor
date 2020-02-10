@@ -295,6 +295,7 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 }
 
 func (c *controller) CreateTag(ctx context.Context, tag *Tag) (int64, error) {
+	// TODO fire event
 	return c.tagMgr.Create(ctx, &(tag.Tag))
 }
 func (c *controller) ListTags(ctx context.Context, query *q.Query, option *TagOption) (int64, []*Tag, error) {
