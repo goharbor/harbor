@@ -19,7 +19,7 @@ import (
 	"github.com/goharbor/harbor/src/api/repository"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/internal"
-	"github.com/goharbor/harbor/src/server/registry/error"
+	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/router"
 	"github.com/opencontainers/go-digest"
 	"net/http"
@@ -32,7 +32,7 @@ func getManifest(w http.ResponseWriter, req *http.Request) {
 	reference := router.Param(req.Context(), ":reference")
 	artifact, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
-		error.Handle(w, req, err)
+		serror.SendError(w, err)
 		return
 	}
 
@@ -53,11 +53,11 @@ func deleteManifest(w http.ResponseWriter, req *http.Request) {
 	reference := router.Param(req.Context(), ":reference")
 	art, err := artifact.Ctl.GetByReference(req.Context(), repository, reference, nil)
 	if err != nil {
-		error.Handle(w, req, err)
+		serror.SendError(w, err)
 		return
 	}
 	if err = artifact.Ctl.Delete(req.Context(), art.ID); err != nil {
-		error.Handle(w, req, err)
+		serror.SendError(w, err)
 		return
 	}
 	w.WriteHeader(http.StatusAccepted)
@@ -72,7 +72,7 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	// make sure the repository exist before pushing the manifest
 	_, repositoryID, err := repository.Ctl.Ensure(req.Context(), repo)
 	if err != nil {
-		error.Handle(w, req, err)
+		serror.SendError(w, err)
 		return
 	}
 
@@ -100,7 +100,7 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 
 	_, _, err = artifact.Ctl.Ensure(req.Context(), repositoryID, dgt, tags...)
 	if err != nil {
-		error.Handle(w, req, err)
+		serror.SendError(w, err)
 		return
 	}
 

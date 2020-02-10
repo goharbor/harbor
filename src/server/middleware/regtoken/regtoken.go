@@ -7,8 +7,8 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	pkg_token "github.com/goharbor/harbor/src/pkg/token"
 	"github.com/goharbor/harbor/src/pkg/token/claims/registry"
+	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
-	reg_err "github.com/goharbor/harbor/src/server/registry/error"
 	"net/http"
 	"strings"
 )
@@ -19,7 +19,7 @@ func Middleware() func(http.Handler) http.Handler {
 		return http.HandlerFunc(func(rw http.ResponseWriter, req *http.Request) {
 			err := parseToken(req)
 			if err != nil {
-				reg_err.Handle(rw, req, err)
+				serror.SendError(rw, err)
 				return
 			}
 			next.ServeHTTP(rw, req)

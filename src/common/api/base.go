@@ -262,6 +262,5 @@ func (b *BaseAPI) SendStatusServiceUnavailableError(err error) {
 //	]
 // }
 func (b *BaseAPI) SendError(err error) {
-	statusCode, payload := serror.APIError(err)
-	b.RenderError(statusCode, payload)
+	serror.SendError(b.Ctx.ResponseWriter, err)
 }

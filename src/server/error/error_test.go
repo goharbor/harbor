@@ -16,38 +16,51 @@ package error
 
 import (
 	"errors"
+	openapi "github.com/go-openapi/errors"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/stretchr/testify/assert"
 	"net/http"
+	"net/http/httptest"
 	"testing"
 )
 
-func TestGetHTTPStatusCode(t *testing.T) {
-	// pre-defined error code
-	errCode := ierror.NotFoundCode
-	statusCode := getHTTPStatusCode(errCode)
-	assert.Equal(t, http.StatusNotFound, statusCode)
+func TestSendError(t *testing.T) {
+	// internal server error
+	rw := httptest.NewRecorder()
+	err := ierror.New(nil).WithCode(ierror.GeneralCode).WithMessage("unknown")
+	SendError(rw, err)
+	assert.Equal(t, http.StatusInternalServerError, rw.Code)
+	assert.Equal(t, `{"errors":[{"code":"UNKNOWN","message":"internal server error"}]}`+"\n", rw.Body.String())
 
-	// not-defined error code
-	errCode = "NOT_DEFINED_ERROR_CODE"
-	statusCode = getHTTPStatusCode(errCode)
-	assert.Equal(t, http.StatusInternalServerError, statusCode)
+	// not internal server error
+	rw = httptest.NewRecorder()
+	err = ierror.New(nil).WithCode(ierror.NotFoundCode).WithMessage("object not found")
+	SendError(rw, err)
+	assert.Equal(t, http.StatusNotFound, rw.Code)
+	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"object not found"}]}`+"\n", rw.Body.String())
 }
 
 func TestAPIError(t *testing.T) {
+	var err error
+	// open API error: github.com/go-openapi/errors.Error
+	err = openapi.New(400, "bad request")
+	statusCode, payload := apiError(err)
+	assert.Equal(t, http.StatusBadRequest, statusCode)
+	assert.Equal(t, `{"errors":[{"code":"BAD_REQUEST","message":"bad request"}]}`, payload)
+
 	// ierror.Error
-	err := &ierror.Error{
+	err = &ierror.Error{
 		Cause:   nil,
 		Code:    ierror.NotFoundCode,
 		Message: "resource not found",
 	}
-	statusCode, payload := APIError(err)
+	statusCode, payload = apiError(err)
 	assert.Equal(t, http.StatusNotFound, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"NOT_FOUND","message":"resource not found"}]}`, payload)
 
 	// common error
 	e := errors.New("customized error")
-	statusCode, payload = APIError(e)
+	statusCode, payload = apiError(e)
 	assert.Equal(t, http.StatusInternalServerError, statusCode)
 	assert.Equal(t, `{"errors":[{"code":"UNKNOWN","message":"customized error"}]}`, payload)
 }

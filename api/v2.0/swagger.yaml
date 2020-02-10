@@ -350,7 +350,7 @@ responses:
         description: The ID of the corresponding request for the response
         type: string
     schema:
-      $ref: '#/definitions/Error'
+      $ref: '#/definitions/Errors'
   '401':
     description: Unauthorized
     headers:
@@ -358,7 +358,7 @@ responses:
         description: The ID of the corresponding request for the response
         type: string
     schema:
-      $ref: '#/definitions/Error'
+      $ref: '#/definitions/Errors'
   '403':
     description: Forbidden
     headers:
@@ -366,7 +366,7 @@ responses:
         description: The ID of the corresponding request for the response
         type: string
     schema:
-      $ref: '#/definitions/Error'
+      $ref: '#/definitions/Errors'
   '404':
     description: Not found
     headers:
@@ -374,7 +374,7 @@ responses:
         description: The ID of the corresponding request for the response
         type: string
     schema:
-      $ref: '#/definitions/Error'
+      $ref: '#/definitions/Errors'
   '409':
     description: Conflict
     headers:
@@ -382,7 +382,7 @@ responses:
         description: The ID of the corresponding request for the response
         type: string
     schema:
-      $ref: '#/definitions/Error'
+      $ref: '#/definitions/Errors'
   '500':
     description: Internal server error
     headers:
@@ -390,8 +390,13 @@ responses:
         description: The ID of the corresponding request for the response
         type: string
     schema:
-      $ref: '#/definitions/Error'
+      $ref: '#/definitions/Errors'
 definitions:
+  Errors:
+    description: The error array that describe the errors got during the handling of request
+    type: array
+    items:
+      $ref: '#/definitions/Error'
   Error:
     description: a model for all the error response coming from harbor
     type: object
@@ -402,11 +407,6 @@ definitions:
       message:
         type: string
         description: The error message
-    x-go-type:
-      import:
-        package: "github.com/goharbor/harbor/src/internal/error"
-        alias: "ierrors"
-      type: "Error"
   Artifact:
     type: object
     properties:

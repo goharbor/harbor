@@ -8,6 +8,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
+	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/pkg/errors"
 	"net/http"
@@ -30,7 +31,8 @@ func Middleware() func(http.Handler) http.Handler {
 				// Invalid project ID
 				if wl.ProjectID == 0 {
 					err := errors.Errorf("project verification error: project %s", img.ProjectName)
-					sendError(err, rw)
+					pkgE := internal_errors.New(err).WithCode(internal_errors.PROJECTPOLICYVIOLATION)
+					serror.SendError(rw, pkgE)
 					return
 				}
 
@@ -52,7 +54,8 @@ func Middleware() func(http.Handler) http.Handler {
 
 				if err != nil {
 					err = errors.Wrap(err, "middleware: vulnerable handler")
-					sendError(err, rw)
+					pkgE := internal_errors.New(err).WithCode(internal_errors.PROJECTPOLICYVIOLATION)
+					serror.SendError(rw, pkgE)
 					return
 				}
 
@@ -60,7 +63,8 @@ func Middleware() func(http.Handler) http.Handler {
 				// No report yet?
 				if !ok {
 					err = errors.Errorf("no scan report existing for the artifact: %s:%s@%s", img.Repository, img.Tag, img.Digest)
-					sendError(err, rw)
+					pkgE := internal_errors.New(err).WithCode(internal_errors.PROJECTPOLICYVIOLATION)
+					serror.SendError(rw, pkgE)
 					return
 				}
 
@@ -70,7 +74,8 @@ func Middleware() func(http.Handler) http.Handler {
 				if summary.Severity.Code() >= projectVulnerableSeverity.Code() {
 					err = errors.Errorf("current image with '%q vulnerable' cannot be pulled due to configured policy in 'Prevent images with vulnerability severity of %q from running.' "+
 						"Please contact your project administrator for help'", summary.Severity, projectVulnerableSeverity)
-					sendError(err, rw)
+					pkgE := internal_errors.New(err).WithCode(internal_errors.PROJECTPOLICYVIOLATION)
+					serror.SendError(rw, pkgE)
 					return
 				}
 
@@ -109,11 +114,4 @@ func validate(req *http.Request) (bool, *middleware.ManifestInfo, vuln.Severity,
 		return false, mf, vs, wl
 	}
 	return true, mf, projectVulnerableSeverity, wl
-}
-
-func sendError(err error, rw http.ResponseWriter) {
-	log.Error(err)
-	pkgE := internal_errors.New(err).WithCode(internal_errors.PROJECTPOLICYVIOLATION)
-	msg := internal_errors.NewErrs(pkgE).Error()
-	http.Error(rw, msg, http.StatusPreconditionFailed)
 }
