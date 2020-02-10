@@ -58,6 +58,9 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	if params.Type != nil {
 		query.Keywords["Type"] = *(params.Type)
 	}
+	if params.Tags != nil {
+		query.Keywords["Tags"] = *(params.Tags)
+	}
 	if params.Page != nil {
 		query.PageNumber = *(params.Page)
 	}

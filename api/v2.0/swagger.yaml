@@ -34,6 +34,11 @@ paths:
           description: Query the artifacts by type. Valid values can be "IMAGE", "CHART", etc.
           type: string
           required: false
+        - name: tags
+          in: query
+          description: Without the "tags" query string, both tagged and untagged artifacts will be returned. Specify it as "*" to return only tagged artifacts; specify it as "nil" to return only untagged artifacts.
+          type: string
+          required: false
         - name: with_tag
           in: query
           description: Specify whether the tags are inclued inside the returning artifacts
@@ -102,6 +107,8 @@ paths:
         - $ref: '#/parameters/projectName'
         - $ref: '#/parameters/repositoryName'
         - $ref: '#/parameters/reference'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
         - name: with_tag
           in: query
           description: Specify whether the tags are inclued inside the returning artifacts
