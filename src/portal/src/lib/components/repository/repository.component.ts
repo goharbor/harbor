@@ -142,20 +142,20 @@ export class RepositoryComponent implements OnInit, OnDestroy {
     this.currentTabID = tabID;
   }
 
-  getTagInfo(repoName: string): Observable<void> {
-    // this.signedNameArr = [];
-    this.signedCon[repoName] = [];
-    return this.tagService
-      .getTags(repoName)
-      .pipe(map(items => {
-        items.forEach((t: any) => {
-          if (t.signature !== null) {
-            this.signedCon[repoName].push(t.name);
-          }
-        });
-      })
-        , catchError(error => observableThrowError(error)));
-  }
+  // getTagInfo(repoName: string): Observable<void> {
+  //   // this.signedNameArr = [];
+  //   this.signedCon[repoName] = [];
+  //   return this.tagService
+  //     .getTags(repoName)
+  //     .pipe(map(items => {
+  //       items.forEach((t: any) => {
+  //         if (t.signature !== null) {
+  //           this.signedCon[repoName].push(t.name);
+  //         }
+  //       });
+  //     })
+  //       , catchError(error => observableThrowError(error)));
+  // }
 
   goBack(): void {
     this.backEvt.emit(this.projectId);

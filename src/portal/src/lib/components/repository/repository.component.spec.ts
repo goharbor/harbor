@@ -259,7 +259,7 @@ describe('RepositoryComponent (inline template)', () => {
 
     spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(of(mockRepo).pipe(delay(0)));
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(of(mockSystemInfo).pipe(delay(0)));
-    spyTags = spyOn(tagService, 'getTags').and.returnValues(of(mockTagData).pipe(delay(0)));
+    // spyTags = spyOn(tagService, 'getTags').and.returnValues(of(mockTagData).pipe(delay(0)));
 
     spyLabels = spyOn(labelService, 'getGLabels').and.returnValues(of(mockLabels).pipe(delay(0)));
     spyLabels1 = spyOn(labelService, 'getPLabels').and.returnValues(of(mockLabels1).pipe(delay(0)));
