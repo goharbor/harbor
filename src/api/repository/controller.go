@@ -16,6 +16,7 @@ package repository
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
@@ -41,6 +42,8 @@ type Controller interface {
 	Get(ctx context.Context, id int64) (repository *models.RepoRecord, err error)
 	// GetByName gets the repository specified by name
 	GetByName(ctx context.Context, name string) (repository *models.RepoRecord, err error)
+	// Delete the repository specified by ID
+	Delete(ctx context.Context, id int64) (err error)
 }
 
 // NewController creates an instance of the default repository controller
@@ -48,12 +51,14 @@ func NewController() Controller {
 	return &controller{
 		proMgr:  project.Mgr,
 		repoMgr: repository.Mgr,
+		artCtl:  artifact.Ctl,
 	}
 }
 
 type controller struct {
 	proMgr  project.Manager
 	repoMgr repository.Manager
+	artCtl  artifact.Controller
 }
 
 func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, error) {
@@ -107,4 +112,26 @@ func (c *controller) Get(ctx context.Context, id int64) (*models.RepoRecord, err
 
 func (c *controller) GetByName(ctx context.Context, name string) (*models.RepoRecord, error) {
 	return c.repoMgr.GetByName(ctx, name)
+}
+
+func (c *controller) Delete(ctx context.Context, id int64) error {
+	// TODO auth
+	// TODO how to make sure the logic included by middlewares(immutable, readonly, quota, etc)
+	// TODO is covered when deleting the artifacts of the repository
+	_, artifacts, err := c.artCtl.List(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"RepositoryID": id,
+		},
+	}, nil)
+	if err != nil {
+		return err
+	}
+	for _, artifact := range artifacts {
+		if err = c.artCtl.Delete(ctx, artifact.ID); err != nil {
+			return err
+		}
+	}
+	return c.repoMgr.Delete(ctx, id)
+
+	// TODO fire event
 }
