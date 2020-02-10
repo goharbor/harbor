@@ -1,6 +1,5 @@
 import { Component, OnInit, Input } from '@angular/core';
-import { ExtraAttrs } from "../../../../../ng-swagger-gen/models/extra-attrs";
-import {AdditionsService} from "./additions.service";
+import { AdditionLinks } from "../../../../../ng-swagger-gen/models/addition-links";
 
 @Component({
   selector: 'artifact-additions',
@@ -8,7 +7,7 @@ import {AdditionsService} from "./additions.service";
   styleUrls: ['./artifact-additions.component.scss']
 })
 export class ArtifactAdditionsComponent implements OnInit {
-  @Input() extraAttrs: ExtraAttrs;
+  @Input() additionLinks: AdditionLinks;
   constructor() { }
 
   ngOnInit() {

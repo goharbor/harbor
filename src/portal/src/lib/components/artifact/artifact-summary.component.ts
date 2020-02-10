@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core";
 
-import { TagService, Tag, VulnerabilitySeverity, VulnerabilitySummary, ArtifactService, ProjectService } from "../../services";
+import { TagService, Tag, VulnerabilitySeverity, VulnerabilitySummary, ProjectService } from "../../services";
 import { ErrorHandler } from "../../utils/error-handler";
 import { Label } from "../../services/interface";
 import { forkJoin } from "rxjs";
@@ -8,7 +8,9 @@ import { UserPermissionService } from "../../services/permission.service";
 import { USERSTATICPERMISSION } from "../../services/permission-static";
 import { ChannelService } from "../../services/channel.service";
 import { DEFAULT_SUPPORTED_MIME_TYPE, VULNERABILITY_SCAN_STATUS, VULNERABILITY_SEVERITY } from "../../utils/utils";
-import { Reference, Artifact } from "./artifact";
+import { Artifact } from "../../../../ng-swagger-gen/models/artifact";
+import { ArtifactService } from "../../../../ng-swagger-gen/services/artifact.service";
+
 
 const TabLinkContentMap: { [index: string]: string } = {
   "tag-history": "history",
