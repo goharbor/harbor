@@ -171,7 +171,8 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         let repArr: any[] = [];
         message.data.forEach(repo => {
             if (!this.signedCon[repo.name]) {
-                repArr.push(this.getTagInfo(repo.name));
+                // to do
+                // repArr.push(this.getTagInfo(repo.name));
             }
         });
         this.loading = true;
@@ -273,19 +274,19 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
                 ConfirmationButtons.DELETE_CANCEL);
         }
     }
-    // to do  component cannot find user
-    getTagInfo(repoName: string): Observable<void> {
-        this.signedCon[repoName] = [];
-        return this.tagService.getTags(repoName)
-            .pipe(map(items => {
-                items.forEach((t: any) => {
-                    if (t.signature !== null) {
-                        this.signedCon[repoName].push(t.name);
-                    }
-                });
-            })
-                , catchError(error => observableThrowError(error)));
-    }
+    // to do  delete when  user sign
+    // getTagInfo(repoName: string): Observable<void> {
+    //     this.signedCon[repoName] = [];
+    //     return this.tagService.getTags(repoName)
+    //         .pipe(map(items => {
+    //             items.forEach((t: any) => {
+    //                 if (t.signature !== null) {
+    //                     this.signedCon[repoName].push(t.name);
+    //                 }
+    //             });
+    //         })
+    //             , catchError(error => observableThrowError(error)));
+    // }
 
     confirmationDialogSet(summaryTitle: string, signature: string,
         repoName: string, repoLists: RepositoryItem[],
@@ -309,35 +310,35 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
             });
     }
 
-    containsLatestTag(repo: RepositoryItem): Observable<boolean> {
-        return this.tagService.getTags(repo.name)
-            .pipe(map(items => {
-                if (items.some((t: Tag) => {
-                    return t.name === 'latest';
-                })) {
-                    return true;
-                } else {
-                    return false;
-                }
+    // containsLatestTag(repo: RepositoryItem): Observable<boolean> {
+    //     return this.tagService.getTags(repo.name)
+    //         .pipe(map(items => {
+    //             if (items.some((t: Tag) => {
+    //                 return t.name === 'latest';
+    //             })) {
+    //                 return true;
+    //             } else {
+    //                 return false;
+    //             }
 
-            })
-                , catchError(error => observableThrowError(false)));
-    }
+    //         })
+    //             , catchError(error => observableThrowError(false)));
+    // }
 
-    provisionItemEvent(evt: any, repo: RepositoryItem): void {
-        evt.stopPropagation();
-        let repoCopy = clone(repo);
-        repoCopy.name = this.registryUrl + ":443/" + repoCopy.name;
-        this.containsLatestTag(repo)
-            .subscribe(containsLatest => {
-                if (containsLatest) {
-                    this.repoProvisionEvent.emit(repoCopy);
-                } else {
-                    this.addInfoEvent.emit(repoCopy);
-                }
-            }, error => this.errorHandler.error(error));
+    // provisionItemEvent(evt: any, repo: RepositoryItem): void {
+    //     evt.stopPropagation();
+    //     let repoCopy = clone(repo);
+    //     repoCopy.name = this.registryUrl + ":443/" + repoCopy.name;
+    //     this.containsLatestTag(repo)
+    //         .subscribe(containsLatest => {
+    //             if (containsLatest) {
+    //                 this.repoProvisionEvent.emit(repoCopy);
+    //             } else {
+    //                 this.addInfoEvent.emit(repoCopy);
+    //             }
+    //         }, error => this.errorHandler.error(error));
 
-    }
+    // }
 
     itemAddInfoEvent(evt: any, repo: RepositoryItem): void {
         evt.stopPropagation();

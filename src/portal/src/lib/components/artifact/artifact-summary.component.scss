@@ -1,160 +1,172 @@
 @import "../../mixin";
-$size24:24px;
+$size24: 24px;
 
 .overview-section {
-    padding-bottom: 36px;
+  padding-bottom: 36px;
 }
 
 .detail-section {
-    background-color: #fafafa;
-    padding-left: 12px;
-    padding-right: $size24;
+  background-color: #fafafa;
+  padding-left: 12px;
+  padding-right: $size24;
 }
 
 .title-block {
-    display: inline-block;
+  display: inline-block;
 }
 
 .tag-name {
-    font-weight: 300;
-    font-size: 32px;
+  font-weight: 300;
+  font-size: 32px;
 }
-.tag-name h2{margin-top:0;}
+.tag-name h2 {
+  margin-top: 0;
+}
 
 .tag-timestamp {
-    font-weight: 400;
-    font-size: 12px;
-    margin-top: 6px;
+  font-weight: 400;
+  font-size: 12px;
+  margin-top: 6px;
 }
 
 .rotate-90 {
-    -webkit-transform: rotate(-90deg);
-    /*Firefox*/
-    -moz-transform: rotate(-90deg);
-    /*Chrome*/
-    -ms-transform: rotate(-90deg);
-    /*IE9 、IE10*/
-    -o-transform: rotate(-90deg);
-    /*Opera*/
-    transform: rotate(-90deg);
+  -webkit-transform: rotate(-90deg);
+  /*Firefox*/
+  -moz-transform: rotate(-90deg);
+  /*Chrome*/
+  -ms-transform: rotate(-90deg);
+  /*IE9 、IE10*/
+  -o-transform: rotate(-90deg);
+  /*Opera*/
+  transform: rotate(-90deg);
 }
 
 .arrow-back {
-    cursor: pointer;
+  cursor: pointer;
 }
 
-.arrow-block {	
-    border-right: 2px solid #cccccc;	
-    margin-right: 6px;	
-    display: inline-flex;	
-    padding: 6px 6px 6px 12px;	
-}	
-	
-.title-block {	
-    display: inline-block;	
+.arrow-block {
+  border-right: 2px solid #cccccc;
+  margin-right: 6px;
+  display: inline-flex;
+  padding: 6px 6px 6px 12px;
 }
 
+.title-block {
+  display: inline-block;
+}
 
 .vulnerability-block {
-    margin-bottom: 12px;
+  margin-bottom: 12px;
 }
 
 .summary-block {
-    margin-top: $size24;
-    display: flex;
-    flex-wrap: row wrap;
+  margin-top: $size24;
+  display: flex;
+  flex-wrap: row wrap;
 }
 
 .flex-block {
-    display: inline-flex;
-    flex-wrap: row wrap;
-    justify-content: space-around;
+  display: inline-flex;
+  flex-wrap: row wrap;
+  justify-content: space-around;
 }
 
- .third-column {
-    margin-left: 36px;
+.third-column {
+  margin-left: 36px;
 }
-.vulnerability{
-    margin-bottom: 20px;}
+.vulnerability {
+  margin-bottom: 20px;
+}
 
 .vulnerabilities-info {
-    padding-left: $size24;
-    .second-column{
-        text-align: left;
-        margin-left: 6px;
-        .second-row {
-            margin-top: 6px;
-        }
-        .row-flex {
-            display: flex;
-            align-items: center;
-            .icon-position {
-                width: $size24;
-                height: $size24;
-                @include flex-center;
-            }
-            .detail-count {
-                height: 20px;
-                width: 30px;
-                @include flex-center;
-            }
-        }
-    }   
+  padding-left: $size24;
+  .second-column {
+    text-align: left;
+    margin-left: 6px;
+    .second-row {
+      margin-top: 6px;
+    }
+    .row-flex {
+      display: flex;
+      align-items: center;
+      .icon-position {
+        width: $size24;
+        height: $size24;
+        @include flex-center;
+      }
+      .detail-count {
+        height: 20px;
+        width: 30px;
+        @include flex-center;
+      }
+    }
+  }
 }
 
-.fourth-column{
-    float: left;
-    margin-left:20px;
-    div {
-        height: $size24;
-    }
+.fourth-column {
+  float: left;
+  margin-left: 20px;
+  div {
+    height: $size24;
+  }
 }
 
 .detail-title {
-    float:left;
-    font-weight: 600;
-    font-size: 14px;
+  float: left;
+  font-weight: 600;
+  font-size: 14px;
 }
 
 .detail-tag {
-    margin-bottom: 2px;
+  margin-bottom: 2px;
 }
 
 .image-detail-label {
-    margin-right: 10px;
-    text-align: left;
-    font-weight: 600;
-    .detail-row {
-        display: flex;
-        .detail-label {
-            flex:0 0 150px;
-        }
-        .image-details {
-            @include text-overflow-param(200px);
-        }
+  margin-right: 10px;
+  text-align: left;
+  font-weight: 600;
+  .detail-row {
+    display: flex;
+    .detail-label {
+      flex: 0 0 150px;
     }
+    .image-details {
+      @include text-overflow-param(200px);
+    }
+  }
 }
 
 .image-detail-value {
-    text-align: left;
-    margin-left: 6px;
-    font-weight: 500;
-    div {
-        height: $size24;
-    }
+  text-align: left;
+  margin-left: 6px;
+  font-weight: 500;
+  div {
+    height: $size24;
+  }
 }
 .tip-icon-medium {
-    color: orange;
+  color: orange;
 }
-.tip-icon-low{
-    color:yellow;
+.tip-icon-low {
+  color: yellow;
 }
 .margin-top-5px {
-    margin-top: 5px;
+  margin-top: 5px;
 }
 .stack-view {
-    mask-image: none;
-    -webkit-mask-image: none;
-    margin-top:1rem;
+  mask-image: none;
+  -webkit-mask-image: none;
+  margin-top: 1rem;
 }
-
+.loading-center-middle {
+  display: block;
+  text-align: center;
+  height: 0;
+  .spinner-middle {
+      width: 2rem;
+      min-width: 2rem;
+      height: 2rem;
+      min-height: 2rem;
+  }
+}

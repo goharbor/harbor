@@ -34,6 +34,7 @@ export class VerifiedSignature {
  * class TagService
  */
 export abstract class TagService {
+
   /**
    * Get all the tags under the specified repository.
    * NOTES: If the Notary is enabled, the signatures should be included in the returned data.
@@ -46,10 +47,12 @@ export abstract class TagService {
    * @memberOf TagService
    */
   // to delete
-  abstract getTags(
+  abstract newTag(
+    projectName: string,
     repositoryName: string,
-    queryParams?: RequestQueryParams
-  ): Observable<Tag[]>;
+    digest: string,
+    tagName: {name: string}
+  ): Observable<any>;
 
   /**
    * Delete the specified tag.
@@ -67,48 +70,7 @@ export abstract class TagService {
     digest: string,
     tagName: string
   ): Observable<any>;
-
-  /**
-   * Get the specified tag.
-   *
-   * @abstract
-   *  ** deprecated param {string} repositoryName
-   *  ** deprecated param {string} tag
-   * returns {(Observable<Tag>)}
-   *
-   * @memberOf TagService
-   */
-  abstract getTag(
-    repositoryName: string,
-    tag: string,
-    queryParams?: RequestQueryParams
-  ): Observable<Tag>;
-
-  abstract addLabelToImages(
-    repoName: string,
-    tagName: string,
-    labelId: number
-  ): Observable<any>;
-  abstract deleteLabelToImages(
-    repoName: string,
-    tagName: string,
-    labelId: number
-  ): Observable<any>;
-
-  /**
-   * Get manifest of tag under the specified repository.
-   *
-   * @abstract
-   * returns {(Observable<Manifest>)}
-   *
-   * @memberOf TagService
-   */
-  abstract getManifest(
-    repositoryName: string,
-    tag: string
-  ): Observable<Manifest>;
-}
-
+  }
 /**
  * Implement default service for tag.
  *
@@ -133,41 +95,20 @@ export class TagDefaultService extends TagService {
       : "/api/labels";
   }
 
-  // Private methods
-  // These two methods are temporary, will be deleted in future after API refactored
-  _getTags(
+  public newTag(
+    projectName: string,
     repositoryName: string,
-    queryParams?: RequestQueryParams
-  ): Observable<Tag[]> {
-    if (!queryParams) {
-      queryParams = queryParams = new RequestQueryParams();
-    }
-
-    queryParams = queryParams.set("detail", "true");
-    let url: string = `${this._baseUrl}/${repositoryName}/tags`;
-
-    return this.http
-      .get(url, buildHttpRequestOptions(queryParams))
-      .pipe(map(response => response as Tag[])
-        , catchError(error => observableThrowError(error)));
-  }
-
-  _getSignatures(repositoryName: string): Observable<VerifiedSignature[]> {
-    let url: string = `${this._baseUrl}/${repositoryName}/signatures`;
-    return this.http
-      .get(url, HTTP_GET_OPTIONS)
-      .pipe(map(response => response as VerifiedSignature[])
-        , catchError(error => observableThrowError(error)));
-  }
-
-  public getTags(
-    repositoryName: string,
-    queryParams?: RequestQueryParams
-  ): Observable<Tag[]> {
-    if (!repositoryName) {
+    digest: string,
+    tagName: {name: string}
+  ): Observable<any> {
+    if (!projectName || !repositoryName || !digest || !tagName) {
       return observableThrowError("Bad argument");
     }
-    return this._getTags(repositoryName, queryParams);
+    let url: string = `/api/v2.0/projects/${projectName}/repositories/${repositoryName}/artifacts/${digest}/tags`;
+    return this.http
+      .post(url, tagName, HTTP_JSON_OPTIONS)
+      .pipe(map(response => response)
+        , catchError(error => observableThrowError(error)));
   }
 
   public deleteTag(
@@ -184,70 +125,6 @@ export class TagDefaultService extends TagService {
     return this.http
       .delete(url, HTTP_JSON_OPTIONS)
       .pipe(map(response => response)
-        , catchError(error => observableThrowError(error)));
-  }
-
-  public getTag(
-    repositoryName: string,
-    tag: string,
-    queryParams?: RequestQueryParams
-  ): Observable<Tag> {
-    if (!repositoryName || !tag) {
-      return observableThrowError("Bad argument");
-    }
-
-    let url: string = `${this._baseUrl}/${repositoryName}/tags/${tag}`;
-    return this.http
-      .get(url, HTTP_GET_OPTIONS)
-      .pipe(map(response => response as Tag)
-        , catchError(error => observableThrowError(error)));
-  }
-
-  public addLabelToImages(
-    repoName: string,
-    tagName: string,
-    labelId: number
-  ): Observable<any> {
-    if (!labelId || !tagName || !repoName) {
-      return observableThrowError("Invalid parameters.");
-    }
-
-    let _addLabelToImageUrl = `${
-      this._baseUrl
-      }/${repoName}/tags/${tagName}/labels`;
-    return this.http
-      .post(_addLabelToImageUrl, { id: labelId }, HTTP_JSON_OPTIONS)
-      .pipe(catchError(error => observableThrowError(error)));
-  }
-
-  public deleteLabelToImages(
-    repoName: string,
-    tagName: string,
-    labelId: number
-  ): Observable<any> {
-    if (!labelId || !tagName || !repoName) {
-      return observableThrowError("Invalid parameters.");
-    }
-
-    let _addLabelToImageUrl = `${
-      this._baseUrl
-      }/${repoName}/tags/${tagName}/labels/${labelId}`;
-    return this.http
-      .delete(_addLabelToImageUrl)
-      .pipe(catchError(error => observableThrowError(error)));
-  }
-
-  public getManifest(
-    repositoryName: string,
-    tag: string
-  ): Observable<Manifest> {
-    if (!repositoryName || !tag) {
-      return observableThrowError("Bad argument");
-    }
-    let url: string = `${this._baseUrl}/${repositoryName}/tags/${tag}/manifest`;
-    return this.http
-      .get(url, HTTP_GET_OPTIONS)
-      .pipe(map(response => response as Manifest)
         , catchError(error => observableThrowError(error)));
   }
 }

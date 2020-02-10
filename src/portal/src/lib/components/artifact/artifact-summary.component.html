@@ -1,3 +1,6 @@
+<div>
+
+
 <div class="title-wrapper">
     <div class="title-block arrow-block" *ngIf="withAdmiral">
         <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
@@ -12,10 +15,13 @@
 <artifact-common-properties [artifactDetails]="artifactDetails"></artifact-common-properties>
 
 <!-- tags -->
-
+<div class="loading-center-middle">
+        <span class="spinner spinner-middle" [hidden]="inProgress === false"></span>
+      </div>
 <artifact-tag [artifactDetails]="artifactDetails" [projectName]="projectName" [repositoryName]="repositoryName"
         (refreshArtifact)="refreshArtifact()"></artifact-tag>
 
 <!-- Additions -->
 
 <artifact-additions></artifact-additions>
+</div>

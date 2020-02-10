@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, OnInit } from "@angular/core";
 
-import { TagService, Tag, VulnerabilitySeverity, VulnerabilitySummary, ArtifactService, ProjectService } from "../../services";
+import { VulnerabilitySummary, ArtifactService, ProjectService } from "../../services";
 import { ErrorHandler } from "../../utils/error-handler";
 import { Label } from "../../services/interface";
 import { forkJoin } from "rxjs";
@@ -8,7 +8,8 @@ import { UserPermissionService } from "../../services/permission.service";
 import { USERSTATICPERMISSION } from "../../services/permission-static";
 import { ChannelService } from "../../services/channel.service";
 import { DEFAULT_SUPPORTED_MIME_TYPE, VULNERABILITY_SCAN_STATUS, VULNERABILITY_SEVERITY } from "../../utils/utils";
-import { Reference, Artifact } from "./artifact";
+import { Artifact } from "./artifact";
+import { finalize } from "rxjs/operators";
 
 const TabLinkContentMap: { [index: string]: string } = {
   "tag-history": "history",
@@ -45,7 +46,7 @@ export class ArtifactSummaryComponent implements OnInit {
   @Input() projectId: number;
   projectName: string;
   showStatBar: boolean = true;
-
+  inProgress = true;
   constructor(
     private projectService: ProjectService,
     private artifactService: ArtifactService,
@@ -57,7 +58,7 @@ export class ArtifactSummaryComponent implements OnInit {
   ngOnInit(): void {
     if (this.repositoryName && this.artifactDigest) {
       // this.tagService.getTag(this.repositoryId, this.tagId).subscribe(
-        this.projectService.getProject(this.projectId).subscribe(project => {
+        this.projectService.getProject(this.projectId).pipe().subscribe(project => {
           this.projectName = project.name;
           this.getArtifact();
         });
@@ -68,7 +69,11 @@ export class ArtifactSummaryComponent implements OnInit {
     });
   }
   getArtifact() {
-    this.artifactService.getArtifactFromId(this.projectName, this.repositoryName, this.artifactDigest).subscribe(
+    this.inProgress = true;
+    this.artifactService.getArtifactFromId(this.projectName, this.repositoryName, this.artifactDigest)
+    .pipe(finalize(() => {
+      this.inProgress = false;
+    })).subscribe(
       response => {
         this.getArtifactDetails(response);
       },

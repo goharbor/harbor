@@ -219,7 +219,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
 
 
     tagService = fixture.debugElement.injector.get(TagService);
-    spy = spyOn(tagService, "getTags").and.returnValues(of(mockTags).pipe(delay(0)));
+    // spy = spyOn(tagService, "getTags").and.returnValues(of(mockTags).pipe(delay(0)));
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
     let http: HttpClient;
     http = fixture.debugElement.injector.get(HttpClient);

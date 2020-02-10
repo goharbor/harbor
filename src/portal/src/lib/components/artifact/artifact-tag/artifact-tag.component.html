@@ -15,17 +15,24 @@
                         <label class="clr-control-container" [class.clr-error]="isTagNameExist">
                             <input clrInput type="text" id="name" name="name" required size="20" autocomplete="off"
                                 [(ngModel)]="newTagName.name" #name="ngModel" (keyup)="existValid(newTagName.name)">
-                            <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
-                            <clr-control-error class="position-ab" >
+                            <!-- <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon> -->
+                            <clr-control-error class="position-ab" *ngIf="isTagNameExist">
                                 {{'LABEL.NAME_ALREADY_EXISTS' | translate }}
                             </clr-control-error>
                         </label>
+                        <!-- <clr-input-container>
+                                <label for="name" class="required">{{'Name' | translate}}</label>
+                                <input type="text" id="name" required clrInput name="name" size="20"  (keyup)="existValid(newTagName.name)"
+                                    [(ngModel)]="newTagName.name" >
+                                <clr-control-error>{{'LABEL.NAME_ALREADY_EXISTS' | translate}}</clr-control-error>
+
+                            </clr-input-container> -->
                     </label>
                     <label>
                         <button type="button" class="btn btn-sm btn-outline" (click)="cancelAddTag()">{{
                                         'BUTTON.CANCEL' | translate }}
                         </button>
-                        <button type="submit" class="btn btn-sm btn-primary" (click)="saveAddTag()">{{
+                        <button type="submit" class="btn btn-sm btn-primary" (click)="saveAddTag()" [disabled]="isTagNameExist || !newTagName.name">{{
                                         'BUTTON.OK' | translate }}
                         </button>
                     </label>

@@ -14,7 +14,8 @@
   max-width: 100% !important;
 }
 .clr-control-container {
-  margin-top: -0.6rem;
+//   margin-top: -0.6rem;
+  margin-bottom: 1rem;
 }
 .btn.remove-btn {
   border: none;
@@ -32,4 +33,7 @@
 }
 .datagrid-action-bar {
   margin-top: 0.5rem;
+}
+.position-ab {
+  position: absolute;
 }
