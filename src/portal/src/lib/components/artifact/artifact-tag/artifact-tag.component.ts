@@ -138,7 +138,7 @@ export class ArtifactTagComponent implements OnInit, OnChanges {
     // }
   }
 
-  existValid() {
+  existValid(name) {
 
   }
   toggleTagListOpenOrClose() {

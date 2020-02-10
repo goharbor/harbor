@@ -256,7 +256,25 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
     let len = this.lastFilteredTagName.length ? this.lastFilteredTagName.length * 6 + 60 : 115;
     return len > 210 ? 210 : len;
   }
-  doSearchArtifactByFilter() {
+  doSearchArtifactByFilter(tagName) {
+    this.lastFilteredTagName = tagName;
+    this.currentPage = 1;
+
+    let st: State = this.currentState;
+    if (!st) {
+      st = { page: {} };
+    }
+    st.page.size = this.pageSize;
+    st.page.from = 0;
+    st.page.to = this.pageSize - 1;
+    let selectedLab = this.imageFilterLabels.find(label => label.iconsShow === true);
+    if (selectedLab) {
+      st.filters = [{ property: 'name', value: this.lastFilteredTagName }, { property: 'labels.id', value: selectedLab.label.id }];
+    } else {
+      st.filters = [{ property: 'name', value: this.lastFilteredTagName }];
+    }
+
+    this.clrLoad(st);
   }
   doSearchArtifactNames(artifactName: string) {
     this.lastFilteredTagName = artifactName;
