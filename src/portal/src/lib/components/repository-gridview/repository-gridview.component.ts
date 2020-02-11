@@ -176,7 +176,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
             }
         });
         this.loading = true;
-        forkJoin(...repArr).subscribe(() => {
+        // forkJoin(...repArr).subscribe(() => {
             if (message &&
                 message.source === ConfirmationTargets.REPOSITORY &&
                 message.state === ConfirmationState.CONFIRMED) {
@@ -202,10 +202,10 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
                     });
                 }
             }
-        }, error => {
-            this.errorHandler.error(error);
-            this.loading = false;
-        });
+        // }, error => {
+        //     this.errorHandler.error(error);
+        //     this.loading = false;
+        // });
     }
 
     delOperate(repo: RepositoryItem): Observable<any> {
@@ -217,12 +217,12 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         operMessage.data.name = repo.name;
         this.operationService.publishInfo(operMessage);
 
-        if (this.signedCon[repo.name].length !== 0) {
-            return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED')).pipe(map(res => {
-                    operateChanges(operMessage, OperationState.failure, res[1]);
-                }));
-        } else {
+        // if (this.signedCon[repo.name].length !== 0) {
+        //     return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+        //         this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED')).pipe(map(res => {
+        //             operateChanges(operMessage, OperationState.failure, res[1]);
+        //         }));
+        // } else {
             return this.newRepoService
                 .deleteRepository({
                     repositoryName: repo.name,
@@ -239,7 +239,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
                         );
                         return observableThrowError(message);
                     }));
-        }
+        // }
     }
 
     doSearchRepoNames(repoName: string) {

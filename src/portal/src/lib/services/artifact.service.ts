@@ -74,7 +74,7 @@ export abstract class ArtifactService {
   abstract deleteArtifact(
     projectName: string,
     repositoryName: string,
-    artifactId: number
+    digest: string
   ): Observable<any>;
 
   /**
@@ -185,13 +185,13 @@ export class ArtifactDefaultService extends ArtifactService {
   public deleteArtifact(
     projectName: string,
     repositoryName: string,
-    artifactId: number
+    digest: string
   ): Observable<any> {
-    if (!repositoryName || !projectName || !artifactId) {
+    if (!repositoryName || !projectName || !digest) {
       return observableThrowError("Bad argument");
     }
 
-    let url: string = `/api/v2.0/projects/${projectName}/repositories/${repositoryName}/artifacts/${artifactId}`;
+    let url: string = `/api/v2.0/projects/${projectName}/repositories/${repositoryName}/artifacts/${digest}`;
     return this.http
       .delete(url, HTTP_JSON_OPTIONS)
       .pipe(map(response => response)

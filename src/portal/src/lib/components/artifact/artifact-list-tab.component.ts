@@ -596,64 +596,12 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
           // error
           this.loading = false;
 
-          //     this.tagService
-          //   .getTags(this.repoName)
-          //   .subscribe(items => {
-          //     // To keep easy use for vulnerability bar
-          //     items.forEach((t: Tag) => {
-          //       if (t.signature !== null) {
-          //         signatures.push(t.name);
-          //       }
-          //     });
-          //     this.artifactList = items as any;
-          //     let signedName: { [key: string]: string[] } = {};
-          //     signedName[this.repoName] = signatures;
-          //     this.signatureOutput.emit(signedName);
-          //     this.loading = false;
-          //     if (this.artifactList && this.artifactList.length === 0) {
-          //       this.refreshRepo.emit(true);
-          //     }
-          //   }, err => {
-          //     this.errorHandler.error(error);
-          //     this.loading = false;
-          //   });
-          //   let hnd = setInterval(() => this.ref.markForCheck(), 100);
-          // setTimeout(() => clearInterval(hnd), 5000);
         })
       }
 
     })
 
   }
-  // retrieve() {
-  //   this.tags = [];
-  //   let signatures: string[] = [];
-  //   this.loading = true;
-
-  //   this.tagService
-  //     .getTags(this.repoName)
-  //     .subscribe(items => {
-  //       // To keep easy use for vulnerability bar
-  //       items.forEach((t: Tag) => {
-  //         if (t.signature !== null) {
-  //           signatures.push(t.name);
-  //         }
-  //       });
-  //       this.tags = items;
-  //       let signedName: { [key: string]: string[] } = {};
-  //       signedName[this.repoName] = signatures;
-  //       this.signatureOutput.emit(signedName);
-  //       this.loading = false;
-  //       if (this.tags && this.tags.length === 0) {
-  //         this.refreshRepo.emit(true);
-  //       }
-  //     }, error => {
-  //       this.errorHandler.error(error);
-  //       this.loading = false;
-  //     });
-  //   let hnd = setInterval(() => this.ref.markForCheck(), 100);
-  //   setTimeout(() => clearInterval(hnd), 5000);
-  // }
 
   sizeTransform(tagSize: string): string {
     let size: number = Number.parseInt(tagSize);
@@ -703,16 +651,16 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
 
   deleteArtifact() {
     if (this.selectedRow && this.selectedRow.length) {
-      let tagNames: string[] = [];
+      let artifactNames: string[] = [];
       this.selectedRow.forEach(artifact => {
-        tagNames.push(artifact.digest);
+        artifactNames.push(artifact.digest.slice(0, 15));
       });
 
       let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;
       titleKey = "REPOSITORY.DELETION_TITLE_TAG";
       summaryKey = "REPOSITORY.DELETION_SUMMARY_TAG";
       buttons = ConfirmationButtons.DELETE_CANCEL;
-      content = tagNames.join(" , ");
+      content = artifactNames.join(" , ");
       let message = new ConfirmationMessage(
         titleKey,
         summaryKey,
@@ -723,26 +671,43 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
       this.confirmationDialog.open(message);
     }
   }
-
+  deleteArtifactobservableLists: Observable<any>[] = [];
   confirmDeletion(message: ConfirmationAcknowledgement) {
     if (message &&
       message.source === ConfirmationTargets.TAG
       && message.state === ConfirmationState.CONFIRMED) {
-      let artifactList: Artifact[] = message.data;
+      let artifactList = message.data;
       if (artifactList && artifactList.length) {
-        let observableLists: any[] = [];
-        artifactList.forEach(artifact => {
-          observableLists.push(this.delOperate(artifact));
-        });
-
-        forkJoin(...observableLists).subscribe((items) => {
-          // if delete one success  refresh list
-          if (items.some(item => !item)) {
-            this.selectedRow = [];
-            this.retrieve();
-          }
-        });
+        this.findArtifactFromIndex(artifactList);
       }
+    }
+  }
+  findArtifactFromIndex(artifactList: Artifact[]) {
+    if (artifactList.every(artifact1 => !artifact1.references)) {
+      artifactList.forEach(artifact => {
+        this.deleteArtifactobservableLists.push(this.delOperate(artifact));
+      });
+      forkJoin(...this.deleteArtifactobservableLists).subscribe((items) => {
+        // if delete one success  refresh list
+        if (items.some(item => !item)) {
+          this.selectedRow = [];
+          this.retrieve();
+        }
+      });
+    } else {
+      let observArr: Observable<Artifact>[] = [];
+      artifactList.forEach(artifact => {
+            this.deleteArtifactobservableLists.push(this.delOperate(artifact));
+            if (artifact.references) {
+              artifact.references.forEach(reference => {
+                observArr.push(this.artifactService.getArtifactFromId(this.projectName, this.repoName, reference.child_digest));
+              });
+
+            }
+          });
+          forkJoin(observArr).subscribe((res) => {
+            this.findArtifactFromIndex(res);
+          });
     }
   }
 
@@ -766,7 +731,7 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
     //     });
     // } else {
     return this.artifactService
-      .deleteArtifact(this.projectName, this.repoName, artifact.id)
+      .deleteArtifact(this.projectName, this.repoName, artifact.digest)
       .pipe(map(
         response => {
           this.translateService.get("BATCH.DELETED_SUCCESS")
