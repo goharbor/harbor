@@ -296,6 +296,9 @@ func (a *adapter) getProject(name string) (*project, error) {
 // when harbor is deployed on Kubernetes
 func (a *adapter) getURL() string {
 	if a.registry.Type == model.RegistryTypeHarbor && a.registry.Name == "Local" {
+		if common_http.InternalTLSEnabled() {
+			return "https://core:8443"
+		}
 		return "http://127.0.0.1:8080"
 	}
 	return a.url

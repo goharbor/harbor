@@ -28,17 +28,24 @@ import (
 	"reflect"
 )
 
-// Client is a util for common HTTP operations, such Get, Head, Post, Put and Delete.
-// Use Do instead if  those methods can not meet your requirement
-type Client struct {
-	modifiers []modifier.Modifier
-	client    *http.Client
-}
+const (
+	// DefaultTransport used to get the default http Transport
+	DefaultTransport = iota
+	// InsecureTransport used to get the insecure http Transport
+	InsecureTransport
+	// InternalTransport used to get the internal secure http Transport
+	InternalTransport
+	// SecureTransport used to get the external secure http Transport
+	SecureTransport
+)
 
-var defaultHTTPTransport, secureHTTPTransport, insecureHTTPTransport *http.Transport
+var (
+	secureHTTPTransport   *http.Transport
+	insecureHTTPTransport *http.Transport
+	internalTransport     *http.Transport
+)
 
 func init() {
-	defaultHTTPTransport = &http.Transport{}
 
 	secureHTTPTransport = &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
@@ -46,23 +53,55 @@ func init() {
 			InsecureSkipVerify: false,
 		},
 	}
+
 	insecureHTTPTransport = &http.Transport{
 		Proxy: http.ProxyFromEnvironment,
 		TLSClientConfig: &tls.Config{
 			InsecureSkipVerify: true,
 		},
 	}
+
+	initInternalTransport()
+}
+
+// Client is a util for common HTTP operations, such Get, Head, Post, Put and Delete.
+// Use Do instead if  those methods can not meet your requirement
+type Client struct {
+	modifiers []modifier.Modifier
+	client    *http.Client
+}
+
+func initInternalTransport() {
+	if InternalTLSEnabled() {
+		tlsConfig, err := GetInternalTLSConfig()
+		if err != nil {
+			panic(err)
+		}
+		internalTransport = &http.Transport{
+			TLSClientConfig: tlsConfig,
+		}
+	} else {
+		internalTransport = &http.Transport{
+			TLSClientConfig: &tls.Config{
+				InsecureSkipVerify: true,
+			},
+		}
+	}
 }
 
 // GetHTTPTransport returns HttpTransport based on insecure configuration
-func GetHTTPTransport(insecure ...bool) *http.Transport {
-	if len(insecure) == 0 {
-		return defaultHTTPTransport
+func GetHTTPTransport(clientType uint) *http.Transport {
+	switch clientType {
+	case SecureTransport:
+		return secureHTTPTransport.Clone()
+	case InsecureTransport:
+		return insecureHTTPTransport.Clone()
+	case InternalTransport:
+		return internalTransport.Clone()
+	default:
+		// default Transport is secure one
+		return secureHTTPTransport.Clone()
 	}
-	if insecure[0] {
-		return insecureHTTPTransport
-	}
-	return secureHTTPTransport
 }
 
 // NewClient creates an instance of Client.
@@ -74,9 +113,7 @@ func NewClient(c *http.Client, modifiers ...modifier.Modifier) *Client {
 	}
 	if client.client == nil {
 		client.client = &http.Client{
-			Transport: &http.Transport{
-				Proxy: http.ProxyFromEnvironment,
-			},
+			Transport: GetHTTPTransport(DefaultTransport),
 		}
 	}
 	if len(modifiers) > 0 {

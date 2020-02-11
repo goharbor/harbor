@@ -21,7 +21,7 @@ http {
 
   upstream core {
 {% if internal_tls.enabled %}
-    server core:10443;
+    server core:8443;
 {% else %}
     server core:8080;
 {% endif %}

@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"syscall"
 	"time"
 
@@ -161,8 +162,21 @@ func main() {
 
 	server.RegisterRoutes()
 
-	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
+	iTLSEnabled := os.Getenv("INTERNAL_TLS_ENABLED")
+	if strings.ToLower(iTLSEnabled) == "true" {
+		log.Info("internal TLS enabled, Init TLS ...")
+		iTLSKeyPath := os.Getenv("INTERNAL_TLS_KEY_PATH")
+		iTLSCertPath := os.Getenv("INTERNAL_TLS_CERT_PATH")
+		iTrustCA := os.Getenv("INTERNAL_TLS_TRUST_CA_PATH")
 
+		log.Infof("load client key: %s client cert: %s", iTLSKeyPath, iTLSCertPath)
+		beego.BConfig.Listen.EnableHTTPS = true
+		beego.BConfig.Listen.HTTPSPort = 8443
+		beego.BConfig.Listen.HTTPSKeyFile = iTLSKeyPath
+		beego.BConfig.Listen.HTTPSCertFile = iTLSCertPath
+	}
+
+	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
 	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
 }
 

@@ -348,9 +348,9 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
 
         if config_dict['internal_tls'].enabled:
             config_dict['registry_controller_url'] = 'https://registryctl:8443'
-            config_dict['core_url'] = 'https://core:10443'
-            config_dict['core_local_url'] = 'https://127.0.0.1:10443'
-            config_dict['token_service_url'] = 'https://core:10443/service/token'
+            config_dict['core_url'] = 'https://core:8443'
+            config_dict['core_local_url'] = 'https://127.0.0.1:8443'
+            config_dict['token_service_url'] = 'https://core:8443/service/token'
             config_dict['jobservice_url'] = 'https://jobservice:8443'
             # config_dict['clair_adapter_url'] = 'https://clair-adapter:8443'
             # config_dict['notary_url'] = 'https://notary-server:4443'

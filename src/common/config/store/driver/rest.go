@@ -2,7 +2,9 @@ package driver
 
 import (
 	"errors"
-	"github.com/goharbor/harbor/src/common/http"
+	"net/http"
+
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/common/utils/log"
 )
@@ -10,12 +12,17 @@ import (
 // RESTDriver - config store driver based on REST API
 type RESTDriver struct {
 	configRESTURL string
-	client        *http.Client
+	client        *commonhttp.Client
 }
 
 // NewRESTDriver - Create RESTDriver
 func NewRESTDriver(configRESTURL string, modifiers ...modifier.Modifier) *RESTDriver {
-	return &RESTDriver{configRESTURL: configRESTURL, client: http.NewClient(nil, modifiers...)}
+	if commonhttp.InternalTLSEnabled() {
+		tr := commonhttp.GetHTTPTransport(commonhttp.InternalTransport)
+		return &RESTDriver{configRESTURL: configRESTURL, client: commonhttp.NewClient(&http.Client{Transport: tr}, modifiers...)}
+
+	}
+	return &RESTDriver{configRESTURL: configRESTURL, client: commonhttp.NewClient(nil, modifiers...)}
 }
 
 // Load - load config data from REST server
