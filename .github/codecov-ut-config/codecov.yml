@@ -1,5 +1,7 @@
 codecov:
   require_ci_to_pass: no
+  bot: steven-zou
+  token: 7ec086ae-1431-4be8-af00-b95206144799
 
 coverage:
   precision: 2
