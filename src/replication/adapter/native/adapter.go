@@ -79,9 +79,14 @@ func NewAdapter(registry *model.Registry) (*Adapter, error) {
 				registry.Credential.AccessSecret)
 		}
 	}
-	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
+	authorizer := auth.NewAuthorizer(cred, &http.Client{
 		Transport: util.GetHTTPTransport(registry.Insecure),
-	}, cred, registry.TokenServiceURL)
+	})
+	/*
+		authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
+			Transport: util.GetHTTPTransport(registry.Insecure),
+		}, cred, registry.TokenServiceURL)
+	*/
 
 	return NewAdapterWithCustomizedAuthorizer(registry, authorizer)
 }
