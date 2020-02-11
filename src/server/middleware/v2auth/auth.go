@@ -58,11 +58,11 @@ func (rc *reqChecker) check(req *http.Request) error {
 			return fmt.Errorf("unauthorized to access repository: %s, action: %s", a.Repository, action)
 		}
 		if req.Method == http.MethodPost && a.BlobMountProjectName != "" { // check permission for the source of blob mount
-			p, err := rc.pm.Get(a.BlobMountProjectName)
+			pid, err := rc.projectID(a.BlobMountProjectName)
 			if err != nil {
 				return err
 			}
-			resource := rbac.NewProjectNamespace(p.ProjectID).Resource(rbac.ResourceRepository)
+			resource := rbac.NewProjectNamespace(pid).Resource(rbac.ResourceRepository)
 			if !securityCtx.Can(rbac.ActionPull, resource) {
 				return fmt.Errorf("unauthorized to access repository from which to mount blob: %s, action: %s", a.BlobMountRepository, rbac.ActionPull)
 			}
