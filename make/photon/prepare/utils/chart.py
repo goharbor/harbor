@@ -105,4 +105,5 @@ def prepare_chartmuseum(config_dict):
     storage_driver=storage_driver,
     all_storage_driver_configs=all_storage_provider_configs,
     public_url=config_dict['public_url'],
-    chart_absolute_url=config_dict['chart_absolute_url'])
+    chart_absolute_url=config_dict['chart_absolute_url'],
+    internal_tls=config_dict['internal_tls'])

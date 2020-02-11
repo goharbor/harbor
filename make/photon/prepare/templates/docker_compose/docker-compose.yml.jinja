@@ -4,7 +4,7 @@ services:
     image: goharbor/harbor-log:{{version}}
     container_name: harbor-log
     restart: always
-    dns_search: .
+    dns_search: ""
     cap_drop:
       - ALL
     cap_add:
@@ -41,17 +41,23 @@ services:
         source: {{gcs_keyfile}}
         target: /etc/registry/gcs.key
 {% endif %}
-{%if registry_custom_ca_bundle_path %}
+{%if internal_tls.enabled %}
       - type: bind
-        source: {{registry_custom_ca_bundle_path}}
-        target: /harbor_cust_cert/custom-ca-bundle.crt
+        source: {{internal_tls.harbor_internal_ca_crt_path}}
+        target: /etc/harbor/tls/harbor_internal_ca.crt
+      - type: bind
+        source: {{internal_tls.registry_crt_path}}
+        target: /etc/harbor/tls/registry.crt
+      - type: bind
+        source: {{internal_tls.registry_key_path}}
+        target: /etc/harbor/tls/registry.key
 {% endif %}
     networks:
       - harbor
 {% if with_clair %}
       - harbor-clair
 {% endif %}
-    dns_search: .
+    dns_search: ""
     depends_on:
       - log
     logging:
@@ -77,14 +83,20 @@ services:
       - type: bind
         source: ./common/config/registryctl/config.yml
         target: /etc/registryctl/config.yml
-{%if registry_custom_ca_bundle_path %}
+{%if internal_tls.enabled %}
       - type: bind
-        source: {{registry_custom_ca_bundle_path}}
-        target: /harbor_cust_cert/custom-ca-bundle.crt
+        source: {{internal_tls.harbor_internal_ca_crt_path}}
+        target: /etc/harbor/ssl/harbor_internal_ca.crt
+      - type: bind
+        source: {{internal_tls.registryctl_crt_path}}
+        target: /etc/harbor/ssl/registryctl.crt
+      - type: bind
+        source: {{internal_tls.registryctl_key_path}}
+        target: /etc/harbor/ssl/registryctl.key
 {% endif %}
     networks:
       - harbor
-    dns_search: .
+    dns_search: ""
     depends_on:
       - log
     logging:
@@ -106,6 +118,17 @@ services:
       - SETUID
     volumes:
       - {{data_volume}}/database:/var/lib/postgresql/data:z
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.harbor_internal_ca_crt_path}}
+        target: /etc/harbor/ssl/harbor_internal_ca.crt
+      - type: bind
+        source: {{internal_tls.harbor_db_crt_path}}
+        target: /etc/harbor/ssl/harbor_db.crt
+      - type: bind
+        source: {{internal_tls.harbor_db_key_path}}
+        target: /etc/harbor/ssl/harbor_db.key
+{% endif %}
     networks:
       harbor:
   {% if with_notary %}
@@ -118,7 +141,7 @@ services:
         aliases:
           - harbor-db
   {% endif %}
-    dns_search: .
+    dns_search: ""
     env_file:
       - ./common/config/db/env
     depends_on:
@@ -158,6 +181,17 @@ services:
         source: {{uaa_ca_file}}
         target: /etc/core/certificates/uaa_ca.pem
 {% endif %}
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.harbor_internal_ca_crt_path}}
+        target: /etc/harbor/ssl/harbor_internal_ca.crt
+      - type: bind
+        source: {{internal_tls.core_crt_path}}
+        target: /etc/harbor/ssl/core.crt
+      - type: bind
+        source: {{internal_tls.core_key_path}}
+        target: /etc/harbor/ssl/core.key
+{% endif %}
     networks:
       harbor:
 {% if with_notary %}
@@ -173,7 +207,7 @@ services:
         aliases:
           - harbor-core
 {% endif %}
-    dns_search: .
+    dns_search: ""
     depends_on:
       - log
       - registry
@@ -201,7 +235,7 @@ services:
       - NET_BIND_SERVICE
     networks:
       - harbor
-    dns_search: .
+    dns_search: ""
     depends_on:
       - log
     logging:
@@ -227,12 +261,23 @@ services:
       - type: bind
         source: ./common/config/jobservice/config.yml
         target: /etc/jobservice/config.yml
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.harbor_internal_ca_crt_path}}
+        target: /etc/harbor/ssl/harbor_internal_ca.crt
+      - type: bind
+        source: {{internal_tls.job_service_crt_path}}
+        target: /etc/harbor/ssl/job_service.crt
+      - type: bind
+        source: {{internal_tls.job_service_key_path}}
+        target: /etc/harbor/ssl/job_service.key
+{% endif %}
     networks:
       - harbor
 {% if with_clair %}
       - harbor-clair
 {% endif %}
-    dns_search: .
+    dns_search: ""
     depends_on:
       - core
     logging:
@@ -265,7 +310,7 @@ services:
         aliases:
           - redis
   {% endif %}
-    dns_search: .
+    dns_search: ""
     depends_on:
       - log
     logging:
@@ -290,12 +335,23 @@ services:
 {% if protocol == 'https' %}
       - {{data_volume}}/secret/cert:/etc/cert:z
 {% endif %}
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.harbor_internal_ca_crt_path}}
+        target: /etc/harbor/tls/harbor_internal_ca.crt
+      - type: bind
+        source: {{internal_tls.proxy_crt_path}}
+        target: /etc/harbor/tls/proxy.crt
+      - type: bind
+        source: {{internal_tls.proxy_key_path}}
+        target: /etc/harbor/tls/proxy.key
+{% endif %}
     networks:
       - harbor
 {% if with_notary %}
       - harbor-notary
 {% endif %}
-    dns_search: .
+    dns_search: ""
     ports:
       - {{http_port}}:8080
 {% if protocol == 'https' %}
@@ -322,7 +378,7 @@ services:
     networks:
       - notary-sig
       - harbor-notary
-    dns_search: .
+    dns_search: ""
     volumes:
       - ./common/config/notary:/etc/notary:z
       - type: bind
@@ -331,6 +387,17 @@ services:
       - type: bind
         source: {{data_volume}}/secret/registry/root.crt
         target: /etc/notary/root.crt
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.harbor_internal_ca_crt_path}}
+        target: /etc/harbor/ssl/harbor_internal_ca.crt
+      - type: bind
+        source: {{internal_tls.notary_server_crt_path}}
+        target: /etc/harbor/ssl/notary_server.crt
+      - type: bind
+        source: {{internal_tls.notary_server_key_path}}
+        target: /etc/harbor/ssl/notary_server.key
+{% endif %}
     env_file:
       - ./common/config/notary/server_env
     depends_on:
@@ -352,7 +419,7 @@ services:
       notary-sig:
         aliases:
           - notarysigner
-    dns_search: .
+    dns_search: ""
     volumes:
       - ./common/config/notary:/etc/notary:z
       - type: bind
@@ -361,6 +428,17 @@ services:
       - type: bind
         source: {{data_volume}}/secret/notary/notary-signer.key
         target: /etc/notary/notary-signer.key
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.harbor_internal_ca_crt_path}}
+        target: /etc/harbor/ssl/harbor_internal_ca.crt
+      - type: bind
+        source: {{internal_tls.notary_signer_crt_path}}
+        target: /etc/harbor/ssl/notary_signer.crt
+      - type: bind
+        source: {{internal_tls.notary_signer_key_path}}
+        target: /etc/harbor/ssl/notary_signer.key
+{% endif %}
     env_file:
       - ./common/config/notary/signer_env
     depends_on:
@@ -388,7 +466,7 @@ services:
       - SETGID
       - SETUID
     cpu_quota: 50000
-    dns_search: .
+    dns_search: ""
     depends_on:
       - log
   {% if external_database == False %}
@@ -398,11 +476,17 @@ services:
       - type: bind
         source: ./common/config/clair/config.yaml
         target: /etc/clair/config.yaml
-  {%if registry_custom_ca_bundle_path %}
+{%if internal_tls.enabled %}
       - type: bind
-        source: {{registry_custom_ca_bundle_path}}
-        target: /harbor_cust_cert/custom-ca-bundle.crt
-  {% endif %}
+        source: {{internal_tls.harbor_internal_ca_crt_path}}
+        target: /etc/harbor/ssl/harbor_internal_ca.crt
+      - type: bind
+        source: {{internal_tls.clair_crt_path}}
+        target: /etc/harbor/ssl/clair.crt
+      - type: bind
+        source: {{internal_tls.clair_key_path}}
+        target: /etc/harbor/ssl/clair.key
+{% endif %}
     logging:
       driver: "syslog"
       options:
@@ -423,11 +507,22 @@ services:
       - SETGID
       - SETUID
     cpu_quota: 50000
-    dns_search: .
+    dns_search: ""
     depends_on:
       - clair
 {% if external_redis == False %}
       - redis
+{% endif %}
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.harbor_internal_ca_crt_path}}
+        target: /etc/harbor/ssl/harbor_internal_ca.crt
+      - type: bind
+        source: {{internal_tls.clair_adapter_crt_path}}
+        target: /etc/harbor/ssl/clair_adapter.crt
+      - type: bind
+        source: {{internal_tls.clair_adapter_key_path}}
+        target: /etc/harbor/ssl/clair_adapter.key
 {% endif %}
     logging:
       driver: "syslog"
@@ -480,21 +575,27 @@ services:
       - SETUID
     networks:
       - harbor-chartmuseum
-    dns_search: .
+    dns_search: ""
     depends_on:
       - log
     volumes:
       - {{data_volume}}/chart_storage:/chart_storage:z
       - ./common/config/chartserver:/etc/chartserver:z
+{%if internal_tls.enabled %}
+      - type: bind
+        source: {{internal_tls.harbor_internal_ca_crt_path}}
+        target: /etc/harbor/ssl/harbor_internal_ca.crt
+      - type: bind
+        source: {{internal_tls.chartmuseum_crt_path}}
+        target: /etc/harbor/ssl/chartmuseum.crt
+      - type: bind
+        source: {{internal_tls.chartmuseum_key_path}}
+        target: /etc/harbor/ssl/chartmuseum.key
+{% endif %}
 {% if gcs_keyfile %}
       - type: bind
         source: {{gcs_keyfile}}
         target: /etc/chartserver/gcs.key
-{% endif %}
-{%if registry_custom_ca_bundle_path %}
-      - type: bind
-        source: {{registry_custom_ca_bundle_path}}
-        target: /harbor_cust_cert/custom-ca-bundle.crt
 {% endif %}
     logging:
       driver: "syslog"

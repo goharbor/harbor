@@ -1,4 +1,5 @@
 import os
+from functools import reduce
 
 from g import templates_dir
 from .configs import parse_versions
@@ -25,7 +26,6 @@ def prepare_docker_compose(configs, with_clair, with_trivy, with_notary, with_ch
         'log_location': configs['log_location'],
         'protocol': configs['protocol'],
         'http_port': configs['http_port'],
-        'registry_custom_ca_bundle_path': configs['registry_custom_ca_bundle_path'],
         'external_redis': configs['external_redis'],
         'external_database': configs['external_database'],
         'with_notary': with_notary,
@@ -33,6 +33,10 @@ def prepare_docker_compose(configs, with_clair, with_trivy, with_notary, with_ch
         'with_trivy': with_trivy,
         'with_chartmuseum': with_chartmuseum
     }
+
+    # if configs.get('registry_custom_ca_bundle_path'):
+    #     rendering_variables['registry_custom_ca_bundle_path'] = configs.get('registry_custom_ca_bundle_path')
+    #     rendering_variables['custom_ca_required'] = True
 
     # for gcs
     storage_config = configs.get('storage_provider_config') or {}
@@ -44,6 +48,9 @@ def prepare_docker_compose(configs, with_clair, with_trivy, with_notary, with_ch
         rendering_variables['cert_key_path'] = configs['cert_key_path']
         rendering_variables['cert_path'] = configs['cert_path']
         rendering_variables['https_port'] = configs['https_port']
+
+    # internal cert pairs
+    rendering_variables['internal_tls'] = configs['internal_tls']
 
     # for uaa
     uaa_config = configs.get('uaa') or {}

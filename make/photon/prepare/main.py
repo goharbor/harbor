@@ -5,7 +5,7 @@ import logging
 import click
 from utils.misc import delfile
 from utils.configs import validate, parse_yaml_config
-from utils.cert import prepare_ca, SSL_CERT_KEY_PATH, SSL_CERT_PATH, get_secret_key
+from utils.cert import prepare_registry_ca, SSL_CERT_KEY_PATH, SSL_CERT_PATH, get_secret_key
 from utils.db import prepare_db
 from utils.jobservice import prepare_job_service
 from utils.registry import prepare_registry
@@ -20,6 +20,7 @@ from utils.chart import prepare_chartmuseum
 from utils.docker_compose import prepare_docker_compose
 from utils.nginx import prepare_nginx, nginx_confd_dir
 from utils.redis import prepare_redis
+from utils.internal_tls import prepare_tls
 from g import (config_dir, input_config_path, private_key_pem_path, root_crt_path, secret_key_dir,
 old_private_key_pem_path, old_crt_path)
 
@@ -49,15 +50,17 @@ def main(conf, with_notary, with_clair, with_trivy, with_chartmuseum):
     prepare_db(config_dict)
     prepare_job_service(config_dict)
     prepare_redis(config_dict)
+    prepare_tls(config_dict)
 
     get_secret_key(secret_key_dir)
 
     #  If Customized cert enabled
-    prepare_ca(
+    prepare_registry_ca(
         private_key_pem_path=private_key_pem_path,
         root_crt_path=root_crt_path,
         old_private_key_pem_path=old_private_key_pem_path,
         old_crt_path=old_crt_path)
+
     if with_notary:
         prepare_notary(config_dict, nginx_confd_dir, SSL_CERT_PATH, SSL_CERT_KEY_PATH)
 
