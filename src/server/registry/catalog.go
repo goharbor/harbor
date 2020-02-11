@@ -75,6 +75,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 
 	// handle the pagination
 	resRepos := repoNames
+	repoNamesLen := len(repoNames)
 	// with "last", get items form lastEntryIndex+1 to lastEntryIndex+maxEntries
 	// without "last", get items from 0 to maxEntries'
 	if lastEntry != "" {
@@ -84,9 +85,21 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 			serror.SendError(w, err)
 			return
 		}
-		resRepos = repoNames[lastEntryIndex+1 : lastEntryIndex+maxEntries]
+		if lastEntryIndex+1+maxEntries > repoNamesLen {
+			resRepos = repoNames[lastEntryIndex+1 : repoNamesLen]
+		} else {
+			resRepos = repoNames[lastEntryIndex+1 : lastEntryIndex+1+maxEntries]
+		}
 	} else {
+		if maxEntries > repoNamesLen {
+			maxEntries = repoNamesLen
+		}
 		resRepos = repoNames[0:maxEntries]
+	}
+
+	if len(resRepos) == 0 {
+		r.sendResponse(w, req, resRepos)
+		return
 	}
 
 	// compare the last item to define whether return the link header.
