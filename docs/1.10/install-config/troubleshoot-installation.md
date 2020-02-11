@@ -1,5 +1,6 @@
 ---
 title: Troubleshooting Harbor Installation
+weight: 50
 ---
 
 The following sections help you to solve problems when installing Harbor.

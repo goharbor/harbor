@@ -1,5 +1,6 @@
 ---
 title: Test Harbor with the Demo Server
+weight: 10
 ---
 
 The Harbor team has made available a demo Harbor instance that you can use to experiment with Harbor and test its functionalities.

@@ -1,5 +1,6 @@
 ---
 title: Upgrading Harbor Deployed with Helm
+weight: 40
 ---
 
 This guide is used to upgrade Harbor deployed by chart since version 0.3.0.

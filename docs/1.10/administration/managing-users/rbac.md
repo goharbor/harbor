@@ -1,5 +1,6 @@
 ---
 title: Harbor Role Based Access Control (RBAC)
+weight: 15
 ---
 
 Harbor manages images through projects. You provide access to these images to users by including the users in projects and assigning one of the following roles to them.

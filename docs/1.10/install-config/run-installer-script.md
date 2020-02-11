@@ -1,5 +1,7 @@
 ---
 title: Run the Installer Script
+
+weight: 35
 ---
 
 Once you have configured `harbor.yml` and optionally set up a storage backend, you install and start Harbor by using the `install.sh` script. Note that it might take some time for the online installer to download all of the Harbor images from Docker hub.

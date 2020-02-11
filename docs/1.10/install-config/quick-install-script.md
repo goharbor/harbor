@@ -1,5 +1,6 @@
 ---
 title: Deploy Harbor with the Quick Installation Script
+weight: 45
 ---
 
 The Harbor community has provided a script that with a single command prepares an Ubuntu 18.04 machine for Harbor and deploys the latest stable version.

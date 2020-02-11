@@ -1,5 +1,6 @@
 ---
 title: User Permissions By Role
+weight: 20
 ---
 
 Users have different abilities depending on the role they in a project.

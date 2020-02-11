@@ -1,5 +1,6 @@
 ---
 title: Configure Harbor User Settings at the Command Line
+weight: 65
 ---
 
 From release 1.8.0 onwards, user settings are configured separately from the system settings. You do not configure user settings in the `harbor.yml` file, but rather in the Harbor interface or via HTTP requests.

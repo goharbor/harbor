@@ -1,5 +1,6 @@
 ---
 title: Configure Project Quotas
+weight: 20
 ---
 
 To exercise control over resource use, as a Harbor system administrator you can set  quotas on projects. You can limit the number of tags that a project can contain and limit the amount of storage capacity that a project can consume. You can set default quotas that apply to all projects globally.

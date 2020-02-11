@@ -1,5 +1,6 @@
 ---
 title: Configure the Harbor YML File
+weight: 35
 ---
 
 You set system level parameters for Harbor in the `harbor.yml` file that is contained in the installer package. These parameters take effect when you run the `install.sh` script to install or reconfigure Harbor. 

@@ -1,5 +1,6 @@
 ---
 title: Customize the Harbor Token Service
+weight: 60
 ---
 
 By default, Harbor uses its own private key and certificate to authenticate with Docker clients. This topic describes how to optionally customize your configuration to use your own key and certificate.

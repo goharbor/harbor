@@ -1,5 +1,6 @@
 ---
 title: Download the Harbor Installer
+weight: 25
 ---
 
 You download the Harbor installers from the [official releases](https://github.com/goharbor/harbor/releases) page. Download either the online installer or the offline installer. 

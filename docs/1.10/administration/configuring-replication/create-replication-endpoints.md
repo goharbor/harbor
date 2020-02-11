@@ -1,5 +1,6 @@
 ---
 title: Creating Replication Endpoints
+weight: 20
 ---
 
 To replicate image repositories from one instance of Harbor to another Harbor or non-Harbor registry, you first create replication endpoints.

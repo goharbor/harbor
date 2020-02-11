@@ -1,5 +1,6 @@
 ---
 title: Access and Search Project Logs
+weight: 35
 ---
 
 Harbor keeps a log of all of the operations that users perform in a project. You can apply filters to help you to search the logs.

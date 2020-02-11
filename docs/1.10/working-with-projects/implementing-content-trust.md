@@ -1,5 +1,6 @@
 ---
 title: Implementing Content Trust
+weight: 55
 ---
 
 {{< note >}}

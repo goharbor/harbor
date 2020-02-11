@@ -1,5 +1,6 @@
 ---
 title: Project Configuration
+weight: 30
 ---
 
 After the initial creation of a project, you can configure or reconfigure its properties in the **Configuration** tab for that project.

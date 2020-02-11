@@ -1,5 +1,6 @@
 ---
 title: Pulling and Pushing Images in the Docker Client
+weight: 65
 ---
 
 Harbor optionally supports HTTP connections, however the Docker client always attempts to connect to registries by first using HTTPS. If Harbor is configured for HTTP, you must configure your Docker client so that it can connect to insecure registries. In your Docker client is not configured for insecure registries, you will see the following error when you attempt to pull or push images to Harbor: 

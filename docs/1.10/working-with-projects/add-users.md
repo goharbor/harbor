@@ -1,5 +1,6 @@
 ---
 title: Assign Users to a Project
+weight: 25
 ---
 
 You can add individual users to an existing project and assign a role to them. You can add an LDAP/AD or OIDC user to the project members if you  use LDAP/AD or OIDC authentication, or a user that you have already created if you use database authentication. If you use LDAP/AD or OIDC authentication, you can add groups to projects and assign a role to the group.

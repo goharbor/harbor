@@ -1,5 +1,6 @@
 ---
 title: Configure a Per-Project CVE Whitelist
+weight: 50
 ---
 
 When you run vulnerability scans, images that are subject to Common Vulnerabilities and Exposures (CVE) are identified. According to the severity of the CVE and your security settings, these images might not be permitted to run. You can create whitelists of CVEs to ignore during vulnerability scanning. 

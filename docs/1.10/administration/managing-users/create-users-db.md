@@ -1,5 +1,6 @@
 ---
 title: Create User Accounts in Database Mode
+weight: 25
 ---
 	
 In database authentication mode, the Harbor system administrator creates user accounts manually. 

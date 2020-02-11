@@ -1,5 +1,6 @@
 ---
 title: Creating a Replication Rule
+weight: 25
 ---
 
 A replication endpoint must exist before you create a replication rule. To create an endpoint, follow the instructions in [Creating Replication Endpoints](create-replication-endpoints.md).
