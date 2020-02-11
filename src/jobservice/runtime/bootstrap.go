@@ -230,6 +230,7 @@ func (bs *Bootstrap) createAPIServer(ctx context.Context, cfg *config.Configurat
 		Port:     cfg.Port,
 	}
 	if cfg.HTTPSConfig != nil {
+		serverConfig.Protocol = config.JobServiceProtocolHTTPS
 		serverConfig.Cert = cfg.HTTPSConfig.Cert
 		serverConfig.Key = cfg.HTTPSConfig.Key
 	}
