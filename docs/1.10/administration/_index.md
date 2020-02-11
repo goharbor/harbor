@@ -1,5 +1,6 @@
 ---
 title: Harbor Administration
+weight: 10
 ---
 
 This section describes how to configure and maintain Harbor after deployment. These operations are performed by the Harbor system administrator. The Harbor system administrator performs global configuration operations that apply to the whole Harbor instance.

@@ -1,5 +1,6 @@
 ---
 title: Deploying Harbor with High Availability via Helm
+weight: 40
 ---
 
 ## Goal

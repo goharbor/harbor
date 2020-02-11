@@ -1,5 +1,6 @@
 ---
 title: Test Harbor Upgrade
+weight: 50
 ---
 
 ## Prepare data  

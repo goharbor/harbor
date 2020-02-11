@@ -1,5 +1,6 @@
 ---
 title: Upgrade Harbor and Migrate Data
+weight: 35
 ---
 
 This guide covers upgrade and migration to version 1.10.0. This guide only covers migration from v1.8.x and later to the current version. If you are upgrading from an earlier version, refer to the migration guide in the `release-1.8.0` branch to upgrade to v1.8.x first, then follow this guide to perform the migration to this version.

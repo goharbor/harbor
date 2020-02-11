@@ -1,5 +1,6 @@
 ---
 title: Harbor Installation Prerequisites
+weight: 20
 ---
 
 Harbor is deployed as several Docker containers. You can therefore deploy it on any Linux distribution that supports Docker. The target host requires Docker, and Docker Compose to be installed.

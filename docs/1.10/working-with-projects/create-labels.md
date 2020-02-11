@@ -1,5 +1,6 @@
 ---
 title: Managing Labels
+weight: 70
 ---
 
 Harbor provides two kinds of labels to isolate different kinds of resources:

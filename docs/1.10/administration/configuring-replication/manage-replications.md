@@ -1,5 +1,6 @@
 ---
 title: Running Replication Manually
+weight: 30
 ---
 
 1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.

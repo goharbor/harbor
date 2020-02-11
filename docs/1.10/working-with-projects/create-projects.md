@@ -1,5 +1,6 @@
 ---
 title: Create Projects
+weight: 20
 ---
 
 A project in Harbor contains all repositories of an application. Images cannot be pushed to Harbor before a project is created. Role-Based Access Control (RBAC) is applied to projects, so that only users with the appropriate roles can perform certain operations. 

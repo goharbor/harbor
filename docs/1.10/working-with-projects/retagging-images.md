@@ -1,5 +1,6 @@
 ---
 title: Retagging Images
+weight: 75
 ---
 
 You can retag images in Harbor. Users with sufficient privileges can retag images to different repositories and projects. For example, you can retag images as follows:

@@ -1,5 +1,6 @@
 ---
 title: Create Robot Accounts
+weight: 40
 ---
 
 You can create robot accounts to run automated operations. Robot accounts have the following limitations:

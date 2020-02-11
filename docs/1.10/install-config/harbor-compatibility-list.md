@@ -1,5 +1,6 @@
 ---
 title: Harbor Compatibility List
+weight: 15
 ---
 
 This document provides compatibility information for all Harbor components.

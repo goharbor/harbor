@@ -1,5 +1,6 @@
 ---
 title: Reconfigure Harbor and Manage the Harbor Lifecycle
+weight: 55
 ---
 
 You use `docker-compose` to manage the lifecycle of Harbor. This topic provides some useful commands. You must run the commands in the directory in which `docker-compose.yml` is located.

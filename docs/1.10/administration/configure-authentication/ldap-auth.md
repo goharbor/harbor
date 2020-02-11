@@ -1,5 +1,6 @@
 ---
 title: Configure LDAP/Active Directory Authentication
+weight: 20
 ---
 
 If you select LDAP/AD authentication, users whose credentials are stored in an external LDAP or AD server can log in to Harbor directly. In this case, you do not create user accounts in Harbor.

@@ -1,5 +1,6 @@
 ---
 title: Roll Back from an Upgrade
+weight: 45
 ---
 
 If, for any reason, you need to roll back to the previous version of Harbor, perform the following steps.
