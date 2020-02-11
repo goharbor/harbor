@@ -117,9 +117,8 @@ class InternalTLS:
             logging.info('internal tls NOT enabled...')
             return
         original_tls_dir = get_realpath(self.tls_dir)
-        rmtree(internal_tls_dir)
-        if not internal_tls_dir.exists():
-            os.makedirs(internal_tls_dir)
+        if internal_tls_dir.exists():
+            rmtree(internal_tls_dir)
         copytree(original_tls_dir, internal_tls_dir, symlinks=True)
 
         for file in internal_tls_dir.iterdir():

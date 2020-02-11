@@ -19,6 +19,7 @@ import (
 	"flag"
 	"net/http"
 
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/registryctl/config"
 	"github.com/goharbor/harbor/src/registryctl/handlers"
@@ -37,25 +38,15 @@ func (s *RegistryCtl) Start() {
 		Handler: s.Handler,
 	}
 
-	if s.ServerConf.Protocol == "HTTPS" {
-		tlsCfg := &tls.Config{
-			MinVersion:               tls.VersionTLS12,
-			CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
-			PreferServerCipherSuites: true,
-			CipherSuites: []uint16{
-				tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-				tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
-				tls.TLS_RSA_WITH_AES_256_CBC_SHA,
-			},
+	if s.ServerConf.Protocol == "https" {
+		regCtl.TLSConfig = &tls.Config{
+			ClientAuth: tls.RequireAndVerifyClientCert,
+			ClientCAs:  commonhttp.GetInternalCA(nil),
 		}
-
-		regCtl.TLSConfig = tlsCfg
-		regCtl.TLSNextProto = make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0)
 	}
 
 	var err error
-	if s.ServerConf.Protocol == "HTTPS" {
+	if s.ServerConf.Protocol == "https" {
 		err = regCtl.ListenAndServeTLS(s.ServerConf.HTTPSConfig.Cert, s.ServerConf.HTTPSConfig.Key)
 	} else {
 		err = regCtl.ListenAndServe()
