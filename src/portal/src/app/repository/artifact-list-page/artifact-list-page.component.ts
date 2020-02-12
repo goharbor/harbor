@@ -16,16 +16,16 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { AppConfigService } from '../../app-config.service';
 import { SessionService } from '../../shared/session.service';
 import { Project } from '../../project/project';
-import { RepositoryComponent } from "../../../lib/components/repository/repository.component";
+import { ArtifactListComponent } from "../../../lib/components/artifact-list/artifact-list.component";
 import { ArtifactClickEvent, ArtifactService } from "../../../lib/services";
 import { clone } from '../../../lib/utils/utils';
 
 @Component({
-  selector: 'tag-repository',
-  templateUrl: 'tag-repository.component.html',
-  styleUrls: ['./tag-repository.component.scss']
+  selector: 'artifact-list-page',
+  templateUrl: 'artifact-list-page.component.html',
+  styleUrls: ['./artifact-list-page.component.scss']
 })
-export class TagRepositoryComponent implements OnInit {
+export class ArtifactListPageComponent implements OnInit {
 
   projectId: number;
   projectMemberRoleId: number;
@@ -35,8 +35,8 @@ export class TagRepositoryComponent implements OnInit {
   isGuest: boolean;
   registryUrl: string;
 
-  @ViewChild(RepositoryComponent, {static: false})
-  repositoryComponent: RepositoryComponent;
+  @ViewChild(ArtifactListComponent, {static: false})
+  repositoryComponent: ArtifactListComponent;
 
   constructor(
     private route: ActivatedRoute,

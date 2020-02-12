@@ -22,17 +22,17 @@ import { ConfirmationDialogService } from '../confirmation-dialog/confirmation-d
 
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationState, ConfirmationTargets } from '../shared.const';
-import { TagRepositoryComponent } from '../../repository/tag-repository/tag-repository.component';
+import { ArtifactListPageComponent } from '../../repository/artifact-list-page/artifact-list-page.component';
 import { Observable } from 'rxjs';
 
 @Injectable()
-export class LeavingRepositoryRouteDeactivate implements CanDeactivate<TagRepositoryComponent> {
+export class LeavingRepositoryRouteDeactivate implements CanDeactivate<ArtifactListPageComponent> {
   constructor(
     private router: Router,
     private confirmation: ConfirmationDialogService) { }
 
   canDeactivate(
-    tagRepo: TagRepositoryComponent,
+    tagRepo: ArtifactListPageComponent,
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean> | boolean {
     // Confirmation before leaving config route

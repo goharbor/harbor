@@ -10,8 +10,8 @@ import { ErrorHandler } from "../../utils/error-handler/error-handler";
 import { Label, Tag } from "../../services/interface";
 import { SERVICE_CONFIG, IServiceConfig } from "../../entities/service.config";
 import {
-    TagService, TagDefaultService, ScanningResultService, ScanningResultDefaultService,
-    RetagService, RetagDefaultService, ProjectService, ProjectDefaultService
+    ScanningResultService, ScanningResultDefaultService,
+    RetagService, RetagDefaultService, ProjectService, ProjectDefaultService, ArtifactService, ArtifactDefaultService
 } from "../../services";
 import { CopyInputComponent } from "../push-image/copy-input.component";
 import { LabelPieceComponent } from "../label-piece/label-piece.component";
@@ -31,7 +31,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
 
   let comp: ArtifactListTabComponent;
   let fixture: ComponentFixture<ArtifactListTabComponent>;
-  let tagService: TagService;
+  let artifactService: ArtifactService;
   let userPermissionService: UserPermissionService;
   let spy: jasmine.Spy;
   let spyLabels: jasmine.Spy;
@@ -41,7 +41,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
     disabled: false,
     name: "Clair"
   };
-  let mockTags: Artifact[] = [
+  let mockArtifacts: Artifact[] = [
     {
       "id": 1,
       type: 'image',
@@ -189,7 +189,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
         ErrorHandler,
         ChannelService,
         { provide: SERVICE_CONFIG, useValue: config },
-        { provide: TagService, useClass: TagDefaultService },
+        { provide: ArtifactService, useClass: ArtifactDefaultService },
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: RetagService, useClass: RetagDefaultService },
         { provide: ScanningResultService, useClass: ScanningResultDefaultService },
@@ -218,8 +218,8 @@ describe("ArtifactListTabComponent (inline template)", () => {
     let labelService: LabelService;
 
 
-    tagService = fixture.debugElement.injector.get(TagService);
-    // spy = spyOn(tagService, "getTags").and.returnValues(of(mockTags).pipe(delay(0)));
+    artifactService = fixture.debugElement.injector.get(ArtifactService);
+    spy = spyOn(artifactService, "getArtifactList").and.returnValues(of(mockArtifacts).pipe(delay(0)));
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
     let http: HttpClient;
     http = fixture.debugElement.injector.get(HttpClient);
@@ -241,7 +241,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
   }));
 
   it("should load project scanner", async(() => {
-    expect(spyScanner.calls.count()).toEqual(1);
+    expect(spyScanner.calls.count()).toEqual(2);
   }));
 
   it("should load and render data", () => {
@@ -253,7 +253,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
       expect(de).toBeTruthy();
       let el: HTMLElement = de.nativeElement;
       expect(el).toBeTruthy();
-      expect(el.textContent.trim()).toEqual("1.11.5");
+      expect(el.textContent.trim()).toEqual("sha256:4875cda3");
     });
   });
 

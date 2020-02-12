@@ -9,7 +9,7 @@
                 &lt;<a (click)="jumpDigest(referArtifactNameArray,i)" >{{digest | slice:0:15}}</a></span>
         </span>
     </div>
-    <hbr-repository [repoName]="repoName"  [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole"
+    <artifact-list [repoName]="repoName"  [hasSignedIn]="hasSignedIn" [hasProjectAdminRole]="hasProjectAdminRole"
                     [projectId]="projectId" [memberRoleID]="projectMemberRoleId" [isGuest]="isGuest"
-                    (tagClickEvent)="watchTagClickEvt($event)" (backEvt)="watchGoBackEvt($event)" (putArtifactReferenceArr)="putArtifactReferenceArr($event)"></hbr-repository>
+                    (tagClickEvent)="watchTagClickEvt($event)" (backEvt)="watchGoBackEvt($event)" (putArtifactReferenceArr)="putArtifactReferenceArr($event)"></artifact-list>
 </div>

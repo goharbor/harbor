@@ -32,7 +32,6 @@ import {
   RequestQueryParams,
   RetagService,
   ScanningResultService,
-  TagService,
   ProjectService,
   ArtifactService
 } from "../../services";
@@ -64,7 +63,6 @@ import { errorHandler as errorHandFn } from "../../utils/shared/shared.utils";
 import { ClrLoadingState } from "@clr/angular";
 import { ChannelService } from "../../services/channel.service";
 import { Artifact, Reference } from "./artifact";
-import { Router } from "@angular/router";
 
 export interface LabelState {
   iconsShow: boolean;
@@ -172,8 +170,6 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
     private translateService: TranslateService,
     private ref: ChangeDetectorRef,
     private operationService: OperationService,
-    private router: Router,
-    private cdf: ChangeDetectorRef,
     private channel: ChannelService,
     private projectService: ProjectService,
     private scanningService: ScanningResultService

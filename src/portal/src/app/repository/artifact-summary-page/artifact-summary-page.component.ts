@@ -14,15 +14,13 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {AppConfigService} from "../../app-config.service";
-import { SessionService } from '../../shared/session.service';
-import { ArtifactService } from '../../../lib/services';
 
 @Component({
-  selector: 'repository',
-  templateUrl: 'tag-detail-page.component.html',
-  styleUrls: ["tag-detail-page.component.scss"]
+  selector: 'artifact-summary-page',
+  templateUrl: 'artifact-summary-page.component.html',
+  styleUrls: ["artifact-summary-page.component.scss"]
 })
-export class TagDetailPageComponent implements OnInit, OnDestroy {
+export class ArtifactSummaryPageComponent implements OnInit, OnDestroy {
   tagId: string;
   artifactDigest: string;
   repositoryName: string;
@@ -31,9 +29,7 @@ export class TagDetailPageComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private appConfigService: AppConfigService,
-    private router: Router,
-    private artifactService: ArtifactService,
-    private session: SessionService
+    private router: Router
   ) {
   }
 

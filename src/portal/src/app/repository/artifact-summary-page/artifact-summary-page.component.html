@@ -5,11 +5,9 @@
         <a (click)="goBackRep()">{{'REPOSITORY.REPOSITORIES'| translate}}</a>
         <span class="back-icon"><</span>
         <a (click)="goBack(repositoryName)">{{'REPOSITORY.ARTIFACTS'| translate}}</a>
-        <!-- <a (click)="goBack(repositoryName)">{{repositoryName}}</a> -->
-        <!-- <span *ngIf="referArtifactNameArray.length>=2" > -->
+
                 <span *ngFor="let digest of referArtifactNameArray;let i = index">
                     &lt;<a (click)="jumpDigest(referArtifactNameArray,i)" >{{digest | slice:0:15}}</a></span>
-            <!-- </span> -->
     </div>
     <artifact-summary (backEvt)="goBack($event)" 
     [artifactDigest]="artifactDigest"

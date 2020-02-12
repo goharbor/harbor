@@ -74,15 +74,12 @@ import { CopyInputComponent } from "./components/push-image/copy-input.component
 import { PushImageButtonComponent } from "./components/push-image/push-image.component";
 import { ReplicationTasksComponent } from "./components/replication/replication-tasks/replication-tasks.component";
 import { ReplicationComponent } from "./components/replication/replication.component";
-import { RepositoryComponent } from "./components/repository/repository.component";
+import { ArtifactListComponent } from "./components/artifact-list/artifact-list.component";
 import { RepositoryGridviewComponent } from "./components/repository-gridview/repository-gridview.component";
-import { ArtifactListComponent } from "./components/artifact/artifact-list/artifact-list.component";
 import { ArtifactListTabComponent } from "./components/artifact/artifact-list-tab.component";
 import { ArtifactSummaryComponent } from "./components/artifact/artifact-summary.component";
 import { ArtifactCommonPropertiesComponent } from './components/artifact/artifact-common-properties/artifact-common-properties.component';
-import { ArtifactLocalPropertiesComponent } from './components/artifact/artifact-local-properties/artifact-local-properties.component';
 import { ArtifactTagComponent } from './components/artifact/artifact-tag/artifact-tag.component';
-import { ArtifactAdditionalLinkComponent } from './components/artifact/artifact-additional-link/artifact-additional-link.component';
 import { ArtifactAdditionsComponent } from './components/artifact/artifact-additions/artifact-additions.component';
 import { HistogramChartComponent } from "./components/vulnerability-scanning/histogram-chart/histogram-chart.component";
 import { ResultTipHistogramComponent } from "./components/vulnerability-scanning/result-tip-histogram/result-tip-histogram.component";
@@ -254,14 +251,12 @@ export interface HarborModuleConfig {
       PushImageButtonComponent,
       ReplicationTasksComponent,
       ReplicationComponent,
-      RepositoryComponent,
+      ArtifactListComponent,
       RepositoryGridviewComponent,
       ArtifactListTabComponent,
       ArtifactSummaryComponent,
       ArtifactCommonPropertiesComponent,
-      ArtifactLocalPropertiesComponent,
       ArtifactTagComponent,
-      ArtifactAdditionalLinkComponent,
       ArtifactAdditionsComponent,
       BuildHistoryComponent,
       HistogramChartComponent,
@@ -269,7 +264,6 @@ export interface HarborModuleConfig {
       ResultBarChartComponent,
       ResultGridComponent,
       ResultTipComponent,
-      ArtifactListComponent,
       DependenciesComponent,
       SummaryComponent,
       ValuesComponent
@@ -309,14 +303,12 @@ export interface HarborModuleConfig {
       PushImageButtonComponent,
       ReplicationTasksComponent,
       ReplicationComponent,
-      RepositoryComponent,
+      ArtifactListComponent,
       RepositoryGridviewComponent,
       ArtifactListTabComponent,
       ArtifactSummaryComponent,
       ArtifactCommonPropertiesComponent,
-      ArtifactLocalPropertiesComponent,
       ArtifactTagComponent,
-      ArtifactAdditionalLinkComponent,
       ArtifactAdditionsComponent,
       BuildHistoryComponent,
       HistogramChartComponent,
@@ -324,7 +316,6 @@ export interface HarborModuleConfig {
       ResultBarChartComponent,
       ResultGridComponent,
       ResultTipComponent,
-      ArtifactListComponent,
       DependenciesComponent,
       SummaryComponent,
       ValuesComponent
