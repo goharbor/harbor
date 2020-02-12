@@ -16,10 +16,12 @@ package registry
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/core/config"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+
+	commonhttp "github.com/goharbor/harbor/src/common/http"
+	"github.com/goharbor/harbor/src/core/config"
 )
 
 var proxy = newProxy()
@@ -31,6 +33,10 @@ func newProxy() http.Handler {
 		panic(fmt.Sprintf("failed to parse the URL of registry: %v", err))
 	}
 	proxy := httputil.NewSingleHostReverseProxy(url)
+	if commonhttp.InternalTLSEnabled() {
+		proxy.Transport = commonhttp.GetHTTPTransport(commonhttp.InternalTransport)
+	}
+
 	proxy.Director = basicAuthDirector(proxy.Director)
 	return proxy
 }

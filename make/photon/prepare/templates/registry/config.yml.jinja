@@ -21,10 +21,22 @@ redis:
   password: {{redis_password}}
   db: {{redis_db_index_reg}}
 http:
+{% if internal_tls.enabled %}
+  addr: :5443
+{% else %}
   addr: :5000
+{% endif %}
   secret: placeholder
   debug:
     addr: localhost:5001
+{% if internal_tls.enabled %}
+  tls:
+    certificate: /etc/harbor/tls/registry.crt
+    key: /etc/harbor/tls/registry.key
+    clientcas:
+      - /etc/harbor/tls/harbor_internal_ca.crt
+{% endif %}
+
 auth:
   htpasswd:
     realm: harbor-registry-basic-realm
