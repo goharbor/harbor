@@ -53,9 +53,9 @@ A replication endpoint must exist before you create a replication rule. To creat
    * **Scheduled**: Replicate the resources periodically by defining a cron job. **Note**: Deletion operations are not replicated. 
    * **Event Based**: When a new resource is pushed to the project, or an image is retagged, it is replicated to the remote registry immediately. If you select the **Delete remote resources when locally deleted**, if you delete an image, it is automatically deleted from the replication target.
 
-    {{< note >}}
-    You can filter images for replication based on the labels that are applied to the images. However, changing a label on an image does not trigger replication. Event-based replication is limited to pushing, retagging, and deleting images.
-    {{< /note >}}
+  {{< note >}}
+  You can filter images for replication based on the labels that are applied to the images. However, changing a label on an image does not trigger replication. Event-based replication is limited to pushing, retagging, and deleting images.
+  {{< /note >}}
 
    ![Trigger mode](../../../img/replication-rule5.png)
       
