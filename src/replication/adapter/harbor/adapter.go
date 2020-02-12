@@ -26,7 +26,9 @@ import (
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	common_http_auth "github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/jobservice/config"
 	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
+
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -68,7 +70,12 @@ type adapter struct {
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
-	transport := util.GetHTTPTransport(registry.Insecure)
+	var transport *http.Transport
+	if registry.URL == config.GetCoreURL() {
+		transport = common_http.GetHTTPTransport(common_http.InternalTransport)
+	} else {
+		transport = util.GetHTTPTransport(registry.Insecure)
+	}
 	// local Harbor instance
 	if registry.Credential != nil && registry.Credential.Type == model.CredentialTypeSecret {
 		authorizer := common_http_auth.NewSecretAuthorizer(registry.Credential.AccessSecret)

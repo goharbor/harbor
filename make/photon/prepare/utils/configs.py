@@ -347,7 +347,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
             external_database=config_dict['external_database'])
 
         if config_dict['internal_tls'].enabled:
-            config_dict['registry_url']: 'https://registry:5443'
+            config_dict['registry_url'] = 'https://registry:5443'
             config_dict['registry_controller_url'] = 'https://registryctl:8443'
             config_dict['core_url'] = 'https://core:8443'
             config_dict['core_local_url'] = 'https://127.0.0.1:8443'
