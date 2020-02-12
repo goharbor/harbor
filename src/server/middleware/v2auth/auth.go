@@ -15,7 +15,7 @@
 package v2auth
 
 import (
-	"context"
+	"errors"
 	"fmt"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"net/http"
@@ -70,8 +70,7 @@ func (rc *reqChecker) check(req *http.Request) error {
 	} else if len(middleware.V2CatalogURLRe.FindStringSubmatch(req.URL.Path)) == 1 && !securityCtx.IsSysAdmin() {
 		return fmt.Errorf("unauthorized to list catalog")
 	} else if req.URL.Path == "/v2/" && !securityCtx.IsAuthenticated() {
-		ctx := context.WithValue(req.Context(), middleware.SkipInjectRegistryCredKey, true)
-		*req = *(req.WithContext(ctx))
+		return errors.New("unauthorized")
 	}
 	return nil
 }

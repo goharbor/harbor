@@ -120,15 +120,13 @@ func (i *indexResolverTestSuite) TestResolveMetadata() {
   "schemaVersion": 2
 }`
 	art := &artifact.Artifact{}
-	i.artMgr.On("List").Return(1, []*artifact.Artifact{
-		{
-			ID: 1,
-		},
+	i.artMgr.On("GetByDigest").Return(&artifact.Artifact{
+		ID: 1,
 	}, nil)
 	err := i.resolver.ResolveMetadata(nil, []byte(manifest), art)
 	i.Require().Nil(err)
 	i.artMgr.AssertExpectations(i.T())
-	i.Assert().Len(art.References, 8)
+	i.Require().Len(art.References, 8)
 	i.Assert().Equal(int64(1), art.References[0].ChildID)
 	i.Assert().Equal("amd64", art.References[0].Platform.Architecture)
 }

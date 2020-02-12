@@ -17,14 +17,12 @@ package image
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/q"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -59,22 +57,13 @@ func (i *indexResolver) ResolveMetadata(ctx context.Context, manifest []byte, ar
 	// populate the referenced artifacts
 	for _, mani := range index.Manifests {
 		digest := mani.Digest.String()
-		_, arts, err := i.artMgr.List(ctx, &q.Query{
-			Keywords: map[string]interface{}{
-				"RepositoryID": art.RepositoryID,
-				"Digest":       digest,
-			},
-		})
+		// make sure the child artifact exist
+		ar, err := i.artMgr.GetByDigest(ctx, art.RepositoryID, digest)
 		if err != nil {
 			return err
 		}
-		// make sure the child artifact exist
-		if len(arts) == 0 {
-			return fmt.Errorf("the referenced artifact with digest %s not found under repository %d",
-				digest, art.RepositoryID)
-		}
 		art.References = append(art.References, &artifact.Reference{
-			ChildID:  arts[0].ID,
+			ChildID:  ar.ID,
 			Platform: mani.Platform,
 		})
 	}

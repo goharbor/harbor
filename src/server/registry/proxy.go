@@ -17,7 +17,6 @@ package registry
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/server/middleware"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
@@ -39,7 +38,7 @@ func newProxy() http.Handler {
 func basicAuthDirector(d func(*http.Request)) func(*http.Request) {
 	return func(r *http.Request) {
 		d(r)
-		if r != nil && !middleware.SkipInjectRegistryCred(r.Context()) {
+		if r != nil {
 			u, p := config.RegistryCredential()
 			r.SetBasicAuth(u, p)
 		}

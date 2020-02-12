@@ -28,10 +28,13 @@ var (
 
 // Manager is the only interface of artifact module to provide the management functions for artifacts
 type Manager interface {
-	// List artifacts according to the query, returns all artifacts if query is nil
+	// List artifacts according to the query. The artifacts that referenced by others and
+	// without tags are not returned
 	List(ctx context.Context, query *q.Query) (total int64, artifacts []*Artifact, err error)
 	// Get the artifact specified by the ID
 	Get(ctx context.Context, id int64) (artifact *Artifact, err error)
+	// GetByDigest returns the artifact specified by repository ID and digest
+	GetByDigest(ctx context.Context, repositoryID int64, digest string) (artifact *Artifact, err error)
 	// Create the artifact. If the artifact is an index, make sure all the artifacts it references
 	// already exist
 	Create(ctx context.Context, artifact *Artifact) (id int64, err error)
@@ -82,6 +85,15 @@ func (m *manager) Get(ctx context.Context, id int64) (*Artifact, error) {
 	}
 	return m.assemble(ctx, art)
 }
+
+func (m *manager) GetByDigest(ctx context.Context, repositoryID int64, digest string) (*Artifact, error) {
+	art, err := m.dao.GetByDigest(ctx, repositoryID, digest)
+	if err != nil {
+		return nil, err
+	}
+	return m.assemble(ctx, art)
+}
+
 func (m *manager) Create(ctx context.Context, artifact *Artifact) (int64, error) {
 	id, err := m.dao.Create(ctx, artifact.To())
 	if err != nil {

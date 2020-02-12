@@ -40,6 +40,10 @@ func (f *fakeDao) Get(ctx context.Context, id int64) (*dao.Artifact, error) {
 	args := f.Called()
 	return args.Get(0).(*dao.Artifact), args.Error(1)
 }
+func (f *fakeDao) GetByDigest(ctx context.Context, repositoryID int64, digest string) (*dao.Artifact, error) {
+	args := f.Called()
+	return args.Get(0).(*dao.Artifact), args.Error(1)
+}
 func (f *fakeDao) Create(ctx context.Context, artifact *dao.Artifact) (int64, error) {
 	args := f.Called()
 	return int64(args.Int(0)), args.Error(1)
@@ -162,6 +166,29 @@ func (m *managerTestSuite) TestGet() {
 	artifact, err := m.mgr.Get(nil, 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
+	m.Require().NotNil(artifact)
+	m.Equal(art.ID, artifact.ID)
+}
+
+func (m *managerTestSuite) TestGetByDigest() {
+	art := &dao.Artifact{
+		ID:                1,
+		Type:              "IMAGE",
+		MediaType:         "application/vnd.oci.image.config.v1+json",
+		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
+		ProjectID:         1,
+		RepositoryID:      1,
+		Digest:            "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",
+		Size:              1024,
+		PushTime:          time.Now(),
+		PullTime:          time.Now(),
+		ExtraAttrs:        `{"attr1":"value1"}`,
+		Annotations:       `{"anno1":"value1"}`,
+	}
+	m.dao.On("GetByDigest", mock.Anything).Return(art, nil)
+	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{}, nil)
+	artifact, err := m.mgr.GetByDigest(nil, 1, "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180")
+	m.Require().Nil(err)
 	m.Require().NotNil(artifact)
 	m.Equal(art.ID, artifact.ID)
 }
