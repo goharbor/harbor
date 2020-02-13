@@ -1,26 +1,19 @@
 import { ComponentFixture, TestBed, async, } from '@angular/core/testing';
-import { DebugElement } from '@angular/core';
+import { DebugElement, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SharedModule } from '../../utils/shared/shared.module';
-import { ConfirmationDialogComponent } from '../confirmation-dialog';
-import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
 import { ArtifactListComponent } from './artifact-list.component';
-import { GridViewComponent } from '../gridview/grid-view.component';
-import { FilterComponent } from '../filter/filter.component';
-import { ArtifactListTabComponent } from '../artifact/artifact-list-tab.component';
 import { ErrorHandler } from '../../utils/error-handler';
 import { Repository, RepositoryItem, Tag, SystemInfo, Label, ArtifactService, ArtifactDefaultService } from '../../services';
 import { SERVICE_CONFIG, IServiceConfig } from '../../entities/service.config';
 import { RepositoryService, RepositoryDefaultService } from '../../services';
 import { SystemInfoService, SystemInfoDefaultService } from '../../services';
-import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { LabelDefaultService, LabelService } from "../../services";
 import { OperationService } from "../operation/operation.service";
 import {
-  ProjectDefaultService,
   ProjectService,
   RetagDefaultService,
-  RetagService, ScanningResultDefaultService,
+  RetagService,
   ScanningResultService
 } from "../../services";
 import { UserPermissionDefaultService, UserPermissionService } from "../../services";
@@ -31,6 +24,7 @@ import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
 import { ChannelService } from "../../services/channel.service";
 import { HarborLibraryModule } from "../../harbor-library.module";
 import { Artifact, Reference } from '../artifact/artifact';
+import { ClarityModule } from '@clr/angular';
 
 
 describe('ArtifactListComponent (inline template)', () => {
@@ -224,7 +218,11 @@ describe('ArtifactListComponent (inline template)', () => {
         SharedModule,
         RouterTestingModule,
         HarborLibraryModule,
-        BrowserAnimationsModule
+        BrowserAnimationsModule,
+        ClarityModule
+      ],
+      schemas: [
+        CUSTOM_ELEMENTS_SCHEMA
       ],
       providers: [
         ErrorHandler,

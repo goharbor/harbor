@@ -30,8 +30,8 @@ export class ArtifactVulnerabilitiesComponent implements OnInit {
   constructor(
     private errorHandler: ErrorHandler,
     private additionsService: AdditionsService,
-    private scanningService: ScanningResultService,
-    private channel: ChannelService,
+    // private scanningService: ScanningResultService,
+    // private channel: ChannelService,
   ) {
     const that = this;
     this.severitySort = {
