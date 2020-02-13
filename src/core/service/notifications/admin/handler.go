@@ -16,15 +16,16 @@ package admin
 
 import (
 	"encoding/json"
+
 	"github.com/goharbor/harbor/src/core/service/notifications"
 
+	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
 	job_model "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	j "github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 )
 
 var statusMap = map[string]string{

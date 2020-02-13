@@ -24,7 +24,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	sc "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
+	sc "github.com/goharbor/harbor/src/api/scanner"
 	"github.com/stretchr/testify/suite"
 )
 

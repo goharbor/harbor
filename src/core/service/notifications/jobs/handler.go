@@ -16,9 +16,11 @@ package jobs
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/core/service/notifications"
 	"time"
 
+	"github.com/goharbor/harbor/src/core/service/notifications"
+
+	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -27,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/retention"
 	sc "github.com/goharbor/harbor/src/pkg/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/operation/hook"
 	"github.com/goharbor/harbor/src/replication/policy/scheduler"

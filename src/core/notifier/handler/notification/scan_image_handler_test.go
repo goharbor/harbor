@@ -6,6 +6,7 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/scan/all"
 
+	sc "github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier"
@@ -14,7 +15,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification"
 	nm "github.com/goharbor/harbor/src/pkg/notification/model"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
-	sc "github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"

@@ -15,9 +15,9 @@
 package api
 
 import (
+	"github.com/goharbor/harbor/src/api/scanner"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scanner"
 	"github.com/pkg/errors"
 )
 

@@ -3,12 +3,12 @@ package notification
 import (
 	"time"
 
+	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/pkg/errors"
 )

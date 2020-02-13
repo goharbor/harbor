@@ -18,12 +18,12 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/errs"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"

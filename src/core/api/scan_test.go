@@ -19,9 +19,9 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/scan/all"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	dscan "github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
