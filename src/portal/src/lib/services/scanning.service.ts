@@ -60,8 +60,9 @@ export abstract class ScanningResultService {
    * @memberOf ScanningResultService
    */
   abstract startVulnerabilityScanning(
+    projectName: string,
     repoName: string,
-    tagId: string
+    artifactId: string
   ): Observable<any>;
 
   /**
@@ -90,7 +91,7 @@ export abstract class ScanningResultService {
 
 @Injectable()
 export class ScanningResultDefaultService extends ScanningResultService {
-  _baseUrl: string = "/api/repositories";
+  _baseUrl: string = "/api/v2.0/projects";
 
   constructor(
     private http: HttpClient,
@@ -140,16 +141,17 @@ export class ScanningResultDefaultService extends ScanningResultService {
   }
 
   startVulnerabilityScanning(
+    projectName: string,
     repoName: string,
-    tagId: string
+    artifactId: string
   ): Observable<any> {
-    if (!repoName || repoName.trim() === "" || !tagId || tagId.trim() === "") {
+    if (!repoName || repoName.trim() === "" || !artifactId || artifactId.trim() === "") {
       return observableThrowError("Bad argument");
     }
 
     return this.http
       .post(
-        `${this._baseUrl}/${repoName}/tags/${tagId}/scan`,
+        `/api/v2.0/projects//${projectName}/repositories/${repoName}/artifacts/${artifactId}/scan`,
         HTTP_JSON_OPTIONS
       )
       .pipe(map(() => {

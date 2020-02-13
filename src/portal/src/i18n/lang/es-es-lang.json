@@ -617,6 +617,9 @@
         "DELETE": "Eliminar",
         "NAME": "Nombre",
         "TAGS_COUNT": "Etiquetas",
+        "PLATFORM": "OS/ARCH",
+        "ARTIFACT_TOOTIP": "Click this icon to enter the Artifact list of refer",
+        "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Comando Pull",
         "PULL_TIME": "Pull Time",
@@ -629,12 +632,14 @@
         "DELETION_SUMMARY_REPO_SIGNED": "Repository '{{repoName}}' cannot be deleted because the following signed images existing.\n{{signedImages}} \nYou should unsign all the signed images before deleting the repository!",
         "DELETION_SUMMARY_REPO": "¿Quiere eliminar el repositorio {{repoName}}?",
         "DELETION_TITLE_TAG": "Confirmación de Eliminación de Etiqueta",
-        "DELETION_SUMMARY_TAG": "¿Quiere eliminar la etiqueta {{param}}? If you delete this tag, all other tags referenced by the same digest will also be deleted",
+        "DELETION_SUMMARY_TAG": "¿Quiere eliminar la etiqueta {{param}}? If you delete this tag, all other tags referenced by the same digest will also be deleted.",
         "DELETION_TITLE_TAG_DENIED": "La etiqueta firmada no puede ser eliminada",
         "DELETION_SUMMARY_TAG_DENIED": "La etiqueta debe ser eliminada de la Notaría antes de eliminarla.\nEliminarla de la Notaría con este comando:\n",
         "TAGS_NO_DELETE": "Delete is prohibited in read only mode.",
         "FILTER_FOR_REPOSITORIES": "Filtrar Repositorios",
         "TAG": "Etiqueta",
+        "ARTIFACT": "Aarifact",
+        "ARTIFACTS": "Artifacts",
         "SIZE": "Size",
         "VULNERABILITY": "Vulnerabilities",
         "BUILD_HISTORY": "Construir Historia",
@@ -661,8 +666,9 @@
         "LABELS": "Labels",
         "ADD_LABEL_TO_IMAGE": "Add labels to this image",
         "FILTER_BY_LABEL": "Filter images by label",
+        "FILTER_ARTIFACT_BY_LABEL": "Filter actifact by label",
         "ADD_LABELS": "Add labels",
-        "RETAG": "Retag",
+        "RETAG": "Copy",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Add Additional Info",
@@ -986,6 +992,12 @@
         "PUSH_COMMAND": "Push an image to this project:",
         "COPY_ERROR": "Copy failed, please try to manually copy the command references."
     },
+    "ARTIFACT": {
+        "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
+        "ADDITIONS": "Additions",
+        "COMMON_PROPERTIES": "Common Properties",
+        "COMMON_ALL": "Common properties across all digest"
+    },
     "TAG": {
         "CREATION_TIME_PREFIX": "Create on",
         "CREATOR_PREFIX": "by",
@@ -1006,7 +1018,14 @@
         "AUTHOR": "Author",
         "LABELS": "Labels",
         "CREATION": "Tiempo de creación",
-        "COMMAND": "Mando"
+        "COMMAND": "Mando",
+        "UPLOADTIME": "Upload Time",
+        "NAME": "Name",
+        "PULL_TIME": "Pull Time",
+        "PUSH_TIME": "Push Time",
+        "OF": "of",
+        "ADD_TAG": "ADD TAG",
+        "REMOVE_TAG": "REMOVE TAG"
 
     },
     "LABEL": {

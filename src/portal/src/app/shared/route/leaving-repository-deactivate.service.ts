@@ -22,21 +22,22 @@ import { ConfirmationDialogService } from '../confirmation-dialog/confirmation-d
 
 import { ConfirmationMessage } from '../confirmation-dialog/confirmation-message';
 import { ConfirmationState, ConfirmationTargets } from '../shared.const';
-import { TagRepositoryComponent } from '../../repository/tag-repository/tag-repository.component';
+import { ArtifactListPageComponent } from '../../repository/artifact-list-page/artifact-list-page.component';
 import { Observable } from 'rxjs';
 
 @Injectable()
-export class LeavingRepositoryRouteDeactivate implements CanDeactivate<TagRepositoryComponent> {
+export class LeavingRepositoryRouteDeactivate implements CanDeactivate<ArtifactListPageComponent> {
   constructor(
     private router: Router,
     private confirmation: ConfirmationDialogService) { }
 
   canDeactivate(
-    tagRepo: TagRepositoryComponent,
+    tagRepo: ArtifactListPageComponent,
     route: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean> | boolean {
     // Confirmation before leaving config route
     return new Observable((observer) => {
+      // if (state)
       if (tagRepo && tagRepo.hasChanges()) {
         let msg: ConfirmationMessage = new ConfirmationMessage(
           "CONFIG.LEAVING_CONFIRMATION_TITLE",
@@ -49,15 +50,24 @@ export class LeavingRepositoryRouteDeactivate implements CanDeactivate<TagReposi
         return this.confirmation.confirmationConfirm$.subscribe(confirmMsg => {
           if (confirmMsg && confirmMsg.source === ConfirmationTargets.REPOSITORY) {
             if (confirmMsg.state === ConfirmationState.CONFIRMED) {
+              //
+              sessionStorage.removeItem('reference');
+
               return observer.next(true);
             } else {
               return observer.next(false); // Prevent leading route
             }
           } else {
+            //
+            sessionStorage.removeItem('reference');
+
             return observer.next(true); // Should go on
           }
         });
       } else {
+        //
+        sessionStorage.removeItem('reference');
+
         return observer.next(true);
       }
     });

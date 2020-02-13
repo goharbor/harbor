@@ -1,0 +1,24 @@
+<div class="title-wrapper">
+    <div class="title-block arrow-block" *ngIf="withAdmiral">
+        <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
+    </div>
+    <div class="title-block">
+        <!-- <h2 class="custom-h2">{{repositoryName}}:{{artifactDetails?.digest | slice:0:15}}</h2> -->
+        <h2 class="custom-h2">{{artifact?.digest | slice:0:15}}</h2>
+    </div>
+</div>
+<ng-container *ngIf="artifact">
+    <!-- common properties -->
+    <artifact-common-properties [artifactDetails]="artifact"></artifact-common-properties>
+
+    <!-- tags -->
+    <artifact-tag [artifactDetails]="artifact" [projectName]="projectName" [repositoryName]="repositoryName"
+                  (refreshArtifact)="refreshArtifact()"></artifact-tag>
+
+    <!-- Additions -->
+    <artifact-additions [additionLinks]="artifact?.addition_links"></artifact-additions>
+</ng-container>
+<div *ngIf="!artifact" class="clr-row mt-3 center">
+    <span class="spinner spinner-md"></span>
+</div>
+

@@ -15,3 +15,4 @@ export * from "./retag.service";
 export * from "./permission.service";
 export * from "./permission-static";
 export * from "./quota.service";
+export * from "./artifact.service";

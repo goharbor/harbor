@@ -1,6 +1,6 @@
 <clr-datagrid (clrDgRefresh)="refresh($event)">
     <clr-dg-column>{{'REPOSITORY.NAME' | translate}}</clr-dg-column>
-    <clr-dg-column>{{'REPOSITORY.TAGS_COUNT' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'REPOSITORY.ARTIFACTS_COUNT' | translate}}</clr-dg-column>
     <clr-dg-column>{{'REPOSITORY.PULL_COUNT' | translate}}</clr-dg-column>
     <clr-dg-row *clrDgItems="let r of repositories" [clrDgItem]='r'>
         <clr-dg-cell><a href="javascript:void(0)" (click)="gotoLink(projectId || r.project_id, r.name || r.repository_name)">{{r.name || r.repository_name}}</a></clr-dg-cell>

@@ -1,0 +1,17 @@
+<div>
+    <div class="arrow-block" *ngIf="!withAdmiral">
+        <a (click)="goBackPro()">{{'SIDE_NAV.PROJECTS'| translate}}</a>
+        <span class="back-icon"><</span>
+        <a (click)="goBackRep()">{{'REPOSITORY.REPOSITORIES'| translate}}</a>
+        <span class="back-icon"><</span>
+        <a (click)="goBack(repositoryName)">{{'REPOSITORY.ARTIFACTS'| translate}}</a>
+
+                <span *ngFor="let digest of referArtifactNameArray;let i = index">
+                    &lt;<a (click)="jumpDigest(referArtifactNameArray,i)" >{{digest | slice:0:15}}</a></span>
+    </div>
+    <artifact-summary (backEvt)="goBack($event)" 
+    [artifactDigest]="artifactDigest"
+    [withAdmiral]="withAdmiral"
+    [projectId]="projectId"
+    [repositoryName]="repositoryName"></artifact-summary>
+</div>

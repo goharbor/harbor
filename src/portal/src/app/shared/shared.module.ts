@@ -26,9 +26,11 @@ import { AuthCheckGuard } from "./route/auth-user-activate.service";
 import { SignInGuard } from "./route/sign-in-guard-activate.service";
 import { SystemAdminGuard } from "./route/system-admin-activate.service";
 import { MemberGuard } from "./route/member-guard-activate.service";
+import { ArtifactGuard } from "./route/artifact-guard-activate.service";
 import { MemberPermissionGuard } from "./route/member-permission-guard-activate.service";
 import { OidcGuard } from "./route/oidc-guard-active.service";
 import { LeavingRepositoryRouteDeactivate } from "./route/leaving-repository-deactivate.service";
+import { LeavingArtifactSummaryRouteDeactivate } from "./route/leaving-artifact-summary-deactivate.service";
 
 import { PortValidatorDirective } from "./port.directive";
 import { MaxLengthExtValidatorDirective } from "./max-length-ext.directive";
@@ -137,7 +139,9 @@ const uiLibConfig: IServiceConfig = {
     AuthCheckGuard,
     SignInGuard,
     LeavingRepositoryRouteDeactivate,
+    LeavingArtifactSummaryRouteDeactivate,
     MemberGuard,
+    ArtifactGuard,
     MemberPermissionGuard,
     OidcGuard,
     MessageHandlerService,
