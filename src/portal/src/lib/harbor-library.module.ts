@@ -98,6 +98,7 @@ import {BuildHistoryComponent} from "./components/artifact/artifact-additions/bu
 import { DependenciesComponent } from "./components/artifact/artifact-additions/dependencies/dependencies.component";
 import { SummaryComponent } from "./components/artifact/artifact-additions/summary/summary.component";
 import { ValuesComponent } from "./components/artifact/artifact-additions/values/values.component";
+import { ArtifactVulnerabilitiesComponent } from "./components/artifact/artifact-additions/artifact-vulnerabilities/artifact-vulnerabilities.component";
 
 
 /**
@@ -272,7 +273,8 @@ export interface HarborModuleConfig {
       ArtifactListComponent,
       DependenciesComponent,
       SummaryComponent,
-      ValuesComponent
+      ValuesComponent,
+      ArtifactVulnerabilitiesComponent
   ],
   exports: [
       SharedModule,
@@ -327,7 +329,8 @@ export interface HarborModuleConfig {
       ArtifactListComponent,
       DependenciesComponent,
       SummaryComponent,
-      ValuesComponent
+      ValuesComponent,
+      ArtifactVulnerabilitiesComponent
   ],
   providers: []
 })

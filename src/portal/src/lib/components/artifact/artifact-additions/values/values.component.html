@@ -19,9 +19,9 @@
     <div class="col-xs-8" *ngIf="valueMode">
         <table class="table">
             <tbody>
-                <tr *ngFor="let key of objKeys(values)">
-                    <td class="left">{{key}}</td>
-                    <td class="left">{{values[key]}}</td>
+                <tr *ngFor="let item of values | keyvalue">
+                    <td class="left">{{item?.key}}</td>
+                    <td class="left">{{item?.value}}</td>
                 </tr>
             </tbody>
         </table>

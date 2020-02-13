@@ -1,8 +1,8 @@
 import { HelmChartMaintainer } from "../../../../app/project/helm-chart/helm-chart.interface.service";
 
 export class ArtifactBuildHistory {
-    createdTime: Date;
-    createdBy: string;
+    created: Date;
+    created_by: string;
 }
 export interface ArtifactDependency {
     name: string;
@@ -31,22 +31,11 @@ export interface Addition {
     data?: object;
 }
 
-export const ADDITIONS = {
-    BUILD_HISTORY: {
-        i18nKey: 'ARTIFACT.BUILD_HISTORY',
-        type: 'json'
-    },
-    SUMMARY: {
-        i18nKey: 'ARTIFACT.SUMMARY',
-        type: 'markdown'
-    },
-    DEPENDENCIES: {
-        i18nKey: 'ARTIFACT.DEPENDENCIES',
-        type: 'yaml'
-    },
-    VALUES: {
-        i18nKey: 'ARTIFACT.VALUES',
-        type: 'yaml'
-    }
-};
+export enum ADDITIONS  {
+    VULNERABILITIES = 'vulnerabilities',
+    BUILD_HISTORY = 'build_history',
+    SUMMARY = 'readme',
+    VALUES = 'values.yaml',
+    DEPENDENCIES = 'dependencies'
+}
 

@@ -5,6 +5,7 @@ import {
 } from "@angular/core";
 import { ErrorHandler } from "../../../../utils/error-handler";
 import { AdditionsService } from "../additions.service";
+import { AdditionLink } from "../../../../../../ng-swagger-gen/models/addition-link";
 
 @Component({
   selector: "hbr-artifact-values",
@@ -13,7 +14,7 @@ import { AdditionsService } from "../additions.service";
 })
 export class ValuesComponent implements OnInit {
   @Input()
-  valuesLink: string;
+  valuesLink: AdditionLink;
 
   values: any = {
     "adminserver.image.pullPolicy": "IfNotPresent",
@@ -155,8 +156,8 @@ export class ValuesComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    if (this.valuesLink) {
-      this.additionsService.getDetailByLink(this.valuesLink).subscribe(
+    if (this.valuesLink && !this.valuesLink.absolute && this.valuesLink.href) {
+      this.additionsService.getDetailByLink(this.valuesLink.href).subscribe(
         res => {
           this.values = res;
           this.yaml = JSON.stringify(res);
