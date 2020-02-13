@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { TagDetailPageComponent } from './tag-detail-page.component';
+import { ArtifactSummaryPageComponent } from './artifact-summary-page.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ClarityModule } from '@clr/angular';
@@ -12,9 +12,9 @@ import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { ActivatedRoute, Router } from '@angular/router';
 import {AppConfigService} from "../../app-config.service";
 import { SessionService } from '../../shared/session.service';
-describe('TagDetailPageComponent', () => {
-    let component: TagDetailPageComponent;
-    let fixture: ComponentFixture<TagDetailPageComponent>;
+describe('ArtifactSummaryPageComponent', () => {
+    let component: ArtifactSummaryPageComponent;
+    let fixture: ComponentFixture<ArtifactSummaryPageComponent>;
     const mockSessionService = {
         getCurrentUser: () => { }
     };
@@ -68,7 +68,7 @@ describe('TagDetailPageComponent', () => {
                 NoopAnimationsModule,
                 HttpClientTestingModule
             ],
-            declarations: [TagDetailPageComponent],
+            declarations: [ArtifactSummaryPageComponent],
             providers: [
                 TranslateService,
                 { provide: SessionService, useValue: mockSessionService },
@@ -81,7 +81,7 @@ describe('TagDetailPageComponent', () => {
     }));
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(TagDetailPageComponent);
+        fixture = TestBed.createComponent(ArtifactSummaryPageComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });

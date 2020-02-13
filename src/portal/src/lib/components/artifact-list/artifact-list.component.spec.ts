@@ -1,19 +1,18 @@
 import { ComponentFixture, TestBed, async, } from '@angular/core/testing';
-import { DebugElement} from '@angular/core';
+import { DebugElement } from '@angular/core';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SharedModule } from '../../utils/shared/shared.module';
 import { ConfirmationDialogComponent } from '../confirmation-dialog';
 import { ImageNameInputComponent } from "../image-name-input/image-name-input.component";
-import { RepositoryComponent } from './repository.component';
+import { ArtifactListComponent } from './artifact-list.component';
 import { GridViewComponent } from '../gridview/grid-view.component';
 import { FilterComponent } from '../filter/filter.component';
 import { ArtifactListTabComponent } from '../artifact/artifact-list-tab.component';
 import { ErrorHandler } from '../../utils/error-handler';
-import { Repository, RepositoryItem, Tag, SystemInfo, Label } from '../../services';
+import { Repository, RepositoryItem, Tag, SystemInfo, Label, ArtifactService, ArtifactDefaultService } from '../../services';
 import { SERVICE_CONFIG, IServiceConfig } from '../../entities/service.config';
 import { RepositoryService, RepositoryDefaultService } from '../../services';
 import { SystemInfoService, SystemInfoDefaultService } from '../../services';
-import { TagService, TagDefaultService } from '../../services';
 import { LabelPieceComponent } from "../label-piece/label-piece.component";
 import { LabelDefaultService, LabelService } from "../../services";
 import { OperationService } from "../operation/operation.service";
@@ -34,18 +33,14 @@ import { HarborLibraryModule } from "../../harbor-library.module";
 import { Artifact, Reference } from '../artifact/artifact';
 
 
-class RouterStub {
-  navigateByUrl(url: string) { return url; }
-}
+describe('ArtifactListComponent (inline template)', () => {
 
-describe('RepositoryComponent (inline template)', () => {
-
-  let compRepo: RepositoryComponent;
-  let fixture: ComponentFixture<RepositoryComponent>;
+  let compRepo: ArtifactListComponent;
+  let fixture: ComponentFixture<ArtifactListComponent>;
   let repositoryService: RepositoryService;
   let systemInfoService: SystemInfoService;
   let userPermissionService: UserPermissionService;
-  let tagService: TagService;
+  let artifactService: ArtifactService;
   let labelService: LabelService;
 
   let spyRepos: jasmine.Spy;
@@ -53,7 +48,12 @@ describe('RepositoryComponent (inline template)', () => {
   let spySystemInfo: jasmine.Spy;
   let spyLabels: jasmine.Spy;
   let spyLabels1: jasmine.Spy;
-
+  let mockPojectService = {
+    getProject: () => of({ name: "library" })
+  };
+  let mockChannelService = {
+    scanCommand$: of(1)
+  };
   let mockSystemInfo: SystemInfo = {
     'with_notary': true,
     'with_admiral': false,
@@ -88,11 +88,11 @@ describe('RepositoryComponent (inline template)', () => {
   ];
 
   let mockRepo: Repository = {
-    metadata: {xTotalCount: 2},
+    metadata: { xTotalCount: 2 },
     data: mockRepoData
   };
 
-  let mockTagData: Artifact[] = [
+  let mockArtifactData: Artifact[] = [
     {
       "id": 1,
       type: 'image',
@@ -102,13 +102,13 @@ describe('RepositoryComponent (inline template)', () => {
         artifact_id: 1,
         name: 'tag1',
         upload_time: '2020-01-06T09:40:08.036866579Z',
-    },
-    {
+      },
+      {
         id: '2',
         artifact_id: 2,
         name: 'tag2',
         upload_time: '2020-01-06T09:40:08.036866579Z',
-    },],
+      },],
       references: [new Reference(1), new Reference(2)],
       media_type: 'string',
       "digest": "sha256:4875cda368906fd670c9629b5e416ab3d6c0292015f3c3f12ef37dc9a32fc8d4",
@@ -153,7 +153,7 @@ describe('RepositoryComponent (inline template)', () => {
       hasReferenceArtifactList: [],
       noReferenceArtifactList: []
 
-  }
+    }
   ];
 
   let mockLabels: Label[] = [{
@@ -166,16 +166,16 @@ describe('RepositoryComponent (inline template)', () => {
     scope: "p",
     update_time: "",
   },
-    {
-      color: "#9b0d54",
-      creation_time: "",
-      description: "",
-      id: 2,
-      name: "label1-g",
-      project_id: 0,
-      scope: "g",
-      update_time: "",
-    }];
+  {
+    color: "#9b0d54",
+    creation_time: "",
+    description: "",
+    id: 2,
+    name: "label1-g",
+    project_id: 0,
+    scope: "g",
+    update_time: "",
+  }];
 
   let mockLabels1: Label[] = [{
     color: "#9b0d54",
@@ -187,16 +187,16 @@ describe('RepositoryComponent (inline template)', () => {
     scope: "p",
     update_time: "",
   },
-    {
-      color: "#9b0d54",
-      creation_time: "",
-      description: "",
-      id: 2,
-      name: "label1-g",
-      project_id: 1,
-      scope: "p",
-      update_time: "",
-    }];
+  {
+    color: "#9b0d54",
+    creation_time: "",
+    description: "",
+    id: 2,
+    name: "label1-g",
+    project_id: 1,
+    scope: "p",
+    update_time: "",
+  }];
 
   let config: IServiceConfig = {
     repositoryBaseEndpoint: '/api/repository/testing',
@@ -213,10 +213,10 @@ describe('RepositoryComponent (inline template)', () => {
     }
   };
   const permissions = [
-    {resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE},
-    {resource: USERSTATICPERMISSION.REPOSITORY.KEY, action:  USERSTATICPERMISSION.REPOSITORY.VALUE.PULL},
-    {resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE},
-    {resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE},
+    { resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE },
+    { resource: USERSTATICPERMISSION.REPOSITORY.KEY, action: USERSTATICPERMISSION.REPOSITORY.VALUE.PULL },
+    { resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE },
+    { resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE },
   ];
   beforeEach(async(() => {
     TestBed.configureTestingModule({
@@ -230,13 +230,13 @@ describe('RepositoryComponent (inline template)', () => {
         ErrorHandler,
         { provide: SERVICE_CONFIG, useValue: config },
         { provide: RepositoryService, useClass: RepositoryDefaultService },
+        { provide: ChannelService, useValue: mockChannelService },
         { provide: SystemInfoService, useClass: SystemInfoDefaultService },
-        { provide: TagService, useClass: TagDefaultService },
-        { provide: ProjectService, useClass: ProjectDefaultService },
+        { provide: ArtifactService, useClass: ArtifactDefaultService },
+        { provide: ProjectService, useValue: mockPojectService },
         { provide: RetagService, useClass: RetagDefaultService },
-        { provide: LabelService, useClass: LabelDefaultService},
-        { provide: UserPermissionService, useClass: UserPermissionDefaultService},
-        { provide: ChannelService},
+        { provide: LabelService, useClass: LabelDefaultService },
+        { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         { provide: OperationService },
         { provide: ScanningResultService, useValue: fakedScanningResultService }
       ]
@@ -244,7 +244,7 @@ describe('RepositoryComponent (inline template)', () => {
   }));
 
   beforeEach(() => {
-    fixture = TestBed.createComponent(RepositoryComponent);
+    fixture = TestBed.createComponent(ArtifactListComponent);
 
     compRepo = fixture.componentInstance;
 
@@ -253,20 +253,20 @@ describe('RepositoryComponent (inline template)', () => {
     compRepo.repoName = 'library/nginx';
     repositoryService = fixture.debugElement.injector.get(RepositoryService);
     systemInfoService = fixture.debugElement.injector.get(SystemInfoService);
-    tagService = fixture.debugElement.injector.get(TagService);
+    artifactService = fixture.debugElement.injector.get(ArtifactService);
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
     labelService = fixture.debugElement.injector.get(LabelService);
 
     spyRepos = spyOn(repositoryService, 'getRepositories').and.returnValues(of(mockRepo).pipe(delay(0)));
     spySystemInfo = spyOn(systemInfoService, 'getSystemInfo').and.returnValues(of(mockSystemInfo).pipe(delay(0)));
-    spyTags = spyOn(tagService, 'getTags').and.returnValues(of(mockTagData).pipe(delay(0)));
-
+    spyTags = spyOn(artifactService, 'TriggerArtifactChan$').and.returnValues(of('repoName').pipe(delay(0)));
+    spyTags = spyOn(artifactService, 'getArtifactList').and.returnValues(of(mockArtifactData).pipe(delay(0)));
     spyLabels = spyOn(labelService, 'getGLabels').and.returnValues(of(mockLabels).pipe(delay(0)));
     spyLabels1 = spyOn(labelService, 'getPLabels').and.returnValues(of(mockLabels1).pipe(delay(0)));
     spyOn(userPermissionService, "hasProjectPermissions")
-    .withArgs(compRepo.projectId, permissions )
-    .and.returnValue(of([mockHasAddLabelImagePermission, mockHasRetagImagePermission,
-       mockHasDeleteImagePermission, mockHasScanImagePermission]));
+      .withArgs(compRepo.projectId, permissions)
+      .and.returnValue(of([mockHasAddLabelImagePermission, mockHasRetagImagePermission,
+        mockHasDeleteImagePermission, mockHasScanImagePermission]));
     fixture.detectChanges();
   });
   let originalTimeout;
@@ -288,11 +288,12 @@ describe('RepositoryComponent (inline template)', () => {
     fixture.whenStable().then(() => {
       fixture.detectChanges();
       let de: DebugElement = fixture.debugElement.query(del => del.classes['datagrid-cell']);
+      //  de = fixture.debugElement.query(By.css('datagrid-cell'));
       fixture.detectChanges();
       expect(de).toBeTruthy();
       let el: HTMLElement = de.nativeElement;
       expect(el).toBeTruthy();
-      expect(el.textContent).toEqual('1.11.5');
+      expect(el.textContent.trim()).toEqual('sha256:4875cda3');
     });
   }));
 });

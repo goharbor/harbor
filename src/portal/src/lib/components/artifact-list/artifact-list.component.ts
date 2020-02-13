@@ -17,30 +17,27 @@ import { State } from '../../services/interface';
 
 import { RepositoryService } from '../../services/repository.service';
 import {
-  Repository, RepositoryItem, Tag, ArtifactClickEvent,
-  SystemInfo, SystemInfoService, TagService, ArtifactService
+  RepositoryItem, ArtifactClickEvent,
+  SystemInfo, SystemInfoService, ArtifactService
 } from '../../services';
 import { ErrorHandler } from '../../utils/error-handler';
 import { ConfirmationState, ConfirmationTargets } from '../../entities/shared.const';
 import { ConfirmationDialogComponent, ConfirmationMessage, ConfirmationAcknowledgement } from '../confirmation-dialog';
-import { map, catchError } from "rxjs/operators";
-import { Observable, throwError as observableThrowError } from "rxjs";
 const TabLinkContentMap: { [index: string]: string } = {
   'repo-info': 'info',
   'repo-image': 'image'
 };
 
 @Component({
-  selector: 'hbr-repository',
-  templateUrl: './repository.component.html',
-  styleUrls: ['./repository.component.scss']
+  selector: 'artifact-list',
+  templateUrl: './artifact-list.component.html',
+  styleUrls: ['./artifact-list.component.scss']
 })
-export class RepositoryComponent implements OnInit, OnDestroy {
+export class ArtifactListComponent implements OnInit, OnDestroy {
   signedCon: { [key: string]: any | string[] } = {};
   @Input() projectId: number;
   @Input() memberRoleID: number;
   @Input() repoName: string;
-  // @Input() referArtifactName: string;
   @Input() hasSignedIn: boolean;
   @Input() hasProjectAdminRole: boolean;
   @Input() isGuest: boolean;
@@ -67,7 +64,6 @@ export class RepositoryComponent implements OnInit, OnDestroy {
     private errorHandler: ErrorHandler,
     private repositoryService: RepositoryService,
     private systemInfoService: SystemInfoService,
-    private tagService: TagService,
     private artifactService: ArtifactService,
     private translate: TranslateService,
   ) { }
@@ -142,20 +138,20 @@ export class RepositoryComponent implements OnInit, OnDestroy {
     this.currentTabID = tabID;
   }
 
-  getTagInfo(repoName: string): Observable<void> {
-    // this.signedNameArr = [];
-    this.signedCon[repoName] = [];
-    return this.tagService
-      .getTags(repoName)
-      .pipe(map(items => {
-        items.forEach((t: any) => {
-          if (t.signature !== null) {
-            this.signedCon[repoName].push(t.name);
-          }
-        });
-      })
-        , catchError(error => observableThrowError(error)));
-  }
+  // getTagInfo(repoName: string): Observable<void> {
+  //   // this.signedNameArr = [];
+  //   this.signedCon[repoName] = [];
+  //   return this.tagService
+  //     .getTags(repoName)
+  //     .pipe(map(items => {
+  //       items.forEach((t: any) => {
+  //         if (t.signature !== null) {
+  //           this.signedCon[repoName].push(t.name);
+  //         }
+  //       });
+  //     })
+  //       , catchError(error => observableThrowError(error)));
+  // }
 
   goBack(): void {
     this.backEvt.emit(this.projectId);

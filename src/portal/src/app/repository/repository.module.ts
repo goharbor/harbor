@@ -17,9 +17,9 @@ import { RouterModule } from '@angular/router';
 import { SharedModule } from '../shared/shared.module';
 
 import { RepositoryPageComponent } from './repository-page.component';
-import { TagRepositoryComponent } from './tag-repository/tag-repository.component';
+import { ArtifactListPageComponent } from './artifact-list-page/artifact-list-page.component';
 import { TopRepoComponent } from './top-repo/top-repo.component';
-import { TagDetailPageComponent } from './tag-detail/tag-detail-page.component';
+import { ArtifactSummaryPageComponent } from './artifact-summary-page/artifact-summary-page.component';
 
 @NgModule({
   imports: [
@@ -28,14 +28,14 @@ import { TagDetailPageComponent } from './tag-detail/tag-detail-page.component';
   ],
   declarations: [
     RepositoryPageComponent,
-    TagRepositoryComponent,
+    ArtifactListPageComponent,
     TopRepoComponent,
-    TagDetailPageComponent
+    ArtifactSummaryPageComponent
   ],
   exports: [
     RepositoryPageComponent,
     TopRepoComponent,
-    TagDetailPageComponent
+    ArtifactSummaryPageComponent
   ],
   providers: []
 })

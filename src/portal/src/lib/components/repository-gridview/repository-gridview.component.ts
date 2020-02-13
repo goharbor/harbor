@@ -42,6 +42,7 @@ import { Observable, throwError as observableThrowError } from "rxjs";
 import { errorHandler as errorHandFn } from "../../utils/shared/shared.utils";
 import { ClrDatagridStateInterface } from "@clr/angular";
 import { FilterComponent } from "../filter/filter.component";
+import { RepositoryService as NewRepositoryService} from "../../../../ng-swagger-gen/services/repository.service";
 @Component({
     selector: "hbr-repository-gridview",
     templateUrl: "./repository-gridview.component.html",
@@ -89,6 +90,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         private errorHandler: ErrorHandler,
         private translateService: TranslateService,
         private repositoryService: RepositoryService,
+        private newRepoService: NewRepositoryService,
         private systemInfoService: SystemInfoService,
         private tagService: TagService,
         private operationService: OperationService,
@@ -169,11 +171,12 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         let repArr: any[] = [];
         message.data.forEach(repo => {
             if (!this.signedCon[repo.name]) {
-                repArr.push(this.getTagInfo(repo.name));
+                // to do
+                // repArr.push(this.getTagInfo(repo.name));
             }
         });
         this.loading = true;
-        forkJoin(...repArr).subscribe(() => {
+        // forkJoin(...repArr).subscribe(() => {
             if (message &&
                 message.source === ConfirmationTargets.REPOSITORY &&
                 message.state === ConfirmationState.CONFIRMED) {
@@ -199,10 +202,10 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
                     });
                 }
             }
-        }, error => {
-            this.errorHandler.error(error);
-            this.loading = false;
-        });
+        // }, error => {
+        //     this.errorHandler.error(error);
+        //     this.loading = false;
+        // });
     }
 
     delOperate(repo: RepositoryItem): Observable<any> {
@@ -214,14 +217,16 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         operMessage.data.name = repo.name;
         this.operationService.publishInfo(operMessage);
 
-        if (this.signedCon[repo.name].length !== 0) {
-            return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-                this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED')).pipe(map(res => {
-                    operateChanges(operMessage, OperationState.failure, res[1]);
-                }));
-        } else {
-            return this.repositoryService
-                .deleteRepository(repo.name)
+        // if (this.signedCon[repo.name].length !== 0) {
+        //     return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
+        //         this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED')).pipe(map(res => {
+        //             operateChanges(operMessage, OperationState.failure, res[1]);
+        //         }));
+        // } else {
+            return this.newRepoService
+                .deleteRepository({
+                    repositoryName: repo.name,
+                    projectName: this.projectName})
                 .pipe(map(
                     response => {
                         this.translateService.get('BATCH.DELETED_SUCCESS').subscribe(res => {
@@ -234,7 +239,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
                         );
                         return observableThrowError(message);
                     }));
-        }
+        // }
     }
 
     doSearchRepoNames(repoName: string) {
@@ -269,19 +274,19 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
                 ConfirmationButtons.DELETE_CANCEL);
         }
     }
-    // to do  component cannot find user
-    getTagInfo(repoName: string): Observable<void> {
-        this.signedCon[repoName] = [];
-        return this.tagService.getTags(repoName)
-            .pipe(map(items => {
-                items.forEach((t: any) => {
-                    if (t.signature !== null) {
-                        this.signedCon[repoName].push(t.name);
-                    }
-                });
-            })
-                , catchError(error => observableThrowError(error)));
-    }
+    // to do  delete when  user sign
+    // getTagInfo(repoName: string): Observable<void> {
+    //     this.signedCon[repoName] = [];
+    //     return this.tagService.getTags(repoName)
+    //         .pipe(map(items => {
+    //             items.forEach((t: any) => {
+    //                 if (t.signature !== null) {
+    //                     this.signedCon[repoName].push(t.name);
+    //                 }
+    //             });
+    //         })
+    //             , catchError(error => observableThrowError(error)));
+    // }
 
     confirmationDialogSet(summaryTitle: string, signature: string,
         repoName: string, repoLists: RepositoryItem[],
@@ -305,35 +310,35 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
             });
     }
 
-    containsLatestTag(repo: RepositoryItem): Observable<boolean> {
-        return this.tagService.getTags(repo.name)
-            .pipe(map(items => {
-                if (items.some((t: Tag) => {
-                    return t.name === 'latest';
-                })) {
-                    return true;
-                } else {
-                    return false;
-                }
+    // containsLatestTag(repo: RepositoryItem): Observable<boolean> {
+    //     return this.tagService.getTags(repo.name)
+    //         .pipe(map(items => {
+    //             if (items.some((t: Tag) => {
+    //                 return t.name === 'latest';
+    //             })) {
+    //                 return true;
+    //             } else {
+    //                 return false;
+    //             }
 
-            })
-                , catchError(error => observableThrowError(false)));
-    }
+    //         })
+    //             , catchError(error => observableThrowError(false)));
+    // }
 
-    provisionItemEvent(evt: any, repo: RepositoryItem): void {
-        evt.stopPropagation();
-        let repoCopy = clone(repo);
-        repoCopy.name = this.registryUrl + ":443/" + repoCopy.name;
-        this.containsLatestTag(repo)
-            .subscribe(containsLatest => {
-                if (containsLatest) {
-                    this.repoProvisionEvent.emit(repoCopy);
-                } else {
-                    this.addInfoEvent.emit(repoCopy);
-                }
-            }, error => this.errorHandler.error(error));
+    // provisionItemEvent(evt: any, repo: RepositoryItem): void {
+    //     evt.stopPropagation();
+    //     let repoCopy = clone(repo);
+    //     repoCopy.name = this.registryUrl + ":443/" + repoCopy.name;
+    //     this.containsLatestTag(repo)
+    //         .subscribe(containsLatest => {
+    //             if (containsLatest) {
+    //                 this.repoProvisionEvent.emit(repoCopy);
+    //             } else {
+    //                 this.addInfoEvent.emit(repoCopy);
+    //             }
+    //         }, error => this.errorHandler.error(error));
 
-    }
+    // }
 
     itemAddInfoEvent(evt: any, repo: RepositoryItem): void {
         evt.stopPropagation();

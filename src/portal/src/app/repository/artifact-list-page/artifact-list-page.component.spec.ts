@@ -1,6 +1,6 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
-import { TagRepositoryComponent } from './tag-repository.component';
+import { ArtifactListPageComponent } from './artifact-list-page.component';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { BrowserAnimationsModule, NoopAnimationsModule } from '@angular/platform-browser/animations';
 import { ClarityModule } from '@clr/angular';
@@ -12,9 +12,10 @@ import { ActivatedRoute, Router } from '@angular/router';
 
 import { AppConfigService } from '../../app-config.service';
 import { SessionService } from '../../shared/session.service';
-describe('TagRepositoryComponent', () => {
-    let component: TagRepositoryComponent;
-    let fixture: ComponentFixture<TagRepositoryComponent>;
+import { ArtifactService } from '../../../lib/services';
+describe('ArtifactListPageComponent', () => {
+    let component: ArtifactListPageComponent;
+    let fixture: ComponentFixture<ArtifactListPageComponent>;
     const mockSessionService = {
         getCurrentUser: () => { }
     };
@@ -32,6 +33,11 @@ describe('TagRepositoryComponent', () => {
     };
     const mockRouter = {
         navigate: () => { }
+    };
+    const mockArtifactService = {
+        triggerUploadArtifact: {
+            next: () => {}
+        }
     };
     const mockActivatedRoute = {
         RouterparamMap: of({ get: (key) => 'value' }),
@@ -69,20 +75,21 @@ describe('TagRepositoryComponent', () => {
                 NoopAnimationsModule,
                 HttpClientTestingModule
             ],
-            declarations: [TagRepositoryComponent],
+            declarations: [ArtifactListPageComponent],
             providers: [
                 TranslateService,
                 { provide: SessionService, useValue: mockSessionService },
                 { provide: AppConfigService, useValue: mockAppConfigService },
                 { provide: Router, useValue: mockRouter },
                 { provide: ActivatedRoute, useValue: mockActivatedRoute },
+                { provide: ArtifactService, useValue: mockArtifactService },
             ]
         })
             .compileComponents();
     }));
 
     beforeEach(() => {
-        fixture = TestBed.createComponent(TagRepositoryComponent);
+        fixture = TestBed.createComponent(ArtifactListPageComponent);
         component = fixture.componentInstance;
         fixture.detectChanges();
     });

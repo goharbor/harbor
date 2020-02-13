@@ -1,7 +1,8 @@
 
 import { Component, OnInit, Input, OnChanges, SimpleChanges, ViewChild, Output, EventEmitter } from '@angular/core';
 import { Artifact } from '../artifact';
-import { Tag, TagService } from '../../../services';
+import { TagService } from '../../../services';
+import { Tag } from '../../../../../ng-swagger-gen/models/tag';
 import { ConfirmationButtons, ConfirmationTargets, ConfirmationState } from '../../../entities/shared.const';
 import { ConfirmationMessage, ConfirmationDialogComponent, ConfirmationAcknowledgement } from '../../confirmation-dialog';
 import { Observable, of, forkJoin } from 'rxjs';
@@ -11,6 +12,7 @@ import { map, catchError } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
 // import { ConfirmationTargets } from 'src/app/shared/shared.const';
 import { errorHandler as errorHandFn } from "../../../utils/shared/shared.utils";
+import { NgForm } from '@angular/forms';
 @Component({
   selector: 'artifact-tag',
   templateUrl: './artifact-tag.component.html',
@@ -25,6 +27,8 @@ export class ArtifactTagComponent implements OnInit, OnChanges {
   newTagName = {
     name: ''
   };
+  newTagForm: NgForm;
+  @ViewChild("newTagForm", { static: true }) currentForm: NgForm;
   selectedRow: Tag[] = [];
   isTagNameExist = false;
   newTagformShow = false;
@@ -56,9 +60,14 @@ export class ArtifactTagComponent implements OnInit, OnChanges {
     this.newTagName = { name: '' };
   }
   saveAddTag() {
-    // api
-    this.newTagformShow = false;
-    this.newTagName = { name: '' };
+    // console.log(this.newTagName);
+    this.tagService.newTag(this.projectName, this.repositoryName, this.artifactDetails.digest, this.newTagName).subscribe(res => {
+      this.newTagformShow = false;
+      this.newTagName = { name: '' };
+      this.refreshArtifact.emit();
+    });
+    // this.newTagformShow = false;
+    // this.newTagName = { name: '' };
   }
   removeTag() {
     if (this.selectedRow && this.selectedRow.length) {
@@ -66,20 +75,20 @@ export class ArtifactTagComponent implements OnInit, OnChanges {
       this.selectedRow.forEach(artifact => {
         tagNames.push(artifact.name);
       });
-    let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;
-    titleKey = "REPOSITORY.DELETION_TITLE_TAG";
-    summaryKey = "REPOSITORY.DELETION_SUMMARY_TAG";
-    buttons = ConfirmationButtons.DELETE_CANCEL;
-    content = tagNames.join(" , ");
+      let titleKey: string, summaryKey: string, content: string, buttons: ConfirmationButtons;
+      titleKey = "REPOSITORY.DELETION_TITLE_TAG";
+      summaryKey = "REPOSITORY.DELETION_SUMMARY_TAG";
+      buttons = ConfirmationButtons.DELETE_CANCEL;
+      content = tagNames.join(" , ");
 
-    let message = new ConfirmationMessage(
-      titleKey,
-      summaryKey,
-      content,
-      this.selectedRow,
-      ConfirmationTargets.TAG,
-      buttons);
-    this.confirmationDialog.open(message);
+      let message = new ConfirmationMessage(
+        titleKey,
+        summaryKey,
+        content,
+        this.selectedRow,
+        ConfirmationTargets.TAG,
+        buttons);
+      this.confirmationDialog.open(message);
     }
   }
   confirmDeletion(message: ConfirmationAcknowledgement) {
@@ -108,7 +117,7 @@ export class ArtifactTagComponent implements OnInit, OnChanges {
       && message.state === ConfirmationState.CONFIRMED) {
       this.delOperate(message.data).subscribe(res => {
         this.refreshArtifact.emit();
-      })
+      });
 
     }
   }
@@ -139,7 +148,12 @@ export class ArtifactTagComponent implements OnInit, OnChanges {
   }
 
   existValid(name) {
-
+    this.isTagNameExist = false;
+    this.artifactDetails.tags.forEach(tag => {
+      if (tag.name === name) {
+        this.isTagNameExist = true;
+      }
+    });
   }
   toggleTagListOpenOrClose() {
     this.openTag = !this.openTag;

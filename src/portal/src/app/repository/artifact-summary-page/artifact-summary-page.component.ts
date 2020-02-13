@@ -18,11 +18,11 @@ import { SessionService } from '../../shared/session.service';
 import { ArtifactService } from '../../../lib/services';
 
 @Component({
-  selector: 'repository',
-  templateUrl: 'tag-detail-page.component.html',
-  styleUrls: ["tag-detail-page.component.scss"]
+  selector: 'artifact-summary-page',
+  templateUrl: 'artifact-summary-page.component.html',
+  styleUrls: ["artifact-summary-page.component.scss"]
 })
-export class TagDetailPageComponent implements OnInit, OnDestroy {
+export class ArtifactSummaryPageComponent implements OnInit, OnDestroy {
   tagId: string;
   artifactDigest: string;
   repositoryName: string;
