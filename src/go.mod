@@ -24,6 +24,7 @@ require (
 	github.com/cenkalti/backoff v2.1.1+incompatible // indirect
 	github.com/cloudflare/cfssl v0.0.0-20190510060611-9c027c93ba9e // indirect
 	github.com/coreos/go-oidc v2.0.0+incompatible
+	github.com/cyphar/filepath-securejoin v0.2.2 // indirect
 	github.com/dghubble/sling v1.1.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/docker/distribution v2.7.1+incompatible
@@ -84,5 +85,5 @@ require (
 	k8s.io/api v0.0.0-20190222213804-5cb15d344471
 	k8s.io/apimachinery v0.0.0-20180704011316-f534d624797b
 	k8s.io/client-go v8.0.0+incompatible
-	k8s.io/helm v2.9.1+incompatible
+	k8s.io/helm v2.16.1+incompatible
 )

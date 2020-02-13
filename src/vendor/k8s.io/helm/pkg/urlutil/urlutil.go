@@ -1,5 +1,5 @@
 /*
-Copyright 2016 The Kubernetes Authors All rights reserved.
+Copyright The Helm Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ func ExtractHostname(addr string) (string, error) {
 	return stripPort(u.Host), nil
 }
 
-// Backported from Go 1.8 because Circle is still on 1.7
+// stripPort from Go 1.8 because Circle is still on 1.7
 func stripPort(hostport string) string {
 	colon := strings.IndexByte(hostport, ':')
 	if colon == -1 {

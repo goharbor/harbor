@@ -21,7 +21,9 @@ import (
 	resolv "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
+	"github.com/goharbor/harbor/src/pkg/chart"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
@@ -31,7 +33,7 @@ const (
 	// ArtifactTypeChart defines the artifact type for helm chart
 	ArtifactTypeChart        = "CHART"
 	AdditionTypeValues       = "VALUES.YAML"
-	AdditionTypeReadme       = "README"
+	AdditionTypeReadme       = "README.MD"
 	AdditionTypeDependencies = "DEPENDENCIES"
 	// TODO import it from helm chart repository
 	mediaType = "application/vnd.cncf.helm.config.v1+json"
@@ -39,8 +41,9 @@ const (
 
 func init() {
 	resolver := &resolver{
-		repoMgr:     repository.Mgr,
-		blobFetcher: blob.Fcher,
+		repoMgr:       repository.Mgr,
+		blobFetcher:   blob.Fcher,
+		chartOperator: chart.Optr,
 	}
 	if err := resolv.Register(resolver, mediaType); err != nil {
 		log.Errorf("failed to register resolver for media type %s: %v", mediaType, err)
@@ -53,8 +56,9 @@ func init() {
 }
 
 type resolver struct {
-	repoMgr     repository.Manager
-	blobFetcher blob.Fetcher
+	repoMgr       repository.Manager
+	blobFetcher   blob.Fetcher
+	chartOperator chart.Operator
 }
 
 func (r *resolver) ResolveMetadata(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
@@ -86,7 +90,61 @@ func (r *resolver) ResolveMetadata(ctx context.Context, manifest []byte, artifac
 }
 
 func (r *resolver) ResolveAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*resolv.Addition, error) {
-	// TODO implement
+	if addition != AdditionTypeValues && addition != AdditionTypeReadme && addition != AdditionTypeDependencies {
+		return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
+			WithMessage("addition %s isn't supported for %s", addition, ArtifactTypeChart)
+	}
+
+	repository, err := r.repoMgr.Get(ctx, artifact.RepositoryID)
+	if err != nil {
+		return nil, err
+	}
+	_, content, err := r.blobFetcher.FetchManifest(repository.Name, artifact.Digest)
+	if err != nil {
+		return nil, err
+	}
+	manifest := &v1.Manifest{}
+	if err := json.Unmarshal(content, manifest); err != nil {
+		return nil, err
+	}
+
+	for _, layer := range manifest.Layers {
+		// chart do have two layers, one is config, we should resolve the other one.
+		layerDgst := layer.Digest.String()
+		if layerDgst != manifest.Config.Digest.String() {
+			content, err = r.blobFetcher.FetchLayer(repository.Name, layerDgst)
+			if err != nil {
+				return nil, err
+			}
+			chartDetails, err := r.chartOperator.GetDetails(content)
+			if err != nil {
+				return nil, err
+			}
+
+			var additionContent []byte
+			var additionContentType string
+
+			switch addition {
+			case AdditionTypeValues:
+				additionContent = []byte(chartDetails.Files[AdditionTypeValues])
+				additionContentType = "text/plain; charset=utf-8"
+			case AdditionTypeReadme:
+				additionContent = []byte(chartDetails.Files[AdditionTypeReadme])
+				additionContentType = "text/markdown; charset=utf-8"
+			case AdditionTypeDependencies:
+				additionContent, err = json.Marshal(chartDetails.Dependencies)
+				if err != nil {
+					return nil, err
+				}
+				additionContentType = "application/json; charset=utf-8"
+			}
+
+			return &resolv.Addition{
+				Content:     additionContent,
+				ContentType: additionContentType,
+			}, nil
+		}
+	}
 	return nil, nil
 }
 
