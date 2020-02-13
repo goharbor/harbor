@@ -45,6 +45,7 @@ import { LabelsComponent } from './labels/labels.component';
 import { ProjectQuotasComponent } from './project-quotas/project-quotas.component';
 import { HarborLibraryModule } from "../lib/harbor-library.module";
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { BaseHrefInterceptService } from "./base-href-intercept.service";
 
 registerLocaleData(zh, 'zh-cn');
 registerLocaleData(es, 'es-es');
@@ -98,6 +99,7 @@ export function getCurrentLanguage(translateService: TranslateService) {
             multi: true
         },
         { provide: LOCALE_ID, useValue: "en-US" },
+        { provide: HTTP_INTERCEPTORS, useClass: BaseHrefInterceptService, multi: true },
         { provide: HTTP_INTERCEPTORS, useClass: InterceptHttpService, multi: true }
 
     ],
