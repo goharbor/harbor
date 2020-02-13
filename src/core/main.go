@@ -209,7 +209,7 @@ func main() {
 	}
 
 	if config.WithTrivy() {
-		log.Info("Registering Trivy scanner adapter")
+		log.Debug("Registering Trivy scanner")
 		reg := &scanner.Registration{
 			Name:            "Trivy",
 			Description:     "The Trivy scanner adapter",
@@ -218,12 +218,18 @@ func main() {
 			Immutable:       true,
 		}
 		if err := scan.EnsureScanner(reg, true); err != nil {
-			log.Fatalf("failed to initialize Trivy scanner: %v", err)
+			log.Fatalf("failed to register Trivy scanner: %v", err)
+		}
+	}
+
+	if !config.WithTrivy() {
+		log.Debug("Removing Trivy scanner")
+		if err := scan.RemoveImmutableScanner(config.TrivyAdapterURL()); err != nil {
+			log.Warningf("failed to remove Trivy scanner: %v", err)
 		}
 	}
 
 	if config.WithClair() {
-		log.Info("Registering Clair scanner adapter")
 		clairDB, err := config.ClairDB()
 		if err != nil {
 			log.Fatalf("failed to load clair database information: %v", err)
@@ -232,6 +238,7 @@ func main() {
 			log.Fatalf("failed to initialize clair database: %v", err)
 		}
 
+		log.Debug("Registering Clair scanner")
 		reg := &scanner.Registration{
 			Name:            "Clair",
 			Description:     "The clair scanner adapter",
@@ -241,14 +248,16 @@ func main() {
 		}
 
 		if err := scan.EnsureScanner(reg, true); err != nil {
-			log.Fatalf("failed to initialize clair scanner: %v", err)
+			log.Fatalf("failed to register Clair scanner: %v", err)
 		}
 	}
-	//} else {
-	//	if err := scan.RemoveImmutableScanners(); err != nil {
-	//		log.Warningf("failed to remove immutable scanners: %v", err)
-	//	}
-	//}
+
+	if !config.WithClair() {
+		log.Debug("Removing Clair scanner")
+		if err := scan.RemoveImmutableScanner(config.ClairAdapterEndpoint()); err != nil {
+			log.Warningf("failed to remove Clair scanners: %v", err)
+		}
+	}
 
 	closing := make(chan struct{})
 	done := make(chan struct{})

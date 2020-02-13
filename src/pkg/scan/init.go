@@ -86,13 +86,16 @@ func EnsureScanner(registration *scanner.Registration, resolveConflicts ...bool)
 	return err
 }
 
-// RemoveImmutableScanners remove all immutable scanners in the system
-func RemoveImmutableScanners() error {
-	q := &q.Query{
-		Keywords: map[string]interface{}{"immutable": true},
+// RemoveImmutableScanner removes an immutable scanner with the specified endpoint URL.
+func RemoveImmutableScanner(registrationURL string) error {
+	query := &q.Query{
+		Keywords: map[string]interface{}{
+			"immutable": true,
+			"url":       registrationURL,
+		},
 	}
 
-	registrations, err := scannerManager.List(q)
+	registrations, err := scannerManager.List(query)
 	if err != nil {
 		return err
 	}
