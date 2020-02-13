@@ -318,7 +318,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
         config_dict['external_database'] = False
 
     # update redis configs
-    config_dict.update(get_redis_configs(configs.get("external_redis", None), with_clair))
+    config_dict.update(get_redis_configs(configs.get("external_redis", None), with_clair, with_trivy))
 
     # auto generated secret string for core
     config_dict['core_secret'] = generate_random_string(16)
@@ -352,7 +352,7 @@ def get_redis_url(db, redis=None):
     return "redis://{host}:{port}/{db}".format(**kwargs)
 
 
-def get_redis_configs(external_redis=None, with_clair=True):
+def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
     """Returns configs for redis
 
     >>> get_redis_configs()['external_redis']
@@ -363,6 +363,8 @@ def get_redis_configs(external_redis=None, with_clair=True):
     'redis://redis:6379/2'
     >>> get_redis_configs()['redis_url_clair']
     'redis://redis:6379/4'
+    >>> get_redis_configs()['redis_url_trivy']
+    'redis://redis:6379/5'
 
     >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['external_redis']
     True
@@ -372,8 +374,12 @@ def get_redis_configs(external_redis=None, with_clair=True):
     'redis://anonymous:pass@localhost:6379/2'
     >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_clair']
     'redis://anonymous:pass@localhost:6379/4'
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_trivy']
+    'redis://anonymous:pass@localhost:6379/5'
 
     >>> 'redis_url_clair' not in get_redis_configs(with_clair=False)
+    True
+    >>> 'redis_url_trivy' not in get_redis_configs(with_trivy=False)
     True
     """
 
@@ -388,6 +394,7 @@ def get_redis_configs(external_redis=None, with_clair=True):
         'jobservice_db_index': 2,
         'chartmuseum_db_index': 3,
         'clair_db_index': 4,
+        'trivy_db_index': 5,
     }
 
     # overwriting existing keys by external_redis
@@ -406,5 +413,9 @@ def get_redis_configs(external_redis=None, with_clair=True):
     if with_clair:
         configs['redis_db_index_clair'] = redis['clair_db_index']
         configs['redis_url_clair'] = get_redis_url(configs['redis_db_index_clair'], redis)
+
+    if with_trivy:
+        configs['redis_db_index_trivy'] = redis['trivy_db_index']
+        configs['redis_url_trivy'] = get_redis_url(configs['redis_db_index_trivy'], redis)
 
     return configs
