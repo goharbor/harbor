@@ -220,9 +220,7 @@ func main() {
 		if err := scan.EnsureScanner(reg, true); err != nil {
 			log.Fatalf("failed to register Trivy scanner: %v", err)
 		}
-	}
-
-	if !config.WithTrivy() {
+	} else {
 		log.Debug("Removing Trivy scanner")
 		if err := scan.RemoveImmutableScanner(config.TrivyAdapterURL()); err != nil {
 			log.Warningf("failed to remove Trivy scanner: %v", err)
@@ -250,9 +248,7 @@ func main() {
 		if err := scan.EnsureScanner(reg, true); err != nil {
 			log.Fatalf("failed to register Clair scanner: %v", err)
 		}
-	}
-
-	if !config.WithClair() {
+	} else {
 		log.Debug("Removing Clair scanner")
 		if err := scan.RemoveImmutableScanner(config.ClairAdapterEndpoint()); err != nil {
 			log.Warningf("failed to remove Clair scanners: %v", err)
