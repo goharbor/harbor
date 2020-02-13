@@ -229,26 +229,6 @@ func main() {
 
 	server.RegisterRoutes()
 
-	syncRegistry := os.Getenv("SYNC_REGISTRY")
-	sync, err := strconv.ParseBool(syncRegistry)
-	if err != nil {
-		log.Errorf("Failed to parse SYNC_REGISTRY: %v", err)
-		// if err set it default to false
-		sync = false
-	}
-	if sync {
-		if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {
-			log.Error(err)
-		}
-	} else {
-		log.Infof("Because SYNC_REGISTRY set false , no need to sync registry \n")
-	}
-
-	log.Info("Init proxy")
-	if err := middlewares.Init(); err != nil {
-		log.Fatalf("init proxy error, %v", err)
-	}
-
 	syncQuota := os.Getenv("SYNC_QUOTA")
 	doSyncQuota, err := strconv.ParseBool(syncQuota)
 	if err != nil {

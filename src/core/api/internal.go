@@ -47,15 +47,6 @@ func (ia *InternalAPI) Prepare() {
 	}
 }
 
-// SyncRegistry ...
-func (ia *InternalAPI) SyncRegistry() {
-	err := SyncRegistry(ia.ProjectMgr)
-	if err != nil {
-		ia.SendInternalServerError(err)
-		return
-	}
-}
-
 // RenameAdmin we don't provide flexibility in this API, as this is a workaround.
 func (ia *InternalAPI) RenameAdmin() {
 	if !dao.IsSuperUser(ia.SecurityCtx.GetUsername()) {
