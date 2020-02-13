@@ -637,7 +637,7 @@
         "FILTER_FOR_REPOSITORIES": "Depoları Filtrele",
         "TAG": "Etiket",
         "ARTIFACT": "Aarifact",
-        "ARTIFACTS": "Arifacts",
+        "ARTIFACTS": "Artifacts",
         "SIZE": "Boyut",
         "VULNERABILITY": "Güvenlik Açığı",
         "BUILD_HISTORY": "Geçmişi Oluştur",
@@ -1016,7 +1016,13 @@
         "LABELS": "Etiketler",
         "CREATION": "Oluşturma",
         "COMMAND": "Komutlar",
-        "UPLOADTIME": "Upload Time"
+        "UPLOADTIME": "Upload Time",
+        "NAME": "Name",
+        "PULL_TIME": "Pull Time",
+        "PUSH_TIME": "Push Time",
+        "OF": "of",
+        "ADD_TAG": "ADD TAG",
+        "REMOVE_TAG": "REMOVE TAG"
     },
     "LABEL": {
         "LABEL": "Etiket",

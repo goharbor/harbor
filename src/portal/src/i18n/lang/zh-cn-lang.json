@@ -639,7 +639,7 @@
         "FILTER_FOR_REPOSITORIES": "过滤镜像仓库",
         "TAG": "Tag",
         "ARTIFACT": "Aarifact",
-        "ARTIFACTS": "Arifacts",
+        "ARTIFACTS": "Artifacts",
         "SIZE": "大小",
         "VULNERABILITY": "漏洞",
         "BUILD_HISTORY": "构建历史",
@@ -1016,7 +1016,13 @@
         "LABELS": "标签",
         "CREATION": "创建时间",
         "COMMAND": "命令",
-        "UPLOADTIME": "上传时间"
+        "UPLOADTIME": "上传时间",
+        "NAME": "名称",
+        "PULL_TIME": "拉取时间",
+        "PUSH_TIME": "推送时间",
+        "OF": "of",
+        "ADD_TAG": "添加 TGA",
+        "REMOVE_TAG": "移除 TAG"
     },
     "LABEL": {
         "LABEL": "标签",

@@ -80,10 +80,6 @@ export class ArtifactListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
-    // let repoName = this.repoName.split("sha256:")[0];
-    // this.referArtifactName = `${this.repoName.split(repoName)[1]}` ? `${this.repoName.split(repoName)[1]}` : "";
-    // this.repoName = this.repoName.split('/')[1];
-    // this.repoName = this.repoName.split(":sha256:")[0];
     if (!this.projectId) {
       this.errorHandler.error('Project ID cannot be unset.');
       return;
@@ -137,21 +133,6 @@ export class ArtifactListComponent implements OnInit, OnDestroy {
   tabLinkClick(tabID: string) {
     this.currentTabID = tabID;
   }
-
-  // getTagInfo(repoName: string): Observable<void> {
-  //   // this.signedNameArr = [];
-  //   this.signedCon[repoName] = [];
-  //   return this.tagService
-  //     .getTags(repoName)
-  //     .pipe(map(items => {
-  //       items.forEach((t: any) => {
-  //         if (t.signature !== null) {
-  //           this.signedCon[repoName].push(t.name);
-  //         }
-  //       });
-  //     })
-  //       , catchError(error => observableThrowError(error)));
-  // }
 
   goBack(): void {
     this.backEvt.emit(this.projectId);
@@ -218,7 +199,6 @@ export class ArtifactListComponent implements OnInit, OnDestroy {
   putReferArtifactArray(referArtifactArray) {
     if (referArtifactArray.length) {
       this.showCurrentTitle = referArtifactArray[referArtifactArray.length - 1];
-      // referArtifactArray.pop();
       this.putArtifactReferenceArr.emit(referArtifactArray);
     }
 

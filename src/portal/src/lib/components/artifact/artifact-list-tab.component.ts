@@ -69,7 +69,7 @@ export interface LabelState {
   label: Label;
   show: boolean;
 }
-export const AVAILABLE_TIME = '0001-01-01T00:00:00Z';
+export const AVAILABLE_TIME = '0001-01-01T00:00:00.000Z';
 @Component({
   selector: 'artifact-list-tab',
   templateUrl: './artifact-list-tab.component.html',
@@ -112,7 +112,6 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
   retagSrcImage: string;
   showlabel: boolean;
 
-  createdComparator: Comparator<Artifact> = new CustomComparator<Artifact>("created", "date");
   pullComparator: Comparator<Artifact> = new CustomComparator<Artifact>("pull_time", "date");
   pushComparator: Comparator<Artifact> = new CustomComparator<Artifact>("push_time", "date");
 
@@ -187,18 +186,9 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
     }
     this.referArtifactArray = JSON.parse(sessionStorage.getItem('reference')) || [];
 
-    // if (this.referArtifactArray.length) {
-    //   this.putReferArtifactArray.emit(this.referArtifactArray);
-    // }
     this.artifactService.TriggerArtifactChan$.subscribe(res => {
-      // if (res === 'repoName') {
-        this.referArtifactArray = JSON.parse(sessionStorage.getItem('reference')) || [];
-        this.retrieve();
-      // }
-      // else {
-      //   this.showCurrentTitle = res[res.length-1]
-      // }
-    })
+      this.retrieve();
+    });
     this.retrieve();
     this.lastFilteredTagName = '';
 
@@ -384,7 +374,6 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
       this.selectedRow = this.selectedTag;
 
       this.artifactService.addLabelToImages(this.projectName, this.repoName, this.selectedRow[0].id, labelId).subscribe(res => {
-        // this.tagService.addLabelToImages(this.repoName, this.selectedRow[0].name, labelId).subscribe(res => {
         this.refresh();
 
         // set the selected label in front
@@ -562,20 +551,18 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
 
   retrieve() {
     this.artifactList = [];
-    let signatures: string[] = [];
     this.loading = true;
     this.projectService.getProject(this.projectId).subscribe(project => {
       this.projectName = project.name;
+      this.referArtifactArray = JSON.parse(sessionStorage.getItem('reference')) || [];
       if (this.referArtifactArray.length) {
 
-        // let referArtifactArray = this.referArtifactName.split('sha256:');
         let observableLists: Observable<Artifact>[] = [];
 
-
-        this.artifactService.getArtifactFromId(this.projectName, this.repoName,
+        this.artifactService.getArtifactFromDigest(this.projectName, this.repoName,
           this.referArtifactArray[this.referArtifactArray.length - 1]).subscribe(artifact => {
             artifact.references.forEach(child => {
-              observableLists.push(this.artifactService.getArtifactFromId(this.projectName, this.repoName,
+              observableLists.push(this.artifactService.getArtifactFromDigest(this.projectName, this.repoName,
                 child.child_digest));
             });
             forkJoin(observableLists).subscribe(artifacts => {
@@ -693,17 +680,17 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
     } else {
       let observArr: Observable<Artifact>[] = [];
       artifactList.forEach(artifact => {
-            this.deleteArtifactobservableLists.push(this.delOperate(artifact));
-            if (artifact.references) {
-              artifact.references.forEach(reference => {
-                observArr.push(this.artifactService.getArtifactFromId(this.projectName, this.repoName, reference.child_digest));
-              });
+        this.deleteArtifactobservableLists.push(this.delOperate(artifact));
+        if (artifact.references) {
+          artifact.references.forEach(reference => {
+            observArr.push(this.artifactService.getArtifactFromDigest(this.projectName, this.repoName, reference.child_digest));
+          });
 
-            }
-          });
-          forkJoin(observArr).subscribe((res) => {
-            this.findArtifactFromIndex(res);
-          });
+        }
+      });
+      forkJoin(observArr).subscribe((res) => {
+        this.findArtifactFromIndex(res);
+      });
     }
   }
 
@@ -855,80 +842,8 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
     return null;
   }
 
-  // hasReferenceArtifactList: Artifact[] = [];
-  // noReferenceArtifactList: Artifact[] = [];
-  // referenceIndexOpenState = false;
-  // referenceDigestOpenState = false;
-  paddingLeftIndex = 1;
-  ctrlIndex = -1;
-  openArtifact(artifact: Artifact) {
-    if (artifact.isOpen) {
-      artifact.isOpen = false;
-      artifact.referenceIndexOpenState = false;
-      artifact.referenceDigestOpenState = false;
-      return;
-    }
-    if (artifact.hasReferenceArtifactList.length || artifact.noReferenceArtifactList.length) {
-      artifact.isOpen = true;
-      return;
-    }
-    // this.getArtifactListFromReference(artifact);
-  }
-  openArtifactContent(artifact, indexOrDigest: string) {
-    if (indexOrDigest === 'index') {
-      if (artifact.referenceIndexOpenState) {
-        artifact.referenceIndexOpenState = false;
-        return;
-      }
-
-      if (artifact.hasReferenceArtifactList.length) {
-        artifact.referenceIndexOpenState = true;
-        return;
-      }
-    }
-    if (indexOrDigest === 'digest') {
-      if (artifact.referenceDigestOpenState) {
-        artifact.referenceDigestOpenState = false;
-        return;
-      }
-      if (artifact.noReferenceArtifactList.length) {
-        artifact.referenceDigestOpenState = true;
-        return;
-      }
-    }
-    // this.getArtifactListFromReference(references, indexOrDigest);
-  }
-  // getArtifactListFromReference(artifact: Artifact) {
-  //   let artifactObList =
-  //   artifact.references.map(reference => this.artifactService.getArtifactFromId(this.projectName, this.repoName, reference.artifact_id));
-  //   console.log(artifactObList);
-  //   forkJoin(artifactObList).subscribe(newArtifactList => {
-
-  //     // indexOrDigest === 'index' ? this.referenceIndexOpenState = true : this.referenceDigestOpenState = true;
-  //     // this.referenceArtifactList = newArtifact;
-  //     newArtifactList.forEach(newArtifact => {
-  //       if (newArtifact.references.length) {
-  //         artifact.hasReferenceArtifactList.push(newArtifact);
-  //       } else {
-  //         artifact.noReferenceArtifactList.push(newArtifact);
-  //       }
-  //     });
-  //     artifact.isOpen = true;
-  //   }, error => {
-  //     artifact.hasReferenceArtifactList.push(new Artifact('sha2560987','e'));
-  //     artifact.noReferenceArtifactList.push(new Artifact('sha2560123'),new Artifact('sha2560987'));
-  //     // this.referenceArtifactList = [new Artifact('sha2560987')];
-  //     // indexOrDigest === 'index' ? this.referenceIndexOpenState = true : this.referenceDigestOpenState = true;
-  //     artifact.isOpen = true;
-
-  //   });
-  // }
   refer(artifact: Artifact) {
     this.referArtifactArray.push(artifact.digest);
-    // let linkUrl = ['harbor', 'projects', this.projectId, 'repositories'
-    //   , `${this.repoName}:${this.referArtifactName}`];
-    // this.router.navigate(linkUrl);
-    // this.cdf.detectChanges();
     sessionStorage.setItem('reference', JSON.stringify(this.referArtifactArray));
 
     if (this.referArtifactArray.length) {

@@ -124,51 +124,7 @@
                     </clr-dropdown-menu>
                 </clr-dropdown>
 
-
-
-                <!-- <button type="button" class="btn  btn-secondary" [disabled]="!(selectedRow.length==1)"
-                    (click)="showDigestId()">
-                    <clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.COPY_DIGEST_ID' | translate}}
-                </button>
-
-                <clr-dropdown *ngIf="!withAdmiral">
-                    <button type="button" class="btn  btn-secondary" clrDropdownTrigger
-                        [disabled]="!(selectedRow.length==1)||!hasAddLabelImagePermission" (click)="addLabels()">
-                        <clr-icon shape="plus" size="16"></clr-icon>{{'REPOSITORY.ADD_LABELS' | translate}}
-                    </button>
-                    <clr-dropdown-menu clrPosition="bottom-left" *clrIfOpen>
-                        <clr-dropdown>
-                            <div class="filter-grid">
-                                <label class="dropdown-header">{{'REPOSITORY.ADD_LABEL_TO_IMAGE' | translate}}</label>
-                                <div class="form-group"><input clrInput type="text" placeholder="Filter labels"
-                                        [(ngModel)]="stickName" (keyup)="handleStickInputFilter()"></div>
-                                <div [hidden]='imageStickLabels.length' class="no-labels">
-                                    {{'LABEL.NO_LABELS' | translate }}</div>
-                                <div [hidden]='!imageStickLabels.length' class="has-label">
-                                    <button type="button" class="dropdown-item" *ngFor='let label of imageStickLabels'
-                                        [hidden]='!label.show' (click)="stickLabel(label)">
-                                        <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'>
-                                        </clr-icon>
-                                        <div class='labelDiv'>
-                                            <hbr-label-piece [label]="label.label" [labelWidth]="130"></hbr-label-piece>
-                                        </div>
-                                    </button>
-                                </div>
-                            </div>
-                        </clr-dropdown>
-                    </clr-dropdown-menu>
-                </clr-dropdown>
-                <button type="button" class="btn  btn-secondary" *ngIf="!withAdmiral"
-                    [disabled]="!(selectedRow.length===1)|| !hasRetagImagePermission" (click)="retag()">
-                    <clr-icon shape="copy" size="16"></clr-icon>&nbsp;{{'REPOSITORY.RETAG' | translate}}
-                </button>
-                <button type="button" class="btn  btn-secondary" *ngIf="hasDeleteImagePermission"
-                    (click)="deleteArtifact()" [disabled]="!hasDeleteImagePermission||!selectedRow.length">
-                    <clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'REPOSITORY.DELETE' | translate}}
-                </button> -->
             </clr-dg-action-bar>
-            <!-- <clr-dg-column class="max-width-38"></clr-dg-column> -->
-            <!-- <clr-dg-column class="max-width-38"></clr-dg-column> -->
 
             <clr-dg-column class="flex-max-width" [clrDgField]="'name'">{{'REPOSITORY.ARTIFACTS_COUNT' | translate}}
             </clr-dg-column>
@@ -179,30 +135,19 @@
             <clr-dg-column>{{'REPOSITORY.VULNERABILITY' | translate}}</clr-dg-column>
             <clr-dg-column *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
             <!-- <clr-dg-column>{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column> -->
-            <!-- <clr-dg-column [clrDgSortBy]="createdComparator">{{'REPOSITORY.CREATED' | translate}}</clr-dg-column> -->
-            <!-- <clr-dg-column [clrDgField]="'docker_version'">{{'REPOSITORY.DOCKER_VERSION' | translate}}</clr-dg-column> -->
+
             <clr-dg-column *ngIf="!withAdmiral">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pushComparator">{{'REPOSITORY.PUSH_TIME' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pullComparator">{{'REPOSITORY.PULL_TIME' | translate}}</clr-dg-column>
             <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
             <clr-dg-row *clrDgItems="let artifact of artifactList" [clrDgItem]='artifact'>
-                <!-- <clr-dg-cell class="max-width-38">
-                        <img class="artifact-icon"
-                        [src]="artifact.type==='IMAGE'||artifact.type==='CHART'?'images/artifact-'+artifact.type.toLowerCase()+'.svg':'images/artifact-default.svg'" />
-                </clr-dg-cell> -->
-                <!-- <clr-dg-cell class="max-width-38">
-                        <a href="javascript:void(0)" *ngIf="artifact.references" (click)="refer(artifact)"><clr-icon class="icon-folder" shape="folder"></clr-icon></a>
-                        <span href="javascript:void(0)" *ngIf="!artifact.references" (click)="refer(artifact)"><clr-icon class="icon-folder" shape="file"></clr-icon></span>
-                </clr-dg-cell> -->
                 <clr-dg-cell class="truncated flex-max-width">
                     <div class="cell white-normal">
                         <img class="artifact-icon"
                             [src]="artifact.type==='IMAGE'||artifact.type==='CHART'?'images/artifact-'+artifact.type.toLowerCase()+'.svg':'images/artifact-default.svg'" />
                         &nbsp; &nbsp;
                         <a href="javascript:void(0)" class="max-width-100" (click)="onTagClick(artifact)"
-                            title="{{artifact.name}}">
-
-                            <!-- {{ artifact.digest}}</a>  -->
+                            title="{{artifact.digest}}">
                             {{ artifact.digest  | slice:0:15}}</a>
                         <clr-tooltip *ngIf="artifact.references">
                             <div clrTooltipTrigger class="level-border">
@@ -219,7 +164,6 @@
                         <span href="javascript:void(0)" *ngIf="!artifact.references">
                             <clr-icon class="icon-folder" shape="file"></clr-icon>
                         </span>
-
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell *ngIf="referArtifactArray.length">
@@ -259,7 +203,6 @@
                                     <tbody>
                                         <tr class="tag-tr" *ngFor="let tag of artifact.tags">
                                             <td class="left tag-body-color">{{tag.name}}</td>
-                                            <!-- to do -->
                                             <td class="left tag-body-color">{{tag.push_time | date: 'short'}}</td>
                                             <td class="left tag-body-color">{{tag.pull_time | date: 'short'}}</td>
                                         </tr>
@@ -304,12 +247,6 @@
                     <div class="cell">
                         {{artifact.author}}
                     </div>
-                </clr-dg-cell> -->
-                <!-- <clr-dg-cell>
-                    <div class="cell">{{artifact.created | date: 'short'}}</div>
-                </clr-dg-cell> -->
-                <!-- <clr-dg-cell>
-                    <div class="cell">{{artifact.docker_version}}</div>
                 </clr-dg-cell> -->
                 <clr-dg-cell *ngIf="!withAdmiral">
                     <div class="cell">

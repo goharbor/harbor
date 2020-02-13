@@ -332,7 +332,6 @@
         "PERMISSIONS_HELMCHART": "Helm Chart",
         "PUSH": "Push",
         "PULL": "Pull",
-
         "FILTER_PLACEHOLDER": "Filter Robot Accounts",
         "ROBOT_NAME": "ne peut pas contenir de caractères spéciaux(~#$%) et la longueur maximale devrait être de 255 caractères.",
         "ACCOUNT_EXISTING": "le robot est existe déjà.",
@@ -628,7 +627,7 @@
         "FILTER_FOR_REPOSITORIES": "Filtrer les Dépôts",
         "TAG": "Tag",
         "ARTIFACT": "Aarifact",
-        "ARTIFACTS": "Arifacts",
+        "ARTIFACTS": "Artifacts",
         "SIZE": "Taille",
         "VULNERABILITY": "Vulnérabilitée",
         "BUILD_HISTORY": "Construire l'histoire",
@@ -989,7 +988,13 @@
         "LABELS": "Labels",
         "CREATION": "Créer sur",
         "COMMAND": "Les commandes",
-        "UPLOADTIME": "Upload Time"
+        "UPLOADTIME": "Upload Time",
+        "NAME": "Name",
+        "PULL_TIME": "Pull Time",
+        "PUSH_TIME": "Push Time",
+        "OF": "of",
+        "ADD_TAG": "ADD TAG",
+        "REMOVE_TAG": "REMOVE TAG"
     },
     "LABEL": {
         "LABEL": "Label",
@@ -1096,7 +1101,6 @@
         "ON": "on",
         "AT": "at",
         "NOSCHEDULE": "An error occurred in Get schedule"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Current Schedule",

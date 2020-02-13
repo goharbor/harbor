@@ -1,5 +1,5 @@
 
-import { Component, OnInit, Input, OnChanges, SimpleChanges, ViewChild, Output, EventEmitter } from '@angular/core';
+import { Component, OnInit, Input, ViewChild, Output, EventEmitter } from '@angular/core';
 import { Artifact } from '../artifact';
 import { TagService } from '../../../services';
 import { Tag } from '../../../../../ng-swagger-gen/models/tag';
@@ -10,23 +10,25 @@ import { OperateInfo, OperationState, operateChanges } from '../../operation/ope
 import { OperationService } from '../../operation/operation.service';
 import { map, catchError } from 'rxjs/operators';
 import { TranslateService } from '@ngx-translate/core';
-// import { ConfirmationTargets } from 'src/app/shared/shared.const';
 import { errorHandler as errorHandFn } from "../../../utils/shared/shared.utils";
 import { NgForm } from '@angular/forms';
+import { ErrorHandler } from '../../../utils/error-handler';
+import { AVAILABLE_TIME } from '../artifact-list-tab.component';
+class InitTag {
+  name = "";
+}
 @Component({
   selector: 'artifact-tag',
   templateUrl: './artifact-tag.component.html',
   styleUrls: ['./artifact-tag.component.scss']
 })
 
-export class ArtifactTagComponent implements OnInit, OnChanges {
+export class ArtifactTagComponent implements OnInit {
   @Input() artifactDetails: Artifact;
   @Input() projectName: string;
   @Input() repositoryName: string;
   @Output() refreshArtifact = new EventEmitter();
-  newTagName = {
-    name: ''
-  };
+  newTagName = new InitTag();
   newTagForm: NgForm;
   @ViewChild("newTagForm", { static: true }) currentForm: NgForm;
   selectedRow: Tag[] = [];
@@ -34,40 +36,36 @@ export class ArtifactTagComponent implements OnInit, OnChanges {
   newTagformShow = false;
   loading = false;
   openTag = false;
+  availableTime = AVAILABLE_TIME;
   @ViewChild("confirmationDialog", { static: false })
   confirmationDialog: ConfirmationDialogComponent;
   constructor(
     private operationService: OperationService,
     private tagService: TagService,
     private translateService: TranslateService,
+    private errorHandler: ErrorHandler
 
   ) { }
 
   ngOnInit() {
   }
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes && changes["artifactDetails"]) {
-      // this.originalConfig = clone(this.currentConfig);
-    }
-  }
   addTag() {
     this.newTagformShow = true;
 
   }
   cancelAddTag() {
     this.newTagformShow = false;
-    this.newTagName = { name: '' };
+    this.newTagName = new InitTag();
   }
   saveAddTag() {
-    // console.log(this.newTagName);
     this.tagService.newTag(this.projectName, this.repositoryName, this.artifactDetails.digest, this.newTagName).subscribe(res => {
       this.newTagformShow = false;
-      this.newTagName = { name: '' };
+      this.newTagName = new InitTag();
       this.refreshArtifact.emit();
+    }, error => {
+      this.errorHandler.error(error);
     });
-    // this.newTagformShow = false;
-    // this.newTagName = { name: '' };
   }
   removeTag() {
     if (this.selectedRow && this.selectedRow.length) {
@@ -111,15 +109,6 @@ export class ArtifactTagComponent implements OnInit, OnChanges {
         });
       }
     }
-
-    if (message &&
-      message.source === ConfirmationTargets.TAG
-      && message.state === ConfirmationState.CONFIRMED) {
-      this.delOperate(message.data).subscribe(res => {
-        this.refreshArtifact.emit();
-      });
-
-    }
   }
 
   delOperate(tag): Observable<any> | null {
@@ -144,22 +133,21 @@ export class ArtifactTagComponent implements OnInit, OnChanges {
           );
           return of(error);
         }));
-    // }
   }
 
   existValid(name) {
     this.isTagNameExist = false;
-    this.artifactDetails.tags.forEach(tag => {
-      if (tag.name === name) {
-        this.isTagNameExist = true;
-      }
-    });
+    if (this.artifactDetails.tags) {
+      this.artifactDetails.tags.forEach(tag => {
+        if (tag.name === name) {
+          this.isTagNameExist = true;
+        }
+      });
+    }
+
   }
   toggleTagListOpenOrClose() {
     this.openTag = !this.openTag;
     this.newTagformShow = false;
   }
-  // refreshTags(state: ClrDatagridStateInterface) {
-
-  // }
 }

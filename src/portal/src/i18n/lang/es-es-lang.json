@@ -639,7 +639,7 @@
         "FILTER_FOR_REPOSITORIES": "Filtrar Repositorios",
         "TAG": "Etiqueta",
         "ARTIFACT": "Aarifact",
-        "ARTIFACTS": "Arifacts",
+        "ARTIFACTS": "Artifacts",
         "SIZE": "Size",
         "VULNERABILITY": "Vulnerabilities",
         "BUILD_HISTORY": "Construir Historia",
@@ -1016,7 +1016,13 @@
         "LABELS": "Labels",
         "CREATION": "Tiempo de creación",
         "COMMAND": "Mando",
-        "UPLOADTIME": "Upload Time"
+        "UPLOADTIME": "Upload Time",
+        "NAME": "Name",
+        "PULL_TIME": "Pull Time",
+        "PUSH_TIME": "Push Time",
+        "OF": "of",
+        "ADD_TAG": "ADD TAG",
+        "REMOVE_TAG": "REMOVE TAG"
 
     },
     "LABEL": {

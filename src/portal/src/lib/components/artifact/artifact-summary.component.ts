@@ -70,7 +70,7 @@ export class ArtifactSummaryComponent implements OnInit {
   }
   getArtifact() {
     this.inProgress = true;
-    this.artifactService.getArtifactFromId(this.projectName, this.repositoryName, this.artifactDigest)
+    this.artifactService.getArtifactFromDigest(this.projectName, this.repositoryName, this.artifactDigest)
     .pipe(finalize(() => {
       this.inProgress = false;
     })).subscribe(

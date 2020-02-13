@@ -638,7 +638,7 @@
         "FILTER_FOR_REPOSITORIES": "Filtrar repositórios",
         "TAG": "Tag",
         "ARTIFACT": "Aarifact",
-        "ARTIFACTS": "Arifacts",
+        "ARTIFACTS": "Artifacts",
         "SIZE": "Tamanho",
         "VULNERABILITY": "Vulnerabilidade",
         "SIGNED": "Assinada",
@@ -1009,7 +1009,13 @@
         "FILTER_FOR_TAGS": "Filtrar Tags",
         "AUTHOR": "Autor",
         "LABELS": "Labels",
-        "UPLOADTIME": "Upload Time"
+        "UPLOADTIME": "Upload Time",
+        "NAME": "Name",
+        "PULL_TIME": "Pull Time",
+        "PUSH_TIME": "Push Time",
+        "OF": "of",
+        "ADD_TAG": "ADD TAG",
+        "REMOVE_TAG": "REMOVE TAG"
     },
     "LABEL": {
         "LABEL": "Label",

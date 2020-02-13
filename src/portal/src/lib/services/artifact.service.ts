@@ -65,7 +65,7 @@ export abstract class ArtifactService {
    *
    * @memberOf TagService
    */
-  abstract getArtifactFromId(
+  abstract getArtifactFromDigest(
     projectName: string,
     repositoryName: string,
     artifactDigest: string
@@ -171,7 +171,7 @@ export class ArtifactDefaultService extends ArtifactService {
     }
     return this._getArtifacts(projectName, repositoryName, queryParams);
   }
-  public getArtifactFromId(
+  public getArtifactFromDigest(
     projectName: string,
     repositoryName: string,
     artifactDigest: string

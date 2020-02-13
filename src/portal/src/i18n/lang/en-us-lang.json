@@ -638,7 +638,7 @@
         "FILTER_FOR_REPOSITORIES": "Filter Repositories",
         "TAG": "Tag",
         "ARTIFACT": "Aarifact",
-        "ARTIFACTS": "Arifacts",
+        "ARTIFACTS": "Artifacts",
         "SIZE": "Size",
         "VULNERABILITY": "Vulnerabilities",
         "BUILD_HISTORY": "Build History",
@@ -1017,7 +1017,13 @@
         "LABELS": "Labels",
         "CREATION": "Create on",
         "COMMAND": "Commands",
-        "UPLOADTIME": "Upload Time"
+        "UPLOADTIME": "Upload Time",
+        "NAME": "Name",
+        "PULL_TIME": "Pull Time",
+        "PUSH_TIME": "Push Time",
+        "OF": "of",
+        "ADD_TAG": "ADD TAG",
+        "REMOVE_TAG": "REMOVE TAG"
     },
     "LABEL": {
         "LABEL": "Label",
