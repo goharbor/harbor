@@ -19,15 +19,20 @@ import (
 	"encoding/json"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/blob"
 	resolv "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
+	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
+// const definitions
 const (
 	// ArtifactTypeChart defines the artifact type for helm chart
-	ArtifactTypeChart = "CHART"
+	ArtifactTypeChart        = "CHART"
+	AdditionTypeValues       = "VALUES.YAML"
+	AdditionTypeReadme       = "README"
+	AdditionTypeDependencies = "DEPENDENCIES"
 	// TODO import it from helm chart repository
 	mediaType = "application/vnd.cncf.helm.config.v1+json"
 )
@@ -38,7 +43,11 @@ func init() {
 		blobFetcher: blob.Fcher,
 	}
 	if err := resolv.Register(resolver, mediaType); err != nil {
-		log.Errorf("failed to register resolver for artifact %s: %v", resolver.ArtifactType(), err)
+		log.Errorf("failed to register resolver for media type %s: %v", mediaType, err)
+		return
+	}
+	if err := descriptor.Register(resolver, mediaType); err != nil {
+		log.Errorf("failed to register descriptor for media type %s: %v", mediaType, err)
 		return
 	}
 }
@@ -48,11 +57,7 @@ type resolver struct {
 	blobFetcher blob.Fetcher
 }
 
-func (r *resolver) ArtifactType() string {
-	return ArtifactTypeChart
-}
-
-func (r *resolver) Resolve(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
+func (r *resolver) ResolveMetadata(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
 	repository, err := r.repoMgr.Get(ctx, artifact.RepositoryID)
 	if err != nil {
 		return err
@@ -66,7 +71,6 @@ func (r *resolver) Resolve(ctx context.Context, manifest []byte, artifact *artif
 	if err != nil {
 		return err
 	}
-	// TODO should we abstract all values?
 	metadata := map[string]interface{}{}
 	if err := json.Unmarshal(layer, &metadata); err != nil {
 		return err
@@ -79,4 +83,17 @@ func (r *resolver) Resolve(ctx context.Context, manifest []byte, artifact *artif
 	}
 
 	return nil
+}
+
+func (r *resolver) ResolveAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*resolv.Addition, error) {
+	// TODO implement
+	return nil, nil
+}
+
+func (r *resolver) GetArtifactType() string {
+	return ArtifactTypeChart
+}
+
+func (r *resolver) ListAdditionTypes() []string {
+	return []string{AdditionTypeValues, AdditionTypeReadme, AdditionTypeDependencies}
 }

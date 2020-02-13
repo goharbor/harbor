@@ -121,3 +121,51 @@ hbr-tag {
     color: $light-color-green !important;
   }
 }
+
+// style of hbr-artifact-summary component
+@mixin align-text-mixin($values...) {
+  @each $var in $values {
+    &[align="$var"] {
+      text-align: $var;
+    }
+  }
+}
+%code-block {
+  background: $color-ddd;
+  border-radius: 2px;
+  padding: 2px 4px;
+}
+
+.md-div {
+  code:not([class*="language-"]) {
+    @extend %code-block;
+    color: $color-657b83
+  }
+  pre:not([class*="language-"]) {
+    background: $color-fdf6e3;
+    code:not([class*="language-"]) {
+      @extend %code-block;
+      background: transparent;
+    }
+  }
+  table {
+    display: block;
+    width: 100%;
+    overflow: auto;
+    padding: 0;
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    td,
+    th {
+      padding: 6px 13px;
+      border: 1px solid $color-ddd;
+      @include align-text-mixin(left, right, center);
+    }
+    tr {
+      &:nth-child(2n) {
+        background-color: $color-f2;
+      }
+    }
+  }
+}

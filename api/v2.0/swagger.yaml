@@ -249,6 +249,39 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/{addition}:
+    get:
+      summary: Get the addition of the specific artifact
+      description: Get the addition of the artifact specified by the reference under the project and repository.
+      tags:
+        - artifact
+      operationId: getAddition
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: addition
+          in: path
+          description: The addition name, "build_history" for images; "values.yaml", "readme", "dependencies" for charts
+          type: string
+          enum: [build_history, values.yaml, readme, dependencies]
+          required: true
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: string
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
 parameters:
   requestId:
     name: X-Request-Id
@@ -425,8 +458,8 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Tag'
-      sub_resource_links:
-        $ref: '#/definitions/SubResourceLinks'
+      addition_links:
+        $ref: '#/definitions/AdditionLinks'
   Tag:
     type: object
     properties:
@@ -455,6 +488,7 @@ definitions:
         description: The latest pull time of the tag
       immutable:
         type: boolean
+        x-omitempty: false
         description: The immutable status of the tag
   ExtraAttrs:
     type: object
@@ -464,20 +498,19 @@ definitions:
     type: object
     additionalProperties:
       type: string
-  SubResourceLinks:
+  AdditionLinks:
     type: object
     additionalProperties:
-      type: array
-      items:
-        $ref: '#/definitions/ResourceLink'
-  ResourceLink:
+      $ref: '#/definitions/AdditionLink'
+  AdditionLink:
     type: object
     properties:
       href:
         type: string
-        description: The link of the resource
+        description: The link of the addition
       absolute:
         type: boolean
+        x-omitempty: false
         description: Determine whether the link is an absolute URL or not
   Reference:
     type: object
@@ -515,3 +548,4 @@ definitions:
       variant:
         type: string
         description: The variant of the CPU
+

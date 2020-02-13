@@ -14,6 +14,8 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import {AppConfigService} from "../../app-config.service";
+import { SessionService } from '../../shared/session.service';
+import { ArtifactService } from '../../../lib/services';
 
 @Component({
   selector: 'artifact-summary-page',
@@ -29,7 +31,9 @@ export class ArtifactSummaryPageComponent implements OnInit, OnDestroy {
   constructor(
     private route: ActivatedRoute,
     private appConfigService: AppConfigService,
-    private router: Router
+    private router: Router,
+    private artifactService: ArtifactService,
+    private session: SessionService
   ) {
   }
 

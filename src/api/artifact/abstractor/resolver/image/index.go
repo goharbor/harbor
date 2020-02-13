@@ -20,7 +20,9 @@ import (
 	"fmt"
 	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
+	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/q"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -30,8 +32,16 @@ func init() {
 	rslver := &indexResolver{
 		artMgr: artifact.Mgr,
 	}
-	if err := resolver.Register(rslver, v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList); err != nil {
-		log.Errorf("failed to register resolver for artifact %s: %v", rslver.ArtifactType(), err)
+	mediaTypes := []string{
+		v1.MediaTypeImageIndex,
+		manifestlist.MediaTypeManifestList,
+	}
+	if err := resolver.Register(rslver, mediaTypes...); err != nil {
+		log.Errorf("failed to register resolver for media type %v: %v", mediaTypes, err)
+		return
+	}
+	if err := descriptor.Register(rslver, mediaTypes...); err != nil {
+		log.Errorf("failed to register descriptor for media type %v: %v", mediaTypes, err)
 		return
 	}
 }
@@ -41,11 +51,7 @@ type indexResolver struct {
 	artMgr artifact.Manager
 }
 
-func (i *indexResolver) ArtifactType() string {
-	return ArtifactTypeImage
-}
-
-func (i *indexResolver) Resolve(ctx context.Context, manifest []byte, art *artifact.Artifact) error {
+func (i *indexResolver) ResolveMetadata(ctx context.Context, manifest []byte, art *artifact.Artifact) error {
 	index := &v1.Index{}
 	if err := json.Unmarshal(manifest, index); err != nil {
 		return err
@@ -72,5 +78,18 @@ func (i *indexResolver) Resolve(ctx context.Context, manifest []byte, art *artif
 			Platform: mani.Platform,
 		})
 	}
+	return nil
+}
+
+func (i *indexResolver) ResolveAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*resolver.Addition, error) {
+	return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
+		WithMessage("addition %s isn't supported for %s(index)", addition, ArtifactTypeImage)
+}
+
+func (i *indexResolver) GetArtifactType() string {
+	return ArtifactTypeImage
+}
+
+func (i *indexResolver) ListAdditionTypes() []string {
 	return nil
 }

@@ -6,6 +6,7 @@ import {
 import { ArtifactDependency } from "../models";
 import { ErrorHandler } from "../../../../utils/error-handler";
 import { AdditionsService } from "../additions.service";
+import { AdditionLink } from "../../../../../../ng-swagger-gen/models/addition-link";
 
 @Component({
   selector: "hbr-artifact-dependencies",
@@ -14,21 +15,19 @@ import { AdditionsService } from "../additions.service";
 })
 export class DependenciesComponent implements OnInit {
   @Input()
-  dependenciesLink: string;
-
-  dependencyList: ArtifactDependency[] = [
-    {
-      "name": "redis",
-      "version": "3.2.5",
-      "repository": "https://kubernetes-charts.storage.googleapis.com"
-    }
-  ];
+  dependenciesLink: AdditionLink;
+  dependencyList: ArtifactDependency[] = [];
   constructor( private errorHandler: ErrorHandler,
                private additionsService: AdditionsService) {}
 
   ngOnInit(): void {
-    if (this.dependenciesLink) {
-      this.additionsService.getDetailByLink(this.dependenciesLink).subscribe(
+    this.getDependencyList();
+  }
+  getDependencyList() {
+    if (this.dependenciesLink
+        && !this.dependenciesLink.absolute
+        && this.dependenciesLink.href) {
+      this.additionsService.getDetailByLink(this.dependenciesLink.href).subscribe(
         res => {
           this.dependencyList = res;
         }, error => {
@@ -37,5 +36,4 @@ export class DependenciesComponent implements OnInit {
       );
     }
   }
-
 }

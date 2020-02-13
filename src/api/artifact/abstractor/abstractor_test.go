@@ -15,14 +15,15 @@
 package abstractor
 
 import (
-	"context"
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/common/models"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/api/artifact/abstractor/blob"
-	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
+	tresolver "github.com/goharbor/harbor/src/testing/api/artifact/abstractor/resolver"
+	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -198,31 +199,18 @@ var (
 }`
 )
 
-type fakeResolver struct{}
-
-func (f *fakeResolver) ArtifactType() string {
-	return fakeArtifactType
-
-}
-func (f *fakeResolver) Resolve(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
-	return nil
-}
-
 type abstractorTestSuite struct {
 	suite.Suite
 	abstractor Abstractor
 	fetcher    *blob.FakeFetcher
-	repoMgr    *repotesting.FakeManager
-}
-
-func (a *abstractorTestSuite) SetupSuite() {
-	resolver.Register(&fakeResolver{}, schema1.MediaTypeSignedManifest,
-		schema2.MediaTypeImageConfig, v1.MediaTypeImageIndex)
+	repoMgr    *repository.FakeManager
+	resolver   *tresolver.FakeResolver
 }
 
 func (a *abstractorTestSuite) SetupTest() {
 	a.fetcher = &blob.FakeFetcher{}
-	a.repoMgr = &repotesting.FakeManager{}
+	a.repoMgr = &repository.FakeManager{}
+	a.resolver = &tresolver.FakeResolver{}
 	a.abstractor = &abstractor{
 		repoMgr:     a.repoMgr,
 		blobFetcher: a.fetcher,
@@ -230,55 +218,55 @@ func (a *abstractorTestSuite) SetupTest() {
 }
 
 // docker manifest v1
-func (a *abstractorTestSuite) TestAbstractV1Manifest() {
+func (a *abstractorTestSuite) TestAbstractMetadataOfV1Manifest() {
+	resolver.Register(a.resolver, schema1.MediaTypeSignedManifest)
 	a.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	a.fetcher.On("FetchManifest").Return(schema1.MediaTypeSignedManifest, []byte(v1Manifest), nil)
+	a.resolver.On("ArtifactType").Return(fakeArtifactType)
+	a.resolver.On("ResolveMetadata").Return(nil)
 	artifact := &artifact.Artifact{
 		ID: 1,
 	}
-	err := a.abstractor.Abstract(nil, artifact)
+	err := a.abstractor.AbstractMetadata(nil, artifact)
 	a.Require().Nil(err)
-	a.repoMgr.AssertExpectations(a.T())
-	a.fetcher.AssertExpectations(a.T())
 	a.Assert().Equal(int64(1), artifact.ID)
-	a.Assert().Equal(fakeArtifactType, artifact.Type)
 	a.Assert().Equal(schema1.MediaTypeSignedManifest, artifact.ManifestMediaType)
 	a.Assert().Equal(schema1.MediaTypeSignedManifest, artifact.MediaType)
 	a.Assert().Equal(int64(0), artifact.Size)
 }
 
 // docker manifest v2
-func (a *abstractorTestSuite) TestAbstractV2Manifest() {
+func (a *abstractorTestSuite) TestAbstractMetadataOfV2Manifest() {
+	resolver.Register(a.resolver, schema2.MediaTypeImageConfig)
 	a.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	a.fetcher.On("FetchManifest").Return(schema2.MediaTypeManifest, []byte(v2Manifest), nil)
+	a.resolver.On("ArtifactType").Return(fakeArtifactType)
+	a.resolver.On("ResolveMetadata").Return(nil)
 	artifact := &artifact.Artifact{
 		ID: 1,
 	}
 
-	err := a.abstractor.Abstract(nil, artifact)
+	err := a.abstractor.AbstractMetadata(nil, artifact)
 	a.Require().Nil(err)
-	a.repoMgr.AssertExpectations(a.T())
-	a.fetcher.AssertExpectations(a.T())
 	a.Assert().Equal(int64(1), artifact.ID)
-	a.Assert().Equal(fakeArtifactType, artifact.Type)
 	a.Assert().Equal(schema2.MediaTypeManifest, artifact.ManifestMediaType)
 	a.Assert().Equal(schema2.MediaTypeImageConfig, artifact.MediaType)
 	a.Assert().Equal(int64(3043), artifact.Size)
 }
 
 // OCI index
-func (a *abstractorTestSuite) TestAbstractIndex() {
+func (a *abstractorTestSuite) TestAbstractMetadataOfIndex() {
+	resolver.Register(a.resolver, v1.MediaTypeImageIndex)
 	a.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	a.fetcher.On("FetchManifest").Return(v1.MediaTypeImageIndex, []byte(index), nil)
+	a.resolver.On("ArtifactType").Return(fakeArtifactType)
+	a.resolver.On("ResolveMetadata").Return(nil)
 	artifact := &artifact.Artifact{
 		ID: 1,
 	}
-	err := a.abstractor.Abstract(nil, artifact)
+	err := a.abstractor.AbstractMetadata(nil, artifact)
 	a.Require().Nil(err)
-	a.repoMgr.AssertExpectations(a.T())
-	a.fetcher.AssertExpectations(a.T())
 	a.Assert().Equal(int64(1), artifact.ID)
-	a.Assert().Equal(fakeArtifactType, artifact.Type)
 	a.Assert().Equal(v1.MediaTypeImageIndex, artifact.ManifestMediaType)
 	a.Assert().Equal(v1.MediaTypeImageIndex, artifact.MediaType)
 	a.Assert().Equal(int64(0), artifact.Size)
@@ -286,16 +274,14 @@ func (a *abstractorTestSuite) TestAbstractIndex() {
 }
 
 // OCI index
-func (a *abstractorTestSuite) TestAbstractUnsupported() {
+func (a *abstractorTestSuite) TestAbstractMetadataOfUnsupported() {
 	a.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	a.fetcher.On("FetchManifest").Return("unsupported-manifest", []byte{}, nil)
 	artifact := &artifact.Artifact{
 		ID: 1,
 	}
-	err := a.abstractor.Abstract(nil, artifact)
+	err := a.abstractor.AbstractMetadata(nil, artifact)
 	a.Require().NotNil(err)
-	a.repoMgr.AssertExpectations(a.T())
-	a.fetcher.AssertExpectations(a.T())
 }
 
 func (a *abstractorTestSuite) TestParseArtifactType() {
@@ -318,6 +304,24 @@ func (a *abstractorTestSuite) TestParseArtifactType() {
 	mediaType = "application/vnd.sylabs.sif.config.v1+json"
 	typee = parseArtifactType(mediaType)
 	a.Equal("SIF", typee)
+}
+
+func (a *abstractorTestSuite) TestAbstractAddition() {
+	resolver.Register(a.resolver, v1.MediaTypeImageConfig)
+	// cannot get the resolver
+	art := &artifact.Artifact{
+		MediaType: "unknown",
+	}
+	_, err := a.abstractor.AbstractAddition(nil, art, "addition")
+	a.True(ierror.IsErr(err, ierror.BadRequestCode))
+
+	// get the resolver
+	art = &artifact.Artifact{
+		MediaType: v1.MediaTypeImageConfig,
+	}
+	a.resolver.On("ResolveAddition").Return(nil, nil)
+	_, err = a.abstractor.AbstractAddition(nil, art, "addition")
+	a.Require().Nil(err)
 }
 
 func TestAbstractorTestSuite(t *testing.T) {

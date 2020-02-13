@@ -64,5 +64,6 @@ const (
 	ResourceScanner                    = Resource("scanner")
 	ResourceArtifact                   = Resource("artifact")
 	ResourceTag                        = Resource("tag")
+	ResourceArtifactAddition           = Resource("artifact-addition")
 	ResourceSelf                       = Resource("") // subresource for self
 )

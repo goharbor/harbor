@@ -77,7 +77,6 @@ import { ReplicationComponent } from "./components/replication/replication.compo
 import { ArtifactListComponent } from "./components/artifact-list/artifact-list.component";
 import { RepositoryGridviewComponent } from "./components/repository-gridview/repository-gridview.component";
 import { ArtifactListTabComponent } from "./components/artifact/artifact-list-tab.component";
-import { ArtifactSummaryComponent } from "./components/artifact/artifact-summary.component";
 import { ArtifactCommonPropertiesComponent } from './components/artifact/artifact-common-properties/artifact-common-properties.component';
 import { ArtifactTagComponent } from './components/artifact/artifact-tag/artifact-tag.component';
 import { ArtifactAdditionsComponent } from './components/artifact/artifact-additions/artifact-additions.component';
@@ -91,11 +90,14 @@ import { ListReplicationRuleComponent } from "./components/list-replication-rule
 import { ChannelService } from "./services/channel.service";
 import { SharedModule } from "./utils/shared/shared.module";
 import { TranslateServiceInitializer } from "./i18n";
-import {BuildHistoryComponent} from "./components/artifact/artifact-additions/build-history/build-history.component";
+import { BuildHistoryComponent } from "./components/artifact/artifact-additions/build-history/build-history.component";
 import { DependenciesComponent } from "./components/artifact/artifact-additions/dependencies/dependencies.component";
 import { SummaryComponent } from "./components/artifact/artifact-additions/summary/summary.component";
 import { ValuesComponent } from "./components/artifact/artifact-additions/values/values.component";
-
+import {
+  ArtifactVulnerabilitiesComponent
+} from "./components/artifact/artifact-additions/artifact-vulnerabilities/artifact-vulnerabilities.component";
+import { ArtifactSummaryComponent } from "./components/artifact/artifact-summary.component";
 
 /**
  * Declare default service configuration; all the endpoints will be defined in
@@ -266,7 +268,8 @@ export interface HarborModuleConfig {
       ResultTipComponent,
       DependenciesComponent,
       SummaryComponent,
-      ValuesComponent
+      ValuesComponent,
+      ArtifactVulnerabilitiesComponent
   ],
   exports: [
       SharedModule,
@@ -318,7 +321,8 @@ export interface HarborModuleConfig {
       ResultTipComponent,
       DependenciesComponent,
       SummaryComponent,
-      ValuesComponent
+      ValuesComponent,
+      ArtifactVulnerabilitiesComponent
   ],
   providers: []
 })

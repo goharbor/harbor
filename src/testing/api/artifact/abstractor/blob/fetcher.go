@@ -18,7 +18,7 @@ import (
 	"github.com/stretchr/testify/mock"
 )
 
-// FakeFetcher is a fake blob fetcher that implement the src/api/artifact/blob.Fetcher interface
+// FakeFetcher is a fake blob fetcher that implement the src/api/artifact/abstractor/blob.Fetcher interface
 type FakeFetcher struct {
 	mock.Mock
 }

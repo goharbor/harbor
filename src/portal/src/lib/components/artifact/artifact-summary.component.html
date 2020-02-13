@@ -1,27 +1,18 @@
-<div>
-
-
 <div class="title-wrapper">
     <div class="title-block arrow-block" *ngIf="withAdmiral">
         <clr-icon class="rotate-90 arrow-back" shape="arrow" size="36" (click)="onBack()"></clr-icon>
     </div>
     <div class="title-block">
         <!-- <h2 class="custom-h2">{{repositoryName}}:{{artifactDetails?.digest | slice:0:15}}</h2> -->
-        <h2 class="custom-h2">{{artifactDetails?.digest | slice:0:15}}</h2>
+        <h2 class="custom-h2">{{artifact?.digest | slice:0:15}}</h2>
     </div>
 </div>
-
 <!-- common properties -->
-<artifact-common-properties [artifactDetails]="artifactDetails"></artifact-common-properties>
+<artifact-common-properties [artifactDetails]="artifact"></artifact-common-properties>
 
 <!-- tags -->
-<div class="loading-center-middle">
-        <span class="spinner spinner-middle" [hidden]="inProgress === false"></span>
-      </div>
-<artifact-tag [artifactDetails]="artifactDetails" [projectName]="projectName" [repositoryName]="repositoryName"
+<artifact-tag [artifactDetails]="artifact" [projectName]="projectName" [repositoryName]="repositoryName"
         (refreshArtifact)="refreshArtifact()"></artifact-tag>
 
 <!-- Additions -->
-
-<artifact-additions></artifact-additions>
-</div>
+<artifact-additions [additionLinks]="artifact?.addition_links"></artifact-additions>

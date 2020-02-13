@@ -40,11 +40,7 @@ func (r *resolverTestSuite) SetupTest() {
 
 }
 
-func (r *resolverTestSuite) TestArtifactType() {
-	r.Assert().Equal(ArtifactTypeChart, r.resolver.ArtifactType())
-}
-
-func (r *resolverTestSuite) TestResolve() {
+func (r *resolverTestSuite) TestResolveMetadata() {
 	content := `{
   "schemaVersion": 2,
   "config": {
@@ -91,12 +87,21 @@ func (r *resolverTestSuite) TestResolve() {
 	artifact := &artifact.Artifact{}
 	r.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	r.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
-	err := r.resolver.Resolve(nil, []byte(content), artifact)
+	err := r.resolver.ResolveMetadata(nil, []byte(content), artifact)
 	r.Require().Nil(err)
 	r.repoMgr.AssertExpectations(r.T())
 	r.blobFetcher.AssertExpectations(r.T())
 	r.Assert().Equal("1.1.2", artifact.ExtraAttrs["version"].(string))
 	r.Assert().Equal("1.8.2", artifact.ExtraAttrs["appVersion"].(string))
+}
+
+func (r *resolverTestSuite) TestGetArtifactType() {
+	r.Assert().Equal(ArtifactTypeChart, r.resolver.GetArtifactType())
+}
+
+func (r *resolverTestSuite) TestListAdditionTypes() {
+	additions := r.resolver.ListAdditionTypes()
+	r.EqualValues([]string{AdditionTypeValues, AdditionTypeReadme, AdditionTypeDependencies}, additions)
 }
 
 func TestResolverTestSuite(t *testing.T) {

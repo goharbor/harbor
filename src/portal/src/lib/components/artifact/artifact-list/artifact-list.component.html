@@ -1,0 +1,47 @@
+<dl class="stack-view">
+    <div class="stack-block" [class.stack-block-expandable]="artifactMainifest.references.length"
+        [class.stack-block-expanded]="referenceNameOpenState && artifactMainifest.references.length">
+        <!-- <dt class="stack-block-label flex-1">Label 2</dt> -->
+        <dt class="stack-block-label flex-1 artifact-name" (click)="openArtifact(artifactMainifest.references)"
+            aria-level="1" aria-posinset="2" aria-setsize="3" [style.padding-left.rem]="2.85+1.75*paddingLeftIndex">
+            {{artifactMainifest.digest}}</dt>
+
+        <div class="stack-children"  *ngIf="referenceNameOpenState">
+            <div class="stack-block">
+                <dt class="stack-block-label pt-0 pb-0 flex-1 clr-display-block" id="stack-block-label" aria-level="2" aria-posinset="1" aria-setsize="3">
+                    <dl class="stack-view">
+                        <div class="stack-block stack-block-expandable"
+                            [class.stack-block-expanded]="referenceIndexOpenState && hasReferenceArtifactList.length">
+                            <!-- <dt class="stack-block-label flex-1">Label 2</dt> -->
+                            <dt class="stack-block-label flex-1 list-index"
+                                (click)="openArtifactContent('index')" aria-level="1"
+                                aria-posinset="2" aria-setsize="3"  [style.padding-left.rem]="3.75+1.75*(paddingLeftIndex)">
+                                <clr-icon class="icon-folder" shape="folder"></clr-icon><span>Index</span></dt>
+
+                            <div class="stack-children" *ngIf="referenceIndexOpenState">
+                                <div class="stack-block" *ngFor="let referceArtifact of hasReferenceArtifactList">
+                                    <!-- <dt class="stack-block-label flex-1" aria-level="2" aria-posinset="1"
+                                        aria-setsize="3">{{referceArtifact.digest}}</dt> -->
+                                    <artifact-list [paddingLeftIndex]="paddingLeftIndex+1" [artifactMainifest]="referceArtifact"></artifact-list>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="stack-block stack-block-expandable"
+                            [class.stack-block-expanded]="referenceDigestOpenState && noReferenceArtifactList.length">
+                            <dt class="stack-block-label flex-1 list-index"
+                                (click)="openArtifactContent('digest')"  [style.padding-left.rem]="3.75+1.75*(paddingLeftIndex)">
+                                <clr-icon class="icon-folder" shape="folder"></clr-icon><span>Digests</span></dt>
+                            <div class="stack-children" *ngIf="referenceDigestOpenState">
+                                <div class="stack-block" *ngFor="let referceArtifact of noReferenceArtifactList">
+                                    <dt class="stack-block-label flex-1" aria-level="2" aria-posinset="1" [style.padding-left.rem]="3+1.5*(paddingLeftIndex+2)"
+                                        aria-setsize="3">{{referceArtifact.digest}}</dt>
+                                </div>
+                            </div>
+                        </div>
+                    </dl>
+                </dt>
+                <!-- <artifact-list [artifactMainifest]="referceArtifact"></artifact-list> -->
+            </div>
+        </div>
+    </div>
+</dl>

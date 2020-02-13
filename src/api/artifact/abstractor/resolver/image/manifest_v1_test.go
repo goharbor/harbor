@@ -15,6 +15,7 @@
 package image
 
 import (
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -30,11 +31,7 @@ func (m *manifestV1ResolverTestSuite) SetupSuite() {
 
 }
 
-func (m *manifestV1ResolverTestSuite) TestArtifactType() {
-	m.Assert().Equal(ArtifactTypeImage, m.resolver.ArtifactType())
-}
-
-func (m *manifestV1ResolverTestSuite) TestResolve() {
+func (m *manifestV1ResolverTestSuite) TestResolveMetadata() {
 	manifest := `{
    "name": "hello-world",
    "tag": "latest",
@@ -81,9 +78,23 @@ func (m *manifestV1ResolverTestSuite) TestResolve() {
 }
 `
 	artifact := &artifact.Artifact{}
-	err := m.resolver.Resolve(nil, []byte(manifest), artifact)
+	err := m.resolver.ResolveMetadata(nil, []byte(manifest), artifact)
 	m.Require().Nil(err)
 	m.Assert().Equal("amd64", artifact.ExtraAttrs["architecture"].(string))
+}
+
+func (m *manifestV1ResolverTestSuite) TestResolveAddition() {
+	_, err := m.resolver.ResolveAddition(nil, nil, AdditionTypeBuildHistory)
+	m.True(ierror.IsErr(err, ierror.BadRequestCode))
+}
+
+func (m *manifestV1ResolverTestSuite) TestGetArtifactType() {
+	m.Assert().Equal(ArtifactTypeImage, m.resolver.GetArtifactType())
+}
+
+func (m *manifestV1ResolverTestSuite) TestListAdditionTypes() {
+	additions := m.resolver.ListAdditionTypes()
+	m.Len(additions, 0)
 }
 
 func TestManifestV1ResolverTestSuite(t *testing.T) {

@@ -20,15 +20,20 @@ import (
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/blob"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
+	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/opencontainers/image-spec/specs-go/v1"
 )
 
+// const definitions
 const (
 	// ArtifactTypeImage is the artifact type for image
-	ArtifactTypeImage = "IMAGE"
+	ArtifactTypeImage           = "IMAGE"
+	AdditionTypeBuildHistory    = "BUILD_HISTORY"
+	AdditionTypeVulnerabilities = "VULNERABILITIES"
 )
 
 func init() {
@@ -36,8 +41,16 @@ func init() {
 		repoMgr:     repository.Mgr,
 		blobFetcher: blob.Fcher,
 	}
-	if err := resolver.Register(rslver, v1.MediaTypeImageConfig, schema2.MediaTypeImageConfig); err != nil {
-		log.Errorf("failed to register resolver for artifact %s: %v", rslver.ArtifactType(), err)
+	mediaTypes := []string{
+		v1.MediaTypeImageConfig,
+		schema2.MediaTypeImageConfig,
+	}
+	if err := resolver.Register(rslver, mediaTypes...); err != nil {
+		log.Errorf("failed to register resolver for media type %v: %v", mediaTypes, err)
+		return
+	}
+	if err := descriptor.Register(rslver, mediaTypes...); err != nil {
+		log.Errorf("failed to register descriptor for media type %v: %v", mediaTypes, err)
 		return
 	}
 }
@@ -48,11 +61,7 @@ type manifestV2Resolver struct {
 	blobFetcher blob.Fetcher
 }
 
-func (m *manifestV2Resolver) ArtifactType() string {
-	return ArtifactTypeImage
-}
-
-func (m *manifestV2Resolver) Resolve(ctx context.Context, content []byte, artifact *artifact.Artifact) error {
+func (m *manifestV2Resolver) ResolveMetadata(ctx context.Context, content []byte, artifact *artifact.Artifact) error {
 	repository, err := m.repoMgr.Get(ctx, artifact.RepositoryID)
 	if err != nil {
 		return err
@@ -78,4 +87,47 @@ func (m *manifestV2Resolver) Resolve(ctx context.Context, content []byte, artifa
 	artifact.ExtraAttrs["architecture"] = image.Architecture
 	artifact.ExtraAttrs["os"] = image.OS
 	return nil
+}
+
+func (m *manifestV2Resolver) ResolveAddition(ctx context.Context, artifact *artifact.Artifact, addition string) (*resolver.Addition, error) {
+	if addition != AdditionTypeBuildHistory {
+		return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
+			WithMessage("addition %s isn't supported for %s(manifest version 2)", addition, ArtifactTypeImage)
+	}
+	repository, err := m.repoMgr.Get(ctx, artifact.RepositoryID)
+	if err != nil {
+		return nil, err
+	}
+	_, content, err := m.blobFetcher.FetchManifest(repository.Name, artifact.Digest)
+	if err != nil {
+		return nil, err
+	}
+	manifest := &v1.Manifest{}
+	if err := json.Unmarshal(content, manifest); err != nil {
+		return nil, err
+	}
+	content, err = m.blobFetcher.FetchLayer(repository.Name, manifest.Config.Digest.String())
+	if err != nil {
+		return nil, err
+	}
+	image := &v1.Image{}
+	if err := json.Unmarshal(content, image); err != nil {
+		return nil, err
+	}
+	content, err = json.Marshal(image.History)
+	if err != nil {
+		return nil, err
+	}
+	return &resolver.Addition{
+		Content:     content,
+		ContentType: "application/json; charset=utf-8",
+	}, nil
+}
+
+func (m *manifestV2Resolver) GetArtifactType() string {
+	return ArtifactTypeImage
+}
+
+func (m *manifestV2Resolver) ListAdditionTypes() []string {
+	return []string{AdditionTypeBuildHistory, AdditionTypeVulnerabilities}
 }

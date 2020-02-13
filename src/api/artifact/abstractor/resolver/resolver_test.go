@@ -23,12 +23,11 @@ import (
 
 type fakeResolver struct{}
 
-func (f *fakeResolver) ArtifactType() string {
-	return ""
-
-}
-func (f *fakeResolver) Resolve(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
+func (f *fakeResolver) ResolveMetadata(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
 	return nil
+}
+func (f *fakeResolver) ResolveAddition(ctx context.Context, artifact *artifact.Artifact, additionType string) (*Addition, error) {
+	return nil, nil
 }
 
 type resolverTestSuite struct {
