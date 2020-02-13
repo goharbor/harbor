@@ -155,7 +155,7 @@ _build_clair_adapter:
 			$(call _extract_archive, https://github.com/goharbor/harbor-scanner-clair/releases/download/$(CLAIRADAPTERVERSION)/harbor-scanner-clair_$(CLAIRADAPTERVERSION:v%=%)_Linux_x86_64.tar.gz, $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary/) && \
 			mv $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary/scanner-clair $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary/harbor-scanner-clair; \
 		else \
-			cd $(DOCKERFILEPATH_CLAIR_ADAPTER) && $(DOCKERFILEPATH_CLAIR_ADAPTER)/builder $(CLAIRADAPTERVERSION) && cd - ; \
+			cd $(DOCKERFILEPATH_CLAIR_ADAPTER) && $(DOCKERFILEPATH_CLAIR_ADAPTER)/builder.sh $(CLAIRADAPTERVERSION) && cd - ; \
 		fi ; \
 		echo "building clair adapter container for photon..." ; \
 		$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_CLAIR_ADAPTER)/$(DOCKERFILENAME_CLAIR_ADAPTER) -t $(DOCKERIMAGENAME_CLAIR_ADAPTER):$(CLAIRADAPTERVERSION)-$(VERSIONTAG) . ; \
@@ -165,13 +165,21 @@ _build_clair_adapter:
 
 _build_trivy_adapter:
 	@if [ "$(TRIVYFLAG)" = "true" ] ; then \
+		rm -rf $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary && mkdir -p $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary ; \
+		echo "Downloading Trivy scanner $(TRIVYVERSION)..." ; \
+		$(call _extract_archive, https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz, $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/) ; \
 		if [ "$(BUILDBIN)" != "true" ] ; then \
-			rm -rf $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary && mkdir -p $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary && \
-			$(call _extract_archive, https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz, $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/) && \
+			echo "Downloading Trivy adapter $(TRIVYADAPTERVERSION)..." ; \
 			$(call _extract_archive, https://github.com/aquasecurity/harbor-scanner-trivy/releases/download/$(TRIVYADAPTERVERSION)/harbor-scanner-trivy_$(TRIVYADAPTERVERSION:v%=%)_Linux_x86_64.tar.gz, $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/) ; \
+		else \
+			echo "Building Trivy adapter $(TRIVYADAPTERVERSION) from sources..." ; \
+			cd $(DOCKERFILEPATH_TRIVY_ADAPTER) && $(DOCKERFILEPATH_TRIVY_ADAPTER)/builder.sh $(TRIVYADAPTERVERSION) && cd - ; \
 		fi ; \
-		echo "building trivy adapter container for photon..." ; \
-		$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) --build-arg trivy_version=$(TRIVYVERSION) -f $(DOCKERFILEPATH_TRIVY_ADAPTER)/$(DOCKERFILENAME_TRIVY_ADAPTER) -t $(DOCKERIMAGENAME_TRIVY_ADAPTER):$(TRIVYADAPTERVERSION)-$(VERSIONTAG) . ; \
+		echo "Building Trivy adapter container for photon..." ; \
+		$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) \
+			--build-arg trivy_version=$(TRIVYVERSION) \
+			-f $(DOCKERFILEPATH_TRIVY_ADAPTER)/$(DOCKERFILENAME_TRIVY_ADAPTER) \
+			-t $(DOCKERIMAGENAME_TRIVY_ADAPTER):$(TRIVYADAPTERVERSION)-$(VERSIONTAG) . ; \
 		rm -rf $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary; \
 		echo "Done." ; \
 	fi
