@@ -17,16 +17,19 @@ package handler
 import (
 	"context"
 	"fmt"
+	"github.com/docker/distribution/reference"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/api/repository"
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/q"
-	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/artifact"
+	"github.com/opencontainers/go-digest"
 	"net/http"
 	"strings"
 	"time"
@@ -36,7 +39,7 @@ func newArtifactAPI() *artifactAPI {
 	return &artifactAPI{
 		artCtl:  artifact.Ctl,
 		proMgr:  project.Mgr,
-		repoMgr: repository.Mgr,
+		repoCtl: repository.Ctl,
 	}
 }
 
@@ -44,7 +47,7 @@ type artifactAPI struct {
 	BaseAPI
 	artCtl  artifact.Controller
 	proMgr  project.Manager
-	repoMgr repository.Manager
+	repoCtl repository.Controller
 }
 
 func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListArtifactsParams) middleware.Responder {
@@ -67,7 +70,7 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	if params.PageSize != nil {
 		query.PageSize = *(params.PageSize)
 	}
-	repository, err := a.repoMgr.GetByName(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName))
+	repository, err := a.repoCtl.GetByName(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName))
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
@@ -131,6 +134,56 @@ func (a *artifactAPI) DeleteArtifact(ctx context.Context, params operation.Delet
 		return a.SendError(ctx, err)
 	}
 	return operation.NewDeleteArtifactOK()
+}
+
+// TODO immutable, quota, readonly middlewares should cover this API
+func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArtifactParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceArtifact); err != nil {
+		return a.SendError(ctx, err)
+	}
+	srcRepo, srcRef, err := parse(params.From)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	srcPro, _ := utils.ParseRepository(srcRepo)
+	if err = a.RequireProjectAccess(ctx, srcPro, rbac.ActionRead, rbac.ResourceArtifact); err != nil {
+		return a.SendError(ctx, err)
+	}
+	srcArt, err := a.artCtl.GetByReference(ctx, srcRepo, srcRef, &artifact.Option{WithTag: true})
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	_, id, err := a.repoCtl.Ensure(ctx, params.ProjectName+"/"+params.RepositoryName)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	id, err = a.artCtl.Copy(ctx, srcArt.ID, id)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+	// TODO set location header
+	_ = id
+	return operation.NewCopyArtifactCreated()
+}
+
+// parse "repository:tag" or "repository@digest" into repository and reference parts
+func parse(s string) (string, string, error) {
+	matches := reference.ReferenceRegexp.FindStringSubmatch(s)
+	if matches == nil {
+		return "", "", ierror.New(nil).WithCode(ierror.BadRequestCode).
+			WithMessage("invalid input: %s", s)
+	}
+	repository := matches[1]
+	reference := matches[2]
+	if matches[3] != "" {
+		_, err := digest.Parse(matches[3])
+		if err != nil {
+			return "", "", ierror.New(nil).WithCode(ierror.BadRequestCode).
+				WithMessage("invalid input: %s", s)
+		}
+		reference = matches[3]
+	}
+	return repository, reference, nil
 }
 
 func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagParams) middleware.Responder {

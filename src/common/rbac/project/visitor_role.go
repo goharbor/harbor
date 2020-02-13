@@ -128,6 +128,7 @@ var (
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionCreate},
 
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
@@ -228,6 +229,7 @@ var (
 
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionDelete},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
@@ -295,6 +297,7 @@ var (
 
 			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
 
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
 			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},

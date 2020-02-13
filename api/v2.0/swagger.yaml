@@ -187,6 +187,36 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+    post:
+      summary: Copy artifact
+      description: Copy the artifact specified in the "from" parameter to the repository.
+      tags:
+        - artifact
+      operationId: CopyArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - name: from
+          in: query
+          description: The artifact from which the new artifact is copied from, the format should be "project/repository:tag" or "project/repository@digest".
+          type: string
+          required: true
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}:
     get:
       summary: Get the specific artifact
