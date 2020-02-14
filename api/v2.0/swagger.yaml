@@ -544,10 +544,10 @@ definitions:
       os:
         type: string
         description: The OS that the artifact applys to
-      os.version:
+      '''os.version''':
         type: string
         description: The version of the OS that the artifact applys to
-      os.features:
+      '''os.features''':
         type: array
         description: The features of the OS that the artifact applys to
         items:
