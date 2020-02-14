@@ -25,9 +25,17 @@ import (
 )
 
 func TestSendError(t *testing.T) {
-	// internal server error
+	// unauthorized error
 	rw := httptest.NewRecorder()
-	err := ierror.New(nil).WithCode(ierror.GeneralCode).WithMessage("unknown")
+	err := ierror.New(nil).WithCode(ierror.UnAuthorizedCode).WithMessage("unauthorized")
+	SendError(rw, err)
+	assert.Equal(t, http.StatusUnauthorized, rw.Code)
+	assert.Equal(t, `{"errors":[{"code":"UNAUTHORIZED","message":"unauthorized"}]}`+"\n", rw.Body.String())
+	assert.Equal(t, `Basic realm="harbor"`, rw.Header().Get("Www-Authenticate"))
+
+	// internal server error
+	rw = httptest.NewRecorder()
+	err = ierror.New(nil).WithCode(ierror.GeneralCode).WithMessage("unknown")
 	SendError(rw, err)
 	assert.Equal(t, http.StatusInternalServerError, rw.Code)
 	assert.Equal(t, `{"errors":[{"code":"UNKNOWN","message":"internal server error"}]}`+"\n", rw.Body.String())

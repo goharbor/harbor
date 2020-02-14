@@ -158,10 +158,8 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	digest := "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180"
 
 	// the artifact already exists
-	c.artMgr.On("List").Return(1, []*artifact.Artifact{
-		{
-			ID: 1,
-		},
+	c.artMgr.On("GetByDigest").Return(&artifact.Artifact{
+		ID: 1,
 	}, nil)
 	created, id, err := c.ctl.ensureArtifact(nil, 1, digest)
 	c.Require().Nil(err)
@@ -175,7 +173,7 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	c.repoMgr.On("Get").Return(&models.RepoRecord{
 		ProjectID: 1,
 	}, nil)
-	c.artMgr.On("List").Return(1, []*artifact.Artifact{}, nil)
+	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
 	c.artMgr.On("Create").Return(1, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	created, id, err = c.ctl.ensureArtifact(nil, 1, digest)
@@ -233,7 +231,7 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.repoMgr.On("Get").Return(&models.RepoRecord{
 		ProjectID: 1,
 	}, nil)
-	c.artMgr.On("List").Return(1, []*artifact.Artifact{}, nil)
+	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
 	c.artMgr.On("Create").Return(1, nil)
 	c.tagMgr.On("List").Return(1, []*tag.Tag{}, nil)
 	c.tagMgr.On("Create").Return(1, nil)
@@ -298,7 +296,7 @@ func (c *controllerTestSuite) TestGetByDigest() {
 	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
 		RepositoryID: 1,
 	}, nil)
-	c.artMgr.On("List").Return(0, nil, nil)
+	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
 	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	art, err := c.ctl.getByDigest(nil, "library/hello-world",
 		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
@@ -312,11 +310,9 @@ func (c *controllerTestSuite) TestGetByDigest() {
 	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
 		RepositoryID: 1,
 	}, nil)
-	c.artMgr.On("List").Return(1, []*artifact.Artifact{
-		{
-			ID:           1,
-			RepositoryID: 1,
-		},
+	c.artMgr.On("GetByDigest").Return(&artifact.Artifact{
+		ID:           1,
+		RepositoryID: 1,
 	}, nil)
 	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	art, err = c.ctl.getByDigest(nil, "library/hello-world",
@@ -367,11 +363,9 @@ func (c *controllerTestSuite) TestGetByReference() {
 	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
 		RepositoryID: 1,
 	}, nil)
-	c.artMgr.On("List").Return(1, []*artifact.Artifact{
-		{
-			ID:           1,
-			RepositoryID: 1,
-		},
+	c.artMgr.On("GetByDigest").Return(&artifact.Artifact{
+		ID:           1,
+		RepositoryID: 1,
 	}, nil)
 	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	art, err := c.ctl.GetByReference(nil, "library/hello-world",

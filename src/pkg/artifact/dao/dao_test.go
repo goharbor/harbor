@@ -322,6 +322,19 @@ func (d *daoTestSuite) TestGet() {
 	d.Equal(d.parentArtID, artifact.ID)
 }
 
+func (d *daoTestSuite) TestGetByDigest() {
+	// get the non-exist artifact
+	_, err := d.dao.GetByDigest(d.ctx, 1, "non_existing_digest")
+	d.Require().NotNil(err)
+	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+
+	// get the exist artifact
+	artifact, err := d.dao.GetByDigest(d.ctx, 1, "child_digest_02")
+	d.Require().Nil(err)
+	d.Require().NotNil(artifact)
+	d.Equal(d.childArt02ID, artifact.ID)
+}
+
 func (d *daoTestSuite) TestCreate() {
 	// the happy pass case is covered in Setup
 

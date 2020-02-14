@@ -26,10 +26,13 @@ import (
 type DAO interface {
 	// Count returns the total count of artifacts according to the query
 	Count(ctx context.Context, query *q.Query) (total int64, err error)
-	// List artifacts according to the query
+	// List artifacts according to the query. The artifacts that referenced by others and
+	// without tags are not returned
 	List(ctx context.Context, query *q.Query) (artifacts []*Artifact, err error)
 	// Get the artifact specified by ID
 	Get(ctx context.Context, id int64) (*Artifact, error)
+	// GetByDigest returns the artifact specified by repository ID and digest
+	GetByDigest(ctx context.Context, repositoryID int64, digest string) (artifact *Artifact, err error)
 	// Create the artifact
 	Create(ctx context.Context, artifact *Artifact) (id int64, err error)
 	// Delete the artifact specified by ID
@@ -112,6 +115,28 @@ func (d *dao) Get(ctx context.Context, id int64) (*Artifact, error) {
 	}
 	return artifact, nil
 }
+
+func (d *dao) GetByDigest(ctx context.Context, repositoryID int64, digest string) (*Artifact, error) {
+	qs, err := orm.QuerySetter(ctx, &Artifact{}, &q.Query{
+		Keywords: map[string]interface{}{
+			"RepositoryID": repositoryID,
+			"Digest":       digest,
+		},
+	})
+	if err != nil {
+		return nil, err
+	}
+	artifacts := []*Artifact{}
+	if _, err = qs.All(&artifacts); err != nil {
+		return nil, err
+	}
+	if len(artifacts) == 0 {
+		return nil, ierror.New(nil).WithCode(ierror.NotFoundCode).
+			WithMessage("artifact %s under the repository %d not found", digest, repositoryID)
+	}
+	return artifacts[0], nil
+}
+
 func (d *dao) Create(ctx context.Context, artifact *Artifact) (int64, error) {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {

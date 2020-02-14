@@ -119,19 +119,15 @@ func (c *controller) Ensure(ctx context.Context, repositoryID int64, digest stri
 
 // ensure the artifact exists under the repository, create it if doesn't exist.
 func (c *controller) ensureArtifact(ctx context.Context, repositoryID int64, digest string) (bool, int64, error) {
-	query := &q.Query{
-		Keywords: map[string]interface{}{
-			"repository_id": repositoryID,
-			"digest":        digest,
-		},
-	}
-	_, artifacts, err := c.artMgr.List(ctx, query)
-	if err != nil {
-		return false, 0, err
-	}
+	art, err := c.artMgr.GetByDigest(ctx, repositoryID, digest)
 	// the artifact already exists under the repository, return directly
-	if len(artifacts) > 0 {
-		return false, artifacts[0].ID, nil
+	if err == nil {
+		return false, art.ID, nil
+	}
+
+	// got other error when get the artifact, return the error
+	if !ierror.IsErr(err, ierror.NotFoundCode) {
+		return false, 0, err
 	}
 
 	// the artifact doesn't exist under the repository, create it first
@@ -162,13 +158,11 @@ func (c *controller) ensureArtifact(ctx context.Context, repositoryID int64, dig
 	if err != nil {
 		// if got conflict error, try to get the artifact again
 		if ierror.IsConflictErr(err) {
-			_, artifacts, err = c.artMgr.List(ctx, query)
-			if err != nil {
-				return false, 0, err
+			art, err = c.artMgr.GetByDigest(ctx, repositoryID, digest)
+			if err == nil {
+				return false, art.ID, nil
 			}
-			if len(artifacts) > 0 {
-				return false, artifacts[0].ID, nil
-			}
+			return false, 0, err
 		}
 		return false, 0, err
 	}
@@ -246,20 +240,11 @@ func (c *controller) getByDigest(ctx context.Context, repository, digest string,
 	if err != nil {
 		return nil, err
 	}
-	_, artifacts, err := c.List(ctx, &q.Query{
-		Keywords: map[string]interface{}{
-			"RepositoryID": repo.RepositoryID,
-			"Digest":       digest,
-		},
-	}, option)
+	art, err := c.artMgr.GetByDigest(ctx, repo.RepositoryID, digest)
 	if err != nil {
 		return nil, err
 	}
-	if len(artifacts) == 0 {
-		return nil, ierror.New(nil).WithCode(ierror.NotFoundCode).
-			WithMessage("artifact %s@%s not found", repository, digest)
-	}
-	return artifacts[0], nil
+	return c.assembleArtifact(ctx, art, option), nil
 }
 
 func (c *controller) getByTag(ctx context.Context, repository, tag string, option *Option) (*Artifact, error) {

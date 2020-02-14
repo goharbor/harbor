@@ -34,8 +34,6 @@ const (
 	manifestInfoKey = contextKey("ManifestInfo")
 	// ScannerPullCtxKey the context key for robot account to bypass the pull policy check.
 	ScannerPullCtxKey = contextKey("ScannerPullCheck")
-	// SkipInjectRegistryCredKey is the context key telling registry proxy to skip adding credentials
-	SkipInjectRegistryCredKey = contextKey("SkipInjectRegistryCredential")
 )
 
 var (
@@ -94,12 +92,6 @@ type ArtifactInfo struct {
 func ArtifactInfoFromContext(ctx context.Context) (*ArtifactInfo, bool) {
 	info, ok := ctx.Value(ArtifactInfoKey).(*ArtifactInfo)
 	return info, ok
-}
-
-// SkipInjectRegistryCred reflects whether the inject credentials should be skipped
-func SkipInjectRegistryCred(ctx context.Context) bool {
-	res, ok := ctx.Value(SkipInjectRegistryCredKey).(bool)
-	return ok && res
 }
 
 // NewManifestInfoContext returns context with manifest info
