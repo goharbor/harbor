@@ -18,14 +18,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/goharbor/harbor/src/replication/util"
-
+	commonthttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/config"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/operation"
 	"github.com/goharbor/harbor/src/replication/policy"
 	"github.com/goharbor/harbor/src/replication/registry"
+	"github.com/goharbor/harbor/src/replication/util"
 )
 
 // Handler is the handler to handle event
@@ -191,6 +191,6 @@ func GetLocalRegistry() *model.Registry {
 			// use secret to do the auth for the local Harbor
 			AccessSecret: config.Config.JobserviceSecret,
 		},
-		Insecure: true,
+		Insecure: !commonthttp.InternalTLSEnabled(),
 	}
 }

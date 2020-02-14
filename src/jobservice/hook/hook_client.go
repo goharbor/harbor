@@ -42,10 +42,6 @@ type basicClient struct {
 
 // NewClient return the ptr of the new hook client
 func NewClient(ctx context.Context) Client {
-	tlsConfig, err := commonhttp.GetInternalTLSConfig()
-	if err != nil {
-		panic(err)
-	}
 	// Create transport
 	transport := &http.Transport{
 		MaxIdleConns:    20,
@@ -58,7 +54,13 @@ func NewClient(ctx context.Context) Client {
 		ResponseHeaderTimeout: 10 * time.Second,
 		ExpectContinueTimeout: 1 * time.Second,
 		Proxy:                 http.ProxyFromEnvironment,
-		TLSClientConfig:       tlsConfig,
+	}
+	if commonhttp.InternalTLSEnabled() {
+		tlsConfig, err := commonhttp.GetInternalTLSConfig()
+		if err != nil {
+			panic(err)
+		}
+		transport.TLSClientConfig = tlsConfig
 	}
 
 	client := &http.Client{

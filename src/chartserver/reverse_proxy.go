@@ -17,6 +17,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/api"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/replication"
@@ -57,6 +58,7 @@ func NewProxyEngine(target *url.URL, cred *Credential, middlewares ...func(http.
 			director(target, cred, req)
 		},
 		ModifyResponse: modifyResponse,
+		Transport:      commonhttp.GetHTTPTransport(commonhttp.InternalTransport),
 	}
 
 	if len(middlewares) > 0 {

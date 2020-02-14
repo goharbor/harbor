@@ -27,10 +27,10 @@ import (
 
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/manifestlist"
-	// register oci manifest unmarshal function
-	_ "github.com/docker/distribution/manifest/ocischema"
+	_ "github.com/docker/distribution/manifest/ocischema" // register oci manifest unmarshal function
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/internal"
 	ierror "github.com/goharbor/harbor/src/internal/error"
@@ -53,6 +53,13 @@ var (
 		v1.MediaTypeImageManifest,
 		schema2.MediaTypeManifest,
 		schema1.MediaTypeSignedManifest,
+	}
+
+	localRegistryURL = map[string]bool{
+		"http://registry:5000":  true,
+		"https://registry:5443": true,
+		"http://core:8080":      true,
+		"https://core:10443":    true,
 	}
 )
 
@@ -99,22 +106,41 @@ type Client interface {
 // of the registry automatically and calls the corresponding underlying authorizers(basic/bearer) to
 // do the auth work. If a customized authorizer is needed, use "NewClientWithAuthorizer" instead
 func NewClient(url, username, password string, insecure bool) Client {
+	var transportType uint
+	if insecure {
+		transportType = commonhttp.InsecureTransport
+	} else {
+		transportType = commonhttp.SecureTransport
+	}
+	if _, ok := localRegistryURL[strings.TrimRight(url, "/")]; ok {
+		transportType = commonhttp.InternalTransport
+	}
+
 	return &client{
 		url:        url,
-		authorizer: auth.NewAuthorizer(username, password, insecure),
+		authorizer: auth.NewAuthorizer(username, password, transportType),
 		client: &http.Client{
-			Transport: internal.GetHTTPTransport(insecure),
+			Transport: commonhttp.GetHTTPTransport(transportType),
 		},
 	}
 }
 
 // NewClientWithAuthorizer creates a registry client with the provided authorizer
 func NewClientWithAuthorizer(url string, authorizer internal.Authorizer, insecure bool) Client {
+	var transportType uint
+	if insecure {
+		transportType = commonhttp.InsecureTransport
+	} else {
+		transportType = commonhttp.SecureTransport
+	}
+	if _, ok := localRegistryURL[strings.TrimRight(url, "/")]; ok {
+		transportType = commonhttp.InternalTransport
+	}
 	return &client{
 		url:        url,
 		authorizer: authorizer,
 		client: &http.Client{
-			Transport: internal.GetHTTPTransport(insecure),
+			Transport: commonhttp.GetHTTPTransport(transportType),
 		},
 	}
 }

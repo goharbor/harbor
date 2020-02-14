@@ -19,8 +19,6 @@ import (
 	"fmt"
 	"sync"
 
-	"sync"
-
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/internal"

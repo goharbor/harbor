@@ -34,7 +34,7 @@ http:
     certificate: /etc/harbor/tls/registry.crt
     key: /etc/harbor/tls/registry.key
     clientcas:
-      - /etc/harbor/tls/harbor_internal_ca.crt
+      - /harbor_cust_cert/harbor_internal_ca.crt
 {% endif %}
 
 auth:

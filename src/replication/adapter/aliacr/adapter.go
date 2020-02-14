@@ -4,9 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/docker/distribution/registry/client/auth/challenge"
-	"github.com/goharbor/harbor/src/internal"
-	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
+
 	"net/http"
 	"path/filepath"
 	"regexp"
@@ -14,8 +12,11 @@ import (
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
+	"github.com/docker/distribution/registry/client/auth/challenge"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -69,9 +70,13 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 }
 
 func ping(registry *model.Registry) (string, string, error) {
-	client := &http.Client{
-		Transport: internal.GetHTTPTransport(registry.Insecure),
+	client := &http.Client{}
+	if registry.Insecure {
+		client.Transport = commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
+	} else {
+		client.Transport = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
 	}
+
 	resp, err := client.Get(registry.URL + "/v2/")
 	if err != nil {
 		return "", "", err

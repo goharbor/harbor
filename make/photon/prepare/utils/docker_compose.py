@@ -1,5 +1,4 @@
 import os
-from functools import reduce
 
 from g import templates_dir
 from .configs import parse_versions

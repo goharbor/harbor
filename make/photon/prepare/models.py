@@ -4,7 +4,7 @@ from pathlib import Path
 from shutil import copytree, rmtree
 
 from g import internal_tls_dir, DEFAULT_GID, DEFAULT_UID, PG_GID, PG_UID
-from utils.misc import check_permission, owner_can_read, other_can_read, get_realpath, owner_can_read
+from utils.misc import check_permission, owner_can_read, get_realpath
 
 
 class InternalTLS:

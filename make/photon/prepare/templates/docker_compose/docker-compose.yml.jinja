@@ -4,7 +4,7 @@ services:
     image: goharbor/harbor-log:{{version}}
     container_name: harbor-log
     restart: always
-    dns_search: ""
+    dns_search: .
     cap_drop:
       - ALL
     cap_add:
@@ -43,8 +43,11 @@ services:
 {% endif %}
 {%if internal_tls.enabled %}
       - type: bind
+        source: {{internal_tls.core_key_path}}
+        target: /harbor_cust_cert/core.crt
+      - type: bind
         source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /etc/harbor/tls/harbor_internal_ca.crt
+        target: /harbor_cust_cert/harbor_internal_ca.crt
       - type: bind
         source: {{internal_tls.registry_crt_path}}
         target: /etc/harbor/tls/registry.crt
@@ -57,7 +60,7 @@ services:
 {% if with_clair %}
       - harbor-clair
 {% endif %}
-    dns_search: ""
+    dns_search: .
     depends_on:
       - log
     logging:
@@ -96,7 +99,7 @@ services:
 {% endif %}
     networks:
       - harbor
-    dns_search: ""
+    dns_search: .
     depends_on:
       - log
     logging:
@@ -141,7 +144,7 @@ services:
         aliases:
           - harbor-db
   {% endif %}
-    dns_search: ""
+    dns_search: .
     env_file:
       - ./common/config/db/env
     depends_on:
@@ -207,7 +210,7 @@ services:
         aliases:
           - harbor-core
 {% endif %}
-    dns_search: ""
+    dns_search: .
     depends_on:
       - log
       - registry
@@ -235,7 +238,7 @@ services:
       - NET_BIND_SERVICE
     networks:
       - harbor
-    dns_search: ""
+    dns_search: .
     depends_on:
       - log
     logging:
@@ -277,7 +280,7 @@ services:
 {% if with_clair %}
       - harbor-clair
 {% endif %}
-    dns_search: ""
+    dns_search: .
     depends_on:
       - core
     logging:
@@ -310,7 +313,7 @@ services:
         aliases:
           - redis
   {% endif %}
-    dns_search: ""
+    dns_search: .
     depends_on:
       - log
     logging:
@@ -351,7 +354,7 @@ services:
 {% if with_notary %}
       - harbor-notary
 {% endif %}
-    dns_search: ""
+    dns_search: .
     ports:
       - {{http_port}}:8080
 {% if protocol == 'https' %}
@@ -378,7 +381,7 @@ services:
     networks:
       - notary-sig
       - harbor-notary
-    dns_search: ""
+    dns_search: .
     volumes:
       - ./common/config/notary:/etc/notary:z
       - type: bind
@@ -419,7 +422,7 @@ services:
       notary-sig:
         aliases:
           - notarysigner
-    dns_search: ""
+    dns_search: .
     volumes:
       - ./common/config/notary:/etc/notary:z
       - type: bind
@@ -466,7 +469,7 @@ services:
       - SETGID
       - SETUID
     cpu_quota: 50000
-    dns_search: ""
+    dns_search: .
     depends_on:
       - log
   {% if external_database == False %}
@@ -479,7 +482,7 @@ services:
 {%if internal_tls.enabled %}
       - type: bind
         source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /etc/harbor/ssl/harbor_internal_ca.crt
+        target: /harbor_cust_cert/harbor_internal_ca.crt 
       - type: bind
         source: {{internal_tls.clair_crt_path}}
         target: /etc/harbor/ssl/clair.crt
@@ -507,16 +510,17 @@ services:
       - SETGID
       - SETUID
     cpu_quota: 50000
-    dns_search: ""
+    dns_search: .
     depends_on:
       - clair
 {% if external_redis == False %}
       - redis
 {% endif %}
 {%if internal_tls.enabled %}
+    volumes:
       - type: bind
         source: {{internal_tls.harbor_internal_ca_crt_path}}
-        target: /etc/harbor/ssl/harbor_internal_ca.crt
+        target: /harbor_cust_cert/harbor_internal_ca.crt 
       - type: bind
         source: {{internal_tls.clair_adapter_crt_path}}
         target: /etc/harbor/ssl/clair_adapter.crt
@@ -575,7 +579,7 @@ services:
       - SETUID
     networks:
       - harbor-chartmuseum
-    dns_search: ""
+    dns_search: .
     depends_on:
       - log
     volumes:

@@ -56,7 +56,7 @@ docker run --rm -v $input_dir:/input:z \
                     -v $harbor_prepare_path:/compose_location:z \
                     -v $config_dir:/config:z \
                     -v /:/hostfs:z \
-                    goharbor/prepare:dev $@
+                    goharbor/prepare:dev prepare $@
 
 echo "Clean up the input dir"
 # Clean up input dir

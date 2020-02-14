@@ -14,8 +14,6 @@ from .misc import (
 SSL_CERT_PATH = os.path.join("/etc/cert", "server.crt")
 SSL_CERT_KEY_PATH = os.path.join("/etc/cert", "server.key")
 
-secret_keys_dir = '/secret/keys'
-
 def _get_secret(folder, filename, length=16):
     key_file = os.path.join(folder, filename)
     if os.path.isfile(key_file):

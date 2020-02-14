@@ -16,7 +16,6 @@ package awsecr
 
 import (
 	"errors"
-	"github.com/goharbor/harbor/src/internal"
 	"net/http"
 	"regexp"
 
@@ -25,6 +24,7 @@ import (
 	"github.com/aws/aws-sdk-go/aws/credentials"
 	"github.com/aws/aws-sdk-go/aws/session"
 	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
+	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
@@ -245,11 +245,18 @@ func (a *adapter) createRepository(repository string) error {
 	if a.region == "" {
 		return errors.New("no region parsed")
 	}
+	var tr *http.Transport
+	if a.registry.Insecure {
+		tr = commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
+	} else {
+		tr = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
+	}
+
 	config := &aws.Config{
 		Credentials: cred,
 		Region:      &a.region,
 		HTTPClient: &http.Client{
-			Transport: internal.GetHTTPTransport(a.registry.Insecure),
+			Transport: tr,
 		},
 	}
 	if a.forceEndpoint != nil {
@@ -287,11 +294,18 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 	if a.region == "" {
 		return errors.New("no region parsed")
 	}
+
+	var tr *http.Transport
+	if a.registry.Insecure {
+		tr = commonhttp.GetHTTPTransport(commonhttp.InsecureTransport)
+	} else {
+		tr = commonhttp.GetHTTPTransport(commonhttp.SecureTransport)
+	}
 	config := &aws.Config{
 		Credentials: cred,
 		Region:      &a.region,
 		HTTPClient: &http.Client{
-			Transport: internal.GetHTTPTransport(a.registry.Insecure),
+			Transport: tr,
 		},
 	}
 	if a.forceEndpoint != nil {
