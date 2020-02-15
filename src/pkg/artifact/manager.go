@@ -16,9 +16,10 @@ package artifact
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
 	"github.com/goharbor/harbor/src/pkg/q"
-	"time"
 )
 
 var (
@@ -43,6 +44,10 @@ type Manager interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// UpdatePullTime updates the pull time of the artifact
 	UpdatePullTime(ctx context.Context, artifactID int64, time time.Time) (err error)
+	// ListReferences according to the query
+	ListReferences(ctx context.Context, query *q.Query) (references []*Reference, err error)
+	// DeleteReference specified by ID
+	DeleteReference(ctx context.Context, id int64) (err error)
 }
 
 // NewManager returns an instance of the default manager
@@ -122,29 +127,43 @@ func (m *manager) UpdatePullTime(ctx context.Context, artifactID int64, time tim
 	}, "PullTime")
 }
 
+func (m *manager) ListReferences(ctx context.Context, query *q.Query) ([]*Reference, error) {
+	references, err := m.dao.ListReferences(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+	var refs []*Reference
+	for _, reference := range references {
+		ref := &Reference{}
+		ref.From(reference)
+		art, err := m.dao.Get(ctx, reference.ChildID)
+		if err != nil {
+			return nil, err
+		}
+		ref.ChildDigest = art.Digest
+		refs = append(refs, ref)
+	}
+	return refs, nil
+}
+
+func (m *manager) DeleteReference(ctx context.Context, id int64) error {
+	return m.dao.DeleteReference(ctx, id)
+}
+
 // assemble the artifact with references populated
 func (m *manager) assemble(ctx context.Context, art *dao.Artifact) (*Artifact, error) {
 	artifact := &Artifact{}
 	// convert from database object
 	artifact.From(art)
 	// populate the references
-	refs, err := m.dao.ListReferences(ctx, &q.Query{
+	references, err := m.ListReferences(ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"parent_id": artifact.ID,
+			"ParentID": artifact.ID,
 		},
 	})
 	if err != nil {
 		return nil, err
 	}
-	for _, ref := range refs {
-		reference := &Reference{}
-		reference.From(ref)
-		art, err := m.dao.Get(ctx, reference.ChildID)
-		if err != nil {
-			return nil, err
-		}
-		reference.ChildDigest = art.Digest
-		artifact.References = append(artifact.References, reference)
-	}
+	artifact.References = references
 	return artifact, nil
 }

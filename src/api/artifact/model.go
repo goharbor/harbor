@@ -24,22 +24,22 @@ import (
 // Artifact is the overall view of artifact
 type Artifact struct {
 	artifact.Artifact
-	Tags          []*Tag                   // the list of tags that attached to the artifact
-	AdditionLinks map[string]*AdditionLink // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
-	Labels        []*cmodels.Label
+	Tags          []*Tag                   `json:"tags"`           // the list of tags that attached to the artifact
+	AdditionLinks map[string]*AdditionLink `json:"addition_links"` // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
+	Labels        []*cmodels.Label         `json:"labels"`
 }
 
 // Tag is the overall view of tag
 type Tag struct {
 	tag.Tag
-	Immutable bool
-	Signed    bool
+	Immutable bool `json:"immutable"`
+	Signed    bool `json:"signed"`
 }
 
 // AdditionLink is a link via that the addition can be fetched
 type AdditionLink struct {
-	HREF     string
-	Absolute bool // specify the href is an absolute URL or not
+	HREF     string `json:"href"`
+	Absolute bool   `json:"absolute"` // specify the href is an absolute URL or not
 }
 
 // Option is used to specify the properties returned when listing/getting artifacts

@@ -61,7 +61,6 @@ func (d *daoTestSuite) TearDownSuite() {
 }
 
 func (d *daoTestSuite) SetupTest() {
-
 	tag := &tag.Tag{
 		RepositoryID: 1000,
 		ArtifactID:   d.artifactID,
@@ -221,6 +220,53 @@ func (d *daoTestSuite) TestUpdate() {
 	var e *ierror.Error
 	d.Require().True(errors.As(err, &e))
 	d.Equal(ierror.NotFoundCode, e.Code)
+}
+
+func (d *daoTestSuite) TestDeleteOfArtifact() {
+	artifactID, err := d.artDAO.Create(d.ctx, &artdao.Artifact{
+		Type:              "IMAGE",
+		MediaType:         "application/vnd.oci.image.config.v1+json",
+		ManifestMediaType: "application/vnd.oci.image.manifest.v1+json",
+		ProjectID:         1,
+		RepositoryID:      1000,
+		Digest:            "sha256:digest02",
+	})
+	d.Require().Nil(err)
+	defer d.artDAO.Delete(d.ctx, artifactID)
+
+	tag1 := &tag.Tag{
+		RepositoryID: 1000,
+		ArtifactID:   artifactID,
+		Name:         "tag1",
+	}
+	_, err = d.dao.Create(d.ctx, tag1)
+	d.Require().Nil(err)
+	tag2 := &tag.Tag{
+		RepositoryID: 1000,
+		ArtifactID:   artifactID,
+		Name:         "tag2",
+	}
+	_, err = d.dao.Create(d.ctx, tag2)
+	d.Require().Nil(err)
+
+	tags, err := d.dao.List(d.ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"ArtifactID": artifactID,
+		},
+	})
+	d.Require().Nil(err)
+	d.Require().Len(tags, 2)
+
+	err = d.dao.DeleteOfArtifact(d.ctx, artifactID)
+	d.Require().Nil(err)
+
+	tags, err = d.dao.List(d.ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"ArtifactID": artifactID,
+		},
+	})
+	d.Require().Nil(err)
+	d.Require().Len(tags, 0)
 }
 
 func TestDaoTestSuite(t *testing.T) {
