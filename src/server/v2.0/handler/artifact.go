@@ -17,6 +17,10 @@ package handler
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/api/artifact"
@@ -27,9 +31,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/artifact"
-	"net/http"
-	"strings"
-	"time"
 )
 
 func newArtifactAPI() *artifactAPI {

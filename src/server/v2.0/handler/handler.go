@@ -15,10 +15,11 @@
 package handler
 
 import (
-	serror "github.com/goharbor/harbor/src/server/error"
-	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 	"log"
 	"net/http"
+
+	serror "github.com/goharbor/harbor/src/server/error"
+	"github.com/goharbor/harbor/src/server/v2.0/restapi"
 )
 
 // New returns http handler for API V2.0
@@ -26,6 +27,7 @@ func New() http.Handler {
 	h, api, err := restapi.HandlerAPI(restapi.Config{
 		ArtifactAPI:   newArtifactAPI(),
 		RepositoryAPI: newRepositoryAPI(),
+		PreheatAPI:    newPreheatAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)

@@ -289,6 +289,227 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /distribution/providers:
+    get:
+      summary: List p2p providers
+      description: List available p2p providers.
+      tags:
+        - preheat
+      operationId: ListProviders
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Provider'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /distribution/instances:
+    get:
+      summary: List p2p instances
+      description: List p2p instances
+      tags:
+        - preheat
+      operationId: ListInstances
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Instance'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Create p2p instances
+      description: Create p2p instances
+      tags:
+        - preheat
+      operationId: CreateInstance
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: instance
+          in: body
+          description: The JSON object of instance.
+          required: true
+          schema:
+            $ref: '#/definitions/Instance'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /distribution/instances/{instance_id}:
+    get:
+      summary: Get instance
+      description: Get instance
+      tags:
+        - preheat
+      operationId: GetInstance
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/instanceId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Instance'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete instance
+      description: Delete instance
+      tags:
+        - preheat
+      operationId: DeleteInstance
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/instanceId'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update instance
+      description: Update instance
+      tags:
+        - preheat
+      operationId: UpdateInstance
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/instanceId'
+        - name: propertySet
+          in: body
+          description: The property set to update
+          required: true
+          schema:
+            type: object
+            additionalProperties:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/InstanceUpdateResp'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /distribution/preheats:
+    get:
+      summary: List preheats history
+      description: List preheats history
+      tags:
+        - preheat
+      operationId: ListPreheatHistories
+      parameters:
+        - $ref: '#/parameters/requestId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/PreheatHistory'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Start to preheat images
+      description: Start to preheat images
+      tags:
+        - preheat
+      operationId: PreheatImages
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - name: preheatReq
+          in: body
+          description: The images to preheat
+          required: true
+          schema:
+            type: object
+            additionalProperties:
+              type: object
+              additionalProperties: true
+      responses:
+        '200':
+          description: Success
+          schema:
+            type: object
+            additionalProperties:
+              type: array
+              items:
+                $ref: '#/definitions/PreheatingStatus'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
 parameters:
   requestId:
     name: X-Request-Id
@@ -337,6 +558,12 @@ parameters:
     required: false
     description: The size of per page
     default: 10
+  instanceId:
+    name: instance_id
+    in: path
+    description: Instance ID
+    required: true
+    type: string
 responses:
   '200':
     description: Success
@@ -555,4 +782,117 @@ definitions:
       variant:
         type: string
         description: The variant of the CPU
-
+  Provider:
+    type: object
+    properties:
+      id:
+        type: string
+        description: id
+      name:
+        type: string
+        description: name
+      icon:
+        type: string
+        description: icon
+      maintainers:
+        type: array
+        description: maintainers
+        items:
+          type: string
+      version:
+        type: string
+        description: version
+      source:
+        type: string
+        description: source
+      auth_mode:
+        type: string
+        description: auth mode
+  Instance:
+    type: object
+    properties:
+      id:
+        type: string
+        description: Unique ID
+      name:
+        type: string
+        description: Instance name
+      description:
+        type: string
+        description: Description of instance
+      provider:
+        type: string
+        description: Based on which driver, identified by ID
+      endpoint:
+        type: string
+        description: The service endpoint of this instance
+      auth_mode:
+        type: string
+        description: The authentication way supported
+      auth_data:
+        type: object
+        description: The auth credential data if exists
+        additionalProperties:
+          type: string
+      status:
+        type: string
+        description: The health status
+      enabled:
+        type: boolean
+        description: Whether the instance is activated or not
+      setup_timestamp:
+        type: integer
+        format: int64
+        description: The timestamp of instance setting up
+      extensions:
+        type: object
+        additionalProperties:
+          type: string
+  InstanceUpdateResp:
+    type: object
+    properties:
+      updated:
+        type: string
+        description: ID of instance updated
+  PreheatHistory:
+    type: object
+    properties:
+      task_id:
+        type: string
+        description: Mapping to provider task ID
+      image:
+        type: string
+        description: image
+      start_time:
+        type: string
+        description: Start time
+      finish_time:
+        type: string
+        description: Finish time
+      status:
+        type: string
+        description: status
+      provider:
+        type: string
+        description: provider
+      instance:
+        type: string
+        description: instance
+  PreheatingStatus:
+    type: object
+    properties:
+      task_id:
+        type: string
+        description: Task ID
+      status:
+        type: string
+        description: status
+      error:
+        type: string
+        description: error
+      start_time:
+        type: string
+        description: Start time
+      finish_time:
+        type: string
+        description: Finish time
