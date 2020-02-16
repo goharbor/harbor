@@ -713,7 +713,9 @@ paths:
             $ref: '#/definitions/Instance'
       responses:
         '201':
-          $ref: '#/responses/201'
+          description: Response to insatnce created
+          schema:
+            $ref: '#/definitions/InstanceCreatedResp'
         '400':
           $ref: '#/responses/400'
         '401':
@@ -762,7 +764,9 @@ paths:
         - $ref: '#/parameters/instanceId'
       responses:
         '200':
-          $ref: '#/responses/200'
+          description: Instance ID deleted
+          schema:
+            $ref: '#/definitions/InstanceDeletedResp'
         '401':
           $ref: '#/responses/401'
         '403':
@@ -1401,6 +1405,18 @@ definitions:
       updated:
         type: string
         description: ID of instance updated
+  InstanceDeletedResp:
+    type: object
+    properties:
+      removed:
+        type: string
+        description: ID of instance removed
+  InstanceCreatedResp:
+    type: object
+    properties:
+      id:
+        type: string
+        description: ID of instance created
   PreheatHistory:
     type: object
     properties:
