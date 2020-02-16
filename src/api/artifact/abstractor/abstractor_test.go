@@ -284,28 +284,6 @@ func (a *abstractorTestSuite) TestAbstractMetadataOfUnsupported() {
 	a.Require().NotNil(err)
 }
 
-func (a *abstractorTestSuite) TestParseArtifactType() {
-	mediaType := ""
-	typee := parseArtifactType(mediaType)
-	a.Equal(ArtifactTypeUnknown, typee)
-
-	mediaType = "unknown"
-	typee = parseArtifactType(mediaType)
-	a.Equal(ArtifactTypeUnknown, typee)
-
-	mediaType = "application/vnd.oci.image.config.v1+json"
-	typee = parseArtifactType(mediaType)
-	a.Equal("IMAGE", typee)
-
-	mediaType = "application/vnd.cncf.helm.chart.config.v1+json"
-	typee = parseArtifactType(mediaType)
-	a.Equal("HELM.CHART", typee)
-
-	mediaType = "application/vnd.sylabs.sif.config.v1+json"
-	typee = parseArtifactType(mediaType)
-	a.Equal("SIF", typee)
-}
-
 func (a *abstractorTestSuite) TestAbstractAddition() {
 	resolver.Register(a.resolver, v1.MediaTypeImageConfig)
 	// cannot get the resolver

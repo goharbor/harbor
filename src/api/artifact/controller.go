@@ -17,9 +17,6 @@ package artifact
 import (
 	"context"
 	"fmt"
-	"strings"
-	"time"
-
 	"github.com/goharbor/harbor/src/api/artifact/abstractor"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/api/artifact/descriptor"
@@ -36,11 +33,14 @@ import (
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	"github.com/opencontainers/go-digest"
-
+	"strings"
+	"time"
 	// registry image resolvers
 	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
 	// register chart resolver
 	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/chart"
+	// register CNAB resolver
+	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/cnab"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
@@ -170,11 +170,7 @@ func (c *controller) ensureArtifact(ctx context.Context, repositoryID int64, dig
 	}
 
 	// populate the artifact type
-	typee, err := descriptor.GetArtifactType(artifact.MediaType)
-	if err != nil {
-		return false, 0, err
-	}
-	artifact.Type = typee
+	artifact.Type = descriptor.GetArtifactType(artifact.MediaType)
 
 	// create it
 	id, err := c.artMgr.Create(ctx, artifact)
@@ -658,12 +654,7 @@ func (c *controller) populateImmutableStatus(ctx context.Context, tag *Tag) {
 }
 
 func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifact) {
-	types, err := descriptor.ListAdditionTypes(artifact.MediaType)
-	if err != nil {
-		log.Error(err.Error())
-		return
-	}
-
+	types := descriptor.ListAdditionTypes(artifact.MediaType)
 	if len(types) > 0 {
 		version := internal.GetAPIVersion(ctx)
 		for _, t := range types {

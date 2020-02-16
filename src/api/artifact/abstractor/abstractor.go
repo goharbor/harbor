@@ -27,14 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/opencontainers/image-spec/specs-go/v1"
-	"regexp"
-	"strings"
 )
-
-// ArtifactTypeUnknown defines the type for the unknown artifacts
-const ArtifactTypeUnknown = "UNKNOWN"
-
-var artifactTypeRegExp = regexp.MustCompile(`^application/vnd\.[^.]*\.(.*)\.config\.[^.]*\+json$`)
 
 // Abstractor abstracts the specific information for different types of artifacts
 type Abstractor interface {
@@ -59,8 +52,6 @@ type abstractor struct {
 	repoMgr     repository.Manager
 	blobFetcher blob.Fetcher
 }
-
-// TODO try CNAB, how to forbid CNAB
 
 // TODO add white list for supported artifact type
 func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact) error {
@@ -101,9 +92,8 @@ func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Ar
 		artifact.Annotations = manifest.Annotations
 	// OCI index/docker manifest list
 	case v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList:
-		// the identity of index is still in progress, only handle image index for now
-		// and use the manifestMediaType as the media type of artifact
-		// If we want to support CNAB, we should get the media type from annotation
+		// the identity of index is still in progress, we use the manifest mediaType
+		// as the media type of artifact
 		artifact.MediaType = artifact.ManifestMediaType
 
 		index := &v1.Index{}
@@ -115,7 +105,15 @@ func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Ar
 
 		// set annotations
 		artifact.Annotations = index.Annotations
-		// TODO handle references in resolvers
+
+		// Currently, CNAB put its media type inside the annotations
+		// try to parse the artifact media type from the annotations
+		if artifact.Annotations != nil {
+			mediaType := artifact.Annotations["org.opencontainers.artifactType"]
+			if len(mediaType) > 0 {
+				artifact.MediaType = mediaType
+			}
+		}
 	default:
 		return fmt.Errorf("unsupported manifest media type: %s", artifact.ManifestMediaType)
 	}
@@ -125,8 +123,6 @@ func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Ar
 		return resolver.ResolveMetadata(ctx, content, artifact)
 	}
 
-	// if got no resolver, try to parse the artifact type based on the media type
-	artifact.Type = parseArtifactType(artifact.MediaType)
 	return nil
 }
 
@@ -137,13 +133,4 @@ func (a *abstractor) AbstractAddition(ctx context.Context, artifact *artifact.Ar
 			WithMessage("the resolver for artifact %s not found, cannot get the addition", artifact.Type)
 	}
 	return resolver.ResolveAddition(ctx, artifact, addition)
-}
-
-func parseArtifactType(mediaType string) string {
-	strs := artifactTypeRegExp.FindStringSubmatch(mediaType)
-	if len(strs) == 2 {
-		return strings.ToUpper(strs[1])
-	}
-	// can not get the artifact type from the media type, return unknown
-	return ArtifactTypeUnknown
 }
