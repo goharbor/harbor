@@ -33,6 +33,7 @@ func New() http.Handler {
 		AuditlogAPI:   newAuditLogAPI(),
 		ScanAPI:       newScanAPI(),
 		ProjectAPI:    newProjectAPI(),
+		PreheatAPI:    newPreheatAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)
