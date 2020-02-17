@@ -20,9 +20,9 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common"
-	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
+	notarytest "github.com/goharbor/harbor/src/pkg/signature/notary/test"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -16,10 +16,9 @@ package notary
 import (
 	"encoding/json"
 	"fmt"
+	model2 "github.com/goharbor/harbor/src/pkg/signature/notary/model"
+	test2 "github.com/goharbor/harbor/src/pkg/signature/notary/test"
 
-	"github.com/goharbor/harbor/src/common/utils/notary/model"
-
-	notarytest "github.com/goharbor/harbor/src/common/utils/notary/test"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/stretchr/testify/assert"
@@ -36,7 +35,7 @@ var endpoint = "10.117.4.142"
 var notaryServer *httptest.Server
 
 func TestMain(m *testing.M) {
-	notaryServer = notarytest.NewNotaryServer(endpoint)
+	notaryServer = test2.NewNotaryServer(endpoint)
 	defer notaryServer.Close()
 	var defaultConfig = map[string]interface{}{
 		common.ExtEndpoint:     "https://" + endpoint,
@@ -80,13 +79,13 @@ func TestGetDigestFromTarget(t *testing.T) {
 				}
 		}`
 
-	var t1 model.Target
+	var t1 model2.Target
 	err := json.Unmarshal([]byte(str), &t1)
 	if err != nil {
 		panic(err)
 	}
 	hash2 := make(map[string][]byte)
-	t2 := model.Target{
+	t2 := model2.Target{
 		Tag:    "2.0",
 		Hashes: hash2,
 	}

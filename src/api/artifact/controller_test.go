@@ -131,7 +131,6 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 		},
 		WithLabel:        true,
 		WithScanOverview: true,
-		WithSignature:    true,
 	}
 	tg := &tag.Tag{
 		ID:           1,
@@ -262,7 +261,6 @@ func (c *controllerTestSuite) TestList() {
 	option := &Option{
 		WithTag:          true,
 		WithScanOverview: true,
-		WithSignature:    true,
 	}
 	c.artMgr.On("List").Return(1, []*artifact.Artifact{
 		{

@@ -17,9 +17,9 @@ package contenttrust
 import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/notary"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
+	"github.com/goharbor/harbor/src/pkg/signature/notary"
 	"net/http"
 	"net/http/httptest"
 )
