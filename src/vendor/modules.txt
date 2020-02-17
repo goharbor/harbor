@@ -92,6 +92,8 @@ github.com/casbin/casbin/rbac/default-role-manager
 github.com/casbin/casbin/config
 # github.com/coreos/go-oidc v2.0.0+incompatible
 github.com/coreos/go-oidc
+# github.com/cyphar/filepath-securejoin v0.2.2
+github.com/cyphar/filepath-securejoin
 # github.com/davecgh/go-spew v1.1.1
 github.com/davecgh/go-spew/spew
 # github.com/dghubble/sling v1.1.0
@@ -416,7 +418,7 @@ k8s.io/client-go/pkg/apis/clientauthentication/v1beta1
 k8s.io/client-go/util/connrotation
 k8s.io/client-go/util/integer
 k8s.io/client-go/util/homedir
-# k8s.io/helm v2.9.1+incompatible
+# k8s.io/helm v2.16.1+incompatible
 k8s.io/helm/cmd/helm/search
 k8s.io/helm/pkg/chartutil
 k8s.io/helm/pkg/proto/hapi/chart
