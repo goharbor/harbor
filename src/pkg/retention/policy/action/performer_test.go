@@ -49,7 +49,7 @@ func (suite *TestPerformerSuite) SetupSuite() {
 			Namespace:  "library",
 			Repository: "harbor",
 			Kind:       "image",
-			Tag:        "latest",
+			Tags:       []string{"latest"},
 			Digest:     "latest",
 			PushedTime: time.Now().Unix(),
 			Labels:     []string{"L1", "L2"},
@@ -58,7 +58,7 @@ func (suite *TestPerformerSuite) SetupSuite() {
 			Namespace:  "library",
 			Repository: "harbor",
 			Kind:       "image",
-			Tag:        "dev",
+			Tags:       []string{"dev"},
 			Digest:     "dev",
 			PushedTime: time.Now().Unix(),
 			Labels:     []string{"L3"},
@@ -86,7 +86,7 @@ func (suite *TestPerformerSuite) TestPerform() {
 			Namespace:  "library",
 			Repository: "harbor",
 			Kind:       "image",
-			Tag:        "latest",
+			Tags:       []string{"latest"},
 			Digest:     "latest",
 			PushedTime: time.Now().Unix(),
 			Labels:     []string{"L1", "L2"},
@@ -98,7 +98,7 @@ func (suite *TestPerformerSuite) TestPerform() {
 	require.Equal(suite.T(), 1, len(results))
 	require.NotNil(suite.T(), results[0].Target)
 	assert.NoError(suite.T(), results[0].Error)
-	assert.Equal(suite.T(), "dev", results[0].Target.Tag)
+	assert.Equal(suite.T(), "dev", results[0].Target.Tags[0])
 }
 
 // TestPerform tests Perform action
@@ -109,7 +109,7 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 			Namespace:   "library",
 			Repository:  "harbor",
 			Kind:        "image",
-			Tag:         "latest",
+			Tags:        []string{"latest"},
 			Digest:      "d0",
 			PushedTime:  time.Now().Unix(),
 			Labels:      []string{"L1", "L2"},
@@ -119,7 +119,7 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 			Namespace:   "library",
 			Repository:  "harbor",
 			Kind:        "image",
-			Tag:         "dev",
+			Tags:        []string{"dev"},
 			Digest:      "d1",
 			PushedTime:  time.Now().Unix(),
 			Labels:      []string{"L3"},
@@ -129,7 +129,7 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 			Namespace:   "library",
 			Repository:  "test",
 			Kind:        "image",
-			Tag:         "immute",
+			Tags:        []string{"immute"},
 			Digest:      "d2",
 			PushedTime:  time.Now().Unix(),
 			Labels:      []string{"L1", "L2"},
@@ -139,7 +139,7 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 			Namespace:   "library",
 			Repository:  "test",
 			Kind:        "image",
-			Tag:         "samedig",
+			Tags:        []string{"samedig"},
 			Digest:      "d2",
 			PushedTime:  time.Now().Unix(),
 			Labels:      []string{"L1", "L2"},
@@ -183,7 +183,7 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 			Namespace:   "library",
 			Repository:  "harbor",
 			Kind:        "image",
-			Tag:         "latest",
+			Tags:        []string{"latest"},
 			Digest:      "d0",
 			PushedTime:  time.Now().Unix(),
 			Labels:      []string{"L1", "L2"},
@@ -197,24 +197,17 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 		require.NotNil(suite.T(), r.Target)
 		if r.Target.Digest == "d1" {
 			require.NoError(suite.T(), r.Error)
-			require.Equal(suite.T(), "dev", r.Target.Tag)
+			require.Equal(suite.T(), "dev", r.Target.Tags[0])
 		} else if r.Target.Digest == "d2" {
 			require.Error(suite.T(), r.Error)
 			require.IsType(suite.T(), (*art.ImmutableError)(nil), r.Error)
-			if i, ok := r.Error.(*art.ImmutableError); ok {
-				if r.Target.Tag == "immute" {
-					require.False(suite.T(), i.IsShareDigest)
-				} else {
-					require.True(suite.T(), i.IsShareDigest)
-				}
-			}
 		} else {
-			require.Fail(suite.T(), "should not delete "+r.Target.NameHash())
+			require.Fail(suite.T(), "should not delete "+r.Target.Hash())
 		}
 	}
 	require.NotNil(suite.T(), results[0].Target)
 	assert.NoError(suite.T(), results[0].Error)
-	assert.Equal(suite.T(), "dev", results[0].Target.Tag)
+	assert.Equal(suite.T(), "dev", results[0].Target.Tags[0])
 }
 
 type fakeRetentionClient struct{}

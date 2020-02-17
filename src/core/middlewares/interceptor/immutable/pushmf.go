@@ -31,7 +31,7 @@ func (pmf *pushmfInterceptor) HandleRequest(req *http.Request) (err error) {
 	var matched bool
 	matched, err = rule.NewRuleMatcher().Match(pmf.mf.ProjectID, art.Candidate{
 		Repository:  repoName,
-		Tag:         pmf.mf.Tag,
+		Tags:        []string{pmf.mf.Tag},
 		NamespaceID: pmf.mf.ProjectID,
 	})
 	if err != nil {

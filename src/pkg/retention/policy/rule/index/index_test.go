@@ -67,7 +67,7 @@ func (suite *IndexTestSuite) TestGet() {
 		Namespace:  "library",
 		Repository: "harbor",
 		Kind:       "image",
-		Tag:        "latest",
+		Tags:       []string{"latest"},
 		PushedTime: time.Now().Unix(),
 		Labels:     []string{"L1", "L2"},
 	}}
@@ -77,7 +77,7 @@ func (suite *IndexTestSuite) TestGet() {
 	assert.Equal(suite.T(), 1, len(results))
 	assert.Condition(suite.T(), func() bool {
 		c := results[0]
-		return c.Repository == "harbor" && c.Tag == "latest"
+		return c.Repository == "harbor" && c.Tags[0] == "latest"
 	})
 }
 

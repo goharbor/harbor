@@ -15,11 +15,12 @@
 package dep
 
 import (
+	modelsv2 "github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"testing"
 
 	"github.com/goharbor/harbor/src/chartserver"
 	jmodels "github.com/goharbor/harbor/src/common/job/models"
-	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/testing/clients"
@@ -34,10 +35,17 @@ type fakeCoreClient struct {
 	clients.DumbCoreClient
 }
 
-func (f *fakeCoreClient) ListAllImages(project, repository string) ([]*models.TagResp, error) {
-	image := &models.TagResp{}
-	image.Name = "latest"
-	return []*models.TagResp{image}, nil
+func (f *fakeCoreClient) ListAllArtifacts(project, repository string) ([]*modelsv2.Artifact, error) {
+	image := &modelsv2.Artifact{}
+	image.Digest = "sha256:123456"
+	image.Tags = []*modelsv2.Tag{
+		{
+			Tag: tag.Tag{
+				Name: "latest",
+			},
+		},
+	}
+	return []*modelsv2.Artifact{image}, nil
 }
 
 func (f *fakeCoreClient) ListAllCharts(project, repository string) ([]*chartserver.ChartVersion, error) {
@@ -89,7 +97,7 @@ func (c *clientTestSuite) TestGetCandidates() {
 	assert.Equal(c.T(), art.Image, candidates[0].Kind)
 	assert.Equal(c.T(), "library", candidates[0].Namespace)
 	assert.Equal(c.T(), "hello-world", candidates[0].Repository)
-	assert.Equal(c.T(), "latest", candidates[0].Tag)
+	assert.Equal(c.T(), "latest", candidates[0].Tags[0])
 
 	/*
 		// chart repository

@@ -47,7 +47,7 @@ func (dmf *delmfInterceptor) HandleRequest(req *http.Request) (err error) {
 		var matched bool
 		matched, err = rule.NewRuleMatcher().Match(dmf.mf.ProjectID, art.Candidate{
 			Repository:  repoName,
-			Tag:         af.Tag,
+			Tags:        []string{af.Tag},
 			NamespaceID: dmf.mf.ProjectID,
 		})
 		if err != nil {
