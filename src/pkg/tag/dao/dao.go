@@ -96,12 +96,14 @@ func (d *dao) Create(ctx context.Context, tag *tag.Tag) (int64, error) {
 		return 0, err
 	}
 	id, err := ormer.Insert(tag)
-	if e := orm.AsConflictError(err, "tag %s already exists under the repository %d",
-		tag.Name, tag.RepositoryID); e != nil {
-		err = e
-	} else if e := orm.AsForeignKeyError(err, "the tag %s tries to attach to a non existing artifact %d",
-		tag.Name, tag.ArtifactID); e != nil {
-		err = e
+	if err != nil {
+		if e := orm.AsConflictError(err, "tag %s already exists under the repository %d",
+			tag.Name, tag.RepositoryID); e != nil {
+			err = e
+		} else if e := orm.AsForeignKeyError(err, "the tag %s tries to attach to a non existing artifact %d",
+			tag.Name, tag.ArtifactID); e != nil {
+			err = e
+		}
 	}
 	return id, err
 }

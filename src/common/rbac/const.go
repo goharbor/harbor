@@ -52,9 +52,9 @@ const (
 	ResourceRepository                 = Resource("repository")
 	ResourceTagRetention               = Resource("tag-retention")
 	ResourceImmutableTag               = Resource("immutable-tag")
-	ResourceRepositoryLabel            = Resource("repository-label")
-	ResourceRepositoryTag              = Resource("repository-tag") // TODO remove
-	ResourceRepositoryTagLabel         = Resource("repository-tag-label")
+	ResourceRepositoryLabel            = Resource("repository-label")     // TODO remove
+	ResourceRepositoryTag              = Resource("repository-tag")       // TODO remove
+	ResourceRepositoryTagLabel         = Resource("repository-tag-label") // TODO remove
 	ResourceRepositoryTagManifest      = Resource("repository-tag-manifest")
 	ResourceRepositoryTagScanJob       = Resource("repository-tag-scan-job")      // TODO: remove
 	ResourceRepositoryTagVulnerability = Resource("repository-tag-vulnerability") // TODO: remove
@@ -65,5 +65,6 @@ const (
 	ResourceArtifact                   = Resource("artifact")
 	ResourceTag                        = Resource("tag")
 	ResourceArtifactAddition           = Resource("artifact-addition")
+	ResourceArtifactLabel              = Resource("artifact-label")
 	ResourceSelf                       = Resource("") // subresource for self
 )

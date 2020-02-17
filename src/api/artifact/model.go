@@ -16,6 +16,7 @@ package artifact
 
 import (
 	"github.com/go-openapi/strfmt"
+	cmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
@@ -25,7 +26,8 @@ import (
 type Artifact struct {
 	artifact.Artifact
 	Tags          []*Tag                   // the list of tags that attached to the artifact
-	AdditionLinks map[string]*AdditionLink // the link for build history(image), values.yaml(chart), dependency(chart), etc
+	AdditionLinks map[string]*AdditionLink // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
+	Labels        []*cmodels.Label
 	// TODO add other attrs: signature, scan result, etc
 }
 
@@ -82,6 +84,19 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 			Href:     link.HREF,
 		}
 	}
+	for _, label := range a.Labels {
+		art.Labels = append(art.Labels, &models.Label{
+			ID:           label.ID,
+			Name:         label.Name,
+			Description:  label.Description,
+			Color:        label.Color,
+			CreationTime: strfmt.DateTime(label.CreationTime),
+			ProjectID:    label.ProjectID,
+			Scope:        label.Scope,
+			UpdateTime:   strfmt.DateTime(label.UpdateTime),
+			Deleted:      label.Deleted,
+		})
+	}
 	return art
 }
 
@@ -89,7 +104,7 @@ func (a *Artifact) ToSwagger() *models.Artifact {
 type Tag struct {
 	tag.Tag
 	Immutable bool
-	// TODO add other attrs: signature, label, etc
+	// TODO add other attrs: signature, etc
 }
 
 // AdditionLink is a link via that the addition can be fetched

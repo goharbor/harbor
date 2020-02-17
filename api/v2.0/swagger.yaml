@@ -270,15 +270,13 @@ paths:
         - $ref: '#/parameters/reference'
         - name: addition
           in: path
-          description: The addition name, "build_history" for images; "values.yaml", "readme", "dependencies" for charts
+          description: The type of addition.
           type: string
           enum: [build_history, values.yaml, readme, dependencies]
           required: true
       responses:
         '200':
-          description: Success
-          schema:
-            type: string
+          $ref: '#/responses/200'
         '400':
           $ref: '#/responses/400'
         '401':
@@ -287,6 +285,70 @@ paths:
           $ref: '#/responses/403'
         '404':
           $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels:
+    post:
+      summary: Add label to artifact
+      description: Add label to the specified artiact.
+      tags:
+        - artifact
+      operationId: addLabel
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: label
+          in: body
+          description: The label that added to the artifact. Only the ID property is needed.
+          required: true
+          schema:
+            $ref: '#/definitions/Label'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels/{label_id}:
+    delete:
+      summary: Remove label from artifact
+      description: Remove the label from the specified artiact.
+      tags:
+        - artifact
+      operationId: removeLabel
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: label_id
+          in: path
+          description: The ID of the label that removed from the artifact.
+          type: integer
+          format: int64
+          required: true
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
 parameters:
@@ -467,6 +529,10 @@ definitions:
           $ref: '#/definitions/Tag'
       addition_links:
         $ref: '#/definitions/AdditionLinks'
+      labels:
+        type: array
+        items:
+          $ref: '#/definitions/Label'
   Tag:
     type: object
     properties:
@@ -555,4 +621,38 @@ definitions:
       variant:
         type: string
         description: The variant of the CPU
+  Label:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the label
+      name:
+        type: string
+        description: The name the label
+      description:
+        type: string
+        description: The description the label
+      color:
+        type: string
+        description: The color the label
+      scope:
+        type: string
+        description: The scope the label
+      project_id:
+        type: integer
+        format: int64
+        description: The ID of project that the label belongs to
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time the label
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the label
+      deleted:
+        type: boolean
+        description: Whether the label is deleted or not
 

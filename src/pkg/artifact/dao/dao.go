@@ -191,12 +191,14 @@ func (d *dao) CreateReference(ctx context.Context, reference *ArtifactReference)
 		return 0, err
 	}
 	id, err := ormer.Insert(reference)
-	if e := orm.AsConflictError(err, "reference already exists, parent artifact ID: %d, child artifact ID: %d",
-		reference.ParentID, reference.ChildID); e != nil {
-		err = e
-	} else if e := orm.AsForeignKeyError(err, "the reference tries to reference a non existing artifact, parent artifact ID: %d, child artifact ID: %d",
-		reference.ParentID, reference.ChildID); e != nil {
-		err = e
+	if err != nil {
+		if e := orm.AsConflictError(err, "reference already exists, parent artifact ID: %d, child artifact ID: %d",
+			reference.ParentID, reference.ChildID); e != nil {
+			err = e
+		} else if e := orm.AsForeignKeyError(err, "the reference tries to reference a non existing artifact, parent artifact ID: %d, child artifact ID: %d",
+			reference.ParentID, reference.ChildID); e != nil {
+			err = e
+		}
 	}
 	return id, err
 }
