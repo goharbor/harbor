@@ -484,11 +484,11 @@ swagger_client:
 	wget -q https://repo1.maven.org/maven2/io/swagger/swagger-codegen-cli/2.3.1/swagger-codegen-cli-2.3.1.jar -O swagger-codegen-cli.jar
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_swagger_client
-	mkdir  -p harborclient/harbor_swagger_client_v2
-	java -jar swagger-codegen-cli.jar generate -i api/harbor/swagger.yaml -l python -o harborclient/harbor_swagger_client -DpackageName=swagger_client
-	java -jar swagger-codegen-cli.jar generate -i api/v2.0/swagger.yaml -l python -o harborclient/harbor_swagger_client_v2 -DpackageName=swagger_client_v2
+	mkdir  -p harborclient/harbor_v2_swagger_client
+	java -jar swagger-codegen-cli.jar generate -i api/harbor/swagger.yaml -l python -o harborclient/harbor_swagger_client -DpackageName=swagger_client_1
+	java -jar swagger-codegen-cli.jar generate -i api/v2.0/swagger.yaml -l python -o harborclient/harbor_v2_swagger_client -DpackageName=v2_swagger_client_2
 	cd harborclient/harbor_swagger_client; python ./setup.py install
-	cd harborclient/harbor_swagger_client_v2; python ./setup.py install
+	cd harborclient/harbor_v2_swagger_client; python ./setup.py install
 	pip install docker -q
 	pip freeze
 
