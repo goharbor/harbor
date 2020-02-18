@@ -17,12 +17,11 @@ package notary
 import (
 	"encoding/hex"
 	"fmt"
+	model2 "github.com/goharbor/harbor/src/pkg/signature/notary/model"
 	"net/http"
 	"os"
 	"path"
 	"strings"
-
-	"github.com/goharbor/harbor/src/common/utils/notary/model"
 
 	"github.com/docker/distribution/registry/auth/token"
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -54,7 +53,7 @@ func init() {
 }
 
 // GetInternalTargets wraps GetTargets to read config values for getting full-qualified repo from internal notary instance.
-func GetInternalTargets(notaryEndpoint string, username string, repo string) ([]model.Target, error) {
+func GetInternalTargets(notaryEndpoint string, username string, repo string) ([]model2.Target, error) {
 	ext, err := config.ExtEndpoint()
 	if err != nil {
 		log.Errorf("Error while reading external endpoint: %v", err)
@@ -68,8 +67,8 @@ func GetInternalTargets(notaryEndpoint string, username string, repo string) ([]
 // GetTargets is a help function called by API to fetch signature information of a given repository.
 // Per docker's convention the repository should contain the information of endpoint, i.e. it should look
 // like "192.168.0.1/library/ubuntu", instead of "library/ubuntu" (fqRepo for fully-qualified repo)
-func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]model.Target, error) {
-	res := []model.Target{}
+func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]model2.Target, error) {
+	res := []model2.Target{}
 	t, err := tokenutil.MakeToken(username, tokenutil.Notary,
 		[]*token.ResourceActions{
 			{
@@ -103,7 +102,7 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]model.
 		log.Warningf("Failed to clear cached root.json: %s, error: %v, when repo is removed from notary the signature status maybe incorrect", rootJSON, rmErr)
 	}
 	for _, t := range targets {
-		res = append(res, model.Target{
+		res = append(res, model2.Target{
 			Tag:    t.Name,
 			Hashes: t.Hashes,
 		})
@@ -112,7 +111,7 @@ func GetTargets(notaryEndpoint string, username string, fqRepo string) ([]model.
 }
 
 // DigestFromTarget get a target and return the value of digest, in accordance to Docker-Content-Digest
-func DigestFromTarget(t model.Target) (string, error) {
+func DigestFromTarget(t model2.Target) (string, error) {
 	sha, ok := t.Hashes["sha256"]
 	if !ok {
 		return "", fmt.Errorf("no valid hash, expecting sha256")

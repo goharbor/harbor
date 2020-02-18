@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/pkg/label"
+	"github.com/goharbor/harbor/src/pkg/signature"
 	"github.com/opencontainers/go-digest"
 	"strings"
 
@@ -94,6 +95,7 @@ func NewController() Controller {
 		repoMgr:      repository.Mgr,
 		artMgr:       artifact.Mgr,
 		tagMgr:       tag.Mgr,
+		sigMgr:       signature.GetManager(),
 		labelMgr:     label.Mgr,
 		abstractor:   abstractor.NewAbstractor(),
 		immutableMtr: rule.NewRuleMatcher(),
@@ -106,6 +108,7 @@ type controller struct {
 	repoMgr      repository.Manager
 	artMgr       artifact.Manager
 	tagMgr       tag.Manager
+	sigMgr       signature.Manager
 	labelMgr     label.Manager
 	abstractor   abstractor.Abstractor
 	immutableMtr match.ImmutableTagMatcher
@@ -382,9 +385,6 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 	if option.WithScanOverview {
 		c.populateScanOverview(ctx, artifact)
 	}
-	if option.WithSignature {
-		c.populateSignature(ctx, artifact)
-	}
 	// populate addition links
 	c.populateAdditionLinks(ctx, artifact)
 	return artifact
@@ -413,10 +413,34 @@ func (c *controller) assembleTag(ctx context.Context, tag *tm.Tag, option *TagOp
 	if option == nil {
 		return t
 	}
+	repo, err := c.repoMgr.Get(ctx, tag.RepositoryID)
+	if err != nil {
+		log.Errorf("Failed to get repo for tag: %s, error: %v", tag.Name, err)
+		return t
+	}
 	if option.WithImmutableStatus {
 		c.populateImmutableStatus(ctx, t)
 	}
+	if option.WithSignature {
+		if a, err := c.artMgr.Get(ctx, t.ArtifactID); err != nil {
+			log.Errorf("Failed to get artifact for tag: %s, error: %v, skip populating signature", t.Name, err)
+		} else {
+			c.populateTagSignature(ctx, repo.Name, t, a.Digest, option)
+		}
+	}
 	return t
+}
+
+func (c *controller) populateTagSignature(ctx context.Context, repo string, tag *Tag, digest string, option *TagOption) {
+	if option.SignatureChecker == nil {
+		chk, err := signature.GetManager().GetCheckerByRepo(ctx, repo)
+		if err != nil {
+			log.Error(err)
+			return
+		}
+		option.SignatureChecker = chk
+	}
+	tag.Signed = option.SignatureChecker.IsTagSigned(tag.Name, digest)
 }
 
 func (c *controller) populateLabels(ctx context.Context, art *Artifact) {

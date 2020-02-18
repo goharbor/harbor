@@ -2,10 +2,10 @@ package contenttrust
 
 import (
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/notary"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/pkg/signature/notary"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"net/http"

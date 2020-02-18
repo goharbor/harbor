@@ -229,10 +229,12 @@ func option(withTag, withImmutableStatus, withLabel, withScanOverview, withSigna
 		option.WithTag = *(withTag)
 	}
 	if option.WithTag {
+		option.TagOption = &artifact.TagOption{}
 		if withImmutableStatus != nil {
-			option.TagOption = &artifact.TagOption{
-				WithImmutableStatus: *(withImmutableStatus),
-			}
+			option.TagOption.WithImmutableStatus = *(withImmutableStatus)
+		}
+		if withSignature != nil {
+			option.TagOption.WithSignature = *withSignature
 		}
 	}
 	if withLabel != nil {
@@ -240,9 +242,6 @@ func option(withTag, withImmutableStatus, withLabel, withScanOverview, withSigna
 	}
 	if withScanOverview != nil {
 		option.WithScanOverview = *(withScanOverview)
-	}
-	if withSignature != nil {
-		option.WithSignature = *(withSignature)
 	}
 	return option
 }

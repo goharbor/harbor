@@ -563,6 +563,10 @@ definitions:
         type: boolean
         x-omitempty: false
         description: The immutable status of the tag
+      signed:
+        type: boolean
+        x-omitempty: false
+        description: The attribute indicates whether the tag is signed or not
   ExtraAttrs:
     type: object
     additionalProperties:

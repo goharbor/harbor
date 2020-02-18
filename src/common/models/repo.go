@@ -17,7 +17,7 @@ package models
 import (
 	"time"
 
-	"github.com/goharbor/harbor/src/common/utils/notary/model"
+	"github.com/goharbor/harbor/src/pkg/signature/notary/model"
 	"github.com/theupdateframework/notary/tuf/data"
 )
 
