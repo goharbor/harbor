@@ -269,22 +269,20 @@ func main() {
 }
 
 func registerScanners() {
+	wantedScanners := make([]scanner.Registration, 0)
 	uninstallURLs := make([]string, 0)
 
 	if config.WithTrivy() {
-		log.Debug("Registering Trivy scanner")
-		reg := &scanner.Registration{
+		log.Info("Registering Trivy scanner")
+		wantedScanners = append(wantedScanners, scanner.Registration{
 			Name:            "Trivy",
 			Description:     "The Trivy scanner adapter",
 			URL:             config.TrivyAdapterURL(),
 			UseInternalAddr: true,
 			Immutable:       true,
-		}
-		if err := scan.EnsureScanner(reg, true); err != nil {
-			log.Fatalf("failed to register Trivy scanner: %v", err)
-		}
+		})
 	} else {
-		log.Debug("Removing Trivy scanner")
+		log.Info("Removing Trivy scanner")
 		uninstallURLs = append(uninstallURLs, config.TrivyAdapterURL())
 	}
 
@@ -297,25 +295,42 @@ func registerScanners() {
 			log.Fatalf("failed to initialize clair database: %v", err)
 		}
 
-		log.Debug("Registering Clair scanner")
-		reg := &scanner.Registration{
+		log.Info("Registering Clair scanner")
+		wantedScanners = append(wantedScanners, scanner.Registration{
 			Name:            "Clair",
-			Description:     "The clair scanner adapter",
+			Description:     "The Clair scanner adapter",
 			URL:             config.ClairAdapterEndpoint(),
 			UseInternalAddr: true,
 			Immutable:       true,
-		}
-
-		if err := scan.EnsureScanner(reg, true); err != nil {
-			log.Fatalf("failed to register Clair scanner: %v", err)
-		}
+		})
 	} else {
-		log.Debug("Removing Clair scanner")
+		log.Info("Removing Clair scanner")
 		uninstallURLs = append(uninstallURLs, config.ClairAdapterEndpoint())
+	}
+
+	if err := scan.EnsureScanners(wantedScanners); err != nil {
+		log.Fatalf("failed to register scanners: %v", err)
+	}
+
+	if defaultScannerURL := getDefaultScannerURL(); defaultScannerURL != "" {
+		log.Infof("Setting %s as default scanner", defaultScannerURL)
+		if err := scan.EnsureDefaultScanner(defaultScannerURL); err != nil {
+			log.Fatalf("failed to set default scanner: %v", err)
+		}
 	}
 
 	if err := scan.RemoveImmutableScanners(uninstallURLs); err != nil {
 		log.Warningf("failed to remove scanners: %v", err)
 	}
 
+}
+
+func getDefaultScannerURL() string {
+	if config.WithTrivy() {
+		return config.TrivyAdapterURL()
+	}
+	if config.WithClair() {
+		return config.ClairAdapterEndpoint()
+	}
+	return ""
 }
