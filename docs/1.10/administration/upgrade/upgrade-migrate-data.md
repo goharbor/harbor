@@ -53,6 +53,11 @@ Since the migration might alter the database schema and the settings of `harbor.
     docker image load -i harbor/harbor.[version].tar.gz
     ```
 
+1. Copy over your harbor.yml config file
+    ```sh
+    cp /my_backup_dir/harbor/harbor.yml ${harbor_yml}
+    ```
+
 1. Upgrade the `harbor.yml` file.
 
     ```sh
