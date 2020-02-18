@@ -277,7 +277,6 @@ func (c *controllerTestSuite) TestList() {
 	c.repoMgr.On("Get").Return(&models.RepoRecord{
 		Name: "library/hello-world",
 	}, nil)
-	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	total, artifacts, err := c.ctl.List(nil, query, option)
 	c.Require().Nil(err)
 	c.Equal(int64(1), total)
@@ -292,7 +291,7 @@ func (c *controllerTestSuite) TestGet() {
 		ID:           1,
 		RepositoryID: 1,
 	}, nil)
-	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
+	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	art, err := c.ctl.Get(nil, 1, nil)
 	c.Require().Nil(err)
 	c.Require().NotNil(art)
@@ -305,7 +304,6 @@ func (c *controllerTestSuite) TestGetByDigest() {
 		RepositoryID: 1,
 	}, nil)
 	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
-	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	art, err := c.ctl.getByDigest(nil, "library/hello-world",
 		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
 	c.Require().NotNil(err)
@@ -322,7 +320,7 @@ func (c *controllerTestSuite) TestGetByDigest() {
 		ID:           1,
 		RepositoryID: 1,
 	}, nil)
-	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
+	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	art, err = c.ctl.getByDigest(nil, "library/hello-world",
 		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
 	c.Require().Nil(err)
@@ -336,7 +334,6 @@ func (c *controllerTestSuite) TestGetByTag() {
 		RepositoryID: 1,
 	}, nil)
 	c.tagMgr.On("List").Return(0, nil, nil)
-	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
 	art, err := c.ctl.getByTag(nil, "library/hello-world", "latest", nil)
 	c.Require().NotNil(err)
 	c.True(ierror.IsErr(err, ierror.NotFoundCode))
@@ -359,7 +356,7 @@ func (c *controllerTestSuite) TestGetByTag() {
 	c.artMgr.On("Get").Return(&artifact.Artifact{
 		ID: 1,
 	}, nil)
-	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
+	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	art, err = c.ctl.getByTag(nil, "library/hello-world", "latest", nil)
 	c.Require().Nil(err)
 	c.Require().NotNil(art)
@@ -375,7 +372,7 @@ func (c *controllerTestSuite) TestGetByReference() {
 		ID:           1,
 		RepositoryID: 1,
 	}, nil)
-	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
+	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	art, err := c.ctl.GetByReference(nil, "library/hello-world",
 		"sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
 	c.Require().Nil(err)
@@ -400,26 +397,85 @@ func (c *controllerTestSuite) TestGetByReference() {
 	c.artMgr.On("Get").Return(&artifact.Artifact{
 		ID: 1,
 	}, nil)
-	c.abstractor.On("ListSupportedAdditions").Return([]string{"BUILD_HISTORY"})
+	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	art, err = c.ctl.GetByReference(nil, "library/hello-world", "latest", nil)
 	c.Require().Nil(err)
 	c.Require().NotNil(art)
 	c.Equal(int64(1), art.ID)
 }
 
-func (c *controllerTestSuite) TestDelete() {
-	c.artMgr.On("Delete").Return(nil)
+func (c *controllerTestSuite) TestDeleteDeeply() {
+	// root artifact and doesn't exist
+	c.artMgr.On("Get").Return(nil, ierror.NotFoundError(nil))
+	err := c.ctl.deleteDeeply(nil, 1, true)
+	c.Require().NotNil(err)
+	c.Assert().True(ierror.IsErr(err, ierror.NotFoundCode))
+
+	// reset the mock
+	c.SetupTest()
+
+	// child artifact and doesn't exist
+	c.artMgr.On("Get").Return(nil, ierror.NotFoundError(nil))
+	err = c.ctl.deleteDeeply(nil, 1, false)
+	c.Require().Nil(err)
+
+	// reset the mock
+	c.SetupTest()
+
+	// child artifact and contains tags
+	c.artMgr.On("Get").Return(&artifact.Artifact{ID: 1}, nil)
 	c.tagMgr.On("List").Return(0, []*tag.Tag{
 		{
 			ID: 1,
 		},
 	}, nil)
-	c.tagMgr.On("Delete").Return(nil)
-	c.labelMgr.On("RemoveAllFrom").Return(nil)
-	err := c.ctl.Delete(nil, 1)
+	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
+	err = c.ctl.deleteDeeply(nil, 1, false)
 	c.Require().Nil(err)
-	c.artMgr.AssertExpectations(c.T())
-	c.tagMgr.AssertExpectations(c.T())
+
+	// reset the mock
+	c.SetupTest()
+
+	// root artifact is referenced by other artifacts
+	c.artMgr.On("Get").Return(&artifact.Artifact{ID: 1}, nil)
+	c.tagMgr.On("List").Return(0, nil, nil)
+	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
+	c.artMgr.On("ListReferences").Return([]*artifact.Reference{
+		{
+			ID: 1,
+		},
+	}, nil)
+	err = c.ctl.deleteDeeply(nil, 1, true)
+	c.Require().NotNil(err)
+
+	// reset the mock
+	c.SetupTest()
+
+	// child artifact contains no tag but referenced by other artifacts
+	c.artMgr.On("Get").Return(&artifact.Artifact{ID: 1}, nil)
+	c.tagMgr.On("List").Return(0, nil, nil)
+	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
+	c.artMgr.On("ListReferences").Return([]*artifact.Reference{
+		{
+			ID: 1,
+		},
+	}, nil)
+	err = c.ctl.deleteDeeply(nil, 1, false)
+	c.Require().Nil(err)
+
+	// reset the mock
+	c.SetupTest()
+
+	// root artifact is referenced by other artifacts
+	c.artMgr.On("Get").Return(&artifact.Artifact{ID: 1}, nil)
+	c.tagMgr.On("List").Return(0, nil, nil)
+	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
+	c.artMgr.On("ListReferences").Return(nil, nil)
+	c.tagMgr.On("DeleteOfArtifact").Return(nil)
+	c.artMgr.On("Delete").Return(nil)
+	c.labelMgr.On("RemoveAllFrom").Return(nil)
+	err = c.ctl.deleteDeeply(nil, 1, true)
+	c.Require().Nil(err)
 }
 
 func (c *controllerTestSuite) TestListTags() {

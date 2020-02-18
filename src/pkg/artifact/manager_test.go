@@ -64,6 +64,10 @@ func (f *fakeDao) ListReferences(ctx context.Context, query *q.Query) ([]*dao.Ar
 	args := f.Called()
 	return args.Get(0).([]*dao.ArtifactReference), args.Error(1)
 }
+func (f *fakeDao) DeleteReference(ctx context.Context, id int64) error {
+	args := f.Called()
+	return args.Error(0)
+}
 func (f *fakeDao) DeleteReferences(ctx context.Context, parentID int64) error {
 	args := f.Called()
 	return args.Error(0)
@@ -221,6 +225,31 @@ func (m *managerTestSuite) TestUpdatePullTime() {
 	err := m.mgr.UpdatePullTime(nil, 1, time.Now())
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestListReferences() {
+	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{
+		{
+			ID:       1,
+			ParentID: 1,
+			ChildID:  2,
+		},
+	}, nil)
+	m.dao.On("Get").Return(&dao.Artifact{
+		ID:     1,
+		Digest: "digest",
+	}, nil)
+	references, err := m.mgr.ListReferences(nil, nil)
+	m.Require().Nil(err)
+	m.Require().Len(references, 1)
+	m.Equal(int64(1), references[0].ID)
+	m.Equal("digest", references[0].ChildDigest)
+}
+
+func (m *managerTestSuite) TestDeleteReference() {
+	m.dao.On("DeleteReference").Return(nil)
+	err := m.mgr.DeleteReference(nil, 1)
+	m.Require().Nil(err)
 }
 
 func TestManager(t *testing.T) {

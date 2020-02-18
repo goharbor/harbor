@@ -41,6 +41,8 @@ type DAO interface {
 	Update(ctx context.Context, tag *tag.Tag, props ...string) (err error)
 	// Delete the tag specified by ID
 	Delete(ctx context.Context, id int64) (err error)
+	// DeleteOfArtifact deletes all tags attached to the artifact
+	DeleteOfArtifact(ctx context.Context, artifactID int64) (err error)
 }
 
 // New returns an instance of the default DAO
@@ -140,4 +142,17 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 		return ierror.NotFoundError(nil).WithMessage("tag %d not found", id)
 	}
 	return nil
+}
+
+func (d *dao) DeleteOfArtifact(ctx context.Context, artifactID int64) error {
+	qs, err := orm.QuerySetter(ctx, &tag.Tag{}, &q.Query{
+		Keywords: map[string]interface{}{
+			"ArtifactID": artifactID,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	_, err = qs.Delete()
+	return err
 }

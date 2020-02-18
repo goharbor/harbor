@@ -425,6 +425,13 @@ func (d *daoTestSuite) TestListReferences() {
 	d.Equal(d.reference01ID, references[0].ID)
 }
 
+func (d *daoTestSuite) TestDeleteReference() {
+	// not exist
+	err := d.dao.DeleteReference(d.ctx, 10000)
+	d.Require().NotNil(err)
+	d.True(ierror.IsErr(err, ierror.NotFoundCode))
+}
+
 func (d *daoTestSuite) TestDeleteReferences() {
 	// happy pass is covered in TearDownTest
 

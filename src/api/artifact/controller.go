@@ -274,30 +274,76 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 }
 
 func (c *controller) Delete(ctx context.Context, id int64) error {
-	// remove labels added to the artifact
-	if err := c.labelMgr.RemoveAllFrom(ctx, id); err != nil {
+	return c.deleteDeeply(ctx, id, true)
+}
+
+// "isRoot" is used to specify whether the artifact is the root parent artifact
+// the error handling logic for the root parent artifact and others is different
+func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) error {
+	art, err := c.Get(ctx, id, &Option{WithTag: true})
+	if err != nil {
+		// return nil if the nonexistent artifact isn't the root parent
+		if !isRoot && ierror.IsErr(err, ierror.NotFoundCode) {
+			return nil
+		}
 		return err
 	}
-	// delete all tags that attached to the artifact
-	_, tags, err := c.tagMgr.List(ctx, &q.Query{
+	// the child artifact is referenced by some tags, skip
+	if !isRoot && len(art.Tags) > 0 {
+		return nil
+	}
+	parents, err := c.artMgr.ListReferences(ctx, &q.Query{
 		Keywords: map[string]interface{}{
-			"artifact_id": id,
+			"ChildID": id,
 		},
 	})
 	if err != nil {
 		return err
 	}
-	for _, tag := range tags {
-		if err = c.DeleteTag(ctx, tag.ID); err != nil {
+	if len(parents) > 0 {
+		// the root artifact is referenced by other artifacts
+		if isRoot {
+			return ierror.New(nil).WithCode(ierror.ViolateForeignKeyConstraintCode).
+				WithMessage("the deleting artifact is referenced by others")
+		}
+		// the child artifact is referenced by other artifacts, skip
+		return nil
+	}
+	// delete child artifacts if contains any
+	for _, reference := range art.References {
+		// delete reference
+		if err = c.artMgr.DeleteReference(ctx, reference.ID); err != nil &&
+			!ierror.IsErr(err, ierror.NotFoundCode) {
+			return err
+		}
+		if err = c.deleteDeeply(ctx, reference.ChildID, false); err != nil {
 			return err
 		}
 	}
 
-	if err := c.artMgr.Delete(ctx, id); err != nil {
+	// delete all tags that attached to the root artifact
+	if isRoot {
+		if err = c.tagMgr.DeleteOfArtifact(ctx, id); err != nil {
+			return err
+		}
+	}
+
+	// remove labels added to the artifact
+	if err := c.labelMgr.RemoveAllFrom(ctx, id); err != nil {
+		return err
+	}
+
+	// delete the artifact itself
+	if err = c.artMgr.Delete(ctx, art.ID); err != nil {
+		// the child artifact doesn't exist, skip
+		if !isRoot && ierror.IsErr(err, ierror.NotFoundCode) {
+			return nil
+		}
 		return err
 	}
 
 	// TODO fire delete artifact event
+
 	return nil
 }
 
@@ -361,6 +407,8 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 	artifact := &Artifact{
 		Artifact: *art,
 	}
+	// populate addition links
+	c.populateAdditionLinks(ctx, artifact)
 	if option == nil {
 		return artifact
 	}

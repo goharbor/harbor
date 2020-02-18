@@ -63,3 +63,9 @@ func (f *FakeManager) Delete(ctx context.Context, id int64) error {
 	args := f.Called()
 	return args.Error(0)
 }
+
+// DeleteOfArtifact ...
+func (f *FakeManager) DeleteOfArtifact(ctx context.Context, artifactID int64) error {
+	args := f.Called()
+	return args.Error(0)
+}

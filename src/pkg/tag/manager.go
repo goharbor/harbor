@@ -38,6 +38,8 @@ type Manager interface {
 	Update(ctx context.Context, tag *tag.Tag, props ...string) (err error)
 	// Delete the tag specified by ID
 	Delete(ctx context.Context, id int64) (err error)
+	// DeleteOfArtifact deletes all tags attached to the artifact
+	DeleteOfArtifact(ctx context.Context, artifactID int64) (err error)
 }
 
 // NewManager creates an instance of the default tag manager
@@ -77,4 +79,8 @@ func (m *manager) Update(ctx context.Context, tag *tag.Tag, props ...string) err
 
 func (m *manager) Delete(ctx context.Context, id int64) error {
 	return m.dao.Delete(ctx, id)
+}
+
+func (m *manager) DeleteOfArtifact(ctx context.Context, artifactID int64) error {
+	return m.dao.DeleteOfArtifact(ctx, artifactID)
 }

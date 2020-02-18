@@ -74,3 +74,19 @@ func (f *FakeManager) UpdatePullTime(ctx context.Context, artifactID int64, time
 	args := f.Called()
 	return args.Error(0)
 }
+
+// ListReferences ...
+func (f *FakeManager) ListReferences(ctx context.Context, query *q.Query) ([]*artifact.Reference, error) {
+	args := f.Called()
+	var references []*artifact.Reference
+	if args.Get(0) != nil {
+		references = args.Get(0).([]*artifact.Reference)
+	}
+	return references, args.Error(1)
+}
+
+// DeleteReference ...
+func (f *FakeManager) DeleteReference(ctx context.Context, id int64) error {
+	args := f.Called()
+	return args.Error(0)
+}

@@ -52,6 +52,10 @@ func (f *fakeDao) Delete(ctx context.Context, id int64) error {
 	args := f.Called()
 	return args.Error(0)
 }
+func (f *fakeDao) DeleteOfArtifact(ctx context.Context, artifactID int64) error {
+	args := f.Called()
+	return args.Error(0)
+}
 
 type managerTestSuite struct {
 	suite.Suite
@@ -111,6 +115,12 @@ func (m *managerTestSuite) TestDelete() {
 	err := m.mgr.Delete(nil, 1)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestDeleteOfArtifact() {
+	m.dao.On("DeleteOfArtifact", mock.Anything).Return(nil)
+	err := m.mgr.DeleteOfArtifact(nil, 1)
+	m.Require().Nil(err)
 }
 
 func TestManager(t *testing.T) {
