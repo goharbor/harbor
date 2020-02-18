@@ -19,7 +19,6 @@ import (
 	"fmt"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
-	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
 	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/internal"
@@ -83,10 +82,6 @@ type Controller interface {
 	AddLabel(ctx context.Context, artifactID int64, labelID int64) (err error)
 	// RemoveLabel from the specified artifact
 	RemoveLabel(ctx context.Context, artifactID int64, labelID int64) (err error)
-	// TODO move this to GC controller?
-	// Prune removes the useless artifact records. The underlying registry data will
-	// be removed during garbage collection
-	// Prune(ctx context.Context, option *Option) error
 }
 
 // NewController creates an instance of the default artifact controller
@@ -350,14 +345,7 @@ func (c *controller) GetAddition(ctx context.Context, artifactID int64, addition
 	if err != nil {
 		return nil, err
 	}
-	switch addition {
-	case image.AdditionTypeVulnerabilities:
-		// get the vulnerabilities from scan service
-		// TODO implement
-		return &resolver.Addition{}, nil
-	default:
-		return c.abstractor.AbstractAddition(ctx, artifact, addition)
-	}
+	return c.abstractor.AbstractAddition(ctx, artifact, addition)
 }
 
 func (c *controller) AddLabel(ctx context.Context, artifactID int64, labelID int64) error {
@@ -381,9 +369,6 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 	}
 	if option.WithLabel {
 		c.populateLabels(ctx, artifact)
-	}
-	if option.WithScanOverview {
-		c.populateScanOverview(ctx, artifact)
 	}
 	// populate addition links
 	c.populateAdditionLinks(ctx, artifact)
@@ -471,15 +456,6 @@ func (c *controller) populateImmutableStatus(ctx context.Context, tag *Tag) {
 	tag.Immutable = matched
 }
 
-func (c *controller) populateScanOverview(ctx context.Context, art *Artifact) {
-	// TODO implement
-}
-
-func (c *controller) populateSignature(ctx context.Context, art *Artifact) {
-	// TODO implement
-	// TODO populate signature on artifact or tag level?
-}
-
 func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifact) {
 	types, err := descriptor.ListAdditionTypes(artifact.MediaType)
 	if err != nil {
@@ -499,21 +475,11 @@ func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifa
 	if artifact.AdditionLinks == nil {
 		artifact.AdditionLinks = make(map[string]*AdditionLink)
 	}
-	href := ""
 	for _, t := range types {
 		t = strings.ToLower(t)
-		switch t {
-		case image.AdditionTypeVulnerabilities:
-			// check whether the scan service is enabled and set the addition link
-			// TODO implement
-			href = fmt.Sprintf("/api/%s/projects/%s/repositories/%s/artifacts/%s/vulnerabilities",
-				version, pro, repo, artifact.Digest)
-		default:
-			href = fmt.Sprintf("/api/%s/projects/%s/repositories/%s/artifacts/%s/additions/%s",
-				version, pro, repo, artifact.Digest, t)
-		}
 		artifact.AdditionLinks[t] = &AdditionLink{
-			HREF:     href,
+			HREF: fmt.Sprintf("/api/%s/projects/%s/repositories/%s/artifacts/%s/additions/%s",
+				version, pro, repo, artifact.Digest, t),
 			Absolute: false,
 		}
 	}

@@ -25,7 +25,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/repository"
-	"github.com/goharbor/harbor/src/server/v2.0/models"
+	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/artifact"
 	"net/http"
 	"strings"
@@ -75,7 +75,7 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
-		params.WithLabel, params.WithScanOverview, params.WithSignature)
+		params.WithLabel, params.WithSignature)
 
 	// list artifacts according to the query and option
 	total, arts, err := a.artCtl.List(ctx, query, option)
@@ -83,9 +83,12 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 		return a.SendError(ctx, err)
 	}
 
-	var artifacts []*models.Artifact
+	var artifacts []*model.Artifact
 	for _, art := range arts {
-		artifacts = append(artifacts, art.ToSwagger())
+		artifact := &model.Artifact{}
+		artifact.Artifact = *art
+		a.assembleArtifact(ctx, artifact, params.WithScanOverview)
+		artifacts = append(artifacts, artifact)
 	}
 
 	// TODO add link header
@@ -98,14 +101,17 @@ func (a *artifactAPI) GetArtifact(ctx context.Context, params operation.GetArtif
 	}
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
-		params.WithLabel, params.WithScanOverview, params.WithSignature)
+		params.WithLabel, params.WithSignature)
 
 	// get the artifact
 	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, option)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-	return operation.NewGetArtifactOK().WithPayload(artifact.ToSwagger())
+	art := &model.Artifact{}
+	art.Artifact = *artifact
+	a.assembleArtifact(ctx, art, params.WithScanOverview)
+	return operation.NewGetArtifactOK().WithPayload(art)
 }
 
 func (a *artifactAPI) DeleteArtifact(ctx context.Context, params operation.DeleteArtifactParams) middleware.Responder {
@@ -221,7 +227,14 @@ func (a *artifactAPI) RemoveLabel(ctx context.Context, params operation.RemoveLa
 	return operation.NewRemoveLabelOK()
 }
 
-func option(withTag, withImmutableStatus, withLabel, withScanOverview, withSignature *bool) *artifact.Option {
+func (a *artifactAPI) assembleArtifact(ctx context.Context, artifact *model.Artifact, withScanOverview *bool) {
+	if withScanOverview != nil && *withScanOverview {
+		// TODO populate scan result
+	}
+	// TODO populate vulnerability link
+}
+
+func option(withTag, withImmutableStatus, withLabel, withSignature *bool) *artifact.Option {
 	option := &artifact.Option{
 		WithTag: true, // return the tag by default
 	}
@@ -239,9 +252,6 @@ func option(withTag, withImmutableStatus, withLabel, withScanOverview, withSigna
 	}
 	if withLabel != nil {
 		option.WithLabel = *(withLabel)
-	}
-	if withScanOverview != nil {
-		option.WithScanOverview = *(withScanOverview)
 	}
 	return option
 }

@@ -31,9 +31,8 @@ import (
 // const definitions
 const (
 	// ArtifactTypeImage is the artifact type for image
-	ArtifactTypeImage           = "IMAGE"
-	AdditionTypeBuildHistory    = "BUILD_HISTORY"
-	AdditionTypeVulnerabilities = "VULNERABILITIES"
+	ArtifactTypeImage        = "IMAGE"
+	AdditionTypeBuildHistory = "BUILD_HISTORY"
 )
 
 func init() {
@@ -129,5 +128,5 @@ func (m *manifestV2Resolver) GetArtifactType() string {
 }
 
 func (m *manifestV2Resolver) ListAdditionTypes() []string {
-	return []string{AdditionTypeBuildHistory, AdditionTypeVulnerabilities}
+	return []string{AdditionTypeBuildHistory}
 }
