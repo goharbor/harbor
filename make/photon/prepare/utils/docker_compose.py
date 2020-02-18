@@ -53,6 +53,11 @@ def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
     if uaa_config.get('ca_file'):
         rendering_variables['uaa_ca_file'] = uaa_config['ca_file']
 
+    # for core ca
+    core_ca_bundle = configs.get('core') or {}
+    if core_ca_bundle = configs.get('core_ca_file'):
+        rendering_variables['core_custom_ca_bundle_path'] = configs['core_custom_ca_bundle_path']
+
     # for log
     log_ep_host = configs.get('log_ep_host')
     if log_ep_host:
