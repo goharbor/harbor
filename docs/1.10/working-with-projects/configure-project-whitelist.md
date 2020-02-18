@@ -10,12 +10,12 @@ Harbor administrators can set a system-wide CVE whitelist. For information about
 1. Go to **Projects**, select a project, and select **Configuration**.
 1. Under **CVE whitelist**, select **Project whitelist**.
 
-    ![Project CVE whitelist](../img/cve-whitelist5.png)
+    ![Project CVE whitelist](../../img/cve-whitelist5.png)
 
 1. Optionally click **Copy From System** to add all of the CVE IDs from the system CVE whitelist to this project whitelist.
 1. Click **Add** and enter a list of additional CVE IDs to ignore during vulnerability scanning of this project.
 
-    ![Add project CVEs](../img/cve-whitelist6.png)
+    ![Add project CVEs](../../img/cve-whitelist6.png)
 
     Either use a comma-separated list or newlines to add multiple CVE IDs to the list.
 

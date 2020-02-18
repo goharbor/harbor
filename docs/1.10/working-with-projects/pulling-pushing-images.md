@@ -63,13 +63,13 @@ After pushing an image, the project administrator can add information to describ
 
 Go into the repository and select the **Info** tab, and click the **Edit** button. Enter a description and click **Save** to save the description.
 
-![edit info](../img/edit-description.png)
+![edit info](../../img/edit-description.png)
 
 ## Download the Harbor Certificate
 
 Users can click the **Registry Certificate** button to download the registry certificate.
 
-![browse project](../img/download-harbor-certs.png)
+![browse project](../../img/download-harbor-certs.png)
 
 ## Deleting Repositories
 
@@ -77,8 +77,8 @@ Deleting repositories involves two steps.
 
 First, you delete a repository in the Harbor interface. This is soft deletion. You can delete the entire repository or just one of its tags. After the soft deletion, the repository is no longer managed by Harbor, however, the repository files remain in the Harbor storage.
 
-![browse project](../img/new-delete-repo.png)
-![browse project](../img/new-delete-tag.png)
+![browse project](../../img/new-delete-repo.png)
+![browse project](../../img/new-delete-tag.png)
 
 {{< danger >}}
 If both tag A and tag B refer to the same image, after deleting tag A, B will also get deleted. if you enabled content trust, you need to use notary command line tool to delete the tag's signature before you delete an image.

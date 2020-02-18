@@ -13,13 +13,13 @@ For more information about users and roles in Harbor, see [User Permissions By R
 1. Go to **Projects** and select a project. 
 1. Select the **Members** tab and click **+User**.
 
-   ![browse project](../img/project-members.png) 
+   ![browse project](../../img/project-members.png)
 1. Enter the name of an existing database, LDAP/AD, or OIDC user and select a role for this user.
 
-   ![browse project](../img/new-add-member.png)
+   ![browse project](../../img/new-add-member.png)
 1. Optionally select one or more members, click **Action**, and select a different role for the user or users, or select **Remove** to remove them from the project.
 
-   ![browse project](../img/new-remove-update-member.png)
+   ![browse project](../../img/new-remove-update-member.png)
 
 ## Add LDAP/AD Groups to Projects
 
@@ -27,10 +27,10 @@ For more information about users and roles in Harbor, see [User Permissions By R
 1. Go to **Projects** and select a project. 
 1. Select the **Members** tab and click **+Group**.
 
-   ![Add group](../img/add-group.png)
+   ![Add group](../../img/add-group.png)
 1. Select **Add an existing user group to project members** or **Add a group from LDAP to project member**.
 
-   ![Screenshot of add group dialog](../img/ldap-group-addgroup-dialog.png)
+   ![Screenshot of add group dialog](../../img/ldap-group-addgroup-dialog.png)
    
    - If you selected **Add an existing user group to project members**, enter the name of a group that you have already used in Harbor and assign a role to that group.
    - If you selected **Add a group from LDAP to project member**, enter the LDAP Group DN and assign a role to that group.
@@ -47,10 +47,10 @@ To be able to add OIDC groups to projects, your OIDC provider and Harbor instanc
 1. Go to **Projects** and select a project. 
 1. Select the **Members** tab and click **+Group**.
 
-   ![Add group](../img/add-group.png)
+   ![Add group](../../img/add-group.png)
 1. Enter the name of a group that already exists in your OIDC provider and assign a role to that group.
 
-   ![Add group](../img/add-oidc-group.png)
+   ![Add group](../../img/add-oidc-group.png)
 
 {{< note >}}
 Unlike with LDAP groups, Harbor cannot check whether OIDC groups exist when you add them to a project. If you mistype the group name, or if the group does not exist in your OIDC provider, Harbor still creates the group.
