@@ -67,7 +67,7 @@ func fetchArtifacts(ctx context.Context, repositoryID int64, chunkSize int) <-ch
 		}
 
 		for {
-			_, artifacts, err := artifact.Ctl.List(ctx, query, &artifact.Option{WithTag: true})
+			artifacts, err := artifact.Ctl.List(ctx, query, &artifact.Option{WithTag: true})
 			if err != nil {
 				log.Errorf("[scan all]: list artifacts failed, error: %v", err)
 				return
@@ -100,7 +100,7 @@ func fetchRepositories(ctx context.Context, chunkSize int) <-chan *models.RepoRe
 		}
 
 		for {
-			_, repositories, err := repository.Ctl.List(ctx, query)
+			repositories, err := repository.Ctl.List(ctx, query)
 			if err != nil {
 				log.Warningf("[scan all]: list repositories failed, error: %v", err)
 				break

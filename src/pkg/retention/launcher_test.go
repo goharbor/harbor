@@ -165,7 +165,7 @@ func (l *launchTestSuite) TestGetProjects() {
 }
 
 func (l *launchTestSuite) TestGetRepositories() {
-	l.repositoryMgr.On("List").Return(1, []*models.RepoRecord{
+	l.repositoryMgr.On("List").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			ProjectID:    1,
@@ -211,7 +211,7 @@ func (l *launchTestSuite) TestLaunch() {
 	require.NotNil(l.T(), err)
 
 	// system scope
-	l.repositoryMgr.On("List").Return(2, []*models.RepoRecord{
+	l.repositoryMgr.On("List").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			ProjectID:    1,

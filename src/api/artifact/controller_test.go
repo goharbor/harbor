@@ -143,7 +143,7 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 		PushTime:     time.Now(),
 		PullTime:     time.Now(),
 	}
-	c.tagMgr.On("List").Return(1, []*tag.Tag{tg}, nil)
+	c.tagMgr.On("List").Return([]*tag.Tag{tg}, nil)
 	c.repoMgr.On("Get").Return(&models.RepoRecord{
 		Name: "library/hello-world",
 	}, nil)
@@ -198,7 +198,7 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 
 func (c *controllerTestSuite) TestEnsureTag() {
 	// the tag already exists under the repository and is attached to the artifact
-	c.tagMgr.On("List").Return(1, []*tag.Tag{
+	c.tagMgr.On("List").Return([]*tag.Tag{
 		{
 			ID:           1,
 			RepositoryID: 1,
@@ -214,7 +214,7 @@ func (c *controllerTestSuite) TestEnsureTag() {
 	c.SetupTest()
 
 	// the tag exists under the repository, but it is attached to other artifact
-	c.tagMgr.On("List").Return(1, []*tag.Tag{
+	c.tagMgr.On("List").Return([]*tag.Tag{
 		{
 			ID:           1,
 			RepositoryID: 1,
@@ -231,7 +231,7 @@ func (c *controllerTestSuite) TestEnsureTag() {
 	c.SetupTest()
 
 	// the tag doesn't exist under the repository, create it
-	c.tagMgr.On("List").Return(1, []*tag.Tag{}, nil)
+	c.tagMgr.On("List").Return([]*tag.Tag{}, nil)
 	c.tagMgr.On("Create").Return(1, nil)
 	err = c.ctl.ensureTag(nil, 1, 1, "latest")
 	c.Require().Nil(err)
@@ -247,7 +247,7 @@ func (c *controllerTestSuite) TestEnsure() {
 	}, nil)
 	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
 	c.artMgr.On("Create").Return(1, nil)
-	c.tagMgr.On("List").Return(1, []*tag.Tag{}, nil)
+	c.tagMgr.On("List").Return([]*tag.Tag{}, nil)
 	c.tagMgr.On("Create").Return(1, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	_, id, err := c.ctl.Ensure(nil, 1, digest, "latest")
@@ -259,18 +259,25 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.Equal(int64(1), id)
 }
 
+func (c *controllerTestSuite) TestCount() {
+	c.artMgr.On("Count").Return(1, nil)
+	total, err := c.ctl.Count(nil, nil)
+	c.Require().Nil(err)
+	c.Equal(int64(1), total)
+}
+
 func (c *controllerTestSuite) TestList() {
 	query := &q.Query{}
 	option := &Option{
 		WithTag: true,
 	}
-	c.artMgr.On("List").Return(1, []*artifact.Artifact{
+	c.artMgr.On("List").Return([]*artifact.Artifact{
 		{
 			ID:           1,
 			RepositoryID: 1,
 		},
 	}, nil)
-	c.tagMgr.On("List").Return(1, []*tag.Tag{
+	c.tagMgr.On("List").Return([]*tag.Tag{
 		{
 			ID:           1,
 			RepositoryID: 1,
@@ -281,9 +288,8 @@ func (c *controllerTestSuite) TestList() {
 	c.repoMgr.On("Get").Return(&models.RepoRecord{
 		Name: "library/hello-world",
 	}, nil)
-	total, artifacts, err := c.ctl.List(nil, query, option)
+	artifacts, err := c.ctl.List(nil, query, option)
 	c.Require().Nil(err)
-	c.Equal(int64(1), total)
 	c.Require().Len(artifacts, 1)
 	c.Equal(int64(1), artifacts[0].ID)
 	c.Require().Len(artifacts[0].Tags, 1)
@@ -337,7 +343,7 @@ func (c *controllerTestSuite) TestGetByTag() {
 	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
 		RepositoryID: 1,
 	}, nil)
-	c.tagMgr.On("List").Return(0, nil, nil)
+	c.tagMgr.On("List").Return(nil, nil)
 	art, err := c.ctl.getByTag(nil, "library/hello-world", "latest", nil)
 	c.Require().NotNil(err)
 	c.True(ierror.IsErr(err, ierror.NotFoundCode))
@@ -349,7 +355,7 @@ func (c *controllerTestSuite) TestGetByTag() {
 	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
 		RepositoryID: 1,
 	}, nil)
-	c.tagMgr.On("List").Return(1, []*tag.Tag{
+	c.tagMgr.On("List").Return([]*tag.Tag{
 		{
 			ID:           1,
 			RepositoryID: 1,
@@ -390,7 +396,7 @@ func (c *controllerTestSuite) TestGetByReference() {
 	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
 		RepositoryID: 1,
 	}, nil)
-	c.tagMgr.On("List").Return(1, []*tag.Tag{
+	c.tagMgr.On("List").Return([]*tag.Tag{
 		{
 			ID:           1,
 			RepositoryID: 1,
@@ -429,7 +435,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	// child artifact and contains tags
 	c.artMgr.On("Get").Return(&artifact.Artifact{ID: 1}, nil)
 	c.artMgr.On("Delete").Return(nil)
-	c.tagMgr.On("List").Return(0, []*tag.Tag{
+	c.tagMgr.On("List").Return([]*tag.Tag{
 		{
 			ID: 1,
 		},
@@ -444,7 +450,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 
 	// root artifact is referenced by other artifacts
 	c.artMgr.On("Get").Return(&artifact.Artifact{ID: 1}, nil)
-	c.tagMgr.On("List").Return(0, nil, nil)
+	c.tagMgr.On("List").Return(nil, nil)
 	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	c.artMgr.On("ListReferences").Return([]*artifact.Reference{
 		{
@@ -459,7 +465,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 
 	// child artifact contains no tag but referenced by other artifacts
 	c.artMgr.On("Get").Return(&artifact.Artifact{ID: 1}, nil)
-	c.tagMgr.On("List").Return(0, nil, nil)
+	c.tagMgr.On("List").Return(nil, nil)
 	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	c.artMgr.On("ListReferences").Return([]*artifact.Reference{
 		{
@@ -474,7 +480,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 
 	// root artifact is referenced by other artifacts
 	c.artMgr.On("Get").Return(&artifact.Artifact{ID: 1}, nil)
-	c.tagMgr.On("List").Return(0, nil, nil)
+	c.tagMgr.On("List").Return(nil, nil)
 	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	c.artMgr.On("ListReferences").Return(nil, nil)
 	c.tagMgr.On("DeleteOfArtifact").Return(nil)
@@ -486,7 +492,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 }
 
 func (c *controllerTestSuite) TestListTags() {
-	c.tagMgr.On("List").Return(1, []*tag.Tag{
+	c.tagMgr.On("List").Return([]*tag.Tag{
 		{
 			ID:           1,
 			RepositoryID: 1,
@@ -494,9 +500,8 @@ func (c *controllerTestSuite) TestListTags() {
 			ArtifactID:   1,
 		},
 	}, nil)
-	total, tags, err := c.ctl.ListTags(nil, nil, nil)
+	tags, err := c.ctl.ListTags(nil, nil, nil)
 	c.Require().Nil(err)
-	c.Equal(int64(1), total)
 	c.Len(tags, 1)
 	c.tagMgr.AssertExpectations(c.T())
 	c.Equal(tags[0].Immutable, false)

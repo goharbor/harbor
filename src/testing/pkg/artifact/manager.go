@@ -27,14 +27,20 @@ type FakeManager struct {
 	mock.Mock
 }
 
+// Count ...
+func (f *FakeManager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	args := f.Called()
+	return int64(args.Int(0)), args.Error(1)
+}
+
 // List ...
-func (f *FakeManager) List(ctx context.Context, query *q.Query) (int64, []*artifact.Artifact, error) {
+func (f *FakeManager) List(ctx context.Context, query *q.Query) ([]*artifact.Artifact, error) {
 	args := f.Called()
 	var artifacts []*artifact.Artifact
-	if args.Get(1) != nil {
-		artifacts = args.Get(1).([]*artifact.Artifact)
+	if args.Get(0) != nil {
+		artifacts = args.Get(0).([]*artifact.Artifact)
 	}
-	return int64(args.Int(0)), artifacts, args.Error(2)
+	return artifacts, args.Error(1)
 }
 
 // Get ...

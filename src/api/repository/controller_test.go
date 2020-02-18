@@ -45,7 +45,7 @@ func (c *controllerTestSuite) SetupTest() {
 
 func (c *controllerTestSuite) TestEnsure() {
 	// already exists
-	c.repoMgr.On("List").Return(0, []*models.RepoRecord{
+	c.repoMgr.On("List").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			ProjectID:    1,
@@ -62,7 +62,7 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.SetupTest()
 
 	// doesn't exist
-	c.repoMgr.On("List").Return(0, []*models.RepoRecord{}, nil)
+	c.repoMgr.On("List").Return([]*models.RepoRecord{}, nil)
 	c.proMgr.On("Get").Return(&models.Project{
 		ProjectID: 1,
 	}, nil)
@@ -75,16 +75,21 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.Equal(int64(1), id)
 }
 
+func (c *controllerTestSuite) TestCount() {
+	c.repoMgr.On("Count").Return(1, nil)
+	total, err := c.ctl.Count(nil, nil)
+	c.Require().Nil(err)
+	c.Equal(int64(1), total)
+}
+
 func (c *controllerTestSuite) TestList() {
-	c.repoMgr.On("List").Return(1, []*models.RepoRecord{
+	c.repoMgr.On("List").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 		},
 	}, nil)
-	total, repositories, err := c.ctl.List(nil, nil)
+	repositories, err := c.ctl.List(nil, nil)
 	c.Require().Nil(err)
-	c.repoMgr.AssertExpectations(c.T())
-	c.Equal(int64(1), total)
 	c.Require().Len(repositories, 1)
 	c.Equal(int64(1), repositories[0].RepositoryID)
 }
@@ -112,10 +117,19 @@ func (c *controllerTestSuite) TestGetByName() {
 func (c *controllerTestSuite) TestDelete() {
 	art := &artifact.Artifact{}
 	art.ID = 1
-	c.artCtl.On("List").Return(1, []*artifact.Artifact{art}, nil)
+	c.artCtl.On("List").Return([]*artifact.Artifact{art}, nil)
 	c.artCtl.On("Delete").Return(nil)
 	c.repoMgr.On("Delete").Return(nil)
 	err := c.ctl.Delete(nil, 1)
+	c.Require().Nil(err)
+}
+
+func (c *controllerTestSuite) TestUpdate() {
+	c.repoMgr.On("Update").Return(nil)
+	err := c.ctl.Update(nil, &models.RepoRecord{
+		RepositoryID: 1,
+		Description:  "description",
+	}, "Description")
 	c.Require().Nil(err)
 }
 

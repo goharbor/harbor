@@ -16,6 +16,100 @@ securityDefinitions:
   basicAuth:
     type: basic
 paths:
+  /projects/{project_name}/repositories:
+    get:
+      summary: List repositories
+      description: List repositories of the specified project
+      tags:
+        - repository
+      operationId: listRepositories
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: name
+          in: query
+          description: Query the repositories by name
+          type: string
+          required: false
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of repositories
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Repository'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}:
+    put:
+      summary: Update repository
+      description: Update the repository specified by name
+      tags:
+        - repository
+      operationId: updateRepository
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - name: repository
+          in: body
+          description: The JSON object of repository.
+          required: true
+          schema:
+            $ref: '#/definitions/Repository'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete repository
+      description: Delete the repository specified by name
+      tags:
+        - repository
+      operationId: deleteRepository
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts:
     get:
       summary: List artifacts
@@ -57,10 +151,9 @@ paths:
           type: boolean
           required: false
           default: false
-        # should be in tag level
         - name: with_signature
           in: query
-          description: Specify whether the signature is inclued inside the returning artifacts
+          description: Specify whether the signature is inclued inside the tags of the returning artifacts. Only works when setting "with_tag=true"
           type: boolean
           required: false
           default: false
@@ -70,7 +163,6 @@ paths:
           type: boolean
           required: false
           default: false
-        # TODO add other query string: type, ....
       responses:
         '200':
           description: Success
@@ -223,28 +315,6 @@ paths:
         - $ref: '#/parameters/repositoryName'
         - $ref: '#/parameters/reference'
         - $ref: '#/parameters/tagName'
-      responses:
-        '200':
-          $ref: '#/responses/200'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-  /projects/{project_name}/repositories/{repository_name}:
-    delete:
-      summary: Delete repository
-      description: Delete the repository specified by name
-      tags:
-        - repository
-      operationId: deleteRepository
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/projectName'
-        - $ref: '#/parameters/repositoryName'
       responses:
         '200':
           $ref: '#/responses/200'
@@ -476,6 +546,39 @@ definitions:
       message:
         type: string
         description: The error message
+  Repository:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the repository
+      project_id:
+        type: integer
+        format: int64
+        description: The ID of the project that the repository belongs to
+      name:
+        type: string
+        description: The name of the repository
+      description:
+        type: string
+        description: The description of the repository
+      artifact_count:
+        type: integer
+        format: int64
+        description: The count of the artifacts inside the repository
+      pull_count:
+        type: integer
+        format: int64
+        description: The count that the artifact inside the repository pulled
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the repository
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the repository
   Artifact:
     type: object
     x-go-type:

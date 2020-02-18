@@ -58,8 +58,12 @@ type Controller interface {
 	// and are attached to the artifact. If the tags don't exist, create them first.
 	// The "created" will be set as true when the artifact is created
 	Ensure(ctx context.Context, repositoryID int64, digest string, tags ...string) (created bool, id int64, err error)
+	// Count returns the total count of artifacts according to the query.
+	// The artifacts that referenced by others and without tags are not counted
+	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// List artifacts according to the query, specify the properties returned with option
-	List(ctx context.Context, query *q.Query, option *Option) (total int64, artifacts []*Artifact, err error)
+	// The artifacts that referenced by others and without tags are not returned
+	List(ctx context.Context, query *q.Query, option *Option) (artifacts []*Artifact, err error)
 	// Get the artifact specified by ID, specify the properties returned with option
 	Get(ctx context.Context, id int64, option *Option) (artifact *Artifact, err error)
 	// Get the artifact specified by repository name and reference, the reference can be tag or digest,
@@ -68,7 +72,7 @@ type Controller interface {
 	// Delete the artifact specified by ID. All tags attached to the artifact are deleted as well
 	Delete(ctx context.Context, id int64) (err error)
 	// ListTags lists the tags according to the query, specify the properties returned with option
-	ListTags(ctx context.Context, query *q.Query, option *TagOption) (total int64, tags []*Tag, err error)
+	ListTags(ctx context.Context, query *q.Query, option *TagOption) (tags []*Tag, err error)
 	// CreateTag creates a tag
 	CreateTag(ctx context.Context, tag *Tag) (id int64, err error)
 	// DeleteTag deletes the tag specified by tagID
@@ -185,7 +189,7 @@ func (c *controller) ensureTag(ctx context.Context, repositoryID, artifactID int
 			"name":          name,
 		},
 	}
-	_, tags, err := c.tagMgr.List(ctx, query)
+	tags, err := c.tagMgr.List(ctx, query)
 	if err != nil {
 		return err
 	}
@@ -216,17 +220,22 @@ func (c *controller) ensureTag(ctx context.Context, repositoryID, artifactID int
 	return err
 }
 
-func (c *controller) List(ctx context.Context, query *q.Query, option *Option) (int64, []*Artifact, error) {
-	total, arts, err := c.artMgr.List(ctx, query)
+func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return c.artMgr.Count(ctx, query)
+}
+
+func (c *controller) List(ctx context.Context, query *q.Query, option *Option) ([]*Artifact, error) {
+	arts, err := c.artMgr.List(ctx, query)
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
 	var artifacts []*Artifact
 	for _, art := range arts {
 		artifacts = append(artifacts, c.assembleArtifact(ctx, art, option))
 	}
-	return total, artifacts, nil
+	return artifacts, nil
 }
+
 func (c *controller) Get(ctx context.Context, id int64, option *Option) (*Artifact, error) {
 	art, err := c.artMgr.Get(ctx, id)
 	if err != nil {
@@ -261,7 +270,7 @@ func (c *controller) getByTag(ctx context.Context, repository, tag string, optio
 	if err != nil {
 		return nil, err
 	}
-	_, tags, err := c.tagMgr.List(ctx, &q.Query{
+	tags, err := c.tagMgr.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"RepositoryID": repo.RepositoryID,
 			"Name":         tag,
@@ -369,16 +378,16 @@ func (c *controller) CreateTag(ctx context.Context, tag *Tag) (int64, error) {
 	// TODO fire event
 	return c.tagMgr.Create(ctx, &(tag.Tag))
 }
-func (c *controller) ListTags(ctx context.Context, query *q.Query, option *TagOption) (int64, []*Tag, error) {
-	total, tgs, err := c.tagMgr.List(ctx, query)
+func (c *controller) ListTags(ctx context.Context, query *q.Query, option *TagOption) ([]*Tag, error) {
+	tgs, err := c.tagMgr.List(ctx, query)
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
 	var tags []*Tag
 	for _, tg := range tgs {
 		tags = append(tags, c.assembleTag(ctx, tg, option))
 	}
-	return total, tags, nil
+	return tags, nil
 }
 
 func (c *controller) DeleteTag(ctx context.Context, tagID int64) error {
@@ -442,7 +451,7 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 }
 
 func (c *controller) populateTags(ctx context.Context, art *Artifact, option *TagOption) {
-	_, tags, err := c.tagMgr.List(ctx, &q.Query{
+	tags, err := c.tagMgr.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"artifact_id": art.ID,
 		},

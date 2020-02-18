@@ -70,6 +70,13 @@ func (m *managerTestSuite) SetupTest() {
 	}
 }
 
+func (m *managerTestSuite) TestCount() {
+	m.dao.On("Count", mock.Anything).Return(1, nil)
+	total, err := m.mgr.Count(nil, nil)
+	m.Require().Nil(err)
+	m.Equal(int64(1), total)
+}
+
 func (m *managerTestSuite) TestList() {
 	tg := &tag.Tag{
 		ID:           1,
@@ -79,12 +86,9 @@ func (m *managerTestSuite) TestList() {
 		PushTime:     time.Now(),
 		PullTime:     time.Now(),
 	}
-	m.dao.On("Count", mock.Anything).Return(1, nil)
 	m.dao.On("List", mock.Anything).Return([]*tag.Tag{tg}, nil)
-	total, tags, err := m.mgr.List(nil, nil)
+	tags, err := m.mgr.List(nil, nil)
 	m.Require().Nil(err)
-	m.dao.AssertExpectations(m.T())
-	m.Equal(int64(1), total)
 	m.Equal(1, len(tags))
 	m.Equal(tg.ID, tags[0].ID)
 }

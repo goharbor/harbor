@@ -64,7 +64,7 @@ func (c *tagTestSuite) TestListTag() {
 		RepositoryID: 1,
 		Name:         "library/hello-world",
 	}, nil)
-	c.artCtl.On("ListTags").Return(2, []*artifact.Tag{
+	c.artCtl.On("ListTags").Return([]*artifact.Tag{
 		{
 			Tag: tag.Tag{
 				RepositoryID: 1,
@@ -99,7 +99,7 @@ func (c *tagTestSuite) TestListTagPagination1() {
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
-	c.artCtl.On("ListTags").Return(2, []*artifact.Tag{
+	c.artCtl.On("ListTags").Return([]*artifact.Tag{
 		{
 			Tag: tag.Tag{
 				RepositoryID: 1,
@@ -135,7 +135,7 @@ func (c *tagTestSuite) TestListTagPagination2() {
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
-	c.artCtl.On("ListTags").Return(2, []*artifact.Tag{
+	c.artCtl.On("ListTags").Return([]*artifact.Tag{
 		{
 			Tag: tag.Tag{
 				RepositoryID: 1,
@@ -171,7 +171,7 @@ func (c *tagTestSuite) TestListTagPagination3() {
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
-	c.artCtl.On("ListTags").Return(2, []*artifact.Tag{
+	c.artCtl.On("ListTags").Return([]*artifact.Tag{
 		{
 			Tag: tag.Tag{
 				RepositoryID: 1,

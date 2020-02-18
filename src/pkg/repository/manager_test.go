@@ -65,18 +65,22 @@ func (m *managerTestSuite) SetupTest() {
 	}
 }
 
+func (m *managerTestSuite) TestCount() {
+	m.dao.On("Count", mock.Anything).Return(1, nil)
+	total, err := m.mgr.Count(nil, nil)
+	m.Require().Nil(err)
+	m.Equal(int64(1), total)
+}
+
 func (m *managerTestSuite) TestList() {
 	repository := &models.RepoRecord{
 		RepositoryID: 1,
 		ProjectID:    1,
 		Name:         "library/hello-world",
 	}
-	m.dao.On("Count", mock.Anything).Return(1, nil)
 	m.dao.On("List", mock.Anything).Return([]*models.RepoRecord{repository}, nil)
-	total, repositories, err := m.mgr.List(nil, nil)
+	repositories, err := m.mgr.List(nil, nil)
 	m.Require().Nil(err)
-	m.dao.AssertExpectations(m.T())
-	m.Equal(int64(1), total)
 	m.Equal(1, len(repositories))
 	m.Equal(repository.RepositoryID, repositories[0].RepositoryID)
 }
@@ -101,7 +105,6 @@ func (m *managerTestSuite) TestGetByName() {
 		ProjectID:    1,
 		Name:         "library/hello-world",
 	}
-	m.dao.On("Count", mock.Anything).Return(1, nil)
 	m.dao.On("List", mock.Anything).Return([]*models.RepoRecord{repository}, nil)
 	repo, err := m.mgr.GetByName(nil, "library/hello-world")
 	m.Require().Nil(err)
