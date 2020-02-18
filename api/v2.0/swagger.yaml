@@ -272,7 +272,7 @@ paths:
           in: path
           description: The type of addition.
           type: string
-          enum: [build_history, values.yaml, readme, dependencies]
+          enum: [build_history, values.yaml, readme.md, dependencies]
           required: true
       responses:
         '200':
