@@ -23,6 +23,8 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/internal"
 	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/pkg/artifactrash"
+	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/pkg/label"
@@ -89,6 +91,7 @@ func NewController() Controller {
 	return &controller{
 		repoMgr:      repository.Mgr,
 		artMgr:       artifact.Mgr,
+		artrashMgr:   artifactrash.Mgr,
 		tagMgr:       tag.Mgr,
 		sigMgr:       signature.GetManager(),
 		labelMgr:     label.Mgr,
@@ -102,6 +105,7 @@ func NewController() Controller {
 type controller struct {
 	repoMgr      repository.Manager
 	artMgr       artifact.Manager
+	artrashMgr   artifactrash.Manager
 	tagMgr       tag.Manager
 	sigMgr       signature.Manager
 	labelMgr     label.Manager
@@ -288,6 +292,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 		}
 		return err
 	}
+
 	// the child artifact is referenced by some tags, skip
 	if !isRoot && len(art.Tags) > 0 {
 		return nil
@@ -342,6 +347,19 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 		return err
 	}
 
+	repo, err := c.repoMgr.Get(ctx, art.RepositoryID)
+	if err != nil && !ierror.IsErr(err, ierror.NotFoundCode) {
+		return err
+	}
+	_, err = c.artrashMgr.Create(ctx, &model.ArtifactTrash{
+		MediaType:         art.MediaType,
+		ManifestMediaType: art.ManifestMediaType,
+		RepositoryName:    repo.Name,
+		Digest:            art.Digest,
+	})
+	if err != nil && !ierror.IsErr(err, ierror.ConflictCode) {
+		return err
+	}
 	// TODO fire delete artifact event
 
 	return nil

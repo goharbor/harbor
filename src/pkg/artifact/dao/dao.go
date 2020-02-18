@@ -171,6 +171,7 @@ func (d *dao) Delete(ctx context.Context, id int64) error {
 	if n == 0 {
 		return ierror.NotFoundError(nil).WithMessage("artifact %d not found", id)
 	}
+
 	return nil
 }
 func (d *dao) Update(ctx context.Context, artifact *Artifact, props ...string) error {
