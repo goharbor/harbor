@@ -86,23 +86,27 @@ func EnsureScanner(registration *scanner.Registration, resolveConflicts ...bool)
 	return err
 }
 
-// RemoveImmutableScanner removes an immutable scanner with the specified endpoint URL.
-func RemoveImmutableScanner(registrationURL string) error {
+// RemoveImmutableScanners removes immutable scanner Registrations with the specified endpoint URLs.
+func RemoveImmutableScanners(urls []string) error {
+	if len(urls) == 0 {
+		return nil
+	}
 	query := &q.Query{
 		Keywords: map[string]interface{}{
-			"immutable": true,
-			"url":       registrationURL,
+			"immutable":  true,
+			"ex_url__in": urls,
 		},
 	}
 
+	// TODO Instead of executing 1 to N SQL queries we might want to delete multiple rows with scannerManager.DeleteByImmutableAndURLIn(true, []string{})
 	registrations, err := scannerManager.List(query)
 	if err != nil {
-		return err
+		return errors.Errorf("listing scanners: %v", err)
 	}
 
 	for _, reg := range registrations {
 		if err := scannerManager.Delete(reg.UUID); err != nil {
-			return err
+			return errors.Errorf("deleting scanner: %s: %v", reg.UUID, err)
 		}
 	}
 

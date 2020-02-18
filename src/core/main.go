@@ -208,52 +208,7 @@ func main() {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
 	}
 
-	if config.WithTrivy() {
-		log.Debug("Registering Trivy scanner")
-		reg := &scanner.Registration{
-			Name:            "Trivy",
-			Description:     "The Trivy scanner adapter",
-			URL:             config.TrivyAdapterURL(),
-			UseInternalAddr: true,
-			Immutable:       true,
-		}
-		if err := scan.EnsureScanner(reg, true); err != nil {
-			log.Fatalf("failed to register Trivy scanner: %v", err)
-		}
-	} else {
-		log.Debug("Removing Trivy scanner")
-		if err := scan.RemoveImmutableScanner(config.TrivyAdapterURL()); err != nil {
-			log.Warningf("failed to remove Trivy scanner: %v", err)
-		}
-	}
-
-	if config.WithClair() {
-		clairDB, err := config.ClairDB()
-		if err != nil {
-			log.Fatalf("failed to load clair database information: %v", err)
-		}
-		if err := dao.InitClairDB(clairDB); err != nil {
-			log.Fatalf("failed to initialize clair database: %v", err)
-		}
-
-		log.Debug("Registering Clair scanner")
-		reg := &scanner.Registration{
-			Name:            "Clair",
-			Description:     "The clair scanner adapter",
-			URL:             config.ClairAdapterEndpoint(),
-			UseInternalAddr: true,
-			Immutable:       true,
-		}
-
-		if err := scan.EnsureScanner(reg, true); err != nil {
-			log.Fatalf("failed to register Clair scanner: %v", err)
-		}
-	} else {
-		log.Debug("Removing Clair scanner")
-		if err := scan.RemoveImmutableScanner(config.ClairAdapterEndpoint()); err != nil {
-			log.Warningf("failed to remove Clair scanners: %v", err)
-		}
-	}
+	registerScanners()
 
 	closing := make(chan struct{})
 	done := make(chan struct{})
@@ -311,4 +266,56 @@ func main() {
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
 
 	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
+}
+
+func registerScanners() {
+	uninstallURLs := make([]string, 0)
+
+	if config.WithTrivy() {
+		log.Debug("Registering Trivy scanner")
+		reg := &scanner.Registration{
+			Name:            "Trivy",
+			Description:     "The Trivy scanner adapter",
+			URL:             config.TrivyAdapterURL(),
+			UseInternalAddr: true,
+			Immutable:       true,
+		}
+		if err := scan.EnsureScanner(reg, true); err != nil {
+			log.Fatalf("failed to register Trivy scanner: %v", err)
+		}
+	} else {
+		log.Debug("Removing Trivy scanner")
+		uninstallURLs = append(uninstallURLs, config.TrivyAdapterURL())
+	}
+
+	if config.WithClair() {
+		clairDB, err := config.ClairDB()
+		if err != nil {
+			log.Fatalf("failed to load clair database information: %v", err)
+		}
+		if err := dao.InitClairDB(clairDB); err != nil {
+			log.Fatalf("failed to initialize clair database: %v", err)
+		}
+
+		log.Debug("Registering Clair scanner")
+		reg := &scanner.Registration{
+			Name:            "Clair",
+			Description:     "The clair scanner adapter",
+			URL:             config.ClairAdapterEndpoint(),
+			UseInternalAddr: true,
+			Immutable:       true,
+		}
+
+		if err := scan.EnsureScanner(reg, true); err != nil {
+			log.Fatalf("failed to register Clair scanner: %v", err)
+		}
+	} else {
+		log.Debug("Removing Clair scanner")
+		uninstallURLs = append(uninstallURLs, config.ClairAdapterEndpoint())
+	}
+
+	if err := scan.RemoveImmutableScanners(uninstallURLs); err != nil {
+		log.Warningf("failed to remove scanners: %v", err)
+	}
+
 }

@@ -213,3 +213,99 @@ func TestEnsureScannerWithResolveConflict(t *testing.T) {
 	assert.Error(EnsureScanner(&scanner.Registration{Name: "Clair", URL: "reg2"}))
 	assert.Nil(EnsureScanner(&scanner.Registration{Name: "Clair", URL: "reg2"}, true))
 }
+
+func TestRemoveImmutableScanners(t *testing.T) {
+
+	t.Run("Should do nothing when list of URLs is empty", func(t *testing.T) {
+		mgr := &mocks.Manager{}
+		scannerManager = mgr
+
+		err := RemoveImmutableScanners([]string{})
+		assert.NoError(t, err)
+		mgr.AssertExpectations(t)
+	})
+
+	t.Run("Should return error when listing scanners fails", func(t *testing.T) {
+		mgr := &mocks.Manager{}
+		scannerManager = mgr
+
+		mgr.On("List", &q.Query{
+			Keywords: map[string]interface{}{
+				"immutable":  true,
+				"ex_url__in": []string{"http://scanner:8080"},
+			},
+		}).Return(nil, errors.New("DB error"))
+
+		err := RemoveImmutableScanners([]string{"http://scanner:8080"})
+		assert.EqualError(t, err, "listing scanners: DB error")
+		mgr.AssertExpectations(t)
+	})
+
+	t.Run("Should delete multiple scanners", func(t *testing.T) {
+		mgr := &mocks.Manager{}
+		scannerManager = mgr
+
+		registrations := []*scanner.Registration{
+			{
+				UUID: "uuid-1",
+				URL:  "http://scanner-1",
+			},
+			{
+				UUID: "uuid-2",
+				URL:  "http://scanner-2",
+			}}
+
+		mgr.On("List", &q.Query{
+			Keywords: map[string]interface{}{
+				"immutable": true,
+				"ex_url__in": []string{
+					"http://scanner-1",
+					"http://scanner-2",
+				},
+			},
+		}).Return(registrations, nil)
+		mgr.On("Delete", "uuid-1").Return(nil)
+		mgr.On("Delete", "uuid-2").Return(nil)
+
+		err := RemoveImmutableScanners([]string{
+			"http://scanner-1",
+			"http://scanner-2",
+		})
+		assert.NoError(t, err)
+		mgr.AssertExpectations(t)
+	})
+
+	t.Run("Should return error when deleting any scanner fails", func(t *testing.T) {
+		mgr := &mocks.Manager{}
+		scannerManager = mgr
+
+		registrations := []*scanner.Registration{
+			{
+				UUID: "uuid-1",
+				URL:  "http://scanner-1",
+			},
+			{
+				UUID: "uuid-2",
+				URL:  "http://scanner-2",
+			}}
+
+		mgr.On("List", &q.Query{
+			Keywords: map[string]interface{}{
+				"immutable": true,
+				"ex_url__in": []string{
+					"http://scanner-1",
+					"http://scanner-2",
+				},
+			},
+		}).Return(registrations, nil)
+		mgr.On("Delete", "uuid-1").Return(nil)
+		mgr.On("Delete", "uuid-2").Return(errors.New("DB error"))
+
+		err := RemoveImmutableScanners([]string{
+			"http://scanner-1",
+			"http://scanner-2",
+		})
+		assert.EqualError(t, err, "deleting scanner: uuid-2: DB error")
+		mgr.AssertExpectations(t)
+	})
+}
