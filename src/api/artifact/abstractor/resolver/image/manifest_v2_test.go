@@ -171,7 +171,7 @@ func (m *manifestV2ResolverTestSuite) TestGetArtifactType() {
 
 func (m *manifestV2ResolverTestSuite) TestListAdditionTypes() {
 	additions := m.resolver.ListAdditionTypes()
-	m.EqualValues([]string{AdditionTypeBuildHistory, AdditionTypeVulnerabilities}, additions)
+	m.EqualValues([]string{AdditionTypeBuildHistory}, additions)
 }
 
 func TestManifestV2ResolverTestSuite(t *testing.T) {

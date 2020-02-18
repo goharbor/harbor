@@ -478,6 +478,10 @@ definitions:
         description: The error message
   Artifact:
     type: object
+    x-go-type:
+      import:
+        package: "github.com/goharbor/harbor/src/server/v2.0/handler/model"
+      type: "Artifact"
     properties:
       id:
         type: integer

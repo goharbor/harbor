@@ -129,8 +129,7 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 		TagOption: &TagOption{
 			WithImmutableStatus: false,
 		},
-		WithLabel:        true,
-		WithScanOverview: true,
+		WithLabel: true,
 	}
 	tg := &tag.Tag{
 		ID:           1,
@@ -259,8 +258,7 @@ func (c *controllerTestSuite) TestEnsure() {
 func (c *controllerTestSuite) TestList() {
 	query := &q.Query{}
 	option := &Option{
-		WithTag:          true,
-		WithScanOverview: true,
+		WithTag: true,
 	}
 	c.artMgr.On("List").Return(1, []*artifact.Artifact{
 		{
