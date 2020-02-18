@@ -158,6 +158,11 @@ services:
         source: {{uaa_ca_file}}
         target: /etc/core/certificates/uaa_ca.pem
 {% endif %}
+{% if core_custom_ca_bundle_path %}
+      - type: bind
+        source: {{core_custom_ca_bundle_path}}
+        target: /etc/pki/tls/certs/ca-bundle.crt
+{% endif %}
     networks:
       harbor:
 {% if with_notary %}
