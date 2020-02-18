@@ -1,0 +1,15 @@
+.value-container {
+    ::ng-deep pre {
+        min-height: fit-content;
+    }
+}
+
+.values-header {
+    margin-top: 12px;
+}
+
+
+pre {
+    max-height: max-content;
+    padding-left: 21px;
+}

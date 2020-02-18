@@ -54,21 +54,13 @@ export interface Repository {
  */
 
 export interface Tag extends Base {
-  digest: string;
+  artifact_id: number;
   name: string;
-  size: string;
-  architecture: string;
-  os: string;
-  'os.version': string;
-  docker_version: string;
-  author: string;
-  created: Date;
-  signature?: string;
-  scan_overview?: ScanOverview;
-  labels: Label[];
   push_time?: string;
   pull_time?: string;
   immutable?: boolean;
+  repository_id?: number;
+  upload_time?: string;
 }
 
 /**
@@ -347,10 +339,11 @@ export interface VulnerabilitySeverityMetrics {
   count: number;
 }
 
-export interface TagClickEvent {
+export interface ArtifactClickEvent {
   project_id: string | number;
   repository_name: string;
-  tag_name: string;
+  digest: string;
+  artifact_id: number;
 }
 
 export interface Label {

@@ -1,0 +1,58 @@
+<h4>{{'REPOSITORY.TAGS_COUNT' | translate}}</h4>
+<clr-datagrid [clrDgLoading]="loading" [(clrDgSelected)]="selectedRow" [clrDgRowSelection]="true">
+    <clr-dg-action-bar>
+        <button type="button" class="btn btn-secondary" (click)="addTag()">
+            <clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'TAG.ADD_TAG' | translate}}
+        </button>
+        <button type="button" class="btn btn-secondary" [disabled]="!(selectedRow.length>=1)" (click)="removeTag()">
+            <clr-icon shape="trash" size="16"></clr-icon>&nbsp;{{'TAG.REMOVE_TAG' | translate}}
+        </button>
+        <form #labelForm="ngForm" [hidden]="!newTagformShow" class="label-form stack-block-label">
+
+            <section>
+                <label>
+                    <label for="name">{{'TAG.NAME' | translate}}</label>
+                    <label class="clr-control-container" [class.clr-error]="isTagNameExist">
+                        <input clrInput type="text" id="name" name="name" required size="20" autocomplete="off"
+                            [(ngModel)]="newTagName.name" #name="ngModel" (keyup)="existValid(newTagName.name)">
+                        <clr-control-error class="position-ab" *ngIf="isTagNameExist">
+                            {{'LABEL.NAME_ALREADY_EXISTS' | translate }}
+                        </clr-control-error>
+                    </label>
+                </label>
+                <label>
+                    <button type="button" class="btn btn-sm btn-outline" (click)="cancelAddTag()">{{
+                                        'BUTTON.CANCEL' | translate }}
+                    </button>
+                    <button type="submit" class="btn btn-sm btn-primary" (click)="saveAddTag()"
+                        [disabled]="isTagNameExist || !newTagName.name">{{
+                                        'BUTTON.OK' | translate }}
+                    </button>
+                </label>
+            </section>
+        </form>
+    </clr-dg-action-bar>
+    <clr-dg-column [clrDgField]="'name'">{{'TAG.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'TAG.PULL_TIME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'TAG.PUSH_TIME' | translate}}</clr-dg-column>
+
+    <clr-dg-row *clrDgItems="let tag of artifactDetails?.tags" [clrDgItem]="tag">
+        <clr-dg-cell>
+            <div class="cell white-normal" [class.immutable]="tag.immutable">
+                <span href="javascript:void(0)" class="max-width-100" title="{{tag.name}}">{{tag.name}}</span>
+                <span *ngIf="tag.immutable" class="label label-info ml-8">{{'REPOSITORY.IMMUTABLE' | translate}}</span>
+            </div>
+        </clr-dg-cell>
+        <clr-dg-cell>{{tag.pull_time !== availableTime? (tag.pull_time | date: 'short') : ""}}</clr-dg-cell>
+        <clr-dg-cell>{{tag.push_time | date: 'short'}}</clr-dg-cell>
+    </clr-dg-row>
+
+    <clr-dg-footer>
+        <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}}
+        {{'TAG.OF' | translate}} {{pagination.totalItems}} {{'TAG.ITEMS' | translate}}</span>
+        <clr-dg-pagination #pagination [clrDgPageSize]="10"></clr-dg-pagination>
+    </clr-dg-footer>
+</clr-datagrid>
+
+<confirmation-dialog class="hidden-tag" #confirmationDialog (confirmAction)="confirmDeletion($event)">
+</confirmation-dialog>

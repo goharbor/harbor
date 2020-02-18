@@ -1,0 +1,27 @@
+
+.label-form {
+  max-width: 100% !important;
+}
+.clr-control-container {
+  margin-bottom: 1rem;
+}
+.btn.remove-btn {
+  border: none;
+  height: 0.6rem;
+  line-height: 1;
+}
+.immutable {
+  padding-right: 94px;
+  position: relative;
+  .label {
+    position: absolute;
+    right: 0;
+    margin-right: 0;
+  }
+}
+.datagrid-action-bar {
+  margin-top: 0.5rem;
+}
+.position-ab {
+  position: absolute;
+}

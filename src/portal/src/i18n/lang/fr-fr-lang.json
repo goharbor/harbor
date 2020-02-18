@@ -332,7 +332,6 @@
         "PERMISSIONS_HELMCHART": "Helm Chart",
         "PUSH": "Push",
         "PULL": "Pull",
-
         "FILTER_PLACEHOLDER": "Filter Robot Accounts",
         "ROBOT_NAME": "ne peut pas contenir de caractères spéciaux(~#$%) et la longueur maximale devrait être de 255 caractères.",
         "ACCOUNT_EXISTING": "le robot est existe déjà.",
@@ -606,6 +605,9 @@
         "DELETE": "Supprimer",
         "NAME": "Nom",
         "TAGS_COUNT": "Tags",
+        "PLATFORM": "OS/ARCH",
+        "ARTIFACT_TOOTIP": "Click this icon to enter the Artifact list of refer",
+        "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Commande de Pull",
         "PULL_TIME": "Pull Time",
@@ -618,12 +620,14 @@
         "DELETION_SUMMARY_REPO_SIGNED": "Le Dépôt '{{repoName}}' ne peut pas être supprimé parce que les images suivantes signées existent. \n{{signedImages}} \nVous devez retirer la signature de toutes les images signées avant de supprimer le dépôt !",
         "DELETION_SUMMARY_REPO": "Voulez-vous supprimer le dépôt {{repoName}} ?",
         "DELETION_TITLE_TAG": "Confirmer la suppression du Tag",
-        "DELETION_SUMMARY_TAG": "Voulez-vous supprimer le tag {{param}}, If you delete this tag, all other tags referenced by the same digest will also be deleted?",
+        "DELETION_SUMMARY_TAG": "Voulez-vous supprimer le tag {{param}}? If you delete this tag, all other tags referenced by the same digest will also be deleted.",
         "DELETION_TITLE_TAG_DENIED": "Un tag signé ne peut être supprimé",
         "DELETION_SUMMARY_TAG_DENIED": "La balise doit être supprimée du Résumé avant qu'elle ne puisse être supprimée. \nSupprimer du Résumé via cette commande: \n",
         "TAGS_NO_DELETE": "Upload/Delete is prohibited in read only mode.",
         "FILTER_FOR_REPOSITORIES": "Filtrer les Dépôts",
         "TAG": "Tag",
+        "ARTIFACT": "Aarifact",
+        "ARTIFACTS": "Artifacts",
         "SIZE": "Taille",
         "VULNERABILITY": "Vulnérabilitée",
         "BUILD_HISTORY": "Construire l'histoire",
@@ -648,8 +652,9 @@
         "LABELS": "Labels",
         "ADD_LABEL_TO_IMAGE": "Add labels to this image",
         "FILTER_BY_LABEL": "Filter images by label",
+        "FILTER_ARTIFACT_BY_LABEL": "Filter actifact by label",
         "ADD_LABELS": "Add labels",
-        "RETAG": "Retag",
+        "RETAG": "Copy",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Add Additional Info",
@@ -960,6 +965,12 @@
         "PUSH_COMMAND": "Pousser une image dans ce projet :",
         "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence."
     },
+    "ARTIFACT": {
+        "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
+        "ADDITIONS": "Additions",
+        "COMMON_PROPERTIES": "Common Properties",
+        "COMMON_ALL": "Common properties across all digest"
+    },
     "TAG": {
         "CREATION_TIME_PREFIX": "Créer le",
         "CREATOR_PREFIX": "par",
@@ -979,7 +990,14 @@
         "AUTHOR": "Author",
         "LABELS": "Labels",
         "CREATION": "Créer sur",
-        "COMMAND": "Les commandes"
+        "COMMAND": "Les commandes",
+        "UPLOADTIME": "Upload Time",
+        "NAME": "Name",
+        "PULL_TIME": "Pull Time",
+        "PUSH_TIME": "Push Time",
+        "OF": "of",
+        "ADD_TAG": "ADD TAG",
+        "REMOVE_TAG": "REMOVE TAG"
     },
     "LABEL": {
         "LABEL": "Label",
@@ -1086,7 +1104,6 @@
         "ON": "on",
         "AT": "at",
         "NOSCHEDULE": "An error occurred in Get schedule"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Current Schedule",

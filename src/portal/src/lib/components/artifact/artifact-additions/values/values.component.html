@@ -1,0 +1,23 @@
+<div class="row flex-items-xs-between values-header">
+    <div *ngIf="valueMode" class="title-container">
+        <label>{{'HELM_CHART.SHOW_KV' | translate }}</label>
+    </div>
+    <div class="switch-container">
+        <span class="card-btn" (click)="showYamlFile(false)" (mouseenter)="mouseEnter('value') " (mouseleave)="mouseLeave('value')">
+            <clr-icon size="24" shape="view-list" title='list values' [ngClass]="{'is-highlight': isValueMode || isHovering('value') }"></clr-icon>
+        </span>
+    </div>
+</div>
+
+<div class="row value-container">
+    <div class="col-xs-8" *ngIf="valueMode">
+        <table class="table">
+            <tbody>
+                <tr *ngFor="let item of values | keyvalue">
+                    <td class="left">{{item?.key}}</td>
+                    <td class="left">{{item?.value}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
