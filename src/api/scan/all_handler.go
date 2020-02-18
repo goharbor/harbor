@@ -15,28 +15,107 @@
 package scan
 
 import (
+	"context"
+
+	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/api/repository"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/pkg/scan/all"
+	"github.com/goharbor/harbor/src/pkg/q"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/pkg/errors"
 )
 
 // HandleCheckIn handles the check in data of the scan all job
-func HandleCheckIn(checkIn string) {
+func HandleCheckIn(ctx context.Context, checkIn string) {
 	if len(checkIn) == 0 {
 		// Nothing to handle, directly return
 		return
 	}
 
-	ck := &all.CheckInData{}
-	if err := ck.FromJSON([]byte(checkIn)); err != nil {
-		log.Error(errors.Wrap(err, "handle check in"))
-	}
-
-	// Start to scan the artifacts
-	for _, art := range ck.Artifacts {
-		if err := DefaultController.Scan(art, WithRequester(ck.Requester)); err != nil {
-			// Just logged
-			log.Error(errors.Wrap(err, "handle check in"))
+	batchSize := 50
+	for repo := range fetchRepositories(ctx, batchSize) {
+		for artifact := range fetchArtifacts(ctx, repo.RepositoryID, batchSize) {
+			for _, tag := range artifact.Tags {
+				art := &v1.Artifact{
+					NamespaceID: artifact.ProjectID,
+					Repository:  repo.Name,
+					Tag:         tag.Name,
+					Digest:      artifact.Digest,
+					MimeType:    artifact.ManifestMediaType,
+				}
+				if err := DefaultController.Scan(art, WithRequester(checkIn)); err != nil {
+					// Just logged
+					log.Error(errors.Wrap(err, "handle check in"))
+				}
+			}
 		}
 	}
+}
+
+func fetchArtifacts(ctx context.Context, repositoryID int64, chunkSize int) <-chan *artifact.Artifact {
+	ch := make(chan *artifact.Artifact, chunkSize)
+	go func() {
+		defer close(ch)
+
+		query := &q.Query{
+			Keywords: map[string]interface{}{
+				"repository_id": repositoryID,
+			},
+			PageSize:   int64(chunkSize),
+			PageNumber: 1,
+		}
+
+		for {
+			_, artifacts, err := artifact.Ctl.List(ctx, query, &artifact.Option{WithTag: true})
+			if err != nil {
+				log.Errorf("[scan all]: list artifacts failed, error: %v", err)
+				return
+			}
+
+			for _, artifact := range artifacts {
+				ch <- artifact
+			}
+
+			if len(artifacts) < chunkSize {
+				break
+			}
+
+			query.PageNumber++
+		}
+
+	}()
+
+	return ch
+}
+
+func fetchRepositories(ctx context.Context, chunkSize int) <-chan *models.RepoRecord {
+	ch := make(chan *models.RepoRecord, chunkSize)
+	go func() {
+		defer close(ch)
+
+		query := &q.Query{
+			PageSize:   int64(chunkSize),
+			PageNumber: 1,
+		}
+
+		for {
+			_, repositories, err := repository.Ctl.List(ctx, query)
+			if err != nil {
+				log.Warningf("[scan all]: list repositories failed, error: %v", err)
+				break
+			}
+
+			for _, repo := range repositories {
+				ch <- repo
+			}
+
+			if len(repositories) < chunkSize {
+				break
+			}
+
+			query.PageNumber++
+		}
+	}()
+	return ch
 }
