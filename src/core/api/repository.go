@@ -27,6 +27,7 @@ import (
 
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
+	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
@@ -41,7 +42,6 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/signature/notary"
 	notarymodel "github.com/goharbor/harbor/src/pkg/signature/notary/model"

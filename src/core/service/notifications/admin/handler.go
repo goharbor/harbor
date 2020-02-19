@@ -15,16 +15,19 @@
 package admin
 
 import (
+	"context"
 	"encoding/json"
-	"github.com/goharbor/harbor/src/core/service/notifications"
 
+	o "github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job"
 	job_model "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/core/service/notifications"
+	"github.com/goharbor/harbor/src/internal/orm"
 	j "github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 )
 
 var statusMap = map[string]string{
@@ -104,7 +107,7 @@ func (h *Handler) HandleAdminJob() {
 	}
 
 	// For scan all job
-	if h.jobName == job.ImageScanAllJob {
-		scan.HandleCheckIn(h.checkIn)
+	if h.jobName == job.ImageScanAllJob && h.checkIn != "" {
+		go scan.HandleCheckIn(orm.NewContext(context.TODO(), o.NewOrm()), h.checkIn)
 	}
 }

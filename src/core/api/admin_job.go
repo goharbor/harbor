@@ -21,6 +21,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/dao"
 	common_http "github.com/goharbor/harbor/src/common/http"
 	common_job "github.com/goharbor/harbor/src/common/job"
@@ -28,7 +29,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
 	utils_core "github.com/goharbor/harbor/src/core/utils"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	"github.com/pkg/errors"
 )
 

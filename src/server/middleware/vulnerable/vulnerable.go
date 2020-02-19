@@ -1,18 +1,19 @@
 package vulnerable
 
 import (
+	"net/http"
+	"net/http/httptest"
+
+	sc "github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
-	sc "github.com/goharbor/harbor/src/pkg/scan/api/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"github.com/pkg/errors"
-	"net/http"
-	"net/http/httptest"
 )
 
 // Middleware handle docker pull vulnerable check

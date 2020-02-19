@@ -16,12 +16,15 @@ package registry
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/core/service/notifications"
 	"regexp"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/goharbor/harbor/src/core/service/notifications"
+
+	"github.com/goharbor/harbor/src/api/scan"
+	"github.com/goharbor/harbor/src/api/scanner"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
@@ -29,8 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	notifierEvt "github.com/goharbor/harbor/src/core/notifier/event"
 	coreutils "github.com/goharbor/harbor/src/core/utils"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scan"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/replication"
 	"github.com/goharbor/harbor/src/replication/adapter"
