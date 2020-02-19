@@ -22,9 +22,6 @@ As for storage layer, it is expected that the user provide high available Postgr
 
 ![Harbor High Availability with Helm](../../img/ha.png)
 
-## Usage
->>>>>>> fc5b145e09aab0c8ef015872f8694e1dd087ae0b
-
 ## Download Chart
 
 Download Harbor helm chart:
