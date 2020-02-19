@@ -20,7 +20,10 @@ Most of Harbor's components are stateless now. So we can simply increase the rep
 
 As for storage layer, it is expected that the user provide high available PostgreSQL, Redis cluster for application data and PVCs or object storage for storing images and charts.
 
-![Harbor High Availability with Helm](../img/ha.png)
+![Harbor High Availability with Helm](../../img/ha.png)
+
+## Usage
+>>>>>>> fc5b145e09aab0c8ef015872f8694e1dd087ae0b
 
 ## Download Chart
 

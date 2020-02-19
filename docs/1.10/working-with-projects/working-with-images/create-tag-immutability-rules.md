@@ -27,14 +27,14 @@ In this case, you cannot delete `hello-world:v2` because it shares the sha256 di
 1. Log in to the Harbor interface with an account that has at least project administrator privileges.
 1. Go to **Projects**, select a project, and select **Tag Immutability**.
 
-    ![Add an immutability rule](../img/tag-immutability.png)
+    ![Add an immutability rule](../../img/tag-immutability.png)
 
 1. Click **Add Rule**.
 
     - In the **Respositories** row, enter a comma-separated list of repositories to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
     - In the **Tags** row, enter a comma-separated list of tags to which to either apply or exclude from the rule by selecting either **matching** or **excluding** from the drop-down menu.
  
-        ![Add an immutability rule](../img/add-immutability-rule.png)
+      ![Add an immutability rule](../../img/add-immutability-rule.png)
 1. Click **Add** to save the rule.
 
     You can add a maximum of 15 immutability rules per project. 
@@ -42,7 +42,7 @@ In this case, you cannot delete `hello-world:v2` because it shares the sha256 di
     After you add a rule, any tags that are identified by the rule are marked **Immutable** in the Repositories tab.
 1. To modify an existing rule, use the **Action** drop-down menu next to a rule to disable, edit, or delete that rule. 
 
-    ![Immutability rules](../img/edit-tag-immutability.png)
+    ![Immutability rules](../../img/edit-tag-immutability.png)
 
 ## Example
 
