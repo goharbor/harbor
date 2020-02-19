@@ -43,6 +43,17 @@ CREATE TABLE artifact_reference
   CONSTRAINT  unique_reference UNIQUE (parent_id, child_id)
 );
 
+/* artifact_trash records deleted artifact */
+CREATE TABLE artifact_trash
+(
+  id                  SERIAL PRIMARY KEY NOT NULL,
+  media_type          varchar(255) NOT NULL,
+  manifest_media_type varchar(255) NOT NULL,
+  repository_name     varchar(255) NOT NULL,
+  digest              varchar(255) NOT NULL,
+  creation_time       timestamp default CURRENT_TIMESTAMP,
+  CONSTRAINT      unique_artifact_trash UNIQUE (repository_name, digest)
+);
 
 /* TODO upgrade: how about keep the table "harbor_resource_label" only for helm v2 chart and use the new table for artifact label reference? */
 /* label_reference records the labels added to the artifact */
@@ -56,4 +67,5 @@ CREATE TABLE label_reference (
  /* TODO replace artifact_2 after finishing the upgrade work */
  FOREIGN KEY (artifact_id) REFERENCES artifact_2(id),
  CONSTRAINT unique_label_reference UNIQUE (label_id,artifact_id)
- );
+);
+
