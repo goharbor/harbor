@@ -30,11 +30,11 @@ This section describes how to use and maintain Harbor after deployment. These da
    - [Configure Database Authentication](administration/configure-authentication/db-auth.md)
    - [Configure LDAP/Active Directory Authentication](administration/configure-authentication/ldap-auth.md)
    - [Configure OIDC Provider Authentication](administration/configure-authentication/oidc-auth.md)
-- [Role Based Access Control](administration/managing-users/rbac.md)
+- [Managing Users](administration/managing-users/_index.md)
     - [User Permissions By Role](administration/managing-users/user-permissions-by-role.md)
     - [Create User Accounts in Database Mode](administration/managing-users/create-users-db.md)
-- [Configure Global Settings](administration/general-settings.md)
-- [Configure Project Quotas](administration/configure-project-quotas.md)
+- [Configure Global Settings](administration/general-settings/_index.md)
+- [Configure Project Quotas](administration/configure-project-quotas/_index.md)
 - [Configuring Replication](administration/configuring-replication/_index.md)
     - [Create Replication Endpoints](administration/configuring-replication/create-replication-endpoints.md)
     - [Create Replication Rules](administration/configuring-replication/create-replication-rules.md)
@@ -46,7 +46,7 @@ This section describes how to use and maintain Harbor after deployment. These da
     - [Schedule Scans](administration/vulnerability-scanning/schedule-scans.md)
     - [Import Vulnerability Data to an Offline Harbor instance](administration/vulnerability-scanning/import-vulnerability-data.md)
     - [Configure System-Wide CVE Whitelists](administration/vulnerability-scanning/configure-system-whitelist.md)
-- [Garbage Collection](administration/garbage-collection.md)
+- [Garbage Collection](administration/garbage-collection/_index.md)
 - [Upgrade Harbor and Migrate Data](administration/upgrade/upgrade-migrate-data.md)
   - [Upgrading Harbor Deployed with Helm](administration/upgrade/helm-upgrade.md)
   - [Roll Back an Upgrade](administration/upgrade/roll-back-upgrade.md)
@@ -57,9 +57,9 @@ This section describes how to use and maintain Harbor after deployment. These da
 This section describes how users with the developer, master, and project administrator roles manage and participate in Harbor projects.
 
 - [Introduction](working-with-projects/_index.md)
-- [Create Projects](working-with-projects/create-projects.md)
+- [Create Projects](working-with-projects/create-projects/_index.md)
     - [Assign Users to a Project](working-with-projects/add-users.md)
-- [Project Configuration](working-with-projects/project-configuration.md)
+- [Project Configuration](working-with-projects/project-configuration/_index.md)
     - [Access and Search Project Logs](working-with-projects/access-project-logs.md)
     - [Create Robot Accounts](working-with-projects/create-robot-accounts.md)
     - [Configure Webhook Notifications](working-with-projects/configure-webhooks.md)
@@ -72,6 +72,7 @@ This section describes how users with the developer, master, and project adminis
     - [Create Tag Retention Rules](working-with-projects/create-tag-retention-rules.md)
     - [Create Tag Immutability  Rules](working-with-projects/create-tag-immutability-rules.md)
     - [Manage Kubernetes Packages with Helm Charts](working-with-projects/managing-helm-charts.md)
+- [Using API Explorer](working-with-projects/using-api-explorer/_index.md)
 
 ## Build, Customize, and Contribute to Harbor
 

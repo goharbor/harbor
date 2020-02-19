@@ -1,6 +1,6 @@
 ---
 title: Configure Global Settings
-weight: 15
+weight: 20
 ---
 
 You can configure Harbor to connect to an email server, set the registry in read-only mode, and configure Harbor so that only system administrators can create projects.

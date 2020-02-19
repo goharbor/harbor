@@ -1,6 +1,6 @@
 ---
 title: Configuring Authentication
-weight: 5
+weight: 10
 ---
 
 Harbor supports different modes for authenticating users and managing user accounts. You should select an authentication mode as soon as you deploy Harbor.

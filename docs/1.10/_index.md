@@ -8,15 +8,15 @@ This documentation includes the following sections:
 
 ## Harbor Installation and Configuration
 
-This section describes how to install Harbor and perform the required initial configurations. These day 1 operations are performed by the Harbor Administrator. [Read more](install-config/_index.md)
+This section describes how to install Harbor and perform the required initial configuration. These day 1 operations are performed by the Harbor Administrator. [Read more](install-config/_index.md)
 
 ## Harbor Administration
 
-This section describes how to use and maintain Harbor after deployment. These day 2 operations are performed by the Harbor Administrator. [Read more](administration/_index.md)
+This section describes how to use and maintain your Harbor registry instance after deployment. These day 2 operations are performed by the Harbor Administrator. [Read more](administration/_index.md)
 
 ## Working with Harbor Projects
 
-This section describes how users with the developer, master, and project administrator roles manage and participate in Harbor projects. [Read more](working-with-projects/_index.md)
+This section describes how users with the developer, master, and project administrator roles manage users, and create, configure, and participate in Harbor projects. [Read more](working-with-projects/_index.md)
 
 ## Building, Customizing, and Contributing to Harbor
 

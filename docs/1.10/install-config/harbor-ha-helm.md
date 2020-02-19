@@ -3,9 +3,7 @@ title: Deploying Harbor with High Availability via Helm
 weight: 40
 ---
 
-## Goal
-
-Deploy Harbor on K8S via helm to make it highly available, that is, if one of node that has Harbor's container running becomes un accessible. Users does not experience interrupt of service of Harbor.
+You can deploy Harbor on Kubernetes via helm to make it highly available. In this way, if one of the nodes on which Harbor is running becomes unavailable, users do not experience interruptions of service.
 
 ## Prerequisites
 
@@ -18,15 +16,13 @@ Deploy Harbor on K8S via helm to make it highly available, that is, if one of no
 
 ## Architecture
 
-Most of Harbor's components are stateless now.  So we can simply increase the replica of the pods to make sure the components are distributed to multiple worker nodes, and leverage the "Service" mechanism of K8S to ensure the connectivity across pods.
+Most of Harbor's components are stateless now. So we can simply increase the replica of the pods to make sure the components are distributed to multiple worker nodes, and leverage the "Service" mechanism of K8S to ensure the connectivity across pods.
 
 As for storage layer, it is expected that the user provide high available PostgreSQL, Redis cluster for application data and PVCs or object storage for storing images and charts.
 
-![HA](../img/ha.png)
+![Harbor High Availability with Helm](../img/ha.png)
 
-## Usage
-
-### Download Chart
+## Download Chart
 
 Download Harbor helm chart:
 
@@ -35,7 +31,7 @@ helm repo add harbor https://helm.goharbor.io
 helm fetch harbor/harbor --untar
 ```
 
-### Configuration
+## Configuration
 
 Configure the followings items in `values.yaml`, you can also set them as parameters via `--set` flag during running `helm install`:
 
@@ -65,7 +61,7 @@ Configure the followings items in `values.yaml`, you can also set them as parame
 - **Replica**
    Set `portal.replicas`, `core.replicas`, `jobservice.replicas`, `registry.replicas`, `chartmuseum.replicas`, `clair.replicas`, `notary.server.replicas` and `notary.signer.replicas` to `n`(`n`>=2).
 
-### Installation
+## Installation
 
 Install the Harbor helm chart with a release name `my-release`:  
 
