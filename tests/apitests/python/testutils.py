@@ -14,7 +14,7 @@ harbor_server = os.environ["HARBOR_HOST"]
 #CLIENT=dict(endpoint="https://"+harbor_server+"/api")
 ADMIN_CLIENT=dict(endpoint = os.environ.get("HARBOR_HOST_SCHEMA", "https")+ "://"+harbor_server+"/api/v2.0", username = admin_user, password =  admin_pwd)
 USER_ROLE=dict(admin=0,normal=1)
-TEARDOWN = True
+TEARDOWN = os.environ.get('TEARDOWN', 'true').lower() in ('true', 'yes')
 
 def GetProductApi(username, password, harbor_server= os.environ["HARBOR_HOST"]):
 

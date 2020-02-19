@@ -155,6 +155,11 @@ func IsErr(err error, code string) bool {
 	return false
 }
 
+// IsNotFoundErr returns true when the error is NotFoundError
+func IsNotFoundErr(err error) bool {
+	return IsErr(err, NotFoundCode)
+}
+
 // IsConflictErr checks whether the err chain contains conflict error
 func IsConflictErr(err error) bool {
 	return IsErr(err, ConflictCode)

@@ -17,6 +17,9 @@ package artifact
 import (
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/goharbor/harbor/src/api/artifact/abstractor"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/api/artifact/descriptor"
@@ -26,13 +29,14 @@ import (
 	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
+	"github.com/goharbor/harbor/src/pkg/blob"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/pkg/label"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	"github.com/opencontainers/go-digest"
-	"strings"
+
 	// registry image resolvers
 	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
 	// register chart resolver
@@ -44,7 +48,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/tag"
 	tm "github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	"time"
 )
 
 var (
@@ -99,6 +102,7 @@ func NewController() Controller {
 		repoMgr:      repository.Mgr,
 		artMgr:       artifact.Mgr,
 		artrashMgr:   artifactrash.Mgr,
+		blobMgr:      blob.Mgr,
 		tagMgr:       tag.Mgr,
 		sigMgr:       signature.GetManager(),
 		labelMgr:     label.Mgr,
@@ -114,6 +118,7 @@ type controller struct {
 	repoMgr      repository.Manager
 	artMgr       artifact.Manager
 	artrashMgr   artifactrash.Manager
+	blobMgr      blob.Manager
 	tagMgr       tag.Manager
 	sigMgr       signature.Manager
 	labelMgr     label.Manager
@@ -349,6 +354,16 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 
 	// remove labels added to the artifact
 	if err := c.labelMgr.RemoveAllFrom(ctx, id); err != nil {
+		return err
+	}
+
+	blobs, err := c.blobMgr.List(ctx, blob.ListParams{ArtifactDigest: art.Digest})
+	if err != nil {
+		return err
+	}
+
+	// clean associations between blob and project when when the blob is not needed by project
+	if err := c.blobMgr.CleanupAssociationsForProject(ctx, art.ProjectID, blobs); err != nil {
 		return err
 	}
 

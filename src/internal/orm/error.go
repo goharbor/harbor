@@ -16,10 +16,29 @@ package orm
 
 import (
 	"errors"
+
 	"github.com/astaxie/beego/orm"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/lib/pq"
 )
+
+// WrapNotFoundError wrap error as NotFoundError when it is orm.ErrNoRows otherwise return err
+func WrapNotFoundError(err error, format string, args ...interface{}) error {
+	if e := AsNotFoundError(err, format, args...); e != nil {
+		return e
+	}
+
+	return err
+}
+
+// WrapConflictError wrap error as ConflictError when it is duplicate key error otherwise return err
+func WrapConflictError(err error, format string, args ...interface{}) error {
+	if e := AsConflictError(err, format, args...); e != nil {
+		return e
+	}
+
+	return err
+}
 
 // AsNotFoundError checks whether the err is orm.ErrNoRows. If it it, wrap it
 // as a src/internal/error.Error with not found error code, else return nil

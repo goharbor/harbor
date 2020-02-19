@@ -15,13 +15,14 @@
 package repository
 
 import (
+	"testing"
+
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/models"
 	artifacttesting "github.com/goharbor/harbor/src/testing/api/artifact"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type controllerTestSuite struct {
@@ -63,7 +64,7 @@ func (c *controllerTestSuite) TestEnsure() {
 
 	// doesn't exist
 	c.repoMgr.On("List").Return([]*models.RepoRecord{}, nil)
-	c.proMgr.On("Get").Return(&models.Project{
+	c.proMgr.On("Get", "library").Return(&models.Project{
 		ProjectID: 1,
 	}, nil)
 	c.repoMgr.On("Create").Return(1, nil)

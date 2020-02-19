@@ -95,3 +95,8 @@ func (r *ResponseBuffer) Reset() error {
 
 	return nil
 }
+
+// StatusCode returns the status code
+func (r *ResponseBuffer) StatusCode() int {
+	return r.code
+}
