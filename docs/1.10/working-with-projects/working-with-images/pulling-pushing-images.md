@@ -37,7 +37,7 @@ You cannot pull an unsigned image if you have enabled content trust.
 
 ## Pushing Images
 
-Before you can push an image to Harbor, you must create a corresponding project in the Harbor interface. For information about how to create a project, see [Create Projects](../create-projects.md).
+Before you can push an image to Harbor, you must create a corresponding project in the Harbor interface. For information about how to create a project, see [Create Projects](../create-projects/_index.md).
 
 First, log in from Docker client:
 

@@ -161,7 +161,7 @@ You can use certificates that are signed by a trusted third-party CA, or you can
   </tr>
 </table>
   
-### Optional parameters
+## Optional Parameters
 
 The following table lists the additional, optional parameters that you can set to configure your Harbor deployment beyond the minimum required settings. To enable a setting, you must uncomment it in `harbor.yml` by deleting the leading `#` character.
 
@@ -299,7 +299,7 @@ The following table lists the additional, optional parameters that you can set t
 The `harbor.yml` file includes options to configure a UAA CA certificate. This authentication mode is not recommended and is not documented.
 {{< /note >}}
 
-### Configuring a Storage Backend {#backend}
+## Configuring a Storage Backend {#backend}
 
 By default Harbor uses local storage for the registry, but you can optionally configure the `storage_service` setting so that Harbor uses external storage. For information about how to configure the storage backend of a registry for different storage providers, see the [Registry Configuration Reference](https://docs.docker.com/registry/configuration/#storage) in the Docker documentation. For example, if you use Openstack Swift as your storage backend, the parameters might resemble the following:
 

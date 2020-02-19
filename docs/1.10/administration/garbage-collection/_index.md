@@ -1,6 +1,6 @@
 ---
 title: Garbage Collection
-weight: 25
+weight: 40
 ---
 
 When you delete images from Harbor, space is not automatically freed up. You must run garbage collection to free up space by removing blobs that are no longer referenced by a manifest from the file system.  

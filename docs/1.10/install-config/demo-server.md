@@ -27,7 +27,7 @@ If you encounter any problems while using the demo server, open an [issue on Git
 1. Explore the default project, `library`.
 1. Click  **New Project** to create your own project.
 
-    For information about how to create a project, see [Create a  Project](../working-with-projects/create-projects.md).
+    For information about how to create a project, see [Create a  Project](../working-with-projects/create-projects/_index.md).
 
 1. Open a Docker client and log in to Harbor with the credentials that you created above.
 

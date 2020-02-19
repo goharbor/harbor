@@ -1,6 +1,6 @@
 ---
 title: Configuring Replication
-weight: 15
+weight: 30
 ---
 
 Replication allows users to replicate resources, namely images and charts, between Harbor and non-Harbor registries, in both pull or push mode. 
