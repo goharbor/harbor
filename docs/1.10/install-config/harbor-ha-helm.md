@@ -22,7 +22,7 @@ Most of Harbor's components are stateless now.  So we can simply increase the re
 
 As for storage layer, it is expected that the user provide high available PostgreSQL, Redis cluster for application data and PVCs or object storage for storing images and charts.
 
-![HA](../img/ha.png)
+![HA](../../img/ha.png)
 
 ## Usage
 
