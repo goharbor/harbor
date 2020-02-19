@@ -313,6 +313,11 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
 
     // Pagination
     let params = new HttpParams();
+    params = params.set('with_label', 'true');
+    params = params.set('with_scan_overview', 'true');
+    params = params.set('with_signature', 'true');
+    params = params.set('with_immutable_status', 'true');
+
     if (pageNumber && this.pageSize) {
       params = params.set('page', pageNumber + '').set('page_size', this.pageSize + '');
     }

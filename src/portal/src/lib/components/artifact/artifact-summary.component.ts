@@ -48,6 +48,10 @@ export class ArtifactSummaryComponent implements OnInit {
       repositoryName: this.repositoryName,
       reference: this.artifactDigest,
       projectName: this.projectName,
+      withLabel: true,
+      withScanOverview: true,
+      withSignature: true,
+      withImmutableStatus: true
     }).subscribe(response => {
       this.artifact = response;
     }, error => {

@@ -75,7 +75,7 @@
                     <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}
                 </button>
 
-                <clr-dropdown class="btn  btn-link mt-1">
+                <clr-dropdown class="btn  btn-link">
                     <span clrDropdownTrigger id="artifact-list-action" class="btn pl-0">
                         {{'BUTTON.ACTIONS' | translate}}
                         <clr-icon shape="caret down"></clr-icon>
@@ -144,7 +144,7 @@
                 <clr-dg-cell class="truncated flex-max-width">
                     <div class="cell white-normal">
                         <img class="artifact-icon"
-                            [src]="artifact.type==='IMAGE'||artifact.type==='CHART'?'images/artifact-'+artifact.type.toLowerCase()+'.svg':'images/artifact-default.svg'" />
+                            [src]="artifact.type==='IMAGE'||artifact.type==='CHART'||artifact.type ==='CNAB'?'images/artifact-'+artifact.type.toLowerCase()+'.svg':'images/artifact-default.svg'" />
                         &nbsp; &nbsp;
                         <a href="javascript:void(0)" class="max-width-100" (click)="onTagClick(artifact)"
                             title="{{artifact.digest}}">

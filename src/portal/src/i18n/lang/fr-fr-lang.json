@@ -306,7 +306,7 @@
         "DELETED_SUCCESS": "Membre supprimé avec succès.",
         "SWITCHED_SUCCESS": "Rôle du membre changé avec succés.",
         "OF": "de",
-        "SET_ROLE": "SET ROLE",
+        "SET_ROLE": "Set Role",
         "REMOVE": "Remove"
     },
     "ROBOT_ACCOUNT": {
@@ -996,6 +996,7 @@
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
         "OF": "of",
+        "ITEMS": "items",
         "ADD_TAG": "ADD TAG",
         "REMOVE_TAG": "REMOVE TAG"
     },

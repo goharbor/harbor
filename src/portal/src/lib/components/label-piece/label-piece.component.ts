@@ -34,7 +34,7 @@ export class LabelPieceComponent implements OnInit, OnChanges {
     ngOnChanges(): void {
         if (this.label) {
             let color = this.label.color;
-            if (color === '') {color = '#FFFFFF'; }
+            if (!color) {color = '#FFFFFF'; }
             this.labelColor = LabelColor.find(data => data.color === color);
         }
     }
