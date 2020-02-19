@@ -60,10 +60,17 @@ DOCKERIMAGENAME_POSTGRESQL=goharbor/postgresql-photon
 DOCKERFILEPATH_CLAIR=$(DOCKERFILEPATH)/clair
 DOCKERFILENAME_CLAIR=Dockerfile
 DOCKERIMAGENAME_CLAIR=goharbor/clair-photon
+CLAIR_ADAPTER_DOWNLOAD_URL=https://github.com/goharbor/harbor-scanner-clair/releases/download/$(CLAIRADAPTERVERSION)/harbor-scanner-clair_$(CLAIRADAPTERVERSION:v%=%)_Linux_x86_64.tar.gz
 
 DOCKERFILEPATH_CLAIR_ADAPTER=$(DOCKERFILEPATH)/clair-adapter
 DOCKERFILENAME_CLAIR_ADAPTER=Dockerfile
 DOCKERIMAGENAME_CLAIR_ADAPTER=goharbor/clair-adapter-photon
+
+DOCKERFILEPATH_TRIVY_ADAPTER=$(DOCKERFILEPATH)/trivy-adapter
+DOCKERFILENAME_TRIVY_ADAPTER=Dockerfile
+DOCKERIMAGENAME_TRIVY_ADAPTER=goharbor/trivy-adapter-photon
+TRIVY_DOWNLOAD_URL=https://github.com/aquasecurity/trivy/releases/download/$(TRIVYVERSION)/trivy_$(TRIVYVERSION:v%=%)_Linux-64bit.tar.gz
+TRIVY_ADAPTER_DOWNLOAD_URL=https://github.com/aquasecurity/harbor-scanner-trivy/releases/download/$(TRIVYADAPTERVERSION)/harbor-scanner-trivy_$(TRIVYADAPTERVERSION:v%=%)_Linux_x86_64.tar.gz
 
 DOCKERFILEPATH_NGINX=$(DOCKERFILEPATH)/nginx
 DOCKERFILENAME_NGINX=Dockerfile
@@ -148,14 +155,37 @@ _build_clair_adapter:
 	@if [ "$(CLAIRFLAG)" = "true" ] ; then \
 		if [ "$(BUILDBIN)" != "true" ] ; then \
 			rm -rf $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary && mkdir -p $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary && \
-			$(call _extract_archive, https://github.com/goharbor/harbor-scanner-clair/releases/download/$(CLAIRADAPTERVERSION)/harbor-scanner-clair_$(CLAIRADAPTERVERSION:v%=%)_Linux_x86_64.tar.gz, $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary/) && \
+			$(call _extract_archive, $(CLAIR_ADAPTER_DOWNLOAD_URL), $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary/) && \
 			mv $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary/scanner-clair $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary/harbor-scanner-clair; \
 		else \
-			cd $(DOCKERFILEPATH_CLAIR_ADAPTER) && $(DOCKERFILEPATH_CLAIR_ADAPTER)/builder $(CLAIRADAPTERVERSION) && cd - ; \
+			cd $(DOCKERFILEPATH_CLAIR_ADAPTER) && $(DOCKERFILEPATH_CLAIR_ADAPTER)/builder.sh $(CLAIRADAPTERVERSION) && cd - ; \
 		fi ; \
-		echo "building clair adapter container for photon..." ; \
-		$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) -f $(DOCKERFILEPATH_CLAIR_ADAPTER)/$(DOCKERFILENAME_CLAIR_ADAPTER) -t $(DOCKERIMAGENAME_CLAIR_ADAPTER):$(CLAIRADAPTERVERSION)-$(VERSIONTAG) . ; \
+		echo "Building Clair adapter container for photon..." ; \
+		$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) \
+			-f $(DOCKERFILEPATH_CLAIR_ADAPTER)/$(DOCKERFILENAME_CLAIR_ADAPTER) \
+			-t $(DOCKERIMAGENAME_CLAIR_ADAPTER):$(CLAIRADAPTERVERSION)-$(VERSIONTAG) . ; \
 		rm -rf $(DOCKERFILEPATH_CLAIR_ADAPTER)/binary; \
+		echo "Done." ; \
+	fi
+
+_build_trivy_adapter:
+	@if [ "$(TRIVYFLAG)" = "true" ] ; then \
+		rm -rf $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary && mkdir -p $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary ; \
+		echo "Downloading Trivy scanner $(TRIVYVERSION)..." ; \
+		$(call _extract_archive, $(TRIVY_DOWNLOAD_URL), $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/) ; \
+		if [ "$(BUILDBIN)" != "true" ] ; then \
+			echo "Downloading Trivy adapter $(TRIVYADAPTERVERSION)..." ; \
+			$(call _extract_archive, $(TRIVY_ADAPTER_DOWNLOAD_URL), $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary/) ; \
+		else \
+			echo "Building Trivy adapter $(TRIVYADAPTERVERSION) from sources..." ; \
+			cd $(DOCKERFILEPATH_TRIVY_ADAPTER) && $(DOCKERFILEPATH_TRIVY_ADAPTER)/builder.sh $(TRIVYADAPTERVERSION) && cd - ; \
+		fi ; \
+		echo "Building Trivy adapter container for photon..." ; \
+		$(DOCKERBUILD) --build-arg harbor_base_image_version=$(BASEIMAGETAG) \
+			--build-arg trivy_version=$(TRIVYVERSION) \
+			-f $(DOCKERFILEPATH_TRIVY_ADAPTER)/$(DOCKERFILENAME_TRIVY_ADAPTER) \
+			-t $(DOCKERIMAGENAME_TRIVY_ADAPTER):$(TRIVYADAPTERVERSION)-$(VERSIONTAG) . ; \
+		rm -rf $(DOCKERFILEPATH_TRIVY_ADAPTER)/binary; \
 		echo "Done." ; \
 	fi
 
@@ -231,7 +261,7 @@ define _get_binary
 	$(WGET) --timeout 30 --no-check-certificate $1 -O $2 || exit 1
 endef
 
-build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_clair_adapter _build_redis _build_migrator _build_chart_server
+build: _build_prepare _build_db _build_portal _build_core _build_jobservice _build_log _build_nginx _build_registry _build_registryctl _build_notary _build_clair _build_clair_adapter _build_trivy_adapter _build_redis _build_migrator _build_chart_server
 
 cleanimage:
 	@echo "cleaning image for photon..."

@@ -348,6 +348,16 @@ func ClairAdapterEndpoint() string {
 	return cfgMgr.Get(common.ClairAdapterURL).GetString()
 }
 
+// WithTrivy returns a bool value to indicate if Harbor's deployed with Trivy.
+func WithTrivy() bool {
+	return cfgMgr.Get(common.WithTrivy).GetBool()
+}
+
+// TrivyAdapterURL returns the endpoint URL of a Trivy adapter instance, by default it's the one deployed within Harbor.
+func TrivyAdapterURL() string {
+	return cfgMgr.Get(common.TrivyAdapterURL).GetString()
+}
+
 // UAASettings returns the UAASettings to access UAA service.
 func UAASettings() (*models.UAASettings, error) {
 	err := cfgMgr.Load()

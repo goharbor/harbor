@@ -15,8 +15,6 @@
 package scan
 
 import (
-	"fmt"
-
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
@@ -30,36 +28,73 @@ var (
 	scannerManager = sc.New()
 )
 
-// EnsureScanner ensure the scanner which specially endpoint exists in the system
-func EnsureScanner(registration *scanner.Registration, resolveConflicts ...bool) error {
-	q := &q.Query{
-		Keywords: map[string]interface{}{"url": registration.URL},
+// EnsureScanners ensures that the scanners with the specified endpoints URLs exist in the system.
+func EnsureScanners(wantedScanners []scanner.Registration) (err error) {
+	if len(wantedScanners) == 0 {
+		return
+	}
+	endpointURLs := make([]string, len(wantedScanners))
+	for i, ws := range wantedScanners {
+		endpointURLs[i] = ws.URL
 	}
 
-	// Check if the registration with the url already existing.
-	registrations, err := scannerManager.List(q)
+	list, err := scannerManager.List(&q.Query{
+		Keywords: map[string]interface{}{
+			"ex_url__in": endpointURLs,
+		},
+	})
 	if err != nil {
-		return err
+		return errors.Errorf("listing scanners: %v", err)
+	}
+	existingScanners := make(map[string]*scanner.Registration)
+	for _, li := range list {
+		existingScanners[li.URL] = li
 	}
 
-	if len(registrations) > 0 {
-		return nil
+	for _, ws := range wantedScanners {
+		if _, exists := existingScanners[ws.URL]; exists {
+			log.Infof("Scanner registration already exists: %s", ws.URL)
+			continue
+		}
+		err = createRegistration(&ws, true)
+		if err != nil {
+			return errors.Errorf("creating registration: %s: %v", ws.URL, err)
+		}
+		log.Infof("Successfully registered %s scanner at %s", ws.Name, ws.URL)
 	}
 
-	var resolveConflict bool
-	if len(resolveConflicts) > 0 {
-		resolveConflict = resolveConflicts[0]
-	}
+	return
+}
 
-	var defaultReg *scanner.Registration
-	defaultReg, err = scannerManager.GetDefault()
+// EnsureDefaultScanner ensures that the scanner with the specified URL is set as default in the system.
+func EnsureDefaultScanner(scannerURL string) (err error) {
+	defaultScanner, err := scannerManager.GetDefault()
 	if err != nil {
-		return fmt.Errorf("failed to get the default scanner, error: %v", err)
+		err = errors.Errorf("getting default scanner: %v", err)
+		return
 	}
+	if defaultScanner != nil && defaultScanner.URL == scannerURL {
+		log.Infof("The default scanner is already set: %s", defaultScanner.URL)
+		return
+	}
+	scanners, err := scannerManager.List(&q.Query{
+		Keywords: map[string]interface{}{"url": scannerURL},
+	})
+	if err != nil {
+		err = errors.Errorf("listing scanners: %v", err)
+		return
+	}
+	if len(scanners) != 1 {
+		return errors.Errorf("expected only one scanner with URL %v but got %d", scannerURL, len(scanners))
+	}
+	err = scannerManager.SetAsDefault(scanners[0].UUID)
+	if err != nil {
+		err = errors.Errorf("setting %s as default scanner: %v", scannerURL, err)
+	}
+	return
+}
 
-	// Set the registration to be default one when no default registration exist in the system
-	registration.IsDefault = defaultReg == nil
-
+func createRegistration(registration *scanner.Registration, resolveConflict bool) (err error) {
 	for {
 		_, err = scannerManager.Create(registration)
 		if err != nil {
@@ -78,28 +113,30 @@ func EnsureScanner(registration *scanner.Registration, resolveConflicts ...bool)
 
 		break
 	}
-
-	if err == nil {
-		log.Infof("initialized scanner named %s", registration.Name)
-	}
-
-	return err
+	return
 }
 
-// RemoveImmutableScanners remove all immutable scanners in the system
-func RemoveImmutableScanners() error {
-	q := &q.Query{
-		Keywords: map[string]interface{}{"immutable": true},
+// RemoveImmutableScanners removes immutable scanner Registrations with the specified endpoint URLs.
+func RemoveImmutableScanners(urls []string) error {
+	if len(urls) == 0 {
+		return nil
+	}
+	query := &q.Query{
+		Keywords: map[string]interface{}{
+			"immutable":  true,
+			"ex_url__in": urls,
+		},
 	}
 
-	registrations, err := scannerManager.List(q)
+	// TODO Instead of executing 1 to N SQL queries we might want to delete multiple rows with scannerManager.DeleteByImmutableAndURLIn(true, []string{})
+	registrations, err := scannerManager.List(query)
 	if err != nil {
-		return err
+		return errors.Errorf("listing scanners: %v", err)
 	}
 
 	for _, reg := range registrations {
 		if err := scannerManager.Delete(reg.UUID); err != nil {
-			return err
+			return errors.Errorf("deleting scanner: %s: %v", reg.UUID, err)
 		}
 	}
 
