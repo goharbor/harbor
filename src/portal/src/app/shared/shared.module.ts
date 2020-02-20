@@ -21,20 +21,14 @@ import { MessageService } from "../global-message/message.service";
 import { MessageComponent } from "../global-message/message.component";
 import { DateValidatorDirective } from "./date-validator.directive";
 import { CoreModule } from "../core/core.module";
-
 import { AuthCheckGuard } from "./route/auth-user-activate.service";
 import { SignInGuard } from "./route/sign-in-guard-activate.service";
 import { SystemAdminGuard } from "./route/system-admin-activate.service";
 import { MemberGuard } from "./route/member-guard-activate.service";
-import { ArtifactGuard } from "./route/artifact-guard-activate.service";
 import { MemberPermissionGuard } from "./route/member-permission-guard-activate.service";
 import { OidcGuard } from "./route/oidc-guard-active.service";
-import { LeavingRepositoryRouteDeactivate } from "./route/leaving-repository-deactivate.service";
-import { LeavingArtifactSummaryRouteDeactivate } from "./route/leaving-artifact-summary-deactivate.service";
-
 import { PortValidatorDirective } from "./port.directive";
 import { MaxLengthExtValidatorDirective } from "./max-length-ext.directive";
-
 import { StatisticHandler } from "./statictics/statistic-handler.service";
 import { StatisticsComponent } from "./statictics/statistics.component";
 import { StatisticsPanelComponent } from "./statictics/statistics-panel.component";
@@ -138,10 +132,7 @@ const uiLibConfig: IServiceConfig = {
     SystemAdminGuard,
     AuthCheckGuard,
     SignInGuard,
-    LeavingRepositoryRouteDeactivate,
-    LeavingArtifactSummaryRouteDeactivate,
     MemberGuard,
-    ArtifactGuard,
     MemberPermissionGuard,
     OidcGuard,
     MessageHandlerService,
