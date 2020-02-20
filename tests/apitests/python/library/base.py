@@ -3,6 +3,7 @@
 import sys
 import time
 import swagger_client
+import v2_swagger_client
 try:
     from urllib import getproxies
 except ImportError:
@@ -19,7 +20,7 @@ class Credential:
         self.username = username
         self.password = password
 
-def _create_client(server, credential, debug):
+def _create_client(server, credential, debug, api_type="products"):
     cfg = swagger_client.Configuration()
     cfg.host = server.endpoint
     cfg.verify_ssl = server.verify_ssl
@@ -32,8 +33,10 @@ def _create_client(server, credential, debug):
     proxy = proxies.get('http', proxies.get('all', None))
     if proxy:
         cfg.proxy = proxy
-
-    return swagger_client.ProductsApi(swagger_client.ApiClient(cfg))
+    return {
+        "products": swagger_client.ProductsApi(swagger_client.ApiClient(cfg)),
+        "artifact": v2_swagger_client.ArtifactApi(v2_swagger_client.ApiClient(cfg)),
+    }.get(api_type,'Error: Wrong API type')
 
 def _assert_status_code(expect_code, return_code):
     if str(return_code) != str(expect_code):
@@ -64,18 +67,21 @@ class Base:
     def __init__(self,
         server = Server(endpoint="http://localhost:8080/api", verify_ssl=False),
         credential = Credential(type="basic_auth", username="admin", password="Harbor12345"),
-        debug = True):
+        debug = True, api_type = "products"):
         if not isinstance(server.verify_ssl, bool):
             server.verify_ssl = server.verify_ssl == "True"
         self.server = server
         self.credential = credential
         self.debug = debug
-        self.client = _create_client(server, credential, debug)
+        self.api_type = api_type
+        self.client = _create_client(server, credential, debug, api_type=api_type)
 
     def _get_client(self, **kwargs):
         if len(kwargs) == 0:
             return self.client
         server = self.server
+        if "api_type" in kwargs:
+            server.api_type = kwargs.get("api_type")
         if "endpoint" in kwargs:
             server.endpoint = kwargs.get("endpoint")
         if "verify_ssl" in kwargs:
