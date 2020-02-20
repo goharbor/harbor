@@ -12,7 +12,3 @@ There might be some delay during replication based on the condition of the netwo
 {{< note >}}
 Due to API changes, replication between different versions of Harbor is not supported.
 {{< /note >}}
-
-- [Create Replication Endpoints](create-replication-endpoints.md)
-- [Create Replication Rules](create-replication-rules.md)
-- [Running Replication Manually](manage-replications.md)

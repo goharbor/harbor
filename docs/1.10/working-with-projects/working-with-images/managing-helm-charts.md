@@ -15,7 +15,7 @@ Click your project to enter the project detail page after successful logging in.
 * The count of chart versions
 * The created time of the chart
 
-![list charts](../../img/list-charts.png)
+![list charts](../../../img/list-charts.png)
 
 You can click the icon buttons on the top right to switch views between card view and list view.
 
@@ -23,7 +23,7 @@ You can click the icon buttons on the top right to switch views between card vie
 
 Click the `UPLOAD` button on the top left to open the chart uploading dialog. Choose the uploading chart from your filesystem. Click the `UPLOAD` button to upload it to the chart repository server.
 
-![upload charts](../../img/upload-charts.png)
+![upload charts](../../../img/upload-charts.png)
 
 If the chart is signed, you can choose the corresponding provenance file from your filesystem and Click the `UPLOAD` button to upload them together at once.
 
@@ -37,7 +37,7 @@ Clicking the chart name from the chart list will show all the available versions
 * the template engine used (default is gotpl)
 * the created timestamp of the chart version
 
-![list charts versions](../../img/list-chart-versions.png)
+![list charts versions](../../../img/list-chart-versions.png)
 
 Obviously, there will be at least 1 version for each of the charts in the top chart list. Same with chart list view, you can also click the icon buttons on the top right to switch views between card view and list view.
 
@@ -49,13 +49,13 @@ Check the checkbox at the 1st column to select the specified chart versions:
 ### Adding Labels to and Removing Labels from Chart Versions
 Users who have Harbor system administrator, project administrator or project developer role can click the `ADD LABELS` button to add labels to or remove labels from chart versions.
 
-![add labels to chart versions](../../img/add-labels-to-chart-versions.png)
+![add labels to chart versions](../../../img/add-labels-to-chart-versions.png)
 
 
 ### Filtering Chart Versions by Label
 The chart versions can be filtered by labels:
 
-![filter chart versions by labels](../../img/filter-chart-versions-by-label.png)
+![filter chart versions by labels](../../../img/filter-chart-versions-by-label.png)
 
 ### View Chart Version Details
 Clicking the chart version number link will open the chart version details view. You can see more details about the specified chart version here. There are three content sections:
@@ -63,14 +63,14 @@ Clicking the chart version number link will open the chart version details view.
   * readme of the chart
   * overall metadata like home, created timestamp and application version
   * related helm commands for reference, such as `helm add repo` and `helm install` etc.
-![chart details](../../img/chart-details.png)
+![chart details](../../../img/chart-details.png)
 * **Dependencies:**
   * list all the dependant sun charts with 'name', 'version' and 'repository' fields
-![chart dependencies](../../img/chart-dependencies.png)
+![chart dependencies](../../../img/chart-dependencies.png)
 * **Values:**
   * display the content from `values.yaml` file with highlight code preview
   * clicking the icon buttons on the top right to switch the yaml file view to k-v value pair list view
-![chart values](../../img/chart-values.png)
+![chart values](../../../img/chart-values.png)
 
 Clicking the `DOWNLOAD` button on the top right will start the downloading process.
 
@@ -97,9 +97,9 @@ Before working, Harbor should be added into the repository list with `helm repo 
     helm repo add --ca-file ca.crt --username=admin --password=Passw0rd myrepo https://xx.xx.xx.xx/chartrepo
     ```
 
-    {{< note >}}
-    Providing both a CA file and cert files is necessary due to an issue in Helm.
-    {{< /note >}}
+   {{< note >}}
+   Providing both a CA file and cert files is necessary due to an issue in Helm.
+   {{< /note >}}
 
 * Add Harbor project as separate index entry point
 

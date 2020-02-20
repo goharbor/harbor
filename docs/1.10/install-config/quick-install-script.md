@@ -47,4 +47,4 @@ You have a machine or VM that is running Ubuntu 18.04. The script does not work 
 
 1. Enter the Harbor address in a browser to log in to the Harbor interface.
 
-After deployment, you can enable HTTPS and Notary by reconfiguring the installation. For information, see [Reconfigure Harbor and Manage the Harbor Lifecycle](../reconfigure-manage-lifecycle.md).
+After deployment, you can enable HTTPS and Notary by reconfiguring the installation. For information, see [Reconfigure Harbor and Manage the Harbor Lifecycle](reconfigure-manage-lifecycle.md).

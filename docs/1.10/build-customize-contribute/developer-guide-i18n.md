@@ -70,4 +70,4 @@ Steps to localize the UI in your language
     </div>
     ```
 
-4. Next, please refer [compile guideline](../compile-guide.md) to rebuild and restart Harbor.
+4. Next, refer to [Build Harbor from Source Code](compile-guide.md) to rebuild and restart Harbor.

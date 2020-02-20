@@ -29,7 +29,7 @@ git clone https://github.com/goharbor/harbor
 
 ### Configuration
 
-Edit the file **make/harbor.yml** and make necessary configuration changes such as hostname, admin password and mail server. Refer to the [Installation and Configuration Guide](../installation-guide.md#configuring-harbor) for more info.
+Edit the file **make/harbor.yml** and make necessary configuration changes such as hostname, admin password and mail server. Refer to [Harbor Installation and Configuration](../install-config/_index.md) for more info.
 
 ```sh
 cd harbor
@@ -99,7 +99,7 @@ If everything worked properly, you will see this message:
 Start complete. You can visit harbor now.
 ```
 
-Refer to the [Installation and Configuration Guide](../installation-guide.md#managing-harbors-lifecycle) for more information about managing your Harbor instance.
+Refer to [Reconfigure Harbor and Manage the Harbor Lifecycle](../install-config/reconfigure-manage-lifecycle.md) for more information about managing your Harbor instance.
 
 ## Appendix
 

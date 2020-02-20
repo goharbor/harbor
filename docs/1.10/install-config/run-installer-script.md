@@ -32,7 +32,7 @@ docker push reg.yourdomain.com/myproject/myrepo:mytag
 ```
 
 {{< important >}}
-- If your installation of Harbor uses HTTPS, you must provide the Harbor certificates to the Docker client. For information, see [Configure HTTPS Access to Harbor](../configure-https.md#provide-the-certificates-to-harbor-and-docker).
+- If your installation of Harbor uses HTTPS, you must provide the Harbor certificates to the Docker client. For information, see [Configure HTTPS Access to Harbor](configure-https.md#provide-the-certificates-to-harbor-and-docker).
 - If your installation of Harbor uses HTTP, you must add the option `--insecure-registry` to your client's Docker daemon and restart the Docker service. For more information, see [Connecting to Harbor via HTTP](#connect-http) below.
 {{< /important >}}
 
@@ -113,5 +113,5 @@ After you update `daemon.json`, you must restart both Docker Engine and Harbor.
 ## What to Do Next ##
 
 - If the installation succeeds, see [Harbor Administration](../administration) for information about using Harbor.
-- If you deployed Harbor with HTTP and you want to secure the connections to Harbor, see [Configure HTTPS Access to Harbor](../configure-https.md).
-- If installation fails, see [Troubleshooting Harbor Installation](../troubleshoot-installation.md).
+- If you deployed Harbor with HTTP and you want to secure the connections to Harbor, see [Configure HTTPS Access to Harbor](configure-https.md).
+- If installation fails, see [Troubleshooting Harbor Installation](troubleshoot-installation.md).

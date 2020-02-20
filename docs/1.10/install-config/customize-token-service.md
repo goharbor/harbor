@@ -40,7 +40,7 @@ Harbor requires the Docker client to access the Harbor registry with a token. Th
 
 ## Provide the Certificate to Harbor {#provide-cert}
 
-See [Run the Installer Script](../run-installer-script.md) or [Reconfigure Harbor and Manage the Harbor Lifecycle](../reconfigure-manage-lifecycle.md) to install or reconfigure Harbor. After you run `./install` or `./prepare`, Harbor generates several configuration files. You need to replace the original private key and certificate with your own key and certificate.
+See [Run the Installer Script](run-installer-script.md) or [Reconfigure Harbor and Manage the Harbor Lifecycle](reconfigure-manage-lifecycle.md) to install or reconfigure Harbor. After you run `./install` or `./prepare`, Harbor generates several configuration files. You need to replace the original private key and certificate with your own key and certificate.
 
 1. Replace the default key and certificate. 
 

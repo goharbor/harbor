@@ -5,17 +5,17 @@ weight: 50
 
 When you run vulnerability scans, images that are subject to Common Vulnerabilities and Exposures (CVE) are identified. According to the severity of the CVE and your security settings, these images might not be permitted to run. You can create whitelists of CVEs to ignore during vulnerability scanning. 
 
-Harbor administrators can set a system-wide CVE whitelist. For information about site-wide CVE whitelists, see [Configure System-Wide CVE Whitelists](../administration/vulnerability-scanning/configure-system-whitelist.md). By default, the system whitelist is applied to all projects. You can configure different CVE whitelists for individual projects, that override the system whitelist. 
+Harbor administrators can set a system-wide CVE whitelist. For information about site-wide CVE whitelists, see [Configure System-Wide CVE Whitelists](../../administration/vulnerability-scanning/configure-system-whitelist.md). By default, the system whitelist is applied to all projects. You can configure different CVE whitelists for individual projects, that override the system whitelist. 
 
 1. Go to **Projects**, select a project, and select **Configuration**.
 1. Under **CVE whitelist**, select **Project whitelist**.
 
-    ![Project CVE whitelist](../../img/cve-whitelist5.png)
+    ![Project CVE whitelist](../../../img/cve-whitelist5.png)
 
 1. Optionally click **Copy From System** to add all of the CVE IDs from the system CVE whitelist to this project whitelist.
 1. Click **Add** and enter a list of additional CVE IDs to ignore during vulnerability scanning of this project.
 
-    ![Add project CVEs](../../img/cve-whitelist6.png)
+    ![Add project CVEs](../../../img/cve-whitelist6.png)
 
     Either use a comma-separated list or newlines to add multiple CVE IDs to the list.
 

@@ -12,6 +12,6 @@ To retag an image, you must have read permission (guest role or above) in the so
 
 In the Harbor interface, select the image to retag, and click `Retag`.
 
-![retag image](../../img/retag-image.png)
+![retag image](../../../img/retag-image.png)
 
 In the Retag windown, enter the project name, repository name, the new tag name, and click **Confirm**. 
