@@ -18,8 +18,6 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/common/models"
-
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
 
@@ -30,10 +28,8 @@ func TestAddArtifactNBlob(t *testing.T) {
 	}
 
 	// add
-	id, err := AddArtifactNBlob(afnb)
+	_, err := AddArtifactNBlob(afnb)
 	require.Nil(t, err)
-	afnb.ID = id
-	assert.Equal(t, id, int64(1))
 }
 
 func TestAddArtifactNBlobs(t *testing.T) {

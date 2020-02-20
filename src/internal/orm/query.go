@@ -16,6 +16,8 @@ package orm
 
 import (
 	"context"
+	"strings"
+
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/pkg/q"
 )
@@ -40,4 +42,14 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query) (orm.Qu
 		}
 	}
 	return qs, nil
+}
+
+// ParamPlaceholderForIn returns a string that contains placeholders for sql keyword "in"
+// e.g. n=3, returns "?,?,?"
+func ParamPlaceholderForIn(n int) string {
+	placeholders := []string{}
+	for i := 0; i < n; i++ {
+		placeholders = append(placeholders, "?")
+	}
+	return strings.Join(placeholders, ",")
 }

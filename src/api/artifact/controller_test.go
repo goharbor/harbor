@@ -16,6 +16,9 @@ package artifact
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/common/models"
@@ -26,6 +29,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	arttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	artrashtesting "github.com/goharbor/harbor/src/testing/pkg/artifactrash"
+	"github.com/goharbor/harbor/src/testing/pkg/blob"
 	immutesting "github.com/goharbor/harbor/src/testing/pkg/immutabletag"
 	"github.com/goharbor/harbor/src/testing/pkg/label"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
@@ -33,8 +37,6 @@ import (
 	tagtesting "github.com/goharbor/harbor/src/testing/pkg/tag"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 type fakeAbstractor struct {
@@ -72,6 +74,7 @@ type controllerTestSuite struct {
 	repoMgr      *repotesting.FakeManager
 	artMgr       *arttesting.FakeManager
 	artrashMgr   *artrashtesting.FakeManager
+	blobMgr      *blob.Manager
 	tagMgr       *tagtesting.FakeManager
 	labelMgr     *label.FakeManager
 	abstractor   *fakeAbstractor
@@ -83,6 +86,7 @@ func (c *controllerTestSuite) SetupTest() {
 	c.repoMgr = &repotesting.FakeManager{}
 	c.artMgr = &arttesting.FakeManager{}
 	c.artrashMgr = &artrashtesting.FakeManager{}
+	c.blobMgr = &blob.Manager{}
 	c.tagMgr = &tagtesting.FakeManager{}
 	c.labelMgr = &label.FakeManager{}
 	c.abstractor = &fakeAbstractor{}
@@ -92,6 +96,7 @@ func (c *controllerTestSuite) SetupTest() {
 		repoMgr:      c.repoMgr,
 		artMgr:       c.artMgr,
 		artrashMgr:   c.artrashMgr,
+		blobMgr:      c.blobMgr,
 		tagMgr:       c.tagMgr,
 		labelMgr:     c.labelMgr,
 		abstractor:   c.abstractor,
@@ -485,6 +490,8 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	// root artifact is referenced by other artifacts
 	c.artMgr.On("Get").Return(&artifact.Artifact{ID: 1}, nil)
 	c.tagMgr.On("List").Return(nil, nil)
+	c.blobMgr.On("List", nil, mock.AnythingOfType("models.ListParams")).Return(nil, nil).Once()
+	c.blobMgr.On("CleanupAssociationsForProject", nil, int64(0), mock.AnythingOfType("[]*models.Blob")).Return(nil).Once()
 	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	c.artMgr.On("ListReferences").Return(nil, nil)
 	c.tagMgr.On("DeleteOfArtifact").Return(nil)

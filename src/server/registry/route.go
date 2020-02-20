@@ -15,7 +15,10 @@
 package registry
 
 import (
+	"net/http"
+
 	"github.com/goharbor/harbor/src/server/middleware/artifactinfo"
+	"github.com/goharbor/harbor/src/server/middleware/blob"
 	"github.com/goharbor/harbor/src/server/middleware/contenttrust"
 	"github.com/goharbor/harbor/src/server/middleware/immutable"
 	"github.com/goharbor/harbor/src/server/middleware/manifestinfo"
@@ -24,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/v2auth"
 	"github.com/goharbor/harbor/src/server/middleware/vulnerable"
 	"github.com/goharbor/harbor/src/server/router"
-	"net/http"
 )
 
 // RegisterRoutes for OCI registry APIs
@@ -69,7 +71,25 @@ func RegisterRoutes() {
 		Middleware(readonly.Middleware()).
 		Middleware(manifestinfo.Middleware()).
 		Middleware(immutable.MiddlewarePush()).
+		Middleware(blob.PutManifestMiddleware()).
 		HandlerFunc(putManifest)
+	// initiate blob upload
+	root.NewRoute().
+		Method(http.MethodPost).
+		Path("/*/blobs/uploads").
+		Middleware(blob.PostInitiateBlobUploadMiddleware()).
+		Handler(proxy)
+	// blob upload
+	root.NewRoute().
+		Method(http.MethodPatch).
+		Path("/*/blobs/uploads/:session_id").
+		Middleware(blob.PatchBlobUploadMiddleware()).
+		Handler(proxy)
+	root.NewRoute().
+		Method(http.MethodPut).
+		Path("/*/blobs/uploads/:session_id").
+		Middleware(blob.PutBlobUploadMiddleware()).
+		Handler(proxy)
 	// blob
 	root.NewRoute().
 		Method(http.MethodPost).
