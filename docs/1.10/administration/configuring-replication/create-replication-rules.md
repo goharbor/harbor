@@ -61,3 +61,7 @@ A replication endpoint must exist before you create a replication rule. To creat
       
 1. Optionally select the Override checkbox to force replicated resources to replace resources at the destination with the same name.
 1. Click **Save** to create the replication rule.  
+
+## What to Do Next
+
+After you create a replication rule, see [Running Replication Manually](manage-replications.md).

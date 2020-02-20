@@ -57,4 +57,4 @@ If you encounter any problems while using the demo server, open an [issue on Git
 
 ## What to Do Next ##
 
-See the [Harbor Installation Prerequisites](../installation-prereqs.md).
+See the [Harbor Installation Prerequisites](installation-prereqs.md).

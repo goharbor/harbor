@@ -49,3 +49,7 @@ To replicate image repositories from one instance of Harbor to another Harbor or
 You can list, add, edit and delete registries under **Administration** -> **Registries**. Only registries which are not referenced by any rules can be deleted.  
 
 ![browse project](../../../img/manage-registry.png)
+
+## What to Do Next
+
+After you configure replication endpoints, see [Creating a Replication Rule](create-replication-rules.md).

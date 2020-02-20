@@ -40,7 +40,7 @@ If Harbor is running behind an `nginx` proxy or elastic load balancing, open the
 proxy_set_header X-Forwarded-Proto $scheme;
 ```
 
-If the proxy already has similar settings, remove it from the sections `location /`, `location /v2/` and `location /service/` and redeploy Harbor. For instructions about how to redeploy Harbor, see [Reconfigure Harbor and Manage the Harbor Lifecycle](../configuration/reconfigure-manage-lifecycle.md).
+If the proxy already has similar settings, remove it from the sections `location /`, `location /v2/` and `location /service/` and redeploy Harbor. For instructions about how to redeploy Harbor, see [Reconfigure Harbor and Manage the Harbor Lifecycle](reconfigure-manage-lifecycle.md).
 
 ## Troubleshoot HTTPS Connections {#https}
 

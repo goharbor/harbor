@@ -117,7 +117,7 @@ After generating the `ca.crt`, `yourdomain.com.crt`, and `yourdomain.com.key` fi
     systemctl restart docker
     ```
 
-You might also need to trust the certificate at the OS level. See [Troubleshooting Harbor Installation](../troubleshoot-installation.md#https) for more information.
+You might also need to trust the certificate at the OS level. See [Troubleshooting Harbor Installation](troubleshoot-installation.md#https) for more information.
 
 The following example illustrates a configuration that uses custom certificates.
 
@@ -131,7 +131,7 @@ The following example illustrates a configuration that uses custom certificates.
 
 ## Deploy or Reconfigure Harbor
 
-If you have not yet deployed Harbor, see [Configure the Harbor YML File](../configure-yml-file.md) for information about how to configure Harbor to use the certificates by specifying the `hostname` and `https` attributes in `harbor.yml`.
+If you have not yet deployed Harbor, see [Configure the Harbor YML File](configure-yml-file.md) for information about how to configure Harbor to use the certificates by specifying the `hostname` and `https` attributes in `harbor.yml`.
 
 If you already deployed Harbor with HTTP and want to reconfigure it to use HTTPS, perform the following steps.
 
@@ -182,4 +182,4 @@ After setting up HTTPS for Harbor, you can verify the HTTPS connection by perfor
 ## What to Do Next
 
 - If the verification succeeds, see [Harbor Administration](../administration) for information about using Harbor.
-- If installation fails, see [Troubleshooting Harbor Installation](../troubleshoot-installation.md).
+- If installation fails, see [Troubleshooting Harbor Installation](troubleshoot-installation.md).

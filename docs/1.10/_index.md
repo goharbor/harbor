@@ -1,10 +1,8 @@
 ---
-title: Harbor Documentation
+title: Harbor 1.10 Documentation
 ---
 
-Welcome to the Harbor 1.10.x documentation. Use the table of contents on the left of the page to navigate through the docs.
-
-This documentation includes the following sections:
+Welcome to the Harbor 1.10.x documentation. This documentation includes all of the information that you need to install, configure, and use Harbor.
 
 ## Harbor Installation and Configuration
 

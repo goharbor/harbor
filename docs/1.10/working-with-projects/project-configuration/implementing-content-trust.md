@@ -25,4 +25,4 @@ Replace "10.117.169.182" with the IP address or domain name of your Harbor node.
 
 When an image is signed, it has a tick shown in UI; otherwise, a cross sign(X) is displayed instead.
 
-![browse project](../../img/content-trust.png)
+![browse project](../../../img/content-trust.png)
