@@ -53,10 +53,21 @@ func (s *selector) Select(artifacts []*art.Candidate) (selected []*art.Candidate
 	for _, art := range artifacts {
 		switch s.decoration {
 		case Matches:
-			value = art.Tag
+			s, err := s.tagSelectMatch(art)
+			if err != nil {
+				return nil, err
+			}
+			if s {
+				selected = append(selected, art)
+			}
 		case Excludes:
-			value = art.Tag
-			excludes = true
+			s, err := s.tagSelectExclude(art)
+			if err != nil {
+				return nil, err
+			}
+			if s {
+				selected = append(selected, art)
+			}
 		case RepoMatches:
 			value = art.Repository
 		case RepoExcludes:
@@ -83,6 +94,32 @@ func (s *selector) Select(artifacts []*art.Candidate) (selected []*art.Candidate
 	}
 
 	return selected, nil
+}
+
+func (s *selector) tagSelectMatch(artifact *art.Candidate) (selected bool, err error) {
+	for _, t := range artifact.Tags {
+		matched, err := match(s.pattern, t)
+		if err != nil {
+			return false, err
+		}
+		if matched {
+			return true, nil
+		}
+	}
+	return false, nil
+}
+
+func (s *selector) tagSelectExclude(artifact *art.Candidate) (selected bool, err error) {
+	for _, t := range artifact.Tags {
+		matched, err := match(s.pattern, t)
+		if err != nil {
+			return false, err
+		}
+		if !matched {
+			return true, nil
+		}
+	}
+	return false, nil
 }
 
 // New is factory method for doublestar selector

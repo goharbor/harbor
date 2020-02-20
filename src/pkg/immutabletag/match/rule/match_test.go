@@ -91,7 +91,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		NamespaceID: 1,
 		Namespace:   "library",
 		Repository:  "redis",
-		Tag:         "release-1.10",
+		Tags:        []string{"release-1.10"},
 	}
 	isMatch, err := match.Match(1, c1)
 	s.require.Equal(isMatch, true)
@@ -101,7 +101,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		NamespaceID: 1,
 		Namespace:   "library",
 		Repository:  "redis",
-		Tag:         "1.10",
+		Tags:        []string{"1.10"},
 		Kind:        art.Image,
 	}
 	isMatch, err = match.Match(1, c2)
@@ -112,7 +112,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		NamespaceID: 1,
 		Namespace:   "immutable",
 		Repository:  "mysql",
-		Tag:         "9.4.8",
+		Tags:        []string{"9.4.8"},
 		Kind:        art.Image,
 	}
 	isMatch, err = match.Match(1, c3)
@@ -123,7 +123,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		NamespaceID: 1,
 		Namespace:   "immutable",
 		Repository:  "hello",
-		Tag:         "world",
+		Tags:        []string{"world"},
 		Kind:        art.Image,
 	}
 	isMatch, err = match.Match(1, c4)

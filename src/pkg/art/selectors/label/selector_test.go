@@ -43,7 +43,7 @@ func (suite *LabelSelectorTestSuite) SetupSuite() {
 			NamespaceID:  1,
 			Namespace:    "library",
 			Repository:   "harbor",
-			Tag:          "1.9",
+			Tags:         []string{"1.9"},
 			Kind:         art.Image,
 			PushedTime:   time.Now().Unix() - 3600,
 			PulledTime:   time.Now().Unix(),
@@ -54,7 +54,7 @@ func (suite *LabelSelectorTestSuite) SetupSuite() {
 			NamespaceID:  1,
 			Namespace:    "library",
 			Repository:   "harbor",
-			Tag:          "dev",
+			Tags:         []string{"dev"},
 			Kind:         art.Image,
 			PushedTime:   time.Now().Unix() - 3600,
 			PulledTime:   time.Now().Unix(),
@@ -135,7 +135,9 @@ func expect(expected []string, candidates []*art.Candidate) bool {
 	hash := make(map[string]bool)
 
 	for _, art := range candidates {
-		hash[fmt.Sprintf("%s:%s", art.Repository, art.Tag)] = true
+		for _, t := range art.Tags {
+			hash[fmt.Sprintf("%s:%s", art.Repository, t)] = true
+		}
 	}
 
 	for _, exp := range expected {

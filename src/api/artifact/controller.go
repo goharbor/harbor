@@ -588,7 +588,7 @@ func (c *controller) populateImmutableStatus(ctx context.Context, tag *Tag) {
 	_, repoName := utils.ParseRepository(repo.Name)
 	matched, err := c.immutableMtr.Match(repo.ProjectID, art.Candidate{
 		Repository:  repoName,
-		Tag:         tag.Name,
+		Tags:        []string{tag.Name},
 		NamespaceID: repo.ProjectID,
 	})
 	if err != nil {

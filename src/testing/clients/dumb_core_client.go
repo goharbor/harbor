@@ -15,26 +15,26 @@
 package clients
 
 import (
+	modelsv2 "github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/chartserver"
-	"github.com/goharbor/harbor/src/common/models"
 )
 
 // DumbCoreClient provides an empty implement for pkg/clients/core.Client
 // it is only used for testing
 type DumbCoreClient struct{}
 
-// ListAllImages ...
-func (d *DumbCoreClient) ListAllImages(project, repository string) ([]*models.TagResp, error) {
+// ListAllArtifacts ...
+func (d *DumbCoreClient) ListAllArtifacts(project, repository string) ([]*modelsv2.Artifact, error) {
 	return nil, nil
 }
 
-// DeleteImage ...
-func (d *DumbCoreClient) DeleteImage(project, repository, tag string) error {
+// DeleteArtifact ...
+func (d *DumbCoreClient) DeleteArtifact(project, repository, digest string) error {
 	return nil
 }
 
-// DeleteImageRepository ...
-func (d *DumbCoreClient) DeleteImageRepository(project, repository string) error {
+// DeleteArtifactRepository ...
+func (d *DumbCoreClient) DeleteArtifactRepository(project, repository string) error {
 	return nil
 }
 

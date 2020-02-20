@@ -169,7 +169,7 @@ func logResults(logger logger.Interface, all []*art.Candidate, results []*art.Re
 	for _, c := range all {
 		row := []string{
 			c.Digest,
-			c.Tag,
+			strings.Join(c.Tags, ","),
 			c.Kind,
 			strings.Join(c.Labels, ","),
 			t(c.PushedTime),
@@ -199,7 +199,7 @@ func logResults(logger logger.Interface, all []*art.Candidate, results []*art.Re
 }
 
 func arn(art *art.Candidate) string {
-	return fmt.Sprintf("%s/%s:%s", art.Namespace, art.Repository, art.Tag)
+	return fmt.Sprintf("%s/%s:%s", art.Namespace, art.Repository, art.Digest)
 }
 
 func t(tm int64) string {
