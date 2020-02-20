@@ -13,8 +13,6 @@
 |------------------|
 |The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
 
-</br> </br>
-
 **Note**: The `master` branch may be in an *unstable or even broken state* during development.
 Please use [releases](https://github.com/vmware/harbor/releases) instead of the `master` branch in order to get a stable set of binaries.
 
@@ -40,8 +38,8 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 
 ## API
 
-* [Harbor RESTful API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/harbor/swagger.yaml): The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically.
-  - Spec validation status: <img src="http://validator.swagger.io/validator?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/harbor/swagger.yaml">
+* [Harbor RESTful API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/v2.0/swagger.yaml): The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically.
+  - Spec validation status: <img src="http://validator.swagger.io/validator?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/v2.0/swagger.yaml">
 
 ## Compatibility
 
