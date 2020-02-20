@@ -85,12 +85,6 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
       permissions: () => this.hasScannerReadPermission
     },
     {
-      linkName: "configs",
-      tabLinkInOverflow: false,
-      showTabName: "PROJECT_DETAIL.CONFIG",
-      permissions: () => this.isSessionValid && this.hasConfigurationListPermission
-    },
-    {
       linkName: "tag-strategy",
       tabLinkInOverflow: false,
       showTabName: "PROJECT_DETAIL.TAG_STRATEGY",
@@ -113,6 +107,12 @@ export class ProjectDetailComponent implements OnInit, AfterViewInit, OnDestroy 
       tabLinkInOverflow: false,
       showTabName: "PROJECT_DETAIL.LOGS",
       permissions: () => this.hasLogListPermission
+    },
+    {
+      linkName: "configs",
+      tabLinkInOverflow: false,
+      showTabName: "PROJECT_DETAIL.CONFIG",
+      permissions: () => this.isSessionValid && this.hasConfigurationListPermission
     }
   ];
   previousWindowWidth: number;

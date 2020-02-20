@@ -314,7 +314,7 @@
         "OF": "of",
         "SWITCH_TITLE": "Confirm project members switch",
         "SWITCH_SUMMARY": "Do you want to switch project members {{param}}?",
-        "SET_ROLE": "SET ROLE",
+        "SET_ROLE": "Set Role",
         "REMOVE": "Remove"
     },
     "ROBOT_ACCOUNT": {
@@ -1025,6 +1025,7 @@
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
         "OF": "of",
+        "ITEMS": "items",
         "ADD_TAG": "ADD TAG",
         "REMOVE_TAG": "REMOVE TAG"
     },

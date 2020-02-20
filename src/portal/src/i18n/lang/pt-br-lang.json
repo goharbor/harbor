@@ -1017,6 +1017,7 @@
         "PULL_TIME": "Pull Time",
         "PUSH_TIME": "Push Time",
         "OF": "of",
+        "ITEMS": "items",
         "ADD_TAG": "ADD TAG",
         "REMOVE_TAG": "REMOVE TAG"
     },

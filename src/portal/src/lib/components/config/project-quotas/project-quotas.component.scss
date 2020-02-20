@@ -4,17 +4,18 @@
   .default-quota-text {
     display: flex;
     align-items: center;
-    text-transform: uppercase;
     font-family: Metropolis, "Avenir Next", "Helvetica Neue", Arial, sans-serif;
     .width-10rem {
       width: 15rem;
+      font-size: 15px;
     }
 
     .num-count {
       display: inline-block;
       min-width: 2rem;
       font-weight: 600;
-      font-size: 18px;
+      font-size: 15px;
+      text-transform: uppercase;
     }
   }
 }

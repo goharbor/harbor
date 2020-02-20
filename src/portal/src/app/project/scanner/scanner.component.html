@@ -17,7 +17,6 @@
                 <div class="clr-input-wrapper">
                     <div class="clr-input-wrapper name">
                         <span id="scanner-name" class="scanner-name">{{scanner?.name}}</span>
-                        <button *ngIf="hasCreatePermission && scanners && scanners.length > 0" id="edit-scanner" class="btn btn-primary " (click)="open()">{{'SCANNER.EDIT' | translate}}</button>
                         <span *ngIf="scanner?.disabled" class="label label-warning ml-1">{{'SCANNER.DISABLED' | translate}}</span>
                         <span *ngIf="scanner?.health === 'unhealthy'" class="label label-danger ml-1">{{'SCANNER.UNHEALTHY' | translate}}</span>
                         <span *ngIf="scanner?.health === 'healthy'" class="label label-success ml-1">{{'SCANNER.HEALTHY' | translate}}</span>
@@ -62,7 +61,9 @@
             </div>
         </div>
     </ng-container>
+    <button *ngIf="hasCreatePermission && scanners && scanners.length > 0" id="edit-scanner"  type="button" (click)="open()" class="btn  btn-secondary mt-1">{{'SCANNER.SELECT_SCANNER' | translate}}</button>
 </div>
+
 <clr-modal [clrModalSize]="'xl'" [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
     <h3 class="modal-title">{{'SCANNER.SELECT_SCANNER' | translate}}</h3>
     <div class="modal-body body-format">
