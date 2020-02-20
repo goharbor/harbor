@@ -5,7 +5,7 @@ import { RouterTestingModule } from '@angular/router/testing';
 import { SharedModule } from '../../utils/shared/shared.module';
 import { RepositoryGridviewComponent } from './repository-gridview.component';
 import { ErrorHandler } from '../../utils/error-handler/error-handler';
-import { Repository, RepositoryItem, SystemInfo } from '../../services/interface';
+import { SystemInfo } from '../../services/interface';
 import { SERVICE_CONFIG, IServiceConfig } from '../../entities/service.config';
 import { RepositoryService } from '../../services/repository.service';
 import { TagService, TagDefaultService } from '../../services/tag.service';
@@ -14,7 +14,6 @@ import { OperationService } from "../operation/operation.service";
 import {
   ProjectDefaultService,
   ProjectService,
-  RequestQueryParams,
   RetagDefaultService,
   RetagService
 } from "../../services";
@@ -23,6 +22,9 @@ import { of } from "rxjs";
 import { HarborLibraryModule } from "../../harbor-library.module";
 import { delay } from 'rxjs/operators';
 import { RepositoryService as NewRepositoryService } from "../../../../ng-swagger-gen/services/repository.service";
+import { Repository as NewRepository } from "../../../../ng-swagger-gen/models/repository";
+import { StrictHttpResponse as __StrictHttpResponse } from '../../../../ng-swagger-gen/strict-http-response';
+
 describe('RepositoryComponentGridview (inline template)', () => {
 
   let compRepo: RepositoryGridviewComponent;
@@ -38,15 +40,14 @@ describe('RepositoryComponentGridview (inline template)', () => {
     "has_ca_root": false,
     "harbor_version": "v1.1.1-rc1-160-g565110d"
   };
-  let mockRepoData: RepositoryItem[] = [
+  let mockRepoData: NewRepository[] = [
     {
       "id": 1,
       "name": "library/busybox",
       "project_id": 1,
       "description": "asdfsadf",
       "pull_count": 0,
-      "star_count": 0,
-      "tags_count": 1
+      "artifact_count": 1
     },
     {
       "id": 2,
@@ -54,30 +55,23 @@ describe('RepositoryComponentGridview (inline template)', () => {
       "project_id": 1,
       "description": "asdf",
       "pull_count": 0,
-      "star_count": 0,
-      "tags_count": 1
+      "artifact_count": 0
     }
   ];
-  let mockRepoNginxData: RepositoryItem[] = [
+  let mockRepoNginxData: NewRepository[] = [
     {
       "id": 2,
       "name": "library/nginx",
       "project_id": 1,
       "description": "asdf",
       "pull_count": 0,
-      "star_count": 0,
-      "tags_count": 1
+      "artifact_count": 0
     }
   ];
 
-  let mockRepo: Repository = {
-    metadata: { xTotalCount: 2 },
-    data: mockRepoData
-  };
-  let mockNginxRepo: Repository = {
-    metadata: { xTotalCount: 2 },
-    data: mockRepoNginxData
-  };
+  let mockRepo: NewRepository[] = mockRepoData;
+  let mockNginxRepo: NewRepository[] = mockRepoNginxData;
+
   let config: IServiceConfig = {
     repositoryBaseEndpoint: '/api/repository/testing',
     systemInfoEndpoint: '/api/systeminfo/testing',
@@ -94,11 +88,11 @@ describe('RepositoryComponentGridview (inline template)', () => {
     }
   };
   const fakedRepositoryService = {
-    getRepositories(projectId: number, name: string, param?: RequestQueryParams) {
-      if (name === 'nginx') {
-          return of(mockNginxRepo);
+    listRepositoriesResponse(params: NewRepositoryService.ListRepositoriesParams) {
+      if (params.name === 'nginx') {
+          return of({headers: new Map(), body: mockNginxRepo});
         }
-        return of(mockRepo).pipe(delay(0));
+        return of({headers: new Map(), body: mockRepo}).pipe(delay(0));
     }
   };
   const fakedUserPermissionService = {

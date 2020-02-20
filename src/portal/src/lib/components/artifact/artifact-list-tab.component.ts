@@ -94,7 +94,6 @@ export class ArtifactListTabComponent implements OnInit, AfterViewInit {
   @Input() withAdmiral: boolean;
   @Output() refreshRepo = new EventEmitter<boolean>();
   @Output() tagClickEvent = new EventEmitter<ArtifactClickEvent>();
-  @Output() signatureOutput = new EventEmitter<any>();
   @Output() putReferArtifactArray = new EventEmitter<string[]>();
 
 

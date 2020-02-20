@@ -4,25 +4,16 @@ import {
     Output,
     OnInit,
     ViewChild,
-    ChangeDetectionStrategy,
-    ChangeDetectorRef,
     EventEmitter,
     OnChanges,
     SimpleChanges,
     Inject, OnDestroy
 } from "@angular/core";
-import { Router } from "@angular/router";
 import { forkJoin, Subscription } from "rxjs";
 import { debounceTime, distinctUntilChanged, finalize, switchMap } from "rxjs/operators";
 import { TranslateService } from "@ngx-translate/core";
 import {
-    Repository,
-    SystemInfo,
-    SystemInfoService,
-    RepositoryService,
-    RequestQueryParams,
-    RepositoryItem,
-    TagService
+    SystemInfo, SystemInfoService
 } from '../../services';
 import { ErrorHandler } from '../../utils/error-handler';
 import { DEFAULT_PAGE_SIZE, calculatePage, clone } from '../../utils/utils';
@@ -42,14 +33,16 @@ import { Observable, throwError as observableThrowError } from "rxjs";
 import { errorHandler as errorHandFn } from "../../utils/shared/shared.utils";
 import { ClrDatagridStateInterface } from "@clr/angular";
 import { FilterComponent } from "../filter/filter.component";
-import { RepositoryService as NewRepositoryService} from "../../../../ng-swagger-gen/services/repository.service";
+import { RepositoryService as NewRepositoryService } from "../../../../ng-swagger-gen/services/repository.service";
+import { Repository as NewRepository } from "../../../../ng-swagger-gen/models/repository";
+import { StrictHttpResponse as __StrictHttpResponse } from '../../../../ng-swagger-gen/strict-http-response';
+
 @Component({
     selector: "hbr-repository-gridview",
     templateUrl: "./repository-gridview.component.html",
     styleUrls: ["./repository-gridview.component.scss"],
 })
 export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy {
-    signedCon: { [key: string]: any | string[] } = {};
     downloadLink: string;
     @Input() projectId: number;
     @Input() projectName = "unknown";
@@ -57,15 +50,15 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     @Input() hasSignedIn: boolean;
     @Input() hasProjectAdminRole: boolean;
     @Input() mode = "admiral";
-    @Output() repoClickEvent = new EventEmitter<RepositoryItem>();
-    @Output() repoProvisionEvent = new EventEmitter<RepositoryItem>();
-    @Output() addInfoEvent = new EventEmitter<RepositoryItem>();
+    @Output() repoClickEvent = new EventEmitter<NewRepository>();
+    @Output() repoProvisionEvent = new EventEmitter<NewRepository>();
+    @Output() addInfoEvent = new EventEmitter<NewRepository>();
 
     lastFilteredRepoName: string;
-    repositories: RepositoryItem[] = [];
-    repositoriesCopy: RepositoryItem[] = [];
+    repositories: NewRepository[] = [];
+    repositoriesCopy: NewRepository[] = [];
     systemInfo: SystemInfo;
-    selectedRow: RepositoryItem[] = [];
+    selectedRow: NewRepository[] = [];
     loading = true;
 
     isCardView: boolean;
@@ -77,25 +70,23 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     totalCount = 0;
     currentState: ClrDatagridStateInterface;
 
-    @ViewChild("confirmationDialog", {static: false})
+    @ViewChild("confirmationDialog", { static: false })
     confirmationDialog: ConfirmationDialogComponent;
 
-    @ViewChild("gridView", {static: false}) gridView: GridViewComponent;
+    @ViewChild("gridView", { static: false }) gridView: GridViewComponent;
     hasCreateRepositoryPermission: boolean;
     hasDeleteRepositoryPermission: boolean;
-    @ViewChild(FilterComponent, {static: true})
+    @ViewChild(FilterComponent, { static: true })
     filterComponent: FilterComponent;
     searchSub: Subscription;
     constructor(@Inject(SERVICE_CONFIG) private configInfo: IServiceConfig,
         private errorHandler: ErrorHandler,
         private translateService: TranslateService,
-        private repositoryService: RepositoryService,
         private newRepoService: NewRepositoryService,
         private systemInfoService: SystemInfoService,
-        private tagService: TagService,
         private operationService: OperationService,
         public userPermissionService: UserPermissionService,
-        ) {
+    ) {
         if (this.configInfo && this.configInfo.systemInfoEndpoint) {
             this.downloadLink = this.configInfo.systemInfoEndpoint + "/getcert";
         }
@@ -142,16 +133,20 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
                 switchMap(repoName => {
                     this.lastFilteredRepoName = repoName;
                     this.currentPage = 1;
-                   // Pagination
-                    let params: RequestQueryParams = new RequestQueryParams()
-                       .set("page", "" + this.currentPage).set("page_size", "" + this.pageSize);
+                    // Pagination
+                    let params: NewRepositoryService.ListRepositoriesParams = {
+                        projectName: this.projectName,
+                        page: this.currentPage,
+                        pageSize: this.pageSize,
+                        name: this.lastFilteredRepoName
+                    };
                     this.loading = true;
-                    return this.repositoryService.getRepositories(this.projectId, this.lastFilteredRepoName, params);
+                    return this.newRepoService.listRepositoriesResponse(
+                        params);
                 })
-            ).subscribe((repo: Repository) => {
-                this.totalCount = repo.metadata.xTotalCount;
-                this.repositories = repo.data;
-                this.signedCon = {};
+            ).subscribe((repo: __StrictHttpResponse<Array<NewRepository>>) => {
+                this.totalCount = +repo.headers.get('x-total-count');
+                this.repositories = repo.body;
                 this.loading = false;
             }, error => {
                 this.loading = false;
@@ -168,47 +163,35 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     }
 
     confirmDeletion(message: ConfirmationAcknowledgement) {
-        let repArr: any[] = [];
-        message.data.forEach(repo => {
-            if (!this.signedCon[repo.name]) {
-                // to do
-                // repArr.push(this.getTagInfo(repo.name));
-            }
-        });
         this.loading = true;
-        // forkJoin(...repArr).subscribe(() => {
-            if (message &&
-                message.source === ConfirmationTargets.REPOSITORY &&
-                message.state === ConfirmationState.CONFIRMED) {
-                let repoLists = message.data;
-                if (repoLists && repoLists.length) {
-                    let observableLists: any[] = [];
-                    repoLists.forEach(repo => {
-                        observableLists.push(this.delOperate(repo));
-                    });
-                    forkJoin(observableLists).subscribe((item) => {
-                        this.selectedRow = [];
+        if (message &&
+            message.source === ConfirmationTargets.REPOSITORY &&
+            message.state === ConfirmationState.CONFIRMED) {
+            let repoLists = message.data;
+            if (repoLists && repoLists.length) {
+                let observableLists: any[] = [];
+                repoLists.forEach(repo => {
+                    observableLists.push(this.delOperate(repo));
+                });
+                forkJoin(observableLists).subscribe((item) => {
+                    this.selectedRow = [];
+                    this.refresh();
+                    let st: ClrDatagridStateInterface = this.getStateAfterDeletion();
+                    if (!st) {
                         this.refresh();
-                        let st: ClrDatagridStateInterface = this.getStateAfterDeletion();
-                        if (!st) {
-                            this.refresh();
-                        } else {
-                            this.clrLoad(st);
-                        }
-                    }, error => {
-                        this.errorHandler.error(error);
-                        this.loading = false;
-                        this.refresh();
-                    });
-                }
+                    } else {
+                        this.clrLoad(st);
+                    }
+                }, error => {
+                    this.errorHandler.error(error);
+                    this.loading = false;
+                    this.refresh();
+                });
             }
-        // }, error => {
-        //     this.errorHandler.error(error);
-        //     this.loading = false;
-        // });
+        }
     }
 
-    delOperate(repo: RepositoryItem): Observable<any> {
+    delOperate(repo: NewRepository): Observable<any> {
         // init operation info
         let operMessage = new OperateInfo();
         operMessage.name = 'OPERATION.DELETE_REPO';
@@ -217,29 +200,23 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         operMessage.data.name = repo.name;
         this.operationService.publishInfo(operMessage);
 
-        // if (this.signedCon[repo.name].length !== 0) {
-        //     return forkJoin(this.translateService.get('BATCH.DELETED_FAILURE'),
-        //         this.translateService.get('REPOSITORY.DELETION_TITLE_REPO_SIGNED')).pipe(map(res => {
-        //             operateChanges(operMessage, OperationState.failure, res[1]);
-        //         }));
-        // } else {
-            return this.newRepoService
-                .deleteRepository({
-                    repositoryName: repo.name,
-                    projectName: this.projectName})
-                .pipe(map(
-                    response => {
-                        this.translateService.get('BATCH.DELETED_SUCCESS').subscribe(res => {
-                            operateChanges(operMessage, OperationState.success);
-                        });
-                    }), catchError(error => {
-                        const message = errorHandFn(error);
-                        this.translateService.get(message).subscribe(res =>
-                            operateChanges(operMessage, OperationState.failure, res)
-                        );
-                        return observableThrowError(message);
-                    }));
-        // }
+        return this.newRepoService
+            .deleteRepository({
+                repositoryName: repo.name.split('/')[1],
+                projectName: this.projectName
+            })
+            .pipe(map(
+                response => {
+                    this.translateService.get('BATCH.DELETED_SUCCESS').subscribe(res => {
+                        operateChanges(operMessage, OperationState.success);
+                    });
+                }), catchError(error => {
+                    const message = errorHandFn(error);
+                    this.translateService.get(message).subscribe(res =>
+                        operateChanges(operMessage, OperationState.failure, res)
+                    );
+                    return observableThrowError(message);
+                }));
     }
 
     doSearchRepoNames(repoName: string) {
@@ -255,11 +232,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         this.clrLoad(st);
     }
 
-    saveSignatures(event: { [key: string]: string[] }): void {
-        Object.assign(this.signedCon, event);
-    }
-
-    deleteRepos(repoLists: RepositoryItem[]) {
+    deleteRepos(repoLists: NewRepository[]) {
         if (repoLists && repoLists.length) {
             let repoNames: string[] = [];
             repoLists.forEach(repo => {
@@ -274,22 +247,9 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
                 ConfirmationButtons.DELETE_CANCEL);
         }
     }
-    // to do  delete when  user sign
-    // getTagInfo(repoName: string): Observable<void> {
-    //     this.signedCon[repoName] = [];
-    //     return this.tagService.getTags(repoName)
-    //         .pipe(map(items => {
-    //             items.forEach((t: any) => {
-    //                 if (t.signature !== null) {
-    //                     this.signedCon[repoName].push(t.name);
-    //                 }
-    //             });
-    //         })
-    //             , catchError(error => observableThrowError(error)));
-    // }
 
     confirmationDialogSet(summaryTitle: string, signature: string,
-        repoName: string, repoLists: RepositoryItem[],
+        repoName: string, repoLists: NewRepository[],
         summaryKey: string, button: ConfirmationButtons): void {
         this.translateService.get(summaryKey,
             {
@@ -309,14 +269,14 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
 
             });
     }
-    itemAddInfoEvent(evt: any, repo: RepositoryItem): void {
+    itemAddInfoEvent(evt: any, repo: NewRepository): void {
         evt.stopPropagation();
         let repoCopy = clone(repo);
         repoCopy.name = this.registryUrl + ":443/" + repoCopy.name;
         this.addInfoEvent.emit(repoCopy);
     }
 
-    deleteItemEvent(evt: any, item: RepositoryItem): void {
+    deleteItemEvent(evt: any, item: NewRepository): void {
         evt.stopPropagation();
         this.deleteRepos([item]);
     }
@@ -327,18 +287,20 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     loadNextPage() {
         this.currentPage = this.currentPage + 1;
         // Pagination
-        let params: RequestQueryParams = new RequestQueryParams().set("page", "" + this.currentPage).set("page_size", "" + this.pageSize);
-
+        let params: NewRepositoryService.ListRepositoriesParams = {
+            projectName: this.projectName,
+            page: this.currentPage,
+            pageSize: this.pageSize,
+            name: this.lastFilteredRepoName
+        };
         this.loading = true;
-        this.repositoryService.getRepositories(
-            this.projectId,
-            this.lastFilteredRepoName,
+        this.newRepoService.listRepositoriesResponse(
             params
         )
-            .subscribe((repo: Repository) => {
-                this.totalCount = repo.metadata.xTotalCount;
-                this.repositoriesCopy = repo.data;
-                this.signedCon = {};
+            .subscribe((repo: __StrictHttpResponse<Array<NewRepository>>) => {
+
+                this.totalCount = +repo.headers.get('x-total-count');
+                this.repositoriesCopy = repo.body;
 
                 this.repositories = this.repositories.concat(this.repositoriesCopy);
                 this.loading = false;
@@ -362,28 +324,30 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         }
 
         // Pagination
-        let params: RequestQueryParams = new RequestQueryParams().set("page", "" + pageNumber).set("page_size", "" + this.pageSize);
+        let params: NewRepositoryService.ListRepositoriesParams = {
+            projectName: this.projectName,
+            page: pageNumber,
+            pageSize: this.pageSize,
+            name: this.lastFilteredRepoName
+        };
+        // only support filter by name
         if (state.filters && state.filters.length) {
             state.filters.forEach(item => {
-                params = params.set(item.property, item.value);
+                params[item.property] = item.value;
             });
         }
         if (state.sort && state.sort.by) {
-            params = params.set(`sort`, `${(state.sort.reverse ? `-` : ``)}${state.sort.by as string}`);
+            // params = params.sort `${(state.sort.reverse ? `-` : ``)}${state.sort.by as string}`);
         }
         this.loading = true;
-
-        this.repositoryService.getRepositories(
-            this.projectId,
-            this.lastFilteredRepoName,
+        this.newRepoService.listRepositoriesResponse(
             params
         )
-            .subscribe((repo: Repository) => {
+            .subscribe((repo: __StrictHttpResponse<Array<NewRepository>>) => {
 
-                this.totalCount = repo.metadata.xTotalCount;
-                this.repositories = repo.data;
+                this.totalCount = +repo.headers.get('x-total-count');
+                this.repositories = repo.body;
 
-                this.signedCon = {};
                 this.loading = false;
             }, error => {
                 this.loading = false;
@@ -415,11 +379,11 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
         return st;
     }
 
-    watchRepoClickEvt(repo: RepositoryItem) {
+    watchRepoClickEvt(repo: NewRepository) {
         this.repoClickEvent.emit(repo);
     }
 
-    getImgLink(repo: RepositoryItem): string {
+    getImgLink(repo: NewRepository): string {
         return "/container-image-icons?container-image=" + repo.name;
     }
 

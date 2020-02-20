@@ -54,7 +54,7 @@
     </section>
     <section id="image" role="tabpanel" aria-labelledby="repo-image" [hidden]='!isCurrentTabContent("image")'>
       <div id="images-container">
-        <artifact-list-tab ngProjectAs="clr-dg-row-detail" (tagClickEvent)="watchTagClickEvt($event)" (signatureOutput)="saveSignatures($event)"
+        <artifact-list-tab ngProjectAs="clr-dg-row-detail" (tagClickEvent)="watchTagClickEvt($event)"
           class="sub-grid-custom" [repoName]="repoName" artifact [registryUrl]="registryUrl" [withNotary]="withNotary" [withAdmiral]="withAdmiral" [hasSignedIn]="hasSignedIn"
           [isGuest]="isGuest" [projectId]="projectId" [memberRoleID]="memberRoleID" (putReferArtifactArray)="putReferArtifactArray($event)"></artifact-list-tab>
       </div>

@@ -114,10 +114,6 @@ export class ArtifactListComponent implements OnInit, OnDestroy {
       .subscribe(systemInfo => this.systemInfo = systemInfo, error => this.errorHandler.error(error));
   }
 
-  saveSignatures(event: { [key: string]: string[] }): void {
-    Object.assign(this.signedCon, event);
-  }
-
   refresh() {
     this.retrieve();
   }
