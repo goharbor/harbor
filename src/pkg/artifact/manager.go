@@ -29,9 +29,12 @@ var (
 
 // Manager is the only interface of artifact module to provide the management functions for artifacts
 type Manager interface {
+	// Count returns the total count of artifacts according to the query.
+	// The artifacts that referenced by others and without tags are not counted
+	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// List artifacts according to the query. The artifacts that referenced by others and
 	// without tags are not returned
-	List(ctx context.Context, query *q.Query) (total int64, artifacts []*Artifact, err error)
+	List(ctx context.Context, query *q.Query) (artifacts []*Artifact, err error)
 	// Get the artifact specified by the ID
 	Get(ctx context.Context, id int64) (artifact *Artifact, err error)
 	// GetByDigest returns the artifact specified by repository ID and digest
@@ -63,24 +66,24 @@ type manager struct {
 	dao dao.DAO
 }
 
-func (m *manager) List(ctx context.Context, query *q.Query) (int64, []*Artifact, error) {
-	total, err := m.dao.Count(ctx, query)
-	if err != nil {
-		return 0, nil, err
-	}
+func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return m.dao.Count(ctx, query)
+}
+
+func (m *manager) List(ctx context.Context, query *q.Query) ([]*Artifact, error) {
 	arts, err := m.dao.List(ctx, query)
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
 	var artifacts []*Artifact
 	for _, art := range arts {
 		artifact, err := m.assemble(ctx, art)
 		if err != nil {
-			return 0, nil, err
+			return nil, err
 		}
 		artifacts = append(artifacts, artifact)
 	}
-	return total, artifacts, nil
+	return artifacts, nil
 }
 
 func (m *manager) Get(ctx context.Context, id int64) (*Artifact, error) {

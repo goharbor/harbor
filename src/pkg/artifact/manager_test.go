@@ -86,6 +86,13 @@ func (m *managerTestSuite) SetupTest() {
 	}
 }
 
+func (m *managerTestSuite) TestCount() {
+	m.dao.On("Count", mock.Anything).Return(1, nil)
+	total, err := m.mgr.Count(nil, nil)
+	m.Require().Nil(err)
+	m.Equal(int64(1), total)
+}
+
 func (m *managerTestSuite) TestAssemble() {
 	art := &dao.Artifact{
 		ID:                1,
@@ -139,13 +146,10 @@ func (m *managerTestSuite) TestList() {
 		ExtraAttrs:        `{"attr1":"value1"}`,
 		Annotations:       `{"anno1":"value1"}`,
 	}
-	m.dao.On("Count", mock.Anything).Return(1, nil)
 	m.dao.On("List", mock.Anything).Return([]*dao.Artifact{art}, nil)
 	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{}, nil)
-	total, artifacts, err := m.mgr.List(nil, nil)
+	artifacts, err := m.mgr.List(nil, nil)
 	m.Require().Nil(err)
-	m.dao.AssertExpectations(m.T())
-	m.Equal(int64(1), total)
 	m.Equal(1, len(artifacts))
 	m.Equal(art.ID, artifacts[0].ID)
 }

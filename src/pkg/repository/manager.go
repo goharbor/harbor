@@ -27,8 +27,10 @@ var Mgr = New()
 
 // Manager is used for repository management
 type Manager interface {
+	// Count returns the total count of repositories according to the query
+	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// List repositories according to the query
-	List(ctx context.Context, query *q.Query) (total int64, repositories []*models.RepoRecord, err error)
+	List(ctx context.Context, query *q.Query) (repositories []*models.RepoRecord, err error)
 	// Get the repository specified by ID
 	Get(ctx context.Context, id int64) (repository *models.RepoRecord, err error)
 	// GetByName gets the repository specified by name
@@ -52,16 +54,16 @@ type manager struct {
 	dao dao.DAO
 }
 
-func (m *manager) List(ctx context.Context, query *q.Query) (int64, []*models.RepoRecord, error) {
-	total, err := m.dao.Count(ctx, query)
-	if err != nil {
-		return 0, nil, err
-	}
+func (m *manager) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return m.dao.Count(ctx, query)
+}
+
+func (m *manager) List(ctx context.Context, query *q.Query) ([]*models.RepoRecord, error) {
 	repositories, err := m.dao.List(ctx, query)
 	if err != nil {
-		return 0, nil, err
+		return nil, err
 	}
-	return total, repositories, nil
+	return repositories, nil
 }
 
 func (m *manager) Get(ctx context.Context, id int64) (*models.RepoRecord, error) {
@@ -69,7 +71,7 @@ func (m *manager) Get(ctx context.Context, id int64) (*models.RepoRecord, error)
 }
 
 func (m *manager) GetByName(ctx context.Context, name string) (repository *models.RepoRecord, err error) {
-	_, repositories, err := m.List(ctx, &q.Query{
+	repositories, err := m.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"Name": name,
 		},
@@ -92,5 +94,5 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 	return m.dao.Delete(ctx, id)
 }
 func (m *manager) Update(ctx context.Context, repository *models.RepoRecord, props ...string) error {
-	return m.dao.Update(ctx, repository)
+	return m.dao.Update(ctx, repository, props...)
 }

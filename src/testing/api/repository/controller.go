@@ -32,14 +32,21 @@ func (f *FakeController) Ensure(ctx context.Context, name string) (bool, int64, 
 	return args.Bool(0), int64(args.Int(1)), args.Error(2)
 }
 
+// Count ...
+func (f *FakeController) Count(ctx context.Context, query *q.Query) (int64, error) {
+	args := f.Called()
+	return int64(args.Int(0)), args.Error(1)
+
+}
+
 // List ...
-func (f *FakeController) List(ctx context.Context, query *q.Query) (int64, []*models.RepoRecord, error) {
+func (f *FakeController) List(ctx context.Context, query *q.Query) ([]*models.RepoRecord, error) {
 	args := f.Called()
 	var repositories []*models.RepoRecord
-	if args.Get(1) != nil {
-		repositories = args.Get(1).([]*models.RepoRecord)
+	if args.Get(0) != nil {
+		repositories = args.Get(0).([]*models.RepoRecord)
 	}
-	return int64(args.Int(0)), repositories, args.Error(2)
+	return repositories, args.Error(1)
 
 }
 
@@ -65,6 +72,12 @@ func (f *FakeController) GetByName(ctx context.Context, name string) (*models.Re
 
 // Delete ...
 func (f *FakeController) Delete(ctx context.Context, id int64) error {
+	args := f.Called()
+	return args.Error(0)
+}
+
+// Update ...
+func (f *FakeController) Update(ctx context.Context, repository *models.RepoRecord, properties ...string) error {
 	args := f.Called()
 	return args.Error(0)
 }

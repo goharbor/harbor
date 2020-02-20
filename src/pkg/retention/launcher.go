@@ -350,7 +350,7 @@ func getRepositories(projectMgr project.Manager, repositoryMgr repository.Manage
 	*/
 	// get image repositories
 	// TODO set the context which contains the ORM
-	_, imageRepositories, err := repositoryMgr.List(orm.NewContext(nil, beegoorm.NewOrm()), &pq.Query{
+	imageRepositories, err := repositoryMgr.List(orm.NewContext(nil, beegoorm.NewOrm()), &pq.Query{
 		Keywords: map[string]interface{}{
 			"ProjectID": projectID,
 		},

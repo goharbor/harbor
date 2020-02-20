@@ -55,12 +55,12 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 	var repoNames []string
 	// get all repositories
 	// ToDo filter out the untagged repos
-	total, repoRecords, err := r.repoCtl.List(req.Context(), nil)
+	repoRecords, err := r.repoCtl.List(req.Context(), nil)
 	if err != nil {
 		serror.SendError(w, err)
 		return
 	}
-	if total <= 0 {
+	if len(repoRecords) <= 0 {
 		r.sendResponse(w, req, repoNames)
 		return
 	}

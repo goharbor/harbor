@@ -51,7 +51,7 @@ func (c *catalogTestSuite) TestCatalog() {
 	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("List").Return(2, []*models.RepoRecord{
+	c.repoCtl.On("List").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			Name:         "hello-world",
@@ -77,7 +77,7 @@ func (c *catalogTestSuite) TestCatalogPaginationN1() {
 	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog?n=1", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("List").Return(2, []*models.RepoRecord{
+	c.repoCtl.On("List").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			Name:         "hello-world",
@@ -104,7 +104,7 @@ func (c *catalogTestSuite) TestCatalogPaginationN2() {
 	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog?n=3", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("List").Return(2, []*models.RepoRecord{
+	c.repoCtl.On("List").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			Name:         "hello-world",
@@ -131,7 +131,7 @@ func (c *catalogTestSuite) TestCatalogPaginationN3() {
 	c.SetupTest()
 	req := httptest.NewRequest(http.MethodGet, "/v2/_catalog?last=busybox&n=1", nil)
 	var w *httptest.ResponseRecorder
-	c.repoCtl.On("List").Return(2, []*models.RepoRecord{
+	c.repoCtl.On("List").Return([]*models.RepoRecord{
 		{
 			RepositoryID: 1,
 			Name:         "hello-world",

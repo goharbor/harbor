@@ -77,8 +77,13 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	option := option(params.WithTag, params.WithImmutableStatus,
 		params.WithLabel, params.WithSignature)
 
+	// get the total count of artifacts
+	total, err := a.artCtl.Count(ctx, query)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
 	// list artifacts according to the query and option
-	total, arts, err := a.artCtl.List(ctx, query, option)
+	arts, err := a.artCtl.List(ctx, query, option)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}

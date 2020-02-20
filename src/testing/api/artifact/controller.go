@@ -34,14 +34,20 @@ func (f *FakeController) Ensure(ctx context.Context, repositoryID int64, digest 
 	return args.Bool(0), int64(args.Int(1)), args.Error(2)
 }
 
+// Count ...
+func (f *FakeController) Count(ctx context.Context, query *q.Query) (int64, error) {
+	args := f.Called()
+	return int64(args.Int(0)), args.Error(1)
+}
+
 // List ...
-func (f *FakeController) List(ctx context.Context, query *q.Query, option *artifact.Option) (int64, []*artifact.Artifact, error) {
+func (f *FakeController) List(ctx context.Context, query *q.Query, option *artifact.Option) ([]*artifact.Artifact, error) {
 	args := f.Called()
 	var artifacts []*artifact.Artifact
-	if args.Get(1) != nil {
-		artifacts = args.Get(1).([]*artifact.Artifact)
+	if args.Get(0) != nil {
+		artifacts = args.Get(0).([]*artifact.Artifact)
 	}
-	return int64(args.Int(0)), artifacts, args.Error(2)
+	return artifacts, args.Error(1)
 }
 
 // Get ...
@@ -71,13 +77,13 @@ func (f *FakeController) Delete(ctx context.Context, id int64) (err error) {
 }
 
 // ListTags ...
-func (f *FakeController) ListTags(ctx context.Context, query *q.Query, option *artifact.TagOption) (int64, []*artifact.Tag, error) {
+func (f *FakeController) ListTags(ctx context.Context, query *q.Query, option *artifact.TagOption) ([]*artifact.Tag, error) {
 	args := f.Called()
 	var tags []*artifact.Tag
-	if args.Get(1) != nil {
-		tags = args.Get(1).([]*artifact.Tag)
+	if args.Get(0) != nil {
+		tags = args.Get(0).([]*artifact.Tag)
 	}
-	return int64(args.Int(0)), tags, args.Error(2)
+	return tags, args.Error(1)
 }
 
 // CreateTag ...

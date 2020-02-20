@@ -36,14 +36,18 @@ type Controller interface {
 	// The "name" should contain the namespace part. The "created" will be set as true
 	// when the repository is created
 	Ensure(ctx context.Context, name string) (created bool, id int64, err error)
+	// Count returns the total count of repositories according to the query
+	Count(ctx context.Context, query *q.Query) (total int64, err error)
 	// List repositories according to the query
-	List(ctx context.Context, query *q.Query) (total int64, repositories []*models.RepoRecord, err error)
+	List(ctx context.Context, query *q.Query) (repositories []*models.RepoRecord, err error)
 	// Get the repository specified by ID
 	Get(ctx context.Context, id int64) (repository *models.RepoRecord, err error)
 	// GetByName gets the repository specified by name
 	GetByName(ctx context.Context, name string) (repository *models.RepoRecord, err error)
 	// Delete the repository specified by ID
 	Delete(ctx context.Context, id int64) (err error)
+	// Update the repository. Specify the properties or all properties will be updated
+	Update(ctx context.Context, repository *models.RepoRecord, properties ...string) (err error)
 }
 
 // NewController creates an instance of the default repository controller
@@ -67,7 +71,7 @@ func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, erro
 			"name": name,
 		},
 	}
-	_, repositories, err := c.repoMgr.List(ctx, query)
+	repositories, err := c.repoMgr.List(ctx, query)
 	if err != nil {
 		return false, 0, err
 	}
@@ -89,7 +93,7 @@ func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, erro
 	if err != nil {
 		// if got conflict error, try to get again
 		if ierror.IsConflictErr(err) {
-			_, repositories, err = c.repoMgr.List(ctx, query)
+			repositories, err = c.repoMgr.List(ctx, query)
 			if err != nil {
 				return false, 0, err
 			}
@@ -102,7 +106,11 @@ func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, erro
 	return true, id, nil
 }
 
-func (c *controller) List(ctx context.Context, query *q.Query) (int64, []*models.RepoRecord, error) {
+func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
+	return c.repoMgr.Count(ctx, query)
+}
+
+func (c *controller) List(ctx context.Context, query *q.Query) ([]*models.RepoRecord, error) {
 	return c.repoMgr.List(ctx, query)
 }
 
@@ -118,7 +126,7 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	// TODO auth
 	// TODO how to make sure the logic included by middlewares(immutable, readonly, quota, etc)
 	// TODO is covered when deleting the artifacts of the repository
-	_, artifacts, err := c.artCtl.List(ctx, &q.Query{
+	artifacts, err := c.artCtl.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{
 			"RepositoryID": id,
 		},
@@ -134,4 +142,8 @@ func (c *controller) Delete(ctx context.Context, id int64) error {
 	return c.repoMgr.Delete(ctx, id)
 
 	// TODO fire event
+}
+
+func (c *controller) Update(ctx context.Context, repository *models.RepoRecord, properties ...string) error {
+	return c.repoMgr.Update(ctx, repository, properties...)
 }

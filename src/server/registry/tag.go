@@ -80,7 +80,7 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// get tags ...
-	total, tags, err := t.artCtl.ListTags(req.Context(), &q.Query{
+	tags, err := t.artCtl.ListTags(req.Context(), &q.Query{
 		Keywords: map[string]interface{}{
 			"RepositoryID": repository.RepositoryID,
 		}}, nil)
@@ -88,7 +88,7 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		serror.SendError(w, err)
 		return
 	}
-	if total == 0 {
+	if len(tags) == 0 {
 		t.sendResponse(w, req, tagNames)
 		return
 	}
