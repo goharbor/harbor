@@ -39,7 +39,8 @@ def prepare_core(config_dict, with_notary, with_clair, with_trivy, with_chartmus
         core_conf,
         uid=DEFAULT_UID,
         gid=DEFAULT_GID,
-        xsrf_key=generate_random_string(40))
+        xsrf_key=generate_random_string(40),
+        **config_dict)
 
 
 def copy_core_config(core_templates_path, core_config_path):

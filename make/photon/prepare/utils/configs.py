@@ -233,6 +233,9 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
       config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
       config_dict[proxy_component + '_no_proxy'] = ','.join(all_no_proxy)
 
+    # Core configs
+    config_dict['enable_xsrf'] = configs.get('enable_xsrf') or 'true'
+
     # Clair configs, optional
     clair_configs = configs.get("clair") or {}
     config_dict['clair_db'] = 'postgres'
