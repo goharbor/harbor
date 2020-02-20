@@ -76,6 +76,12 @@ func (f *FakeController) Delete(ctx context.Context, id int64) (err error) {
 	return args.Error(0)
 }
 
+// Copy ...
+func (f *FakeController) Copy(ctx context.Context, srcArtID, dstRepoID int64) (int64, error) {
+	args := f.Called()
+	return int64(args.Int(0)), args.Error(1)
+}
+
 // ListTags ...
 func (f *FakeController) ListTags(ctx context.Context, query *q.Query, option *artifact.TagOption) ([]*artifact.Tag, error) {
 	args := f.Called()

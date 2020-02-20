@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/api/artifact/abstractor"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/api/artifact/descriptor"
+	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/internal"
 	"github.com/goharbor/harbor/src/pkg/art"
@@ -28,10 +29,10 @@ import (
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/pkg/label"
+	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	"github.com/opencontainers/go-digest"
 	"strings"
-
 	// registry image resolvers
 	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
 	// register chart resolver
@@ -71,6 +72,8 @@ type Controller interface {
 	GetByReference(ctx context.Context, repository, reference string, option *Option) (artifact *Artifact, err error)
 	// Delete the artifact specified by ID. All tags attached to the artifact are deleted as well
 	Delete(ctx context.Context, id int64) (err error)
+	// Copy the artifact whose ID is specified by "srcArtID" into the repository specified by "dstRepoID"
+	Copy(ctx context.Context, srcArtID, dstRepoID int64) (id int64, err error)
 	// ListTags lists the tags according to the query, specify the properties returned with option
 	ListTags(ctx context.Context, query *q.Query, option *TagOption) (tags []*Tag, err error)
 	// CreateTag creates a tag
@@ -101,6 +104,7 @@ func NewController() Controller {
 		labelMgr:     label.Mgr,
 		abstractor:   abstractor.NewAbstractor(),
 		immutableMtr: rule.NewRuleMatcher(),
+		regCli:       registry.Cli,
 	}
 }
 
@@ -115,6 +119,7 @@ type controller struct {
 	labelMgr     label.Manager
 	abstractor   abstractor.Abstractor
 	immutableMtr match.ImmutableTagMatcher
+	regCli       registry.Client
 }
 
 func (c *controller) Ensure(ctx context.Context, repositoryID int64, digest string, tags ...string) (bool, int64, error) {
@@ -372,6 +377,68 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 	// TODO fire delete artifact event
 
 	return nil
+}
+
+func (c *controller) Copy(ctx context.Context, srcArtID, dstRepoID int64) (int64, error) {
+	srcArt, err := c.Get(ctx, srcArtID, &Option{WithTag: true})
+	if err != nil {
+		return 0, err
+	}
+	srcRepo, err := c.repoMgr.Get(ctx, srcArt.RepositoryID)
+	if err != nil {
+		return 0, err
+	}
+	dstRepo, err := c.repoMgr.Get(ctx, dstRepoID)
+	if err != nil {
+		return 0, err
+	}
+
+	_, err = c.artMgr.GetByDigest(ctx, dstRepoID, srcArt.Digest)
+	// the artifact already exists in the destination repository
+	if err == nil {
+		return 0, ierror.New(nil).WithCode(ierror.ConflictCode).
+			WithMessage("the artifact %s already exists under the repository %s",
+				srcArt.Digest, dstRepo.Name)
+	}
+	if !ierror.IsErr(err, ierror.NotFoundCode) {
+		return 0, err
+	}
+
+	// only copy the tags of outermost artifact
+	var tags []string
+	for _, tag := range srcArt.Tags {
+		tags = append(tags, tag.Name)
+	}
+	return c.copyDeeply(ctx, srcRepo, srcArt, dstRepo, tags...)
+}
+
+// as we call the docker registry APIs in the registry client directly,
+// this bypass our own logic(ensure, fire event, etc.) inside the registry handlers,
+// these logic must be covered explicitly here.
+// "copyDeeply" iterates the child artifacts and copy them first
+func (c *controller) copyDeeply(ctx context.Context, srcRepo *models.RepoRecord, srcArt *Artifact,
+	dstRepo *models.RepoRecord, tags ...string) (int64, error) {
+	// copy child artifacts if contains any
+	for _, reference := range srcArt.References {
+		childArt, err := c.Get(ctx, reference.ChildID, nil)
+		if err != nil {
+			return 0, err
+		}
+		if _, err = c.copyDeeply(ctx, srcRepo, childArt, dstRepo); err != nil {
+			return 0, err
+		}
+	}
+	// copy the parent artifact
+	if err := c.regCli.Copy(srcRepo.Name, srcArt.Digest,
+		dstRepo.Name, srcArt.Digest, false); err != nil {
+		return 0, err
+	}
+	_, id, err := c.Ensure(ctx, dstRepo.RepositoryID, srcArt.Digest, tags...)
+	if err != nil {
+		return 0, err
+	}
+	// TODO fire event
+	return id, nil
 }
 
 func (c *controller) CreateTag(ctx context.Context, tag *Tag) (int64, error) {

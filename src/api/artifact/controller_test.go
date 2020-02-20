@@ -28,6 +28,7 @@ import (
 	artrashtesting "github.com/goharbor/harbor/src/testing/pkg/artifactrash"
 	immutesting "github.com/goharbor/harbor/src/testing/pkg/immutabletag"
 	"github.com/goharbor/harbor/src/testing/pkg/label"
+	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
 	tagtesting "github.com/goharbor/harbor/src/testing/pkg/tag"
 	"github.com/stretchr/testify/mock"
@@ -75,6 +76,7 @@ type controllerTestSuite struct {
 	labelMgr     *label.FakeManager
 	abstractor   *fakeAbstractor
 	immutableMtr *immutesting.FakeMatcher
+	regCli       *registry.FakeClient
 }
 
 func (c *controllerTestSuite) SetupTest() {
@@ -85,6 +87,7 @@ func (c *controllerTestSuite) SetupTest() {
 	c.labelMgr = &label.FakeManager{}
 	c.abstractor = &fakeAbstractor{}
 	c.immutableMtr = &immutesting.FakeMatcher{}
+	c.regCli = &registry.FakeClient{}
 	c.ctl = &controller{
 		repoMgr:      c.repoMgr,
 		artMgr:       c.artMgr,
@@ -93,6 +96,7 @@ func (c *controllerTestSuite) SetupTest() {
 		labelMgr:     c.labelMgr,
 		abstractor:   c.abstractor,
 		immutableMtr: c.immutableMtr,
+		regCli:       c.regCli,
 	}
 	descriptor.Register(&fakeDescriptor{}, "")
 }
@@ -488,6 +492,29 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	c.labelMgr.On("RemoveAllFrom").Return(nil)
 	c.artrashMgr.On("Create").Return(0, nil)
 	err = c.ctl.deleteDeeply(nil, 1, true)
+	c.Require().Nil(err)
+}
+
+func (c *controllerTestSuite) TestCopy() {
+	c.artMgr.On("Get").Return(&artifact.Artifact{
+		ID: 1,
+	}, nil)
+	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
+	c.tagMgr.On("List").Return([]*tag.Tag{
+		{
+			ID:   1,
+			Name: "latest",
+		},
+	}, nil)
+	c.tagMgr.On("Update").Return(nil)
+	c.repoMgr.On("Get").Return(&models.RepoRecord{
+		RepositoryID: 1,
+		Name:         "library/hello-world",
+	}, nil)
+	c.abstractor.On("AbstractMetadata").Return(nil)
+	c.artMgr.On("Create").Return(1, nil)
+	c.regCli.On("Copy").Return(nil)
+	_, err := c.ctl.Copy(nil, 1, 1)
 	c.Require().Nil(err)
 }
 
