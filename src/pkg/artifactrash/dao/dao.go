@@ -2,10 +2,11 @@ package dao
 
 import (
 	"context"
+	"time"
+
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
-	"time"
 )
 
 // DAO is the data access object interface for artifact trash
@@ -61,7 +62,6 @@ func (d *dao) Delete(ctx context.Context, id int64) (err error) {
 }
 
 // Filter ...
-// ToDo replace artifact_2 with artifact
 func (d *dao) Filter(ctx context.Context) (arts []model.ArtifactTrash, err error) {
 	var deletedAfs []model.ArtifactTrash
 	ormer, err := orm.FromContext(ctx)
@@ -69,7 +69,7 @@ func (d *dao) Filter(ctx context.Context) (arts []model.ArtifactTrash, err error
 		return deletedAfs, err
 	}
 
-	sql := `SELECT * FROM artifact_trash where artifact_trash.digest NOT IN (select digest from artifact_2)`
+	sql := `SELECT * FROM artifact_trash where artifact_trash.digest NOT IN (select digest from artifact)`
 
 	if err := ormer.Raw(sql).QueryRow(&deletedAfs); err != nil {
 		return deletedAfs, err

@@ -16,6 +16,7 @@ package dao
 
 import (
 	"context"
+
 	beegoorm "github.com/astaxie/beego/orm"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/internal/orm"
@@ -50,22 +51,21 @@ type DAO interface {
 }
 
 const (
-	// TODO replace the table name "artifact_2" after upgrade
 	// both tagged and untagged artifacts
 	all = `IN (
-		SELECT DISTINCT art.id FROM artifact_2 art
+		SELECT DISTINCT art.id FROM artifact art
 		LEFT JOIN tag ON art.id=tag.artifact_id 
 		LEFT JOIN artifact_reference ref ON art.id=ref.child_id
 		WHERE tag.id IS NOT NULL OR ref.id IS NULL)`
 	// only untagged artifacts
 	untagged = `IN (
-		SELECT DISTINCT art.id FROM artifact_2 art
+		SELECT DISTINCT art.id FROM artifact art
 		LEFT JOIN tag ON art.id=tag.artifact_id 
 		LEFT JOIN artifact_reference ref ON art.id=ref.child_id
 		WHERE tag.id IS NULL AND ref.id IS NULL)`
 	// only tagged artifacts
 	tagged = `IN (
-		SELECT DISTINCT art.id FROM artifact_2 art
+		SELECT DISTINCT art.id FROM artifact art
 		LEFT JOIN tag ON art.id=tag.artifact_id
 		WHERE tag.id IS NOT NULL)`
 )

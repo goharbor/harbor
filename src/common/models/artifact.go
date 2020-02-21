@@ -19,7 +19,7 @@ type Artifact struct {
 
 // TableName ...
 func (af *Artifact) TableName() string {
-	return "artifact"
+	return "artifact_2"
 }
 
 // ArtifactQuery ...

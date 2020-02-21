@@ -173,11 +173,11 @@ func (suite *DaoTestSuite) TestFindBlobsShouldUnassociatedWithProject() {
 		artifact1 := suite.DigestString()
 		artifact2 := suite.DigestString()
 
-		sql := `INSERT INTO artifact_2 ("type", media_type, manifest_media_type, digest, project_id, repository_id) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?)`
+		sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?)`
 		suite.ExecSQL(sql, artifact1, projectID, 10)
 		suite.ExecSQL(sql, artifact2, projectID, 10)
 
-		defer suite.ExecSQL(`DELETE FROM artifact_2 WHERE project_id = ?`, projectID)
+		defer suite.ExecSQL(`DELETE FROM artifact WHERE project_id = ?`, projectID)
 
 		digest1 := suite.DigestString()
 		digest2 := suite.DigestString()
@@ -211,7 +211,7 @@ func (suite *DaoTestSuite) TestFindBlobsShouldUnassociatedWithProject() {
 			suite.Len(results, 0)
 		}
 
-		suite.ExecSQL(`DELETE FROM artifact_2 WHERE digest = ?`, artifact2)
+		suite.ExecSQL(`DELETE FROM artifact WHERE digest = ?`, artifact2)
 
 		{
 			results, err := suite.dao.FindBlobsShouldUnassociatedWithProject(ctx, projectID, blobs)
