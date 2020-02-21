@@ -196,7 +196,28 @@ ALTER TABLE notification_policy ADD UNIQUE (name);
 
 ALTER TABLE replication_task ALTER COLUMN src_resource TYPE varchar(512);
 ALTER TABLE replication_task ALTER COLUMN dst_resource TYPE varchar(512);
-
-/*remove count from quota hard and quota_usage used json*/
-UPDATE quota SET hard = hard - 'count';
+CREATE TABLE p2p_preheat_instance
+(
+  name        varchar(255) NOT NULL,
+  description varchar(255),
+  provider    varchar(255) NOT NULL,
+  endpoint    varchar(255) NOT NULL,
+  auth_mode   varchar(255),
+  auth_data   text,
+  status      text,
+  enabled     boolean,
+  setup_timestamp int,
+  extensions  text
+);
 UPDATE quota_usage SET used = used - 'count';
+CREATE TABLE p2p_preheat_history
+(
+  id          SERIAL PRIMARY KEY NOT NULL,
+  task_id     varchar(255) NOT NULL,
+  image       varchar(255) NOT NULL,
+  start_time  varchar(255),
+  finish_time varchar(255),
+  status      text,
+  provider    varchar(255) NOT NULL,
+  instance    int NOT NULL
+);
