@@ -134,8 +134,9 @@ func (c *controllerTestSuite) TestAssembleTag() {
 
 func (c *controllerTestSuite) TestAssembleArtifact() {
 	art := &artifact.Artifact{
-		ID:     1,
-		Digest: "sha256:123",
+		ID:             1,
+		Digest:         "sha256:123",
+		RepositoryName: "library/hello-world",
 	}
 	option := &Option{
 		WithTag: true,
@@ -296,6 +297,9 @@ func (c *controllerTestSuite) TestList() {
 	}, nil)
 	c.repoMgr.On("Get").Return(&models.RepoRecord{
 		Name: "library/hello-world",
+	}, nil)
+	c.repoMgr.On("List").Return([]*models.RepoRecord{
+		{RepositoryID: 1, Name: "library/hello-world"},
 	}, nil)
 	artifacts, err := c.ctl.List(nil, query, option)
 	c.Require().Nil(err)

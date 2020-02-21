@@ -17,22 +17,29 @@ package handler
 import (
 	"context"
 	"fmt"
+	"net/http"
+	"strings"
+	"time"
+
 	"github.com/docker/distribution/reference"
 	"github.com/go-openapi/runtime"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/api/repository"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/artifact"
 	"github.com/opencontainers/go-digest"
-	"net/http"
-	"strings"
-	"time"
+)
+
+const (
+	vulnerabilitiesAddition = "vulnerabilities"
 )
 
 func newArtifactAPI() *artifactAPI {
@@ -95,9 +102,10 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	for _, art := range arts {
 		artifact := &model.Artifact{}
 		artifact.Artifact = *art
-		a.assembleArtifact(ctx, artifact, params.WithScanOverview)
 		artifacts = append(artifacts, artifact)
 	}
+
+	assembler.NewVulAssembler(boolValue(params.WithScanOverview)).WithArtifacts(artifacts...).Assemble(ctx)
 
 	// TODO add link header
 	return operation.NewListArtifactsOK().WithXTotalCount(total).WithLink("").WithPayload(artifacts)
@@ -118,7 +126,9 @@ func (a *artifactAPI) GetArtifact(ctx context.Context, params operation.GetArtif
 	}
 	art := &model.Artifact{}
 	art.Artifact = *artifact
-	a.assembleArtifact(ctx, art, params.WithScanOverview)
+
+	assembler.NewVulAssembler(boolValue(params.WithScanOverview)).WithArtifacts(art).Assemble(ctx)
+
 	return operation.NewGetArtifactOK().WithPayload(art)
 }
 
@@ -243,14 +253,23 @@ func (a *artifactAPI) GetAddition(ctx context.Context, params operation.GetAddit
 	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionRead, rbac.ResourceArtifactAddition); err != nil {
 		return a.SendError(ctx, err)
 	}
+
 	artifact, err := a.artCtl.GetByReference(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName), params.Reference, nil)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-	addition, err := a.artCtl.GetAddition(ctx, artifact.ID, strings.ToUpper(params.Addition))
+
+	var addition *resolver.Addition
+
+	if params.Addition == vulnerabilitiesAddition {
+		addition, err = resolveVulnerabilitiesAddition(ctx, artifact)
+	} else {
+		addition, err = a.artCtl.GetAddition(ctx, artifact.ID, strings.ToUpper(params.Addition))
+	}
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
+
 	return middleware.ResponderFunc(func(w http.ResponseWriter, p runtime.Producer) {
 		w.Header().Set("Content-Type", addition.ContentType)
 		w.Write(addition.Content)
@@ -285,31 +304,22 @@ func (a *artifactAPI) RemoveLabel(ctx context.Context, params operation.RemoveLa
 	return operation.NewRemoveLabelOK()
 }
 
-func (a *artifactAPI) assembleArtifact(ctx context.Context, artifact *model.Artifact, withScanOverview *bool) {
-	if withScanOverview != nil && *withScanOverview {
-		// TODO populate scan result
-	}
-	// TODO populate vulnerability link
-}
-
 func option(withTag, withImmutableStatus, withLabel, withSignature *bool) *artifact.Option {
 	option := &artifact.Option{
-		WithTag: true, // return the tag by default
+		WithTag:   true, // return the tag by default
+		WithLabel: boolValue(withLabel),
 	}
+
 	if withTag != nil {
 		option.WithTag = *(withTag)
 	}
+
 	if option.WithTag {
-		option.TagOption = &artifact.TagOption{}
-		if withImmutableStatus != nil {
-			option.TagOption.WithImmutableStatus = *(withImmutableStatus)
-		}
-		if withSignature != nil {
-			option.TagOption.WithSignature = *withSignature
+		option.TagOption = &artifact.TagOption{
+			WithImmutableStatus: boolValue(withImmutableStatus),
+			WithSignature:       boolValue(withSignature),
 		}
 	}
-	if withLabel != nil {
-		option.WithLabel = *(withLabel)
-	}
+
 	return option
 }
