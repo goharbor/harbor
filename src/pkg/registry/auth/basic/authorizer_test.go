@@ -12,13 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package registry
+package basic
 
 import (
-	"github.com/docker/distribution"
+	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
+	"net/http"
+	"testing"
 )
 
-// UnMarshal converts []byte to be distribution.Manifest
-func UnMarshal(mediaType string, data []byte) (distribution.Manifest, distribution.Descriptor, error) {
-	return distribution.UnmarshalManifest(mediaType, data)
+func TestModify(t *testing.T) {
+	authorizer := NewAuthorizer("u", "p")
+	req, _ := http.NewRequest(http.MethodGet, "", nil)
+	err := authorizer.Modify(req)
+	require.Nil(t, err)
+	u, p, ok := req.BasicAuth()
+	require.True(t, ok)
+	assert.Equal(t, "u", u)
+	assert.Equal(t, "p", p)
 }

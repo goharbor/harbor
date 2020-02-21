@@ -12,17 +12,32 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package auth
+package internal
 
 import (
+	"crypto/tls"
 	"net/http"
-
-	"github.com/docker/distribution/registry/client/auth/challenge"
 )
 
-// ParseChallengeFromResponse ...
-func ParseChallengeFromResponse(resp *http.Response) []challenge.Challenge {
-	challenges := challenge.ResponseChallenges(resp)
+var (
+	secureHTTPTransport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: false,
+		},
+	}
+	insecureHTTPTransport = &http.Transport{
+		Proxy: http.ProxyFromEnvironment,
+		TLSClientConfig: &tls.Config{
+			InsecureSkipVerify: true,
+		},
+	}
+)
 
-	return challenges
+// GetHTTPTransport returns the HTTP transport based on insecure configuration
+func GetHTTPTransport(insecure ...bool) *http.Transport {
+	if len(insecure) > 0 && insecure[0] {
+		return insecureHTTPTransport
+	}
+	return secureHTTPTransport
 }

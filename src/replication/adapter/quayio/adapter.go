@@ -12,7 +12,6 @@ import (
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -35,27 +34,16 @@ func init() {
 }
 
 func newAdapter(registry *model.Registry) (*adapter, error) {
-	modifiers := []modifier.Modifier{
-		&auth.UserAgentModifier{
-			UserAgent: adp.UserAgentReplication,
-		},
-	}
-
+	modifiers := []modifier.Modifier{}
 	var authorizer modifier.Modifier
 	if registry.Credential != nil && len(registry.Credential.AccessKey) != 0 {
-		authorizer = auth.NewAPIKeyAuthorizer("Authorization", fmt.Sprintf("Bearer %s", registry.Credential.AccessKey), auth.APIKeyInHeader)
+		authorizer = NewAPIKeyAuthorizer("Authorization", fmt.Sprintf("Bearer %s", registry.Credential.AccessKey), APIKeyInHeader)
 	}
-
 	if authorizer != nil {
 		modifiers = append(modifiers, authorizer)
 	}
-	nativeRegistryAdapter, err := native.NewAdapterWithCustomizedAuthorizer(registry, authorizer)
-	if err != nil {
-		return nil, err
-	}
-
 	return &adapter{
-		Adapter:  nativeRegistryAdapter,
+		Adapter:  native.NewAdapterWithAuthorizer(registry, authorizer),
 		registry: registry,
 		client: common_http.NewClient(
 			&http.Client{

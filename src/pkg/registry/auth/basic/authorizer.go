@@ -12,13 +12,29 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package auth
+package basic
 
-import "net/http"
+import (
+	"github.com/goharbor/harbor/src/internal"
+	"net/http"
+)
 
-type nullAuthorizer struct{}
+// NewAuthorizer return a basic authorizer
+func NewAuthorizer(username, password string) internal.Authorizer {
+	return &authorizer{
+		username: username,
+		password: password,
+	}
+}
 
-func (n *nullAuthorizer) Modify(req *http.Request) error {
-	// do nothing
+type authorizer struct {
+	username string
+	password string
+}
+
+func (a *authorizer) Modify(req *http.Request) error {
+	if len(a.username) > 0 {
+		req.SetBasicAuth(a.username, a.password)
+	}
 	return nil
 }

@@ -18,6 +18,10 @@ import (
 	"fmt"
 	"github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/pkg/registry/auth/basic"
+	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
+	"github.com/goharbor/harbor/src/pkg/registry/auth/null"
 	"net/http"
 	"net/url"
 	"strings"
@@ -25,18 +29,14 @@ import (
 )
 
 // NewAuthorizer creates an authorizer that can handle different auth schemes
-func NewAuthorizer(credential Credential, client ...*http.Client) modifier.Modifier {
-	authorizer := &authorizer{
-		credential: credential,
+func NewAuthorizer(username, password string, insecure bool) internal.Authorizer {
+	return &authorizer{
+		username: username,
+		password: password,
+		client: &http.Client{
+			Transport: internal.GetHTTPTransport(insecure),
+		},
 	}
-	if len(client) > 0 {
-		authorizer.client = client[0]
-	}
-	if authorizer.client == nil {
-		authorizer.client = http.DefaultClient
-	}
-
-	return authorizer
 }
 
 // authorizer authorizes the request with the provided credential.
@@ -44,15 +44,16 @@ func NewAuthorizer(credential Credential, client ...*http.Client) modifier.Modif
 // different underlying authorizers to do the auth work
 type authorizer struct {
 	sync.Mutex
+	username   string
+	password   string
 	client     *http.Client
 	url        *url.URL          // registry URL
 	authorizer modifier.Modifier // the underlying authorizer
-	credential Credential
 }
 
 func (a *authorizer) Modify(req *http.Request) error {
 	// Nil URL means this is the first time the authorizer is called
-	// Try to connect to the registry and determine the auth method
+	// Try to connect to the registry and determine the auth scheme
 	if a.url == nil {
 		// to avoid concurrent issue
 		a.Lock()
@@ -83,25 +84,25 @@ func (a *authorizer) initialize(u *url.URL) error {
 	if err != nil {
 		return err
 	}
-	challenges := ParseChallengeFromResponse(resp)
+
+	challenges := challenge.ResponseChallenges(resp)
 	// no challenge, mean no auth
 	if len(challenges) == 0 {
-		a.authorizer = &nullAuthorizer{}
+		a.authorizer = null.NewAuthorizer()
 		return nil
 	}
 	cm := map[string]challenge.Challenge{}
 	for _, challenge := range challenges {
 		cm[challenge.Scheme] = challenge
 	}
-	if _, exist := cm["basic"]; exist {
-		a.authorizer = a.credential
+	if challenge, exist := cm["bearer"]; exist {
+		a.authorizer = bearer.NewAuthorizer(challenge.Parameters["realm"],
+			challenge.Parameters["service"], basic.NewAuthorizer(a.username, a.password),
+			a.client.Transport.(*http.Transport))
 		return nil
 	}
-
-	if _, exist := cm["bearer"]; exist {
-		// TODO clean up the code of "StandardTokenAuthorizer"
-		// TODO Currently, the checking of auth scheme is done twice, this can be avoided
-		a.authorizer = NewStandardTokenAuthorizer(a.client, a.credential)
+	if _, exist := cm["basic"]; exist {
+		a.authorizer = basic.NewAuthorizer(a.username, a.password)
 		return nil
 	}
 	return fmt.Errorf("unspported auth scheme: %v", challenges)

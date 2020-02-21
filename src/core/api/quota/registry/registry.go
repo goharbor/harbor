@@ -15,23 +15,19 @@
 package registry
 
 import (
-	"strings"
-	"sync"
-	"time"
-
-	"github.com/docker/distribution/manifest/schema1"
-	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	common_quota "github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/api"
 	quota "github.com/goharbor/harbor/src/core/api/quota"
 	"github.com/goharbor/harbor/src/core/promgr"
-	coreutils "github.com/goharbor/harbor/src/core/utils"
+	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/pkg/errors"
+	"strings"
+	"sync"
+	"time"
 )
 
 // Migrator ...
@@ -60,7 +56,7 @@ func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 		err      error
 	)
 
-	reposInRegistry, err := api.Catalog()
+	reposInRegistry, err := registry.Cli.Catalog()
 	if err != nil {
 		return nil, err
 	}
@@ -392,11 +388,7 @@ func infoOfProject(project string, repoList []string) (quota.ProjectInfo, error)
 }
 
 func infoOfRepo(pid int64, repo string) (quota.RepoData, error) {
-	repoClient, err := coreutils.NewRepositoryClientForUI("harbor-core", repo)
-	if err != nil {
-		return quota.RepoData{}, err
-	}
-	tags, err := repoClient.ListTag()
+	tags, err := registry.Cli.ListTags(repo)
 	if err != nil {
 		return quota.RepoData{}, err
 	}
@@ -405,11 +397,7 @@ func infoOfRepo(pid int64, repo string) (quota.RepoData, error) {
 	var blobs []*models.Blob
 
 	for _, tag := range tags {
-		_, mediaType, payload, err := repoClient.PullManifest(tag, []string{
-			schema1.MediaTypeManifest,
-			schema1.MediaTypeSignedManifest,
-			schema2.MediaTypeManifest,
-		})
+		manifest, digest, err := registry.Cli.PullManifest(repo, tag)
 		if err != nil {
 			log.Error(err)
 			// To workaround issue: https://github.com/goharbor/harbor/issues/9299, just log the error and do not raise it.
@@ -417,28 +405,27 @@ func infoOfRepo(pid int64, repo string) (quota.RepoData, error) {
 			// User still can view there images with size 0 in harbor.
 			continue
 		}
-		manifest, desc, err := registry.UnMarshal(mediaType, payload)
+		mediaType, payload, err := manifest.Payload()
 		if err != nil {
-			log.Error(err)
 			return quota.RepoData{}, err
 		}
 		// self
 		afnb := &models.ArtifactAndBlob{
-			DigestAF:   desc.Digest.String(),
-			DigestBlob: desc.Digest.String(),
+			DigestAF:   digest,
+			DigestBlob: digest,
 		}
 		afnbs = append(afnbs, afnb)
 		// add manifest as a blob.
 		blob := &models.Blob{
-			Digest:       desc.Digest.String(),
-			ContentType:  desc.MediaType,
-			Size:         desc.Size,
+			Digest:       digest,
+			ContentType:  mediaType,
+			Size:         int64(len(payload)),
 			CreationTime: time.Now(),
 		}
 		blobs = append(blobs, blob)
 		for _, layer := range manifest.References() {
 			afnb := &models.ArtifactAndBlob{
-				DigestAF:   desc.Digest.String(),
+				DigestAF:   digest,
 				DigestBlob: layer.Digest.String(),
 			}
 			afnbs = append(afnbs, afnb)
@@ -454,7 +441,7 @@ func infoOfRepo(pid int64, repo string) (quota.RepoData, error) {
 			PID:          pid,
 			Repo:         repo,
 			Tag:          tag,
-			Digest:       desc.Digest.String(),
+			Digest:       digest,
 			Kind:         "Docker-Image",
 			CreationTime: time.Now(),
 		}

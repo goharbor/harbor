@@ -12,32 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package auth
+package internal
 
-import (
-	"net/http"
-	"testing"
-)
+import "github.com/goharbor/harbor/src/common/http/modifier"
 
-func TestAddAuthorizationOfBasicAuthCredential(t *testing.T) {
-	cred := NewBasicAuthCredential("usr", "pwd")
-	req, err := http.NewRequest("GET", "http://example.com", nil)
-	if err != nil {
-		t.Fatalf("failed to create request: %v", err)
-	}
-
-	cred.Modify(req)
-
-	usr, pwd, ok := req.BasicAuth()
-	if !ok {
-		t.Fatal("basic auth not found")
-	}
-
-	if usr != "usr" {
-		t.Errorf("unexpected username: %s != usr", usr)
-	}
-
-	if pwd != "pwd" {
-		t.Errorf("unexpected password: %s != pwd", pwd)
-	}
-}
+// Authorizer authorizes the request
+type Authorizer modifier.Modifier

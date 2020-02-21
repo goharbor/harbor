@@ -2,12 +2,10 @@ package gitlab
 
 import (
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
-	"net/http"
 	"strings"
 )
 
@@ -24,7 +22,7 @@ type factory struct {
 
 // Create ...
 func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
-	return newAdapter(r)
+	return newAdapter(r), nil
 }
 
 // AdapterPattern ...
@@ -41,33 +39,13 @@ type adapter struct {
 	clientGitlabAPI *Client
 }
 
-func newAdapter(registry *model.Registry) (*adapter, error) {
-	var credential auth.Credential
-	if registry.Credential != nil && len(registry.Credential.AccessSecret) != 0 {
-		credential = auth.NewBasicAuthCredential(
-			registry.Credential.AccessKey,
-			registry.Credential.AccessSecret)
-	}
-	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
-		Transport: util.GetHTTPTransport(registry.Insecure),
-	}, credential)
-
-	dockerRegistryAdapter, err := native.NewAdapterWithCustomizedAuthorizer(&model.Registry{
-		Name:       registry.Name,
-		URL:        registry.URL,
-		Credential: registry.Credential,
-		Insecure:   registry.Insecure,
-	}, authorizer)
-	if err != nil {
-		return nil, err
-	}
-
+func newAdapter(registry *model.Registry) *adapter {
 	return &adapter{
 		registry:        registry,
 		url:             registry.URL,
 		clientGitlabAPI: NewClient(registry),
-		Adapter:         dockerRegistryAdapter,
-	}, nil
+		Adapter:         native.NewAdapter(registry),
+	}
 }
 
 func (a *adapter) Info() (info *model.RegistryInfo, err error) {

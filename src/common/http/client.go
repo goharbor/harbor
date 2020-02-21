@@ -19,14 +19,13 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"errors"
+	"github.com/goharbor/harbor/src/common/http/modifier"
+	"github.com/goharbor/harbor/src/internal"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
-	"strings"
-
-	"github.com/goharbor/harbor/src/common/http/modifier"
 )
 
 // Client is a util for common HTTP operations, such Get, Head, Post, Put and Delete.
@@ -231,8 +230,8 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 		if err != nil {
 			return err
 		}
-		defer resp.Body.Close()
 		data, err := ioutil.ReadAll(resp.Body)
+		resp.Body.Close()
 		if err != nil {
 			return err
 		}
@@ -250,12 +249,10 @@ func (c *Client) GetAndIteratePagination(endpoint string, v interface{}) error {
 		resources = reflect.AppendSlice(resources, reflect.Indirect(res))
 
 		endpoint = ""
-		link := resp.Header.Get("Link")
-		for _, str := range strings.Split(link, ",") {
-			if strings.HasSuffix(str, `rel="next"`) &&
-				strings.Index(str, "<") >= 0 &&
-				strings.Index(str, ">") >= 0 {
-				endpoint = url.Scheme + "://" + url.Host + str[strings.Index(str, "<")+1:strings.Index(str, ">")]
+		links := internal.ParseLinks(resp.Header.Get("Link"))
+		for _, link := range links {
+			if link.Rel == "next" {
+				endpoint = url.Scheme + "://" + url.Host + link.URL
 				break
 			}
 		}
