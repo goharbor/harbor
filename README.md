@@ -42,7 +42,7 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 
 ## API
 
-* [Harbor RESTful API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/harbor/swagger.yaml): The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically.
+* [Harbor RESTful API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/v2.0/swagger.yaml): The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically.
   - Spec validation status: <img src="http://validator.swagger.io/validator?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/harbor/swagger.yaml">
 
 ## Compatibility
