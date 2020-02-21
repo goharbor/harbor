@@ -17,6 +17,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
@@ -50,6 +51,7 @@ type CWorkerTestSuite struct {
 func (suite *CWorkerTestSuite) SetupSuite() {
 	suite.namespace = tests.GiveMeTestNamespace()
 	suite.pool = tests.GiveMeRedisPool()
+	common_dao.PrepareTestForPostgresSQL()
 
 	// Append node ID
 	vCtx := context.WithValue(context.Background(), utils.NodeID, utils.GenerateNodeID())

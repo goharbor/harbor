@@ -5676,6 +5676,9 @@ definitions:
       job_kind:
         type: string
         description: the job kind of gc job.
+      job_parameters:
+        type: string
+        description: the job parameters of gc job.
       schedule:
         $ref: '#/definitions/AdminJobScheduleObj'
       job_status:
@@ -5695,6 +5698,9 @@ definitions:
     properties:
       schedule:
         $ref: '#/definitions/AdminJobScheduleObj'
+      parameters:
+        type: string
+        description: The parameters of admin job
   AdminJobScheduleObj:
     type: object
     properties:

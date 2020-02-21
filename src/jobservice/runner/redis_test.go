@@ -15,6 +15,7 @@ package runner
 
 import (
 	"context"
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"os"
 	"sync"
 	"testing"
@@ -52,6 +53,7 @@ type RedisRunnerTestSuite struct {
 
 // TestRedisRunnerTestSuite is entry of go test
 func TestRedisRunnerTestSuite(t *testing.T) {
+	common_dao.PrepareTestForPostgresSQL()
 	suite.Run(t, new(RedisRunnerTestSuite))
 }
 

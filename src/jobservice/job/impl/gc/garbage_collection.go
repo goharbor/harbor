@@ -16,19 +16,18 @@ package gc
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/pkg/artifactrash"
+	"github.com/goharbor/harbor/src/pkg/q"
 	"os"
-	"strconv"
 	"time"
 
 	"github.com/garyburd/redigo/redis"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/config"
-	"github.com/goharbor/harbor/src/common/dao"
-	common_quota "github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/registryctl"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/goharbor/harbor/src/registryctl/client"
 )
 
@@ -43,11 +42,14 @@ const (
 
 // GarbageCollector is the struct to run registry's garbage collection
 type GarbageCollector struct {
+	artCtl            artifact.Controller
+	artrashMgr        artifactrash.Manager
 	registryCtlClient client.Client
 	logger            logger.Interface
 	cfgMgr            *config.CfgManager
 	CoreURL           string
 	redisURL          string
+	deleteUntagged    bool
 }
 
 // MaxFails implements the interface in job/Interface
@@ -66,6 +68,22 @@ func (gc *GarbageCollector) Validate(params job.Parameters) error {
 }
 
 // Run implements the interface in job/Interface
+// The workflow of GC is:
+// 1, set harbor to readonly
+// 2, select the candidate artifacts from Harbor DB.
+// 3, call registry API(--delete-untagged=false) to delete manifest bases on the results of #2
+// 4, clean keys of redis DB of registry, clean artifact trash and untagged from DB.
+// 5, roll back readonly.
+// More details:
+// 1, why disable delete untagged when to call registry API
+//		Generally because that we introduce Harbor tag in v2.0, it's in database but no corresponding data in registry.
+//		Also one failure case example:
+// 			there are two parts for putting an manifest in Harbor: write database and write storage, but they're not in a transaction,
+//			which leads to the data mismatching in parallel pushing images with same tag but different digest. The valid artifact in
+//			harbor DB could be a untagged one in the storage. If we enable the delete untagged, the valid data could be removed from the storage.
+// 2, what to be cleaned
+//		> the deleted artifact, bases on table of artifact_trash and artifact
+//		> the untagged artifact(optional), bases on table of artifact.
 func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 	if err := gc.init(ctx, params); err != nil {
 		return err
@@ -80,11 +98,10 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 		}
 		defer gc.setReadOnly(readOnlyCur)
 	}
-	if err := gc.registryCtlClient.Health(); err != nil {
-		gc.logger.Errorf("failed to start gc as registry controller is unreachable: %v", err)
-		return err
-	}
 	gc.logger.Infof("start to run gc in job.")
+	if err := gc.deleteCandidates(ctx); err != nil {
+		gc.logger.Errorf("failed to delete GC candidates in gc job, with error: %v", err)
+	}
 	gcr, err := gc.registryCtlClient.StartGC()
 	if err != nil {
 		gc.logger.Errorf("failed to get gc result: %v", err)
@@ -92,9 +109,6 @@ func (gc *GarbageCollector) Run(ctx job.Context, params job.Parameters) error {
 	}
 	if err := gc.cleanCache(); err != nil {
 		return err
-	}
-	if err := gc.ensureQuota(); err != nil {
-		gc.logger.Warningf("failed to align quota data in gc job, with error: %v", err)
 	}
 	gc.logger.Infof("GC results: status: %t, message: %s, start: %s, end: %s.", gcr.Status, gcr.Msg, gcr.StartTime, gcr.EndTime)
 	gc.logger.Infof("success to run gc in job.")
@@ -105,6 +119,13 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 	registryctl.Init()
 	gc.registryCtlClient = registryctl.RegistryCtlClient
 	gc.logger = ctx.GetLogger()
+	gc.artCtl = artifact.Ctl
+	gc.artrashMgr = artifactrash.NewManager()
+
+	if err := gc.registryCtlClient.Health(); err != nil {
+		gc.logger.Errorf("failed to start gc as registry controller is unreachable: %v", err)
+		return err
+	}
 
 	errTpl := "failed to get required property: %s"
 	if v, ok := ctx.Get(common.CoreURL); ok && len(v.(string)) > 0 {
@@ -116,11 +137,17 @@ func (gc *GarbageCollector) init(ctx job.Context, params job.Parameters) error {
 	configURL := gc.CoreURL + common.CoreConfigPath
 	gc.cfgMgr = config.NewRESTCfgManager(configURL, secret)
 	gc.redisURL = params["redis_url_reg"].(string)
+
+	// default is to delete the untagged artifact
+	if params["delete_untagged"] == "" {
+		gc.deleteUntagged = true
+	} else {
+		gc.deleteUntagged = params["delete_untagged"].(bool)
+	}
 	return nil
 }
 
 func (gc *GarbageCollector) getReadOnly() (bool, error) {
-
 	if err := gc.cfgMgr.Load(); err != nil {
 		return false, err
 	}
@@ -138,7 +165,6 @@ func (gc *GarbageCollector) setReadOnly(switcher bool) error {
 // cleanCache is to clean the registry cache for GC.
 // To do this is because the issue https://github.com/docker/distribution/issues/2094
 func (gc *GarbageCollector) cleanCache() error {
-
 	con, err := redis.DialURL(
 		gc.redisURL,
 		redis.DialConnectTimeout(dialConnectionTimeout),
@@ -169,60 +195,47 @@ func (gc *GarbageCollector) cleanCache() error {
 	return nil
 }
 
-func delKeys(con redis.Conn, pattern string) error {
-	iter := 0
-	keys := make([]string, 0)
-	for {
-		arr, err := redis.Values(con.Do("SCAN", iter, "MATCH", pattern))
-		if err != nil {
-			return fmt.Errorf("error retrieving '%s' keys", pattern)
+// deleteCandidates deletes the two parts of artifact from harbor DB
+// 1, required part, the artifacts were removed from Harbor.
+// 2, optional part, the untagged artifacts.
+func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
+	// default is to clean trash
+	flushTrash := true
+	defer func() {
+		if flushTrash {
+			if err := gc.artrashMgr.Flush(ctx.SystemContext()); err != nil {
+				gc.logger.Errorf("failed to flush artifact trash")
+			}
 		}
-		iter, err = redis.Int(arr[0], nil)
-		if err != nil {
-			return fmt.Errorf("unexpected type for Int, got type %T", err)
-		}
-		k, err := redis.Strings(arr[1], nil)
-		if err != nil {
-			return fmt.Errorf("converts an array command reply to a []string %v", err)
-		}
-		keys = append(keys, k...)
+	}()
 
-		if iter == 0 {
-			break
+	// handle the optional ones, and the artifact controller will move them into trash.
+	if gc.deleteUntagged {
+		untagged, err := gc.artCtl.List(ctx.SystemContext(), &q.Query{
+			Keywords: map[string]interface{}{
+				"Tags": "nil",
+			},
+		}, nil)
+		if err != nil {
+			return err
+		}
+		for _, art := range untagged {
+			if err := gc.artCtl.Delete(ctx.SystemContext(), art.ID); err != nil {
+				// the failure ones can be GCed by the next execution
+				gc.logger.Errorf("failed to delete untagged:%d artifact in DB, error, %v", art.ID, err)
+			}
 		}
 	}
-	for _, key := range keys {
-		_, err := con.Do("DEL", key)
-		if err != nil {
-			return fmt.Errorf("failed to clean registry cache %v", err)
-		}
-	}
-	return nil
-}
 
-func (gc *GarbageCollector) ensureQuota() error {
-	projects, err := dao.GetProjects(nil)
+	// handle the trash
+	required, err := gc.artrashMgr.Filter(ctx.SystemContext())
 	if err != nil {
-		return err
+		return nil
 	}
-	for _, project := range projects {
-		pSize, err := dao.CountSizeOfProject(project.ProjectID)
-		if err != nil {
-			gc.logger.Warningf("error happen on counting size of project:%d by artifact, error:%v, just skip it.", project.ProjectID, err)
-			continue
-		}
-		quotaMgr, err := common_quota.NewManager("project", strconv.FormatInt(project.ProjectID, 10))
-		if err != nil {
-			gc.logger.Errorf("Error occurred when to new quota manager %v, just skip it.", err)
-			continue
-		}
-		if err := quotaMgr.SetResourceUsage(types.ResourceStorage, pSize); err != nil {
-			gc.logger.Errorf("cannot ensure quota for the project: %d, err: %v, just skip it.", project.ProjectID, err)
-			continue
-		}
-		if err := dao.RemoveUntaggedBlobs(project.ProjectID); err != nil {
-			gc.logger.Errorf("cannot delete untagged blobs of project: %d, err: %v, just skip it.", project.ProjectID, err)
-			continue
+	for _, art := range required {
+		if err := deleteManifest(art.RepositoryName, art.Digest); err != nil {
+			flushTrash = false
+			return fmt.Errorf("failed to delete manifest, %s:%s with error: %v", art.RepositoryName, art.Digest, err)
 		}
 	}
 	return nil

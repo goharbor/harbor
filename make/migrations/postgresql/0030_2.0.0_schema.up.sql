@@ -1,3 +1,4 @@
+ALTER TABLE admin_job ADD COLUMN job_parameters varchar(255) Default '';
 ALTER TABLE artifact ADD COLUMN repository_id int;
 ALTER TABLE artifact ADD COLUMN media_type varchar(255);
 ALTER TABLE artifact ADD COLUMN manifest_media_type varchar(255);

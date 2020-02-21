@@ -28,10 +28,10 @@ func AddAdminJob(job *models.AdminJob) (int64, error) {
 	if len(job.Status) == 0 {
 		job.Status = models.JobPending
 	}
-	sql := "insert into admin_job (job_name, job_kind, status, job_uuid, cron_str, creation_time, update_time) values (?, ?, ?, ?, ?, ?, ?) RETURNING id"
+	sql := "insert into admin_job (job_name, job_parameters, job_kind, status, job_uuid, cron_str, creation_time, update_time) values (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id"
 	var id int64
 	now := time.Now()
-	err := o.Raw(sql, job.Name, job.Kind, job.Status, job.UUID, job.Cron, now, now).QueryRow(&id)
+	err := o.Raw(sql, job.Name, job.Parameters, job.Kind, job.Status, job.UUID, job.Cron, now, now).QueryRow(&id)
 	if err != nil {
 		return 0, err
 	}

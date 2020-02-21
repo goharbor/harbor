@@ -24,6 +24,10 @@ func (f *fakeDao) Filter(ctx context.Context) (arts []model.ArtifactTrash, err e
 	args := f.Called()
 	return args.Get(0).([]model.ArtifactTrash), args.Error(1)
 }
+func (f *fakeDao) Flush(ctx context.Context) (err error) {
+	args := f.Called()
+	return args.Error(0)
+}
 
 type managerTestSuite struct {
 	suite.Suite
@@ -68,4 +72,11 @@ func (m *managerTestSuite) TestFilter() {
 	arts, err := m.mgr.Filter(nil)
 	m.Require().Nil(err)
 	m.Equal(len(arts), 1)
+}
+
+func (m *managerTestSuite) TestFlush() {
+	m.dao.On("Flush", mock.Anything).Return(nil)
+	err := m.mgr.Flush(nil)
+	m.Require().Nil(err)
+	m.dao.AssertExpectations(m.T())
 }
