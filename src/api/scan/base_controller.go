@@ -17,16 +17,13 @@ package scan
 import (
 	"encoding/base64"
 	"fmt"
-	"time"
 
-	tk "github.com/docker/distribution/registry/auth/token"
 	sc "github.com/goharbor/harbor/src/api/scanner"
 	cj "github.com/goharbor/harbor/src/common/job"
 	jm "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/pkg/robot"
@@ -48,9 +45,6 @@ var DefaultController = NewController()
 const (
 	configRegistryEndpoint = "registryEndpoint"
 	configCoreInternalAddr = "coreInternalAddr"
-	authorizationType      = "harbor.scanner-adapter/registry-authorization-type"
-	authorizationBearer    = "Bearer"
-	authorizationBasic     = "Basic"
 )
 
 // uuidGenerator is a func template which is for generating UUID.
@@ -227,13 +221,7 @@ func (bc *basicController) Scan(artifact *v1.Artifact, options ...Option) error 
 		return errors.Wrap(err, "scan controller: scan")
 	}
 
-	// Get authorization type
-	auth := authorizationBasic
-	if v, ok := meta.Properties[authorizationType]; ok {
-		auth = v
-	}
-
-	jobID, err := bc.launchScanJob(trackID, artifact, r, producesMimes, auth)
+	jobID, err := bc.launchScanJob(trackID, artifact, r, producesMimes)
 	if err != nil {
 		// Update the status to the concrete error
 		// Change status code to normal error code
@@ -409,44 +397,32 @@ func (bc *basicController) GetStats(requester string) (*all.Stats, error) {
 	return sts, nil
 }
 
-// makeBasicAuthorization creates authorization from a robot account based on the arguments for scanning.
-func (bc *basicController) makeBasicAuthorization(pid int64, repository string, ttl int64) (string, int64, error) {
+// makeRobotAccount creates a robot account based on the arguments for scanning.
+func (bc *basicController) makeRobotAccount(projectID int64, repository string) (*model.Robot, error) {
 	// Use uuid as name to avoid duplicated entries.
 	UUID, err := bc.uuid()
 	if err != nil {
-		return "", -1, errors.Wrap(err, "scan controller: make robot account")
+		return nil, errors.Wrap(err, "scan controller: make robot account")
 	}
 
-	expireAt := time.Now().UTC().Add(time.Duration(ttl) * time.Second).Unix()
-
-	logger.Warningf("repository %s and expire time %d are not supported by robot controller", repository, expireAt)
-
-	resource := rbac.NewProjectNamespace(pid).Resource(rbac.ResourceRepository)
-	access := []*rbac.Policy{{
-		Resource: resource,
-		Action:   rbac.ActionScannerPull,
-	}}
-
+	resource := rbac.NewProjectNamespace(projectID).Resource(rbac.ResourceRepository)
 	robotReq := &model.RobotCreate{
 		Name:        UUID,
 		Description: "for scan",
-		ProjectID:   pid,
-		Access:      access,
+		ProjectID:   projectID,
+		Access:      []*rbac.Policy{{Resource: resource, Action: rbac.ActionScannerPull}},
 	}
 
 	rb, err := bc.rc.CreateRobotAccount(robotReq)
 	if err != nil {
-		return "", -1, errors.Wrap(err, "scan controller: make robot account")
+		return nil, errors.Wrap(err, "scan controller: make robot account")
 	}
 
-	basic := fmt.Sprintf("%s:%s", rb.Name, rb.Token)
-	encoded := base64.StdEncoding.EncodeToString([]byte(basic))
-
-	return fmt.Sprintf("Basic %s", encoded), rb.ID, nil
+	return rb, nil
 }
 
 // launchScanJob launches a job to run scan
-func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, registration *scanner.Registration, mimes []string, auth string) (jobID string, err error) {
+func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, registration *scanner.Registration, mimes []string) (jobID string, err error) {
 	var ck string
 	if registration.UseInternalAddr {
 		ck = configCoreInternalAddr
@@ -459,21 +435,13 @@ func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, 
 		return "", errors.Wrap(err, "scan controller: launch scan job")
 	}
 
-	var (
-		authorization string
-		rID           int64 = -1
-	)
-
-	if auth == authorizationBearer {
-		authorization, err = makeBearerAuthorization(artifact.Repository, fmt.Sprintf("%s:%s", registration.Name, registration.UUID))
-	} else {
-		// Make authorization from a robot account with 30 minutes
-		authorization, rID, err = bc.makeBasicAuthorization(artifact.NamespaceID, artifact.Repository, 1800)
-	}
-
+	robot, err := bc.makeRobotAccount(artifact.NamespaceID, artifact.Repository)
 	if err != nil {
 		return "", errors.Wrap(err, "scan controller: launch scan job")
 	}
+
+	basic := fmt.Sprintf("%s:%s", robot.Name, robot.Token)
+	authorization := fmt.Sprintf("Basic %s", base64.StdEncoding.EncodeToString([]byte(basic)))
 
 	// Set job parameters
 	scanReq := &v1.ScanRequest{
@@ -498,9 +466,7 @@ func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, 
 	params[sca.JobParamRegistration] = rJSON
 	params[sca.JobParameterRequest] = sJSON
 	params[sca.JobParameterMimes] = mimes
-	if rID > 0 {
-		params[sca.JobParameterRobotID] = rID
-	}
+	params[sca.JobParameterRobotID] = robot.ID
 
 	// Launch job
 	callbackURL, err := bc.config(configCoreInternalAddr)
@@ -519,24 +485,6 @@ func (bc *basicController) launchScanJob(trackID string, artifact *v1.Artifact, 
 	}
 
 	return bc.jc().SubmitJob(j)
-}
-
-// makeBearerAuthorization make a authorization with bearer token
-func makeBearerAuthorization(repository string, username string) (string, error) {
-	access := []*tk.ResourceActions{
-		{
-			Type:    "repository",
-			Name:    repository,
-			Actions: []string{rbac.ActionPull.String(), rbac.ActionScannerPull.String()},
-		},
-	}
-
-	accessToken, err := token.MakeToken(username, token.Registry, access)
-	if err != nil {
-		return "", errors.Wrap(err, "make bearer authorization")
-	}
-
-	return fmt.Sprintf("Bearer %s", accessToken.Token), nil
 }
 
 func parseOptions(options ...Option) (*Options, error) {
