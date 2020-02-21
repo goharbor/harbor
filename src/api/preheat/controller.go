@@ -10,9 +10,9 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/service/token"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/history"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/instance"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/history"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/instance"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
 )
 
@@ -24,7 +24,7 @@ var ErrorConflict = errors.New("resource conflict")
 
 // CompositePreheatingResults handle preheating results among multiple providers
 // Key is the ID of the provider instance.
-type CompositePreheatingResults map[string]*[]*provider.PreheatingStatus
+type CompositePreheatingResults map[int64]*[]*provider.PreheatingStatus
 
 // Controller defines related top interfaces to handle the workflow of
 // the image distribution.
@@ -52,14 +52,14 @@ type Controller interface {
 	// If succeed, the metadata with nil error are returned
 	// Otherwise, a non nil error is returned
 	//
-	GetInstance(id string) (*models.Metadata, error)
+	GetInstance(id int64) (*models.Metadata, error)
 
 	// Create a new instance for the specified provider.
 	//
 	// If succeed, the ID of the instance will be returned.
 	// Any problems met, a non nil error will be returned.
 	//
-	CreateInstance(instance *models.Metadata) (string, error)
+	CreateInstance(instance *models.Metadata) (int64, error)
 
 	// Delete the specified provider instance.
 	//
@@ -67,7 +67,7 @@ type Controller interface {
 	//
 	// Any problems met, a non nil error will be returned.
 	//
-	DeleteInstance(id string) error
+	DeleteInstance(id int64) error
 
 	// Update the instance with incremental way;
 	// Including update the enabled flag of the instance.
@@ -77,7 +77,7 @@ type Controller interface {
 	//
 	// Any problems met, a non nil error will be returned
 	//
-	UpdateInstance(id string, properties models.PropertySet) error
+	UpdateInstance(id int64, properties models.PropertySet) error
 
 	// Preheat images.
 	//
@@ -99,10 +99,10 @@ type Controller interface {
 //
 type CoreController struct {
 	// For history
-	hStore history.Storage
+	hManager history.Manager
 
 	// For instance
-	iStore instance.Storage
+	iManager instance.Manager
 
 	// Monitor and update the progress of tasks and health of instances
 	monitor *Monitor
@@ -110,19 +110,19 @@ type CoreController struct {
 
 // NewCoreController is constructor of controller
 func NewCoreController(ctx context.Context) (*CoreController, error) {
-	iStore, err := instance.StorageFactory()
-	if iStore == nil || err != nil {
-		return nil, fmt.Errorf("nil instance storage, error: %v", err)
+	iManager := instance.NewDefaultManager()
+	if iManager == nil {
+		return nil, errors.New("nil instance manager")
 	}
-	hStore, err := history.StorageFactory()
-	if hStore == nil || err != nil {
-		return nil, fmt.Errorf("nil history storage, error: %v", err)
+	hManager := history.NewDefaultManager()
+	if hManager == nil {
+		return nil, errors.New("nil history manager")
 	}
 
 	return &CoreController{
-		iStore:  iStore,
-		hStore:  hStore,
-		monitor: NewMonitor(ctx, iStore, hStore),
+		iManager: iManager,
+		hManager: hManager,
+		monitor:  NewMonitor(ctx, iManager, hManager),
 	}, nil
 }
 
@@ -133,33 +133,33 @@ func (cc *CoreController) GetAvailableProviders() ([]*provider.Metadata, error) 
 
 // ListInstances implements @Controller.ListInstances
 func (cc *CoreController) ListInstances(params *models.QueryParam) ([]*models.Metadata, error) {
-	return cc.iStore.List(params)
+	return cc.iManager.List(params)
 }
 
 // CreateInstance implements @Controller.CreateInstance
-func (cc *CoreController) CreateInstance(instance *models.Metadata) (string, error) {
+func (cc *CoreController) CreateInstance(instance *models.Metadata) (int64, error) {
 	if instance == nil {
-		return "", errors.New("nil instance object provided")
+		return 0, errors.New("nil instance object provided")
 	}
 
 	// Avoid duplicated endpoint
-	allOnes, err := cc.iStore.List(nil)
+	allOnes, err := cc.iManager.List(nil)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 	for _, theOne := range allOnes {
 		if theOne.Endpoint == instance.Endpoint {
-			return "", ErrorConflict
+			return 0, ErrorConflict
 		}
 	}
 	// Check health before saving
 	f, ok := provider.GetProvider(instance.Provider)
 	if !ok {
-		return "", fmt.Errorf("no provider registered with name '%s'", instance.Provider)
+		return 0, fmt.Errorf("no provider registered with name '%s'", instance.Provider)
 	}
 	p, err := f(instance)
 	if err != nil {
-		return "", err
+		return 0, err
 	}
 
 	status, err := p.GetHealth()
@@ -172,29 +172,21 @@ func (cc *CoreController) CreateInstance(instance *models.Metadata) (string, err
 
 	instance.SetupTimestamp = time.Now().Unix()
 
-	return cc.iStore.Save(instance)
+	return cc.iManager.Save(instance)
 }
 
 // DeleteInstance implements @Controller.DeleteInstance
-func (cc *CoreController) DeleteInstance(id string) error {
-	if len(id) == 0 {
-		return errors.New("empty ID")
-	}
-
-	return cc.iStore.Delete(id)
+func (cc *CoreController) DeleteInstance(id int64) error {
+	return cc.iManager.Delete(id)
 }
 
 // UpdateInstance implements @Controller.UpdateInstance
-func (cc *CoreController) UpdateInstance(id string, properties models.PropertySet) error {
-	if len(id) == 0 {
-		return errors.New("empty ID")
-	}
-
+func (cc *CoreController) UpdateInstance(id int64, properties models.PropertySet) error {
 	if len(properties) == 0 {
 		return errors.New("no properties provided to update")
 	}
 
-	metadata, err := cc.iStore.Get(id)
+	metadata, err := cc.iManager.Get(id)
 	if err != nil {
 		return err
 	}
@@ -203,7 +195,7 @@ func (cc *CoreController) UpdateInstance(id string, properties models.PropertySe
 		return err
 	}
 
-	return cc.iStore.Update(metadata)
+	return cc.iManager.Update(metadata)
 }
 
 // PreheatImages implements @Controller.PreheatImages
@@ -221,7 +213,7 @@ func (cc *CoreController) PreheatImages(images ...models.ImageRepository) (Compo
 
 	// Directly dispatch to all the instances
 	// TODO: Use async way in future
-	instances, err := cc.iStore.List(nil)
+	instances, err := cc.iManager.List(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -244,7 +236,7 @@ func (cc *CoreController) PreheatImages(images ...models.ImageRepository) (Compo
 			factory, ok := provider.GetProvider(inst.Provider)
 			if !ok {
 				// Append error
-				err := fmt.Errorf("the specified provider %s for instance %s is not registered", inst.Provider, inst.ID)
+				err := fmt.Errorf("the specified provider %s for instance %d is not registered", inst.Provider, inst.ID)
 				log.Errorf("get provider factory error: %s", err)
 
 				allStatus = append(allStatus, preheatingStatus("-", models.PreheatingStatusFail, err))
@@ -280,7 +272,7 @@ func (cc *CoreController) PreheatImages(images ...models.ImageRepository) (Compo
 				}
 
 				// Append a new history record
-				if err := cc.hStore.AppendHistory(&models.HistoryRecord{
+				if err := cc.hManager.AppendHistory(&models.HistoryRecord{
 					TaskID:     pStatus.TaskID,
 					Image:      string(img),
 					StartTime:  "-",
@@ -310,12 +302,12 @@ func (cc *CoreController) PreheatImages(images ...models.ImageRepository) (Compo
 
 // LoadHistoryRecords implements @Controller.LoadHistoryRecords
 func (cc *CoreController) LoadHistoryRecords(params *models.QueryParam) ([]*models.HistoryRecord, error) {
-	return cc.hStore.LoadHistories(params)
+	return cc.hManager.LoadHistories(params)
 }
 
 // GetInstance implements @Controller.GetInstance
-func (cc *CoreController) GetInstance(id string) (*models.Metadata, error) {
-	return cc.iStore.Get(id)
+func (cc *CoreController) GetInstance(id int64) (*models.Metadata, error) {
+	return cc.iManager.Get(id)
 }
 
 // Init the distribution providers
@@ -335,7 +327,7 @@ func Init(ctx context.Context) {
 
 			for _, item := range allItemNotDone {
 				c.monitor.WatchProgress(item.Instance, item.TaskID)
-				log.Debugf("Sync status for task %s against %s", item.TaskID, item.Instance)
+				log.Debugf("Sync status for task %s against %d", item.TaskID, item.Instance)
 			}
 		}
 	}

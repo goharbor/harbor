@@ -16,10 +16,11 @@ package handler
 
 import (
 	"context"
+	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
 	api_preheat "github.com/goharbor/harbor/src/api/preheat"
-	dao_models "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
+	preheat_models "github.com/goharbor/harbor/src/pkg/p2p/preheat/models"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	"github.com/goharbor/harbor/src/server/v2.0/restapi/operations/preheat"
 )
@@ -37,7 +38,7 @@ type preheatAPI struct {
 
 // CreateInstance is Create p2p instances
 func (p *preheatAPI) CreateInstance(ctx context.Context, params preheat.CreateInstanceParams) middleware.Responder {
-	id, err := api_preheat.DefaultController.CreateInstance(&dao_models.Metadata{
+	id, err := api_preheat.DefaultController.CreateInstance(&preheat_models.Metadata{
 		ID:             params.Instance.ID,
 		Name:           params.Instance.Name,
 		Description:    params.Instance.Description,
@@ -94,7 +95,7 @@ func (p *preheatAPI) GetInstance(ctx context.Context, params preheat.GetInstance
 
 // ListInstances is List p2p instances
 func (p *preheatAPI) ListInstances(ctx context.Context, params preheat.ListInstancesParams) middleware.Responder {
-	queryParams := &dao_models.QueryParam{}
+	queryParams := &preheat_models.QueryParam{}
 	if params.PageSize != nil {
 		queryParams.PageSize = uint(*params.PageSize)
 	} else {
@@ -136,7 +137,7 @@ func (p *preheatAPI) ListInstances(ctx context.Context, params preheat.ListInsta
 
 // ListPreheatHistories is List preheats history
 func (p *preheatAPI) ListPreheatHistories(ctx context.Context, params preheat.ListPreheatHistoriesParams) middleware.Responder {
-	queryParams := &dao_models.QueryParam{}
+	queryParams := &preheat_models.QueryParam{}
 	if params.PageSize != nil {
 		queryParams.PageSize = uint(*params.PageSize)
 	} else {
@@ -223,9 +224,9 @@ func (p *preheatAPI) PreheatImages(ctx context.Context, params preheat.PreheatIm
 		})
 	}
 
-	var imageRepos []dao_models.ImageRepository
+	var imageRepos []preheat_models.ImageRepository
 	for _, img := range imageList {
-		imageRepos = append(imageRepos, dao_models.ImageRepository(img.(string)))
+		imageRepos = append(imageRepos, preheat_models.ImageRepository(img.(string)))
 	}
 	result, err := api_preheat.DefaultController.PreheatImages(imageRepos...)
 	if err != nil {
@@ -244,7 +245,7 @@ func (p *preheatAPI) PreheatImages(ctx context.Context, params preheat.PreheatIm
 				TaskID:     s.TaskID,
 			})
 		}
-		preheatings[k] = statuses
+		preheatings[strconv.Itoa(int(k))] = statuses
 	}
 
 	return preheat.NewPreheatImagesOK().WithPayload(preheatings)

@@ -16,7 +16,7 @@ const (
 // Metadata represents the basic info of one working node for the specified provider.
 type Metadata struct {
 	// Unique ID
-	ID string `json:"id"`
+	ID int64 `json:"id"`
 
 	// Instance name
 	Name string `json:"name"`
@@ -51,13 +51,14 @@ type Metadata struct {
 
 // HistoryRecord represents one record of the image preheating process.
 type HistoryRecord struct {
+	ID         int64  `json:"id"`
 	TaskID     string `json:"task_id"` // mapping to the provider task ID
 	Image      string `json:"image"`
 	StartTime  string `json:"start_time"`
 	FinishTime string `json:"finish_time"`
 	Status     string `json:"status"`
 	Provider   string `json:"provider"`
-	Instance   string `json:"instance"`
+	Instance   int64  `json:"instance"`
 }
 
 // QueryParam is a collection of parameters for querying preheating history records.
