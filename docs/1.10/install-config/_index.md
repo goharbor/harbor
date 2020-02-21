@@ -5,7 +5,7 @@ weight: 5
 
 This section describes how to perform a new installation of Harbor.
 
-If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see [Upgrading Harbor](../../administration/upgrade/_index.md).
+If you are upgrading from a previous version of Harbor, you might need to update the configuration file and migrate your data to fit the database schema of the later version. For information about upgrading, see [Upgrading Harbor](../administration/upgrade/_index.md).
 
 Before you install Harbor, you can test its functionality on a demo server that the Harbor team has made available. For information, see [Test Harbor with the Demo Server](demo-server.md).
 
