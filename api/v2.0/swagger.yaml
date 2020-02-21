@@ -794,227 +794,6 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
-  /distribution/providers:
-    get:
-      summary: List p2p providers
-      description: List available p2p providers.
-      tags:
-        - preheat
-      operationId: ListProviders
-      parameters:
-        - $ref: '#/parameters/requestId'
-      responses:
-        '200':
-          description: Success
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Provider'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-  /distribution/instances:
-    get:
-      summary: List p2p instances
-      description: List p2p instances
-      tags:
-        - preheat
-      operationId: ListInstances
-      parameters:
-        - $ref: '#/parameters/requestId'
-      responses:
-        '200':
-          description: Success
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/Instance'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-    post:
-      summary: Create p2p instances
-      description: Create p2p instances
-      tags:
-        - preheat
-      operationId: CreateInstance
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - name: instance
-          in: body
-          description: The JSON object of instance.
-          required: true
-          schema:
-            $ref: '#/definitions/Instance'
-      responses:
-        '201':
-          $ref: '#/responses/201'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '409':
-          $ref: '#/responses/409'
-        '500':
-          $ref: '#/responses/500'
-  /distribution/instances/{instance_id}:
-    get:
-      summary: Get instance
-      description: Get instance
-      tags:
-        - preheat
-      operationId: GetInstance
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/instanceId'
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/Instance'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-    delete:
-      summary: Delete instance
-      description: Delete instance
-      tags:
-        - preheat
-      operationId: DeleteInstance
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/instanceId'
-      responses:
-        '200':
-          $ref: '#/responses/200'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-    put:
-      summary: Update instance
-      description: Update instance
-      tags:
-        - preheat
-      operationId: UpdateInstance
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - $ref: '#/parameters/instanceId'
-        - name: propertySet
-          in: body
-          description: The property set to update
-          required: true
-          schema:
-            type: object
-            additionalProperties:
-              type: object
-              additionalProperties: true
-      responses:
-        '200':
-          description: Success
-          schema:
-            $ref: '#/definitions/InstanceUpdateResp'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-  /distribution/preheats:
-    get:
-      summary: List preheats history
-      description: List preheats history
-      tags:
-        - preheat
-      operationId: ListPreheatHistories
-      parameters:
-        - $ref: '#/parameters/requestId'
-      responses:
-        '200':
-          description: Success
-          schema:
-            type: array
-            items:
-              $ref: '#/definitions/PreheatHistory'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
-    post:
-      summary: Start to preheat images
-      description: Start to preheat images
-      tags:
-        - preheat
-      operationId: PreheatImages
-      parameters:
-        - $ref: '#/parameters/requestId'
-        - name: preheatReq
-          in: body
-          description: The images to preheat
-          required: true
-          schema:
-            type: object
-            additionalProperties:
-              type: object
-              additionalProperties: true
-      responses:
-        '200':
-          description: Success
-          schema:
-            type: object
-            additionalProperties:
-              type: array
-              items:
-                $ref: '#/definitions/PreheatingStatus'
-        '400':
-          $ref: '#/responses/400'
-        '401':
-          $ref: '#/responses/401'
-        '403':
-          $ref: '#/responses/403'
-        '404':
-          $ref: '#/responses/404'
-        '500':
-          $ref: '#/responses/500'
 parameters:
   query:
     name: q
@@ -1074,7 +853,7 @@ parameters:
     in: path
     description: Instance ID
     required: true
-    type: string
+    type: integer
 responses:
   '200':
     description: Success
@@ -1498,7 +1277,7 @@ definitions:
     type: object
     properties:
       id:
-        type: string
+        type: integer
         description: Unique ID
       name:
         type: string
@@ -1538,19 +1317,19 @@ definitions:
     type: object
     properties:
       updated:
-        type: string
+        type: integer
         description: ID of instance updated
   InstanceDeletedResp:
     type: object
     properties:
       removed:
-        type: string
+        type: integer
         description: ID of instance removed
   InstanceCreatedResp:
     type: object
     properties:
       id:
-        type: string
+        type: integer
         description: ID of instance created
   PreheatHistory:
     type: object
@@ -1574,7 +1353,7 @@ definitions:
         type: string
         description: provider
       instance:
-        type: string
+        type: integer
         description: instance
   PreheatingStatus:
     type: object

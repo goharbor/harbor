@@ -6,11 +6,10 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/history"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/instance"
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
+	hmocks "github.com/goharbor/harbor/src/pkg/p2p/preheat/history/mocks"
+	imocks "github.com/goharbor/harbor/src/pkg/p2p/preheat/instance/mocks"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
-	"github.com/goharbor/harbor/src/testing/pkg/p2p/preheat/dao"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
@@ -19,23 +18,21 @@ import (
 type preheatSuite struct {
 	suite.Suite
 	controller    Controller
-	instanceStore *dao.FakeInstanceStore
-	historyStore  *dao.FakeHistoryStore
+	instanceStore *imocks.Manager
+	historyStore  *hmocks.Manager
 }
 
 func TestPreheatSuite(t *testing.T) {
-	instanceStore := &dao.FakeInstanceStore{}
-	historyStore := &dao.FakeHistoryStore{}
-	instance.StorageFactory = func() (instance.Storage, error) {
-		return instanceStore, nil
-	}
-	history.StorageFactory = func() (history.Storage, error) {
-		return historyStore, nil
-	}
+	instanceStore := &imocks.Manager{}
+	historyStore := &hmocks.Manager{}
+
 	c, err := NewCoreController(context.Background())
 	assert.NotNil(t, c)
 	assert.NoError(t, err)
 
+	// inject mock manager for test
+	c.hManager = historyStore
+	c.iManager = instanceStore
 	suite.Run(t, &preheatSuite{
 		controller:    c,
 		instanceStore: instanceStore,
@@ -44,23 +41,7 @@ func TestPreheatSuite(t *testing.T) {
 }
 
 func TestNewCoreController(t *testing.T) {
-	instance.StorageFactory = func() (instance.Storage, error) {
-		return nil, nil
-	}
-	history.StorageFactory = func() (history.Storage, error) {
-		return nil, nil
-	}
 	c, err := NewCoreController(context.Background())
-	assert.Nil(t, c)
-	assert.Error(t, err)
-
-	instance.StorageFactory = func() (instance.Storage, error) {
-		return &dao.FakeInstanceStore{}, nil
-	}
-	history.StorageFactory = func() (history.Storage, error) {
-		return &dao.FakeHistoryStore{}, nil
-	}
-	c, err = NewCoreController(context.Background())
 	assert.NotNil(t, c)
 	assert.NoError(t, err)
 }
@@ -70,21 +51,21 @@ func (s *preheatSuite) SetupSuite() {
 
 	s.instanceStore.On("List", mock.Anything).Return([]*models.Metadata{
 		{
-			ID:       "i1",
+			ID:       1,
 			Provider: "dragonfly",
 			Endpoint: "http://localhost",
 			Status:   provider.DriverStatusHealthy,
 			Enabled:  true,
 		},
 	}, nil)
-	s.instanceStore.On("Save", mock.Anything).Return("i1", nil)
-	s.instanceStore.On("Delete", "i1").Return(nil)
-	s.instanceStore.On("Delete", "none").Return(errors.New("not found"))
-	s.instanceStore.On("Get", "i1").Return(&models.Metadata{
-		ID:       "i1",
+	s.instanceStore.On("Save", mock.Anything).Return(int64(1), nil)
+	s.instanceStore.On("Delete", int64(1)).Return(nil)
+	s.instanceStore.On("Delete", int64(0)).Return(errors.New("not found"))
+	s.instanceStore.On("Get", int64(1)).Return(&models.Metadata{
+		ID:       1,
 		Endpoint: "http://localhost",
 	}, nil)
-	s.instanceStore.On("Get", "none").Return(nil, errors.New("not found"))
+	s.instanceStore.On("Get", int64(0)).Return(nil, errors.New("not found"))
 	s.instanceStore.On("Update", mock.Anything).Return(nil)
 
 	s.historyStore.On("LoadHistories", mock.Anything).Return([]*models.HistoryRecord{
@@ -106,7 +87,7 @@ func (s *preheatSuite) TestListInstances() {
 	instances, err := s.controller.ListInstances(nil)
 	s.NoError(err)
 	s.Equal(1, len(instances))
-	s.Equal("i1", instances[0].ID)
+	s.Equal(int64(1), instances[0].ID)
 }
 
 func (s *preheatSuite) TestCreateInstance() {
@@ -136,31 +117,28 @@ func (s *preheatSuite) TestCreateInstance() {
 		Provider: "dragonfly",
 	})
 	s.NoError(err)
-	s.Equal("i1", id)
+	s.Equal(int64(1), id)
 }
 
 func (s *preheatSuite) TestDeleteInstance() {
-	err := s.controller.DeleteInstance("")
+	err := s.controller.DeleteInstance(0)
 	s.Error(err)
 
-	err = s.controller.DeleteInstance("none")
-	s.Error(err)
-
-	err = s.controller.DeleteInstance("i1")
+	err = s.controller.DeleteInstance(1)
 	s.NoError(err)
 }
 
 func (s *preheatSuite) TestUpdateInstance() {
-	err := s.controller.UpdateInstance("", nil)
+	err := s.controller.UpdateInstance(0, nil)
 	s.Error(err)
 
-	err = s.controller.UpdateInstance("i1", nil)
+	err = s.controller.UpdateInstance(1, nil)
 	s.Error(err)
 
-	err = s.controller.UpdateInstance("none", map[string]interface{}{"enabled": false})
+	err = s.controller.UpdateInstance(0, map[string]interface{}{"enabled": false})
 	s.Error(err)
 
-	err = s.controller.UpdateInstance("i1", map[string]interface{}{"enabled": false})
+	err = s.controller.UpdateInstance(1, map[string]interface{}{"enabled": false})
 	s.NoError(err)
 }
 
@@ -184,7 +162,7 @@ func (s *preheatSuite) TestPreheatImages() {
 	// Case: valid images provided, healthy instances available.
 	s.instanceStore.On("List", mock.Anything).Return([]*models.Metadata{
 		{
-			ID:       "i1",
+			ID:       1,
 			Provider: "dragonfly",
 			Endpoint: "http://localhost",
 			Status:   provider.DriverStatusHealthy,
@@ -204,11 +182,11 @@ func (s *preheatSuite) TestLoadHistoryRecords() {
 }
 
 func (s *preheatSuite) TestGetInstance() {
-	instance, err := s.controller.GetInstance("none")
+	instance, err := s.controller.GetInstance(0)
 	s.Error(err)
 	s.Nil(instance)
 
-	instance, err = s.controller.GetInstance("i1")
+	instance, err = s.controller.GetInstance(1)
 	s.NoError(err)
 	s.NotNil(instance)
 }

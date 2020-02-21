@@ -1,7 +1,7 @@
 package provider
 
 import (
-	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/models"
 )
 
 // Factory is responsible to create a new driver based on the metadata.
