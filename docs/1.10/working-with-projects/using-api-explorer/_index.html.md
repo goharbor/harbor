@@ -1,5 +1,6 @@
 ---
 title: Using the API Explorer
+weight: 100
 ---
 
 Harbor integrated swagger UI from 1.8. That means all APIs can be invoked through the Harbor interface. You can navigate to the API Explorer in two ways. 
