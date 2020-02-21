@@ -19,7 +19,7 @@ class TestProjects(unittest.TestCase):
         user = User()
         self.user= user
 
-        repo = Repository()
+        repo = Repository(api_type='repository')
         self.repo= repo
 
     @classmethod
@@ -29,7 +29,7 @@ class TestProjects(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
         #1. Delete repository(RA) by admin;
-        self.repo.delete_repoitory(TestProjects.repo_name, **ADMIN_CLIENT)
+        self.repo.delete_repoitory(TestProjects.project_alice_name, TestProjects.repo_name.split('/')[1], **ADMIN_CLIENT)
 
         #2. Delete project(Alice);
         self.project.delete_project(TestProjects.project_alice_id, **ADMIN_CLIENT)
@@ -57,7 +57,7 @@ class TestProjects(unittest.TestCase):
         Tear down:
             1. Delete repository(RA) by admin;
             2. Delete project(Alice);
-            3. Delete user Alice, Bob and Carol.               
+            3. Delete user Alice, Bob and Carol.
         """
         url = ADMIN_CLIENT["endpoint"]
         user_alice_password = "Aa123456"
@@ -76,10 +76,10 @@ class TestProjects(unittest.TestCase):
         TestProjects.user_carol_id, user_carol_name = self.user.create_user(user_password = user_carol_password, **ADMIN_CLIENT)
 
         #2.1 Create private project(PA) by Alice
-        TestProjects.project_alice_id, project_alice_name = self.project.create_project(metadata = {"public": "false"}, **USER_ALICE_CLIENT)
+        TestProjects.project_alice_id, TestProjects.project_alice_name = self.project.create_project(metadata = {"public": "false"}, **USER_ALICE_CLIENT)
 
         #2.2 Add a repository to project(PA) by Alice
-        TestProjects.repo_name, _ = push_image_to_project(project_alice_name, harbor_server, user_alice_name, user_alice_password, "hello-world", "latest")
+        TestProjects.repo_name, _ = push_image_to_project(TestProjects.project_alice_name, harbor_server, user_alice_name, user_alice_password, "hello-world", "latest")
 
         #3. Bob is not a member of project(PA);
         self.project.check_project_member_not_exist(TestProjects.project_alice_id, user_bob_name, **USER_ALICE_CLIENT)

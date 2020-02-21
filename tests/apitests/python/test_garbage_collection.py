@@ -24,7 +24,7 @@ class TestProjects(unittest.TestCase):
         user = User()
         self.user= user
 
-        repo = Repository()
+        repo = Repository(api_type='repository')
         self.repo= repo
 
     @classmethod
@@ -67,16 +67,16 @@ class TestProjects(unittest.TestCase):
         TestProjects.USER_GC_CLIENT=dict(endpoint = url, username = user_gc_name, password = user_gc_password)
 
         #2. Create a new project(PA) by user(UA);
-        TestProjects.project_gc_id, project_gc_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_GC_CLIENT)
+        TestProjects.project_gc_id, TestProjects.project_gc_name = self.project.create_project(metadata = {"public": "false"}, **TestProjects.USER_GC_CLIENT)
 
         #3. Push a new image(IA) in project(PA) by admin;
-        repo_name, _ = push_image_to_project(project_gc_name, harbor_server, admin_name, admin_password, "tomcat", "latest")
+        repo_name, _ = push_image_to_project(TestProjects.project_gc_name, harbor_server, admin_name, admin_password, "tomcat", "latest")
 
         #4. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(repo_name, **TestProjects.USER_GC_CLIENT)
+        self.repo.delete_repoitory(TestProjects.project_gc_name, repo_name.split('/')[1], **TestProjects.USER_GC_CLIENT)
 
         #5. Get repository by user(UA), it should get nothing;
-        repo_data = self.repo.get_repository(TestProjects.project_gc_id, **TestProjects.USER_GC_CLIENT)
+        repo_data = self.repo.get_repository(TestProjects.project_gc_name, **TestProjects.USER_GC_CLIENT)
         _assert_status_code(len(repo_data), 0)
 
         #6. Tigger garbage collection operation;

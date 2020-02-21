@@ -21,6 +21,8 @@ class TestProjects(unittest.TestCase):
 
         repo = Repository()
         self.repo= repo
+        repo_v2 = Repository(api_type='repository')
+        self.repo_v2= repo_v2
 
     @classmethod
     def tearDown(self):
@@ -29,7 +31,7 @@ class TestProjects(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == True, "Test data won't be erased.")
     def test_ClearData(self):
         #1. Delete repository(RA) by user(UA);
-        self.repo.delete_repoitory(TestProjects.repo_name, **TestProjects.USER_sign_image_CLIENT)
+        self.repo_v2.delete_repoitory(TestProjects.project_sign_image_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_sign_image_CLIENT)
 
         #2. Delete project(PA);
         self.project.delete_project(TestProjects.project_sign_image_id, **TestProjects.USER_sign_image_CLIENT)
@@ -61,7 +63,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.USER_sign_image_CLIENT=dict(endpoint = url, username = user_sign_image_name, password = user_001_password)
 
         #2. Create a new private project(PA) by user(UA);
-        TestProjects.project_sign_image_id, project_sign_image_name = self.project.create_project(metadata = {"public": "false"}, **ADMIN_CLIENT)
+        TestProjects.project_sign_image_id, TestProjects.project_sign_image_name = self.project.create_project(metadata = {"public": "false"}, **ADMIN_CLIENT)
 
         #3. Add user(UA) as a member of project(PA) with project-admin role;
         self.project.add_project_members(TestProjects.project_sign_image_id, TestProjects.user_sign_image_id, **ADMIN_CLIENT)
@@ -73,10 +75,10 @@ class TestProjects(unittest.TestCase):
         image = "hello-world"
         src_tag = "latest"
         #5. Create a new repository(RA) and tag(TA) in project(PA) by user(UA);
-        TestProjects.repo_name, tag = push_image_to_project(project_sign_image_name, harbor_server, user_sign_image_name, user_001_password, image, src_tag)
+        TestProjects.repo_name, tag = push_image_to_project(TestProjects.project_sign_image_name, harbor_server, user_sign_image_name, user_001_password, image, src_tag)
 
         #6. Sign image with tag(TA) which was tagged by step #5;
-        sign_image(harbor_server, project_sign_image_name, image, tag)
+        sign_image(harbor_server, TestProjects.project_sign_image_name, image, tag)
 
         #7. Get signature of image with tag(TA), it should be exist.
         self.repo.signature_should_exist(TestProjects.repo_name, tag, **TestProjects.USER_sign_image_CLIENT)

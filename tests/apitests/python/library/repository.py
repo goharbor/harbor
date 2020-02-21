@@ -72,14 +72,14 @@ class Repository(base.Base):
         if self.image_exists(repository, tag, **kwargs):
             raise Exception("image %s:%s exists" % (repository, tag))
 
-    def delete_repoitory(self, repo_name, **kwargs):
+    def delete_repoitory(self, project_name, repo_name, **kwargs):
         client = self._get_client(**kwargs)
-        _, status_code, _ = client.repositories_repo_name_delete_with_http_info(repo_name)
+        _, status_code, _ = client.delete_repository_with_http_info(project_name, repo_name)
         base._assert_status_code(200, status_code)
 
-    def get_repository(self, project_id, **kwargs):
+    def get_repository(self, project_name, **kwargs):
         client = self._get_client(**kwargs)
-        data, status_code, _ = client.repositories_get_with_http_info(project_id)
+        data, status_code, _ = client.list_repositories_with_http_info(project_name)
         base._assert_status_code(200, status_code)
         return data
 
