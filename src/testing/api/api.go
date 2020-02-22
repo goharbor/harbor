@@ -12,12 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package model
+package api
 
-import "github.com/goharbor/harbor/src/api/artifact"
-
-// Artifact model
-type Artifact struct {
-	artifact.Artifact
-	ScanOverview map[string]interface{} `json:"scan_overview"`
-}
+//go:generate mockery -case snake -dir ../../api/scan -name Controller -output ./scan -outpkg scan
+//go:generate mockery -case snake -dir ../../api/scanner -name Controller -output ./scanner -outpkg scanner

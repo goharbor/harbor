@@ -24,6 +24,7 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/pkg/robot"
@@ -261,7 +262,7 @@ func (bc *basicController) GetReport(artifact *v1.Artifact, mimeTypes []string) 
 	}
 
 	if r == nil {
-		return nil, errs.WithCode(errs.PreconditionFailed, errs.Errorf("no scanner registration configured for project: %d", artifact.NamespaceID))
+		return nil, ierror.NotFoundError(nil).WithMessage("no scanner registration configured for project: %d", artifact.NamespaceID)
 	}
 
 	return bc.manager.GetBy(artifact.Digest, r.UUID, mimes)

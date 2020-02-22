@@ -40,6 +40,8 @@ type Artifact struct {
 	ExtraAttrs        map[string]interface{} `json:"extra_attrs"` // only contains the simple attributes specific for the different artifact type, most of them should come from the config layer
 	Annotations       map[string]string      `json:"annotations"`
 	References        []*Reference           `json:"references"` // child artifacts referenced by the parent artifact if the artifact is an index
+
+	RepositoryName string `json:"-"` // repository name, eg: library/photon
 }
 
 // From converts the database level artifact to the business level object

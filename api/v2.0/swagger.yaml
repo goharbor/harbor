@@ -135,31 +135,31 @@ paths:
           required: false
         - name: with_tag
           in: query
-          description: Specify whether the tags are inclued inside the returning artifacts
+          description: Specify whether the tags are included inside the returning artifacts
           type: boolean
           required: false
           default: true
         - name: with_label
           in: query
-          description: Specify whether the labels are inclued inside the returning artifacts
+          description: Specify whether the labels are included inside the returning artifacts
           type: boolean
           required: false
           default: false
         - name: with_scan_overview
           in: query
-          description: Specify whether the scan overview is inclued inside the returning artifacts
+          description: Specify whether the scan overview is included inside the returning artifacts
           type: boolean
           required: false
           default: false
         - name: with_signature
           in: query
-          description: Specify whether the signature is inclued inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          description: Specify whether the signature is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
           type: boolean
           required: false
           default: false
         - name: with_immutable_status
           in: query
-          description: Specify whether the immutable status is inclued inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          description: Specify whether the immutable status is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
           type: boolean
           required: false
           default: false
@@ -372,7 +372,7 @@ paths:
           in: path
           description: The type of addition.
           type: string
-          enum: [build_history, values.yaml, readme.md, dependencies]
+          enum: [build_history, values.yaml, readme.md, dependencies, vulnerabilities]
           required: true
       responses:
         '200':
@@ -670,6 +670,9 @@ definitions:
         type: array
         items:
           $ref: '#/definitions/Label'
+      scan_overview:
+        $ref: '#/definitions/ScanOverview'
+        description: The overview of the scan result.
   Tag:
     type: object
     properties:
@@ -796,4 +799,66 @@ definitions:
       deleted:
         type: boolean
         description: Whether the label is deleted or not
-
+  ScanOverview:
+    type: object
+    description: 'The scan overview attached in the metadata of tag'
+    additionalProperties:
+      $ref: '#/definitions/NativeReportSummary'
+  NativeReportSummary:
+    type: object
+    description: 'The summary for the native report'
+    properties:
+      report_id:
+        type: string
+        description: 'id of the native scan report'
+        example: '5f62c830-f996-11e9-957f-0242c0a89008'
+      scan_status:
+        type: string
+        description: 'The status of the report generating process'
+        example: 'Success'
+      severity:
+        type: string
+        description: 'The overall severity'
+        example: 'High'
+      duration:
+        type: integer
+        format: int64
+        description: 'The seconds spent for generating the report'
+        example: 300
+      summary:
+        $ref: '#/definitions/VulnerabilitySummary'
+      start_time:
+        type: string
+        format: date-time
+        description: 'The start time of the scan process that generating report'
+        example: '2006-01-02T14:04:05'
+      end_time:
+        type: string
+        format: date-time
+        description: 'The end time of the scan process that generating report'
+        example: '2006-01-02T15:04:05'
+  VulnerabilitySummary:
+    type: object
+    description: |
+      VulnerabilitySummary contains the total number of the foun d vulnerabilities number and numbers of each severity level.
+    properties:
+      total:
+        type: integer
+        format: int
+        description: 'The total number of the found vulnerabilities'
+        example: 500
+      fixable:
+        type: integer
+        format: int
+        description: 'The number of the fixable vulnerabilities'
+        example: 100
+      summary:
+        type: object
+        description: 'Numbers of the vulnerabilities with different severity'
+        additionalProperties:
+          type: integer
+          format: int
+          example: 10
+        example:
+          'Critical': 5
+          'High': 5

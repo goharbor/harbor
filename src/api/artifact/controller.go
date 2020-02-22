@@ -239,6 +239,11 @@ func (c *controller) List(ctx context.Context, query *q.Query, option *Option) (
 	if err != nil {
 		return nil, err
 	}
+
+	if err := c.populateRepositoryName(ctx, arts...); err != nil {
+		return nil, err
+	}
+
 	var artifacts []*Artifact
 	for _, art := range arts {
 		artifacts = append(artifacts, c.assembleArtifact(ctx, art, option))
@@ -516,6 +521,17 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 	artifact := &Artifact{
 		Artifact: *art,
 	}
+
+	if artifact.RepositoryName == "" {
+		repo, err := c.repoMgr.Get(ctx, artifact.RepositoryID)
+		if err != nil {
+			log.Errorf("get repository %d failed, error: %v", artifact.RepositoryID, err)
+			return artifact
+		}
+
+		artifact.RepositoryName = repo.Name
+	}
+
 	// populate addition links
 	c.populateAdditionLinks(ctx, artifact)
 	if option == nil {
@@ -530,6 +546,34 @@ func (c *controller) assembleArtifact(ctx context.Context, art *artifact.Artifac
 	// populate addition links
 	c.populateAdditionLinks(ctx, artifact)
 	return artifact
+}
+
+func (c *controller) populateRepositoryName(ctx context.Context, artifacts ...*artifact.Artifact) error {
+	var ids []int64
+	for _, artifact := range artifacts {
+		ids = append(ids, artifact.RepositoryID)
+	}
+
+	repositories, err := c.repoMgr.List(ctx, &q.Query{Keywords: map[string]interface{}{"repository_id__in": ids}})
+	if err != nil {
+		return err
+	}
+
+	mp := make(map[int64]string, len(repositories))
+	for _, repository := range repositories {
+		mp[repository.RepositoryID] = repository.Name
+	}
+
+	for _, artifact := range artifacts {
+		repositoryName, ok := mp[artifact.RepositoryID]
+		if !ok {
+			return ierror.NotFoundError(nil).WithMessage("repository %d not found", artifact.RepositoryID)
+		}
+
+		artifact.RepositoryName = repositoryName
+	}
+
+	return nil
 }
 
 func (c *controller) populateTags(ctx context.Context, art *Artifact, option *TagOption) {
@@ -619,25 +663,11 @@ func (c *controller) populateAdditionLinks(ctx context.Context, artifact *Artifa
 		log.Error(err.Error())
 		return
 	}
-	if len(types) == 0 {
-		return
-	}
-	repository, err := c.repoMgr.Get(ctx, artifact.RepositoryID)
-	if err != nil {
-		log.Error(err.Error())
-		return
-	}
-	pro, repo := utils.ParseRepository(repository.Name)
-	version := internal.GetAPIVersion(ctx)
-	if artifact.AdditionLinks == nil {
-		artifact.AdditionLinks = make(map[string]*AdditionLink)
-	}
-	for _, t := range types {
-		t = strings.ToLower(t)
-		artifact.AdditionLinks[t] = &AdditionLink{
-			HREF: fmt.Sprintf("/api/%s/projects/%s/repositories/%s/artifacts/%s/additions/%s",
-				version, pro, repo, artifact.Digest, t),
-			Absolute: false,
+
+	if len(types) > 0 {
+		version := internal.GetAPIVersion(ctx)
+		for _, t := range types {
+			artifact.SetAdditionLink(strings.ToLower(t), version)
 		}
 	}
 }
