@@ -94,6 +94,10 @@
                     [disabled]="!(canScanNow() && selectedRowHasVul() && selectedRow.length==1 && hasEnabledScanner && hasScanImagePermission )" (click)="scanNow()">
                     <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}
                 </button>
+                <button type="button" class="btn  btn-secondary scan-btn"
+                    (click)="preheat(selectedRow)" [disabled]="selectedRow.length < 1">
+                    <clr-icon shape="pop-out" size="16"></clr-icon>&nbsp;{{'DISTRIBUTION.PREHEAT_ACTION' | translate}}
+                </button>
 
                 <clr-dropdown class="btn  btn-link">
                     <span clrDropdownTrigger id="artifact-list-action" class="btn pl-0">
