@@ -9,9 +9,9 @@ import (
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	notificationModel "github.com/goharbor/harbor/src/pkg/notification/model"
+	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
 )

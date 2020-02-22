@@ -15,7 +15,7 @@ import (
 
 	"github.com/goharbor/harbor/src/common"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
-	n_event "github.com/goharbor/harbor/src/core/notifier/event"
+	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/replication"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/justinas/alice"

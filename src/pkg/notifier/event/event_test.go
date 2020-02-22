@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/common/models"
-	notifierModel "github.com/goharbor/harbor/src/core/notifier/model"
+	notifierModel "github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

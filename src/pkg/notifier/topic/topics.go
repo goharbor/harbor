@@ -2,9 +2,9 @@ package topic
 
 import (
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/notifier"
-	"github.com/goharbor/harbor/src/core/notifier/handler/notification"
-	"github.com/goharbor/harbor/src/core/notifier/model"
+	"github.com/goharbor/harbor/src/pkg/notifier"
+	"github.com/goharbor/harbor/src/pkg/notifier/handler/notification"
+	"github.com/goharbor/harbor/src/pkg/notifier/model"
 )
 
 // Subscribe topics

@@ -8,9 +8,9 @@ import (
 
 	"github.com/goharbor/harbor/src/common/job/models"
 	cModels "github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/core/notifier/event"
-	"github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	"github.com/goharbor/harbor/src/pkg/notifier/event"
+	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/stretchr/testify/require"
 )
 
