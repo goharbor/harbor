@@ -43,54 +43,54 @@ func Middleware() func(http.Handler) http.Handler {
 	}
 }
 
-func validate(req *http.Request) (bool, *middleware.ManifestInfo) {
-	mf, ok := middleware.ManifestInfoFromContext(req.Context())
-	if !ok {
-		return false, nil
+func validate(req *http.Request) (bool, middleware.ArtifactInfo) {
+	none := middleware.ArtifactInfo{}
+	if err := middleware.EnsureArtifactDigest(req.Context()); err != nil {
+		return false, none
 	}
-	_, err := mf.ManifestExists(req.Context())
-	if err != nil {
-		return false, mf
+	af, ok := middleware.ArtifactInfoFromContext(req.Context())
+	if !ok {
+		return false, none
 	}
 	if scannerPull, ok := middleware.ScannerPullFromContext(req.Context()); ok && scannerPull {
-		return false, mf
+		return false, none
 	}
-	if !middleware.GetPolicyChecker().ContentTrustEnabled(mf.ProjectName) {
-		return false, mf
+	if !middleware.GetPolicyChecker().ContentTrustEnabled(af.ProjectName) {
+		return false, af
 	}
-	return true, mf
+	return true, af
 }
 
-func matchNotaryDigest(mf *middleware.ManifestInfo) (bool, error) {
+func matchNotaryDigest(af middleware.ArtifactInfo) (bool, error) {
 	if NotaryEndpoint == "" {
 		NotaryEndpoint = config.InternalNotaryEndpoint()
 	}
-	targets, err := notary.GetInternalTargets(NotaryEndpoint, util.TokenUsername, mf.Repository)
+	targets, err := notary.GetInternalTargets(NotaryEndpoint, util.TokenUsername, af.Repository)
 	if err != nil {
 		return false, err
 	}
 	for _, t := range targets {
-		if mf.Digest != "" {
+		if af.Digest != "" {
 			d, err := notary.DigestFromTarget(t)
 			if err != nil {
 				return false, err
 			}
-			if mf.Digest == d {
+			if af.Digest == d {
 				return true, nil
 			}
 		} else {
-			if t.Tag == mf.Tag {
-				log.Debugf("found reference: %s in notary, try to match digest.", mf.Tag)
+			if t.Tag == af.Tag {
+				log.Debugf("found reference: %s in notary, try to match digest.", af.Tag)
 				d, err := notary.DigestFromTarget(t)
 				if err != nil {
 					return false, err
 				}
-				if mf.Digest == d {
+				if af.Digest == d {
 					return true, nil
 				}
 			}
 		}
 	}
-	log.Debugf("image: %#v, not found in notary", mf)
+	log.Debugf("image: %#v, not found in notary", af)
 	return false, nil
 }
