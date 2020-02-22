@@ -5,9 +5,9 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	notificationModel "github.com/goharbor/harbor/src/pkg/notification/model"
+	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )

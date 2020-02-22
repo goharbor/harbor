@@ -22,7 +22,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/label"
 	"github.com/goharbor/harbor/src/core/middlewares"
-	n_event "github.com/goharbor/harbor/src/core/notifier/event"
+	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
 )

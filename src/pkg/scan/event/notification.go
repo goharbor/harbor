@@ -17,9 +17,9 @@ package event
 import (
 	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/notifier"
-	"github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/pkg/notifier"
+	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/pkg/errors"
 )

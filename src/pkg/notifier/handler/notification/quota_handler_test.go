@@ -7,11 +7,11 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/notifier"
-	"github.com/goharbor/harbor/src/core/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	nm "github.com/goharbor/harbor/src/pkg/notification/model"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
+	"github.com/goharbor/harbor/src/pkg/notifier"
+	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )

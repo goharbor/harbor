@@ -5,9 +5,9 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/notifier"
-	"github.com/goharbor/harbor/src/core/notifier/model"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notification/model"
+	"github.com/goharbor/harbor/src/pkg/notifier"
+	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/pkg/errors"
 )
