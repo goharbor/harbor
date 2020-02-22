@@ -1,0 +1,19 @@
+@mixin refresh-button {
+    cursor: pointer;
+}
+
+@mixin refresh-button-hover($color) {
+    color: $color;
+}
+
+@mixin float-right($right-margin) {
+    display: flex;
+    justify-content: flex-end;
+    margin-right: $right-margin;
+}
+
+@mixin square($edge) {
+    width: $edge;
+    height: $edge;
+    min-height: $edge;
+}

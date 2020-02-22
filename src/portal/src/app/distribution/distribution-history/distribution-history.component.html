@@ -1,0 +1,57 @@
+<div class="row">
+  <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+    <h2 class="custom-h2">{{ 'DISTRIBUTION.HISTORIES' | translate }}</h2>
+
+    <div class="flex-items-xs-right option-right display-f">
+      <hbr-filter
+        [withDivider]="true"
+        filterPlaceholder="{{
+          'DISTRIBUTION.FILTER_HISTORIES_PLACEHOLDER' | translate
+        }}"
+        (filterEvt)="doFilter($event)"
+      ></hbr-filter>
+      <span class="refresh-btn" (click)="refresh()">
+        <clr-icon shape="refresh"></clr-icon>
+      </span>
+    </div>
+    <div>
+      <clr-datagrid (clrDgRefresh)="loadData()" [clrDgLoading]="loading">
+        <clr-dg-column>{{ 'DISTRIBUTION.IMAGE' | translate }}</clr-dg-column>
+        <clr-dg-column>{{
+          'DISTRIBUTION.START_TIME' | translate
+        }}</clr-dg-column>
+        <clr-dg-column>{{
+          'DISTRIBUTION.FINISH_TIME' | translate
+        }}</clr-dg-column>
+        <clr-dg-column>{{ 'DISTRIBUTION.STATUS' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'DISTRIBUTION.PROVIDER' | translate }}</clr-dg-column>
+        <clr-dg-column>{{ 'DISTRIBUTION.INSTANCE' | translate }}</clr-dg-column>
+        <clr-dg-placeholder>{{
+          'DISTRIBUTION.NOT_FOUND' | translate
+        }}</clr-dg-placeholder>
+        <clr-dg-row *ngFor="let record of records">
+          <clr-dg-cell>{{ record.image }}</clr-dg-cell>
+          <clr-dg-cell>{{ record.start_time }}</clr-dg-cell>
+          <clr-dg-cell>{{ record.finish_time }}</clr-dg-cell>
+          <clr-dg-cell>{{ record.status }}</clr-dg-cell>
+          <clr-dg-cell>{{ record.provider }}</clr-dg-cell>
+          <clr-dg-cell>{{ record.instance }}</clr-dg-cell>
+        </clr-dg-row>
+        <clr-dg-footer>
+          <clr-dg-pagination
+            #pagination
+            [clrDgPageSize]="pageSize"
+            [clrDgTotalItems]="totalCount"
+            [(clrDgPage)]="currentPage"
+          >
+            <span *ngIf="pagination.totalItems">
+              {{ pagination.firstItem + 1 }} - {{ pagination.lastItem + 1 }}
+              {{ 'HELM_CHART.OF' | translate }}
+            </span>
+            {{ pagination.totalItems }} {{ 'HELM_CHART.ITEMS' | translate }}
+          </clr-dg-pagination>
+        </clr-dg-footer>
+      </clr-datagrid>
+    </div>
+  </div>
+</div>

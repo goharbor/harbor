@@ -8,17 +8,14 @@
             </span>
         </div>
         <div class="clr-col-2 right">
-            <a class="all-scanners" href="#"
-                routerLink="/harbor/interrogation-services/scanners">{{'SCANNER.ALL_SCANNERS' | translate }}</a>
+            <a class="all-scanners" href="#" routerLink="/harbor/interrogation-services/scanners">{{'SCANNER.ALL_SCANNERS' | translate }}</a>
             <clr-icon (click)="closeInfo()" class="close-icon" shape="times" size="24"></clr-icon>
         </div>
     </div>
-    <global-message [isAppLevel]="true" ></global-message>
+    <global-message [isAppLevel]="true"></global-message>
     <navigator (showAccountSettingsModal)="openModal($event)" (showDialogModalAction)="openModal($event)"></navigator>
     <div class="content-container">
-        <div class="content-area" [class.container-override]="showSearch"
-            [class.content-area-override]="!shouldOverrideContent"
-            [class.start-content-padding]="shouldOverrideContent">
+        <div class="content-area" [class.container-override]="showSearch" [class.content-area-override]="!shouldOverrideContent" [class.start-content-padding]="shouldOverrideContent">
             <global-message [isAppLevel]="false"></global-message>
             <!-- Only appear when searching -->
             <search-result></search-result>
@@ -30,6 +27,21 @@
                     <clr-icon shape="organization" clrVerticalNavIcon></clr-icon>
                     {{'SIDE_NAV.PROJECTS' | translate}}
                 </a>
+                <clr-vertical-nav-group *ngIf="isSystemAdmin" routerLinkActive="active">
+                    <clr-icon shape="cloud-traffic" clrVerticalNavIcon></clr-icon>
+                    {{'SIDE_NAV.DISTRIBUTIONS.NAME' | translate}}
+                    <a routerLink="#" hidden aria-hidden="true"></a>
+                    <clr-vertical-nav-group-children *clrIfExpanded="true">
+                        <a clrVerticalNavLink routerLink="/harbor/distribution/instances" routerLinkActive="active">
+                            <clr-icon shape="cloud-network" clrVerticalNavIcon></clr-icon>
+                            {{'SIDE_NAV.DISTRIBUTIONS.INSTANCES' | translate}}
+                        </a>
+                        <a clrVerticalNavLink routerLink="/harbor/distribution/histories" routerLinkActive="active">
+                            <clr-icon shape="note" clrVerticalNavIcon></clr-icon>
+                            {{'SIDE_NAV.DISTRIBUTIONS.HISTORIES' | translate}}
+                        </a>
+                    </clr-vertical-nav-group-children>
+                </clr-vertical-nav-group>
                 <a clrVerticalNavLink routerLinkActive="active" routerLink="/harbor/logs">
                     <clr-icon shape="list" clrVerticalNavIcon></clr-icon>
                     {{'SIDE_NAV.LOGS' | translate}}
@@ -43,8 +55,7 @@
                             <clr-icon shape="users" clrVerticalNavIcon></clr-icon>
                             {{'SIDE_NAV.SYSTEM_MGMT.USER' | translate}}
                         </a>
-                        <a *ngIf='isLdapMode || isHttpAuthMode || isOidcMode' clrVerticalNavLink
-                            routerLink="/harbor/groups" routerLinkActive="active">
+                        <a *ngIf='isLdapMode || isHttpAuthMode || isOidcMode' clrVerticalNavLink routerLink="/harbor/groups" routerLinkActive="active">
                             <clr-icon shape="users" clrVerticalNavIcon></clr-icon>
                             {{'SIDE_NAV.SYSTEM_MGMT.GROUP' | translate}}
                         </a>
@@ -56,8 +67,7 @@
                             <clr-icon shape="cloud-traffic" clrVerticalNavIcon></clr-icon>
                             {{'SIDE_NAV.SYSTEM_MGMT.REPLICATION' | translate}}
                         </a>
-                        <a *ngIf="!withAdmiral" clrVerticalNavLink routerLink="/harbor/labels"
-                            routerLinkActive="active">
+                        <a *ngIf="!withAdmiral" clrVerticalNavLink routerLink="/harbor/labels" routerLinkActive="active">
                             <clr-icon shape="tag" clrVerticalNavIcon></clr-icon>
                             {{'CONFIG.LABEL' | translate }}
                         </a>

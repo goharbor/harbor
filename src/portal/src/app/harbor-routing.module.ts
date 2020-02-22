@@ -62,6 +62,8 @@ import { ArtifactSummaryComponent } from "./project/repository/artifact/artifact
 import { ReplicationTasksComponent } from "../lib/components/replication/replication-tasks/replication-tasks.component";
 import { ReplicationTasksRoutingResolverService } from "./services/routing-resolvers/replication-tasks-routing-resolver.service";
 import { ArtifactDetailRoutingResolverService } from "./services/routing-resolvers/artifact-detail-routing-resolver.service";
+import { DistributionHistoryComponent } from './distribution/distribution-history/distribution-history.component';
+import { DistributionInstancesComponent } from './distribution/distribution-instances/distribution-instances.component';
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -137,18 +139,18 @@ const harborRoutes: Routes = [
             path: '',
             redirectTo: 'scanners',
             pathMatch: 'full'
-          },
+          }
         ]
       },
       {
         path: 'labels',
         component: LabelsComponent,
-        canActivate: [SystemAdminGuard],
+        canActivate: [SystemAdminGuard]
       },
       {
         path: 'project-quotas',
         component: ProjectQuotasComponent,
-        canActivate: [SystemAdminGuard],
+        canActivate: [SystemAdminGuard]
       },
       {
         path: 'replications/:id/tasks',
@@ -290,8 +292,7 @@ const harborRoutes: Routes = [
                 path: 'immutable-tag',
                 component: ImmutableTagComponent
               },
-              { path: '', redirectTo: 'tag-retention', pathMatch: 'full' },
-
+              { path: '', redirectTo: 'tag-retention', pathMatch: 'full' }
             ]
           },
           {
@@ -332,7 +333,7 @@ const harborRoutes: Routes = [
         canActivate: [MemberGuard],
         resolve: {
           projectResolver: ProjectRoutingResolver
-        },
+        }
       },
       {
         path: 'projects/:id/repositories/:repo/artifacts/:digest',
@@ -365,6 +366,16 @@ const harborRoutes: Routes = [
         component: DestinationPageComponent,
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard]
+      },
+      {
+        path: 'distribution/instances',
+        component: DistributionInstancesComponent,
+        canActivate: [SystemAdminGuard]
+      },
+      {
+        path: 'distribution/histories',
+        component: DistributionHistoryComponent,
+        canActivate: [SystemAdminGuard]
       }
     ]
   },
