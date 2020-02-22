@@ -12,7 +12,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { BrowserModule } from '@angular/platform-browser';
-import { NgModule, APP_INITIALIZER, LOCALE_ID, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import {
+  NgModule,
+  APP_INITIALIZER,
+  LOCALE_ID,
+  CUSTOM_ELEMENTS_SCHEMA
+} from '@angular/core';
 import { AppComponent } from './app.component';
 import { InterceptHttpService } from './services/intercept-http.service';
 
@@ -40,10 +45,11 @@ import { VulnerabilityPageComponent } from './vulnerability-page/vulnerability-p
 import { GcPageComponent } from './gc-page/gc-page.component';
 import { OidcOnboardModule } from './oidc-onboard/oidc-onboard.module';
 import { LicenseModule } from './license/license.module';
-import { InterrogationServicesComponent } from "./interrogation-services/interrogation-services.component";
+import { InterrogationServicesComponent } from './interrogation-services/interrogation-services.component';
 import { LabelsComponent } from './labels/labels.component';
 import { ProjectQuotasComponent } from './project-quotas/project-quotas.component';
-import { HarborLibraryModule } from "../lib/harbor-library.module";
+import { HarborLibraryModule } from '../lib/harbor-library.module';
+import { DistributionModule } from './distribution/distribution.module';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
 import { AllPipesModule } from './all-pipes/all-pipes.module';
 registerLocaleData(zh, 'zh-cn');
@@ -52,15 +58,18 @@ registerLocaleData(localeFr, 'fr-fr');
 registerLocaleData(localePt, 'pt-br');
 registerLocaleData(localeTr, 'tr-tr');
 
-export function initConfig(configService: AppConfigService, skinableService: SkinableConfig) {
-    return () => {
-        skinableService.getCustomFile().subscribe();
-        configService.load().subscribe();
-    };
+export function initConfig(
+  configService: AppConfigService,
+  skinableService: SkinableConfig
+) {
+  return () => {
+    skinableService.getCustomFile().subscribe();
+    configService.load().subscribe();
+  };
 }
 
 export function getCurrentLanguage(translateService: TranslateService) {
-    return translateService.currentLang;
+  return translateService.currentLang;
 }
 
 @NgModule({
@@ -85,6 +94,7 @@ export function getCurrentLanguage(translateService: TranslateService) {
         OidcOnboardModule,
         LicenseModule,
         HarborLibraryModule,
+        DistributionModule
         AllPipesModule
     ],
     exports: [
@@ -107,4 +117,4 @@ export function getCurrentLanguage(translateService: TranslateService) {
     ],
     bootstrap: [AppComponent]
 })
-export class AppModule { }
+export class AppModule {}
