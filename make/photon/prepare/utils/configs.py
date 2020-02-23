@@ -395,6 +395,7 @@ def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
         'chartmuseum_db_index': 3,
         'clair_db_index': 4,
         'trivy_db_index': 5,
+        'idle_timeout_seconds': 30,
     }
 
     # overwriting existing keys by external_redis
@@ -406,6 +407,7 @@ def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
     configs['redis_db_index_reg'] = redis['registry_db_index']
     configs['redis_db_index_js'] = redis['jobservice_db_index']
     configs['redis_db_index_chart'] = redis['chartmuseum_db_index']
+    configs['redis_idle_timeout_seconds'] = redis['idle_timeout_seconds']
 
     configs['redis_url_js'] = get_redis_url(configs['redis_db_index_js'], redis)
     configs['redis_url_reg'] = get_redis_url(configs['redis_db_index_reg'], redis)
