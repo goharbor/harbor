@@ -54,18 +54,6 @@ func registerLegacyRoutes() {
 	beego.Router("/api/"+version+"/quotas", &api.QuotaAPI{}, "get:List")
 	beego.Router("/api/"+version+"/quotas/:id([0-9]+)", &api.QuotaAPI{}, "get:Get;put:Put")
 
-	beego.Router("/api/"+version+"/repositories", &api.RepositoryAPI{}, "get:Get")
-	beego.Router("/api/"+version+"/repositories/*", &api.RepositoryAPI{}, "delete:Delete;put:Put")
-	beego.Router("/api/"+version+"/repositories/*/labels", &api.RepositoryLabelAPI{}, "get:GetOfRepository;post:AddToRepository")
-	beego.Router("/api/"+version+"/repositories/*/labels/:id([0-9]+)", &api.RepositoryLabelAPI{}, "delete:RemoveFromRepository")
-	beego.Router("/api/"+version+"/repositories/*/tags/:tag", &api.RepositoryAPI{}, "delete:Delete;get:GetTag")
-	beego.Router("/api/"+version+"/repositories/*/tags/:tag/labels", &api.RepositoryLabelAPI{}, "get:GetOfImage;post:AddToImage")
-	beego.Router("/api/"+version+"/repositories/*/tags/:tag/labels/:id([0-9]+)", &api.RepositoryLabelAPI{}, "delete:RemoveFromImage")
-	beego.Router("/api/"+version+"/repositories/*/tags", &api.RepositoryAPI{}, "get:GetTags;post:Retag")
-	beego.Router("/api/"+version+"/repositories/*/tags/:tag/manifest", &api.RepositoryAPI{}, "get:GetManifests")
-	beego.Router("/api/"+version+"/repositories/*/signatures", &api.RepositoryAPI{}, "get:GetSignatures")
-	beego.Router("/api/"+version+"/repositories/top", &api.RepositoryAPI{}, "get:GetTopRepos")
-
 	beego.Router("/api/"+version+"/system/gc", &api.GCAPI{}, "get:List")
 	beego.Router("/api/"+version+"/system/gc/:id", &api.GCAPI{}, "get:GetGC")
 	beego.Router("/api/"+version+"/system/gc/:id([0-9]+)/log", &api.GCAPI{}, "get:GetLog")
@@ -154,11 +142,6 @@ func registerLegacyRoutes() {
 	proScannerAPI := &api.ProjectScannerAPI{}
 	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/scanner", proScannerAPI, "get:GetProjectScanner;put:SetProjectScanner")
 	beego.Router("/api/"+version+"/projects/:pid([0-9]+)/scanner/candidates", proScannerAPI, "get:GetProScannerCandidates")
-
-	// Add routes for scan
-	scanAPI := &api.ScanAPI{}
-	beego.Router("/api/"+version+"/repositories/*/tags/:tag/scan", scanAPI, "post:Scan;get:Report")
-	beego.Router("/api/"+version+"/repositories/*/tags/:tag/scan/:uuid/log", scanAPI, "get:Log")
 
 	// Add routes for scan all metrics
 	scanAllAPI := &api.ScanAllAPI{}

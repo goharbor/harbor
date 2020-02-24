@@ -751,29 +751,6 @@ func TestGetRepositoryByName(t *testing.T) {
 	}
 }
 
-func TestIncreasePullCount(t *testing.T) {
-	if err := IncreasePullCount(currentRepository.Name); err != nil {
-		log.Errorf("Error happens when increasing pull count: %v", currentRepository.Name)
-	}
-
-	repository, err := GetRepositoryByName(currentRepository.Name)
-	if err != nil {
-		t.Errorf("Error occurred in GetRepositoryByName: %v", err)
-	}
-
-	if repository.PullCount != 1 {
-		t.Errorf("repository pull count is not 1 after IncreasePullCount, expected: 1, actual: %d", repository.PullCount)
-	}
-}
-
-func TestRepositoryExists(t *testing.T) {
-	var exists bool
-	exists = RepositoryExists(currentRepository.Name)
-	if !exists {
-		t.Errorf("The repository with name: %s, does not exist", currentRepository.Name)
-	}
-}
-
 func TestDeleteRepository(t *testing.T) {
 	err := DeleteRepository(currentRepository.Name)
 	if err != nil {
