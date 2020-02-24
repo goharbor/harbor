@@ -146,7 +146,6 @@ func GetProjects(query *models.ProjectQueryParam) ([]*models.Project, error) {
 		p.creation_time, p.update_time ` + sqlStr + ` order by p.name`
 	sqlStr, queryParam = CreatePagination(query, sqlStr, queryParam)
 
-	log.Debugf("sql:=%+v, param= %+v", sqlStr, queryParam)
 	var projects []*models.Project
 	_, err := GetOrmer().Raw(sqlStr, queryParam).QueryRows(&projects)
 

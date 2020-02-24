@@ -19,7 +19,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/stretchr/testify/mock"
-	"time"
 )
 
 // FakeManager is a fake artifact manager that implement src/pkg/artifact.Manager interface
@@ -76,7 +75,7 @@ func (f *FakeManager) Delete(ctx context.Context, id int64) error {
 }
 
 // UpdatePullTime ...
-func (f *FakeManager) UpdatePullTime(ctx context.Context, artifactID int64, time time.Time) error {
+func (f *FakeManager) Update(ctx context.Context, artifact *artifact.Artifact, props ...string) error {
 	args := f.Called()
 	return args.Error(0)
 }

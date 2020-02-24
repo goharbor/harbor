@@ -488,8 +488,8 @@ func (c *controllerTestSuite) TestUpdatePullTime() {
 			ArtifactID: 1,
 		},
 	}, nil)
-	c.artMgr.On("UpdatePullTime").Return(nil)
 	c.tagCtl.On("Update").Return(nil)
+	c.artMgr.On("Update").Return(nil)
 	err := c.ctl.UpdatePullTime(nil, 1, 1, time.Now())
 	c.Require().Nil(err)
 	c.artMgr.AssertExpectations(c.T())

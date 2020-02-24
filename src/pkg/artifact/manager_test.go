@@ -226,9 +226,12 @@ func (m *managerTestSuite) TestDelete() {
 	m.dao.AssertExpectations(m.T())
 }
 
-func (m *managerTestSuite) TestUpdatePullTime() {
+func (m *managerTestSuite) TestUpdate() {
 	m.dao.On("Update", mock.Anything).Return(nil)
-	err := m.mgr.UpdatePullTime(nil, 1, time.Now())
+	err := m.mgr.Update(nil, &Artifact{
+		ID:       1,
+		PullTime: time.Now(),
+	}, "PullTime")
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 }

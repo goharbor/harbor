@@ -1,4 +1,26 @@
+/*
+table artifact:
+  id            SERIAL PRIMARY KEY NOT NULL,
+  type          varchar(255) NOT NULL,
+  media_type    varchar(255) NOT NULL,
+  manifest_media_type varchar(255) NOT NULL,
+  project_id    int NOT NULL,
+  repository_id int NOT NULL,
+  repository_name varchar(255) NOT NULL,
+  digest        varchar(255) NOT NULL,
+  size          bigint,
+  push_time     timestamp default CURRENT_TIMESTAMP,
+  pull_time     timestamp,
+  extra_attrs   text,
+  annotations   jsonb,
+  CONSTRAINT unique_artifact_2 UNIQUE (repository_id, digest)
+*/
+
 ALTER TABLE admin_job ADD COLUMN job_parameters varchar(255) Default '';
+
+/*record the data version to decide whether the data migration should be skipped*/
+ALTER TABLE schema_migrations ADD COLUMN data_version int;
+
 ALTER TABLE artifact ADD COLUMN repository_id int;
 ALTER TABLE artifact ADD COLUMN media_type varchar(255);
 ALTER TABLE artifact ADD COLUMN manifest_media_type varchar(255);
@@ -101,7 +123,6 @@ CREATE TABLE artifact_trash
   CONSTRAINT      unique_artifact_trash UNIQUE (repository_name, digest)
 );
 
-/* TODO upgrade: how about keep the table "harbor_resource_label" only for helm v2 chart and use the new table for artifact label reference? */
 /* label_reference records the labels added to the artifact */
 CREATE TABLE label_reference (
  id SERIAL PRIMARY KEY NOT NULL,
@@ -113,6 +134,23 @@ CREATE TABLE label_reference (
  FOREIGN KEY (artifact_id) REFERENCES artifact(id),
  CONSTRAINT unique_label_reference UNIQUE (label_id,artifact_id)
 );
+
+/*move the labels added to tag to artifact*/
+INSERT INTO label_reference (label_id, artifact_id, creation_time, update_time)
+(
+SELECT label.label_id, repo_tag.artifact_id, label.creation_time, label.update_time
+    FROM harbor_resource_label AS label
+    JOIN (
+        SELECT tag.artifact_id, CONCAT(repository.name, ':', tag.name) as name
+            FROM tag
+            JOIN repository
+            ON tag.repository_id = repository.repository_id
+    ) AS repo_tag
+    ON repo_tag.name = label.resource_name AND label.resource_type = 'i'
+) ON CONFLICT DO NOTHING;
+
+/*remove the records for images in table 'harbor_resource_label'*/
+DELETE FROM harbor_resource_label WHERE resource_type = 'i';
 
 
 /* TODO remove this table after clean up code that related with the old artifact model */

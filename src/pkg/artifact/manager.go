@@ -16,8 +16,6 @@ package artifact
 
 import (
 	"context"
-	"time"
-
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
 	"github.com/goharbor/harbor/src/pkg/q"
 )
@@ -45,8 +43,8 @@ type Manager interface {
 	// Delete just deletes the artifact record. The underlying data of registry will be
 	// removed during garbage collection
 	Delete(ctx context.Context, id int64) (err error)
-	// UpdatePullTime updates the pull time of the artifact
-	UpdatePullTime(ctx context.Context, artifactID int64, time time.Time) (err error)
+	// Update the artifact. Only the properties specified by "props" will be updated if it is set
+	Update(ctx context.Context, artifact *Artifact, props ...string) (err error)
 	// ListReferences according to the query
 	ListReferences(ctx context.Context, query *q.Query) (references []*Reference, err error)
 	// DeleteReference specified by ID
@@ -123,11 +121,9 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 	// delete artifact
 	return m.dao.Delete(ctx, id)
 }
-func (m *manager) UpdatePullTime(ctx context.Context, artifactID int64, time time.Time) error {
-	return m.dao.Update(ctx, &dao.Artifact{
-		ID:       artifactID,
-		PullTime: time,
-	}, "PullTime")
+
+func (m *manager) Update(ctx context.Context, artifact *Artifact, props ...string) (err error) {
+	return m.dao.Update(ctx, artifact.To(), props...)
 }
 
 func (m *manager) ListReferences(ctx context.Context, query *q.Query) ([]*Reference, error) {
