@@ -1150,7 +1150,7 @@
         "MSG_SCHEDULE_RESET": "Çöp Toplama programı sıfırlandı"
     },
     "RETAG": {
-        "MSG_SUCCESS": "Başarıyla yeniden etiketle",
+        "MSG_SUCCESS": "Copy artifact successfully",
         "TIP_REPO": "Bir depo adı yol bileşenlerine bölünmüştür. Depo adının bir bileşeni, isteğe bağlı olarak nokta, kısa çizgi veya alt çizgi ile ayrılmış en az bir küçük harf, alfa sayısal karakterler olmalıdır. Daha kesin olarak, [a-z0-9] + (?: [._-] [a-z0-9] +) * normal ifadesiyle eşleşmelidir. Eğer bir depo adı iki veya daha fazla yol bileşenine sahipse, eğik çizgi ile ayrılmış ('/').Eğik çizgi içeren bir depo adının toplam uzunluğu, 256 karakterden az olmalıdır.",
         "TIP_TAG": "Etiket, bir depodaki Docker imajına uygulanan bir etikettir. Etiketler, bir depodaki çeşitli imajların birbirlerinden nasıl ayırt edildikleridir. Regex ile eşleşmesi gerekir: (`[\\ w] [\\ w .-] {0,127}`)"
     },

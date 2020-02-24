@@ -1118,7 +1118,7 @@
         "MSG_SCHEDULE_RESET": "Garbage Collection schedule has been reset"
     },
     "RETAG": {
-        "MSG_SUCCESS": "Retag successfully",
+        "MSG_SUCCESS": "Copy artifact successfully",
         "TIP_REPO": "A repository name is broken up into path components. A component of a repository name must be at least one lowercase, alpha-numeric characters, optionally separated by periods, dashes or underscores. More strictly, it must match the regular expression [a-z0-9]+(?:[._-][a-z0-9]+)*.If a repository name has two or more path components, they must be separated by a forward slash ('/').The total length of a repository name, including slashes, must be less the 256 characters.",
         "TIP_TAG": "A tag is a label applied to a Docker image in a repository. Tags are how various images in a repository are distinguished from each other.It need to match Regex: (`[\\w][\\w.-]{0,127}`)"
     },

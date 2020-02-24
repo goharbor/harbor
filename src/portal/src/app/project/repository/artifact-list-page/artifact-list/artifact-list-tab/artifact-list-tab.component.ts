@@ -51,7 +51,7 @@ import {
 import { ImageNameInputComponent } from "../../../../../../lib/components/image-name-input/image-name-input.component";
 import { CopyInputComponent } from "../../../../../../lib/components/push-image/copy-input.component";
 import { ErrorHandler } from "../../../../../../lib/utils/error-handler";
-import { ArtifactDefaultService } from "../../../artifact/artifact.service";
+import { ArtifactService } from "../../../artifact/artifact.service";
 import { OperationService } from "../../../../../../lib/components/operation/operation.service";
 import { ChannelService } from "../../../../../../lib/services/channel.service";
 import {
@@ -63,7 +63,7 @@ import { operateChanges, OperateInfo, OperationState } from "../../../../../../l
 import { errorHandler } from "../../../../../../lib/utils/shared/shared.utils";
 import { Artifact } from "../../../artifact/artifact";
 import { Project } from "../../../../project";
-
+import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
 export interface LabelState {
   iconsShow: boolean;
   label: Label;
@@ -165,7 +165,8 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     private retagService: RetagService,
     private userPermissionService: UserPermissionService,
     private labelService: LabelService,
-    private artifactService: ArtifactDefaultService,
+    private artifactService: ArtifactService,
+    private newArtifactService: NewArtifactService,
     private translateService: TranslateService,
     private operationService: OperationService,
     private channel: ChannelService,
@@ -636,19 +637,16 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
     if (this.selectedRow && this.selectedRow.length) {
       this.retagDialogOpened = true;
       this.retagSrcImage = this.repoName + ":" + this.selectedRow[0].digest;
-    } else {
-      this.errorHandlerService.error("One tag should be selected before retag.");
     }
   }
 
   onRetag() {
-    this.retagService.retag({
-      targetProject: this.imageNameInput.projectName.value,
-      targetRepo: this.imageNameInput.repoName.value,
-      targetTag: this.imageNameInput.tagName.value,
-      srcImage: this.retagSrcImage,
-      override: true
-    })
+    let params: NewArtifactService.CopyArtifactParams = {
+      projectName: this.imageNameInput.projectName.value,
+      repositoryName: this.imageNameInput.repoName.value,
+      from: `${this.projectName}/${this.repoName}@${this.selectedRow[0].digest}`,
+    };
+    this.newArtifactService.CopyArtifact(params)
       .pipe(finalize(() => {
         this.retagDialogOpened = false;
         this.imageNameInput.form.reset();
@@ -656,16 +654,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       .subscribe(response => {
         this.translateService.get('RETAG.MSG_SUCCESS').subscribe((res: string) => {
           this.errorHandlerService.info(res);
-          if (`${this.imageNameInput.projectName.value}/${this.imageNameInput.repoName.value}` === this.repoName) {
-            let st: State = this.currentState;
-            if (!st) {
-              st = { page: {} };
-            }
-            st.page.size = this.pageSize;
-            st.page.from = 0;
-            st.page.to = this.pageSize - 1;
-            this.clrLoad(st);
-          }
         });
       }, error => {
         this.errorHandlerService.error(error);
@@ -701,7 +689,17 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       && message.state === ConfirmationState.CONFIRMED) {
       let artifactList = message.data;
       if (artifactList && artifactList.length) {
-        this.findArtifactFromIndex(artifactList);
+        artifactList.forEach(artifact => {
+          this.deleteArtifactobservableLists.push(this.delOperate(artifact));
+        });
+        forkJoin(...this.deleteArtifactobservableLists).subscribe((items) => {
+          // if delete one success  refresh list
+          if (items.some(item => !item)) {
+            this.selectedRow = [];
+            let st: ClrDatagridStateInterface = { page: {from: 0, to: this.pageSize - 1, size: this.pageSize} };
+            this.clrLoad(st);
+          }
+        });
       }
     }
   }
