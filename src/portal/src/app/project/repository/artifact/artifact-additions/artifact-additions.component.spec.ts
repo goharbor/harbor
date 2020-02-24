@@ -3,17 +3,18 @@ import { ArtifactAdditionsComponent } from './artifact-additions.component';
 import { AdditionLinks } from "../../../../../../ng-swagger-gen/models/addition-links";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../../../lib/entities/service.config";
 import { ProjectModule } from "../../../project.module";
+import { CURRENT_BASE_HREF } from "../../../../../lib/utils/utils";
 
 
 describe('ArtifactAdditionsComponent', () => {
   const mockedAdditionLinks: AdditionLinks = {
    vulnerabilities: {
      absolute: false,
-     href: "api/v2/test"
+     href: CURRENT_BASE_HREF + "/test"
    }
   };
   const config: IServiceConfig = {
-    baseEndpoint: "/api/v2"
+    baseEndpoint: CURRENT_BASE_HREF
   };
   let component: ArtifactAdditionsComponent;
   let fixture: ComponentFixture<ArtifactAdditionsComponent>;

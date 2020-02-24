@@ -5,7 +5,7 @@ import { Observable, throwError as observableThrowError, Subject } from "rxjs";
 import { Manifest, RequestQueryParams } from "../../../../lib/services";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../../lib/entities/service.config";
 import {
-  buildHttpRequestOptionsWithObserveResponse,
+  buildHttpRequestOptionsWithObserveResponse, CURRENT_BASE_HREF,
   HTTP_GET_OPTIONS,
   HTTP_JSON_OPTIONS
 } from "../../../../lib/utils/utils";
@@ -122,10 +122,10 @@ export class ArtifactDefaultService extends ArtifactService {
     super();
     this._baseUrl = this.config.repositoryBaseEndpoint
       ? this.config.repositoryBaseEndpoint
-      : "/api/repositories";
+      : CURRENT_BASE_HREF + "/repositories";
     this._labelUrl = this.config.labelEndpoint
       ? this.config.labelEndpoint
-      : "/api/labels";
+      : CURRENT_BASE_HREF + "/labels";
   }
 
 
@@ -138,7 +138,7 @@ export class ArtifactDefaultService extends ArtifactService {
     }
 
     // queryParams = queryParams.set("detail", "true");
-    let url: string = `/api/v2.0/projects/${project_id}/repositories/${repositoryName}/artifacts`;
+    let url: string = `${ CURRENT_BASE_HREF }/projects/${project_id}/repositories/${repositoryName}/artifacts`;
     // /api/v2/projects/{project_id}/repositories/{repositoryName}/artifacts
     return this.http
       .get<HttpResponse<Artifact[]>>(url, buildHttpRequestOptionsWithObserveResponse(queryParams))
@@ -164,7 +164,7 @@ export class ArtifactDefaultService extends ArtifactService {
     if (!artifactDigest) {
       return observableThrowError("Bad argument");
     }
-    let url = `/api/v2.0/projects/${projectName}/repositories/${repositoryName}/artifacts/${artifactDigest}`;
+    let url = `${ CURRENT_BASE_HREF }/projects/${projectName}/repositories/${repositoryName}/artifacts/${artifactDigest}`;
     return this.http.get(url).pipe(catchError(error => observableThrowError(error))) as Observable<Artifact>;
   }
   public deleteArtifact(
@@ -176,7 +176,7 @@ export class ArtifactDefaultService extends ArtifactService {
       return observableThrowError("Bad argument");
     }
 
-    let url: string = `/api/v2.0/projects/${projectName}/repositories/${repositoryName}/artifacts/${digest}`;
+    let url: string = `${ CURRENT_BASE_HREF }/projects/${projectName}/repositories/${repositoryName}/artifacts/${digest}`;
     return this.http
       .delete(url, HTTP_JSON_OPTIONS)
       .pipe(map(response => response)
@@ -195,7 +195,7 @@ export class ArtifactDefaultService extends ArtifactService {
     }
 
     let _addLabelToImageUrl = `
-    /api/v2.0/projects/${projectName}/repositories/${repoName}/artifacts/${digest}/labels`;
+   ${ CURRENT_BASE_HREF }/projects/${projectName}/repositories/${repoName}/artifacts/${digest}/labels`;
     return this.http
       .post(_addLabelToImageUrl, { id: labelId }, HTTP_JSON_OPTIONS)
       .pipe(catchError(error => observableThrowError(error)));
@@ -212,7 +212,7 @@ export class ArtifactDefaultService extends ArtifactService {
     }
 
     let _addLabelToImageUrl = `
-    /api/v2.0/projects/${projectName}/repositories/${repoName}/artifacts/${digest}/labels/${labelId}`;
+     ${ CURRENT_BASE_HREF }/projects/${projectName}/repositories/${repoName}/artifacts/${digest}/labels/${labelId}`;
     return this.http
       .delete(_addLabelToImageUrl)
       .pipe(catchError(error => observableThrowError(error)));

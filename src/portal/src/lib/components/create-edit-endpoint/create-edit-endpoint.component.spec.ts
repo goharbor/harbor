@@ -21,6 +21,7 @@ import { IServiceConfig, SERVICE_CONFIG } from "../../entities/service.config";
 import { of } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
+import { CURRENT_BASE_HREF } from "../../utils/utils";
 
 describe("CreateEditEndpointComponent (inline template)", () => {
   let mockData: Endpoint = {
@@ -254,7 +255,7 @@ describe("CreateEditEndpointComponent (inline template)", () => {
   let fixture: ComponentFixture<CreateEditEndpointComponent>;
 
   let config: IServiceConfig = {
-    systemInfoEndpoint: "/api/endpoints/testing"
+    systemInfoEndpoint: CURRENT_BASE_HREF + "/endpoints/testing"
   };
 
   let endpointService: EndpointService;
@@ -326,6 +327,6 @@ describe("CreateEditEndpointComponent (inline template)", () => {
 
   it("should endpoint be initialized", () => {
     fixture.detectChanges();
-    expect(config.systemInfoEndpoint).toEqual("/api/endpoints/testing");
+    expect(config.systemInfoEndpoint).toEqual(CURRENT_BASE_HREF + "/endpoints/testing");
   });
 });

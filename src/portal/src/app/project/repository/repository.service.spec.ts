@@ -3,11 +3,12 @@ import { TestBed, inject } from '@angular/core/testing';
 import { RepositoryService, RepositoryDefaultService } from './repository.service';
 import { IServiceConfig, SERVICE_CONFIG } from "../../../lib/entities/service.config";
 import { SharedModule } from "../../../lib/utils/shared/shared.module";
+import { CURRENT_BASE_HREF } from "../../../lib/utils/utils";
 
 
 describe('RepositoryService', () => {
   const mockConfig: IServiceConfig = {
-    repositoryBaseEndpoint: "/api/repositories/testing"
+    repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories/testing"
   };
 
   let config: IServiceConfig;
@@ -37,7 +38,7 @@ describe('RepositoryService', () => {
 
   it('should inject the right config', () => {
     expect(config).toBeTruthy();
-    expect(config.repositoryBaseEndpoint).toEqual("/api/repositories/testing");
+    expect(config.repositoryBaseEndpoint).toEqual(CURRENT_BASE_HREF + "/repositories/testing");
   });
 
 });

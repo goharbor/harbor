@@ -13,6 +13,7 @@ import { AppConfigService } from "../../../app-config.service";
 import { ArtifactService } from "../../../../../ng-swagger-gen/services/artifact.service";
 import { ArtifactDefaultService } from "../artifact/artifact.service";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../../lib/entities/service.config";
+import { CURRENT_BASE_HREF } from "../../../../lib/utils/utils";
 
 describe('ArtifactListPageComponent', () => {
     let component: ArtifactListPageComponent;
@@ -70,7 +71,7 @@ describe('ArtifactListPageComponent', () => {
         }
     };
     const config: IServiceConfig = {
-        repositoryBaseEndpoint: "/api/repositories/testing"
+        repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories/testing"
     };
     beforeEach(async(() => {
         TestBed.configureTestingModule({

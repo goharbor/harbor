@@ -2,7 +2,7 @@ import { Label } from "./interface";
 import { Inject, Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { IServiceConfig, SERVICE_CONFIG } from "../entities/service.config";
-import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from "../utils/utils";
+import { buildHttpRequestOptions, CURRENT_BASE_HREF, HTTP_JSON_OPTIONS } from "../utils/utils";
 import { RequestQueryParams } from "./RequestQueryParams";
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
@@ -40,7 +40,7 @@ export class LabelDefaultService extends LabelService {
     super();
     this._labelUrl = config.labelEndpoint
       ? config.labelEndpoint
-      : "/api/labels";
+      : CURRENT_BASE_HREF + "/labels";
   }
 
   getLabels(

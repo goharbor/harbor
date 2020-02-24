@@ -38,7 +38,7 @@ import {
   ErrorHandler,
   DefaultErrorHandler
 } from './utils/error-handler';
-import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG } from './utils/utils';
+import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG, CURRENT_BASE_HREF } from './utils/utils';
 import { OperationService } from './components/operation/operation.service';
 import { GcHistoryComponent } from "./components/config/gc/gc-history/gc-history.component";
 import { GcComponent } from "./components/config/gc/gc.component";
@@ -80,16 +80,16 @@ import { TranslateServiceInitializer } from "./i18n";
  * this default configuration.
  */
 export const DefaultServiceConfig: IServiceConfig = {
-  baseEndpoint: "/api",
-  systemInfoEndpoint: "/api/systeminfo",
-  repositoryBaseEndpoint: "/api/repositories",
-  logBaseEndpoint: "/api/logs",
-  targetBaseEndpoint: "/api/registries",
-  replicationBaseEndpoint: "/api/replication",
-  replicationRuleEndpoint: "/api/replication/policies",
-  vulnerabilityScanningBaseEndpoint: "/api/repositories",
-  projectPolicyEndpoint: "/api/projects/configs",
-  projectBaseEndpoint: "/api/projects",
+  baseEndpoint: CURRENT_BASE_HREF,
+  systemInfoEndpoint: CURRENT_BASE_HREF + "/systeminfo",
+  repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories",
+  logBaseEndpoint: CURRENT_BASE_HREF + "/logs",
+  targetBaseEndpoint: CURRENT_BASE_HREF + "/registries",
+  replicationBaseEndpoint: CURRENT_BASE_HREF + "/replication",
+  replicationRuleEndpoint: CURRENT_BASE_HREF + "/replication/policies",
+  vulnerabilityScanningBaseEndpoint: CURRENT_BASE_HREF + "/repositories",
+  projectPolicyEndpoint: CURRENT_BASE_HREF + "/projects/configs",
+  projectBaseEndpoint: CURRENT_BASE_HREF + "/projects",
   enablei18Support: false,
   langCookieKey: DEFAULT_LANG_COOKIE_KEY,
   supportedLangs: DEFAULT_SUPPORTING_LANGS,
@@ -98,13 +98,13 @@ export const DefaultServiceConfig: IServiceConfig = {
   langMessagePathForHttpLoader: "i18n/langs/",
   langMessageFileSuffixForHttpLoader: "-lang.json",
   localI18nMessageVariableMap: {},
-  configurationEndpoint: "/api/configurations",
-  scanJobEndpoint: "/api/jobs/scan",
-  labelEndpoint: "/api/labels",
-  helmChartEndpoint: "/api/chartrepo",
+  configurationEndpoint: CURRENT_BASE_HREF + "/configurations",
+  scanJobEndpoint: CURRENT_BASE_HREF + "/jobs/scan",
+  labelEndpoint: CURRENT_BASE_HREF + "/labels",
+  helmChartEndpoint: CURRENT_BASE_HREF + "/chartrepo",
   downloadChartEndpoint: "/chartrepo",
-  gcEndpoint: "/api/system/gc",
-  ScanAllEndpoint: "/api/system/scanAll"
+  gcEndpoint: CURRENT_BASE_HREF + "/system/gc",
+  ScanAllEndpoint: CURRENT_BASE_HREF + "/system/scanAll"
 };
 
 /**

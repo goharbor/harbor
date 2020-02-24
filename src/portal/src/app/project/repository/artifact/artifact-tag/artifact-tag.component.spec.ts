@@ -9,6 +9,7 @@ import { SharedModule } from "../../../../../lib/utils/shared/shared.module";
 import { ErrorHandler } from "../../../../../lib/utils/error-handler";
 import { TagService } from "../../../../../lib/services";
 import { OperationService } from "../../../../../lib/components/operation/operation.service";
+import { CURRENT_BASE_HREF } from "../../../../../lib/utils/utils";
 
 
 describe('ArtifactTagComponent', () => {
@@ -22,7 +23,7 @@ describe('ArtifactTagComponent', () => {
     deleteTag: () => of(null),
   };
   const config: IServiceConfig = {
-    repositoryBaseEndpoint: "/api/repositories/testing"
+    repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories/testing"
   };
   beforeEach(async(() => {
     TestBed.configureTestingModule({

@@ -4,7 +4,11 @@ import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { Repository, RepositoryItem, RequestQueryParams } from "../../../lib/services";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../lib/entities/service.config";
-import { buildHttpRequestOptionsWithObserveResponse, HTTP_JSON_OPTIONS } from "../../../lib/utils/utils";
+import {
+    buildHttpRequestOptionsWithObserveResponse,
+    CURRENT_BASE_HREF,
+    HTTP_JSON_OPTIONS
+} from "../../../lib/utils/utils";
 
 /**
  * Define service methods for handling the repository related things.
@@ -86,7 +90,7 @@ export class RepositoryDefaultService extends RepositoryService {
         if (repositoryName && repositoryName.trim() !== '') {
             queryParams = queryParams.set('q', repositoryName);
         }
-        let url: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : '/api/repositories';
+        let url: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : CURRENT_BASE_HREF + '/repositories';
         return this.http.get<HttpResponse<RepositoryItem[]>>(url, buildHttpRequestOptionsWithObserveResponse(queryParams))
             .pipe(map(response => {
                 let result: Repository = {
@@ -123,7 +127,7 @@ export class RepositoryDefaultService extends RepositoryService {
             queryParams = new RequestQueryParams();
         }
 
-        let baseUrl: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : '/api/repositories';
+        let baseUrl: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : CURRENT_BASE_HREF + '/repositories';
         let url = `${baseUrl}/${repositoryName}`;
         return this.http.put(url, { 'description': description }, HTTP_JSON_OPTIONS)
             .pipe(map(response => response)
@@ -134,7 +138,7 @@ export class RepositoryDefaultService extends RepositoryService {
         if (!repositoryName) {
             return observableThrowError('Bad argument');
         }
-        let url: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : '/api/repositories';
+        let url: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : CURRENT_BASE_HREF + '/repositories';
         url = `${url}/${repositoryName}`;
 
         return this.http.delete(url, HTTP_JSON_OPTIONS)

@@ -7,6 +7,7 @@ import { AdditionLink } from "../../../../../../../ng-swagger-gen/models/additio
 import { IServiceConfig, SERVICE_CONFIG } from "../../../../../../lib/entities/service.config";
 import { ErrorHandler } from "../../../../../../lib/utils/error-handler";
 import { ProjectModule } from "../../../../project.module";
+import { CURRENT_BASE_HREF } from "../../../../../../lib/utils/utils";
 
 describe('SummaryComponent', () => {
   let component: SummaryComponent;
@@ -160,7 +161,7 @@ describe('SummaryComponent', () => {
     }
   };
   const config: IServiceConfig = {
-    repositoryBaseEndpoint: "/api/repositories/testing"
+    repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories/testing"
   };
   beforeEach(async(() => {
     TestBed.configureTestingModule({
