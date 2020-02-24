@@ -16,6 +16,7 @@ package project
 
 import (
 	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/core/config"
 )
 
 // visitorContext the context interface for the project visitor
