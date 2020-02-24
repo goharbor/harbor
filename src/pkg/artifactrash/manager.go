@@ -33,6 +33,8 @@ type Manager interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Filter ...
 	Filter(ctx context.Context) (arts []model.ArtifactTrash, err error)
+	// Flush clean the trash table
+	Flush(ctx context.Context) (err error)
 }
 
 // NewManager returns an instance of the default manager
@@ -56,4 +58,8 @@ func (m *manager) Delete(ctx context.Context, id int64) error {
 }
 func (m *manager) Filter(ctx context.Context) (arts []model.ArtifactTrash, err error) {
 	return m.dao.Filter(ctx)
+}
+
+func (m *manager) Flush(ctx context.Context) (err error) {
+	return m.dao.Flush(ctx)
 }

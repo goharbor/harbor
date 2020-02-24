@@ -17,6 +17,8 @@ type DAO interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Filter lists the artifact that needs to be cleaned
 	Filter(ctx context.Context) (arts []model.ArtifactTrash, err error)
+	// Flush clean the trash table
+	Flush(ctx context.Context) (err error)
 }
 
 // New returns an instance of the default DAO
@@ -75,4 +77,21 @@ func (d *dao) Filter(ctx context.Context) (arts []model.ArtifactTrash, err error
 		return deletedAfs, err
 	}
 	return deletedAfs, nil
+}
+
+// Flush ...
+func (d *dao) Flush(ctx context.Context) (err error) {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return err
+	}
+	sql := `DELETE * FROM artifact_trash`
+	if err != nil {
+		return err
+	}
+	_, err = ormer.Raw(sql).Exec()
+	if err != nil {
+		return err
+	}
+	return nil
 }

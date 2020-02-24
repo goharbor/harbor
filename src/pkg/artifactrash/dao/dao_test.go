@@ -89,3 +89,27 @@ func (d *daoTestSuite) TestFilter() {
 	d.Require().NotNil(err)
 	d.Require().Equal(afs[0].Digest, "1234")
 }
+
+func (d *daoTestSuite) TestFlush() {
+	_, err := d.dao.Create(d.ctx, &model.ArtifactTrash{
+		ManifestMediaType: v1.MediaTypeImageManifest,
+		RepositoryName:    "hello-world",
+		Digest:            "abcd",
+	})
+	d.Require().Nil(err)
+	_, err = d.dao.Create(d.ctx, &model.ArtifactTrash{
+		ManifestMediaType: v1.MediaTypeImageManifest,
+		RepositoryName:    "hello-world2",
+		Digest:            "efgh",
+	})
+	d.Require().Nil(err)
+	_, err = d.dao.Create(d.ctx, &model.ArtifactTrash{
+		ManifestMediaType: v1.MediaTypeImageManifest,
+		RepositoryName:    "hello-world3",
+		Digest:            "ijkl",
+	})
+	d.Require().Nil(err)
+
+	err = d.dao.Flush(d.ctx)
+	d.Require().Nil(err)
+}
