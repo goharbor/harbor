@@ -428,11 +428,7 @@ func ReadOnly() bool {
 
 // DisableAnonymous returns a bool to indicates if anonymous user is disabled.
 func DisableAnonymous() bool {
-	disableAnonymous := os.Getenv("DISABLE_ANONYMOUS")
-	if (strings.EqualFold("false", disableAnonymous)) {
-		return false
-	}
-	return true
+	return cfgMgr.Get(common.DisableAnonymous).GetBool()
 }
 
 // WithChartMuseum returns a bool to indicate if chartmuseum is deployed with Harbor.

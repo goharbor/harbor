@@ -71,7 +71,14 @@
                     [ngModel]="systemSettings.read_only.value" (ngModelChange)="setRepoReadOnlyValue($event)" />
             </clr-checkbox-wrapper>
         </clr-checkbox-container>
-
+        <clr-checkbox-container *ngIf="!withAdmiral">
+            <label id="disable_anonymous_lbl" for="disableAnonymous">{{'CONFIG.DISABLE_ANONYMOUS' | translate}}
+            </label>
+            <clr-checkbox-wrapper>
+                <input type="checkbox" clrCheckbox name="disableAnonymous" id="disableAnonymous"
+                    [ngModel]="systemSettings.disable_anonymous.value" (ngModelChange)="setDisableAnonymousValue($event)" />
+            </clr-checkbox-wrapper>
+        </clr-checkbox-container>
 
         <div class="clr-form-control d-f">
             <label for="systemWhitelist"
