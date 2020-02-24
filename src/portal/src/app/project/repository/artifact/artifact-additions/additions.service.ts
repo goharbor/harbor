@@ -9,7 +9,10 @@ export class AdditionsService {
   constructor(private http: HttpClient) {
   }
 
-  getDetailByLink(link: string): Observable<any> {
-    return this.http.get(link);
+  getDetailByLink(link: string, shouldReturnText?: boolean): Observable<any> {
+    if (shouldReturnText) {
+      return this.http.get(link, { observe: 'body', responseType: 'text'} );
+    }
+    return  this.http.get(link);
   }
 }

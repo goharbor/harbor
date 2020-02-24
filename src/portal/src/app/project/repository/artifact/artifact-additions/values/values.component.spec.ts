@@ -16,11 +16,11 @@ describe('ValuesComponent', () => {
   let component: ValuesComponent;
   let fixture: ComponentFixture<ValuesComponent>;
 
-  const mockedValues = {
-    "adminserver.image.pullPolicy": "IfNotPresent",
-    "adminserver.image.repository": "vmware/harbor-adminserver",
-    "adminserver.image.tag": "dev"
-  };
+  const mockedValues = `
+    adminserver.image.pullPolicy: IfNotPresent,
+    adminserver.image.repository: vmware/harbor-adminserver,
+    adminserver.image.tag: dev
+    `;
   const fakedAdditionsService = {
     getDetailByLink() {
       return of(mockedValues);
@@ -56,15 +56,16 @@ describe('ValuesComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ValuesComponent);
     component = fixture.componentInstance;
+    component.valueMode = true;
+    component.valuesLink = mockedLink;
+    component.ngOnInit();
     fixture.detectChanges();
   });
 
-  /*it('should create', () => {
+  it('should create', () => {
     expect(component).toBeTruthy();
-  });*/
+  });
   it('should get values  and render', async () => {
-    component.valuesLink = mockedLink;
-    component.ngOnInit();
     fixture.detectChanges();
     await fixture.whenStable();
     const trs = fixture.nativeElement.getElementsByTagName('tr');

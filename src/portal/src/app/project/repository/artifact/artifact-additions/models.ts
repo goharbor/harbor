@@ -34,7 +34,7 @@ export interface Addition {
 export enum ADDITIONS  {
     VULNERABILITIES = 'vulnerabilities',
     BUILD_HISTORY = 'build_history',
-    SUMMARY = 'readme',
+    SUMMARY = 'readme.md',
     VALUES = 'values.yaml',
     DEPENDENCIES = 'dependencies'
 }

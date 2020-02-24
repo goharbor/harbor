@@ -195,6 +195,6 @@ describe('SummaryComponent', () => {
     fixture.detectChanges();
     await fixture.whenStable();
     const tables = fixture.nativeElement.getElementsByTagName('table');
-    expect(tables.length).toEqual(2);
+    expect(tables.length).toEqual(1);
   });
 });

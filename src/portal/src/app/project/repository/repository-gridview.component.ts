@@ -119,7 +119,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     return this.systemInfo && this.systemInfo.has_ca_root;
   }
 
-  goIntoRepo(repoEvt: RepositoryItem): void {
+  goIntoRepo(repoEvt: NewRepository): void {
     let linkUrl = ['harbor', 'projects', repoEvt.project_id, 'repositories', repoEvt.name.split('/')[1]];
     this.router.navigate(linkUrl);
   }

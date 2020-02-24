@@ -6,6 +6,7 @@ import {
 import { AdditionsService } from "../additions.service";
 import { AdditionLink } from "../../../../../../../ng-swagger-gen/models/addition-link";
 import { ErrorHandler } from "../../../../../../lib/utils/error-handler";
+import { finalize } from "rxjs/operators";
 
 
 @Component({
@@ -16,6 +17,7 @@ import { ErrorHandler } from "../../../../../../lib/utils/error-handler";
 export class SummaryComponent implements OnInit {
   @Input() summaryLink: AdditionLink;
   readme: string;
+  loading: boolean = false;
   constructor(
     private errorHandler: ErrorHandler,
     private additionsService: AdditionsService
@@ -28,7 +30,10 @@ export class SummaryComponent implements OnInit {
     if (this.summaryLink
       && !this.summaryLink.absolute
       && this.summaryLink.href) {
-      this.additionsService.getDetailByLink(this.summaryLink.href).subscribe(
+      this.loading = true;
+      this.additionsService.getDetailByLink(this.summaryLink.href, true)
+        .pipe(finalize(() => this.loading = false))
+        .subscribe(
         res => {
           this.readme = res;
         }, error => {

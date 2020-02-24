@@ -1,20 +1,10 @@
-<div class="row flex-items-xs-center dep-container">
-    <div class="col-md-12">
-        <table class="table">
-            <thead>
-                <tr>
-                    <th class="left">{{'HELM_CHART.NAME' | translate}}</th>
-                    <th class="left">{{'HELM_CHART.VERSION' | translate}}</th>
-                    <th class="left">{{'HELM_CHART.REPO' | translate}}</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr *ngFor="let dep of dependencyList">
-                    <td class="left">{{dep.name}}</td>
-                    <td class="left">{{dep.version}}</td>
-                    <td class="left"><a href="{{dep.repository}}">{{dep.repository}}</a></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+<clr-datagrid [clrDgLoading]="loading">
+    <clr-dg-column>{{'HELM_CHART.NAME' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'HELM_CHART.VERSION' | translate}}</clr-dg-column>
+    <clr-dg-column>{{'HELM_CHART.REPO' | translate}}</clr-dg-column>
+    <clr-dg-row *clrDgItems="let dep of dependencyList" [clrDgItem]='dep' class="history-item">
+        <clr-dg-cell class="left">{{dep.name}}</clr-dg-cell>
+        <clr-dg-cell class="left">{{dep.version}}</clr-dg-cell>
+        <clr-dg-cell class="left"><a href="{{dep.repository}}">{{dep.repository}}</a></clr-dg-cell>
+    </clr-dg-row>
+</clr-datagrid>

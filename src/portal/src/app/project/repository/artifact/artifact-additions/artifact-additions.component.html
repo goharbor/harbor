@@ -1,38 +1,42 @@
 <ng-container *ngIf="additionLinks">
     <h4 class="margin-bottom-025">{{'ARTIFACT.ADDITIONS' | translate}}</h4>
-    <clr-tabs>
-        <clr-tab *ngIf="getVulnerability()">
-            <button clrTabLink id="vulnerability">{{'REPOSITORY.VULNERABILITY' | translate}}</button>
-            <clr-tab-content id="vulnerability-content" *clrIfActive>
-                <hbr-artifact-vulnerabilities *ngIf="getBuildHistory()"
-                                              [vulnerabilitiesLink]="getVulnerability()"></hbr-artifact-vulnerabilities>
-            </clr-tab-content>
-        </clr-tab>
-        <clr-tab *ngIf="getBuildHistory()">
-            <button clrTabLink id="build-history">{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</button>
-            <clr-tab-content *clrIfActive>
-                <hbr-artifact-build-history [buildHistoryLink]="getBuildHistory()"></hbr-artifact-build-history>
-            </clr-tab-content>
-        </clr-tab>
-        <clr-tab *ngIf="getSummary()">
-            <button clrTabLink id="summary-link">{{'HELM_CHART.SUMMARY' | translate}}</button>
-            <clr-tab-content id="summary-content" *clrIfActive>
-                <hbr-artifact-summary [summaryLink]="getSummary()"></hbr-artifact-summary>
-            </clr-tab-content>
-        </clr-tab>
-        <clr-tab *ngIf="getDependencies()">
-            <button clrTabLink id="depend-link">{{'HELM_CHART.DEPENDENCIES' | translate}}</button>
-            <clr-tab-content id="depend-content" *clrIfActive>
-                <hbr-artifact-dependencies [dependenciesLink]="getDependencies()"></hbr-artifact-dependencies>
-            </clr-tab-content>
-        </clr-tab>
-        <clr-tab *ngIf="getValues()">
-            <button clrTabLink id="value-link">{{'HELM_CHART.VALUES' | translate}}</button>
-            <clr-tab-content id="value-content" *clrIfActive>
-                <hbr-artifact-values [valuesLink]="getValues()"></hbr-artifact-values>
-            </clr-tab-content>
-        </clr-tab>
-    </clr-tabs>
+    <div class="min-15">
+        <clr-tabs>
+            <clr-tab *ngIf="getVulnerability()">
+                <button clrTabLink id="vulnerability">{{'REPOSITORY.VULNERABILITY' | translate}}</button>
+                <clr-tab-content id="vulnerability-content" *clrIfActive>
+                    <hbr-artifact-vulnerabilities  [projectName]="projectName"
+                                                   [projectId]="projectId"
+                                                   [repoName]="repoName"
+                                                   [digest]="digest" [vulnerabilitiesLink]="getVulnerability()"></hbr-artifact-vulnerabilities>
+                </clr-tab-content>
+            </clr-tab>
+            <clr-tab *ngIf="getBuildHistory()">
+                <button clrTabLink id="build-history">{{ 'REPOSITORY.BUILD_HISTORY' | translate }}</button>
+                <clr-tab-content *clrIfActive>
+                    <hbr-artifact-build-history [buildHistoryLink]="getBuildHistory()"></hbr-artifact-build-history>
+                </clr-tab-content>
+            </clr-tab>
+            <clr-tab *ngIf="getSummary()">
+                <button clrTabLink id="summary-link">{{'HELM_CHART.SUMMARY' | translate}}</button>
+                <clr-tab-content id="summary-content" *clrIfActive>
+                    <hbr-artifact-summary [summaryLink]="getSummary()"></hbr-artifact-summary>
+                </clr-tab-content>
+            </clr-tab>
+            <clr-tab *ngIf="getDependencies()">
+                <button clrTabLink id="depend-link">{{'HELM_CHART.DEPENDENCIES' | translate}}</button>
+                <clr-tab-content id="depend-content" *clrIfActive>
+                    <hbr-artifact-dependencies [dependenciesLink]="getDependencies()"></hbr-artifact-dependencies>
+                </clr-tab-content>
+            </clr-tab>
+            <clr-tab *ngIf="getValues()">
+                <button clrTabLink id="value-link">{{'HELM_CHART.VALUES' | translate}}</button>
+                <clr-tab-content id="value-content" *clrIfActive>
+                    <hbr-artifact-values [valuesLink]="getValues()"></hbr-artifact-values>
+                </clr-tab-content>
+            </clr-tab>
+        </clr-tabs>
+    </div>
 </ng-container>
 
 

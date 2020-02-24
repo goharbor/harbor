@@ -10,6 +10,13 @@ import { AdditionLink } from "../../../../../../ng-swagger-gen/models/addition-l
 })
 export class ArtifactAdditionsComponent implements OnInit {
   @Input() additionLinks: AdditionLinks;
+  @Input() projectName: string;
+  @Input()
+  projectId: number;
+  @Input()
+  repoName: string;
+  @Input()
+  digest: string;
   constructor() { }
 
   ngOnInit() {
