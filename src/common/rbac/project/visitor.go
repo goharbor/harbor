@@ -38,7 +38,7 @@ type visitor struct {
 func (v *visitor) GetUserName() string {
 	// anonymous username for unauthenticated Visitor
 	if !v.ctx.IsAuthenticated() {
-		return "anonymous"
+		return ""
 	}
 
 	return v.ctx.GetUsername()
