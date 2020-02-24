@@ -77,11 +77,11 @@ func (f *fakedAdapter) FetchImages(filters []*model.Filter) ([]*model.Resource, 
 func (f *fakedAdapter) ManifestExist(repository, reference string) (exist bool, digest string, err error) {
 	return false, "", nil
 }
-func (f *fakedAdapter) PullManifest(repository, reference string, accepttedMediaTypes []string) (manifest distribution.Manifest, digest string, err error) {
+func (f *fakedAdapter) PullManifest(repository, reference string, accepttedMediaTypes ...string) (manifest distribution.Manifest, digest string, err error) {
 	return nil, "", nil
 }
-func (f *fakedAdapter) PushManifest(repository, reference, mediaType string, payload []byte) error {
-	return nil
+func (f *fakedAdapter) PushManifest(repository, reference, mediaType string, payload []byte) (string, error) {
+	return "", nil
 }
 func (f *fakedAdapter) DeleteManifest(repository, digest string) error {
 	return nil

@@ -16,12 +16,8 @@ func init() {
 }
 
 func newAdapter(registry *model.Registry) (adp.Adapter, error) {
-	dockerRegistryAdapter, err := native.NewAdapter(registry)
-	if err != nil {
-		return nil, err
-	}
 	return &adapter{
-		Adapter: dockerRegistryAdapter,
+		Adapter: native.NewAdapter(registry),
 	}, nil
 }
 

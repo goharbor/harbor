@@ -25,7 +25,7 @@ import (
 	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/goharbor/harbor/src/common/http/modifier"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry"
+	"github.com/goharbor/harbor/src/internal"
 	"net/http"
 	"net/url"
 	"strings"
@@ -100,7 +100,7 @@ func (a *awsAuthCredential) getAuthorization() (string, string, string, *time.Ti
 		Credentials: cred,
 		Region:      &a.region,
 		HTTPClient: &http.Client{
-			Transport: registry.GetHTTPTransport(a.insecure),
+			Transport: internal.GetHTTPTransport(a.insecure),
 		},
 	}
 	if a.forceEndpoint != nil {

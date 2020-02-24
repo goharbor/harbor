@@ -1,4 +1,4 @@
-package auth
+package quayio
 
 import (
 	"fmt"

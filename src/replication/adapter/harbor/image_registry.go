@@ -146,12 +146,12 @@ func (a *adapter) listCandidateProjects(filters []*model.Filter) ([]*project, er
 // override the default implementation from the default image registry
 // by calling Harbor API directly
 func (a *adapter) DeleteManifest(repository, reference string) error {
-	url := fmt.Sprintf("%s/api/repositories/%s/tags/%s", a.url, repository, reference)
+	url := fmt.Sprintf("%s/api/v2.0/repositories/%s/tags/%s", a.url, repository, reference)
 	return a.client.Delete(url)
 }
 
 func (a *adapter) getTags(repository string) ([]*adp.VTag, error) {
-	url := fmt.Sprintf("%s/api/repositories/%s/tags", a.getURL(), repository)
+	url := fmt.Sprintf("%s/api/v2.0/repositories/%s/tags", a.getURL(), repository)
 	tags := []*struct {
 		Name   string `json:"name"`
 		Labels []*struct {

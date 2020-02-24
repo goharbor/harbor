@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/docker/distribution/registry/client/auth/challenge"
+	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/pkg/registry/auth/bearer"
 	"net/http"
 	"path/filepath"
 	"regexp"
@@ -11,7 +14,6 @@ import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/cr"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -50,22 +52,36 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 	}
 	// fix url (allow user input cr service url)
 	registry.URL = fmt.Sprintf(registryEndpointTpl, region)
-
-	credential := NewAuth(region, registry.Credential.AccessKey, registry.Credential.AccessSecret)
-	authorizer := auth.NewStandardTokenAuthorizer(&http.Client{
-		Transport: util.GetHTTPTransport(registry.Insecure),
-	}, credential)
-	nativeRegistry, err := native.NewAdapterWithCustomizedAuthorizer(registry, authorizer)
+	realm, service, err := ping(registry)
 	if err != nil {
 		return nil, err
 	}
-
+	credential := NewAuth(region, registry.Credential.AccessKey, registry.Credential.AccessSecret)
+	authorizer := bearer.NewAuthorizer(realm, service, credential, util.GetHTTPTransport(registry.Insecure))
 	return &adapter{
 		region:   region,
 		registry: registry,
 		domain:   fmt.Sprintf(endpointTpl, region),
-		Adapter:  nativeRegistry,
+		Adapter:  native.NewAdapterWithAuthorizer(registry, authorizer),
 	}, nil
+}
+
+func ping(registry *model.Registry) (string, string, error) {
+	client := &http.Client{
+		Transport: internal.GetHTTPTransport(registry.Insecure),
+	}
+	resp, err := client.Get(registry.URL + "/v2/")
+	if err != nil {
+		return "", "", err
+	}
+	defer resp.Body.Close()
+	challenges := challenge.ResponseChallenges(resp)
+	for _, challenge := range challenges {
+		if challenge.Scheme == "bearer" {
+			return challenge.Parameters["realm"], challenge.Parameters["service"], nil
+		}
+	}
+	return "", "", fmt.Errorf("bearer auth scheme isn't supported: %v", challenges)
 }
 
 type factory struct {

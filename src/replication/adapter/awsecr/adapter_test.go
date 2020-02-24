@@ -133,13 +133,9 @@ func getMockAdapter(t *testing.T, hasCred, health bool) (*adapter, *httptest.Ser
 			AccessSecret: "ppp",
 		}
 	}
-	dockerRegistryAdapter, err := native.NewAdapter(registry)
-	if err != nil {
-		panic(err)
-	}
 	return &adapter{
 		registry:      registry,
-		Adapter:       dockerRegistryAdapter,
+		Adapter:       native.NewAdapter(registry),
 		region:        "test-region",
 		forceEndpoint: &server.URL,
 	}, server

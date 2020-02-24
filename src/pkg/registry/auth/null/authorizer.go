@@ -12,28 +12,22 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package auth
+package null
 
 import (
-	"github.com/stretchr/testify/assert"
+	"github.com/goharbor/harbor/src/internal"
 	"net/http"
-	"os"
-	"testing"
 )
 
-func TestDefaultBasicAuthorizer(t *testing.T) {
-	os.Setenv("REGISTRY_CREDENTIAL_USERNAME", "testuser")
-	os.Setenv("REGISTRY_CREDENTIAL_PASSWORD", "testpassword")
-	defer func() {
-		os.Unsetenv("REGISTRY_CREDENTIAL_USERNAME")
-		os.Unsetenv("REGISTRY_CREDENTIAL_PASSWORD")
-	}()
-	req, _ := http.NewRequest(http.MethodGet, "http://127.0.0.1", nil)
-	a := DefaultBasicAuthorizer()
-	err := a.Modify(req)
-	assert.Nil(t, err)
-	u, p, ok := req.BasicAuth()
-	assert.True(t, ok)
-	assert.Equal(t, "testuser", u)
-	assert.Equal(t, "testpassword", p)
+// NewAuthorizer returns a null authorizer
+func NewAuthorizer() internal.Authorizer {
+	return &authorizer{}
+
+}
+
+type authorizer struct{}
+
+func (a *authorizer) Modify(req *http.Request) error {
+	// do nothing
+	return nil
 }

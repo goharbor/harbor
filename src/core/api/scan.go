@@ -15,6 +15,7 @@
 package api
 
 import (
+	"github.com/goharbor/harbor/src/pkg/registry"
 	"net/http"
 	"strconv"
 
@@ -22,7 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
-	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/pkg/scan/errs"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
@@ -192,20 +192,15 @@ func (sa *ScanAPI) Log() {
 // TODO: This can be removed if the registry access interface is ready.
 type digestGetter func(repo, tag string, username string) (string, error)
 
+// TODO this method should be reconsidered as the tags are stored in database
+// TODO rather than in registry
 func getDigest(repo, tag string, username string) (string, error) {
-	client, err := coreutils.NewRepositoryClientForUI(username, repo)
+	exist, digest, err := registry.Cli.ManifestExist(repo, tag)
 	if err != nil {
 		return "", err
 	}
-
-	digest, exists, err := client.ManifestExist(tag)
-	if err != nil {
-		return "", err
-	}
-
-	if !exists {
+	if !exist {
 		return "", errors.Errorf("tag %s does exist", tag)
 	}
-
 	return digest, nil
 }
