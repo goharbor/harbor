@@ -761,6 +761,7 @@
         "LABEL": "标签",
         "REPOSITORY": "仓库",
         "REPO_READ_ONLY": "仓库只读",
+        "DISABLE_ANONYMOUS": "禁用匿名用户",
         "WEBHOOK_NOTIFICATION_ENABLED": "开启 WEBHOOK",
         "SYSTEM": "系统设置",
         "PROJECT_QUOTAS": "项目定额",
