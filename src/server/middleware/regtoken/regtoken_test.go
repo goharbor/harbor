@@ -1,6 +1,7 @@
 package regtoken
 
 import (
+	"context"
 	"fmt"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -25,9 +26,9 @@ func doPullManifestRequest(projectName, name, tag string, next ...http.HandlerFu
 	req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", token))
 	rr := httptest.NewRecorder()
 
-	mfInfo := &middleware.ManifestInfo{
-		ProjectID:  1,
+	af := &middleware.ArtifactInfo{
 		Repository: name,
+		Reference:  tag,
 		Tag:        tag,
 		Digest:     "",
 	}
@@ -40,10 +41,9 @@ func doPullManifestRequest(projectName, name, tag string, next ...http.HandlerFu
 			w.WriteHeader(http.StatusNotFound)
 		}
 	}
-	*req = *(req.WithContext(middleware.NewManifestInfoContext(req.Context(), mfInfo)))
-
-	h := Middleware()(http.HandlerFunc(n))
-	h.ServeHTTP(util.NewCustomResponseWriter(rr), req)
+	ctx := context.WithValue(req.Context(), middleware.ArtifactInfoKey, af)
+	*req = *(req.WithContext(ctx))
+	n.ServeHTTP(util.NewCustomResponseWriter(rr), req)
 
 	return rr.Code
 }

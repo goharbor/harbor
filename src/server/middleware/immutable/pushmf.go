@@ -35,12 +35,12 @@ func MiddlewarePush() func(http.Handler) http.Handler {
 // If the pushing image matched by any of immutable rule, will have to whether it is the first time to push it,
 // as the immutable rule only impacts the existing tag.
 func handlePush(req *http.Request) error {
-	mf, ok := middleware.ManifestInfoFromContext(req.Context())
+	art, ok := middleware.ArtifactInfoFromContext(req.Context())
 	if !ok {
 		return errors.New("cannot get the manifest information from request context")
 	}
 
-	af, err := artifact.Ctl.GetByReference(req.Context(), mf.Repository, mf.Tag, &artifact.Option{
+	af, err := artifact.Ctl.GetByReference(req.Context(), art.Repository, art.Tag, &artifact.Option{
 		WithTag:   true,
 		TagOption: &artifact.TagOption{WithImmutableStatus: true},
 	})
@@ -51,11 +51,11 @@ func handlePush(req *http.Request) error {
 		return err
 	}
 
-	_, repoName := common_util.ParseRepository(mf.Repository)
+	_, repoName := common_util.ParseRepository(art.Repository)
 	for _, tag := range af.Tags {
 		// push a existing immutable tag, reject th e request
-		if tag.Name == mf.Tag && tag.Immutable {
-			return NewErrImmutable(repoName, mf.Tag)
+		if tag.Name == art.Tag && tag.Immutable {
+			return NewErrImmutable(repoName, art.Tag)
 		}
 	}
 

@@ -92,27 +92,26 @@ func Middleware() func(http.Handler) http.Handler {
 	}
 }
 
-func validate(req *http.Request) (bool, *middleware.ManifestInfo, vuln.Severity, models.CVEWhitelist) {
+func validate(req *http.Request) (bool, middleware.ArtifactInfo, vuln.Severity, models.CVEWhitelist) {
 	var vs vuln.Severity
 	var wl models.CVEWhitelist
-	var mf *middleware.ManifestInfo
-	mf, ok := middleware.ManifestInfoFromContext(req.Context())
-	if !ok {
-		return false, nil, vs, wl
+	var af middleware.ArtifactInfo
+	err := middleware.EnsureArtifactDigest(req.Context())
+	if err != nil {
+		return false, af, vs, wl
 	}
-
-	exist, err := mf.ManifestExists(req.Context())
-	if err != nil || !exist {
-		return false, nil, vs, wl
+	af, ok := middleware.ArtifactInfoFromContext(req.Context())
+	if !ok {
+		return false, af, vs, wl
 	}
 
 	if scannerPull, ok := middleware.ScannerPullFromContext(req.Context()); ok && scannerPull {
-		return false, mf, vs, wl
+		return false, af, vs, wl
 	}
 	// Is vulnerable policy set?
-	projectVulnerableEnabled, projectVulnerableSeverity, wl := middleware.GetPolicyChecker().VulnerablePolicy(mf.ProjectName)
+	projectVulnerableEnabled, projectVulnerableSeverity, wl := middleware.GetPolicyChecker().VulnerablePolicy(af.ProjectName)
 	if !projectVulnerableEnabled {
-		return false, mf, vs, wl
+		return false, af, vs, wl
 	}
-	return true, mf, projectVulnerableSeverity, wl
+	return true, af, projectVulnerableSeverity, wl
 }

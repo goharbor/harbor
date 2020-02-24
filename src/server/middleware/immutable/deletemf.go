@@ -33,12 +33,12 @@ func MiddlewareDelete() func(http.Handler) http.Handler {
 
 // handleDelete ...
 func handleDelete(req *http.Request) error {
-	mf, ok := middleware.ManifestInfoFromContext(req.Context())
+	art, ok := middleware.ArtifactInfoFromContext(req.Context())
 	if !ok {
 		return errors.New("cannot get the manifest information from request context")
 	}
 
-	af, err := artifact.Ctl.GetByReference(req.Context(), mf.Repository, mf.Digest, &artifact.Option{
+	af, err := artifact.Ctl.GetByReference(req.Context(), art.Repository, art.Digest, &artifact.Option{
 		WithTag:   true,
 		TagOption: &artifact.TagOption{WithImmutableStatus: true},
 	})
@@ -49,7 +49,7 @@ func handleDelete(req *http.Request) error {
 		return err
 	}
 
-	_, repoName := common_util.ParseRepository(mf.Repository)
+	_, repoName := common_util.ParseRepository(art.Repository)
 	for _, tag := range af.Tags {
 		if tag.Immutable {
 			return NewErrImmutable(repoName, tag.Name)

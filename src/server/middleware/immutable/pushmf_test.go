@@ -36,11 +36,11 @@ func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, n
 	url := fmt.Sprintf("/v2/%s/manifests/%s", repository, tag)
 	req, _ := http.NewRequest("PUT", url, nil)
 
-	mfInfo := &middleware.ManifestInfo{
-		ProjectID:  projectID,
-		Repository: repository,
-		Tag:        tag,
-		Digest:     dgt,
+	afInfo := &middleware.ArtifactInfo{
+		ProjectName: projectName,
+		Repository:  repository,
+		Tag:         tag,
+		Digest:      dgt,
 	}
 	rr := httptest.NewRecorder()
 
@@ -53,7 +53,7 @@ func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, n
 		}
 	}
 	*req = *(req.WithContext(internal_orm.NewContext(context.TODO(), dao.GetOrmer())))
-	*req = *(req.WithContext(middleware.NewManifestInfoContext(req.Context(), mfInfo)))
+	*req = *(req.WithContext(context.WithValue(req.Context(), middleware.ArtifactInfoKey, afInfo)))
 	h := MiddlewarePush()(n)
 	h.ServeHTTP(util.NewCustomResponseWriter(rr), req)
 
@@ -66,11 +66,11 @@ func doDeleteManifestRequest(projectID int64, projectName, name, tag, dgt string
 	url := fmt.Sprintf("/v2/%s/manifests/%s", repository, tag)
 	req, _ := http.NewRequest("DELETE", url, nil)
 
-	mfInfo := &middleware.ManifestInfo{
-		ProjectID:  projectID,
-		Repository: repository,
-		Tag:        tag,
-		Digest:     dgt,
+	afInfo := &middleware.ArtifactInfo{
+		ProjectName: projectName,
+		Repository:  repository,
+		Tag:         tag,
+		Digest:      dgt,
 	}
 	rr := httptest.NewRecorder()
 
@@ -83,7 +83,7 @@ func doDeleteManifestRequest(projectID int64, projectName, name, tag, dgt string
 		}
 	}
 	*req = *(req.WithContext(internal_orm.NewContext(context.TODO(), dao.GetOrmer())))
-	*req = *(req.WithContext(middleware.NewManifestInfoContext(req.Context(), mfInfo)))
+	*req = *(req.WithContext(context.WithValue(req.Context(), middleware.ArtifactInfoKey, afInfo)))
 	h := MiddlewareDelete()(n)
 	h.ServeHTTP(util.NewCustomResponseWriter(rr), req)
 
