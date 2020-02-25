@@ -13,14 +13,9 @@ from library.repository import Repository
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        repo = Repository(api_type='repository')
-        self.repo= repo
+        self.project = Project()
+        self.user = User()
+        self.repo = Repository(api_type='repository')
 
     @classmethod
     def tearDown(self):

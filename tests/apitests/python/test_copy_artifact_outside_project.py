@@ -18,16 +18,10 @@ from library.repository import pull_harbor_image
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        artifact = Artifact(api_type='artifact')
-        self.artifact= artifact
-        repo = Repository(api_type='repository')
-        self.repo= repo
+        self.project = Project()
+        self.user = User()
+        self.artifact = Artifact(api_type='artifact')
+        self.repo = Repository(api_type='repository')
 
     @classmethod
     def tearDownClass(self):

@@ -15,14 +15,9 @@ from library.base import _assert_status_code
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        repo = Repository(api_type='repository')
-        self.repo= repo
+        self.project = Project()
+        self.user = User()
+        self.repo = Repository(api_type='repository')
 
     @classmethod
     def tearDown(self):

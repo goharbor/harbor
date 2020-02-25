@@ -35,9 +35,9 @@ class TestProjects(unittest.TestCase):
     def setUpClass(self):
         self.user = User()
         self.system = System()
-        self.repo= Repository(api_type='repository')
+        self.repo = Repository(api_type='repository')
         self.project = Project()
-        self.retention=Retention()
+        self.retention = Retention()
 
     def testTagRetention(self):
         user_ra_password = "Aa123456"

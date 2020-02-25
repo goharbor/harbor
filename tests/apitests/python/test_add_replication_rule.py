@@ -13,17 +13,10 @@ import swagger_client
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        replication = Replication()
-        self.replication= replication
-
-        registry = Registry()
-        self.registry= registry
+        self.project = Project()
+        self.user = User()
+        self.replication = Replication()
+        self.registry = Registry()
 
     @classmethod
     def tearDown(self):

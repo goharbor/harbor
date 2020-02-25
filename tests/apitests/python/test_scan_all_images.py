@@ -13,17 +13,10 @@ from library.repository import push_image_to_project
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        system = System()
-        self.system= system
-
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        repo = Repository()
-        self.repo= repo
+        self.system = System()
+        self.project= Project()
+        self.user= User()
+        self.repo= Repository()
 
     @classmethod
     def tearDown(self):
