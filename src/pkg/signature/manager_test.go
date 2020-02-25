@@ -14,7 +14,7 @@ func TestMain(m *testing.M) {
 	// B/C the notary requires private key for signing token, b
 	// before running locally, please make sure the env var is set as follow:
 	// export TOKEN_PRIVATE_KEY_PATH="/harbor/tests/private_key.pem"
-	endpoint := "10.117.4.142"
+	endpoint := "jt-dev.local.goharbor.io"
 	// notary-demo/busybox:1.0 is signed, more details in the notary/test pkg
 	notaryServer := test.NewNotaryServer(endpoint)
 	defer notaryServer.Close()
@@ -47,9 +47,9 @@ func TestGetCheckerByRepo(t *testing.T) {
 	}{
 		{
 			input: in{
-				repo:   "notary-demo/busybox",
-				tag:    "1.0",
-				digest: "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7",
+				repo:   "library/busybox",
+				tag:    "latest-signed",
+				digest: "sha256:dd97a3fe6d721c5cf03abac0f50e2848dc583f7c4e41bf39102ceb42edfd1808",
 			},
 			expect: res{
 				tagSigned: true,
@@ -58,8 +58,8 @@ func TestGetCheckerByRepo(t *testing.T) {
 		},
 		{
 			input: in{
-				repo:   "notary-demo/busybox",
-				tag:    "1.0",
+				repo:   "library/busybox",
+				tag:    "latest-signed",
 				digest: "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a8",
 			},
 			expect: res{
@@ -69,9 +69,9 @@ func TestGetCheckerByRepo(t *testing.T) {
 		},
 		{
 			input: in{
-				repo:   "notary-demo/busybox",
+				repo:   "library/busybox",
 				tag:    "2.0",
-				digest: "sha256:1359608115b94599e5641638bac5aef1ddfaa79bb96057ebf41ebc8d33acf8a7",
+				digest: "sha256:dd97a3fe6d721c5cf03abac0f50e2848dc583f7c4e41bf39102ceb42edfd1808",
 			},
 			expect: res{
 				tagSigned: false,
