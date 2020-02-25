@@ -265,7 +265,14 @@ describe("ArtifactListTabComponent (inline template)", () => {
     publishInfo: () => {}
   };
   const mockArtifactService = {
-    getArtifactList: () => {
+    TriggerArtifactChan$: {
+      subscribe: (fn) => {
+
+      }
+    }
+  };
+  const mockNewArtifactService = {
+    listArtifactsResponse: () => {
       if (filtereName === 'sha256:3e33e3e3') {
         return of(
           {
@@ -280,14 +287,9 @@ describe("ArtifactListTabComponent (inline template)", () => {
         ).pipe(delay(0));
       }
     },
-    TriggerArtifactChan$: {
-      subscribe: (fn) => {
-
-      }
-    },
     deleteArtifact: () => of (null)
 
-  }
+  };
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -320,7 +322,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
         { provide: ErrorHandler, useValue: mockErrorHandler },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         { provide: OperationService, useValue: mockOperationService },
-        { provide: NewArtifactService, useValue: null },
+        { provide: NewArtifactService, useValue: mockNewArtifactService },
       ]
     }).compileComponents();
   }));

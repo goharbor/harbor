@@ -42,6 +42,12 @@ export const errorHandler = function (error: any): string {
     if (!error) {
         return "UNKNOWN_ERROR";
     }
+    // oci standard
+    if (error.errors && error.errors instanceof Array && error.errors.length) {
+        return error.errors.reduce((preError, currentError, index) => {
+            return preError ? `${preError},${currentError.message}` : currentError.message;
+       }, '');
+    }
     // Not a standard error return Basically not used cover unknown error
     try {
         return JSON.parse(error.error).message;
@@ -49,6 +55,12 @@ export const errorHandler = function (error: any): string {
     // Not a standard error return Basically not used cover unknown error
     if (typeof error.error === "string") {
         return error.error;
+    }
+    // oci standard
+    if (error.error && error.error.errors && error.error.errors instanceof Array && error.error.errors.length) {
+        return error.error.errors.reduce((preError, currentError, index) => {
+            return preError ? `${preError},${currentError.message}` : currentError.message;
+       }, '');
     }
     if (error.error && error.error.message) {
         if (typeof error.error.message === "string") {

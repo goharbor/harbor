@@ -30,34 +30,54 @@
 <div class="row tag-row">
     <div>
         <div class="row flex-items-xs-right rightPos">
-            <div id="filterArea">
-                <div class='filterLabelPiece' *ngIf="!withAdmiral" [hidden]="!openLabelFilterPiece"
-                    [style.left.px]='32'>
+            <div id="filterArea" *ngIf="!depth">
+                <div class='filterLabelPiece' *ngIf="(openLabelFilterPiece &&filterByType ==='label.id')"
+                    [style.left.px]='96'>
                     <hbr-label-piece *ngIf="showlabel" [hidden]='!filterOneLabel' [label]="filterOneLabel"
                         [labelWidth]="130"></hbr-label-piece>
                 </div>
                 <div class="flex-xs-middle">
-                    <hbr-filter [readonly]="'readonly'" [withDivider]="true"
-                        filterPlaceholder="{{'ARTIFACT.FILTER_FOR_ARTIFACTS' | translate}}"
-                        (filterEvt)="doSearchArtifactByFilter($event)" (openFlag)="openFlagEvent($event)"
-                        [currentValue]="lastFilteredTagName"></hbr-filter>
-                    <div class="label-filter-panel" *ngIf="!withAdmiral" [hidden]="!openLabelFilterPanel">
-                        <a class="filterClose" (click)="closeFilter()">&times;</a>
-                        <label
-                            class="filterLabelHeader filter-dark">{{'REPOSITORY.FILTER_ARTIFACT_BY_LABEL' | translate}}</label>
-                        <div class="form-group"><input clrInput type="text" placeholder="Filter labels"
-                                [(ngModel)]="filterName" (keyup)="handleInputFilter()"></div>
-                        <div [hidden]='imageFilterLabels.length' class="no-labels">{{'LABEL.NO_LABELS' | translate }}
+                    <div class="execution-select">
+                        <div class="select filter-tag" [hidden]="!openSelectFilterPiece">
+                            <clr-select-container>
+                                <select clrSelect [(ngModel)]="filterByType" (change)="selectFilterType($event)" >
+                                    <option *ngFor="let filter of mutipleFilter" value="{{filter.filterBy}}">{{ filter.filterByShowText | translate}}</option>
+                                </select>
+                            </clr-select-container>
                         </div>
-                        <div [hidden]='!imageFilterLabels.length' class="has-label">
-                            <button type="button" class="labelBtn" *ngFor='let label of imageFilterLabels'
-                                [hidden]="!label.show" (click)="rightFilterLabel(label)">
-                                <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
-                                <div class='labelDiv'>
-                                    <hbr-label-piece [label]="label.label" [labelWidth]="160"></hbr-label-piece>
-                                </div>
-                            </button>
+                        <div class="flex-xs-middle">
+                        <hbr-filter [withDivider]="true" [readonly]="isFilterReadonly"
+                            filterPlaceholder="{{'ARTIFACT.FILTER_FOR_ARTIFACTS' | translate}}"
+                            (filterEvt)="doSearchArtifactByFilter($event)" (openFlag)="openFlagEvent($event)"
+                            [currentValue]="lastFilteredTagName">
+                        </hbr-filter>
+                        <div [hidden]="!openSelectFilterPiece" class="label-filter-panel list-filter">
+                            <div *ngFor="let filter of mutipleFilter" >
+                                <ul class="list-unstyled" *ngIf="filterByType ===filter.filterBy">
+                                    <li class="cursor-pointer" (click)="selectFilter(item.showItem, item.filterText)" *ngFor="let item of filter.listItem">{{item.showItem | translate}}</li>
+                                </ul>   
+                            </div>
+                            
                         </div>
+                        <div class="label-filter-panel" *ngIf="!withAdmiral" [hidden]="!(openLabelFilterPanel&&filterByType==='label.id')">
+                            <a class="filterClose" (click)="closeFilter()">&times;</a>
+                            <label
+                                class="filterLabelHeader filter-dark">{{'REPOSITORY.FILTER_ARTIFACT_BY_LABEL' | translate}}</label>
+                            <div class="form-group"><input clrInput type="text" placeholder="Filter labels"
+                                    [(ngModel)]="filterName" (keyup)="handleInputFilter()"></div>
+                            <div [hidden]='imageFilterLabels.length' class="no-labels">{{'LABEL.NO_LABELS' | translate }}
+                            </div>
+                            <div [hidden]='!imageFilterLabels.length' class="has-label">
+                                <button type="button" class="labelBtn" *ngFor='let label of imageFilterLabels'
+                                    [hidden]="!label.show" (click)="rightFilterLabel(label)">
+                                    <clr-icon shape="check" class='pull-left' [hidden]='!label.iconsShow'></clr-icon>
+                                    <div class='labelDiv'>
+                                        <hbr-label-piece [label]="label.label" [labelWidth]="160"></hbr-label-piece>
+                                    </div>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>
@@ -136,11 +156,11 @@
             <clr-dg-column *ngIf="!withAdmiral">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pushComparator">{{'REPOSITORY.PUSH_TIME' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pullComparator">{{'REPOSITORY.PULL_TIME' | translate}}</clr-dg-column>
-            <clr-dg-placeholder>{{'TAG.PLACEHOLDER' | translate }}</clr-dg-placeholder>
+            <clr-dg-placeholder>{{'ARTIFACT.PLACEHOLDER' | translate }}</clr-dg-placeholder>
             <clr-dg-row *ngFor="let artifact of artifactList" [clrDgItem]="artifact" >
                 <clr-dg-cell class="truncated flex-max-width">
                     <div class="cell white-normal">
-                        <img class="artifact-icon"
+                        <img class="artifact-icon" [title]="artifact.type"
                             [src]="artifact.type==='IMAGE'||artifact.type==='CHART'||artifact.type ==='CNAB'?'images/artifact-'+artifact.type.toLowerCase()+'.svg':'images/artifact-default.svg'" />
                         &nbsp; &nbsp;
                         <a href="javascript:void(0)" class="max-width-100" (click)="goIntoArtifactSummaryPage(artifact)"
@@ -216,11 +236,6 @@
                         {{artifact.size?sizeTransform(artifact.size): ""}}
                     </div>
                 </clr-dg-cell>
-                <!-- <clr-dg-cell class="truncated" title="docker pull {{registryUrl}}/{{repoName}}:{{artifact.name}}">
-                    <div class="cell">
-                        <hbr-copy-input #copyInput (onCopyError)="onCpError($event)" iconMode="true" defaultValue="docker pull {{registryUrl}}/{{repoName}}:{{artifact.name}}"></hbr-copy-input>
-                    </div>
-                </clr-dg-cell> -->
                 <clr-dg-cell>
                     <div class="cell">
                         <hbr-vulnerability-bar [scanner]="handleScanOverview(artifact.scan_overview)?.scanner"

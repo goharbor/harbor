@@ -42,7 +42,7 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
     ngOnInit(): void {
         this.proNameChecker
             .pipe(debounceTime(200))
-            .pipe(distinctUntilChanged(),
+            .pipe(
                 switchMap(name => {
                     this.noProjectInfo = "";
                     this.selectedProjectList = [];

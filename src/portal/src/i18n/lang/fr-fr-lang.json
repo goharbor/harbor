@@ -968,8 +968,15 @@
     "ARTIFACT": {
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
         "ADDITIONS": "Additions",
-        "ANNOTATION": "Annotation",
-        "EXTRA_PROPERTIES": "Extra Attributes"
+        "ANNOTATION": "Annotations",
+        "EXTRA_PROPERTIES": "Extra Attributes",
+        "IMAGE": "IMAGE",
+        "CHART": "CHART",
+        "CNAB": "CNAB",
+        "TAGGED": "Tagged",
+        "UNTAGGED": "Untagged",
+        "ALL": "All",
+        "PLACEHOLDER": "We couldn't find any artifacts!"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Créer le",
