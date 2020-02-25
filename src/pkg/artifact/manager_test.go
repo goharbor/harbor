@@ -40,7 +40,7 @@ func (f *fakeDao) Get(ctx context.Context, id int64) (*dao.Artifact, error) {
 	args := f.Called()
 	return args.Get(0).(*dao.Artifact), args.Error(1)
 }
-func (f *fakeDao) GetByDigest(ctx context.Context, repositoryID int64, digest string) (*dao.Artifact, error) {
+func (f *fakeDao) GetByDigest(ctx context.Context, repository, digest string) (*dao.Artifact, error) {
 	args := f.Called()
 	return args.Get(0).(*dao.Artifact), args.Error(1)
 }
@@ -195,7 +195,7 @@ func (m *managerTestSuite) TestGetByDigest() {
 	}
 	m.dao.On("GetByDigest", mock.Anything).Return(art, nil)
 	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{}, nil)
-	artifact, err := m.mgr.GetByDigest(nil, 1, "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180")
+	artifact, err := m.mgr.GetByDigest(nil, "library/hello-world", "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180")
 	m.Require().Nil(err)
 	m.Require().NotNil(artifact)
 	m.Equal(art.ID, artifact.ID)

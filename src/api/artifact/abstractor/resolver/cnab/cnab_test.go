@@ -15,12 +15,10 @@
 package cnab
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/api/artifact/abstractor/blob"
 	testingartifact "github.com/goharbor/harbor/src/testing/pkg/artifact"
-	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -28,17 +26,14 @@ import (
 type resolverTestSuite struct {
 	suite.Suite
 	resolver    *resolver
-	repoMgr     *repository.FakeManager
 	artMgr      *testingartifact.FakeManager
 	blobFetcher *blob.FakeFetcher
 }
 
 func (r *resolverTestSuite) SetupTest() {
-	r.repoMgr = &repository.FakeManager{}
 	r.artMgr = &testingartifact.FakeManager{}
 	r.blobFetcher = &blob.FakeFetcher{}
 	r.resolver = &resolver{
-		repoMgr:     r.repoMgr,
 		argMgr:      r.artMgr,
 		blobFetcher: r.blobFetcher,
 	}
@@ -115,7 +110,6 @@ func (r *resolverTestSuite) TestResolveMetadata() {
 }`
 	art := &artifact.Artifact{}
 	r.artMgr.On("GetByDigest").Return(&artifact.Artifact{ID: 1}, nil)
-	r.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	r.blobFetcher.On("FetchManifest").Return("", []byte(manifest), nil)
 	r.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
 	err := r.resolver.ResolveMetadata(nil, []byte(index), art)

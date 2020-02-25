@@ -81,11 +81,7 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	if params.PageSize != nil {
 		query.PageSize = *(params.PageSize)
 	}
-	repository, err := a.repoCtl.GetByName(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName))
-	if err != nil {
-		return a.SendError(ctx, err)
-	}
-	query.Keywords["RepositoryID"] = repository.RepositoryID
+	query.Keywords["RepositoryName"] = fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
 
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
@@ -155,23 +151,24 @@ func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArt
 	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceArtifact); err != nil {
 		return a.SendError(ctx, err)
 	}
-	srcRepo, srcRef, err := parse(params.From)
+
+	srcRepo, ref, err := parse(params.From)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
+
 	srcPro, _ := utils.ParseRepository(srcRepo)
 	if err = a.RequireProjectAccess(ctx, srcPro, rbac.ActionRead, rbac.ResourceArtifact); err != nil {
 		return a.SendError(ctx, err)
 	}
-	srcArt, err := a.artCtl.GetByReference(ctx, srcRepo, srcRef, &artifact.Option{WithTag: true})
+
+	dstRepo := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
+	_, id, err := a.repoCtl.Ensure(ctx, dstRepo)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-	_, id, err := a.repoCtl.Ensure(ctx, params.ProjectName+"/"+params.RepositoryName)
-	if err != nil {
-		return a.SendError(ctx, err)
-	}
-	id, err = a.artCtl.Copy(ctx, srcArt.ID, id)
+
+	id, err = a.artCtl.Copy(ctx, srcRepo, ref, dstRepo)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}

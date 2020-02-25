@@ -58,7 +58,7 @@ func (i *indexResolver) ResolveMetadata(ctx context.Context, manifest []byte, ar
 	for _, mani := range index.Manifests {
 		digest := mani.Digest.String()
 		// make sure the child artifact exist
-		ar, err := i.artMgr.GetByDigest(ctx, art.RepositoryID, digest)
+		ar, err := i.artMgr.GetByDigest(ctx, art.RepositoryName, digest)
 		if err != nil {
 			return err
 		}

@@ -54,7 +54,7 @@ func (f *FakeManager) Get(ctx context.Context, id int64) (*artifact.Artifact, er
 }
 
 // GetByDigest ...
-func (f *FakeManager) GetByDigest(ctx context.Context, repositoryID int64, digest string) (*artifact.Artifact, error) {
+func (f *FakeManager) GetByDigest(ctx context.Context, repository, digest string) (*artifact.Artifact, error) {
 	args := f.Called()
 	var art *artifact.Artifact
 	if args.Get(0) != nil {

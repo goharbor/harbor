@@ -25,7 +25,6 @@ import (
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -43,24 +42,18 @@ type Abstractor interface {
 // NewAbstractor returns an instance of the default abstractor
 func NewAbstractor() Abstractor {
 	return &abstractor{
-		repoMgr:     repository.Mgr,
 		blobFetcher: blob.Fcher,
 	}
 }
 
 type abstractor struct {
-	repoMgr     repository.Manager
 	blobFetcher blob.Fetcher
 }
 
 // TODO add white list for supported artifact type
 func (a *abstractor) AbstractMetadata(ctx context.Context, artifact *artifact.Artifact) error {
-	repository, err := a.repoMgr.Get(ctx, artifact.RepositoryID)
-	if err != nil {
-		return err
-	}
 	// read manifest content
-	manifestMediaType, content, err := a.blobFetcher.FetchManifest(repository.Name, artifact.Digest)
+	manifestMediaType, content, err := a.blobFetcher.FetchManifest(artifact.RepositoryName, artifact.Digest)
 	if err != nil {
 		return err
 	}

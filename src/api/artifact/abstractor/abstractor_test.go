@@ -18,12 +18,10 @@ import (
 	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
-	"github.com/goharbor/harbor/src/common/models"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/api/artifact/abstractor/blob"
 	tresolver "github.com/goharbor/harbor/src/testing/api/artifact/abstractor/resolver"
-	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
 	"testing"
@@ -203,16 +201,13 @@ type abstractorTestSuite struct {
 	suite.Suite
 	abstractor Abstractor
 	fetcher    *blob.FakeFetcher
-	repoMgr    *repository.FakeManager
 	resolver   *tresolver.FakeResolver
 }
 
 func (a *abstractorTestSuite) SetupTest() {
 	a.fetcher = &blob.FakeFetcher{}
-	a.repoMgr = &repository.FakeManager{}
 	a.resolver = &tresolver.FakeResolver{}
 	a.abstractor = &abstractor{
-		repoMgr:     a.repoMgr,
 		blobFetcher: a.fetcher,
 	}
 }
@@ -220,7 +215,6 @@ func (a *abstractorTestSuite) SetupTest() {
 // docker manifest v1
 func (a *abstractorTestSuite) TestAbstractMetadataOfV1Manifest() {
 	resolver.Register(a.resolver, schema1.MediaTypeSignedManifest)
-	a.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	a.fetcher.On("FetchManifest").Return(schema1.MediaTypeSignedManifest, []byte(v1Manifest), nil)
 	a.resolver.On("ArtifactType").Return(fakeArtifactType)
 	a.resolver.On("ResolveMetadata").Return(nil)
@@ -238,7 +232,6 @@ func (a *abstractorTestSuite) TestAbstractMetadataOfV1Manifest() {
 // docker manifest v2
 func (a *abstractorTestSuite) TestAbstractMetadataOfV2Manifest() {
 	resolver.Register(a.resolver, schema2.MediaTypeImageConfig)
-	a.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	a.fetcher.On("FetchManifest").Return(schema2.MediaTypeManifest, []byte(v2Manifest), nil)
 	a.resolver.On("ArtifactType").Return(fakeArtifactType)
 	a.resolver.On("ResolveMetadata").Return(nil)
@@ -257,7 +250,6 @@ func (a *abstractorTestSuite) TestAbstractMetadataOfV2Manifest() {
 // OCI index
 func (a *abstractorTestSuite) TestAbstractMetadataOfIndex() {
 	resolver.Register(a.resolver, v1.MediaTypeImageIndex)
-	a.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	a.fetcher.On("FetchManifest").Return(v1.MediaTypeImageIndex, []byte(index), nil)
 	a.resolver.On("ArtifactType").Return(fakeArtifactType)
 	a.resolver.On("ResolveMetadata").Return(nil)
@@ -275,7 +267,6 @@ func (a *abstractorTestSuite) TestAbstractMetadataOfIndex() {
 
 // OCI index
 func (a *abstractorTestSuite) TestAbstractMetadataOfUnsupported() {
-	a.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	a.fetcher.On("FetchManifest").Return("unsupported-manifest", []byte{}, nil)
 	artifact := &artifact.Artifact{
 		ID: 1,
