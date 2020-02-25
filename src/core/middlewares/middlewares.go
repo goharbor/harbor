@@ -15,6 +15,7 @@
 package middlewares
 
 import (
+	"github.com/goharbor/harbor/src/server/middleware/readonly"
 	"net/http"
 	"path"
 	"regexp"
@@ -29,11 +30,28 @@ import (
 )
 
 var (
-	blobURLRe = regexp.MustCompile("^/v2/(" + reference.NameRegexp.String() + ")/blobs/" + reference.DigestRegexp.String())
+	match         = regexp.MustCompile
+	numericRegexp = match(`[0-9]+`)
+
+	blobURLRe = match("^/v2/(" + reference.NameRegexp.String() + ")/blobs/" + reference.DigestRegexp.String())
 
 	// fetchBlobAPISkipper skip transaction middleware for fetch blob API
 	// because transaction use the ResponseBuffer for the response which will degrade the performance for fetch blob
 	fetchBlobAPISkipper = middleware.MethodAndPathSkipper(http.MethodGet, blobURLRe)
+
+	// readonlySkippers skip the post request when harbor sets to readonly.
+	readonlySkippers = []middleware.Skipper{
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/login")),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/userExists")),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/c/oidc/onboard")),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/adminjob/"+numericRegexp.String())),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/replication/"+numericRegexp.String())),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/replication/task/"+numericRegexp.String())),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/webhook/"+numericRegexp.String())),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/retention/task/"+numericRegexp.String())),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/schedules/"+numericRegexp.String())),
+		middleware.MethodAndPathSkipper(http.MethodPost, match("^/service/notifications/jobs/webhook/"+numericRegexp.String())),
+	}
 )
 
 // legacyAPISkipper skip middleware for legacy APIs
@@ -52,6 +70,7 @@ func legacyAPISkipper(r *http.Request) bool {
 func MiddleWares() []beego.MiddleWare {
 	return []beego.MiddleWare{
 		requestid.Middleware(),
+		readonly.Middleware(readonlySkippers...),
 		orm.Middleware(legacyAPISkipper),
 		transaction.Middleware(legacyAPISkipper, fetchBlobAPISkipper),
 	}

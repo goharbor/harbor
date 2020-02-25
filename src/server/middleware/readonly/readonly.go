@@ -59,6 +59,8 @@ func Middleware(skippers ...middleware.Skipper) func(http.Handler) http.Handler 
 func MiddlewareWithConfig(config Config, skippers ...middleware.Skipper) func(http.Handler) http.Handler {
 	if len(skippers) == 0 {
 		skippers = []middleware.Skipper{safeMethodSkipper}
+	} else {
+		skippers = append(skippers, []middleware.Skipper{safeMethodSkipper}...)
 	}
 
 	if config.ReadOnly == nil {
