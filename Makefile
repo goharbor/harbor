@@ -374,6 +374,12 @@ build_base_docker:
 		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) goharbor/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) ; \
 	done
 
+pull_base_docker:
+	@for name in chartserver clair clair-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+		echo $$name ; \
+		$(DOCKERPULL) goharbor/harbor-$$name-base:$(BASEIMAGETAG) ; \
+	done
+
 install: compile build prepare start
 
 package_online: update_prepare_version

@@ -1,3 +1,3 @@
 FROM photon:2.0
 
-RUN tdnf install -y redis sudo
+RUN tdnf install -y redis sudo && tdnf clean all
