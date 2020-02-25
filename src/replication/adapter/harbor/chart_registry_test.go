@@ -16,9 +16,11 @@ package harbor
 
 import (
 	"bytes"
+	"fmt"
 	"net/http"
 	"testing"
 
+	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/stretchr/testify/assert"
@@ -29,7 +31,7 @@ func TestFetchCharts(t *testing.T) {
 	server := test.NewServer([]*test.RequestHandlerMapping{
 		{
 			Method:  http.MethodGet,
-			Pattern: "/api/v2.0/projects",
+			Pattern: fmt.Sprintf("/api/%s/projects", api.APIVersion),
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
 					"name": "library",
@@ -40,7 +42,7 @@ func TestFetchCharts(t *testing.T) {
 		},
 		{
 			Method:  http.MethodGet,
-			Pattern: "/api/v2.0/chartrepo/library/charts/harbor",
+			Pattern: fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor", api.APIVersion),
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
 				"name": "harbor",
@@ -54,7 +56,7 @@ func TestFetchCharts(t *testing.T) {
 		},
 		{
 			Method:  http.MethodGet,
-			Pattern: "/api/v2.0/chartrepo/library/charts",
+			Pattern: fmt.Sprintf("/api/%s/chartrepo/library/charts", api.APIVersion),
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
 				"name": "harbor"
@@ -100,7 +102,7 @@ func TestFetchCharts(t *testing.T) {
 func TestChartExist(t *testing.T) {
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodGet,
-		Pattern: "/api/v2.0/chartrepo/library/charts/harbor/1.0",
+		Pattern: fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor/1.0", api.APIVersion),
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			data := `{
 				"metadata": {
@@ -125,7 +127,7 @@ func TestDownloadChart(t *testing.T) {
 	server := test.NewServer([]*test.RequestHandlerMapping{
 		{
 			Method:  http.MethodGet,
-			Pattern: "/api/v2.0/chartrepo/library/charts/harbor/1.0",
+			Pattern: fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor/1.0", api.APIVersion),
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `{
 				"metadata": {
@@ -156,7 +158,7 @@ func TestDownloadChart(t *testing.T) {
 func TestUploadChart(t *testing.T) {
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodPost,
-		Pattern: "/api/v2.0/chartrepo/library/charts",
+		Pattern: fmt.Sprintf("/api/%s/chartrepo/library/charts", api.APIVersion),
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		},
@@ -174,7 +176,7 @@ func TestUploadChart(t *testing.T) {
 func TestDeleteChart(t *testing.T) {
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodDelete,
-		Pattern: "/api/v2.0/chartrepo/library/charts/harbor/1.0",
+		Pattern: fmt.Sprintf("/api/%s/chartrepo/library/charts/harbor/1.0", api.APIVersion),
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		},
