@@ -71,7 +71,7 @@
             [(clrDgSelected)]="selectedRow">
             <clr-dg-action-bar>
                 <button [clrLoading]="scanBtnState" type="button" class="btn  btn-secondary scan-btn"
-                    [disabled]="!(canScanNow() && selectedRow.length==1 && hasEnabledScanner && !referArtifactArray.length)" (click)="scanNow()">
+                    [disabled]="!(canScanNow() && selectedRow.length==1 && hasEnabledScanner && !depth)" (click)="scanNow()">
                     <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}
                 </button>
 
@@ -82,11 +82,11 @@
                     </span>
                     <clr-dropdown-menu class="action-dropdown" clrPosition="bottom-left" *clrIfOpen>
                         <div class="action-dropdown-item" aria-label="copy digest" clrDropdownItem
-                            [clrDisabled]="!(selectedRow.length==1&& !referArtifactArray.length)" (click)="showDigestId()">
+                            [clrDisabled]="!(selectedRow.length==1&& !depth)" (click)="showDigestId()">
                             {{'REPOSITORY.COPY_DIGEST_ID' | translate}}</div>
                         <clr-dropdown *ngIf="!withAdmiral">
                             <button class="action-dropdown-item" clrDropdownTrigger
-                                [disabled]="!(selectedRow.length==1)||!hasAddLabelImagePermission ||referArtifactArray.length"
+                                [disabled]="!(selectedRow.length==1)||!hasAddLabelImagePermission ||depth"
                                 (click)="addLabels()">
                                 {{'REPOSITORY.ADD_LABELS' | translate}}
                             </button>
@@ -116,10 +116,10 @@
                             </clr-dropdown-menu>
                         </clr-dropdown>
                         <div class="action-dropdown-item" aria-label="retag" *ngIf="!withAdmiral"
-                            [clrDisabled]="!(selectedRow.length===1)|| !hasRetagImagePermission||referArtifactArray.length" (click)="retag()"
+                            [clrDisabled]="!(selectedRow.length===1)|| !hasRetagImagePermission||depth" (click)="retag()"
                             clrDropdownItem>{{'REPOSITORY.RETAG' | translate}}</div>
                         <div class="action-dropdown-item" clrDropdownItem *ngIf="hasDeleteImagePermission"
-                            (click)="deleteArtifact()" id="artifact-list-delete" [clrDisabled]="!hasDeleteImagePermission||!selectedRow.length || referArtifactArray.length">
+                            (click)="deleteArtifact()" id="artifact-list-delete" [clrDisabled]="!hasDeleteImagePermission||!selectedRow.length || depth">
                             {{'REPOSITORY.DELETE' | translate}}</div>
                     </clr-dropdown-menu>
                 </clr-dropdown>
@@ -128,14 +128,12 @@
 
             <clr-dg-column class="flex-max-width" [clrDgField]="'q'">{{'REPOSITORY.ARTIFACTS_COUNT' | translate}}
             </clr-dg-column>
-            <clr-dg-column *ngIf="referArtifactArray.length">{{'REPOSITORY.PLATFORM' | translate}}</clr-dg-column>
+            <clr-dg-column *ngIf="depth">{{'REPOSITORY.PLATFORM' | translate}}</clr-dg-column>
             <clr-dg-column class="w-rem-4">{{'REPOSITORY.TAGS_COUNT' | translate}}</clr-dg-column>
             <clr-dg-column >{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
-            <!-- <clr-dg-column>{{'REPOSITORY.PULL_COMMAND' | translate}}</clr-dg-column> -->
             <clr-dg-column>{{'REPOSITORY.VULNERABILITY' | translate}}</clr-dg-column>
             <clr-dg-column *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
-            <!-- <clr-dg-column>{{'REPOSITORY.AUTHOR' | translate}}</clr-dg-column> -->
-
+            <clr-dg-column>{{'ARTIFACT.ANNOTATION' | translate}}</clr-dg-column>
             <clr-dg-column *ngIf="!withAdmiral">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pushComparator">{{'REPOSITORY.PUSH_TIME' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pullComparator">{{'REPOSITORY.PULL_TIME' | translate}}</clr-dg-column>
@@ -166,7 +164,7 @@
                         </span>
                     </div>
                 </clr-dg-cell>
-                <clr-dg-cell *ngIf="referArtifactArray.length">
+                <clr-dg-cell *ngIf="depth">
                     <div class="cell">
                         {{artifact.extra_attrs?.os}}/{{artifact.extra_attrs?.architecture}}
                     </div>
@@ -243,11 +241,27 @@
                         </a>
                     </div>
                 </clr-dg-cell>
-                <!-- <clr-dg-cell class="truncated" title="{{artifact.author}}">
-                    <div class="cell">
-                        {{artifact.author}}
+                <clr-dg-cell>
+                    <div class="cell" *ngIf="artifact.annotationsArray?.length">
+                        <div  class="bar-state">
+                                <span class="label not-scan">{{artifact.annotationsArray[0]}}</span>
+                            </div>
+                        <div class="signpost-item" [hidden]="artifact.annotationsArray?.length<=1">
+                            <div class="trigger-item">
+                                <clr-signpost>
+                                    <button class="btn btn-link" clrSignpostTrigger>...</button>
+                                    <clr-signpost-content [clrPosition]="'left-top'" *clrIfOpen>
+                                        <div>
+                                            <div  *ngFor="let attr of artifact.annotationsArray" class="bar-state">
+                                                    <span class="label not-scan">{{attr}}</span>
+                                                </div>
+                                        </div>
+                                    </clr-signpost-content>
+                                </clr-signpost>
+                            </div>
+                        </div>
                     </div>
-                </clr-dg-cell> -->
+                </clr-dg-cell>
                 <clr-dg-cell *ngIf="!withAdmiral">
                     <div class="cell">
                         <hbr-label-piece *ngIf="artifact.labels?.length" [label]="artifact.labels[0]" [labelWidth]="90">

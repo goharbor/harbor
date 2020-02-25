@@ -33,30 +33,7 @@ export class ArtifactCommonPropertiesComponent implements OnInit, OnChanges {
   ngOnChanges(changes: SimpleChanges) {
     if (changes && changes["artifactDetails"]) {
       if (this.artifactDetails) {
-        if (this.artifactDetails.type) {
-          this.commonProperties[Types.TYPE] = this.artifactDetails.type;
-        }
-        if (this.artifactDetails.media_type) {
-          this.commonProperties[Types.MEDIA_TYPE] = this.artifactDetails.media_type;
-        }
-        if (this.artifactDetails.manifest_media_type) {
-          this.commonProperties[Types.MANIFEST_MEDIA_TYPE] = this.artifactDetails.manifest_media_type;
-        }
-        if (this.artifactDetails.digest) {
-          this.commonProperties[Types.DIGEST] = this.artifactDetails.digest;
-        }
-        if (this.artifactDetails.size) {
-          this.commonProperties[Types.SIZE] = formatSize(this.artifactDetails.size.toString());
-        }
-        if (this.artifactDetails.push_time) {
-          this.commonProperties[Types.PUSH_TIME] = new DatePipe(this.translate.currentLang)
-            .transform(this.artifactDetails.push_time, 'short');
-        }
-        if (this.artifactDetails.pull_time) {
-          this.commonProperties[Types.PULL_TIME] = new DatePipe(this.translate.currentLang)
-            .transform(this.artifactDetails.pull_time, 'short');
-        }
-        Object.assign(this.commonProperties, this.artifactDetails.extra_attrs, this.artifactDetails.annotations);
+        Object.assign(this.commonProperties, this.artifactDetails.extra_attrs);
         for (let name in this.commonProperties) {
           if (this.commonProperties.hasOwnProperty(name)) {
             if (this.commonProperties[name] && this.commonProperties[name] instanceof Object) {

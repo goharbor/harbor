@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Subject } from "rxjs";
-import { Artifact } from "../../app/project/repository/artifact/artifact";
+import { ArtifactFront as Artifact } from "../../app/project/repository/artifact/artifact";
 
 @Injectable()
 export class ChannelService {

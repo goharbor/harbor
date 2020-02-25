@@ -139,10 +139,6 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
       this.projectName = pro.name;
     }
     this.hasSignedIn = this.session.getCurrentUser() !== null;
-
-
-
-
     // Get system info for tag views
    this.getSystemInfo();
     this.isCardView = this.mode === "admiral";
@@ -227,7 +223,7 @@ export class RepositoryGridviewComponent implements OnChanges, OnInit, OnDestroy
     this.operationService.publishInfo(operMessage);
     return this.newRepoService
       .deleteRepository({
-        repositoryName: repo.name,
+        repositoryName: repo.name.split('/')[1],
         projectName: this.projectName
       })
       .pipe(map(

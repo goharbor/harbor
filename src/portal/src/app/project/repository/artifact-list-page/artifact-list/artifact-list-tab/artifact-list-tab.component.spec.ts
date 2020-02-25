@@ -22,7 +22,7 @@ import {
   UserPermissionService,
   USERSTATICPERMISSION
 } from "../../../../../../lib/services";
-import { Artifact, Reference } from "../../../artifact/artifact";
+import { ArtifactFront as Artifact } from "../../../artifact/artifact";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../../../../lib/entities/service.config";
 import { SharedModule } from "../../../../../../lib/utils/shared/shared.module";
 import { LabelPieceComponent } from "../../../../../../lib/components/label-piece/label-piece.component";
@@ -82,21 +82,19 @@ describe("ArtifactListTabComponent (inline template)", () => {
     {
       "id": 1,
       type: 'image',
-      repository: "goharbor/harbor-portal",
       tags: [{
-        id: '1',
+        id: 1,
         name: 'tag1',
-        artifact_id: 1,
-        upload_time: '2020-01-06T09:40:08.036866579Z',
+        artifact_id: 1
       },
       {
-        id: '2',
+        id: 2,
         name: 'tag2',
         artifact_id: 2,
         pull_time: '2020-01-06T09:40:08.036866579Z',
         push_time: '2020-01-06T09:40:08.036866579Z',
-      },],
-      references: [new Reference(1), new Reference(2)],
+      }],
+      references: [],
       media_type: 'string',
       "digest": "sha256:4875cda368906fd670c9629b5e416ab3d6c0292015f3c3f12ef37dc9a32fc8d4",
       "size": 20372934,
@@ -141,22 +139,20 @@ describe("ArtifactListTabComponent (inline template)", () => {
     {
       "id": 1,
       type: 'image',
-      repository: "goharbor/harbor-portal",
       tags: [{
-        id: '1',
+        id: 1,
         name: 'tag1',
-        artifact_id: 1,
-        upload_time: '2020-01-06T09:40:08.036866579Z',
+        artifact_id: 1
       },
       {
-        id: '2',
+        id: 2,
         name: 'tag2',
         artifact_id: 2,
         pull_time: '2020-01-06T09:40:08.036866579Z',
         push_time: '2020-01-06T09:40:08.036866579Z',
     }
     ],
-      references: [new Reference(1), new Reference(2)],
+      references: [],
       media_type: 'string',
       "digest": "sha256:3e33e3e3",
       "size": 20372934,
