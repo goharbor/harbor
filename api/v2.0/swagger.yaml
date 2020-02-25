@@ -68,12 +68,6 @@ paths:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/projectName'
         - $ref: '#/parameters/repositoryName'
-        - name: repository
-          in: body
-          description: The JSON object of repository.
-          required: true
-          schema:
-            $ref: '#/definitions/Repository'
       responses:
         '200':
           description: Success
