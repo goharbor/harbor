@@ -32,14 +32,14 @@ import { CopyInputComponent } from "../../../../../../lib/components/push-image/
 import { ErrorHandler } from "../../../../../../lib/utils/error-handler";
 import { ChannelService } from "../../../../../../lib/services/channel.service";
 import { OperationService } from "../../../../../../lib/components/operation/operation.service";
+import { By } from "@angular/platform-browser";
+import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
 
 describe("ArtifactListTabComponent (inline template)", () => {
 
   let comp: ArtifactListTabComponent;
   let fixture: ComponentFixture<ArtifactListTabComponent>;
-  let artifactService: ArtifactService;
   let userPermissionService: UserPermissionService;
-  let spy: jasmine.Spy;
   let spyLabels: jasmine.Spy;
   let spyLabels1: jasmine.Spy;
   let spyScanner: jasmine.Spy;
@@ -88,15 +88,14 @@ describe("ArtifactListTabComponent (inline template)", () => {
         name: 'tag1',
         artifact_id: 1,
         upload_time: '2020-01-06T09:40:08.036866579Z',
-    },
-    {
+      },
+      {
         id: '2',
         name: 'tag2',
         artifact_id: 2,
         pull_time: '2020-01-06T09:40:08.036866579Z',
         push_time: '2020-01-06T09:40:08.036866579Z',
-    }
-    ],
+      },],
       references: [new Reference(1), new Reference(2)],
       media_type: 'string',
       "digest": "sha256:4875cda368906fd670c9629b5e416ab3d6c0292015f3c3f12ef37dc9a32fc8d4",
@@ -137,13 +136,70 @@ describe("ArtifactListTabComponent (inline template)", () => {
         }
       ],
       "push_time": "2020-01-07T03:33:41.162319Z",
+      "pull_time": "0001-01-01T00:00:00Z"
+    },
+    {
+      "id": 1,
+      type: 'image',
+      repository: "goharbor/harbor-portal",
+      tags: [{
+        id: '1',
+        name: 'tag1',
+        artifact_id: 1,
+        upload_time: '2020-01-06T09:40:08.036866579Z',
+      },
+      {
+        id: '2',
+        name: 'tag2',
+        artifact_id: 2,
+        pull_time: '2020-01-06T09:40:08.036866579Z',
+        push_time: '2020-01-06T09:40:08.036866579Z',
+    }
+    ],
+      references: [new Reference(1), new Reference(2)],
+      media_type: 'string',
+      "digest": "sha256:3e33e3e3",
+      "size": 20372934,
+      "scan_overview": {
+        "application/vnd.scanner.adapter.vuln.report.harbor+json; version=1.0": {
+          "report_id": "5e64bc05-3102-11ea-93ae-0242ac140004",
+          "scan_status": "Error",
+          "severity": "",
+          "duration": 118,
+          "summary": null,
+          "start_time": "2020-01-07T04:01:23.157711Z",
+          "end_time": "2020-01-07T04:03:21.662766Z"
+        }
+      },
+      "labels": [
+        {
+          "id": 3,
+          "name": "aaa",
+          "description": "",
+          "color": "#0095D3",
+          "scope": "g",
+          "project_id": 0,
+          "creation_time": "2020-01-13T05:44:00.580198Z",
+          "update_time": "2020-01-13T05:44:00.580198Z",
+          "deleted": false
+        },
+        {
+          "id": 6,
+          "name": "dbc",
+          "description": "",
+          "color": "",
+          "scope": "g",
+          "project_id": 0,
+          "creation_time": "2020-01-13T08:27:19.279123Z",
+          "update_time": "2020-01-13T08:27:19.279123Z",
+          "deleted": false
+        }
+      ],
+      "push_time": "2020-01-07T03:33:41.162319Z",
       "pull_time": "0001-01-01T00:00:00Z",
-      hasReferenceArtifactList: [],
-      noReferenceArtifactList: []
-
-  }
+    }
   ];
-
+  let filtereName = '';
   let mockLabels: Label[] = [
     {
       color: "#9b0d54",
@@ -198,17 +254,44 @@ describe("ArtifactListTabComponent (inline template)", () => {
   let mockHasDeleteImagePermission: boolean = true;
   let mockHasScanImagePermission: boolean = true;
   const mockErrorHandler = {
-    error: () => {}
+    error: () => { }
   };
   const permissions = [
-    {resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE},
-    {resource: USERSTATICPERMISSION.REPOSITORY.KEY, action:  USERSTATICPERMISSION.REPOSITORY.VALUE.PULL},
-    {resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE},
-    {resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action:  USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE},
+    { resource: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG_LABEL.VALUE.CREATE },
+    { resource: USERSTATICPERMISSION.REPOSITORY.KEY, action: USERSTATICPERMISSION.REPOSITORY.VALUE.PULL },
+    { resource: USERSTATICPERMISSION.REPOSITORY_TAG.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG.VALUE.DELETE },
+    { resource: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.KEY, action: USERSTATICPERMISSION.REPOSITORY_TAG_SCAN_JOB.VALUE.CREATE },
   ];
   const mockRouter = {
     navigate: () => { }
   };
+  const mockOperationService = {
+    publishInfo: () => {}
+  };
+  const mockArtifactService = {
+    getArtifactList: () => {
+      if (filtereName === 'sha256:3e33e3e3') {
+        return of(
+          {
+            body: [mockArtifacts[1]]
+          }
+        );
+      } else {
+        return of(
+          {
+            body: mockArtifacts
+          }
+        ).pipe(delay(0));
+      }
+    },
+    TriggerArtifactChan$: {
+      subscribe: (fn) => {
+
+      }
+    },
+    deleteArtifact: () => of (null)
+
+  }
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -232,7 +315,7 @@ describe("ArtifactListTabComponent (inline template)", () => {
         ArtifactDefaultService,
         { provide: Router, useValue: mockRouter },
         { provide: SERVICE_CONFIG, useValue: config },
-        { provide: ArtifactService, useClass: ArtifactDefaultService },
+        { provide: ArtifactService, useValue: mockArtifactService },
         { provide: ProjectService, useClass: ProjectDefaultService },
         { provide: RetagService, useClass: RetagDefaultService },
         { provide: ScanningResultService, useClass: ScanningResultDefaultService },
@@ -240,7 +323,8 @@ describe("ArtifactListTabComponent (inline template)", () => {
         { provide: UserPermissionService, useClass: UserPermissionDefaultService },
         { provide: ErrorHandler, useValue: mockErrorHandler },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
-        { provide: OperationService },
+        { provide: OperationService, useValue: mockOperationService },
+        { provide: NewArtifactService, useValue: null },
       ]
     }).compileComponents();
   }));
@@ -257,28 +341,64 @@ describe("ArtifactListTabComponent (inline template)", () => {
     comp.withNotary = false;
     comp.withAdmiral = false;
     let labelService: LabelService;
-    artifactService = fixture.debugElement.injector.get(ArtifactService);
-    spy = spyOn(artifactService, "getArtifactList").and.returnValues(of(
-      {
-        body: mockArtifacts
-      }
-      ).pipe(delay(0)));
     userPermissionService = fixture.debugElement.injector.get(UserPermissionService);
     let http: HttpClient;
     http = fixture.debugElement.injector.get(HttpClient);
     spyScanner = spyOn(http, "get").and.returnValue(of(scannerMock));
     spyOn(userPermissionService, "hasProjectPermissions")
-    .withArgs(comp.projectId, permissions )
-    .and.returnValue(of([mockHasAddLabelImagePermission, mockHasRetagImagePermission,
-       mockHasDeleteImagePermission, mockHasScanImagePermission]));
+      .withArgs(comp.projectId, permissions)
+      .and.returnValue(of([mockHasAddLabelImagePermission, mockHasRetagImagePermission,
+        mockHasDeleteImagePermission, mockHasScanImagePermission]));
+
     labelService = fixture.debugElement.injector.get(LabelService);
     spyLabels = spyOn(labelService, "getGLabels").and.returnValues(of(mockLabels).pipe(delay(0)));
     spyLabels1 = spyOn(labelService, "getPLabels").withArgs(comp.projectId).and.returnValues(of(mockLabels1).pipe(delay(0)));
     fixture.detectChanges();
   });
-  it("should load data", async(() => {
-    expect(spy.calls.any).toBeTruthy();
-  }));
+
+  it("should load and render data", () => {
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+      fixture.detectChanges();
+      let de: DebugElement = fixture.debugElement.query(del => del.classes["datagrid-cell"]);
+      fixture.detectChanges();
+      expect(de).toBeTruthy();
+      let el: HTMLElement = de.nativeElement;
+      expect(el).toBeTruthy();
+      expect(el.textContent.trim()).toEqual("sha256:4875cda3");
+    });
+  });
+  it('should filter data by keyword', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    filtereName = 'sha256:3e33e3e3';
+    comp.doSearchArtifactNames('sha256:3e33e3e3');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    let de: DebugElement = fixture.debugElement.query(del => del.classes["datagrid-cell"]);
+    expect(de).toBeTruthy();
+    let el: HTMLElement = de.nativeElement;
+    expect(el).toBeTruthy();
+    filtereName = '';
+    expect(el.textContent.trim()).toEqual('sha256:3e33e3e3');
+  });
+  it('should delete artifact', async () => {
+    fixture.detectChanges();
+    await fixture.whenStable();
+    comp.selectedRow = [mockArtifacts[0]];
+    filtereName = 'sha256:3e33e3e3';
+    comp.confirmDeletion({source: 9, state: 1, data: comp.selectedRow});
+    fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    let de: DebugElement = fixture.debugElement.query(del => del.classes["datagrid-cell"]);
+    expect(de).toBeTruthy();
+    let el: HTMLElement = de.nativeElement;
+    expect(el).toBeTruthy();
+    filtereName = '';
+    expect(el.textContent.trim()).toEqual('sha256:3e33e3e3');
+  });
 });
 
 

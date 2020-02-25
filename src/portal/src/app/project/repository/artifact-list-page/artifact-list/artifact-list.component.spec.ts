@@ -21,7 +21,9 @@ import { ErrorHandler } from "../../../../../lib/utils/error-handler";
 import { HttpClientTestingModule } from "@angular/common/http/testing";
 import { IServiceConfig, SERVICE_CONFIG } from "../../../../../lib/entities/service.config";
 import { SharedModule } from "../../../../../lib/utils/shared/shared.module";
-
+import {
+  RepositoryService as NewRepositoryService
+} from "../../../../../../ng-swagger-gen/services/repository.service";
 
 describe('ArtifactListComponent (inline template)', () => {
 
@@ -44,7 +46,8 @@ describe('ArtifactListComponent (inline template)', () => {
       subscribe: () => {
         return of(null);
       }
-    }
+    },
+    snapshot: { data: null }
   };
   let mockChannelService = {
     scanCommand$: of(1)
@@ -81,7 +84,9 @@ describe('ArtifactListComponent (inline template)', () => {
       'tags_count': 1
     }
   ];
-
+  let newRepositoryService = {
+    updateRepository: () => of(null)
+  };
   let mockRepo: Repository = {
     metadata: { xTotalCount: 2 },
     data: mockRepoData
@@ -119,6 +124,7 @@ describe('ArtifactListComponent (inline template)', () => {
         { provide: ArtifactService, useClass: ArtifactDefaultService },
         { provide: ActivatedRoute, useValue: mockActivatedRoute },
         { provide: SERVICE_CONFIG, useValue: config },
+        { provide: NewRepositoryService, useValue: newRepositoryService},
       ]
     });
   }));

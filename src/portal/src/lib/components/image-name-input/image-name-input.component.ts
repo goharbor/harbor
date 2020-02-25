@@ -35,11 +35,7 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
                 Validators.required,
                 Validators.maxLength(256),
                 Validators.pattern('^[a-z0-9]+(?:[._-][a-z0-9]+)*(/[a-z0-9]+(?:[._-][a-z0-9]+)*)*')
-            ])],
-            tagName: ["", Validators.compose([
-                Validators.required,
-                Validators.pattern('^[\\w][\\w.-]{0,127}$')
-            ])],
+            ])]
         });
     }
 
@@ -94,10 +90,6 @@ export class ImageNameInputComponent implements OnInit, OnDestroy {
 
     get repoName(): AbstractControl {
         return this.imageNameForm.get("repoName");
-    }
-
-    get tagName(): AbstractControl {
-        return this.imageNameForm.get("tagName");
     }
 
     ngOnDestroy(): void {

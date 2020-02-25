@@ -24,7 +24,10 @@ import { RepositoryService } from "../../repository.service";
 import { ArtifactService } from "../../artifact/artifact.service";
 import { ConfirmationState, ConfirmationTargets } from "../../../../../lib/entities/shared.const";
 import { ActivatedRoute } from "@angular/router";
-
+import { Project } from '../../../project';
+import {
+  RepositoryService as NewRepositoryService
+} from "../../../../../../ng-swagger-gen/services/repository.service";
 const TabLinkContentMap: { [index: string]: string } = {
   'repo-info': 'info',
   'repo-image': 'image'
@@ -58,7 +61,7 @@ export class ArtifactListComponent implements OnInit {
   orgImageInfo: string;
 
   timerHandler: any;
-
+  projectName: string = '';
   @ViewChild('confirmationDialog', { static: false })
   confirmationDlg: ConfirmationDialogComponent;
   showCurrentTitle: string;
@@ -68,6 +71,7 @@ export class ArtifactListComponent implements OnInit {
     private repositoryService: RepositoryService,
     private systemInfoService: SystemInfoService,
     private artifactService: ArtifactService,
+    private newRepositoryService: NewRepositoryService,
     private translate: TranslateService,
     private activatedRoute: ActivatedRoute,
   ) {
@@ -95,6 +99,11 @@ export class ArtifactListComponent implements OnInit {
     if (!this.projectId) {
       this.errorHandler.error('Project ID cannot be unset.');
       return;
+    }
+    const resolverData = this.activatedRoute.snapshot.data;
+    if (resolverData) {
+      const pro: Project = <Project>resolverData['projectResolver'];
+      this.projectName = pro.name;
     }
     this.showCurrentTitle = this.repoName || 'null';
     this.retrieve();
@@ -159,7 +168,12 @@ export class ArtifactListComponent implements OnInit {
       return;
     }
     this.onGoing = true;
-    this.repositoryService.updateRepositoryDescription(this.repoName, this.imageInfo)
+    let params: NewRepositoryService.UpdateRepositoryParams = {
+      repositoryName: this.repoName,
+      repository: {description: this.imageInfo},
+      projectName: this.projectName,
+    };
+    this.newRepositoryService.updateRepository(params)
       .subscribe(() => {
         this.onGoing = false;
         this.translate.get('CONFIG.SAVE_SUCCESS').subscribe((res: string) => {

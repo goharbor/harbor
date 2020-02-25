@@ -23,7 +23,7 @@
     </div>
     <div class="modal-footer">
         <button type="button"
-            [disabled]="imageNameInput.projectName.invalid||imageNameInput.repoName.invalid||imageNameInput.tagName.invalid||imageNameInput.noProjectInfo!=''"
+            [disabled]="imageNameInput.projectName.invalid||imageNameInput.repoName.invalid||imageNameInput.noProjectInfo!=''"
             class="btn btn-primary" (click)="onRetag()">{{'BUTTON.CONFIRM' | translate}}</button>
     </div>
 </clr-modal>
@@ -179,11 +179,11 @@
                                 <div>
                                     <div class="inner truncated ">
                                         <span>
-                                            {{artifact.tags[0].name | slice:0:5}}
+                                            {{artifact?.tags[0]?.name}}
                                         </span>
                                         <span class="eslip"
-                                            *ngIf="artifact.tags.length>1||artifact.tags.length>5">...</span>
-                                        <span class=""> ({{artifact.tags.length}})</span>
+                                            *ngIf="artifact?.tags?.length>1">...</span>
+                                        <span *ngIf="artifact?.tags?.length>1" > ({{artifact?.tags?.length}})</span>
 
                                     </div>
                                 </div>

@@ -36,16 +36,4 @@
             </clr-control-error>
         </div>
     </div>
-    <div class="clr-form-control">
-        <label class="required clr-control-label">{{ 'REPOSITORY.TAG' | translate }}</label>
-        <div class="clr-control-container" [class.clr-error]="tagName.invalid && (tagName.dirty || tagName.touched)">
-            <div class="clr-input-wrapper">
-                <input type="text" id="tag-name" class="clr-input w-90" formControlName="tagName"  autocomplete="off" />
-                <clr-icon class="clr-validate-icon" shape="exclamation-circle"></clr-icon>
-            </div>
-            <clr-control-error *ngIf="tagName.invalid && (tagName.dirty || tagName.touched)" class="tooltip-content">
-                {{ 'RETAG.TIP_TAG' | translate }}
-            </clr-control-error>
-        </div>
-    </div>
 </form>
