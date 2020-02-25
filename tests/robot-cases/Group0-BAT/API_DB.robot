@@ -24,8 +24,8 @@ ${SERVER_API_ENDPOINT}  ${SERVER_URL}/api
 #    Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 Test Case - Add Private Project Member and Check User Can See It
     Harbor API Test  ./tests/apitests/python/test_add_member_to_private_project.py
-# Test Case - Delete a Repository of a Certain Project Created by Normal User
-#    Harbor API Test  ./tests/apitests/python/test_del_repo.py
+Test Case - Delete a Repository of a Certain Project Created by Normal User
+    Harbor API Test  ./tests/apitests/python/test_del_repo.py
 #Test Case - Add a System Global Label to a Certain Tag
 #    Harbor API Test  ./tests/apitests/python/test_add_sys_label_to_tag.py
 Test Case - Add Replication Rule
@@ -51,6 +51,8 @@ Test Case - Edit Project Creation
 #     Harbor API Test  ./tests/apitests/python/test_list_helm_charts.py
 ### Test Case - Assign Sys Admin
 ###     Harbor API Test  ./tests/apitests/python/test_assign_sys_admin.py
+Test Case - Copy Artifact Outside Project
+    Harbor API Test  ./tests/apitests/python/test_copy_artifact_outside_project.py
 ### Test Case - Robot Account
 ###     Harbor API Test  ./tests/apitests/python/test_robot_account.py
 ### Test Case - Sign A Image

@@ -34,8 +34,9 @@ def _create_client(server, credential, debug, api_type="products"):
     if proxy:
         cfg.proxy = proxy
     return {
-        "products": swagger_client.ProductsApi(swagger_client.ApiClient(cfg)),
-        "artifact": v2_swagger_client.ArtifactApi(v2_swagger_client.ApiClient(cfg)),
+        "products":   swagger_client.ProductsApi(swagger_client.ApiClient(cfg)),
+        "artifact":   v2_swagger_client.ArtifactApi(v2_swagger_client.ApiClient(cfg)),
+        "repository": v2_swagger_client.RepositoryApi(v2_swagger_client.ApiClient(cfg)),
     }.get(api_type,'Error: Wrong API type')
 
 def _assert_status_code(expect_code, return_code):
@@ -96,4 +97,4 @@ class Base:
             credential.username = kwargs.get("username")
         if "password" in kwargs:
             credential.password = kwargs.get("password")
-        return _create_client(server, credential, self.debug)
+        return _create_client(server, credential, self.debug, self.api_type)
