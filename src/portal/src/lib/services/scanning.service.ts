@@ -67,7 +67,7 @@ export abstract class ScanningResultService {
   abstract startVulnerabilityScanning(
     projectName: string,
     repoName: string,
-    artifactId: string
+    artifactDigest: string
   ): Observable<any>;
 
   /**
@@ -148,15 +148,15 @@ export class ScanningResultDefaultService extends ScanningResultService {
   startVulnerabilityScanning(
     projectName: string,
     repoName: string,
-    artifactId: string
+    artifactDigest: string
   ): Observable<any> {
-    if (!repoName || repoName.trim() === "" || !artifactId || artifactId.trim() === "") {
+    if (!repoName || repoName.trim() === "" || !artifactDigest || artifactDigest.trim() === "") {
       return observableThrowError("Bad argument");
     }
 
     return this.http
       .post(
-        `${ CURRENT_BASE_HREF }/projects//${projectName}/repositories/${repoName}/artifacts/${artifactId}/scan`,
+        `${ CURRENT_BASE_HREF }/projects//${projectName}/repositories/${repoName}/artifacts/${artifactDigest}/scan`,
         HTTP_JSON_OPTIONS
       )
       .pipe(map(() => {

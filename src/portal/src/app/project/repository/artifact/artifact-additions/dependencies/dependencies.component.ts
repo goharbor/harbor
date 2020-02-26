@@ -7,6 +7,8 @@ import { ArtifactDependency } from "../models";
 import { AdditionsService } from "../additions.service";
 import { AdditionLink } from "../../../../../../../ng-swagger-gen/models/addition-link";
 import { ErrorHandler } from "../../../../../../lib/utils/error-handler";
+import { pipe } from "rxjs";
+import { finalize } from "rxjs/operators";
 
 
 @Component({
@@ -18,6 +20,7 @@ export class DependenciesComponent implements OnInit {
   @Input()
   dependenciesLink: AdditionLink;
   dependencyList: ArtifactDependency[] = [];
+  loading: boolean = false;
   constructor( private errorHandler: ErrorHandler,
                private additionsService: AdditionsService) {}
 
@@ -28,7 +31,10 @@ export class DependenciesComponent implements OnInit {
     if (this.dependenciesLink
         && !this.dependenciesLink.absolute
         && this.dependenciesLink.href) {
-      this.additionsService.getDetailByLink(this.dependenciesLink.href).subscribe(
+      this.loading = true;
+      this.additionsService.getDetailByLink(this.dependenciesLink.href)
+        .pipe(finalize(() => this.loading = false))
+          .subscribe(
         res => {
           this.dependencyList = res;
         }, error => {

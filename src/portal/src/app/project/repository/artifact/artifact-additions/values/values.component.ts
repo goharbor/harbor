@@ -6,7 +6,8 @@ import {
 import { AdditionsService } from "../additions.service";
 import { AdditionLink } from "../../../../../../../ng-swagger-gen/models/addition-link";
 import { ErrorHandler } from "../../../../../../lib/utils/error-handler";
-
+import  * as yaml  from "js-yaml";
+import { finalize } from "rxjs/operators";
 
 @Component({
   selector: "hbr-artifact-values",
@@ -17,22 +18,31 @@ export class ValuesComponent implements OnInit {
   @Input()
   valuesLink: AdditionLink;
 
-  values: any;
+  values: string;
+  valuesObj: object = {};
 
   // Default set to yaml file
-  valueMode = true;
+  valueMode = false;
   valueHover = false;
   yamlHover = true;
-
+  loading: boolean = false;
   constructor(private errorHandler: ErrorHandler,
               private additionsService: AdditionsService) {
   }
 
   ngOnInit(): void {
     if (this.valuesLink && !this.valuesLink.absolute && this.valuesLink.href) {
-      this.additionsService.getDetailByLink(this.valuesLink.href).subscribe(
+      this.loading = true;
+      this.additionsService.getDetailByLink(this.valuesLink.href, true)
+        .pipe(finalize(() => this.loading = false))
+        .subscribe(
         res => {
-          this.values = res;
+          try {
+            this.format(yaml.safeLoad(res));
+            this.values = res;
+          } catch (e) {
+            this.errorHandler.error(e);
+          }
         }, error => {
           this.errorHandler.error(error);
         }
@@ -70,5 +80,22 @@ export class ValuesComponent implements OnInit {
     } else {
       this.yamlHover = false;
     }
+  }
+  format(obj: object) {
+      for (let name in obj) {
+        if (obj.hasOwnProperty(name)) {
+          if (obj[name] instanceof Object) {
+            for (let key in obj[name]) {
+              if (obj[name].hasOwnProperty(key)) {
+                  obj[`${name}.${key}`] = obj[name][key];
+              }
+            }
+            delete obj[name];
+            this.format(obj);
+          } else {
+            this.valuesObj[name] = obj[name];
+          }
+        }
+      }
   }
 }

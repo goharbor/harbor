@@ -1,5 +1,4 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
-
 import { ArtifactVulnerabilitiesComponent } from './artifact-vulnerabilities.component';
 import { NO_ERRORS_SCHEMA } from "@angular/core";
 import { ClarityModule } from "@clr/angular";
@@ -7,9 +6,11 @@ import { AdditionsService } from "../additions.service";
 import { of } from "rxjs";
 import { TranslateFakeLoader, TranslateLoader, TranslateModule } from "@ngx-translate/core";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
-import { VulnerabilityItem } from "../../../../../../lib/services";
+import { ScanningResultService, UserPermissionService, VulnerabilityItem } from "../../../../../../lib/services";
 import { AdditionLink } from "../../../../../../../ng-swagger-gen/models/addition-link";
 import { ErrorHandler } from "../../../../../../lib/utils/error-handler";
+import { ChannelService } from "../../../../../../lib/services/channel.service";
+import { DEFAULT_SUPPORTED_MIME_TYPE } from "../../../../../../lib/utils/utils";
 
 
 describe('ArtifactVulnerabilitiesComponent', () => {
@@ -35,16 +36,35 @@ describe('ArtifactVulnerabilitiesComponent', () => {
       description: 'just a test'
     },
   ];
+  let scanOverview = {};
+  scanOverview[DEFAULT_SUPPORTED_MIME_TYPE] = {};
+  scanOverview[DEFAULT_SUPPORTED_MIME_TYPE].vulnerabilities = mockedVulnerabilities;
   const mockedLink: AdditionLink = {
     absolute: false,
     href: '/test'
   };
   const fakedAdditionsService = {
     getDetailByLink() {
-      return of(mockedVulnerabilities);
+      return of(scanOverview);
     }
   };
-
+  const fakedUserPermissionService = {
+    hasProjectPermissions() {
+      return of(true);
+    }
+  };
+  const fakedScanningResultService = {
+    getProjectScanner() {
+      return of(true);
+    }
+  };
+  const fakedChannelService = {
+    ArtifactDetail$: {
+      subscribe() {
+        return null;
+      }
+    }
+  };
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       imports: [
@@ -60,7 +80,10 @@ describe('ArtifactVulnerabilitiesComponent', () => {
       declarations: [ArtifactVulnerabilitiesComponent],
       providers: [
         ErrorHandler,
-        {provide: AdditionsService, useValue: fakedAdditionsService}
+        {provide: AdditionsService, useValue: fakedAdditionsService},
+        {provide: UserPermissionService, useValue: fakedUserPermissionService},
+        {provide: ScanningResultService, useValue: fakedScanningResultService},
+        {provide: ChannelService, useValue: fakedChannelService},
       ],
       schemas: [
         NO_ERRORS_SCHEMA
@@ -72,6 +95,10 @@ describe('ArtifactVulnerabilitiesComponent', () => {
   beforeEach(() => {
     fixture = TestBed.createComponent(ArtifactVulnerabilitiesComponent);
     component = fixture.componentInstance;
+    component.hasScanningPermission = true;
+    component.hasEnabledScanner = true;
+    component.vulnerabilitiesLink = mockedLink;
+    component.ngOnInit();
     fixture.detectChanges();
   });
 
@@ -79,8 +106,6 @@ describe('ArtifactVulnerabilitiesComponent', () => {
     expect(component).toBeTruthy();
   });
   it('should get vulnerability list and render', async () => {
-    component.vulnerabilitiesLink = mockedLink;
-    component.ngOnInit();
     fixture.detectChanges();
     await fixture.whenStable();
     const rows = fixture.nativeElement.getElementsByTagName('clr-dg-row');
