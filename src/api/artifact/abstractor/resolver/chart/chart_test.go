@@ -21,7 +21,7 @@ import (
 	"github.com/goharbor/harbor/src/testing/api/artifact/abstractor/blob"
 	"github.com/goharbor/harbor/src/testing/pkg/chart"
 	"github.com/stretchr/testify/suite"
-	"k8s.io/helm/pkg/chartutil"
+	helm_chart "helm.sh/helm/v3/pkg/chart"
 	"testing"
 )
 
@@ -131,7 +131,7 @@ func (r *resolverTestSuite) TestResolveAddition() {
 }`
 
 	chartDetails := &chartserver.VersionDetails{
-		Dependencies: []*chartutil.Dependency{
+		Dependencies: []*helm_chart.Dependency{
 			{
 				Name:       "harbor",
 				Version:    "v1.10",
