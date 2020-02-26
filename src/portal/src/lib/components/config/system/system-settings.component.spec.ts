@@ -7,11 +7,12 @@ import { ErrorHandler } from "../../../utils/error-handler";
 import { of } from "rxjs";
 import { StringValueItem } from "../config";
 import { BrowserAnimationsModule } from "@angular/platform-browser/animations";
+import { CURRENT_BASE_HREF } from "../../../utils/utils";
 describe('SystemSettingsComponent', () => {
   let component: SystemSettingsComponent;
   let fixture: ComponentFixture<SystemSettingsComponent>;
   const config: IServiceConfig = {
-    baseEndpoint: "/api/testing"
+    baseEndpoint: CURRENT_BASE_HREF + "/testing"
   };
   const mockedWhitelist = {
     id: 1,

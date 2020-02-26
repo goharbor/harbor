@@ -15,6 +15,7 @@ import { SERVICE_CONFIG, IServiceConfig } from '../../entities/service.config';
 import { ReplicationService, ReplicationDefaultService } from '../../services/replication.service';
 import { OperationService } from "../operation/operation.service";
 import { of } from 'rxjs';
+import { CURRENT_BASE_HREF } from "../../utils/utils";
 
 describe('ListReplicationRuleComponent (inline template)', () => {
 
@@ -56,7 +57,7 @@ describe('ListReplicationRuleComponent (inline template)', () => {
   let spyRules: jasmine.Spy;
 
   let config: IServiceConfig = {
-    replicationRuleEndpoint: '/api/policies/replication/testing'
+    replicationRuleEndpoint: CURRENT_BASE_HREF + '/policies/replication/testing'
   };
 
   beforeEach(async(() => {

@@ -6,6 +6,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { ConfirmationTargets } from '../../entities/shared.const';
 import { ConfirmationMessage } from './confirmation-message';
 import { BatchInfo } from './confirmation-batch-message';
+import { CURRENT_BASE_HREF } from "../../utils/utils";
 
 
 describe('ConfirmationDialogComponent', () => {
@@ -13,7 +14,7 @@ describe('ConfirmationDialogComponent', () => {
     let comp: ConfirmationDialogComponent;
     let fixture: ComponentFixture<ConfirmationDialogComponent>;
     let config: IServiceConfig = {
-        configurationEndpoint: '/api/configurations/testing'
+        configurationEndpoint: CURRENT_BASE_HREF + '/configurations/testing'
     };
     const deletionMessage: ConfirmationMessage = new ConfirmationMessage(
         "MEMBER.DELETION_TITLE",

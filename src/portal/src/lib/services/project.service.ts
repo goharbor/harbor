@@ -10,7 +10,7 @@ import { ProjectPolicy } from "../components/project-policy-config/project-polic
 import {
   HTTP_JSON_OPTIONS,
   HTTP_GET_OPTIONS,
-  buildHttpRequestOptionsWithObserveResponse
+  buildHttpRequestOptionsWithObserveResponse, CURRENT_BASE_HREF
 } from "../utils/utils";
 
 /**
@@ -100,7 +100,7 @@ export class ProjectDefaultService extends ProjectService {
     }
     let baseUrl: string = this.config.projectBaseEndpoint
       ? this.config.projectBaseEndpoint
-      : "/api/projects";
+      : CURRENT_BASE_HREF + "/projects";
     return this.http
       .get<Project>(`${baseUrl}/${projectId}`, HTTP_GET_OPTIONS)
       .pipe(catchError(error => observableThrowError(error)));
@@ -114,7 +114,7 @@ export class ProjectDefaultService extends ProjectService {
   ): any {
     let baseUrl: string = this.config.projectBaseEndpoint
       ? this.config.projectBaseEndpoint
-      : "/api/projects";
+      : CURRENT_BASE_HREF + "/projects";
     return this.http
       .put<any>(
         `${baseUrl}/${projectId}`,
@@ -145,13 +145,13 @@ export class ProjectDefaultService extends ProjectService {
       params = params.set('public', '' + isPublic);
     }
     return this.http
-               .get<HttpResponse<Project[]>>(`/api/projects`, buildHttpRequestOptionsWithObserveResponse(params)).pipe(
+               .get<HttpResponse<Project[]>>(`${ CURRENT_BASE_HREF }/projects`, buildHttpRequestOptionsWithObserveResponse(params)).pipe(
                catchError(error => observableThrowError(error)), );
   }
 
   public createProject(name: string, metadata: any, countLimit: number, storageLimit: number): Observable<any> {
     return this.http
-               .post(`/api/projects`,
+               .post(`${ CURRENT_BASE_HREF }/projects`,
                 JSON.stringify({'project_name': name, 'metadata': {
                   public: metadata.public ? 'true' : 'false',
                 },
@@ -163,13 +163,13 @@ export class ProjectDefaultService extends ProjectService {
 
   public deleteProject(projectId: number): Observable<any> {
     return this.http
-               .delete(`/api/projects/${projectId}`)
+               .delete(`${ CURRENT_BASE_HREF }/projects/${projectId}`)
                .pipe(catchError(error => observableThrowError(error)));
   }
 
   public checkProjectExists(projectName: string): Observable<any> {
     return this.http
-        .head(`/api/projects/?project_name=${projectName}`).pipe(
+        .head(`${ CURRENT_BASE_HREF }/projects/?project_name=${projectName}`).pipe(
             catchError(error => {
               if (error && error.status === 404) {
                 return of(error);
@@ -180,12 +180,12 @@ export class ProjectDefaultService extends ProjectService {
 
   public checkProjectMember(projectId: number): Observable<any> {
     return this.http
-               .get(`/api/projects/${projectId}/members`, HTTP_GET_OPTIONS).pipe(
+               .get(`${ CURRENT_BASE_HREF }/projects/${projectId}/members`, HTTP_GET_OPTIONS).pipe(
                catchError(error => observableThrowError(error)), );
   }
   public getProjectSummary(projectId: number): Observable<any> {
     return this.http
-               .get(`/api/projects/${projectId}/summary`, HTTP_GET_OPTIONS).pipe(
+               .get(`${ CURRENT_BASE_HREF }/projects/${projectId}/summary`, HTTP_GET_OPTIONS).pipe(
                catchError(error => observableThrowError(error)), );
   }
 }

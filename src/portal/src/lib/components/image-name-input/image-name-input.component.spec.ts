@@ -8,6 +8,7 @@ import { IServiceConfig, SERVICE_CONFIG } from "../../entities/service.config";
 import { of } from "rxjs";
 import { HttpResponse } from "@angular/common/http";
 import { ChannelService } from "../../services/channel.service";
+import { CURRENT_BASE_HREF } from "../../utils/utils";
 
 describe("ImageNameInputComponent (inline template)", () => {
     let comp: ImageNameInputComponent;
@@ -28,7 +29,7 @@ describe("ImageNameInputComponent (inline template)", () => {
     ];
 
     let config: IServiceConfig = {
-        projectBaseEndpoint: "/api/projects/testing"
+        projectBaseEndpoint: CURRENT_BASE_HREF + "/projects/testing"
     };
 
     beforeEach(async(() => {

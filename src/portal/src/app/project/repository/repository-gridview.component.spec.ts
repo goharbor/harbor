@@ -25,6 +25,7 @@ import { ProjectModule } from "../project.module";
 import { ActivatedRoute } from "@angular/router";
 import { Repository as NewRepository } from "../../../../ng-swagger-gen/models/repository";
 import { StrictHttpResponse as __StrictHttpResponse } from '../../../../ng-swagger-gen/strict-http-response';
+import { CURRENT_BASE_HREF } from "../../../lib/utils/utils";
 
 describe('RepositoryComponentGridview (inline template)', () => {
 
@@ -73,9 +74,9 @@ describe('RepositoryComponentGridview (inline template)', () => {
   let mockRepo: NewRepository[] = mockRepoData;
   let mockNginxRepo: NewRepository[] = mockRepoNginxData;
   let config: IServiceConfig = {
-    repositoryBaseEndpoint: '/api/repository/testing',
-    systemInfoEndpoint: '/api/systeminfo/testing',
-    targetBaseEndpoint: '/api/tag/testing'
+    repositoryBaseEndpoint: CURRENT_BASE_HREF + '/repository/testing',
+    systemInfoEndpoint: CURRENT_BASE_HREF + '/systeminfo/testing',
+    targetBaseEndpoint: CURRENT_BASE_HREF + '/tag/testing'
   };
   const fakedErrorHandler = {
     error() {

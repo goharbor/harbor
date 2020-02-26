@@ -4,7 +4,7 @@ import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
 import { SERVICE_CONFIG, IServiceConfig } from "../entities/service.config";
-import { HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS } from "../utils/utils";
+import { HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS, CURRENT_BASE_HREF } from "../utils/utils";
 import { Configuration } from "../components/config/config";
 
 /**
@@ -52,7 +52,7 @@ export class ConfigurationDefaultService extends ConfigurationService {
     this._baseUrl =
       this.config && this.config.configurationEndpoint
         ? this.config.configurationEndpoint
-        : "/api/configurations";
+        : CURRENT_BASE_HREF + "/configurations";
   }
 
   getConfigurations():

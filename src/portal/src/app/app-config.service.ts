@@ -19,9 +19,9 @@ import { CookieKeyOfAdmiral, HarborQueryParamKey } from './shared/shared.const';
 import { maintainUrlQueryParmas } from './shared/shared.utils';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
-import { HTTP_GET_OPTIONS } from "../lib/utils/utils";
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from "../lib/utils/utils";
 import { CONFIG_AUTH_MODE } from "../lib/entities/shared.const";
-export const systemInfoEndpoint = "/api/systeminfo";
+export const systemInfoEndpoint = CURRENT_BASE_HREF + "/systeminfo";
 /**
  * Declare service to handle the bootstrap options
  *

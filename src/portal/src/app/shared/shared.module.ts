@@ -46,6 +46,7 @@ import { ListChartVersionRoComponent } from "./list-chart-version-ro/list-chart-
 import { IServiceConfig, SERVICE_CONFIG } from "../../lib/entities/service.config";
 import { ErrorHandler } from "../../lib/utils/error-handler";
 import { HarborLibraryModule } from "../../lib/harbor-library.module";
+import { CURRENT_BASE_HREF } from "../../lib/utils/utils";
 
 const uiLibConfig: IServiceConfig = {
   enablei18Support: true,
@@ -53,24 +54,24 @@ const uiLibConfig: IServiceConfig = {
   langMessageLoader: "http",
   langMessagePathForHttpLoader: "i18n/lang/",
   langMessageFileSuffixForHttpLoader: "-lang.json",
-  systemInfoEndpoint: "/api/systeminfo",
-  repositoryBaseEndpoint: "/api/repositories",
-  logBaseEndpoint: "/api/logs",
-  targetBaseEndpoint: "/api/registries",
-  replicationBaseEndpoint: "/api/replication",
-  replicationRuleEndpoint: "/api/replication/policies",
-  vulnerabilityScanningBaseEndpoint: "/api/repositories",
-  projectPolicyEndpoint: "/api/projects/configs",
-  projectBaseEndpoint: "/api/projects",
+  systemInfoEndpoint: CURRENT_BASE_HREF + "/systeminfo",
+  repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories",
+  logBaseEndpoint: CURRENT_BASE_HREF + "/logs",
+  targetBaseEndpoint: CURRENT_BASE_HREF + "/registries",
+  replicationBaseEndpoint: CURRENT_BASE_HREF + "/replication",
+  replicationRuleEndpoint: CURRENT_BASE_HREF + "/replication/policies",
+  vulnerabilityScanningBaseEndpoint: CURRENT_BASE_HREF + "/repositories",
+  projectPolicyEndpoint: CURRENT_BASE_HREF + "/projects/configs",
+  projectBaseEndpoint: CURRENT_BASE_HREF + "/projects",
   localI18nMessageVariableMap: {},
-  configurationEndpoint: "/api/configurations",
-  scanJobEndpoint: "/api/jobs/scan",
-  labelEndpoint: "/api/labels",
-  helmChartEndpoint: "/api/chartrepo",
+  configurationEndpoint: CURRENT_BASE_HREF + "/configurations",
+  scanJobEndpoint: CURRENT_BASE_HREF + "/jobs/scan",
+  labelEndpoint: CURRENT_BASE_HREF + "/labels",
+  helmChartEndpoint: CURRENT_BASE_HREF + "/chartrepo",
   downloadChartEndpoint: "/chartrepo",
-  gcEndpoint: "/api/system/gc",
-  ScanAllEndpoint: "/api/system/scanAll",
-  quotaUrl: "/api/quotas"
+  gcEndpoint: CURRENT_BASE_HREF + "/system/gc",
+  ScanAllEndpoint: CURRENT_BASE_HREF + "/system/scanAll",
+  quotaUrl: CURRENT_BASE_HREF + "/quotas"
 };
 
 @NgModule({

@@ -16,9 +16,9 @@ import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { Repository } from "../../../lib/services";
-import { HTTP_GET_OPTIONS } from "../../../lib/utils/utils";
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from "../../../lib/utils/utils";
 
-export const topRepoEndpoint = "/api/repositories/top";
+export const topRepoEndpoint = CURRENT_BASE_HREF + "/repositories/top";
 /**
  * Declare service to handle the top repositories
  *
