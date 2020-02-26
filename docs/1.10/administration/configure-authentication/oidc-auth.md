@@ -5,9 +5,12 @@ weight: 25
 
 If you select OpenID Connect (OIDC) authentication, users log in to the Harbor interface via an OIDC single sign-on (SSO) provider, such as Okta, KeyCloak, or dex. In this case, you do not create user accounts in Harbor.
 
-{{< important >}}
+---
+**Notice**
+
 You can change the authentication mode from database to OIDC only if no local users have been added to the database. If there is at least one user other than `admin` in the Harbor database, you cannot change the authentication mode.
-{{< /important >}}
+
+---
 
 Because the users are managed by the OIDC provider, self-registration, creating users, deleting users, changing passwords, and resetting passwords are not supported in OIDC authentication mode.
 
@@ -15,16 +18,16 @@ Because the users are managed by the OIDC provider, self-registration, creating 
 
 You must configure your OIDC provider so that you can use it with Harbor. For precise information about how to perform these configurations, see the documentation for your OIDC provider.
 
-- Set up the users and groups that will use the OIDC provider to log in to Harbor. You do not need to assign any specific OIDC roles to users or groups as these do not get mapped to Harbor roles.
-- The URL of the OIDC provider endpoint, known as the Authorization Server in OAuth terminology, must service the well-known URI for its configuration document. For more information about the configuration document, see the [OpenID documentation](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationRequest).
-- To manage users by using OIDC groups, create a custom group claim that contains all of the user groups that you want to register in Harbor. The group claim must be mapped in the ID token that is sent to Harbor when users log in. You can enable the `memberof` feature on the OIDC provider. With the `memberof` feature, the OIDC user entity's `memberof` attribute is updated when the group entity's `member` attribute is updated, for example by adding or removing an OIDC user from the OIDC group.
+- Set up the users and groups which will use the OIDC provider to log in to Harbor. You do not need to assign any specific OIDC roles to users or groups as these do not get mapped to Harbor roles.
+- The URL of the OIDC provider endpoint, known as the Authorization Server in OAuth terminology, must serve the well-known URI for its configuration document. For more information about the configuration document, see the [OpenID documentation](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfigurationRequest).
+- To manage users by using OIDC groups, create a custom group claim which contains all of the user groups that you want to register in Harbor. The group claim must be mapped in the ID token which is sent to Harbor when users log in. You can enable the `memberof` feature on the OIDC provider. With the `memberof` feature, the OIDC user entity's `memberof` attribute is updated when the group entity's `member` attribute is updated, for example by adding or removing an OIDC user from the OIDC group.
 - Register Harbor as a client application with the OIDC provider. Associate Harbor's callback URI to the client application as a `redirectURI`. This is the address to which the OIDC provider sends ID tokens.
 
 ### Configure an OIDC Provider in Harbor
 
 Before configuring an OIDC provider in Harbor, make sure that your provider is configured correctly according to the preceding section.
 
-1. Log in to the Harbor interface with an account that has Harbor system administrator privileges.
+1. Log in to the Harbor interface as an account with Harbor system administrator privilege.
 1. Under **Administration**, go to **Configuration** and select the **Authentication** tab.
 1. Use the **Auth Mode** drop-down menu to select **OIDC**.
 
@@ -48,7 +51,7 @@ Before configuring an OIDC provider in Harbor, make sure that your provider is c
 1. Click **Test OIDC Server** to make sure that your configuration is correct.
 1. Click **Save** to complete the configuration.
 
-### Log In to Harbor via an OIDC Provider
+### Log in to Harbor via an OIDC Provider
 
 When the Harbor system administrator has configured Harbor to authenticate via OIDC a **Login via OIDC Provider** button appears on the Harbor login page.  
 
@@ -68,9 +71,9 @@ When the Harbor system administrator has configured Harbor to authenticate via O
 
 ### Using OIDC from the Docker or Helm CLI
 
-After you have authenticated via OIDC and logged into the Harbor interface for the first time, you can use the Docker or Helm CLI to access Harbor.
+After you have authenticated via OIDC and logged in to the Harbor interface for the first time, you can use the Docker or Helm CLI to access Harbor.
 
-The Docker and Helm CLIs cannot handle redirection for OIDC, so Harbor provides a CLI secret for use when logging in from Docker or Helm. This is only available when Harbor uses OIDC authentication.  
+The Docker or Helm CLI cannot handle redirection for OIDC, so Harbor provides a CLI secret for use when logging in from Docker or Helm. This is only available when Harbor uses OIDC authentication.  
 
 1. Log in to Harbor with an OIDC user account.
 1. Click your username at the top of the screen and select **User Profile**.
@@ -92,6 +95,10 @@ You can now use your CLI secret as the password when logging in to Harbor from t
 docker login -u testuser -p <i>cli_secret</i> jt-test.local.goharbor.io
 </pre>
 
-{{< note >}}
-The CLI secret is associated with the OIDC ID token. Harbor will try to refresh the token, so the CLI secret will be valid after the ID token expires. However, if the OIDC Provider does not provide a refresh token or the refresh fails, the CLI secret becomes invalid. In this case, log out and log back in to Harbor via your OIDC provider so that Harbor can get a new ID token. The CLI secret will then work again.
-{{< /note >}}
+---
+**Notice**
+
+The CLI secret is associated with the OIDC ID token. Harbor will try to refresh the ID token using the access token after the ID token expires, so the CLI secret will always be valid. However, if the OIDC Provider does not provide a refresh token or the refresh fails, the CLI secret becomes invalid. In this case, log out and log back in to Harbor via your OIDC provider so that Harbor can get a new ID token. The CLI secret will then work again.
+
+---
+
