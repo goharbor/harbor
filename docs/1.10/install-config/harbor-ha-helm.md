@@ -3,7 +3,9 @@ title: Deploying Harbor with High Availability via Helm
 weight: 40
 ---
 
-You can deploy Harbor on Kubernetes via helm to make it highly available. In this way, if one of the nodes on which Harbor is running becomes unavailable, users do not experience interruptions of service.
+You can deploy Harbor on Kubernetes via Helm to make it highly available. In this way, if one of the nodes on which Harbor is running becomes unavailable, users do not experience interruptions of service. 
+
+The Helm chart for Harbor is maintained at https://github.com/goharbor/harbor-helm.
 
 ## Prerequisites
 
