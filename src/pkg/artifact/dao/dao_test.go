@@ -360,6 +360,37 @@ func (d *daoTestSuite) TestCreate() {
 	d.True(ierror.IsErr(err, ierror.ConflictCode))
 }
 
+func (d *daoTestSuite) TestGetOrCreate() {
+	// already exists
+	artifact := &Artifact{
+		Type:              "IMAGE",
+		MediaType:         v1.MediaTypeImageConfig,
+		ManifestMediaType: v1.MediaTypeImageManifest,
+		ProjectID:         1,
+		RepositoryID:      1,
+		RepositoryName:    "library/hello-world",
+		Digest:            "parent_digest",
+	}
+	created, id, err := d.dao.GetOrCreate(d.ctx, artifact)
+	d.Require().Nil(err)
+	d.False(created)
+
+	// doesn't exist
+	artifact = &Artifact{
+		Type:              "IMAGE",
+		MediaType:         v1.MediaTypeImageConfig,
+		ManifestMediaType: v1.MediaTypeImageManifest,
+		ProjectID:         1,
+		RepositoryID:      1,
+		RepositoryName:    "library/hello-world",
+		Digest:            "non-exist-digest",
+	}
+	created, id, err = d.dao.GetOrCreate(d.ctx, artifact)
+	d.Require().Nil(err)
+	defer d.dao.Delete(d.ctx, id)
+	d.True(created)
+}
+
 func (d *daoTestSuite) TestDelete() {
 	// the happy pass case is covered in TearDown
 

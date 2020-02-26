@@ -42,6 +42,8 @@ type Manager interface {
 	// Create the artifact. If the artifact is an index, make sure all the artifacts it references
 	// already exist
 	Create(ctx context.Context, artifact *Artifact) (id int64, err error)
+	// GetOrCreate tries to get the artifact specified by repository name and digest, or create one if doesn't exist
+	GetOrCreate(ctx context.Context, artifact *Artifact) (created bool, id int64, err error)
 	// Delete just deletes the artifact record. The underlying data of registry will be
 	// removed during garbage collection
 	Delete(ctx context.Context, id int64) (err error)
@@ -115,6 +117,30 @@ func (m *manager) Create(ctx context.Context, artifact *Artifact) (int64, error)
 	}
 	return id, nil
 }
+
+func (m *manager) GetOrCreate(ctx context.Context, artifact *Artifact) (bool, int64, error) {
+	art := artifact.To()
+	created, id, err := m.dao.GetOrCreate(ctx, art)
+	if err != nil {
+		return false, 0, err
+	}
+	if created {
+		for _, reference := range artifact.References {
+			reference.ParentID = id
+			if _, err = m.dao.CreateReference(ctx, reference.To()); err != nil {
+				return false, 0, err
+			}
+		}
+		art.ID = id
+	}
+	artifact2, err := m.assemble(ctx, art)
+	if err != nil {
+		return false, 0, err
+	}
+	*artifact = *artifact2
+	return created, id, nil
+}
+
 func (m *manager) Delete(ctx context.Context, id int64) error {
 	// delete references
 	if err := m.dao.DeleteReferences(ctx, id); err != nil {

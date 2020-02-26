@@ -128,6 +128,27 @@ func (d *daoTestSuite) TestCreate() {
 	d.True(ierror.IsErr(err, ierror.ConflictCode))
 }
 
+func (d *daoTestSuite) TestGetOrCreate() {
+	// the repository already exists
+	repository := &models.RepoRecord{
+		Name:      repository,
+		ProjectID: 1,
+	}
+	created, id, err := d.dao.GetOrCreate(d.ctx, repository)
+	d.Require().Nil(err)
+	d.False(created)
+
+	// the repository already exists
+	repository = &models.RepoRecord{
+		Name:      "library/1-non-exist-repository",
+		ProjectID: 1,
+	}
+	created, id, err = d.dao.GetOrCreate(d.ctx, repository)
+	d.Require().Nil(err)
+	defer d.dao.Delete(d.ctx, id)
+	d.True(created)
+}
+
 func (d *daoTestSuite) TestDelete() {
 	// the happy pass case is covered in TearDown
 

@@ -74,6 +74,12 @@ func (f *FakeManager) Create(ctx context.Context, repository *models.RepoRecord)
 	return int64(args.Int(0)), args.Error(1)
 }
 
+// GetOrCreate ...
+func (f *FakeManager) GetOrCreate(ctx context.Context, repository *models.RepoRecord) (bool, int64, error) {
+	args := f.Called()
+	return args.Bool(0), int64(args.Int(1)), args.Error(2)
+}
+
 // Update ...
 func (f *FakeManager) Update(ctx context.Context, repository *models.RepoRecord, props ...string) error {
 	args := f.Called()

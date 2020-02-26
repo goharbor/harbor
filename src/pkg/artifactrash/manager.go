@@ -29,6 +29,8 @@ var (
 type Manager interface {
 	// Create ...
 	Create(ctx context.Context, artifactrsh *model.ArtifactTrash) (id int64, err error)
+	// GetOrCreate tries to get the artifact trash specified by repository name and digest, or create one if doesn't exist
+	GetOrCreate(ctx context.Context, artifactrsh *model.ArtifactTrash) (created bool, id int64, err error)
 	// Delete ...
 	Delete(ctx context.Context, id int64) (err error)
 	// Filter ...
@@ -53,6 +55,11 @@ type manager struct {
 func (m *manager) Create(ctx context.Context, artifactrsh *model.ArtifactTrash) (id int64, err error) {
 	return m.dao.Create(ctx, artifactrsh)
 }
+
+func (m *manager) GetOrCreate(ctx context.Context, artifactrsh *model.ArtifactTrash) (bool, int64, error) {
+	return m.dao.GetOrCreate(ctx, artifactrsh)
+}
+
 func (m *manager) Delete(ctx context.Context, id int64) error {
 	return m.dao.Delete(ctx, id)
 }

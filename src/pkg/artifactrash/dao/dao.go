@@ -13,6 +13,8 @@ import (
 type DAO interface {
 	// Create the artifact trash
 	Create(ctx context.Context, artifactrsh *model.ArtifactTrash) (id int64, err error)
+	// GetOrCreate tries to get the artifact trash specified by repository name and digest, or create one if doesn't exist
+	GetOrCreate(ctx context.Context, artifactrsh *model.ArtifactTrash) (created bool, id int64, err error)
 	// Delete the artifact trash specified by ID
 	Delete(ctx context.Context, id int64) (err error)
 	// Filter lists the artifact that needs to be cleaned
@@ -43,6 +45,14 @@ func (d *dao) Create(ctx context.Context, artifactrsh *model.ArtifactTrash) (id 
 		}
 	}
 	return id, err
+}
+
+func (d *dao) GetOrCreate(ctx context.Context, artifactrsh *model.ArtifactTrash) (bool, int64, error) {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return false, 0, err
+	}
+	return ormer.ReadOrCreate(artifactrsh, "RepositoryName", "Digest")
 }
 
 // Delete ...

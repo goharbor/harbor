@@ -32,6 +32,8 @@ type DAO interface {
 	Get(ctx context.Context, id int64) (repository *models.RepoRecord, err error)
 	// Create the repository
 	Create(ctx context.Context, repository *models.RepoRecord) (id int64, err error)
+	// GetOrCreate tries to get the repository specified by name, or create one if doesn't exist
+	GetOrCreate(ctx context.Context, repository *models.RepoRecord) (created bool, id int64, err error)
 	// Delete the repository specified by ID
 	Delete(ctx context.Context, id int64) (err error)
 	// Update updates the repository. Only the properties specified by "props" will be updated if it is set
@@ -97,6 +99,14 @@ func (d *dao) Create(ctx context.Context, repository *models.RepoRecord) (int64,
 		err = e
 	}
 	return id, err
+}
+
+func (d *dao) GetOrCreate(ctx context.Context, repository *models.RepoRecord) (bool, int64, error) {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return false, 0, err
+	}
+	return ormer.ReadOrCreate(repository, "Name")
 }
 
 func (d *dao) Delete(ctx context.Context, id int64) error {

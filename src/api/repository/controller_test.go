@@ -45,33 +45,12 @@ func (c *controllerTestSuite) SetupTest() {
 }
 
 func (c *controllerTestSuite) TestEnsure() {
-	// already exists
-	c.repoMgr.On("List").Return([]*models.RepoRecord{
-		{
-			RepositoryID: 1,
-			ProjectID:    1,
-			Name:         "library/hello-world",
-		},
-	}, nil)
-	created, id, err := c.ctl.Ensure(nil, "library/hello-world")
-	c.Require().Nil(err)
-	c.repoMgr.AssertExpectations(c.T())
-	c.False(created)
-	c.Equal(int64(1), id)
-
-	// reset the mock
-	c.SetupTest()
-
-	// doesn't exist
-	c.repoMgr.On("List").Return([]*models.RepoRecord{}, nil)
 	c.proMgr.On("Get", "library").Return(&models.Project{
 		ProjectID: 1,
 	}, nil)
-	c.repoMgr.On("Create").Return(1, nil)
-	created, id, err = c.ctl.Ensure(nil, "library/hello-world")
+	c.repoMgr.On("GetOrCreate").Return(true, 1, nil)
+	created, id, err := c.ctl.Ensure(nil, "library/hello-world")
 	c.Require().Nil(err)
-	c.repoMgr.AssertExpectations(c.T())
-	c.proMgr.AssertExpectations(c.T())
 	c.True(created)
 	c.Equal(int64(1), id)
 }

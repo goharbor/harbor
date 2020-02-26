@@ -37,6 +37,8 @@ type DAO interface {
 	Get(ctx context.Context, id int64) (tag *tag.Tag, err error)
 	// Create the tag
 	Create(ctx context.Context, tag *tag.Tag) (id int64, err error)
+	// GetOrCreate tries to get the tag specified by repository ID and name, or create one if doesn't exist
+	GetOrCreate(ctx context.Context, tag *tag.Tag) (created bool, id int64, err error)
 	// Update the tag. Only the properties specified by "props" will be updated if it is set
 	Update(ctx context.Context, tag *tag.Tag, props ...string) (err error)
 	// Delete the tag specified by ID
@@ -109,6 +111,15 @@ func (d *dao) Create(ctx context.Context, tag *tag.Tag) (int64, error) {
 	}
 	return id, err
 }
+
+func (d *dao) GetOrCreate(ctx context.Context, tag *tag.Tag) (bool, int64, error) {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return false, 0, err
+	}
+	return ormer.ReadOrCreate(tag, "RepositoryID", "Name")
+}
+
 func (d *dao) Update(ctx context.Context, tag *tag.Tag, props ...string) error {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {

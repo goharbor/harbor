@@ -172,57 +172,44 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 	// populate the artifact type
 	artifact.Type = descriptor.GetArtifactType(artifact.MediaType)
 
-	// create it
-	id, err := c.artMgr.Create(ctx, artifact)
+	// create the artifact
+	// use GetOrCreate rather Create here to avoid the issue:
+	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
+	created, id, err := c.artMgr.GetOrCreate(ctx, artifact)
 	if err != nil {
-		// if got conflict error, try to get the artifact again
-		if ierror.IsConflictErr(err) {
-			art, err = c.artMgr.GetByDigest(ctx, repository, digest)
-			if err == nil {
-				return false, art, nil
-			}
-			return false, nil, err
-		}
 		return false, nil, err
 	}
 	artifact.ID = id
-	return true, artifact, nil
+	return created, artifact, nil
 }
 
 func (c *controller) ensureTag(ctx context.Context, repositoryID, artifactID int64, name string) error {
-	query := &q.Query{
-		Keywords: map[string]interface{}{
-			"repository_id": repositoryID,
-			"name":          name,
-		},
-	}
-	tags, err := c.tagMgr.List(ctx, query)
-	if err != nil {
-		return err
-	}
-	// the tag already exists under the repository
-	if len(tags) > 0 {
-		tag := tags[0]
-		// the tag already exists under the repository and is attached to the artifact, return directly
-		if tag.ArtifactID == artifactID {
-			return nil
-		}
-		// the tag exists under the repository, but it is attached to other artifact
-		// update it to point to the provided artifact
-		tag.ArtifactID = artifactID
-		tag.PushTime = time.Now()
-		return c.tagMgr.Update(ctx, tag, "ArtifactID", "PushTime")
-	}
-	// the tag doesn't exist under the repository, create it
-	_, err = c.tagMgr.Create(ctx, &tm.Tag{
+	now := time.Now()
+	tag := &tm.Tag{
 		RepositoryID: repositoryID,
 		ArtifactID:   artifactID,
 		Name:         name,
-		PushTime:     time.Now(),
-	})
-	// ignore the conflict error
-	if err != nil && ierror.IsConflictErr(err) {
+		PushTime:     now,
+	}
+	// use GetOrCreate rather Create here to avoid the issue:
+	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
+	created, id, err := c.tagMgr.GetOrCreate(ctx, tag)
+	if err != nil {
+		return err
+	}
+	// the tag is newly created, return directly
+	if created {
 		return nil
+	}
+
+	// the tag already exists, make sure it is attached to the artifact
+	tag.ID = id
+	tag.ArtifactID = artifactID
+	tag.PushTime = now
+	err = c.tagMgr.Update(ctx, tag, "ArtifactID", "PushTime")
+	// the not found error means the tag is deleted by others concurrently, ignore it
+	if ierror.IsErr(err, ierror.NotFoundCode) {
+		err = nil
 	}
 	return err
 }
@@ -370,7 +357,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 		return err
 	}
 
-	_, err = c.artrashMgr.Create(ctx, &model.ArtifactTrash{
+	_, _, err = c.artrashMgr.GetOrCreate(ctx, &model.ArtifactTrash{
 		MediaType:         art.MediaType,
 		ManifestMediaType: art.ManifestMediaType,
 		RepositoryName:    art.RepositoryName,
@@ -379,6 +366,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 	if err != nil && !ierror.IsErr(err, ierror.ConflictCode) {
 		return err
 	}
+
 	// TODO fire delete artifact event
 
 	return nil

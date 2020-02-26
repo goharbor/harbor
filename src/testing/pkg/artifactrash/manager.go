@@ -34,6 +34,12 @@ func (f *FakeManager) Create(ctx context.Context, artifactrsh *model.ArtifactTra
 	return int64(args.Int(0)), args.Error(1)
 }
 
+// GetOrCreate ...
+func (f *FakeManager) GetOrCreate(ctx context.Context, artifactrsh *model.ArtifactTrash) (created bool, id int64, err error) {
+	args := f.Called()
+	return args.Bool(0), int64(args.Int(1)), args.Error(2)
+}
+
 // Delete ...
 func (f *FakeManager) Delete(ctx context.Context, id int64) error {
 	args := f.Called()

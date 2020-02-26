@@ -160,6 +160,30 @@ func (d *daoTestSuite) TestCreate() {
 	d.True(ierror.IsErr(err, ierror.ViolateForeignKeyConstraintCode))
 }
 
+func (d *daoTestSuite) TestGetOrCreate() {
+	// the tag already exists
+	t := &tag.Tag{
+		RepositoryID: 1000,
+		ArtifactID:   d.artifactID,
+		Name:         "latest",
+	}
+	created, id, err := d.dao.GetOrCreate(d.ctx, t)
+	d.Require().Nil(err)
+	d.False(created)
+	d.Equal(d.tagID, id)
+
+	// the tag doesn't already exist
+	t = &tag.Tag{
+		RepositoryID: 1000,
+		ArtifactID:   d.artifactID,
+		Name:         "latest2",
+	}
+	created, id, err = d.dao.GetOrCreate(d.ctx, t)
+	d.Require().Nil(err)
+	defer d.dao.Delete(d.ctx, id)
+	d.True(created)
+}
+
 func (d *daoTestSuite) TestDelete() {
 	// happy pass is covered in TearDown
 

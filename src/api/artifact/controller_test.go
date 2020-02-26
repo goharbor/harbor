@@ -199,7 +199,7 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 		ProjectID: 1,
 	}, nil)
 	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
-	c.artMgr.On("Create").Return(1, nil)
+	c.artMgr.On("GetOrCreate").Return(true, 1, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	created, art, err = c.ctl.ensureArtifact(nil, "library/hello-world", digest)
 	c.Require().Nil(err)
@@ -208,45 +208,9 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 }
 
 func (c *controllerTestSuite) TestEnsureTag() {
-	// the tag already exists under the repository and is attached to the artifact
-	c.tagMgr.On("List").Return([]*tag.Tag{
-		{
-			ID:           1,
-			RepositoryID: 1,
-			ArtifactID:   1,
-			Name:         "latest",
-		},
-	}, nil)
+	c.tagMgr.On("GetOrCreate").Return(true, 1, nil)
 	err := c.ctl.ensureTag(nil, 1, 1, "latest")
 	c.Require().Nil(err)
-	c.tagMgr.AssertExpectations(c.T())
-
-	// reset the mock
-	c.SetupTest()
-
-	// the tag exists under the repository, but it is attached to other artifact
-	c.tagMgr.On("List").Return([]*tag.Tag{
-		{
-			ID:           1,
-			RepositoryID: 1,
-			ArtifactID:   2,
-			Name:         "latest",
-		},
-	}, nil)
-	c.tagMgr.On("Update").Return(nil)
-	err = c.ctl.ensureTag(nil, 1, 1, "latest")
-	c.Require().Nil(err)
-	c.tagMgr.AssertExpectations(c.T())
-
-	// reset the mock
-	c.SetupTest()
-
-	// the tag doesn't exist under the repository, create it
-	c.tagMgr.On("List").Return([]*tag.Tag{}, nil)
-	c.tagMgr.On("Create").Return(1, nil)
-	err = c.ctl.ensureTag(nil, 1, 1, "latest")
-	c.Require().Nil(err)
-	c.tagMgr.AssertExpectations(c.T())
 }
 
 func (c *controllerTestSuite) TestEnsure() {
@@ -257,9 +221,8 @@ func (c *controllerTestSuite) TestEnsure() {
 		ProjectID: 1,
 	}, nil)
 	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
-	c.artMgr.On("Create").Return(1, nil)
-	c.tagMgr.On("List").Return([]*tag.Tag{}, nil)
-	c.tagMgr.On("Create").Return(1, nil)
+	c.artMgr.On("GetOrCreate").Return(true, 1, nil)
+	c.tagMgr.On("GetOrCreate").Return(true, 1, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	_, id, err := c.ctl.Ensure(nil, "library/hello-world", digest, "latest")
 	c.Require().Nil(err)
@@ -502,7 +465,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	c.tagMgr.On("DeleteOfArtifact").Return(nil)
 	c.artMgr.On("Delete").Return(nil)
 	c.labelMgr.On("RemoveAllFrom").Return(nil)
-	c.artrashMgr.On("Create").Return(0, nil)
+	c.artrashMgr.On("GetOrCreate").Return(false, 0, nil)
 	err = c.ctl.deleteDeeply(nil, 1, true)
 	c.Require().Nil(err)
 }
@@ -529,7 +492,8 @@ func (c *controllerTestSuite) TestCopy() {
 		Name:         "library/hello-world",
 	}, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
-	c.artMgr.On("Create").Return(1, nil)
+	c.artMgr.On("GetOrCreate").Return(true, 1, nil)
+	c.tagMgr.On("GetOrCreate").Return(true, 1, nil)
 	c.regCli.On("Copy").Return(nil)
 	_, err := c.ctl.Copy(nil, "library/hello-world", "latest", "library/hello-world2")
 	c.Require().Nil(err)

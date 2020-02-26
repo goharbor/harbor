@@ -58,6 +58,12 @@ func (f *FakeManager) Create(ctx context.Context, tag *tag.Tag) (int64, error) {
 	return int64(args.Int(0)), args.Error(1)
 }
 
+// GetOrCreate ...
+func (f *FakeManager) GetOrCreate(ctx context.Context, tag *tag.Tag) (bool, int64, error) {
+	args := f.Called()
+	return args.Bool(0), int64(args.Int(1)), args.Error(2)
+}
+
 // Update ...
 func (f *FakeManager) Update(ctx context.Context, tag *tag.Tag, props ...string) error {
 	args := f.Called()

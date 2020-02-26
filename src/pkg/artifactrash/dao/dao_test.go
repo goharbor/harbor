@@ -76,6 +76,32 @@ func (d *daoTestSuite) TestCreate() {
 	d.True(ierror.IsErr(err, ierror.ConflictCode))
 }
 
+func (d *daoTestSuite) TestGetOrCreate() {
+	// already exists
+	aft := &model.ArtifactTrash{
+		ManifestMediaType: v1.MediaTypeImageManifest,
+		RepositoryName:    "test/hello-world",
+		Digest:            "1234",
+	}
+
+	created, id, err := d.dao.GetOrCreate(d.ctx, aft)
+	d.Require().Nil(err)
+	d.False(created)
+	d.Equal(d.id, id)
+
+	// doesn't exists
+	aft = &model.ArtifactTrash{
+		ManifestMediaType: v1.MediaTypeImageManifest,
+		RepositoryName:    "test/hello-world",
+		Digest:            "12345",
+	}
+
+	created, id, err = d.dao.GetOrCreate(d.ctx, aft)
+	d.Require().Nil(err)
+	defer d.dao.Delete(d.ctx, id)
+	d.True(created)
+}
+
 func (d *daoTestSuite) TestDelete() {
 	err := d.dao.Delete(d.ctx, 100021)
 	d.Require().NotNil(err)

@@ -16,7 +16,6 @@ package dao
 
 import (
 	"context"
-
 	beegoorm "github.com/astaxie/beego/orm"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/internal/orm"
@@ -36,6 +35,8 @@ type DAO interface {
 	GetByDigest(ctx context.Context, repository, digest string) (artifact *Artifact, err error)
 	// Create the artifact
 	Create(ctx context.Context, artifact *Artifact) (id int64, err error)
+	// GetOrCreate tries to get the artifact specified by repository name and digest, or create one if doesn't exist
+	GetOrCreate(ctx context.Context, artifact *Artifact) (created bool, id int64, err error)
 	// Delete the artifact specified by ID
 	Delete(ctx context.Context, id int64) (err error)
 	// Update updates the artifact. Only the properties specified by "props" will be updated if it is set
@@ -153,6 +154,15 @@ func (d *dao) Create(ctx context.Context, artifact *Artifact) (int64, error) {
 	}
 	return id, err
 }
+
+func (d *dao) GetOrCreate(ctx context.Context, artifact *Artifact) (bool, int64, error) {
+	ormer, err := orm.FromContext(ctx)
+	if err != nil {
+		return false, 0, err
+	}
+	return ormer.ReadOrCreate(artifact, "RepositoryName", "Digest")
+}
+
 func (d *dao) Delete(ctx context.Context, id int64) error {
 	ormer, err := orm.FromContext(ctx)
 	if err != nil {

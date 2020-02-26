@@ -19,7 +19,6 @@ import (
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
-	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/repository"
@@ -66,44 +65,19 @@ type controller struct {
 }
 
 func (c *controller) Ensure(ctx context.Context, name string) (bool, int64, error) {
-	query := &q.Query{
-		Keywords: map[string]interface{}{
-			"name": name,
-		},
-	}
-	repositories, err := c.repoMgr.List(ctx, query)
-	if err != nil {
-		return false, 0, err
-	}
-	// the repository already exists, return directly
-	if len(repositories) > 0 {
-		return false, repositories[0].RepositoryID, nil
-	}
-
-	// the repository doesn't exist, create it first
 	projectName, _ := utils.ParseRepository(name)
 	project, err := c.proMgr.Get(projectName)
 	if err != nil {
 		return false, 0, err
 	}
-	id, err := c.repoMgr.Create(ctx, &models.RepoRecord{
+
+	repository := &models.RepoRecord{
 		ProjectID: project.ProjectID,
 		Name:      name,
-	})
-	if err != nil {
-		// if got conflict error, try to get again
-		if ierror.IsConflictErr(err) {
-			repositories, err = c.repoMgr.List(ctx, query)
-			if err != nil {
-				return false, 0, err
-			}
-			if len(repositories) > 0 {
-				return false, repositories[0].RepositoryID, nil
-			}
-		}
-		return false, 0, err
 	}
-	return true, id, nil
+	// use GetOrCreate rather Create here to avoid the issue:
+	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
+	return c.repoMgr.GetOrCreate(ctx, repository)
 }
 
 func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
@@ -123,8 +97,7 @@ func (c *controller) GetByName(ctx context.Context, name string) (*models.RepoRe
 }
 
 func (c *controller) Delete(ctx context.Context, id int64) error {
-	// TODO auth
-	// TODO how to make sure the logic included by middlewares(immutable, readonly, quota, etc)
+	// TODO how to make sure the logic included by middlewares(immutable, quota, etc)
 	// TODO is covered when deleting the artifacts of the repository
 	artifacts, err := c.artCtl.List(ctx, &q.Query{
 		Keywords: map[string]interface{}{

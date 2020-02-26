@@ -48,6 +48,10 @@ func (f *fakeDao) Create(ctx context.Context, artifact *dao.Artifact) (int64, er
 	args := f.Called()
 	return int64(args.Int(0)), args.Error(1)
 }
+func (f *fakeDao) GetOrCreate(ctx context.Context, artifact *dao.Artifact) (bool, int64, error) {
+	args := f.Called()
+	return args.Bool(0), int64(args.Int(1)), args.Error(2)
+}
 func (f *fakeDao) Delete(ctx context.Context, id int64) error {
 	args := f.Called()
 	return args.Error(0)
@@ -214,6 +218,60 @@ func (m *managerTestSuite) TestCreate() {
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
 	m.Equal(int64(1), id)
+}
+
+func (m *managerTestSuite) TestGetOrCreate() {
+	// already exists
+	m.dao.On("GetOrCreate").Return(false, 1, nil)
+	m.dao.On("Get").Return(&dao.Artifact{}, nil)
+	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{
+		{
+			ID:       1,
+			ParentID: 1,
+			ChildID:  2,
+		},
+	}, nil)
+	art := &Artifact{
+		References: []*Reference{
+			{
+				ChildID: 2,
+			},
+		},
+	}
+	created, id, err := m.mgr.GetOrCreate(nil, art)
+	m.Require().Nil(err)
+	m.False(created)
+	m.Equal(int64(1), id)
+	m.Require().Len(art.References, 1)
+	m.Equal(int64(1), art.References[0].ID)
+
+	// reset the mock
+	m.SetupTest()
+
+	// doesn't exist
+	art = &Artifact{
+		References: []*Reference{
+			{
+				ChildID: 2,
+			},
+		},
+	}
+	m.dao.On("GetOrCreate").Return(true, 1, nil)
+	m.dao.On("CreateReference").Return(1, nil)
+	m.dao.On("Get").Return(&dao.Artifact{}, nil)
+	m.dao.On("ListReferences").Return([]*dao.ArtifactReference{
+		{
+			ID:       1,
+			ParentID: 1,
+			ChildID:  2,
+		},
+	}, nil)
+	created, id, err = m.mgr.GetOrCreate(nil, art)
+	m.Require().Nil(err)
+	m.True(created)
+	m.Equal(int64(1), id)
+	m.Require().Len(art.References, 1)
+	m.Equal(int64(1), art.References[0].ID)
 }
 
 func (m *managerTestSuite) TestDelete() {

@@ -44,6 +44,10 @@ func (f *fakeDao) Create(ctx context.Context, tag *tag.Tag) (int64, error) {
 	args := f.Called()
 	return int64(args.Int(0)), args.Error(1)
 }
+func (f *fakeDao) GetOrCreate(ctx context.Context, tag *tag.Tag) (bool, int64, error) {
+	args := f.Called()
+	return args.Bool(0), int64(args.Int(1)), args.Error(2)
+}
 func (f *fakeDao) Update(ctx context.Context, tag *tag.Tag, props ...string) error {
 	args := f.Called()
 	return args.Error(0)
@@ -105,6 +109,14 @@ func (m *managerTestSuite) TestCreate() {
 	_, err := m.mgr.Create(nil, nil)
 	m.Require().Nil(err)
 	m.dao.AssertExpectations(m.T())
+}
+
+func (m *managerTestSuite) TestGetOrCreate() {
+	m.dao.On("GetOrCreate", mock.Anything).Return(false, 1, nil)
+	created, id, err := m.mgr.GetOrCreate(nil, nil)
+	m.Require().Nil(err)
+	m.False(created)
+	m.Equal(int64(1), id)
 }
 
 func (m *managerTestSuite) TestUpdate() {
