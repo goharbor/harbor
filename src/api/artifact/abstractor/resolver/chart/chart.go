@@ -24,7 +24,6 @@ import (
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/chart"
-	"github.com/goharbor/harbor/src/pkg/repository"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -41,7 +40,6 @@ const (
 
 func init() {
 	resolver := &resolver{
-		repoMgr:       repository.Mgr,
 		blobFetcher:   blob.Fcher,
 		chartOperator: chart.Optr,
 	}
@@ -56,22 +54,17 @@ func init() {
 }
 
 type resolver struct {
-	repoMgr       repository.Manager
 	blobFetcher   blob.Fetcher
 	chartOperator chart.Operator
 }
 
 func (r *resolver) ResolveMetadata(ctx context.Context, manifest []byte, artifact *artifact.Artifact) error {
-	repository, err := r.repoMgr.Get(ctx, artifact.RepositoryID)
-	if err != nil {
-		return err
-	}
 	m := &v1.Manifest{}
 	if err := json.Unmarshal(manifest, m); err != nil {
 		return err
 	}
 	digest := m.Config.Digest.String()
-	layer, err := r.blobFetcher.FetchLayer(repository.Name, digest)
+	layer, err := r.blobFetcher.FetchLayer(artifact.RepositoryName, digest)
 	if err != nil {
 		return err
 	}
@@ -95,11 +88,7 @@ func (r *resolver) ResolveAddition(ctx context.Context, artifact *artifact.Artif
 			WithMessage("addition %s isn't supported for %s", addition, ArtifactTypeChart)
 	}
 
-	repository, err := r.repoMgr.Get(ctx, artifact.RepositoryID)
-	if err != nil {
-		return nil, err
-	}
-	_, content, err := r.blobFetcher.FetchManifest(repository.Name, artifact.Digest)
+	_, content, err := r.blobFetcher.FetchManifest(artifact.RepositoryName, artifact.Digest)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +101,7 @@ func (r *resolver) ResolveAddition(ctx context.Context, artifact *artifact.Artif
 		// chart do have two layers, one is config, we should resolve the other one.
 		layerDgst := layer.Digest.String()
 		if layerDgst != manifest.Config.Digest.String() {
-			content, err = r.blobFetcher.FetchLayer(repository.Name, layerDgst)
+			content, err = r.blobFetcher.FetchLayer(artifact.RepositoryName, layerDgst)
 			if err != nil {
 				return nil, err
 			}

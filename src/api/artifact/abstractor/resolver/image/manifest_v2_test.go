@@ -15,11 +15,9 @@
 package image
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/testing/api/artifact/abstractor/blob"
-	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
 	"testing"
 )
@@ -123,15 +121,12 @@ var (
 type manifestV2ResolverTestSuite struct {
 	suite.Suite
 	resolver    *manifestV2Resolver
-	repoMgr     *repository.FakeManager
 	blobFetcher *blob.FakeFetcher
 }
 
 func (m *manifestV2ResolverTestSuite) SetupTest() {
-	m.repoMgr = &repository.FakeManager{}
 	m.blobFetcher = &blob.FakeFetcher{}
 	m.resolver = &manifestV2Resolver{
-		repoMgr:     m.repoMgr,
 		blobFetcher: m.blobFetcher,
 	}
 
@@ -139,11 +134,9 @@ func (m *manifestV2ResolverTestSuite) SetupTest() {
 
 func (m *manifestV2ResolverTestSuite) TestResolveMetadata() {
 	artifact := &artifact.Artifact{}
-	m.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	m.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
 	err := m.resolver.ResolveMetadata(nil, []byte(manifest), artifact)
 	m.Require().Nil(err)
-	m.repoMgr.AssertExpectations(m.T())
 	m.blobFetcher.AssertExpectations(m.T())
 	m.Assert().Equal("amd64", artifact.ExtraAttrs["architecture"].(string))
 	m.Assert().Equal("linux", artifact.ExtraAttrs["os"].(string))
@@ -156,7 +149,6 @@ func (m *manifestV2ResolverTestSuite) TestResolveAddition() {
 
 	// build history
 	artifact := &artifact.Artifact{}
-	m.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	m.blobFetcher.On("FetchManifest").Return("", []byte(manifest), nil)
 	m.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
 	addition, err := m.resolver.ResolveAddition(nil, artifact, AdditionTypeBuildHistory)

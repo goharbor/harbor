@@ -110,15 +110,16 @@ func (suite *HandlerSuite) addProject(projectName string) int64 {
 	return projectID
 }
 
-func (suite *HandlerSuite) addArt(ctx context.Context, pid, repositoryID int64, dgt string) int64 {
+func (suite *HandlerSuite) addArt(ctx context.Context, pid, repositoryID int64, repositoryName, dgt string) int64 {
 	af := &artifact.Artifact{
-		Type:         "Docker-Image",
-		ProjectID:    pid,
-		RepositoryID: repositoryID,
-		Digest:       dgt,
-		Size:         1024,
-		PushTime:     time.Now(),
-		PullTime:     time.Now(),
+		Type:           "Docker-Image",
+		ProjectID:      pid,
+		RepositoryID:   repositoryID,
+		RepositoryName: repositoryName,
+		Digest:         dgt,
+		Size:           1024,
+		PushTime:       time.Now(),
+		PullTime:       time.Now(),
 	}
 	afid, err := artifact.Mgr.Create(ctx, af)
 	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
@@ -185,7 +186,7 @@ func (suite *HandlerSuite) TestPutDeleteManifestCreated() {
 	projectID := suite.addProject(projectName)
 	immuRuleID := suite.addImmutableRule(projectID)
 	repoID := suite.addRepo(ctx, projectID, repoName)
-	afID := suite.addArt(ctx, projectID, repoID, dgt)
+	afID := suite.addArt(ctx, projectID, repoID, repoName, dgt)
 	tagID := suite.addTags(ctx, repoID, afID, "release-1.10")
 
 	defer func() {

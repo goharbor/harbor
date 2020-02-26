@@ -57,6 +57,7 @@ func (d *daoTestSuite) SetupTest() {
 		ManifestMediaType: v1.MediaTypeImageIndex,
 		ProjectID:         1,
 		RepositoryID:      1,
+		RepositoryName:    "library/hello-world",
 		Digest:            "parent_digest",
 		PushTime:          now,
 		PullTime:          now,
@@ -72,6 +73,7 @@ func (d *daoTestSuite) SetupTest() {
 		ManifestMediaType: v1.MediaTypeImageManifest,
 		ProjectID:         1,
 		RepositoryID:      1,
+		RepositoryName:    "library/hello-world",
 		Digest:            "child_digest_01",
 		Size:              1024,
 		PushTime:          now,
@@ -88,6 +90,7 @@ func (d *daoTestSuite) SetupTest() {
 		ManifestMediaType: v1.MediaTypeImageManifest,
 		ProjectID:         1,
 		RepositoryID:      1,
+		RepositoryName:    "library/hello-world",
 		Digest:            "child_digest_02",
 		Size:              1024,
 		PushTime:          now,
@@ -324,12 +327,12 @@ func (d *daoTestSuite) TestGet() {
 
 func (d *daoTestSuite) TestGetByDigest() {
 	// get the non-exist artifact
-	_, err := d.dao.GetByDigest(d.ctx, 1, "non_existing_digest")
+	_, err := d.dao.GetByDigest(d.ctx, "library/hello-world", "non_existing_digest")
 	d.Require().NotNil(err)
 	d.True(ierror.IsErr(err, ierror.NotFoundCode))
 
 	// get the exist artifact
-	artifact, err := d.dao.GetByDigest(d.ctx, 1, "child_digest_02")
+	artifact, err := d.dao.GetByDigest(d.ctx, "library/hello-world", "child_digest_02")
 	d.Require().Nil(err)
 	d.Require().NotNil(artifact)
 	d.Equal(d.childArt02ID, artifact.ID)

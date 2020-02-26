@@ -56,9 +56,6 @@ WHERE ordered_art.seq=1;
 
 ALTER TABLE artifact DROP COLUMN tag;
 
-/*TODO: remove this after insert the repository_name when create artifact*/
-ALTER TABLE artifact ALTER COLUMN repository_name DROP NOT NULL;
-
 /*remove the duplicate artifact rows*/
 DELETE FROM artifact
 WHERE id NOT IN (

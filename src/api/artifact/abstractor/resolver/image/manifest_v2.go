@@ -24,7 +24,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -37,7 +36,6 @@ const (
 
 func init() {
 	rslver := &manifestV2Resolver{
-		repoMgr:     repository.Mgr,
 		blobFetcher: blob.Fcher,
 	}
 	mediaTypes := []string{
@@ -56,21 +54,16 @@ func init() {
 
 // manifestV2Resolver resolve artifact with OCI manifest and docker v2 manifest
 type manifestV2Resolver struct {
-	repoMgr     repository.Manager
 	blobFetcher blob.Fetcher
 }
 
 func (m *manifestV2Resolver) ResolveMetadata(ctx context.Context, content []byte, artifact *artifact.Artifact) error {
-	repository, err := m.repoMgr.Get(ctx, artifact.RepositoryID)
-	if err != nil {
-		return err
-	}
 	manifest := &v1.Manifest{}
 	if err := json.Unmarshal(content, manifest); err != nil {
 		return err
 	}
 	digest := manifest.Config.Digest.String()
-	layer, err := m.blobFetcher.FetchLayer(repository.Name, digest)
+	layer, err := m.blobFetcher.FetchLayer(artifact.RepositoryName, digest)
 	if err != nil {
 		return err
 	}
@@ -93,11 +86,7 @@ func (m *manifestV2Resolver) ResolveAddition(ctx context.Context, artifact *arti
 		return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
 			WithMessage("addition %s isn't supported for %s(manifest version 2)", addition, ArtifactTypeImage)
 	}
-	repository, err := m.repoMgr.Get(ctx, artifact.RepositoryID)
-	if err != nil {
-		return nil, err
-	}
-	_, content, err := m.blobFetcher.FetchManifest(repository.Name, artifact.Digest)
+	_, content, err := m.blobFetcher.FetchManifest(artifact.RepositoryName, artifact.Digest)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +94,7 @@ func (m *manifestV2Resolver) ResolveAddition(ctx context.Context, artifact *arti
 	if err := json.Unmarshal(content, manifest); err != nil {
 		return nil, err
 	}
-	content, err = m.blobFetcher.FetchLayer(repository.Name, manifest.Config.Digest.String())
+	content, err = m.blobFetcher.FetchLayer(artifact.RepositoryName, manifest.Config.Digest.String())
 	if err != nil {
 		return nil, err
 	}

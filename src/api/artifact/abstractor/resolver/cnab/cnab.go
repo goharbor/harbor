@@ -23,7 +23,6 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/repository"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 )
 
@@ -35,7 +34,6 @@ const (
 
 func init() {
 	resolver := &resolver{
-		repoMgr:     repository.Mgr,
 		argMgr:      artifact.Mgr,
 		blobFetcher: blob.Fcher,
 	}
@@ -50,7 +48,6 @@ func init() {
 }
 
 type resolver struct {
-	repoMgr     repository.Manager
 	argMgr      artifact.Manager
 	blobFetcher blob.Fetcher
 }
@@ -65,7 +62,7 @@ func (r *resolver) ResolveMetadata(ctx context.Context, manifest []byte, art *ar
 	for _, mani := range index.Manifests {
 		digest := mani.Digest.String()
 		// make sure the child artifact exist
-		ar, err := r.argMgr.GetByDigest(ctx, art.RepositoryID, digest)
+		ar, err := r.argMgr.GetByDigest(ctx, art.RepositoryName, digest)
 		if err != nil {
 			return err
 		}
@@ -84,12 +81,8 @@ func (r *resolver) ResolveMetadata(ctx context.Context, manifest []byte, art *ar
 	}
 
 	// resolve the config of CNAB
-	repository, err := r.repoMgr.Get(ctx, art.RepositoryID)
-	if err != nil {
-		return err
-	}
 	// get the manifest that the config layer is referenced by
-	_, cfgMani, err := r.blobFetcher.FetchManifest(repository.Name, cfgManiDgt)
+	_, cfgMani, err := r.blobFetcher.FetchManifest(art.RepositoryName, cfgManiDgt)
 	if err != nil {
 		return err
 	}
@@ -99,7 +92,7 @@ func (r *resolver) ResolveMetadata(ctx context.Context, manifest []byte, art *ar
 	}
 	cfgDgt := m.Config.Digest.String()
 	// get the config layer
-	cfg, err := r.blobFetcher.FetchLayer(repository.Name, cfgDgt)
+	cfg, err := r.blobFetcher.FetchLayer(art.RepositoryName, cfgDgt)
 	if err != nil {
 		return err
 	}

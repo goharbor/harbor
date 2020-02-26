@@ -15,13 +15,11 @@
 package chart
 
 import (
-	"github.com/goharbor/harbor/src/common/models"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	chartserver "github.com/goharbor/harbor/src/pkg/chart"
 	"github.com/goharbor/harbor/src/testing/api/artifact/abstractor/blob"
 	"github.com/goharbor/harbor/src/testing/pkg/chart"
-	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
 	"k8s.io/helm/pkg/chartutil"
 	"testing"
@@ -30,17 +28,14 @@ import (
 type resolverTestSuite struct {
 	suite.Suite
 	resolver    *resolver
-	repoMgr     *repository.FakeManager
 	blobFetcher *blob.FakeFetcher
 	chartOptr   *chart.FakeOpertaor
 }
 
 func (r *resolverTestSuite) SetupTest() {
-	r.repoMgr = &repository.FakeManager{}
 	r.blobFetcher = &blob.FakeFetcher{}
 	r.chartOptr = &chart.FakeOpertaor{}
 	r.resolver = &resolver{
-		repoMgr:       r.repoMgr,
 		blobFetcher:   r.blobFetcher,
 		chartOperator: r.chartOptr,
 	}
@@ -92,11 +87,9 @@ func (r *resolverTestSuite) TestResolveMetadata() {
   "appVersion": "1.8.2"
 }`
 	artifact := &artifact.Artifact{}
-	r.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	r.blobFetcher.On("FetchLayer").Return([]byte(config), nil)
 	err := r.resolver.ResolveMetadata(nil, []byte(content), artifact)
 	r.Require().Nil(err)
-	r.repoMgr.AssertExpectations(r.T())
 	r.blobFetcher.AssertExpectations(r.T())
 	r.Assert().Equal("1.1.2", artifact.ExtraAttrs["version"].(string))
 	r.Assert().Equal("1.8.2", artifact.ExtraAttrs["appVersion"].(string))
@@ -158,7 +151,6 @@ func (r *resolverTestSuite) TestResolveAddition() {
 	}
 
 	artifact := &artifact.Artifact{}
-	r.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	r.blobFetcher.On("FetchManifest").Return("", []byte(chartManifest), nil)
 	r.blobFetcher.On("FetchLayer").Return([]byte(chartYaml), nil)
 	r.chartOptr.On("GetDetails").Return(chartDetails, nil)

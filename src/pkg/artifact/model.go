@@ -33,6 +33,7 @@ type Artifact struct {
 	ManifestMediaType string                 `json:"manifest_media_type"` // the media type of manifest/index
 	ProjectID         int64                  `json:"project_id"`
 	RepositoryID      int64                  `json:"repository_id"`
+	RepositoryName    string                 `json:"repository_name"`
 	Digest            string                 `json:"digest"`
 	Size              int64                  `json:"size"`
 	PushTime          time.Time              `json:"push_time"`
@@ -40,8 +41,6 @@ type Artifact struct {
 	ExtraAttrs        map[string]interface{} `json:"extra_attrs"` // only contains the simple attributes specific for the different artifact type, most of them should come from the config layer
 	Annotations       map[string]string      `json:"annotations"`
 	References        []*Reference           `json:"references"` // child artifacts referenced by the parent artifact if the artifact is an index
-
-	RepositoryName string `json:"-"` // repository name, eg: library/photon
 }
 
 // From converts the database level artifact to the business level object
@@ -52,6 +51,7 @@ func (a *Artifact) From(art *dao.Artifact) {
 	a.ManifestMediaType = art.ManifestMediaType
 	a.ProjectID = art.ProjectID
 	a.RepositoryID = art.RepositoryID
+	a.RepositoryName = art.RepositoryName
 	a.Digest = art.Digest
 	a.Size = art.Size
 	a.PushTime = art.PushTime
@@ -79,6 +79,7 @@ func (a *Artifact) To() *dao.Artifact {
 		ManifestMediaType: a.ManifestMediaType,
 		ProjectID:         a.ProjectID,
 		RepositoryID:      a.RepositoryID,
+		RepositoryName:    a.RepositoryName,
 		Digest:            a.Digest,
 		Size:              a.Size,
 		PushTime:          a.PushTime,

@@ -37,8 +37,8 @@ type Manager interface {
 	List(ctx context.Context, query *q.Query) (artifacts []*Artifact, err error)
 	// Get the artifact specified by the ID
 	Get(ctx context.Context, id int64) (artifact *Artifact, err error)
-	// GetByDigest returns the artifact specified by repository ID and digest
-	GetByDigest(ctx context.Context, repositoryID int64, digest string) (artifact *Artifact, err error)
+	// GetByDigest returns the artifact specified by repository and digest
+	GetByDigest(ctx context.Context, repository, digest string) (artifact *Artifact, err error)
 	// Create the artifact. If the artifact is an index, make sure all the artifacts it references
 	// already exist
 	Create(ctx context.Context, artifact *Artifact) (id int64, err error)
@@ -94,8 +94,8 @@ func (m *manager) Get(ctx context.Context, id int64) (*Artifact, error) {
 	return m.assemble(ctx, art)
 }
 
-func (m *manager) GetByDigest(ctx context.Context, repositoryID int64, digest string) (*Artifact, error) {
-	art, err := m.dao.GetByDigest(ctx, repositoryID, digest)
+func (m *manager) GetByDigest(ctx context.Context, repository, digest string) (*Artifact, error) {
+	art, err := m.dao.GetByDigest(ctx, repository, digest)
 	if err != nil {
 		return nil, err
 	}
