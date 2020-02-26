@@ -997,8 +997,7 @@
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
         "ADDITIONS": "Additions",
         "ANNOTATION": "Annotation",
-        "EXTRA_PROPERTIES": "Extra Attributes",
-        "COMMON_ALL": "Extra Attributes across all digest"
+        "EXTRA_PROPERTIES": "Extra Attributes"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Create on",

@@ -92,6 +92,10 @@ export class ArtifactSummaryComponent implements OnInit {
       repositoryName: this.repositoryName,
       reference: this.artifactDigest,
       projectName: this.projectName,
+      withLabel: true,
+      withScanOverview: true,
+      withSignature: true,
+      withImmutableStatus: true
     }).pipe(finalize(() => this.loading = false))
       .subscribe(response => {
       this.artifact = response;
