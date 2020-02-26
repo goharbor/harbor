@@ -132,7 +132,6 @@
             <clr-dg-column class="w-rem-4">{{'REPOSITORY.TAGS_COUNT' | translate}}</clr-dg-column>
             <clr-dg-column >{{'REPOSITORY.SIZE' | translate}}</clr-dg-column>
             <clr-dg-column>{{'REPOSITORY.VULNERABILITY' | translate}}</clr-dg-column>
-            <clr-dg-column *ngIf="withNotary">{{'REPOSITORY.SIGNED' | translate}}</clr-dg-column>
             <clr-dg-column>{{'ARTIFACT.ANNOTATION' | translate}}</clr-dg-column>
             <clr-dg-column *ngIf="!withAdmiral">{{'REPOSITORY.LABELS' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgSortBy]="pushComparator">{{'REPOSITORY.PUSH_TIME' | translate}}</clr-dg-column>
@@ -228,17 +227,6 @@
                             (submitFinish)="submitFinish($event)" [projectName]="projectName" [repoName]="repoName"
                             [artifactId]="artifact.id" [summary]="handleScanOverview(artifact.scan_overview)">
                         </hbr-vulnerability-bar>
-                    </div>
-                </clr-dg-cell>
-                <clr-dg-cell *ngIf="withNotary" [ngSwitch]="artifact.signature !== null">
-                    <div class="cell">
-                        <clr-icon shape="check-circle" *ngSwitchCase="true" size="20" class="color-green"></clr-icon>
-                        <clr-icon shape="times-circle" *ngSwitchCase="false" size="16" class="color-red"></clr-icon>
-                        <a href="javascript:void(0)" *ngSwitchDefault role="tooltip" aria-haspopup="true"
-                            class="tooltip tooltip-top-right">
-                            <clr-icon shape="help" class="color-gray" size="16"></clr-icon>
-                            <span class="tooltip-content">{{'REPOSITORY.NOTARY_IS_UNDETERMINED' | translate}}</span>
-                        </a>
                     </div>
                 </clr-dg-cell>
                 <clr-dg-cell>

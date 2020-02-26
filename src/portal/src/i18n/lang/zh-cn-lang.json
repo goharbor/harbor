@@ -996,8 +996,7 @@
         "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
         "ADDITIONS": "其他",
         "ANNOTATION": "注解",
-        "EXTRA_PROPERTIES": "额外属性",
-        "COMMON_ALL": "额外属性"
+        "EXTRA_PROPERTIES": "额外属性"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "创建时间：",
