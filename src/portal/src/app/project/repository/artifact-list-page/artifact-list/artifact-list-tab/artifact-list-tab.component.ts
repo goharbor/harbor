@@ -61,7 +61,7 @@ import {
 } from "../../../../../../lib/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../../lib/components/operation/operate";
 import { errorHandler } from "../../../../../../lib/utils/shared/shared.utils";
-import { Artifact } from "../../../artifact/artifact";
+import { ArtifactFront as Artifact } from "../../../artifact/artifact";
 import { Project } from "../../../../project";
 import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
 export interface LabelState {
@@ -82,7 +82,6 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   projectName: string;
   @Input() memberRoleID: number;
   @Input() repoName: string;
-  referArtifactArray: string[] = [];
   @Input() isEmbedded: boolean;
   @Input() hasSignedIn: boolean;
   @Input() isGuest: boolean;
@@ -373,6 +372,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               this.loading = false;
             })).subscribe(artifacts => {
               this.artifactList = artifacts;
+              this.getArtifactAnnotationsArray(this.artifactList);
             }, error => {
               this.errorHandlerService.error(error);
             });
@@ -391,6 +391,7 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
               }
             }
             this.artifactList = res.body;
+            this.getArtifactAnnotationsArray(this.artifactList);
           }, error => {
             // error
             this.errorHandlerService.error(error);
@@ -401,7 +402,21 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
   refresh() {
     this.doSearchArtifactNames("");
   }
-
+  getArtifactAnnotationsArray(artifactList: Artifact[]) {
+    artifactList.forEach(artifact => {
+      artifact.annotationsArray = [];
+      if (artifact.annotations) {
+        for (const key in artifact.annotations) {
+          if (artifact.annotations.hasOwnProperty(key)) {
+            const annotation = artifact.annotations[key];
+            artifact.annotationsArray.push(`${key} : ${annotation}`);
+          }
+        }
+        // todo : cannot support Object.entries
+        // artifact.annotationsArray = Object.entries(artifact.annotations).map(item => `${item[0]} : ${item[1]}`);
+      }
+    });
+  }
   getAllLabels(): void {
     forkJoin(this.labelService.getGLabels(), this.labelService.getPLabels(this.projectId)).subscribe(results => {
       results.forEach(labels => {

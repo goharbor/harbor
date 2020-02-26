@@ -118,12 +118,14 @@ export class ArtifactListComponent implements OnInit {
   }
 
   retrieve(state?: State) {
-    this.repositoryService.getRepositories(this.projectId, this.repoName)
+    let params: NewRepositoryService.GetRepositoryParams = {
+      projectName: this.projectName,
+      repositoryName: this.repoName
+    };
+    this.newRepositoryService.getRepository(params)
       .subscribe(response => {
-        if (response.metadata.xTotalCount > 0) {
-          this.orgImageInfo = response.data[0].description;
-          this.imageInfo = response.data[0].description;
-        }
+          this.orgImageInfo = response.description;
+          this.imageInfo = response.description;
       }, error => this.errorHandler.error(error));
     this.systemInfoService.getSystemInfo()
       .subscribe(systemInfo => this.systemInfo = systemInfo, error => this.errorHandler.error(error));

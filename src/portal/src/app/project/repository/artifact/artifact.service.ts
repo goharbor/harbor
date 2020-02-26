@@ -9,7 +9,7 @@ import {
   HTTP_GET_OPTIONS,
   HTTP_JSON_OPTIONS
 } from "../../../../lib/utils/utils";
-import { Artifact } from "./artifact";
+import { ArtifactFront as Artifact } from "./artifact";
 
 
 /**

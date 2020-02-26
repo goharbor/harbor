@@ -85,7 +85,8 @@ describe('ArtifactListComponent (inline template)', () => {
     }
   ];
   let newRepositoryService = {
-    updateRepository: () => of(null)
+    updateRepository: () => of(null),
+    getRepository: () => of({description: ''})
   };
   let mockRepo: Repository = {
     metadata: { xTotalCount: 2 },

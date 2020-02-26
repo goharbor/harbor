@@ -15,7 +15,7 @@ import { ErrorHandler } from "../../../../../lib/utils/error-handler";
 import { ConfirmationButtons, ConfirmationState, ConfirmationTargets } from "../../../../../lib/entities/shared.const";
 import { operateChanges, OperateInfo, OperationState } from "../../../../../lib/components/operation/operate";
 import { errorHandler } from "../../../../../lib/utils/shared/shared.utils";
-import { Artifact } from "../artifact";
+import { ArtifactFront as Artifact } from "../artifact";
 
 class InitTag {
   name = "";

@@ -7,16 +7,18 @@
         <button type="button" class="btn btn-secondary" [disabled]="!(selectedRow.length>=1)" (click)="removeTag()">
             <clr-icon shape="trash" size="16"></clr-icon>&nbsp;{{'TAG.REMOVE_TAG' | translate}}
         </button>
-        <form #labelForm="ngForm" [hidden]="!newTagformShow" class="label-form stack-block-label">
-
+        <form #tagForm="ngForm" [hidden]="!newTagformShow" class="label-form stack-block-label">
             <section>
                 <label>
                     <label for="name">{{'TAG.NAME' | translate}}</label>
-                    <label class="clr-control-container" [class.clr-error]="isTagNameExist">
+                    <label class="clr-control-container" [class.clr-error]="isTagNameExist || name.hasError('pattern')">
                         <input clrInput type="text" id="name" name="name" required size="20" autocomplete="off"
-                            [(ngModel)]="newTagName.name" #name="ngModel" (keyup)="existValid(newTagName.name)">
+                            [(ngModel)]="newTagName.name" #name="ngModel" pattern="^[\w][\w.-]{0,127}$" (keyup)="existValid(newTagName.name)">
                         <clr-control-error class="position-ab" *ngIf="isTagNameExist">
                             {{'LABEL.NAME_ALREADY_EXISTS' | translate }}
+                        </clr-control-error>
+                        <clr-control-error class="position-ab" *ngIf="name.hasError('pattern')">
+                            {{'RETAG.TIP_TAG' | translate }}
                         </clr-control-error>
                     </label>
                 </label>
@@ -25,7 +27,7 @@
                                         'BUTTON.CANCEL' | translate }}
                     </button>
                     <button type="submit" class="btn btn-sm btn-primary" (click)="saveAddTag()"
-                        [disabled]="isTagNameExist || !newTagName.name">{{
+                        [disabled]="isTagNameExist || !newTagName.name ||tagForm.invalid">{{
                                         'BUTTON.OK' | translate }}
                     </button>
                 </label>
