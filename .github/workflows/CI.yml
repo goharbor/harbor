@@ -18,6 +18,8 @@ env:
 on:
   pull_request:
   push:
+    paths-ignore:
+    - 'docs/**'
 
 jobs:
   UTTEST:
