@@ -7,7 +7,15 @@ from v2_swagger_client.rest import ApiException
 class Artifact(base.Base):
     def get_reference_info(self, project_name, repo_name, reference, **kwargs):
         client = self._get_client(**kwargs)
-        return client.get_artifact_with_http_info(project_name, repo_name, reference)
+        params = {}
+        if "with_signature" in kwargs:
+            params["with_signature"] = kwargs["with_signature"]
+        return client.get_artifact_with_http_info(project_name, repo_name, reference, **params )
+
+    def add_label_to_reference(self, project_name, repo_name, reference, label_id, **kwargs):
+        client = self._get_client(**kwargs)
+        label = v2_swagger_client.Label(id = label_id)
+        return client.add_label_with_http_info(project_name, repo_name, reference, label)
 
     def copy_artifact(self, project_name, repo_name, _from, expect_status_code = 201, expect_response_body = None, **kwargs):
         client = self._get_client(**kwargs)

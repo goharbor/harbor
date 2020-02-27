@@ -5,6 +5,7 @@ import unittest
 from testutils import harbor_server
 from testutils import TEARDOWN
 from testutils import ADMIN_CLIENT
+from library.artifact import Artifact
 from library.project import Project
 from library.user import User
 from library.repository import Repository
@@ -14,19 +15,11 @@ from library.label import Label
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        repo = Repository()
-        self.repo= repo
-        repo_v2 = Repository(api_type='repository')
-        self.repo_v2= repo_v2
-
-        label = Label()
-        self.label= label
+        self.project = Project()
+        self.user = User()
+        self.artifact = Artifact(api_type='artifact')
+        self.repo = Repository(api_type='repository')
+        self.label = Label()
 
     @classmethod
     def tearDown(self):
@@ -35,7 +28,7 @@ class TestProjects(unittest.TestCase):
     @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
         #1. Delete repository(RA) by user(UA);
-        self.repo_v2.delete_repoitory(TestProjects.project_add_g_lbl_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_add_g_lbl_CLIENT)
+        self.repo.delete_repoitory(TestProjects.project_add_g_lbl_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_add_g_lbl_CLIENT)
 
         #2. Delete project(PA);
         self.project.delete_project(TestProjects.project_add_g_lbl_id, **TestProjects.USER_add_g_lbl_CLIENT)
@@ -89,7 +82,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.label_id, _ = self.label.create_label(**ADMIN_CLIENT)
 
         #7. Add this system global label to repository(RA)/tag(TA).
-        self.repo.add_label_to_tag(TestProjects.repo_name, tag, int(TestProjects.label_id), **TestProjects.USER_add_g_lbl_CLIENT)
+        self.artifact.add_label_to_reference(TestProjects.project_add_g_lbl_name, TestProjects.repo_name.split('/')[1], tag, int(TestProjects.label_id), **TestProjects.USER_add_g_lbl_CLIENT)
 
 if __name__ == '__main__':
     unittest.main()

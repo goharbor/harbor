@@ -5,6 +5,7 @@ from library.sign import sign_image
 from testutils import ADMIN_CLIENT
 from testutils import harbor_server
 from testutils import TEARDOWN
+from library.artifact import Artifact
 from library.project import Project
 from library.user import User
 from library.repository import Repository
@@ -13,25 +14,19 @@ from library.repository import push_image_to_project
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        repo = Repository()
-        self.repo= repo
-        repo_v2 = Repository(api_type='repository')
-        self.repo_v2= repo_v2
+        self.project = Project()
+        self.user = User()
+        self.artifact = Artifact(api_type='artifact')
+        self.repo = Repository(api_type='repository')
 
     @classmethod
     def tearDown(self):
         print "Case completed"
 
-    @unittest.skipIf(TEARDOWN == True, "Test data won't be erased.")
+    @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     def test_ClearData(self):
         #1. Delete repository(RA) by user(UA);
-        self.repo_v2.delete_repoitory(TestProjects.project_sign_image_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_sign_image_CLIENT)
+        self.repo.delete_repoitory(TestProjects.project_sign_image_name, TestProjects.repo_name.split('/')[1], **TestProjects.USER_sign_image_CLIENT)
 
         #2. Delete project(PA);
         self.project.delete_project(TestProjects.project_sign_image_id, **TestProjects.USER_sign_image_CLIENT)
@@ -60,7 +55,7 @@ class TestProjects(unittest.TestCase):
         #1. Create user-001
         TestProjects.user_sign_image_id, user_sign_image_name = self.user.create_user(user_password = user_001_password, **ADMIN_CLIENT)
 
-        TestProjects.USER_sign_image_CLIENT=dict(endpoint = url, username = user_sign_image_name, password = user_001_password)
+        TestProjects.USER_sign_image_CLIENT=dict(with_signature = True, endpoint = url, username = user_sign_image_name, password = user_001_password)
 
         #2. Create a new private project(PA) by user(UA);
         TestProjects.project_sign_image_id, TestProjects.project_sign_image_name = self.project.create_project(metadata = {"public": "false"}, **ADMIN_CLIENT)
@@ -81,7 +76,8 @@ class TestProjects(unittest.TestCase):
         sign_image(harbor_server, TestProjects.project_sign_image_name, image, tag)
 
         #7. Get signature of image with tag(TA), it should be exist.
-        self.repo.signature_should_exist(TestProjects.repo_name, tag, **TestProjects.USER_sign_image_CLIENT)
+        artifact = self.artifact.get_reference_info(TestProjects.project_sign_image_name, image, tag, **TestProjects.USER_sign_image_CLIENT)
+        self.assertEqual(artifact[0].tags[0].signed, True)
 
 if __name__ == '__main__':
     unittest.main()

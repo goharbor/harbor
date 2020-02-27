@@ -10,11 +10,8 @@ from library.configurations import Configurations
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        conf = Configurations()
-        self.conf= conf
-
-        user = User()
-        self.user= user
+        self.conf= Configurations()
+        self.user = User()
 
     @classmethod
     def tearDown(self):

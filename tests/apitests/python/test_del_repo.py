@@ -16,14 +16,9 @@ from library.repository import push_image_to_project
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUpClass(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        repo = Repository(api_type='repository')
-        self.repo= repo
+        self.project= Project()
+        self.user= User()
+        self.repo= Repository(api_type='repository')
 
     @classmethod
     def tearDownClass(self):
