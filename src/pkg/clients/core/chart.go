@@ -18,10 +18,11 @@ import (
 	"fmt"
 
 	"github.com/goharbor/harbor/src/chartserver"
+	"github.com/goharbor/harbor/src/common/api"
 )
 
 func (c *client) ListAllCharts(project, repository string) ([]*chartserver.ChartVersion, error) {
-	url := c.buildURL(fmt.Sprintf("/api/chartrepo/%s/charts/%s", project, repository))
+	url := c.buildURL(fmt.Sprintf("/api/%s/chartrepo/%s/charts/%s", api.APIVersion, project, repository))
 	var charts []*chartserver.ChartVersion
 	if err := c.httpclient.Get(url, &charts); err != nil {
 		return nil, err
@@ -30,11 +31,11 @@ func (c *client) ListAllCharts(project, repository string) ([]*chartserver.Chart
 }
 
 func (c *client) DeleteChart(project, repository, version string) error {
-	url := c.buildURL(fmt.Sprintf("/api/chartrepo/%s/charts/%s/%s", project, repository, version))
+	url := c.buildURL(fmt.Sprintf("/api/%s/chartrepo/%s/charts/%s/%s", api.APIVersion, project, repository, version))
 	return c.httpclient.Delete(url)
 }
 
 func (c *client) DeleteChartRepository(project, repository string) error {
-	url := c.buildURL(fmt.Sprintf("/api/chartrepo/%s/charts/%s", project, repository))
+	url := c.buildURL(fmt.Sprintf("/api/%s/chartrepo/%s/charts/%s", api.APIVersion, project, repository))
 	return c.httpclient.Delete(url)
 }

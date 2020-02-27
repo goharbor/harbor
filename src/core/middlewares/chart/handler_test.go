@@ -22,6 +22,7 @@ import (
 	"testing"
 
 	"github.com/goharbor/harbor/src/chartserver"
+	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/core/middlewares/util"
 	"github.com/goharbor/harbor/src/pkg/types"
@@ -30,7 +31,7 @@ import (
 )
 
 func deleteChartVersion(projectName, chartName, version string) {
-	url := fmt.Sprintf("/api/chartrepo/%s/charts/%s/%s", projectName, chartName, version)
+	url := fmt.Sprintf("/api/%s/chartrepo/%s/charts/%s/%s", api.APIVersion, projectName, chartName, version)
 	req, _ := http.NewRequest(http.MethodDelete, url, nil)
 
 	next := http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
@@ -43,7 +44,7 @@ func deleteChartVersion(projectName, chartName, version string) {
 }
 
 func uploadChartVersion(projectID int64, projectName, chartName, version string) {
-	url := fmt.Sprintf("/api/chartrepo/%s/charts/", projectName)
+	url := fmt.Sprintf("/api/%s/chartrepo/%s/charts/", api.APIVersion, projectName)
 	req, _ := http.NewRequest(http.MethodPost, url, nil)
 
 	info := &util.ChartVersionInfo{

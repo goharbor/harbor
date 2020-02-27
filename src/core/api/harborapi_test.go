@@ -30,6 +30,7 @@ import (
 
 	"github.com/astaxie/beego"
 	"github.com/dghubble/sling"
+	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/job/test"
 	"github.com/goharbor/harbor/src/common/models"
@@ -172,15 +173,15 @@ func init() {
 	beego.Router("/api/projects/:pid([0-9]+)/immutabletagrules/:id([0-9]+)", &ImmutableTagRuleAPI{})
 	// Charts are controlled under projects
 	chartRepositoryAPIType := &ChartRepositoryAPI{}
-	beego.Router("/api/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
-	beego.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
-	beego.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "get:ListChartVersions")
-	beego.Router("/api/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "delete:DeleteChart")
-	beego.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "get:GetChartVersion")
-	beego.Router("/api/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "delete:DeleteChartVersion")
-	beego.Router("/api/chartrepo/:repo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
-	beego.Router("/api/chartrepo/:repo/prov", chartRepositoryAPIType, "post:UploadChartProvFile")
-	beego.Router("/api/chartrepo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/health", chartRepositoryAPIType, "get:GetHealthStatus")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts", chartRepositoryAPIType, "get:ListCharts")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "get:ListChartVersions")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name", chartRepositoryAPIType, "delete:DeleteChart")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "get:GetChartVersion")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version", chartRepositoryAPIType, "delete:DeleteChartVersion")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/prov", chartRepositoryAPIType, "post:UploadChartProvFile")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/charts", chartRepositoryAPIType, "post:UploadChartVersion")
 
 	// Repository services
 	beego.Router("/chartrepo/:repo/index.yaml", chartRepositoryAPIType, "get:GetIndexByRepo")
@@ -188,8 +189,8 @@ func init() {
 	beego.Router("/chartrepo/:repo/charts/:filename", chartRepositoryAPIType, "get:DownloadChart")
 	// Labels for chart
 	chartLabelAPIType := &ChartLabelAPI{}
-	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
-	beego.Router("/api/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version/labels", chartLabelAPIType, "get:GetLabels;post:MarkLabel")
+	beego.Router("/api/"+api.APIVersion+"/chartrepo/:repo/charts/:name/:version/labels/:id([0-9]+)", chartLabelAPIType, "delete:RemoveLabel")
 
 	quotaAPIType := &QuotaAPI{}
 	beego.Router("/api/quotas", quotaAPIType, "get:List")
