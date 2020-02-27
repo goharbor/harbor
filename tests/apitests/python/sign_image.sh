@@ -15,6 +15,6 @@ export DOCKER_CONTENT_TRUST_REPOSITORY_PASSPHRASE=$PASSHRASE
 export DOCKER_CONTENT_TRUST_OFFLINE_PASSPHRASE=$PASSHRASE
 export DOCKER_CONTENT_TRUST_TAGGING_PASSPHRASE=$PASSHRASE
 
-docker login -u admin -p Harbor12345 $IP
-docker push $IP/$2/$3:$4
+sudo docker login -u admin -p Harbor12345 $IP
+sudo docker push $IP/$2/$3:$4
 
