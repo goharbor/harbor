@@ -81,8 +81,10 @@ func (r *repositoryAPI) ListRepositories(ctx context.Context, params operation.L
 	for _, repository := range repositories {
 		repos = append(repos, r.assembleRepository(ctx, repository))
 	}
-	// TODO add link header
-	return operation.NewListRepositoriesOK().WithXTotalCount(total).WithLink("").WithPayload(repos)
+	return operation.NewListRepositoriesOK().
+		WithXTotalCount(total).
+		WithLink(r.Links(ctx, params.HTTPRequest.URL, total, query.PageNumber, query.PageSize).String()).
+		WithPayload(repos)
 }
 
 func (r *repositoryAPI) GetRepository(ctx context.Context, params operation.GetRepositoryParams) middleware.Responder {

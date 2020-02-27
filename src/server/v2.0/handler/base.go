@@ -19,7 +19,10 @@ package handler
 import (
 	"context"
 	"errors"
+	"github.com/goharbor/harbor/src/internal"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	"net/url"
+	"strconv"
 
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/common/rbac"
@@ -94,4 +97,33 @@ func (b *BaseAPI) RequireProjectAccess(ctx context.Context, projectIDOrName inte
 		return ierror.UnauthorizedError(nil)
 	}
 	return ierror.ForbiddenError(nil)
+}
+
+// Links return Links based on the provided pagination information
+func (b *BaseAPI) Links(ctx context.Context, u *url.URL, total, pageNumber, pageSize int64) internal.Links {
+	url := *u
+	var links internal.Links
+	// prev
+	if pageNumber > 1 && (pageNumber-1)*pageSize < total {
+		q := url.Query()
+		q.Set("page", strconv.FormatInt(pageNumber-1, 10))
+		url.RawQuery = q.Encode()
+		link := &internal.Link{
+			URL: url.String(),
+			Rel: "prev",
+		}
+		links = append(links, link)
+	}
+	// next
+	if pageSize*pageNumber < total {
+		q := url.Query()
+		q.Set("page", strconv.FormatInt(pageNumber+1, 10))
+		url.RawQuery = q.Encode()
+		link := &internal.Link{
+			URL: url.String(),
+			Rel: "next",
+		}
+		links = append(links, link)
+	}
+	return links
 }

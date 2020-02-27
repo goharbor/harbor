@@ -560,6 +560,9 @@ responses:
       X-Request-Id:
         description: The ID of the corresponding request for the response
         type: string
+      Location:
+        description: The location of the resource
+        type: string
   '202':
     description: Accepted
     headers:
