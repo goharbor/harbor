@@ -17,10 +17,10 @@ package dayspl
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
@@ -41,7 +41,7 @@ type evaluator struct {
 	n int
 }
 
-func (e *evaluator) Process(artifacts []*art.Candidate) (result []*art.Candidate, err error) {
+func (e *evaluator) Process(artifacts []*artifactselector.Candidate) (result []*artifactselector.Candidate, err error) {
 	minPullTime := time.Now().UTC().Add(time.Duration(-1*24*e.n) * time.Hour).Unix()
 	for _, a := range artifacts {
 		if a.PulledTime >= minPullTime {

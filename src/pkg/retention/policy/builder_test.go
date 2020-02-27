@@ -16,6 +16,7 @@ package policy
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"testing"
 	"time"
 
@@ -23,7 +24,7 @@ import (
 
 	index2 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
 
-	"github.com/goharbor/harbor/src/pkg/art/selectors/index"
+	"github.com/goharbor/harbor/src/pkg/artifactselector/selectors/index"
 
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 
@@ -31,9 +32,9 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/alg/or"
 
-	"github.com/goharbor/harbor/src/pkg/art/selectors/label"
+	"github.com/goharbor/harbor/src/pkg/artifactselector/selectors/label"
 
-	"github.com/goharbor/harbor/src/pkg/art/selectors/doublestar"
+	"github.com/goharbor/harbor/src/pkg/artifactselector/selectors/doublestar"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/latestps"
 
@@ -47,8 +48,6 @@ import (
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/lwp"
 
-	"github.com/goharbor/harbor/src/pkg/art"
-
 	"github.com/stretchr/testify/suite"
 )
 
@@ -56,7 +55,7 @@ import (
 type TestBuilderSuite struct {
 	suite.Suite
 
-	all       []*art.Candidate
+	all       []*artifactselector.Candidate
 	oldClient dep.Client
 }
 
@@ -68,7 +67,7 @@ func TestBuilder(t *testing.T) {
 // SetupSuite prepares the testing content if needed
 func (suite *TestBuilderSuite) SetupSuite() {
 	dao.PrepareTestForPostgresSQL()
-	suite.all = []*art.Candidate{
+	suite.all = []*artifactselector.Candidate{
 		{
 			NamespaceID: 1,
 			Namespace:   "library",
@@ -165,21 +164,21 @@ func (suite *TestBuilderSuite) TestBuild() {
 
 type fakeRetentionClient struct{}
 
-func (frc *fakeRetentionClient) DeleteRepository(repo *art.Repository) error {
+func (frc *fakeRetentionClient) DeleteRepository(repo *artifactselector.Repository) error {
 	panic("implement me")
 }
 
 // GetCandidates ...
-func (frc *fakeRetentionClient) GetCandidates(repo *art.Repository) ([]*art.Candidate, error) {
+func (frc *fakeRetentionClient) GetCandidates(repo *artifactselector.Repository) ([]*artifactselector.Candidate, error) {
 	return nil, errors.New("not implemented")
 }
 
 // Delete ...
-func (frc *fakeRetentionClient) Delete(candidate *art.Candidate) error {
+func (frc *fakeRetentionClient) Delete(candidate *artifactselector.Candidate) error {
 	return nil
 }
 
 // SubmitTask ...
-func (frc *fakeRetentionClient) SubmitTask(taskID int64, repository *art.Repository, meta *lwp.Metadata) (string, error) {
+func (frc *fakeRetentionClient) SubmitTask(taskID int64, repository *artifactselector.Repository, meta *lwp.Metadata) (string, error) {
 	return "", errors.New("not implemented")
 }

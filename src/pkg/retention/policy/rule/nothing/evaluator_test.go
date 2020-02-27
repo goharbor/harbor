@@ -15,9 +15,9 @@
 package nothing
 
 import (
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"testing"
 
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -36,7 +36,7 @@ func (e *EvaluatorTestSuite) TestNew() {
 
 func (e *EvaluatorTestSuite) TestProcess() {
 	sut := New(rule.Parameters{})
-	input := []*art.Candidate{{PushedTime: 0}, {PushedTime: 1}, {PushedTime: 2}, {PushedTime: 3}}
+	input := []*artifactselector.Candidate{{PushedTime: 0}, {PushedTime: 1}, {PushedTime: 2}, {PushedTime: 3}}
 
 	result, err := sut.Process(input)
 

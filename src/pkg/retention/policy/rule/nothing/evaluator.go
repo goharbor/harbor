@@ -15,7 +15,7 @@
 package nothing
 
 import (
-	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 )
@@ -28,7 +28,7 @@ const (
 type evaluator struct{}
 
 // Process for the "nothing" Evaluator simply returns the input with no error
-func (e *evaluator) Process(artifacts []*art.Candidate) (processed []*art.Candidate, err error) {
+func (e *evaluator) Process(artifacts []*artifactselector.Candidate) (processed []*artifactselector.Candidate, err error) {
 	return processed, err
 }
 

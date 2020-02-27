@@ -12,29 +12,19 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package art
+package artifactselector
 
-import (
-	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/pkg/q"
-)
-
-// DefaultController for easy referring as a singleton instance
-var DefaultController = NewController()
-
-// basicController is the default implementation of controller
-type basicController struct {
-	m Manager
+// Result keeps the action result
+type Result struct {
+	Target *Candidate `json:"target"`
+	// nil error means success
+	Error error `json:"error"`
 }
 
-// NewController ...
-func NewController() Controller {
-	return &basicController{
-		m: NewManager(),
-	}
+// ImmutableError ...
+type ImmutableError struct {
 }
 
-// List artifacts
-func (b *basicController) List(query *q.Query) ([]*models.Artifact, error) {
-	return b.m.List(query)
+func (e *ImmutableError) Error() string {
+	return "Immutable tag"
 }

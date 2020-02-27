@@ -17,11 +17,11 @@ package dayspl
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -54,7 +54,7 @@ func (e *EvaluatorTestSuite) TestNew() {
 
 func (e *EvaluatorTestSuite) TestProcess() {
 	now := time.Now().UTC()
-	data := []*art.Candidate{
+	data := []*artifactselector.Candidate{
 		{PulledTime: daysAgo(now, 1, time.Hour)},
 		{PulledTime: daysAgo(now, 2, time.Hour)},
 		{PulledTime: daysAgo(now, 3, time.Hour)},

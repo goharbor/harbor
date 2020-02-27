@@ -15,9 +15,12 @@
 package event
 
 import (
+	"context"
+	bo "github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/q"
@@ -28,7 +31,7 @@ import (
 type scanCtlGetter func() scan.Controller
 
 // artCtlGetter for getting a artifact controller reference to avoid package importing order issue.
-type artCtlGetter func() art.Controller
+type artCtlGetter func() artifact.Controller
 
 // onDelImageHandler is a handler to listen to the internal delete image event.
 type onDelImageHandler struct {
@@ -44,8 +47,8 @@ func NewOnDelImageHandler() notifier.NotificationHandler {
 		scanCtl: func() scan.Controller {
 			return scan.DefaultController
 		},
-		artCtl: func() art.Controller {
-			return art.DefaultController
+		artCtl: func() artifact.Controller {
+			return artifact.Ctl
 		},
 	}
 }
@@ -67,10 +70,11 @@ func (o *onDelImageHandler) Handle(value interface{}) error {
 		Keywords: make(map[string]interface{}),
 	}
 
+	ctx := orm.NewContext(context.TODO(), bo.NewOrm())
 	for _, res := range evt.Resource {
 		// Check if it is safe to delete the reports.
 		query.Keywords["digest"] = res.Digest
-		l, err := o.artCtl().List(query)
+		l, err := o.artCtl().List(ctx, query, nil)
 
 		if err != nil {
 			// Just logged

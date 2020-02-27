@@ -15,6 +15,7 @@
 package index
 
 import (
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"testing"
 	"time"
 
@@ -22,7 +23,6 @@ import (
 
 	"github.com/stretchr/testify/require"
 
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 
 	"github.com/stretchr/testify/suite"
@@ -63,7 +63,7 @@ func (suite *IndexTestSuite) TestGet() {
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), evaluator)
 
-	candidates := []*art.Candidate{{
+	candidates := []*artifactselector.Candidate{{
 		Namespace:  "library",
 		Repository: "harbor",
 		Kind:       "image",
@@ -102,7 +102,7 @@ type fakeEvaluator struct {
 }
 
 // Process rule
-func (e *fakeEvaluator) Process(artifacts []*art.Candidate) ([]*art.Candidate, error) {
+func (e *fakeEvaluator) Process(artifacts []*artifactselector.Candidate) ([]*artifactselector.Candidate, error) {
 	return artifacts, nil
 }
 

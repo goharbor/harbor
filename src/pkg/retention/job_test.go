@@ -17,13 +17,13 @@ package retention
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"testing"
 	"time"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger"
-	"github.com/goharbor/harbor/src/pkg/art"
-	"github.com/goharbor/harbor/src/pkg/art/selectors/doublestar"
+	"github.com/goharbor/harbor/src/pkg/artifactselector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/action"
@@ -60,10 +60,10 @@ func (suite *JobTestSuite) TearDownSuite() {
 func (suite *JobTestSuite) TestRunSuccess() {
 	params := make(job.Parameters)
 	params[ParamDryRun] = false
-	repository := &art.Repository{
+	repository := &artifactselector.Repository{
 		Namespace: "library",
 		Name:      "harbor",
-		Kind:      art.Image,
+		Kind:      artifactselector.Image,
 	}
 	repoJSON, err := repository.ToJSON()
 	require.Nil(suite.T(), err)
@@ -112,8 +112,8 @@ func (suite *JobTestSuite) TestRunSuccess() {
 type fakeRetentionClient struct{}
 
 // GetCandidates ...
-func (frc *fakeRetentionClient) GetCandidates(repo *art.Repository) ([]*art.Candidate, error) {
-	return []*art.Candidate{
+func (frc *fakeRetentionClient) GetCandidates(repo *artifactselector.Repository) ([]*artifactselector.Candidate, error) {
+	return []*artifactselector.Candidate{
 		{
 			Namespace:    "library",
 			Repository:   "harbor",
@@ -140,12 +140,12 @@ func (frc *fakeRetentionClient) GetCandidates(repo *art.Repository) ([]*art.Cand
 }
 
 // Delete ...
-func (frc *fakeRetentionClient) Delete(candidate *art.Candidate) error {
+func (frc *fakeRetentionClient) Delete(candidate *artifactselector.Candidate) error {
 	return nil
 }
 
 // SubmitTask ...
-func (frc *fakeRetentionClient) DeleteRepository(repo *art.Repository) error {
+func (frc *fakeRetentionClient) DeleteRepository(repo *artifactselector.Repository) error {
 	return nil
 }
 

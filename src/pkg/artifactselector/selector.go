@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package art
+package artifactselector
 
 // Selector is used to filter the inputting list
 type Selector interface {

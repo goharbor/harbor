@@ -17,7 +17,7 @@ package action
 import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/pkg/art"
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 )
@@ -37,7 +37,7 @@ type Performer interface {
 	//  Returns:
 	//    []*art.Result : result infos
 	//    error     : common error if any errors occurred
-	Perform(candidates []*art.Candidate) ([]*art.Result, error)
+	Perform(candidates []*artifactselector.Candidate) ([]*artifactselector.Result, error)
 }
 
 // PerformerFactory is factory method for creating Performer
@@ -45,13 +45,13 @@ type PerformerFactory func(params interface{}, isDryRun bool) Performer
 
 // retainAction make sure all the candidates will be retained and others will be cleared
 type retainAction struct {
-	all []*art.Candidate
+	all []*artifactselector.Candidate
 	// Indicate if it is a dry run
 	isDryRun bool
 }
 
 // Perform the action
-func (ra *retainAction) Perform(candidates []*art.Candidate) (results []*art.Result, err error) {
+func (ra *retainAction) Perform(candidates []*artifactselector.Candidate) (results []*artifactselector.Result, err error) {
 	retainedShare := make(map[string]bool)
 	immutableShare := make(map[string]bool)
 	for _, c := range candidates {
@@ -71,11 +71,11 @@ func (ra *retainAction) Perform(candidates []*art.Candidate) (results []*art.Res
 	if len(ra.all) > 0 {
 		for _, c := range ra.all {
 			if _, ok := retainedShare[c.Hash()]; !ok {
-				result := &art.Result{
+				result := &artifactselector.Result{
 					Target: c,
 				}
 				if _, ok = immutableShare[c.Hash()]; ok {
-					result.Error = &art.ImmutableError{}
+					result.Error = &artifactselector.ImmutableError{}
 				} else {
 					if !ra.isDryRun {
 						if err := dep.DefaultClient.Delete(c); err != nil {
@@ -91,11 +91,11 @@ func (ra *retainAction) Perform(candidates []*art.Candidate) (results []*art.Res
 	return
 }
 
-func isImmutable(c *art.Candidate) bool {
+func isImmutable(c *artifactselector.Candidate) bool {
 	projectID := c.NamespaceID
 	repo := c.Repository
 	_, repoName := utils.ParseRepository(repo)
-	matched, err := rule.NewRuleMatcher().Match(projectID, art.Candidate{
+	matched, err := rule.NewRuleMatcher().Match(projectID, artifactselector.Candidate{
 		Repository:  repoName,
 		Tags:        c.Tags,
 		NamespaceID: projectID,
@@ -110,7 +110,7 @@ func isImmutable(c *art.Candidate) bool {
 // NewRetainAction is factory method for RetainAction
 func NewRetainAction(params interface{}, isDryRun bool) Performer {
 	if params != nil {
-		if all, ok := params.([]*art.Candidate); ok {
+		if all, ok := params.([]*artifactselector.Candidate); ok {
 			return &retainAction{
 				all:      all,
 				isDryRun: isDryRun,
@@ -119,7 +119,7 @@ func NewRetainAction(params interface{}, isDryRun bool) Performer {
 	}
 
 	return &retainAction{
-		all:      make([]*art.Candidate, 0),
+		all:      make([]*artifactselector.Candidate, 0),
 		isDryRun: isDryRun,
 	}
 }
