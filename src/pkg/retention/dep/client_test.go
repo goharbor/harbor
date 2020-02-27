@@ -16,7 +16,8 @@ package dep
 
 import (
 	modelsv2 "github.com/goharbor/harbor/src/api/artifact"
-	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
+	"github.com/goharbor/harbor/src/api/tag"
+	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"testing"
 
 	"github.com/goharbor/harbor/src/chartserver"
@@ -38,9 +39,9 @@ type fakeCoreClient struct {
 func (f *fakeCoreClient) ListAllArtifacts(project, repository string) ([]*modelsv2.Artifact, error) {
 	image := &modelsv2.Artifact{}
 	image.Digest = "sha256:123456"
-	image.Tags = []*modelsv2.Tag{
+	image.Tags = []*tag.Tag{
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				Name: "latest",
 			},
 		},

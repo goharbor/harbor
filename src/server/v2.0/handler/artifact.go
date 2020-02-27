@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/api/repository"
 	"github.com/goharbor/harbor/src/api/scan"
+	"github.com/goharbor/harbor/src/api/tag"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
@@ -232,7 +233,7 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-	tag := &artifact.Tag{}
+	tag := &tag.Tag{}
 	tag.RepositoryID = art.RepositoryID
 	tag.ArtifactID = art.ID
 	tag.Name = params.Tag.Name
@@ -340,7 +341,7 @@ func option(withTag, withImmutableStatus, withLabel, withSignature *bool) *artif
 	}
 
 	if option.WithTag {
-		option.TagOption = &artifact.TagOption{
+		option.TagOption = &tag.Option{
 			WithImmutableStatus: boolValue(withImmutableStatus),
 			WithSignature:       boolValue(withSignature),
 		}

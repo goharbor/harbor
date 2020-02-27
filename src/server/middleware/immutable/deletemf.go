@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/api/tag"
 	common_util "github.com/goharbor/harbor/src/common/utils"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
 	serror "github.com/goharbor/harbor/src/server/error"
@@ -40,7 +41,7 @@ func handleDelete(req *http.Request) error {
 
 	af, err := artifact.Ctl.GetByReference(req.Context(), art.Repository, art.Digest, &artifact.Option{
 		WithTag:   true,
-		TagOption: &artifact.TagOption{WithImmutableStatus: true},
+		TagOption: &tag.Option{WithImmutableStatus: true},
 	})
 	if err != nil {
 		if internal_errors.IsErr(err, internal_errors.NotFoundCode) {

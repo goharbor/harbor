@@ -18,8 +18,9 @@ import (
 	"encoding/json"
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/repository"
+	"github.com/goharbor/harbor/src/api/tag"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
+	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	arttesting "github.com/goharbor/harbor/src/testing/api/artifact"
 	repotesting "github.com/goharbor/harbor/src/testing/api/repository"
 	"github.com/stretchr/testify/suite"
@@ -64,15 +65,15 @@ func (c *tagTestSuite) TestListTag() {
 		RepositoryID: 1,
 		Name:         "library/hello-world",
 	}, nil)
-	c.artCtl.On("ListTags").Return([]*artifact.Tag{
+	c.artCtl.On("ListTags").Return([]*tag.Tag{
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v1",
 			},
 		},
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v2",
 			},
@@ -99,15 +100,15 @@ func (c *tagTestSuite) TestListTagPagination1() {
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
-	c.artCtl.On("ListTags").Return([]*artifact.Tag{
+	c.artCtl.On("ListTags").Return([]*tag.Tag{
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v1",
 			},
 		},
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v2",
 			},
@@ -135,15 +136,15 @@ func (c *tagTestSuite) TestListTagPagination2() {
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
-	c.artCtl.On("ListTags").Return([]*artifact.Tag{
+	c.artCtl.On("ListTags").Return([]*tag.Tag{
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v1",
 			},
 		},
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v2",
 			},
@@ -171,15 +172,15 @@ func (c *tagTestSuite) TestListTagPagination3() {
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
-	c.artCtl.On("ListTags").Return([]*artifact.Tag{
+	c.artCtl.On("ListTags").Return([]*tag.Tag{
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v1",
 			},
 		},
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v2",
 			},
