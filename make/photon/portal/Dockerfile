@@ -15,6 +15,7 @@ COPY ./api/v2.0/legacy_swagger.yaml /build_dir/swagger.yaml
 COPY ./api/v2.0/swagger.yaml /build_dir/swagger2.yaml
 
 RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger.yaml > swagger.json
+RUN python -c 'import sys, yaml, json; y=yaml.load(sys.stdin.read()); print json.dumps(y)' < swagger2.yaml > swagger2.json
 
 COPY ./LICENSE /build_dir
 COPY src/portal /build_dir
@@ -28,6 +29,7 @@ FROM goharbor/harbor-portal-base:${harbor_base_image_version}
 COPY --from=nodeportal /build_dir/dist /usr/share/nginx/html
 COPY --from=nodeportal /build_dir/swagger.yaml /usr/share/nginx/html
 COPY --from=nodeportal /build_dir/swagger.json /usr/share/nginx/html
+COPY --from=nodeportal /build_dir/swagger2.json /usr/share/nginx/html
 COPY --from=nodeportal /build_dir/LICENSE /usr/share/nginx/html
 
 COPY make/photon/portal/nginx.conf /etc/nginx/nginx.conf
