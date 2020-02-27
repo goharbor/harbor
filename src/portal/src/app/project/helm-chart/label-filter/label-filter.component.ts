@@ -4,8 +4,8 @@ import { fromEvent } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 import { HelmChartVersion } from '../helm-chart.interface.service';
 import { ResourceType } from '../../../shared/shared.const';
-import { Label, Tag } from "../../../../lib/services";
-import { Artifact } from '../../../../lib/components/artifact/artifact';
+import { Label } from "../../../../lib/services";
+import { Artifact } from "../../../../../ng-swagger-gen/models/artifact";
 
 @Component({
     selector: "hbr-chart-version-label-filter",

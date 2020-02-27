@@ -23,7 +23,6 @@ import (
 	"github.com/docker/distribution"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	pkg_registry "github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/replication/model"
 	trans "github.com/goharbor/harbor/src/replication/transfer"
 	"github.com/stretchr/testify/assert"
@@ -42,7 +41,7 @@ func (f *fakeRegistry) ManifestExist(repository, reference string) (bool, string
 	}
 	return false, "sha256:c6b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7", nil
 }
-func (f *fakeRegistry) PullManifest(repository, reference string, accepttedMediaTypes []string) (distribution.Manifest, string, error) {
+func (f *fakeRegistry) PullManifest(repository, reference string, accepttedMediaTypes ...string) (distribution.Manifest, string, error) {
 	manifest := `{
 		"schemaVersion": 2,
 		"mediaType": "application/vnd.docker.distribution.manifest.v2+json",
@@ -71,14 +70,14 @@ func (f *fakeRegistry) PullManifest(repository, reference string, accepttedMedia
 	}`
 	mediaType := schema2.MediaTypeManifest
 	payload := []byte(manifest)
-	mani, _, err := pkg_registry.UnMarshal(mediaType, payload)
+	mani, _, err := distribution.UnmarshalManifest(mediaType, payload)
 	if err != nil {
 		return nil, "", err
 	}
 	return mani, "sha256:c6b2b2c507a0944348e0303114d8d93aaaa081732b86451d9bce1f432a537bc7", nil
 }
-func (f *fakeRegistry) PushManifest(repository, reference, mediaType string, payload []byte) error {
-	return nil
+func (f *fakeRegistry) PushManifest(repository, reference, mediaType string, payload []byte) (string, error) {
+	return "", nil
 }
 func (f *fakeRegistry) DeleteManifest(repository, reference string) error {
 	return nil

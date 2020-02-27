@@ -4,12 +4,13 @@ import { SERVICE_CONFIG, IServiceConfig } from '../../../../entities/service.con
 import { EditQuotaQuotaInterface } from '../../../../services';
 import { HarborLibraryModule } from '../../../../harbor-library.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CURRENT_BASE_HREF } from "../../../../utils/utils";
 
 describe('EditProjectQuotasComponent', () => {
   let component: EditProjectQuotasComponent;
   let fixture: ComponentFixture<EditProjectQuotasComponent>;
   let config: IServiceConfig = {
-    quotaUrl: "/api/quotas/testing"
+    quotaUrl: CURRENT_BASE_HREF + "/quotas/testing"
   };
   const mockedEditQuota: EditQuotaQuotaInterface = {
     editQuota: "Edit Default Project Quotas",

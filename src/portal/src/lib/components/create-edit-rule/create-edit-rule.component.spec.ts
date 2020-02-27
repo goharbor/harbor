@@ -39,6 +39,7 @@ import {LabelService} from "../../services/label.service";
 import {LabelPieceComponent} from "../label-piece/label-piece.component";
 import { RouterTestingModule } from '@angular/router/testing';
 import { of } from "rxjs";
+import { CURRENT_BASE_HREF } from "../../utils/utils";
 
 describe("CreateEditRuleComponent (inline template)", () => {
   let mockRules: ReplicationRule[] = [
@@ -221,8 +222,8 @@ describe("CreateEditRuleComponent (inline template)", () => {
 
 
   let config: IServiceConfig = {
-    replicationBaseEndpoint: "/api/replication/testing",
-    targetBaseEndpoint: "/api/registries/testing"
+    replicationBaseEndpoint: CURRENT_BASE_HREF + "/replication/testing",
+    targetBaseEndpoint: CURRENT_BASE_HREF + "/registries/testing"
   };
 
   beforeEach(async(() => {

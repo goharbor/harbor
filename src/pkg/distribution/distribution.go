@@ -25,6 +25,8 @@ import (
 	_ "github.com/docker/distribution/manifest/schema2"
 	// manifestlist
 	_ "github.com/docker/distribution/manifest/manifestlist"
+	// oci schema
+	_ "github.com/docker/distribution/manifest/ocischema"
 	ref "github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/common/utils"
 )

@@ -5,7 +5,7 @@ import { SERVICE_CONFIG, IServiceConfig } from "../entities/service.config";
 import {
   buildHttpRequestOptions,
   HTTP_JSON_OPTIONS,
-  HTTP_GET_OPTIONS
+  HTTP_GET_OPTIONS, CURRENT_BASE_HREF
 } from "../utils/utils";
 import { RequestQueryParams } from "./RequestQueryParams";
 import { Tag, Manifest } from "./interface";
@@ -89,10 +89,10 @@ export class TagDefaultService extends TagService {
     super();
     this._baseUrl = this.config.repositoryBaseEndpoint
       ? this.config.repositoryBaseEndpoint
-      : "/api/repositories";
+      : CURRENT_BASE_HREF + "/repositories";
     this._labelUrl = this.config.labelEndpoint
       ? this.config.labelEndpoint
-      : "/api/labels";
+      : CURRENT_BASE_HREF + "/labels";
   }
 
   public newTag(
@@ -104,7 +104,7 @@ export class TagDefaultService extends TagService {
     if (!projectName || !repositoryName || !digest || !tagName) {
       return observableThrowError("Bad argument");
     }
-    let url: string = `/api/v2.0/projects/${projectName}/repositories/${repositoryName}/artifacts/${digest}/tags`;
+    let url: string = `${ CURRENT_BASE_HREF }/projects/${projectName}/repositories/${repositoryName}/artifacts/${digest}/tags`;
     return this.http
       .post(url, tagName, HTTP_JSON_OPTIONS)
       .pipe(map(response => response)
@@ -121,7 +121,7 @@ export class TagDefaultService extends TagService {
       return observableThrowError("Bad argument");
     }
 
-    let url: string = `/api/v2.0/projects/${projectName}/repositories/${repositoryName}/artifacts/${digest}/tags/${tagName}`;
+    let url: string = `${ CURRENT_BASE_HREF }/projects/${projectName}/repositories/${repositoryName}/artifacts/${digest}/tags/${tagName}`;
     return this.http
       .delete(url, HTTP_JSON_OPTIONS)
       .pipe(map(response => response)

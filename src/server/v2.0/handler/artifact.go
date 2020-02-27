@@ -27,11 +27,13 @@ import (
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/api/repository"
+	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/q"
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/artifact"
@@ -47,6 +49,7 @@ func newArtifactAPI() *artifactAPI {
 		artCtl:  artifact.Ctl,
 		proMgr:  project.Mgr,
 		repoCtl: repository.Ctl,
+		scanCtl: scan.DefaultController,
 	}
 }
 
@@ -55,6 +58,7 @@ type artifactAPI struct {
 	artCtl  artifact.Controller
 	proMgr  project.Manager
 	repoCtl repository.Controller
+	scanCtl scan.Controller
 }
 
 func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListArtifactsParams) middleware.Responder {
@@ -77,11 +81,7 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	if params.PageSize != nil {
 		query.PageSize = *(params.PageSize)
 	}
-	repository, err := a.repoCtl.GetByName(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName))
-	if err != nil {
-		return a.SendError(ctx, err)
-	}
-	query.Keywords["RepositoryID"] = repository.RepositoryID
+	query.Keywords["RepositoryName"] = fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
 
 	// set option
 	option := option(params.WithTag, params.WithImmutableStatus,
@@ -151,29 +151,54 @@ func (a *artifactAPI) CopyArtifact(ctx context.Context, params operation.CopyArt
 	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceArtifact); err != nil {
 		return a.SendError(ctx, err)
 	}
-	srcRepo, srcRef, err := parse(params.From)
+
+	srcRepo, ref, err := parse(params.From)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
+
 	srcPro, _ := utils.ParseRepository(srcRepo)
 	if err = a.RequireProjectAccess(ctx, srcPro, rbac.ActionRead, rbac.ResourceArtifact); err != nil {
 		return a.SendError(ctx, err)
 	}
-	srcArt, err := a.artCtl.GetByReference(ctx, srcRepo, srcRef, &artifact.Option{WithTag: true})
+
+	dstRepo := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
+	_, id, err := a.repoCtl.Ensure(ctx, dstRepo)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
-	_, id, err := a.repoCtl.Ensure(ctx, params.ProjectName+"/"+params.RepositoryName)
-	if err != nil {
-		return a.SendError(ctx, err)
-	}
-	id, err = a.artCtl.Copy(ctx, srcArt.ID, id)
+
+	id, err = a.artCtl.Copy(ctx, srcRepo, ref, dstRepo)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}
 	// TODO set location header
 	_ = id
 	return operation.NewCopyArtifactCreated()
+}
+
+func (a *artifactAPI) ScanArtifact(ctx context.Context, params operation.ScanArtifactParams) middleware.Responder {
+	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionCreate, rbac.ResourceScan); err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	repository := fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
+	artifact, err := a.artCtl.GetByReference(ctx, repository, params.Reference, nil)
+	if err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	art := &v1.Artifact{
+		NamespaceID: artifact.ProjectID,
+		Repository:  repository,
+		Digest:      artifact.Digest,
+		MimeType:    artifact.ManifestMediaType,
+	}
+	if err := a.scanCtl.Scan(art); err != nil {
+		return a.SendError(ctx, err)
+	}
+
+	return operation.NewScanArtifactAccepted()
 }
 
 // parse "repository:tag" or "repository@digest" into repository and reference parts

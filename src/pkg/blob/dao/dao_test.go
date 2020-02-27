@@ -173,7 +173,7 @@ func (suite *DaoTestSuite) TestFindBlobsShouldUnassociatedWithProject() {
 		artifact1 := suite.DigestString()
 		artifact2 := suite.DigestString()
 
-		sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?)`
+		sql := `INSERT INTO artifact ("type", media_type, manifest_media_type, digest, project_id, repository_id, repository_name) VALUES ('image', 'media_type', 'manifest_media_type', ?, ?, ?, 'library/hello-world')`
 		suite.ExecSQL(sql, artifact1, projectID, 10)
 		suite.ExecSQL(sql, artifact2, projectID, 10)
 

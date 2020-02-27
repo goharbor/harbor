@@ -1,0 +1,12 @@
+<ng-container *ngIf="hasCommonProperties()">
+    <h4 class="margin-bottom-075">{{'ARTIFACT.EXTRA_PROPERTIES' | translate}}</h4>
+    <clr-stack-view>
+        <clr-stack-block [clrSbExpanded] = "true">
+            <clr-stack-label>{{'ARTIFACT.EXTRA_PROPERTIES' | translate}}</clr-stack-label>
+            <clr-stack-block *ngFor="let item of commonProperties | keyvalue">
+                <clr-stack-label>{{item?.key}}</clr-stack-label>
+                <clr-stack-content>{{item?.value}}</clr-stack-content>
+            </clr-stack-block>
+        </clr-stack-block>
+    </clr-stack-view>
+</ng-container>

@@ -21,6 +21,7 @@ import (
 	"strconv"
 
 	"errors"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/validation"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
@@ -31,6 +32,9 @@ import (
 const (
 	defaultPageSize int64 = 500
 	maxPageSize     int64 = 500
+
+	// APIVersion is the current core api version
+	APIVersion = "v2.0"
 )
 
 // BaseAPI wraps common methods for controllers to host API

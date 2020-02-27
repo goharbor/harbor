@@ -17,6 +17,7 @@ import { Observable, forkJoin, of, throwError as observableThrowError } from "rx
 import { map, tap, publishReplay, refCount } from "rxjs/operators";
 import { HttpClient } from '@angular/common/http';
 import { CacheObservable } from "../utils/cache-util";
+import { CURRENT_BASE_HREF } from "../utils/utils";
 
 
 interface Permission {
@@ -53,7 +54,7 @@ export class UserPermissionDefaultService extends UserPermissionService {
 
     @CacheObservable({ maxAge: 1000 * 60 })
     private getPermissions(scope: string, relative?: boolean): Observable<Array<Permission>> {
-        const url = `/api/users/current/permissions?scope=${scope}&relative=${relative ? 'true' : 'false'}`;
+        const url = `${ CURRENT_BASE_HREF }/users/current/permissions?scope=${scope}&relative=${relative ? 'true' : 'false'}`;
         return this.http.get<Array<Permission>>(url);
     }
 

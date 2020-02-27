@@ -23,6 +23,7 @@ import (
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
@@ -209,7 +210,7 @@ func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	path := ctx.Request.URL.Path
 	if path != "/service/token" &&
 		!strings.HasPrefix(path, "/chartrepo/") &&
-		!strings.HasPrefix(path, "/api/chartrepo/") {
+		!strings.HasPrefix(path, fmt.Sprintf("/api/%s/chartrepo/", api.APIVersion)) {
 		log.Debug("OIDC CLI modifier only handles request by docker CLI or helm CLI")
 		return false
 	}

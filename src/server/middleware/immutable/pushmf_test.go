@@ -36,11 +36,11 @@ func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, n
 	url := fmt.Sprintf("/v2/%s/manifests/%s", repository, tag)
 	req, _ := http.NewRequest("PUT", url, nil)
 
-	mfInfo := &middleware.ManifestInfo{
-		ProjectID:  projectID,
-		Repository: repository,
-		Tag:        tag,
-		Digest:     dgt,
+	afInfo := &middleware.ArtifactInfo{
+		ProjectName: projectName,
+		Repository:  repository,
+		Tag:         tag,
+		Digest:      dgt,
 	}
 	rr := httptest.NewRecorder()
 
@@ -53,7 +53,7 @@ func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, n
 		}
 	}
 	*req = *(req.WithContext(internal_orm.NewContext(context.TODO(), dao.GetOrmer())))
-	*req = *(req.WithContext(middleware.NewManifestInfoContext(req.Context(), mfInfo)))
+	*req = *(req.WithContext(context.WithValue(req.Context(), middleware.ArtifactInfoKey, afInfo)))
 	h := MiddlewarePush()(n)
 	h.ServeHTTP(util.NewCustomResponseWriter(rr), req)
 
@@ -66,11 +66,11 @@ func doDeleteManifestRequest(projectID int64, projectName, name, tag, dgt string
 	url := fmt.Sprintf("/v2/%s/manifests/%s", repository, tag)
 	req, _ := http.NewRequest("DELETE", url, nil)
 
-	mfInfo := &middleware.ManifestInfo{
-		ProjectID:  projectID,
-		Repository: repository,
-		Tag:        tag,
-		Digest:     dgt,
+	afInfo := &middleware.ArtifactInfo{
+		ProjectName: projectName,
+		Repository:  repository,
+		Tag:         tag,
+		Digest:      dgt,
 	}
 	rr := httptest.NewRecorder()
 
@@ -83,7 +83,7 @@ func doDeleteManifestRequest(projectID int64, projectName, name, tag, dgt string
 		}
 	}
 	*req = *(req.WithContext(internal_orm.NewContext(context.TODO(), dao.GetOrmer())))
-	*req = *(req.WithContext(middleware.NewManifestInfoContext(req.Context(), mfInfo)))
+	*req = *(req.WithContext(context.WithValue(req.Context(), middleware.ArtifactInfoKey, afInfo)))
 	h := MiddlewareDelete()(n)
 	h.ServeHTTP(util.NewCustomResponseWriter(rr), req)
 
@@ -110,15 +110,16 @@ func (suite *HandlerSuite) addProject(projectName string) int64 {
 	return projectID
 }
 
-func (suite *HandlerSuite) addArt(ctx context.Context, pid, repositoryID int64, dgt string) int64 {
+func (suite *HandlerSuite) addArt(ctx context.Context, pid, repositoryID int64, repositoryName, dgt string) int64 {
 	af := &artifact.Artifact{
-		Type:         "Docker-Image",
-		ProjectID:    pid,
-		RepositoryID: repositoryID,
-		Digest:       dgt,
-		Size:         1024,
-		PushTime:     time.Now(),
-		PullTime:     time.Now(),
+		Type:           "Docker-Image",
+		ProjectID:      pid,
+		RepositoryID:   repositoryID,
+		RepositoryName: repositoryName,
+		Digest:         dgt,
+		Size:           1024,
+		PushTime:       time.Now(),
+		PullTime:       time.Now(),
 	}
 	afid, err := artifact.Mgr.Create(ctx, af)
 	suite.Nil(err, fmt.Sprintf("Add artifact failed for %d", repositoryID))
@@ -185,7 +186,7 @@ func (suite *HandlerSuite) TestPutDeleteManifestCreated() {
 	projectID := suite.addProject(projectName)
 	immuRuleID := suite.addImmutableRule(projectID)
 	repoID := suite.addRepo(ctx, projectID, repoName)
-	afID := suite.addArt(ctx, projectID, repoID, dgt)
+	afID := suite.addArt(ctx, projectID, repoID, repoName, dgt)
 	tagID := suite.addTags(ctx, repoID, afID, "release-1.10")
 
 	defer func() {

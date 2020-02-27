@@ -88,8 +88,9 @@ func (r *Route) Handler(handler http.Handler) {
 		middleware.WithMiddlewares(handler, middlewares...).
 			ServeHTTP(ctx.ResponseWriter, ctx.Request)
 	})
+
 	if len(methods) == 0 {
-		beego.Any(r.path, filterFunc)
+		beego.Any(path, filterFunc)
 		return
 	}
 	for _, method := range methods {

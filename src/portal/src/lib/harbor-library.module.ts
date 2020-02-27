@@ -12,8 +12,6 @@ import {
   ReplicationDefaultService,
   QuotaService,
   QuotaDefaultService,
-  RepositoryService,
-  RepositoryDefaultService,
   TagService,
   TagDefaultService,
   ScanningResultService,
@@ -30,8 +28,6 @@ import {
   RetagDefaultService,
   UserPermissionService,
   UserPermissionDefaultService,
-  ArtifactDefaultService,
-  ArtifactService
 } from './services';
 import { GcRepoService } from './components/config/gc/gc.service';
 import { ScanAllRepoService } from './components/config/vulnerability/scanAll.service';
@@ -42,7 +38,7 @@ import {
   ErrorHandler,
   DefaultErrorHandler
 } from './utils/error-handler';
-import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG } from './utils/utils';
+import { DEFAULT_LANG_COOKIE_KEY, DEFAULT_SUPPORTING_LANGS, DEFAULT_LANG, CURRENT_BASE_HREF } from './utils/utils';
 import { OperationService } from './components/operation/operation.service';
 import { GcHistoryComponent } from "./components/config/gc/gc-history/gc-history.component";
 import { GcComponent } from "./components/config/gc/gc.component";
@@ -61,7 +57,6 @@ import { CronScheduleComponent, CronTooltipComponent } from "./components/cron-s
 import { DateValidatorDirective } from "./components/datetime-picker/date-validator.directive";
 import { DatePickerComponent } from "./components/datetime-picker/datetime-picker.component";
 import { EndpointComponent } from "./components/endpoint/endpoint.component";
-import { GridViewComponent } from "./components/gridview/grid-view.component";
 import { ImageNameInputComponent } from "./components/image-name-input/image-name-input.component";
 import { InlineAlertComponent } from "./components/inline-alert/inline-alert.component";
 import { LabelSignPostComponent } from "./components/label/label-signpost/label-signpost.component";
@@ -74,46 +69,27 @@ import { CopyInputComponent } from "./components/push-image/copy-input.component
 import { PushImageButtonComponent } from "./components/push-image/push-image.component";
 import { ReplicationTasksComponent } from "./components/replication/replication-tasks/replication-tasks.component";
 import { ReplicationComponent } from "./components/replication/replication.component";
-import { ArtifactListComponent } from "./components/artifact-list/artifact-list.component";
-import { RepositoryGridviewComponent } from "./components/repository-gridview/repository-gridview.component";
-import { ArtifactListTabComponent } from "./components/artifact/artifact-list-tab.component";
-import { ArtifactCommonPropertiesComponent } from './components/artifact/artifact-common-properties/artifact-common-properties.component';
-import { ArtifactTagComponent } from './components/artifact/artifact-tag/artifact-tag.component';
-import { ArtifactAdditionsComponent } from './components/artifact/artifact-additions/artifact-additions.component';
-import { HistogramChartComponent } from "./components/vulnerability-scanning/histogram-chart/histogram-chart.component";
-import { ResultTipHistogramComponent } from "./components/vulnerability-scanning/result-tip-histogram/result-tip-histogram.component";
-import { ResultBarChartComponent } from "./components/vulnerability-scanning/result-bar-chart.component";
-import { ResultGridComponent } from "./components/vulnerability-scanning/result-grid.component";
-import { ResultTipComponent } from "./components/vulnerability-scanning/result-tip.component";
 import { FilterComponent } from "./components/filter/filter.component";
 import { ListReplicationRuleComponent } from "./components/list-replication-rule/list-replication-rule.component";
 import { ChannelService } from "./services/channel.service";
 import { SharedModule } from "./utils/shared/shared.module";
 import { TranslateServiceInitializer } from "./i18n";
-import { BuildHistoryComponent } from "./components/artifact/artifact-additions/build-history/build-history.component";
-import { DependenciesComponent } from "./components/artifact/artifact-additions/dependencies/dependencies.component";
-import { SummaryComponent } from "./components/artifact/artifact-additions/summary/summary.component";
-import { ValuesComponent } from "./components/artifact/artifact-additions/values/values.component";
-import {
-  ArtifactVulnerabilitiesComponent
-} from "./components/artifact/artifact-additions/artifact-vulnerabilities/artifact-vulnerabilities.component";
-import { ArtifactSummaryComponent } from "./components/artifact/artifact-summary.component";
 
 /**
  * Declare default service configuration; all the endpoints will be defined in
  * this default configuration.
  */
 export const DefaultServiceConfig: IServiceConfig = {
-  baseEndpoint: "/api",
-  systemInfoEndpoint: "/api/systeminfo",
-  repositoryBaseEndpoint: "/api/repositories",
-  logBaseEndpoint: "/api/logs",
-  targetBaseEndpoint: "/api/registries",
-  replicationBaseEndpoint: "/api/replication",
-  replicationRuleEndpoint: "/api/replication/policies",
-  vulnerabilityScanningBaseEndpoint: "/api/repositories",
-  projectPolicyEndpoint: "/api/projects/configs",
-  projectBaseEndpoint: "/api/projects",
+  baseEndpoint: CURRENT_BASE_HREF,
+  systemInfoEndpoint: CURRENT_BASE_HREF + "/systeminfo",
+  repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories",
+  logBaseEndpoint: CURRENT_BASE_HREF + "/logs",
+  targetBaseEndpoint: CURRENT_BASE_HREF + "/registries",
+  replicationBaseEndpoint: CURRENT_BASE_HREF + "/replication",
+  replicationRuleEndpoint: CURRENT_BASE_HREF + "/replication/policies",
+  vulnerabilityScanningBaseEndpoint: CURRENT_BASE_HREF + "/repositories",
+  projectPolicyEndpoint: CURRENT_BASE_HREF + "/projects/configs",
+  projectBaseEndpoint: CURRENT_BASE_HREF + "/projects",
   enablei18Support: false,
   langCookieKey: DEFAULT_LANG_COOKIE_KEY,
   supportedLangs: DEFAULT_SUPPORTING_LANGS,
@@ -122,13 +98,13 @@ export const DefaultServiceConfig: IServiceConfig = {
   langMessagePathForHttpLoader: "i18n/langs/",
   langMessageFileSuffixForHttpLoader: "-lang.json",
   localI18nMessageVariableMap: {},
-  configurationEndpoint: "/api/configurations",
-  scanJobEndpoint: "/api/jobs/scan",
-  labelEndpoint: "/api/labels",
-  helmChartEndpoint: "/api/chartrepo",
+  configurationEndpoint: CURRENT_BASE_HREF + "/configurations",
+  scanJobEndpoint: CURRENT_BASE_HREF + "/jobs/scan",
+  labelEndpoint: CURRENT_BASE_HREF + "/labels",
+  helmChartEndpoint: CURRENT_BASE_HREF + "/chartrepo",
   downloadChartEndpoint: "/chartrepo",
-  gcEndpoint: "/api/system/gc",
-  ScanAllEndpoint: "/api/system/scanAll"
+  gcEndpoint: CURRENT_BASE_HREF + "/system/gc",
+  ScanAllEndpoint: CURRENT_BASE_HREF + "/system/scanAll"
 };
 
 /**
@@ -239,7 +215,6 @@ export interface HarborModuleConfig {
       DatePickerComponent,
       EndpointComponent,
       FilterComponent,
-      GridViewComponent,
       ImageNameInputComponent,
       InlineAlertComponent,
       LabelSignPostComponent,
@@ -253,23 +228,6 @@ export interface HarborModuleConfig {
       PushImageButtonComponent,
       ReplicationTasksComponent,
       ReplicationComponent,
-      ArtifactListComponent,
-      RepositoryGridviewComponent,
-      ArtifactListTabComponent,
-      ArtifactSummaryComponent,
-      ArtifactCommonPropertiesComponent,
-      ArtifactTagComponent,
-      ArtifactAdditionsComponent,
-      BuildHistoryComponent,
-      HistogramChartComponent,
-      ResultTipHistogramComponent,
-      ResultBarChartComponent,
-      ResultGridComponent,
-      ResultTipComponent,
-      DependenciesComponent,
-      SummaryComponent,
-      ValuesComponent,
-      ArtifactVulnerabilitiesComponent
   ],
   exports: [
       SharedModule,
@@ -292,7 +250,6 @@ export interface HarborModuleConfig {
       DatePickerComponent,
       EndpointComponent,
       FilterComponent,
-      GridViewComponent,
       ImageNameInputComponent,
       InlineAlertComponent,
       LabelSignPostComponent,
@@ -306,23 +263,6 @@ export interface HarborModuleConfig {
       PushImageButtonComponent,
       ReplicationTasksComponent,
       ReplicationComponent,
-      ArtifactListComponent,
-      RepositoryGridviewComponent,
-      ArtifactListTabComponent,
-      ArtifactSummaryComponent,
-      ArtifactCommonPropertiesComponent,
-      ArtifactTagComponent,
-      ArtifactAdditionsComponent,
-      BuildHistoryComponent,
-      HistogramChartComponent,
-      ResultTipHistogramComponent,
-      ResultBarChartComponent,
-      ResultGridComponent,
-      ResultTipComponent,
-      DependenciesComponent,
-      SummaryComponent,
-      ValuesComponent,
-      ArtifactVulnerabilitiesComponent
   ],
   providers: []
 })
@@ -339,7 +279,6 @@ export class HarborLibraryModule {
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
         config.QuotaService || { provide: QuotaService, useClass: QuotaDefaultService },
-        config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
         config.tagService || { provide: TagService, useClass: TagDefaultService },
         config.retagService || { provide: RetagService, useClass: RetagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
@@ -348,7 +287,6 @@ export class HarborLibraryModule {
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
         config.labelService || { provide: LabelService, useClass: LabelDefaultService },
         config.userPermissionService || { provide: UserPermissionService, useClass: UserPermissionDefaultService },
-        config.artifactService || { provide: ArtifactService, useClass: ArtifactDefaultService },
         config.gcApiRepository || {provide: GcApiRepository, useClass: GcApiDefaultRepository},
         config.ScanApiRepository || {provide: ScanApiRepository, useClass: ScanApiDefaultRepository},
           // Do initializing
@@ -379,7 +317,6 @@ export class HarborLibraryModule {
         config.endpointService || { provide: EndpointService, useClass: EndpointDefaultService },
         config.replicationService || { provide: ReplicationService, useClass: ReplicationDefaultService },
         config.QuotaService || { provide: QuotaService, useClass: QuotaDefaultService },
-        config.repositoryService || { provide: RepositoryService, useClass: RepositoryDefaultService },
         config.tagService || { provide: TagService, useClass: TagDefaultService },
         config.retagService || { provide: RetagService, useClass: RetagDefaultService },
         config.scanningService || { provide: ScanningResultService, useClass: ScanningResultDefaultService },
@@ -388,7 +325,6 @@ export class HarborLibraryModule {
         config.projectPolicyService || { provide: ProjectService, useClass: ProjectDefaultService },
         config.labelService || { provide: LabelService, useClass: LabelDefaultService },
         config.userPermissionService || { provide: UserPermissionService, useClass: UserPermissionDefaultService },
-        config.artifactService || { provide: ArtifactService, useClass: ArtifactDefaultService },
         config.gcApiRepository || {provide: GcApiRepository, useClass: GcApiDefaultRepository},
         config.ScanApiRepository || {provide: ScanApiRepository, useClass: ScanApiDefaultRepository},
         ChannelService,

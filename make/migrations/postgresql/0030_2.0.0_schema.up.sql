@@ -1,3 +1,4 @@
+ALTER TABLE admin_job ADD COLUMN job_parameters varchar(255) Default '';
 ALTER TABLE artifact ADD COLUMN repository_id int;
 ALTER TABLE artifact ADD COLUMN media_type varchar(255);
 ALTER TABLE artifact ADD COLUMN manifest_media_type varchar(255);
@@ -54,9 +55,6 @@ JOIN (
 WHERE ordered_art.seq=1;
 
 ALTER TABLE artifact DROP COLUMN tag;
-
-/*TODO: remove this after insert the repository_name when create artifact*/
-ALTER TABLE artifact ALTER COLUMN repository_name DROP NOT NULL;
 
 /*remove the duplicate artifact rows*/
 DELETE FROM artifact

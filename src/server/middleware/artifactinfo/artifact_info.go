@@ -33,6 +33,7 @@ const (
 	blobFromQuery   = "from"
 	blobMountDigest = "blob_mount_digest"
 	blobMountRepo   = "blob_mount_repo"
+	tag             = "tag"
 )
 
 var (
@@ -70,7 +71,9 @@ func Middleware() func(http.Handler) http.Handler {
 			if ref, ok := m[middleware.ReferenceSubexp]; ok {
 				art.Reference = ref
 			}
-
+			if t, ok := m[tag]; ok {
+				art.Tag = t
+			}
 			if bmr, ok := m[blobMountRepo]; ok {
 				// Fail early for now, though in docker registry an invalid may return 202
 				// it's not clear in OCI spec how to handle invalid from parm
@@ -118,6 +121,8 @@ func parse(url *url.URL) (map[string]string, bool) {
 	}
 	if digest.DigestRegexp.MatchString(m[middleware.ReferenceSubexp]) {
 		m[middleware.DigestSubexp] = m[middleware.ReferenceSubexp]
+	} else if ref, ok := m[middleware.ReferenceSubexp]; ok {
+		m[tag] = ref
 	}
 	return m, match
 }

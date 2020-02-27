@@ -12,6 +12,7 @@ import { delay } from 'rxjs/operators';
 import {APP_BASE_HREF} from '@angular/common';
 import { HarborLibraryModule } from '../../../harbor-library.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
+import { CURRENT_BASE_HREF } from "../../../utils/utils";
 describe('ProjectQuotasComponent', () => {
   let spy: jasmine.Spy;
   let spyUpdate: jasmine.Spy;
@@ -22,7 +23,7 @@ describe('ProjectQuotasComponent', () => {
   let fixture: ComponentFixture<ProjectQuotasComponent>;
 
   let config: IServiceConfig = {
-    quotaUrl: "/api/quotas/testing"
+    quotaUrl: CURRENT_BASE_HREF + "/quotas/testing"
   };
   let mockQuotaList: Quota[] = [{
     id: 1111,

@@ -6,6 +6,17 @@ import { DebugElement } from '@angular/core';
 import { Comparator, State, HttpOptionInterface, HttpOptionTextInterface, QuotaUnitInterface } from '../services/interface';
 import { QuotaUnits, StorageMultipleConstant, LimitCount } from '../entities/shared.const';
 import { AbstractControl } from "@angular/forms";
+/**
+ * Api levels
+ */
+enum APILevels {
+    V1 = '',
+    V2 = '/v2.0'
+}
+/**
+ * Current base href
+ */
+export const CURRENT_BASE_HREF = '/api' + APILevels.V2;
 
 /**
  * Convert the different async channels to the Promise<T> type.

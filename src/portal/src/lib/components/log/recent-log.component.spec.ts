@@ -9,7 +9,7 @@ import { ErrorHandler } from '../../utils/error-handler';
 import { SharedModule } from '../../utils/shared/shared.module';
 import { FilterComponent } from '../filter/filter.component';
 
-import { click } from '../../utils/utils';
+import { click, CURRENT_BASE_HREF } from '../../utils/utils';
 import { of } from 'rxjs';
 import { delay } from 'rxjs/operators';
 
@@ -33,7 +33,7 @@ describe('RecentLogComponent (inline template)', () => {
     data: []
   };
   let testConfig: IServiceConfig = {
-    logBaseEndpoint: "/api/logs/testing"
+    logBaseEndpoint: CURRENT_BASE_HREF + "/logs/testing"
   };
 
   beforeEach(async(() => {
@@ -96,7 +96,7 @@ describe('RecentLogComponent (inline template)', () => {
 
   it('should inject the SERVICE_CONFIG', () => {
     expect(serviceConfig).toBeTruthy();
-    expect(serviceConfig.logBaseEndpoint).toEqual("/api/logs/testing");
+    expect(serviceConfig.logBaseEndpoint).toEqual(CURRENT_BASE_HREF + "/logs/testing");
   });
 
   it('should get data from AccessLogService', async(() => {

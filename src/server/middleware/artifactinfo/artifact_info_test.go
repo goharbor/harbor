@@ -137,6 +137,7 @@ func TestPopulateArtifactInfo(t *testing.T) {
 				Repository:  "library/hello-world",
 				Reference:   "latest",
 				ProjectName: "library",
+				Tag:         "latest",
 			},
 		},
 		{
@@ -176,7 +177,7 @@ func TestPopulateArtifactInfo(t *testing.T) {
 		if tt.art != nil {
 			a, ok := middleware.ArtifactInfoFromContext(next.ctx)
 			assert.True(t, ok)
-			assert.Equal(t, *tt.art, *a)
+			assert.Equal(t, *tt.art, a)
 		}
 	}
 }

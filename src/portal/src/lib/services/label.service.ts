@@ -6,7 +6,7 @@ import { RequestQueryParams } from "./RequestQueryParams";
 import { Label } from "./interface";
 
 import { IServiceConfig, SERVICE_CONFIG } from "../entities/service.config";
-import { buildHttpRequestOptions, HTTP_JSON_OPTIONS } from "../utils/utils";
+import { buildHttpRequestOptions, CURRENT_BASE_HREF, HTTP_JSON_OPTIONS } from "../utils/utils";
 import { Observable, throwError as observableThrowError } from "rxjs";
 
 export abstract class LabelService {
@@ -78,8 +78,8 @@ export class LabelDefaultService extends LabelService {
     private http: HttpClient
   ) {
     super();
-    this.labelUrl = config.labelEndpoint ? config.labelEndpoint : "/api/labels";
-    this.chartUrl =  config.helmChartEndpoint ? config.helmChartEndpoint : "/api/chartrepo";
+    this.labelUrl = config.labelEndpoint ? config.labelEndpoint : CURRENT_BASE_HREF + "/labels";
+    this.chartUrl =  config.helmChartEndpoint ? config.helmChartEndpoint : CURRENT_BASE_HREF + "/chartrepo";
   }
 
 

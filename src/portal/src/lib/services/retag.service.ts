@@ -2,7 +2,7 @@ import { Observable } from "rxjs";
 import { HttpClient } from "@angular/common/http";
 import { Injectable, Inject } from "@angular/core";
 import { RetagRequest } from "./interface";
-import { HTTP_JSON_OPTIONS } from "../utils/utils";
+import { CURRENT_BASE_HREF, HTTP_JSON_OPTIONS } from "../utils/utils";
 import { catchError } from "rxjs/operators";
 import { throwError as observableThrowError } from "rxjs/index";
 import { IServiceConfig, SERVICE_CONFIG } from "../entities/service.config";
@@ -44,7 +44,7 @@ export class RetagDefaultService extends RetagService {
     }
 
     retag(request: RetagRequest): Observable<any> {
-        let baseUrl: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : '/api/repositories';
+        let baseUrl: string = this.config.repositoryBaseEndpoint ? this.config.repositoryBaseEndpoint : CURRENT_BASE_HREF + '/repositories';
         return this.http
             .post(`${baseUrl}/${request.targetProject}/${request.targetRepo}/tags`,
                 {

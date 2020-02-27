@@ -16,7 +16,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
-	"sync"
 )
 
 type contextKey string
@@ -30,8 +29,6 @@ const (
 	DigestSubexp = "digest"
 	// ArtifactInfoKey the context key for artifact info
 	ArtifactInfoKey = contextKey("artifactInfo")
-	// manifestInfoKey the context key for manifest info
-	manifestInfoKey = contextKey("ManifestInfo")
 	// ScannerPullCtxKey the context key for robot account to bypass the pull policy check.
 	ScannerPullCtxKey = contextKey("ScannerPullCheck")
 )
@@ -49,60 +46,44 @@ var (
 	V2CatalogURLRe = regexp.MustCompile(`^/v2/_catalog$`)
 )
 
-// ManifestInfo ...
-type ManifestInfo struct {
-	ProjectID   int64
-	ProjectName string
-	Repository  string
-	Tag         string
-	Digest      string
-
-	manifestExist     bool
-	manifestExistErr  error
-	manifestExistOnce sync.Once
-}
-
-// ManifestExists ...
-func (info *ManifestInfo) ManifestExists(ctx context.Context) (bool, error) {
-	info.manifestExistOnce.Do(func() {
-		af, err := artifact.Ctl.GetByReference(ctx, info.Repository, info.Tag, nil)
-		if err != nil {
-			info.manifestExistErr = err
-			return
-		}
-		info.manifestExist = true
-		info.Digest = af.Digest
-	})
-
-	return info.manifestExist, info.manifestExistErr
-}
-
 // ArtifactInfo ...
 type ArtifactInfo struct {
 	Repository           string
 	Reference            string
 	ProjectName          string
 	Digest               string
+	Tag                  string
 	BlobMountRepository  string
 	BlobMountProjectName string
 	BlobMountDigest      string
 }
 
-// ArtifactInfoFromContext returns the artifact info from context
-func ArtifactInfoFromContext(ctx context.Context) (*ArtifactInfo, bool) {
+// ArtifactInfoFromContext returns the artifact info from context, the returned value is a copied value, so updating
+// the attributes of returned artifactInfo will not update the one in context.
+func ArtifactInfoFromContext(ctx context.Context) (ArtifactInfo, bool) {
 	info, ok := ctx.Value(ArtifactInfoKey).(*ArtifactInfo)
-	return info, ok
+	var res ArtifactInfo
+	if ok {
+		res = *info
+	}
+	return res, ok
 }
 
-// NewManifestInfoContext returns context with manifest info
-func NewManifestInfoContext(ctx context.Context, info *ManifestInfo) context.Context {
-	return context.WithValue(ctx, manifestInfoKey, info)
-}
-
-// ManifestInfoFromContext returns manifest info from context
-func ManifestInfoFromContext(ctx context.Context) (*ManifestInfo, bool) {
-	info, ok := ctx.Value(manifestInfoKey).(*ManifestInfo)
-	return info, ok
+// EnsureArtifactDigest get artifactInfo from context and set the digest for artifact that has project name repository and reference
+func EnsureArtifactDigest(ctx context.Context) error {
+	info, ok := ctx.Value(ArtifactInfoKey).(*ArtifactInfo)
+	if !ok {
+		return fmt.Errorf("no artifact info in context")
+	}
+	if len(info.Digest) > 0 {
+		return nil
+	}
+	af, err := artifact.Ctl.GetByReference(ctx, info.Repository, info.Reference, nil)
+	if err != nil || af == nil {
+		return fmt.Errorf("failed to get artifact for populating digest, error: %v", err)
+	}
+	info.Digest = af.Digest
+	return nil
 }
 
 // NewScannerPullContext returns context with policy check info

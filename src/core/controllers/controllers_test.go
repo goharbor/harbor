@@ -30,7 +30,6 @@ import (
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
-	"github.com/goharbor/harbor/src/core/middlewares"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -101,8 +100,6 @@ func TestRedirectForOIDC(t *testing.T) {
 func TestAll(t *testing.T) {
 	config.InitWithSettings(utilstest.GetUnitTestConfig())
 	assert := assert.New(t)
-	err := middlewares.Init()
-	assert.Nil(err)
 
 	r, _ := http.NewRequest("POST", "/c/login", nil)
 	w := httptest.NewRecorder()

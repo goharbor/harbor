@@ -3,6 +3,7 @@ import os
 import sys
 
 sys.path.insert(0, os.environ["SWAGGER_CLIENT_PATH"])
+import v2_swagger_client
 from swagger_client.rest import ApiException
 import swagger_client.models
 from pprint import pprint
@@ -27,6 +28,19 @@ def GetProductApi(username, password, harbor_server= os.environ["HARBOR_HOST"]):
     api_client = swagger_client.ApiClient(cfg)
     api_instance = swagger_client.ProductsApi(api_client)
     return api_instance
+
+def GetRepositoryApi(username, password, harbor_server= os.environ["HARBOR_HOST"]):
+
+    cfg = v2_swagger_client.Configuration()
+    cfg.host = "https://"+harbor_server+"/api/v2.0"
+    cfg.username = username
+    cfg.password = password
+    cfg.verify_ssl = False
+    cfg.debug = True
+    api_client = v2_swagger_client.ApiClient(cfg)
+    api_instance = v2_swagger_client.RepositoryApi(api_client)
+    return api_instance
+
 class TestResult(object):
     def __init__(self):
         self.num_errors = 0

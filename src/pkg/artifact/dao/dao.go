@@ -32,8 +32,8 @@ type DAO interface {
 	List(ctx context.Context, query *q.Query) (artifacts []*Artifact, err error)
 	// Get the artifact specified by ID
 	Get(ctx context.Context, id int64) (*Artifact, error)
-	// GetByDigest returns the artifact specified by repository ID and digest
-	GetByDigest(ctx context.Context, repositoryID int64, digest string) (artifact *Artifact, err error)
+	// GetByDigest returns the artifact specified by repository and digest
+	GetByDigest(ctx context.Context, repository, digest string) (artifact *Artifact, err error)
 	// Create the artifact
 	Create(ctx context.Context, artifact *Artifact) (id int64, err error)
 	// Delete the artifact specified by ID
@@ -118,11 +118,11 @@ func (d *dao) Get(ctx context.Context, id int64) (*Artifact, error) {
 	return artifact, nil
 }
 
-func (d *dao) GetByDigest(ctx context.Context, repositoryID int64, digest string) (*Artifact, error) {
+func (d *dao) GetByDigest(ctx context.Context, repository, digest string) (*Artifact, error) {
 	qs, err := orm.QuerySetter(ctx, &Artifact{}, &q.Query{
 		Keywords: map[string]interface{}{
-			"RepositoryID": repositoryID,
-			"Digest":       digest,
+			"RepositoryName": repository,
+			"Digest":         digest,
 		},
 	})
 	if err != nil {
@@ -134,7 +134,7 @@ func (d *dao) GetByDigest(ctx context.Context, repositoryID int64, digest string
 	}
 	if len(artifacts) == 0 {
 		return nil, ierror.New(nil).WithCode(ierror.NotFoundCode).
-			WithMessage("artifact %s under the repository %d not found", digest, repositoryID)
+			WithMessage("artifact %s@%s not found", repository, digest)
 	}
 	return artifacts[0], nil
 }

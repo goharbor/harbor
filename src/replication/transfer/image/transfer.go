@@ -16,12 +16,10 @@ package image
 
 import (
 	"errors"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"strings"
 
-	"github.com/docker/distribution/manifest/manifestlist"
-
 	"github.com/docker/distribution"
-	"github.com/docker/distribution/manifest/schema1"
 	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/replication/adapter"
@@ -207,7 +205,7 @@ func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo
 	switch content.MediaType {
 	// when the media type of pulled manifest is manifest list,
 	// the contents it contains are a few manifests
-	case schema2.MediaTypeManifest:
+	case v1.MediaTypeImageManifest, schema2.MediaTypeManifest:
 		// as using digest as the reference, so set the override to true directly
 		return t.copyImage(srcRepo, digest, dstRepo, digest, true)
 	// handle foreign layer
@@ -258,13 +256,7 @@ func (t *transfer) pullManifest(repository, reference string) (
 		return nil, "", nil
 	}
 	t.logger.Infof("pulling the manifest of image %s:%s ...", repository, reference)
-	// TODO add OCI media types
-	manifest, digest, err := t.src.PullManifest(repository, reference, []string{
-		schema1.MediaTypeManifest,
-		schema1.MediaTypeSignedManifest,
-		schema2.MediaTypeManifest,
-		manifestlist.MediaTypeManifestList,
-	})
+	manifest, digest, err := t.src.PullManifest(repository, reference)
 	if err != nil {
 		t.logger.Errorf("failed to pull the manifest of image %s:%s: %v", repository, reference, err)
 		return nil, "", err
@@ -295,7 +287,7 @@ func (t *transfer) pushManifest(manifest distribution.Manifest, repository, tag 
 			repository, tag, err)
 		return err
 	}
-	if err := t.dst.PushManifest(repository, tag, mediaType, payload); err != nil {
+	if _, err := t.dst.PushManifest(repository, tag, mediaType, payload); err != nil {
 		t.logger.Errorf("failed to push manifest of image %s:%s: %v",
 			repository, tag, err)
 		return err

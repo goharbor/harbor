@@ -13,40 +13,26 @@
 // limitations under the License.
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
 import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
 import { AuthCheckGuard } from './shared/route/auth-user-activate.service';
 import { SignInGuard } from './shared/route/sign-in-guard-activate.service';
 import { MemberGuard } from './shared/route/member-guard-activate.service';
-import { ArtifactGuard } from './shared/route/artifact-guard-activate.service';
 import { MemberPermissionGuard } from './shared/route/member-permission-guard-activate.service';
 import { OidcGuard } from './shared/route/oidc-guard-active.service';
-
 import { PageNotFoundComponent } from './shared/not-found/not-found.component';
 import { HarborShellComponent } from './base/harbor-shell/harbor-shell.component';
 import { ConfigurationComponent } from './config/config.component';
 import { DevCenterComponent } from './dev-center/dev-center.component';
 import { GcPageComponent } from './gc-page/gc-page.component';
-import { VulnerabilityPageComponent } from './vulnerability-page/vulnerability-page.component';
-
 import { UserComponent } from './user/user.component';
 import { SignInComponent } from './sign-in/sign-in.component';
 import { ResetPasswordComponent } from './account/password-setting/reset-password/reset-password.component';
 import { GroupComponent } from './group/group.component';
-
 import { TotalReplicationPageComponent } from './replication/total-replication/total-replication-page.component';
 import { ReplicationTasksPageComponent } from './replication/replication-tasks-page/replication-tasks-page.component';
-
 import { DestinationPageComponent } from './replication/destination/destination-page.component';
-
 import { AuditLogComponent } from './log/audit-log.component';
 import { LogPageComponent } from './log/log-page.component';
-
-import { RepositoryPageComponent } from './repository/repository-page.component';
-import { ArtifactListPageComponent } from './repository/artifact-list-page/artifact-list-page.component';
-import { ArtifactSummaryPageComponent } from './repository/artifact-summary-page/artifact-summary-page.component';
-import { LeavingRepositoryRouteDeactivate } from './shared/route/leaving-repository-deactivate.service';
-
 import { ProjectComponent } from './project/project.component';
 import { ProjectDetailComponent } from './project/project-detail/project-detail.component';
 import { MemberComponent } from './project/member/member.component';
@@ -61,7 +47,6 @@ import { HelmChartDetailComponent } from './project/helm-chart/helm-chart-detail
 import { OidcOnboardComponent } from './oidc-onboard/oidc-onboard.component';
 import { LicenseComponent } from './license/license.component';
 import { SummaryComponent } from './project/summary/summary.component';
-
 import { TagFeatureIntegrationComponent } from './project/tag-feature-integration/tag-feature-integration.component';
 import { TagRetentionComponent } from './project/tag-feature-integration/tag-retention/tag-retention.component';
 import { ImmutableTagComponent } from './project/tag-feature-integration/immutable-tag/immutable-tag.component';
@@ -72,8 +57,9 @@ import { LabelsComponent } from "./labels/labels.component";
 import { ProjectQuotasComponent } from "./project-quotas/project-quotas.component";
 import { VulnerabilityConfigComponent } from "../lib/components/config/vulnerability/vulnerability-config.component";
 import { USERSTATICPERMISSION } from "../lib/services";
-import { LeavingArtifactSummaryRouteDeactivate } from './shared/route/leaving-artifact-summary-deactivate.service';
-
+import { RepositoryGridviewComponent } from "./project/repository/repository-gridview.component";
+import { ArtifactListPageComponent } from "./project/repository/artifact-list-page/artifact-list-page.component";
+import { ArtifactSummaryComponent } from "./project/repository/artifact/artifact-summary.component";
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -99,7 +85,6 @@ const harborRoutes: Routes = [
   {
     path: 'harbor',
     component: HarborShellComponent,
-    // canActivate: [AuthCheckGuard],
     canActivateChild: [AuthCheckGuard],
     children: [
       { path: '', redirectTo: 'projects', pathMatch: 'full' },
@@ -170,41 +155,6 @@ const harborRoutes: Routes = [
         canActivateChild: [SystemAdminGuard]
       },
       {
-        path: 'tags/:id/:repo',
-        component: ArtifactListPageComponent,
-        canActivate: [MemberGuard],
-        resolve: {
-          projectResolver: ProjectRoutingResolver
-        }
-      },
-      {
-        path: 'projects/:id/repositories/:repo',
-        component: ArtifactListPageComponent,
-        canActivate: [MemberGuard],
-        canDeactivate: [LeavingRepositoryRouteDeactivate],
-        resolve: {
-          projectResolver: ProjectRoutingResolver
-        },
-      },
-      {
-        path: 'projects/:id/repositories/:repo/depth/:depth',
-        component: ArtifactListPageComponent,
-        canActivate: [MemberGuard],
-        canDeactivate: [LeavingRepositoryRouteDeactivate],
-        resolve: {
-          projectResolver: ProjectRoutingResolver
-        },
-      },
-      {
-        path: 'projects/:id/repositories/:repo/artifacts/:digest',
-        component: ArtifactSummaryPageComponent,
-        canActivate: [MemberGuard, ArtifactGuard],
-        canDeactivate: [LeavingArtifactSummaryRouteDeactivate],
-        resolve: {
-          projectResolver: ProjectRoutingResolver
-        }
-      },
-      {
         path: 'projects/:id/helm-charts/:chart/versions',
         component: ListChartVersionsComponent,
         canActivate: [MemberGuard],
@@ -248,7 +198,7 @@ const harborRoutes: Routes = [
                 action: USERSTATICPERMISSION.REPOSITORY.VALUE.LIST
               }
             },
-            component: RepositoryPageComponent,
+            component: RepositoryGridviewComponent
           },
           {
             path: 'helm-charts',
@@ -260,17 +210,6 @@ const harborRoutes: Routes = [
               }
             },
             component: ListChartsComponent
-          },
-          {
-            path: 'repositories/:repo/tags',
-            canActivate: [MemberPermissionGuard],
-            data: {
-              permissionParam: {
-                resource: USERSTATICPERMISSION.REPOSITORY.KEY,
-                action: USERSTATICPERMISSION.REPOSITORY.VALUE.LIST
-              }
-            },
-            component: ArtifactListPageComponent
           },
           {
             path: 'members',
@@ -373,6 +312,38 @@ const harborRoutes: Routes = [
             component: ScannerComponent
           }
         ]
+      },
+      {
+        path: 'projects/:id/repositories/:repo',
+        component: ArtifactListPageComponent,
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        }
+      },
+      {
+        path: 'projects/:id/repositories/:repo/depth/:depth',
+        component: ArtifactListPageComponent,
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        },
+      },
+      {
+        path: 'projects/:id/repositories/:repo/artifacts/:digest',
+        component: ArtifactSummaryComponent,
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        }
+      },
+      {
+        path: 'projects/:id/repositories/:repo/depth/:depth/artifacts/:digest',
+        component: ArtifactSummaryComponent,
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        }
       },
       {
         path: 'configs',

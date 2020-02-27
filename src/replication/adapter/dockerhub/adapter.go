@@ -31,19 +31,14 @@ func newAdapter(registry *model.Registry) (adp.Adapter, error) {
 		return nil, err
 	}
 
-	dockerRegistryAdapter, err := native.NewAdapter(&model.Registry{
-		URL:        registryURL,
-		Credential: registry.Credential,
-		Insecure:   registry.Insecure,
-	})
-	if err != nil {
-		return nil, err
-	}
-
 	return &adapter{
 		client:   client,
 		registry: registry,
-		Adapter:  dockerRegistryAdapter,
+		Adapter: native.NewAdapter(&model.Registry{
+			URL:        registryURL,
+			Credential: registry.Credential,
+			Insecure:   registry.Insecure,
+		}),
 	}, nil
 }
 

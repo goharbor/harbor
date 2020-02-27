@@ -3,6 +3,7 @@ import { HttpClientTestingModule, HttpTestingController } from '@angular/common/
 import { GlobalSearchService } from './global-search.service';
 import { Injector } from '@angular/core';
 import { SearchResults } from './search-results';
+import { CURRENT_BASE_HREF } from "../../../lib/utils/utils";
 
 describe('GlobalSearchService', () => {
   let injector: TestBed;
@@ -31,7 +32,7 @@ describe('GlobalSearchService', () => {
       expect(res).toEqual(new SearchResults());
     });
 
-    const req = httpMock.expectOne('/api/search?q=library');
+    const req = httpMock.expectOne(CURRENT_BASE_HREF + '/search?q=library');
     expect(req.request.method).toBe('GET');
     req.flush(new SearchResults());
   });

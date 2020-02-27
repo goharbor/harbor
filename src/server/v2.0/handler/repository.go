@@ -79,21 +79,36 @@ func (r *repositoryAPI) ListRepositories(ctx context.Context, params operation.L
 	}
 	var repos []*models.Repository
 	for _, repository := range repositories {
-		repo := repository.ToSwagger()
-		total, err := r.artCtl.Count(ctx, &q.Query{
-			Keywords: map[string]interface{}{
-				"RepositoryID": repo.ID,
-			},
-		})
-		if err != nil {
-			log.Errorf("failed to get the count of artifacts under the repository %s: %v",
-				repo.Name, err)
-		}
-		repo.ArtifactCount = total
-		repos = append(repos, repo)
+		repos = append(repos, r.assembleRepository(ctx, repository))
 	}
 	// TODO add link header
 	return operation.NewListRepositoriesOK().WithXTotalCount(total).WithLink("").WithPayload(repos)
+}
+
+func (r *repositoryAPI) GetRepository(ctx context.Context, params operation.GetRepositoryParams) middleware.Responder {
+	if err := r.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceRepository); err != nil {
+		return r.SendError(ctx, err)
+	}
+	repository, err := r.repoCtl.GetByName(ctx, fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName))
+	if err != nil {
+		return r.SendError(ctx, err)
+	}
+	return operation.NewGetRepositoryOK().WithPayload(r.assembleRepository(ctx, repository))
+}
+
+func (r *repositoryAPI) assembleRepository(ctx context.Context, repository *cmodels.RepoRecord) *models.Repository {
+	repo := repository.ToSwagger()
+	total, err := r.artCtl.Count(ctx, &q.Query{
+		Keywords: map[string]interface{}{
+			"RepositoryID": repo.ID,
+		},
+	})
+	if err != nil {
+		log.Errorf("failed to get the count of artifacts under the repository %s: %v",
+			repo.Name, err)
+	}
+	repo.ArtifactCount = total
+	return repo
 }
 
 func (r *repositoryAPI) UpdateRepository(ctx context.Context, params operation.UpdateRepositoryParams) middleware.Responder {

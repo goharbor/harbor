@@ -73,6 +73,7 @@ type AdminJobRep struct {
 	ID           int64     `json:"id"`
 	Name         string    `json:"job_name"`
 	Kind         string    `json:"job_kind"`
+	Parameters   string    `json:"job_parameters"`
 	Status       string    `json:"job_status"`
 	UUID         string    `json:"-"`
 	Deleted      bool      `json:"deleted"`
@@ -144,6 +145,16 @@ func (ar *AdminJobReq) JobKind() string {
 // CronString ...
 func (ar *AdminJobReq) CronString() string {
 	str, err := json.Marshal(ar.Schedule)
+	if err != nil {
+		log.Debugf("failed to marshal json error, %v", err)
+		return ""
+	}
+	return string(str)
+}
+
+// ParamString ...
+func (ar *AdminJobReq) ParamString() string {
+	str, err := json.Marshal(ar.Parameters)
 	if err != nil {
 		log.Debugf("failed to marshal json error, %v", err)
 		return ""

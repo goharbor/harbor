@@ -29,7 +29,7 @@ type FakeController struct {
 }
 
 // Ensure ...
-func (f *FakeController) Ensure(ctx context.Context, repositoryID int64, digest string, tags ...string) (bool, int64, error) {
+func (f *FakeController) Ensure(ctx context.Context, repository, digest string, tags ...string) (bool, int64, error) {
 	args := f.Called()
 	return args.Bool(0), int64(args.Int(1)), args.Error(2)
 }
@@ -77,7 +77,7 @@ func (f *FakeController) Delete(ctx context.Context, id int64) (err error) {
 }
 
 // Copy ...
-func (f *FakeController) Copy(ctx context.Context, srcArtID, dstRepoID int64) (int64, error) {
+func (f *FakeController) Copy(ctx context.Context, srcRepo, ref, dstRepo string) (int64, error) {
 	args := f.Called()
 	return int64(args.Int(0)), args.Error(1)
 }

@@ -17,7 +17,7 @@ import { Retention, RuleMetadate } from "./retention";
 import { Observable, throwError as observableThrowError } from "rxjs";
 import { map, catchError } from "rxjs/operators";
 import { Project } from "../../project";
-import { buildHttpRequestOptionsWithObserveResponse } from "../../../../lib/utils/utils";
+import { buildHttpRequestOptionsWithObserveResponse, CURRENT_BASE_HREF } from "../../../../lib/utils/utils";
 
 @Injectable()
 export class TagRetentionService {
@@ -65,45 +65,45 @@ export class TagRetentionService {
     }
 
     getRetentionMetadata(): Observable<RuleMetadate> {
-        return this.http.get(`/api/retentions/metadatas`)
+        return this.http.get(`${ CURRENT_BASE_HREF }/retentions/metadatas`)
             .pipe(map(response => response as RuleMetadate))
             .pipe(catchError(error => observableThrowError(error)));
     }
 
     getRetention(retentionId): Observable<Retention> {
-        return this.http.get(`/api/retentions/${retentionId}`)
+        return this.http.get(`${ CURRENT_BASE_HREF }/retentions/${retentionId}`)
             .pipe(map(response => response as Retention))
             .pipe(catchError(error => observableThrowError(error)));
     }
 
     createRetention(retention: Retention) {
-        return this.http.post(`/api/retentions`, retention)
+        return this.http.post(`${ CURRENT_BASE_HREF }/retentions`, retention)
             .pipe(catchError(error => observableThrowError(error)));
     }
 
     updateRetention(retentionId, retention: Retention) {
-        return this.http.put(`/api/retentions/${retentionId}`, retention)
+        return this.http.put(`${ CURRENT_BASE_HREF }/retentions/${retentionId}`, retention)
             .pipe(catchError(error => observableThrowError(error)));
     }
 
     getProjectInfo(projectId) {
-        return this.http.get(`/api/projects/${projectId}`)
+        return this.http.get(`${ CURRENT_BASE_HREF }/projects/${projectId}`)
             .pipe(map(response => response as Project))
             .pipe(catchError(error => observableThrowError(error)));
     }
 
     runNowTrigger(retentionId) {
-        return this.http.post(`/api/retentions/${retentionId}/executions`, {dry_run: false})
+        return this.http.post(`${ CURRENT_BASE_HREF }/retentions/${retentionId}/executions`, {dry_run: false})
             .pipe(catchError(error => observableThrowError(error)));
     }
 
     whatIfRunTrigger(retentionId) {
-        return this.http.post(`/api/retentions/${retentionId}/executions`, {dry_run: true})
+        return this.http.post(`${ CURRENT_BASE_HREF }/retentions/${retentionId}/executions`, {dry_run: true})
             .pipe(catchError(error => observableThrowError(error)));
     }
 
     AbortRun(retentionId, executionId) {
-        return this.http.patch(`/api/retentions/${retentionId}/executions/${executionId}`, {action: 'stop'})
+        return this.http.patch(`${ CURRENT_BASE_HREF }/retentions/${retentionId}/executions/${executionId}`, {action: 'stop'})
             .pipe(catchError(error => observableThrowError(error)));
     }
 
@@ -113,7 +113,8 @@ export class TagRetentionService {
             params = params.set('page', page + '').set('page_size', pageSize + '');
         }
         return this.http
-          .get<HttpResponse<Array<any>>>(`/api/retentions/${retentionId}/executions`, buildHttpRequestOptionsWithObserveResponse(params))
+          .get<HttpResponse<Array<any>>>(`${ CURRENT_BASE_HREF }/retentions/${retentionId}/executions`,
+            buildHttpRequestOptionsWithObserveResponse(params))
           .pipe(catchError(error => observableThrowError(error)), );
     }
 
@@ -122,12 +123,12 @@ export class TagRetentionService {
         if (page && pageSize) {
             params = params.set('page', page + '').set('page_size', pageSize + '');
         }
-        return this.http.get<HttpResponse<Array<any>>>(`/api/retentions/${retentionId}/executions/${executionId}/tasks`,
+        return this.http.get<HttpResponse<Array<any>>>(`${ CURRENT_BASE_HREF }/retentions/${retentionId}/executions/${executionId}/tasks`,
             buildHttpRequestOptionsWithObserveResponse(params))
             .pipe(catchError(error => observableThrowError(error)));
     }
 
     seeLog(retentionId, executionId, taskId) {
-        window.open(`api/retentions/${retentionId}/executions/${executionId}/tasks/${taskId}`, '_blank');
+        window.open(`${ CURRENT_BASE_HREF }/retentions/${retentionId}/executions/${executionId}/tasks/${taskId}`, '_blank');
     }
 }

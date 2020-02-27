@@ -3,6 +3,7 @@ import { TestBed, inject } from '@angular/core/testing';
 import { SharedModule } from '../utils/shared/shared.module';
 import { SERVICE_CONFIG, IServiceConfig } from '../entities/service.config';
 import { TagService, TagDefaultService } from './tag.service';
+import { CURRENT_BASE_HREF } from "../utils/utils";
 
 
 describe('TagService', () => {
@@ -22,7 +23,7 @@ describe('TagService', () => {
   // ];
 
   const mockConfig: IServiceConfig = {
-    repositoryBaseEndpoint: "/api/repositories/testing"
+    repositoryBaseEndpoint: CURRENT_BASE_HREF + "/repositories/testing"
   };
 
   beforeEach(() => {

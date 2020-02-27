@@ -16,6 +16,7 @@ package awsecr
 
 import (
 	"errors"
+	"github.com/goharbor/harbor/src/internal"
 	"net/http"
 	"regexp"
 
@@ -25,7 +26,6 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	awsecrapi "github.com/aws/aws-sdk-go/service/ecr"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/adapter/native"
 	"github.com/goharbor/harbor/src/replication/model"
@@ -53,13 +53,9 @@ func newAdapter(registry *model.Registry) (*adapter, error) {
 		return nil, err
 	}
 	authorizer := NewAuth(region, registry.Credential.AccessKey, registry.Credential.AccessSecret, registry.Insecure)
-	dockerRegistry, err := native.NewAdapterWithCustomizedAuthorizer(registry, authorizer)
-	if err != nil {
-		return nil, err
-	}
 	return &adapter{
 		registry: registry,
-		Adapter:  dockerRegistry,
+		Adapter:  native.NewAdapterWithAuthorizer(registry, authorizer),
 		region:   region,
 	}, nil
 }
@@ -201,7 +197,7 @@ func (a *adapter) HealthCheck() (model.HealthStatus, error) {
 		log.Errorf("no credential to ping registry %s", a.registry.URL)
 		return model.Unhealthy, nil
 	}
-	if err := a.PingGet(); err != nil {
+	if err := a.Ping(); err != nil {
 		log.Errorf("failed to ping registry %s: %v", a.registry.URL, err)
 		return model.Unhealthy, nil
 	}
@@ -248,7 +244,7 @@ func (a *adapter) createRepository(repository string) error {
 		Credentials: cred,
 		Region:      &a.region,
 		HTTPClient: &http.Client{
-			Transport: registry.GetHTTPTransport(a.registry.Insecure),
+			Transport: internal.GetHTTPTransport(a.registry.Insecure),
 		},
 	}
 	if a.forceEndpoint != nil {
@@ -290,7 +286,7 @@ func (a *adapter) DeleteManifest(repository, reference string) error {
 		Credentials: cred,
 		Region:      &a.region,
 		HTTPClient: &http.Client{
-			Transport: registry.GetHTTPTransport(a.registry.Insecure),
+			Transport: internal.GetHTTPTransport(a.registry.Insecure),
 		},
 	}
 	if a.forceEndpoint != nil {

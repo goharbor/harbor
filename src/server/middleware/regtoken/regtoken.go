@@ -28,7 +28,7 @@ func Middleware() func(http.Handler) http.Handler {
 }
 
 func parseToken(req *http.Request) error {
-	mf, ok := middleware.ManifestInfoFromContext(req.Context())
+	art, ok := middleware.ArtifactInfoFromContext(req.Context())
 	if !ok {
 		return errors.New("cannot get the manifest information from request context")
 	}
@@ -50,7 +50,7 @@ func parseToken(req *http.Request) error {
 	accessItems = append(accessItems, auth.Access{
 		Resource: auth.Resource{
 			Type: rbac.ResourceRepository.String(),
-			Name: mf.Repository,
+			Name: art.Repository,
 		},
 		Action: rbac.ActionScannerPull.String(),
 	})

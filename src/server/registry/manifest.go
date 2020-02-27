@@ -70,7 +70,7 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 	reference := router.Param(req.Context(), ":reference")
 
 	// make sure the repository exist before pushing the manifest
-	_, repositoryID, err := repository.Ctl.Ensure(req.Context(), repo)
+	_, _, err := repository.Ctl.Ensure(req.Context(), repo)
 	if err != nil {
 		serror.SendError(w, err)
 		return
@@ -98,7 +98,7 @@ func putManifest(w http.ResponseWriter, req *http.Request) {
 		tags = append(tags, reference)
 	}
 
-	_, _, err = artifact.Ctl.Ensure(req.Context(), repositoryID, dgt, tags...)
+	_, _, err = artifact.Ctl.Ensure(req.Context(), repo, dgt, tags...)
 	if err != nil {
 		serror.SendError(w, err)
 		return

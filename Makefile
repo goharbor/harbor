@@ -374,6 +374,12 @@ build_base_docker:
 		$(PUSHSCRIPTPATH)/$(PUSHSCRIPTNAME) goharbor/harbor-$$name-base:$(BASEIMAGETAG) $(REGISTRYUSER) $(REGISTRYPASSWORD) ; \
 	done
 
+pull_base_docker:
+	@for name in chartserver clair clair-adapter core db jobservice log nginx notary-server notary-signer portal prepare redis registry registryctl; do \
+		echo $$name ; \
+		$(DOCKERPULL) goharbor/harbor-$$name-base:$(BASEIMAGETAG) ; \
+	done
+
 install: compile build prepare start
 
 package_online: update_prepare_version
@@ -498,6 +504,7 @@ swagger_client:
 	rm -rf harborclient
 	mkdir  -p harborclient/harbor_swagger_client
 	mkdir  -p harborclient/harbor_v2_swagger_client
+	sed -i "/type: basic/ a\\security:\n  - basicAuth: []" api/v2.0/swagger.yaml
 	java -jar swagger-codegen-cli.jar generate -i api/v2.0/legacy_swagger.yaml -l python -o harborclient/harbor_swagger_client -DpackageName=swagger_client
 	java -jar swagger-codegen-cli.jar generate -i api/v2.0/swagger.yaml -l python -o harborclient/harbor_v2_swagger_client -DpackageName=v2_swagger_client
 	cd harborclient/harbor_swagger_client; python ./setup.py install

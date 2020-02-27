@@ -65,3 +65,34 @@ func Test_legacyAPISkipper(t *testing.T) {
 		})
 	}
 }
+
+func Test_readonlySkipper(t *testing.T) {
+	type args struct {
+		r *http.Request
+	}
+	tests := []struct {
+		name string
+		args args
+		want bool
+	}{
+		{"login", args{httptest.NewRequest(http.MethodPost, "/c/login", nil)}, true},
+		{"login get", args{httptest.NewRequest(http.MethodGet, "/c/login", nil)}, false},
+		{"onboard", args{httptest.NewRequest(http.MethodPost, "/c/oidc/onboard", nil)}, true},
+		{"user exist", args{httptest.NewRequest(http.MethodPost, "/c/userExists", nil)}, true},
+		{"user exist", args{httptest.NewRequest(http.MethodPost, "/service/notifications/jobs/adminjob/123456", nil)}, true},
+		{"user exist", args{httptest.NewRequest(http.MethodPost, "/service/notifications/jobs/adminjob/abcdefg", nil)}, false},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			var pass bool
+			for _, skipper := range readonlySkippers {
+				if got := skipper(tt.args.r); got == tt.want {
+					pass = true
+				}
+			}
+			if !pass {
+				t.Errorf("readonlySkippers() = %v, want %v", tt.args, tt.want)
+			}
+		})
+	}
+}

@@ -1,7 +1,0 @@
-<div class="row content-wrapper">
-    <div class="col-md-8 md-container pl-1">
-        <div *ngIf="readme" class="md-div" [innerHTML]="readme | markdown"></div>
-        <div *ngIf="!readme">{{'HELM_CHART.NO_README' | translate}}</div>
-    </div>
-</div>
-<table class="table"></table>

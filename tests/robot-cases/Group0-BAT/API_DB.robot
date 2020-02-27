@@ -16,6 +16,8 @@ ${SERVER_URL}  https://${SERVER}
 ${SERVER_API_ENDPOINT}  ${SERVER_URL}/api
 &{SERVER_CONFIG}  endpoint=${SERVER_API_ENDPOINT}  verify_ssl=False
 
+# TODO the cases commented by "###" can be uncommented after implementing the repository python library based on new API
+
 *** Test Cases ***
 # TODO uncomment this after re-implement the case
 # Test Case - Garbage Collection
@@ -49,8 +51,8 @@ Test Case - Project Level Policy Content Trust
 #     Harbor API Test  ./tests/apitests/python/test_list_helm_charts.py
 Test Case - Assign Sys Admin
     Harbor API Test  ./tests/apitests/python/test_assign_sys_admin.py
-Test Case - Retag Image
-    Harbor API Test  ./tests/apitests/python/test_retag.py
+Test Case - Copy Artifact Outside Project
+    Harbor API Test  ./tests/apitests/python/test_copy_artifact_outside_project.py
 Test Case - Robot Account
     Harbor API Test  ./tests/apitests/python/test_robot_account.py
 Test Case - Sign A Image

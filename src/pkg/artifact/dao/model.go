@@ -33,6 +33,7 @@ type Artifact struct {
 	ManifestMediaType string    `orm:"column(manifest_media_type)"` // the media type of manifest/index
 	ProjectID         int64     `orm:"column(project_id)"`          // needed for quota
 	RepositoryID      int64     `orm:"column(repository_id)"`
+	RepositoryName    string    `orm:"column(repository_name)"`
 	Digest            string    `orm:"column(digest)"`
 	Size              int64     `orm:"column(size)"`
 	PushTime          time.Time `orm:"column(push_time)"`

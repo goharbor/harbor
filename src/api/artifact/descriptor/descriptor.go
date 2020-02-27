@@ -17,10 +17,16 @@ package descriptor
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"regexp"
+	"strings"
 )
 
+// ArtifactTypeUnknown defines the type for the unknown artifacts
+const ArtifactTypeUnknown = "UNKNOWN"
+
 var (
-	registry = map[string]Descriptor{}
+	registry           = map[string]Descriptor{}
+	artifactTypeRegExp = regexp.MustCompile(`^application/vnd\.[^.]*\.(.*)\.config\.[^.]*\+json$`)
 )
 
 // Descriptor describes the static information for one kind of media type
@@ -45,28 +51,34 @@ func Register(descriptor Descriptor, mediaTypes ...string) error {
 }
 
 // Get the descriptor according to the media type
-func Get(mediaType string) (Descriptor, error) {
-	descriptor := registry[mediaType]
-	if descriptor == nil {
-		return nil, fmt.Errorf("descriptor for media type %s not found", mediaType)
-	}
-	return descriptor, nil
+func Get(mediaType string) Descriptor {
+	return registry[mediaType]
 }
 
 // GetArtifactType gets the artifact type according to the media type
-func GetArtifactType(mediaType string) (string, error) {
-	descriptor, err := Get(mediaType)
-	if err != nil {
-		return "", err
+func GetArtifactType(mediaType string) string {
+	descriptor := Get(mediaType)
+	if descriptor != nil {
+		return descriptor.GetArtifactType()
 	}
-	return descriptor.GetArtifactType(), nil
+	// if got no descriptor, try to parse the artifact type based on the media type
+	return parseArtifactType(mediaType)
 }
 
 // ListAdditionTypes lists the supported addition types according to the media type
-func ListAdditionTypes(mediaType string) ([]string, error) {
-	descriptor, err := Get(mediaType)
-	if err != nil {
-		return nil, err
+func ListAdditionTypes(mediaType string) []string {
+	descriptor := Get(mediaType)
+	if descriptor != nil {
+		return descriptor.ListAdditionTypes()
 	}
-	return descriptor.ListAdditionTypes(), nil
+	return nil
+}
+
+func parseArtifactType(mediaType string) string {
+	strs := artifactTypeRegExp.FindStringSubmatch(mediaType)
+	if len(strs) == 2 {
+		return strings.ToUpper(strs[1])
+	}
+	// can not get the artifact type from the media type, return unknown
+	return ArtifactTypeUnknown
 }

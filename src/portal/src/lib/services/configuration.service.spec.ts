@@ -3,10 +3,11 @@ import { TestBed, inject } from '@angular/core/testing';
 import { ConfigurationService, ConfigurationDefaultService } from './configuration.service';
 import { SharedModule } from '../utils/shared/shared.module';
 import { SERVICE_CONFIG, IServiceConfig } from '../entities/service.config';
+import { CURRENT_BASE_HREF } from "../utils/utils";
 
 describe('ConfigurationService', () => {
   const mockConfig: IServiceConfig = {
-    configurationEndpoint: "/api/configurations/testing"
+    configurationEndpoint: CURRENT_BASE_HREF + "/configurations/testing"
   };
 
   let config: IServiceConfig;
@@ -36,7 +37,7 @@ describe('ConfigurationService', () => {
 
   it('should inject the right config', () => {
     expect(config).toBeTruthy();
-    expect(config.configurationEndpoint).toEqual("/api/configurations/testing");
+    expect(config.configurationEndpoint).toEqual(CURRENT_BASE_HREF + "/configurations/testing");
   });
 
 });

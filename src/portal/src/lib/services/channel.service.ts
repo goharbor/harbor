@@ -12,9 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Injectable } from '@angular/core';
-import { Observable, Subject} from "rxjs";
-// import { Tag } from './index';
-import { Artifact } from '../components/artifact/artifact';
+import { Subject } from "rxjs";
+import { ArtifactFront as Artifact } from "../../app/project/repository/artifact/artifact";
 
 @Injectable()
 export class ChannelService {

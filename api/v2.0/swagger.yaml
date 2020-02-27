@@ -58,6 +58,31 @@ paths:
         '500':
           $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}:
+    get:
+      summary: Get repository
+      description: Get the repository specified by name
+      tags:
+        - repository
+      operationId: getRepository
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Repository'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
     put:
       summary: Update repository
       description: Update the repository specified by name
@@ -299,6 +324,29 @@ paths:
           $ref: '#/responses/404'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan:
+    post:
+      summary: Scan the artifact
+      description: Scan the specified artifact
+      tags:
+        - artifact
+      operationId: scanArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
   /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags:
     post:
       summary: Create tag
@@ -508,6 +556,12 @@ responses:
         type: string
   '201':
     description: Created
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+  '202':
+    description: Accepted
     headers:
       X-Request-Id:
         description: The ID of the corresponding request for the response

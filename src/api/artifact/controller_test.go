@@ -39,6 +39,8 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+// TODO find another way to test artifact controller, it's hard to maintain currently
+
 type fakeAbstractor struct {
 	mock.Mock
 }
@@ -107,6 +109,13 @@ func (c *controllerTestSuite) SetupTest() {
 }
 
 func (c *controllerTestSuite) TestAssembleTag() {
+	art := &artifact.Artifact{
+		ID:             1,
+		ProjectID:      1,
+		RepositoryID:   1,
+		RepositoryName: "library/hello-world",
+		Digest:         "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",
+	}
 	tg := &tag.Tag{
 		ID:           1,
 		RepositoryID: 1,
@@ -119,13 +128,8 @@ func (c *controllerTestSuite) TestAssembleTag() {
 		WithImmutableStatus: true,
 	}
 
-	c.repoMgr.On("Get").Return(&models.RepoRecord{
-		ProjectID: 1,
-		Name:      "hello-world",
-	}, nil)
-
 	c.immutableMtr.On("Match").Return(true, nil)
-	tag := c.ctl.assembleTag(nil, tg, option)
+	tag := c.ctl.assembleTag(nil, art, tg, option)
 	c.Require().NotNil(tag)
 	c.Equal(tag.ID, tg.ID)
 	c.Equal(true, tag.Immutable)
@@ -154,9 +158,6 @@ func (c *controllerTestSuite) TestAssembleArtifact() {
 		PullTime:     time.Now(),
 	}
 	c.tagMgr.On("List").Return([]*tag.Tag{tg}, nil)
-	c.repoMgr.On("Get").Return(&models.RepoRecord{
-		Name: "library/hello-world",
-	}, nil)
 	ctx := internal.SetAPIVersion(nil, "2.0")
 	lb := &models.Label{
 		ID:   1,
@@ -185,25 +186,25 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	c.artMgr.On("GetByDigest").Return(&artifact.Artifact{
 		ID: 1,
 	}, nil)
-	created, id, err := c.ctl.ensureArtifact(nil, 1, digest)
+	created, art, err := c.ctl.ensureArtifact(nil, "library/hello-world", digest)
 	c.Require().Nil(err)
 	c.False(created)
-	c.Equal(int64(1), id)
+	c.Equal(int64(1), art.ID)
 
 	// reset the mock
 	c.SetupTest()
 
 	// the artifact doesn't exist
-	c.repoMgr.On("Get").Return(&models.RepoRecord{
+	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
 		ProjectID: 1,
 	}, nil)
 	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
 	c.artMgr.On("Create").Return(1, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
-	created, id, err = c.ctl.ensureArtifact(nil, 1, digest)
+	created, art, err = c.ctl.ensureArtifact(nil, "library/hello-world", digest)
 	c.Require().Nil(err)
 	c.True(created)
-	c.Equal(int64(1), id)
+	c.Equal(int64(1), art.ID)
 }
 
 func (c *controllerTestSuite) TestEnsureTag() {
@@ -252,7 +253,7 @@ func (c *controllerTestSuite) TestEnsure() {
 	digest := "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180"
 
 	// both the artifact and the tag don't exist
-	c.repoMgr.On("Get").Return(&models.RepoRecord{
+	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
 		ProjectID: 1,
 	}, nil)
 	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
@@ -260,7 +261,7 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.tagMgr.On("List").Return([]*tag.Tag{}, nil)
 	c.tagMgr.On("Create").Return(1, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
-	_, id, err := c.ctl.Ensure(nil, 1, digest, "latest")
+	_, id, err := c.ctl.Ensure(nil, "library/hello-world", digest, "latest")
 	c.Require().Nil(err)
 	c.repoMgr.AssertExpectations(c.T())
 	c.artMgr.AssertExpectations(c.T())
@@ -508,7 +509,12 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 
 func (c *controllerTestSuite) TestCopy() {
 	c.artMgr.On("Get").Return(&artifact.Artifact{
-		ID: 1,
+		ID:     1,
+		Digest: "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180",
+	}, nil)
+	c.repoMgr.On("GetByName").Return(&models.RepoRecord{
+		RepositoryID: 1,
+		Name:         "library/hello-world",
 	}, nil)
 	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
 	c.tagMgr.On("List").Return([]*tag.Tag{
@@ -525,7 +531,7 @@ func (c *controllerTestSuite) TestCopy() {
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	c.artMgr.On("Create").Return(1, nil)
 	c.regCli.On("Copy").Return(nil)
-	_, err := c.ctl.Copy(nil, 1, 1)
+	_, err := c.ctl.Copy(nil, "library/hello-world", "latest", "library/hello-world2")
 	c.Require().Nil(err)
 }
 
@@ -538,6 +544,7 @@ func (c *controllerTestSuite) TestListTags() {
 			ArtifactID:   1,
 		},
 	}, nil)
+	c.artMgr.On("Get").Return(&artifact.Artifact{}, nil)
 	tags, err := c.ctl.ListTags(nil, nil, nil)
 	c.Require().Nil(err)
 	c.Len(tags, 1)

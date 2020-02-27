@@ -4,6 +4,7 @@ import { CookieService } from 'ngx-cookie';
 import { AppConfigService } from './app-config.service';
 import { AppConfig } from './app-config';
 import { Component } from '@angular/core';
+import { CURRENT_BASE_HREF } from "../lib/utils/utils";
 
 describe('AppConfigService', () => {
   let injector: TestBed;
@@ -35,7 +36,7 @@ describe('AppConfigService', () => {
       expect(res).toEqual(systeminfo);
     });
 
-    const req = httpMock.expectOne('/api/systeminfo');
+    const req = httpMock.expectOne(CURRENT_BASE_HREF + '/systeminfo');
     expect(req.request.method).toBe('GET');
     req.flush(systeminfo);
     expect(service.getConfig()).toEqual(systeminfo);

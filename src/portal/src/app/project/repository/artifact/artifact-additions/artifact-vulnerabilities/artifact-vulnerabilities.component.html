@@ -1,0 +1,76 @@
+<div class="row result-row">
+    <div>
+        <div class="row flex-items-xs-right rightPos">
+            <div class="flex-xs-middle option-right">
+                <span class="refresh-btn" (click)="refresh()"><clr-icon shape="refresh"></clr-icon></span>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <clr-datagrid [clrDgLoading]="loading">
+            <clr-dg-action-bar>
+                <div class="clr-row center">
+                    <div class="clr-col-1">
+                        <button (click)="scanNow()" type="button"  class="btn  btn-secondary" [clrLoading]="scanBtnState" [disabled]="!(hasEnabledScanner && hasScanningPermission && !onSendingScanCommand)"><clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}</button>
+                    </div>
+                    <div class="clr-col">
+                        <div [hidden]="!shouldShowBar()">
+                            <hbr-vulnerability-bar [scanner]="scanner"
+                                                   (submitFinish)="submitFinish($event)" [projectName]="projectName" [repoName]="repoName"
+                                                   [artifactDigest]="digest">
+                            </hbr-vulnerability-bar>
+                        </div>
+                    </div>
+                </div>
+            </clr-dg-action-bar>
+            <clr-dg-column [clrDgField]="'id'">{{'VULNERABILITY.GRID.COLUMN_ID' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgSortBy]="severitySort">{{'VULNERABILITY.GRID.COLUMN_SEVERITY' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgField]="'package'">{{'VULNERABILITY.GRID.COLUMN_PACKAGE' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgField]="'version'">{{'VULNERABILITY.GRID.COLUMN_VERSION' | translate}}</clr-dg-column>
+            <clr-dg-column [clrDgField]="'fix_version'">{{'VULNERABILITY.GRID.COLUMN_FIXED' | translate}}</clr-dg-column>
+
+            <clr-dg-placeholder>{{'VULNERABILITY.CHART.TOOLTIPS_TITLE_ZERO' | translate}}</clr-dg-placeholder>
+            <clr-dg-row *clrDgItems="let res of scanningResults">
+                <clr-dg-cell>
+                    <span *ngIf="!res.links || res.links.length === 0">{{res.id}}</span>
+                    <a *ngIf="res.links && res.links.length === 1" href="{{res.links[0]}}" target="_blank">{{res.id}}</a>
+                    <span *ngIf="res.links && res.links.length > 1">
+                        {{res.id}}
+                        <clr-signpost>
+                            <clr-signpost-content *clrIfOpen>
+                                <div class="mt-5px"  *ngFor="let link of res.links">
+                                    <a href="{{link}}" target="_blank">{{link}}</a>
+                                </div>
+                            </clr-signpost-content>
+                        </clr-signpost>
+                    </span>
+                </clr-dg-cell>
+                <clr-dg-cell [ngSwitch]="res.severity">
+                    <span *ngSwitchCase="'Critical'" class="label label-critical no-border">{{severityText(res.severity) | translate}}</span>
+                    <span *ngSwitchCase="'High'" class="label label-danger no-border">{{severityText(res.severity) | translate}}</span>
+                    <span *ngSwitchCase="'Medium'" class="label label-medium no-border">{{severityText(res.severity) | translate}}</span>
+                    <span *ngSwitchCase="'Low'" class="label label-low no-border">{{severityText(res.severity) | translate}}</span>
+                    <span *ngSwitchCase="'Negligible'" class="label label-negligible no-border">{{severityText(res.severity) | translate}}</span>
+                    <span *ngSwitchCase="'Unknown'" class="label label-unknown no-border">{{severityText(res.severity) | translate}}</span>
+                    <span *ngSwitchDefault>{{severityText(res.severity) | translate}}</span>
+                </clr-dg-cell>
+                <clr-dg-cell>{{res.package}}</clr-dg-cell>
+                <clr-dg-cell>{{res.version}}</clr-dg-cell>
+                <clr-dg-cell>
+                    <div *ngIf="res.fix_version; else elseBlock">
+                        <clr-icon shape="wrench" class="is-success" size="20"></clr-icon>&nbsp;<span class="font-color-green">{{res.fix_version}}</span>
+                    </div>
+                    <ng-template #elseBlock>{{res.fix_version}}</ng-template>
+                </clr-dg-cell>
+                <clr-dg-row-detail *clrIfExpanded>
+                    {{'VULNERABILITY.GRID.COLUMN_DESCRIPTION' | translate}}: {{res.description}}
+                </clr-dg-row-detail>
+            </clr-dg-row>
+
+            <clr-dg-footer>
+                <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'VULNERABILITY.GRID.FOOT_OF' | translate}}</span> {{pagination.totalItems}} {{'VULNERABILITY.GRID.FOOT_ITEMS' | translate}}
+                <clr-dg-pagination #pagination [clrDgPageSize]="25" [clrDgTotalItems]="scanningResults.length"></clr-dg-pagination>
+            </clr-dg-footer>
+        </clr-datagrid>
+    </div>
+</div>
