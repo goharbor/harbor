@@ -16,6 +16,9 @@ package artifact
 
 import (
 	"context"
+	"testing"
+	"time"
+
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/api/tag"
@@ -33,10 +36,9 @@ import (
 	"github.com/goharbor/harbor/src/testing/pkg/label"
 	"github.com/goharbor/harbor/src/testing/pkg/registry"
 	repotesting "github.com/goharbor/harbor/src/testing/pkg/repository"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/suite"
-	"testing"
-	"time"
 )
 
 // TODO find another way to test artifact controller, it's hard to maintain currently
@@ -526,6 +528,41 @@ func (c *controllerTestSuite) TestRemoveFrom() {
 	c.labelMgr.On("RemoveFrom").Return(nil)
 	err := c.ctl.RemoveLabel(nil, 1, 1)
 	c.Require().Nil(err)
+}
+
+func (c *controllerTestSuite) TestWalk() {
+	c.artMgr.On("List").Return([]*artifact.Artifact{
+		{ManifestMediaType: v1.MediaTypeImageManifest},
+		{ManifestMediaType: v1.MediaTypeImageManifest},
+	}, nil)
+
+	{
+		root := &Artifact{}
+
+		var n int
+		c.ctl.Walk(context.TODO(), root, func(a *Artifact) error {
+			n++
+			return nil
+		}, nil)
+
+		c.Equal(1, n)
+	}
+
+	{
+		root := &Artifact{}
+		root.References = []*artifact.Reference{
+			{ParentID: 1, ChildID: 2},
+			{ParentID: 1, ChildID: 3},
+		}
+
+		var n int
+		c.ctl.Walk(context.TODO(), root, func(a *Artifact) error {
+			n++
+			return nil
+		}, nil)
+
+		c.Equal(3, n)
+	}
 }
 
 func TestControllerTestSuite(t *testing.T) {

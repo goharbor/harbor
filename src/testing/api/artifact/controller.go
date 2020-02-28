@@ -16,11 +16,12 @@ package artifact
 
 import (
 	"context"
+	"time"
+
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/stretchr/testify/mock"
-	"time"
 )
 
 // FakeController is a fake artifact controller that implement src/api/artifact.Controller interface
@@ -106,6 +107,12 @@ func (f *FakeController) AddLabel(ctx context.Context, artifactID int64, labelID
 
 // RemoveLabel ...
 func (f *FakeController) RemoveLabel(ctx context.Context, artifactID int64, labelID int64) error {
+	args := f.Called()
+	return args.Error(0)
+}
+
+// Walk ...
+func (f *FakeController) Walk(ctx context.Context, root *artifact.Artifact, workFn func(*artifact.Artifact) error, option *artifact.Option) error {
 	args := f.Called()
 	return args.Error(0)
 }

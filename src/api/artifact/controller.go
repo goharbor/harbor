@@ -15,8 +15,12 @@
 package artifact
 
 import (
+	"container/list"
 	"context"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/goharbor/harbor/src/api/artifact/abstractor"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
 	"github.com/goharbor/harbor/src/api/artifact/descriptor"
@@ -31,8 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	"github.com/opencontainers/go-digest"
-	"strings"
-	"time"
+
 	// registry image resolvers
 	_ "github.com/goharbor/harbor/src/api/artifact/abstractor/resolver/image"
 	// register chart resolver
@@ -84,6 +87,8 @@ type Controller interface {
 	AddLabel(ctx context.Context, artifactID int64, labelID int64) (err error)
 	// RemoveLabel from the specified artifact
 	RemoveLabel(ctx context.Context, artifactID int64, labelID int64) (err error)
+	// Walk walks the artifact tree rooted at root, calling walkFn for each artifact in the tree, including root.
+	Walk(ctx context.Context, root *Artifact, walkFn func(*Artifact) error, option *Option) error
 }
 
 // NewController creates an instance of the default artifact controller
@@ -313,7 +318,7 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 		return err
 	}
 
-	// clean associations between blob and project when when the blob is not needed by project
+	// clean associations between blob and project when the blob is not needed by project
 	if err := c.blobMgr.CleanupAssociationsForProject(ctx, art.ProjectID, blobs); err != nil {
 		return err
 	}
@@ -433,6 +438,39 @@ func (c *controller) AddLabel(ctx context.Context, artifactID int64, labelID int
 
 func (c *controller) RemoveLabel(ctx context.Context, artifactID int64, labelID int64) error {
 	return c.labelMgr.RemoveFrom(ctx, labelID, artifactID)
+}
+
+func (c *controller) Walk(ctx context.Context, root *Artifact, walkFn func(*Artifact) error, option *Option) error {
+	queue := list.New()
+	queue.PushBack(root)
+
+	for queue.Len() > 0 {
+		elem := queue.Front()
+		queue.Remove(elem)
+
+		artifact := elem.Value.(*Artifact)
+		if err := walkFn(artifact); err != nil {
+			return err
+		}
+
+		if len(artifact.References) > 0 {
+			var ids []int64
+			for _, ref := range artifact.References {
+				ids = append(ids, ref.ChildID)
+			}
+
+			artifacts, err := c.List(ctx, q.New(q.KeyWords{"id__in": ids}), option)
+			if err != nil {
+				return err
+			}
+
+			for _, artifact := range artifacts {
+				queue.PushBack(artifact)
+			}
+		}
+	}
+
+	return nil
 }
 
 // assemble several part into a single artifact

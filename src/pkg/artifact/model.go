@@ -18,6 +18,7 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
@@ -41,6 +42,12 @@ type Artifact struct {
 	ExtraAttrs        map[string]interface{} `json:"extra_attrs"` // only contains the simple attributes specific for the different artifact type, most of them should come from the config layer
 	Annotations       map[string]string      `json:"annotations"`
 	References        []*Reference           `json:"references"` // child artifacts referenced by the parent artifact if the artifact is an index
+}
+
+// HasChildren returns true when artifact has children artifacts, most times that means the artifact is Image Index.
+func (a *Artifact) HasChildren() bool {
+	return a.ManifestMediaType == v1.MediaTypeImageIndex ||
+		a.ManifestMediaType == manifestlist.MediaTypeManifestList
 }
 
 // From converts the database level artifact to the business level object

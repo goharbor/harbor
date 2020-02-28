@@ -158,15 +158,15 @@ func (m *manager) assemble(ctx context.Context, art *dao.Artifact) (*Artifact, e
 	artifact := &Artifact{}
 	// convert from database object
 	artifact.From(art)
+
 	// populate the references
-	references, err := m.ListReferences(ctx, &q.Query{
-		Keywords: map[string]interface{}{
-			"ParentID": artifact.ID,
-		},
-	})
-	if err != nil {
-		return nil, err
+	if artifact.HasChildren() {
+		references, err := m.ListReferences(ctx, q.New(q.KeyWords{"ParentID": artifact.ID}))
+		if err != nil {
+			return nil, err
+		}
+		artifact.References = references
 	}
-	artifact.References = references
+
 	return artifact, nil
 }
