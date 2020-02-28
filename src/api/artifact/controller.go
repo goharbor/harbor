@@ -418,7 +418,10 @@ func (c *controller) UpdatePullTime(ctx context.Context, artifactID int64, tagID
 	if tag.ArtifactID != artifactID {
 		return fmt.Errorf("tag %d isn't attached to artifact %d", tagID, artifactID)
 	}
-	if err := c.artMgr.UpdatePullTime(ctx, artifactID, time); err != nil {
+	if err := c.artMgr.Update(ctx, &artifact.Artifact{
+		ID:       artifactID,
+		PullTime: time,
+	}, "PullTime"); err != nil {
 		return err
 	}
 	return c.tagCtl.Update(ctx, tag, "PullTime")

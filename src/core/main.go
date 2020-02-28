@@ -17,6 +17,7 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"github.com/goharbor/harbor/src/migration"
 	"os"
 	"os/signal"
 	"strconv"
@@ -183,8 +184,11 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
 	}
-	if err := dao.InitAndUpgradeDatabase(database); err != nil {
+	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
+	}
+	if err = migration.Migrate(database); err != nil {
+		log.Fatalf("failed to migrate: %v", err)
 	}
 	if err := config.Load(); err != nil {
 		log.Fatalf("failed to load config: %v", err)
@@ -228,20 +232,6 @@ func main() {
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)
 
 	server.RegisterRoutes()
-
-	syncQuota := os.Getenv("SYNC_QUOTA")
-	doSyncQuota, err := strconv.ParseBool(syncQuota)
-	if err != nil {
-		log.Errorf("Failed to parse SYNC_QUOTA: %v", err)
-		doSyncQuota = true
-	}
-	if doSyncQuota {
-		if err := quotaSync(); err != nil {
-			log.Fatalf("quota migration error, %v", err)
-		}
-	} else {
-		log.Infof("Because SYNC_QUOTA set false , no need to sync quota \n")
-	}
 
 	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
 
