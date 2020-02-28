@@ -17,17 +17,16 @@ package artifact
 import (
 	"fmt"
 
+	"github.com/goharbor/harbor/src/api/tag"
 	cmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/signature"
-	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
 )
 
 // Artifact is the overall view of artifact
 type Artifact struct {
 	artifact.Artifact
-	Tags          []*Tag                   `json:"tags"`           // the list of tags that attached to the artifact
+	Tags          []*tag.Tag               `json:"tags"`           // the list of tags that attached to the artifact
 	AdditionLinks map[string]*AdditionLink `json:"addition_links"` // the resource link for build history(image), values.yaml(chart), dependency(chart), etc
 	Labels        []*cmodels.Label         `json:"labels"`
 }
@@ -44,13 +43,6 @@ func (artifact *Artifact) SetAdditionLink(addition, version string) {
 	artifact.AdditionLinks[addition] = &AdditionLink{HREF: href, Absolute: false}
 }
 
-// Tag is the overall view of tag
-type Tag struct {
-	tag.Tag
-	Immutable bool `json:"immutable"`
-	Signed    bool `json:"signed"`
-}
-
 // AdditionLink is a link via that the addition can be fetched
 type AdditionLink struct {
 	HREF     string `json:"href"`
@@ -60,13 +52,6 @@ type AdditionLink struct {
 // Option is used to specify the properties returned when listing/getting artifacts
 type Option struct {
 	WithTag   bool
-	TagOption *TagOption // only works when WithTag is set to true
+	TagOption *tag.Option // only works when WithTag is set to true
 	WithLabel bool
-}
-
-// TagOption is used to specify the properties returned when listing/getting tags
-type TagOption struct {
-	WithImmutableStatus bool
-	WithSignature       bool
-	SignatureChecker    *signature.Checker
 }

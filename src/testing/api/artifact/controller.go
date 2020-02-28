@@ -82,28 +82,6 @@ func (f *FakeController) Copy(ctx context.Context, srcRepo, ref, dstRepo string)
 	return int64(args.Int(0)), args.Error(1)
 }
 
-// ListTags ...
-func (f *FakeController) ListTags(ctx context.Context, query *q.Query, option *artifact.TagOption) ([]*artifact.Tag, error) {
-	args := f.Called()
-	var tags []*artifact.Tag
-	if args.Get(0) != nil {
-		tags = args.Get(0).([]*artifact.Tag)
-	}
-	return tags, args.Error(1)
-}
-
-// CreateTag ...
-func (f *FakeController) CreateTag(ctx context.Context, tag *artifact.Tag) (int64, error) {
-	args := f.Called()
-	return int64(args.Int(0)), args.Error(1)
-}
-
-// DeleteTag ...
-func (f *FakeController) DeleteTag(ctx context.Context, tagID int64) (err error) {
-	args := f.Called()
-	return args.Error(0)
-}
-
 // UpdatePullTime ...
 func (f *FakeController) UpdatePullTime(ctx context.Context, artifactID int64, tagID int64, time time.Time) error {
 	args := f.Called()

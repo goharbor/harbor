@@ -16,12 +16,12 @@ package registry
 
 import (
 	"encoding/json"
-	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/repository"
+	"github.com/goharbor/harbor/src/api/tag"
 	"github.com/goharbor/harbor/src/common/models"
-	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
-	arttesting "github.com/goharbor/harbor/src/testing/api/artifact"
+	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	repotesting "github.com/goharbor/harbor/src/testing/api/repository"
+	tagtesting "github.com/goharbor/harbor/src/testing/api/tag"
 	"github.com/stretchr/testify/suite"
 	"net/http"
 	"net/http/httptest"
@@ -32,20 +32,20 @@ type tagTestSuite struct {
 	suite.Suite
 	originalRepoCtl repository.Controller
 	repoCtl         *repotesting.FakeController
-	originalArtCtl  artifact.Controller
-	artCtl          *arttesting.FakeController
+	originalTagCtl  tag.Controller
+	tagCtl          *tagtesting.FakeController
 }
 
 func (c *tagTestSuite) SetupSuite() {
-	c.originalArtCtl = artifact.Ctl
 	c.originalRepoCtl = repository.Ctl
+	c.originalTagCtl = tag.Ctl
 }
 
 func (c *tagTestSuite) SetupTest() {
-	c.artCtl = &arttesting.FakeController{}
-	artifact.Ctl = c.artCtl
 	c.repoCtl = &repotesting.FakeController{}
 	repository.Ctl = c.repoCtl
+	c.tagCtl = &tagtesting.FakeController{}
+	tag.Ctl = c.tagCtl
 }
 
 func (c *tagTestSuite) TearDownTest() {
@@ -53,7 +53,7 @@ func (c *tagTestSuite) TearDownTest() {
 
 func (c *tagTestSuite) TearDownSuite() {
 	repository.Ctl = c.originalRepoCtl
-	artifact.Ctl = c.originalArtCtl
+	tag.Ctl = c.originalTagCtl
 }
 
 func (c *tagTestSuite) TestListTag() {
@@ -64,15 +64,15 @@ func (c *tagTestSuite) TestListTag() {
 		RepositoryID: 1,
 		Name:         "library/hello-world",
 	}, nil)
-	c.artCtl.On("ListTags").Return([]*artifact.Tag{
+	c.tagCtl.On("List").Return([]*tag.Tag{
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v1",
 			},
 		},
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v2",
 			},
@@ -99,15 +99,15 @@ func (c *tagTestSuite) TestListTagPagination1() {
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
-	c.artCtl.On("ListTags").Return([]*artifact.Tag{
+	c.tagCtl.On("List").Return([]*tag.Tag{
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v1",
 			},
 		},
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v2",
 			},
@@ -135,15 +135,15 @@ func (c *tagTestSuite) TestListTagPagination2() {
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
-	c.artCtl.On("ListTags").Return([]*artifact.Tag{
+	c.tagCtl.On("List").Return([]*tag.Tag{
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v1",
 			},
 		},
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v2",
 			},
@@ -171,15 +171,15 @@ func (c *tagTestSuite) TestListTagPagination3() {
 		RepositoryID: 1,
 		Name:         "hello-world",
 	}, nil)
-	c.artCtl.On("ListTags").Return([]*artifact.Tag{
+	c.tagCtl.On("List").Return([]*tag.Tag{
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v1",
 			},
 		},
 		{
-			Tag: tag.Tag{
+			Tag: model_tag.Tag{
 				RepositoryID: 1,
 				Name:         "v2",
 			},
