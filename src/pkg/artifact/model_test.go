@@ -18,7 +18,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/docker/distribution/manifest/manifestlist"
 	"github.com/goharbor/harbor/src/pkg/artifact/dao"
+	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/suite"
 )
@@ -92,6 +94,17 @@ func (m *modelTestSuite) TestArtifactTo() {
 	assert.Equal(t, art.PullTime, dbArt.PullTime)
 	assert.Equal(t, `{"attr1":"value1"}`, dbArt.ExtraAttrs)
 	assert.Equal(t, `{"anno1":"value1"}`, dbArt.Annotations)
+}
+
+func (m *modelTestSuite) TestHasChildren() {
+	art1 := Artifact{ManifestMediaType: v1.MediaTypeImageIndex}
+	m.True(art1.HasChildren())
+
+	art2 := Artifact{ManifestMediaType: manifestlist.MediaTypeManifestList}
+	m.True(art2.HasChildren())
+
+	art3 := Artifact{ManifestMediaType: v1.MediaTypeImageManifest}
+	m.False(art3.HasChildren())
 }
 
 func TestModel(t *testing.T) {
