@@ -1,7 +1,6 @@
----
-title: Upgrade Harbor and Migrate Data
-weight: 45
----
+
+# Upgrade Harbor and Migrate Data
+
 
 This guide covers upgrade and migration to version 1.10.0. This guide only covers migration from v1.8.x and later to the current version. If you are upgrading from an earlier version, refer to the migration guide in the `release-1.8.0` branch to upgrade to v1.8.x first, then follow this guide to perform the migration to this version.
 
@@ -61,9 +60,13 @@ Since the migration might alter the database schema and the settings of `harbor.
     docker run -it --rm -v ${harbor_yml}:/harbor-migration/harbor-cfg/harbor.yml goharbor/harbor-migrator:[tag] --cfg up
     ```
 
-    **NOTE:** The schema upgrade and data migration of the database is performed by core when Harbor starts. If the migration fails, check the core log to debug.
+    **NOTE 1:** harbor_yml is the `harbor.yml` that is going to be upgraded. Copy the `harbor.yml` file that needs to be upgraded to an intermediate location, for example /tmp, and then run the upgrade by setting harbor_yml to `/tmp/harbor.yml`
+    
+    **NOTE 2:** The schema upgrade and data migration of the database is performed by core when Harbor starts. If the migration fails, check the core log to debug.
 
-1. In the `./harbor` directory, run the `./install.sh` script to install the new Harbor instance. 
+1. Copy the upgraded `harbor.yml` to the `./harbor` directory of the new release. 
+
+1. In the `./harbor` directory of the new release, run the `./install.sh` script to install the new Harbor instance. 
 
    To install Harbor with components such as Notary, Clair, and chartmuseum, see [Run the Installer Script](../../install-config/run-installer-script.md) for more information.
    
