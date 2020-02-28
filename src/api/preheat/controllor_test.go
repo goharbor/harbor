@@ -77,8 +77,14 @@ func (s *preheatSuite) SetupSuite() {
 
 func (s *preheatSuite) TestGetAvailableProviders() {
 	providers, err := s.controller.GetAvailableProviders()
-	s.Equal(1, len(providers))
-	s.Equal("dragonfly", providers[0].ID)
+	s.Equal(2, len(providers))
+	expectProviders := map[string]interface{}{}
+	expectProviders["dragonfly"] = nil
+	expectProviders["kraken"] = nil
+	_, ok := expectProviders[providers[0].ID]
+	s.True(ok)
+	_, ok = expectProviders[providers[1].ID]
+	s.True(ok)
 	s.NoError(err)
 
 }
@@ -116,6 +122,13 @@ func (s *preheatSuite) TestCreateInstance() {
 	id, err = s.controller.CreateInstance(&models.Metadata{
 		Endpoint: "http://foo.bar",
 		Provider: "dragonfly",
+	})
+	s.NoError(err)
+	s.Equal(int64(1), id)
+
+	id, err = s.controller.CreateInstance(&models.Metadata{
+		Endpoint: "http://foo.bar",
+		Provider: "kraken",
 	})
 	s.NoError(err)
 	s.Equal(int64(1), id)
@@ -161,10 +174,24 @@ func (s *preheatSuite) TestPreheatImages() {
 	s.Error(err)
 
 	// Case: valid images provided, healthy instances available.
-	s.instanceStore.On("List", mock.Anything).Return([]*models.Metadata{
+	s.instanceStore.On("List", mock.Anything).Return(1, []*models.Metadata{
 		{
 			ID:       1,
 			Provider: "dragonfly",
+			Endpoint: "http://localhost",
+			Status:   provider.DriverStatusHealthy,
+			Enabled:  true,
+		},
+	}, nil)
+	result, err = s.controller.PreheatImages("library/alpine:latest")
+	s.NotNil(result)
+	s.NoError(err)
+	s.Equal(1, len(result))
+
+	s.instanceStore.On("List", mock.Anything).Return(1, []*models.Metadata{
+		{
+			ID:       1,
+			Provider: "kraken",
 			Endpoint: "http://localhost",
 			Status:   provider.DriverStatusHealthy,
 			Enabled:  true,
