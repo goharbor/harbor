@@ -27,6 +27,7 @@ import (
 	"github.com/goharbor/harbor/src/api/artifact/descriptor"
 	"github.com/goharbor/harbor/src/api/tag"
 	"github.com/goharbor/harbor/src/internal"
+	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	"github.com/goharbor/harbor/src/pkg/blob"
@@ -175,20 +176,30 @@ func (c *controller) ensureArtifact(ctx context.Context, repository, digest stri
 	artifact.Type = descriptor.GetArtifactType(artifact.MediaType)
 
 	// create it
-	id, err := c.artMgr.Create(ctx, artifact)
-	if err != nil {
-		// if got conflict error, try to get the artifact again
-		if ierror.IsConflictErr(err) {
-			art, err = c.artMgr.GetByDigest(ctx, repository, digest)
-			if err == nil {
-				return false, art, nil
+	// use orm.WithTransaction here to avoid the issue:
+	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
+	created := false
+	if err = orm.WithTransaction(func(ctx context.Context) error {
+		id, err := c.artMgr.Create(ctx, artifact)
+		if err != nil {
+			// if got conflict error, try to get the artifact again
+			if ierror.IsConflictErr(err) {
+				var e error
+				artifact, e = c.artMgr.GetByDigest(ctx, repository, digest)
+				if e != nil {
+					err = e
+				}
 			}
-			return false, nil, err
+			return err
 		}
+		created = true
+		artifact.ID = id
+		return nil
+	})(ctx); err != nil && !ierror.IsConflictErr(err) {
 		return false, nil, err
 	}
-	artifact.ID = id
-	return true, artifact, nil
+
+	return created, artifact, nil
 }
 
 func (c *controller) Count(ctx context.Context, query *q.Query) (int64, error) {
@@ -338,15 +349,20 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 		return err
 	}
 
-	_, err = c.artrashMgr.Create(ctx, &model.ArtifactTrash{
-		MediaType:         art.MediaType,
-		ManifestMediaType: art.ManifestMediaType,
-		RepositoryName:    art.RepositoryName,
-		Digest:            art.Digest,
-	})
-	if err != nil && !ierror.IsErr(err, ierror.ConflictCode) {
+	// use orm.WithTransaction here to avoid the issue:
+	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
+	if err = orm.WithTransaction(func(ctx context.Context) error {
+		_, err = c.artrashMgr.Create(ctx, &model.ArtifactTrash{
+			MediaType:         art.MediaType,
+			ManifestMediaType: art.ManifestMediaType,
+			RepositoryName:    art.RepositoryName,
+			Digest:            art.Digest,
+		})
+		return err
+	})(ctx); err != nil && !ierror.IsErr(err, ierror.ConflictCode) {
 		return err
 	}
+
 	// TODO fire delete artifact event
 
 	return nil
