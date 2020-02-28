@@ -2,7 +2,7 @@
 set -e
 
 # If compiling source code this dir is harbor's make dir.
-# If installing harbor via pacakge, this dir is harbor's root dir.
+# If installing harbor via package, this dir is harbor's root dir.
 if [[ -n "$HARBOR_BUNDLE_DIR" ]]; then
     harbor_prepare_path=$HARBOR_BUNDLE_DIR
 else
