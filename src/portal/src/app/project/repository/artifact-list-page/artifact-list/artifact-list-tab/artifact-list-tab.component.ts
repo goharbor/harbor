@@ -64,6 +64,7 @@ import { errorHandler } from "../../../../../../lib/utils/shared/shared.utils";
 import { ArtifactFront as Artifact, mutipleFilter } from "../../../artifact/artifact";
 import { Project } from "../../../../project";
 import { ArtifactService as NewArtifactService } from "../../../../../../../ng-swagger-gen/services/artifact.service";
+import { ADDITIONS } from "../../../artifact/artifact-additions/models";
 export interface LabelState {
   iconsShow: boolean;
   label: Label;
@@ -862,6 +863,12 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       this.onSendingScanCommand = true;
       this.channel.publishScanEvent(this.repoName + "/" + this.selectedRow[0].digest);
     }
+  }
+  hasVul(): boolean {
+    return !!(this.selectedRow
+      && this.selectedRow[0]
+      && this.selectedRow[0].addition_links
+      && this.selectedRow[0].addition_links[ADDITIONS.VULNERABILITIES]);
   }
   submitFinish(e: boolean) {
     this.onSendingScanCommand = e;
