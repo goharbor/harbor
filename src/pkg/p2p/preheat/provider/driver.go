@@ -59,6 +59,12 @@ type PreheatImage struct {
 
 	// The headers which will be sent to the above URL of preheating image
 	Headers map[string]interface{} `json:"headers"`
+
+	// The image name
+	ImageName string `json:"image,omitempty"`
+
+	// The tag
+	Tag string `json:"tag,omitempty"`
 }
 
 // PreheatingStatus contains the related results/status of the preheating operation

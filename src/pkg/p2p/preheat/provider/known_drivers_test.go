@@ -7,8 +7,8 @@ func TestListProviders(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(metadata) != 1 {
-		t.Errorf("expect 1 provider but got %d", len(metadata))
+	if len(metadata) != len(knownDrivers) {
+		t.Errorf("expect %d provider but got %d", len(knownDrivers), len(metadata))
 	}
 	m := metadata[0]
 	if m.ID != "dragonfly" {

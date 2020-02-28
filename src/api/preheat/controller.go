@@ -396,5 +396,7 @@ func buildImageData(image models.ImageRepository) (*provider.PreheatImage, error
 		Headers: map[string]interface{}{
 			"Authorization": fmt.Sprintf("Bearer %s", tk.Token),
 		},
+		ImageName: image.Name(),
+		Tag:       image.Tag(),
 	}, nil
 }
