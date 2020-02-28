@@ -18,7 +18,6 @@ import (
 	"context"
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
-	"github.com/goharbor/harbor/src/api/tag"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/stretchr/testify/mock"
 	"time"
@@ -81,28 +80,6 @@ func (f *FakeController) Delete(ctx context.Context, id int64) (err error) {
 func (f *FakeController) Copy(ctx context.Context, srcRepo, ref, dstRepo string) (int64, error) {
 	args := f.Called()
 	return int64(args.Int(0)), args.Error(1)
-}
-
-// ListTags ...
-func (f *FakeController) ListTags(ctx context.Context, query *q.Query, option *tag.Option) ([]*tag.Tag, error) {
-	args := f.Called()
-	var tags []*tag.Tag
-	if args.Get(0) != nil {
-		tags = args.Get(0).([]*tag.Tag)
-	}
-	return tags, args.Error(1)
-}
-
-// CreateTag ...
-func (f *FakeController) CreateTag(ctx context.Context, tag *tag.Tag) (int64, error) {
-	args := f.Called()
-	return int64(args.Int(0)), args.Error(1)
-}
-
-// DeleteTag ...
-func (f *FakeController) DeleteTag(ctx context.Context, tagID int64) (err error) {
-	args := f.Called()
-	return args.Error(0)
 }
 
 // UpdatePullTime ...

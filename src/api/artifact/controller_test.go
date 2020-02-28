@@ -478,40 +478,6 @@ func (c *controllerTestSuite) TestCopy() {
 	c.Require().Nil(err)
 }
 
-func (c *controllerTestSuite) TestListTags() {
-	c.tagCtl.On("List").Return([]*tag.Tag{
-		{
-			Tag: model_tag.Tag{
-				ID:           1,
-				RepositoryID: 1,
-				Name:         "latest",
-				ArtifactID:   1,
-			},
-		},
-	}, nil)
-	c.artMgr.On("Get").Return(&artifact.Artifact{}, nil)
-	tags, err := c.ctl.ListTags(nil, nil, nil)
-	c.Require().Nil(err)
-	c.Len(tags, 1)
-	c.tagCtl.AssertExpectations(c.T())
-	c.Equal(tags[0].Immutable, false)
-	// TODO check other properties: label, etc
-}
-
-func (c *controllerTestSuite) TestCreateTag() {
-	c.tagCtl.On("Create").Return(1, nil)
-	id, err := c.ctl.CreateTag(nil, &tag.Tag{})
-	c.Require().Nil(err)
-	c.Equal(int64(1), id)
-}
-
-func (c *controllerTestSuite) TestDeleteTag() {
-	c.tagCtl.On("Delete").Return(nil)
-	err := c.ctl.DeleteTag(nil, 1)
-	c.Require().Nil(err)
-	c.tagCtl.AssertExpectations(c.T())
-}
-
 func (c *controllerTestSuite) TestUpdatePullTime() {
 	// artifact ID and tag ID matches
 	c.tagCtl.On("Get").Return(&tag.Tag{

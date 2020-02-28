@@ -179,16 +179,8 @@ func (c *controllerTestSuite) TestDeleteTags() {
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
 	c.tagMgr.On("Delete").Return(nil)
-	tags := []*Tag{
-		{
-			Tag: tag.Tag{
-				RepositoryID: 10,
-				Name:         "test2",
-			},
-			Signed: true,
-		},
-	}
-	err := c.ctl.DeleteTags(nil, tags)
+	ids := []int64{1, 2, 3, 4}
+	err := c.ctl.DeleteTags(nil, ids)
 	c.Require().Nil(err)
 }
 

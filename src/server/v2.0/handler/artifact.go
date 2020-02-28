@@ -51,6 +51,7 @@ func newArtifactAPI() *artifactAPI {
 		proMgr:  project.Mgr,
 		repoCtl: repository.Ctl,
 		scanCtl: scan.DefaultController,
+		tagCtl:  tag.Ctl,
 	}
 }
 
@@ -60,6 +61,7 @@ type artifactAPI struct {
 	proMgr  project.Manager
 	repoCtl repository.Controller
 	scanCtl scan.Controller
+	tagCtl  tag.Controller
 }
 
 func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListArtifactsParams) middleware.Responder {
@@ -238,7 +240,7 @@ func (a *artifactAPI) CreateTag(ctx context.Context, params operation.CreateTagP
 	tag.ArtifactID = art.ID
 	tag.Name = params.Tag.Name
 	tag.PushTime = time.Now()
-	if _, err = a.artCtl.CreateTag(ctx, tag); err != nil {
+	if _, err = a.tagCtl.Create(ctx, tag); err != nil {
 		return a.SendError(ctx, err)
 	}
 	// TODO set location header?
@@ -269,7 +271,7 @@ func (a *artifactAPI) DeleteTag(ctx context.Context, params operation.DeleteTagP
 			"tag %s attached to artifact %d not found", params.TagName, artifact.ID)
 		return a.SendError(ctx, err)
 	}
-	if err = a.artCtl.DeleteTag(ctx, id); err != nil {
+	if err = a.tagCtl.Delete(ctx, id); err != nil {
 		return a.SendError(ctx, err)
 	}
 	return operation.NewDeleteTagOK()

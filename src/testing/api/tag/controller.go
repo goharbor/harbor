@@ -63,7 +63,7 @@ func (f *FakeController) Delete(ctx context.Context, id int64) (err error) {
 }
 
 // DeleteTags ...
-func (f *FakeController) DeleteTags(ctx context.Context, tags []*tag.Tag) (err error) {
+func (f *FakeController) DeleteTags(ctx context.Context, ids []int64) (err error) {
 	args := f.Called()
 	return args.Error(0)
 }

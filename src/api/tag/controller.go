@@ -38,7 +38,7 @@ type Controller interface {
 	// Delete the tag specified by ID with limitation check
 	Delete(ctx context.Context, id int64) (err error)
 	// DeleteTags deletes all tags
-	DeleteTags(ctx context.Context, tags []*Tag) (err error)
+	DeleteTags(ctx context.Context, ids []int64) (err error)
 }
 
 // NewController creates an instance of the default repository controller
@@ -66,7 +66,6 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 	}
 	tags, err := c.List(ctx, query, &Option{
 		WithImmutableStatus: true,
-		WithSignature:       true,
 	})
 	if err != nil {
 		return err
@@ -74,18 +73,14 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 	// the tag already exists under the repository
 	if len(tags) > 0 {
 		tag := tags[0]
+		// the tag already exists under the repository and is attached to the artifact, return directly
+		if tag.ArtifactID == artifactID {
+			return nil
+		}
 		// existing tag must check the immutable status and signature
 		if tag.Immutable {
 			return ierror.New(nil).WithCode(ierror.PreconditionCode).
 				WithMessage("the tag %s configured as immutable, cannot be updated", tag.Name)
-		}
-		if tag.Signed {
-			return ierror.New(nil).WithCode(ierror.PreconditionCode).
-				WithMessage("the tag %s with signature cannot be updated", tag.Name)
-		}
-		// the tag already exists under the repository and is attached to the artifact, return directly
-		if tag.ArtifactID == artifactID {
-			return nil
 		}
 		// the tag exists under the repository, but it is attached to other artifact
 		// update it to point to the provided artifact
@@ -138,15 +133,7 @@ func (c *controller) Get(ctx context.Context, id int64, option *Option) (tag *Ta
 		return tag, nil
 	}
 
-	if option.WithImmutableStatus {
-		c.populateImmutableStatus(ctx, tag)
-	}
-
-	if option.WithSignature {
-		c.populateTagSignature(ctx, tag, option)
-	}
-
-	return tag, nil
+	return c.assembleTag(ctx, &tag.Tag, option), nil
 }
 
 // Create ...
@@ -181,10 +168,10 @@ func (c *controller) Delete(ctx context.Context, id int64) (err error) {
 }
 
 // DeleteTags ...
-func (c *controller) DeleteTags(ctx context.Context, tags []*Tag) (err error) {
+func (c *controller) DeleteTags(ctx context.Context, ids []int64) (err error) {
 	// in order to leverage the signature and immutable status check
-	for _, tag := range tags {
-		if err := c.Delete(ctx, tag.ID); err != nil {
+	for _, id := range ids {
+		if err := c.Delete(ctx, id); err != nil {
 			return err
 		}
 	}

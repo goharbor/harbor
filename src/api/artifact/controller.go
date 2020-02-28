@@ -73,12 +73,6 @@ type Controller interface {
 	Delete(ctx context.Context, id int64) (err error)
 	// Copy the artifact specified by "srcRepo" and "reference" into the repository specified by "dstRepo"
 	Copy(ctx context.Context, srcRepo, reference, dstRepo string) (id int64, err error)
-	// ListTags lists the tags according to the query, specify the properties returned with option
-	ListTags(ctx context.Context, query *q.Query, option *tag.Option) (tags []*tag.Tag, err error)
-	// CreateTag creates a tag
-	CreateTag(ctx context.Context, tag *tag.Tag) (id int64, err error)
-	// DeleteTag deletes the tag specified by tagID
-	DeleteTag(ctx context.Context, tagID int64) (err error)
 	// UpdatePullTime updates the pull time for the artifact. If the tagID is provides, update the pull
 	// time of the tag as well
 	UpdatePullTime(ctx context.Context, artifactID int64, tagID int64, time time.Time) (err error)
@@ -300,7 +294,11 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 
 	// delete all tags that attached to the root artifact
 	if isRoot {
-		if err = c.tagCtl.DeleteTags(ctx, art.Tags); err != nil {
+		var ids []int64
+		for _, tag := range art.Tags {
+			ids = append(ids, tag.ID)
+		}
+		if err = c.tagCtl.DeleteTags(ctx, ids); err != nil {
 			return err
 		}
 	}
@@ -405,23 +403,6 @@ func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo
 	}
 	// TODO fire event
 	return id, nil
-}
-
-func (c *controller) CreateTag(ctx context.Context, tag *tag.Tag) (int64, error) {
-	// TODO fire event
-	return c.tagCtl.Create(ctx, tag)
-}
-func (c *controller) ListTags(ctx context.Context, query *q.Query, option *tag.Option) ([]*tag.Tag, error) {
-	tags, err := c.tagCtl.List(ctx, query, option)
-	if err != nil {
-		return nil, err
-	}
-	return tags, nil
-}
-
-func (c *controller) DeleteTag(ctx context.Context, tagID int64) error {
-	// TODO fire delete tag event
-	return c.tagCtl.Delete(ctx, tagID)
 }
 
 func (c *controller) UpdatePullTime(ctx context.Context, artifactID int64, tagID int64, time time.Time) error {

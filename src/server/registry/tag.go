@@ -17,8 +17,8 @@ package registry
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/repository"
+	"github.com/goharbor/harbor/src/api/tag"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/q"
 	serror "github.com/goharbor/harbor/src/server/error"
@@ -32,13 +32,13 @@ import (
 func newTagHandler() http.Handler {
 	return &tagHandler{
 		repoCtl: repository.Ctl,
-		artCtl:  artifact.Ctl,
+		tagCtl:  tag.Ctl,
 	}
 }
 
 type tagHandler struct {
 	repoCtl        repository.Controller
-	artCtl         artifact.Controller
+	tagCtl         tag.Controller
 	repositoryName string
 }
 
@@ -80,7 +80,7 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	}
 
 	// get tags ...
-	tags, err := t.artCtl.ListTags(req.Context(), &q.Query{
+	tags, err := t.tagCtl.List(req.Context(), &q.Query{
 		Keywords: map[string]interface{}{
 			"RepositoryID": repository.RepositoryID,
 		}}, nil)
