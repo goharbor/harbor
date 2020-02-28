@@ -16,14 +16,11 @@ package assembler
 
 import (
 	"context"
-	"fmt"
 	"testing"
 
-	models "github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
 	"github.com/goharbor/harbor/src/testing/api/scan"
-	"github.com/goharbor/harbor/src/testing/api/scanner"
-	"github.com/stretchr/testify/mock"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -31,75 +28,48 @@ type VulAssemblerTestSuite struct {
 	suite.Suite
 }
 
-func (suite *VulAssemblerTestSuite) newVulAssembler(withScanOverview bool) (*VulAssembler, *scan.Controller, *scanner.Controller) {
-	vulAssembler := NewVulAssembler(withScanOverview)
-
+func (suite *VulAssemblerTestSuite) TestScannable() {
+	checker := &scan.Checker{}
 	scanCtl := &scan.Controller{}
-	scannerCtl := &scanner.Controller{}
 
-	vulAssembler.scanCtl = scanCtl
-	vulAssembler.scannerCtl = scannerCtl
+	assembler := VulAssembler{
+		scanChecker:      checker,
+		scanCtl:          scanCtl,
+		withScanOverview: true,
+	}
 
-	return vulAssembler, scanCtl, scannerCtl
+	mock.OnAnything(checker, "IsScannable").Return(true, nil)
+
+	summary := map[string]interface{}{"key": "value"}
+	mock.OnAnything(scanCtl, "GetSummary").Return(summary, nil)
+
+	var artifact model.Artifact
+
+	suite.Nil(assembler.WithArtifacts(&artifact).Assemble(context.TODO()))
+	suite.Len(artifact.AdditionLinks, 1)
+	suite.Equal(artifact.ScanOverview, summary)
 }
 
-func (suite *VulAssemblerTestSuite) TestNotHasScanner() {
-	{
-		assembler, _, scannerCtl := suite.newVulAssembler(true)
-		scannerCtl.On("GetRegistrationByProject", mock.AnythingOfType("int64")).Return(nil, nil)
+func (suite *VulAssemblerTestSuite) TestNotScannable() {
+	checker := &scan.Checker{}
+	scanCtl := &scan.Controller{}
 
-		var artifact model.Artifact
-		suite.Nil(assembler.WithArtifacts(&artifact).Assemble(context.TODO()))
-		suite.Len(artifact.AdditionLinks, 0)
+	assembler := VulAssembler{
+		scanChecker:      checker,
+		scanCtl:          scanCtl,
+		withScanOverview: true,
 	}
 
-	{
-		assembler, _, scannerCtl := suite.newVulAssembler(true)
-		scannerCtl.On("GetRegistrationByProject", mock.AnythingOfType("int64")).Return(nil, fmt.Errorf("error"))
+	mock.OnAnything(checker, "IsScannable").Return(false, nil)
 
-		var artifact model.Artifact
-		suite.Nil(assembler.WithArtifacts(&artifact).Assemble(context.TODO()))
-		suite.Len(artifact.AdditionLinks, 0)
-	}
-}
+	summary := map[string]interface{}{"key": "value"}
+	mock.OnAnything(scanCtl, "GetSummary").Return(summary, nil)
 
-func (suite *VulAssemblerTestSuite) TestHasScanner() {
-	{
-		assembler, scanCtl, scannerCtl := suite.newVulAssembler(true)
-		scannerCtl.On("GetRegistrationByProject", mock.AnythingOfType("int64")).Return(&models.Registration{}, nil)
+	var art model.Artifact
 
-		summary := map[string]interface{}{"key": "value"}
-		scanCtl.On("GetSummary", mock.AnythingOfType("*v1.Artifact"), mock.AnythingOfType("[]string")).Return(summary, nil)
-
-		var artifact model.Artifact
-		suite.Nil(assembler.WithArtifacts(&artifact).Assemble(context.TODO()))
-		suite.Len(artifact.AdditionLinks, 1)
-		suite.Equal(artifact.ScanOverview, summary)
-	}
-
-	{
-		assembler, scanCtl, scannerCtl := suite.newVulAssembler(false)
-		scannerCtl.On("GetRegistrationByProject", mock.AnythingOfType("int64")).Return(&models.Registration{}, nil)
-		summary := map[string]interface{}{"key": "value"}
-		scanCtl.On("GetSummary", mock.AnythingOfType("*v1.Artifact"), mock.AnythingOfType("[]string")).Return(summary, nil)
-
-		var artifact model.Artifact
-		suite.Nil(assembler.WithArtifacts(&artifact).Assemble(context.TODO()))
-		suite.Len(artifact.AdditionLinks, 1)
-		suite.Nil(artifact.ScanOverview)
-	}
-
-	{
-		assembler, scanCtl, scannerCtl := suite.newVulAssembler(true)
-		scannerCtl.On("GetRegistrationByProject", mock.AnythingOfType("int64")).Return(&models.Registration{}, nil)
-
-		scanCtl.On("GetSummary", mock.AnythingOfType("*v1.Artifact"), mock.AnythingOfType("[]string")).Return(nil, fmt.Errorf("error"))
-
-		var artifact model.Artifact
-		suite.Nil(assembler.WithArtifacts(&artifact).Assemble(context.TODO()))
-		suite.Len(artifact.AdditionLinks, 1)
-		suite.Nil(artifact.ScanOverview)
-	}
+	suite.Nil(assembler.WithArtifacts(&art).Assemble(context.TODO()))
+	suite.Len(art.AdditionLinks, 0)
+	scanCtl.AssertNotCalled(suite.T(), "GetSummary")
 }
 
 func TestVulAssemblerTestSuite(t *testing.T) {

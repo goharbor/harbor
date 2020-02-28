@@ -14,5 +14,7 @@
 
 package api
 
+//go:generate mockery -case snake -dir ../../api/artifact -name Controller -output ./artifact -outpkg artifact
 //go:generate mockery -case snake -dir ../../api/scan -name Controller -output ./scan -outpkg scan
+//go:generate mockery -case snake -dir ../../api/scan -name Checker -output ./scan -outpkg scan
 //go:generate mockery -case snake -dir ../../api/scanner -name Controller -output ./scanner -outpkg scanner

@@ -15,15 +15,17 @@
 package registry
 
 import (
+	"net/http"
+	"net/http/httptest"
+	"testing"
+
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/repository"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	arttesting "github.com/goharbor/harbor/src/testing/api/artifact"
 	repotesting "github.com/goharbor/harbor/src/testing/api/repository"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/stretchr/testify/suite"
-	"net/http"
-	"net/http/httptest"
-	"testing"
 )
 
 type manifestTestSuite struct {
@@ -32,7 +34,7 @@ type manifestTestSuite struct {
 	originalArtCtl  artifact.Controller
 	originalProxy   http.Handler
 	repoCtl         *repotesting.FakeController
-	artCtl          *arttesting.FakeController
+	artCtl          *arttesting.Controller
 }
 
 func (m *manifestTestSuite) SetupSuite() {
@@ -43,7 +45,7 @@ func (m *manifestTestSuite) SetupSuite() {
 
 func (m *manifestTestSuite) SetupTest() {
 	m.repoCtl = &repotesting.FakeController{}
-	m.artCtl = &arttesting.FakeController{}
+	m.artCtl = &arttesting.Controller{}
 	repository.Ctl = m.repoCtl
 	artifact.Ctl = m.artCtl
 }
@@ -63,7 +65,7 @@ func (m *manifestTestSuite) TestGetManifest() {
 	req := httptest.NewRequest(http.MethodGet, "/v2/library/hello-world/manifests/latest", nil)
 	w := &httptest.ResponseRecorder{}
 
-	m.artCtl.On("GetByReference").Return(nil, ierror.New(nil).WithCode(ierror.NotFoundCode))
+	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, ierror.New(nil).WithCode(ierror.NotFoundCode))
 	getManifest(w, req)
 	m.Equal(http.StatusNotFound, w.Code)
 
@@ -85,7 +87,7 @@ func (m *manifestTestSuite) TestGetManifest() {
 
 	art := &artifact.Artifact{}
 	art.Digest = "sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180"
-	m.artCtl.On("GetByReference").Return(art, nil)
+	mock.OnAnything(m.artCtl, "GetByReference").Return(art, nil)
 	getManifest(w, req)
 	m.Equal(http.StatusOK, w.Code)
 }
@@ -95,7 +97,7 @@ func (m *manifestTestSuite) TestDeleteManifest() {
 	req := httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/latest", nil)
 	w := &httptest.ResponseRecorder{}
 
-	m.artCtl.On("GetByReference").Return(nil, ierror.New(nil).WithCode(ierror.NotFoundCode))
+	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, ierror.New(nil).WithCode(ierror.NotFoundCode))
 	deleteManifest(w, req)
 	m.Equal(http.StatusNotFound, w.Code)
 
@@ -116,8 +118,8 @@ func (m *manifestTestSuite) TestDeleteManifest() {
 	})
 	req = httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/latest", nil)
 	w = &httptest.ResponseRecorder{}
-	m.artCtl.On("GetByReference").Return(&artifact.Artifact{}, nil)
-	m.artCtl.On("Delete").Return(nil)
+	mock.OnAnything(m.artCtl, "GetByReference").Return(&artifact.Artifact{}, nil)
+	mock.OnAnything(m.artCtl, "Delete").Return(nil)
 	deleteManifest(w, req)
 	m.Equal(http.StatusAccepted, w.Code)
 }
@@ -152,7 +154,7 @@ func (m *manifestTestSuite) TestPutManifest() {
 	req = httptest.NewRequest(http.MethodPut, "/v2/library/hello-world/manifests/latest", nil)
 	w = &httptest.ResponseRecorder{}
 	m.repoCtl.On("Ensure").Return(false, 1, nil)
-	m.artCtl.On("Ensure").Return(true, 1, nil)
+	mock.OnAnything(m.artCtl, "Ensure").Return(true, int64(1), nil)
 	putManifest(w, req)
 	m.Equal(http.StatusCreated, w.Code)
 }

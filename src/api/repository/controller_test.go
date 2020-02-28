@@ -20,6 +20,7 @@ import (
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/common/models"
 	artifacttesting "github.com/goharbor/harbor/src/testing/api/artifact"
+	"github.com/goharbor/harbor/src/testing/mock"
 	"github.com/goharbor/harbor/src/testing/pkg/project"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/suite"
@@ -30,13 +31,13 @@ type controllerTestSuite struct {
 	ctl     *controller
 	proMgr  *project.FakeManager
 	repoMgr *repository.FakeManager
-	artCtl  *artifacttesting.FakeController
+	artCtl  *artifacttesting.Controller
 }
 
 func (c *controllerTestSuite) SetupTest() {
 	c.proMgr = &project.FakeManager{}
 	c.repoMgr = &repository.FakeManager{}
-	c.artCtl = &artifacttesting.FakeController{}
+	c.artCtl = &artifacttesting.Controller{}
 	c.ctl = &controller{
 		proMgr:  c.proMgr,
 		repoMgr: c.repoMgr,
@@ -118,8 +119,8 @@ func (c *controllerTestSuite) TestGetByName() {
 func (c *controllerTestSuite) TestDelete() {
 	art := &artifact.Artifact{}
 	art.ID = 1
-	c.artCtl.On("List").Return([]*artifact.Artifact{art}, nil)
-	c.artCtl.On("Delete").Return(nil)
+	mock.OnAnything(c.artCtl, "List").Return([]*artifact.Artifact{art}, nil)
+	mock.OnAnything(c.artCtl, "Delete").Return(nil)
 	c.repoMgr.On("Delete").Return(nil)
 	err := c.ctl.Delete(nil, 1)
 	c.Require().Nil(err)

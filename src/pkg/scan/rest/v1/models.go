@@ -65,6 +65,19 @@ type ScannerAdapterMetadata struct {
 	Properties   ScannerProperties    `json:"properties"`
 }
 
+// HasCapability returns true when mine type of the artifact support by the scanner
+func (md *ScannerAdapterMetadata) HasCapability(mimeType string) bool {
+	for _, capability := range md.Capabilities {
+		for _, mt := range capability.ConsumesMimeTypes {
+			if mt == mimeType {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 // Artifact represents an artifact stored in Registry.
 type Artifact struct {
 	// ID of the namespace (project). It will not be sent to scanner adapter.

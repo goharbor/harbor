@@ -35,6 +35,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/pkg/scan/vuln"
+	scannertesting "github.com/goharbor/harbor/src/testing/api/scanner"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
@@ -94,7 +95,7 @@ func (suite *ControllerTestSuite) SetupSuite() {
 		},
 	}
 
-	sc := &MockScannerController{}
+	sc := &scannertesting.Controller{}
 	sc.On("GetRegistrationByProject", suite.artifact.NamespaceID).Return(suite.registration, nil)
 	sc.On("Ping", suite.registration).Return(m, nil)
 
@@ -362,119 +363,6 @@ func (mrm *MockReportManager) GetStats(requester string) (*all.Stats, error) {
 	}
 
 	return args.Get(0).(*all.Stats), args.Error(1)
-}
-
-// MockScannerController ...
-type MockScannerController struct {
-	mock.Mock
-}
-
-// ListRegistrations ...
-func (msc *MockScannerController) ListRegistrations(query *q.Query) ([]*scanner.Registration, error) {
-	args := msc.Called(query)
-
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).([]*scanner.Registration), args.Error(1)
-}
-
-// CreateRegistration ...
-func (msc *MockScannerController) CreateRegistration(registration *scanner.Registration) (string, error) {
-	args := msc.Called(registration)
-
-	return args.String(0), args.Error(1)
-}
-
-// GetRegistration ...
-func (msc *MockScannerController) GetRegistration(registrationUUID string) (*scanner.Registration, error) {
-	args := msc.Called(registrationUUID)
-
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(*scanner.Registration), args.Error(1)
-}
-
-// RegistrationExists ...
-func (msc *MockScannerController) RegistrationExists(registrationUUID string) bool {
-	args := msc.Called(registrationUUID)
-
-	return args.Bool(0)
-}
-
-// UpdateRegistration ...
-func (msc *MockScannerController) UpdateRegistration(registration *scanner.Registration) error {
-	args := msc.Called(registration)
-
-	return args.Error(0)
-}
-
-// DeleteRegistration ...
-func (msc *MockScannerController) DeleteRegistration(registrationUUID string) (*scanner.Registration, error) {
-	args := msc.Called(registrationUUID)
-
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(*scanner.Registration), args.Error(1)
-}
-
-// SetDefaultRegistration ...
-func (msc *MockScannerController) SetDefaultRegistration(registrationUUID string) error {
-	args := msc.Called(registrationUUID)
-
-	return args.Error(0)
-}
-
-// SetRegistrationByProject ...
-func (msc *MockScannerController) SetRegistrationByProject(projectID int64, scannerID string) error {
-	args := msc.Called(projectID, scannerID)
-
-	return args.Error(0)
-}
-
-// GetRegistrationByProject ...
-func (msc *MockScannerController) GetRegistrationByProject(projectID int64) (*scanner.Registration, error) {
-	args := msc.Called(projectID)
-
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(*scanner.Registration), args.Error(1)
-}
-
-// Ping ...
-func (msc *MockScannerController) Ping(registration *scanner.Registration) (*v1.ScannerAdapterMetadata, error) {
-	args := msc.Called(registration)
-
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(*v1.ScannerAdapterMetadata), args.Error(1)
-}
-
-// GetMetadata ...
-func (msc *MockScannerController) GetMetadata(registrationUUID string) (*v1.ScannerAdapterMetadata, error) {
-	args := msc.Called(registrationUUID)
-
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-
-	return args.Get(0).(*v1.ScannerAdapterMetadata), args.Error(1)
-}
-
-// IsScannerAvailable ...
-func (msc *MockScannerController) IsScannerAvailable(projectID int64) (bool, error) {
-	args := msc.Called(projectID)
-
-	return args.Bool(0), args.Error(1)
 }
 
 // MockJobServiceClient ...

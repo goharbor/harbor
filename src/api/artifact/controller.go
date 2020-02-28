@@ -17,6 +17,7 @@ package artifact
 import (
 	"container/list"
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 	"time"
@@ -52,6 +53,11 @@ import (
 var (
 	// Ctl is a global artifact controller instance
 	Ctl = NewController()
+)
+
+var (
+	// ErrBreak error to break walk
+	ErrBreak = errors.New("break")
 )
 
 // Controller defines the operations related with artifacts and tags
@@ -453,6 +459,10 @@ func (c *controller) Walk(ctx context.Context, root *Artifact, walkFn func(*Arti
 
 		artifact := elem.Value.(*Artifact)
 		if err := walkFn(artifact); err != nil {
+			if err == ErrBreak {
+				return nil
+			}
+
 			return err
 		}
 

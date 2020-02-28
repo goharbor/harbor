@@ -112,7 +112,7 @@ type Controller interface {
 	//   Returns:
 	//     *scanner.Registration : the default scanner registration
 	//     error                 : non nil error if any errors occurred
-	GetRegistrationByProject(projectID int64) (*scanner.Registration, error)
+	GetRegistrationByProject(projectID int64, options ...Option) (*scanner.Registration, error)
 
 	// Ping pings Scanner Adapter to test EndpointURL and Authorization settings.
 	// The implementation is supposed to call the GetMetadata method on scanner.Client.
