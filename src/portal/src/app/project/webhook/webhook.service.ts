@@ -11,8 +11,8 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { throwError as observableThrowError, Observable } from "rxjs";
-import { map, catchError } from "rxjs/operators";
+import { throwError as observableThrowError, Observable, of } from "rxjs";
+import { map, catchError, delay } from "rxjs/operators";
 import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { Webhook, LastTrigger } from "./webhook";
@@ -42,6 +42,12 @@ export class WebhookService {
       .pipe(catchError(error => observableThrowError(error)));
   }
 
+  public deleteWebhook(projectId: number, policyId: number): Observable<any> {
+    return this.http
+      .delete(`${ CURRENT_BASE_HREF }/projects/${projectId}/webhook/policies/${policyId}`)
+      .pipe(catchError(error => observableThrowError(error)));
+  }
+
   public createWebhook(projectId: number, data: any): Observable<any> {
     return this.http
       .post(`${ CURRENT_BASE_HREF }/projects/${projectId}/webhook/policies`, data)
@@ -52,6 +58,12 @@ export class WebhookService {
   public testEndpoint(projectId: number, param): Observable<any> {
     return this.http
       .post(`${ CURRENT_BASE_HREF }/projects/${projectId}/webhook/policies/test`, param)
+      .pipe(catchError(error => observableThrowError(error)));
+  }
+
+  public getWebhookMetadata(projectId: number): Observable<any> {
+    return this.http
+      .get(`${CURRENT_BASE_HREF}/projects/${projectId}/webhook/events`)
       .pipe(catchError(error => observableThrowError(error)));
   }
 }
