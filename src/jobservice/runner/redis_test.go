@@ -15,25 +15,22 @@ package runner
 
 import (
 	"context"
-	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"os"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/stretchr/testify/assert"
-
-	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/logger/backend"
-
 	"github.com/gocraft/work"
-
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/config"
-	"github.com/goharbor/harbor/src/jobservice/tests"
-
 	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
+	"github.com/goharbor/harbor/src/jobservice/logger/backend"
+	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/gomodule/redigo/redis"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 )
@@ -66,6 +63,7 @@ func (suite *RedisRunnerTestSuite) SetupSuite() {
 		SystemContext: ctx,
 		WG:            new(sync.WaitGroup),
 		ErrorChan:     make(chan error, 1),
+		JobContext:    impl.NewDefaultContext(ctx),
 	}
 
 	suite.namespace = tests.GiveMeTestNamespace()

@@ -17,10 +17,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
+	"testing"
+	"time"
+
 	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/jobservice/common/utils"
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/tests"
 	"github.com/goharbor/harbor/src/jobservice/worker"
@@ -28,9 +33,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"sync"
-	"testing"
-	"time"
 )
 
 // CWorkerTestSuite tests functions of c worker
@@ -63,6 +65,7 @@ func (suite *CWorkerTestSuite) SetupSuite() {
 		SystemContext: ctx,
 		WG:            new(sync.WaitGroup),
 		ErrorChan:     make(chan error, 1),
+		JobContext:    impl.NewDefaultContext(ctx),
 	}
 	suite.context = envCtx
 
@@ -87,8 +90,6 @@ func (suite *CWorkerTestSuite) SetupSuite() {
 // TearDownSuite clears the test suite
 func (suite *CWorkerTestSuite) TearDownSuite() {
 	suite.cancel()
-
-	suite.context.WG.Wait()
 
 	conn := suite.pool.Get()
 	defer func() {
@@ -190,7 +191,7 @@ func (suite *CWorkerTestSuite) TestStopJob() {
 	t, err := suite.lcmCtl.New(genericJob)
 	require.NoError(suite.T(), err, "new job stats: nil error expected but got %s", err)
 
-	tk := time.NewTicker(500 * time.Millisecond)
+	tk := time.NewTicker(417 * time.Millisecond)
 	defer tk.Stop()
 
 LOOP:
@@ -199,12 +200,12 @@ LOOP:
 		case <-tk.C:
 			latest, err := t.Status()
 			require.NoError(suite.T(), err, "get latest status: nil error expected but got %s", err)
-			if latest.Compare(job.RunningStatus) == 0 {
+			if latest.Compare(job.RunningStatus) >= 0 {
 				break LOOP
 			}
-		case <-time.After(30 * time.Second):
+		case <-time.After(29 * time.Second):
 			require.NoError(suite.T(), errors.New("check running status time out"))
-			break LOOP
+			return
 		}
 	}
 
