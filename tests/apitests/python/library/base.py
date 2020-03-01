@@ -2,6 +2,7 @@
 
 import sys
 import time
+import subprocess
 import swagger_client
 import v2_swagger_client
 try:
@@ -63,6 +64,16 @@ def _get_string_from_unicode(udata):
         tmp = u.encode('utf8')
         result = result + tmp.strip('\n\r\t')
     return result
+
+def run_command(command):
+    print "Command: ", subprocess.list2cmdline(command)
+    try:
+        output = subprocess.check_output(command,
+                                         stderr=subprocess.STDOUT,
+                                         universal_newlines=True)
+    except subprocess.CalledProcessError as e:
+        raise Exception('Error: Exited with error code: %s. Output:%s'% (e.returncode, e.output))
+    return output
 
 class Base:
     def __init__(self,

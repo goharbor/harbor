@@ -18,5 +18,5 @@ Test Case - LDAP Group Admin Role
 Test Case - LDAP Group User Group
     Harbor API Test  ./tests/apitests/python/test_user_group.py
 
-### Test Case - Run LDAP Group Related API Test
-###     Harbor API Test  ./tests/apitests/python/test_assign_role_to_ldap_group.py
+Test Case - Run LDAP Group Related API Test
+    Harbor API Test  ./tests/apitests/python/test_assign_role_to_ldap_group.py
