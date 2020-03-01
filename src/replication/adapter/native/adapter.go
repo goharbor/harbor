@@ -17,7 +17,6 @@ package native
 import (
 	"errors"
 	"fmt"
-	"sync"
 
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
