@@ -1,11 +1,8 @@
 package contenttrust
 
 import (
-	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/middlewares/util"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/pkg/signature/notary"
+	"github.com/goharbor/harbor/src/pkg/signature"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
 	"net/http"
@@ -27,7 +24,7 @@ func Middleware() func(http.Handler) http.Handler {
 			rec := httptest.NewRecorder()
 			next.ServeHTTP(rec, req)
 			if rec.Result().StatusCode == http.StatusOK {
-				match, err := matchNotaryDigest(mf)
+				match, err := isArtifactSigned(req, mf)
 				if err != nil {
 					serror.SendError(rw, err)
 					return
@@ -61,36 +58,12 @@ func validate(req *http.Request) (bool, middleware.ArtifactInfo) {
 	return true, af
 }
 
-func matchNotaryDigest(af middleware.ArtifactInfo) (bool, error) {
-	if NotaryEndpoint == "" {
-		NotaryEndpoint = config.InternalNotaryEndpoint()
-	}
-	targets, err := notary.GetInternalTargets(NotaryEndpoint, util.TokenUsername, af.Repository)
+// isArtifactSigned use the sign manager to check the signature, it could handle pull by tag or digtest
+// if pull by digest, any tag of the artifact is signed, will return true.
+func isArtifactSigned(req *http.Request, art middleware.ArtifactInfo) (bool, error) {
+	checker, err := signature.GetManager().GetCheckerByRepo(req.Context(), art.Repository)
 	if err != nil {
 		return false, err
 	}
-	for _, t := range targets {
-		if af.Digest != "" {
-			d, err := notary.DigestFromTarget(t)
-			if err != nil {
-				return false, err
-			}
-			if af.Digest == d {
-				return true, nil
-			}
-		} else {
-			if t.Tag == af.Tag {
-				log.Debugf("found reference: %s in notary, try to match digest.", af.Tag)
-				d, err := notary.DigestFromTarget(t)
-				if err != nil {
-					return false, err
-				}
-				if af.Digest == d {
-					return true, nil
-				}
-			}
-		}
-	}
-	log.Debugf("image: %#v, not found in notary", af)
-	return false, nil
+	return checker.IsArtifactSigned(art.Digest), nil
 }
