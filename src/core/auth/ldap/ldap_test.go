@@ -28,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/api"
 
+	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/core/auth"
 	coreConfig "github.com/goharbor/harbor/src/core/config"
 )
@@ -162,7 +163,7 @@ func TestAuthenticateWithAdmin(t *testing.T) {
 	if user.Username != "mike" {
 		t.Errorf("unexpected ldap user authenticate fail: %s = %s", "user.Username", user.Username)
 	}
-	if !user.HasAdminRole {
+	if !user.AdminRoleInAuth {
 		t.Errorf("ldap user mike should have admin role!")
 	}
 }
@@ -178,7 +179,7 @@ func TestAuthenticateWithoutAdmin(t *testing.T) {
 	if user.Username != "user001" {
 		t.Errorf("unexpected ldap user authenticate fail: %s = %s", "user.Username", user.Username)
 	}
-	if user.HasAdminRole {
+	if user.AdminRoleInAuth {
 		t.Errorf("ldap user user001 should not have admin role!")
 	}
 }
@@ -401,11 +402,12 @@ func TestAddProjectMemberWithLdapGroup(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error occurred when GetProjectByName: %v", err)
 	}
+	userGroups := []models.UserGroup{{GroupName: "cn=harbor_users,ou=groups,dc=example,dc=com", LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com", GroupType: common.LDAPGroupType}}
+	groupIds, err := group.PopulateGroup(userGroups)
 	member := models.MemberReq{
 		ProjectID: currentProject.ProjectID,
 		MemberGroup: models.UserGroup{
-			LdapGroupDN: "cn=harbor_users,ou=groups,dc=example,dc=com",
-			GroupType:   1,
+			ID: groupIds[0],
 		},
 		Role: models.PROJECTADMIN,
 	}

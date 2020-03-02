@@ -1,4 +1,3 @@
-import { RoleInfo } from './../shared/shared.const';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,15 +13,15 @@ import { RoleInfo } from './../shared/shared.const';
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { Router, Resolve, RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/router';
-
 import { Project } from './project';
-import { ProjectService } from '@harbor/ui';
 import { SessionService } from '../shared/session.service';
 import { Observable } from 'rxjs';
 import { map, catchError } from "rxjs/operators";
+import { RoleInfo } from '../shared/shared.const';
 
 
 import { Roles } from '../shared/shared.const';
+import { ProjectService } from "../../lib/services";
 
 @Injectable()
 export class ProjectRoutingResolver implements Resolve<Project> {

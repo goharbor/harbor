@@ -1,7 +1,7 @@
-FROM golang:1.12.12
+FROM golang:1.13.4
 
 ADD .   /go/src/github.com/goharbor/harbor-scanner-clair/
 WORKDIR /go/src/github.com/goharbor/harbor-scanner-clair/
 
-RUN export GOOS=linux GO111MODULE=on CGO_ENABLED=0 && \
-	go build github.com/goharbor/harbor-scanner-clair/cmd/harbor-scanner-clair
+RUN export GOFLAGS=-mod=vendor GOOS=linux GO111MODULE=on CGO_ENABLED=0 && \
+	go build -o harbor-scanner-clair cmd/harbor-scanner-clair/main.go

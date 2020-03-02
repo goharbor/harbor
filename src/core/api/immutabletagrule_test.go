@@ -152,7 +152,7 @@ func TestImmutableTagRuleAPI_Post(t *testing.T) {
 			},
 			code: http.StatusCreated,
 		},
-		// 201
+		// 409
 		{
 			request: &testingRequest{
 				method:     http.MethodPost,
@@ -160,7 +160,7 @@ func TestImmutableTagRuleAPI_Post(t *testing.T) {
 				credential: projAdmin,
 				bodyJSON:   metadata,
 			},
-			code: http.StatusCreated,
+			code: http.StatusConflict,
 		},
 		// 403
 		{
@@ -228,6 +228,7 @@ func TestImmutableTagRuleAPI_Put(t *testing.T) {
 	defer mgr.DeleteImmutableRule(id)
 
 	url := fmt.Sprintf("/api/projects/1/immutabletagrules/%d", id)
+	url2 := fmt.Sprintf("/api/projects/3/immutabletagrules/%d", id)
 	cases := []*codeCheckingCase{
 		// 401
 		{
@@ -268,6 +269,16 @@ func TestImmutableTagRuleAPI_Put(t *testing.T) {
 			},
 			code: http.StatusForbidden,
 		},
+		// 404
+		{
+			request: &testingRequest{
+				method:     http.MethodPut,
+				url:        url2,
+				credential: projAdmin,
+				bodyJSON:   metadata2,
+			},
+			code: http.StatusNotFound,
+		},
 	}
 	runCodeCheckingCases(t, cases...)
 }
@@ -302,6 +313,7 @@ func TestImmutableTagRuleAPI_Delete(t *testing.T) {
 	defer mgr.DeleteImmutableRule(id)
 
 	url := fmt.Sprintf("/api/projects/1/immutabletagrules/%d", id)
+	wrongURL := fmt.Sprintf("/api/projects/3/immutabletagrules/%d", id)
 
 	cases := []*codeCheckingCase{
 		// 401
@@ -321,6 +333,15 @@ func TestImmutableTagRuleAPI_Delete(t *testing.T) {
 			},
 			code: http.StatusForbidden,
 		},
+		// 404
+		{
+			request: &testingRequest{
+				method:     http.MethodDelete,
+				url:        wrongURL,
+				credential: projAdmin,
+			},
+			code: http.StatusNotFound,
+		},
 		// 200
 		{
 			request: &testingRequest{
@@ -329,6 +350,15 @@ func TestImmutableTagRuleAPI_Delete(t *testing.T) {
 				credential: projAdmin,
 			},
 			code: http.StatusOK,
+		},
+		// 404
+		{
+			request: &testingRequest{
+				method:     http.MethodDelete,
+				url:        url,
+				credential: projAdmin,
+			},
+			code: http.StatusNotFound,
 		},
 	}
 	runCodeCheckingCases(t, cases...)

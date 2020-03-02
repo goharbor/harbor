@@ -3,28 +3,23 @@
 </div>
 <div *ngIf="!loading" class="clr-form clr-form-horizontal">
     <div class="clr-form-control">
-        <label class="clr-control-label name">{{'SCANNER.SCANNER' | translate}}</label>
+        <label *ngIf="!scanner" class="clr-control-label name">{{'SCANNER.SCANNER' | translate}}</label>
         <div class="clr-control-container">
-
-            <label *ngIf="!(scanners && scanners.length > 0)" class="name">{{'SCANNER.NOT_AVAILABLE' | translate}}</label>
+            <button *ngIf="(!scanner) && hasCreatePermission && scanners && scanners.length > 0" id="edit-scanner-copy" class="btn btn-primary " (click)="open()">{{'SCANNER.EDIT' | translate}}</button>
+            <label *ngIf="(!scanner) && hasCreatePermission && !(scanners && scanners.length > 0)" class="name">{{'SCANNER.NOT_AVAILABLE' | translate}}</label>
+            <label *ngIf="(!scanner) && !hasCreatePermission" class="name">{{'SCANNER.NO_PROJECT_SCANNER' | translate}}</label>
         </div>
     </div>
     <ng-container *ngIf="scanner">
         <div class="clr-form-control">
-            <label for="select-full" class="clr-control-label">{{'SCANNER.NAME' | translate}}</label>
+            <label for="select-full" class="clr-control-label name">{{'SCANNER.NAME' | translate}}</label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
-                    <div class="clr-input-wrapper">
+                    <div class="clr-input-wrapper name">
                         <span id="scanner-name" class="scanner-name">{{scanner?.name}}</span>
-                        <button *ngIf="scanners && scanners.length > 0" id="edit-scanner" class="btn btn-primary btn-sm" (click)="open()">{{'SCANNER.EDIT' | translate}}</button>
                         <span *ngIf="scanner?.disabled" class="label label-warning ml-1">{{'SCANNER.DISABLED' | translate}}</span>
-                        <span *ngIf="scanner?.loadingMetadata;else elseBlockLoading" class="spinner spinner-inline ml-2"></span>
-                        <ng-template #elseBlockLoading>
-                            <span *ngIf="scanner?.metadata;else elseBlock" class="label label-success ml-1">{{'SCANNER.HEALTHY' | translate}}</span>
-                            <ng-template #elseBlock>
-                                <span class="label label-danger ml-1">{{'SCANNER.UNHEALTHY' | translate}}</span>
-                            </ng-template>
-                        </ng-template>
+                        <span *ngIf="scanner?.health === 'unhealthy'" class="label label-danger ml-1">{{'SCANNER.UNHEALTHY' | translate}}</span>
+                        <span *ngIf="scanner?.health === 'healthy'" class="label label-success ml-1">{{'SCANNER.HEALTHY' | translate}}</span>
                     </div>
                 </div>
             </div>
@@ -38,35 +33,37 @@
                 </div>
             </div>
         </div>
-        <div class="clr-form-control" *ngIf="scanner?.metadata?.scanner?.name">
+        <div class="clr-form-control" *ngIf="scanner?.adapter">
             <label class="clr-control-label">{{'SCANNER.ADAPTER' | translate}}</label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
-                    <input [ngModel]="scanner?.metadata?.scanner?.name" readonly class="clr-input width-240" type="text" id="scanner-scanner"
+                    <input [ngModel]="scanner?.adapter" readonly class="clr-input width-240" type="text" id="scanner-scanner"
                            autocomplete="off">
                 </div>
             </div>
         </div>
-        <div class="clr-form-control" *ngIf="scanner?.metadata?.scanner?.vendor">
+        <div class="clr-form-control" *ngIf="scanner?.vendor">
             <label class="clr-control-label">{{'SCANNER.VENDOR' | translate}}</label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
-                    <input [ngModel]="scanner?.metadata?.scanner?.vendor" readonly class="clr-input width-240" type="text" id="scanner-vendor"
+                    <input [ngModel]="scanner?.vendor" readonly class="clr-input width-240" type="text" id="scanner-vendor"
                            autocomplete="off">
                 </div>
             </div>
         </div>
-        <div class="clr-form-control" *ngIf="scanner?.metadata?.scanner?.version">
+        <div class="clr-form-control" *ngIf="scanner?.version">
             <label class="clr-control-label">{{'SCANNER.VERSION' | translate}}</label>
             <div class="clr-control-container">
                 <div class="clr-input-wrapper">
-                    <input [ngModel]="scanner?.metadata?.scanner?.version" readonly class="clr-input width-240" type="text" id="scanner-version"
+                    <input [ngModel]="scanner?.version" readonly class="clr-input width-240" type="text" id="scanner-version"
                            autocomplete="off">
                 </div>
             </div>
         </div>
     </ng-container>
+    <button *ngIf="hasCreatePermission && scanners && scanners.length > 0" id="edit-scanner"  type="button" (click)="open()" class="btn  btn-secondary mt-1">{{'SCANNER.SELECT_SCANNER' | translate}}</button>
 </div>
+
 <clr-modal [clrModalSize]="'xl'" [(clrModalOpen)]="opened" [clrModalStaticBackdrop]="true" [clrModalClosable]="false">
     <h3 class="modal-title">{{'SCANNER.SELECT_SCANNER' | translate}}</h3>
     <div class="modal-body body-format">
@@ -74,26 +71,16 @@
         <clr-datagrid [(clrDgSingleSelected)]="selectedScanner">
             <clr-dg-column [clrDgField]="'name'">{{'SCANNER.NAME' | translate}}</clr-dg-column>
             <clr-dg-column [clrDgField]="'url'">{{'SCANNER.ENDPOINT' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'SCANNER.HEALTH' | translate}}</clr-dg-column>
             <clr-dg-column>{{'SCANNER.DEFAULT' | translate}}</clr-dg-column>
-            <clr-dg-column>{{'SCANNER.AUTH' | translate}}</clr-dg-column>
+            <clr-dg-column>{{'SCANNER.DESCRIPTION' | translate}}</clr-dg-column>
             <clr-dg-row *clrDgItems="let scanner of scanners" [clrDgItem]="scanner">
                 <clr-dg-cell>{{scanner.name}}</clr-dg-cell>
                 <clr-dg-cell>{{scanner.url}}</clr-dg-cell>
-                <clr-dg-cell>
-                    <span *ngIf="scanner.loadingMetadata;else elseBlockLoading" class="spinner spinner-inline ml-2">Loading...</span>
-                    <ng-template #elseBlockLoading>
-                        <span *ngIf="scanner.metadata;else elseBlock" class="label label-success">{{'SCANNER.HEALTHY' | translate}}</span>
-                        <ng-template #elseBlock>
-                            <span class="label label-danger">{{'SCANNER.UNHEALTHY' | translate}}</span>
-                        </ng-template>
-                    </ng-template>
-                </clr-dg-cell>
-                <clr-dg-cell>
+                <clr-dg-cell class="position-relative">
                     <span *ngIf="scanner.is_default" class="label label-info">{{scanner.is_default}}</span>
                     <span *ngIf="!scanner.is_default">{{scanner.is_default}}</span>
                 </clr-dg-cell>
-                <clr-dg-cell>{{scanner.auth?scanner.auth:('SCANNER.NONE'|translate)}}</clr-dg-cell>
+                <clr-dg-cell>{{scanner.description}}</clr-dg-cell>
             </clr-dg-row>
             <clr-dg-footer>
                 <span *ngIf="scanners?.length > 0">1 - {{scanners?.length}} {{'WEBHOOK.OF' | translate}} </span> {{scanners?.length}} {{'WEBHOOK.ITEMS' | translate}}
@@ -102,7 +89,7 @@
         </clr-datagrid>
     </div>
     <div class="modal-footer">
-        <button type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
-        <button type="button" [clrLoading]="saveBtnState" class="btn btn-primary" [disabled]="!valid" (click)="save()">{{'BUTTON.OK' | translate}}</button>
+        <button id="cancel" type="button" class="btn btn-outline" (click)="close()">{{'BUTTON.CANCEL' | translate}}</button>
+        <button id="save-scanner" type="button" [clrLoading]="saveBtnState" class="btn btn-primary" [disabled]="!valid" (click)="save()">{{'BUTTON.OK' | translate}}</button>
     </div>
 </clr-modal>

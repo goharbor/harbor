@@ -15,13 +15,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
-
 import { Statistics } from './statistics';
 import { Volumes } from './volumes';
-import {HTTP_GET_OPTIONS} from "@harbor/ui";
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS } from "../../../lib/utils/utils";
 
-const statisticsEndpoint = "/api/statistics";
-const volumesEndpoint = "/api/systeminfo/volumes";
+
+const statisticsEndpoint = CURRENT_BASE_HREF + "/statistics";
+const volumesEndpoint = CURRENT_BASE_HREF + "/systeminfo/volumes";
 /**
  * Declare service to handle the top repositories
  *

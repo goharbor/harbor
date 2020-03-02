@@ -13,12 +13,10 @@
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-// import 'rxjs/add/operator/toPromise';
-
 import { SignInCredential } from '../shared/sign-in-credential';
-import {HTTP_FORM_OPTIONS} from "@harbor/ui";
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
+import { HTTP_FORM_OPTIONS } from "../../lib/utils/utils";
 const signInUrl = '/c/login';
 /**
  *

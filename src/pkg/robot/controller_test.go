@@ -11,6 +11,7 @@ import (
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
 	"testing"
+	"time"
 )
 
 type ControllerTestSuite struct {
@@ -47,9 +48,13 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 	policies := []*rbac.Policy{}
 	policies = append(policies, rbacPolicy)
 
+	tokenDuration := time.Duration(30) * time.Minute
+	expiresAt := time.Now().UTC().Add(tokenDuration).Unix()
+
 	robot1 := &model.RobotCreate{
 		Name:        "robot1",
 		Description: "TestCreateRobotAccount",
+		ExpiresAt:   expiresAt,
 		ProjectID:   int64(1),
 		Access:      policies,
 	}
@@ -74,11 +79,21 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 	robot2 := &model.RobotCreate{
 		Name:        "robot2",
 		Description: "TestCreateRobotAccount",
+		ExpiresAt:   expiresAt,
 		ProjectID:   int64(1),
 		Access:      policies,
 	}
 	r2, _ := s.ctr.CreateRobotAccount(robot2)
 	s.robotID = r2.ID
+
+	robot3 := &model.RobotCreate{
+		Name:        "robot3",
+		Description: "TestCreateRobotAccount",
+		ExpiresAt:   expiresAt,
+		ProjectID:   int64(11),
+		Access:      policies,
+	}
+	r3, _ := s.ctr.CreateRobotAccount(robot3)
 
 	keywords := make(map[string]interface{})
 	keywords["ProjectID"] = int64(1)
@@ -91,6 +106,8 @@ func (s *ControllerTestSuite) TestRobotAccount() {
 	s.require.Equal(robots[1].Name, common.RobotPrefix+"robot2")
 
 	err = s.ctr.DeleteRobotAccount(robot.ID)
+	s.require.Nil(err)
+	err = s.ctr.DeleteRobotAccount(r3.ID)
 	s.require.Nil(err)
 
 	robots, err = s.ctr.ListRobotAccount(query)

@@ -1,14 +1,19 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 
-	"github.com/goharbor/harbor/src/pkg/q"
-
+	"github.com/goharbor/harbor/src/api/scan"
+	"github.com/goharbor/harbor/src/api/scanner"
 	common_job "github.com/goharbor/harbor/src/common/job"
+	cm "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/api/models"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scanner"
+	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/pkg/q"
+	"github.com/goharbor/harbor/src/pkg/scan/all"
 	"github.com/pkg/errors"
 )
 
@@ -97,6 +102,43 @@ func (sc *ScanAllAPI) List() {
 	sc.list(common_job.ImageScanAllJob)
 }
 
+// GetScheduleMetrics returns the progress metrics for the latest scheduled scan all job
+func (sc *ScanAllAPI) GetScheduleMetrics() {
+	sc.getMetrics(common_job.JobKindPeriodic)
+}
+
+// GetScanAllMetrics returns the progress metrics for the latest manually triggered scan all job
+func (sc *ScanAllAPI) GetScanAllMetrics() {
+	sc.getMetrics(common_job.JobKindGeneric)
+}
+
+func (sc *ScanAllAPI) getMetrics(kind string) {
+	aj, err := sc.getLatestAdminJob(common_job.ImageScanAllJob, kind)
+	if err != nil {
+		sc.SendInternalServerError(errors.Wrap(err, "get metrics: scan all API"))
+		return
+	}
+
+	var sts *all.Stats
+	if aj != nil {
+		sts, err = scan.DefaultController.GetStats(fmt.Sprintf("%d", aj.ID))
+		if err != nil {
+			sc.SendInternalServerError(errors.Wrap(err, "get metrics: scan all API"))
+			return
+		}
+
+		setOngoing(sts, aj.Status)
+	}
+
+	// Return empty
+	if sts == nil {
+		sts = &all.Stats{}
+	}
+
+	sc.Data["json"] = sts
+	sc.ServeJSON()
+}
+
 func isScanEnabled() (bool, error) {
 	kws := make(map[string]interface{})
 	kws["is_default"] = true
@@ -111,4 +153,16 @@ func isScanEnabled() (bool, error) {
 	}
 
 	return len(l) > 0, nil
+}
+
+func setOngoing(stats *all.Stats, st string) {
+	status := job.PendingStatus
+
+	if st == cm.JobFinished {
+		status = job.SuccessStatus
+	} else {
+		status = job.Status(strings.ToTitle(st))
+	}
+
+	stats.Ongoing = !status.Final() || stats.Total != stats.Completed
 }

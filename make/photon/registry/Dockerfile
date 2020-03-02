@@ -1,24 +1,20 @@
-FROM photon:2.0
+ARG harbor_base_image_version
+FROM goharbor/harbor-registry-base:${harbor_base_image_version}
 
-MAINTAINER wangyan@vmware.com
-
-# The original script in the docker offical registry image.
-RUN tdnf install sudo -y >> /dev/null\
-    && tdnf clean all \
-    && mkdir /harbor/ \
-    && mkdir -p /etc/registry \
-    && groupadd -r -g 10000 harbor && useradd --no-log-init -r -g 10000 -u 10000 harbor  
-
-COPY ./make/photon/common/install_cert.sh /harbor
-COPY ./make/photon/registry/entrypoint.sh /
+COPY ./make/photon/common/install_cert.sh /home/harbor
+COPY ./make/photon/registry/entrypoint.sh /home/harbor
 COPY ./make/photon/registry/binary/registry /usr/bin
 
-RUN chmod u+x /entrypoint.sh \
-    && chmod u+x /usr/bin/registry
+RUN chown -R harbor:harbor /etc/pki/tls/certs \
+    && chown harbor:harbor /home/harbor/entrypoint.sh && chmod u+x /home/harbor/entrypoint.sh \
+    && chown harbor:harbor /home/harbor/install_cert.sh && chmod u+x /home/harbor/install_cert.sh \
+    && chown harbor:harbor /usr/bin/registry && chmod u+x /usr/bin/registry
 
 HEALTHCHECK CMD curl 127.0.0.1:5000/
 
-VOLUME ["/var/lib/registry"]
+USER harbor
+
+ENTRYPOINT ["/home/harbor/entrypoint.sh"]
+
+VOLUME ["/storage"]
 EXPOSE 5000
-ENTRYPOINT ["/entrypoint.sh"]
-CMD ["/etc/registry/config.yml"]

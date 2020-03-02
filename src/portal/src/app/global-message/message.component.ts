@@ -15,11 +15,10 @@ import { Component, Input, OnInit, OnDestroy, ElementRef } from '@angular/core';
 import { Router } from '@angular/router';
 import { Subscription } from "rxjs";
 import { TranslateService } from '@ngx-translate/core';
-
 import { Message } from './message';
 import { MessageService } from './message.service';
+import { CommonRoutes, dismissInterval, httpStatusCode } from "../../lib/entities/shared.const";
 
-import { dismissInterval, httpStatusCode, CommonRoutes } from '@harbor/ui';
 
 @Component({
   selector: 'global-message',

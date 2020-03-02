@@ -16,12 +16,12 @@ package replication
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/internal"
 	"net/http"
 	"os"
 
 	common_http "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
-	reg "github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/replication/model"
 )
@@ -61,7 +61,7 @@ func (s *Scheduler) Run(ctx job.Context, params job.Parameters) error {
 	policyID := (int64)(params["policy_id"].(float64))
 	cred := auth.NewSecretAuthorizer(os.Getenv("JOBSERVICE_SECRET"))
 	client := common_http.NewClient(&http.Client{
-		Transport: reg.GetHTTPTransport(true),
+		Transport: internal.GetHTTPTransport(true),
 	}, cred)
 	if err := client.Post(url, struct {
 		PolicyID int64 `json:"policy_id"`

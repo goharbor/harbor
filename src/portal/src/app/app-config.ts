@@ -11,7 +11,9 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-import { ClairDBStatus } from '@harbor/ui';
+
+
+import { ClairDBStatus } from "../lib/services";
 
 export class AppConfig {
     with_notary: boolean;

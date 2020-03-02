@@ -26,7 +26,7 @@ Verify Project
     Init Chrome Driver
     Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
     :FOR    ${project}    IN    @{project}
-    \    Page Should Contain    ${project}
+    \    Retry Wait Until Page Contains    ${project}
     Verify Project Metadata  ${json}
     Close Browser
 
@@ -56,10 +56,10 @@ Verify Project Metadata
     \    Switch To Project Configuration
     \    Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.public  ${project_config_public_checkbox}
     \    Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.enable_content_trust  ${project_config_content_trust_checkbox}
-    \    Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.automatically_scan_images_on_push  ${project_config_scan_images_on_push_checkbox}
-    \    Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.prevent_vulnerable_images_from_running  ${project_config_prevent_vulnerable_images_from_running_checkbox}
+    \    Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.auto_scan  ${project_config_scan_images_on_push_checkbox}
+    \    Verify Checkbox  ${json}  $.projects[?(@.name=${project})].configuration.prevent_vul  ${project_config_prevent_vulnerable_images_from_running_checkbox}
     \    ${ret}    Get Selected List Value    ${project_config_severity_select}
-    \    @{severity}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.prevent_vlunerable_images_from_running_severity
+    \    @{severity}=    Get Value From Json    ${json}    $.projects[?(@.name=${project})].configuration.severity
     \    Should Contain    ${ret}    @{severity}[0]
     \    Navigate To Projects
     Close Browser
@@ -145,12 +145,40 @@ Verify Endpoint
 
 Verify Replicationrule
     [Arguments]    ${json}
-    @{replicationrule}=  Get Value From Json  ${json}  $.replicationrule..name
-    Init Chrome Driver
-    Sign In Harbor  ${HARBOR_URL}  ${HARBOR_ADMIN}  ${HARBOR_PASSWORD}
-    Switch To Replication Manage
-    :For    ${replicationrule}    IN    @{replicationrule}
-    \    Page Should Contain    ${replicationrule}
+    @{replicationrules}=    Get Value From Json    ${json}    $.replicationrule.[*].rulename
+    @{endpoints}=    Get Value From Json    ${json}    $.endpoint.[*].name
+    : FOR    ${replicationrule}    IN    @{replicationrules}
+    \    Init Chrome Driver
+    \    Log To Console    -----replicationrule-----"${replicationrule}"------------
+    \    Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
+    \    Switch To Replication Manage
+    \    Select Rule And Click Edit Button    ${replicationrule}
+    \    @{is_src_registry}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].is_src_registry
+    \    @{trigger_type}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].trigger_type
+    \    @{name_filters}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].name_filters
+    \    @{tag_filters}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].tag_filters
+    \    @{dest_namespace}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].dest_namespace
+    \    @{cron}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].cron
+    \    @{is_src_registry}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].is_src_registry
+    \    Log To Console    -----is_src_registry-----@{is_src_registry}[0]------------
+    \    @{endpoint}=    Get Value From Json    ${json}    $.replicationrule[?(@.rulename=${replicationrule})].endpoint
+    \    Log To Console    -----endpoint-----@{endpoint}------------
+    \    ${endpoint0}=   Set Variable    @{endpoint}[0]
+    \    Log To Console    -----endpoint0-----${endpoint0}------------
+    \    @{endpoint_type}=    Get Value From Json    ${json}    $.endpoint[?(@.name=${endpoint0})].type
+    \    Retry Textfield Value Should Be    ${source_project}    @{name_filters}[0]
+    \    Retry Textfield Value Should Be    ${filter_tag}    @{tag_filters}[0]
+    \    Retry Textfield Value Should Be    ${rule_name_input}    ${replicationrule}
+    \    Retry Textfield Value Should Be    ${dest_namespace_xpath}    @{dest_namespace}[0]
+    \    Log To Console    -----endpoint_type-----@{endpoint_type}[0]------------
+    \    ${registry}=    Set Variable If    "@{endpoint_type}[0]"=="harbor"    ${endpoint0}-https://${IP}    ${endpoint0}-https://hub.docker.com
+    \    Log To Console    -------registry---${registry}------------
+    \    Run Keyword If    '@{is_src_registry}[0]' == '${true}'    Retry List Selection Should Be    ${src_registry_dropdown_list}    ${registry}
+    \    ...    ELSE    Retry List Selection Should Be    ${dest_registry_dropdown_list}    ${registry}
+    \    #\    Retry List Selection Should Be    ${rule_resource_selector}    ${resource_type}
+    \    Retry List Selection Should Be    ${rule_trigger_select}    @{trigger_type}[0]
+    \    Run Keyword If    '@{trigger_type}[0]' == 'scheduled'    Log To Console    ----------@{trigger_type}[0]------------
+    \    Run Keyword If    '@{trigger_type}[0]' == 'scheduled'    Retry Textfield Value Should Be    ${targetCron_id}    @{cron}[0]
     Close Browser
 
 Verify Project Setting

@@ -17,30 +17,26 @@ package filter
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"net/http"
-	"regexp"
+	"strings"
 
 	beegoctx "github.com/astaxie/beego/context"
 	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/dao/group"
 	"github.com/goharbor/harbor/src/common/models"
 	secstore "github.com/goharbor/harbor/src/common/secret"
 	"github.com/goharbor/harbor/src/common/security"
-	admr "github.com/goharbor/harbor/src/common/security/admiral"
-	"github.com/goharbor/harbor/src/common/security/admiral/authcontext"
 	"github.com/goharbor/harbor/src/common/security/local"
 	robotCtx "github.com/goharbor/harbor/src/common/security/robot"
 	"github.com/goharbor/harbor/src/common/security/secret"
 	"github.com/goharbor/harbor/src/common/utils/log"
+	"github.com/goharbor/harbor/src/common/utils/oidc"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
-	"github.com/goharbor/harbor/src/core/promgr/pmsdriver/admiral"
-	"strings"
-
 	"github.com/goharbor/harbor/src/pkg/authproxy"
 	"github.com/goharbor/harbor/src/pkg/robot"
 	pkg_token "github.com/goharbor/harbor/src/pkg/token"
@@ -56,9 +52,6 @@ type pathMethod struct {
 }
 
 const (
-	// SecurCtxKey is context value key for security context
-	SecurCtxKey ContextValueKey = "harbor_security_context"
-
 	// PmKey is context value key for the project manager
 	PmKey ContextValueKey = "harbor_project_manager"
 	// AuthModeKey is context key for auth mode
@@ -95,17 +88,6 @@ var (
 
 // Init ReqCtxMofiers list
 func Init() {
-	// integration with admiral
-	if config.WithAdmiral() {
-		reqCtxModifiers = []ReqCtxModifier{
-			&secretReqCtxModifier{config.SecretStore},
-			&tokenReqCtxModifier{},
-			&basicAuthReqCtxModifier{},
-			&unauthorizedReqCtxModifier{}}
-		return
-	}
-
-	// standalone
 	reqCtxModifiers = []ReqCtxModifier{
 		&configCtxModifier{},
 		&secretReqCtxModifier{config.SecretStore},
@@ -227,8 +209,9 @@ type oidcCliReqCtxModifier struct{}
 func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	path := ctx.Request.URL.Path
 	if path != "/service/token" &&
+		!strings.HasPrefix(path, "/v2") &&
 		!strings.HasPrefix(path, "/chartrepo/") &&
-		!strings.HasPrefix(path, "/api/chartrepo/") {
+		!strings.HasPrefix(path, fmt.Sprintf("/api/%s/chartrepo/", api.APIVersion)) {
 		log.Debug("OIDC CLI modifier only handles request by docker CLI or helm CLI")
 		return false
 	}
@@ -239,18 +222,8 @@ func (oc *oidcCliReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	if !ok {
 		return false
 	}
-
-	user, err := dao.GetUser(models.User{
-		Username: username,
-	})
+	user, err := oidc.VerifySecret(ctx.Request.Context(), username, secret)
 	if err != nil {
-		log.Errorf("Failed to get user: %v", err)
-		return false
-	}
-	if user == nil {
-		return false
-	}
-	if err := oidc.VerifySecret(ctx.Request.Context(), user.UserID, secret); err != nil {
 		log.Errorf("Failed to verify secret: %v", err)
 		return false
 	}
@@ -289,9 +262,17 @@ func (it *idTokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Warning("User matches token's claims is not onboarded.")
 		return false
 	}
-	u.GroupIDs, err = group.GetGroupIDByGroupName(oidc.GroupsFromToken(claims), common.OIDCGroupType)
+	settings, err := config.OIDCSetting()
 	if err != nil {
-		log.Errorf("Failed to get group ID list for OIDC user: %s, error: %v", u.Username, err)
+		log.Errorf("Failed to get OIDC settings, error: %v", err)
+	}
+	if groupNames, ok := oidc.GroupsFromClaims(claims, settings.GroupsClaim); ok {
+		groups := models.UserGroupsFromName(groupNames, common.OIDCGroupType)
+		u.GroupIDs, err = group.PopulateGroup(groups)
+		if err != nil {
+			log.Errorf("Failed to get group ID list for OIDC user: %s, error: %v", u.Username, err)
+			return false
+		}
 	}
 	pm := config.GlobalProjectMgr
 	sc := local.NewSecurityContext(u, pm)
@@ -327,32 +308,42 @@ func (ap *authProxyReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 		log.Errorf("fail to get auth proxy settings, %v", err)
 		return false
 	}
-	tokenReviewResponse, err := authproxy.TokenReview(proxyPwd, httpAuthProxyConf)
+	tokenReviewStatus, err := authproxy.TokenReview(proxyPwd, httpAuthProxyConf)
 	if err != nil {
 		log.Errorf("fail to review token, %v", err)
 		return false
 	}
-
-	if !tokenReviewResponse.Status.Authenticated {
-		log.Errorf("fail to auth user: %s", rawUserName)
+	if rawUserName != tokenReviewStatus.User.Username {
+		log.Errorf("user name doesn't match with token: %s", rawUserName)
 		return false
 	}
 	user, err := dao.GetUser(models.User{
 		Username: rawUserName,
 	})
 	if err != nil {
-		log.Errorf("fail to get user: %v", err)
+		log.Errorf("fail to get user: %s, error: %v", rawUserName, err)
 		return false
 	}
-	if user == nil {
-		log.Errorf("User: %s has not been on boarded yet.", rawUserName)
+	if user == nil { // onboard user if it's not yet onboarded.
+		uid, err := auth.SearchAndOnBoardUser(rawUserName)
+		if err != nil {
+			log.Errorf("Failed to search and onboard user, username: %s, error: %v", rawUserName, err)
+			return false
+		}
+		user, err = dao.GetUser(models.User{
+			UserID: uid,
+		})
+		if err != nil {
+			log.Errorf("Fail to get user, name: %s, ID: %d, error: %v", rawUserName, uid, err)
+			return false
+		}
+	}
+	u2, err := authproxy.UserFromReviewStatus(tokenReviewStatus)
+	if err != nil {
+		log.Errorf("Failed to get user information from token review status, error: %v", err)
 		return false
 	}
-	if rawUserName != tokenReviewResponse.Status.User.Username {
-		log.Errorf("user name doesn't match with token: %s", rawUserName)
-		return false
-	}
-
+	user.GroupIDs = u2.GroupIDs
 	pm := config.GlobalProjectMgr
 	log.Debug("creating local database security context for auth proxy...")
 	securCtx := local.NewSecurityContext(user, pm)
@@ -376,53 +367,6 @@ func (b *basicAuthReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	}
 	log.Debug("got user information via basic auth")
 
-	// integration with admiral
-	if config.WithAdmiral() {
-		// Can't get a token from Admiral's login API, we can only
-		// create a project manager with the token of the solution user.
-		// That way may cause some wrong permission promotion in some API
-		// calls, so we just handle the requests which are necessary
-		match := false
-		var err error
-		path := ctx.Request.URL.Path
-		for _, pattern := range basicAuthReqPatterns {
-			match, err = regexp.MatchString(pattern.path, path)
-			if err != nil {
-				log.Errorf("failed to match %s with pattern %s", path, pattern)
-				continue
-			}
-			if match {
-				break
-			}
-		}
-		if !match {
-			log.Debugf("basic auth is not supported for request %s %s, skip",
-				ctx.Request.Method, ctx.Request.URL.Path)
-			return false
-		}
-
-		token, err := config.TokenReader.ReadToken()
-		if err != nil {
-			log.Errorf("failed to read solution user token: %v", err)
-			return false
-		}
-		authCtx, err := authcontext.Login(config.AdmiralClient,
-			config.AdmiralEndpoint(), username, password, token)
-		if err != nil {
-			log.Errorf("failed to authenticate %s: %v", username, err)
-			return false
-		}
-
-		log.Debug("using global project manager...")
-		pm := config.GlobalProjectMgr
-		log.Debug("creating admiral security context...")
-		securCtx := admr.NewSecurityContext(authCtx, pm)
-
-		setSecurCtxAndPM(ctx.Request, securCtx, pm)
-		return true
-	}
-
-	// standalone
 	user, err := auth.Login(models.AuthModel{
 		Principal: username,
 		Password:  password,
@@ -467,91 +411,26 @@ func (s *sessionReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	return true
 }
 
-type tokenReqCtxModifier struct{}
-
-func (t *tokenReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
-	token := ctx.Request.Header.Get(authcontext.AuthTokenHeader)
-	if len(token) == 0 {
-		return false
-	}
-
-	log.Debug("got token from request")
-
-	authContext, err := authcontext.GetAuthCtx(config.AdmiralClient,
-		config.AdmiralEndpoint(), token)
-	if err != nil {
-		log.Errorf("failed to get auth context: %v", err)
-		return false
-	}
-
-	log.Debug("creating PMS project manager...")
-	driver := admiral.NewDriver(config.AdmiralClient,
-		config.AdmiralEndpoint(), &admiral.RawTokenReader{
-			Token: token,
-		})
-
-	pm := promgr.NewDefaultProjectManager(driver, false)
-
-	log.Debug("creating admiral security context...")
-	securCtx := admr.NewSecurityContext(authContext, pm)
-	setSecurCtxAndPM(ctx.Request, securCtx, pm)
-
-	return true
-}
-
 // use this one as the last modifier in the modifier list for unauthorized request
 type unauthorizedReqCtxModifier struct{}
 
 func (u *unauthorizedReqCtxModifier) Modify(ctx *beegoctx.Context) bool {
 	log.Debug("user information is nil")
-
-	var securCtx security.Context
-	var pm promgr.ProjectManager
-	if config.WithAdmiral() {
-		// integration with admiral
-		log.Debug("creating PMS project manager...")
-		driver := admiral.NewDriver(config.AdmiralClient,
-			config.AdmiralEndpoint(), nil)
-		pm = promgr.NewDefaultProjectManager(driver, false)
-		log.Debug("creating admiral security context...")
-		securCtx = admr.NewSecurityContext(nil, pm)
-	} else {
-		// standalone
-		log.Debug("using local database project manager")
-		pm = config.GlobalProjectMgr
-		log.Debug("creating local database security context...")
-		securCtx = local.NewSecurityContext(nil, pm)
-	}
+	log.Debug("using local database project manager")
+	pm := config.GlobalProjectMgr
+	log.Debug("creating local database security context...")
+	securCtx := local.NewSecurityContext(nil, pm)
 	setSecurCtxAndPM(ctx.Request, securCtx, pm)
 	return true
 }
 
 func setSecurCtxAndPM(req *http.Request, ctx security.Context, pm promgr.ProjectManager) {
-	addToReqContext(req, SecurCtxKey, ctx)
+	*req = *(req.WithContext(security.NewContext(req.Context(), ctx)))
 	addToReqContext(req, PmKey, pm)
 }
 
 func addToReqContext(req *http.Request, key, value interface{}) {
 	*req = *(req.WithContext(context.WithValue(req.Context(), key, value)))
-}
-
-// GetSecurityContext tries to get security context from request and returns it
-func GetSecurityContext(req *http.Request) (security.Context, error) {
-	if req == nil {
-		return nil, fmt.Errorf("request is nil")
-	}
-
-	ctx := req.Context().Value(SecurCtxKey)
-	if ctx == nil {
-		return nil, fmt.Errorf("the security context got from request is nil")
-	}
-
-	c, ok := ctx.(security.Context)
-	if !ok {
-		return nil, fmt.Errorf("the variable got from request is not security context type")
-	}
-
-	return c, nil
 }
 
 // GetProjectManager tries to get project manager from request and returns it

@@ -37,7 +37,7 @@ Capture Screenshot And Source
     Log Source
 
 Sign Up Should Not Display
-    Page Should Not Contain Element  xpath=${sign_up_button_xpath}
+    Retry Wait Until Page Not Contains Element  xpath=${sign_up_button_xpath}
 
 Create An New User
     [Arguments]  ${url}  ${username}  ${email}  ${realname}  ${newPassword}  ${comment}

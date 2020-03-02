@@ -15,13 +15,10 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { map, catchError } from "rxjs/operators";
 import { Observable, throwError as observableThrowError } from "rxjs";
-
-
 import { PasswordSetting } from './password-setting';
+import { CURRENT_BASE_HREF, HTTP_FORM_OPTIONS, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../../lib/utils/utils";
 
-import {HTTP_FORM_OPTIONS, HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "@harbor/ui";
-
-const passwordChangeEndpoint = "/api/users/:user_id/password";
+const passwordChangeEndpoint = CURRENT_BASE_HREF + "/users/:user_id/password";
 const sendEmailEndpoint = "/c/sendEmail";
 const resetPasswordEndpoint = "/c/reset";
 

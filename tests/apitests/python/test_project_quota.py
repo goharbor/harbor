@@ -13,15 +13,9 @@ from library.system import System
 class TestProjects(unittest.TestCase):
     @classmethod
     def setUp(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
-        repo = Repository()
-        self.repo= repo
-
+        self.project= Project()
+        self.user= User()
+        self.repo= Repository()
         self.system = System()
 
     @classmethod
@@ -66,14 +60,14 @@ class TestProjects(unittest.TestCase):
         self.project.add_project_members(TestProjects.project_test_quota_id, TestProjects.user_test_quota_id, **ADMIN_CLIENT)
 
         #4.Push an image to project(PA) by user(UA), then check the project quota usage; -- {"count": 1, "storage": 2791709}
-        image = "alpine"
+        image = "goharbor/alpine"
         src_tag = "3.10"
         TestProjects.repo_name, _ = push_image_to_project(project_test_quota_name, harbor_server, user_test_quota_name, user_001_password, image, src_tag)
 
         #5. Get project quota
         quota = self.system.get_project_quota("project", TestProjects.project_test_quota_id, **ADMIN_CLIENT)
         self.assertEqual(quota[0].used["count"], 1)
-        self.assertEqual(quota[0].used["storage"], 2789174)
+        self.assertEqual(quota[0].used["storage"], 2789002)
 
         #6. Delete repository(RA) by user(UA);
         self.repo.delete_repoitory(TestProjects.repo_name, **ADMIN_CLIENT)

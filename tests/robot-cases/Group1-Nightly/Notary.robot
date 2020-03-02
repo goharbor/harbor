@@ -41,3 +41,6 @@ Test Case - Project Level Policy Content Trust
 
 Test Case - Admin Push Signed Image
     Body Of Admin Push Signed Image
+
+Test Case - Admin Push Signed Image And Remove Signature
+    Body Of Admin Push Signed Image  image=mariadb  with_remove=${true}

@@ -1,5 +1,3 @@
-
-import {finalize, debounceTime, distinctUntilChanged} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +11,7 @@ import {finalize, debounceTime, distinctUntilChanged} from 'rxjs/operators';
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
+import {finalize, debounceTime, distinctUntilChanged} from 'rxjs/operators';
 import {
   Component,
   Input,
@@ -35,14 +34,11 @@ import { MessageHandlerService } from '../../../shared/message-handler/message-h
 import { InlineAlertComponent } from '../../../shared/inline-alert/inline-alert.component';
 import { UserService } from '../../../user/user.service';
 import {User} from "../../../user/user";
-
 import {Project} from "../../project";
-
 import { Member } from '../member';
-import { errorHandler as errorHandFn } from "@harbor/ui";
-
 import { MemberService } from '../member.service';
 import { HttpResponseBase } from '@angular/common/http';
+import { errorHandler } from "../../../../lib/utils/shared/shared.utils";
 
 
 @Component({
@@ -170,7 +166,7 @@ export class AddMemberComponent implements AfterViewChecked, OnInit, OnDestroy {
             this.messageHandlerService.handleError(error);
             // this.addMemberOpened = false;
           } else {
-          let errorMessageKey: string = errorHandFn(error);
+          let errorMessageKey: string = errorHandler(error);
             this.translateService
               .get(errorMessageKey)
               .subscribe(errorMessage => this.messageHandlerService.handleError(errorMessage));

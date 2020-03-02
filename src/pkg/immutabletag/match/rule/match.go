@@ -10,13 +10,12 @@ import (
 
 // Matcher ...
 type Matcher struct {
-	pid   int64
 	rules []model.Metadata
 }
 
 // Match ...
-func (rm *Matcher) Match(c art.Candidate) (bool, error) {
-	if err := rm.getImmutableRules(); err != nil {
+func (rm *Matcher) Match(pid int64, c art.Candidate) (bool, error) {
+	if err := rm.getImmutableRules(pid); err != nil {
 		return false, err
 	}
 
@@ -71,8 +70,8 @@ func (rm *Matcher) Match(c art.Candidate) (bool, error) {
 	return false, nil
 }
 
-func (rm *Matcher) getImmutableRules() error {
-	rules, err := immutabletag.ImmuCtr.ListImmutableRules(rm.pid)
+func (rm *Matcher) getImmutableRules(pid int64) error {
+	rules, err := immutabletag.ImmuCtr.ListImmutableRules(pid)
 	if err != nil {
 		return err
 	}
@@ -81,8 +80,6 @@ func (rm *Matcher) getImmutableRules() error {
 }
 
 // NewRuleMatcher ...
-func NewRuleMatcher(pid int64) match.ImmutableTagMatcher {
-	return &Matcher{
-		pid: pid,
-	}
+func NewRuleMatcher() match.ImmutableTagMatcher {
+	return &Matcher{}
 }

@@ -5,7 +5,9 @@
         "VIC": "vSphere Integrated Containers",
         "MGMT": "Management",
         "REG": "Registre",
-        "HARBOR_SWAGGER": "Harbor Swagger"
+        "HARBOR_SWAGGER": "Harbor Swagger",
+        "THEME_DARK_TEXT": "DARK",
+        "THEME_LIGHT_TEXT": "LIGHT"
     },
     "SIGN_IN": {
         "REMEMBER": "Se souvenir de moi",
@@ -138,7 +140,7 @@
         "NEW_PWD": "Nouveau Mot de Passe",
         "CONFIRM_PWD": "Confirmer le Mot de Passe",
         "SAVE_SUCCESS": "Mot de passe utilisateur modifié avec succès.",
-        "PASS_TIPS": "8-20 caractères long avec 1 majuscule, 1 minuscule et 1 chiffre"
+        "PASS_TIPS": "8-128 caractères long avec 1 majuscule, 1 minuscule et 1 chiffre"
     },
     "ACCOUNT_SETTINGS": {
         "PROFILE": "Profil Utilisateur",
@@ -160,7 +162,8 @@
             "REPLICATION": "Réplication",
             "CONFIG": "Configuration",
             "VULNERABILITY": "Vulnerability",
-            "GARBAGE_COLLECTION": "Garbage Collection"
+            "GARBAGE_COLLECTION": "Garbage Collection",
+            "INTERROGATION_SERVICES": "Interrogation Services"
         },
         "LOGS": "Logs",
         "TASKS": "Tasks",
@@ -207,9 +210,8 @@
         "PUBLIC_PROJECTS": "Projets Publics",
         "PROJECT": "Projet",
         "NEW_PROJECT": "Nouveau Projet",
-        "NAME_TOOLTIP": "Le nom du projet doit comporter au moins 2 caractères avec des minuscules, des chiffres et. _- et doit commencer par des caractères ou des chiffres.",
+        "NAME_TOOLTIP": "Le nom du projet doit comporter 1~255 caractères avec des minuscules, des chiffres et. _- et doit commencer par des caractères ou des chiffres.",
         "NAME_IS_REQUIRED": "Le nom du projet est obligatoire.",
-        "NAME_MINIMUM_LENGTH": "Le nom du projet est trop court, il doit être supérieur à 2 caractères.",
         "NAME_ALREADY_EXISTS": "Le nom du projet existe déjà.",
         "NAME_IS_ILLEGAL": "Le nom du projet est invalide.",
         "UNKNOWN_ERROR": "Une erreur inconnue s'est produite lors de la création du projet.",
@@ -242,7 +244,8 @@
         "HELMCHART": "Helm Charts",
         "ROBOT_ACCOUNTS": "Robot Accounts",
         "WEBHOOKS": "Webhooks",
-        "IMMUTABLE_TAG": "Immutable Tag"
+        "IMMUTABLE_TAG": "Tag Immutability",
+        "TAG_STRATEGY": "Tag Strategy"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Dépôt du Projet",
@@ -303,7 +306,7 @@
         "DELETED_SUCCESS": "Membre supprimé avec succès.",
         "SWITCHED_SUCCESS": "Rôle du membre changé avec succés.",
         "OF": "de",
-        "SET_ROLE": "SET ROLE",
+        "SET_ROLE": "Set Role",
         "REMOVE": "Remove"
     },
     "ROBOT_ACCOUNT": {
@@ -312,6 +315,7 @@
         "TOKEN": "gage ",
         "NEW_ROBOT_ACCOUNT": "nouveau robot compte ",
         "ENABLED_STATE": "état d 'activation",
+        "CREATETION": "Created time",
         "EXPIRATION": "Expiration",
         "NUMBER_REQUIRED": "Field is required and should be an integer other than 0.",
         "TOKEN_EXPIRATION": "Robot Token Expiration (Days)",
@@ -328,7 +332,6 @@
         "PERMISSIONS_HELMCHART": "Helm Chart",
         "PUSH": "Push",
         "PULL": "Pull",
-
         "FILTER_PLACEHOLDER": "Filter Robot Accounts",
         "ROBOT_NAME": "ne peut pas contenir de caractères spéciaux(~#$%) et la longueur maximale devrait être de 255 caractères.",
         "ACCOUNT_EXISTING": "le robot est existe déjà.",
@@ -356,6 +359,7 @@
         "CREATE_WEBHOOK": "Getting started with webhooks",
         "EDIT_WEBHOOK_DESC": "Specify the endpoint for receiving webhook notifications",
         "CREATE_WEBHOOK_DESC": "To get started with webhooks, provide an endpoint and credentials to access the webhook server.",
+        "VERIFY_REMOTE_CERT_TOOLTIP": "Determine whether the webhook should verify the certificate of a remote url Uncheck this box when the remote url uses a self-signed or untrusted certificate.",
         "ENDPOINT_URL": "Endpoint URL",
         "URL_IS_REQUIRED": "Endpoint URL is required.",
         "AUTH_HEADER": "Auth Header",
@@ -399,7 +403,8 @@
         "PROJECT_ADMIN": "Project Admin",
         "PROJECT_MASTER": "Master",
         "DEVELOPER": "Developer",
-        "GUEST": "Guest"
+        "GUEST": "Guest",
+        "LIMITED_GUEST": "Limited Guest"
     },
     "AUDIT_LOG": {
         "USERNAME": "Nom d'utilisateur",
@@ -487,7 +492,6 @@
         "REPLICATION_MODE": "Replication Mode",
         "SRC_REGISTRY": "Source registry",
         "DESTINATION_NAMESPACE": "Destination registry:Namespace",
-        "LAST_REPLICATION": "Last Replication",
         "DESTINATION_NAME_IS_REQUIRED": "Le nom du Point Final est obligatoire.",
         "NEW_DESTINATION": "Nouveau Point Final",
         "DESTINATION_URL": "URL du Point Final",
@@ -521,22 +525,16 @@
         "ITEMS": "items",
         "NO_LOGS": "Pas de log",
         "TOGGLE_ENABLE_TITLE": "Activer la Règle",
-        "CONFIRM_TOGGLE_ENABLE_POLICY": "Après avoir activé la règle de réplication, tous les dépôts du projet seront répliqués dans le registre de destination. Veuillez confirmer pour continuer.",
         "TOGGLE_DISABLE_TITLE": "Désactiver la Règle",
-        "CONFIRM_TOGGLE_DISABLE_POLICY": "Après avoir désactivé la règle, tous les travaux de réplication inachevés de cette règle seront arrêtés et annulés. Veuillez confirmer pour continuer.",
         "CREATED_SUCCESS": "Règle de réplication créée avec succès.",
         "UPDATED_SUCCESS": "Règle de réplication mise à jour avec succès.",
         "DELETED_SUCCESS": "Règle de réplication supprimée avec succès.",
         "DELETED_FAILED": "La suppression de la règle de réplication a échoué.",
         "TOGGLED_SUCCESS": "Modification du statut de la règle de réplication avec succés.",
         "CANNOT_EDIT": "La règle de réplication ne peut pas être modifiée lorsqu'elle est activée.",
-        "POLICY_ALREADY_EXISTS": "La règle de réplication existe déjà.",
-        "FAILED_TO_DELETE_POLICY_ENABLED": "Impossible de supprimer une règle : la règle a une (des) tâche(s) inachevé(s) ou la règle est activée.",
-        "FOUND_ERROR_IN_JOBS": "Erreurs trouvées dans les travaux de réplication, veuillez vérifier.",
         "INVALID_DATE": "Date non valide.",
         "PLACEHOLDER": "Nous n'avons trouvé aucune règle de réplication !",
         "JOB_PLACEHOLDER": "Nous n'avons trouvé aucun travail de réplication !",
-        "JOB_LOG_VIEWER": "Afficher les logs des travaux de réplication",
         "NO_ENDPOINT_INFO": "Please add an endpoint first",
         "NO_PROJECT_INFO": "This project is not exist",
         "SOURCE_RESOURCE_FILTER": "Source resource filter",
@@ -554,7 +552,6 @@
         "REPLICATE": "Replicate",
         "DELETE_REMOTE_IMAGES": "Delete remote resources when locally deleted",
         "DELETE_ENABLED": "Enabled this policy",
-        "REPLICATE_IMMEDIATE": "Replicate existing images immediately",
         "NEW": "New",
         "NAME_TOOLTIP": "replication rule name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
         "DESTINATION_NAME_TOOLTIP": "Destination name should be at least 2 characters long with lower case characters, numbers and ._- and must be start with characters or numbers.",
@@ -608,6 +605,9 @@
         "DELETE": "Supprimer",
         "NAME": "Nom",
         "TAGS_COUNT": "Tags",
+        "PLATFORM": "OS/ARCH",
+        "ARTIFACT_TOOTIP": "Click this icon to enter the Artifact list of refer",
+        "ARTIFACTS_COUNT": "Artifacts",
         "PULL_COUNT": "Pulls",
         "PULL_COMMAND": "Commande de Pull",
         "PULL_TIME": "Pull Time",
@@ -620,12 +620,14 @@
         "DELETION_SUMMARY_REPO_SIGNED": "Le Dépôt '{{repoName}}' ne peut pas être supprimé parce que les images suivantes signées existent. \n{{signedImages}} \nVous devez retirer la signature de toutes les images signées avant de supprimer le dépôt !",
         "DELETION_SUMMARY_REPO": "Voulez-vous supprimer le dépôt {{repoName}} ?",
         "DELETION_TITLE_TAG": "Confirmer la suppression du Tag",
-        "DELETION_SUMMARY_TAG": "Voulez-vous supprimer le tag {{param}}?",
+        "DELETION_SUMMARY_TAG": "Voulez-vous supprimer le tag {{param}}? If you delete this tag, all other tags referenced by the same digest will also be deleted.",
         "DELETION_TITLE_TAG_DENIED": "Un tag signé ne peut être supprimé",
         "DELETION_SUMMARY_TAG_DENIED": "La balise doit être supprimée du Résumé avant qu'elle ne puisse être supprimée. \nSupprimer du Résumé via cette commande: \n",
         "TAGS_NO_DELETE": "Upload/Delete is prohibited in read only mode.",
         "FILTER_FOR_REPOSITORIES": "Filtrer les Dépôts",
         "TAG": "Tag",
+        "ARTIFACT": "Aarifact",
+        "ARTIFACTS": "Artifacts",
         "SIZE": "Taille",
         "VULNERABILITY": "Vulnérabilitée",
         "BUILD_HISTORY": "Construire l'histoire",
@@ -650,8 +652,9 @@
         "LABELS": "Labels",
         "ADD_LABEL_TO_IMAGE": "Add labels to this image",
         "FILTER_BY_LABEL": "Filter images by label",
+        "FILTER_ARTIFACT_BY_LABEL": "Filter actifact by label",
         "ADD_LABELS": "Add labels",
-        "RETAG": "Retag",
+        "RETAG": "Copy",
         "ACTION": "ACTION",
         "DEPLOY": "DEPLOY",
         "ADDITIONAL_INFO": "Add Additional Info",
@@ -717,10 +720,10 @@
     },
     "SUMMARY": {
         "QUOTAS": "quotas",
-        "PROJECT_REPOSITORY": "Project repositories",
-        "PROJECT_HELM_CHART": "Project Helm Chart",
-        "PROJECT_MEMBER": "Project members",
-        "PROJECT_QUOTAS": "Project quotas",
+        "PROJECT_REPOSITORY": "Repositories",
+        "PROJECT_HELM_CHART": "Helm Chart",
+        "PROJECT_MEMBER": "Members",
+        "PROJECT_QUOTAS": "Quotas",
         "ARTIFACT_COUNT": "Artifact count",
         "STORAGE_CONSUMPTION": "Storage consumption",
         "ADMIN": "Admin(s)",
@@ -797,7 +800,6 @@
             "PRO_CREATION_RESTRICTION": "L'indicateur pour définir quels utilisateurs ont le droit de créer des projets. Par défaut, tout le monde peut créer un projet. Définissez sur 'Administrateur Seulement' pour que seul un administrateur puisse créer un projet.",
             "ROOT_CERT_DOWNLOAD": "Téléchargez le certificat racine du dépôt.",
             "SCANNING_POLICY": "Définissez la politique d'analyse des images en fonction des différentes exigences. 'Aucune' : pas de politique active; 'Tousles jours à' : déclenchement du balayage à l'heure spécifiée tous les jours.",
-            "READONLY_TOOLTIP": "In read-only mode, you can not delete repositories or tags or push images. ",
             "GC_POLICY": "",
             "WEBHOOK_TOOLTIP": "Enable webhooks to receive callbacks at your designated endpoints when certain actions such as image or chart being pushed, pulled, deleted, scanned are performed",
             "HOURLY_CRON": "Run once an hour, beginning of hour. Équivalent à 0 0 * * * *.",
@@ -847,16 +849,28 @@
         },
         "SCANNING": {
             "TRIGGER_SCAN_ALL_SUCCESS": "Déclenchement d'analyse globale avec succès !",
-            "TRIGGER_SCAN_ALL_FAIL": "Echec du déclenchement d'analyse globale avec des erreurs : {{error}",
+            "TRIGGER_SCAN_ALL_FAIL": "Echec du déclenchement d'analyse globale avec des erreurs : {{error}}",
             "TITLE": "Analyse de vulnérabilité",
             "SCAN_ALL": "Analyser tout",
+            "SCHEDULE_TO_SCAN_ALL": "Schedule to scan all",
             "SCAN_NOW": "ANALYSER MAINTENANT",
+            "SCAN": "SCAN",
             "NONE_POLICY": "Aucune",
             "DAILY_POLICY": "Tous les jours à",
             "REFRESH_POLICY": "Lors de la mise à jour",
             "DB_REFRESH_TIME": "Base de données mise à jour le",
             "DB_NOT_READY": "La base de données sur les vulnérabilités pourrait ne pas être entièrement prête !",
-            "NEXT_SCAN": "Disponible à partir de"
+            "NEXT_SCAN": "Disponible à partir de",
+            "STATUS": {
+                "PENDING": "Pending",
+                "RUNNING": "Running",
+                "STOPPED": "Stopped",
+                "ERROR": "Error",
+                "SUCCESS": "Success",
+                "SCHEDULED": "Scheduled"
+            },
+            "MANUAL": "Manual",
+            "SCHEDULED": "Scheduled"
         },
         "TEST_MAIL_SUCCESS": "La connexion au serveur de mail est vérifiée.",
         "TEST_LDAP_SUCCESS": "La connexion au serveur LDAP est vérifiée.",
@@ -924,7 +938,7 @@
             "SCANNING_TIME": "Temps d'analyse complète :",
             "TOOLTIPS_TITLE": "{{totalVulnerability}} de {{totalPackages}} {{package}} ont des {{vulnerability}} connues.",
             "TOOLTIPS_TITLE_SINGULAR": "{{totalVulnerability}} de {{totalPackages}} {{package}} a des {{vulnerability}} connues.",
-            "TOOLTIPS_TITLE_ZERO": "Aucun paquet de vulnérabilité connue trouvé"
+            "TOOLTIPS_TITLE_ZERO": "No recognizable vulnerability found"
         },
         "SEVERITY": {
             "CRITICAL": "Critique",
@@ -942,8 +956,7 @@
         "PLACEHOLDER": "Filtrer les Vulnérabilitiés",
         "PACKAGE": "paquet",
         "PACKAGES": "paquets",
-        "SCAN_NOW": "Analyser",
-        "JOB_LOG_VIEWER": "Voir le log des travaux d'analyse"
+        "SCAN_NOW": "Analyser"
     },
     "PUSH_IMAGE": {
         "TITLE": "Pousser l'Image",
@@ -951,6 +964,12 @@
         "TAG_COMMAND": "Tagger une image pour ce projet :",
         "PUSH_COMMAND": "Pousser une image dans ce projet :",
         "COPY_ERROR": "Copie échouée, veuillez essayer de copier manuellement les commandes de référence."
+    },
+    "ARTIFACT": {
+        "FILTER_FOR_ARTIFACTS": "Filter Artifacts",
+        "ADDITIONS": "Additions",
+        "ANNOTATION": "Annotation",
+        "EXTRA_PROPERTIES": "Extra Attributes"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Créer le",
@@ -971,7 +990,15 @@
         "AUTHOR": "Author",
         "LABELS": "Labels",
         "CREATION": "Créer sur",
-        "COMMAND": "Les commandes"
+        "COMMAND": "Les commandes",
+        "UPLOADTIME": "Upload Time",
+        "NAME": "Name",
+        "PULL_TIME": "Pull Time",
+        "PUSH_TIME": "Push Time",
+        "OF": "of",
+        "ITEMS": "items",
+        "ADD_TAG": "ADD TAG",
+        "REMOVE_TAG": "REMOVE TAG"
     },
     "LABEL": {
         "LABEL": "Label",
@@ -1009,7 +1036,8 @@
         "STORAGE_DEFAULT_QUOTA": "Default storage quota",
         "SAVE_SUCCESS": "Quota edit success",
         "UNLIMITED": "unlimited",
-        "INVALID_INPUT": "invalid input"
+        "INVALID_INPUT": "invalid input",
+        "PLACEHOLDER": "We couldn't find any project quotas"
     },
     "WEEKLY": {
         "MONDAY": "Monday",
@@ -1077,7 +1105,6 @@
         "ON": "on",
         "AT": "at",
         "NOSCHEDULE": "An error occurred in Get schedule"
-
     },
     "GC": {
         "CURRENT_SCHEDULE": "Current Schedule",
@@ -1091,7 +1118,7 @@
         "MSG_SCHEDULE_RESET": "Garbage Collection schedule has been reset"
     },
     "RETAG": {
-        "MSG_SUCCESS": "Retag successfully",
+        "MSG_SUCCESS": "Copy artifact successfully",
         "TIP_REPO": "A repository name is broken up into path components. A component of a repository name must be at least one lowercase, alpha-numeric characters, optionally separated by periods, dashes or underscores. More strictly, it must match the regular expression [a-z0-9]+(?:[._-][a-z0-9]+)*.If a repository name has two or more path components, they must be separated by a forward slash ('/').The total length of a repository name, including slashes, must be less the 256 characters.",
         "TIP_TAG": "A tag is a label applied to a Docker image in a repository. Tags are how various images in a repository are distinguished from each other.It need to match Regex: (`[\\w][\\w.-]{0,127}`)"
     },
@@ -1202,6 +1229,32 @@
         "EXECUTION_TYPE": "Execution Type",
         "ACTION": "ACTION"
     },
+    "IMMUTABLE_TAG": {
+        "IMMUTABLE_RULES": "Immutability rules",
+        "ADD_RULE": "ADD RULE",
+        "ADD_RULE_HELP_1": "Click the ADD RULE button to add a rule.",
+        "EDIT": "Edit",
+        "DISABLE": "Disable",
+        "ENABLE": "Enable",
+        "DELETE": "Delete",
+        "ADD_TITLE": "Add Tag Immutability Rule",
+        "ADD_SUBTITLE": "Specify a tag immutability rule for this project.  Note: all tag immutability rules are first independently calculated and then unioned to capture the final set of immutable tags.",
+        "IN_REPOSITORIES": "For the repositories",
+        "REP_SEPARATOR": "Enter multiple comma separated repos,repo*,or **",
+        "TAGS": "Tags",
+        "TAG_SEPARATOR": "Enter multiple comma separated tags,tag*,or **",
+        "EDIT_TITLE": "Edit Tag Immutability Rule",
+        "EXC": " excluding ",
+        "MAT": " matching ",
+        "AND": " and",
+        "WITH": " with ",
+        "WITHOUT": " without ",
+        "LOWER_LABELS": " labels",
+        "LOWER_TAGS": " tags",
+        "NONE": " none",
+        "EXISTING_RULE": "Existing rule",
+        "ACTION": "ACTION"
+    },
     "SCANNER": {
         "DELETION_SUMMARY": "Do you want to delete scanner {{param}}?",
         "SKIP_CERT_VERIFY": "Check this box to skip certificate verification when the remote registry uses a self-signed or untrusted certificate.",
@@ -1226,13 +1279,13 @@
         "TOKEN": "Token",
         "TOKEN_REQUIRED": "Token is required",
         "API_KEY_REQUIRED": "APIKey is required",
-        "SKIP": "Skip Certificate Verification",
+        "SKIP": "Skip certificate verification",
         "ADD_SCANNER": "Add Scanner",
         "EDIT_SCANNER": "Edit Scanner",
         "TEST_CONNECTION": "TEST CONNECTION",
         "ADD_SUCCESS": "Successfully added ",
         "TEST_PASS": "Test passed",
-        "TEST_FAILED": "Test failed",
+        "TEST_FAILED": "Ping: registration {{name}}:{{url}} is unreachable",
         "UPDATE_SUCCESS": "Successfully updated",
         "SCANNER_COLON": "Scanner:",
         "NAME_COLON": "Name:",
@@ -1264,6 +1317,19 @@
         "DELETE_SUCCESS": "Successfully deleted",
         "TOTAL": "Total",
         "FIXABLE": "Fixable",
-        "DURATION": "Duration:"
+        "DURATION": "Duration:",
+        "OPTIONS": "Options",
+        "USE_INNER": "Use internal registry address",
+        "USE_INNER_TIP": "If the option is checked, the scanner will be forced to use the internal registry address to access the related contents.",
+        "VULNERABILITY_SEVERITY": "Vulnerability severity:",
+        "CONFIRM_DELETION": "Confirm Scanner deletion",
+        "NO_PROJECT_SCANNER": "No Scanner",
+        "SET_UNHEALTHY_SCANNER": "Selected scanner:{{name}} is unhealthy",
+        "SCANNED_BY": "Scanned by:",
+        "IMAGE_SCANNERS": "Image Scanners",
+        "VIEW_DOC": "view documentation",
+        "ALL_SCANNERS": "All scanners",
+        "HELP_INFO_1": "The default scanner has been installed. To install other scanners refer to the ",
+        "HELP_INFO_2": "documentation."
     }
 }

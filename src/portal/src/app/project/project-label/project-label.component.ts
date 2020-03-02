@@ -15,9 +15,9 @@ import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { SessionService } from '../../shared/session.service';
 import { SessionUser } from '../../shared/session-user';
-import { Project } from '../project';
 import { forkJoin } from 'rxjs';
-import { UserPermissionService, USERSTATICPERMISSION, ErrorHandler } from "@harbor/ui";
+import { UserPermissionService, USERSTATICPERMISSION } from "../../../lib/services";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
 
 @Component({
   selector: 'app-project-config',

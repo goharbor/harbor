@@ -1,4 +1,4 @@
-import { async, ComponentFixture, ComponentFixtureAutoDetect, TestBed } from '@angular/core/testing';
+import { async, ComponentFixture, ComponentFixtureAutoDetect, fakeAsync, TestBed, tick } from '@angular/core/testing';
 import { ClrLoadingState } from "@clr/angular";
 import { ConfigScannerService } from "../config-scanner.service";
 import { NewScannerModalComponent } from "./new-scanner-modal.component";
@@ -7,14 +7,15 @@ import { NewScannerFormComponent } from "../new-scanner-form/new-scanner-form.co
 import { FormBuilder } from "@angular/forms";
 import { of, Subscription } from "rxjs";
 import { delay } from "rxjs/operators";
-import { SharedModule } from "@harbor/ui";
 import { SharedModule as AppSharedModule } from "../../../shared/shared.module";
+import { Scanner } from "../scanner";
+import { SharedModule } from "../../../../lib/utils/shared/shared.module";
 
 describe('NewScannerModalComponent', () => {
   let component: NewScannerModalComponent;
   let fixture: ComponentFixture<NewScannerModalComponent>;
 
-  let mockScanner1 = {
+  let mockScanner1: Scanner = {
     name: 'test1',
     description: 'just a sample',
     url: 'http://168.0.0.1',
@@ -34,7 +35,7 @@ describe('NewScannerModalComponent', () => {
       return of(true).pipe(delay(200));
     }
   };
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
@@ -51,9 +52,8 @@ describe('NewScannerModalComponent', () => {
         // open auto detect
         { provide: ComponentFixtureAutoDetect, useValue: true }
       ]
-    })
-    .compileComponents();
-  }));
+    });
+  });
   beforeEach(() => {
     fixture = TestBed.createComponent(NewScannerModalComponent);
     component = fixture.componentInstance;
@@ -61,6 +61,16 @@ describe('NewScannerModalComponent', () => {
     component.newScannerFormComponent.checkNameSubscribe = new Subscription();
     component.newScannerFormComponent.checkEndpointUrlSubscribe = new Subscription();
     fixture.detectChanges();
+  });
+  afterEach(() => {
+      if (component && component.newScannerFormComponent && component.newScannerFormComponent.checkNameSubscribe) {
+          component.newScannerFormComponent.checkNameSubscribe.unsubscribe();
+          component.newScannerFormComponent.checkNameSubscribe = null;
+      }
+      if (component && component.newScannerFormComponent && component.newScannerFormComponent.checkEndpointUrlSubscribe) {
+          component.newScannerFormComponent.checkEndpointUrlSubscribe.unsubscribe();
+          component.newScannerFormComponent.checkEndpointUrlSubscribe = null;
+      }
   });
   it('should creat', () => {
     expect(component).toBeTruthy();
@@ -71,7 +81,7 @@ describe('NewScannerModalComponent', () => {
     let el = fixture.nativeElement.querySelector('#button-add');
     expect(el).toBeTruthy();
   });
-  it('should be edit mode', () => {
+  it('should be edit mode', fakeAsync(() => {
     component.isEdit = true;
     fixture.detectChanges();
     let el = fixture.nativeElement.querySelector('#button-save');
@@ -96,11 +106,13 @@ describe('NewScannerModalComponent', () => {
     expect(component.validForSaving).toBeTruthy();
     el.click();
     el.dispatchEvent(new Event('click'));
-    setTimeout(() => {
-        expect(component.opened).toBeFalsy();
-    }, 300);
-  });
-  it('test connection button should not be disabled', () => {
+    tick(10000);
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+       expect(component.opened).toBeFalsy();
+    });
+  }));
+  it('test connection button should not be disabled', fakeAsync(() => {
     let nameInput = fixture.nativeElement.querySelector('#scanner-name');
     nameInput.value = "test2";
     nameInput.dispatchEvent(new Event('input'));
@@ -112,11 +124,13 @@ describe('NewScannerModalComponent', () => {
     el.click();
     el.dispatchEvent(new Event('click'));
     expect(component.checkBtnState).toBe(ClrLoadingState.LOADING);
-    setTimeout(() => {
-      expect(component.checkBtnState).toBe(ClrLoadingState.SUCCESS);
-    }, 300);
-  });
-  it('add button should not be disabled', () => {
+    tick(10000);
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+       expect(component.checkBtnState).toBe(ClrLoadingState.SUCCESS);
+    });
+  }));
+  it('add button should not be disabled', fakeAsync(() => {
     fixture.nativeElement.querySelector('#scanner-name').value = "test2";
     fixture.nativeElement.querySelector('#scanner-endpoint').value = "http://168.0.0.1";
     let authInput = fixture.nativeElement.querySelector('#scanner-authorization');
@@ -134,10 +148,12 @@ describe('NewScannerModalComponent', () => {
     expect(component.valid).toBeFalsy();
     el.click();
     el.dispatchEvent(new Event('click'));
-    setTimeout(() => {
-      expect(component.opened).toBeFalsy();
-    }, 300);
-  });
+    tick(10000);
+    fixture.detectChanges();
+    fixture.whenStable().then(() => {
+       expect(component.opened).toBeFalsy();
+    });
+  }));
 });
 
 

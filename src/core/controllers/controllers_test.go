@@ -15,24 +15,21 @@ package controllers
 
 import (
 	"context"
-	"github.com/goharbor/harbor/src/core/filter"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
-	// "net/url"
+	"os"
 	"path/filepath"
 	"runtime"
-	"testing"
-
-	"fmt"
-	"os"
 	"strings"
+	"testing"
 
 	"github.com/astaxie/beego"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/models"
 	utilstest "github.com/goharbor/harbor/src/common/utils/test"
 	"github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/middlewares"
+	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -41,6 +38,7 @@ func init() {
 	dir := filepath.Dir(file)
 	dir = filepath.Join(dir, "..")
 	apppath, _ := filepath.Abs(dir)
+	beego.BConfig.WebConfig.EnableXSRF = true
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 	beego.AddTemplateExt("htm")
@@ -50,7 +48,6 @@ func init() {
 	beego.Router("/c/reset", &CommonController{}, "post:ResetPassword")
 	beego.Router("/c/userExists", &CommonController{}, "post:UserExists")
 	beego.Router("/c/sendEmail", &CommonController{}, "get:SendResetEmail")
-	beego.Router("/v2/*", &RegistryProxy{}, "*:Handle")
 }
 
 func TestMain(m *testing.M) {
@@ -103,13 +100,11 @@ func TestRedirectForOIDC(t *testing.T) {
 func TestAll(t *testing.T) {
 	config.InitWithSettings(utilstest.GetUnitTestConfig())
 	assert := assert.New(t)
-	err := middlewares.Init()
-	assert.Nil(err)
 
 	r, _ := http.NewRequest("POST", "/c/login", nil)
 	w := httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(401), w.Code, "'/c/login' httpStatusCode should be 401")
+	assert.Equal(http.StatusUnprocessableEntity, w.Code, "'/c/login' httpStatusCode should be 422")
 
 	r, _ = http.NewRequest("GET", "/c/log_out", nil)
 	w = httptest.NewRecorder()
@@ -120,31 +115,15 @@ func TestAll(t *testing.T) {
 	r, _ = http.NewRequest("POST", "/c/reset", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(400), w.Code, "'/c/reset' httpStatusCode should be 400")
+	assert.Equal(http.StatusUnprocessableEntity, w.Code, "'/c/reset' httpStatusCode should be 422")
 
 	r, _ = http.NewRequest("POST", "/c/userExists", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(500), w.Code, "'/c/userExists' httpStatusCode should be 500")
+	assert.Equal(http.StatusUnprocessableEntity, w.Code, "'/c/userExists' httpStatusCode should be 422")
 
 	r, _ = http.NewRequest("GET", "/c/sendEmail", nil)
 	w = httptest.NewRecorder()
 	beego.BeeApp.Handlers.ServeHTTP(w, r)
 	assert.Equal(int(400), w.Code, "'/c/sendEmail' httpStatusCode should be 400")
-
-	r, _ = http.NewRequest("GET", "/v2/", nil)
-	w = httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(200), w.Code, "ping v2 should get a 200 response")
-
-	r, _ = http.NewRequest("GET", "/v2/noproject/manifests/1.0", nil)
-	w = httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(400), w.Code, "GET v2/noproject/manifests/1.0 should get a 400 response")
-
-	r, _ = http.NewRequest("GET", "/v2/project/notexist/manifests/1.0", nil)
-	w = httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(int(404), w.Code, "GET v2/noproject/manifests/1.0 should get a 404 response")
-
 }

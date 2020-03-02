@@ -16,9 +16,11 @@ package authproxy
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/jobservice/logger"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -34,17 +36,13 @@ import (
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/authproxy"
-	k8s_api_v1beta1 "k8s.io/api/authentication/v1beta1"
 )
 
 const refreshDuration = 2 * time.Second
 const userEntryComment = "By Authproxy"
 
-var secureTransport = &http.Transport{}
-var insecureTransport = &http.Transport{
-	TLSClientConfig: &tls.Config{
-		InsecureSkipVerify: true,
-	},
+var transport = &http.Transport{
+	Proxy: http.ProxyFromEnvironment,
 }
 
 // Auth implements HTTP authenticator the required attributes.
@@ -54,7 +52,6 @@ type Auth struct {
 	sync.Mutex
 	Endpoint            string
 	TokenReviewEndpoint string
-	SkipCertVerify      bool
 	SkipSearch          bool
 	settingTimeStamp    time.Time
 	client              *http.Client
@@ -82,60 +79,48 @@ func (a *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
+	data, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Warningf("Failed to read response body, error: %v", err)
+		return nil, auth.ErrAuth{}
+	}
 	defer resp.Body.Close()
 	if resp.StatusCode == http.StatusOK {
-		user := &models.User{Username: m.Principal}
-		data, err := ioutil.ReadAll(resp.Body)
-		if err != nil {
-			log.Warningf("Failed to read response body, error: %v", err)
-			return nil, auth.ErrAuth{}
-		}
 		s := session{}
 		err = json.Unmarshal(data, &s)
 		if err != nil {
-			log.Errorf("failed to read session %v", err)
+			return nil, auth.NewErrAuth(fmt.Sprintf("failed to read session %v", err))
 		}
-
-		reviewResponse, err := a.tokenReview(s.SessionID)
+		user, err := a.tokenReview(s.SessionID)
 		if err != nil {
-			return nil, err
-		}
-		if reviewResponse == nil {
-			return nil, auth.ErrAuth{}
-		}
-
-		// Attach user group ID information
-		ugList := reviewResponse.Status.User.Groups
-		log.Debugf("user groups %+v", ugList)
-		if len(ugList) > 0 {
-			groupIDList, err := group.GetGroupIDByGroupName(ugList, common.HTTPGroupType)
-			if err != nil {
-				return nil, err
-			}
-			log.Debugf("current user's group ID list is %+v", groupIDList)
-			user.GroupIDs = groupIDList
+			return nil, auth.NewErrAuth(fmt.Sprintf("failed to do token review, error: %v", err))
 		}
 		return user, nil
-
 	} else if resp.StatusCode == http.StatusUnauthorized {
-		return nil, auth.ErrAuth{}
+		return nil, auth.NewErrAuth(string(data))
 	} else {
 		data, err := ioutil.ReadAll(resp.Body)
 		if err != nil {
 			log.Warningf("Failed to read response body, error: %v", err)
 		}
 		return nil, fmt.Errorf("failed to authenticate, status code: %d, text: %s", resp.StatusCode, string(data))
-
 	}
-
 }
 
-func (a *Auth) tokenReview(sessionID string) (*k8s_api_v1beta1.TokenReview, error) {
+func (a *Auth) tokenReview(sessionID string) (*models.User, error) {
 	httpAuthProxySetting, err := config.HTTPAuthProxySetting()
 	if err != nil {
 		return nil, err
 	}
-	return authproxy.TokenReview(sessionID, httpAuthProxySetting)
+	reviewStatus, err := authproxy.TokenReview(sessionID, httpAuthProxySetting)
+	if err != nil {
+		return nil, err
+	}
+	u, err := authproxy.UserFromReviewStatus(reviewStatus)
+	if err != nil {
+		return nil, err
+	}
+	return u, nil
 }
 
 // OnBoardUser delegates to dao pkg to insert/update data in DB.
@@ -155,7 +140,8 @@ func (a *Auth) PostAuthenticate(u *models.User) error {
 }
 
 // SearchUser returns nil as authproxy does not have such capability.
-// When SkipSearch is set it always return the default model.
+// When SkipSearch is set it always return the default model,
+// the username will be switch to lowercase if it's configured as case-insensitive
 func (a *Auth) SearchUser(username string) (*models.User, error) {
 	err := a.ensure()
 	if err != nil {
@@ -228,16 +214,28 @@ func (a *Auth) ensure() error {
 		}
 		a.Endpoint = setting.Endpoint
 		a.TokenReviewEndpoint = setting.TokenReviewEndpoint
-		a.SkipCertVerify = !setting.VerifyCert
 		a.SkipSearch = setting.SkipSearch
+		tlsCfg, err := getTLSConfig(setting)
+		if err != nil {
+			return err
+		}
+		transport.TLSClientConfig = tlsCfg
+		a.client.Transport = transport
 	}
-	if a.SkipCertVerify {
-		a.client.Transport = insecureTransport
-	} else {
-		a.client.Transport = secureTransport
-	}
-
 	return nil
+}
+
+func getTLSConfig(setting *models.HTTPAuthProxy) (*tls.Config, error) {
+	c := setting.ServerCertificate
+	if setting.VerifyCert && len(c) > 0 {
+		certs := x509.NewCertPool()
+		if !certs.AppendCertsFromPEM([]byte(c)) {
+			logger.Errorf("Failed to pin server certificate, please double check if it's valid, certificate: %s", c)
+			return nil, fmt.Errorf("failed to pin server certificate for authproxy")
+		}
+		return &tls.Config{RootCAs: certs}, nil
+	}
+	return &tls.Config{InsecureSkipVerify: !setting.VerifyCert}, nil
 }
 
 func init() {

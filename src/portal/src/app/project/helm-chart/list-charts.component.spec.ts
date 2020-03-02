@@ -3,7 +3,7 @@ import { ClarityModule } from '@clr/angular';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { CUSTOM_ELEMENTS_SCHEMA, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { SessionService } from './../../shared/session.service';
+import { SessionService } from '../../shared/session.service';
 import { ListChartsComponent } from './list-charts.component';
 
 describe('ListChartsComponent', () => {

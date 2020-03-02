@@ -66,7 +66,6 @@ var defaultConfigWithVerifyCert = map[string]interface{}{
 	common.MaxJobWorkers:              3,
 	common.TokenExpiration:            30,
 	common.AdminInitialPassword:       "password",
-	common.AdmiralEndpoint:            "http://www.vmware.com",
 	common.WithNotary:                 false,
 	common.WithClair:                  false,
 }
@@ -85,9 +84,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
 
-	if err := uiConfig.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
+	uiConfig.Init()
 
 	uiConfig.Upload(ldapTestConfig)
 

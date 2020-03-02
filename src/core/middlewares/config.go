@@ -16,24 +16,8 @@ package middlewares
 
 // const variables
 const (
-	CHART            = "chart"
-	READONLY         = "readonly"
-	URL              = "url"
-	MUITIPLEMANIFEST = "manifest"
-	LISTREPO         = "listrepo"
-	CONTENTTRUST     = "contenttrust"
-	VULNERABLE       = "vulnerable"
-	SIZEQUOTA        = "sizequota"
-	COUNTQUOTA       = "countquota"
-	IMMUTABLE        = "immutable"
-	REGTOKEN         = "regtoken"
+	CHART = "chart"
 )
 
 // ChartMiddlewares middlewares for chart server
 var ChartMiddlewares = []string{CHART}
-
-// Middlewares with sequential organization
-var Middlewares = []string{READONLY, URL, REGTOKEN, MUITIPLEMANIFEST, LISTREPO, CONTENTTRUST, VULNERABLE, SIZEQUOTA, IMMUTABLE, COUNTQUOTA}
-
-// MiddlewaresLocal ...
-var MiddlewaresLocal = []string{SIZEQUOTA, IMMUTABLE, COUNTQUOTA}

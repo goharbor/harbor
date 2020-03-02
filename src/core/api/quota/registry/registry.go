@@ -15,23 +15,19 @@
 package registry
 
 import (
-	"strings"
-	"sync"
-	"time"
-
-	"github.com/docker/distribution/manifest/schema1"
-	"github.com/docker/distribution/manifest/schema2"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	common_quota "github.com/goharbor/harbor/src/common/quota"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry"
 	"github.com/goharbor/harbor/src/core/api"
 	quota "github.com/goharbor/harbor/src/core/api/quota"
 	"github.com/goharbor/harbor/src/core/promgr"
-	coreutils "github.com/goharbor/harbor/src/core/utils"
+	"github.com/goharbor/harbor/src/pkg/registry"
 	"github.com/pkg/errors"
+	"strings"
+	"sync"
+	"time"
 )
 
 // Migrator ...
@@ -60,7 +56,7 @@ func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 		err      error
 	)
 
-	reposInRegistry, err := api.Catalog()
+	reposInRegistry, err := registry.Cli.Catalog()
 	if err != nil {
 		return nil, err
 	}
@@ -85,6 +81,11 @@ func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 			repos = append(repos, item)
 			repoMap[pro.Name] = repos
 		}
+	}
+	repoMap, err = rm.appendEmptyProject(repoMap)
+	if err != nil {
+		log.Errorf("fail to add empty projects: %v", err)
+		return nil, err
 	}
 
 	wg.Add(len(repoMap))
@@ -141,6 +142,24 @@ func (rm *Migrator) Dump() ([]quota.ProjectInfo, error) {
 	}
 
 	return projects, nil
+}
+
+// As catalog api cannot list the empty projects in harbor, here it needs to append the empty projects into repo infor
+// so that quota syncer can add 0 usage into quota usage.
+func (rm *Migrator) appendEmptyProject(repoMap map[string][]string) (map[string][]string, error) {
+	var withEmptyProjects map[string][]string
+	all, err := dao.GetProjects(nil)
+	if err != nil {
+		return withEmptyProjects, err
+	}
+	withEmptyProjects = repoMap
+	for _, pro := range all {
+		_, exist := repoMap[pro.Name]
+		if !exist {
+			withEmptyProjects[pro.Name] = []string{}
+		}
+	}
+	return withEmptyProjects, nil
 }
 
 // Usage ...
@@ -369,11 +388,7 @@ func infoOfProject(project string, repoList []string) (quota.ProjectInfo, error)
 }
 
 func infoOfRepo(pid int64, repo string) (quota.RepoData, error) {
-	repoClient, err := coreutils.NewRepositoryClientForUI("harbor-core", repo)
-	if err != nil {
-		return quota.RepoData{}, err
-	}
-	tags, err := repoClient.ListTag()
+	tags, err := registry.Cli.ListTags(repo)
 	if err != nil {
 		return quota.RepoData{}, err
 	}
@@ -382,37 +397,35 @@ func infoOfRepo(pid int64, repo string) (quota.RepoData, error) {
 	var blobs []*models.Blob
 
 	for _, tag := range tags {
-		_, mediaType, payload, err := repoClient.PullManifest(tag, []string{
-			schema1.MediaTypeManifest,
-			schema1.MediaTypeSignedManifest,
-			schema2.MediaTypeManifest,
-		})
+		manifest, digest, err := registry.Cli.PullManifest(repo, tag)
 		if err != nil {
 			log.Error(err)
-			return quota.RepoData{}, err
+			// To workaround issue: https://github.com/goharbor/harbor/issues/9299, just log the error and do not raise it.
+			// Let the sync process pass, but the 'Unknown manifest' will not be counted into size and count of quota usage.
+			// User still can view there images with size 0 in harbor.
+			continue
 		}
-		manifest, desc, err := registry.UnMarshal(mediaType, payload)
+		mediaType, payload, err := manifest.Payload()
 		if err != nil {
-			log.Error(err)
 			return quota.RepoData{}, err
 		}
 		// self
 		afnb := &models.ArtifactAndBlob{
-			DigestAF:   desc.Digest.String(),
-			DigestBlob: desc.Digest.String(),
+			DigestAF:   digest,
+			DigestBlob: digest,
 		}
 		afnbs = append(afnbs, afnb)
 		// add manifest as a blob.
 		blob := &models.Blob{
-			Digest:       desc.Digest.String(),
-			ContentType:  desc.MediaType,
-			Size:         desc.Size,
+			Digest:       digest,
+			ContentType:  mediaType,
+			Size:         int64(len(payload)),
 			CreationTime: time.Now(),
 		}
 		blobs = append(blobs, blob)
 		for _, layer := range manifest.References() {
 			afnb := &models.ArtifactAndBlob{
-				DigestAF:   desc.Digest.String(),
+				DigestAF:   digest,
 				DigestBlob: layer.Digest.String(),
 			}
 			afnbs = append(afnbs, afnb)
@@ -428,7 +441,7 @@ func infoOfRepo(pid int64, repo string) (quota.RepoData, error) {
 			PID:          pid,
 			Repo:         repo,
 			Tag:          tag,
-			Digest:       desc.Digest.String(),
+			Digest:       digest,
 			Kind:         "Docker-Image",
 			CreationTime: time.Now(),
 		}

@@ -1,24 +1,25 @@
-<div class="summary display-flex" *ngIf="summaryInformation">
+<div class="summary summary-dark display-flex" *ngIf="summaryInformation">
   <div class="summary-left">
     <div class="display-flex project-detail pt-1">
-      <h5 class="mt-0">{{'SUMMARY.PROJECT_REPOSITORY' | translate}}</h5>
+      <h5 class="mt-0 width-7-5">{{'SUMMARY.PROJECT_REPOSITORY' | translate}}</h5>
       <ul class="list-unstyled">
         <li>{{summaryInformation?.repo_count}}</li>
       </ul>
     </div>
     <div class="display-flex project-detail pt-1" *ngIf="withHelmChart">
-      <h5 class="mt-0">{{'SUMMARY.PROJECT_HELM_CHART' | translate}}</h5>
+      <h5 class="mt-0 width-7-5">{{'SUMMARY.PROJECT_HELM_CHART' | translate}}</h5>
       <ul class="list-unstyled">
         <li>{{summaryInformation?.chart_count}}</li>
       </ul>
     </div>
     <div *ngIf="showProjectMemberInfo" class="display-flex project-detail pt-1">
-      <h5 class="mt-0">{{'SUMMARY.PROJECT_MEMBER' | translate}}</h5>
+      <h5 class="mt-0 width-7-5">{{'SUMMARY.PROJECT_MEMBER' | translate}}</h5>
       <ul class="list-unstyled">
         <li>{{ summaryInformation?.project_admin_count }} {{'SUMMARY.ADMIN' | translate}}</li>
         <li>{{ summaryInformation?.master_count }} {{'SUMMARY.MASTER' | translate}}</li>
         <li>{{ summaryInformation?.developer_count }} {{'SUMMARY.DEVELOPER' | translate}}</li>
         <li>{{ summaryInformation?.guest_count }} {{'SUMMARY.GUEST' | translate}}</li>
+        <li>{{ summaryInformation?.limited_guest_count }} {{'SUMMARY.LIMITED_GUEST' | translate}}</li>
       </ul>
     </div>
   </div>

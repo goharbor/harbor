@@ -10,12 +10,8 @@ from library.user import User
 class TestProjects(unittest.TestCase):
     """UserGroup unit test stubs"""
     def setUp(self):
-        project = Project()
-        self.project= project
-
-        user = User()
-        self.user= user
-
+        self.project = Project()
+        self.user= User()
 
     def tearDown(self):
         pass

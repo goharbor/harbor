@@ -15,11 +15,13 @@ package runner
 
 import (
 	"context"
-	"github.com/stretchr/testify/assert"
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"os"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/assert"
 
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/jobservice/logger/backend"
@@ -51,6 +53,7 @@ type RedisRunnerTestSuite struct {
 
 // TestRedisRunnerTestSuite is entry of go test
 func TestRedisRunnerTestSuite(t *testing.T) {
+	common_dao.PrepareTestForPostgresSQL()
 	suite.Run(t, new(RedisRunnerTestSuite))
 }
 
@@ -154,7 +157,7 @@ func (suite *RedisRunnerTestSuite) TestJobWrapperInvalidTracker() {
 	redisJob := NewRedisJob((*fakeParentJob)(nil), suite.envContext, suite.lcmCtl)
 	err := redisJob.Run(j)
 	require.Error(suite.T(), err, "redis job: non nil error expected but got nil")
-	assert.Equal(suite.T(), int64(2), j.Fails)
+	assert.Equal(suite.T(), int64(10000000000), j.Fails)
 }
 
 // TestJobWrapperPanic tests job runner panic

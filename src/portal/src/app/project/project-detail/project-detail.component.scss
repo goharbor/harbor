@@ -12,12 +12,33 @@
 }
 
 .role-label {
-  color: #CCCCCC;
+  color: #cccccc;
   font-size: 14px;
   font-style: italic;
   letter-spacing: 0.01em;
 }
-.backStyle{
+.backStyle {
   color: #007cbb;
-  font-size: 12px;
-  cursor: pointer;}
+  font-size: 16px;
+  cursor: pointer;
+  padding: 5px;
+  border-radius: 2px;
+}
+
+button {
+  outline: none;
+}
+#project-tabs {
+  .clear-default-active {
+    box-shadow: none;
+    &:hover {
+      box-shadow: 0 -3px 0 #0077b8 inset;
+    }
+  }
+}
+
+.tabs {
+  .nav-link {
+    padding: 0;
+  }
+}

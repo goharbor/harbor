@@ -16,25 +16,25 @@ package core
 
 import (
 	"fmt"
-
-	"github.com/goharbor/harbor/src/common/models"
+	modelsv2 "github.com/goharbor/harbor/src/api/artifact"
 )
 
-func (c *client) ListAllImages(project, repository string) ([]*models.TagResp, error) {
-	url := c.buildURL(fmt.Sprintf("/api/repositories/%s/%s/tags", project, repository))
-	var images []*models.TagResp
-	if err := c.httpclient.GetAndIteratePagination(url, &images); err != nil {
+func (c *client) ListAllArtifacts(project, repository string) ([]*modelsv2.Artifact, error) {
+	url := c.buildURL(fmt.Sprintf("/api/v2.0/projects/%s/repositories/%s/artifacts", project, repository)) // should query only tag
+	var arts []*modelsv2.Artifact
+	if err := c.httpclient.GetAndIteratePagination(url, &arts); err != nil {
 		return nil, err
 	}
-	return images, nil
+	return arts, nil
 }
 
-func (c *client) DeleteImage(project, repository, tag string) error {
-	url := c.buildURL(fmt.Sprintf("/api/repositories/%s/%s/tags/%s", project, repository, tag))
+func (c *client) DeleteArtifact(project, repository, digest string) error {
+	// /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}
+	url := c.buildURL(fmt.Sprintf("/api/v2.0/projects/%s/repositories/%s/artifacts/%s", project, repository, digest))
 	return c.httpclient.Delete(url)
 }
 
-func (c *client) DeleteImageRepository(project, repository string) error {
+func (c *client) DeleteArtifactRepository(project, repository string) error {
 	url := c.buildURL(fmt.Sprintf("/api/repositories/%s/%s", project, repository))
 	return c.httpclient.Delete(url)
 }

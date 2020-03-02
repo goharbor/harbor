@@ -1,7 +1,8 @@
 # pylint: disable=no-value-for-parameter
 
+import sys
+import logging
 import click
-
 from utils.misc import delfile
 from utils.configs import validate, parse_yaml_config
 from utils.cert import prepare_ca, SSL_CERT_KEY_PATH, SSL_CERT_PATH, get_secret_key
@@ -14,6 +15,7 @@ from utils.notary import prepare_notary
 from utils.log import prepare_log_configs
 from utils.clair import prepare_clair
 from utils.clair_adapter import prepare_clair_adapter
+from utils.trivy_adapter import prepare_trivy_adapter
 from utils.chart import prepare_chartmuseum
 from utils.docker_compose import prepare_docker_compose
 from utils.nginx import prepare_nginx, nginx_confd_dir
@@ -26,16 +28,22 @@ old_private_key_pem_path, old_crt_path)
 @click.option('--conf', default=input_config_path, help="the path of Harbor configuration file")
 @click.option('--with-notary', is_flag=True, help="the Harbor instance is to be deployed with notary")
 @click.option('--with-clair', is_flag=True, help="the Harbor instance is to be deployed with clair")
+@click.option('--with-trivy', is_flag=True, help="the Harbor instance is to be deployed with Trivy")
 @click.option('--with-chartmuseum', is_flag=True, help="the Harbor instance is to be deployed with chart repository supporting")
-def main(conf, with_notary, with_clair, with_chartmuseum):
+def main(conf, with_notary, with_clair, with_trivy, with_chartmuseum):
 
     delfile(config_dir)
-    config_dict = parse_yaml_config(conf, with_notary=with_notary, with_clair=with_clair, with_chartmuseum=with_chartmuseum)
-    validate(config_dict, notary_mode=with_notary)
+    config_dict = parse_yaml_config(conf, with_notary=with_notary, with_clair=with_clair, with_trivy=with_trivy, with_chartmuseum=with_chartmuseum)
+    try:
+        validate(config_dict, notary_mode=with_notary)
+    except Exception as e:
+        logging.info('Error happened in config validation...')
+        logging.error(e)
+        sys.exit(-1)
 
     prepare_log_configs(config_dict)
     prepare_nginx(config_dict)
-    prepare_core(config_dict, with_notary=with_notary, with_clair=with_clair, with_chartmuseum=with_chartmuseum)
+    prepare_core(config_dict, with_notary=with_notary, with_clair=with_clair, with_trivy=with_trivy, with_chartmuseum=with_chartmuseum)
     prepare_registry(config_dict)
     prepare_registry_ctl(config_dict)
     prepare_db(config_dict)
@@ -57,10 +65,13 @@ def main(conf, with_notary, with_clair, with_chartmuseum):
         prepare_clair(config_dict)
         prepare_clair_adapter(config_dict)
 
+    if with_trivy:
+        prepare_trivy_adapter(config_dict)
+
     if with_chartmuseum:
         prepare_chartmuseum(config_dict)
 
-    prepare_docker_compose(config_dict, with_clair, with_notary, with_chartmuseum)
+    prepare_docker_compose(config_dict, with_clair, with_trivy, with_notary, with_chartmuseum)
 
 if __name__ == '__main__':
     main()

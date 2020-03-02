@@ -12,10 +12,6 @@
 |![notification](docs/img/bell-outline-badged.svg)Community Meeting|
 |------------------|
 |The Harbor Project holds bi-weekly community calls in two different timezones. To join the community calls or to watch previous meeting notes and recordings, please visit the [meeting schedule](https://github.com/goharbor/community/blob/master/MEETING_SCHEDULE.md).|
- 
-We welcome you to join the below Harbor community events and meet with project maintainers and users:
-
-**November 18-21, 2019**, [KubeCon US, San Diego](https://events19.linuxfoundation.org/events/kubecon-cloudnativecon-north-america-2019): Harbor Lunch & Learn led by Joe Beda, Intro and Deep-dive sessions.
 
 </br> </br>
 
@@ -43,6 +39,19 @@ Harbor is hosted by the [Cloud Native Computing Foundation](https://cncf.io) (CN
 * **Auditing**: All the operations to the repositories are tracked.
 * **RESTful API**: RESTful APIs for most administrative operations, easy to integrate with external systems. An embedded Swagger UI is available for exploring and testing the API.
 * **Easy deployment**: Provide both an online and offline installer. In addition, a Helm Chart can be used to deploy Harbor on Kubernetes.
+
+## API
+
+* [Harbor RESTful API](https://editor.swagger.io/?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/v2.0/swagger.yaml): The APIs for most administrative operations of Harbor and can be used to perform integrations with Harbor programmatically.
+  - Spec validation status: <img src="http://validator.swagger.io/validator?url=https://raw.githubusercontent.com/goharbor/harbor/master/api/harbor/swagger.yaml">
+
+## Compatibility
+
+The [compatibility list](./docs/harbor_compatibility_list.md) document provides compatibility information for the Harbor components.
+
+- [Replication adapters](./docs/harbor_compatibility_list.md#Replication-Adapters)
+- [OIDC adapters](./docs/harbor_compatibility_list.md#OIDC-Adapters)
+- [Scanner adapters](./docs/harbor_compatibility_list.md#Scanner-Adapters)
 
 ## Install & Run
 
@@ -79,6 +88,21 @@ Tools layered on top of Harbor and contributed by community.
 ## Partners and Users
 
 For a list of users, please refer to [ADOPTERS.md](ADOPTERS.md).
+
+## Security
+
+### Security Audit
+
+A third party security audit was performed by Cure53 in October of 2019. You can see the full report [here](docs/security/Harbor_Security_Audit_Oct2019.pdf).
+
+### Reporting security vulnerabilities
+
+If you've found a security related issue, a vulnerability, or a potential vulnerability in Harbor please let the [Harbor Security Team](mailto:cncf-harbor-security@lists.cncf.io) know with the details of the vulnerability. We'll send a confirmation
+email to acknowledge your report, and we'll send an additional email when we've identified the issue
+positively or negatively.
+
+For further details please see our complete [security release process](SECURITY.md).
+
 
 ## License
 

@@ -19,6 +19,7 @@ import (
 	"net/http"
 	"regexp"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -32,6 +33,7 @@ import (
 	errutil "github.com/goharbor/harbor/src/common/utils/error"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/pkg/scan/vuln"
 	"github.com/goharbor/harbor/src/pkg/types"
 	"github.com/pkg/errors"
 )
@@ -48,7 +50,7 @@ type ProjectAPI struct {
 }
 
 const projectNameMaxLen int = 255
-const projectNameMinLen int = 2
+const projectNameMinLen int = 1
 const restrictedNameChars = `[a-z0-9]+(?:[._-][a-z0-9]+)*`
 
 // Prepare validates the URL and the user
@@ -96,17 +98,11 @@ func (p *ProjectAPI) Post() {
 		p.SendUnAuthorizedError(errors.New("Unauthorized"))
 		return
 	}
-	var onlyAdmin bool
-	var err error
-	if config.WithAdmiral() {
-		onlyAdmin = true
-	} else {
-		onlyAdmin, err = config.OnlyAdminCreateProject()
-		if err != nil {
-			log.Errorf("failed to determine whether only admin can create projects: %v", err)
-			p.SendInternalServerError(fmt.Errorf("failed to determine whether only admin can create projects: %v", err))
-			return
-		}
+	onlyAdmin, err := config.OnlyAdminCreateProject()
+	if err != nil {
+		log.Errorf("failed to determine whether only admin can create projects: %v", err)
+		p.SendInternalServerError(fmt.Errorf("failed to determine whether only admin can create projects: %v", err))
+		return
 	}
 
 	if onlyAdmin && !(p.SecurityCtx.IsSysAdmin() || p.SecurityCtx.IsSolutionUser()) {
@@ -398,46 +394,43 @@ func (p *ProjectAPI) List() {
 		query.Public = &pub
 	}
 
-	// standalone, filter projects according to the privilleges of the user first
-	if !config.WithAdmiral() {
-		var projects []*models.Project
-		if !p.SecurityCtx.IsAuthenticated() {
-			// not login, only get public projects
+	var projects []*models.Project
+	if !p.SecurityCtx.IsAuthenticated() {
+		// not login, only get public projects
+		pros, err := p.ProjectMgr.GetPublic()
+		if err != nil {
+			p.SendInternalServerError(fmt.Errorf("failed to get public projects: %v", err))
+			return
+		}
+		projects = []*models.Project{}
+		projects = append(projects, pros...)
+	} else {
+		if !(p.SecurityCtx.IsSysAdmin() || p.SecurityCtx.IsSolutionUser()) {
+			projects = []*models.Project{}
+			// login, but not system admin or solution user, get public projects and
+			// projects that the user is member of
 			pros, err := p.ProjectMgr.GetPublic()
 			if err != nil {
 				p.SendInternalServerError(fmt.Errorf("failed to get public projects: %v", err))
 				return
 			}
-			projects = []*models.Project{}
 			projects = append(projects, pros...)
-		} else {
-			if !(p.SecurityCtx.IsSysAdmin() || p.SecurityCtx.IsSolutionUser()) {
-				projects = []*models.Project{}
-				// login, but not system admin or solution user, get public projects and
-				// projects that the user is member of
-				pros, err := p.ProjectMgr.GetPublic()
-				if err != nil {
-					p.SendInternalServerError(fmt.Errorf("failed to get public projects: %v", err))
-					return
-				}
-				projects = append(projects, pros...)
-				mps, err := p.SecurityCtx.GetMyProjects()
-				if err != nil {
-					p.SendInternalServerError(fmt.Errorf("failed to list projects: %v", err))
-					return
-				}
-				projects = append(projects, mps...)
+			mps, err := p.SecurityCtx.GetMyProjects()
+			if err != nil {
+				p.SendInternalServerError(fmt.Errorf("failed to list projects: %v", err))
+				return
 			}
+			projects = append(projects, mps...)
 		}
-		// Query projects by user group
+	}
+	// Query projects by user group
 
-		if projects != nil {
-			projectIDs := []int64{}
-			for _, project := range projects {
-				projectIDs = append(projectIDs, project.ProjectID)
-			}
-			query.ProjectIDs = projectIDs
+	if projects != nil {
+		projectIDs := []int64{}
+		for _, project := range projects {
+			projectIDs = append(projectIDs, project.ProjectID)
 		}
+		query.ProjectIDs = projectIDs
 	}
 
 	result, err := p.ProjectMgr.List(query)
@@ -458,16 +451,15 @@ func (p *ProjectAPI) List() {
 }
 
 func (p *ProjectAPI) populateProperties(project *models.Project) error {
+	// Transform the severity to severity of CVSS v3.0 Ratings
+	if severity, ok := project.GetMetadata(models.ProMetaSeverity); ok {
+		project.SetMetadata(models.ProMetaSeverity, strings.ToLower(vuln.ParseSeverityVersion3(severity).String()))
+	}
+
 	if p.SecurityCtx.IsAuthenticated() {
 		roles := p.SecurityCtx.GetProjectRoles(project.ProjectID)
-		if len(roles) != 0 {
-			project.Role = roles[0]
-		}
-
-		if project.Role == common.RoleProjectAdmin ||
-			p.SecurityCtx.IsSysAdmin() {
-			project.Togglable = true
-		}
+		project.RoleList = roles
+		project.Role = highestRole(roles)
 	}
 
 	total, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
@@ -695,6 +687,7 @@ func getProjectMemberSummary(projectID int64, summary *models.ProjectSummary) {
 		{common.RoleMaster, &summary.MasterCount},
 		{common.RoleDeveloper, &summary.DeveloperCount},
 		{common.RoleGuest, &summary.GuestCount},
+		{common.RoleLimitedGuest, &summary.LimitedGuestCount},
 	} {
 		wg.Add(1)
 		go func(role int, count *int64) {
@@ -711,4 +704,28 @@ func getProjectMemberSummary(projectID int64, summary *models.ProjectSummary) {
 	}
 
 	wg.Wait()
+}
+
+// Returns the highest role in the role list.
+// This func should be removed once we deprecate the "current_user_role_id" in project API
+// A user can have multiple roles and they may not have a strict ranking relationship
+func highestRole(roles []int) int {
+	if roles == nil {
+		return 0
+	}
+	rolePower := map[int]int{
+		common.RoleProjectAdmin: 50,
+		common.RoleMaster:       40,
+		common.RoleDeveloper:    30,
+		common.RoleGuest:        20,
+		common.RoleLimitedGuest: 10,
+	}
+	var highest, highestPower int
+	for _, role := range roles {
+		if p, ok := rolePower[role]; ok && p > highestPower {
+			highest = role
+			highestPower = p
+		}
+	}
+	return highest
 }

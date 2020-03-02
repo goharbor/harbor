@@ -16,6 +16,8 @@ package vuln
 
 import (
 	"time"
+
+	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 )
 
 // NativeReportSummary is the default supported scan report summary model.
@@ -29,6 +31,7 @@ type NativeReportSummary struct {
 	CVEBypassed []string              `json:"-"`
 	StartTime   time.Time             `json:"start_time"`
 	EndTime     time.Time             `json:"end_time"`
+	Scanner     *v1.Scanner           `json:"scanner,omitempty"`
 }
 
 // VulnerabilitySummary contains the total number of the found vulnerabilities number

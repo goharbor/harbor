@@ -23,12 +23,8 @@ type Result struct {
 
 // ImmutableError ...
 type ImmutableError struct {
-	IsShareDigest bool
 }
 
 func (e *ImmutableError) Error() string {
-	if e.IsShareDigest {
-		return "Same digest with other immutable tag"
-	}
 	return "Immutable tag"
 }

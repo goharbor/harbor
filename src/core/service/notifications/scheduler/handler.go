@@ -17,17 +17,17 @@ package scheduler
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/goharbor/harbor/src/core/service/notifications"
 
 	"github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/core/api"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/scheduler/hook"
 )
 
 // Handler handles the scheduler requests
 type Handler struct {
-	api.BaseController
+	notifications.BaseHandler
 }
 
 // Handle ...

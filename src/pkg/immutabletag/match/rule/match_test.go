@@ -85,15 +85,15 @@ func (s *MatchTestSuite) TestImmuMatch() {
 	s.ruleID2 = id
 	s.require.Nil(err)
 
-	match := NewRuleMatcher(1)
+	match := NewRuleMatcher()
 
 	c1 := art.Candidate{
 		NamespaceID: 1,
 		Namespace:   "library",
 		Repository:  "redis",
-		Tag:         "release-1.10",
+		Tags:        []string{"release-1.10"},
 	}
-	isMatch, err := match.Match(c1)
+	isMatch, err := match.Match(1, c1)
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
@@ -101,10 +101,10 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		NamespaceID: 1,
 		Namespace:   "library",
 		Repository:  "redis",
-		Tag:         "1.10",
+		Tags:        []string{"1.10"},
 		Kind:        art.Image,
 	}
-	isMatch, err = match.Match(c2)
+	isMatch, err = match.Match(1, c2)
 	s.require.Equal(isMatch, false)
 	s.require.Nil(err)
 
@@ -112,10 +112,10 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		NamespaceID: 1,
 		Namespace:   "immutable",
 		Repository:  "mysql",
-		Tag:         "9.4.8",
+		Tags:        []string{"9.4.8"},
 		Kind:        art.Image,
 	}
-	isMatch, err = match.Match(c3)
+	isMatch, err = match.Match(1, c3)
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
@@ -123,10 +123,10 @@ func (s *MatchTestSuite) TestImmuMatch() {
 		NamespaceID: 1,
 		Namespace:   "immutable",
 		Repository:  "hello",
-		Tag:         "world",
+		Tags:        []string{"world"},
 		Kind:        art.Image,
 	}
-	isMatch, err = match.Match(c4)
+	isMatch, err = match.Match(1, c4)
 	s.require.Equal(isMatch, false)
 	s.require.Nil(err)
 }

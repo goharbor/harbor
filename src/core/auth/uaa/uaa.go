@@ -92,7 +92,7 @@ func (u *Auth) PostAuthenticate(user *models.User) error {
 		return u.OnBoardUser(user)
 	}
 	user.UserID = dbUser.UserID
-	user.HasAdminRole = dbUser.HasAdminRole
+	user.SysAdminFlag = dbUser.SysAdminFlag
 	fillEmailRealName(user)
 	if err2 := dao.ChangeUserProfile(*user, "Email", "Realname"); err2 != nil {
 		log.Warningf("Failed to update user profile, user: %s, error: %v", user.Username, err2)

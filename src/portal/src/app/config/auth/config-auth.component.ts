@@ -14,14 +14,15 @@
 import { Component, Input, ViewChild, SimpleChanges, OnChanges, OnInit, Output, EventEmitter } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { Subscription } from "rxjs";
-
-import { Configuration, clone, isEmpty, getChanges, StringValueItem, BoolValueItem, SystemInfoService, ErrorHandler
-    , CONFIG_AUTH_MODE } from '@harbor/ui';
 import { MessageHandlerService } from '../../shared/message-handler/message-handler.service';
 import { ConfirmMessageHandler } from '../config.msg.utils';
 import { AppConfigService } from '../../app-config.service';
 import { ConfigurationService } from '../config.service';
-import { catchError } from 'rxjs/operators';
+import { Configuration } from "../../../lib/components/config/config";
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { SystemInfoService } from "../../../lib/services";
+import { clone, isEmpty, getChanges as getChangesFunc } from "../../../lib/utils/utils";
+import { CONFIG_AUTH_MODE } from "../../../lib/entities/shared.const";
 const fakePass = 'aWpLOSYkIzJTTU4wMDkx';
 
 @Component({
@@ -155,6 +156,7 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
                     settings['verify_cert'] = this.currentConfig[prop].value;
                 }
             }
+            this.testingOnGoing = true;
             this.configService.testOIDCServer(settings)
                 .subscribe(respone => {
                     this.testingOnGoing = false;
@@ -179,7 +181,7 @@ export class ConfigurationAuthComponent implements OnChanges, OnInit {
     }
 
     public getChanges() {
-        let allChanges = getChanges(this.originalConfig, this.currentConfig);
+        let allChanges = getChangesFunc(this.originalConfig, this.currentConfig);
         let changes = {};
         for (let prop in allChanges) {
             if (prop.startsWith('ldap_')

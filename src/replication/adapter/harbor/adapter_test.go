@@ -29,7 +29,7 @@ func TestInfo(t *testing.T) {
 	// chart museum enabled
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodGet,
-		Pattern: "/api/systeminfo",
+		Pattern: "/api/v2.0/systeminfo",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			data := `{"with_chartmuseum":true}`
 			w.Write([]byte(data))
@@ -53,7 +53,7 @@ func TestInfo(t *testing.T) {
 	// chart museum disabled
 	server = test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodGet,
-		Pattern: "/api/systeminfo",
+		Pattern: "/api/v2.0/systeminfo",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			data := `{"with_chartmuseum":false}`
 			w.Write([]byte(data))
@@ -77,7 +77,7 @@ func TestInfo(t *testing.T) {
 func TestPrepareForPush(t *testing.T) {
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodPost,
-		Pattern: "/api/projects",
+		Pattern: "/api/v2.0/projects",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusCreated)
 		},
@@ -131,7 +131,7 @@ func TestPrepareForPush(t *testing.T) {
 	// project already exists
 	server = test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodPost,
-		Pattern: "/api/projects",
+		Pattern: "/api/v2.0/projects",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusConflict)
 		},

@@ -21,8 +21,8 @@ import (
 
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 
+	sc "github.com/goharbor/harbor/src/api/scanner"
 	"github.com/goharbor/harbor/src/pkg/q"
-	sc "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"

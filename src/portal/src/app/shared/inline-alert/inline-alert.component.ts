@@ -13,9 +13,8 @@
 // limitations under the License.
 import { Component, Output, EventEmitter } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
-
-import { errorHandler } from '@harbor/ui';
 import { Subscription } from "rxjs";
+import { errorHandler } from "../../../lib/utils/shared/shared.utils";
 
 @Component({
     selector: 'inline-alert',

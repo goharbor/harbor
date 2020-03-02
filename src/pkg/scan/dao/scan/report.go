@@ -16,10 +16,12 @@ package scan
 
 import (
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/pkg/errors"
 )
@@ -97,8 +99,10 @@ func UpdateReportData(uuid string, report string, statusRev int64) error {
 		return err
 	}
 
+	// Update has preconditions which may NOT be matched, and then count may equal 0.
+	// Just need log, no error need to be returned.
 	if count == 0 {
-		return errors.Errorf("no report with uuid %s updated", uuid)
+		log.Warningf("Data of report with uuid %s is not updated as preconditions may not be matched: status change revision %d", uuid, statusRev)
 	}
 
 	return nil
@@ -120,16 +124,27 @@ func UpdateReportStatus(trackID string, status string, statusCode int, statusRev
 		data["end_time"] = time.Now().UTC()
 	}
 
-	count, err := qt.Filter("track_id", trackID).
-		Filter("status_rev__lte", statusRev).
-		Filter("status_code__lte", statusCode).Update(data)
+	// qt generates sql statements:
+	// UPDATE "scan_report" SET "end_time" = $1, "status" = $2, "status_code" = $3, "status_rev" = $4
+	// WHERE "id" IN ( SELECT T0."id" FROM "scan_report" T0 WHERE ( T0."status_rev" = $5 AND T0."status_code" < $6 )
+	// OR ( T0."status_rev" < $7 ) AND T0."track_id" = $8  )
+	cond := orm.NewCondition()
+	c1 := cond.And("status_rev", statusRev).And("status_code__lt", statusCode)
+	c2 := cond.And("status_rev__lt", statusRev)
+	c := cond.AndCond(c1).OrCond(c2)
+
+	count, err := qt.SetCond(c).
+		Filter("track_id", trackID).
+		Update(data)
 
 	if err != nil {
 		return err
 	}
 
+	// Update has preconditions which may NOT be matched, and then count may equal 0.
+	// Just need log, no error need to be returned.
 	if count == 0 {
-		return errors.Errorf("no report with track_id %s updated", trackID)
+		log.Warningf("Status of report with track ID %s is not updated as preconditions may not be matched: status change revision %d, status code %d", trackID, statusRev, statusCode)
 	}
 
 	return nil
@@ -145,4 +160,29 @@ func UpdateJobID(trackID string, jobID string) error {
 	_, err := qt.Filter("track_id", trackID).Update(params)
 
 	return err
+}
+
+// GetScanStats gets the scan stats organized by status
+func GetScanStats(requester string) (map[string]uint, error) {
+	res := make(orm.Params)
+
+	o := dao.GetOrmer()
+	if _, err := o.Raw("select status, count(status) from (select status from scan_report where requester=? group by track_id, status) as scan_status group by status").
+		SetArgs(requester).
+		RowsToMap(&res, "status", "count"); err != nil {
+		return nil, err
+	}
+
+	m := make(map[string]uint)
+	for k, v := range res {
+		vl, err := strconv.ParseInt(v.(string), 10, 32)
+		if err != nil {
+			log.Error(errors.Wrap(err, "get scan stats"))
+			continue
+		}
+
+		m[k] = uint(vl)
+	}
+
+	return m, nil
 }

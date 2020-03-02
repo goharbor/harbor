@@ -44,8 +44,8 @@ Select Trigger
 
 Select Destination URL
     [Arguments]    ${type}
-    Retry Element Click    ${destination_url_xpath}
-    Retry Element Click    ${destination_url_xpath}//option[contains(.,'${type}')]
+    Retry Element Click  ${destination_url_xpath}
+    Retry Element Click  //div[contains(@class, 'selectBox')]//li[contains(.,'${type}')]
 
 Check New Rule UI Without Endpoint
     Retry Element Click    ${new_replication-rule_button}
@@ -185,11 +185,14 @@ Find Item And Click Delete Button
     Retry Select Object    ${name}
     Retry Element Click    ${action_bar_delete}
 
-Edit Replication Rule By Name
+Switch To Replication Manage Page
     [Arguments]    ${name}
     Switch To Registries
     Switch To Replication Manage
-    Find Item And Click Edit Button  ${name}
+
+Edit Replication Rule By Name
+    [Arguments]    ${name}
+    Retry Double Keywords When Error  Switch To Replication Manage Page  "NULL"  Find Item And Click Edit Button  ${name}
 
 Delete Replication Rule By Name
     [Arguments]    ${name}
@@ -226,6 +229,11 @@ Select Rule And Replicate
     Retry Element Click    ${replication_exec_id}
     Retry Double Keywords When Error    Retry Element Click    xpath=${dialog_replicate}    Retry Wait Until Page Not Contains Element    xpath=${dialog_replicate}
 
+Select Rule And Click Edit Button
+    [Arguments]  ${rule_name}
+    Retry Element Click  //clr-dg-row[contains(.,'${rule_name}')]//clr-radio-wrapper/label
+    Retry Element Click  ${edit_replication_rule_id}
+
 Delete Replication Rule
     [Arguments]  ${name}
     Retry Element Click  ${endpoint_filter_search}
@@ -235,3 +243,17 @@ Delete Replication Rule
     Retry Element Click  ${action_bar_delete}
     Wait Until Page Contains Element  ${dialog_delete}
     Retry Element Click  ${dialog_delete}
+
+Image Should Be Replicated To Project
+    [Arguments]  ${project}  ${image}  ${period}=60  ${times}=10
+    :For  ${n}  IN RANGE  1  ${times}
+    \    Sleep  ${period}
+    \    Go Into Project    ${project}
+    \    Switch To Project Repo
+    \    #In AWS-ECR, under repository a, there're only several images: httpd,alpine,hello-world.
+    \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains  ${project}/${image}
+    \    Log To Console  Return value is ${out[0]}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    \    Sleep  5
+    Run Keyword If  '${out[0]}'=='FAIL'  Capture Page Screenshot
+    Should Be Equal As Strings  '${out[0]}'  'PASS'

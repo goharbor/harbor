@@ -50,3 +50,32 @@ clr-vertical-nav {
 	}
 }
 
+.scanner-info {
+    margin-right: 0;
+    margin-left: 0;
+    background-color: #0079b8;
+    height: 2rem;
+    color: #fff;
+    align-items: center;
+    font-size: 0.5rem;
+    a {
+        cursor: pointer;
+        text-decoration: #bababa underline;
+        font-weight: 600;
+    }
+    a:hover, a:visited, a:link {
+        color: #fff;
+    }
+}
+.all-scanners {
+   margin-right: 1.5rem;
+}
+.close-icon {
+   margin-right: 1rem;
+}
+.ml-05 {
+    margin-left: 0.5rem;
+}
+.right {
+    text-align: right;
+}

@@ -1,12 +1,14 @@
 package dao
 
 import (
+	"strings"
+	"testing"
+
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/dao/model"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
-	"testing"
 )
 
 type immutableRuleDaoTestSuite struct {
@@ -29,6 +31,13 @@ func (t *immutableRuleDaoTestSuite) TestCreateImmutableRule() {
 	id, err := t.dao.CreateImmutableRule(ir)
 	t.require.Nil(err)
 	t.require.True(id > 0, "Can not create immutable tag rule")
+
+	// insert duplicate rows
+	ir2 := &model.ImmutableRule{TagFilter: "**", ProjectID: 1}
+	id2, err := t.dao.CreateImmutableRule(ir2)
+	t.require.True(strings.Contains(err.Error(), "duplicate key"))
+	t.require.Equal(int64(0), id2)
+
 	_, err = t.dao.DeleteImmutableRule(id)
 	t.require.Nil(err)
 }

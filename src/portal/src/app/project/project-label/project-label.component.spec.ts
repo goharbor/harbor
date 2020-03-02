@@ -3,8 +3,9 @@ import { Router, ActivatedRoute } from '@angular/router';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { of } from 'rxjs';
 import { ProjectLabelComponent } from './project-label.component';
-import { UserPermissionService, ErrorHandler } from "@harbor/ui";
 import { SessionService } from '../../shared/session.service';
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { UserPermissionService } from "../../../lib/services";
 
 describe('ProjectLabelComponent', () => {
     let component: ProjectLabelComponent;

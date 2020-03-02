@@ -40,7 +40,7 @@
         </clr-input-container>
         <clr-input-container>
             <label class="required">{{'PROFILE.PASSWORD' | translate}}</label>
-            <input clrInput type="password" id="newPassword" required pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,20}$" name="newPassword"
+            <input clrInput type="password" id="newPassword" required pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,128}$" name="newPassword"
                 [(ngModel)]="newUser.password" #newPassInput="ngModel" size="30" (input)='handleValidation("newPassword", false)'
                 (blur)='handleValidation("newPassword", true)'>
             <clr-control-helper *ngIf="isSelfRegistration">{{'CHANGE_PWD.PASS_TIPS' | translate}}</clr-control-helper>
@@ -50,7 +50,7 @@
         </clr-input-container>
         <clr-input-container>
             <label class="required">{{'CHANGE_PWD.CONFIRM_PWD' | translate}}</label>
-            <input clrInput type="password" id="confirmPassword" required pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,20}$" name="confirmPassword"
+            <input clrInput type="password" id="confirmPassword" required pattern="^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])(?!.*\s).{8,128}$" name="confirmPassword"
                 [(ngModel)]="confirmedPwd" #confirmPassInput="ngModel" size="30" (input)='handleValidation("confirmPassword", false)'
                 (blur)='handleValidation("confirmPassword", true)'>
             <clr-control-error *ngIf='getValidationState("confirmPassword")'>

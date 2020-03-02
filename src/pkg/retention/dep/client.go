@@ -18,6 +18,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/goharbor/harbor/src/common/http/modifier/auth"
 	"github.com/goharbor/harbor/src/jobservice/config"
@@ -95,26 +96,41 @@ func (bc *basicClient) GetCandidates(repository *art.Repository) ([]*art.Candida
 	candidates := make([]*art.Candidate, 0)
 	switch repository.Kind {
 	case art.Image:
-		images, err := bc.coreClient.ListAllImages(repository.Namespace, repository.Name)
+		artifacts, err := bc.coreClient.ListAllArtifacts(repository.Namespace, repository.Name)
 		if err != nil {
 			return nil, err
 		}
-		for _, image := range images {
+		for _, artifact := range artifacts {
+			if artifact.Digest == "" {
+				return nil, fmt.Errorf("Lack Digest of Candidate for %s/%s", repository.Namespace, repository.Name)
+			}
 			labels := make([]string, 0)
-			for _, label := range image.Labels {
+			for _, label := range artifact.Labels {
 				labels = append(labels, label.Name)
+			}
+			tags := make([]string, 0)
+			var lastPulledTime time.Time
+			var lastPushedTime time.Time
+			for _, t := range artifact.Tags {
+				tags = append(tags, t.Name)
+				if t.PullTime.After(lastPulledTime) {
+					lastPulledTime = t.PullTime
+				}
+				if t.PushTime.After(lastPushedTime) {
+					lastPushedTime = t.PushTime
+				}
 			}
 			candidate := &art.Candidate{
 				Kind:         art.Image,
 				NamespaceID:  repository.NamespaceID,
 				Namespace:    repository.Namespace,
 				Repository:   repository.Name,
-				Tag:          image.Name,
-				Digest:       image.Digest,
+				Tags:         tags,
+				Digest:       artifact.Digest,
 				Labels:       labels,
-				CreationTime: image.Created.Unix(),
-				PulledTime:   image.PullTime.Unix(),
-				PushedTime:   image.PushTime.Unix(),
+				CreationTime: artifact.PushTime.Unix(),
+				PulledTime:   lastPulledTime.Unix(),
+				PushedTime:   lastPushedTime.Unix(),
 			}
 			candidates = append(candidates, candidate)
 		}
@@ -155,7 +171,7 @@ func (bc *basicClient) DeleteRepository(repo *art.Repository) error {
 	}
 	switch repo.Kind {
 	case art.Image:
-		return bc.coreClient.DeleteImageRepository(repo.Namespace, repo.Name)
+		return bc.coreClient.DeleteArtifactRepository(repo.Namespace, repo.Name)
 	/*
 		case art.Chart:
 			return bc.coreClient.DeleteChartRepository(repo.Namespace, repo.Name)
@@ -172,7 +188,7 @@ func (bc *basicClient) Delete(candidate *art.Candidate) error {
 	}
 	switch candidate.Kind {
 	case art.Image:
-		return bc.coreClient.DeleteImage(candidate.Namespace, candidate.Repository, candidate.Tag)
+		return bc.coreClient.DeleteArtifact(candidate.Namespace, candidate.Repository, candidate.Digest)
 	/*
 		case art.Chart:
 			return bc.coreClient.DeleteChart(candidate.Namespace, candidate.Repository, candidate.Tag)

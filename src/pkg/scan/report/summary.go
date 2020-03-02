@@ -156,5 +156,7 @@ func GenerateNativeSummary(r *scan.Report, options ...Option) (interface{}, erro
 		sum.Severity = overallSev
 	}
 
+	sum.Scanner = rp.Scanner
+
 	return sum, nil
 }

@@ -19,11 +19,12 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 
-	sc "github.com/goharbor/harbor/src/pkg/scan/api/scanner"
+	sc "github.com/goharbor/harbor/src/api/scanner"
 	"github.com/stretchr/testify/suite"
 )
 
@@ -92,4 +93,34 @@ func (suite *ProScannerAPITestSuite) TestScannerAPIProjectScanner() {
 
 	assert.Equal(suite.T(), r.Name, rr.Name)
 	assert.Equal(suite.T(), r.UUID, rr.UUID)
+}
+
+// TestScannerAPIGetScannerCandidates ...
+func (suite *ProScannerAPITestSuite) TestScannerAPIGetScannerCandidates() {
+	query := &q.Query{
+		PageNumber: 1,
+		PageSize:   500,
+	}
+
+	ll := []*scanner.Registration{
+		{
+			ID:          1005,
+			UUID:        "uuid",
+			Name:        "TestScannerAPIGetScannerCandidates",
+			Description: "JUST FOR TEST",
+			URL:         "https://a.b.c",
+		}}
+	suite.mockC.On("ListRegistrations", query).Return(ll, nil)
+
+	// Get
+	l := make([]*scanner.Registration, 0)
+	err := handleAndParse(&testingRequest{
+		url:        fmt.Sprintf("/api/projects/%d/scanner/candidates", 1),
+		method:     http.MethodGet,
+		credential: projAdmin,
+	}, &l)
+	require.NoError(suite.T(), err)
+
+	assert.Equal(suite.T(), 1, len(l))
+	assert.Equal(suite.T(), "uuid", l[0].UUID)
 }

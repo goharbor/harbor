@@ -156,14 +156,9 @@ Test Case - Replication Of Pull Images from DockerHub To Self
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    rule${d}    pull    danfengliu/*    image    e${d}    project${d}
     Select Rule And Replicate  rule${d}
-    Sleep    30
-    Go Into Project    project${d}
-    Switch To Project Repo
     #In docker-hub, under repository danfengliu, there're only 2 images: centos,mariadb.
-    Retry Wait Until Page Contains    project${d}/centos
-    Go Into Project    project${d}
-    Switch To Project Repo
-    Retry Wait Until Page Contains    project${d}/mariadb
+    Image Should Be Replicated To Project  project${d}  centos
+    Image Should Be Replicated To Project  project${d}  mariadb
     Close Browser
 
 Test Case - Replication Of Push Images from Self To Harbor
@@ -188,13 +183,11 @@ Test Case - Replication Of Push Images from Self To Harbor
     Sign In Harbor    ${HARBOR_URL}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Switch To Replication Manage
     Select Rule And Replicate  rule${d}
-    Sleep    20
+    Sleep  20
     Logout Harbor
     Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
-    Go Into Project    project_dest${d}
-    Switch To Project Repo
-    Retry Wait Until Page Contains    project_dest${d}/hello-world
-    Retry Wait Until Page Contains    project_dest${d}/busybox
+    Image Should Be Replicated To Project  project_dest${d}  hello-world
+    Image Should Be Replicated To Project  project_dest${d}  busybox
     Close Browser
 
 Test Case - Replication Of Push Chart from Self To Harbor
@@ -245,10 +238,7 @@ Test Case - Replication Of Push Images from Self To Harbor By Push Event
     Sign In Harbor    https://${ip1}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}
     Create An New Project    project_dest${d}
     Push Image    ${ip}    ${HARBOR_ADMIN}    ${HARBOR_PASSWORD}    project${d}    centos
-    Sleep  10
-    Go Into Project    project_dest${d}
-    Switch To Project Repo
-    Retry Wait Until Page Contains    project_dest${d}/centos
+    Image Should Be Replicated To Project  project_dest${d}  centos
     Close Browser
 
 Test Case - Replication Of Pull Images from AWS-ECR To Self
@@ -262,15 +252,9 @@ Test Case - Replication Of Pull Images from AWS-ECR To Self
     Switch To Replication Manage
     Create A Rule With Existing Endpoint    rule${d}    pull    a/*    image    e${d}    project${d}
     Select Rule And Replicate  rule${d}
-    Sleep    60
-    Go Into Project    project${d}
-    Switch To Project Repo
-    #In AWS-ECR, under repository a, there're only several images: httpd,alpine,hello-world.
-    Retry Wait Until Page Contains    project${d}/httpd
-    Go Into Project    project${d}
-    Switch To Project Repo
-    Retry Wait Until Page Contains    project${d}/alpine
-    Retry Wait Until Page Contains    project${d}/hello-world
+    Image Should Be Replicated To Project  project${d}  httpd
+    Image Should Be Replicated To Project  project${d}  alpine
+    Image Should Be Replicated To Project  project${d}  hello-world
     Close Browser
 
 Test Case - Replication Of Pull Images from Google-GCR To Self
@@ -285,12 +269,6 @@ Test Case - Replication Of Pull Images from Google-GCR To Self
     Create A Rule With Existing Endpoint    rule${d}    pull    eminent-nation-87317/*    image    e${d}    project${d}
     Filter Replicatin Rule  rule${d}
     Select Rule And Replicate  rule${d}
-    Sleep    30
-    Go Into Project    project${d}
-    Switch To Project Repo
-    #In Google-GCR, under repository a, there're only several images: httpd,tomcat.
-    Retry Wait Until Page Contains    project${d}/httpd
-    Go Into Project    project${d}
-    Switch To Project Repo
-    Retry Wait Until Page Contains    project${d}/tomcat
+    Image Should Be Replicated To Project  project${d}  httpd
+    Image Should Be Replicated To Project  project${d}  tomcat
     Close Browser

@@ -6,6 +6,7 @@ services:
     volumes:
       - /data/registry:/storage
       - ./common/config/registry/:/etc/registry/
+      - /etc/core/ca/ca.crt:/etc/registry/root.crt
     ports:
       - 5000:5000
     command:
@@ -23,6 +24,6 @@ services:
     image: goharbor/redis-photon:4.0
     restart: always
     volumes:
-      - /data/redis:/data
+      - /data/redis:/var/lib/redis
     ports:
       - 6379:6379

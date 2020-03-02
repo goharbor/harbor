@@ -15,7 +15,7 @@
 package oidc
 
 import (
-	gooidc "github.com/coreos/go-oidc"
+	"encoding/json"
 	"github.com/goharbor/harbor/src/common"
 	config2 "github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/models"
@@ -112,11 +112,16 @@ func TestTestEndpoint(t *testing.T) {
 	assert.NotNil(t, TestEndpoint(c2))
 }
 
-func TestGroupsFromToken(t *testing.T) {
-	res := GroupsFromToken(nil)
-	assert.Equal(t, []string{}, res)
-	res = GroupsFromToken(&gooidc.IDToken{})
-	assert.Equal(t, []string{}, res)
+type fakeClaims struct {
+	claims map[string]interface{}
+}
+
+func (fc *fakeClaims) Claims(n interface{}) error {
+	b, err := json.Marshal(fc.claims)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal(b, n)
 }
 
 func TestGroupsFromClaim(t *testing.T) {
@@ -130,31 +135,194 @@ func TestGroupsFromClaim(t *testing.T) {
 		input  map[string]interface{}
 		key    string
 		expect []string
+		ok     bool
 	}{
 		{
 			in,
 			"user",
-			nil,
+			[]string{},
+			false,
 		},
 		{
 			in,
 			"prg",
-			nil,
+			[]string{},
+			false,
 		},
 		{
 			in,
 			"groups",
 			[]string{"group1", "group2"},
+			true,
 		},
 		{
 			in,
 			"groups_2",
 			[]string{"group1", "group2"},
+			true,
 		},
 	}
 
 	for _, tc := range m {
-		r := groupsFromClaim(tc.input, tc.key)
+
+		r, ok := GroupsFromClaims(&fakeClaims{tc.input}, tc.key)
 		assert.Equal(t, tc.expect, r)
+		assert.Equal(t, tc.ok, ok)
+	}
+}
+
+func TestUserInfoFromClaims(t *testing.T) {
+	s := []struct {
+		input      map[string]interface{}
+		groupClaim string
+		expect     *UserInfo
+	}{
+		{
+			input: map[string]interface{}{
+				"name":   "Daniel",
+				"email":  "daniel@gmail.com",
+				"groups": []interface{}{"g1", "g2"},
+			},
+			groupClaim: "grouplist",
+			expect: &UserInfo{
+				Issuer:        "",
+				Subject:       "",
+				Username:      "Daniel",
+				Email:         "daniel@gmail.com",
+				Groups:        []string{},
+				hasGroupClaim: false,
+			},
+		},
+		{
+			input: map[string]interface{}{
+				"name":   "Daniel",
+				"email":  "daniel@gmail.com",
+				"groups": []interface{}{"g1", "g2"},
+			},
+			groupClaim: "groups",
+			expect: &UserInfo{
+				Issuer:        "",
+				Subject:       "",
+				Username:      "Daniel",
+				Email:         "daniel@gmail.com",
+				Groups:        []string{"g1", "g2"},
+				hasGroupClaim: true,
+			},
+		},
+		{
+			input: map[string]interface{}{
+				"iss":        "issuer",
+				"sub":        "subject000",
+				"name":       "jack",
+				"email":      "jack@gmail.com",
+				"groupclaim": []interface{}{},
+			},
+			groupClaim: "groupclaim",
+			expect: &UserInfo{
+				Issuer:        "issuer",
+				Subject:       "subject000",
+				Username:      "jack",
+				Email:         "jack@gmail.com",
+				Groups:        []string{},
+				hasGroupClaim: true,
+			},
+		},
+	}
+	for _, tc := range s {
+		out, err := userInfoFromClaims(&fakeClaims{tc.input}, tc.groupClaim)
+		assert.Nil(t, err)
+		assert.Equal(t, *tc.expect, *out)
+	}
+}
+
+func TestMergeUserInfo(t *testing.T) {
+	s := []struct {
+		fromInfo    *UserInfo
+		fromIDToken *UserInfo
+		expected    *UserInfo
+	}{
+		{
+			fromInfo: &UserInfo{
+				Issuer:        "",
+				Subject:       "",
+				Username:      "daniel",
+				Email:         "daniel@gmail.com",
+				Groups:        []string{},
+				hasGroupClaim: false,
+			},
+			fromIDToken: &UserInfo{
+				Issuer:        "issuer-google",
+				Subject:       "subject-daniel",
+				Username:      "daniel",
+				Email:         "daniel@yahoo.com",
+				Groups:        []string{"developers", "everyone"},
+				hasGroupClaim: true,
+			},
+			expected: &UserInfo{
+				Issuer:        "issuer-google",
+				Subject:       "subject-daniel",
+				Username:      "daniel",
+				Email:         "daniel@gmail.com",
+				Groups:        []string{"developers", "everyone"},
+				hasGroupClaim: true,
+			},
+		},
+		{
+			fromInfo: &UserInfo{
+				Issuer:        "",
+				Subject:       "",
+				Username:      "tom",
+				Email:         "tom@gmail.com",
+				Groups:        nil,
+				hasGroupClaim: false,
+			},
+			fromIDToken: &UserInfo{
+				Issuer:        "issuer-okta",
+				Subject:       "subject-jiangtan",
+				Username:      "tom",
+				Email:         "tom@okta.com",
+				Groups:        []string{"nouse"},
+				hasGroupClaim: false,
+			},
+			expected: &UserInfo{
+				Issuer:        "issuer-okta",
+				Subject:       "subject-jiangtan",
+				Username:      "tom",
+				Email:         "tom@gmail.com",
+				Groups:        []string{},
+				hasGroupClaim: false,
+			},
+		},
+		{
+			fromInfo: &UserInfo{
+				Issuer:        "",
+				Subject:       "",
+				Username:      "jim",
+				Email:         "jim@gmail.com",
+				Groups:        []string{},
+				hasGroupClaim: true,
+			},
+			fromIDToken: &UserInfo{
+				Issuer:        "issuer-yahoo",
+				Subject:       "subject-jim",
+				Username:      "jim",
+				Email:         "jim@yaoo.com",
+				Groups:        []string{"g1", "g2"},
+				hasGroupClaim: true,
+			},
+			expected: &UserInfo{
+				Issuer:        "issuer-yahoo",
+				Subject:       "subject-jim",
+				Username:      "jim",
+				Email:         "jim@gmail.com",
+				Groups:        []string{},
+				hasGroupClaim: true,
+			},
+		},
+	}
+
+	for _, tc := range s {
+		m := mergeUserInfo(tc.fromInfo, tc.fromIDToken)
+		assert.Equal(t, *tc.expected, *m)
 	}
 }

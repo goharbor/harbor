@@ -26,33 +26,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func Test_newAdapter(t *testing.T) {
-	tests := []struct {
-		name     string
-		registry *model.Registry
-		wantErr  bool
-	}{
-		{name: "Nil Registry URL", registry: &model.Registry{}, wantErr: true},
-		{name: "Right", registry: &model.Registry{URL: "abc"}, wantErr: false},
-	}
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewAdapter(tt.registry)
-			if tt.wantErr {
-				assert.NotNil(t, err)
-				assert.Nil(t, got)
-			} else {
-				assert.Nil(t, err)
-				assert.NotNil(t, got)
-			}
-		})
-	}
-}
-
 func Test_native_Info(t *testing.T) {
 	var registry = &model.Registry{URL: "abc"}
-	adapter, err := NewAdapter(registry)
-	require.Nil(t, err)
+	adapter := NewAdapter(registry)
 	assert.NotNil(t, adapter)
 
 	info, err := adapter.Info()
@@ -67,11 +43,10 @@ func Test_native_Info(t *testing.T) {
 
 func Test_native_PrepareForPush(t *testing.T) {
 	var registry = &model.Registry{URL: "abc"}
-	adapter, err := NewAdapter(registry)
-	require.Nil(t, err)
+	adapter := NewAdapter(registry)
 	assert.NotNil(t, adapter)
 
-	err = adapter.PrepareForPush(nil)
+	err := adapter.PrepareForPush(nil)
 	assert.Nil(t, err)
 }
 
@@ -117,8 +92,7 @@ func Test_native_FetchImages(t *testing.T) {
 		URL:      mock.URL,
 		Insecure: true,
 	}
-	adapter, err := NewAdapter(registry)
-	assert.Nil(t, err)
+	adapter := NewAdapter(registry)
 	assert.NotNil(t, adapter)
 
 	tests := []struct {
@@ -314,32 +288,9 @@ func Test_native_FetchImages(t *testing.T) {
 				for i, resource := range resources {
 					require.NotNil(t, resource.Metadata)
 					assert.Equal(t, tt.want[i].Metadata.Repository, resource.Metadata.Repository)
-					assert.Equal(t, tt.want[i].Metadata.Vtags, resource.Metadata.Vtags)
+					assert.ElementsMatch(t, tt.want[i].Metadata.Vtags, resource.Metadata.Vtags)
 				}
 			}
 		})
-	}
-}
-
-func TestIsDigest(t *testing.T) {
-	cases := []struct {
-		str      string
-		isDigest bool
-	}{
-		{
-			str:      "",
-			isDigest: false,
-		},
-		{
-			str:      "latest",
-			isDigest: false,
-		},
-		{
-			str:      "sha256:fea8895f450959fa676bcc1df0611ea93823a735a01205fd8622846041d0c7cf",
-			isDigest: true,
-		},
-	}
-	for _, c := range cases {
-		assert.Equal(t, c.isDigest, isDigest(c.str))
 	}
 }

@@ -63,9 +63,7 @@ func TestMain(m *testing.M) {
 		log.Fatalf("failed to set env %s: %v", "KEY_PATH", err)
 	}
 
-	if err := coreConfig.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
+	coreConfig.Init()
 
 	config.Upload(testConfig)
 	retCode := m.Run()

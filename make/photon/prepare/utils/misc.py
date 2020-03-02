@@ -1,10 +1,9 @@
-import os
-import string
-import random
+import os, string, sys
+import secrets
 from pathlib import Path
+from functools import wraps
 
 from g import DEFAULT_UID, DEFAULT_GID
-
 
 # To meet security requirement
 # By default it will change file mode to 0600, and make the owner of the file to 10000:10000
@@ -76,7 +75,7 @@ def validate_crt_subj(dirty_subj):
 
 
 def generate_random_string(length):
-    return ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(length))
+    return ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(length))
 
 
 def prepare_dir(root: str, *args, **kwargs) -> str:
@@ -140,3 +139,32 @@ def check_permission(path: str, uid:int = None, gid:int = None, mode:int = None)
     if mode is not None and (path.stat().st_mode - mode) % 0o1000 != 0:
         return False
     return True
+
+
+def owner_can_read(st_mode: int) -> bool:
+    """
+    Check if owner have the read permission of this st_mode
+    """
+    return True if st_mode & 0o400 else False
+
+
+def other_can_read(st_mode: int) -> bool:
+    """
+    Check if other user have the read permission of this st_mode
+    """
+    return True if st_mode & 0o004 else False
+
+
+# decorator actions
+def stat_decorator(func):
+    @wraps(func)
+    def check_wrapper(*args, **kw):
+        stat = func(*args, **kw)
+        if stat == 0:
+            print("Successfully called func: %s" % func.__name__)
+        else:
+            print("Failed to call func: %s" % func.__name__)
+            sys.exit(1)
+    return check_wrapper
+
+

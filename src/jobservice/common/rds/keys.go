@@ -86,3 +86,33 @@ func KeyHookEventRetryQueue(namespace string) string {
 func KeyStatusUpdateRetryQueue(namespace string) string {
 	return fmt.Sprintf("%s%s", KeyNamespacePrefix(namespace), "status_change_events")
 }
+
+// KeyJobTrackInProgress returns the key of in progress jobs tracking queue
+func KeyJobTrackInProgress(namespace string) string {
+	return fmt.Sprintf("%s%s", KeyNamespacePrefix(namespace), "job_track:inprogress")
+}
+
+// KeyJobs returns the key of the specified job queue
+func KeyJobs(namespace, jobType string) string {
+	return fmt.Sprintf("%sjobs:%s", KeyNamespacePrefix(namespace), jobType)
+}
+
+// KeyJobLock returns the key of lock for the specified job type.
+func KeyJobLock(namespace string, jobType string) string {
+	return fmt.Sprintf("%s:lock", KeyJobs(namespace, jobType))
+}
+
+// KeyJobLockInfo returns the key of lock_info for the specified job type.
+func KeyJobLockInfo(namespace string, jobType string) string {
+	return fmt.Sprintf("%s:lock_info", KeyJobs(namespace, jobType))
+}
+
+// KeyInProgressQueue returns the key of the in progress queue for the specified job type.
+func KeyInProgressQueue(namespace string, jobType string, workerPoolID string) string {
+	return fmt.Sprintf("%s:%s:inprogress", KeyJobs(namespace, jobType), workerPoolID)
+}
+
+// KeyWorkerPools returns the key of the worker pool
+func KeyWorkerPools(namespace string) string {
+	return KeyNamespacePrefix(namespace) + "worker_pools"
+}

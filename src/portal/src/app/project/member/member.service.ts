@@ -1,7 +1,3 @@
-
-import {throwError as observableThrowError,  Observable } from "rxjs";
-
-import {map, catchError} from 'rxjs/operators';
 // Copyright (c) 2017 VMware, Inc. All Rights Reserved.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -17,16 +13,11 @@ import {map, catchError} from 'rxjs/operators';
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-
-
-
-
-
-import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "@harbor/ui";
-// import {HTTP_JSON_OPTIONS, HTTP_GET_OPTIONS} from "../../shared/shared.utils";
 import { User } from '../../user/user';
 import { Member } from './member';
-
+import {throwError as observableThrowError,  Observable } from "rxjs";
+import {map, catchError} from 'rxjs/operators';
+import { CURRENT_BASE_HREF, HTTP_GET_OPTIONS, HTTP_JSON_OPTIONS } from "../../../lib/utils/utils";
 
 @Injectable()
 export class MemberService {
@@ -35,7 +26,7 @@ export class MemberService {
 
   listMembers(projectId: number, entity_name: string): Observable<Member[]> {
     return this.http
-               .get(`/api/projects/${projectId}/members?entityname=${entity_name}`, HTTP_GET_OPTIONS).pipe(
+               .get(`${ CURRENT_BASE_HREF }/projects/${projectId}/members?entityname=${entity_name}`, HTTP_GET_OPTIONS).pipe(
                map(response => response as Member[]),
                catchError(error => observableThrowError(error)), );
   }
@@ -50,7 +41,7 @@ export class MemberService {
       return;
     }
     return this.http.post(
-      `/api/projects/${projectId}/members`,
+      `${ CURRENT_BASE_HREF }/projects/${projectId}/members`,
       {
         role_id: roleId,
         member_user: member_user
@@ -61,7 +52,7 @@ export class MemberService {
 
   addGroupMember(projectId: number, group: any, roleId: number): Observable<any> {
     return this.http
-               .post(`/api/projects/${projectId}/members`,
+               .post(`${ CURRENT_BASE_HREF }/projects/${projectId}/members`,
                { role_id: roleId, member_group: group},
                HTTP_JSON_OPTIONS).pipe(
                catchError(error => observableThrowError(error)), );
@@ -69,13 +60,13 @@ export class MemberService {
 
   changeMemberRole(projectId: number, userId: number, roleId: number): Observable<any> {
     return this.http
-               .put(`/api/projects/${projectId}/members/${userId}`, { role_id: roleId }, HTTP_JSON_OPTIONS)
+               .put(`${ CURRENT_BASE_HREF }/projects/${projectId}/members/${userId}`, { role_id: roleId }, HTTP_JSON_OPTIONS)
                .pipe(catchError(error => observableThrowError(error)));
   }
 
   deleteMember(projectId: number, memberId: number): Observable<any> {
     return this.http
-               .delete(`/api/projects/${projectId}/members/${memberId}`)
+               .delete(`${ CURRENT_BASE_HREF }/projects/${projectId}/members/${memberId}`)
                .pipe(catchError(error => observableThrowError(error)));
   }
 }

@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/docker/distribution/registry/client/auth/challenge"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/common/utils/registry/auth"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
 	"io"
@@ -65,7 +65,7 @@ func ping(client *http.Client, endpoint string) (string, string, error) {
 	}
 	defer resp.Body.Close()
 
-	challenges := auth.ParseChallengeFromResponse(resp)
+	challenges := challenge.ResponseChallenges(resp)
 	for _, challenge := range challenges {
 		if scheme == challenge.Scheme {
 			realm := challenge.Parameters["realm"]

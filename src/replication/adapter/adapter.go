@@ -54,8 +54,8 @@ type Adapter interface {
 type ImageRegistry interface {
 	FetchImages(filters []*model.Filter) ([]*model.Resource, error)
 	ManifestExist(repository, reference string) (exist bool, digest string, err error)
-	PullManifest(repository, reference string, accepttedMediaTypes []string) (manifest distribution.Manifest, digest string, err error)
-	PushManifest(repository, reference, mediaType string, payload []byte) error
+	PullManifest(repository, reference string, accepttedMediaTypes ...string) (manifest distribution.Manifest, digest string, err error)
+	PushManifest(repository, reference, mediaType string, payload []byte) (string, error)
 	// the "reference" can be "tag" or "digest", the function needs to handle both
 	DeleteManifest(repository, reference string) error
 	BlobExist(repository, digest string) (exist bool, err error)

@@ -33,7 +33,7 @@ func Register(user models.User) (int64, error) {
 				 values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING user_id`
 	var userID int64
 	err := o.Raw(sql, user.Username, utils.Encrypt(user.Password, salt, utils.SHA256), utils.SHA256, user.Realname, user.Email,
-		user.Comment, salt, user.HasAdminRole, now, now).QueryRow(&userID)
+		user.Comment, salt, user.SysAdminFlag, now, now).QueryRow(&userID)
 	if err != nil {
 		return 0, err
 	}

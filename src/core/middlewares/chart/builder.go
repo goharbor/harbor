@@ -20,6 +20,7 @@ import (
 	"regexp"
 	"strconv"
 
+	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/middlewares/interceptor"
@@ -29,8 +30,10 @@ import (
 )
 
 var (
-	deleteChartVersionRe = regexp.MustCompile(`^/api/chartrepo/(?P<namespace>[^?#]+)/charts/(?P<name>[^?#]+)/(?P<version>[^?#]+)/?$`)
-	createChartVersionRe = regexp.MustCompile(`^/api/chartrepo/(?P<namespace>[^?#]+)/charts/?$`)
+	deleteChartVersionRePattern = fmt.Sprintf(`^/api/%s/chartrepo/(?P<namespace>[^?#]+)/charts/(?P<name>[^?#]+)/(?P<version>[^?#]+)/?$`, api.APIVersion)
+	deleteChartVersionRe        = regexp.MustCompile(deleteChartVersionRePattern)
+	createChartVersionRePattern = fmt.Sprintf(`^/api/%s/chartrepo/(?P<namespace>[^?#]+)/charts/?$`, api.APIVersion)
+	createChartVersionRe        = regexp.MustCompile(createChartVersionRePattern)
 )
 
 var (

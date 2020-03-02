@@ -5,8 +5,8 @@ import { ClarityModule } from '@clr/angular';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MarkedOptions, MarkdownModule, MarkdownService } from 'ngx-markdown';
-import { ErrorHandler, DefaultErrorHandler } from '@harbor/ui';
 import { HelmChartService } from '../../helm-chart.service';
+import { DefaultErrorHandler, ErrorHandler } from "../../../../../lib/utils/error-handler";
 describe('ChartDetailSummaryComponent', () => {
     let component: ChartDetailSummaryComponent;
     let fixture: ComponentFixture<ChartDetailSummaryComponent>;

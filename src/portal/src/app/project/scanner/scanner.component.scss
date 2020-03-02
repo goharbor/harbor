@@ -1,6 +1,5 @@
 .scanner-name {
   height: 1rem;
-  color: #000;
   display: inline-block;
   padding: 0 .25rem;
   max-height: 1rem;
@@ -20,4 +19,8 @@
 }
 .clr-form-control {
   margin-top: 0.75rem !important;
+}
+.name {
+  height: 1.75rem;
+  line-height: 1.75rem;
 }

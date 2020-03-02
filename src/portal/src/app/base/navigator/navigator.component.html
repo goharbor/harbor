@@ -13,7 +13,7 @@
     </div>
     <global-search></global-search>
     <div class="header-actions">
-        <clr-dropdown class="dropdown bottom-left" *ngIf="!isIntegrationMode">
+        <clr-dropdown class="dropdown-lang dropdown bottom-left" *ngIf="!isIntegrationMode">
             <button class="nav-icon nav-icon-width" clrDropdownToggle>
                 <clr-icon shape="world" class="icon-left"></clr-icon>
                 <span class="currentLang">{{currentLang}}</span>
@@ -28,6 +28,7 @@
                 <a href="javascript:void(0)" clrDropdownItem (click)='switchLanguage("tr-tr")' [class.lang-selected]='matchLang("tr-tr")'>Türkçe</a>
             </clr-dropdown-menu>
         </clr-dropdown>
+        <div class="nav-divider"></div>
         <clr-dropdown class="dropdown" *ngIf="isSessionValid">
             <button class="nav-text" clrDropdownToggle>
               <clr-icon shape="user" class="is-inverse user-icon" size="24"></clr-icon>
@@ -42,7 +43,17 @@
                 <a href="javascript:void(0)" clrDropdownItem (click)="logOut()">{{'ACCOUNT_SETTINGS.LOGOUT' | translate}}</a>
             </clr-dropdown-menu>
         </clr-dropdown>
-        <div class="nav-divider" *ngIf="!isSessionValid"></div>
         <a href="javascript:void(0)" id="aboutMenu" class="nav-link nav-text nav-about-link" (click)="openAboutDialog()" *ngIf="!isSessionValid">{{'ACCOUNT_SETTINGS.ABOUT' | translate}}</a>
+        <div class="nav-divider"></div>
+        <ng-container *ngFor="let theme of themeArray;let i=index">
+            <ng-container *ngIf="theme.showStyle === styleMode">
+                <a class="nav-link nav-icon theme-select"
+                    (click)="themeChanged(theme)">
+                    <clr-icon size="20" *ngIf="styleMode ==='DARK'" shape="sun" class="is-solid"></clr-icon>
+                    <clr-icon size="20" *ngIf="styleMode ==='LIGHT'" shape="moon" class="is-solid"></clr-icon>
+                    {{ theme.text | translate }}
+                </a>
+            </ng-container>
+        </ng-container>
     </div>
 </clr-header>

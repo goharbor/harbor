@@ -2,10 +2,12 @@
   color: #000;
   padding-right: 0.3rem;
   font-size: 13px;
+  justify-content: space-between;
   .summary-left {
+    padding-top: .25rem;
     .project-detail {
       width: 17rem;
-      min-height: 3rem;
+      min-height: 1.45rem;
 
       ul {
         width: 8rem;
@@ -16,19 +18,22 @@
   h5 {
     font-size: 13px;
     font-weight: 700;
+    color: #000;
   }
 
   .summary-right {
     .quotas-progress {
       min-width: 10rem;
+      justify-content: space-between;
       ;
     }
   }
 }
-
+.width-7-5 {
+  width: 7.5rem;
+}
 .display-flex {
   display: flex;
-  justify-content: space-between;
 }
 
 .progress,

@@ -21,6 +21,11 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 )
 
+var (
+	// Mgr is the global project manager
+	Mgr = New()
+)
+
 // Manager is used for project management
 // currently, the interface only defines the methods needed for tag retention
 // will expand it when doing refactor

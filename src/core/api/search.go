@@ -18,13 +18,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/dao"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
-	coreutils "github.com/goharbor/harbor/src/core/utils"
 	"k8s.io/helm/cmd/helm/search"
 )
 
@@ -96,13 +94,7 @@ func (s *SearchAPI) Get() {
 
 		if isAuthenticated {
 			roles := s.SecurityCtx.GetProjectRoles(p.ProjectID)
-			if len(roles) != 0 {
-				p.Role = roles[0]
-			}
-
-			if p.Role == common.RoleProjectAdmin || isSysAdmin {
-				p.Togglable = true
-			}
+			p.Role = highestRole(roles)
 		}
 
 		total, err := dao.GetTotalOfRepositories(&models.RepositoryQuery{
@@ -187,27 +179,10 @@ func filterRepositories(projects []*models.Project, keyword string) (
 		entry["project_public"] = project.IsPublic()
 		entry["pull_count"] = repository.PullCount
 
-		tags, err := getTags(repository.Name)
-		if err != nil {
-			return nil, err
-		}
-		entry["tags_count"] = len(tags)
+		// TODO populate artifact count
+		// entry["tags_count"] = len(tags)
 
 		result = append(result, entry)
 	}
 	return result, nil
-}
-
-func getTags(repository string) ([]string, error) {
-	client, err := coreutils.NewRepositoryClientForUI("harbor-core", repository)
-	if err != nil {
-		return nil, err
-	}
-
-	tags, err := client.ListTag()
-	if err != nil {
-		return nil, err
-	}
-
-	return tags, nil
 }

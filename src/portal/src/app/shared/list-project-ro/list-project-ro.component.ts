@@ -13,7 +13,7 @@
 // limitations under the License.
 import { Component, EventEmitter, Output, Input, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { Router } from '@angular/router';
-import { State } from '../../../../lib/src/service/interface';
+import { State } from '../../../lib/services/interface';
 
 import { SearchTriggerService } from '../../base/global-search/search-trigger.service';
 import { Project } from '../../project/project';

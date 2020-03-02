@@ -1,14 +1,9 @@
-
 import {of as observableOf,  forkJoin} from "rxjs";
-
 import {mergeMap, catchError} from 'rxjs/operators';
 import { ChangeDetectorRef, ChangeDetectionStrategy, ViewChild } from "@angular/core";
 import { Component, OnInit, Input, Output, EventEmitter } from "@angular/core";
 import { NgForm } from '@angular/forms';
-
 import { TranslateService } from '@ngx-translate/core';
-import { operateChanges, OperateInfo, OperationService, OperationState, errorHandler as errorHandFn } from "@harbor/ui";
-
 import { UserGroup } from "./../../../group/group";
 import { MemberService } from "./../member.service";
 import { GroupService } from "../../../group/group.service";
@@ -16,6 +11,9 @@ import { ProjectRoles } from "../../../shared/shared.const";
 import { MessageHandlerService } from '../../../shared/message-handler/message-handler.service';
 import { Member } from "../member";
 import { throwError as observableThrowError } from "rxjs";
+import { OperationService } from "../../../../lib/components/operation/operation.service";
+import { operateChanges, OperateInfo, OperationState } from "../../../../lib/components/operation/operate";
+import { errorHandler } from "../../../../lib/utils/shared/shared.utils";
 @Component({
   selector: "add-group",
   templateUrl: "./add-group.component.html",
@@ -137,7 +135,7 @@ export class AddGroupComponent implements OnInit {
            })); }),
             catchError(
               error => {
-                  const message = errorHandFn(error);
+                  const message = errorHandler(error);
                   this.translateService.get(message).subscribe(res =>
                     operateChanges(operMessage, OperationState.failure, res)
                   );

@@ -17,11 +17,15 @@ import {map, catchError} from 'rxjs/operators';
 // limitations under the License.
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams, HttpResponse } from '@angular/common/http';
-
 import { AuditLog } from './audit-log';
-import {RequestQueryParams, buildHttpRequestOptions, buildHttpRequestOptionsWithObserveResponse} from '@harbor/ui';
+import {
+  buildHttpRequestOptions,
+  buildHttpRequestOptionsWithObserveResponse,
+  CURRENT_BASE_HREF
+} from "../../lib/utils/utils";
+import { RequestQueryParams } from "../../lib/services";
 
-export const logEndpoint = '/api/logs';
+export const logEndpoint = CURRENT_BASE_HREF + '/logs';
 
 @Injectable()
 export class AuditLogService {
@@ -46,7 +50,7 @@ export class AuditLogService {
       params = params.set('page_size', <string>queryParam.page_size);
     }
     return this.http
-      .get<HttpResponse<AuditLog[]>>(`/api/projects/${queryParam.project_id}/logs`
+      .get<HttpResponse<AuditLog[]>>(`${ CURRENT_BASE_HREF }/projects/${queryParam.project_id}/logs`
       , buildHttpRequestOptionsWithObserveResponse(params)).pipe(
       catchError(error => observableThrowError(error)), );
   }

@@ -74,7 +74,7 @@ func (suite *TestBuilderSuite) SetupSuite() {
 			Namespace:   "library",
 			Repository:  "harbor",
 			Kind:        "image",
-			Tag:         "latest",
+			Tags:        []string{"latest"},
 			Digest:      "latest",
 			PushedTime:  time.Now().Unix(),
 			Labels:      []string{"L1", "L2"},
@@ -84,7 +84,7 @@ func (suite *TestBuilderSuite) SetupSuite() {
 			Namespace:   "library",
 			Repository:  "harbor",
 			Kind:        "image",
-			Tag:         "dev",
+			Tags:        []string{"dev"},
 			Digest:      "dev",
 			PushedTime:  time.Now().Unix(),
 			Labels:      []string{"L3"},
@@ -157,7 +157,7 @@ func (suite *TestBuilderSuite) TestBuild() {
 		success = art.Error == nil &&
 			art.Target != nil &&
 			art.Target.Repository == "harbor" &&
-			art.Target.Tag == "dev"
+			art.Target.Tags[0] == "dev"
 
 		return
 	})

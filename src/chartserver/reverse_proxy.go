@@ -12,24 +12,29 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/api"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
-	n_event "github.com/goharbor/harbor/src/core/notifier/event"
+	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"github.com/goharbor/harbor/src/replication"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/justinas/alice"
-	"time"
 )
 
 const (
 	agentHarbor         = "HARBOR"
 	contentLengthHeader = "Content-Length"
+)
 
-	defaultRepo             = "library"
-	rootUploadingEndpoint   = "/api/chartrepo/charts"
-	rootIndexEndpoint       = "/chartrepo/index.yaml"
-	chartRepoHealthEndpoint = "/api/chartrepo/health"
+var (
+	defaultRepo = "library"
+
+	chartRepoAPIPrefix      = fmt.Sprintf("/api/%s/chartrepo", api.APIVersion)
+	rootUploadingEndpoint   = fmt.Sprintf("/api/%s/chartrepo/charts", api.APIVersion)
+	chartRepoHealthEndpoint = fmt.Sprintf("/api/%s/chartrepo/health", api.APIVersion)
+	chartRepoPrefix         = "/chartrepo"
 )
 
 // ProxyEngine is used to proxy the related traffics
@@ -220,19 +225,19 @@ func rewriteURLPath(req *http.Request) {
 
 	// Root uploading endpoint
 	if incomingURLPath == rootUploadingEndpoint {
-		req.URL.Path = strings.Replace(incomingURLPath, "chartrepo", defaultRepo, 1)
+		req.URL.Path = strings.Replace(incomingURLPath, fmt.Sprintf("%s/chartrepo", api.APIVersion), defaultRepo, 1)
 		return
 	}
 
 	// Repository endpoints
-	if strings.HasPrefix(incomingURLPath, "/chartrepo") {
+	if strings.HasPrefix(incomingURLPath, chartRepoPrefix) {
 		req.URL.Path = strings.TrimPrefix(incomingURLPath, "/chartrepo")
 		return
 	}
 
 	// API endpoints
-	if strings.HasPrefix(incomingURLPath, "/api/chartrepo") {
-		req.URL.Path = strings.Replace(incomingURLPath, "/chartrepo", "", 1)
+	if strings.HasPrefix(incomingURLPath, chartRepoAPIPrefix) {
+		req.URL.Path = strings.Replace(incomingURLPath, fmt.Sprintf("/%s/chartrepo", api.APIVersion), "", 1)
 		return
 	}
 }

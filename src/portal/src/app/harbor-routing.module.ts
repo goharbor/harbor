@@ -13,39 +13,26 @@
 // limitations under the License.
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-
 import { SystemAdminGuard } from './shared/route/system-admin-activate.service';
 import { AuthCheckGuard } from './shared/route/auth-user-activate.service';
 import { SignInGuard } from './shared/route/sign-in-guard-activate.service';
 import { MemberGuard } from './shared/route/member-guard-activate.service';
 import { MemberPermissionGuard } from './shared/route/member-permission-guard-activate.service';
 import { OidcGuard } from './shared/route/oidc-guard-active.service';
-
 import { PageNotFoundComponent } from './shared/not-found/not-found.component';
 import { HarborShellComponent } from './base/harbor-shell/harbor-shell.component';
 import { ConfigurationComponent } from './config/config.component';
 import { DevCenterComponent } from './dev-center/dev-center.component';
 import { GcPageComponent } from './gc-page/gc-page.component';
-import { VulnerabilityPageComponent } from './vulnerability-page/vulnerability-page.component';
-
 import { UserComponent } from './user/user.component';
 import { SignInComponent } from './sign-in/sign-in.component';
 import { ResetPasswordComponent } from './account/password-setting/reset-password/reset-password.component';
 import { GroupComponent } from './group/group.component';
-
 import { TotalReplicationPageComponent } from './replication/total-replication/total-replication-page.component';
 import { ReplicationTasksPageComponent } from './replication/replication-tasks-page/replication-tasks-page.component';
-
 import { DestinationPageComponent } from './replication/destination/destination-page.component';
-
 import { AuditLogComponent } from './log/audit-log.component';
 import { LogPageComponent } from './log/log-page.component';
-
-import { RepositoryPageComponent } from './repository/repository-page.component';
-import { TagRepositoryComponent } from './repository/tag-repository/tag-repository.component';
-import { TagDetailPageComponent } from './repository/tag-detail/tag-detail-page.component';
-import { LeavingRepositoryRouteDeactivate } from './shared/route/leaving-repository-deactivate.service';
-
 import { ProjectComponent } from './project/project.component';
 import { ProjectDetailComponent } from './project/project-detail/project-detail.component';
 import { MemberComponent } from './project/member/member.component';
@@ -60,10 +47,19 @@ import { HelmChartDetailComponent } from './project/helm-chart/helm-chart-detail
 import { OidcOnboardComponent } from './oidc-onboard/oidc-onboard.component';
 import { LicenseComponent } from './license/license.component';
 import { SummaryComponent } from './project/summary/summary.component';
-import { TagRetentionComponent } from './project/tag-retention/tag-retention.component';
-import { ImmutableTagComponent } from './project/immutable-tag/immutable-tag.component';
-import { USERSTATICPERMISSION } from '@harbor/ui';
+import { TagFeatureIntegrationComponent } from './project/tag-feature-integration/tag-feature-integration.component';
+import { TagRetentionComponent } from './project/tag-feature-integration/tag-retention/tag-retention.component';
+import { ImmutableTagComponent } from './project/tag-feature-integration/immutable-tag/immutable-tag.component';
 import { ScannerComponent } from "./project/scanner/scanner.component";
+import { InterrogationServicesComponent } from "./interrogation-services/interrogation-services.component";
+import { ConfigurationScannerComponent } from "./config/scanner/config-scanner.component";
+import { LabelsComponent } from "./labels/labels.component";
+import { ProjectQuotasComponent } from "./project-quotas/project-quotas.component";
+import { VulnerabilityConfigComponent } from "../lib/components/config/vulnerability/vulnerability-config.component";
+import { USERSTATICPERMISSION } from "../lib/services";
+import { RepositoryGridviewComponent } from "./project/repository/repository-gridview.component";
+import { ArtifactListPageComponent } from "./project/repository/artifact-list-page/artifact-list-page.component";
+import { ArtifactSummaryComponent } from "./project/repository/artifact/artifact-summary.component";
 
 const harborRoutes: Routes = [
   { path: '', redirectTo: 'harbor', pathMatch: 'full' },
@@ -89,7 +85,6 @@ const harborRoutes: Routes = [
   {
     path: 'harbor',
     component: HarborShellComponent,
-    // canActivate: [AuthCheckGuard],
     canActivateChild: [AuthCheckGuard],
     children: [
       { path: '', redirectTo: 'projects', pathMatch: 'full' },
@@ -123,35 +118,41 @@ const harborRoutes: Routes = [
         canActivateChild: [SystemAdminGuard]
       },
       {
+        path: 'interrogation-services',
+        component: InterrogationServicesComponent,
+        canActivate: [SystemAdminGuard],
+        canActivateChild: [SystemAdminGuard],
+        children: [
+          {
+            path: 'scanners',
+            component: ConfigurationScannerComponent
+          },
+          {
+            path: 'vulnerability',
+            component: VulnerabilityConfigComponent
+          },
+          {
+            path: '',
+            redirectTo: 'scanners',
+            pathMatch: 'full'
+          },
+        ]
+      },
+      {
+        path: 'labels',
+        component: LabelsComponent,
+        canActivate: [SystemAdminGuard],
+      },
+      {
+        path: 'project-quotas',
+        component: ProjectQuotasComponent,
+        canActivate: [SystemAdminGuard],
+      },
+      {
         path: 'replications/:id/:tasks',
         component: ReplicationTasksPageComponent,
         canActivate: [SystemAdminGuard],
         canActivateChild: [SystemAdminGuard]
-      },
-      {
-        path: 'tags/:id/:repo',
-        component: TagRepositoryComponent,
-        canActivate: [MemberGuard],
-        resolve: {
-          projectResolver: ProjectRoutingResolver
-        }
-      },
-      {
-        path: 'projects/:id/repositories/:repo',
-        component: TagRepositoryComponent,
-        canActivate: [MemberGuard],
-        canDeactivate: [LeavingRepositoryRouteDeactivate],
-        resolve: {
-          projectResolver: ProjectRoutingResolver
-        }
-      },
-      {
-        path: 'projects/:id/repositories/:repo/tags/:tag',
-        component: TagDetailPageComponent,
-        canActivate: [MemberGuard],
-        resolve: {
-          projectResolver: ProjectRoutingResolver
-        }
       },
       {
         path: 'projects/:id/helm-charts/:chart/versions',
@@ -173,13 +174,13 @@ const harborRoutes: Routes = [
         path: 'projects/:id',
         component: ProjectDetailComponent,
         canActivate: [MemberGuard],
-        canActivateChild: [MemberPermissionGuard],
         resolve: {
           projectResolver: ProjectRoutingResolver
         },
         children: [
           {
             path: 'summary',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.PROJECT.KEY,
@@ -190,16 +191,18 @@ const harborRoutes: Routes = [
           },
           {
             path: 'repositories',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.REPOSITORY.KEY,
                 action: USERSTATICPERMISSION.REPOSITORY.VALUE.LIST
               }
             },
-            component: RepositoryPageComponent,
+            component: RepositoryGridviewComponent
           },
           {
             path: 'helm-charts',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.HELM_CHART.KEY,
@@ -209,17 +212,8 @@ const harborRoutes: Routes = [
             component: ListChartsComponent
           },
           {
-            path: 'repositories/:repo/tags',
-            data: {
-              permissionParam: {
-                resource: USERSTATICPERMISSION.REPOSITORY.KEY,
-                action: USERSTATICPERMISSION.REPOSITORY.VALUE.LIST
-              }
-            },
-            component: TagRepositoryComponent
-          },
-          {
             path: 'members',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.MEMBER.KEY,
@@ -230,6 +224,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'logs',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.LOG.KEY,
@@ -240,6 +235,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'labels',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.LABEL.KEY,
@@ -250,6 +246,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'configs',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.CONFIGURATION.KEY,
@@ -260,6 +257,7 @@ const harborRoutes: Routes = [
           },
           {
             path: 'robot-account',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.ROBOT.KEY,
@@ -269,27 +267,31 @@ const harborRoutes: Routes = [
             component: RobotAccountComponent
           },
           {
-            path: 'tag-retention',
+            path: 'tag-strategy',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.TAG_RETENTION.KEY,
                 action: USERSTATICPERMISSION.TAG_RETENTION.VALUE.READ
               }
             },
-            component: TagRetentionComponent
-          },
-          {
-            path: 'immutable-tag',
-            data: {
-              permissionParam: {
-                resource: USERSTATICPERMISSION.TAG_RETENTION.KEY,
-                action: USERSTATICPERMISSION.TAG_RETENTION.VALUE.READ
-              }
-            },
-            component: ImmutableTagComponent
+            component: TagFeatureIntegrationComponent,
+            children: [
+              {
+                path: 'tag-retention',
+                component: TagRetentionComponent
+              },
+              {
+                path: 'immutable-tag',
+                component: ImmutableTagComponent
+              },
+              { path: '', redirectTo: 'tag-retention', pathMatch: 'full' },
+
+            ]
           },
           {
             path: 'webhook',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
                 resource: USERSTATICPERMISSION.WEBHOOK.KEY,
@@ -300,10 +302,11 @@ const harborRoutes: Routes = [
           },
           {
             path: 'scanner',
+            canActivate: [MemberPermissionGuard],
             data: {
               permissionParam: {
-                resource: USERSTATICPERMISSION.CONFIGURATION.KEY,
-                action: USERSTATICPERMISSION.CONFIGURATION.VALUE.READ
+                resource: USERSTATICPERMISSION.SCANNER.KEY,
+                action: USERSTATICPERMISSION.SCANNER.VALUE.READ
               }
             },
             component: ScannerComponent
@@ -311,13 +314,40 @@ const harborRoutes: Routes = [
         ]
       },
       {
-        path: 'configs',
-        component: ConfigurationComponent,
-        canActivate: [SystemAdminGuard]
+        path: 'projects/:id/repositories/:repo',
+        component: ArtifactListPageComponent,
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        }
       },
       {
-        path: 'vulnerability',
-        component: VulnerabilityPageComponent,
+        path: 'projects/:id/repositories/:repo/depth/:depth',
+        component: ArtifactListPageComponent,
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        },
+      },
+      {
+        path: 'projects/:id/repositories/:repo/artifacts/:digest',
+        component: ArtifactSummaryComponent,
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        }
+      },
+      {
+        path: 'projects/:id/repositories/:repo/depth/:depth/artifacts/:digest',
+        component: ArtifactSummaryComponent,
+        canActivate: [MemberGuard],
+        resolve: {
+          projectResolver: ProjectRoutingResolver
+        }
+      },
+      {
+        path: 'configs',
+        component: ConfigurationComponent,
         canActivate: [SystemAdminGuard]
       },
       {

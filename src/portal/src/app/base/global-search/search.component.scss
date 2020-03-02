@@ -19,12 +19,6 @@
     position: relative;
 }
 
-.search-title {
-    font-size: 28px;
-    letter-spacing: normal;
-    color: #000;
-}
-
 .search-close {
     position: absolute;
     right: 24px;
@@ -57,7 +51,6 @@
 }
 
 .search::before {
-    position: absolute;
     content: '';
     display: inline-block;
     background: #fafafa;

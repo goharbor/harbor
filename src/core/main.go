@@ -17,6 +17,7 @@ package main
 import (
 	"encoding/gob"
 	"fmt"
+	"github.com/goharbor/harbor/src/migration"
 	"os"
 	"os/signal"
 	"strconv"
@@ -43,15 +44,17 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/filter"
 	"github.com/goharbor/harbor/src/core/middlewares"
-	_ "github.com/goharbor/harbor/src/core/notifier/topic"
 	"github.com/goharbor/harbor/src/core/service/token"
 	"github.com/goharbor/harbor/src/pkg/notification"
+	_ "github.com/goharbor/harbor/src/pkg/notifier/topic"
 	"github.com/goharbor/harbor/src/pkg/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 	"github.com/goharbor/harbor/src/pkg/scan/event"
 	"github.com/goharbor/harbor/src/pkg/scheduler"
 	"github.com/goharbor/harbor/src/pkg/types"
+	"github.com/goharbor/harbor/src/pkg/version"
 	"github.com/goharbor/harbor/src/replication"
+	"github.com/goharbor/harbor/src/server"
 )
 
 const (
@@ -163,7 +166,7 @@ func gracefulShutdown(closing, done chan struct{}) {
 
 func main() {
 	beego.BConfig.WebConfig.Session.SessionOn = true
-	beego.BConfig.WebConfig.Session.SessionName = "sid"
+	beego.BConfig.WebConfig.Session.SessionName = config.SessionCookieName
 
 	redisURL := os.Getenv("_REDIS_URL")
 	if len(redisURL) > 0 {
@@ -174,17 +177,18 @@ func main() {
 	beego.AddTemplateExt("htm")
 
 	log.Info("initializing configurations...")
-	if err := config.Init(); err != nil {
-		log.Fatalf("failed to initialize configurations: %v", err)
-	}
+	config.Init()
 	log.Info("configurations initialization completed")
 	token.InitCreators()
 	database, err := config.Database()
 	if err != nil {
 		log.Fatalf("failed to get database configuration: %v", err)
 	}
-	if err := dao.InitAndUpgradeDatabase(database); err != nil {
+	if err := dao.InitDatabase(database); err != nil {
 		log.Fatalf("failed to initialize database: %v", err)
+	}
+	if err = migration.Migrate(database); err != nil {
+		log.Fatalf("failed to migrate: %v", err)
 	}
 	if err := config.Load(); err != nil {
 		log.Fatalf("failed to load config: %v", err)
@@ -208,28 +212,7 @@ func main() {
 		log.Fatalf("Failed to initialize API handlers with error: %s", err.Error())
 	}
 
-	if config.WithClair() {
-		clairDB, err := config.ClairDB()
-		if err != nil {
-			log.Fatalf("failed to load clair database information: %v", err)
-		}
-		if err := dao.InitClairDB(clairDB); err != nil {
-			log.Fatalf("failed to initialize clair database: %v", err)
-		}
-
-		// TODO: change to be internal adapter
-		reg := &scanner.Registration{
-			Name:        "Clair",
-			Description: "The clair scanner adapter",
-			URL:         config.ClairAdapterEndpoint(),
-			Disabled:    false,
-			IsDefault:   true,
-		}
-
-		if err := scan.EnsureScanner(reg); err != nil {
-			log.Fatalf("failed to initialize clair scanner: %v", err)
-		}
-	}
+	registerScanners()
 
 	closing := make(chan struct{})
 	done := make(chan struct{})
@@ -244,35 +227,80 @@ func main() {
 	event.Init()
 
 	filter.Init()
+	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)
-	beego.InsertFilter("/api/*", beego.BeforeRouter, filter.MediaTypeFilter("application/json", "multipart/form-data", "application/octet-stream"))
 
-	initRouters()
+	server.RegisterRoutes()
 
-	syncRegistry := os.Getenv("SYNC_REGISTRY")
-	sync, err := strconv.ParseBool(syncRegistry)
-	if err != nil {
-		log.Errorf("Failed to parse SYNC_REGISTRY: %v", err)
-		// if err set it default to false
-		sync = false
-	}
-	if sync {
-		if err := api.SyncRegistry(config.GlobalProjectMgr); err != nil {
-			log.Error(err)
-		}
+	log.Infof("Version: %s, Git commit: %s", version.ReleaseVersion, version.GitCommit)
+
+	beego.RunWithMiddleWares("", middlewares.MiddleWares()...)
+}
+
+func registerScanners() {
+	wantedScanners := make([]scanner.Registration, 0)
+	uninstallURLs := make([]string, 0)
+
+	if config.WithTrivy() {
+		log.Info("Registering Trivy scanner")
+		wantedScanners = append(wantedScanners, scanner.Registration{
+			Name:            "Trivy",
+			Description:     "The Trivy scanner adapter",
+			URL:             config.TrivyAdapterURL(),
+			UseInternalAddr: true,
+			Immutable:       true,
+		})
 	} else {
-		log.Infof("Because SYNC_REGISTRY set false , no need to sync registry \n")
+		log.Info("Removing Trivy scanner")
+		uninstallURLs = append(uninstallURLs, config.TrivyAdapterURL())
 	}
 
-	log.Info("Init proxy")
-	if err := middlewares.Init(); err != nil {
-		log.Fatalf("init proxy error, %v", err)
+	if config.WithClair() {
+		clairDB, err := config.ClairDB()
+		if err != nil {
+			log.Fatalf("failed to load clair database information: %v", err)
+		}
+		if err := dao.InitClairDB(clairDB); err != nil {
+			log.Fatalf("failed to initialize clair database: %v", err)
+		}
+
+		log.Info("Registering Clair scanner")
+		wantedScanners = append(wantedScanners, scanner.Registration{
+			Name:            "Clair",
+			Description:     "The Clair scanner adapter",
+			URL:             config.ClairAdapterEndpoint(),
+			UseInternalAddr: true,
+			Immutable:       true,
+		})
+	} else {
+		log.Info("Removing Clair scanner")
+		uninstallURLs = append(uninstallURLs, config.ClairAdapterEndpoint())
 	}
 
-	if err := quotaSync(); err != nil {
-		log.Fatalf("quota migration error, %v", err)
+	if err := scan.EnsureScanners(wantedScanners); err != nil {
+		log.Fatalf("failed to register scanners: %v", err)
 	}
 
-	beego.Run()
+	if defaultScannerURL := getDefaultScannerURL(); defaultScannerURL != "" {
+		log.Infof("Setting %s as default scanner", defaultScannerURL)
+		if err := scan.EnsureDefaultScanner(defaultScannerURL); err != nil {
+			log.Fatalf("failed to set default scanner: %v", err)
+		}
+	}
+
+	if err := scan.RemoveImmutableScanners(uninstallURLs); err != nil {
+		log.Warningf("failed to remove scanners: %v", err)
+	}
+
+}
+
+func getDefaultScannerURL() string {
+	if config.WithTrivy() {
+		return config.TrivyAdapterURL()
+	}
+	if config.WithClair() {
+		return config.ClairAdapterEndpoint()
+	}
+	return ""
 }

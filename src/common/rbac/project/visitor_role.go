@@ -124,6 +124,21 @@ var (
 
 			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionCreate},
+
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
+			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceTag, Action: rbac.ActionDelete},
+
+			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
 		},
 
 		"master": {
@@ -211,6 +226,20 @@ var (
 
 			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionDelete},
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
+			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceTag, Action: rbac.ActionDelete},
+
+			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
 		},
 
 		"developer": {
@@ -264,8 +293,19 @@ var (
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
 
-			{Resource: rbac.ResourceScan, Action: rbac.ActionCreate},
 			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
+			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceTag, Action: rbac.ActionCreate},
+
+			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionCreate},
+			{Resource: rbac.ResourceArtifactLabel, Action: rbac.ActionDelete},
 		},
 
 		"guest": {
@@ -306,6 +346,14 @@ var (
 
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionRead},
 			{Resource: rbac.ResourceRobot, Action: rbac.ActionList},
+
+			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
+			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
 		},
 
 		"limitedGuest": {
@@ -330,6 +378,14 @@ var (
 			{Resource: rbac.ResourceHelmChartVersion, Action: rbac.ActionList},
 
 			{Resource: rbac.ResourceConfiguration, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScan, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceScanner, Action: rbac.ActionRead},
+
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionRead},
+			{Resource: rbac.ResourceArtifact, Action: rbac.ActionList},
+			{Resource: rbac.ResourceArtifactAddition, Action: rbac.ActionRead},
 		},
 	}
 )

@@ -65,7 +65,6 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		log.Warningf("ldap search fail: %v", err)
 		return nil, err
 	}
-
 	if len(ldapUsers) == 0 {
 		log.Warningf("Not found an entry.")
 		return nil, auth.NewErrAuth("Not found an entry")
@@ -75,21 +74,31 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 	}
 	log.Debugf("Found ldap user %+v", ldapUsers[0])
 
-	u := models.User{}
-	u.Username = ldapUsers[0].Username
-	u.Email = strings.TrimSpace(ldapUsers[0].Email)
-	u.Realname = ldapUsers[0].Realname
-	ugIDs := []int{}
-
 	dn := ldapUsers[0].DN
 	if err = ldapSession.Bind(dn, m.Password); err != nil {
-		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", u.Username, dn, err)
+		log.Warningf("Failed to bind user, username: %s, dn: %s, error: %v", p, dn, err)
 		return nil, auth.NewErrAuth(err.Error())
 	}
 
+	u := models.User{}
+	u.Username = ldapUsers[0].Username
+	u.Realname = ldapUsers[0].Realname
+	u.Email = strings.TrimSpace(ldapUsers[0].Email)
+
+	l.syncUserInfoFromDB(&u)
+	l.attachLDAPGroup(ldapUsers, &u)
+
+	return &u, nil
+}
+
+func (l *Auth) attachLDAPGroup(ldapUsers []models.LdapUser, u *models.User) {
 	// Retrieve ldap related info in login to avoid too many traffic with LDAP server.
 	// Get group admin dn
 	groupCfg, err := config.LDAPGroupConf()
+	if err != nil {
+		log.Warningf("Failed to fetch ldap group configuration:%v", err)
+		// most likely user doesn't configure user group info, it should not block user login
+	}
 	groupAdminDN := utils.TrimLower(groupCfg.LdapGroupAdminDN)
 	// Attach user group
 	for _, groupDN := range ldapUsers[0].GroupDNList {
@@ -97,25 +106,31 @@ func (l *Auth) Authenticate(m models.AuthModel) (*models.User, error) {
 		groupDN = utils.TrimLower(groupDN)
 		// Attach LDAP group admin
 		if len(groupAdminDN) > 0 && groupAdminDN == groupDN {
-			u.HasAdminRole = true
+			u.AdminRoleInAuth = true
 		}
 
-		userGroupQuery := models.UserGroup{
-			GroupType:   1,
-			LdapGroupDN: groupDN,
-		}
-		userGroups, err := group.QueryUserGroup(userGroupQuery)
-		if err != nil {
-			continue
-		}
-		if len(userGroups) == 0 {
-			continue
-		}
-		ugIDs = append(ugIDs, userGroups[0].ID)
 	}
-	u.GroupIDs = ugIDs
+	userGroups := make([]models.UserGroup, 0)
+	for _, dn := range ldapUsers[0].GroupDNList {
+		userGroups = append(userGroups, models.UserGroup{GroupName: dn, LdapGroupDN: dn, GroupType: common.LDAPGroupType})
+	}
+	u.GroupIDs, err = group.PopulateGroup(userGroups)
+	if err != nil {
+		log.Warningf("Failed to fetch ldap group configuration:%v", err)
+	}
+}
 
-	return &u, nil
+func (l *Auth) syncUserInfoFromDB(u *models.User) {
+	// Retrieve SysAdminFlag from DB so that it transfer to session
+	dbUser, err := dao.GetUser(models.User{Username: u.Username})
+	if err != nil {
+		log.Errorf("failed to sync user info from DB error %v", err)
+		return
+	}
+	if dbUser == nil {
+		return
+	}
+	u.SysAdminFlag = dbUser.SysAdminFlag
 }
 
 // OnBoardUser will check if a user exists in user table, if not insert the user and
@@ -236,8 +251,6 @@ func (l *Auth) PostAuthenticate(u *models.User) error {
 			return nil
 		}
 		u.UserID = dbUser.UserID
-		// If user has admin role already, do not overwrite by user info in DB.
-		u.HasAdminRole = u.HasAdminRole || dbUser.HasAdminRole
 
 		if dbUser.Email != u.Email {
 			Re := regexp.MustCompile(`^[a-z0-9._%+\-]+@[a-z0-9.\-]+\.[a-z]{2,4}$`)

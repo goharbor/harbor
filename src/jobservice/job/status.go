@@ -80,3 +80,9 @@ func (s Status) Compare(another Status) int {
 func (s Status) String() string {
 	return string(s)
 }
+
+// Final returns if the status is final status
+// e.g: "Stopped", "Error" or "Success"
+func (s Status) Final() bool {
+	return s.Code() == 3
+}

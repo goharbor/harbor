@@ -1,15 +1,36 @@
 #!/bin/bash
-set +e
+set -e
 
 # If compiling source code this dir is harbor's make dir.
-# If installing harbor via pacakge, this dir is harbor's root dir.
+# If installing harbor via package, this dir is harbor's root dir.
 if [[ -n "$HARBOR_BUNDLE_DIR" ]]; then
     harbor_prepare_path=$HARBOR_BUNDLE_DIR
 else
     harbor_prepare_path="$( cd "$(dirname "$0")" ; pwd -P )"
 fi
 echo "prepare base dir is set to ${harbor_prepare_path}"
-data_path=$(grep '^[^#]*data_volume:' ${harbor_prepare_path}/harbor.yml | awk '{print $NF}')
+
+# Clean up input dir
+rm -rf ${harbor_prepare_path}/input
+# Create a input dirs
+mkdir -p ${harbor_prepare_path}/input
+input_dir=${harbor_prepare_path}/input
+
+# Copy harbor.yml to input dir
+if [[ ! "$1" =~ ^\-\- ]] && [ -f "$1" ]
+then
+    cp $1 $input_dir/harbor.yml
+    shift
+else
+    if [ -f "${harbor_prepare_path}/harbor.yml" ];then
+        cp ${harbor_prepare_path}/harbor.yml $input_dir/harbor.yml
+    else
+        echo "no config file: ${harbor_prepare_path}/harbor.yml"
+        exit 1
+    fi
+fi
+
+data_path=$(grep '^[^#]*data_volume:' $input_dir/harbor.yml | awk '{print $NF}')
 
 # If previous secretkeys exist, move it to new location
 previous_secretkey_path=/data/secretkey
@@ -24,21 +45,6 @@ if [ -f $previous_defaultalias_path ]; then
     mv $previous_defaultalias_path $data_path/secret/keys
 fi
 
-# Clean up input dir
-rm -rf ${harbor_prepare_path}/input
-# Create a input dirs
-mkdir -p ${harbor_prepare_path}/input
-input_dir=${harbor_prepare_path}/input
-
-set -e
-
-# Copy harbor.yml to input dir
-if [[ ! "$1" =~ ^\-\- ]] && [ -f "$1" ]
-then
-    cp $1 $input_dir/harbor.yml
-else
-    cp ${harbor_prepare_path}/harbor.yml $input_dir/harbor.yml
-fi
 
 # Create secret dir
 secret_dir=${data_path}/secret

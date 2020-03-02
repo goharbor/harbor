@@ -14,6 +14,9 @@
 
 package q
 
+// KeyWords ...
+type KeyWords = map[string]interface{}
+
 // Query parameters
 type Query struct {
 	// Page number
@@ -21,5 +24,26 @@ type Query struct {
 	// Page size
 	PageSize int64
 	// List of key words
-	Keywords map[string]interface{}
+	Keywords KeyWords
+}
+
+// New returns Query with keywords
+func New(kw KeyWords) *Query {
+	return &Query{Keywords: kw}
+}
+
+// Copy the specified query object
+func Copy(query *Query) *Query {
+	if query == nil {
+		return nil
+	}
+	q := &Query{
+		PageNumber: query.PageNumber,
+		PageSize:   query.PageSize,
+		Keywords:   map[string]interface{}{},
+	}
+	for key, value := range query.Keywords {
+		q.Keywords[key] = value
+	}
+	return q
 }

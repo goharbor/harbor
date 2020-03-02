@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
+	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/core/config"
 	robot_claim "github.com/goharbor/harbor/src/pkg/token/claims/robot"
@@ -13,9 +13,7 @@ import (
 )
 
 func TestMain(m *testing.M) {
-	if err := config.Init(); err != nil {
-		panic(err)
-	}
+	config.Init()
 
 	result := m.Run()
 	if result != 0 {

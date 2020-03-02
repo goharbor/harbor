@@ -73,6 +73,7 @@ type AdminJobRep struct {
 	ID           int64     `json:"id"`
 	Name         string    `json:"job_name"`
 	Kind         string    `json:"job_kind"`
+	Parameters   string    `json:"job_parameters"`
 	Status       string    `json:"job_status"`
 	UUID         string    `json:"-"`
 	Deleted      bool      `json:"deleted"`
@@ -113,6 +114,14 @@ func (ar *AdminJobReq) ToJob() *models.JobData {
 		StatusHook: fmt.Sprintf("%s/service/notifications/jobs/adminjob/%d",
 			config.InternalCoreURL(), ar.ID),
 	}
+
+	// Append admin job ID as job parameter
+	if jobData.Parameters == nil {
+		jobData.Parameters = make(models.Parameters)
+	}
+	// As string
+	jobData.Parameters["admin_job_id"] = fmt.Sprintf("%d", ar.ID)
+
 	return jobData
 }
 
@@ -136,6 +145,16 @@ func (ar *AdminJobReq) JobKind() string {
 // CronString ...
 func (ar *AdminJobReq) CronString() string {
 	str, err := json.Marshal(ar.Schedule)
+	if err != nil {
+		log.Debugf("failed to marshal json error, %v", err)
+		return ""
+	}
+	return string(str)
+}
+
+// ParamString ...
+func (ar *AdminJobReq) ParamString() string {
+	str, err := json.Marshal(ar.Parameters)
 	if err != nil {
 		log.Debugf("failed to marshal json error, %v", err)
 		return ""

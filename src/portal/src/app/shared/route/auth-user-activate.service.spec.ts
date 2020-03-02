@@ -1,11 +1,4 @@
 import { TestBed, inject } from '@angular/core/testing';
-import {
-  CanActivate, Router,
-  ActivatedRouteSnapshot,
-  RouterStateSnapshot,
-  CanActivateChild,
-  NavigationExtras
-} from '@angular/router';
 import { RouterTestingModule } from '@angular/router/testing';
 import { SessionService } from '../../shared/session.service';
 import { AppConfigService } from '../../app-config.service';

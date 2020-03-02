@@ -27,7 +27,6 @@ import (
 	"github.com/goharbor/harbor/src/common/dao/project"
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/auth"
 	"github.com/goharbor/harbor/src/core/config"
 )
@@ -35,11 +34,10 @@ import (
 // ProjectMemberAPI handles request to /api/projects/{}/members/{}
 type ProjectMemberAPI struct {
 	BaseController
-	id         int
-	entityID   int
-	entityType string
-	project    *models.Project
-	groupType  int
+	id        int
+	project   *models.Project
+	member    *models.Member
+	groupType int
 }
 
 // ErrDuplicateProjectMember ...
@@ -67,26 +65,38 @@ func (pma *ProjectMemberAPI) Prepare() {
 		pma.SendBadRequestError(errors.New(text))
 		return
 	}
-	project, err := pma.ProjectMgr.Get(pid)
+	pro, err := pma.ProjectMgr.Get(pid)
 	if err != nil {
 		pma.ParseAndHandleError(fmt.Sprintf("failed to get project %d", pid), err)
 		return
 	}
-	if project == nil {
+	if pro == nil {
 		pma.SendNotFoundError(fmt.Errorf("project %d not found", pid))
 		return
 	}
-	pma.project = project
+	pma.project = pro
 
-	pmid, err := pma.GetInt64FromPath(":pmid")
-	if err != nil {
-		log.Warningf("Failed to get pmid from path, error %v", err)
+	if pma.ParamExistsInPath(":pmid") {
+		pmid, err := pma.GetInt64FromPath(":pmid")
+		if err != nil || pmid <= 0 {
+			pma.SendBadRequestError(fmt.Errorf("The project member id is invalid, pmid:%s", pma.GetStringFromPath(":pmid")))
+			return
+		}
+		pma.id = int(pmid)
+
+		members, err := project.GetProjectMember(models.Member{ProjectID: pid, ID: pma.id})
+		if err != nil {
+			pma.SendInternalServerError(err)
+			return
+		}
+		if len(members) == 0 {
+			pma.SendNotFoundError(fmt.Errorf("project member %d not found in project %d", pmid, pid))
+			return
+		}
+
+		pma.member = members[0]
 	}
-	if pmid <= 0 && (pma.Ctx.Input.IsPut() || pma.Ctx.Input.IsDelete()) {
-		pma.SendBadRequestError(fmt.Errorf("The project member id is invalid, pmid:%s", pma.GetStringFromPath(":pmid")))
-		return
-	}
-	pma.id = int(pmid)
+
 	authMode, err := config.AuthMode()
 	if err != nil {
 		pma.SendInternalServerError(fmt.Errorf("failed to get authentication mode"))
@@ -123,22 +133,10 @@ func (pma *ProjectMemberAPI) Get() {
 		}
 
 	} else {
-		// return a specific member
-		queryMember.ID = pma.id
-		memberList, err := project.GetProjectMember(queryMember)
-		if err != nil {
-			pma.SendInternalServerError(fmt.Errorf("Failed to query database for member list, error: %v", err))
-			return
-		}
-		if len(memberList) == 0 {
-			pma.SendNotFoundError(fmt.Errorf("The project member does not exist, pmid:%v", pma.id))
-			return
-		}
-
 		if !pma.requireAccess(rbac.ActionRead) {
 			return
 		}
-		pma.Data["json"] = memberList[0]
+		pma.Data["json"] = pma.member
 	}
 	pma.ServeJSON()
 }

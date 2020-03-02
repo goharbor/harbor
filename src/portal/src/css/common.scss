@@ -1,0 +1,187 @@
+// styles for dark and light theme should be defined here.
+.in-overflow {
+    .tabs-overflow {
+      > .nav-item {
+        > button {
+          box-shadow: 0 -3px 0 $mode-link-color2 inset;
+          color: #0077b8;
+        }
+      }
+    }
+}
+.label-form {
+  background-color: $label-form-color !important;
+}
+.esxc-gauge-circle-bgc-dark {
+  background-color: $mode-background-color1 ;
+}
+
+.harbor-icon {
+  filter: drop-shadow($fill-color1 58px 2px) !important;
+}
+
+.color-white-dark {
+  color: $right-status-fill-color;
+}
+
+.label-filter-panel {
+  background-color: $mode-background-color !important;
+}
+
+.filter-dark {
+  color: $mode-font-color1 !important;
+}
+.side-form {
+  background-color: $mode-background-color !important;
+}
+.toolBar {
+  background-color: $mode-background-color !important;
+}
+
+.search-overlay {
+  background-color: $mode-background-color2 !important;
+}
+
+.add-modal-dark {
+  background: $mode-background-color3 !important;
+}
+.license {
+  background-color: $mode-background-color !important;
+}
+
+.pagination-list {
+  .pagination-current {
+    color: $mode-font-color1 !important;
+  }
+}
+.no-info-div,
+.info-div {
+  background-color: $mode-background-color !important;
+}
+.bottom-line-project-config {
+  color: $mode-font-color3 !important;
+}
+.config-subtext {
+  color: $mode-font-color4 !important;
+}
+.permission-dark {
+  color: $mode-font-color3 !important;
+}
+.scanner-name {
+  color: $mode-font-color3 !important;
+}
+.summary-dark {
+  color: $mode-font-color3 !important;
+  h5 {
+    color: $mode-font-color3 !important;
+  }
+}
+.about-version {
+  color: $mode-font-color2 !important;
+}
+.update-time {
+  color: $mode-font-color3 !important;
+}
+.font-style {
+  color: $mode-font-color3 !important;
+}
+.go-link {
+  color: $mode-link-color1 !important; 
+  border-bottom: 1px solid  $mode-link-color1 !important;
+}
+.circle-block {
+  color: $mode-font-color5 !important;
+}
+.executions-detail {
+  label {
+    color: $mode-font-color3 !important;
+  }
+}
+.black-point {
+  background-color: $mode-font-color3 !important;
+}
+clr-dg-action-overflow {
+  clr-icon {
+    fill: $mode-font-color3 !important;
+  }
+}
+.oidc-tip {
+  color: $mode-font-color3 !important;
+}
+.clr-select-wrapper{
+  select {
+    option {
+      background: $select-back-color;
+      color: $select-option-color;
+    }
+  } 
+}
+hbr-tag {
+  .color-green {
+    color: $light-color-green !important;
+  }
+}
+
+// style of hbr-artifact-summary component
+@mixin align-text-mixin($values...) {
+  @each $var in $values {
+    &[align="$var"] {
+      text-align: $var;
+    }
+  }
+}
+%code-block {
+  background: $color-ddd;
+  border-radius: 2px;
+  padding: 2px 4px;
+}
+
+.md-div {
+  code:not([class*="language-"]) {
+    @extend %code-block;
+    color: $color-657b83
+  }
+  pre:not([class*="language-"]) {
+    background: $color-fdf6e3;
+    code:not([class*="language-"]) {
+      @extend %code-block;
+      background: transparent;
+    }
+  }
+  table {
+    display: block;
+    width: 100%;
+    overflow: auto;
+    padding: 0;
+    border-spacing: 0;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+    td,
+    th {
+      padding: 6px 13px;
+      border: 1px solid $color-ddd;
+      @include align-text-mixin(left, right, center);
+    }
+    tr {
+      &:nth-child(2n) {
+        background-color: $color-f2;
+      }
+    }
+  }
+}
+.table-tag {
+  .tag-thead {
+    .tag-header-color {
+      color: $mode-background-color3;
+    }
+  };
+  .tag-tbody {
+    .tag-tr {
+      .tag-body-color {
+        color: $mode-background-color2;
+      }
+    }
+  }
+
+}
+

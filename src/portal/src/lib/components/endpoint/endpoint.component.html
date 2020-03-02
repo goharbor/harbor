@@ -1,0 +1,53 @@
+<div>
+    <div class="row"  class="endpoint-view">
+        <div>
+            <div class="row flex-items-xs-between rightPos">
+                <div class="flex-items-xs-middle option-right">
+                    <hbr-filter [withDivider]="true" filterPlaceholder='{{"REPLICATION.FILTER_TARGETS_PLACEHOLDER" | translate}}' (filterEvt)="doSearchTargets($event)" [currentValue]="targetName"></hbr-filter>
+                    <span class="refresh-btn" (click)="refreshTargets()">
+                        <clr-icon shape="refresh"></clr-icon>
+                    </span>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+            <clr-datagrid [clrDgLoading]="loading"  [(clrDgSelected)]="selectedRow" (clrDgSelectedChange)="selectedChange()">
+                <clr-dg-action-bar>
+                    <button type="button" class="btn  btn-secondary" (click)="openModal()"><clr-icon shape="plus" size="16"></clr-icon>&nbsp;{{'DESTINATION.NEW_ENDPOINT' | translate}}</button>
+                    <button type="button" class="btn  btn-secondary" [disabled]="!(selectedRow.length ===1)"  (click)="editTargets(selectedRow)" ><clr-icon shape="pencil" size="16"></clr-icon>&nbsp;{{'DESTINATION.EDIT' | translate}}</button>
+                    <button type="button" class="btn  btn-secondary" [disabled]="!selectedRow.length" (click)="deleteTargets(selectedRow)"><clr-icon shape="times" size="16"></clr-icon>&nbsp;{{'DESTINATION.DELETE' | translate}}</button>
+                </clr-dg-action-bar>
+                <clr-dg-column [clrDgField]="'name'" class="flex-min-width">{{'DESTINATION.NAME' | translate}}</clr-dg-column>
+                <clr-dg-column [clrDgField]="'status'" class="flex-min-width">{{'DESTINATION.STATUS' | translate}}</clr-dg-column>                
+                <clr-dg-column [clrDgField]="'url'" class="flex-min-width">{{'DESTINATION.URL' | translate}}</clr-dg-column>
+                <clr-dg-column [clrDgField]="'type'">{{'DESTINATION.PROVIDER' | translate}}</clr-dg-column>
+                <clr-dg-column [clrDgSortBy]="'insecure'">{{'CONFIG.VERIFY_REMOTE_CERT' | translate }}</clr-dg-column>
+                <clr-dg-column [clrDgField]="'credential.type'">{{'DESTINATION.AUTHENTICATION' | translate }}</clr-dg-column>
+                <clr-dg-column [clrDgSortBy]="creationTimeComparator">{{'DESTINATION.CREATION_TIME' | translate}}</clr-dg-column>
+                <clr-dg-placeholder>{{'DESTINATION.PLACEHOLDER' | translate }}</clr-dg-placeholder>
+                <clr-dg-row *clrDgItems="let t of targets" [clrDgItem]='t'>
+                    <clr-dg-cell class="flex-min-width">{{t.name}}</clr-dg-cell>
+                    <clr-dg-cell [ngSwitch]="t.status" class="flex-min-width">
+                        <div *ngSwitchCase="'unhealthy'"><clr-icon shape="exclamation-circle" class="is-error text-alignment" size="22"></clr-icon> Unhealthy</div>
+                        <div *ngSwitchCase="'healthy'"><clr-icon shape="success-standard" class="is-success text-alignment" size="18"></clr-icon> Healthy</div>
+                        <div *ngSwitchCase="'unknown' || ''"><clr-icon shape="exclamation-triangle" class="is-warning text-alignment" size="22"></clr-icon> Unknown</div>
+                    </clr-dg-cell>
+                    <clr-dg-cell class="flex-min-width">{{t.url}}</clr-dg-cell>
+                    <clr-dg-cell>{{t.type}}</clr-dg-cell>
+                    <clr-dg-cell>
+                        {{!t.insecure}}
+                    </clr-dg-cell>
+                    <clr-dg-cell>{{t.credential.type}}</clr-dg-cell>
+                    <clr-dg-cell>{{t.creation_time | date: 'short'}}</clr-dg-cell>
+                </clr-dg-row>
+                <clr-dg-footer>
+                    <span *ngIf="pagination.totalItems">{{pagination.firstItem + 1}} - {{pagination.lastItem + 1}} {{'DESTINATION.OF' | translate}}</span>
+                    {{pagination.totalItems}} {{'DESTINATION.ITEMS' | translate}}
+                    <clr-dg-pagination #pagination [clrDgPageSize]="15"></clr-dg-pagination>
+                </clr-dg-footer>
+            </clr-datagrid>
+        </div>
+    </div>
+    <confirmation-dialog #confirmationDialog (confirmAction)="confirmDeletion($event)"></confirmation-dialog>
+    <hbr-create-edit-endpoint (reload)="reload($event)"></hbr-create-edit-endpoint>
+</div>

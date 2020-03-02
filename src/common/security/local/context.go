@@ -38,6 +38,11 @@ func NewSecurityContext(user *models.User, pm promgr.ProjectManager) *SecurityCo
 	}
 }
 
+// Name returns the name of the security context
+func (s *SecurityContext) Name() string {
+	return "local"
+}
+
 // IsAuthenticated returns true if the user has been authenticated
 func (s *SecurityContext) IsAuthenticated() bool {
 	return s.user != nil
@@ -52,13 +57,18 @@ func (s *SecurityContext) GetUsername() string {
 	return s.user.Username
 }
 
+// User get the current user
+func (s *SecurityContext) User() *models.User {
+	return s.user
+}
+
 // IsSysAdmin returns whether the authenticated user is system admin
 // It returns false if the user has not been authenticated
 func (s *SecurityContext) IsSysAdmin() bool {
 	if !s.IsAuthenticated() {
 		return false
 	}
-	return s.user.HasAdminRole
+	return s.user.SysAdminFlag || s.user.AdminRoleInAuth
 }
 
 // IsSolutionUser ...

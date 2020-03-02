@@ -14,11 +14,11 @@ import { Subject } from "rxjs";
 import { debounceTime, finalize } from "rxjs/operators";
 import { RobotService } from "../robot-account.service";
 import { TranslateService } from "@ngx-translate/core";
-import { ErrorHandler } from "@harbor/ui";
 import { MessageHandlerService } from "../../../shared/message-handler/message-handler.service";
 import { InlineAlertComponent } from "../../../shared/inline-alert/inline-alert.component";
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { AppConfigService } from "../../../app-config.service";
+import { ErrorHandler } from "../../../../lib/utils/error-handler";
 
 @Component({
   selector: "add-robot",

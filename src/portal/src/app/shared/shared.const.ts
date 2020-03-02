@@ -109,4 +109,5 @@ export enum WebhookEventTypes {
   PUSH_IMAGE = "pushImage",
   SCANNING_FAILED = "scanningFailed",
   SCANNING_COMPLETED = "scanningCompleted",
+  PROJECT_QUOTA = "projectQuota",
 }

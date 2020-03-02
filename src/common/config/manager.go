@@ -189,7 +189,7 @@ func (c *CfgManager) Save() error {
 func (c *CfgManager) Get(key string) *metadata.ConfigureValue {
 	configValue, err := c.store.Get(key)
 	if err != nil {
-		log.Errorf("failed to get key %v, error: %v", key, err)
+		log.Debugf("failed to get key %v, error: %v", key, err)
 		configValue = &metadata.ConfigureValue{}
 	}
 	return configValue

@@ -20,16 +20,21 @@ import (
 	"net/http"
 	"strconv"
 
+	"errors"
+
 	"github.com/astaxie/beego"
 	"github.com/astaxie/beego/validation"
 	commonhttp "github.com/goharbor/harbor/src/common/http"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/pkg/errors"
+	serror "github.com/goharbor/harbor/src/server/error"
 )
 
 const (
 	defaultPageSize int64 = 500
 	maxPageSize     int64 = 500
+
+	// APIVersion is the current core api version
+	APIVersion = "v2.0"
 )
 
 // BaseAPI wraps common methods for controllers to host API
@@ -46,6 +51,11 @@ func (b *BaseAPI) GetStringFromPath(key string) string {
 func (b *BaseAPI) GetInt64FromPath(key string) (int64, error) {
 	value := b.Ctx.Input.Param(key)
 	return strconv.ParseInt(value, 10, 64)
+}
+
+// ParamExistsInPath returns true when param exists in the path
+func (b *BaseAPI) ParamExistsInPath(key string) bool {
+	return b.GetStringFromPath(key) != ""
 }
 
 // Render returns nil as it won't render template
@@ -242,4 +252,19 @@ func (b *BaseAPI) SendPreconditionFailedError(err error) {
 // SendStatusServiceUnavailableError sends service unavailable error to the client.
 func (b *BaseAPI) SendStatusServiceUnavailableError(err error) {
 	b.RenderFormattedError(http.StatusServiceUnavailable, err.Error())
+}
+
+// SendError return the error defined in OCI spec: https://github.com/opencontainers/distribution-spec/blob/master/spec.md#errors
+// {
+//	"errors:" [{
+//			"code": <error identifier>,
+//			"message": <message describing condition>,
+//			// optional
+//			"detail": <unstructured>
+//		},
+//		...
+//	]
+// }
+func (b *BaseAPI) SendError(err error) {
+	serror.SendError(b.Ctx.ResponseWriter, err)
 }

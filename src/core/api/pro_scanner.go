@@ -15,8 +15,9 @@
 package api
 
 import (
+	"github.com/goharbor/harbor/src/api/scanner"
 	"github.com/goharbor/harbor/src/common/rbac"
-	"github.com/goharbor/harbor/src/pkg/scan/api/scanner"
+	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/pkg/errors"
 )
 
@@ -67,7 +68,7 @@ func (sa *ProjectScannerAPI) Prepare() {
 // GetProjectScanner gets the project level scanner
 func (sa *ProjectScannerAPI) GetProjectScanner() {
 	// Check access permissions
-	if !sa.RequireProjectAccess(sa.pid, rbac.ActionRead, rbac.ResourceConfiguration) {
+	if !sa.RequireProjectAccess(sa.pid, rbac.ActionRead, rbac.ResourceScanner) {
 		return
 	}
 
@@ -89,7 +90,7 @@ func (sa *ProjectScannerAPI) GetProjectScanner() {
 // SetProjectScanner sets the project level scanner
 func (sa *ProjectScannerAPI) SetProjectScanner() {
 	// Check access permissions
-	if !sa.RequireProjectAccess(sa.pid, rbac.ActionUpdate, rbac.ResourceConfiguration) {
+	if !sa.RequireProjectAccess(sa.pid, rbac.ActionCreate, rbac.ResourceScanner) {
 		return
 	}
 
@@ -109,4 +110,34 @@ func (sa *ProjectScannerAPI) SetProjectScanner() {
 		sa.SendInternalServerError(errors.Wrap(err, "scanner API: set project scanners"))
 		return
 	}
+}
+
+// GetProScannerCandidates gets the candidates for setting project level scanner.
+func (sa *ProjectScannerAPI) GetProScannerCandidates() {
+	// Check access permissions
+	// Same permission with project level scanner set action
+	if !sa.RequireProjectAccess(sa.pid, rbac.ActionCreate, rbac.ResourceScanner) {
+		return
+	}
+
+	p, pz, err := sa.GetPaginationParams()
+	if err != nil {
+		sa.SendBadRequestError(errors.Wrap(err, "scanner API: get project scanner candidates"))
+		return
+	}
+
+	query := &q.Query{
+		PageSize:   pz,
+		PageNumber: p,
+	}
+
+	all, err := sa.c.ListRegistrations(query)
+	if err != nil {
+		sa.SendInternalServerError(errors.Wrap(err, "scanner API: get project scanner candidates"))
+		return
+	}
+
+	// Response to the client
+	sa.Data["json"] = all
+	sa.ServeJSON()
 }

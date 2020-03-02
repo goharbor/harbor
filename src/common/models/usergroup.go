@@ -29,3 +29,12 @@ type UserGroup struct {
 func (u *UserGroup) TableName() string {
 	return UserGroupTable
 }
+
+// UserGroupsFromName ...
+func UserGroupsFromName(groupNames []string, groupType int) []UserGroup {
+	groups := make([]UserGroup, 0)
+	for _, name := range groupNames {
+		groups = append(groups, UserGroup{GroupName: name, GroupType: groupType})
+	}
+	return groups
+}

@@ -5,7 +5,7 @@ import {
   ChangeDetectionStrategy
 } from "@angular/core";
 
-import { HelmChartDependency } from "./../../helm-chart.interface.service";
+import { HelmChartDependency } from "../../helm-chart.interface.service";
 
 @Component({
   selector: "hbr-chart-detail-dependency",

@@ -17,24 +17,21 @@ import (
 
 	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common"
+	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/rbac"
 	hlog "github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/label"
 	"github.com/goharbor/harbor/src/core/middlewares"
-	n_event "github.com/goharbor/harbor/src/core/notifier/event"
+	n_event "github.com/goharbor/harbor/src/pkg/notifier/event"
 	rep_event "github.com/goharbor/harbor/src/replication/event"
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
 const (
-	namespaceParam          = ":repo"
-	nameParam               = ":name"
-	filenameParam           = ":filename"
-	defaultRepo             = "library"
-	rootUploadingEndpoint   = "/api/chartrepo/charts"
-	rootIndexEndpoint       = "/chartrepo/index.yaml"
-	chartRepoHealthEndpoint = "/api/chartrepo/health"
+	namespaceParam = ":repo"
+	nameParam      = ":name"
+	filenameParam  = ":filename"
 
 	accessLevelPublic = iota
 	accessLevelRead
@@ -48,6 +45,13 @@ const (
 	contentTypeMultipart  = "multipart/form-data"
 	// chartPackageFileExtension is the file extension used for chart packages
 	chartPackageFileExtension = "tgz"
+)
+
+var (
+	defaultRepo             = "library"
+	rootUploadingEndpoint   = fmt.Sprintf("/api/%s/chartrepo/charts", api.APIVersion)
+	chartRepoHealthEndpoint = fmt.Sprintf("/api/%s/chartrepo/health", api.APIVersion)
+	rootIndexEndpoint       = "/chartrepo/index.yaml"
 )
 
 // chartController is a singleton instance
@@ -108,7 +112,7 @@ func (cra *ChartRepositoryAPI) requireAccess(action rbac.Action, subresource ...
 	return cra.RequireProjectAccess(cra.namespace, action, subresource...)
 }
 
-// GetHealthStatus handles GET /api/chartrepo/health
+// GetHealthStatus handles GET /chartrepo/health
 func (cra *ChartRepositoryAPI) GetHealthStatus() {
 	// Check access
 	if !cra.SecurityCtx.IsAuthenticated() {

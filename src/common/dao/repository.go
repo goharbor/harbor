@@ -32,6 +32,9 @@ var orderMap = map[string]string{
 	"update_time":    "update_time asc",
 	"+update_time":   "update_time asc",
 	"-update_time":   "update_time desc",
+	"pull_count":     "pull_count asc",
+	"+pull_count":    "pull_count asc",
+	"-pull_count":    "pull_count desc",
 }
 
 // AddRepository adds a repo to the database.
@@ -66,52 +69,10 @@ func DeleteRepository(name string) error {
 	return err
 }
 
-// UpdateRepository ...
-func UpdateRepository(repo models.RepoRecord) error {
-	o := GetOrmer()
-	repo.UpdateTime = time.Now()
-	_, err := o.Update(&repo)
-	return err
-}
-
-// IncreasePullCount ...
-func IncreasePullCount(name string) (err error) {
-	o := GetOrmer()
-	num, err := o.QueryTable("repository").Filter("name", name).Update(
-		orm.Params{
-			"pull_count":  orm.ColValue(orm.ColAdd, 1),
-			"update_time": time.Now(),
-		})
-	if err != nil {
-		return err
-	}
-	if num == 0 {
-		return fmt.Errorf("Failed to increase repository pull count with name: %s", name)
-	}
-	return nil
-}
-
 // RepositoryExists returns whether the repository exists according to its name.
 func RepositoryExists(name string) bool {
 	o := GetOrmer()
 	return o.QueryTable("repository").Filter("name", name).Exist()
-}
-
-// GetTopRepos returns the most popular repositories whose project ID is
-// in projectIDs
-func GetTopRepos(projectIDs []int64, n int) ([]*models.RepoRecord, error) {
-	repositories := []*models.RepoRecord{}
-	if len(projectIDs) == 0 {
-		return repositories, nil
-	}
-
-	_, err := GetOrmer().QueryTable(&models.RepoRecord{}).
-		Filter("project_id__in", projectIDs).
-		OrderBy("-pull_count").
-		Limit(n).
-		All(&repositories)
-
-	return repositories, err
 }
 
 // GetTotalOfRepositories ...
@@ -183,8 +144,6 @@ func repositoryQueryConditions(query ...*models.RepositoryQuery) (string, []inte
 	}
 
 	if len(q.ProjectName) > 0 {
-		// use "like" rather than "table joining" because that
-		// in integration mode the projects are saved in Admiral side
 		sql += `and r.name like ? `
 		params = append(params, q.ProjectName+"/%")
 	}

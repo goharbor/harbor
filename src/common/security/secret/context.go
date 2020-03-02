@@ -38,6 +38,11 @@ func NewSecurityContext(secret string, store *secret.Store) *SecurityContext {
 	}
 }
 
+// Name returns the name of the security context
+func (s *SecurityContext) Name() string {
+	return "secret"
+}
+
 // IsAuthenticated returns true if the secret is valid
 func (s *SecurityContext) IsAuthenticated() bool {
 	if s.store == nil {

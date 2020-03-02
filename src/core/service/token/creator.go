@@ -203,8 +203,8 @@ func (g generalCreator) Create(r *http.Request) (*models.Token, error) {
 	scopes := parseScopes(r.URL)
 	log.Debugf("scopes: %v", scopes)
 
-	ctx, err := filter.GetSecurityContext(r)
-	if err != nil {
+	ctx, ok := security.FromContext(r.Context())
+	if !ok {
 		return nil, fmt.Errorf("failed to  get security context from request")
 	}
 

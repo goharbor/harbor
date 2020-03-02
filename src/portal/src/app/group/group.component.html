@@ -11,11 +11,11 @@
     <div>
       <clr-datagrid [(clrDgSelected)]="selectedGroups" [clrDgLoading]="loading">
         <clr-dg-action-bar >
-            <button type="button" class="btn btn-sm btn-secondary" (click)="addGroup()" [disabled]="!canAddGroup">
+            <button type="button" class="btn  btn-secondary" (click)="addGroup()" [disabled]="!canAddGroup">
               <clr-icon shape="plus" size="15"></clr-icon>&nbsp;{{'GROUP.ADD' | translate}}</button>
-              <button type="button" class="btn btn-sm btn-secondary" (click)="editGroup()" [disabled]="!canEditGroup">
+              <button type="button" class="btn  btn-secondary" (click)="editGroup()" [disabled]="!canEditGroup">
                   <clr-icon shape="pencil" size="15"></clr-icon>&nbsp;{{'GROUP.EDIT' | translate}}</button>
-                  <button type="button" class="btn btn-sm btn-secondary" (click)="openDeleteConfirmationDialog()" [disabled]="!canDeleteGroup">
+                  <button type="button" class="btn  btn-secondary" (click)="openDeleteConfirmationDialog()" [disabled]="!canDeleteGroup">
                       <clr-icon shape="times" size="15"></clr-icon>&nbsp;{{'GROUP.DELETE' | translate}}</button>
         </clr-dg-action-bar>
 

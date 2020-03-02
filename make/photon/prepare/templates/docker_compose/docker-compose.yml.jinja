@@ -142,7 +142,6 @@ services:
       - SETUID
     volumes:
       - {{data_volume}}/ca_download/:/etc/core/ca/:z
-      - {{data_volume}}/psc/:/etc/core/token/:z
       - {{data_volume}}/:/data/:z
       - ./common/config/core/certificates/:/etc/core/certificates/:z
       - type: bind
@@ -258,8 +257,13 @@ services:
       harbor:
   {% if with_chartmuseum %}
       harbor-chartmuseum:
-          aliases:
-            - redis
+        aliases:
+          - redis
+  {% endif %}
+  {% if with_clair %}
+      harbor-clair:
+        aliases:
+          - redis
   {% endif %}
     dns_search: .
     depends_on:
@@ -422,6 +426,9 @@ services:
     dns_search: .
     depends_on:
       - clair
+{% if external_redis == False %}
+      - redis
+{% endif %}
     logging:
       driver: "syslog"
       options:
@@ -429,6 +436,35 @@ services:
         tag: "clair-adapter"
     env_file:
       ./common/config/clair-adapter/env
+{% endif %}
+{% if with_trivy %}
+  trivy-adapter:
+    container_name: trivy-adapter
+    image: goharbor/trivy-adapter-photon:{{trivy_adapter_version}}
+    restart: always
+    cap_drop:
+      - ALL
+    dns_search: .
+    networks:
+      - harbor
+{% if external_redis == False %}
+    depends_on:
+      - redis
+{% endif %}
+    volumes:
+      - type: bind
+        source: {{data_volume}}/trivy-adapter/trivy
+        target: /home/scanner/.cache/trivy
+      - type: bind
+        source: {{data_volume}}/trivy-adapter/reports
+        target: /home/scanner/.cache/reports
+    logging:
+      driver: "syslog"
+      options:
+        syslog-address: "tcp://127.0.0.1:1514"
+        tag: "trivy-adapter"
+    env_file:
+      ./common/config/trivy-adapter/env
 {% endif %}
 {% if with_chartmuseum %}
   chartmuseum:

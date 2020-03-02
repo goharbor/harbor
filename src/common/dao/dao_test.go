@@ -159,8 +159,8 @@ func testForAll(m *testing.M) int {
 func clearAll() {
 	tables := []string{"project_member",
 		"project_metadata", "access_log", "repository", "replication_policy",
-		"registry", "replication_execution", "replication_task", "img_scan_job",
-		"replication_schedule_job", "img_scan_overview", "clair_vuln_timestamp", "project", "harbor_user"}
+		"registry", "replication_execution", "replication_task",
+		"replication_schedule_job", "project", "harbor_user"}
 	for _, t := range tables {
 		if err := ClearTable(t); err != nil {
 			log.Errorf("Failed to clear table: %s,error: %v", t, err)
@@ -626,12 +626,41 @@ func TestGetRoleByID(t *testing.T) {
 	}
 }
 
+// isAdminRole returns whether the user is admin.
+func isAdminRole(userIDOrUsername interface{}) (bool, error) {
+	u := models.User{}
+
+	switch v := userIDOrUsername.(type) {
+	case int:
+		u.UserID = v
+	case string:
+		u.Username = v
+	default:
+		return false, fmt.Errorf("invalid parameter, only int and string are supported: %v", userIDOrUsername)
+	}
+
+	if u.UserID == NonExistUserID && len(u.Username) == 0 {
+		return false, nil
+	}
+
+	user, err := GetUser(u)
+	if err != nil {
+		return false, err
+	}
+
+	if user == nil {
+		return false, nil
+	}
+
+	return user.SysAdminFlag, nil
+}
+
 func TestToggleAdminRole(t *testing.T) {
 	err := ToggleUserAdminRole(currentUser.UserID, true)
 	if err != nil {
 		t.Errorf("Error in toggle ToggleUserAdmin role: %v, user: %+v", err, currentUser)
 	}
-	isAdmin, err := IsAdminRole(currentUser.UserID)
+	isAdmin, err := isAdminRole(currentUser.UserID)
 	if err != nil {
 		t.Errorf("Error in IsAdminRole: %v, user id: %d", err, currentUser.UserID)
 	}
@@ -642,7 +671,7 @@ func TestToggleAdminRole(t *testing.T) {
 	if err != nil {
 		t.Errorf("Error in toggle ToggleUserAdmin role: %v, user: %+v", err, currentUser)
 	}
-	isAdmin, err = IsAdminRole(currentUser.UserID)
+	isAdmin, err = isAdminRole(currentUser.UserID)
 	if err != nil {
 		t.Errorf("Error in IsAdminRole: %v, user id: %d", err, currentUser.UserID)
 	}
@@ -719,29 +748,6 @@ func TestGetRepositoryByName(t *testing.T) {
 	}
 	if currentRepository.Name != currentProject.Name+"/"+repositoryName {
 		t.Errorf("Repository name does not match, expected: %s, actual: %s", currentProject.Name+"/"+repositoryName, currentProject.Name)
-	}
-}
-
-func TestIncreasePullCount(t *testing.T) {
-	if err := IncreasePullCount(currentRepository.Name); err != nil {
-		log.Errorf("Error happens when increasing pull count: %v", currentRepository.Name)
-	}
-
-	repository, err := GetRepositoryByName(currentRepository.Name)
-	if err != nil {
-		t.Errorf("Error occurred in GetRepositoryByName: %v", err)
-	}
-
-	if repository.PullCount != 1 {
-		t.Errorf("repository pull count is not 1 after IncreasePullCount, expected: 1, actual: %d", repository.PullCount)
-	}
-}
-
-func TestRepositoryExists(t *testing.T) {
-	var exists bool
-	exists = RepositoryExists(currentRepository.Name)
-	if !exists {
-		t.Errorf("The repository with name: %s, does not exist", currentRepository.Name)
 	}
 }
 
@@ -864,8 +870,8 @@ func TestSaveConfigEntries(t *testing.T) {
 }
 
 func TestIsDupRecError(t *testing.T) {
-	assert.True(t, isDupRecErr(fmt.Errorf("pq: duplicate key value violates unique constraint \"properties_k_key\"")))
-	assert.False(t, isDupRecErr(fmt.Errorf("other error")))
+	assert.True(t, IsDupRecErr(fmt.Errorf("pq: duplicate key value violates unique constraint \"properties_k_key\"")))
+	assert.False(t, IsDupRecErr(fmt.Errorf("other error")))
 }
 
 func TestWithTransaction(t *testing.T) {

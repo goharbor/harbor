@@ -27,7 +27,7 @@ Create An New Project
     Capture Page Screenshot
     Retry Text Input  xpath=${project_name_xpath}  ${projectname}
     ${element_project_public}=  Set Variable  xpath=${project_public_xpath}
-    Run Keyword If  '${public}' == 'true'  Run Keywords  Wait Until Element Is Visible And Enabled  ${element_project_public}  AND  Click Element  ${element_project_public}
+    Run Keyword If  '${public}' == 'true'  Run Keywords  Wait Until Element Is Visible And Enabled  ${element_project_public}  AND  Retry Element Click  ${element_project_public}
     Run Keyword If  '${count_quota}'!='${null}'  Input Count Quota  ${count_quota}
     Run Keyword If  '${storage_quota}'!='${null}'  Input Storage Quota  ${storage_quota}  ${storage_quota_unit}
     Capture Page Screenshot
@@ -45,6 +45,7 @@ Create An New Project With New User
 
 #It's the log of project.
 Go To Project Log
+    #Switch To Project Tab Overflow
     Retry Element Click  xpath=${project_log_xpath}
     Sleep  2
 
@@ -63,6 +64,21 @@ Switch To Replication
 
 Switch To Project Configuration
     Retry Element Click  ${project_config_tabsheet}
+    Sleep  1
+
+Switch To Tag Retention
+    #Switch To Project Tab Overflow
+    Retry Element Click  xpath=${project_tag_strategy_xpath}
+    Sleep  1
+
+Switch To Tag Immutability
+    #Switch To Project Tab Overflow
+    Retry Double Keywords When Error  Retry Element Click  xpath=${project_tag_strategy_xpath}  Retry Wait Until Page Contains Element  ${project_tag_immutability_switch}
+    Retry Double Keywords When Error  Retry Element Click  xpath=${project_tag_immutability_switch}  Retry Wait Until Page Contains  Immutability rules
+    Sleep  1
+
+Switch To Project Tab Overflow
+    Retry Element Click  xpath=${project_tab_overflow_btn}
     Sleep  1
 
 Navigate To Projects
@@ -90,7 +106,9 @@ Make Project Private
     Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
     Retry Double Keywords When Error  Retry Element Click  ${project_config_public_checkbox_label}  Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
     Retry Element Click  //button[contains(.,'SAVE')]
-    Retry Wait Until Page Contains  Configuration has been successfully saved
+    Go Into Project  ${project name}
+    Switch To Project Configuration
+    Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
 
 Make Project Public
     [Arguments]  ${projectname}
@@ -99,7 +117,9 @@ Make Project Public
     Retry Checkbox Should Not Be Selected  ${project_config_public_checkbox}
     Retry Double Keywords When Error  Retry Element Click  ${project_config_public_checkbox_label}  Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
     Retry Element Click  //button[contains(.,'SAVE')]
-    Retry Wait Until Page Contains  Configuration has been successfully saved
+    Go Into Project  ${project name}
+    Switch To Project Configuration
+    Retry Checkbox Should Be Selected  ${project_config_public_checkbox}
 
 Delete Repo
     [Arguments]  ${projectname}
@@ -168,15 +188,23 @@ Do Log Advanced Search
     Retry Text Input  xpath=//audit-log//hbr-filter//input  harbor
     Sleep  1
     Capture Page Screenshot  LogAdvancedSearch2.png
-    ${rc} =  Get Matching Xpath Count  //audit-log//clr-dg-row
+    ${rc} =  Get Element Count  //audit-log//clr-dg-row
     Should Be Equal As Integers  ${rc}  0
 
 Go Into Repo
     [Arguments]  ${repoName}
+    Sleep  2
+    Retry Wait Until Page Not Contains Element  ${repo_list_spinner}
     ${repo_name_element}=  Set Variable  xpath=//clr-dg-cell[contains(.,'${repoName}')]/a
     Retry Element Click  ${repo_search_icon}
-    Retry Text Input  ${repo_search_input}  ${repoName}
-    Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}  Page Should Not Contain Element  ${repo_name_element}
+    :For  ${n}  IN RANGE  1  10
+    \    Retry Clear Element Text  ${repo_search_input}
+    \    Retry Text Input  ${repo_search_input}  ${repoName}
+    \    ${out}  Run Keyword And Ignore Error  Retry Wait Until Page Contains Element  ${repo_name_element}
+    \    Exit For Loop If  '${out[0]}'=='PASS'
+    \    Capture Page Screenshot  gointo_${repoName}.png
+    \    Sleep  2
+    Retry Double Keywords When Error  Retry Element Click  ${repo_name_element}  Retry Wait Until Page Not Contains Element  ${repo_name_element}
     Retry Wait Element  ${tag_table_column_pull_command}
     Retry Wait Element  ${tag_images_btn}
     Capture Page Screenshot  gointo_${repoName}.png

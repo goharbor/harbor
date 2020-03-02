@@ -1,0 +1,921 @@
+swagger: '2.0'
+info:
+  title: Harbor API
+  description: These APIs provide services for manipulating Harbor project.
+  version: '2.0'
+host: localhost
+schemes:
+  - http
+  - https
+basePath: /api/v2.0
+produces:
+  - application/json
+consumes:
+  - application/json
+securityDefinitions:
+  basicAuth:
+    type: basic
+paths:
+  /projects/{project_name}/repositories:
+    get:
+      summary: List repositories
+      description: List repositories of the specified project
+      tags:
+        - repository
+      operationId: listRepositories
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: name
+          in: query
+          description: Query the repositories by name
+          type: string
+          required: false
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of repositories
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Repository'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}:
+    get:
+      summary: Get repository
+      description: Get the repository specified by name
+      tags:
+        - repository
+      operationId: getRepository
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Repository'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    put:
+      summary: Update repository
+      description: Update the repository specified by name
+      tags:
+        - repository
+      operationId: updateRepository
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - name: repository
+          in: body
+          description: The JSON object of repository.
+          required: true
+          schema:
+            $ref: '#/definitions/Repository'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete repository
+      description: Delete the repository specified by name
+      tags:
+        - repository
+      operationId: deleteRepository
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts:
+    get:
+      summary: List artifacts
+      description: List artifacts under the specific project and repository.
+      tags:
+        - artifact
+      operationId: listArtifacts
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: type
+          in: query
+          description: Query the artifacts by type. Valid values can be "IMAGE", "CHART", etc.
+          type: string
+          required: false
+        - name: tags
+          in: query
+          description: Without the "tags" query string, both tagged and untagged artifacts will be returned. Specify it as "*" to return only tagged artifacts; specify it as "nil" to return only untagged artifacts.
+          type: string
+          required: false
+        - name: with_tag
+          in: query
+          description: Specify whether the tags are included inside the returning artifacts
+          type: boolean
+          required: false
+          default: true
+        - name: with_label
+          in: query
+          description: Specify whether the labels are included inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_scan_overview
+          in: query
+          description: Specify whether the scan overview is included inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_signature
+          in: query
+          description: Specify whether the signature is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          type: boolean
+          required: false
+          default: false
+        - name: with_immutable_status
+          in: query
+          description: Specify whether the immutable status is included inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          type: boolean
+          required: false
+          default: false
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of artifacts
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Artifact'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    post:
+      summary: Copy artifact
+      description: Copy the artifact specified in the "from" parameter to the repository.
+      tags:
+        - artifact
+      operationId: CopyArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - name: from
+          in: query
+          description: The artifact from which the new artifact is copied from, the format should be "project/repository:tag" or "project/repository@digest".
+          type: string
+          required: true
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}:
+    get:
+      summary: Get the specific artifact
+      description: Get the artifact specified by the reference under the project and repository. The reference can be digest or tag.
+      tags:
+        - artifact
+      operationId: getArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: with_tag
+          in: query
+          description: Specify whether the tags are inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: true
+        - name: with_label
+          in: query
+          description: Specify whether the labels are inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_scan_overview
+          in: query
+          description: Specify whether the scan overview is inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        # should be in tag level
+        - name: with_signature
+          in: query
+          description: Specify whether the signature is inclued inside the returning artifacts
+          type: boolean
+          required: false
+          default: false
+        - name: with_immutable_status
+          in: query
+          description: Specify whether the immutable status is inclued inside the tags of the returning artifacts. Only works when setting "with_tag=true"
+          type: boolean
+          required: false
+          default: false
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/Artifact'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+    delete:
+      summary: Delete the specific artifact
+      description: Delete the artifact specified by the reference under the project and repository. The reference can be digest or tag
+      tags:
+        - artifact
+      operationId: deleteArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/scan:
+    post:
+      summary: Scan the artifact
+      description: Scan the specified artifact
+      tags:
+        - artifact
+      operationId: scanArtifact
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+      responses:
+        '202':
+          $ref: '#/responses/202'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags:
+    post:
+      summary: Create tag
+      description: Create a tag for the specified artifact
+      tags:
+        - artifact
+      operationId: createTag
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: tag
+          in: body
+          description: The JSON object of tag.
+          required: true
+          schema:
+            $ref: '#/definitions/Tag'
+      responses:
+        '201':
+          $ref: '#/responses/201'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/tags/{tag_name}:
+    delete:
+      summary: Delete tag
+      description: Delete the tag of the specified artifact
+      tags:
+        - artifact
+      operationId: deleteTag
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - $ref: '#/parameters/tagName'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/additions/{addition}:
+    get:
+      summary: Get the addition of the specific artifact
+      description: Get the addition of the artifact specified by the reference under the project and repository.
+      tags:
+        - artifact
+      operationId: getAddition
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: addition
+          in: path
+          description: The type of addition.
+          type: string
+          enum: [build_history, values.yaml, readme.md, dependencies, vulnerabilities]
+          required: true
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels:
+    post:
+      summary: Add label to artifact
+      description: Add label to the specified artiact.
+      tags:
+        - artifact
+      operationId: addLabel
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: label
+          in: body
+          description: The label that added to the artifact. Only the ID property is needed.
+          required: true
+          schema:
+            $ref: '#/definitions/Label'
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+  /projects/{project_name}/repositories/{repository_name}/artifacts/{reference}/labels/{label_id}:
+    delete:
+      summary: Remove label from artifact
+      description: Remove the label from the specified artiact.
+      tags:
+        - artifact
+      operationId: removeLabel
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectName'
+        - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/reference'
+        - name: label_id
+          in: path
+          description: The ID of the label that removed from the artifact.
+          type: integer
+          format: int64
+          required: true
+      responses:
+        '200':
+          $ref: '#/responses/200'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
+        '404':
+          $ref: '#/responses/404'
+        '409':
+          $ref: '#/responses/409'
+        '500':
+          $ref: '#/responses/500'
+parameters:
+  requestId:
+    name: X-Request-Id
+    description: An unique ID for the request
+    in: header
+    type: string
+    required: false
+    minLength: 1
+  projectName:
+    name: project_name
+    in: path
+    description: The name of the project
+    required: true
+    type: string
+  repositoryName:
+    name: repository_name
+    in: path
+    description: The name of the repository
+    required: true
+    type: string
+  reference:
+    name: reference
+    in: path
+    description: The reference of the artifact, can be digest or tag
+    required: true
+    type: string
+  tagName:
+    name: tag_name
+    in: path
+    description: The name of the tag
+    required: true
+    type: string
+  page:
+    name: page
+    in: query
+    type: integer
+    format: int64
+    required: false
+    description: The page number
+    default: 1
+  pageSize:
+    name: page_size
+    in: query
+    type: integer
+    format: int64
+    required: false
+    description: The size of per page
+    default: 10
+responses:
+  '200':
+    description: Success
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+  '201':
+    description: Created
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+      Location:
+        description: The location of the resource
+        type: string
+  '202':
+    description: Accepted
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+  '400':
+    description: Bad request
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '401':
+    description: Unauthorized
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '403':
+    description: Forbidden
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '404':
+    description: Not found
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '409':
+    description: Conflict
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+  '500':
+    description: Internal server error
+    headers:
+      X-Request-Id:
+        description: The ID of the corresponding request for the response
+        type: string
+    schema:
+      $ref: '#/definitions/Errors'
+definitions:
+  Errors:
+    description: The error array that describe the errors got during the handling of request
+    type: array
+    items:
+      $ref: '#/definitions/Error'
+  Error:
+    description: a model for all the error response coming from harbor
+    type: object
+    properties:
+      code:
+        type: string
+        description: The error code
+      message:
+        type: string
+        description: The error message
+  Repository:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the repository
+      project_id:
+        type: integer
+        format: int64
+        description: The ID of the project that the repository belongs to
+      name:
+        type: string
+        description: The name of the repository
+      description:
+        type: string
+        description: The description of the repository
+      artifact_count:
+        type: integer
+        format: int64
+        description: The count of the artifacts inside the repository
+      pull_count:
+        type: integer
+        format: int64
+        description: The count that the artifact inside the repository pulled
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time of the repository
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the repository
+  Artifact:
+    type: object
+    x-go-type:
+      import:
+        package: "github.com/goharbor/harbor/src/server/v2.0/handler/model"
+      type: "Artifact"
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the artifact
+      type:
+        type: string
+        description: The type of the artifact, e.g. image, chart, etc
+      media_type:
+        type: string
+        description: The media type of the artifact
+      manifest_media_type:
+        type: string
+        description: The manifest media type of the artifact
+      project_id:
+        type: integer
+        format: int64
+        description: The ID of the project that the artifact belongs to
+      repository_id:
+        type: integer
+        format: int64
+        description: The ID of the repository that the artifact belongs to
+      digest:
+        type: string
+        description: The digest of the artifact
+      size:
+        type: integer
+        format: int64
+        description: The size of the artifact
+      push_time:
+        type: string
+        format: date-time
+        description: The push time of the artifact
+      pull_time:
+        type: string
+        format: date-time
+        description: The latest pull time of the artifact
+      extra_attrs:
+        $ref: '#/definitions/ExtraAttrs'
+      annotations:
+        $ref: '#/definitions/Annotations'
+      references:
+        type: array
+        items:
+          $ref: '#/definitions/Reference'
+      tags:
+        type: array
+        items:
+          $ref: '#/definitions/Tag'
+      addition_links:
+        $ref: '#/definitions/AdditionLinks'
+      labels:
+        type: array
+        items:
+          $ref: '#/definitions/Label'
+      scan_overview:
+        $ref: '#/definitions/ScanOverview'
+        description: The overview of the scan result.
+  Tag:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the tag
+      repository_id:
+        type: integer
+        format: int64
+        description: The ID of the repository that the tag belongs to
+      artifact_id:
+        type: integer
+        format: int64
+        description: The ID of the artifact that the tag attached to
+      name:
+        type: string
+        description: The name of the tag
+      push_time:
+        type: string
+        format: date-time
+        description: The push time of the tag
+      pull_time:
+        type: string
+        format: date-time
+        description: The latest pull time of the tag
+      immutable:
+        type: boolean
+        x-omitempty: false
+        description: The immutable status of the tag
+      signed:
+        type: boolean
+        x-omitempty: false
+        description: The attribute indicates whether the tag is signed or not
+  ExtraAttrs:
+    type: object
+    additionalProperties:
+      type: object
+  Annotations:
+    type: object
+    additionalProperties:
+      type: string
+  AdditionLinks:
+    type: object
+    additionalProperties:
+      $ref: '#/definitions/AdditionLink'
+  AdditionLink:
+    type: object
+    properties:
+      href:
+        type: string
+        description: The link of the addition
+      absolute:
+        type: boolean
+        x-omitempty: false
+        description: Determine whether the link is an absolute URL or not
+  Reference:
+    type: object
+    properties:
+      parent_id:
+        type: integer
+        format: int64
+        description: The parent ID of the reference
+      child_id:
+        type: integer
+        format: int64
+        description: The child ID of the reference
+      child_digest:
+        type: string
+        description: The digest of the child artifact
+      platform:
+        $ref: '#/definitions/Platform'
+  Platform:
+    type: object
+    properties:
+      architecture:
+        type: string
+        description: The architecture that the artifact applys to
+      os:
+        type: string
+        description: The OS that the artifact applys to
+      '''os.version''':
+        type: string
+        description: The version of the OS that the artifact applys to
+      '''os.features''':
+        type: array
+        description: The features of the OS that the artifact applys to
+        items:
+          type: string
+      variant:
+        type: string
+        description: The variant of the CPU
+  Label:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int64
+        description: The ID of the label
+      name:
+        type: string
+        description: The name the label
+      description:
+        type: string
+        description: The description the label
+      color:
+        type: string
+        description: The color the label
+      scope:
+        type: string
+        description: The scope the label
+      project_id:
+        type: integer
+        format: int64
+        description: The ID of project that the label belongs to
+      creation_time:
+        type: string
+        format: date-time
+        description: The creation time the label
+      update_time:
+        type: string
+        format: date-time
+        description: The update time of the label
+      deleted:
+        type: boolean
+        description: Whether the label is deleted or not
+  ScanOverview:
+    type: object
+    description: 'The scan overview attached in the metadata of tag'
+    additionalProperties:
+      $ref: '#/definitions/NativeReportSummary'
+  NativeReportSummary:
+    type: object
+    description: 'The summary for the native report'
+    properties:
+      report_id:
+        type: string
+        description: 'id of the native scan report'
+        example: '5f62c830-f996-11e9-957f-0242c0a89008'
+      scan_status:
+        type: string
+        description: 'The status of the report generating process'
+        example: 'Success'
+      severity:
+        type: string
+        description: 'The overall severity'
+        example: 'High'
+      duration:
+        type: integer
+        format: int64
+        description: 'The seconds spent for generating the report'
+        example: 300
+      summary:
+        $ref: '#/definitions/VulnerabilitySummary'
+      start_time:
+        type: string
+        format: date-time
+        description: 'The start time of the scan process that generating report'
+        example: '2006-01-02T14:04:05'
+      end_time:
+        type: string
+        format: date-time
+        description: 'The end time of the scan process that generating report'
+        example: '2006-01-02T15:04:05'
+  VulnerabilitySummary:
+    type: object
+    description: |
+      VulnerabilitySummary contains the total number of the foun d vulnerabilities number and numbers of each severity level.
+    properties:
+      total:
+        type: integer
+        format: int
+        description: 'The total number of the found vulnerabilities'
+        example: 500
+      fixable:
+        type: integer
+        format: int
+        description: 'The number of the fixable vulnerabilities'
+        example: 100
+      summary:
+        type: object
+        description: 'Numbers of the vulnerabilities with different severity'
+        additionalProperties:
+          type: integer
+          format: int
+          example: 10
+        example:
+          'Critical': 5
+          'High': 5

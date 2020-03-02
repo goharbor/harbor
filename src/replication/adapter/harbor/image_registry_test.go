@@ -28,7 +28,7 @@ func TestFetchImages(t *testing.T) {
 	server := test.NewServer([]*test.RequestHandlerMapping{
 		{
 			Method:  http.MethodGet,
-			Pattern: "/api/projects",
+			Pattern: "/api/v2.0/projects",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
 					"name": "library",
@@ -39,7 +39,7 @@ func TestFetchImages(t *testing.T) {
 		},
 		{
 			Method:  http.MethodGet,
-			Pattern: "/api/repositories/library/hello-world/tags",
+			Pattern: "/api/v2.0/repositories/library/hello-world/tags",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
 					"name": "1.0"
@@ -51,7 +51,7 @@ func TestFetchImages(t *testing.T) {
 		},
 		{
 			Method:  http.MethodGet,
-			Pattern: "/api/repositories",
+			Pattern: "/api/v2.0/repositories",
 			Handler: func(w http.ResponseWriter, r *http.Request) {
 				data := `[{
 					"name": "library/hello-world"
@@ -98,7 +98,7 @@ func TestFetchImages(t *testing.T) {
 func TestDeleteManifest(t *testing.T) {
 	server := test.NewServer(&test.RequestHandlerMapping{
 		Method:  http.MethodDelete,
-		Pattern: "/api/repositories/library/hello-world/tags/1.0",
+		Pattern: "/api/v2.0/repositories/library/hello-world/tags/1.0",
 		Handler: func(w http.ResponseWriter, r *http.Request) {
 			w.WriteHeader(http.StatusOK)
 		}})

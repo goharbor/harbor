@@ -1,20 +1,36 @@
+import os
 import yaml
-from g import versions_file_path
-from .misc import generate_random_string
+import logging
+from g import versions_file_path, host_root_dir, DEFAULT_UID, INTERNAL_NO_PROXY_DN
+from utils.misc import generate_random_string, owner_can_read, other_can_read
 
 default_db_max_idle_conns = 2  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxIdleConns
 default_db_max_open_conns = 0  # NOTE: https://golang.org/pkg/database/sql/#DB.SetMaxOpenConns
+default_https_cert_path = '/your/certificate/path'
+default_https_key_path = '/your/certificate/path'
 
-def validate(conf, **kwargs):
+REGISTRY_USER_NAME = 'harbor_registry_user'
+
+
+def validate(conf: dict, **kwargs):
+    # hostname validate
+    if conf.get('hostname') == '127.0.0.1':
+        raise Exception("127.0.0.1 can not be the hostname")
+    if conf.get('hostname') == 'reg.mydomain.com':
+        raise Exception("Please specify hostname")
+
+    # protocol validate
     protocol = conf.get("protocol")
     if protocol != "https" and kwargs.get('notary_mode'):
         raise Exception(
             "Error: the protocol must be https when Harbor is deployed with Notary")
     if protocol == "https":
-        if not conf.get("cert_path"):
+        if not conf.get("cert_path") or conf["cert_path"] == default_https_cert_path:
             raise Exception("Error: The protocol is https but attribute ssl_cert is not set")
-        if not conf.get("cert_key_path"):
+        if not conf.get("cert_key_path") or conf['cert_key_path'] == default_https_key_path:
             raise Exception("Error: The protocol is https but attribute ssl_cert_key is not set")
+    if protocol == "http":
+        logging.warning("WARNING: HTTP protocol is insecure. Harbor will deprecate http protocol in the future. Please make sure to upgrade to https")
 
     # log endpoint validate
     if ('log_ep_host' in conf) and not conf['log_ep_host']:
@@ -36,6 +52,24 @@ def validate(conf, **kwargs):
         if storage_provider_config == "":
             raise Exception(
                 "Error: no provider configurations are provided for provider %s" % storage_provider_name)
+    # ca_bundle validate
+    if conf.get('registry_custom_ca_bundle_path'):
+        registry_custom_ca_bundle_path = conf.get('registry_custom_ca_bundle_path') or ''
+        if registry_custom_ca_bundle_path.startswith('/data/'):
+            ca_bundle_host_path = registry_custom_ca_bundle_path
+        else:
+            ca_bundle_host_path = os.path.join(host_root_dir, registry_custom_ca_bundle_path.lstrip('/'))
+        try:
+            uid = os.stat(ca_bundle_host_path).st_uid
+            st_mode = os.stat(ca_bundle_host_path).st_mode
+        except Exception as e:
+            logging.error(e)
+            raise Exception('Can not get file info')
+        err_msg = 'Cert File {} should be owned by user with uid 10000 or readable by others'.format(registry_custom_ca_bundle_path)
+        if uid == DEFAULT_UID and not owner_can_read(st_mode):
+            raise Exception(err_msg)
+        if uid != DEFAULT_UID and not other_can_read(st_mode):
+            raise Exception(err_msg)
 
     # Redis validate
     redis_host = conf.get("redis_host")
@@ -48,6 +82,9 @@ def validate(conf, **kwargs):
         raise Exception(
             "Error: redis_port in harbor.yml needs to point to the port of Redis server or cluster.")
 
+    # TODO:
+    # If user enable trust cert dir, need check if the files in this dir is readable.
+
 
 def parse_versions():
     if not versions_file_path.is_file():
@@ -56,7 +93,8 @@ def parse_versions():
         versions = yaml.load(f)
     return versions
 
-def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseum):
+
+def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, with_chartmuseum):
     '''
     :param configs: config_parser object
     :returns: dict of configs
@@ -75,6 +113,7 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
         'jobservice_url': 'http://jobservice:8080',
         'clair_url': 'http://clair:6060',
         'clair_adapter_url': 'http://clair-adapter:8080',
+        'trivy_adapter_url': 'http://trivy-adapter:8080',
         'notary_url': 'http://notary-server:4443',
         'chart_repository_url': 'http://chartmuseum:9999'
     }
@@ -184,15 +223,21 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
     # Global proxy configs
     proxy_config = configs.get('proxy') or {}
     proxy_components = proxy_config.get('components') or []
+    no_proxy_config = proxy_config.get('no_proxy')
+    all_no_proxy = INTERNAL_NO_PROXY_DN
+    if no_proxy_config:
+        all_no_proxy |= set(no_proxy_config.split(','))
+
     for proxy_component in proxy_components:
       config_dict[proxy_component + '_http_proxy'] = proxy_config.get('http_proxy') or ''
       config_dict[proxy_component + '_https_proxy'] = proxy_config.get('https_proxy') or ''
-      config_dict[proxy_component + '_no_proxy'] = proxy_config.get('no_proxy') or '127.0.0.1,localhost,core,registry'
+      config_dict[proxy_component + '_no_proxy'] = ','.join(all_no_proxy)
 
     # Clair configs, optional
     clair_configs = configs.get("clair") or {}
     config_dict['clair_db'] = 'postgres'
-    config_dict['clair_updaters_interval'] = clair_configs.get("updaters_interval") or 12
+    updaters_interval = clair_configs.get("updaters_interval", None)
+    config_dict['clair_updaters_interval'] = 12 if updaters_interval is None else updaters_interval
 
     # Chart configs
     chart_configs = configs.get("chart") or {}
@@ -272,43 +317,105 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_chartmuseu
     else:
         config_dict['external_database'] = False
 
-
-    # redis config
-    redis_configs = configs.get("external_redis")
-    if redis_configs:
-        config_dict['external_redis'] = True
-        # using external_redis
-        config_dict['redis_host'] = redis_configs['host']
-        config_dict['redis_port'] = redis_configs['port']
-        config_dict['redis_password'] = redis_configs.get("password") or ''
-        config_dict['redis_db_index_reg'] = redis_configs.get('registry_db_index') or 1
-        config_dict['redis_db_index_js'] = redis_configs.get('jobservice_db_index') or 2
-        config_dict['redis_db_index_chart'] = redis_configs.get('chartmuseum_db_index') or 3
-    else:
-        config_dict['external_redis'] = False
-        ## Using local redis
-        config_dict['redis_host'] = 'redis'
-        config_dict['redis_port'] = 6379
-        config_dict['redis_password'] = ''
-        config_dict['redis_db_index_reg'] = 1
-        config_dict['redis_db_index_js'] = 2
-        config_dict['redis_db_index_chart'] = 3
-
-    # redis://[arbitrary_username:password@]ipaddress:port/database_index
-    if config_dict.get('redis_password'):
-        config_dict['redis_url_js'] = "redis://anonymous:%s@%s:%s/%s" % (config_dict['redis_password'], config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_js'])
-        config_dict['redis_url_reg'] = "redis://anonymous:%s@%s:%s/%s" % (config_dict['redis_password'], config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_reg'])
-    else:
-        config_dict['redis_url_js'] = "redis://%s:%s/%s" % (config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_js'])
-        config_dict['redis_url_reg'] = "redis://%s:%s/%s" % (config_dict['redis_host'], config_dict['redis_port'], config_dict['redis_db_index_reg'])
+    # update redis configs
+    config_dict.update(get_redis_configs(configs.get("external_redis", None), with_clair, with_trivy))
 
     # auto generated secret string for core
     config_dict['core_secret'] = generate_random_string(16)
 
-     # Admiral configs
-    config_dict['admiral_url'] = configs.get("admiral_url") or ""
-
     # UAA configs
     config_dict['uaa'] = configs.get('uaa') or {}
 
+    config_dict['registry_username'] = REGISTRY_USER_NAME
+    config_dict['registry_password'] = generate_random_string(32)
     return config_dict
+
+
+def get_redis_url(db, redis=None):
+    """Returns redis url with format `redis://[arbitrary_username:password@]ipaddress:port/database_index`
+
+    >>> get_redis_url(1)
+    'redis://redis:6379/1'
+    >>> get_redis_url(1, {'host': 'localhost', 'password': 'password'})
+    'redis://anonymous:password@localhost:6379/1'
+    """
+    kwargs = {
+        'host': 'redis',
+        'port': 6379,
+        'password': '',
+    }
+    kwargs.update(redis or {})
+    kwargs['db'] = db
+
+    if kwargs['password']:
+        return "redis://anonymous:{password}@{host}:{port}/{db}".format(**kwargs)
+    return "redis://{host}:{port}/{db}".format(**kwargs)
+
+
+def get_redis_configs(external_redis=None, with_clair=True, with_trivy=True):
+    """Returns configs for redis
+
+    >>> get_redis_configs()['external_redis']
+    False
+    >>> get_redis_configs()['redis_url_reg']
+    'redis://redis:6379/1'
+    >>> get_redis_configs()['redis_url_js']
+    'redis://redis:6379/2'
+    >>> get_redis_configs()['redis_url_clair']
+    'redis://redis:6379/4'
+    >>> get_redis_configs()['redis_url_trivy']
+    'redis://redis:6379/5'
+
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['external_redis']
+    True
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_reg']
+    'redis://anonymous:pass@localhost:6379/1'
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_js']
+    'redis://anonymous:pass@localhost:6379/2'
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_clair']
+    'redis://anonymous:pass@localhost:6379/4'
+    >>> get_redis_configs({'host': 'localhost', 'password': 'pass'})['redis_url_trivy']
+    'redis://anonymous:pass@localhost:6379/5'
+
+    >>> 'redis_url_clair' not in get_redis_configs(with_clair=False)
+    True
+    >>> 'redis_url_trivy' not in get_redis_configs(with_trivy=False)
+    True
+    """
+
+    configs = dict(external_redis=bool(external_redis))
+
+    # internal redis config as the default
+    redis = {
+        'host': 'redis',
+        'port': 6379,
+        'password': '',
+        'registry_db_index': 1,
+        'jobservice_db_index': 2,
+        'chartmuseum_db_index': 3,
+        'clair_db_index': 4,
+        'trivy_db_index': 5,
+    }
+
+    # overwriting existing keys by external_redis
+    redis.update(external_redis or {})
+
+    configs['redis_host'] = redis['host']
+    configs['redis_port'] = redis['port']
+    configs['redis_password'] = redis['password']
+    configs['redis_db_index_reg'] = redis['registry_db_index']
+    configs['redis_db_index_js'] = redis['jobservice_db_index']
+    configs['redis_db_index_chart'] = redis['chartmuseum_db_index']
+
+    configs['redis_url_js'] = get_redis_url(configs['redis_db_index_js'], redis)
+    configs['redis_url_reg'] = get_redis_url(configs['redis_db_index_reg'], redis)
+
+    if with_clair:
+        configs['redis_db_index_clair'] = redis['clair_db_index']
+        configs['redis_url_clair'] = get_redis_url(configs['redis_db_index_clair'], redis)
+
+    if with_trivy:
+        configs['redis_db_index_trivy'] = redis['trivy_db_index']
+        configs['redis_url_trivy'] = get_redis_url(configs['redis_db_index_trivy'], redis)
+
+    return configs

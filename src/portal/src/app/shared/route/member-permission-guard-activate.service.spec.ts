@@ -1,11 +1,9 @@
 import { TestBed, async, inject } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import {
-  UserPermissionService,
-  ErrorHandler
-} from "@harbor/ui";
 import { MemberPermissionGuard } from './member-permission-guard-activate.service';
 import { of } from 'rxjs';
+import { ErrorHandler } from "../../../lib/utils/error-handler";
+import { UserPermissionService } from "../../../lib/services";
 
 describe('MemberPermissionGuardActivateServiceGuard', () => {
   const fakeUserPermissionService = {

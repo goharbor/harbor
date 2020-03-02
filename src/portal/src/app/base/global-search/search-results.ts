@@ -12,8 +12,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 import { Project } from "../../project/project";
-import { Repository } from "@harbor/ui";
 import { HelmChartSearchResultItem } from "../../project/helm-chart/helm-chart.interface.service";
+import { Repository } from "../../../lib/services";
 
 export class SearchResults {
   constructor() {

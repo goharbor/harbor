@@ -5,7 +5,7 @@ import { SharedModule } from "../../../shared/shared.module";
 import { ConfigScannerService } from "../config-scanner.service";
 import { of } from "rxjs";
 import { ScannerMetadataComponent } from "./scanner-metadata.component";
-import { ErrorHandler } from "@harbor/ui";
+import { ErrorHandler } from "../../../../lib/utils/error-handler";
 
 describe('ScannerMetadataComponent', () => {
   let mockScannerMetadata = {
@@ -26,7 +26,7 @@ describe('ScannerMetadataComponent', () => {
       return of(mockScannerMetadata);
     }
   };
-  beforeEach(async(() => {
+  beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [
         SharedModule,
@@ -40,9 +40,8 @@ describe('ScannerMetadataComponent', () => {
         ErrorHandler,
         { provide: ConfigScannerService, useValue: fakedConfigScannerService },
       ]
-    })
-    .compileComponents();
-  }));
+    });
+  });
   beforeEach(() => {
     fixture = TestBed.createComponent(ScannerMetadataComponent);
     component = fixture.componentInstance;

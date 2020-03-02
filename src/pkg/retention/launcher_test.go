@@ -16,21 +16,19 @@ package retention
 
 import (
 	"fmt"
-	"testing"
-
-	"github.com/goharbor/harbor/src/chartserver"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
 	_ "github.com/goharbor/harbor/src/pkg/art/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/project"
-	"github.com/goharbor/harbor/src/pkg/repository"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/goharbor/harbor/src/pkg/retention/q"
 	hjob "github.com/goharbor/harbor/src/testing/job"
+	"github.com/goharbor/harbor/src/testing/pkg/repository"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
+	"testing"
 )
 
 type fakeProjectManager struct {
@@ -60,18 +58,6 @@ func (f *fakeProjectManager) Get(idOrName interface{}) (*models.Project, error) 
 		return nil, nil
 	}
 	return nil, fmt.Errorf("invalid parameter: %v, should be ID(int64) or name(string)", idOrName)
-}
-
-type fakeRepositoryManager struct {
-	imageRepositories []*models.RepoRecord
-	chartRepositories []*chartserver.ChartInfo
-}
-
-func (f *fakeRepositoryManager) ListImageRepositories(projectID int64) ([]*models.RepoRecord, error) {
-	return f.imageRepositories, nil
-}
-func (f *fakeRepositoryManager) ListChartRepositories(projectID int64) ([]*chartserver.ChartInfo, error) {
-	return f.chartRepositories, nil
 }
 
 type fakeRetentionManager struct{}
@@ -145,7 +131,7 @@ func (f *fakeRetentionManager) ListHistories(executionID int64, query *q.Query) 
 type launchTestSuite struct {
 	suite.Suite
 	projectMgr       project.Manager
-	repositoryMgr    repository.Manager
+	repositoryMgr    *repository.FakeManager
 	retentionMgr     Manager
 	jobserviceClient job.Client
 }
@@ -163,21 +149,7 @@ func (l *launchTestSuite) SetupTest() {
 		projects: []*models.Project{
 			pro1, pro2,
 		}}
-	l.repositoryMgr = &fakeRepositoryManager{
-		imageRepositories: []*models.RepoRecord{
-			{
-				Name: "library/image",
-			},
-			{
-				Name: "test/image",
-			},
-		},
-		chartRepositories: []*chartserver.ChartInfo{
-			{
-				Name: "chart",
-			},
-		},
-	}
+	l.repositoryMgr = &repository.FakeManager{}
 	l.retentionMgr = &fakeRetentionManager{}
 	l.jobserviceClient = &hjob.MockJobClient{
 		JobUUID: []string{"1"},
@@ -193,9 +165,17 @@ func (l *launchTestSuite) TestGetProjects() {
 }
 
 func (l *launchTestSuite) TestGetRepositories() {
+	l.repositoryMgr.On("List").Return([]*models.RepoRecord{
+		{
+			RepositoryID: 1,
+			ProjectID:    1,
+			Name:         "library/image",
+		},
+	}, nil)
 	repositories, err := getRepositories(l.projectMgr, l.repositoryMgr, 1, true)
 	require.Nil(l.T(), err)
-	assert.Equal(l.T(), 2, len(repositories))
+	l.repositoryMgr.AssertExpectations(l.T())
+	assert.Equal(l.T(), 1, len(repositories))
 	assert.Equal(l.T(), "library", repositories[0].Namespace)
 	assert.Equal(l.T(), "image", repositories[0].Repository)
 	assert.Equal(l.T(), "image", repositories[0].Kind)
@@ -231,6 +211,13 @@ func (l *launchTestSuite) TestLaunch() {
 	require.NotNil(l.T(), err)
 
 	// system scope
+	l.repositoryMgr.On("List").Return([]*models.RepoRecord{
+		{
+			RepositoryID: 1,
+			ProjectID:    1,
+			Name:         "library/image",
+		},
+	}, nil)
 	ply = &policy.Metadata{
 		Scope: &policy.Scope{
 			Level: "system",
@@ -277,7 +264,8 @@ func (l *launchTestSuite) TestLaunch() {
 	}
 	n, err = launcher.Launch(ply, 1, false)
 	require.Nil(l.T(), err)
-	assert.Equal(l.T(), int64(2), n)
+	l.repositoryMgr.AssertExpectations(l.T())
+	assert.Equal(l.T(), int64(1), n)
 }
 
 func (l *launchTestSuite) TestStop() {

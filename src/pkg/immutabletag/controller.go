@@ -1,6 +1,8 @@
 package immutabletag
 
 import (
+	"fmt"
+
 	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
 )
 
@@ -53,6 +55,9 @@ func (r *DefaultAPIController) UpdateImmutableRule(pid int64, m *model.Metadata)
 	m0, err := r.manager.GetImmutableRule(m.ID)
 	if err != nil {
 		return err
+	}
+	if m0 == nil {
+		return fmt.Errorf("the immutable tag rule is not found id:%v", m.ID)
 	}
 	if m0.Disabled != m.Disabled {
 		_, err := r.manager.EnableImmutableRule(m.ID, m.Disabled)

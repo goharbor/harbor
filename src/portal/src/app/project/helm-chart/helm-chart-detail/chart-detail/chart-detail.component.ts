@@ -1,4 +1,3 @@
-import { downloadFile, SystemInfoService, SystemInfo, ErrorHandler } from "@harbor/ui";
 import {
   Component,
   OnInit,
@@ -11,6 +10,9 @@ import { Project } from "../../../project";
 import { HelmChartService } from "../../helm-chart.service";
 import { HelmChartDetail } from "../../helm-chart.interface.service";
 import { finalize } from "rxjs/operators";
+import { SystemInfo, SystemInfoService } from "../../../../../lib/services";
+import { ErrorHandler } from "../../../../../lib/utils/error-handler";
+import { downloadFile } from "../../../../../lib/utils/utils";
 
 @Component({
   selector: "hbr-chart-detail",

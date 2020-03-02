@@ -23,11 +23,10 @@ import (
 	"github.com/goharbor/harbor/src/common/config"
 	"github.com/goharbor/harbor/src/common/config/metadata"
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/common/security/secret"
+	"github.com/goharbor/harbor/src/common/security"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/api/models"
 	corecfg "github.com/goharbor/harbor/src/core/config"
-	"github.com/goharbor/harbor/src/core/filter"
 )
 
 // ConfigAPI ...
@@ -47,7 +46,7 @@ func (c *ConfigAPI) Prepare() {
 
 	// Only internal container can access /api/internal/configurations
 	if strings.EqualFold(c.Ctx.Request.RequestURI, "/api/internal/configurations") {
-		if _, ok := c.Ctx.Request.Context().Value(filter.SecurCtxKey).(*secret.SecurityContext); !ok {
+		if s, ok := security.FromContext(c.Ctx.Request.Context()); !ok || s.Name() != "secret" {
 			c.SendUnAuthorizedError(errors.New("UnAuthorized"))
 			return
 		}
@@ -121,21 +120,32 @@ func (c *ConfigAPI) Put() {
 }
 
 func (c *ConfigAPI) validateCfg(cfgs map[string]interface{}) (bool, error) {
-	mode := c.cfgManager.Get(common.AUTHMode).GetString()
-	if value, ok := cfgs[common.AUTHMode]; ok {
-		flag, err := authModeCanBeModified()
-		if err != nil {
-			return true, err
-		}
-		if mode != fmt.Sprintf("%v", value) && !flag {
-			return false, fmt.Errorf("%s can not be modified as new users have been inserted into database", common.AUTHMode)
-		}
-	}
-	err := c.cfgManager.ValidateCfg(cfgs)
+	flag, err := authModeCanBeModified()
 	if err != nil {
-		return false, err
+		return true, err
 	}
-	return false, nil
+	if !flag {
+		if failedKeys := checkUnmodifiable(c.cfgManager, cfgs, common.AUTHMode); len(failedKeys) > 0 {
+			return false, fmt.Errorf("the keys %v can not be modified as new users have been inserted into database", failedKeys)
+		}
+	}
+	err = c.cfgManager.ValidateCfg(cfgs)
+	return false, err
+}
+
+func checkUnmodifiable(mgr *config.CfgManager, cfgs map[string]interface{}, keys ...string) (failed []string) {
+	if mgr == nil || cfgs == nil || keys == nil {
+		return
+	}
+	for _, k := range keys {
+		v := mgr.Get(k).GetString()
+		if nv, ok := cfgs[k]; ok {
+			if v != fmt.Sprintf("%v", nv) {
+				failed = append(failed, k)
+			}
+		}
+	}
+	return
 }
 
 // delete sensitive attrs and add editable field to every attr

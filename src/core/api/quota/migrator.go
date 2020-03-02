@@ -22,7 +22,6 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/promgr"
 	"github.com/goharbor/harbor/src/pkg/types"
-	"math/rand"
 	"strconv"
 	"time"
 )
@@ -80,7 +79,6 @@ func Register(name string, adapter Instance) {
 
 // Sync ...
 func Sync(pm promgr.ProjectManager, populate bool) error {
-	rand.Seed(time.Now().UnixNano())
 	totalUsage := make(map[string][]ProjectUsage)
 	for name, instanceFunc := range adapters {
 		if !config.WithChartMuseum() {

@@ -17,7 +17,6 @@ package api
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -29,6 +28,7 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/systeminfo"
 	"github.com/goharbor/harbor/src/core/systeminfo/imagestorage"
+	"github.com/goharbor/harbor/src/pkg/version"
 )
 
 // SystemInfoAPI handle requests for getting system info /api/systeminfo
@@ -37,7 +37,6 @@ type SystemInfoAPI struct {
 }
 
 const defaultRootCert = "/etc/core/ca/ca.crt"
-const harborVersionFile = "/harbor/UIVERSION"
 
 // SystemInfo models for system info.
 type SystemInfo struct {
@@ -53,8 +52,6 @@ type Storage struct {
 // GeneralInfo wraps common systeminfo for anonymous request
 type GeneralInfo struct {
 	WithNotary                  bool                             `json:"with_notary"`
-	WithAdmiral                 bool                             `json:"with_admiral"`
-	AdmiralEndpoint             string                           `json:"admiral_endpoint"`
 	AuthMode                    string                           `json:"auth_mode"`
 	AuthProxySettings           *models.HTTPAuthProxy            `json:"authproxy_settings,omitempty"`
 	RegistryURL                 string                           `json:"registry_url"`
@@ -136,8 +133,6 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 	enableCADownload := caStatErr == nil && strings.HasPrefix(extURL, "https://")
 	harborVersion := sia.getVersion()
 	info := GeneralInfo{
-		AdmiralEndpoint:             utils.SafeCastString(cfg[common.AdmiralEndpoint]),
-		WithAdmiral:                 config.WithAdmiral(),
 		WithNotary:                  config.WithNotary(),
 		AuthMode:                    utils.SafeCastString(cfg[common.AUTHMode]),
 		ProjectCreationRestrict:     utils.SafeCastString(cfg[common.ProjectCreationRestriction]),
@@ -165,12 +160,7 @@ func (sia *SystemInfoAPI) GetGeneralInfo() {
 
 // getVersion gets harbor version.
 func (sia *SystemInfoAPI) getVersion() string {
-	version, err := ioutil.ReadFile(harborVersionFile)
-	if err != nil {
-		log.Errorf("Error occurred getting harbor version: %v", err)
-		return ""
-	}
-	return string(version[:])
+	return fmt.Sprintf("%s-%s", version.ReleaseVersion, version.GitCommit)
 }
 
 // Ping ping the harbor core service.
