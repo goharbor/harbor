@@ -347,67 +347,68 @@ func (c *controller) deleteDeeply(ctx context.Context, id int64, isRoot bool) er
 }
 
 func (c *controller) Copy(ctx context.Context, srcRepo, reference, dstRepo string) (int64, error) {
-	return c.copyDeeply(ctx, srcRepo, reference, dstRepo, true)
-}
-
-// as we call the docker registry APIs in the registry client directly,
-// this bypass our own logic(ensure, fire event, etc.) inside the registry handlers,
-// these logic must be covered explicitly here.
-// "copyDeeply" iterates the child artifacts and copy them first
-func (c *controller) copyDeeply(ctx context.Context, srcRepo, reference, dstRepo string, isRoot bool) (int64, error) {
-	var option *Option
-	// only get the tags of the root parent
-	if isRoot {
-		option = &Option{WithTag: true}
-	}
-
-	srcArt, err := c.GetByReference(ctx, srcRepo, reference, option)
+	option := &Option{WithTag: true}
+	root, err := c.GetByReference(ctx, srcRepo, reference, option)
 	if err != nil {
 		return 0, err
 	}
 
-	digest := srcArt.Digest
-
-	// check the existence of artifact in the destination repository
-	dstArt, err := c.GetByReference(ctx, dstRepo, digest, option)
-	if err == nil {
-		// return conflict error if the root parent artifact already exists under the destination repository
-		if isRoot {
-			return 0, ierror.New(nil).WithCode(ierror.ConflictCode).
-				WithMessage("the artifact %s@%s already exists", dstRepo, digest)
-		}
-		// the child artifact already under the destination repository, skip
-		return dstArt.ID, nil
+	// Copy to self, skip it
+	if srcRepo == dstRepo {
+		return root.ID, nil
 	}
-	if !ierror.IsErr(err, ierror.NotFoundCode) {
+
+	var copyArtifacts []*Artifact
+	walkFn := func(a *Artifact) error {
+		digest := a.Digest
+
+		_, err := c.GetByReference(ctx, dstRepo, digest, nil)
+		if err == nil {
+			// exist in dest repo
+			return nil
+		}
+
+		if !ierror.IsNotFoundErr(err) {
+			return err
+		}
+
+		// insert the child artifact in the front
+		copyArtifacts = append([]*Artifact{a}, copyArtifacts...)
+
+		return nil
+	}
+
+	if err := c.Walk(ctx, root, walkFn, option); err != nil {
 		return 0, err
 	}
 
-	// the artifact doesn't exist under the destination repository, continue to copy
-	// copy child artifacts if contains any
-	for _, reference := range srcArt.References {
-		if _, err = c.copyDeeply(ctx, srcRepo, reference.ChildDigest, dstRepo, false); err != nil {
+	var rootID int64
+	for _, artifact := range copyArtifacts {
+		digest := artifact.Digest
+
+		// copy the artifact into the backend docker registry
+		if err := c.regCli.Copy(srcRepo, digest, dstRepo, digest, false); err != nil {
 			return 0, err
 		}
+
+		// only copy the tags of the artifact
+		var tags []string
+		for _, tag := range artifact.Tags {
+			tags = append(tags, tag.Name)
+		}
+
+		// ensure the artifact exist in the database
+		_, id, err := c.Ensure(ctx, dstRepo, digest, tags...)
+		if err != nil {
+			return 0, err
+		}
+
+		// the last artifact is the root
+		rootID = id
 	}
 
-	// copy the parent artifact into the backend docker registry
-	if err := c.regCli.Copy(srcRepo, digest, dstRepo, digest, false); err != nil {
-		return 0, err
-	}
-
-	// only copy the tags of outermost artifact
-	var tags []string
-	for _, tag := range srcArt.Tags {
-		tags = append(tags, tag.Name)
-	}
-	// ensure the parent artifact exist in the database
-	_, id, err := c.Ensure(ctx, dstRepo, digest, tags...)
-	if err != nil {
-		return 0, err
-	}
-	// TODO fire event
-	return id, nil
+	// TODO: fire event
+	return rootID, nil
 }
 
 func (c *controller) UpdatePullTime(ctx context.Context, artifactID int64, tagID int64, time time.Time) error {
