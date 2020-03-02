@@ -24,7 +24,7 @@ describe('InterceptHttpService', () => {
         return of(new HttpResponse({status: 200}));
       } else {
         return throwError(new HttpResponse( {
-        status: 403
+        status: 422
         }));
       }
     }
@@ -48,7 +48,7 @@ describe('InterceptHttpService', () => {
     (service: InterceptHttpService) => {
       mockCookieService.set("fdsa|ds");
       service.intercept(mockRequest, mockHandle).subscribe(res => {
-        if (res.status === 403) {
+        if (res.status === 422) {
           expect(btoa(mockRequest.headers.get("X-Xsrftoken"))).toEqual(cookie.split("|")[0]);
         } else {
           expect(res.status).toEqual(200);
