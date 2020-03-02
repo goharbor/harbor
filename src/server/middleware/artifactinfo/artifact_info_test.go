@@ -57,7 +57,8 @@ func TestParseURL(t *testing.T) {
 			match: true,
 		},
 		{
-			input:  "/v2/development/golang/manifests/shaxxx:xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
+			input: "/v2/development/golang/manifests/shaxxx:**********************************************************************************************************************************",
+
 			expect: map[string]string{},
 			match:  false,
 		},

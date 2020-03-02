@@ -4,8 +4,9 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"k8s.io/helm/pkg/chartutil"
-	"k8s.io/helm/pkg/proto/hapi/chart"
+	helm_chart "helm.sh/helm/v3/pkg/chart"
+	"helm.sh/helm/v3/pkg/chart/loader"
+	"strings"
 )
 
 var (
@@ -23,7 +24,7 @@ type Operator interface {
 	// GetChartDetails parse the details from the provided content bytes
 	GetDetails(content []byte) (*VersionDetails, error)
 	// FetchLayer the content of layer under the repository
-	GetData(content []byte) (*chart.Chart, error)
+	GetData(content []byte) (*helm_chart.Chart, error)
 }
 
 var _ Operator = &operator{}
@@ -44,40 +45,35 @@ func (cho *operator) GetDetails(content []byte) (*VersionDetails, error) {
 		return nil, err
 	}
 
-	// Parse the requirements of chart
-	requirements, err := chartutil.LoadRequirements(chartData)
-	if err != nil {
-		// If no requirements.yaml, return empty dependency list
-		if _, ok := err.(chartutil.ErrNoRequirementsFile); ok {
-			requirements = &chartutil.Requirements{
-				Dependencies: make([]*chartutil.Dependency, 0),
-			}
-		} else {
-			return nil, err
-		}
+	// Parse the dependencies of chart
+	depts := make([]*helm_chart.Dependency, 0)
+
+	// for APIVersionV2, the dependency is in the Chart.yaml
+	if chartData.Metadata.APIVersion == helm_chart.APIVersionV1 {
+		depts = chartData.Metadata.Dependencies
 	}
 
 	var values map[string]interface{}
 	files := make(map[string]string)
 	// Parse values
 	if chartData.Values != nil {
-		values = parseRawValues([]byte(chartData.Values.GetRaw()))
-		if len(values) > 0 {
-			// Append values.yaml file
-			files[valuesFileName] = chartData.Values.Raw
-		}
+		readValue(values, "", chartData.Values)
 	}
 
-	// Append other files like 'README.md'
-	for _, v := range chartData.GetFiles() {
-		if v.TypeUrl == readmeFileName {
-			files[readmeFileName] = string(v.GetValue())
+	// Append other files like 'README.md' 'values.yaml'
+	for _, v := range chartData.Raw {
+		if strings.ToUpper(v.Name) == readmeFileName {
+			files[readmeFileName] = string(v.Data)
+			break
+		}
+		if strings.ToUpper(v.Name) == valuesFileName {
+			files[valuesFileName] = string(v.Data)
 			break
 		}
 	}
 
 	theChart := &VersionDetails{
-		Dependencies: requirements.Dependencies,
+		Dependencies: depts,
 		Values:       values,
 		Files:        files,
 	}
@@ -86,36 +82,18 @@ func (cho *operator) GetDetails(content []byte) (*VersionDetails, error) {
 }
 
 // GetData returns raw data of chart
-func (cho *operator) GetData(content []byte) (*chart.Chart, error) {
+func (cho *operator) GetData(content []byte) (*helm_chart.Chart, error) {
 	if content == nil || len(content) == 0 {
 		return nil, errors.New("zero content")
 	}
 
 	reader := bytes.NewReader(content)
-	chartData, err := chartutil.LoadArchive(reader)
+	chartData, err := loader.LoadArchive(reader)
 	if err != nil {
 		return nil, err
 	}
 
 	return chartData, nil
-}
-
-// Parse the raw values to value map
-func parseRawValues(rawValue []byte) map[string]interface{} {
-	valueMap := make(map[string]interface{})
-
-	if len(rawValue) == 0 {
-		return valueMap
-	}
-
-	values, err := chartutil.ReadValues(rawValue)
-	if err != nil || len(values) == 0 {
-		return valueMap
-	}
-
-	readValue(values, "", valueMap)
-
-	return valueMap
 }
 
 // Recursively read value

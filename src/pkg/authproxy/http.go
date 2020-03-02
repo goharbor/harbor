@@ -24,7 +24,7 @@ func TokenReview(rawToken string, authProxyConfig *models.HTTPAuthProxy) (k8s_ap
 		Host: authProxyConfig.TokenReviewEndpoint,
 		ContentConfig: rest.ContentConfig{
 			GroupVersion:         &schema.GroupVersion{},
-			NegotiatedSerializer: serializer.DirectCodecFactory{CodecFactory: scheme.Codecs},
+			NegotiatedSerializer: serializer.WithoutConversionCodecFactory{CodecFactory: scheme.Codecs},
 		},
 		BearerToken:     rawToken,
 		TLSClientConfig: getTLSConfig(authProxyConfig),

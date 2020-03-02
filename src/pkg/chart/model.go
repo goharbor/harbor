@@ -1,26 +1,16 @@
 package chart
 
 import (
-	"k8s.io/helm/pkg/chartutil"
-	helm_repo "k8s.io/helm/pkg/repo"
+	helm_chart "helm.sh/helm/v3/pkg/chart"
 	"time"
 )
 
-// Version extends the helm Version with additional labels
-type Version struct {
-	helm_repo.ChartVersion
-}
-
-// Versions is an array of extended Version
-type Versions []*Version
-
 // VersionDetails keeps the detailed data info of the chart version
 type VersionDetails struct {
-	Metadata     *helm_repo.ChartVersion `json:"metadata"`
-	Dependencies []*chartutil.Dependency `json:"dependencies"`
-	Values       map[string]interface{}  `json:"values"`
-	Files        map[string]string       `json:"files"`
-	Security     *SecurityReport         `json:"security"`
+	Dependencies []*helm_chart.Dependency `json:"dependencies"`
+	Values       map[string]interface{}   `json:"values"`
+	Files        map[string]string        `json:"files"`
+	Security     *SecurityReport          `json:"security"`
 }
 
 // SecurityReport keeps the info related with security

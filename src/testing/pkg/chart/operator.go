@@ -3,7 +3,7 @@ package chart
 import (
 	chartserver "github.com/goharbor/harbor/src/pkg/chart"
 	"github.com/stretchr/testify/mock"
-	"k8s.io/helm/pkg/proto/hapi/chart"
+	helm_chart "helm.sh/helm/v3/pkg/chart"
 )
 
 // FakeOpertaor ...
@@ -22,11 +22,11 @@ func (f *FakeOpertaor) GetDetails(content []byte) (*chartserver.VersionDetails, 
 }
 
 // GetData ...
-func (f *FakeOpertaor) GetData(content []byte) (*chart.Chart, error) {
+func (f *FakeOpertaor) GetData(content []byte) (*helm_chart.Chart, error) {
 	args := f.Called()
-	var chartData *chart.Chart
+	var chartData *helm_chart.Chart
 	if args.Get(0) != nil {
-		chartData = args.Get(0).(*chart.Chart)
+		chartData = args.Get(0).(*helm_chart.Chart)
 	}
 	return chartData, args.Error(1)
 }
