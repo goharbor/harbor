@@ -173,3 +173,6 @@ CREATE TABLE artifact_2
   push_time     timestamp,
   CONSTRAINT unique_artifact_2 UNIQUE (project_id, repo, tag)
 );
+
+/*remove the constraint for project_id in table 'notification_policy'*/
+ALTER TABLE notification_policy DROP CONSTRAINT unique_project_id;

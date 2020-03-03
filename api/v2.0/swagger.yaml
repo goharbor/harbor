@@ -499,6 +499,24 @@ paths:
           $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
+  /projects/{project_id}/webhook/events:
+    get:
+      summary: Get supported event types and notify types.
+      description: Get supportted event types and notify types.
+      tags:
+        - notification
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/projectId'
+      responses:
+        '200':
+          description: Success
+          schema:
+            $ref: '#/definitions/SupportedWebhookEventTypes'
+        '401':
+          $ref: '#/responses/401'
+        '403':
+          $ref: '#/responses/403'
 parameters:
   requestId:
     name: X-Request-Id
@@ -511,6 +529,12 @@ parameters:
     name: project_name
     in: path
     description: The name of the project
+    required: true
+    type: string
+  projectId:
+    name: project_id
+    in: path
+    description: The ID of the project
     required: true
     type: string
   repositoryName:
@@ -919,3 +943,23 @@ definitions:
         example:
           'Critical': 5
           'High': 5
+  SupportedWebhookEventTypes:
+    type: object
+    description: Supportted webhook event types and notify types.
+    properties:
+      event_type:
+        type: array
+        items:
+          $ref: '#/definitions/EventType'
+      notify_type:
+        type: array
+        items:
+          $ref: '#/definitions/NotifyType'
+  EventType:
+    type: string
+    description: Webhook supportted event type.
+    example: 'pullImage'
+  NotifyType:
+    type: string
+    description: Webhook supportted notify type.
+    example: 'http'
