@@ -251,7 +251,7 @@
         "ROBOT_ACCOUNTS": "Robot Hesapları",
         "WEBHOOKS": "Ağ Kancaları",
         "IMMUTABLE_TAG": "Tag Immutability",
-        "TAG_STRATEGY": "Tag Strategy"
+        "POLICY": "Policy"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "Proje kaydı",
@@ -1223,9 +1223,11 @@
         "IN_REPOSITORIES": "Depolar için",
         "REP_SEPARATOR": "Birden çok virgülle ayrılmış depolar, depo* veya ** girin",
         "TAGS": "Etiketler",
+        "INCLUDE_UNTAGGED": " untagged artifacts",
+        "UNTAGGED": " untagged",
         "MATCHES_TAGS": "Etiketleri eşleşir",
         "MATCHES_EXCEPT_TAGS": "Etiketler hariç eşleşir",
-        "TAG_SEPARATOR": "Birden çok virgülle ayrılmış etiket, etiket * veya ** girin",
+        "TAG_SEPARATOR": "Enter multiple comma separated tags, tag*, or **. Optionally include all untagged artifacts when applying the ‘including’ or ‘excluding’ selector by checking the box above.",
         "LABELS": "Etiketler",
         "MATCHES_LABELS": "Eşleşen Etiketler",
         "MATCHES_EXCEPT_LABELS": "Etiketler hariç eşleşmeler",

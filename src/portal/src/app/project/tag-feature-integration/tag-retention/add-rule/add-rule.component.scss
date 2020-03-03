@@ -11,7 +11,25 @@
 .height-72 {
   height: 72px;
 }
+.height-85 {
+  height: 85px;
+}
 
 .display-none {
-  display: none
+  display: none;
+}
+
+.untagged {
+  display: flex;
+  justify-content: space-around;
+}
+.modal-body {
+  overflow-y: hidden;
+}
+.tootip {
+  display: block;
+  line-height: .9rem;
+}
+.font-size-13 {
+  font-size: 13px;
 }

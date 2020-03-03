@@ -72,6 +72,16 @@ func (suite *RegExpSelectorTestSuite) SetupSuite() {
 			CreationTime: time.Now().Unix() - 7200,
 			Labels:       []string{"label1", "label4", "label5"},
 		},
+		{
+			NamespaceID:  3,
+			Namespace:    "library",
+			Repository:   "special",
+			Tags:         nil, // untagged
+			Kind:         iselector.Image,
+			PushedTime:   time.Now().Unix() - 3600,
+			PulledTime:   time.Now().Unix(),
+			CreationTime: time.Now().Unix() - 7200,
+		},
 	}
 }
 
@@ -100,6 +110,15 @@ func (suite *RegExpSelectorTestSuite) TestTagMatches() {
 	assert.Condition(suite.T(), func() bool {
 		return expect([]string{"redis:4.0", "redis:4.1"}, selected)
 	})
+
+	tagMatches3 := New(Matches, "4.*", "")
+
+	selected, err = tagMatches3.Select(suite.artifacts)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 3, len(selected))
+	assert.Condition(suite.T(), func() bool {
+		return expect([]string{"redis:4.0", "redis:4.1"}, selected)
+	})
 }
 
 // TestTagExcludes tests the tag `excludes` case
@@ -107,15 +126,23 @@ func (suite *RegExpSelectorTestSuite) TestTagExcludes() {
 	tagExcludes := &selector{
 		decoration: Excludes,
 		pattern:    "{latest,4.*}",
+		untagged:   true,
 	}
 
 	selected, err := tagExcludes.Select(suite.artifacts)
 	require.NoError(suite.T(), err)
 	assert.Equal(suite.T(), 0, len(selected))
 
+	tagExcludes1 := New(Excludes, "{latest,4.*}", "")
+
+	selected, err = tagExcludes1.Select(suite.artifacts)
+	require.NoError(suite.T(), err)
+	assert.Equal(suite.T(), 1, len(selected))
+
 	tagExcludes2 := &selector{
 		decoration: Excludes,
 		pattern:    "4.*",
+		untagged:   true,
 	}
 
 	selected, err = tagExcludes2.Select(suite.artifacts)
@@ -162,7 +189,7 @@ func (suite *RegExpSelectorTestSuite) TestRepoExcludes() {
 
 	selected, err := repoExcludes.Select(suite.artifacts)
 	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 1, len(selected))
+	assert.Equal(suite.T(), 2, len(selected))
 	assert.Condition(suite.T(), func() bool {
 		return expect([]string{"harbor:latest"}, selected)
 	})
@@ -174,7 +201,7 @@ func (suite *RegExpSelectorTestSuite) TestRepoExcludes() {
 
 	selected, err = repoExcludes2.Select(suite.artifacts)
 	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 2, len(selected))
+	assert.Equal(suite.T(), 3, len(selected))
 	assert.Condition(suite.T(), func() bool {
 		return expect([]string{"redis:4.0", "redis:4.1"}, selected)
 	})
@@ -189,7 +216,7 @@ func (suite *RegExpSelectorTestSuite) TestNSMatches() {
 
 	selected, err := repoMatches.Select(suite.artifacts)
 	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 1, len(selected))
+	assert.Equal(suite.T(), 2, len(selected))
 	assert.Condition(suite.T(), func() bool {
 		return expect([]string{"harbor:latest"}, selected)
 	})
@@ -228,7 +255,7 @@ func (suite *RegExpSelectorTestSuite) TestNSExcludes() {
 
 	selected, err = repoExcludes2.Select(suite.artifacts)
 	require.NoError(suite.T(), err)
-	assert.Equal(suite.T(), 1, len(selected))
+	assert.Equal(suite.T(), 2, len(selected))
 	assert.Condition(suite.T(), func() bool {
 		return expect([]string{"harbor:latest"}, selected)
 	})

@@ -49,7 +49,7 @@ func (s *selector) Select(artifacts []*iselector.Candidate) (selected []*iselect
 }
 
 // New is factory method for list selector
-func New(decoration string, pattern string) iselector.Selector {
+func New(decoration string, pattern string, extras string) iselector.Selector {
 	labels := make([]string, 0)
 	if len(pattern) > 0 {
 		labels = append(labels, strings.Split(pattern, ",")...)

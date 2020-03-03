@@ -27,4 +27,4 @@ type Selector interface {
 }
 
 // Factory is factory method to return a selector implementation
-type Factory func(decoration string, pattern string) Selector
+type Factory func(decoration string, pattern string, extras string) Selector

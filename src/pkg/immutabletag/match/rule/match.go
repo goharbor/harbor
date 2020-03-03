@@ -33,7 +33,7 @@ func (rm *Matcher) Match(pid int64, c iselector.Candidate) (bool, error) {
 		}
 		repositorySelector := repositorySelectors[0]
 		selector, err := index.Get(repositorySelector.Kind, repositorySelector.Decoration,
-			repositorySelector.Pattern)
+			repositorySelector.Pattern, "")
 		if err != nil {
 			return false, err
 		}
@@ -53,7 +53,7 @@ func (rm *Matcher) Match(pid int64, c iselector.Candidate) (bool, error) {
 		}
 		tagSelector := r.TagSelectors[0]
 		selector, err = index.Get(tagSelector.Kind, tagSelector.Decoration,
-			tagSelector.Pattern)
+			tagSelector.Pattern, "")
 		if err != nil {
 			return false, err
 		}
