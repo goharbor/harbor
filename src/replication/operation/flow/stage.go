@@ -17,6 +17,7 @@ package flow
 import (
 	"errors"
 	"fmt"
+	"github.com/goharbor/harbor/src/replication/filter"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -110,75 +111,12 @@ func fetchResources(adapter adp.Adapter, policy *model.Policy) ([]*model.Resourc
 
 // apply the filters to the resources and returns the filtered resources
 func filterResources(resources []*model.Resource, filters []*model.Filter) ([]*model.Resource, error) {
-	var res []*model.Resource
-	for _, resource := range resources {
-		match := true
-	FILTER_LOOP:
-		for _, filter := range filters {
-			switch filter.Type {
-			case model.FilterTypeResource:
-				resourceType, ok := filter.Value.(model.ResourceType)
-				if !ok {
-					return nil, fmt.Errorf("%v is not a valid string", filter.Value)
-				}
-				if model.ResourceType(resourceType) != resource.Type {
-					match = false
-					break FILTER_LOOP
-				}
-			case model.FilterTypeName:
-				pattern, ok := filter.Value.(string)
-				if !ok {
-					return nil, fmt.Errorf("%v is not a valid string", filter.Value)
-				}
-				if resource.Metadata == nil {
-					match = false
-					break FILTER_LOOP
-				}
-				m, err := util.Match(pattern, resource.Metadata.Repository.Name)
-				if err != nil {
-					return nil, err
-				}
-				if !m {
-					match = false
-					break FILTER_LOOP
-				}
-			case model.FilterTypeTag:
-				pattern, ok := filter.Value.(string)
-				if !ok {
-					return nil, fmt.Errorf("%v is not a valid string", filter.Value)
-				}
-				if resource.Metadata == nil {
-					match = false
-					break FILTER_LOOP
-				}
-				var versions []string
-				for _, version := range resource.Metadata.Vtags {
-					m, err := util.Match(pattern, version)
-					if err != nil {
-						return nil, err
-					}
-					if m {
-						versions = append(versions, version)
-					}
-				}
-				if len(versions) == 0 {
-					match = false
-					break FILTER_LOOP
-				}
-				// NOTE: the property "Vtags" of the origin resource struct is overrided here
-				resource.Metadata.Vtags = versions
-			case model.FilterTypeLabel:
-				// TODO add support to label
-			default:
-				return nil, fmt.Errorf("unsupportted filter type: %v", filter.Type)
-			}
-		}
-		if match {
-			res = append(res, resource)
-		}
+	resources, err := filter.DoFilterResources(resources, filters)
+	if err != nil {
+		return nil, err
 	}
 	log.Debug("filter resources completed")
-	return res, nil
+	return resources, nil
 }
 
 // assemble the source resources by filling the registry information
@@ -208,7 +146,8 @@ func assembleDestinationResources(resources []*model.Resource,
 				Name:     replaceNamespace(resource.Metadata.Repository.Name, policy.DestNamespace),
 				Metadata: resource.Metadata.Repository.Metadata,
 			},
-			Vtags: resource.Metadata.Vtags,
+			Vtags:     resource.Metadata.Vtags,
+			Artifacts: resource.Metadata.Artifacts,
 		}
 		result = append(result, res)
 	}
@@ -334,16 +273,24 @@ func getResourceName(res *model.Resource) string {
 	if meta == nil {
 		return ""
 	}
-	repositoryName := meta.Repository.Name
-	if len(meta.Vtags) == 0 {
-		return repositoryName
+	n := 0
+	if len(meta.Artifacts) > 0 {
+		for _, artifact := range meta.Artifacts {
+			// contains tags
+			if len(artifact.Tags) > 0 {
+				n += len(artifact.Tags)
+				continue
+			}
+			// contains no tag, count digest
+			if len(artifact.Digest) > 0 {
+				n++
+			}
+		}
+	} else {
+		n = len(meta.Vtags)
 	}
 
-	if len(meta.Vtags) == 1 {
-		return repositoryName + ":[" + meta.Vtags[0] + "]"
-	}
-
-	return fmt.Sprintf("%s:[%s ... %d in total]", repositoryName, meta.Vtags[0], len(meta.Vtags))
+	return fmt.Sprintf("%s [%d in total]", meta.Repository.Name, n)
 }
 
 // repository:c namespace:n -> n/c

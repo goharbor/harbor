@@ -39,7 +39,11 @@ func TestRunOfDeletionFlow(t *testing.T) {
 				Repository: &model.Repository{
 					Name: "library/hello-world",
 				},
-				Vtags: []string{"latest"},
+				Artifacts: []*model.Artifact{
+					{
+						Tags: []string{"latest"},
+					},
+				},
 			},
 		},
 	}

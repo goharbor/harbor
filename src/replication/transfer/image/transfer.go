@@ -60,22 +60,33 @@ func (t *transfer) Transfer(src *model.Resource, dst *model.Resource) error {
 
 	// delete the repository on destination registry
 	if dst.Deleted {
-		return t.delete(&repository{
-			repository: dst.Metadata.GetResourceName(),
-			tags:       dst.Metadata.Vtags,
-		})
+		return t.delete(t.convert(dst))
 	}
 
-	srcRepo := &repository{
-		repository: src.Metadata.GetResourceName(),
-		tags:       src.Metadata.Vtags,
-	}
-	dstRepo := &repository{
-		repository: dst.Metadata.GetResourceName(),
-		tags:       dst.Metadata.Vtags,
-	}
 	// copy the repository from source registry to the destination
-	return t.copy(srcRepo, dstRepo, dst.Override)
+	return t.copy(t.convert(src), t.convert(dst), dst.Override)
+}
+
+func (t *transfer) convert(resource *model.Resource) *repository {
+	repository := &repository{
+		repository: resource.Metadata.Repository.Name,
+	}
+	for _, artifact := range resource.Metadata.Artifacts {
+		if len(artifact.Tags) > 0 {
+			repository.tags = append(repository.tags, artifact.Tags...)
+			continue
+		}
+		// no tags
+		if len(artifact.Digest) > 0 {
+			repository.tags = append(repository.tags, artifact.Digest)
+		}
+	}
+	if len(repository.tags) > 0 {
+		return repository
+	}
+	// fallback to vtags
+	repository.tags = resource.Metadata.Vtags
+	return repository
 }
 
 func (t *transfer) initialize(src *model.Resource, dst *model.Resource) error {

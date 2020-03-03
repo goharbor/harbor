@@ -120,7 +120,6 @@ func (a *adapter) ConvertResourceMetadata(resourceMetadata *model.ResourceMetada
 	metadata := &model.ResourceMetadata{
 		Repository: resourceMetadata.Repository,
 		Vtags:      resourceMetadata.Vtags,
-		Labels:     resourceMetadata.Labels,
 	}
 	return metadata, nil
 }

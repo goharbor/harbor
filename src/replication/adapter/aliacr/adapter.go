@@ -253,8 +253,7 @@ func (a *adapter) FetchImages(filters []*model.Filter) (resources []*model.Resou
 						Repository: &model.Repository{
 							Name: filepath.Join(repo.RepoNamespace, repo.RepoName),
 						},
-						Vtags:  filterTags,
-						Labels: []string{},
+						Vtags: filterTags,
 					},
 				}
 			}

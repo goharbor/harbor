@@ -17,6 +17,7 @@ package harbor
 import (
 	"bytes"
 	"fmt"
+	"github.com/goharbor/harbor/src/replication/filter"
 	"io"
 	"io/ioutil"
 	"mime/multipart"
@@ -25,7 +26,6 @@ import (
 
 	"github.com/goharbor/harbor/src/common/api"
 	common_http "github.com/goharbor/harbor/src/common/http"
-	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 )
 
@@ -47,14 +47,15 @@ type chartVersionMetadata struct {
 }
 
 func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error) {
-	projects, err := a.listCandidateProjects(filters)
+	projects, err := a.listProjects(filters)
 	if err != nil {
 		return nil, err
 	}
+
 	resources := []*model.Resource{}
 	for _, project := range projects {
 		url := fmt.Sprintf("%s/api/%s/chartrepo/%s/charts", a.getURL(), api.APIVersion, project.Name)
-		repositories := []*adp.Repository{}
+		repositories := []*model.Repository{}
 		if err := a.client.Get(url, &repositories); err != nil {
 			return nil, err
 		}
@@ -63,13 +64,12 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 		}
 		for _, repository := range repositories {
 			repository.Name = fmt.Sprintf("%s/%s", project.Name, repository.Name)
-			repository.ResourceType = string(model.ResourceTypeChart)
 		}
-		for _, filter := range filters {
-			if err = filter.DoFilter(&repositories); err != nil {
-				return nil, err
-			}
+		repositories, err = filter.DoFilterRepositories(repositories, filters)
+		if err != nil {
+			return nil, err
 		}
+
 		for _, repository := range repositories {
 			name := strings.SplitN(repository.Name, "/", 2)[1]
 			url := fmt.Sprintf("%s/api/%s/chartrepo/%s/charts/%s", a.getURL(), api.APIVersion, project.Name, name)
@@ -80,25 +80,26 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 			if len(versions) == 0 {
 				continue
 			}
-			vTags := []*adp.VTag{}
+			var artifacts []*model.Artifact
 			for _, version := range versions {
 				var labels []string
 				for _, label := range version.Labels {
 					labels = append(labels, label.Name)
 				}
-				vTags = append(vTags, &adp.VTag{
-					Name:         version.Version,
-					Labels:       labels,
-					ResourceType: string(model.ResourceTypeChart),
+				artifacts = append(artifacts, &model.Artifact{
+					Tags:   []string{version.Version},
+					Labels: labels,
 				})
 			}
-			for _, filter := range filters {
-				if err = filter.DoFilter(&vTags); err != nil {
-					return nil, err
-				}
+			artifacts, err = filter.DoFilterArtifacts(artifacts, filters)
+			if err != nil {
+				return nil, err
+			}
+			if len(artifacts) == 0 {
+				continue
 			}
 
-			for _, vTag := range vTags {
+			for _, artifact := range artifacts {
 				resources = append(resources, &model.Resource{
 					Type:     model.ResourceTypeChart,
 					Registry: a.registry,
@@ -107,7 +108,7 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 							Name:     repository.Name,
 							Metadata: project.Metadata,
 						},
-						Vtags: []string{vTag.Name},
+						Artifacts: []*model.Artifact{artifact},
 					},
 				})
 			}

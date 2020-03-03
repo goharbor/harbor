@@ -77,8 +77,8 @@ func TestFetchCharts(t *testing.T) {
 	assert.Equal(t, 2, len(resources))
 	assert.Equal(t, model.ResourceTypeChart, resources[0].Type)
 	assert.Equal(t, "library/harbor", resources[0].Metadata.Repository.Name)
-	assert.Equal(t, 1, len(resources[0].Metadata.Vtags))
-	assert.Equal(t, "1.0", resources[0].Metadata.Vtags[0])
+	assert.Equal(t, 1, len(resources[0].Metadata.Artifacts))
+	assert.Equal(t, "1.0", resources[0].Metadata.Artifacts[0].Tags[0])
 	// not nil filter
 	filters := []*model.Filter{
 		{
@@ -95,8 +95,8 @@ func TestFetchCharts(t *testing.T) {
 	require.Equal(t, 1, len(resources))
 	assert.Equal(t, model.ResourceTypeChart, resources[0].Type)
 	assert.Equal(t, "library/harbor", resources[0].Metadata.Repository.Name)
-	assert.Equal(t, 1, len(resources[0].Metadata.Vtags))
-	assert.Equal(t, "1.0", resources[0].Metadata.Vtags[0])
+	assert.Equal(t, 1, len(resources[0].Metadata.Artifacts))
+	assert.Equal(t, "1.0", resources[0].Metadata.Artifacts[0].Tags[0])
 }
 
 func TestChartExist(t *testing.T) {

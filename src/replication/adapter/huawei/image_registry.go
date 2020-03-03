@@ -151,7 +151,6 @@ func parseRepoQueryResultToResource(repo hwRepoQueryResult) *model.Resource {
 	resource.Metadata = &model.ResourceMetadata{
 		Repository: repository,
 		Vtags:      repo.Tags,
-		Labels:     []string{},
 	}
 	resource.Deleted = false
 	resource.Override = false
