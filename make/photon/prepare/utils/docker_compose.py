@@ -19,12 +19,12 @@ def prepare_docker_compose(configs, with_clair, with_notary, with_chartmuseum):
 
     rendering_variables = {
         'version': VERSION_TAG,
-        'reg_version': "{}-{}".format(REGISTRY_VERSION, VERSION_TAG),
+        'reg_version': VERSION_TAG,
         'redis_version': VERSION_TAG,
-        'notary_version': '{}-{}'.format(NOTARY_VERSION, VERSION_TAG),
-        'clair_version': '{}-{}'.format(CLAIR_VERSION, VERSION_TAG),
-        'clair_adapter_version': '{}-{}'.format(CLAIR_ADAPTER_VERSION, VERSION_TAG),
-        'chartmuseum_version': '{}-{}'.format(CHARTMUSEUM_VERSION, VERSION_TAG),
+        'notary_version': VERSION_TAG,
+        'clair_version': VERSION_TAG,
+        'clair_adapter_version': VERSION_TAG,
+        'chartmuseum_version': VERSION_TAG,
         'data_volume': configs['data_volume'],
         'log_location': configs['log_location'],
         'protocol': configs['protocol'],
