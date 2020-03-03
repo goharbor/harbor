@@ -21,7 +21,6 @@ import (
 	"time"
 
 	"github.com/goharbor/harbor/src/pkg/scan/rest/auth"
-
 	"github.com/pkg/errors"
 )
 

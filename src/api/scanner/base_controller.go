@@ -180,7 +180,7 @@ func (bc *basicController) SetRegistrationByProject(projectID int64, registratio
 }
 
 // GetRegistrationByProject ...
-func (bc *basicController) GetRegistrationByProject(projectID int64) (*scanner.Registration, error) {
+func (bc *basicController) GetRegistrationByProject(projectID int64, options ...Option) (*scanner.Registration, error) {
 	if projectID == 0 {
 		return nil, errors.New("invalid project ID")
 	}
@@ -222,18 +222,22 @@ func (bc *basicController) GetRegistrationByProject(projectID int64) (*scanner.R
 		return nil, nil
 	}
 
-	// Get metadata of the configured registration
-	meta, err := bc.Ping(registration)
-	if err != nil {
-		// Not blocked, just logged it
-		log.Error(errors.Wrap(err, "api controller: get project scanner"))
-		registration.Health = statusUnhealthy
-	} else {
-		registration.Health = statusHealthy
-		// Fill in some metadata
-		registration.Adapter = meta.Scanner.Name
-		registration.Vendor = meta.Scanner.Vendor
-		registration.Version = meta.Scanner.Version
+	opts := newOptions(options...)
+
+	if opts.Ping {
+		// Get metadata of the configured registration
+		meta, err := bc.Ping(registration)
+		if err != nil {
+			// Not blocked, just logged it
+			log.Error(errors.Wrap(err, "api controller: get project scanner"))
+			registration.Health = statusUnhealthy
+		} else {
+			registration.Health = statusHealthy
+			// Fill in some metadata
+			registration.Adapter = meta.Scanner.Name
+			registration.Vendor = meta.Scanner.Vendor
+			registration.Version = meta.Scanner.Version
+		}
 	}
 
 	return registration, err

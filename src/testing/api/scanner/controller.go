@@ -3,8 +3,10 @@
 package scanner
 
 import (
-	q "github.com/goharbor/harbor/src/pkg/q"
+	apiscanner "github.com/goharbor/harbor/src/api/scanner"
 	mock "github.com/stretchr/testify/mock"
+
+	q "github.com/goharbor/harbor/src/pkg/q"
 
 	scanner "github.com/goharbor/harbor/src/pkg/scan/dao/scanner"
 
@@ -106,13 +108,20 @@ func (_m *Controller) GetRegistration(registrationUUID string) (*scanner.Registr
 	return r0, r1
 }
 
-// GetRegistrationByProject provides a mock function with given fields: projectID
-func (_m *Controller) GetRegistrationByProject(projectID int64) (*scanner.Registration, error) {
-	ret := _m.Called(projectID)
+// GetRegistrationByProject provides a mock function with given fields: projectID, options
+func (_m *Controller) GetRegistrationByProject(projectID int64, options ...apiscanner.Option) (*scanner.Registration, error) {
+	_va := make([]interface{}, len(options))
+	for _i := range options {
+		_va[_i] = options[_i]
+	}
+	var _ca []interface{}
+	_ca = append(_ca, projectID)
+	_ca = append(_ca, _va...)
+	ret := _m.Called(_ca...)
 
 	var r0 *scanner.Registration
-	if rf, ok := ret.Get(0).(func(int64) *scanner.Registration); ok {
-		r0 = rf(projectID)
+	if rf, ok := ret.Get(0).(func(int64, ...apiscanner.Option) *scanner.Registration); ok {
+		r0 = rf(projectID, options...)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(*scanner.Registration)
@@ -120,8 +129,8 @@ func (_m *Controller) GetRegistrationByProject(projectID int64) (*scanner.Regist
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func(int64) error); ok {
-		r1 = rf(projectID)
+	if rf, ok := ret.Get(1).(func(int64, ...apiscanner.Option) error); ok {
+		r1 = rf(projectID, options...)
 	} else {
 		r1 = ret.Error(1)
 	}
