@@ -1,8 +1,8 @@
 package rule
 
 import (
-	"github.com/goharbor/harbor/src/pkg/art"
-	"github.com/goharbor/harbor/src/pkg/art/selectors/index"
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/pkg/artifactselector/selectors/index"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
@@ -14,19 +14,19 @@ type Matcher struct {
 }
 
 // Match ...
-func (rm *Matcher) Match(pid int64, c art.Candidate) (bool, error) {
+func (rm *Matcher) Match(pid int64, c artifactselector.Candidate) (bool, error) {
 	if err := rm.getImmutableRules(pid); err != nil {
 		return false, err
 	}
 
-	cands := []*art.Candidate{&c}
+	cands := []*artifactselector.Candidate{&c}
 	for _, r := range rm.rules {
 		if r.Disabled {
 			continue
 		}
 
 		// match repositories according to the repository selectors
-		var repositoryCandidates []*art.Candidate
+		var repositoryCandidates []*artifactselector.Candidate
 		repositorySelectors := r.ScopeSelectors["repository"]
 		if len(repositorySelectors) < 1 {
 			continue
@@ -46,7 +46,7 @@ func (rm *Matcher) Match(pid int64, c art.Candidate) (bool, error) {
 		}
 
 		// match tag according to the tag selectors
-		var tagCandidates []*art.Candidate
+		var tagCandidates []*artifactselector.Candidate
 		tagSelectors := r.TagSelectors
 		if len(tagSelectors) < 0 {
 			continue

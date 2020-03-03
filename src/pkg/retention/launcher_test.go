@@ -18,7 +18,7 @@ import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/job"
 	"github.com/goharbor/harbor/src/common/models"
-	_ "github.com/goharbor/harbor/src/pkg/art/selectors/doublestar"
+	_ "github.com/goharbor/harbor/src/pkg/artifactselector/selectors/doublestar"
 	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/retention/policy"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"

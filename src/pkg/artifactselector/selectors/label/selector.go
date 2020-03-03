@@ -15,9 +15,8 @@
 package label
 
 import (
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"strings"
-
-	"github.com/goharbor/harbor/src/pkg/art"
 )
 
 const (
@@ -39,7 +38,7 @@ type selector struct {
 }
 
 // Select candidates by the labels
-func (s *selector) Select(artifacts []*art.Candidate) (selected []*art.Candidate, err error) {
+func (s *selector) Select(artifacts []*artifactselector.Candidate) (selected []*artifactselector.Candidate, err error) {
 	for _, art := range artifacts {
 		if isMatched(s.labels, art.Labels, s.decoration) {
 			selected = append(selected, art)
@@ -50,7 +49,7 @@ func (s *selector) Select(artifacts []*art.Candidate) (selected []*art.Candidate
 }
 
 // New is factory method for list selector
-func New(decoration string, pattern string) art.Selector {
+func New(decoration string, pattern string) artifactselector.Selector {
 	labels := make([]string, 0)
 	if len(pattern) > 0 {
 		labels = append(labels, strings.Split(pattern, ",")...)

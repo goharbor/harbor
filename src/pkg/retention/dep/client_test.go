@@ -17,13 +17,13 @@ package dep
 import (
 	modelsv2 "github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/tag"
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"testing"
 
 	"github.com/goharbor/harbor/src/chartserver"
 	jmodels "github.com/goharbor/harbor/src/common/job/models"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/testing/clients"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -82,20 +82,20 @@ type clientTestSuite struct {
 func (c *clientTestSuite) TestGetCandidates() {
 	client := &basicClient{}
 	client.coreClient = &fakeCoreClient{}
-	var repository *art.Repository
+	var repository *artifactselector.Repository
 	// nil repository
 	candidates, err := client.GetCandidates(repository)
 	require.NotNil(c.T(), err)
 
 	// image repository
-	repository = &art.Repository{}
-	repository.Kind = art.Image
+	repository = &artifactselector.Repository{}
+	repository.Kind = artifactselector.Image
 	repository.Namespace = "library"
 	repository.Name = "hello-world"
 	candidates, err = client.GetCandidates(repository)
 	require.Nil(c.T(), err)
 	assert.Equal(c.T(), 1, len(candidates))
-	assert.Equal(c.T(), art.Image, candidates[0].Kind)
+	assert.Equal(c.T(), artifactselector.Image, candidates[0].Kind)
 	assert.Equal(c.T(), "library", candidates[0].Namespace)
 	assert.Equal(c.T(), "hello-world", candidates[0].Repository)
 	assert.Equal(c.T(), "latest", candidates[0].Tags[0])
@@ -118,14 +118,14 @@ func (c *clientTestSuite) TestDelete() {
 	client := &basicClient{}
 	client.coreClient = &fakeCoreClient{}
 
-	var candidate *art.Candidate
+	var candidate *artifactselector.Candidate
 	// nil candidate
 	err := client.Delete(candidate)
 	require.NotNil(c.T(), err)
 
 	// image
-	candidate = &art.Candidate{}
-	candidate.Kind = art.Image
+	candidate = &artifactselector.Candidate{}
+	candidate.Kind = artifactselector.Image
 	err = client.Delete(candidate)
 	require.Nil(c.T(), err)
 

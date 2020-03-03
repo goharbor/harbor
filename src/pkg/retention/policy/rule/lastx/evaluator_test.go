@@ -2,10 +2,10 @@ package lastx
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/art"
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -38,7 +38,7 @@ func (e *EvaluatorTestSuite) TestNew() {
 
 func (e *EvaluatorTestSuite) TestProcess() {
 	now := time.Now().UTC()
-	data := []*art.Candidate{
+	data := []*artifactselector.Candidate{
 		{PushedTime: now.Add(time.Duration(1*-24) * time.Hour).Unix()},
 		{PushedTime: now.Add(time.Duration(2*-24) * time.Hour).Unix()},
 		{PushedTime: now.Add(time.Duration(3*-24) * time.Hour).Unix()},

@@ -16,11 +16,11 @@ package action
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
+	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
 	"testing"
 	"time"
 
-	"github.com/goharbor/harbor/src/pkg/art"
 	immumodel "github.com/goharbor/harbor/src/pkg/immutabletag/model"
 	"github.com/goharbor/harbor/src/pkg/retention/dep"
 	"github.com/pkg/errors"
@@ -34,7 +34,7 @@ type TestPerformerSuite struct {
 	suite.Suite
 
 	oldClient dep.Client
-	all       []*art.Candidate
+	all       []*artifactselector.Candidate
 }
 
 // TestPerformer is the entry of the TestPerformerSuite
@@ -44,7 +44,7 @@ func TestPerformer(t *testing.T) {
 
 // SetupSuite ...
 func (suite *TestPerformerSuite) SetupSuite() {
-	suite.all = []*art.Candidate{
+	suite.all = []*artifactselector.Candidate{
 		{
 			Namespace:  "library",
 			Repository: "harbor",
@@ -81,7 +81,7 @@ func (suite *TestPerformerSuite) TestPerform() {
 		all: suite.all,
 	}
 
-	candidates := []*art.Candidate{
+	candidates := []*artifactselector.Candidate{
 		{
 			Namespace:  "library",
 			Repository: "harbor",
@@ -103,7 +103,7 @@ func (suite *TestPerformerSuite) TestPerform() {
 
 // TestPerform tests Perform action
 func (suite *TestPerformerSuite) TestPerformImmutable() {
-	all := []*art.Candidate{
+	all := []*artifactselector.Candidate{
 		{
 			NamespaceID: 1,
 			Namespace:   "library",
@@ -177,7 +177,7 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 		assert.NoError(suite.T(), immutabletag.ImmuCtr.DeleteImmutableRule(imid))
 	}()
 
-	candidates := []*art.Candidate{
+	candidates := []*artifactselector.Candidate{
 		{
 			NamespaceID: 1,
 			Namespace:   "library",
@@ -200,7 +200,7 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 			require.Equal(suite.T(), "dev", r.Target.Tags[0])
 		} else if r.Target.Digest == "d2" {
 			require.Error(suite.T(), r.Error)
-			require.IsType(suite.T(), (*art.ImmutableError)(nil), r.Error)
+			require.IsType(suite.T(), (*artifactselector.ImmutableError)(nil), r.Error)
 		} else {
 			require.Fail(suite.T(), "should not delete "+r.Target.Hash())
 		}
@@ -213,16 +213,16 @@ func (suite *TestPerformerSuite) TestPerformImmutable() {
 type fakeRetentionClient struct{}
 
 // GetCandidates ...
-func (frc *fakeRetentionClient) GetCandidates(repo *art.Repository) ([]*art.Candidate, error) {
+func (frc *fakeRetentionClient) GetCandidates(repo *artifactselector.Repository) ([]*artifactselector.Candidate, error) {
 	return nil, errors.New("not implemented")
 }
 
 // Delete ...
-func (frc *fakeRetentionClient) Delete(candidate *art.Candidate) error {
+func (frc *fakeRetentionClient) Delete(candidate *artifactselector.Candidate) error {
 	return nil
 }
 
 // DeleteRepository ...
-func (frc *fakeRetentionClient) DeleteRepository(repo *art.Repository) error {
+func (frc *fakeRetentionClient) DeleteRepository(repo *artifactselector.Repository) error {
 	panic("implement me")
 }
