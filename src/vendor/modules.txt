@@ -189,10 +189,14 @@ github.com/google/go-querystring/query
 github.com/google/gofuzz
 # github.com/google/uuid v1.1.1
 github.com/google/uuid
+# github.com/gorilla/csrf v1.6.2
+github.com/gorilla/csrf
 # github.com/gorilla/handlers v1.3.0
 github.com/gorilla/handlers
 # github.com/gorilla/mux v1.7.2
 github.com/gorilla/mux
+# github.com/gorilla/securecookie v1.1.1
+github.com/gorilla/securecookie
 # github.com/graph-gophers/dataloader v5.0.0+incompatible
 github.com/graph-gophers/dataloader
 # github.com/jmespath/go-jmespath v0.0.0-20180206201540-c2b33e8439af

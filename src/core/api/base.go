@@ -83,10 +83,6 @@ func (b *BaseController) Prepare() {
 		return
 	}
 	b.ProjectMgr = pm
-
-	if !filter.ReqCarriesSession(b.Ctx.Request) {
-		b.EnableXSRF = false
-	}
 }
 
 // RequireAuthenticated returns true when the request is authenticated
@@ -96,7 +92,6 @@ func (b *BaseController) RequireAuthenticated() bool {
 		b.SendError(internal_errors.UnauthorizedError(errors.New("Unauthorized")))
 		return false
 	}
-
 	return true
 }
 

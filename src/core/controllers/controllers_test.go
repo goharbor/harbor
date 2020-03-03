@@ -16,6 +16,7 @@ package controllers
 import (
 	"context"
 	"fmt"
+	"github.com/goharbor/harbor/src/core/middlewares"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -38,7 +39,6 @@ func init() {
 	dir := filepath.Dir(file)
 	dir = filepath.Join(dir, "..")
 	apppath, _ := filepath.Abs(dir)
-	beego.BConfig.WebConfig.EnableXSRF = true
 	beego.BConfig.WebConfig.Session.SessionOn = true
 	beego.TestBeegoInit(apppath)
 	beego.AddTemplateExt("htm")
@@ -100,30 +100,38 @@ func TestRedirectForOIDC(t *testing.T) {
 func TestAll(t *testing.T) {
 	config.InitWithSettings(utilstest.GetUnitTestConfig())
 	assert := assert.New(t)
+	handler := http.Handler(beego.BeeApp.Handlers)
+	mws := middlewares.MiddleWares()
+	for i := len(mws) - 1; i >= 0; i-- {
+		if mws[i] == nil {
+			continue
+		}
+		handler = mws[i](handler)
+	}
 
 	r, _ := http.NewRequest("POST", "/c/login", nil)
 	w := httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(http.StatusUnprocessableEntity, w.Code, "'/c/login' httpStatusCode should be 422")
+	handler.ServeHTTP(w, r)
+	assert.Equal(http.StatusForbidden, w.Code, "'/c/login' httpStatusCode should be 403")
 
 	r, _ = http.NewRequest("GET", "/c/log_out", nil)
 	w = httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, r)
+	handler.ServeHTTP(w, r)
 	assert.Equal(int(200), w.Code, "'/c/log_out' httpStatusCode should be 200")
 	assert.Equal(true, strings.Contains(fmt.Sprintf("%s", w.Body), ""), "http respond should be empty")
 
 	r, _ = http.NewRequest("POST", "/c/reset", nil)
 	w = httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(http.StatusUnprocessableEntity, w.Code, "'/c/reset' httpStatusCode should be 422")
+	handler.ServeHTTP(w, r)
+	assert.Equal(http.StatusForbidden, w.Code, "'/c/reset' httpStatusCode should be 403")
 
 	r, _ = http.NewRequest("POST", "/c/userExists", nil)
 	w = httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, r)
-	assert.Equal(http.StatusUnprocessableEntity, w.Code, "'/c/userExists' httpStatusCode should be 422")
+	handler.ServeHTTP(w, r)
+	assert.Equal(http.StatusForbidden, w.Code, "'/c/userExists' httpStatusCode should be 403")
 
 	r, _ = http.NewRequest("GET", "/c/sendEmail", nil)
 	w = httptest.NewRecorder()
-	beego.BeeApp.Handlers.ServeHTTP(w, r)
+	handler.ServeHTTP(w, r)
 	assert.Equal(int(400), w.Code, "'/c/sendEmail' httpStatusCode should be 400")
 }

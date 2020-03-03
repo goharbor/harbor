@@ -15,6 +15,7 @@
 package middlewares
 
 import (
+	"github.com/goharbor/harbor/src/server/middleware/csrf"
 	"github.com/goharbor/harbor/src/server/middleware/readonly"
 	"net/http"
 	"path"
@@ -71,6 +72,7 @@ func legacyAPISkipper(r *http.Request) bool {
 // MiddleWares returns global middlewares
 func MiddleWares() []beego.MiddleWare {
 	return []beego.MiddleWare{
+		csrf.Middleware(),
 		requestid.Middleware(),
 		readonly.Middleware(readonlySkippers...),
 		orm.Middleware(legacyAPISkipper),
