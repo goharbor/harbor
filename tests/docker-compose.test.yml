@@ -1,7 +1,7 @@
 version: '2'
 services:
   registry:
-    image: goharbor/registry-photon:__reg_version__
+    image: goharbor/registry-photon:__version__
     restart: always
     volumes:
       - /data/registry:/storage

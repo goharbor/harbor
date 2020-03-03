@@ -260,7 +260,8 @@ DOCKERSAVE_PARA=$(DOCKER_IMAGE_NAME_PREPARE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_JOBSERVICE):$(VERSIONTAG) \
 		$(DOCKERIMAGENAME_REGCTL):$(VERSIONTAG) \
 		goharbor/redis-photon:$(REDISVERSION) \
-		goharbor/nginx-photon:$(NGINXVERSION) goharbor/registry-photon:$(REGISTRYVERSION)-$(VERSIONTAG)
+		goharbor/nginx-photon:$(NGINXVERSION) \
+		goharbor/registry-photon:$(VERSIONTAG)
 
 PACKAGE_OFFLINE_PARA=-zcvf harbor-offline-installer-$(PKGVERSIONTAG).tgz \
 					$(HARBORPKG)/$(DOCKERIMGFILE).$(VERSIONTAG).tar.gz \
@@ -279,20 +280,20 @@ PACKAGE_ONLINE_PARA=-zcvf harbor-online-installer-$(PKGVERSIONTAG).tgz \
 DOCKERCOMPOSE_FILE_OPT=-f $(DOCKERCOMPOSEFILEPATH)/$(DOCKERCOMPOSEFILENAME)
 
 ifeq ($(NOTARYFLAG), true)
-	DOCKERSAVE_PARA+= goharbor/notary-server-photon:$(NOTARYVERSION)-$(VERSIONTAG) goharbor/notary-signer-photon:$(NOTARYVERSION)-$(VERSIONTAG)
+	DOCKERSAVE_PARA+= goharbor/notary-server-photon:$(VERSIONTAG) goharbor/notary-signer-photon:$(VERSIONTAG)
 endif
 ifeq ($(CLAIRFLAG), true)
-	DOCKERSAVE_PARA+= goharbor/clair-photon:$(CLAIRVERSION)-$(VERSIONTAG) goharbor/clair-adapter-photon:$(CLAIRADAPTERVERSION)-$(VERSIONTAG)
+	DOCKERSAVE_PARA+= goharbor/clair-photon:$(VERSIONTAG) goharbor/clair-adapter-photon:$(VERSIONTAG)
 endif
 ifeq ($(TRIVYFLAG), true)
-	DOCKERSAVE_PARA+= goharbor/trivy-adapter-photon:$(TRIVYADAPTERVERSION)-$(VERSIONTAG)
+	DOCKERSAVE_PARA+= goharbor/trivy-adapter-photon:$(VERSIONTAG)
 endif
 ifeq ($(MIGRATORFLAG), true)
 	DOCKERSAVE_PARA+= goharbor/harbor-migrator:$(MIGRATORVERSION)
 endif
 # append chartmuseum parameters if set
 ifeq ($(CHARTFLAG), true)
-	DOCKERSAVE_PARA+= $(DOCKERIMAGENAME_CHART_SERVER):$(CHARTMUSEUMVERSION)-$(VERSIONTAG)
+	DOCKERSAVE_PARA+= $(DOCKERIMAGENAME_CHART_SERVER):$(VERSIONTAG)
 endif
 
 SWAGGER_IMAGENAME=goharbor/swagger
