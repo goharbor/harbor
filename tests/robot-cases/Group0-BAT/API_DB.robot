@@ -68,4 +68,6 @@ Test Case - Tag Retention
     Harbor API Test  ./tests/apitests/python/test_retention.py
 Test Case - Health Check
     Harbor API Test  ./tests/apitests/python/test_health_check.py
+Test Case - Push Index By Docker Manifest
+    Harbor API Test  ./tests/apitests/python/test_push_index_by_docker_manifest.py
 
