@@ -137,7 +137,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 			// filter projects according to the project selectors
 			for _, projectSelector := range rule.ScopeSelectors["project"] {
 				selector, err := index.Get(projectSelector.Kind, projectSelector.Decoration,
-					projectSelector.Pattern)
+					projectSelector.Pattern, "")
 				if err != nil {
 					return 0, launcherError(err)
 				}
@@ -166,7 +166,7 @@ func (l *launcher) Launch(ply *policy.Metadata, executionID int64, isDryRun bool
 		// filter repositories according to the repository selectors
 		for _, repositorySelector := range rule.ScopeSelectors["repository"] {
 			selector, err := index.Get(repositorySelector.Kind, repositorySelector.Decoration,
-				repositorySelector.Pattern)
+				repositorySelector.Pattern, repositorySelector.Extras)
 			if err != nil {
 				return 0, launcherError(err)
 			}

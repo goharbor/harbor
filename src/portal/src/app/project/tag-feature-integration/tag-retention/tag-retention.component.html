@@ -44,6 +44,9 @@
                             <span>{{'TAG_RETENTION.LOWER_TAGS' | translate}}</span>
                             <span>{{getI18nKey(rule?.tag_selectors[0]?.decoration)|translate}}</span>
                             <span>{{formatPattern(rule?.tag_selectors[0]?.pattern)}}</span>
+                            <span class="color-97">{{ showUntagged(rule?.tag_selectors[0]?.extras) ? ('TAG_RETENTION.WITH_CONDITION' | translate) :''}}</span>
+                            <span>{{ showUntagged(rule?.tag_selectors[0]?.extras) ? ( 'TAG_RETENTION.UNTAGGED' | translate ) : ''}}</span>
+
                             <ng-container *ngIf="rule?.tag_selectors[1]?.pattern && rule?.tag_selectors[1]?.pattern">
                                 <span class="color-97">{{'TAG_RETENTION.AND' | translate}}</span>
                                 <span>{{'TAG_RETENTION.LOWER_LABELS' | translate}}</span>

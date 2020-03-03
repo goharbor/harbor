@@ -69,7 +69,7 @@ func Register(kind string, decorations []string, factory selector.Factory) {
 }
 
 // Get selector with the provided kind and decoration
-func Get(kind, decoration, pattern string) (selector.Selector, error) {
+func Get(kind, decoration, pattern, extras string) (selector.Selector, error) {
 	if len(kind) == 0 || len(decoration) == 0 {
 		return nil, errors.New("empty selector kind or decoration")
 	}
@@ -83,7 +83,7 @@ func Get(kind, decoration, pattern string) (selector.Selector, error) {
 	for _, dec := range item.Meta.Decorations {
 		if dec == decoration {
 			factory := item.Factory
-			return factory(decoration, pattern), nil
+			return factory(decoration, pattern, extras), nil
 		}
 	}
 

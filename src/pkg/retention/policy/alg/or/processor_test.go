@@ -93,8 +93,8 @@ func (suite *ProcessorTestSuite) TestProcess() {
 	params = append(params, &alg.Parameter{
 		Evaluator: lastx.New(lastxParams),
 		Selectors: []selector.Selector{
-			doublestar.New(doublestar.Matches, "*dev*"),
-			label.New(label.With, "L1,L2"),
+			doublestar.New(doublestar.Matches, "*dev*", ""),
+			label.New(label.With, "L1,L2", ""),
 		},
 		Performer: perf,
 	})
@@ -104,7 +104,7 @@ func (suite *ProcessorTestSuite) TestProcess() {
 	params = append(params, &alg.Parameter{
 		Evaluator: latestps.New(latestKParams),
 		Selectors: []selector.Selector{
-			label.New(label.With, "L3"),
+			label.New(label.With, "L3", ""),
 		},
 		Performer: perf,
 	})
@@ -134,8 +134,8 @@ func (suite *ProcessorTestSuite) TestProcess2() {
 	params = append(params, &alg.Parameter{
 		Evaluator: always.New(alwaysParams),
 		Selectors: []selector.Selector{
-			doublestar.New(doublestar.Matches, "latest"),
-			label.New(label.With, ""),
+			doublestar.New(doublestar.Matches, "latest", ""),
+			label.New(label.With, "", ""),
 		},
 		Performer: perf,
 	})

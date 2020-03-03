@@ -250,7 +250,7 @@
         "ROBOT_ACCOUNTS": "机器人账户",
         "WEBHOOKS": "Webhooks",
         "IMMUTABLE_TAG": "不可变的Tag",
-        "TAG_STRATEGY": "Tag 策略"
+        "POLICY": "策略"
     },
     "PROJECT_CONFIG": {
         "REGISTRY": "项目仓库",
@@ -1246,9 +1246,11 @@
         "IN_REPOSITORIES": "应用到仓库",
         "REP_SEPARATOR": "使用逗号分隔repos,repo*和**",
         "TAGS": "Tags",
+        "INCLUDE_UNTAGGED": " 不含tag 的 artifacts",
+        "UNTAGGED": " 不含tag",
         "MATCHES_TAGS": "匹配tags",
         "MATCHES_EXCEPT_TAGS": "排除tags",
-        "TAG_SEPARATOR": "使用逗号分割tags,tag*和**",
+        "TAG_SEPARATOR": "输入多个逗号分隔的Tags, Tag*或**。可通过勾选将未加 Tag 的镜像作为此策略的一部分。",
         "LABELS": "标签",
         "MATCHES_LABELS": "匹配标签",
         "MATCHES_EXCEPT_LABELS": "排除标签",
