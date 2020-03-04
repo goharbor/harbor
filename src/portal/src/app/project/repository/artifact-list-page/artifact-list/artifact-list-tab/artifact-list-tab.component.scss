@@ -389,3 +389,27 @@ clr-datagrid {
   margin-left: -3px;
 }
 
+.execution-select {
+  height: 24px;
+  display: flex;
+  justify-content: flex-end;
+  .filter-tag {
+      float: left;
+      margin-top: 8px;
+      .clr-form-control {
+        margin-top: 0;
+      }
+  }
+}
+.list-filter {
+  width:7rem;
+  margin-left: 0.8rem;
+  padding: 0;
+  li {
+    padding-left: 1rem;
+    &:hover {
+      background-color: #eee;
+      
+    }
+  }
+}
