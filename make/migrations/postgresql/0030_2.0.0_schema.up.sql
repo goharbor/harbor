@@ -173,3 +173,14 @@ CREATE TABLE artifact_2
   push_time     timestamp,
   CONSTRAINT unique_artifact_2 UNIQUE (project_id, repo, tag)
 );
+
+CREATE TABLE audit_log
+(
+ id             SERIAL PRIMARY KEY NOT NULL,
+ project_id     int NOT NULL,
+ operation      varchar(20) NOT NULL,
+ resource_type  varchar(255) NOT NULL,
+ resource       varchar(1024) NOT NULL,
+ username       varchar(255) NOT NULL,
+ op_time        timestamp default CURRENT_TIMESTAMP
+);

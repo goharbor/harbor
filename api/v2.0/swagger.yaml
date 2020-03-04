@@ -499,6 +499,68 @@ paths:
           $ref: '#/responses/409'
         '500':
           $ref: '#/responses/500'
+  /audit-logs:
+    get:
+      summary: Get recent logs of the projects which the user is a member of
+      description: |
+        This endpoint let user see the recent operation logs of the projects which he is member of
+      tags:
+        - auditlog
+      operationId: listAuditLogs
+      parameters:
+        - $ref: '#/parameters/requestId'
+        - $ref: '#/parameters/page'
+        - $ref: '#/parameters/pageSize'
+        - name: username
+          in: query
+          type: string
+          required: false
+          description: Username of the operator.
+        - name: resource
+          in: query
+          type: string
+          required: false
+          description: The identity of resource
+        - name: resource_type
+          in: query
+          type: string
+          required: false
+          description: The type of resource, artifact/tag/repository
+        - name: operation
+          in: query
+          type: string
+          required: false
+          description: The operation, create/delete
+        - name: begin_timestamp
+          in: query
+          type: string
+          required: false
+          description: The begin timestamp
+        - name: end_timestamp
+          in: query
+          type: string
+          required: false
+          description: The end timestamp
+      responses:
+        '200':
+          description: Success
+          headers:
+            X-Total-Count:
+              description: The total count of auditlogs
+              type: integer
+            Link:
+              description: Link refers to the previous page and next page
+              type: string
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/AuditLog'
+        '400':
+          $ref: '#/responses/400'
+        '401':
+          $ref: '#/responses/401'
+        '500':
+          $ref: '#/responses/500'
 parameters:
   requestId:
     name: X-Request-Id
@@ -919,3 +981,24 @@ definitions:
         example:
           'Critical': 5
           'High': 5
+  AuditLog:
+    type: object
+    properties:
+      id:
+        type: integer
+        description: The ID of the audit log entry.
+      username:
+        type: string
+        description: Username of the user in this log entry.
+      resource:
+        type: string
+        description: Name of the repository in this log entry.
+      resource_type:
+        type: string
+        description: Tag of the repository in this log entry.
+      operation:
+        type: string
+        description: The operation against the repository in this log entry.
+      op_time:
+        type: string
+        description: The time when this operation is triggered.
