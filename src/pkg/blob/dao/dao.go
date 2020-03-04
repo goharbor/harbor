@@ -254,7 +254,7 @@ func (d *dao) DeleteProjectBlob(ctx context.Context, projectID int64, blobIDs ..
 		return nil
 	}
 
-	kw := q.KeyWords{"blob_id__in": blobIDs}
+	kw := q.KeyWords{"blob_id__in": &q.RawValue{Value: blobIDs}}
 	qs, err := orm.QuerySetter(ctx, &models.ProjectBlob{}, q.New(kw))
 	if err != nil {
 		return err

@@ -53,22 +53,24 @@ func (r *repositoryAPI) ListRepositories(ctx context.Context, params operation.L
 	if err != nil {
 		return r.SendError(ctx, err)
 	}
+
 	// set query
-	query := &q.Query{
-		Keywords: map[string]interface{}{
-			"ProjectID": project.ProjectID,
-		},
+	var query *q.Query
+	if params.Q != nil {
+		query, err = q.Build(*params.Q)
+		if err != nil {
+			return r.SendError(ctx, err)
+		}
 	}
-	// TODO support fuzzy match
-	if params.Name != nil {
-		query.Keywords["Name"] = *(params.Name)
+
+	if query == nil {
+		query = &q.Query{Keywords: map[string]interface{}{}}
 	}
-	if params.Page != nil {
-		query.PageNumber = *(params.Page)
+	if query.Keywords == nil {
+		query.Keywords = map[string]interface{}{}
 	}
-	if params.PageSize != nil {
-		query.PageSize = *(params.PageSize)
-	}
+	query.Keywords["ProjectID"] = project.ProjectID
+
 	total, err := r.repoCtl.Count(ctx, query)
 	if err != nil {
 		return r.SendError(ctx, err)

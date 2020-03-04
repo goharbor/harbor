@@ -47,3 +47,31 @@ func Copy(query *Query) *Query {
 	}
 	return q
 }
+
+// Range query
+type Range struct {
+	Min interface{}
+	Max interface{}
+}
+
+// AndList query
+type AndList struct {
+	Values []interface{}
+}
+
+// OrList query
+type OrList struct {
+	Values []interface{}
+}
+
+// FuzzyMatchValue query
+type FuzzyMatchValue struct {
+	Value interface{}
+}
+
+// RawValue indicates that the column checking shouldn't be applied to this query item
+// when build the ORM query setter. It can be used to support any query filters of Beego
+// ORM. e.g. &q.Query{Keywords:map[string]interface{}{"name__startswith": "slene""}}
+type RawValue struct {
+	Value interface{}
+}

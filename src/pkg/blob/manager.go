@@ -126,7 +126,7 @@ func (m *manager) List(ctx context.Context, params ListParams) ([]*Blob, error) 
 	}
 
 	if len(params.BlobDigests) > 0 {
-		kw["digest__in"] = params.BlobDigests
+		kw["digest__in"] = &q.RawValue{Value: params.BlobDigests}
 	}
 
 	blobs, err := m.dao.ListBlobs(ctx, q.New(kw))
