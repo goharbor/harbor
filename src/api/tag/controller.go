@@ -5,6 +5,7 @@ import (
 	"github.com/goharbor/harbor/src/common/utils"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
@@ -88,18 +89,23 @@ func (c *controller) Ensure(ctx context.Context, repositoryID, artifactID int64,
 		tag.PushTime = time.Now()
 		return c.Update(ctx, tag, "ArtifactID", "PushTime")
 	}
+
 	// the tag doesn't exist under the repository, create it
-	tag := &Tag{}
-	tag.RepositoryID = repositoryID
-	tag.ArtifactID = artifactID
-	tag.Name = name
-	tag.PushTime = time.Now()
-	_, err = c.Create(ctx, tag)
-	// ignore the conflict error
-	if err != nil && ierror.IsConflictErr(err) {
-		return nil
+	// use orm.WithTransaction here to avoid the issue:
+	// https://www.postgresql.org/message-id/002e01c04da9%24a8f95c20%2425efe6c1%40lasting.ro
+	if err = orm.WithTransaction(func(ctx context.Context) error {
+		tag := &Tag{}
+		tag.RepositoryID = repositoryID
+		tag.ArtifactID = artifactID
+		tag.Name = name
+		tag.PushTime = time.Now()
+		_, err = c.Create(ctx, tag)
+		return err
+	})(ctx); err != nil && !ierror.IsConflictErr(err) {
+		return err
 	}
-	return err
+
+	return nil
 }
 
 // Count ...

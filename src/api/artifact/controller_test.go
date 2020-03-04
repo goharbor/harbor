@@ -25,10 +25,12 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/internal"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/internal/orm"
 	"github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/q"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	tagtesting "github.com/goharbor/harbor/src/testing/api/tag"
+	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	arttesting "github.com/goharbor/harbor/src/testing/pkg/artifact"
 	artrashtesting "github.com/goharbor/harbor/src/testing/pkg/artifactrash"
 	"github.com/goharbor/harbor/src/testing/pkg/blob"
@@ -162,7 +164,7 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	c.artMgr.On("GetByDigest").Return(&artifact.Artifact{
 		ID: 1,
 	}, nil)
-	created, art, err := c.ctl.ensureArtifact(nil, "library/hello-world", digest)
+	created, art, err := c.ctl.ensureArtifact(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest)
 	c.Require().Nil(err)
 	c.False(created)
 	c.Equal(int64(1), art.ID)
@@ -177,7 +179,7 @@ func (c *controllerTestSuite) TestEnsureArtifact() {
 	c.artMgr.On("GetByDigest").Return(nil, ierror.NotFoundError(nil))
 	c.artMgr.On("Create").Return(1, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
-	created, art, err = c.ctl.ensureArtifact(nil, "library/hello-world", digest)
+	created, art, err = c.ctl.ensureArtifact(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest)
 	c.Require().Nil(err)
 	c.True(created)
 	c.Equal(int64(1), art.ID)
@@ -194,7 +196,7 @@ func (c *controllerTestSuite) TestEnsure() {
 	c.artMgr.On("Create").Return(1, nil)
 	c.abstractor.On("AbstractMetadata").Return(nil)
 	c.tagCtl.On("Ensure").Return(nil)
-	_, id, err := c.ctl.Ensure(nil, "library/hello-world", digest, "latest")
+	_, id, err := c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", digest, "latest")
 	c.Require().Nil(err)
 	c.repoMgr.AssertExpectations(c.T())
 	c.artMgr.AssertExpectations(c.T())
@@ -370,7 +372,7 @@ func (c *controllerTestSuite) TestGetByReference() {
 func (c *controllerTestSuite) TestDeleteDeeply() {
 	// root artifact and doesn't exist
 	c.artMgr.On("Get").Return(nil, ierror.NotFoundError(nil))
-	err := c.ctl.deleteDeeply(nil, 1, true)
+	err := c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, true)
 	c.Require().NotNil(err)
 	c.Assert().True(ierror.IsErr(err, ierror.NotFoundCode))
 
@@ -379,7 +381,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 
 	// child artifact and doesn't exist
 	c.artMgr.On("Get").Return(nil, ierror.NotFoundError(nil))
-	err = c.ctl.deleteDeeply(nil, 1, false)
+	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, false)
 	c.Require().Nil(err)
 
 	// reset the mock
@@ -397,7 +399,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 	}, nil)
 	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
 	c.artrashMgr.On("Create").Return(0, nil)
-	err = c.ctl.deleteDeeply(nil, 1, false)
+	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, false)
 	c.Require().Nil(err)
 
 	// reset the mock
@@ -412,7 +414,7 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 			ID: 1,
 		},
 	}, nil)
-	err = c.ctl.deleteDeeply(nil, 1, true)
+	err = c.ctl.deleteDeeply(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, true)
 	c.Require().NotNil(err)
 
 	// reset the mock
@@ -428,24 +430,6 @@ func (c *controllerTestSuite) TestDeleteDeeply() {
 		},
 	}, nil)
 	err = c.ctl.deleteDeeply(nil, 1, false)
-	c.Require().Nil(err)
-
-	// reset the mock
-	c.SetupTest()
-
-	// root artifact is referenced by other artifacts
-	c.artMgr.On("Get").Return(&artifact.Artifact{ID: 1}, nil)
-	c.tagCtl.On("List").Return(nil, nil)
-	c.blobMgr.On("List", nil, mock.AnythingOfType("models.ListParams")).Return(nil, nil).Once()
-	c.blobMgr.On("CleanupAssociationsForProject", nil, int64(0), mock.AnythingOfType("[]*models.Blob")).Return(nil).Once()
-	c.repoMgr.On("Get").Return(&models.RepoRecord{}, nil)
-	c.artMgr.On("ListReferences").Return(nil, nil)
-	c.tagCtl.On("DeleteOfArtifact").Return(nil)
-	c.artMgr.On("Delete").Return(nil)
-	c.labelMgr.On("RemoveAllFrom").Return(nil)
-	c.artrashMgr.On("Create").Return(0, nil)
-	c.tagCtl.On("DeleteTags").Return(nil)
-	err = c.ctl.deleteDeeply(nil, 1, true)
 	c.Require().Nil(err)
 }
 
@@ -476,7 +460,7 @@ func (c *controllerTestSuite) TestCopy() {
 	c.artMgr.On("Create").Return(1, nil)
 	c.regCli.On("Copy").Return(nil)
 	c.tagCtl.On("Ensure").Return(nil)
-	_, err := c.ctl.Copy(nil, "library/hello-world", "latest", "library/hello-world2")
+	_, err := c.ctl.Copy(orm.NewContext(nil, &ormtesting.FakeOrmer{}), "library/hello-world", "latest", "library/hello-world2")
 	c.Require().Nil(err)
 }
 

@@ -4,8 +4,10 @@ import (
 	"github.com/goharbor/harbor/src/common"
 	coreConfig "github.com/goharbor/harbor/src/core/config"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	"github.com/goharbor/harbor/src/internal/orm"
 	pkg_artifact "github.com/goharbor/harbor/src/pkg/artifact"
 	"github.com/goharbor/harbor/src/pkg/tag/model/tag"
+	ormtesting "github.com/goharbor/harbor/src/testing/lib/orm"
 	"github.com/goharbor/harbor/src/testing/pkg/artifact"
 	immutesting "github.com/goharbor/harbor/src/testing/pkg/immutabletag"
 	"github.com/goharbor/harbor/src/testing/pkg/repository"
@@ -55,7 +57,7 @@ func (c *controllerTestSuite) TestEnsureTag() {
 		ID: 1,
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
-	err := c.ctl.Ensure(nil, 1, 1, "latest")
+	err := c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
 	c.Require().Nil(err)
 	c.tagMgr.AssertExpectations(c.T())
 
@@ -76,7 +78,7 @@ func (c *controllerTestSuite) TestEnsureTag() {
 		ID: 1,
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
-	err = c.ctl.Ensure(nil, 1, 1, "latest")
+	err = c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
 	c.Require().Nil(err)
 	c.tagMgr.AssertExpectations(c.T())
 
@@ -90,7 +92,7 @@ func (c *controllerTestSuite) TestEnsureTag() {
 		ID: 1,
 	}, nil)
 	c.immutableMtr.On("Match").Return(false, nil)
-	err = c.ctl.Ensure(nil, 1, 1, "latest")
+	err = c.ctl.Ensure(orm.NewContext(nil, &ormtesting.FakeOrmer{}), 1, 1, "latest")
 	c.Require().Nil(err)
 	c.tagMgr.AssertExpectations(c.T())
 }
