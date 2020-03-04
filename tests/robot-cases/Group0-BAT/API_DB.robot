@@ -70,4 +70,6 @@ Test Case - Health Check
     Harbor API Test  ./tests/apitests/python/test_health_check.py
 Test Case - Push Index By Docker Manifest
     Harbor API Test  ./tests/apitests/python/test_push_index_by_docker_manifest.py
+Test Case - Push Index By Docker Manifest
+    Harbor API Test  ./tests/apitests/python/test_push_chart_by_helm3_chart_cli.py
 
