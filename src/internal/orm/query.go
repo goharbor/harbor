@@ -16,14 +16,16 @@ package orm
 
 import (
 	"context"
+	"reflect"
 	"strings"
 
 	"github.com/astaxie/beego/orm"
 	"github.com/goharbor/harbor/src/pkg/q"
 )
 
-// QuerySetter generates the query setter according to the query
-func QuerySetter(ctx context.Context, model interface{}, query *q.Query) (orm.QuerySeter, error) {
+// QuerySetter generates the query setter according to the query. "ignoredCols" is used to set the
+// columns that will not be queried
+func QuerySetter(ctx context.Context, model interface{}, query *q.Query, ignoredCols ...string) (orm.QuerySeter, error) {
 	ormer, err := FromContext(ctx)
 	if err != nil {
 		return nil, err
@@ -32,7 +34,49 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query) (orm.Qu
 	if query == nil {
 		return qs, nil
 	}
+
+	// the program will panic when querying the columns that doesn't exist
+	// list the supported columns first to avoid the panic
+	cols := listQueriableCols(model, ignoredCols...)
 	for k, v := range query.Keywords {
+		if _, exist := cols[k]; !exist {
+			continue
+		}
+
+		// fuzzy match
+		f, ok := v.(*q.FuzzyMatchValue)
+		if ok {
+			qs = qs.Filter(k+"__icontains", f.Value)
+			continue
+		}
+
+		// range
+		r, ok := v.(*q.Range)
+		if ok {
+			if r.Min != nil {
+				qs = qs.Filter(k+"__gte", r.Min)
+			}
+			if r.Max != nil {
+				qs = qs.Filter(k+"__lte", r.Max)
+			}
+			continue
+		}
+
+		// or list
+		ol, ok := v.(*q.OrList)
+		if ok {
+			qs = qs.Filter(k+"__in", ol.Values...)
+			continue
+		}
+
+		// and list
+		_, ok = v.(*q.OrList)
+		if ok {
+			// do nothing as and list needs to be handled by the logic of DAO
+			continue
+		}
+
+		// exact match
 		qs = qs.Filter(k, v)
 	}
 	if query.PageSize > 0 {
@@ -42,6 +86,60 @@ func QuerySetter(ctx context.Context, model interface{}, query *q.Query) (orm.Qu
 		}
 	}
 	return qs, nil
+}
+
+// list the columns that can be queried
+// e.g. for the following model the columns that can be queried are:
+// "Field2", "customized_field2", "Field3" and "field3"
+// type model struct{
+//   Field1 string `orm:"-"`
+//   Field2 string `orm:"column(customized_field2)"`
+//   Field3 string
+// }
+//
+// set "ignoredCols" to ignore the specified columns
+func listQueriableCols(model interface{}, ignoredCols ...string) map[string]struct{} {
+	if model == nil {
+		return nil
+	}
+	ignored := map[string]struct{}{}
+	for _, ig := range ignoredCols {
+		ignored[ig] = struct{}{}
+	}
+	cols := map[string]struct{}{}
+	t := reflect.Indirect(reflect.ValueOf(model)).Type()
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		orm := field.Tag.Get("orm")
+		if orm == "-" {
+			continue
+		}
+		colName := ""
+		for _, str := range strings.Split(orm, ";") {
+			if strings.HasPrefix(str, "column") {
+				str = strings.TrimPrefix(str, "column(")
+				str = strings.TrimSuffix(str, ")")
+				if len(str) > 0 {
+					colName = str
+					break
+				}
+			}
+		}
+		if len(colName) == 0 {
+			// TODO convert the field.Name to snake_case
+		}
+		if _, exist := ignored[colName]; exist {
+			continue
+		}
+		if _, exist := ignored[field.Name]; exist {
+			continue
+		}
+		if len(colName) != 0 {
+			cols[colName] = struct{}{}
+		}
+		cols[field.Name] = struct{}{}
+	}
+	return cols
 }
 
 // ParamPlaceholderForIn returns a string that contains placeholders for sql keyword "in"

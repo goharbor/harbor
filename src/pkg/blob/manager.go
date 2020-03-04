@@ -126,7 +126,11 @@ func (m *manager) List(ctx context.Context, params ListParams) ([]*Blob, error) 
 	}
 
 	if len(params.BlobDigests) > 0 {
-		kw["digest__in"] = params.BlobDigests
+		ol := &q.OrList{}
+		for _, blobDigest := range params.BlobDigests {
+			ol.Values = append(ol.Values, blobDigest)
+		}
+		kw["digest"] = ol
 	}
 
 	blobs, err := m.dao.ListBlobs(ctx, q.New(kw))

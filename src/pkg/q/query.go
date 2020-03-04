@@ -47,3 +47,24 @@ func Copy(query *Query) *Query {
 	}
 	return q
 }
+
+// Range query
+type Range struct {
+	Min interface{}
+	Max interface{}
+}
+
+// AndList query
+type AndList struct {
+	Values []interface{}
+}
+
+// OrList query
+type OrList struct {
+	Values []interface{}
+}
+
+// FuzzyMatchValue query
+type FuzzyMatchValue struct {
+	Value interface{}
+}

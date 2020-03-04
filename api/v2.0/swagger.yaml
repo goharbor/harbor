@@ -28,6 +28,8 @@ paths:
         - $ref: '#/parameters/projectName'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
+        # TODO remove it
         - name: name
           in: query
           description: Query the repositories by name
@@ -500,6 +502,12 @@ paths:
         '500':
           $ref: '#/responses/500'
 parameters:
+  query:
+    name: q
+    description: Query string to query resources. Supported query patterns are "exact match(k=v)", "fuzzy match(k=~v)", "range(k=[min~max])", "list with union releationship(k={v1 v2 v3})" and "list with intersetion relationship(k=(v1 v2 v3))". All of these query patterns should be put in the query string "q=xxx" and splitted by ",". e.g. q=k1=v1,k2=~v2,k3=[min~max]
+    in: query
+    type: string
+    required: false
   requestId:
     name: X-Request-Id
     description: An unique ID for the request
