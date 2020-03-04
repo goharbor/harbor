@@ -506,7 +506,6 @@ paths:
       tags:
         - notification
       parameters:
-        - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/projectId'
       responses:
         '200':
