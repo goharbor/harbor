@@ -15,16 +15,18 @@ import { AddWebhookFormComponent } from "../add-webhook-form/add-webhook-form.co
   styleUrls: ['./add-webhook.component.scss']
 })
 export class AddWebhookComponent implements OnInit {
+  isEdit: boolean;
   isOpen: boolean = false;
   closable: boolean = false;
   staticBackdrop: boolean = true;
 
   @Input() projectId: number;
-  @Input() webhook: Webhook;
-  @Output() modify = new EventEmitter<boolean>();
+   webhook: Webhook;
+  @Input()
+  metadata: any;
   @ViewChild(AddWebhookFormComponent, { static: false })
   addWebhookFormComponent: AddWebhookFormComponent;
-
+  @Output() notify = new EventEmitter<Webhook>();
 
   constructor() { }
 
@@ -38,12 +40,11 @@ export class AddWebhookComponent implements OnInit {
   onCancel() {
     this.isOpen = false;
   }
-
-  closeModal(isModified: boolean): void {
-    if (isModified) {
-      this.modify.emit(true);
-    }
+  notifySuccess() {
+    this.isOpen = false;
+    this.notify.emit();
+  }
+  closeModal() {
     this.isOpen = false;
   }
-
 }

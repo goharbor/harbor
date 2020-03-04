@@ -63,6 +63,7 @@ import {
 import { RepositoryDefaultService, RepositoryService } from "./repository/repository.service";
 import { ArtifactDefaultService, ArtifactService } from "./repository/artifact/artifact.service";
 import { GridViewComponent } from "./repository/gridview/grid-view.component";
+import { LastTriggerComponent } from "./webhook/last-trigger/last-trigger.component";
 
 @NgModule({
   imports: [
@@ -110,6 +111,7 @@ import { GridViewComponent } from "./repository/gridview/grid-view.component";
     ValuesComponent,
     ArtifactVulnerabilitiesComponent,
     GridViewComponent,
+    LastTriggerComponent
   ],
   exports: [ProjectComponent, ListProjectComponent],
   providers: [
