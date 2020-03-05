@@ -229,7 +229,6 @@ func main() {
 	filter.Init()
 	beego.InsertFilter("/api/*", beego.BeforeStatic, filter.SessionCheck)
 	beego.InsertFilter("/*", beego.BeforeRouter, filter.SecurityFilter)
-	beego.InsertFilter("/*", beego.BeforeRouter, filter.ReadonlyFilter)
 
 	server.RegisterRoutes()
 
