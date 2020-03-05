@@ -1004,7 +1004,8 @@
         "TAGGED": "Tagged",
         "UNTAGGED": "Untagged",
         "ALL": "All",
-        "PLACEHOLDER": "We couldn't find any artifactds!"
+        "PLACEHOLDER": "We couldn't find any artifactds!",
+        "SCAN_UNSUPPORTED": "Scan Unsupported"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Create on",

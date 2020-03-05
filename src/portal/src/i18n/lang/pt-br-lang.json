@@ -999,7 +999,8 @@
         "TAGGED": "Tagged",
         "UNTAGGED": "Untagged",
         "ALL": "All",
-        "PLACEHOLDER": "We couldn't find any artifacts!"
+        "PLACEHOLDER": "We couldn't find any artifacts!",
+        "SCAN_UNSUPPORTED": "Scan Unsupported"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "Criado em",
