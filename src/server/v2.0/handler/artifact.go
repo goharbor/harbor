@@ -17,8 +17,6 @@ package handler
 import (
 	"context"
 	"fmt"
-	"github.com/goharbor/harbor/src/api/event"
-	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
 	"net/http"
 	"strings"
 	"time"
@@ -28,15 +26,18 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/artifact/abstractor/resolver"
+	"github.com/goharbor/harbor/src/api/event"
 	"github.com/goharbor/harbor/src/api/repository"
 	"github.com/goharbor/harbor/src/api/scan"
 	"github.com/goharbor/harbor/src/api/tag"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	evt "github.com/goharbor/harbor/src/pkg/notifier/event"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
+	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/artifact"
 	"github.com/opencontainers/go-digest"
 )
@@ -97,14 +98,14 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 		return a.SendError(ctx, err)
 	}
 
-	var artifacts []*model.Artifact
+	assembler := assembler.NewVulAssembler(boolValue(params.WithScanOverview))
+	var artifacts []*models.Artifact
 	for _, art := range arts {
 		artifact := &model.Artifact{}
 		artifact.Artifact = *art
-		artifacts = append(artifacts, artifact)
+		assembler.WithArtifacts(artifact).Assemble(ctx)
+		artifacts = append(artifacts, artifact.ToSwagger())
 	}
-
-	assembler.NewVulAssembler(boolValue(params.WithScanOverview)).WithArtifacts(artifacts...).Assemble(ctx)
 
 	return operation.NewListArtifactsOK().
 		WithXTotalCount(total).
@@ -130,7 +131,7 @@ func (a *artifactAPI) GetArtifact(ctx context.Context, params operation.GetArtif
 
 	assembler.NewVulAssembler(boolValue(params.WithScanOverview)).WithArtifacts(art).Assemble(ctx)
 
-	return operation.NewGetArtifactOK().WithPayload(art)
+	return operation.NewGetArtifactOK().WithPayload(art.ToSwagger())
 }
 
 func (a *artifactAPI) DeleteArtifact(ctx context.Context, params operation.DeleteArtifactParams) middleware.Responder {

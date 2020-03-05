@@ -763,10 +763,6 @@ definitions:
         description: The update time of the repository
   Artifact:
     type: object
-    x-go-type:
-      import:
-        package: "github.com/goharbor/harbor/src/server/v2.0/handler/model"
-      type: "Artifact"
     properties:
       id:
         type: integer
@@ -897,6 +893,13 @@ definitions:
         description: The digest of the child artifact
       platform:
         $ref: '#/definitions/Platform'
+      annotations:
+        $ref: '#/definitions/Annotations'
+      urls:
+        type: array
+        description: The download URLs
+        items:
+          type: string
   Platform:
     type: object
     properties:
@@ -948,9 +951,6 @@ definitions:
         type: string
         format: date-time
         description: The update time of the label
-      deleted:
-        type: boolean
-        description: Whether the label is deleted or not
   ScanOverview:
     type: object
     description: 'The scan overview attached in the metadata of tag'

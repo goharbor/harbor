@@ -14,10 +14,48 @@
 
 package model
 
-import "github.com/goharbor/harbor/src/api/artifact"
+import (
+	"github.com/go-openapi/strfmt"
+	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/server/v2.0/models"
+)
 
 // Artifact model
 type Artifact struct {
 	artifact.Artifact
 	ScanOverview map[string]interface{} `json:"scan_overview"`
+}
+
+// ToSwagger converts the artifact to the swagger model
+func (a *Artifact) ToSwagger() *models.Artifact {
+	art := &models.Artifact{
+		ID:                a.ID,
+		Type:              a.Type,
+		MediaType:         a.MediaType,
+		ManifestMediaType: a.ManifestMediaType,
+		ProjectID:         a.ProjectID,
+		RepositoryID:      a.RepositoryID,
+		Digest:            a.Digest,
+		Size:              a.Size,
+		PullTime:          strfmt.DateTime(a.PullTime),
+		PushTime:          strfmt.DateTime(a.PushTime),
+		ExtraAttrs:        a.ExtraAttrs,
+		Annotations:       a.Annotations,
+	}
+	for _, reference := range a.References {
+		art.References = append(art.References, reference.ToSwagger())
+	}
+	for _, tag := range a.Tags {
+		art.Tags = append(art.Tags, tag.ToSwagger())
+	}
+	for addition, link := range a.AdditionLinks {
+		if art.AdditionLinks == nil {
+			art.AdditionLinks = make(map[string]models.AdditionLink)
+		}
+		art.AdditionLinks[addition] = link.ToSwagger()
+	}
+	for _, label := range a.Labels {
+		art.Labels = append(art.Labels, label.ToSwagger())
+	}
+	return art
 }
