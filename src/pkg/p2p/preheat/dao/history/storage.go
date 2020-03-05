@@ -18,3 +18,10 @@ type Storage interface {
 	// Otherwise, a non nil error will be set.
 	LoadHistories(params *models.QueryParam) ([]*models.HistoryRecord, error)
 }
+
+// StorageFactory is factory to create Storage.
+var StorageFactory func() (Storage, error)
+
+func init() {
+	StorageFactory = NewRedisStorage
+}
