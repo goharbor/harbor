@@ -8,6 +8,7 @@ import { AdditionLink } from "../../../../../../../ng-swagger-gen/models/additio
 import { ErrorHandler } from "../../../../../../lib/utils/error-handler";
 import  * as yaml  from "js-yaml";
 import { finalize } from "rxjs/operators";
+import { isObject } from "../../../../../../lib/utils/utils";
 
 @Component({
   selector: "hbr-artifact-values",
@@ -84,7 +85,7 @@ export class ValuesComponent implements OnInit {
   format(obj: object) {
       for (let name in obj) {
         if (obj.hasOwnProperty(name)) {
-          if (obj[name] instanceof Object) {
+          if (isObject(obj[name])) {
             for (let key in obj[name]) {
               if (obj[name].hasOwnProperty(key)) {
                   obj[`${name}.${key}`] = obj[name][key];
