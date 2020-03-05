@@ -1003,7 +1003,8 @@
         "TAGGED": "含有 Tag",
         "UNTAGGED": "不含有 Tag",
         "ALL": "所有",
-        "PLACEHOLDER": "未发现任何 artifacts!"
+        "PLACEHOLDER": "未发现任何 artifacts!",
+        "SCAN_UNSUPPORTED": "不支持扫描"
     },
     "TAG": {
         "CREATION_TIME_PREFIX": "创建时间：",

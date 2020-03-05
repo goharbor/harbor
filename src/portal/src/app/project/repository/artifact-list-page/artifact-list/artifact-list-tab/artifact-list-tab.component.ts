@@ -370,7 +370,12 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
                 let childParams: NewArtifactService.GetArtifactParams = {
                   repositoryName: this.repoName,
                   projectName: this.projectName,
-                  reference: child.child_digest
+                  reference: child.child_digest,
+                  withImmutableStatus: true,
+                  withLabel: true,
+                  withScanOverview: true,
+                  withSignature: true,
+                  withTag: true
                 };
                 observableLists.push(this.newArtifactService.getArtifact(childParams));
               }
@@ -864,11 +869,14 @@ export class ArtifactListTabComponent implements OnInit, OnDestroy {
       this.channel.publishScanEvent(this.repoName + "/" + this.selectedRow[0].digest);
     }
   }
-  hasVul(): boolean {
+  selectedRowHasVul(): boolean {
     return !!(this.selectedRow
       && this.selectedRow[0]
       && this.selectedRow[0].addition_links
       && this.selectedRow[0].addition_links[ADDITIONS.VULNERABILITIES]);
+  }
+  hasVul(artifact: Artifact): boolean {
+    return !!(artifact && artifact.addition_links && artifact.addition_links[ADDITIONS.VULNERABILITIES]);
   }
   submitFinish(e: boolean) {
     this.onSendingScanCommand = e;

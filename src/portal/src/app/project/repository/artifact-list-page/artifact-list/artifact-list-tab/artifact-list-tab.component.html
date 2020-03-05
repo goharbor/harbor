@@ -91,7 +91,7 @@
             [(clrDgSelected)]="selectedRow">
             <clr-dg-action-bar>
                 <button [clrLoading]="scanBtnState" type="button" class="btn  btn-secondary scan-btn"
-                    [disabled]="!(canScanNow() && hasVul() && selectedRow.length==1 && hasEnabledScanner && hasScanImagePermission && !depth)" (click)="scanNow()">
+                    [disabled]="!(canScanNow() && selectedRowHasVul() && selectedRow.length==1 && hasEnabledScanner && hasScanImagePermission )" (click)="scanNow()">
                     <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}
                 </button>
 
@@ -238,7 +238,10 @@
                 </clr-dg-cell>
                 <clr-dg-cell>
                     <div class="cell">
-                        <hbr-vulnerability-bar [scanner]="handleScanOverview(artifact.scan_overview)?.scanner"
+                        <span *ngIf="!hasVul(artifact)">
+                            {{'ARTIFACT.SCAN_UNSUPPORTED' | translate}}
+                        </span>
+                        <hbr-vulnerability-bar *ngIf="hasVul(artifact)" [scanner]="handleScanOverview(artifact.scan_overview)?.scanner"
                             (submitFinish)="submitFinish($event)" [projectName]="projectName" [repoName]="repoName"
                             [artifactDigest]="artifact.digest" [summary]="handleScanOverview(artifact.scan_overview)">
                         </hbr-vulnerability-bar>
