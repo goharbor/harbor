@@ -28,7 +28,7 @@ func RedisPool(addr string) *redis.Pool {
 	return redisPool
 }
 
-// get redis address
+// RedisAddr get redis address
 func RedisAddr(rawAddr string) (string, bool) {
 	if len(rawAddr) == 0 {
 		return "", false
@@ -46,7 +46,6 @@ func RedisAddr(rawAddr string) (string, bool) {
 	}
 	addrParts = append(addrParts, segments[0], "/0") // use default db index 0
 
-	//verify
 	redisAddr := strings.Join(addrParts, "")
 	_, err := url.Parse(redisAddr)
 	if err != nil {

@@ -30,7 +30,7 @@ func TestPropertyDecode(t *testing.T) {
 }
 
 func TestPropertySet(t *testing.T) {
-	flag := theChangableProperties.Match("enabled")
+	flag := theChangeableProperties.Match("enabled")
 	if !flag {
 		t.Errorf("expect true flag but got false")
 	}
