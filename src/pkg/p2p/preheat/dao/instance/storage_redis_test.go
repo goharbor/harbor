@@ -11,16 +11,16 @@ import (
 )
 
 var (
-	pool      = tests.Pool()
-	namespace = "test_instance_storage"
+	pool       = tests.Pool()
+	testingKey = "test_instance_storage"
 )
 
 func TestDel(t *testing.T) {
-	rs := NewRedisStorage(pool, namespace)
+	rs := NewRedisStorage(pool, testingKey)
 	if rs == nil {
 		t.Fatal("expect non nil redis storage but got nil")
 	}
-	defer tests.Clear(pool, namespace)
+	defer tests.Clear(pool, testingKey)
 
 	id, err := mockOne(rs)
 	if err != nil {
@@ -41,11 +41,11 @@ func TestDel(t *testing.T) {
 }
 
 func TestUpdate(t *testing.T) {
-	rs := NewRedisStorage(pool, namespace)
+	rs := NewRedisStorage(pool, testingKey)
 	if rs == nil {
 		t.Fatal("expect non nil redis storage but got nil")
 	}
-	defer tests.Clear(pool, namespace)
+	defer tests.Clear(pool, testingKey)
 
 	id, err := mockOne(rs)
 	if err != nil {
@@ -74,11 +74,11 @@ func TestUpdate(t *testing.T) {
 }
 
 func TestList(t *testing.T) {
-	rs := NewRedisStorage(pool, namespace)
+	rs := NewRedisStorage(pool, testingKey)
 	if rs == nil {
 		t.Fatal("expect non nil redis storage but got nil")
 	}
-	defer tests.Clear(pool, namespace)
+	defer tests.Clear(pool, testingKey)
 
 	_, err := mockOne(rs)
 	if err != nil {

@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/garyburd/redigo/redis"
+
 	storage "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/utils"
@@ -21,8 +23,8 @@ type RedisStorage struct {
 	redisBase *storage.RedisBase
 }
 
-// NewRedisStorage is constructor of RedisStorage
-func NewRedisStorage() (Storage, error) {
+// RedisStorageFactory is constructor of RedisStorage
+func RedisStorageFactory() (Storage, error) {
 	rawAddr := os.Getenv(envRedisURL)
 	addr, ok := utils.RedisAddr(rawAddr)
 	if !ok {
@@ -33,6 +35,17 @@ func NewRedisStorage() (Storage, error) {
 	return &RedisStorage{
 		redisBase: storage.NewRedisBase(pool, namespace),
 	}, nil
+}
+
+// NewRedisStorage is constructor of RedisStorage
+func NewRedisStorage(pool *redis.Pool, namespace string) *RedisStorage {
+	if pool == nil || len(namespace) == 0 {
+		return nil
+	}
+
+	return &RedisStorage{
+		redisBase: storage.NewRedisBase(pool, namespace),
+	}
 }
 
 // Save implements @Storage.Save
