@@ -53,17 +53,17 @@ func (ir ImageRepository) Tag() string {
 	return segments[1]
 }
 
-// changableProperties contains names of the changable properties
-type changableProperties []string
+// changeableProperties contains names of the changeable properties
+type changeableProperties []string
 
-// Append changable property
-func (cp *changableProperties) Append(prop ...string) *changableProperties {
+// Append changeable property
+func (cp *changeableProperties) Append(prop ...string) *changeableProperties {
 	*cp = append(*cp, prop...)
 	return cp
 }
 
-// Match confirms if the provided prop are changable
-func (cp *changableProperties) Match(prop string) bool {
+// Match confirms if the provided prop are changeable
+func (cp *changeableProperties) Match(prop string) bool {
 	for _, p := range *cp {
 		if p == prop {
 			return true
@@ -116,7 +116,7 @@ func (ts TrackStatus) String() string {
 }
 
 // For querying
-var theChangableProperties = initChangableProperties()
+var theChangeableProperties = initChangeableProperties()
 
 // PropertySet for incremental updating
 type PropertySet map[string]interface{}
@@ -128,8 +128,8 @@ func (ps PropertySet) Apply(metadata *Metadata) error {
 	}
 
 	for k, v := range ps {
-		if !theChangableProperties.Match(k) {
-			return fmt.Errorf("property '%s' is not changable", k)
+		if !theChangeableProperties.Match(k) {
+			return fmt.Errorf("property '%s' is not changeable", k)
 		}
 
 		pv := PropertyValue{v}
@@ -225,9 +225,9 @@ func (pv PropertyValue) StringMap() map[string]string {
 	return nil
 }
 
-// initChangableProperties is used as a initializer of ChangableProperties
-func initChangableProperties() *changableProperties {
-	cp := make(changableProperties, 0)
+// initChangeableProperties is used as a initializer of ChangeableProperties
+func initChangeableProperties() *changeableProperties {
+	cp := make(changeableProperties, 0)
 	cpr := &cp
 	cpr.Append("auth_mode").
 		Append("auth_data").

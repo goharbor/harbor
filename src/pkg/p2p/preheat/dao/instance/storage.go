@@ -56,5 +56,5 @@ type Storage interface {
 var StorageFactory func() (Storage, error)
 
 func init() {
-	StorageFactory = NewRedisStorage
+	StorageFactory = RedisStorageFactory
 }
