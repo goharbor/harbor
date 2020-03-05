@@ -26,6 +26,8 @@ const (
 	Matches = "matches"
 	// Excludes [pattern] for tag (default)
 	Excludes = "excludes"
+	// UNAGGED [pattern] for tag (default)
+	UNAGGED = "untagged"
 	// RepoMatches represents repository matches [pattern]
 	RepoMatches = "repoMatches"
 	// RepoExcludes represents repository excludes [pattern]
@@ -62,6 +64,14 @@ func (s *selector) Select(artifacts []*artifactselector.Candidate) (selected []*
 			}
 		case Excludes:
 			s, err := s.tagSelectExclude(art)
+			if err != nil {
+				return nil, err
+			}
+			if s {
+				selected = append(selected, art)
+			}
+		case UNAGGED:
+			s, err := s.tagSelectUntagged(art)
 			if err != nil {
 				return nil, err
 			}
@@ -120,6 +130,10 @@ func (s *selector) tagSelectExclude(artifact *artifactselector.Candidate) (selec
 		}
 	}
 	return false, nil
+}
+
+func (s *selector) tagSelectUntagged(artifact *artifactselector.Candidate) (selected bool, err error) {
+	return len(artifact.Tags) == 0, nil
 }
 
 // New is factory method for doublestar selector

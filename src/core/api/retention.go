@@ -113,7 +113,8 @@ func (r *RetentionAPI) GetMetadatas() {
             "kind": "doublestar",
             "decorations": [
                 "matches",
-                "excludes"
+                "excludes",
+                "untagged"
             ]
         }
     ]

@@ -27,6 +27,7 @@ func init() {
 	Register(doublestar.Kind, []string{
 		doublestar.Matches,
 		doublestar.Excludes,
+		doublestar.UNAGGED,
 		doublestar.RepoMatches,
 		doublestar.RepoExcludes,
 		doublestar.NSMatches,
