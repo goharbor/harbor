@@ -32,7 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/q"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
@@ -48,7 +47,6 @@ const (
 func newArtifactAPI() *artifactAPI {
 	return &artifactAPI{
 		artCtl:  artifact.Ctl,
-		proMgr:  project.Mgr,
 		repoCtl: repository.Ctl,
 		scanCtl: scan.DefaultController,
 		tagCtl:  tag.Ctl,
@@ -58,7 +56,6 @@ func newArtifactAPI() *artifactAPI {
 type artifactAPI struct {
 	BaseAPI
 	artCtl  artifact.Controller
-	proMgr  project.Manager
 	repoCtl repository.Controller
 	scanCtl scan.Controller
 	tagCtl  tag.Controller
