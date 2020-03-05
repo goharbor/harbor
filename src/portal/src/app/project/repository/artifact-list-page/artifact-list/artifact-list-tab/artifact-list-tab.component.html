@@ -91,7 +91,7 @@
             [(clrDgSelected)]="selectedRow">
             <clr-dg-action-bar>
                 <button [clrLoading]="scanBtnState" type="button" class="btn  btn-secondary scan-btn"
-                    [disabled]="!(canScanNow() && selectedRow.length==1 && hasEnabledScanner && hasScanImagePermission && !depth)" (click)="scanNow()">
+                    [disabled]="!(canScanNow() && hasVul() && selectedRow.length==1 && hasEnabledScanner && hasScanImagePermission && !depth)" (click)="scanNow()">
                     <clr-icon shape="shield-check" size="16"></clr-icon>&nbsp;{{'VULNERABILITY.SCAN_NOW' | translate}}
                 </button>
 
