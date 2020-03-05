@@ -128,24 +128,43 @@ func Test_native_FetchImages(t *testing.T) {
 				{
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{Name: "test/a1"},
-						Vtags:      []string{"tag11"},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{"tag11"},
+							},
+						},
 					},
 				},
 				{
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{Name: "test/b2"},
-						Vtags:      []string{"tag11", "tag2", "tag13"},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{"tag11"},
+							},
+							{
+								Tags: []string{"tag2"},
+							},
+							{
+								Tags: []string{"tag13"},
+							},
+						},
 					},
 				},
 				{
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{Name: "test/c3/3level"},
-						Vtags:      []string{"tag4"},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{"tag4"},
+							},
+						},
 					},
 				},
 			},
 			wantErr: false,
 		},
+
 		{
 			name: "only special repository",
 			filters: []*model.Filter{
@@ -158,7 +177,11 @@ func Test_native_FetchImages(t *testing.T) {
 				{
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{Name: "test/a1"},
-						Vtags:      []string{"tag11"},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{"tag11"},
+							},
+						},
 					},
 				},
 			},
@@ -176,18 +199,27 @@ func Test_native_FetchImages(t *testing.T) {
 				{
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{Name: "test/a1"},
-						Vtags:      []string{"tag11"},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{"tag11"},
+							},
+						},
 					},
 				},
 				{
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{Name: "test/b2"},
-						Vtags:      []string{"tag11"},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{"tag11"},
+							},
+						},
 					},
 				},
 			},
 			wantErr: false,
 		},
+
 		{
 			name: "special repository and special tag",
 			filters: []*model.Filter{
@@ -204,7 +236,11 @@ func Test_native_FetchImages(t *testing.T) {
 				{
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{Name: "test/b2"},
-						Vtags:      []string{"tag2"},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{"tag2"},
+							},
+						},
 					},
 				},
 			},
@@ -223,7 +259,17 @@ func Test_native_FetchImages(t *testing.T) {
 				{
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{Name: "test/b2"},
-						Vtags:      []string{"tag11", "tag2", "tag13"},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{"tag11"},
+							},
+							{
+								Tags: []string{"tag2"},
+							},
+							{
+								Tags: []string{"tag13"},
+							},
+						},
 					},
 				},
 			},
@@ -241,13 +287,24 @@ func Test_native_FetchImages(t *testing.T) {
 				{
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{Name: "test/a1"},
-						Vtags:      []string{"tag11"},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{"tag11"},
+							},
+						},
 					},
 				},
 				{
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{Name: "test/b2"},
-						Vtags:      []string{"tag11", "tag13"},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{"tag11"},
+							},
+							{
+								Tags: []string{"tag13"},
+							},
+						},
 					},
 				},
 			},
@@ -269,7 +326,14 @@ func Test_native_FetchImages(t *testing.T) {
 				{
 					Metadata: &model.ResourceMetadata{
 						Repository: &model.Repository{Name: "test/b2"},
-						Vtags:      []string{"tag11", "tag13"},
+						Artifacts: []*model.Artifact{
+							{
+								Tags: []string{"tag11"},
+							},
+							{
+								Tags: []string{"tag13"},
+							},
+						},
 					},
 				},
 			},
@@ -288,7 +352,7 @@ func Test_native_FetchImages(t *testing.T) {
 				for i, resource := range resources {
 					require.NotNil(t, resource.Metadata)
 					assert.Equal(t, tt.want[i].Metadata.Repository, resource.Metadata.Repository)
-					assert.ElementsMatch(t, tt.want[i].Metadata.Vtags, resource.Metadata.Vtags)
+					assert.ElementsMatch(t, tt.want[i].Metadata.Artifacts, resource.Metadata.Artifacts)
 				}
 			}
 		})

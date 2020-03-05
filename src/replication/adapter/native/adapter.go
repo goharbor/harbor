@@ -22,9 +22,9 @@ import (
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/registry"
 	adp "github.com/goharbor/harbor/src/replication/adapter"
+	"github.com/goharbor/harbor/src/replication/filter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/goharbor/harbor/src/replication/util"
-	"sync"
 )
 
 func init() {
@@ -37,8 +37,7 @@ func init() {
 
 var _ adp.Adapter = &Adapter{}
 
-type factory struct {
-}
+type factory struct{}
 
 // Create ...
 func (f *factory) Create(r *model.Registry) (adp.Adapter, error) {
@@ -53,7 +52,6 @@ func (f *factory) AdapterPattern() *model.AdapterPattern {
 // Adapter implements an adapter for Docker registry. It can be used to all registries
 // that implement the registry V2 API
 type Adapter struct {
-	sync.RWMutex
 	registry *model.Registry
 	registry.Client
 }
@@ -127,17 +125,12 @@ func (a *Adapter) HealthCheck() (model.HealthStatus, error) {
 
 // FetchImages ...
 func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error) {
-	repositories, err := a.getRepositories(filters)
+	repositories, err := a.listRepositories(filters)
 	if err != nil {
 		return nil, err
 	}
 	if len(repositories) == 0 {
 		return nil, nil
-	}
-	for _, filter := range filters {
-		if err = filter.DoFilter(&repositories); err != nil {
-			return nil, err
-		}
 	}
 
 	var rawResources = make([]*model.Resource, len(repositories))
@@ -148,24 +141,12 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 		index := i
 		repo := r
 		runner.AddTask(func() error {
-			vTags, err := a.getVTags(repo.Name)
+			artifacts, err := a.listArtifacts(repo.Name, filters)
 			if err != nil {
-				return fmt.Errorf("List tags for repo '%s' error: %v", repo.Name, err)
+				return fmt.Errorf("failed to list artifacts of repository %s: %v", repo.Name, err)
 			}
-			if len(vTags) == 0 {
+			if len(artifacts) == 0 {
 				return nil
-			}
-			for _, filter := range filters {
-				if err = filter.DoFilter(&vTags); err != nil {
-					return fmt.Errorf("Filter tags %v error: %v", vTags, err)
-				}
-			}
-			if len(vTags) == 0 {
-				return nil
-			}
-			tags := []string{}
-			for _, vTag := range vTags {
-				tags = append(tags, vTag.Name)
 			}
 			rawResources[index] = &model.Resource{
 				Type:     model.ResourceTypeImage,
@@ -174,7 +155,7 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 					Repository: &model.Repository{
 						Name: repo.Name,
 					},
-					Vtags: tags,
+					Artifacts: artifacts,
 				},
 			}
 
@@ -197,7 +178,7 @@ func (a *Adapter) FetchImages(filters []*model.Filter) ([]*model.Resource, error
 	return resources, nil
 }
 
-func (a *Adapter) getRepositories(filters []*model.Filter) ([]*adp.Repository, error) {
+func (a *Adapter) listRepositories(filters []*model.Filter) ([]*model.Repository, error) {
 	pattern := ""
 	for _, filter := range filters {
 		if filter.Type == model.FilterTypeName {
@@ -219,29 +200,27 @@ func (a *Adapter) getRepositories(filters []*model.Filter) ([]*adp.Repository, e
 		}
 	}
 
-	result := []*adp.Repository{}
+	var result []*model.Repository
 	for _, repository := range repositories {
-		result = append(result, &adp.Repository{
-			ResourceType: string(model.ResourceTypeImage),
-			Name:         repository,
+		result = append(result, &model.Repository{
+			Name: repository,
 		})
 	}
-	return result, nil
+	return filter.DoFilterRepositories(result, filters)
 }
 
-func (a *Adapter) getVTags(repository string) ([]*adp.VTag, error) {
+func (a *Adapter) listArtifacts(repository string, filters []*model.Filter) ([]*model.Artifact, error) {
 	tags, err := a.ListTags(repository)
 	if err != nil {
 		return nil, err
 	}
-	var result []*adp.VTag
+	var artifacts []*model.Artifact
 	for _, tag := range tags {
-		result = append(result, &adp.VTag{
-			ResourceType: string(model.ResourceTypeImage),
-			Name:         tag,
+		artifacts = append(artifacts, &model.Artifact{
+			Tags: []string{tag},
 		})
 	}
-	return result, nil
+	return filter.DoFilterArtifacts(artifacts, filters)
 }
 
 // PingSimple checks whether the registry is available. It checks the connectivity and certificate (if TLS enabled)

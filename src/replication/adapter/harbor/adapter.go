@@ -284,18 +284,6 @@ func (a *adapter) getProject(name string) (*project, error) {
 	return nil, nil
 }
 
-func (a *adapter) getRepositories(projectID int64) ([]*adp.Repository, error) {
-	repositories := []*adp.Repository{}
-	url := fmt.Sprintf("%s/api/%s/repositories?project_id=%d&page=1&page_size=500", a.getURL(), api.APIVersion, projectID)
-	if err := a.client.GetAndIteratePagination(url, &repositories); err != nil {
-		return nil, err
-	}
-	for _, repository := range repositories {
-		repository.ResourceType = string(model.ResourceTypeImage)
-	}
-	return repositories, nil
-}
-
 // when the adapter is created for local Harbor, returns the "http://127.0.0.1:8080"
 // as URL to avoid issue https://github.com/goharbor/harbor-helm/issues/222
 // when harbor is deployed on Kubernetes

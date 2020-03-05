@@ -51,7 +51,7 @@ type handler struct {
 func (h *handler) Handle(event *Event) error {
 	if event == nil || event.Resource == nil ||
 		event.Resource.Metadata == nil ||
-		len(event.Resource.Metadata.Vtags) == 0 {
+		len(event.Resource.Metadata.Artifacts) == 0 {
 		return errors.New("invalid event")
 	}
 	var policies []*model.Policy

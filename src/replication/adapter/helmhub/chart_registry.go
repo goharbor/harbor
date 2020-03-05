@@ -16,13 +16,13 @@ package helmhub
 
 import (
 	"fmt"
+	"github.com/goharbor/harbor/src/replication/filter"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"strings"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
-	adp "github.com/goharbor/harbor/src/replication/adapter"
 	"github.com/goharbor/harbor/src/replication/model"
 	"github.com/pkg/errors"
 )
@@ -34,19 +34,16 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 	}
 
 	resources := []*model.Resource{}
-	repositories := []*adp.Repository{}
+	var repositories []*model.Repository
 	for _, chart := range charts.Data {
-		repository := &adp.Repository{
-			ResourceType: string(model.ResourceTypeChart),
-			Name:         chart.ID,
-		}
-		repositories = append(repositories, repository)
+		repositories = append(repositories, &model.Repository{
+			Name: chart.ID,
+		})
 	}
 
-	for _, filter := range filters {
-		if err = filter.DoFilter(&repositories); err != nil {
-			return nil, err
-		}
+	repositories, err = filter.DoFilterRepositories(repositories, filters)
+	if err != nil {
+		return nil, err
 	}
 
 	for _, repository := range repositories {
@@ -56,21 +53,22 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 			return nil, err
 		}
 
-		vTags := []*adp.VTag{}
+		var artifacts []*model.Artifact
 		for _, version := range versionList.Data {
-			vTags = append(vTags, &adp.VTag{
-				Name:         version.Attributes.Version,
-				ResourceType: string(model.ResourceTypeChart),
+			artifacts = append(artifacts, &model.Artifact{
+				Tags: []string{version.Attributes.Version},
 			})
 		}
 
-		for _, filter := range filters {
-			if err = filter.DoFilter(&vTags); err != nil {
-				return nil, err
-			}
+		artifacts, err = filter.DoFilterArtifacts(artifacts, filters)
+		if err != nil {
+			return nil, err
+		}
+		if len(artifacts) == 0 {
+			continue
 		}
 
-		for _, vTag := range vTags {
+		for _, artifact := range artifacts {
 			resources = append(resources, &model.Resource{
 				Type:     model.ResourceTypeChart,
 				Registry: a.registry,
@@ -78,7 +76,7 @@ func (a *adapter) FetchCharts(filters []*model.Filter) ([]*model.Resource, error
 					Repository: &model.Repository{
 						Name: repository.Name,
 					},
-					Vtags: []string{vTag.Name},
+					Artifacts: []*model.Artifact{artifact},
 				},
 			})
 		}

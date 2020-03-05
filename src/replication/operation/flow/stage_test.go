@@ -223,9 +223,11 @@ func TestFilterResources(t *testing.T) {
 				Repository: &model.Repository{
 					Name: "library/hello-world",
 				},
-				Vtags: []string{"latest"},
-				// TODO test labels
-				Labels: nil,
+				Artifacts: []*model.Artifact{
+					{
+						Tags: []string{"latest"},
+					},
+				},
 			},
 			Deleted:  true,
 			Override: true,
@@ -236,9 +238,14 @@ func TestFilterResources(t *testing.T) {
 				Repository: &model.Repository{
 					Name: "library/harbor",
 				},
-				Vtags: []string{"0.2.0", "0.3.0"},
-				// TODO test labels
-				Labels: nil,
+				Artifacts: []*model.Artifact{
+					{
+						Tags: []string{"0.2.0"},
+					},
+					{
+						Tags: []string{"0.3.0"},
+					},
+				},
 			},
 			Deleted:  true,
 			Override: true,
@@ -249,9 +256,11 @@ func TestFilterResources(t *testing.T) {
 				Repository: &model.Repository{
 					Name: "library/mysql",
 				},
-				Vtags: []string{"1.0"},
-				// TODO test labels
-				Labels: nil,
+				Artifacts: []*model.Artifact{
+					{
+						Tags: []string{"1.0"},
+					},
+				},
 			},
 			Deleted:  true,
 			Override: true,
@@ -279,8 +288,8 @@ func TestFilterResources(t *testing.T) {
 	require.Nil(t, err)
 	assert.Equal(t, 1, len(res))
 	assert.Equal(t, "library/harbor", res[0].Metadata.Repository.Name)
-	assert.Equal(t, 1, len(res[0].Metadata.Vtags))
-	assert.Equal(t, "0.2.0", res[0].Metadata.Vtags[0])
+	assert.Equal(t, 1, len(res[0].Metadata.Artifacts))
+	assert.Equal(t, "0.2.0", res[0].Metadata.Artifacts[0].Tags[0])
 }
 
 func TestAssembleSourceResources(t *testing.T) {
