@@ -19,11 +19,11 @@ import (
 	"fmt"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/goharbor/harbor/src/api/artifact"
+	"github.com/goharbor/harbor/src/api/project"
 	"github.com/goharbor/harbor/src/api/repository"
 	cmodels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	"github.com/goharbor/harbor/src/pkg/project"
 	"github.com/goharbor/harbor/src/pkg/q"
 	"github.com/goharbor/harbor/src/server/v2.0/models"
 	operation "github.com/goharbor/harbor/src/server/v2.0/restapi/operations/repository"
@@ -31,7 +31,7 @@ import (
 
 func newRepositoryAPI() *repositoryAPI {
 	return &repositoryAPI{
-		proMgr:  project.Mgr,
+		proCtl:  project.Ctl,
 		repoCtl: repository.Ctl,
 		artCtl:  artifact.Ctl,
 	}
@@ -39,8 +39,7 @@ func newRepositoryAPI() *repositoryAPI {
 
 type repositoryAPI struct {
 	BaseAPI
-	// TODO replace proMgr with proCtl
-	proMgr  project.Manager
+	proCtl  project.Controller
 	repoCtl repository.Controller
 	artCtl  artifact.Controller
 }
@@ -49,7 +48,7 @@ func (r *repositoryAPI) ListRepositories(ctx context.Context, params operation.L
 	if err := r.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceRepository); err != nil {
 		return r.SendError(ctx, err)
 	}
-	project, err := r.proMgr.Get(params.ProjectName)
+	project, err := r.proCtl.GetByName(ctx, params.ProjectName)
 	if err != nil {
 		return r.SendError(ctx, err)
 	}
