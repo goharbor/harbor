@@ -16,6 +16,7 @@ package impl
 
 import (
 	"context"
+	common_dao "github.com/goharbor/harbor/src/common/dao"
 	"os"
 	"testing"
 
@@ -44,6 +45,7 @@ type ContextImplTestSuite struct {
 
 // TestContextImplTestSuite is entry of go test
 func TestContextImplTestSuite(t *testing.T) {
+	common_dao.PrepareTestForPostgresSQL()
 	suite.Run(t, new(ContextImplTestSuite))
 }
 

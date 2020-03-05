@@ -199,12 +199,12 @@ func (gc *GarbageCollector) cleanCache() error {
 // 1, required part, the artifacts were removed from Harbor.
 // 2, optional part, the untagged artifacts.
 func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
-	// default is to clean trash
-	flushTrash := true
+	// default is not to clean trash
+	flushTrash := false
 	defer func() {
 		if flushTrash {
 			if err := gc.artrashMgr.Flush(ctx.SystemContext()); err != nil {
-				gc.logger.Errorf("failed to flush artifact trash")
+				gc.logger.Errorf("failed to flush artifact trash: %v", err)
 			}
 		}
 	}()
@@ -230,13 +230,13 @@ func (gc *GarbageCollector) deleteCandidates(ctx job.Context) error {
 	// handle the trash
 	required, err := gc.artrashMgr.Filter(ctx.SystemContext())
 	if err != nil {
-		return nil
+		return err
 	}
 	for _, art := range required {
 		if err := deleteManifest(art.RepositoryName, art.Digest); err != nil {
-			flushTrash = false
 			return fmt.Errorf("failed to delete manifest, %s:%s with error: %v", art.RepositoryName, art.Digest, err)
 		}
 	}
+	flushTrash = true
 	return nil
 }

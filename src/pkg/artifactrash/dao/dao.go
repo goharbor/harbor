@@ -73,7 +73,8 @@ func (d *dao) Filter(ctx context.Context) (arts []model.ArtifactTrash, err error
 
 	sql := `SELECT * FROM artifact_trash where artifact_trash.digest NOT IN (select digest from artifact)`
 
-	if err := ormer.Raw(sql).QueryRow(&deletedAfs); err != nil {
+	_, err = ormer.Raw(sql).QueryRows(&deletedAfs)
+	if err != nil {
 		return deletedAfs, err
 	}
 	return deletedAfs, nil
@@ -85,7 +86,7 @@ func (d *dao) Flush(ctx context.Context) (err error) {
 	if err != nil {
 		return err
 	}
-	sql := `DELETE * FROM artifact_trash`
+	sql := `DELETE FROM artifact_trash`
 	if err != nil {
 		return err
 	}
