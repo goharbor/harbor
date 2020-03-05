@@ -4,13 +4,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"net/url"
-	"os"
-	"strings"
 	"time"
 
 	tk "github.com/docker/distribution/registry/auth/token"
-	"github.com/garyburd/redigo/redis"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/core/service/token"
@@ -18,12 +14,6 @@ import (
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/instance"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/provider"
-)
-
-const (
-	historyNamespace  = "dist_history"
-	instanceNamespace = "dist_instance"
-	envRedisURL       = "_REDIS_URL" // same with core
 )
 
 // DefaultController is default controller
@@ -120,19 +110,13 @@ type CoreController struct {
 
 // NewCoreController is constructor of controller
 func NewCoreController(ctx context.Context) (*CoreController, error) {
-	addr, ok := redisAddr()
-	if !ok {
-		return nil, errors.New("malformat redis address")
+	iStore, err := instance.StorageFactory()
+	if iStore == nil || err != nil {
+		return nil, fmt.Errorf("nil instance storage, error: %v", err)
 	}
-
-	pool := redisPool(addr)
-	iStore := instance.NewRedisStorage(pool, instanceNamespace)
-	if iStore == nil {
-		return nil, errors.New("nil instance storage")
-	}
-	hStore := history.NewRedisStorage(pool, historyNamespace)
-	if hStore == nil {
-		return nil, errors.New("nil history storage")
+	hStore, err := history.StorageFactory()
+	if hStore == nil || err != nil {
+		return nil, fmt.Errorf("nil history storage, error: %v", err)
 	}
 
 	return &CoreController{
@@ -318,7 +302,7 @@ func (cc *CoreController) PreheatImages(images ...models.ImageRepository) (Compo
 	}
 
 	if validCount == 0 {
-		return nil, errors.New("No enabled healthy instances existing")
+		return nil, errors.New("no enabled healthy instances existing")
 	}
 
 	return results, nil
@@ -421,52 +405,4 @@ func buildImageData(image models.ImageRepository) (*provider.PreheatImage, error
 			"Authorization": fmt.Sprintf("Bearer %s", tk.Token),
 		},
 	}, nil
-}
-
-// redisPool used to create a redis pool
-func redisPool(addr string) *redis.Pool {
-	redisPool := &redis.Pool{
-		MaxActive: 6,
-		MaxIdle:   6,
-		Wait:      true,
-		Dial: func() (redis.Conn, error) {
-			return redis.DialURL(
-				addr,
-				redis.DialConnectTimeout(30*time.Second),
-				redis.DialReadTimeout(15*time.Second),
-				redis.DialWriteTimeout(15*time.Second),
-			)
-		},
-	}
-
-	return redisPool
-}
-
-// get redis address
-func redisAddr() (string, bool) {
-	rawAddr := os.Getenv(envRedisURL)
-	if len(rawAddr) == 0 {
-		return "", false
-	}
-
-	segments := strings.SplitN(rawAddr, ",", 3)
-	if len(segments) <= 1 {
-		return "", false
-	}
-
-	addrParts := []string{}
-	addrParts = append(addrParts, "redis://")
-	if len(segments) >= 3 && len(segments[2]) > 0 {
-		addrParts = append(addrParts, fmt.Sprintf("%s:%s@", "arbitrary_username", segments[2]))
-	}
-	addrParts = append(addrParts, segments[0], "/0") // use default db index 0
-
-	//verify
-	redisAddr := strings.Join(addrParts, "")
-	_, err := url.Parse(redisAddr)
-	if err != nil {
-		return "", false
-	}
-
-	return redisAddr, true
 }
