@@ -21,7 +21,6 @@ import (
 	"strings"
 
 	beegoctx "github.com/astaxie/beego/context"
-	"github.com/docker/distribution/reference"
 	"github.com/goharbor/harbor/src/common"
 	"github.com/goharbor/harbor/src/common/api"
 	"github.com/goharbor/harbor/src/common/dao"
@@ -60,30 +59,6 @@ const (
 
 var (
 	reqCtxModifiers []ReqCtxModifier
-	// basic auth request context modifier only takes effect on the patterns
-	// in the slice
-	basicAuthReqPatterns = []*pathMethod{
-		// create project
-		{
-			path:   "/api/projects",
-			method: http.MethodPost,
-		},
-		// token service
-		{
-			path:   "/service/token",
-			method: http.MethodGet,
-		},
-		// delete repository
-		{
-			path:   "/api/repositories/" + reference.NameRegexp.String(),
-			method: http.MethodDelete,
-		},
-		// delete tag
-		{
-			path:   "/api/repositories/" + reference.NameRegexp.String() + "/tags/" + reference.TagRegexp.String(),
-			method: http.MethodDelete,
-		},
-	}
 )
 
 // Init ReqCtxMofiers list
