@@ -4,12 +4,18 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"reflect"
 	"strings"
 
-	"github.com/garyburd/redigo/redis"
 	storage "github.com/goharbor/harbor/src/pkg/p2p/preheat/dao"
 	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/models"
+	"github.com/goharbor/harbor/src/pkg/p2p/preheat/dao/utils"
+)
+
+const (
+	namespace   = "dist_history"
+	envRedisURL = "_REDIS_URL"
 )
 
 // RedisStorage implements storage based on redis backend.
@@ -18,14 +24,17 @@ type RedisStorage struct {
 }
 
 // NewRedisStorage is constructor of RedisStorage
-func NewRedisStorage(pool *redis.Pool, namespace string) *RedisStorage {
-	if pool == nil || len(namespace) == 0 {
-		return nil
+func NewRedisStorage() (Storage, error) {
+	rawAddr := os.Getenv(envRedisURL)
+	addr, ok := utils.RedisAddr(rawAddr)
+	if !ok {
+		return nil, fmt.Errorf("malformed redis address: %s", rawAddr)
 	}
+	pool := utils.RedisPool(addr)
 
 	return &RedisStorage{
 		redisBase: storage.NewRedisBase(pool, namespace),
-	}
+	}, nil
 }
 
 // AppendHistory implements @Storage.AppendHistory
