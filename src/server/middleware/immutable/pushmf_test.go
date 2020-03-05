@@ -54,37 +54,7 @@ func doPutManifestRequest(projectID int64, projectName, name, tag, dgt string, n
 	}
 	*req = *(req.WithContext(internal_orm.NewContext(context.TODO(), dao.GetOrmer())))
 	*req = *(req.WithContext(context.WithValue(req.Context(), middleware.ArtifactInfoKey, afInfo)))
-	h := MiddlewarePush()(n)
-	h.ServeHTTP(util.NewCustomResponseWriter(rr), req)
-
-	return rr.Code
-}
-
-func doDeleteManifestRequest(projectID int64, projectName, name, tag, dgt string, next ...http.HandlerFunc) int {
-	repository := fmt.Sprintf("%s/%s", projectName, name)
-
-	url := fmt.Sprintf("/v2/%s/manifests/%s", repository, tag)
-	req, _ := http.NewRequest("DELETE", url, nil)
-
-	afInfo := &middleware.ArtifactInfo{
-		ProjectName: projectName,
-		Repository:  repository,
-		Tag:         tag,
-		Digest:      dgt,
-	}
-	rr := httptest.NewRecorder()
-
-	var n http.HandlerFunc
-	if len(next) > 0 {
-		n = next[0]
-	} else {
-		n = func(w http.ResponseWriter, req *http.Request) {
-			w.WriteHeader(http.StatusCreated)
-		}
-	}
-	*req = *(req.WithContext(internal_orm.NewContext(context.TODO(), dao.GetOrmer())))
-	*req = *(req.WithContext(context.WithValue(req.Context(), middleware.ArtifactInfoKey, afInfo)))
-	h := MiddlewareDelete()(n)
+	h := Middleware()(n)
 	h.ServeHTTP(util.NewCustomResponseWriter(rr), req)
 
 	return rr.Code
@@ -202,12 +172,6 @@ func (suite *HandlerSuite) TestPutDeleteManifestCreated() {
 
 	code2 := doPutManifestRequest(projectID, projectName, "photon", "latest", dgt)
 	suite.Equal(http.StatusCreated, code2)
-
-	code3 := doDeleteManifestRequest(projectID, projectName, "photon", "release-1.10", dgt)
-	suite.Equal(http.StatusPreconditionFailed, code3)
-
-	code4 := doDeleteManifestRequest(projectID, projectName, "photon", "latest", dgt)
-	suite.Equal(http.StatusPreconditionFailed, code4)
 
 }
 

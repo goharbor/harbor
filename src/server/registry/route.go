@@ -58,12 +58,11 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodDelete).
 		Path("/*/manifests/:reference").
-		Middleware(immutable.MiddlewareDelete()).
 		HandlerFunc(deleteManifest)
 	root.NewRoute().
 		Method(http.MethodPut).
 		Path("/*/manifests/:reference").
-		Middleware(immutable.MiddlewarePush()).
+		Middleware(immutable.Middleware()).
 		Middleware(blob.PutManifestMiddleware()).
 		HandlerFunc(putManifest)
 	// initiate blob upload
