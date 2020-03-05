@@ -51,3 +51,10 @@ type Storage interface {
 	//
 	List(param *models.QueryParam) ([]*models.Metadata, error)
 }
+
+// StorageFactory is factory to create Storage.
+var StorageFactory func() (Storage, error)
+
+func init() {
+	StorageFactory = NewRedisStorage
+}
