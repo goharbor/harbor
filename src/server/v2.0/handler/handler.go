@@ -26,6 +26,7 @@ func New() http.Handler {
 	h, api, err := restapi.HandlerAPI(restapi.Config{
 		ArtifactAPI:   newArtifactAPI(),
 		RepositoryAPI: newRepositoryAPI(),
+		AuditlogAPI:   newAuditLogAPI(),
 	})
 	if err != nil {
 		log.Fatal(err)
