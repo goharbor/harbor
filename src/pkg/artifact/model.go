@@ -114,8 +114,10 @@ type Reference struct {
 	ID          int64  `json:"id"`
 	ParentID    int64  `json:"parent_id"`
 	ChildID     int64  `json:"child_id"`
-	ChildDigest string `json:"child_digest"` // As we only provide the API based on digest rather than ID, the digest of child artifact is needed
+	ChildDigest string `json:"child_digest"`
 	Platform    *v1.Platform
+	URLs        []string          `json:"urls"`
+	Annotations map[string]string `json:"annotations"`
 }
 
 // From converts the data level reference to business level
@@ -123,10 +125,23 @@ func (r *Reference) From(ref *dao.ArtifactReference) {
 	r.ID = ref.ID
 	r.ParentID = ref.ParentID
 	r.ChildID = ref.ChildID
+	r.ChildDigest = ref.ChildDigest
 	if len(ref.Platform) > 0 {
 		r.Platform = &v1.Platform{}
 		if err := json.Unmarshal([]byte(ref.Platform), r.Platform); err != nil {
 			log.Errorf("failed to unmarshal the platform of reference: %v", err)
+		}
+	}
+	if len(ref.URLs) > 0 {
+		r.URLs = []string{}
+		if err := json.Unmarshal([]byte(ref.URLs), &r.URLs); err != nil {
+			log.Errorf("failed to unmarshal the URLs of reference: %v", err)
+		}
+	}
+	if len(ref.Annotations) > 0 {
+		r.Annotations = map[string]string{}
+		if err := json.Unmarshal([]byte(ref.Annotations), &r.Annotations); err != nil {
+			log.Errorf("failed to unmarshal the annotations of reference: %v", err)
 		}
 	}
 }
@@ -134,9 +149,10 @@ func (r *Reference) From(ref *dao.ArtifactReference) {
 // To converts the reference to data level object
 func (r *Reference) To() *dao.ArtifactReference {
 	ref := &dao.ArtifactReference{
-		ID:       r.ID,
-		ParentID: r.ParentID,
-		ChildID:  r.ChildID,
+		ID:          r.ID,
+		ParentID:    r.ParentID,
+		ChildID:     r.ChildID,
+		ChildDigest: r.ChildDigest,
 	}
 	if r.Platform != nil {
 		platform, err := json.Marshal(r.Platform)
@@ -144,6 +160,20 @@ func (r *Reference) To() *dao.ArtifactReference {
 			log.Errorf("failed to marshal the platform of reference: %v", err)
 		}
 		ref.Platform = string(platform)
+	}
+	if len(r.URLs) > 0 {
+		urls, err := json.Marshal(r.URLs)
+		if err != nil {
+			log.Errorf("failed to marshal the URLs of reference: %v", err)
+		}
+		ref.URLs = string(urls)
+	}
+	if len(r.Annotations) > 0 {
+		annotations, err := json.Marshal(r.Annotations)
+		if err != nil {
+			log.Errorf("failed to marshal the annotations of reference: %v", err)
+		}
+		ref.Annotations = string(annotations)
 	}
 	return ref
 }

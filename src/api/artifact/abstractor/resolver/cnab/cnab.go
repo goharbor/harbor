@@ -67,8 +67,11 @@ func (r *resolver) ResolveMetadata(ctx context.Context, manifest []byte, art *ar
 			return err
 		}
 		art.References = append(art.References, &artifact.Reference{
-			ChildID:  ar.ID,
-			Platform: mani.Platform,
+			ChildID:     ar.ID,
+			ChildDigest: digest,
+			Platform:    mani.Platform,
+			URLs:        mani.URLs,
+			Annotations: mani.Annotations,
 		})
 		// try to get the digest of the manifest that the config layer is referenced by
 		if mani.Annotations != nil &&

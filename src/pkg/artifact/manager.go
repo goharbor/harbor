@@ -135,11 +135,6 @@ func (m *manager) ListReferences(ctx context.Context, query *q.Query) ([]*Refere
 	for _, reference := range references {
 		ref := &Reference{}
 		ref.From(reference)
-		art, err := m.dao.Get(ctx, reference.ChildID)
-		if err != nil {
-			return nil, err
-		}
-		ref.ChildDigest = art.Digest
 		refs = append(refs, ref)
 	}
 	return refs, nil

@@ -49,10 +49,13 @@ func (a *Artifact) TableName() string {
 
 // ArtifactReference records the child artifact referenced by parent artifact
 type ArtifactReference struct {
-	ID       int64  `orm:"pk;auto;column(id)"`
-	ParentID int64  `orm:"column(parent_id)"`
-	ChildID  int64  `orm:"column(child_id)"`
-	Platform string `orm:"column(platform)"` // json string
+	ID          int64  `orm:"pk;auto;column(id)"`
+	ParentID    int64  `orm:"column(parent_id)"`
+	ChildID     int64  `orm:"column(child_id)"`
+	ChildDigest string `orm:"column(child_digest)"`
+	Platform    string `orm:"column(platform)"` // json string
+	URLs        string `orm:"column(urls)"`     // json string
+	Annotations string `orm:"column(annotations);type(jsonb)"`
 }
 
 // TableName for artifact reference
