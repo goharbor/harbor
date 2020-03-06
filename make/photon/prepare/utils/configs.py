@@ -53,23 +53,21 @@ def validate(conf: dict, **kwargs):
             raise Exception(
                 "Error: no provider configurations are provided for provider %s" % storage_provider_name)
     # ca_bundle validate
-    if conf.get('registry_custom_ca_bundle_path'):
-        registry_custom_ca_bundle_path = conf.get('registry_custom_ca_bundle_path') or ''
-        if registry_custom_ca_bundle_path.startswith('/data/'):
-            ca_bundle_host_path = registry_custom_ca_bundle_path
-        else:
-            ca_bundle_host_path = os.path.join(host_root_dir, registry_custom_ca_bundle_path.lstrip('/'))
-        try:
-            uid = os.stat(ca_bundle_host_path).st_uid
-            st_mode = os.stat(ca_bundle_host_path).st_mode
-        except Exception as e:
-            logging.error(e)
-            raise Exception('Can not get file info')
-        err_msg = 'Cert File {} should be owned by user with uid 10000 or readable by others'.format(registry_custom_ca_bundle_path)
-        if uid == DEFAULT_UID and not owner_can_read(st_mode):
-            raise Exception(err_msg)
-        if uid != DEFAULT_UID and not other_can_read(st_mode):
-            raise Exception(err_msg)
+    for conf_key in ('registry_custom_ca_bundle_path', 'core_custom_ca_bundle_path'):
+        if conf.get(conf_key):
+            custom_ca_bundle_path = conf.get(conf_key) or ''
+            ca_bundle_host_path = os.path.join(host_root_dir, custom_ca_bundle_path.strip('/'))
+            try:
+                uid = os.stat(ca_bundle_host_path).st_uid
+                st_mode = os.stat(ca_bundle_host_path).st_mode
+            except Exception as e:
+                logging.error(e)
+                raise Exception('Can not get file info')
+            err_msg = 'Cert File {} should be owned by user with uid 10000 or readable by others'.format(custom_ca_bundle_path)
+            if uid == DEFAULT_UID and not owner_can_read(st_mode):
+                raise Exception(err_msg)
+            if uid != DEFAULT_UID and not other_can_read(st_mode):
+                raise Exception(err_msg)
 
     # Redis validate
     redis_host = conf.get("redis_host")
@@ -328,8 +326,11 @@ def parse_yaml_config(config_file_path, with_notary, with_clair, with_trivy, wit
 
     config_dict['registry_username'] = REGISTRY_USER_NAME
     config_dict['registry_password'] = generate_random_string(32)
-    return config_dict
 
+    # Core configs
+    core_config = configs.get('core') or {}
+    config_dict['core_custom_ca_bundle_path'] = core_config.get('ca_bundle') or ''
+    return config_dict
 
 def get_redis_url(db, redis=None):
     """Returns redis url with format `redis://[arbitrary_username:password@]ipaddress:port/database_index`

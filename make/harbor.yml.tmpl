@@ -4,6 +4,10 @@
 # DO NOT use localhost or 127.0.0.1, because Harbor needs to be accessed by external clients.
 hostname: reg.mydomain.com
 
+# Uncomment the following section if you want to override the default system CA bundle
+#core:
+#  ca_bundle: /etc/pki/tls/certs/ca-bundle.crt
+
 # http related config
 http:
   # port for http, default is 80. If https enabled, this port will redirect to https port
