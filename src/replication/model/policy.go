@@ -94,7 +94,7 @@ func (p *Policy) Valid(v *validation.Validation) {
 			}
 			if filter.Type == FilterTypeResource {
 				rt := ResourceType(value)
-				if !(rt == ResourceTypeImage || rt == ResourceTypeChart) {
+				if !(rt == ResourceTypeArtifact || rt == ResourceTypeImage || rt == ResourceTypeChart) {
 					v.SetError("filters", fmt.Sprintf("invalid resource filter: %s", value))
 					break
 				}

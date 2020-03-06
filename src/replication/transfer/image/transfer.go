@@ -16,6 +16,8 @@ package image
 
 import (
 	"errors"
+	"github.com/docker/distribution/manifest/manifestlist"
+	"github.com/docker/distribution/manifest/schema1"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"strings"
 
@@ -214,9 +216,11 @@ func (t *transfer) copyImage(srcRepo, srcRef, dstRepo, dstRef string, override b
 func (t *transfer) copyContent(content distribution.Descriptor, srcRepo, dstRepo string) error {
 	digest := content.Digest.String()
 	switch content.MediaType {
-	// when the media type of pulled manifest is manifest list,
-	// the contents it contains are a few manifests
-	case v1.MediaTypeImageManifest, schema2.MediaTypeManifest:
+	// when the media type of pulled manifest is index,
+	// the contents it contains are a few manifests/indexes
+	case v1.MediaTypeImageIndex, manifestlist.MediaTypeManifestList,
+		v1.MediaTypeImageManifest, schema2.MediaTypeManifest,
+		schema1.MediaTypeSignedManifest:
 		// as using digest as the reference, so set the override to true directly
 		return t.copyImage(srcRepo, digest, dstRepo, digest, true)
 	// handle foreign layer

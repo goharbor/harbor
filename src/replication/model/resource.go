@@ -16,8 +16,9 @@ package model
 
 // the resource type
 const (
-	ResourceTypeImage ResourceType = "image"
-	ResourceTypeChart ResourceType = "chart"
+	ResourceTypeArtifact ResourceType = "artifact"
+	ResourceTypeImage    ResourceType = "image"
+	ResourceTypeChart    ResourceType = "chart"
 )
 
 // ResourceType represents the type of the resource
