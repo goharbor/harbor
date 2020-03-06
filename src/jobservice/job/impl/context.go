@@ -17,6 +17,8 @@ package impl
 import (
 	"context"
 	"fmt"
+	o "github.com/astaxie/beego/orm"
+	"github.com/goharbor/harbor/src/internal/orm"
 	"math"
 	"sync"
 	"time"
@@ -101,7 +103,7 @@ func (c *Context) Build(tracker job.Tracker) (job.Context, error) {
 	}
 
 	jContext := &Context{
-		sysContext: c.sysContext,
+		sysContext: orm.NewContext(c.sysContext, o.NewOrm()),
 		cfgMgr:     c.cfgMgr,
 		properties: make(map[string]interface{}),
 		tracker:    tracker,

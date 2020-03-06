@@ -63,7 +63,10 @@ func (gc *GCAPI) Prepare() {
 //  }
 //	}
 func (gc *GCAPI) Post() {
-	ajr := models.AdminJobReq{}
+	parameters := make(map[string]interface{})
+	ajr := models.AdminJobReq{
+		Parameters: parameters,
+	}
 	isValid, err := gc.DecodeJSONReqAndValidate(&ajr)
 	if !isValid {
 		gc.SendBadRequestError(err)
@@ -87,7 +90,10 @@ func (gc *GCAPI) Post() {
 //  }
 //	}
 func (gc *GCAPI) Put() {
-	ajr := models.AdminJobReq{}
+	parameters := make(map[string]interface{})
+	ajr := models.AdminJobReq{
+		Parameters: parameters,
+	}
 	isValid, err := gc.DecodeJSONReqAndValidate(&ajr)
 	if !isValid {
 		gc.SendBadRequestError(err)

@@ -11,6 +11,7 @@ import (
 	"github.com/goharbor/harbor/src/pkg/artifactrash/model"
 	v1 "github.com/opencontainers/image-spec/specs-go/v1"
 	"github.com/stretchr/testify/suite"
+	"testing"
 )
 
 type daoTestSuite struct {
@@ -23,11 +24,10 @@ type daoTestSuite struct {
 
 func (d *daoTestSuite) SetupSuite() {
 	d.dao = New()
+	d.afDao = artdao.New()
 	common_dao.PrepareTestForPostgresSQL()
 	d.ctx = orm.NewContext(nil, beegoorm.NewOrm())
-}
 
-func (d *daoTestSuite) SetupTest() {
 	art1 := &artdao.Artifact{
 		Type:              "image",
 		ManifestMediaType: v1.MediaTypeImageManifest,
@@ -56,12 +56,11 @@ func (d *daoTestSuite) SetupTest() {
 	}
 	id, err = d.dao.Create(d.ctx, aft)
 	d.Require().Nil(err)
-	d.id = id
+	d.id = art2.ID
 }
 
-func (d *daoTestSuite) TearDownTest() {
-	err := d.dao.Delete(d.ctx, d.id)
-	d.Require().Nil(err)
+func (d *daoTestSuite) TearDownSuite() {
+	d.afDao.Delete(d.ctx, d.id)
 }
 
 func (d *daoTestSuite) TestCreate() {
@@ -69,6 +68,7 @@ func (d *daoTestSuite) TestCreate() {
 	aft := &model.ArtifactTrash{
 		ManifestMediaType: v1.MediaTypeImageManifest,
 		RepositoryName:    "test/hello-world",
+		Digest:            "1234",
 	}
 
 	_, err := d.dao.Create(d.ctx, aft)
@@ -86,7 +86,7 @@ func (d *daoTestSuite) TestDelete() {
 
 func (d *daoTestSuite) TestFilter() {
 	afs, err := d.dao.Filter(d.ctx)
-	d.Require().NotNil(err)
+	d.Require().Nil(err)
 	d.Require().Equal(afs[0].Digest, "1234")
 }
 
@@ -112,4 +112,8 @@ func (d *daoTestSuite) TestFlush() {
 
 	err = d.dao.Flush(d.ctx)
 	d.Require().Nil(err)
+}
+
+func TestDaoTestSuite(t *testing.T) {
+	suite.Run(t, &daoTestSuite{})
 }
