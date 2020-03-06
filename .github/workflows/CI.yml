@@ -130,6 +130,9 @@ jobs:
           sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
           sudo update-ca-certificates
           sudo service docker restart
+          wget https://get.helm.sh/helm-v3.1.1-linux-386.tar.gz && tar zxvf helm-v3.1.1-linux-386.tar.gz && \
+          sudo mv linux-386/helm /usr/local/bin/helm3 && \
+          helm3 plugin install https://github.com/chartmuseum/helm-push
       - name: install
         run: |
           cd src/github.com/goharbor/harbor
