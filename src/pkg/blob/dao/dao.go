@@ -253,8 +253,11 @@ func (d *dao) DeleteProjectBlob(ctx context.Context, projectID int64, blobIDs ..
 	if len(blobIDs) == 0 {
 		return nil
 	}
-
-	kw := q.KeyWords{"blob_id__in": blobIDs}
+	ol := &q.OrList{}
+	for _, blobID := range blobIDs {
+		ol.Values = append(ol.Values, blobID)
+	}
+	kw := q.KeyWords{"blob_id": ol}
 	qs, err := orm.QuerySetter(ctx, &models.ProjectBlob{}, q.New(kw))
 	if err != nil {
 		return err

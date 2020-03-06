@@ -160,7 +160,7 @@ func (suite *DaoTestSuite) TestListBlobs() {
 		suite.Len(blobs, 1)
 	}
 
-	blobs, err = suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"digest__in": []string{digest1, digest2}}))
+	blobs, err = suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"digest": &q.OrList{Values: []interface{}{digest1, digest2}}}))
 	if suite.Nil(err) {
 		suite.Len(blobs, 2)
 	}
@@ -193,7 +193,11 @@ func (suite *DaoTestSuite) TestFindBlobsShouldUnassociatedWithProject() {
 			}
 		}
 
-		blobs, err := suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"digest__in": blobDigests}))
+		ol := &q.OrList{}
+		for _, blobDigest := range blobDigests {
+			ol.Values = append(ol.Values, blobDigest)
+		}
+		blobs, err := suite.dao.ListBlobs(ctx, q.New(q.KeyWords{"digest": ol}))
 		suite.Nil(err)
 		suite.Len(blobs, 5)
 
