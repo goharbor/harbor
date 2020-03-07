@@ -132,6 +132,7 @@ func Middleware() func(http.Handler) http.Handler {
 			if err := checker.check(req); err != nil {
 				// the header is needed for "docker manifest" commands: https://github.com/docker/cli/issues/989
 				rw.Header().Set("Docker-Distribution-Api-Version", "registry/2.0")
+				rw.Header().Set("Www-Authenticate", `Basic realm="harbor"`)
 				serror.SendError(rw, ierror.UnauthorizedError(err).WithMessage(err.Error()))
 				return
 			}
