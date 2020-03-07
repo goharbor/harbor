@@ -16,6 +16,7 @@ package orm
 
 import (
 	"context"
+	"github.com/goharbor/harbor/src/common/dao"
 	"reflect"
 	"strings"
 
@@ -150,4 +151,9 @@ func ParamPlaceholderForIn(n int) string {
 		placeholders = append(placeholders, "?")
 	}
 	return strings.Join(placeholders, ",")
+}
+
+// Escape special characters
+func Escape(str string) string {
+	return dao.Escape(str)
 }
