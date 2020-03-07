@@ -91,7 +91,7 @@ class TestProjects(unittest.TestCase):
         TestProjects.src_repo_name, tag_name = push_image_to_project(TestProjects.project_src_repo_name, harbor_server, 'admin', 'Harbor12345', "hello-world", pull_tag_name)
 
         #6. Get repository in project(PA), there should be one repository which was created by user(UA);
-        src_repo_data = self.repo.get_repository(TestProjects.project_src_repo_name, **TestProjects.USER_RETAG_CLIENT)
+        src_repo_data = self.repo.list_repositories(TestProjects.project_src_repo_name, **TestProjects.USER_RETAG_CLIENT)
         _assert_status_code(TestProjects.src_repo_name, src_repo_data[0].name)
 
         #7. Get repository(RA)'s image tag detail information;

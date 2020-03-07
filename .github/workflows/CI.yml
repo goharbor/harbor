@@ -109,6 +109,7 @@ jobs:
           cd src/github.com/goharbor/harbor
           pwd
           go env
+          echo "::set-env name=CNAB_PATH::$(go env GOPATH)/src/github.com/docker"
           echo "::set-env name=GOPATH::$(go env GOPATH):$GITHUB_WORKSPACE"
           echo "::add-path::$(go env GOPATH)/bin"
           echo "::set-env name=TOKEN_PRIVATE_KEY_PATH::${GITHUB_WORKSPACE}/src/github.com/goharbor/harbor/tests/private_key.pem"
@@ -130,9 +131,14 @@ jobs:
           sudo cp ./tests/harbor_ca.crt /usr/local/share/ca-certificates/
           sudo update-ca-certificates
           sudo service docker restart
-          wget https://get.helm.sh/helm-v3.1.1-linux-386.tar.gz && tar zxvf helm-v3.1.1-linux-386.tar.gz && \
-          sudo mv linux-386/helm /usr/local/bin/helm3 && \
+          wget https://get.helm.sh/helm-v3.1.1-linux-386.tar.gz && tar zxvf helm-v3.1.1-linux-386.tar.gz
+          sudo mv linux-386/helm /usr/local/bin/helm3
           helm3 plugin install https://github.com/chartmuseum/helm-push
+          mkdir -p $CNAB_PATH && cd $CNAB_PATH && git clone https://github.com/cnabio/cnab-to-oci.git
+          cd cnab-to-oci && git checkout v0.3.0-beta4
+          go list
+          make build
+          sudo mv bin/cnab-to-oci /usr/local/bin
       - name: install
         run: |
           cd src/github.com/goharbor/harbor

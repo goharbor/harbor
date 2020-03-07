@@ -59,7 +59,7 @@ class TestProjects(unittest.TestCase):
         push_special_image_to_project(TestProjects.project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test3", ['1.0'])
         push_special_image_to_project(TestProjects.project_src_repo_name, harbor_server, user_ra_name, user_ra_password, "test4", ['1.0'])
 
-        resp=self.repo.get_repository(TestProjects.project_src_repo_name, **TestProjects.USER_RA_CLIENT)
+        resp=self.repo.list_repositories(TestProjects.project_src_repo_name, **TestProjects.USER_RA_CLIENT)
         self.assertEqual(len(resp), 4)
 
         # Create Retention Policy
@@ -91,7 +91,7 @@ class TestProjects(unittest.TestCase):
         print(resp)
         # TODO As the repository isn't deleted when no tags left anymore
         # TODO we should check the artifact/tag count here
-        # resp=self.repo.get_repository(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
+        # resp=self.repo.list_repositories(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
         # self.assertEqual(len(resp), 3)
 
 
@@ -102,7 +102,7 @@ class TestProjects(unittest.TestCase):
     # TODO delete_repoitory will fail when no tags left anymore
     # @unittest.skipIf(TEARDOWN == False, "Test data won't be erased.")
     # def test_ClearData(self):
-    #     resp=self.repo.get_repository(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
+    #     resp=self.repo.list_repositories(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)
     #     for repo in resp:
     #         self.repo.delete_repoitory(repo.name, **TestProjects.USER_RA_CLIENT)
     #     self.project.delete_project(TestProjects.project_src_repo_id, **TestProjects.USER_RA_CLIENT)

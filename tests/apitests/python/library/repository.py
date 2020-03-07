@@ -37,7 +37,7 @@ def push_special_image_to_project(project_name, registry, username, password, im
     time.sleep(2)
     if expected_login_error_message != None:
         return
-    _docker_api.docker_image_build(r'{}/{}/{}'.format(registry, project_name, image), tags = tags, size=size, expected_error_message=expected_error_message)
+    return _docker_api.docker_image_build(r'{}/{}/{}'.format(registry, project_name, image), tags = tags, size=size, expected_error_message=expected_error_message)
 
 def is_repo_exist_in_project(repositories, repo_name):
     result = False
@@ -78,9 +78,15 @@ class Repository(base.Base):
         _, status_code, _ = client.delete_repository_with_http_info(project_name, repo_name)
         base._assert_status_code(200, status_code)
 
-    def get_repository(self, project_name, **kwargs):
+    def list_repositories(self, project_name, **kwargs):
         client = self._get_client(**kwargs)
         data, status_code, _ = client.list_repositories_with_http_info(project_name)
+        base._assert_status_code(200, status_code)
+        return data
+
+    def get_repository(self, project_name, repo_name, **kwargs):
+        client = self._get_client(**kwargs)
+        data, status_code, _ = client.get_repository_with_http_info(project_name, repo_name)
         base._assert_status_code(200, status_code)
         return data
 
@@ -122,7 +128,7 @@ class Repository(base.Base):
         return data
 
     def repository_should_exist(self, project_id, repo_name, **kwargs):
-        repositories = self.get_repository(project_id, **kwargs)
+        repositories = self.list_repositories(project_id, **kwargs)
         if is_repo_exist_in_project(repositories, repo_name) == False:
             raise Exception("Repository {} is not exist.".format(repo_name))
 
