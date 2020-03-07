@@ -105,9 +105,6 @@ func validate(req *http.Request) (bool, middleware.ArtifactInfo, vuln.Severity, 
 		return false, af, vs, wl
 	}
 
-	if scannerPull, ok := middleware.ScannerPullFromContext(req.Context()); ok && scannerPull {
-		return false, af, vs, wl
-	}
 	// Is vulnerable policy set?
 	projectVulnerableEnabled, projectVulnerableSeverity, wl := middleware.GetPolicyChecker().VulnerablePolicy(af.ProjectName)
 	if !projectVulnerableEnabled {

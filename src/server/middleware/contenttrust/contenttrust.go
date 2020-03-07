@@ -49,9 +49,6 @@ func validate(req *http.Request) (bool, middleware.ArtifactInfo) {
 	if !ok {
 		return false, none
 	}
-	if scannerPull, ok := middleware.ScannerPullFromContext(req.Context()); ok && scannerPull {
-		return false, none
-	}
 	if !middleware.GetPolicyChecker().ContentTrustEnabled(af.ProjectName) {
 		return false, af
 	}
