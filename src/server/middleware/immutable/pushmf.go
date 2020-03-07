@@ -6,6 +6,7 @@ import (
 	"github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/tag"
 	common_util "github.com/goharbor/harbor/src/common/utils"
+	"github.com/goharbor/harbor/src/common/utils/log"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
 	serror "github.com/goharbor/harbor/src/server/error"
 	"github.com/goharbor/harbor/src/server/middleware"
@@ -46,10 +47,8 @@ func handlePush(req *http.Request) error {
 		TagOption: &tag.Option{WithImmutableStatus: true},
 	})
 	if err != nil {
-		if internal_errors.IsErr(err, internal_errors.NotFoundCode) {
-			return nil
-		}
-		return err
+		log.Debugf("failed to list artifact, %v", err.Error())
+		return nil
 	}
 
 	_, repoName := common_util.ParseRepository(art.Repository)

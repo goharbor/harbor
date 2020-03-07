@@ -15,6 +15,9 @@
 package registry
 
 import (
+	"context"
+	beegocontext "github.com/astaxie/beego/context"
+	"github.com/goharbor/harbor/src/server/router"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -99,7 +102,7 @@ func (m *manifestTestSuite) TestDeleteManifest() {
 
 	mock.OnAnything(m.artCtl, "GetByReference").Return(nil, ierror.New(nil).WithCode(ierror.NotFoundCode))
 	deleteManifest(w, req)
-	m.Equal(http.StatusNotFound, w.Code)
+	m.Equal(http.StatusBadRequest, w.Code)
 
 	// reset the mock
 	m.SetupTest()
@@ -116,7 +119,10 @@ func (m *manifestTestSuite) TestDeleteManifest() {
 		}
 		w.WriteHeader(http.StatusOK)
 	})
-	req = httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/latest", nil)
+	req = httptest.NewRequest(http.MethodDelete, "/v2/library/hello-world/manifests/sha256:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180", nil)
+	input := &beegocontext.BeegoInput{}
+	input.SetParam(":reference", "sha527:418fb88ec412e340cdbef913b8ca1bbe8f9e8dc705f9617414c1f2c8db980180")
+	*req = *(req.WithContext(context.WithValue(req.Context(), router.ContextKeyInput{}, input)))
 	w = &httptest.ResponseRecorder{}
 	mock.OnAnything(m.artCtl, "GetByReference").Return(&artifact.Artifact{}, nil)
 	mock.OnAnything(m.artCtl, "Delete").Return(nil)
