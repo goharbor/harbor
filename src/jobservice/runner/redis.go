@@ -18,12 +18,10 @@ import (
 	"fmt"
 	"runtime"
 
-	"github.com/goharbor/harbor/src/jobservice/errs"
-
 	"github.com/gocraft/work"
 	"github.com/goharbor/harbor/src/jobservice/env"
+	"github.com/goharbor/harbor/src/jobservice/errs"
 	"github.com/goharbor/harbor/src/jobservice/job"
-	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/lcm"
 	"github.com/goharbor/harbor/src/jobservice/logger"
 	"github.com/goharbor/harbor/src/jobservice/period"
@@ -160,9 +158,6 @@ func (rj *RedisJob) Run(j *work.Job) (err error) {
 	}
 
 	// Build job context
-	if rj.context.JobContext == nil {
-		rj.context.JobContext = impl.NewDefaultContext(rj.context.SystemContext)
-	}
 	if execContext, err = rj.context.JobContext.Build(tracker); err != nil {
 		return
 	}

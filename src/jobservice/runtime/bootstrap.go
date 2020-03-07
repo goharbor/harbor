@@ -30,6 +30,7 @@ import (
 	"github.com/goharbor/harbor/src/jobservice/env"
 	"github.com/goharbor/harbor/src/jobservice/hook"
 	"github.com/goharbor/harbor/src/jobservice/job"
+	"github.com/goharbor/harbor/src/jobservice/job/impl"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/gc"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/notification"
 	"github.com/goharbor/harbor/src/jobservice/job/impl/replication"
@@ -85,6 +86,10 @@ func (bs *Bootstrap) LoadAndRun(ctx context.Context, cancel context.CancelFunc) 
 		if err != nil {
 			return errors.Errorf("initialize job context error: %s", err)
 		}
+	}
+	// Make sure the job context is created
+	if rootContext.JobContext == nil {
+		rootContext.JobContext = impl.NewDefaultContext(ctx)
 	}
 
 	// Alliance to config
