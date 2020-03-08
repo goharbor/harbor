@@ -264,6 +264,26 @@ func (q *QuotaMetaData) Resolve(evt *Event) error {
 	return nil
 }
 
+// ReplicationMetaData defines replication related event data
+type ReplicationMetaData struct {
+	ReplicationTaskID int64
+	Status            string
+}
+
+// Resolve replication metadata into replication event
+func (r *ReplicationMetaData) Resolve(evt *Event) error {
+	data := &model.ReplicationEvent{
+		ReplicationTaskID: r.ReplicationTaskID,
+		EventType:         notifyModel.EventTypeReplication,
+		OccurAt:           time.Now(),
+		Status:            r.Status,
+	}
+
+	evt.Topic = model.ReplicationTopic
+	evt.Data = data
+	return nil
+}
+
 // HookMetaData defines hook notification related event data
 type HookMetaData struct {
 	PolicyID  int64
