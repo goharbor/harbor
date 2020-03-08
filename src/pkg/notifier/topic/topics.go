@@ -21,6 +21,7 @@ func init() {
 		model.ScanningFailedTopic:    {&notification.ScanImagePreprocessHandler{}},
 		model.QuotaExceedTopic:       {&notification.QuotaPreprocessHandler{}},
 		model.ReplicationTopic:       {&notification.ReplicationPreprocessHandler{}},
+		model.SlackTopic:             {&notification.SlackHandler{}},
 	}
 
 	for t, handlers := range handlersMap {
