@@ -70,7 +70,7 @@ func (t *tagHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	var tagNames []string
+	tagNames := make([]string, 0)
 
 	t.repositoryName = router.Param(req.Context(), ":splat")
 	repository, err := t.repoCtl.GetByName(req.Context(), t.repositoryName)

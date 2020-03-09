@@ -52,7 +52,7 @@ func (r *repositoryHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) 
 		}
 	}
 
-	var repoNames []string
+	repoNames := make([]string, 0)
 	// get all repositories
 	// ToDo filter out the untagged repos
 	repoRecords, err := r.repoCtl.List(req.Context(), nil)

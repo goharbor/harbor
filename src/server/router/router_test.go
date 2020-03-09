@@ -65,13 +65,13 @@ func (r *routerTestSuite) TestParam() {
 	r.Empty(value)
 
 	// context contains wrong type input
-	value = Param(context.WithValue(context.Background(), contextKeyInput{}, &Route{}), "key")
+	value = Param(context.WithValue(context.Background(), ContextKeyInput{}, &Route{}), "key")
 	r.Empty(value)
 
 	// success
 	input := &beegocontext.BeegoInput{}
 	input.SetParam("key", "value")
-	value = Param(context.WithValue(context.Background(), contextKeyInput{}, input), "key")
+	value = Param(context.WithValue(context.Background(), ContextKeyInput{}, input), "key")
 	r.Equal("value", value)
 }
 
