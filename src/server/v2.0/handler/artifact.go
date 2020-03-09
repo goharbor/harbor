@@ -66,7 +66,7 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	}
 
 	// set query
-	query, err := a.BuildQuery(ctx, params.Q)
+	query, err := a.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
 	if err != nil {
 		return a.SendError(ctx, err)
 	}

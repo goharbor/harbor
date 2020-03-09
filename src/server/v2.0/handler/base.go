@@ -101,24 +101,22 @@ func (b *BaseAPI) RequireProjectAccess(ctx context.Context, projectIDOrName inte
 }
 
 // BuildQuery builds the query model according to the query string
-func (b *BaseAPI) BuildQuery(ctx context.Context, query *string) (*q.Query, error) {
+func (b *BaseAPI) BuildQuery(ctx context.Context, query *string, pageNumber, pageSize *int64) (*q.Query, error) {
 	var (
-		qy  *q.Query
-		err error
+		qs string
+		pn int64
+		ps int64
 	)
 	if query != nil {
-		qy, err = q.Build(*query)
-		if err != nil {
-			return nil, err
-		}
+		qs = *query
 	}
-	if qy == nil {
-		qy = &q.Query{}
+	if pageNumber != nil {
+		pn = *pageNumber
 	}
-	if qy.Keywords == nil {
-		qy.Keywords = map[string]interface{}{}
+	if pageSize != nil {
+		ps = *pageSize
 	}
-	return qy, nil
+	return q.Build(qs, pn, ps)
 }
 
 // Links return Links based on the provided pagination information

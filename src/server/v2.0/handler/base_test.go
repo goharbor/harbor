@@ -30,18 +30,28 @@ func (b *baseHandlerTestSuite) SetupSuite() {
 }
 
 func (b *baseHandlerTestSuite) TestBuildQuery() {
-	// nil query string pointer
-	var query *string
-	q, err := b.base.BuildQuery(nil, query)
+	// nil query string and pagination pointer
+	var (
+		query      *string
+		pageNumber *int64
+		pageSize   *int64
+	)
+	q, err := b.base.BuildQuery(nil, query, pageNumber, pageSize)
 	b.Require().Nil(err)
 	b.Require().NotNil(q)
 	b.NotNil(q.Keywords)
 
-	// not nil query string
-	str := "q=a=b"
-	q, err = b.base.BuildQuery(nil, &str)
+	// not nil query string and pagination pointer
+	var (
+		qs       = "q=a=b"
+		pn int64 = 1
+		ps int64 = 10
+	)
+	q, err = b.base.BuildQuery(nil, &qs, &pn, &ps)
 	b.Require().Nil(err)
 	b.Require().NotNil(q)
+	b.Equal(int64(1), q.PageNumber)
+	b.Equal(int64(10), q.PageSize)
 	b.NotNil(q.Keywords)
 }
 

@@ -54,7 +54,7 @@ func (r *repositoryAPI) ListRepositories(ctx context.Context, params operation.L
 	}
 
 	// set query
-	query, err := r.BuildQuery(ctx, params.Q)
+	query, err := r.BuildQuery(ctx, params.Q, params.Page, params.PageSize)
 	if err != nil {
 		return r.SendError(ctx, err)
 	}

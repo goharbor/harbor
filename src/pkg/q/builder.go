@@ -17,23 +17,37 @@ package q
 import (
 	"fmt"
 	ierror "github.com/goharbor/harbor/src/internal/error"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
 )
 
-// Build query sting into the Query model
-// query string format: q=k=v,k=~v,k=[min~max],k={v1 v2 v3},k=(v1 v2 v3),page=1,page_size=10
+// Build query sting and pagination information into the Query model
+// query string format: q=k=v,k=~v,k=[min~max],k={v1 v2 v3},k=(v1 v2 v3)
 // exact match: k=v
 // fuzzy match: k=~v
 // range: k=[min~max]
 // or list: k={v1 v2 v3}
 // and list: k=(v1 v2 v3)
-func Build(q string) (*Query, error) {
-	if len(q) == 0 {
-		return nil, nil
+func Build(q string, pageNumber, pageSize int64) (*Query, error) {
+	query := &Query{
+		PageNumber: pageNumber,
+		PageSize:   pageSize,
+		Keywords:   map[string]interface{}{},
 	}
-	query := &Query{Keywords: map[string]interface{}{}}
+	if len(q) == 0 {
+		return query, nil
+	}
+	// unescape the query string
+	// when the query string is returned in the link header, they are all escaped
+	qs, err := url.QueryUnescape(q)
+	if err != nil {
+		return nil, ierror.New(err).
+			WithCode(ierror.BadRequestCode).
+			WithMessage("invalid query string: %s", q)
+	}
+	q = qs
 	params := strings.Split(q, ",")
 	for _, param := range params {
 		strs := strings.SplitN(param, "=", 2)
@@ -41,26 +55,6 @@ func Build(q string) (*Query, error) {
 			return nil, ierror.New(nil).
 				WithCode(ierror.BadRequestCode).
 				WithMessage(`the query string must contain "=" and the key/value cannot be empty`)
-		}
-		if strs[0] == "page" {
-			i, err := strconv.ParseInt(strs[1], 10, 64)
-			if err != nil {
-				return nil, ierror.New(nil).
-					WithCode(ierror.BadRequestCode).
-					WithMessage("page must be integer")
-			}
-			query.PageNumber = i
-			continue
-		}
-		if strs[0] == "page_size" {
-			i, err := strconv.ParseInt(strs[1], 10, 64)
-			if err != nil {
-				return nil, ierror.New(nil).
-					WithCode(ierror.BadRequestCode).
-					WithMessage("page_size must be integer")
-			}
-			query.PageSize = i
-			continue
 		}
 		value, err := parsePattern(strs[1])
 		if err != nil {
