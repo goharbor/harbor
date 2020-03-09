@@ -114,22 +114,26 @@ func (pj *Job) Run(ctx job.Context, params job.Parameters) error {
 	logResults(myLogger, allCandidates, results)
 
 	// Save retain and total num in DB
-	return saveRetainNum(ctx, results, allCandidates)
+	return saveRetainNum(ctx, results, allCandidates, isDryRun)
 }
 
-func saveRetainNum(ctx job.Context, results []*artifactselector.Result, allCandidates []*artifactselector.Candidate) error {
-	var delNum int
+func saveRetainNum(ctx job.Context, results []*artifactselector.Result, allCandidates []*artifactselector.Candidate, isDryRun bool) error {
+	var realDelete []*artifactselector.Result
 	for _, r := range results {
 		if r.Error == nil {
-			delNum++
+			realDelete = append(realDelete, r)
 		}
 	}
 	retainObj := struct {
-		Total    int `json:"total"`
-		Retained int `json:"retained"`
+		Total    int                        `json:"total"`
+		Retained int                        `json:"retained"`
+		DryRun   bool                       `json:"dry_run"`
+		Deleted  []*artifactselector.Result `json:"deleted"`
 	}{
 		Total:    len(allCandidates),
-		Retained: len(allCandidates) - delNum,
+		Retained: len(allCandidates) - len(realDelete),
+		DryRun:   isDryRun,
+		Deleted:  realDelete,
 	}
 	c, err := json.Marshal(retainObj)
 	if err != nil {
