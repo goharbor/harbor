@@ -27,6 +27,7 @@ type RedisStorage struct {
 // RedisStorageFactory is constructor of RedisStorage
 func RedisStorageFactory() (Storage, error) {
 	rawAddr := os.Getenv(envRedisURL)
+
 	addr, ok := utils.RedisAddr(rawAddr)
 	if !ok {
 		return nil, fmt.Errorf("malformed redis address: %s", rawAddr)
