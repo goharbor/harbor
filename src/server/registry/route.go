@@ -21,7 +21,6 @@ import (
 	"github.com/goharbor/harbor/src/server/middleware/blob"
 	"github.com/goharbor/harbor/src/server/middleware/contenttrust"
 	"github.com/goharbor/harbor/src/server/middleware/immutable"
-	"github.com/goharbor/harbor/src/server/middleware/regtoken"
 	"github.com/goharbor/harbor/src/server/middleware/v2auth"
 	"github.com/goharbor/harbor/src/server/middleware/vulnerable"
 	"github.com/goharbor/harbor/src/server/router"
@@ -47,7 +46,6 @@ func RegisterRoutes() {
 	root.NewRoute().
 		Method(http.MethodGet).
 		Path("/*/manifests/:reference").
-		Middleware(regtoken.Middleware()).
 		Middleware(contenttrust.Middleware()).
 		Middleware(vulnerable.Middleware()).
 		HandlerFunc(getManifest)
