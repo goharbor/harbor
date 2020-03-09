@@ -15,7 +15,7 @@
 package index
 
 import (
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"testing"
 	"time"
 
@@ -63,7 +63,7 @@ func (suite *IndexTestSuite) TestGet() {
 	require.NoError(suite.T(), err)
 	require.NotNil(suite.T(), evaluator)
 
-	candidates := []*artifactselector.Candidate{{
+	candidates := []*selector.Candidate{{
 		Namespace:  "library",
 		Repository: "harbor",
 		Kind:       "image",
@@ -102,7 +102,7 @@ type fakeEvaluator struct {
 }
 
 // Process rule
-func (e *fakeEvaluator) Process(artifacts []*artifactselector.Candidate) ([]*artifactselector.Candidate, error) {
+func (e *fakeEvaluator) Process(artifacts []*selector.Candidate) ([]*selector.Candidate, error) {
 	return artifacts, nil
 }
 

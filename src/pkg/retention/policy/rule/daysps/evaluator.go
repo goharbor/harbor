@@ -17,7 +17,7 @@ package daysps
 import (
 	"fmt"
 	"github.com/goharbor/harbor/src/common/utils"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"time"
 
 	"github.com/goharbor/harbor/src/common/utils/log"
@@ -41,7 +41,7 @@ type evaluator struct {
 	n int
 }
 
-func (e *evaluator) Process(artifacts []*artifactselector.Candidate) (result []*artifactselector.Candidate, err error) {
+func (e *evaluator) Process(artifacts []*selector.Candidate) (result []*selector.Candidate, err error) {
 	minPushTime := time.Now().UTC().Add(time.Duration(-1*24*e.n) * time.Hour).Unix()
 	for _, a := range artifacts {
 		if a.PushedTime >= minPushTime {

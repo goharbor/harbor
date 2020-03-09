@@ -17,7 +17,7 @@ package dep
 import (
 	modelsv2 "github.com/goharbor/harbor/src/api/artifact"
 	"github.com/goharbor/harbor/src/api/tag"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	model_tag "github.com/goharbor/harbor/src/pkg/tag/model/tag"
 	"testing"
 
@@ -82,20 +82,20 @@ type clientTestSuite struct {
 func (c *clientTestSuite) TestGetCandidates() {
 	client := &basicClient{}
 	client.coreClient = &fakeCoreClient{}
-	var repository *artifactselector.Repository
+	var repository *selector.Repository
 	// nil repository
 	candidates, err := client.GetCandidates(repository)
 	require.NotNil(c.T(), err)
 
 	// image repository
-	repository = &artifactselector.Repository{}
-	repository.Kind = artifactselector.Image
+	repository = &selector.Repository{}
+	repository.Kind = selector.Image
 	repository.Namespace = "library"
 	repository.Name = "hello-world"
 	candidates, err = client.GetCandidates(repository)
 	require.Nil(c.T(), err)
 	assert.Equal(c.T(), 1, len(candidates))
-	assert.Equal(c.T(), artifactselector.Image, candidates[0].Kind)
+	assert.Equal(c.T(), selector.Image, candidates[0].Kind)
 	assert.Equal(c.T(), "library", candidates[0].Namespace)
 	assert.Equal(c.T(), "hello-world", candidates[0].Repository)
 	assert.Equal(c.T(), "latest", candidates[0].Tags[0])
@@ -118,14 +118,14 @@ func (c *clientTestSuite) TestDelete() {
 	client := &basicClient{}
 	client.coreClient = &fakeCoreClient{}
 
-	var candidate *artifactselector.Candidate
+	var candidate *selector.Candidate
 	// nil candidate
 	err := client.Delete(candidate)
 	require.NotNil(c.T(), err)
 
 	// image
-	candidate = &artifactselector.Candidate{}
-	candidate.Kind = artifactselector.Image
+	candidate = &selector.Candidate{}
+	candidate.Kind = selector.Image
 	err = client.Delete(candidate)
 	require.Nil(c.T(), err)
 

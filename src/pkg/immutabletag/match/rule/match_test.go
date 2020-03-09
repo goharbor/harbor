@@ -2,7 +2,7 @@ package rule
 
 import (
 	"github.com/goharbor/harbor/src/common/dao"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"github.com/goharbor/harbor/src/pkg/immutabletag"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/model"
 	"github.com/stretchr/testify/assert"
@@ -87,7 +87,7 @@ func (s *MatchTestSuite) TestImmuMatch() {
 
 	match := NewRuleMatcher()
 
-	c1 := artifactselector.Candidate{
+	c1 := selector.Candidate{
 		NamespaceID: 1,
 		Namespace:   "library",
 		Repository:  "redis",
@@ -97,34 +97,34 @@ func (s *MatchTestSuite) TestImmuMatch() {
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
-	c2 := artifactselector.Candidate{
+	c2 := selector.Candidate{
 		NamespaceID: 1,
 		Namespace:   "library",
 		Repository:  "redis",
 		Tags:        []string{"1.10"},
-		Kind:        artifactselector.Image,
+		Kind:        selector.Image,
 	}
 	isMatch, err = match.Match(1, c2)
 	s.require.Equal(isMatch, false)
 	s.require.Nil(err)
 
-	c3 := artifactselector.Candidate{
+	c3 := selector.Candidate{
 		NamespaceID: 1,
 		Namespace:   "immutable",
 		Repository:  "mysql",
 		Tags:        []string{"9.4.8"},
-		Kind:        artifactselector.Image,
+		Kind:        selector.Image,
 	}
 	isMatch, err = match.Match(1, c3)
 	s.require.Equal(isMatch, true)
 	s.require.Nil(err)
 
-	c4 := artifactselector.Candidate{
+	c4 := selector.Candidate{
 		NamespaceID: 1,
 		Namespace:   "immutable",
 		Repository:  "hello",
 		Tags:        []string{"world"},
-		Kind:        artifactselector.Image,
+		Kind:        selector.Image,
 	}
 	isMatch, err = match.Match(1, c4)
 	s.require.Equal(isMatch, false)

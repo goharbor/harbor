@@ -6,8 +6,8 @@ import (
 	"github.com/goharbor/harbor/src/common/utils/log"
 	ierror "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/internal/orm"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"github.com/goharbor/harbor/src/pkg/artifact"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match"
 	"github.com/goharbor/harbor/src/pkg/immutabletag/match/rule"
 	"github.com/goharbor/harbor/src/pkg/q"
@@ -207,7 +207,7 @@ func (c *controller) populateImmutableStatus(ctx context.Context, tag *Tag) {
 		return
 	}
 	_, repoName := utils.ParseRepository(artifact.RepositoryName)
-	matched, err := c.immutableMtr.Match(artifact.ProjectID, artifactselector.Candidate{
+	matched, err := c.immutableMtr.Match(artifact.ProjectID, selector.Candidate{
 		Repository:  repoName,
 		Tags:        []string{tag.Name},
 		NamespaceID: artifact.ProjectID,

@@ -16,7 +16,7 @@ package label
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	iselector "github.com/goharbor/harbor/src/internal/selector"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -28,7 +28,7 @@ import (
 type LabelSelectorTestSuite struct {
 	suite.Suite
 
-	artifacts []*artifactselector.Candidate
+	artifacts []*iselector.Candidate
 }
 
 // TestLabelSelector is entrance for LabelSelectorTestSuite
@@ -38,13 +38,13 @@ func TestLabelSelector(t *testing.T) {
 
 // SetupSuite to do preparation work
 func (suite *LabelSelectorTestSuite) SetupSuite() {
-	suite.artifacts = []*artifactselector.Candidate{
+	suite.artifacts = []*iselector.Candidate{
 		{
 			NamespaceID:  1,
 			Namespace:    "library",
 			Repository:   "harbor",
 			Tags:         []string{"1.9"},
-			Kind:         artifactselector.Image,
+			Kind:         iselector.Image,
 			PushedTime:   time.Now().Unix() - 3600,
 			PulledTime:   time.Now().Unix(),
 			CreationTime: time.Now().Unix() - 7200,
@@ -55,7 +55,7 @@ func (suite *LabelSelectorTestSuite) SetupSuite() {
 			Namespace:    "library",
 			Repository:   "harbor",
 			Tags:         []string{"dev"},
-			Kind:         artifactselector.Image,
+			Kind:         iselector.Image,
 			PushedTime:   time.Now().Unix() - 3600,
 			PulledTime:   time.Now().Unix(),
 			CreationTime: time.Now().Unix() - 7200,
@@ -131,7 +131,7 @@ func (suite *LabelSelectorTestSuite) TestWithoutNoneExistingLabels() {
 }
 
 // Check whether the returned result matched the expected ones (only check repo:tag)
-func expect(expected []string, candidates []*artifactselector.Candidate) bool {
+func expect(expected []string, candidates []*iselector.Candidate) bool {
 	hash := make(map[string]bool)
 
 	for _, art := range candidates {

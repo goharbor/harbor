@@ -17,7 +17,7 @@ package daysps
 import (
 	"errors"
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 	"testing"
 	"time"
 
@@ -54,7 +54,7 @@ func (e *EvaluatorTestSuite) TestNew() {
 
 func (e *EvaluatorTestSuite) TestProcess() {
 	now := time.Now().UTC()
-	data := []*artifactselector.Candidate{
+	data := []*selector.Candidate{
 		{PushedTime: daysAgo(now, 1, time.Hour)},
 		{PushedTime: daysAgo(now, 2, time.Hour)},
 		{PushedTime: daysAgo(now, 3, time.Hour)},

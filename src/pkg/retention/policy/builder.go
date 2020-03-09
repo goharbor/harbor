@@ -16,13 +16,13 @@ package policy
 
 import (
 	"fmt"
-	"github.com/goharbor/harbor/src/pkg/artifactselector"
+	"github.com/goharbor/harbor/src/internal/selector"
 
 	index4 "github.com/goharbor/harbor/src/pkg/retention/policy/action/index"
 
 	index3 "github.com/goharbor/harbor/src/pkg/retention/policy/alg/index"
 
-	index2 "github.com/goharbor/harbor/src/pkg/artifactselector/selectors/index"
+	index2 "github.com/goharbor/harbor/src/internal/selector/selectors/index"
 
 	"github.com/goharbor/harbor/src/pkg/retention/policy/rule/index"
 
@@ -46,7 +46,7 @@ type Builder interface {
 }
 
 // NewBuilder news a basic builder
-func NewBuilder(all []*artifactselector.Candidate) Builder {
+func NewBuilder(all []*selector.Candidate) Builder {
 	return &basicBuilder{
 		allCandidates: all,
 	}
@@ -54,7 +54,7 @@ func NewBuilder(all []*artifactselector.Candidate) Builder {
 
 // basicBuilder is default implementation of Builder interface
 type basicBuilder struct {
-	allCandidates []*artifactselector.Candidate
+	allCandidates []*selector.Candidate
 }
 
 // Build policy processor from the raw policy
@@ -76,7 +76,7 @@ func (bb *basicBuilder) Build(policy *lwp.Metadata, isDryRun bool) (alg.Processo
 			return nil, errors.Wrap(err, "get action performer by metadata")
 		}
 
-		sl := make([]artifactselector.Selector, 0)
+		sl := make([]selector.Selector, 0)
 		for _, s := range r.TagSelectors {
 			sel, err := index2.Get(s.Kind, s.Decoration, s.Pattern)
 			if err != nil {
