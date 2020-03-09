@@ -45,9 +45,10 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, model.RegistryTypeHarbor, info.Type)
 	assert.Equal(t, 2, len(info.SupportedResourceFilters))
 	assert.Equal(t, 2, len(info.SupportedTriggers))
-	assert.Equal(t, 2, len(info.SupportedResourceTypes))
-	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
-	assert.Equal(t, model.ResourceTypeChart, info.SupportedResourceTypes[1])
+	assert.Equal(t, 3, len(info.SupportedResourceTypes))
+	assert.Equal(t, model.ResourceTypeArtifact, info.SupportedResourceTypes[0])
+	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[1])
+	assert.Equal(t, model.ResourceTypeChart, info.SupportedResourceTypes[2])
 	server.Close()
 
 	// chart museum disabled
@@ -69,8 +70,9 @@ func TestInfo(t *testing.T) {
 	assert.Equal(t, model.RegistryTypeHarbor, info.Type)
 	assert.Equal(t, 2, len(info.SupportedResourceFilters))
 	assert.Equal(t, 2, len(info.SupportedTriggers))
-	assert.Equal(t, 1, len(info.SupportedResourceTypes))
-	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[0])
+	assert.Equal(t, 2, len(info.SupportedResourceTypes))
+	assert.Equal(t, model.ResourceTypeArtifact, info.SupportedResourceTypes[0])
+	assert.Equal(t, model.ResourceTypeImage, info.SupportedResourceTypes[1])
 	server.Close()
 }
 

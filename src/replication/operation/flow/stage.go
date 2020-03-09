@@ -60,13 +60,10 @@ func initialize(policy *model.Policy) (adp.Adapter, adp.Adapter, error) {
 // fetch resources from the source registry
 func fetchResources(adapter adp.Adapter, policy *model.Policy) ([]*model.Resource, error) {
 	var resTypes []model.ResourceType
-	var filters []*model.Filter
 	for _, filter := range policy.Filters {
-		if filter.Type != model.FilterTypeResource {
-			filters = append(filters, filter)
-			continue
+		if filter.Type == model.FilterTypeResource {
+			resTypes = append(resTypes, filter.Value.(model.ResourceType))
 		}
-		resTypes = append(resTypes, filter.Value.(model.ResourceType))
 	}
 	if len(resTypes) == 0 {
 		info, err := adapter.Info()
@@ -76,33 +73,42 @@ func fetchResources(adapter adp.Adapter, policy *model.Policy) ([]*model.Resourc
 		resTypes = append(resTypes, info.SupportedResourceTypes...)
 	}
 
-	resources := []*model.Resource{}
-	// convert the adapter to different interfaces according to its required resource types
-	for _, typ := range resTypes {
-		var res []*model.Resource
-		var err error
-		if typ == model.ResourceTypeImage {
-			// images
-			reg, ok := adapter.(adp.ImageRegistry)
-			if !ok {
-				return nil, fmt.Errorf("the adapter doesn't implement the ImageRegistry interface")
-			}
-			res, err = reg.FetchImages(filters)
-		} else if typ == model.ResourceTypeChart {
-			// charts
-			reg, ok := adapter.(adp.ChartRegistry)
-			if !ok {
-				return nil, fmt.Errorf("the adapter doesn't implement the ChartRegistry interface")
-			}
-			res, err = reg.FetchCharts(filters)
-		} else {
-			return nil, fmt.Errorf("unsupported resource type %s", typ)
+	fetchArtifact := false
+	fetchChart := false
+	for _, resType := range resTypes {
+		if resType == model.ResourceTypeChart {
+			fetchChart = true
+			continue
 		}
+		fetchArtifact = true
+	}
+
+	var resources []*model.Resource
+	// artifacts
+	if fetchArtifact {
+		reg, ok := adapter.(adp.ImageRegistry)
+		if !ok {
+			return nil, fmt.Errorf("the adapter doesn't implement the ImageRegistry interface")
+		}
+		res, err := reg.FetchImages(policy.Filters)
 		if err != nil {
-			return nil, fmt.Errorf("failed to fetch %s: %v", typ, err)
+			return nil, fmt.Errorf("failed to fetch artifacts: %v", err)
 		}
 		resources = append(resources, res...)
-		log.Debugf("fetch %s completed", typ)
+		log.Debug("fetch artifacts completed")
+	}
+	// charts
+	if fetchChart {
+		reg, ok := adapter.(adp.ChartRegistry)
+		if !ok {
+			return nil, fmt.Errorf("the adapter doesn't implement the ChartRegistry interface")
+		}
+		res, err := reg.FetchCharts(policy.Filters)
+		if err != nil {
+			return nil, fmt.Errorf("failed to fetch charts: %v", err)
+		}
+		resources = append(resources, res...)
+		log.Debug("fetch charts completed")
 	}
 
 	log.Debug("fetch resources from the source registry completed")
@@ -290,7 +296,7 @@ func getResourceName(res *model.Resource) string {
 		n = len(meta.Vtags)
 	}
 
-	return fmt.Sprintf("%s [%d in total]", meta.Repository.Name, n)
+	return fmt.Sprintf("%s [%d artifact(s) in total]", meta.Repository.Name, n)
 }
 
 // repository:c namespace:n -> n/c

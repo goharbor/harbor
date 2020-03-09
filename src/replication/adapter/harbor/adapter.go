@@ -98,6 +98,7 @@ func (a *adapter) Info() (*model.RegistryInfo, error) {
 	info := &model.RegistryInfo{
 		Type: model.RegistryTypeHarbor,
 		SupportedResourceTypes: []model.ResourceType{
+			model.ResourceTypeArtifact,
 			model.ResourceTypeImage,
 		},
 		SupportedResourceFilters: []*model.FilterStyle{
