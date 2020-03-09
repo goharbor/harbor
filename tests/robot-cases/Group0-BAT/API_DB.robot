@@ -20,8 +20,8 @@ ${SERVER_API_ENDPOINT}  ${SERVER_URL}/api
 
 *** Test Cases ***
 # TODO uncomment this after re-implement the case
-# Test Case - Garbage Collection
-#    Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
+Test Case - Garbage Collection
+    Harbor API Test  ./tests/apitests/python/test_garbage_collection.py
 Test Case - Add Private Project Member and Check User Can See It
     Harbor API Test  ./tests/apitests/python/test_add_member_to_private_project.py
 Test Case - Delete a Repository of a Certain Project Created by Normal User
