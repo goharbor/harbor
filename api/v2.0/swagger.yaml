@@ -26,10 +26,9 @@ paths:
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/projectName'
-        # TODO remove it
+        - $ref: '#/parameters/query'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
-        - $ref: '#/parameters/query'
         # TODO remove it
         - name: name
           in: query
@@ -149,9 +148,10 @@ paths:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/projectName'
         - $ref: '#/parameters/repositoryName'
+        - $ref: '#/parameters/query'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
-        - $ref: '#/parameters/query'
+        # TODO remove the query strings included in "query"
         - name: type
           in: query
           description: Query the artifacts by type. Valid values can be "IMAGE", "CHART", etc.

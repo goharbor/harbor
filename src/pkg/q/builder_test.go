@@ -244,28 +244,28 @@ func TestParsePattern(t *testing.T) {
 func TestBuild(t *testing.T) {
 	// empty string
 	q := ``
-	query, err := Build(q)
+	query, err := Build(q, 1, 10)
 	require.Nil(t, err)
-	assert.Nil(t, query)
+	require.NotNil(t, query)
+	assert.Equal(t, int64(1), query.PageNumber)
+	assert.Equal(t, int64(10), query.PageSize)
 
-	// contains only ";"
+	// contains only ","
 	q = `,`
-	query, err = Build(q)
-	require.NotNil(t, err)
-
-	// invalid page
-	q = `page=a`
-	query, err = Build(q)
-	require.NotNil(t, err)
-
-	// invalid page
-	q = `page_size=a`
-	query, err = Build(q)
+	query, err = Build(q, 1, 10)
 	require.NotNil(t, err)
 
 	// valid query string
-	q = `k=v,page=1,page_size=10`
-	query, err = Build(q)
+	q = `k=v`
+	query, err = Build(q, 1, 10)
+	require.Nil(t, err)
+	assert.Equal(t, int64(1), query.PageNumber)
+	assert.Equal(t, int64(10), query.PageSize)
+	assert.Equal(t, "v", query.Keywords["k"].(string))
+
+	// contains escaped characters
+	q = `k%3Dv`
+	query, err = Build(q, 1, 10)
 	require.Nil(t, err)
 	assert.Equal(t, int64(1), query.PageNumber)
 	assert.Equal(t, int64(10), query.PageSize)
