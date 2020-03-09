@@ -16,6 +16,8 @@ package dao
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	beegoorm "github.com/astaxie/beego/orm"
 	ierror "github.com/goharbor/harbor/src/internal/error"
@@ -52,7 +54,7 @@ type DAO interface {
 
 const (
 	// both tagged and untagged artifacts
-	all = `IN (
+	both = `IN (
 		SELECT DISTINCT art.id FROM artifact art
 		LEFT JOIN tag ON art.id=tag.artifact_id 
 		LEFT JOIN artifact_reference ref ON art.id=ref.child_id
@@ -60,13 +62,12 @@ const (
 	// only untagged artifacts
 	untagged = `IN (
 		SELECT DISTINCT art.id FROM artifact art
-		LEFT JOIN tag ON art.id=tag.artifact_id 
-		LEFT JOIN artifact_reference ref ON art.id=ref.child_id
-		WHERE tag.id IS NULL AND ref.id IS NULL)`
+		LEFT JOIN tag ON art.id=tag.artifact_id
+		WHERE tag.id IS NULL)`
 	// only tagged artifacts
 	tagged = `IN (
 		SELECT DISTINCT art.id FROM artifact art
-		LEFT JOIN tag ON art.id=tag.artifact_id
+		JOIN tag ON art.id=tag.artifact_id
 		WHERE tag.id IS NOT NULL)`
 )
 
@@ -251,31 +252,113 @@ func (d *dao) DeleteReferences(ctx context.Context, parentID int64) error {
 }
 
 func querySetter(ctx context.Context, query *q.Query) (beegoorm.QuerySeter, error) {
-	// as we modify the query in this method, copy it to avoid the impact for the original one
-	query = q.Copy(query)
-	// show both tagged and untagged artifacts by default
-	rawFilter := all
-	if query != nil && len(query.Keywords) > 0 {
-		value, ok := query.Keywords["Tags"]
-		if ok {
-			switch value.(string) {
-			case "nil":
-				// only show untagged artifacts
-				rawFilter = untagged
-			case "*":
-				// only show tagged artifacts
-				rawFilter = tagged
-			default:
-				return nil, ierror.New(nil).WithCode(ierror.BadRequestCode).
-					WithMessage("invalid value of tags: %s", value.(string))
-			}
-			// as the "Tags" isn't a table column, remove the "Tags" from the query to avoid orm error
-			delete(query.Keywords, "Tags")
-		}
-	}
 	qs, err := orm.QuerySetter(ctx, &Artifact{}, query)
 	if err != nil {
 		return nil, err
 	}
-	return qs.FilterRaw("id", rawFilter), nil
+	qs, err = setBaseQuery(qs, query)
+	if err != nil {
+		return nil, err
+	}
+	qs, err = setTagQuery(qs, query)
+	if err != nil {
+		return nil, err
+	}
+	qs, err = setLabelQuery(qs, query)
+	if err != nil {
+		return nil, err
+	}
+	return qs, nil
+}
+
+// handle q=base=*
+// when "q=base=*" is specified in the query, the base collection is the all artifacts of database,
+// otherwise the base connection is only the tagged artifacts and untagged artifacts that aren't
+// referenced by others
+func setBaseQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, error) {
+	if query == nil || len(query.Keywords) == 0 {
+		qs = qs.FilterRaw("id", both)
+		return qs, nil
+	}
+	base, exist := query.Keywords["base"]
+	if !exist {
+		qs = qs.FilterRaw("id", both)
+		return qs, nil
+	}
+	b, ok := base.(string)
+	if !ok || b != "*" {
+		return qs, ierror.New(nil).WithCode(ierror.BadRequestCode).
+			WithMessage(`the value of "base" query can only be exact match value with "*"`)
+	}
+	// the base is specified as "*"
+	return qs, nil
+}
+
+// handle query string: q=tags=value q=tags=~value
+func setTagQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, error) {
+	if query == nil || len(query.Keywords) == 0 {
+		return qs, nil
+	}
+	tags, exist := query.Keywords["tags"]
+	if !exist {
+		tags, exist = query.Keywords["Tags"]
+		if !exist {
+			return qs, nil
+		}
+	}
+
+	// fuzzy match
+	f, ok := tags.(*q.FuzzyMatchValue)
+	if ok {
+		sql := fmt.Sprintf(`IN (
+		SELECT DISTINCT art.id FROM artifact art
+		JOIN tag ON art.id=tag.artifact_id
+		WHERE tag.name LIKE '%%%s%%')`, orm.Escape(f.Value))
+		qs = qs.FilterRaw("id", sql)
+		return qs, nil
+	}
+	// exact match, only handle "*" for listing tagged artifacts and "nil" for listing untagged artifacts
+	s, ok := tags.(string)
+	if ok {
+		if s == "*" {
+			qs = qs.FilterRaw("id", tagged)
+			return qs, nil
+		}
+		if s == "nil" {
+			qs = qs.FilterRaw("id", untagged)
+			return qs, nil
+		}
+	}
+	return qs, ierror.New(nil).WithCode(ierror.BadRequestCode).
+		WithMessage(`the value of "tags" query can only be fuzzy match value or exact match value with "*" and "nil"`)
+}
+
+// handle query string: q=labels=(1 2 3)
+func setLabelQuery(qs beegoorm.QuerySeter, query *q.Query) (beegoorm.QuerySeter, error) {
+	if query == nil || len(query.Keywords) == 0 {
+		return qs, nil
+	}
+	labels, exist := query.Keywords["labels"]
+	if !exist {
+		labels, exist = query.Keywords["Labels"]
+		if !exist {
+			return qs, nil
+		}
+	}
+	al, ok := labels.(*q.AndList)
+	if !ok {
+		return qs, ierror.New(nil).WithCode(ierror.BadRequestCode).
+			WithMessage(`the value of "labels" query can only be integer list with intersetion relationship`)
+	}
+	var collections []string
+	for _, value := range al.Values {
+		labelID, ok := value.(int64)
+		if !ok {
+			return qs, ierror.New(nil).WithCode(ierror.BadRequestCode).
+				WithMessage(`the value of "labels" query can only be integer list with intersetion relationship`)
+		}
+		collections = append(collections, fmt.Sprintf(`SELECT artifact_id FROM label_reference WHERE label_id=%d`, labelID))
+	}
+	qs = qs.FilterRaw("id", fmt.Sprintf(`IN (%s)`, strings.Join(collections, " INTERSECT ")))
+	return qs, nil
 }

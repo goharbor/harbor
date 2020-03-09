@@ -26,6 +26,7 @@ paths:
       parameters:
         - $ref: '#/parameters/requestId'
         - $ref: '#/parameters/projectName'
+        # TODO remove it
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
         - $ref: '#/parameters/query'
@@ -150,6 +151,7 @@ paths:
         - $ref: '#/parameters/repositoryName'
         - $ref: '#/parameters/page'
         - $ref: '#/parameters/pageSize'
+        - $ref: '#/parameters/query'
         - name: type
           in: query
           description: Query the artifacts by type. Valid values can be "IMAGE", "CHART", etc.

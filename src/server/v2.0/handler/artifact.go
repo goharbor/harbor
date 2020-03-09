@@ -32,7 +32,6 @@ import (
 	"github.com/goharbor/harbor/src/common/rbac"
 	"github.com/goharbor/harbor/src/common/utils"
 	ierror "github.com/goharbor/harbor/src/internal/error"
-	"github.com/goharbor/harbor/src/pkg/q"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/assembler"
 	"github.com/goharbor/harbor/src/server/v2.0/handler/model"
@@ -65,21 +64,11 @@ func (a *artifactAPI) ListArtifacts(ctx context.Context, params operation.ListAr
 	if err := a.RequireProjectAccess(ctx, params.ProjectName, rbac.ActionList, rbac.ResourceArtifact); err != nil {
 		return a.SendError(ctx, err)
 	}
+
 	// set query
-	query := &q.Query{
-		Keywords: map[string]interface{}{},
-	}
-	if params.Type != nil {
-		query.Keywords["Type"] = *(params.Type)
-	}
-	if params.Tags != nil {
-		query.Keywords["Tags"] = *(params.Tags)
-	}
-	if params.Page != nil {
-		query.PageNumber = *(params.Page)
-	}
-	if params.PageSize != nil {
-		query.PageSize = *(params.PageSize)
+	query, err := a.BuildQuery(ctx, params.Q)
+	if err != nil {
+		return a.SendError(ctx, err)
 	}
 	query.Keywords["RepositoryName"] = fmt.Sprintf("%s/%s", params.ProjectName, params.RepositoryName)
 

@@ -32,22 +32,6 @@ func New(kw KeyWords) *Query {
 	return &Query{Keywords: kw}
 }
 
-// Copy the specified query object
-func Copy(query *Query) *Query {
-	if query == nil {
-		return nil
-	}
-	q := &Query{
-		PageNumber: query.PageNumber,
-		PageSize:   query.PageSize,
-		Keywords:   map[string]interface{}{},
-	}
-	for key, value := range query.Keywords {
-		q.Keywords[key] = value
-	}
-	return q
-}
-
 // Range query
 type Range struct {
 	Min interface{}
@@ -66,5 +50,5 @@ type OrList struct {
 
 // FuzzyMatchValue query
 type FuzzyMatchValue struct {
-	Value interface{}
+	Value string
 }

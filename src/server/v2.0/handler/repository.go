@@ -54,19 +54,9 @@ func (r *repositoryAPI) ListRepositories(ctx context.Context, params operation.L
 	}
 
 	// set query
-	var query *q.Query
-	if params.Q != nil {
-		query, err = q.Build(*params.Q)
-		if err != nil {
-			return r.SendError(ctx, err)
-		}
-	}
-
-	if query == nil {
-		query = &q.Query{Keywords: map[string]interface{}{}}
-	}
-	if query.Keywords == nil {
-		query.Keywords = map[string]interface{}{}
+	query, err := r.BuildQuery(ctx, params.Q)
+	if err != nil {
+		return r.SendError(ctx, err)
 	}
 	query.Keywords["ProjectID"] = project.ProjectID
 

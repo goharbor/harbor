@@ -29,6 +29,22 @@ func (b *baseHandlerTestSuite) SetupSuite() {
 	b.base = &BaseAPI{}
 }
 
+func (b *baseHandlerTestSuite) TestBuildQuery() {
+	// nil query string pointer
+	var query *string
+	q, err := b.base.BuildQuery(nil, query)
+	b.Require().Nil(err)
+	b.Require().NotNil(q)
+	b.NotNil(q.Keywords)
+
+	// not nil query string
+	str := "q=a=b"
+	q, err = b.base.BuildQuery(nil, &str)
+	b.Require().Nil(err)
+	b.Require().NotNil(q)
+	b.NotNil(q.Keywords)
+}
+
 func (b *baseHandlerTestSuite) TestLinks() {
 	// request first page, response contains only "next" link
 	url, err := url.Parse("http://localhost/api/artifacts?page=1&page_size=1")
