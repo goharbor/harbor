@@ -70,14 +70,14 @@ jobs:
         run: |
           cd src/github.com/goharbor/harbor
           env
-          bash ./tests/showtime.sh ./tests/travis/ut_install.sh
+          bash ./tests/showtime.sh ./tests/ci/ut_install.sh
       - name: script
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           echo IP: $IP
           cd src/github.com/goharbor/harbor
-          bash ./tests/showtime.sh ./tests/travis/ut_run.sh $IP
+          bash ./tests/showtime.sh ./tests/ci/ut_run.sh $IP
       - name: Codecov For BackEnd
         uses: codecov/codecov-action@v1
         with:
@@ -137,12 +137,12 @@ jobs:
         run: |
           cd src/github.com/goharbor/harbor
           env
-          bash ./tests/showtime.sh ./tests/travis/api_common_install.sh $IP DB
+          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP DB
       - name: script
         run: |
           cd src/github.com/goharbor/harbor
           echo IP: $IP
-          bash ./tests/showtime.sh ./tests/travis/api_run.sh DB $IP
+          bash ./tests/showtime.sh ./tests/ci/api_run.sh DB $IP
 
   APITEST_LDAP:
     env:
@@ -194,12 +194,12 @@ jobs:
         run: |
           cd src/github.com/goharbor/harbor
           env
-          bash ./tests/showtime.sh ./tests/travis/api_common_install.sh $IP LDAP
+          bash ./tests/showtime.sh ./tests/ci/api_common_install.sh $IP LDAP
       - name: script
         run: |
           echo IP: $IP
           cd src/github.com/goharbor/harbor
-          bash ./tests/showtime.sh ./tests/travis/api_run.sh LDAP $IP
+          bash ./tests/showtime.sh ./tests/ci/api_run.sh LDAP $IP
 
   OFFLINE:
     env:
@@ -252,7 +252,7 @@ jobs:
         run: |
           echo IP: $IP
           cd src/github.com/goharbor/harbor
-          bash ./tests/showtime.sh ./tests/travis/distro_installer.sh
+          bash ./tests/showtime.sh ./tests/ci/distro_installer.sh
 
   UI_UT:
     env:
@@ -297,7 +297,7 @@ jobs:
         run: |
           echo IP: $IP
           cd src/github.com/goharbor/harbor
-          bash ./tests/showtime.sh ./tests/travis/ui_ut_run.sh
+          bash ./tests/showtime.sh ./tests/ci/ui_ut_run.sh
       - name: Codecov For UI
         uses: codecov/codecov-action@v1.0.5
         with:
