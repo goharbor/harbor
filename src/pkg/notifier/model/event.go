@@ -77,9 +77,9 @@ type Payload struct {
 
 // EventData of notification event payload
 type EventData struct {
-	Resources   []*Resource       `json:"resources"`
-	Repository  *Repository       `json:"repository"`
-	Replication *Replication      `json:"replication"`
+	Resources   []*Resource       `json:"resources,omitempty"`
+	Repository  *Repository       `json:"repository,omitempty"`
+	Replication *Replication      `json:"replication,omitempty"`
 	Custom      map[string]string `json:"custom_attributes,omitempty"`
 }
 
@@ -102,42 +102,34 @@ type Repository struct {
 
 // Replication describes replication infos
 type Replication struct {
-	HarborHostname     string                `json:"harbor_hostname"`
-	JobStatus          string                `json:"job_status"`
-	Description        string                `json:"description"`
-	ArtifactType       string                `json:"artifact_type"`
-	AuthenticationType string                `json:"authentication_type"`
-	OverrideMode       bool                  `json:"override_mode"`
-	TriggerType        string                `json:"trigger_type"`
-	ExecutionTimestamp int64                 `json:"execution_timestamp"`
-	Operator           string                `json:"operator"`
-	SrcRegistryType    string                `json:"src_registry_type"`
-	SrcRegistryName    string                `json:"src_registry_name"`
-	SrcEndpoint        string                `json:"src_endpoint"`
-	SrcProvider        string                `json:"src_provider"`
-	SrcNamespace       string                `json:"src_namespace"`
-	SrcProjectName     string                `json:"src_project_name"`
-	DestRegistryType   string                `json:"dest_registry_type"`
-	DestRegistryName   string                `json:"dest_registry_name"`
-	DestEndpoint       string                `json:"dest_endpoint"`
-	DestProvider       string                `json:"dest_provider"`
-	DestNamespace      string                `json:"dest_namespace"`
-	DestProjectName    string                `json:"dest_project_name"`
-	SuccessfulArtifact []*SuccessfulArtifact `json:"successful_artifact"`
-	FailedArtifact     []*FailedArtifact     `json:"failed_artifact"`
+	HarborHostname     string               `json:"harbor_hostname,omitempty"`
+	JobStatus          string               `json:"job_status,omitempty"`
+	Description        string               `json:"description,omitempty"`
+	ArtifactType       string               `json:"artifact_type,omitempty"`
+	AuthenticationType string               `json:"authentication_type,omitempty"`
+	OverrideMode       bool                 `json:"override_mode,omitempty"`
+	TriggerType        string               `json:"trigger_type,omitempty"`
+	PolicyCreator      string               `json:"policy_creator,omitempty"`
+	ExecutionTimestamp int64                `json:"execution_timestamp,omitempty"`
+	SrcResource        *ReplicationResource `json:"src_resource,omitempty"`
+	DestResource       *ReplicationResource `json:"dest_resource,omitempty"`
+	SuccessfulArtifact []*ArtifactInfo      `json:"successful_artifact,omitempty"`
+	FailedArtifact     []*ArtifactInfo      `json:"failed_artifact,omitempty"`
 }
 
-// SuccessfulArtifact describe info of artifact successfully replicated
-type SuccessfulArtifact struct {
-	Type    string `json:"type"`
-	Status  string `json:"status"`
-	NameTag string `json:"name_tag"`
+// ArtifactInfo describe info of artifact replicated
+type ArtifactInfo struct {
+	Type       string `json:"type"`
+	Status     string `json:"status"`
+	NameAndTag string `json:"name_tag"`
+	FailReason string `json:"fail_reason,omitempty"`
 }
 
-// FailedArtifact describe info of artifact unsuccessfully replicated
-type FailedArtifact struct {
-	Type    string `json:"type"`
-	Status  string `json:"status"`
-	NameTag string `json:"name_tag"`
-	Reason  string `json:"reason"`
+// ReplicationResource describes replication resource info
+type ReplicationResource struct {
+	RegistryName string `json:"registry_name,omitempty"`
+	RegistryType string `json:"registry_type"`
+	Endpoint     string `json:"endpoint"`
+	Provider     string `json:"provider,omitempty"`
+	Namespace    string `json:"namespace,omitempty"`
 }

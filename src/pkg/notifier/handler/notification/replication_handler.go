@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/goharbor/harbor/src/replication/dao/models"
-
 	commonModels "github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
 	"github.com/goharbor/harbor/src/core/config"
+	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notification"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/goharbor/harbor/src/replication"
+	rpModel "github.com/goharbor/harbor/src/replication/model"
 )
 
 // ReplicationPreprocessHandler preprocess replication event data
@@ -33,33 +33,6 @@ func (r *ReplicationPreprocessHandler) Handle(value interface{}) error {
 	}
 	if rpEvent == nil {
 		return fmt.Errorf("nil replication event")
-	}
-
-	task, err := replication.OperationCtl.GetTask(rpEvent.ReplicationTaskID)
-	if err != nil {
-		log.Errorf("failed to get replication task %d: error: %v", rpEvent.ReplicationTaskID, err)
-		return err
-	}
-	if task == nil {
-		return fmt.Errorf("task %d not found with replication event", rpEvent.ReplicationTaskID)
-	}
-
-	execution, err := replication.OperationCtl.GetExecution(task.ExecutionID)
-	if err != nil {
-		log.Errorf("failed to get replication execution %d: error: %v", task.ExecutionID, err)
-		return err
-	}
-	if execution == nil {
-		return fmt.Errorf("execution %d not found with replication event", task.ExecutionID)
-	}
-
-	rpPolicy, err := replication.PolicyCtl.Get(execution.PolicyID)
-	if err != nil {
-		log.Errorf("failed to get replication policy %d: error: %v", execution.PolicyID, err)
-		return err
-	}
-	if rpPolicy == nil {
-		return fmt.Errorf("policy %d not found with replication event", execution.PolicyID)
 	}
 
 	payload, project, err := constructReplicationPayload(rpEvent)
@@ -116,29 +89,49 @@ func constructReplicationPayload(event *notifyModel.ReplicationEvent) (*model.Pa
 		return nil, nil, fmt.Errorf("policy %d not found with replication event", execution.PolicyID)
 	}
 
-	registry, err := replication.RegistryMgr.Get(rpPolicy.DestRegistry.ID)
+	var remoteRegID int64
+	if rpPolicy.SrcRegistry != nil && rpPolicy.SrcRegistry.ID > 0 {
+		remoteRegID = rpPolicy.SrcRegistry.ID
+	}
+
+	if rpPolicy.DestRegistry != nil && rpPolicy.DestRegistry.ID > 0 {
+		remoteRegID = rpPolicy.DestRegistry.ID
+	}
+
+	remoteRegistry, err := replication.RegistryMgr.Get(remoteRegID)
 	if err != nil {
-		log.Errorf("failed to get replication registry %d: error: %v", rpPolicy.DestRegistry.ID, err)
+		log.Errorf("failed to get replication remoteRegistry registry %d: error: %v", remoteRegID, err)
 		return nil, nil, err
 	}
-	if registry == nil {
-		return nil, nil, fmt.Errorf("registry %d not found with replication event", rpPolicy.DestRegistry.ID)
+	if remoteRegistry == nil {
+		return nil, nil, fmt.Errorf("registry %d not found with replication event", remoteRegID)
 	}
 
-	srcNamespace, srcNameTag := getMetadataFromResource(task.SrcResource)
-	destNamespace, _ := getMetadataFromResource(task.DstResource)
+	srcNamespace, srcNameAndTag := getMetadataFromResource(task.SrcResource)
+	destNamespace, destNameAndTag := getMetadataFromResource(task.DstResource)
 
-	prjName := destNamespace
-	// push based replication policy get project from src
-	if rpPolicy.DestRegistry.ID > 0 {
-		prjName = srcNamespace
+	extURL, err := config.ExtURL()
+	if err != nil {
+		log.Errorf("Error while reading external endpoint URL: %v", err)
+	}
+	hostname := strings.Split(extURL, ":")[0]
+
+	remoteRes := &model.ReplicationResource{
+		RegistryName: remoteRegistry.Name,
+		RegistryType: string(remoteRegistry.Type),
+		Endpoint:     remoteRegistry.URL,
+		Namespace:    srcNamespace,
 	}
 
-	ext, err := config.ExtURL()
+	ext, err := config.ExtEndpoint()
 	if err != nil {
 		log.Errorf("Error while reading external endpoint: %v", err)
 	}
-	hostname := strings.Split(ext, ":")[0]
+	localRes := &model.ReplicationResource{
+		RegistryType: string(rpModel.RegistryTypeHarbor),
+		Endpoint:     ext,
+		Namespace:    destNamespace,
+	}
 
 	payload := &notifyModel.Payload{
 		Type:     event.EventType,
@@ -149,41 +142,48 @@ func constructReplicationPayload(event *notifyModel.ReplicationEvent) (*model.Pa
 				HarborHostname:     hostname,
 				JobStatus:          event.Status,
 				Description:        rpPolicy.Description,
+				PolicyCreator:      rpPolicy.Creator,
 				ArtifactType:       task.ResourceType,
-				AuthenticationType: string(registry.Credential.Type),
+				AuthenticationType: string(remoteRegistry.Credential.Type),
 				OverrideMode:       rpPolicy.Override,
 				TriggerType:        string(execution.Trigger),
 				ExecutionTimestamp: execution.StartTime.Unix(),
-				SrcRegistryType:    string(rpPolicy.SrcRegistry.Type),
-				SrcRegistryName:    rpPolicy.SrcRegistry.Name,
-				SrcEndpoint:        rpPolicy.SrcRegistry.URL,
-				SrcProvider:        "",
-				SrcNamespace:       srcNamespace,
-				SrcProjectName:     srcNamespace,
-				DestRegistryType:   string(rpPolicy.DestRegistry.Type),
-				DestRegistryName:   rpPolicy.DestRegistry.Name,
-				DestEndpoint:       rpPolicy.DestRegistry.URL,
-				DestProvider:       "",
-				DestNamespace:      rpPolicy.DestNamespace,
-				DestProjectName:    rpPolicy.DestNamespace,
 			},
 		},
 	}
 
-	if task.Status == models.TaskStatusSucceed {
-		succeedArtifact := &model.SuccessfulArtifact{
-			Type:    task.ResourceType,
-			Status:  task.Status,
-			NameTag: srcNameTag,
+	var prjName, nameAndTag string
+	// remote(src) -> local harbor(dest)
+	if rpPolicy.SrcRegistry != nil {
+		payload.EventData.Replication.SrcResource = remoteRes
+		payload.EventData.Replication.DestResource = localRes
+		prjName = destNamespace
+		nameAndTag = destNameAndTag
+	}
+
+	// local harbor(src) -> remote(dest)
+	if rpPolicy.DestRegistry != nil {
+		payload.EventData.Replication.DestResource = remoteRes
+		payload.EventData.Replication.SrcResource = localRes
+		prjName = srcNamespace
+		nameAndTag = srcNameAndTag
+	}
+
+	if event.Status == string(job.SuccessStatus) {
+		succeedArtifact := &model.ArtifactInfo{
+			Type:       task.ResourceType,
+			Status:     task.Status,
+			NameAndTag: nameAndTag,
 		}
-		payload.EventData.Replication.SuccessfulArtifact = append(payload.EventData.Replication.SuccessfulArtifact, succeedArtifact)
-	} else {
-		failedArtifact := &model.FailedArtifact{
-			Type:    task.ResourceType,
-			Status:  task.Status,
-			NameTag: srcNameTag,
+		payload.EventData.Replication.SuccessfulArtifact = []*model.ArtifactInfo{succeedArtifact}
+	}
+	if event.Status == string(job.ErrorStatus) {
+		failedArtifact := &model.ArtifactInfo{
+			Type:       task.ResourceType,
+			Status:     task.Status,
+			NameAndTag: nameAndTag,
 		}
-		payload.EventData.Replication.FailedArtifact = append(payload.EventData.Replication.FailedArtifact, failedArtifact)
+		payload.EventData.Replication.FailedArtifact = []*model.ArtifactInfo{failedArtifact}
 	}
 
 	project, err := config.GlobalProjectMgr.Get(prjName)

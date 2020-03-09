@@ -153,29 +153,28 @@ func (h *Handler) HandleReplicationScheduleJob() {
 // HandleReplicationTask handles the webhook of replication task
 func (h *Handler) HandleReplicationTask() {
 	log.Debugf("received replication task status update event: task-%d, status-%s", h.id, h.status)
-	// Trigger artifict webhook event only for JobFinished and JobError status
-	if h.status == models.JobFinished ||
-		h.status == models.JobError ||
-		h.status == models.JobStopped {
-		e := &event.Event{}
-		metaData := &event.ReplicationMetaData{
-			ReplicationTaskID: h.id,
-			Status:            h.status,
-		}
-
-		if err := e.Build(metaData); err == nil {
-			if err := e.Publish(); err != nil {
-				log.Error(errors.Wrap(err, "scan job hook handler: event publish"))
-			}
-		} else {
-			log.Error(errors.Wrap(err, "scan job hook handler: event publish"))
-		}
-	}
 
 	if err := hook.UpdateTask(replication.OperationCtl, h.id, h.rawStatus, h.revision); err != nil {
 		log.Errorf("failed to update the status of the replication task %d: %v", h.id, err)
 		h.SendInternalServerError(err)
 		return
+	}
+
+	// Trigger artifict webhook event only for JobFinished and JobError status
+	if h.status == models.JobFinished || h.status == models.JobError || h.status == models.JobStopped {
+		e := &event.Event{}
+		metaData := &event.ReplicationMetaData{
+			ReplicationTaskID: h.id,
+			Status:            h.rawStatus,
+		}
+
+		if err := e.Build(metaData); err == nil {
+			if err := e.Publish(); err != nil {
+				log.Error(errors.Wrap(err, "replication job hook handler: event publish"))
+			}
+		} else {
+			log.Error(errors.Wrap(err, "replication job hook handler: event publish"))
+		}
 	}
 }
 
