@@ -31,7 +31,6 @@ func TestSendError(t *testing.T) {
 	SendError(rw, err)
 	assert.Equal(t, http.StatusUnauthorized, rw.Code)
 	assert.Equal(t, `{"errors":[{"code":"UNAUTHORIZED","message":"unauthorized"}]}`+"\n", rw.Body.String())
-	assert.Equal(t, `Basic realm="harbor"`, rw.Header().Get("Www-Authenticate"))
 
 	// internal server error
 	rw = httptest.NewRecorder()
