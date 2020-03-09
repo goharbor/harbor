@@ -34,12 +34,12 @@ func RedisAddr(rawAddr string) (string, bool) {
 		return "", false
 	}
 
-	segments := strings.SplitN(rawAddr, ",", 3)
+	segments := strings.SplitN(rawAddr, ",", -1)
 	if len(segments) <= 1 {
 		return "", false
 	}
 
-	addrParts := []string{}
+	var addrParts []string
 	addrParts = append(addrParts, "redis://")
 	if len(segments) >= 3 && len(segments[2]) > 0 {
 		addrParts = append(addrParts, fmt.Sprintf("%s:%s@", "arbitrary_username", segments[2]))
