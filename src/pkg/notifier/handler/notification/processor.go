@@ -140,6 +140,24 @@ func resolveImageEventData(value interface{}) (*notifyModel.ImageEvent, error) {
 	return imgEvent, nil
 }
 
+func resolveTagEventToImageEvent(value interface{}) (*notifyModel.ImageEvent, error) {
+	tagEvent, ok := value.(*notifyModel.TagEvent)
+	if !ok || tagEvent == nil {
+		return nil, errors.New("invalid image event")
+	}
+	imageEvent := notifyModel.ImageEvent{
+		EventType: notifyModel.PushImageTopic,
+		Project:   tagEvent.Project,
+		RepoName:  tagEvent.RepoName,
+		Resource: []*notifyModel.ImgResource{
+			{Tag: tagEvent.TagName},
+		},
+		OccurAt:  tagEvent.OccurAt,
+		Operator: tagEvent.Operator,
+	}
+	return &imageEvent, nil
+}
+
 // preprocessAndSendImageHook preprocess image event data and send hook by notification policy target
 func preprocessAndSendImageHook(value interface{}) error {
 	// if global notification configured disabled, return directly

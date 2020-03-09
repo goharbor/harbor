@@ -11,13 +11,12 @@ import (
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/jobservice/job"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	nm "github.com/goharbor/harbor/src/pkg/notification/model"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/goharbor/harbor/src/pkg/scan/dao/scan"
 	"github.com/goharbor/harbor/src/pkg/scan/report"
-	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
+	"github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 	"github.com/stretchr/testify/suite"
@@ -53,7 +52,7 @@ func (suite *ScanImagePreprocessHandlerSuite) SetupSuite() {
 		MimeType:    v1.MimeTypeDockerArtifact,
 	}
 	suite.evt = &model.ScanImageEvent{
-		EventType: nm.EventTypeScanningCompleted,
+		EventType: model.EventTypeScanningCompleted,
 		OccurAt:   time.Now().UTC(),
 		Operator:  "admin",
 		Artifact:  a,

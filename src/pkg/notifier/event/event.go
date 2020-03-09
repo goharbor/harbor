@@ -5,9 +5,9 @@ import (
 
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/common/utils/log"
-	notifyModel "github.com/goharbor/harbor/src/pkg/notification/model"
 	"github.com/goharbor/harbor/src/pkg/notifier"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
+	notifyModel "github.com/goharbor/harbor/src/pkg/notifier/model"
 	v1 "github.com/goharbor/harbor/src/pkg/scan/rest/v1"
 	"github.com/pkg/errors"
 )
@@ -20,6 +20,43 @@ const (
 type Event struct {
 	Topic string
 	Data  interface{}
+}
+
+// TopicEvent - Events that contains topic information
+type TopicEvent interface {
+	Topic() string
+}
+
+// New ...
+func New() *Event {
+	return &Event{}
+}
+
+// WithTopicEvent - builder method
+func (e *Event) WithTopicEvent(topicEvent TopicEvent) *Event {
+	e.Topic = topicEvent.Topic()
+	e.Data = topicEvent
+	return e
+}
+
+// Build an event by metadata
+func (e *Event) Build(metadata ...Metadata) error {
+	for _, md := range metadata {
+		if err := md.Resolve(e); err != nil {
+			log.Debugf("failed to resolve event metadata: %v", md)
+			return errors.Wrap(err, "failed to resolve event metadata")
+		}
+	}
+	return nil
+}
+
+// Publish an event
+func (e *Event) Publish() error {
+	if err := notifier.Publish(e.Topic, e.Data); err != nil {
+		log.Debugf("failed to publish topic %s with event: %v", e.Topic, e.Data)
+		return errors.Wrap(err, "failed to publish event")
+	}
+	return nil
 }
 
 // Metadata is the event raw data to be processed
@@ -283,25 +320,5 @@ func (h *HookMetaData) Resolve(evt *Event) error {
 
 	evt.Topic = h.Target.Type
 	evt.Data = data
-	return nil
-}
-
-// Build an event by metadata
-func (e *Event) Build(metadata ...Metadata) error {
-	for _, md := range metadata {
-		if err := md.Resolve(e); err != nil {
-			log.Debugf("failed to resolve event metadata: %v", md)
-			return errors.Wrap(err, "failed to resolve event metadata")
-		}
-	}
-	return nil
-}
-
-// Publish an event
-func (e *Event) Publish() error {
-	if err := notifier.Publish(e.Topic, e.Data); err != nil {
-		log.Debugf("failed to publish topic %s with event: %v", e.Topic, e.Data)
-		return errors.Wrap(err, "failed to publish event")
-	}
 	return nil
 }

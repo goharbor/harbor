@@ -10,7 +10,6 @@ import (
 	"github.com/goharbor/harbor/src/common/models"
 	"github.com/goharbor/harbor/src/core/config"
 	"github.com/goharbor/harbor/src/pkg/notification"
-	notificationModel "github.com/goharbor/harbor/src/pkg/notification/model"
 	"github.com/goharbor/harbor/src/pkg/notifier/model"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/require"
@@ -53,8 +52,8 @@ func (f *fakedNotificationPlyMgr) GetRelatedPolices(id int64, eventType string) 
 			{
 				ID: 1,
 				EventTypes: []string{
-					notificationModel.EventTypePullImage,
-					notificationModel.EventTypePushImage,
+					model.EventTypePullImage,
+					model.EventTypePushImage,
 				},
 				Targets: []models.EventTarget{
 					{

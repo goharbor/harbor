@@ -5,9 +5,9 @@ import (
 	"github.com/goharbor/harbor/src/pkg/notification/hook"
 	"github.com/goharbor/harbor/src/pkg/notification/job"
 	jobMgr "github.com/goharbor/harbor/src/pkg/notification/job/manager"
-	"github.com/goharbor/harbor/src/pkg/notification/model"
 	"github.com/goharbor/harbor/src/pkg/notification/policy"
 	"github.com/goharbor/harbor/src/pkg/notification/policy/manager"
+	"github.com/goharbor/harbor/src/pkg/notifier/model"
 )
 
 var (

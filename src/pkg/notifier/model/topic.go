@@ -2,6 +2,23 @@ package model
 
 // Define global topic names
 const (
+	// TagTopic
+	PushTagTopic   = "PushTagTopic"
+	PullTagTopic   = "PullTagTopic"
+	DeleteTagTopic = "DeleteTagTopic"
+
+	// ProjectTopic ...
+	CreateProjectTopic = "CreateProjectTopic"
+	DeleteProjectTopic = "DeleteProjectTopic"
+
+	// RepositoryTopic ...
+	CreateRepositoryTopic = "CreateRepositoryTopic"
+	DeleteRepositoryTopic = "DeleteRepositoryTopic"
+
+	// ArtifactTopic
+	CreateArtifactTopic = "CreateArtifactTopic"
+	DeleteArtifactTopic = "DeleteArtifactTopic"
+
 	// PushImageTopic is topic for push image event
 	PushImageTopic = "OnPushImage"
 	// PullImageTopic is topic for pull image event
