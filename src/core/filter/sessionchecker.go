@@ -18,11 +18,8 @@ func SessionCheck(ctx *beegoctx.Context) {
 	req := ctx.Request
 	_, err := req.Cookie(config.SessionCookieName)
 	if err == nil {
-		// This is a temp workaround for beego bug: https://github.com/goharbor/harbor/issues/10446
-		// After we upgrading beego to the latest version and moving the filter to middleware,
-		// this workaround can be removed
-		*(ctx.Request) = *(req.WithContext(context.WithValue(req.Context(), SessionReqKey, true)))
-		log.Debug("Mark the request as no-session")
+		ctx.Request = req.WithContext(context.WithValue(req.Context(), SessionReqKey, true))
+		log.Debugf("Mark the request as with-session: %s %s", req.Method, req.URL.RawPath)
 	}
 }
 

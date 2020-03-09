@@ -27,13 +27,6 @@ type Handler struct {
 	beego.Controller
 }
 
-// Prepare disables xsrf for /service/token endpoint.
-// This is done on purpose b/c containerd will try to send POST and fallback to GET
-// more details see #10305
-func (h *Handler) Prepare() {
-	h.EnableXSRF = false
-}
-
 // Get handles GET request, it checks the http header for user credentials
 // and parse service and scope based on docker registry v2 standard,
 // checks the permission against local DB and generates jwt token.
