@@ -1152,7 +1152,9 @@
         "LATEST_JOBS": "最新的 {{param}} 个任务",
         "MSG_SUCCESS": "垃圾回收成功",
         "MSG_SCHEDULE_SET": "垃圾回收定时任务设置成功",
-        "MSG_SCHEDULE_RESET": "垃圾回收定时任务已被重置"
+        "MSG_SCHEDULE_RESET": "垃圾回收定时任务已被重置",
+        "PARAMETERS": "参数",
+        "DELETE_UNTAGGED": "删除无 Tag 的 Artifacts"
     },
     "RETAG": {
         "MSG_SUCCESS": "Artifact 拷贝成功",

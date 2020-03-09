@@ -1156,7 +1156,9 @@
         "LATEST_JOBS": "Latest {{param}} Jobs",
         "MSG_SUCCESS": "Garbage Collection Successful",
         "MSG_SCHEDULE_SET": "Garbage Collection schedule has been set",
-        "MSG_SCHEDULE_RESET": "Garbage Collection schedule has been reset"
+        "MSG_SCHEDULE_RESET": "Garbage Collection schedule has been reset",
+        "PARAMETERS": "Parameters",
+        "DELETE_UNTAGGED": "Delete Untagged Artifacts"
     },
     "RETAG": {
         "MSG_SUCCESS": "Copy artifact successfully",
