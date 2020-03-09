@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { AdditionsService } from "../additions.service";
 import { ClrDatagridComparatorInterface, ClrLoadingState } from "@clr/angular";
 import { finalize } from "rxjs/operators";
@@ -18,13 +18,14 @@ import {
 } from "../../../../../../lib/utils/utils";
 import { ChannelService } from "../../../../../../lib/services/channel.service";
 import { ResultBarChartComponent } from "../../../vulnerability-scanning/result-bar-chart.component";
+import { Subscription } from "rxjs";
 
 @Component({
   selector: 'hbr-artifact-vulnerabilities',
   templateUrl: './artifact-vulnerabilities.component.html',
   styleUrls: ['./artifact-vulnerabilities.component.scss']
 })
-export class ArtifactVulnerabilitiesComponent implements OnInit {
+export class ArtifactVulnerabilitiesComponent implements OnInit, OnDestroy {
   @Input()
   vulnerabilitiesLink: AdditionLink;
   @Input()
@@ -48,6 +49,7 @@ export class ArtifactVulnerabilitiesComponent implements OnInit {
   hasShowLoading: boolean = false;
   @ViewChild(ResultBarChartComponent, {static: false})
   resultBarChartComponent: ResultBarChartComponent;
+  sub: Subscription;
   constructor(
     private errorHandler: ErrorHandler,
     private additionsService: AdditionsService,
@@ -67,9 +69,17 @@ export class ArtifactVulnerabilitiesComponent implements OnInit {
     this.getVulnerabilities();
     this.getScanningPermission();
     this.getProjectScanner();
-    this.channel.ArtifactDetail$.subscribe(tag => {
-     this.getVulnerabilities();
-    });
+    if (!this.sub) {
+      this.sub = this.channel.ArtifactDetail$.subscribe(tag => {
+        this.getVulnerabilities();
+      });
+    }
+  }
+  ngOnDestroy() {
+    if (this.sub) {
+      this.sub.unsubscribe();
+      this.sub = null;
+    }
   }
 
   getVulnerabilities() {
