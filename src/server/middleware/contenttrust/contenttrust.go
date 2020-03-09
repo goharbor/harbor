@@ -1,6 +1,9 @@
 package contenttrust
 
 import (
+	"github.com/goharbor/harbor/src/api/project"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
 	internal_errors "github.com/goharbor/harbor/src/internal/error"
 	"github.com/goharbor/harbor/src/pkg/signature"
 	serror "github.com/goharbor/harbor/src/server/error"
@@ -47,6 +50,18 @@ func validate(req *http.Request) (bool, middleware.ArtifactInfo) {
 	}
 	af, ok := middleware.ArtifactInfoFromContext(req.Context())
 	if !ok {
+		return false, none
+	}
+	pro, err := project.Ctl.GetByName(req.Context(), af.ProjectName)
+	if err != nil {
+		return false, none
+	}
+	resource := rbac.NewProjectNamespace(pro.ProjectID).Resource(rbac.ResourceRepository)
+	securityCtx, ok := security.FromContext(req.Context())
+	if !ok {
+		return false, none
+	}
+	if !securityCtx.Can(rbac.ActionScannerPull, resource) {
 		return false, none
 	}
 	if !middleware.GetPolicyChecker().ContentTrustEnabled(af.ProjectName) {

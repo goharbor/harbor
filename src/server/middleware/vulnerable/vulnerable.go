@@ -1,6 +1,9 @@
 package vulnerable
 
 import (
+	"github.com/goharbor/harbor/src/api/project"
+	"github.com/goharbor/harbor/src/common/rbac"
+	"github.com/goharbor/harbor/src/common/security"
 	"net/http"
 	"net/http/httptest"
 
@@ -105,6 +108,18 @@ func validate(req *http.Request) (bool, middleware.ArtifactInfo, vuln.Severity, 
 		return false, af, vs, wl
 	}
 
+	pro, err := project.Ctl.GetByName(req.Context(), af.ProjectName)
+	if err != nil {
+		return false, af, vs, wl
+	}
+	resource := rbac.NewProjectNamespace(pro.ProjectID).Resource(rbac.ResourceRepository)
+	securityCtx, ok := security.FromContext(req.Context())
+	if !ok {
+		return false, af, vs, wl
+	}
+	if !securityCtx.Can(rbac.ActionScannerPull, resource) {
+		return false, af, vs, wl
+	}
 	// Is vulnerable policy set?
 	projectVulnerableEnabled, projectVulnerableSeverity, wl := middleware.GetPolicyChecker().VulnerablePolicy(af.ProjectName)
 	if !projectVulnerableEnabled {
